@@ -3173,15 +3173,15 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					if (ap) {
 						NodePath npath = animation->track_get_path(track);
 						Node *a_ap_root_node = ap->get_node_or_null(ap->get_root_node());
-						Node *nd = nullptr;
-						// We must test that we have a valid a_ap_root_node before trying to access its content to init the nd Node.
+						Node *node = nullptr;
+						// We must test that we have a valid a_ap_root_node before trying to access its content to init the `node` Node.
 						if (a_ap_root_node) {
-							nd = a_ap_root_node->get_node_or_null(NodePath(npath.get_concatenated_names()));
+							node = a_ap_root_node->get_node_or_null(NodePath(npath.get_concatenated_names()));
 						}
-						if (nd) {
+						if (node) {
 							StringName prop = npath.get_concatenated_subnames();
 							PropertyInfo prop_info;
-							ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
+							ClassDB::get_property_info(node->get_class(), prop, &prop_info);
 #ifdef DISABLE_DEPRECATED
 							bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.contains("radians_as_degrees");
 #else
@@ -6894,15 +6894,15 @@ bool AnimationTrackEditor::_is_track_compatible(int p_target_track_idx, Variant:
 						if (ap) {
 							NodePath npath = animation->track_get_path(p_target_track_idx);
 							Node *a_ap_root_node = ap->get_node(ap->get_root_node());
-							Node *nd = nullptr;
-							// We must test that we have a valid a_ap_root_node before trying to access its content to init the nd Node.
+							Node *node = nullptr;
+							// We must test that we have a valid a_ap_root_node before trying to access its content to init the `node` Node.
 							if (a_ap_root_node) {
-								nd = a_ap_root_node->get_node(NodePath(npath.get_concatenated_names()));
+								node = a_ap_root_node->get_node(NodePath(npath.get_concatenated_names()));
 							}
-							if (nd) {
+							if (node) {
 								StringName prop = npath.get_concatenated_subnames();
 								PropertyInfo prop_info;
-								path_valid = ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
+								path_valid = ClassDB::get_property_info(node->get_class(), prop, &prop_info);
 								property_type = prop_info.type;
 							}
 						}

@@ -332,9 +332,9 @@ bool CameraFeedLinux::set_format(int p_index, const Dictionary &p_parameters) {
 		memset(&param, 0, sizeof(param));
 
 		param.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-		param.parm.capture.capability = V4L2_CAP_TIMEPERFRAME;
-		param.parm.capture.timeperframe.numerator = feed_format.frame_numerator;
-		param.parm.capture.timeperframe.denominator = feed_format.frame_denominator;
+		param.parm.capture.capability = V4L2_CAP_TIMEPERFRAME; // codespell:ignore parm.
+		param.parm.capture.timeperframe.numerator = feed_format.frame_numerator; // codespell:ignore parm.
+		param.parm.capture.timeperframe.denominator = feed_format.frame_denominator; // codespell:ignore parm.
 
 		if (ioctl(file_descriptor, VIDIOC_S_PARM, &param) == -1) {
 			close(file_descriptor);

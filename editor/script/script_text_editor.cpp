@@ -212,8 +212,8 @@ ScriptTextEditor::EditMenusSTE::EditMenusSTE() {
 ////////////////////////////////////////////////////////////////////////////////
 
 Vector<String> ScriptTextEditor::get_functions() {
-	CodeEdit *te = code_editor->get_text_editor();
-	String text = te->get_text();
+	CodeEdit *text_editor = code_editor->get_text_editor();
+	String text = text_editor->get_text();
 	List<String> fnc;
 
 	Ref<Script> script = edited_res;
@@ -703,26 +703,26 @@ void ScriptTextEditor::_update_color_constructor_options() {
 
 void ScriptTextEditor::_update_background_color() {
 	// Clear background lines.
-	CodeEdit *te = code_editor->get_text_editor();
-	for (int i = 0; i < te->get_line_count(); i++) {
-		bool is_folded_code_region = te->is_line_code_region_start(i) && te->is_line_folded(i);
-		te->set_line_background_color(i, is_folded_code_region ? folded_code_region_color : Color(0, 0, 0, 0));
+	CodeEdit *text_editor = code_editor->get_text_editor();
+	for (int i = 0; i < text_editor->get_line_count(); i++) {
+		bool is_folded_code_region = text_editor->is_line_code_region_start(i) && text_editor->is_line_folded(i);
+		text_editor->set_line_background_color(i, is_folded_code_region ? folded_code_region_color : Color(0, 0, 0, 0));
 	}
 
 	// Set the warning background.
 	if (warning_line_color.a != 0.0) {
 		for (const ScriptLanguage::Warning &warning : warnings) {
-			int warning_start_line = CLAMP(warning.start_line - 1, 0, te->get_line_count() - 1);
-			int warning_end_line = CLAMP(warning.end_line - 1, 0, te->get_line_count() - 1);
-			int folded_line_header = te->get_folded_line_header(warning_start_line);
+			int warning_start_line = CLAMP(warning.start_line - 1, 0, text_editor->get_line_count() - 1);
+			int warning_end_line = CLAMP(warning.end_line - 1, 0, text_editor->get_line_count() - 1);
+			int folded_line_header = text_editor->get_folded_line_header(warning_start_line);
 
 			// If the warning highlight is too long, only highlight the start line.
 			const int warning_max_lines = 20;
 
-			te->set_line_background_color(folded_line_header, warning_line_color);
+			text_editor->set_line_background_color(folded_line_header, warning_line_color);
 			if (warning_end_line - warning_start_line < warning_max_lines) {
 				for (int i = warning_start_line + 1; i <= warning_end_line; i++) {
-					te->set_line_background_color(i, warning_line_color);
+					text_editor->set_line_background_color(i, warning_line_color);
 				}
 			}
 		}
@@ -731,10 +731,10 @@ void ScriptTextEditor::_update_background_color() {
 	// Set the error background.
 	if (marked_line_color.a != 0.0) {
 		for (const ScriptLanguage::ScriptError &error : errors) {
-			int error_line = CLAMP(error.line - 1, 0, te->get_line_count() - 1);
-			int folded_line_header = te->get_folded_line_header(error_line);
+			int error_line = CLAMP(error.line - 1, 0, text_editor->get_line_count() - 1);
+			int folded_line_header = text_editor->get_folded_line_header(error_line);
 
-			te->set_line_background_color(folded_line_header, marked_line_color);
+			text_editor->set_line_background_color(folded_line_header, marked_line_color);
 		}
 	}
 }
@@ -847,9 +847,9 @@ struct ScriptErrorLineComparator {
 };
 
 void ScriptTextEditor::_validate_script() {
-	CodeEdit *te = code_editor->get_text_editor();
+	CodeEdit *text_editor = code_editor->get_text_editor();
 
-	String text = te->get_text();
+	String text = text_editor->get_text();
 	List<String> fnc;
 
 	warnings.clear();
@@ -884,7 +884,7 @@ void ScriptTextEditor::_validate_script() {
 		if (!script->is_tool()) {
 			script->set_source_code(text);
 			script->update_exports();
-			te->get_syntax_highlighter()->update_cache();
+			text_editor->get_syntax_highlighter()->update_cache();
 		}
 
 		functions.clear();
@@ -1030,21 +1030,21 @@ void ScriptTextEditor::_update_errors() {
 
 	bool highlight_safe = EDITOR_GET("text_editor/appearance/gutters/highlight_type_safe_lines");
 	bool last_is_safe = false;
-	CodeEdit *te = code_editor->get_text_editor();
+	CodeEdit *text_editor = code_editor->get_text_editor();
 
-	for (int i = 0; i < te->get_line_count(); i++) {
+	for (int i = 0; i < text_editor->get_line_count(); i++) {
 		if (highlight_safe) {
 			if (safe_lines.has(i + 1)) {
-				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
+				text_editor->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 				last_is_safe = true;
-			} else if (last_is_safe && (te->is_in_comment(i) != -1 || te->get_line(i).strip_edges().is_empty())) {
-				te->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
+			} else if (last_is_safe && (text_editor->is_in_comment(i) != -1 || text_editor->get_line(i).strip_edges().is_empty())) {
+				text_editor->set_line_gutter_item_color(i, line_number_gutter, safe_line_number_color);
 			} else {
-				te->set_line_gutter_item_color(i, line_number_gutter, default_line_number_color);
+				text_editor->set_line_gutter_item_color(i, line_number_gutter, default_line_number_color);
 				last_is_safe = false;
 			}
 		} else {
-			te->set_line_gutter_item_color(i, 1, default_line_number_color);
+			text_editor->set_line_gutter_item_color(i, 1, default_line_number_color);
 		}
 	}
 }
@@ -2083,18 +2083,18 @@ String ScriptTextEditor::_get_dropped_resource_as_exported_member(const Ref<Reso
 void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 
-	CodeEdit *te = code_editor->get_text_editor();
-	Point2i pos = (p_point == Vector2(Math::INF, Math::INF)) ? Point2i(te->get_caret_line(0), te->get_caret_column(0)) : te->get_line_column_at_pos(p_point);
+	CodeEdit *text_editor = code_editor->get_text_editor();
+	Point2i pos = (p_point == Vector2(Math::INF, Math::INF)) ? Point2i(text_editor->get_caret_line(0), text_editor->get_caret_column(0)) : text_editor->get_line_column_at_pos(p_point);
 	int drop_at_line = pos.y;
 	int drop_at_column = pos.x;
-	int selection_index = te->get_selection_at_line_column(drop_at_line, drop_at_column);
+	int selection_index = text_editor->get_selection_at_line_column(drop_at_line, drop_at_column);
 
 	bool is_empty_line = false;
 	if (selection_index >= 0) {
 		// Dropped on a selection, it will be replaced.
-		drop_at_line = te->get_selection_from_line(selection_index);
-		drop_at_column = te->get_selection_from_column(selection_index);
-		is_empty_line = drop_at_column <= te->get_first_non_whitespace_column(drop_at_line) && te->get_selection_to_column(selection_index) == te->get_line(te->get_selection_to_line(selection_index)).length();
+		drop_at_line = text_editor->get_selection_from_line(selection_index);
+		drop_at_column = text_editor->get_selection_from_column(selection_index);
+		is_empty_line = drop_at_column <= text_editor->get_first_non_whitespace_column(drop_at_line) && text_editor->get_selection_to_column(selection_index) == text_editor->get_line(text_editor->get_selection_to_line(selection_index)).length();
 	}
 
 	Node *scene_root = get_tree()->get_edited_scene_root();
@@ -2103,10 +2103,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	const bool export_drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 	const bool allow_uid = Input::get_singleton()->is_key_pressed(Key::SHIFT) != bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
-	const String &line = te->get_line(drop_at_line);
+	const String &line = text_editor->get_line(drop_at_line);
 
 	if (selection_index < 0) {
-		is_empty_line = line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
+		is_empty_line = line.is_empty() || text_editor->get_first_non_whitespace_column(drop_at_line) == line.length();
 	}
 
 	String text_to_drop;
@@ -2171,11 +2171,11 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		}
 		String join_string;
 		if (is_empty_line) {
-			int indent_level = te->get_indent_level(drop_at_line);
-			if (te->is_indent_using_spaces()) {
+			int indent_level = text_editor->get_indent_level(drop_at_line);
+			if (text_editor->is_indent_using_spaces()) {
 				join_string = "\n" + String(" ").repeat(indent_level);
 			} else {
-				join_string = "\n" + String("\t").repeat(indent_level / te->get_tab_size());
+				join_string = "\n" + String("\t").repeat(indent_level / text_editor->get_tab_size());
 			}
 		} else {
 			join_string = ", ";
@@ -2308,23 +2308,23 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	// Remove drag caret before any actions so it is not included in undo.
-	te->remove_drag_caret();
-	te->begin_complex_operation();
+	text_editor->remove_drag_caret();
+	text_editor->begin_complex_operation();
 	if (selection_index >= 0) {
-		te->delete_selection(selection_index);
+		text_editor->delete_selection(selection_index);
 	}
-	te->remove_secondary_carets();
-	te->deselect();
-	te->set_caret_line(drop_at_line);
+	text_editor->remove_secondary_carets();
+	text_editor->deselect();
+	text_editor->set_caret_line(drop_at_line);
 	if (add_new_line) {
-		te->set_caret_column(te->get_line(drop_at_line).length());
+		text_editor->set_caret_column(text_editor->get_line(drop_at_line).length());
 		text_to_drop = "\n" + text_to_drop;
 	} else {
-		te->set_caret_column(drop_at_column);
+		text_editor->set_caret_column(drop_at_column);
 	}
-	te->insert_text_at_caret(text_to_drop);
-	te->end_complex_operation();
-	te->grab_focus();
+	text_editor->insert_text_at_caret(text_to_drop);
+	text_editor->end_complex_operation();
+	text_editor->grab_focus();
 
 	drag_info_label->hide();
 }

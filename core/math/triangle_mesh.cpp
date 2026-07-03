@@ -231,9 +231,9 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 						Vector3 res;
 
 						if (f3.intersects_segment(p_begin, p_end, &res)) {
-							real_t nd = n.dot(res);
-							if (nd < d) {
-								d = nd;
+							real_t ndist = n.dot(res);
+							if (ndist < d) {
+								d = ndist;
 								r_point = res;
 								r_normal = f3.get_plane().get_normal();
 								if (r_surf_index) {
@@ -339,9 +339,9 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 						Vector3 res;
 
 						if (f3.intersects_ray(p_begin, p_dir, &res)) {
-							real_t nd = n.dot(res);
-							if (nd < d) {
-								d = nd;
+							real_t ndist = n.dot(res);
+							if (ndist < d) {
+								d = ndist;
 								r_point = res;
 								r_normal = f3.get_plane().get_normal();
 								if (r_surf_index) {

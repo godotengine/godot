@@ -284,22 +284,22 @@ void BonePropertiesEditor::set_target(const String &p_prop) {
 }
 
 void BonePropertiesEditor::_property_keyed(const String &p_path, bool p_advance) {
-	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
-	if (!te || !te->has_keying()) {
+	AnimationTrackEditor *track_editor = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	if (!track_editor || !track_editor->has_keying()) {
 		return;
 	}
-	te->_clear_selection();
+	track_editor->_clear_selection();
 	PackedStringArray split = p_path.split("/");
 	if (split.size() == 3 && split[0] == "bones") {
 		int bone_idx = split[1].to_int();
 		if (split[2] == "position") {
-			te->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_POSITION_3D, (Vector3)skeleton->get(p_path) / skeleton->get_motion_scale());
+			track_editor->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_POSITION_3D, (Vector3)skeleton->get(p_path) / skeleton->get_motion_scale());
 		}
 		if (split[2] == "rotation") {
-			te->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_ROTATION_3D, skeleton->get(p_path));
+			track_editor->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_ROTATION_3D, skeleton->get(p_path));
 		}
 		if (split[2] == "scale") {
-			te->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_SCALE_3D, skeleton->get(p_path));
+			track_editor->insert_transform_3d_key(skeleton, skeleton->get_bone_name(bone_idx), Animation::TYPE_SCALE_3D, skeleton->get(p_path));
 		}
 	}
 }
@@ -467,10 +467,10 @@ void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
 void Skeleton3DEditor::insert_keys(const bool p_all_bones, const bool p_enable_modifier) {
 	ERR_FAIL_COND(!skeleton);
 
-	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
-	bool is_read_only = te->is_read_only();
+	AnimationTrackEditor *track_editor = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	bool is_read_only = track_editor->is_read_only();
 	if (is_read_only) {
-		te->popup_read_only_dialog();
+		track_editor->popup_read_only_dialog();
 		return;
 	}
 	if (p_enable_modifier) {
@@ -501,8 +501,8 @@ void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
 	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 	String path = String(root->get_path_to(skeleton));
 
-	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
-	te->make_insert_queue();
+	AnimationTrackEditor *track_editor = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	track_editor->make_insert_queue();
 	for (int i = 0; i < bone_len; i++) {
 		const String name = skeleton->get_bone_name(i);
 
@@ -510,17 +510,17 @@ void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
 			continue;
 		}
 
-		if (pos_enabled && (p_all_bones || te->has_transform_3d_track(skeleton, name, Animation::TYPE_POSITION_3D))) {
-			te->insert_transform_3d_key(skeleton, name, Animation::TYPE_POSITION_3D, skeleton->get_bone_pose_position(i) / skeleton->get_motion_scale());
+		if (pos_enabled && (p_all_bones || track_editor->has_transform_3d_track(skeleton, name, Animation::TYPE_POSITION_3D))) {
+			track_editor->insert_transform_3d_key(skeleton, name, Animation::TYPE_POSITION_3D, skeleton->get_bone_pose_position(i) / skeleton->get_motion_scale());
 		}
-		if (rot_enabled && (p_all_bones || te->has_transform_3d_track(skeleton, name, Animation::TYPE_ROTATION_3D))) {
-			te->insert_transform_3d_key(skeleton, name, Animation::TYPE_ROTATION_3D, skeleton->get_bone_pose_rotation(i));
+		if (rot_enabled && (p_all_bones || track_editor->has_transform_3d_track(skeleton, name, Animation::TYPE_ROTATION_3D))) {
+			track_editor->insert_transform_3d_key(skeleton, name, Animation::TYPE_ROTATION_3D, skeleton->get_bone_pose_rotation(i));
 		}
-		if (scl_enabled && (p_all_bones || te->has_transform_3d_track(skeleton, name, Animation::TYPE_SCALE_3D))) {
-			te->insert_transform_3d_key(skeleton, name, Animation::TYPE_SCALE_3D, skeleton->get_bone_pose_scale(i));
+		if (scl_enabled && (p_all_bones || track_editor->has_transform_3d_track(skeleton, name, Animation::TYPE_SCALE_3D))) {
+			track_editor->insert_transform_3d_key(skeleton, name, Animation::TYPE_SCALE_3D, skeleton->get_bone_pose_scale(i));
 		}
 	}
-	te->commit_insert_queue();
+	track_editor->commit_insert_queue();
 }
 
 void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
@@ -1063,7 +1063,7 @@ void Skeleton3DEditor::create_editors() {
 	set_focus_mode(FOCUS_ALL);
 
 	Node3DEditor *ne = Node3DEditor::get_singleton();
-	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	AnimationTrackEditor *track_editor = AnimationPlayerEditor::get_singleton()->get_track_editor();
 
 	// Create File dialog.
 	file_dialog = memnew(EditorFileDialog);
@@ -1211,7 +1211,7 @@ void Skeleton3DEditor::create_editors() {
 	pose_editor->set_visible(false);
 	add_child(pose_editor);
 
-	set_keyable(te->has_keying());
+	set_keyable(track_editor->has_keying());
 }
 
 void Skeleton3DEditor::_loc_toggled(bool p_toggled_on) {

@@ -1485,9 +1485,9 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 	return RD::get_singleton()->vertex_format_create(attributes);
 }
 
-void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, MeshInstance::Surface *mis, uint32_t p_current_buffer, uint32_t p_previous_buffer) {
+void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &p_version, Mesh::Surface *p_mesh_surface, uint64_t p_input_mask, bool p_input_motion_vectors, bool p_point_size_emulated, MeshInstance::Surface *p_mesh_instance_surface, uint32_t p_current_buffer, uint32_t p_previous_buffer) {
 	uint32_t position_stride = 0;
-	v.vertex_format = _mesh_surface_generate_vertex_format(s->format, p_input_mask, mis != nullptr, p_input_motion_vectors, p_point_size_emulated, position_stride);
+	p_version.vertex_format = _mesh_surface_generate_vertex_format(p_mesh_surface->format, p_input_mask, p_mesh_instance_surface != nullptr, p_input_motion_vectors, p_point_size_emulated, position_stride);
 
 	Vector<RID> buffers;
 	Vector<uint64_t> offsets;
@@ -1496,7 +1496,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 	for (int i = 0; i < RSE::ARRAY_INDEX; i++) {
 		offset = 0;
 
-		if (!(s->format & (1ULL << i))) {
+		if (!(p_mesh_surface->format & (1ULL << i))) {
 			// Not supplied by surface, use default buffers.
 			buffer = mesh_default_rd_buffers[i];
 		} else {
@@ -1504,8 +1504,8 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			switch (i) {
 				case RSE::ARRAY_VERTEX:
 				case RSE::ARRAY_NORMAL:
-					offset = i == RSE::ARRAY_NORMAL ? position_stride * s->vertex_count : 0;
-					buffer = mis != nullptr ? mis->vertex_buffer[p_current_buffer] : s->vertex_buffer;
+					offset = i == RSE::ARRAY_NORMAL ? position_stride * p_mesh_surface->vertex_count : 0;
+					buffer = p_mesh_instance_surface != nullptr ? p_mesh_instance_surface->vertex_buffer[p_current_buffer] : p_mesh_surface->vertex_buffer;
 					break;
 				case RSE::ARRAY_TANGENT:
 					buffer = mesh_default_rd_buffers[i];
@@ -1517,11 +1517,11 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 				case RSE::ARRAY_CUSTOM1:
 				case RSE::ARRAY_CUSTOM2:
 				case RSE::ARRAY_CUSTOM3:
-					buffer = s->attribute_buffer;
+					buffer = p_mesh_surface->attribute_buffer;
 					break;
 				case RSE::ARRAY_BONES:
 				case RSE::ARRAY_WEIGHTS:
-					buffer = s->skin_buffer;
+					buffer = p_mesh_surface->skin_buffer;
 					break;
 			}
 		}
@@ -1536,8 +1536,8 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		if (p_input_motion_vectors) {
 			// Push the buffer for motion vector inputs.
 			if (i == RSE::ARRAY_VERTEX || i == RSE::ARRAY_NORMAL || i == RSE::ARRAY_TANGENT) {
-				if (mis && buffer != mesh_default_rd_buffers[i]) {
-					buffers.push_back(mis->vertex_buffer[p_previous_buffer]);
+				if (p_mesh_instance_surface && buffer != mesh_default_rd_buffers[i]) {
+					buffers.push_back(p_mesh_instance_surface->vertex_buffer[p_previous_buffer]);
 				} else {
 					buffers.push_back(buffer);
 				}
@@ -1547,12 +1547,12 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 		}
 	}
 
-	v.input_mask = p_input_mask;
-	v.current_buffer = p_current_buffer;
-	v.previous_buffer = p_previous_buffer;
-	v.input_motion_vectors = p_input_motion_vectors;
-	v.point_size_emulated = p_point_size_emulated;
-	v.vertex_array = RD::get_singleton()->vertex_array_create(p_point_size_emulated ? 0 : s->vertex_count, v.vertex_format, buffers, offsets);
+	p_version.input_mask = p_input_mask;
+	p_version.current_buffer = p_current_buffer;
+	p_version.previous_buffer = p_previous_buffer;
+	p_version.input_motion_vectors = p_input_motion_vectors;
+	p_version.point_size_emulated = p_point_size_emulated;
+	p_version.vertex_array = RD::get_singleton()->vertex_array_create(p_point_size_emulated ? 0 : p_mesh_surface->vertex_count, p_version.vertex_format, buffers, offsets);
 }
 
 ////////////////// MULTIMESH

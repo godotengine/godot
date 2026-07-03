@@ -2540,12 +2540,12 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 							Dictionary device_event = devices[i];
 							if (device_event["Event"] == "DeviceDetected") {
 								Dictionary device_info = device_event["Device"];
-								Device nd;
-								nd.id = device_info["DeviceIdentifier"];
-								nd.name = device_info["DeviceName"].operator String() + " (ios_deploy, " + ((device_event["Interface"] == "WIFI") ? "network" : "wired") + ")";
-								nd.wifi = device_event["Interface"] == "WIFI";
-								nd.use_ios_deploy = true;
-								ldevices.push_back(nd);
+								Device device;
+								device.id = device_info["DeviceIdentifier"];
+								device.name = device_info["DeviceName"].operator String() + " (ios_deploy, " + ((device_event["Interface"] == "WIFI") ? "network" : "wired") + ")";
+								device.wifi = device_event["Interface"] == "WIFI";
+								device.use_ios_deploy = true;
+								ldevices.push_back(device);
 							}
 						}
 					}
@@ -2583,11 +2583,11 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 						const Dictionary &conn_props = device_info["connectionProperties"];
 						const Dictionary &dev_props = device_info["deviceProperties"];
 						if (dev_props.has("developerModeStatus") && conn_props.has("pairingState") && conn_props.has("transportType") && conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
-							Device nd;
-							nd.id = device_info["identifier"];
-							nd.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";
-							nd.wifi = conn_props["transportType"] == "localNetwork";
-							ldevices.push_back(nd);
+							Device device;
+							device.id = device_info["identifier"];
+							device.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";
+							device.wifi = conn_props["transportType"] == "localNetwork";
+							ldevices.push_back(device);
 						}
 					}
 				}

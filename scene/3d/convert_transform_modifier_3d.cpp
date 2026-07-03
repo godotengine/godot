@@ -348,8 +348,8 @@ void ConvertTransformModifier3D::_process_constraint_by_bone(int p_index, Skelet
 }
 
 void ConvertTransformModifier3D::_process_constraint_by_node(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, const NodePath &p_reference_node, float p_amount) {
-	Node3D *nd = Object::cast_to<Node3D>(get_node_or_null(p_reference_node));
-	if (!nd) {
+	Node3D *node = Object::cast_to<Node3D>(get_node_or_null(p_reference_node));
+	if (!node) {
 		return;
 	}
 	Transform3D skel_tr = p_skeleton->get_global_transform_interpolated();
@@ -357,7 +357,7 @@ void ConvertTransformModifier3D::_process_constraint_by_node(int p_index, Skelet
 	if (parent >= 0) {
 		skel_tr = skel_tr * p_skeleton->get_bone_global_pose(parent);
 	}
-	Transform3D dest_tr = nd->get_global_transform_interpolated();
+	Transform3D dest_tr = node->get_global_transform_interpolated();
 	Transform3D reference_dest = skel_tr.affine_inverse() * dest_tr;
 	_process_convert(p_index, p_skeleton, p_apply_bone, reference_dest, p_amount);
 }

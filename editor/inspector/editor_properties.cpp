@@ -1974,7 +1974,7 @@ void EditorPropertyEasing::setup(bool p_positive_only, bool p_flip) {
 void EditorPropertyEasing::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			preset->set_item_icon(preset->get_item_index(EASING_LINEAR), get_editor_theme_icon(SNAME("CurveLinear")));
+			preset->set_item_icon(preset->get_item_index(EASING_LINEAR), get_editor_theme_icon(SNAME("CurveLinear"))); // codespell:ignore curvelinear.
 			preset->set_item_icon(preset->get_item_index(EASING_IN), get_editor_theme_icon(SNAME("CurveIn")));
 			preset->set_item_icon(preset->get_item_index(EASING_OUT), get_editor_theme_icon(SNAME("CurveOut")));
 			preset->set_item_icon(preset->get_item_index(EASING_ZERO), get_editor_theme_icon(SNAME("CurveConstant")));

@@ -179,7 +179,7 @@ vec3 allenwp_curve(vec3 x) {
 vec3 tonemap_agx(vec3 color) {
 	// Input color should be non-negative!
 	// Large negative values in one channel and large positive values in other
-	// channels can result in a colour that appears darker and more saturated than
+	// channels can result in a color that appears darker and more saturated than
 	// desired after passing it through the inset matrix. For this reason, it is
 	// best to prevent negative input values.
 	// This is done before the Rec. 2020 transform to allow the Rec. 2020
@@ -214,7 +214,7 @@ vec3 tonemap_agx(vec3 color) {
 	// providing stability across all variable dyanimc range (SDR, HDR, EDR).
 	color = allenwp_curve(color);
 
-	// Clipping to output_max_value is required to address a cyan colour that occurs
+	// Clipping to output_max_value is required to address a cyan color that occurs
 	// with very bright inputs.
 	color = min(vec3(params.output_max_value), color);
 

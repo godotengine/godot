@@ -1756,11 +1756,11 @@ void SpringBoneSimulator3D::_init_joints(Skeleton3D *p_skeleton, SpringBone3DSet
 		if (setting->center_node == NodePath()) {
 			setting->cached_center = Transform3D();
 		} else {
-			Node3D *nd = Object::cast_to<Node3D>(get_node_or_null(setting->center_node));
-			if (!nd) {
+			Node3D *node = Object::cast_to<Node3D>(get_node_or_null(setting->center_node));
+			if (!node) {
 				setting->cached_center = Transform3D();
 			} else {
-				setting->cached_center = nd->get_global_transform_interpolated().affine_inverse() * p_skeleton->get_global_transform_interpolated();
+				setting->cached_center = node->get_global_transform_interpolated().affine_inverse() * p_skeleton->get_global_transform_interpolated();
 			}
 		}
 	} else {

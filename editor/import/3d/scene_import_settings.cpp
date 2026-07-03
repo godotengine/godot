@@ -434,7 +434,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 	item->set_selectable(0, true);
 
 	if (!node_map.has(import_id)) {
-		NodeData nd;
+		NodeData node_data;
 
 		if (p_node != scene) {
 			ResourceImporterScene::InternalImportCategory category;
@@ -454,10 +454,10 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 				category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 			}
 
-			_load_default_subresource_settings(nd.settings, "nodes", import_id, category);
+			_load_default_subresource_settings(node_data.settings, "nodes", import_id, category);
 		}
 
-		node_map[import_id] = nd;
+		node_map[import_id] = node_data;
 	}
 	NodeData &node_data = node_map[import_id];
 
@@ -869,9 +869,9 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		}
 		material_tree->deselect_all();
 		mesh_tree->deselect_all();
-		NodeData &nd = node_map[p_id];
+		NodeData &node_data = node_map[p_id];
 
-		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(nd.node);
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(node_data.node);
 		if (mi) {
 			Ref<Mesh> base_mesh = mi->get_mesh();
 			if (base_mesh.is_valid()) {
@@ -886,18 +886,18 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 			}
 		}
 
-		if (nd.node == scene) {
+		if (node_data.node == scene) {
 			scene_import_settings_data->settings = &defaults;
 			scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX;
 		} else {
-			scene_import_settings_data->settings = &nd.settings;
+			scene_import_settings_data->settings = &node_data.settings;
 			if (mi) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE;
 				scene_import_settings_data->hide_options = hide_node_gen_options;
-			} else if (Object::cast_to<AnimationPlayer>(nd.node)) {
+			} else if (Object::cast_to<AnimationPlayer>(node_data.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
 				scene_import_settings_data->hide_options = hide_anim_and_skel_options;
-			} else if (Object::cast_to<Skeleton3D>(nd.node)) {
+			} else if (Object::cast_to<Skeleton3D>(node_data.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
 				bones_mesh_preview->show();
 				scene_import_settings_data->hide_options = hide_anim_and_skel_options;

@@ -36,7 +36,7 @@
 
 #include <Jolt/Jolt.h>
 
-#include <Jolt/Core/StreamIn.h>
+#include <Jolt/Core/StreamIn.h> // codespell:ignore streamin.
 #include <Jolt/Core/StreamOut.h>
 
 class JoltStreamOutputWrapper final : public JPH::StreamOut {
@@ -55,7 +55,7 @@ public:
 	}
 };
 
-class JoltStreamInputWrapper final : public JPH::StreamIn {
+class JoltStreamInputWrapper final : public JPH::StreamIn { // codespell:ignore streamin.
 	Ref<FileAccess> file_access;
 
 public:

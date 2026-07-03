@@ -2361,12 +2361,12 @@ void AnimationPlayerEditorPlugin::_notification(int p_what) {
 }
 
 void AnimationPlayerEditorPlugin::_property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance) {
-	AnimationTrackEditor *te = anim_editor->get_track_editor();
-	if (!te || !te->has_keying()) {
+	AnimationTrackEditor *track_editor = anim_editor->get_track_editor();
+	if (!track_editor || !track_editor->has_keying()) {
 		return;
 	}
-	te->_clear_selection();
-	te->insert_value_key(p_keyed, p_advance);
+	track_editor->_clear_selection();
+	track_editor->insert_value_key(p_keyed, p_advance);
 }
 
 void AnimationPlayerEditorPlugin::_transform_3d_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {

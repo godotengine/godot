@@ -568,8 +568,8 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 }
 
 void CanvasItemEditor::_keying_changed() {
-	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
-	if (te && te->is_visible_in_tree() && te->get_current_animation().is_valid()) {
+	AnimationTrackEditor *track_editor = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	if (track_editor && track_editor->is_visible_in_tree() && track_editor->get_current_animation().is_valid()) {
 		animation_hb->show();
 	} else {
 		animation_hb->hide();
@@ -4730,15 +4730,15 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
 	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
 
-	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
-	ERR_FAIL_COND_MSG(te->get_current_animation().is_null(), "Cannot insert animation key. No animation selected.");
+	AnimationTrackEditor *track_editor = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	ERR_FAIL_COND_MSG(track_editor->get_current_animation().is_null(), "Cannot insert animation key. No animation selected.");
 
-	bool is_read_only = te->is_read_only();
+	bool is_read_only = track_editor->is_read_only();
 	if (is_read_only) {
-		te->popup_read_only_dialog();
+		track_editor->popup_read_only_dialog();
 		return;
 	}
-	te->make_insert_queue();
+	track_editor->make_insert_queue();
 	for (const KeyValue<ObjectID, Object *> &E : selection) {
 		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(E.key);
 		if (!ci || !ci->is_visible_in_tree()) {
@@ -4749,13 +4749,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			Node2D *n2d = Object::cast_to<Node2D>(ci);
 
 			if (key_pos && p_location) {
-				te->insert_node_value_key(n2d, "position", p_on_existing);
+				track_editor->insert_node_value_key(n2d, "position", p_on_existing);
 			}
 			if (key_rot && p_rotation) {
-				te->insert_node_value_key(n2d, "rotation", p_on_existing);
+				track_editor->insert_node_value_key(n2d, "rotation", p_on_existing);
 			}
 			if (key_scale && p_scale) {
-				te->insert_node_value_key(n2d, "scale", p_on_existing);
+				track_editor->insert_node_value_key(n2d, "scale", p_on_existing);
 			}
 
 			if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
@@ -4781,13 +4781,13 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 				if (has_chain && ik_chain.size()) {
 					for (Node2D *&F : ik_chain) {
 						if (key_pos) {
-							te->insert_node_value_key(F, "position", p_on_existing);
+							track_editor->insert_node_value_key(F, "position", p_on_existing);
 						}
 						if (key_rot) {
-							te->insert_node_value_key(F, "rotation", p_on_existing);
+							track_editor->insert_node_value_key(F, "rotation", p_on_existing);
 						}
 						if (key_scale) {
-							te->insert_node_value_key(F, "scale", p_on_existing);
+							track_editor->insert_node_value_key(F, "scale", p_on_existing);
 						}
 					}
 				}
@@ -4797,17 +4797,17 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 			Control *ctrl = Object::cast_to<Control>(ci);
 
 			if (key_pos) {
-				te->insert_node_value_key(ctrl, "position", p_on_existing);
+				track_editor->insert_node_value_key(ctrl, "position", p_on_existing);
 			}
 			if (key_rot) {
-				te->insert_node_value_key(ctrl, "rotation", p_on_existing);
+				track_editor->insert_node_value_key(ctrl, "rotation", p_on_existing);
 			}
 			if (key_scale) {
-				te->insert_node_value_key(ctrl, "size", p_on_existing);
+				track_editor->insert_node_value_key(ctrl, "size", p_on_existing);
 			}
 		}
 	}
-	te->commit_insert_queue();
+	track_editor->commit_insert_queue();
 }
 
 void CanvasItemEditor::_prepare_view_menu() {

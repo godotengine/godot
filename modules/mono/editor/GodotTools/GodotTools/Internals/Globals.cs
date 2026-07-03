@@ -54,8 +54,8 @@ namespace GodotTools.Internals
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static string TTR(this string text)
         {
-            using godot_string textIn = Marshaling.ConvertStringToNative(text);
-            Internal.godot_icall_Globals_TTR(textIn, out godot_string dest);
+            using godot_string textIn = Marshaling.ConvertStringToNative(text); // codespell:ignore textin.
+            Internal.godot_icall_Globals_TTR(textIn, out godot_string dest); // codespell:ignore textin.
             using (dest)
                 return Marshaling.ConvertStringToManaged(dest);
         }

@@ -638,7 +638,7 @@ String DirAccessPack::get_drive(int p_drive) {
 }
 
 PackedData::PackedDir *DirAccessPack::_find_dir(const String &p_dir) {
-	String nd = p_dir.replace_char('\\', '/');
+	String dir_name = p_dir.replace_char('\\', '/');
 
 	// Special handling since simplify_path() will forbid it
 	if (p_dir == "..") {
@@ -646,23 +646,23 @@ PackedData::PackedDir *DirAccessPack::_find_dir(const String &p_dir) {
 	}
 
 	bool absolute = false;
-	if (nd.begins_with("res://")) {
-		nd = nd.replace_first("res://", "");
+	if (dir_name.begins_with("res://")) {
+		dir_name = dir_name.replace_first("res://", "");
 		absolute = true;
 	}
 
-	nd = nd.simplify_path();
+	dir_name = dir_name.simplify_path();
 
-	if (nd.is_empty()) {
-		nd = ".";
+	if (dir_name.is_empty()) {
+		dir_name = ".";
 	}
 
-	if (nd.begins_with("/")) {
-		nd = nd.replace_first("/", "");
+	if (dir_name.begins_with("/")) {
+		dir_name = dir_name.replace_first("/", "");
 		absolute = true;
 	}
 
-	Vector<String> paths = nd.split("/");
+	Vector<String> paths = dir_name.split("/");
 
 	PackedData::PackedDir *pd;
 

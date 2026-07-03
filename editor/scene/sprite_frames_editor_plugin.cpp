@@ -588,7 +588,7 @@ bool SpriteFramesEditor::_matches_background_color(const Color &p_background_col
 	}
 
 	Color d = p_background_color - p_pixel_color;
-	// 0.04f is the threshold for how much a colour can deviate from background colour and still be considered a match. Arrived at through experimentation, can be tweaked.
+	// 0.04f is the threshold for how much a color can deviate from background color and still be considered a match. Arrived at through experimentation, can be tweaked.
 	return (d.r * d.r) + (d.g * d.g) + (d.b * d.b) + (d.a * d.a) < 0.04f;
 }
 
