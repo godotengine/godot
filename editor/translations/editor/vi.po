@@ -60,13 +60,14 @@
 # Bách <bachmeme1212@gmail.com>, 2026.
 # Lý Hoàng Bách <bachmeme1212@gmail.com>, 2026.
 # LPL-sudo <lephuocloc070313@gmail.com>, 2026.
+# Nguyễn Thị Đào <kenhcuatoilaan@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-16 19:05+0000\n"
-"Last-Translator: Lý Hoàng Bách <bachmeme1212@gmail.com>\n"
+"PO-Revision-Date: 2026-06-25 13:01+0000\n"
+"Last-Translator: Nguyễn Thị Đào <kenhcuatoilaan@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -407,6 +408,9 @@ msgstr "Sao chép"
 msgid "Paste"
 msgstr "Dán"
 
+msgid "Toggle Tab Focus Mode"
+msgstr "Chuyển đổi chế độ điều hướng bằng Tab"
+
 msgid "Undo"
 msgstr "Hoàn tác"
 
@@ -529,6 +533,9 @@ msgstr "Hiện các tệp ẩn"
 
 msgid "Find"
 msgstr "Tìm"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "Trợ năng: Kéo và thả bằng bàn phím"
 
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Toán hạng không hợp lệ cho toán tử %s, %s và %s."
@@ -2494,6 +2501,9 @@ msgstr "Bản mẫu"
 
 msgid "All"
 msgstr "Tất cả"
+
+msgid "Repository returned with invalid data."
+msgstr "kho dữ liệu trả về kết quả không hợp lệ."
 
 msgid "No results for \"%s\"."
 msgstr "Không tìm thấy kết quả cho \"%s\"."

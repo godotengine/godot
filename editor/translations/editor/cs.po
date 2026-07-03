@@ -66,7 +66,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-13 15:46+0000\n"
+"PO-Revision-Date: 2026-06-20 16:01+0000\n"
 "Last-Translator: NoNormal <no123normal@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -2610,6 +2610,9 @@ msgstr "Šablona"
 
 msgid "All"
 msgstr "Vše"
+
+msgid "Repository returned with invalid data."
+msgstr "Repozitář vrátil neplatná data."
 
 msgid "No results for \"%s\"."
 msgstr "Žádné výsledky pro \"%s\"."
@@ -6386,7 +6389,7 @@ msgstr ""
 "ale vyžadují \"cross-origin-isolated\" webovou stránku, aby fungovaly."
 
 msgid "Web with Extensions"
-msgstr "Prohlížeč s Rozšířeními"
+msgstr "Web s Rozšířeními"
 
 msgid ""
 "Web build with support for GDExtensions. Only useful if you use GDExtensions, "
@@ -6402,7 +6405,7 @@ msgid "Web build without threading support."
 msgstr "Sestavení pro prohlížeč bez podpory vláken."
 
 msgid "Web with Extensions Single-Threaded"
-msgstr "Prohlížeč s Rozšířeníni Jedno-Vláknový"
+msgstr "Web s Rozšířeními Jedno-Vláknový"
 
 msgid "Web build with GDExtension support and no threading support."
 msgstr "Sestavení pro prohlížeč s podporou GDExtension, ale bez podpory vláken."
@@ -9592,8 +9595,8 @@ msgid ""
 "Display Server can be modified in the Project Settings (Display > Display "
 "Server > Driver)."
 msgstr ""
-"Vložení hry není dostupné pro správce oken: '%s'.\n"
-"Správce oken můžete změnit v Nastavení projektu (Zobrazení > Správce oken > "
+"Vložení hry není dostupné pro Okenní Systém: '%s'.\n"
+"Okenní Systém můžete změnit v Nastavení projektu (Zobrazení > Okenní Systém > "
 "Ovladač)."
 
 msgid "Game embedding not available when the game starts minimized."
@@ -9664,7 +9667,7 @@ msgstr ""
 "která pracuje v režimu HDR."
 
 msgid "Display server does not support HDR output."
-msgstr "Vykreslovací server nepodporuje HDR výstup."
+msgstr "Okenní Systém nepodporuje HDR výstup."
 
 msgid "Renderer does not support HDR output."
 msgstr "Vykreslovač nepodporuje HDR výstup."
@@ -16316,10 +16319,10 @@ msgid "OpenXR standard implementation (requires XR to be enabled)."
 msgstr "Standartní implementace OpenXR (vyžaduje zapnuté XR)."
 
 msgid "Wayland display server support (Linux only)."
-msgstr "Podpora pro Zobrazovací Server Wayland (pouze pro Linux)."
+msgstr "Podpora pro Okenní Systém Wayland (pouze pro Linux)."
 
 msgid "X11 display server support (Linux only)."
-msgstr "Podpora pro Zobrazovací Server X11 (pouze pro Linux)."
+msgstr "Podpora pro Okenní Systém X11 (pouze pro Linux)."
 
 msgid "PulseAudio audio driver (Linux only)."
 msgstr "PulseAudio zvukový ovladač (pouze pro Linux)."
@@ -22246,6 +22249,13 @@ msgstr ""
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s zde může být odložen. Použijte %s ke zrušení."
+
+msgid ""
+"Labels with autowrapping enabled must have a positive custom minimum or "
+"maximum width configured to work correctly."
+msgstr ""
+"Popisky s zapnutým automatickým zalamováním musí mít vlastní kladnou "
+"minimální nebo maximální velikost, aby správně fungovaly."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

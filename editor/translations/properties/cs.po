@@ -48,12 +48,13 @@
 # Pixeluted <pixeluted@proton.me>, 2025.
 # Jakub Szydlowski <kubkii27@gmail.com>, 2026.
 # NoNormal <no123normal@gmail.com>, 2026.
+# Adam Mezera <aadaanmez@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-31 22:43+0000\n"
+"PO-Revision-Date: 2026-06-25 13:02+0000\n"
 "Last-Translator: NoNormal <no123normal@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/cs/>\n"
@@ -62,7 +63,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "Application"
 msgstr "Aplikace"
@@ -134,7 +135,7 @@ msgid "Accessibility Support"
 msgstr "Podpora dostupnosti"
 
 msgid "Updates per Second"
-msgstr "Aktualizace za Sekundu"
+msgstr "Aktualizace za sekundu"
 
 msgid "Display"
 msgstr "Zobrazení"
@@ -188,7 +189,7 @@ msgid "Minimize Disabled"
 msgstr "Vypnutá minimalizace"
 
 msgid "Maximize Disabled"
-msgstr "Maximalizace Vypnuta"
+msgstr "Vypnutá maximalizace"
 
 msgid "Window Width Override"
 msgstr "Přepsání šířky okna"
@@ -464,7 +465,7 @@ msgid "Collada"
 msgstr "Collada"
 
 msgid "Use Ambient"
-msgstr "Použít ambientní světlo"
+msgstr "Použít ambientní"
 
 msgid "Input Devices"
 msgstr "Vstupní zařízení"
@@ -482,7 +483,7 @@ msgid "Rotary Input Scroll Axis"
 msgstr "Rotační vstupní osa rolování"
 
 msgid "Override Volume Buttons"
-msgstr "Přepsat tlačítko hlasitosti"
+msgstr "Přepsat tlačítka hlasitosti"
 
 msgid "Disable Scroll Deadzone"
 msgstr "Vypnout mrtvou zónu posunu"
@@ -527,7 +528,7 @@ msgid "Baking Use High Priority Threads"
 msgstr "Použít vysokoprioritní vlákna pro vypalování"
 
 msgid "Editor Overrides"
-msgstr "Editor Přepisuje"
+msgstr "Přepsání Editoru"
 
 msgid "Low Processor Usage Mode"
 msgstr "Režim nízkého využití procesoru"
@@ -2127,7 +2128,7 @@ msgid "Auto Select Current Scene File"
 msgstr "Automaticky zvolit soubor aktuální scény"
 
 msgid "Restore Windows on Load"
-msgstr "Obnovit Windows při načtení"
+msgstr "Obnovit Okna při načtení"
 
 msgid "Maximize Window"
 msgstr "Maximalizovat okno"

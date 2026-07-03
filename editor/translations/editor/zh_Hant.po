@@ -47,7 +47,7 @@
 # hung0123 <flyking1486325@gmail.com>, 2023.
 # Sand Smith <1105483764@qq.com>, 2023.
 # Skyter Lin <linskyter@gmail.com>, 2023.
-# powder <hhurhxhdyruw@gmail.com>, 2023.
+# powder <hhurhxhdyruw@gmail.com>, 2023, 2026.
 # Ink&Soul <mbyl_inkandsoul@foxmail.com>, 2023.
 # lemtea8 <polylemtea@gmail.com>, 2024.
 # Chang-Chia Tseng <pswo10680@gmail.com>, 2024.
@@ -70,13 +70,15 @@
 # RogerFang <newlag@gmail.com>, 2025.
 # Wei-Fu Chen <410477jimmy@gmail.com>, 2026.
 # "Chen,Wei-Ting" <benson94879453@gmail.com>, 2026.
+# ELEPOT <elepotmail0@gmail.com>, 2026.
+# 李奕寯 <eugenelego88@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-03-18 04:09+0000\n"
-"Last-Translator: \"Chen,Wei-Ting\" <benson94879453@gmail.com>\n"
+"PO-Revision-Date: 2026-07-01 16:01+0000\n"
+"Last-Translator: 李奕寯 <eugenelego88@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hant/>\n"
 "Language: zh_Hant\n"
@@ -84,7 +86,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "OK"
 msgstr "好"
@@ -167,8 +169,14 @@ msgstr "無法連線"
 msgid "Can't resolve"
 msgstr "無法解析"
 
+msgid "Connection error"
+msgstr "連接錯誤"
+
 msgid "Can't acquire resource"
 msgstr "無法取得資源"
+
+msgid "Can't fork"
+msgstr "無法分支"
 
 msgid "Invalid data"
 msgstr "無效的資料"
@@ -188,6 +196,12 @@ msgstr "無法讀取資料庫"
 msgid "Can't write database"
 msgstr "無法寫入資料庫"
 
+msgid "Compilation failed"
+msgstr "編譯失敗"
+
+msgid "Method not found"
+msgstr "方法未找到"
+
 msgid "Link failed"
 msgstr "連接錯誤"
 
@@ -199,6 +213,9 @@ msgstr "偵測到循環連結"
 
 msgid "Invalid declaration"
 msgstr "無效的宣告"
+
+msgid "Duplicate symbol"
+msgstr "符號重複"
 
 msgid "Parse error"
 msgstr "剖析錯誤"
@@ -217,6 +234,9 @@ msgstr "錯誤"
 
 msgid "Printer on fire"
 msgstr "印表機起火"
+
+msgid "unset"
+msgstr "未設定"
 
 msgid "Physical"
 msgstr "實體"
@@ -723,11 +743,14 @@ msgstr "取消全選關鍵影格"
 msgid "Add Animation"
 msgstr "新增動畫"
 
+msgid "No available animations"
+msgstr "沒有可用的動畫"
+
 msgid "Add %s"
 msgstr "新增 %s"
 
 msgid "Load..."
-msgstr "載入..."
+msgstr "載入…"
 
 msgid "Move BlendSpace1D Node Point"
 msgstr "移動 BlendSpace1D 節點頂點"
@@ -779,6 +802,9 @@ msgstr "同步"
 
 msgid "None"
 msgstr "無"
+
+msgid "Independent"
+msgstr "縮排"
 
 msgid "Open Editor"
 msgstr "開啟編輯器"
@@ -2147,6 +2173,15 @@ msgstr "更改音訊軌片段開始偏移"
 msgid "Change Audio Track Clip End Offset"
 msgstr "更改音訊軌片段結束偏移"
 
+msgid "%s at "
+msgstr "%s 在 "
+
+msgid "'%s':"
+msgstr "'%s':"
+
+msgid "Error: "
+msgstr "錯誤： "
+
 msgid "Root"
 msgstr "根節點"
 
@@ -2159,32 +2194,65 @@ msgstr "路徑："
 msgid "Errors"
 msgstr "錯誤"
 
+msgid "Thumbnail"
+msgstr "縮圖"
+
 msgid "Title"
 msgstr "標題"
 
 msgid "Author"
 msgstr "作者"
 
+msgid "Verified Author"
+msgstr "已驗證的作者"
+
 msgid "License"
 msgstr "授權條款"
 
+msgid "Review Score"
+msgstr "評價"
+
+msgid "No changelog provided for this version."
+msgstr "此版本未提供變更記錄。"
+
 msgid "Loading..."
-msgstr "正在載入..."
+msgstr "正在載入…"
+
+msgid "Tags:"
+msgstr "標籤："
 
 msgid "Download"
 msgstr "下載"
 
 msgid "Downloading..."
-msgstr "正在下載..."
+msgstr "正在下載…"
 
 msgid "Install..."
-msgstr "安裝..."
+msgstr "安裝…"
 
 msgid "Version:"
 msgstr "版本："
 
+msgid "Download other versions."
+msgstr "下載其他版本。"
+
+msgid "Store Page"
+msgstr "商店頁面"
+
+msgid "Open the web browser to show the asset in the online store page."
+msgstr "開啟網頁瀏覽器，在線上商店頁面查看此素材。"
+
+msgid "View Source"
+msgstr "查看原始碼"
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "開啟網頁瀏覽器，查看來源檔案頁面。"
+
 msgid "Description"
 msgstr "說明"
+
+msgid "Changelog"
+msgstr "變更記錄"
 
 msgid "Connection error, please try again."
 msgstr "連線錯誤，請重試。"
@@ -2249,14 +2317,17 @@ msgstr "SHA-256 雜湊檢查失敗"
 msgid "Asset Download Error:"
 msgstr "素材下載錯誤："
 
+msgid "Ready to install."
+msgstr "準備安裝。"
+
 msgid "Downloading (%s / %s)..."
 msgstr "正在下載（%s / %s）…"
 
 msgid "Resolving..."
-msgstr "正在解析..."
+msgstr "正在解析…"
 
 msgid "Connecting..."
-msgstr "正在連線..."
+msgstr "正在連線…"
 
 msgid "Requesting..."
 msgstr "正在要求…"
@@ -2273,27 +2344,53 @@ msgstr "重試"
 msgid "Download Error"
 msgstr "下載錯誤"
 
+msgid "Relevance"
+msgstr "相關性"
+
+msgid "Updated (Newest First)"
+msgstr "更新時間（由近到遠）"
+
+msgid "Updated (Oldest First)"
+msgstr "更新時間（由遠到近）"
+
+msgid "Reviews (Highest Score First)"
+msgstr "評價（由高到低）"
+
+msgid "Reviews (Lowest Score First)"
+msgstr "評價（由低到高）"
+
+msgid "Created (Newest First)"
+msgstr "建立時間（由近到遠）"
+
+msgid "Created (Oldest First)"
+msgstr "建立時間（由遠到近）"
+
 msgctxt "Pagination"
 msgid "First"
-msgstr "第一個"
+msgstr "第一頁"
 
 msgctxt "Pagination"
 msgid "Previous"
-msgstr "上一個"
+msgstr "上一頁"
 
 msgctxt "Pagination"
 msgid "Next"
-msgstr "下一個"
+msgstr "下一頁"
 
 msgctxt "Pagination"
 msgid "Last"
-msgstr "最後一個"
+msgstr "最後一頁"
+
+msgid ""
+"The Asset Store requires an online connection and involves sending data over "
+"the internet."
+msgstr "素材商店需要連接網際網路並傳送資料。"
 
 msgid "Go Online"
 msgstr "切換至線上模式"
 
 msgid "Template"
-msgstr "樣板"
+msgstr "範本"
 
 msgid "All"
 msgstr "全部"
@@ -2301,11 +2398,17 @@ msgstr "全部"
 msgid "No results for \"%s\"."
 msgstr "找不到與「%s」相關的結果。"
 
+msgid "Search templates. Use tags by including \"#tagname\"."
+msgstr "搜尋範本。使用標籤請包含「#標籤名」。"
+
+msgid "Search assets (excluding templates). Use tags by including \"#tagname\"."
+msgstr "搜尋素材（不含範本）。使用標籤請包含「#標籤名」。"
+
 msgid "Import..."
-msgstr "匯入..."
+msgstr "匯入…"
 
 msgid "Plugins..."
-msgstr "外掛..."
+msgstr "外掛…"
 
 msgid "Sort:"
 msgstr "排序："
@@ -2313,11 +2416,17 @@ msgstr "排序："
 msgid "Category:"
 msgstr "分類："
 
+msgid "Source:"
+msgstr "來源："
+
 msgid "Licenses"
 msgstr "授權條款"
 
 msgid "Assets ZIP File"
 msgstr "素材 ZIP 檔"
+
+msgid "Asset Store"
+msgstr "素材商店"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "開啟素材檔案「%s」時發生錯誤（非 ZIP 格式）。"
@@ -2354,7 +2463,7 @@ msgid "Success!"
 msgstr "成功！"
 
 msgid "Asset:"
-msgstr "素材:"
+msgstr "素材："
 
 msgid "Open the list of the asset contents and select which files to install."
 msgstr "打開素材內容清單，選擇要安裝的檔案。"
@@ -2370,13 +2479,13 @@ msgid "Show contents of the asset and conflicting files."
 msgstr "顯示素材和衝突檔案的內容。"
 
 msgid "Contents of the asset:"
-msgstr "素材內容:"
+msgstr "素材內容："
 
 msgid "Source Files"
 msgstr "來源檔案"
 
 msgid "Installation preview:"
-msgstr "安裝預覽:"
+msgstr "安裝預覽："
 
 msgid "Destination Files"
 msgstr "目標檔案"
@@ -3819,8 +3928,11 @@ msgstr "新增群組。"
 msgid "Filter Groups"
 msgstr "按群組篩選"
 
+msgid "Select one or more nodes to edit their groups."
+msgstr "選一個或多個節點來編輯其所屬群組。"
+
 msgid "The Beginning"
-msgstr "剛開始"
+msgstr "起點"
 
 msgid "History"
 msgstr "歷史記錄"
@@ -3871,7 +3983,7 @@ msgid "Preset"
 msgstr "預設"
 
 msgid "Advanced..."
-msgstr "進階..."
+msgstr "進階…"
 
 msgid ""
 "The imported resource is currently loaded. All instances will be replaced and "
@@ -4262,8 +4374,24 @@ msgstr ""
 msgid "Filter by Type"
 msgstr "依照型別篩選"
 
+msgid ""
+"Selects all Nodes of the given type.\n"
+"Inserts \"type:\". You can also use the shorthand \"t:\"."
+msgstr ""
+"選擇指定型別的所有節點。\n"
+"插入「type:」。也可以使用簡寫「t:」。"
+
 msgid "Filter by Group"
 msgstr "按組篩選"
+
+msgid ""
+"Selects all Nodes belonging to the given group.\n"
+"If empty, selects any Node belonging to any group.\n"
+"Inserts \"group:\". You can also use the shorthand \"g:\"."
+msgstr ""
+"選擇屬於指定群組的所有節點。\n"
+"若留空，則選擇屬於所有群組的節點。\n"
+"插入「group:」。也可以使用簡寫「g:」。"
 
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
@@ -4277,13 +4405,16 @@ msgid "Can't paste root node into the same scene."
 msgstr "無法將根節點貼到相同場景。"
 
 msgid "Paste Node(s) as Sibling of %s"
-msgstr "貼上並設為 %s 的兄弟節點"
+msgstr "貼上並設爲 %s 的兄弟節點"
 
 msgid "Paste Node(s) as Child of %s"
-msgstr "貼上為 %s 的子節點"
+msgstr "貼上爲 %s 的子節點"
 
 msgid "Paste Node(s) as Root"
-msgstr "貼上為根節點"
+msgstr "貼上爲根節點"
+
+msgid "Paste Node(s) as Replacement"
+msgstr "貼上並取代節點"
 
 msgid "<Unnamed> at %s"
 msgstr "%s <未命名>"
@@ -4298,22 +4429,28 @@ msgid "Batch Rename..."
 msgstr "批次重新命名…"
 
 msgid "Add Child Node..."
-msgstr "新增子節點..."
+msgstr "新增子節點…"
 
 msgid "Instantiate Child Scene..."
-msgstr "實體化子場景..."
+msgstr "實體化子場景…"
+
+msgid "Paste (as Child)"
+msgstr "貼上（爲子）"
 
 msgid "Paste as Sibling"
-msgstr "貼上為兄弟節點"
+msgstr "貼上爲兄弟節點"
+
+msgid "Paste as Replacement"
+msgstr "貼上並取代"
 
 msgid "Change Type..."
-msgstr "更改型別..."
+msgstr "更改型別…"
 
 msgid "Attach Script..."
-msgstr "附加腳本..."
+msgstr "附加腳本…"
 
 msgid "Extend Script..."
-msgstr "擴充腳本..."
+msgstr "擴充腳本…"
 
 msgid "Move Up"
 msgstr "上移"
@@ -4328,13 +4465,16 @@ msgid "Reparent..."
 msgstr "重設父節點…"
 
 msgid "Reparent to New Node..."
-msgstr "重新指定父節點為新節點..."
+msgstr "重設父節點爲新節點…"
 
 msgid "Make Scene Root"
-msgstr "設為場景根節點"
+msgstr "設爲場景根節點"
 
 msgid "Toggle Access as Unique Name"
 msgstr "切換以唯一名稱存取"
+
+msgid "Open Scene in Editor"
+msgstr "在編輯器中開啟場景"
 
 msgid "Delete (No Confirm)"
 msgstr "刪除（無確認）"
@@ -4382,6 +4522,9 @@ msgstr "刪除相關動畫軌道"
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "確定要清除繼承嗎？（無法復原！）"
 
+msgid "Open Signals Dock"
+msgstr "開啟訊號面板"
+
 msgid "Paste Params"
 msgstr "貼上參數"
 
@@ -4389,7 +4532,7 @@ msgid "Updating Scene"
 msgstr "更新場景"
 
 msgid "Storing local changes..."
-msgstr "正在儲存變更..."
+msgstr "正在儲存本機的變更…"
 
 msgid "Updating scene..."
 msgstr "正在更新場景…"
@@ -4411,6 +4554,9 @@ msgstr "建立新的 %s"
 
 msgid "Output"
 msgstr "輸出"
+
+msgid "Toggle Output Dock"
+msgstr "切換輸出面板"
 
 msgid "Clear Log"
 msgstr "清除紀錄"
@@ -5061,7 +5207,7 @@ msgid "Save All Scenes"
 msgstr "儲存所有場景"
 
 msgid "Quick Open..."
-msgstr "快速開啟..."
+msgstr "快速開啟…"
 
 msgid "Quick Open Scene..."
 msgstr "快速開啟場景…"
@@ -5078,23 +5224,26 @@ msgstr "重新載入已儲存的場景"
 msgid "Close Scene"
 msgstr "關閉場景"
 
+msgid "Close All Scenes"
+msgstr "關閉所有場景"
+
 msgid "Editor Settings..."
-msgstr "編輯器設定..."
+msgstr "編輯器設定…"
 
 msgid "Quit"
 msgstr "離開"
 
 msgid "Project Settings..."
-msgstr "專案設定..."
+msgstr "專案設定…"
 
 msgid "Project Settings"
 msgstr "專案設定"
 
 msgid "Find in Files..."
-msgstr "在檔案中搜尋..."
+msgstr "在檔案中尋找…"
 
 msgid "Export..."
-msgstr "匯出..."
+msgstr "匯出…"
 
 msgid "Export"
 msgstr "匯出"
@@ -5115,7 +5264,7 @@ msgid "Quit to Project List"
 msgstr "退出到專案列表"
 
 msgid "Command Palette..."
-msgstr "Command面板..."
+msgstr "指令面板…"
 
 msgid "Take Screenshot"
 msgstr "螢幕截圖"
@@ -5153,11 +5302,20 @@ msgstr "關於 Godot…"
 msgid "Support Godot Development"
 msgstr "支援 Godot 開發"
 
+msgid "Open 2D Workspace"
+msgstr "開啟 2D 工作區"
+
+msgid "Open 3D Workspace"
+msgstr "開啟 3D 工作區"
+
 msgid "Open Script Editor"
 msgstr "開啟腳本編輯器"
 
 msgid "Open Game View"
 msgstr "開啟遊戲預覽"
+
+msgid "Open Asset Store"
+msgstr "開啟素材商店"
 
 msgid "Open the next Editor"
 msgstr "開啟下一個編輯器"
@@ -5167,6 +5325,9 @@ msgstr "開啟上一個編輯器"
 
 msgid "Project"
 msgstr "專案"
+
+msgid "Renderer"
+msgstr "算繪器"
 
 msgid "Update Mode"
 msgstr "更新模式"
@@ -5193,7 +5354,7 @@ msgid "Install from file"
 msgstr "自檔案安裝"
 
 msgid "Select Android sources file"
-msgstr "選擇Android原始檔"
+msgstr "選擇 Android 原始檔"
 
 msgid "Import Templates From ZIP File"
 msgstr "自 ZIP 檔匯入樣板"
@@ -5610,6 +5771,19 @@ msgstr "正在匯入："
 msgid "Common"
 msgstr "常見"
 
+msgid "Download missing template files."
+msgstr "下載缺失樣板中。"
+
+msgid "Download request failed: %s."
+msgstr "要求下載失敗：%s。"
+
+msgid ""
+"Download failed.\n"
+"Reason: %s."
+msgstr ""
+"下載失敗。\n"
+"原因：%s。"
+
 msgid "Uncompressing Android Build Sources"
 msgstr "正在解壓縮 Android 建置來源"
 
@@ -5625,11 +5799,47 @@ msgstr "鏡像"
 msgid "Open in Web Browser"
 msgstr "在瀏覽器中開啟"
 
+msgid "Install from a TPZ file."
+msgstr "從 TPZ 檔案安裝。"
+
 msgid "Select Template File"
-msgstr "選擇樣板檔案"
+msgstr "選擇範本檔案"
 
 msgid "Godot Export Templates"
-msgstr "Godot 匯出樣板"
+msgstr "Godot 匯出範本"
+
+msgid "Godot Version"
+msgstr "Godot 版本"
+
+msgid "Godot Version List"
+msgstr "Godot 版本列表"
+
+msgid "Available Templates"
+msgstr "可用範本"
+
+msgid "Installed Templates"
+msgstr "已安裝範本"
+
+msgid "Open templates directory."
+msgstr "開啟範本目錄。"
+
+msgid "Remove all installed templates."
+msgstr "移除所有已安裝的範本。"
+
+msgid "Offline mode, some functionality is not available."
+msgstr "離線模式，部分功能不可用。"
+
+msgid "Can't resolve the requested address"
+msgstr "無法解析要求的位址"
+
+msgid "Can't connect to the mirror"
+msgstr "無法連線至鏡像"
+
+msgid "No response from the mirror"
+msgstr "鏡像沒有回應"
+
+msgid "Request failed"
+msgstr "要求失敗"
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
@@ -5661,6 +5871,12 @@ msgstr "使用每個已定義的預設設定來匯出此專案。"
 msgid "All presets must have an export path defined for Export All to work."
 msgstr "所有預設設定都必須先定義匯出路徑，才能使用「全部匯出」。"
 
+msgid "Hide encryption key"
+msgstr "隱藏加密金鑰"
+
+msgid "Show encryption key"
+msgstr "顯示加密金鑰"
+
 msgid "Delete preset '%s'?"
 msgstr "確定要刪除預設設定「%s」？"
 
@@ -5674,7 +5890,7 @@ msgid "Resources to export:"
 msgstr "匯出的資源："
 
 msgid "(Inherited)"
-msgstr "(繼承)"
+msgstr "（繼承）"
 
 msgid "Delete patch '%s' from list?"
 msgstr "要從清單移除修補檔「%s」嗎？"
@@ -6094,6 +6310,21 @@ msgstr "搜尋："
 msgid "Matches:"
 msgstr "符合項目："
 
+msgid "Reset filters."
+msgstr "重設篩選器。"
+
+msgid "Filters"
+msgstr "篩選器"
+
+msgid "Show Built-in"
+msgstr "顯示內建"
+
+msgid "Show Custom"
+msgstr "顯示自訂"
+
+msgid "Show Editor"
+msgstr "顯示編輯器"
+
 msgctxt "Job Title"
 msgid "Project Manager"
 msgstr "專案管理員"
@@ -6243,13 +6474,22 @@ msgid "Open a list of sub-resources."
 msgstr "開啟子資源列表。"
 
 msgid "Search files..."
-msgstr "搜尋檔案..."
+msgstr "搜尋檔案…"
 
 msgid "Select Resource"
-msgstr "選取資源"
+msgstr "選擇資源"
 
 msgid "Select Scene"
-msgstr "選取場景"
+msgstr "選擇場景"
+
+msgid "Select %s"
+msgstr "選擇%s"
+
+msgid "Recursion detected, Instant Preview failed."
+msgstr "偵測到遞迴，即時預覽失敗。"
+
+msgid "Instant Preview"
+msgstr "即時預覽"
 
 msgid "Fuzzy Search"
 msgstr "模糊搜尋"
@@ -6270,13 +6510,19 @@ msgid "No results found"
 msgstr "找不到結果"
 
 msgid " (recently opened)"
-msgstr " (最近開啟)"
+msgstr " （最近開啟）"
 
 msgid "Grid view"
 msgstr "格狀檢視"
 
 msgid "List view"
 msgstr "列表檢視"
+
+msgid "Hold %s to round to integers."
+msgstr "按住 %s 四捨五入爲整數。"
+
+msgid "Hold Shift for more precise changes."
+msgstr "按住 Shift 進行更精確的調整。"
 
 msgid "No notifications."
 msgstr "沒有通知。"
@@ -6328,7 +6574,7 @@ msgid "Pre-Import Scene"
 msgstr "匯入前場景"
 
 msgid "Importing Scene..."
-msgstr "正在匯入場景..."
+msgstr "正在匯入場景…"
 
 msgid "Import Scene"
 msgstr "匯入場景"
@@ -6352,7 +6598,7 @@ msgid "Did you return a Node-derived object in the `_post_import()` method?"
 msgstr "您是否在 `_post_import()` 方法中傳回了繼承自 Node 的物件？"
 
 msgid "Saving..."
-msgstr "正在儲存..."
+msgstr "正在儲存…"
 
 msgid "<Unnamed Material>"
 msgstr "<未命名材質>"
@@ -7079,6 +7325,16 @@ msgstr "新增翻譯"
 msgid "Lock/Unlock Component Ratio"
 msgstr "鎖定/解除鎖定元件比例"
 
+msgid "This %s is used in %d place."
+msgid_plural "This %s is used in %d places."
+msgstr[0] "此 %s 已在 %d 處使用。"
+
+msgid "This %s is external to scene."
+msgstr "此 %s 在場景之外。"
+
+msgid "Left-click to make it unique."
+msgstr "用滑鼠左鍵按一下使其獨立。"
+
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
 "(%s)."
@@ -7478,6 +7734,9 @@ msgstr "專案安裝路徑："
 msgid "Renderer:"
 msgstr "算繪器："
 
+msgid "More information"
+msgstr "更多資訊"
+
 msgid ""
 "RenderingDevice-based methods not available on this GPU:\n"
 "%s\n"
@@ -7506,10 +7765,22 @@ msgid "Project Path"
 msgstr "專案路徑"
 
 msgid "This project was last edited in a different Godot version: "
-msgstr "此專案上次在其他 Godot 版本編輯： "
+msgstr "此專案上次編輯使用的 Godot 版本： "
+
+msgid "Opening it will upgrade it to Godot %s.%s."
+msgstr "開啟會升級成 Godot %s.%s。"
+
+msgid "Opening it will downgrade it to Godot %s.%s."
+msgstr "開啟會降級成 Godot %s.%s。"
+
+msgid "Downgrading projects is not recommended."
+msgstr "不建議降低專案版本。"
 
 msgid "Unknown version"
 msgstr "未知版本"
+
+msgid "This project uses an unknown version of Godot."
+msgstr "不知此專案使用的 Godot 版本。"
 
 msgid "This project uses features unsupported by the current build:"
 msgstr "此專案使用了當前建構不支援的功能："
@@ -7533,16 +7804,25 @@ msgid "Scanning"
 msgstr "掃描中"
 
 msgid "Scanning for projects..."
-msgstr "正在掃描專案..."
+msgstr "正在掃描專案…"
 
 msgid "Missing Project"
 msgstr "遺失專案"
+
+msgid "Open in Editor (Verbose Mode)"
+msgstr "在編輯器中開啟（詳細模式）"
+
+msgid "Open in Editor (Recovery Mode)"
+msgstr "在編輯器中開啟（恢復模式）"
 
 msgid "Run Project"
 msgstr "執行專案"
 
 msgid "Manage Tags"
 msgstr "管理標籤"
+
+msgid "Remove from Project List"
+msgstr "從專案列表中移除"
 
 msgid "New Window"
 msgstr "新視窗"
@@ -7552,7 +7832,18 @@ msgid "Project Manager"
 msgstr "專案管理員"
 
 msgid "You don't have any projects yet."
-msgstr "你還沒有任何專案。"
+msgstr "目前沒有任何專案。"
+
+msgid ""
+"Get started by creating a new one,\n"
+"importing one that exists, or by downloading a project template from the "
+"Asset Store!"
+msgstr ""
+"可以先從建立新專案、\n"
+"匯入現有專案，或是從素材商店下載專案範本開始！"
+
+msgid "Go Online and Open Asset Store"
+msgstr "開啟線上素材商店"
 
 msgid "Are you sure to run %d projects at once?"
 msgstr "確定要同時執行 %d 個專案？"
@@ -7779,11 +8070,17 @@ msgstr "標籤名稱不能為空。"
 msgid "Tag name can't begin or end with underscore."
 msgstr "標籤名稱不可以下劃線開頭或結尾。"
 
+msgid "Tag name can't contain consecutive underscores or spaces."
+msgstr "標籤名稱不可包含連續的底線或空格。"
+
 msgid "These characters are not allowed in tags: %s."
 msgstr "標籤中不允許使用以下字元：%s。"
 
 msgid "About Godot"
 msgstr "關於 Godot"
+
+msgid "Window"
+msgstr "視窗"
 
 msgid "Settings"
 msgstr "設定"
@@ -7818,7 +8115,7 @@ msgstr ""
 "若要依名稱及完整路徑篩選，查詢字串必須至少包含一個「/」字元。"
 
 msgid "Last Edited"
-msgstr "最後修改時間"
+msgstr "最後編輯時間"
 
 msgid "Tags"
 msgstr "標籤"
@@ -7837,6 +8134,9 @@ msgstr "移除專案"
 
 msgid "Remove Missing"
 msgstr "移除遺失"
+
+msgid "Donate"
+msgstr "捐助"
 
 msgid "Select a Folder to Scan"
 msgstr "選擇資料夾以進行掃描"
@@ -7887,7 +8187,7 @@ msgid "Project Tags"
 msgstr "專案標籤"
 
 msgid "Click tag to remove it from the project."
-msgstr "點擊標籤可將其自專案移除。"
+msgstr "點選標籤可將其從專案移除。"
 
 msgid "All Tags"
 msgstr "所有標籤"
@@ -7922,8 +8222,11 @@ msgstr "語言"
 msgid "Style"
 msgstr "樣式"
 
+msgid "Color Preset"
+msgstr "色彩"
+
 msgid "Custom preset can be further configured in the editor."
-msgstr "自訂預設可於編輯器中進一步設定。"
+msgstr "可於編輯器中進一步自訂色彩。"
 
 msgid "Display Scale"
 msgstr "顯示比例"
@@ -7936,6 +8239,9 @@ msgstr "檢查更新"
 
 msgid "Directory Naming Convention"
 msgstr "資料夾命名慣例"
+
+msgid "Edit All Settings"
+msgstr "編輯所有設定"
 
 msgid ""
 "Settings changed! The project manager must be restarted for changes to take "
@@ -7981,8 +8287,26 @@ msgstr "正在更新專案資源"
 msgid "Re-saving resource:"
 msgstr "重新儲存資源："
 
+msgid "Run the project's main scene."
+msgstr "執行專案的主場景。"
+
+msgid "Play the currently edited scene."
+msgstr "執行目前編輯的場景。"
+
 msgid "Play a custom scene."
-msgstr "執行自定義場景。"
+msgstr "執行自訂場景。"
+
+msgid "Reload the played scene that was being edited."
+msgstr "重新載入已編輯的已執行場景。"
+
+msgid "Reload the played custom scene."
+msgstr "重新載入已執行的自訂場景。"
+
+msgid "Reload the played main scene."
+msgstr "重新載入已執行的主場景。"
+
+msgid "Failed to run the project because the project.godot file is missing."
+msgstr "缺少 project.godot 檔案，因此無法執行專案。"
 
 msgid ""
 "Movie Maker mode is enabled, but no movie file path has been specified.\n"
@@ -8178,11 +8502,58 @@ msgstr "遊戲在全螢幕啟動時無法使用嵌入功能。"
 msgid "Game embedding not available in single window mode."
 msgstr "單一視窗模式下無法使用遊戲嵌入功能。"
 
+msgid "HDR"
+msgstr "HDR"
+
+msgid "SDR"
+msgstr "SDR"
+
 msgid "Unmute game audio."
 msgstr "取消靜音遊戲音訊。"
 
 msgid "Mute game audio."
 msgstr "靜音遊戲音訊。"
+
+msgid "Request HDR Output"
+msgstr "要求 HDR 輸出"
+
+msgid "Window does not support HDR output."
+msgstr "視窗不支援 HDR 輸出。"
+
+msgid ""
+"Move the game window to a screen\n"
+"that is operating in HDR mode."
+msgstr ""
+"請將遊戲視窗移到\n"
+"以 HDR 模式運作的螢幕上。"
+
+msgid "Display server does not support HDR output."
+msgstr "顯示伺服器不支援 HDR 輸出。"
+
+msgid "Renderer does not support HDR output."
+msgstr "算繪器不支援 HDR 輸出。"
+
+msgid ""
+"Change the display/display_server/driver\n"
+"advanced project setting to a driver\n"
+"that supports HDR output."
+msgstr ""
+"請將進階專案設定 display/display_server/driver\n"
+"變更爲支援 HDR 輸出的驅動程式。"
+
+msgid ""
+"Change the rendering/renderer/rendering_method\n"
+"project setting to a renderer that supports HDR output and\n"
+"the rendering/rendering_device/driver advanced project\n"
+"setting to a driver that supports HDR output."
+msgstr ""
+"請將專案設定 rendering/renderer/rendering_method\n"
+"變更爲支援 HDR 輸出的算繪器，\n"
+"並將進階專案設定 rendering/rendering_device/driver\n"
+"變更爲支援 HDR 輸出的驅動程式。"
+
+msgid "%s+Alt+RMB: Show list of all nodes at position clicked."
+msgstr "%s+Alt+滑鼠右鍵：顯示點選位置的所有節點列表。"
 
 msgid "Suspend"
 msgstr "暫停"
@@ -8502,10 +8873,10 @@ msgid "Invalid Polygon (need 3 different vertices)"
 msgstr "無效的多邊形（需三個不同頂點）"
 
 msgid "Add Custom Polygon"
-msgstr "新增自定多邊形"
+msgstr "新增自訂多邊形"
 
 msgid "Remove Custom Polygon"
-msgstr "移除自定多邊形"
+msgstr "移除自訂多邊形"
 
 msgid "Transform UV Map"
 msgstr "轉換 UV Map"
@@ -8518,6 +8889,9 @@ msgstr "描繪骨骼權重"
 
 msgid "Polygon"
 msgstr "多邊形"
+
+msgid "Toggle Polygon Dock"
+msgstr "切換多邊形面板"
 
 msgid "Points"
 msgstr "點"
@@ -11171,6 +11545,9 @@ msgstr "移除水平參考線"
 msgid "Create Horizontal and Vertical Guides"
 msgstr "建立水平與垂直參考線"
 
+msgid "Add 2D Node Here..."
+msgstr "在此處新增 2D 節點…"
+
 msgid "Instantiate Scene Here..."
 msgstr "在此實例化場景..."
 
@@ -11443,11 +11820,20 @@ msgstr "正在新增 %s…"
 msgid "Can't instantiate multiple nodes without root."
 msgstr "無根節點無法實體化多個節點。"
 
+msgid "This file format is not supported."
+msgstr "不支援此檔案格式。"
+
 msgid "Creating inherited scene from: %s"
 msgstr "從 %s 建立繼承的場景"
 
 msgid "Instantiating: "
 msgstr "實例化： "
+
+msgid "Dropping a Texture file as a %s node..."
+msgstr "將紋理檔案拖入並建立爲 %s 節點…"
+
+msgid "[b]Hold Alt + Shift:[/b] Add Texture as a different node type."
+msgstr "[b]按住 Alt + Shift：[/b]將紋理新增爲不同的節點類型。"
 
 msgid ""
 "All selected CanvasItems are either invisible or locked in some way and can't "
@@ -11478,7 +11864,7 @@ msgid "Connect to Script:"
 msgstr "連接至腳本："
 
 msgid "From Signal:"
-msgstr "自訊號："
+msgstr "從訊號："
 
 msgid "Go to Source"
 msgstr "前往來源"
@@ -11585,6 +11971,9 @@ msgstr "編輯…"
 
 msgid "Go to Method"
 msgstr "跳至方法"
+
+msgid "Select a single node or resource to edit its signals."
+msgstr "選一個節點或資源來編輯其訊號。"
 
 msgid "Load Curve Preset"
 msgstr "載入曲線預設"
@@ -12658,7 +13047,7 @@ msgid "Disable Scene Unique Name"
 msgstr "禁用場景唯一名稱"
 
 msgid "(Connecting From)"
-msgstr "（連接自）"
+msgstr "（連接來源）"
 
 msgid "Node configuration warning:"
 msgstr "節點組態設定警告："
@@ -12798,6 +13187,9 @@ msgstr "新增空白"
 msgid "Move Frame"
 msgstr "移動影格"
 
+msgid "Paste Animation"
+msgstr "貼上動畫"
+
 msgid "Delete Animation?"
 msgstr "是否刪除動畫？"
 
@@ -12812,6 +13204,9 @@ msgstr "SpriteFrames"
 
 msgid "Animations:"
 msgstr "動畫："
+
+msgid "Copy Animation"
+msgstr "複製動畫"
 
 msgid "Delete Animation"
 msgstr "刪除動畫"
@@ -12845,6 +13240,9 @@ msgstr "影格長度："
 
 msgid "Zoom Reset"
 msgstr "重設縮放"
+
+msgid "Add Frame from File"
+msgstr "從檔案新增影格"
 
 msgid "Copy Frame(s)"
 msgstr "複製影格"
@@ -13044,13 +13442,16 @@ msgid ""
 msgstr "包含有下列副檔名的檔案。可在專案設定中新增或移除。"
 
 msgid "Find..."
-msgstr "搜尋..."
+msgstr "尋找…"
 
 msgid "Replace..."
-msgstr "取代..."
+msgstr "取代…"
 
 msgid "Searching..."
-msgstr "正在搜尋..."
+msgstr "正在搜尋…"
+
+msgid "Replace all matches in file"
+msgstr "取代檔案中所有相符的項目"
 
 msgid "Remove result"
 msgstr "移除結果"
@@ -13063,6 +13464,12 @@ msgstr "%d 筆符合項目（於 %d 個檔案內）"
 
 msgid "%d matches in %d files"
 msgstr "%d 筆符合項目（於 %d 個檔案內）"
+
+msgid "Keep Results"
+msgstr "保留結果"
+
+msgid "Keep these results and show subsequent results in a new window"
+msgstr "保留這些結果，並在新視窗中顯示後續結果"
 
 msgid "Replace all (no undo)"
 msgstr "全部取代（不可復原）"
@@ -13101,7 +13508,7 @@ msgid "Extension doesn't match chosen language."
 msgstr "附檔名與所選語言不符。"
 
 msgid "Template:"
-msgstr "樣板："
+msgstr "範本："
 
 msgid "Error - Could not create script in filesystem."
 msgstr "錯誤 - 無法在檔案系統中建立腳本。"

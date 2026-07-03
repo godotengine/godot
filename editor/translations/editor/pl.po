@@ -102,7 +102,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-09 11:32+0000\n"
+"PO-Revision-Date: 2026-06-18 04:28+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
@@ -112,7 +112,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -647,7 +647,7 @@ msgid "Accessibility: Keyboard Drag and Drop"
 msgstr "Dostępność: Przeciągnij i upuść klawiaturą"
 
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Niewłaściwe dane %d (nie przekazane) w wyrażeniu"
+msgstr "Nieprawidłowe dane %d (nie przekazane) w wyrażeniu"
 
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
@@ -2660,6 +2660,9 @@ msgstr "Szablon"
 
 msgid "All"
 msgstr "Wszystko"
+
+msgid "Repository returned with invalid data."
+msgstr "Repozytorium zwróciło nieprawidłowe dane."
 
 msgid "No results for \"%s\"."
 msgstr "Brak wyników dla \"%s\"."
@@ -10810,7 +10813,7 @@ msgid "Sort by ID (Descending)"
 msgstr "Sortuj po ID (malejąco)"
 
 msgid "Invalid source selected."
-msgstr "Wybrano niewłaściwe źródło."
+msgstr "Wybrano nieprawidłowe źródło."
 
 msgid "Patterns"
 msgstr "Wzory"
@@ -20271,7 +20274,7 @@ msgid "Invalid source for preview."
 msgstr "Nieprawidłowe źródło do podglądu."
 
 msgid "Invalid source for shader."
-msgstr "Niewłaściwe źródło dla shadera."
+msgstr "Nieprawidłowe źródło dla shadera."
 
 msgid "Invalid operator for that type."
 msgstr "Nieprawidłowy operator dla tego typu."
@@ -22473,6 +22476,13 @@ msgstr "%s może być tu upuszczony. Użyj %s, aby upuścić, użyj %s, aby anul
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s nie może być tu upuszczony. Użyj %s, aby anulować."
+
+msgid ""
+"Labels with autowrapping enabled must have a positive custom minimum or "
+"maximum width configured to work correctly."
+msgstr ""
+"Labelki z włączonym autozawijaniem muszą mieć skonfigurowaną dodatnia "
+"minimalną lub maksymalną szerokość, aby działać poprawnie."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

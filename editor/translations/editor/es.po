@@ -159,12 +159,14 @@
 # Kevin <kevmed39@protonmail.com>, 2025.
 # Juan José Arcila Valderrama <sedmirnel124@gmail.com>, 2026.
 # Valentin Romanutti <valentinromanutti@gmail.com>, 2026.
+# Segundo <segudlq@gmail.com>, 2026.
+# Libre <6n0n1m0s@proton.me>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-28 22:02+0000\n"
+"PO-Revision-Date: 2026-07-02 18:23+0000\n"
 "Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -173,13 +175,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.7.1.dev0\n"
 
 msgid "OK"
-msgstr "OK"
+msgstr "Aceptar"
 
 msgid "Failed"
-msgstr "Error"
+msgstr "Incorrecto"
 
 msgid "Unavailable"
 msgstr "No disponible"
@@ -212,13 +214,13 @@ msgid "File already in use"
 msgstr "Archivo en uso"
 
 msgid "Can't open file"
-msgstr "No se puede abrir el archivo"
+msgstr "No puede abrir el archivo"
 
 msgid "Can't write file"
-msgstr "No se puede escribir el archivo"
+msgstr "No puede escribir el archivo"
 
 msgid "Can't read file"
-msgstr "No se puede leer el archivo"
+msgstr "No puede leer el archivo"
 
 msgid "File unrecognized"
 msgstr "Archivo no reconocido"
@@ -233,13 +235,13 @@ msgid "End of file"
 msgstr "Fin de archivo"
 
 msgid "Can't open"
-msgstr "No se puede abrir"
+msgstr "No puede abrir"
 
 msgid "Can't create"
-msgstr "No se puede crear"
+msgstr "No puede crear"
 
 msgid "Query failed"
-msgstr "Consulta fallida"
+msgstr "La consulta falló"
 
 msgid "Already in use"
 msgstr "Ya está en uso"
@@ -305,7 +307,7 @@ msgid "Duplicate symbol"
 msgstr "Símbolo duplicado"
 
 msgid "Parse error"
-msgstr "Error de análisis"
+msgstr "Error de intérprete"
 
 msgid "Busy"
 msgstr "Ocupado"
@@ -323,7 +325,7 @@ msgid "Printer on fire"
 msgstr "Impresora en llamas"
 
 msgid "unset"
-msgstr "Sin Establecer"
+msgstr "sin Establecer"
 
 msgid "Physical"
 msgstr "Físico"
@@ -335,7 +337,7 @@ msgid "Right Mouse Button"
 msgstr "Botón Derecho del Ratón"
 
 msgid "Middle Mouse Button"
-msgstr "Botón Central del Ratón"
+msgstr "Botón del Ratón Central"
 
 msgid "Mouse Wheel Up"
 msgstr "Rueda del Ratón Arriba"
@@ -440,7 +442,7 @@ msgid "D-pad Down"
 msgstr "Pad Direccional Abajo"
 
 msgid "D-pad Left"
-msgstr "Pad direccional Izquierda"
+msgstr "Pad Direccional Izquierda"
 
 msgid "D-pad Right"
 msgstr "Pad Direccional Derecha"
@@ -578,10 +580,10 @@ msgid "New Line Above"
 msgstr "Nueva Línea Por Encima"
 
 msgid "Indent"
-msgstr "Indentar"
+msgstr "Sangrado"
 
 msgid "Dedent"
-msgstr "Quitar indentado"
+msgstr "Quitar sangrado"
 
 msgid "Backspace"
 msgstr "Retroceso"
@@ -641,7 +643,7 @@ msgid "Caret Add Below"
 msgstr "Añade Bajo el Cursor"
 
 msgid "Caret Add Above"
-msgstr "Añade por Encima del Cursor"
+msgstr "Añade Encima del Cursor"
 
 msgid "Scroll Up"
 msgstr "Scroll Arriba"
@@ -650,19 +652,19 @@ msgid "Scroll Down"
 msgstr "Scroll Abajo"
 
 msgid "Select All"
-msgstr "Elegir Todo"
+msgstr "Seleccionar Todo"
 
 msgid "Select Word Under Caret"
-msgstr "Elegir Palabra Bajo el Cursor"
+msgstr "Seleccionar Palabra Bajo Cursor"
 
 msgid "Add Selection for Next Occurrence"
 msgstr "Añadir Selección para Siguiente Ocurrencia"
 
 msgid "Skip Selection for Next Occurrence"
-msgstr "Omitir la selección para la siguiente ocurrencia"
+msgstr "Omitir Selección para Siguiente Ocurrencia"
 
 msgid "Clear Carets and Selection"
-msgstr "Borrar Cursores y Selección"
+msgstr "Vaciar Cursores y Selección"
 
 msgid "Toggle Insert Mode"
 msgstr "Alternar Modo De Inserción"
@@ -674,7 +676,7 @@ msgid "Duplicate Nodes"
 msgstr "Duplicar Nodos"
 
 msgid "Delete Nodes"
-msgstr "Borrar Nodos"
+msgstr "Eliminar Nodos"
 
 msgid "Follow Input Port Connection"
 msgstr "Seguir Conexión de Puerto de Entrada"
@@ -707,7 +709,7 @@ msgid "ColorPicker: Delete Preset"
 msgstr "ColorPicker: Eliminar ajuste preestablecido"
 
 msgid "Accessibility: Keyboard Drag and Drop"
-msgstr "Accesibilidad: Drag and Drop con teclado"
+msgstr "Accesibilidad: Arrastrar y Soltar con teclado"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Entrada inválida %d (no aprobada) en la expresión"
@@ -719,10 +721,10 @@ msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Operandos inválidos para el operador %s, %s y %s."
 
 msgid "Invalid index of type %s for base type %s"
-msgstr "Índice inválido de tipo %s para el tipo base %s"
+msgstr "Índice inválido de tipo %s para tipo base %s"
 
 msgid "Invalid named index '%s' for base type %s"
-msgstr "Índice inválido de nombre '%s' para el tipo de base %s"
+msgstr "Índice inválido de nombre '%s' para tipo base %s"
 
 msgid "Invalid arguments to construct '%s'"
 msgstr "Argumentos inválidos para construir '%s'"
@@ -835,6 +837,9 @@ msgstr "Deseleccionar Todas las Claves"
 msgid "Add Animation"
 msgstr "Añadir Animación"
 
+msgid "No available animations"
+msgstr "No hay animaciones disponibles"
+
 msgid "Add %s"
 msgstr "Añadir %s"
 
@@ -918,7 +923,7 @@ msgid "Independent"
 msgstr "Independiente"
 
 msgid "Cyclic Mutable"
-msgstr "Cíclico Mutable"
+msgstr "Mutable Cíclico"
 
 msgid "Cyclic Constant"
 msgstr "Constante Cíclica"
@@ -959,10 +964,10 @@ msgid "Blend Value"
 msgstr "Valor de Combinación"
 
 msgid "Min"
-msgstr "Min"
+msgstr "Mín"
 
 msgid "Max"
-msgstr "Max"
+msgstr "Máx"
 
 msgid "Value"
 msgstr "Valor"
@@ -989,7 +994,7 @@ msgid "Remove BlendSpace2D Point"
 msgstr "Eliminar Punto BlendSpace2D"
 
 msgid "Remove BlendSpace2D Triangle"
-msgstr "Eliminar Triángulo BlendSpace2D"
+msgstr "Retirar Triángulo BlendSpace2D"
 
 msgid "Reorder BlendSpace2D Point Index"
 msgstr "Reordenar Índice de Puntos de BlendSpace2D"
@@ -1023,22 +1028,22 @@ msgid "Blend Y Value"
 msgstr "Valor Y de Combinación"
 
 msgid "Max Y"
-msgstr "Max Y"
+msgstr "Máx Y"
 
 msgid "Y Value"
 msgstr "Valor Y"
 
 msgid "Min Y"
-msgstr "Min Y"
+msgstr "Mín Y"
 
 msgid "Min X"
-msgstr "Min X"
+msgstr "Mín X"
 
 msgid "X Value"
 msgstr "Valor X"
 
 msgid "Max X"
-msgstr "Max X"
+msgstr "Máx X"
 
 msgid "Parameter Changed: %s"
 msgstr "Parámetro Modificado: %s"
@@ -1090,7 +1095,7 @@ msgid "Invert Filter Selection"
 msgstr "Invertir Selección del Filtro"
 
 msgid "Clear Filter Selection"
-msgstr "Limpiar Selección del Filtro"
+msgstr "Vaciar Selección del Filtro"
 
 msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
@@ -1130,7 +1135,7 @@ msgid "Invert"
 msgstr "Invertir"
 
 msgid "Clear"
-msgstr "Limpiar"
+msgstr "Vaciar"
 
 msgid "Start of Animation"
 msgstr "Inicio de la Animación"
@@ -1161,11 +1166,11 @@ msgid "Animation with the same name already exists."
 msgstr "Ya existe una animación con el mismo nombre."
 
 msgid "Enter a library name."
-msgstr "Introduce el nombre de la librería."
+msgstr "Introduce un nombre de librería."
 
 msgid "Library name contains invalid characters: '/', ':', ',' or '['."
 msgstr ""
-"El nombre de la librería contiene caracteres inválidos: '/', ':', ',' or '['."
+"El nombre de la librería contiene caracteres inválidos: '/', ':', ',' o '['."
 
 msgid "Library with the same name already exists."
 msgstr "Ya existe una librería con el mismo nombre."
@@ -1249,8 +1254,8 @@ msgstr ""
 "El archivo seleccionado es una escena importada desde un modelo 3D, como glTF "
 "o FBX.\n"
 "\n"
-"En Godot, los modelos 3D se pueden importar como escenas o como bibliotecas "
-"de animación, razón por la cual aparecen aquí.\n"
+"En Godot, los modelos 3D se pueden importar como escenas o como librerías de "
+"animación, razón por la cual aparecen aquí.\n"
 "\n"
 "Si quieres usar las animaciones de este modelo 3D, abre el cuadro de diálogo "
 "Ajustes de Importación Avanzados\n"
@@ -1272,7 +1277,7 @@ msgstr ""
 
 msgid "Some of the selected libraries were already added to the mixer."
 msgstr ""
-"Algunas de las bibliotecas seleccionadas ya fueron agregadas al mezclador."
+"Algunas de las librerías seleccionadas ya fueron agregadas al mezclador."
 
 msgid "Add Animation Libraries"
 msgstr "Agregar librerías de animación"
@@ -1282,10 +1287,10 @@ msgstr "Algunos archivos de animación eran inválidos."
 
 msgid "Some of the selected animations were already added to the library."
 msgstr ""
-"Algunas de las animaciones seleccionadas y afueron añadidas a la librería."
+"Algunas de las animaciones seleccionadas y fueron añadidas a la librería."
 
 msgid "Load Animations into Library"
-msgstr "Cargar animaciones en la librería"
+msgstr "Cargar animaciones en la Librería"
 
 msgid "Load Animation into Library: %s"
 msgstr "Cargar Animación en Librería: %s"
@@ -2156,10 +2161,10 @@ msgid ""
 "The dummy player is forced active, non-deterministic and doesn't have the "
 "root motion track. Furthermore, the original node is inactive temporary."
 msgstr ""
-"Algunas opciones de AnimationPlayerEditor están deshabilitadas ya que este es "
-"el AnimationPlayer ficticio para vista previa.\n"
+"Algunas opciones del AnimationPlayerEditor están deshabilitadas ya que este "
+"es el AnimationPlayer simulado para la vista previa.\n"
 "\n"
-"El jugador ficticio está forzado a estar activo, no es determinista y no "
+"El reproductor simulado está forzado a estar activo, no es determinista y no "
 "tiene la pista de movimiento raíz. Además, el nodo original está inactivo "
 "temporalmente."
 
@@ -2500,7 +2505,7 @@ msgid "'%s':"
 msgstr "'%s':"
 
 msgid "input %d '%s'."
-msgstr "Entrada %d \"%s\"."
+msgstr "entrada %d \"%s\"."
 
 msgid "Error: "
 msgstr "Error "
@@ -2732,6 +2737,9 @@ msgstr "Plantilla"
 
 msgid "All"
 msgstr "Todos"
+
+msgid "Repository returned with invalid data."
+msgstr "El repositorio devolvió datos no válidos."
 
 msgid "No results for \"%s\"."
 msgstr "No hay resultados para \"%s\"."
@@ -3040,7 +3048,7 @@ msgstr ""
 "No es necesario activarla para usar el depurador de GDScript localmente."
 
 msgid "Small Deploy with Network Filesystem"
-msgstr "Despliegue Reducido con el Sistema de Archivos en Red"
+msgstr "Despliegue Pequeño con Sistema de Archivos en Red"
 
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
@@ -3870,7 +3878,7 @@ msgid "Search Help"
 msgstr "Buscar en la Ayuda"
 
 msgid "Case Sensitive"
-msgstr "Respetar Mayúsculas/Minúsculas"
+msgstr "Distinguir Mayúsculas y Minúsculas"
 
 msgid "Show Hierarchy"
 msgstr "Mostrar Jerarquía"
@@ -6577,6 +6585,13 @@ msgstr ""
 msgid "Web with Extensions"
 msgstr "Web con Extensiones"
 
+msgid ""
+"Web build with support for GDExtensions. Only useful if you use GDExtensions, "
+"otherwise it only increases build size."
+msgstr ""
+"Compilación web con soporte para GDExtensions. Solo útil si usas "
+"GDExtensions, de lo contrario solo aumenta el tamaño de la compilación."
+
 msgid "Web Single-Threaded"
 msgstr "Compilación Web Monohilo"
 
@@ -6777,19 +6792,37 @@ msgstr "Error al abrir el mini-ZIP para escritura."
 msgid "ZIP reader could not open mini-ZIP."
 msgstr "El lector de ZIP no pudo abrir el mini-ZIP."
 
+msgid "File does not exist in ZIP archive."
+msgstr "El archivo no existe en el archivo ZIP."
+
+msgid "Could not open file within ZIP archive."
+msgstr "No se pudo abrir el archivo dentro del archivo ZIP."
+
+msgid "Unable to read file information from ZIP archive."
+msgstr "No se pudo leer la información del archivo desde el archivo ZIP."
+
+msgid "IO/zlib error reading file from ZIP archive."
+msgstr "Error de IO/zlib al leer el archivo del archivo ZIP."
+
+msgid "CRC error reading file from ZIP archive."
+msgstr "Error de CRC al leer el archivo del archivo ZIP."
+
 msgid "Mini-ZIP data was empty."
 msgstr "Datos de Mini-ZIP vacíos."
+
+msgid "Failed to open template file for writing."
+msgstr "No se pudo abrir el archivo de plantilla para escritura."
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
 "your platform: %s"
 msgstr ""
-"No se encontró la librería \"%s\" para GDExtension: \"%s\". Posibles flags de "
-"características para tu plataforma: %s"
+"No se encontró la librería \"%s\" para GDExtension: \"%s\". Indicadores "
+"posibles de características para tu plataforma: %s"
 
 msgid "Multiple \"%s\" libraries found for GDExtension: \"%s\": \"%s\"."
 msgstr ""
-"Se encontraron múltiples librerías \"%s\" para GDExtension: \"%s\": \"%s\"."
+"Se encontraron múltiples librería \"%s\" para GDExtension: \"%s\": \"%s\"."
 
 msgid ""
 "Target platform requires '%s' texture compression. Enable 'Import %s' to fix."
@@ -7303,7 +7336,7 @@ msgid "Replace Mode"
 msgstr "Modo Reemplazar"
 
 msgid "Match Case"
-msgstr "Coincidir Mayúsculas/Minúsculas"
+msgstr "Coincidir Mayúsculas y Minúsculas"
 
 msgid "Whole Words"
 msgstr "Palabras Completas"
@@ -7516,7 +7549,7 @@ msgid ""
 "an exhaustive list of all such third-party components with their respective "
 "copyright statements and license terms."
 msgstr ""
-"Godot Engine se basa en una serie de librerías libres y de código abierto de "
+"Godot Engine se basa en una serie de librería libres y de código abierto de "
 "terceros, todas ellas compatibles con los términos de su licencia MIT. La "
 "siguiente es una lista exhaustiva de todos estos componentes de terceros con "
 "sus respectivas declaraciones de derechos de autor y términos de licencia."
@@ -10493,6 +10526,13 @@ msgid "Editing instance properties"
 msgstr "Editando propiedades de la instancia"
 
 msgid ""
+"Edited properties will apply to the newly painted instances. They will be "
+"stored locally in the current scene."
+msgstr ""
+"Las propiedades editadas se aplicarán a las instancias recién pintadas. Se "
+"guardarán localmente en la escena actual."
+
+msgid ""
 "Pin the current node.\n"
 "When enabled, the painting parent node will not change when selecting other "
 "nodes in the scene."
@@ -10500,6 +10540,9 @@ msgstr ""
 "Fijar el nodo actual.\n"
 "Cuando está activado, el nodo padre de pintura no cambiará al seleccionar "
 "otros nodos en la escena."
+
+msgid "Pinned Node: %s"
+msgstr "Nodo Anclado: %s"
 
 msgid ""
 "The selected scene could not be found. It may have been moved or deleted."
@@ -10510,11 +10553,34 @@ msgstr ""
 msgid "Advanced Settings"
 msgstr "Ajustes Avanzados"
 
+msgid ""
+"Hold Alt while painting to temporarily switch to the previously used paint "
+"snap mode."
+msgstr ""
+"Mantén Alt mientras pintas para cambiar temporalmente al modo de ajuste de "
+"pintura utilizado anteriormente."
+
 msgid "Pin Node"
 msgstr "Anclar Nodo"
 
+msgid ""
+"When enabled, the painting parent node will not change when selecting other "
+"nodes in the scene."
+msgstr ""
+"Cuando está habilitado, el nodo padre de pintado no cambiará al seleccionar "
+"otros nodos en la escena."
+
 msgid "Scene Picker"
 msgstr "Selector de Escena"
+
+msgid ""
+"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
+"2D editor's viewport.\n"
+"Holding Ctrl enables picking from the 2D editor's viewport."
+msgstr ""
+"Cuando está habilitado, puedes seleccionar escenas desde el panel Sistema de "
+"Archivos, el panel Escena o el viewport del editor 2D.\n"
+"Manteniendo Ctrl se habilita la selección desde el viewport del editor 2D."
 
 msgid "Edit Properties"
 msgstr "Editar Propiedades"
@@ -10533,6 +10599,13 @@ msgstr "Ajustar al Centro de la Celda de la Cuadrícula"
 
 msgid "Allow Overlapping"
 msgstr "Permitir Superposición"
+
+msgid ""
+"Allow painting over existing painted scenes.\n"
+"Hold Shift while painting to temporarily toggle this option."
+msgstr ""
+"Permitir pintar sobre escenas ya pintadas.\n"
+"Mantén Shift mientras pintas para alternar temporalmente esta opción."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Este esqueleto no tiene huesos, crea algunos nodos Bone2D hijos."
@@ -12200,6 +12273,13 @@ msgid "The transform to apply to the item's mesh."
 msgstr "La transformación a aplicar a la malla del elemento."
 
 msgid ""
+"The shadow casting mode used by the item's mesh. See [enum "
+"RenderingServer.ShadowCastingSetting]."
+msgstr ""
+"El modo de proyección de sombras que utiliza la malla del elemento. Consulta "
+"[enum RenderingServer.ShadowCastingSetting]."
+
+msgid ""
 "The item's collision shapes.\n"
 "The array should consist of [Shape3D] objects, each followed by a "
 "[Transform3D] that will be applied to it. For shapes that should not have a "
@@ -12222,6 +12302,15 @@ msgstr "Máscara de bits de las capas de navegación del elemento."
 msgid "The texture to use as the item's preview icon in the editor."
 msgstr ""
 "La textura a utilizar como icono de vista previa del elemento en el editor."
+
+msgid ""
+"No items found inside the MeshLibrary.\n"
+"You can add some by using the Add button on the left, or by importing them "
+"from a scene file via the Import menu."
+msgstr ""
+"No se encontraron elementos en la MeshLibrary.\n"
+"Puedes añadir algunos usando el botón Añadir a la izquierda, o importándolos "
+"desde un archivo de escena a través del menú Importar."
 
 msgid "Apply without Transforms"
 msgstr "Aplicar sin Transformaciones"
@@ -15203,7 +15292,7 @@ msgid "snake_case to PascalCase"
 msgstr "snake_case a PascalCase"
 
 msgid "Case"
-msgstr "Mayus./Minus."
+msgstr "Mayúsculas y Minúsculas"
 
 msgid "To Lowercase"
 msgstr "A Minúsculas"
@@ -15920,7 +16009,7 @@ msgid "Folding"
 msgstr "Plegado"
 
 msgid "Convert Case"
-msgstr "Convertir Mayúsculas/Minúsculas"
+msgstr "Convertir Mayúsculas y Minúsculas"
 
 msgid "Syntax Highlighter"
 msgstr "Resaltador de Sintaxis"
@@ -16559,14 +16648,14 @@ msgid "NavigationServer and capabilities for 3D."
 msgstr "NavigationServer y capacidades para 3D."
 
 msgid "Support for screen readers using the AccessKit library."
-msgstr "Soporte para lectores de pantalla mediante la biblioteca AccessKit."
+msgstr "Soporte para lectores de pantalla mediante la librería AccessKit."
 
 msgid ""
 "Improved gamepad support on Windows, macOS, and Linux using the SDL library.\n"
 "If disabled, built-in custom code is used for gamepad support instead, which "
 "may be less reliable for certain controller models."
 msgstr ""
-"Soporte mejorado de gamepad en Windows, macOS y Linux mediante la biblioteca "
+"Soporte mejorado de gamepad en Windows, macOS y Linux mediante la librería "
 "SDL.\n"
 "Si está desactivado, se utiliza en su lugar código personalizado integrado "
 "para el soporte de gamepads, lo cual puede ser menos fiable para ciertos "
@@ -16642,7 +16731,7 @@ msgid ""
 "Text Server implementation powered by ICU and HarfBuzz libraries.\n"
 "Supports complex text layouts, BiDi, and contextual OpenType font features."
 msgstr ""
-"Implementación del servidor de texto mediante las librerías ICU y HarfBuzz.\n"
+"Implementación del servidor de texto mediante las librería ICU y HarfBuzz.\n"
 "Admite formatos de texto complejos, BiDi y funciones contextuales de fuentes "
 "OpenType."
 
@@ -16656,7 +16745,7 @@ msgstr ""
 
 msgid "WOFF2 font format support using FreeType and Brotli libraries."
 msgstr ""
-"Compatibilidad con el formato de fuente WOFF2 utilizando las bibliotecas "
+"Compatibilidad con el formato de fuente WOFF2 utilizando las librerías "
 "FreeType y Brotli."
 
 msgid ""
@@ -17186,7 +17275,7 @@ msgid "Physical Keycode (Position on US QWERTY Keyboard)"
 msgstr "Código de teclas físicas (posición en el teclado QWERTY de EE.UU.)"
 
 msgid "Key Label (Unicode, Case-Insensitive)"
-msgstr "Etiqueta de tecla (Unicode, distingue mayúsculas de minúsculas)"
+msgstr "Etiqueta de Tecla (Unicode, no distingue mayúsculas de minúsculas)"
 
 msgid "Physical Location"
 msgstr "Ubicación física"
@@ -20517,7 +20606,7 @@ msgid ""
 "\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is "
 "enabled."
 msgstr ""
-"\"Comprimir Librerías Nativas\" solo es válido cuando \"Usar Gradle Build\" "
+"\"Comprimir Librería Nativas\" solo es válido cuando \"Usar Gradle Build\" "
 "está activado."
 
 msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
@@ -20573,7 +20662,7 @@ msgstr ""
 msgid "\"Use Gradle Build\" must be enabled to disable \"Show In App Library\"."
 msgstr ""
 "\"Usar Gradle Build\" debe estar activado para desactivar \"Mostrar en la "
-"Biblioteca de Aplicaciones\"."
+"Librería de Aplicaciones\"."
 
 msgid "Mirror Android devices"
 msgstr "Reflejar dispositivos Android"
@@ -20904,7 +20993,7 @@ msgid ""
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
-"Faltan librerías en la plantilla de exportación para las arquitecturas "
+"Faltan librería en la plantilla de exportación para las arquitecturas "
 "seleccionadas: %s. Construye una plantilla con todas las librerías necesarias "
 "o desmarca las arquitecturas faltantes en el ajuste de exportación."
 
@@ -21046,7 +21135,7 @@ msgid ""
 "'rcodesign' doesn't support signing applications with embedded dynamic "
 "libraries (GDExtension or .NET)."
 msgstr ""
-"‘rcodesign’ no admite la firma de aplicaciones con bibliotecas dinámicas "
+"‘rcodesign’ no admite la firma de aplicaciones con librerías dinámicas "
 "incrustadas (GDExtension o .NET)."
 
 msgid "Code signing is required for App Store distribution."
@@ -21276,7 +21365,7 @@ msgstr ""
 "se encuentre en el archivo de plantillas."
 
 msgid "Making PKG"
-msgstr "haciendo paquete"
+msgstr "Creando PKG"
 
 msgid "Entitlements Modified"
 msgstr "Derechos Modificados"
@@ -21292,7 +21381,7 @@ msgid ""
 "'rcodesign' doesn't support signing applications with embedded dynamic "
 "libraries."
 msgstr ""
-"‘rcodesign’ no admite la firma de aplicaciones con bibliotecas dinámicas "
+"‘rcodesign’ no admite la firma de aplicaciones con librerías dinámicas "
 "incrustadas."
 
 msgid "Could not create entitlements file."
@@ -22570,6 +22659,9 @@ msgstr "Aplicar Reinicio de Animación"
 msgid "No playback resource set at path: %s."
 msgstr "Ningún recurso de reproducción asignado en la ruta: %s."
 
+msgid "Nothing connected to input %d."
+msgstr "Nada conectado a la entrada %d."
+
 msgid "No root AnimationNode for the graph is set."
 msgstr "No se ha establecido ningún nodo AnimationNode raíz para el gráfico."
 
@@ -22688,6 +22780,13 @@ msgstr "%s puede soltarse aquí. Usa %s para soltar, usa %s para cancelar."
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s no puede soltarse aquí. Usa %s para cancelar."
+
+msgid ""
+"Labels with autowrapping enabled must have a positive custom minimum or "
+"maximum width configured to work correctly."
+msgstr ""
+"Las etiquetas con el ajuste automático habilitado deben tener configurado un "
+"ancho mínimo o máximo personalizado positivo para funcionar correctamente."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "
@@ -22923,8 +23022,8 @@ msgstr "No se ha encontrado ninguna función que coincida con la llamada \"%s\":
 msgid ""
 "candidate function \"%s(%s)\" not viable, argument %d should be %s but is %s."
 msgstr ""
-"La función candidata \"%s(%s)\" no es viable, el argumento %d debería ser %s "
-"pero es %s."
+"función candidata \"%s(%s)\" no viable, el argumento %d debería ser %s pero "
+"es %s."
 
 msgid ""
 "Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."
@@ -23099,7 +23198,7 @@ msgid "Only integer expressions are allowed for indexing."
 msgstr "Sólo se permiten expresiones enteras para la indexación."
 
 msgid "Index [%d] out of range [%d..%d]."
-msgstr "Índice [%d] fuera del rango [%d.. %d]."
+msgstr "Índice [%d] fuera de rango [%d..%d]."
 
 msgid "Expected expression, found: '%s'."
 msgstr "Expresión esperada, encontrada: '%s'."
@@ -23180,13 +23279,13 @@ msgid "Expected an integer or unsigned integer expression."
 msgstr "Se esperaba una expresión entera o entera sin signo."
 
 msgid "Default case must be defined only once."
-msgstr "El caso por defecto debe definirse una sola vez."
+msgstr "El caso por defecto debe definirse solo una vez."
 
 msgid "'%s' must be placed within a '%s' block."
 msgstr "%s' debe colocarse dentro de un bloque '%s'."
 
 msgid "Undefined identifier '%s' in a case label."
-msgstr "Identificador indefinido '%s' en una etiqueta de caso."
+msgstr "Identificador no definido '%s' en una etiqueta de caso."
 
 msgid "Expected an unsigned integer constant."
 msgstr "Se esperaba una constante entera sin signo."
@@ -23195,7 +23294,7 @@ msgid "Expected an integer constant."
 msgstr "Se esperaba un entero constante."
 
 msgid "Duplicated case label: %d."
-msgstr "Etiqueta duplicada: %d."
+msgstr "Etiqueta de caso duplicada: %d."
 
 msgid "Using '%s' in the '%s' processor function is incorrect."
 msgstr "El uso de '%s' en la función de procesador '%s' es incorrecto."

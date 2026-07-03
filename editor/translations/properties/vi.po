@@ -36,13 +36,14 @@
 # Nam Namcuteee <namcuteeenam@gmail.com>, 2026.
 # Khắc Vinh Vũ <vukhacvinh31@gmail.com>, 2026.
 # Lý Hoàng Bách <bachmeme1212@gmail.com>, 2026.
+# Nguyễn Thị Đào <kenhcuatoilaan@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-15 19:02+0000\n"
-"Last-Translator: Lý Hoàng Bách <bachmeme1212@gmail.com>\n"
+"PO-Revision-Date: 2026-06-25 13:02+0000\n"
+"Last-Translator: Nguyễn Thị Đào <kenhcuatoilaan@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/vi/>\n"
 "Language: vi\n"
@@ -409,11 +410,20 @@ msgstr "Kích cỡ Khối (KB)"
 msgid "Max Size (MB)"
 msgstr "Kích cỡ tối đa (MB)"
 
+msgid "Texture Upload Region Size Px"
+msgstr "Kích thước vùng tải lên Texture (px)"
+
+msgid "Texture Download Region Size Px"
+msgstr "Kích thước vùng tải xuống Texture (px)"
+
 msgid "Pipeline Cache"
 msgstr "Bộ đệm đường ống"
 
 msgid "Enable"
 msgstr "Mở"
+
+msgid "Save Chunk Size (MB)"
+msgstr "Kích thước chunk lưu trữ (MB)"
 
 msgid "Vulkan"
 msgstr "Vulkan"
@@ -424,8 +434,23 @@ msgstr "Mô tả tối đa cho mỗi nhóm"
 msgid "D3D12"
 msgstr "D3D12"
 
+msgid "Max Resource Descriptors"
+msgstr "Số lượng bộ mô tả tài nguyên tối đa"
+
+msgid "Max Sampler Descriptors"
+msgstr "Số bộ mô tả Sampler tối đa"
+
+msgid "Agility SDK Version"
+msgstr "Phiên bản Agility SDK"
+
 msgid "Textures"
 msgstr "Hình kết cấu"
+
+msgid "Canvas Textures"
+msgstr "Họa tiết Canvas"
+
+msgid "Default Texture Filter"
+msgstr "bộ lọc họa tiết mặc định"
 
 msgid "Collada"
 msgstr "Collada"
@@ -448,20 +473,38 @@ msgstr "Điều hướng"
 msgid "Avoidance Use High Priority Threads"
 msgstr "Tránh sử dụng luồng có mức độ ưu tiên cao"
 
+msgid "Pathfinding"
+msgstr "Tìm đường"
+
+msgid "Baking"
+msgstr "Tính Toán Sẵn"
+
 msgid "Use Crash Prevention Checks"
 msgstr "Sử dụng Kiểm tra phòng ngừa sự cố"
 
 msgid "Baking Use High Priority Threads"
 msgstr "Baking Sử dụng luồng có mức độ ưu tiên cao"
 
+msgid "NavMesh Edge Merge Errors"
+msgstr "Lỗi hợp nhất cạnh NavMesh"
+
 msgid "Low Processor Usage Mode"
 msgstr "Chế độ tiết kiệm của bộ vi xử lý"
+
+msgid "Delta Smoothing"
+msgstr "Làm Mượt Delta"
 
 msgid "Print Error Messages"
 msgstr "In thông điệp lỗi"
 
+msgid "Print to stdout"
+msgstr "In ra đầu ra tiêu chuẩn"
+
 msgid "Physics Ticks per Second"
 msgstr "Số tích tắc vật lý mỗi giây"
+
+msgid "Max Physics Steps per Frame"
+msgstr "Số Bước Vật Lý Tối Đa Mỗi Khung Hình"
 
 msgid "Max FPS"
 msgstr "FPS tối đa"
@@ -469,11 +512,17 @@ msgstr "FPS tối đa"
 msgid "Time Scale"
 msgstr "độ giãn nở thời gian"
 
+msgid "Physics Jitter Fix"
+msgstr "Khắc Phục Sự Rung Lắc Vật Lý"
+
 msgid "Emulate Mouse From Touch"
 msgstr "Mô phỏng chuột từ cảm ứng"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Mô phỏng cảm ứng từ chuột"
+
+msgid "Ignore Joypad on Unfocused Application"
+msgstr "Bỏ qua tay cầm khi ứng dụng chạy nền"
 
 msgid "Legacy Just Pressed Behavior"
 msgstr "Hành vi Just Pressed cũ"
@@ -484,17 +533,41 @@ msgstr "Thiết bị"
 msgid "Command or Control Autoremap"
 msgstr "Lệnh hoặc Kiểm soát Autoremap"
 
+msgid "Alt Pressed"
+msgstr "Phím Alt Đã Được Ấn"
+
+msgid "Shift Pressed"
+msgstr "Phím Shift Đã Được Ấn"
+
+msgid "Ctrl Pressed"
+msgstr "Phím Ctrl Đã Được Ấn"
+
+msgid "Meta Pressed"
+msgstr "Phím Meta Đã Được Ấn"
+
 msgid "Pressed"
 msgstr "Được ấn"
 
 msgid "Keycode"
 msgstr "Mã khóa"
 
+msgid "Physical Keycode"
+msgstr "Mã phím vật lí"
+
+msgid "Key Label"
+msgstr "Nhãn Phím"
+
 msgid "Unicode"
 msgstr "Unicode"
 
+msgid "Location"
+msgstr "Vị Trí"
+
 msgid "Echo"
 msgstr "Tiếng vang"
+
+msgid "Button Mask"
+msgstr "Bộ Lọc Phím"
 
 msgid "Position"
 msgstr "Vị trí"
@@ -504,6 +577,9 @@ msgstr "Vị trí toàn cục"
 
 msgid "Button Index"
 msgstr "Chỉ số của phím"
+
+msgid "Canceled"
+msgstr "Đã Hủy"
 
 msgid "Double Click"
 msgstr "Nháy Đúp"
@@ -559,6 +635,9 @@ msgstr "Big Endian"
 msgid "Blocking Mode Enabled"
 msgstr "Đã bật chế độ chặn"
 
+msgid "Connection"
+msgstr "Kết Nối­­"
+
 msgid "Read Chunk Size"
 msgstr "Kích thước đoạn đọc"
 
@@ -579,6 +658,9 @@ msgstr "Kích thước tối đa của bộ đệm đầu ra"
 
 msgid "Resource"
 msgstr "Tài nguyên"
+
+msgid "Local to Scene"
+msgstr "Dùng Riêng Trong Cảnh"
 
 msgid "Path"
 msgstr "Đường dẫn"
@@ -706,6 +788,9 @@ msgstr "Camera"
 msgid "Plugins"
 msgstr "Tiện ích"
 
+msgid "Increased Memory Limit"
+msgstr "Tăng giới hạn bộ nhớ"
+
 msgid "Performance Gaming Tier"
 msgstr "Hiệu suất chơi game Cấp độ"
 
@@ -747,6 +832,9 @@ msgstr "Chỉ đọc"
 
 msgid "Flat"
 msgstr "Tùy chọn"
+
+msgid "Editing Integer"
+msgstr "Chỉnh Sửa Số Nguyên"
 
 msgid "Make Unique"
 msgstr "Duy nhất"
@@ -826,8 +914,14 @@ msgstr "Nút"
 msgid "Mesh Library"
 msgstr "Thư viện Lưới"
 
+msgid "Use Node Names as Mesh Names"
+msgstr "Sử dụng tên Node làm tên Mesh"
+
 msgid "Import as Skeleton Bones"
 msgstr "Root Scale"
+
+msgid "Use Node Type Suffixes"
+msgstr "Sử Dụng Hậu Tố Theo Loại Node"
 
 msgid "Skins"
 msgstr "Force Disable Compression"
@@ -843,6 +937,9 @@ msgstr "Disable Embedded Bitmap"
 
 msgid "MSDF Pixel Range"
 msgstr "Trường khoảng cách có dấu đa kênh"
+
+msgid "Modulate Color Glyphs"
+msgstr "Điều chỉnh màu ký tự"
 
 msgid "Hinting"
 msgstr "Buộc tự động gợi ý"
@@ -1012,6 +1109,9 @@ msgstr "Phông chữ mã hóa Chữ ghép theo ngữ cảnh"
 msgid "Code Font Custom OpenType Features"
 msgstr "Tính năng OpenType tùy chỉnh của phông chữ mã hóa"
 
+msgid "Font Allow MSDF"
+msgstr "Cho Phép Font MSDF (khuyên Dùng)"
+
 msgid "Main Font"
 msgstr "Phông chính"
 
@@ -1035,6 +1135,9 @@ msgstr "Hộp thoại Chấp nhận Hủy Nút OK"
 
 msgid "Show Internal Errors in Toast Notifications"
 msgstr "Hiển thị Lỗi nội bộ trong Thông báo Toast"
+
+msgid "Import Resources When Unfocused"
+msgstr "Nhập tài nguyên khi không tập trung"
 
 msgid "Update Continuously"
 msgstr "Cập nhật Liên tục"
@@ -1089,6 +1192,9 @@ msgstr "Cỡ viền"
 
 msgid "Additional Spacing"
 msgstr "Khoảng cách bổ sung"
+
+msgid "Use Monospace Font for Editor Symbols"
+msgstr "Dùng Font Monospace cho Kí Hiệu Soạn Thảo"
 
 msgid "Custom Theme"
 msgstr "Chủ đề tuỳ chỉnh"

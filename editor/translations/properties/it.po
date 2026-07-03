@@ -108,7 +108,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-16 19:05+0000\n"
+"PO-Revision-Date: 2026-07-01 16:01+0000\n"
 "Last-Translator: Micky <micheledevita2@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
@@ -552,7 +552,7 @@ msgid "Region Use Async Iterations"
 msgstr "Usa iterazioni asincrone per le regioni"
 
 msgid "Avoidance"
-msgstr "Evasione"
+msgstr "Evitamento"
 
 msgid "Thread Model"
 msgstr "Modello di parallelismo"
@@ -907,6 +907,9 @@ msgstr "Rapporto di thread a bassa priorità"
 
 msgid "Locale"
 msgstr "Lingua"
+
+msgid "Plural Rules Override"
+msgstr "Sostituzione delle regole per il plurale"
 
 msgid "Test"
 msgstr "Testing"
@@ -2185,6 +2188,9 @@ msgstr "Tema"
 msgid "Follow System Theme"
 msgstr "Segui il tema del sistema"
 
+msgid "Color Preset"
+msgstr "Preset di colori"
+
 msgid "Spacing Preset"
 msgstr "Preimpostazione di spaziatura"
 
@@ -3143,7 +3149,7 @@ msgid "Remote Host"
 msgstr "Host remoto"
 
 msgid "Language Server"
-msgstr "Server di lingua"
+msgstr "Server di linguaggio"
 
 msgid "Enable Smart Resolve"
 msgstr "Abilita risoluzione intelligente"
@@ -3469,11 +3475,17 @@ msgstr "Abilita tracciamento dei marcatori"
 msgid "Enable Builtin Marker Tracking"
 msgstr "Abilita tracciamento dei marcatori integrato"
 
+msgid "April Tag Dict"
+msgstr "Dizionario April Tag"
+
 msgid "Eye Gaze Interaction"
 msgstr "Interazione con lo sguardo degli occhi"
 
 msgid "Render Model"
 msgstr "Modello di rendering"
+
+msgid "User Presence"
+msgstr "Presenza dell'utente"
 
 msgid "Binding Modifiers"
 msgstr "Modificatori delle associazioni"
@@ -3485,7 +3497,7 @@ msgid "Dpad Binding"
 msgstr "Associazione del d-pad"
 
 msgid "Boot Splash"
-msgstr "Immagine di avvio"
+msgstr "Schermata di avvio"
 
 msgid "BG Color"
 msgstr "Colore di sfondo"
@@ -5011,6 +5023,9 @@ msgstr "Host di debug remoto tramite Wi-Fi"
 msgid "Splash Screen"
 msgstr "Schermata di avvio"
 
+msgid "Disable Godot Boot Splash"
+msgstr "Disabilita schermata di avvio di Godot"
+
 msgid "Background Color"
 msgstr "Colore per lo sfondo"
 
@@ -6092,13 +6107,13 @@ msgid "Max Speed"
 msgstr "Velocità massima"
 
 msgid "Avoidance Layers"
-msgstr "Strati di evasione"
+msgstr "Strati di evitamento"
 
 msgid "Avoidance Mask"
-msgstr "Maschera di evasione"
+msgstr "Maschera di evitamento"
 
 msgid "Avoidance Priority"
-msgstr "Priorità di evasione"
+msgstr "Priorità di evitamento"
 
 msgid "Use Custom"
 msgstr "Usa personalizzato"
@@ -6825,6 +6840,9 @@ msgstr "Allineamento verticale"
 msgid "Uppercase"
 msgstr "Maiuscolo"
 
+msgid "Autowrap Trim Flags"
+msgstr "Flag di troncamento per ritorno a capo automatico"
+
 msgid "Justification Flags"
 msgstr "Flag di giustificazione"
 
@@ -7036,7 +7054,7 @@ msgid "Path Height Offset"
 msgstr "Scostamento di altezza del percorso"
 
 msgid "Use 3D Avoidance"
-msgstr "Usa l'evasione 3D"
+msgstr "Usa l'evitamento 3D"
 
 msgid "Keep Y Velocity"
 msgstr "Mantieni la velocità in Y"
@@ -8155,7 +8173,7 @@ msgid "Wraparound Items"
 msgstr "Avvolgi elementi"
 
 msgid "Items"
-msgstr "Elementi"
+msgstr "Voci"
 
 msgid "Max Columns"
 msgstr "Colonne massime"
@@ -8302,16 +8320,19 @@ msgid "Axis Stretch"
 msgstr "Allungamento degli assi"
 
 msgid "Fit to Longest Item"
-msgstr "Aggiusta per l'oggetto più lungo"
+msgstr "Aggiusta per la voce più lunga"
+
+msgid "Min Item Count"
+msgstr "Numero minimo di voci"
 
 msgid "Hide on Item Selection"
-msgstr "Nascondi alla selezione di un elemento"
+msgstr "Nascondi alla selezione di una voce"
 
 msgid "Hide on Checkable Item Selection"
-msgstr "Nascondi alla selezione di un elemento spuntabile"
+msgstr "Nascondi alla selezione di una voce spuntabile"
 
 msgid "Hide on State Item Selection"
-msgstr "Nascondi alla selezione di un elemento di stato"
+msgstr "Nascondi alla selezione di una voce di stato"
 
 msgid "Submenu Popup Delay"
 msgstr "Ritardo per l'apparizione del sottomenù"
@@ -11417,6 +11438,9 @@ msgstr "Scala di velocità di riproduzione"
 msgid "Playback Mode"
 msgstr "Modalità riproduzione"
 
+msgid "Random Pitch Semitones"
+msgstr "Tono casuale in semitoni"
+
 msgid "Random Volume Offset dB"
 msgstr "Offset casuale del volume in dB"
 
@@ -11706,7 +11730,7 @@ msgid "Shape RID"
 msgstr "RID di forma"
 
 msgid "Collide Separation Ray"
-msgstr "Raggio di separazione di collisione"
+msgstr "Collisione a raggio di separazione"
 
 msgid "Exclude Bodies"
 msgstr "Escludi i corpi"
@@ -11757,7 +11781,7 @@ msgid "Default Constraint Bias"
 msgstr "Bias di vincolo predefinito"
 
 msgid "Physics Engine"
-msgstr "Motore fisico"
+msgstr "Motore di fisica"
 
 msgid "Inverse Inertia Tensor"
 msgstr "Tensore di inerzia inversa"
@@ -11847,7 +11871,7 @@ msgid "Use Physical Light Units"
 msgstr "Usa unità fisiche di luce"
 
 msgid "Soft Shadow Filter Quality"
-msgstr "Qualità del filtro di ombre morbide"
+msgstr "Qualità del filtro di ombre sfumate"
 
 msgid "Atlas 16 Bits"
 msgstr "Atlante a 16 bit"

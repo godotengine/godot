@@ -63,7 +63,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-15 19:02+0000\n"
+"PO-Revision-Date: 2026-06-24 02:52+0000\n"
 "Last-Translator: hw <hywoo325@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
@@ -1035,7 +1035,7 @@ msgid "Code Sign Identity Debug"
 msgstr "코드 서명 ID 디버그"
 
 msgid "Code Sign Identity Release"
-msgstr "코드 서명 ID 릴리즈"
+msgstr "코드 서명 ID 릴리스"
 
 msgid "Provisioning Profile UUID Debug"
 msgstr "프로비저닝 프로필 UUID 디버그"
@@ -2677,7 +2677,7 @@ msgid "Open Dominant Script on Scene Change"
 msgstr "씬 변경 시 주요 스크립트 열기"
 
 msgid "Drop Preload Resources as UID"
-msgstr "미리 불러온 리소스를 UID로 드롭"
+msgstr "미리 불러온 리소스를 UID로 놓기"
 
 msgid "Documentation"
 msgstr "문서"
@@ -9127,7 +9127,7 @@ msgid "Hide Root"
 msgstr "루트 숨기기"
 
 msgid "Drop Mode Flags"
-msgstr "드롭 모드 플래그"
+msgstr "놓기 모드 플래그"
 
 msgid "Auto Tooltip"
 msgstr "자동 툴팁"
@@ -11626,10 +11626,10 @@ msgid "Guide Color"
 msgstr "가이드 색상"
 
 msgid "Drop on Item Color"
-msgstr "항목에 드롭 색상"
+msgstr "항목에 놓기 색상"
 
 msgid "Drop Position Color"
-msgstr "드롭 위치 색상"
+msgstr "놓기 위치 색상"
 
 msgid "Relationship Line Color"
 msgstr "관계선 색상"
@@ -11743,7 +11743,7 @@ msgid "Font Unselected Color"
 msgstr "선택되지 않은 글꼴 색상"
 
 msgid "Drop Mark Color"
-msgstr "드롭 마크 색상"
+msgstr "놓기 마크 색상"
 
 msgid "Icon Selected Color"
 msgstr "선택된 아이콘 색상"

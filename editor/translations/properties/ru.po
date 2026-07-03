@@ -210,13 +210,16 @@
 # MariyaShikunova <mariia@basealt.ru>, 2026.
 # Anatoly Zubarev <padamass@mail.ru>, 2026.
 # kureca <deviantart189@gmail.com>, 2026.
+# Translator <temp19282929282@gmail.com>, 2026.
+# Arseniy Sokolov <arsenyisklv@gmail.com>, 2026.
+# Damir Sobolev <damir.sobolev.0@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-28 22:01+0000\n"
-"Last-Translator: kureca <deviantart189@gmail.com>\n"
+"PO-Revision-Date: 2026-06-27 16:02+0000\n"
+"Last-Translator: Damir Sobolev <damir.sobolev.0@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -225,7 +228,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -772,6 +775,9 @@ msgstr "Включить гироскоп"
 
 msgid "Enable Magnetometer"
 msgstr "Включить магнитометр"
+
+msgid "Joypads"
+msgstr "Геймпады"
 
 msgid "Device"
 msgstr "Устройство"
@@ -1637,6 +1643,9 @@ msgstr "Корневой скрипт"
 msgid "Mesh Library"
 msgstr "Библиотека сеток"
 
+msgid "Use Node Names as Mesh Names"
+msgstr "Использовать названия узлов как названия имен"
+
 msgid "Apply Root Scale"
 msgstr "Применить масштаб корня"
 
@@ -2410,6 +2419,9 @@ msgstr "Базовое расстояние"
 msgid "Additional Spacing"
 msgstr "Дополнительное расстояние"
 
+msgid "Use Monospace Font for Editor Symbols"
+msgstr "Использовать Моноширинный Шрифта для Редактор Символов"
+
 msgid "Custom Theme"
 msgstr "Пользовательская тема"
 
@@ -2418,6 +2430,9 @@ msgstr "Сенсорный экран"
 
 msgid "Enable Touch Optimizations"
 msgstr "Включение сенсорной оптимизации"
+
+msgid "Haptic on Long Press"
+msgstr "Вибрация при долгом нажатии"
 
 msgid "Scale Gizmo Handles"
 msgstr "Масштаб маркеров гизмо"
@@ -2995,6 +3010,9 @@ msgstr "Размер диска наклона Path3D"
 
 msgid "Lightmap GI Probe Size"
 msgstr "Размер Проба GI Карты Освещения"
+
+msgid "Show Collision Shapes Only When Selected"
+msgstr "Показывать Коллизию Фигур только при выборе"
 
 msgid "Primary Grid Steps"
 msgstr "Первичные шаги сетки"
@@ -8259,6 +8277,9 @@ msgstr "Настройка размера контейнера"
 msgid "Stretch Ratio"
 msgstr "Коэффициент растягивания"
 
+msgid "Pivot"
+msgstr "точка вращения"
+
 msgid "Localize Numeral System"
 msgstr "Локализовать систему счисления"
 
@@ -8690,6 +8711,9 @@ msgstr "Растягивание оси"
 
 msgid "Fit to Longest Item"
 msgstr "Подогнать по самому длинному элементу"
+
+msgid "Search Bar"
+msgstr "Строка Поиска"
 
 msgid "Hide on Item Selection"
 msgstr "Скрывать при выборе элемента"
@@ -9172,6 +9196,9 @@ msgstr "Разделитель имени и номера узла"
 
 msgid "Node Name Casing"
 msgstr "Регистр имён узлов"
+
+msgid "Owner"
+msgstr "Владелец"
 
 msgid "Physics Priority"
 msgstr "Приоритет физики"
@@ -10247,6 +10274,9 @@ msgstr "Пространство"
 
 msgid "Baseline"
 msgstr "Базовая линия"
+
+msgid "Palette"
+msgstr "Палитра"
 
 msgid "Font Names"
 msgstr "Имена шрифтов"
@@ -12325,6 +12355,9 @@ msgstr "Расчёт тесселяции"
 
 msgid "Compute"
 msgstr "Расчёт"
+
+msgid "Any Hit"
+msgstr "Любой результат"
 
 msgid "Syntax"
 msgstr "Синтаксис"

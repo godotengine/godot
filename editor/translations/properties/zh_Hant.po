@@ -52,13 +52,14 @@
 # Myeongjin <aranet100@gmail.com>, 2025.
 # RogerFang <newlag@gmail.com>, 2025.
 # Wei-Fu Chen <410477jimmy@gmail.com>, 2026.
+# 李奕寯 <eugenelego88@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-25 00:39+0000\n"
-"Last-Translator: Wei-Fu Chen <410477jimmy@gmail.com>\n"
+"PO-Revision-Date: 2026-07-01 16:01+0000\n"
+"Last-Translator: 李奕寯 <eugenelego88@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_Hant\n"
@@ -66,7 +67,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16-dev\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "Application"
 msgstr "應用"
@@ -199,6 +200,12 @@ msgstr "窗口寬度覆蓋"
 
 msgid "Window Height Override"
 msgstr "視窗高度覆蓋"
+
+msgid "HDR"
+msgstr "HDR"
+
+msgid "Request HDR Output"
+msgstr "要求 HDR 輸出"
 
 msgid "Energy Saving"
 msgstr "節能"
@@ -1569,10 +1576,10 @@ msgid "Kerning Pairs"
 msgstr "字距調整配對"
 
 msgid "Columns"
-msgstr "列數"
+msgstr "行數"
 
 msgid "Rows"
-msgstr "行數"
+msgstr "列數"
 
 msgid "Image Margin"
 msgstr "圖片外邊距"
@@ -2106,14 +2113,20 @@ msgstr "主題"
 msgid "Follow System Theme"
 msgstr "跟隨系統主題"
 
+msgid "Style"
+msgstr "樣式"
+
+msgid "Color Preset"
+msgstr "色彩"
+
 msgid "Spacing Preset"
-msgstr "間距預設"
+msgstr "間距"
 
 msgid "Icon and Font Color"
 msgstr "圖示及字體顏色"
 
 msgid "Base Color"
-msgstr "基礎顏色"
+msgstr "底色"
 
 msgid "Accent Color"
 msgstr "強調色"
@@ -2147,6 +2160,9 @@ msgstr "基本間距"
 
 msgid "Additional Spacing"
 msgstr "額外間距"
+
+msgid "Use Monospace Font for Editor Symbols"
+msgstr "編輯器符號使用等寬字體"
 
 msgid "Custom Theme"
 msgstr "自訂主題"
@@ -7536,7 +7552,7 @@ msgid "Input Count"
 msgstr "輸入數"
 
 msgid "Request"
-msgstr "請求"
+msgstr "要求"
 
 msgid "Internal Active"
 msgstr "內部啟動"
@@ -8841,6 +8857,9 @@ msgstr "自有 3D 世界"
 msgid "World 3D"
 msgstr "3D 世界"
 
+msgid "World 2D"
+msgstr "2D 世界"
+
 msgid "Transparent BG"
 msgstr "透明背景"
 
@@ -8993,6 +9012,9 @@ msgstr "保持標題可見"
 
 msgid "Content Scale"
 msgstr "內容縮放"
+
+msgid "Requested"
+msgstr "已要求"
 
 msgid "Swap Cancel OK"
 msgstr "交換取消確定"
