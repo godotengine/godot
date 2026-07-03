@@ -108,7 +108,7 @@ static int _find_lower(int p_char) {
 """
 
     ucaps_path: str = os.path.join(os.path.dirname(__file__), "../../core/string/ucaps.h")
-    with open(ucaps_path, "w", newline="\n") as f:
+    with open(ucaps_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(source)
 
     print("`ucaps.h` generated successfully.")

@@ -378,9 +378,9 @@ def configure_msvc(env: "SConsEnvironment"):
                 if not caught and (is_cl and re_cl_capture.match(line)) or (not is_cl and re_link_capture.match(line)):
                     caught = True
                     try:
-                        with open(capture_path, "a", encoding=sys.stdout.encoding, errors="replace") as log:
+                        with open(capture_path, "a", encoding="utf-8") as log:
                             log.write(line + "\n")
-                    except OSError:
+                    except (OSError, UnicodeError):
                         print_warning(f'Failed to log captured line: "{line}".')
                     continue
                 content += line + "\n"
@@ -610,7 +610,7 @@ def get_ar_version(env):
             subprocess
             .check_output([env.subst(env["AR"]), "--version"], shell=(os.name == "nt"))
             .strip()
-            .decode("utf-8")
+            .decode(sys.stdout.encoding, errors="replace")
         )
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't check version of `ar`.")
