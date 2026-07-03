@@ -1,0 +1,3 @@
+GDTEST_OK
+~~ WARNING at line 3: (UNUSED_VARIABLE) The local variable "bind" is declared but never used in the block. If this is intended, prefix it with an underscore: "_bind".
+~~ WARNING at line 7: (UNUSED_VARIABLE) The local variable "bind" is declared but never used in the block. If this is intended, prefix it with an underscore: "_bind".
