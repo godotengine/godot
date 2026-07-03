@@ -237,7 +237,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
 
     if env["wayland"]:
-        if subprocess.run(["wayland-scanner"], capture_output=True).returncode != 0:
+        if subprocess.run(["wayland-scanner", "-v"], capture_output=True).returncode != 0:
             print_warning("wayland-scanner not found. Disabling Wayland support.")
             env["wayland"] = False
 
