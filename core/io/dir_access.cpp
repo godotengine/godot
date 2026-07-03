@@ -310,6 +310,11 @@ Error DirAccess::remove_absolute(const String &p_path) {
 	return d->remove(p_path);
 }
 
+Error DirAccess::remove_recursive_absolute(const String &p_path) {
+	Ref<DirAccess> d = DirAccess::create_for_path(p_path);
+	return d->remove_recursive(p_path);
+}
+
 Ref<DirAccess> DirAccess::create(AccessType p_access) {
 	Ref<DirAccess> da = create_func[p_access] ? create_func[p_access]() : nullptr;
 	if (da.is_valid()) {
@@ -543,6 +548,35 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int 
 	return OK;
 }
 
+Error DirAccess::remove_recursive(const String &p_path) {
+	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Directory path is empty.");
+	ERR_FAIL_COND_V_MSG(!dir_exists(p_path), ERR_FILE_NOT_FOUND, "Directory doesn't exist.");
+
+	String dir_name = p_path.get_file();
+	String parent_dir = p_path.get_base_dir();
+	if (parent_dir.is_empty()) {
+		parent_dir = ".";
+	}
+
+	DirChanger dir_changer(this, parent_dir);
+	Error err = change_dir(dir_name);
+	if (err != OK) {
+		return err;
+	}
+
+	err = erase_contents_recursive();
+	if (err != OK) {
+		return err;
+	}
+
+	err = change_dir("..");
+	if (err != OK) {
+		return err;
+	}
+
+	return remove(dir_name);
+}
+
 Error DirAccess::copy_dir(const String &p_from, String p_to, int p_chmod_flags, bool p_copy_links) {
 	ERR_FAIL_COND_V_MSG(!dir_exists(p_from), ERR_FILE_NOT_FOUND, "Source directory doesn't exist.");
 
@@ -660,7 +694,6 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_absolute", "path"), &DirAccess::make_dir_absolute);
 	ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &DirAccess::make_dir_recursive);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_recursive_absolute", "path"), &DirAccess::make_dir_recursive_absolute);
-	ClassDB::bind_method(D_METHOD("erase_contents_recursive"), &DirAccess::erase_contents_recursive);
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &DirAccess::file_exists);
 	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &DirAccess::dir_exists);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("dir_exists_absolute", "path"), &DirAccess::dir_exists_absolute);
@@ -670,7 +703,9 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &DirAccess::rename);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("rename_absolute", "from", "to"), &DirAccess::rename_absolute);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &DirAccess::remove);
+	ClassDB::bind_method(D_METHOD("remove_recursive", "path"), &DirAccess::remove_recursive);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("remove_absolute", "path"), &DirAccess::remove_absolute);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("remove_recursive_absolute", "path"), &DirAccess::remove_recursive_absolute);
 
 	ClassDB::bind_method(D_METHOD("is_link", "path"), &DirAccess::is_link);
 	ClassDB::bind_method(D_METHOD("read_link", "path"), &DirAccess::read_link);
