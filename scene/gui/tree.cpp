@@ -3913,14 +3913,18 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 		next = selected_item;
 
-		for (int i = 0; i < 10; i++) {
+		int cur_height = get_item_height(next);
+		int page_height = v_scroll->get_page();
+		while (cur_height < page_height) {
 			TreeItem *_n = next->get_next_visible();
 			if (_n) {
 				next = _n;
 			} else {
 				break;
 			}
+			cur_height += get_item_height(next);
 		}
+
 		if (next == selected_item) {
 			return;
 		}
@@ -3940,6 +3944,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			next->select(selected_col);
 		}
 
+		v_scroll->scroll(v_scroll->get_page());
 		ensure_cursor_is_visible();
 	} else if (p_event->is_action("ui_page_up") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
@@ -3952,14 +3957,18 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 		prev = selected_item;
 
-		for (int i = 0; i < 10; i++) {
+		int cur_height = get_item_height(prev);
+		int page_height = v_scroll->get_page();
+		while (cur_height < page_height) {
 			TreeItem *_n = prev->get_prev_visible();
 			if (_n) {
 				prev = _n;
 			} else {
 				break;
 			}
+			cur_height += get_item_height(prev);
 		}
+
 		if (prev == selected_item) {
 			return;
 		}
@@ -3978,6 +3987,8 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			prev->select(selected_col);
 		}
+
+		v_scroll->scroll(-v_scroll->get_page());
 		ensure_cursor_is_visible();
 	} else if (p_event->is_action("ui_select") && p_event->is_pressed()) {
 		if (select_mode == SELECT_MULTI) {
