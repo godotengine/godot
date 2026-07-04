@@ -1084,6 +1084,8 @@ void FileDialog::update_file_list() {
 		int selected = _get_selected_file_idx();
 		if (selected == -1) {
 			_file_list_select_first();
+		} else {
+			_file_list_selected(selected);
 		}
 	}
 
