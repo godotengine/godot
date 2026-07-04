@@ -288,13 +288,8 @@ float LightmapGIData::get_baked_exposure() const {
 	return baked_exposure;
 }
 
-void LightmapGIData::set_modulate(const Color &p_color) {
-	modulate = p_color;
+void LightmapGIData::update_modulate(const Color &p_color) {
 	RS::get_singleton()->lightmap_set_modulate(lightmap, p_color.srgb_to_linear());
-}
-
-Color LightmapGIData::get_modulate() const {
-	return modulate;
 }
 
 void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
@@ -358,9 +353,6 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadowmask_textures", "shadowmask_textures"), &LightmapGIData::set_shadowmask_textures);
 	ClassDB::bind_method(D_METHOD("get_shadowmask_textures"), &LightmapGIData::get_shadowmask_textures);
 
-	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &LightmapGIData::set_modulate);
-	ClassDB::bind_method(D_METHOD("get_modulate"), &LightmapGIData::get_modulate);
-
 	ClassDB::bind_method(D_METHOD("set_uses_spherical_harmonics", "uses_spherical_harmonics"), &LightmapGIData::set_uses_spherical_harmonics);
 	ClassDB::bind_method(D_METHOD("is_using_spherical_harmonics"), &LightmapGIData::is_using_spherical_harmonics);
 
@@ -375,7 +367,6 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate", PROPERTY_HINT_COLOR_NO_ALPHA), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lightmap_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_lightmap_textures", "get_lightmap_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "shadowmask_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_shadowmask_textures", "get_shadowmask_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
@@ -1816,6 +1807,7 @@ void LightmapGI::set_light_data(const Ref<LightmapGIData> &p_data) {
 			_assign_lightmaps();
 		}
 		light_data->update_shadowmask_mode(shadowmask_mode);
+		light_data->update_modulate(modulate);
 		RSG::light_storage->lightmap_insert_to_lightmap_instances(light_data->get_rid(), get_instance());
 	}
 
@@ -1923,6 +1915,18 @@ void LightmapGI::set_environment_custom_color(const Color &p_color) {
 
 Color LightmapGI::get_environment_custom_color() const {
 	return environment_custom_color;
+}
+
+void LightmapGI::set_modulate(const Color &p_color) {
+	modulate = p_color;
+
+	if (light_data.is_valid()) {
+		light_data->update_modulate(p_color);
+	}
+}
+
+Color LightmapGI::get_modulate() const {
+	return modulate;
 }
 
 void LightmapGI::set_environment_custom_energy(float p_energy) {
@@ -2096,6 +2100,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_environment_custom_color", "color"), &LightmapGI::set_environment_custom_color);
 	ClassDB::bind_method(D_METHOD("get_environment_custom_color"), &LightmapGI::get_environment_custom_color);
 
+	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &LightmapGI::set_modulate);
+	ClassDB::bind_method(D_METHOD("get_modulate"), &LightmapGI::get_modulate);
+
 	ClassDB::bind_method(D_METHOD("set_environment_custom_energy", "energy"), &LightmapGI::set_environment_custom_energy);
 	ClassDB::bind_method(D_METHOD("get_environment_custom_energy"), &LightmapGI::get_environment_custom_energy);
 
@@ -2153,6 +2160,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0.00001,0.1,0.00001,or_greater"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texel_scale", PROPERTY_HINT_RANGE, "0.01,100.0,0.01"), "set_texel_scale", "get_texel_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_texture_size", PROPERTY_HINT_RANGE, "2048,16384,1"), "set_max_texture_size", "get_max_texture_size");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate", PROPERTY_HINT_COLOR_NO_ALPHA), "set_modulate", "get_modulate");
 	ADD_GROUP("Environment", "environment_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_mode", PROPERTY_HINT_ENUM, "Disabled,Scene,Custom Sky,Custom Color"), "set_environment_mode", "get_environment_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment_custom_sky", PROPERTY_HINT_RESOURCE_TYPE, Sky::get_class_static()), "set_environment_custom_sky", "get_environment_custom_sky");

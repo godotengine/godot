@@ -2275,6 +2275,13 @@
 				[b]Note:[/b] The equivalent node is [LightmapGI].
 			</description>
 		</method>
+		<method name="lightmap_get_modulate" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="lightmap" type="RID" />
+			<description>
+				Returns the color the specified lightmap is modulated with.
+			</description>
+		</method>
 		<method name="lightmap_get_probe_capture_bsp_tree" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="lightmap" type="RID" />

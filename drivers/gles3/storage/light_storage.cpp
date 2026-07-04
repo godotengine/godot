@@ -1196,6 +1196,12 @@ void LightStorage::lightmap_set_modulate(RID p_lightmap, const Color &p_color) {
 	}
 }
 
+Color LightStorage::lightmap_get_modulate(RID p_lightmap) const {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lm, Color(1, 1, 1, 1));
+	return lm->modulate;
+}
+
 PackedVector3Array LightStorage::lightmap_get_probe_capture_points(RID p_lightmap) const {
 	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
 	ERR_FAIL_NULL_V(lightmap, PackedVector3Array());

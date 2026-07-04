@@ -541,6 +541,7 @@ public:
 	FUNC5(lightmap_set_probe_capture_data, RID, const PackedVector3Array &, const PackedColorArray &, const PackedInt32Array &, const PackedInt32Array &)
 	FUNC2(lightmap_set_baked_exposure_normalization, RID, float)
 	FUNC2(lightmap_set_modulate, RID, const Color &)
+	FUNC1RC(Color, lightmap_get_modulate, RID)
 	FUNC1RC(PackedVector3Array, lightmap_get_probe_capture_points, RID)
 	FUNC1RC(PackedColorArray, lightmap_get_probe_capture_sh, RID)
 	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)

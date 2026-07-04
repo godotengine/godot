@@ -1026,6 +1026,7 @@ public:
 	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) override;
 	virtual void lightmap_set_baked_exposure_normalization(RID p_lightmap, float p_exposure) override;
 	virtual void lightmap_set_modulate(RID p_lightmap, const Color &p_color) override;
+	virtual Color lightmap_get_modulate(RID p_lightmap) const override;
 	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const override;
 	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const override;
 	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const override;
@@ -1056,11 +1057,6 @@ public:
 		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
 		ERR_FAIL_NULL_V(lm, 1.0);
 		return lm->baked_exposure;
-	}
-	_FORCE_INLINE_ Color lightmap_get_modulate(RID p_lightmap) const {
-		const Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
-		ERR_FAIL_NULL_V(lm, Color(1, 1, 1, 1));
-		return lm->modulate;
 	}
 	_FORCE_INLINE_ int32_t lightmap_get_array_index(RID p_lightmap) const {
 		ERR_FAIL_COND_V(!using_lightmap_array, -1); //only for arrays

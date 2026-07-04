@@ -2709,6 +2709,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("lightmap_get_probe_capture_bsp_tree", "lightmap"), &RenderingServer::lightmap_get_probe_capture_bsp_tree);
 	ClassDB::bind_method(D_METHOD("lightmap_set_baked_exposure_normalization", "lightmap", "baked_exposure"), &RenderingServer::lightmap_set_baked_exposure_normalization);
 	ClassDB::bind_method(D_METHOD("lightmap_set_modulate", "lightmap", "energy_color"), &RenderingServer::lightmap_set_modulate);
+	ClassDB::bind_method(D_METHOD("lightmap_get_modulate", "lightmap"), &RenderingServer::lightmap_get_modulate);
 
 	ClassDB::bind_method(D_METHOD("lightmap_set_probe_capture_update_speed", "speed"), &RenderingServer::lightmap_set_probe_capture_update_speed);
 

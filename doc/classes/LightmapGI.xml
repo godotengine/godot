@@ -65,6 +65,9 @@
 		<member name="max_texture_size" type="int" setter="set_max_texture_size" getter="get_max_texture_size" default="16384">
 			The maximum texture size for the generated texture atlas. Higher values will result in fewer slices being generated, but may not work on all hardware as a result of hardware limitations on texture sizes. Leave [member max_texture_size] at its default value of [code]16384[/code] if unsure.
 		</member>
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+			The color the lightmap is multiplied with. Gets applied in real-time without the need to re-bake the lightmap.
+		</member>
 		<member name="quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="LightmapGI.BakeQuality" default="1">
 			The quality preset to use when baking lightmaps. This affects bake times, but output file sizes remain mostly identical across quality levels.
 			To further speed up bake times, decrease [member bounces], disable [member use_denoiser] and/or decrease [member texel_scale].
