@@ -304,6 +304,8 @@ private:
 		Ref<AudioStreamPlayback> stream_playback;
 		// Playback state determines the fate of a particular AudioStreamListNode during the mix step. Must be atomically replaced.
 		std::atomic<PlaybackState> state = AWAITING_DELETION;
+		// Used to ensure playback returns to the correct state.
+		SafeFlag mute_check;
 		// This data should only ever be modified by an atomic replacement of the pointer.
 		std::atomic<AudioStreamPlaybackBusDetails *> bus_details = nullptr;
 		// Previous bus details should only be accessed on the audio thread.
@@ -444,8 +446,8 @@ public:
 	void set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes);
 	void set_playback_all_bus_volumes_linear(Ref<AudioStreamPlayback> p_playback, Vector<AudioFrame> p_volumes);
 	void set_playback_pitch_scale(Ref<AudioStreamPlayback> p_playback, float p_pitch_scale);
-	void set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool p_paused, bool p_muted);
-	void set_playback_muted(Ref<AudioStreamPlayback> p_playback, bool p_mute, bool p_paused);
+	void set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool p_paused);
+	void set_playback_muted(Ref<AudioStreamPlayback> p_playback, bool p_mute);
 	void set_playback_highshelf_params(Ref<AudioStreamPlayback> p_playback, float p_gain, float p_attenuation_cutoff_hz);
 
 	bool is_playback_active(Ref<AudioStreamPlayback> p_playback);

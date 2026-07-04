@@ -181,7 +181,7 @@ Ref<AudioStreamPlayback> AudioStreamPlayerInternal::play_basic() {
 void AudioStreamPlayerInternal::set_stream_paused(bool p_pause) {
 	// TODO this does not have perfect recall, fix that maybe? If there are zero playbacks registered with the AudioServer, this bool isn't persisted.
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-		AudioServer::get_singleton()->set_playback_paused(playback, p_pause, muted);
+		AudioServer::get_singleton()->set_playback_paused(playback, p_pause);
 		if (_is_sample() && playback->get_sample_playback().is_valid()) {
 			AudioServer::get_singleton()->set_sample_playback_pause(playback->get_sample_playback(), p_pause);
 		}
@@ -326,7 +326,7 @@ void AudioStreamPlayerInternal::set_mute(bool p_mute) {
 	muted = p_mute;
 
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
-		AudioServer::get_singleton()->set_playback_muted(playback, p_mute, get_stream_paused());
+		AudioServer::get_singleton()->set_playback_muted(playback, p_mute);
 	}
 
 	node->emit_signal(SceneStringName(mute_toggled));
