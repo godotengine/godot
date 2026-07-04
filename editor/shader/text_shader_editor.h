@@ -86,6 +86,8 @@ private:
 	static HashMap<String, String> builtin_spatial_types;
 	static HashMap<String, String> builtin_canvas_types;
 
+	String _strip_comments(const String &p_code) const;
+	int _get_brace_balance(const String &p_code) const;
 	String _get_enclosing_function(const PackedStringArray &p_lines, int p_line) const;
 	bool _is_inside_loop(const PackedStringArray &p_lines, int p_line) const;
 	bool _find_statement(const PackedStringArray &p_lines, int p_line, String &r_var_name, int &r_start, int &r_end) const;

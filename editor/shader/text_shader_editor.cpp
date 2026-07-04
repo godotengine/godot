@@ -416,6 +416,101 @@ void TextShaderPreview::_delete_pressed() {
 	emit_signal("remove_btn_pressed");
 }
 
+String TextShaderPreview::_strip_comments(const String &p_code) const {
+	enum CommentState {
+		COMMENT_STATE_NONE,
+		COMMENT_STATE_LINE,
+		COMMENT_STATE_BLOCK,
+	};
+
+	String result;
+	CommentState state = COMMENT_STATE_NONE;
+	char32_t quote = 0;
+	bool escaped = false;
+
+	for (int i = 0; i < p_code.length(); i++) {
+		const char32_t c = p_code[i];
+		const char32_t next = i + 1 < p_code.length() ? p_code[i + 1] : 0;
+
+		if (state == COMMENT_STATE_LINE) {
+			if (c == '\n') {
+				state = COMMENT_STATE_NONE;
+				result += c;
+			} else {
+				result += ' ';
+			}
+			continue;
+		}
+
+		if (state == COMMENT_STATE_BLOCK) {
+			if (c == '*' && next == '/') {
+				result += "  ";
+				i++;
+				state = COMMENT_STATE_NONE;
+			} else {
+				result += c == '\n' ? '\n' : ' ';
+			}
+			continue;
+		}
+
+		if (quote != 0) {
+			result += c;
+			if (escaped) {
+				escaped = false;
+			} else if (c == '\\') {
+				escaped = true;
+			} else if (c == quote) {
+				quote = 0;
+			}
+			continue;
+		}
+
+		if (c == '"' || c == '\'') {
+			quote = c;
+			result += c;
+		} else if (c == '/' && next == '/') {
+			result += "  ";
+			i++;
+			state = COMMENT_STATE_LINE;
+		} else if (c == '/' && next == '*') {
+			result += "  ";
+			i++;
+			state = COMMENT_STATE_BLOCK;
+		} else {
+			result += c;
+		}
+	}
+
+	return result;
+}
+
+int TextShaderPreview::_get_brace_balance(const String &p_code) const {
+	int balance = 0;
+	char32_t quote = 0;
+	bool escaped = false;
+
+	for (int i = 0; i < p_code.length(); i++) {
+		const char32_t c = p_code[i];
+		if (quote != 0) {
+			if (escaped) {
+				escaped = false;
+			} else if (c == '\\') {
+				escaped = true;
+			} else if (c == quote) {
+				quote = 0;
+			}
+		} else if (c == '"' || c == '\'') {
+			quote = c;
+		} else if (c == '{') {
+			balance++;
+		} else if (c == '}') {
+			balance--;
+		}
+	}
+
+	return balance;
+}
+
 String TextShaderPreview::_get_enclosing_function(const PackedStringArray &p_lines, int p_line) const {
 	int brace_stack = 0;
 
@@ -425,7 +520,7 @@ String TextShaderPreview::_get_enclosing_function(const PackedStringArray &p_lin
 
 	for (int i = p_line; i >= 0; i--) {
 		// Strip comments and trailing whitespace.
-		String clean_line = p_lines[i].split("//")[0].strip_edges();
+		String clean_line = p_lines[i].strip_edges();
 		if (clean_line.is_empty()) {
 			continue;
 		}
@@ -456,7 +551,7 @@ bool TextShaderPreview::_is_inside_loop(const PackedStringArray &p_lines, int p_
 	func_regex->compile(R"(\b(?!for\b|while\b|do\b|if\b|else\b|return\b|switch\b)\w+\s+\w+\s*\()");
 
 	for (int i = p_line; i >= 0; i--) {
-		String clean_line = p_lines[i].split("//")[0].strip_edges();
+		String clean_line = p_lines[i].strip_edges();
 		if (clean_line.is_empty()) {
 			continue;
 		}
@@ -486,7 +581,9 @@ bool TextShaderPreview::_find_statement(const PackedStringArray &p_lines, int p_
 
 	// Walk backward from the caret to find the line with the assignment operator.
 	int start = p_line;
-	Ref<RegExMatch> var_match = var_regex->search(p_lines[start]);
+	String clean_line = p_lines[start].strip_edges();
+	Ref<RegExMatch> var_match = var_regex->search(clean_line);
+
 	while (!var_match.is_valid() && start > 0) {
 		String current_line = p_lines[start].strip_edges();
 
@@ -495,7 +592,10 @@ bool TextShaderPreview::_find_statement(const PackedStringArray &p_lines, int p_
 		}
 
 		start -= 1;
-		var_match = var_regex->search(p_lines[start]);
+		if (start >= 0) {
+			clean_line = p_lines[start].strip_edges();
+			var_match = var_regex->search(clean_line);
+		}
 	}
 
 	if (!var_match.is_valid()) {
@@ -548,7 +648,10 @@ String TextShaderPreview::_find_var_type(const PackedStringArray &p_lines, const
 	// Walk backwards from the end of the assignment statement.
 	for (int i = p_line; i >= 0; i--) {
 		// Strip out comments before checking so we don't catch commented-out declarations.
-		String clean_line = p_lines[i].split("//")[0];
+		String clean_line = p_lines[i].strip_edges();
+		if (clean_line.is_empty()) {
+			continue;
+		}
 
 		Ref<RegExMatch> m = type_regex->search(clean_line);
 		if (m.is_valid()) {
@@ -714,7 +817,7 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 		return;
 	}
 
-	const PackedStringArray lines = p_code.split("\n");
+	const PackedStringArray lines = _strip_comments(p_code).split("\n");
 	String enclosing_function = _get_enclosing_function(lines, p_line);
 
 	if (enclosing_function != "fragment") {
@@ -753,9 +856,7 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 	String full_truncated_text = "\n";
 	full_truncated_text = full_truncated_text.join(truncated_lines);
 
-	int open_braces = full_truncated_text.count("{");
-	int closed_braces = full_truncated_text.count("}");
-	int needed_closures = open_braces - closed_braces;
+	int needed_closures = _get_brace_balance(full_truncated_text);
 
 	for (int i = 0; i < needed_closures; i++) {
 		full_truncated_text += "\n}";
@@ -1388,7 +1489,7 @@ void ShaderTextEditor::_validate_script() {
 			}
 		} else {
 			for (KeyValue<int, TextShaderPreview *> pair : previews) {
-				pair.value->set_shader_code(code, pair.key, get_text_editor()->is_in_comment(pair.key) != -1);
+				pair.value->set_shader_code(get_text_editor()->get_text(), pair.key, get_text_editor()->is_in_comment(pair.key) != -1);
 			}
 		}
 
