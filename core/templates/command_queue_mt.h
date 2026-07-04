@@ -168,9 +168,20 @@ class CommandQueueMT {
 		MutexLock lock(mutex);
 
 		if (unlikely(flush_read_ptr)) {
-			// Another thread is flushing.
-			lock.temp_unlock(); // Not really temp.
-			sync();
+			// Another thread is flushing. Enqueue a sync command and wait for it to be
+			// reached. Two subtleties matter here:
+			// - The sync command must be enqueued without releasing the lock, so the
+			//   in-progress flush pass can't retire before it's in the queue. Otherwise,
+			//   it (and this thread) could be left waiting for a flusher that may never
+			//   run again; e.g., the physics pump task refuses to flush while the main
+			//   thread is inside the scene-tree sync window.
+			// - Waiting for the sync command (at a fixed position in the queue) instead
+			//   of the end of the pass keeps the wait bounded even if other threads
+			//   push commands faster than the flusher can drain them.
+			using SyncCommand = Command<CommandQueueMT, void (CommandQueueMT::*)(), true>;
+			create_command<SyncCommand>(this, &CommandQueueMT::_no_op);
+			sync_tail++;
+			_wait_for_sync(lock);
 			flushing = false;
 			return;
 		}
