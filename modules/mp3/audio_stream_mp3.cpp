@@ -211,10 +211,6 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 	return mp3s;
 }
 
-void AudioStreamMP3::clear_data() {
-	data.clear();
-}
-
 void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 	drmp3 *mp3d = memnew(drmp3);
 	int success = drmp3_init_memory(mp3d, p_data.ptr(), p_data.size(), (drmp3_allocation_callbacks *)&dr_alloc_calls);
