@@ -2177,7 +2177,7 @@ void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, double p_delta
 			continue;
 		}
 
-		ifx->elapsed_time += p_delta_time * MAX(effect_speed_scale, 0.0);
+		ifx->elapsed_time += p_delta_time * effect_speed_scale;
 
 		ItemShake *shake = nullptr;
 
@@ -5395,7 +5395,7 @@ bool RichTextLabel::is_hint_underlined() const {
 }
 
 void RichTextLabel::set_effect_speed_scale(float p_effect_speed_scale) {
-	effect_speed_scale = p_effect_speed_scale;
+	effect_speed_scale = MAX(p_effect_speed_scale, 0.0);
 }
 
 float RichTextLabel::get_effect_speed_scale() const {
