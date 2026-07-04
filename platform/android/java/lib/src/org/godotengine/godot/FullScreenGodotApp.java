@@ -40,6 +40,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,6 +72,15 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 		EdgeToEdge.enable(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.godot_app_layout);
+
+		getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+			@Override
+			public void handleOnBackPressed() {
+				if (godotFragment != null) {
+					godotFragment.onBackPressed();
+				}
+			}
+		});
 
 		handleStartIntent(getIntent(), true);
 
@@ -186,15 +196,6 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		if (godotFragment != null) {
 			godotFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
-		}
-	}
-
-	@Override
-	public void onBackPressed() {
-		if (godotFragment != null) {
-			godotFragment.onBackPressed();
-		} else {
-			super.onBackPressed();
 		}
 	}
 
