@@ -615,6 +615,8 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 		}
 	}
 
+	_register_requested_device_extension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+
 	// Register additional device extensions from project settings.
 	{
 		PackedStringArray additional_extensions = GLOBAL_GET("rendering/rendering_device/vulkan/additional_device_extensions");
@@ -625,8 +627,6 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 			}
 		}
 	}
-
-	_register_requested_device_extension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 
 	uint32_t device_extension_count = 0;
 	VkResult err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, nullptr);
