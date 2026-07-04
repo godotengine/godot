@@ -754,9 +754,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			if (ad->audio_output.active.is_set()) {
 				ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
 			} else {
-				for (int i = 0; i < ad->samples_in.size(); i++) {
-					ad->samples_in.write[i] = 0;
-				}
+				ad->samples_in.fill(0);
 			}
 
 			avail_frames = ad->buffer_frames;
@@ -788,7 +786,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 						// We're using WASAPI Shared Mode so we must convert the buffer
 						if (ad->channels == ad->audio_output.channels) {
 							for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
-								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i, ad->samples_in.write[write_ofs++]);
+								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i, ad->samples_in[write_ofs++]);
 							}
 						} else if (ad->channels == ad->audio_output.channels + 1) {
 							// Pass all channels except the last two as-is, and then mix the last two
@@ -796,17 +794,17 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 							unsigned int last_chan = ad->audio_output.channels - 1;
 							for (unsigned int i = 0; i < write_frames; i++) {
 								for (unsigned int j = 0; j < last_chan; j++) {
-									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
+									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in[write_ofs++]);
 								}
-								int32_t l = ad->samples_in.write[write_ofs++];
-								int32_t r = ad->samples_in.write[write_ofs++];
+								int32_t l = ad->samples_in[write_ofs++];
+								int32_t r = ad->samples_in[write_ofs++];
 								int32_t c = (int32_t)(((int64_t)l + (int64_t)r) / 2);
 								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + last_chan, c);
 							}
 						} else {
 							for (unsigned int i = 0; i < write_frames; i++) {
 								for (unsigned int j = 0; j < MIN(ad->channels, ad->audio_output.channels); j++) {
-									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
+									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in[write_ofs++]);
 								}
 								if (ad->audio_output.channels > ad->channels) {
 									for (unsigned int j = ad->channels; j < ad->audio_output.channels; j++) {
