@@ -1768,7 +1768,25 @@ void Node::remove_child(RequiredParam<Node> rp_child) {
 
 	data.blocked--;
 
-	data.children_cache_dirty = true;
+	if (!data.children_cache_dirty && !data.children_cache.is_empty() && data.children_cache[data.children_cache.size() - 1] == p_child) {
+		// Removing the last child keeps the cache and the counters valid, so pop it
+		// instead of dirtying the cache. This keeps interleaving removals with reads
+		// (like get_child()) linear, as long as children are removed back to front.
+		data.children_cache.resize(data.children_cache.size() - 1);
+		switch (p_child->data.internal_mode) {
+			case INTERNAL_MODE_DISABLED: {
+				data.external_children_count_cache--;
+			} break;
+			case INTERNAL_MODE_FRONT: {
+				data.internal_children_front_count_cache--;
+			} break;
+			case INTERNAL_MODE_BACK: {
+				data.internal_children_back_count_cache--;
+			} break;
+		}
+	} else {
+		data.children_cache_dirty = true;
+	}
 	bool success = data.children.erase(p_child->data.name);
 	ERR_FAIL_COND_MSG(!success, "Children name does not match parent name in hashtable, this is a bug.");
 
