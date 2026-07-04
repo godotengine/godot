@@ -35,11 +35,11 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/object/script_language.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #endif
 
@@ -56,6 +56,7 @@ public:
 	}
 };
 
+#ifdef TOOLS_ENABLED
 static void write_test_script(const String &p_path, const String &p_source) {
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::ModeFlags::WRITE);
 	REQUIRE(fa.is_valid());
@@ -77,7 +78,6 @@ static PropertyInfo find_script_property(const Ref<GDScript> &p_script, const St
 }
 
 // TODO: Handle some cases failing on release builds. See: https://github.com/godotengine/godot/pull/88452
-#ifdef TOOLS_ENABLED
 TEST_SUITE("[Modules][GDScript]") {
 	TEST_CASE("Script compilation and runtime") {
 		bool print_filenames = OS::get_singleton()->get_cmdline_args().find("--print-filenames") != nullptr;
