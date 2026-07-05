@@ -48,7 +48,7 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 	bool looping_override = false;
 	bool looping = false;
 	drmp3 mp3d = {};
-	uint32_t frames_mixed = 0;
+	int frames_mixed = 0;
 	bool active = false;
 	int loops = 0;
 
