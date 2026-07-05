@@ -336,6 +336,7 @@ public:
 	EXBIND2RC(Variant, body_get_param, RID, BodyParameter)
 
 	EXBIND1(body_reset_mass_properties, RID)
+	EXBIND1(body_teleport, RID);
 
 	EXBIND3(body_set_state, RID, BodyState, const Variant &)
 	EXBIND2RC(Variant, body_get_state, RID, BodyState)

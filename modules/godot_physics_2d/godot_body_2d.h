@@ -307,6 +307,7 @@ public:
 
 	void update_mass_properties();
 	void reset_mass_properties();
+	void body_teleport();
 
 	_FORCE_INLINE_ const Vector2 &get_center_of_mass() const { return center_of_mass; }
 	_FORCE_INLINE_ const Vector2 &get_center_of_mass_local() const { return center_of_mass_local; }
