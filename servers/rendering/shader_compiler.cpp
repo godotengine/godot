@@ -179,7 +179,7 @@ static String _mkid(const String &p_id) {
 }
 
 static String f2sp0(float p_float) {
-	String num = rtos(p_float);
+	String num = String::num_scientific(p_float);
 	if (!num.contains_char('.') && !num.contains_char('e')) {
 		num += ".0";
 	}
