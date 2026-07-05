@@ -1033,7 +1033,7 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	if (E) {
 		E->value = p_value;
 	} else {
-		ERR_FAIL_COND_MSG(!p_name.string().is_valid_ascii_identifier(), vformat("Invalid metadata identifier: '%s'.", p_name));
+		ERR_FAIL_COND_MSG(!p_name.string().is_valid_unicode_identifier(), vformat("Invalid metadata identifier: '%s'.", p_name));
 		Variant *V = &metadata.insert(p_name, p_value)->value;
 
 		const String &sname = p_name;
