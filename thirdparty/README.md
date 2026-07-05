@@ -810,10 +810,6 @@ Collection of single-file libraries used in Godot components.
   * License: BSD-3-Clause
   * Patches:
     - `ifaddrs-android-0001-complete-struct.patch` ([GH-34101](https://github.com/godotengine/godot/pull/34101))
-- `mikktspace.{c,h}`
-  * Upstream: https://archive.blender.org/wiki/index.php/Dev:Shading/Tangent_Space_Normal_Maps/
-  * Version: 1.0 (2011)
-  * License: zlib
 - `nvapi_minimal.h`
   * Upstream: http://download.nvidia.com/XFree86/nvapi-open-source-sdk
   * Version: R525

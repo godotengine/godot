@@ -478,12 +478,6 @@ Comment: libjingle
 Copyright: 2012-2013, Google Inc.
 License: BSD-3-clause
 
-Files: thirdparty/misc/mikktspace.c
- thirdparty/misc/mikktspace.h
-Comment: Tangent Space Normal Maps implementation
-Copyright: 2011, Morten S. Mikkelsen
-License: Zlib
-
 Files: thirdparty/misc/nvapi_minimal.h
 Comment: NVIDIA NVAPI (minimal excerpt)
 Copyright: 2019-2022, NVIDIA Corporation
