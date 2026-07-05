@@ -114,6 +114,7 @@ class PhysicsDirectSpaceState2DDummy : public PhysicsDirectSpaceState2D {
 	GDCLASS(PhysicsDirectSpaceState2DDummy, PhysicsDirectSpaceState2D);
 
 public:
+	virtual int intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_results, int p_result_max) override { return 0; }
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override { return false; }
 
 	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override { return 0; }

@@ -70,6 +70,7 @@ public:
 	JoltPhysicsDirectSpaceState3D() = default;
 	explicit JoltPhysicsDirectSpaceState3D(JoltSpace3D *p_space);
 
+	virtual int intersect_ray_multiple(const RayParameters &p_parameters, RayResult *r_results, int p_result_max) override;
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override;
 	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override;
 	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) override;
