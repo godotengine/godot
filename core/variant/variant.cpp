@@ -3391,6 +3391,18 @@ bool Variant::identity_compare(const Variant &p_variant) const {
 			return _data.packed_array == p_variant._data.packed_array;
 		} break;
 
+		case FLOAT: {
+			if (Math::is_nan(_data._float) && Math::is_nan(p_variant._data._float)) {
+				return true;
+			} else if (_data._float != p_variant._data._float) {
+				return false;
+			} else if (std::signbit(_data._float) != std::signbit(p_variant._data._float)) {
+				return false; // 0.0 and -0.0
+			} else {
+				return true;
+			}
+		} break;
+
 		default: {
 			return hash_compare(p_variant);
 		}
