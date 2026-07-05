@@ -444,20 +444,20 @@ void ReplicationEditor::_tree_item_edited() {
 			return;
 		}
 		ti_edited = nullptr;
-		bool spaw = ti->is_checked(1);
+		bool spawn = ti->is_checked(1);
 		int mode = ti->get_range(2);
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Change sync property"));
 		undo_redo->add_do_method(replication_config, "remove_property", old_path);
 		undo_redo->add_do_method(replication_config, "add_property", new_path);
-		undo_redo->add_do_method(replication_config, "property_set_spawn", new_path, spaw);
+		undo_redo->add_do_method(replication_config, "property_set_spawn", new_path, spawn);
 		undo_redo->add_do_method(replication_config, "property_set_replication_mode", new_path, mode);
 		undo_redo->add_do_method(this, "_rename_tree_item", old_path, new_path);
 
 		undo_redo->add_undo_method(replication_config, "remove_property", new_path);
 		undo_redo->add_undo_method(replication_config, "add_property", old_path);
-		undo_redo->add_undo_method(replication_config, "property_set_spawn", old_path, spaw);
+		undo_redo->add_undo_method(replication_config, "property_set_spawn", old_path, spawn);
 		undo_redo->add_undo_method(replication_config, "property_set_replication_mode", old_path, mode);
 		undo_redo->add_undo_method(this, "_rename_tree_item", new_path, old_path);
 		undo_redo->commit_action();
@@ -542,7 +542,7 @@ void ReplicationEditor::_dialog_closed(bool p_confirmed) {
 	deleting = NodePath();
 }
 
-void ReplicationEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void ReplicationEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
 		tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 		tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);

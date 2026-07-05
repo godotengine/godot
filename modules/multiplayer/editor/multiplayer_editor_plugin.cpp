@@ -37,8 +37,6 @@
 #include "core/object/callable_mp.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
-#include "editor/editor_node.h"
-#include "scene/main/scene_tree.h"
 
 void MultiplayerEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("open_request", PropertyInfo(Variant::STRING, "path")));

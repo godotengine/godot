@@ -35,8 +35,6 @@
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 
-#include "modules/regex/regex.h"
-
 class ConfirmationDialog;
 class MultiplayerSynchronizer;
 class AcceptDialog;
