@@ -388,7 +388,7 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 
 		if (name.begins_with("<")) {
 			stack.pop_back();
-			
+
 			// Update the time of parent categories after the end of this category.
 			for (TreeItem *E : stack) {
 				float total_cpu = E->get_metadata(1);
