@@ -189,10 +189,6 @@ Ref<AudioStreamPlayback> AudioStreamOpus::instantiate_playback() {
 	return opus;
 }
 
-String AudioStreamOpus::get_stream_name() const {
-	return ""; //return stream_name;
-}
-
 void AudioStreamOpus::clear_data() {
 	data.clear();
 }
