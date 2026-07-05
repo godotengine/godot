@@ -30,7 +30,9 @@
 
 #include "register_types.h"
 
+#include "shader_graph.h"
 #include "visual_shader.h"
+#include "visual_shader_group.h"
 #include "vs_nodes/visual_shader_nodes.h"
 #include "vs_nodes/visual_shader_particle_nodes.h"
 #include "vs_nodes/visual_shader_sdf_nodes.h"
@@ -59,11 +61,16 @@ static void _editor_init() {
 
 void initialize_visual_shader_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_INTERNAL_CLASS(ShaderGraph);
 		GDREGISTER_CLASS(VisualShader);
+		GDREGISTER_CLASS(VisualShaderGroup);
 		GDREGISTER_ABSTRACT_CLASS(VisualShaderNode);
 		GDREGISTER_CLASS(VisualShaderNodeCustom);
 		GDREGISTER_CLASS(VisualShaderNodeInput);
 		GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeOutput);
+		GDREGISTER_CLASS(VisualShaderNodeGroupInput);
+		GDREGISTER_CLASS(VisualShaderNodeGroupOutput);
+		GDREGISTER_CLASS(VisualShaderNodeGroup);
 		GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeResizableBase);
 		GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeGroupBase);
 		GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeConstant);
