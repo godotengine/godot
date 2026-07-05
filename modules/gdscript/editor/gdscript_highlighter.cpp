@@ -905,6 +905,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 			List<String> constant_list;
 			ClassDB::get_integer_constant_list(instance_base, &constant_list);
+			ClassDB::get_variant_constant_list(instance_base, &constant_list);
 			for (const String &E : constant_list) {
 				member_keywords[E] = member_variable_color;
 			}

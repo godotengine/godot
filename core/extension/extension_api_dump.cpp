@@ -968,6 +968,25 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					constants.push_back(d2);
 				}
 
+				List<String> variant_constant_list;
+				ClassDB::get_variant_constant_list(class_name, &variant_constant_list, true);
+				for (const String &F : variant_constant_list) {
+					Dictionary d2;
+					d2["name"] = String(F);
+					d2["value"] = ClassDB::get_variant_constant(class_name, F);
+
+					if (p_include_docs) {
+						for (const DocData::ConstantDoc &constant_doc : class_doc->constants) {
+							if (constant_doc.name == F) {
+								d2["description"] = fix_doc_description(constant_doc.description);
+								break;
+							}
+						}
+					}
+
+					constants.push_back(d2);
+				}
+
 				if (constants.size()) {
 					d["constants"] = constants;
 				}

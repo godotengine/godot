@@ -1768,6 +1768,33 @@ int64_t ClassDB::class_get_integer_constant(const StringName &p_class, const Str
 	return c;
 }
 
+PackedStringArray ClassDB::class_get_variant_constant_list(const StringName &p_class, bool p_no_inheritance) const {
+	List<String> constants;
+	::ClassDB::get_variant_constant_list(p_class, &constants, p_no_inheritance);
+
+	PackedStringArray ret;
+	ret.resize(constants.size());
+	int idx = 0;
+	for (const String &E : constants) {
+		ret.set(idx++, E);
+	}
+
+	return ret;
+}
+
+bool ClassDB::class_has_variant_constant(const StringName &p_class, const StringName &p_name) const {
+	bool success;
+	::ClassDB::get_variant_constant(p_class, p_name, &success);
+	return success;
+}
+
+Variant ClassDB::class_get_variant_constant(const StringName &p_class, const StringName &p_name) const {
+	bool found;
+	Variant c = ::ClassDB::get_variant_constant(p_class, p_name, &found);
+	ERR_FAIL_COND_V(!found, Variant());
+	return c;
+}
+
 bool ClassDB::class_has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) const {
 	return ::ClassDB::has_enum(p_class, p_name, p_no_inheritance);
 }
@@ -1875,6 +1902,11 @@ void ClassDB::_bind_methods() {
 
 	::ClassDB::bind_method(D_METHOD("class_has_integer_constant", "class", "name"), &ClassDB::class_has_integer_constant);
 	::ClassDB::bind_method(D_METHOD("class_get_integer_constant", "class", "name"), &ClassDB::class_get_integer_constant);
+
+	::ClassDB::bind_method(D_METHOD("class_get_variant_constant_list", "class", "no_inheritance"), &ClassDB::class_get_variant_constant_list, DEFVAL(false));
+
+	::ClassDB::bind_method(D_METHOD("class_has_variant_constant", "class", "name"), &ClassDB::class_has_variant_constant);
+	::ClassDB::bind_method(D_METHOD("class_get_variant_constant", "class", "name"), &ClassDB::class_get_variant_constant);
 
 	::ClassDB::bind_method(D_METHOD("class_has_enum", "class", "name", "no_inheritance"), &ClassDB::class_has_enum, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &ClassDB::class_get_enum_list, DEFVAL(false));
