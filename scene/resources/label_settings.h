@@ -150,6 +150,7 @@ public:
 	int get_stacked_shadow_outline_size(int p_index) const;
 
 	LabelSettings() {
+		set_use_shared_copy(false);
 		stacked_outline_property_helper.setup_for_instance(stacked_outline_base_property_helper, this);
 		stacked_shadow_property_helper.setup_for_instance(stacked_shadow_base_property_helper, this);
 	}
