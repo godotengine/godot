@@ -89,6 +89,10 @@ String TextServerFallback::_get_name() const {
 	return "Fallback (Built-in)";
 }
 
+String TextServerFallback::_get_short_name() const {
+	return "fallback";
+}
+
 int64_t TextServerFallback::_get_features() const {
 	int64_t interface_features = FEATURE_SIMPLE_LAYOUT | FEATURE_FONT_BITMAP;
 #ifdef MODULE_FREETYPE_ENABLED
@@ -4937,7 +4941,8 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				for (int j = span.end - 1; j >= span.start; j--) {
 					last_non_zero_w = j;
 					uint32_t idx = (int32_t)sd->text[j - sd->start];
-					if (!is_control(idx) && !(idx >= 0x200B && idx <= 0x200D)) {
+					bool zero_w_idx = (sd->preserve_control) ? (idx == 0x200B || idx == 0xFEFF) : ((idx >= 0x200B && idx <= 0x200D) || idx == 0x2060 || idx == 0xFEFF);
+					if (!is_control(idx) && !zero_w_idx) {
 						break;
 					}
 				}
@@ -4952,7 +4957,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				gl.count = 1;
 				gl.font_size = span.font_size;
 				gl.index = (int32_t)sd->text[j - sd->start]; // Use codepoint.
-				bool zw = (gl.index >= 0x200b && gl.index <= 0x200d);
+				bool zw = (sd->preserve_control) ? (gl.index == 0x200B || gl.index == 0xFEFF) : ((gl.index >= 0x200B && gl.index <= 0x200D) || gl.index == 0x2060 || gl.index == 0xFEFF);
 				if (gl.index == 0x0009 || gl.index == 0x000b || zw) {
 					gl.index = 0x0020;
 				}
@@ -5038,6 +5043,10 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 						sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 						sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
 					}
+				}
+				if (zw) {
+					gl.index = 0;
+					gl.advance = 0.0;
 				}
 				sd->width += gl.advance;
 				sd->glyphs.push_back(gl);

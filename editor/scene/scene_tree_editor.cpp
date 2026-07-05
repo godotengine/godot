@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
@@ -44,6 +45,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/filter_line_edit.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
@@ -91,6 +93,90 @@ PackedStringArray SceneTreeEditor::_get_node_accessibility_configuration_warning
 	return warnings;
 }
 
+void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
+	if (connect_to_script_mode) {
+		return; // Don't do anything in this mode.
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
+			if (mb->is_pressed()) {
+				Vector2 tree_mouse_pos = tree->get_transform().xform_inv(mb->get_position());
+				int tree_button_id = tree->get_button_id_at_position(tree_mouse_pos);
+				if (tree_button_id == BUTTON_VISIBILITY) {
+					TreeItem *tree_item = tree->get_item_at_position(tree_mouse_pos);
+					ERR_FAIL_NULL(tree_item);
+					NodePath node_path = tree_item->get_metadata(0);
+					Node *node = get_node_or_null(node_path);
+					if (node != nullptr) {
+						visibility_drag_value = !node->call("is_visible");
+						visibility_drag_start_pos = tree_mouse_pos;
+						visibility_drag_start_node = node->get_instance_id();
+					}
+				}
+			} else if (mb->is_released() && visibility_drag_start_node.is_valid()) {
+				if (!visibility_drag_nodes.is_empty()) {
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+					undo_redo->create_action(vformat(TTR("Toggle Visibility of %d Nodes"), visibility_drag_nodes.size()));
+
+					for (ObjectID id : visibility_drag_nodes) {
+						Node *node = ObjectDB::get_instance<Node>(id);
+						if (node != nullptr) {
+							undo_redo->add_do_method(node, "set_visible", visibility_drag_value);
+							undo_redo->add_undo_method(node, "set_visible", !visibility_drag_value);
+						}
+					}
+
+					undo_redo->commit_action(false);
+				}
+
+				// Defer this so that `_cell_button_pressed` can still react to the dragging.
+				callable_mp(this, &SceneTreeEditor::_reset_visibility_drag).call_deferred();
+			}
+		} else if (mb->get_button_index() == MouseButton::RIGHT && visibility_drag_start_node.is_valid()) {
+			_reset_visibility_drag();
+			accept_event();
+		}
+
+		return;
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		if (visibility_drag_start_node.is_valid()) {
+			Vector2 tree_mouse_pos = tree->get_transform().xform_inv(mm->get_position());
+			int tree_button_id = tree->get_button_id_at_position(tree_mouse_pos);
+			bool crossed_drag_threshold = visibility_drag_start_pos.distance_to(tree_mouse_pos) > get_viewport()->get_drag_threshold();
+			if (tree_button_id == BUTTON_VISIBILITY && (crossed_drag_threshold || !visibility_drag_nodes.is_empty())) {
+				Node *start_node = ObjectDB::get_instance<Node>(visibility_drag_start_node);
+				if (start_node != nullptr && (bool)start_node->call("is_visible") != visibility_drag_value) {
+					start_node->call("set_visible", visibility_drag_value);
+					visibility_drag_nodes.push_back(visibility_drag_start_node);
+				}
+
+				TreeItem *tree_item = tree->get_item_at_position(tree_mouse_pos);
+				ERR_FAIL_NULL(tree_item);
+				NodePath node_path = tree_item->get_metadata(0);
+				Node *node = get_node_or_null(node_path);
+				if (node != nullptr && (bool)node->call("is_visible") != visibility_drag_value) {
+					node->call("set_visible", visibility_drag_value);
+					visibility_drag_nodes.push_back(node->get_instance_id());
+				}
+			}
+		}
+
+		return;
+	}
+
+	if (p_event->is_action_type()) {
+		if (p_event->is_action_pressed(SNAME("ui_cancel")) && visibility_drag_start_node.is_valid()) {
+			_reset_visibility_drag();
+			accept_event();
+		}
+	}
+}
+
 void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
 	if (p_button != MouseButton::LEFT) {
 		return;
@@ -124,6 +210,10 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 
 	} else if (p_id == BUTTON_VISIBILITY) {
+		if (!visibility_drag_nodes.is_empty()) {
+			return;
+		}
+
 		undo_redo->create_action(TTR("Toggle Visible"));
 		_toggle_visible(n);
 		List<Node *> selection = editor_selection->get_top_selected_node_list();
@@ -143,8 +233,18 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->add_undo_method(n, "set_meta", "_edit_lock_", true);
 		undo_redo->add_do_method(this, "emit_signal", "node_changed");
 		undo_redo->add_undo_method(this, "emit_signal", "node_changed");
-		undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
-		undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+		if (Object::cast_to<CanvasItem>(n)) {
+			undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+			undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+		} else if (Object::cast_to<Node3D>(n)) {
+			Node3DEditor *node_3d_editor = Node3DEditor::get_singleton();
+			undo_redo->add_do_method(node_3d_editor, "emit_signal", "item_lock_status_changed");
+			undo_redo->add_undo_method(node_3d_editor, "emit_signal", "item_lock_status_changed");
+			undo_redo->add_do_method(node_3d_editor, "_refresh_menu_icons");
+			undo_redo->add_undo_method(node_3d_editor, "_refresh_menu_icons");
+			undo_redo->add_do_method(node_3d_editor, "update_transform_gizmo");
+			undo_redo->add_undo_method(node_3d_editor, "update_transform_gizmo");
+		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
 		if (n->is_class("AnimationMixer")) {
@@ -644,8 +744,9 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 	if (selected == p_node) {
 		if (!editor_selection) {
 			p_item->select(0);
+		} else {
+			p_item->set_as_cursor(0);
 		}
-		p_item->set_as_cursor(0);
 	}
 }
 
@@ -1082,11 +1183,13 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 		p_parent->set_visible(!hide_filtered_out_parents || is_root);
 
 		if (!p_parent->is_visible()) {
+			TreeItem *candidate_sibling = p_parent;
 			TreeItem *filtered_parent = p_parent->get_parent();
 			while (filtered_parent) {
 				if (filtered_parent == tree->get_root() || (filtered_parent->is_selectable(0) && filtered_parent->is_visible())) {
 					break;
 				}
+				candidate_sibling = filtered_parent;
 				filtered_parent = filtered_parent->get_parent();
 			}
 
@@ -1097,10 +1200,8 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 
 					p_parent->remove_child(ti);
 					filtered_parent->add_child(ti);
-					TreeItem *prev = p_parent->get_prev();
-					if (prev) {
-						ti->move_after(prev);
-					}
+					ti->move_after(candidate_sibling);
+					candidate_sibling = ti;
 
 					if (is_selected) {
 						ti->select(0);
@@ -1132,7 +1233,7 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 			if (n && editor_selection->is_selected(n)) {
 				if (p_scroll_to_selected) {
 					// Needs to be deferred to account for possible root visibility change.
-					callable_mp(tree, &Tree::scroll_to_item).call_deferred(p_parent, false);
+					callable_mp(tree, &Tree::scroll_to_item).call_deferred(Variant(p_parent), false);
 				} else {
 					r_last_selected = p_parent;
 				}
@@ -1366,6 +1467,13 @@ void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
 	}
 }
 
+void SceneTreeEditor::_reset_visibility_drag() {
+	visibility_drag_value = false;
+	visibility_drag_start_pos = Vector2();
+	visibility_drag_start_node = ObjectID();
+	visibility_drag_nodes.clear();
+}
+
 void SceneTreeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -1429,6 +1537,11 @@ void SceneTreeEditor::_notification(int p_what) {
 				}
 			}
 		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT:
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			_reset_visibility_drag();
+		} break;
 	}
 }
 
@@ -1480,7 +1593,6 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 				node = node->get_parent();
 			}
 			item->select(0);
-			item->set_as_cursor(0);
 			tree->ensure_cursor_is_visible();
 		} else {
 			// Ensure the node is selected and visible for the user if the node
@@ -1496,7 +1608,6 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 			}
 			if (!collapsed) {
 				item->select(0);
-				item->set_as_cursor(0);
 				tree->ensure_cursor_is_visible();
 			}
 		}
@@ -1914,6 +2025,11 @@ bool SceneTreeEditor::_is_script_type(const StringName &p_type) const {
 	return (script_types->has(p_type));
 }
 
+bool SceneTreeEditor::_has_drop_selection(TreeItem *p_item, const Point2 &p_point) const {
+	int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(p_item).position) : tree->get_drop_section_at_position(p_point);
+	return !(section < -1 || (section == -1 && !p_item->get_parent()));
+}
+
 bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	if (!can_rename) {
 		return false; // Not editable tree.
@@ -1934,11 +2050,6 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		return false;
 	}
 
-	int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(item).position) : tree->get_drop_section_at_position(p_point);
-	if (section < -1 || (section == -1 && !item->get_parent())) {
-		return false;
-	}
-
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
@@ -1948,7 +2059,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(files[0]))) {
 			tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
-			return true;
+			return _has_drop_selection(item, p_point);
 		}
 
 		bool scene_drop = true;
@@ -1965,7 +2076,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		if (scene_drop) {
 			tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
-			return true;
+			return _has_drop_selection(item, p_point);
 		}
 
 		if (audio_drop) {
@@ -1974,15 +2085,14 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 			} else {
 				tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
 			}
-			return true;
+			return _has_drop_selection(item, p_point);
 		}
 
 		if (files.size() > 1) {
 			return false;
 		}
 		tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
-
-		return true;
+		return _has_drop_selection(item, p_point);
 	}
 
 	if (String(d["type"]) == "script_list_element") {
@@ -1991,7 +2101,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 			String sp = se->get_edited_resource()->get_path();
 			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
 				tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
-				return true;
+				return _has_drop_selection(item, p_point);
 			}
 		}
 	}
@@ -2007,7 +2117,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 			}
 		}
 
-		return true;
+		return _has_drop_selection(item, p_point);
 	}
 
 	return false;
@@ -2165,7 +2275,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 		Label *label = memnew(Label);
 		label->set_theme_type_variation("HeaderSmall");
 		label->set_position(Point2(10, 0));
-		label->set_text(TTR("Scene Tree (Nodes):"));
+		label->set_text(TTRC("Scene Tree (Nodes):"));
 
 		add_child(label);
 	}
@@ -2193,13 +2303,14 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
 	tree->connect("button_clicked", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
+	tree->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeEditor::_gui_input));
 
 	error = memnew(AcceptDialog);
 	add_child(error);
 
 	warning = memnew(AcceptDialog);
 	add_child(warning);
-	warning->set_title(TTR("Node Configuration Warning!"));
+	warning->set_title(TTRC("Node Configuration Warning!"));
 	warning->set_flag(Window::FLAG_POPUP, true);
 
 	last_hash = 0;
@@ -2217,7 +2328,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	add_child(update_node_tooltip_delay);
 
 	revoke_dialog = memnew(ConfirmationDialog);
-	revoke_dialog->set_ok_button_text(TTR("Revoke"));
+	revoke_dialog->set_ok_button_text(TTRC("Revoke"));
 	add_child(revoke_dialog);
 	revoke_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeEditor::_update_ask_before_revoking_unique_name));
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -2225,8 +2336,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	revoke_dialog_label = memnew(Label);
 	revoke_dialog_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(revoke_dialog_label);
-	ask_before_revoke_checkbox = memnew(CheckBox(TTR("Don't Ask Again")));
-	ask_before_revoke_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
+	ask_before_revoke_checkbox = memnew(CheckBox(TTRC("Don't Ask Again")));
+	ask_before_revoke_checkbox->set_tooltip_text(TTRC("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
 	vb->add_child(ask_before_revoke_checkbox);
 
 	script_types = memnew(LocalVector<StringName>);

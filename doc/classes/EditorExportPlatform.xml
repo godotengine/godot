@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlatform" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPlatform" inherits="RefCounted" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Identifies a supported export platform, and internally provides the functionality of exporting to that platform.
 	</brief_description>
@@ -59,8 +59,9 @@
 			<param index="1" name="debug" type="bool" />
 			<param index="2" name="path" type="String" />
 			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" default="0" />
+			<param index="4" name="notify" type="bool" default="true" />
 			<description>
-				Creates a full project at [param path] for the specified [param preset].
+				Creates a full project at [param path] for the specified [param preset]. If [param notify] is [code]true[/code], plugins using [method EditorExportPlugin._export_begin] will be called during the process.
 			</description>
 		</method>
 		<method name="export_project_files">

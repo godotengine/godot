@@ -389,20 +389,21 @@ hb_resolve_graph_overflows (hb_tag_t table_tag,
   }
 
   unsigned round = 0;
+  unsigned total_iterations = 0;
   hb_vector_t<graph::overflow_record_t> overflows;
   // TODO(garretrieger): select a good limit for max rounds.
   while (!sorted_graph.in_error ()
          && graph::will_overflow (sorted_graph, &overflows)
-         && round < max_rounds) {
+         && round < max_rounds
+         && total_iterations < HB_REPACKER_MAX_ITERATIONS) {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "=== Overflow resolution round %u ===", round);
     print_overflows (sorted_graph, overflows);
 
+    total_iterations++;
     hb_set_t priority_bumped_parents;
 
     if (!_try_isolating_subgraphs (overflows, sorted_graph))
     {
-      // Don't count space isolation towards round limit. Only increment
-      // round counter if space isolation made no changes.
       round++;
       if (!_process_overflows (overflows, priority_bumped_parents, sorted_graph))
       {

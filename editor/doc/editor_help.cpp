@@ -36,6 +36,8 @@
 #include "core/extension/gdextension.h"
 #include "core/input/input.h"
 #include "core/io/json.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
@@ -52,6 +54,7 @@
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_property_name_processor.h"
+#include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
@@ -268,13 +271,14 @@ void EditorHelp::_search(bool p_search_previous) {
 
 void EditorHelp::_class_desc_finished() {
 	if (scroll_to >= 0) {
-		class_desc->connect(SceneStringName(draw), callable_mp(class_desc, &RichTextLabel::scroll_to_paragraph).bind(scroll_to), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+		class_desc->connect(SceneStringName(draw), callable_mp(this, &EditorHelp::_class_desc_scroll_to_paragraph).bind(scroll_to, need_save_new_history), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 	}
 	scroll_to = -1;
+	need_save_new_history = false;
 }
 
 void EditorHelp::_class_list_select(const String &p_select) {
-	_goto_desc(p_select);
+	_goto_desc(p_select, true);
 }
 
 void EditorHelp::_class_desc_select(const String &p_select) {
@@ -342,12 +346,14 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		// Case order is important here to correctly handle edge cases like `Variant.Type` in `@GlobalScope`.
 		if (table->has(link)) {
 			// Found in the current page.
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 			if (class_desc->is_finished()) {
-				emit_signal(SNAME("request_save_history"));
-				class_desc->scroll_to_paragraph((*table)[link]);
+				_class_desc_scroll_to_paragraph((*table)[link], _need_save_new_history());
 			} else {
 				scroll_to = (*table)[link];
+				need_save_new_history = _need_save_new_history();
 			}
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		} else {
 			// Look for link in `@GlobalScope`.
 			if (topic == "class_enum") {
@@ -724,7 +730,7 @@ void EditorHelp::_pop_code_font() {
 	class_desc->pop(); // font
 }
 
-Error EditorHelp::_goto_desc(const String &p_class) {
+Error EditorHelp::_goto_desc(const String &p_class, bool p_can_trigger_save_history) {
 	if (!doc->class_list.has(p_class)) {
 		return ERR_DOES_NOT_EXIST;
 	}
@@ -736,11 +742,17 @@ Error EditorHelp::_goto_desc(const String &p_class) {
 	description_line = 0;
 
 	if (p_class == edited_class) {
+		if (p_can_trigger_save_history) {
+			trigger_history_save_on_navigate();
+		}
 		return OK; // Already there.
 	}
 
 	edited_class = p_class;
 	_update_doc();
+	if (p_can_trigger_save_history) {
+		trigger_history_save_on_navigate();
+	}
 	return OK;
 }
 
@@ -904,7 +916,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 
 				class_desc->add_text(TTR("Error codes returned:"));
 				class_desc->add_newline();
-				class_desc->push_list(0, RichTextLabel::LIST_DOTS, false);
+				class_desc->push_list(1, RichTextLabel::LIST_DOTS, false);
 				for (int j = 0; j < method.errors_returned.size(); j++) {
 					if (j > 0) {
 						class_desc->add_newline();
@@ -1676,18 +1688,17 @@ void EditorHelp::_update_doc() {
 		Vector<DocData::ConstantDoc> constants;
 
 		for (const DocData::ConstantDoc &constant : cd.constants) {
+			// Ignore undocumented private.
+			const bool is_documented = constant.is_deprecated || constant.is_experimental || !constant.description.strip_edges().is_empty();
+			if (!is_documented && constant.name.begins_with("_")) {
+				continue;
+			}
 			if (!constant.enumeration.is_empty()) {
 				if (!enums.has(constant.enumeration)) {
 					enums[constant.enumeration] = Vector<DocData::ConstantDoc>();
 				}
-
 				enums[constant.enumeration].push_back(constant);
 			} else {
-				// Ignore undocumented private.
-				const bool is_documented = constant.is_deprecated || constant.is_experimental || !constant.description.strip_edges().is_empty();
-				if (!is_documented && constant.name.begins_with("_")) {
-					continue;
-				}
 				constants.push_back(constant);
 			}
 		}
@@ -2342,7 +2353,7 @@ void EditorHelp::_update_doc() {
 }
 
 void EditorHelp::_request_help(const String &p_string) {
-	Error err = _goto_desc(p_string);
+	Error err = _goto_desc(p_string, false);
 	if (err == OK) {
 		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 	}
@@ -2430,10 +2441,34 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 
 	if (class_desc->is_finished()) {
-		class_desc->scroll_to_paragraph(line);
+		_class_desc_scroll_to_paragraph(line, _need_save_new_history());
 	} else {
 		scroll_to = line;
+		need_save_new_history = _need_save_new_history();
 	}
+}
+
+void EditorHelp::_class_desc_scroll_to_paragraph(int p_line, bool p_save_history) {
+	// Save history before scrolling.
+	if (p_save_history) {
+		Dictionary state = get_state();
+		// Row 0 is not a state worth saving as a previous state to history.
+		if (int(state["row"]) > 0) {
+			emit_signal(SNAME("_request_save_new_history"), state);
+		}
+	}
+	class_desc->scroll_to_paragraph(p_line);
+	// Save history after scrolling.
+	if (p_save_history) {
+		emit_signal(SNAME("_request_save_new_history"), get_state());
+		if (ScriptEditorNavigationMarker::get_singleton()->is_locating()) {
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
+		}
+	}
+}
+
+bool EditorHelp::_need_save_new_history() const {
+	return !ScriptEditorNavigationMarker::get_singleton()->is_initializing() && ScriptEditorNavigationMarker::get_singleton()->is_locating();
 }
 
 static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const Control *p_owner_node, const String &p_class) {
@@ -2784,7 +2819,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			p_rt->set_cell_padding(Rect2(0, 10 * EDSCALE, 0, 10 * EDSCALE));
 			p_rt->set_cell_size_override(Vector2(1, 1), Vector2(10, 10) * EDSCALE);
 			p_rt->push_meta("^" + codeblock_copy_text, RichTextLabel::META_UNDERLINE_ON_HOVER);
-			p_rt->add_image(p_owner_node->get_editor_theme_icon(SNAME("ActionCopy")), 24 * EDSCALE, 24 * EDSCALE, Color(link_property_color, 0.3), INLINE_ALIGNMENT_BOTTOM_TO, Rect2(), Variant(), false, TTR("Click to copy."));
+			p_rt->add_image(p_owner_node->get_editor_theme_icon(SNAME("ActionCopy")), 24 * EDSCALE, 24 * EDSCALE, Color(link_property_color, 0.5), INLINE_ALIGNMENT_BOTTOM_TO, Rect2(), Variant(), false, TTR("Click to copy."));
 			p_rt->pop(); // meta
 			p_rt->pop(); // cell
 
@@ -2901,7 +2936,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 			}
 
 			String image_path = bbcode.substr(brk_end + 1, end - brk_end - 1);
-			p_rt->add_image(ResourceLoader::load(image_path, "Texture2D"), width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(), Variant(), false, String(), size_in_percent);
+			p_rt->add_image(ResourceLoader::load(image_path, "Texture2D"), width, height, Color(1, 1, 1), INLINE_ALIGNMENT_CENTER, Rect2(), Variant(), false, String(), size_in_percent ? RichTextLabel::IMAGE_UNIT_PERCENT : RichTextLabel::IMAGE_UNIT_PIXEL);
 
 			pos = end;
 			tag_stack.push_front("img");
@@ -3350,7 +3385,7 @@ void EditorHelp::go_to_help(const String &p_help) {
 
 void EditorHelp::go_to_class(const String &p_class) {
 	_wait_for_thread();
-	_goto_desc(p_class);
+	_goto_desc(p_class, true);
 }
 
 void EditorHelp::update_doc() {
@@ -3358,6 +3393,21 @@ void EditorHelp::update_doc() {
 	ERR_FAIL_COND(!doc->class_list.has(edited_class));
 	ERR_FAIL_COND(!doc->class_list[edited_class].is_script_doc);
 	_update_doc();
+}
+
+void EditorHelp::trigger_history_save_on_navigate() {
+	if (_need_save_new_history()) {
+		emit_signal(SNAME("_request_save_new_history"), get_state());
+		if (ScriptEditorNavigationMarker::get_singleton()->is_locating()) {
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
+		}
+	}
+}
+
+Dictionary EditorHelp::get_state() {
+	Dictionary state;
+	state["row"] = get_scroll(); // Use "row" to simplify the logic when processing history list.
+	return state;
 }
 
 void EditorHelp::cleanup_doc() {
@@ -3378,12 +3428,15 @@ Vector<Pair<String, int>> EditorHelp::get_sections() {
 
 void EditorHelp::scroll_to_section(int p_section_index) {
 	_wait_for_thread();
+	ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 	int line = section_line[p_section_index].second;
 	if (class_desc->is_finished()) {
-		class_desc->scroll_to_paragraph(line);
+		_class_desc_scroll_to_paragraph(line, _need_save_new_history());
 	} else {
 		scroll_to = line;
+		need_save_new_history = _need_save_new_history();
 	}
+	ScriptEditorNavigationMarker::get_singleton()->locate_end();
 }
 
 void EditorHelp::popup_search() {
@@ -3423,7 +3476,7 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_help_callback", &EditorHelp::_help_callback);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
-	ADD_SIGNAL(MethodInfo("request_save_history"));
+	ADD_SIGNAL(MethodInfo("_request_save_new_history", PropertyInfo(Variant::DICTIONARY, "state")));
 }
 
 void EditorHelp::init_gdext_pointers() {
@@ -3683,7 +3736,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_property_help_data(const StringName 
 							if (item_descr.is_empty()) {
 								item_descr = "[color=<EditorHelpBitCommentColor>][i]" + TTR("No description available.") + "[/i][/color]";
 							}
-							current.description += vformat("\n[b]%s:[/b] %s", item_name, item_descr);
+							current.description += vformat("\n[b]%s[/b] [color=<EditorHelpBitCommentColor>]=[/color] %s[color=<EditorHelpBitCommentColor>]:[/color] %s", item_name, constant.value, item_descr);
 						}
 					}
 					current.description = current.description.lstrip("\n");
@@ -4382,6 +4435,238 @@ void EditorHelpBit::_notification(int p_what) {
 			_update_labels();
 			break;
 	}
+}
+
+String EditorHelpBit::get_as_plain_text(const String &p_symbol, const String &p_prologue) {
+	const PackedStringArray slices = p_symbol.split("|", true, 3);
+	ERR_FAIL_COND_V_MSG(slices.size() < 3, String(), R"(Invalid doc id: The expected format is "item_type|class_name|item_name[|item_data]".)");
+
+	const String &item_type = slices[0];
+	const String &class_name = slices[1];
+	const String &item_name = slices[2];
+
+	Dictionary item_data;
+	if (slices.size() > 3) {
+		item_data = JSON::parse_string(slices[3]);
+	}
+
+	HelpData new_help_data = HelpData();
+
+	if (item_type == "class") {
+		new_help_data = _get_class_help_data(class_name);
+	} else if (item_type == "enum") {
+		new_help_data = _get_enum_help_data(class_name, item_name);
+	} else if (item_type == "constant") {
+		new_help_data = _get_constant_help_data(class_name, item_name);
+	} else if (item_type == "property") {
+		new_help_data = _get_property_help_data(class_name, item_name);
+
+		// Add copy note to built-in properties returning `Packed*Array`.
+		const DocData::ClassDoc *cd = EditorHelp::get_doc(class_name);
+		if (cd && !cd->is_script_doc && packed_array_types.has(new_help_data.doc_type.type)) {
+			if (!new_help_data.description.is_empty()) {
+				new_help_data.description += "\n";
+			}
+			// See also `EditorHelp::_update_doc()` and `doc/tools/make_rst.py`.
+			new_help_data.description += vformat(TTR("[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details."), new_help_data.doc_type.type);
+		}
+	} else if (item_type == "internal_property") {
+		new_help_data.description = TTR("This property can only be set in the Inspector.");
+	} else if (item_type == "theme_item") {
+		new_help_data = _get_theme_item_help_data(class_name, item_name);
+	} else if (item_type == "method") {
+		new_help_data = _get_method_help_data(class_name, item_name);
+	} else if (item_type == "signal") {
+		new_help_data = _get_signal_help_data(class_name, item_name);
+	} else if (item_type == "annotation") {
+		new_help_data = _get_annotation_help_data(class_name, item_name);
+	} else if (item_type == "local_constant" || item_type == "local_variable") {
+		new_help_data.description = item_data.get("description", "").operator String().strip_edges();
+		if (item_data.get("is_deprecated", false)) {
+			const String deprecated_message = item_data.get("deprecated_message", "").operator String().strip_edges();
+			if (deprecated_message.is_empty()) {
+				if (item_type == "local_constant") {
+					new_help_data.deprecated_message = TTR("This constant may be changed or removed in future versions.");
+				} else {
+					new_help_data.deprecated_message = TTR("This variable may be changed or removed in future versions.");
+				}
+			} else {
+				new_help_data.deprecated_message = deprecated_message;
+			}
+		}
+		if (item_data.get("is_experimental", false)) {
+			const String experimental_message = item_data.get("experimental_message", "").operator String().strip_edges();
+			if (experimental_message.is_empty()) {
+				if (item_type == "local_constant") {
+					new_help_data.experimental_message = TTR("This constant may be changed or removed in future versions.");
+				} else {
+					new_help_data.experimental_message = TTR("This variable may be changed or removed in future versions.");
+				}
+			} else {
+				new_help_data.experimental_message = experimental_message;
+			}
+		}
+	}
+
+	if (!p_prologue.is_empty()) {
+		if (new_help_data.description.is_empty()) {
+			new_help_data.description = p_prologue;
+		} else {
+			new_help_data.description = p_prologue + "\n" + new_help_data.description;
+		}
+	}
+
+	if (new_help_data.description.is_empty() && item_type != "resource") {
+		new_help_data.description = TTR("No description available.");
+	}
+
+	String bbcode = new_help_data.description;
+	if (!new_help_data.deprecated_message.is_empty()) {
+		bbcode += "\n" + new_help_data.deprecated_message;
+	}
+	if (!new_help_data.experimental_message.is_empty()) {
+		bbcode += "\n" + new_help_data.experimental_message;
+	}
+
+	if (bbcode.is_empty()) {
+		return String();
+	}
+
+	DocTools *doc = EditorHelp::get_doc_data();
+
+	StringBuilder output;
+
+	List<String> tag_stack;
+	int pos = 0;
+	while (pos < bbcode.length()) {
+		int brk_pos = bbcode.find_char('[', pos);
+
+		if (brk_pos < 0) {
+			brk_pos = bbcode.length();
+		}
+
+		if (brk_pos > pos) {
+			String text = bbcode.substr(pos, brk_pos - pos);
+			output.append(text);
+		}
+
+		if (brk_pos == bbcode.length()) {
+			// Nothing else to add.
+			break;
+		}
+
+		int brk_end = bbcode.find_char(']', brk_pos + 1);
+
+		if (brk_end == -1) {
+			String text = bbcode.substr(brk_pos);
+			output.append(text);
+			break;
+		}
+
+		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+
+		if (tag.begins_with("/")) {
+			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1);
+
+			if (!tag_ok) {
+				output.append("]");
+				pos = brk_pos + 1;
+				continue;
+			}
+
+			tag_stack.pop_front();
+			pos = brk_end + 1;
+		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
+			int tag_end = tag.find_char(' ');
+			String link_tag = tag.left(tag_end);
+			String link_target = tag.substr(tag_end + 1).lstrip(" ");
+			if (link_tag == "param") {
+				link_tag = "parameter";
+			} else if (link_tag == "theme_item") {
+				link_tag = "theme item";
+			}
+			output.append(link_tag + " '" + link_target + "'");
+			pos = brk_end + 1;
+		} else if (tag == "codeblocks") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "codeblock" || tag.begins_with("codeblock ")) {
+			pos = brk_end + 1;
+			tag_stack.push_front("codeblock");
+		} else if (tag.begins_with("gdscript")) {
+			pos = brk_end + 1;
+			output.append("GDScript:\n");
+			tag_stack.push_front("gdscript");
+		} else if (tag.begins_with("csharp")) {
+			pos = brk_end + 1;
+			output.append("C#:\n");
+			tag_stack.push_front("csharp");
+		} else if (tag == "b") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "i") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "code" || tag.begins_with("code ")) {
+			pos = brk_end + 1;
+			tag_stack.push_front("code");
+		} else if (doc->class_list.has(tag)) {
+			output.append(tag);
+			pos = brk_end + 1;
+		} else if (tag == "kbd") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "center") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "br") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "u") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "s") {
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "url") {
+			int end = bbcode.find_char('[', brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String url = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			output.append(url);
+
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag.begins_with("url=")) {
+			pos = brk_end + 1;
+			tag_stack.push_front("url");
+		} else if (tag == "img") {
+			int end = bbcode.find_char('[', brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
+
+			output.append("(Image: ");
+			output.append(image);
+			output.append(")");
+
+			pos = end;
+			tag_stack.push_front(tag);
+		} else if (tag.begins_with("color=")) {
+			pos = brk_end + 1;
+			tag_stack.push_front("color");
+		} else if (tag.begins_with("font=")) {
+			pos = brk_end + 1;
+			tag_stack.push_front("font");
+		} else {
+			output.append("[");
+			pos = brk_pos + 1;
+		}
+	}
+
+	return output.as_string();
 }
 
 void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologue) {

@@ -1316,7 +1316,6 @@ void ShaderLanguage::clear() {
 	last_name = StringName();
 	last_type = IDENTIFIER_MAX;
 	current_uniform_group_name = "";
-	current_uniform_subgroup_name = "";
 	current_uniform_hint = ShaderNode::Uniform::HINT_NONE;
 	current_uniform_filter = FILTER_DEFAULT;
 	current_uniform_repeat = REPEAT_DEFAULT;
@@ -1545,9 +1544,10 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 		if (r_struct_name) {
 			*r_struct_name = shader->constants[p_identifier].struct_name;
 		}
-		if (r_constant_values) {
-			if (shader->constants[p_identifier].initializer && !shader->constants[p_identifier].initializer->get_values().is_empty()) {
-				*r_constant_values = shader->constants[p_identifier].initializer->get_values();
+		if (r_constant_values && shader->constants[p_identifier].initializer) {
+			Vector<Scalar> values = _get_node_values(p_block, p_function_info, shader->constants[p_identifier].initializer);
+			if (!values.is_empty()) {
+				*r_constant_values = values;
 			}
 		}
 		if (r_type) {
@@ -3589,6 +3589,7 @@ const ShaderLanguage::BuiltinEntry ShaderLanguage::frag_only_func_defs[] = {
 	{ "fwidth" },
 	{ "fwidthCoarse" },
 	{ "fwidthFine" },
+	{ "textureQueryLod" },
 	{ nullptr }
 };
 
@@ -3603,8 +3604,8 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 
 	ERR_FAIL_COND_V(p_func->arguments[0]->type != Node::NODE_TYPE_VARIABLE, false);
 
-	StringName name = static_cast<VariableNode *>(p_func->arguments[0])->name.operator String();
-	StringName rname = static_cast<VariableNode *>(p_func->arguments[0])->rname.operator String();
+	StringName name = static_cast<VariableNode *>(p_func->arguments[0])->name.string();
+	StringName rname = static_cast<VariableNode *>(p_func->arguments[0])->rname.string();
 
 	for (int i = 1; i < p_func->arguments.size(); i++) {
 		args.push_back(p_func->arguments[i]->get_datatype());
@@ -5422,7 +5423,7 @@ bool ShaderLanguage::_get_completable_identifier(BlockNode *p_block, CompletionT
 		tk = _get_token();
 
 		if (tk.type == TK_IDENTIFIER) {
-			identifier = identifier.operator String() + tk.text.operator String();
+			identifier = identifier.string() + tk.text.string();
 		} else {
 			_set_tkpos(pos);
 		}
@@ -7753,6 +7754,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					_set_error(vformat(RTR("Invalid arguments to unary operator '%s': %s."), get_operator_text(op->op), at));
 					return nullptr;
 				}
+				expression.write[i].node = _reduce_expression(p_block, expression.write[i].node);
 				expression.remove_at(i + 1);
 			}
 
@@ -9767,7 +9769,6 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					uniform.precision = precision;
 					uniform.array_size = array_size;
 					uniform.group = current_uniform_group_name;
-					uniform.subgroup = current_uniform_subgroup_name;
 
 					tk = _get_token();
 					if (tk.type == TK_BRACKET_OPEN) {
@@ -10057,6 +10058,10 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									new_hint = ShaderNode::Uniform::HINT_SCREEN_TEXTURE;
 									--texture_uniforms;
 									--texture_binding;
+									if (shader_type_identifier != StringName() && !(String(shader_type_identifier) == "spatial" || String(shader_type_identifier) == "canvas_item")) {
+										_set_error(vformat(RTR("'hint_screen_texture' is not supported in '%s' shaders."), shader_type_identifier));
+										return ERR_PARSE_ERROR;
+									}
 								} break;
 								case TK_HINT_NORMAL_ROUGHNESS_TEXTURE: {
 									new_hint = ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE;
@@ -10301,22 +10306,22 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					current_uniform_group_name = tk.text;
-					current_uniform_subgroup_name = "";
+
 					tk = _get_token();
-					if (tk.type == TK_PERIOD) {
+					while (tk.type == TK_PERIOD) {
 						tk = _get_token();
+
 						if (tk.type == TK_IDENTIFIER) {
-							current_uniform_subgroup_name = tk.text;
-							tk = _get_token();
-							if (tk.type != TK_SEMICOLON) {
-								_set_expected_error(";");
-								return ERR_PARSE_ERROR;
-							}
+							current_uniform_group_name += "/" + tk.text;
 						} else {
 							_set_error(RTR("Expected an uniform subgroup identifier."));
 							return ERR_PARSE_ERROR;
 						}
-					} else if (tk.type != TK_SEMICOLON) {
+
+						tk = _get_token();
+					}
+
+					if (tk.type != TK_SEMICOLON) {
 						_set_expected_error(";", ".");
 						return ERR_PARSE_ERROR;
 					}
@@ -10333,7 +10338,6 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						return ERR_PARSE_ERROR;
 					} else {
 						current_uniform_group_name = "";
-						current_uniform_subgroup_name = "";
 					}
 				}
 			} break;
@@ -11495,7 +11499,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				if (keyword_list[i].excluded_shader_types.has(shader_type_identifier) || keyword_list[i].excluded_functions.has(current_function)) {
 					continue;
 				}
-				ScriptLanguage::CodeCompletionOption option(keyword_list[i].text, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				ScriptLanguage::CodeCompletionOption option(keyword_list[i].text, ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD);
 				r_options->push_back(option);
 			}
 		}

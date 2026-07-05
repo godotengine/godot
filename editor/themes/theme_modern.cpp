@@ -496,6 +496,14 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_constant("outline_size", "Button", 0);
 		p_theme->set_constant("align_to_largest_stylebox", "Button", 1); // Enabled.
 
+#ifdef ANDROID_ENABLED
+		// Use a larger click margin on the Android editor to improve touchscreen usability.
+		const int click_margin = Math::round(4 * EDSCALE);
+#else
+		const int click_margin = Math::round(2 * EDSCALE);
+#endif
+		p_theme->set_constant("click_margin", "BaseButton", click_margin);
+
 		// MenuBar.
 
 		p_theme->set_stylebox(CoreStringName(normal), "MenuBar", p_config.button_style);
@@ -650,6 +658,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_constant("icon_h_separation", "Tree", p_config.base_margin * 1.5 * EDSCALE);
 			p_theme->set_constant("button_margin", "Tree", p_config.base_margin * EDSCALE);
 			p_theme->set_constant("dragging_unfold_wait_msec", "Tree", p_config.dragging_hover_wait_msec);
+			p_theme->set_constant("scroll_max_sticky_items", "Tree", p_config.max_sticky_tree_items);
 			p_theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
 			p_theme->set_constant("scroll_speed", "Tree", 12);
 			p_theme->set_constant("outline_size", "Tree", 0);
@@ -1031,6 +1040,9 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 		// FileDialog.
 		p_theme->set_icon("folder", "FileDialog", p_theme->get_icon("Folder", EditorStringName(EditorIcons)));
+		p_theme->set_icon("file", "FileDialog", p_theme->get_icon("File", EditorStringName(EditorIcons)));
+		p_theme->set_icon("folder_thumbnail", "FileDialog", p_theme->get_icon("FolderBigThumb", EditorStringName(EditorIcons)));
+		p_theme->set_icon("file_thumbnail", "FileDialog", p_theme->get_icon("FileBigThumb", EditorStringName(EditorIcons)));
 		p_theme->set_icon("parent_folder", "FileDialog", p_theme->get_icon("ArrowUp", EditorStringName(EditorIcons)));
 		p_theme->set_icon("back_folder", "FileDialog", p_theme->get_icon("Back", EditorStringName(EditorIcons)));
 		p_theme->set_icon("forward_folder", "FileDialog", p_theme->get_icon("Forward", EditorStringName(EditorIcons)));
@@ -1093,10 +1105,12 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 			p_theme->set_icon("checked", "PopupMenu", p_theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("unchecked", "PopupMenu", p_theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("indeterminate", "PopupMenu", p_theme->get_icon(SNAME("GuiIndeterminate"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("radio_checked", "PopupMenu", p_theme->get_icon(SNAME("GuiRadioChecked"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("radio_unchecked", "PopupMenu", p_theme->get_icon(SNAME("GuiRadioUnchecked"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("checked_disabled", "PopupMenu", p_theme->get_icon(SNAME("GuiCheckedDisabled"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("unchecked_disabled", "PopupMenu", p_theme->get_icon(SNAME("GuiUncheckedDisabled"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("indeterminate_disabled", "PopupMenu", p_theme->get_icon(SNAME("GuiIndeterminateDisabled"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("radio_checked_disabled", "PopupMenu", p_theme->get_icon(SNAME("GuiRadioCheckedDisabled"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("radio_unchecked_disabled", "PopupMenu", p_theme->get_icon(SNAME("GuiRadioUncheckedDisabled"), EditorStringName(EditorIcons)));
 			p_theme->set_icon("submenu", "PopupMenu", p_theme->get_icon(SNAME("ArrowRight"), EditorStringName(EditorIcons)));
@@ -1234,6 +1248,17 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_constant("shadow_outline_size", "Label", 1 * EDSCALE);
 		p_theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
 		p_theme->set_constant("outline_size", "Label", 0);
+
+		// Label with different margins.
+
+		p_theme->set_type_variation("LabelNoMargin", "Label");
+		p_theme->set_stylebox(CoreStringName(normal), "LabelNoMargin", p_config.base_empty_style);
+
+		p_theme->set_type_variation("LabelNoMarginVertical", "Label");
+		Ref<StyleBoxEmpty> no_v_margin_style = label_style->duplicate();
+		no_v_margin_style->set_content_margin(SIDE_TOP, 0);
+		no_v_margin_style->set_content_margin(SIDE_BOTTOM, 0);
+		p_theme->set_stylebox(CoreStringName(normal), "LabelNoMarginVertical", no_v_margin_style);
 	}
 
 	// SpinBox.
@@ -1762,6 +1787,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Bottom panel.
 		Ref<StyleBoxFlat> style_bottom_panel = p_config.content_panel_style->duplicate();
+		style_bottom_panel->set_content_margin_all(p_config.tab_container_style->get_content_margin(SIDE_LEFT));
 		style_bottom_panel->set_border_width(SIDE_BOTTOM, 0);
 		style_bottom_panel->set_corner_radius_all(p_config.corner_radius * EDSCALE);
 		style_bottom_panel->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
@@ -1909,6 +1935,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// Flat button variations.
 		{
+			p_theme->set_type_variation(SceneStringName(FlatButton), "Button");
 			p_theme->set_stylebox(CoreStringName(normal), SceneStringName(FlatButton), p_config.base_empty_wide_style);
 			p_theme->set_stylebox(SceneStringName(hover), SceneStringName(FlatButton), p_config.flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), SceneStringName(FlatButton), p_config.flat_button_pressed);
@@ -1933,15 +1960,24 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox("hover_pressed_mirrored", "FlatMenuButton", p_config.flat_button_hover_pressed);
 			p_theme->set_stylebox("disabled_mirrored", "FlatMenuButton", p_config.base_empty_wide_style);
 
+			// Variations for buttons that shouldn't tint their icons.
+
 			p_theme->set_type_variation("FlatButtonNoIconTint", "FlatButton");
 			p_theme->set_color("icon_pressed_color", "FlatButtonNoIconTint", p_config.icon_normal_color);
-			p_theme->set_color("icon_hover_color", "FlatButtonNoIconTint", p_config.mono_color);
-			p_theme->set_color("icon_hover_pressed_color", "FlatButtonNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_color", "FlatButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
+			p_theme->set_color("icon_hover_pressed_color", "FlatButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
 
 			p_theme->set_type_variation("FlatMenuButtonNoIconTint", "FlatMenuButton");
 			p_theme->set_color("icon_pressed_color", "FlatMenuButtonNoIconTint", p_config.icon_normal_color);
-			p_theme->set_color("icon_hover_color", "FlatMenuButtonNoIconTint", p_config.mono_color);
-			p_theme->set_color("icon_hover_pressed_color", "FlatMenuButtonNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_color", "FlatMenuButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
+			p_theme->set_color("icon_hover_pressed_color", "FlatMenuButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
+
+			// Variation for the AssetLib thumbnails.
+
+			p_theme->set_type_variation("ThumbnailButton", SceneStringName(FlatButton));
+			p_theme->set_color("icon_pressed_color", "ThumbnailButton", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_color", "ThumbnailButton", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_pressed_color", "ThumbnailButton", p_config.icon_normal_color);
 
 			// Variation for Editor Log filter buttons.
 
@@ -1966,8 +2002,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		{
 			p_theme->set_type_variation("CheckBoxNoIconTint", "CheckBox");
 			p_theme->set_color("icon_pressed_color", "CheckBoxNoIconTint", p_config.icon_normal_color);
-			p_theme->set_color("icon_hover_color", "CheckBoxNoIconTint", p_config.mono_color);
-			p_theme->set_color("icon_hover_pressed_color", "CheckBoxNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_color", "CheckBoxNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
+			p_theme->set_color("icon_hover_pressed_color", "CheckBoxNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
 		}
 
 		// Buttons styles that stand out against the panel background (e.g. AssetLib).
@@ -2017,7 +2053,49 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_type_variation("NoBorderHorizontalBottom", "NoBorderHorizontal");
 			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottom", margin);
 
-			margin *= 2;
+			// Used in the asset library. Specifically, the ("bg", "AssetLib") stylebox.
+
+			margin = -p_config.base_margin * EDSCALE;
+
+			p_theme->set_type_variation("NoBorderAssetLib", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderAssetLib", margin);
+			p_theme->set_constant("margin_right", "NoBorderAssetLib", margin);
+			p_theme->set_constant("margin_bottom", "NoBorderAssetLib", margin);
+
+			p_theme->set_type_variation("NoBorderAssetLibHorizontal", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderAssetLibHorizontal", margin);
+			p_theme->set_constant("margin_right", "NoBorderAssetLibHorizontal", margin);
+
+			margin -= panel_margin;
+
+			// Same as above, but with the margins adapted for the project manager.
+
+			p_theme->set_type_variation("NoBorderAssetLibProjectManager", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManager", margin);
+			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManager", margin);
+			p_theme->set_constant("margin_bottom", "NoBorderAssetLibProjectManager", margin);
+
+			p_theme->set_type_variation("NoBorderAssetLibProjectManagerHorizontal", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManagerHorizontal", margin);
+			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManagerHorizontal", margin);
+
+			int bottom_panel_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
+			margin = -panel_margin - bottom_panel_margin;
+
+			// Used in the animation track editor.
+			p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderAnimation", margin);
+			p_theme->set_constant("margin_right", "NoBorderAnimation", margin);
+
+			// Used in the OpenXR action map editor.
+			p_theme->set_type_variation("NoBorderOpenXR", "NoBorderAnimation");
+			p_theme->set_constant("margin_bottom", "NoBorderOpenXR", -panel_margin);
+
+			margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("AcceptDialog"))->get_content_margin(SIDE_LEFT);
+
+			p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
+			p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
 
 			// Used in nested containers.
 			p_theme->set_type_variation("NoBorderHorizontalWide", "MarginContainer");
@@ -2026,40 +2104,11 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 			// Same as above, including the bottom.
 			p_theme->set_type_variation("NoBorderHorizontalBottomWide", "NoBorderHorizontalWide");
-			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottomWide", margin);
+			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottomWide", 2 * -bottom_panel_margin);
 
-			// Used in the asset library. Specifically, the ("bg", "AssetLib") stylebox.
-			p_theme->set_type_variation("NoBorderAssetLib", "NoBorderHorizontal");
-			p_theme->set_constant("margin_bottom", "NoBorderAssetLib", -p_config.base_margin);
-
-			margin = -panel_margin - p_config.base_margin;
-
-			// Same as above, but with the margins adapted for the project manager.
-			p_theme->set_type_variation("NoBorderAssetLibProjectManager", "NoBorderHorizontal");
-			p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManager", margin);
-			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManager", margin);
-			p_theme->set_constant("margin_bottom", "NoBorderAssetLibProjectManager", margin);
-
-			int bottom_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
-			margin = -bottom_margin;
-
-			// Used in editors residing in the bottom panel.
-			p_theme->set_type_variation("NoBorderBottomPanel", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderBottomPanel", margin);
-			p_theme->set_constant("margin_right", "NoBorderBottomPanel", margin);
-
-			margin = -panel_margin - bottom_margin;
-
-			// Used in the animation track editor.
-			p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAnimation", margin);
-			p_theme->set_constant("margin_right", "NoBorderAnimation", margin);
-
-			margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("AcceptDialog"))->get_content_margin(SIDE_LEFT);
-
-			p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
-			p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
+			// Used in the action map editor.
+			p_theme->set_type_variation("NoBorderActionEditor", "NoBorderHorizontalWide");
+			p_theme->set_constant("margin_bottom", "NoBorderActionEditor", -bottom_panel_margin);
 		}
 
 		// Buttons in material previews.
@@ -2142,6 +2191,18 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerTabbarInner", style_tabbar_background_inner);
 		}
 
+		// PanelContainerButtonGroup.
+		{
+			p_theme->set_type_variation("PanelContainerButtonGroup", "PanelContainer");
+
+			Ref<StyleBoxFlat> style_button_group = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
+			style_button_group->set_content_margin_all(p_config.base_margin * EDSCALE);
+			style_button_group->set_corner_radius_all(p_config.corner_radius > 0 ? (p_config.corner_radius + p_config.base_margin) * EDSCALE : 0);
+			style_button_group->set_bg_color(p_config.surface_lower_color.lerp(p_config.mono_color_inv, 0.15).lightened(0.02));
+
+			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
+		}
+
 		// TreeLineEdit.
 		{
 			Ref<StyleBoxFlat> tree_line_edit_style = p_theme->get_stylebox(CoreStringName(normal), SNAME("LineEdit"))->duplicate();
@@ -2167,6 +2228,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_type_variation("TreeSecondary", "Tree");
 			p_theme->set_type_variation("ItemListSecondary", "ItemList");
 			p_theme->set_type_variation("EditorAudioBusEffectsTree", "Tree");
+			p_theme->set_type_variation("EditorAudioBusAddBusPanel", "PanelContainer");
 
 			Ref<StyleBoxFlat> style_sidebar = p_config.base_style->duplicate();
 			style_sidebar->set_bg_color(p_config.surface_low_color);
@@ -2203,6 +2265,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			}
 			p_theme->set_stylebox(SceneStringName(panel), "EditorAudioBusEffectsTree", style_audio_bus_effect_tree);
 			p_theme->set_constant("h_separation", "EditorAudioBusEffectsTree", 0);
+
+			p_theme->set_stylebox(SceneStringName(panel), "EditorAudioBusAddBusPanel", style_audio_bus_effect_tree);
 		}
 
 		// ForegroundPanel.
@@ -2309,10 +2373,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		// EditorProperty.
 
-		Ref<StyleBoxFlat> style_property_bg = p_config.base_style->duplicate();
-		style_property_bg->set_bg_color(p_config.highlight_color);
-		style_property_bg->set_border_width_all(0);
-
 		Ref<StyleBoxFlat> style_property_bg_selected = p_config.base_style->duplicate();
 		style_property_bg_selected->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.05));
 
@@ -2394,7 +2454,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		p_theme->set_constant("inspector_margin", EditorStringName(Editor), 12 * EDSCALE);
 
-		// Colored EditorProperty.
+		// Colored EditorProperty and EditorInspectorCategory.
 		for (int i = 0; i < 16; i++) {
 			Color si_base_color = p_config.accent_color;
 
@@ -2420,6 +2480,18 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			bg_color->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
 			p_theme->set_stylebox("sub_inspector_property_bg" + itos(i + 1), EditorStringName(EditorStyles), bg_color);
+
+			// EditorInspectorCategory when inside a sub-inspector.
+			Ref<StyleBoxFlat> category_bg_sub = category_bg->duplicate();
+			category_bg_sub->set_content_margin_all(0);
+
+			p_theme->set_stylebox("sub_inspector_category_bg", EditorStringName(EditorStyles), category_bg_sub);
+
+			// The same as above, but colored for nesting.
+			Ref<StyleBoxFlat> category_bg_sub_color = category_bg_sub->duplicate();
+			category_bg_sub_color->set_bg_color(p_config.dark_color_1.lerp(si_base_color, 0.15));
+
+			p_theme->set_stylebox("sub_inspector_color_category_bg" + itos(i + 1), EditorStringName(EditorStyles), category_bg_sub_color);
 
 			// Dictionary editor add item.
 			// Expand to the left and right by 4px to compensate for the dictionary editor margins.
@@ -2546,6 +2618,9 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_type_variation("AnimationTrackMargins", "MarginContainer");
 		p_theme->set_constant("margin_left", "AnimationTrackMargins", margin);
 		p_theme->set_constant("margin_right", "AnimationTrackMargins", margin);
+
+		p_theme->set_type_variation("AnimationBezierMargin", "MarginContainer");
+		p_theme->set_constant("margin_left", "AnimationBezierMargin", margin);
 
 		// AnimationTimelineEdit.
 		// "primary" is used for integer timeline values, "secondary" for decimals.
@@ -2723,12 +2798,19 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(CoreStringName(normal), "EditorHelpBitTooltipContent", style);
 	}
 
-	// Asset Library.
-	p_theme->set_stylebox("bg", "AssetLib", EditorThemeManager::make_empty_stylebox(p_config.base_margin, p_config.base_margin, p_config.base_margin, p_config.base_margin));
-	p_theme->set_stylebox(SceneStringName(panel), "AssetLib", p_config.foreground_panel);
-	p_theme->set_stylebox("downloads", "AssetLib", p_theme->get_stylebox(SceneStringName(panel), SNAME("ScrollContainerSecondary")));
-	p_theme->set_color("status_color", "AssetLib", Color(0.5, 0.5, 0.5)); // FIXME: Use a defined color instead.
-	p_theme->set_icon("dismiss", "AssetLib", p_theme->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
+	// Asset Store.
+	{
+		Ref<StyleBoxFlat> assetlib_panel_style = p_config.base_style->duplicate();
+		assetlib_panel_style->set_bg_color(p_config.surface_low_color);
+		assetlib_panel_style->set_content_margin_all(p_config.base_margin * 2 * EDSCALE);
+
+		p_theme->set_stylebox("bg", "AssetLib", EditorThemeManager::make_empty_stylebox(p_config.base_margin, p_config.base_margin, p_config.base_margin, p_config.base_margin));
+		p_theme->set_stylebox(SceneStringName(panel), "AssetLib", assetlib_panel_style);
+		p_theme->set_stylebox(SceneStringName(panel), "AssetLib", p_config.foreground_panel);
+		p_theme->set_stylebox("downloads", "AssetLib", p_theme->get_stylebox(SceneStringName(panel), SNAME("ScrollContainerSecondary")));
+		p_theme->set_color("faded_text", "AssetLib", p_config.font_disabled_color);
+		p_theme->set_icon("dismiss", "AssetLib", p_theme->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
+	}
 
 	// Debugger.
 	Ref<StyleBoxFlat> debugger_panel_style = p_config.content_panel_style->duplicate();
@@ -2837,6 +2919,13 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 			p_theme->set_color("playback_color", "GraphStateMachine", p_config.font_color);
 			p_theme->set_color("playback_background_color", "GraphStateMachine", p_config.font_color * Color(1, 1, 1, 0.3));
+		}
+
+		// BlendSpace graph.
+		{
+			Ref<StyleBox> bs_panel_style = p_config.tree_panel_style->duplicate();
+			bs_panel_style->set_content_margin_all(0);
+			p_theme->set_stylebox(SceneStringName(panel), "GraphBlendSpace", bs_panel_style);
 		}
 	}
 

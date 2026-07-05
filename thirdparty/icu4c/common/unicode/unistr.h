@@ -4173,8 +4173,10 @@ operator+ (const UnicodeString &s1, const UnicodeString &s2);
  * @return UnicodeString(s1).append(s2)
  * @stable ICU 76
  */
-template<typename S, typename = std::enable_if_t<ConvertibleToU16StringView<S>>>
-inline UnicodeString operator+(const UnicodeString &s1, const S &s2) {
+template<
+    typename US, typename S,
+    typename = std::enable_if_t<ConvertibleToU16StringView<S> && std::is_same_v<US, UnicodeString>>>
+inline UnicodeString operator+(const US &s1, const S &s2) {
   return unistr_internalConcat(s1, internal::toU16StringView(s2));
 }
 

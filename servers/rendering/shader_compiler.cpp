@@ -929,7 +929,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.renames.has(vnode->name)) {
 				code = p_default_actions.renames[vnode->name];
 			} else {
-				if (shader->uniforms.has(vnode->name)) {
+				bool param_found = false;
+				if (function) {
+					for (const SL::FunctionNode::Argument &argument : function->arguments) {
+						if (argument.name == vnode->name) {
+							param_found = true;
+							break;
+						}
+					}
+				}
+				if (!param_found && shader->uniforms.has(vnode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
 					if (u.is_texture()) {
@@ -1054,7 +1063,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.renames.has(anode->name)) {
 				code = p_default_actions.renames[anode->name];
 			} else {
-				if (shader->uniforms.has(anode->name)) {
+				bool param_found = false;
+				if (function) {
+					for (const SL::FunctionNode::Argument &argument : function->arguments) {
+						if (argument.name == anode->name) {
+							param_found = true;
+							break;
+						}
+					}
+				}
+				if (!param_found && shader->uniforms.has(anode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[anode->name];
 					if (u.is_texture()) {

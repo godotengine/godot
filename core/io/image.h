@@ -55,8 +55,8 @@ typedef Ref<Image> (*ScalableImageMemLoadFunc)(const uint8_t *p_data, int p_size
 typedef Error (*SaveWebPFunc)(const String &p_path, const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
 typedef Vector<uint8_t> (*SaveWebPBufferFunc)(const Ref<Image> &p_img, const bool p_lossy, const float p_quality);
 
-typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
-typedef Vector<uint8_t> (*SaveEXRBufferFunc)(const Ref<Image> &p_img, bool p_grayscale);
+typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale, bool p_color_image, float p_max_value);
+typedef Vector<uint8_t> (*SaveEXRBufferFunc)(const Ref<Image> &p_img, bool p_grayscale, bool p_color_image, float p_max_value);
 
 typedef Error (*SaveDDSFunc)(const String &p_path, const Ref<Image> &p_img);
 typedef Vector<uint8_t> (*SaveDDSBufferFunc)(const Ref<Image> &p_img);
@@ -119,6 +119,8 @@ public:
 		FORMAT_RG16I,
 		FORMAT_RGB16I,
 		FORMAT_RGBA16I,
+		FORMAT_ASTC_6x6,
+		FORMAT_ASTC_6x6_HDR,
 		FORMAT_MAX
 	};
 
@@ -144,10 +146,18 @@ public:
 		USED_CHANNELS_RGBA,
 	};
 
+#ifndef DISABLE_DEPRECATED
 	// ASTC supports block formats other than 4x4.
 	enum ASTCFormat {
 		ASTC_FORMAT_4x4,
 		ASTC_FORMAT_8x8,
+	};
+#endif
+
+	enum BPTCFormat {
+		BPTC_DETECT,
+		BPTC_FORCE_SIGNED,
+		BPTC_FORCE_UNSIGNED,
 	};
 
 	enum RoughnessChannel {
@@ -182,6 +192,14 @@ public:
 		COMPRESS_SOURCE_SRGB,
 		COMPRESS_SOURCE_NORMAL,
 		COMPRESS_SOURCE_MAX,
+	};
+
+	enum CompressProfile {
+		COMPRESS_PROFILE_AUTOMATIC,
+		COMPRESS_PROFILE_MAX_QUALITY,
+		COMPRESS_PROFILE_COMPRESSED,
+		COMPRESS_PROFILE_MAX_COMPRESSION,
+		COMPRESS_PROFILE_MAX
 	};
 
 	enum AlphaMode {
@@ -224,12 +242,12 @@ public:
 	// External VRAM compression function pointers.
 
 	static void (*_image_compress_bc_func)(Image *, UsedChannels p_channels);
-	static void (*_image_compress_bptc_func)(Image *, UsedChannels p_channels);
+	static void (*_image_compress_bptc_func)(Image *, UsedChannels p_channels, BPTCFormat p_bptc_format);
 	static void (*_image_compress_etc1_func)(Image *);
 	static void (*_image_compress_etc2_func)(Image *, UsedChannels p_channels);
-	static void (*_image_compress_astc_func)(Image *, ASTCFormat p_format);
+	static void (*_image_compress_astc_func)(Image *, UsedChannels p_channels, CompressProfile p_profile);
 
-	static Error (*_image_compress_bptc_rd_func)(Image *, UsedChannels p_channels);
+	static Error (*_image_compress_bptc_rd_func)(Image *, UsedChannels p_channels, BPTCFormat p_bptc_format);
 	static Error (*_image_compress_bc_rd_func)(Image *, UsedChannels p_channels);
 
 	// External VRAM decompression function pointers.
@@ -256,6 +274,15 @@ protected:
 	virtual Ref<Resource> _duplicate(const DuplicateParams &p_params) const override;
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	Error _compress_bind_compat_115003(CompressMode p_mode, CompressSource p_source, ASTCFormat p_format);
+	Error _compress_from_channels_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format);
+	Vector<uint8_t> _save_exr_to_buffer_bind_compat_117800(bool p_grayscale = false) const;
+	Error _save_exr_bind_compat_117800(const String &p_path, bool p_grayscale = false) const;
+
+	static void _bind_compatibility_methods();
+#endif
 
 private:
 	Format format = FORMAT_L8;
@@ -352,7 +379,7 @@ public:
 	// Returns true when the image is empty (0,0) in size.
 	bool is_empty() const;
 
-	Vector<uint8_t> get_data() const;
+	const Vector<uint8_t> &get_data() const _LIFETIME_BOUND_;
 
 	Error load(const String &p_path);
 	static Ref<Image> load_from_file(const String &p_path);
@@ -361,9 +388,9 @@ public:
 	Error save_dds(const String &p_path) const;
 	Vector<uint8_t> save_png_to_buffer() const;
 	Vector<uint8_t> save_jpg_to_buffer(float p_quality = 0.75) const;
-	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false) const;
+	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false, bool p_color_image = false, float p_max_value = -1.0f) const;
 	Vector<uint8_t> save_dds_to_buffer() const;
-	Error save_exr(const String &p_path, bool p_grayscale = false) const;
+	Error save_exr(const String &p_path, bool p_grayscale = false, bool p_color_image = false, float p_max_value = -1.0f) const;
 	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
 	Vector<uint8_t> save_webp_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
 
@@ -381,7 +408,7 @@ public:
 	bool is_invisible() const;
 
 	static int get_format_pixel_size(Format p_format);
-	static int get_format_pixel_rshift(Format p_format);
+	static uint64_t get_format_pixels_shifted(Format p_format, uint64_t p_pixels);
 	static int get_format_block_size(Format p_format);
 	static void get_format_min_pixel_size(Format p_format, int &r_w, int &r_h);
 
@@ -391,8 +418,9 @@ public:
 	static int64_t get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
 	static int64_t get_image_mipmap_offset_and_dimensions(int p_width, int p_height, Format p_format, int p_mipmap, int &r_w, int &r_h);
 
-	Error compress(CompressMode p_mode, CompressSource p_source = COMPRESS_SOURCE_GENERIC, ASTCFormat p_astc_format = ASTC_FORMAT_4x4);
-	Error compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format = ASTC_FORMAT_4x4);
+	Error compress(CompressMode p_mode, CompressSource p_source = COMPRESS_SOURCE_GENERIC, CompressProfile p_profile = COMPRESS_PROFILE_AUTOMATIC);
+	Error compress_from_channels(CompressMode p_mode, UsedChannels p_channels, CompressProfile p_profile = COMPRESS_PROFILE_AUTOMATIC);
+	Error _compress_from_channels(CompressMode p_mode, UsedChannels p_channels, CompressProfile p_profile, BPTCFormat p_bptc_format);
 	Error decompress();
 	bool is_compressed() const;
 	static bool is_format_compressed(Format p_format);
@@ -467,4 +495,8 @@ VARIANT_ENUM_CAST(Image::CompressSource)
 VARIANT_ENUM_CAST(Image::UsedChannels)
 VARIANT_ENUM_CAST(Image::AlphaMode)
 VARIANT_ENUM_CAST(Image::RoughnessChannel)
+VARIANT_ENUM_CAST(Image::CompressProfile)
+
+#ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(Image::ASTCFormat)
+#endif

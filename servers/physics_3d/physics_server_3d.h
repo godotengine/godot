@@ -773,6 +773,8 @@ public:
 		G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS,
 		G6DOF_JOINT_ANGULAR_SPRING_DAMPING,
 		G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT,
+		G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT,
+		G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT,
 		G6DOF_JOINT_MAX
 	};
 
@@ -793,6 +795,9 @@ public:
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const = 0;
+
+	virtual void generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) = 0;
+	virtual Quaternion generic_6dof_joint_get_angular_target_rotation(RID p_joint) const = 0;
 
 	/* QUERY API */
 

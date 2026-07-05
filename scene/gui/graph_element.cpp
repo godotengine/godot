@@ -66,7 +66,7 @@ Size2 GraphElement::get_minimum_size() const {
 			continue;
 		}
 
-		Size2i size = child->get_combined_minimum_size();
+		Size2i size = child->get_bound_minimum_size();
 
 		minsize = minsize.max(size);
 	}

@@ -42,8 +42,8 @@
 // Class that makes functions in java/src/org/godotengine/godot/Godot.kt callable from C++
 class GodotJavaWrapper {
 private:
-	jobject godot_instance;
-	jclass godot_class;
+	jobject godot_native_bridge;
+	jclass godot_native_bridge_class;
 
 	GodotJavaViewWrapper *godot_view = nullptr;
 
@@ -98,7 +98,7 @@ private:
 	jmethodID _set_auto_enter_pip_mode_on_background = nullptr;
 
 public:
-	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
+	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_native_bridge);
 	~GodotJavaWrapper();
 
 	jobject get_activity();

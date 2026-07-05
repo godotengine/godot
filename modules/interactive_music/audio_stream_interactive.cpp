@@ -44,10 +44,6 @@ Ref<AudioStreamPlayback> AudioStreamInteractive::instantiate_playback() {
 	return playback_transitioner;
 }
 
-String AudioStreamInteractive::get_stream_name() const {
-	return "Transitioner";
-}
-
 void AudioStreamInteractive::set_clip_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0 || p_count > MAX_CLIPS);
 
@@ -522,6 +518,7 @@ void AudioStreamInteractive::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(TRANSITION_TO_TIME_SAME_POSITION);
 	BIND_ENUM_CONSTANT(TRANSITION_TO_TIME_START);
+	BIND_ENUM_CONSTANT(TRANSITION_TO_TIME_PREVIOUS_POSITION);
 
 	BIND_ENUM_CONSTANT(FADE_DISABLED);
 	BIND_ENUM_CONSTANT(FADE_IN);

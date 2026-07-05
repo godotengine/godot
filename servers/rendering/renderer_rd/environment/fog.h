@@ -357,6 +357,8 @@ public:
 		RID shadow_atlas_depth;
 		RID omni_light_buffer;
 		RID spot_light_buffer;
+		RID area_light_buffer;
+		RID area_light_atlas;
 		RID directional_shadow_depth;
 		RID directional_light_buffer;
 

@@ -370,14 +370,24 @@ void FileDialog::update_dir() {
 	if (drives->is_visible()) {
 		if (dir_access->get_current_dir().is_network_share_path()) {
 			_update_drives(false);
-			drives->add_item(ETR("Network"));
-			drives->set_item_disabled(-1, true);
-			drives->select(drives->get_item_count() - 1);
+			PopupMenu *pm = drives->get_popup();
+			pm->add_item(ETR("Network"));
+			Dictionary meta;
+			meta["index"] = -1;
+			meta["path"] = String();
+			meta["name"] = ETR("Network");
+			pm->set_item_metadata(-1, meta);
+			pm->set_item_disabled(-1, true);
+			drives->set_text(meta["name"]);
+			selected_drive = pm->get_item_count() - 1;
 		} else {
+			PopupMenu *pm = drives->get_popup();
 			int cur = dir_access->get_current_drive();
-			for (int i = 0; i < drives->get_item_count(); i++) {
-				if (drives->get_item_metadata(i).operator int() == cur) {
-					drives->select(i);
+			for (int i = 0; i < pm->get_item_count(); i++) {
+				const Dictionary &meta = pm->get_item_metadata(i);
+				if (meta["index"].operator int() == cur) {
+					drives->set_text(meta["name"]);
+					selected_drive = i;
 					break;
 				}
 			}
@@ -393,7 +403,7 @@ void FileDialog::_dir_submitted(String p_dir) {
 #ifdef WINDOWS_ENABLED
 	if (root_prefix.is_empty() && drives->is_visible() && !new_dir.is_network_share_path() && new_dir.is_absolute_path() && new_dir.find(":/") == -1 && new_dir.find(":\\") == -1) {
 		// Non network path without X:/ prefix on Windows, add drive letter.
-		new_dir = drives->get_item_text(drives->get_selected()).path_join(new_dir);
+		new_dir = drives->get_popup()->get_item_metadata(selected_drive).operator Dictionary()["path"].operator String().path_join(new_dir);
 	}
 #endif
 	if (!root_prefix.is_empty()) {
@@ -1615,8 +1625,11 @@ void FileDialog::_make_dir() {
 }
 
 void FileDialog::_select_drive(int p_idx) {
-	String d = drives->get_item_text(p_idx);
-	_change_dir(d);
+	const Dictionary &meta = drives->get_popup()->get_item_metadata(p_idx);
+	drives->set_text(meta["name"]);
+	selected_drive = p_idx;
+
+	_change_dir(meta["path"]);
 	filename_edit->set_text("");
 	_push_history();
 }
@@ -1662,7 +1675,8 @@ void FileDialog::_update_drives(bool p_select) {
 	if (drive_map.size() == 0) {
 		drives->hide();
 	} else {
-		drives->clear();
+		PopupMenu *pm = drives->get_popup();
+		pm->clear();
 		Node *dp = drives->get_parent();
 		if (dp) {
 			dp->remove_child(drives);
@@ -1672,10 +1686,22 @@ void FileDialog::_update_drives(bool p_select) {
 		drives->show();
 
 		for (const KeyValue<int, String> &drv : drive_map) {
-			drives->add_item(drv.value);
-			drives->set_item_metadata(-1, drv.key);
+			String display_name = drv.value;
+			String lbl = dir_access->get_drive_label(drv.key);
+			if (!lbl.is_empty()) {
+				display_name = drv.value + " (" + lbl + ")";
+			}
+			pm->add_item(display_name);
+			pm->set_item_tooltip(-1, drv.value);
+
+			Dictionary meta;
+			meta["index"] = drv.key;
+			meta["path"] = drv.value;
+			meta["name"] = drv.value;
+			pm->set_item_metadata(-1, meta);
 			if (p_select && drv.key == cur) {
-				drives->select(drives->get_item_count() - 1);
+				drives->set_text(drv.value);
+				selected_drive = drv.key;
 			}
 		}
 	}
@@ -2248,6 +2274,7 @@ void FileDialog::set_show_hidden_files(bool p_show) {
 	if (show_hidden_files == p_show) {
 		return;
 	}
+	show_hidden->set_pressed_no_signal(p_show);
 	show_hidden_files = p_show;
 	invalidate();
 }
@@ -2367,8 +2394,9 @@ FileDialog::FileDialog() {
 	drives_container = memnew(HBoxContainer);
 	top_toolbar->add_child(drives_container);
 
-	drives = memnew(OptionButton);
-	drives->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_select_drive));
+	drives = memnew(MenuButton);
+	drives->set_flat(false);
+	drives->get_popup()->connect("index_pressed", callable_mp(this, &FileDialog::_select_drive));
 	drives->set_accessibility_name(ETR("Drive"));
 	top_toolbar->add_child(drives);
 
@@ -2600,6 +2628,7 @@ FileDialog::FileDialog() {
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // Too many extensions overflows it.
+	filter->set_fit_to_longest_item(false);
 	file_box->add_child(filter);
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_filter_selected));
 
@@ -2618,6 +2647,7 @@ FileDialog::FileDialog() {
 	confirm_save->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_save_confirm_pressed));
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	delete_dialog->set_text(ETR("Delete the selected file?\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 	add_child(delete_dialog, false, INTERNAL_MODE_FRONT);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_delete_confirm));
@@ -2636,10 +2666,12 @@ FileDialog::FileDialog() {
 	make_dir_dialog->register_text_enter(new_dir_name);
 
 	mkdirerr = memnew(AcceptDialog);
+	mkdirerr->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	mkdirerr->set_text(ETR("Could not create folder."));
 	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
 
 	exterr = memnew(AcceptDialog);
+	exterr->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	exterr->set_text(ETR("Invalid extension, or empty filename."));
 	add_child(exterr, false, INTERNAL_MODE_FRONT);
 

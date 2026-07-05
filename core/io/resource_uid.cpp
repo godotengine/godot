@@ -111,17 +111,10 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 }
 
 ResourceUID::ID ResourceUID::create_id() {
-	// mbedTLS may not be fully initialized when the ResourceUID is created, so we
-	// need to lazily instantiate the random number generator.
-	if (crypto == nullptr) {
-		crypto = memnew(CryptoCore::RandomGenerator);
-		((CryptoCore::RandomGenerator *)crypto)->init();
-	}
-
 	while (true) {
 		ID id = INVALID_ID;
 		MutexLock lock(mutex);
-		Error err = ((CryptoCore::RandomGenerator *)crypto)->get_random_bytes((uint8_t *)&id, sizeof(id));
+		Error err = CryptoCore::generate_random((uint8_t *)&id, sizeof(id));
 		ERR_FAIL_COND_V(err != OK, INVALID_ID);
 		id &= 0x7FFFFFFFFFFFFFFF;
 		bool exists = unique_ids.has(id);
@@ -169,6 +162,8 @@ void ResourceUID::add_id(ID p_id, const String &p_path) {
 		reverse_cache[c.cs] = p_id;
 	}
 	changed = true;
+	// The cache was never loaded (probably does not exist), so assume that first ID initializes it.
+	cache_initialized = true;
 }
 
 void ResourceUID::set_id(ID p_id, const String &p_path) {
@@ -207,7 +202,12 @@ String ResourceUID::get_id_path(ID p_id) const {
 	}
 #endif
 
-	ERR_FAIL_COND_V_MSG(!cache, String(), vformat("Unrecognized UID: \"%s\".", id_to_text(p_id)));
+	if (unlikely(!cache)) {
+		if (cache_initialized) {
+			ERR_PRINT(vformat("Unrecognized UID: \"%s\".", id_to_text(p_id)));
+		}
+		return String();
+	}
 	const CharString &cs = cache->cs;
 	return String::utf8(cs.ptr());
 }
@@ -329,6 +329,7 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 
 	cache_entries = entry_count;
 	changed = false;
+	cache_initialized = true;
 	return OK;
 }
 
@@ -428,9 +429,4 @@ ResourceUID *ResourceUID::singleton = nullptr;
 ResourceUID::ResourceUID() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
-}
-ResourceUID::~ResourceUID() {
-	if (crypto != nullptr) {
-		memdelete((CryptoCore::RandomGenerator *)crypto);
-	}
 }

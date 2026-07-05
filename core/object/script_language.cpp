@@ -35,7 +35,6 @@
 #include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/templates/sort_array.h"
@@ -164,7 +163,6 @@ PropertyInfo Script::get_class_category() const {
 void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_instantiate"), &Script::can_instantiate);
 	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
-	ClassDB::bind_method(D_METHOD("instance_has", "base_object"), &Script::instance_has);
 	ClassDB::bind_method(D_METHOD("has_source_code"), &Script::has_source_code);
 	ClassDB::bind_method(D_METHOD("get_source_code"), &Script::get_source_code);
 	ClassDB::bind_method(D_METHOD("set_source_code", "source"), &Script::set_source_code);
@@ -188,32 +186,25 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::_get_rpc_config_bind);
 
+#ifndef DISABLE_DEPRECATED
+	GODOT_PUSH_IGNORE_DEPRECATION();
+
+	ClassDB::bind_method(D_METHOD("instance_has", "base_object"), &Script::instance_has);
+
+	GODOT_POP_IGNORE_DEPRECATION();
+#endif // !DISABLE_DEPRECATED
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
 
 void Script::reload_from_file() {
 #ifdef TOOLS_ENABLED
-	// Replicates how the ScriptEditor reloads script resources, which generally handles it.
-	// However, when scripts are to be reloaded but aren't open in the internal editor, we go through here instead.
-	const Ref<Script> rel = ResourceLoader::load(ResourceLoader::path_remap(get_path()), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-	if (rel.is_null()) {
-		return;
+	if (Engine::get_singleton()->is_editor_hint() && is_tool()) {
+		get_language()->reload_tool_script(this, true);
+	} else {
+		Array scripts = { this };
+		get_language()->reload_scripts(scripts, true);
 	}
-
-	set_source_code(rel->get_source_code());
-	set_last_modified_time(rel->get_last_modified_time());
-
-	// Only reload the script when there are no compilation errors to prevent printing the error messages twice.
-	if (rel->is_valid()) {
-		if (Engine::get_singleton()->is_editor_hint() && is_tool()) {
-			get_language()->reload_tool_script(this, true);
-		} else {
-			// It's important to set p_keep_state to true in order to manage reloading scripts
-			// that are currently instantiated.
-			reload(true);
-		}
-	}
-
 #else
 	Resource::reload_from_file();
 #endif

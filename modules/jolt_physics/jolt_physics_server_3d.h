@@ -108,8 +108,6 @@ public:
 		G6DOF_JOINT_LINEAR_LIMIT_SPRING_FREQUENCY,
 		G6DOF_JOINT_LINEAR_LIMIT_SPRING_DAMPING,
 		G6DOF_JOINT_ANGULAR_SPRING_FREQUENCY,
-		G6DOF_JOINT_LINEAR_SPRING_MAX_FORCE,
-		G6DOF_JOINT_ANGULAR_SPRING_MAX_TORQUE,
 	};
 
 	enum G6DOFJointAxisFlagJolt {
@@ -404,6 +402,9 @@ public:
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag, bool p_enable) override;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const override;
+
+	virtual void generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) override;
+	virtual Quaternion generic_6dof_joint_get_angular_target_rotation(RID p_joint) const override;
 
 	virtual PhysicsServer3D::JointType joint_get_type(RID p_joint) const override;
 

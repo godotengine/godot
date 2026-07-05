@@ -582,7 +582,6 @@ Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture
 	image_data.resize(tight_mip_size);
 
 	uint32_t pixel_size = get_image_format_pixel_size(tex_format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(tex_format);
 	uint32_t blockw = 0, blockh = 0;
 	get_compressed_image_format_block_dimensions(tex_format, blockw, blockh);
 
@@ -592,7 +591,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::texture_get_data(TextureID p_texture
 		uint32_t bw = STEPIFY(tex_w, blockw);
 		uint32_t bh = STEPIFY(tex_h, blockh);
 
-		uint32_t bytes_per_row = (bw * pixel_size) >> pixel_rshift;
+		uint32_t bytes_per_row = get_compressed_image_format_pixels_shifted(tex_format, bw * pixel_size);
 		uint32_t bytes_per_img = bytes_per_row * bh;
 		uint32_t mip_size = bytes_per_img * tex_d;
 
@@ -983,6 +982,11 @@ RDD::ColorSpace RenderingDeviceDriverMetal::swap_chain_get_color_space(SwapChain
 	return swap_chain->color_space;
 }
 
+bool RenderingDeviceDriverMetal::swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) {
+	// Our minimum supported version of metal requires support for EDR.
+	return true;
+}
+
 void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	RenderingContextDriverMetal::Surface *metal_surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
@@ -1038,13 +1042,34 @@ void RenderingDeviceDriverMetal::framebuffer_free(FramebufferID p_framebuffer) {
 
 #pragma mark - Shader
 
-void RenderingDeviceDriverMetal::shader_cache_free_entry(const SHA256Digest &key) {
-	if (ShaderCacheEntry **pentry = _shader_cache.getptr(key); pentry != nullptr) {
-		ShaderCacheEntry *entry = *pentry;
-		_shader_cache.erase(key);
-		entry->library.reset();
-		memdelete(entry);
+void RenderingDeviceDriverMetal::shader_cache_free_entry(ShaderCacheEntry *p_entry) {
+	MutexLock lock(_shader_cache_lock);
+	// Only remove the map slot if it still refers to this exact entry. A concurrent
+	// creation for the same hash may have replaced it, in which case that newer entry
+	// (and its library) must be left untouched.
+	if (ShaderCacheEntry **pentry = _shader_cache.getptr(p_entry->key); pentry != nullptr && *pentry == p_entry) {
+		_shader_cache.erase(p_entry->key);
 	}
+	memdelete(p_entry);
+}
+
+std::optional<std::shared_ptr<MDLibrary>> RenderingDeviceDriverMetal::shader_cache_get_library(const SHA256Digest &key) {
+	MutexLock lock(_shader_cache_lock);
+
+	if (ShaderCacheEntry **p = _shader_cache.getptr(key); p != nullptr) {
+		if (std::shared_ptr<MDLibrary> lib = (*p)->library.lock()) {
+			return lib;
+		}
+		// Library was released; remove stale cache entry and recreate.
+		_shader_cache.erase(key);
+	}
+
+	return std::nullopt;
+}
+
+void RenderingDeviceDriverMetal::shader_cache_set_entry(const SHA256Digest &key, ShaderCacheEntry *p_entry) {
+	MutexLock lock(_shader_cache_lock);
+	_shader_cache[key] = p_entry;
 }
 
 template <typename T, typename U>
@@ -1073,6 +1098,11 @@ static void update_uniform_info(const RenderingShaderContainerMetal::UniformData
 RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) {
 	Ref<RenderingShaderContainerMetal> shader_container = p_shader_container;
 	using RSCM = RenderingShaderContainerMetal;
+
+	if (shader_container->is_invalid()) {
+		WARN_PRINT("Metal shader container is invalid and will be recompiled.");
+		return RDD::ShaderID();
+	}
 
 	CharString shader_name = shader_container->shader_name;
 	RSCM::HeaderData &mtl_reflection_data = shader_container->mtl_reflection_data;
@@ -1112,14 +1142,9 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 		if (shader.shader_stage == RDD::ShaderStage::SHADER_STAGE_COMPUTE) {
 			pipeline_type = PIPELINE_TYPE_COMPUTE;
 		}
-
-		if (ShaderCacheEntry **p = _shader_cache.getptr(shader_data.hash); p != nullptr) {
-			if (std::shared_ptr<MDLibrary> lib = (*p)->library.lock()) {
-				libraries[shader.shader_stage] = lib;
-				continue;
-			}
-			// Library was released; remove stale cache entry and recreate.
-			_shader_cache.erase(shader_data.hash);
+		if (std::optional<std::shared_ptr<MDLibrary>> lib = shader_cache_get_library(shader_data.hash); lib) {
+			libraries[shader.shader_stage] = std::move(*lib);
+			continue;
 		}
 
 		if (shader.code_decompressed_size > 0) {
@@ -1157,7 +1182,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 			library = MDLibrary::create(cd, device, source.get(), options.get(), _shader_load_strategy);
 		}
 
-		_shader_cache[shader_data.hash] = cd;
+		shader_cache_set_entry(shader_data.hash, cd);
 		libraries[shader.shader_stage] = library;
 	}
 
@@ -1600,17 +1625,18 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		subpass.color_references = p_subpasses[i].color_references;
 		subpass.depth_stencil_reference = p_subpasses[i].depth_stencil_reference;
 		subpass.resolve_references = p_subpasses[i].resolve_references;
+		subpass.depth_resolve_reference = p_subpasses[i].depth_resolve_reference;
 	}
 
 	static const MTL::LoadAction LOAD_ACTIONS[] = {
-		[ATTACHMENT_LOAD_OP_LOAD] = MTL::LoadActionLoad,
-		[ATTACHMENT_LOAD_OP_CLEAR] = MTL::LoadActionClear,
-		[ATTACHMENT_LOAD_OP_DONT_CARE] = MTL::LoadActionDontCare,
+		MTL::LoadActionLoad, // ATTACHMENT_LOAD_OP_LOAD
+		MTL::LoadActionClear, // ATTACHMENT_LOAD_OP_CLEAR
+		MTL::LoadActionDontCare, // ATTACHMENT_LOAD_OP_DONT_CARE
 	};
 
 	static const MTL::StoreAction STORE_ACTIONS[] = {
-		[ATTACHMENT_STORE_OP_STORE] = MTL::StoreActionStore,
-		[ATTACHMENT_STORE_OP_DONT_CARE] = MTL::StoreActionDontCare,
+		MTL::StoreActionStore, // ATTACHMENT_STORE_OP_STORE
+		MTL::StoreActionDontCare, // ATTACHMENT_STORE_OP_DONT_CARE
 	};
 
 	Vector<MDAttachment> attachments;
@@ -2262,20 +2288,16 @@ RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_s
 
 // ----- ACCELERATION STRUCTURE -----
 
-RDD::AccelerationStructureID RenderingDeviceDriverMetal::blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset_bytes, uint32_t p_index_coun, BitField<AccelerationStructureGeometryBits> p_geometry_bits) {
+RDD::AccelerationStructureID RenderingDeviceDriverMetal::blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) {
 	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the Metal driver.");
 }
 
-uint32_t RenderingDeviceDriverMetal::tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) {
-	ERR_FAIL_V_MSG(0, "Ray tracing is not currently supported by the Metal driver.");
+RDD::AccelerationStructureID RenderingDeviceDriverMetal::tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) {
+	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the Metal driver.");
 }
 
-void RenderingDeviceDriverMetal::tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) {
+void RenderingDeviceDriverMetal::acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) {
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
-}
-
-RDD::AccelerationStructureID RenderingDeviceDriverMetal::tlas_create(BufferID p_instance_buffer) {
-	ERR_FAIL_V_MSG(AccelerationStructureID(), "Ray tracing is not currently supported by the Metal driver.");
 }
 
 void RenderingDeviceDriverMetal::acceleration_structure_free(RDD::AccelerationStructureID p_acceleration_structure) {
@@ -2288,7 +2310,7 @@ uint32_t RenderingDeviceDriverMetal::acceleration_structure_get_scratch_size_byt
 
 // ----- PIPELINE -----
 
-RDD::RaytracingPipelineID RenderingDeviceDriverMetal::raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
+RDD::RaytracingPipelineID RenderingDeviceDriverMetal::raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) {
 	ERR_FAIL_V_MSG(RaytracingPipelineID(), "Ray tracing is not currently supported by the Metal driver.");
 }
 
@@ -2296,9 +2318,17 @@ void RenderingDeviceDriverMetal::raytracing_pipeline_free(RDD::RaytracingPipelin
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
 }
 
+bool RenderingDeviceDriverMetal::raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data, uint32_t p_data_stride_bytes) {
+	ERR_FAIL_V_MSG(false, "Ray tracing is not currently supported by the Metal driver.");
+}
+
 // ----- COMMANDS -----
 
-void RenderingDeviceDriverMetal::command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
+void RenderingDeviceDriverMetal::command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) {
+	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
+}
+
+void RenderingDeviceDriverMetal::command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) {
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
 }
 
@@ -2310,7 +2340,7 @@ void RenderingDeviceDriverMetal::command_bind_raytracing_uniform_set(CommandBuff
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
 }
 
-void RenderingDeviceDriverMetal::command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) {
+void RenderingDeviceDriverMetal::command_trace_rays(CommandBufferID p_cmd_buffer, const ShaderBindingTable &p_raygen_sbt, const ShaderBindingTable &p_miss_sbt, const ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 	ERR_FAIL_MSG("Ray tracing is not currently supported by the Metal driver.");
 }
 
@@ -2505,13 +2535,15 @@ Error RenderingDeviceDriverMetal::_copy_queue_initialize() {
 	copy_queue_buffer.get()->setLabel(MTLSTR("Copy Command Scratch Buffer"));
 
 	if (__builtin_available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 1.0, *)) {
-		MTL::ResidencySetDescriptor *rs_desc = MTL::ResidencySetDescriptor::alloc()->init();
-		rs_desc->setInitialCapacity(2);
-		rs_desc->setLabel(MTLSTR("Copy Queue Residency Set"));
-		NS::Error *error = nullptr;
-		copy_queue_rs = NS::TransferPtr(device->newResidencySet(rs_desc, &error));
-		rs_desc->release();
-		copy_queue.get()->addResidencySet(copy_queue_rs.get());
+		if (device_properties->features.supports_residency_sets) {
+			MTL::ResidencySetDescriptor *rs_desc = MTL::ResidencySetDescriptor::alloc()->init();
+			rs_desc->setInitialCapacity(2);
+			rs_desc->setLabel(MTLSTR("Copy Queue Residency Set"));
+			NS::Error *error = nullptr;
+			copy_queue_rs = NS::TransferPtr(device->newResidencySet(rs_desc, &error));
+			rs_desc->release();
+			copy_queue.get()->addResidencySet(copy_queue_rs.get());
+		}
 	}
 
 	return OK;
@@ -2675,6 +2707,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return true;
 		case SUPPORTS_POINT_SIZE:
 			return true;
+		case SUPPORTS_FRAMEBUFFER_DEPTH_RESOLVE:
+			return device_properties->features.supports_msaa_depth_resolve;
 		default:
 			return false;
 	}

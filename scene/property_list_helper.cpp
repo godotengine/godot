@@ -146,30 +146,35 @@ bool PropertyListHelper::is_property_valid(const String &p_property, int *r_inde
 	return property_list.has(components[1]);
 }
 
+void PropertyListHelper::add_properties_for_index(int p_index, List<PropertyInfo> *p_list) const {
+	for (const KeyValue<String, Property> &E : property_list) {
+		const Property &property = E.value;
+		if (property_filter) {
+			Callable::CallError ce;
+			Variant args[] = { property.info.name, p_index };
+			const Variant *argptrs[] = { &args[0], &args[1] };
+
+			bool property_valid = property_filter->call(object, argptrs, 2, ce);
+			if (!property_valid) {
+				continue;
+			}
+		}
+
+		PropertyInfo info = property.info;
+		if (!(info.usage & PROPERTY_USAGE_STORE_IF_NULL) && _call_getter(&property, p_index) == property.default_value) {
+			info.usage &= (~PROPERTY_USAGE_STORAGE);
+		}
+
+		info.name = vformat("%s%d/%s", prefix, p_index, info.name);
+		p_list->push_back(info);
+	}
+}
+
 void PropertyListHelper::get_property_list(List<PropertyInfo> *p_list) const {
+	DEV_ASSERT(array_length_getter);
 	const int property_count = _call_array_length_getter();
 	for (int i = 0; i < property_count; i++) {
-		for (const KeyValue<String, Property> &E : property_list) {
-			const Property &property = E.value;
-			if (property_filter) {
-				Callable::CallError ce;
-				Variant args[] = { property.info.name, i };
-				const Variant *argptrs[] = { &args[0], &args[1] };
-
-				bool property_valid = property_filter->call(object, argptrs, 2, ce);
-				if (!property_valid) {
-					continue;
-				}
-			}
-
-			PropertyInfo info = property.info;
-			if (!(info.usage & PROPERTY_USAGE_STORE_IF_NULL) && _call_getter(&property, i) == property.default_value) {
-				info.usage &= (~PROPERTY_USAGE_STORAGE);
-			}
-
-			info.name = vformat("%s%d/%s", prefix, i, info.name);
-			p_list->push_back(info);
-		}
+		add_properties_for_index(i, p_list);
 	}
 }
 

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/error/error_list.h"
 #include "core/object/script_language.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/script/script_editor_base.h"
@@ -77,8 +78,7 @@ public:
 };
 
 class EditorScriptCodeCompletionCache;
-class FindInFilesContainer;
-class FindInFilesDialog;
+class FindInFiles;
 
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
@@ -196,8 +196,7 @@ class ScriptEditor : public PanelContainer {
 	Button *script_back = nullptr;
 	Button *script_forward = nullptr;
 
-	FindInFilesDialog *find_in_files_dialog = nullptr;
-	FindInFilesContainer *find_in_files = nullptr;
+	FindInFiles *find_in_files = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;
 
@@ -217,7 +216,7 @@ class ScriptEditor : public PanelContainer {
 
 	struct ScriptHistory {
 		Control *control = nullptr;
-		Variant state;
+		Dictionary state;
 	};
 
 	Vector<ScriptHistory> history;
@@ -253,10 +252,10 @@ class ScriptEditor : public PanelContainer {
 
 	void _show_error_dialog(const String &p_path);
 
-	void _close_tab(int p_idx, bool p_save = true, bool p_history_back = true);
+	void _close_tab(int p_idx, bool p_save = true);
 	void _update_find_replace_bar();
 
-	void _close_current_tab(bool p_save = true, bool p_history_back = true);
+	void _close_current_tab(bool p_save = true);
 	void _close_discard_current_tab(const String &p_str);
 	void _close_docs_tab();
 	void _close_other_tabs();
@@ -356,18 +355,19 @@ class ScriptEditor : public PanelContainer {
 
 	void _history_forward();
 	void _history_back();
+	void _roll_back_to_pre_tab();
 
 	bool waiting_update_names;
-	bool lock_history = false;
-	void _unlock_history();
 
 	void _help_class_open(const String &p_class);
 	void _help_class_goto(const String &p_desc);
 	bool _help_tab_goto(const String &p_name, const String &p_desc);
 	void _update_history_arrows();
-	void _save_history();
-	void _save_previous_state(Dictionary p_state);
-	void _go_to_tab(int p_idx);
+	void _save_history(Control *p_control);
+	void _save_new_history(const Dictionary &p_state, Control *p_control);
+	void _save_previous_state(const Dictionary &p_state, Control *p_control);
+	void _compress_history_patterns(bool p_once);
+	void _go_to_tab(int p_idx, bool p_save_history = false);
 	void _update_history_pos(int p_new_pos);
 	void _update_script_colors();
 	void _update_modified_scripts_for_external_editor(Ref<Script> p_for_script = Ref<Script>());
@@ -383,10 +383,8 @@ class ScriptEditor : public PanelContainer {
 	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
 
-	void _on_replace_in_files_requested(const String &text);
-	void _on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end);
-	void _start_find_in_files(bool with_replace);
-	void _on_find_in_files_modified_files(const PackedStringArray &paths);
+	void _on_find_in_files_result_selected(const String &p_path, int p_line_number, int p_begin, int p_end);
+	void _on_find_in_files_modified_files();
 
 	void _set_script_zoom_factor(float p_zoom_factor);
 	void _update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor);
@@ -408,10 +406,11 @@ public:
 	bool is_files_panel_toggled();
 	void apply_scripts() const;
 	void reload_scripts(bool p_refresh_only = false);
-	void open_find_in_files_dialog(const String &text);
+	void open_find_in_files_dialog(const String &p_initial_text = "", bool p_replace = false);
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);
+	Error close_file(const String &p_file);
 
 	void ensure_select_current();
 
@@ -462,6 +461,7 @@ public:
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
 	ScriptEditor(WindowWrapper *p_wrapper);
+	~ScriptEditor();
 };
 
 class ScriptEditorPlugin : public EditorPlugin {

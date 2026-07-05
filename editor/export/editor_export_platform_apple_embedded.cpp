@@ -32,6 +32,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/plist.h"
+#include "core/io/resource_loader.h"
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
@@ -283,6 +284,8 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/delete_old_export_files_unconditionally"), false));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "modules/camera"), false));
+
 	Vector<PluginConfigAppleEmbedded> found_plugins = get_plugins(get_platform_name());
 	for (int i = 0; i < found_plugins.size(); i++) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("plugins"), found_plugins[i].name)), false));
@@ -413,8 +416,14 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$modules_buildphase", p_config.modules_buildphase) + "\n";
 	} else if (p_line.contains("$modules_buildgrp")) {
 		strnew += p_line.replace("$modules_buildgrp", p_config.modules_buildgrp) + "\n";
+	} else if (p_line.contains("$spm_packages")) {
+		strnew += p_line.replace("$spm_packages", p_config.spm_packages) + "\n";
+	} else if (p_line.contains("$spm_package_refs")) {
+		strnew += p_line.replace("$spm_package_refs", p_config.spm_package_refs) + "\n";
+	} else if (p_line.contains("$spm_package_products")) {
+		strnew += p_line.replace("$spm_package_products", p_config.spm_package_products) + "\n";
 	} else if (p_line.contains("$name")) {
-		strnew += p_line.replace("$name", p_config.pkg_name.xml_escape(true)) + "\n";
+		strnew += p_line.replace("$name", p_config.pkg_name) + "\n";
 	} else if (p_line.contains("$bundle_identifier")) {
 		strnew += p_line.replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
 	} else if (p_line.contains("$short_version")) {
@@ -1422,7 +1431,7 @@ Vector<String> EditorExportPlatformAppleEmbedded::_get_preset_architectures(cons
 	return enabled_archs;
 }
 
-Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Ref<EditorExportPreset> &p_preset, AppleEmbeddedConfigData &p_config_data, const String &dest_dir, Vector<AppleEmbeddedExportAsset> &r_exported_assets, bool p_debug) {
+Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Ref<EditorExportPreset> &p_preset, AppleEmbeddedConfigData &p_config_data, const String &p_dest_dir, const Vector<String> &p_module_libs, Vector<AppleEmbeddedExportAsset> &r_exported_assets, bool p_debug) {
 	String plugin_definition_cpp_code;
 	String plugin_initialization_cpp_code;
 	String plugin_deinitialization_cpp_code;
@@ -1449,7 +1458,7 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 		String plugin_binary_result_file = plugin.binary.get_file();
 		// We shouldn't embed .xcframework that contains static libraries.
 		// Static libraries are not embedded anyway.
-		err = _copy_asset(p_preset, dest_dir, plugin_main_binary, &plugin_binary_result_file, true, false, r_exported_assets);
+		err = _copy_asset(p_preset, p_dest_dir, plugin_main_binary, &plugin_binary_result_file, true, false, r_exported_assets);
 		ERR_FAIL_COND_V(err != OK, err);
 
 		// Adding dependencies.
@@ -1553,6 +1562,23 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 		plugin_deinitialization_cpp_code += "\t" + deinitialization_method;
 	}
 
+	for (const String &lib_name : p_module_libs) {
+		String definition_comment = "// Module: " + lib_name + "\n";
+		String initialization_method = "register_" + lib_name + "_external_module();\n";
+		String deinitialization_method = "unregister_" + lib_name + "_external_module();\n";
+
+		plugin_definition_cpp_code += definition_comment +
+				"extern void " + initialization_method +
+				"extern void " + deinitialization_method + "\n";
+
+		plugin_initialization_cpp_code += "\t" + initialization_method;
+		plugin_deinitialization_cpp_code += "\t" + deinitialization_method;
+
+		String binary_name = p_dest_dir.get_file().get_basename();
+		AppleEmbeddedExportAsset exported_asset = { binary_name + "_" + lib_name + ".xcframework", true, false };
+		r_exported_assets.push_back(exported_asset);
+	}
+
 	// Updating `Info.plist`
 	{
 		for (const KeyValue<String, String> &E : plist_values) {
@@ -1570,15 +1596,15 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 	// Export files
 	{
 		// Export linked plugin dependency
-		err = _export_additional_assets(p_preset, dest_dir, plugin_linked_dependencies, true, false, r_exported_assets);
+		err = _export_additional_assets(p_preset, p_dest_dir, plugin_linked_dependencies, true, false, r_exported_assets);
 		ERR_FAIL_COND_V(err != OK, err);
 
 		// Export embedded plugin dependency
-		err = _export_additional_assets(p_preset, dest_dir, plugin_embedded_dependencies, true, true, r_exported_assets);
+		err = _export_additional_assets(p_preset, p_dest_dir, plugin_embedded_dependencies, true, true, r_exported_assets);
 		ERR_FAIL_COND_V(err != OK, err);
 
 		// Export plugin files
-		err = _export_additional_assets(p_preset, dest_dir, plugin_files, false, false, r_exported_assets);
+		err = _export_additional_assets(p_preset, p_dest_dir, plugin_files, false, false, r_exported_assets);
 		ERR_FAIL_COND_V(err != OK, err);
 	}
 
@@ -1625,15 +1651,76 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 		p_config_data.linker_flags += result_linker_flags;
 	}
 
+	// SPM Packages
+	{
+		PbxId pbx_id;
+		pbx_id.high_bits = 0xDEB00000;
+		pbx_id.mid_bits = 0;
+		pbx_id.low_bits = 0;
+
+		HashMap<String, PluginConfigAppleEmbedded::SPMPackage> unique_packages;
+		for (int i = 0; i < enabled_plugins.size(); i++) {
+			for (const PluginConfigAppleEmbedded::SPMPackage &package : enabled_plugins[i].spm_packages) {
+				if (!unique_packages.has(package.url)) {
+					unique_packages[package.url] = package;
+				} else {
+					for (const String &product : package.products) {
+						if (unique_packages[package.url].products.find(product) == -1) {
+							unique_packages[package.url].products.push_back(product);
+						}
+					}
+				}
+			}
+		}
+
+		Vector<String> sorted_package_urls;
+		for (const KeyValue<String, PluginConfigAppleEmbedded::SPMPackage> &E : unique_packages) {
+			sorted_package_urls.push_back(E.key);
+		}
+		sorted_package_urls.sort();
+
+		for (const String &url : sorted_package_urls) {
+			const PluginConfigAppleEmbedded::SPMPackage &package = unique_packages[url];
+			String package_id = (++pbx_id).str();
+			String package_name = package.url.get_file().get_basename();
+
+			p_config_data.spm_packages += vformat("\t\t\t\t%s /* %s */,\n", package_id, package_name);
+
+			p_config_data.spm_package_refs += vformat("\t\t%s /* %s */ = {\n", package_id, package_name);
+			p_config_data.spm_package_refs += "\t\t\tisa = XCRemoteSwiftPackageReference;\n";
+			p_config_data.spm_package_refs += vformat("\t\t\trepositoryURL = \"%s\";\n", package.url);
+			p_config_data.spm_package_refs += "\t\t\trequirement = {\n";
+			p_config_data.spm_package_refs += "\t\t\t\tkind = exactVersion;\n";
+			p_config_data.spm_package_refs += vformat("\t\t\t\tversion = %s;\n", package.version);
+			p_config_data.spm_package_refs += "\t\t\t};\n";
+			p_config_data.spm_package_refs += "\t\t};\n";
+
+			for (const String &product : package.products) {
+				String product_id = (++pbx_id).str();
+				String build_file_id = (++pbx_id).str();
+
+				p_config_data.spm_package_products += vformat("\t\t%s /* %s */ = {\n", product_id, product);
+				p_config_data.spm_package_products += "\t\t\tisa = XCSwiftPackageProductDependency;\n";
+				p_config_data.spm_package_products += vformat("\t\t\tpackage = %s /* %s */;\n", package_id, package_name);
+				p_config_data.spm_package_products += vformat("\t\t\tproductName = \"%s\";\n", product);
+				p_config_data.spm_package_products += "\t\t};\n";
+
+				p_config_data.modules_buildfile += vformat("\t\t%s /* %s in Frameworks */ = {isa = PBXBuildFile; productRef = %s /* %s */; };\n", build_file_id, product, product_id, product);
+
+				p_config_data.modules_buildphase += vformat("\t\t\t\t%s /* %s in Frameworks */,\n", build_file_id, product);
+			}
+		}
+	}
+
 	return OK;
 }
 
-Error EditorExportPlatformAppleEmbedded::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false);
+Error EditorExportPlatformAppleEmbedded::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	return _export_project_helper(p_preset, p_debug, p_path, p_flags, p_notify, false);
 }
 
-Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_oneclick) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify, bool p_oneclick) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
 	const String dest_dir = p_path.get_base_dir() + "/";
 	const String binary_name = p_path.get_file().get_basename();
@@ -1765,6 +1852,10 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	}
 
 	String library_to_use = "libgodot." + get_platform_name() + "." + String(p_debug ? "debug" : "release") + ".xcframework";
+	Vector<String> module_libs;
+	if (p_preset->get("modules/camera").operator bool()) {
+		module_libs.push_back("camera");
+	}
 
 	print_line("Static framework: " + library_to_use);
 	String pkg_name;
@@ -1774,7 +1865,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		pkg_name = "Unnamed";
 	}
 
-	bool found_library = false;
+	int found_libraries = 0;
 
 	HashSet<String> files_to_parse;
 	const String project_file = "godot_apple_embedded.xcodeproj/project.pbxproj";
@@ -1795,11 +1886,14 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		String(" ").join(_get_preset_architectures(p_preset)),
 		_get_linker_flags(),
 		_get_cpp_code(),
-		"",
-		"",
-		"",
-		"",
-		Vector<String>(),
+		"", // modules_buildfile
+		"", // modules_fileref
+		"", // modules_buildphase
+		"", // modules_buildgrp
+		"", // spm_packages
+		"", // spm_package_refs
+		"", // spm_package_products
+		Vector<String>(), // capabilities
 	};
 
 	config_data.plist_content += p_preset->get("application/additional_plist_content").operator String() + "\n";
@@ -1821,13 +1915,28 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		return ERR_CANT_OPEN;
 	}
 
-	err = _export_apple_embedded_plugins(p_preset, config_data, binary_dir, assets, p_debug);
+	err = _export_apple_embedded_plugins(p_preset, config_data, binary_dir, module_libs, assets, p_debug);
 	if (err != OK) {
 		// TODO: Improve error reporting by using `add_message` throughout all methods called via `_export_apple_embedded_plugins`.
 		// For now a generic top level message would be fine, but we're ought to use proper reporting here instead of
 		// just fail macros and non-descriptive error return values.
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Apple Embedded Plugins"), vformat(TTR("Failed to export Apple Embedded plugins with code %d. Please check the output log."), err));
 		return err;
+	}
+
+	// Generate a unique name for the launch screen to avoid caching.
+	{
+		const String custom_launch_image_2x = p_preset->get("storyboard/custom_image@2x");
+		const String custom_launch_image_3x = p_preset->get("storyboard/custom_image@3x");
+
+		String launch_image_hash;
+		if (custom_launch_image_2x.length() > 0 && custom_launch_image_3x.length() > 0) {
+			Vector<String> launch_scr_files;
+			launch_scr_files.push_back(custom_launch_image_2x);
+			launch_scr_files.push_back(custom_launch_image_3x);
+			launch_image_hash = "_" + FileAccess::get_multiple_md5(launch_scr_files);
+		}
+		launch_screen_image_file_name = "SplashImage" + launch_image_hash;
 	}
 
 	//export rest of the files
@@ -1859,18 +1968,36 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 		//write
 
+		file = file.replace("Images.xcassets/SplashImage.imageset", "Images.xcassets/" + launch_screen_image_file_name + ".imageset");
+
 		if (files_to_parse.has(file)) {
 			_fix_config_file(p_preset, data, config_data, p_debug);
-		} else if (file.begins_with("libgodot." + get_platform_name())) {
-			if (!file.begins_with(library_to_use) || file.ends_with(String("/empty"))) {
+		} else if (file.begins_with("libgodot") && file.contains(get_platform_name())) {
+			String prefix_lib = library_to_use;
+			String suffix_lib = binary_name;
+			bool is_lib = file.begins_with(library_to_use);
+			if (!is_lib) {
+				for (const String &lib_name : module_libs) {
+					String prefix = "libgodot_" + lib_name + "." + get_platform_name() + "." + String(p_debug ? "debug" : "release") + ".xcframework";
+					if (file.begins_with(prefix)) {
+						is_lib = true;
+						prefix_lib = prefix;
+						suffix_lib = binary_name + "_" + lib_name;
+						break;
+					}
+				}
+			}
+			if (!is_lib || file.ends_with(String("/empty"))) {
 				ret = unzGoToNextFile(src_pkg_zip);
 				continue; //ignore!
 			}
-			found_library = true;
+			if (file.ends_with("Info.plist")) {
+				found_libraries++;
+			}
 #if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
 			is_execute = true;
 #endif
-			file = file.replace(library_to_use, binary_name + ".xcframework");
+			file = file.replace(prefix_lib, suffix_lib + ".xcframework");
 		}
 
 		if (file == project_file) {
@@ -1924,7 +2051,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	// We're done with our source zip.
 	unzClose(src_pkg_zip);
 
-	if (!found_library) {
+	if (found_libraries < module_libs.size() + 1) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Requested template library '%s' not found. It might be missing from your template archive."), library_to_use));
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -1966,7 +2093,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 			if (appnames.is_empty()) {
 				domain->set_locale_override(lang);
-				const String &name = domain->translate(project_name, String());
+				String name = domain->translate(project_name, String());
 				if (name != project_name) {
 					f->store_line("CFBundleDisplayName = \"" + name.xml_escape(true) + "\";");
 				}
@@ -2018,13 +2145,14 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	}
 
 	{
-		String splash_image_path = binary_dir + "/Images.xcassets/SplashImage.imageset/";
+		String splash_image_path = binary_dir + "/Images.xcassets/" + launch_screen_image_file_name + ".imageset/";
 
 		Ref<DirAccess> launch_screen_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (launch_screen_da.is_null()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not access the filesystem."));
 			return ERR_CANT_CREATE;
 		}
+		launch_screen_da->make_dir_recursive(splash_image_path);
 
 		print_line("Exporting launch screen storyboard");
 
@@ -2194,6 +2322,14 @@ bool EditorExportPlatformAppleEmbedded::has_valid_export_configuration(const Ref
 	valid = dvalid || rvalid;
 	r_missing_templates = !valid;
 
+	if (p_preset->get("modules/camera").operator bool()) {
+		String description = p_preset->get("privacy/camera_usage_description");
+		if (description.is_empty()) {
+			valid = false;
+			err += TTR("Camera module enabled, but camera usage description is not set.") + "\n";
+		}
+	}
+
 	const String &additional_plist_content = p_preset->get("application/additional_plist_content");
 	if (!additional_plist_content.is_empty()) {
 		const String &plist = vformat("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -2243,6 +2379,9 @@ bool EditorExportPlatformAppleEmbedded::has_valid_project_configuration(const Re
 	}
 
 	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
+		if (EditorNode::is_cmdline_mode()) {
+			err += vformat(TTR("ETC2/ASTC texture compression is required for %s export. In the Project Settings, search for 'ETC2' in the search field, or enable 'Advanced Settings', and go to Rendering > Textures > VRAM Compression to enable 'Import ETC2 ASTC'."), get_name()) + "\n";
+		}
 		valid = false;
 	}
 
@@ -2430,7 +2569,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 			args.push_back(vformat("hardwareProperties.deviceType MATCHES '%s'", device_types));
 
 			int ec = 0;
-			Error err = OS::get_singleton()->execute("xcrun", args, &devices_json, &ec, true);
+			Error err = OS::get_singleton()->execute("xcrun", args, &devices_json, &ec, false);
 			if (err == OK && ec == 0) {
 				Ref<JSON> json;
 				json.instantiate();
@@ -2646,7 +2785,7 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 	Device dev = devices[p_device];
 
 	// Export before sending to device.
-	Error err = _export_project_helper(p_preset, true, tmp_export_path, p_debug_flags, true);
+	Error err = _export_project_helper(p_preset, true, tmp_export_path, p_debug_flags, true, true);
 
 	if (err != OK) {
 		CLEANUP_AND_RETURN(err);

@@ -30,6 +30,7 @@
 
 #include "animation_track_editor_plugins.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"

@@ -124,11 +124,12 @@ public:
 				uint32_t directional_penumbra_shadow_samples : 6;
 				uint32_t omni_lights : 2;
 				uint32_t spot_lights : 2;
+				uint32_t area_lights : 2;
 				uint32_t reflection_probes : 2;
 				uint32_t directional_lights : 2;
 				uint32_t decals : 1;
 				uint32_t directional_light_blend_splits : 8;
-				uint32_t padding_1 : 3;
+				uint32_t padding_1 : 1;
 			};
 		};
 
@@ -253,6 +254,7 @@ public:
 		bool uses_roughness = false;
 		bool uses_normal = false;
 		bool uses_tangent = false;
+		bool writes_tangent = false;
 		bool uses_particle_trails = false;
 		bool uses_normal_map = false;
 		bool uses_bent_normal_map = false;
@@ -355,6 +357,7 @@ public:
 	RID debug_shadow_splits_material_shader;
 	RID debug_shadow_splits_material;
 	RID default_shader_rd;
+	RID default_multiview_shader_rd; // This is lazily initialized, use "get_default_shader_rd" instead.
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
@@ -384,6 +387,7 @@ public:
 	void enable_fp16_shader_group();
 	void enable_multiview_shader_group();
 	bool is_multiview_shader_group_enabled() const;
+	RID get_default_shader_rd(bool p_is_multiview = false);
 };
 
 } // namespace RendererSceneRenderImplementation

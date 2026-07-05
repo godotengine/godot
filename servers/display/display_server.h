@@ -306,8 +306,8 @@ public:
 
 	const float SCREEN_REFRESH_RATE_FALLBACK = -1.0; // Returned by screen_get_refresh_rate if the method fails.
 
-	virtual TypedArray<Rect2> get_display_cutouts() const { return TypedArray<Rect2>(); }
-	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
+	virtual TypedArray<Rect2> get_display_cutouts(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const { return TypedArray<Rect2>(); }
+	virtual Rect2i get_display_safe_area(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const { return screen_get_usable_rect(p_screen); }
 
 	int _get_screen_index(int p_screen) const {
 		switch (p_screen) {
@@ -446,6 +446,8 @@ public:
 	virtual float window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const;
 	virtual float window_get_hdr_output_current_max_luminance(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const;
 
+	virtual void window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) {}
+
 	virtual float window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const;
 
 	virtual bool window_is_maximize_allowed(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const = 0;
@@ -507,6 +509,8 @@ public:
 #ifndef DISABLE_DEPRECATED
 	Error _file_dialog_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
 	Error _file_dialog_with_options_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback);
+	TypedArray<Rect2> _get_display_cutouts_bind_compat_119196() const;
+	Rect2i _get_display_safe_area_bind_compat_119196() const;
 #endif
 
 	virtual void show_emoji_and_symbol_picker() const;

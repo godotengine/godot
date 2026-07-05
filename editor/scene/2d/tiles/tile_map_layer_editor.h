@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/random_pcg.h"
 #include "core/os/thread.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/scene/2d/tiles/tile_atlas_view.h"
@@ -87,7 +88,7 @@ public:
 	virtual void tile_set_changed() {}
 	virtual void edit(ObjectID p_tile_map_layer_id) {}
 	virtual void draw_tile_coords_over_viewport(Control *p_overlay, const TileMapLayer *p_edited_layer, Ref<TileSet> p_tile_set, bool p_show_rectangle_size, const Vector2i &p_rectangle_origin);
-	virtual void update_layout(EditorDock::DockLayout p_layout) {}
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) {}
 };
 
 class TileMapLayerEditorTilesPlugin : public TileMapLayerSubEditorPlugin {
@@ -181,6 +182,9 @@ private:
 
 	RBSet<TileMapCell> tile_set_selection;
 
+	RandomPCG pattern_rng;
+	uint64_t rng_base_state = 0;
+
 	void _update_selection_pattern_from_tilemap_selection();
 	void _update_selection_pattern_from_tileset_tiles_selection();
 	void _update_selection_pattern_from_tileset_pattern_selection();
@@ -260,7 +264,7 @@ public:
 	virtual Vector<TabData> get_tabs() const override;
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
-	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 	virtual void edit(ObjectID p_tile_map_layer_id) override;
 
@@ -354,7 +358,7 @@ public:
 	virtual Vector<TabData> get_tabs() const override;
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
-	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 	virtual void edit(ObjectID p_tile_map_layer_id) override;
 
@@ -443,7 +447,7 @@ private:
 protected:
 	void _notification(int p_what);
 	void _draw_shape(Control *p_control, Rect2 p_region, TileSet::TileShape p_shape, TileSet::TileOffsetAxis p_offset_axis, Color p_color);
-	virtual void update_layout(DockLayout p_layout) override;
+	virtual void update_layout(DockLayout p_layout, int p_slot) override;
 
 public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);

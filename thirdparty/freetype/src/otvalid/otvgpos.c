@@ -4,7 +4,7 @@
  *
  *   OpenType GPOS table validation (body).
  *
- * Copyright (C) 2002-2025 by
+ * Copyright (C) 2002-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -33,11 +33,11 @@
 
   static void
   otv_Anchor_validate( FT_Bytes       table,
-                       OTV_Validator  valid );
+                       OTV_Validator  otvalid );
 
   static void
   otv_MarkArray_validate( FT_Bytes       table,
-                          OTV_Validator  valid );
+                          OTV_Validator  otvalid );
 
 
   /*************************************************************************/
@@ -52,8 +52,8 @@
 #define LigatureAttachFunc  otv_x_sxy
 #define Mark2ArrayFunc      otv_x_sxy
 
-  /* uses valid->extra1 (counter)                             */
-  /* uses valid->extra2 (boolean to handle NULL anchor field) */
+  /* uses otvalid->extra1 (counter)                             */
+  /* uses otvalid->extra2 (boolean to handle NULL anchor field) */
 
   static void
   otv_x_sxy( FT_Bytes       table,

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -54,6 +55,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -2105,6 +2107,16 @@ void ScriptEditorDebugger::toggle_profiler(const String &p_profiler, bool p_enab
 	_put_msg("profiler:" + p_profiler, msg_data);
 }
 
+void ScriptEditorDebugger::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
+		vmem_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);
+	} else {
+		vmem_mc->set_theme_type_variation("NoBorderHorizontal");
+		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
+	}
+}
+
 ScriptEditorDebugger::ScriptEditorDebugger() {
 	if (unlikely(parse_message_handlers.is_empty())) {
 		_init_parse_message_handlers();
@@ -2131,66 +2143,70 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		reason->set_context_menu_enabled(true);
 		reason->set_h_size_flags(SIZE_EXPAND_FILL);
 		reason->set_v_size_flags(SIZE_SHRINK_CENTER);
-		reason->connect(SceneStringName(resized), callable_mp(this, &ScriptEditorDebugger::_update_reason_content_height));
+		reason->connect(SceneStringName(resized), callable_mp(this, &ScriptEditorDebugger::_update_reason_content_height), CONNECT_DEFERRED);
 		hbc->add_child(reason);
 
-		hbc->add_child(memnew(VSeparator));
+		HBoxContainer *buttons = memnew(HBoxContainer);
+		buttons->set_v_size_flags(SIZE_SHRINK_END);
+		hbc->add_child(buttons);
+
+		buttons->add_child(memnew(VSeparator));
 
 		skip_breakpoints = memnew(Button);
 		skip_breakpoints->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(skip_breakpoints);
+		buttons->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTRC("Skip Breakpoints"));
 		skip_breakpoints->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		ignore_error_breaks = memnew(Button);
 		ignore_error_breaks->set_theme_type_variation(SceneStringName(FlatButton));
 		ignore_error_breaks->set_tooltip_text(TTRC("Ignore Error Breaks"));
-		hbc->add_child(ignore_error_breaks);
+		buttons->add_child(ignore_error_breaks);
 		ignore_error_breaks->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_ignore_error_breaks));
 
-		hbc->add_child(memnew(VSeparator));
+		buttons->add_child(memnew(VSeparator));
 
 		copy = memnew(Button);
 		copy->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(copy);
+		buttons->add_child(copy);
 		copy->set_tooltip_text(TTRC("Copy Error"));
 		copy->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_copy));
 
-		hbc->add_child(memnew(VSeparator));
+		buttons->add_child(memnew(VSeparator));
 
 		step = memnew(Button);
 		step->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(step);
+		buttons->add_child(step);
 		step->set_tooltip_text(TTRC("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
 		step->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_step));
 
 		next = memnew(Button);
 		next->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(next);
+		buttons->add_child(next);
 		next->set_tooltip_text(TTRC("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
 		next->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_next));
 
 		out = memnew(Button);
 		out->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(out);
+		buttons->add_child(out);
 		out->set_tooltip_text(TTRC("Step Out"));
 		out->set_shortcut(ED_GET_SHORTCUT("debugger/step_out"));
 		out->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_out));
 
-		hbc->add_child(memnew(VSeparator));
+		buttons->add_child(memnew(VSeparator));
 
 		dobreak = memnew(Button);
 		dobreak->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(dobreak);
+		buttons->add_child(dobreak);
 		dobreak->set_tooltip_text(TTRC("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
 		dobreak->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_break));
 
 		docontinue = memnew(Button);
 		docontinue->set_theme_type_variation(SceneStringName(FlatButton));
-		hbc->add_child(docontinue);
+		buttons->add_child(docontinue);
 		docontinue->set_tooltip_text(TTRC("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
 		docontinue->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_continue));
@@ -2409,10 +2425,10 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_refresh->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
 		vmem_export->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
 
-		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderBottomPanel");
-		mc->set_v_size_flags(SIZE_EXPAND_FILL);
-		vmem_vb->add_child(mc);
+		vmem_mc = memnew(MarginContainer);
+		vmem_mc->set_theme_type_variation("NoBorderHorizontal");
+		vmem_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+		vmem_vb->add_child(vmem_mc);
 
 		vmem_tree = memnew(Tree);
 		vmem_vb->set_name(TTRC("Video RAM"));
@@ -2431,7 +2447,7 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_tree->set_column_custom_minimum_width(3, 80 * EDSCALE);
 		vmem_tree->set_hide_root(true);
 		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
-		mc->add_child(vmem_tree);
+		vmem_mc->add_child(vmem_tree);
 		vmem_tree->set_allow_rmb_select(true);
 		vmem_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_vmem_item_activated));
 		vmem_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_vmem_tree_rmb_selected));
@@ -2485,7 +2501,7 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 			info_left->add_child(lehb);
 		}
 
-		misc->add_child(memnew(VSeparator));
+		misc->add_child(memnew(HSeparator));
 
 		HBoxContainer *buttons = memnew(HBoxContainer);
 
@@ -2499,9 +2515,6 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 	msgdialog = memnew(AcceptDialog);
 	add_child(msgdialog);
 
-	camera_override = CameraOverride::OVERRIDE_NONE;
-	error_count = 0;
-	warning_count = 0;
 	_update_buttons_state();
 }
 

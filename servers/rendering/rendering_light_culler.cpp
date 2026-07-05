@@ -102,6 +102,12 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 			lsource.type = LightSource::ST_OMNI;
 			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RSE::LIGHT_PARAM_RANGE);
 			break;
+		case RSE::LIGHT_AREA: {
+			lsource.type = LightSource::ST_AREA;
+			lsource.area_size = RSG::light_storage->light_area_get_size(p_instance.base);
+			float half_diagonal = lsource.area_size.length() / 2.0;
+			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RSE::LIGHT_PARAM_RANGE) + half_diagonal;
+		} break;
 		case RSE::LIGHT_DIRECTIONAL:
 			lsource.type = LightSource::ST_DIRECTIONAL;
 
@@ -141,15 +147,20 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 		Plane boundary_planes[5];
 		{
 			constexpr const int MAX_PLANES = 5;
+			// Orthogonal cameras have fixed max shadow distance, determined by the camera far plane.
+			// That must be accounted for, or else GH-120457 happens.
+			// For perspective cameras, shadow far must also never be further than the camera far plane (otherwise things break).
+			float camera_far = data.camera_projection.get_z_far();
+			float shadow_far = data.camera_projection.is_orthogonal() ? camera_far : MIN(lsource.range, camera_far);
 			real_t plane_distances[MAX_PLANES] = {
 				data.camera_projection.get_z_near(),
-				lsource.cascade_splits[0] * lsource.range,
-				lsource.cascade_splits[1] * lsource.range,
-				lsource.cascade_splits[2] * lsource.range,
-				lsource.range,
+				lsource.cascade_splits[0] * shadow_far,
+				lsource.cascade_splits[1] * shadow_far,
+				lsource.cascade_splits[2] * shadow_far,
+				shadow_far,
 			};
-			//If not 4 cascades, replace last used cascade plane distance with max shadow range (shadow far plane distance).
-			plane_distances[used_planes - 1] = lsource.range;
+			// If not 4 cascades, replace last used cascade plane distance with max shadow range (shadow far plane distance).
+			plane_distances[used_planes - 1] = shadow_far;
 #ifdef LIGHT_CULLER_DEBUG_LOGGING
 			if (is_logging()) {
 				print_line("cascade split planes (first " + itos(used_planes) + " used): " +
@@ -423,6 +434,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 	switch (p_light_source.type) {
 		case LightSource::ST_SPOTLIGHT:
 		case LightSource::ST_OMNI:
+		case LightSource::ST_AREA:
 			break;
 		case LightSource::ST_DIRECTIONAL:
 			return add_light_camera_planes_directional(r_cull_planes, p_light_source, p_cull_frustum);
@@ -462,6 +474,24 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 				// This is one of the tests. If the point source is more than range distance from a frustum plane, it can't
 				// be seen.
 				if (dist >= p_light_source.range) {
+					// If the light is out of range, no need to do anything else, everything will be culled.
+					data.out_of_range = true;
+					return false;
+				}
+			}
+		}
+	} else if (p_light_source.type == LightSource::ST_AREA) {
+		for (int n = 0; n < 6; n++) {
+			float dist = data.frustum_planes[n].distance_to(p_light_source.pos);
+			float half_diagonal = p_light_source.area_size.length() / 2.0;
+			if (dist < 0.0f) {
+				lookup |= 1 << n;
+
+				// Add backfacing camera frustum planes.
+				r_cull_planes.add_cull_plane(data.frustum_planes[n]);
+			} else {
+				// Is the light out of range?
+				if (dist >= p_light_source.range + half_diagonal) {
 					// If the light is out of range, no need to do anything else, everything will be culled.
 					data.out_of_range = true;
 					return false;

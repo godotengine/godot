@@ -48,7 +48,7 @@ namespace LSP {
 typedef String DocumentUri;
 
 /** Format BBCode documentation from DocData to markdown */
-static String marked_documentation(const String &p_bbcode);
+static String marked_documentation(const String &p_bbcode, const HashSet<String> &p_allowed_html_tags);
 
 /**
  * Text documents are identified using a URI. On the protocol level, URIs are passed as strings.
@@ -110,6 +110,9 @@ struct Position {
 		dict["character"] = character;
 		return dict;
 	}
+
+	Position() = default;
+	Position(int p_line, int p_character) : line(p_line), character(p_character) {}
 };
 
 /**
@@ -160,6 +163,10 @@ struct Range {
 		dict["end"] = end.to_json();
 		return dict;
 	}
+
+	Range() = default;
+	Range(Position p_start, Position p_end) : start(p_start), end(p_end) {}
+	Range(int p_start_line, int p_start_column, int p_end_line, int p_end_column) : start(p_start_line, p_start_column), end(p_end_line, p_end_column) {}
 };
 
 /**
@@ -319,6 +326,13 @@ struct TextEdit {
 	 * empty string.
 	 */
 	String newText;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["newText"] = newText;
+		dict["range"] = range.to_json();
+		return dict;
+	}
 };
 
 /**
@@ -500,22 +514,6 @@ struct SignatureHelpOptions {
 };
 
 /**
- * Code Lens options.
- */
-struct CodeLensOptions {
-	/**
-	 * Code lens has a resolve provider as well.
-	 */
-	bool resolveProvider = false;
-
-	Dictionary to_json() {
-		Dictionary dict;
-		dict["resolveProvider"] = resolveProvider;
-		return dict;
-	}
-};
-
-/**
  * Rename options
  */
 struct RenameOptions {
@@ -576,24 +574,6 @@ struct SaveOptions {
 		Dictionary dict;
 		dict["includeText"] = includeText;
 		return dict;
-	}
-};
-
-/**
- * Color provider options.
- */
-struct ColorProviderOptions {
-	Dictionary to_json() {
-		return Dictionary();
-	}
-};
-
-/**
- * Folding range provider options.
- */
-struct FoldingRangeProviderOptions {
-	Dictionary to_json() {
-		return Dictionary();
 	}
 };
 
@@ -1076,6 +1056,12 @@ struct CompletionItem {
 		if (!insertText.is_empty()) {
 			dict["insertText"] = insertText;
 		}
+		if (insertTextFormat) {
+			dict["insertTextFormat"] = insertTextFormat;
+		}
+		if (!textEdit.newText.is_empty()) {
+			dict["textEdit"] = textEdit.to_json();
+		}
 		if (resolved) {
 			if (!detail.is_empty()) {
 				dict["detail"] = detail;
@@ -1135,6 +1121,7 @@ struct CompletionItem {
 		if (p_dict.has("insertText")) {
 			insertText = p_dict["insertText"];
 		}
+		insertTextFormat = p_dict.get("insertTextFormat", 0);
 		if (p_dict.has("data")) {
 			data = p_dict["data"];
 		}
@@ -1285,60 +1272,18 @@ struct DocumentSymbol {
 		return dict;
 	}
 
-	_FORCE_INLINE_ MarkupContent render() const {
+	_FORCE_INLINE_ MarkupContent render(const HashSet<String> &p_allowed_html_tags) const {
 		MarkupContent markdown;
 		if (detail.length()) {
 			markdown.value = "\t" + detail + "\n\n";
 		}
 		if (documentation.length()) {
-			markdown.value += marked_documentation(documentation) + "\n\n";
+			markdown.value += marked_documentation(documentation, p_allowed_html_tags) + "\n\n";
 		}
 		if (script_path.length()) {
 			markdown.value += "Defined in [" + script_path + "](" + uri + ")";
 		}
 		return markdown;
-	}
-
-	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
-		LSP::CompletionItem item;
-		item.label = name;
-
-		if (resolved) {
-			item.documentation = render();
-		}
-
-		switch (kind) {
-			case LSP::SymbolKind::Enum:
-				item.kind = LSP::CompletionItemKind::Enum;
-				break;
-			case LSP::SymbolKind::Class:
-				item.kind = LSP::CompletionItemKind::Class;
-				break;
-			case LSP::SymbolKind::Property:
-				item.kind = LSP::CompletionItemKind::Property;
-				break;
-			case LSP::SymbolKind::Method:
-			case LSP::SymbolKind::Function:
-				item.kind = LSP::CompletionItemKind::Method;
-				break;
-			case LSP::SymbolKind::Event:
-				item.kind = LSP::CompletionItemKind::Event;
-				break;
-			case LSP::SymbolKind::Constant:
-				item.kind = LSP::CompletionItemKind::Constant;
-				break;
-			case LSP::SymbolKind::Variable:
-				item.kind = LSP::CompletionItemKind::Variable;
-				break;
-			case LSP::SymbolKind::File:
-				item.kind = LSP::CompletionItemKind::File;
-				break;
-			default:
-				item.kind = LSP::CompletionItemKind::Text;
-				break;
-		}
-
-		return item;
 	}
 };
 
@@ -1804,11 +1749,6 @@ struct ServerCapabilities {
 	bool codeActionProvider = false;
 
 	/**
-	 * The server provides code lens.
-	 */
-	CodeLensOptions codeLensProvider;
-
-	/**
 	 * The server provides document formatting.
 	 */
 	bool documentFormattingProvider = false;
@@ -1836,20 +1776,6 @@ struct ServerCapabilities {
 	DocumentLinkOptions documentLinkProvider;
 
 	/**
-	 * The server provides color provider support.
-	 *
-	 * Since 3.6.0
-	 */
-	ColorProviderOptions colorProvider;
-
-	/**
-	 * The server provides folding provider support.
-	 *
-	 * Since 3.10.0
-	 */
-	FoldingRangeProviderOptions foldingRangeProvider;
-
-	/**
 	 * The server provides go to declaration support.
 	 *
 	 * Since 3.14.0
@@ -1868,12 +1794,9 @@ struct ServerCapabilities {
 		signatureHelpProvider.triggerCharacters.push_back(",");
 		signatureHelpProvider.triggerCharacters.push_back("(");
 		dict["signatureHelpProvider"] = signatureHelpProvider.to_json();
-		//dict["codeLensProvider"] = codeLensProvider.to_json();
 		dict["documentOnTypeFormattingProvider"] = documentOnTypeFormattingProvider.to_json();
 		dict["renameProvider"] = renameProvider.to_json();
 		dict["documentLinkProvider"] = documentLinkProvider.to_json();
-		dict["colorProvider"] = false; // colorProvider.to_json();
-		dict["foldingRangeProvider"] = false; //foldingRangeProvider.to_json();
 		dict["executeCommandProvider"] = executeCommandProvider.to_json();
 		dict["hoverProvider"] = hoverProvider;
 		dict["definitionProvider"] = definitionProvider;
@@ -1937,7 +1860,8 @@ struct GodotCapabilities {
 };
 
 /** Format BBCode documentation from DocData to markdown */
-static String marked_documentation(const String &p_bbcode) {
+static String marked_documentation(const String &p_bbcode, const HashSet<String> &p_allowed_html_tags) {
+	bool span_allowed = p_allowed_html_tags.has("span");
 	String markdown = p_bbcode.strip_edges();
 
 	Vector<String> lines = markdown.split("\n");
@@ -2017,7 +1941,6 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[center]", "");
 			line = line.replace("[/center]", "");
 			line = line.replace("[/font]", "");
-			line = line.replace("[/color]", "");
 			line = line.replace("[/img]", "");
 
 			// Convert remaining simple bracketed class names to backticks and literal brackets.
@@ -2090,6 +2013,35 @@ static String marked_documentation(const String &p_bbcode) {
 				pos += replacement.length();
 			}
 
+			// Convert [color] BBCode to <span>, if the client is capable of rendering it, strip it otherwise.
+			pos = 0;
+			while ((pos = line.find("[color=", pos)) != -1) {
+				constexpr int COLOR_OPEN_TAG_LENGTH = 7; // Length of "[color=".
+				constexpr int COLOR_CLOSE_TAG_LENGTH = 8; // Length of "[/color]".
+
+				int color_end = line.find_char(']', pos);
+				int close_start = line.find("[/color]", color_end);
+				if (color_end == -1 || close_start == -1) {
+					break;
+				}
+				String text = line.substr(color_end + 1, close_start - color_end - 1);
+				String replacement;
+				if (span_allowed) {
+					const String color = line.substr(pos + COLOR_OPEN_TAG_LENGTH, color_end - pos - COLOR_OPEN_TAG_LENGTH).strip_edges();
+					if (Color::html_is_valid(color)) {
+						replacement = "<span style=\"color:" + color + "\">" + text + "</span>";
+					} else if (int named_color_index = Color::find_named_color(color); named_color_index != -1) {
+						replacement = "<span style=\"color:#" + Color::get_named_color(named_color_index).to_html(false) + "\">" + text + "</span>";
+					}
+				}
+				// If no span replacement was produced (client can't render spans, or invalid color), just keep the inner text.
+				if (replacement.is_empty()) {
+					replacement = text;
+				}
+				line = line.substr(0, pos) + replacement + line.substr(close_start + COLOR_CLOSE_TAG_LENGTH);
+				pos += replacement.length();
+			}
+
 			// Replace the various link types with inline code ([class MyNode] to `MyNode`).
 			// Uses a while loop because there can occasionally be multiple links of the same type in a single line.
 			const Vector<String> link_start_patterns = {
@@ -2111,10 +2063,10 @@ static String marked_documentation(const String &p_bbcode) {
 				}
 			}
 
-			// Remove tags with attributes like [color=red], as they don't have a direct Markdown
+			// Remove tags with attributes like [font=Arial], as they don't have a direct Markdown
 			// equivalent supported by external tools.
 			const String attribute_tags[] = {
-				"color", "font", "img"
+				"font", "img"
 			};
 			for (const String &tag_name : attribute_tags) {
 				int tag_pos = 0;

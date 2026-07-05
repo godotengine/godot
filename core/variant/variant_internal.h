@@ -363,6 +363,16 @@ public:
 		v->_get_obj().ref(r);
 	}
 
+	// This should be used with extreme caution, as it does not increment the reference count in the
+	// case where the object is `RefCounted`. You *must* ensure that the destructor of this
+	// `Variant` is never called, and that the assigned object always outlives the `Variant`.
+	_FORCE_INLINE_ static void object_assign_without_ref_unsafe(Variant *v, Object *o) {
+		v->type = Variant::OBJECT;
+		Variant::ObjData &obj_data = v->_get_obj();
+		obj_data.id = o->get_instance_id();
+		obj_data.obj = o;
+	}
+
 	_FORCE_INLINE_ static void object_reset_data(Variant *v) {
 		v->_get_obj() = Variant::ObjData();
 	}
@@ -851,7 +861,7 @@ struct VariantInitializer {
 template <typename T>
 struct VariantInitializer<T, std::enable_if_t<VariantInternalAccessor<T>::is_local>> {
 	static _FORCE_INLINE_ void init(Variant *v) {
-		memnew_placement(&VariantInternalAccessor<T>::get(v), T);
+		memnew_placement(&VariantInternalAccessor<T>::get(v), T());
 		VariantInternal::set_type(*v, GetTypeInfo<T>::VARIANT_TYPE);
 	}
 };
@@ -959,9 +969,9 @@ struct VariantTypeChanger {
 		if (v->get_type() != GetTypeInfo<T>::VARIANT_TYPE || GetTypeInfo<T>::VARIANT_TYPE >= Variant::PACKED_BYTE_ARRAY) { //second condition removed by optimizer
 			VariantInternal::clear(v);
 			VariantInitializer<T>::init(v);
+		} else {
+			VariantDefaultInitializer<T>::init(v);
 		}
-
-		VariantDefaultInitializer<T>::init(v);
 	}
 };
 

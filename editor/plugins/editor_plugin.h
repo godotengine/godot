@@ -199,6 +199,7 @@ public:
 	virtual void set_plugin_version(const String &p_version);
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
+	virtual void set_current() {}
 	virtual void selected_notify() {} //notify that it was raised by the user, not the editor
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
@@ -245,14 +246,14 @@ public:
 	void add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 	void remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 
-	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
-	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
-
 	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority = false);
 	void remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
 
 	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
+
+	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
+	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);

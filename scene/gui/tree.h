@@ -156,6 +156,11 @@ private:
 	TreeItem *first_child = nullptr;
 	TreeItem *last_child = nullptr;
 
+	int cached_start = 0;
+	int cached_label_height = 0;
+	int cached_total_end = 0;
+	Point2 sticky_offset;
+
 	LocalVector<TreeItem *> children_cache;
 	bool is_root = false; // For tree root.
 	Tree *tree = nullptr; // Tree (for reference).
@@ -164,7 +169,7 @@ private:
 
 	void _changed_notify(int p_cell);
 	void _changed_notify();
-	void _cell_selected(int p_cell);
+	void _cell_selected(int p_cell, bool p_set_as_cursor);
 	void _cell_deselected(int p_cell);
 	void _handle_visibility_changed(bool p_visible);
 	void _propagate_visibility_changed(bool p_parent_visible_in_tree);
@@ -224,6 +229,7 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	void _select_bind_compat_119367(int p_column);
 	void _add_button_bind_compat_76829(int p_column, const Ref<Texture2D> &p_button, int p_id, bool p_disabled, const String &p_tooltip);
 	static void _bind_compatibility_methods();
 #endif
@@ -376,7 +382,7 @@ public:
 
 	bool is_selected(int p_column);
 	bool is_any_column_selected() const;
-	void select(int p_column);
+	void select(int p_column, bool p_set_as_cursor = true);
 	void deselect(int p_column);
 	void set_as_cursor(int p_column);
 
@@ -498,6 +504,7 @@ private:
 	TreeItem *drop_mode_over = nullptr;
 	int drop_mode_section = 0;
 	bool drop_mode_unchanged = false;
+	bool dragging_within_self = false;
 
 	TreeItem *single_select_defer = nullptr;
 	int single_select_defer_column = 0;
@@ -515,6 +522,10 @@ private:
 
 	bool propagate_mouse_activated = false;
 	float content_scale_factor = 0.0;
+
+	int sticky_stack_end = 0;
+	LocalVector<TreeItem *> sticky_candidates;
+	LocalVector<TreeItem *> sticky_list;
 
 	Rect2 custom_popup_rect;
 	int edited_col = -1;
@@ -554,9 +565,13 @@ private:
 	bool show_column_titles = false;
 
 	bool popup_edit_committed = true;
+	int scroll_pending = 0;
 	RID accessibility_scroll_element;
-	RID header_ci; // Separate canvas item for drawing column headers
-	RID content_ci; // Separate canvas item for drawing tree rows
+	RID stylebox_ci; // Separate canvas item for drawing native styleboxes.
+	RID custom_ci; // Separate canvas item for drawing custom content.
+	RID header_ci; // Separate canvas item for drawing column headers.
+	RID content_ci; // Separate canvas item for drawing tree rows.
+	RID last_sticky_ci; // Separate canvas item for drawing the last sticky item, which can partially hide underneath other sticky items.
 	RID drop_indicator_ci;
 
 	VBoxContainer *popup_editor_vb = nullptr;
@@ -584,10 +599,10 @@ private:
 	void update_column(int p_col);
 	void update_item_cell(TreeItem *p_item, int p_col) const;
 	void update_item_cache(TreeItem *p_item) const;
-	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color) const;
-	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height);
+	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color, const RID &p_ci) const;
+	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height, const RID &p_ci);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
-	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod);
+	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod, bool p_first_call = true, bool p_skip_children = false);
 	void _line_editor_submit(String p_text);
 	void _apply_multiline_edit(bool p_hide_focus = false);
 	void _text_editor_popup_modal_close();
@@ -600,7 +615,7 @@ private:
 
 	void item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mouse_index = MouseButton::NONE);
 	void item_changed(int p_column, TreeItem *p_item);
-	void item_selected(int p_column, TreeItem *p_item);
+	void item_selected(int p_column, TreeItem *p_item, bool p_set_as_cursor);
 	void item_deselected(int p_column, TreeItem *p_item);
 	void update_min_size_for_item_change();
 
@@ -690,6 +705,7 @@ private:
 
 		int scroll_border = 0;
 		int scroll_speed = 0;
+		int scroll_max_sticky_items = 5;
 
 		int scrollbar_margin_top = -1;
 		int scrollbar_margin_right = -1;
@@ -741,10 +757,11 @@ private:
 	String incr_search;
 	bool cursor_can_exit_tree = true;
 	void _do_incr_search(const String &p_add);
+	void _incr_search_as_needed(const Ref<InputEventKey> &p_event_key);
 
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 
-	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &r_height, int &r_section) const;
+	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &r_height, int &r_section, bool p_sticky_check = true) const;
 
 	void _find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index, int &r_section) const;
 
@@ -766,6 +783,7 @@ private:
 	bool click_handled = false;
 	bool allow_rmb_select = false;
 	bool scrolling = false;
+	bool using_native_touch = true;
 
 	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
 	bool tile_scroll_hint = false;
@@ -901,6 +919,8 @@ public:
 
 	void set_column_titles_visible(bool p_show);
 	bool are_column_titles_visible() const;
+
+	RID get_custom_drawing_canvas_item() const { return custom_ci; }
 
 	TreeItem *get_edited() const;
 	int get_edited_column() const;

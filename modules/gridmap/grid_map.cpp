@@ -263,6 +263,24 @@ Array GridMap::get_collision_shapes() const {
 
 	return shapes;
 }
+
+RID GridMap::get_physics_body_from_octant_coord(const Vector3i &p_octant_coords) const {
+	OctantKey octantkey;
+	octantkey.x = p_octant_coords.x;
+	octantkey.y = p_octant_coords.y;
+	octantkey.z = p_octant_coords.z;
+
+	const HashMap<OctantKey, Octant *, OctantKey>::ConstIterator octant_kv = octant_map.find(octantkey);
+
+	if (!octant_kv) {
+		return RID();
+	}
+
+	Octant *g = octant_kv->value;
+	RID body_rid = g->static_body;
+
+	return body_rid;
+}
 #endif // PHYSICS_3D_DISABLED
 
 void GridMap::set_bake_navigation(bool p_bake_navigation) {
@@ -361,6 +379,134 @@ void GridMap::set_center_z(bool p_enable) {
 bool GridMap::get_center_z() const {
 	return center_z;
 }
+
+void GridMap::set_debug_octant_color(const Color &p_color) {
+#ifdef DEBUG_ENABLED
+	if (debug_octant_color == p_color) {
+		return;
+	}
+
+	debug_octant_color = p_color;
+
+	if (debug_octant_line_material.is_valid()) {
+		debug_octant_line_material->set_albedo(debug_octant_color);
+	}
+#endif
+}
+
+Color GridMap::get_debug_octant_color() const {
+	return debug_octant_color;
+}
+
+#ifdef DEBUG_ENABLED
+void GridMap::_debug_update() {
+	if (debug_dirty || !is_inside_tree()) {
+		return;
+	}
+	debug_dirty = true;
+
+	callable_mp(this, &GridMap::_debug_update_octants).call_deferred();
+}
+
+void GridMap::_debug_update_octants() {
+	debug_dirty = false;
+
+	if (!debug_show_octants) {
+		_debug_clear_octants();
+		return;
+	}
+
+	if (debug_octant_line_material.is_null()) {
+		debug_octant_line_material.instantiate();
+		debug_octant_line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		debug_octant_line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		debug_octant_line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+		debug_octant_line_material->set_albedo(debug_octant_color);
+	}
+
+	Array debug_mesh_arrays = _build_octant_line_mesh_arrays();
+
+	if (debug_octant_line_mesh_rid.is_null()) {
+		debug_octant_line_mesh_rid = RS::get_singleton()->mesh_create();
+	}
+	RS::get_singleton()->mesh_clear(debug_octant_line_mesh_rid);
+	RS::get_singleton()->mesh_add_surface_from_arrays(debug_octant_line_mesh_rid, RSE::PRIMITIVE_LINES, debug_mesh_arrays);
+	RS::get_singleton()->mesh_surface_set_material(debug_octant_line_mesh_rid, 0, debug_octant_line_material->get_rid());
+
+	RID debug_scenario = get_world_3d()->get_scenario();
+	const Transform3D &gridmap_xform = get_global_transform();
+
+	for (const KeyValue<OctantKey, Octant *> &ele : octant_map) {
+		OctantKey octant_key = ele.key;
+		HashMap<OctantKey, OctantDebug *, OctantKey>::Iterator E = debug_octant_map.find(octant_key);
+		if (!E) {
+			OctantDebug *octant_debug = memnew(OctantDebug);
+
+			RID debug_octant_line_instance_rid = RS::get_singleton()->instance_create();
+
+			RS::get_singleton()->instance_set_base(debug_octant_line_instance_rid, debug_octant_line_mesh_rid);
+			RS::get_singleton()->instance_set_scenario(debug_octant_line_instance_rid, debug_scenario);
+
+			octant_debug->debug_line_instance_rid = debug_octant_line_instance_rid;
+
+			E = debug_octant_map.insert(octant_key, octant_debug);
+		}
+
+		OctantDebug &octant_debug = *E->value;
+		const Transform3D octant_transform = gridmap_xform * (Transform3D(Basis(), Vector3(octant_key.x, octant_key.y, octant_key.z) * octant_size * cell_size));
+
+		RS::get_singleton()->instance_set_scenario(octant_debug.debug_line_instance_rid, debug_scenario);
+		RS::get_singleton()->instance_set_transform(octant_debug.debug_line_instance_rid, octant_transform);
+		RS::get_singleton()->instance_set_visible(octant_debug.debug_line_instance_rid, is_visible_in_tree());
+	}
+}
+
+void GridMap::_debug_clear_octants() {
+	for (const KeyValue<OctantKey, Octant *> &ele : octant_map) {
+		OctantKey octant_key = ele.key;
+		HashMap<OctantKey, OctantDebug *, OctantKey>::Iterator E = debug_octant_map.find(octant_key);
+		if (E) {
+			OctantDebug &octant_debug = *E->value;
+
+			if (octant_debug.debug_line_mesh_rid.is_valid()) {
+				RS::get_singleton()->free_rid(octant_debug.debug_line_mesh_rid);
+				octant_debug.debug_line_mesh_rid = RID();
+			}
+			if (octant_debug.debug_line_instance_rid.is_valid()) {
+				RS::get_singleton()->free_rid(octant_debug.debug_line_instance_rid);
+				octant_debug.debug_line_instance_rid = RID();
+			}
+
+			memdelete(&octant_debug);
+		}
+	}
+
+	debug_octant_map.clear();
+}
+
+Array GridMap::_build_octant_line_mesh_arrays() const {
+	AABB aabb;
+	aabb.size = octant_size * cell_size;
+
+	Vector<Vector3> vertex_array;
+	vertex_array.resize(24);
+	Vector3 *vertex_array_ptrw = vertex_array.ptrw();
+	int vertex_index = 0;
+
+	for (int i = 0; i < 12; i++) {
+		Vector3 a, b;
+		aabb.get_edge(i, a, b);
+		vertex_array_ptrw[vertex_index++] = a;
+		vertex_array_ptrw[vertex_index++] = b;
+	}
+
+	Array mesh_arrays;
+	mesh_arrays.resize(Mesh::ARRAY_MAX);
+	mesh_arrays[Mesh::ARRAY_VERTEX] = vertex_array;
+
+	return mesh_arrays;
+}
+#endif // DEBUG_ENABLED
 
 void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 	if (baked_meshes.size() && !recreating_octants) {
@@ -991,6 +1137,8 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 			g.navigation_debug_edge_connections_mesh.unref();
 		}
 	}
+
+	_debug_clear_octants();
 #endif // DEBUG_ENABLED
 }
 
@@ -1040,9 +1188,11 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 			g.navigation_debug_edge_connections_mesh.unref();
 		}
 	}
+
+	_debug_clear_octants();
 #endif // DEBUG_ENABLED
 
-	//erase multimeshes
+	// Erase multimeshes.
 
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
 		RS::get_singleton()->free_rid(g.multimesh_instances[i].instance);
@@ -1067,20 +1217,32 @@ void GridMap::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
+#ifdef DEBUG_ENABLED
+			_debug_update();
+
+#ifndef NAVIGATION_3D_DISABLED
 			if (bake_navigation && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 				_update_navigation_debug_edge_connections();
 			}
-#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
+#endif // NAVIGATION_3D_DISABLED
+
+#endif // DEBUG_ENABLED
+
 			_update_visibility();
 		} break;
+
+#ifdef DEBUG_ENABLED
+		case NOTIFICATION_EXIT_TREE: {
+			_debug_clear_octants();
+		} break;
+#endif
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Transform3D new_xform = get_global_transform();
 			if (new_xform == last_transform) {
 				break;
 			}
-			//update run
+
 			for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
 				_octant_transform(E.key);
 			}
@@ -1090,6 +1252,17 @@ void GridMap::_notification(int p_what) {
 			for (int i = 0; i < baked_meshes.size(); i++) {
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
+
+#ifdef DEBUG_ENABLED
+			for (const KeyValue<OctantKey, OctantDebug *> &E : debug_octant_map) {
+				OctantKey octant_key = E.key;
+				OctantDebug &octant_debug = *E.value;
+				if (octant_debug.debug_line_instance_rid.is_valid()) {
+					const Transform3D octant_transform = new_xform * (Transform3D(Basis(), Vector3(octant_key.x, octant_key.y, octant_key.z) * octant_size * cell_size));
+					RS::get_singleton()->instance_set_transform(octant_debug.debug_line_instance_rid, octant_transform);
+				}
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
@@ -1097,9 +1270,6 @@ void GridMap::_notification(int p_what) {
 				_octant_exit_world(E.key);
 			}
 
-			//_queue_octants_dirty(MAP_DIRTY_INSTANCES|MAP_DIRTY_TRANSFORMS);
-			//_update_octants_callback();
-			//_update_area_instances();
 			for (int i = 0; i < baked_meshes.size(); i++) {
 				RS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, RID());
 			}
@@ -1127,6 +1297,15 @@ void GridMap::_update_visibility() {
 	for (int i = 0; i < baked_meshes.size(); i++) {
 		RS::get_singleton()->instance_set_visible(baked_meshes[i].instance, is_visible_in_tree());
 	}
+
+#ifdef DEBUG_ENABLED
+	for (const KeyValue<OctantKey, OctantDebug *> &E : debug_octant_map) {
+		OctantDebug &octant_debug = *E.value;
+		if (octant_debug.debug_line_instance_rid.is_valid()) {
+			RS::get_singleton()->instance_set_visible(octant_debug.debug_line_instance_rid, is_visible_in_tree());
+		}
+	}
+#endif
 }
 
 void GridMap::_queue_octants_dirty() {
@@ -1140,12 +1319,17 @@ void GridMap::_queue_octants_dirty() {
 
 void GridMap::_recreate_octant_data() {
 	recreating_octants = true;
+
 	HashMap<IndexKey, Cell, IndexKey> cell_copy(cell_map);
 	_clear_internal();
 	for (const KeyValue<IndexKey, Cell> &E : cell_copy) {
 		set_cell_item(Vector3i(E.key), E.value.item, E.value.rot);
 	}
+
 	recreating_octants = false;
+#ifdef DEBUG_ENABLED
+	_debug_update();
+#endif
 }
 
 void GridMap::_clear_internal() {
@@ -1160,6 +1344,10 @@ void GridMap::_clear_internal() {
 
 	octant_map.clear();
 	cell_map.clear();
+#ifdef DEBUG_ENABLED
+	_debug_clear_octants();
+	_debug_update();
+#endif
 }
 
 void GridMap::clear() {
@@ -1194,6 +1382,10 @@ void GridMap::_update_octants_callback() {
 
 	_update_visibility();
 	awaiting_update = false;
+
+#ifdef DEBUG_ENABLED
+	_debug_update_octants();
+#endif
 }
 
 void GridMap::_bind_methods() {
@@ -1266,12 +1458,29 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
 	ClassDB::bind_method(D_METHOD("get_used_cells_by_item", "item"), &GridMap::get_used_cells_by_item);
 
+	ClassDB::bind_method(D_METHOD("get_used_octants"), &GridMap::get_used_octants);
+	ClassDB::bind_method(D_METHOD("get_used_octants_by_item", "item"), &GridMap::get_used_octants_by_item);
+
+	ClassDB::bind_method(D_METHOD("get_used_cells_in_octant", "octant_coords"), &GridMap::get_used_cells_in_octant);
+	ClassDB::bind_method(D_METHOD("get_used_cells_in_octant_by_item", "octant_coords", "item"), &GridMap::get_used_cells_in_octant_by_item);
+
+	ClassDB::bind_method(D_METHOD("get_octants_in_bounds", "bounds"), &GridMap::get_octants_in_bounds);
+	ClassDB::bind_method(D_METHOD("get_used_octants_in_bounds", "bounds"), &GridMap::get_used_octants_in_bounds);
+
+	ClassDB::bind_method(D_METHOD("get_octant_coords_from_cell_coords", "cell_coords"), &GridMap::get_octant_coords_from_cell_coords);
+
 	ClassDB::bind_method(D_METHOD("get_meshes"), &GridMap::get_meshes);
 	ClassDB::bind_method(D_METHOD("get_bake_meshes"), &GridMap::get_bake_meshes);
 	ClassDB::bind_method(D_METHOD("get_bake_mesh_instance", "idx"), &GridMap::get_bake_mesh_instance);
 
 	ClassDB::bind_method(D_METHOD("clear_baked_meshes"), &GridMap::clear_baked_meshes);
 	ClassDB::bind_method(D_METHOD("make_baked_meshes", "gen_lightmap_uv", "lightmap_uv_texel_size"), &GridMap::make_baked_meshes, DEFVAL(false), DEFVAL(0.1));
+
+	ClassDB::bind_method(D_METHOD("set_debug_show_octants", "enable"), &GridMap::set_debug_show_octants);
+	ClassDB::bind_method(D_METHOD("get_debug_show_octants"), &GridMap::get_debug_show_octants);
+
+	ClassDB::bind_method(D_METHOD("set_debug_octant_color", "color"), &GridMap::set_debug_octant_color);
+	ClassDB::bind_method(D_METHOD("get_debug_octant_color"), &GridMap::get_debug_octant_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh_library", PROPERTY_HINT_RESOURCE_TYPE, MeshLibrary::get_class_static()), "set_mesh_library", "get_mesh_library");
 #ifndef PHYSICS_3D_DISABLED
@@ -1293,6 +1502,9 @@ void GridMap::_bind_methods() {
 #endif // PHYSICS_3D_DISABLED
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
+	ADD_GROUP("Debug", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_show_octants"), "set_debug_show_octants", "get_debug_show_octants");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_octant_color"), "set_debug_octant_color", "get_debug_octant_color");
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
@@ -1335,6 +1547,193 @@ TypedArray<Vector3i> GridMap::get_used_cells_by_item(int p_item) const {
 	}
 
 	return a;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants() const {
+	TypedArray<Vector3i> octant_coords;
+	octant_coords.resize(octant_map.size());
+	int i = 0;
+	for (const KeyValue<OctantKey, Octant *> &octant_kv : octant_map) {
+		const OctantKey &octant_key = octant_kv.key;
+		Vector3i octant_coord(octant_key.x, octant_key.y, octant_key.z);
+		octant_coords[i++] = octant_coord;
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants_by_item(int p_item) const {
+	TypedArray<Vector3i> octant_coords;
+	for (const KeyValue<OctantKey, Octant *> &octant_kv : octant_map) {
+		const OctantKey &octant_key = octant_kv.key;
+		const Octant &octant = *octant_kv.value;
+		for (const IndexKey &cell_key : octant.cells) {
+			const Cell &cell = cell_map[cell_key];
+			if ((int)cell.item == p_item) {
+				Vector3i octant_coord(octant_key.x, octant_key.y, octant_key.z);
+				octant_coords.push_back(octant_coord);
+				break;
+			}
+		}
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_cells_in_octant(const Vector3i &p_octant_coords) const {
+	TypedArray<Vector3i> cell_coords;
+
+	const OctantKey octantkey = get_octant_key_from_cell_coords(p_octant_coords);
+	if (!octant_map.has(octantkey)) {
+		return cell_coords;
+	}
+
+	const Octant &octant = *octant_map[octantkey];
+
+	for (const IndexKey &cell_key : octant.cells) {
+		Vector3i cell_coord(cell_key.x, cell_key.y, cell_key.z);
+		cell_coords.push_back(cell_coord);
+	}
+
+	return cell_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_cells_in_octant_by_item(const Vector3i &p_octant_coords, int p_item) const {
+	TypedArray<Vector3i> cell_coords;
+
+	const OctantKey octantkey = get_octant_key_from_cell_coords(p_octant_coords);
+	if (!octant_map.has(octantkey)) {
+		return cell_coords;
+	}
+
+	const Octant &octant = *octant_map[octantkey];
+
+	for (const IndexKey &cell_key : octant.cells) {
+		const Cell &cell = cell_map[cell_key];
+		if ((int)cell.item == p_item) {
+			Vector3i cell_coord(cell_key.x, cell_key.y, cell_key.z);
+			cell_coords.push_back(cell_coord);
+		}
+	}
+
+	return cell_coords;
+}
+
+Vector3i GridMap::get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const {
+	return Vector3i(
+			p_cell_coords.x > 0 ? p_cell_coords.x / octant_size : (p_cell_coords.x - (octant_size - 1)) / octant_size,
+			p_cell_coords.y > 0 ? p_cell_coords.y / octant_size : (p_cell_coords.y - (octant_size - 1)) / octant_size,
+			p_cell_coords.z > 0 ? p_cell_coords.z / octant_size : (p_cell_coords.z - (octant_size - 1)) / octant_size);
+}
+
+LocalVector<GridMap::IndexKey> GridMap::get_index_keys_in_bounds(const AABB &p_bounds, bool p_used_only) const {
+	LocalVector<IndexKey> index_keys;
+	if (!p_bounds.has_volume()) {
+		return index_keys;
+	}
+
+	Vector3i cell_coords_start = (p_bounds.position / cell_size).floor();
+	// -CMP_EPSILON because we don't want the octants that are just starting at the edge of the bounds.
+	Vector3i cell_coords_end = ((p_bounds.get_end() - Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON)) / cell_size).floor();
+
+	for (int z = cell_coords_start.z; z < cell_coords_end.z + 1; z++) {
+		for (int y = cell_coords_start.y; y < cell_coords_end.y + 1; y++) {
+			for (int x = cell_coords_start.x; x < cell_coords_end.x + 1; x++) {
+				IndexKey index_key;
+				index_key.x = x;
+				index_key.y = y;
+				index_key.z = z;
+
+				if (p_used_only) {
+					const HashMap<IndexKey, Cell, IndexKey>::ConstIterator index_key_kv = cell_map.find(index_key);
+
+					if (index_key_kv) {
+						index_keys.push_back(index_key);
+					}
+				} else {
+					index_keys.push_back(index_key);
+				}
+			}
+		}
+	}
+
+	return index_keys;
+}
+
+LocalVector<GridMap::OctantKey> GridMap::get_octant_keys_in_bounds(const AABB &p_bounds, bool p_used_only) const {
+	LocalVector<OctantKey> octant_keys;
+	if (!p_bounds.has_volume()) {
+		return octant_keys;
+	}
+
+	Vector3i cell_coords_start = (p_bounds.position / cell_size).floor();
+	// -CMP_EPSILON because we don't want the octants that are just starting at the edge of the bounds.
+	Vector3i cell_coords_end = ((p_bounds.get_end() - Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON)) / cell_size).floor();
+
+	OctantKey octant_coords_start = get_octant_key_from_cell_coords(cell_coords_start);
+	OctantKey octant_coords_end = get_octant_key_from_cell_coords(cell_coords_end);
+
+	for (int z = octant_coords_start.z; z < octant_coords_end.z + 1; z++) {
+		for (int y = octant_coords_start.y; y < octant_coords_end.y + 1; y++) {
+			for (int x = octant_coords_start.x; x < octant_coords_end.x + 1; x++) {
+				OctantKey octant_key;
+				octant_key.x = x;
+				octant_key.y = y;
+				octant_key.z = z;
+
+				if (p_used_only) {
+					const HashMap<OctantKey, Octant *, OctantKey>::ConstIterator octant_kv = octant_map.find(octant_key);
+
+					if (octant_kv) {
+						Vector3i octant_coord(x, y, z);
+						octant_keys.push_back(octant_key);
+					}
+				} else {
+					octant_keys.push_back(octant_key);
+				}
+			}
+		}
+	}
+
+	return octant_keys;
+}
+
+TypedArray<Vector3i> GridMap::get_octants_in_bounds(const AABB &p_bounds) const {
+	TypedArray<Vector3i> octant_coords;
+	if (!p_bounds.has_volume()) {
+		return octant_coords;
+	}
+
+	bool used_only = false;
+
+	const LocalVector<OctantKey> &octant_keys = get_octant_keys_in_bounds(p_bounds, used_only);
+
+	octant_coords.resize(octant_keys.size());
+
+	for (uint32_t i = 0; i < octant_keys.size(); i++) {
+		octant_coords[i] = Vector3i(octant_keys[i].x, octant_keys[i].y, octant_keys[i].z);
+	}
+
+	return octant_coords;
+}
+
+TypedArray<Vector3i> GridMap::get_used_octants_in_bounds(const AABB &p_bounds) const {
+	TypedArray<Vector3i> octant_coords;
+	if (!p_bounds.has_volume()) {
+		return octant_coords;
+	}
+
+	bool used_only = true;
+
+	const LocalVector<OctantKey> &octant_keys = get_octant_keys_in_bounds(p_bounds, used_only);
+
+	octant_coords.resize(octant_keys.size());
+
+	for (uint32_t i = 0; i < octant_keys.size(); i++) {
+		octant_coords[i] = Vector3i(octant_keys[i].x, octant_keys[i].y, octant_keys[i].z);
+	}
+
+	return octant_coords;
 }
 
 Array GridMap::get_meshes() const {
@@ -1491,6 +1890,21 @@ RID GridMap::get_bake_mesh_instance(int p_idx) {
 	return baked_meshes[p_idx].instance;
 }
 
+void GridMap::set_debug_show_octants(bool p_enable) {
+#ifdef DEBUG_ENABLED
+	if (debug_show_octants == p_enable) {
+		return;
+	}
+
+	debug_show_octants = p_enable;
+	_debug_update();
+#endif
+}
+
+bool GridMap::get_debug_show_octants() const {
+	return debug_show_octants;
+}
+
 GridMap::GridMap() {
 	set_notify_transform(true);
 #if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
@@ -1533,7 +1947,34 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 	}
 #ifndef PHYSICS_3D_DISABLED
 	else if ((parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) && (gridmap->get_collision_layer() & parsed_collision_mask)) {
-		Array shapes = gridmap->get_collision_shapes();
+		Array shapes;
+
+		// If we have a baking AABB set we can skip wasting time on parsing the entire GridMap.
+		AABB baking_aabb = p_navigation_mesh->get_filter_baking_aabb();
+		if (baking_aabb.has_volume()) {
+			Vector3 baking_aabb_offset = p_navigation_mesh->get_filter_baking_aabb_offset();
+			baking_aabb.position = baking_aabb.position + baking_aabb_offset;
+
+			const TypedArray<Vector3i> octant_coords = gridmap->get_used_octants_in_bounds(baking_aabb);
+			for (const Vector3i octant_coord : octant_coords) {
+				RID body = gridmap->get_physics_body_from_octant_coord(octant_coord);
+				if (body.is_null()) {
+					continue;
+				}
+				const Transform3D body_xform = PhysicsServer3D::get_singleton()->body_get_state(body, PhysicsServer3D::BODY_STATE_TRANSFORM);
+				int nshapes = PhysicsServer3D::get_singleton()->body_get_shape_count(body);
+				for (int i = 0; i < nshapes; i++) {
+					RID shape = PhysicsServer3D::get_singleton()->body_get_shape(body, i);
+					Transform3D shape_xform = PhysicsServer3D::get_singleton()->body_get_shape_transform(body, i);
+					Transform3D xform = body_xform * shape_xform;
+					shapes.push_back(xform);
+					shapes.push_back(shape);
+				}
+			}
+		} else {
+			shapes = gridmap->get_collision_shapes();
+		}
+
 		for (int i = 0; i < shapes.size(); i += 2) {
 			RID shape = shapes[i + 1];
 			PhysicsServer3D::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);
@@ -1659,10 +2100,16 @@ void GridMap::_navigation_map_changed(RID p_map) {
 
 GridMap::~GridMap() {
 	clear();
-#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
+
+#ifdef DEBUG_ENABLED
+	_debug_clear_octants();
+
+#ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3D::get_singleton()->disconnect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
 	NavigationServer3D::get_singleton()->disconnect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));
-#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
+#endif // NAVIGATION_3D_DISABLED
+
+#endif // DEBUG_ENABLED
 }
 
 #if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)

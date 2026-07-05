@@ -4,7 +4,7 @@
  *
  *   TrueType Glyph Loader (body).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1185,9 +1185,7 @@
 
 
     /* make room for phantom points */
-    error = FT_GLYPHLOADER_CHECK_POINTS( loader->gloader,
-                                         outline->n_points + 4,
-                                         0 );
+    error = FT_GLYPHLOADER_CHECK_POINTS( loader->gloader, 4, 0 );
     if ( error )
       return error;
 
@@ -1424,6 +1422,14 @@
     if ( recurse_count )
       FT_TRACE5(( "  nesting level: %u\n", recurse_count ));
 #endif
+
+    /* arbitrary recursion limit */
+    if ( recurse_count > 100 )
+    {
+      FT_TRACE4(( "load_truetype_glyph: recursion depth exceeded\n" ));
+      error = FT_THROW( Invalid_Composite );
+      goto Exit;
+    }
 
     /* some fonts have an incorrect value of `maxComponentDepth' */
     if ( recurse_count > face->max_profile.maxComponentDepth )
@@ -2217,6 +2223,10 @@
       exec = size->context;
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
+      /* reset backward compatibility; note that */
+      /* the CVT program always runs without it  */
+      exec->backward_compatibility = 0;
+
       if ( driver->interpreter_version == TT_INTERPRETER_VERSION_40 )
       {
         grayscale = FALSE;
@@ -2253,9 +2263,7 @@
           return error;
       }
 
-      error = TT_Load_Context( exec, face, size );
-      if ( error )
-        return error;
+      TT_Load_Context( exec, face, size );
 
       /* check whether the cvt program has disabled hinting */
       if ( size->GS.instruct_control & 1 )
@@ -2283,8 +2291,7 @@
            mode != FT_RENDER_MODE_MONO                              &&
            !FT_IS_TRICKY( glyph->face )                             )
         exec->backward_compatibility = ( size->GS.instruct_control & 4 ) ^ 4;
-      else
-        exec->backward_compatibility = 0;
+
 #endif /* TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL */
 
       loader->exec = exec;

@@ -41,6 +41,10 @@ class ScriptLanguage;
 template <typename T>
 class TypedArray;
 
+#ifdef TOOLS_ENABLED
+class EditorLanguage;
+#endif // TOOLS_ENABLED
+
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
 class ScriptServer {
@@ -151,7 +155,6 @@ public:
 	virtual StringName get_instance_base_type() const = 0; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
 	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) { return nullptr; }
-	virtual bool instance_has(const Object *p_this) const = 0;
 
 	virtual bool has_source_code() const = 0;
 	virtual String get_source_code() const = 0;
@@ -200,6 +203,10 @@ public:
 	Script() {
 		_define_ancestry(AncestralClass::SCRIPT);
 	}
+
+#ifndef DISABLE_DEPRECATED
+	[[deprecated("Use Object::get_script instead.")]] bool instance_has(const Object *p_this) const { return p_this != nullptr && Object::cast_to<Script>(p_this->get_script()) == this; }
+#endif // !DISABLE_DEPRECATED
 };
 
 class ScriptLanguage : public Object {
@@ -218,8 +225,15 @@ public:
 	virtual void finish() = 0;
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	// Must not return `nullptr`. `EditorLanguage` can be used as default implementation for languages without editor support.
+	virtual EditorLanguage *get_editor_language() = 0;
+#endif // TOOLS_ENABLED
+
 	struct Warning {
+		/// One-based.
 		int start_line = 0;
+		/// One-based.
 		int end_line = 0;
 		int code;
 		String string_code;
@@ -228,7 +242,9 @@ public:
 
 	struct ScriptError {
 		String path;
+		/// One-based.
 		int line = -1;
+		/// One-based.
 		int column = -1;
 		String message;
 	};
@@ -294,6 +310,7 @@ public:
 		CODE_COMPLETION_KIND_NODE_PATH,
 		CODE_COMPLETION_KIND_FILE_PATH,
 		CODE_COMPLETION_KIND_PLAIN_TEXT,
+		CODE_COMPLETION_KIND_KEYWORD,
 		CODE_COMPLETION_KIND_MAX
 	};
 
@@ -305,10 +322,27 @@ public:
 		LOCATION_OTHER = 1 << 10,
 	};
 
+	struct TextEdit {
+		String new_text;
+		int start_line = -1;
+		int start_column;
+		int end_line;
+		int end_column;
+
+		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
+	};
+
 	struct CodeCompletionOption {
 		CodeCompletionKind kind = CODE_COMPLETION_KIND_PLAIN_TEXT;
 		String display;
 		String insert_text;
+		/**
+		 * Optional server side calculated insertion.
+		 *
+		 * In contrast to `insert_text`, the editor must not do matching of preexisting text on `text_edit`.
+		 * Note: This is used by the language server, there is no support in the builtin editor for this property at the moment.
+		 */
+		TextEdit text_edit;
 		Color font_color;
 		Ref<Resource> icon;
 		Variant default_value;
@@ -334,8 +368,6 @@ public:
 	private:
 		TypedArray<int> charac;
 	};
-
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
 	enum LookupResultType {
 		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.

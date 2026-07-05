@@ -105,7 +105,6 @@ bool RenderingDeviceGraph::_is_write_usage(ResourceUsage p_usage) {
 		case RESOURCE_USAGE_STORAGE_IMAGE_READ:
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ:
 		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
-		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT:
 		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ:
 			return false;
 		case RESOURCE_USAGE_COPY_TO:
@@ -176,10 +175,6 @@ RDD::BarrierAccessBits RenderingDeviceGraph::_usage_to_access_bits(ResourceUsage
 			return RDD::BARRIER_ACCESS_UNIFORM_READ_BIT;
 		case RESOURCE_USAGE_INDIRECT_BUFFER_READ:
 			return RDD::BARRIER_ACCESS_INDIRECT_COMMAND_READ_BIT;
-		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT:
-			// Acceleration structure build inputs can be either storage buffers with vertices, indices, transforms, or
-			// other acceleration structures (BLAS)
-			return RDD::BarrierAccessBits(RDD::BARRIER_ACCESS_COPY_READ_BIT | RDD::BARRIER_ACCESS_ACCELERATION_STRUCTURE_READ_BIT);
 		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ:
 			return RDD::BARRIER_ACCESS_ACCELERATION_STRUCTURE_READ_BIT;
 		case RESOURCE_USAGE_STORAGE_BUFFER_READ:
@@ -411,6 +406,13 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 
 		resource_tracker->reset_if_outdated(tracking_frame);
 
+		resource_tracker->command_index = p_command_index;
+		resource_tracker->usage_index = i;
+	}
+
+	for (uint32_t i = 0; i < p_resource_count; i++) {
+		ResourceTracker *resource_tracker = p_resource_trackers[i];
+
 		const RDD::TextureSubresourceRange &subresources = resource_tracker->texture_subresources;
 		const Rect2i resource_tracker_rect(subresources.base_mipmap, subresources.base_layer, subresources.mipmap_count, subresources.layer_count);
 		Rect2i search_tracker_rect = resource_tracker_rect;
@@ -422,6 +424,15 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 		if (is_resource_a_slice) {
 			// This resource depends on a parent resource.
 			resource_tracker->parent->reset_if_outdated(tracking_frame);
+
+			// Quit early if the parent is already in this command.
+			if (resource_tracker->parent->command_index == p_command_index) {
+				DEV_ASSERT(resource_tracker->parent->usage_index != UINT32_MAX);
+
+				ERR_FAIL_COND_MSG(p_resource_usages[resource_tracker->parent->usage_index] != new_resource_usage, "Using a full texture and its slices at the same time with different usages is not allowed.");
+
+				continue;
+			}
 
 			if (resource_tracker->texture_slice_command_index != p_command_index) {
 				// Indicate this slice has been used by this command.
@@ -818,7 +829,7 @@ void RenderingDeviceGraph::_run_raytracing_list_command(RDD::CommandBufferID p_c
 			} break;
 			case RaytracingListInstruction::TYPE_TRACE_RAYS: {
 				const RaytracingListTraceRaysInstruction *trace_rays_instruction = reinterpret_cast<const RaytracingListTraceRaysInstruction *>(instruction);
-				driver->command_trace_rays(p_command_buffer, trace_rays_instruction->width, trace_rays_instruction->height);
+				driver->command_trace_rays(p_command_buffer, trace_rays_instruction->raygen_sbt, trace_rays_instruction->miss_sbt, trace_rays_instruction->hit_sbt, trace_rays_instruction->width, trace_rays_instruction->height, trace_rays_instruction->depth);
 				instruction_data_cursor += sizeof(RaytracingListTraceRaysInstruction);
 			} break;
 			case RaytracingListInstruction::TYPE_SET_PUSH_CONSTANT: {
@@ -1086,9 +1097,13 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 		_run_label_command_change(r_command_buffer, command->label_index, p_level, false, true, &p_sorted_commands[i], p_sorted_commands_count - i, r_current_label_index, r_current_label_level);
 
 		switch (command->type) {
-			case RecordedCommand::TYPE_ACCELERATION_STRUCTURE_BUILD: {
-				const RecordedAccelerationStructureBuildCommand *as_build_command = reinterpret_cast<const RecordedAccelerationStructureBuildCommand *>(command);
-				driver->command_build_acceleration_structure(r_command_buffer, as_build_command->acceleration_structure, as_build_command->scratch_buffer);
+			case RecordedCommand::TYPE_BOTTOM_LEVEL_ACCELERATION_STRUCTURE_BUILD: {
+				const RecordedBottomLevelAccelerationStructureBuildCommand *blas_build_command = reinterpret_cast<const RecordedBottomLevelAccelerationStructureBuildCommand *>(command);
+				driver->command_build_blas(r_command_buffer, blas_build_command->acceleration_structure, blas_build_command->scratch_buffer);
+			} break;
+			case RecordedCommand::TYPE_TOP_LEVEL_ACCELERATION_STRUCTURE_BUILD: {
+				const RecordedTopLevelAccelerationStructureBuildCommand *tlas_build_command = reinterpret_cast<const RecordedTopLevelAccelerationStructureBuildCommand *>(command);
+				driver->command_build_tlas(r_command_buffer, tlas_build_command->acceleration_structure, tlas_build_command->scratch_buffer, tlas_build_command->instance_buffer, tlas_build_command->instance_offset, tlas_build_command->instance_count);
 			} break;
 			case RecordedCommand::TYPE_BUFFER_CLEAR: {
 				const RecordedBufferClearCommand *buffer_clear_command = reinterpret_cast<const RecordedBufferClearCommand *>(command);
@@ -1118,7 +1133,7 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 				_run_raytracing_list_command(r_command_buffer, raytracing_list_command->instruction_data(), raytracing_list_command->instruction_data_size);
 			} break;
 			case RecordedCommand::TYPE_COMPUTE_LIST: {
-				if (device.workarounds.avoid_compute_after_draw && workarounds_state.draw_list_found) {
+				if (driver_workarounds.avoid_compute_after_draw && workarounds_state.draw_list_found) {
 					// Avoid compute after draw workaround. Refer to the comment that enables this in the Vulkan driver for more information.
 					workarounds_state.draw_list_found = false;
 
@@ -1142,7 +1157,7 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 				_run_compute_list_command(r_command_buffer, compute_list_command->instruction_data(), compute_list_command->instruction_data_size);
 			} break;
 			case RecordedCommand::TYPE_DRAW_LIST: {
-				if (device.workarounds.avoid_compute_after_draw) {
+				if (driver_workarounds.avoid_compute_after_draw) {
 					// Indicate that a draw list was encountered for the workaround.
 					workarounds_state.draw_list_found = true;
 				}
@@ -1713,13 +1728,13 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 	}
 }
 
-void RenderingDeviceGraph::initialize(RDD *p_driver, RenderingContextDriver::Device p_device, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame) {
+void RenderingDeviceGraph::initialize(RDD *p_driver, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame) {
 	DEV_ASSERT(p_driver != nullptr);
 	DEV_ASSERT(p_render_pass_creation_function != nullptr);
 	DEV_ASSERT(p_frame_count > 0);
 
 	driver = p_driver;
-	device = p_device;
+	driver_workarounds = p_driver->get_driver_workarounds();
 	render_pass_creation_function = p_render_pass_creation_function;
 	frames.resize(p_frame_count);
 
@@ -1784,10 +1799,10 @@ void RenderingDeviceGraph::begin() {
 #endif
 }
 
-void RenderingDeviceGraph::add_acceleration_structure_build(RDD::AccelerationStructureID p_acceleration_structure, RDD::BufferID p_scratch_buffer, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers) {
+void RenderingDeviceGraph::add_blas_build(RDD::AccelerationStructureID p_acceleration_structure, RDD::BufferID p_scratch_buffer, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers) {
 	int32_t command_index;
-	RecordedAccelerationStructureBuildCommand *command = static_cast<RecordedAccelerationStructureBuildCommand *>(_allocate_command(sizeof(RecordedAccelerationStructureBuildCommand), command_index));
-	command->type = RecordedCommand::TYPE_ACCELERATION_STRUCTURE_BUILD;
+	RecordedBottomLevelAccelerationStructureBuildCommand *command = static_cast<RecordedBottomLevelAccelerationStructureBuildCommand *>(_allocate_command(sizeof(RecordedBottomLevelAccelerationStructureBuildCommand), command_index));
+	command->type = RecordedCommand::TYPE_BOTTOM_LEVEL_ACCELERATION_STRUCTURE_BUILD;
 	command->self_stages = RDD::PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT;
 	command->acceleration_structure = p_acceleration_structure;
 	command->scratch_buffer = p_scratch_buffer;
@@ -1802,7 +1817,37 @@ void RenderingDeviceGraph::add_acceleration_structure_build(RDD::AccelerationStr
 
 	for (uint32_t i = 0; i < p_src_trackers.size(); ++i) {
 		trackers[i] = p_src_trackers[i];
-		usages[i] = RESOURCE_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT;
+		usages[i] = RESOURCE_USAGE_STORAGE_BUFFER_READ;
+	}
+
+	trackers[resource_count - 1] = p_dst_tracker;
+	usages[resource_count - 1] = RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE;
+
+	_add_command_to_graph(trackers.ptr(), usages.ptr(), usages.size(), command_index, command);
+}
+
+void RenderingDeviceGraph::add_tlas_build(RDD::AccelerationStructureID p_acceleration_structure, RDD::BufferID p_scratch_buffer, RDD::BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers) {
+	int32_t command_index;
+	RecordedTopLevelAccelerationStructureBuildCommand *command = static_cast<RecordedTopLevelAccelerationStructureBuildCommand *>(_allocate_command(sizeof(RecordedTopLevelAccelerationStructureBuildCommand), command_index));
+	command->type = RecordedCommand::TYPE_TOP_LEVEL_ACCELERATION_STRUCTURE_BUILD;
+	command->self_stages = RDD::PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT;
+	command->acceleration_structure = p_acceleration_structure;
+	command->scratch_buffer = p_scratch_buffer;
+	command->instance_buffer = p_instance_buffer;
+	command->instance_offset = p_instance_offset;
+	command->instance_count = p_instance_count;
+
+	thread_local LocalVector<ResourceTracker *> trackers;
+	thread_local LocalVector<ResourceUsage> usages;
+
+	// Sources and destination.
+	uint32_t resource_count = p_src_trackers.size() + 1;
+	trackers.resize(resource_count);
+	usages.resize(resource_count);
+
+	for (uint32_t i = 0; i < p_src_trackers.size(); ++i) {
+		trackers[i] = p_src_trackers[i];
+		usages[i] = RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ;
 	}
 
 	trackers[resource_count - 1] = p_dst_tracker;
@@ -1930,11 +1975,15 @@ void RenderingDeviceGraph::add_raytracing_list_set_push_constant(RDD::ShaderID p
 	memcpy(instruction->data(), p_data, p_data_size);
 }
 
-void RenderingDeviceGraph::add_raytracing_list_trace_rays(uint32_t p_width, uint32_t p_height) {
+void RenderingDeviceGraph::add_raytracing_list_trace_rays(const RDD::ShaderBindingTable &p_raygen_sbt, const RDD::ShaderBindingTable &p_miss_sbt, const RDD::ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) {
 	RaytracingListTraceRaysInstruction *instruction = reinterpret_cast<RaytracingListTraceRaysInstruction *>(_allocate_raytracing_list_instruction(sizeof(RaytracingListTraceRaysInstruction)));
 	instruction->type = RaytracingListInstruction::TYPE_TRACE_RAYS;
+	instruction->raygen_sbt = p_raygen_sbt;
+	instruction->miss_sbt = p_miss_sbt;
+	instruction->hit_sbt = p_hit_sbt;
 	instruction->width = p_width;
 	instruction->height = p_height;
+	instruction->depth = p_depth;
 }
 
 void RenderingDeviceGraph::add_raytracing_list_uniform_set_prepare_for_use(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
@@ -2610,13 +2659,16 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 		}
 
 		// Batch buffer, texture, draw lists and compute operations together.
-		const uint32_t PriorityTable[RecordedCommand::TYPE_MAX] = {
+		const uint32_t PriorityTable[] = {
 			0, // TYPE_NONE
+			6, // TYPE_BOTTOM_LEVEL_ACCELERATION_STRUCTURE_BUILD
+			6, // TYPE_TOP_LEVEL_ACCELERATION_STRUCTURE_BUILD
 			1, // TYPE_BUFFER_CLEAR
 			1, // TYPE_BUFFER_COPY
 			1, // TYPE_BUFFER_GET_DATA
 			1, // TYPE_BUFFER_UPDATE
 			4, // TYPE_COMPUTE_LIST
+			7, // TYPE_RAYTRACING_LIST
 			3, // TYPE_DRAW_LIST
 			2, // TYPE_TEXTURE_CLEAR_COLOR
 			2, // TYPE_TEXTURE_CLEAR_DEPTH_STENCIL
@@ -2627,6 +2679,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 			2, // TYPE_CAPTURE_TIMESTAMP
 			5, // TYPE_DRIVER_CALLBACK
 		};
+		static_assert(std_size(PriorityTable) == RecordedCommand::TYPE_MAX, "PriorityTable must have one entry per RecordedCommand::Type");
 
 		commands_sorted.clear();
 		commands_sorted.resize(command_count);
@@ -2666,7 +2719,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 		int32_t current_label_level = -1;
 		_run_label_command_change(r_command_buffer, -1, -1, true, true, nullptr, 0, current_label_index, current_label_level);
 
-		if (device.workarounds.avoid_compute_after_draw) {
+		if (driver_workarounds.avoid_compute_after_draw) {
 			// Reset the state of the workaround.
 			workarounds_state.draw_list_found = false;
 		}

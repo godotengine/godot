@@ -46,6 +46,7 @@ public:
 		SCROLL_MODE_SHOW_ALWAYS,
 		SCROLL_MODE_SHOW_NEVER,
 		SCROLL_MODE_RESERVE,
+		SCROLL_MODE_MAXIMIZE_FIRST,
 	};
 
 	enum ScrollHintMode {
@@ -91,6 +92,9 @@ private:
 	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
 	bool tile_scroll_hint = false;
 
+	bool following = false;
+	Vector2 scroll_diff;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
@@ -116,8 +120,14 @@ private:
 	bool focus_border_is_drawn = false;
 	bool child_has_focus();
 
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+
+	Rect2 _get_local_visible_rect() const;
+
 protected:
 	Size2 get_minimum_size() const override;
+	Size2 get_desired_size() const override;
+	Size2 get_inner_combined_maximum_size() const override;
 
 	void _gui_focus_changed(Control *p_control);
 	void _reposition_children();

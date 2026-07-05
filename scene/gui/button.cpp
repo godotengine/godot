@@ -153,20 +153,25 @@ Ref<StyleBox> Button::_get_current_stylebox() const {
 	return stylebox;
 }
 
+String Button::_get_accessibility_name() const {
+	const String &ac_name = Control::_get_accessibility_name();
+	if (!xl_text.is_empty() && ac_name.is_empty()) {
+		return xl_text;
+	} else if (!xl_text.is_empty() && !ac_name.is_empty() && ac_name != xl_text) {
+		return ac_name + ": " + xl_text;
+	} else if (xl_text.is_empty() && ac_name.is_empty() && !get_tooltip_text().is_empty()) {
+		return get_tooltip_text(); // Fall back to tooltip.
+	} else {
+		return ac_name;
+	}
+}
+
 void Button::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			const String &ac_name = get_accessibility_name();
-			if (!xl_text.is_empty() && ac_name.is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, xl_text);
-			} else if (!xl_text.is_empty() && !ac_name.is_empty() && ac_name != xl_text) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, ac_name + ": " + xl_text);
-			} else if (xl_text.is_empty() && ac_name.is_empty() && !get_tooltip_text().is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, get_tooltip_text()); // Fall back to tooltip.
-			}
 			AcceptDialog *dlg = Object::cast_to<AcceptDialog>(get_parent());
 			if (dlg && dlg->get_ok_button() == this) {
 				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_DEFAULT_BUTTON);
@@ -182,6 +187,7 @@ void Button::_notification(int p_what) {
 			_shape();
 
 			update_minimum_size();
+			update_configuration_warnings();
 			queue_accessibility_update();
 			queue_redraw();
 		} break;
@@ -600,6 +606,7 @@ void Button::set_text(const String &p_text) {
 	xl_text = translated_text;
 	_shape();
 
+	update_configuration_warnings();
 	queue_accessibility_update();
 	queue_redraw();
 	update_minimum_size();

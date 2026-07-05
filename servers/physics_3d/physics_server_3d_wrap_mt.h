@@ -35,7 +35,7 @@
 #include "core/templates/command_queue_mt.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
-#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 #define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 #define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 
@@ -382,6 +382,9 @@ public:
 
 	FUNC4(generic_6dof_joint_set_flag, RID, Vector3::Axis, G6DOFJointAxisFlag, bool)
 	FUNC3RC(bool, generic_6dof_joint_get_flag, RID, Vector3::Axis, G6DOFJointAxisFlag)
+
+	FUNC2(generic_6dof_joint_set_angular_target_rotation, RID, const Quaternion &)
+	FUNC1RC(Quaternion, generic_6dof_joint_get_angular_target_rotation, RID)
 
 	FUNC1RC(JointType, joint_get_type, RID);
 

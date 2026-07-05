@@ -186,9 +186,7 @@ void Node::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
-			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
-				notification(NOTIFICATION_TRANSLATION_CHANGED);
-			}
+			notification(NOTIFICATION_TRANSLATION_CHANGED);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1477,7 +1475,7 @@ void Node::set_name(const StringName &p_name) {
 }
 
 // Returns a clear description of this node depending on what is available. Useful for error messages.
-String Node::get_description() const {
+String Node::get_description(bool p_show_not_in_tree) const {
 	String description;
 	if (is_inside_tree()) {
 		description = String(get_path());
@@ -1485,6 +1483,9 @@ String Node::get_description() const {
 		description = get_name();
 		if (description.is_empty()) {
 			description = get_class();
+		}
+		if (p_show_not_in_tree) {
+			description += " (not inside tree)";
 		}
 	}
 	return description;
@@ -1552,7 +1553,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 			// Optimized version of the code below:
 			// String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
 			uint32_t c = node_hrcr_count.get();
-			String cn = p_child->get_class_name().operator String();
+			String cn = p_child->get_class_name().string();
 			const char32_t *cn_ptr = cn.ptr();
 			uint32_t cn_length = cn.length();
 			uint32_t c_chars = String::num_characters(c);
@@ -1995,7 +1996,7 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 		if (p_owned && !cptr[i]->data.owner) {
 			continue;
 		}
-		if (cptr[i]->data.name.operator String().match(p_pattern)) {
+		if (cptr[i]->data.name.string().match(p_pattern)) {
 			return cptr[i];
 		}
 
@@ -2026,7 +2027,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			continue;
 		}
 
-		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
+		if (p_pattern.is_empty() || cptr[i]->data.name.string().match(p_pattern)) {
 			if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
 				ret.append(cptr[i]);
 			} else if (cptr[i]->get_script_instance()) {
@@ -2104,7 +2105,7 @@ Node *Node::find_parent(const String &p_pattern) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *p = data.parent;
 	while (p) {
-		if (p->data.name.operator String().match(p_pattern)) {
+		if (p->data.name.string().match(p_pattern)) {
 			return p;
 		}
 		p = p->data.parent;
@@ -2149,12 +2150,23 @@ Window *Node::get_last_exclusive_window() const {
 
 bool Node::is_ancestor_of(RequiredParam<const Node> rp_node) const {
 	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
-	Node *p = p_node->data.parent;
-	while (p) {
-		if (p == this) {
+
+	const Node *n = p_node;
+
+	if (is_inside_tree() && p_node->data.tree == data.tree) {
+		const int depth = data.depth;
+		while (n->data.depth > depth) {
+			n = n->data.parent;
+		}
+		return n == this;
+	}
+
+	n = p_node->data.parent;
+	while (n) {
+		if (n == this) {
 			return true;
 		}
-		p = p->data.parent;
+		n = n->data.parent;
 	}
 
 	return false;
@@ -2222,7 +2234,7 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 
 void Node::_release_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Safety check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.string());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which == nullptr || *which != this) {
 		return; // Ignore.
@@ -2232,7 +2244,7 @@ void Node::_release_unique_name_in_owner() {
 
 void Node::_acquire_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Safety check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.string());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
 		String which_path = String(is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which));
@@ -2362,7 +2374,7 @@ NodePath Node::get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_
 		common_parent = common_parent->data.parent;
 	}
 
-	ERR_FAIL_NULL_V(common_parent, NodePath()); //nodes not in the same tree
+	ERR_FAIL_NULL_V_MSG(common_parent, NodePath(), vformat("No path can be resolved between the nodes %s and %s as they share no common ancestor.", get_description(true), p_node->get_description(true)));
 
 	visited.clear();
 
@@ -3238,16 +3250,14 @@ void Node::replace_by(RequiredParam<Node> rp_node, bool p_keep_groups) {
 
 	emit_signal(SNAME("replacing_by"), p_node);
 
-	while (get_child_count()) {
-		Node *child = get_child(0);
+	// Move non-internal children to `p_node`.
+	while (get_child_count(false)) {
+		Node *child = get_child(0, false);
 		remove_child(child);
-		if (!child->is_internal()) {
-			// Add the custom children to the p_node.
-			Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
-			child->set_owner(nullptr);
-			p_node->add_child(child);
-			child->set_owner(child_owner);
-		}
+		Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
+		child->set_owner(nullptr);
+		p_node->add_child(child);
+		child->set_owner(child_owner);
 	}
 
 	p_node->set_owner(owner);
@@ -3494,7 +3504,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
 		HashMap<StringName, String> global_groups(ProjectSettings::get_singleton()->get_global_groups_list());
 		for (const KeyValue<StringName, String> &E : global_groups) {
-			r_options->push_back(E.key.operator String().quote());
+			r_options->push_back(E.key.string().quote());
 		}
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
@@ -3723,6 +3733,14 @@ RID Node::get_focused_accessibility_element() const {
 		return id;
 	} else {
 		return get_accessibility_element();
+	}
+}
+
+Transform2D Node::get_accessibility_transform() const {
+	if (is_inside_tree() && data.parent) {
+		return data.parent->get_accessibility_transform();
+	} else {
+		return Transform2D();
 	}
 }
 
@@ -3966,6 +3984,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_EXIT);
 	BIND_CONSTANT(NOTIFICATION_WM_POSITION_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_WM_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);

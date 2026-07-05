@@ -18,11 +18,11 @@
         android:required="true" />
     <uses-feature
         android:name="android.hardware.vulkan.version"
-        android:required="true"
+        android:required="false"
         android:version="0x401000" />
     <uses-feature
         android:name="android.hardware.vulkan.level"
-        android:required="true"
+        android:required="false"
         android:version="1" />
     <uses-feature
         android:name="android.hardware.camera"
@@ -111,6 +111,7 @@
             android:label="@string/godot_game_activity_name"
             android:launchMode="singleTask"
             android:process=":GodotGame"
+            android:taskAffinity=":game"
             android:autoRemoveFromRecents="true"
             android:theme="@style/GodotGameTheme"
             android:supportsPictureInPicture="true"

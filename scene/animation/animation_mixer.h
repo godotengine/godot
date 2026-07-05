@@ -72,7 +72,7 @@ public:
 	struct AnimationLibraryData {
 		StringName name;
 		Ref<AnimationLibrary> library;
-		bool operator<(const AnimationLibraryData &p_data) const { return name.operator String() < p_data.name.operator String(); }
+		bool operator<(const AnimationLibraryData &p_data) const { return name.string() < p_data.name.string(); }
 	};
 
 	struct AnimationData {
@@ -310,7 +310,7 @@ protected:
 	Vector<Node *> playing_audio_stream_players;
 
 	// Helpers.
-	void _clear_caches();
+	void _clear_caches(bool p_clear_track_cache = true);
 	void _clear_audio_streams();
 	void _clear_playing_caches();
 	void _init_root_motion_cache();

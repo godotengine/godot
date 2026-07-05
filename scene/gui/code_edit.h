@@ -50,6 +50,7 @@ public:
 		KIND_NODE_PATH,
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
+		KIND_KEYWORD,
 	};
 
 	// core/object/script_language.h - ScriptLanguage::CodeCompletionLocation
@@ -208,6 +209,7 @@ private:
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
 
+	Vector2 completion_touch_drag_accum;
 	bool code_completion_active = false;
 	bool is_code_completion_scroll_hovered = false;
 	bool is_code_completion_scroll_pressed = false;

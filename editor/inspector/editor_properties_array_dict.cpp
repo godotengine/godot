@@ -32,6 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/docks/inspector_dock.h"
@@ -250,6 +251,22 @@ void EditorPropertyArray::initialize_array(Variant &p_array) {
 		p_array = array;
 	} else {
 		VariantInternal::initialize(&p_array, array_type);
+	}
+}
+
+void EditorPropertyArray::_update_slots_size() {
+	float name_size = 0;
+	for (Slot &slot : slots) {
+		if (name_size == 0) {
+			int max_index = (page_index + 1) * page_length - 1;
+			const String ms = String("M").repeat(itos(max_index).length());
+
+			Ref<Font> font = theme_cache.font;
+			int font_size = theme_cache.font_size;
+			int half_padding = theme_cache.padding / 2;
+			name_size = slots[0].reorder_button->get_minimum_size().x + theme_cache.horizontal_separation + half_padding + font->get_string_size(ms, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+		}
+		slot.prop->set_name_fixed_size(name_size);
 	}
 }
 
@@ -523,6 +540,7 @@ void EditorPropertyArray::update_property() {
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
+				new_prop->set_name_split_ratio(0.0);
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
 				if (value_type == Variant::OBJECT) {
@@ -551,6 +569,9 @@ void EditorPropertyArray::update_property() {
 				changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 			}
 			slot.prop->update_property();
+		}
+		if (is_inside_tree()) {
+			_update_slots_size();
 		}
 
 		updating = false;
@@ -634,7 +655,6 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			return false;
 		}
 
-		String res_type = res->get_class();
 		StringName script_class;
 		if (res->get_script()) {
 			script_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
@@ -642,7 +662,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 		for (String at : allowed_type.split(",", false)) {
 			at = at.strip_edges();
-			if (ClassDB::is_parent_class(res_type, at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
+			if (res->is_class(at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
 				return true;
 			}
 		}
@@ -672,7 +692,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			ERR_FAIL_NULL_V_MSG(dropped_node, false, "Could not get the dropped node by its path.");
 
 			if (allowed_type != "NodePath") {
-				if (!ClassDB::is_parent_class(dropped_node->get_class_name(), allowed_type) &&
+				if (!dropped_node->is_class(allowed_type) &&
 						!EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, allowed_type)) {
 					// Fail if one of the nodes is not of allowed type.
 					return false;
@@ -684,7 +704,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 				if (!allowed_subtype_array.has(dropped_node->get_class_name())) {
 					// The dropped node type was not found in the allowed subtype array, we must check if it inherits one of them.
 					for (const String &ast : allowed_subtype_array) {
-						if (ClassDB::is_parent_class(dropped_node->get_class_name(), ast) ||
+						if (dropped_node->is_class(ast) ||
 								EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, ast)) {
 							is_drop_allowed = true;
 							break;
@@ -789,6 +809,7 @@ void EditorPropertyArray::_notification(int p_what) {
 					slot.remove_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 				}
 			}
+			_update_slots_size();
 		} break;
 		case NOTIFICATION_DRAG_BEGIN: {
 			if (is_visible_in_tree()) {
@@ -1399,6 +1420,8 @@ void EditorPropertyDictionary::update_property() {
 					new_prop->set_use_folding(is_using_folding());
 					new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 					new_prop->set_draw_label(false);
+					new_prop->set_mouse_filter(MOUSE_FILTER_PASS);
+					new_prop->set_mouse_behavior_recursive(MOUSE_BEHAVIOR_DISABLED);
 					EditorPropertyArray *arr_prop = Object::cast_to<EditorPropertyArray>(new_prop);
 					if (arr_prop) {
 						arr_prop->set_preview_value(true);
@@ -1473,7 +1496,7 @@ void EditorPropertyDictionary::update_property() {
 
 			// We need to grab the focus of the property that is being changed, even if the type didn't actually changed.
 			// Otherwise, focus will stay on the change type button, which is not very user friendly.
-			if (changing_type_index == slot.index) {
+			if (changing_type_index == slot.index && (!change_type || !change_type->is_visible())) {
 				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
 				changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE; // Reset to avoid grabbing focus again.
 			}

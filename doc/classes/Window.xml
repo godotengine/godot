@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Window" inherits="Viewport" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Window" inherits="Viewport" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all windows, dialogs, and popups.
 	</brief_description>
@@ -8,6 +8,8 @@
 		At runtime, [Window]s will not close automatically when requested. You need to handle it manually using the [signal close_requested] signal (this applies both to pressing the close button and clicking outside of a popup).
 	</description>
 	<tutorials>
+		<link title="HDR output">$DOCS_URL/tutorials/rendering/hdr_output.html</link>
+		<link title="Multiple Windows demo">https://github.com/godotengine/godot-demo-projects/tree/master/misc/multiple_windows</link>
 	</tutorials>
 	<methods>
 		<method name="_get_contents_minimum_size" qualifiers="virtual const">
@@ -123,8 +125,8 @@
 		<method name="get_output_max_linear_value" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the maximum value for linear color components that can be displayed in this window, regardless of SDR or HDR output. Returns [code]1.0[/code] if HDR is not enabled or not supported. This value is used by tonemapping and other [Environment] effects to ensure that bright colors are presented in the range that can be displayed by this window.
-				When using the Linear tonemapper without [Environment] effects or no [WorldEnvironment], use the returned value to scale content to maximize the screen's brightness, such as for lasers or other bright effects. The following is an example that produces the brightest purple color that the screen can produce:
+				Returns the maximum value for linear color components that can be displayed in this window, regardless of SDR or HDR output. Returns [code]1.0[/code] if HDR is not enabled or not supported. The [signal output_max_linear_value_changed] signal will be emitted whenever this value changes.
+				This value is used by tonemapping and other [Environment] effects to ensure that bright colors are presented in the range that can be displayed by this window. When using this maximum linear value in your project, it should only be used to present colors directly to the screen without tonemapping and without influencing lighting, post-processing effects, or surrounding color. The following is an example that produces the brightest purple color that the screen can produce:
 				[codeblocks]
 				[gdscript]
 				func _process(_delta):
@@ -680,6 +682,9 @@
 		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
 		</member>
+		<member name="fullscreen_shortcut_enabled" type="bool" setter="set_fullscreen_shortcut_enabled" getter="is_fullscreen_shortcut_enabled" default="false">
+			If [code]true[/code], allows the user to toggle fullscreen mode by pressing the shortcut defined in [member ProjectSettings.input/ui_toggle_fullscreen] ([kbd]Alt + Enter[/kbd] by default). This is enabled on the main window according to the [member ProjectSettings.display/window/size/enable_toggle_fullscreen_shortcut] project setting.
+		</member>
 		<member name="hdr_output_requested" type="bool" setter="set_hdr_output_requested" getter="is_hdr_output_requested" default="false">
 			If [code]true[/code], requests HDR output for the [Window], falling back to SDR if not supported, and automatically switching between HDR and SDR as the window moves between screens, screen capabilities change, or system settings are modified. This will internally force [member Viewport.use_hdr_2d] to be enabled on the main [Viewport]. All other [SubViewport] of this [Window] must have their [member Viewport.use_hdr_2d] property enabled to produce HDR output.
 		</member>
@@ -867,6 +872,12 @@
 				Emitted when the mouse event is received by the custom decoration area defined by [member nonclient_area], and normal input to the window is blocked (such as when it has an exclusive child opened). [param event]'s position is in the embedder's coordinate system.
 			</description>
 		</signal>
+		<signal name="output_max_linear_value_changed">
+			<param index="0" name="output_max_linear_value" type="float" />
+			<description>
+				Emitted when the output max linear value returned by [method Window.get_output_max_linear_value] has changed. This occurs when HDR output is enabled or disabled and when any HDR output luminance values of the window have changed, such as when the player adjusts their screen brightness setting or moves the window to a different screen. [param output_max_linear_value] is the new value.
+			</description>
+		</signal>
 		<signal name="theme_changed">
 			<description>
 				Emitted when the [constant NOTIFICATION_THEME_CHANGED] notification is sent.
@@ -934,32 +945,38 @@
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
 			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
 		</constant>
 		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
 			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].
+			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, Windows, and embedded windows.
 		</constant>
 		<constant name="FLAG_ALWAYS_ON_TOP" value="2" enum="Flags">
 			The window is floating on top of all other windows. This flag is ignored for full-screen windows. Set with [member always_on_top].
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
 		</constant>
 		<constant name="FLAG_TRANSPARENT" value="3" enum="Flags">
 			The window background can be transparent. Set with [member transparent].
 			[b]Note:[/b] This flag has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
+			[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, Windows, and embedded windows.
 		</constant>
 		<constant name="FLAG_NO_FOCUS" value="4" enum="Flags">
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
 		</constant>
 		<constant name="FLAG_POPUP" value="5" enum="Flags">
 			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [member transient]).
-			[b]Note:[/b] This flag has no effect in embedded windows (unless said window is a [Popup]).
+			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, Windows, and embedded [Popup] windows.
 		</constant>
 		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
-			[b]Note:[/b] This flag is implemented only on macOS.
 			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="FLAG_MOUSE_PASSTHROUGH" value="7" enum="Flags">
 			All mouse events are passed to the underlying window of the same application.
 			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows.
 		</constant>
 		<constant name="FLAG_SHARP_CORNERS" value="8" enum="Flags">
 			Window style is overridden, forcing sharp corners.
@@ -974,14 +991,18 @@
 		</constant>
 		<constant name="FLAG_POPUP_WM_HINT" value="10" enum="Flags">
 			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on Linux (Wayland).
 		</constant>
 		<constant name="FLAG_MINIMIZE_DISABLED" value="11" enum="Flags">
 			Window minimize button is disabled.
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
 		<constant name="FLAG_MAXIMIZE_DISABLED" value="12" enum="Flags">
 			Window maximize button is disabled.
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
 		<constant name="FLAG_MAX" value="13" enum="Flags">
 			Max value of the [enum Flags].

@@ -35,10 +35,12 @@
 #include "core/core_bind.h"
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
+#include "core/crypto/crypto_resource_format.h"
 #include "core/crypto/hashing_context.h"
 #include "core/debugger/engine_profiler.h"
 #include "core/extension/gdextension.h"
 #include "core/extension/gdextension_manager.h"
+#include "core/extension/gdextension_resource_format.h"
 #include "core/extension/godot_instance.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
@@ -46,10 +48,11 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/dtls_server.h"
-#include "core/io/file_access_encrypted.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
+#include "core/io/image_resource_format.h"
 #include "core/io/json.h"
+#include "core/io/json_resource_format.h"
 #include "core/io/marshalls.h"
 #include "core/io/missing_resource.h"
 #include "core/io/packet_peer.h"
@@ -58,6 +61,8 @@
 #include "core/io/pck_packer.h"
 #include "core/io/resource_format_binary.h"
 #include "core/io/resource_importer.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/io/resource_uid.h"
 #include "core/io/stream_peer_gzip.h"
 #include "core/io/stream_peer_tls.h"
@@ -79,6 +84,7 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/os/time.h"
+#include "core/string/fuzzy_search.h"
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
@@ -130,6 +136,8 @@ void register_core_types() {
 
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
+
+	CryptoCore::initialize();
 
 	ObjectDB::setup();
 	StringName::setup();
@@ -295,6 +303,9 @@ void register_core_types() {
 	GDREGISTER_ABSTRACT_CLASS(ResourceUID);
 
 	GDREGISTER_CLASS(EngineProfiler);
+
+	GDREGISTER_CLASS(FuzzySearch);
+	GDREGISTER_CLASS(FuzzySearchMatch);
 
 	resource_uid = memnew(ResourceUID);
 
@@ -481,6 +492,8 @@ void unregister_core_types() {
 	memdelete(_time);
 	ObjectDB::cleanup();
 
+	CryptoCore::finalize();
+
 	Variant::unregister_types();
 
 	unregister_global_constants();
@@ -489,8 +502,6 @@ void unregister_core_types() {
 	ClassDB::cleanup();
 	CoreStringNames::free();
 	StringName::cleanup();
-
-	FileAccessEncrypted::deinitialize();
 
 	OS::get_singleton()->benchmark_end_measure("Core", "Unregister Types");
 }

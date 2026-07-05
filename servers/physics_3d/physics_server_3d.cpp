@@ -1018,6 +1018,8 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_DAMPING);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT);
+	BIND_ENUM_CONSTANT(G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT);
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_MAX);
 
 	BIND_ENUM_CONSTANT(G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT);
@@ -1043,6 +1045,9 @@ void PhysicsServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("generic_6dof_joint_set_flag", "joint", "axis", "flag", "enable"), &PhysicsServer3D::generic_6dof_joint_set_flag);
 	ClassDB::bind_method(D_METHOD("generic_6dof_joint_get_flag", "joint", "axis", "flag"), &PhysicsServer3D::generic_6dof_joint_get_flag);
+
+	ClassDB::bind_method(D_METHOD("generic_6dof_joint_set_angular_target_rotation", "joint", "target_rotation"), &PhysicsServer3D::generic_6dof_joint_set_angular_target_rotation);
+	ClassDB::bind_method(D_METHOD("generic_6dof_joint_get_angular_target_rotation", "joint"), &PhysicsServer3D::generic_6dof_joint_get_angular_target_rotation);
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &PhysicsServer3D::free_rid);
 

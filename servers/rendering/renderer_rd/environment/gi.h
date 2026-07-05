@@ -175,6 +175,10 @@ private:
 
 		float direction[3];
 		uint32_t has_shadow;
+
+		float area_width[4];
+		float area_height[4];
+		float area_projector_rect[4];
 	};
 
 	struct VoxelGIPushConstant {
@@ -358,6 +362,10 @@ private:
 			float cos_spot_angle;
 			float inv_spot_attenuation;
 			float radius;
+
+			float area_width[4];
+			float area_height[4];
+			float area_projector_rect[4];
 		};
 
 		struct DirectLightPushConstant {

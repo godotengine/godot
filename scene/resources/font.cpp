@@ -1103,7 +1103,7 @@ void FontFile::_validate_property(PropertyInfo &p_property) const {
 }
 
 bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
-	Vector<String> tokens = p_name.operator String().split("/");
+	Vector<String> tokens = p_name.string().split("/");
 
 #ifndef DISABLE_DEPRECATED
 	if (tokens.size() == 1 && tokens[0] == "font_path") {
@@ -1281,7 +1281,7 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool FontFile::_get(const StringName &p_name, Variant &r_ret) const {
-	Vector<String> tokens = p_name.operator String().split("/");
+	Vector<String> tokens = p_name.string().split("/");
 	if (tokens.size() == 2 && tokens[0] == "language_support_override") {
 		const String &lang_code = tokens[1];
 		r_ret = get_language_support_override(lang_code);

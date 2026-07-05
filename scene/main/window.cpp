@@ -552,6 +552,14 @@ Window::Mode Window::get_mode() const {
 	return mode;
 }
 
+void Window::set_fullscreen_shortcut_enabled(bool p_enabled) {
+	fullscreen_shortcut_enabled = p_enabled;
+}
+
+bool Window::is_fullscreen_shortcut_enabled() const {
+	return fullscreen_shortcut_enabled;
+}
+
 void Window::set_flag(Flags p_flag, bool p_enabled) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
@@ -582,7 +590,7 @@ bool Window::get_flag(Flags p_flag) const {
 }
 
 bool Window::is_popup() const {
-	return get_flag(Window::FLAG_POPUP) || get_flag(Window::FLAG_NO_FOCUS);
+	return (get_flag(Window::FLAG_POPUP) && get_flag(Window::FLAG_NO_FOCUS)) || get_flag(Window::FLAG_MOUSE_PASSTHROUGH);
 }
 
 void Window::set_hdr_output_requested(bool p_requested) {
@@ -924,6 +932,10 @@ void Window::_event_callback(DisplayServerEnums::WindowEvent p_event) {
 		} break;
 		case DisplayServerEnums::WINDOW_EVENT_FORCE_CLOSE: {
 			hide();
+		} break;
+		case DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED: {
+			_propagate_window_notification(this, NOTIFICATION_WM_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
+			emit_signal(SNAME("output_max_linear_value_changed"), get_output_max_linear_value());
 		} break;
 	}
 }
@@ -1514,6 +1526,54 @@ RID Window::get_focused_accessibility_element() const {
 	return Node::get_focused_accessibility_element();
 }
 
+String Window::_get_accessibility_name() const {
+	if (accessibility_name.is_empty()) {
+		return displayed_title;
+	} else {
+		return accessibility_name;
+	}
+}
+
+PackedStringArray Window::get_accessibility_configuration_warnings() const {
+	ERR_READ_THREAD_GUARD_V(PackedStringArray());
+	PackedStringArray warnings = Node::get_accessibility_configuration_warnings();
+
+	String ac_name = _get_accessibility_name().strip_edges();
+	if (ac_name.is_empty()) {
+		warnings.push_back(RTR("Accessibility Name must not be empty, or contain only spaces."));
+	}
+	if (ac_name.contains(get_class_name())) {
+		warnings.push_back(RTR("Accessibility Name must not include Node class name."));
+	}
+	for (int i = 0; i < ac_name.length(); i++) {
+		if (is_control(ac_name[i])) {
+			warnings.push_back(RTR("Accessibility Name must not include control character."));
+			break;
+		}
+	}
+
+	return warnings;
+}
+
+Transform2D Window::get_accessibility_transform() const {
+	if (is_inside_tree() && get_parent()) {
+		Transform2D parent_tr = get_parent()->get_accessibility_transform();
+		Transform2D window_tr;
+		if (window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
+			window_tr.set_origin(position);
+		} else {
+			Window *np = get_non_popup_window();
+			if (np) {
+				window_tr.set_origin(get_position() - np->get_position());
+			}
+		}
+		window_tr.set_scale(Vector2(1.f, 1.f) * get_content_scale_factor());
+		return parent_tr.affine_inverse() * window_tr;
+	} else {
+		return Transform2D();
+	}
+}
+
 void Window::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_what) {
@@ -1533,30 +1593,15 @@ void Window::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_WINDOW);
-			if (accessibility_name.is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, displayed_title);
-			} else {
-				AccessibilityServer::get_singleton()->update_set_name(ae, accessibility_name);
-			}
+			AccessibilityServer::get_singleton()->update_set_name(ae, _get_accessibility_name());
 			AccessibilityServer::get_singleton()->update_set_description(ae, accessibility_description);
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_MODAL, exclusive);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Window::_accessibility_action_grab_focus));
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !visible);
 
 			if (get_embedder() || is_popup()) {
-				Control *parent_ctrl = Object::cast_to<Control>(get_parent());
-				Transform2D parent_tr = parent_ctrl ? parent_ctrl->get_global_transform() : Transform2D();
-				Transform2D tr;
-				if (window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
-					tr.set_origin(position);
-				} else {
-					Window *np = get_non_popup_window();
-					if (np) {
-						tr.set_origin(get_position() - np->get_position());
-					}
-				}
-				AccessibilityServer::get_singleton()->update_set_transform(ae, parent_tr.affine_inverse() * tr);
-				AccessibilityServer::get_singleton()->update_set_bounds(ae, Rect2(Point2(), size));
+				AccessibilityServer::get_singleton()->update_set_transform(ae, get_accessibility_transform());
+				AccessibilityServer::get_singleton()->update_set_bounds(ae, Rect2(Point2(), Vector2(size) / get_content_scale_factor()));
 
 				if (accessibility_title_element.is_null()) {
 					accessibility_title_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TITLE_BAR);
@@ -1643,6 +1688,7 @@ void Window::_notification(int p_what) {
 					// It's the root window!
 					visible = true; // Always visible.
 					window_id = DisplayServerEnums::MAIN_WINDOW_ID;
+					fullscreen_shortcut_enabled = GLOBAL_GET("display/window/size/enable_toggle_fullscreen_shortcut");
 					focused_window = this;
 					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 					AccessibilityServer::get_singleton()->set_window_callbacks(window_id, callable_mp(this, &Window::_accessibility_activate), callable_mp(this, &Window::_accessibility_deactivate));
@@ -1921,7 +1967,7 @@ Size2 Window::_get_contents_minimum_size() const {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (c) {
 			Point2i pos = c->get_position();
-			Size2i min = c->get_combined_minimum_size();
+			Size2i min = c->get_bound_minimum_size();
 
 			max = max.max(pos + min);
 		}
@@ -1986,6 +2032,15 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 	if (p_ev->get_device() != InputEvent::DEVICE_ID_INTERNAL && is_inside_tree()) {
 		emit_signal(SceneStringName(window_input), p_ev);
+	}
+
+	if (fullscreen_shortcut_enabled && p_ev->is_action_pressed("ui_toggle_fullscreen")) {
+		if (mode == MODE_FULLSCREEN || mode == MODE_EXCLUSIVE_FULLSCREEN) {
+			set_mode(toggle_fullscreen_previous_mode);
+		} else {
+			toggle_fullscreen_previous_mode = mode;
+			set_mode(MODE_FULLSCREEN);
+		}
 	}
 
 	if (is_inside_tree()) {
@@ -2088,7 +2143,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	if (popup_rect != Rect2()) {
 		set_size(popup_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(popup_rect.size);
 	if (popup_rect != Rect2i()) {
 		popup_rect.size = get_size();
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
@@ -2127,7 +2182,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	if (popup_rect != Rect2()) {
 		set_size(popup_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(popup_rect.size);
 	if (popup_rect != Rect2i()) {
 		popup_rect.size = get_size();
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
@@ -2164,7 +2219,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	if (popup_rect != Rect2()) {
 		set_size(popup_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(popup_rect.size);
 	if (popup_rect != Rect2i()) {
 		popup_rect.size = get_size();
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
@@ -2180,7 +2235,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	if (screen_rect != Rect2i()) {
 		set_size(screen_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(screen_rect.size);
 	if (screen_rect != Rect2i()) {
 		screen_rect.size = get_size();
 	}
@@ -3319,6 +3374,7 @@ void Window::_update_displayed_title() {
 	}
 #endif
 
+	update_configuration_warnings();
 	queue_accessibility_update();
 }
 
@@ -3358,6 +3414,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hdr_output_requested", "requested"), &Window::set_hdr_output_requested);
 	ClassDB::bind_method(D_METHOD("is_hdr_output_requested"), &Window::is_hdr_output_requested);
 	ClassDB::bind_method(D_METHOD("get_output_max_linear_value"), &Window::get_output_max_linear_value);
+
+	ClassDB::bind_method(D_METHOD("set_fullscreen_shortcut_enabled", "enabled"), &Window::set_fullscreen_shortcut_enabled);
+	ClassDB::bind_method(D_METHOD("is_fullscreen_shortcut_enabled"), &Window::is_fullscreen_shortcut_enabled);
 
 	ClassDB::bind_method(D_METHOD("is_maximize_allowed"), &Window::is_maximize_allowed);
 
@@ -3545,6 +3604,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_wm_hint"), "set_flag", "get_flag", FLAG_POPUP_WM_HINT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "minimize_disabled"), "set_flag", "get_flag", FLAG_MINIMIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "maximize_disabled"), "set_flag", "get_flag", FLAG_MAXIMIZE_DISABLED);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fullscreen_shortcut_enabled"), "set_fullscreen_shortcut_enabled", "is_fullscreen_shortcut_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_native"), "set_force_native", "get_force_native");
 
 	ADD_GROUP("Limits", "");
@@ -3589,6 +3649,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dpi_changed"));
 	ADD_SIGNAL(MethodInfo("titlebar_changed"));
 	ADD_SIGNAL(MethodInfo("title_changed"));
+	ADD_SIGNAL(MethodInfo("output_max_linear_value_changed", PropertyInfo(Variant::FLOAT, "output_max_linear_value")));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);

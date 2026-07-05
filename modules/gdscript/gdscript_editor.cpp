@@ -36,12 +36,14 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
+#include "editor/gdscript_editor_language.h"
 #include "editor/script_templates/templates.gen.h"
 #endif
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/math/expression.h"
 #include "core/object/class_db.h"
 #include "core/variant/container_type_validate.h"
@@ -53,6 +55,14 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 #endif
+
+#ifdef TOOLS_ENABLED
+GDScriptEditorLanguage *GDScriptEditorLanguage::singleton = nullptr;
+
+EditorLanguage *GDScriptLanguage::get_editor_language() {
+	return GDScriptEditorLanguage::get_singleton();
+}
+#endif // TOOLS_ENABLED
 
 Vector<String> GDScriptLanguage::get_comment_delimiters() const {
 	static const Vector<String> delimiters = { "#" };
@@ -314,7 +324,7 @@ String GDScriptLanguage::debug_get_stack_level_function(int p_level) const {
 
 	ERR_FAIL_INDEX_V(p_level, (int)_call_stack_size, "");
 	GDScriptFunction *func = _get_stack_level(p_level)->function;
-	return func ? func->get_name().operator String() : "";
+	return func ? func->get_name().string() : "";
 }
 
 String GDScriptLanguage::debug_get_stack_level_source(int p_level) const {
@@ -817,9 +827,9 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 		}
 		const GDScriptParser::ParameterNode *par = p_function->parameters[i];
 		if (!par->get_datatype().is_hard_type()) {
-			arghint += par->identifier->name.operator String() + ": Variant";
+			arghint += par->identifier->name.string() + ": Variant";
 		} else {
-			arghint += par->identifier->name.operator String() + ": " + par->get_datatype().to_string();
+			arghint += par->identifier->name.string() + ": " + par->get_datatype().to_string();
 		}
 
 		if (par->initializer) {
@@ -831,14 +841,14 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 				} break;
 				case GDScriptParser::Node::IDENTIFIER: {
 					const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(par->initializer);
-					def_val = id->name.operator String();
+					def_val = id->name.string();
 				} break;
 				case GDScriptParser::Node::CALL: {
 					const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(par->initializer);
 					if (call->is_constant && call->reduced) {
 						def_val = call->reduced_value.get_construct_string();
 					} else if (call->get_callee_type() == GDScriptParser::Node::IDENTIFIER) {
-						def_val = call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+						def_val = call->function_name.string() + (call->arguments.is_empty() ? "()" : "(...)");
 					}
 				} break;
 				case GDScriptParser::Node::ARRAY: {
@@ -894,7 +904,63 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 	return arghint;
 }
 
-static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_list, const StringName &p_required_type = StringName()) {
+/**
+ * Creates a completion option that inserts a string or fully replaces the string content of a preexisting literal.
+ *
+ * @param p_existing - An existing node at the position. If this is a string literal the option will replace its content. Can be `nullptr`.
+ * @param p_str - The string literal to be inserted. This should only contain the strings content, not the quotes that are used to declare it syntactically.
+ * @param p_expected - The expected variant type at the context were the string is to be insert. Use `Variant::Type::NIL` if this does not apply.
+ */
+static ScriptLanguage::CodeCompletionOption _calculate_string_insertion(const GDScriptParser::Node *p_existing, const String &p_content, Variant::Type p_expected = Variant::NIL) {
+	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
+
+	const GDScriptParser::LiteralNode *existing_literal = p_existing && p_existing->type == GDScriptParser::Node::LITERAL ? static_cast<const GDScriptParser::LiteralNode *>(p_existing) : nullptr;
+
+	const bool has_string_name = existing_literal && existing_literal->value.get_type() == Variant::STRING_NAME;
+	const bool has_node_path = existing_literal && existing_literal->value.get_type() == Variant::NODE_PATH;
+
+	const bool should_have_string_name = (p_expected == Variant::STRING_NAME && EDITOR_GET("text_editor/completion/add_string_name_literals")) || has_string_name;
+	const bool should_have_node_path = (p_expected == Variant::NODE_PATH && EDITOR_GET("text_editor/completion/add_node_path_literals")) || has_node_path;
+
+	String final_code = p_content.quote(quote_style);
+	if (should_have_string_name) {
+		final_code = "&" + final_code;
+	} else if (should_have_node_path) {
+		final_code = "^" + final_code;
+	}
+
+	// For the builtin editor.
+	String insert_text = p_content.quote(quote_style);
+	if (should_have_string_name && !has_string_name) {
+		insert_text = "&" + insert_text;
+	} else if (should_have_node_path && !has_node_path) {
+		insert_text = "^" + insert_text;
+	}
+
+	ScriptLanguage::CodeCompletionOption option(insert_text, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+	option.display = final_code;
+
+	// For LSP. See https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEdit.
+	if (existing_literal == nullptr || (existing_literal->value.get_type() != Variant::STRING && existing_literal->value.get_type() != Variant::STRING_NAME && existing_literal->value.get_type() != Variant::NODE_PATH)) {
+		// No existing string literal. Use default client behavior.
+		return option;
+	}
+
+	if (existing_literal->start_line != existing_literal->end_line) {
+		// Preexisting multiline string. Not relevant for how we are using the method.
+		return option;
+	}
+
+	option.text_edit.new_text = final_code;
+	option.text_edit.start_line = existing_literal->start_line;
+	option.text_edit.start_column = existing_literal->start_column;
+	option.text_edit.end_line = existing_literal->end_line;
+	option.text_edit.end_column = existing_literal->end_column;
+
+	return option;
+}
+
+static void _get_directory_contents(const GDScriptParser::Node *p_current, EditorFileSystemDirectory *p_dir, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_list, const StringName &p_required_type = StringName()) {
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 	const bool requires_type = !p_required_type.is_empty();
 
@@ -902,17 +968,20 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<St
 		if (requires_type && !ClassDB::is_parent_class(p_dir->get_file_type(i), p_required_type)) {
 			continue;
 		}
-		ScriptLanguage::CodeCompletionOption option(p_dir->get_file_path(i).quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH);
+		ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(p_current, p_dir->get_file_path(i), Variant::NIL);
+		option.kind = ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH;
 		r_list.insert(option.display, option);
 	}
 
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
-		_get_directory_contents(p_dir->get_subdir(i), r_list, p_required_type);
+		_get_directory_contents(p_current, p_dir->get_subdir(i), r_list, p_required_type);
 	}
 }
 
 static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String p_quote_style, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
 	ERR_FAIL_NULL(p_annotation);
+
+	const GDScriptParser::Node *existing_argument = p_annotation->arguments.size() > p_argument ? p_annotation->arguments[p_argument] : nullptr;
 
 	if (p_annotation->info != nullptr) {
 		r_arghint = _make_arguments_hint(p_annotation->info->info, p_argument, true);
@@ -920,32 +989,26 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 	if (p_annotation->name == SNAME("@export_range")) {
 		if (p_argument == 3 || p_argument == 4 || p_argument == 5) {
 			// Slider hint.
-			ScriptLanguage::CodeCompletionOption slider1("or_greater", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			slider1.insert_text = slider1.display.quote(p_quote_style);
+			ScriptLanguage::CodeCompletionOption slider1 = _calculate_string_insertion(existing_argument, "or_greater");
 			r_result.insert(slider1.display, slider1);
-			ScriptLanguage::CodeCompletionOption slider2("or_less", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			slider2.insert_text = slider2.display.quote(p_quote_style);
+			ScriptLanguage::CodeCompletionOption slider2 = _calculate_string_insertion(existing_argument, "or_less");
 			r_result.insert(slider2.display, slider2);
-			ScriptLanguage::CodeCompletionOption slider3("prefer_slider", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			slider3.insert_text = slider3.display.quote(p_quote_style);
+			ScriptLanguage::CodeCompletionOption slider3 = _calculate_string_insertion(existing_argument, "prefer_slider");
 			r_result.insert(slider3.display, slider3);
-			ScriptLanguage::CodeCompletionOption slider4("hide_control", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			slider4.insert_text = slider4.display.quote(p_quote_style);
+			ScriptLanguage::CodeCompletionOption slider4 = _calculate_string_insertion(existing_argument, "hide_control");
 			r_result.insert(slider4.display, slider4);
 		}
 	} else if (p_annotation->name == SNAME("@export_exp_easing")) {
 		if (p_argument == 0 || p_argument == 1) {
 			// Easing hint.
-			ScriptLanguage::CodeCompletionOption hint1("attenuation", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			hint1.insert_text = hint1.display.quote(p_quote_style);
+			ScriptLanguage::CodeCompletionOption hint1 = _calculate_string_insertion(existing_argument, "attenuation");
 			r_result.insert(hint1.display, hint1);
-			ScriptLanguage::CodeCompletionOption hint2("positive_only", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			hint2.insert_text = hint2.display.quote(p_quote_style);
+			ScriptLanguage::CodeCompletionOption hint2 = _calculate_string_insertion(existing_argument, "positive_only");
 			r_result.insert(hint2.display, hint2);
 		}
 	} else if (p_annotation->name == SNAME("@export_node_path")) {
-		ScriptLanguage::CodeCompletionOption node("Node", ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
-		node.insert_text = node.display.quote(p_quote_style);
+		ScriptLanguage::CodeCompletionOption node = _calculate_string_insertion(existing_argument, "Node", Variant::NIL);
+		node.kind = ScriptLanguage::CODE_COMPLETION_KIND_CLASS;
 		r_result.insert(node.display, node);
 
 		LocalVector<StringName> native_classes;
@@ -954,8 +1017,8 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			if (!ClassDB::is_class_exposed(E)) {
 				continue;
 			}
-			ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
-			option.insert_text = option.display.quote(p_quote_style);
+			ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, E, Variant::NIL);
+			option.kind = ScriptLanguage::CODE_COMPLETION_KIND_CLASS;
 			r_result.insert(option.display, option);
 		}
 
@@ -965,8 +1028,8 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			if (!ClassDB::is_parent_class(ScriptServer::get_global_class_native_base(class_name), "Node")) {
 				continue;
 			}
-			ScriptLanguage::CodeCompletionOption option(class_name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
-			option.insert_text = option.display.quote(p_quote_style);
+			ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, class_name, Variant::NIL);
+			option.kind = ScriptLanguage::CODE_COMPLETION_KIND_CLASS;
 			r_result.insert(option.display, option);
 		}
 	} else if (p_annotation->name == SNAME("@export_tool_button")) {
@@ -976,8 +1039,8 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 				List<StringName> icon_list;
 				theme->get_icon_list(EditorStringName(EditorIcons), &icon_list);
 				for (const StringName &E : icon_list) {
-					ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
-					option.insert_text = option.display.quote(p_quote_style);
+					ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, E, Variant::NIL);
+					option.kind = ScriptLanguage::CODE_COMPLETION_KIND_CLASS;
 					r_result.insert(option.display, option);
 				}
 			}
@@ -1012,16 +1075,14 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 				break; // Don't suggest deprecated warnings as they are never produced.
 			}
 #endif // DISABLE_DEPRECATED
-			ScriptLanguage::CodeCompletionOption warning(GDScriptWarning::get_name_from_code((GDScriptWarning::Code)warning_code).to_lower(), ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-			warning.insert_text = warning.display.quote(p_quote_style);
+			ScriptLanguage::CodeCompletionOption warning = _calculate_string_insertion(existing_argument, GDScriptWarning::get_name_from_code((GDScriptWarning::Code)warning_code).to_lower());
 			r_result.insert(warning.display, warning);
 		}
 	} else if (p_annotation->name == SNAME("@rpc")) {
 		if (p_argument == 0 || p_argument == 1 || p_argument == 2) {
 			static const char *options[7] = { "call_local", "call_remote", "any_peer", "authority", "reliable", "unreliable", "unreliable_ordered" };
 			for (int i = 0; i < 7; i++) {
-				ScriptLanguage::CodeCompletionOption option(options[i], ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-				option.insert_text = option.display.quote(p_quote_style);
+				ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, options[i]);
 				r_result.insert(option.display, option);
 			}
 		}
@@ -1124,9 +1185,7 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	}
 
 	// Autoload singletons
-	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads(ProjectSettings::get_singleton()->get_autoload_list());
-
-	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
 		if (!info.is_singleton || !info.path.has_extension("gd")) {
 			continue;
@@ -1205,7 +1264,7 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 						option = ScriptLanguage::CodeCompletionOption(member.m_enum->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_ENUM, location);
 						break;
 					case GDScriptParser::ClassNode::Member::FUNCTION:
-						if (p_types_only || outer || (p_static && !member.function->is_static) || member.function->identifier->name.operator String().begins_with("@")) {
+						if (p_types_only || outer || (p_static && !member.function->is_static) || member.function->identifier->name.string().begins_with("@")) {
 							continue;
 						}
 						option = ScriptLanguage::CodeCompletionOption(member.function->identifier->name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION, location);
@@ -1307,7 +1366,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 						scr->get_constants(&constants);
 						for (const KeyValue<StringName, Variant> &E : constants) {
 							int location = p_recursion_depth + _get_constant_location(scr, E.key);
-							ScriptLanguage::CodeCompletionOption option(E.key.operator String(), ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
+							ScriptLanguage::CodeCompletionOption option(E.key.string(), ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
 							r_result.insert(option.display, option);
 						}
 					}
@@ -1440,7 +1499,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 					List<StringName> enum_values;
 
-					ClassDB::get_enum_constants(type, type_enum, &enum_values);
+					// Type may be a script type.
+					if (ClassDB::class_exists(type)) {
+						ClassDB::get_enum_constants(type, type_enum, &enum_values);
+					}
 
 					for (const StringName &E : enum_values) {
 						int location = p_recursion_depth + _get_enum_constant_location(type, E);
@@ -1570,7 +1632,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	const char **kw = _keywords;
 	while (*kw) {
-		ScriptLanguage::CodeCompletionOption option(*kw, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+		ScriptLanguage::CodeCompletionOption option(*kw, ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD);
 		r_result.insert(option.display, option);
 		kw++;
 	}
@@ -1583,7 +1645,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 
 	const char **kws = _keywords_with_space;
 	while (*kws) {
-		ScriptLanguage::CodeCompletionOption option(*kws, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+		ScriptLanguage::CodeCompletionOption option(*kws, ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD);
 		option.insert_text += " ";
 		r_result.insert(option.display, option);
 		kws++;
@@ -1629,9 +1691,9 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	for (const KeyValue<StringName, int> &E : GDScriptLanguage::get_singleton()->get_global_map()) {
 		ScriptLanguage::CodeCompletionOption option;
 		if (GDScriptAnalyzer::class_exists(E.key) || Engine::get_singleton()->has_singleton(E.key)) {
-			option = ScriptLanguage::CodeCompletionOption(E.key.operator String(), ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
+			option = ScriptLanguage::CodeCompletionOption(E.key.string(), ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
 		} else {
-			option = ScriptLanguage::CodeCompletionOption(E.key.operator String(), ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+			option = ScriptLanguage::CodeCompletionOption(E.key.string(), ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
 		}
 		r_result.insert(option.display, option);
 	}
@@ -2044,7 +2106,7 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 
 					// Insert example values for functions which a structured dictionary response.
 					if (!base.type.is_meta_type) {
-						const Dictionary *example = structure_examples.getptr(base.type.native_type.operator String() + "::" + call->function_name);
+						const Dictionary *example = structure_examples.getptr(base.type.native_type.string() + "::" + call->function_name);
 						if (example != nullptr) {
 							r_type = _type_from_variant(*example, p_context);
 							found = true;
@@ -2947,8 +3009,8 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	const StringName &method = p_call->function_name;
 
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
-	const bool use_string_names = EDITOR_GET("text_editor/completion/add_string_name_literals");
-	const bool use_node_paths = EDITOR_GET("text_editor/completion/add_node_path_literals");
+
+	const GDScriptParser::Node *existing_argument = p_call->arguments.size() > p_argidx ? p_call->arguments[p_argidx] : nullptr;
 
 	while (base_type.is_set() && !base_type.is_variant()) {
 		switch (base_type.kind) {
@@ -3014,32 +3076,13 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						if (obj) {
 							List<String> options;
 							obj->get_argument_options(method, p_argidx, &options);
+							const GDScriptParser::Node *existing_node = p_call->arguments.size() > p_argidx ? p_call->arguments[p_argidx] : nullptr;
+							const Variant::Type expected_type = info.arguments.size() > p_argidx ? info.arguments[p_argidx].type : Variant::NIL;
 							for (String &opt : options) {
-								// Handle user preference.
 								if (opt.is_quoted()) {
-									opt = opt.unquote().quote(quote_style);
-									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
-										if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
-											GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-											if (literal->value.get_type() == Variant::STRING) {
-												opt = "&" + opt;
-											}
-										} else {
-											opt = "&" + opt;
-										}
-									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
-										if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
-											GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-											if (literal->value.get_type() == Variant::STRING) {
-												opt = "^" + opt;
-											}
-										} else {
-											opt = "^" + opt;
-										}
-									}
+									ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_node, opt.unquote(), expected_type);
+									r_result.insert(option.display, option);
 								}
-								ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-								r_result.insert(option.display, option);
 							}
 						}
 					}
@@ -3078,18 +3121,9 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 									if (E.usage & (PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_INTERNAL)) {
 										continue;
 									}
-									String name = E.name.quote(quote_style);
-									if (use_node_paths) {
-										if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
-											GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-											if (literal->value.get_type() == Variant::STRING) {
-												name = "^" + name;
-											}
-										} else {
-											name = "^" + name;
-										}
-									}
-									ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, ScriptLanguage::CodeCompletionLocation::LOCATION_LOCAL + n);
+									ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, E.name, Variant::NODE_PATH);
+									option.kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+									option.location = ScriptLanguage::CodeCompletionLocation::LOCATION_LOCAL + n;
 									r_result.insert(option.display, option);
 								}
 								script = script->get_base_script();
@@ -3103,18 +3137,9 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 							while (clss) {
 								for (GDScriptParser::ClassNode::Member member : clss->members) {
 									if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
-										String name = member.get_name().quote(quote_style);
-										if (use_node_paths) {
-											if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
-												GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-												if (literal->value.get_type() == Variant::STRING) {
-													name = "^" + name;
-												}
-											} else {
-												name = "^" + name;
-											}
-										}
-										ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, ScriptLanguage::CodeCompletionLocation::LOCATION_LOCAL + n);
+										ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, member.get_name(), Variant::NODE_PATH);
+										option.kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+										option.location = ScriptLanguage::CodeCompletionLocation::LOCATION_LOCAL + n;
 										r_result.insert(option.display, option);
 									}
 								}
@@ -3137,18 +3162,8 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 						if (E.usage & (PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_INTERNAL)) {
 							continue;
 						}
-						String name = E.name.quote(quote_style);
-						if (use_node_paths) {
-							if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
-								GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-								if (literal->value.get_type() == Variant::STRING) {
-									name = "^" + name;
-								}
-							} else {
-								name = "^" + name;
-							}
-						}
-						ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+						ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, E.name, Variant::NODE_PATH);
+						option.kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
 						r_result.insert(option.display, option);
 					}
 				}
@@ -3164,50 +3179,29 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 							continue;
 						}
 						String name = s.get_slicec('/', 1);
-						String path = ("/root/" + name).quote(quote_style);
-						if (use_node_paths) {
-							if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
-								GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-								if (literal->value.get_type() == Variant::STRING) {
-									path = "^" + path;
-								}
-							} else {
-								path = "^" + path;
-							}
-						}
-						ScriptLanguage::CodeCompletionOption option(path, ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH);
+						ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, "/root/" + name, Variant::NODE_PATH);
+						option.kind = ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH;
 						r_result.insert(option.display, option);
 					}
 				}
 
-				if (p_argidx == 0 && method_args > 0 && ClassDB::is_parent_class(class_name, SNAME("InputEvent")) && method.operator String().contains("action")) {
+				if (p_argidx == 0 && method_args > 0 && ClassDB::is_parent_class(class_name, SNAME("InputEvent")) && method.string().contains("action")) {
 					// Get input actions
 					List<PropertyInfo> props;
 					ProjectSettings::get_singleton()->get_property_list(&props);
 					for (const PropertyInfo &E : props) {
-						String s = E.name;
-						if (!s.begins_with("input/")) {
+						if (!E.name.begins_with("input/")) {
 							continue;
 						}
-						String name = s.get_slicec('/', 1).quote(quote_style);
-						if (use_string_names) {
-							if (p_call->arguments.size() > p_argidx && p_call->arguments[p_argidx] && p_call->arguments[p_argidx]->type == GDScriptParser::Node::LITERAL) {
-								GDScriptParser::LiteralNode *literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[p_argidx]);
-								if (literal->value.get_type() == Variant::STRING) {
-									name = "&" + name;
-								}
-							} else {
-								name = "&" + name;
-							}
-						}
-						ScriptLanguage::CodeCompletionOption option(name, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+
+						ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, E.name.get_slicec('/', 1), Variant::STRING_NAME);
 						r_result.insert(option.display, option);
 					}
 				}
 				if (EDITOR_GET("text_editor/completion/complete_file_paths")) {
 					if (p_argidx == 0 && method == SNAME("change_scene_to_file") && ClassDB::is_parent_class(class_name, SNAME("SceneTree"))) {
 						HashMap<String, ScriptLanguage::CodeCompletionOption> list;
-						_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), list, SNAME("PackedScene"));
+						_get_directory_contents(existing_argument, EditorFileSystem::get_singleton()->get_filesystem(), list, SNAME("PackedScene"));
 						for (const KeyValue<String, ScriptLanguage::CodeCompletionOption> &key_value_pair : list) {
 							ScriptLanguage::CodeCompletionOption option = key_value_pair.value;
 							r_result.insert(option.display, option);
@@ -3341,7 +3335,7 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, const GDScriptParser::Node *p_call, int p_argidx, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, bool &r_forced, String &r_arghint) {
 	if (p_call->type == GDScriptParser::Node::PRELOAD) {
 		if (p_argidx == 0 && bool(EDITOR_GET("text_editor/completion/complete_file_paths"))) {
-			_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), r_result);
+			_get_directory_contents(static_cast<const GDScriptParser::PreloadNode *>(p_call)->path, EditorFileSystem::get_singleton()->get_filesystem(), r_result);
 		}
 
 		MethodInfo mi(PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static()), "preload", PropertyInfo(Variant::STRING, "path"));
@@ -3445,7 +3439,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	r_forced = r_result.size() > 0;
 }
 
-::Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
+::Error GDScriptEditorLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
 	GDScriptParser parser;
@@ -3612,6 +3606,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			GDScriptCompletionIdentifier base;
 			const bool res = _guess_expression_type(completion_context, subscript->base, base);
 
+			const GDScriptParser::Node *existing_index = subscript->index;
+
 			// If the type is not known, we assume it is BUILTIN, since indices on arrays is the most common use case.
 			if (!subscript->is_attribute && (!res || base.type.kind == GDScriptParser::DataType::BUILTIN || base.type.is_variant())) {
 				if (base.value.get_type() == Variant::DICTIONARY) {
@@ -3619,7 +3615,9 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					base.value.get_property_list(&members);
 
 					for (const PropertyInfo &E : members) {
-						ScriptLanguage::CodeCompletionOption option(E.name.quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_MEMBER, ScriptLanguage::LOCATION_LOCAL);
+						ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_index, E.name);
+						option.kind = ScriptLanguage::CODE_COMPLETION_KIND_MEMBER;
+						option.location = ScriptLanguage::LOCATION_LOCAL;
 						options.insert(option.display, option);
 					}
 				}
@@ -3632,8 +3630,10 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 					HashMap<String, ScriptLanguage::CodeCompletionOption> opt;
 					_find_identifiers_in_base(base, false, false, false, opt, 0);
-					for (const KeyValue<String, CodeCompletionOption> &E : opt) {
-						ScriptLanguage::CodeCompletionOption option(E.value.insert_text.quote(quote_style), E.value.kind, E.value.location);
+					for (const KeyValue<String, ScriptLanguage::CodeCompletionOption> &E : opt) {
+						ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_index, E.value.insert_text);
+						option.kind = E.value.kind;
+						option.location = E.value.location;
 						options.insert(option.display, option);
 					}
 				} else {
@@ -3669,8 +3669,17 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			r_forced = true;
 		} break;
 		case GDScriptParser::COMPLETION_RESOURCE_PATH: {
+			GDScriptParser::Node *existing = nullptr;
+			if (completion_context.node && completion_context.node->type == GDScriptParser::Node::CALL && completion_context.current_argument >= 0) {
+				const GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(completion_context.node);
+				existing = call->arguments.size() > completion_context.current_argument ? call->arguments[completion_context.current_argument] : nullptr;
+			} else if (completion_context.node && completion_context.node->type == GDScriptParser::Node::PRELOAD) {
+				const GDScriptParser::PreloadNode *preload = static_cast<GDScriptParser::PreloadNode *>(completion_context.node);
+				existing = preload->path;
+			}
+
 			if (EDITOR_GET("text_editor/completion/complete_file_paths")) {
-				_get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), options);
+				_get_directory_contents(existing, EditorFileSystem::get_singleton()->get_filesystem(), options);
 				r_forced = true;
 			}
 		} break;
@@ -3856,13 +3865,6 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 	return OK;
 }
-
-#else // !TOOLS_ENABLED
-
-Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
-	return OK;
-}
-
 #endif // TOOLS_ENABLED
 
 //////// END COMPLETION //////////
@@ -4315,13 +4317,6 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		return OK;
 	}
 
-	if (p_symbol == "PI" || p_symbol == "TAU" || p_symbol == "INF" || p_symbol == "NAN") {
-		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
-		r_result.class_name = "@GDScript";
-		r_result.class_member = p_symbol;
-		return OK;
-	}
-
 	GDScriptParser parser;
 	parser.parse(p_code, p_path, true);
 
@@ -4537,6 +4532,13 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					}
 				}
 
+				if (p_symbol == "PI" || p_symbol == "TAU" || p_symbol == "INF" || p_symbol == "NAN") {
+					r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
+					r_result.class_name = "@GDScript";
+					r_result.class_member = p_symbol;
+					return OK;
+				}
+
 				if (CoreConstants::is_global_enum(p_symbol)) {
 					r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_ENUM;
 					r_result.class_name = "@GlobalScope";
@@ -4629,7 +4631,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			}
 		} break;
 		case GDScriptParser::COMPLETION_ANNOTATION: {
-			const String annotation_symbol = "@" + p_symbol;
+			const String annotation_symbol = "@" + p_symbol.trim_prefix("@");
 			if (parser.annotation_exists(annotation_symbol)) {
 				r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_ANNOTATION;
 				r_result.class_name = "@GDScript";

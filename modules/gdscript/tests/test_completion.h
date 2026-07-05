@@ -32,6 +32,7 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "../editor/gdscript_editor_language.h"
 #include "../gdscript.h"
 #include "gdscript_test_runner.h"
 
@@ -39,6 +40,7 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
@@ -183,7 +185,7 @@ static void test_directory(const String &p_dir) {
 				owner->set_script(scr);
 			}
 
-			GDScriptLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
+			GDScriptEditorLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
 			ERR_PRINT_ON;
 
 			String contains_excluded;

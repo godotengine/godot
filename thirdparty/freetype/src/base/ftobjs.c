@@ -4,7 +4,7 @@
  *
  *   The FreeType private base classes (body).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -385,6 +385,7 @@
     FT_Pos   y_shift = 0;
     FT_Pos   x_left, y_top;
     FT_Pos   width, height, pitch;
+    FT_Bool  ret;
 
 
     if ( slot->format == FT_GLYPH_FORMAT_SVG )
@@ -495,6 +496,20 @@
     width  = pbox.xMax - pbox.xMin;
     height = pbox.yMax - pbox.yMin;
 
+    /* Flag the width or height unsuitable for rendering.   */
+    /* The limit is based on the ppem value when available. */
+    /* FT_Renderer modules should check the return value.   */
+    ret = FT_BOOL(     width >= 0x10000   ||    height >= 0x10000   ||
+                   pbox.xMin < -0x1000000 || pbox.xMax >= 0x1000000 ||
+                   pbox.yMin < -0x1000000 || pbox.yMax >= 0x1000000 ||
+             ( slot->face                                         &&
+               ( width  > 10 * slot->face->size->metrics.x_ppem ||
+                 height > 10 * slot->face->size->metrics.y_ppem ) ) );
+
+    if ( ret )
+      FT_TRACE3(( "ft_glyphslot_preset_bitmap: [%ld %ld %ld %ld]\n",
+                  pbox.xMin, pbox.yMin, pbox.xMax, pbox.yMax ));
+
     switch ( pixel_mode )
     {
     case FT_PIXEL_MODE_MONO:
@@ -524,15 +539,7 @@
     bitmap->rows       = (unsigned int)height;
     bitmap->pitch      = pitch;
 
-    if ( pbox.xMin < -0x8000 || pbox.xMax > 0x7FFF ||
-         pbox.yMin < -0x8000 || pbox.yMax > 0x7FFF )
-    {
-      FT_TRACE3(( "ft_glyphslot_preset_bitmap: [%ld %ld %ld %ld]\n",
-                  pbox.xMin, pbox.yMin, pbox.xMax, pbox.yMax ));
-      return 1;
-    }
-
-    return 0;
+    return ret;
   }
 
 
@@ -549,8 +556,7 @@
 
 
   FT_BASE_DEF( FT_Error )
-  ft_glyphslot_alloc_bitmap( FT_GlyphSlot  slot,
-                             FT_ULong      size )
+  ft_glyphslot_alloc_bitmap( FT_GlyphSlot  slot )
   {
     FT_Memory  memory = FT_FACE_MEMORY( slot->face );
     FT_Error   error;
@@ -561,7 +567,10 @@
     else
       slot->internal->flags |= FT_GLYPH_OWN_BITMAP;
 
-    FT_MEM_ALLOC( slot->bitmap.buffer, size );
+    /* dimensions must be preset */
+    FT_MEM_ALLOC_MULT( slot->bitmap.buffer,
+                       slot->bitmap.rows,
+                       slot->bitmap.pitch );
     return error;
   }
 
@@ -1413,7 +1422,10 @@
         if ( ( cur[0]->platform_id == TT_PLATFORM_MICROSOFT &&
                cur[0]->encoding_id == TT_MS_ID_UCS_4        )     ||
              ( cur[0]->platform_id == TT_PLATFORM_APPLE_UNICODE &&
-               cur[0]->encoding_id == TT_APPLE_ID_UNICODE_32    ) )
+               cur[0]->encoding_id == TT_APPLE_ID_UNICODE_32    ) ||
+             ( cur[0]->platform_id == TT_PLATFORM_APPLE_UNICODE &&
+               cur[0]->encoding_id == TT_APPLE_ID_FULL_UNICODE  &&
+               FT_Get_CMap_Format( cur[0] ) == 13               ) )
         {
           face->charmap = cur[0];
           return FT_Err_Ok;
@@ -2798,11 +2810,6 @@
       internal->refcount = 1;
 
       internal->no_stem_darkening = -1;
-
-#ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-      /* Per-face filtering can only be set up by FT_Face_Properties */
-      internal->lcd_filter_func = NULL;
-#endif
     }
 
     if ( aface )
@@ -4032,18 +4039,8 @@
       }
       else if ( properties->tag == FT_PARAM_TAG_LCD_FILTER_WEIGHTS )
       {
-#ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-        if ( properties->data )
-        {
-          ft_memcpy( face->internal->lcd_weights,
-                     properties->data,
-                     FT_LCD_FILTER_FIVE_TAPS );
-          face->internal->lcd_filter_func = ft_lcd_filter_fir;
-        }
-#else
         error = FT_THROW( Unimplemented_Feature );
         goto Exit;
-#endif
       }
       else if ( properties->tag == FT_PARAM_TAG_RANDOM_SEED )
       {

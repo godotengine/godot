@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
@@ -163,7 +165,7 @@ void ShaderCreateDialog::_create_new() {
 		if (is_built_in) {
 			Node *edited_scene = get_tree()->get_edited_scene_root();
 			if (likely(edited_scene)) {
-				shader->set_path(edited_scene->get_scene_file_path() + "::" + shader->generate_scene_unique_id());
+				EditorNode::setup_built_in_resource(shader, edited_scene->get_scene_file_path());
 			}
 		} else {
 			String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
@@ -337,7 +339,7 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 	int preferred_type = -1;
 	// Select preferred type if specified.
 	for (int i = 0; i < type_menu->get_item_count(); i++) {
-		if (type_menu->get_item_text(i) == p_preferred_type) {
+		if (type_menu->get_item_text(i) == p_preferred_type && !(p_load_enabled && p_preferred_type.contains("Include"))) {
 			preferred_type = i;
 			break;
 		}
@@ -348,7 +350,7 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 		String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
 		if (!last_lang.is_empty()) {
 			for (int i = 0; i < type_menu->get_item_count(); i++) {
-				if (type_menu->get_item_text(i) == last_lang) {
+				if (type_menu->get_item_text(i) == last_lang && !(p_load_enabled && last_lang.contains("Include"))) {
 					preferred_type = i;
 					break;
 				}

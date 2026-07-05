@@ -742,6 +742,14 @@ Ref<StyleBox> TextEdit::_get_current_stylebox() const {
 	return editable ? theme_cache.style_normal : theme_cache.style_readonly;
 }
 
+String TextEdit::_get_accessibility_name() const {
+	if (!placeholder_text.is_empty() && get_accessibility_name().is_empty()) {
+		return atr(placeholder_text);
+	} else {
+		return Control::_get_accessibility_name();
+	}
+}
+
 void TextEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_EXIT_TREE:
@@ -757,9 +765,7 @@ void TextEdit::_notification(int p_what) {
 			if (text.size() == 1 && text[0].is_empty()) {
 				AccessibilityServer::get_singleton()->update_set_placeholder(ae, atr(placeholder_text));
 			}
-			if (!placeholder_text.is_empty() && get_accessibility_name().is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, atr(placeholder_text));
-			}
+
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, !editable);
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_TEXT_SELECTION, callable_mp(this, &TextEdit::_accessibility_action_set_selection));
 			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_REPLACE_SELECTED_TEXT, callable_mp(this, &TextEdit::_accessibility_action_replace_selected));
@@ -885,7 +891,70 @@ void TextEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (scrolling && get_v_scroll() != target_v_scroll) {
+			if (touch_dragging_starting || touch_dragging_in_progress || touch_dragging_deaccel) {
+				if (touch_dragging_deaccel) {
+					// Deceleration handling loop; finger-up after flick.
+					Vector2 pos = Vector2(h_scroll->get_value(), v_scroll->get_value());
+
+					float line_height = MAX(1, get_line_height());
+					Vector2 frame_movement = drag_speed * get_process_delta_time();
+
+					pos.x += frame_movement.x;
+					pos.y += frame_movement.y / line_height;
+
+					bool turnoff_h = false;
+					bool turnoff_v = false;
+
+					if (pos.x < 0) {
+						pos.x = 0;
+						turnoff_h = true;
+					}
+					if (pos.x > (h_scroll->get_max() - h_scroll->get_page())) {
+						pos.x = h_scroll->get_max() - h_scroll->get_page();
+						turnoff_h = true;
+					}
+
+					if (pos.y < 0) {
+						pos.y = 0;
+						turnoff_v = true;
+					}
+					if (pos.y > (v_scroll->get_max() - v_scroll->get_page())) {
+						pos.y = v_scroll->get_max() - v_scroll->get_page();
+						turnoff_v = true;
+					}
+
+					h_scroll->scroll_to(pos.x);
+					v_scroll->scroll_to(pos.y);
+
+					float sgn_x = drag_speed.x < 0 ? -1 : 1;
+					float val_x = Math::abs(drag_speed.x);
+					val_x -= 1000.0f * get_process_delta_time();
+					if (val_x < 0) {
+						turnoff_h = true;
+					}
+
+					float sgn_y = drag_speed.y < 0 ? -1 : 1;
+					float val_y = Math::abs(drag_speed.y);
+					val_y -= 1000.0f * get_process_delta_time();
+					if (val_y < 0) {
+						turnoff_v = true;
+					}
+
+					drag_speed = Vector2(sgn_x * val_x, sgn_y * val_y);
+
+					if (turnoff_h && turnoff_v) {
+						_cancel_inertial_scroll();
+					}
+				} else {
+					// Active touch scrolling; finger-down.
+					if (time_since_motion == 0.0 || time_since_motion > 0.1) {
+						Vector2 diff = drag_accum - last_drag_accum;
+						last_drag_accum = drag_accum;
+						drag_speed = diff / get_process_delta_time();
+					}
+					time_since_motion += get_process_delta_time();
+				}
+			} else if (scrolling && get_v_scroll() != target_v_scroll) {
 				double target_y = target_v_scroll - get_v_scroll();
 				double dist = std::abs(target_y);
 				// To ensure minimap is responsive override the speed setting.
@@ -1949,6 +2018,25 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
+			// Selection handles.
+			if (show_selection_handle && selection_handle_enabled) {
+				for (int c = 0; c < get_caret_count(); c++) {
+					if (!has_selection(c)) {
+						continue;
+					}
+
+					Vector<Point2i> handles_pos = _get_selection_handles_pos(c);
+					Point2i start_pos = handles_pos[0];
+					Point2i end_pos = handles_pos[1];
+					if (start_pos.x != -1) {
+						_draw_selection_handle(start_pos);
+					}
+					if (end_pos.x != -1) {
+						_draw_selection_handle(end_pos);
+					}
+				}
+			}
+
 			if (has_focus()) {
 				_update_ime_window_position();
 			}
@@ -2050,6 +2138,54 @@ void TextEdit::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+void TextEdit::_draw_selection_handle(Vector2 p_pos) const {
+	Color handle_color = theme_cache.caret_color;
+	int line_height = get_line_height();
+
+	int handle_line_width = theme_cache.caret_width * MAX(1, theme_cache.base_scale);
+	RS::get_singleton()->canvas_item_add_line(text_ci, p_pos, p_pos + Vector2(0, line_height), handle_color, handle_line_width);
+
+	Vector2 circle_center = p_pos + Vector2(0, line_height + selection_handle_radius);
+	RS::get_singleton()->canvas_item_add_circle(text_ci, circle_center, selection_handle_radius, handle_color);
+}
+
+/*
+ * Returns true if p_column is at index 0 or if it is the first character of a wrapped line segment.
+ */
+bool TextEdit::_is_first_column(int p_line, int p_column) const {
+	bool is_first_column = p_column == 0;
+	if (!is_first_column && is_line_wrapped(p_line)) {
+		int wrap_index = get_line_wrap_index_at_column(p_line, p_column);
+		int wrap_index_last_column = get_line_wrap_index_at_column(p_line, p_column - 1);
+		is_first_column = wrap_index != wrap_index_last_column;
+	}
+	return is_first_column;
+}
+
+Vector<Point2i> TextEdit::_get_selection_handles_pos(int p_caret) const {
+	int selection_from_line = get_selection_from_line(p_caret);
+	int selection_from_column = get_selection_from_column(p_caret);
+	int selection_to_line = get_selection_to_line(p_caret);
+	int selection_to_column = get_selection_to_column(p_caret);
+	Rect2i start_rect = get_rect_at_line_column(selection_from_line, selection_from_column);
+	Rect2i end_rect = get_rect_at_line_column(selection_to_line, selection_to_column);
+
+	Point2i start_pos = start_rect.position;
+	if (start_pos.x != -1 && !_is_first_column(selection_from_line, selection_from_column)) {
+		start_pos.x += start_rect.size.x;
+	}
+
+	Point2i end_pos = end_rect.position;
+	if (end_pos.x != -1 && !_is_first_column(selection_to_line, selection_to_column)) {
+		end_pos.x += end_rect.size.x;
+	}
+
+	Vector<Point2i> result;
+	result.push_back(start_pos);
+	result.push_back(end_pos);
+	return result;
 }
 
 void TextEdit::unhandled_key_input(const Ref<InputEvent> &p_event) {
@@ -2251,9 +2387,12 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	double prev_v_scroll = v_scroll->get_value();
 	double prev_h_scroll = h_scroll->get_value();
 
+	int event_device_id = p_gui_input->get_device();
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
-	if (mb.is_valid()) {
+	if (mb.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		show_selection_handle = false; // Hiding selection handle because mouse is used.
+
 		Vector2i mpos = mb->get_position();
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
@@ -2312,7 +2451,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					emit_signal(SNAME("gutter_clicked"), hovered_gutter.y, hovered_gutter.x);
 					return;
 				}
-				int left_margin = Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT));
+				int left_margin = get_line_start_margin();
 				if (mpos.x < left_margin + gutters_width + gutter_padding) {
 					return;
 				}
@@ -2501,16 +2640,271 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
 					DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 				}
+
+				if (editable) {
+					_show_virtual_keyboard();
+				}
+			}
+		}
+	}
+
+	Ref<InputEventScreenTouch> touch = p_gui_input;
+	if (touch.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		show_selection_handle = true;
+
+		// Prioritizing selection handle input
+		if (touch->is_pressed() && selection_handle_enabled) {
+			for (int c = 0; c < get_caret_count(); c++) {
+				if (!has_selection(c)) {
+					continue;
+				}
+
+				Vector<Point2i> handles_pos = _get_selection_handles_pos(c);
+				Point2i start_pos = handles_pos[0];
+				Point2i end_pos = handles_pos[1];
+
+				int line_height = get_line_height();
+
+				float start_dist = touch->get_position().distance_to(start_pos + Vector2(0, line_height + selection_handle_radius));
+				bool start_touched = start_pos.x != -1 && start_dist < selection_handle_radius * 2;
+				float end_dist = touch->get_position().distance_to(end_pos + Vector2(0, line_height + selection_handle_radius));
+				bool end_touched = end_pos.x != -1 && end_dist < selection_handle_radius * 2;
+
+				if (!start_touched && !end_touched) {
+					continue;
+				}
+
+				if (start_touched && end_touched) {
+					start_touched = start_dist < end_dist;
+					end_touched = !start_touched;
+				}
+
+				if (start_touched) {
+					selection_handle_drag_type = is_caret_after_selection_origin(c) ? SELECTION_HANDLE_START : SELECTION_HANDLE_END;
+					selection_handle_drag_offset = touch->get_position() - Vector2(start_pos) - Vector2(0, line_height / 2);
+				} else {
+					selection_handle_drag_type = is_caret_after_selection_origin(c) ? SELECTION_HANDLE_END : SELECTION_HANDLE_START;
+					selection_handle_drag_offset = touch->get_position() - Vector2(end_pos) - Vector2(0, line_height / 2);
+				}
+				dragging_caret_index = c;
+				_cancel_inertial_scroll();
+				accept_event();
+				return; // Return early to block default touch logic
+			}
+		}
+
+		if (touch->is_released() && selection_handle_drag_type != SELECTION_HANDLE_NONE) {
+			selection_handle_drag_type = SELECTION_HANDLE_NONE;
+			dragging_caret_index = -1;
+			accept_event();
+			return;
+		}
+
+		if (touch->is_pressed() && !touch->is_double_tap()) {
+			if (draw_minimap) {
+				_update_minimap_click();
+				if (dragging_minimap) {
+					return;
+				}
 			}
 
-			if (editable) {
-				_show_virtual_keyboard();
+			if (touch_dragging_deaccel) {
+				_cancel_inertial_scroll();
 			}
+
+			touch_dragging_starting = true;
+			touch_dragging_in_progress = false;
+
+			drag_speed = Vector2();
+			drag_accum = Vector2();
+			last_drag_accum = Vector2();
+			drag_from = Vector2(prev_h_scroll, prev_v_scroll);
+			touch_dragging_deaccel = false;
+			time_since_motion = 0.0;
+
+			set_process_internal(true);
+		}
+
+		if ((touch->is_pressed() && touch->is_double_tap()) || (touch->is_released() && !touch->is_double_tap() && !touch_dragging_in_progress && !pan_gesture_performed)) {
+			// Otherwise, if we receive a double touch press event, or a single touch release event with no touch dragging having occurred,
+			// we process as a regular tap, similar to how mouse click are handled above omitting logic not relevant to touch taps.
+			// Notice that a key difference from the mouse click handling logic and double tap events is that for single tap, we apply the logic below on release instead of on press.
+			// This is because we're unsure whether single tap press event will end as a single tap press->release event, or turn into a drag (press->drag->release) event.
+			Vector2i touch_pos = touch->get_position();
+			if (is_layout_rtl()) {
+				touch_pos.x = get_size().x - touch_pos.x;
+			}
+			_reset_caret_blink_timer();
+
+			apply_ime();
+
+			Point2i pos = get_line_column_at_pos(touch_pos);
+			int line = pos.y;
+			int col = pos.x;
+
+			// Gutters.
+			Vector2i current_hovered_gutter = _get_hovered_gutter(touch_pos);
+			if (current_hovered_gutter != Vector2i(-1, -1)) {
+				emit_signal(SNAME("gutter_clicked"), current_hovered_gutter.y, current_hovered_gutter.x);
+				return;
+			}
+			int left_margin = get_line_start_margin();
+			if (touch_pos.x < left_margin + gutters_width + gutter_padding) {
+				return;
+			}
+
+			// Minimap.
+			if (draw_minimap) {
+				if (touch->is_double_tap()) {
+					_update_minimap_click();
+					if (dragging_minimap) {
+						return;
+					}
+				} else if (dragging_minimap) {
+					// touch is released, cleanup minimap logic.
+					dragging_minimap = false;
+					can_drag_minimap = false;
+					minimap_clicked = false;
+					return;
+				}
+			}
+
+			// Update caret.
+			if (!touch->is_double_tap()) {
+				// A regular click clears all other carets.
+				int caret = 0;
+				remove_secondary_carets();
+				deselect();
+
+				_push_current_op();
+				set_caret_line(line, false, true, -1, caret);
+				set_caret_column(col, false, caret);
+
+				adjust_viewport_to_caret();
+			} else {
+				// Start double-click select word mode.
+				set_selection_mode(SelectionMode::SELECTION_MODE_WORD);
+				_update_selection_mode_word(true);
+			}
+
+			// Click inline objects.
+			if (inline_object_click_handler.is_valid()) {
+				int xmargin_beg = left_margin + gutters_width + gutter_padding;
+				int wrap_i = get_line_wrap_index_at_column(pos.y, pos.x);
+				const float wrap_indent = _get_wrap_indent_offset(pos.y, wrap_i, is_layout_rtl());
+
+				Ref<TextParagraph> ldata = text.get_line_data(line);
+				for (const Variant &inline_key : ldata->get_line_objects(wrap_i)) {
+					if (!is_inline_info_valid(inline_key)) {
+						continue;
+					}
+					Dictionary info = inline_key.duplicate();
+					info["line"] = line;
+					Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, inline_key);
+					obj_rect.position.x += xmargin_beg + wrap_indent - first_visible_col;
+
+					if (touch_pos.x > obj_rect.position.x && touch_pos.x < obj_rect.get_end().x) {
+						Rect2 col_rect = get_rect_at_line_column(line, col);
+						col_rect.position += get_screen_position() + Vector2(col_rect.size.x, 0);
+						col_rect.size = obj_rect.size;
+						set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_NONE);
+						inline_object_click_handler.call(info, col_rect);
+						break;
+					}
+				}
+			}
+
+			queue_accessibility_update();
+			queue_redraw();
+		}
+
+		if (touch->is_released()) {
+			if (!touch_dragging_in_progress) {
+				// If touch dragging did not occur, we perform some tidy up similar to what's done for the mouse click logic.
+				if (has_ime_text()) {
+					// Ignore mouse up in IME input mode.
+				} else {
+					dragging_selection = false;
+					set_selection_mode(SelectionMode::SELECTION_MODE_NONE);
+					click_select_held->stop();
+					if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY)) {
+						DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
+					}
+
+					// Avoid showing the virtual keyboard when released on the minimap, or pan gesture performed.
+					if (editable && !dragging_minimap && !pan_gesture_performed) {
+						_show_virtual_keyboard();
+					}
+					dragging_minimap = false;
+					can_drag_minimap = false;
+					pan_gesture_performed = false;
+				}
+			}
+
+			if (touch_dragging_starting || touch_dragging_in_progress) {
+				if (touch->is_canceled() || drag_speed == Vector2()) {
+					_cancel_inertial_scroll();
+				} else {
+					touch_dragging_deaccel = true;
+				}
+			}
+
+			touch_dragging_starting = false;
+			touch_dragging_in_progress = false;
+		}
+	}
+
+	Ref<InputEventScreenDrag> drag = p_gui_input;
+	if (drag.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		show_selection_handle = true; // Showing selection handle because native touch input is used.
+
+		if (selection_handle_drag_type != SELECTION_HANDLE_NONE) {
+			Vector2 corrected_text_pos = drag->get_position() - selection_handle_drag_offset;
+			Point2i pos = get_line_column_at_pos(corrected_text_pos);
+			int c = dragging_caret_index;
+
+			if (selection_handle_drag_type == SELECTION_HANDLE_END) {
+				select(get_selection_origin_line(c), get_selection_origin_column(c), pos.y, pos.x, c);
+			} else {
+				select(pos.y, pos.x, get_caret_line(c), get_caret_column(c), c);
+			}
+
+			accept_event();
+			return;
+		}
+
+		// If we've started dragging and aren't actively processing deceleration momentum
+		if (touch_dragging_starting && !touch_dragging_deaccel) {
+			touch_dragging_in_progress = true;
+			Vector2 motion = drag->get_relative();
+
+			drag_accum -= motion;
+
+			// Convert the vertical accumulation from raw pixels to lines
+			float line_height = MAX(1, get_line_height());
+			float vertical_line_offset = drag_accum.y / line_height;
+
+			Vector2 diff = drag_from + Vector2(drag_accum.x, vertical_line_offset);
+			h_scroll->scroll_to(diff.x);
+			v_scroll->scroll_to(diff.y);
+
+			time_since_motion = 0.0;
+			accept_event();
+		} else {
+			// Likely follow up from a double tap touch event; we apply similar logic as the mouse motion logic.
+			_on_drag_or_mouse_motion_event(drag->get_position(), true);
 		}
 	}
 
 	const Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid()) {
+		// A pan gesture starts with two fingers, so we mark both a drag and a pan as in progress.
+		// When the first finger is lifted, it triggers a touch release event that clears touch_dragging_in_progress,
+		// it performs same like the end of a single-finger drag.
+		// pan_gesture_performed remains set until the second touch release event, allowing us
+		// to detect that the interaction was part of a pan gesture and avoid showing the virtual keyboard.
+		touch_dragging_in_progress = true;
+		pan_gesture_performed = true;
 		const real_t delta = pan_gesture->get_delta().y;
 		if (delta < 0) {
 			_scroll_up(-delta, false);
@@ -2528,62 +2922,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	Ref<InputEventMouseMotion> mm = p_gui_input;
 
-	if (mm.is_valid()) {
-		Vector2i mpos = mm->get_position();
-		if (is_layout_rtl()) {
-			mpos.x = get_size().x - mpos.x;
-		}
-
-		if (mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && get_viewport()->gui_get_drag_data() == Variant()) {
-			// Update if not in drag and drop.
-			_reset_caret_blink_timer();
-
-			if (draw_minimap && !dragging_selection) {
-				_update_minimap_drag();
-			}
-
-			if (!dragging_minimap && !has_ime_text()) {
-				switch (selecting_mode) {
-					case SelectionMode::SELECTION_MODE_POINTER: {
-						_update_selection_mode_pointer();
-					} break;
-					case SelectionMode::SELECTION_MODE_WORD: {
-						_update_selection_mode_word();
-					} break;
-					case SelectionMode::SELECTION_MODE_LINE: {
-						_update_selection_mode_line();
-					} break;
-					default: {
-						break;
-					}
-				}
-			}
-		}
-
-		// Update hovered gutter.
-		Vector2i current_hovered_gutter = _get_hovered_gutter(mpos);
-		if (current_hovered_gutter != hovered_gutter) {
-			hovered_gutter = current_hovered_gutter;
-			queue_redraw();
-		}
-
-		if (drag_action && can_drop_data(mpos, get_viewport()->gui_get_drag_data())) {
-			apply_ime();
-			// Update drag and drop caret.
-			drag_caret_force_displayed = true;
-			Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
-
-			if (drag_caret_index == -1) {
-				// Force create a new caret for drag and drop.
-				carets.push_back(Caret());
-				drag_caret_index = carets.size() - 1;
-			}
-
-			drag_caret_force_displayed = true;
-			set_caret_line(pos.y, false, true, -1, drag_caret_index);
-			set_caret_column(pos.x, true, drag_caret_index);
-			dragging_selection = true;
-		}
+	if (mm.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		_on_drag_or_mouse_motion_event(mm->get_position(), mm->get_button_mask().has_flag(MouseButtonMask::LEFT));
 	}
 
 	if (draw_minimap && !dragging_selection) {
@@ -2876,6 +3216,72 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 	}
+}
+
+void TextEdit::_on_drag_or_mouse_motion_event(Vector2i p_event_position, bool p_is_left_click_or_drag) {
+	if (is_layout_rtl()) {
+		p_event_position.x = get_size().x - p_event_position.x;
+	}
+
+	if (p_is_left_click_or_drag && get_viewport()->gui_get_drag_data() == Variant()) {
+		// Update if not in drag and drop.
+		_reset_caret_blink_timer();
+
+		if (draw_minimap && !dragging_selection) {
+			_update_minimap_drag();
+		}
+
+		if (!dragging_minimap && !has_ime_text()) {
+			switch (selecting_mode) {
+				case SelectionMode::SELECTION_MODE_POINTER: {
+					_update_selection_mode_pointer();
+				} break;
+				case SelectionMode::SELECTION_MODE_WORD: {
+					_update_selection_mode_word();
+				} break;
+				case SelectionMode::SELECTION_MODE_LINE: {
+					_update_selection_mode_line();
+				} break;
+				default: {
+					break;
+				}
+			}
+		}
+	}
+
+	// Update hovered gutter.
+	Vector2i current_hovered_gutter = _get_hovered_gutter(p_event_position);
+	if (current_hovered_gutter != hovered_gutter) {
+		hovered_gutter = current_hovered_gutter;
+		queue_redraw();
+	}
+
+	if (drag_action && can_drop_data(p_event_position, get_viewport()->gui_get_drag_data())) {
+		apply_ime();
+		// Update drag and drop caret.
+		drag_caret_force_displayed = true;
+		Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
+
+		if (drag_caret_index == -1) {
+			// Force create a new caret for drag and drop.
+			carets.push_back(Caret());
+			drag_caret_index = carets.size() - 1;
+		}
+
+		drag_caret_force_displayed = true;
+		set_caret_line(pos.y, false, true, -1, drag_caret_index);
+		set_caret_column(pos.x, true, drag_caret_index);
+		dragging_selection = true;
+	}
+}
+
+void TextEdit::_cancel_inertial_scroll() {
+	set_process_internal(false);
+	touch_dragging_deaccel = false;
+	drag_speed = Vector2();
+	drag_accum = Vector2();
+	last_drag_accum = Vector2();
+	drag_from = Vector2();
 }
 
 /* Input actions. */
@@ -3404,6 +3810,10 @@ void TextEdit::_update_theme_item_cache() {
 	if (text.get_line_height() + theme_cache.line_spacing < 1) {
 		WARN_PRINT("Line height is too small, please increase font_size and/or line_spacing");
 	}
+
+	// The value was chosen after trying a few different radii.
+	// 10.0 provided the best balance between being easy to grab without making the touch area feel too large.
+	selection_handle_radius = 10.0 * theme_cache.base_scale;
 }
 
 void TextEdit::_update_caches(bool p_invalidate_all) {
@@ -4057,6 +4467,7 @@ void TextEdit::set_placeholder(const String &p_text) {
 
 	placeholder_text = p_text;
 	_update_placeholder();
+	update_configuration_warnings();
 	queue_accessibility_update();
 	queue_redraw();
 }
@@ -5112,7 +5523,7 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 
 	Point2i pos, size;
 	pos.y = cache_entry.y_offset + get_line_height() * wrap_index;
-	pos.x = get_total_gutter_width() + Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT)) + wrap_indent - get_h_scroll();
+	pos.x = get_total_gutter_width() + get_line_start_margin() + wrap_indent - get_h_scroll();
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(wrap_index);
 	Vector2 col_bounds = TS->shaped_text_get_grapheme_bounds(text_rid, p_column);
@@ -5122,6 +5533,10 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 	size.y = get_line_height();
 
 	return Rect2i(pos, size);
+}
+
+int TextEdit::get_line_start_margin() const {
+	return Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT));
 }
 
 int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
@@ -6367,6 +6782,14 @@ void TextEdit::delete_selection(int p_caret) {
 	end_complex_operation();
 }
 
+void TextEdit::set_selection_handle_enabled(bool p_enabled) {
+	selection_handle_enabled = p_enabled;
+}
+
+bool TextEdit::is_selection_handle_enabled() const {
+	return selection_handle_enabled;
+}
+
 /* Line wrapping. */
 void TextEdit::set_line_wrapping_mode(LineWrappingMode p_wrapping_mode) {
 	if (line_wrapping_mode != p_wrapping_mode) {
@@ -7018,12 +7441,16 @@ void TextEdit::set_syntax_highlighter(Ref<SyntaxHighlighter> p_syntax_highlighte
 		return;
 	}
 
+	if (syntax_highlighter.is_valid()) {
+		syntax_highlighter->disconnect_changed(callable_mp(this, &TextEdit::_syntax_highlighter_changed));
+	}
+
 	syntax_highlighter = p_syntax_highlighter;
 	if (syntax_highlighter.is_valid()) {
 		syntax_highlighter->set_text_edit(this);
+		syntax_highlighter->connect_changed(callable_mp(this, &TextEdit::_syntax_highlighter_changed));
 	}
-	_clear_syntax_highlighting_cache();
-	queue_redraw();
+	_syntax_highlighter_changed();
 }
 
 Ref<SyntaxHighlighter> TextEdit::get_syntax_highlighter() const {
@@ -7448,6 +7875,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("deselect", "caret_index"), &TextEdit::deselect, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("delete_selection", "caret_index"), &TextEdit::delete_selection, DEFVAL(-1));
 
+	ClassDB::bind_method(D_METHOD("set_selection_handle_enabled", "enable"), &TextEdit::set_selection_handle_enabled);
+	ClassDB::bind_method(D_METHOD("is_selection_handle_enabled"), &TextEdit::is_selection_handle_enabled);
+
 	/* Line wrapping. */
 	BIND_ENUM_CONSTANT(LINE_WRAPPING_NONE);
 	BIND_ENUM_CONSTANT(LINE_WRAPPING_BOUNDARY);
@@ -7610,6 +8040,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Arbitrary:1,Word:2,Word (Smart):3"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indent_wrapped_lines"), "set_indent_wrapped_lines", "is_indent_wrapped_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tab_input_mode"), "set_tab_input_mode", "get_tab_input_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selection_handle_enabled"), "set_selection_handle_enabled", "is_selection_handle_enabled");
 
 	ADD_GROUP("Virtual Keyboard", "virtual_keyboard_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
@@ -7967,6 +8398,10 @@ void TextEdit::_paste_internal(int p_caret) {
 	// Paste a full line. Ignore '\r' characters that may have been added to the clipboard by the OS.
 	if (get_caret_count() == 1 && !has_selection(0) && !cut_copy_line.is_empty() && cut_copy_line == clipboard.remove_char('\r')) {
 		insert_text(clipboard, get_caret_line(), 0);
+
+		_update_scrollbars();
+		adjust_viewport_to_caret(0);
+
 		return;
 	}
 
@@ -8594,7 +9029,7 @@ void TextEdit::_update_wrap_at_column(bool p_force) {
 		new_wrap_at -= minimap_width;
 	}
 	if (v_scroll->is_visible_in_tree()) {
-		new_wrap_at -= v_scroll->get_combined_minimum_size().width;
+		new_wrap_at -= v_scroll->get_bound_minimum_size().width;
 	}
 	/* Give it a little more space. */
 	new_wrap_at -= theme_cache.wrap_offset;
@@ -8641,8 +9076,8 @@ void TextEdit::_update_wrap_at_column(bool p_force) {
 /* Viewport. */
 void TextEdit::_update_scrollbars() {
 	Size2 size = get_size();
-	Size2 hmin = h_scroll->get_combined_minimum_size();
-	Size2 vmin = v_scroll->get_combined_minimum_size();
+	Size2 hmin = h_scroll->get_bound_minimum_size();
+	Size2 vmin = v_scroll->get_bound_minimum_size();
 
 	Ref<StyleBox> style = _get_current_stylebox();
 	v_scroll->set_begin(Point2(size.width - vmin.width, style->get_margin(SIDE_TOP)));
@@ -8671,9 +9106,16 @@ void TextEdit::_update_scrollbars() {
 		update_minimum_size();
 	}
 
+	const Size2 combined_maximum_size = get_combined_maximum_size();
+	const Size2 style_minimum_size = style->get_minimum_size();
+	const bool fit_content_height_exceeds_maximum = fit_content_height && combined_maximum_size.y >= 0 &&
+			style_minimum_size.y + content_size_cache.y > combined_maximum_size.y;
+	const bool fit_content_width_exceeds_maximum = fit_content_width && combined_maximum_size.x >= 0 &&
+			style_minimum_size.x + content_size_cache.x > combined_maximum_size.x;
+
 	updating_scrolls = true;
 
-	if (!fit_content_height && total_rows > visible_rows) {
+	if ((!fit_content_height || fit_content_height_exceeds_maximum) && total_rows > visible_rows) {
 		double visible_rows_exact = (double)_get_control_height() / (double)get_line_height();
 		double fractional_visible_rows = visible_rows_exact - (double)visible_rows;
 		fractional_visible_rows = CLAMP(fractional_visible_rows, 0.0, 1.0);
@@ -8689,7 +9131,7 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->hide();
 	}
 
-	if (total_width > visible_width) {
+	if ((!fit_content_width || fit_content_width_exceeds_maximum) && total_width > visible_width) {
 		h_scroll->show();
 		h_scroll->set_max(total_width);
 		h_scroll->set_page(visible_width);
@@ -8885,7 +9327,7 @@ void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximi
 		visible_width -= minimap_width;
 	}
 	if (v_scroll->is_visible_in_tree()) {
-		visible_width -= v_scroll->get_combined_minimum_size().width;
+		visible_width -= v_scroll->get_bound_minimum_size().width;
 	}
 	visible_width -= 20; // Give it a little more space.
 
@@ -9032,7 +9474,7 @@ void TextEdit::_update_gutter_width() {
 }
 
 Vector2i TextEdit::_get_hovered_gutter(const Point2 &p_mouse_pos) const {
-	int left_margin = Math::ceil(_get_current_stylebox()->get_margin(SIDE_LEFT));
+	int left_margin = get_line_start_margin();
 	if (p_mouse_pos.x > left_margin + gutters_width + gutter_padding) {
 		return Vector2i(-1, -1);
 	}
@@ -9085,6 +9527,11 @@ Vector<Pair<int64_t, Color>> TextEdit::_get_line_syntax_highlighting(int p_line)
 
 void TextEdit::_clear_syntax_highlighting_cache() {
 	syntax_highlighting_cache.clear();
+}
+
+void TextEdit::_syntax_highlighter_changed() {
+	_clear_syntax_highlighting_cache();
+	queue_redraw();
 }
 
 /* Deprecated. */
@@ -9342,6 +9789,9 @@ TextEdit::TextEdit(const String &p_placeholder) {
 
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
+
+	h_scroll->set_use_parent_material(true);
+	v_scroll->set_use_parent_material(true);
 
 	add_child(h_scroll, false, INTERNAL_MODE_FRONT);
 	add_child(v_scroll, false, INTERNAL_MODE_FRONT);

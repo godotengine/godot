@@ -150,7 +150,6 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 
 	TreeItem *to_select = first_section->get_first_child();
 	to_select->select(0);
-	to_select->set_as_cursor(0);
 	search_options->ensure_cursor_is_visible();
 }
 
@@ -188,7 +187,7 @@ void EditorCommandPalette::_confirmed() {
 	const String command_key = selected_option != nullptr ? selected_option->get_metadata(0) : "";
 	if (!command_key.is_empty()) {
 		hide();
-		callable_mp(this, &EditorCommandPalette::execute_command).call_deferred(command_key);
+		execute_command(command_key);
 	}
 }
 

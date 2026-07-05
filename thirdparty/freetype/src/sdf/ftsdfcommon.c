@@ -4,7 +4,7 @@
  *
  *   Auxiliary data for Signed Distance Field support (body).
  *
- * Copyright (C) 2020-2025 by
+ * Copyright (C) 2020-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.

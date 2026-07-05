@@ -36,9 +36,11 @@ import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.RadioButton
 import androidx.core.content.edit
@@ -97,6 +99,8 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		fun suspendGame(suspended: Boolean)
 		fun dispatchNextFrame()
 		fun toggleSelectionVisibility(enabled: Boolean)
+		fun toggleSelectionAvoidLocked(enabled: Boolean)
+		fun toggleSelectionPreferGroup(enabled: Boolean)
 		fun overrideCamera(enabled: Boolean)
 		fun selectRuntimeNode(nodeType: NodeType)
 		fun selectRuntimeNodeSelectMode(selectMode: SelectMode)
@@ -112,13 +116,14 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 		fun minimizeGameWindow() {}
 		fun closeGameWindow() {}
+		fun dragGameWindow(view: View, event: MotionEvent): Boolean { return false}
 
 		fun isMinimizedButtonEnabled() = false
 		fun isFullScreenButtonEnabled() = false
 		fun isCloseButtonEnabled() = false
 		fun isPiPButtonEnabled() = false
 		fun isMenuBarCollapsable() = false
-
+		fun isDragButtonEnabled() = false
 		fun isAlwaysOnTopSupported() = false
 
 		fun onFullScreenUpdated(enabled: Boolean) {}
@@ -127,6 +132,9 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 	private val collapseMenuButton: View? by lazy {
 		view?.findViewById(R.id.game_menu_collapse_button)
+	}
+	private val dragButton: View? by lazy {
+		view?.findViewById(R.id.game_menu_drag_button)
 	}
 	private val suspendButton: View? by lazy {
 		view?.findViewById(R.id.game_menu_suspend_button)
@@ -137,9 +145,6 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	private val setTimeScaleButton: Button? by lazy {
 		view?.findViewById<Button>(R.id.game_menu_set_time_scale_button)
 	}
-	private val resetTimeScaleButton: View? by lazy {
-		view?.findViewById(R.id.game_menu_reset_time_scale_button)
-	}
 	private val unselectNodesButton: RadioButton? by lazy {
 		view?.findViewById(R.id.game_menu_unselect_nodes_button)
 	}
@@ -149,14 +154,14 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	private val select3DNodesButton: RadioButton? by lazy {
 		view?.findViewById(R.id.game_menu_select_3d_nodes_button)
 	}
-	private val guiVisibilityButton: View? by lazy {
-		view?.findViewById(R.id.game_menu_gui_visibility_button)
-	}
 	private val toolSelectButton: RadioButton? by lazy {
 		view?.findViewById(R.id.game_menu_tool_select_button)
 	}
 	private val listSelectButton: RadioButton? by lazy {
 		view?.findViewById(R.id.game_menu_list_select_button)
+	}
+	private val selectDropdownButton: ImageButton? by lazy {
+		view?.findViewById(R.id.game_menu_select_dropdown_button)
 	}
 	private val audioMuteButton: View? by lazy {
 		view?.findViewById(R.id.game_menu_audio_mute_button)
@@ -181,7 +186,33 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		PopupMenu(context, optionsButton).apply {
 			setOnMenuItemClickListener(this@GameMenuFragment)
 			inflate(R.menu.options_menu)
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+				menu.setGroupDividerEnabled(true)
+			}
+		}
+	}
+
+	private val selectDropdownMenu: PopupMenu by lazy {
+		PopupMenu(context, selectDropdownButton).apply {
+			inflate(R.menu.select_dropdown_menu)
 			menu.setGroupDividerEnabled(true)
+			setOnMenuItemClickListener { item: MenuItem ->
+				when (item.itemId) {
+					R.id.menu_show_selection_visibility -> {
+						item.isChecked = !item.isChecked
+						menuListener?.toggleSelectionVisibility(item.isChecked)
+					}
+					R.id.menu_dont_select_locked_nodes -> {
+						item.isChecked = !item.isChecked
+						menuListener?.toggleSelectionAvoidLocked(item.isChecked)
+					}
+					R.id.menu_select_group_over_children -> {
+						item.isChecked = !item.isChecked
+						menuListener?.toggleSelectionPreferGroup(item.isChecked)
+					}
+				}
+				true
+			}
 		}
 	}
 
@@ -260,6 +291,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		val isCloseButtonEnabled = menuListener?.isCloseButtonEnabled() == true
 		val isPiPButtonEnabled = menuListener?.isPiPButtonEnabled() == true
 		val isMenuBarCollapsable = menuListener?.isMenuBarCollapsable() == true
+		val isDragButtonEnabled = menuListener?.isDragButtonEnabled() == true
 
 		// Show the divider if any of the window controls is visible
 		view.findViewById<View>(R.id.game_menu_window_controls_divider)?.isVisible =
@@ -267,13 +299,21 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 				isFullScreenButtonEnabled ||
 				isCloseButtonEnabled ||
 				isPiPButtonEnabled ||
-				isMenuBarCollapsable
+				isMenuBarCollapsable ||
+				isDragButtonEnabled
 
 		collapseMenuButton?.apply {
 			isVisible = isMenuBarCollapsable
 			setOnClickListener {
 				collapseGameMenu()
 			}
+		}
+		dragButton?.apply {
+			isVisible = isDragButtonEnabled
+			setOnTouchListener { v, event ->
+				menuListener?.dragGameWindow(v, event) == true
+			}
+
 		}
 		fullscreenButton?.apply{
 			isVisible = isFullScreenButtonEnabled
@@ -319,13 +359,6 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 			}
 		}
 
-		resetTimeScaleButton?.apply {
-			setOnClickListener {
-				menuListener?.resetTimeScale()
-				setTimeScaleButton?.text = "1.0x"
-			}
-		}
-
 		unselectNodesButton?.apply{
 			setOnCheckedChangeListener { buttonView, isChecked ->
 				if (isChecked) {
@@ -347,13 +380,6 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 				}
 			}
 		}
-		guiVisibilityButton?.apply{
-			setOnClickListener {
-				val isActivated = !it.isActivated
-				menuListener?.toggleSelectionVisibility(!isActivated)
-				it.isActivated = isActivated
-			}
-		}
 
 		toolSelectButton?.apply{
 			setOnCheckedChangeListener { buttonView, isChecked ->
@@ -368,6 +394,9 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 					menuListener?.selectRuntimeNodeSelectMode(GameMenuListener.SelectMode.LIST)
 				}
 			}
+		}
+		selectDropdownButton?.setOnClickListener {
+			selectDropdownMenu.show()
 		}
 		audioMuteButton?.apply{
 			setOnClickListener {
@@ -402,11 +431,15 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 		select2DNodesButton?.isChecked = nodeType == GameMenuListener.NodeType.TYPE_2D
 		select3DNodesButton?.isChecked = nodeType == GameMenuListener.NodeType.TYPE_3D
 
-		guiVisibilityButton?.isActivated = !gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECTION_VISIBLE, true)
-
 		val selectMode = gameMenuState.getSerializable(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECT_MODE) as GameMenuListener.SelectMode? ?: GameMenuListener.SelectMode.SINGLE
 		toolSelectButton?.isChecked = selectMode == GameMenuListener.SelectMode.SINGLE
 		listSelectButton?.isChecked = selectMode == GameMenuListener.SelectMode.LIST
+
+		selectDropdownMenu.menu.apply {
+			findItem(R.id.menu_show_selection_visibility)?.isChecked = gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECTION_VISIBLE, true)
+			findItem(R.id.menu_dont_select_locked_nodes)?.isChecked = gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECTION_AVOID_LOCKED, false)
+			findItem(R.id.menu_select_group_over_children)?.isChecked = gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_SELECTION_PREFER_GROUP, false)
+		}
 
 		audioMuteButton?.isActivated = gameMenuState.getBoolean(BaseGodotEditor.GAME_MENU_ACTION_SET_DEBUG_MUTE_AUDIO, false)
 
@@ -442,6 +475,10 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 	internal fun isAlwaysOnTop() = isGameEmbedded && alwaysOnTopChecked
 
+	internal fun toggleDragButton(pressed: Boolean) {
+		dragButton?.isPressed = pressed
+	}
+
 	private fun collapseGameMenu() {
 		view?.isVisible = false
 		PreferenceManager.getDefaultSharedPreferences(context).edit {
@@ -456,6 +493,11 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 			putBoolean(PREF_KEY_GAME_MENU_BAR_COLLAPSED, false)
 		}
 		menuListener?.onGameMenuCollapsed(false)
+	}
+
+	internal fun refreshButtonsVisibility() {
+		minimizeButton?.isVisible = menuListener?.isMinimizedButtonEnabled() == true
+		dragButton?.isVisible = menuListener?.isDragButtonEnabled() == true
 	}
 
 	private fun updateAlwaysOnTop(enabled: Boolean) {

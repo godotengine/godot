@@ -61,15 +61,6 @@ void TileMapPattern::_set_tile_data(const Vector<int> &p_data) {
 			local[j] = ptr[j];
 		}
 
-#ifdef BIG_ENDIAN_ENABLED
-		SWAP(local[0], local[3]);
-		SWAP(local[1], local[2]);
-		SWAP(local[4], local[7]);
-		SWAP(local[5], local[6]);
-		SWAP(local[8], local[11]);
-		SWAP(local[9], local[10]);
-#endif
-
 		int16_t x = decode_uint16(&local[0]);
 		int16_t y = decode_uint16(&local[2]);
 		uint16_t source_id = decode_uint16(&local[4]);
@@ -4366,7 +4357,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_source_level_tile_proxy", "source_from"), &TileSet::has_source_level_tile_proxy);
 	ClassDB::bind_method(D_METHOD("remove_source_level_tile_proxy", "source_from"), &TileSet::remove_source_level_tile_proxy);
 
-	ClassDB::bind_method(D_METHOD("set_coords_level_tile_proxy", "p_source_from", "coords_from", "source_to", "coords_to"), &TileSet::set_coords_level_tile_proxy);
+	ClassDB::bind_method(D_METHOD("set_coords_level_tile_proxy", "source_from", "coords_from", "source_to", "coords_to"), &TileSet::set_coords_level_tile_proxy);
 	ClassDB::bind_method(D_METHOD("get_coords_level_tile_proxy", "source_from", "coords_from"), &TileSet::get_coords_level_tile_proxy);
 	ClassDB::bind_method(D_METHOD("has_coords_level_tile_proxy", "source_from", "coords_from"), &TileSet::has_coords_level_tile_proxy);
 	ClassDB::bind_method(D_METHOD("remove_coords_level_tile_proxy", "source_from", "coords_from"), &TileSet::remove_coords_level_tile_proxy);

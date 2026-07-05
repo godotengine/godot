@@ -144,8 +144,6 @@ private:
 			Color color = Color(1, 1, 1);
 		};
 
-		mutable int64_t next_item_id = 0;
-
 		struct Line {
 			Vector<Gutter> gutters;
 
@@ -512,6 +510,36 @@ private:
 	uint64_t last_dblclk = 0;
 	Vector2 last_dblclk_pos;
 
+	bool touch_dragging_starting = false;
+	bool touch_dragging_in_progress = false;
+	bool touch_dragging_deaccel = false;
+	Vector2 drag_accum;
+	Vector2 drag_from;
+	Vector2 drag_speed;
+	Vector2 last_drag_accum;
+	double time_since_motion = 0.0;
+	bool pan_gesture_performed = false;
+
+	enum SelectionHandleDragType {
+		SELECTION_HANDLE_NONE,
+		SELECTION_HANDLE_START,
+		SELECTION_HANDLE_END,
+	};
+
+	SelectionHandleDragType selection_handle_drag_type = SELECTION_HANDLE_NONE;
+	float selection_handle_radius;
+	int dragging_caret_index = -1;
+	Vector2 selection_handle_drag_offset;
+	bool show_selection_handle = false;
+	bool selection_handle_enabled = true;
+	Vector<Point2i> _get_selection_handles_pos(int p_cursor) const;
+	bool _is_first_column(int p_line, int p_column) const;
+	void _draw_selection_handle(Vector2 p_pos) const;
+
+	void _cancel_inertial_scroll();
+
+	void _on_drag_or_mouse_motion_event(Vector2i p_event_position, bool p_is_left_click_or_drag);
+
 	void _selection_changed(int p_caret = -1);
 	void _click_selection_held();
 
@@ -605,6 +633,7 @@ private:
 
 	Vector<Pair<int64_t, Color>> _get_line_syntax_highlighting(int p_line);
 	void _clear_syntax_highlighting_cache();
+	void _syntax_highlighter_changed();
 
 	/* Visual. */
 	struct ThemeCache {
@@ -707,6 +736,8 @@ protected:
 
 	virtual void _draw_guidelines() {}
 	virtual void _update_theme_item_cache() override;
+
+	virtual String _get_accessibility_name() const override;
 
 	/* Internal API for CodeEdit, pending public API. */
 	// Brace matching.
@@ -938,6 +969,7 @@ public:
 	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
 	Point2i get_pos_at_line_column(int p_line, int p_column) const;
 	Rect2i get_rect_at_line_column(int p_line, int p_column) const;
+	int get_line_start_margin() const;
 
 	int get_minimap_line_at_pos(const Point2i &p_pos) const;
 
@@ -1037,6 +1069,9 @@ public:
 
 	void deselect(int p_caret = -1);
 	void delete_selection(int p_caret = -1);
+
+	void set_selection_handle_enabled(bool p_enabled);
+	bool is_selection_handle_enabled() const;
 
 	/* Line wrapping. */
 	void set_line_wrapping_mode(LineWrappingMode p_wrapping_mode);

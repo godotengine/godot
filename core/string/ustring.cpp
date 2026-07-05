@@ -2022,11 +2022,7 @@ Error String::append_utf16(const char16_t *p_utf16, int p_len, bool p_default_li
 	int cstr_size = 0;
 	int str_size = 0;
 
-#ifdef BIG_ENDIAN_ENABLED
-	bool byteswap = p_default_little_endian;
-#else
 	bool byteswap = !p_default_little_endian;
-#endif
 	/* HANDLE BOM (Byte Order Mark) */
 	if (p_len < 0 || p_len >= 1) {
 		bool has_bom = false;

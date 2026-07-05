@@ -245,12 +245,8 @@ void ConnectDialog::_add_bind() {
 /*
  * Remove parameter bind from connection.
  */
-void ConnectDialog::_remove_bind() {
-	String st = bind_editor->get_selected_path();
-	if (st.is_empty()) {
-		return;
-	}
-	int idx = st.get_slicec('/', 1).to_int() - 1;
+void ConnectDialog::_remove_bind(const String &p_bind) {
+	int idx = p_bind.get_slicec('/', 1).to_int() - 1;
 
 	ERR_FAIL_INDEX(idx, cdbinds->params.size());
 	cdbinds->params.remove_at(idx);
@@ -895,18 +891,14 @@ ConnectDialog::ConnectDialog() {
 	add_bind->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_add_bind));
 	bind_controls.push_back(add_bind);
 
-	Button *del_bind = memnew(Button);
-	del_bind->set_text(TTR("Remove"));
-	add_bind_hb->add_child(del_bind);
-	del_bind->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_remove_bind));
-	bind_controls.push_back(del_bind);
-
 	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
 
 	bind_editor = memnew(EditorInspector);
 	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments:"));
 	bind_editor->set_theme_type_variation("ScrollContainerSecondary");
+	bind_editor->set_use_deletable_properties(true);
 	bind_controls.push_back(bind_editor);
+	bind_editor->connect("property_deleted", callable_mp(this, &ConnectDialog::_remove_bind));
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
@@ -957,6 +949,7 @@ ConnectDialog::ConnectDialog() {
 	cdbinds = memnew(ConnectDialogBinds);
 
 	error = memnew(AcceptDialog);
+	error->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(error);
 	error->set_title(TTR("Cannot connect signal"));
 	error->set_ok_button_text(TTR("Close"));
@@ -1250,7 +1243,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	cd.method = ConnectDialog::generate_method_callback_name(cd.source, signal_name, cd.target);
 	connect_dialog->init(cd, signal_args);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
-	connect_dialog->popup_dialog(signal_name.operator String() + "(" + String(", ").join(signal_args) + ")");
+	connect_dialog->popup_dialog(signal_name.string() + "(" + String(", ").join(signal_args) + ")");
 }
 
 /*
@@ -1272,7 +1265,7 @@ void ConnectionsDock::_open_edit_connection_dialog(TreeItem &p_item) {
 
 		connect_dialog->init(cd, signal_args, true);
 		connect_dialog->set_title(vformat(TTR("Edit Connection: '%s'"), cd.signal));
-		connect_dialog->popup_dialog(signal_name.operator String() + "(" + String(", ").join(signal_args) + ")");
+		connect_dialog->popup_dialog(signal_name.string() + "(" + String(", ").join(signal_args) + ")");
 	}
 }
 
@@ -1793,6 +1786,7 @@ ConnectionsDock::ConnectionsDock() {
 	holder->add_child(connect_dialog);
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);
+	disconnect_all_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	holder->add_child(disconnect_all_dialog);
 	disconnect_all_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ConnectionsDock::_disconnect_all));
 	disconnect_all_dialog->set_text(TTR("Are you sure you want to remove all connections from this signal?"));

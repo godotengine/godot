@@ -30,6 +30,7 @@
 
 #include "tile_set_editor.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
@@ -409,6 +410,16 @@ void TileSetEditor::_notification(int p_what) {
 				remove_expanded_editor();
 			}
 		} break;
+	}
+}
+
+void TileSetEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
+		patterns_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
+	} else {
+		patterns_mc->set_theme_type_variation("NoBorderHorizontal");
+		patterns_item_list->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
 	}
 }
 
@@ -964,7 +975,7 @@ TileSetEditor::TileSetEditor() {
 
 	patterns_mc = memnew(MarginContainer);
 	patterns_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	patterns_mc->set_theme_type_variation("NoBorderBottomPanel");
+	patterns_mc->set_theme_type_variation("NoBorderHorizontal");
 	main_vb->add_child(patterns_mc);
 	patterns_mc->hide();
 

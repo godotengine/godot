@@ -158,8 +158,8 @@ public:
 
 			float z_far; // 4 - 340
 			uint32_t directional_light_count; // 4 - 344
-			uint32_t pad1; // 4 - 348
-			uint32_t pad2; // 4 - 352
+			uint32_t fog_use_legacy_blending; // 4 - 348
+			uint32_t pad1; // 4 - 352
 		};
 
 		UBO ubo;
@@ -180,7 +180,12 @@ public:
 
 		RID fog_shader;
 		RID fog_material;
+
+		// These are lazily initialized, use "get_fog_only_texture_uniform_set" instead.
 		RID fog_only_texture_uniform_set;
+		RID fog_only_texture_multiview_uniform_set;
+
+		RID get_fog_only_texture_uniform_set(RID p_default_shader_rd, bool p_is_multiview);
 	} sky_scene_state;
 
 	struct ReflectionData {
@@ -231,6 +236,9 @@ public:
 		RID default_shader;
 		RID default_material;
 		RID default_shader_rd;
+		RID default_multiview_shader_rd; // This is lazily initialized, use "get_default_shader_rd" instead.
+
+		RID get_default_shader_rd(bool p_is_multiview = false);
 	} sky_shader;
 
 	struct SkyMaterialData : public RendererRD::MaterialStorage::MaterialData {
@@ -249,6 +257,7 @@ public:
 		static inline const int REAL_TIME_ROUGHNESS_LAYERS = 7;
 
 		RID radiance;
+		RID radiance_first_layer_slice;
 		RID quarter_res_pass;
 		RID quarter_res_framebuffer;
 		Size2i screen_size;
@@ -262,6 +271,7 @@ public:
 		float uv_border_size = 0.0; // Border size in UV space.
 
 		RSE::SkyMode mode = RSE::SKY_MODE_AUTOMATIC;
+		RSE::SkyMode internal_mode = RSE::SKY_MODE_INCREMENTAL; // When using SKY_MODE_AUTOMATIC, this is the mode used internally.
 
 		ReflectionData reflection;
 		bool dirty = false;
@@ -274,9 +284,11 @@ public:
 		Vector3 prev_position;
 		float prev_time;
 
+		void free_radiance();
+
 		void free();
 
-		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, Ref<RenderSceneBuffersRD> p_render_buffers);
+		RID get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, bool p_is_multiview, Ref<RenderSceneBuffersRD> p_render_buffers);
 		bool set_radiance_size(int p_radiance_size);
 		int get_radiance_size() const;
 		bool set_mode(RSE::SkyMode p_mode);

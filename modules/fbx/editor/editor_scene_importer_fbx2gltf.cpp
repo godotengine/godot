@@ -33,6 +33,7 @@
 #include "editor_scene_importer_ufbx.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
 #include "core/os/os.h"
 #include "editor/settings/editor_settings.h"
 

@@ -48,11 +48,7 @@ protected:
 	Array _get_data(int p_bytes);
 	Array _get_partial_data(int p_bytes);
 
-#ifdef BIG_ENDIAN_ENABLED
-	bool big_endian = true;
-#else
 	bool big_endian = false;
-#endif
 
 public:
 	virtual Error put_data(const uint8_t *p_data, int p_bytes) = 0; ///< put a whole chunk of data, blocking until it sent
@@ -144,7 +140,7 @@ public:
 	void resize(int p_size);
 
 	void set_data_array(const Vector<uint8_t> &p_data);
-	Vector<uint8_t> get_data_array() const;
+	const Vector<uint8_t> &get_data_array() const _LIFETIME_BOUND_;
 
 	void clear();
 
