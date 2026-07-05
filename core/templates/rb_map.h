@@ -40,7 +40,7 @@
 // https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
 template <typename K, typename V, typename C = Comparator<K>, typename A = DefaultAllocator>
-class RBMap {
+class _WARN_UNUSED_ RBMap {
 	enum Color {
 		RED,
 		BLACK

@@ -195,7 +195,6 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 }
 
 Vector<EditorExportPlatformAppleEmbedded::IconInfo> EditorExportPlatformIOS::get_icon_infos() const {
-	Vector<EditorExportPlatformAppleEmbedded::IconInfo> icon_infos;
 	return {
 		// Settings on iPhone, iPad Pro, iPad, iPad mini
 		{ PNAME("icons/settings_58x58"), "universal", "Icon-58", "58", "2x", "29x29", false },

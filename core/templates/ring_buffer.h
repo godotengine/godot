@@ -33,7 +33,7 @@
 #include "core/templates/local_vector.h"
 
 template <typename T>
-class RingBuffer {
+class _WARN_UNUSED_ RingBuffer {
 	LocalVector<T> data;
 	int read_pos = 0;
 	int write_pos = 0;

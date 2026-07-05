@@ -34,7 +34,7 @@
 #include "core/typedefs.h"
 
 template <typename T>
-class VSet {
+class _WARN_UNUSED_ VSet {
 	Vector<T> _data;
 
 protected:

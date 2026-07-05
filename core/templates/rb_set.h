@@ -39,7 +39,7 @@
 // https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
 template <typename T, typename C = Comparator<T>, typename A = DefaultAllocator>
-class RBSet {
+class _WARN_UNUSED_ RBSet {
 	enum Color {
 		RED,
 		BLACK

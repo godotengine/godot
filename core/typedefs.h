@@ -284,6 +284,13 @@ struct is_zero_constructible<const volatile T> : is_zero_constructible<T> {};
 template <typename T>
 inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 
+#if GD_HAS_CPP_ATTRIBUTE(gnu::warn_unused)
+// https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Attributes.html#index-warn_005funused
+#define _WARN_UNUSED_ [[gnu::warn_unused]]
+#else
+#define _WARN_UNUSED_
+#endif
+
 // Warning suppression helper macros.
 #if defined(__clang__)
 #define GODOT_CLANG_PRAGMA(m_content) _Pragma(#m_content)

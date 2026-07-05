@@ -157,7 +157,6 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 		const int &alternative = tiles.front()->get().alternative;
 
 		if (alternative == 0) {
-			Vector<String> components = String(p_name).split("/", true, 2);
 			if (p_name == "atlas_coords") {
 				Vector2i as_vector2i = Vector2i(p_value);
 				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(as_vector2i, tile_set_atlas_source->get_tile_size_in_atlas(coords), tile_set_atlas_source->get_tile_animation_columns(coords), tile_set_atlas_source->get_tile_animation_separation(coords), tile_set_atlas_source->get_tile_animation_frames_count(coords), coords);
@@ -314,7 +313,6 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 		const int &alternative = tiles.front()->get().alternative;
 
 		if (alternative == 0) {
-			Vector<String> components = String(p_name).split("/", true, 2);
 			if (p_name == "atlas_coords") {
 				r_ret = coords;
 				return true;

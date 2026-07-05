@@ -1498,8 +1498,6 @@ bool JavaClassWrapper::_wrap_class_components(JNIEnv *p_env, const Ref<JavaClass
 			p_env->DeleteLocalRef(name);
 		}
 
-		Vector<String> params;
-
 		jint mods = p_env->CallIntMethod(obj, is_constructor ? Constructor_getModifiers : Method_getModifiers);
 		bool is_public = (mods & 0x0001) != 0; // java.lang.reflect.Modifier.PUBLIC
 

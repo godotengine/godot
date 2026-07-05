@@ -2011,7 +2011,6 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 		Ref<Animation> new_anim = memnew(Animation);
 
 		for (int j = 0; j < anim->get_track_count(); j++) {
-			List<float> keys;
 			int kc = anim->track_get_key_count(j);
 			int dtrack = -1;
 			for (int k = 0; k < kc; k++) {

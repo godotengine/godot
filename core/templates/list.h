@@ -45,7 +45,7 @@
  */
 
 template <typename T, typename A = DefaultAllocator>
-class List {
+class _WARN_UNUSED_ List {
 	struct _Data;
 
 public:

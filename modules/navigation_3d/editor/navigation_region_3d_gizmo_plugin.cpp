@@ -174,8 +174,6 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
 			polygon_color.a = debug_navigation_geometry_face_color.a;
 
-			Vector<int> polygon = navigationmesh->get_polygon(i);
-
 			face_color_array.push_back(polygon_color);
 			face_color_array.push_back(polygon_color);
 			face_color_array.push_back(polygon_color);

@@ -774,8 +774,6 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
-	HashSet<ResourceUID::ID> existing_uids;
-
 	Vector<ResourceUID::ID> *history = _get_history();
 	if (history) {
 		for (const ResourceUID::ID &uid : *history) {
