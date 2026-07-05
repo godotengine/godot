@@ -30,6 +30,12 @@
 
 #pragma once
 
+#include <cstdint>
+
+// PE (Portable Executable) file format constants.
+// Used both by the Windows platform code and by the (cross-platform) Windows export plugin.
+constexpr uint32_t PE_SIGNATURE = 0x00004550; // "PE\0\0"
+
 #ifdef WINDOWS_ENABLED
 
 #include "core/string/ustring.h"

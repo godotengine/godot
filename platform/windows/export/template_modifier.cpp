@@ -33,6 +33,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/image.h"
 #include "editor/export/editor_export_preset.h"
+#include "platform/windows/windows_utils.h"
 
 void TemplateModifier::ByteStream::save(uint8_t p_value, Vector<uint8_t> &r_bytes) const {
 	save(p_value, r_bytes, 1);
@@ -347,7 +348,7 @@ uint32_t TemplateModifier::_get_pe_header_offset(Ref<FileAccess> p_executable) c
 	p_executable->seek(pe_header_offset);
 	uint32_t magic = p_executable->get_32();
 
-	return magic == 0x00004550 ? pe_header_offset : 0;
+	return magic == PE_SIGNATURE ? pe_header_offset : 0;
 }
 
 uint32_t TemplateModifier::_snap(uint32_t p_value, uint32_t p_size) const {

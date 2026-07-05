@@ -2386,7 +2386,7 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 
 		f->seek(pe_pos);
 		uint32_t magic = f->get_32();
-		if (magic != 0x00004550) {
+		if (magic != PE_SIGNATURE) {
 			return 0;
 		}
 	}

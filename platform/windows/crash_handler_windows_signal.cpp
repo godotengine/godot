@@ -37,6 +37,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
+#include "platform/windows/windows_utils.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
@@ -190,7 +191,7 @@ int64_t get_image_base(const String &p_path) {
 
 		f->seek(pe_pos);
 		uint32_t magic = f->get_32();
-		if (magic != 0x00004550) {
+		if (magic != PE_SIGNATURE) {
 			return 0;
 		}
 	}
