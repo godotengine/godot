@@ -101,7 +101,6 @@ class AudioStreamMP3 : public AudioStream {
 	float length = 0.0;
 	bool loop = false;
 	float loop_offset = 0.0;
-	void clear_data();
 
 	double bpm = 0;
 	int beat_count = 0;

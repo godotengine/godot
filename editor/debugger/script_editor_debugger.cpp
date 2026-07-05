@@ -2107,7 +2107,7 @@ void ScriptEditorDebugger::toggle_profiler(const String &p_profiler, bool p_enab
 	_put_msg("profiler:" + p_profiler, msg_data);
 }
 
-void ScriptEditorDebugger::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void ScriptEditorDebugger::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
 		vmem_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);

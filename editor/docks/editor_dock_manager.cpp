@@ -936,7 +936,7 @@ void DockContextPopup::_update_buttons() {
 	// Update tab move buttons.
 	tab_move_left_button->set_disabled(true);
 	tab_move_right_button->set_disabled(true);
-	TabContainer *context_tab_container = context_dock->get_parent_container();
+	DockTabContainer *context_tab_container = context_dock->get_parent_container();
 	if (context_tab_container && context_tab_container->get_tab_count() > 0) {
 		int context_tab_index = context_tab_container->get_tab_idx_from_control(context_dock);
 		tab_move_left_button->set_disabled(context_tab_index == 0);
