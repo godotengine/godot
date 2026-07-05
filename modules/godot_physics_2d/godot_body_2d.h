@@ -238,6 +238,11 @@ public:
 		angular_velocity += _inv_inertia * p_torque;
 	}
 
+	// Rotational counterpart of apply_bias_impulse (split-impulse channel).
+	_FORCE_INLINE_ void apply_bias_torque_impulse(real_t p_torque) {
+		biased_angular_velocity += _inv_inertia * p_torque;
+	}
+
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2(), real_t p_max_delta_av = -1.0) {
 		biased_linear_velocity += p_impulse * _inv_mass;
 		if (p_max_delta_av != 0.0) {
