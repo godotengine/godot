@@ -2176,6 +2176,8 @@ void DisplayServerWindows::window_drag_files(const PackedStringArray &p_files, D
 
 	class DropSource : public IDropSource {
 	public:
+		virtual ~DropSource() = default;
+
 		STDMETHODIMP QueryInterface(REFIID riid, void **ppv) override {
 			if (riid == IID_IUnknown || riid == IID_IDropSource) {
 				*ppv = static_cast<IDropSource *>(this);
