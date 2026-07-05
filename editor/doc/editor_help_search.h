@@ -70,7 +70,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 	Ref<Runner> search;
 
 	struct TreeCache {
-		HashMap<String, TreeItem *> item_cache;
+		HashMap<String, Vector<TreeItem *>> item_cache;
 
 		void clear();
 
