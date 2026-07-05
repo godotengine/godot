@@ -36,7 +36,9 @@
 static const int OPUS_SAMPLERATE = 48000;
 
 int AudioStreamPlaybackOpus::_mix_internal(AudioFrame *p_buffer, int p_frames) {
-	ERR_FAIL_COND_V(!active, 0);
+	if (!active) {
+		return 0;
+	}
 
 	int todo = p_frames;
 	bool mixed_was_zero = false; // for detecting infinite loop
