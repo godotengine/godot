@@ -2174,6 +2174,8 @@ void DisplayServerWindows::window_drag_files(const PackedStringArray &p_files, D
 		return;
 	}
 
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor") // Silence warning due to a COM API weirdness.
+
 	class DropSource : public IDropSource {
 	public:
 		virtual ~DropSource() = default;
