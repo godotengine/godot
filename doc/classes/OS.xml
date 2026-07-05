@@ -472,7 +472,7 @@
 			<return type="String" />
 			<description>
 				Returns the full name of the CPU model on the host machine (e.g. [code]"Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz"[/code]).
-				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android and Web, [method get_processor_name] returns an empty string.
+				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux, Android (API level 31+), and iOS. On Web, [method get_processor_name] returns an empty string.
 			</description>
 		</method>
 		<method name="get_restart_on_exit_arguments" qualifiers="const">

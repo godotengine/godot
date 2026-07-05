@@ -1808,6 +1808,7 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	if (p_frames.is_null()) {
 		frames.unref();
 		_remove_sprite_node();
+		close();
 		return;
 	}
 
