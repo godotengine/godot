@@ -1647,7 +1647,7 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 }
 
 void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
-	if (!script->is_valid() || !script->valid) {
+	if (!script->is_script_valid() || !script->valid) {
 		return;
 	}
 
@@ -1668,7 +1668,7 @@ bool CSharpInstance::has_method(const StringName &p_method) const {
 }
 
 int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
-	if (!script->is_valid() || !script->valid) {
+	if (!script->is_script_valid() || !script->valid) {
 		if (r_is_valid) {
 			*r_is_valid = false;
 		}

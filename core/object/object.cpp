@@ -1539,7 +1539,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 #ifdef TOOLS_ENABLED
 			else {
 				//allow connecting signals anyway if script is invalid, see issue #17070
-				if (!script_instance->get_script()->is_valid()) {
+				if (!script_instance->get_script()->is_script_valid()) {
 					signal_is_valid = true;
 				}
 			}

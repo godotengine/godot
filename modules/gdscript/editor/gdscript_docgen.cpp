@@ -354,7 +354,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 
 	doc.script_path = p_script->get_script_path();
 
-	if (p_script->base.is_valid() && p_script->base->is_valid()) {
+	if (p_script->base.is_valid() && p_script->base->is_script_valid()) {
 		// See GH-105926. Evaluate the doc name of the base class instead of using `p_script->base->doc.name`
 		// to avoid load/compile order issues in case of complex circular dependencies.
 		doc.inherits = _get_gdscript_name(p_script->base.ptr());
