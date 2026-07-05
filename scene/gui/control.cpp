@@ -1781,7 +1781,7 @@ void Control::update_maximum_size() {
 
 	for (Node *child : iterate_children()) {
 		Control *child_control = Object::cast_to<Control>(child);
-		if (child_control && !child_control->is_set_as_top_level() && child_control->data.maximum_size_valid) {
+		if (child_control && !child_control->is_set_as_top_level()) {
 			if (child_control->data.parent_maximum_size_cache == parent_max) {
 				continue;
 			}
