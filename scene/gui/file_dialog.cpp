@@ -362,6 +362,7 @@ Vector<String> FileDialog::get_selected_files() const {
 void FileDialog::update_dir() {
 	const String current_dir = dir_access->get_current_dir();
 	const String current_dir_no_drive = dir_access->get_current_dir(false);
+	full_dir = current_dir;
 	if (root_prefix.is_empty()) {
 		directory_edit->set_text(current_dir_no_drive);
 	} else {
@@ -1654,7 +1655,6 @@ void FileDialog::_change_dir(const String &p_new_dir) {
 	} else {
 		String old_dir = dir_access->get_current_dir();
 		dir_access->change_dir(p_new_dir);
-
 		if (!dir_access->get_current_dir().begins_with(root_prefix)) {
 			dir_access->change_dir(old_dir);
 			return;
