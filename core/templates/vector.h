@@ -41,6 +41,7 @@
 #include "core/error/error_macros.h"
 #include "core/templates/cowdata.h"
 #include "core/templates/sort_array.h"
+#include "core/typedefs.h"
 
 #include <initializer_list>
 
@@ -58,7 +59,7 @@ public:
 };
 
 template <typename T>
-class Vector {
+class _WARN_UNUSED_ Vector {
 	friend class VectorWriteProxy<T>;
 
 public:

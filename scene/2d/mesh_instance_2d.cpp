@@ -201,8 +201,6 @@ void MeshInstance2D::navmesh_parse_source_geometry(const Ref<NavigationPolygon> 
 
 	//path_solution = RamerDouglasPeucker(path_solution, 0.025);
 
-	Vector<Vector<Vector2>> polypaths;
-
 	for (const PathD &scaled_path : path_solution) {
 		Vector<Vector2> shape_outline;
 		for (const PointD &scaled_point : scaled_path) {

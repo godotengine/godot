@@ -3193,7 +3193,6 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 				rect.set_end(tile_set->local_to_map(mpos));
 				rect = rect.abs();
 
-				HashMap<Vector2i, TileSet::TerrainsPattern> to_draw;
 				for (int x = rect.position.x; x <= rect.get_end().x; x++) {
 					for (int y = rect.position.y; y <= rect.get_end().y; y++) {
 						preview.insert(Vector2i(x, y));
