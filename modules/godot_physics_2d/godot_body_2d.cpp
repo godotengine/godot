@@ -421,7 +421,7 @@ void GodotBody2D::_update_transform_dependent() {
 
 void GodotBody2D::offset_position_for_ccd(const Vector2 &p_offset) {
 	Transform2D offset_transform = get_transform();
-	offset_transform.origin += p_offset;
+	offset_transform.set_origin(offset_transform.get_origin() + p_offset);
 	_set_transform(offset_transform);
 	_set_inv_transform(offset_transform.affine_inverse());
 }
