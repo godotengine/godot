@@ -297,7 +297,9 @@ Variant GodotBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
 }
 
 void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
+#ifndef DISABLE_DEPRECATED
 	PhysicsServer3D::BodyMode prev = mode;
+#endif
 	mode = p_mode;
 
 	switch (p_mode) {
@@ -310,9 +312,11 @@ void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			set_active(p_mode == PhysicsServer3D::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity = Vector3();
 			angular_velocity = Vector3();
-			if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC && prev != mode) {
+#ifndef DISABLE_DEPRECATED
+			if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC && prev != mode && kinematic_body_initial_teleport) {
 				first_time_kinematic = true;
 			}
+#endif
 			_update_transform_dependent();
 
 		} break;
@@ -356,10 +360,14 @@ void GodotBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p
 				new_transform = p_variant;
 				//wakeup_neighbours();
 				set_active(true);
-				if (first_time_kinematic) {
-					_set_transform(p_variant);
-					_set_inv_transform(get_transform().affine_inverse());
+#ifndef DISABLE_DEPRECATED
+				if (!get_space() || first_time_kinematic) {
+					flush_kinematic_transform();
 					first_time_kinematic = false;
+#else
+				if (!get_space()) {
+					flush_kinematic_transform();
+#endif
 				}
 
 			} else if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
@@ -436,6 +444,13 @@ Variant GodotBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
 	}
 
 	return Variant();
+}
+
+void GodotBody3D::flush_kinematic_transform() {
+	ERR_FAIL_COND_MSG(mode != PhysicsServer3D::BODY_MODE_KINEMATIC, "Attempted to flush kinematic transform of non-kinematic body.");
+
+	_set_transform(new_transform);
+	_set_inv_transform(get_transform().affine_inverse());
 }
 
 void GodotBody3D::set_space(GodotSpace3D *p_space) {

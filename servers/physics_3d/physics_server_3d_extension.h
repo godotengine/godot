@@ -337,6 +337,8 @@ public:
 	EXBIND3(body_set_state, RID, BodyState, const Variant &)
 	EXBIND2RC(Variant, body_get_state, RID, BodyState)
 
+	EXBIND1(body_flush_kinematic_transform, RID)
+
 	EXBIND2(body_apply_central_impulse, RID, const Vector3 &)
 	EXBIND3(body_apply_impulse, RID, const Vector3 &, const Vector3 &)
 	EXBIND2(body_apply_torque_impulse, RID, const Vector3 &)
