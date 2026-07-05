@@ -50,7 +50,7 @@ static bool _profile_count_as_native(const Object *p_base_obj, const StringName 
 }
 
 static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {
-	if (script_type.is_valid() && script_type->is_valid()) {
+	if (script_type.is_valid() && script_type->is_script_valid()) {
 		return GDScript::debug_get_script_name(script_type);
 	} else if (native_type != StringName()) {
 		return native_type.string();

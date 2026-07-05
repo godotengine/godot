@@ -131,7 +131,14 @@ public:
 	}
 
 	EXBIND0RC(bool, is_tool)
-	EXBIND0RC(bool, is_valid)
+
+	// TODO: Rename to _is_script_valid in Godot 5.
+	GDVIRTUAL0RC_REQUIRED(bool, _is_valid);
+	virtual bool is_script_valid() const override {
+		bool ret = false;
+		GDVIRTUAL_CALL(_is_valid, ret);
+		return ret;
+	}
 
 	virtual bool is_abstract() const override {
 		bool abst;

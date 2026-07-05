@@ -3046,7 +3046,7 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				base_type = base_type.class_type->base_type;
 			} break;
 			case GDScriptParser::DataType::SCRIPT: {
-				if (base_type.script_type->is_valid() && base_type.script_type->has_method(method)) {
+				if (base_type.script_type->is_script_valid() && base_type.script_type->has_method(method)) {
 					r_arghint = _make_arguments_hint(base_type.script_type->get_method_info(method), p_argidx);
 					return;
 				}

@@ -2791,7 +2791,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 				if (err) {
 					return err;
 				}
-			} else if (!base->is_valid()) {
+			} else if (!base->is_script_valid()) {
 				String base_qualified_name = base->fully_qualified_name;
 				String base_path = base->path;
 

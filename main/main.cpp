@@ -4366,7 +4366,7 @@ int Main::start() {
 		ERR_FAIL_COND_V_MSG(script_res.is_null(), EXIT_FAILURE, "Can't load script: " + script);
 
 		if (check_only) {
-			return script_res->is_valid() ? EXIT_SUCCESS : EXIT_FAILURE;
+			return script_res->is_script_valid() ? EXIT_SUCCESS : EXIT_FAILURE;
 		}
 
 		if (script_res->can_instantiate()) {

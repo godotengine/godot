@@ -862,7 +862,7 @@ bool ClassDB::can_instantiate(const StringName &p_class) {
 
 use_script:
 	Ref<Script> scr = ResourceLoader::load(script_path);
-	return scr.is_valid() && scr->is_valid() && !scr->is_abstract();
+	return scr.is_valid() && scr->is_script_valid() && !scr->is_abstract();
 }
 
 bool ClassDB::is_abstract(const StringName &p_class) {
@@ -894,7 +894,7 @@ bool ClassDB::is_abstract(const StringName &p_class) {
 
 use_script:
 	Ref<Script> scr = ResourceLoader::load(script_path);
-	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
+	return scr.is_valid() && scr->is_script_valid() && scr->is_abstract();
 }
 
 bool ClassDB::is_virtual(const StringName &p_class) {
@@ -920,7 +920,7 @@ bool ClassDB::is_virtual(const StringName &p_class) {
 
 use_script:
 	Ref<Script> scr = ResourceLoader::load(script_path);
-	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
+	return scr.is_valid() && scr->is_script_valid() && scr->is_abstract();
 }
 
 bool ClassDB::is_gdextension(const StringName &p_class) {
