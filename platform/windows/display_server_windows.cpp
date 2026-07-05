@@ -2124,13 +2124,17 @@ void DisplayServerWindows::window_drag_files(const PackedStringArray &p_files, D
 	if (p_files.is_empty()) {
 		return;
 	}
-	// Map the files using Wide chars (UTF-16) to ensure cross-platform safety.
+
+	LocalVector<Char16String> cs_files;
 	size_t characters_total_size = 0;
-	for (int i = 0; i < p_files.size(); i++) {
-		characters_total_size += p_files[i].length() + 1; // +1 for string null terminator
+	for (const String &f : p_files) {
+		const Char16String &cs = OS_Windows::fix_path(f).utf16();
+		cs_files.push_back(cs);
+		characters_total_size += cs.size(); // Size includes null terminator
 	}
 	characters_total_size += 1; // Extra final null terminator for double-null terminated list
 	size_t total_buffer_bytes = sizeof(DROPFILES) + (characters_total_size * sizeof(WCHAR));
+
 	// Allocate global unmanaged memory required by OLE/Shell operations
 	HGLOBAL h_global = GlobalAlloc(GHND, total_buffer_bytes);
 	if (!h_global) {
@@ -2146,13 +2150,12 @@ void DisplayServerWindows::window_drag_files(const PackedStringArray &p_files, D
 	df->fWide = TRUE; // Explicitly signaling UTF-16 content strings
 	// Copy all strings into the allocated block sequential block memory
 	WCHAR *write_cursor = (WCHAR *)((BYTE *)df + sizeof(DROPFILES));
-	for (int i = 0; i < p_files.size(); i++) {
-		String native_path = p_files[i].replace("/", "\\"); // Clean paths to Windows native notation
-		int path_len = native_path.length();
-		memcpy(write_cursor, native_path.utf16().ptr(), path_len * sizeof(WCHAR));
-		write_cursor[path_len] = L'\0';
-		write_cursor += path_len + 1;
+
+	for (const Char16String &f : cs_files) {
+		memcpy(write_cursor, f.ptr(), f.size() * sizeof(WCHAR));
+		write_cursor += f.size();
 	}
+
 	*write_cursor = L'\0'; // Double-null terminate the sequence
 	GlobalUnlock(h_global);
 	IDataObject *data_object = nullptr;
