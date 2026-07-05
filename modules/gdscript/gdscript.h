@@ -443,6 +443,10 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	friend class GDScript;
 
+	/**
+	 * Linked list of all GDScripts.
+	 * When clearing a script GDScript gives up ownership of that script to whoever is holding the reference alive, thus cleared scripts do not appear in this list.
+	 */
 	SelfList<GDScript>::List script_list;
 	friend class GDScriptFunction;
 
