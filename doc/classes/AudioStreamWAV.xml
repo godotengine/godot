@@ -53,6 +53,13 @@
 				[b]Note:[/b] A [code].wav[/code] extension is automatically appended to [param path] if it is missing.
 			</description>
 		</method>
+		<method name="save_to_wav_buffer">
+			<return type="PackedByteArray" />
+			<description>
+				Saves this AudioStreamWAV as a WAV file contained in a byte array. Samples with IMA ADPCM or Quite OK Audio formats can't be saved.
+				If an error occurs, this function returns an empty buffer.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
