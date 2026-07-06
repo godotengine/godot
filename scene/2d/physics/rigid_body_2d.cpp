@@ -34,6 +34,8 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/resources/physics_material.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d_constants.h"
 
 void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
@@ -178,7 +180,7 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 
 		if (new_transform != old_transform) {
 			// Update the physics server with the new transform, to prevent it from being overwritten at the sync below.
-			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_TRANSFORM, new_transform);
+			PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PS2DE::BODY_STATE_TRANSFORM, new_transform);
 		}
 	}
 
@@ -268,16 +270,16 @@ void RigidBody2D::_apply_body_mode() {
 	if (freeze) {
 		switch (freeze_mode) {
 			case FREEZE_MODE_STATIC: {
-				set_body_mode(PhysicsServer2D::BODY_MODE_STATIC);
+				set_body_mode(PS2DE::BODY_MODE_STATIC);
 			} break;
 			case FREEZE_MODE_KINEMATIC: {
-				set_body_mode(PhysicsServer2D::BODY_MODE_KINEMATIC);
+				set_body_mode(PS2DE::BODY_MODE_KINEMATIC);
 			} break;
 		}
 	} else if (lock_rotation) {
-		set_body_mode(PhysicsServer2D::BODY_MODE_RIGID_LINEAR);
+		set_body_mode(PS2DE::BODY_MODE_RIGID_LINEAR);
 	} else {
-		set_body_mode(PhysicsServer2D::BODY_MODE_RIGID);
+		set_body_mode(PS2DE::BODY_MODE_RIGID);
 	}
 }
 
@@ -323,7 +325,7 @@ RigidBody2D::FreezeMode RigidBody2D::get_freeze_mode() const {
 void RigidBody2D::set_mass(real_t p_mass) {
 	ERR_FAIL_COND(p_mass <= 0);
 	mass = p_mass;
-	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_MASS, mass);
+	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_MASS, mass);
 }
 
 real_t RigidBody2D::get_mass() const {
@@ -333,7 +335,7 @@ real_t RigidBody2D::get_mass() const {
 void RigidBody2D::set_inertia(real_t p_inertia) {
 	ERR_FAIL_COND(p_inertia < 0);
 	inertia = p_inertia;
-	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_INERTIA, inertia);
+	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_INERTIA, inertia);
 }
 
 real_t RigidBody2D::get_inertia() const {
@@ -352,12 +354,12 @@ void RigidBody2D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 			center_of_mass = Vector2();
 			PhysicsServer2D::get_singleton()->body_reset_mass_properties(get_rid());
 			if (inertia != 0.0) {
-				PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_INERTIA, inertia);
+				PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_INERTIA, inertia);
 			}
 		} break;
 
 		case CENTER_OF_MASS_MODE_CUSTOM: {
-			PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
+			PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
 		} break;
 	}
 
@@ -376,7 +378,7 @@ void RigidBody2D::set_center_of_mass(const Vector2 &p_center_of_mass) {
 	ERR_FAIL_COND(center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM);
 	center_of_mass = p_center_of_mass;
 
-	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
+	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
 }
 
 const Vector2 &RigidBody2D::get_center_of_mass() const {
@@ -402,7 +404,7 @@ Ref<PhysicsMaterial> RigidBody2D::get_physics_material_override() const {
 
 void RigidBody2D::set_gravity_scale(real_t p_gravity_scale) {
 	gravity_scale = p_gravity_scale;
-	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
+	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
 }
 
 real_t RigidBody2D::get_gravity_scale() const {
@@ -411,7 +413,7 @@ real_t RigidBody2D::get_gravity_scale() const {
 
 void RigidBody2D::set_linear_damp_mode(DampMode p_mode) {
 	linear_damp_mode = p_mode;
-	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_LINEAR_DAMP_MODE, linear_damp_mode);
+	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_LINEAR_DAMP_MODE, linear_damp_mode);
 }
 
 RigidBody2D::DampMode RigidBody2D::get_linear_damp_mode() const {
@@ -420,7 +422,7 @@ RigidBody2D::DampMode RigidBody2D::get_linear_damp_mode() const {
 
 void RigidBody2D::set_angular_damp_mode(DampMode p_mode) {
 	angular_damp_mode = p_mode;
-	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_ANGULAR_DAMP_MODE, angular_damp_mode);
+	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_ANGULAR_DAMP_MODE, angular_damp_mode);
 }
 
 RigidBody2D::DampMode RigidBody2D::get_angular_damp_mode() const {
@@ -430,7 +432,7 @@ RigidBody2D::DampMode RigidBody2D::get_angular_damp_mode() const {
 void RigidBody2D::set_linear_damp(real_t p_linear_damp) {
 	ERR_FAIL_COND(p_linear_damp < -1);
 	linear_damp = p_linear_damp;
-	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_LINEAR_DAMP, linear_damp);
+	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_LINEAR_DAMP, linear_damp);
 }
 
 real_t RigidBody2D::get_linear_damp() const {
@@ -440,7 +442,7 @@ real_t RigidBody2D::get_linear_damp() const {
 void RigidBody2D::set_angular_damp(real_t p_angular_damp) {
 	ERR_FAIL_COND(p_angular_damp < -1);
 	angular_damp = p_angular_damp;
-	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_ANGULAR_DAMP, angular_damp);
+	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_ANGULAR_DAMP, angular_damp);
 }
 
 real_t RigidBody2D::get_angular_damp() const {
@@ -451,12 +453,12 @@ void RigidBody2D::set_axis_velocity(const Vector2 &p_axis) {
 	Vector2 axis = p_axis.normalized();
 	linear_velocity -= axis * axis.dot(linear_velocity);
 	linear_velocity += p_axis;
-	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
+	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PS2DE::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 }
 
 void RigidBody2D::set_linear_velocity(const Vector2 &p_velocity) {
 	linear_velocity = p_velocity;
-	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
+	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PS2DE::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 }
 
 Vector2 RigidBody2D::get_linear_velocity() const {
@@ -465,7 +467,7 @@ Vector2 RigidBody2D::get_linear_velocity() const {
 
 void RigidBody2D::set_angular_velocity(real_t p_velocity) {
 	angular_velocity = p_velocity;
-	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
+	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PS2DE::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
 }
 
 real_t RigidBody2D::get_angular_velocity() const {
@@ -487,12 +489,12 @@ bool RigidBody2D::is_using_custom_integrator() {
 
 void RigidBody2D::set_sleeping(bool p_sleeping) {
 	sleeping = p_sleeping;
-	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_SLEEPING, sleeping);
+	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PS2DE::BODY_STATE_SLEEPING, sleeping);
 }
 
 void RigidBody2D::set_can_sleep(bool p_active) {
 	can_sleep = p_active;
-	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_CAN_SLEEP, p_active);
+	PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PS2DE::BODY_STATE_CAN_SLEEP, p_active);
 }
 
 bool RigidBody2D::is_able_to_sleep() const {
@@ -504,7 +506,7 @@ bool RigidBody2D::is_sleeping() const {
 }
 
 void RigidBody2D::set_max_contacts_reported(int p_amount) {
-	ERR_FAIL_INDEX_MSG(p_amount, MAX_CONTACTS_REPORTED_2D_MAX, "Max contacts reported allocates memory (about 100 bytes each), and therefore must not be set too high.");
+	ERR_FAIL_INDEX_MSG(p_amount, PS2DC::MAX_CONTACTS_REPORTED_2D_MAX, "Max contacts reported allocates memory (about 100 bytes each), and therefore must not be set too high.");
 	max_contacts_reported = p_amount;
 	PhysicsServer2D::get_singleton()->body_set_max_contacts_reported(get_rid(), p_amount);
 }
@@ -571,7 +573,7 @@ real_t RigidBody2D::get_constant_torque() const {
 
 void RigidBody2D::set_continuous_collision_detection_mode(CCDMode p_mode) {
 	ccd_mode = p_mode;
-	PhysicsServer2D::get_singleton()->body_set_continuous_collision_detection_mode(get_rid(), PhysicsServer2D::CCDMode(p_mode));
+	PhysicsServer2D::get_singleton()->body_set_continuous_collision_detection_mode(get_rid(), PS2DE::CCDMode(p_mode));
 }
 
 RigidBody2D::CCDMode RigidBody2D::get_continuous_collision_detection_mode() const {
@@ -807,7 +809,7 @@ void RigidBody2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 RigidBody2D::RigidBody2D() :
-		PhysicsBody2D(PhysicsServer2D::BODY_MODE_RIGID) {
+		PhysicsBody2D(PS2DE::BODY_MODE_RIGID) {
 	PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &RigidBody2D::_body_state_changed));
 }
 
@@ -819,10 +821,10 @@ RigidBody2D::~RigidBody2D() {
 
 void RigidBody2D::_reload_physics_characteristics() {
 	if (physics_material_override.is_null()) {
-		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_BOUNCE, 0);
-		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_FRICTION, 1);
+		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_BOUNCE, 0);
+		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_FRICTION, 1);
 	} else {
-		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_BOUNCE, physics_material_override->computed_bounce());
-		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_FRICTION, physics_material_override->computed_friction());
+		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_BOUNCE, physics_material_override->computed_bounce());
+		PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PS2DE::BODY_PARAM_FRICTION, physics_material_override->computed_friction());
 	}
 }

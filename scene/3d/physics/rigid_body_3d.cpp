@@ -34,6 +34,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/resources/physics_material.h"
+#include "servers/physics_3d/physics_server_3d_constants.h"
 
 void RigidBody3D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
@@ -179,7 +180,7 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 
 		if (new_transform != old_transform) {
 			// Update the physics server with the new transform, to prevent it from being overwritten at the sync below.
-			PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_TRANSFORM, new_transform);
+			PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PS3DE::BODY_STATE_TRANSFORM, new_transform);
 		}
 	}
 
@@ -286,16 +287,16 @@ void RigidBody3D::_apply_body_mode() {
 	if (freeze) {
 		switch (freeze_mode) {
 			case FREEZE_MODE_STATIC: {
-				set_body_mode(PhysicsServer3D::BODY_MODE_STATIC);
+				set_body_mode(PS3DE::BODY_MODE_STATIC);
 			} break;
 			case FREEZE_MODE_KINEMATIC: {
-				set_body_mode(PhysicsServer3D::BODY_MODE_KINEMATIC);
+				set_body_mode(PS3DE::BODY_MODE_KINEMATIC);
 			} break;
 		}
 	} else if (lock_rotation) {
-		set_body_mode(PhysicsServer3D::BODY_MODE_RIGID_LINEAR);
+		set_body_mode(PS3DE::BODY_MODE_RIGID_LINEAR);
 	} else {
-		set_body_mode(PhysicsServer3D::BODY_MODE_RIGID);
+		set_body_mode(PS3DE::BODY_MODE_RIGID);
 	}
 }
 
@@ -341,7 +342,7 @@ RigidBody3D::FreezeMode RigidBody3D::get_freeze_mode() const {
 void RigidBody3D::set_mass(real_t p_mass) {
 	ERR_FAIL_COND(p_mass <= 0);
 	mass = p_mass;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_MASS, mass);
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_MASS, mass);
 }
 
 real_t RigidBody3D::get_mass() const {
@@ -354,7 +355,7 @@ void RigidBody3D::set_inertia(const Vector3 &p_inertia) {
 	ERR_FAIL_COND(p_inertia.z < 0);
 
 	inertia = p_inertia;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA, inertia);
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_INERTIA, inertia);
 }
 
 const Vector3 &RigidBody3D::get_inertia() const {
@@ -373,12 +374,12 @@ void RigidBody3D::set_center_of_mass_mode(CenterOfMassMode p_mode) {
 			center_of_mass = Vector3();
 			PhysicsServer3D::get_singleton()->body_reset_mass_properties(get_rid());
 			if (inertia != Vector3()) {
-				PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_INERTIA, inertia);
+				PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_INERTIA, inertia);
 			}
 		} break;
 
 		case CENTER_OF_MASS_MODE_CUSTOM: {
-			PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
+			PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
 		} break;
 	}
 
@@ -397,7 +398,7 @@ void RigidBody3D::set_center_of_mass(const Vector3 &p_center_of_mass) {
 	ERR_FAIL_COND(center_of_mass_mode != CENTER_OF_MASS_MODE_CUSTOM);
 	center_of_mass = p_center_of_mass;
 
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_CENTER_OF_MASS, center_of_mass);
 }
 
 const Vector3 &RigidBody3D::get_center_of_mass() const {
@@ -423,7 +424,7 @@ Ref<PhysicsMaterial> RigidBody3D::get_physics_material_override() const {
 
 void RigidBody3D::set_gravity_scale(real_t p_gravity_scale) {
 	gravity_scale = p_gravity_scale;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
 }
 
 real_t RigidBody3D::get_gravity_scale() const {
@@ -432,7 +433,7 @@ real_t RigidBody3D::get_gravity_scale() const {
 
 void RigidBody3D::set_linear_damp_mode(DampMode p_mode) {
 	linear_damp_mode = p_mode;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE, linear_damp_mode);
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_LINEAR_DAMP_MODE, linear_damp_mode);
 }
 
 RigidBody3D::DampMode RigidBody3D::get_linear_damp_mode() const {
@@ -441,7 +442,7 @@ RigidBody3D::DampMode RigidBody3D::get_linear_damp_mode() const {
 
 void RigidBody3D::set_angular_damp_mode(DampMode p_mode) {
 	angular_damp_mode = p_mode;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP_MODE, angular_damp_mode);
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_ANGULAR_DAMP_MODE, angular_damp_mode);
 }
 
 RigidBody3D::DampMode RigidBody3D::get_angular_damp_mode() const {
@@ -451,7 +452,7 @@ RigidBody3D::DampMode RigidBody3D::get_angular_damp_mode() const {
 void RigidBody3D::set_linear_damp(real_t p_linear_damp) {
 	ERR_FAIL_COND(p_linear_damp < 0.0);
 	linear_damp = p_linear_damp;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP, linear_damp);
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_LINEAR_DAMP, linear_damp);
 }
 
 real_t RigidBody3D::get_linear_damp() const {
@@ -461,7 +462,7 @@ real_t RigidBody3D::get_linear_damp() const {
 void RigidBody3D::set_angular_damp(real_t p_angular_damp) {
 	ERR_FAIL_COND(p_angular_damp < 0.0);
 	angular_damp = p_angular_damp;
-	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP, angular_damp);
+	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_ANGULAR_DAMP, angular_damp);
 }
 
 real_t RigidBody3D::get_angular_damp() const {
@@ -472,12 +473,12 @@ void RigidBody3D::set_axis_velocity(const Vector3 &p_axis) {
 	Vector3 axis = p_axis.normalized();
 	linear_velocity -= axis * axis.dot(linear_velocity);
 	linear_velocity += p_axis;
-	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PS3DE::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 }
 
 void RigidBody3D::set_linear_velocity(const Vector3 &p_velocity) {
 	linear_velocity = p_velocity;
-	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PS3DE::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 }
 
 Vector3 RigidBody3D::get_linear_velocity() const {
@@ -486,7 +487,7 @@ Vector3 RigidBody3D::get_linear_velocity() const {
 
 void RigidBody3D::set_angular_velocity(const Vector3 &p_velocity) {
 	angular_velocity = p_velocity;
-	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PS3DE::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
 }
 
 Vector3 RigidBody3D::get_angular_velocity() const {
@@ -512,12 +513,12 @@ bool RigidBody3D::is_using_custom_integrator() {
 
 void RigidBody3D::set_sleeping(bool p_sleeping) {
 	sleeping = p_sleeping;
-	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_SLEEPING, sleeping);
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PS3DE::BODY_STATE_SLEEPING, sleeping);
 }
 
 void RigidBody3D::set_can_sleep(bool p_active) {
 	can_sleep = p_active;
-	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_CAN_SLEEP, p_active);
+	PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PS3DE::BODY_STATE_CAN_SLEEP, p_active);
 }
 
 bool RigidBody3D::is_able_to_sleep() const {
@@ -529,7 +530,7 @@ bool RigidBody3D::is_sleeping() const {
 }
 
 void RigidBody3D::set_max_contacts_reported(int p_amount) {
-	ERR_FAIL_INDEX_MSG(p_amount, MAX_CONTACTS_REPORTED_3D_MAX, "Max contacts reported allocates memory (about 80 bytes each), and therefore must not be set too high.");
+	ERR_FAIL_INDEX_MSG(p_amount, PS3DC::MAX_CONTACTS_REPORTED_3D_MAX, "Max contacts reported allocates memory (about 80 bytes each), and therefore must not be set too high.");
 	max_contacts_reported = p_amount;
 	PhysicsServer3D::get_singleton()->body_set_max_contacts_reported(get_rid(), p_amount);
 }
@@ -659,11 +660,11 @@ TypedArray<Node3D> RigidBody3D::get_colliding_bodies() const {
 
 void RigidBody3D::_reload_physics_characteristics() {
 	if (physics_material_override.is_null()) {
-		PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_BOUNCE, 0);
-		PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_FRICTION, 1);
+		PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_BOUNCE, 0);
+		PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_FRICTION, 1);
 	} else {
-		PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material_override->computed_bounce());
-		PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_FRICTION, physics_material_override->computed_friction());
+		PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_BOUNCE, physics_material_override->computed_bounce());
+		PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PS3DE::BODY_PARAM_FRICTION, physics_material_override->computed_friction());
 	}
 }
 
@@ -827,7 +828,7 @@ void RigidBody3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 RigidBody3D::RigidBody3D() :
-		PhysicsBody3D(PhysicsServer3D::BODY_MODE_RIGID) {
+		PhysicsBody3D(PS3DE::BODY_MODE_RIGID) {
 	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &RigidBody3D::_body_state_changed));
 }
 

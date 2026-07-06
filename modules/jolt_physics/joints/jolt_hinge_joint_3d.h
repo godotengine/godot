@@ -38,9 +38,9 @@
 #include <Jolt/Physics/Constraints/SliderConstraint.h>
 
 class JoltHingeJoint3D final : public JoltJoint3D {
-	typedef PhysicsServer3D::HingeJointParam Parameter;
+	typedef PS3DE::HingeJointParam Parameter;
 	typedef JoltPhysicsServer3D::HingeJointParamJolt JoltParameter;
-	typedef PhysicsServer3D::HingeJointFlag Flag;
+	typedef PS3DE::HingeJointFlag Flag;
 	typedef JoltPhysicsServer3D::HingeJointFlagJolt JoltFlag;
 
 	double limit_lower = 0.0;
@@ -76,7 +76,7 @@ class JoltHingeJoint3D final : public JoltJoint3D {
 public:
 	JoltHingeJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);
 
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_HINGE; }
+	virtual PS3DE::JointType get_type() const override { return PS3DE::JOINT_TYPE_HINGE; }
 
 	double get_param(Parameter p_param) const;
 	void set_param(Parameter p_param, double p_value);
