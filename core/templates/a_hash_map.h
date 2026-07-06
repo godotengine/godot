@@ -80,7 +80,7 @@ class Variant;
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
-class AHashMap {
+class _WARN_UNUSED_ AHashMap {
 public:
 	// Must be a power of two.
 	static constexpr uint32_t INITIAL_CAPACITY = 16;

@@ -44,7 +44,7 @@ GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Warray-bounds")
  *
  */
 template <class T, uint32_t CAPACITY>
-class FixedVector {
+class _WARN_UNUSED_ FixedVector {
 	// This declaration allows us to access other FixedVector's private members.
 	template <class T_, uint32_t CAPACITY_>
 	friend class FixedVector;

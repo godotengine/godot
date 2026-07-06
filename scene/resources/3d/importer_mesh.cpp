@@ -1324,7 +1324,6 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 	LocalVector<float> vertices;
 	LocalVector<float> normals;
 	LocalVector<int> indices;
-	LocalVector<float> uv;
 	LocalVector<Pair<int, int>> uv_indices;
 
 	Vector<EditorSceneFormatImporterMeshLightmapSurface> lightmap_surfaces;
