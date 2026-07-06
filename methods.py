@@ -111,12 +111,23 @@ def redirect_emitter(target, source, env):
     return redirected_targets, source
 
 
-def disable_warnings(self):
-    # 'self' is the environment
-    if self.msvc and not using_clang(self):
-        self["WARNLEVEL"] = "/w"
+def disable_warnings(env):
+    """
+    Disables warnings for a given environment. Explicitly removes warnings made up to
+    that point in order to reduce recompilation times. Will unilaterally enable warning errors
+    in order to catch any warnings which erroneously slip through the cracks & need to be
+    explicitly excluded.
+
+    This is a one-way process. Should only be used for third-party environments, or
+    an environment where warnings are entirely disabled from the start.
+    """
+    if env.msvc and not using_clang(env):
+        CURRATED_CC_WARNINGS = ["/WX", "/w", "/wd4244", "/wd4267"]
     else:
-        self["WARNLEVEL"] = "-w"
+        CURRATED_CC_WARNINGS = ["-Werror", "-w"]
+    env["CWARNINGS"] = CURRATED_CC_WARNINGS
+    env["CXXWARNINGS"] = CURRATED_CC_WARNINGS
+    env["LINKWARNINGS"] = []
 
 
 def force_optimization_on_debug(self):
@@ -1672,3 +1683,19 @@ def get_default_include_paths(env):
         print_warning("Failed to find the include paths in the compiler output.")
         return []
     return [x.strip() for x in match[1].strip().splitlines()]
+
+
+############################################################
+# VARIABLE CONTAINERS
+############################################################
+
+
+def EnumToBoolVariable(key: str, help: str, default: str | bool, map: dict[str, bool]):
+    from SCons.Variables.BoolVariable import _text2bool, _validator
+
+    def _converter_lcase(val):
+        """Case-lowering converter."""
+        return _text2bool(map.get(val.lower(), val.lower()))
+
+    help = f"{help} (yes|no)"
+    return key, help, default, _validator, _text2bool
