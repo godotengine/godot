@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IKModifier2D" inherits="SkeletonModifier2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for 2D inverse kinematics modifiers.
+	</brief_description>
+	<description>
+		Base class for 2D inverse kinematics modifiers.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

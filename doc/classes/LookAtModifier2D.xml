@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LookAtModifier2D" inherits="SkeletonModifier2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Rotates one 2D bone toward a target node.
+	</brief_description>
+	<description>
+		[LookAtModifier2D] rotates a bone so its current forward segment points toward a target [Node2D].
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

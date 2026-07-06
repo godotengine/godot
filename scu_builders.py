@@ -395,7 +395,6 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["scene/main"])
     process_folder(["scene/resources"])
     process_folder(["scene/resources/2d"])
-    process_folder(["scene/resources/2d/skeleton"])
     process_folder(["scene/resources/3d"])
     process_folder(["scene/theme"])
 
@@ -423,7 +422,6 @@ def generate_scu_files(max_includes_per_scu):
             "tests",
             "/core",
             "/core/config",
-            "/core/crypto",
             "/core/input",
             "/core/io",
             "/core/math",

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CCDIK2D" inherits="IterateIK2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A CCD 2D IK modifier.
+	</brief_description>
+	<description>
+		Solves a 2D bone chain using cyclic coordinate descent.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

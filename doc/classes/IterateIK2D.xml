@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IterateIK2D" inherits="ChainIK2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for iterative 2D IK solvers.
+	</brief_description>
+	<description>
+		Base class for iterative 2D IK solvers.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

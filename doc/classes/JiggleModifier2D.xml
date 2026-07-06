@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="JiggleModifier2D" inherits="SkeletonModifier2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Applies simple spring motion to a 2D bone chain.
+	</brief_description>
+	<description>
+		[JiggleModifier2D] simulates spring points along a bone chain and writes the result to the [Skeleton2D] runtime pose.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  skeleton_modification_2d_lookat.h                                     */
+/*  two_bone_ik_2d.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,68 +30,42 @@
 
 #pragma once
 
-#include "scene/2d/skeleton_2d.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
+#include "scene/2d/ik_modifier_2d.h"
 
-///////////////////////////////////////
-// SkeletonModification2DLookAt
-///////////////////////////////////////
-
-class SkeletonModification2DLookAt : public SkeletonModification2D {
-	GDCLASS(SkeletonModification2DLookAt, SkeletonModification2D);
-
-private:
-	int bone_idx = -1;
-	NodePath bone2d_node;
-	ObjectID bone2d_node_cache;
+class TwoBoneIK2D : public IKModifier2D {
+	GDCLASS(TwoBoneIK2D, IKModifier2D);
 
 	NodePath target_node;
-	ObjectID target_node_cache;
-	Node2D *target_node_reference = nullptr;
-
-	float additional_rotation = 0;
-	bool enable_constraint = false;
-	float constraint_angle_min = 0;
-	float constraint_angle_max = (2.0 * Math::PI);
-	bool constraint_angle_invert = false;
-	bool constraint_in_localspace = true;
-
-	void update_bone2d_cache();
-	void update_target_cache();
+	NodePath pole_node;
+	int root_bone = -1;
+	int middle_bone = -1;
+	int tip_bone = -1;
+	bool flip_bend_direction = false;
+	real_t target_minimum_distance = 0.0;
+	real_t target_maximum_distance = 0.0;
 
 protected:
 	static void _bind_methods();
-	bool _set(const StringName &p_path, const Variant &p_value);
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	virtual PackedStringArray get_configuration_warnings() const override;
+	virtual void _process_modification(double p_delta) override;
 
 public:
-	void _execute(float p_delta) override;
-	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
-	void _draw_editor_gizmo() override;
-
-	void set_bone2d_node(const NodePath &p_target_node);
-	NodePath get_bone2d_node() const;
-	void set_bone_index(int p_idx);
-	int get_bone_index() const;
-
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
+	void set_pole_node(const NodePath &p_pole_node);
+	NodePath get_pole_node() const;
 
-	void set_additional_rotation(float p_rotation);
-	float get_additional_rotation() const;
+	void set_root_bone(int p_bone);
+	int get_root_bone() const;
+	void set_middle_bone(int p_bone);
+	int get_middle_bone() const;
+	void set_tip_bone(int p_bone);
+	int get_tip_bone() const;
 
-	void set_enable_constraint(bool p_constraint);
-	bool get_enable_constraint() const;
-	void set_constraint_angle_min(float p_angle_min);
-	float get_constraint_angle_min() const;
-	void set_constraint_angle_max(float p_angle_max);
-	float get_constraint_angle_max() const;
-	void set_constraint_angle_invert(bool p_invert);
-	bool get_constraint_angle_invert() const;
-	void set_constraint_in_localspace(bool p_constraint_in_localspace);
-	bool get_constraint_in_localspace() const;
-
-	SkeletonModification2DLookAt();
-	~SkeletonModification2DLookAt();
+	void set_flip_bend_direction(bool p_flip);
+	bool is_bend_direction_flipped() const;
+	void set_target_minimum_distance(real_t p_distance);
+	real_t get_target_minimum_distance() const;
+	void set_target_maximum_distance(real_t p_distance);
+	real_t get_target_maximum_distance() const;
 };

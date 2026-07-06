@@ -1934,7 +1934,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_epilog() {
 	// - Seeking won't restore any values that may have been modified by the user
 	//   in the node after the last time the AnimationPlayer updated it.
 	// - Restoring the backup won't account for values that are not directly involved
-	//   in the animation but a consequence of them (e.g., SkeletonModification2DLookAt).
+	//   in the animation but a consequence of them (e.g., LookAtModifier2D).
 	// FIXME: Since backup of values is based on the reset animation, only values
 	//        backed by a proper reset animation will work correctly with onion
 	//        skinning and the possibility to restore the values mentioned in the
@@ -2129,7 +2129,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	scale->hide();
 
 	delete_dialog = memnew(ConfirmationDialog);
-	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(delete_dialog);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationPlayerEditor::_animation_remove_confirmed));
 
@@ -2159,7 +2158,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
 	animation->set_tooltip_text(TTRC("Display list of animations in player."));
 	animation->set_clip_text(true);
-	animation->set_fit_to_longest_item(false);
 	animation->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	autoplay = memnew(Button);
@@ -2351,7 +2349,7 @@ AnimationPlayerEditor::~AnimationPlayerEditor() {
 void AnimationPlayerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			Node3DEditor::get_singleton()->connect(SNAME("transform_3d_key_request"), callable_mp(this, &AnimationPlayerEditorPlugin::_transform_3d_key_request));
+			Node3DEditor::get_singleton()->connect(SNAME("transform_key_request"), callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
 			InspectorDock::get_inspector_singleton()->connect(SNAME("property_keyed"), callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
 			anim_editor->get_track_editor()->connect(SNAME("keying_changed"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_keying));
 			InspectorDock::get_inspector_singleton()->connect(SNAME("edited_object_changed"), callable_mp(anim_editor->get_track_editor(), &AnimationTrackEditor::update_keying));
@@ -2369,7 +2367,7 @@ void AnimationPlayerEditorPlugin::_property_keyed(const String &p_keyed, const V
 	te->insert_value_key(p_keyed, p_advance);
 }
 
-void AnimationPlayerEditorPlugin::_transform_3d_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
+void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
 	if (!anim_editor->get_track_editor()->has_keying()) {
 		return;
 	}
@@ -2377,9 +2375,9 @@ void AnimationPlayerEditorPlugin::_transform_3d_key_request(Object *sp, const St
 	if (!s) {
 		return;
 	}
-	anim_editor->get_track_editor()->insert_transform_3d_key(s, p_sub, Animation::TYPE_POSITION_3D, p_key.origin);
-	anim_editor->get_track_editor()->insert_transform_3d_key(s, p_sub, Animation::TYPE_ROTATION_3D, p_key.basis.get_rotation_quaternion());
-	anim_editor->get_track_editor()->insert_transform_3d_key(s, p_sub, Animation::TYPE_SCALE_3D, p_key.basis.get_scale());
+	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_POSITION_3D, p_key.origin);
+	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_ROTATION_3D, p_key.basis.get_rotation_quaternion());
+	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_SCALE_3D, p_key.basis.get_scale());
 }
 
 void AnimationPlayerEditorPlugin::_update_keying() {

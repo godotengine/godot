@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModifier2D" inherits="Node2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for nodes that modify a [Skeleton2D].
+	</brief_description>
+	<description>
+		[SkeletonModifier2D] nodes must be direct children of a [Skeleton2D]. The skeleton processes them in child order during its deferred update.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_skeleton" qualifiers="const">
+			<return type="Skeleton2D" />
+			<description>
+				Returns the parent [Skeleton2D].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="active" type="bool" setter="set_active" getter="is_active" default="true">
+			If [code]true[/code], the modifier processes its modification.
+		</member>
+		<member name="influence" type="float" setter="set_influence" getter="get_influence" default="1.0">
+			Blend influence of this modifier.
+		</member>
+	</members>
+	<signals>
+		<signal name="modification_processed">
+			<description>
+				Emitted after this modifier processes.
+			</description>
+		</signal>
+	</signals>
+</class>

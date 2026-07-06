@@ -4,32 +4,57 @@
 		The parent of a hierarchy of [Bone2D]s, used to create a 2D skeletal animation.
 	</brief_description>
 	<description>
-		[Skeleton2D] parents a hierarchy of [Bone2D] nodes. It holds a reference to each [Bone2D]'s rest pose and acts as a single point of access to its bones.
-		To set up different types of inverse kinematics for the given Skeleton2D, a [SkeletonModificationStack2D] should be created. The inverse kinematics be applied by increasing [member SkeletonModificationStack2D.modification_count] and creating the desired number of modifications.
+		[Skeleton2D] parents a hierarchy of [Bone2D] nodes. It holds each bone rest pose and acts as a single point of access to runtime bone poses.
+		To modify bones procedurally, add [SkeletonModifier2D] child nodes to the [Skeleton2D]. Modifiers are processed by the skeleton in a deferred update.
 	</description>
 	<tutorials>
 		<link title="2D skeletons">$DOCS_URL/tutorials/animation/2d_skeletons.html</link>
 	</tutorials>
 	<methods>
-		<method name="execute_modifications">
+		<method name="advance">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
-			<param index="1" name="execution_mode" type="int" />
 			<description>
-				Executes all the modifications on the [SkeletonModificationStack2D], if the Skeleton2D has one assigned.
+				Manually advances child [SkeletonModifier2D] nodes by the specified time in seconds.
+			</description>
+		</method>
+		<method name="clear_bone_local_pose_override">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Clears the local pose override for [param bone_idx].
+			</description>
+		</method>
+		<method name="clear_bones_local_pose_override">
+			<return type="void" />
+			<description>
+				Clears all local pose overrides.
+			</description>
+		</method>
+		<method name="force_update_deferred">
+			<return type="void" />
+			<description>
+				Requests a deferred skeleton update.
 			</description>
 		</method>
 		<method name="get_bone">
 			<return type="Bone2D" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns a [Bone2D] from the node hierarchy parented by Skeleton2D. The object to return is identified by the parameter [param idx]. Bones are indexed by descending the node hierarchy from top to bottom, adding the children of each branch before moving to the next sibling.
+				Returns the [Bone2D] at [param idx].
 			</description>
 		</method>
 		<method name="get_bone_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of [Bone2D] nodes in the node hierarchy parented by Skeleton2D.
+				Returns the number of [Bone2D] nodes in this skeleton.
+			</description>
+		</method>
+		<method name="get_bone_global_pose" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the current skeleton-space global pose for [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_local_pose_override">
@@ -39,16 +64,38 @@
 				Returns the local pose override transform for [param bone_idx].
 			</description>
 		</method>
-		<method name="get_modification_stack" qualifiers="const">
-			<return type="SkeletonModificationStack2D" />
+		<method name="get_bone_parent" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the [SkeletonModificationStack2D] attached to this skeleton, if one exists.
+				Returns the parent bone index for [param idx], or [code]-1[/code] if the bone has no parent.
+			</description>
+		</method>
+		<method name="get_bone_pose" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="bone_idx" type="int" />
+			<description>
+				Returns the current local pose for [param bone_idx].
+			</description>
+		</method>
+		<method name="get_modifier_callback_mode_process" qualifiers="const">
+			<return type="int" enum="Skeleton2D.ModifierCallbackModeProcess" />
+			<description>
+				Returns when child [SkeletonModifier2D] nodes are processed.
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of a Skeleton2D instance.
+				Returns the [RID] of this skeleton.
+			</description>
+		</method>
+		<method name="set_bone_global_pose">
+			<return type="void" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="pose" type="Transform2D" />
+			<description>
+				Sets the skeleton-space global pose for [param bone_idx].
 			</description>
 		</method>
 		<method name="set_bone_local_pose_override">
@@ -58,24 +105,49 @@
 			<param index="2" name="strength" type="float" />
 			<param index="3" name="persistent" type="bool" />
 			<description>
-				Sets the local pose transform, [param override_pose], for the bone at [param bone_idx].
-				[param strength] is the interpolation strength that will be used when applying the pose, and [param persistent] determines if the applied pose will remain.
-				[b]Note:[/b] The pose transform needs to be a local transform relative to the [Bone2D] node at [param bone_idx]!
+				Sets the local pose override for [param bone_idx].
 			</description>
 		</method>
-		<method name="set_modification_stack">
+		<method name="set_bone_pose">
 			<return type="void" />
-			<param index="0" name="modification_stack" type="SkeletonModificationStack2D" />
+			<param index="0" name="bone_idx" type="int" />
+			<param index="1" name="pose" type="Transform2D" />
 			<description>
-				Sets the [SkeletonModificationStack2D] attached to this skeleton.
+				Sets the local pose for [param bone_idx].
+			</description>
+		</method>
+		<method name="set_modifier_callback_mode_process">
+			<return type="void" />
+			<param index="0" name="mode" type="int" enum="Skeleton2D.ModifierCallbackModeProcess" />
+			<description>
+				Sets when child [SkeletonModifier2D] nodes are processed.
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="modifier_callback_mode_process" type="int" setter="set_modifier_callback_mode_process" getter="get_modifier_callback_mode_process" enum="Skeleton2D.ModifierCallbackModeProcess" default="1">
+			Sets the processing timing for child [SkeletonModifier2D] nodes.
+		</member>
+	</members>
 	<signals>
 		<signal name="bone_setup_changed">
 			<description>
-				Emitted when the [Bone2D] setup attached to this skeletons changes. This is primarily used internally within the skeleton.
+				Emitted when the [Bone2D] setup attached to this skeleton changes.
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
+			Notification received when this skeleton needs to update its pose.
+		</constant>
+		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS" value="0" enum="ModifierCallbackModeProcess">
+			Process child [SkeletonModifier2D] nodes during physics frames.
+		</constant>
+		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_IDLE" value="1" enum="ModifierCallbackModeProcess">
+			Process child [SkeletonModifier2D] nodes during process frames.
+		</constant>
+		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_MANUAL" value="2" enum="ModifierCallbackModeProcess">
+			Do not process child [SkeletonModifier2D] nodes automatically. Use [method advance] to process them manually.
+		</constant>
+	</constants>
 </class>

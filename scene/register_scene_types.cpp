@@ -181,11 +181,18 @@
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/canvas_group.h"
 #include "scene/2d/canvas_modulate.h"
+#include "scene/2d/ccd_ik_2d.h"
+#include "scene/2d/chain_ik_2d.h"
 #include "scene/2d/cpu_particles_2d.h"
+#include "scene/2d/fabrik_2d.h"
 #include "scene/2d/gpu_particles_2d.h"
+#include "scene/2d/ik_modifier_2d.h"
+#include "scene/2d/iterate_ik_2d.h"
+#include "scene/2d/jiggle_modifier_2d.h"
 #include "scene/2d/light_2d.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/line_2d.h"
+#include "scene/2d/look_at_modifier_2d.h"
 #include "scene/2d/marker_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
@@ -194,17 +201,12 @@
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/remote_transform_2d.h"
 #include "scene/2d/skeleton_2d.h"
+#include "scene/2d/skeleton_modifier_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/tile_map_layer.h"
+#include "scene/2d/two_bone_ik_2d.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
 #include "scene/resources/2d/polygon_path_finder.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d_ccdik.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d_fabrik.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d_lookat.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d_stackholder.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d_twoboneik.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_stack_2d.h"
 #include "scene/resources/2d/tile_set.h"
 #include "scene/resources/world_2d.h"
 #ifndef DISABLE_DEPRECATED
@@ -317,6 +319,7 @@
 #include "scene/2d/physics/joints/pin_joint_2d.h"
 #include "scene/2d/physics/kinematic_collision_2d.h"
 #include "scene/2d/physics/physical_bone_2d.h"
+#include "scene/2d/physics/physical_bone_simulator_2d.h"
 #include "scene/2d/physics/physics_body_2d.h"
 #include "scene/2d/physics/ray_cast_2d.h"
 #include "scene/2d/physics/rigid_body_2d.h"
@@ -331,8 +334,6 @@
 #include "scene/resources/2d/segment_shape_2d.h"
 #include "scene/resources/2d/separation_ray_shape_2d.h"
 #include "scene/resources/2d/shape_2d.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d_jiggle.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d_physicalbones.h"
 #include "scene/resources/2d/world_boundary_shape_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
@@ -854,18 +855,19 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TileMap);
 #endif
 
-	GDREGISTER_CLASS(SkeletonModificationStack2D);
-	GDREGISTER_CLASS(SkeletonModification2D);
-	GDREGISTER_CLASS(SkeletonModification2DLookAt);
-	GDREGISTER_CLASS(SkeletonModification2DCCDIK);
-	GDREGISTER_CLASS(SkeletonModification2DFABRIK);
-	GDREGISTER_CLASS(SkeletonModification2DTwoBoneIK);
-	GDREGISTER_CLASS(SkeletonModification2DStackHolder);
+	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier2D);
+	GDREGISTER_ABSTRACT_CLASS(IKModifier2D);
+	GDREGISTER_CLASS(TwoBoneIK2D);
+	GDREGISTER_ABSTRACT_CLASS(ChainIK2D);
+	GDREGISTER_ABSTRACT_CLASS(IterateIK2D);
+	GDREGISTER_CLASS(FABRIK2D);
+	GDREGISTER_CLASS(CCDIK2D);
+	GDREGISTER_CLASS(LookAtModifier2D);
+	GDREGISTER_CLASS(JiggleModifier2D);
 
 #ifndef PHYSICS_2D_DISABLED
 	GDREGISTER_CLASS(PhysicalBone2D);
-	GDREGISTER_CLASS(SkeletonModification2DJiggle);
-	GDREGISTER_CLASS(SkeletonModification2DPhysicalBones);
+	GDREGISTER_CLASS(PhysicalBoneSimulator2D);
 #endif // PHYSICS_2D_DISABLED
 
 	OS::get_singleton()->yield(); // may take time to init

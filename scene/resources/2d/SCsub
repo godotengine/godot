@@ -19,5 +19,3 @@ if not env["disable_navigation_2d"]:
     env.add_source_files(env.scene_sources, "navigation_mesh_source_geometry_data_2d.cpp")
     env.add_source_files(env.scene_sources, "navigation_polygon.cpp")
     env.add_source_files(env.scene_sources, "polygon_path_finder.cpp")
-
-SConscript("skeleton/SCsub")

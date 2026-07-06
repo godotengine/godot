@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicalBoneSimulator2D" inherits="SkeletonModifier2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Applies [PhysicalBone2D] transforms to a [Skeleton2D].
+	</brief_description>
+	<description>
+		[PhysicalBoneSimulator2D] reads [PhysicalBone2D] nodes under the parent [Skeleton2D] and writes their transforms to the skeleton runtime pose.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="apply_to_simulating_bones_only" type="bool" setter="set_apply_to_simulating_bones_only" getter="is_applying_to_simulating_bones_only" default="true">
+			If [code]true[/code], only simulating [PhysicalBone2D] nodes are applied.
+		</member>
+	</members>
+</class>

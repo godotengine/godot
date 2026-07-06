@@ -34,6 +34,7 @@
 #include "core/math/transform_interpolator.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "scene/2d/skeleton_modifier_2d.h"
 #include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
@@ -516,27 +517,14 @@ Bone2D::~Bone2D() {
 //////////////////////////////////////
 
 bool Skeleton2D::_set(const StringName &p_path, const Variant &p_value) {
-	if (p_path == SNAME("modification_stack")) {
-		set_modification_stack(p_value);
-		return true;
-	}
 	return false;
 }
 
 bool Skeleton2D::_get(const StringName &p_path, Variant &r_ret) const {
-	if (p_path == SNAME("modification_stack")) {
-		r_ret = get_modification_stack();
-		return true;
-	}
 	return false;
 }
 
 void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(
-			PropertyInfo(Variant::OBJECT, PNAME("modification_stack"),
-					PROPERTY_HINT_RESOURCE_TYPE,
-					"SkeletonModificationStack2D",
-					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 }
 
 void Skeleton2D::_make_bone_setup_dirty() {
@@ -583,7 +571,7 @@ void Skeleton2D::_make_transform_dirty() {
 	}
 	transform_dirty = true;
 	if (is_inside_tree()) {
-		callable_mp(this, &Skeleton2D::_update_transform).call_deferred();
+		_update_deferred(UPDATE_FLAG_TRANSFORM);
 	}
 }
 
@@ -600,10 +588,18 @@ void Skeleton2D::_update_transform() {
 
 	for (uint32_t i = 0; i < bones.size(); i++) {
 		ERR_CONTINUE(bones[i].parent_index >= (int)i);
+		Transform2D local_transform = bones[i].bone->get_transform();
+		if (bones[i].local_pose_override_amount > 0) {
+			local_transform = local_transform.interpolate_with(bones[i].local_pose_override, bones[i].local_pose_override_amount);
+			if (!bones[i].local_pose_override_persistent) {
+				bones[i].local_pose_override_amount = 0.0;
+			}
+		}
+
 		if (bones[i].parent_index >= 0) {
-			bones[i].accum_transform = bones[bones[i].parent_index].accum_transform * bones[i].bone->get_transform();
+			bones[i].accum_transform = bones[bones[i].parent_index].accum_transform * local_transform;
 		} else {
-			bones[i].accum_transform = bones[i].bone->get_transform();
+			bones[i].accum_transform = local_transform;
 		}
 	}
 
@@ -626,20 +622,30 @@ int Skeleton2D::get_bone_count() const {
 
 Bone2D *Skeleton2D::get_bone(int p_idx) {
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+	if (bone_setup_dirty) {
+		_update_bone_setup();
+	}
 	ERR_FAIL_INDEX_V(p_idx, (int)bones.size(), nullptr);
 
 	return bones[p_idx].bone;
 }
 
-void Skeleton2D::_update_process_mode() {
-	bool process = modification_stack.is_valid() && is_inside_tree();
-	if (!process) {
-		// We might have another reason to process.
-		process = is_physics_interpolated_and_enabled() && is_visible_in_tree();
+int Skeleton2D::get_bone_parent(int p_idx) const {
+	if (bone_setup_dirty) {
+		const_cast<Skeleton2D *>(this)->_update_bone_setup();
 	}
+	ERR_FAIL_INDEX_V(p_idx, (int)bones.size(), -1);
+	return bones[p_idx].parent_index;
+}
+
+void Skeleton2D::_update_process_mode() {
+	bool needs_interpolation_process = is_physics_interpolated_and_enabled() && is_visible_in_tree();
+	bool has_modifiers = is_inside_tree() && (modifiers_dirty || !modifiers.is_empty());
+	bool process = needs_interpolation_process || (has_modifiers && modifier_callback_mode_process == MODIFIER_CALLBACK_MODE_PROCESS_IDLE);
+	bool physics_process = needs_interpolation_process || (has_modifiers && modifier_callback_mode_process == MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS);
 
 	set_process_internal(process);
-	set_physics_process_internal(process);
+	set_physics_process_internal(physics_process);
 }
 
 void Skeleton2D::_ensure_update_interpolation_data() {
@@ -668,6 +674,7 @@ void Skeleton2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			_make_modifiers_dirty();
 			_update_process_mode();
 
 			if (is_physics_interpolated_and_enabled()) {
@@ -698,9 +705,7 @@ void Skeleton2D::_notification(int p_what) {
 				TransformInterpolator::interpolate_transform_2d(_interpolation_data.xform_prev, _interpolation_data.xform_curr, res, Engine::get_singleton()->get_physics_interpolation_fraction());
 				RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, res);
 			}
-			if (modification_stack.is_valid()) {
-				execute_modifications(get_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process);
-			}
+			advance(get_process_delta_time());
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -708,28 +713,31 @@ void Skeleton2D::_notification(int p_what) {
 				_ensure_update_interpolation_data();
 				_interpolation_data.xform_curr = get_global_transform();
 			}
-			if (modification_stack.is_valid()) {
-				execute_modifications(get_physics_process_delta_time(), SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_physics_process);
-			}
-		} break;
-
-		case NOTIFICATION_POST_ENTER_TREE: {
-			set_modification_stack(modification_stack);
+			advance(get_physics_process_delta_time());
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_process_mode();
 		} break;
 
-#ifdef TOOLS_ENABLED
-		case NOTIFICATION_DRAW: {
-			if (Engine::get_singleton()->is_editor_hint()) {
-				if (modification_stack.is_valid()) {
-					modification_stack->draw_editor_gizmos();
-				}
+		case NOTIFICATION_UPDATE_SKELETON: {
+			if (bone_setup_dirty) {
+				_update_bone_setup();
 			}
+			if (transform_dirty) {
+				_update_transform();
+			}
+
+			updating = true;
+			if (update_flags & UPDATE_FLAG_MODIFIER) {
+				_process_modifiers();
+			}
+			if (transform_dirty) {
+				_update_transform();
+			}
+			updating = false;
+			update_flags = UPDATE_FLAG_NONE;
 		} break;
-#endif // TOOLS_ENABLED
 	}
 }
 
@@ -738,100 +746,226 @@ RID Skeleton2D::get_skeleton() const {
 }
 
 void Skeleton2D::set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, real_t p_amount, bool p_persistent) {
+	if (bone_setup_dirty) {
+		_update_bone_setup();
+	}
 	ERR_FAIL_INDEX_MSG(p_bone_idx, (int)bones.size(), "Bone index is out of range!");
 	bones[p_bone_idx].local_pose_override = p_override;
 	bones[p_bone_idx].local_pose_override_amount = p_amount;
 	bones[p_bone_idx].local_pose_override_persistent = p_persistent;
+	_make_transform_dirty();
 }
 
 Transform2D Skeleton2D::get_bone_local_pose_override(int p_bone_idx) {
+	if (bone_setup_dirty) {
+		_update_bone_setup();
+	}
 	ERR_FAIL_INDEX_V_MSG(p_bone_idx, (int)bones.size(), Transform2D(), "Bone index is out of range!");
 	return bones[p_bone_idx].local_pose_override;
 }
 
-void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack) {
-	if (modification_stack.is_valid()) {
-		modification_stack->is_setup = false;
-		modification_stack->set_skeleton(nullptr);
+void Skeleton2D::clear_bone_local_pose_override(int p_bone_idx) {
+	if (bone_setup_dirty) {
+		_update_bone_setup();
 	}
-	modification_stack = p_stack;
-	if (modification_stack.is_valid() && is_inside_tree()) {
-		modification_stack->set_skeleton(this);
-		modification_stack->setup();
+	ERR_FAIL_INDEX_MSG(p_bone_idx, (int)bones.size(), "Bone index is out of range!");
+	bones[p_bone_idx].local_pose_override_amount = 0.0;
+	_make_transform_dirty();
+}
 
-#ifdef TOOLS_ENABLED
-		modification_stack->set_editor_gizmos_dirty(true);
-#endif // TOOLS_ENABLED
+void Skeleton2D::clear_bones_local_pose_override() {
+	for (uint32_t i = 0; i < bones.size(); i++) {
+		bones[i].local_pose_override_amount = 0.0;
 	}
+	_make_transform_dirty();
+}
+
+void Skeleton2D::set_bone_pose(int p_bone_idx, const Transform2D &p_pose) {
+	set_bone_local_pose_override(p_bone_idx, p_pose, 1.0, true);
+}
+
+Transform2D Skeleton2D::get_bone_pose(int p_bone_idx) const {
+	if (bone_setup_dirty) {
+		const_cast<Skeleton2D *>(this)->_update_bone_setup();
+	}
+	ERR_FAIL_INDEX_V_MSG(p_bone_idx, (int)bones.size(), Transform2D(), "Bone index is out of range!");
+	return bones[p_bone_idx].local_pose_override_amount > 0 ? bones[p_bone_idx].local_pose_override : bones[p_bone_idx].bone->get_transform();
+}
+
+Transform2D Skeleton2D::get_bone_global_pose(int p_bone_idx) const {
+	if (bone_setup_dirty) {
+		const_cast<Skeleton2D *>(this)->_update_bone_setup();
+	} else if (transform_dirty) {
+		const_cast<Skeleton2D *>(this)->_update_transform();
+	}
+	ERR_FAIL_INDEX_V_MSG(p_bone_idx, (int)bones.size(), Transform2D(), "Bone index is out of range!");
+	return bones[p_bone_idx].accum_transform;
+}
+
+void Skeleton2D::set_bone_global_pose(int p_bone_idx, const Transform2D &p_pose) {
+	if (bone_setup_dirty) {
+		_update_bone_setup();
+	}
+	ERR_FAIL_INDEX_MSG(p_bone_idx, (int)bones.size(), "Bone index is out of range!");
+
+	Transform2D parent_pose;
+	const int parent_bone = bones[p_bone_idx].parent_index;
+	if (parent_bone >= 0) {
+		parent_pose = get_bone_global_pose(parent_bone);
+	}
+
+	set_bone_pose(p_bone_idx, parent_pose.affine_inverse() * p_pose);
+}
+
+void Skeleton2D::advance(double p_delta) {
+	_find_modifiers();
+	if (!modifiers.is_empty()) {
+		update_delta += p_delta;
+		_update_deferred(UPDATE_FLAG_MODIFIER);
+	}
+}
+
+void Skeleton2D::force_update_deferred() {
+	_update_deferred((modifiers_dirty || !modifiers.is_empty()) ? (UpdateFlag)(UPDATE_FLAG_TRANSFORM | UPDATE_FLAG_MODIFIER) : UPDATE_FLAG_TRANSFORM);
+}
+
+void Skeleton2D::set_modifier_callback_mode_process(Skeleton2D::ModifierCallbackModeProcess p_mode) {
+	if (modifier_callback_mode_process == p_mode) {
+		return;
+	}
+	modifier_callback_mode_process = p_mode;
 	_update_process_mode();
 }
 
-Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {
-	return modification_stack;
+Skeleton2D::ModifierCallbackModeProcess Skeleton2D::get_modifier_callback_mode_process() const {
+	return modifier_callback_mode_process;
 }
 
-void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
-	if (modification_stack.is_null()) {
+void Skeleton2D::_update_deferred(UpdateFlag p_update_flag) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	if (update_flags == UPDATE_FLAG_NONE && !updating) {
+		notify_deferred_thread_group(NOTIFICATION_UPDATE_SKELETON);
+	}
+	update_flags |= p_update_flag;
+}
+
+void Skeleton2D::_find_modifiers() {
+	if (!modifiers_dirty) {
 		return;
 	}
 
-	// Do not cache the transform changes caused by the modifications!
-	for (uint32_t i = 0; i < bones.size(); i++) {
-		bones[i].bone->copy_transform_to_cache = false;
+	modifiers.clear();
+	for (int i = 0; i < get_child_count(); i++) {
+		SkeletonModifier2D *c = Object::cast_to<SkeletonModifier2D>(get_child(i));
+		if (c) {
+			modifiers.push_back(c->get_instance_id());
+		}
+	}
+	modifiers_dirty = false;
+	_update_process_mode();
+}
+
+void Skeleton2D::_process_modifiers() {
+	_find_modifiers();
+	clear_bones_local_pose_override();
+	if (transform_dirty) {
+		_update_transform();
 	}
 
-	if (modification_stack->skeleton != this) {
-		modification_stack->set_skeleton(this);
-	}
+	for (const ObjectID &oid : modifiers) {
+		Object *t_obj = ObjectDB::get_instance(oid);
+		if (!t_obj) {
+			continue;
+		}
 
-	modification_stack->execute(p_delta, p_execution_mode);
+		SkeletonModifier2D *mod = Object::cast_to<SkeletonModifier2D>(t_obj);
+		if (!mod) {
+			continue;
+		}
 
-	// Only apply the local pose override on _process. Otherwise, just calculate the local_pose_override and reset the transform.
-	if (p_execution_mode == SkeletonModificationStack2D::EXECUTION_MODE::execution_mode_process) {
-		for (uint32_t i = 0; i < bones.size(); i++) {
-			if (bones[i].local_pose_override_amount > 0) {
-				bones[i].bone->set_meta("_local_pose_override_enabled_", true);
-
-				Transform2D final_trans = bones[i].bone->cache_transform;
-				final_trans = final_trans.interpolate_with(bones[i].local_pose_override, bones[i].local_pose_override_amount);
-				bones[i].bone->set_transform(final_trans);
-				bones[i].bone->propagate_call("force_update_transform");
-
-				if (bones[i].local_pose_override_persistent) {
-					bones[i].local_pose_override_amount = 0.0;
-				}
-			} else {
-				// TODO: see if there is a way to undo the override without having to resort to setting every bone's transform.
-				bones[i].bone->remove_meta("_local_pose_override_enabled_");
-				bones[i].bone->set_transform(bones[i].bone->cache_transform);
+		LocalVector<Transform2D> bone_pose_backup;
+		const real_t influence = mod->get_influence();
+		if (influence < 1.0) {
+			bone_pose_backup.resize(bones.size());
+			for (uint32_t i = 0; i < bones.size(); i++) {
+				bone_pose_backup[i] = get_bone_pose(i);
 			}
+		}
+
+		mod->process_modification(update_delta);
+
+		if (influence < 1.0) {
+			for (uint32_t i = 0; i < bones.size(); i++) {
+				const Transform2D modified_pose = get_bone_pose(i);
+				if (modified_pose != bone_pose_backup[i]) {
+					set_bone_pose(i, bone_pose_backup[i].interpolate_with(modified_pose, influence));
+				}
+			}
+		}
+		if (transform_dirty) {
+			_update_transform();
 		}
 	}
 
-	// Cache any future transform changes
-	for (uint32_t i = 0; i < bones.size(); i++) {
-		bones[i].bone->copy_transform_to_cache = true;
-	}
+	update_delta = 0.0;
+}
 
-#ifdef TOOLS_ENABLED
-	modification_stack->set_editor_gizmos_dirty(true);
-#endif // TOOLS_ENABLED
+void Skeleton2D::_make_modifiers_dirty() {
+	modifiers_dirty = true;
+	_update_deferred(UPDATE_FLAG_MODIFIER);
+	_update_process_mode();
+}
+
+void Skeleton2D::add_child_notify(Node *p_child) {
+	if (Object::cast_to<SkeletonModifier2D>(p_child)) {
+		_make_modifiers_dirty();
+	}
+}
+
+void Skeleton2D::move_child_notify(Node *p_child) {
+	if (Object::cast_to<SkeletonModifier2D>(p_child)) {
+		_make_modifiers_dirty();
+	}
+}
+
+void Skeleton2D::remove_child_notify(Node *p_child) {
+	if (Object::cast_to<SkeletonModifier2D>(p_child)) {
+		_make_modifiers_dirty();
+	}
 }
 
 void Skeleton2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone_count"), &Skeleton2D::get_bone_count);
 	ClassDB::bind_method(D_METHOD("get_bone", "idx"), &Skeleton2D::get_bone);
+	ClassDB::bind_method(D_METHOD("get_bone_parent", "idx"), &Skeleton2D::get_bone_parent);
 
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &Skeleton2D::get_skeleton);
 
-	ClassDB::bind_method(D_METHOD("set_modification_stack", "modification_stack"), &Skeleton2D::set_modification_stack);
-	ClassDB::bind_method(D_METHOD("get_modification_stack"), &Skeleton2D::get_modification_stack);
-	ClassDB::bind_method(D_METHOD("execute_modifications", "delta", "execution_mode"), &Skeleton2D::execute_modifications);
+	ClassDB::bind_method(D_METHOD("advance", "delta"), &Skeleton2D::advance);
+	ClassDB::bind_method(D_METHOD("force_update_deferred"), &Skeleton2D::force_update_deferred);
+	ClassDB::bind_method(D_METHOD("set_modifier_callback_mode_process", "mode"), &Skeleton2D::set_modifier_callback_mode_process);
+	ClassDB::bind_method(D_METHOD("get_modifier_callback_mode_process"), &Skeleton2D::get_modifier_callback_mode_process);
 
 	ClassDB::bind_method(D_METHOD("set_bone_local_pose_override", "bone_idx", "override_pose", "strength", "persistent"), &Skeleton2D::set_bone_local_pose_override);
 	ClassDB::bind_method(D_METHOD("get_bone_local_pose_override", "bone_idx"), &Skeleton2D::get_bone_local_pose_override);
+	ClassDB::bind_method(D_METHOD("clear_bone_local_pose_override", "bone_idx"), &Skeleton2D::clear_bone_local_pose_override);
+	ClassDB::bind_method(D_METHOD("clear_bones_local_pose_override"), &Skeleton2D::clear_bones_local_pose_override);
+	ClassDB::bind_method(D_METHOD("set_bone_pose", "bone_idx", "pose"), &Skeleton2D::set_bone_pose);
+	ClassDB::bind_method(D_METHOD("get_bone_pose", "bone_idx"), &Skeleton2D::get_bone_pose);
+	ClassDB::bind_method(D_METHOD("get_bone_global_pose", "bone_idx"), &Skeleton2D::get_bone_global_pose);
+	ClassDB::bind_method(D_METHOD("set_bone_global_pose", "bone_idx", "pose"), &Skeleton2D::set_bone_global_pose);
+
+	ADD_GROUP("Modifier", "modifier_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "modifier_callback_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_modifier_callback_mode_process", "get_modifier_callback_mode_process");
 
 	ADD_SIGNAL(MethodInfo("bone_setup_changed"));
+
+	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
+	BIND_ENUM_CONSTANT(MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS);
+	BIND_ENUM_CONSTANT(MODIFIER_CALLBACK_MODE_PROCESS_IDLE);
+	BIND_ENUM_CONSTANT(MODIFIER_CALLBACK_MODE_PROCESS_MANUAL);
 }
 
 Skeleton2D::Skeleton2D() {

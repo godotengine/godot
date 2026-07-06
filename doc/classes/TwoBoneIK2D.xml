@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TwoBoneIK2D" inherits="IKModifier2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A two-bone 2D IK modifier.
+	</brief_description>
+	<description>
+		[TwoBoneIK2D] solves a direct root, middle, tip bone chain toward a target node. A pole node controls the bend direction.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+			Target [Node2D] to reach.
+		</member>
+		<member name="pole_node" type="NodePath" setter="set_pole_node" getter="get_pole_node" default="NodePath(&quot;&quot;)">
+			Pole [Node2D] that controls bend direction.
+		</member>
+	</members>
+</class>
