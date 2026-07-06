@@ -180,7 +180,6 @@ void GDScriptFunction::debug_get_stack_member_state(int p_line, List<Pair<String
 	int oc = 0;
 	HashMap<StringName, _GDFKC> sdmap;
 	for (const StackDebug &sd : stack_debug) {
-
 		if (sd.added) {
 			if (sd.line > p_line) {
 				// Stack debug member added on a line later than the paused line.
