@@ -582,9 +582,6 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	ofs += 4;
 	uint32_t name_len = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
-	// Security: Use safe arithmetic to prevent integer underflow in size check.
-	// Instead of (name_len + sync_len*4) > (p_buffer_len - ofs) which can underflow,
-	// check that ofs doesn't exceed p_buffer_len before subtraction.
 	ERR_FAIL_COND_V_MSG(ofs > p_buffer_len || name_len + (sync_len * 4) > uint32_t(p_buffer_len - ofs), ERR_INVALID_DATA, vformat("Invalid spawn packet size: %d, wants: %d", p_buffer_len, ofs + name_len + (sync_len * 4)));
 	List<uint32_t> sync_ids;
 	for (uint32_t i = 0; i < sync_len; i++) {
@@ -775,7 +772,6 @@ Error SceneReplicationInterface::on_delta_receive(int p_from, const uint8_t *p_b
 		ofs += 8;
 		uint32_t size = decode_uint32(&p_buffer[ofs]);
 		ofs += 4;
-		// Security: Add bounds check to prevent unsigned underflow
 		ERR_FAIL_COND_V(ofs > p_buffer_len || size > uint32_t(p_buffer_len - ofs), ERR_INVALID_DATA);
 		MultiplayerSynchronizer *sync = _find_synchronizer(p_from, net_id);
 		Node *node = sync ? sync->get_root_node() : nullptr;
@@ -868,7 +864,6 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		ofs += 4;
 		uint32_t size = decode_uint32(&p_buffer[ofs]);
 		ofs += 4;
-		// Security: Add bounds check to prevent unsigned underflow
 		ERR_FAIL_COND_V(ofs > p_buffer_len || size > uint32_t(p_buffer_len - ofs), ERR_INVALID_DATA);
 		MultiplayerSynchronizer *sync = _find_synchronizer(p_from, net_id);
 		if (!sync) {
