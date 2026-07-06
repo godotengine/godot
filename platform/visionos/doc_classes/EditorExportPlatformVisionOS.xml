@@ -44,6 +44,8 @@
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
+		<member name="application/min_visionos_gpu_family" type="String" setter="" getter="">
+		</member>
 		<member name="application/min_visionos_version" type="String" setter="" getter="">
 		</member>
 		<member name="application/provisioning_profile_specifier_debug" type="String" setter="" getter="">
