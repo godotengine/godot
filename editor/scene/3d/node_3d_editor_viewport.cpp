@@ -68,6 +68,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
@@ -3153,12 +3154,13 @@ void Node3DEditorViewport::_project_settings_changed() {
 }
 
 static void override_label_colors(Control *p_control) {
+	const Ref<Theme> &editor_theme = EditorNode::get_singleton()->get_editor_theme();
 	p_control->begin_bulk_theme_override();
-	p_control->add_theme_color_override(SceneStringName(font_color), p_control->get_theme_color(SNAME("font_dark_background_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_hover_color", p_control->get_theme_color(SNAME("font_dark_background_hover_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_focus_color", p_control->get_theme_color(SNAME("font_dark_background_focus_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_pressed_color", p_control->get_theme_color(SNAME("font_dark_background_pressed_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_hover_pressed_color", p_control->get_theme_color(SNAME("font_dark_background_hover_pressed_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override(SceneStringName(font_color), editor_theme->get_color(SNAME("font_dark_background_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_hover_color", editor_theme->get_color(SNAME("font_dark_background_hover_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_focus_color", editor_theme->get_color(SNAME("font_dark_background_focus_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_pressed_color", editor_theme->get_color(SNAME("font_dark_background_pressed_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_hover_pressed_color", editor_theme->get_color(SNAME("font_dark_background_hover_pressed_color"), EditorStringName(Editor)));
 	p_control->end_bulk_theme_override();
 }
 
@@ -3227,6 +3229,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
 			_update_navigation_controls_visibility();
+			_init_gizmo_instance(index);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -3835,21 +3838,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_edit.gizmo = Ref<EditorNode3DGizmo>();
 				set_message("");
 			}
-		} break;
-
-		case NOTIFICATION_ENTER_TREE: {
-			surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
-			surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
-			surface->connect(SceneStringName(mouse_entered), callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
-			surface->connect(SceneStringName(mouse_exited), callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
-			surface->connect(SceneStringName(focus_entered), callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
-			surface->connect(SceneStringName(focus_exited), callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
-
-			_init_gizmo_instance(index);
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			_finish_gizmo_instances();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -6719,7 +6707,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	c->add_child(viewport);
 	surface = memnew(Control);
 	SET_DRAG_FORWARDING_CD(surface, Node3DEditorViewport);
-	add_child(surface);
 	surface->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	surface->set_clip_contents(true);
 	camera = memnew(Camera3D);
@@ -6728,6 +6715,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
+	add_child(surface);
+
+	surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
+	surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
+	surface->connect(SceneStringName(mouse_entered), callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
+	surface->connect(SceneStringName(mouse_exited), callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
+	surface->connect(SceneStringName(focus_entered), callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
+	surface->connect(SceneStringName(focus_exited), callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);
@@ -7153,6 +7148,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {
+	_finish_gizmo_instances();
 	memdelete(ruler);
 }
 
