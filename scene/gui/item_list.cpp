@@ -346,7 +346,7 @@ Rect2 ItemList::get_item_rect(int p_idx, bool p_expand) const {
 	if (p_expand && p_idx % current_columns == current_columns - 1) {
 		int width = get_size().width - theme_cache.panel_style->get_minimum_size().width;
 		if (scroll_bar_v->is_visible()) {
-			width -= scroll_bar_v->get_bound_minimum_size().width;
+			width -= scroll_bar_v->get_bound_minimum_size().width + theme_cache.scroll_bar_h_separation;
 		}
 		ret.size.width = width - ret.position.x;
 	}
@@ -1420,7 +1420,7 @@ void ItemList::_notification(int p_what) {
 			Size2 size = get_size();
 			int width = size.width - theme_cache.panel_style->get_minimum_size().width;
 			if (scroll_bar_v->is_visible()) {
-				width -= scroll_bar_v_min.width;
+				width -= scroll_bar_v_min.width + theme_cache.scroll_bar_h_separation;
 			}
 
 			draw_style_box(theme_cache.panel_style, Rect2(Point2(), size));
@@ -2487,6 +2487,7 @@ void ItemList::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, v_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scroll_bar_h_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, focus_style, "focus");

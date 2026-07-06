@@ -780,6 +780,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("scroll_hint_color", "ItemList", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));
 			p_theme->set_constant("v_separation", "ItemList", p_config.base_margin * 1.5 * EDSCALE);
 			p_theme->set_constant("h_separation", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
+			p_theme->set_constant("scroll_bar_h_separation", "ItemList", style_itemlist_bg->get_margin(SIDE_RIGHT));
 			p_theme->set_constant("icon_margin", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
 			p_theme->set_constant(SceneStringName(line_separation), "ItemList", p_config.separation_margin);
 			p_theme->set_constant("outline_size", "ItemList", 0);
@@ -2240,6 +2241,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(panel), "ScrollContainerSecondary", style_sidebar);
 			p_theme->set_stylebox(SceneStringName(panel), "TreeSecondary", style_sidebar);
 			p_theme->set_stylebox(SceneStringName(panel), "ItemListSecondary", style_sidebar);
+			p_theme->set_constant("scroll_bar_h_separation", "ItemListSecondary", style_sidebar->get_margin(SIDE_RIGHT));
 			// Use it for EditorDebuggerInspector in StackTrace to keep the default 3-column layout,
 			// as the debugger inspector is too small to be considered a main area.
 			p_theme->set_stylebox(SceneStringName(panel), "EditorDebuggerInspector", style_sidebar);
