@@ -266,7 +266,7 @@ public:
 	bool is_tool() const override {
 		return type_info.is_tool;
 	}
-	bool is_valid() const override {
+	bool is_script_valid() const override {
 		return valid;
 	}
 	bool is_abstract() const override {

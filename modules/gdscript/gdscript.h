@@ -229,7 +229,7 @@ public:
 	// Cancels all functions of the script that are are waiting to be resumed after using await.
 	void cancel_pending_functions(bool warn);
 
-	virtual bool is_valid() const override { return valid; }
+	virtual bool is_script_valid() const override { return valid; }
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 

@@ -348,7 +348,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 
 		Ref<Script> scr = res;
 		if (scr.is_valid()) {
-			ERR_FAIL_COND_V_MSG(!scr->is_valid(), nullptr, vformat("Failed to create an autoload, script '%s' is not compiling.", p_path));
+			ERR_FAIL_COND_V_MSG(!scr->is_script_valid(), nullptr, vformat("Failed to create an autoload, script '%s' is not compiling.", p_path));
 
 			StringName ibt = scr->get_instance_base_type();
 			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
