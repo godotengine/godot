@@ -776,6 +776,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_color("guide_color", "ItemList", Color(1, 1, 1, 0));
 			p_theme->set_constant("v_separation", "ItemList", p_config.forced_even_separation * EDSCALE);
 			p_theme->set_constant("h_separation", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
+			p_theme->set_constant("scroll_bar_h_separation", "ItemList", p_config.separation_margin);
 			p_theme->set_constant("icon_margin", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
 			p_theme->set_constant(SceneStringName(line_separation), "ItemList", p_config.separation_margin);
 			p_theme->set_constant("outline_size", "ItemList", 0);
