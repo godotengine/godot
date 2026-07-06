@@ -21,7 +21,7 @@ repos:
     rev: v21.1.7
     hooks:
       - id: clang-format
-        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|mc|mm|inc|java)$
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
         types_or: [text]
       - id: clang-format
         name: clang-format-glsl
