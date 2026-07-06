@@ -396,14 +396,14 @@ void vertex_shader(vec3 vertex_input,
 	vertex = (model_matrix * vec4(vertex, 1.0)).xyz;
 
 #ifdef NORMAL_USED
+	// For correct non-uniform scale handling, normal has to be transformed by normal matrix, but tangent vectors need to use model matrix as is
 	normal_highp = model_normal_matrix * normal_highp;
 #endif
 
 #ifdef TANGENT_USED
-
-	tangent = model_normal_matrix * tangent;
-	binormal = model_normal_matrix * binormal;
-
+	// For non-uniform scale, this produces non-orthogonal TBNs; ideally binormal should be reconstructed in fragment shader with cross
+	tangent = mat3(model_matrix) * tangent;
+	binormal = mat3(model_matrix) * binormal;
 #endif
 #endif
 
@@ -461,13 +461,14 @@ void vertex_shader(vec3 vertex_input,
 	vertex = (modelview * vec4(vertex, 1.0)).xyz;
 
 #ifdef NORMAL_USED
+	// For correct non-uniform scale handling, normal has to be transformed by normal matrix, but tangent vectors need to use model matrix as is
 	normal = modelview_normal * normal;
 #endif
 
 #ifdef TANGENT_USED
-
-	binormal = modelview_normal * binormal;
-	tangent = modelview_normal * tangent;
+	// For non-uniform scale, this produces non-orthogonal TBNs; ideally binormal should be reconstructed in fragment shader with cross
+	tangent = mat3(modelview) * tangent;
+	binormal = mat3(modelview) * binormal;
 #endif
 #endif // !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
@@ -487,8 +488,7 @@ void vertex_shader(vec3 vertex_input,
 
 	vertex_interp = vertex;
 
-	// Normalize TBN vectors before interpolation, per MikkTSpace.
-	// See: http://www.mikktspace.com/
+	// Normalize TBN vectors to account for model/normal transforms that may have scale
 #ifdef NORMAL_USED
 	normal_interp = normalize(normal);
 #endif
