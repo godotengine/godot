@@ -38,7 +38,8 @@ extern "C" {
 typedef struct mbedtls_chacha20_context {
     uint32_t MBEDTLS_PRIVATE(state)[16];          /*! The state (before round operations). */
     uint8_t  MBEDTLS_PRIVATE(keystream8)[64];     /*! Leftover keystream bytes. */
-    size_t MBEDTLS_PRIVATE(keystream_bytes_used); /*! Number of keystream bytes already used. */
+    size_t MBEDTLS_PRIVATE(keystream_bytes_used); /*! Number of keystream bytes already used,
+                                                   * or an internal sentinel value. */
 }
 mbedtls_chacha20_context;
 
@@ -143,6 +144,9 @@ int mbedtls_chacha20_starts(mbedtls_chacha20_context *ctx,
  *                  This pointer can be \c NULL if `size == 0`.
  *
  * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA
+ *                  if processing \p size bytes would make the 32-bit block
+ *                  counter wrap.
  * \return          A negative error code on failure.
  */
 int mbedtls_chacha20_update(mbedtls_chacha20_context *ctx,
@@ -176,6 +180,9 @@ int mbedtls_chacha20_update(mbedtls_chacha20_context *ctx,
  *                  This pointer can be \c NULL if `size == 0`.
  *
  * \return          \c 0 on success.
+ * \return          #MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA
+ *                  if processing \p size bytes would make the 32-bit block
+ *                  counter wrap.
  * \return          A negative error code on failure.
  */
 int mbedtls_chacha20_crypt(const unsigned char key[32],

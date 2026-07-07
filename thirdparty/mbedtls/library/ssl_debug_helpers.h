@@ -38,6 +38,8 @@ const char *mbedtls_ssl_named_group_to_str(uint16_t in);
 
 const char *mbedtls_ssl_get_extension_name(unsigned int extension_type);
 
+const char *mbedtls_ssl_get_hs_msg_name(int hs_msg_type);
+
 void mbedtls_ssl_print_extensions(const mbedtls_ssl_context *ssl,
                                   int level, const char *file, int line,
                                   int hs_msg_type, uint32_t extensions_mask,

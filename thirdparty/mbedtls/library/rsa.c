@@ -414,37 +414,12 @@ end_of_export:
 
 #if defined(MBEDTLS_PKCS1_V15) && defined(MBEDTLS_RSA_C) && !defined(MBEDTLS_RSA_ALT)
 
-/** This function performs the unpadding part of a PKCS#1 v1.5 decryption
- *  operation (EME-PKCS1-v1_5 decoding).
- *
- * \note The return value from this function is a sensitive value
- *       (this is unusual). #MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE shouldn't happen
- *       in a well-written application, but 0 vs #MBEDTLS_ERR_RSA_INVALID_PADDING
- *       is often a situation that an attacker can provoke and leaking which
- *       one is the result is precisely the information the attacker wants.
- *
- * \param input          The input buffer which is the payload inside PKCS#1v1.5
- *                       encryption padding, called the "encoded message EM"
- *                       by the terminology.
- * \param ilen           The length of the payload in the \p input buffer.
- * \param output         The buffer for the payload, called "message M" by the
- *                       PKCS#1 terminology. This must be a writable buffer of
- *                       length \p output_max_len bytes.
- * \param olen           The address at which to store the length of
- *                       the payload. This must not be \c NULL.
- * \param output_max_len The length in bytes of the output buffer \p output.
- *
- * \return      \c 0 on success.
- * \return      #MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE
- *              The output buffer is too small for the unpadded payload.
- * \return      #MBEDTLS_ERR_RSA_INVALID_PADDING
- *              The input doesn't contain properly formatted padding.
+/*
+ * EME-PKCS1-v1_5 decoding, see documentation in rsa_internal.h
  */
-static int mbedtls_ct_rsaes_pkcs1_v15_unpadding(unsigned char *input,
-                                                size_t ilen,
-                                                unsigned char *output,
-                                                size_t output_max_len,
-                                                size_t *olen)
+MBEDTLS_STATIC_TESTABLE int mbedtls_ct_rsaes_pkcs1_v15_unpadding(
+    unsigned char *input, size_t ilen,
+    unsigned char *output, size_t output_max_len, size_t *olen)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t i, plaintext_max_size;
@@ -566,6 +541,32 @@ static int mbedtls_ct_rsaes_pkcs1_v15_unpadding(unsigned char *input,
 }
 
 #endif /* MBEDTLS_PKCS1_V15 && MBEDTLS_RSA_C && ! MBEDTLS_RSA_ALT */
+
+#if defined(MBEDTLS_PKCS1_V15) && defined(MBEDTLS_RSA_C)
+int mbedtls_rsa_decrypt_decompose_ret(
+    int invalid_padding_in, int invalid_padding_out,
+    int output_too_large_in, int output_too_large_out,
+    int combined_ret,
+    int *problem)
+{
+    *problem = 0;
+    int ret = combined_ret;
+
+    const mbedtls_ct_condition_t invalid_padding_cond =
+        mbedtls_ct_uint_eq((mbedtls_ct_uint_t) ret,
+                           (mbedtls_ct_uint_t) invalid_padding_in);
+    *problem = mbedtls_ct_error_if(invalid_padding_cond, invalid_padding_out, *problem);
+    ret = mbedtls_ct_error_if(invalid_padding_cond, 0, ret);
+
+    const mbedtls_ct_condition_t output_too_large_cond =
+        mbedtls_ct_uint_eq((mbedtls_ct_uint_t) ret,
+                           (mbedtls_ct_uint_t) output_too_large_in);
+    *problem = mbedtls_ct_error_if(output_too_large_cond, output_too_large_out, *problem);
+    ret = mbedtls_ct_error_if(output_too_large_cond, 0, ret);
+
+    return ret;
+}
+#endif /* MBEDTLS_PKCS1_V15 && MBEDTLS_RSA_C */
 
 #if !defined(MBEDTLS_RSA_ALT)
 
@@ -1101,7 +1102,6 @@ int mbedtls_rsa_gen_key(mbedtls_rsa_context *ctx,
          * if it exists (FIPS 186-4 §B.3.1 criterion 2(a)) */
         ret = mbedtls_rsa_deduce_private_exponent(&ctx->P, &ctx->Q, &ctx->E, &ctx->D);
         if (ret == MBEDTLS_ERR_MPI_NOT_ACCEPTABLE) {
-            mbedtls_mpi_lset(&ctx->D, 0); /* needed for the next call */
             continue;
         }
         if (ret != 0) {
@@ -1268,6 +1268,117 @@ cleanup:
     return 0;
 }
 
+#if !defined(MBEDTLS_RSA_NO_CRT)
+/*
+ * Compute T such that T = TP mod P and T = TQ mod Q.
+ * (This is the Chinese Remainder Theorem - CRT.)
+ */
+static int rsa_apply_crt(mbedtls_mpi *T,
+                         const mbedtls_mpi *TP,
+                         const mbedtls_mpi *TQ,
+                         const mbedtls_rsa_context *ctx)
+{
+    int ret;
+
+    /*
+     * Set T = ((TP - TQ) * (Q^-1 mod P) mod P) * Q + TQ
+     *
+     * That way we have both:
+     * mod P: T = (TP - TQ) * (Q^-1 * Q) + TQ = (TP - TQ) * 1 + TQ = TP
+     * mod Q: T = (...) * Q + TQ = TQ
+     */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(T, TP, TQ));        // T = TP - TQ
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(T, T, &ctx->QP));   // T *= Q^-1 mod P
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(T, T, &ctx->P));    // T %= P
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(T, T, &ctx->Q));    // T *= Q
+    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(T, T, TQ));         // T += TQ
+
+cleanup:
+    return ret;
+}
+#endif
+
+/* Generate random A and B such that A^-1 = B mod N */
+static int rsa_gen_rand_with_inverse(const mbedtls_rsa_context *ctx,
+                                     mbedtls_mpi *A,
+                                     mbedtls_mpi *B,
+                                     int (*f_rng)(void *, unsigned char *, size_t),
+                                     void *p_rng)
+{
+#if defined(MBEDTLS_RSA_NO_CRT)
+    int ret;
+    mbedtls_mpi G;
+
+    mbedtls_mpi_init(&G);
+
+    MBEDTLS_MPI_CHK(mbedtls_mpi_random(A, 1, &ctx->N, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(&G, B, A, &ctx->N));
+
+    if (mbedtls_mpi_cmp_int(&G, 1) != 0) {
+        /* This happens if we're unlucky enough to draw a multiple of P or Q,
+         * or if (at least) one of them is not a prime, and we drew a multiple
+         * of one of its factors. */
+        ret = MBEDTLS_ERR_RSA_RNG_FAILED;
+        goto cleanup;
+    }
+
+cleanup:
+    mbedtls_mpi_free(&G);
+
+    return ret;
+#else
+    int ret;
+    mbedtls_mpi Ap, Aq, Bp, Bq, G;
+
+    mbedtls_mpi_init(&Ap); mbedtls_mpi_init(&Aq);
+    mbedtls_mpi_init(&Bp); mbedtls_mpi_init(&Bq);
+    mbedtls_mpi_init(&G);
+
+    /*
+     * Instead of generating A, B = A^-1 (mod N) directly, generate one Ap, Bp
+     * pair (mod P) and one pair (mod Q) and use Chinese Remainder Theorem to
+     * construct an A and B from those.
+     *
+     * This works because the CRT correspondence is a ring isomorphism between
+     * Z/NZ (integers mod N) and Z/PZ x Z/QZ (pairs of integers mod P and Q):
+     * - it is a bijection (one-to-one correspondence);
+     * - doing a ring operation (modular +, -, *, ^-1 when possible) on one side is
+     *   the same as doing it on the other side.
+     * So, drawing uniformly at random an invertible A mod N is the same as
+     * drawing uniformly at random pairs of invertible Ap mod P, Aq mod Q.
+     */
+
+    /* Generate Ap in [1, P) and compute Bp = Ap^-1 mod P */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_random(&Ap, 1, &ctx->P, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(&G, &Bp, &Ap, &ctx->P));
+    if (mbedtls_mpi_cmp_int(&G, 1) != 0) {
+        /* This can only happen if P was not a prime. */
+        ret = MBEDTLS_ERR_RSA_RNG_FAILED;
+        goto cleanup;
+    }
+
+    /* Generate Aq in [1, Q) and compute Bq = Aq^-1 mod Q */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_random(&Aq, 1, &ctx->Q, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(&G, &Bq, &Aq, &ctx->Q));
+    if (mbedtls_mpi_cmp_int(&G, 1) != 0) {
+        /* This can only happen if Q was not a prime. */
+        ret = MBEDTLS_ERR_RSA_RNG_FAILED;
+        goto cleanup;
+    }
+
+    /* Reconstruct A and B */
+    MBEDTLS_MPI_CHK(rsa_apply_crt(A, &Ap, &Aq, ctx));
+    MBEDTLS_MPI_CHK(rsa_apply_crt(B, &Bp, &Bq, ctx));
+
+cleanup:
+    mbedtls_mpi_free(&Ap); mbedtls_mpi_free(&Aq);
+    mbedtls_mpi_free(&Bp); mbedtls_mpi_free(&Bq);
+    mbedtls_mpi_free(&G);
+
+    return ret;
+#endif
+}
+
 /*
  * Generate or update blinding values, see section 10 of:
  *  KOCHER, Paul C. Timing attacks on implementations of Diffie-Hellman, RSA,
@@ -1277,10 +1388,7 @@ cleanup:
 static int rsa_prepare_blinding(mbedtls_rsa_context *ctx,
                                 int (*f_rng)(void *, unsigned char *, size_t), void *p_rng)
 {
-    int ret, count = 0;
-    mbedtls_mpi R;
-
-    mbedtls_mpi_init(&R);
+    int ret;
 
     if (ctx->Vf.p != NULL) {
         /* We already have blinding values, just update them by squaring */
@@ -1288,30 +1396,17 @@ static int rsa_prepare_blinding(mbedtls_rsa_context *ctx,
         MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&ctx->Vi, &ctx->Vi, &ctx->N));
         MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&ctx->Vf, &ctx->Vf, &ctx->Vf));
         MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&ctx->Vf, &ctx->Vf, &ctx->N));
-
         goto cleanup;
     }
 
     /* Unblinding value: Vf = random number, invertible mod N */
-    mbedtls_mpi_lset(&R, 0);
-    do {
-        if (count++ > 10) {
-            ret = MBEDTLS_ERR_RSA_RNG_FAILED;
-            goto cleanup;
-        }
-
-        MBEDTLS_MPI_CHK(mbedtls_mpi_random(&ctx->Vf, 1, &ctx->N, f_rng, p_rng));
-        MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(&R, &ctx->Vi, &ctx->Vf, &ctx->N));
-    } while (mbedtls_mpi_cmp_int(&R, 1) != 0);
+    MBEDTLS_MPI_CHK(rsa_gen_rand_with_inverse(ctx, &ctx->Vf, &ctx->Vi, f_rng, p_rng));
 
     /* Blinding value: Vi = Vf^(-e) mod N
      * (Vi already contains Vf^-1 at this point) */
     MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&ctx->Vi, &ctx->Vi, &ctx->E, &ctx->N, &ctx->RN));
 
-
 cleanup:
-    mbedtls_mpi_free(&R);
-
     return ret;
 }
 
@@ -1511,19 +1606,7 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
 
     MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&TP, &T, &DP_blind, &ctx->P, &ctx->RP));
     MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&TQ, &T, &DQ_blind, &ctx->Q, &ctx->RQ));
-
-    /*
-     * T = (TP - TQ) * (Q^-1 mod P) mod P
-     */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&T, &TP, &TQ));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&TP, &T, &ctx->QP));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&T, &TP, &ctx->P));
-
-    /*
-     * T = TQ + T * Q
-     */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&TP, &T, &ctx->Q));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&T, &TQ, &TP));
+    MBEDTLS_MPI_CHK(rsa_apply_crt(&T, &TP, &TQ, ctx));
 #endif /* MBEDTLS_RSA_NO_CRT */
 
     /* Verify the result to prevent glitching attacks. */

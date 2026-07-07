@@ -310,9 +310,6 @@ psa_status_t mbedtls_psa_aead_decrypt(
 exit:
     mbedtls_psa_aead_abort(&operation);
 
-    if (status == PSA_SUCCESS) {
-        *plaintext_length = ciphertext_length - operation.tag_length;
-    }
     return status;
 }
 

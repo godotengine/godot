@@ -5,8 +5,6 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#include <limits.h>
-
 #include "common.h"
 
 #if defined(MBEDTLS_BASE64_C)
@@ -16,6 +14,7 @@
 #include "constant_time_internal.h"
 #include "mbedtls/error.h"
 
+#include <limits.h>
 #include <stdint.h>
 
 #if defined(MBEDTLS_SELF_TEST)
