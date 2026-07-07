@@ -56,6 +56,9 @@ private:
 
 	ConfirmationDialog *delete_dialog = nullptr;
 	Button *add_pick_button = nullptr;
+	Button *move_up = nullptr;
+	Button *move_down = nullptr;
+	Button *remove = nullptr;
 	Button *add_from_path_button = nullptr;
 	LineEdit *np_line_edit = nullptr;
 
@@ -78,14 +81,17 @@ private:
 	void _add_pressed();
 	void _np_text_submitted(const String &p_newtext);
 	void _tree_item_edited();
-	void _tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
+	void _move_up_pressed();
+	void _move_down_pressed();
+	void _delete_button_pressed();
 	void _tree_item_selected();
 	void _update_config();
 	void _dialog_closed(bool p_confirmed);
 	void _rename_tree_item(const NodePath &p_old, const NodePath &p_new);
+	void _swap_tree_item(const int new_index, const int old_index);
 	void _update_tree_item_by_node_path(const NodePath &p_property);
 	void _update_tree_item(TreeItem &t_ti);
-	void _set_tree_item(TreeItem &item, const NodePath &p_property, const bool p_spawn, const SceneReplicationConfig::ReplicationMode p_mode);
+	void _set_tree_item(TreeItem &item, int p_index, const NodePath &p_property, const bool p_spawn, const SceneReplicationConfig::ReplicationMode p_mode);
 
 	void _pick_node_filter_text_changed(const String &p_newtext);
 	void _pick_node_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
