@@ -731,6 +731,9 @@ void RigidBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_continuous_collision_detection", "enable"), &RigidBody3D::set_use_continuous_collision_detection);
 	ClassDB::bind_method(D_METHOD("is_using_continuous_collision_detection"), &RigidBody3D::is_using_continuous_collision_detection);
 
+	ClassDB::bind_method(D_METHOD("get_velocity_at_local_position", "local_position"), &RigidBody3D::get_velocity_at_local_position);
+	ClassDB::bind_method(D_METHOD("get_velocity_at_position", "global_point"), &RigidBody3D::get_velocity_at_position);
+
 	ClassDB::bind_method(D_METHOD("set_axis_velocity", "axis_velocity"), &RigidBody3D::set_axis_velocity);
 
 	ClassDB::bind_method(D_METHOD("apply_central_impulse", "impulse"), &RigidBody3D::apply_central_impulse);
