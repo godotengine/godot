@@ -195,7 +195,6 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	private val selectDropdownMenu: PopupMenu by lazy {
 		PopupMenu(context, selectDropdownButton).apply {
 			inflate(R.menu.select_dropdown_menu)
-			menu.setGroupDividerEnabled(true)
 			setOnMenuItemClickListener { item: MenuItem ->
 				when (item.itemId) {
 					R.id.menu_show_selection_visibility -> {
