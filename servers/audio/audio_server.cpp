@@ -447,14 +447,8 @@ void AudioServer::_mix_step() {
 			playback->state.store(new_state);
 		} else {
 			// Move the last little bit of what we just mixed into our lookahead buffer for the next call to _mix_step.
-			if (playback->state.load() != AudioStreamPlaybackListNode::MUTED) {
-				for (int i = 0; i < LOOKAHEAD_BUFFER_SIZE; i++) {
-					playback->lookahead[i] = buf[buffer_size + i];
-				}
-			} else {
-				for (int i = 0; i < LOOKAHEAD_BUFFER_SIZE; i++) {
-					playback->lookahead[i] = AudioFrame(0, 0);
-				}
+			for (int i = 0; i < LOOKAHEAD_BUFFER_SIZE; i++) {
+				playback->lookahead[i] = buf[buffer_size + i];
 			}
 		}
 
@@ -1446,29 +1440,23 @@ void AudioServer::set_playback_paused(Ref<AudioStreamPlayback> p_playback, bool 
 	do {
 		current_state = playback_node->state.load();
 		if (p_paused) {
-			if (current_state == AudioStreamPlaybackListNode::MUTED) {
+			if (playback_node->mute_check.is_set()) {
 				new_state = AudioStreamPlaybackListNode::PAUSED;
-				print_line("DEBUG: In paused: new_state = PAUSED");
 			} else {
 				new_state = AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE;
-				print_line("DEBUG: In paused: new_state = FADE PAUSE");
 			}
 		} else {
 			if (playback_node->mute_check.is_set()) {
 				new_state = AudioStreamPlaybackListNode::MUTED;
-				print_line("DEBUG: In paused: new_state = MUTED");
 			} else {
 				new_state = AudioStreamPlaybackListNode::PLAYING;
-				print_line("DEBUG: In paused: new_state = PLAYING");
 			}
 		}
 
-		if (!p_paused && (current_state == AudioStreamPlaybackListNode::PLAYING || current_state == AudioStreamPlaybackListNode::MUTED)) {
-			print_line("DEBUG: In paused: No-op 1");
+		if (p_paused && (current_state == AudioStreamPlaybackListNode::PAUSED || current_state == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE)) {
 			return; // No-op.
 		}
-		if (p_paused && (current_state == AudioStreamPlaybackListNode::PAUSED || current_state == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE)) {
-			print_line("DEBUG: In paused: No-op 2");
+		if (!p_paused && !(current_state == AudioStreamPlaybackListNode::PAUSED || current_state == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE)) {
 			return; // No-op.
 		}
 
@@ -1486,31 +1474,32 @@ void AudioServer::set_playback_muted(Ref<AudioStreamPlayback> p_playback, bool p
 	if (p_mute) {
 		if (!playback_node->mute_check.is_set()) {
 			playback_node->mute_check.set();
-			print_line("DEBUG: In mute: set mute_check");
 		}
 	} else {
 		if (playback_node->mute_check.is_set()) {
 			playback_node->mute_check.clear();
-			print_line("DEBUG: In mute: clear mute_check");
 		}
 	}
 
 	AudioStreamPlaybackListNode::PlaybackState new_state, current_state;
 	do {
 		current_state = playback_node->state.load();
-		if (p_mute && current_state != AudioStreamPlaybackListNode::PAUSED) {
+		bool paused = current_state == AudioStreamPlaybackListNode::PAUSED || current_state == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE ? true : false;
+		if (p_mute && !paused) {
 			new_state = AudioStreamPlaybackListNode::FADE_OUT_TO_MUTE;
-			print_line("DEBUG: In mute: new_state = FADE MUTE");
-		} else if (!p_mute && !(current_state == AudioStreamPlaybackListNode::PAUSED || current_state == AudioStreamPlaybackListNode::FADE_OUT_TO_PAUSE)) {
+		} else if (!p_mute && !paused) {
 			new_state = AudioStreamPlaybackListNode::PLAYING;
-			print_line("DEBUG: In mute: new_state = PLAYING");
 		} else {
-			new_state = AudioStreamPlaybackListNode::PAUSED;
-			print_line("DEBUG: In mute: new_state = PAUSED");
+			new_state = current_state;
 		}
 
+		if (paused) {
+			return; // No-op.
+		}
 		if (p_mute && (current_state == AudioStreamPlaybackListNode::MUTED || current_state == AudioStreamPlaybackListNode::FADE_OUT_TO_MUTE)) {
-			print_line("DEBUG: In mute: No-op");
+			return; // No-op.
+		}
+		if (!p_mute && !(current_state == AudioStreamPlaybackListNode::MUTED || current_state == AudioStreamPlaybackListNode::FADE_OUT_TO_MUTE)) {
 			return; // No-op.
 		}
 
