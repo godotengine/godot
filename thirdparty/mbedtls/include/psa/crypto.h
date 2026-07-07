@@ -119,9 +119,7 @@ psa_status_t psa_crypto_init(void);
 
 /** Return an initial value for a key attributes structure.
  */
-#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_key_attributes_t psa_key_attributes_init(void);
-#endif
 
 /** Declare a key as persistent and set its key identifier.
  *
@@ -350,9 +348,7 @@ static void psa_set_key_bits(psa_key_attributes_t *attributes,
  *
  * \return The key type stored in the attribute structure.
  */
-#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_key_type_t psa_get_key_type(const psa_key_attributes_t *attributes);
-#endif
 
 /** Retrieve the key size from key attributes.
  *
@@ -955,9 +951,7 @@ typedef struct psa_hash_operation_s psa_hash_operation_t;
 
 /** Return an initial value for a hash operation object.
  */
-#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_hash_operation_t psa_hash_operation_init(void);
-#endif
 
 /** Set up a multipart hash operation.
  *
@@ -1316,9 +1310,7 @@ typedef struct psa_mac_operation_s psa_mac_operation_t;
 
 /** Return an initial value for a MAC operation object.
  */
-#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_mac_operation_t psa_mac_operation_init(void);
-#endif
 
 /** Set up a multipart MAC calculation operation.
  *
@@ -1731,9 +1723,7 @@ typedef struct psa_cipher_operation_s psa_cipher_operation_t;
 
 /** Return an initial value for a cipher operation object.
  */
-#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_cipher_operation_t psa_cipher_operation_init(void);
-#endif
 
 /** Set the key for a multipart symmetric encryption operation.
  *
@@ -2083,6 +2073,8 @@ psa_status_t psa_cipher_abort(psa_cipher_operation_t *operation);
  * \param[in] plaintext           Data that will be authenticated and
  *                                encrypted.
  * \param plaintext_length        Size of \p plaintext in bytes.
+ *                                For #PSA_ALG_CHACHA20_POLY1305, this must
+ *                                not exceed `UINT32_MAX * 64` bytes.
  * \param[out] ciphertext         Output buffer for the authenticated and
  *                                encrypted data. The additional data is not
  *                                part of this output. For algorithms where the
@@ -2109,7 +2101,8 @@ psa_status_t psa_cipher_abort(psa_cipher_operation_t *operation);
  * \retval #PSA_ERROR_INVALID_HANDLE \emptydescription
  * \retval #PSA_ERROR_NOT_PERMITTED \emptydescription
  * \retval #PSA_ERROR_INVALID_ARGUMENT
- *         \p key is not compatible with \p alg.
+ *         \p key is not compatible with \p alg, or \p plaintext_length
+ *         is not acceptable for \p alg.
  * \retval #PSA_ERROR_NOT_SUPPORTED
  *         \p alg is not supported or is not an AEAD algorithm.
  * \retval #PSA_ERROR_INSUFFICIENT_MEMORY \emptydescription
@@ -2160,6 +2153,10 @@ psa_status_t psa_aead_encrypt(mbedtls_svc_key_id_t key,
  *                                must contain the encrypted data followed
  *                                by the authentication tag.
  * \param ciphertext_length       Size of \p ciphertext in bytes.
+ *                                For #PSA_ALG_CHACHA20_POLY1305, the
+ *                                encrypted data length, excluding the
+ *                                authentication tag, must not exceed
+ *                                `UINT32_MAX * 64` bytes.
  * \param[out] plaintext          Output buffer for the decrypted data.
  * \param plaintext_size          Size of the \p plaintext buffer in bytes.
  *                                This must be appropriate for the selected
@@ -2182,7 +2179,8 @@ psa_status_t psa_aead_encrypt(mbedtls_svc_key_id_t key,
  *         The ciphertext is not authentic.
  * \retval #PSA_ERROR_NOT_PERMITTED \emptydescription
  * \retval #PSA_ERROR_INVALID_ARGUMENT
- *         \p key is not compatible with \p alg.
+ *         \p key is not compatible with \p alg, or the encrypted data length
+ *         is not acceptable for \p alg.
  * \retval #PSA_ERROR_NOT_SUPPORTED
  *         \p alg is not supported or is not an AEAD algorithm.
  * \retval #PSA_ERROR_INSUFFICIENT_MEMORY \emptydescription
@@ -2251,9 +2249,7 @@ typedef struct psa_aead_operation_s psa_aead_operation_t;
 
 /** Return an initial value for an AEAD operation object.
  */
-#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_aead_operation_t psa_aead_operation_init(void);
-#endif
 
 /** Set the key for a multipart authenticated encryption operation.
  *
@@ -2482,6 +2478,8 @@ psa_status_t psa_aead_set_nonce(psa_aead_operation_t *operation,
  * psa_aead_set_nonce() or psa_aead_generate_nonce().
  *
  * - For #PSA_ALG_CCM, calling this function is required.
+ * - For #PSA_ALG_CHACHA20_POLY1305, the plaintext length must not
+ *   exceed `UINT32_MAX * 64` bytes.
  * - For the other AEAD algorithms defined in this specification, calling
  *   this function is not required.
  * - For vendor-defined algorithm, refer to the vendor documentation.
@@ -2630,7 +2628,8 @@ psa_status_t psa_aead_update_ad(psa_aead_operation_t *operation,
  *         less than the additional data length that was previously
  *         specified with psa_aead_set_lengths(), or
  *         the total input length overflows the plaintext length that
- *         was previously specified with psa_aead_set_lengths().
+ *         was previously specified with psa_aead_set_lengths(), or
+ *         the total message length is not acceptable for the algorithm.
  * \retval #PSA_ERROR_INSUFFICIENT_MEMORY \emptydescription
  * \retval #PSA_ERROR_COMMUNICATION_FAILURE \emptydescription
  * \retval #PSA_ERROR_HARDWARE_FAILURE \emptydescription
@@ -3137,6 +3136,16 @@ psa_status_t psa_asymmetric_encrypt(mbedtls_svc_key_id_t key,
 /**
  * \brief Decrypt a short message with a private key.
  *
+ * \warning         When \p alg is #PSA_ALG_RSA_PKCS1V15_CRYPT, this is an
+ *                  inherently dangerous function (CWE-242): unless it is used
+ *                  in a side channel free and safe way, the calling code
+ *                  is vulnerable.
+ *                  Specifically, callers need to ensure an adversary cannot
+ *                  distinguish between success, #PSA_ERROR_INVALID_PADDING and
+ *                  #PSA_ERROR_BUFFER_TOO_SMALL. Also, in the latter two cases,
+ *                  the values of the output bytes must be ignored, again
+ *                  without revealing whether that's the case.
+ *
  * \param key                   Identifier of the key to use for the operation.
  *                              It must be an asymmetric key pair. It must
  *                              allow the usage #PSA_KEY_USAGE_DECRYPT.
@@ -3240,9 +3249,7 @@ typedef struct psa_key_derivation_s psa_key_derivation_operation_t;
 
 /** Return an initial value for a key derivation operation object.
  */
-#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_key_derivation_operation_t psa_key_derivation_operation_init(void);
-#endif
 
 /** Set up a key derivation operation.
  *

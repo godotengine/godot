@@ -666,6 +666,20 @@ static int mbedtls_pkcs7_data_or_hash_verify(mbedtls_pkcs7 *pkcs7,
         return ret;
     }
 
+#if !defined(MBEDTLS_PKCS7_ALLOW_WEAK_SIGNATURES)
+    /* Ensure the MD alg from the PKCS#7 context and signature algorithm from
+     * the certificate belong to the list of secure algorithms
+     * (i.e. mbedtls_x509_crt_profile_default). */
+    ret = mbedtls_x509_profile_check_md_alg(&mbedtls_x509_crt_profile_default, md_alg);
+    if (ret != 0) {
+        return MBEDTLS_ERR_PKCS7_INVALID_ALG;
+    }
+    ret = mbedtls_x509_profile_check_pk_alg(&mbedtls_x509_crt_profile_default, cert->sig_pk);
+    if (ret != 0) {
+        return MBEDTLS_ERR_PKCS7_INVALID_ALG;
+    }
+#endif /* MBEDTLS_PKCS7_ALLOW_WEAK_SIGNATURES */
+
     md_info = mbedtls_md_info_from_type(md_alg);
     if (md_info == NULL) {
         return MBEDTLS_ERR_PKCS7_VERIFY_FAIL;
@@ -767,7 +781,7 @@ void mbedtls_pkcs7_free(mbedtls_pkcs7 *pkcs7)
         mbedtls_free(signer_prev);
     }
 
-    pkcs7->raw.p = NULL;
+    mbedtls_platform_zeroize(pkcs7, sizeof(*pkcs7));
 }
 
 #endif
