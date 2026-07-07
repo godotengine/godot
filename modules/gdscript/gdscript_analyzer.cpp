@@ -1851,7 +1851,8 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			}
 		}
 	} else {
-		if (p_function->return_type != nullptr) {
+		const bool has_explicit_return_type = p_function->return_type != nullptr;
+		if (has_explicit_return_type) {
 			p_function->set_datatype(type_from_metatype(resolve_datatype(p_function->return_type)));
 		} else {
 			// In case the function is not typed, we can safely assume it's a Variant, so it's okay to mark as "inferred" here.
@@ -1863,6 +1864,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		}
 
 		// Fetch the parent signature to inherit return types for untyped overrides.
+		// Export templates need the inherited return type for runtime return conversion.
 		// Constructors can vary in signature.
 		GDScriptParser::DataType base_type = parser->current_class->base_type;
 		base_type.is_meta_type = false;
@@ -1872,12 +1874,12 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		BitField<MethodFlags> method_flags = {};
 		StringName native_base;
 #ifdef TOOLS_ENABLED
-		const bool should_check_parent_signature = !p_is_lambda;
+		const bool should_fetch_parent_signature = !p_is_lambda;
 #else
-		const bool should_check_parent_signature = !p_is_lambda && p_function->return_type == nullptr;
+		const bool should_fetch_parent_signature = !p_is_lambda && !has_explicit_return_type;
 #endif // TOOLS_ENABLED
-		if (should_check_parent_signature && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
-			if (p_function->return_type == nullptr) {
+		if (should_fetch_parent_signature && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, method_flags, &native_base)) {
+			if (!has_explicit_return_type) {
 				// GH-118877. We decided to make an exception to maintain compatibility, since the problem can only be detected at runtime.
 #ifdef DISABLE_DEPRECATED
 				p_function->set_datatype(parent_return_type);
@@ -1898,7 +1900,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 #ifdef TOOLS_ENABLED
 			bool valid = p_function->is_static == method_flags.has_flag(METHOD_FLAG_STATIC);
 
-			if (p_function->return_type != nullptr) {
+			if (has_explicit_return_type) {
 				// Check return type covariance.
 				GDScriptParser::DataType return_type = p_function->get_datatype();
 				if (return_type.is_variant()) {
