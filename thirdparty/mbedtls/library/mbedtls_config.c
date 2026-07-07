@@ -6,6 +6,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
+#include "mbedtls_platform_requirements.h"
+
 /* We are a special snowflake: we don't include "mbedtls_common.h",
  * because that would pull <mbedtls/build_info.h> and we need to
  * tune the way it works. */

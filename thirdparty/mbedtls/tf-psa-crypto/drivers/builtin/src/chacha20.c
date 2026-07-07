@@ -25,6 +25,8 @@
 #include "mbedtls/platform.h"
 
 #define CHACHA20_CTR_INDEX (12U)
+#define CHACHA20_MAX_BLOCKS UINT32_MAX
+#define CHACHA20_COUNTER_EXHAUSTED (MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES + 1U)
 
 #if MBEDTLS_CHACHA20_NEON_MULTIBLOCK == 0
 
@@ -194,7 +196,7 @@ int mbedtls_chacha20_starts(mbedtls_chacha20_context *ctx,
                             uint32_t counter)
 {
     /* Counter */
-    ctx->state[12] = counter;
+    ctx->state[CHACHA20_CTR_INDEX] = counter;
 
     /* Nonce */
     if (MBEDTLS_IS_BIG_ENDIAN) {
@@ -213,6 +215,51 @@ int mbedtls_chacha20_starts(mbedtls_chacha20_context *ctx,
     return 0;
 }
 
+int mbedtls_chacha20_check_counter_wrap(const mbedtls_chacha20_context *ctx,
+                                        size_t size)
+{
+    size_t available_keystream = 0;
+    uint64_t needed_blocks = 0;
+
+    if (ctx->keystream_bytes_used >= CHACHA20_COUNTER_EXHAUSTED) {
+        return size == 0U ? 0 : MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA;
+    }
+
+#if SIZE_MAX >= UINT64_MAX
+    if (size > UINT64_MAX / 2) {
+        return MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA;
+    }
+#endif
+
+    if (ctx->keystream_bytes_used < MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES) {
+        available_keystream =
+            MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES - ctx->keystream_bytes_used;
+
+        if (size <= available_keystream) {
+            return 0;
+        }
+
+        if (ctx->state[CHACHA20_CTR_INDEX] == 0U) {
+            return MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA;
+        }
+
+        size -= available_keystream;
+    }
+
+    needed_blocks = (size / MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES);
+
+    if (size % MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES != 0U) {
+        needed_blocks++;
+    }
+
+    if (needed_blocks >
+        (uint64_t) CHACHA20_MAX_BLOCKS + 1U - ctx->state[CHACHA20_CTR_INDEX]) {
+        return MBEDTLS_ERR_CHACHA20_BAD_INPUT_DATA;
+    }
+
+    return 0;
+}
+
 #if MBEDTLS_CHACHA20_NEON_MULTIBLOCK == 0
 
 int mbedtls_chacha20_update(mbedtls_chacha20_context *ctx,
@@ -221,6 +268,12 @@ int mbedtls_chacha20_update(mbedtls_chacha20_context *ctx,
                             unsigned char *output)
 {
     size_t offset = 0U;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+
+    ret = mbedtls_chacha20_check_counter_wrap(ctx, size);
+    if (ret != 0) {
+        return ret;
+    }
 
     /* Use leftover keystream bytes, if available */
     while (ctx->keystream_bytes_used < MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES && size > 0) {
@@ -230,6 +283,11 @@ int mbedtls_chacha20_update(mbedtls_chacha20_context *ctx,
         ctx->keystream_bytes_used++;
         offset++;
         size--;
+
+        if (ctx->keystream_bytes_used == MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES &&
+            ctx->state[CHACHA20_CTR_INDEX] == 0U) {
+            ctx->keystream_bytes_used = CHACHA20_COUNTER_EXHAUSTED;
+        }
     }
 
     /* Process full blocks */
@@ -242,6 +300,10 @@ int mbedtls_chacha20_update(mbedtls_chacha20_context *ctx,
 
         offset += MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES;
         size   -= MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES;
+
+        if (ctx->state[CHACHA20_CTR_INDEX] == 0U) {
+            ctx->keystream_bytes_used = CHACHA20_COUNTER_EXHAUSTED;
+        }
     }
 
     /* Last (partial) block */

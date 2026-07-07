@@ -12,6 +12,7 @@
 #include "mbedtls/platform.h"
 
 #include "mbedtls/ssl.h"
+#include "ssl_debug_helpers.h"
 #include "ssl_client.h"
 #include "debug_internal.h"
 #include "mbedtls/error.h"
@@ -1742,32 +1743,77 @@ static int ssl_parse_signature_algorithm(mbedtls_ssl_context *ssl,
 {
     if (mbedtls_ssl_get_pk_sigalg_and_md_alg_from_sig_alg(sig_alg, pk_alg, md_alg) != 0) {
         MBEDTLS_SSL_DEBUG_MSG(1,
-                              ("Server used unsupported value in SigAlg extension 0x%04x",
-                               sig_alg));
+                              ("Server used unsupported %s signature algorithm",
+                               mbedtls_ssl_sig_alg_to_str(sig_alg)));
         return MBEDTLS_SSL_ALERT_MSG_ILLEGAL_PARAMETER;
     }
 
     /*
-     * mbedtls_ssl_get_pk_sigalg_and_md_alg_from_sig_alg() understands sig_alg code points across
-     * TLS versions. Make sure that the received sig_alg extension is valid in TLS 1.2.
+     * mbedtls_ssl_get_pk_sigalg_and_md_alg_from_sig_alg() understands
+     * signature algorithm code points from both TLS 1.2 and TLS 1.3. Make sure
+     * that the selected signature algorithm is acceptable when TLS 1.2 is
+     * negotiated.
+     *
+     * In TLS 1.2, RSA-PSS signature algorithms (rsa_pss_rsae_*) are not
+     * defined by RFC 5246. However, RFC 8446 Section 4.2.3 requires that
+     * implementations which advertise support for RSASSA-PSS must be
+     * prepared to accept such signatures even when TLS 1.2 is negotiated,
+     * provided they were offered in the signature_algorithms extension.
+     *
+     * Therefore, we allow rsa_pss_rsae_* here if:
+     *  - the implementation supports them, and
+     *  - they were offered in the signature_algorithms extension (checked by
+     *    `mbedtls_ssl_sig_alg_is_offered()` below).
+     *
+     * If we were to add full support for rsa_pss_rsae_* signature algorithms
+     * in TLS 1.2 (not defined by RFC 5246; RFC 8446 requires implementations
+     * that advertise RSASSA-PSS to accept such signatures even when TLS 1.2
+     * is negotiated; in practice, several TLS implementations also offer and
+     * use these algorithms in TLS 1.2-only configurations), we should then
+     * integrate RSA-PSS into the TLS 1.2 signature algorithm support logic
+     * (`mbedtls_ssl_tls12_sig_alg_is_supported()`) instead of handling it as a
+     * special case here.
      */
     if (!mbedtls_ssl_sig_alg_is_supported(ssl, sig_alg)) {
-        MBEDTLS_SSL_DEBUG_MSG(1,
-                              ("Server used unsupported value in SigAlg extension 0x%04x",
-                               sig_alg));
-        return MBEDTLS_SSL_ALERT_MSG_ILLEGAL_PARAMETER;
+        switch (sig_alg) {
+#if defined(PSA_WANT_ALG_RSA_PSS)
+#if defined(PSA_WANT_ALG_SHA_256)
+            case MBEDTLS_TLS1_3_SIG_RSA_PSS_RSAE_SHA256:
+#endif
+#if defined(PSA_WANT_ALG_SHA_384)
+            case MBEDTLS_TLS1_3_SIG_RSA_PSS_RSAE_SHA384:
+#endif
+#if defined(PSA_WANT_ALG_SHA_512)
+            case MBEDTLS_TLS1_3_SIG_RSA_PSS_RSAE_SHA512:
+#endif
+#if defined(PSA_WANT_ALG_SHA_256) || defined(PSA_WANT_ALG_SHA_384) || defined(PSA_WANT_ALG_SHA_512)
+        MBEDTLS_SSL_DEBUG_MSG(3,
+                              (
+                                  "Accepting TLS 1.2 RSA-PSS signature algorithm %s via compatibility exception",
+                                  mbedtls_ssl_sig_alg_to_str(sig_alg)));
+        break;
+#endif
+#endif /* PSA_WANT_ALG_RSA_PSS */
+            default:
+                MBEDTLS_SSL_DEBUG_MSG(1,
+                                      ("Server used unsupported %s signature algorithm",
+                                       mbedtls_ssl_sig_alg_to_str(sig_alg)));
+                return MBEDTLS_SSL_ALERT_MSG_ILLEGAL_PARAMETER;
+        }
     }
 
     /*
      * Check if the signature algorithm is acceptable
      */
     if (!mbedtls_ssl_sig_alg_is_offered(ssl, sig_alg)) {
-        MBEDTLS_SSL_DEBUG_MSG(1, ("Server used SigAlg value 0x%04x that was not offered", sig_alg));
+        MBEDTLS_SSL_DEBUG_MSG(1,
+                              ("Server used the signature algorithm %s that was not offered",
+                               mbedtls_ssl_sig_alg_to_str(sig_alg)));
         return MBEDTLS_SSL_ALERT_MSG_ILLEGAL_PARAMETER;
     }
 
-    MBEDTLS_SSL_DEBUG_MSG(2, ("Server used SignatureAlgorithm %d", sig_alg & 0x00FF));
-    MBEDTLS_SSL_DEBUG_MSG(2, ("Server used HashAlgorithm %d", sig_alg >> 8));
+    MBEDTLS_SSL_DEBUG_MSG(2, ("Server used the signature algorithm %s",
+                              mbedtls_ssl_sig_alg_to_str(sig_alg)));
 
     return 0;
 }
@@ -1885,6 +1931,8 @@ start_processing:
          * However since we only support secp256r1 for now, we check only
          * that TLS ID here
          */
+        MBEDTLS_SSL_CHK_BUF_READ_PTR(p, end, 3);
+
         uint16_t read_tls_id = MBEDTLS_GET_UINT16_BE(p, 1);
         uint16_t exp_tls_id = mbedtls_ssl_get_tls_id_from_ecp_group_id(
             MBEDTLS_ECP_DP_SECP256R1);
@@ -2424,11 +2472,16 @@ static int ssl_write_client_key_exchange(mbedtls_ssl_context *ssl)
 
         /* uint16 to store content length */
         const size_t content_len_size = 2;
+        const size_t ecpoint_len_size = 1;
+        const size_t ecpoint_max_len =
+            PSA_EXPORT_PUBLIC_KEY_OUTPUT_SIZE(handshake->xxdh_psa_type,
+                                              handshake->xxdh_psa_bits);
 
         header_len = 4;
 
-        if (header_len + content_len_size + ssl->conf->psk_identity_len
-            > MBEDTLS_SSL_OUT_CONTENT_LEN) {
+        if (ecpoint_max_len > MBEDTLS_SSL_OUT_CONTENT_LEN - ecpoint_len_size ||
+            header_len + content_len_size + ssl->conf->psk_identity_len
+            > MBEDTLS_SSL_OUT_CONTENT_LEN - ecpoint_len_size - ecpoint_max_len) {
             MBEDTLS_SSL_DEBUG_MSG(1,
                                   ("psk identity too long or SSL buffer too short"));
             return MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL;

@@ -6,6 +6,8 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
+#include "tf_psa_crypto_platform_requirements.h"
+
 /* Detect whether this is a normal build of the library, or a build of
  * libtestdriver1, where all identifiers starting with normal prefixes
  * have LIBTESTDRIVER1_ prepended. Do this without relying on

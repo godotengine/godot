@@ -26,6 +26,7 @@
 
 #if defined(MBEDTLS_ECDH_VARIANT_EVEREST_ENABLED)
 #include "tf-psa-crypto/private/everest/x25519.h"
+#include "mbedtls/constant_time.h"
 #endif
 
 #if defined(MBEDTLS_PSA_BUILTIN_KEY_TYPE_ECC_KEY_PAIR_BASIC) || \
@@ -560,6 +561,15 @@ static psa_status_t ecdh_everest_shared_secret(
     }
 
     mbedtls_x25519_scalarmult(shared_secret, key_buffer, peer_key);
+
+    /* Check that the shared secret is not zero. This is not required by RFC
+     * 7748, but ecp.c does it (by checking if the input is a low-order point,
+     * see ecp_check_bad_points_mx()), and protocols that require contributory
+     * behaviour need it. Also, it will never happen in normal ECDH usage. */
+    uint8_t zero[MBEDTLS_X25519_KEY_SIZE_BYTES] = { 0 };
+    if (mbedtls_ct_memcmp(zero, shared_secret, *shared_secret_length) == 0) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
 
     return PSA_SUCCESS;
 }
