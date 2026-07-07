@@ -311,10 +311,10 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         target_suffix = "macosx10.9"
 
     elif apple_platform == "ios":
-        target_suffix = "ios14.0"  # iOS 14.0 needed for SwiftUI lifecycle
+        target_suffix = "ios15.0"  # iOS 15.0 needed for SwiftUI lifecycle
 
     elif apple_platform == "iossimulator":
-        target_suffix = "ios14.0-simulator"  # iOS 14.0 needed for SwiftUI lifecycle
+        target_suffix = "ios15.0-simulator"  # iOS 15.0 needed for SwiftUI lifecycle
 
     elif apple_platform == "visionos":
         target_suffix = "xros26.0"
