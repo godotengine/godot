@@ -519,7 +519,7 @@ static const _ModelInfo _models[] = {
 	{ { "iPad17,1", "iPad17,2", "iPad17,3", "iPad17,4", "RealityDevice17,1" }, "Apple M5" },
 	{ { "iPhone17,3", "iPhone17,4", "iPhone17,5" }, "Apple A18" },
 	{ { "iPhone17,1", "iPhone17,2" }, "Apple A18 Pro" },
-	{ { "iPhone18,3" }, "Apple A19" },
+	{ { "iPhone18,3", "iPhone18,5" }, "Apple A19" },
 	{ { "iPhone18,1", "iPhone18,2", "iPhone18,4" }, "Apple A19 Pro" },
 };
 
