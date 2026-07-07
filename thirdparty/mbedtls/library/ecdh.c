@@ -646,11 +646,13 @@ static int ecdh_calc_secret_internal(mbedtls_ecdh_context_mbed *ctx,
     }
 #endif /* MBEDTLS_ECP_RESTARTABLE */
 
-    if (mbedtls_mpi_size(&ctx->z) > blen) {
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    size_t p_bytes = ctx->grp.pbits / 8 + ((ctx->grp.pbits % 8) != 0);
+
+    if (p_bytes > blen) {
+        return MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL;
     }
 
-    *olen = ctx->grp.pbits / 8 + ((ctx->grp.pbits % 8) != 0);
+    *olen = p_bytes;
 
     if (mbedtls_ecp_get_type(&ctx->grp) == MBEDTLS_ECP_TYPE_MONTGOMERY) {
         return mbedtls_mpi_write_binary_le(&ctx->z, buf, *olen);
