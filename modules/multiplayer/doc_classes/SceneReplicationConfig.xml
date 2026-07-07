@@ -37,13 +37,6 @@
 				Finds the index of the given [param path].
 			</description>
 		</method>
-		<method name="property_get_index" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="path" type="NodePath" />
-			<description>
-				Finds the index of the given [param path].
-			</description>
-		</method>
 		<method name="property_get_replication_mode">
 			<return type="int" enum="SceneReplicationConfig.ReplicationMode" />
 			<param index="0" name="path" type="NodePath" />
@@ -51,12 +44,11 @@
 				Returns the replication mode for the property identified by the given [param path].
 			</description>
 		</method>
-		<method name="swap_property_by_index">
-			<return type="void" />
-			<param index="0" name="from_index" type="int" />
-			<param index="1" name="to_index" type="int" />
+		<method name="property_get_spawn">
+			<return type="bool" />
+			<param index="0" name="path" type="NodePath" />
 			<description>
-				Swaps the position of two replication properties using their respective indices.
+				Returns [code]true[/code] if the property identified by the given [param path] is configured to be synchronized on spawn.
 			</description>
 		</method>
 		<method name="property_get_sync" deprecated="Use [method property_get_replication_mode] instead.">
@@ -79,14 +71,6 @@
 			<param index="1" name="mode" type="int" enum="SceneReplicationConfig.ReplicationMode" />
 			<description>
 				Sets the synchronization mode for the property identified by the given [param path].
-			</description>
-		</method>
-		<method name="swap_property_by_index">
-			<return type="void" />
-			<param index="0" name="from_index" type="int" />
-			<param index="1" name="to_index" type="int" />
-			<description>
-				Swaps the position of two replication properties using their respective indices.
 			</description>
 		</method>
 		<method name="property_set_spawn">
@@ -118,6 +102,14 @@
 			<param index="0" name="path" type="NodePath" />
 			<description>
 				Removes the property identified by the given [param path] from the configuration.
+			</description>
+		</method>
+		<method name="swap_property_by_index">
+			<return type="void" />
+			<param index="0" name="from_index" type="int" />
+			<param index="1" name="to_index" type="int" />
+			<description>
+				Swaps the position of two replication properties using their respective indices.
 			</description>
 		</method>
 	</methods>
