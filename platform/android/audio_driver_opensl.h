@@ -46,6 +46,7 @@ class AudioDriverOpenSL : public AudioDriver {
 
 	bool pause = false;
 
+	int mix_rate = 44100;
 	uint32_t buffer_size = 0;
 	int16_t *buffers[BUFFER_COUNT] = {};
 	int32_t *mixdown_buffer = nullptr;

@@ -80,7 +80,21 @@ void AudioDriverOpenSL::_buffer_callbacks(
 	ad->_buffer_callback(queueItf);
 }
 
+static int _fit_opensl_mix_rate(int p_mix_rate) {
+	// Sampling rates with SL_SAMPLINGRATE_* definitions in OpenSLES.h.
+	static const int supported_rates[] = { 8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000, 64000, 88200, 96000, 192000 };
+	for (const int rate : supported_rates) {
+		if (p_mix_rate == rate) {
+			return p_mix_rate;
+		}
+	}
+	WARN_PRINT(vformat("%d Hz is not a mix rate supported by the OpenSL ES driver, falling back to 44100 Hz.", p_mix_rate));
+	return 44100;
+}
+
 Error AudioDriverOpenSL::init() {
+	mix_rate = _fit_opensl_mix_rate(_get_configured_mix_rate());
+
 	SLresult res;
 	SLEngineOption EngineOption[] = {
 		{ (SLuint32)SL_ENGINEOPTION_THREADSAFE, (SLuint32)SL_BOOLEAN_TRUE }
@@ -130,7 +144,7 @@ void AudioDriverOpenSL::start() {
 	/* Setup the format of the content in the buffer queue */
 	pcm.formatType = SL_DATAFORMAT_PCM;
 	pcm.numChannels = 2;
-	pcm.samplesPerSec = SL_SAMPLINGRATE_44_1;
+	pcm.samplesPerSec = SLuint32(mix_rate) * 1000; // Milli-hertz, matching SL_SAMPLINGRATE_* values.
 	pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
 	pcm.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
 	pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
@@ -213,7 +227,7 @@ Error AudioDriverOpenSL::init_input_device() {
 	SLDataFormat_PCM format_pcm = {
 		SL_DATAFORMAT_PCM,
 		1,
-		SL_SAMPLINGRATE_44_1,
+		SLuint32(mix_rate) * 1000, // Milli-hertz, matching SL_SAMPLINGRATE_* values.
 		SL_PCMSAMPLEFORMAT_FIXED_16,
 		SL_PCMSAMPLEFORMAT_FIXED_16,
 		SL_SPEAKER_FRONT_CENTER,
@@ -300,7 +314,7 @@ Error AudioDriverOpenSL::input_stop() {
 }
 
 int AudioDriverOpenSL::get_mix_rate() const {
-	return 44100; // hardcoded for Android, as selected by SL_SAMPLINGRATE_44_1
+	return mix_rate;
 }
 
 AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
