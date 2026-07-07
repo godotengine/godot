@@ -71,6 +71,12 @@
 				Returns [code]true[/code] if there are any [Translation] instances that match [param locale] (see [method TranslationServer.compare_locales]). If [param exact] is [code]true[/code], only instances whose locale exactly equals [param locale] are considered.
 			</description>
 		</method>
+		<method name="is_fallback_allowed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if fall back is allowed.
+			</description>
+		</method>
 		<method name="pseudolocalize" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="message" type="StringName" />
@@ -83,6 +89,13 @@
 			<param index="0" name="translation" type="Translation" />
 			<description>
 				Removes the given translation.
+			</description>
+		</method>
+		<method name="set_fallback_allowed">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Sets whether fall back is allowed.
 			</description>
 		</method>
 		<method name="set_fallback_locale">
@@ -124,9 +137,6 @@
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			If [code]true[/code], translation is enabled. Otherwise, [method translate] and [method translate_plural] will return the input message unchanged regardless of the current locale.
-		</member>
-		<member name="allow_fallback" type="bool" setter="set_fallback_allowed" getter="is_fallback_allowed" default="true">
-			If [code]true[/code], the locale will fall back to [member allow_fallback] when a translation isn't available in a given language.
 		</member>
 		<member name="pseudolocalization_accents_enabled" type="bool" setter="set_pseudolocalization_accents_enabled" getter="is_pseudolocalization_accents_enabled" default="true">
 			Replace all characters with their accented variants during pseudolocalization.
