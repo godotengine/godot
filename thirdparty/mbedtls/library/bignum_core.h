@@ -4,7 +4,13 @@
  *  This interface should only be used by the legacy bignum module (bignum.h)
  *  and the modular bignum modules (bignum_mod.c, bignum_mod_raw.c). All other
  *  modules should use the high-level modular bignum interface (bignum_mod.h)
- *  or the legacy bignum interface (bignum.h).
+ *  or the legacy bignum interface (bignum.h). The only exceptions are:
+ *  1. In ecp_curves.c, some mbedtls_ecp_mod_pXXX_raw() functions are using
+ *  bignum_core functions. That's because those functions are implementing a
+ *  part of bignum_mod: the optimized reduction in mbedtls_mpi_mod_modulus.
+ *  2. In ecp.c, ecp_modp() is currently using bignum_core, while the rest of
+ *  the module is using legacy bignum. That's transitional; eventually ecp.c is
+ *  going to use bignum_mod_raw.
  *
  * This module is about processing non-negative integers with a fixed upper
  * bound that's of the form 2^n-1 where n is a multiple of #biL.
