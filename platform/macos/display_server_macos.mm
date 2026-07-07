@@ -2969,13 +2969,8 @@ void DisplayServerMacOS::window_get_edr_values(DisplayServerEnums::WindowID p_wi
 		*v = val; \
 	}
 
-	if (@available(macOS 10.15, *)) {
-		SET_VAL(r_max_potential_edr_value, screen.maximumPotentialExtendedDynamicRangeColorComponentValue);
-		SET_VAL(r_max_edr_value, screen.maximumExtendedDynamicRangeColorComponentValue);
-	} else {
-		SET_VAL(r_max_potential_edr_value, 1.0);
-		SET_VAL(r_max_edr_value, 1.0);
-	}
+	SET_VAL(r_max_potential_edr_value, screen.maximumPotentialExtendedDynamicRangeColorComponentValue);
+	SET_VAL(r_max_edr_value, screen.maximumExtendedDynamicRangeColorComponentValue);
 
 #undef SET_VAL
 }
