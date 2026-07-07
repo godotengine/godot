@@ -125,7 +125,7 @@
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			If [code]true[/code], translation is enabled. Otherwise, [method translate] and [method translate_plural] will return the input message unchanged regardless of the current locale.
 		</member>
-		<member name="fallback_allowed" type="bool" setter="set_fallback_allowed" getter="is_fallback_allowed" default="true">
+		<member name="allow_fallback" type="bool" setter="set_fallback_allowed" getter="is_fallback_allowed" default="true">
 			If [code]true[/code], the locale will fall back to [member allow_fallback] when a translation isn't available in a given language.
 		</member>
 		<member name="pseudolocalization_accents_enabled" type="bool" setter="set_pseudolocalization_accents_enabled" getter="is_pseudolocalization_accents_enabled" default="true">
