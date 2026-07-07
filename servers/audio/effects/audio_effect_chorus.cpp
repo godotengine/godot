@@ -86,7 +86,7 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 		if (v.cutoff == 0) {
 			continue;
 		}
-		float auxlp = std::exp(-Math::TAU * v.cutoff / mix_rate);
+		float auxlp = Math::exp(-Math::TAU * v.cutoff / mix_rate);
 		float c1 = 1.0 - auxlp;
 		float c2 = auxlp;
 		AudioFrame h = filter_h[vc];
@@ -106,9 +106,9 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 
 			float phase = (float)(local_cycles & AudioEffectChorus::CYCLES_MASK) / (float)(1 << AudioEffectChorus::CYCLES_FRAC);
 
-			float wave_delay = std::sin(phase * Math::TAU) * max_depth_frames;
+			float wave_delay = Math::sin(phase * Math::TAU) * max_depth_frames;
 
-			int wave_delay_frames = std::rint(std::floor(wave_delay));
+			int wave_delay_frames = std::rint(Math::floor(wave_delay));
 			float wave_delay_frac = wave_delay - (float)wave_delay_frames;
 
 			/** COMPUTE RINGBUFFER POS**/

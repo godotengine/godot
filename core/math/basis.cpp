@@ -476,7 +476,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					if (rows[1][0] == 0 && rows[0][1] == 0 && rows[1][2] == 0 && rows[2][1] == 0 && rows[1][1] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
 						euler.x = 0;
-						euler.y = std::atan2(rows[0][2], rows[0][0]);
+						euler.y = Math::atan2(rows[0][2], rows[0][0]);
 						euler.z = 0;
 					} else {
 						euler.x = Math::atan2(-rows[1][2], rows[2][2]);
@@ -541,22 +541,22 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					// is this a pure X rotation?
 					if (rows[1][0] == 0 && rows[0][1] == 0 && rows[0][2] == 0 && rows[2][0] == 0 && rows[0][0] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
-						euler.x = std::atan2(-m12, rows[1][1]);
+						euler.x = Math::atan2(-m12, rows[1][1]);
 						euler.y = 0;
 						euler.z = 0;
 					} else {
-						euler.x = std::asin(-m12);
-						euler.y = std::atan2(rows[0][2], rows[2][2]);
-						euler.z = std::atan2(rows[1][0], rows[1][1]);
+						euler.x = Math::asin(-m12);
+						euler.y = Math::atan2(rows[0][2], rows[2][2]);
+						euler.z = Math::atan2(rows[1][0], rows[1][1]);
 					}
 				} else { // m12 == -1
 					euler.x = Math::PI * 0.5f;
-					euler.y = std::atan2(rows[0][1], rows[0][0]);
+					euler.y = Math::atan2(rows[0][1], rows[0][0]);
 					euler.z = 0;
 				}
 			} else { // m12 == 1
 				euler.x = -Math::PI * 0.5f;
-				euler.y = -std::atan2(rows[0][1], rows[0][0]);
+				euler.y = -Math::atan2(rows[0][1], rows[0][0]);
 				euler.z = 0;
 			}
 

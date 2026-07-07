@@ -1528,8 +1528,8 @@ void CanvasItemEditor::_draw_grid() {
 
 		if (ci_manipulator->is_snap_relative_enabled() && selection.size() > 0) {
 			const Vector2 topleft = _get_encompassing_rect_from_list(selection).position;
-			real_grid_offset.x = std::fmod(topleft.x, grid_step.x * (real_t)Math::pow(2.0, grid_step_multiplier));
-			real_grid_offset.y = std::fmod(topleft.y, grid_step.y * (real_t)Math::pow(2.0, grid_step_multiplier));
+			real_grid_offset.x = Math::fmod(topleft.x, grid_step.x * (real_t)Math::pow(2.0, grid_step_multiplier));
+			real_grid_offset.y = Math::fmod(topleft.y, grid_step.y * (real_t)Math::pow(2.0, grid_step_multiplier));
 		} else {
 			real_grid_offset = grid_offset;
 		}
@@ -1679,8 +1679,8 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		viewport->draw_string(font, text_pos, ts->format_number(vformat("%.1f px", length_vector.length()), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 
 		if (draw_secondary_lines) {
-			const int horizontal_angle = std::round(180 * horizontal_angle_rad / Math::PI);
-			const int vertical_angle = std::round(180 * vertical_angle_rad / Math::PI);
+			const int horizontal_angle = Math::round(180 * horizontal_angle_rad / Math::PI);
+			const int vertical_angle = Math::round(180 * vertical_angle_rad / Math::PI);
 
 			Point2 text_pos2 = text_pos;
 			text_pos2.x = begin.x < text_pos.x ? MIN(text_pos.x - text_width, begin.x - text_width / 2) : MAX(text_pos.x + text_width, begin.x - text_width / 2);
@@ -1729,16 +1729,16 @@ void CanvasItemEditor::_draw_ruler_tool() {
 
 				Point2 text_pos2 = text_pos;
 				text_pos2.x = begin.x < text_pos.x ? MIN(text_pos.x - text_width, begin.x - text_width / 2) : MAX(text_pos.x + text_width, begin.x - text_width / 2);
-				viewport->draw_string_outline(font, text_pos2, ts->format_number(vformat("%d " + TTR("units"), std::round(length_vector.y / grid_step.y)), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
-				viewport->draw_string(font, text_pos2, ts->format_number(vformat("%d " + TTR("units"), std::round(length_vector.y / grid_step.y)), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
+				viewport->draw_string_outline(font, text_pos2, ts->format_number(vformat("%d " + TTR("units"), Math::round(length_vector.y / grid_step.y)), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
+				viewport->draw_string(font, text_pos2, ts->format_number(vformat("%d " + TTR("units"), Math::round(length_vector.y / grid_step.y)), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
 
 				text_pos2 = text_pos;
 				text_pos2.y = end.y < text_pos.y ? MIN(text_pos.y - text_height * 2, end.y + text_height / 2) : MAX(text_pos.y + text_height * 2, end.y + text_height / 2);
-				viewport->draw_string_outline(font, text_pos2, ts->format_number(vformat("%d " + TTR("units"), std::round(length_vector.x / grid_step.x)), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
-				viewport->draw_string(font, text_pos2, ts->format_number(vformat("%d " + TTR("units"), std::round(length_vector.x / grid_step.x)), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
+				viewport->draw_string_outline(font, text_pos2, ts->format_number(vformat("%d " + TTR("units"), Math::round(length_vector.x / grid_step.x)), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
+				viewport->draw_string(font, text_pos2, ts->format_number(vformat("%d " + TTR("units"), Math::round(length_vector.x / grid_step.x)), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_secondary_color);
 			} else {
-				viewport->draw_string_outline(font, text_pos, ts->format_number(vformat("%d " + TTR("units"), std::round((length_vector / grid_step).length())), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
-				viewport->draw_string(font, text_pos, ts->format_number(vformat("%d " + TTR("units"), std::round((length_vector / grid_step).length())), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+				viewport->draw_string_outline(font, text_pos, ts->format_number(vformat("%d " + TTR("units"), Math::round((length_vector / grid_step).length())), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
+				viewport->draw_string(font, text_pos, ts->format_number(vformat("%d " + TTR("units"), Math::round((length_vector / grid_step).length())), lang), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
 			}
 		}
 	} else if (grid_snap_active) {

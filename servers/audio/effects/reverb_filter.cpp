@@ -88,7 +88,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 	}
 
 	if (params.hpf > 0) {
-		float hpaux = std::exp(-Math::TAU * params.hpf * 6000 / params.mix_rate);
+		float hpaux = Math::exp(-Math::TAU * params.hpf * 6000 / params.mix_rate);
 		float hp_a1 = (1.0 + hpaux) / 2.0;
 		float hp_a2 = -(1.0 + hpaux) / 2.0;
 		float hp_b1 = hpaux;
@@ -290,7 +290,7 @@ void Reverb::update_parameters() {
 		float auxdmp = params.damp / 2.0 + 0.5; //only half the range (0.5 .. 1.0 is enough)
 		auxdmp *= auxdmp;
 
-		c.damp = std::exp(-Math::TAU * auxdmp * 10000 / params.mix_rate); // 0 .. 10khz
+		c.damp = Math::exp(-Math::TAU * auxdmp * 10000 / params.mix_rate); // 0 .. 10khz
 	}
 }
 
