@@ -73,6 +73,14 @@
 				Sets the synchronization mode for the property identified by the given [param path].
 			</description>
 		</method>
+		<method name="swap_property_by_index">
+			<return type="void" />
+			<param index="0" name="from_index" type="int" />
+			<param index="1" name="to_index" type="int" />
+			<description>
+				Swaps the position of two replication properties using their respective indices.
+			</description>
+		</method>
 		<method name="property_set_spawn">
 			<return type="void" />
 			<param index="0" name="path" type="NodePath" />

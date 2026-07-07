@@ -81,7 +81,7 @@ void ReplicationEditor::_pick_node_select_recursive(TreeItem *p_item, const Stri
 		return;
 	}
 
-	NodePath np = p_item->get_metadata(0);
+	NodePath np = p_item->get_metadata(1);
 	Node *node = get_node(np);
 
 	if (!p_filter.is_empty() && ((String)node->get_name()).containsn(p_filter)) {
@@ -116,6 +116,11 @@ void ReplicationEditor::_pick_node_selected(NodePath p_path) {
 void ReplicationEditor::_add_sync_property(String p_path) {
 	if (replication_config->has_property(p_path)) {
 		EditorNode::get_singleton()->show_warning(TTRC("Property is already being synchronized."));
+		return;
+	}
+
+	if (replication_config->get_properties().size() >= 64) {
+		EditorNode::get_singleton()->show_warning(TTRC("A MultiplayerSynchronizer can synchronize a maximum of 64 properties. Create another MultiplayerSynchronizer to synchronize additional properties."));
 		return;
 	}
 
@@ -170,6 +175,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	vb->add_theme_constant_override("separation", 8);
 	add_child(vb);
 
 	pick_node = memnew(SceneTreeDialog);
@@ -231,17 +237,8 @@ ReplicationEditor::ReplicationEditor() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
 
-	add_pick_button = memnew(Button(TTRC("Add property to sync...")));
-	add_pick_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_pick_new_property));
-	hb->add_child(add_pick_button);
-
-	VSeparator *vs = memnew(VSeparator);
-	vs->set_custom_minimum_size(Size2(30 * EDSCALE, 0));
-	hb->add_child(vs);
-	hb->add_child(memnew(Label(TTRC("Path:"))));
-
 	np_line_edit = memnew(LineEdit);
-	np_line_edit->set_placeholder(":property");
+	np_line_edit->set_placeholder("../..:property:sub_property");
 	np_line_edit->set_accessibility_name(TTRC("Path:"));
 	np_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	np_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ReplicationEditor::_np_text_submitted));
@@ -251,7 +248,7 @@ ReplicationEditor::ReplicationEditor() {
 	add_from_path_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_add_pressed));
 	hb->add_child(add_from_path_button);
 
-	vs = memnew(VSeparator);
+	VSeparator *vs = memnew(VSeparator);
 	vs->set_custom_minimum_size(Size2(30 * EDSCALE, 0));
 	hb->add_child(vs);
 
@@ -262,6 +259,40 @@ ReplicationEditor::ReplicationEditor() {
 	pin->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_pinned));
 	hb->add_child(pin);
 
+	HBoxContainer *hb2 = memnew(HBoxContainer);
+	vb->add_child(hb2);
+
+	Label *lb = memnew(Label);
+	lb->set_text(TTRC("Edit Property"));
+	hb2->add_child(lb);
+
+	move_up = memnew(Button);
+	move_up->set_accessibility_name(TTRC("Move Up Property"));
+	move_up->set_theme_type_variation(SceneStringName(FlatButton));
+	move_up->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_move_down_pressed));
+	hb2->add_child(move_up);
+
+	move_down = memnew(Button);
+	move_down->set_accessibility_name(TTRC("Move Down Property"));
+	move_down->set_theme_type_variation(SceneStringName(FlatButton));
+	move_down->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_move_up_pressed));
+	hb2->add_child(move_down);
+
+	remove = memnew(Button);
+	remove->set_accessibility_name(TTRC("Remove Property"));
+	remove->set_theme_type_variation(SceneStringName(FlatButton));
+	remove->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_delete_button_pressed));
+	hb2->add_child(remove);
+
+	VSeparator *vs2 = memnew(VSeparator);
+	vs2->set_custom_minimum_size(Size2(30 * EDSCALE, 0));
+	hb2->add_child(vs2);
+
+	add_pick_button = memnew(Button(TTRC("Add property to syncronizer")));
+	add_pick_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_pick_button->connect(SceneStringName(pressed), callable_mp(this, &ReplicationEditor::_pick_new_property));
+	hb2->add_child(add_pick_button);
+
 	tree_mc = memnew(MarginContainer);
 	tree_mc->set_theme_type_variation("NoBorderHorizontal");
 	tree_mc->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -271,17 +302,17 @@ ReplicationEditor::ReplicationEditor() {
 	tree->set_hide_root(true);
 	tree->set_columns(4);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0, TTRC("Properties"));
-	tree->set_column_expand(0, true);
-	tree->set_column_title(1, TTRC("Spawn"));
-	tree->set_column_expand(1, false);
-	tree->set_column_custom_minimum_width(1, 100);
-	tree->set_column_title(2, TTRC("Replicate"));
-	tree->set_column_custom_minimum_width(2, 150);
+	tree->set_column_expand(0, false);
+	tree->set_column_custom_minimum_width(0, 100);
+	tree->set_column_title(0, TTRC("Index"));
+	tree->set_column_title(1, TTRC("Properties"));
+	tree->set_column_expand(1, true);
+	tree->set_column_title(2, TTRC("Spawn"));
 	tree->set_column_expand(2, false);
+	tree->set_column_custom_minimum_width(2, 100);
+	tree->set_column_title(3, TTRC("Replicate"));
+	tree->set_column_custom_minimum_width(3, 150);
 	tree->set_column_expand(3, false);
-	tree->create_item();
-	tree->connect("button_clicked", callable_mp(this, &ReplicationEditor::_tree_button_pressed));
 	tree->connect("item_edited", callable_mp(this, &ReplicationEditor::_tree_item_edited));
 	tree->connect("cell_selected", callable_mp(this, &ReplicationEditor::_tree_item_selected), CONNECT_DEFERRED);
 	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
@@ -301,6 +332,7 @@ void ReplicationEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_config"), &ReplicationEditor::_update_config);
 	ClassDB::bind_method(D_METHOD("_update_tree_item_by_node_path", "property"), &ReplicationEditor::_update_tree_item_by_node_path);
 	ClassDB::bind_method(D_METHOD("_rename_tree_item", "old", "new"), &ReplicationEditor::_rename_tree_item);
+	ClassDB::bind_method(D_METHOD("_swap_tree_item", "new_index", "old_index"), &ReplicationEditor::_swap_tree_item);
 }
 
 bool ReplicationEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
@@ -362,18 +394,18 @@ void ReplicationEditor::_notification(int p_what) {
 			if (root && replication_config) {
 				for (TreeItem *ti = root->get_first_child(); ti; ti = ti->get_next()) {
 					if (!read_only) {
-						ti->set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
-						ti->set_text(2, TTR("Never", "Replication Mode") + "," + TTR("Always", "Replication Mode") + "," + TTR("On Change", "Replication Mode"));
+						ti->set_cell_mode(3, TreeItem::CELL_MODE_RANGE);
+						ti->set_text(3, TTR("Never", "Replication Mode") + "," + TTR("Always", "Replication Mode") + "," + TTR("On Change", "Replication Mode"));
 					} else {
-						const NodePath prop = ti->get_metadata(0);
+						const NodePath prop = ti->get_metadata(1);
 						SceneReplicationConfig::ReplicationMode p_mode = replication_config->property_get_replication_mode(prop);
-						ti->set_cell_mode(2, TreeItem::CELL_MODE_STRING);
+						ti->set_cell_mode(3, TreeItem::CELL_MODE_STRING);
 						if (SceneReplicationConfig::ReplicationMode::REPLICATION_MODE_NEVER == p_mode) {
-							ti->set_text(2, TTR("Never", "Replication Mode"));
+							ti->set_text(3, TTR("Never", "Replication Mode"));
 						} else if (SceneReplicationConfig::ReplicationMode::REPLICATION_MODE_ON_CHANGE == p_mode) {
-							ti->set_text(2, TTR("On Change", "Replication Mode"));
+							ti->set_text(3, TTR("On Change", "Replication Mode"));
 						} else if (SceneReplicationConfig::ReplicationMode::REPLICATION_MODE_ALWAYS == p_mode) {
-							ti->set_text(2, TTR("Always", "Replication Mode"));
+							ti->set_text(3, TTR("Always", "Replication Mode"));
 						}
 					}
 				}
@@ -390,6 +422,9 @@ void ReplicationEditor::_notification(int p_what) {
 			add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SceneStringName(panel), SNAME("Panel")));
 			add_pick_button->set_button_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
 			pin->set_button_icon(get_theme_icon(SNAME("Pin"), EditorStringName(EditorIcons)));
+			move_down->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
+			remove->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+			move_up->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
 		} break;
 	}
 }
@@ -434,18 +469,18 @@ void ReplicationEditor::_add_pressed() {
 
 void ReplicationEditor::_tree_item_edited() {
 	TreeItem *ti = tree->get_edited();
-	const NodePath prop = ti->get_metadata(0);
+	const NodePath prop = ti->get_metadata(1);
 	int column = tree->get_edited_column();
-	if (column == 0) {
+	if (column == 1) {
 		NodePath old_path = prop;
-		NodePath new_path = ti->get_text(0);
+		NodePath new_path = ti->get_text(1);
 		if (old_path == new_path) {
 			_update_tree_item(*ti);
 			return;
 		}
 		ti_edited = nullptr;
-		bool spawn = ti->is_checked(1);
-		int mode = ti->get_range(2);
+		bool spawn = ti->is_checked(2);
+		int mode = ti->get_range(3);
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Change sync property"));
@@ -461,7 +496,7 @@ void ReplicationEditor::_tree_item_edited() {
 		undo_redo->add_undo_method(replication_config, "property_set_replication_mode", old_path, mode);
 		undo_redo->add_undo_method(this, "_rename_tree_item", new_path, old_path);
 		undo_redo->commit_action();
-	} else if (column == 1) {
+	} else if (column == 2) {
 		bool value = ti->is_checked(column);
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -472,7 +507,7 @@ void ReplicationEditor::_tree_item_edited() {
 		undo_redo->add_undo_method(replication_config, "property_set_spawn", prop, !value);
 		undo_redo->add_undo_method(this, "_update_tree_item_by_node_path", prop);
 		undo_redo->commit_action();
-	} else if (column == 2) {
+	} else if (column == 3) {
 		int value = ti->get_range(column);
 		int old_value = replication_config->property_get_replication_mode(prop);
 		if (old_value == value) {
@@ -496,25 +531,66 @@ void ReplicationEditor::_tree_item_selected() {
 	if (ti_edited && ti_edited != ti) {
 		_update_tree_item(*ti_edited);
 	}
-
-	ti_edited = ti;
-	ti->set_text(0, String(ti->get_metadata(0)));
-	if (!read_only) {
-		ti->set_editable(0, true);
-	}
-}
-
-void ReplicationEditor::_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button) {
-	if (p_button != MouseButton::LEFT) {
-		return;
-	}
-
-	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
 	if (!ti) {
 		return;
 	}
-	deleting = ti->get_metadata(0);
-	delete_dialog->set_text(TTR("Delete Property?") + "\n\"" + ti->get_text(0) + "\"");
+	ti_edited = ti;
+	ti->set_text(1, String(ti->get_metadata(1)));
+	if (!read_only) {
+		ti->set_editable(1, true);
+	}
+}
+
+void ReplicationEditor::_move_up_pressed() {
+	TreeItem *ti = tree->get_selected();
+	if (!ti) {
+		return;
+	}
+	int old_index = int(ti->get_metadata(0));
+	int new_index = (old_index + 1) % replication_config->get_properties().size();
+	if (old_index == new_index) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Change property order"));
+	undo_redo->add_do_method(replication_config, "swap_property_by_index", old_index, new_index);
+	undo_redo->add_do_method(this, "_swap_tree_item", old_index, new_index);
+
+	undo_redo->add_undo_method(replication_config, "swap_property_by_index", new_index, old_index);
+	undo_redo->add_undo_method(this, "_swap_tree_item", new_index, old_index);
+	undo_redo->commit_action();
+}
+
+void ReplicationEditor::_move_down_pressed() {
+	TreeItem *ti = tree->get_selected();
+	if (!ti) {
+		return;
+	}
+	int old_index = int(ti->get_metadata(0));
+	int new_index = (old_index - 1 + replication_config->get_properties().size()) % replication_config->get_properties().size();
+	if (old_index == new_index) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Change property order"));
+	undo_redo->add_do_method(replication_config, "swap_property_by_index", old_index, new_index);
+	undo_redo->add_do_method(this, "_swap_tree_item", old_index, new_index);
+
+	undo_redo->add_undo_method(replication_config, "swap_property_by_index", new_index, old_index);
+	undo_redo->add_undo_method(this, "_swap_tree_item", new_index, old_index);
+	undo_redo->commit_action();
+}
+
+void ReplicationEditor::_delete_button_pressed() {
+	TreeItem *ti = tree->get_selected();
+	if (!ti) {
+		return;
+	}
+	const NodePath prop = ti->get_metadata(1);
+	deleting = ti->get_metadata(1);
+	delete_dialog->set_text(TTR("Delete Property?") + "\n\"" + ti->get_text(1) + "\"");
 	delete_dialog->popup_centered();
 }
 
@@ -523,16 +599,17 @@ void ReplicationEditor::_dialog_closed(bool p_confirmed) {
 		return;
 	}
 	if (p_confirmed) {
+		tree->deselect_all();
 		const NodePath prop = deleting;
 		int idx = replication_config->property_get_index(prop);
 		bool spawn = replication_config->property_get_spawn(prop);
 		SceneReplicationConfig::ReplicationMode mode = replication_config->property_get_replication_mode(prop);
 
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
 		undo_redo->create_action(TTR("Remove Property"));
 		undo_redo->add_do_method(replication_config, "remove_property", prop);
 		undo_redo->add_do_method(this, "_update_config");
+
 		undo_redo->add_undo_method(replication_config, "add_property", prop, idx);
 		undo_redo->add_undo_method(replication_config, "property_set_spawn", prop, spawn);
 		undo_redo->add_undo_method(replication_config, "property_set_replication_mode", prop, mode);
@@ -594,6 +671,9 @@ void ReplicationEditor::edit(Object *p_object) {
 	add_pick_button->set_disabled(read_only);
 	add_from_path_button->set_disabled(read_only);
 	np_line_edit->set_editable(!read_only);
+	remove->set_disabled(read_only);
+	move_up->set_disabled(read_only);
+	move_down->set_disabled(read_only);
 
 	_setup_multiplayer_sync_node();
 	_update_config();
@@ -653,7 +733,7 @@ void ReplicationEditor::_update_config() {
 	for (int i = 0; i < props.size(); i++) {
 		const NodePath path = props[i];
 		TreeItem *item = tree->create_item();
-		_set_tree_item(*item, path, replication_config->property_get_spawn(path), replication_config->property_get_replication_mode(path));
+		_set_tree_item(*item, i, path, replication_config->property_get_spawn(path), replication_config->property_get_replication_mode(path));
 	}
 }
 
@@ -689,11 +769,48 @@ void ReplicationEditor::_rename_tree_item(const NodePath &p_old, const NodePath 
 
 	TreeItem *ti = tree->get_root()->get_first_child();
 	while (ti) {
-		if (ti->get_metadata(0).operator NodePath() == p_old) {
-			_set_tree_item(*ti, String(p_new), replication_config->property_get_spawn(p_new), replication_config->property_get_replication_mode(p_new));
+		if (ti->get_metadata(1).operator NodePath() == p_old) {
+			int index = ti->get_metadata(0);
+			_set_tree_item(*ti, index, String(p_new), replication_config->property_get_spawn(p_new), replication_config->property_get_replication_mode(p_new));
 			return;
 		}
 		ti = ti->get_next();
+	}
+}
+
+void ReplicationEditor::_swap_tree_item(const int new_index, const int old_index) {
+	if (!replication_config) {
+		return;
+	}
+
+	TreeItem *new_ti = nullptr;
+	TreeItem *old_ti = nullptr;
+
+	TreeItem *ti = tree->get_root()->get_first_child();
+	while (ti) {
+		if (int(ti->get_metadata(0)) == new_index) {
+			new_ti = ti;
+		}
+		if (int(ti->get_metadata(0)) == old_index) {
+			old_ti = ti;
+		}
+		if (new_ti && old_ti) {
+			break;
+		}
+		ti = ti->get_next();
+	}
+
+	if (new_ti && old_ti) {
+		NodePath new_np = new_ti->get_metadata(1);
+		bool new_spaw = replication_config->property_get_spawn(new_np);
+		int new_mode = replication_config->property_get_replication_mode(new_np);
+
+		NodePath old_np = old_ti->get_metadata(1);
+		bool old_spaw = replication_config->property_get_spawn(old_np);
+		int old_mode = replication_config->property_get_replication_mode(old_np);
+		_set_tree_item(*new_ti, new_index, String(old_np), old_spaw, (SceneReplicationConfig::ReplicationMode)old_mode);
+		_set_tree_item(*old_ti, old_index, String(new_np), new_spaw, (SceneReplicationConfig::ReplicationMode)new_mode);
+		tree->set_selected(old_ti, 1);
 	}
 }
 
@@ -704,8 +821,9 @@ void ReplicationEditor::_update_tree_item_by_node_path(const NodePath &p_propert
 
 	TreeItem *ti = tree->get_root()->get_first_child();
 	while (ti) {
-		if (ti->get_metadata(0).operator NodePath() == p_property) {
-			_set_tree_item(*ti, String(p_property), replication_config->property_get_spawn(p_property), replication_config->property_get_replication_mode(p_property));
+		if (ti->get_metadata(1).operator NodePath() == p_property) {
+			int index = ti->get_metadata(0);
+			_set_tree_item(*ti, index, String(p_property), replication_config->property_get_spawn(p_property), replication_config->property_get_replication_mode(p_property));
 			return;
 		}
 		ti = ti->get_next();
@@ -713,23 +831,27 @@ void ReplicationEditor::_update_tree_item_by_node_path(const NodePath &p_propert
 }
 
 void ReplicationEditor::_update_tree_item(TreeItem &t_ti) {
-	NodePath p_property = t_ti.get_metadata(0);
+	NodePath p_property = t_ti.get_metadata(1);
+	int index = t_ti.get_metadata(0);
 	if (!replication_config->has_property(p_property)) {
 		return;
 	}
-	_set_tree_item(t_ti, String(p_property), replication_config->property_get_spawn(p_property), replication_config->property_get_replication_mode(p_property));
+	_set_tree_item(t_ti, index, String(p_property), replication_config->property_get_spawn(p_property), replication_config->property_get_replication_mode(p_property));
 }
 
-void ReplicationEditor::_set_tree_item(TreeItem &item, const NodePath &p_property, const bool p_spawn, const SceneReplicationConfig::ReplicationMode p_mode) {
+void ReplicationEditor::_set_tree_item(TreeItem &item, int p_index, const NodePath &p_property, const bool p_spawn, const SceneReplicationConfig::ReplicationMode p_mode) {
 	String prop = String(p_property);
 
-	item.set_selectable(0, true);
-	item.set_editable(0, false);
-	item.set_selectable(1, false);
-	item.set_selectable(2, false);
-	item.set_selectable(3, false);
-	item.set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
-	item.set_metadata(0, p_property);
+	item.set_selectable(0, false);
+	item.set_metadata(0, p_index);
+	item.set_text(0, itos(p_index + 1) + String::chr(0x00BA));
+	item.set_text_alignment(0, HORIZONTAL_ALIGNMENT_CENTER);
+
+	item.set_selectable(1, true);
+	item.set_editable(1, false);
+	item.set_metadata(1, p_property);
+	item.set_auto_translate_mode(1, AUTO_TRANSLATE_MODE_DISABLED);
+
 	if (multiplayer_synchronizer) {
 		Node *root_node = nullptr;
 		root_node = multiplayer_synchronizer->get_node_or_null(multiplayer_synchronizer->get_root_path());
@@ -739,7 +861,9 @@ void ReplicationEditor::_set_tree_item(TreeItem &item, const NodePath &p_propert
 		Node *node = root_node->get_node_or_null(NodePath(p_property.get_concatenated_names()));
 		if (node) {
 			SubViewport *scene_root = EditorNode::get_singleton()->get_scene_root();
-			node = scene_root->is_ancestor_of(node) ? node : nullptr;
+			if (!scene_root->is_ancestor_of(node) || scene_root == node) {
+				node = nullptr;
+			}
 		}
 		if (node) {
 			NodePath lp = root_node->get_path_to(node);
@@ -751,50 +875,48 @@ void ReplicationEditor::_set_tree_item(TreeItem &item, const NodePath &p_propert
 				names += root_node->get_node(NodePath(cn))->get_name();
 				cn += "/";
 			}
-			item.set_text(0, String(node->get_name()) + ":" + String(p_property.get_concatenated_subnames()) + " -> " + TTRC("From: ") + root_path_name + names);
+			item.set_text(1, String(node->get_name()) + ":" + String(p_property.get_concatenated_subnames()) + " -> " + TTRC("From: ") + root_path_name + names);
 
 			bool valid = false;
 			Variant value = node->get(p_property.get_concatenated_subnames(), &valid);
 			if (valid && !can_sync(value)) {
-				item.set_icon(0, get_theme_icon(SNAME("StatusWarning"), EditorStringName(EditorIcons)));
-				item.set_tooltip_text(0, TTRC("Property of this type not supported."));
+				item.set_icon(1, get_theme_icon(SNAME("StatusWarning"), EditorStringName(EditorIcons)));
+				item.set_tooltip_text(1, TTRC("Property of this type not supported."));
 			} else {
-				item.set_icon(0, _get_class_icon(node));
+				item.set_icon(1, _get_class_icon(node));
 			}
 		} else {
-			item.set_text(0, prop);
-			item.set_icon(0, get_theme_icon(SNAME("ImportFail"), EditorStringName(EditorIcons)));
-			item.set_tooltip_text(0, TTRC("don't find the node in the current tree"));
+			item.set_text(1, prop);
+			item.set_icon(1, get_theme_icon(SNAME("ImportFail"), EditorStringName(EditorIcons)));
+			item.set_tooltip_text(1, TTRC("don't find the node in the current tree"));
 		}
 	} else {
-		item.set_text(0, prop);
-		item.set_icon(0, get_theme_icon(SNAME("NotNode"), EditorStringName(EditorIcons)));
-		item.set_tooltip_text(0, TTRC("SceneReplicationConfig do not set to a MultiplayerSynchronizer"));
+		item.set_text(1, prop);
+		item.set_icon(1, get_theme_icon(SNAME("NotNode"), EditorStringName(EditorIcons)));
+		item.set_tooltip_text(1, TTRC("SceneReplicationConfig do not set to a MultiplayerSynchronizer"));
 	}
+	item.set_selectable(2, false);
+	item.set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER);
+	item.set_cell_mode(2, TreeItem::CELL_MODE_CHECK);
+	item.set_checked(2, p_spawn);
+	item.set_editable(2, !read_only);
 
-	item.set_text_alignment(1, HORIZONTAL_ALIGNMENT_CENTER);
-	item.set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
-	item.set_checked(1, p_spawn);
-	item.set_editable(1, !read_only);
+	item.set_selectable(3, false);
 	if (!read_only) {
-		item.set_text_alignment(2, HORIZONTAL_ALIGNMENT_CENTER);
-		item.set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
-		item.set_range(2, (int)p_mode);
-		item.set_editable(2, !read_only);
-		item.set_text(2, TTR("Never", "Replication Mode") + "," + TTR("Always", "Replication Mode") + "," + TTR("On Change", "Replication Mode"));
-		item.set_auto_translate_mode(2, AUTO_TRANSLATE_MODE_DISABLED);
-		item.set_range_config(2, 0, 3, 1);
+		item.set_text_alignment(3, HORIZONTAL_ALIGNMENT_CENTER);
+		item.set_cell_mode(3, TreeItem::CELL_MODE_RANGE);
+		item.set_range(3, (int)p_mode);
+		item.set_editable(3, !read_only);
+		item.set_text(3, TTR("Never", "Replication Mode") + "," + TTR("Always", "Replication Mode") + "," + TTR("On Change", "Replication Mode"));
+		item.set_auto_translate_mode(3, AUTO_TRANSLATE_MODE_DISABLED);
+		item.set_range_config(3, 0, 3, 1);
 	} else {
 		if (SceneReplicationConfig::ReplicationMode::REPLICATION_MODE_NEVER == p_mode) {
-			item.set_text(2, TTR("Never", "Replication Mode"));
+			item.set_text(3, TTR("Never", "Replication Mode"));
 		} else if (SceneReplicationConfig::ReplicationMode::REPLICATION_MODE_ALWAYS == p_mode) {
-			item.set_text(2, TTR("On Change", "Replication Mode"));
+			item.set_text(3, TTR("On Change", "Replication Mode"));
 		} else if (SceneReplicationConfig::ReplicationMode::REPLICATION_MODE_ON_CHANGE == p_mode) {
-			item.set_text(2, TTR("Always", "Replication Mode"));
+			item.set_text(3, TTR("Always", "Replication Mode"));
 		}
 	}
-	item.set_text_alignment(3, HORIZONTAL_ALIGNMENT_CENTER);
-	item.clear_buttons();
-	item.add_button(3, get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
-	item.set_button_disabled(3, 0, read_only);
 }
