@@ -3592,7 +3592,12 @@ exit:
     LOCAL_INPUT_FREE(salt_external, salt);
     LOCAL_OUTPUT_FREE(output_external, output);
 
-    return (status == PSA_SUCCESS) ? unlock_status : status;
+    /* Don't branch on status as it is a sensitive value
+     * (it reveals whether padding was valid).
+     * Instead branch on unlock_status. That means when both status and
+     * unlock_status were errors, we'll return the unlock error while we would
+     * normally return the first error, but that's better than leaking info. */
+    return (unlock_status != PSA_SUCCESS) ? unlock_status : status;
 }
 
 /****************************************************************/
@@ -5386,7 +5391,13 @@ psa_status_t psa_aead_set_lengths(psa_aead_operation_t *operation,
 #endif /* PSA_WANT_ALG_CCM */
 #if defined(PSA_WANT_ALG_CHACHA20_POLY1305)
         case PSA_ALG_CHACHA20_POLY1305:
-            /* No length restrictions for ChaChaPoly. */
+#if SIZE_MAX > UINT32_MAX
+            if (plaintext_length > (size_t) UINT32_MAX *
+                MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES) {
+                status = PSA_ERROR_INVALID_ARGUMENT;
+                goto exit;
+            }
+#endif
             break;
 #endif /* PSA_WANT_ALG_CHACHA20_POLY1305 */
         default:
@@ -6946,7 +6957,9 @@ static int psa_key_derivation_allows_free_form_secret_input(
 psa_status_t psa_key_derivation_setup(psa_key_derivation_operation_t *operation,
                                       psa_algorithm_t alg)
 {
+#if defined(AT_LEAST_ONE_BUILTIN_KDF)
     psa_status_t status;
+#endif
 
     if (operation->alg != 0) {
         return PSA_ERROR_BAD_STATE;
@@ -6979,10 +6992,12 @@ psa_status_t psa_key_derivation_setup(psa_key_derivation_operation_t *operation,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
+#if defined(AT_LEAST_ONE_BUILTIN_KDF)
     if (status == PSA_SUCCESS) {
         operation->alg = alg;
     }
     return status;
+#endif /* AT_LEAST_ONE_BUILTIN_KDF */
 }
 
 #if defined(BUILTIN_ALG_ANY_HKDF)

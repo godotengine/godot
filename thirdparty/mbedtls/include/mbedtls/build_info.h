@@ -28,16 +28,16 @@
  */
 #define MBEDTLS_VERSION_MAJOR  4
 #define MBEDTLS_VERSION_MINOR  1
-#define MBEDTLS_VERSION_PATCH  0
+#define MBEDTLS_VERSION_PATCH  1
 
 /**
  * The single version number has the following structure:
  *    MMNNPP00
  *    Major version | Minor version | Patch version
  */
-#define MBEDTLS_VERSION_NUMBER         0x04010000
-#define MBEDTLS_VERSION_STRING         "4.1.0"
-#define MBEDTLS_VERSION_STRING_FULL    "Mbed TLS 4.1.0"
+#define MBEDTLS_VERSION_NUMBER         0x04010100
+#define MBEDTLS_VERSION_STRING         "4.1.1"
+#define MBEDTLS_VERSION_STRING_FULL    "Mbed TLS 4.1.1"
 
 #if defined(MBEDTLS_CONFIG_FILES_READ)
 #error "Something went wrong: MBEDTLS_CONFIG_FILES_READ defined before reading the config files!"

@@ -59,7 +59,7 @@
  */
 #if defined(__has_attribute)
 #if __has_attribute(format)
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) && !defined(__clang__)
 #define MBEDTLS_PRINTF_ATTRIBUTE(string_index, first_to_check)    \
     __attribute__((__format__(gnu_printf, string_index, first_to_check)))
 #else /* defined(__MINGW32__) */
