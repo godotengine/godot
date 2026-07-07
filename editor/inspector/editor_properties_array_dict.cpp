@@ -342,6 +342,7 @@ void EditorPropertyArray::_create_new_property_slot() {
 	reorder_button->connect(SNAME("button_down"), callable_mp(this, &EditorPropertyArray::_reorder_button_down).bind(idx));
 
 	hbox->add_child(prop);
+	prop->add_inline_control(reorder_button, INLINE_CONTROL_LEFT);
 
 	bool is_untyped_array = object->get_array().get_type() == Variant::ARRAY && subtype == Variant::NIL;
 
@@ -354,6 +355,7 @@ void EditorPropertyArray::_create_new_property_slot() {
 		edit_btn->set_disabled(is_read_only());
 		edit_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, idx));
+		prop->add_inline_control(edit_btn, INLINE_CONTROL_RIGHT);
 	} else {
 		remove_btn = memnew(Button);
 		remove_btn->set_accessibility_name(TTRC("Remove"));
@@ -361,6 +363,7 @@ void EditorPropertyArray::_create_new_property_slot() {
 		remove_btn->set_disabled(is_read_only());
 		remove_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(idx));
+		prop->add_inline_control(remove_btn, INLINE_CONTROL_RIGHT);
 	}
 	property_vbox->add_child(hbox);
 
@@ -1131,6 +1134,7 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 		edit_btn->set_disabled(is_read_only());
 		edit_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, slots.size()));
+		prop->add_inline_control(edit_btn, INLINE_CONTROL_RIGHT);
 	} else if (p_idx >= 0) {
 		remove_btn = memnew(Button);
 		remove_btn->set_accessibility_name(TTRC("Remove"));
@@ -1138,6 +1142,7 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 		remove_btn->set_disabled(is_read_only());
 		remove_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_remove_pressed).bind(slots.size()));
+		prop->add_inline_control(remove_btn, INLINE_CONTROL_RIGHT);
 	}
 
 	if (add_panel) {
