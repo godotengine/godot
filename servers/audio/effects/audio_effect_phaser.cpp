@@ -48,7 +48,7 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 			phase -= Math::TAU;
 		}
 
-		float d = dmin + (dmax - dmin) * ((std::sin(phase) + 1.f) / 2.f);
+		float d = dmin + (dmax - dmin) * ((Math::sin(phase) + 1.f) / 2.f);
 
 		//update filter coeffs
 		for (int j = 0; j < 6; j++) {

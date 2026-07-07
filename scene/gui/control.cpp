@@ -192,7 +192,7 @@ bool Control::_edit_use_rotation() const {
 
 void Control::_edit_set_pivot(const Point2 &p_pivot) {
 	Vector2 delta_pivot = p_pivot - get_pivot_offset();
-	Vector2 move = Vector2((std::cos(data.rotation) - 1.0) * delta_pivot.x - std::sin(data.rotation) * delta_pivot.y, std::sin(data.rotation) * delta_pivot.x + (std::cos(data.rotation) - 1.0) * delta_pivot.y);
+	Vector2 move = Vector2((Math::cos(data.rotation) - 1.0) * delta_pivot.x - Math::sin(data.rotation) * delta_pivot.y, Math::sin(data.rotation) * delta_pivot.x + (Math::cos(data.rotation) - 1.0) * delta_pivot.y);
 	set_position(get_position() + move);
 	set_pivot_offset(p_pivot);
 	set_pivot_offset_ratio(Vector2());
@@ -883,7 +883,7 @@ void Control::set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, 
 
 void Control::set_begin(const Point2 &p_point) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!std::isfinite(p_point.x) || !std::isfinite(p_point.y));
+	ERR_FAIL_COND(!Math::is_finite(p_point.x) || !Math::is_finite(p_point.y));
 	if (data.offset[0] == p_point.x && data.offset[1] == p_point.y) {
 		return;
 	}
@@ -1567,7 +1567,7 @@ void Control::_set_size(const Size2 &p_size) {
 
 void Control::set_size(const Size2 &p_size, bool p_keep_offsets) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!std::isfinite(p_size.x) || !std::isfinite(p_size.y));
+	ERR_FAIL_COND(!Math::is_finite(p_size.x) || !Math::is_finite(p_size.y));
 	Size2 new_size = p_size;
 	Size2 min = get_combined_minimum_size();
 	if (new_size.x < min.x) {

@@ -1988,7 +1988,7 @@ static String rtos_fix(double p_value, bool p_compat) {
 		return "0"; // Avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
 	} else if (p_compat) {
 		// Write old inf_neg for compatibility.
-		if (std::isinf(p_value) && p_value < 0.0) {
+		if (Math::is_inf(p_value) && p_value < 0.0) {
 			return "inf_neg";
 		}
 	}

@@ -454,7 +454,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 		if (bool(p_options["retarget/rest_fixer/normalize_position_tracks"])) {
 			int src_bone_idx = src_skeleton->find_bone(profile->get_scale_base_bone());
 			if (src_bone_idx >= 0) {
-				real_t motion_scale = std::abs(src_skeleton->get_bone_global_rest(src_bone_idx).origin.y);
+				real_t motion_scale = Math::abs(src_skeleton->get_bone_global_rest(src_bone_idx).origin.y);
 				if (motion_scale > 0) {
 					src_skeleton->set_motion_scale(motion_scale);
 				}

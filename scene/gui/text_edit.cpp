@@ -956,7 +956,7 @@ void TextEdit::_notification(int p_what) {
 				}
 			} else if (scrolling && get_v_scroll() != target_v_scroll) {
 				double target_y = target_v_scroll - get_v_scroll();
-				double dist = std::abs(target_y);
+				double dist = Math::abs(target_y);
 				// To ensure minimap is responsive override the speed setting.
 				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_process_delta_time();
 
@@ -1214,7 +1214,7 @@ void TextEdit::_notification(int p_what) {
 				// Calculate viewport size and y offset.
 				int viewport_height = (draw_amount - 1) * minimap_line_height;
 				int control_height = _get_control_height() - viewport_height;
-				int viewport_offset_y = std::round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
+				int viewport_offset_y = Math::round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
 				// Calculate the first line.
 				int num_lines_before = std::round((viewport_offset_y) / minimap_line_height);
@@ -1696,7 +1696,7 @@ void TextEdit::_notification(int p_what) {
 									} else if (rect.position.x + rect.size.x > xmargin_end) {
 										rect.size.x = xmargin_end - rect.position.x;
 									}
-									rect.position.y += std::ceil(TS->shaped_text_get_ascent(rid)) + std::ceil(theme_cache.font->get_underline_position(theme_cache.font_size));
+									rect.position.y += Math::ceil(TS->shaped_text_get_ascent(rid)) + Math::ceil(theme_cache.font->get_underline_position(theme_cache.font_size));
 									rect.size.y = MAX(1, theme_cache.font->get_underline_thickness(theme_cache.font_size));
 									RS::get_singleton()->canvas_item_add_rect(text_ci, rect, highlight_underline_color);
 								}
@@ -5555,7 +5555,7 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 	// Calculate viewport size and y offset.
 	int viewport_height = (draw_amount - 1) * minimap_line_height;
 	int control_height = _get_control_height() - viewport_height;
-	int viewport_offset_y = std::round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
+	int viewport_offset_y = Math::round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
 	// Calculate the first line.
 	int num_lines_before = std::round((viewport_offset_y) / minimap_line_height);
@@ -9177,7 +9177,7 @@ void TextEdit::_scroll_moved(double p_to_val) {
 		// Set line ofs and wrap ofs.
 		bool draw_placeholder = _using_placeholder();
 
-		int v_scroll_i = std::floor(get_v_scroll());
+		int v_scroll_i = Math::floor(get_v_scroll());
 		int sc = 0;
 		int n_line;
 		for (n_line = 0; n_line < text.size(); n_line++) {
@@ -9204,13 +9204,13 @@ void TextEdit::_scroll_moved(double p_to_val) {
 double TextEdit::_get_visible_lines_offset() const {
 	double total = _get_control_height();
 	total /= (double)get_line_height();
-	total = total - std::floor(total);
+	total = total - Math::floor(total);
 	total = -CLAMP(total, 0.001, 1) + 1;
 	return total;
 }
 
 double TextEdit::_get_v_scroll_offset() const {
-	double val = get_v_scroll() - std::floor(get_v_scroll());
+	double val = get_v_scroll() - Math::floor(get_v_scroll());
 	return CLAMP(val, 0, 1);
 }
 
