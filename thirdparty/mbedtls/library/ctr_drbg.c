@@ -494,7 +494,7 @@ static int mbedtls_ctr_drbg_reseed_internal(mbedtls_ctr_drbg_context *ctx,
     if ((ret = ctr_drbg_update_internal(ctx, seed)) != 0) {
         goto exit;
     }
-    ctx->reseed_counter = 1;
+    ctx->reseed_counter = 0;
 
 exit:
     mbedtls_platform_zeroize(seed, sizeof(seed));
@@ -629,7 +629,7 @@ int mbedtls_ctr_drbg_random_with_add(void *p_rng,
 
     memset(locals.add_input, 0, MBEDTLS_CTR_DRBG_SEEDLEN);
 
-    if (ctx->reseed_counter > ctx->reseed_interval ||
+    if (ctx->reseed_counter >= ctx->reseed_interval ||
         ctx->prediction_resistance) {
         if ((ret = mbedtls_ctr_drbg_reseed(ctx, additional, add_len)) != 0) {
             return ret;
