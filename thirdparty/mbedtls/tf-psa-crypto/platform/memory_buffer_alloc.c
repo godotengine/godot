@@ -294,7 +294,9 @@ static void *buffer_alloc_calloc(size_t n, size_t size)
     }
 
     p = ((unsigned char *) cur) + sizeof(memory_header) + len;
-    new = (memory_header *) p;
+    /* Double casting is required to prevent compilation warning on Clang-based
+     * compilers when "-Wcast-align" is used. */
+    new = (memory_header *) (void *) p;
 
     new->size = cur->size - len - sizeof(memory_header);
     new->alloc = 0;
@@ -375,7 +377,9 @@ static void buffer_alloc_free(void *ptr)
     }
 
     p -= sizeof(memory_header);
-    hdr = (memory_header *) p;
+    /* Double casting is required to prevent compilation warning on Clang-based
+     * compilers when "-Wcast-align" is used. */
+    hdr = (memory_header *) (void *) p;
 
     if (verify_header(hdr) != 0) {
         mbedtls_exit(1);
@@ -586,7 +590,9 @@ void mbedtls_memory_buffer_alloc_init(unsigned char *buf, size_t len)
     heap.buf = buf;
     heap.len = len;
 
-    heap.first = (memory_header *) buf;
+    /* Double casting is required to prevent compilation warning on Clang-based
+     * compilers when "-Wcast-align" is used. */
+    heap.first = (memory_header *) (void *) buf;
     heap.first->size = len - sizeof(memory_header);
     heap.first->magic1 = MAGIC1;
     heap.first->magic2 = MAGIC2;

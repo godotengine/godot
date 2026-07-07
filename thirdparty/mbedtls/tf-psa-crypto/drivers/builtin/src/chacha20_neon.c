@@ -21,6 +21,10 @@
 
 #include "mbedtls/platform.h"
 
+#define CHACHA20_CTR_INDEX (12U)
+#define CHACHA20_MAX_BLOCKS UINT32_MAX
+#define CHACHA20_COUNTER_EXHAUSTED (MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES + 1U)
+
 // Tested on all combinations of Armv7 arm/thumb2; Armv8 arm/thumb2/aarch64; Armv8 aarch64_be on
 // clang 14, gcc 11, and some more recent versions.
 
@@ -212,6 +216,15 @@ int mbedtls_chacha20_update(mbedtls_chacha20_context *ctx,
                             unsigned char *output)
 {
     size_t offset = 0U;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    size_t blocks = 0U;
+    size_t partial_block_size = 0U;
+    int final_counter_block = 0;
+
+    ret = mbedtls_chacha20_check_counter_wrap(ctx, size);
+    if (ret != 0) {
+        return ret;
+    }
 
     /* Use leftover keystream bytes, if available */
     while (ctx->keystream_bytes_used < MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES && size > 0) {
@@ -221,6 +234,25 @@ int mbedtls_chacha20_update(mbedtls_chacha20_context *ctx,
         ctx->keystream_bytes_used++;
         offset++;
         size--;
+
+        if (ctx->keystream_bytes_used == MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES &&
+            ctx->state[CHACHA20_CTR_INDEX] == 0U) {
+            ctx->keystream_bytes_used = CHACHA20_COUNTER_EXHAUSTED;
+        }
+    }
+
+    blocks = size / MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES;
+    partial_block_size = size % MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES;
+    if (blocks != 0U || partial_block_size != 0U) {
+        uint64_t generated_blocks = (uint64_t) blocks;
+
+        if (partial_block_size != 0U) {
+            generated_blocks++;
+        }
+
+        final_counter_block =
+            generated_blocks - 1U ==
+            (uint64_t) CHACHA20_MAX_BLOCKS - ctx->state[CHACHA20_CTR_INDEX];
     }
 
     /* Load state into NEON registers */
@@ -231,8 +263,7 @@ int mbedtls_chacha20_update(mbedtls_chacha20_context *ctx,
     state.d = vld1q_u32(&ctx->state[12]);
 
     /* Process full blocks */
-    if (size >= MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES) {
-        size_t blocks = size / MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES;
+    if (blocks != 0U) {
         state.d = chacha20_neon_blocks(state, output + offset, input + offset, blocks);
 
         offset += MBEDTLS_CHACHA20_BLOCK_SIZE_BYTES * blocks;
@@ -248,6 +279,10 @@ int mbedtls_chacha20_update(mbedtls_chacha20_context *ctx,
         mbedtls_xor_no_simd(output + offset, input + offset, ctx->keystream8, size);
 
         ctx->keystream_bytes_used = size;
+    }
+
+    if (final_counter_block && partial_block_size == 0U) {
+        ctx->keystream_bytes_used = CHACHA20_COUNTER_EXHAUSTED;
     }
 
     /* Capture state */
