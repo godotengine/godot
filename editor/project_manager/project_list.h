@@ -229,6 +229,7 @@ private:
 	ConfigFile _config;
 
 	Vector<Item> _projects;
+	static inline HashMap<String, int> modified_time_cache;
 
 	int _icon_load_index = 0;
 	bool project_opening_initiated = false;
