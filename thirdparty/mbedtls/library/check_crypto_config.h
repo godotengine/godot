@@ -128,11 +128,6 @@
 #error "PSA_WANT_KEY_TYPE_DH_KEY_PAIR_DERIVE defined, but feature is not supported"
 #endif
 
-#if defined(MBEDTLS_SSL_PROTO_TLS1_2) && defined(MBEDTLS_USE_PSA_CRYPTO) && \
-    !(defined(PSA_WANT_ALG_SHA_1) || defined(PSA_WANT_ALG_SHA_256) || defined(PSA_WANT_ALG_SHA_512))
-#error "MBEDTLS_SSL_PROTO_TLS1_2 defined, but not all prerequisites"
-#endif
-
 #if defined(PSA_WANT_ALG_TLS12_ECJPAKE_TO_PMS) && \
     !defined(PSA_WANT_ALG_SHA_256)
 #error "PSA_WANT_ALG_TLS12_ECJPAKE_TO_PMS defined, but not all prerequisites"

@@ -147,12 +147,9 @@ void mbedtls_zeroize_and_free(void *buf, size_t len)
 
 #if defined(MBEDTLS_HAVE_TIME_DATE) && !defined(MBEDTLS_PLATFORM_GMTIME_R_ALT)
 #include <time.h>
-#if !defined(_WIN32) && (defined(unix) || \
-    defined(__unix) || defined(__unix__) || (defined(__APPLE__) && \
-    defined(__MACH__)) || defined(__midipix__))
+#if defined(MBEDTLS_PLATFORM_IS_UNIXLIKE)
 #include <unistd.h>
-#endif /* !_WIN32 && (unix || __unix || __unix__ ||
-        * (__APPLE__ && __MACH__) || __midipix__) */
+#endif
 
 #if !((defined(_POSIX_VERSION) && _POSIX_VERSION >= 200809L) ||     \
     (defined(_POSIX_THREAD_SAFE_FUNCTIONS) &&                     \
@@ -218,12 +215,10 @@ void (*mbedtls_test_hook_test_fail)(const char *, int, const char *);
 #if defined(MBEDTLS_HAVE_TIME) && !defined(MBEDTLS_PLATFORM_MS_TIME_ALT)
 
 #include <time.h>
-#if !defined(_WIN32) && \
-    (defined(unix) || defined(__unix) || defined(__unix__) || \
-    (defined(__APPLE__) && defined(__MACH__)) || defined(__HAIKU__) || defined(__midipix__))
+#if defined(MBEDTLS_PLATFORM_IS_UNIXLIKE)
 #include <unistd.h>
-#endif \
-    /* !_WIN32 && (unix || __unix || __unix__ || (__APPLE__ && __MACH__) || __HAIKU__ || __midipix__) */
+#endif
+
 #if (defined(_POSIX_VERSION) && _POSIX_VERSION >= 199309L) || defined(__HAIKU__)
 mbedtls_ms_time_t mbedtls_ms_time(void)
 {
