@@ -277,6 +277,13 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Add the game menu bar.
 		setupGameMenuBar()
+
+		if (!isLargeScreen) {
+			// Lock the editor screen orientation to landscape on small screens.
+			changingOrientationAllowed = true
+			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+			changingOrientationAllowed = false
+		}
 	}
 
 	override fun onConfigurationChanged(newConfig: Configuration) {
@@ -720,7 +727,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	/**
 	 * The Godot Android Editor sets its own orientation via its AndroidManifest
 	 */
-	protected open fun overrideOrientationRequest() = !changingOrientationAllowed
+	protected open fun overrideOrientationRequest() = isLargeScreen || godot?.isProjectManagerHint() == true || !changingOrientationAllowed
 
 	protected open fun overrideVolumeButtons() = false
 
@@ -939,12 +946,16 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			}
 		}
 
-		toggleScriptEditorOrientation()
+		if (!isLargeScreen) {
+			toggleScriptEditorOrientation()
+		}
 	}
 
 	override fun onDistractionFreeModeChanged(enabled: Boolean) {
 		distractionFreeModeEnabled = enabled
-		toggleScriptEditorOrientation()
+		if (!isLargeScreen) {
+			toggleScriptEditorOrientation()
+		}
 	}
 
 	private fun toggleScriptEditorOrientation() {
