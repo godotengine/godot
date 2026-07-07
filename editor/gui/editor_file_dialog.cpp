@@ -104,6 +104,8 @@ void EditorFileDialog::_validate_property(PropertyInfo &p_property) const {
 	// Hide properties controlled by editor settings.
 	if (p_property.name == "use_native_dialog" || p_property.name == "show_hidden_files" || p_property.name == "display_mode") {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "access") {
+		p_property.hint_string = "Resources,User Data,File System,Editor Resources";
 	}
 }
 
