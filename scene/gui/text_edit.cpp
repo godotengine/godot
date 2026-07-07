@@ -9255,7 +9255,7 @@ void TextEdit::_scroll_down(real_t p_delta, bool p_animate) {
 	}
 
 	if (smooth_scroll_enabled) {
-		int max_v_scroll = std::round(v_scroll->get_max() - v_scroll->get_page());
+		double max_v_scroll = v_scroll->get_max() - v_scroll->get_page();
 		if (target_v_scroll > max_v_scroll) {
 			target_v_scroll = max_v_scroll;
 		}
