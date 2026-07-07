@@ -33,20 +33,15 @@
 #ifndef WEB_ENABLED
 
 #include "core/io/stream_peer_tls.h"
-
-CryptoCore::RandomGenerator *WSLPeer::_static_rng = nullptr;
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 
 void WSLPeer::initialize() {
 	WebSocketPeer::_create = WSLPeer::_create;
-	_static_rng = memnew(CryptoCore::RandomGenerator);
-	_static_rng->init();
 }
 
-void WSLPeer::deinitialize() {
-	if (_static_rng) {
-		memdelete(_static_rng);
-		_static_rng = nullptr;
-	}
+WebSocketPeer *WSLPeer::_create(bool p_notify_postinitialize) {
+	return static_cast<WebSocketPeer *>(ClassDB::creator<WSLPeer>(p_notify_postinitialize));
 }
 
 ///
@@ -80,7 +75,7 @@ void WSLPeer::Resolver::stop() {
 	port = 0;
 }
 
-void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
+void WSLPeer::Resolver::try_next_candidate(const Ref<StreamPeerTCP> &p_tcp) {
 	// Check if we still need resolving.
 	if (resolver_id != IP::RESOLVER_INVALID_ID) {
 		IP::ResolverStatus ip_status = IP::get_singleton()->get_resolve_item_status(resolver_id);
@@ -124,7 +119,7 @@ void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
 ///
 /// Server functions
 ///
-Error WSLPeer::accept_stream(Ref<StreamPeer> p_stream) {
+Error WSLPeer::accept_stream(const Ref<StreamPeer> &p_stream) {
 	ERR_FAIL_COND_V(p_stream.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
 
@@ -175,7 +170,7 @@ bool WSLPeer::_parse_client_request() {
 	}
 	requested_host = headers.has("host") ? headers.get("host") : "";
 	requested_url = (use_tls ? "wss://" : "ws://") + requested_host + req[1];
-#define WSL_CHECK(NAME, VALUE)                                                          \
+#define WSL_CHECK(NAME, VALUE) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
 #define WSL_CHECK_EX(NAME) \
@@ -297,7 +292,7 @@ Error WSLPeer::_do_server_handshake() {
 			wslay_event_context_server_init(&wsl_ctx, &_wsl_callbacks, this);
 			wslay_event_config_set_no_buffering(wsl_ctx, 1);
 			wslay_event_config_set_max_recv_msg_length(wsl_ctx, inbound_buffer_size);
-			in_buffer.resize(nearest_shift(inbound_buffer_size), max_queued_packets);
+			in_buffer.resize(Math::nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
 			packet_buffer.resize(inbound_buffer_size);
 			ready_state = STATE_OPEN;
 		}
@@ -406,7 +401,7 @@ void WSLPeer::_do_client_handshake() {
 				wslay_event_context_client_init(&wsl_ctx, &_wsl_callbacks, this);
 				wslay_event_config_set_no_buffering(wsl_ctx, 1);
 				wslay_event_config_set_max_recv_msg_length(wsl_ctx, inbound_buffer_size);
-				in_buffer.resize(nearest_shift(inbound_buffer_size), max_queued_packets);
+				in_buffer.resize(Math::nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
 				packet_buffer.resize(inbound_buffer_size);
 				ready_state = STATE_OPEN;
 				break;
@@ -440,10 +435,10 @@ bool WSLPeer::_verify_server_response() {
 		}
 	}
 
-#define WSL_CHECK(NAME, VALUE)                                                          \
+#define WSL_CHECK(NAME, VALUE) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
-#define WSL_CHECK_NC(NAME, VALUE)                                            \
+#define WSL_CHECK_NC(NAME, VALUE) \
 	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME] != VALUE, false, \
 			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
 	WSL_CHECK("connection", "upgrade");
@@ -474,7 +469,7 @@ bool WSLPeer::_verify_server_response() {
 	return true;
 }
 
-Error WSLPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_options) {
+Error WSLPeer::connect_to_url(const String &p_url, const Ref<TLSOptions> &p_options) {
 	ERR_FAIL_COND_V(p_url.is_empty(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_options.is_valid() && p_options->is_server(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(ready_state != STATE_CLOSED && ready_state != STATE_CLOSING, ERR_ALREADY_IN_USE);
@@ -632,8 +627,7 @@ ssize_t WSLPeer::_wsl_send_callback(wslay_event_context_ptr ctx, const uint8_t *
 }
 
 int WSLPeer::_wsl_genmask_callback(wslay_event_context_ptr ctx, uint8_t *buf, size_t len, void *user_data) {
-	ERR_FAIL_NULL_V(_static_rng, WSLAY_ERR_CALLBACK_FAILURE);
-	Error err = _static_rng->get_random_bytes(buf, len);
+	Error err = CryptoCore::generate_random(buf, len);
 	ERR_FAIL_COND_V(err != OK, WSLAY_ERR_CALLBACK_FAILURE);
 	return 0;
 }
@@ -688,7 +682,7 @@ String WSLPeer::_generate_key() {
 	return CryptoCore::b64_encode_str(bkey.ptrw(), len);
 }
 
-String WSLPeer::_compute_key_response(String p_key) {
+String WSLPeer::_compute_key_response(const String &p_key) {
 	String key = p_key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"; // Magic UUID as per RFC
 	Vector<uint8_t> sha = key.sha1_buffer();
 	return CryptoCore::b64_encode_str(sha.ptr(), sha.size());
@@ -840,7 +834,7 @@ int WSLPeer::get_current_outbound_buffered_amount() const {
 	return wslay_event_get_queued_msg_length(wsl_ctx);
 }
 
-void WSLPeer::close(int p_code, String p_reason) {
+void WSLPeer::close(int p_code, const String &p_reason) {
 	if (p_code < 0) {
 		// Force immediate close.
 		ready_state = STATE_CLOSED;

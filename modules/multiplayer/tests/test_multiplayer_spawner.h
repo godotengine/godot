@@ -30,23 +30,15 @@
 
 #pragma once
 
+#include "../multiplayer_spawner.h"
+
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
 
-#include "../multiplayer_spawner.h"
-
 namespace TestMultiplayerSpawner {
-
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-
 class Wasp : public Node {
 	GDCLASS(Wasp, Node);
 

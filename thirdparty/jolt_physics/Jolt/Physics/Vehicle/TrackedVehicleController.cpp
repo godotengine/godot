@@ -26,18 +26,24 @@ JPH_IMPLEMENT_SERIALIZABLE_VIRTUAL(TrackedVehicleControllerSettings)
 
 JPH_IMPLEMENT_SERIALIZABLE_VIRTUAL(WheelSettingsTV)
 {
+	JPH_ADD_BASE_CLASS(WheelSettingsTV, WheelSettings)
+
 	JPH_ADD_ATTRIBUTE(WheelSettingsTV, mLongitudinalFriction)
 	JPH_ADD_ATTRIBUTE(WheelSettingsTV, mLateralFriction)
 }
 
 void WheelSettingsTV::SaveBinaryState(StreamOut &inStream) const
 {
+	WheelSettings::SaveBinaryState(inStream);
+
 	inStream.Write(mLongitudinalFriction);
 	inStream.Write(mLateralFriction);
 }
 
 void WheelSettingsTV::RestoreBinaryState(StreamIn &inStream)
 {
+	WheelSettings::RestoreBinaryState(inStream);
+
 	inStream.Read(mLongitudinalFriction);
 	inStream.Read(mLateralFriction);
 }
@@ -526,6 +532,16 @@ void TrackedVehicleController::RestoreState(StateRecorder &inStream)
 
 	for (VehicleTrack &t : mTracks)
 		t.RestoreState(inStream);
+}
+
+Ref<VehicleControllerSettings> TrackedVehicleController::GetSettings() const
+{
+	TrackedVehicleControllerSettings *settings = new TrackedVehicleControllerSettings;
+	settings->mEngine = static_cast<const VehicleEngineSettings &>(mEngine);
+	settings->mTransmission = static_cast<const VehicleTransmissionSettings &>(mTransmission);
+	for (size_t i = 0; i < std::size(mTracks); ++i)
+		settings->mTracks[i] = static_cast<const VehicleTrackSettings &>(mTracks[i]);
+	return settings;
 }
 
 JPH_NAMESPACE_END

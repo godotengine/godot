@@ -1,0 +1,13 @@
+GH-95126
+--------
+Validate extension JSON: Error: Field 'classes/Shader/methods/get_default_texture_parameter/return_value': type changed value in new API, from "Texture2D" to "Texture".
+Validate extension JSON: Error: Field 'classes/Shader/methods/set_default_texture_parameter/arguments/1': type changed value in new API, from "Texture2D" to "Texture".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeCubemap/methods/get_cube_map/return_value': type changed value in new API, from "Cubemap" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeCubemap/methods/set_cube_map/arguments/0': type changed value in new API, from "Cubemap" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeCubemap/properties/cube_map': type changed value in new API, from "Cubemap" to "Cubemap,CompressedCubemap,PlaceholderCubemap,TextureCubemapRD".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeTexture2DArray/methods/get_texture_array/return_value': type changed value in new API, from "Texture2DArray" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeTexture2DArray/methods/set_texture_array/arguments/0': type changed value in new API, from "Texture2DArray" to "TextureLayered".
+Validate extension JSON: Error: Field 'classes/VisualShaderNodeTexture2DArray/properties/texture_array': type changed value in new API, from "Texture2DArray" to "Texture2DArray,CompressedTexture2DArray,PlaceholderTexture2DArray,Texture2DArrayRD".
+
+Allow setting a cubemap as default parameter to shader.
+Compatibility methods registered.

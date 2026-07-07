@@ -31,34 +31,44 @@
 #include "editor_interface.h"
 #include "editor_interface.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "editor/create_dialog.h"
-#include "editor/editor_command_palette.h"
-#include "editor/editor_feature_profile.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "editor/docks/filesystem_dock.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_resource_preview.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/filesystem_dock.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/gui/create_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
-#include "editor/gui/editor_run_bar.h"
-#include "editor/gui/editor_scene_tabs.h"
 #include "editor/gui/editor_toaster.h"
-#include "editor/gui/scene_tree_editor.h"
-#include "editor/inspector_dock.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
-#include "editor/property_selector.h"
+#include "editor/inspector/editor_preview_plugins.h"
+#include "editor/inspector/editor_resource_preview.h"
+#include "editor/inspector/property_selector.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/scene/2d/scene_paint_2d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
+#include "editor/scene/editor_scene_tabs.h"
+#include "editor/scene/scene_tree_editor.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_feature_profile.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
-#include "plugins/editor_preview_plugins.h"
 #include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/visual_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
+#include "scene/resources/image_texture.h"
+#include "scene/resources/packed_scene.h"
 #include "scene/resources/theme.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
 
@@ -75,7 +85,7 @@ EditorCommandPalette *EditorInterface::get_command_palette() const {
 	return EditorCommandPalette::get_singleton();
 }
 
-EditorFileSystem *EditorInterface::get_resource_file_system() const {
+EditorFileSystem *EditorInterface::get_resource_filesystem() const {
 	return EditorFileSystem::get_singleton();
 }
 
@@ -103,17 +113,21 @@ EditorUndoRedoManager *EditorInterface::get_editor_undo_redo() const {
 	return EditorUndoRedoManager::get_singleton();
 }
 
+ScenePaint2DEditor *EditorInterface::get_scene_paint_2d() const {
+	return ScenePaint2DEditor::get_singleton();
+}
+
 AABB EditorInterface::_calculate_aabb_for_scene(Node *p_node, AABB &p_scene_aabb) {
-	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
-	if (mesh_node && mesh_node->get_mesh().is_valid()) {
+	GeometryInstance3D *geom_node = Object::cast_to<GeometryInstance3D>(p_node);
+	if (geom_node != nullptr) {
 		Transform3D accum_xform;
-		Node3D *base = mesh_node;
+		Node3D *base = geom_node;
 		while (base) {
 			accum_xform = base->get_transform() * accum_xform;
 			base = Object::cast_to<Node3D>(base->get_parent());
 		}
 
-		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
+		AABB aabb = accum_xform.xform(geom_node->get_aabb());
 		p_scene_aabb.merge_with(aabb);
 	}
 
@@ -146,7 +160,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 	RID scenario = RS::get_singleton()->scenario_create();
 
 	RID viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ALWAYS);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_ALWAYS);
 	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	RS::get_singleton()->viewport_set_size(viewport, size, size);
 	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
@@ -213,30 +227,33 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		ERR_CONTINUE(img.is_null() || img->is_empty());
 		Ref<ImageTexture> it = ImageTexture::create_from_image(img);
 
-		RS::get_singleton()->free(inst);
+		RS::get_singleton()->free_rid(inst);
 
 		textures.push_back(it);
 	}
 
-	RS::get_singleton()->free(viewport);
-	RS::get_singleton()->free(light);
-	RS::get_singleton()->free(light_instance);
-	RS::get_singleton()->free(light2);
-	RS::get_singleton()->free(light_instance2);
-	RS::get_singleton()->free(camera);
-	RS::get_singleton()->free(scenario);
+	RS::get_singleton()->free_rid(viewport);
+	RS::get_singleton()->free_rid(light);
+	RS::get_singleton()->free_rid(light_instance);
+	RS::get_singleton()->free_rid(light2);
+	RS::get_singleton()->free_rid(light_instance2);
+	RS::get_singleton()->free_rid(camera);
+	RS::get_singleton()->free_rid(scenario);
 
 	return textures;
 }
 
 void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size) {
-	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null.");
+	if (!Engine::get_singleton()->is_editor_hint() || !DisplayServer::get_singleton()->window_can_draw()) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(p_path.is_empty(), "Path is empty, cannot generate preview.");
+	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null, cannot generate preview.");
 	ERR_FAIL_COND_MSG(p_scene->is_inside_tree(), "The scene must not be inside the tree.");
-	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be called from the editor.");
 	ERR_FAIL_NULL_MSG(EditorNode::get_singleton(), "EditorNode doesn't exist.");
 
 	SubViewport *sub_viewport_node = memnew(SubViewport);
-	AABB scene_aabb;
+	AABB scene_aabb = AABB(Vector3(-0.001f, -0.001f, -0.001f), Vector3(0.002f, 0.002f, 0.002f));
 	scene_aabb = _calculate_aabb_for_scene(p_scene, scene_aabb);
 
 	sub_viewport_node->set_update_mode(SubViewport::UPDATE_ALWAYS);
@@ -357,7 +374,29 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	}
 
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_path);
-	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed"));
+	EditorFileSystem::get_singleton()->filesystem_changed();
+}
+
+void EditorInterface::add_root_node(Node *p_node) {
+	if (EditorNode::get_singleton()->get_edited_scene()) {
+		ERR_PRINT("EditorInterface::add_root_node: The current scene already has a root node.");
+		return;
+	}
+
+	const String &scene_path = p_node->get_scene_file_path();
+	if (!scene_path.is_empty()) {
+		Ref<PackedScene> scene = ResourceLoader::load(scene_path);
+		if (scene.is_valid()) {
+			memfree(scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE)); // Ensure node cache.
+
+			p_node->set_scene_inherited_state(scene->get_state());
+			p_node->set_scene_file_path(String());
+		}
+	}
+
+	EditorNode::get_singleton()->set_edited_scene(p_node);
+	EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+	EditorSceneTabs::get_singleton()->update_scene_tabs();
 }
 
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
@@ -413,6 +452,26 @@ bool EditorInterface::is_multi_window_enabled() const {
 
 float EditorInterface::get_editor_scale() const {
 	return EDSCALE;
+}
+
+String EditorInterface::get_editor_language() const {
+	return EditorSettings::get_singleton()->get_language();
+}
+
+bool EditorInterface::is_node_3d_snap_enabled() const {
+	return Node3DEditor::get_singleton()->is_snap_enabled();
+}
+
+real_t EditorInterface::get_node_3d_translate_snap() const {
+	return Node3DEditor::get_singleton()->get_translate_snap();
+}
+
+real_t EditorInterface::get_node_3d_rotate_snap() const {
+	return Node3DEditor::get_singleton()->get_rotate_snap();
+}
+
+real_t EditorInterface::get_node_3d_scale_snap() const {
+	return Node3DEditor::get_singleton()->get_scale_snap();
 }
 
 void EditorInterface::popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect) {
@@ -647,7 +706,7 @@ void EditorInterface::open_scene_from_path(const String &scene_path, bool p_set_
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
-	EditorNode::get_singleton()->load_scene(scene_path, false, p_set_inherited);
+	EditorNode::get_singleton()->open_scene(scene_path, false, p_set_inherited);
 }
 
 void EditorInterface::reload_scene_from_path(const String &scene_path) {
@@ -656,6 +715,16 @@ void EditorInterface::reload_scene_from_path(const String &scene_path) {
 	}
 
 	EditorNode::get_singleton()->reload_scene(scene_path);
+}
+
+void EditorInterface::set_object_edited(Object *p_object, bool p_edited) {
+	ERR_FAIL_NULL_MSG(p_object, "Cannot change edited status on a null object.");
+	p_object->set_edited(p_edited);
+}
+
+bool EditorInterface::is_object_edited(Object *p_object) const {
+	ERR_FAIL_NULL_V_MSG(p_object, false, "Cannot check edit status on a null object.");
+	return p_object->is_edited();
 }
 
 Node *EditorInterface::get_edited_scene_root() const {
@@ -667,10 +736,19 @@ PackedStringArray EditorInterface::get_open_scenes() const {
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
 	for (EditorData::EditedScene &edited_scene : scenes) {
-		if (edited_scene.root == nullptr) {
-			continue;
+		ret.push_back(edited_scene.path);
+	}
+	return ret;
+}
+
+PackedStringArray EditorInterface::get_unsaved_scenes() const {
+	PackedStringArray ret;
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
+
+	for (int i = 0; i < scenes.size(); i++) {
+		if (EditorNode::get_singleton()->is_scene_unsaved(i)) {
+			ret.push_back(scenes[i].path);
 		}
-		ret.push_back(edited_scene.root->get_scene_file_path());
 	}
 	return ret;
 }
@@ -711,6 +789,10 @@ void EditorInterface::mark_scene_as_unsaved() {
 
 void EditorInterface::save_all_scenes() {
 	EditorNode::get_singleton()->save_all_scenes();
+}
+
+Error EditorInterface::close_scene() {
+	return EditorNode::get_singleton()->close_scene() ? OK : ERR_DOES_NOT_EXIST;
 }
 
 // Scene playback.
@@ -771,13 +853,14 @@ void EditorInterface::_bind_methods() {
 	// Editor tools.
 
 	ClassDB::bind_method(D_METHOD("get_command_palette"), &EditorInterface::get_command_palette);
-	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_file_system);
+	ClassDB::bind_method(D_METHOD("get_resource_filesystem"), &EditorInterface::get_resource_filesystem);
 	ClassDB::bind_method(D_METHOD("get_editor_paths"), &EditorInterface::get_editor_paths);
 	ClassDB::bind_method(D_METHOD("get_resource_previewer"), &EditorInterface::get_resource_previewer);
 	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
 	ClassDB::bind_method(D_METHOD("get_editor_toaster"), &EditorInterface::get_editor_toaster);
 	ClassDB::bind_method(D_METHOD("get_editor_undo_redo"), &EditorInterface::get_editor_undo_redo);
+	ClassDB::bind_method(D_METHOD("get_scene_paint_2d"), &EditorInterface::get_scene_paint_2d);
 
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 
@@ -799,6 +882,12 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_multi_window_enabled"), &EditorInterface::is_multi_window_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
+	ClassDB::bind_method(D_METHOD("get_editor_language"), &EditorInterface::get_editor_language);
+
+	ClassDB::bind_method(D_METHOD("is_node_3d_snap_enabled"), &EditorInterface::is_node_3d_snap_enabled);
+	ClassDB::bind_method(D_METHOD("get_node_3d_translate_snap"), &EditorInterface::get_node_3d_translate_snap);
+	ClassDB::bind_method(D_METHOD("get_node_3d_rotate_snap"), &EditorInterface::get_node_3d_rotate_snap);
+	ClassDB::bind_method(D_METHOD("get_node_3d_scale_snap"), &EditorInterface::get_node_3d_scale_snap);
 
 	ClassDB::bind_method(D_METHOD("popup_dialog", "dialog", "rect"), &EditorInterface::popup_dialog, DEFVAL(Rect2i()));
 	ClassDB::bind_method(D_METHOD("popup_dialog_centered", "dialog", "minsize"), &EditorInterface::popup_dialog_centered, DEFVAL(Size2i()));
@@ -838,13 +927,20 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_scene_from_path", "scene_filepath", "set_inherited"), &EditorInterface::open_scene_from_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
 
+	ClassDB::bind_method(D_METHOD("set_object_edited", "object", "edited"), &EditorInterface::set_object_edited);
+	ClassDB::bind_method(D_METHOD("is_object_edited", "object"), &EditorInterface::is_object_edited);
+
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
+	ClassDB::bind_method(D_METHOD("get_unsaved_scenes"), &EditorInterface::get_unsaved_scenes);
 	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
+
+	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorInterface::add_root_node);
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("save_all_scenes"), &EditorInterface::save_all_scenes);
+	ClassDB::bind_method(D_METHOD("close_scene"), &EditorInterface::close_scene);
 
 	ClassDB::bind_method(D_METHOD("mark_scene_as_unsaved"), &EditorInterface::mark_scene_as_unsaved);
 

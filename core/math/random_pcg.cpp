@@ -49,6 +49,7 @@ int64_t RandomPCG::rand_weighted(const Vector<float> &p_weights) {
 	const float *weights = p_weights.ptr();
 	float weights_sum = 0.0;
 	for (int64_t i = 0; i < weights_size; ++i) {
+		ERR_FAIL_COND_V_MSG(weights[i] < 0.0, -1, vformat("Weight array contains the negative value %f at index %d.", weights[i], i));
 		weights_sum += weights[i];
 	}
 
@@ -80,5 +81,15 @@ int RandomPCG::random(int p_from, int p_to) {
 	if (p_from == p_to) {
 		return p_from;
 	}
-	return int(rand(uint32_t(Math::abs(p_from - p_to)) + 1U)) + MIN(p_from, p_to);
+
+	int64_t min = MIN(p_from, p_to);
+	int64_t max = MAX(p_from, p_to);
+	uint32_t diff = static_cast<uint32_t>(max - min);
+
+	if (diff == UINT32_MAX) {
+		// Can't add 1 to max uint32_t value for inclusive range, so call rand without passing bounds.
+		return static_cast<int64_t>(rand()) + min;
+	}
+
+	return static_cast<int64_t>(rand(diff + 1U)) + min;
 }

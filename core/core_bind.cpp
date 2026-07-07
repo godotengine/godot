@@ -31,14 +31,20 @@
 #include "core_bind.h"
 #include "core_bind.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
@@ -46,17 +52,17 @@ namespace CoreBind {
 
 ////// ResourceLoader //////
 
-ResourceLoader *ResourceLoader::singleton = nullptr;
-
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
 	return ::ResourceLoader::load_threaded_request(p_path, p_type_hint, p_use_sub_threads, ResourceFormatLoader::CacheMode(p_cache_mode));
 }
 
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, Array r_progress) {
-	float progress = 0;
-	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, &progress);
+	// Progress being the default array indicates the user hasn't requested for it to be computed.
 	// Default array should never be modified, it causes the hash of the method to change.
-	if (!ClassDB::is_default_array_arg(r_progress)) {
+	const bool return_progress = !ClassDB::is_default_array_arg(r_progress);
+	float progress = 0;
+	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, return_progress ? &progress : nullptr);
+	if (return_progress) {
 		r_progress.resize(1);
 		r_progress[0] = progress;
 	}
@@ -88,11 +94,13 @@ Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &
 	return ret;
 }
 
-void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
+void ResourceLoader::add_resource_format_loader(RequiredParam<ResourceFormatLoader> rp_format_loader, bool p_at_front) {
+	EXTRACT_PARAM_OR_FAIL(p_format_loader, rp_format_loader);
 	::ResourceLoader::add_resource_format_loader(p_format_loader, p_at_front);
 }
 
-void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader) {
+void ResourceLoader::remove_resource_format_loader(RequiredParam<ResourceFormatLoader> rp_format_loader) {
+	EXTRACT_PARAM_OR_FAIL(p_format_loader, rp_format_loader);
 	::ResourceLoader::remove_resource_format_loader(p_format_loader);
 }
 
@@ -165,11 +173,16 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
+Error ResourceSaver::save(RequiredParam<Resource> p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
 	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
-Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
+Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+	return ::ResourceSaver::set_uid(p_path, p_uid);
+}
+
+Vector<String> ResourceSaver::get_recognized_extensions(RequiredParam<Resource> rp_resource) {
+	EXTRACT_PARAM_OR_FAIL_V(p_resource, rp_resource, Vector<String>());
 	List<String> exts;
 	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
 	Vector<String> ret;
@@ -179,11 +192,13 @@ Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_r
 	return ret;
 }
 
-void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
+void ResourceSaver::add_resource_format_saver(RequiredParam<ResourceFormatSaver> rp_format_saver, bool p_at_front) {
+	EXTRACT_PARAM_OR_FAIL(p_format_saver, rp_format_saver);
 	::ResourceSaver::add_resource_format_saver(p_format_saver, p_at_front);
 }
 
-void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
+void ResourceSaver::remove_resource_format_saver(RequiredParam<ResourceFormatSaver> rp_format_saver) {
+	EXTRACT_PARAM_OR_FAIL(p_format_saver, rp_format_saver);
 	::ResourceSaver::remove_resource_format_saver(p_format_saver);
 }
 
@@ -191,10 +206,9 @@ ResourceUID::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bo
 	return ::ResourceSaver::get_resource_id_for_path(p_path, p_generate);
 }
 
-ResourceSaver *ResourceSaver::singleton = nullptr;
-
 void ResourceSaver::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save", "resource", "path", "flags"), &ResourceSaver::save, DEFVAL(""), DEFVAL((uint32_t)FLAG_NONE));
+	ClassDB::bind_method(D_METHOD("set_uid", "resource", "uid"), &ResourceSaver::set_uid);
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
 	ClassDB::bind_method(D_METHOD("add_resource_format_saver", "format_saver", "at_front"), &ResourceSaver::add_resource_format_saver, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_resource_format_saver", "format_saver"), &ResourceSaver::remove_resource_format_saver);
@@ -232,11 +246,9 @@ void Logger::log_message(const String &p_text, bool p_error) {
 ////// OS //////
 
 void OS::LoggerBind::logv(const char *p_format, va_list p_list, bool p_err) {
-	if (!should_log(p_err) || is_logging) {
+	if (!should_log(p_err)) {
 		return;
 	}
-
-	is_logging = true;
 
 	constexpr int static_buf_size = 1024;
 	char static_buf[static_buf_size] = { '\0' };
@@ -259,12 +271,10 @@ void OS::LoggerBind::logv(const char *p_format, va_list p_list, bool p_err) {
 	if (len >= static_buf_size) {
 		Memory::free_static(buf);
 	}
-
-	is_logging = false;
 }
 
 void OS::LoggerBind::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
-	if (!should_log(true) || is_logging) {
+	if (!should_log(true)) {
 		return;
 	}
 
@@ -274,13 +284,9 @@ void OS::LoggerBind::log_error(const char *p_function, const char *p_file, int p
 		backtraces[i] = p_script_backtraces[i];
 	}
 
-	is_logging = true;
-
 	for (Ref<CoreBind::Logger> &logger : loggers) {
 		logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, CoreBind::Logger::ErrorType(p_type), backtraces);
 	}
-
-	is_logging = false;
 }
 
 PackedByteArray OS::get_entropy(int p_bytes) {
@@ -428,7 +434,7 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
-	::OS::ProcessID pid = 0;
+	ProcessID pid = 0;
 	Error err = ::OS::get_singleton()->create_instance(args, &pid);
 	if (err != OK) {
 		return -1;
@@ -436,12 +442,20 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 	return pid;
 }
 
+Error OS::open_with_program(const String &p_program_path, const Vector<String> &p_paths) {
+	List<String> paths;
+	for (const String &path : p_paths) {
+		paths.push_back(path);
+	}
+	return ::OS::get_singleton()->open_with_program(p_program_path, paths);
+}
+
 int OS::create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console) {
 	List<String> args;
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
-	::OS::ProcessID pid = 0;
+	ProcessID pid = 0;
 	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid, p_open_console);
 	if (err != OK) {
 		return -1;
@@ -546,6 +560,10 @@ Vector<String> OS::get_restart_on_exit_arguments() const {
 
 String OS::get_locale() const {
 	return ::OS::get_singleton()->get_locale();
+}
+
+Vector<String> OS::get_preferred_locales() const {
+	return ::OS::get_singleton()->get_preferred_locales();
 }
 
 String OS::get_locale_language() const {
@@ -660,7 +678,7 @@ bool OS::is_debug_build() const {
 	return true;
 #else
 	return false;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
@@ -699,8 +717,8 @@ String OS::get_unique_id() const {
 	return ::OS::get_singleton()->get_unique_id();
 }
 
-void OS::add_logger(const Ref<Logger> &p_logger) {
-	ERR_FAIL_COND(p_logger.is_null());
+void OS::add_logger(RequiredParam<Logger> rp_logger) {
+	EXTRACT_PARAM_OR_FAIL(p_logger, rp_logger);
 
 	if (!logger_bind) {
 		logger_bind = memnew(LoggerBind);
@@ -711,13 +729,32 @@ void OS::add_logger(const Ref<Logger> &p_logger) {
 	logger_bind->loggers.push_back(p_logger);
 }
 
-void OS::remove_logger(const Ref<Logger> &p_logger) {
-	ERR_FAIL_COND(p_logger.is_null());
+void OS::remove_logger(RequiredParam<Logger> rp_logger) {
+	EXTRACT_PARAM_OR_FAIL(p_logger, rp_logger);
 	ERR_FAIL_COND_MSG(!logger_bind || logger_bind->loggers.find(p_logger) == -1, "Could not remove logger, as it hasn't been added.");
 	logger_bind->loggers.erase(p_logger);
 }
 
-OS *OS::singleton = nullptr;
+void OS::remove_script_loggers(const ScriptLanguage *p_script) {
+	if (logger_bind) {
+		LocalVector<Ref<CoreBind::Logger>> to_remove;
+		for (const Ref<CoreBind::Logger> &logger : logger_bind->loggers) {
+			if (logger.is_null()) {
+				continue;
+			}
+			ScriptInstance *si = logger->get_script_instance();
+			if (!si) {
+				continue;
+			}
+			if (si->get_language() == p_script) {
+				to_remove.push_back(logger);
+			}
+		}
+		for (const Ref<CoreBind::Logger> &logger : to_remove) {
+			logger_bind->loggers.erase(logger);
+		}
+	}
+}
 
 void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_entropy", "size"), &OS::get_entropy);
@@ -756,6 +793,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("execute_with_pipe", "path", "arguments", "blocking"), &OS::execute_with_pipe, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
+	ClassDB::bind_method(D_METHOD("open_with_program", "program_path", "paths"), &OS::open_with_program);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
 	ClassDB::bind_method(D_METHOD("shell_show_in_file_manager", "file_or_dir_path", "open_folder"), &OS::shell_show_in_file_manager, DEFVAL(true));
@@ -784,6 +822,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &OS::delay_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &OS::get_locale);
+	ClassDB::bind_method(D_METHOD("get_preferred_locales"), &OS::get_preferred_locales);
 	ClassDB::bind_method(D_METHOD("get_locale_language"), &OS::get_locale_language);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &OS::get_model_name);
 
@@ -871,8 +910,6 @@ OS::~OS() {
 }
 
 ////// Geometry2D //////
-
-Geometry2D *Geometry2D::singleton = nullptr;
 
 Geometry2D *Geometry2D::get_singleton() {
 	return singleton;
@@ -1133,8 +1170,6 @@ void Geometry2D::_bind_methods() {
 
 ////// Geometry3D //////
 
-Geometry3D *Geometry3D::singleton = nullptr;
-
 Geometry3D *Geometry3D::get_singleton() {
 	return singleton;
 }
@@ -1276,8 +1311,6 @@ void Geometry3D::_bind_methods() {
 }
 
 ////// Marshalls //////
-
-Marshalls *Marshalls::singleton = nullptr;
 
 Marshalls *Marshalls::get_singleton() {
 	return singleton;
@@ -1511,6 +1544,10 @@ void Thread::set_thread_safety_checks_enabled(bool p_enabled) {
 	set_current_thread_safe_for_nodes(!p_enabled);
 }
 
+bool Thread::is_main_thread() {
+	return ::Thread::is_main_thread();
+}
+
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
@@ -1519,6 +1556,7 @@ void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
 
 	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
+	ClassDB::bind_static_method("Thread", D_METHOD("is_main_thread"), &Thread::is_main_thread);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
@@ -1530,14 +1568,16 @@ namespace Special {
 ////// ClassDB //////
 
 PackedStringArray ClassDB::get_class_list() const {
-	List<StringName> classes;
-	::ClassDB::get_class_list(&classes);
+	LocalVector<StringName> classes;
+	::ClassDB::get_class_list(classes);
 
 	PackedStringArray ret;
 	ret.resize(classes.size());
+	String *ptrw = ret.ptrw();
 	int idx = 0;
-	for (const StringName &E : classes) {
-		ret.set(idx++, E);
+	for (const StringName &cls : classes) {
+		ptrw[idx] = cls;
+		idx++;
 	}
 
 	return ret;
@@ -1636,13 +1676,15 @@ StringName ClassDB::class_get_property_setter(const StringName &p_class, const S
 	return ::ClassDB::get_property_setter(p_class, p_property);
 }
 
-Variant ClassDB::class_get_property(Object *p_object, const StringName &p_property) const {
+Variant ClassDB::class_get_property(RequiredParam<Object> rp_object, const StringName &p_property) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_object, rp_object, Variant());
 	Variant ret;
 	::ClassDB::get_property(p_object, p_property, ret);
 	return ret;
 }
 
-Error ClassDB::class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const {
+Error ClassDB::class_set_property(RequiredParam<Object> rp_object, const StringName &p_property, const Variant &p_value) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_object, rp_object, ERR_INVALID_PARAMETER);
 	Variant ret;
 	bool valid;
 	if (!::ClassDB::set_property(p_object, p_property, p_value, &valid)) {
@@ -1675,14 +1717,8 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	TypedArray<Dictionary> ret;
 
-	for (const MethodInfo &E : methods) {
-#ifdef DEBUG_METHODS_ENABLED
-		ret.push_back(E.operator Dictionary());
-#else
-		Dictionary dict;
-		dict["name"] = E.name;
-		ret.push_back(dict);
-#endif
+	for (const MethodInfo &method : methods) {
+		ret.push_back(method.operator Dictionary());
 	}
 
 	return ret;
@@ -1791,8 +1827,12 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 				pf == "is_class_enabled" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
-		for (const String &E : get_class_list()) {
-			r_options->push_back(E.quote());
+		LocalVector<StringName> classes;
+		::ClassDB::get_class_list(classes);
+		for (const StringName &E : classes) {
+			if (::ClassDB::is_class_exposed(E)) {
+				r_options->push_back(E.string().quote());
+			}
 		}
 	}
 
@@ -1961,7 +2001,8 @@ Object *Engine::get_singleton_object(const StringName &p_name) const {
 	return ::Engine::get_singleton()->get_singleton_object(p_name);
 }
 
-void Engine::register_singleton(const StringName &p_name, Object *p_object) {
+void Engine::register_singleton(const StringName &p_name, RequiredParam<Object> rp_instance) {
+	EXTRACT_PARAM_OR_FAIL(p_object, rp_instance);
 	ERR_FAIL_COND_MSG(has_singleton(p_name), vformat("Singleton already registered: '%s'.", String(p_name)));
 	ERR_FAIL_COND_MSG(!String(p_name).is_valid_ascii_identifier(), vformat("Singleton name is not a valid identifier: '%s'.", p_name));
 	::Engine::Singleton s;
@@ -1988,11 +2029,13 @@ Vector<String> Engine::get_singleton_list() const {
 	return ret;
 }
 
-Error Engine::register_script_language(ScriptLanguage *p_language) {
+Error Engine::register_script_language(RequiredParam<ScriptLanguage> rp_language) {
+	EXTRACT_PARAM_OR_FAIL_V(p_language, rp_language, ERR_INVALID_PARAMETER);
 	return ScriptServer::register_language(p_language);
 }
 
-Error Engine::unregister_script_language(const ScriptLanguage *p_language) {
+Error Engine::unregister_script_language(RequiredParam<const ScriptLanguage> rp_language) {
+	EXTRACT_PARAM_OR_FAIL_V(p_language, rp_language, ERR_INVALID_PARAMETER);
 	return ScriptServer::unregister_language(p_language);
 }
 
@@ -2122,8 +2165,6 @@ void Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
 }
-
-Engine *Engine::singleton = nullptr;
 
 ////// EngineDebugger //////
 
@@ -2269,8 +2310,6 @@ EngineDebugger::~EngineDebugger() {
 	}
 	captures.clear();
 }
-
-EngineDebugger *EngineDebugger::singleton = nullptr;
 
 void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &EngineDebugger::is_active);

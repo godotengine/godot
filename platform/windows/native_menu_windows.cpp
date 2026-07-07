@@ -58,7 +58,7 @@ HBITMAP NativeMenuWindows::_make_bitmap(const Ref<Image> &p_img) const {
 	HDC dc = GetDC(nullptr);
 	HBITMAP bitmap = CreateDIBSection(dc, reinterpret_cast<BITMAPINFO *>(&bi), DIB_RGB_COLORS, reinterpret_cast<void **>(&buffer), nullptr, 0);
 	for (UINT index = 0; index < image_size; index++) {
-		int row_index = floor(index / texture_size.width);
+		int row_index = std::floor(index / texture_size.width);
 		int column_index = (index % int(texture_size.width));
 		const Color &c = p_img->get_pixel(column_index, row_index);
 		*(buffer + index) = c.to_argb32();
@@ -170,7 +170,7 @@ void NativeMenuWindows::popup(const RID &p_rid, const Vector2i &p_position) {
 	const MenuData *md = menus.get_or_null(p_rid);
 	ERR_FAIL_NULL(md);
 
-	HWND hwnd = (HWND)DisplayServer::get_singleton()->window_get_native_handle(DisplayServer::WINDOW_HANDLE, DisplayServer::MAIN_WINDOW_ID);
+	HWND hwnd = (HWND)DisplayServer::get_singleton()->window_get_native_handle(DisplayServerEnums::WINDOW_HANDLE, DisplayServerEnums::MAIN_WINDOW_ID);
 	UINT flags = TPM_HORIZONTAL | TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON | TPM_VERPOSANIMATION;
 	if (md->is_rtl) {
 		flags |= TPM_LAYOUTRTL;
@@ -574,7 +574,7 @@ int NativeMenuWindows::find_item_index_with_text(const RID &p_rid, const String 
 		if (GetMenuItemInfoW(md->menu, i, true, &item)) {
 			item.cch++;
 			Char16String str;
-			str.resize(item.cch);
+			str.resize_uninitialized(item.cch);
 			item.dwTypeData = (LPWSTR)str.ptrw();
 			if (GetMenuItemInfoW(md->menu, i, true, &item)) {
 				if (String::utf16((const char16_t *)str.get_data()) == p_text) {
@@ -728,7 +728,7 @@ String NativeMenuWindows::get_item_text(const RID &p_rid, int p_idx) const {
 	if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
 		item.cch++;
 		Char16String str;
-		str.resize(item.cch);
+		str.resize_uninitialized(item.cch);
 		item.dwTypeData = (LPWSTR)str.ptrw();
 		if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
 			return String::utf16((const char16_t *)str.get_data());
@@ -996,15 +996,15 @@ void NativeMenuWindows::set_item_submenu(const RID &p_rid, int p_idx, const RID 
 	int count = GetMenuItemCount(md->menu);
 	ERR_FAIL_COND(p_idx >= count);
 
-	MenuData *md_sub = menus.get_or_null(p_submenu_rid);
-	ERR_FAIL_COND_MSG(md->menu == md_sub->menu, "Can't set submenu to self!");
-
 	MENUITEMINFOW item;
 	ZeroMemory(&item, sizeof(item));
 	item.cbSize = sizeof(item);
 	item.fMask = MIIM_SUBMENU;
 	if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
 		if (p_submenu_rid.is_valid()) {
+			MenuData *md_sub = menus.get_or_null(p_submenu_rid);
+			ERR_FAIL_NULL(md_sub);
+			ERR_FAIL_COND_MSG(md->menu == md_sub->menu, "Can't set submenu to self!");
 			item.hSubMenu = md_sub->menu;
 		} else {
 			item.hSubMenu = nullptr;
@@ -1120,6 +1120,58 @@ void NativeMenuWindows::set_item_icon(const RID &p_rid, int p_idx, const Ref<Tex
 
 void NativeMenuWindows::set_item_indentation_level(const RID &p_rid, int p_idx, int p_level) {
 	// Not supported.
+}
+
+int NativeMenuWindows::set_item_index(const RID &p_rid, int p_idx, int p_target_idx) {
+	ERR_FAIL_COND_V(p_idx < 0, -1);
+	const MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, -1);
+	int count = GetMenuItemCount(md->menu);
+	ERR_FAIL_COND_V(p_idx >= count, -1);
+	ERR_FAIL_INDEX_V(p_target_idx, count, -1);
+
+	// Get item text separately.
+	MENUITEMINFOW item;
+	ZeroMemory(&item, sizeof(item));
+	item.cbSize = sizeof(item);
+	item.fMask = MIIM_STRING;
+	item.dwTypeData = nullptr;
+	Char16String str;
+	if (!GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
+		return -1;
+	}
+	item.cch++;
+	str.resize_uninitialized(item.cch);
+	item.dwTypeData = (LPWSTR)str.ptrw();
+	if (!GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
+		return -1;
+	}
+
+	ZeroMemory(&item, sizeof(item));
+	item.cbSize = sizeof(item);
+	item.fMask = MIIM_FTYPE | MIIM_DATA | MIIM_STRING | MIIM_STATE | MIIM_SUBMENU | MIIM_BITMAP;
+	if (!GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
+		return -1;
+	}
+
+	item.dwTypeData = (LPWSTR)str.get_data();
+
+	if (!RemoveMenu(md->menu, p_idx, MF_BYPOSITION)) {
+		return -1;
+	}
+	if (!InsertMenuItemW(md->menu, p_target_idx, true, &item)) {
+		// Delete item if failed to insert.
+		MenuItemData *item_data = (MenuItemData *)item.dwItemData;
+		if (item_data) {
+			if (item_data->bmp) {
+				DeleteObject(item_data->bmp);
+			}
+			memdelete(item_data);
+		}
+		return -1;
+	}
+
+	return p_target_idx;
 }
 
 int NativeMenuWindows::get_item_count(const RID &p_rid) const {

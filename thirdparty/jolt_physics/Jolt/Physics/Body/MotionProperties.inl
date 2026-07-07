@@ -17,10 +17,7 @@ void MotionProperties::MoveKinematic(Vec3Arg inDeltaPosition, QuatArg inDeltaRot
 	mLinearVelocity = LockTranslation(inDeltaPosition / inDeltaTime);
 
 	// Calculate required angular velocity
-	Vec3 axis;
-	float angle;
-	inDeltaRotation.GetAxisAngle(axis, angle);
-	mAngularVelocity = LockAngular(axis * (angle / inDeltaTime));
+	mAngularVelocity = LockAngular(inDeltaRotation.GetAngularVelocity(inDeltaTime));
 }
 
 void MotionProperties::ClampLinearVelocity()
@@ -113,7 +110,7 @@ void MotionProperties::ApplyGyroscopicForceInternal(QuatArg inBodyRotation, floa
 
 	// Calculate local space angular momentum
 	Quat inertia_space_to_world_space = inBodyRotation * mInertiaRotation;
-	Vec3 local_angular_velocity = inertia_space_to_world_space.Conjugated() * mAngularVelocity;
+	Vec3 local_angular_velocity = inertia_space_to_world_space.InverseRotate(mAngularVelocity);
 	Vec3 local_momentum = local_inertia * local_angular_velocity;
 
 	// The gyroscopic force applies a torque: T = -w x I w where w is angular velocity and I the inertia tensor

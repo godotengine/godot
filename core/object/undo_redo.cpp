@@ -31,8 +31,10 @@
 #include "undo_redo.h"
 
 #include "core/io/resource.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/callable_bind.h"
 
 void UndoRedo::Operation::delete_reference() {
 	if (type != Operation::TYPE_REFERENCE) {

@@ -67,6 +67,7 @@ DDSFormatType _dds_format_get_type(DDSFormat p_format) {
 		case DDS_R32F:
 		case DDS_RG32F:
 		case DDS_RGBA32F:
+		case DDS_RGBA16:
 			return DDFT_FOURCC;
 
 		case DDS_BC6S:
@@ -74,6 +75,9 @@ DDSFormatType _dds_format_get_type(DDSFormat p_format) {
 		case DDS_BC7:
 		case DDS_RGB9E5:
 		case DDS_RGB32F:
+		case DDS_R16I:
+		case DDS_RG16I:
+		case DDS_RGBA16I:
 			return DDFT_DXGI;
 
 		default:
@@ -151,6 +155,24 @@ DDSFormat _image_format_to_dds_format(Image::Format p_image_format) {
 		case Image::FORMAT_BPTC_RGBA: {
 			return DDS_BC7;
 		}
+		case Image::FORMAT_R16: {
+			return DDS_R16;
+		}
+		case Image::FORMAT_RG16: {
+			return DDS_RG16;
+		}
+		case Image::FORMAT_RGBA16: {
+			return DDS_RGBA16;
+		}
+		case Image::FORMAT_R16I: {
+			return DDS_R16I;
+		}
+		case Image::FORMAT_RG16I: {
+			return DDS_RG16I;
+		}
+		case Image::FORMAT_RGBA16I: {
+			return DDS_RGBA16I;
+		}
 		default: {
 			return DDS_MAX;
 		}
@@ -181,6 +203,8 @@ uint32_t _image_format_to_fourcc_format(Image::Format p_format) {
 			return DDFCC_RG16F;
 		case Image::FORMAT_RGBAH:
 			return DDFCC_RGBA16F;
+		case Image::FORMAT_RGBA16:
+			return DDFCC_RGBA16;
 
 		default:
 			return 0;
@@ -221,6 +245,18 @@ uint32_t _image_format_to_dxgi_format(Image::Format p_format) {
 			return DXGI_R16G16B16A16_FLOAT;
 		case Image::FORMAT_RGBE9995:
 			return DXGI_R9G9B9E5;
+		case Image::FORMAT_R16:
+			return DXGI_R16_UNORM;
+		case Image::FORMAT_RG16:
+			return DXGI_R16G16_UNORM;
+		case Image::FORMAT_RGBA16:
+			return DXGI_R16G16B16A16_UNORM;
+		case Image::FORMAT_R16I:
+			return DXGI_R16_UINT;
+		case Image::FORMAT_RG16I:
+			return DXGI_R16G16_UINT;
+		case Image::FORMAT_RGBA16I:
+			return DXGI_R16G16B16A16_UINT;
 
 		default:
 			return 0;
@@ -276,6 +312,20 @@ void _get_dds_pixel_bitmask(Image::Format p_format, uint32_t &r_bit_count, uint3
 			r_blue_mask = 0x1f;
 			r_alpha_mask = 0;
 		} break;
+		case Image::FORMAT_R16: {
+			r_bit_count = 16;
+			r_red_mask = 0xffff;
+			r_green_mask = 0;
+			r_blue_mask = 0;
+			r_alpha_mask = 0;
+		} break;
+		case Image::FORMAT_RG16: {
+			r_bit_count = 32;
+			r_red_mask = 0xffff;
+			r_green_mask = 0xffff0000;
+			r_blue_mask = 0;
+			r_alpha_mask = 0;
+		} break;
 
 		default: {
 			r_bit_count = 0;
@@ -293,8 +343,8 @@ Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img) {
 
 	Ref<Image> image = p_img;
 
-	stream_buffer->put_32(DDS_MAGIC);
-	stream_buffer->put_32(DDS_HEADER_SIZE);
+	stream_buffer->put_u32(DDS_MAGIC);
+	stream_buffer->put_u32(DDS_HEADER_SIZE);
 
 	uint32_t flags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT | DDSD_PITCH | DDSD_LINEARSIZE;
 
@@ -302,13 +352,13 @@ Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img) {
 		flags |= DDSD_MIPMAPCOUNT;
 	}
 
-	stream_buffer->put_32(flags);
+	stream_buffer->put_u32(flags);
 
 	uint32_t height = image->get_height();
-	stream_buffer->put_32(height);
+	stream_buffer->put_u32(height);
 
 	uint32_t width = image->get_width();
-	stream_buffer->put_32(width);
+	stream_buffer->put_u32(width);
 
 	DDSFormat dds_format = _image_format_to_dds_format(image->get_format());
 	const DDSFormatInfo &info = dds_format_info[dds_format];
@@ -322,18 +372,18 @@ Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img) {
 		pitch = width * info.block_size;
 	}
 
-	stream_buffer->put_32(pitch);
-	stream_buffer->put_32(depth);
+	stream_buffer->put_u32(pitch);
+	stream_buffer->put_u32(depth);
 
 	uint32_t mipmaps = image->get_mipmap_count() + 1;
-	stream_buffer->put_32(mipmaps);
+	stream_buffer->put_u32(mipmaps);
 
 	uint32_t reserved = 0;
 	for (int i = 0; i < 11; i++) {
-		stream_buffer->put_32(reserved);
+		stream_buffer->put_u32(reserved);
 	}
 
-	stream_buffer->put_32(DDS_PIXELFORMAT_SIZE);
+	stream_buffer->put_u32(DDS_PIXELFORMAT_SIZE);
 
 	uint32_t pf_flags = 0;
 
@@ -349,63 +399,63 @@ Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img) {
 		pf_flags = DDPF_FOURCC;
 	}
 
-	stream_buffer->put_32(pf_flags);
+	stream_buffer->put_u32(pf_flags);
 
 	bool needs_pixeldata_swap = false;
 
 	if (format_type == DDFT_BITMASK) {
 		// Uncompressed bitmasked.
-		stream_buffer->put_32(0); // FourCC
+		stream_buffer->put_u32(0); // FourCC
 
 		uint32_t bit_count, r_mask, g_mask, b_mask, a_mask;
 		_get_dds_pixel_bitmask(image->get_format(), bit_count, r_mask, g_mask, b_mask, a_mask);
 
-		stream_buffer->put_32(bit_count);
-		stream_buffer->put_32(r_mask);
-		stream_buffer->put_32(g_mask);
-		stream_buffer->put_32(b_mask);
-		stream_buffer->put_32(a_mask);
+		stream_buffer->put_u32(bit_count);
+		stream_buffer->put_u32(r_mask);
+		stream_buffer->put_u32(g_mask);
+		stream_buffer->put_u32(b_mask);
+		stream_buffer->put_u32(a_mask);
 
-		if (image->get_format() == Image::FORMAT_RGBA4444 || image->get_format() == Image::FORMAT_RGB565 || image->get_format() == Image::FORMAT_RGB8) {
+		if (image->get_format() == Image::FORMAT_RGBA4444 || image->get_format() == Image::FORMAT_RGB8) {
 			needs_pixeldata_swap = true;
 		}
 	} else if (format_type == DDFT_FOURCC) {
 		// FourCC.
 		uint32_t fourcc = _image_format_to_fourcc_format(image->get_format());
-		stream_buffer->put_32(fourcc);
+		stream_buffer->put_u32(fourcc);
 
-		stream_buffer->put_32(0); // Bit count
-		stream_buffer->put_32(0); // R Bitmask
-		stream_buffer->put_32(0); // G Bitmask
-		stream_buffer->put_32(0); // B Bitmask
-		stream_buffer->put_32(0); // A Bitmask
+		stream_buffer->put_u32(0); // Bit count
+		stream_buffer->put_u32(0); // R Bitmask
+		stream_buffer->put_u32(0); // G Bitmask
+		stream_buffer->put_u32(0); // B Bitmask
+		stream_buffer->put_u32(0); // A Bitmask
 	} else {
 		// DXGI format and DX10 header.
-		stream_buffer->put_32(DDFCC_DX10);
+		stream_buffer->put_u32(DDFCC_DX10);
 
-		stream_buffer->put_32(0); // Bit count
-		stream_buffer->put_32(0); // R Bitmask
-		stream_buffer->put_32(0); // G Bitmask
-		stream_buffer->put_32(0); // B Bitmask
-		stream_buffer->put_32(0); // A Bitmask
+		stream_buffer->put_u32(0); // Bit count
+		stream_buffer->put_u32(0); // R Bitmask
+		stream_buffer->put_u32(0); // G Bitmask
+		stream_buffer->put_u32(0); // B Bitmask
+		stream_buffer->put_u32(0); // A Bitmask
 	}
 
 	uint32_t caps1 = info.compressed ? DDSD_LINEARSIZE : DDSD_PITCH;
-	stream_buffer->put_32(caps1);
+	stream_buffer->put_u32(caps1);
 
-	stream_buffer->put_32(0); // Caps2
-	stream_buffer->put_32(0); // Caps3
-	stream_buffer->put_32(0); // Caps4
-	stream_buffer->put_32(0); // Reserved 2
+	stream_buffer->put_u32(0); // Caps2
+	stream_buffer->put_u32(0); // Caps3
+	stream_buffer->put_u32(0); // Caps4
+	stream_buffer->put_u32(0); // Reserved 2
 
 	if (format_type == DDFT_DXGI) {
 		// DX10 header.
 		uint32_t dxgi_format = _image_format_to_dxgi_format(image->get_format());
-		stream_buffer->put_32(dxgi_format);
-		stream_buffer->put_32(DX10D_2D);
-		stream_buffer->put_32(0); // Misc flags 1
-		stream_buffer->put_32(1); // Array size
-		stream_buffer->put_32(0); // Misc flags 2
+		stream_buffer->put_u32(dxgi_format);
+		stream_buffer->put_u32(DX10D_2D);
+		stream_buffer->put_u32(0); // Misc flags 1
+		stream_buffer->put_u32(1); // Array size
+		stream_buffer->put_u32(0); // Misc flags 2
 	}
 
 	for (uint32_t mip_i = 0; mip_i < mipmaps; mip_i++) {
@@ -441,23 +491,6 @@ Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img) {
 
 					wb[data_i + 1] = ((ar & 0x0F) << 4) | ((gb & 0xF0) >> 4);
 					wb[data_i + 0] = ((ar & 0xF0) >> 4) | ((gb & 0x0F) << 4);
-				}
-			} else if (mip_image->get_format() == Image::FORMAT_RGB565) {
-				// RGB565 to BGR565
-				const int64_t data_size = data.size();
-				uint8_t *wb = data.ptrw();
-
-				for (int64_t data_i = 0; data_i < data_size; data_i += 2) {
-					uint16_t px = wb[data_i] | (wb[data_i + 1] << 8);
-
-					uint8_t r = (px >> 11) & 0x1F;
-					uint8_t g = (px >> 5) & 0x3F;
-					uint8_t b = px & 0x1F;
-
-					uint16_t out_px = (b << 11) | (g << 5) | r;
-
-					wb[data_i + 0] = out_px & 0xFF;
-					wb[data_i + 1] = (out_px >> 8) & 0xFF;
 				}
 			} else if (mip_image->get_format() == Image::FORMAT_RGB8) {
 				// RGB8 to BGR8

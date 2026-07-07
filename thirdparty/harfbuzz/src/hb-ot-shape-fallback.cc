@@ -409,6 +409,36 @@ position_around_base (const hb_ot_shape_plan_t *plan,
 }
 
 static inline void
+position_cluster_impl (const hb_ot_shape_plan_t *plan,
+		       hb_font_t *font,
+		       hb_buffer_t  *buffer,
+		       unsigned int start,
+		       unsigned int end,
+		       bool adjust_offsets_when_zeroing)
+{
+  /* Find the base glyph */
+  hb_glyph_info_t *info = buffer->info;
+  for (unsigned int i = start; i < end; i++)
+    if (!_hb_glyph_info_is_unicode_mark (&info[i]))
+    {
+      /* Find mark glyphs */
+      unsigned int j;
+      for (j = i + 1; j < end; j++)
+      {
+        if (_hb_glyph_info_is_hidden (&info[j]) ||
+	    _hb_glyph_info_is_default_ignorable (&info[j]))
+	  continue;
+	if (!_hb_glyph_info_is_unicode_mark (&info[j]))
+	  break;
+      }
+
+      position_around_base (plan, font, buffer, i, j, adjust_offsets_when_zeroing);
+
+      i = j - 1;
+    }
+}
+
+static HB_ALWAYS_INLINE void
 position_cluster (const hb_ot_shape_plan_t *plan,
 		  hb_font_t *font,
 		  hb_buffer_t  *buffer,
@@ -419,21 +449,7 @@ position_cluster (const hb_ot_shape_plan_t *plan,
   if (end - start < 2)
     return;
 
-  /* Find the base glyph */
-  hb_glyph_info_t *info = buffer->info;
-  for (unsigned int i = start; i < end; i++)
-    if (!_hb_glyph_info_is_unicode_mark (&info[i]))
-    {
-      /* Find mark glyphs */
-      unsigned int j;
-      for (j = i + 1; j < end; j++)
-	if (!_hb_glyph_info_is_unicode_mark (&info[j]))
-	  break;
-
-      position_around_base (plan, font, buffer, i, j, adjust_offsets_when_zeroing);
-
-      i = j - 1;
-    }
+  position_cluster_impl (plan, font, buffer, start, end, adjust_offsets_when_zeroing);
 }
 
 void
@@ -455,7 +471,9 @@ _hb_ot_shape_fallback_mark_position (const hb_ot_shape_plan_t *plan,
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 1; i < count; i++)
-    if (likely (!_hb_glyph_info_is_unicode_mark (&info[i]))) {
+    if (likely (!_hb_glyph_info_is_unicode_mark (&info[i]) &&
+		!_hb_glyph_info_is_hidden (&info[i]) &&
+		!_hb_glyph_info_is_default_ignorable (&info[i]))) {
       position_cluster (plan, font, buffer, start, i, adjust_offsets_when_zeroing);
       start = i;
     }

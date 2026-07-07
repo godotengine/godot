@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "cubemap_filter.h"
 
-#include "../storage/texture_storage.h"
+#ifdef GLES3_ENABLED
+
 #include "core/config/project_settings.h"
+#include "drivers/gles3/storage/texture_storage.h"
 
 using namespace GLES3;
 
@@ -72,8 +72,8 @@ CubemapFilter::CubemapFilter() {
 		glGenVertexArrays(1, &screen_triangle_array);
 		glBindVertexArray(screen_triangle_array);
 		glBindBuffer(GL_ARRAY_BUFFER, screen_triangle);
-		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
-		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
+		glVertexAttribPointer(RSE::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
+		glEnableVertexAttribArray(RSE::ARRAY_VERTEX);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 	}
@@ -92,13 +92,13 @@ CubemapFilter::~CubemapFilter() {
 Vector3 importance_sample_GGX(Vector2 xi, float roughness4) {
 	// Compute distribution direction
 	float phi = 2.0 * Math::PI * xi.x;
-	float cos_theta = sqrt((1.0 - xi.y) / (1.0 + (roughness4 - 1.0) * xi.y));
-	float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+	float cos_theta = std::sqrt((1.0 - xi.y) / (1.0 + (roughness4 - 1.0) * xi.y));
+	float sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
 
 	// Convert to spherical direction
 	Vector3 half_vector;
-	half_vector.x = sin_theta * cos(phi);
-	half_vector.y = sin_theta * sin(phi);
+	half_vector.x = sin_theta * std::cos(phi);
+	half_vector.y = sin_theta * std::sin(phi);
 	half_vector.z = cos_theta;
 
 	return half_vector;
@@ -182,7 +182,7 @@ void CubemapFilter::filter_radiance(GLuint p_source_cubemap, GLuint p_dest_cubem
 
 			float solid_angle_sample = 1.0 / (float(sample_count) * pdf + 0.0001);
 
-			float mip_level = MAX(0.5 * log2(solid_angle_sample / solid_angle_texel) + float(MAX(1, p_layer - 3)), 1.0);
+			float mip_level = MAX(0.5 * std::log2(solid_angle_sample / solid_angle_texel) + float(MAX(1, p_layer - 3)), 1.0);
 
 			sample_directions[index * 4 + 3] = mip_level;
 			weight += light_vec.z;

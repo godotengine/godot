@@ -35,8 +35,6 @@
 #include "core/object/class_db.h"
 #include "core/variant/variant.h"
 
-HashMap<StringName, LocalVector<GDExtensionSpecialCompatHashes::Mapping>> GDExtensionSpecialCompatHashes::mappings;
-
 bool GDExtensionSpecialCompatHashes::lookup_current_hash(const StringName &p_class, const StringName &p_method, uint32_t p_legacy_hash, uint32_t *r_current_hash) {
 	LocalVector<Mapping> *methods = mappings.getptr(p_class);
 	if (!methods) {
@@ -65,7 +63,7 @@ bool GDExtensionSpecialCompatHashes::get_legacy_hashes(const StringName &p_class
 			if (p_check_valid) {
 				MethodBind *mb = ClassDB::get_method_with_compatibility(p_class, p_method, mapping.current_hash);
 				if (!mb) {
-					WARN_PRINT(vformat("Compatibility hash %d for %s::%s() mapped to non-existent hash %d. Please update gdextension_special_compat_hashes.cpp.", mapping.legacy_hash, p_class, p_method, mapping.current_hash));
+					WARN_PRINT(vformat("Compatibility hash %d for %s::%s() mapped to non-existent hash %d in gdextension_special_compat_hashes.cpp.", mapping.legacy_hash, p_class, p_method, mapping.current_hash));
 					continue;
 				}
 			}
@@ -333,6 +331,12 @@ void GDExtensionSpecialCompatHashes::initialize() {
 	});
 	mappings.insert("EditorFileDialog", {
 		{ "add_filter", 233059325, 3388804757 },
+		{ "get_access", 778734016, 3344081076 },
+		{ "set_access", 3882893764, 4104413466 },
+		{ "get_display_mode", 3517174669, 1092104624 },
+		{ "set_display_mode", 3049004050, 2692197101 },
+		{ "get_file_mode", 2681044145, 4074825319 },
+		{ "set_file_mode", 274150415, 3654936397 },
 	});
 	mappings.insert("EditorImportPlugin", {
 		{ "append_import_external_resource", 3645925746, 320493106 },

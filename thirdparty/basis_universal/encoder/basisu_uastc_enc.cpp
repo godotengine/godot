@@ -3813,32 +3813,7 @@ namespace basisu
 			return hash_hsieh((const uint8_t*)&s, sizeof(s));
 		}
 	};
-
-	class tracked_stat
-	{
-	public:
-		tracked_stat() { clear(); }
-
-		void clear() { m_num = 0; m_total = 0; m_total2 = 0; }
-
-		void update(uint32_t val) { m_num++; m_total += val; m_total2 += val * val; }
-
-		tracked_stat& operator += (uint32_t val) { update(val); return *this; }
-
-		uint32_t get_number_of_values() { return m_num; }
-		uint64_t get_total() const { return m_total; }
-		uint64_t get_total2() const { return m_total2; }
-
-		float get_average() const { return m_num ? (float)m_total / m_num : 0.0f; };
-		float get_std_dev() const { return m_num ? sqrtf((float)(m_num * m_total2 - m_total * m_total)) / m_num : 0.0f; }
-		float get_variance() const { float s = get_std_dev(); return s * s; }
-
-	private:
-		uint32_t m_num;
-		uint64_t m_total;
-		uint64_t m_total2;
-	};
-		
+				
 	static bool uastc_rdo_blocks(uint32_t first_index, uint32_t last_index, basist::uastc_block* pBlocks, const color_rgba* pBlock_pixels, const uastc_rdo_params& params, uint32_t flags, 
 		uint32_t &total_skipped, uint32_t &total_refined, uint32_t &total_modified, uint32_t &total_smooth)
 	{
@@ -4150,9 +4125,7 @@ namespace basisu
 				const uint32_t first_index = block_index_iter;
 				const uint32_t last_index = minimum<uint32_t>(num_blocks, block_index_iter + blocks_per_job);
 
-#ifndef __EMSCRIPTEN__
 				pJob_pool->add_job([first_index, last_index, pBlocks, pBlock_pixels, &params, flags, &total_skipped, &total_modified, &total_refined, &total_smooth, &all_succeeded, &stat_mutex] {
-#endif
 
 					uint32_t job_skipped = 0, job_modified = 0, job_refined = 0, job_smooth = 0;
 
@@ -4168,16 +4141,12 @@ namespace basisu
 						total_smooth += job_smooth;
 					}
 
-#ifndef __EMSCRIPTEN__
 					}
 				);
-#endif
 
 			} // block_index_iter
 
-#ifndef __EMSCRIPTEN__
 			pJob_pool->wait_for_all();
-#endif
 
 			status = all_succeeded;
 		}

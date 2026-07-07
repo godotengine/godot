@@ -31,59 +31,91 @@
 #include "scroll_container.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
-Size2 ScrollContainer::get_minimum_size() const {
+Size2 ScrollContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	// Calculated in this function, as it needs to traverse all child controls once to calculate;
-	// and needs to be calculated before being used by update_scrollbars().
+	// and needs to be calculated before being used by `_update_scrollbars()`.
 	largest_child_min_size = Size2();
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
-		if (!c) {
-			continue;
-		}
-		if (c == h_scroll || c == v_scroll || c == focus_panel) {
+		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
 
-		Size2 child_min_size = c->get_combined_minimum_size();
-
+		Size2 child_min_size = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
 		largest_child_min_size = largest_child_min_size.max(child_min_size);
 	}
 
 	Size2 min_size;
 	const Size2 size = get_size();
 
+	bool v_scroll_show = vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || vertical_scroll_mode == SCROLL_MODE_RESERVE || ((vertical_scroll_mode == SCROLL_MODE_AUTO || vertical_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) && (largest_child_min_size.y > size.y));
+	bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || horizontal_scroll_mode == SCROLL_MODE_RESERVE || ((horizontal_scroll_mode == SCROLL_MODE_AUTO || horizontal_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) && (largest_child_min_size.x > size.x));
+
 	if (horizontal_scroll_mode == SCROLL_MODE_DISABLED) {
 		min_size.x = largest_child_min_size.x;
-		bool v_scroll_show = vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || vertical_scroll_mode == SCROLL_MODE_RESERVE || (vertical_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.y > size.y);
 		if (v_scroll_show && v_scroll->get_parent() == this) {
-			min_size.x += v_scroll->get_minimum_size().x;
+			min_size.x += v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
+		}
+	} else if (horizontal_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) {
+		float h_max_size = get_combined_maximum_size().x;
+		min_size.x = h_max_size >= 0 ? MIN(largest_child_min_size.x, h_max_size) : largest_child_min_size.x;
+		if (v_scroll_show && v_scroll->get_parent() == this) {
+			min_size.x += v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
 		}
 	}
 
 	if (vertical_scroll_mode == SCROLL_MODE_DISABLED) {
 		min_size.y = largest_child_min_size.y;
-		bool h_scroll_show = horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || horizontal_scroll_mode == SCROLL_MODE_RESERVE || (horizontal_scroll_mode == SCROLL_MODE_AUTO && largest_child_min_size.x > size.x);
 		if (h_scroll_show && h_scroll->get_parent() == this) {
-			min_size.y += h_scroll->get_minimum_size().y;
+			min_size.y += h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
+		}
+	} else if (vertical_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) {
+		float v_max_size = get_combined_maximum_size().y;
+		min_size.y = v_max_size >= 0 ? MIN(largest_child_min_size.y, v_max_size) : largest_child_min_size.y;
+		if (h_scroll_show && h_scroll->get_parent() == this) {
+			min_size.y += h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
 		}
 	}
 
-	Size2 panel_size = theme_cache.panel_style->get_minimum_size();
-	min_size += panel_size;
-	if (draw_focus_border) {
-		Size2 focus_size = theme_cache.focus_style->get_minimum_size();
-		// Only update the minimum size if the focus style's minimum size doesn't fit into the panel style's minimum size.
-		if (focus_size > panel_size) {
-			min_size += focus_size - panel_size;
-		}
-	}
+	Rect2 margins = _get_margins();
+	min_size += margins.position + margins.size;
 
 	return min_size;
+}
+
+Size2 ScrollContainer::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 ScrollContainer::get_desired_size() const {
+	return _get_minimum_size(true);
+}
+
+Size2 ScrollContainer::get_inner_combined_maximum_size() const {
+	Size2 ms = Container::get_inner_combined_maximum_size();
+
+	if (theme_cache.panel_style.is_valid()) {
+		ms -= theme_cache.panel_style->get_minimum_size();
+	}
+
+	if (h_scroll && (_is_h_scroll_visible() || horizontal_scroll_mode == SCROLL_MODE_RESERVE)) {
+		ms.y -= h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
+	}
+	if (v_scroll && (_is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE)) {
+		ms.x -= v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
+	}
+
+	return ms;
 }
 
 void ScrollContainer::_cancel_drag() {
@@ -104,11 +136,49 @@ void ScrollContainer::_cancel_drag() {
 
 bool ScrollContainer::_is_h_scroll_visible() const {
 	// Scrolls may have been moved out for reasons.
-	return h_scroll->is_visible() && h_scroll->get_parent() == this;
+	return h_scroll && h_scroll->is_visible() && h_scroll->get_parent() == this;
 }
 
 bool ScrollContainer::_is_v_scroll_visible() const {
-	return v_scroll->is_visible() && v_scroll->get_parent() == this;
+	return v_scroll && v_scroll->is_visible() && v_scroll->get_parent() == this;
+}
+
+Rect2 ScrollContainer::_get_margins() const {
+	float right_margin = theme_cache.panel_style->get_margin(SIDE_RIGHT);
+	float left_margin = theme_cache.panel_style->get_margin(SIDE_LEFT);
+	float top_margin = theme_cache.panel_style->get_margin(SIDE_TOP);
+	float bottom_margin = theme_cache.panel_style->get_margin(SIDE_BOTTOM);
+	if (draw_focus_border) {
+		// Only update margins if the focus style's margins don't fit into the panel style's margins.
+		float focus_margin = theme_cache.focus_style->get_margin(SIDE_RIGHT);
+		if (focus_margin > right_margin) {
+			right_margin = focus_margin;
+		}
+		focus_margin = theme_cache.focus_style->get_margin(SIDE_LEFT);
+		if (focus_margin > left_margin) {
+			left_margin = focus_margin;
+		}
+		focus_margin = theme_cache.focus_style->get_margin(SIDE_TOP);
+		if (focus_margin > top_margin) {
+			top_margin = focus_margin;
+		}
+		focus_margin = theme_cache.focus_style->get_margin(SIDE_BOTTOM);
+		if (focus_margin > bottom_margin) {
+			bottom_margin = focus_margin;
+		}
+	}
+
+	return Rect2(left_margin, top_margin, right_margin, bottom_margin);
+}
+
+Rect2 ScrollContainer::_get_local_visible_rect() const {
+	const float side_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
+	const float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
+
+	Point2 origin = Point2(is_layout_rtl() ? side_margin : 0.0f, 0.0f);
+	Size2 size = Size2(get_size().x - side_margin, get_size().y - bottom_margin);
+
+	return Rect2(origin, size);
 }
 
 void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
@@ -124,11 +194,12 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	if (mb.is_valid()) {
 		if (mb->is_pressed()) {
 			bool scroll_value_modified = false;
+			bool swap_axes = scroll_horizontal_by_default != mb->is_shift_pressed();
 
 			bool v_scroll_hidden = !v_scroll->is_visible() && vertical_scroll_mode != SCROLL_MODE_SHOW_NEVER;
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 				// By default, the vertical orientation takes precedence. This is an exception.
-				if ((h_scroll_enabled && mb->is_shift_pressed()) || v_scroll_hidden) {
+				if ((h_scroll_enabled && swap_axes) || v_scroll_hidden) {
 					h_scroll->scroll(-h_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (v_scroll_enabled) {
@@ -137,7 +208,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				if ((h_scroll_enabled && mb->is_shift_pressed()) || v_scroll_hidden) {
+				if ((h_scroll_enabled && swap_axes) || v_scroll_hidden) {
 					h_scroll->scroll(h_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (v_scroll_enabled) {
@@ -149,7 +220,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			bool h_scroll_hidden = !h_scroll->is_visible() && horizontal_scroll_mode != SCROLL_MODE_SHOW_NEVER;
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
 				// By default, the horizontal orientation takes precedence. This is an exception.
-				if ((v_scroll_enabled && mb->is_shift_pressed()) || h_scroll_hidden) {
+				if ((v_scroll_enabled && swap_axes) || h_scroll_hidden) {
 					v_scroll->scroll(-v_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (h_scroll_enabled) {
@@ -158,7 +229,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
-				if ((v_scroll_enabled && mb->is_shift_pressed()) || h_scroll_hidden) {
+				if ((v_scroll_enabled && swap_axes) || h_scroll_hidden) {
 					v_scroll->scroll(v_scroll->get_page() / ScrollBar::PAGE_DIVISOR * mb->get_factor());
 					scroll_value_modified = true;
 				} else if (h_scroll_enabled) {
@@ -268,55 +339,35 @@ void ScrollContainer::_update_scrollbar_position() {
 		return;
 	}
 
-	float right_margin = theme_cache.panel_style->get_margin(SIDE_RIGHT);
-	float left_margin = theme_cache.panel_style->get_margin(SIDE_LEFT);
-	float top_margin = theme_cache.panel_style->get_margin(SIDE_TOP);
-	float bottom_margin = theme_cache.panel_style->get_margin(SIDE_BOTTOM);
-	if (draw_focus_border) {
-		// Only update margins if the focus style's margins don't fit into the panel style's margins.
-		float focus_margin = theme_cache.focus_style->get_margin(SIDE_RIGHT);
-		if (focus_margin > right_margin) {
-			right_margin += focus_margin;
-		}
-		focus_margin = theme_cache.focus_style->get_margin(SIDE_LEFT);
-		if (focus_margin > left_margin) {
-			left_margin += focus_margin;
-		}
-		focus_margin = theme_cache.focus_style->get_margin(SIDE_TOP);
-		if (focus_margin > top_margin) {
-			top_margin += focus_margin;
-		}
-		focus_margin = theme_cache.focus_style->get_margin(SIDE_BOTTOM);
-		if (focus_margin > bottom_margin) {
-			bottom_margin += focus_margin;
-		}
-	}
+	Rect2 margins = _get_margins();
 
-	Size2 hmin = h_scroll->is_visible() ? h_scroll->get_combined_minimum_size() : Size2();
-	Size2 vmin = v_scroll->is_visible() ? v_scroll->get_combined_minimum_size() : Size2();
+	Size2 hmin = h_scroll->is_visible() ? h_scroll->get_bound_minimum_size() : Size2();
+	Size2 vmin = v_scroll->is_visible() ? v_scroll->get_bound_minimum_size() : Size2();
 
-	int lmar = is_layout_rtl() ? right_margin : left_margin;
-	int rmar = is_layout_rtl() ? left_margin : right_margin;
+	int lmar = is_layout_rtl() ? margins.size.x : margins.position.x;
+	int rmar = is_layout_rtl() ? margins.position.x : margins.size.x;
 
 	h_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, lmar);
 	h_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -rmar - vmin.width);
-	h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height - bottom_margin);
-	h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -bottom_margin);
+	h_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -hmin.height - margins.size.y);
+	h_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -margins.size.y);
 
 	v_scroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -vmin.width - rmar);
 	v_scroll->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -rmar);
-	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, top_margin);
-	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -hmin.height - bottom_margin);
+	v_scroll->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, margins.position.y);
+	v_scroll->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -hmin.height - margins.size.y);
 
 	_updating_scrollbars = false;
 }
 
 void ScrollContainer::_gui_focus_changed(Control *p_control) {
 	if (follow_focus && is_ancestor_of(p_control)) {
+		following = true;
 		ensure_control_visible(p_control);
+		following = false;
 	}
 	if (draw_focus_border) {
-		const bool _should_draw_focus_border = has_focus() || child_has_focus();
+		const bool _should_draw_focus_border = has_focus(true) || child_has_focus();
 		if (focus_border_is_drawn != _should_draw_focus_border) {
 			queue_redraw();
 		}
@@ -326,81 +377,152 @@ void ScrollContainer::_gui_focus_changed(Control *p_control) {
 void ScrollContainer::ensure_control_visible(Control *p_control) {
 	ERR_FAIL_COND_MSG(!is_ancestor_of(p_control), "Must be an ancestor of the control.");
 
-	// Just eliminate the rotation of this ScrollContainer.
-	Transform2D other_in_this = get_global_transform().affine_inverse() * p_control->get_global_transform();
+	// The less scroll the better. We can assume that only the final visible area is transformed.
+	// This can reduce the amount of unnecessary scrolling caused by invisible parts.
 
-	Size2 size = get_size();
-	Rect2 other_rect = other_in_this.xform(Rect2(Point2(), p_control->get_size()));
+	scroll_diff = Vector2(); // Clear the cache.
 
-	float side_margin = v_scroll->is_visible() ? v_scroll->get_size().x : 0.0f;
-	float bottom_margin = h_scroll->is_visible() ? h_scroll->get_size().y : 0.0f;
+	Control *target = p_control;
+	Transform2D target_in_sc;
 
-	Vector2 diff = Vector2(MAX(MIN(other_rect.position.x - (is_layout_rtl() ? side_margin : 0.0f), 0.0f), other_rect.position.x + other_rect.size.x - size.x + (!is_layout_rtl() ? side_margin : 0.0f)),
-			MAX(MIN(other_rect.position.y, 0.0f), other_rect.position.y + other_rect.size.y - size.y + bottom_margin));
+	// The rect of the visible area of p_control.
+	Rect2 target_rect_local = Rect2(Point2(), p_control->get_size());
 
-	set_h_scroll(get_h_scroll() + diff.x);
-	set_v_scroll(get_v_scroll() + diff.y);
+	CanvasItem *parent_item = p_control->get_parent_item();
+	while (parent_item) {
+		ScrollContainer *sc = Object::cast_to<ScrollContainer>(parent_item);
+		parent_item = parent_item->get_parent_item();
+
+		if (!sc) {
+			continue;
+		}
+
+		// The transformation of the target in sc.
+		target_in_sc = (sc->get_global_transform().affine_inverse() * target->get_global_transform()) * target_in_sc;
+
+		if (sc == this) {
+			break;
+		}
+
+		target = sc;
+
+		if (following) {
+			// For nested cases, the inner ScrollContainer will first call this method, but the control will not be transformed immediately.
+			// Here we need to take into account the transform that will be applied by the inner ScrollContainer scrolling.
+			target_in_sc = target_in_sc.translated(-sc->scroll_diff);
+		}
+
+		const Rect2 rect = sc->_get_local_visible_rect();
+		target_rect_local = target_rect_local.intersection_transformed(target_in_sc.affine_inverse(), rect);
+
+		if (!target_rect_local.has_area()) {
+			ERR_FAIL_MSG("Unable to make the control visible because it is obscured by the inner ScrollContainer.");
+		}
+	}
+
+	// Calculates the amount to scroll in this ScrollContainer.
+
+	const Rect2 visible_rect = _get_local_visible_rect();
+	const Rect2 target_rect = target_in_sc.xform(target_rect_local);
+
+	Vector2 begin_diff = target_rect.position - visible_rect.position;
+	Vector2 end_diff = target_rect.get_end() - visible_rect.get_end();
+
+	for (int axis = 0; axis < 2; axis++) {
+		if (visible_rect.size[axis] > target_rect.size[axis]) {
+			scroll_diff[axis] = (begin_diff[axis] <= 0.0f) ? begin_diff[axis] : ((end_diff[axis] <= 0.0f) ? 0.0f : end_diff[axis]);
+		} else {
+			scroll_diff[axis] = (begin_diff[axis] >= 0.0f) ? begin_diff[axis] : ((end_diff[axis] >= 0.0f) ? 0.0f : end_diff[axis]);
+		}
+	}
+
+	// In skewed or rotated case, check if more scrolling is needed.
+	if ((Math::is_zero_approx(target_in_sc.columns[0][1]) || Math::is_zero_approx(target_in_sc.columns[1][0])) &&
+			((Math::is_zero_approx(target_in_sc.columns[0][0]) || Math::is_zero_approx(target_in_sc.columns[1][1])))) {
+		// Check for intersection after scrolling is applied.
+		Transform2D t_scrolled = target_in_sc.translated(-scroll_diff).affine_inverse();
+		Rect2 rect_scrolled = t_scrolled.xform(visible_rect);
+		if (!target_rect_local.intersects(rect_scrolled)) {
+			// Pan the ScrollContainer to make part of the control visible.
+			begin_diff = rect_scrolled.position - target_rect_local.position;
+			end_diff = rect_scrolled.get_end() - target_rect_local.get_end();
+
+			for (int axis = 0; axis < 2; axis++) {
+				if (target_rect_local.size[axis] > rect_scrolled.size[axis]) {
+					scroll_diff[axis] = (begin_diff[axis] <= 0.0f) ? begin_diff[axis] : ((end_diff[axis] <= 0.0f) ? 0.0f : end_diff[axis]);
+				} else {
+					scroll_diff[axis] = (begin_diff[axis] >= 0.0f) ? begin_diff[axis] : ((end_diff[axis] >= 0.0f) ? 0.0f : end_diff[axis]);
+				}
+			}
+
+			t_scrolled = t_scrolled.translated(-scroll_diff).affine_inverse();
+
+			scroll_diff = target_rect.position - t_scrolled.xform(target_rect_local).position;
+		}
+	}
+
+	set_h_scroll(get_h_scroll() + scroll_diff.x);
+	set_v_scroll(get_v_scroll() + scroll_diff.y);
 }
 
 void ScrollContainer::_reposition_children() {
-	update_scrollbars();
-	Size2 size = get_size();
-	Point2 ofs;
+	_update_scrollbars();
+	_update_scroll_hints();
 
-	Size2 panel_size = theme_cache.panel_style->get_minimum_size();
-	Point2 panel_offset = theme_cache.panel_style->get_offset();
-	size -= panel_size;
-	ofs += panel_offset;
-	if (draw_focus_border) {
-		// Only update the size and offset if focus style's doesn't fit into the panel style's.
-		Size2 focus_size = theme_cache.focus_style->get_minimum_size();
-		if (focus_size > panel_size) {
-			size -= focus_size - panel_size;
-		}
-		Point2 focus_offset = theme_cache.focus_style->get_offset();
-		if (focus_offset > panel_offset) {
-			ofs += focus_offset - panel_offset;
-		}
-	}
+	Rect2 margins = _get_margins();
+	Size2 size = get_size();
+	size -= margins.position + margins.size;
+	Point2 ofs = margins.position;
 
 	bool rtl = is_layout_rtl();
+	bool reserve_vscroll = _is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE;
 
 	if (_is_h_scroll_visible() || horizontal_scroll_mode == SCROLL_MODE_RESERVE) {
-		size.y -= h_scroll->get_minimum_size().y;
+		size.y -= h_scroll->get_minimum_size().y + theme_cache.scrollbar_v_separation;
 	}
 
-	if (_is_v_scroll_visible() || vertical_scroll_mode == SCROLL_MODE_RESERVE) {
-		size.x -= v_scroll->get_minimum_size().x;
+	if (reserve_vscroll) {
+		int width = v_scroll->get_minimum_size().x + theme_cache.scrollbar_h_separation;
+		size.x -= width;
+		if (rtl) {
+			ofs.x += width;
+		}
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
-		if (!c) {
+		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
-		if (c == h_scroll || c == v_scroll || c == focus_panel) {
-			continue;
-		}
-		Size2 minsize = c->get_combined_minimum_size();
 
+		Size2 minsize = c->get_combined_minimum_size();
+		Size2 maxsize = c->get_combined_maximum_size();
 		Rect2 r = Rect2(-Size2(get_h_scroll(), get_v_scroll()), minsize);
+
 		if (c->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.width = MAX(size.width, minsize.width);
+			if (maxsize.width >= 0) {
+				r.size.width = MIN(r.size.width, maxsize.width);
+			}
 		}
 		if (c->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.height = MAX(size.height, minsize.height);
+			if (maxsize.height >= 0) {
+				r.size.height = MIN(r.size.height, maxsize.height);
+			}
 		}
+
 		r.position += ofs;
-		if (rtl && _is_v_scroll_visible()) {
-			r.position.x += v_scroll->get_minimum_size().x;
-		}
 		r.position = r.position.floor();
 		fit_child_in_rect(c, r);
 	}
 
 	if (draw_focus_border) {
+		focus_panel->set_position(Vector2(0, 0));
 		focus_panel->set_size(get_size());
 	}
+
+	update_maximum_size();
 	queue_redraw();
 }
 
@@ -411,19 +533,35 @@ void ScrollContainer::_accessibility_action_scroll_set(const Variant &p_data) {
 }
 
 void ScrollContainer::_accessibility_action_scroll_up(const Variant &p_data) {
-	v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
+		v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
+	} else {
+		v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page());
+	}
 }
 
 void ScrollContainer::_accessibility_action_scroll_down(const Variant &p_data) {
-	v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
+		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
+	} else {
+		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page());
+	}
 }
 
 void ScrollContainer::_accessibility_action_scroll_left(const Variant &p_data) {
-	h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
+		h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
+	} else {
+		h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page());
+	}
 }
 
 void ScrollContainer::_accessibility_action_scroll_right(const Variant &p_data) {
-	h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
+	if ((AccessibilityServerEnums::AccessibilityScrollUnit)p_data == AccessibilityServerEnums::SCROLL_UNIT_ITEM) {
+		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / ScrollBar::PAGE_DIVISOR);
+	} else {
+		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page());
+	}
 }
 
 void ScrollContainer::_notification(int p_what) {
@@ -432,17 +570,23 @@ void ScrollContainer::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SCROLL_VIEW);
+			if (is_accessibility_region()) {
+				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_REGION);
+			} else {
+				AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SCROLL_VIEW);
+			}
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_down));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_LEFT, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_left));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_RIGHT, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_right));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_UP, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_up));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_set));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_DOWN, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_down));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_LEFT, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_left));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_RIGHT, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_right));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_UP, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_up));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SET_SCROLL_OFFSET, callable_mp(this, &ScrollContainer::_accessibility_action_scroll_set));
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_scroll_hints();
+			[[fallthrough]];
+		}
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_updating_scrollbars = true;
@@ -467,7 +611,7 @@ void ScrollContainer::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			draw_style_box(theme_cache.panel_style, Rect2(Vector2(), get_size()));
-			focus_border_is_drawn = draw_focus_border && (has_focus() || child_has_focus());
+			focus_border_is_drawn = draw_focus_border && (has_focus(true) || child_has_focus());
 			focus_panel->set_visible(focus_border_is_drawn);
 		} break;
 
@@ -576,23 +720,17 @@ void ScrollContainer::_notification(int p_what) {
 	}
 }
 
-void ScrollContainer::update_scrollbars() {
+void ScrollContainer::_update_scrollbars() {
+	Rect2 margins = _get_margins();
+
 	Size2 size = get_size();
-	Size2 panel_size = theme_cache.panel_style->get_minimum_size();
-	size -= panel_size;
-	if (draw_focus_border) {
-		Size2 focus_size = theme_cache.focus_style->get_minimum_size();
-		// Only update the size if the focus style's minimum size doesn't fit into the panel style's minimum size.
-		if (focus_size > panel_size) {
-			size -= focus_size - panel_size;
-		}
-	}
+	size -= margins.position + margins.size;
 
-	Size2 hmin = h_scroll->get_combined_minimum_size();
-	Size2 vmin = v_scroll->get_combined_minimum_size();
+	Size2 hmin = h_scroll->get_bound_minimum_size();
+	Size2 vmin = v_scroll->get_bound_minimum_size();
 
-	h_scroll->set_visible(horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || ((horizontal_scroll_mode == SCROLL_MODE_AUTO || horizontal_scroll_mode == SCROLL_MODE_RESERVE) && largest_child_min_size.width > size.width));
-	v_scroll->set_visible(vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || ((vertical_scroll_mode == SCROLL_MODE_AUTO || vertical_scroll_mode == SCROLL_MODE_RESERVE) && largest_child_min_size.height > size.height));
+	h_scroll->set_visible(horizontal_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || ((horizontal_scroll_mode == SCROLL_MODE_AUTO || horizontal_scroll_mode == SCROLL_MODE_RESERVE || horizontal_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) && largest_child_min_size.width > size.width));
+	v_scroll->set_visible(vertical_scroll_mode == SCROLL_MODE_SHOW_ALWAYS || ((vertical_scroll_mode == SCROLL_MODE_AUTO || vertical_scroll_mode == SCROLL_MODE_RESERVE || vertical_scroll_mode == SCROLL_MODE_MAXIMIZE_FIRST) && largest_child_min_size.height > size.height));
 
 	h_scroll->set_max(largest_child_min_size.width);
 	h_scroll->set_page(_is_v_scroll_visible() ? size.width - vmin.width : size.width);
@@ -603,6 +741,59 @@ void ScrollContainer::update_scrollbars() {
 	// Avoid scrollbar overlapping.
 	_updating_scrollbars = true;
 	callable_mp(this, &ScrollContainer::_update_scrollbar_position).call_deferred();
+}
+
+void ScrollContainer::_update_scroll_hints() {
+	Size2 size = get_size();
+	Rect2 margins = _get_margins();
+	Size2 scroll_size = size - margins.position - margins.size;
+
+	float v_scroll_value = v_scroll->get_value();
+	bool v_scroll_below_max = v_scroll_value < (largest_child_min_size.height - scroll_size.height - 1);
+	bool show_vertical_hints = v_scroll_value > 1 || v_scroll_below_max;
+
+	float h_scroll_value = h_scroll->get_value();
+	bool h_scroll_below_max = h_scroll_value < (largest_child_min_size.width - scroll_size.width - 1);
+	bool show_horizontal_hints = h_scroll_value > 1 || h_scroll_below_max;
+
+	bool rtl = is_layout_rtl();
+	if (show_vertical_hints) {
+		scroll_hint_top_left->set_texture(theme_cache.scroll_hint_vertical);
+		scroll_hint_top_left->set_modulate(theme_cache.scroll_hint_vertical_color);
+		scroll_hint_top_left->set_visible(!show_horizontal_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT) && v_scroll_value > 1);
+		scroll_hint_top_left->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? -size.x : 0);
+		scroll_hint_top_left->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? 0 : size.x);
+		scroll_hint_top_left->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+		scroll_hint_top_left->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_BEGIN, theme_cache.scroll_hint_vertical->get_height());
+
+		scroll_hint_bottom_right->set_flip_h(false);
+		scroll_hint_bottom_right->set_flip_v(true);
+		scroll_hint_bottom_right->set_texture(theme_cache.scroll_hint_vertical);
+		scroll_hint_bottom_right->set_modulate(theme_cache.scroll_hint_vertical_color);
+		scroll_hint_bottom_right->set_visible(!show_horizontal_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT) && v_scroll_below_max);
+		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? -size.x : 0);
+		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? 0 : size.x);
+		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -theme_cache.scroll_hint_vertical->get_height());
+		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+	} else {
+		scroll_hint_top_left->set_texture(theme_cache.scroll_hint_horizontal);
+		scroll_hint_top_left->set_modulate(theme_cache.scroll_hint_horizontal_color);
+		scroll_hint_top_left->set_visible(!show_vertical_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || (rtl ? scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT : scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT)) && h_scroll_value > 1);
+		scroll_hint_top_left->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, rtl ? (size.x - theme_cache.scroll_hint_horizontal->get_width()) : 0);
+		scroll_hint_top_left->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_BEGIN, rtl ? size.x : theme_cache.scroll_hint_horizontal->get_width());
+		scroll_hint_top_left->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+		scroll_hint_top_left->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+
+		scroll_hint_bottom_right->set_flip_h(true);
+		scroll_hint_bottom_right->set_flip_v(false);
+		scroll_hint_bottom_right->set_texture(theme_cache.scroll_hint_horizontal);
+		scroll_hint_bottom_right->set_modulate(theme_cache.scroll_hint_horizontal_color);
+		scroll_hint_bottom_right->set_visible(!show_vertical_hints && (scroll_hint_mode == SCROLL_HINT_MODE_ALL || (rtl ? scroll_hint_mode == SCROLL_HINT_MODE_TOP_AND_LEFT : scroll_hint_mode == SCROLL_HINT_MODE_BOTTOM_AND_RIGHT)) && h_scroll_below_max);
+		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, rtl ? -size.x : -theme_cache.scroll_hint_horizontal->get_width());
+		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, rtl ? (-size.x + theme_cache.scroll_hint_horizontal->get_width()) : 0);
+		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, 0);
+		scroll_hint_bottom_right->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, 0);
+	}
 }
 
 void ScrollContainer::_scroll_moved(float) {
@@ -671,12 +862,48 @@ ScrollContainer::ScrollMode ScrollContainer::get_vertical_scroll_mode() const {
 	return vertical_scroll_mode;
 }
 
+void ScrollContainer::set_scroll_horizontal_by_default(bool p_enable) {
+	scroll_horizontal_by_default = p_enable;
+}
+
+bool ScrollContainer::is_scroll_horizontal_by_default() const {
+	return scroll_horizontal_by_default;
+}
+
 int ScrollContainer::get_deadzone() const {
 	return deadzone;
 }
 
 void ScrollContainer::set_deadzone(int p_deadzone) {
 	deadzone = p_deadzone;
+}
+
+void ScrollContainer::set_scroll_hint_mode(ScrollHintMode p_mode) {
+	if (scroll_hint_mode == p_mode) {
+		return;
+	}
+
+	scroll_hint_mode = p_mode;
+	_update_scroll_hints();
+}
+
+ScrollContainer::ScrollHintMode ScrollContainer::get_scroll_hint_mode() const {
+	return scroll_hint_mode;
+}
+
+void ScrollContainer::set_tile_scroll_hint(bool p_enable) {
+	if (tile_scroll_hint == p_enable) {
+		return;
+	}
+
+	scroll_hint_top_left->set_stretch_mode(p_enable ? TextureRect::STRETCH_TILE : TextureRect::STRETCH_SCALE);
+	scroll_hint_bottom_right->set_stretch_mode(p_enable ? TextureRect::STRETCH_TILE : TextureRect::STRETCH_SCALE);
+
+	tile_scroll_hint = p_enable;
+}
+
+bool ScrollContainer::is_scroll_hint_tiled() {
+	return tile_scroll_hint;
 }
 
 bool ScrollContainer::is_following_focus() const {
@@ -694,10 +921,7 @@ PackedStringArray ScrollContainer::get_configuration_warnings() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
-		if (!c) {
-			continue;
-		}
-		if (c == h_scroll || c == v_scroll || c == focus_panel) {
+		if (!c || c == h_scroll || c == v_scroll || c == focus_panel || c == scroll_hint_top_left || c == scroll_hint_bottom_right) {
 			continue;
 		}
 
@@ -742,8 +966,17 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vertical_scroll_mode", "enable"), &ScrollContainer::set_vertical_scroll_mode);
 	ClassDB::bind_method(D_METHOD("get_vertical_scroll_mode"), &ScrollContainer::get_vertical_scroll_mode);
 
+	ClassDB::bind_method(D_METHOD("set_scroll_horizontal_by_default", "enable"), &ScrollContainer::set_scroll_horizontal_by_default);
+	ClassDB::bind_method(D_METHOD("is_scroll_horizontal_by_default"), &ScrollContainer::is_scroll_horizontal_by_default);
+
 	ClassDB::bind_method(D_METHOD("set_deadzone", "deadzone"), &ScrollContainer::set_deadzone);
 	ClassDB::bind_method(D_METHOD("get_deadzone"), &ScrollContainer::get_deadzone);
+
+	ClassDB::bind_method(D_METHOD("set_scroll_hint_mode", "scroll_hint_mode"), &ScrollContainer::set_scroll_hint_mode);
+	ClassDB::bind_method(D_METHOD("get_scroll_hint_mode"), &ScrollContainer::get_scroll_hint_mode);
+
+	ClassDB::bind_method(D_METHOD("set_tile_scroll_hint", "tile_scroll_hint"), &ScrollContainer::set_tile_scroll_hint);
+	ClassDB::bind_method(D_METHOD("is_scroll_hint_tiled"), &ScrollContainer::is_scroll_hint_tiled);
 
 	ClassDB::bind_method(D_METHOD("set_follow_focus", "enabled"), &ScrollContainer::set_follow_focus);
 	ClassDB::bind_method(D_METHOD("is_following_focus"), &ScrollContainer::is_following_focus);
@@ -761,23 +994,43 @@ void ScrollContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_focus"), "set_follow_focus", "is_following_focus");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_focus_border"), "set_draw_focus_border", "get_draw_focus_border");
 
-	ADD_GROUP("Scroll", "scroll_");
+	ADD_GROUP("Scrollbar", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_horizontal", PROPERTY_HINT_NONE, "suffix:px"), "set_h_scroll", "get_h_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_vertical", PROPERTY_HINT_NONE, "suffix:px"), "set_v_scroll", "get_v_scroll");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_horizontal_custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_horizontal_custom_step", "get_horizontal_custom_step");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scroll_vertical_custom_step", PROPERTY_HINT_RANGE, "-1,4096,suffix:px"), "set_vertical_custom_step", "get_vertical_custom_step");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve"), "set_horizontal_scroll_mode", "get_horizontal_scroll_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve"), "set_vertical_scroll_mode", "get_vertical_scroll_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve,Maximize First"), "set_horizontal_scroll_mode", "get_horizontal_scroll_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_scroll_mode", PROPERTY_HINT_ENUM, "Disabled,Auto,Always Show,Never Show,Reserve,Maximize First"), "set_vertical_scroll_mode", "get_vertical_scroll_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_by_default"), "set_scroll_horizontal_by_default", "is_scroll_horizontal_by_default");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_deadzone"), "set_deadzone", "get_deadzone");
+
+	ADD_GROUP("Scroll Hint", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scroll_hint_mode", PROPERTY_HINT_ENUM, "Disabled,All,Top and Left,Bottom and Right"), "set_scroll_hint_mode", "get_scroll_hint_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tile_scroll_hint"), "set_tile_scroll_hint", "is_scroll_hint_tiled");
 
 	BIND_ENUM_CONSTANT(SCROLL_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_AUTO);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_ALWAYS);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_SHOW_NEVER);
 	BIND_ENUM_CONSTANT(SCROLL_MODE_RESERVE);
+	BIND_ENUM_CONSTANT(SCROLL_MODE_MAXIMIZE_FIRST);
+
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_ALL);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_TOP_AND_LEFT);
+	BIND_ENUM_CONSTANT(SCROLL_HINT_MODE_BOTTOM_AND_RIGHT);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, scrollbar_h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollContainer, scrollbar_v_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ScrollContainer, focus_style, "focus");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ScrollContainer, scroll_hint_vertical);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ScrollContainer, scroll_hint_horizontal);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ScrollContainer, scroll_hint_vertical_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ScrollContainer, scroll_hint_horizontal_color);
 
 	GLOBAL_DEF("gui/common/default_scroll_deadzone", 0);
 }
@@ -798,19 +1051,37 @@ bool ScrollContainer::get_draw_focus_border() {
 
 bool ScrollContainer::child_has_focus() {
 	const Control *focus_owner = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
-	return focus_owner && is_ancestor_of(focus_owner);
+	return focus_owner && focus_owner->has_focus(true) && is_ancestor_of(focus_owner);
 }
 
 ScrollContainer::ScrollContainer() {
+	scroll_hint_top_left = memnew(TextureRect);
+	scroll_hint_top_left->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	scroll_hint_top_left->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	scroll_hint_top_left->set_use_parent_material(true);
+	scroll_hint_top_left->hide();
+	add_child(scroll_hint_top_left, false, INTERNAL_MODE_BACK);
+
+	scroll_hint_bottom_right = memnew(TextureRect);
+	scroll_hint_bottom_right->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	scroll_hint_bottom_right->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	scroll_hint_bottom_right->set_use_parent_material(true);
+	scroll_hint_bottom_right->hide();
+	add_child(scroll_hint_bottom_right, false, INTERNAL_MODE_BACK);
+
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
+	h_scroll->set_use_parent_material(true);
 	add_child(h_scroll, false, INTERNAL_MODE_BACK);
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
+	h_scroll->set_focus_mode(FOCUS_NONE);
 
 	v_scroll = memnew(VScrollBar);
 	v_scroll->set_name("_v_scroll");
+	v_scroll->set_use_parent_material(true);
 	add_child(v_scroll, false, INTERNAL_MODE_BACK);
 	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &ScrollContainer::_scroll_moved));
+	v_scroll->set_focus_mode(FOCUS_NONE);
 
 	// We need to use a PanelContainer for the focus style instead of just drawing it directly with RenderingService
 	// due to a clippling issues. The Control that is being scrolled will be over the focus border because both will be
@@ -823,7 +1094,8 @@ ScrollContainer::ScrollContainer() {
 	focus_panel->set_visible(draw_focus_border);
 	add_child(focus_panel, false, INTERNAL_MODE_BACK);
 
-	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
+	deadzone = GLOBAL_GET_CACHED(int, "gui/common/default_scroll_deadzone");
 
 	set_clip_contents(true);
+	set_propagate_maximum_size(false);
 }

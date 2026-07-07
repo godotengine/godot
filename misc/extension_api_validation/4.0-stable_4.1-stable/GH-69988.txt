@@ -1,0 +1,29 @@
+GH-69988
+--------
+Validate extension JSON: API was removed: classes/NavigationAgent2D/methods/get_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent2D/methods/set_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent2D/properties/time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/get_agent_height_offset
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/get_ignore_y
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/get_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_agent_height_offset
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_ignore_y
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/agent_height_offset
+Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/ignore_y
+Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/time_horizon
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/is_radius_estimated
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/set_estimate_radius
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/properties/estimate_radius
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/is_radius_estimated
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/set_estimate_radius
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/properties/estimate_radius
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_set_callback
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_set_target_velocity
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_set_time_horizon
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_set_callback
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_set_target_velocity
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_set_time_horizon
+
+Navigation avoidance was reworked entirely.
+Migration: TODO

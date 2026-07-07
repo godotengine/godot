@@ -34,7 +34,6 @@
 
 #include "core/string/print_string.h"
 
-#import <CoreAudio/HostTime.h>
 #import <CoreServices/CoreServices.h>
 
 Mutex MIDIDriverCoreMidi::mutex;

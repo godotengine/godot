@@ -15,7 +15,7 @@ class TempAllocator;
 //#define JPH_VALIDATE_ISLAND_BUILDER
 
 /// Keeps track of connected bodies and builds islands for multithreaded velocity/position update
-class IslandBuilder : public NonCopyable
+class JPH_EXPORT IslandBuilder : public NonCopyable
 {
 public:
 	/// Destructor
@@ -53,6 +53,21 @@ public:
 	/// The number of position iterations for each island
 	void					SetNumPositionSteps(uint32 inIslandIndex, uint inNumPositionSteps)	{ JPH_ASSERT(inIslandIndex < mNumIslands); JPH_ASSERT(inNumPositionSteps < 256); mNumPositionSteps[inIslandIndex] = uint8(inNumPositionSteps); }
 	uint					GetNumPositionSteps(uint32 inIslandIndex) const						{ JPH_ASSERT(inIslandIndex < mNumIslands); return mNumPositionSteps[inIslandIndex]; }
+
+#ifdef JPH_TRACK_SIMULATION_STATS
+	struct IslandStats
+	{
+		atomic<uint64>		mVelocityConstraintTicks = 0;
+		atomic<uint64>		mPositionConstraintTicks = 0;
+		atomic<uint64>		mUpdateBoundsTicks = 0;
+		uint8				mNumVelocitySteps = 0;
+		uint8				mNumPositionSteps = 0;												///< Tracking this a 2nd time since IslandBuilder::mNumPositionSteps is not filled in when there are no constraints or for large islands.
+		bool				mIsLargeIsland = false;
+	};
+
+	/// Tracks simulation stats per island
+	IslandStats &			GetIslandStats(uint32 inIslandIndex)								{ return mIslandStats[inIslandIndex]; }
+#endif
 
 	/// After you're done calling the three functions above, call this function to free associated data
 	void					ResetIslands(TempAllocator *inTempAllocator);
@@ -100,6 +115,10 @@ private:
 	uint32 *				mIslandsSorted = nullptr;						///< A list of island indices in order of most constraints first
 
 	uint8 *					mNumPositionSteps = nullptr;					///< Number of position steps for each island
+
+#ifdef JPH_TRACK_SIMULATION_STATS
+	IslandStats *			mIslandStats = nullptr;							///< Per island statistics
+#endif
 
 	// Counters
 	uint32					mMaxActiveBodies;								///< Maximum size of the active bodies list (see BodyManager::mActiveBodies)

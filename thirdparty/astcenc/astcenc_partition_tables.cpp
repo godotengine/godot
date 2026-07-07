@@ -304,9 +304,9 @@ static bool generate_one_partition_info_entry(
 	// Fill loop tail so we can overfetch later
 	for (unsigned int i = 0; i < partition_count; i++)
 	{
-		int ptex_count = counts[i];
-		int ptex_count_simd = round_up_to_simd_multiple_vla(ptex_count);
-		for (int j = ptex_count; j < ptex_count_simd; j++)
+		size_t ptex_count = counts[i];
+		size_t ptex_count_simd = round_up_to_simd_multiple_vla(ptex_count);
+		for (size_t j = ptex_count; j < ptex_count_simd; j++)
 		{
 			pi.texels_of_partition[i][j] = pi.texels_of_partition[i][ptex_count - 1];
 		}

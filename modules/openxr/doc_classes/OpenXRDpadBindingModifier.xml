@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenXRDpadBindingModifier" inherits="OpenXRIPBindingModifier" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="OpenXRDpadBindingModifier" inherits="OpenXRIPBindingModifier" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		The DPad binding modifier converts an axis input to a dpad output.
 	</brief_description>
@@ -36,7 +36,7 @@
 		<member name="threshold_released" type="float" setter="set_threshold_released" getter="get_threshold_released" default="0.4">
 			When our input value falls below this, our output becomes [code]false[/code].
 		</member>
-		<member name="wedge_angle" type="float" setter="set_wedge_angle" getter="get_wedge_angle" default="1.5708">
+		<member name="wedge_angle" type="float" setter="set_wedge_angle" getter="get_wedge_angle" default="1.5707964">
 			The angle of each wedge that identifies the 4 directions of the emulated dpad.
 		</member>
 	</members>

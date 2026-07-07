@@ -34,7 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 #include <openxr/openxr.h>
 
@@ -55,7 +55,7 @@ OpenXRHandTrackingExtension::~OpenXRHandTrackingExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	unobstructed_data_source = GLOBAL_GET("xr/openxr/extensions/hand_tracking_unobstructed_data_source");
@@ -245,7 +245,7 @@ void OpenXRHandTrackingExtension::on_process() {
 
 			// For some reason an inactive controller isn't coming back as inactive but has coordinates either as NAN or very large
 			const XrPosef &palm = hand_trackers[i].joint_locations[XR_HAND_JOINT_PALM_EXT].pose;
-			if (!hand_trackers[i].locations.isActive || isnan(palm.position.x) || palm.position.x < -1000000.00 || palm.position.x > 1000000.00) {
+			if (!hand_trackers[i].locations.isActive || std::isnan(palm.position.x) || palm.position.x < -1000000.00 || palm.position.x > 1000000.00) {
 				hand_trackers[i].locations.isActive = false; // workaround, make sure its inactive
 			}
 

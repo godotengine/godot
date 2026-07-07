@@ -47,8 +47,6 @@ CollideSphereVsTriangles::CollideSphereVsTriangles(const SphereShape *inShape1, 
 
 void CollideSphereVsTriangles::Collide(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8 inActiveEdges, const SubShapeID &inSubShapeID2)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Scale triangle and make it relative to the center of the sphere
 	Vec3 v0 = mScale2 * inV0 - mSphereCenterIn2;
 	Vec3 v1 = mScale2 * inV1 - mSphereCenterIn2;
@@ -113,6 +111,10 @@ void CollideSphereVsTriangles::Collide(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2,
 		result.mShape2Face[0] = mTransform2 * (mSphereCenterIn2 + v0);
 		result.mShape2Face[1] = mTransform2 * (mSphereCenterIn2 + v1);
 		result.mShape2Face[2] = mTransform2 * (mSphereCenterIn2 + v2);
+
+		// When inside out, we need to swap the triangle winding
+		if (mScaleSign2 < 0.0f)
+			std::swap(result.mShape2Face[1], result.mShape2Face[2]);
 	}
 
 	// Notify the collector

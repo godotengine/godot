@@ -30,9 +30,12 @@
 
 #pragma once
 
+#include "gdscript.h"
 #include "gdscript_codegen.h"
 #include "gdscript_function.h"
 #include "gdscript_utility_functions.h"
+
+#include "core/templates/rb_map.h"
 
 class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	struct StackSlot {
@@ -74,7 +77,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 
 	bool ended = false;
 	GDScriptFunction *function = nullptr;
-	bool debug_stack = false;
 
 	Vector<int> opcodes;
 	List<RBMap<StringName, int>> stack_id_stack;
@@ -98,15 +100,8 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	int current_line = 0;
 	int instr_args_max = 0;
 
-#ifdef DEBUG_ENABLED
-	List<int> temp_stack;
-#endif
-
-	HashMap<Variant, int, VariantHasher, VariantComparator> constant_map;
+	HashMap<Variant, int> constant_map;
 	RBMap<StringName, int> name_map;
-#ifdef TOOLS_ENABLED
-	Vector<StringName> named_globals;
-#endif
 	RBMap<Variant::ValidatedOperatorEvaluator, int> operator_func_map;
 	RBMap<Variant::ValidatedSetter, int> setters_map;
 	RBMap<Variant::ValidatedGetter, int> getters_map;
@@ -144,6 +139,9 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<int> for_jmp_addrs;
 	List<Address> for_counter_variables;
 	List<Address> for_container_variables;
+	List<Address> for_range_from_variables;
+	List<Address> for_range_to_variables;
+	List<Address> for_range_step_variables;
 	List<int> while_jmp_addrs;
 	List<int> continue_addrs;
 
@@ -162,7 +160,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			max_locals = locals.size();
 		}
 		stack_identifiers[p_id] = p_stackpos;
-		if (debug_stack) {
+		if (GDScriptLanguage::get_singleton()->should_track_locals()) {
 			block_identifiers[p_id] = p_stackpos;
 			GDScriptFunction::StackDebug sd;
 			sd.added = true;
@@ -176,7 +174,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	void push_stack_identifiers() {
 		stack_identifiers_counts.push_back(locals.size());
 		stack_id_stack.push_back(stack_identifiers);
-		if (debug_stack) {
+		if (GDScriptLanguage::get_singleton()->should_track_locals()) {
 			RBMap<StringName, int> block_ids(block_identifiers);
 			block_identifier_stack.push_back(block_ids);
 			block_identifiers.clear();
@@ -197,7 +195,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			dirty_locals.insert(i + GDScriptFunction::FIXED_ADDRESSES_MAX);
 		}
 		locals.resize(current_locals);
-		if (debug_stack) {
+		if (GDScriptLanguage::get_singleton()->should_track_locals()) {
 			for (const KeyValue<StringName, int> &E : block_identifiers) {
 				GDScriptFunction::StackDebug sd;
 				sd.added = false;
@@ -535,10 +533,11 @@ public:
 	virtual void write_endif() override;
 	virtual void write_jump_if_shared(const Address &p_value) override;
 	virtual void write_end_jump_if_shared() override;
-	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) override;
-	virtual void write_for_assignment(const Address &p_list) override;
-	virtual void write_for(const Address &p_variable, bool p_use_conversion) override;
-	virtual void write_endfor() override;
+	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type, bool p_is_range) override;
+	virtual void write_for_list_assignment(const Address &p_list) override;
+	virtual void write_for_range_assignment(const Address &p_from, const Address &p_to, const Address &p_step) override;
+	virtual void write_for(const Address &p_variable, bool p_use_conversion, bool p_is_range) override;
+	virtual void write_endfor(bool p_is_range) override;
 	virtual void start_while_condition() override;
 	virtual void write_while(const Address &p_condition) override;
 	virtual void write_endwhile() override;
@@ -546,7 +545,7 @@ public:
 	virtual void write_continue() override;
 	virtual void write_breakpoint() override;
 	virtual void write_newline(int p_line) override;
-	virtual void write_return(const Address &p_return_value) override;
+	virtual void write_return(const Address &p_return_value, bool p_use_conversion) override;
 	virtual void write_assert(const Address &p_test, const Address &p_message) override;
 
 	virtual ~GDScriptByteCodeGenerator();

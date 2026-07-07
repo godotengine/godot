@@ -36,21 +36,21 @@
 
 #include "core/config/engine.h"
 
-#include "Jolt/Physics/Constraints/FixedConstraint.h"
-#include "Jolt/Physics/Constraints/HingeConstraint.h"
+#include <Jolt/Physics/Constraints/FixedConstraint.h>
+#include <Jolt/Physics/Constraints/HingeConstraint.h>
 
 namespace {
 
-constexpr double DEFAULT_BIAS = 0.3;
-constexpr double DEFAULT_LIMIT_BIAS = 0.3;
-constexpr double DEFAULT_SOFTNESS = 0.9;
-constexpr double DEFAULT_RELAXATION = 1.0;
+constexpr double HINGE_DEFAULT_BIAS = 0.3;
+constexpr double HINGE_DEFAULT_LIMIT_BIAS = 0.3;
+constexpr double HINGE_DEFAULT_SOFTNESS = 0.9;
+constexpr double HINGE_DEFAULT_RELAXATION = 1.0;
 
 double estimate_physics_step() {
 	Engine *engine = Engine::get_singleton();
 
-	const double step = 1.0 / engine->get_physics_ticks_per_second();
-	const double step_scaled = step * engine->get_time_scale();
+	const double step = 1.0 / engine->get_user_physics_ticks_per_second();
+	const double step_scaled = step * engine->get_effective_time_scale();
 
 	return step_scaled;
 }
@@ -170,28 +170,28 @@ JoltHingeJoint3D::JoltHingeJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p
 
 double JoltHingeJoint3D::get_param(Parameter p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::HINGE_JOINT_BIAS: {
-			return DEFAULT_BIAS;
+		case PS3DE::HINGE_JOINT_BIAS: {
+			return HINGE_DEFAULT_BIAS;
 		}
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER: {
+		case PS3DE::HINGE_JOINT_LIMIT_UPPER: {
 			return limit_upper;
 		}
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_LOWER: {
+		case PS3DE::HINGE_JOINT_LIMIT_LOWER: {
 			return limit_lower;
 		}
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_BIAS: {
-			return DEFAULT_LIMIT_BIAS;
+		case PS3DE::HINGE_JOINT_LIMIT_BIAS: {
+			return HINGE_DEFAULT_LIMIT_BIAS;
 		}
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_SOFTNESS: {
-			return DEFAULT_SOFTNESS;
+		case PS3DE::HINGE_JOINT_LIMIT_SOFTNESS: {
+			return HINGE_DEFAULT_SOFTNESS;
 		}
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_RELAXATION: {
-			return DEFAULT_RELAXATION;
+		case PS3DE::HINGE_JOINT_LIMIT_RELAXATION: {
+			return HINGE_DEFAULT_RELAXATION;
 		}
-		case PhysicsServer3D::HINGE_JOINT_MOTOR_TARGET_VELOCITY: {
+		case PS3DE::HINGE_JOINT_MOTOR_TARGET_VELOCITY: {
 			return motor_target_speed;
 		}
-		case PhysicsServer3D::HINGE_JOINT_MOTOR_MAX_IMPULSE: {
+		case PS3DE::HINGE_JOINT_MOTOR_MAX_IMPULSE: {
 			// With Godot using max impulse instead of max torque we don't have much choice but to calculate this and hope the timestep doesn't change.
 			return motor_max_torque * estimate_physics_step();
 		}
@@ -203,39 +203,39 @@ double JoltHingeJoint3D::get_param(Parameter p_param) const {
 
 void JoltHingeJoint3D::set_param(Parameter p_param, double p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::HINGE_JOINT_BIAS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_BIAS)) {
+		case PS3DE::HINGE_JOINT_BIAS: {
+			if (!Math::is_equal_approx(p_value, HINGE_DEFAULT_BIAS)) {
 				WARN_PRINT(vformat("Hinge joint bias is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER: {
+		case PS3DE::HINGE_JOINT_LIMIT_UPPER: {
 			limit_upper = p_value;
 			_limits_changed();
 		} break;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_LOWER: {
+		case PS3DE::HINGE_JOINT_LIMIT_LOWER: {
 			limit_lower = p_value;
 			_limits_changed();
 		} break;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_BIAS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_LIMIT_BIAS)) {
+		case PS3DE::HINGE_JOINT_LIMIT_BIAS: {
+			if (!Math::is_equal_approx(p_value, HINGE_DEFAULT_LIMIT_BIAS)) {
 				WARN_PRINT(vformat("Hinge joint bias limit is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_SOFTNESS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_SOFTNESS)) {
+		case PS3DE::HINGE_JOINT_LIMIT_SOFTNESS: {
+			if (!Math::is_equal_approx(p_value, HINGE_DEFAULT_SOFTNESS)) {
 				WARN_PRINT(vformat("Hinge joint softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::HINGE_JOINT_LIMIT_RELAXATION: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_RELAXATION)) {
+		case PS3DE::HINGE_JOINT_LIMIT_RELAXATION: {
+			if (!Math::is_equal_approx(p_value, HINGE_DEFAULT_RELAXATION)) {
 				WARN_PRINT(vformat("Hinge joint relaxation is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::HINGE_JOINT_MOTOR_TARGET_VELOCITY: {
+		case PS3DE::HINGE_JOINT_MOTOR_TARGET_VELOCITY: {
 			motor_target_speed = p_value;
 			_motor_speed_changed();
 		} break;
-		case PhysicsServer3D::HINGE_JOINT_MOTOR_MAX_IMPULSE: {
+		case PS3DE::HINGE_JOINT_MOTOR_MAX_IMPULSE: {
 			// With Godot using max impulse instead of max torque we don't have much choice but to calculate this and hope the timestep doesn't change.
 			motor_max_torque = p_value / estimate_physics_step();
 			_motor_limit_changed();
@@ -285,10 +285,10 @@ void JoltHingeJoint3D::set_jolt_param(JoltParameter p_param, double p_value) {
 
 bool JoltHingeJoint3D::get_flag(Flag p_flag) const {
 	switch (p_flag) {
-		case PhysicsServer3D::HINGE_JOINT_FLAG_USE_LIMIT: {
+		case PS3DE::HINGE_JOINT_FLAG_USE_LIMIT: {
 			return limits_enabled;
 		}
-		case PhysicsServer3D::HINGE_JOINT_FLAG_ENABLE_MOTOR: {
+		case PS3DE::HINGE_JOINT_FLAG_ENABLE_MOTOR: {
 			return motor_enabled;
 		}
 		default: {
@@ -299,11 +299,11 @@ bool JoltHingeJoint3D::get_flag(Flag p_flag) const {
 
 void JoltHingeJoint3D::set_flag(Flag p_flag, bool p_enabled) {
 	switch (p_flag) {
-		case PhysicsServer3D::HINGE_JOINT_FLAG_USE_LIMIT: {
+		case PS3DE::HINGE_JOINT_FLAG_USE_LIMIT: {
 			limits_enabled = p_enabled;
 			_limits_changed();
 		} break;
-		case PhysicsServer3D::HINGE_JOINT_FLAG_ENABLE_MOTOR: {
+		case PS3DE::HINGE_JOINT_FLAG_ENABLE_MOTOR: {
 			motor_enabled = p_enabled;
 			_motor_state_changed();
 		} break;
@@ -381,21 +381,12 @@ void JoltHingeJoint3D::rebuild() {
 	destroy();
 
 	JoltSpace3D *space = get_space();
-
 	if (space == nullptr) {
 		return;
 	}
 
-	const JPH::BodyID body_ids[2] = {
-		body_a != nullptr ? body_a->get_jolt_id() : JPH::BodyID(),
-		body_b != nullptr ? body_b->get_jolt_id() : JPH::BodyID()
-	};
-
-	const JoltWritableBodies3D jolt_bodies = space->write_bodies(body_ids, 2);
-
-	JPH::Body *jolt_body_a = static_cast<JPH::Body *>(jolt_bodies[0]);
-	JPH::Body *jolt_body_b = static_cast<JPH::Body *>(jolt_bodies[1]);
-
+	JPH::Body *jolt_body_a = body_a != nullptr ? body_a->get_jolt_body() : nullptr;
+	JPH::Body *jolt_body_b = body_b != nullptr ? body_b->get_jolt_body() : nullptr;
 	ERR_FAIL_COND(jolt_body_a == nullptr && jolt_body_b == nullptr);
 
 	float ref_shift = 0.0f;
@@ -421,8 +412,8 @@ void JoltHingeJoint3D::rebuild() {
 
 	space->add_joint(this);
 
-	_update_enabled();
-	_update_iterations();
+	_update_joint();
+
 	_update_motor_state();
 	_update_motor_velocity();
 	_update_motor_limit();

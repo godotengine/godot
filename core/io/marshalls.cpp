@@ -31,12 +31,13 @@
 #include "marshalls.h"
 
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/variant/container_type_validate.h"
 
-#include <limits.h>
-#include <stdio.h>
+#include <climits>
+#include <cstdio>
 
 void EncodedObjectAsID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_object_id", "id"), &EncodedObjectAsID::set_object_id);
@@ -1519,7 +1520,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 					encode_uint32(utf8.length(), buf);
 					buf += 4;
 					memcpy(buf, utf8.get_data(), utf8.length());
-					buf += pad + utf8.length();
+					buf += utf8.length();
+					memset(buf, 0, pad);
+					buf += pad;
 				}
 
 				r_len += 4 + utf8.length() + pad;
@@ -1858,9 +1861,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				if (buf) {
 					buf += len;
 				}
-				const Variant *value = dict.getptr(kv.key);
-				ERR_FAIL_NULL_V(value, ERR_BUG);
-				err = encode_variant(*value, buf, len, p_full_objects, p_depth + 1);
+				err = encode_variant(kv.value, buf, len, p_full_objects, p_depth + 1);
 				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;

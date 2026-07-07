@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Mesh" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Mesh" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [Resource] that contains vertex array-based geometry.
 	</brief_description>
@@ -13,32 +13,32 @@
 		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
 	</tutorials>
 	<methods>
-		<method name="_get_aabb" qualifiers="virtual const">
+		<method name="_get_aabb" qualifiers="virtual required const">
 			<return type="AABB" />
 			<description>
 				Virtual method to override the [AABB] for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_get_blend_shape_count" qualifiers="virtual const">
+		<method name="_get_blend_shape_count" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Virtual method to override the number of blend shapes for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_get_blend_shape_name" qualifiers="virtual const">
+		<method name="_get_blend_shape_name" qualifiers="virtual required const">
 			<return type="StringName" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the retrieval of blend shape names for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_get_surface_count" qualifiers="virtual const">
+		<method name="_get_surface_count" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Virtual method to override the surface count for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_set_blend_shape_name" qualifiers="virtual">
+		<method name="_set_blend_shape_name" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="name" type="StringName" />
@@ -46,63 +46,63 @@
 				Virtual method to override the names of blend shapes for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_array_index_len" qualifiers="virtual const">
+		<method name="_surface_get_array_index_len" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface array index length for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_array_len" qualifiers="virtual const">
+		<method name="_surface_get_array_len" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface array length for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_arrays" qualifiers="virtual const">
+		<method name="_surface_get_arrays" qualifiers="virtual required const">
 			<return type="Array" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface arrays for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_blend_shape_arrays" qualifiers="virtual const">
+		<method name="_surface_get_blend_shape_arrays" qualifiers="virtual required const">
 			<return type="Array[]" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the blend shape arrays for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_format" qualifiers="virtual const">
+		<method name="_surface_get_format" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface format for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_lods" qualifiers="virtual const">
+		<method name="_surface_get_lods" qualifiers="virtual required const">
 			<return type="Dictionary" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface LODs for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_material" qualifiers="virtual const">
+		<method name="_surface_get_material" qualifiers="virtual required const">
 			<return type="Material" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface material for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_get_primitive_type" qualifiers="virtual const">
+		<method name="_surface_get_primitive_type" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Virtual method to override the surface primitive type for a custom class extending [Mesh].
 			</description>
 		</method>
-		<method name="_surface_set_material" qualifiers="virtual">
+		<method name="_surface_set_material" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<param index="1" name="material" type="Material" />
@@ -369,6 +369,9 @@
 		</constant>
 		<constant name="ARRAY_FLAG_COMPRESS_ATTRIBUTES" value="536870912" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark that a mesh is using compressed attributes (vertices, normals, tangents, UVs). When this form of compression is enabled, vertex positions will be packed into an RGBA16UNORM attribute and scaled in the vertex shader. The normal and tangent will be packed into an RG16UNORM representing an axis, and a 16-bit float stored in the A-channel of the vertex. UVs will use 16-bit normalized floats instead of full 32-bit signed floats. When using this compression mode you must use either vertices, normals, and tangents or only vertices. You cannot use normals without tangents. Importers will automatically enable this compression if they can.
+		</constant>
+		<constant name="ARRAY_FLAG_USE_STORAGE_BUFFER" value="1073741824" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that the surface's vertex, attribute, skin, and index buffers must be created with the storage-buffer usage bit so they can be bound as storage buffers in compute shaders. This is required to write into them from a compute pipeline through the [RID]s returned by [method RenderingServer.mesh_surface_get_vertex_buffer_rd_rid] and the matching methods for the attribute, skin, and index buffers. Has no effect on the OpenGL backend, which does not expose [RenderingDevice] [RID]s.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 			Blend shapes are normalized.

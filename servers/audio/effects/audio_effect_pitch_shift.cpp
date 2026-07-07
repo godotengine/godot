@@ -31,7 +31,8 @@
 #include "audio_effect_pitch_shift.h"
 
 #include "core/math/math_funcs.h"
-#include "servers/audio_server.h"
+#include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 /* Thirdparty code, so disable clang-format with Godot style */
 /* clang-format off */
@@ -112,7 +113,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* do windowing and re,im interleave */
 			for (k = 0; k < fftFrameSize;k++) {
-				window = -.5*cos(2.*Math::PI*(double)k/(double)fftFrameSize)+.5;
+				window = -.5*std::cos(2.*Math::PI*(double)k/(double)fftFrameSize)+.5;
 				gFFTworksp[2*k] = gInFIFO[k] * window;
 				gFFTworksp[2*k+1] = 0.;
 			}
@@ -129,8 +130,8 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 				imag = gFFTworksp[2*k+1];
 
 				/* compute magnitude and phase */
-				magn = 2.*sqrt(real*real + imag*imag);
-				phase = atan2(imag,real);
+				magn = 2.*std::sqrt(real*real + imag*imag);
+				phase = std::atan2(imag,real);
 
 				/* compute phase difference */
 				tmp = phase - gLastPhase[k];
@@ -199,8 +200,8 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 				phase = gSumPhase[k];
 
 				/* get real and imag part and re-interleave */
-				gFFTworksp[2*k] = magn*cos(phase);
-				gFFTworksp[2*k+1] = magn*sin(phase);
+				gFFTworksp[2*k] = magn*std::cos(phase);
+				gFFTworksp[2*k+1] = magn*std::sin(phase);
 			}
 
 			/* zero negative frequencies */
@@ -212,7 +213,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* do windowing and add to output accumulator */
 			for(k=0; k < fftFrameSize; k++) {
-				window = -.5*cos(2.*Math::PI*(double)k/(double)fftFrameSize)+.5;
+				window = -.5*std::cos(2.*Math::PI*(double)k/(double)fftFrameSize)+.5;
 				gOutputAccum[k] += 2.*window*gFFTworksp[2*k]/(fftFrameSize2*osamp);
 			}
 			for (k = 0; k < stepSize; k++) { gOutFIFO[k] = gOutputAccum[k];
@@ -260,14 +261,14 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 			*p1 = *p2; *p2 = temp;
 		}
 	}
-	for (k = 0, le = 2; k < (long)(log((double)fftFrameSize)/log(2.)+.5); k++) {
+	for (k = 0, le = 2; k < (long)(std::log((double)fftFrameSize)/std::log(2.)+.5); k++) {
 		le <<= 1;
 		le2 = le>>1;
 		ur = 1.0;
 		ui = 0.0;
 		arg = Math::PI / (le2>>1);
-		wr = cos(arg);
-		wi = sign*sin(arg);
+		wr = std::cos(arg);
+		wi = sign*std::sin(arg);
 		for (j = 0; j < le2; j += 2) {
 			p1r = fftBuffer+j; p1i = p1r+1;
 			p2r = p1r+le2; p2i = p2r+1;

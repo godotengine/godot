@@ -31,7 +31,9 @@
 #include "tts_linux.h"
 
 #include "core/config/project_settings.h"
-#include "servers/text_server.h"
+#include "core/object/callable_mp.h"
+#include "servers/display/display_server.h"
+#include "servers/text/text_server.h"
 
 TTS_Linux *TTS_Linux::singleton = nullptr;
 
@@ -90,7 +92,7 @@ void TTS_Linux::_speech_index_mark(int p_msg_id, int p_type, const String &p_ind
 	_THREAD_SAFE_METHOD_
 
 	if (ids.has(p_msg_id)) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_BOUNDARY, ids[p_msg_id], p_index_mark.to_int());
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_BOUNDARY, ids[p_msg_id], p_index_mark.to_int());
 	}
 }
 
@@ -124,19 +126,19 @@ void TTS_Linux::_speech_event(int p_msg_id, int p_type) {
 
 	if (!paused && ids.has(p_msg_id)) {
 		if ((SPDNotificationType)p_type == SPD_EVENT_END) {
-			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_ENDED, ids[p_msg_id]);
+			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_ENDED, ids[p_msg_id]);
 			ids.erase(p_msg_id);
 			last_msg_id = -1;
 			speaking = false;
 		} else if ((SPDNotificationType)p_type == SPD_EVENT_CANCEL) {
-			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, ids[p_msg_id]);
+			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, ids[p_msg_id]);
 			ids.erase(p_msg_id);
 			last_msg_id = -1;
 			speaking = false;
 		}
 	}
 	if (!speaking && queue.size() > 0) {
-		DisplayServer::TTSUtterance &message = queue.front()->get();
+		TTSUtterance &message = queue.front()->get();
 
 		// Inject index mark after each word.
 		String text;
@@ -166,15 +168,15 @@ void TTS_Linux::_speech_event(int p_msg_id, int p_type) {
 		spd_set_voice_pitch(synth, (message.pitch - 1) * 100);
 		float rate = 0;
 		if (message.rate > 1.f) {
-			rate = log10(MIN(message.rate, 2.5f)) / log10(2.5f) * 100;
+			rate = std::log10(MIN(message.rate, 2.5f)) / std::log10(2.5f) * 100;
 		} else if (message.rate < 1.f) {
-			rate = log10(MAX(message.rate, 0.5f)) / log10(0.5f) * -100;
+			rate = std::log10(MAX(message.rate, 0.5f)) / std::log10(0.5f) * -100;
 		}
 		spd_set_voice_rate(synth, rate);
 		spd_set_data_mode(synth, SPD_DATA_SSML);
 		last_msg_id = spd_say(synth, SPD_TEXT, text.utf8().get_data());
 		ids[last_msg_id] = message.id;
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_STARTED, message.id);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_STARTED, message.id);
 
 		queue.pop_front();
 		speaking = true;
@@ -207,7 +209,7 @@ Array TTS_Linux::get_voices() const {
 	return list;
 }
 
-void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int64_t p_utterance_id, bool p_interrupt) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_NULL(synth);
@@ -216,11 +218,11 @@ void TTS_Linux::speak(const String &p_text, const String &p_voice, int p_volume,
 	}
 
 	if (p_text.is_empty()) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, p_utterance_id);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, p_utterance_id);
 		return;
 	}
 
-	DisplayServer::TTSUtterance message;
+	TTSUtterance message;
 	message.text = p_text;
 	message.voice = p_voice;
 	message.volume = CLAMP(p_volume, 0, 100);
@@ -257,11 +259,11 @@ void TTS_Linux::stop() {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_NULL(synth);
-	for (DisplayServer::TTSUtterance &message : queue) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, message.id);
+	for (TTSUtterance &message : queue) {
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, message.id);
 	}
 	if ((last_msg_id != -1) && ids.has(last_msg_id)) {
-		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, ids[last_msg_id]);
+		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, ids[last_msg_id]);
 	}
 	queue.clear();
 	ids.clear();

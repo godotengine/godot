@@ -31,8 +31,10 @@
 #pragma once
 
 #include "core/debugger/engine_profiler.h"
+#include "core/io/logger.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/script_backtrace.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
@@ -48,7 +50,7 @@ class ResourceLoader : public Object {
 
 protected:
 	static void _bind_methods();
-	static ResourceLoader *singleton;
+	static inline ResourceLoader *singleton = nullptr;
 
 public:
 	enum ThreadLoadStatus {
@@ -74,8 +76,8 @@ public:
 
 	Ref<Resource> load(const String &p_path, const String &p_type_hint = "", CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	Vector<String> get_recognized_extensions_for_type(const String &p_type);
-	void add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front);
-	void remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader);
+	void add_resource_format_loader(RequiredParam<ResourceFormatLoader> p_format_loader, bool p_at_front);
+	void remove_resource_format_loader(RequiredParam<ResourceFormatLoader> p_format_loader);
 	void set_abort_on_missing_resources(bool p_abort);
 	PackedStringArray get_dependencies(const String &p_path);
 	bool has_cached(const String &p_path);
@@ -93,7 +95,7 @@ class ResourceSaver : public Object {
 
 protected:
 	static void _bind_methods();
-	static ResourceSaver *singleton;
+	static inline ResourceSaver *singleton = nullptr;
 
 public:
 	enum SaverFlags {
@@ -109,10 +111,11 @@ public:
 
 	static ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags);
-	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
-	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
-	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
+	Error save(RequiredParam<Resource> p_resource, const String &p_path, BitField<SaverFlags> p_flags);
+	Error set_uid(const String &p_path, ResourceUID::ID p_uid);
+	Vector<String> get_recognized_extensions(RequiredParam<Resource> p_resource);
+	void add_resource_format_saver(RequiredParam<ResourceFormatSaver> p_format_saver, bool p_at_front);
+	void remove_resource_format_saver(RequiredParam<ResourceFormatSaver> p_format_saver);
 
 	ResourceUID::ID get_resource_id_for_path(const String &p_path, bool p_generate = false);
 
@@ -146,8 +149,6 @@ class OS : public Object {
 	mutable HashMap<String, bool> feature_cache;
 
 	class LoggerBind : public ::Logger {
-		inline static thread_local bool is_logging = false;
-
 	public:
 		LocalVector<Ref<CoreBind::Logger>> loggers;
 
@@ -161,7 +162,7 @@ class OS : public Object {
 
 protected:
 	static void _bind_methods();
-	static OS *singleton;
+	static inline OS *singleton = nullptr;
 
 #ifndef DISABLE_DEPRECATED
 	Dictionary _execute_with_pipe_bind_compat_94434(const String &p_path, const Vector<String> &p_arguments);
@@ -220,6 +221,7 @@ public:
 	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
+	Error open_with_program(const String &p_program_path, const Vector<String> &p_paths);
 	Error kill(int p_pid);
 	Error shell_open(const String &p_uri);
 	Error shell_show_in_file_manager(const String &p_path, bool p_open_folder = true);
@@ -247,6 +249,7 @@ public:
 	Vector<String> get_video_adapter_driver_info() const;
 
 	String get_locale() const;
+	Vector<String> get_preferred_locales() const;
 	String get_locale_language() const;
 
 	String get_model_name() const;
@@ -309,8 +312,9 @@ public:
 	Vector<String> get_granted_permissions() const;
 	void revoke_granted_permissions();
 
-	void add_logger(const Ref<Logger> &p_logger);
-	void remove_logger(const Ref<Logger> &p_logger);
+	void add_logger(RequiredParam<Logger> p_logger);
+	void remove_logger(RequiredParam<Logger> p_logger);
+	void remove_script_loggers(const ScriptLanguage *p_script);
 
 	static OS *get_singleton() { return singleton; }
 
@@ -321,7 +325,7 @@ public:
 class Geometry2D : public Object {
 	GDCLASS(Geometry2D, Object);
 
-	static Geometry2D *singleton;
+	static inline Geometry2D *singleton = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -387,7 +391,7 @@ public:
 class Geometry3D : public Object {
 	GDCLASS(Geometry3D, Object);
 
-	static Geometry3D *singleton;
+	static inline Geometry3D *singleton = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -418,7 +422,7 @@ public:
 class Marshalls : public Object {
 	GDCLASS(Marshalls, Object);
 
-	static Marshalls *singleton;
+	static inline Marshalls *singleton = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -494,6 +498,7 @@ public:
 	Variant wait_to_finish();
 
 	static void set_thread_safety_checks_enabled(bool p_enabled);
+	static bool is_main_thread();
 };
 
 namespace Special {
@@ -529,8 +534,8 @@ public:
 	TypedArray<Dictionary> class_get_property_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	StringName class_get_property_getter(const StringName &p_class, const StringName &p_property);
 	StringName class_get_property_setter(const StringName &p_class, const StringName &p_property);
-	Variant class_get_property(Object *p_object, const StringName &p_property) const;
-	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
+	Variant class_get_property(RequiredParam<Object> p_object, const StringName &p_property) const;
+	Error class_set_property(RequiredParam<Object> p_object, const StringName &p_property, const Variant &p_value) const;
 
 	Variant class_get_property_default_value(const StringName &p_class, const StringName &p_property) const;
 
@@ -557,9 +562,6 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
-
-	ClassDB() {}
-	~ClassDB() {}
 };
 
 } // namespace Special
@@ -569,7 +571,7 @@ class Engine : public Object {
 
 protected:
 	static void _bind_methods();
-	static Engine *singleton;
+	static inline Engine *singleton = nullptr;
 
 public:
 	static Engine *get_singleton() { return singleton; }
@@ -610,12 +612,12 @@ public:
 
 	bool has_singleton(const StringName &p_name) const;
 	Object *get_singleton_object(const StringName &p_name) const;
-	void register_singleton(const StringName &p_name, Object *p_object);
+	void register_singleton(const StringName &p_name, RequiredParam<Object> p_instance);
 	void unregister_singleton(const StringName &p_name);
 	Vector<String> get_singleton_list() const;
 
-	Error register_script_language(ScriptLanguage *p_language);
-	Error unregister_script_language(const ScriptLanguage *p_language);
+	Error register_script_language(RequiredParam<ScriptLanguage> p_language);
+	Error unregister_script_language(RequiredParam<const ScriptLanguage> p_language);
 	int get_script_language_count();
 	ScriptLanguage *get_script_language(int p_index) const;
 	TypedArray<ScriptBacktrace> capture_script_backtraces(bool p_include_variables = false) const;
@@ -649,7 +651,7 @@ class EngineDebugger : public Object {
 
 protected:
 	static void _bind_methods();
-	static EngineDebugger *singleton;
+	static inline EngineDebugger *singleton = nullptr;
 
 public:
 	static EngineDebugger *get_singleton() { return singleton; }

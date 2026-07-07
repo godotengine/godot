@@ -5,7 +5,7 @@
 #endif
 
 GODOT_ICON ICON platform/windows/godot_console.ico
-1 RT_MANIFEST "godot.manifest"
+1 RT_MANIFEST "platform/windows/godot.manifest"
 
 1 VERSIONINFO
 FILEVERSION     GODOT_VERSION_MAJOR,GODOT_VERSION_MINOR,GODOT_VERSION_PATCH,0

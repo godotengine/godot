@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/os/mutex.h"
 #include "core/string/ustring.h"
 #include "core/templates/safe_refcount.h"
 
@@ -38,12 +37,8 @@
 
 class Main;
 
-class StringName {
-	enum {
-		STRING_TABLE_BITS = 16,
-		STRING_TABLE_LEN = 1 << STRING_TABLE_BITS,
-		STRING_TABLE_MASK = STRING_TABLE_LEN - 1
-	};
+class [[nodiscard]] StringName {
+	struct Table;
 
 	struct _Data {
 		SafeRefCount refcount;
@@ -52,20 +47,11 @@ class StringName {
 #ifdef DEBUG_ENABLED
 		uint32_t debug_references = 0;
 #endif
-		const String &get_name() const { return name; }
-		bool operator==(const String &p_name) const;
-		bool operator!=(const String &p_name) const;
-		bool operator==(const char *p_name) const;
-		bool operator!=(const char *p_name) const;
 
-		int idx = 0;
 		uint32_t hash = 0;
 		_Data *prev = nullptr;
 		_Data *next = nullptr;
-		_Data() {}
 	};
-
-	static inline _Data *_table[STRING_TABLE_LEN];
 
 	_Data *_data = nullptr;
 
@@ -73,7 +59,6 @@ class StringName {
 	friend void register_core_types();
 	friend void unregister_core_types();
 	friend class Main;
-	static inline Mutex mutex;
 	static void setup();
 	static void cleanup();
 	static uint32_t get_empty_hash();
@@ -91,7 +76,7 @@ class StringName {
 	StringName(_Data *p_data) { _data = p_data; }
 
 public:
-	explicit operator bool() const { return _data && !_data->name.is_empty(); }
+	_FORCE_INLINE_ explicit operator bool() const { return _data; }
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
@@ -101,7 +86,7 @@ public:
 	const char32_t *get_data() const { return _data ? _data->name.ptr() : U""; }
 	char32_t operator[](int p_index) const;
 	int length() const;
-	bool is_empty() const;
+	_FORCE_INLINE_ bool is_empty() const { return !_data; }
 
 	_FORCE_INLINE_ bool is_node_unique_name() const {
 		if (!_data) {
@@ -140,17 +125,14 @@ public:
 		return (void *)_data;
 	}
 
-	_FORCE_INLINE_ operator String() const {
-		if (_data) {
-			return _data->name;
-		}
-
-		return String();
+	_FORCE_INLINE_ const String &string() const _LIFETIME_BOUND_ {
+		static const String EMPTY;
+		return _data ? _data->name : EMPTY;
 	}
 
-	static StringName search(const char *p_name);
-	static StringName search(const char32_t *p_name);
-	static StringName search(const String &p_name);
+	_FORCE_INLINE_ operator const String &() const _LIFETIME_BOUND_ {
+		return string();
+	}
 
 	struct AlphCompare {
 		template <typename LT, typename RT>
@@ -190,8 +172,6 @@ public:
 	}
 	StringName(const String &p_name, bool p_static = false);
 	StringName() {}
-
-	static void assign_static_unique_class_name(StringName *ptr, const char *p_name);
 
 #ifdef SIZE_EXTRA
 	_NO_INLINE_

@@ -32,10 +32,10 @@
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/lightmapper.h"
-#include "scene/resources/mesh.h"
-#include "servers/rendering/rendering_device.h"
 
+class RenderingDevice;
 class RDShaderFile;
+
 class LightmapperRD : public Lightmapper {
 	GDCLASS(LightmapperRD, Lightmapper)
 
@@ -82,8 +82,20 @@ class LightmapperRD : public Lightmapper {
 		float shadow_blur = 0.0;
 		uint32_t static_bake = 0;
 		uint32_t pad = 0;
+		float area_width[4] = {};
+		float area_height[4] = {};
+		float area_texture_rect[4] = {};
 
 		bool operator<(const Light &p_light) const {
+			return type < p_light.type;
+		}
+	};
+
+	struct LightMetadata {
+		String name;
+		uint32_t type = LIGHT_TYPE_DIRECTIONAL;
+
+		bool operator<(const LightMetadata &p_light) const {
 			return type < p_light.type;
 		}
 	};
@@ -203,7 +215,13 @@ class LightmapperRD : public Lightmapper {
 	Vector<MeshInstance> mesh_instances;
 
 	Vector<Light> lights;
-	Vector<String> light_names;
+	Vector<LightMetadata> light_metadata;
+
+	struct AreaLightAtlas {
+		int mipmap_count;
+		Vector2i size;
+		PackedByteArray atlas_data;
+	} area_light_atlas;
 
 	struct TriangleSort {
 		uint32_t cell_index = 0;
@@ -252,7 +270,7 @@ class LightmapperRD : public Lightmapper {
 		uint32_t ray_to = 0;
 		uint32_t region_ofs[2] = {};
 		uint32_t probe_count = 0;
-		uint32_t pad = 0;
+		uint32_t denoiser_range = 0;
 	};
 
 	Vector<Ref<Image>> lightmap_textures;
@@ -272,7 +290,8 @@ class LightmapperRD : public Lightmapper {
 
 		int half_search_window;
 		float filter_strength;
-		float pad[2];
+		uint32_t slice_count;
+		uint32_t pad;
 	};
 
 	BakeError _blit_meshes_into_atlas(int p_max_texture_size, int p_denoiser_range, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, float p_supersampling_factor, BakeStepFunc p_step_function, void *p_bake_userdata);
@@ -280,7 +299,7 @@ class LightmapperRD : public Lightmapper {
 	void _raster_geometry(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, int grid_size, AABB bounds, float p_bias, Vector<int> slice_triangle_count, RID position_tex, RID unocclude_tex, RID normal_tex, RID raster_depth_buffer, RID rasterize_shader, RID raster_base_uniform);
 
 	BakeError _dilate(RenderingDevice *rd, Ref<RDShaderFile> &compute_shader, RID &compute_base_uniform_set, PushConstant &push_constant, RID &source_light_tex, RID &dest_light_tex, const Size2i &atlas_size, int atlas_slices);
-	BakeError _denoise(RenderingDevice *p_rd, Ref<RDShaderFile> &p_compute_shader, const RID &p_compute_base_uniform_set, PushConstant &p_push_constant, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, float p_denoiser_strength, int p_denoiser_range, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, BakeStepFunc p_step_function, void *p_bake_userdata);
+	BakeError _denoise(RenderingDevice *p_rd, Ref<RDShaderFile> &p_compute_shader, const RID &p_compute_base_uniform_set, PushConstant &p_push_constant, RID p_source_light_tex, RID p_source_normal_tex, RID p_dest_light_tex, RID p_unocclude_tex, float p_denoiser_strength, int p_denoiser_range, const Size2i &p_atlas_size, int p_atlas_slices, bool p_bake_sh, BakeStepFunc p_step_function, void *p_bake_userdata);
 	BakeError _pack_l1(RenderingDevice *rd, Ref<RDShaderFile> &compute_shader, RID &compute_base_uniform_set, PushConstant &push_constant, RID &source_light_tex, RID &dest_light_tex, const Size2i &atlas_size, int atlas_slices);
 
 	Error _store_pfm(RenderingDevice *p_rd, RID p_atlas_tex, int p_index, const Size2i &p_atlas_size, const String &p_name, bool p_shadowmask);
@@ -291,7 +310,9 @@ public:
 	virtual void add_mesh(const MeshData &p_mesh) override;
 	virtual void add_directional_light(const String &p_name, bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_angular_distance, float p_shadow_blur) override;
 	virtual void add_omni_light(const String &p_name, bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) override;
-	virtual void add_spot_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) override;
+	virtual void add_spot_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) override;
+	virtual void add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur, const Rect2 &p_texture_rect, float p_max_mipmap) override;
+	virtual void add_area_light_atlas(const Vector2i &p_size, int p_mipmap_count, const PackedByteArray &p_atlas_data) override;
 	virtual void add_probe(const Vector3 &p_position) override;
 	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_denoiser_range, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_bake_shadowmask, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_bake_userdata = nullptr, float p_exposure_normalization = 1.0, float p_supersampling_factor = 1.0f) override;
 

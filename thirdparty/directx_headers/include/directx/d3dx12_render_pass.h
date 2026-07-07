@@ -60,6 +60,8 @@ inline bool operator==( const D3D12_RENDER_PASS_BEGINNING_ACCESS &a, const D3D12
         if (!(a.PreserveLocal == b.PreserveLocal)) return false;
         break;
 #endif
+    default:
+        break;
     }
     return true;
 }
@@ -79,8 +81,9 @@ inline bool operator==(const D3D12_RENDER_PASS_ENDING_ACCESS& a, const D3D12_REN
         if (!(a.PreserveLocal == b.PreserveLocal)) return false;
         break;
 #endif
+    default:
+        break;
     }
-
     return true;
 }
 

@@ -35,20 +35,22 @@
 #include "../managed_callable.h"
 #include "../mono_gd/gd_mono_cache.h"
 #include "../signal_awaiter_utils.h"
-#include "../utils/path_utils.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/compression.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
 #include "core/os/os.h"
 #include "core/string/string_name.h"
+#include "core/variant/variant_parser.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #endif
 
 #ifdef __cplusplus
@@ -203,6 +205,11 @@ void godotsharp_internal_refcounted_disposed(Object *p_ptr, GCHandleIntPtr p_gch
 			CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->get();
 			if (script_binding.inited) {
 				if (!script_binding.gchandle.is_released()) {
+					if (rc->get_reference_count() == 1 && script_binding.gchandle.is_weak()) {
+						// The GCHandle is just swapped, so get the swapped handle to release
+						// See: CSharpLanguage::_instance_binding_reference_callback(void *p_token, void *p_binding, GDExtensionBool p_reference)
+						p_gchandle_to_free = script_binding.gchandle.get_intptr();
+					}
 					CSharpLanguage::release_binding_gchandle_thread_safe(p_gchandle_to_free, script_binding);
 				}
 			}
@@ -271,7 +278,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 	CRASH_COND(script_binding.type_name == StringName());
 #endif
 
-	bool parent_is_object_class = ClassDB::is_parent_class(p_unmanaged->get_class_name(), script_binding.type_name);
+	bool parent_is_object_class = p_unmanaged->is_class(script_binding.type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, { nullptr },
 			"Type inherits from native type '" + script_binding.type_name + "', so it can't be instantiated in object of type: '" + p_unmanaged->get_class() + "'.");
 
@@ -349,7 +356,7 @@ void godotsharp_array_filter_godot_objects_by_native(StringName *p_native_name, 
 	memnew_placement(r_output, Array);
 
 	for (int i = 0; i < p_input->size(); ++i) {
-		if (ClassDB::is_parent_class(((Object *)(*p_input)[i])->get_class(), *p_native_name)) {
+		if (((Object *)(*p_input)[i])->is_class(*p_native_name)) {
 			r_output->push_back(p_input[i]);
 		}
 	}
@@ -384,7 +391,7 @@ void godotsharp_node_path_new_from_string(NodePath *r_dest, const String *p_name
 }
 
 void godotsharp_string_name_as_string(String *r_dest, const StringName *p_name) {
-	memnew_placement(r_dest, String(p_name->operator String()));
+	memnew_placement(r_dest, String(p_name->string()));
 }
 
 void godotsharp_node_path_as_string(String *r_dest, const NodePath *p_np) {
@@ -1168,6 +1175,47 @@ void godotsharp_array_to_string(const Array *p_self, String *r_str) {
 	*r_str = Variant(*p_self).operator String();
 }
 
+void godotsharp_packed_byte_array_compress(const PackedByteArray *p_src, int p_mode, PackedByteArray *r_dst) {
+	if (p_src->size() > 0) {
+		Compression::Mode mode = (Compression::Mode)(p_mode);
+		r_dst->resize(Compression::get_max_compressed_buffer_size(p_src->size(), mode));
+		int result = Compression::compress(r_dst->ptrw(), p_src->ptr(), p_src->size(), mode);
+
+		result = result >= 0 ? result : 0;
+		r_dst->resize(result);
+	}
+}
+
+void godotsharp_packed_byte_array_decompress(const PackedByteArray *p_src, int64_t p_buffer_size, int p_mode, PackedByteArray *r_dst) {
+	int64_t buffer_size = p_buffer_size;
+	Compression::Mode mode = (Compression::Mode)(p_mode);
+
+	if (buffer_size <= 0) {
+		ERR_FAIL_MSG("Decompression buffer size must be greater than zero.");
+	}
+	if (p_src->size() == 0) {
+		ERR_FAIL_MSG("Compressed buffer size must be greater than zero.");
+	}
+
+	r_dst->resize(buffer_size);
+	int result = Compression::decompress(r_dst->ptrw(), buffer_size, p_src->ptr(), p_src->size(), mode);
+
+	result = result >= 0 ? result : 0;
+	r_dst->resize(result);
+}
+
+void godotsharp_packed_byte_array_decompress_dynamic(const PackedByteArray *p_src, int64_t p_max_output_size, int p_mode, PackedByteArray *r_dst) {
+	int64_t max_output_size = p_max_output_size;
+	Compression::Mode mode = (Compression::Mode)(p_mode);
+
+	int result = Compression::decompress_dynamic(r_dst, max_output_size, p_src->ptr(), p_src->size(), mode);
+
+	if (result != OK) {
+		r_dst->clear();
+		ERR_FAIL_MSG("Decompression failed.");
+	}
+}
+
 // Dictionary
 
 bool godotsharp_dictionary_try_get_value(const Dictionary *p_self, const Variant *p_key, Variant *r_value) {
@@ -1522,6 +1570,54 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 }
 #endif
 
+int64_t godotsharp_string_size(const String *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_byte_array_size(const PackedByteArray *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_int32_array_size(const PackedInt32Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_int64_array_size(const PackedInt64Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_float32_array_size(const PackedFloat32Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_float64_array_size(const PackedFloat64Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_string_array_size(const PackedStringArray *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_vector2_array_size(const PackedVector2Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_vector3_array_size(const PackedVector3Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_vector4_array_size(const PackedVector4Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_color_array_size(const PackedColorArray *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_array_size(const Array *p_self) {
+	return p_self->size();
+}
+
 // The order in this array must match the declaration order of
 // the methods in 'GodotSharp/Core/NativeInterop/NativeFuncs.cs'.
 static const void *unmanaged_callbacks[]{
@@ -1683,6 +1779,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_slice,
 	(void *)godotsharp_array_sort,
 	(void *)godotsharp_array_to_string,
+	(void *)godotsharp_packed_byte_array_compress,
+	(void *)godotsharp_packed_byte_array_decompress,
+	(void *)godotsharp_packed_byte_array_decompress_dynamic,
 	(void *)godotsharp_dictionary_try_get_value,
 	(void *)godotsharp_dictionary_set_value,
 	(void *)godotsharp_dictionary_keys,
@@ -1747,6 +1846,18 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_var_to_str,
 	(void *)godotsharp_err_print_error,
 	(void *)godotsharp_object_to_string,
+	(void *)godotsharp_string_size,
+	(void *)godotsharp_packed_byte_array_size,
+	(void *)godotsharp_packed_int32_array_size,
+	(void *)godotsharp_packed_int64_array_size,
+	(void *)godotsharp_packed_float32_array_size,
+	(void *)godotsharp_packed_float64_array_size,
+	(void *)godotsharp_packed_string_array_size,
+	(void *)godotsharp_packed_vector2_array_size,
+	(void *)godotsharp_packed_vector3_array_size,
+	(void *)godotsharp_packed_vector4_array_size,
+	(void *)godotsharp_packed_color_array_size,
+	(void *)godotsharp_array_size,
 };
 
 const void **godotsharp::get_runtime_interop_funcs(int32_t &r_size) {

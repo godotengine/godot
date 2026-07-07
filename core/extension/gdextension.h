@@ -30,11 +30,9 @@
 
 #pragma once
 
-#include "core/extension/gdextension_interface.h"
+#include "core/extension/gdextension_interface.gen.h"
 #include "core/extension/gdextension_loader.h"
-#include "core/io/config_file.h"
-#include "core/io/resource_loader.h"
-#include "core/object/ref_counted.h"
+#include "core/io/resource.h"
 
 class GDExtensionMethodBind;
 
@@ -67,9 +65,11 @@ class GDExtension : public Resource {
 
 	struct ClassCreationDeprecatedInfo {
 #ifndef DISABLE_DEPRECATED
+		bool legacy_unexposed_class = false;
 		GDExtensionClassNotification notification_func = nullptr;
 		GDExtensionClassFreePropertyList free_property_list_func = nullptr;
 		GDExtensionClassCreateInstance create_instance_func = nullptr;
+		GDExtensionClassCreateInstance2 create_instance2_func = nullptr;
 		GDExtensionClassGetRID get_rid_func = nullptr;
 		GDExtensionClassGetVirtual get_virtual_func = nullptr;
 		GDExtensionClassGetVirtualCallData get_virtual_call_data_func = nullptr;
@@ -80,9 +80,11 @@ class GDExtension : public Resource {
 	static void _register_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo *p_extension_funcs);
 	static void _register_extension_class2(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs);
 	static void _register_extension_class3(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo3 *p_extension_funcs);
-#endif // DISABLE_DEPRECATED
 	static void _register_extension_class4(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo4 *p_extension_funcs);
-	static void _register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo4 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs = nullptr);
+	static void _register_extension_class5(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo5 *p_extension_funcs);
+#endif // DISABLE_DEPRECATED
+	static void _register_extension_class6(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo6 *p_extension_funcs);
+	static void _register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo6 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs = nullptr);
 	static void _register_extension_class_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassMethodInfo *p_method_info);
 	static void _register_extension_class_virtual_method(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionClassVirtualMethodInfo *p_method_info);
 	static void _register_extension_class_integer_constant(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_enum_name, GDExtensionConstStringNamePtr p_constant_name, GDExtensionInt p_constant_value, GDExtensionBool p_is_bitfield);
@@ -94,6 +96,7 @@ class GDExtension : public Resource {
 	static void _unregister_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name);
 	static void _get_library_path(GDExtensionClassLibraryPtr p_library, GDExtensionStringPtr r_path);
 	static void _register_get_classes_used_callback(GDExtensionClassLibraryPtr p_library, GDExtensionEditorGetClassesUsedCallback p_callback);
+	static void _register_main_loop_callbacks(GDExtensionClassLibraryPtr p_library, const GDExtensionMainLoopCallbacks *p_callbacks);
 
 	GDExtensionInitialization initialization;
 	int32_t level_initialized = -1;
@@ -115,7 +118,11 @@ class GDExtension : public Resource {
 	void clear_instance_bindings();
 #endif
 
-	static HashMap<StringName, GDExtensionInterfaceFunctionPtr> gdextension_interface_functions;
+	GDExtensionMainLoopStartupCallback startup_callback = nullptr;
+	GDExtensionMainLoopShutdownCallback shutdown_callback = nullptr;
+	GDExtensionMainLoopFrameCallback frame_callback = nullptr;
+
+	static inline HashMap<StringName, GDExtensionInterfaceFunctionPtr> gdextension_interface_functions;
 
 protected:
 	static void _bind_methods();
@@ -170,26 +177,15 @@ public:
 	static void initialize_gdextensions();
 	static void finalize_gdextensions();
 
-	GDExtension();
 	~GDExtension();
 };
 
 VARIANT_ENUM_CAST(GDExtension::InitializationLevel)
 
-class GDExtensionResourceLoader : public ResourceFormatLoader {
-public:
-	static Error load_gdextension_resource(const String &p_path, Ref<GDExtension> &p_extension);
-
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
-};
-
 #ifdef TOOLS_ENABLED
 class GDExtensionEditorPlugins {
 private:
-	static Vector<StringName> extension_classes;
+	static inline Vector<StringName> extension_classes;
 
 protected:
 	friend class EditorNode;
@@ -197,8 +193,8 @@ protected:
 	// Since this in core, we can't directly reference EditorNode, so it will
 	// set these function pointers in its constructor.
 	typedef void (*EditorPluginRegisterFunc)(const StringName &p_class_name);
-	static EditorPluginRegisterFunc editor_node_add_plugin;
-	static EditorPluginRegisterFunc editor_node_remove_plugin;
+	static inline EditorPluginRegisterFunc editor_node_add_plugin = nullptr;
+	static inline EditorPluginRegisterFunc editor_node_remove_plugin = nullptr;
 
 public:
 	static void add_extension_class(const StringName &p_class_name);
@@ -218,10 +214,10 @@ protected:
 	// is initialized even _before_ it gets instantiated, as we need to rely on
 	// this method while initializing the engine.
 	typedef void (*EditorHelpLoadXmlBufferFunc)(const uint8_t *p_buffer, int p_size);
-	static EditorHelpLoadXmlBufferFunc editor_help_load_xml_buffer;
+	static inline EditorHelpLoadXmlBufferFunc editor_help_load_xml_buffer = nullptr;
 
 	typedef void (*EditorHelpRemoveClassFunc)(const String &p_class);
-	static EditorHelpRemoveClassFunc editor_help_remove_class;
+	static inline EditorHelpRemoveClassFunc editor_help_remove_class = nullptr;
 
 public:
 	static void load_xml_buffer(const uint8_t *p_buffer, int p_size);

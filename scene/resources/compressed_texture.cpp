@@ -30,7 +30,11 @@
 
 #include "compressed_texture.h"
 
+#include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "scene/resources/bit_map.h"
+#include "servers/rendering/rendering_server.h"
 
 Error CompressedTexture2D::_load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
 	alpha_cache.unref();
@@ -103,7 +107,7 @@ void CompressedTexture2D::_requested_3d(void *p_ud) {
 	request_3d_callback(ctex);
 }
 
-void CompressedTexture2D::_requested_roughness(void *p_ud, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel) {
+void CompressedTexture2D::_requested_roughness(void *p_ud, const String &p_normal_path, RSE::TextureDetectRoughnessChannel p_roughness_channel) {
 	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
 	Ref<CompressedTexture2D> ctex(ct);
 	ERR_FAIL_NULL(request_roughness_callback);
@@ -269,8 +273,8 @@ bool CompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 		int x = p_x * aw / w;
 		int y = p_y * ah / h;
 
-		x = CLAMP(x, 0, aw);
-		y = CLAMP(y, 0, ah);
+		x = CLAMP(x, 0, aw - 1);
+		y = CLAMP(y, 0, ah - 1);
 
 		return alpha_cache->get_bit(x, y);
 	}
@@ -293,9 +297,6 @@ void CompressedTexture2D::reload_from_file() {
 	load(path);
 }
 
-void CompressedTexture2D::_validate_property(PropertyInfo &p_property) const {
-}
-
 Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_size_limit) {
 	uint32_t data_format = f->get_32();
 	uint32_t w = f->get_16();
@@ -312,8 +313,6 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 		//mipmaps need to be read independently, they will be later combined
 		Vector<Ref<Image>> mipmap_images;
 		uint64_t total_size = 0;
-
-		bool first = true;
 
 		for (uint32_t i = 0; i < mipmaps + 1; i++) {
 			uint32_t size = f->get_32();
@@ -343,14 +342,17 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 			if (img.is_null() || img->is_empty()) {
 				ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
 			}
+			// If the image is compressed and its format doesn't match the desired format, return an empty reference.
+			// This is done to avoid recompressing the image on load.
+			ERR_FAIL_COND_V(img->is_compressed() && format != img->get_format(), Ref<Image>());
 
-			if (first) {
-				//format will actually be the format of the first image,
-				//as it may have changed on compression
-				format = img->get_format();
-				first = false;
-			} else if (img->get_format() != format) {
-				img->convert(format); //all needs to be the same format
+			// The format will actually be the format of the header,
+			// as it may have changed on compression.
+			if (format != img->get_format()) {
+				// Convert the image to the desired format.
+				// Note: We are not decompressing the image here, just changing its format.
+				// It's important that all images in the texture array share the same format for correct rendering.
+				img->convert(format);
 			}
 
 			total_size += img->get_data().size();
@@ -457,42 +459,11 @@ void CompressedTexture2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
 }
 
-CompressedTexture2D::CompressedTexture2D() {}
-
 CompressedTexture2D::~CompressedTexture2D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
-}
-
-Ref<Resource> ResourceFormatLoaderCompressedTexture2D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	Ref<CompressedTexture2D> st;
-	st.instantiate();
-	Error err = st->load(p_path);
-	if (r_error) {
-		*r_error = err;
-	}
-	if (err != OK) {
-		return Ref<Resource>();
-	}
-
-	return st;
-}
-
-void ResourceFormatLoaderCompressedTexture2D::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("ctex");
-}
-
-bool ResourceFormatLoaderCompressedTexture2D::handles_type(const String &p_type) const {
-	return p_type == "CompressedTexture2D";
-}
-
-String ResourceFormatLoaderCompressedTexture2D::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "ctex") {
-		return "CompressedTexture2D";
-	}
-	return "";
 }
 
 void CompressedTexture3D::set_path(const String &p_path, bool p_take_over) {
@@ -636,9 +607,6 @@ void CompressedTexture3D::reload_from_file() {
 	load(path);
 }
 
-void CompressedTexture3D::_validate_property(PropertyInfo &p_property) const {
-}
-
 void CompressedTexture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &CompressedTexture3D::load);
 	ClassDB::bind_method(D_METHOD("get_load_path"), &CompressedTexture3D::get_load_path);
@@ -646,42 +614,11 @@ void CompressedTexture3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.ctex"), "load", "get_load_path");
 }
 
-CompressedTexture3D::CompressedTexture3D() {}
-
 CompressedTexture3D::~CompressedTexture3D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
-}
-
-Ref<Resource> ResourceFormatLoaderCompressedTexture3D::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	Ref<CompressedTexture3D> st;
-	st.instantiate();
-	Error err = st->load(p_path);
-	if (r_error) {
-		*r_error = err;
-	}
-	if (err != OK) {
-		return Ref<Resource>();
-	}
-
-	return st;
-}
-
-void ResourceFormatLoaderCompressedTexture3D::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("ctex3d");
-}
-
-bool ResourceFormatLoaderCompressedTexture3D::handles_type(const String &p_type) const {
-	return p_type == "CompressedTexture3D";
-}
-
-String ResourceFormatLoaderCompressedTexture3D::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "ctex3d") {
-		return "CompressedTexture3D";
-	}
-	return "";
 }
 
 void CompressedTextureLayered::set_path(const String &p_path, bool p_take_over) {
@@ -751,10 +688,10 @@ Error CompressedTextureLayered::load(const String &p_path) {
 	}
 
 	if (texture.is_valid()) {
-		RID new_texture = RS::get_singleton()->texture_2d_layered_create(images, RS::TextureLayeredType(layered_type));
+		RID new_texture = RS::get_singleton()->texture_2d_layered_create(images, RSE::TextureLayeredType(layered_type));
 		RS::get_singleton()->texture_replace(texture, new_texture);
 	} else {
-		texture = RS::get_singleton()->texture_2d_layered_create(images, RS::TextureLayeredType(layered_type));
+		texture = RS::get_singleton()->texture_2d_layered_create(images, RSE::TextureLayeredType(layered_type));
 	}
 
 	w = images[0]->get_width();
@@ -801,7 +738,7 @@ TextureLayered::LayeredType CompressedTextureLayered::get_layered_type() const {
 
 RID CompressedTextureLayered::get_rid() const {
 	if (!texture.is_valid()) {
-		texture = RS::get_singleton()->texture_2d_layered_placeholder_create(RS::TextureLayeredType(layered_type));
+		texture = RS::get_singleton()->texture_2d_layered_placeholder_create(RSE::TextureLayeredType(layered_type));
 	}
 	return texture;
 }
@@ -830,9 +767,6 @@ void CompressedTextureLayered::reload_from_file() {
 	load(path);
 }
 
-void CompressedTextureLayered::_validate_property(PropertyInfo &p_property) const {
-}
-
 void CompressedTextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &CompressedTextureLayered::load);
 	ClassDB::bind_method(D_METHOD("get_load_path"), &CompressedTextureLayered::get_load_path);
@@ -847,62 +781,6 @@ CompressedTextureLayered::CompressedTextureLayered(LayeredType p_type) {
 CompressedTextureLayered::~CompressedTextureLayered() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(texture);
+		RS::get_singleton()->free_rid(texture);
 	}
-}
-
-/////////////////////////////////////////////////
-
-Ref<Resource> ResourceFormatLoaderCompressedTextureLayered::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	Ref<CompressedTextureLayered> ct;
-	if (p_path.get_extension().to_lower() == "ctexarray") {
-		Ref<CompressedTexture2DArray> c;
-		c.instantiate();
-		ct = c;
-	} else if (p_path.get_extension().to_lower() == "ccube") {
-		Ref<CompressedCubemap> c;
-		c.instantiate();
-		ct = c;
-	} else if (p_path.get_extension().to_lower() == "ccubearray") {
-		Ref<CompressedCubemapArray> c;
-		c.instantiate();
-		ct = c;
-	} else {
-		if (r_error) {
-			*r_error = ERR_FILE_UNRECOGNIZED;
-		}
-		return Ref<Resource>();
-	}
-	Error err = ct->load(p_path);
-	if (r_error) {
-		*r_error = err;
-	}
-	if (err != OK) {
-		return Ref<Resource>();
-	}
-
-	return ct;
-}
-
-void ResourceFormatLoaderCompressedTextureLayered::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("ctexarray");
-	p_extensions->push_back("ccube");
-	p_extensions->push_back("ccubearray");
-}
-
-bool ResourceFormatLoaderCompressedTextureLayered::handles_type(const String &p_type) const {
-	return p_type == "CompressedTexture2DArray" || p_type == "CompressedCubemap" || p_type == "CompressedCubemapArray";
-}
-
-String ResourceFormatLoaderCompressedTextureLayered::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "ctexarray") {
-		return "CompressedTexture2DArray";
-	}
-	if (p_path.get_extension().to_lower() == "ccube") {
-		return "CompressedCubemap";
-	}
-	if (p_path.get_extension().to_lower() == "ccubearray") {
-		return "CompressedCubemapArray";
-	}
-	return "";
 }

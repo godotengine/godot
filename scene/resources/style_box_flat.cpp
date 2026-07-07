@@ -30,9 +30,12 @@
 
 #include "style_box_flat.h"
 
-#include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
-#include "servers/rendering_server.h"
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/text/text_server.h"
+
+#include <cfloat> // FLT_EPSILON
 
 float StyleBoxFlat::get_style_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
@@ -40,6 +43,9 @@ float StyleBoxFlat::get_style_margin(Side p_side) const {
 }
 
 void StyleBoxFlat::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (!anti_aliased && p_property.name == "anti_aliasing_size") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -493,18 +499,15 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	real_t aa_size_scaled = 1.0f;
 	if (aa_on) {
-		real_t scale_factor = 1.0f;
-		const SceneTree *tree = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
-		if (tree) {
-			const Window *window = tree->get_root();
-			const Vector2 stretch_scale = window->get_stretch_transform().get_scale();
-			scale_factor = MIN(stretch_scale.x, stretch_scale.y);
+		real_t scale_factor = TextServer::get_current_drawn_item_oversampling();
+		if (scale_factor == 0.0) {
+			scale_factor = 1.0;
 		}
 
 		// Adjust AA feather size to account for the 2D scale factor, so that
 		// antialiasing doesn't become blurry at viewport resolutions higher
 		// than the default when using the `canvas_items` stretch mode
-		// (or when using `content_scale_factor` values different than `1.0`).
+		// (or when using `oversampling` values different than `1.0`).
 		aa_size_scaled = aa_size / scale_factor;
 	}
 
@@ -731,7 +734,3 @@ void StyleBoxFlat::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "anti_aliasing"), "set_anti_aliased", "is_anti_aliased");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "anti_aliasing_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,suffix:px"), "set_aa_size", "get_aa_size");
 }
-
-StyleBoxFlat::StyleBoxFlat() {}
-
-StyleBoxFlat::~StyleBoxFlat() {}

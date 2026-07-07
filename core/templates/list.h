@@ -32,7 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
-#include "core/templates/sort_array.h"
+#include "core/templates/sort_list.h"
 
 #include <initializer_list>
 
@@ -45,7 +45,7 @@
  */
 
 template <typename T, typename A = DefaultAllocator>
-class List {
+class _WARN_UNUSED_ List {
 	struct _Data;
 
 public:
@@ -134,8 +134,6 @@ public:
 		}
 
 		void transfer_to_back(List<T, A> *p_dst_list);
-
-		_FORCE_INLINE_ Element() {}
 	};
 
 	typedef T ValueType;
@@ -258,35 +256,35 @@ public:
 	/**
 	 * return a const iterator to the beginning of the list.
 	 */
-	_FORCE_INLINE_ const Element *front() const {
+	_FORCE_INLINE_ const Element *front() const _LIFETIME_BOUND_ {
 		return _data ? _data->first : nullptr;
 	}
 
 	/**
 	 * return an iterator to the beginning of the list.
 	 */
-	_FORCE_INLINE_ Element *front() {
+	_FORCE_INLINE_ Element *front() _LIFETIME_BOUND_ {
 		return _data ? _data->first : nullptr;
 	}
 
 	/**
 	 * return a const iterator to the last member of the list.
 	 */
-	_FORCE_INLINE_ const Element *back() const {
+	_FORCE_INLINE_ const Element *back() const _LIFETIME_BOUND_ {
 		return _data ? _data->last : nullptr;
 	}
 
 	/**
 	 * return an iterator to the last member of the list.
 	 */
-	_FORCE_INLINE_ Element *back() {
+	_FORCE_INLINE_ Element *back() _LIFETIME_BOUND_ {
 		return _data ? _data->last : nullptr;
 	}
 
 	/**
 	 * store a new element at the end of the list
 	 */
-	Element *push_back(const T &value) {
+	Element *push_back(const T &value) _LIFETIME_BOUND_ {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
 			_data->first = nullptr;
@@ -325,7 +323,7 @@ public:
 	/**
 	 * store a new element at the beginning of the list
 	 */
-	Element *push_front(const T &value) {
+	Element *push_front(const T &value) _LIFETIME_BOUND_ {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
 			_data->first = nullptr;
@@ -360,7 +358,7 @@ public:
 		}
 	}
 
-	Element *insert_after(Element *p_element, const T &p_value) {
+	Element *insert_after(Element *p_element, const T &p_value) _LIFETIME_BOUND_ {
 		CRASH_COND(p_element && (!_data || p_element->data != _data));
 
 		if (!p_element) {
@@ -386,7 +384,7 @@ public:
 		return n;
 	}
 
-	Element *insert_before(Element *p_element, const T &p_value) {
+	Element *insert_before(Element *p_element, const T &p_value) _LIFETIME_BOUND_ {
 		CRASH_COND(p_element && (!_data || p_element->data != _data));
 
 		if (!p_element) {
@@ -416,7 +414,20 @@ public:
 	 * find an element in the list,
 	 */
 	template <typename T_v>
-	Element *find(const T_v &p_val) {
+	const Element *find(const T_v &p_val) const _LIFETIME_BOUND_ {
+		const Element *it = front();
+		while (it) {
+			if (it->value == p_val) {
+				return it;
+			}
+			it = it->next();
+		}
+
+		return nullptr;
+	}
+
+	template <typename T_v>
+	Element *find(const T_v &p_val) _LIFETIME_BOUND_ {
 		Element *it = front();
 		while (it) {
 			if (it->value == p_val) {
@@ -535,7 +546,7 @@ public:
 
 	// Random access to elements, use with care,
 	// do not use for iteration.
-	T &get(int p_index) {
+	T &get(int p_index) _LIFETIME_BOUND_ {
 		CRASH_BAD_INDEX(p_index, size());
 
 		Element *I = front();
@@ -550,7 +561,7 @@ public:
 
 	// Random access to elements, use with care,
 	// do not use for iteration.
-	const T &get(int p_index) const {
+	const T &get(int p_index) const _LIFETIME_BOUND_ {
 		CRASH_BAD_INDEX(p_index, size());
 
 		const Element *I = front();
@@ -656,114 +667,25 @@ public:
 		where->prev_ptr = value;
 	}
 
-	/**
-	 * simple insertion sort
-	 */
-
 	void sort() {
 		sort_custom<Comparator<T>>();
 	}
 
 	template <typename C>
-	void sort_custom_inplace() {
+	void sort_custom() {
 		if (size() < 2) {
 			return;
 		}
 
-		Element *from = front();
-		Element *current = from;
-		Element *to = from;
-
-		while (current) {
-			Element *next = current->next_ptr;
-
-			if (from != current) {
-				current->prev_ptr = nullptr;
-				current->next_ptr = from;
-
-				Element *find = from;
-				C less;
-				while (find && less(find->value, current->value)) {
-					current->prev_ptr = find;
-					current->next_ptr = find->next_ptr;
-					find = find->next_ptr;
-				}
-
-				if (current->prev_ptr) {
-					current->prev_ptr->next_ptr = current;
-				} else {
-					from = current;
-				}
-
-				if (current->next_ptr) {
-					current->next_ptr->prev_ptr = current;
-				} else {
-					to = current;
-				}
-			} else {
-				current->prev_ptr = nullptr;
-				current->next_ptr = nullptr;
-			}
-
-			current = next;
-		}
-		_data->first = from;
-		_data->last = to;
-	}
-
-	template <typename C>
-	struct AuxiliaryComparator {
-		C compare;
-		_FORCE_INLINE_ bool operator()(const Element *a, const Element *b) const {
-			return compare(a->value, b->value);
-		}
-	};
-
-	template <typename C>
-	void sort_custom() {
-		//this version uses auxiliary memory for speed.
-		//if you don't want to use auxiliary memory, use the in_place version
-
-		int s = size();
-		if (s < 2) {
-			return;
-		}
-
-		Element **aux_buffer = memnew_arr(Element *, s);
-
-		int idx = 0;
-		for (Element *E = front(); E; E = E->next_ptr) {
-			aux_buffer[idx] = E;
-			idx++;
-		}
-
-		SortArray<Element *, AuxiliaryComparator<C>> sort;
-		sort.sort(aux_buffer, s);
-
-		_data->first = aux_buffer[0];
-		aux_buffer[0]->prev_ptr = nullptr;
-		aux_buffer[0]->next_ptr = aux_buffer[1];
-
-		_data->last = aux_buffer[s - 1];
-		aux_buffer[s - 1]->prev_ptr = aux_buffer[s - 2];
-		aux_buffer[s - 1]->next_ptr = nullptr;
-
-		for (int i = 1; i < s - 1; i++) {
-			aux_buffer[i]->prev_ptr = aux_buffer[i - 1];
-			aux_buffer[i]->next_ptr = aux_buffer[i + 1];
-		}
-
-		memdelete_arr(aux_buffer);
+		SortList<Element, T, &Element::value, &Element::prev_ptr, &Element::next_ptr, C> sorter;
+		sorter.sort(_data->first, _data->last);
 	}
 
 	const void *id() const {
 		return (void *)_data;
 	}
 
-	/**
-	 * copy constructor for the list
-	 */
-	List(const List &p_list) {
+	explicit List(const List &p_list) {
 		const Element *it = p_list.front();
 		while (it) {
 			push_back(it->get());

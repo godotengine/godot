@@ -39,19 +39,19 @@ class EditorImportPlugin : public ResourceImporter {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0RC(String, _get_importer_name)
-	GDVIRTUAL0RC(String, _get_visible_name)
+	GDVIRTUAL0RC_REQUIRED(String, _get_importer_name)
+	GDVIRTUAL0RC_REQUIRED(String, _get_visible_name)
 	GDVIRTUAL0RC(int, _get_preset_count)
-	GDVIRTUAL1RC(String, _get_preset_name, int)
-	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
-	GDVIRTUAL2RC(TypedArray<Dictionary>, _get_import_options, String, int)
-	GDVIRTUAL0RC(String, _get_save_extension)
-	GDVIRTUAL0RC(String, _get_resource_type)
+	GDVIRTUAL1RC_REQUIRED(String, _get_preset_name, int)
+	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_recognized_extensions)
+	GDVIRTUAL2RC_REQUIRED(TypedArray<Dictionary>, _get_import_options, String, int)
+	GDVIRTUAL0RC_REQUIRED(String, _get_save_extension)
+	GDVIRTUAL0RC_REQUIRED(String, _get_resource_type)
 	GDVIRTUAL0RC(float, _get_priority)
 	GDVIRTUAL0RC(int, _get_import_order)
 	GDVIRTUAL0RC(int, _get_format_version)
 	GDVIRTUAL3RC(bool, _get_option_visibility, String, StringName, Dictionary)
-	GDVIRTUAL5RC(Error, _import, String, String, Dictionary, TypedArray<String>, TypedArray<String>)
+	GDVIRTUAL5RC_REQUIRED(Error, _import, String, String, Dictionary, TypedArray<String>, TypedArray<String>)
 	GDVIRTUAL0RC(bool, _can_import_threaded)
 
 	Error _append_import_external_resource(const String &p_file, const Dictionary &p_custom_options = Dictionary(), const String &p_custom_importer = String(), Variant p_generator_parameters = Variant());

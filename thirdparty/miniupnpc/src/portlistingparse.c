@@ -1,7 +1,7 @@
-/* $Id: portlistingparse.c,v 1.9 2015/07/15 12:41:13 nanard Exp $ */
+/* $Id: portlistingparse.c,v 1.12 2025/03/29 17:58:33 nanard Exp $ */
 /* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2011-2020 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2011-2025 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 #include <string.h>
@@ -15,7 +15,7 @@
 #if defined(__HAIKU__)
 /* rename our private function because Haiku already defines a atoui() function */
 #define atoui atoui2
-#endif 
+#endif
 
 /* list of the elements */
 static const struct {

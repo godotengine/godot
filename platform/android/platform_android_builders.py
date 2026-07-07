@@ -19,10 +19,13 @@ def generate_android_binaries(target, source, env):
     if env["target"] == "editor":
         gradle_process += ["generateGodotEditor", "generateGodotHorizonOSEditor", "generateGodotPicoOSEditor"]
     else:
-        gradle_process += ["generateGodotTemplates"]
+        if env["module_mono_enabled"]:
+            gradle_process += ["generateGodotMonoTemplates"]
+        else:
+            gradle_process += ["generateGodotTemplates"]
     gradle_process += ["--quiet"]
 
-    if env["gradle_do_not_strip"]:
+    if env["debug_symbols"] and not env["separate_debug_symbols"]:
         gradle_process += ["-PdoNotStrip=true"]
 
     subprocess.run(

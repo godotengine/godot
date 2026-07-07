@@ -54,7 +54,8 @@ void Basis::invert() {
 }
 
 void Basis::orthonormalize() {
-	// Gram-Schmidt Process
+	// Orthonormalizable check is done in Vector3 class below.
+	// Gram-Schmidt Process:
 
 	Vector3 x = get_column(0);
 	Vector3 y = get_column(1);
@@ -232,15 +233,9 @@ Basis Basis::from_scale(const Vector3 &p_scale) {
 // Multiplies the matrix from left by the scaling matrix: M -> S.M
 // See the comment for Basis::rotated for further explanation.
 void Basis::scale(const Vector3 &p_scale) {
-	rows[0][0] *= p_scale.x;
-	rows[0][1] *= p_scale.x;
-	rows[0][2] *= p_scale.x;
-	rows[1][0] *= p_scale.y;
-	rows[1][1] *= p_scale.y;
-	rows[1][2] *= p_scale.y;
-	rows[2][0] *= p_scale.z;
-	rows[2][1] *= p_scale.z;
-	rows[2][2] *= p_scale.z;
+	rows[0] *= p_scale.x;
+	rows[1] *= p_scale.y;
+	rows[2] *= p_scale.z;
 }
 
 Basis Basis::scaled(const Vector3 &p_scale) const {
@@ -252,7 +247,9 @@ Basis Basis::scaled(const Vector3 &p_scale) const {
 void Basis::scale_local(const Vector3 &p_scale) {
 	// performs a scaling in object-local coordinate system:
 	// M -> (M.S.Minv).M = M.S.
-	*this = scaled_local(p_scale);
+	rows[0] *= p_scale;
+	rows[1] *= p_scale;
+	rows[2] *= p_scale;
 }
 
 void Basis::scale_orthogonal(const Vector3 &p_scale) {
@@ -262,7 +259,7 @@ void Basis::scale_orthogonal(const Vector3 &p_scale) {
 Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 	Basis m = *this;
 	Vector3 s = Vector3(-1, -1, -1) + p_scale;
-	bool sign = signbit(s.x + s.y + s.z);
+	bool sign = std::signbit(s.x + s.y + s.z);
 	Basis b = m.orthonormalized();
 	s = b.xform_inv(s);
 	Vector3 dots;
@@ -271,7 +268,7 @@ Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 			dots[j] += s[i] * Math::abs(m.get_column(i).normalized().dot(b.get_column(j)));
 		}
 	}
-	if (sign != signbit(dots.x + dots.y + dots.z)) {
+	if (sign != std::signbit(dots.x + dots.y + dots.z)) {
 		dots = -dots;
 	}
 	m.scale_local(Vector3(1, 1, 1) + dots);
@@ -283,7 +280,9 @@ real_t Basis::get_uniform_scale() const {
 }
 
 Basis Basis::scaled_local(const Vector3 &p_scale) const {
-	return (*this) * Basis::from_scale(p_scale);
+	Basis m = *this;
+	m.scale_local(p_scale);
+	return m;
 }
 
 Vector3 Basis::get_scale_abs() const {
@@ -477,7 +476,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					if (rows[1][0] == 0 && rows[0][1] == 0 && rows[1][2] == 0 && rows[2][1] == 0 && rows[1][1] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
 						euler.x = 0;
-						euler.y = atan2(rows[0][2], rows[0][0]);
+						euler.y = std::atan2(rows[0][2], rows[0][0]);
 						euler.z = 0;
 					} else {
 						euler.x = Math::atan2(-rows[1][2], rows[2][2]);
@@ -542,22 +541,22 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 					// is this a pure X rotation?
 					if (rows[1][0] == 0 && rows[0][1] == 0 && rows[0][2] == 0 && rows[2][0] == 0 && rows[0][0] == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
-						euler.x = atan2(-m12, rows[1][1]);
+						euler.x = std::atan2(-m12, rows[1][1]);
 						euler.y = 0;
 						euler.z = 0;
 					} else {
-						euler.x = asin(-m12);
-						euler.y = atan2(rows[0][2], rows[2][2]);
-						euler.z = atan2(rows[1][0], rows[1][1]);
+						euler.x = std::asin(-m12);
+						euler.y = std::atan2(rows[0][2], rows[2][2]);
+						euler.z = std::atan2(rows[1][0], rows[1][1]);
 					}
 				} else { // m12 == -1
 					euler.x = Math::PI * 0.5f;
-					euler.y = atan2(rows[0][1], rows[0][0]);
+					euler.y = std::atan2(rows[0][1], rows[0][0]);
 					euler.z = 0;
 				}
 			} else { // m12 == 1
 				euler.x = -Math::PI * 0.5f;
-				euler.y = -atan2(rows[0][1], rows[0][0]);
+				euler.y = -std::atan2(rows[0][1], rows[0][0]);
 				euler.z = 0;
 			}
 
@@ -756,7 +755,7 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 #endif
 	*/
 
-	// https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
+	// https://www.euclideanspace.com/math/geometry/rotations/conversions/matrixToAngle/index.htm
 	real_t x, y, z; // Variables for result.
 	if (Math::is_zero_approx(rows[0][1] - rows[1][0]) && Math::is_zero_approx(rows[0][2] - rows[2][0]) && Math::is_zero_approx(rows[1][2] - rows[2][1])) {
 		// Singularity found.

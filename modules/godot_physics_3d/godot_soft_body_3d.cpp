@@ -33,7 +33,8 @@
 #include "godot_space_3d.h"
 
 #include "core/math/geometry_3d.h"
-#include "servers/rendering_server.h"
+#include "servers/physics_3d/physics_server_3d_rendering_server_handler.h"
+#include "servers/rendering/rendering_server.h"
 
 // Based on Bullet soft body.
 
@@ -62,46 +63,46 @@ GodotSoftBody3D::GodotSoftBody3D() :
 void GodotSoftBody3D::_shapes_changed() {
 }
 
-void GodotSoftBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant) {
+void GodotSoftBody3D::set_state(PS3DE::BodyState p_state, const Variant &p_variant) {
 	switch (p_state) {
-		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
+		case PS3DE::BODY_STATE_TRANSFORM: {
 			_set_transform(p_variant);
 			_set_inv_transform(get_transform().inverse());
 
 			apply_nodes_transform(get_transform());
 
 		} break;
-		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
+		case PS3DE::BODY_STATE_LINEAR_VELOCITY: {
 			// Not supported.
 			ERR_FAIL_MSG("Linear velocity is not supported for Soft bodies.");
 		} break;
-		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
+		case PS3DE::BODY_STATE_ANGULAR_VELOCITY: {
 			ERR_FAIL_MSG("Angular velocity is not supported for Soft bodies.");
 		} break;
-		case PhysicsServer3D::BODY_STATE_SLEEPING: {
+		case PS3DE::BODY_STATE_SLEEPING: {
 			ERR_FAIL_MSG("Sleeping state is not supported for Soft bodies.");
 		} break;
-		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
+		case PS3DE::BODY_STATE_CAN_SLEEP: {
 			ERR_FAIL_MSG("Sleeping state is not supported for Soft bodies.");
 		} break;
 	}
 }
 
-Variant GodotSoftBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
+Variant GodotSoftBody3D::get_state(PS3DE::BodyState p_state) const {
 	switch (p_state) {
-		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
+		case PS3DE::BODY_STATE_TRANSFORM: {
 			return get_transform();
 		} break;
-		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
+		case PS3DE::BODY_STATE_LINEAR_VELOCITY: {
 			ERR_FAIL_V_MSG(Vector3(), "Linear velocity is not supported for Soft bodies.");
 		} break;
-		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
+		case PS3DE::BODY_STATE_ANGULAR_VELOCITY: {
 			ERR_FAIL_V_MSG(Vector3(), "Angular velocity is not supported for Soft bodies.");
 		} break;
-		case PhysicsServer3D::BODY_STATE_SLEEPING: {
+		case PS3DE::BODY_STATE_SLEEPING: {
 			ERR_FAIL_V_MSG(false, "Sleeping state is not supported for Soft bodies.");
 		} break;
-		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
+		case PS3DE::BODY_STATE_CAN_SLEEP: {
 			ERR_FAIL_V_MSG(false, "Sleeping state is not supported for Soft bodies.");
 		} break;
 	}
@@ -136,11 +137,15 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 		return;
 	}
 
+	// TODO: calling RenderingServer::mesh_surface_get_arrays() from the physics thread
+	// is not safe and can deadlock when physics/3d/run_on_separate_thread is enabled.
+	// This method blocks on the main thread to return data, but the main thread may be
+	// blocked waiting on us in PhysicsServer3D::sync().
 	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
 	ERR_FAIL_COND(arrays.is_empty());
 
-	const Vector<int> &indices = arrays[RenderingServer::ARRAY_INDEX];
-	const Vector<Vector3> &vertices = arrays[RenderingServer::ARRAY_VERTEX];
+	const Vector<int> &indices = arrays[RSE::ARRAY_INDEX];
+	const Vector<Vector3> &vertices = arrays[RSE::ARRAY_VERTEX];
 	ERR_FAIL_COND_MSG(indices.is_empty(), "Soft body's mesh needs to have indices");
 	ERR_FAIL_COND_MSG(vertices.is_empty(), "Soft body's mesh needs to have vertices");
 
@@ -272,8 +277,10 @@ void GodotSoftBody3D::update_area() {
 }
 
 void GodotSoftBody3D::reset_link_rest_lengths() {
+	float multiplier = 1.0 - shrinking_factor;
 	for (Link &link : links) {
 		link.rl = (link.n[0]->x - link.n[1]->x).length();
+		link.rl *= multiplier;
 		link.c1 = link.rl * link.rl;
 	}
 }
@@ -444,6 +451,30 @@ void GodotSoftBody3D::apply_node_impulse(uint32_t p_node_index, const Vector3 &p
 	ERR_FAIL_UNSIGNED_INDEX(p_node_index, nodes.size());
 	Node &node = nodes[p_node_index];
 	node.v += p_impulse * node.im;
+}
+
+void GodotSoftBody3D::apply_node_force(uint32_t p_node_index, const Vector3 &p_force) {
+	ERR_FAIL_UNSIGNED_INDEX(p_node_index, nodes.size());
+	Node &node = nodes[p_node_index];
+	node.f += p_force;
+}
+
+void GodotSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
+	const Vector3 impulse = p_impulse / nodes.size();
+	for (Node &node : nodes) {
+		if (node.im > 0) {
+			node.v += impulse * node.im;
+		}
+	}
+}
+
+void GodotSoftBody3D::apply_central_force(const Vector3 &p_force) {
+	const Vector3 force = p_force / nodes.size();
+	for (Node &node : nodes) {
+		if (node.im > 0) {
+			node.f += force;
+		}
+	}
 }
 
 void GodotSoftBody3D::apply_node_bias_impulse(uint32_t p_node_index, const Vector3 &p_impulse) {
@@ -837,6 +868,7 @@ void GodotSoftBody3D::append_link(uint32_t p_node1, uint32_t p_node2) {
 	link.n[0] = node1;
 	link.n[1] = node2;
 	link.rl = (node1->x - node2->x).length();
+	link.rl *= 1.0 - shrinking_factor;
 
 	links.push_back(link);
 }
@@ -892,6 +924,10 @@ void GodotSoftBody3D::set_collision_margin(real_t p_val) {
 
 void GodotSoftBody3D::set_linear_stiffness(real_t p_val) {
 	linear_stiffness = p_val;
+}
+
+void GodotSoftBody3D::set_shrinking_factor(real_t p_val) {
+	shrinking_factor = p_val;
 }
 
 void GodotSoftBody3D::set_pressure_coefficient(real_t p_val) {
@@ -963,7 +999,7 @@ Vector3 GodotSoftBody3D::_compute_area_windforce(const GodotArea3D *p_area, cons
 	const Vector3 &ws = p_area->get_wind_source();
 	real_t projection_on_tri_normal = vec3_dot(p_face->normal, wd);
 	real_t projection_toward_centroid = vec3_dot(p_face->centroid - ws, wd);
-	real_t attenuation_over_distance = pow(projection_toward_centroid, -waf);
+	real_t attenuation_over_distance = std::pow(projection_toward_centroid, -waf);
 	real_t nodal_force_magnitude = wfm * 0.33333333333 * p_face->ra * projection_on_tri_normal * attenuation_over_distance;
 	return nodal_force_magnitude * p_face->normal;
 }
@@ -984,20 +1020,20 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 		const AreaCMP *aa = &areas[0];
 		for (int i = ac - 1; i >= 0; i--) {
 			if (!gravity_done) {
-				PhysicsServer3D::AreaSpaceOverrideMode area_gravity_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
-				if (area_gravity_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+				PS3DE::AreaSpaceOverrideMode area_gravity_mode = (PS3DE::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
+				if (area_gravity_mode != PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 					Vector3 area_gravity;
 					aa[i].area->compute_gravity(get_transform().get_origin(), area_gravity);
 					switch (area_gravity_mode) {
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+						case PS3DE::AREA_SPACE_OVERRIDE_COMBINE:
+						case PS3DE::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
 							gravity += area_gravity;
-							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+							gravity_done = area_gravity_mode == PS3DE::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
 						} break;
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+						case PS3DE::AREA_SPACE_OVERRIDE_REPLACE:
+						case PS3DE::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
 							gravity = area_gravity;
-							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+							gravity_done = area_gravity_mode == PS3DE::AREA_SPACE_OVERRIDE_REPLACE;
 						} break;
 						default: {
 						}

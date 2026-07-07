@@ -30,7 +30,12 @@
 
 #include "ray_cast_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/3d/physics/collision_object_3d.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server.h"
 
 void RayCast3D::set_target_position(const Vector3 &p_point) {
 	target_position = p_point;
@@ -229,7 +234,7 @@ void RayCast3D::_update_raycast_state() {
 		to = Vector3(0, 0.01, 0);
 	}
 
-	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	PS3DT::RayParameters ray_params;
 	ray_params.from = gt.get_origin();
 	ray_params.to = gt.xform(to);
 	ray_params.exclude = exclude;
@@ -239,7 +244,7 @@ void RayCast3D::_update_raycast_state() {
 	ray_params.hit_from_inside = hit_from_inside;
 	ray_params.hit_back_faces = hit_back_faces;
 
-	PhysicsDirectSpaceState3D::RayResult rr;
+	PS3DT::RayResult rr;
 	if (dss->intersect_ray(ray_params, rr)) {
 		collided = true;
 		against = rr.collider_id;
@@ -264,8 +269,8 @@ void RayCast3D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void RayCast3D::add_exception(const CollisionObject3D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+void RayCast3D::add_exception(RequiredParam<const CollisionObject3D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
 	add_exception_rid(p_node->get_rid());
 }
 
@@ -273,8 +278,8 @@ void RayCast3D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void RayCast3D::remove_exception(const CollisionObject3D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+void RayCast3D::remove_exception(RequiredParam<const CollisionObject3D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
 	remove_exception_rid(p_node->get_rid());
 }
 
@@ -381,8 +386,8 @@ void RayCast3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_back_faces"), "set_hit_back_faces", "is_hit_back_faces_enabled");
 
 	ADD_GROUP("Collide With", "collide_with");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 
 	ADD_GROUP("Debug Shape", "debug_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_shape_custom_color"), "set_debug_shape_custom_color", "get_debug_shape_custom_color");
@@ -408,7 +413,7 @@ void RayCast3D::_update_debug_shape_vertices() {
 		float scale_factor = 100.0;
 		Vector3 dir = Vector3(target_position).normalized();
 		// Draw truncated pyramid
-		Vector3 normal = (fabs(dir.x) + fabs(dir.y) > CMP_EPSILON) ? Vector3(-dir.y, dir.x, 0).normalized() : Vector3(0, -dir.z, dir.y).normalized();
+		Vector3 normal = (std::abs(dir.x) + std::abs(dir.y) > CMP_EPSILON) ? Vector3(-dir.y, dir.x, 0).normalized() : Vector3(0, -dir.z, dir.y).normalized();
 		normal *= debug_shape_thickness / scale_factor;
 		int vertices_strip_order[14] = { 4, 5, 0, 1, 2, 5, 6, 4, 7, 0, 3, 2, 7, 6 };
 		for (int v = 0; v < 14; v++) {
@@ -547,11 +552,11 @@ void RayCast3D::_update_debug_shape() {
 void RayCast3D::_clear_debug_shape() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_instance);
+		RenderingServer::get_singleton()->free_rid(debug_instance);
 		debug_instance = RID();
 	}
 	if (debug_mesh.is_valid()) {
-		RenderingServer::get_singleton()->free(debug_mesh->get_rid());
+		RenderingServer::get_singleton()->free_rid(debug_mesh->get_rid());
 		debug_mesh = Ref<ArrayMesh>();
 	}
 }

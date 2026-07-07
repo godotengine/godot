@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Represents a normalized plane equation. [member normal] is the normal of the plane (a, b, c normalized), and [member d] is the distance from the origin to the plane (in the direction of "normal"). "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
+		[b]Note:[/b] In a boolean context, a plane will evaluate to [code]false[/code] if all its components equal [code]0[/code]. Otherwise, a plane will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>

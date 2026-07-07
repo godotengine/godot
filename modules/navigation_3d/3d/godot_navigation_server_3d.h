@@ -39,20 +39,20 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
-#include "servers/navigation/navigation_path_query_parameters_3d.h"
-#include "servers/navigation/navigation_path_query_result_3d.h"
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
+#include "servers/navigation_3d/navigation_path_query_result_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 
 /// The commands are functions executed during the `sync` phase.
 
 #define MERGE_INTERNAL(A, B) A##B
 #define MERGE(A, B) MERGE_INTERNAL(A, B)
 
-#define COMMAND_1(F_NAME, T_0, D_0)        \
+#define COMMAND_1(F_NAME, T_0, D_0) \
 	virtual void F_NAME(T_0 D_0) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0)
 
-#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)       \
+#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1) \
 	virtual void F_NAME(T_0 D_0, T_1 D_1) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
@@ -149,6 +149,9 @@ public:
 	virtual RID region_create() override;
 	virtual uint32_t region_get_iteration_id(RID p_region) const override;
 
+	COMMAND_2(region_set_use_async_iterations, RID, p_region, bool, p_enabled);
+	virtual bool region_get_use_async_iterations(RID p_region) const override;
+
 	COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled);
 	virtual bool region_get_enabled(RID p_region) const override;
 
@@ -185,6 +188,7 @@ public:
 	virtual AABB region_get_bounds(RID p_region) const override;
 
 	virtual RID link_create() override;
+	virtual uint32_t link_get_iteration_id(RID p_link) const override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
 	virtual RID link_get_map(RID p_link) const override;
 	COMMAND_2(link_set_enabled, RID, p_link, bool, p_enabled);
@@ -268,6 +272,7 @@ public:
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override;
+	virtual String get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const override;
 
 	virtual RID source_geometry_parser_create() override;
 	virtual void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) override;
@@ -275,7 +280,7 @@ public:
 	virtual Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) override;
 
 public:
-	COMMAND_1(free, RID, p_object);
+	COMMAND_1(free_rid, RID, p_object);
 
 	virtual void set_active(bool p_active) override;
 

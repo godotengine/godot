@@ -1,0 +1,6 @@
+GH-110369
+--------------
+Validate extension JSON: Error: Field 'classes/AnimationNodeBlendSpace2D/methods/add_blend_point/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/AnimationNodeBlendSpace1D/methods/add_blend_point/arguments': size changed value in new API, from 3 to 4.
+
+Added "name" parameter, to functionally replace index reference for points. Compatibility methods registered.

@@ -30,7 +30,8 @@
 
 #include "json.h"
 
-#include "core/config/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/variant/container_type_validate.h"
 
@@ -47,42 +48,66 @@ const char *JSON::tk_name[TK_MAX] = {
 	"EOF",
 };
 
-String JSON::_make_indent(const String &p_indent, int p_size) {
-	return p_indent.repeat(p_size);
+void JSON::_add_indent(String &r_result, const String &p_indent, int p_size) {
+	for (int i = 0; i < p_size; i++) {
+		r_result += p_indent;
+	}
 }
 
-String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision) {
-	ERR_FAIL_COND_V_MSG(p_cur_indent > Variant::MAX_RECURSION_DEPTH, "...", "JSON structure is too deep. Bailing.");
-
-	String colon = ":";
-	String end_statement = "";
-
-	if (!p_indent.is_empty()) {
-		colon += " ";
-		end_statement += "\n";
+void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision) {
+	if (p_cur_indent > Variant::MAX_RECURSION_DEPTH) {
+		r_result += "...";
+		ERR_FAIL_MSG("JSON structure is too deep. Bailing.");
 	}
+
+	const char *colon = p_indent.is_empty() ? ":" : ": ";
+	const char *end_statement = p_indent.is_empty() ? "" : "\n";
 
 	switch (p_var.get_type()) {
 		case Variant::NIL:
-			return "null";
+			r_result += "null";
+			return;
 		case Variant::BOOL:
-			return p_var.operator bool() ? "true" : "false";
+			r_result += p_var.operator bool() ? "true" : "false";
+			return;
 		case Variant::INT:
-			return itos(p_var);
+			r_result += itos(p_var);
+			return;
 		case Variant::FLOAT: {
-			double num = p_var;
+			const double num = p_var;
 
+			// JSON does not support NaN or Infinity, so use extremely large numbers for infinity.
+			if (!Math::is_finite(num)) {
+				if (num == Math::INF) {
+					r_result += "1e99999";
+				} else if (num == -Math::INF) {
+					r_result += "-1e99999";
+				} else {
+					WARN_PRINT_ONCE("`NaN` (\"Not a Number\") found in argument passed to JSON.stringify(). `NaN` cannot be represented in JSON, so the value has been replaced with `null`. This warning will not be printed for any later NaN occurrences.");
+					r_result += "null";
+				}
+				return;
+			}
 			// Only for exactly 0. If we have approximately 0 let the user decide how much
 			// precision they want.
-			if (num == double(0)) {
-				return String("0.0");
+			if (num == double(0.0)) {
+				r_result += "0.0";
+				return;
 			}
 
-			double magnitude = log10(Math::abs(num));
-			int total_digits = p_full_precision ? 17 : 14;
-			int precision = MAX(1, total_digits - (int)Math::floor(magnitude));
-
-			return String::num(num, precision);
+			if (p_full_precision) {
+				const String num_sci = String::num_scientific(num);
+				if (num_sci.contains_char('.') || num_sci.contains_char('e')) {
+					r_result += num_sci;
+				} else {
+					r_result += num_sci + ".0";
+				}
+			} else {
+				const double magnitude = std::log10(Math::abs(num));
+				const int precision = MAX(1, 14 - (int)Math::floor(magnitude));
+				r_result += String::num(num, precision);
+			}
+			return;
 		}
 		case Variant::PACKED_INT32_ARRAY:
 		case Variant::PACKED_INT64_ARRAY:
@@ -91,13 +116,19 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 		case Variant::PACKED_STRING_ARRAY:
 		case Variant::ARRAY: {
 			Array a = p_var;
-			if (a.is_empty()) {
-				return "[]";
+			if (p_markers.has(a.id())) {
+				r_result += "\"[...]\"";
+				ERR_FAIL_MSG("Converting circular structure to JSON.");
 			}
-			String s = "[";
-			s += end_statement;
 
-			ERR_FAIL_COND_V_MSG(p_markers.has(a.id()), "\"[...]\"", "Converting circular structure to JSON.");
+			if (a.is_empty()) {
+				r_result += "[]";
+				return;
+			}
+
+			r_result += '[';
+			r_result += end_statement;
+
 			p_markers.insert(a.id());
 
 			bool first = true;
@@ -105,21 +136,32 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 				if (first) {
 					first = false;
 				} else {
-					s += ",";
-					s += end_statement;
+					r_result += ',';
+					r_result += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(var, p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				_add_indent(r_result, p_indent, p_cur_indent + 1);
+				_stringify(r_result, var, p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
 			}
-			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
+			r_result += end_statement;
+			_add_indent(r_result, p_indent, p_cur_indent);
+			r_result += ']';
 			p_markers.erase(a.id());
-			return s;
+			return;
 		}
 		case Variant::DICTIONARY: {
-			String s = "{";
-			s += end_statement;
 			Dictionary d = p_var;
+			if (p_markers.has(d.id())) {
+				r_result += "\"{...}\"";
+				ERR_FAIL_MSG("Converting circular structure to JSON.");
+			}
 
-			ERR_FAIL_COND_V_MSG(p_markers.has(d.id()), "\"{...}\"", "Converting circular structure to JSON.");
+			if (d.is_empty()) {
+				r_result += "{}";
+				return;
+			}
+
+			r_result += '{';
+			r_result += end_statement;
 			p_markers.insert(d.id());
 
 			LocalVector<Variant> keys = d.get_key_list();
@@ -129,24 +171,30 @@ String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_
 			}
 
 			bool first_key = true;
-			for (const Variant &E : keys) {
+			for (const Variant &key : keys) {
 				if (first_key) {
 					first_key = false;
 				} else {
-					s += ",";
-					s += end_statement;
+					r_result += ',';
+					r_result += end_statement;
 				}
-				s += _make_indent(p_indent, p_cur_indent + 1) + _stringify(String(E), p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
-				s += colon;
-				s += _stringify(d[E], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				_add_indent(r_result, p_indent, p_cur_indent + 1);
+				_stringify(r_result, String(key), p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
+				r_result += colon;
+				_stringify(r_result, d[key], p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
 			}
 
-			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
+			r_result += end_statement;
+			_add_indent(r_result, p_indent, p_cur_indent);
+			r_result += '}';
 			p_markers.erase(d.id());
-			return s;
+			return;
 		}
 		default:
-			return "\"" + String(p_var).json_escape() + "\"";
+			r_result += '"';
+			r_result += String(p_var).json_escape();
+			r_result += '"';
+			return;
 	}
 }
 
@@ -568,10 +616,10 @@ String JSON::get_parsed_text() const {
 }
 
 String JSON::stringify(const Variant &p_var, const String &p_indent, bool p_sort_keys, bool p_full_precision) {
-	Ref<JSON> json;
-	json.instantiate();
+	String result;
 	HashSet<const void *> markers;
-	return json->_stringify(p_var, p_indent, 0, p_sort_keys, markers, p_full_precision);
+	_stringify(result, p_var, p_indent, 0, p_sort_keys, markers, p_full_precision);
+	return result;
 }
 
 Variant JSON::parse_string(const String &p_json_string) {
@@ -625,10 +673,10 @@ static bool _encode_container_type(Dictionary &r_dict, const String &p_key, cons
 }
 
 Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_depth) {
-#define RETURN_ARGS                                           \
-	Dictionary ret;                                           \
+#define RETURN_ARGS \
+	Dictionary ret; \
 	ret[TYPE] = Variant::get_type_name(p_variant.get_type()); \
-	ret[ARGS] = args;                                         \
+	ret[ARGS] = args; \
 	return ret
 
 	switch (p_variant.get_type()) {
@@ -1025,7 +1073,15 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 			if (s.begins_with("i:")) {
 				return s.substr(2).to_int();
 			} else if (s.begins_with("f:")) {
-				return s.substr(2).to_float();
+				const String sub = s.substr(2);
+				if (sub == "inf") {
+					return Math::INF;
+				} else if (sub == "-inf") {
+					return -Math::INF;
+				} else if (sub == "nan") {
+					return Math::NaN;
+				}
+				return sub.to_float();
 			} else if (s.begins_with("s:")) {
 				return s.substr(2);
 			} else if (s.begins_with("sn:")) {
@@ -1042,18 +1098,18 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 
 			ERR_FAIL_COND_V(!dict.has(TYPE), Variant());
 
-#define LOAD_ARGS()                              \
+#define LOAD_ARGS() \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
 	const Array args = dict[ARGS]
 
-#define LOAD_ARGS_CHECK_SIZE(m_size)             \
+#define LOAD_ARGS_CHECK_SIZE(m_size) \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
-	const Array args = dict[ARGS];               \
+	const Array args = dict[ARGS]; \
 	ERR_FAIL_COND_V(args.size() != (m_size), Variant())
 
-#define LOAD_ARGS_CHECK_FACTOR(m_factor)         \
+#define LOAD_ARGS_CHECK_FACTOR(m_factor) \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
-	const Array args = dict[ARGS];               \
+	const Array args = dict[ARGS]; \
 	ERR_FAIL_COND_V(args.size() % (m_factor) != 0, Variant())
 
 			switch (Variant::get_type_by_name(dict[TYPE])) {
@@ -1494,87 +1550,3 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 #undef VALUE_TYPE
 #undef ARGS
 #undef PROPS
-
-////////////
-
-Ref<Resource> ResourceFormatLoaderJSON::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	if (r_error) {
-		*r_error = ERR_FILE_CANT_OPEN;
-	}
-
-	if (!FileAccess::exists(p_path)) {
-		*r_error = ERR_FILE_NOT_FOUND;
-		return Ref<Resource>();
-	}
-
-	Ref<JSON> json;
-	json.instantiate();
-
-	Error err = json->parse(FileAccess::get_file_as_string(p_path), Engine::get_singleton()->is_editor_hint());
-	if (err != OK) {
-		String err_text = "Error parsing JSON file at '" + p_path + "', on line " + itos(json->get_error_line()) + ": " + json->get_error_message();
-
-		if (Engine::get_singleton()->is_editor_hint()) {
-			// If running on editor, still allow opening the JSON so the code editor can edit it.
-			WARN_PRINT(err_text);
-		} else {
-			if (r_error) {
-				*r_error = err;
-			}
-			ERR_PRINT(err_text);
-			return Ref<Resource>();
-		}
-	}
-
-	if (r_error) {
-		*r_error = OK;
-	}
-
-	return json;
-}
-
-void ResourceFormatLoaderJSON::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("json");
-}
-
-bool ResourceFormatLoaderJSON::handles_type(const String &p_type) const {
-	return (p_type == "JSON");
-}
-
-String ResourceFormatLoaderJSON::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "json") {
-		return "JSON";
-	}
-	return "";
-}
-
-Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	Ref<JSON> json = p_resource;
-	ERR_FAIL_COND_V(json.is_null(), ERR_INVALID_PARAMETER);
-
-	String source = json->get_parsed_text().is_empty() ? JSON::stringify(json->get_data(), "\t", false, true) : json->get_parsed_text();
-
-	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-
-	ERR_FAIL_COND_V_MSG(err, err, vformat("Cannot save json '%s'.", p_path));
-
-	file->store_string(source);
-	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		return ERR_CANT_CREATE;
-	}
-
-	return OK;
-}
-
-void ResourceFormatSaverJSON::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
-	Ref<JSON> json = p_resource;
-	if (json.is_valid()) {
-		p_extensions->push_back("json");
-	}
-}
-
-bool ResourceFormatSaverJSON::recognize(const Ref<Resource> &p_resource) const {
-	return p_resource->get_class_name() == "JSON"; //only json, not inherited
-}

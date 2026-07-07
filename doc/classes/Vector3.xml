@@ -155,7 +155,7 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector3" />
 			<description>
-				Returns the squared distance between this vector and [param to].
+				Returns the squared [url=https://en.wikipedia.org/wiki/Euclidean_distance]Euclidean distance[/url] between this vector and [param to].
 				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
@@ -163,7 +163,7 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector3" />
 			<description>
-				Returns the distance between this vector and [param to].
+				Returns the [url=https://en.wikipedia.org/wiki/Euclidean_distance]Euclidean distance[/url] between this vector and [param to].
 			</description>
 		</method>
 		<method name="dot" qualifiers="const">
@@ -235,7 +235,7 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="limit_length" qualifiers="const" keywords="truncate">
+		<method name="limit_length" qualifiers="const" keywords="clamp, saturate, truncate">
 			<return type="Vector3" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>

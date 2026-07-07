@@ -30,12 +30,18 @@
 
 #include "primitive_meshes.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/main_loop.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
-#include "servers/rendering_server.h"
-#include "thirdparty/misc/polypartition.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
+
+#include <thirdparty/misc/polypartition.h>
 
 #define PADDING_REF_SIZE 1024.0
 
@@ -45,13 +51,13 @@
 void PrimitiveMesh::_update() const {
 	Array arr;
 	if (GDVIRTUAL_CALL(_create_mesh_array, arr)) {
-		ERR_FAIL_COND_MSG(arr.size() != RS::ARRAY_MAX, "_create_mesh_array must return an array of Mesh.ARRAY_MAX elements.");
+		ERR_FAIL_COND_MSG(arr.size() != RSE::ARRAY_MAX, "_create_mesh_array must return an array of Mesh.ARRAY_MAX elements.");
 	} else {
-		arr.resize(RS::ARRAY_MAX);
+		arr.resize(RSE::ARRAY_MAX);
 		_create_mesh_array(arr);
 	}
 
-	Vector<Vector3> points = arr[RS::ARRAY_VERTEX];
+	Vector<Vector3> points = arr[RSE::ARRAY_VERTEX];
 
 	ERR_FAIL_COND_MSG(points.is_empty(), "_create_mesh_array must return at least a vertex array.");
 
@@ -70,10 +76,10 @@ void PrimitiveMesh::_update() const {
 		}
 	}
 
-	Vector<int> indices = arr[RS::ARRAY_INDEX];
+	Vector<int> indices = arr[RSE::ARRAY_INDEX];
 
 	if (flip_faces) {
-		Vector<Vector3> normals = arr[RS::ARRAY_NORMAL];
+		Vector<Vector3> normals = arr[RSE::ARRAY_NORMAL];
 
 		if (normals.size() && indices.size()) {
 			{
@@ -91,8 +97,8 @@ void PrimitiveMesh::_update() const {
 					SWAP(w[i + 0], w[i + 1]);
 				}
 			}
-			arr[RS::ARRAY_NORMAL] = normals;
-			arr[RS::ARRAY_INDEX] = indices;
+			arr[RSE::ARRAY_NORMAL] = normals;
+			arr[RSE::ARRAY_INDEX] = indices;
 		}
 	}
 
@@ -100,8 +106,8 @@ void PrimitiveMesh::_update() const {
 		// _create_mesh_array should populate our UV2, this is a fallback in case it doesn't.
 		// As we don't know anything about the geometry we only pad the right and bottom edge
 		// of our texture.
-		Vector<Vector2> uv = arr[RS::ARRAY_TEX_UV];
-		Vector<Vector2> uv2 = arr[RS::ARRAY_TEX_UV2];
+		Vector<Vector2> uv = arr[RSE::ARRAY_TEX_UV];
+		Vector<Vector2> uv2 = arr[RSE::ARRAY_TEX_UV2];
 
 		if (uv.size() > 0 && uv2.is_empty()) {
 			Vector2 uv2_scale = get_uv2_scale();
@@ -113,14 +119,14 @@ void PrimitiveMesh::_update() const {
 			}
 		}
 
-		arr[RS::ARRAY_TEX_UV2] = uv2;
+		arr[RSE::ARRAY_TEX_UV2] = uv2;
 	}
 
 	array_len = pc;
 	index_array_len = indices.size();
 	// in with the new
 	RenderingServer::get_singleton()->mesh_clear(mesh);
-	RenderingServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (RenderingServer::PrimitiveType)primitive_type, arr);
+	RenderingServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (RSE::PrimitiveType)primitive_type, arr);
 	RenderingServer::get_singleton()->mesh_surface_set_material(mesh, 0, material.is_null() ? RID() : material->get_rid());
 
 	pending_request = false;
@@ -182,9 +188,9 @@ TypedArray<Array> PrimitiveMesh::surface_get_blend_shape_arrays(int p_surface) c
 BitField<Mesh::ArrayFormat> PrimitiveMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, 0);
 
-	uint64_t mesh_format = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL | RS::ARRAY_FORMAT_TANGENT | RS::ARRAY_FORMAT_TEX_UV | RS::ARRAY_FORMAT_INDEX;
+	uint64_t mesh_format = RSE::ARRAY_FORMAT_VERTEX | RSE::ARRAY_FORMAT_NORMAL | RSE::ARRAY_FORMAT_TANGENT | RSE::ARRAY_FORMAT_TEX_UV | RSE::ARRAY_FORMAT_INDEX;
 	if (add_uv2) {
-		mesh_format |= RS::ARRAY_FORMAT_TEX_UV2;
+		mesh_format |= RSE::ARRAY_FORMAT_TEX_UV2;
 	}
 
 	return mesh_format;
@@ -362,7 +368,7 @@ PrimitiveMesh::PrimitiveMesh() {
 	mesh = RenderingServer::get_singleton()->mesh_create();
 
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
-	texel_size = float(GLOBAL_GET("rendering/lightmapping/primitive_meshes/texel_size"));
+	texel_size = float(GLOBAL_GET_CACHED(float, "rendering/lightmapping/primitive_meshes/texel_size"));
 	if (texel_size <= 0.0) {
 		texel_size = 0.2;
 	}
@@ -372,7 +378,7 @@ PrimitiveMesh::PrimitiveMesh() {
 
 PrimitiveMesh::~PrimitiveMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(mesh);
+	RenderingServer::get_singleton()->free_rid(mesh);
 
 	ERR_FAIL_NULL(ProjectSettings::get_singleton());
 	ProjectSettings *project_settings = ProjectSettings::get_singleton();
@@ -440,9 +446,9 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
-	tangents.push_back(m_x);            \
-	tangents.push_back(m_y);            \
-	tangents.push_back(m_z);            \
+	tangents.push_back(m_x); \
+	tangents.push_back(m_y); \
+	tangents.push_back(m_z); \
 	tangents.push_back(m_d);
 
 	// Note, this has been aligned with our collision shape but I've left the descriptions as top/middle/bottom.
@@ -598,14 +604,14 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 		thisrow = point;
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
-	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
-	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
-	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RSE::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (p_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
+		p_arr[RSE::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
+	p_arr[RSE::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void CapsuleMesh::_bind_methods() {
@@ -689,8 +695,6 @@ int CapsuleMesh::get_rings() const {
 	return rings;
 }
 
-CapsuleMesh::CapsuleMesh() {}
-
 /**
   BoxMesh
 */
@@ -762,9 +766,9 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
-	tangents.push_back(m_x);            \
-	tangents.push_back(m_y);            \
-	tangents.push_back(m_z);            \
+	tangents.push_back(m_x); \
+	tangents.push_back(m_y); \
+	tangents.push_back(m_z); \
 	tangents.push_back(m_d);
 
 	// front + back
@@ -956,14 +960,14 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 		thisrow = point;
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
-	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
-	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
-	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RSE::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (p_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
+		p_arr[RSE::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
+	p_arr[RSE::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void BoxMesh::_bind_methods() {
@@ -1036,8 +1040,6 @@ int BoxMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-BoxMesh::BoxMesh() {}
-
 /**
 	CylinderMesh
 */
@@ -1107,9 +1109,9 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
-	tangents.push_back(m_x);            \
-	tangents.push_back(m_y);            \
-	tangents.push_back(m_z);            \
+	tangents.push_back(m_x); \
+	tangents.push_back(m_y); \
+	tangents.push_back(m_z); \
 	tangents.push_back(m_d);
 
 	thisrow = 0;
@@ -1262,14 +1264,14 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 		}
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
-	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
-	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
-	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RSE::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (p_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
+		p_arr[RSE::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
+	p_arr[RSE::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void CylinderMesh::_bind_methods() {
@@ -1395,8 +1397,6 @@ bool CylinderMesh::is_cap_bottom() const {
 	return cap_bottom;
 }
 
-CylinderMesh::CylinderMesh() {}
-
 /**
   PlaneMesh
 */
@@ -1445,9 +1445,9 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
-	tangents.push_back(m_x);            \
-	tangents.push_back(m_y);            \
-	tangents.push_back(m_z);            \
+	tangents.push_back(m_x); \
+	tangents.push_back(m_y); \
+	tangents.push_back(m_z); \
 	tangents.push_back(m_d);
 
 	/* top + bottom */
@@ -1495,11 +1495,11 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 		thisrow = point;
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
-	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
-	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
-	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
-	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
+	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RSE::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RSE::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void PlaneMesh::_bind_methods() {
@@ -1589,8 +1589,6 @@ PlaneMesh::Orientation PlaneMesh::get_orientation() const {
 	return orientation;
 }
 
-PlaneMesh::PlaneMesh() {}
-
 /**
   PrismMesh
 */
@@ -1662,9 +1660,9 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
-	tangents.push_back(m_x);            \
-	tangents.push_back(m_y);            \
-	tangents.push_back(m_z);            \
+	tangents.push_back(m_x); \
+	tangents.push_back(m_y); \
+	tangents.push_back(m_z); \
 	tangents.push_back(m_d);
 
 	/* front + back */
@@ -1869,14 +1867,14 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 		thisrow = point;
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
-	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
-	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
-	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RSE::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
+		p_arr[RSE::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
+	p_arr[RSE::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void PrismMesh::_bind_methods() {
@@ -1961,8 +1959,6 @@ int PrismMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-PrismMesh::PrismMesh() {}
-
 /**
   SphereMesh
 */
@@ -2022,9 +2018,9 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
-	tangents.push_back(m_x);            \
-	tangents.push_back(m_y);            \
-	tangents.push_back(m_z);            \
+	tangents.push_back(m_x); \
+	tangents.push_back(m_y); \
+	tangents.push_back(m_z); \
 	tangents.push_back(m_d);
 
 	thisrow = 0;
@@ -2086,14 +2082,14 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 		thisrow = point;
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
-	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
-	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
-	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RSE::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (p_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
+		p_arr[RSE::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
+	p_arr[RSE::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void SphereMesh::_bind_methods() {
@@ -2181,8 +2177,6 @@ bool SphereMesh::get_is_hemisphere() const {
 	return is_hemisphere;
 }
 
-SphereMesh::SphereMesh() {}
-
 /**
   TorusMesh
 */
@@ -2235,9 +2229,9 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 	indices.reserve(rings * ring_segments * 6);
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
-	tangents.push_back(m_x);            \
-	tangents.push_back(m_y);            \
-	tangents.push_back(m_z);            \
+	tangents.push_back(m_x); \
+	tangents.push_back(m_y); \
+	tangents.push_back(m_z); \
 	tangents.push_back(m_d);
 
 	ERR_FAIL_COND_MSG(inner_radius == outer_radius, "Inner radius and outer radius cannot be the same.");
@@ -2299,14 +2293,14 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 		}
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
-	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
-	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
-	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RSE::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
 	if (_add_uv2) {
-		p_arr[RS::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
+		p_arr[RSE::ARRAY_TEX_UV2] = Vector<Vector2>(uv2s);
 	}
-	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
+	p_arr[RSE::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void TorusMesh::_bind_methods() {
@@ -2378,8 +2372,6 @@ int TorusMesh::get_ring_segments() const {
 	return ring_segments;
 }
 
-TorusMesh::TorusMesh() {}
-
 /**
   PointMesh
 */
@@ -2389,7 +2381,7 @@ void PointMesh::_create_mesh_array(Array &p_arr) const {
 	faces.resize(1);
 	faces.set(0, Vector3(0.0, 0.0, 0.0));
 
-	p_arr[RS::ARRAY_VERTEX] = faces;
+	p_arr[RSE::ARRAY_VERTEX] = faces;
 }
 
 PointMesh::PointMesh() {
@@ -2540,9 +2532,9 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 	int point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
-	tangents.push_back(m_x);            \
-	tangents.push_back(m_y);            \
-	tangents.push_back(m_z);            \
+	tangents.push_back(m_x); \
+	tangents.push_back(m_y); \
+	tangents.push_back(m_z); \
 	tangents.push_back(m_d);
 
 	int thisrow = 0;
@@ -2744,13 +2736,13 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 		}
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
-	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
-	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
-	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
-	p_arr[RS::ARRAY_BONES] = Vector<int>(bone_indices);
-	p_arr[RS::ARRAY_WEIGHTS] = Vector<float>(bone_weights);
-	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
+	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RSE::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RSE::ARRAY_BONES] = Vector<int>(bone_indices);
+	p_arr[RSE::ARRAY_WEIGHTS] = Vector<float>(bone_weights);
+	p_arr[RSE::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void TubeTrailMesh::_bind_methods() {
@@ -2790,7 +2782,7 @@ void TubeTrailMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_top"), "set_cap_top", "is_cap_top");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cap_bottom"), "set_cap_bottom", "is_cap_bottom");
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()), "set_curve", "get_curve");
 }
 
 TubeTrailMesh::TubeTrailMesh() {
@@ -2915,9 +2907,9 @@ void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
 	indices.reserve(total_segments * 6 * (shape == SHAPE_CROSS ? 2 : 1));
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
-	tangents.push_back(m_x);            \
-	tangents.push_back(m_y);            \
-	tangents.push_back(m_z);            \
+	tangents.push_back(m_x); \
+	tangents.push_back(m_y); \
+	tangents.push_back(m_z); \
 	tangents.push_back(m_d);
 
 	for (int j = 0; j <= total_segments; j++) {
@@ -3007,13 +2999,13 @@ void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
 		}
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = Vector<Vector3>(points);
-	p_arr[RS::ARRAY_NORMAL] = Vector<Vector3>(normals);
-	p_arr[RS::ARRAY_TANGENT] = Vector<float>(tangents);
-	p_arr[RS::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
-	p_arr[RS::ARRAY_BONES] = Vector<int>(bone_indices);
-	p_arr[RS::ARRAY_WEIGHTS] = Vector<float>(bone_weights);
-	p_arr[RS::ARRAY_INDEX] = Vector<int>(indices);
+	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
+	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
+	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
+	p_arr[RSE::ARRAY_TEX_UV] = Vector<Vector2>(uvs);
+	p_arr[RSE::ARRAY_BONES] = Vector<int>(bone_indices);
+	p_arr[RSE::ARRAY_WEIGHTS] = Vector<float>(bone_weights);
+	p_arr[RSE::ARRAY_INDEX] = Vector<int>(indices);
 }
 
 void RibbonTrailMesh::_bind_methods() {
@@ -3040,7 +3032,7 @@ void RibbonTrailMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_sections", "get_sections");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "section_length", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001,or_greater,suffix:m"), "set_section_length", "get_section_length");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "section_segments", PROPERTY_HINT_RANGE, "1,128,1"), "set_section_segments", "get_section_segments");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()), "set_curve", "get_curve");
 
 	BIND_ENUM_CONSTANT(SHAPE_FLAT)
 	BIND_ENUM_CONSTANT(SHAPE_CROSS)
@@ -3078,11 +3070,11 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 		Vector<ContourPoint> polygon;
 
 		for (int32_t j = start; j <= end; j++) {
-			if (points[j].z == TextServer::CONTOUR_CURVE_TAG_ON) {
+			if (points[j].z == (real_t)TextServer::CONTOUR_CURVE_TAG_ON) {
 				// Point on the curve.
 				Vector2 p = Vector2(points[j].x, points[j].y) * pixel_size;
 				polygon.push_back(ContourPoint(p, true));
-			} else if (points[j].z == TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
+			} else if (points[j].z == (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
 				// Conic Bezier arc.
 				int32_t next = (j == end) ? start : (j + 1);
 				int32_t prev = (j == start) ? end : (j - 1);
@@ -3091,16 +3083,16 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 				Vector2 p2;
 
 				// For successive conic OFF points add a virtual ON point in the middle.
-				if (points[prev].z == TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
+				if (points[prev].z == (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
 					p0 = (Vector2(points[prev].x, points[prev].y) + Vector2(points[j].x, points[j].y)) / 2.0;
-				} else if (points[prev].z == TextServer::CONTOUR_CURVE_TAG_ON) {
+				} else if (points[prev].z == (real_t)TextServer::CONTOUR_CURVE_TAG_ON) {
 					p0 = Vector2(points[prev].x, points[prev].y);
 				} else {
 					ERR_FAIL_MSG(vformat("Invalid conic arc point sequence at %d:%d", i, j));
 				}
-				if (points[next].z == TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
+				if (points[next].z == (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CONIC) {
 					p2 = (Vector2(points[j].x, points[j].y) + Vector2(points[next].x, points[next].y)) / 2.0;
-				} else if (points[next].z == TextServer::CONTOUR_CURVE_TAG_ON) {
+				} else if (points[next].z == (real_t)TextServer::CONTOUR_CURVE_TAG_ON) {
 					p2 = Vector2(points[next].x, points[next].y);
 				} else {
 					ERR_FAIL_MSG(vformat("Invalid conic arc point sequence at %d:%d", i, j));
@@ -3118,7 +3110,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 					polygon.push_back(ContourPoint(p, false));
 					t += step;
 				}
-			} else if (points[j].z == TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC) {
+			} else if (points[j].z == (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC) {
 				// Cubic Bezier arc.
 				int32_t cur = j;
 				int32_t next1 = (j == end) ? start : (j + 1);
@@ -3126,7 +3118,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 				int32_t prev = (j == start) ? end : (j - 1);
 
 				// There must be exactly two OFF points and two ON points for each cubic arc.
-				if (points[prev].z != TextServer::CONTOUR_CURVE_TAG_ON) {
+				if (points[prev].z != (real_t)TextServer::CONTOUR_CURVE_TAG_ON) {
 					cur = (cur == 0) ? end : cur - 1;
 					next1 = (next1 == 0) ? end : next1 - 1;
 					next2 = (next2 == 0) ? end : next2 - 1;
@@ -3134,10 +3126,10 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 				} else {
 					j++;
 				}
-				ERR_FAIL_COND_MSG(points[prev].z != TextServer::CONTOUR_CURVE_TAG_ON, vformat("Invalid cubic arc point sequence at %d:%d", i, prev));
-				ERR_FAIL_COND_MSG(points[cur].z != TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC, vformat("Invalid cubic arc point sequence at %d:%d", i, cur));
-				ERR_FAIL_COND_MSG(points[next1].z != TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC, vformat("Invalid cubic arc point sequence at %d:%d", i, next1));
-				ERR_FAIL_COND_MSG(points[next2].z != TextServer::CONTOUR_CURVE_TAG_ON, vformat("Invalid cubic arc point sequence at %d:%d", i, next2));
+				ERR_FAIL_COND_MSG(points[prev].z != (real_t)TextServer::CONTOUR_CURVE_TAG_ON, vformat("Invalid cubic arc point sequence at %d:%d", i, prev));
+				ERR_FAIL_COND_MSG(points[cur].z != (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC, vformat("Invalid cubic arc point sequence at %d:%d", i, cur));
+				ERR_FAIL_COND_MSG(points[next1].z != (real_t)TextServer::CONTOUR_CURVE_TAG_OFF_CUBIC, vformat("Invalid cubic arc point sequence at %d:%d", i, next1));
+				ERR_FAIL_COND_MSG(points[next2].z != (real_t)TextServer::CONTOUR_CURVE_TAG_ON, vformat("Invalid cubic arc point sequence at %d:%d", i, next2));
 
 				Vector2 p0 = Vector2(points[prev].x, points[prev].y);
 				Vector2 p1 = Vector2(points[cur].x, points[cur].y);
@@ -3240,8 +3232,9 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		TS->shaped_text_clear(text_rid);
 		TS->shaped_text_set_direction(text_rid, text_direction);
 
-		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
-		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
+		const String &lang = language.is_empty() ? _get_locale() : language;
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, lang) : xl_text;
+		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), lang);
 
 		TypedArray<Vector3i> stt;
 		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
@@ -3609,11 +3602,11 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		indices.push_back(0);
 	}
 
-	p_arr[RS::ARRAY_VERTEX] = vertices;
-	p_arr[RS::ARRAY_NORMAL] = normals;
-	p_arr[RS::ARRAY_TANGENT] = tangents;
-	p_arr[RS::ARRAY_TEX_UV] = uvs;
-	p_arr[RS::ARRAY_INDEX] = indices;
+	p_arr[RSE::ARRAY_VERTEX] = vertices;
+	p_arr[RSE::ARRAY_NORMAL] = normals;
+	p_arr[RSE::ARRAY_TANGENT] = tangents;
+	p_arr[RSE::ARRAY_TEX_UV] = uvs;
+	p_arr[RSE::ARRAY_INDEX] = indices;
 }
 
 void TextMesh::_bind_methods() {
@@ -3673,7 +3666,7 @@ void TextMesh::_bind_methods() {
 
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static()), "set_font", "get_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");
@@ -3699,11 +3692,8 @@ void TextMesh::_bind_methods() {
 void TextMesh::_notification(int p_what) {
 	switch (p_what) {
 		case MainLoop::NOTIFICATION_TRANSLATION_CHANGED: {
-			String new_text = tr(text);
-			if (new_text == xl_text) {
-				return; // Nothing new.
-			}
-			xl_text = new_text;
+			// Language update might change the appearance of some characters.
+			xl_text = tr(text);
 			dirty_text = true;
 			request_update();
 		} break;
@@ -3966,16 +3956,16 @@ TextServer::StructuredTextParser TextMesh::get_structured_text_bidi_override() c
 	return st_parser;
 }
 
-void TextMesh::set_structured_text_bidi_override_options(Array p_args) {
+void TextMesh::set_structured_text_bidi_override_options(const Array &p_args) {
 	if (st_args != p_args) {
-		st_args = p_args;
+		st_args = Array(p_args);
 		dirty_text = true;
 		request_update();
 	}
 }
 
 Array TextMesh::get_structured_text_bidi_override_options() const {
-	return st_args;
+	return Array(st_args);
 }
 
 void TextMesh::set_uppercase(bool p_uppercase) {

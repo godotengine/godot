@@ -50,6 +50,13 @@ public:
 		SELECT_TOGGLE,
 	};
 
+	enum ScrollHintMode {
+		SCROLL_HINT_MODE_DISABLED,
+		SCROLL_HINT_MODE_BOTH,
+		SCROLL_HINT_MODE_TOP,
+		SCROLL_HINT_MODE_BOTTOM,
+	};
+
 private:
 	struct Item {
 		mutable RID accessibility_item_element;
@@ -98,6 +105,7 @@ private:
 	int current = -1;
 	int hovered = -1;
 	int prev_hovered = -1;
+	int shift_anchor = -1;
 
 	bool shape_changed = true;
 
@@ -122,6 +130,9 @@ private:
 	HScrollBar *scroll_bar_h = nullptr;
 	TextServer::OverrunBehavior text_overrun_behavior = TextServer::OVERRUN_TRIM_ELLIPSIS;
 
+	ScrollHintMode scroll_hint_mode = SCROLL_HINT_MODE_DISABLED;
+	bool tile_scroll_hint = false;
+
 	uint64_t search_time_msec = 0;
 	String search_string;
 
@@ -131,7 +142,6 @@ private:
 	int max_columns = 1;
 
 	Size2 fixed_icon_size;
-	Size2 max_item_size_cache;
 	Size2 fixed_tag_icon_size;
 
 	int defer_select_single = -1;
@@ -142,6 +152,14 @@ private:
 
 	bool do_autoscroll_to_bottom = false;
 
+	void _scroll_changed(double);
+	void _shape_text(int p_idx);
+	void _mouse_exited();
+	void _shift_range_select(int p_from, int p_to);
+
+	String _atr(int p_idx, const String &p_text) const;
+
+protected:
 	struct ThemeCache {
 		int h_separation = 0;
 		int v_separation = 0;
@@ -157,6 +175,8 @@ private:
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
+		Color font_disabled_color;
+		Color font_disabled_hovered_color;
 
 		int line_separation = 0;
 		int icon_margin = 0;
@@ -167,16 +187,14 @@ private:
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;
 		Ref<StyleBox> cursor_focus_style;
+		Ref<StyleBox> disabled_style;
+		Ref<StyleBox> disabled_hovered_style;
 		Color guide_color;
+
+		Ref<Texture2D> scroll_hint;
+		Color scroll_hint_color;
 	} theme_cache;
 
-	void _scroll_changed(double);
-	void _shape_text(int p_idx);
-	void _mouse_exited();
-
-	String _atr(int p_idx, const String &p_text) const;
-
-protected:
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
@@ -305,11 +323,13 @@ public:
 	bool get_allow_search() const;
 
 	void ensure_current_is_visible();
+	void center_on_current(bool p_center_verically = true, bool p_center_horizontally = true);
 
 	void sort_items_by_text();
 	int find_metadata(const Variant &p_metadata) const;
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
+	virtual AutoTranslateMode get_tooltip_auto_translate_mode_at(const Point2 &p_at) const override;
 	int get_item_at_position(const Point2 &p_pos, bool p_exact = false) const;
 	bool is_pos_at_end_of_items(const Point2 &p_pos) const;
 
@@ -334,9 +354,16 @@ public:
 	VScrollBar *get_v_scroll_bar() { return scroll_bar_v; }
 	HScrollBar *get_h_scroll_bar() { return scroll_bar_h; }
 
+	void set_scroll_hint_mode(ScrollHintMode p_mode);
+	ScrollHintMode get_scroll_hint_mode() const;
+
+	void set_tile_scroll_hint(bool p_enable);
+	bool is_scroll_hint_tiled();
+
 	ItemList();
 	~ItemList();
 };
 
 VARIANT_ENUM_CAST(ItemList::SelectMode);
 VARIANT_ENUM_CAST(ItemList::IconMode);
+VARIANT_ENUM_CAST(ItemList::ScrollHintMode);

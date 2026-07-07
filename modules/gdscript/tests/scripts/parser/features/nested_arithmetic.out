@@ -1,21 +1,21 @@
 GDTEST_OK
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
-~~ WARNING at line 19: (INTEGER_DIVISION) Integer division, decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
+~~ WARNING at line 19: (INTEGER_DIVISION) Integer division. Decimal part will be discarded.
 2.718
 
 2.718

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialEntityTracker" inherits="XRPositionalTracker" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Base class for Positional trackers managed by OpenXR's spatial entity extensions.
+	</brief_description>
+	<description>
+		These are trackers created and managed by OpenXR's spatial entity extensions that give access to specific data related to OpenXR's spatial entities. They will always be of type [code]TRACKER_ANCHOR[/code].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_next">
+			<return type="void" />
+			<param index="0" name="next" type="OpenXRStructureBase" />
+			<description>
+				Adds a new [OpenXRStructureBase] to the next-chain.
+				[method get_next] will return this [param next] until either [method add_next] is called again or it's removed in [method remove_next].
+			</description>
+		</method>
+		<method name="get_next" qualifiers="const">
+			<return type="OpenXRStructureBase" />
+			<description>
+				Gets the head [OpenXRStructureBase] in the next-chain.
+				See also [method add_next] and [method remove_next].
+			</description>
+		</method>
+		<method name="get_spatial_context" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Gets the spatial context used to create this [OpenXRSpatialEntityTracker].
+			</description>
+		</method>
+		<method name="remove_next">
+			<return type="void" />
+			<param index="0" name="next" type="OpenXRStructureBase" />
+			<description>
+				Removes a [param next] object previously added in [method add_next] from the next-chain.
+			</description>
+		</method>
+		<method name="set_spatial_context">
+			<return type="void" />
+			<param index="0" name="spatial_context" type="RID" />
+			<description>
+				Sets the spatial context used to create this tracker.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="entity" type="RID" setter="set_entity" getter="get_entity" default="RID()">
+			The spatial entity associated with this tracker.
+		</member>
+		<member name="spatial_tracking_state" type="int" setter="set_spatial_tracking_state" getter="get_spatial_tracking_state" enum="OpenXRSpatialEntityTracker.EntityTrackingState" default="2">
+			The spatial tracking state for this tracker.
+		</member>
+		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" overrides="XRTracker" enum="XRServer.TrackerType" default="8" />
+	</members>
+	<signals>
+		<signal name="next_changed">
+			<description>
+				Emitted when the next-chain changes, from either [method add_next] or [method remove_next].
+			</description>
+		</signal>
+		<signal name="spatial_tracking_state_changed">
+			<param index="0" name="spatial_tracking_state" type="int" />
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="ENTITY_TRACKING_STATE_STOPPED" value="1" enum="EntityTrackingState">
+			This anchor has stopped tracking.
+		</constant>
+		<constant name="ENTITY_TRACKING_STATE_PAUSED" value="2" enum="EntityTrackingState">
+			Tracking is currently paused.
+		</constant>
+		<constant name="ENTITY_TRACKING_STATE_TRACKING" value="3" enum="EntityTrackingState">
+			This anchor is currently being tracked.
+		</constant>
+	</constants>
+</class>

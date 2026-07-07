@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 
 class CanvasItem;
 
@@ -78,5 +78,4 @@ class StyleBoxEmpty : public StyleBox {
 
 public:
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override {}
-	StyleBoxEmpty() {}
 };

@@ -50,6 +50,7 @@ public:
 		KIND_NODE_PATH,
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
+		KIND_KEYWORD,
 	};
 
 	// core/object/script_language.h - ScriptLanguage::CodeCompletionLocation
@@ -111,6 +112,7 @@ private:
 	/* Line numbers */
 	int line_number_gutter = -1;
 	int line_number_digits = 1;
+	int line_numbers_min_digits = 3;
 	String line_number_padding = " ";
 	HashMap<int, RID> line_number_text_cache;
 	void _clear_line_number_text_cache();
@@ -132,6 +134,8 @@ private:
 	String code_region_start_tag = "region";
 	String code_region_end_tag = "endregion";
 	void _update_code_region_tags();
+	bool _fold_line(int p_line);
+	bool _unfold_line(int p_line);
 
 	/* Delimiters */
 	enum DelimiterType {
@@ -205,11 +209,15 @@ private:
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
 
+	Vector2 completion_touch_drag_accum;
 	bool code_completion_active = false;
 	bool is_code_completion_scroll_hovered = false;
 	bool is_code_completion_scroll_pressed = false;
 	bool is_code_completion_drag_started = false;
 	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
+	Vector<RID> code_completion_ac_items;
+	RID code_completion_ac_scroll_element;
+	RID code_completion_ac_root_element;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;
 	int code_completion_force_item_center = -1;
@@ -288,6 +296,7 @@ private:
 
 		/* Other visuals */
 		Ref<StyleBox> style_normal;
+		Ref<StyleBox> style_readonly;
 
 		Color brace_mismatch_color;
 
@@ -323,12 +332,16 @@ protected:
 
 	virtual void _unhide_carets() override;
 
+	virtual void _draw_guidelines() override;
+
 	/* Text manipulation */
 
 	// Overridable actions
 	virtual void _handle_unicode_input_internal(const uint32_t p_unicode, int p_caret) override;
 	virtual void _backspace_internal(int p_caret) override;
 	virtual void _cut_internal(int p_caret) override;
+
+	virtual RID get_focused_accessibility_element() const override;
 
 	GDVIRTUAL1(_confirm_code_completion, bool)
 	GDVIRTUAL1(_request_code_completion, bool)
@@ -408,6 +421,8 @@ public:
 	bool is_draw_line_numbers_enabled() const;
 	void set_line_numbers_zero_padded(bool p_zero_padded);
 	bool is_line_numbers_zero_padded() const;
+	void set_line_numbers_min_digits(int p_count);
+	int get_line_numbers_min_digits() const;
 
 	/* Fold gutter */
 	void set_draw_fold_gutter(bool p_draw);
@@ -426,8 +441,10 @@ public:
 	void toggle_foldable_line(int p_line);
 	void toggle_foldable_lines_at_carets();
 
+	int get_folded_line_header(int p_line) const;
 	bool is_line_folded(int p_line) const;
-	TypedArray<int> get_folded_lines() const;
+	TypedArray<int> get_folded_lines_bind() const;
+	PackedInt32Array get_folded_lines() const;
 
 	/* Code region */
 	void create_code_region();
@@ -501,6 +518,7 @@ public:
 
 	String get_text_for_symbol_lookup() const;
 	String get_text_with_cursor_char(int p_line, int p_column) const;
+	String get_lookup_word(int p_line, int p_column) const;
 
 	void set_symbol_lookup_word_as_valid(bool p_valid);
 
@@ -512,6 +530,7 @@ public:
 	void move_lines_up();
 	void move_lines_down();
 	void delete_lines();
+	void join_lines(const String &p_line_ending = " ");
 	void duplicate_selection();
 	void duplicate_lines();
 

@@ -1,0 +1,36 @@
+GH-113172
+---------
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_accessors': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_additional_data': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_animation_player': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_animation_players_count': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_animations': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_base_path': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_buffer_views': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_buffers': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_cameras': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_create_animations': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_glb_data': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_handle_binary_image': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_images': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_import_as_skeleton_bones': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_json': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_lights': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_major_version': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_materials': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_meshes': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_minor_version': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_node_index': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_nodes': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_root_nodes': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_scene_name': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_scene_node': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_skeletons': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_skins': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_texture_samplers': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_textures': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_unique_animation_names': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_unique_names': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFState/methods/get_use_named_skin_binds': is_const changed value in new API, from false to true.
+
+GLTFState getters made const. Compatibility methods registered.

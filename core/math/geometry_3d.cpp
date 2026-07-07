@@ -186,13 +186,11 @@ struct _FaceClassify {
 			face = -1;
 			edge = -1;
 		}
-		_Link() {}
 	};
 	bool valid = false;
 	int group = -1;
 	_Link links[3];
 	Face3 face;
-	_FaceClassify() {}
 };
 
 /*** GEOMETRY WRAPPER ***/
@@ -239,15 +237,15 @@ static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int
 	int div_z = len_z > 1 ? 2 : 1;
 
 #define SPLIT_DIV(m_i, m_div, m_v, m_len_v, m_new_v, m_new_len_v) \
-	if (m_div == 1) {                                             \
-		m_new_v = m_v;                                            \
-		m_new_len_v = 1;                                          \
-	} else if (m_i == 0) {                                        \
-		m_new_v = m_v;                                            \
-		m_new_len_v = m_len_v / 2;                                \
-	} else {                                                      \
-		m_new_v = m_v + m_len_v / 2;                              \
-		m_new_len_v = m_len_v - m_len_v / 2;                      \
+	if (m_div == 1) { \
+		m_new_v = m_v; \
+		m_new_len_v = 1; \
+	} else if (m_i == 0) { \
+		m_new_v = m_v; \
+		m_new_len_v = m_len_v / 2; \
+	} else { \
+		m_new_v = m_v + m_len_v / 2; \
+		m_new_len_v = m_len_v - m_len_v / 2; \
 	}
 
 	int new_x;
@@ -862,6 +860,7 @@ Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Plane *p_planes, in
 }
 
 #define square(m_s) ((m_s) * (m_s))
+#define BIG_VAL 1e20
 
 /* dt of 1d function using squared distance */
 static void edt(float *f, int stride, int n) {
@@ -871,8 +870,8 @@ static void edt(float *f, int stride, int n) {
 
 	int k = 0;
 	v[0] = 0;
-	z[0] = -Math::INF;
-	z[1] = +Math::INF;
+	z[0] = -BIG_VAL;
+	z[1] = +BIG_VAL;
 	for (int q = 1; q <= n - 1; q++) {
 		float s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
 		while (s <= z[k]) {
@@ -883,7 +882,7 @@ static void edt(float *f, int stride, int n) {
 		v[k] = q;
 
 		z[k] = s;
-		z[k + 1] = +Math::INF;
+		z[k + 1] = +BIG_VAL;
 	}
 
 	k = 0;
@@ -908,7 +907,7 @@ Vector<uint32_t> Geometry3D::generate_edf(const Vector<bool> &p_voxels, const Ve
 
 	float *work_memory = memnew_arr(float, float_count);
 	for (uint32_t i = 0; i < float_count; i++) {
-		work_memory[i] = Math::INF;
+		work_memory[i] = BIG_VAL;
 	}
 
 	uint32_t y_mult = p_size.x;
@@ -966,6 +965,8 @@ Vector<uint32_t> Geometry3D::generate_edf(const Vector<bool> &p_voxels, const Ve
 
 	return ret;
 }
+
+#undef BIG_VAL
 
 Vector<int8_t> Geometry3D::generate_sdf8(const Vector<uint32_t> &p_positive, const Vector<uint32_t> &p_negative) {
 	ERR_FAIL_COND_V(p_positive.size() != p_negative.size(), Vector<int8_t>());

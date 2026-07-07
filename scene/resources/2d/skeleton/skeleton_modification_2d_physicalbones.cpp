@@ -29,6 +29,9 @@
 /**************************************************************************/
 
 #include "skeleton_modification_2d_physicalbones.h"
+
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/2d/physics/physical_bone_2d.h"
 #include "scene/2d/skeleton_2d.h"
 
@@ -67,7 +70,8 @@ bool SkeletonModification2DPhysicalBones::_get(const StringName &p_path, Variant
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (path.begins_with("fetch_bones")) {
-			return true; // Do nothing!
+			// Do nothing!
+			return false;
 		}
 	}
 #endif //TOOLS_ENABLED

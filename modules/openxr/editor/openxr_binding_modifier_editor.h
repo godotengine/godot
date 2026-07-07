@@ -31,10 +31,10 @@
 #pragma once
 
 #include "../action_map/openxr_action_map.h"
-#include "../action_map/openxr_action_set.h"
 #include "../action_map/openxr_binding_modifier.h"
-#include "editor/editor_inspector.h"
+
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector/editor_inspector.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -104,7 +104,7 @@ protected:
 public:
 	Ref<OpenXRBindingModifier> get_binding_modifier() const { return binding_modifier; }
 
-	virtual void setup(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRBindingModifier> p_binding_modifier);
+	virtual void setup(const Ref<OpenXRActionMap> &p_action_map, const Ref<OpenXRBindingModifier> &p_binding_modifier);
 
 	OpenXRBindingModifierEditor();
 };

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptBacktrace" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ScriptBacktrace" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A captured backtrace of a specific script language.
 	</brief_description>
@@ -122,6 +122,12 @@
 			<description>
 				Returns the value of the member variable at the specified [param variable_index] in the stack frame at the specified [param frame_index].
 				[b]Warning:[/b] With GDScript backtraces, the returned [Variant] will be the variable's actual value, including any object references. This means that storing the returned [Variant] will prevent any such object from being deallocated, so it's generally recommended not to do so.
+			</description>
+		</method>
+		<method name="is_empty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the backtrace has no stack frames.
 			</description>
 		</method>
 	</methods>

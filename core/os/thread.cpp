@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "platform_config.h"
+#include "platform_config.h" // IWYU pragma: keep. Can override the implementation.
 
 #ifndef PLATFORM_THREAD_OVERRIDE // See details in thread.h.
 
@@ -94,9 +94,6 @@ Error Thread::set_name(const String &p_name) {
 	}
 
 	return ERR_UNAVAILABLE;
-}
-
-Thread::Thread() {
 }
 
 Thread::~Thread() {

@@ -46,7 +46,7 @@
 	compositor after the callback is fired and as such the client must not
 	attempt to use it after that point.
 
-	The callback_data passed in the callback is the event serial.
+	The callback_data passed in the callback is undefined and should be ignored.
       </description>
       <arg name="callback" type="new_id" interface="wl_callback"
 	   summary="callback object for the sync request"/>
@@ -212,7 +212,7 @@
     </request>
   </interface>
 
-  <interface name="wl_shm_pool" version="1">
+  <interface name="wl_shm_pool" version="2">
     <description summary="a shared memory pool">
       The wl_shm_pool object encapsulates a piece of memory shared
       between the compositor and client.  Through the wl_shm_pool
@@ -262,17 +262,17 @@
 	created, but using the new size.  This request can only be
 	used to make the pool bigger.
 
-        This request only changes the amount of bytes that are mmapped
-        by the server and does not touch the file corresponding to the
-        file descriptor passed at creation time. It is the client's
-        responsibility to ensure that the file is at least as big as
-        the new pool size.
+	This request only changes the amount of bytes that are mmapped
+	by the server and does not touch the file corresponding to the
+	file descriptor passed at creation time. It is the client's
+	responsibility to ensure that the file is at least as big as
+	the new pool size.
       </description>
       <arg name="size" type="int" summary="new size of the pool, in bytes"/>
     </request>
   </interface>
 
-  <interface name="wl_shm" version="1">
+  <interface name="wl_shm" version="2">
     <description summary="shared memory support">
       A singleton global object that provides support for shared
       memory.
@@ -419,6 +419,21 @@
       <entry name="xbgr16161616" value="0x38344258" summary="[63:0] x:B:G:R 16:16:16:16 little endian"/>
       <entry name="argb16161616" value="0x38345241" summary="[63:0] A:R:G:B 16:16:16:16 little endian"/>
       <entry name="abgr16161616" value="0x38344241" summary="[63:0] A:B:G:R 16:16:16:16 little endian"/>
+      <entry name="c1" value="0x20203143" summary="[7:0] C0:C1:C2:C3:C4:C5:C6:C7 1:1:1:1:1:1:1:1 eight pixels/byte"/>
+      <entry name="c2" value="0x20203243" summary="[7:0] C0:C1:C2:C3 2:2:2:2 four pixels/byte"/>
+      <entry name="c4" value="0x20203443" summary="[7:0] C0:C1 4:4 two pixels/byte"/>
+      <entry name="d1" value="0x20203144" summary="[7:0] D0:D1:D2:D3:D4:D5:D6:D7 1:1:1:1:1:1:1:1 eight pixels/byte"/>
+      <entry name="d2" value="0x20203244" summary="[7:0] D0:D1:D2:D3 2:2:2:2 four pixels/byte"/>
+      <entry name="d4" value="0x20203444" summary="[7:0] D0:D1 4:4 two pixels/byte"/>
+      <entry name="d8" value="0x20203844" summary="[7:0] D"/>
+      <entry name="r1" value="0x20203152" summary="[7:0] R0:R1:R2:R3:R4:R5:R6:R7 1:1:1:1:1:1:1:1 eight pixels/byte"/>
+      <entry name="r2" value="0x20203252" summary="[7:0] R0:R1:R2:R3 2:2:2:2 four pixels/byte"/>
+      <entry name="r4" value="0x20203452" summary="[7:0] R0:R1 4:4 two pixels/byte"/>
+      <entry name="r10" value="0x20303152" summary="[15:0] x:R 6:10 little endian"/>
+      <entry name="r12" value="0x20323152" summary="[15:0] x:R 4:12 little endian"/>
+      <entry name="avuy8888" value="0x59555641" summary="[31:0] A:Cr:Cb:Y 8:8:8:8 little endian"/>
+      <entry name="xvuy8888" value="0x59555658" summary="[31:0] X:Cr:Cb:Y 8:8:8:8 little endian"/>
+      <entry name="p030" value="0x30333050" summary="2x2 subsampled Cr:Cb plane 10 bits per channel packed"/>
     </enum>
 
     <request name="create_pool">
@@ -442,6 +457,17 @@
       </description>
       <arg name="format" type="uint" enum="format" summary="buffer pixel format"/>
     </event>
+
+    <!-- Version 2 additions -->
+
+    <request name="release" type="destructor" since="2">
+      <description summary="release the shm object">
+	Using this request a client can tell the server that it is not going to
+	use the shm object anymore.
+
+	Objects created via this interface remain unaffected.
+      </description>
+    </request>
   </interface>
 
   <interface name="wl_buffer" version="1">
@@ -453,9 +479,11 @@
       client provides and updates the contents is defined by the buffer factory
       interface.
 
-      If the buffer uses a format that has an alpha channel, the alpha channel
-      is assumed to be premultiplied in the color channels unless otherwise
-      specified.
+      Color channels are assumed to be electrical rather than optical (in other
+      words, encoded with a transfer function) unless otherwise specified. If
+      the buffer uses a format that has an alpha channel, the alpha channel is
+      assumed to be premultiplied into the electrical color channel values
+      (after transfer function encoding) unless otherwise specified.
 
       Note, because wl_buffer objects are created from multiple independent
       factory interfaces, the wl_buffer interface is frozen at version 1.
@@ -473,8 +501,10 @@
     <event name="release">
       <description summary="compositor releases buffer">
 	Sent when this wl_buffer is no longer used by the compositor.
-	The client is now free to reuse or destroy this buffer and its
-	backing storage.
+
+	For more information on when release events may or may not be sent,
+	and what consequences it has, please see the description of
+	wl_surface.attach.
 
 	If a client receives a release event before the frame callback
 	requested in the same wl_surface.commit that attaches this
@@ -847,6 +877,7 @@
 
     <enum name="error">
       <entry name="role" value="0" summary="given wl_surface has another role"/>
+      <entry name="used_source" value="1" summary="source has already been used"/>
     </enum>
 
     <request name="start_drag">
@@ -868,7 +899,7 @@
 	The icon surface is an optional (can be NULL) surface that
 	provides an icon to be moved around with the cursor.  Initially,
 	the top-left corner of the icon surface is placed at the cursor
-	hotspot, but subsequent wl_surface.attach request can move the
+	hotspot, but subsequent wl_surface.offset requests can move the
 	relative position. Attach requests must be confirmed with
 	wl_surface.commit as usual. The icon surface is given the role of
 	a drag-and-drop icon. If the icon surface already has another role,
@@ -876,6 +907,10 @@
 
 	The input region is ignored for wl_surfaces with the role of a
 	drag-and-drop icon.
+
+	The given source may not be used in any further set_selection or
+	start_drag requests. Attempting to reuse a previously-used source
+	may send a used_source error.
       </description>
       <arg name="source" type="object" interface="wl_data_source" allow-null="true" summary="data source for the eventual transfer"/>
       <arg name="origin" type="object" interface="wl_surface" summary="surface where the drag originates"/>
@@ -889,6 +924,10 @@
 	to the data from the source on behalf of the client.
 
 	To unset the selection, set the source to NULL.
+
+	The given source may not be used in any further set_selection or
+	start_drag requests. Attempting to reuse a previously-used source
+	may send a used_source error.
       </description>
       <arg name="source" type="object" interface="wl_data_source" allow-null="true" summary="data source for the selection"/>
       <arg name="serial" type="uint" summary="serial number of the event that triggered this request"/>
@@ -1411,7 +1450,7 @@
       <entry name="invalid_size" value="2" summary="buffer size is invalid"/>
       <entry name="invalid_offset" value="3" summary="buffer offset is invalid"/>
       <entry name="defunct_role_object" value="4"
-             summary="surface was destroyed before its role object"/>
+	     summary="surface was destroyed before its role object"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -1440,9 +1479,9 @@
 
 	When the bound wl_surface version is 5 or higher, passing any
 	non-zero x or y is a protocol violation, and will result in an
-        'invalid_offset' error being raised. The x and y arguments are ignored
-        and do not change the pending state. To achieve equivalent semantics,
-        use wl_surface.offset.
+	'invalid_offset' error being raised. The x and y arguments are ignored
+	and do not change the pending state. To achieve equivalent semantics,
+	use wl_surface.offset.
 
 	Surface contents are double-buffered state, see wl_surface.commit.
 
@@ -1467,7 +1506,8 @@
 	the delivery of wl_buffer.release events becomes undefined. A well
 	behaved client should not rely on wl_buffer.release events in this
 	case. Alternatively, a client could create multiple wl_buffer objects
-	from the same backing storage or use wp_linux_buffer_release.
+	from the same backing storage or use a protocol extension providing
+	per-commit release notifications.
 
 	Destroying the wl_buffer after wl_buffer.release does not change
 	the surface contents. Destroying the wl_buffer before wl_buffer.release
@@ -1479,6 +1519,13 @@
 
 	If wl_surface.attach is sent with a NULL wl_buffer, the
 	following wl_surface.commit will remove the surface content.
+
+	If a pending wl_buffer has been destroyed, the result is not specified.
+	Many compositors are known to remove the surface content on the following
+	wl_surface.commit, but this behaviour is not universal. Clients seeking to
+	maximise compatibility should not destroy pending buffers and should
+	ensure that they explicitly remove content from surfaces, even after
+	destroying buffers.
       </description>
       <arg name="buffer" type="object" interface="wl_buffer" allow-null="true"
 	   summary="buffer of surface contents"/>
@@ -1618,16 +1665,18 @@
       <description summary="commit pending surface state">
 	Surface state (input, opaque, and damage regions, attached buffers,
 	etc.) is double-buffered. Protocol requests modify the pending state,
-	as opposed to the current state in use by the compositor. A commit
-	request atomically applies all pending state, replacing the current
-	state. After commit, the new pending state is as documented for each
-	related request.
+	as opposed to the active state in use by the compositor.
 
-	On commit, a pending wl_buffer is applied first, and all other state
-	second. This means that all coordinates in double-buffered state are
-	relative to the new wl_buffer coming into use, except for
-	wl_surface.attach itself. If there is no pending wl_buffer, the
-	coordinates are relative to the current surface contents.
+	A commit request atomically creates a content update from the pending
+	state, even if the pending state has not been touched. The content
+	update is placed in a queue until it becomes active. After commit, the
+	new pending state is as documented for each related request.
+
+	When the content update is applied, the wl_buffer is applied before all
+	other state. This means that all coordinates in double-buffered state
+	are relative to the newly attached wl_buffers, except for
+	wl_surface.attach itself. If there is no newly attached wl_buffer, the
+	coordinates are relative to the previous content update.
 
 	All requests that need a commit to become effective are documented
 	to affect double-buffered state.
@@ -1666,10 +1715,12 @@
 
     <request name="set_buffer_transform" since="2">
       <description summary="sets the buffer transformation">
-	This request sets an optional transformation on how the compositor
-	interprets the contents of the buffer attached to the surface. The
-	accepted values for the transform parameter are the values for
-	wl_output.transform.
+	This request sets the transformation that the client has already applied
+	to the content of the buffer. The accepted values for the transform
+	parameter are the values for wl_output.transform.
+
+	The compositor applies the inverse of this transformation whenever it
+	uses the buffer contents.
 
 	Buffer transform is double-buffered state, see wl_surface.commit.
 
@@ -1725,11 +1776,11 @@
 	a buffer that is larger (by a factor of scale in each dimension)
 	than the desired surface size.
 
-	If scale is not positive the invalid_scale protocol error is
+	If scale is not greater than 0 the invalid_scale protocol error is
 	raised.
       </description>
       <arg name="scale" type="int"
-	   summary="positive scale for interpreting buffer contents"/>
+	   summary="scale for interpreting buffer contents"/>
     </request>
 
     <!-- Version 4 additions -->
@@ -1784,6 +1835,9 @@
 	x and y, combined with the new surface size define in which
 	directions the surface's size changes.
 
+	The exact semantics of wl_surface.offset are role-specific. Refer to
+	the documentation of specific roles for more information.
+
 	Surface location offset is double-buffered state, see
 	wl_surface.commit.
 
@@ -1802,10 +1856,15 @@
 	This event indicates the preferred buffer scale for this surface. It is
 	sent whenever the compositor's preference changes.
 
+	Before receiving this event the preferred buffer scale for this surface
+	is 1.
+
 	It is intended that scaling aware clients use this event to scale their
 	content and use wl_surface.set_buffer_scale to indicate the scale they
 	have rendered with. This allows clients to supply a higher detail
 	buffer.
+
+	The compositor shall emit a scale value greater than 0.
       </description>
       <arg name="factor" type="int" summary="preferred scaling factor"/>
     </event>
@@ -1815,16 +1874,19 @@
 	This event indicates the preferred buffer transform for this surface.
 	It is sent whenever the compositor's preference changes.
 
-	It is intended that transform aware clients use this event to apply the
-	transform to their content and use wl_surface.set_buffer_transform to
-	indicate the transform they have rendered with.
+	Before receiving this event the preferred buffer transform for this
+	surface is normal.
+
+	Applying this transformation to the surface buffer contents and using
+	wl_surface.set_buffer_transform might allow the compositor to use the
+	surface buffer more efficiently.
       </description>
       <arg name="transform" type="uint" enum="wl_output.transform"
 	   summary="preferred transform"/>
     </event>
    </interface>
 
-  <interface name="wl_seat" version="9">
+  <interface name="wl_seat" version="10">
     <description summary="group of input devices">
       A seat is a group of keyboards, pointer and touch devices. This
       object is published as a global during start up, or when such a
@@ -1852,9 +1914,10 @@
 
     <event name="capabilities">
       <description summary="seat capabilities changed">
-	This is emitted whenever a seat gains or loses the pointer,
-	keyboard or touch capabilities.  The argument is a capability
-	enum containing the complete set of capabilities this seat has.
+	This is sent on binding to the seat global or whenever a seat gains
+	or loses the pointer, keyboard or touch capabilities.
+	The argument is a capability enum containing the complete set of
+	capabilities this seat has.
 
 	When the pointer capability is added, a client may create a
 	wl_pointer object using the wl_seat.get_pointer request. This object
@@ -1936,9 +1999,9 @@
 	The same seat names are used for all clients. Thus, the name can be
 	shared across processes to refer to a specific wl_seat global.
 
-	The name event is sent after binding to the seat global. This event is
-	only sent once per seat object, and the name does not change over the
-	lifetime of the wl_seat global.
+	The name event is sent after binding to the seat global, and should be sent
+	before announcing capabilities. This event only sent once per seat object,
+	and the name does not change over the lifetime of the wl_seat global.
 
 	Compositors may re-use the same seat name if the wl_seat global is
 	destroyed and re-created later.
@@ -1957,7 +2020,7 @@
 
   </interface>
 
-  <interface name="wl_pointer" version="9">
+  <interface name="wl_pointer" version="10">
     <description summary="pointer input device">
       The wl_pointer interface represents one or more input devices,
       such as mice, which control the pointer location and pointer_focus
@@ -1992,9 +2055,9 @@
 	where (x, y) are the coordinates of the pointer location, in
 	surface-local coordinates.
 
-	On surface.attach requests to the pointer surface, hotspot_x
+	On wl_surface.offset requests to the pointer surface, hotspot_x
 	and hotspot_y are decremented by the x and y parameters
-	passed to the request. Attach must be confirmed by
+	passed to the request. The offset must be applied by
 	wl_surface.commit as usual.
 
 	The hotspot can also be updated by passing the currently set
@@ -2248,7 +2311,7 @@
       <arg name="axis" type="uint" enum="axis" summary="the axis stopped with this event"/>
     </event>
 
-    <event name="axis_discrete" since="5">
+    <event name="axis_discrete" since="5" deprecated-since="8">
       <description summary="axis click event">
 	Discrete step information for scroll and other axes.
 
@@ -2370,10 +2433,20 @@
     </event>
   </interface>
 
-  <interface name="wl_keyboard" version="9">
+  <interface name="wl_keyboard" version="10">
     <description summary="keyboard input device">
       The wl_keyboard interface represents one or more keyboards
       associated with a seat.
+
+      Each wl_keyboard has the following logical state:
+
+      - an active surface (possibly null),
+      - the keys currently logically down,
+      - the active modifiers,
+      - the active group.
+
+      By default, the active surface is null, the keys currently logically down
+      are empty, the active modifiers and the active group are 0.
     </description>
 
     <enum name="keymap_format">
@@ -2408,10 +2481,18 @@
 
 	The compositor must send the wl_keyboard.modifiers event after this
 	event.
+
+	In the wl_keyboard logical state, this event sets the active surface to
+	the surface argument and the keys currently logically down to the keys
+	in the keys argument. The compositor must not send this event if the
+	wl_keyboard already had an active surface immediately before this event.
+
+	Clients should not use the list of pressed keys to emulate key-press
+	events. The order of keys in the list is unspecified.
       </description>
       <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" summary="surface gaining keyboard focus"/>
-      <arg name="keys" type="array" summary="the currently pressed keys"/>
+      <arg name="keys" type="array" summary="the keys currently logically down"/>
     </event>
 
     <event name="leave">
@@ -2422,8 +2503,10 @@
 	The leave notification is sent before the enter notification
 	for the new focus.
 
-	After this event client must assume that all keys, including modifiers,
-	are lifted and also it must stop key repeating if there's some going on.
+	In the wl_keyboard logical state, this event resets all values to their
+	defaults. The compositor must not send this event if the active surface
+	of the wl_keyboard was not equal to the surface argument immediately
+	before this event.
       </description>
       <arg name="serial" type="uint" summary="serial number of the leave event"/>
       <arg name="surface" type="object" interface="wl_surface" summary="surface that lost keyboard focus"/>
@@ -2432,9 +2515,18 @@
     <enum name="key_state">
       <description summary="physical key state">
 	Describes the physical state of a key that produced the key event.
+
+	Since version 10, the key can be in a "repeated" pseudo-state which
+	means the same as "pressed", but is used to signal repetition in the
+	key event.
+
+	The key may only enter the repeated state after entering the pressed
+	state and before entering the released state. This event may be
+	generated multiple times while the key is down.
       </description>
       <entry name="released" value="0" summary="key is not pressed"/>
       <entry name="pressed" value="1" summary="key is pressed"/>
+      <entry name="repeated" value="2" summary="key was repeated" since="10"/>
     </enum>
 
     <event name="key">
@@ -2448,6 +2540,20 @@
 
 	If this event produces a change in modifiers, then the resulting
 	wl_keyboard.modifiers event must be sent after this event.
+
+	In the wl_keyboard logical state, this event adds the key to the keys
+	currently logically down (if the state argument is pressed) or removes
+	the key from the keys currently logically down (if the state argument is
+	released). The compositor must not send this event if the wl_keyboard
+	did not have an active surface immediately before this event. The
+	compositor must not send this event if state is pressed (resp. released)
+	and the key was already logically down (resp. was not logically down)
+	immediately before this event.
+
+	Since version 10, compositors may send key events with the "repeated"
+	key state when a wl_keyboard.repeat_info event with a rate argument of
+	0 has been received. This allows the compositor to take over the
+	responsibility of key repetition.
       </description>
       <arg name="serial" type="uint" summary="serial number of the key event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
@@ -2459,6 +2565,17 @@
       <description summary="modifier and group state">
 	Notifies clients that the modifier and/or group state has
 	changed, and it should update its local state.
+
+	The compositor may send this event without a surface of the client
+	having keyboard focus, for example to tie modifier information to
+	pointer focus instead. If a modifier event with pressed modifiers is sent
+	without a prior enter event, the client can assume the modifier state is
+	valid until it receives the next wl_keyboard.modifiers event. In order to
+	reset the modifier state again, the compositor can send a
+	wl_keyboard.modifiers event with no pressed modifiers.
+
+	In the wl_keyboard logical state, this event updates the modifiers and
+	group.
       </description>
       <arg name="serial" type="uint" summary="serial number of the modifiers event"/>
       <arg name="mods_depressed" type="uint" summary="depressed modifiers"/>
@@ -2497,7 +2614,7 @@
     </event>
   </interface>
 
-  <interface name="wl_touch" version="9">
+  <interface name="wl_touch" version="10">
     <description summary="touchscreen input device">
       The wl_touch interface represents a touchscreen
       associated with a seat.
@@ -2566,6 +2683,8 @@
 	currently active on this client's surface. The client is
 	responsible for finalizing the touch points, future touch points on
 	this surface may reuse the touch point ID.
+
+	No frame event is required after the cancel event.
       </description>
     </event>
 
@@ -2665,10 +2784,9 @@
     </enum>
 
     <enum name="transform">
-      <description summary="transform from framebuffer to output">
-	This describes the transform that a compositor will apply to a
-	surface to compensate for the rotation or mirroring of an
-	output device.
+      <description summary="transformation applied to buffer contents">
+	This describes transformations that clients and compositors apply to
+	buffer contents.
 
 	The flipped values correspond to an initial flip around a
 	vertical axis followed by rotation.
@@ -2700,6 +2818,10 @@
 	The geometry event will be followed by a done event (starting from
 	version 2).
 
+	Clients should use wl_surface.preferred_buffer_transform instead of the
+	transform advertised by this event to find the preferred buffer
+	transform to use for a surface.
+
 	Note: wl_output only advertises partial information about the output
 	position and identification. Some compositors, for instance those not
 	implementing a desktop-style output layout or those exposing virtual
@@ -2722,7 +2844,7 @@
       <arg name="model" type="string"
 	   summary="textual description of the model"/>
       <arg name="transform" type="int" enum="transform"
-	   summary="transform that maps framebuffer to output"/>
+	   summary="additional transformation applied to buffer contents during presentation"/>
     </event>
 
     <enum name="mode" bitfield="true">
@@ -2795,8 +2917,9 @@
 	This event contains scaling geometry information
 	that is not in the geometry event. It may be sent after
 	binding the output object or if the output scale changes
-	later. If it is not sent, the client should assume a
-	scale of 1.
+	later. The compositor will emit a non-zero, positive
+	value for scale. If it is not sent, the client should
+	assume a scale of 1.
 
 	A scale larger than 1 means that the compositor will
 	automatically scale surface buffers by this amount
@@ -2804,12 +2927,9 @@
 	displays where applications rendering at the native
 	resolution would be too small to be legible.
 
-	It is intended that scaling aware clients track the
-	current output of a surface, and if it is on a scaled
-	output it should use wl_surface.set_buffer_scale with
-	the scale of the output. That way the compositor can
-	avoid scaling the surface, and the client can supply
-	a higher detail image.
+	Clients should use wl_surface.preferred_buffer_scale
+	instead of this event to find the preferred buffer
+	scale to use for a surface.
 
 	The scale event will be followed by a done event.
       </description>
@@ -3035,6 +3155,11 @@
 
       If the parent wl_surface object is destroyed, the sub-surface is
       unmapped.
+
+      A sub-surface never has the keyboard focus of any seat.
+
+      The wl_surface.offset request is ignored: clients must use set_position
+      instead to move the sub-surface.
     </description>
 
     <request name="destroy" type="destructor">
@@ -3060,9 +3185,7 @@
 	surface area. Negative values are allowed.
 
 	The scheduled coordinates will take effect whenever the state of the
-	parent surface is applied. When this happens depends on whether the
-	parent surface is in synchronized mode or not. See
-	wl_subsurface.set_sync and wl_subsurface.set_desync for details.
+	parent surface is applied.
 
 	If more than one set_position request is invoked by the client before
 	the commit of the parent surface, the position of a new request always
@@ -3085,9 +3208,7 @@
 	The z-order is double-buffered. Requests are handled in order and
 	applied immediately to a pending state. The final pending state is
 	copied to the active state the next time the state of the parent
-	surface is applied. When this happens depends on whether the parent
-	surface is in synchronized mode or not. See wl_subsurface.set_sync and
-	wl_subsurface.set_desync for details.
+	surface is applied.
 
 	A new sub-surface is initially added as the top-most in the stack
 	of its siblings and parent.
@@ -3145,6 +3266,33 @@
 	If a surface's parent surface behaves as desynchronized, then
 	the cached state is applied on set_desync.
       </description>
+    </request>
+  </interface>
+
+  <interface name="wl_fixes" version="1">
+    <description summary="wayland protocol fixes">
+      This global fixes problems with other core-protocol interfaces that
+      cannot be fixed in these interfaces themselves.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroys this object"/>
+    </request>
+
+    <request name="destroy_registry">
+      <description summary="destroy a wl_registry">
+	This request destroys a wl_registry object.
+
+	The client should no longer use the wl_registry after making this
+	request.
+
+	The compositor will emit a wl_display.delete_id event with the object ID
+	of the registry and will no longer emit any events on the registry. The
+	client should re-use the object ID once it receives the
+	wl_display.delete_id event.
+      </description>
+      <arg name="registry" type="object" interface="wl_registry"
+	   summary="the registry to destroy"/>
     </request>
   </interface>
 

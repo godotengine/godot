@@ -30,6 +30,8 @@
 
 #include "audio_stream_generator.h"
 
+#include "core/object/class_db.h"
+
 void AudioStreamGenerator::set_mix_rate(float p_mix_rate) {
 	mix_rate = p_mix_rate;
 }
@@ -70,14 +72,10 @@ Ref<AudioStreamPlayback> AudioStreamGenerator::instantiate_playback() {
 	Ref<AudioStreamGeneratorPlayback> playback;
 	playback.instantiate();
 	playback->generator = this;
-	int target_buffer_size = _get_target_rate() * buffer_len;
-	playback->buffer.resize(nearest_shift(target_buffer_size));
+	uint32_t target_buffer_size = _get_target_rate() * buffer_len;
+	playback->buffer.resize(Math::nearest_shift(target_buffer_size));
 	playback->buffer.clear();
 	return playback;
-}
-
-String AudioStreamGenerator::get_stream_name() const {
-	return "UserFeed";
 }
 
 double AudioStreamGenerator::get_length() const {
@@ -115,7 +113,7 @@ bool AudioStreamGeneratorPlayback::push_frame(const Vector2 &p_frame) {
 		return false;
 	}
 
-	AudioFrame f = p_frame;
+	AudioFrame f(p_frame);
 
 	buffer.write(&f, 1);
 	return true;
@@ -142,7 +140,7 @@ bool AudioStreamGeneratorPlayback::push_buffer(const PackedVector2Array &p_frame
 		while (to_write) {
 			int w = MIN(to_write, 2048);
 			for (int i = 0; i < w; i++) {
-				buf[i] = r[i + ofs];
+				buf[i] = AudioFrame(r[i + ofs]);
 			}
 			buffer.write(buf, w);
 			ofs += w;

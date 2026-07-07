@@ -36,9 +36,6 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
-#include <stdint.h>
-
 // This is taken from the old GDNative, which was removed.
 
 #define GODOT_VARIANT_SIZE (sizeof(real_t) * 4 + sizeof(int64_t))

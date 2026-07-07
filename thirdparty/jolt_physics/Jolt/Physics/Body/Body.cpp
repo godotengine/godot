@@ -242,7 +242,7 @@ bool Body::ApplyBuoyancyImpulse(float inTotalVolume, float inSubmergedVolume, Ve
 		float relative_center_of_buoyancy_velocity_len_sq = relative_center_of_buoyancy_velocity.LengthSq();
 		if (relative_center_of_buoyancy_velocity_len_sq > 1.0e-12f)
 		{
-			Vec3 local_relative_center_of_buoyancy_velocity = GetRotation().Conjugated() * relative_center_of_buoyancy_velocity;
+			Vec3 local_relative_center_of_buoyancy_velocity = GetRotation().InverseRotate(relative_center_of_buoyancy_velocity);
 			area = local_relative_center_of_buoyancy_velocity.Abs().Dot(size.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>() * size.Swizzle<SWIZZLE_Z, SWIZZLE_X, SWIZZLE_Y>()) / sqrt(relative_center_of_buoyancy_velocity_len_sq);
 		}
 
@@ -415,6 +415,9 @@ SoftBodyCreationSettings Body::GetSoftBodyCreationSettings() const
 	result.mGravityFactor = mp->GetGravityFactor();
 	result.mPressure = mp->GetPressure();
 	result.mUpdatePosition = mp->GetUpdatePosition();
+	result.mVertexRadius = mp->GetVertexRadius();
+	result.mAllowSleeping = mp->GetAllowSleeping();
+	result.mFacesDoubleSided = mp->GetFacesDoubleSided();
 	result.mSettings = mp->GetSettings();
 
 	return result;

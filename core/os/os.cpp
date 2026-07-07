@@ -37,11 +37,12 @@
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
 
-#include <stdarg.h>
+#include <cstdarg>
+#include <cstdio>
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.thread.h"
+#include <thirdparty/mingw-std-threads/mingw.thread.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <thread>
@@ -53,6 +54,16 @@ uint64_t OS::target_ticks = 0;
 
 OS *OS::get_singleton() {
 	return singleton;
+}
+
+bool OS::prefer_meta_over_ctrl() {
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+	return true;
+#elif defined(WEB_ENABLED)
+	return singleton->has_feature("web_macos") || singleton->has_feature("web_ios");
+#else
+	return false;
+#endif
 }
 
 uint64_t OS::get_ticks_msec() const {
@@ -309,8 +320,13 @@ String OS::get_bundle_resource_dir() const {
 	return ".";
 }
 
-// Path to macOS .app bundle embedded icon
+// Path to macOS .app bundle embedded icon (.icns file).
 String OS::get_bundle_icon_path() const {
+	return String();
+}
+
+// Name of macOS .app bundle embedded icon (Liquid Glass asset name).
+String OS::get_bundle_icon_name() const {
 	return String();
 }
 
@@ -345,6 +361,10 @@ String OS::get_resource_dir() const {
 // Access system-specific dirs like Documents, Downloads, etc.
 String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
+}
+
+String OS::expand_path(const String &p_path) const {
+	return p_path;
 }
 
 void OS::create_lock_file() {
@@ -391,6 +411,10 @@ uint64_t OS::get_static_memory_peak_usage() const {
 
 Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
+}
+
+String OS::get_cwd() const {
+	return ".";
 }
 
 Dictionary OS::get_memory_info() const {
@@ -585,21 +609,26 @@ bool OS::has_feature(const String &p_feature) {
 	}
 #endif
 
-#if defined(IOS_SIMULATOR)
+#if defined(IOS_SIMULATOR) || defined(VISIONOS_SIMULATOR)
 	if (p_feature == "simulator") {
 		return true;
 	}
 #endif
 
-#ifdef THREADS_ENABLED
 	if (p_feature == "threads") {
+#ifdef THREADS_ENABLED
 		return true;
-	}
 #else
-	if (p_feature == "nothreads") {
-		return true;
-	}
+		return false;
 #endif
+	}
+	if (p_feature == "nothreads") {
+#ifdef THREADS_ENABLED
+		return false;
+#else
+		return true;
+#endif
+	}
 
 	if (_check_internal_feature_support(p_feature)) {
 		return true;
@@ -630,7 +659,7 @@ bool OS::is_restart_on_exit_set() const {
 }
 
 List<String> OS::get_restart_on_exit_arguments() const {
-	return restart_commandline;
+	return List<String>(restart_commandline);
 }
 
 PackedStringArray OS::get_connected_midi_inputs() {
@@ -658,7 +687,25 @@ void OS::close_midi_inputs() {
 	}
 }
 
-void OS::add_frame_delay(bool p_can_draw) {
+uint64_t OS::get_frame_delay(bool p_can_draw) const {
+	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
+
+	// Add a dynamic frame delay to decrease CPU/GPU usage. This takes the
+	// previous frame time into account for a smoother result.
+	uint64_t dynamic_delay = 0;
+	if (is_in_low_processor_usage_mode() || !p_can_draw) {
+		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
+	}
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+		// Override the low processor usage mode sleep delay if the target FPS is lower.
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
+	}
+
+	return frame_delay + dynamic_delay;
+}
+
+void OS::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
 		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take

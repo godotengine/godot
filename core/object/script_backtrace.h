@@ -65,6 +65,7 @@ public:
 
 	String get_language_name() const { return language_name; }
 
+	bool is_empty() const { return stack_frames.is_empty(); }
 	int get_frame_count() const { return stack_frames.size(); }
 	String get_frame_function(int p_index) const;
 	String get_frame_file(int p_index) const;
@@ -83,5 +84,5 @@ public:
 	Variant get_member_variable_value(int p_frame_index, int p_variable_index) const;
 
 	String format(int p_indent_all = 0, int p_indent_frames = 4) const;
-	virtual String to_string() override { return format(); }
+	virtual String _to_string() override { return format(); }
 };

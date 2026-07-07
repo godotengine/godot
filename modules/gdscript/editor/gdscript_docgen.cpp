@@ -33,6 +33,7 @@
 #include "../gdscript.h"
 
 #include "core/config/project_settings.h"
+#include "core/doc_data.h"
 
 HashMap<String, String> GDScriptDocGen::singletons;
 
@@ -59,6 +60,20 @@ String GDScriptDocGen::_get_class_name(const GDP::ClassNode &p_class) {
 		full_name = vformat("%s.%s", curr_class->identifier->name, full_name);
 	}
 	return full_name;
+}
+
+String GDScriptDocGen::_get_gdscript_name(const GDScript *p_script) {
+	if (p_script->local_name.is_empty()) {
+		// This is an outer unnamed class.
+		return _get_script_name(p_script->get_script_path());
+	} else {
+		// This is an inner or global outer class.
+		String name = p_script->local_name;
+		if (p_script->_owner) {
+			name = _get_gdscript_name(p_script->_owner) + "." + name;
+		}
+		return name;
+	}
 }
 
 void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String &r_enum, bool p_is_return) {
@@ -303,7 +318,9 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 		} break;
 		case GDP::Node::CALL: {
 			const GDP::CallNode *call = static_cast<const GDP::CallNode *>(p_expression);
-			return call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+			if (call->get_callee_type() == GDP::Node::IDENTIFIER) {
+				return call->function_name.string() + (call->arguments.is_empty() ? "()" : "(...)");
+			}
 		} break;
 		case GDP::Node::DICTIONARY: {
 			const GDP::DictionaryNode *dict = static_cast<const GDP::DictionaryNode *>(p_expression);
@@ -313,10 +330,17 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 			const GDP::IdentifierNode *id = static_cast<const GDP::IdentifierNode *>(p_expression);
 			return id->name;
 		} break;
+		case GDP::Node::LAMBDA: {
+			const GDP::LambdaNode *lambda = static_cast<const GDP::LambdaNode *>(p_expression);
+			const GDP::IdentifierNode *id = lambda->function->identifier;
+			return id != nullptr ? id->name : "<anonymous lambda>";
+		} break;
 		default: {
-			return "<unknown>";
+			// Nothing to do.
 		} break;
 	}
+
+	return "<unknown>";
 }
 
 void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
@@ -326,27 +350,16 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 
 	doc.is_script_doc = true;
 
-	if (p_script->local_name == StringName()) {
-		// This is an outer unnamed class.
-		doc.name = _get_script_name(p_script->get_script_path());
-	} else {
-		// This is an inner or global outer class.
-		doc.name = p_script->local_name;
-		if (p_script->_owner) {
-			doc.name = p_script->_owner->doc.name + "." + doc.name;
-		}
-	}
+	doc.name = _get_gdscript_name(p_script);
 
 	doc.script_path = p_script->get_script_path();
 
-	if (p_script->base.is_valid() && p_script->base->is_valid()) {
-		if (!p_script->base->doc.name.is_empty()) {
-			doc.inherits = p_script->base->doc.name;
-		} else {
-			doc.inherits = p_script->base->get_instance_base_type();
-		}
-	} else if (p_script->native.is_valid()) {
-		doc.inherits = p_script->native->get_name();
+	if (p_script->base.is_valid() && p_script->base->is_script_valid()) {
+		// See GH-105926. Evaluate the doc name of the base class instead of using `p_script->base->doc.name`
+		// to avoid load/compile order issues in case of complex circular dependencies.
+		doc.inherits = _get_gdscript_name(p_script->base.ptr());
+	} else {
+		doc.inherits = p_script->get_instance_base_type();
 	}
 
 	doc.brief_description = p_class->doc_data.brief;
@@ -407,16 +420,32 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				method_doc.deprecated_message = m_func->doc_data.deprecated_message;
 				method_doc.is_experimental = m_func->doc_data.is_experimental;
 				method_doc.experimental_message = m_func->doc_data.experimental_message;
-				method_doc.qualifiers = m_func->is_static ? "static" : "";
 
-				if (func_name == "_init") {
+				if (m_func->is_vararg()) {
+					if (!method_doc.qualifiers.is_empty()) {
+						method_doc.qualifiers += " ";
+					}
+					method_doc.qualifiers += "vararg";
+					method_doc.rest_argument.name = m_func->rest_parameter->identifier->name;
+					_doctype_from_gdtype(m_func->rest_parameter->get_datatype(), method_doc.rest_argument.type, method_doc.rest_argument.enumeration);
+				}
+				if (m_func->is_abstract) {
+					if (!method_doc.qualifiers.is_empty()) {
+						method_doc.qualifiers += " ";
+					}
+					method_doc.qualifiers += "abstract";
+				}
+				if (m_func->is_static) {
+					if (!method_doc.qualifiers.is_empty()) {
+						method_doc.qualifiers += " ";
+					}
+					method_doc.qualifiers += "static";
+				}
+
+				if (func_name == "_init" || func_name == "_static_init") {
 					method_doc.return_type = "void";
-				} else if (m_func->return_type) {
-					// `m_func->return_type->get_datatype()` is a metatype.
+				} else if (!m_func->get_datatype().is_variant()) {
 					_doctype_from_gdtype(m_func->get_datatype(), method_doc.return_type, method_doc.return_enum, true);
-				} else if (!m_func->body->has_return) {
-					// If no `return` statement, then return type is `void`, not `Variant`.
-					method_doc.return_type = "void";
 				} else {
 					method_doc.return_type = "Variant";
 				}

@@ -30,20 +30,21 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/object/script_backtrace.h"
+#include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
-#include <stdarg.h>
+#include <cstdarg>
 
+class FileAccess;
 class RegEx;
+class ScriptBacktrace;
 
 class Logger {
 protected:
 	bool should_log(bool p_err);
 
-	static bool _flush_stdout_on_print;
+	static inline bool _flush_stdout_on_print = true;
 
 public:
 	enum ErrorType {
@@ -52,6 +53,34 @@ public:
 		ERR_SCRIPT,
 		ERR_SHADER
 	};
+
+	static constexpr const char *error_type_string(ErrorType p_type) {
+		switch (p_type) {
+			case ERR_ERROR:
+				return "ERROR";
+			case ERR_WARNING:
+				return "WARNING";
+			case ERR_SCRIPT:
+				return "SCRIPT ERROR";
+			case ERR_SHADER:
+				return "SHADER ERROR";
+		}
+		return "UNKNOWN ERROR";
+	}
+
+	static constexpr const char *error_type_indent(ErrorType p_type) {
+		switch (p_type) {
+			case ERR_ERROR:
+				return "   ";
+			case ERR_WARNING:
+				return "     ";
+			case ERR_SCRIPT:
+				return "          ";
+			case ERR_SHADER:
+				return "          ";
+		}
+		return "           ";
+	}
 
 	static void set_flush_stdout_on_print(bool value);
 

@@ -47,11 +47,11 @@ public:
 
 private:
 	bool folded = false;
-	String text;
+	String title;
 	Ref<FoldableGroup> foldable_group;
 	String language;
-	TextDirection text_direction = TEXT_DIRECTION_AUTO;
-	HorizontalAlignment text_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	TextDirection title_text_direction = TEXT_DIRECTION_AUTO;
+	HorizontalAlignment title_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 	TitlePosition title_position = POSITION_TOP;
 
@@ -89,6 +89,7 @@ private:
 
 	Ref<StyleBox> _get_title_style() const;
 	Ref<Texture2D> _get_title_icon() const;
+	Rect2 _get_title_rect() const;
 	int _get_h_separation() const { return MAX(theme_cache.h_separation, 0); }
 	real_t _get_title_controls_width() const;
 
@@ -101,6 +102,7 @@ private:
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
+	virtual bool has_point(const Point2 &p_point) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -114,17 +116,17 @@ public:
 	void set_foldable_group(const Ref<FoldableGroup> &p_group);
 	Ref<FoldableGroup> get_foldable_group() const;
 
-	void set_text(const String &p_text);
-	String get_text() const;
+	void set_title(const String &p_text);
+	String get_title() const;
 
-	void set_text_alignment(HorizontalAlignment p_alignment);
-	HorizontalAlignment get_text_alignment() const;
+	void set_title_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_title_alignment() const;
 
-	void set_text_direction(TextDirection p_text_direction);
-	TextDirection get_text_direction() const;
+	void set_title_text_direction(TextDirection p_text_direction);
+	TextDirection get_title_text_direction() const;
 
-	void set_text_overrun_behavior(TextServer::OverrunBehavior p_overrun_behavior);
-	TextServer::OverrunBehavior get_text_overrun_behavior() const;
+	void set_title_text_overrun_behavior(TextServer::OverrunBehavior p_overrun_behavior);
+	TextServer::OverrunBehavior get_title_text_overrun_behavior() const;
 
 	void set_language(const String &p_language);
 	String get_language() const;
@@ -136,6 +138,8 @@ public:
 	void remove_title_bar_control(Control *p_control);
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
+	virtual Size2 get_inner_combined_maximum_size() const override;
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override { return { SIZE_FILL, SIZE_SHRINK_BEGIN, SIZE_SHRINK_CENTER, SIZE_SHRINK_END }; }
 	virtual Vector<int> get_allowed_size_flags_vertical() const override { return { SIZE_FILL, SIZE_SHRINK_BEGIN, SIZE_SHRINK_CENTER, SIZE_SHRINK_END }; }

@@ -63,6 +63,11 @@ real_t Quaternion::length() const {
 }
 
 void Quaternion::normalize() {
+#ifdef MATH_CHECKS
+	if (!is_finite()) {
+		WARN_PRINT("Quaternion cannot be normalized, the elements should be finite.");
+	}
+#endif // MATH_CHECKS
 	*this /= length();
 }
 
@@ -148,7 +153,7 @@ Quaternion Quaternion::slerpni(const Quaternion &p_to, real_t p_weight) const {
 
 	real_t dot = from.dot(p_to);
 
-	if (Math::absf(dot) > 0.9999f) {
+	if (Math::abs(dot) > 0.9999f) {
 		return from;
 	}
 
@@ -180,11 +185,11 @@ Quaternion Quaternion::spherical_cubic_interpolate(const Quaternion &p_b, const 
 	post_q = Basis(post_q).get_rotation_quaternion();
 
 	// Flip quaternions to shortest path if necessary.
-	bool flip1 = signbit(from_q.dot(pre_q));
+	bool flip1 = std::signbit(from_q.dot(pre_q));
 	pre_q = flip1 ? -pre_q : pre_q;
-	bool flip2 = signbit(from_q.dot(to_q));
+	bool flip2 = std::signbit(from_q.dot(to_q));
 	to_q = flip2 ? -to_q : to_q;
-	bool flip3 = flip2 ? to_q.dot(post_q) <= 0 : signbit(to_q.dot(post_q));
+	bool flip3 = flip2 ? to_q.dot(post_q) <= 0 : std::signbit(to_q.dot(post_q));
 	post_q = flip3 ? -post_q : post_q;
 
 	// Calc by Expmap in from_q space.
@@ -231,11 +236,11 @@ Quaternion Quaternion::spherical_cubic_interpolate_in_time(const Quaternion &p_b
 	post_q = Basis(post_q).get_rotation_quaternion();
 
 	// Flip quaternions to shortest path if necessary.
-	bool flip1 = signbit(from_q.dot(pre_q));
+	bool flip1 = std::signbit(from_q.dot(pre_q));
 	pre_q = flip1 ? -pre_q : pre_q;
-	bool flip2 = signbit(from_q.dot(to_q));
+	bool flip2 = std::signbit(from_q.dot(to_q));
 	to_q = flip2 ? -to_q : to_q;
-	bool flip3 = flip2 ? to_q.dot(post_q) <= 0 : signbit(to_q.dot(post_q));
+	bool flip3 = flip2 ? to_q.dot(post_q) <= 0 : std::signbit(to_q.dot(post_q));
 	post_q = flip3 ? -post_q : post_q;
 
 	// Calc by Expmap in from_q space.

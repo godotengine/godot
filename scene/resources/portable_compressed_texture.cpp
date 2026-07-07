@@ -32,7 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
 #include "scene/resources/bit_map.h"
+#include "servers/rendering/rendering_server.h"
 
 static const char *compression_mode_names[7] = {
 	"Lossless", "Lossy", "Basis Universal", "S3TC", "ETC2", "BPTC", "ASTC"
@@ -45,7 +47,7 @@ static PortableCompressedTexture2D::CompressionMode get_expected_compression_mod
 		return PortableCompressedTexture2D::COMPRESSION_MODE_ETC2;
 	} else if (format >= Image::FORMAT_BPTC_RGBA && format <= Image::FORMAT_BPTC_RGBFU) {
 		return PortableCompressedTexture2D::COMPRESSION_MODE_BPTC;
-	} else if (format >= Image::FORMAT_ASTC_4x4 && format <= Image::FORMAT_ASTC_8x8_HDR) {
+	} else if ((format >= Image::FORMAT_ASTC_4x4 && format <= Image::FORMAT_ASTC_8x8_HDR) || (format >= Image::FORMAT_ASTC_6x6 && format <= Image::FORMAT_ASTC_6x6_HDR)) {
 		return PortableCompressedTexture2D::COMPRESSION_MODE_ASTC;
 	}
 	ERR_FAIL_V(PortableCompressedTexture2D::COMPRESSION_MODE_LOSSLESS);
@@ -165,7 +167,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 	switch (p_compression_mode) {
 		case COMPRESSION_MODE_LOSSLESS:
 		case COMPRESSION_MODE_LOSSY: {
-			bool lossless_force_png = GLOBAL_GET("rendering/textures/lossless_compression/force_png") ||
+			bool lossless_force_png = GLOBAL_GET_CACHED(bool, "rendering/textures/lossless_compression/force_png") ||
 					!Image::_webp_mem_loader_func; // WebP module disabled.
 			bool use_webp = !lossless_force_png && p_image->get_width() <= 16383 && p_image->get_height() <= 16383; // WebP has a size limit.
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
@@ -193,7 +195,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 			ERR_FAIL_COND(p_image->is_compressed());
 			encode_uint16(DATA_FORMAT_BASIS_UNIVERSAL, buffer.ptrw() + 2);
 			Image::UsedChannels uc = p_image->detect_used_channels(p_normal_map ? Image::COMPRESS_SOURCE_NORMAL : Image::COMPRESS_SOURCE_GENERIC);
-			Vector<uint8_t> budata = Image::basis_universal_packer(p_image, uc);
+			Vector<uint8_t> budata = Image::basis_universal_packer(p_image, uc, basisu_params);
 			buffer.append_array(budata);
 #else
 			ERR_FAIL_MSG("Basis Universal compression can only run in editor build.");
@@ -313,8 +315,8 @@ bool PortableCompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 		int x = p_x * aw / size.width;
 		int y = p_y * ah / size.height;
 
-		x = CLAMP(x, 0, aw);
-		y = CLAMP(y, 0, ah);
+		x = CLAMP(x, 0, aw - 1);
+		y = CLAMP(y, 0, ah - 1);
 
 		return alpha_cache->get_bit(x, y);
 	}
@@ -360,9 +362,13 @@ bool PortableCompressedTexture2D::is_keeping_compressed_buffer() const {
 	return keep_compressed_buffer;
 }
 
+void PortableCompressedTexture2D::set_basisu_compressor_params(int p_uastc_level, float p_rdo_quality_loss) {
+	basisu_params.uastc_level = p_uastc_level;
+	basisu_params.rdo_quality_loss = p_rdo_quality_loss;
+}
+
 void PortableCompressedTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_from_image", "image", "compression_mode", "normal_map", "lossy_quality"), &PortableCompressedTexture2D::create_from_image, DEFVAL(false), DEFVAL(0.8));
-	ClassDB::bind_method(D_METHOD("get_format"), &PortableCompressedTexture2D::get_format);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &PortableCompressedTexture2D::get_compression_mode);
 
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &PortableCompressedTexture2D::set_size_override);
@@ -370,6 +376,8 @@ void PortableCompressedTexture2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_keep_compressed_buffer", "keep"), &PortableCompressedTexture2D::set_keep_compressed_buffer);
 	ClassDB::bind_method(D_METHOD("is_keeping_compressed_buffer"), &PortableCompressedTexture2D::is_keeping_compressed_buffer);
+
+	ClassDB::bind_method(D_METHOD("set_basisu_compressor_params", "uastc_level", "rdo_quality_loss"), &PortableCompressedTexture2D::set_basisu_compressor_params);
 
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &PortableCompressedTexture2D::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &PortableCompressedTexture2D::_get_data);
@@ -390,11 +398,9 @@ void PortableCompressedTexture2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESSION_MODE_ASTC);
 }
 
-PortableCompressedTexture2D::PortableCompressedTexture2D() {}
-
 PortableCompressedTexture2D::~PortableCompressedTexture2D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(texture);
+		RenderingServer::get_singleton()->free_rid(texture);
 	}
 }

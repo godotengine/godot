@@ -33,7 +33,6 @@
 #include "../regex.h"
 
 #include "core/string/ustring.h"
-
 #include "tests/test_macros.h"
 
 namespace TestRegEx {

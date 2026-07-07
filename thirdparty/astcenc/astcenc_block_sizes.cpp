@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2023 Arm Limited
+// Copyright 2011-2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -384,12 +384,12 @@ static void init_decimation_info_2d(
 	}
 
 	// Initialize array tail so we can over-fetch with SIMD later to avoid loop tails
-	unsigned int texels_per_block_simd = round_up_to_simd_multiple_vla(texels_per_block);
-	for (unsigned int i = texels_per_block; i < texels_per_block_simd; i++)
+	size_t texels_per_block_simd = round_up_to_simd_multiple_vla(texels_per_block);
+	for (size_t i = texels_per_block; i < texels_per_block_simd; i++)
 	{
 		di.texel_weight_count[i] = 0;
 
-		for (unsigned int j = 0; j < 4; j++)
+		for (size_t j = 0; j < 4; j++)
 		{
 			di.texel_weight_contribs_float_tr[j][i] = 0;
 			di.texel_weights_tr[j][i] = 0;
@@ -402,12 +402,12 @@ static void init_decimation_info_2d(
 	unsigned int last_texel_count_wt = wb.texel_count_of_weight[weights_per_block - 1];
 	uint8_t last_texel = di.weight_texels_tr[last_texel_count_wt - 1][weights_per_block - 1];
 
-	unsigned int weights_per_block_simd = round_up_to_simd_multiple_vla(weights_per_block);
-	for (unsigned int i = weights_per_block; i < weights_per_block_simd; i++)
+	size_t weights_per_block_simd = round_up_to_simd_multiple_vla(weights_per_block);
+	for (size_t i = weights_per_block; i < weights_per_block_simd; i++)
 	{
 		di.weight_texel_count[i] = 0;
 
-		for (unsigned int j = 0; j < max_texel_count_of_weight; j++)
+		for (size_t j = 0; j < max_texel_count_of_weight; j++)
 		{
 			di.weight_texels_tr[j][i] = last_texel;
 			di.weights_texel_contribs_tr[j][i] = 0.0f;
@@ -640,12 +640,12 @@ static void init_decimation_info_3d(
 	}
 
 	// Initialize array tail so we can over-fetch with SIMD later to avoid loop tails
-	unsigned int texels_per_block_simd = round_up_to_simd_multiple_vla(texels_per_block);
-	for (unsigned int i = texels_per_block; i < texels_per_block_simd; i++)
+	size_t texels_per_block_simd = round_up_to_simd_multiple_vla(texels_per_block);
+	for (size_t i = texels_per_block; i < texels_per_block_simd; i++)
 	{
 		di.texel_weight_count[i] = 0;
 
-		for (unsigned int j = 0; j < 4; j++)
+		for (size_t j = 0; j < 4; j++)
 		{
 			di.texel_weight_contribs_float_tr[j][i] = 0;
 			di.texel_weights_tr[j][i] = 0;
@@ -658,12 +658,12 @@ static void init_decimation_info_3d(
 	int last_texel_count_wt = wb.texel_count_of_weight[weights_per_block - 1];
 	uint8_t last_texel = di.weight_texels_tr[last_texel_count_wt - 1][weights_per_block - 1];
 
-	unsigned int weights_per_block_simd = round_up_to_simd_multiple_vla(weights_per_block);
-	for (unsigned int i = weights_per_block; i < weights_per_block_simd; i++)
+	size_t weights_per_block_simd = round_up_to_simd_multiple_vla(weights_per_block);
+	for (size_t i = weights_per_block; i < weights_per_block_simd; i++)
 	{
 		di.weight_texel_count[i] = 0;
 
-		for (int j = 0; j < max_texel_count_of_weight; j++)
+		for (size_t j = 0; j < max_texel_count_of_weight; j++)
 		{
 			di.weight_texels_tr[j][i] = last_texel;
 			di.weights_texel_contribs_tr[j][i] = 0.0f;

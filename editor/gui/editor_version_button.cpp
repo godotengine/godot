@@ -32,6 +32,8 @@
 
 #include "core/os/time.h"
 #include "core/version.h"
+#include "editor/gui/editor_toaster.h"
+#include "servers/display/display_server.h"
 
 String _get_version_string(EditorVersionButton::VersionFormat p_format) {
 	String main;
@@ -64,22 +66,28 @@ void EditorVersionButton::_notification(int p_what) {
 			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			set_text(_get_version_string(format));
 		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			String build_date;
+			if (GODOT_VERSION_TIMESTAMP > 0) {
+				build_date = Time::get_singleton()->get_datetime_string_from_unix_time(GODOT_VERSION_TIMESTAMP, true) + " UTC";
+			} else {
+				build_date = TTR("(unknown)");
+			}
+			set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
+		} break;
 	}
 }
 
 void EditorVersionButton::pressed() {
 	DisplayServer::get_singleton()->clipboard_set(_get_version_string(FORMAT_WITH_BUILD));
+	EditorToaster *toaster = EditorToaster::get_singleton();
+	if (toaster) {
+		toaster->popup_str(TTR("Copied Godot editor version."));
+	}
 }
 
 EditorVersionButton::EditorVersionButton(VersionFormat p_format) {
 	format = p_format;
 	set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-
-	String build_date;
-	if (GODOT_VERSION_TIMESTAMP > 0) {
-		build_date = Time::get_singleton()->get_datetime_string_from_unix_time(GODOT_VERSION_TIMESTAMP, true) + " UTC";
-	} else {
-		build_date = TTR("(unknown)");
-	}
-	set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
 }

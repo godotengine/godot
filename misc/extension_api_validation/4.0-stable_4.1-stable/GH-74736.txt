@@ -1,0 +1,5 @@
+GH-74736
+--------
+Validate extension JSON: Error: Field 'classes/MenuBar/properties/start_index': type changed value in new API, from "bool" to "int".
+
+The previous type was simply wrong and the getter and setter already used int.

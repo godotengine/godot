@@ -30,7 +30,12 @@
 
 #include "openxr_select_action_dialog.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/scroll_container.h"
 
 void OpenXRSelectActionDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("action_selected", PropertyInfo(Variant::STRING, "action")));
@@ -38,14 +43,13 @@ void OpenXRSelectActionDialog::_bind_methods() {
 
 void OpenXRSelectActionDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 		} break;
 	}
 }
 
-void OpenXRSelectActionDialog::_on_select_action(const String p_action) {
+void OpenXRSelectActionDialog::_on_select_action(const String &p_action) {
 	if (selected_action != "") {
 		NodePath button_path = action_buttons[selected_action];
 		Button *button = Object::cast_to<Button>(get_node(button_path));
@@ -121,7 +125,7 @@ void OpenXRSelectActionDialog::ok_pressed() {
 	hide();
 }
 
-OpenXRSelectActionDialog::OpenXRSelectActionDialog(Ref<OpenXRActionMap> p_action_map) {
+OpenXRSelectActionDialog::OpenXRSelectActionDialog(const Ref<OpenXRActionMap> &p_action_map) {
 	action_map = p_action_map;
 
 	set_title(TTR("Select an action"));

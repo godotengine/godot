@@ -34,12 +34,12 @@
 #include "mono_gd/gd_mono.h"
 
 #include "core/doc_data.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
+#include "core/templates/rb_map.h"
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/object/editor_language.h"
 #include "editor/plugins/editor_plugin.h"
 #endif
 
@@ -235,7 +235,6 @@ public:
 	StringName get_instance_base_type() const override;
 	ScriptInstance *instance_create(Object *p_this) override;
 	PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override;
-	bool instance_has(const Object *p_this) const override;
 
 	bool has_source_code() const override;
 	String get_source_code() const override;
@@ -267,7 +266,7 @@ public:
 	bool is_tool() const override {
 		return type_info.is_tool;
 	}
-	bool is_valid() const override {
+	bool is_script_valid() const override {
 		return valid;
 	}
 	bool is_abstract() const override {
@@ -289,7 +288,7 @@ public:
 
 	int get_member_line(const StringName &p_member) const override;
 
-	Variant get_rpc_config() const override;
+	const Variant get_rpc_config() const override;
 
 #ifdef TOOLS_ENABLED
 	bool is_placeholder_fallback_enabled() const override {
@@ -434,6 +433,7 @@ class CSharpLanguage : public ScriptLanguage {
 
 #ifdef TOOLS_ENABLED
 	EditorPlugin *godotsharp_editor = nullptr;
+	EditorLanguage editor_language;
 
 	static void _editor_init_callback();
 #endif
@@ -499,11 +499,15 @@ public:
 	void finalize();
 
 	/* EDITOR FUNCTIONS */
-	void get_reserved_words(List<String> *p_words) const override;
+#ifdef TOOLS_ENABLED
+	virtual EditorLanguage *get_editor_language() override { return &editor_language; }
+#endif
+
+	Vector<String> get_reserved_words() const override;
 	bool is_control_flow_keyword(const String &p_keyword) const override;
-	void get_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_doc_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_string_delimiters(List<String> *p_delimiters) const override;
+	Vector<String> get_comment_delimiters() const override;
+	Vector<String> get_doc_comment_delimiters() const override;
+	Vector<String> get_string_delimiters() const override;
 	bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
@@ -512,10 +516,6 @@ public:
 		return true;
 	}
 	String validate_path(const String &p_path) const override;
-	Script *create_script() const override;
-#ifndef DISABLE_DEPRECATED
-	virtual bool has_named_classes() const override { return false; }
-#endif
 	bool supports_builtin_mode() const override;
 	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
 		return -1;
@@ -586,19 +586,4 @@ public:
 
 	CSharpLanguage();
 	~CSharpLanguage();
-};
-
-class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
-public:
-	Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	void get_recognized_extensions(List<String> *p_extensions) const override;
-	bool handles_type(const String &p_type) const override;
-	String get_resource_type(const String &p_path) const override;
-};
-
-class ResourceFormatSaverCSharpScript : public ResourceFormatSaver {
-public:
-	Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
-	void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
-	bool recognize(const Ref<Resource> &p_resource) const override;
 };

@@ -29,25 +29,27 @@
 /**************************************************************************/
 
 #include "audio_effect_distortion.h"
+
 #include "core/math/math_funcs.h"
-#include "servers/audio_server.h"
+#include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	const float *src = (const float *)p_src_frames;
 	float *dst = (float *)p_dst_frames;
 
-	//float lpf_c=expf(-Math::TAU*keep_hf_hz.get()/(mix_rate*(float)OVERSAMPLE));
-	float lpf_c = expf(-Math::TAU * base->keep_hf_hz / (AudioServer::get_singleton()->get_mix_rate()));
+	//float lpf_c=std::exp(-Math::TAU*keep_hf_hz.get()/(mix_rate*(float)OVERSAMPLE));
+	float lpf_c = std::exp(-Math::TAU * base->keep_hf_hz / (AudioServer::get_singleton()->get_mix_rate()));
 	float lpf_ic = 1.0 - lpf_c;
 
 	float drive_f = base->drive;
 	float pregain_f = Math::db_to_linear(base->pre_gain);
 	float postgain_f = Math::db_to_linear(base->post_gain);
 
-	float atan_mult = pow(10, drive_f * drive_f * 3.0) - 1.0 + 0.001;
-	float atan_div = 1.0 / (atanf(atan_mult) * (1.0 + drive_f * 8));
+	float atan_mult = std::pow(10, drive_f * drive_f * 3.0) - 1.0 + 0.001;
+	float atan_div = 1.0 / (std::atan(atan_mult) * (1.0 + drive_f * 8));
 
-	float lofi_mult = powf(2.0, 2.0 + (1.0 - drive_f) * 14); //goes from 16 to 2 bits
+	float lofi_mult = std::pow(2.0, 2.0 + (1.0 - drive_f) * 14); //goes from 16 to 2 bits
 
 	for (int i = 0; i < p_frame_count * 2; i++) {
 		float out = undenormalize(src[i] * lpf_ic + lpf_c * h[i & 1]);
@@ -59,7 +61,7 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 		switch (base->mode) {
 			case AudioEffectDistortion::MODE_CLIP: {
 				float a_sign = a < 0 ? -1.0f : 1.0f;
-				a = powf(abs(a), 1.0001 - drive_f) * a_sign;
+				a = std::pow(std::abs(a), 1.0001 - drive_f) * a_sign;
 				if (a > 1.0) {
 					a = 1.0;
 				} else if (a < (-1.0)) {
@@ -68,23 +70,23 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 
 			} break;
 			case AudioEffectDistortion::MODE_ATAN: {
-				a = atanf(a * atan_mult) * atan_div;
+				a = std::atan(a * atan_mult) * atan_div;
 
 			} break;
 			case AudioEffectDistortion::MODE_LOFI: {
-				a = floorf(a * lofi_mult + 0.5) / lofi_mult;
+				a = std::floor(a * lofi_mult + 0.5) / lofi_mult;
 
 			} break;
 			case AudioEffectDistortion::MODE_OVERDRIVE: {
 				const double x = a * 0.686306;
-				const double z = 1 + exp(sqrt(fabs(x)) * -0.75);
-				a = (expf(x) - expf(-x * z)) / (expf(x) + expf(-x));
+				const double z = 1 + std::exp(std::sqrt(std::abs(x)) * -0.75);
+				a = (std::exp(x) - std::exp(-x * z)) / (std::exp(x) + std::exp(-x));
 			} break;
 			case AudioEffectDistortion::MODE_WAVESHAPE: {
 				float x = a;
 				float k = 2 * drive_f / (1.00001 - drive_f);
 
-				a = (1.0 + k) * x / (1.0 + k * fabsf(x));
+				a = (1.0 + k) * x / (1.0 + k * std::abs(x));
 
 			} break;
 		}
@@ -120,7 +122,7 @@ float AudioEffectDistortion::get_pre_gain() const {
 }
 
 void AudioEffectDistortion::set_keep_hf_hz(float p_keep_hf_hz) {
-	keep_hf_hz = p_keep_hf_hz;
+	keep_hf_hz = MAX(p_keep_hf_hz, 1.0);
 }
 
 float AudioEffectDistortion::get_keep_hf_hz() const {
@@ -161,7 +163,7 @@ void AudioEffectDistortion::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Clip,ATan,LoFi,Overdrive,Wave Shape"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pre_gain", PROPERTY_HINT_RANGE, "-60,60,0.01,suffix:dB"), "set_pre_gain", "get_pre_gain");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_keep_hf_hz", "get_keep_hf_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "keep_hf_hz", PROPERTY_HINT_RANGE, "20,20500,1,or_less,exp,suffix:Hz"), "set_keep_hf_hz", "get_keep_hf_hz");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drive", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drive", "get_drive");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01,suffix:dB"), "set_post_gain", "get_post_gain");
 
