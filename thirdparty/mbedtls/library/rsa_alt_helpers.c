@@ -188,7 +188,7 @@ int mbedtls_rsa_deduce_private_exponent(mbedtls_mpi const *P,
     int ret = 0;
     mbedtls_mpi K, L;
 
-    if (D == NULL || mbedtls_mpi_cmp_int(D, 0) != 0) {
+    if (D == NULL) {
         return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
     }
 
