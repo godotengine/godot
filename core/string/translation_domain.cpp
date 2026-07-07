@@ -273,11 +273,11 @@ Ref<Translation> TranslationDomain::get_translation_object(const String &p_local
 }
 #endif
 
-void TranslationServer::set_fallback_allowed(const bool &p_allow) {
+void TranslationDomain::set_fallback_allowed(const bool &p_allow) {
 	allow_fallback = p_allow;
 }
 
-bool TranslationServer::is_fallback_allowed() const {
+bool TranslationDomain::is_fallback_allowed() const {
 	return allow_fallback;
 }
 
@@ -527,6 +527,8 @@ void TranslationDomain::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_translation_object", "locale"), &TranslationDomain::get_translation_object);
 #endif
 
+	ClassDB::bind_method(D_METHOD("is_fallback_allowed"), &TranslationDomain::is_fallback_allowed);
+	ClassDB::bind_method(D_METHOD("set_fallback_allowed", "enabled"), &TranslationDomain::set_fallback_allowed);
 	ClassDB::bind_method(D_METHOD("set_fallback_locale", "locale"), &TranslationDomain::set_fallback_locale);
 	ClassDB::bind_method(D_METHOD("get_fallback_locale"), &TranslationDomain::get_fallback_locale);
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationDomain::add_translation);
