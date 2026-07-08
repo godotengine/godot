@@ -1282,6 +1282,7 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
 	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
 	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_modei, BLEND_MODE_DISABLED);
+	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_modei, BLEND_MODE_PREMULTIPLIED_ALPHA);
 
 	actions.uniforms = &uniforms;
 	Error err = texture_storage->tex_blit_shader.compiler.compile(RSE::SHADER_TEXTURE_BLIT, code, &actions, path, gen_code);
@@ -1359,6 +1360,15 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+		} break;
+		case BLEND_MODE_PREMULTIPLIED_ALPHA: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		} break;
 		case BLEND_MODE_DISABLED:
 		default: {
