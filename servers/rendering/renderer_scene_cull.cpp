@@ -2261,7 +2261,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			float soft_shadow_angle = RSG::light_storage->light_get_param(p_instance->base, RSE::LIGHT_PARAM_SIZE);
 
 			if (soft_shadow_angle > 0.0) {
-				float z_range = (cam_basis_z.dot(frustum_centroid_local) + frustum_circumscribing_radius + pancake_size) - z_min_cam;
+				float z_range = (cam_basis_z.dot(frustum_centroid_world) + frustum_circumscribing_radius + pancake_size) - z_min_cam;
 				soft_shadow_expand = Math::tan(Math::deg_to_rad(soft_shadow_angle)) * z_range;
 			}
 
