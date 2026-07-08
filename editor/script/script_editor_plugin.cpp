@@ -3704,6 +3704,19 @@ void DocumentEditorContainer::_help_class_goto(const String &p_desc) {
 	_save_layout();
 }
 
+void DocumentEditorContainer::replace_help_class(const String &p_old_name, const String &p_new_name) {
+	if (p_old_name == p_new_name) {
+		return;
+	}
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
+		if (eh && eh->get_class() == p_old_name) {
+			eh->go_to_class(p_new_name);
+			return;
+		}
+	}
+}
+
 void DocumentEditorContainer::update_doc(const String &p_name) {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
