@@ -2188,6 +2188,9 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 		sort->add_item(sort_text[i]);
 	}
 
+	// TODO: Remove this once "Relevance" sorting is fixed.
+	sort->select(SORT_REVIEWS);
+
 	search_hb2->add_child(sort);
 
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
