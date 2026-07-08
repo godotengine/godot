@@ -69,7 +69,7 @@
 			The rate at which objects stop spinning in this area. Represents the angular velocity lost per second.
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
-		<member name="angular_damp_space_override" type="int" setter="set_angular_damp_space_override_mode" getter="get_angular_damp_space_override_mode" enum="Area3D.SpaceOverride" default="0">
+		<member name="angular_damp_space_override" type="int" setter="set_angular_damp_space_override_mode" getter="get_angular_damp_space_override_mode" enum="PhysicsServer3D.AreaSpaceOverrideMode" default="0">
 			Override mode for angular damping calculations within this area.
 		</member>
 		<member name="audio_bus_name" type="StringName" setter="set_audio_bus_name" getter="get_audio_bus_name" default="&amp;&quot;Master&quot;">
@@ -94,14 +94,14 @@
 			The distance at which the gravity strength is equal to [member gravity]. For example, on a planet 100 meters in radius with a surface gravity of 4.0 m/s², set the [member gravity] to 4.0 and the unit distance to 100.0. The gravity will have falloff according to the inverse square law, so in the example, at 200 meters from the center the gravity will be 1.0 m/s² (twice the distance, 1/4th the gravity), at 50 meters it will be 16.0 m/s² (half the distance, 4x the gravity), and so on.
 			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
 		</member>
-		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="Area3D.SpaceOverride" default="0">
+		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="PhysicsServer3D.AreaSpaceOverrideMode" default="0">
 			Override mode for gravity calculations within this area.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">
 			The rate at which objects stop moving in this area. Represents the linear velocity lost per second.
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
-		<member name="linear_damp_space_override" type="int" setter="set_linear_damp_space_override_mode" getter="get_linear_damp_space_override_mode" enum="Area3D.SpaceOverride" default="0">
+		<member name="linear_damp_space_override" type="int" setter="set_linear_damp_space_override_mode" getter="get_linear_damp_space_override_mode" enum="PhysicsServer3D.AreaSpaceOverrideMode" default="0">
 			Override mode for linear damping calculations within this area.
 		</member>
 		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable" default="true">
@@ -229,19 +229,19 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="SPACE_OVERRIDE_DISABLED" value="0" enum="SpaceOverride">
+		<constant name="SPACE_OVERRIDE_DISABLED" value="0" enum="SpaceOverride" deprecated="Use [constant PhysicsServer3D.AREA_SPACE_OVERRIDE_DISABLED] instead.">
 			This area does not affect gravity/damping.
 		</constant>
-		<constant name="SPACE_OVERRIDE_COMBINE" value="1" enum="SpaceOverride">
+		<constant name="SPACE_OVERRIDE_COMBINE" value="1" enum="SpaceOverride" deprecated="Use [constant PhysicsServer3D.AREA_SPACE_OVERRIDE_COMBINE] instead.">
 			This area adds its gravity/damping values to whatever has been calculated so far (in [member priority] order).
 		</constant>
-		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="SpaceOverride">
+		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="SpaceOverride" deprecated="Use [constant PhysicsServer3D.AREA_SPACE_OVERRIDE_COMBINE_REPLACE] instead.">
 			This area adds its gravity/damping values to whatever has been calculated so far (in [member priority] order), ignoring any lower priority areas.
 		</constant>
-		<constant name="SPACE_OVERRIDE_REPLACE" value="3" enum="SpaceOverride">
+		<constant name="SPACE_OVERRIDE_REPLACE" value="3" enum="SpaceOverride" deprecated="Use [constant PhysicsServer3D.AREA_SPACE_OVERRIDE_REPLACE] instead.">
 			This area replaces any gravity/damping, even the defaults, ignoring any lower priority areas.
 		</constant>
-		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="SpaceOverride">
+		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="SpaceOverride" deprecated="Use [constant PhysicsServer3D.AREA_SPACE_OVERRIDE_REPLACE_COMBINE] instead.">
 			This area replaces any gravity/damping calculated so far (in [member priority] order), but keeps calculating the rest of the areas.
 		</constant>
 	</constants>
