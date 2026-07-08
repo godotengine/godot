@@ -210,6 +210,10 @@ static int ssl_write_alpn_ext(mbedtls_ssl_context *ssl,
  * generalization of the TLS 1.2 supported elliptic curves extension. They both
  * share the same extension identifier.
  *
+ * If the TLS 1.3 logic for selecting proposed groups changes, the TLS 1.3
+ * group filtering in the function `ssl_tls13_parse_hrr_key_share_ext()` must
+ * be updated accordingly.
+ *
  */
 #define SSL_WRITE_SUPPORTED_GROUPS_EXT_TLS1_2_FLAG 1
 #define SSL_WRITE_SUPPORTED_GROUPS_EXT_TLS1_3_FLAG 2
@@ -253,8 +257,8 @@ static int ssl_write_supported_groups_ext(mbedtls_ssl_context *ssl,
         if (flags & SSL_WRITE_SUPPORTED_GROUPS_EXT_TLS1_3_FLAG) {
 #if defined(PSA_WANT_ALG_ECDH)
             if (mbedtls_ssl_tls13_named_group_is_ecdhe(*group_list) &&
-                (mbedtls_ssl_get_ecp_group_id_from_tls_id(*group_list) !=
-                 MBEDTLS_ECP_DP_NONE)) {
+                mbedtls_ssl_get_psa_curve_info_from_tls_id(
+                    *group_list, NULL, NULL) == PSA_SUCCESS) {
                 propose_group = 1;
             }
 #endif

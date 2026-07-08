@@ -7,13 +7,14 @@
 
 #include "common.h"
 
-#if !defined(MBEDTLS_ECP_WITH_MPI_UINT)
-
 #if defined(MBEDTLS_ECP_LIGHT)
 
 #include "mbedtls/ecp.h"
+#include "mbedtls/platform.h"
 #include "mbedtls/platform_util.h"
 #include "mbedtls/error.h"
+
+#include "constant_time_internal.h"
 
 #include "bn_mul.h"
 #include "bignum_core.h"
@@ -4486,10 +4487,13 @@ static const mbedtls_ecp_point brainpoolP512r1_T[32] = {
 #endif
 #endif /* MBEDTLS_ECP_DP_BP512R1_ENABLED */
 
-#if defined(ECP_LOAD_GROUP)
+
+#if defined(ECP_LOAD_GROUP) || defined(MBEDTLS_ECP_DP_CURVE25519_ENABLED) || \
+    defined(MBEDTLS_ECP_DP_CURVE448_ENABLED)
 /*
  * Create an MPI from embedded constants
- * (assumes len is an exact multiple of sizeof(mbedtls_mpi_uint))
+ * (assumes len is an exact multiple of sizeof(mbedtls_mpi_uint) and
+ * len < 1048576)
  */
 static inline void ecp_mpi_load(mbedtls_mpi *X, const mbedtls_mpi_uint *p, size_t len)
 {
@@ -4497,15 +4501,15 @@ static inline void ecp_mpi_load(mbedtls_mpi *X, const mbedtls_mpi_uint *p, size_
     X->n = (unsigned short) (len / sizeof(mbedtls_mpi_uint));
     X->p = (mbedtls_mpi_uint *) p;
 }
+#endif
 
+#if defined(ECP_LOAD_GROUP)
 /*
  * Set an MPI to static value 1
  */
 static inline void ecp_mpi_set1(mbedtls_mpi *X)
 {
-    X->s = 1;
-    X->n = 1;
-    X->p = (mbedtls_mpi_uint *) mpi_one; /* X->p will not be modified so the cast is safe */
+    ecp_mpi_load(X, mpi_one, sizeof(mbedtls_mpi_uint));
 }
 
 /*
@@ -4534,7 +4538,7 @@ static int ecp_group_load(mbedtls_ecp_group *grp,
     grp->pbits = mbedtls_mpi_bitlen(&grp->P);
     grp->nbits = mbedtls_mpi_bitlen(&grp->N);
 
-    grp->h = 1;
+    grp->h = 1; /* All constants static */
 
     grp->T = (mbedtls_ecp_point *) T;
     /*
@@ -4550,18 +4554,28 @@ static int ecp_group_load(mbedtls_ecp_group *grp,
 /* Forward declarations */
 #if defined(MBEDTLS_ECP_DP_SECP192R1_ENABLED)
 static int ecp_mod_p192(mbedtls_mpi *);
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p192_raw(mbedtls_mpi_uint *Np, size_t Nn);
 #endif
 #if defined(MBEDTLS_ECP_DP_SECP224R1_ENABLED)
 static int ecp_mod_p224(mbedtls_mpi *);
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p224_raw(mbedtls_mpi_uint *X, size_t X_limbs);
 #endif
 #if defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED)
 static int ecp_mod_p256(mbedtls_mpi *);
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p256_raw(mbedtls_mpi_uint *X, size_t X_limbs);
 #endif
 #if defined(MBEDTLS_ECP_DP_SECP384R1_ENABLED)
 static int ecp_mod_p384(mbedtls_mpi *);
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p384_raw(mbedtls_mpi_uint *X, size_t X_limbs);
 #endif
 #if defined(MBEDTLS_ECP_DP_SECP521R1_ENABLED)
 static int ecp_mod_p521(mbedtls_mpi *);
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p521_raw(mbedtls_mpi_uint *N_p, size_t N_n);
 #endif
 
 #define NIST_MODP(P)      grp->modp = ecp_mod_ ## P;
@@ -4572,18 +4586,28 @@ static int ecp_mod_p521(mbedtls_mpi *);
 /* Additional forward declarations */
 #if defined(MBEDTLS_ECP_DP_CURVE25519_ENABLED)
 static int ecp_mod_p255(mbedtls_mpi *);
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p255_raw(mbedtls_mpi_uint *X, size_t X_limbs);
 #endif
 #if defined(MBEDTLS_ECP_DP_CURVE448_ENABLED)
 static int ecp_mod_p448(mbedtls_mpi *);
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p448_raw(mbedtls_mpi_uint *, size_t);
 #endif
 #if defined(MBEDTLS_ECP_DP_SECP192K1_ENABLED)
 static int ecp_mod_p192k1(mbedtls_mpi *);
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p192k1_raw(mbedtls_mpi_uint *X, size_t X_limbs);
 #endif
 #if defined(MBEDTLS_ECP_DP_SECP224K1_ENABLED)
 static int ecp_mod_p224k1(mbedtls_mpi *);
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p224k1_raw(mbedtls_mpi_uint *X, size_t X_limbs);
 #endif
 #if defined(MBEDTLS_ECP_DP_SECP256K1_ENABLED)
 static int ecp_mod_p256k1(mbedtls_mpi *);
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p256k1_raw(mbedtls_mpi_uint *X, size_t X_limbs);
 #endif
 
 #if defined(ECP_LOAD_GROUP)
@@ -4611,9 +4635,21 @@ static int ecp_mod_p256k1(mbedtls_mpi *);
 #if defined(MBEDTLS_ECP_DP_CURVE25519_ENABLED)
 /* Constants used by ecp_use_curve25519() */
 static const mbedtls_mpi_sint curve25519_a24 = 0x01DB42;
-static const unsigned char curve25519_part_of_n[] = {
-    0x14, 0xDE, 0xF9, 0xDE, 0xA2, 0xF7, 0x9C, 0xD6,
-    0x58, 0x12, 0x63, 0x1A, 0x5C, 0xF5, 0xD3, 0xED,
+
+/* P = 2^255 - 19 */
+static const mbedtls_mpi_uint curve25519_p[] = {
+    MBEDTLS_BYTES_TO_T_UINT_8(0xED, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0X7F)
+};
+
+/* N = 2^252 + 27742317777372353535851937790883648493 */
+static const mbedtls_mpi_uint curve25519_n[] = {
+    MBEDTLS_BYTES_TO_T_UINT_8(0XED, 0XD3, 0XF5, 0X5C, 0X1A, 0X63, 0X12, 0X58),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XD6, 0X9C, 0XF7, 0XA2, 0XDE, 0XF9, 0XDE, 0X14),
+    MBEDTLS_BYTES_TO_T_UINT_8(0X00, 0X00, 0X00, 0X00, 0x00, 0x00, 0x00, 0x00),
+    MBEDTLS_BYTES_TO_T_UINT_8(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10)
 };
 
 /*
@@ -4623,28 +4659,23 @@ static int ecp_use_curve25519(mbedtls_ecp_group *grp)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    /* Actually ( A + 2 ) / 4 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&grp->A, curve25519_a24));
+    /* Set this before anything that can fail and call ecp_group_free(). */
+    grp->h = 2; /* N and P static, but not A, B or G */
 
-    /* P = 2^255 - 19 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&grp->P, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(&grp->P, 255));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&grp->P, &grp->P, 19));
+    ecp_mpi_load(&grp->P, curve25519_p, sizeof(curve25519_p));
     grp->pbits = mbedtls_mpi_bitlen(&grp->P);
 
-    /* N = 2^252 + 27742317777372353535851937790883648493 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&grp->N,
-                                            curve25519_part_of_n, sizeof(curve25519_part_of_n)));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_set_bit(&grp->N, 252, 1));
+    ecp_mpi_load(&grp->N, curve25519_n, sizeof(curve25519_n));
+    grp->nbits = 254; /* Actually, the required msb for private keys */
+
+    /* Actually ( A + 2 ) / 4 */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&grp->A, curve25519_a24));
 
     /* Y intentionally not set, since we use x/z coordinates.
      * This is used as a marker to identify Montgomery curves! */
     MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&grp->G.X, 9));
     MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&grp->G.Z, 1));
     mbedtls_mpi_free(&grp->G.Y);
-
-    /* Actually, the required msb for private keys */
-    grp->nbits = 254;
 
 cleanup:
     if (ret != 0) {
@@ -4658,11 +4689,29 @@ cleanup:
 #if defined(MBEDTLS_ECP_DP_CURVE448_ENABLED)
 /* Constants used by ecp_use_curve448() */
 static const mbedtls_mpi_sint curve448_a24 = 0x98AA;
-static const unsigned char curve448_part_of_n[] = {
-    0x83, 0x35, 0xDC, 0x16, 0x3B, 0xB1, 0x24,
-    0xB6, 0x51, 0x29, 0xC9, 0x6F, 0xDE, 0x93,
-    0x3D, 0x8D, 0x72, 0x3A, 0x70, 0xAA, 0xDC,
-    0x87, 0x3D, 0x6D, 0x54, 0xA7, 0xBB, 0x0D,
+
+/* P = 2^448 - 2^224 - 1 */
+static const mbedtls_mpi_uint curve448_p[] = {
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFE, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00)
+};
+
+/* N = 2^446 - 13818066809895115352007386748515426880336692474882178609894547503885 */
+static const mbedtls_mpi_uint curve448_n[] = {
+    MBEDTLS_BYTES_TO_T_UINT_8(0XF3, 0X44, 0X58, 0XAB, 0X92, 0XC2, 0X78, 0X23),
+    MBEDTLS_BYTES_TO_T_UINT_8(0X55, 0X8F, 0XC5, 0X8D, 0X72, 0XC2, 0X6C, 0X21),
+    MBEDTLS_BYTES_TO_T_UINT_8(0X90, 0X36, 0XD6, 0XAE, 0X49, 0XDB, 0X4E, 0XC4),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XE9, 0X23, 0XCA, 0X7C, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF),
+    MBEDTLS_BYTES_TO_T_UINT_8(0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0X3F),
+    MBEDTLS_BYTES_TO_T_UINT_8(0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00)
 };
 
 /*
@@ -4670,21 +4719,19 @@ static const unsigned char curve448_part_of_n[] = {
  */
 static int ecp_use_curve448(mbedtls_ecp_group *grp)
 {
-    mbedtls_mpi Ns;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
-    mbedtls_mpi_init(&Ns);
+    /* Set this before anything that can fail and call ecp_group_free(). */
+    grp->h = 2; /* N and P static, but not A, B or G */
+
+    ecp_mpi_load(&grp->P, curve448_p, sizeof(curve448_p));
+    grp->pbits = mbedtls_mpi_bitlen(&grp->P);
+
+    ecp_mpi_load(&grp->N, curve448_n, sizeof(curve448_n));
+    grp->nbits = 447; /* Actually, the required msb for private keys */
 
     /* Actually ( A + 2 ) / 4 */
     MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&grp->A, curve448_a24));
-
-    /* P = 2^448 - 2^224 - 1 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&grp->P, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(&grp->P, 224));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&grp->P, &grp->P, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(&grp->P, 224));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&grp->P, &grp->P, 1));
-    grp->pbits = mbedtls_mpi_bitlen(&grp->P);
 
     /* Y intentionally not set, since we use x/z coordinates.
      * This is used as a marker to identify Montgomery curves! */
@@ -4692,17 +4739,7 @@ static int ecp_use_curve448(mbedtls_ecp_group *grp)
     MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&grp->G.Z, 1));
     mbedtls_mpi_free(&grp->G.Y);
 
-    /* N = 2^446 - 13818066809895115352007386748515426880336692474882178609894547503885 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_set_bit(&grp->N, 446, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&Ns,
-                                            curve448_part_of_n, sizeof(curve448_part_of_n)));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&grp->N, &grp->N, &Ns));
-
-    /* Actually, the required msb for private keys */
-    grp->nbits = 447;
-
 cleanup:
-    mbedtls_mpi_free(&Ns);
     if (ret != 0) {
         mbedtls_ecp_group_free(grp);
     }
@@ -4804,15 +4841,49 @@ int mbedtls_ecp_group_load(mbedtls_ecp_group *grp, mbedtls_ecp_group_id id)
     }
 }
 
+/*
+ * FAST_QUASI_REDUCTION
+ *
+ * Fast quasi-reduction exploits the structure of the prime P to bring a number
+ * from the range [0, P^2) (the result of a multiplication) into a range such
+ * that a single constant-time conditional subtract is enough to get the result
+ * in the range [0, P) (see ecp_modp() in ecp.c).
+ *
+ * There is one function per prime, with a common contract:
+ * (a) the output is in [0, 2P) (so we need at most 1 subtraction);
+ * (b) it has no more limbs than P (required by new bignum functions).
+ *
+ * Note that for primes whose bit length is a multiple of biL (32 or 64),
+ * (b) implies (a); for other primes (p255, p521), (a) implies (b).
+ *
+ * The general strategy is that P is written as P = 2^n - R,
+ * where n is the bit length of P and R a constant (see below).
+ * Then modulo P we have 2^n = R.
+ * So, we write X = X1 * 2^n + X0, and modulo P we have X = X0 + X1 * R.
+ * This can be used repeatedly to bring X to the desired range.
+ *
+ * This is only efficient if R was well chosen. There are two cases:
+ * 1. R is a small constant:
+ *    - for secp521r1 it's actually 1: P = 2^521 - 1
+ *    - for secp256k1 it's a 33-bit number
+ *    - for curve25519 it's 19: P = 2^255 - 19 (hence the name)
+ * 2. R is a sum of +/-1 * powers of 2^32:
+ *    - for secp256r1, P = 2^256 - 2^224 + 2^192 + 2^96 - 1
+ *    - for secp384r1, P = 2^384 - 2^128 - 2^96 + 2^32 - 1
+ *    - for curve448, P = 2^448 - 2^224 - 1
+ *
+ * The details vary for each prime, see the comments in each function.
+ */
+
 #if defined(MBEDTLS_ECP_NIST_OPTIM)
 /*
- * Fast reduction modulo the primes used by the NIST curves.
+ * NIST_QUASI_REDUCTION
  *
- * These functions are critical for speed, but not needed for correct
- * operations. So, we make the choice to heavily rely on the internals of our
- * bignum library, which creates a tight coupling between these functions and
- * our MPI implementation.  However, the coupling between the ECP module and
- * MPI remains loose, since these functions can be deactivated at will.
+ * Compared to the way things are presented in FIPS 186-3 D.2,
+ * we proceed in columns, from right (least significant chunk) to left,
+ * adding chunks to N in place, and keeping a carry for the next chunk.
+ * This avoids moving things around in memory, and uselessly adding zeros,
+ * compared to the more straightforward, line-oriented approach.
  */
 
 #if defined(MBEDTLS_ECP_DP_SECP192R1_ENABLED)
@@ -4851,32 +4922,68 @@ static inline void carry64(mbedtls_mpi_uint *dst, mbedtls_mpi_uint *carry)
 }
 
 #define WIDTH       8 / sizeof(mbedtls_mpi_uint)
-#define A(i)      N->p + (i) * WIDTH
-#define ADD(i)    add64(p, A(i), &c)
+#define A(i)        Np + (i) * WIDTH
+#define ADD(i)      add64(p, A(i), &c)
 #define NEXT        p += WIDTH; carry64(p, &c)
-#define LAST        p += WIDTH; *p = c; while (++p < end) *p = 0
+#define LAST        p += WIDTH; do *p = 0; while (++p < end)
+#define RESET       last_carry[0] = c; c = 0; p = Np
+#define ADD_LAST    add64(p, last_carry, &c)
 
 /*
- * Fast quasi-reduction modulo p192 (FIPS 186-3 D.2.1)
+ * Fast quasi-reduction modulo p192
  */
 static int ecp_mod_p192(mbedtls_mpi *N)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    mbedtls_mpi_uint c = 0;
-    mbedtls_mpi_uint *p, *end;
-
-    /* Make sure we have enough blocks so that A(5) is legal */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, 6 * WIDTH));
-
-    p = N->p;
-    end = p + N->n;
-
-    ADD(3); ADD(5);             NEXT;     // A0 += A3 + A5
-    ADD(3); ADD(4); ADD(5);   NEXT;       // A1 += A3 + A4 + A5
-    ADD(4); ADD(5);             LAST;     // A2 += A4 + A5
+    size_t expected_width = BITS_TO_LIMBS(192) * 2;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
+    ret = mbedtls_ecp_mod_p192_raw(N->p, expected_width);
 
 cleanup:
     return ret;
+}
+
+/*
+ * Raw fast quasi-reduction modulo p192
+ *
+ * See ecp_invasive.h and FAST_QUASI_REDUCTION above,
+ * plus NIST_QUASI_REDUCTION above and FIPS 186-3 D.2.1.
+ */
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p192_raw(mbedtls_mpi_uint *Np, size_t Nn)
+{
+    mbedtls_mpi_uint c = 0, last_carry[WIDTH] = { 0 };
+    mbedtls_mpi_uint *p, *end;
+
+    if (Nn != BITS_TO_LIMBS(192) * 2) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    p = Np;
+    end = p + Nn;
+
+    ADD(3); ADD(5);         NEXT;   // A0 += A3 + A5
+    ADD(3); ADD(4); ADD(5); NEXT;   // A1 += A3 + A4 + A5
+    ADD(4); ADD(5);                 // A2 += A4 + A5
+    /* Similarly to mbedtls_ecp_mod_p256_raw(), we have 0 <= c <= 3. */
+
+    /* The reduced value is 2^192 * c + X0, with X0 the low 3 chunks of X.
+     * Set R = 2^64 + 1, and update with X_new = X0 + c * R.
+     *
+     * The rest of the reasoning is similar to mbedtls_ecp_mod_p256_raw(),
+     * and we see that two rounds are enough to bring the result in range.
+     */
+    for (size_t round = 0; round < 2; ++round) {
+        RESET;
+
+        ADD_LAST; NEXT;                 // A0 += last_carry
+        ADD_LAST; NEXT;                 // A1 += last_carry
+                                        // A2 += carry
+    }
+
+    LAST;
+
+    return 0;
 }
 
 #undef WIDTH
@@ -4884,17 +4991,13 @@ cleanup:
 #undef ADD
 #undef NEXT
 #undef LAST
+#undef RESET
+#undef ADD_LAST
 #endif /* MBEDTLS_ECP_DP_SECP192R1_ENABLED */
 
 #if defined(MBEDTLS_ECP_DP_SECP224R1_ENABLED) ||   \
     defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED) ||   \
     defined(MBEDTLS_ECP_DP_SECP384R1_ENABLED)
-/*
- * The reader is advised to first understand ecp_mod_p192() since the same
- * general structure is used here, but with additional complications:
- * (1) chunks of 32 bits, and (2) subtractions.
- */
-
 /*
  * For these primes, we need to handle data in chunks of 32 bits.
  * This makes it more complicated if we use 64 bits limbs in MPI,
@@ -4909,218 +5012,361 @@ cleanup:
 
 #if defined(MBEDTLS_HAVE_INT32)  /* 32 bit */
 
-#define MAX32       N->n
-#define A(j)      N->p[j]
-#define STORE32     N->p[i] = cur;
+#define MAX32       X_limbs
+#define A(j)        X[j]
+#define STORE32     X[i] = (mbedtls_mpi_uint) cur;
+#define STORE0      X[i] = 0;
 
-#else                               /* 64-bit */
+#else /* 64 bit */
 
-#define MAX32       N->n * 2
-#define A(j) (j) % 2 ? (uint32_t) (N->p[(j)/2] >> 32) : \
-    (uint32_t) (N->p[(j)/2])
-#define STORE32                                   \
-    if (i % 2) {                                 \
-        N->p[i/2] &= 0x00000000FFFFFFFF;          \
-        N->p[i/2] |= ((mbedtls_mpi_uint) cur) << 32;        \
-    } else {                                      \
-        N->p[i/2] &= 0xFFFFFFFF00000000;          \
-        N->p[i/2] |= (mbedtls_mpi_uint) cur;                \
+#define MAX32   X_limbs * 2
+#define A(j)                                                \
+    (j) % 2 ?                                               \
+    (uint32_t) (X[(j) / 2] >> 32) :                         \
+    (uint32_t) (X[(j) / 2])
+#define STORE32                                             \
+    if (i % 2) {                                            \
+        X[i/2] &= 0x00000000FFFFFFFF;                       \
+        X[i/2] |= (uint64_t) (cur) << 32;                   \
+    } else {                                                \
+        X[i/2] &= 0xFFFFFFFF00000000;                       \
+        X[i/2] |= (uint32_t) cur;                           \
     }
 
-#endif /* sizeof( mbedtls_mpi_uint ) */
+#define STORE0                                              \
+    if (i % 2) {                                            \
+        X[i/2] &= 0x00000000FFFFFFFF;                       \
+    } else {                                                \
+        X[i/2] &= 0xFFFFFFFF00000000;                       \
+    }
 
-/*
- * Helpers for addition and subtraction of chunks, with signed carry.
- */
-static inline void add32(uint32_t *dst, uint32_t src, signed char *carry)
+#endif
+
+static inline int8_t extract_carry(int64_t cur)
 {
-    *dst += src;
-    *carry += (*dst < src);
+    /*
+     * Extract the signed carry without relying on `cur >> 32` for negative `cur`,
+     * since signed right shift is implementation-defined. Shift as uint64_t, then
+     * sign-extend explicitly.
+     *
+     * Modern optimizing compilers will likely generate the same code
+     * as the less portable (int8_t) (cur >> 32) anyway.
+     */
+    uint32_t hi = (uint32_t) (((uint64_t) cur) >> 32);
+    return (int8_t) ((int64_t) hi - ((int64_t) (hi >> 31) << 32));
 }
 
-static inline void sub32(uint32_t *dst, uint32_t src, signed char *carry)
-{
-    *carry -= (*dst < src);
-    *dst -= src;
-}
+#define ADD(j)    cur += A(j)
+#define SUB(j)    cur -= A(j)
 
-#define ADD(j)    add32(&cur, A(j), &c);
-#define SUB(j)    sub32(&cur, A(j), &c);
+#define ADD_CARRY(cc) cur += (cc)
+#define SUB_CARRY(cc) cur -= (cc)
+
+#define ADD_LAST ADD_CARRY(last_c)
+#define SUB_LAST SUB_CARRY(last_c)
 
 /*
  * Helpers for the main 'loop'
  */
-#define INIT(b)                                                       \
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;                    \
-    signed char c = 0, cc;                                              \
-    uint32_t cur;                                                       \
-    size_t i = 0, bits = (b);                                           \
-    /* N is the size of the product of two b-bit numbers, plus one */   \
-    /* limb for fix_negative */                                         \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, (b) * 2 / biL + 1));      \
+#define INIT(b)                                         \
+    int8_t c = 0, last_c;                               \
+    int64_t cur;                                        \
+    size_t i = 0;                                       \
     LOAD32;
 
-#define NEXT                    \
-    STORE32; i++; LOAD32;       \
-    cc = c; c = 0;              \
-    if (cc < 0)                \
-    sub32(&cur, -cc, &c); \
-    else                        \
-    add32(&cur, cc, &c);  \
+#define NEXT                                            \
+    c = extract_carry(cur);                             \
+    STORE32; i++; LOAD32;                               \
+    ADD_CARRY(c);
 
-#define LAST                                    \
-    STORE32; i++;                               \
-    cur = c > 0 ? c : 0; STORE32;               \
-    cur = 0; while (++i < MAX32) { STORE32; }  \
-    if (c < 0) mbedtls_ecp_fix_negative(N, c, bits);
+#define RESET                                           \
+    c = extract_carry(cur);                             \
+    last_c = c;                                         \
+    STORE32; i = 0; LOAD32;                             \
+    c = 0;                                              \
 
-/*
- * If the result is negative, we get it in the form
- * c * 2^bits + N, with c negative and N positive shorter than 'bits'
- */
-static void mbedtls_ecp_fix_negative(mbedtls_mpi *N, signed char c, size_t bits)
-{
-    size_t i;
-
-    /* Set N := 2^bits - 1 - N. We know that 0 <= N < 2^bits, so
-     * set the absolute value to 0xfff...fff - N. There is no carry
-     * since we're subtracting from all-bits-one.  */
-    for (i = 0; i <= bits / 8 / sizeof(mbedtls_mpi_uint); i++) {
-        N->p[i] = ~(mbedtls_mpi_uint) 0 - N->p[i];
-    }
-    /* Add 1, taking care of the carry. */
-    i = 0;
-    do {
-        ++N->p[i];
-    } while (N->p[i++] == 0 && i <= bits / 8 / sizeof(mbedtls_mpi_uint));
-    /* Invert the sign.
-     * Now N = N0 - 2^bits where N0 is the initial value of N. */
-    N->s = -1;
-
-    /* Add |c| * 2^bits to the absolute value. Since c and N are
-     * negative, this adds c * 2^bits. */
-    mbedtls_mpi_uint msw = (mbedtls_mpi_uint) -c;
-#if defined(MBEDTLS_HAVE_INT64)
-    if (bits == 224) {
-        msw <<= 32;
-    }
-#endif
-    N->p[bits / 8 / sizeof(mbedtls_mpi_uint)] += msw;
-}
+#define LAST                                            \
+    c = extract_carry(cur);                             \
+    STORE32; i++;                                       \
+    if (c != 0)                                         \
+    return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;              \
+    while (i < MAX32) { STORE0; i++; }
 
 #if defined(MBEDTLS_ECP_DP_SECP224R1_ENABLED)
+
 /*
- * Fast quasi-reduction modulo p224 (FIPS 186-3 D.2.2)
+ * Fast quasi-reduction modulo p224
  */
 static int ecp_mod_p224(mbedtls_mpi *N)
 {
-    INIT(224);
-
-    SUB(7); SUB(11);               NEXT;      // A0 += -A7 - A11
-    SUB(8); SUB(12);               NEXT;      // A1 += -A8 - A12
-    SUB(9); SUB(13);               NEXT;      // A2 += -A9 - A13
-    SUB(10); ADD(7); ADD(11);    NEXT;        // A3 += -A10 + A7 + A11
-    SUB(11); ADD(8); ADD(12);    NEXT;        // A4 += -A11 + A8 + A12
-    SUB(12); ADD(9); ADD(13);    NEXT;        // A5 += -A12 + A9 + A13
-    SUB(13); ADD(10);               LAST;     // A6 += -A13 + A10
-
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    size_t expected_width = BITS_TO_LIMBS(224) * 2;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
+    ret = mbedtls_ecp_mod_p224_raw(N->p, expected_width);
 cleanup:
     return ret;
 }
+
+/*
+ * Raw fast quasi-reduction modulo p224
+ *
+ * See ecp_invasive.h and FAST_QUASI_REDUCTION above,
+ * plus NIST_QUASI_REDUCTION above and FIPS 186-3 D.2.2.
+ */
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p224_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+{
+    if (X_limbs != BITS_TO_LIMBS(224) * 2) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    INIT(224);
+
+    SUB(7);  SUB(11);           NEXT;   // A0 += -A7  - A11
+    SUB(8);  SUB(12);           NEXT;   // A1 += -A8  - A12
+    SUB(9);  SUB(13);           NEXT;   // A2 += -A9  - A13
+    SUB(10); ADD(7);  ADD(11);  NEXT;   // A3 += -A10 + A7 + A11
+    SUB(11); ADD(8);  ADD(12);  NEXT;   // A4 += -A11 + A8 + A12
+    SUB(12); ADD(9);  ADD(13);  NEXT;   // A5 += -A12 + A9 + A13
+    SUB(13); ADD(10);                   // A6 += -A13 + A10
+
+    RESET;
+
+    /* Use 2^224 = P + 2^96 - 1 to modulo reduce the final carry */
+    SUB_LAST; NEXT;                     // A0 -= last_c
+    ;         NEXT;                     // A1
+    ;         NEXT;                     // A2
+    ADD_LAST; NEXT;                     // A3 += last_c
+    ;         NEXT;                     // A4
+    ;         NEXT;                     // A5
+                                        // A6
+
+    /* The carry reduction cannot generate a carry
+     * (see commit 73e8553 for details)*/
+
+    LAST;
+
+    return 0;
+}
+
 #endif /* MBEDTLS_ECP_DP_SECP224R1_ENABLED */
 
 #if defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED)
+
 /*
- * Fast quasi-reduction modulo p256 (FIPS 186-3 D.2.3)
+ * Fast quasi-reduction modulo p256
  */
 static int ecp_mod_p256(mbedtls_mpi *N)
 {
-    INIT(256);
-
-    ADD(8); ADD(9);
-    SUB(11); SUB(12); SUB(13); SUB(14);             NEXT;         // A0
-
-    ADD(9); ADD(10);
-    SUB(12); SUB(13); SUB(14); SUB(15);             NEXT;         // A1
-
-    ADD(10); ADD(11);
-    SUB(13); SUB(14); SUB(15);                        NEXT;       // A2
-
-    ADD(11); ADD(11); ADD(12); ADD(12); ADD(13);
-    SUB(15); SUB(8); SUB(9);                        NEXT;         // A3
-
-    ADD(12); ADD(12); ADD(13); ADD(13); ADD(14);
-    SUB(9); SUB(10);                                   NEXT;      // A4
-
-    ADD(13); ADD(13); ADD(14); ADD(14); ADD(15);
-    SUB(10); SUB(11);                                   NEXT;     // A5
-
-    ADD(14); ADD(14); ADD(15); ADD(15); ADD(14); ADD(13);
-    SUB(8); SUB(9);                                   NEXT;       // A6
-
-    ADD(15); ADD(15); ADD(15); ADD(8);
-    SUB(10); SUB(11); SUB(12); SUB(13);             LAST;         // A7
-
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    size_t expected_width = BITS_TO_LIMBS(256) * 2;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
+    ret = mbedtls_ecp_mod_p256_raw(N->p, expected_width);
 cleanup:
     return ret;
 }
+
+/*
+ * Raw fast quasi-reduction modulo p256
+ *
+ * See ecp_invasive.h and FAST_QUASI_REDUCTION above,
+ * plus NIST_QUASI_REDUCTION above and FIPS 186-3 D.2.3.
+ */
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p256_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+{
+    if (X_limbs != BITS_TO_LIMBS(256) * 2) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    INIT(256);
+
+    ADD(8);  ADD(9);
+    SUB(11); SUB(12); SUB(13); SUB(14);                   NEXT; // A0
+
+    ADD(9);  ADD(10);
+    SUB(12); SUB(13); SUB(14); SUB(15);                   NEXT; // A1
+
+    ADD(10); ADD(11);
+    SUB(13); SUB(14); SUB(15);                            NEXT; // A2
+
+    ADD(11); ADD(11); ADD(12); ADD(12); ADD(13);
+    SUB(15); SUB(8);  SUB(9);                             NEXT; // A3
+
+    ADD(12); ADD(12); ADD(13); ADD(13); ADD(14);
+    SUB(9);  SUB(10);                                     NEXT; // A4
+
+    ADD(13); ADD(13); ADD(14); ADD(14); ADD(15);
+    SUB(10); SUB(11);                                     NEXT; // A5
+
+    ADD(14); ADD(14); ADD(15); ADD(15); ADD(14); ADD(13);
+    SUB(8);  SUB(9);                                      NEXT; // A6
+
+    ADD(15); ADD(15); ADD(15); ADD(8);
+    SUB(10); SUB(11); SUB(12); SUB(13);                         // A7
+    /* The carry is easily seen to be in the range -5 <= c <= +5,
+     * because on the top chunk we do 4 explicit add (resp. sub), plus one
+     * implicit (adding the carry from the previous limbs), and each can
+     * increment (resp. decrement) the carry.
+     * Tighter estimates can probably be obtained, but we don't need them. */
+
+    /* From now on, the reduced value is 2^256 * c + X0,
+     * where X0 is A0 + 2^32 * A1 + ... + 2^224 * A7 (the low 8 chunks of X).
+     * Note that c may be negative, but X0 is always in [0, 2^256).
+     *
+     * Set R = 2^224 - 2^192 - 2^96 + 1 and use 2^256 = R (mod p256),
+     * so the update formula is X = X0 + c * R.
+     *
+     * Let's call X_ori the value before the loop,
+     * X_1st the value after the first iteration,
+     * X_2nd the value after the second iteration.
+     *
+     * First round:
+     * We have 0 <= X_ori < 2^256 and -8 < -5 <= last_c <= 5 < 8,
+     * so -2^227 < last_c * R < 2^227
+     * and -2^227 < X_1st < 2^256 + 2^227.
+     * Again X_1st is represented as 2^256 * c + X0, but now c is -1, 0 or 1.
+     *
+     * Second round:
+     * - If c is 0, then X_2nd = X0 + 0 * R = X0 which is in range.
+     * - If c is 1, then X_2nd = X0 + 1 * R is clearly non-negative.
+     *   Also, since X_1st < 2^256 + 2^227, we have X0 < 2^227,
+     *   so X_2nd = X0 + 1 * R < 2^227 + 2^224 < 2^256.
+     * - If c is -1 then X_2nd = X0 - 1 * R is clearly < 2^256.
+     *   Also, since X_1st > -2^227 and X_1st = - 2^256 + X0,
+     *   we have X0 > 2^256 - 2^227
+     *   so X_2nd = X0 - 1 * R > 2^256 - 2^227 - 2^224 >= 0.
+     * In all cases, 0 <= X_2nd < 2^256 as desired.
+     */
+    for (size_t round = 0; round < 2; ++round) {
+        RESET;
+
+        ADD_LAST; NEXT;                                         // A0
+        ;         NEXT;                                         // A1
+        ;         NEXT;                                         // A2
+        SUB_LAST; NEXT;                                         // A3
+        ;         NEXT;                                         // A4
+        ;         NEXT;                                         // A5
+        SUB_LAST; NEXT;                                         // A6
+        ADD_LAST;                                               // A7
+    }
+
+    LAST;
+
+    return 0;
+}
+
 #endif /* MBEDTLS_ECP_DP_SECP256R1_ENABLED */
 
 #if defined(MBEDTLS_ECP_DP_SECP384R1_ENABLED)
 /*
- * Fast quasi-reduction modulo p384 (FIPS 186-3 D.2.4)
+ * Fast quasi-reduction modulo p384
  */
 static int ecp_mod_p384(mbedtls_mpi *N)
 {
-    INIT(384);
-
-    ADD(12); ADD(21); ADD(20);
-    SUB(23);                                              NEXT;   // A0
-
-    ADD(13); ADD(22); ADD(23);
-    SUB(12); SUB(20);                                   NEXT;     // A2
-
-    ADD(14); ADD(23);
-    SUB(13); SUB(21);                                   NEXT;     // A2
-
-    ADD(15); ADD(12); ADD(20); ADD(21);
-    SUB(14); SUB(22); SUB(23);                        NEXT;       // A3
-
-    ADD(21); ADD(21); ADD(16); ADD(13); ADD(12); ADD(20); ADD(22);
-    SUB(15); SUB(23); SUB(23);                        NEXT;       // A4
-
-    ADD(22); ADD(22); ADD(17); ADD(14); ADD(13); ADD(21); ADD(23);
-    SUB(16);                                              NEXT;   // A5
-
-    ADD(23); ADD(23); ADD(18); ADD(15); ADD(14); ADD(22);
-    SUB(17);                                              NEXT;   // A6
-
-    ADD(19); ADD(16); ADD(15); ADD(23);
-    SUB(18);                                              NEXT;   // A7
-
-    ADD(20); ADD(17); ADD(16);
-    SUB(19);                                              NEXT;   // A8
-
-    ADD(21); ADD(18); ADD(17);
-    SUB(20);                                              NEXT;   // A9
-
-    ADD(22); ADD(19); ADD(18);
-    SUB(21);                                              NEXT;   // A10
-
-    ADD(23); ADD(20); ADD(19);
-    SUB(22);                                              LAST;   // A11
-
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    size_t expected_width = BITS_TO_LIMBS(384) * 2;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
+    ret = mbedtls_ecp_mod_p384_raw(N->p, expected_width);
 cleanup:
     return ret;
 }
+
+/*
+ * Raw fast quasi-reduction modulo p384
+ *
+ * See ecp_invasive.h and FAST_QUASI_REDUCTION above,
+ * plus NIST_QUASI_REDUCTION above and FIPS 186-3 D.2.4.
+ */
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p384_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+{
+    if (X_limbs != BITS_TO_LIMBS(384) * 2) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    INIT(384);
+
+    ADD(12); ADD(21); ADD(20);
+    SUB(23);                                                NEXT; // A0
+
+    ADD(13); ADD(22); ADD(23);
+    SUB(12); SUB(20);                                       NEXT; // A1
+
+    ADD(14); ADD(23);
+    SUB(13); SUB(21);                                       NEXT; // A2
+
+    ADD(15); ADD(12); ADD(20); ADD(21);
+    SUB(14); SUB(22); SUB(23);                              NEXT; // A3
+
+    ADD(21); ADD(21); ADD(16); ADD(13); ADD(12); ADD(20); ADD(22);
+    SUB(15); SUB(23); SUB(23);                              NEXT; // A4
+
+    ADD(22); ADD(22); ADD(17); ADD(14); ADD(13); ADD(21); ADD(23);
+    SUB(16);                                                NEXT; // A5
+
+    ADD(23); ADD(23); ADD(18); ADD(15); ADD(14); ADD(22);
+    SUB(17);                                                NEXT; // A6
+
+    ADD(19); ADD(16); ADD(15); ADD(23);
+    SUB(18);                                                NEXT; // A7
+
+    ADD(20); ADD(17); ADD(16);
+    SUB(19);                                                NEXT; // A8
+
+    ADD(21); ADD(18); ADD(17);
+    SUB(20);                                                NEXT; // A9
+
+    ADD(22); ADD(19); ADD(18);
+    SUB(21);                                                NEXT; // A10
+
+    ADD(23); ADD(20); ADD(19);
+    SUB(22);                                                      // A11
+    /* Similarly to mbedtls_ecp_mod_p256_raw(), we have -2 <= c <= 4. */
+
+    /* The reduced value is 2^384 * c + X0, with X0 the low 12 chunks of X.
+     * Set R = 2^128 + 2^96 - 2^32 + 1, and update with X_new = X0 + c * R.
+     *
+     * The rest of the reasoning is similar to mbedtls_ecp_mod_p256_raw(),
+     * and we see that two rounds are enough to bring the result in range.
+     */
+    for (size_t round = 0; round < 2; ++round) {
+        RESET;
+
+        ADD_LAST; NEXT;                                           // A0
+        SUB_LAST; NEXT;                                           // A1
+        ;         NEXT;                                           // A2
+        ADD_LAST; NEXT;                                           // A3
+        ADD_LAST; NEXT;                                           // A4
+        ;         NEXT;                                           // A5
+        ;         NEXT;                                           // A6
+        ;         NEXT;                                           // A7
+        ;         NEXT;                                           // A8
+        ;         NEXT;                                           // A9
+        ;         NEXT;                                           // A10
+                                                                  // A11
+    }
+
+    LAST;
+
+    return 0;
+}
 #endif /* MBEDTLS_ECP_DP_SECP384R1_ENABLED */
 
-#undef A
 #undef LOAD32
-#undef STORE32
 #undef MAX32
+#undef A
+#undef STORE32
+#undef STORE0
+#undef ADD
+#undef SUB
+#undef ADD_CARRY
+#undef SUB_CARRY
+#undef ADD_LAST
+#undef SUB_LAST
 #undef INIT
 #undef NEXT
+#undef RESET
 #undef LAST
 
 #endif /* MBEDTLS_ECP_DP_SECP224R1_ENABLED ||
@@ -5128,60 +5374,96 @@ cleanup:
           MBEDTLS_ECP_DP_SECP384R1_ENABLED */
 
 #if defined(MBEDTLS_ECP_DP_SECP521R1_ENABLED)
-/*
- * Here we have an actual Mersenne prime, so things are more straightforward.
- * However, chunks are aligned on a 'weird' boundary (521 bits).
- */
-
 /* Size of p521 in terms of mbedtls_mpi_uint */
-#define P521_WIDTH      (521 / 8 / sizeof(mbedtls_mpi_uint) + 1)
+#define P521_WIDTH      BITS_TO_LIMBS(521)
 
 /* Bits to keep in the most significant mbedtls_mpi_uint */
 #define P521_MASK       0x01FF
 
 /*
- * Fast quasi-reduction modulo p521 (FIPS 186-3 D.2.5)
- * Write N as A1 + 2^521 A0, return A0 + A1
+ * Fast quasi-reduction modulo p521
  */
 static int ecp_mod_p521(mbedtls_mpi *N)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    size_t i;
-    mbedtls_mpi M;
-    mbedtls_mpi_uint Mp[P521_WIDTH + 1];
-    /* Worst case for the size of M is when mbedtls_mpi_uint is 16 bits:
-     * we need to hold bits 513 to 1056, which is 34 limbs, that is
-     * P521_WIDTH + 1. Otherwise P521_WIDTH is enough. */
-
-    if (N->n < P521_WIDTH) {
-        return 0;
-    }
-
-    /* M = A1 */
-    M.s = 1;
-    M.n = N->n - (P521_WIDTH - 1);
-    if (M.n > P521_WIDTH + 1) {
-        M.n = P521_WIDTH + 1;
-    }
-    M.p = Mp;
-    memcpy(Mp, N->p + P521_WIDTH - 1, M.n * sizeof(mbedtls_mpi_uint));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&M, 521 % (8 * sizeof(mbedtls_mpi_uint))));
-
-    /* N = A0 */
-    N->p[P521_WIDTH - 1] &= P521_MASK;
-    for (i = P521_WIDTH; i < N->n; i++) {
-        N->p[i] = 0;
-    }
-
-    /* N = A0 + A1 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_abs(N, N, &M));
-
+    size_t expected_width = BITS_TO_LIMBS(521) * 2;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
+    ret = mbedtls_ecp_mod_p521_raw(N->p, expected_width);
 cleanup:
     return ret;
 }
 
+/*
+ * Raw fast quasi-reduction modulo p521 = 2^521 - 1
+ *
+ * See ecp_invasive.h and FAST_QUASI_REDUCTION above.
+ *
+ * First handle whole limbs above 521 bits,
+ * then handle the carry as well as remaining bits in the top limb.
+ */
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p521_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+{
+    mbedtls_mpi_uint carry = 0;
+
+    if (X_limbs != BITS_TO_LIMBS(521) * 2) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    /* Step 1: Reduction to P521_WIDTH limbs */
+    /* Pointers to bottom/top part of X - note that they don't overlap,
+     * as required for the call to mbedtls_mpi_core_mla() below. */
+    mbedtls_mpi_uint *X0 = X;
+    size_t X0_limbs = P521_WIDTH;
+    mbedtls_mpi_uint *X1 = X + X0_limbs;
+    size_t X1_limbs = X_limbs - X0_limbs;
+    /* Split X as X0 + 2^(P521_WIDTH * biL) X1 and compute X0 + 2^(biL - 9) X1.
+     * (We are using that 2^(P521_WIDTH * biL) = 2^(512 + biL) and that
+     * 2^(512 + biL) X1 = 2^(biL - 9) X1 mod P521.)
+     * The high order limb of the result will be held in carry and the rest
+     * in X0 (that is the result will be represented as
+     * 2^(P521_WIDTH * biL) * carry + X0).
+     *
+     * Also, note that the resulting carry is either 0 or 1:
+     * X0 < 2^(512 + biL) and X1 < 2^512
+     * therefore
+     * X0 + 2^(biL - 9) X1 < 2^(512 + biL) + 2^(512 + biL - 9)
+     * which in turn is less than 2 * 2^(512 + biL).
+     */
+    mbedtls_mpi_uint shift = ((mbedtls_mpi_uint) 1u) << (biL - 9);
+    carry = mbedtls_mpi_core_mla(X0, X0_limbs, X1, X1_limbs, shift);
+    /* Set X to X0 (by clearing the top part). */
+    memset(X1, 0, X1_limbs * sizeof(mbedtls_mpi_uint));
+
+    /* Step 2: Reduction modulo P521
+     *
+     * At this point X is reduced to P521_WIDTH limbs. What remains is to add
+     * the carry (that is 2^P521_WIDTH carry) and to reduce mod P521. */
+
+    /* 2^(P521_WIDTH * biL) * carry = 2^(512 + biL) carry = 2^(biL - 9) carry mod P521.
+     * Also, recall that carry is either 0 or 1. */
+    mbedtls_mpi_uint addend = carry << (biL - 9);
+    /* Keep the top 9 bits and reduce the rest, using 2^521 = 1 mod P521. */
+    addend += (X[P521_WIDTH - 1] >> 9);
+    X[P521_WIDTH - 1] &= P521_MASK;
+
+    /* Reuse the top part of X (already zeroed) as a helper array for
+     * carrying out the addition. */
+    mbedtls_mpi_uint *addend_arr = X + P521_WIDTH;
+    addend_arr[0] = addend;
+    (void) mbedtls_mpi_core_add(X, X, addend_arr, P521_WIDTH);
+    /* Both addends were less than P521 therefore X < 2 * P521. (This also means
+     * that the result fit in P521_WIDTH limbs and there won't be any carry.) */
+
+    /* Clear the reused part of X. */
+    addend_arr[0] = 0;
+
+    return 0;
+}
+
 #undef P521_WIDTH
 #undef P521_MASK
+
 #endif /* MBEDTLS_ECP_DP_SECP521R1_ENABLED */
 
 #endif /* MBEDTLS_ECP_NIST_OPTIM */
@@ -5189,34 +5471,66 @@ cleanup:
 #if defined(MBEDTLS_ECP_DP_CURVE25519_ENABLED)
 
 /* Size of p255 in terms of mbedtls_mpi_uint */
-#define P255_WIDTH      (255 / 8 / sizeof(mbedtls_mpi_uint) + 1)
+#define P255_WIDTH      BITS_TO_LIMBS(255)
 
 /*
  * Fast quasi-reduction modulo p255 = 2^255 - 19
- * Write N as A0 + 2^256 A1, return A0 + 38 * A1
  */
 static int ecp_mod_p255(mbedtls_mpi *N)
 {
-    mbedtls_mpi_uint Mp[P255_WIDTH];
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    size_t expected_width = BITS_TO_LIMBS(255) * 2;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
+    ret = mbedtls_ecp_mod_p255_raw(N->p, expected_width);
+cleanup:
+    return ret;
+}
 
-    /* Helper references for top part of N */
-    mbedtls_mpi_uint * const NT_p = N->p + P255_WIDTH;
-    const size_t NT_n = N->n - P255_WIDTH;
-    if (N->n <= P255_WIDTH) {
-        return 0;
-    }
-    if (NT_n > P255_WIDTH) {
+/*
+ * Raw fast quasi-reduction modulo p255 = 2^255 - 19
+ *
+ * See ecp_invasive.h and FAST_QUASI_REDUCTION above.
+ *
+ * First write N as A0 + 2^256 A1, compute A0 + 38 * A1.
+ * Then handle the carry and remaining bit.
+ */
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p255_raw(mbedtls_mpi_uint *X, size_t X_Limbs)
+{
+
+    if (X_Limbs != BITS_TO_LIMBS(255) * 2) {
         return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
     }
 
-    /* Split N as N + 2^256 M */
-    memcpy(Mp,   NT_p, sizeof(mbedtls_mpi_uint) * NT_n);
-    memset(NT_p, 0,    sizeof(mbedtls_mpi_uint) * NT_n);
+    mbedtls_mpi_uint carry[P255_WIDTH] = { 0 };
 
-    /* N = A0 + 38 * A1 */
-    mbedtls_mpi_core_mla(N->p, P255_WIDTH + 1,
-                         Mp, NT_n,
-                         38);
+    /* Step 1: Reduction to P255_WIDTH limbs */
+    mbedtls_mpi_uint * const A1 = X + P255_WIDTH;
+    const size_t A1_limbs = X_Limbs - P255_WIDTH;
+
+    /* X = A0 + 38 * A1, capture carry out
+     * Note: X truncated to P255_WIDTH does not overlap with A1
+     * (mbedtls_mpi_core_mla() doesn't support overlap other than aliasing) */
+    *carry = mbedtls_mpi_core_mla(X, P255_WIDTH, A1, A1_limbs, 38);
+    /* Clear top part */
+    memset(A1, 0, sizeof(mbedtls_mpi_uint) * A1_limbs);
+
+    /* Step 2: Reduce to <2p
+     * Split as A0 + 2^255*c, with c a scalar, and compute A0 + 19*c */
+    *carry <<= 1;
+    *carry += (X[P255_WIDTH - 1] >> (biL - 1));
+    *carry *= 19;
+
+    /* Clear top bit */
+    X[P255_WIDTH - 1] <<= 1; X[P255_WIDTH - 1] >>= 1;
+    /* Since the top bit for X has been cleared 0 + 0 + Carry
+     * will not overflow.
+     *
+     * Furthermore for 2p = 2^256-38. When a carry propagation on the highest
+     * limb occurs, X > 2^255 and all the remaining bits on the limb are zero.
+     *   - If X < 2^255 ==> X < 2p
+     *   - If X > 2^255 ==> X < 2^256 - 2^255 < 2p  */
+    (void) mbedtls_mpi_core_add(X, X, carry, P255_WIDTH);
 
     return 0;
 }
@@ -5225,236 +5539,587 @@ static int ecp_mod_p255(mbedtls_mpi *N)
 #if defined(MBEDTLS_ECP_DP_CURVE448_ENABLED)
 
 /* Size of p448 in terms of mbedtls_mpi_uint */
-#define P448_WIDTH      (448 / 8 / sizeof(mbedtls_mpi_uint))
+#define P448_WIDTH      BITS_TO_LIMBS(448)
 
-/* Number of limbs fully occupied by 2^224 (max), and limbs used by it (min) */
-#define DIV_ROUND_UP(X, Y) (((X) + (Y) -1) / (Y))
+/* Number of bytes for a 224-bit value */
 #define P224_SIZE        (224 / 8)
+
+/* Number of limbs fully used to store a 224-bit value */
 #define P224_WIDTH_MIN   (P224_SIZE / sizeof(mbedtls_mpi_uint))
+/* Number or limbs partially used to store a 224-bit value.
+ * With 32-bit limbs we have MAX == MIN, but with 64-bit limbs MAX == MIN + 1 */
+#define DIV_ROUND_UP(X, Y) (((X) + (Y) -1) / (Y))
 #define P224_WIDTH_MAX   DIV_ROUND_UP(P224_SIZE, sizeof(mbedtls_mpi_uint))
-#define P224_UNUSED_BITS ((P224_WIDTH_MAX * sizeof(mbedtls_mpi_uint) * 8) - 224)
 
 /*
- * Fast quasi-reduction modulo p448 = 2^448 - 2^224 - 1
- * Write N as A0 + 2^448 A1 and A1 as B0 + 2^224 B1, and return
- * A0 + A1 + B1 + (B0 + B1) * 2^224.  This is different to the reference
- * implementation of Curve448, which uses its own special 56-bit limbs rather
- * than a generic bignum library.  We could squeeze some extra speed out on
- * 32-bit machines by splitting N up into 32-bit limbs and doing the
- * arithmetic using the limbs directly as we do for the NIST primes above,
- * but for 64-bit targets it should use half the number of operations if we do
- * the reduction with 224-bit limbs, since mpi_add_mpi will then use 64-bit adds.
+ * Fast quasi-reduction module p448
  */
 static int ecp_mod_p448(mbedtls_mpi *N)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    size_t i;
-    mbedtls_mpi M, Q;
-    mbedtls_mpi_uint Mp[P448_WIDTH + 1], Qp[P448_WIDTH];
-
-    if (N->n <= P448_WIDTH) {
-        return 0;
-    }
-
-    /* M = A1 */
-    M.s = 1;
-    M.n = N->n - (P448_WIDTH);
-    if (M.n > P448_WIDTH) {
-        /* Shouldn't be called with N larger than 2^896! */
-        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
-    }
-    M.p = Mp;
-    memset(Mp, 0, sizeof(Mp));
-    memcpy(Mp, N->p + P448_WIDTH, M.n * sizeof(mbedtls_mpi_uint));
-
-    /* N = A0 */
-    for (i = P448_WIDTH; i < N->n; i++) {
-        N->p[i] = 0;
-    }
-
-    /* N += A1 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(N, N, &M));
-
-    /* Q = B1, N += B1 */
-    Q = M;
-    Q.p = Qp;
-    memcpy(Qp, Mp, sizeof(Qp));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&Q, 224));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(N, N, &Q));
-
-    /* M = (B0 + B1) * 2^224, N += M */
-    if (sizeof(mbedtls_mpi_uint) > 4) {
-        Mp[P224_WIDTH_MIN] &= ((mbedtls_mpi_uint)-1) >> (P224_UNUSED_BITS);
-    }
-    for (i = P224_WIDTH_MAX; i < M.n; ++i) {
-        Mp[i] = 0;
-    }
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&M, &M, &Q));
-    M.n = P448_WIDTH + 1; /* Make room for shifted carry bit from the addition */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_shift_l(&M, 224));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(N, N, &M));
-
+    size_t expected_width = BITS_TO_LIMBS(448) * 2;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
+    ret = mbedtls_ecp_mod_p448_raw(N->p, expected_width);
 cleanup:
     return ret;
+}
+
+/* Copy and shift right: X = A >> 224
+ * X must be P448_WIDTH + 1, and A must be P448_WIDTH limbs */
+static void ecp_copy_shift_r_224(mbedtls_mpi_uint *X,
+                                 const mbedtls_mpi_uint *A)
+{
+#if defined(MBEDTLS_HAVE_INT64) && defined(MBEDTLS_IS_BIG_ENDIAN)
+    /* No need to copy lower limbs, they'll be shifted away.
+     * P448_WIDTH = P224_WIDTH_MIN + P224_WIDTH_MAX */
+    memcpy(X + P224_WIDTH_MIN, A + P224_WIDTH_MIN, P224_WIDTH_MAX * ciL);
+    X[P448_WIDTH] = 0;
+    mbedtls_mpi_core_shift_r(X, P448_WIDTH, 224);
+#else
+    /* Shortcut for 32-bit and little-endian 64-bit.
+     * P448_WITDH * ciL = 2 * P224_SIZE */
+    memcpy(X, (char *) A + P224_SIZE, P224_SIZE);
+    memset((char *) X + P224_SIZE, 0, P224_SIZE + ciL);
+#endif
+}
+
+/* In-place shift left: X <<= 224
+ * X must be P448_WIDTH + 1 limbs */
+static void ecp_shift_l_224(mbedtls_mpi_uint *X)
+{
+#if defined(MBEDTLS_HAVE_INT64) && defined(MBEDTLS_IS_BIG_ENDIAN)
+    mbedtls_mpi_core_shift_l(X, P448_WIDTH + 1, 224);
+#else
+    /* Shortcut for 32-bit and little-endian 64-bit. */
+    memmove((char *) X + P224_SIZE, X, P224_SIZE + ciL);
+    memset(X, 0, P224_SIZE);
+#endif
+}
+
+/* In-place truncated to 224-bits: X %= 2^224
+ * X must be P448_WIDTH + 1 limbs */
+static void ecp_trunc_224(mbedtls_mpi_uint *X)
+{
+#if defined(MBEDTLS_HAVE_INT64) && defined(MBEDTLS_IS_BIG_ENDIAN)
+    /* Since 224 is only a multiple of 32 but not of 64, the 224-bit
+     * limit falls in the middle of a limb. Clear the top 32 bits of that limb,
+     * (that is, keep only its low 32 bits). Higher limbs can be fully cleared.
+     */
+    X[P224_WIDTH_MIN] &= (mbedtls_mpi_uint) 0xffffffff;
+    memset(X + P224_WIDTH_MAX, 0, ((P448_WIDTH + 1 - P224_WIDTH_MAX) * ciL));
+#else
+    /* Shortcut for 32-bit and little-endian 64-bit. */
+    memset((char *) X + P224_SIZE, 0, P224_SIZE + ciL);
+#endif
+}
+
+/*
+ * Raw fast quasi-reduction modulo p448 = 2^448 - 2^224 - 1
+ *
+ * See ecp_invasive.h and FAST_QUASI_REDUCTION above.
+ *
+ * Write X as A0 + 2^448 A1 and A1 as B0 + 2^224 B1, and
+ * compute A0 + A1 + B1 + (B0 + B1) * 2^224.
+ *
+ * This is different to the reference implementation of
+ * Curve448, which uses its own special 56-bit limbs rather than a generic
+ * bignum library.
+ *
+ * We could squeeze some extra speed out on 32-bit machines by
+ * splitting N up into 32-bit limbs and doing the arithmetic using the limbs
+ * directly as we do for the NIST primes above, but for 64-bit targets it should
+ * use half the number of operations if we do the reduction with 224-bit limbs,
+ * since mpi_core_add will then use 64-bit adds.
+ */
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p448_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+{
+    if (X_limbs != BITS_TO_LIMBS(448) * 2) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    /* Both M and Q require an extra limb to catch carries. */
+    mbedtls_mpi_uint M[P448_WIDTH + 1];
+    mbedtls_mpi_uint Q[P448_WIDTH + 1];
+
+    /* M = A1 */
+    memcpy(M, X + P448_WIDTH, P448_WIDTH * ciL);
+    M[P448_WIDTH] = 0;
+
+    /* X = A0 */
+    memset(X + P448_WIDTH, 0, P448_WIDTH * ciL);
+
+    /* X = X + M = A0 + A1 */
+    /* The result is at most 449 bits, so it fits in P448_WIDTH + 1 limbs.
+     * and we know the final carry returned by the function will be 0. */
+    (void) mbedtls_mpi_core_add(X, X, M, P448_WIDTH + 1);
+
+    /* Q = B1 = M >> 224 */
+    ecp_copy_shift_r_224(Q, M);
+
+    /* X = X + Q = (A0 + A1) + B1 */
+    /* Inputs are at most 449 bits and 224 bits, so the result fits. */
+    (void) mbedtls_mpi_core_add(X, X, Q, P448_WIDTH + 1);
+
+    /* M = B0 */
+    ecp_trunc_224(M);
+
+    /* M = M + Q = B0 + B1 */
+    (void) mbedtls_mpi_core_add(M, M, Q, P448_WIDTH + 1);
+
+    /* M = (B0 + B1) * 2^224 */
+    /* Shifted carry bit from the addition fits in oversize M. */
+    ecp_shift_l_224(M);
+
+    /* X = X + M = (A0 + A1 + B1) + (B0 + B1) * 2^224 */
+    (void) mbedtls_mpi_core_add(X, X, M, P448_WIDTH + 1);
+
+    /* Clear M once before the loop */
+    memset(M, 0, ((P448_WIDTH + 1) * ciL));
+
+    /* Now X < 2^448 + 2^448 + 2^224 + (2^224 + 2^224) * 2^224,
+     * so X is at most 451 bits. So, in subsequent rounds,
+     * A1 has at most 1 non-zero limb, so B0 = A1 and B1 = 0.
+     * So the update formula simplifies as follows:
+     * A0 + A1 + B1 + (B0 + B1) * 2^224 = A0 + A1 + A1 * 2^224.
+     *
+     * Two rounds are enough because:
+     * 1st round: A0 < 2^448, A1 <= 2^3 - 1
+     *            so X < 2^448 + 2^227 (at most 449 bits).
+     * 2nd round: Either A1 is 0 and we're done already,
+     *            or A1 is 1 and A0 = X - A1 * 2^448 < 2^227,
+     *            so X < 2^227 + 1 + 1 * 2^224 is less than 448 bits.
+     */
+    for (size_t round = 0; round < 2; ++round) {
+        /* M = A1 + A1 * 2^224
+         * Since A1 is only a few bits, we can directly write A1 << 224 to the
+         * right place (which might not be on a limb boundary).
+         * (Note: other limbs of M were cleared before the loop.) */
+        M[0] = X[P448_WIDTH];
+        M[224 / biL] = X[P448_WIDTH] << (224 % biL);
+
+        /* X = A0 (only 1 limb to clear) */
+        X[P448_WIDTH] = 0;
+
+        /* X = A0 + (A1 + A1 * 2^224) */
+        (void) mbedtls_mpi_core_add(X, X, M, P448_WIDTH + 1);
+    }
+
+    return 0;
 }
 #endif /* MBEDTLS_ECP_DP_CURVE448_ENABLED */
 
 #if defined(MBEDTLS_ECP_DP_SECP192K1_ENABLED) ||   \
     defined(MBEDTLS_ECP_DP_SECP224K1_ENABLED) ||   \
     defined(MBEDTLS_ECP_DP_SECP256K1_ENABLED)
+
+/* Limb size of R for ecp_mod_koblitz() */
+#define P_KOBLITZ_R     BITS_TO_LIMBS(33)
+
+/* Maximum limb size of P for ecp_mod_koblitz() */
+#if defined(MBEDTLS_ECP_DP_SECP256K1_ENABLED)
+#define P_KOBLITZ_MAX_P BITS_TO_LIMBS(256)
+#elif defined(MBEDTLS_ECP_DP_SECP224K1_ENABLED)
+#define P_KOBLITZ_MAX_P BITS_TO_LIMBS(224)
+#else
+#define P_KOBLITZ_MAX_P BITS_TO_LIMBS(192)
+#endif
+
 /*
- * Fast quasi-reduction modulo P = 2^s - R,
- * with R about 33 bits, used by the Koblitz curves.
+ * Fast quasi-reduction modulo P = 2^n - R,
+ * with R a curve-dependent 33-bit value.
  *
- * Write N as A0 + 2^224 A1, return A0 + R * A1.
- * Actually do two passes, since R is big.
+ * This function is the core of mbedtls_ecp_mod_p192k1_raw(),
+ * mbedtls_ecp_mod_p224k1_raw(), and mbedtls_ecp_mod_p256k1_raw().
+ *
+ * See ecp_invasive.h and FAST_QUASI_REDUCTION above.
+ *
+ * Write X as A0 + 2^n A1, update as A0 + R * A1.
  */
-#define P_KOBLITZ_MAX   (256 / 8 / sizeof(mbedtls_mpi_uint))      // Max limbs in P
-#define P_KOBLITZ_R     (8 / sizeof(mbedtls_mpi_uint))            // Limbs in R
-static inline int ecp_mod_koblitz(mbedtls_mpi *N, const mbedtls_mpi_uint *Rp, size_t p_limbs,
-                                  size_t adjust, size_t shift, mbedtls_mpi_uint mask)
+static inline int ecp_mod_koblitz(mbedtls_mpi_uint *X,
+                                  mbedtls_mpi_uint *R,
+                                  size_t bits)
 {
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-    size_t i;
-    mbedtls_mpi M, R;
-    mbedtls_mpi_uint Mp[P_KOBLITZ_MAX + P_KOBLITZ_R + 1];
+    /* Determine if A1 is aligned to limb bitsize. If not then the used limbs
+     * of P, A0 and A1 must be set accordingly and there is a middle limb
+     * which is shared by A0 and A1 and need to handle accordingly.
+     */
+    size_t shift   = bits % biL;
+    size_t adjust  = (shift + biL - 1) / biL;
+    size_t P_limbs = bits / biL + adjust;
 
-    if (N->n < p_limbs) {
-        return 0;
+    mbedtls_mpi_uint A1[P_KOBLITZ_MAX_P] = { 0 };
+
+    /* Create a buffer to store the value of `R * A1` */
+    size_t R_limbs = P_KOBLITZ_R;
+    mbedtls_mpi_uint M[P_KOBLITZ_MAX_P + P_KOBLITZ_R] = { 0 };
+
+    mbedtls_mpi_uint mask = 0;
+    if (adjust != 0) {
+        mask  = ((mbedtls_mpi_uint) 1 << shift) - 1;
     }
 
-    /* Init R */
-    R.s = 1;
-    R.p = (mbedtls_mpi_uint *) Rp; /* R.p will not be modified so the cast is safe */
-    R.n = P_KOBLITZ_R;
+    /* See end of the loop for why 3 passes */
+    for (size_t pass = 0; pass < 3; pass++) {
+        /* Copy A1 */
+        memcpy(A1, X + P_limbs - adjust, P_limbs * ciL);
 
-    /* Common setup for M */
-    M.s = 1;
-    M.p = Mp;
+        /* Shift A1 to be aligned */
+        if (shift != 0) {
+            mbedtls_mpi_core_shift_r(A1, P_limbs, shift);
+        }
 
-    /* M = A1 */
-    M.n = (unsigned short) (N->n - (p_limbs - adjust));
-    if (M.n > p_limbs + adjust) {
-        M.n = (unsigned short) (p_limbs + adjust);
-    }
-    memset(Mp, 0, sizeof(Mp));
-    memcpy(Mp, N->p + p_limbs - adjust, M.n * sizeof(mbedtls_mpi_uint));
-    if (shift != 0) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&M, shift));
-    }
-    M.n += R.n; /* Make room for multiplication by R */
+        /* Zeroize the A1 part of the shared limb */
+        if (mask != 0) {
+            X[P_limbs - 1] &= mask;
+        }
 
-    /* N = A0 */
-    if (mask != 0) {
-        N->p[p_limbs - 1] &= mask;
-    }
-    for (i = p_limbs; i < N->n; i++) {
-        N->p[i] = 0;
-    }
+        /* X = A0: Zeroize the A1 part of X to keep only the A0 part. */
+        memset(X + P_limbs, 0, P_limbs * ciL);
 
-    /* N = A0 + R * A1 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&M, &M, &R));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_abs(N, N, &M));
-
-    /* Second pass */
-
-    /* M = A1 */
-    M.n = (unsigned short) (N->n - (p_limbs - adjust));
-    if (M.n > p_limbs + adjust) {
-        M.n = (unsigned short) (p_limbs + adjust);
-    }
-    memset(Mp, 0, sizeof(Mp));
-    memcpy(Mp, N->p + p_limbs - adjust, M.n * sizeof(mbedtls_mpi_uint));
-    if (shift != 0) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_shift_r(&M, shift));
-    }
-    M.n += R.n; /* Make room for multiplication by R */
-
-    /* N = A0 */
-    if (mask != 0) {
-        N->p[p_limbs - 1] &= mask;
-    }
-    for (i = p_limbs; i < N->n; i++) {
-        N->p[i] = 0;
+        /* X = A0 + R * A1 */
+        mbedtls_mpi_core_mul(M, A1, P_limbs, R, R_limbs);
+        (void) mbedtls_mpi_core_add(X, X, M, P_limbs + R_limbs);
+        /* The above cannot generate a carry since P_limbs + R_limbs is enough.
+         *
+         * More precisely, if n is P's bit length:
+         * 1st pass: A0 is n bits, R * A1 is 33 + n, so X is n + 34 bits.
+         *           This fits in P_limbs + R_limbs which is n + 64 bits.
+         * 2nd pass: A0 is n bits, R * A1 is 33 + 34, so X is n + 1 bits.
+         *           Actually, X < 2^n + 2^67
+         * 3rd pass: Either A1 is 0, then X = A0 is at most n bits.
+         *           Or A1 is 1, but then A0 = X - A1 * 2^n < 2^67,
+         *           so X = A0 + R * A1 < 2^67 + 2^33 is less than n bits,
+         *           since n >= 68.
+         * So, after the 3rd pass, X is at most n bits.
+         */
     }
 
-    /* N = A0 + R * A1 */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&M, &M, &R));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_abs(N, N, &M));
-
-cleanup:
-    return ret;
+    return 0;
 }
+
 #endif /* MBEDTLS_ECP_DP_SECP192K1_ENABLED) ||
           MBEDTLS_ECP_DP_SECP224K1_ENABLED) ||
           MBEDTLS_ECP_DP_SECP256K1_ENABLED) */
 
 #if defined(MBEDTLS_ECP_DP_SECP192K1_ENABLED)
+
 /*
- * Fast quasi-reduction modulo p192k1 = 2^192 - R,
- * with R = 2^32 + 2^12 + 2^8 + 2^7 + 2^6 + 2^3 + 1 = 0x01000011C9
+ * Fast quasi-reduction modulo p192k1 = 2^192 - 0x01000011C9
  */
 static int ecp_mod_p192k1(mbedtls_mpi *N)
 {
-    static const mbedtls_mpi_uint Rp[] = {
-        MBEDTLS_BYTES_TO_T_UINT_8(0xC9, 0x11, 0x00, 0x00, 0x01, 0x00, 0x00,
-                                  0x00)
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    size_t expected_width = BITS_TO_LIMBS(192) * 2;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
+    ret = mbedtls_ecp_mod_p192k1_raw(N->p, expected_width);
+
+cleanup:
+    return ret;
+}
+
+/*
+ * Raw fast quasi-reduction modulo p192k1 = 2^192 - 0x01000011C9
+ */
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p192k1_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+{
+    static mbedtls_mpi_uint Rp[] = {
+        MBEDTLS_BYTES_TO_T_UINT_8(0xC9, 0x11, 0x00, 0x00,
+                                  0x01, 0x00, 0x00, 0x00)
     };
 
-    return ecp_mod_koblitz(N, Rp, 192 / 8 / sizeof(mbedtls_mpi_uint), 0, 0,
-                           0);
+    if (X_limbs != BITS_TO_LIMBS(192) * 2) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    return ecp_mod_koblitz(X, Rp, 192);
 }
+
 #endif /* MBEDTLS_ECP_DP_SECP192K1_ENABLED */
 
 #if defined(MBEDTLS_ECP_DP_SECP224K1_ENABLED)
+
 /*
- * Fast quasi-reduction modulo p224k1 = 2^224 - R,
- * with R = 2^32 + 2^12 + 2^11 + 2^9 + 2^7 + 2^4 + 2 + 1 = 0x0100001A93
+ * Fast quasi-reduction modulo p224k1 = 2^224 - 0x0100001A93
  */
 static int ecp_mod_p224k1(mbedtls_mpi *N)
 {
-    static const mbedtls_mpi_uint Rp[] = {
-        MBEDTLS_BYTES_TO_T_UINT_8(0x93, 0x1A, 0x00, 0x00, 0x01, 0x00, 0x00,
-                                  0x00)
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    size_t expected_width = BITS_TO_LIMBS(224) * 2;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
+    ret = mbedtls_ecp_mod_p224k1_raw(N->p, expected_width);
+
+cleanup:
+    return ret;
+}
+
+/*
+ * Raw fast quasi-reduction modulo p224k1 = 2^224 - 0x0100001A93
+ */
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p224k1_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+{
+    static mbedtls_mpi_uint Rp[] = {
+        MBEDTLS_BYTES_TO_T_UINT_8(0x93, 0x1A, 0x00, 0x00,
+                                  0x01, 0x00, 0x00, 0x00)
     };
 
-#if defined(MBEDTLS_HAVE_INT64)
-    return ecp_mod_koblitz(N, Rp, 4, 1, 32, 0xFFFFFFFF);
-#else
-    return ecp_mod_koblitz(N, Rp, 224 / 8 / sizeof(mbedtls_mpi_uint), 0, 0,
-                           0);
-#endif
+    if (X_limbs !=  BITS_TO_LIMBS(224) * 2) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    return ecp_mod_koblitz(X, Rp, 224);
 }
 
 #endif /* MBEDTLS_ECP_DP_SECP224K1_ENABLED */
 
 #if defined(MBEDTLS_ECP_DP_SECP256K1_ENABLED)
+
 /*
- * Fast quasi-reduction modulo p256k1 = 2^256 - R,
- * with R = 2^32 + 2^9 + 2^8 + 2^7 + 2^6 + 2^4 + 1 = 0x01000003D1
+ * Fast quasi-reduction modulo p256k1 = 2^256 - 0x01000003D1
  */
 static int ecp_mod_p256k1(mbedtls_mpi *N)
 {
-    static const mbedtls_mpi_uint Rp[] = {
-        MBEDTLS_BYTES_TO_T_UINT_8(0xD1, 0x03, 0x00, 0x00, 0x01, 0x00, 0x00,
-                                  0x00)
-    };
-    return ecp_mod_koblitz(N, Rp, 256 / 8 / sizeof(mbedtls_mpi_uint), 0, 0,
-                           0);
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    size_t expected_width = BITS_TO_LIMBS(256) * 2;
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(N, expected_width));
+    ret = mbedtls_ecp_mod_p256k1_raw(N->p, expected_width);
+
+cleanup:
+    return ret;
 }
+
+/*
+ * Raw fast quasi-reduction modulo p256k1 = 2^256 - 0x01000003D1
+ */
+MBEDTLS_STATIC_TESTABLE
+int mbedtls_ecp_mod_p256k1_raw(mbedtls_mpi_uint *X, size_t X_limbs)
+{
+    static mbedtls_mpi_uint Rp[] = {
+        MBEDTLS_BYTES_TO_T_UINT_8(0xD1, 0x03, 0x00, 0x00,
+                                  0x01, 0x00, 0x00, 0x00)
+    };
+
+    if (X_limbs != BITS_TO_LIMBS(256) * 2) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    return ecp_mod_koblitz(X, Rp, 256);
+}
+
 #endif /* MBEDTLS_ECP_DP_SECP256K1_ENABLED */
 
-#if defined(MBEDTLS_TEST_HOOKS)
+#if defined(MBEDTLS_TEST_HOOKS) && defined(MBEDTLS_ECP_WITH_MPI_UINT)
 
 MBEDTLS_STATIC_TESTABLE
-mbedtls_ecp_variant mbedtls_ecp_get_variant(void)
+int mbedtls_ecp_modulus_setup(mbedtls_mpi_mod_modulus *N,
+                              const mbedtls_ecp_group_id id,
+                              const mbedtls_ecp_modulus_type ctype)
 {
-    return MBEDTLS_ECP_VARIANT_WITH_MPI_STRUCT;
-}
+    mbedtls_mpi_modp_fn modp = NULL;
+    mbedtls_mpi_uint *p = NULL;
+    size_t p_limbs;
 
-#endif /* MBEDTLS_TEST_HOOKS */
+    if (!(ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE || \
+          ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_SCALAR)) {
+        return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    switch (id) {
+#if defined(MBEDTLS_ECP_DP_SECP192R1_ENABLED)
+        case MBEDTLS_ECP_DP_SECP192R1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+#if defined(MBEDTLS_ECP_NIST_OPTIM)
+                modp = &mbedtls_ecp_mod_p192_raw;
+#endif
+                p = (mbedtls_mpi_uint *) secp192r1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp192r1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) secp192r1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp192r1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_SECP224R1_ENABLED)
+        case MBEDTLS_ECP_DP_SECP224R1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+#if defined(MBEDTLS_ECP_NIST_OPTIM)
+                modp = &mbedtls_ecp_mod_p224_raw;
+#endif
+                p = (mbedtls_mpi_uint *) secp224r1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp224r1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) secp224r1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp224r1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_SECP256R1_ENABLED)
+        case MBEDTLS_ECP_DP_SECP256R1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+#if defined(MBEDTLS_ECP_NIST_OPTIM)
+                modp = &mbedtls_ecp_mod_p256_raw;
+#endif
+                p = (mbedtls_mpi_uint *) secp256r1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp256r1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) secp256r1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp256r1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_SECP384R1_ENABLED)
+        case MBEDTLS_ECP_DP_SECP384R1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+#if defined(MBEDTLS_ECP_NIST_OPTIM)
+                modp = &mbedtls_ecp_mod_p384_raw;
+#endif
+                p = (mbedtls_mpi_uint *) secp384r1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp384r1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) secp384r1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp384r1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_SECP521R1_ENABLED)
+        case MBEDTLS_ECP_DP_SECP521R1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+#if defined(MBEDTLS_ECP_NIST_OPTIM)
+                modp = &mbedtls_ecp_mod_p521_raw;
+#endif
+                p = (mbedtls_mpi_uint *) secp521r1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp521r1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) secp521r1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp521r1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_BP256R1_ENABLED)
+        case MBEDTLS_ECP_DP_BP256R1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+                p = (mbedtls_mpi_uint *) brainpoolP256r1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(brainpoolP256r1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) brainpoolP256r1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(brainpoolP256r1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_BP384R1_ENABLED)
+        case MBEDTLS_ECP_DP_BP384R1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+                p = (mbedtls_mpi_uint *) brainpoolP384r1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(brainpoolP384r1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) brainpoolP384r1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(brainpoolP384r1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_BP512R1_ENABLED)
+        case MBEDTLS_ECP_DP_BP512R1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+                p = (mbedtls_mpi_uint *) brainpoolP512r1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(brainpoolP512r1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) brainpoolP512r1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(brainpoolP512r1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_CURVE25519_ENABLED)
+        case MBEDTLS_ECP_DP_CURVE25519:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+                modp = &mbedtls_ecp_mod_p255_raw;
+                p = (mbedtls_mpi_uint *) curve25519_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(curve25519_p));
+            } else {
+                p = (mbedtls_mpi_uint *) curve25519_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(curve25519_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_SECP192K1_ENABLED)
+        case MBEDTLS_ECP_DP_SECP192K1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+                modp = &mbedtls_ecp_mod_p192k1_raw;
+                p = (mbedtls_mpi_uint *) secp192k1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp192k1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) secp192k1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp192k1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_SECP224K1_ENABLED)
+        case MBEDTLS_ECP_DP_SECP224K1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+                modp = &mbedtls_ecp_mod_p224k1_raw;
+                p = (mbedtls_mpi_uint *) secp224k1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp224k1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) secp224k1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp224k1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_SECP256K1_ENABLED)
+        case MBEDTLS_ECP_DP_SECP256K1:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+                modp = &mbedtls_ecp_mod_p256k1_raw;
+                p = (mbedtls_mpi_uint *) secp256k1_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp256k1_p));
+            } else {
+                p = (mbedtls_mpi_uint *) secp256k1_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(secp256k1_n));
+            }
+            break;
+#endif
+
+#if defined(MBEDTLS_ECP_DP_CURVE448_ENABLED)
+        case MBEDTLS_ECP_DP_CURVE448:
+            if (ctype == (mbedtls_ecp_modulus_type) MBEDTLS_ECP_MOD_COORDINATE) {
+                modp = &mbedtls_ecp_mod_p448_raw;
+                p = (mbedtls_mpi_uint *) curve448_p;
+                p_limbs = CHARS_TO_LIMBS(sizeof(curve448_p));
+            } else {
+                p = (mbedtls_mpi_uint *) curve448_n;
+                p_limbs = CHARS_TO_LIMBS(sizeof(curve448_n));
+            }
+            break;
+#endif
+
+        default:
+        case MBEDTLS_ECP_DP_NONE:
+            return MBEDTLS_ERR_ECP_BAD_INPUT_DATA;
+    }
+
+    if (modp != NULL) {
+        if (mbedtls_mpi_mod_optred_modulus_setup(N, p, p_limbs, modp)) {
+            return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+        }
+    } else {
+        if (mbedtls_mpi_mod_modulus_setup(N, p, p_limbs)) {
+            return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+        }
+    }
+    return 0;
+}
+#endif /* MBEDTLS_TEST_HOOKS && MBEDTLS_ECP_WITH_MPI_UINT */
 
 #endif /* !MBEDTLS_ECP_ALT */
-
 #endif /* MBEDTLS_ECP_LIGHT */
-#endif /* MBEDTLS_ECP_WITH_MPI_UINT */
