@@ -1507,8 +1507,10 @@ void EditorSettings::setup_network() {
 	List<IPAddress> local_ip;
 	IP::get_singleton()->get_local_addresses(&local_ip);
 	String hint;
-	String current = has_setting("network/debug/remote_host") ? get("network/debug/remote_host") : "";
-	String selected = "127.0.0.1";
+	String debug_current = has_setting("network/debug/remote_host") ? get("network/debug/remote_host") : "";
+	String lsp_current = has_setting("network/language_server/remote_host") ? get("network/language_server/remote_host") : "";
+	String debug_selected = "127.0.0.1";
+	String lsp_selected = "127.0.0.1";
 
 	// Check that current remote_host is a valid interface address and populate hints.
 	for (const IPAddress &ip : local_ip) {
@@ -1521,8 +1523,11 @@ void EditorSettings::setup_network() {
 			continue;
 		}
 		// Select current IP (found)
-		if (ip == current) {
-			selected = String(ip);
+		if (ip == debug_current) {
+			debug_selected = String(ip);
+		}
+		if (ip == lsp_current) {
+			lsp_selected = String(ip);
 		}
 		if (!hint.is_empty()) {
 			hint += ",";
@@ -1534,8 +1539,8 @@ void EditorSettings::setup_network() {
 	add_property_hint(PropertyInfo(Variant::STRING, "network/debug/remote_host", PROPERTY_HINT_ENUM, hint));
 	add_property_hint(PropertyInfo(Variant::STRING, "network/language_server/remote_host", PROPERTY_HINT_ENUM, hint));
 	// Fix potentially invalid remote_host due to network change.
-	set("network/debug/remote_host", selected);
-	set("network/language_server/remote_host", selected);
+	set("network/debug/remote_host", debug_selected);
+	set("network/language_server/remote_host", lsp_selected);
 }
 
 void EditorSettings::save() {
