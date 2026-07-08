@@ -321,7 +321,7 @@ public:
 	void integrate_velocities(real_t p_step);
 
 	_FORCE_INLINE_ Vector2 get_velocity_in_local_point(const Vector2 &rel_pos) const {
-		return linear_velocity + Vector2(-angular_velocity * rel_pos.y, angular_velocity * rel_pos.x);
+		return linear_velocity + Vector2(-angular_velocity * (rel_pos.y - center_of_mass.y), angular_velocity * (rel_pos.x - center_of_mass.x));
 	}
 
 	_FORCE_INLINE_ Vector2 get_motion() const {
