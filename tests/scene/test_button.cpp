@@ -60,7 +60,7 @@ TEST_CASE("[SceneTree][Button] Getters/Setters") {
 		button->set_text_alignment(test_alignment);
 		CHECK(button->get_text_alignment() == test_alignment);
 	}
-	
+
 	SUBCASE("[SceneTree][Button] Set and Get Icon") {
 		Ref<Texture2D> test_icon;
 		test_icon.instantiate();
