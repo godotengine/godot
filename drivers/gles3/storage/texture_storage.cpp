@@ -1503,6 +1503,11 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 		case GLES3::TexBlitShaderData::BLEND_MODE_DISABLED:
 			glDisable(GL_BLEND);
 			break;
+
+		case GLES3::TexBlitShaderData::BLEND_MODE_PREMULTIPLIED_ALPHA:
+			glBlendEquation(GL_FUNC_ADD);
+			glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+			break;
 	}
 
 	glDrawBuffers(draw_buffers.size(), draw_buffers.ptr());
