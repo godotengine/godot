@@ -415,6 +415,16 @@ void EditorPropertyArray::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
+			for (Slot &slot : slots) {
+				slot.prop->queue_free();
+				slot.reorder_button->queue_free();
+				slot.container->queue_free();
+				if (slot.edit_button) { // Either edit_button or remove_button has been created.
+					slot.edit_button->queue_free();
+				} else {
+					slot.remove_button->queue_free();
+				}
+			}
 			slots.clear();
 		}
 		return;
@@ -582,6 +592,16 @@ void EditorPropertyArray::update_property() {
 			memdelete(container);
 			button_add_item = nullptr;
 			container = nullptr;
+			for (Slot &slot : slots) {
+				slot.prop->queue_free();
+				slot.reorder_button->queue_free();
+				slot.container->queue_free();
+				if (slot.edit_button) { // Either edit_button or remove_button has been created.
+					slot.edit_button->queue_free();
+				} else {
+					slot.remove_button->queue_free();
+				}
+			}
 			slots.clear();
 		}
 	}
@@ -1299,6 +1319,18 @@ void EditorPropertyDictionary::update_property() {
 			button_add_item = nullptr;
 			container = nullptr;
 			add_panel = nullptr;
+			for (Slot &slot : slots) {
+				slot.prop->queue_free();
+				slot.container->queue_free();
+				if (slot.prop_key) { // prop_key might not have been created, and that's fine.
+					slot.prop_key->queue_free();
+				}
+				if (slot.edit_button) { // Either edit_button or remove_button has been created.
+					slot.edit_button->queue_free();
+				} else if (slot.remove_button) {
+					slot.remove_button->queue_free();
+				}
+			}
 			slots.clear();
 		}
 		return;
@@ -1515,6 +1547,18 @@ void EditorPropertyDictionary::update_property() {
 			button_add_item = nullptr;
 			container = nullptr;
 			add_panel = nullptr;
+			for (Slot &slot : slots) {
+				slot.prop->queue_free();
+				slot.container->queue_free();
+				if (slot.prop_key) { // prop_key might not have been created, and that's fine.
+					slot.prop_key->queue_free();
+				}
+				if (slot.edit_button) { // Either edit_button or remove_button has been created.
+					slot.edit_button->queue_free();
+				} else if (slot.remove_button) {
+					slot.remove_button->queue_free();
+				}
+			}
 			slots.clear();
 		}
 	}
