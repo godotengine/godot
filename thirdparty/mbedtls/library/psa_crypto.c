@@ -37,6 +37,7 @@
  * stored keys. */
 #include "psa_crypto_storage.h"
 
+#include "psa_crypto_random.h"
 #include "psa_crypto_random_impl.h"
 
 #include <stdlib.h>
@@ -72,6 +73,8 @@
 #include "mbedtls/sha512.h"
 #include "mbedtls/psa_util.h"
 #include "mbedtls/threading.h"
+
+#include "constant_time_internal.h"
 
 #if defined(MBEDTLS_PSA_BUILTIN_ALG_HKDF) ||          \
     defined(MBEDTLS_PSA_BUILTIN_ALG_HKDF_EXTRACT) ||  \
@@ -1494,8 +1497,8 @@ psa_status_t psa_export_key_internal(
             key_buffer, key_buffer_size,
             data, data_size, data_length);
     } else {
-        /* This shouldn't happen in the reference implementation, but
-           it is valid for a special-purpose implementation to omit
+        /* This shouldn't happen in the built-in implementation, but
+           it is valid for a special-purpose drivers to omit
            support for exporting certain key types. */
         return PSA_ERROR_NOT_SUPPORTED;
     }
@@ -2400,8 +2403,11 @@ psa_status_t psa_hash_setup(psa_hash_operation_t *operation,
         goto exit;
     }
 
-    /* Ensure all of the context is zeroized, since PSA_HASH_OPERATION_INIT only
-     * directly zeroes the int-sized dummy member of the context union. */
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
     memset(&operation->ctx, 0, sizeof(operation->ctx));
 
     status = psa_driver_wrapper_hash_setup(operation, alg);
@@ -2596,6 +2602,13 @@ psa_status_t psa_hash_clone(const psa_hash_operation_t *source_operation,
         return PSA_ERROR_BAD_STATE;
     }
 
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&target_operation->ctx, 0, sizeof(target_operation->ctx));
+
     psa_status_t status = psa_driver_wrapper_hash_clone(source_operation,
                                                         target_operation);
     if (status != PSA_SUCCESS) {
@@ -2692,6 +2705,13 @@ static psa_status_t psa_mac_setup(psa_mac_operation_t *operation,
         status = PSA_ERROR_BAD_STATE;
         goto exit;
     }
+
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
 
     status = psa_get_and_lock_key_slot_with_policy(
         key,
@@ -3548,7 +3568,12 @@ exit:
     LOCAL_INPUT_FREE(salt_external, salt);
     LOCAL_OUTPUT_FREE(output_external, output);
 
-    return (status == PSA_SUCCESS) ? unlock_status : status;
+    /* Don't branch on status as it is a sensitive value
+     * (it reveals whether padding was valid).
+     * Instead branch on unlock_status. That means when both status and
+     * unlock_status were errors, we'll return the unlock error while we would
+     * normally return the first error, but that's better than leaking info. */
+    return (unlock_status != PSA_SUCCESS) ? unlock_status : status;
 }
 
 /****************************************************************/
@@ -3618,6 +3643,13 @@ psa_status_t psa_sign_hash_start(
     if (operation->id != 0 || operation->error_occurred) {
         return PSA_ERROR_BAD_STATE;
     }
+
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
 
     status = psa_sign_verify_check_alg(0, alg);
     if (status != PSA_SUCCESS) {
@@ -3778,6 +3810,13 @@ psa_status_t psa_verify_hash_start(
     if (operation->id != 0 || operation->error_occurred) {
         return PSA_ERROR_BAD_STATE;
     }
+
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
 
     status = psa_sign_verify_check_alg(0, alg);
     if (status != PSA_SUCCESS) {
@@ -4379,25 +4418,8 @@ static psa_status_t psa_generate_random_internal(uint8_t *output,
     return PSA_SUCCESS;
 
 #else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
-
-    while (output_size > 0) {
-        int ret = MBEDTLS_ERR_PLATFORM_FEATURE_UNSUPPORTED;
-        size_t request_size =
-            (output_size > MBEDTLS_PSA_RANDOM_MAX_REQUEST ?
-             MBEDTLS_PSA_RANDOM_MAX_REQUEST :
-             output_size);
-#if defined(MBEDTLS_CTR_DRBG_C)
-        ret = mbedtls_ctr_drbg_random(&global_data.rng.drbg, output, request_size);
-#elif defined(MBEDTLS_HMAC_DRBG_C)
-        ret = mbedtls_hmac_drbg_random(&global_data.rng.drbg, output, request_size);
-#endif /* !MBEDTLS_CTR_DRBG_C && !MBEDTLS_HMAC_DRBG_C */
-        if (ret != 0) {
-            return mbedtls_to_psa_error(ret);
-        }
-        output_size -= request_size;
-        output += request_size;
-    }
-    return PSA_SUCCESS;
+    return psa_random_internal_generate(&global_data.rng,
+                                        output, output_size);
 #endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
 }
 
@@ -4445,6 +4467,14 @@ static psa_status_t psa_cipher_setup(psa_cipher_operation_t *operation,
         operation->iv_required = 1;
     }
     operation->default_iv_length = PSA_CIPHER_IV_LENGTH(slot->attr.type, alg);
+
+
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
 
     /* Try doing the operation through a driver before using software fallback. */
     if (cipher_operation == MBEDTLS_ENCRYPT) {
@@ -4653,12 +4683,26 @@ psa_status_t psa_cipher_finish(psa_cipher_operation_t *operation,
                                               output_length);
 
 exit:
-    if (status == PSA_SUCCESS) {
-        status = psa_cipher_abort(operation);
-    } else {
-        *output_length = 0;
-        (void) psa_cipher_abort(operation);
+    /* C99 doesn't allow a declaration to follow a label */;
+    psa_status_t abort_status = psa_cipher_abort(operation);
+    /* Normally abort shouldn't fail unless the operation is in a bad
+     * state, in which case we'd expect finish to fail with the same error.
+     * So it doesn't matter much which call's error code we pick when both
+     * fail. However, in unauthenticated decryption specifically, the
+     * distinction between PSA_SUCCESS and PSA_ERROR_INVALID_PADDING is
+     * security-sensitive (risk of a padding oracle attack), so here we
+     * must not have a code path that depends on the value of status. */
+    if (abort_status != PSA_SUCCESS) {
+        status = abort_status;
     }
+
+    /* Set *output_length to 0 if status != PSA_SUCCESS, without
+     * leaking the value of status through a timing side channel
+     * (status == PSA_ERROR_INVALID_PADDING is sensitive when doing
+     * unpadded decryption, due to the risk of padding oracle attack). */
+    mbedtls_ct_condition_t success =
+        mbedtls_ct_bool_not(mbedtls_ct_bool(status));
+    *output_length = mbedtls_ct_size_if_else_0(success, *output_length);
 
     LOCAL_OUTPUT_FREE(output_external, output);
 
@@ -4802,13 +4846,17 @@ psa_status_t psa_cipher_decrypt(mbedtls_svc_key_id_t key,
 
 exit:
     unlock_status = psa_unregister_read_under_mutex(slot);
-    if (status == PSA_SUCCESS) {
+    if (unlock_status != PSA_SUCCESS) {
         status = unlock_status;
     }
 
-    if (status != PSA_SUCCESS) {
-        *output_length = 0;
-    }
+    /* Set *output_length to 0 if status != PSA_SUCCESS, without
+     * leaking the value of status through a timing side channel
+     * (status == PSA_ERROR_INVALID_PADDING is sensitive when doing
+     * unpadded decryption, due to the risk of padding oracle attack). */
+    mbedtls_ct_condition_t success =
+        mbedtls_ct_bool_not(mbedtls_ct_bool(status));
+    *output_length = mbedtls_ct_size_if_else_0(success, *output_length);
 
     LOCAL_INPUT_FREE(input_external, input);
     LOCAL_OUTPUT_FREE(output_external, output);
@@ -5079,6 +5127,13 @@ static psa_status_t psa_aead_setup(psa_aead_operation_t *operation,
         goto exit;
     }
 
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
+
     if (is_encrypt) {
         key_usage = PSA_KEY_USAGE_ENCRYPT;
     } else {
@@ -5307,7 +5362,13 @@ psa_status_t psa_aead_set_lengths(psa_aead_operation_t *operation,
 #endif /* PSA_WANT_ALG_CCM */
 #if defined(PSA_WANT_ALG_CHACHA20_POLY1305)
         case PSA_ALG_CHACHA20_POLY1305:
-            /* No length restrictions for ChaChaPoly. */
+#if SIZE_MAX > UINT32_MAX
+            if (plaintext_length > (size_t) UINT32_MAX *
+                64U) {
+                status = PSA_ERROR_INVALID_ARGUMENT;
+                goto exit;
+            }
+#endif
             break;
 #endif /* PSA_WANT_ALG_CHACHA20_POLY1305 */
         default:
@@ -5457,6 +5518,10 @@ exit:
 
 static psa_status_t psa_aead_final_checks(const psa_aead_operation_t *operation)
 {
+    if (operation->alg == PSA_ALG_CCM && !operation->lengths_set) {
+        return PSA_ERROR_BAD_STATE;
+    }
+
     if (operation->id == 0 || !operation->nonce_set) {
         return PSA_ERROR_BAD_STATE;
     }
@@ -5585,7 +5650,7 @@ psa_status_t psa_aead_abort(psa_aead_operation_t *operation)
 }
 
 /****************************************************************/
-/* Generators */
+/* Key derivation: output generation */
 /****************************************************************/
 
 #if defined(BUILTIN_ALG_ANY_HKDF) || \
@@ -5599,6 +5664,17 @@ psa_status_t psa_aead_abort(psa_aead_operation_t *operation)
 #if defined(BUILTIN_ALG_ANY_HKDF) || \
     defined(MBEDTLS_PSA_BUILTIN_ALG_TLS12_PRF) || \
     defined(MBEDTLS_PSA_BUILTIN_ALG_TLS12_PSK_TO_MS)
+
+/** Internal helper to set up an HMAC operation with a key passed directly.
+ *
+ * \param[in,out] operation     A MAC operation object. It does not need to
+ *                              be initialized.
+ * \param hash_alg              The hash algorithm used for HMAC.
+ * \param hmac_key              The HMAC key.
+ * \param hmac_key_length       Length of \p hmac_key in bytes.
+ *
+ * \return A PSA status code.
+ */
 static psa_status_t psa_key_derivation_start_hmac(
     psa_mac_operation_t *operation,
     psa_algorithm_t hash_alg,
@@ -5610,6 +5686,14 @@ static psa_status_t psa_key_derivation_start_hmac(
     psa_set_key_type(&attributes, PSA_KEY_TYPE_HMAC);
     psa_set_key_bits(&attributes, PSA_BYTES_TO_BITS(hmac_key_length));
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
+
+    /* Make sure the whole the operation is zeroed.
+     * It isn't enough to require the caller to initialize operation to
+     * PSA_MAC_OPERATION_INIT, since one field is a union and initializing
+     * a union does not necessarily initialize all of its members.
+     * psa_mac_setup() would handle PSA_MAC_OPERATION_INIT, but here we
+     * bypass it and call lower-level functions directly. */
+    memset(operation, 0, sizeof(*operation));
 
     operation->is_sign = 1;
     operation->mac_size = PSA_HASH_LENGTH(hash_alg);
@@ -5835,7 +5919,7 @@ static psa_status_t psa_key_derivation_tls12_prf_generate_next_block(
 {
     psa_algorithm_t hash_alg = PSA_ALG_HKDF_GET_HASH(alg);
     uint8_t hash_length = PSA_HASH_LENGTH(hash_alg);
-    psa_mac_operation_t hmac = PSA_MAC_OPERATION_INIT;
+    psa_mac_operation_t hmac;
     size_t hmac_output_length;
     psa_status_t status, cleanup_status;
 
@@ -6036,7 +6120,14 @@ static psa_status_t psa_key_derivation_pbkdf2_generate_block(
     psa_key_attributes_t *attributes)
 {
     psa_status_t status;
-    psa_mac_operation_t mac_operation = PSA_MAC_OPERATION_INIT;
+    psa_mac_operation_t mac_operation;
+    /* Make sure the whole the operation is zeroed.
+     * PSA_MAC_OPERATION_INIT does not necessarily do it fully,
+     * since one field is a union and initializing a union does not
+     * necessarily initialize all of its members.
+     * psa_mac_setup() would do it, but here we bypass it and call
+     * lower-level functions directly. */
+    memset(&mac_operation, 0, sizeof(mac_operation));
     size_t mac_output_length;
     uint8_t U_i[PSA_MAC_MAX_SIZE];
     uint8_t *U_accumulator = pbkdf2->output_block;
@@ -6667,7 +6758,7 @@ psa_status_t psa_key_derivation_output_key(
 
 
 /****************************************************************/
-/* Key derivation */
+/* Key derivation: operation management */
 /****************************************************************/
 
 #if defined(AT_LEAST_ONE_BUILTIN_KDF)
@@ -6859,7 +6950,9 @@ static int psa_key_derivation_allows_free_form_secret_input(
 psa_status_t psa_key_derivation_setup(psa_key_derivation_operation_t *operation,
                                       psa_algorithm_t alg)
 {
+#if defined(AT_LEAST_ONE_BUILTIN_KDF)
     psa_status_t status;
+#endif
 
     if (operation->alg != 0) {
         return PSA_ERROR_BAD_STATE;
@@ -6892,10 +6985,12 @@ psa_status_t psa_key_derivation_setup(psa_key_derivation_operation_t *operation,
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
+#if defined(AT_LEAST_ONE_BUILTIN_KDF)
     if (status == PSA_SUCCESS) {
         operation->alg = alg;
     }
     return status;
+#endif /* AT_LEAST_ONE_BUILTIN_KDF */
 }
 
 #if defined(BUILTIN_ALG_ANY_HKDF)
@@ -7831,10 +7926,8 @@ psa_status_t psa_raw_key_agreement(psa_algorithm_t alg,
      * for the output size. The PSA specification only guarantees that this
      * function works if output_size >= PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE(...),
      * but it might be nice to allow smaller buffers if the output fits.
-     * At the time of writing this comment, with only ECDH implemented,
-     * PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE() is exact so the point is moot.
-     * If FFDH is implemented, PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE() can easily
-     * be exact for it as well. */
+     * At the time of writing this comment, for both FFDH and ECDH,
+     * PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE() is exact so the point is moot. */
     expected_length =
         PSA_RAW_KEY_AGREEMENT_OUTPUT_SIZE(slot->attr.type, slot->attr.bits);
     if (output_size < expected_length) {
@@ -7894,28 +7987,7 @@ static void mbedtls_psa_random_init(mbedtls_psa_random_context_t *rng)
 #if defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
     memset(rng, 0, sizeof(*rng));
 #else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
-
-    /* Set default configuration if
-     * mbedtls_psa_crypto_configure_entropy_sources() hasn't been called. */
-    if (rng->entropy_init == NULL) {
-        rng->entropy_init = mbedtls_entropy_init;
-    }
-    if (rng->entropy_free == NULL) {
-        rng->entropy_free = mbedtls_entropy_free;
-    }
-
-    rng->entropy_init(&rng->entropy);
-#if defined(MBEDTLS_PSA_INJECT_ENTROPY) && \
-    defined(MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES)
-    /* The PSA entropy injection feature depends on using NV seed as an entropy
-     * source. Add NV seed as an entropy source for PSA entropy injection. */
-    mbedtls_entropy_add_source(&rng->entropy,
-                               mbedtls_nv_seed_poll, NULL,
-                               MBEDTLS_ENTROPY_BLOCK_SIZE,
-                               MBEDTLS_ENTROPY_SOURCE_STRONG);
-#endif
-
-    mbedtls_psa_drbg_init(&rng->drbg);
+    psa_random_internal_init(rng);
 #endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
 }
 
@@ -7929,8 +8001,7 @@ static void mbedtls_psa_random_free(mbedtls_psa_random_context_t *rng)
 #if defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
     memset(rng, 0, sizeof(*rng));
 #else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
-    mbedtls_psa_drbg_free(&rng->drbg);
-    rng->entropy_free(&rng->entropy);
+    psa_random_internal_free(rng);
 #endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
 }
 
@@ -7943,10 +8014,84 @@ static psa_status_t mbedtls_psa_random_seed(mbedtls_psa_random_context_t *rng)
     (void) rng;
     return PSA_SUCCESS;
 #else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
-    const unsigned char drbg_seed[] = "PSA";
-    int ret = mbedtls_psa_drbg_seed(&rng->drbg, &rng->entropy,
-                                    drbg_seed, sizeof(drbg_seed) - 1);
+    return psa_random_internal_seed(rng);
+#endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+}
+
+psa_status_t psa_random_reseed(const uint8_t *perso, size_t perso_size)
+{
+    GUARD_MODULE_INITIALIZED;
+#if defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
+    (void) perso;
+    (void) perso_size;
+    return PSA_ERROR_NOT_SUPPORTED;
+#else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+#if defined(MBEDTLS_THREADING_C)
+    if (mbedtls_mutex_lock(&mbedtls_threading_psa_rngdata_mutex) != 0) {
+        return PSA_ERROR_SERVICE_FAILURE;
+    }
+#endif /* defined(MBEDTLS_THREADING_C) */
+    int ret = mbedtls_psa_drbg_reseed(&global_data.rng.drbg,
+                                      perso, perso_size);
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_unlock(&mbedtls_threading_psa_rngdata_mutex);
+#endif /* defined(MBEDTLS_THREADING_C) */
     return mbedtls_to_psa_error(ret);
+#endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+}
+
+psa_status_t psa_random_deplete(void)
+{
+    GUARD_MODULE_INITIALIZED;
+#if defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
+    return PSA_ERROR_NOT_SUPPORTED;
+#else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+#if defined(MBEDTLS_THREADING_C)
+    if (mbedtls_mutex_lock(&mbedtls_threading_psa_rngdata_mutex) != 0) {
+        return PSA_ERROR_SERVICE_FAILURE;
+    }
+#endif /* defined(MBEDTLS_THREADING_C) */
+    mbedtls_psa_drbg_deplete(&global_data.rng.drbg);
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_unlock(&mbedtls_threading_psa_rngdata_mutex);
+#endif /* defined(MBEDTLS_THREADING_C) */
+    return PSA_SUCCESS;
+#endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+}
+
+psa_status_t psa_random_set_prediction_resistance(unsigned enabled)
+{
+    GUARD_MODULE_INITIALIZED;
+
+#if defined(MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG)
+    (void) enabled;
+    return PSA_ERROR_NOT_SUPPORTED;
+#else /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+
+    if (enabled != 0 && enabled != 1) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+#if MBEDTLS_ENTROPY_TRUE_SOURCES > 0
+#if defined(MBEDTLS_THREADING_C)
+    if (mbedtls_mutex_lock(&mbedtls_threading_psa_rngdata_mutex) != 0) {
+        return PSA_ERROR_SERVICE_FAILURE;
+    }
+#endif /* defined(MBEDTLS_THREADING_C) */
+    mbedtls_psa_drbg_set_prediction_resistance(&global_data.rng.drbg, enabled);
+#if defined(MBEDTLS_THREADING_C)
+    mbedtls_mutex_unlock(&mbedtls_threading_psa_rngdata_mutex);
+#endif /* defined(MBEDTLS_THREADING_C) */
+    return PSA_SUCCESS;
+
+#else /* MBEDTLS_ENTROPY_TRUE_SOURCES > 0 */
+    if (enabled) {
+        return PSA_ERROR_NOT_SUPPORTED;
+    } else {
+        return PSA_SUCCESS;
+    }
+
+#endif /* MBEDTLS_ENTROPY_TRUE_SOURCES > 0 */
 #endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
 }
 
@@ -8221,6 +8366,8 @@ psa_status_t psa_generate_key(const psa_key_attributes_t *attributes,
                                    NULL, 0,
                                    key);
 }
+
+
 
 /****************************************************************/
 /* Module setup */
@@ -8497,6 +8644,12 @@ exit:
     return status;
 }
 
+
+
+/****************************************************************/
+/* PAKE */
+/****************************************************************/
+
 #if defined(PSA_WANT_ALG_SOME_PAKE)
 psa_status_t psa_crypto_driver_pake_get_password_len(
     const psa_crypto_driver_pake_inputs_t *inputs,
@@ -8621,7 +8774,11 @@ psa_status_t psa_pake_setup(
         goto exit;
     }
 
-    memset(&operation->data.inputs, 0, sizeof(operation->data.inputs));
+    /* Make sure the variable-purpose part of the operation is zeroed.
+     * Initializing the operation does not necessarily take care of it,
+     * since the context is a union and initializing a union does not
+     * necessarily initialize all of its members. */
+    memset(&operation->data, 0, sizeof(operation->data));
 
     operation->alg = cipher_suite->algorithm;
     operation->primitive = PSA_PAKE_PRIMITIVE(cipher_suite->type,

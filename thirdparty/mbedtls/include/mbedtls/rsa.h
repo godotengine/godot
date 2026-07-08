@@ -465,7 +465,7 @@ size_t mbedtls_rsa_get_len(const mbedtls_rsa_context *ctx);
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
  */
 int mbedtls_rsa_gen_key(mbedtls_rsa_context *ctx,
-                        int (*f_rng)(void *, unsigned char *, size_t),
+                        mbedtls_f_rng_t *f_rng,
                         void *p_rng,
                         unsigned int nbits, int exponent);
 
@@ -590,7 +590,7 @@ int mbedtls_rsa_public(mbedtls_rsa_context *ctx,
  *
  */
 int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
-                        int (*f_rng)(void *, unsigned char *, size_t),
+                        mbedtls_f_rng_t *f_rng,
                         void *p_rng,
                         const unsigned char *input,
                         unsigned char *output);
@@ -619,7 +619,7 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
  */
 int mbedtls_rsa_pkcs1_encrypt(mbedtls_rsa_context *ctx,
-                              int (*f_rng)(void *, unsigned char *, size_t),
+                              mbedtls_f_rng_t *f_rng,
                               void *p_rng,
                               size_t ilen,
                               const unsigned char *input,
@@ -646,7 +646,7 @@ int mbedtls_rsa_pkcs1_encrypt(mbedtls_rsa_context *ctx,
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
  */
 int mbedtls_rsa_rsaes_pkcs1_v15_encrypt(mbedtls_rsa_context *ctx,
-                                        int (*f_rng)(void *, unsigned char *, size_t),
+                                        mbedtls_f_rng_t *f_rng,
                                         void *p_rng,
                                         size_t ilen,
                                         const unsigned char *input,
@@ -680,7 +680,7 @@ int mbedtls_rsa_rsaes_pkcs1_v15_encrypt(mbedtls_rsa_context *ctx,
  * \return           An \c MBEDTLS_ERR_RSA_XXX error code on failure.
  */
 int mbedtls_rsa_rsaes_oaep_encrypt(mbedtls_rsa_context *ctx,
-                                   int (*f_rng)(void *, unsigned char *, size_t),
+                                   mbedtls_f_rng_t *f_rng,
                                    void *p_rng,
                                    const unsigned char *label, size_t label_len,
                                    size_t ilen,
@@ -696,7 +696,9 @@ int mbedtls_rsa_rsaes_oaep_encrypt(mbedtls_rsa_context *ctx,
  *
  * \warning        When \p ctx->padding is set to #MBEDTLS_RSA_PKCS_V15,
  *                 mbedtls_rsa_rsaes_pkcs1_v15_decrypt() is called, which is an
- *                 inherently dangerous function (CWE-242).
+ *                 inherently dangerous function (CWE-242). In that case, the
+ *                 return value of this function is sensitive, see the
+ *                 documentation of mbedtls_rsa_rsaes_pkcs1_v15_decrypt().
  *
  * \note           The output buffer length \c output_max_len should be
  *                 as large as the size \p ctx->len of \p ctx->N (for example,
@@ -723,7 +725,7 @@ int mbedtls_rsa_rsaes_oaep_encrypt(mbedtls_rsa_context *ctx,
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
  */
 int mbedtls_rsa_pkcs1_decrypt(mbedtls_rsa_context *ctx,
-                              int (*f_rng)(void *, unsigned char *, size_t),
+                              mbedtls_f_rng_t *f_rng,
                               void *p_rng,
                               size_t *olen,
                               const unsigned char *input,
@@ -735,9 +737,13 @@ int mbedtls_rsa_pkcs1_decrypt(mbedtls_rsa_context *ctx,
  *                 operation (RSAES-PKCS1-v1_5-DECRYPT).
  *
  * \warning        This is an inherently dangerous function (CWE-242). Unless
- *                 it is used in a side channel free and safe way (eg.
- *                 implementing the TLS protocol as per 7.4.7.1 of RFC 5246),
+ *                 it is used in a side channel free and safe way,
  *                 the calling code is vulnerable.
+ *                 Specifically, callers need to ensure an adversary cannot
+ *                 distinguish between success, MBEDTLS_ERR_RSA_INVALID_PADDING
+ *                 and MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE. Also, in the latter two
+ *                 cases, the values of the output bytes must be ignored, again
+ *                 without revealing whether that's the case.
  *
  * \note           The output buffer length \c output_max_len should be
  *                 as large as the size \p ctx->len of \p ctx->N, for example,
@@ -765,7 +771,7 @@ int mbedtls_rsa_pkcs1_decrypt(mbedtls_rsa_context *ctx,
  *
  */
 int mbedtls_rsa_rsaes_pkcs1_v15_decrypt(mbedtls_rsa_context *ctx,
-                                        int (*f_rng)(void *, unsigned char *, size_t),
+                                        mbedtls_f_rng_t *f_rng,
                                         void *p_rng,
                                         size_t *olen,
                                         const unsigned char *input,
@@ -806,7 +812,7 @@ int mbedtls_rsa_rsaes_pkcs1_v15_decrypt(mbedtls_rsa_context *ctx,
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
  */
 int mbedtls_rsa_rsaes_oaep_decrypt(mbedtls_rsa_context *ctx,
-                                   int (*f_rng)(void *, unsigned char *, size_t),
+                                   mbedtls_f_rng_t *f_rng,
                                    void *p_rng,
                                    const unsigned char *label, size_t label_len,
                                    size_t *olen,
@@ -849,7 +855,7 @@ int mbedtls_rsa_rsaes_oaep_decrypt(mbedtls_rsa_context *ctx,
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
  */
 int mbedtls_rsa_pkcs1_sign(mbedtls_rsa_context *ctx,
-                           int (*f_rng)(void *, unsigned char *, size_t),
+                           mbedtls_f_rng_t *f_rng,
                            void *p_rng,
                            mbedtls_md_type_t md_alg,
                            unsigned int hashlen,
@@ -881,7 +887,7 @@ int mbedtls_rsa_pkcs1_sign(mbedtls_rsa_context *ctx,
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
  */
 int mbedtls_rsa_rsassa_pkcs1_v15_sign(mbedtls_rsa_context *ctx,
-                                      int (*f_rng)(void *, unsigned char *, size_t),
+                                      mbedtls_f_rng_t *f_rng,
                                       void *p_rng,
                                       mbedtls_md_type_t md_alg,
                                       unsigned int hashlen,
@@ -933,7 +939,7 @@ int mbedtls_rsa_rsassa_pkcs1_v15_sign(mbedtls_rsa_context *ctx,
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
  */
 int mbedtls_rsa_rsassa_pss_sign_ext(mbedtls_rsa_context *ctx,
-                                    int (*f_rng)(void *, unsigned char *, size_t),
+                                    mbedtls_f_rng_t *f_rng,
                                     void *p_rng,
                                     mbedtls_md_type_t md_alg,
                                     unsigned int hashlen,
@@ -983,7 +989,7 @@ int mbedtls_rsa_rsassa_pss_sign_ext(mbedtls_rsa_context *ctx,
  * \return         An \c MBEDTLS_ERR_RSA_XXX error code on failure.
  */
 int mbedtls_rsa_rsassa_pss_sign(mbedtls_rsa_context *ctx,
-                                int (*f_rng)(void *, unsigned char *, size_t),
+                                mbedtls_f_rng_t *f_rng,
                                 void *p_rng,
                                 mbedtls_md_type_t md_alg,
                                 unsigned int hashlen,

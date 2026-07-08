@@ -332,7 +332,8 @@ int mbedtls_x509_dn_gets(char *buf, size_t size, const mbedtls_x509_name *dn);
  *                   call to mbedtls_asn1_free_named_data_list().
  *
  * \param[out] head  Address in which to store the pointer to the head of the
- *                   allocated list of mbedtls_x509_name
+ *                   allocated list of mbedtls_x509_name. Must point to NULL on
+ *                   entry.
  * \param[in] name   The string representation of a DN to convert
  *
  * \return           0 on success, or a negative error code.

@@ -68,6 +68,8 @@
 #include "mbedtls/error.h"
 
 #include "bn_mul.h"
+#include "bignum_internal.h"
+#include "bignum_core.h"
 #include "ecp_invasive.h"
 
 #include <string.h>
@@ -581,10 +583,10 @@ void mbedtls_ecp_group_free(mbedtls_ecp_group *grp)
         mbedtls_mpi_free(&grp->B);
         mbedtls_ecp_point_free(&grp->G);
 
-#if !defined(MBEDTLS_ECP_WITH_MPI_UINT)
-        mbedtls_mpi_free(&grp->N);
-        mbedtls_mpi_free(&grp->P);
-#endif
+        if (grp->h != 2) {
+            mbedtls_mpi_free(&grp->N);
+            mbedtls_mpi_free(&grp->P);
+        }
     }
 
     if (!ecp_group_is_static_comb_table(grp) && grp->T != NULL) {
@@ -1012,15 +1014,11 @@ static int ecp_modp(mbedtls_mpi *N, const mbedtls_ecp_group *grp)
 
     MBEDTLS_MPI_CHK(grp->modp(N));
 
-    /* N->s < 0 is a much faster test, which fails only if N is 0 */
-    while (N->s < 0 && mbedtls_mpi_cmp_int(N, 0) != 0) {
-        MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(N, N, &grp->P));
-    }
-
-    while (mbedtls_mpi_cmp_mpi(N, &grp->P) >= 0) {
-        /* we known P, N and the result are positive */
-        MBEDTLS_MPI_CHK(mbedtls_mpi_sub_abs(N, N, &grp->P));
-    }
+    /* The previous call left N in the range [0, 2P) with no more limbs than P
+     * (see documentation of mbedtls_ecp_mod_pXXX_raw() in ecp_invasive.h),
+     * so we can bring it into the range [0, P) in constant time. */
+    mbedtls_mpi_uint c = mbedtls_mpi_core_sub(N->p, N->p, grp->P.p, grp->P.n);
+    (void) mbedtls_mpi_core_add_if(N->p, grp->P.p, grp->P.n, (unsigned) c);
 
 cleanup:
     return ret;
@@ -1173,7 +1171,7 @@ cleanup:
     MBEDTLS_MPI_CHK(mbedtls_mpi_mul_int_mod(grp, X, A, c))
 
 #define MPI_ECP_INV(dst, src)                                                 \
-    MBEDTLS_MPI_CHK(mbedtls_mpi_inv_mod((dst), (src), &grp->P))
+    MBEDTLS_MPI_CHK(mbedtls_mpi_gcd_modinv_odd(NULL, (dst), (src), &grp->P))
 
 #define MPI_ECP_MOV(X, A)                                                     \
     MBEDTLS_MPI_CHK(mbedtls_mpi_copy(X, A))
@@ -2201,21 +2199,6 @@ static int ecp_mul_comb_after_precomp(const mbedtls_ecp_group *grp,
 final_norm:
     MBEDTLS_ECP_BUDGET(MBEDTLS_ECP_OPS_INV);
 #endif
-    /*
-     * Knowledge of the jacobian coordinates may leak the last few bits of the
-     * scalar [1], and since our MPI implementation isn't constant-flow,
-     * inversion (used for coordinate normalization) may leak the full value
-     * of its input via side-channels [2].
-     *
-     * [1] https://eprint.iacr.org/2003/191
-     * [2] https://eprint.iacr.org/2020/055
-     *
-     * Avoid the leak by randomizing coordinates before we normalize them.
-     */
-    if (f_rng != 0) {
-        MBEDTLS_MPI_CHK(ecp_randomize_jac(grp, RR, f_rng, p_rng));
-    }
-
     MBEDTLS_MPI_CHK(ecp_normalize_jac(grp, RR));
 
 #if defined(MBEDTLS_ECP_RESTARTABLE)
@@ -2594,18 +2577,6 @@ static int ecp_mul_mxz(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
         MPI_ECP_COND_SWAP(&R->Z, &RP.Z, b);
     }
 
-    /*
-     * Knowledge of the projective coordinates may leak the last few bits of the
-     * scalar [1], and since our MPI implementation isn't constant-flow,
-     * inversion (used for coordinate normalization) may leak the full value
-     * of its input via side-channels [2].
-     *
-     * [1] https://eprint.iacr.org/2003/191
-     * [2] https://eprint.iacr.org/2020/055
-     *
-     * Avoid the leak by randomizing coordinates before we normalize them.
-     */
-    MBEDTLS_MPI_CHK(ecp_randomize_mxz(grp, R, f_rng, p_rng));
     MBEDTLS_MPI_CHK(ecp_normalize_mxz(grp, R));
 
 cleanup:

@@ -213,22 +213,11 @@ mbedtls_ecp_point;
  *
  * If \p modp is NULL, reduction modulo \p P is done using a generic algorithm.
  * Otherwise, \p modp must point to a function that takes an \p mbedtls_mpi in the
- * range of <code>0..2^(2*pbits)-1</code>, and transforms it in-place to an integer
- * which is congruent mod \p P to the given MPI, and is close enough to \p pbits
- * in size, so that it may be efficiently brought in the 0..P-1 range by a few
- * additions or subtractions. Therefore, it is only an approximate modular
- * reduction. It must return 0 on success and non-zero on failure.
- *
- * \note        Alternative implementations of the ECP module must obey the
- *              following constraints.
- *              * Group IDs must be distinct: if two group structures have
- *                the same ID, then they must be identical.
- *              * The fields \c id, \c P, \c A, \c B, \c G, \c N,
- *                \c pbits and \c nbits must have the same type and semantics
- *                as in the built-in implementation.
- *                They must be available for reading, but direct modification
- *                of these fields does not need to be supported.
- *                They do not need to be at the same offset in the structure.
+ * range of [0, 2^(2*pbits)), and transforms it in-place to an integer which is
+ * congruent mod \p P to the given MPI, is in the range [0, 2P), and has no more
+ * non-zero limbs than P, so that it may be efficiently brought into the range
+ * [0, P) by a single constant-time conditional subtraction.
+ * It must return 0 on success and non-zero on failure.
  */
 typedef struct mbedtls_ecp_group {
     mbedtls_ecp_group_id id;    /*!< An internal group identifier. */
@@ -248,7 +237,7 @@ typedef struct mbedtls_ecp_group {
                                      private keys. */
     /* End of public fields */
 
-    unsigned int MBEDTLS_PRIVATE(h);             /*!< \internal 1 if the constants are static. */
+    unsigned int MBEDTLS_PRIVATE(h);             /*!< \internal 1 if all the constants are static, 2 if only N and P are static */
     int(*MBEDTLS_PRIVATE(modp))(mbedtls_mpi *);  /*!< The function for fast pseudo-reduction
                                                     mod \p P (see above).*/
     int(*MBEDTLS_PRIVATE(t_pre))(mbedtls_ecp_point *, void *);   /*!< Unused. */
@@ -966,7 +955,7 @@ int mbedtls_ecp_tls_write_group(const mbedtls_ecp_group *grp,
  */
 int mbedtls_ecp_mul(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                     const mbedtls_mpi *m, const mbedtls_ecp_point *P,
-                    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
+                    mbedtls_f_rng_t *f_rng, void *p_rng);
 
 /**
  * \brief           This function performs multiplication of a point by
@@ -1000,7 +989,7 @@ int mbedtls_ecp_mul(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
  */
 int mbedtls_ecp_mul_restartable(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                                 const mbedtls_mpi *m, const mbedtls_ecp_point *P,
-                                int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
+                                mbedtls_f_rng_t *f_rng, void *p_rng,
                                 mbedtls_ecp_restart_ctx *rs_ctx);
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
@@ -1179,7 +1168,7 @@ int mbedtls_ecp_check_privkey(const mbedtls_ecp_group *grp,
  */
 int mbedtls_ecp_gen_privkey(const mbedtls_ecp_group *grp,
                             mbedtls_mpi *d,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /**
@@ -1212,7 +1201,7 @@ int mbedtls_ecp_gen_privkey(const mbedtls_ecp_group *grp,
 int mbedtls_ecp_gen_keypair_base(mbedtls_ecp_group *grp,
                                  const mbedtls_ecp_point *G,
                                  mbedtls_mpi *d, mbedtls_ecp_point *Q,
-                                 int (*f_rng)(void *, unsigned char *, size_t),
+                                 mbedtls_f_rng_t *f_rng,
                                  void *p_rng);
 
 /**
@@ -1240,7 +1229,7 @@ int mbedtls_ecp_gen_keypair_base(mbedtls_ecp_group *grp,
  */
 int mbedtls_ecp_gen_keypair(mbedtls_ecp_group *grp, mbedtls_mpi *d,
                             mbedtls_ecp_point *Q,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /**
@@ -1257,7 +1246,7 @@ int mbedtls_ecp_gen_keypair(mbedtls_ecp_group *grp, mbedtls_mpi *d,
  *                  on failure.
  */
 int mbedtls_ecp_gen_key(mbedtls_ecp_group_id grp_id, mbedtls_ecp_keypair *key,
-                        int (*f_rng)(void *, unsigned char *, size_t),
+                        mbedtls_f_rng_t *f_rng,
                         void *p_rng);
 
 /** \brief          Set the public key in a key pair object.
@@ -1451,7 +1440,7 @@ int mbedtls_ecp_write_public_key(const mbedtls_ecp_keypair *key,
  */
 int mbedtls_ecp_check_pub_priv(
     const mbedtls_ecp_keypair *pub, const mbedtls_ecp_keypair *prv,
-    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
+    mbedtls_f_rng_t *f_rng, void *p_rng);
 
 /** \brief          Calculate the public key from a private key in a key pair.
  *
@@ -1468,7 +1457,7 @@ int mbedtls_ecp_check_pub_priv(
  */
 int mbedtls_ecp_keypair_calc_public(
     mbedtls_ecp_keypair *key,
-    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
+    mbedtls_f_rng_t *f_rng, void *p_rng);
 
 /** \brief          Query the group that a key pair belongs to.
  *

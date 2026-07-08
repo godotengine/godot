@@ -6,7 +6,7 @@
  * The Elliptic Curve Diffie-Hellman (ECDH) protocol is an anonymous
  * key agreement protocol allowing two parties to establish a shared
  * secret over an insecure channel. Each party must have an
- * elliptic-curve public–private key pair.
+ * elliptic-curve public private key pair.
  *
  * For more information, see <em>NIST SP 800-56A Rev. 2: Recommendation for
  * Pair-Wise Key Establishment Schemes Using Discrete Logarithm
@@ -189,7 +189,7 @@ int mbedtls_ecdh_can_do(mbedtls_ecp_group_id gid);
  *                  \c MBEDTLS_MPI_XXX error code on failure.
  */
 int mbedtls_ecdh_gen_public(mbedtls_ecp_group *grp, mbedtls_mpi *d, mbedtls_ecp_point *Q,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /**
@@ -225,7 +225,7 @@ int mbedtls_ecdh_gen_public(mbedtls_ecp_group *grp, mbedtls_mpi *d, mbedtls_ecp_
  */
 int mbedtls_ecdh_compute_shared(mbedtls_ecp_group *grp, mbedtls_mpi *z,
                                 const mbedtls_ecp_point *Q, const mbedtls_mpi *d,
-                                int (*f_rng)(void *, unsigned char *, size_t),
+                                mbedtls_f_rng_t *f_rng,
                                 void *p_rng);
 
 /**
@@ -290,7 +290,7 @@ void mbedtls_ecdh_free(mbedtls_ecdh_context *ctx);
  */
 int mbedtls_ecdh_make_params(mbedtls_ecdh_context *ctx, size_t *olen,
                              unsigned char *buf, size_t blen,
-                             int (*f_rng)(void *, unsigned char *, size_t),
+                             mbedtls_f_rng_t *f_rng,
                              void *p_rng);
 
 /**
@@ -372,7 +372,7 @@ int mbedtls_ecdh_get_params(mbedtls_ecdh_context *ctx,
  */
 int mbedtls_ecdh_make_public(mbedtls_ecdh_context *ctx, size_t *olen,
                              unsigned char *buf, size_t blen,
-                             int (*f_rng)(void *, unsigned char *, size_t),
+                             mbedtls_f_rng_t *f_rng,
                              void *p_rng);
 
 /**
@@ -416,6 +416,7 @@ int mbedtls_ecdh_read_public(mbedtls_ecdh_context *ctx,
  *                  Bytes written on success. This must not be \c NULL.
  * \param buf       The buffer to write the generated shared key to. This
  *                  must be a writable buffer of size \p blen Bytes.
+ *                  A sufficient size is given by #MBEDTLS_ECP_MAX_BYTES.
  * \param blen      The length of the destination buffer \p buf in Bytes.
  * \param f_rng     The RNG function to use. This must not be \c NULL.
  * \param p_rng     The RNG context. This may be \c NULL if \p f_rng
@@ -428,7 +429,7 @@ int mbedtls_ecdh_read_public(mbedtls_ecdh_context *ctx,
  */
 int mbedtls_ecdh_calc_secret(mbedtls_ecdh_context *ctx, size_t *olen,
                              unsigned char *buf, size_t blen,
-                             int (*f_rng)(void *, unsigned char *, size_t),
+                             mbedtls_f_rng_t *f_rng,
                              void *p_rng);
 
 #if defined(MBEDTLS_ECP_RESTARTABLE)
