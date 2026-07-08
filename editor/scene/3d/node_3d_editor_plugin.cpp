@@ -2424,7 +2424,7 @@ void Node3DEditor::_notification(int p_what) {
 			tool_button[TOOL_MODE_SCALE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + show_list_tooltip);
 			tool_button[TOOL_MODE_SELECT]->set_tooltip_text(show_list_tooltip);
 			tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked.") + "\n" + show_list_tooltip);
-			tool_button[TOOL_RULER]->set_tooltip_text(TTR("LMB+Drag: Measure the distance between two points in 3D space.") + "\n" + show_list_tooltip);
+			tool_button[TOOL_RULER]->set_tooltip_text(TTR("LMB+Drag: Measure the distance between two points in 3D space.") + "\n" + TTR("Shift+LMB+Drag: Show component measurements.") + "\n" + show_list_tooltip);
 			_update_gizmos_menu();
 			_update_vertex_snap_tooltips();
 		} break;
@@ -3348,7 +3348,6 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_RULER]->set_toggle_mode(true);
 	tool_button[TOOL_RULER]->set_theme_type_variation("FlatButton");
 	tool_button[TOOL_RULER]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_RULER));
-	tool_button[TOOL_RULER]->set_tooltip_text(TTRC("LMB+Drag: Measure distance between two points.\nShift+LMB+Drag: Show component measurements."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_RULER]->set_shortcut(ED_SHORTCUT("spatial_editor/measure", TTRC("Ruler Mode"), Key::M));
 	tool_button[TOOL_RULER]->set_accessibility_name(TTRC("Ruler Mode"));
