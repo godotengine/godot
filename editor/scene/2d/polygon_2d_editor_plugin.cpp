@@ -290,25 +290,38 @@ void Polygon2DEditor::_paint_bone_weight() {
 		float *extremes = bone_paint_stroke_extremes.ptrw();
 
 		for (int i = 0; i < pc; i++) {
+			if (mtx.xform(rv[i]).distance_to(bone_paint_pos) >= radius) {
+				continue;
+			}
+
 			Vector2 point_pos = mtx.xform(rv[i]);
 			float falloff = _get_soft_paint_easing(bone_paint_pos, point_pos, 1.0f, radius, inner_radius, pinch, bubble);
+
+			if (set) {
+				// Soft Set ignores the previous weight and sets it to a new value between
+				// 0 and 'amount', but tracks the highest value it ever reached.
+				extremes[i] = MAX(extremes[i], falloff);
+				w[i] = CLAMP(Math::lerp(0, (float)amount, extremes[i]), 0.0f, 1.0f);
+				continue;
+			}
+
 			if (falloff <= 0.0f) {
 				continue;
 			}
 
-			float candidate = set ? Math::lerp(r[i], (float)amount, falloff) : r[i] + amount * falloff;
-			candidate = CLAMP(candidate, 0.0f, 1.0f);
-
 			// Track the most extreme value reached at this vertex over the whole stroke,
 			// so passing through and back out doesn't erase the peak.
+			float candidate = CLAMP(set ? Math::lerp(r[i], (float)amount, falloff) : r[i] + amount * falloff, 0.0f, 1.0f);
 			extremes[i] = track_min ? MIN(extremes[i], candidate) : MAX(extremes[i], candidate);
 			w[i] = extremes[i];
 		}
 	} else {
 		for (int i = 0; i < pc; i++) {
-			if (mtx.xform(rv[i]).distance_to(bone_paint_pos) < radius) {
-				w[i] = CLAMP(set ? amount : r[i] + amount, 0, 1);
+			if (mtx.xform(rv[i]).distance_to(bone_paint_pos) >= radius) {
+				continue;
 			}
+
+			w[i] = CLAMP(set ? amount : r[i] + amount, 0, 1);
 		}
 	}
 
@@ -847,7 +860,12 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 						bone_painting = true;
 						bone_painting_bone = bone_selected;
 
-						bone_paint_stroke_extremes = prev_weights.duplicate();
+						if (current_paint_mode == PAINT_MODE_SOFT && current_action == ACTION_SET_WEIGHT) {
+							bone_paint_stroke_extremes.resize(prev_weights.size());
+							bone_paint_stroke_extremes.fill(0.0f);
+						} else {
+							bone_paint_stroke_extremes = prev_weights.duplicate();
+						}
 
 						bone_paint_pos = mb->get_position();
 						_paint_bone_weight();
