@@ -971,6 +971,19 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							result = true;
 							break;
 						}
+						// A class is also `is` any trait it (or a base class) implements.
+						GDScript *gdscript_ptr = Object::cast_to<GDScript>(script_ptr);
+						if (gdscript_ptr) {
+							for (const Ref<GDScript> &trait : gdscript_ptr->implemented_traits) {
+								if (trait.ptr() == script_type) {
+									result = true;
+									break;
+								}
+							}
+							if (result) {
+								break;
+							}
+						}
 						script_ptr = script_ptr->get_base_script().ptr();
 					}
 				}
@@ -1712,6 +1725,19 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							if (src_type == base_type) {
 								valid = true;
 								break;
+							}
+							// A class can also be cast to any trait it (or a base class) implements.
+							GDScript *gdscript_ptr = Object::cast_to<GDScript>(src_type);
+							if (gdscript_ptr) {
+								for (const Ref<GDScript> &trait : gdscript_ptr->implemented_traits) {
+									if (trait.ptr() == base_type) {
+										valid = true;
+										break;
+									}
+								}
+								if (valid) {
+									break;
+								}
 							}
 							src_type = src_type->get_base_script().ptr();
 						}

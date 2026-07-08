@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 1: The signature of "Something.declared_func()" does not match the signature declared by trait "SimSystem".
