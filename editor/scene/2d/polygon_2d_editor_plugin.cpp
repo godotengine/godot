@@ -30,6 +30,7 @@
 
 #include "polygon_2d_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
@@ -963,6 +964,17 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
+void Polygon2DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	if (!is_visible_in_tree()) {
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && !k->is_echo() && k->get_keycode() == Key::ALT) {
+		canvas->queue_redraw(); // Redraw to show/hide the vertex weight labels.
+	}
+}
+
 void Polygon2DEditor::_update_available_modes() {
 	// Force point editing mode if there's no polygon yet.
 	if (node->get_polygon().is_empty()) {
@@ -1230,10 +1242,37 @@ void Polygon2DEditor::_canvas_draw() {
 	}
 
 	if (weight_r) {
+		bool show_weight_labels = Input::get_singleton()->is_key_pressed(Key::ALT);
+		Ref<Font> weight_label_font = get_theme_font(SceneStringName(font), SNAME("Label"));
+		int weight_label_font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+
 		for (int i = 0; i < uvs.size(); i++) {
 			Vector2 draw_pos = mtx.xform(uvs[i]);
 			float weight = weight_r[i];
-			canvas->draw_rect(Rect2(draw_pos - Vector2(2, 2) * EDSCALE, Vector2(5, 5) * EDSCALE), Color(weight, weight, weight, 1.0), Math::round(EDSCALE));
+
+			static const Color stops[5] = {
+				Color(0, 0, 1, 1), // 0.01 blue
+				Color(0, 1, 1, 1), // 0.25 cyan
+				Color(0, 1, 0, 1), // 0.50 green
+				Color(1, 1, 0, 1), // 0.75 yellow
+				Color(1, 0, 0, 1), // 1.00 red
+			};
+
+			// If exactly 0, shows as black.
+			Color result = Color(0, 0, 0, 1);
+			if (weight > 0.0f) {
+				float t = CLAMP(weight, 0.0f, 1.0f) * 4.0f;
+				int idx = CLAMP(int(t), 0, 3);
+				result = stops[idx].lerp(stops[idx + 1], t - idx);
+			}
+			canvas->draw_rect(Rect2(draw_pos - Vector2(2, 2) * EDSCALE, Vector2(5, 5) * EDSCALE), result, Math::round(EDSCALE));
+
+			if (show_weight_labels && weight > 0.0f) {
+				String text = String::num(weight, 2);
+				Vector2 text_size = weight_label_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, weight_label_font_size);
+				Vector2 text_pos = draw_pos + Vector2(-text_size.x / 2.0f, -4 * EDSCALE - weight_label_font->get_descent(weight_label_font_size));
+				canvas->draw_string(weight_label_font, text_pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, weight_label_font_size, Color(1, 1, 1));
+			}
 		}
 	} else {
 		Vector2 texture_size_half = handle->get_size() * 0.5;
@@ -1346,6 +1385,10 @@ Polygon2DEditor::Polygon2DEditor() {
 	snap_show_grid = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "show_grid", false);
 
 	selected_action = ACTION_EDIT_POINT;
+
+	// Needed so the vertex weight labels can be toggled by holding Alt even
+	// when the canvas doesn't currently have keyboard focus.
+	set_process_shortcut_input(true);
 
 	polygon_edit = memnew(EditorDock);
 	polygon_edit->set_name(TTRC("Polygon"));

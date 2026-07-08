@@ -181,6 +181,8 @@ protected:
 	virtual bool _has_uv() const override { return true; }
 	virtual void _commit_action() override;
 
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
