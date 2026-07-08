@@ -229,6 +229,13 @@ opts.Add(
         True,
     )
 )
+opts.Add(
+    BoolVariable(
+        "tracy_as_shared",
+        "if profiling using tracy this option enables building tracy as a shared library so that gdextension can link and use the tracy api",
+        False,
+    )
+)
 
 
 # Advanced options
@@ -1170,6 +1177,9 @@ else:
     env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
 env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
 env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
+
+# msvc exports sidecar name will be incorrect without this
+env["WINDOWSEXPSUFFIX"] = suffix + ".exp"
 
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]

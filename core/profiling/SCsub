@@ -7,6 +7,8 @@ import pathlib
 
 import profiling_builders
 
+import methods
+
 Import("env")
 
 env.add_source_files(env.core_sources, "*.cpp")
@@ -14,11 +16,10 @@ env.add_source_files(env.core_sources, "*.cpp")
 default_perfetto_install_dir = "../../thirdparty/perfetto"
 
 
-def find_perfetto_path(path: pathlib.Path) -> pathlib.Path:
+def find_perfetto_path(path: pathlib.Path) -> pathlib.Path | None:
     if not path.is_dir():
         print(f"Perfetto profiler path '{path.absolute()}' is invalid.")
-        Exit(255)
-
+        return None
     if (path / "sdk" / "perfetto.cc").is_file():
         # perfetto root directory.
         return path / "sdk"
@@ -27,82 +28,174 @@ def find_perfetto_path(path: pathlib.Path) -> pathlib.Path:
         return path
 
     print("Invalid perfetto profiler path. Unable to find perfetto.cc.")
-    Exit(255)
+    return None
 
 
-def find_tracy_path(path: pathlib.Path) -> pathlib.Path:
+def find_tracy_path(path: pathlib.Path) -> pathlib.Path | None:
     if not path.is_dir():
         print("profiler_path must point to a directory.")
-        Exit(255)
-
+        return None
     if (path / "public" / "TracyClient.cpp").is_file():
         # tracy root directory
         return path / "public"
     if (path / "TracyClient.cpp").is_file():
         # tracy public directory
         return path
-
     print("Invalid profiler_path. Unable to find TracyClient.cpp.")
-    Exit(255)
+    return None
+
+
+def configure_instruments() -> bool:
+    if env["profiler_sample_callstack"]:
+        print("profiler_sample_callstack ignored. Please configure callstack sampling in Instruments instead.")
+    if env["profiler_track_memory"]:
+        print("profiler_track_memory ignored. Please configure memory tracking in Instruments instead.")
+    if env["profiler_record_on_demand"]:
+        print("profiler_record_on_demand ignored. Instruments is always recording.")
+    return True
+
+
+def configure_tracy_shared(env_tracy, profiler_path) -> bool:
+    tracylib = env_tracy.add_shared_library("TracyClient", [str((profiler_path / "TracyClient.cpp").absolute())])
+    to_install = Flatten(tracylib)
+
+    if env["platform"] == "windows":
+        if env.msvc and not methods.using_clang(env):
+            # These two defines control the visibility of symbols within the library
+            # and are required when fvisibility=hidden, which is the default on windows.
+            env_tracy.Append(CPPDEFINES=["TRACY_EXPORTS", "TRACY_IMPORTS"])
+
+            # required on release build when msvc
+            env_tracy.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS", "/ENTRY:_DllMainCRTStartup", "/DLL"])
+
+            # add the pdb to the list of files to install
+            if env_tracy.get("debug_symbols"):
+                # Create PDB node with proper dependency because an immediate copy
+                # breaks due to windows file locking.
+                dll_node = next((n for n in to_install if str(n).endswith(".dll")), None)
+                if dll_node:
+                    pdb_node = env_tracy.File(env_tracy.subst("${TARGET.base}.pdb", target=dll_node))
+                    to_install.append(pdb_node)
+                    # Add explicit dependency so SCons knows PDB is produced by the link step
+                    env_tracy.Depends(pdb_node, dll_node)
+
+        elif methods.using_clang(env):
+            # clang-cl (with MSVC frontend) or MinGW LLVM
+            pass
+        elif methods.using_gcc(env):
+            # MinGW GCC
+            pass
+
+    elif env["platform"] == "linuxbsd":
+        if methods.using_clang(env):
+            # Linux + Clang
+            pass
+        else:
+            # Linux + GCC (default)
+            pass
+
+    elif env["platform"] == "macos":
+        if methods.is_apple_clang(env):
+            # AppleClang
+            pass
+        elif methods.using_clang(env):
+            # Upstream Clang on macOS
+            pass
+
+    # Add the shared library to the godot dependencies.
+    env.Append(LIBS=["TracyClient"])
+    env.Append(LIBPATH=[tracylib[0].get_dir()])
+
+    # Install(copy) shared lib files [+ pdb] to the bin dir
+    env.Install("#bin/", to_install)
+    return True
+
+
+def configure_tracy() -> bool:
+    if not env["profiler_path"]:
+        print("profiler_path must be set when using the tracy profiler. Aborting.")
+        return False
+
+    profiler_path: pathlib.Path | None = find_tracy_path(pathlib.Path(env["profiler_path"]))
+    if profiler_path is None:
+        return False
+
+    env.Prepend(CPPPATH=[str(profiler_path.absolute())])
+
+    # clone env so we dont pollute the build flags unnecessarily.
+    # The engine code relies on the generated core/profiling/profiling.gen.h
+    # to enable/disable tracy features.
+    env_tracy = env.Clone()
+    env_tracy.disable_warnings()
+    env_tracy.Append(CPPDEFINES=["TRACY_ENABLE"])
+
+    # == Call Stack Sampling ==
+    if env["profiler_sample_callstack"]:
+        if env["platform"] not in ("windows", "linuxbsd", "android"):
+            # Reference the feature matrix in the tracy documentation.
+            print("Tracy does not support call stack sampling on the target platform. Aborting.")
+            return False
+        # 62 is the maximum supported callstack depth reported by the tracy docs.
+        env_tracy.Append(CPPDEFINES=[("TRACY_CALLSTACK", 62)])
+
+    # == Profile on demand( this is the default) ==
+    if env["profiler_record_on_demand"]:
+        env_tracy.Append(CPPDEFINES=["TRACY_ON_DEMAND"])
+
+    # == Build Tracy as a shared library ==
+    # This allows GDExtenstion to link to the tracy shared library and use the
+    # its API directly.
+    if env["tracy_as_shared"]:
+        return configure_tracy_shared(env_tracy, profiler_path)
+    else:
+        # Otherwise compile tracy into the engine.
+        env_tracy.add_source_files(env.core_sources, str((profiler_path / "TracyClient.cpp").absolute()))
+    return True
+
+
+def configure_perfetto() -> bool:
+    if env["profiler_path"]:
+        profiler_path = find_perfetto_path(pathlib.Path(env["profiler_path"]))
+    elif (default_perfetto_path := pathlib.Path(default_perfetto_install_dir)).is_dir():
+        profiler_path = find_perfetto_path(default_perfetto_path)
+    else:
+        print("Perfetto must be installed or profiler_path must be set when using the perfetto profiler. Aborting.")
+        return False
+
+    if profiler_path is None:
+        return False
+
+    env.Prepend(CPPPATH=[str(profiler_path.absolute())])
+
+    env_perfetto = env.Clone()
+    if env["profiler_sample_callstack"]:
+        print("Perfetto does not support call stack sampling. Aborting.")
+        Exit(255)
+    if env["profiler_track_memory"]:
+        print("Perfetto does not support memory tracking. Aborting.")
+        Exit(255)
+    if env["profiler_record_on_demand"]:
+        print("profiler_record_on_demand ignored. Perfetto is always recording.")
+    env_perfetto.disable_warnings()
+    env_perfetto.Prepend(CPPPATH=[str(profiler_path.absolute())])
+    env_perfetto.add_source_files(env.core_sources, str((profiler_path / "perfetto.cc").absolute()))
+    return True
 
 
 if env["profiler"]:
-    if env["profiler"] == "instruments":
-        if env["profiler_sample_callstack"]:
-            print("profiler_sample_callstack ignored. Please configure callstack sampling in Instruments instead.")
-        if env["profiler_track_memory"]:
-            print("profiler_track_memory ignored. Please configure memory tracking in Instruments instead.")
-        if env["profiler_record_on_demand"]:
-            print("profiler_record_on_demand ignored. Instruments is always recording.")
-    elif env["profiler"] == "tracy":
-        if not env["profiler_path"]:
-            print("profiler_path must be set when using the tracy profiler. Aborting.")
-            Exit(255)
-        profiler_path = find_tracy_path(pathlib.Path(env["profiler_path"]))
-        env.Prepend(CPPPATH=[str(profiler_path.absolute())])
-
-        env_tracy = env.Clone()
-        env_tracy.Append(CPPDEFINES=["TRACY_ENABLE"])
-        if env["profiler_sample_callstack"]:
-            if env["platform"] not in ("windows", "linuxbsd", "android"):
-                # Reference the feature matrix in the tracy documentation.
-                print("Tracy does not support call stack sampling on this platform. Aborting.")
-                Exit(255)
-
-            # 62 is the maximum supported callstack depth reported by the tracy docs.
-            env_tracy.Append(CPPDEFINES=[("TRACY_CALLSTACK", 62)])
-        if env["profiler_track_memory"]:
-            env_tracy.Append(CPPDEFINES=["GODOT_PROFILER_TRACK_MEMORY"])
-        if env["profiler_record_on_demand"]:
-            env_tracy.Append(CPPDEFINES=["TRACY_ON_DEMAND"])
-        env_tracy.disable_warnings()
-        env_tracy.add_source_files(env.core_sources, str((profiler_path / "TracyClient.cpp").absolute()))
-    elif env["profiler"] == "perfetto":
-        if env["profiler_path"]:
-            profiler_path = find_perfetto_path(pathlib.Path(env["profiler_path"]))
-        elif (default_perfetto_path := pathlib.Path(default_perfetto_install_dir)).is_dir():
-            profiler_path = find_perfetto_path(default_perfetto_path)
-        else:
-            print("Perfetto must be installed or profiler_path must be set when using the perfetto profiler. Aborting.")
-            Exit(255)
-
-        env.Prepend(CPPPATH=[str(profiler_path.absolute())])
-
-        env_perfetto = env.Clone()
-        if env["profiler_sample_callstack"]:
-            print("Perfetto does not support call stack sampling. Aborting.")
-            Exit(255)
-        if env["profiler_track_memory"]:
-            print("Perfetto does not support memory tracking. Aborting.")
-            Exit(255)
-        if env["profiler_record_on_demand"]:
-            print("profiler_record_on_demand ignored. Perfetto is always recording.")
-        env_perfetto.disable_warnings()
-        env_perfetto.Prepend(CPPPATH=[str(profiler_path.absolute())])
-        env_perfetto.add_source_files(env.core_sources, str((profiler_path / "perfetto.cc").absolute()))
+    if env["profiler"] == "instruments" and not configure_instruments():
+        print("Failed to configure Instruments. Aborting.")
+        Exit(255)
+    elif env["profiler"] == "tracy" and not configure_tracy():
+        print("Failed to configure Tracy. Aborting.")
+        Exit(255)
+    elif env["profiler"] == "perfetto" and not configure_perfetto():
+        print("Failed to configure Perfetto. Aborting.")
+        Exit(255)
 elif env["profiler_path"]:
     print("profiler is required if profiler_path is set. Aborting.")
     Exit(255)
+
 
 env.CommandNoCache(
     "profiling.gen.h",
@@ -114,3 +207,8 @@ env.CommandNoCache(
     ],
     env.Run(profiling_builders.profiler_gen_builder),
 )
+
+# Copy generated header to bin/ for users to include into their GDExtension
+if env["profiler"] == "tracy" and env["tracy_as_shared"]:
+    gen_header = env.File("profiling.gen.h")
+    env.Install("#bin/", gen_header)
