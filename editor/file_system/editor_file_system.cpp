@@ -2264,14 +2264,33 @@ void EditorFileSystem::_update_script_documentation() {
 				if (scr.is_null()) {
 					continue;
 				}
+
+				bool renamed = false;
+				// get_doc_class_name() returns the cached name, so the one before the rename
+				String old_prefix = scr->get_doc_class_name();
+				LocalVector<String> old_suffixes;
+				for (const DocData::ClassDoc &cd : scr->get_documentation()) {
+					if (cd.script_path != scr->get_path()) {
+						renamed = true;
+						should_reload_script = true;
+						old_suffixes.push_back(cd.name.trim_prefix(old_prefix));
+					}
+				}
+
 				if (should_reload_script) {
 					// Reloading the script from disk. Otherwise, the ResourceLoader::load will
 					// return the last loaded version of the script (without the modifications).
 					scr->reload_from_file();
 				}
+
+				String new_prefix = scr->get_doc_class_name();
 				for (const DocData::ClassDoc &cd : scr->get_documentation()) {
 					EditorHelp::add_doc(cd);
 					if (!first_scan) {
+						if (renamed && old_suffixes.has(cd.name.trim_prefix(new_prefix))) {
+							String suffix = cd.name.trim_prefix(new_prefix);
+							ScriptEditor::get_singleton()->replace_help_class(old_prefix + suffix, cd.name);
+						}
 						// Update the documentation in the Script Editor if it is open.
 						ScriptEditor::get_singleton()->update_doc(cd.name);
 					}
