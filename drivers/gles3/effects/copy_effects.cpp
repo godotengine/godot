@@ -162,7 +162,7 @@ void CopyEffects::copy_with_lens_distortion(const Rect2 &p_rect, float p_layer, 
 	copy.shader.version_set_uniform(CopyShaderGLES3::LOD, 0.0, copy.shader_version, variant, specializations);
 	copy.shader.version_set_uniform(CopyShaderGLES3::EYE_CENTER, p_eye_center.x, p_eye_center.y, copy.shader_version, variant, specializations);
 	copy.shader.version_set_uniform(CopyShaderGLES3::K1, p_k1, copy.shader_version, variant, specializations);
-	copy.shader.version_set_uniform(CopyShaderGLES3::K2, p_k1, copy.shader_version, variant, specializations);
+	copy.shader.version_set_uniform(CopyShaderGLES3::K2, p_k2, copy.shader_version, variant, specializations);
 	copy.shader.version_set_uniform(CopyShaderGLES3::UPSCALE, p_upscale, copy.shader_version, variant, specializations);
 	copy.shader.version_set_uniform(CopyShaderGLES3::ASPECT_RATIO, p_aspect_ration, copy.shader_version, variant, specializations);
 
