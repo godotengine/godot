@@ -37,6 +37,7 @@ class Area3D : public CollisionObject3D {
 	GDCLASS(Area3D, CollisionObject3D);
 
 public:
+#ifndef DISABLE_DEPRECATED
 	enum SpaceOverride {
 		SPACE_OVERRIDE_DISABLED,
 		SPACE_OVERRIDE_COMBINE,
@@ -44,16 +45,17 @@ public:
 		SPACE_OVERRIDE_REPLACE,
 		SPACE_OVERRIDE_REPLACE_COMBINE
 	};
+#endif // DISABLE_DEPRECATED
 
 private:
-	SpaceOverride gravity_space_override = SPACE_OVERRIDE_DISABLED;
+	PS3DE::AreaSpaceOverrideMode gravity_space_override = PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
 	Vector3 gravity_vec;
 	real_t gravity = 0.0;
 	bool gravity_is_point = false;
 	real_t gravity_point_unit_distance = 0.0;
 
-	SpaceOverride linear_damp_space_override = SPACE_OVERRIDE_DISABLED;
-	SpaceOverride angular_damp_space_override = SPACE_OVERRIDE_DISABLED;
+	PS3DE::AreaSpaceOverrideMode linear_damp_space_override = PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
+	PS3DE::AreaSpaceOverrideMode angular_damp_space_override = PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
 	real_t angular_damp = 0.1;
 	real_t linear_damp = 0.1;
 
@@ -149,9 +151,20 @@ protected:
 
 	virtual void _space_changed(const RID &p_new_space) override;
 
+#ifndef DISABLE_DEPRECATED
+	// Old enum properties for compatibility.
+	void _set_gravity_space_override_mode_bind_compat_121102(SpaceOverride p_mode);
+	SpaceOverride _get_gravity_space_override_mode_bind_compat_121102() const;
+	void _set_linear_damp_space_override_mode_bind_compat_121102(SpaceOverride p_mode);
+	SpaceOverride _get_linear_damp_space_override_mode_bind_compat_121102() const;
+	void _set_angular_damp_space_override_mode_bind_compat_121102(SpaceOverride p_mode);
+	SpaceOverride _get_angular_damp_space_override_mode_bind_compat_121102() const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
-	void set_gravity_space_override_mode(SpaceOverride p_mode);
-	SpaceOverride get_gravity_space_override_mode() const;
+	void set_gravity_space_override_mode(PS3DE::AreaSpaceOverrideMode p_mode);
+	PS3DE::AreaSpaceOverrideMode get_gravity_space_override_mode() const;
 
 	void set_gravity_is_point(bool p_enabled);
 	bool is_gravity_a_point() const;
@@ -168,11 +181,11 @@ public:
 	void set_gravity(real_t p_gravity);
 	real_t get_gravity() const;
 
-	void set_linear_damp_space_override_mode(SpaceOverride p_mode);
-	SpaceOverride get_linear_damp_space_override_mode() const;
+	void set_linear_damp_space_override_mode(PS3DE::AreaSpaceOverrideMode p_mode);
+	PS3DE::AreaSpaceOverrideMode get_linear_damp_space_override_mode() const;
 
-	void set_angular_damp_space_override_mode(SpaceOverride p_mode);
-	SpaceOverride get_angular_damp_space_override_mode() const;
+	void set_angular_damp_space_override_mode(PS3DE::AreaSpaceOverrideMode p_mode);
+	PS3DE::AreaSpaceOverrideMode get_angular_damp_space_override_mode() const;
 
 	void set_angular_damp(real_t p_angular_damp);
 	real_t get_angular_damp() const;
@@ -229,4 +242,6 @@ public:
 	~Area3D();
 };
 
+#ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(Area3D::SpaceOverride);
+#endif // DISABLE_DEPRECATED
