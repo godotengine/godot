@@ -855,17 +855,17 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 
 	uint64_t last_edited = 0;
 	if (cf_err == OK) {
-		// The modification date marks the date the project was last edited.
-		// This is because the `project.godot` file will always be modified
-		// when editing a project (but not when running it).
-		last_edited = FileAccess::get_modified_time(conf);
-
-		String fscache = p_path.path_join(".fscache");
-		if (FileAccess::exists(fscache)) {
-			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
-			if (cache_modified > last_edited) {
-				last_edited = cache_modified;
-			}
+		int *cached_time = modified_time_cache.getptr(p_path);
+		if (cached_time) {
+			// Modified time may change as a result of Project Manager actions, which will affect sorting.
+			// For that reason, the time is read only once.
+			last_edited = *cached_time;
+		} else {
+			// The modification date marks the date the project was last edited.
+			// This is because the `project.godot` file will always be modified
+			// when editing a project (but not when running it).
+			last_edited = FileAccess::get_modified_time(conf);
+			modified_time_cache[p_path] = last_edited;
 		}
 	} else {
 		grayed = true;
