@@ -35,6 +35,10 @@
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 
+Plane RenderSceneDataRD::get_cam_frustum_plane(Projection::Planes p_plane) const {
+	return cam_frustum[p_plane];
+}
+
 Transform3D RenderSceneDataRD::get_cam_transform() const {
 	return cam_transform;
 }

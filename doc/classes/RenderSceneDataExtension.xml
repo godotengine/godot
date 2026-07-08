@@ -9,6 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_cam_frustum_plane" qualifiers="virtual const">
+			<return type="Plane" />
+			<param index="0" name="plane" type="int" />
+			<description>
+				Implement this in GDExtension to return the given frustum [param plane] of the camera.
+			</description>
+		</method>
 		<method name="_get_cam_projection" qualifiers="virtual const">
 			<return type="Projection" />
 			<description>
