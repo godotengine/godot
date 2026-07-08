@@ -4,7 +4,7 @@
  *
  *   TrueType and OpenType embedded bitmap support (body).
  *
- * Copyright (C) 2005-2025 by
+ * Copyright (C) 2005-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Copyright 2013 by Google, Inc.
@@ -547,7 +547,6 @@
     FT_Error    error = FT_Err_Ok;
     FT_UInt     width, height;
     FT_Bitmap*  map = decoder->bitmap;
-    FT_ULong    size;
 
 
     if ( !decoder->metrics_loaded )
@@ -599,17 +598,11 @@
       goto Exit;
     }
 
-    size = map->rows * (FT_ULong)map->pitch;
-
-    /* check that there is no empty image */
-    if ( size == 0 )
-      goto Exit;     /* exit successfully! */
-
     if ( metrics_only )
       goto Exit;     /* only metrics are requested */
 
-    error = ft_glyphslot_alloc_bitmap( decoder->face->root.glyph, size );
-    if ( error )
+    error = ft_glyphslot_alloc_bitmap( decoder->face->root.glyph );
+    if ( error || !map->buffer )
       goto Exit;
 
     decoder->bitmap_allocated = 1;

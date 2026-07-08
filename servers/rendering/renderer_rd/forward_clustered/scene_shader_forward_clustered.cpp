@@ -29,9 +29,10 @@
 /**************************************************************************/
 
 #include "scene_shader_forward_clustered.h"
+
 #include "core/config/project_settings.h"
 #include "core/math/math_defs.h"
-#include "render_forward_clustered.h"
+#include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 
@@ -55,7 +56,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	depth_test_disabledi = 0;
 	depth_test_invertedi = 0;
 	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
-	int cull_modei = RS::CULL_MODE_BACK;
+	int cull_modei = RSE::CULL_MODE_BACK;
 
 	uses_point_size = false;
 	uses_alpha = false;
@@ -67,6 +68,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	uses_roughness = false;
 	uses_normal = false;
 	uses_tangent = false;
+	writes_tangent = false;
 	uses_normal_map = false;
 	uses_bent_normal_map = false;
 	wireframe = false;
@@ -111,9 +113,9 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_test_disabledi, 1);
 	actions.render_mode_values["depth_test_inverted"] = Pair<int *, int>(&depth_test_invertedi, 1);
 
-	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_DISABLED);
-	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_FRONT);
-	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_BACK);
+	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, RSE::CULL_MODE_DISABLED);
+	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, RSE::CULL_MODE_FRONT);
+	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, RSE::CULL_MODE_BACK);
 
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
@@ -149,6 +151,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.write_flag_pointers["PROJECTION_MATRIX"] = &writes_modelview_or_projection;
 	actions.write_flag_pointers["VERTEX"] = &uses_vertex;
 	actions.write_flag_pointers["POSITION"] = &uses_position;
+	actions.write_flag_pointers["TANGENT"] = &writes_tangent;
+	actions.write_flag_pointers["BINORMAL"] = &writes_tangent;
 	actions.write_flag_pointers["Z_CLIP_SCALE"] = &uses_z_clip_scale;
 
 	actions.stencil_mode_values["read"] = Pair<int *, int>(&stencil_readi, STENCIL_FLAG_READ);
@@ -170,7 +174,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	Error err = OK;
 	{
 		MutexLock lock(SceneShaderForwardClustered::singleton_mutex);
-		err = SceneShaderForwardClustered::singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
+		err = SceneShaderForwardClustered::singleton->compiler.compile(RSE::SHADER_SPATIAL, code, &actions, path, gen_code);
 	}
 
 	if (err != OK) {
@@ -193,7 +197,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	} else {
 		depth_test = DEPTH_TEST_ENABLED;
 	}
-	cull_mode = RS::CullMode(cull_modei);
+	cull_mode = RSE::CullMode(cull_modei);
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 	uses_screen_texture = gen_code.uses_screen_texture;
 	uses_depth_texture = gen_code.uses_depth_texture;
@@ -255,11 +259,11 @@ bool SceneShaderForwardClustered::ShaderData::casts_shadows() const {
 	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test != DEPTH_TEST_ENABLED));
 }
 
-RS::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_source_code() const {
 	if (version.is_valid()) {
 		return SceneShaderForwardClustered::singleton->shader.version_get_native_source_code(version);
 	} else {
-		return RS::ShaderNativeSourceCode();
+		return RenderingServerTypes::ShaderNativeSourceCode();
 	}
 }
 
@@ -403,7 +407,7 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 
 	bool depth_pre_pass_enabled = bool(GLOBAL_GET_CACHED(bool, "rendering/driver/depth_prepass/enable"));
 
-	RD::RenderPrimitive primitive_rd_table[RS::PRIMITIVE_MAX] = {
+	RD::RenderPrimitive primitive_rd_table[RSE::PRIMITIVE_MAX] = {
 		RD::RENDER_PRIMITIVE_POINTS,
 		RD::RENDER_PRIMITIVE_LINES,
 		RD::RENDER_PRIMITIVE_LINESTRIPS,
@@ -580,7 +584,7 @@ RendererRD::MaterialStorage::ShaderData *SceneShaderForwardClustered::_create_sh
 }
 
 void SceneShaderForwardClustered::MaterialData::set_render_priority(int p_priority) {
-	priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
+	priority = p_priority - RSE::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
 }
 
 void SceneShaderForwardClustered::MaterialData::set_next_pass(RID p_pass) {
@@ -785,6 +789,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
 		actions.renames["NODE_POSITION_VIEW"] = "(read_view_matrix * read_model_matrix)[3].xyz";
 
+		actions.renames["IS_MULTIVIEW"] = "OUTPUT_IS_MULTIVIEW";
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "0";
 		actions.renames["VIEW_RIGHT"] = "1";
@@ -795,6 +800,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["SPECULAR_AMOUNT"] = "specular_amount_highp";
 		actions.renames["LIGHT_COLOR"] = "light_color_highp";
 		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
+		actions.renames["LIGHT_IS_AREA"] = "is_area";
+		actions.renames["LIGHT_AREA_DIFFUSE_MULTIPLIER"] = "area_diffuse";
+		actions.renames["LIGHT_AREA_SPECULAR_MULTIPLIER"] = "area_specular";
 		actions.renames["LIGHT"] = "light_highp";
 		actions.renames["ATTENUATION"] = "attenuation_highp";
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light_highp";
@@ -827,6 +835,9 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 		actions.usage_defines["LIGHT_VERTEX"] = "#define LIGHT_VERTEX_USED\n";
 		actions.usage_defines["Z_CLIP_SCALE"] = "#define Z_CLIP_SCALE_USED\n";
+		actions.usage_defines["LIGHT_AREA_DIFFUSE_MULTIPLIER"] = "#define AREA_LIGHT_CODE_USED\n";
+		actions.usage_defines["LIGHT_AREA_SPECULAR_MULTIPLIER"] = "@LIGHT_AREA_DIFFUSE_MULTIPLIER";
+		actions.usage_defines["LIGHT_IS_AREA"] = "@LIGHT_AREA_DIFFUSE_MULTIPLIER";
 
 		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
 		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";
@@ -1032,7 +1043,27 @@ bool SceneShaderForwardClustered::is_advanced_shader_group_enabled(bool p_multiv
 	}
 }
 
-uint32_t SceneShaderForwardClustered::get_pipeline_compilations(RS::PipelineSource p_source) {
+uint32_t SceneShaderForwardClustered::get_pipeline_compilations(RSE::PipelineSource p_source) {
 	MutexLock lock(SceneShaderForwardClustered::singleton_mutex);
 	return pipeline_compilations[p_source];
+}
+
+RID SceneShaderForwardClustered::get_default_shader_rd(bool p_is_multiview) {
+	RID &shader_rd = p_is_multiview ? default_multiview_shader_rd : default_shader_rd;
+
+	if (shader_rd.is_null()) {
+		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+		ERR_FAIL_NULL_V(material_storage, RID());
+		ERR_FAIL_COND_V(!default_material.is_valid(), RID());
+
+		uint32_t flags = 0;
+		if (p_is_multiview) {
+			flags |= SHADER_COLOR_PASS_FLAG_MULTIVIEW;
+		}
+
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(default_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
+		shader_rd = md->shader_data->get_shader_variant(PIPELINE_VERSION_COLOR_PASS, flags, false);
+	}
+
+	return shader_rd;
 }

@@ -31,6 +31,8 @@
 #include "mesh_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/main/viewport.h"
@@ -163,6 +165,8 @@ MeshEditor::MeshEditor() {
 
 	rot_x = 0;
 	rot_y = 0;
+
+	EditorNode::get_singleton()->register_hdr_viewport(viewport);
 }
 
 ///////////////////////

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_map.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/gui/theme_editor_preview.h"
@@ -41,6 +42,8 @@
 class Button;
 class CheckButton;
 class EditorFileDialog;
+class FilterLineEdit;
+class HSplitContainer;
 class ItemList;
 class Label;
 class LineEdit;
@@ -295,7 +298,7 @@ class ThemeTypeDialog : public ConfirmationDialog {
 
 	String pre_submitted_value;
 
-	LineEdit *add_type_filter = nullptr;
+	FilterLineEdit *add_type_filter = nullptr;
 	ItemList *add_type_options = nullptr;
 	ConfirmationDialog *add_type_confirmation = nullptr;
 
@@ -305,7 +308,6 @@ class ThemeTypeDialog : public ConfirmationDialog {
 	void _update_add_type_options(const String &p_filter = "");
 
 	void _add_type_filter_cbk(const String &p_value);
-	void _type_filter_input(const Ref<InputEvent> &p_event);
 	void _add_type_options_cbk(int p_index);
 	void _add_type_dialog_entered(const String &p_value);
 	void _add_type_dialog_activated(int p_index);
@@ -454,6 +456,7 @@ class ThemeEditor : public EditorDock {
 
 	Label *theme_name = nullptr;
 	ThemeItemEditorDialog *theme_edit_dialog = nullptr;
+	HSplitContainer *main_hs = nullptr;
 
 	void _theme_save_button_cbk(bool p_save_as);
 	void _theme_edit_button_cbk();
@@ -477,6 +480,9 @@ class ThemeEditor : public EditorDock {
 protected:
 	void _notification(int p_what);
 
+	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
+	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
+
 public:
 	void edit(const Ref<Theme> &p_theme);
 	Ref<Theme> get_edited_theme();
@@ -494,7 +500,6 @@ class ThemeEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "Theme"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

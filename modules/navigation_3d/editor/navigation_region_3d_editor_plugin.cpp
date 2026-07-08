@@ -30,6 +30,8 @@
 
 #include "navigation_region_3d_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/multi_node_edit.h"
@@ -39,6 +41,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
+#include "scene/main/scene_tree.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 
 void NavigationRegion3DEditor::_node_removed(Node *p_node) {
@@ -248,6 +251,7 @@ NavigationRegion3DEditor::NavigationRegion3DEditor() {
 	bake_hbox->add_child(bake_info);
 
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 
 	multibake_dialog = memnew(ConfirmationDialog);
@@ -265,7 +269,7 @@ void NavigationRegion3DEditorPlugin::edit(Object *p_object) {
 		NavigationRegion3D *region = Object::cast_to<NavigationRegion3D>(p_object);
 		if (region) {
 			regions.push_back(region);
-			navigation_region_editor->edit(regions);
+			navigation_region_editor->edit(std::move(regions));
 			return;
 		}
 	}
@@ -281,7 +285,7 @@ void NavigationRegion3DEditorPlugin::edit(Object *p_object) {
 		}
 	}
 
-	navigation_region_editor->edit(regions);
+	navigation_region_editor->edit(std::move(regions));
 }
 
 bool NavigationRegion3DEditorPlugin::handles(Object *p_object) const {

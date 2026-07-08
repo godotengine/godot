@@ -82,6 +82,8 @@ public:
 	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {}
 };
 
+VARIANT_BITFIELD_CAST(EditorSceneFormatImporter::ImportFlags)
+
 class EditorScenePostImport : public RefCounted {
 	GDCLASS(EditorScenePostImport, RefCounted);
 
@@ -288,6 +290,9 @@ public:
 	void _create_slices(AnimationPlayer *ap, Ref<Animation> anim, const Array &p_clips, bool p_bake_all);
 	void _optimize_animations(AnimationPlayer *anim, float p_max_vel_error, float p_max_ang_error, int p_prc_error);
 	void _compress_animations(AnimationPlayer *anim, int p_page_size_kb);
+
+	Error _save_scene_as_mesh_library(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags);
+	Error _save_scene_as_single_mesh(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags);
 
 	Node *pre_import(const String &p_source_file, const HashMap<StringName, Variant> &p_options);
 	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;

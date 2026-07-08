@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "variant.h"
-
-#include "core/debugger/engine_debugger.h"
-#include "core/object/class_db.h"
+#include "core/variant/method_ptrcall.h"
+#include "core/variant/type_info.h"
+#include "core/variant/variant.h"
+#include "core/variant/variant_internal.h"
 
 template <typename Evaluator>
 class CommonEvaluate {
@@ -912,18 +912,18 @@ _FORCE_INLINE_ static bool _operate_get_ptr_object(const void *p_ptr) {
 	return PtrToArg<Object *>::convert(p_ptr) != nullptr;
 }
 
-#define OP_EVALUATOR(m_class_name, m_left, m_right, m_op)                                                                 \
-	class m_class_name : public CommonEvaluate<m_class_name> {                                                            \
-	public:                                                                                                               \
-		static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {                \
+#define OP_EVALUATOR(m_class_name, m_left, m_right, m_op) \
+	class m_class_name : public CommonEvaluate<m_class_name> { \
+	public: \
+		static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) { \
 			VariantInternalAccessor<bool>::get(r_ret) = m_op(_operate_get_##m_left(left), _operate_get_##m_right(right)); \
-		}                                                                                                                 \
-                                                                                                                          \
-		static void ptr_evaluate(const void *left, const void *right, void *r_ret) {                                      \
-			PtrToArg<bool>::encode(m_op(_operate_get_ptr_##m_left(left), _operate_get_ptr_##m_right(right)), r_ret);      \
-		}                                                                                                                 \
-                                                                                                                          \
-		using ReturnType = bool;                                                                                          \
+		} \
+\
+		static void ptr_evaluate(const void *left, const void *right, void *r_ret) { \
+			PtrToArg<bool>::encode(m_op(_operate_get_ptr_##m_left(left), _operate_get_ptr_##m_right(right)), r_ret); \
+		} \
+\
+		using ReturnType = bool; \
 	};
 
 // OR
@@ -1129,11 +1129,11 @@ class OperatorEvaluatorInStringFind<Left, StringName> : public CommonEvaluate<Op
 public:
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
 		const Left &str_a = VariantInternalAccessor<Left>::get(left);
-		const String str_b = VariantInternalAccessor<StringName>::get(right).operator String();
+		const String str_b = VariantInternalAccessor<StringName>::get(right).string();
 		VariantInternalAccessor<bool>::get(r_ret) = str_b.find(str_a) != -1;
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(PtrToArg<StringName>::convert(right).operator String().find(PtrToArg<Left>::convert(left)) != -1, r_ret);
+		PtrToArg<bool>::encode(PtrToArg<StringName>::convert(right).string().find(PtrToArg<Left>::convert(left)) != -1, r_ret);
 	}
 	using ReturnType = bool;
 };

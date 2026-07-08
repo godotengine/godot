@@ -31,7 +31,10 @@
 #include "project_list.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
 #include "core/io/dir_access.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
@@ -42,6 +45,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup_menu.h"
@@ -49,6 +53,8 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/image_texture.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 void ProjectListItemControl::_notification(int p_what) {
 	switch (p_what) {
@@ -62,10 +68,28 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_title->begin_bulk_theme_override();
 			project_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title"), EditorStringName(EditorFonts)));
 			project_title->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("title_size"), EditorStringName(EditorFonts)));
-			project_title->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
+			project_title->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("ProjectList")));
 			project_title->end_bulk_theme_override();
 
-			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("Tree")));
+			project_path->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("ProjectList")));
+
+			switch (version_match_type) {
+				case VersionMatchType::PROJECT_USES_OLDER_MAJOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectUpgradeMajor")));
+					break;
+				case VersionMatchType::PROJECT_USES_OLDER_MINOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectUpgrade")));
+					break;
+				case VersionMatchType::PROJECT_USES_NEWER_MAJOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectDowngradeMajor")));
+					break;
+				case VersionMatchType::PROJECT_USES_NEWER_MINOR:
+					project_different_version->set_texture(get_editor_theme_icon(SNAME("ProjectDowngrade")));
+					break;
+				default:
+					break;
+			}
+
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_focus_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
@@ -83,7 +107,6 @@ void ProjectListItemControl::_notification(int p_what) {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 #endif
 			}
-
 			if (touch_menu_button) {
 				touch_menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			}
@@ -105,21 +128,21 @@ void ProjectListItemControl::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST_BOX_OPTION);
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, TTR("Project") + " " + project_title->get_text());
-			DisplayServer::get_singleton()->accessibility_update_set_value(ae, project_title->get_text());
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX_OPTION);
+			AccessibilityServer::get_singleton()->update_set_name(ae, TTR("Project") + " " + project_title->get_text());
+			AccessibilityServer::get_singleton()->update_set_value(ae, project_title->get_text());
 
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CLICK, callable_mp(this, &ProjectListItemControl::_accessibility_action_open));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ProjectListItemControl::_accessibility_action_scroll_into_view));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ProjectListItemControl::_accessibility_action_focus));
-			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ProjectListItemControl::_accessibility_action_blur));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &ProjectListItemControl::_accessibility_action_open));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_SCROLL_INTO_VIEW, callable_mp(this, &ProjectListItemControl::_accessibility_action_scroll_into_view));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &ProjectListItemControl::_accessibility_action_focus));
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ProjectListItemControl::_accessibility_action_blur));
 
 			ProjectList *pl = get_list();
 			if (pl) {
-				DisplayServer::get_singleton()->accessibility_update_set_list_item_index(ae, pl->get_index(this));
+				AccessibilityServer::get_singleton()->update_set_list_item_index(ae, pl->get_index(this));
 			}
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_level(ae, 0);
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_selected(ae, is_selected);
+			AccessibilityServer::get_singleton()->update_set_list_item_level(ae, 0);
+			AccessibilityServer::get_singleton()->update_set_list_item_selected(ae, is_selected);
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -127,8 +150,8 @@ void ProjectListItemControl::_notification(int p_what) {
 			if (pl) {
 				int idx = pl->get_index(this);
 				if (idx >= 0) {
-					pl->ensure_project_visible(idx);
-					pl->select_project(idx);
+					// has_focus(true) is false on mouse-initiated focus, true on keyboard navigation.
+					pl->select_project(idx, !has_focus(true));
 
 					pl->emit_signal(SNAME(ProjectList::SIGNAL_SELECTION_CHANGED));
 				}
@@ -136,18 +159,23 @@ void ProjectListItemControl::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (is_selected) {
-				draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("Tree")), Rect2(Point2(), get_size()));
-			}
-			if (is_hovering) {
-				draw_style_box(get_theme_stylebox(SNAME("hovered"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			if (is_selected && is_hovering) {
+				draw_style_box(get_theme_stylebox(SNAME("hover_pressed"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
+			} else if (is_selected) {
+				draw_style_box(get_theme_stylebox(SNAME("selected"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
+			} else if (is_hovering) {
+				draw_style_box(get_theme_stylebox(SNAME("hovered"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
 			}
 			// Due to how this control works, we can't rely on the built-in way of checking for focus visibility.
 			if (has_focus() && !is_focus_hidden) {
-				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("Tree")), Rect2(Point2(), get_size()));
+				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("ProjectList")), Rect2(Point2(), get_size()));
 			}
 
-			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("Tree")));
+			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("ProjectList")));
+		} break;
+
+		case NOTIFICATION_READY: {
+			set_project_title_autowrap();
 		} break;
 	}
 }
@@ -261,6 +289,7 @@ void ProjectListItemControl::set_project_version(const String &p_info) {
 void ProjectListItemControl::set_unsupported_features(PackedStringArray p_features) {
 	if (p_features.size() > 0) {
 		String tooltip_text = "";
+		bool unknown_version = false;
 		for (int i = 0; i < p_features.size(); i++) {
 			if (ProjectList::project_feature_looks_like_version(p_features[i])) {
 				PackedStringArray project_version_split = p_features[i].split(".");
@@ -269,18 +298,67 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 					project_version_major = project_version_split[0].to_int();
 					project_version_minor = project_version_split[1].to_int();
 				}
-				if (GODOT_VERSION_MAJOR != project_version_major || GODOT_VERSION_MINOR <= project_version_minor) {
-					// Don't show a warning if the project was last edited in a previous minor version.
-					tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+
+				version_match_type = VersionMatchType::PROJECT_USES_SAME;
+				if (project_version_major > GODOT_VERSION_MAJOR) {
+					version_match_type = VersionMatchType::PROJECT_USES_NEWER_MAJOR;
+				} else if (project_version_major < GODOT_VERSION_MAJOR) {
+					version_match_type = VersionMatchType::PROJECT_USES_OLDER_MAJOR;
+				} else {
+					// Project is same major version.
+					// Is it the same minor version, or an upgrade or downgrade?
+					if (project_version_minor > GODOT_VERSION_MINOR) {
+						version_match_type = VersionMatchType::PROJECT_USES_NEWER_MINOR;
+					} else if (project_version_minor < GODOT_VERSION_MINOR) {
+						version_match_type = VersionMatchType::PROJECT_USES_OLDER_MINOR;
+					}
 				}
-				p_features.remove_at(i);
-				i--;
+
+				if (version_match_type != VersionMatchType::PROJECT_USES_SAME) {
+					String project_version_tooltip_text = TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+					if (version_match_type == VersionMatchType::PROJECT_USES_OLDER_MAJOR || version_match_type == VersionMatchType::PROJECT_USES_OLDER_MINOR) {
+						project_version_tooltip_text += vformat(TTR("Opening it will upgrade it to Godot %s.%s."), GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR) + "\n";
+					} else if (version_match_type == VersionMatchType::PROJECT_USES_NEWER_MAJOR || version_match_type == VersionMatchType::PROJECT_USES_NEWER_MINOR) {
+						project_version_tooltip_text += vformat(TTR("Opening it will downgrade it to Godot %s.%s."), GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR) + "\n";
+						project_version_tooltip_text += TTR("Downgrading projects is not recommended.") + "\n";
+					}
+					project_different_version->set_focus_mode(FOCUS_ACCESSIBILITY);
+					project_different_version->set_tooltip_text(project_version_tooltip_text);
+					project_different_version->show();
+				} else {
+					project_different_version->hide();
+				}
+			} else {
+				if (p_features[i] == "3.x") {
+					version_match_type = VersionMatchType::PROJECT_USES_OLDER_MAJOR;
+					String project_version_tooltip_text = TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+					project_version_tooltip_text += vformat(TTR("Opening it will upgrade it to Godot %s.%s."), GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR) + "\n";
+					project_different_version->set_focus_mode(FOCUS_ACCESSIBILITY);
+					project_different_version->set_tooltip_text(project_version_tooltip_text);
+					project_different_version->show();
+				} else if (p_features[i] == TTR("Unknown version")) {
+					unknown_version = true;
+					project_different_version->hide();
+				}
 			}
+
+			p_features.remove_at(i);
+			i--;
+		}
+
+		// This is actually triggered when the project.godot file's config_version
+		// is less than 4, so perhaps it'd be more accurate to say the engine configuration
+		// file's version is not supported...? If the config/features array includes
+		// a proper version number, it will be displayed alongside the "unknown version"
+		// warning otherwise.
+		if (unknown_version) {
+			tooltip_text += TTR("This project uses an unknown version of Godot.") + "\n";
 		}
 		if (p_features.size() > 0) {
 			String unsupported_features_str = String(", ").join(p_features);
 			tooltip_text += TTR("This project uses features unsupported by the current build:") + "\n" + unsupported_features_str;
 		}
+
 		if (tooltip_text.is_empty()) {
 			return;
 		}
@@ -289,6 +367,7 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 		project_unsupported_features->set_tooltip_text(tooltip_text);
 		project_unsupported_features->show();
 	} else {
+		project_different_version->hide();
 		project_unsupported_features->hide();
 	}
 }
@@ -324,13 +403,13 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 		explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
 		explore_button->set_tooltip_text(TTRC("Error: Project is missing on the filesystem."));
 	} else {
-#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
-		explore_button->set_tooltip_text(TTRC("Show in File Manager"));
-#else
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 		// Opening the system file manager is not supported on the Android and web editors.
 		explore_button->hide();
-#endif
+#else // !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+		explore_button->set_tooltip_text(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN));
+#endif // defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 	}
 }
 
@@ -345,6 +424,76 @@ void ProjectListItemControl::set_is_grayed(bool p_grayed) {
 	}
 }
 
+void ProjectListItemControl::set_project_title_index(int p_title_index) {
+	project_title_index = p_title_index;
+}
+
+void ProjectListItemControl::set_project_title_autowrap() {
+	title_fullsize_cache = project_title->get_size().x;
+	window_size_cache = get_window()->get_size().x;
+
+	int tag_size = 0;
+	int tag_maxsize = 0;
+	for (Node *child : tag_container->iterate_children()) {
+		ProjectTag *tag = Object::cast_to<ProjectTag>(child);
+		tag_size += tag->get_size().x;
+
+		if (tag_maxsize == 0) {
+			tag_maxsize = tag->get_custom_maximum_size().x;
+		}
+	}
+	tag_size_cache = MIN(tag_size, tag_maxsize);
+	int &title_size_cache = get_list()->title_size_cache[project_title_index];
+
+	int size_check = 800 * EDSCALE;
+	if (title_size_cache == 0) {
+		title_size_cache = size_check;
+	}
+
+	if (title_fullsize_cache > size_check - tag_size_cache) {
+		resize_project_title();
+	}
+}
+
+void ProjectListItemControl::resize_project_title() {
+	if (get_window() == nullptr) {
+		return;
+	}
+
+	int window_size = get_window()->get_size().x;
+	int difference = window_size - window_size_cache;
+	window_size_cache = window_size;
+
+	int &title_size_cache = get_list()->title_size_cache[project_title_index];
+	title_size_cache += difference;
+
+	if (title_size_cache > title_fullsize_cache + tag_size_cache) {
+		project_title->set_custom_maximum_size(Vector2(-1, -1));
+		project_title->set_custom_minimum_size(Vector2(0, 0));
+		project_title->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
+
+		return;
+	}
+	ProjectTag tag = ProjectTag("dummy");
+	int tag_maxsize = tag.get_custom_maximum_size().x;
+	int title_maxsize = title_size_cache - tag_size_cache;
+	int title_minsize = title_size_cache - tag_maxsize;
+
+	int abs_minsize = (200 * EDSCALE);
+	if (title_fullsize_cache > abs_minsize) {
+		if (title_minsize < abs_minsize) {
+			title_minsize = abs_minsize + tag_maxsize - tag_size_cache;
+		}
+		if (title_maxsize < title_minsize) {
+			project_title->set_custom_maximum_size(Vector2(title_minsize, -1));
+		} else {
+			project_title->set_custom_maximum_size(Vector2(title_maxsize, -1));
+		}
+		project_title->set_custom_minimum_size(Vector2(title_minsize, 0));
+		project_title->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	}
+}
+
 void ProjectListItemControl::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("favorite_pressed"));
 	ADD_SIGNAL(MethodInfo("explore_pressed"));
@@ -354,6 +503,9 @@ void ProjectListItemControl::_bind_methods() {
 ProjectListItemControl::ProjectListItemControl() {
 	set_focus_mode(FocusMode::FOCUS_ALL);
 	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
+	// Left spacer.
+	add_child(memnew(Control));
 
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
 	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
@@ -392,16 +544,13 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_title = memnew(Label);
 		project_title->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_title->set_name("ProjectName");
-		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		project_title->set_clip_text(true);
+		project_title->set_h_size_flags(Control::SIZE_FILL);
 		title_hb->add_child(project_title);
 
-		tag_container = memnew(HBoxContainer);
+		tag_container = memnew(HFlowContainer);
+		tag_container->set_alignment(FlowContainer::ALIGNMENT_END);
+		tag_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		title_hb->add_child(tag_container);
-
-		Control *spacer = memnew(Control);
-		spacer->set_custom_minimum_size(Size2(10, 10));
-		title_hb->add_child(spacer);
 	}
 
 	// Bottom half, containing the path and view folder button.
@@ -413,6 +562,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		explore_button = memnew(Button);
 		explore_button->set_name("ExploreButton");
 		explore_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		explore_button->set_mouse_filter(MOUSE_FILTER_PASS);
 		explore_button->set_tooltip_text(TTRC("Open in file manager"));
 		explore_button->set_flat(true);
 		path_hb->add_child(explore_button);
@@ -433,6 +583,12 @@ ProjectListItemControl::ProjectListItemControl() {
 		path_hb->add_child(project_unsupported_features);
 		project_unsupported_features->hide();
 
+		project_different_version = memnew(TextureRect);
+		project_different_version->set_name("ProjectDifferentVersion");
+		project_different_version->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		path_hb->add_child(project_different_version);
+		project_different_version->hide();
+
 		project_version = memnew(Label);
 		project_version->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_version->set_name("ProjectVersion");
@@ -447,10 +603,6 @@ ProjectListItemControl::ProjectListItemControl() {
 		last_edited_info->set_tooltip_text(TTRC("Last edited timestamp"));
 		last_edited_info->set_modulate(Color(1, 1, 1, 0.5));
 		path_hb->add_child(last_edited_info);
-
-		Control *spacer = memnew(Control);
-		spacer->set_custom_minimum_size(Size2(10, 10));
-		path_hb->add_child(spacer);
 	}
 
 	if (DisplayServer::get_singleton()->is_touchscreen_available()) {
@@ -458,8 +610,12 @@ ProjectListItemControl::ProjectListItemControl() {
 		touch_menu_button->set_theme_type_variation(SceneStringName(FlatButton));
 		touch_menu_button->set_v_size_flags(SIZE_SHRINK_CENTER);
 		add_child(touch_menu_button);
+		touch_menu_button->set_mouse_filter(MOUSE_FILTER_PASS);
 		touch_menu_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_request_menu));
 	}
+
+	// Right spacer.
+	add_child(memnew(Control));
 }
 
 struct ProjectListComparator {
@@ -485,6 +641,15 @@ struct ProjectListComparator {
 		}
 	}
 };
+
+String ProjectList::Item::get_last_edited_string() const {
+	if (missing) {
+		return TTR("Missing Date");
+	}
+
+	OS::TimeZoneInfo tz = OS::get_singleton()->get_time_zone_info();
+	return Time::get_singleton()->get_datetime_string_from_unix_time(last_edited + tz.bias * 60, true);
+}
 
 // Helpers.
 
@@ -533,9 +698,9 @@ void ProjectList::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_LIST_BOX);
-			DisplayServer::get_singleton()->accessibility_update_set_list_item_count(ae, _projects.size());
-			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_MULTISELECTABLE, false);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX);
+			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, _projects.size());
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_MULTISELECTABLE, false);
 		}
 	}
 }
@@ -769,11 +934,14 @@ void ProjectList::update_project_list() {
 	// If you have 150 projects, it may read through 150 files on your disk at once + load 150 icons.
 	// FIXME: Does it really have to be a full, hard reload? Runtime updates should be made much cheaper.
 
+	int temp_title_index = -1;
 	if (ProjectManager::get_singleton()->is_initialized()) {
 		// Clear whole list
 		for (int i = 0; i < _projects.size(); ++i) {
 			Item &project = _projects.write[i];
 			CRASH_COND(project.control == nullptr);
+
+			temp_title_index = project.project_title_index;
 			memdelete(project.control); // Why not queue_free()?
 		}
 
@@ -786,6 +954,9 @@ void ProjectList::update_project_list() {
 
 	// Create controls
 	for (int i = 0; i < _projects.size(); ++i) {
+		Item &item = _projects.write[i];
+		item.project_title_index = temp_title_index;
+
 		_create_project_item_control(i);
 	}
 
@@ -973,10 +1144,14 @@ int ProjectList::refresh_project(const String &dir_path) {
 
 	bool was_selected = _selected_project_paths.has(dir_path);
 
+	int temp_title_index = -1;
+
 	// Remove item in any case
 	for (int i = 0; i < _projects.size(); ++i) {
 		const Item &existing_item = _projects[i];
 		if (existing_item.path == dir_path) {
+			temp_title_index = existing_item.project_title_index;
+
 			_remove_project(i, false);
 			break;
 		}
@@ -988,6 +1163,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 
 		Item item = load_project_data(dir_path, is_favorite);
 
+		item.project_title_index = temp_title_index;
 		_projects.push_back(item);
 		_create_project_item_control(_projects.size() - 1);
 
@@ -1053,6 +1229,15 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->connect("explore_pressed", callable_mp(this, &ProjectList::_on_explore_pressed).bind(item.path));
 #endif
 	hb->connect("request_menu", callable_mp(this, &ProjectList::_open_menu).bind(hb));
+
+	if (item.project_title_index == -1) {
+		project_title_index_count++;
+		title_size_cache[project_title_index_count] = 0;
+		item.project_title_index = project_title_index_count;
+		hb->set_project_title_index(project_title_index_count);
+	} else {
+		hb->set_project_title_index(item.project_title_index);
+	}
 
 	project_list_vbox->add_child(hb);
 	item.control = hb;
@@ -1195,8 +1380,8 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->add_item(TTRC("Run Project"), MENU_RUN);
 		project_context_menu->add_separator();
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-		project_context_menu->add_item(TTRC("Show in File Manager"), MENU_SHOW_IN_FILE_MANAGER);
-#endif
+		project_context_menu->add_item(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN), MENU_SHOW_IN_FILE_MANAGER);
+#endif // !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 		project_context_menu->add_item(TTRC("Copy Path"), MENU_COPY_PATH);
 		project_context_menu->add_separator();
 		project_context_menu->add_item(TTRC("Rename"), MENU_RENAME);
@@ -1207,7 +1392,7 @@ void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {
 		project_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectList::_menu_option));
 		_update_menu_icons();
 	}
-	select_project(clicked_index);
+	clicked_project.control->grab_focus(true);
 
 	for (int id : Vector<int>{
 				 MENU_EDIT,
@@ -1397,6 +1582,14 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 	_last_clicked = "";
 
 	update_dock_menu();
+}
+
+// Resize project titles.
+
+void ProjectList::resize_project_titles() {
+	for (Item &item : _projects) {
+		item.control->resize_project_title();
+	}
 }
 
 // Missing projects.

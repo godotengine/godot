@@ -31,8 +31,9 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
+
+class Sky;
 
 class Environment : public Resource {
 	GDCLASS(Environment, Resource);

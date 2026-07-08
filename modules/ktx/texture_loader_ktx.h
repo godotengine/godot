@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/io/resource_loader.h"
-#include "scene/resources/texture.h"
 
 class ResourceFormatKTX : public ResourceFormatLoader {
 	GDSOFTCLASS(ResourceFormatKTX, ResourceFormatLoader);

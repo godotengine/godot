@@ -30,6 +30,7 @@
 
 #include "separation_ray_shape_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/mesh.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
@@ -90,7 +91,7 @@ void SeparationRayShape3D::_bind_methods() {
 }
 
 SeparationRayShape3D::SeparationRayShape3D() :
-		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_SEPARATION_RAY)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PS3DE::SHAPE_SEPARATION_RAY)) {
 	/* Code copied from setters to prevent the use of uninitialized variables */
 	_update_shape();
 	emit_changed();

@@ -35,12 +35,15 @@
 #include "core/object/script_backtrace.h"
 #include "core/object/script_instance.h"
 #include "core/templates/pair.h"
-#include "core/templates/safe_refcount.h"
 #include "core/variant/typed_array.h"
 
 class ScriptLanguage;
 template <typename T>
 class TypedArray;
+
+#ifdef TOOLS_ENABLED
+class EditorLanguage;
+#endif // TOOLS_ENABLED
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
@@ -71,8 +74,6 @@ class ScriptServer {
 	static bool inheriters_cache_dirty;
 
 public:
-	static ScriptEditRequestFunction edit_request_func;
-
 	static void set_scripting_enabled(bool p_enabled);
 	static bool is_scripting_enabled();
 	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
@@ -100,6 +101,7 @@ public:
 	static bool is_global_class_tool(const String &p_class);
 	static void get_global_class_list(LocalVector<StringName> &r_global_classes);
 	static void get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
+	static void get_indirect_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
 	static void save_global_classes();
 
 	static Vector<Ref<ScriptBacktrace>> capture_script_backtraces(bool p_include_variables = false);
@@ -153,7 +155,6 @@ public:
 	virtual StringName get_instance_base_type() const = 0; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
 	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) { return nullptr; }
-	virtual bool instance_has(const Object *p_this) const = 0;
 
 	virtual bool has_source_code() const = 0;
 	virtual String get_source_code() const = 0;
@@ -176,7 +177,7 @@ public:
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
-	virtual bool is_valid() const = 0;
+	virtual bool is_script_valid() const = 0;
 	virtual bool is_abstract() const = 0;
 
 	virtual ScriptLanguage *get_language() const = 0;
@@ -202,6 +203,10 @@ public:
 	Script() {
 		_define_ancestry(AncestralClass::SCRIPT);
 	}
+
+#ifndef DISABLE_DEPRECATED
+	[[deprecated("Use Object::get_script instead.")]] bool instance_has(const Object *p_this) const { return p_this != nullptr && Object::cast_to<Script>(p_this->get_script()) == this; }
+#endif // !DISABLE_DEPRECATED
 };
 
 class ScriptLanguage : public Object {
@@ -220,8 +225,16 @@ public:
 	virtual void finish() = 0;
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	// Must not return `nullptr`. `EditorLanguage` can be used as default implementation for languages without editor support.
+	virtual EditorLanguage *get_editor_language() = 0;
+#endif // TOOLS_ENABLED
+
 	struct Warning {
-		int start_line = -1, end_line = -1;
+		/// One-based.
+		int start_line = 0;
+		/// One-based.
+		int end_line = 0;
 		int code;
 		String string_code;
 		String message;
@@ -229,7 +242,9 @@ public:
 
 	struct ScriptError {
 		String path;
+		/// One-based.
 		int line = -1;
+		/// One-based.
 		int column = -1;
 		String message;
 	};
@@ -272,7 +287,6 @@ public:
 	virtual bool is_using_templates() { return false; }
 	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
-	virtual Script *create_script() const = 0;
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }
 	virtual bool can_inherit_from_file() const { return false; }
@@ -296,6 +310,7 @@ public:
 		CODE_COMPLETION_KIND_NODE_PATH,
 		CODE_COMPLETION_KIND_FILE_PATH,
 		CODE_COMPLETION_KIND_PLAIN_TEXT,
+		CODE_COMPLETION_KIND_KEYWORD,
 		CODE_COMPLETION_KIND_MAX
 	};
 
@@ -307,10 +322,27 @@ public:
 		LOCATION_OTHER = 1 << 10,
 	};
 
+	struct TextEdit {
+		String new_text;
+		int start_line = -1;
+		int start_column;
+		int end_line;
+		int end_column;
+
+		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
+	};
+
 	struct CodeCompletionOption {
 		CodeCompletionKind kind = CODE_COMPLETION_KIND_PLAIN_TEXT;
 		String display;
 		String insert_text;
+		/**
+		 * Optional server side calculated insertion.
+		 *
+		 * In contrast to `insert_text`, the editor must not do matching of preexisting text on `text_edit`.
+		 * Note: This is used by the language server, there is no support in the builtin editor for this property at the moment.
+		 */
+		TextEdit text_edit;
 		Color font_color;
 		Ref<Resource> icon;
 		Variant default_value;
@@ -336,53 +368,6 @@ public:
 	private:
 		TypedArray<int> charac;
 	};
-
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
-
-	enum LookupResultType {
-		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.
-		LOOKUP_RESULT_CLASS,
-		LOOKUP_RESULT_CLASS_CONSTANT,
-		LOOKUP_RESULT_CLASS_PROPERTY,
-		LOOKUP_RESULT_CLASS_METHOD,
-		LOOKUP_RESULT_CLASS_SIGNAL,
-		LOOKUP_RESULT_CLASS_ENUM,
-		LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE, // Deprecated.
-		LOOKUP_RESULT_CLASS_ANNOTATION,
-		LOOKUP_RESULT_LOCAL_CONSTANT,
-		LOOKUP_RESULT_LOCAL_VARIABLE,
-		LOOKUP_RESULT_MAX,
-	};
-
-	struct LookupResult {
-		LookupResultType type;
-
-		// For `CLASS_*`.
-		String class_name;
-		String class_member;
-
-		// For `LOCAL_*`.
-		String description;
-		bool is_deprecated = false;
-		String deprecated_message;
-		bool is_experimental = false;
-		String experimental_message;
-
-		// For `LOCAL_*`.
-		String doc_type;
-		String enumeration;
-		bool is_bitfield = false;
-
-		// For `LOCAL_*`.
-		String value;
-
-		// `SCRIPT_LOCATION` and `LOCAL_*` must have, `CLASS_*` can have.
-		Ref<Script> script;
-		String script_path;
-		int location = -1;
-	};
-
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
 
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;

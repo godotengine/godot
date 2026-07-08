@@ -31,6 +31,7 @@
 #include "vehicle_body_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 #define ROLLING_INFLUENCE_FIX
 
@@ -470,11 +471,11 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 
 	real_t param = real_t(0.);
 
-	PhysicsDirectSpaceState3D::RayResult rr;
+	PS3DT::RayResult rr;
 
 	PhysicsDirectSpaceState3D *ss = s->get_space_state();
 
-	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	PS3DT::RayParameters ray_params;
 	ray_params.from = source;
 	ray_params.to = target;
 	ray_params.exclude = exclude;

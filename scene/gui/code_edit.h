@@ -50,6 +50,7 @@ public:
 		KIND_NODE_PATH,
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
+		KIND_KEYWORD,
 	};
 
 	// core/object/script_language.h - ScriptLanguage::CodeCompletionLocation
@@ -208,11 +209,15 @@ private:
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
 
+	Vector2 completion_touch_drag_accum;
 	bool code_completion_active = false;
 	bool is_code_completion_scroll_hovered = false;
 	bool is_code_completion_scroll_pressed = false;
 	bool is_code_completion_drag_started = false;
 	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
+	Vector<RID> code_completion_ac_items;
+	RID code_completion_ac_scroll_element;
+	RID code_completion_ac_root_element;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;
 	int code_completion_force_item_center = -1;
@@ -335,6 +340,8 @@ protected:
 	virtual void _handle_unicode_input_internal(const uint32_t p_unicode, int p_caret) override;
 	virtual void _backspace_internal(int p_caret) override;
 	virtual void _cut_internal(int p_caret) override;
+
+	virtual RID get_focused_accessibility_element() const override;
 
 	GDVIRTUAL1(_confirm_code_completion, bool)
 	GDVIRTUAL1(_request_code_completion, bool)
@@ -523,6 +530,7 @@ public:
 	void move_lines_up();
 	void move_lines_down();
 	void delete_lines();
+	void join_lines(const String &p_line_ending = " ");
 	void duplicate_selection();
 	void duplicate_lines();
 

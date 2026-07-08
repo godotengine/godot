@@ -32,12 +32,16 @@
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
+#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/safe_refcount.h"
 #include "core/templates/span.h"
 
 #include <initializer_list>
 #include <type_traits>
+
+#ifdef ASAN_ENABLED
+#include <sanitizer/asan_interface.h>
+#endif
 
 static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
 
@@ -157,13 +161,13 @@ public:
 		p_from._ptr = nullptr;
 	}
 
-	_FORCE_INLINE_ T *ptrw() {
+	_FORCE_INLINE_ T *ptrw() _LIFETIME_BOUND_ {
 		// If forking fails, we can only crash.
 		CRASH_COND(_copy_on_write());
 		return _ptr;
 	}
 
-	_FORCE_INLINE_ const T *ptr() const {
+	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ {
 		return _ptr;
 	}
 
@@ -181,7 +185,7 @@ public:
 		_ptr[p_index] = p_elem;
 	}
 
-	_FORCE_INLINE_ T &get_m(Size p_index) {
+	_FORCE_INLINE_ T &get_m(Size p_index) _LIFETIME_BOUND_ {
 		CRASH_BAD_INDEX(p_index, size());
 		// If we fail to fork, all we can do is crash,
 		// since the caller may write incorrectly to the unforked array.
@@ -189,7 +193,7 @@ public:
 		return _ptr[p_index];
 	}
 
-	_FORCE_INLINE_ const T &get(Size p_index) const {
+	_FORCE_INLINE_ const T &get(Size p_index) const _LIFETIME_BOUND_ {
 		CRASH_BAD_INDEX(p_index, size());
 
 		return _ptr[p_index];
@@ -209,12 +213,13 @@ public:
 	Error insert(Size p_pos, T &&p_val);
 	Error push_back(T &&p_val);
 
-	_FORCE_INLINE_ operator Span<T>() const { return Span<T>(ptr(), size()); }
-	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return Span<T>(ptr(), size()); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return operator Span<T>(); }
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData() { _unref(); }
 	_FORCE_INLINE_ CowData(std::initializer_list<T> p_init);
+	_FORCE_INLINE_ explicit CowData(Span<T> p_span);
 	_FORCE_INLINE_ CowData(const CowData<T> &p_from) { _ref(p_from); }
 	_FORCE_INLINE_ CowData(CowData<T> &&p_from) {
 		_ptr = p_from._ptr;
@@ -246,17 +251,21 @@ void CowData<T>::_unref() {
 	T *prev_ptr = _ptr;
 	_ptr = nullptr;
 
-	destruct_arr_placement(prev_ptr, current_size);
+#ifdef ASAN_ENABLED
+	// Access during destruction is illegal in C++, and results in undefined behavior.
+	// In address sanitizer builds, we can poison ourselves (_ptr) to catch this.
+	__asan_poison_memory_region(this, sizeof(CowData));
+#endif
 
-	// Safety check; none of the destructors should have added elements during destruction.
-	DEV_ASSERT(!_ptr);
+	destruct_arr_placement(prev_ptr, current_size);
 
 	// Free Memory.
 	Memory::free_static((uint8_t *)prev_ptr - DATA_OFFSET, false);
 
-#ifdef DEBUG_ENABLED
-	// If any destructors access us through pointers, it is a bug.
-	// We can't really test for that, but we can at least check no items have been added.
+#ifdef ASAN_ENABLED
+	__asan_unpoison_memory_region(this, sizeof(CowData));
+#elif defined(DEBUG_ENABLED)
+	// In a non-asan build, the best we can do is catch if elements were added during destruction.
 	ERR_FAIL_COND_MSG(_ptr != nullptr, "Internal bug, please report: CowData was modified during destruction.");
 #endif
 }
@@ -567,6 +576,14 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 
 	copy_arr_placement(_ptr, p_init.begin(), p_init.size());
 	*_get_size() = p_init.size();
+}
+
+template <typename T>
+CowData<T>::CowData(Span<T> p_span) {
+	CRASH_COND(_alloc_exact(p_span.size()));
+
+	copy_arr_placement(_ptr, p_span.begin(), p_span.size());
+	*_get_size() = p_span.size();
 }
 
 GODOT_GCC_WARNING_POP

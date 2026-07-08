@@ -31,6 +31,9 @@
 #include "editor_plugin.h"
 #include "editor_plugin.compat.inc"
 
+#include "core/io/resource_importer.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/docks/editor_dock.h"
@@ -51,6 +54,7 @@
 #include "editor/plugins/editor_plugin_list.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/project_settings_editor.h"
@@ -68,12 +72,12 @@ void EditorPlugin::remove_custom_type(const String &p_type) {
 
 void EditorPlugin::add_autoload_singleton(const String &p_name, const String &p_path) {
 	if (p_path.begins_with("res://")) {
-		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, p_path);
+		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, p_path, false);
 	} else {
 		const Ref<Script> plugin_script = static_cast<Ref<Script>>(get_script());
 		ERR_FAIL_COND(plugin_script.is_null());
 		const String script_base_path = plugin_script->get_path().get_base_dir();
-		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, script_base_path.path_join(p_path));
+		EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_add(p_name, script_base_path.path_join(p_path), false);
 	}
 }
 
@@ -90,11 +94,12 @@ Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const Stri
 void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL(p_control);
 	ERR_FAIL_COND(legacy_docks.has(p_control));
+	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
 	EditorDock *dock = memnew(EditorDock);
 	dock->set_title(p_control->get_name());
 	dock->set_dock_shortcut(p_shortcut);
-	dock->set_default_slot((DockConstants::DockSlot)p_slot);
+	dock->set_default_slot((EditorDock::DockSlot)p_slot);
 	dock->add_child(p_control);
 	legacy_docks[p_control] = dock;
 
@@ -104,6 +109,9 @@ void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, cons
 void EditorPlugin::remove_control_from_docks(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 	ERR_FAIL_COND(!legacy_docks.has(p_control));
+
+	// Ensure freeing the legacy dock won't free `p_control` (freeing it is up to the user).
+	legacy_docks[p_control]->remove_child(p_control);
 
 	EditorDockManager::get_singleton()->remove_dock(legacy_docks[p_control]);
 	legacy_docks[p_control]->queue_free();
@@ -483,16 +491,6 @@ void EditorPlugin::remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin
 	Node3DEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
 }
 
-void EditorPlugin::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
-	ERR_FAIL_COND(p_plugin.is_null());
-	EditorInspector::add_inspector_plugin(p_plugin);
-}
-
-void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
-	ERR_FAIL_COND(p_plugin.is_null());
-	EditorInspector::remove_inspector_plugin(p_plugin);
-}
-
 void EditorPlugin::add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(p_importer.is_null());
 	ResourceImporterScene::add_scene_importer(p_importer, p_first_priority);
@@ -509,6 +507,16 @@ void EditorPlugin::add_scene_post_import_plugin(const Ref<EditorScenePostImportP
 
 void EditorPlugin::remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
 	ResourceImporterScene::remove_post_importer_plugin(p_plugin);
+}
+
+void EditorPlugin::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	EditorInspector::add_inspector_plugin(p_plugin);
+}
+
+void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	EditorInspector::remove_inspector_plugin(p_plugin);
 }
 
 void EditorPlugin::add_context_menu_plugin(EditorContextMenuPlugin::ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin) {
@@ -654,16 +662,10 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_translation_parser_plugin", "parser"), &EditorPlugin::remove_translation_parser_plugin);
 	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer", "first_priority"), &EditorPlugin::add_import_plugin, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer"), &EditorPlugin::remove_import_plugin);
-	ClassDB::bind_method(D_METHOD("add_scene_format_importer_plugin", "scene_format_importer", "first_priority"), &EditorPlugin::add_scene_format_importer_plugin, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("remove_scene_format_importer_plugin", "scene_format_importer"), &EditorPlugin::remove_scene_format_importer_plugin);
-	ClassDB::bind_method(D_METHOD("add_scene_post_import_plugin", "scene_import_plugin", "first_priority"), &EditorPlugin::add_scene_post_import_plugin, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("remove_scene_post_import_plugin", "scene_import_plugin"), &EditorPlugin::remove_scene_post_import_plugin);
 	ClassDB::bind_method(D_METHOD("add_export_plugin", "plugin"), &EditorPlugin::add_export_plugin);
 	ClassDB::bind_method(D_METHOD("remove_export_plugin", "plugin"), &EditorPlugin::remove_export_plugin);
 	ClassDB::bind_method(D_METHOD("add_export_platform", "platform"), &EditorPlugin::add_export_platform);
 	ClassDB::bind_method(D_METHOD("remove_export_platform", "platform"), &EditorPlugin::remove_export_platform);
-	ClassDB::bind_method(D_METHOD("add_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::add_node_3d_gizmo_plugin);
-	ClassDB::bind_method(D_METHOD("remove_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::remove_node_3d_gizmo_plugin);
 	ClassDB::bind_method(D_METHOD("add_inspector_plugin", "plugin"), &EditorPlugin::add_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("remove_inspector_plugin", "plugin"), &EditorPlugin::remove_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("add_resource_conversion_plugin", "plugin"), &EditorPlugin::add_resource_conversion_plugin);
@@ -672,6 +674,13 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_force_draw_over_forwarding_enabled"), &EditorPlugin::set_force_draw_over_forwarding_enabled);
 	ClassDB::bind_method(D_METHOD("add_context_menu_plugin", "slot", "plugin"), &EditorPlugin::add_context_menu_plugin);
 	ClassDB::bind_method(D_METHOD("remove_context_menu_plugin", "plugin"), &EditorPlugin::remove_context_menu_plugin);
+
+	ClassDB::bind_method(D_METHOD("add_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::add_node_3d_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("remove_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::remove_node_3d_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("add_scene_format_importer_plugin", "scene_format_importer", "first_priority"), &EditorPlugin::add_scene_format_importer_plugin, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_scene_format_importer_plugin", "scene_format_importer"), &EditorPlugin::remove_scene_format_importer_plugin);
+	ClassDB::bind_method(D_METHOD("add_scene_post_import_plugin", "scene_import_plugin", "first_priority"), &EditorPlugin::add_scene_post_import_plugin, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_scene_post_import_plugin", "scene_import_plugin"), &EditorPlugin::remove_scene_post_import_plugin);
 
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
@@ -705,10 +714,10 @@ void EditorPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_enable_plugin);
 	GDVIRTUAL_BIND(_disable_plugin);
 
-	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("main_screen_changed", PropertyInfo(Variant::STRING, "screen_name")));
-	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static())));
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "filepath")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
 
@@ -725,6 +734,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_LEFT);
 	BIND_ENUM_CONSTANT(CONTAINER_PROJECT_SETTING_TAB_RIGHT);
 
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(DOCK_SLOT_NONE);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_UL);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_LEFT_BL);
@@ -736,6 +746,7 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
+#endif
 
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_PASS);
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_STOP);

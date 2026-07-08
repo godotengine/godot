@@ -41,7 +41,7 @@ GroupsDock::GroupsDock() {
 	set_name(TTRC("Groups"));
 	set_icon_name("Groups");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_groups", TTRC("Open Groups Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_RIGHT_UL);
+	set_default_slot(EditorDock::DOCK_SLOT_RIGHT_UL);
 
 	groups = memnew(GroupsEditor);
 	groups->set_v_size_flags(SIZE_EXPAND_FILL);

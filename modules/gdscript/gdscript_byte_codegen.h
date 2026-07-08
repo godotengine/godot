@@ -100,15 +100,8 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	int current_line = 0;
 	int instr_args_max = 0;
 
-#ifdef DEBUG_ENABLED
-	List<int> temp_stack;
-#endif
-
 	HashMap<Variant, int> constant_map;
 	RBMap<StringName, int> name_map;
-#ifdef TOOLS_ENABLED
-	Vector<StringName> named_globals;
-#endif
 	RBMap<Variant::ValidatedOperatorEvaluator, int> operator_func_map;
 	RBMap<Variant::ValidatedSetter, int> setters_map;
 	RBMap<Variant::ValidatedGetter, int> getters_map;
@@ -552,7 +545,7 @@ public:
 	virtual void write_continue() override;
 	virtual void write_breakpoint() override;
 	virtual void write_newline(int p_line) override;
-	virtual void write_return(const Address &p_return_value) override;
+	virtual void write_return(const Address &p_return_value, bool p_use_conversion) override;
 	virtual void write_assert(const Address &p_test, const Address &p_message) override;
 
 	virtual ~GDScriptByteCodeGenerator();

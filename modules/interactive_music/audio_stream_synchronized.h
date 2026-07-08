@@ -63,7 +63,6 @@ public:
 	float get_sync_stream_volume(int p_stream_index) const;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 	virtual double get_length() const override;
 	virtual bool is_meta_stream() const override { return true; }
 

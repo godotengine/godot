@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/variant/typed_dictionary.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_frame.h"
 #include "scene/gui/graph_node.h"
@@ -404,8 +403,6 @@ public:
 	static void finish_shaders();
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
-
-	PackedStringArray get_configuration_warnings() const override;
 
 	void key_input(const Ref<InputEvent> &p_ev);
 

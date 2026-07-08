@@ -193,20 +193,20 @@ public:
 	static Variant::Type get_return_type() { return GetTypeInfo<Vector4>::VARIANT_TYPE; }
 };
 
-#define register_string_op(m_op_type, m_op_code)                                                               \
-	if constexpr (true) {                                                                                      \
-		register_op<m_op_type<String, String>>(m_op_code, Variant::STRING, Variant::STRING);                   \
-		register_op<m_op_type<String, StringName>>(m_op_code, Variant::STRING, Variant::STRING_NAME);          \
-		register_op<m_op_type<StringName, String>>(m_op_code, Variant::STRING_NAME, Variant::STRING);          \
+#define register_string_op(m_op_type, m_op_code) \
+	if constexpr (true) { \
+		register_op<m_op_type<String, String>>(m_op_code, Variant::STRING, Variant::STRING); \
+		register_op<m_op_type<String, StringName>>(m_op_code, Variant::STRING, Variant::STRING_NAME); \
+		register_op<m_op_type<StringName, String>>(m_op_code, Variant::STRING_NAME, Variant::STRING); \
 		register_op<m_op_type<StringName, StringName>>(m_op_code, Variant::STRING_NAME, Variant::STRING_NAME); \
-	} else                                                                                                     \
+	} else \
 		((void)0)
 
-#define register_string_modulo_op(m_class, m_type)                                                                         \
-	if constexpr (true) {                                                                                                  \
-		register_op<OperatorEvaluatorStringFormat<String, m_class>>(Variant::OP_MODULE, Variant::STRING, m_type);          \
+#define register_string_modulo_op(m_class, m_type) \
+	if constexpr (true) { \
+		register_op<OperatorEvaluatorStringFormat<String, m_class>>(Variant::OP_MODULE, Variant::STRING, m_type); \
 		register_op<OperatorEvaluatorStringFormat<StringName, m_class>>(Variant::OP_MODULE, Variant::STRING_NAME, m_type); \
-	} else                                                                                                                 \
+	} else \
 		((void)0)
 
 void Variant::_register_variant_operators() {
@@ -744,6 +744,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorLess<::RID, ::RID>>(Variant::OP_LESS, Variant::RID, Variant::RID);
 	register_op<OperatorEvaluatorLess<Array, Array>>(Variant::OP_LESS, Variant::ARRAY, Variant::ARRAY);
 
+	register_op<OperatorEvaluatorLessEqual<bool, bool>>(Variant::OP_LESS_EQUAL, Variant::BOOL, Variant::BOOL);
 	register_op<OperatorEvaluatorLessEqual<int64_t, int64_t>>(Variant::OP_LESS_EQUAL, Variant::INT, Variant::INT);
 	register_op<OperatorEvaluatorLessEqual<int64_t, double>>(Variant::OP_LESS_EQUAL, Variant::INT, Variant::FLOAT);
 	register_op<OperatorEvaluatorLessEqual<double, int64_t>>(Variant::OP_LESS_EQUAL, Variant::FLOAT, Variant::INT);
@@ -775,6 +776,7 @@ void Variant::_register_variant_operators() {
 	register_op<OperatorEvaluatorGreater<::RID, ::RID>>(Variant::OP_GREATER, Variant::RID, Variant::RID);
 	register_op<OperatorEvaluatorGreater<Array, Array>>(Variant::OP_GREATER, Variant::ARRAY, Variant::ARRAY);
 
+	register_op<OperatorEvaluatorGreaterEqual<bool, bool>>(Variant::OP_GREATER_EQUAL, Variant::BOOL, Variant::BOOL);
 	register_op<OperatorEvaluatorGreaterEqual<int64_t, int64_t>>(Variant::OP_GREATER_EQUAL, Variant::INT, Variant::INT);
 	register_op<OperatorEvaluatorGreaterEqual<int64_t, double>>(Variant::OP_GREATER_EQUAL, Variant::INT, Variant::FLOAT);
 	register_op<OperatorEvaluatorGreaterEqual<double, int64_t>>(Variant::OP_GREATER_EQUAL, Variant::FLOAT, Variant::INT);

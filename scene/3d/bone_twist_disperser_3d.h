@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/3d/skeleton_modifier_3d.h"
+#include "scene/resources/curve.h"
 
 class BoneTwistDisperser3D : public SkeletonModifier3D {
 	GDCLASS(BoneTwistDisperser3D, SkeletonModifier3D);
@@ -101,6 +102,8 @@ protected:
 
 	void _make_joints_dirty(int p_index);
 	void _update_joints(int p_index);
+	void _set_joint_bone(int p_index, int p_joint, int p_bone);
+
 	void _update_reference_bone(int p_index);
 	void _update_curve(int p_index);
 
@@ -146,9 +149,7 @@ public:
 	Ref<Curve> get_damping_curve(int p_index) const;
 
 	// Individual joints.
-	void set_joint_bone_name(int p_index, int p_joint, const String &p_bone_name);
 	String get_joint_bone_name(int p_index, int p_joint) const;
-	void set_joint_bone(int p_index, int p_joint, int p_bone);
 	int get_joint_bone(int p_index, int p_joint) const;
 
 	void set_joint_twist_amount(int p_index, int p_joint, float p_amount);

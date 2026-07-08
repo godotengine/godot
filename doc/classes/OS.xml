@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OS" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides access to common operating system functionalities.
 	</brief_description>
@@ -46,9 +46,9 @@
 			<param index="0" name="arguments" type="PackedStringArray" />
 			<description>
 				Creates a new instance of Godot that runs independently. The [param arguments] are used in the given order and separated by a space.
-				If the process is successfully created, this method returns the new process' ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
+				If the process is successfully created, this method returns the new process's ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process cannot be created, this method returns [code]-1[/code].
 				See [method create_process] if you wish to run a different process.
-				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="create_process">
@@ -337,8 +337,8 @@
 				- [code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
 				- [code skip-lint]Script[/code] - 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
 				- [code]COUNTRY[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
-				- [code]VARIANT[/code] - language variant, region and sort order. The variant can have any number of underscored keywords.
-				- [code]extra[/code] - semicolon separated list of additional key words. This may include currency, calendar, sort order and numbering system information.
+				- [code]VARIANT[/code] - language variant, region, and sort order. The variant can have any number of underscored keywords.
+				- [code]extra[/code] - semicolon separated list of additional key words. This may include currency, calendar, sort order, and numbering system information.
 				If you want only the language code and not the fully specified locale from the OS, you can use [method get_locale_language].
 			</description>
 		</method>
@@ -433,6 +433,18 @@
 				[b]Note:[/b] On Web platforms, it is still possible to determine the host platform's OS with feature tags. See [method has_feature].
 			</description>
 		</method>
+		<method name="get_preferred_locales" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of locales preferred by the user, in order of preference. Each locale is as a [String] on the form [code]language_Script_COUNTRY_VARIANT@extra[/code]. Every substring after [code]language[/code] is optional and may not exist.
+				- [code]language[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes]language code[/url], in lower case.
+				- [code skip-lint]Script[/code] - 4-letter [url=https://en.wikipedia.org/wiki/ISO_15924]script code[/url], in title case.
+				- [code]COUNTRY[/code] - 2 or 3-letter [url=https://en.wikipedia.org/wiki/ISO_3166-1]country code[/url], in upper case.
+				- [code]VARIANT[/code] - language variant, region, and sort order. The variant can have any number of underscored keywords.
+				- [code]extra[/code] - semicolon separated list of additional key words. This may include currency, calendar, sort order, and numbering system information.
+				[b]Note:[/b] This method is implemented on macOS, iOS, and Windows.
+			</description>
+		</method>
 		<method name="get_process_exit_code" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="pid" type="int" />
@@ -460,7 +472,7 @@
 			<return type="String" />
 			<description>
 				Returns the full name of the CPU model on the host machine (e.g. [code]"Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz"[/code]).
-				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android and Web, [method get_processor_name] returns an empty string.
+				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux, Android (API level 31+), and iOS. On Web, [method get_processor_name] returns an empty string.
 			</description>
 		</method>
 		<method name="get_restart_on_exit_arguments" qualifiers="const">
@@ -868,7 +880,7 @@
 				- [code]OS.shell_open("C:\\Users\\name\\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
 				- [code]OS.shell_open("C:/Users/name/Downloads")[/code] also works on Windows and opens the file explorer at the user's Downloads folder.
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
-				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
+				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The mailto URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] project path into a system path for use with this method.
 				[b]Note:[/b] Use [method String.uri_encode] to encode characters within URLs in a URL-safe, portable way. This is especially required for line breaks. Otherwise, [method shell_open] may not work correctly in a project exported to the Web platform.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS and Windows.
@@ -910,13 +922,13 @@
 	</members>
 	<constants>
 		<constant name="RENDERING_DRIVER_VULKAN" value="0" enum="RenderingDriver">
-			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
+			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1, 1.2, and 1.3 if available.
 		</constant>
 		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver">
 			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
 		<constant name="RENDERING_DRIVER_D3D12" value="2" enum="RenderingDriver">
-			The Direct3D 12 rendering driver.
+			The Direct3D 12 rendering driver. It requires the 12_0 feature level and Shader Model 6.0 support.
 		</constant>
 		<constant name="RENDERING_DRIVER_METAL" value="3" enum="RenderingDriver">
 			The Metal rendering driver.

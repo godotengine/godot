@@ -32,12 +32,15 @@
 #include "audio_stream_player_2d.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/world_2d.h"
 #include "servers/audio/audio_server.h"
 #include "servers/audio/audio_stream.h"
+#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
 
 #ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/area_2d.h"
@@ -80,6 +83,10 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 // Interacts with PhysicsServer2D, so can only be called during _physics_process.
 StringName AudioStreamPlayer2D::_get_actual_bus() {
 #ifndef PHYSICS_2D_DISABLED
+	if (area_mask == 0) {
+		return internal->bus;
+	}
+
 	Vector2 global_pos = get_global_position();
 
 	//check if any area is diverting sound into a bus
@@ -88,9 +95,9 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
 	ERR_FAIL_NULL_V(space_state, SceneStringName(Master));
-	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
+	PS2DT::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-	PhysicsDirectSpaceState2D::PointParameters point_params;
+	PS2DT::PointParameters point_params;
 	point_params.position = global_pos;
 	point_params.collision_mask = area_mask;
 	point_params.collide_with_bodies = false;
@@ -125,7 +132,7 @@ void AudioStreamPlayer2D::_update_panning() {
 
 	Vector2 global_pos = get_global_position();
 
-	HashSet<Viewport *> viewports = world_2d->get_viewports();
+	HashSet<Viewport *> viewports(world_2d->get_viewports());
 
 	volume_vector.resize(4);
 	volume_vector.write[0] = AudioFrame(0, 0);
@@ -426,8 +433,8 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_playback_type", "playback_type"), &AudioStreamPlayer2D::set_playback_type);
 	ClassDB::bind_method(D_METHOD("get_playback_type"), &AudioStreamPlayer2D::get_playback_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), "set_stream", "get_stream");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,or_greater,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_ONESHOT, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");

@@ -31,9 +31,9 @@
 #include "rendering_shader_container.h"
 
 #include "core/io/compression.h"
-
 #include "servers/rendering/renderer_rd/shader_rd.h"
-#include "thirdparty/spirv-reflect/spirv_reflect.h"
+
+#include <thirdparty/spirv-reflect/spirv_reflect.h>
 
 static inline uint32_t aligned_to(uint32_t p_size, uint32_t p_alignment) {
 	if (p_size % p_alignment) {
@@ -139,7 +139,22 @@ void RenderingShaderContainer::_set_from_shader_reflection_post(const ReflectSha
 	// Do nothing.
 }
 
-static RenderingDeviceCommons::DataFormat spv_image_format_to_data_format(const SpvImageFormat p_format) {
+static RenderingDeviceCommons::TextureType _spv_image_dim_to_texture_type(SpvDim p_dim, bool p_arrayed) {
+	switch (p_dim) {
+		case SpvDim1D:
+			return p_arrayed ? RenderingDeviceCommons::TEXTURE_TYPE_1D_ARRAY : RenderingDeviceCommons::TEXTURE_TYPE_1D;
+		case SpvDim2D:
+			return p_arrayed ? RenderingDeviceCommons::TEXTURE_TYPE_2D_ARRAY : RenderingDeviceCommons::TEXTURE_TYPE_2D;
+		case SpvDim3D:
+			return RenderingDeviceCommons::TEXTURE_TYPE_3D;
+		case SpvDimCube:
+			return p_arrayed ? RenderingDeviceCommons::TEXTURE_TYPE_CUBE_ARRAY : RenderingDeviceCommons::TEXTURE_TYPE_CUBE;
+		default:
+			return RenderingDeviceCommons::TEXTURE_TYPE_MAX;
+	}
+}
+
+static RenderingDeviceCommons::DataFormat _spv_image_format_to_data_format(const SpvImageFormat p_format) {
 	using RDC = RenderingDeviceCommons;
 	switch (p_format) {
 		case SpvImageFormatUnknown:
@@ -242,11 +257,41 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 	LocalVector<ReflectShaderStage> &r_refl = r_shader.shader_stages;
 	r_refl.resize(spirv_size);
 
+	bool pipeline_type_detected = false;
 	for (uint32_t i = 0; i < spirv_size; i++) {
 		RDC::ShaderStage stage = p_spirv[i].shader_stage;
 		RDC::ShaderStage stage_flag = (RDC::ShaderStage)(1 << stage);
 		r_refl[i].shader_stage = stage;
 		r_refl[i]._spirv_data = p_spirv[i].spirv;
+
+		RDC::PipelineType pipeline_type = {};
+		switch (stage) {
+			case RDC::SHADER_STAGE_VERTEX:
+			case RDC::SHADER_STAGE_FRAGMENT:
+			case RDC::SHADER_STAGE_TESSELATION_CONTROL:
+			case RDC::SHADER_STAGE_TESSELATION_EVALUATION:
+				pipeline_type = RDC::PIPELINE_TYPE_RASTERIZATION;
+				break;
+			case RDC::SHADER_STAGE_COMPUTE:
+				pipeline_type = RDC::PIPELINE_TYPE_COMPUTE;
+				break;
+			case RDC::SHADER_STAGE_RAYGEN:
+			case RDC::SHADER_STAGE_ANY_HIT:
+			case RDC::SHADER_STAGE_CLOSEST_HIT:
+			case RDC::SHADER_STAGE_MISS:
+			case RDC::SHADER_STAGE_INTERSECTION:
+				pipeline_type = RDC::PIPELINE_TYPE_RAYTRACING;
+				break;
+			default:
+				DEV_ASSERT(false && "Unknown shader stage.");
+		}
+
+		if (pipeline_type_detected) {
+			ERR_FAIL_COND_V_MSG(r_shader.pipeline_type != pipeline_type, FAILED, "Shader stages of different pipeline types cannot be mixed in the same shader container.");
+		} else {
+			r_shader.pipeline_type = pipeline_type;
+			pipeline_type_detected = true;
+		}
 
 		const Vector<uint64_t> &dynamic_buffers = p_spirv[i].dynamic_buffers;
 
@@ -255,8 +300,21 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 					"Compute shaders can only receive one stage, dedicated to compute.");
 		}
 		ERR_FAIL_COND_V_MSG(reflection.stages_bits.has_flag(stage_flag), FAILED,
-				"Stage " + String(RDC::SHADER_STAGE_NAMES[p_spirv[i].shader_stage]) + " submitted more than once.");
+				"Stage " + String(RDC::SHADER_STAGE_NAMES[stage]) + " submitted more than once.");
 		reflection.stages_bits.set_flag(stage_flag);
+
+		// We make all raytracing stages visible to make our lives easier when creating raytracing pipelines.
+		// This makes no practical difference in current graphics drivers, since Vulkan is the outlier.
+		BitField<RDC::ShaderStage> uniform_stage_flags;
+		if (pipeline_type == RDC::PIPELINE_TYPE_RAYTRACING) {
+			uniform_stage_flags = RDC::SHADER_STAGE_RAYGEN |
+					RDC::SHADER_STAGE_ANY_HIT |
+					RDC::SHADER_STAGE_CLOSEST_HIT |
+					RDC::SHADER_STAGE_MISS |
+					RDC::SHADER_STAGE_INTERSECTION;
+		} else {
+			uniform_stage_flags = stage_flag;
+		}
 
 		{
 			SpvReflectShaderModule &module = *r_refl.ptr()[i]._module;
@@ -370,8 +428,7 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 							is_image = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR: {
-							ERR_PRINT("Acceleration structure not supported.");
-							continue;
+							uniform.type = RDC::UNIFORM_TYPE_ACCELERATION_STRUCTURE;
 						} break;
 					}
 
@@ -396,8 +453,14 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 						uniform.writable = false;
 					}
 
-					if (is_image) {
-						uniform.image.format = spv_image_format_to_data_format(binding.image.image_format);
+					// Gather the texture type and format for runtime validation when creating uniform sets.
+					// We cannot enforce the type for input attachments since they do not indicate whether the texture is 2D or 2D array for multiview.
+					if (is_image && binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT) {
+						uniform.texture_type = _spv_image_dim_to_texture_type(binding.image.dim, binding.image.arrayed);
+						uniform.texture_format = _spv_image_format_to_data_format(binding.image.image_format);
+
+						ERR_FAIL_COND_V_MSG(uniform.texture_type == RDC::TEXTURE_TYPE_MAX, FAILED,
+								"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + binding.name + "' does not have a valid texture type.");
 					}
 
 					uniform.binding = binding.binding;
@@ -424,7 +487,7 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 										"On shader stage '" + String(RDC::SHADER_STAGE_NAMES[stage]) + "', uniform '" + binding.name + "' trying to reuse location for set=" + itos(set) + ", binding=" + itos(uniform.binding) + " with different writability.");
 
 								// Just append stage mask and return.
-								reflection.uniform_sets[set][k].stages.set_flag(stage_flag);
+								reflection.uniform_sets[set][k].stages.set_flag(uniform_stage_flags);
 								exists = true;
 								break;
 							}
@@ -435,7 +498,7 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 						}
 					}
 
-					uniform.stages.set_flag(stage_flag);
+					uniform.stages.set_flag(uniform_stage_flags);
 
 					if (set >= (uint32_t)reflection.uniform_sets.size()) {
 						reflection.uniform_sets.resize(set + 1);
@@ -467,22 +530,31 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 						SpvReflectSpecializationConstant *spc = spec_constants[j];
 						sconst.set_spv_reflect(stage, spc);
 
+						if (spc->default_value_size != 4) {
+							ERR_FAIL_V_MSG(FAILED, vformat("Reflection of SPIR-V shader stage '%s' failed because the specialization constant #%d's default value is not 4 bytes long (%d) and is currently not supported.", RDC::SHADER_STAGE_NAMES[p_spirv[i].shader_stage], spc->constant_id, spc->default_value_size));
+						}
+
 						sconst.constant_id = spc->constant_id;
 						sconst.int_value = 0; // Clear previous value JIC.
-						switch (spc->constant_type) {
-							case SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL: {
+
+						switch (spc->type_description->op) {
+							case SpvOpTypeBool:
 								sconst.type = RDC::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
-								sconst.bool_value = spc->default_value.int_bool_value != 0;
-							} break;
-							case SPV_REFLECT_SPECIALIZATION_CONSTANT_INT: {
+								sconst.bool_value = *(uint32_t *)(spc->default_value);
+								break;
+							case SpvOpTypeInt:
 								sconst.type = RDC::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
-								sconst.int_value = spc->default_value.int_bool_value;
-							} break;
-							case SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT: {
+								sconst.int_value = *(uint32_t *)(spc->default_value);
+								break;
+							case SpvOpTypeFloat:
 								sconst.type = RDC::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
-								sconst.float_value = spc->default_value.float_value;
-							} break;
+								sconst.float_value = *(float *)(spc->default_value);
+								break;
+							default:
+								ERR_FAIL_V_MSG(FAILED, vformat("Reflection of SPIR-V shader stage '%s' failed because the specialization constant #%d does not use a known operation (%d).", RDC::SHADER_STAGE_NAMES[p_spirv[i].shader_stage], spc->constant_id, spc->type_description->op));
+								break;
 						}
+
 						sconst.stages.set_flag(stage_flag);
 
 						for (uint32_t k = 0; k < reflection.specialization_constants.size(); k++) {
@@ -585,7 +657,7 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 						"Reflection of SPIR-V shader stage '" + String(RDC::SHADER_STAGE_NAMES[p_spirv[i].shader_stage]) + "': Push constant block must be the same across shader stages.");
 
 				reflection.push_constant_size = pconstants[0]->size;
-				reflection.push_constant_stages.set_flag(stage_flag);
+				reflection.push_constant_stages.set_flag(uniform_stage_flags);
 
 				//print_line("Stage: " + String(RDC::SHADER_STAGE_NAMES[stage]) + " push constant of size=" + itos(push_constant.push_constant_size));
 			}
@@ -611,7 +683,7 @@ void RenderingShaderContainer::set_from_shader_reflection(const ReflectShader &p
 	reflection_data.vertex_input_mask = p_reflection.vertex_input_mask;
 	reflection_data.fragment_output_mask = p_reflection.fragment_output_mask;
 	reflection_data.specialization_constants_count = p_reflection.specialization_constants.size();
-	reflection_data.is_compute = p_reflection.is_compute();
+	reflection_data.pipeline_type = p_reflection.pipeline_type;
 	reflection_data.has_multiview = p_reflection.has_multiview;
 	reflection_data.has_dynamic_buffers = p_reflection.has_dynamic_buffers;
 	reflection_data.compute_local_size[0] = p_reflection.compute_local_size[0];
@@ -630,6 +702,8 @@ void RenderingShaderContainer::set_from_shader_reflection(const ReflectShader &p
 			binding_data.stages = uint32_t(uniform.stages);
 			binding_data.length = uniform.length;
 			binding_data.writable = uint32_t(uniform.writable);
+			binding_data.texture_type = uniform.texture_type;
+			binding_data.texture_format = uniform.texture_format;
 			reflection_binding_set_uniforms_data.push_back(binding_data);
 		}
 
@@ -668,7 +742,7 @@ RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_shader_re
 	shader_refl.push_constant_stages = reflection_data.push_constant_stages_mask;
 	shader_refl.vertex_input_mask = reflection_data.vertex_input_mask;
 	shader_refl.fragment_output_mask = reflection_data.fragment_output_mask;
-	shader_refl.is_compute = reflection_data.is_compute;
+	shader_refl.pipeline_type = reflection_data.pipeline_type;
 	shader_refl.has_multiview = reflection_data.has_multiview;
 	shader_refl.has_dynamic_buffers = reflection_data.has_dynamic_buffers;
 	shader_refl.compute_local_size[0] = reflection_data.compute_local_size[0];
@@ -692,6 +766,8 @@ RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_shader_re
 			uniform.length = binding.length;
 			uniform.binding = binding.binding;
 			uniform.stages = binding.stages;
+			uniform.texture_type = binding.texture_type;
+			uniform.texture_format = binding.texture_format;
 		}
 	}
 

@@ -30,11 +30,20 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "tree.h"
+
+#include "core/object/class_db.h"
+
+void TreeItem::_select_bind_compat_119367(int p_column) {
+	select(p_column, true);
+}
+
 void TreeItem::_add_button_bind_compat_76829(int p_column, const Ref<Texture2D> &p_button, int p_id, bool p_disabled, const String &p_tooltip) {
 	add_button(p_column, p_button, p_id, p_disabled, p_tooltip, String());
 }
 
 void TreeItem::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("select", "column"), &TreeItem::_select_bind_compat_119367);
 	ClassDB::bind_compatibility_method(D_METHOD("add_button", "column", "button", "id", "disabled", "tooltip_text"), &TreeItem::_add_button_bind_compat_76829, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 }
 

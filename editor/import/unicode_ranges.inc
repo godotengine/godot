@@ -34,7 +34,7 @@
 #define UNICODE_RANGES_INC
 
 // Unicode Character Blocks
-// Source: https://www.unicode.org/Public/16.0.0/ucd/Blocks.txt
+// Source: https://www.unicode.org/Public/17.0.0/ucd/Blocks.txt
 
 struct UniRange {
 	int32_t start;
@@ -233,6 +233,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x108E0, 0x108FF, U"Hatran" },
 	{ 0x10900, 0x1091F, U"Phoenician" },
 	{ 0x10920, 0x1093F, U"Lydian" },
+	{ 0x10940, 0x1095F, U"Sidetic" },
 	{ 0x10980, 0x1099F, U"Meroitic Hieroglyphs" },
 	{ 0x109A0, 0x109FF, U"Meroitic Cursive" },
 	{ 0x10A00, 0x10A5F, U"Kharoshthi" },
@@ -284,11 +285,13 @@ static UniRange unicode_ranges[] = {
 	{ 0x11AB0, 0x11ABF, U"Unified Canadian Aboriginal Syllabics Extended-A" },
 	{ 0x11AC0, 0x11AFF, U"Pau Cin Hau" },
 	{ 0x11B00, 0x11B5F, U"Devanagari Extended-A" },
+	{ 0x11B60, 0x11B7F, U"Sharada Supplement" },
 	{ 0x11BC0, 0x11BFF, U"Sunuwar" },
 	{ 0x11C00, 0x11C6F, U"Bhaiksuki" },
 	{ 0x11C70, 0x11CBF, U"Marchen" },
 	{ 0x11D00, 0x11D5F, U"Masaram Gondi" },
 	{ 0x11D60, 0x11DAF, U"Gunjala Gondi" },
+	{ 0x11DB0, 0x11DEF, U"Tolong Siki" },
 	{ 0x11EE0, 0x11EFF, U"Makasar" },
 	{ 0x11F00, 0x11F5F, U"Kawi" },
 	{ 0x11FB0, 0x11FBF, U"Lisu Supplement" },
@@ -308,12 +311,14 @@ static UniRange unicode_ranges[] = {
 	{ 0x16B00, 0x16B8F, U"Pahawh Hmong" },
 	{ 0x16D40, 0x16D7F, U"Kirat Rai" },
 	{ 0x16E40, 0x16E9F, U"Medefaidrin" },
+	{ 0x16EA0, 0x16EDF, U"Beria Erfe" },
 	{ 0x16F00, 0x16F9F, U"Miao" },
 	{ 0x16FE0, 0x16FFF, U"Ideographic Symbols and Punctuation" },
 	{ 0x17000, 0x187FF, U"Tangut" },
 	{ 0x18800, 0x18AFF, U"Tangut Components" },
 	{ 0x18B00, 0x18CFF, U"Khitan Small Script" },
 	{ 0x18D00, 0x18D7F, U"Tangut Supplement" },
+	{ 0x18D80, 0x18DFF, U"Tangut Components Supplement" },
 	{ 0x1AFF0, 0x1AFFF, U"Kana Extended-B" },
 	{ 0x1B000, 0x1B0FF, U"Kana Supplement" },
 	{ 0x1B100, 0x1B12F, U"Kana Extended-A" },
@@ -322,6 +327,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x1BC00, 0x1BC9F, U"Duployan" },
 	{ 0x1BCA0, 0x1BCAF, U"Shorthand Format Controls" },
 	{ 0x1CC00, 0x1CEBF, U"Symbols for Legacy Computing Supplement" },
+	{ 0x1CEC0, 0x1CEFF, U"Miscellaneous Symbols Supplement" },
 	{ 0x1CF00, 0x1CFCF, U"Znamenny Musical Notation" },
 	{ 0x1D000, 0x1D0FF, U"Byzantine Musical Symbols" },
 	{ 0x1D100, 0x1D1FF, U"Musical Symbols" },
@@ -340,6 +346,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x1E2C0, 0x1E2FF, U"Wancho" },
 	{ 0x1E4D0, 0x1E4FF, U"Nag Mundari" },
 	{ 0x1E5D0, 0x1E5FF, U"Ol Onal" },
+	{ 0x1E6C0, 0x1E6FF, U"Tai Yo" },
 	{ 0x1E7E0, 0x1E7FF, U"Ethiopic Extended-B" },
 	{ 0x1E800, 0x1E8DF, U"Mende Kikakui" },
 	{ 0x1E900, 0x1E95F, U"Adlam" },
@@ -371,6 +378,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x2F800, 0x2FA1F, U"CJK Compatibility Ideographs Supplement" },
 	{ 0x30000, 0x3134F, U"CJK Unified Ideographs Extension G" },
 	{ 0x31350, 0x323AF, U"CJK Unified Ideographs Extension H" },
+	{ 0x323B0, 0x3347F, U"CJK Unified Ideographs Extension J" },
 	{ 0xF0000, 0xFFFFF, U"Supplementary Private Use Area-A" },
 	{ 0x100000, 0x10FFFF, U"Supplementary Private Use Area-B" },
 	{ 0x10FFFF, 0x10FFFF, String() }

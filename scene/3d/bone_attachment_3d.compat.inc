@@ -32,6 +32,8 @@
 
 #include "bone_attachment_3d.h"
 
+#include "core/object/class_db.h"
+
 void BoneAttachment3D::_on_bone_pose_update_bind_compat_90575(int p_bone_index) {
 	return on_skeleton_update();
 }

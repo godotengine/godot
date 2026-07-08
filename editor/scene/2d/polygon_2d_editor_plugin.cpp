@@ -32,6 +32,9 @@
 
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
@@ -53,20 +56,27 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/view_panner.h"
+#include "scene/main/scene_tree.h"
+#include "servers/rendering/rendering_server.h"
 
 Node2D *Polygon2DEditor::_get_node() const {
 	return node;
 }
 
 void Polygon2DEditor::_set_node(Node *p_polygon) {
+	CanvasItem *ci_editor_control = CanvasItemEditor::get_singleton()->get_viewport_control();
+
 	CanvasItem *draw = Object::cast_to<CanvasItem>(canvas);
 	if (node) {
 		node->disconnect(SceneStringName(draw), callable_mp(draw, &CanvasItem::queue_redraw));
 		node->disconnect(SceneStringName(draw), callable_mp(this, &Polygon2DEditor::_update_available_modes));
+		node->disconnect(SceneStringName(draw), callable_mp(ci_editor_control, &CanvasItem::queue_redraw));
 	}
+
 	node = Object::cast_to<Polygon2D>(p_polygon);
 	_update_polygon_editing_state();
 	canvas->queue_redraw();
+
 	if (node) {
 		canvas->set_texture_filter(node->get_texture_filter_in_tree());
 
@@ -82,6 +92,8 @@ void Polygon2DEditor::_set_node(Node *p_polygon) {
 		// Whenever polygon gets redrawn, there's possible changes for the editor as well.
 		node->connect(SceneStringName(draw), callable_mp(draw, &CanvasItem::queue_redraw));
 		node->connect(SceneStringName(draw), callable_mp(this, &Polygon2DEditor::_update_available_modes));
+		// Update the canvas overlay.
+		node->connect(SceneStringName(draw), callable_mp(ci_editor_control, &CanvasItem::queue_redraw));
 	}
 }
 
@@ -107,7 +119,7 @@ void Polygon2DEditor::_notification(int p_what) {
 		}
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(polygon_edit, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1339,7 +1351,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	polygon_edit->set_name(TTRC("Polygon"));
 	polygon_edit->set_icon_name("PolygonDock");
 	polygon_edit->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTRC("Toggle Polygon Dock")));
-	polygon_edit->set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	polygon_edit->set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	polygon_edit->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	polygon_edit->set_global(false);
 	polygon_edit->set_transient(true);
@@ -1565,6 +1577,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	canvas->set_focus_mode(FOCUS_CLICK);
 
 	error = memnew(AcceptDialog);
+	error->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(error);
 }
 

@@ -33,6 +33,7 @@
 class EditorExportPlatform;
 
 #include "core/object/ref_counted.h"
+#include "core/variant/type_info.h"
 
 class EditorExportPreset : public RefCounted {
 	GDCLASS(EditorExportPreset, RefCounted);
@@ -69,7 +70,6 @@ private:
 	String exporter;
 	HashSet<String> selected_files;
 	HashMap<String, FileExportMode> customized_files;
-	bool runnable = false;
 	bool dedicated_server = false;
 
 	Vector<String> patches;
@@ -88,6 +88,7 @@ private:
 	HashMap<StringName, bool> update_visibility;
 
 	String name;
+	bool options_search_active = false;
 
 	String custom_features;
 
@@ -123,6 +124,8 @@ public:
 	void update_value_overrides();
 
 	Vector<String> get_files_to_export() const;
+	HashSet<String> get_selected_files() const;
+	void set_selected_files(const HashSet<String> &p_files);
 	Dictionary get_customized_files() const;
 	int get_customized_files_count() const;
 	void set_customized_files(const Dictionary &p_files);
@@ -143,6 +146,7 @@ public:
 	bool is_runnable() const;
 
 	bool are_advanced_options_enabled() const;
+	void set_options_search_active(bool p_active);
 
 	void set_dedicated_server(bool p_enable);
 	bool is_dedicated_server() const;

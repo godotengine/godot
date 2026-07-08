@@ -34,12 +34,21 @@
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
 
+// Enable additional LSP related logging.
+//#define DEBUG_LSP
+
+#ifdef DEBUG_LSP
+#define LOG_LSP(...) print_line("[ LSP -", __FILE__, ":", __LINE__, "-", __func__, "] -", ##__VA_ARGS__)
+#else
+#define LOG_LSP(...)
+#endif
+
 namespace LSP {
 
 typedef String DocumentUri;
 
 /** Format BBCode documentation from DocData to markdown */
-static String marked_documentation(const String &p_bbcode);
+static String marked_documentation(const String &p_bbcode, const HashSet<String> &p_allowed_html_tags);
 
 /**
  * Text documents are identified using a URI. On the protocol level, URIs are passed as strings.
@@ -101,6 +110,9 @@ struct Position {
 		dict["character"] = character;
 		return dict;
 	}
+
+	Position() = default;
+	Position(int p_line, int p_character) : line(p_line), character(p_character) {}
 };
 
 /**
@@ -151,6 +163,10 @@ struct Range {
 		dict["end"] = end.to_json();
 		return dict;
 	}
+
+	Range() = default;
+	Range(Position p_start, Position p_end) : start(p_start), end(p_end) {}
+	Range(int p_start_line, int p_start_column, int p_end_line, int p_end_column) : start(p_start_line, p_start_column), end(p_end_line, p_end_column) {}
 };
 
 /**
@@ -310,6 +326,13 @@ struct TextEdit {
 	 * empty string.
 	 */
 	String newText;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["newText"] = newText;
+		dict["range"] = range.to_json();
+		return dict;
+	}
 };
 
 /**
@@ -491,22 +514,6 @@ struct SignatureHelpOptions {
 };
 
 /**
- * Code Lens options.
- */
-struct CodeLensOptions {
-	/**
-	 * Code lens has a resolve provider as well.
-	 */
-	bool resolveProvider = false;
-
-	Dictionary to_json() {
-		Dictionary dict;
-		dict["resolveProvider"] = resolveProvider;
-		return dict;
-	}
-};
-
-/**
  * Rename options
  */
 struct RenameOptions {
@@ -567,24 +574,6 @@ struct SaveOptions {
 		Dictionary dict;
 		dict["includeText"] = includeText;
 		return dict;
-	}
-};
-
-/**
- * Color provider options.
- */
-struct ColorProviderOptions {
-	Dictionary to_json() {
-		return Dictionary();
-	}
-};
-
-/**
- * Folding range provider options.
- */
-struct FoldingRangeProviderOptions {
-	Dictionary to_json() {
-		return Dictionary();
 	}
 };
 
@@ -663,6 +652,11 @@ struct DocumentOnTypeFormattingOptions {
 	}
 };
 
+enum class LanguageId {
+	GDSCRIPT,
+	OTHER,
+};
+
 struct TextDocumentItem {
 	/**
 	 * The text document's URI.
@@ -672,7 +666,7 @@ struct TextDocumentItem {
 	/**
 	 * The text document's language identifier.
 	 */
-	String languageId;
+	LanguageId languageId;
 
 	/**
 	 * The version number of this document (it will increase after each
@@ -687,18 +681,19 @@ struct TextDocumentItem {
 
 	void load(const Dictionary &p_dict) {
 		uri = p_dict["uri"];
-		languageId = p_dict.get("languageId", "");
-		version = p_dict.get("version", 0);
-		text = p_dict.get("text", "");
-	}
+		version = p_dict["version"];
+		text = p_dict["text"];
 
-	Dictionary to_json() const {
-		Dictionary dict;
-		dict["uri"] = uri;
-		dict["languageId"] = languageId;
-		dict["version"] = version;
-		dict["text"] = text;
-		return dict;
+		// Clients should use "gdscript" as language id, but we can't enforce it.
+		// We normalize some known ids to make them easier to work with:
+		// Rider < 2026.1: "gd"
+		// Kate: "godot"
+		String rawLanguageId = p_dict["languageId"];
+		if (rawLanguageId == "gdscript" || rawLanguageId == "gd" || rawLanguageId == "godot") {
+			languageId = LanguageId::GDSCRIPT;
+		} else {
+			languageId = LanguageId::OTHER;
+		}
 	}
 };
 
@@ -1061,9 +1056,19 @@ struct CompletionItem {
 		if (!insertText.is_empty()) {
 			dict["insertText"] = insertText;
 		}
+		if (insertTextFormat) {
+			dict["insertTextFormat"] = insertTextFormat;
+		}
+		if (!textEdit.newText.is_empty()) {
+			dict["textEdit"] = textEdit.to_json();
+		}
 		if (resolved) {
-			dict["detail"] = detail;
-			dict["documentation"] = documentation.to_json();
+			if (!detail.is_empty()) {
+				dict["detail"] = detail;
+			}
+			if (!documentation.value.is_empty()) {
+				dict["documentation"] = documentation.to_json();
+			}
 			dict["deprecated"] = deprecated;
 			dict["preselect"] = preselect;
 			if (!sortText.is_empty()) {
@@ -1116,6 +1121,7 @@ struct CompletionItem {
 		if (p_dict.has("insertText")) {
 			insertText = p_dict["insertText"];
 		}
+		insertTextFormat = p_dict.get("insertTextFormat", 0);
 		if (p_dict.has("data")) {
 			data = p_dict["data"];
 		}
@@ -1266,60 +1272,18 @@ struct DocumentSymbol {
 		return dict;
 	}
 
-	_FORCE_INLINE_ MarkupContent render() const {
+	_FORCE_INLINE_ MarkupContent render(const HashSet<String> &p_allowed_html_tags) const {
 		MarkupContent markdown;
 		if (detail.length()) {
 			markdown.value = "\t" + detail + "\n\n";
 		}
 		if (documentation.length()) {
-			markdown.value += marked_documentation(documentation) + "\n\n";
+			markdown.value += marked_documentation(documentation, p_allowed_html_tags) + "\n\n";
 		}
 		if (script_path.length()) {
 			markdown.value += "Defined in [" + script_path + "](" + uri + ")";
 		}
 		return markdown;
-	}
-
-	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
-		LSP::CompletionItem item;
-		item.label = name;
-
-		if (resolved) {
-			item.documentation = render();
-		}
-
-		switch (kind) {
-			case LSP::SymbolKind::Enum:
-				item.kind = LSP::CompletionItemKind::Enum;
-				break;
-			case LSP::SymbolKind::Class:
-				item.kind = LSP::CompletionItemKind::Class;
-				break;
-			case LSP::SymbolKind::Property:
-				item.kind = LSP::CompletionItemKind::Property;
-				break;
-			case LSP::SymbolKind::Method:
-			case LSP::SymbolKind::Function:
-				item.kind = LSP::CompletionItemKind::Method;
-				break;
-			case LSP::SymbolKind::Event:
-				item.kind = LSP::CompletionItemKind::Event;
-				break;
-			case LSP::SymbolKind::Constant:
-				item.kind = LSP::CompletionItemKind::Constant;
-				break;
-			case LSP::SymbolKind::Variable:
-				item.kind = LSP::CompletionItemKind::Variable;
-				break;
-			case LSP::SymbolKind::File:
-				item.kind = LSP::CompletionItemKind::File;
-				break;
-			default:
-				item.kind = LSP::CompletionItemKind::Text;
-				break;
-		}
-
-		return item;
 	}
 };
 
@@ -1434,7 +1398,7 @@ struct CompletionContext {
 	/**
 	 * How the completion was triggered.
 	 */
-	int triggerKind = CompletionTriggerKind::TriggerCharacter;
+	int triggerKind = CompletionTriggerKind::Invoked;
 
 	/**
 	 * The trigger character (a single character) that has trigger code complete.
@@ -1457,7 +1421,10 @@ struct CompletionParams : public TextDocumentPositionParams {
 
 	void load(const Dictionary &p_params) {
 		TextDocumentPositionParams::load(p_params);
-		context.load(p_params["context"]);
+
+		if (p_params.has("context")) {
+			context.load(p_params["context"]);
+		}
 	}
 
 	Dictionary to_json() {
@@ -1702,16 +1669,8 @@ struct FileOperations {
  * Workspace specific server capabilities
  */
 struct Workspace {
-	/**
-	 * The server is interested in file notifications/requests.
-	 */
-	FileOperations fileOperations;
-
 	Dictionary to_json() const {
 		Dictionary dict;
-
-		dict["fileOperations"] = fileOperations.to_json();
-
 		return dict;
 	}
 };
@@ -1765,7 +1724,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides document highlight support.
 	 */
-	bool documentHighlightProvider = false;
+	bool documentHighlightProvider = true;
 
 	/**
 	 * The server provides document symbol support.
@@ -1788,11 +1747,6 @@ struct ServerCapabilities {
 	 * `textDocument.codeAction.codeActionLiteralSupport`.
 	 */
 	bool codeActionProvider = false;
-
-	/**
-	 * The server provides code lens.
-	 */
-	CodeLensOptions codeLensProvider;
 
 	/**
 	 * The server provides document formatting.
@@ -1822,20 +1776,6 @@ struct ServerCapabilities {
 	DocumentLinkOptions documentLinkProvider;
 
 	/**
-	 * The server provides color provider support.
-	 *
-	 * Since 3.6.0
-	 */
-	ColorProviderOptions colorProvider;
-
-	/**
-	 * The server provides folding provider support.
-	 *
-	 * Since 3.10.0
-	 */
-	FoldingRangeProviderOptions foldingRangeProvider;
-
-	/**
 	 * The server provides go to declaration support.
 	 *
 	 * Since 3.14.0
@@ -1854,12 +1794,9 @@ struct ServerCapabilities {
 		signatureHelpProvider.triggerCharacters.push_back(",");
 		signatureHelpProvider.triggerCharacters.push_back("(");
 		dict["signatureHelpProvider"] = signatureHelpProvider.to_json();
-		//dict["codeLensProvider"] = codeLensProvider.to_json();
 		dict["documentOnTypeFormattingProvider"] = documentOnTypeFormattingProvider.to_json();
 		dict["renameProvider"] = renameProvider.to_json();
 		dict["documentLinkProvider"] = documentLinkProvider.to_json();
-		dict["colorProvider"] = false; // colorProvider.to_json();
-		dict["foldingRangeProvider"] = false; //foldingRangeProvider.to_json();
 		dict["executeCommandProvider"] = executeCommandProvider.to_json();
 		dict["hoverProvider"] = hoverProvider;
 		dict["definitionProvider"] = definitionProvider;
@@ -1923,7 +1860,8 @@ struct GodotCapabilities {
 };
 
 /** Format BBCode documentation from DocData to markdown */
-static String marked_documentation(const String &p_bbcode) {
+static String marked_documentation(const String &p_bbcode, const HashSet<String> &p_allowed_html_tags) {
+	bool span_allowed = p_allowed_html_tags.has("span");
 	String markdown = p_bbcode.strip_edges();
 
 	Vector<String> lines = markdown.split("\n");
@@ -2003,7 +1941,6 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[center]", "");
 			line = line.replace("[/center]", "");
 			line = line.replace("[/font]", "");
-			line = line.replace("[/color]", "");
 			line = line.replace("[/img]", "");
 
 			// Convert remaining simple bracketed class names to backticks and literal brackets.
@@ -2076,6 +2013,35 @@ static String marked_documentation(const String &p_bbcode) {
 				pos += replacement.length();
 			}
 
+			// Convert [color] BBCode to <span>, if the client is capable of rendering it, strip it otherwise.
+			pos = 0;
+			while ((pos = line.find("[color=", pos)) != -1) {
+				constexpr int COLOR_OPEN_TAG_LENGTH = 7; // Length of "[color=".
+				constexpr int COLOR_CLOSE_TAG_LENGTH = 8; // Length of "[/color]".
+
+				int color_end = line.find_char(']', pos);
+				int close_start = line.find("[/color]", color_end);
+				if (color_end == -1 || close_start == -1) {
+					break;
+				}
+				String text = line.substr(color_end + 1, close_start - color_end - 1);
+				String replacement;
+				if (span_allowed) {
+					const String color = line.substr(pos + COLOR_OPEN_TAG_LENGTH, color_end - pos - COLOR_OPEN_TAG_LENGTH).strip_edges();
+					if (Color::html_is_valid(color)) {
+						replacement = "<span style=\"color:" + color + "\">" + text + "</span>";
+					} else if (int named_color_index = Color::find_named_color(color); named_color_index != -1) {
+						replacement = "<span style=\"color:#" + Color::get_named_color(named_color_index).to_html(false) + "\">" + text + "</span>";
+					}
+				}
+				// If no span replacement was produced (client can't render spans, or invalid color), just keep the inner text.
+				if (replacement.is_empty()) {
+					replacement = text;
+				}
+				line = line.substr(0, pos) + replacement + line.substr(close_start + COLOR_CLOSE_TAG_LENGTH);
+				pos += replacement.length();
+			}
+
 			// Replace the various link types with inline code ([class MyNode] to `MyNode`).
 			// Uses a while loop because there can occasionally be multiple links of the same type in a single line.
 			const Vector<String> link_start_patterns = {
@@ -2097,10 +2063,10 @@ static String marked_documentation(const String &p_bbcode) {
 				}
 			}
 
-			// Remove tags with attributes like [color=red], as they don't have a direct Markdown
+			// Remove tags with attributes like [font=Arial], as they don't have a direct Markdown
 			// equivalent supported by external tools.
 			const String attribute_tags[] = {
-				"color", "font", "img"
+				"font", "img"
 			};
 			for (const String &tag_name : attribute_tags) {
 				int tag_pos = 0;
@@ -2122,4 +2088,26 @@ static String marked_documentation(const String &p_bbcode) {
 	}
 	return markdown;
 }
+
+/**
+ * A document highlight is a range inside a text document which deserves
+ * special attention. Usually a document highlight is visualized by changing
+ * the background color of its range.
+ */
+struct DocumentHighlight {
+	/**
+	 * The range this highlight applies to.
+	 */
+	Range range;
+
+	_FORCE_INLINE_ Dictionary to_json() const {
+		Dictionary dict;
+		dict["range"] = range.to_json();
+		return dict;
+	}
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		range.load(p_params["range"]);
+	}
+};
 } // namespace LSP

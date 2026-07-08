@@ -33,18 +33,21 @@
 #include "os_web.h"
 
 #include "core/config/engine.h"
-#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
-#include "scene/main/scene_tree.h"
-#include "scene/main/window.h" // SceneTree only forward declares it.
 
 #ifdef TOOLS_ENABLED
+#include "core/io/file_access.h"
 #include "editor/web_tools_editor_plugin.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h" // SceneTree only forward declares it.
 #endif
 
 #include <emscripten/emscripten.h>
+
 #include <cstdlib>
 
 static OS_Web *os = nullptr;
@@ -64,9 +67,10 @@ void exit_callback() {
 		main_started = false;
 	}
 	int exit_code = OS_Web::get_singleton()->get_exit_code();
-	memdelete(os);
+	delete os; // We used a normal new, so it needs a normal delete.
 	os = nullptr;
 	godot_cleanup_profiler();
+	emscripten_cancel_main_loop(); // We are exiting in this iteration.
 	emscripten_force_exit(exit_code); // Exit runtime.
 }
 

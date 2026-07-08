@@ -31,9 +31,12 @@
 #include "world_3d.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_3d/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
@@ -51,10 +54,10 @@ RID World3D::get_space() const {
 	if (space.is_null()) {
 		space = PhysicsServer3D::get_singleton()->space_create();
 		PhysicsServer3D::get_singleton()->space_set_active(space, true);
-		PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_GRAVITY, GLOBAL_GET("physics/3d/default_gravity"));
-		PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_GET("physics/3d/default_gravity_vector"));
-		PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_LINEAR_DAMP, GLOBAL_GET("physics/3d/default_linear_damp"));
-		PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_GET("physics/3d/default_angular_damp"));
+		PhysicsServer3D::get_singleton()->area_set_param(space, PS3DE::AREA_PARAM_GRAVITY, GLOBAL_GET("physics/3d/default_gravity"));
+		PhysicsServer3D::get_singleton()->area_set_param(space, PS3DE::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_GET("physics/3d/default_gravity_vector"));
+		PhysicsServer3D::get_singleton()->area_set_param(space, PS3DE::AREA_PARAM_LINEAR_DAMP, GLOBAL_GET("physics/3d/default_linear_damp"));
+		PhysicsServer3D::get_singleton()->area_set_param(space, PS3DE::AREA_PARAM_ANGULAR_DAMP, GLOBAL_GET("physics/3d/default_angular_damp"));
 	}
 #endif // PHYSICS_3D_DISABLED
 	return space;
@@ -166,8 +169,8 @@ void World3D::_bind_methods() {
 #ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World3D::get_direct_space_state);
 #endif // PHYSICS_3D_DISABLED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_fallback_environment", "get_fallback_environment");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, Environment::get_class_static()), "set_environment", "get_environment");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, Environment::get_class_static()), "set_fallback_environment", "get_fallback_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
 #ifndef NAVIGATION_3D_DISABLED
@@ -175,7 +178,7 @@ void World3D::_bind_methods() {
 #endif // NAVIGATION_3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "scenario", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_scenario");
 #ifndef PHYSICS_3D_DISABLED
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState3D", PROPERTY_USAGE_NONE), "", "get_direct_space_state");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, PhysicsDirectSpaceState3D::get_class_static(), PROPERTY_USAGE_NONE), "", "get_direct_space_state");
 #endif // PHYSICS_3D_DISABLED
 }
 

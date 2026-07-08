@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "file_dialog.h"
+
+#include "core/object/class_db.h"
+
 void FileDialog::_add_filter_bind_compat_111439(const String &p_filter, const String &p_description) {
 	add_filter(p_filter, p_description, "");
 }
@@ -38,4 +42,4 @@ void FileDialog::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("add_filter", "filter", "description"), &FileDialog::_add_filter_bind_compat_111439, DEFVAL(""));
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

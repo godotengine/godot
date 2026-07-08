@@ -814,6 +814,11 @@ struct graph_t
       if (unlikely (!check_success (!connected_roots.in_error ()))) break;
 
       unsigned next_space = this->next_space ();
+      if (next_space >= HB_REPACKER_MAX_SPACES)
+      {
+        check_success (false);
+        break;
+      }
       num_roots_for_space_.push (0);
       for (unsigned root : connected_roots)
       {
@@ -1062,6 +1067,12 @@ struct graph_t
    */
   unsigned duplicate (unsigned node_idx)
   {
+    if (vertices_.length >= HB_REPACKER_MAX_VERTICES)
+    {
+      check_success (false);
+      return -1;
+    }
+
     positions_invalid = true;
     distance_invalid = true;
 
@@ -1096,24 +1107,6 @@ struct graph_t
 
     return clone_idx;
   }
-
-  /*
-   * Creates a copy of child and re-assigns the link from
-   * parent to the clone. The copy is a shallow copy, objects
-   * linked from child are not duplicated.
-   *
-   * Returns the index of the newly created duplicate.
-   *
-   * If the child_idx only has incoming edges from parent_idx, this
-   * will do nothing and return the original child_idx.
-   */
-  unsigned duplicate_if_shared (unsigned parent_idx, unsigned child_idx)
-  {
-    unsigned new_idx = duplicate (parent_idx, child_idx);
-    if (new_idx == (unsigned) -1) return child_idx;
-    return new_idx;
-  }
-
 
   /*
    * Creates a copy of child and re-assigns the link from
@@ -1239,6 +1232,12 @@ struct graph_t
    */
   unsigned new_node (char* head, char* tail)
   {
+    if (vertices_.length >= HB_REPACKER_MAX_VERTICES)
+    {
+      check_success (false);
+      return -1;
+    }
+
     positions_invalid = true;
     distance_invalid = true;
 
@@ -1256,6 +1255,34 @@ struct graph_t
     clone->space = 0;
 
     return clone_idx;
+  }
+
+  /*
+   * Creates a new child node and remap the old child to it.
+   *
+   * Returns the index of the newly created child.
+   *
+   */
+  unsigned remap_child (unsigned parent_idx, unsigned old_child_idx)
+  {
+    unsigned new_child_idx = duplicate (old_child_idx);
+    if (new_child_idx == (unsigned) -1) return -1;
+
+    auto& parent = vertices_[parent_idx];
+    for (auto& l : parent.obj.real_links)
+    {
+      if (l.objidx != old_child_idx)
+        continue;
+      reassign_link (l, parent_idx, new_child_idx, false);
+    }
+
+    for (auto& l : parent.obj.virtual_links)
+    {
+      if (l.objidx != old_child_idx)
+        continue;
+      reassign_link (l, parent_idx, new_child_idx, true);
+    }
+    return new_child_idx;
   }
 
   /*
@@ -1374,6 +1401,11 @@ struct graph_t
 
   void move_to_new_space (const hb_set_t& indices)
   {
+    if (num_roots_for_space_.length >= HB_REPACKER_MAX_SPACES)
+    {
+      check_success (false);
+      return;
+    }
     num_roots_for_space_.push (0);
     unsigned new_space = num_roots_for_space_.length - 1;
 

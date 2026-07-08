@@ -30,11 +30,13 @@
 
 #pragma once
 
-#include "../../openxr_util.h"
+#include "../../openxr_structure.h"
 #include "../openxr_extension_wrapper.h"
+#include "../openxr_future_extension.h"
+#include "openxr_spatial_entities.h"
+
 #include "core/templates/rid_owner.h"
 #include "core/variant/typed_array.h"
-#include "openxr_spatial_entities.h"
 
 // Spatial entity extension
 class OpenXRSpatialEntityExtension : public OpenXRExtensionWrapper {
@@ -88,6 +90,7 @@ public:
 	XrSpatialContextEXT get_spatial_context_handle(RID p_spatial_context) const;
 
 	// Discovery query
+	Ref<OpenXRFutureResult> discover_spatial_entities_with_component_data(RID p_spatial_context, const TypedArray<OpenXRSpatialComponentData> &p_component_data, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback);
 	Ref<OpenXRFutureResult> discover_spatial_entities(RID p_spatial_context, const Vector<XrSpatialComponentTypeEXT> &p_component_types, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback);
 
 	// Update query

@@ -677,7 +677,8 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
     return;
 
 #ifndef HB_NO_VAR
-  normalize_axes_location (face, this);
+  if (!check_success (normalize_axes_location (face, this)))
+      return;
 #endif
 
   _populate_unicodes_to_retain (input->sets.unicodes, input->sets.glyphs, this);

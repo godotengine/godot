@@ -53,7 +53,7 @@ private:
 	Vector3::Axis primary_rotation_axis = Vector3::AXIS_Y;
 	Vector3::Axis secondary_rotation_axis = Vector3::AXIS_X;
 	bool use_secondary_rotation = true;
-	bool relative = true;
+	bool relative = false;
 
 	OriginFrom origin_from = ORIGIN_FROM_SELF;
 	String origin_bone_name;

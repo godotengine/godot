@@ -35,12 +35,18 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
+#include "servers/display/native_menu.h"
 
 class PanelContainer;
+class VBoxContainer;
+class LineEdit;
 class Timer;
+class PopupMenuItems;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
+
+	friend class PopupMenuItems;
 
 	static HashMap<NativeMenu::SystemMenus, PopupMenu *> system_menus;
 
@@ -61,6 +67,7 @@ class PopupMenu : public Popup {
 		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 		bool checked = false;
+		bool visible = true;
 		enum {
 			CHECKABLE_TYPE_NONE,
 			CHECKABLE_TYPE_CHECK_BOX,
@@ -70,6 +77,7 @@ class PopupMenu : public Popup {
 		int state = 0;
 		bool separator = false;
 		bool disabled = false;
+		bool indeterminate = false;
 		bool dirty = true;
 		int id = 0;
 		Variant metadata;
@@ -175,9 +183,15 @@ class PopupMenu : public Popup {
 	uint64_t search_time_msec = 0;
 	String search_string = "";
 
+	bool search_bar_enabled = false;
+	int search_bar_min_item_count = 0;
+	bool search_bar_fuzzy_search_enabled = true;
+	int search_bar_fuzzy_search_max_misses = 2;
 	PanelContainer *panel = nullptr;
+	VBoxContainer *vbox_container = nullptr;
+	LineEdit *search_bar = nullptr;
 	ScrollContainer *scroll_container = nullptr;
-	Control *control = nullptr;
+	PopupMenuItems *control = nullptr;
 
 	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
 	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
@@ -194,6 +208,7 @@ class PopupMenu : public Popup {
 
 		int v_separation = 0;
 		int h_separation = 0;
+		int search_bar_separation = 0;
 		int indent = 0;
 		int item_start_padding = 0;
 		int item_end_padding = 0;
@@ -204,11 +219,14 @@ class PopupMenu : public Popup {
 		Ref<Texture2D> checked_disabled;
 		Ref<Texture2D> unchecked;
 		Ref<Texture2D> unchecked_disabled;
+		Ref<Texture2D> indeterminate;
+		Ref<Texture2D> indeterminate_disabled;
 		Ref<Texture2D> radio_checked;
 		Ref<Texture2D> radio_checked_disabled;
 		Ref<Texture2D> radio_unchecked;
 		Ref<Texture2D> radio_unchecked_disabled;
 
+		Ref<Texture2D> search;
 		Ref<Texture2D> submenu;
 		Ref<Texture2D> submenu_mirrored;
 
@@ -230,6 +248,11 @@ class PopupMenu : public Popup {
 	} theme_cache;
 
 	void _draw_items();
+	void _update_search_bar_visibility();
+	void _items_focus_entered();
+	void _search_bar_text_changed(const String &p_new_text);
+	void _search_bar_focus_entered();
+	void _filter_items(const String &p_query);
 
 	void _close_pressed();
 	void _menu_changed();
@@ -241,8 +264,11 @@ class PopupMenu : public Popup {
 	String _atr(int p_idx, const String &p_text) const;
 	void _submenu_hidden();
 
+	bool shrink_height = true;
+	bool shrink_width = true;
+
 protected:
-	virtual void _pre_popup() override;
+	virtual void _pre_popup(const Size2i &p_size) override;
 	virtual Rect2i _popup_adjust_rect() const override;
 
 	virtual void add_child_notify(Node *p_child) override;
@@ -257,6 +283,8 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
+
+	virtual String _get_accessibility_name() const override;
 
 #ifndef DISABLE_DEPRECATED
 	void _add_shortcut_bind_compat_36493(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
@@ -313,6 +341,7 @@ public:
 	void set_item_icon_max_width(int p_idx, int p_width);
 	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
 	void set_item_checked(int p_idx, bool p_checked);
+	void set_item_indeterminate(int p_idx, bool p_indeterminate);
 	void set_item_id(int p_idx, int p_id);
 	void set_item_accelerator(int p_idx, Key p_accel);
 	void set_item_metadata(int p_idx, const Variant &p_meta);
@@ -329,6 +358,7 @@ public:
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
 	void set_item_shortcut_disabled(int p_idx, bool p_disabled);
+	void set_item_index(int p_idx, int p_target_idx);
 
 	void toggle_item_checked(int p_idx);
 
@@ -342,6 +372,7 @@ public:
 	int get_item_icon_max_width(int p_idx) const;
 	Color get_item_icon_modulate(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
+	bool is_item_indeterminate(int p_idx) const;
 	int get_item_id(int p_idx) const;
 	int get_item_index(int p_id) const;
 	Key get_item_accelerator(int p_idx) const;
@@ -369,6 +400,18 @@ public:
 	void set_prefer_native_menu(bool p_enabled);
 	bool is_prefer_native_menu() const;
 
+	void set_search_bar_enabled(bool p_enabled);
+	bool is_search_bar_enabled() const;
+
+	void set_search_bar_min_item_count(int p_count);
+	int get_search_bar_min_item_count() const;
+
+	void set_search_bar_fuzzy_search_enabled(bool p_enabled);
+	bool is_search_bar_fuzzy_search_enabled() const;
+
+	void set_search_bar_fuzzy_search_max_misses(int p_max_misses);
+	int get_search_bar_fuzzy_search_max_misses() const;
+
 	bool is_native_menu() const;
 
 	void scroll_to_item(int p_idx);
@@ -384,8 +427,6 @@ public:
 	void add_separator(const String &p_text = String(), int p_id = -1);
 
 	void clear(bool p_free_submenus = true);
-
-	virtual String get_tooltip(const Point2 &p_pos) const;
 
 #ifdef TOOLS_ENABLED
 	PackedStringArray get_configuration_warnings() const override;
@@ -409,8 +450,27 @@ public:
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
 
+	void set_shrink_height(bool p_shrink);
+	bool get_shrink_height() const;
+
+	void set_shrink_width(bool p_shrink);
+	bool get_shrink_width() const;
+
 	virtual void set_visible(bool p_visible) override;
 
 	PopupMenu();
 	~PopupMenu();
+};
+
+class PopupMenuItems : public Control {
+	GDCLASS(PopupMenuItems, Control);
+
+	PopupMenu *popup = nullptr;
+
+public:
+	PopupMenuItems(PopupMenu *p_popup) : popup(p_popup) {}
+
+	virtual RID get_focused_accessibility_element() const override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 };

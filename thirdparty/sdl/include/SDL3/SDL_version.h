@@ -62,7 +62,7 @@ extern "C" {
  *
  * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_MICRO_VERSION   16
+#define SDL_MICRO_VERSION   28
 
 /**
  * This macro turns the version numbers into a numeric value.

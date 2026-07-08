@@ -31,8 +31,10 @@
 #include "mesh.h"
 
 #include "core/math/convex_hull.h"
+#include "core/object/class_db.h"
 #include "core/templates/pair.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
@@ -889,6 +891,7 @@ void Mesh::_bind_methods() {
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
 
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_COMPRESS_ATTRIBUTES);
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_STORAGE_BUFFER);
 
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
@@ -1039,7 +1042,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 	uint32_t dst_attribute_stride;
 	uint32_t dst_skin_stride;
 	uint32_t dst_offsets[Mesh::ARRAY_MAX];
-	RenderingServer::get_singleton()->mesh_surface_make_offsets_from_format(p_new_format & (~RS::ARRAY_FORMAT_INDEX), p_elements, 0, dst_offsets, dst_vertex_stride, dst_normal_tangent_stride, dst_attribute_stride, dst_skin_stride);
+	RenderingServer::get_singleton()->mesh_surface_make_offsets_from_format(p_new_format & (~RSE::ARRAY_FORMAT_INDEX), p_elements, 0, dst_offsets, dst_vertex_stride, dst_normal_tangent_stride, dst_attribute_stride, dst_skin_stride);
 
 	vertex_data.resize((dst_vertex_stride + dst_normal_tangent_stride) * p_elements);
 	attribute_data.resize(dst_attribute_stride * p_elements);
@@ -1104,19 +1107,20 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 					if ((p_old_format & OLD_ARRAY_COMPRESS_NORMAL) && (p_old_format & OLD_ARRAY_FORMAT_TANGENT) && (p_old_format & OLD_ARRAY_COMPRESS_TANGENT)) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 
-							dst[0] = (int16_t)CLAMP(src[0] / 127.0f * 32767, -32768, 32767);
-							dst[1] = (int16_t)CLAMP(src[1] / 127.0f * 32767, -32768, 32767);
+							// 4.x requires biasing the octahedron components to a 0.0 <-> 1.0 range, whereas in 3.x they were stored in the -1.0 <-> 1.0 range
+							dst[0] = (uint16_t)CLAMP((src[0] / 127.0f * .5f + .5f) * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP((src[1] / 127.0f * .5f + .5f) * 65535, 0, 65535);
 						}
 						src_offset += sizeof(int8_t) * 2;
 					} else {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 
-							dst[0] = src[0];
-							dst[1] = src[1];
+							dst[0] = (uint16_t)CLAMP((src[0] / 32767.0f * .5f + .5f) * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP((src[1] / 32767.0f * .5f + .5f) * 65535, 0, 65535);
 						}
 						src_offset += sizeof(int16_t) * 2;
 					}
@@ -1124,7 +1128,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 					if (p_old_format & OLD_ARRAY_COMPRESS_NORMAL) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							const Vector3 original_normal(src[0], src[1], src[2]);
+							const Vector3 original_normal(src[0] / 127.0f, src[1] / 127.0f, src[2] / 127.0f);
 							Vector2 res = original_normal.octahedron_encode();
 
 							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
@@ -1172,10 +1176,10 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 					if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							const Vector3 original_tangent(src[0], src[1], src[2]);
-							Vector2 res = original_tangent.octahedron_tangent_encode(src[3]);
+							const Vector3 original_tangent(src[0] / 127.0f, src[1] / 127.0f, src[2] / 127.0f);
+							Vector2 res = original_tangent.octahedron_tangent_encode(src[3] / 127.0f);
 
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 							if (dst[0] == 0 && dst[1] == 65535) {
@@ -1191,7 +1195,7 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 							const Vector3 original_tangent(src[0], src[1], src[2]);
 							Vector2 res = original_tangent.octahedron_tangent_encode(src[3]);
 
-							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_normal_tangent_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
 							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
 							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 							if (dst[0] == 0 && dst[1] == 65535) {
@@ -1417,7 +1421,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 				new_format |= ARRAY_FORMAT_INDEX;
 			}
 			if (old_format & OLD_ARRAY_FLAG_USE_2D_VERTICES) {
-				new_format |= OLD_ARRAY_FLAG_USE_2D_VERTICES;
+				new_format |= ARRAY_FLAG_USE_2D_VERTICES;
 			}
 
 			Vector<uint8_t> vertex_array;
@@ -1514,7 +1518,7 @@ Array ArrayMesh::_get_surfaces() const {
 
 	Array ret;
 	for (int i = 0; i < surfaces.size(); i++) {
-		RenderingServer::SurfaceData surface = RS::get_singleton()->mesh_get_surface(mesh, i);
+		RenderingServerTypes::SurfaceData surface = RS::get_singleton()->mesh_get_surface(mesh, i);
 		Dictionary data;
 		data["format"] = surface.format;
 		data["primitive"] = surface.primitive;
@@ -1576,20 +1580,20 @@ Array ArrayMesh::_get_surfaces() const {
 void ArrayMesh::_create_if_empty() const {
 	if (!mesh.is_valid()) {
 		mesh = RS::get_singleton()->mesh_create();
-		RS::get_singleton()->mesh_set_blend_shape_mode(mesh, (RS::BlendShapeMode)blend_shape_mode);
+		RS::get_singleton()->mesh_set_blend_shape_mode(mesh, (RSE::BlendShapeMode)blend_shape_mode);
 		RS::get_singleton()->mesh_set_blend_shape_count(mesh, blend_shapes.size());
 		RS::get_singleton()->mesh_set_path(mesh, get_path());
 	}
 }
 
 void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
-	Vector<RS::SurfaceData> surface_data;
+	Vector<RenderingServerTypes::SurfaceData> surface_data;
 	Vector<Ref<Material>> surface_materials;
 	Vector<String> surface_names;
 	Vector<bool> surface_2d;
 
 	for (int i = 0; i < p_surfaces.size(); i++) {
-		RS::SurfaceData surface;
+		RenderingServerTypes::SurfaceData surface;
 		Dictionary d = p_surfaces[i];
 		ERR_FAIL_COND(!d.has("format"));
 		ERR_FAIL_COND(!d.has("primitive"));
@@ -1597,7 +1601,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 		ERR_FAIL_COND(!d.has("vertex_count"));
 		ERR_FAIL_COND(!d.has("aabb"));
 		surface.format = d["format"];
-		surface.primitive = RS::PrimitiveType(int(d["primitive"]));
+		surface.primitive = RSE::PrimitiveType(int(d["primitive"]));
 		surface.vertex_data = d["vertex_data"];
 		surface.vertex_count = d["vertex_count"];
 		if (d.has("attribute_data")) {
@@ -1622,7 +1626,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 			Array lods = d["lods"];
 			ERR_FAIL_COND(lods.size() & 1); //must be even
 			for (int j = 0; j < lods.size(); j += 2) {
-				RS::SurfaceData::LOD lod;
+				RenderingServerTypes::SurfaceData::LOD lod;
 				lod.edge_length = lods[j + 0];
 				lod.index_data = lods[j + 1];
 				surface.lods.push_back(lod);
@@ -1662,11 +1666,11 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 		uint64_t surface_version = surface.format & (ARRAY_FLAG_FORMAT_VERSION_MASK << ARRAY_FLAG_FORMAT_VERSION_SHIFT);
 		if (surface_version != ARRAY_FLAG_FORMAT_CURRENT_VERSION) {
 			RS::get_singleton()->fix_surface_compatibility(surface, get_path());
-			surface_version = surface.format & (RS::ARRAY_FLAG_FORMAT_VERSION_MASK << RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
-			ERR_FAIL_COND_MSG(surface_version != RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
+			surface_version = surface.format & (RSE::ARRAY_FLAG_FORMAT_VERSION_MASK << RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT);
+			ERR_FAIL_COND_MSG(surface_version != RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION,
 					vformat("Surface version provided (%d) does not match current version (%d).",
-							(surface_version >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK,
-							(RS::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RS::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RS::ARRAY_FLAG_FORMAT_VERSION_MASK));
+							(surface_version >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK,
+							(RSE::ARRAY_FLAG_FORMAT_CURRENT_VERSION >> RSE::ARRAY_FLAG_FORMAT_VERSION_SHIFT) & RSE::ARRAY_FLAG_FORMAT_VERSION_MASK));
 		}
 #endif
 
@@ -1686,7 +1690,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 		// if mesh does not exist (first time this is loaded, most likely),
 		// we can create it with a single call, which is a lot more efficient and thread friendly
 		mesh = RS::get_singleton()->mesh_create_from_surfaces(surface_data, blend_shapes.size());
-		RS::get_singleton()->mesh_set_blend_shape_mode(mesh, (RS::BlendShapeMode)blend_shape_mode);
+		RS::get_singleton()->mesh_set_blend_shape_mode(mesh, (RSE::BlendShapeMode)blend_shape_mode);
 		RS::get_singleton()->mesh_set_path(mesh, get_path());
 	}
 
@@ -1778,8 +1782,8 @@ void ArrayMesh::_recompute_aabb() {
 }
 
 // TODO: Need to add binding to add_surface using future MeshSurfaceData object.
-void ArrayMesh::add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, const Vector<AABB> &p_bone_aabbs, const Vector<RS::SurfaceData::LOD> &p_lods, const Vector4 p_uv_scale) {
-	ERR_FAIL_COND(surfaces.size() == RS::MAX_MESH_SURFACES);
+void ArrayMesh::add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, const Vector<AABB> &p_bone_aabbs, const Vector<RenderingServerTypes::SurfaceData::LOD> &p_lods, const Vector4 p_uv_scale) {
+	ERR_FAIL_COND(surfaces.size() == RSE::MAX_MESH_SURFACES);
 	_create_if_empty();
 
 	Surface s;
@@ -1793,9 +1797,9 @@ void ArrayMesh::add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_prim
 	surfaces.push_back(s);
 	_recompute_aabb();
 
-	RS::SurfaceData sd;
+	RenderingServerTypes::SurfaceData sd;
 	sd.format = p_format;
-	sd.primitive = RS::PrimitiveType(p_primitive);
+	sd.primitive = RSE::PrimitiveType(p_primitive);
 	sd.aabb = p_aabb;
 	sd.vertex_count = p_vertex_count;
 	sd.vertex_data = p_array;
@@ -1819,9 +1823,9 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 	ERR_FAIL_COND(p_blend_shapes.size() != blend_shapes.size());
 	ERR_FAIL_COND(p_arrays.size() != ARRAY_MAX);
 
-	RS::SurfaceData surface;
+	RenderingServerTypes::SurfaceData surface;
 
-	Error err = RS::get_singleton()->mesh_create_surface_data_from_arrays(&surface, (RenderingServer::PrimitiveType)p_primitive, p_arrays, p_blend_shapes, p_lods, p_flags);
+	Error err = RS::get_singleton()->mesh_create_surface_data_from_arrays(&surface, (RSE::PrimitiveType)p_primitive, p_arrays, p_blend_shapes, p_lods, p_flags);
 	ERR_FAIL_COND(err != OK);
 
 	/* Debug code.
@@ -1914,7 +1918,7 @@ void ArrayMesh::clear_blend_shapes() {
 void ArrayMesh::set_blend_shape_mode(BlendShapeMode p_mode) {
 	blend_shape_mode = p_mode;
 	if (mesh.is_valid()) {
-		RS::get_singleton()->mesh_set_blend_shape_mode(mesh, (RS::BlendShapeMode)p_mode);
+		RS::get_singleton()->mesh_set_blend_shape_mode(mesh, (RSE::BlendShapeMode)p_mode);
 	}
 }
 
@@ -2088,7 +2092,6 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 	LocalVector<float> vertices;
 	LocalVector<float> normals;
 	LocalVector<int> indices;
-	LocalVector<float> uv;
 	LocalVector<Pair<int, int>> uv_indices;
 
 	Vector<ArrayMeshLightmapSurface> lightmap_surfaces;
@@ -2233,10 +2236,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 				surfaces_tools[surface]->set_normal(v.normal);
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_TANGENT) {
-				Plane t;
-				t.normal = v.tangent;
-				t.d = v.binormal.dot(v.normal.cross(v.tangent)) < 0 ? -1 : 1;
-				surfaces_tools[surface]->set_tangent(t);
+				surfaces_tools[surface]->set_tangent(Plane(v.tangent.x, v.tangent.y, v.tangent.z, v.tangent.w));
 			}
 			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_BONES) {
 				surfaces_tools[surface]->set_bones(v.bones);
@@ -2339,7 +2339,7 @@ void ArrayMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NO_NODEPATH, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NO_NODEPATH, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shadow_mesh", PROPERTY_HINT_RESOURCE_TYPE, "ArrayMesh"), "set_shadow_mesh", "get_shadow_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shadow_mesh", PROPERTY_HINT_RESOURCE_TYPE, ArrayMesh::get_class_static()), "set_shadow_mesh", "get_shadow_mesh");
 }
 
 void ArrayMesh::reload_from_file() {

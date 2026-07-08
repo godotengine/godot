@@ -164,7 +164,6 @@ static wchar_t *utf8_to_wchar_t(const char *utf8)
  * Use register_error_str(NULL) to free the error message completely. */
 static void register_error_str(wchar_t **error_str, const char *msg)
 {
-	free(*error_str);
 #ifdef HIDAPI_USING_SDL_RUNTIME
 	/* Thread-safe error handling */
 	if (msg) {
@@ -173,6 +172,7 @@ static void register_error_str(wchar_t **error_str, const char *msg)
 		SDL_ClearError();
 	}
 #else
+	free(*error_str);
 	*error_str = utf8_to_wchar_t(msg);
 #endif
 }

@@ -31,12 +31,11 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "scene/property_list_helper.h"
-#include "servers/audio/audio_server.h"
-
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
+#include "scene/property_list_helper.h"
+#include "servers/audio/audio_server.h"
 
 class AudioStream;
 
@@ -171,7 +170,9 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL0RC_REQUIRED(Ref<AudioStreamPlayback>, _instantiate_playback)
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL0RC(String, _get_stream_name)
+#endif
 	GDVIRTUAL0RC(double, _get_length)
 	GDVIRTUAL0RC(bool, _is_monophonic)
 	GDVIRTUAL0RC(double, _get_bpm)
@@ -183,7 +184,6 @@ protected:
 
 public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback();
-	virtual String get_stream_name() const;
 
 	virtual double get_bpm() const;
 	virtual bool has_loop() const;
@@ -228,7 +228,6 @@ class AudioStreamMicrophone : public AudioStream {
 
 public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 
 	virtual double get_length() const override; //if supported, otherwise return 0
 
@@ -338,7 +337,6 @@ public:
 	PlaybackMode get_playback_mode() const;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 
 	virtual double get_length() const override; //if supported, otherwise return 0
 	virtual bool is_monophonic() const override;

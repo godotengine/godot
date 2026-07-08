@@ -64,12 +64,16 @@ template <unsigned int key_bits=16,
 struct hb_cache_t
 {
   using item_t = typename std::conditional<thread_safe,
-					   typename std::conditional<key_bits + value_bits - cache_bits <= 16,
-								     hb_atomic_t<unsigned short>,
-								     hb_atomic_t<unsigned int>>::type,
-					   typename std::conditional<key_bits + value_bits - cache_bits <= 16,
-								     unsigned short,
-								     unsigned int>::type
+					   typename std::conditional<key_bits + value_bits - cache_bits <= 8,
+								     hb_atomic_t<unsigned char>,
+								     typename std::conditional<key_bits + value_bits - cache_bits <= 16,
+											       hb_atomic_t<unsigned short>,
+											       hb_atomic_t<unsigned int>>::type>::type,
+					   typename std::conditional<key_bits + value_bits - cache_bits <= 8,
+								     unsigned char,
+								     typename std::conditional<key_bits + value_bits - cache_bits <= 16,
+											       unsigned short,
+											       unsigned int>::type>::type
 					  >::type;
 
   static_assert ((key_bits >= cache_bits), "");

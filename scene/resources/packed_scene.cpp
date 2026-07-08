@@ -34,9 +34,12 @@
 #include "core/io/file_access.h"
 #include "core/io/missing_resource.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
 #include "core/variant/callable_bind.h"
+#include "core/variant/container_type_validate.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
@@ -78,6 +81,85 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 	return pinned;
 }
 
+Variant SceneState::_duplicate_recursive(const Variant &p_variant, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_remap_cache, const Variant &p_fallback, Node *p_for_scene) {
+	switch (p_variant.get_type()) {
+		case Variant::OBJECT: {
+			// The local-to-scene subresource instance is preserved, thus maintaining the previous sharing relationship.
+			// This is mainly used when the sub-scene root is reset in the main scene.
+			Ref<Resource> sub_res_of_from = p_variant;
+			if (sub_res_of_from.is_valid() && sub_res_of_from->is_local_to_scene()) {
+				return get_remap_resource(sub_res_of_from, p_remap_cache, p_fallback, p_for_scene);
+			}
+		} break;
+		case Variant::ARRAY: {
+			const Array &src = p_variant;
+			const Array &fallback = p_fallback;
+
+			bool has_fallback = true;
+			Array dst;
+			if (src.is_typed()) {
+				const ContainerType &scr_type = src.get_element_type();
+				dst.set_typed(scr_type);
+				has_fallback = false;
+				if (fallback.is_typed()) {
+					const ContainerType &fallback_type = fallback.get_element_type();
+					has_fallback =
+							scr_type.builtin_type == fallback_type.builtin_type &&
+							scr_type.class_name == fallback_type.class_name &&
+							scr_type.script == fallback_type.script;
+				}
+			}
+			dst.resize(src.size());
+			for (int i = 0; i < src.size(); i++) {
+				Variant ele_fallback;
+				if (has_fallback && fallback.size() > i) {
+					ele_fallback = fallback[i];
+				}
+				dst[i] = _duplicate_recursive(src[i], p_remap_cache, ele_fallback, p_for_scene);
+			}
+			return dst;
+		} break;
+		case Variant::DICTIONARY: {
+			const Dictionary &src = p_variant;
+			const Dictionary &fallback = p_fallback;
+
+			bool has_fallback = true;
+			Dictionary dst;
+			if (src.is_typed()) {
+				dst.set_typed(src.get_typed_key_builtin(), src.get_typed_key_class_name(), src.get_typed_key_script(), src.get_typed_value_builtin(), src.get_typed_value_class_name(), src.get_typed_value_script());
+				has_fallback = false;
+				if (fallback.is_typed()) {
+					has_fallback =
+							src.get_typed_key_builtin() == fallback.get_typed_key_builtin() &&
+							src.get_typed_key_class_name() == fallback.get_typed_key_class_name() &&
+							src.get_typed_key_script() == fallback.get_typed_key_script() &&
+							src.get_typed_value_builtin() == fallback.get_typed_value_builtin() &&
+							src.get_typed_value_class_name() == fallback.get_typed_value_class_name() &&
+							src.get_typed_value_script() == fallback.get_typed_value_script();
+				}
+			}
+
+			for (const KeyValue<Variant, Variant> &KV : src) {
+				const Variant &k = KV.key;
+				const Variant &v = KV.value;
+				Variant val_fallback;
+				// FIXME: as both `src` and `fallback` are remapped values, so if the local-to-scene
+				// resource is used as the key, it is difficult to find its fallback value.
+				if (has_fallback && fallback.has(k)) {
+					val_fallback = fallback[k];
+				}
+				dst.set(
+						_duplicate_recursive(k, p_remap_cache, Variant(), p_for_scene),
+						_duplicate_recursive(v, p_remap_cache, val_fallback, p_for_scene));
+			}
+			return dst;
+		} break;
+		default: {
+		}
+	}
+	return p_variant;
+}
+
 Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene) {
 	ERR_FAIL_COND_V(p_resource.is_null(), Ref<Resource>());
 
@@ -112,14 +194,7 @@ Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, Ha
 				continue; // Do not change path.
 			}
 
-			Variant value = p_resource->get(E.name);
-
-			// The local-to-scene subresource instance is preserved, thus maintaining the previous sharing relationship.
-			// This is mainly used when the sub-scene root is reset in the main scene.
-			Ref<Resource> sub_res_of_from = value;
-			if (sub_res_of_from.is_valid() && sub_res_of_from->is_local_to_scene()) {
-				value = get_remap_resource(sub_res_of_from, remap_cache, p_fallback->get(E.name), p_fallback->get_local_scene());
-			}
+			Variant value = _duplicate_recursive(p_resource->get(E.name), remap_cache, p_fallback->get(E.name), p_for_scene);
 
 			p_fallback->set(E.name, value);
 		}
@@ -154,17 +229,17 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	// Nodes where instantiation failed (because something is missing.)
 	List<Node *> stray_instances;
 
-#define NODE_FROM_ID(p_name, p_id)                                             \
-	Node *p_name;                                                              \
-	if (p_id & FLAG_ID_IS_PATH) {                                              \
-		NodePath np = node_paths[p_id & FLAG_MASK];                            \
-		p_name = ret_nodes[0]->get_node_or_null(np);                           \
-		if (!p_name) {                                                         \
+#define NODE_FROM_ID(p_name, p_id) \
+	Node *p_name; \
+	if (p_id & FLAG_ID_IS_PATH) { \
+		NodePath np = node_paths[p_id & FLAG_MASK]; \
+		p_name = ret_nodes[0]->get_node_or_null(np); \
+		if (!p_name) { \
 			p_name = _recover_node_path_index(ret_nodes[0], p_id & FLAG_MASK); \
-		}                                                                      \
-	} else {                                                                   \
-		ERR_FAIL_INDEX_V(p_id & FLAG_MASK, nc, nullptr);                       \
-		p_name = ret_nodes[p_id & FLAG_MASK];                                  \
+		} \
+	} else { \
+		ERR_FAIL_INDEX_V(p_id & FLAG_MASK, nc, nullptr); \
+		p_name = ret_nodes[p_id & FLAG_MASK]; \
 	}
 
 	int nc = nodes.size();
@@ -664,9 +739,6 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		Callable callable(cto, snames[c.method]);
 
 		Array binds;
-		if (c.flags & CONNECT_APPEND_SOURCE_OBJECT) {
-			binds.push_back(cfrom);
-		}
 
 		for (int bind : c.binds) {
 			binds.push_back(props[bind]);
@@ -1193,11 +1265,6 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 					unbinds = ccu->get_unbinds();
 					base_callable = ccu->get_callable();
 				}
-
-				// The source object may already be bound, ignore it to avoid saving the source object.
-				if ((c.flags & CONNECT_APPEND_SOURCE_OBJECT) && (p_node == binds[0])) {
-					binds.remove_at(0);
-				}
 			} else {
 				base_callable = c.callable;
 			}
@@ -1560,6 +1627,36 @@ Variant SceneState::get_property_value(int p_node, const StringName &p_property,
 				return variants[p[i].value];
 			}
 		}
+
+#ifndef DISABLE_DEPRECATED
+#ifdef TOOLS_ENABLED
+		// Compatibility: In 4.5 and earlier, AnimationMixer used a single "libraries" Dictionary property.
+		// In 4.6+, each library is stored as a separate "libraries/<name>" property.
+		// If we're looking for "libraries/<name>" and didn't find it, check the old format.
+		String prop_str = p_property.string();
+		if (prop_str.begins_with("libraries/")) {
+			StringName node_type = get_node_type(p_node);
+			if (node_type != StringName() && ClassDB::is_parent_class(node_type, SNAME("AnimationMixer"))) {
+				String library_name = prop_str.get_slicec('/', 1);
+				static const StringName libraries_sname = "libraries";
+				for (int i = 0; i < pc; i++) {
+					if (namep[p[i].name & FLAG_PROP_NAME_MASK] == libraries_sname) {
+						Variant libs_variant = variants[p[i].value];
+						if (libs_variant.get_type() == Variant::DICTIONARY) {
+							Dictionary libs_dict = libs_variant;
+							if (libs_dict.has(library_name)) {
+								r_found = true;
+								r_node_deferred = false;
+								return libs_dict[library_name];
+							}
+						}
+						break;
+					}
+				}
+			}
+		}
+#endif // TOOLS_ENABLED
+#endif // DISABLE_DEPRECATED
 	}
 
 	// Property not found, try on instance.

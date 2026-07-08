@@ -42,18 +42,19 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/texture_progress_bar.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
 class EditorAudioBuses;
 class EditorFileDialog;
+class Gradient;
+class GradientTexture2D;
 class HBoxContainer;
+class StyleBoxFlat;
 class Timer;
 
 class EditorAudioBus : public PanelContainer {
 	GDCLASS(EditorAudioBus, PanelContainer);
 
-	Ref<Texture2D> disabled_vu;
 	LineEdit *track_name = nullptr;
 	MenuButton *bus_options = nullptr;
 	VSlider *slider = nullptr;
@@ -64,12 +65,39 @@ class EditorAudioBus : public PanelContainer {
 	struct {
 		bool prev_active = false;
 
-		float peak_l = 0;
-		float peak_r = 0;
+		float peak_l;
+		float peak_r;
 
 		TextureProgressBar *vu_l = nullptr;
 		TextureProgressBar *vu_r = nullptr;
+
+		Panel *peak_indicator_l = nullptr;
+		Panel *peak_indicator_r = nullptr;
+		Timer *peak_timer_l = nullptr;
+		Timer *peak_timer_r = nullptr;
+
+		bool indicator_fall_l = false;
+		bool indicator_fall_r = false;
 	} channel[CHANNELS_MAX];
+
+	// Divides positive and negative dB values.
+	const PackedFloat32Array gradient_offsets = { 0.0, 0.72, 0.74 };
+	PackedColorArray active_gradient_colors;
+	PackedColorArray inactive_gradient_colors;
+	Color under_tint_color;
+	Color over_tint_color;
+
+	Ref<GradientTexture2D> active_bus_texture;
+	Ref<Gradient> active_gradient;
+	Ref<GradientTexture2D> inactive_bus_texture;
+	Ref<Gradient> inactive_gradient;
+
+	Ref<StyleBoxFlat> peak_indicator_stylebox_l;
+	Ref<StyleBoxFlat> peak_indicator_stylebox_r;
+
+	const float vu_width = 16;
+	const float vu_height = 128;
+	float peak_indicator_range;
 
 	OptionButton *send = nullptr;
 
@@ -102,6 +130,7 @@ class EditorAudioBus : public PanelContainer {
 	float _scaled_db_to_normalized_volume(float db);
 	void _show_value(float slider_value);
 	void _hide_value_preview();
+	void _enable_indicator_fall();
 	void _solo_toggled();
 	void _mute_toggled();
 	void _bypass_toggled();
@@ -152,8 +181,16 @@ protected:
 class EditorAudioBuses : public EditorDock {
 	GDCLASS(EditorAudioBuses, EditorDock);
 
+	enum class MenuOption {
+		LOAD,
+		SAVE_AS,
+		LOAD_DEFAULT,
+		CREATE,
+	};
+
 	HBoxContainer *top_hb = nullptr;
 
+	MarginContainer *bus_mc = nullptr;
 	ScrollContainer *bus_scroll = nullptr;
 	HBoxContainer *bus_hb = nullptr;
 
@@ -162,14 +199,12 @@ class EditorAudioBuses : public EditorDock {
 	Label *file = nullptr;
 
 	Button *add = nullptr;
-	Button *load = nullptr;
-	Button *save_as = nullptr;
-	Button *_default = nullptr;
-	Button *_new = nullptr;
+	MenuButton *menu = nullptr;
 
 	Timer *save_timer = nullptr;
 	String edited_path;
 
+	void _update_file_label();
 	void _update_file_label_size();
 
 	void _rebuild_buses();
@@ -185,12 +220,14 @@ class EditorAudioBuses : public EditorDock {
 	void _drop_at_index(int p_bus, int p_index);
 
 	void _server_save();
+	void _file_moved(const String &p_old_path, const String &p_new_path);
 
 	void _select_layout();
 	void _load_layout();
 	void _save_as_layout();
 	void _load_default_layout();
 	void _new_layout();
+	void _menu_option(int p_option);
 
 	EditorFileDialog *file_dialog = nullptr;
 	bool new_layout = false;
@@ -200,6 +237,8 @@ class EditorAudioBuses : public EditorDock {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 public:
 	void open_layout(const String &p_path);
@@ -251,8 +290,6 @@ private:
 public:
 	const float line_length = 5.0f;
 	const float label_space = 2.0f;
-	const float btm_padding = 9.0f;
-	const float top_padding = 5.0f;
 
 	void add_notch(float p_normalized_offset, float p_db_value, bool p_render_value = false);
 	Size2 get_minimum_size() const override;
@@ -272,7 +309,6 @@ class AudioBusesEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "SampleLibrary"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;

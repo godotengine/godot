@@ -141,7 +141,7 @@ static void _digest_job_queue(void *p_job_queue, uint32_t p_index) {
 	}
 }
 
-void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
+void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels, Image::BPTCFormat p_bptc_format) {
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	if (p_image->is_compressed()) {
@@ -179,7 +179,17 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 			p_image->convert(Image::FORMAT_RGBH);
 		}
 
-		is_signed = p_image->detect_signed();
+		switch (p_bptc_format) {
+			case Image::BPTC_DETECT:
+				is_signed = p_image->detect_signed();
+				break;
+			case Image::BPTC_FORCE_SIGNED:
+				is_signed = true;
+				break;
+			case Image::BPTC_FORCE_UNSIGNED:
+				is_signed = false;
+				break;
+		}
 		target_format = is_signed ? Image::FORMAT_BPTC_RGBF : Image::FORMAT_BPTC_RGBFU;
 	} else {
 		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
@@ -189,7 +199,6 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
 	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w, h, target_format) : 0;
 	data.resize(target_size);
-	int shift = Image::get_format_pixel_rshift(target_format);
 
 	uint8_t *wb = data.ptrw();
 
@@ -272,7 +281,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 			out_bytes += 16 * (bw / 4);
 		}
 
-		dst_ofs += (MAX(4, bw) * MAX(4, bh)) >> shift;
+		dst_ofs += Image::get_format_pixels_shifted(target_format, MAX(4, bw) * MAX(4, bh));
 	}
 
 	const CVTTCompressionRowTask *tasks_rb = tasks.ptr();

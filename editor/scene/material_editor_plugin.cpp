@@ -31,6 +31,7 @@
 #include "material_editor_plugin.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -42,8 +43,11 @@
 #include "scene/gui/label.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/blit_material.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/particle_process_material.h"
+#include "scene/resources/sky.h"
+#include "servers/rendering/rendering_server.h"
 
 // 3D.
 #include "scene/3d/camera_3d.h"
@@ -98,6 +102,15 @@ void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void MaterialEditor::set_autohide_buttons(bool p_autohide) {
+	autohide_buttons = p_autohide;
+	if (autohide_buttons) {
+		layout_3d->hide();
+	} else {
+		layout_3d->show();
+	}
+}
+
 void MaterialEditor::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
@@ -127,7 +140,23 @@ void MaterialEditor::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			if (!is_unsupported_shader_mode) {
 				Size2 size = get_size();
+				draw_rect(Rect2(Point2(), size), Color(0, 0, 0, 1)); // Since checkerboard texture is transluscent, draw opaque black behind it.
 				draw_texture_rect(theme_cache.checkerboard, Rect2(Point2(), size), true);
+			}
+		} break;
+
+		case NOTIFICATION_MOUSE_ENTER: {
+			if (autohide_buttons) {
+				Shader::Mode mode = material.is_valid() ? material->get_shader_mode() : Shader::MODE_MAX;
+				if (mode == Shader::MODE_SPATIAL) {
+					layout_3d->show();
+				}
+			}
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			if (autohide_buttons) {
+				layout_3d->hide();
 			}
 		} break;
 	}
@@ -170,7 +199,9 @@ void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_en
 			case Shader::MODE_SPATIAL:
 				layout_error->hide();
 				layout_2d->hide();
-				layout_3d->show();
+				if (!autohide_buttons) {
+					layout_3d->show();
+				}
 				sphere_instance->set_material_override(material);
 				box_instance->set_material_override(material);
 				quad_instance->set_material_override(material);
@@ -231,7 +262,7 @@ void MaterialEditor::_on_quad_switch_pressed() {
 }
 
 MaterialEditor::MaterialEditor() {
-	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
+	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
 
 	// Canvas item
 
@@ -252,7 +283,8 @@ MaterialEditor::MaterialEditor() {
 
 	rect_instance = memnew(ColorRect);
 	layout_2d->add_child(rect_instance);
-	rect_instance->set_custom_minimum_size(Size2(150, 150) * EDSCALE);
+	rect_instance->set_h_size_flags(SIZE_EXPAND_FILL);
+	rect_instance->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	layout_2d->set_visible(false);
 
@@ -332,28 +364,40 @@ MaterialEditor::MaterialEditor() {
 
 	layout_3d = memnew(HBoxContainer);
 	add_child(layout_3d);
+	if (autohide_buttons) {
+		layout_3d->hide();
+	}
 	layout_3d->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 2);
 
 	VBoxContainer *vb_shape = memnew(VBoxContainer);
 	layout_3d->add_child(vb_shape);
 
+	Ref<ButtonGroup> bg;
+	bg.instantiate();
+
 	sphere_switch = memnew(Button);
+	sphere_switch->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	sphere_switch->set_theme_type_variation("PreviewLightButton");
 	sphere_switch->set_toggle_mode(true);
+	sphere_switch->set_button_group(bg);
 	sphere_switch->set_accessibility_name(TTRC("Sphere"));
 	vb_shape->add_child(sphere_switch);
 	sphere_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_sphere_switch_pressed));
 
 	box_switch = memnew(Button);
+	box_switch->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	box_switch->set_theme_type_variation("PreviewLightButton");
 	box_switch->set_toggle_mode(true);
+	box_switch->set_button_group(bg);
 	box_switch->set_accessibility_name(TTRC("Box"));
 	vb_shape->add_child(box_switch);
 	box_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_box_switch_pressed));
 
 	quad_switch = memnew(Button);
+	quad_switch->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	quad_switch->set_theme_type_variation("PreviewLightButton");
 	quad_switch->set_toggle_mode(true);
+	quad_switch->set_button_group(bg);
 	quad_switch->set_accessibility_name(TTRC("Quad"));
 	vb_shape->add_child(quad_switch);
 	quad_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_quad_switch_pressed));
@@ -364,6 +408,7 @@ MaterialEditor::MaterialEditor() {
 	layout_3d->add_child(vb_light);
 
 	light_1_switch = memnew(Button);
+	light_1_switch->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	light_1_switch->set_theme_type_variation("PreviewLightButton");
 	light_1_switch->set_toggle_mode(true);
 	light_1_switch->set_pressed(true);
@@ -372,6 +417,7 @@ MaterialEditor::MaterialEditor() {
 	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_light_1_switch_pressed));
 
 	light_2_switch = memnew(Button);
+	light_2_switch->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	light_2_switch->set_theme_type_variation("PreviewLightButton");
 	light_2_switch->set_toggle_mode(true);
 	light_2_switch->set_pressed(true);
@@ -396,6 +442,9 @@ MaterialEditor::MaterialEditor() {
 
 	Vector2 stored_rot = EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_rotation", Vector2());
 	_set_rotation(stored_rot.x, stored_rot.y);
+
+	EditorNode::get_singleton()->register_hdr_viewport(viewport);
+	EditorNode::get_singleton()->register_hdr_viewport(viewport_2d);
 }
 
 ///////////////////////
@@ -498,4 +547,43 @@ bool CanvasItemMaterialConversionPlugin::handles(const Ref<Resource> &p_resource
 Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	ERR_FAIL_COND_V(!Object::cast_to<CanvasItemMaterial>(*p_resource) || !Object::cast_to<CanvasItemMaterial>(*p_resource)->_is_initialized(), Ref<CanvasItemMaterial>());
 	return MaterialEditor::make_shader_material(p_resource);
+}
+
+String BlitMaterialConversionPlugin::converts_to() const {
+	return "ShaderMaterial";
+}
+
+bool BlitMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+	Ref<BlitMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+
+Ref<Resource> BlitMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+	Ref<BlitMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instantiate();
+
+	Ref<Shader> shader;
+	shader.instantiate();
+
+	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
+
+	for (const PropertyInfo &E : params) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
+		smat->set_shader_parameter(E.name, value);
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	smat->set_local_to_scene(mat->is_local_to_scene());
+	smat->set_name(mat->get_name());
+	return smat;
 }

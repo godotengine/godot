@@ -59,7 +59,7 @@ private:
 	static void multicast_lock_release();
 
 protected:
-	static NetSocket *_create_func();
+	static Ref<NetSocket> _create_func();
 
 public:
 	static void make_default();

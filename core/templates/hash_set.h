@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
+#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/hashfuncs.h"
 
 /**
@@ -46,7 +46,7 @@
 template <typename TKey,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
-class HashSet {
+class _WARN_UNUSED_ HashSet {
 public:
 	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
 	static constexpr float MAX_OCCUPANCY = 0.75;
@@ -380,20 +380,20 @@ public:
 		int32_t _key_idx = -1;
 	};
 
-	_FORCE_INLINE_ Iterator begin() const {
+	_FORCE_INLINE_ Iterator begin() const _LIFETIME_BOUND_ {
 		return _size ? Iterator(_keys, _size, 0) : Iterator();
 	}
-	_FORCE_INLINE_ Iterator end() const {
+	_FORCE_INLINE_ Iterator end() const _LIFETIME_BOUND_ {
 		return Iterator();
 	}
-	_FORCE_INLINE_ Iterator last() const {
+	_FORCE_INLINE_ Iterator last() const _LIFETIME_BOUND_ {
 		if (_size == 0) {
 			return Iterator();
 		}
 		return Iterator(_keys, _size, _size - 1);
 	}
 
-	_FORCE_INLINE_ Iterator find(const TKey &p_key) const {
+	_FORCE_INLINE_ Iterator find(const TKey &p_key) const _LIFETIME_BOUND_ {
 		uint32_t key_idx = 0;
 		bool exists = _lookup_key_idx(p_key, key_idx);
 		if (!exists) {
@@ -410,15 +410,33 @@ public:
 
 	/* Insert */
 
-	Iterator insert(const TKey &p_key) {
+	Iterator insert(const TKey &p_key) _LIFETIME_BOUND_ {
 		uint32_t key_idx = _insert(p_key);
 		return Iterator(_keys, _size, key_idx);
 	}
 
 	/* Constructors */
 
-	HashSet(const HashSet &p_other) {
+	explicit HashSet(const HashSet &p_other) {
 		_init_from(p_other);
+	}
+
+	HashSet(HashSet &&p_other) {
+		_keys = p_other._keys;
+		_hash_idx_to_key_idx = p_other._hash_idx_to_key_idx;
+		_key_idx_to_hash_idx = p_other._key_idx_to_hash_idx;
+		_hashes = p_other._hashes;
+
+		_capacity_idx = p_other._capacity_idx;
+		_size = p_other._size;
+
+		p_other._keys = nullptr;
+		p_other._hash_idx_to_key_idx = nullptr;
+		p_other._hashes = nullptr;
+		p_other._key_idx_to_hash_idx = nullptr;
+
+		p_other._capacity_idx = 0;
+		p_other._size = 0;
 	}
 
 	void operator=(const HashSet &p_other) {
@@ -440,6 +458,20 @@ public:
 		}
 
 		_init_from(p_other);
+	}
+
+	void operator=(HashSet &&p_other) {
+		if (this == &p_other) {
+			return; // Ignore self assignment.
+		}
+
+		SWAP(_keys, p_other._keys);
+		SWAP(_hash_idx_to_key_idx, p_other._hash_idx_to_key_idx);
+		SWAP(_key_idx_to_hash_idx, p_other._key_idx_to_hash_idx);
+		SWAP(_hashes, p_other._hashes);
+
+		SWAP(_capacity_idx, p_other._capacity_idx);
+		SWAP(_size, p_other._size);
 	}
 
 	bool operator==(const HashSet &p_other) const {
@@ -465,7 +497,6 @@ public:
 	HashSet() {
 		_capacity_idx = MIN_CAPACITY_INDEX;
 	}
-
 	HashSet(std::initializer_list<TKey> p_init) {
 		reserve(p_init.size());
 		for (const TKey &E : p_init) {

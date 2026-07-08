@@ -32,7 +32,9 @@
 #include "text_server.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -68,7 +70,7 @@ void TextServerManager::add_interface(const Ref<TextServer> &p_interface) {
 	};
 
 	interfaces.push_back(p_interface);
-	print_verbose("TextServer: Added interface \"" + p_interface->get_name() + "\"");
+	print_verbose("TextServer: Added interface \"" + p_interface->get_name() + "\" (" + p_interface->get_short_name() + ")");
 	emit_signal(SNAME("interface_added"), p_interface->get_name());
 }
 
@@ -85,7 +87,7 @@ void TextServerManager::remove_interface(const Ref<TextServer> &p_interface) {
 	};
 
 	ERR_FAIL_COND_MSG(idx == -1, "Interface not found.");
-	print_verbose("TextServer: Removed interface \"" + p_interface->get_name() + "\"");
+	print_verbose("TextServer: Removed interface \"" + p_interface->get_name() + "\" (" + p_interface->get_short_name() + ")");
 	emit_signal(SNAME("interface_removed"), p_interface->get_name());
 	interfaces.remove_at(idx);
 }
@@ -120,6 +122,7 @@ TypedArray<Dictionary> TextServerManager::get_interfaces() const {
 
 		iface_info["id"] = i;
 		iface_info["name"] = interfaces[i]->get_name();
+		iface_info["short_name"] = interfaces[i]->get_short_name();
 
 		ret.push_back(iface_info);
 	};
@@ -133,7 +136,7 @@ void TextServerManager::set_primary_interface(const Ref<TextServer> &p_primary_i
 		primary_interface.unref();
 	} else {
 		primary_interface = p_primary_interface;
-		print_verbose("TextServer: Primary interface set to: \"" + primary_interface->get_name() + "\".");
+		print_verbose("TextServer: Primary interface set to: \"" + primary_interface->get_name() + "\" (" + primary_interface->get_short_name() + ").");
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TEXT_SERVER_CHANGED);
@@ -198,6 +201,7 @@ double TextServer::vp_oversampling = 0.0;
 void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &TextServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &TextServer::get_name);
+	ClassDB::bind_method(D_METHOD("get_short_name"), &TextServer::get_short_name);
 	ClassDB::bind_method(D_METHOD("get_features"), &TextServer::get_features);
 	ClassDB::bind_method(D_METHOD("load_support_data", "filename"), &TextServer::load_support_data);
 
@@ -205,6 +209,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_support_data_info"), &TextServer::get_support_data_info);
 	ClassDB::bind_method(D_METHOD("save_support_data", "filename"), &TextServer::save_support_data);
 	ClassDB::bind_method(D_METHOD("get_support_data"), &TextServer::get_support_data);
+	ClassDB::bind_method(D_METHOD("is_locale_using_support_data", "locale"), &TextServer::is_locale_using_support_data);
 
 	ClassDB::bind_method(D_METHOD("is_locale_right_to_left", "locale"), &TextServer::is_locale_right_to_left);
 
@@ -273,8 +278,16 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font_rid", "force_autohinter"), &TextServer::font_set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("font_is_force_autohinter", "font_rid"), &TextServer::font_is_force_autohinter);
 
-	ClassDB::bind_method(D_METHOD("font_set_modulate_color_glyphs", "font_rid", "force_autohinter"), &TextServer::font_set_modulate_color_glyphs);
+	ClassDB::bind_method(D_METHOD("font_set_modulate_color_glyphs", "font_rid", "modulate"), &TextServer::font_set_modulate_color_glyphs);
 	ClassDB::bind_method(D_METHOD("font_is_modulate_color_glyphs", "font_rid"), &TextServer::font_is_modulate_color_glyphs);
+
+	ClassDB::bind_method(D_METHOD("font_get_palette_count", "font_rid"), &TextServer::font_get_palette_count);
+	ClassDB::bind_method(D_METHOD("font_get_palette_name", "font_rid", "index"), &TextServer::font_get_palette_name);
+	ClassDB::bind_method(D_METHOD("font_get_palette_colors", "font_rid", "index"), &TextServer::font_get_palette_colors);
+	ClassDB::bind_method(D_METHOD("font_set_palette_custom_colors", "font_rid", "colors"), &TextServer::font_set_palette_custom_colors);
+	ClassDB::bind_method(D_METHOD("font_get_palette_custom_colors", "font_rid"), &TextServer::font_get_palette_custom_colors);
+	ClassDB::bind_method(D_METHOD("font_get_used_palette", "font_rid"), &TextServer::font_get_used_palette);
+	ClassDB::bind_method(D_METHOD("font_set_used_palette", "font_rid", "index"), &TextServer::font_set_used_palette);
 
 	ClassDB::bind_method(D_METHOD("font_set_hinting", "font_rid", "hinting"), &TextServer::font_set_hinting);
 	ClassDB::bind_method(D_METHOD("font_get_hinting", "font_rid"), &TextServer::font_get_hinting);
@@ -450,6 +463,7 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shaped_get_run_count", "shaped"), &TextServer::shaped_get_run_count);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_text", "shaped", "index"), &TextServer::shaped_get_run_text);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_range", "shaped", "index"), &TextServer::shaped_get_run_range);
+	ClassDB::bind_method(D_METHOD("shaped_get_run_glyph_range", "shaped", "index"), &TextServer::shaped_get_run_glyph_range);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_font_rid", "shaped", "index"), &TextServer::shaped_get_run_font_rid);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_font_size", "shaped", "index"), &TextServer::shaped_get_run_font_size);
 	ClassDB::bind_method(D_METHOD("shaped_get_run_language", "shaped", "index"), &TextServer::shaped_get_run_language);
@@ -896,10 +910,10 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 					while (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) && trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 						start_pos += l_gl[start_pos].count;
 					}
-					while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+					while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos <= end_pos) && (end_pos > 0) && ((l_gl[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 						end_pos -= l_gl[end_pos].count;
 					}
-					if (last_end <= l_gl[start_pos].start) {
+					if (last_end <= l_gl[start_pos].start && l_gl[start_pos].start != l_gl[end_pos].end) {
 						lines.push_back(l_gl[start_pos].start);
 						lines.push_back(l_gl[end_pos].end);
 						cur_safe_brk = last_safe_break;
@@ -940,10 +954,10 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 						while (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) && trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 							start_pos += l_gl[start_pos].count;
 						}
-						while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+						while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos <= end_pos) && (end_pos > 0) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 							end_pos -= l_gl[end_pos].count;
 						}
-						if (last_end <= l_gl[start_pos].start) {
+						if (last_end <= l_gl[start_pos].start && l_gl[start_pos].start != l_gl[end_pos].end) {
 							lines.push_back(l_gl[start_pos].start);
 							lines.push_back(l_gl[end_pos].end);
 							last_end = l_gl[i].end;
@@ -976,7 +990,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 					if ((l_gl[i].flags & GRAPHEME_IS_SOFT_HYPHEN) == GRAPHEME_IS_SOFT_HYPHEN) {
 						uint32_t gl = font_get_glyph_index(l_gl[i].font_rid, l_gl[i].font_size, 0x00ad, 0);
 						float w = font_get_glyph_advance(l_gl[i].font_rid, l_gl[i].font_size, gl)[(orientation == ORIENTATION_HORIZONTAL) ? 0 : 1];
-						if (width + adv + w <= p_width[chunk]) {
+						if (width + adv + w <= p_width[chunk] || w >= p_width[chunk]) {
 							last_safe_break = i;
 							word_count++;
 						}
@@ -1079,10 +1093,10 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 					while (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) && trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 						start_pos += l_gl[start_pos].count;
 					}
-					while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+					while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos <= end_pos) && (end_pos > 0) && ((l_gl[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 						end_pos -= l_gl[end_pos].count;
 					}
-					if (last_end <= l_gl[start_pos].start) {
+					if (last_end <= l_gl[start_pos].start && l_gl[start_pos].start != l_gl[end_pos].end) {
 						lines.push_back(l_gl[start_pos].start);
 						lines.push_back(l_gl[end_pos].end);
 						if (p_width > indent && i > indent_end) {
@@ -1122,11 +1136,11 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 						while (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) && trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 							start_pos += l_gl[start_pos].count;
 						}
-						while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+						while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos <= end_pos) && (end_pos > 0) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 							end_pos -= l_gl[end_pos].count;
 						}
 						trim_next = true;
-						if (last_end <= l_gl[start_pos].start) {
+						if (last_end <= l_gl[start_pos].start && l_gl[start_pos].start != l_gl[end_pos].end) {
 							lines.push_back(l_gl[start_pos].start);
 							lines.push_back(l_gl[end_pos].end);
 							if (p_width > indent && i > indent_end) {
@@ -1160,7 +1174,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 					if ((l_gl[i].flags & GRAPHEME_IS_SOFT_HYPHEN) == GRAPHEME_IS_SOFT_HYPHEN) {
 						uint32_t gl = font_get_glyph_index(l_gl[i].font_rid, l_gl[i].font_size, 0x00AD, 0);
 						float w = font_get_glyph_advance(l_gl[i].font_rid, l_gl[i].font_size, gl)[(orientation == ORIENTATION_HORIZONTAL) ? 0 : 1];
-						if (width + adv + w <= p_width) {
+						if (width + adv + w <= p_width || w >= p_width) {
 							last_safe_break = i;
 							word_count++;
 						}
@@ -1240,8 +1254,6 @@ PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, Bi
 }
 
 CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_position) const {
-	Vector<Rect2> carets;
-
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	const Vector2 &range = shaped_text_get_range(p_shaped);
 	real_t ascent = shaped_text_get_ascent(p_shaped);
@@ -2309,6 +2321,7 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_
 		glyph["font_rid"] = glyphs[i].font_rid;
 		glyph["font_size"] = glyphs[i].font_size;
 		glyph["index"] = glyphs[i].index;
+		glyph["span_index"] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}
@@ -2334,6 +2347,7 @@ TypedArray<Dictionary> TextServer::_shaped_text_sort_logical_wrapper(const RID &
 		glyph["font_rid"] = glyphs[i].font_rid;
 		glyph["font_size"] = glyphs[i].font_size;
 		glyph["index"] = glyphs[i].index;
+		glyph["span_index"] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}
@@ -2359,6 +2373,7 @@ TypedArray<Dictionary> TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(cons
 		glyph["font_rid"] = glyphs[i].font_rid;
 		glyph["font_size"] = glyphs[i].font_size;
 		glyph["index"] = glyphs[i].index;
+		glyph["span_index"] = glyphs[i].span_index;
 
 		ret.push_back(glyph);
 	}

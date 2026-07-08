@@ -17,6 +17,7 @@
 #include <stdlib.h>
 
 #include "sharpyuv/sharpyuv_cpu.h"
+#include "src/dsp/cpu.h"
 #include "src/webp/types.h"
 
 //-----------------------------------------------------------------------------

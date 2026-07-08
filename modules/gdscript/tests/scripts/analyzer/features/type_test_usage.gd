@@ -19,6 +19,24 @@ func test():
 	Utils.check((const_builtin is float) == false)
 	Utils.check(is_instance_of(const_builtin, TYPE_FLOAT) == false)
 
+	var untyped_array: Variant = []
+	Utils.check((untyped_array is Variant) == true)
+	Utils.check((untyped_array is Array) == true)
+	Utils.check(is_instance_of(untyped_array, TYPE_ARRAY) == true)
+	Utils.check((untyped_array is Array[int]) == false)
+	Utils.check((untyped_array is Array[float]) == false)
+	Utils.check((untyped_array is int) == false)
+	Utils.check(is_instance_of(untyped_array, TYPE_INT) == false)
+
+	const const_untyped_array: Variant = []
+	Utils.check((const_untyped_array is Variant) == true)
+	Utils.check((const_untyped_array is Array) == true)
+	Utils.check(is_instance_of(const_untyped_array, TYPE_ARRAY) == true)
+	Utils.check((const_untyped_array is Array[int]) == false)
+	Utils.check((const_untyped_array is Array[float]) == false)
+	Utils.check((const_untyped_array is int) == false)
+	Utils.check(is_instance_of(const_untyped_array, TYPE_INT) == false)
+
 	var int_array: Variant = [] as Array[int]
 	Utils.check((int_array is Variant) == true)
 	Utils.check((int_array is Array) == true)
@@ -28,7 +46,7 @@ func test():
 	Utils.check((int_array is int) == false)
 	Utils.check(is_instance_of(int_array, TYPE_INT) == false)
 
-	var const_int_array: Variant = [] as Array[int]
+	const const_int_array: Variant = [] as Array[int]
 	Utils.check((const_int_array is Variant) == true)
 	Utils.check((const_int_array is Array) == true)
 	Utils.check(is_instance_of(const_int_array, TYPE_ARRAY) == true)
@@ -47,7 +65,7 @@ func test():
 	Utils.check((b_array is int) == false)
 	Utils.check(is_instance_of(b_array, TYPE_INT) == false)
 
-	var const_b_array: Variant = [] as Array[B]
+	const const_b_array: Variant = [] as Array[B]
 	Utils.check((const_b_array is Variant) == true)
 	Utils.check((const_b_array is Array) == true)
 	Utils.check(is_instance_of(const_b_array, TYPE_ARRAY) == true)
@@ -56,6 +74,62 @@ func test():
 	Utils.check((const_b_array is Array[int]) == false)
 	Utils.check((const_b_array is int) == false)
 	Utils.check(is_instance_of(const_b_array, TYPE_INT) == false)
+
+	var untyped_dict: Variant = {}
+	Utils.check((untyped_dict is Variant) == true)
+	Utils.check((untyped_dict is Dictionary) == true)
+	Utils.check(is_instance_of(untyped_dict, TYPE_DICTIONARY) == true)
+	Utils.check((untyped_dict is Dictionary[int, int]) == false)
+	Utils.check((untyped_dict is Dictionary[float, String]) == false)
+	Utils.check((untyped_dict is int) == false)
+	Utils.check(is_instance_of(untyped_dict, TYPE_INT) == false)
+
+	const const_untyped_dict: Variant = {}
+	Utils.check((const_untyped_dict is Variant) == true)
+	Utils.check((const_untyped_dict is Dictionary) == true)
+	Utils.check(is_instance_of(const_untyped_dict, TYPE_DICTIONARY) == true)
+	Utils.check((const_untyped_dict is Dictionary[int, int]) == false)
+	Utils.check((const_untyped_dict is Dictionary[float, String]) == false)
+	Utils.check((const_untyped_dict is int) == false)
+	Utils.check(is_instance_of(const_untyped_dict, TYPE_INT) == false)
+
+	var int_dict: Variant = {} as Dictionary[int, int]
+	Utils.check((int_dict is Variant) == true)
+	Utils.check((int_dict is Dictionary) == true)
+	Utils.check(is_instance_of(int_dict, TYPE_DICTIONARY) == true)
+	Utils.check((int_dict is Dictionary[int, int]) == true)
+	Utils.check((int_dict is Dictionary[float, String]) == false)
+	Utils.check((int_dict is int) == false)
+	Utils.check(is_instance_of(int_dict, TYPE_INT) == false)
+
+	const const_int_dict: Variant = {} as Dictionary[int, int]
+	Utils.check((const_int_dict is Variant) == true)
+	Utils.check((const_int_dict is Dictionary) == true)
+	Utils.check(is_instance_of(const_int_dict, TYPE_DICTIONARY) == true)
+	Utils.check((const_int_dict is Dictionary[int, int]) == true)
+	Utils.check((const_int_dict is Dictionary[float, String]) == false)
+	Utils.check((const_int_dict is int) == false)
+	Utils.check(is_instance_of(const_int_dict, TYPE_INT) == false)
+
+	var b_dict: Variant = {} as Dictionary[String, B]
+	Utils.check((b_dict is Variant) == true)
+	Utils.check((b_dict is Dictionary) == true)
+	Utils.check(is_instance_of(b_dict, TYPE_DICTIONARY) == true)
+	Utils.check((b_dict is Dictionary[String, B]) == true)
+	Utils.check((b_dict is Dictionary[String, A]) == false)
+	Utils.check((b_dict is Dictionary[String, int]) == false)
+	Utils.check((b_dict is int) == false)
+	Utils.check(is_instance_of(b_dict, TYPE_INT) == false)
+
+	const const_b_dict: Variant = {} as Dictionary[String, B]
+	Utils.check((const_b_dict is Variant) == true)
+	Utils.check((const_b_dict is Dictionary) == true)
+	Utils.check(is_instance_of(const_b_dict, TYPE_DICTIONARY) == true)
+	Utils.check((const_b_dict is Dictionary[String, B]) == true)
+	Utils.check((const_b_dict is Dictionary[String, A]) == false)
+	Utils.check((const_b_dict is Dictionary[String, int]) == false)
+	Utils.check((const_b_dict is int) == false)
+	Utils.check(is_instance_of(const_b_dict, TYPE_INT) == false)
 
 	var native: Variant = RefCounted.new()
 	Utils.check((native is Variant) == true)

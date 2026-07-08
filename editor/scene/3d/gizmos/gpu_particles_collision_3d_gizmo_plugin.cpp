@@ -30,6 +30,7 @@
 
 #include "gpu_particles_collision_3d_gizmo_plugin.h"
 
+#include "core/math/geometry_3d.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/gizmos/gizmo_3d_helper.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
@@ -167,34 +168,34 @@ void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	if (Object::cast_to<GPUParticlesCollisionSphere3D>(cs) || Object::cast_to<GPUParticlesAttractorSphere3D>(cs)) {
 		float radius = cs->call("get_radius");
 
-#define PUSH_QUARTER(m_from_x, m_from_y, m_to_x, m_to_y, m_y)  \
-	points_ptrw[index++] = Vector3(m_from_x, m_y, m_from_y);   \
-	points_ptrw[index++] = Vector3(m_to_x, m_y, m_to_y);       \
-	points_ptrw[index++] = Vector3(m_from_x, m_y, -m_from_y);  \
-	points_ptrw[index++] = Vector3(m_to_x, m_y, -m_to_y);      \
-	points_ptrw[index++] = Vector3(-m_from_x, m_y, m_from_y);  \
-	points_ptrw[index++] = Vector3(-m_to_x, m_y, m_to_y);      \
+#define PUSH_QUARTER(m_from_x, m_from_y, m_to_x, m_to_y, m_y) \
+	points_ptrw[index++] = Vector3(m_from_x, m_y, m_from_y); \
+	points_ptrw[index++] = Vector3(m_to_x, m_y, m_to_y); \
+	points_ptrw[index++] = Vector3(m_from_x, m_y, -m_from_y); \
+	points_ptrw[index++] = Vector3(m_to_x, m_y, -m_to_y); \
+	points_ptrw[index++] = Vector3(-m_from_x, m_y, m_from_y); \
+	points_ptrw[index++] = Vector3(-m_to_x, m_y, m_to_y); \
 	points_ptrw[index++] = Vector3(-m_from_x, m_y, -m_from_y); \
 	points_ptrw[index++] = Vector3(-m_to_x, m_y, -m_to_y);
 
-#define PUSH_QUARTER_XY(m_from_x, m_from_y, m_to_x, m_to_y)  \
-	points_ptrw[index++] = Vector3(m_from_x, -m_from_y, 0);  \
-	points_ptrw[index++] = Vector3(m_to_x, -m_to_y, 0);      \
-	points_ptrw[index++] = Vector3(m_from_x, m_from_y, 0);   \
-	points_ptrw[index++] = Vector3(m_to_x, m_to_y, 0);       \
+#define PUSH_QUARTER_XY(m_from_x, m_from_y, m_to_x, m_to_y) \
+	points_ptrw[index++] = Vector3(m_from_x, -m_from_y, 0); \
+	points_ptrw[index++] = Vector3(m_to_x, -m_to_y, 0); \
+	points_ptrw[index++] = Vector3(m_from_x, m_from_y, 0); \
+	points_ptrw[index++] = Vector3(m_to_x, m_to_y, 0); \
 	points_ptrw[index++] = Vector3(-m_from_x, -m_from_y, 0); \
-	points_ptrw[index++] = Vector3(-m_to_x, -m_to_y, 0);     \
-	points_ptrw[index++] = Vector3(-m_from_x, m_from_y, 0);  \
+	points_ptrw[index++] = Vector3(-m_to_x, -m_to_y, 0); \
+	points_ptrw[index++] = Vector3(-m_from_x, m_from_y, 0); \
 	points_ptrw[index++] = Vector3(-m_to_x, m_to_y, 0);
 
-#define PUSH_QUARTER_YZ(m_from_x, m_from_y, m_to_x, m_to_y)  \
-	points_ptrw[index++] = Vector3(0, -m_from_y, m_from_x);  \
-	points_ptrw[index++] = Vector3(0, -m_to_y, m_to_x);      \
-	points_ptrw[index++] = Vector3(0, m_from_y, m_from_x);   \
-	points_ptrw[index++] = Vector3(0, m_to_y, m_to_x);       \
+#define PUSH_QUARTER_YZ(m_from_x, m_from_y, m_to_x, m_to_y) \
+	points_ptrw[index++] = Vector3(0, -m_from_y, m_from_x); \
+	points_ptrw[index++] = Vector3(0, -m_to_y, m_to_x); \
+	points_ptrw[index++] = Vector3(0, m_from_y, m_from_x); \
+	points_ptrw[index++] = Vector3(0, m_to_y, m_to_x); \
 	points_ptrw[index++] = Vector3(0, -m_from_y, -m_from_x); \
-	points_ptrw[index++] = Vector3(0, -m_to_y, -m_to_x);     \
-	points_ptrw[index++] = Vector3(0, m_from_y, -m_from_x);  \
+	points_ptrw[index++] = Vector3(0, -m_to_y, -m_to_x); \
+	points_ptrw[index++] = Vector3(0, m_from_y, -m_from_x); \
 	points_ptrw[index++] = Vector3(0, m_to_y, -m_to_x);
 
 		// Number of points in an octant. So there will be 8 * points_in_octant points in total.

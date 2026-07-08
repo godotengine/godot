@@ -34,13 +34,12 @@
 #include "mono_gd/gd_mono.h"
 
 #include "core/doc_data.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/self_list.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/object/editor_language.h"
 #include "editor/plugins/editor_plugin.h"
 #endif
 
@@ -236,7 +235,6 @@ public:
 	StringName get_instance_base_type() const override;
 	ScriptInstance *instance_create(Object *p_this) override;
 	PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override;
-	bool instance_has(const Object *p_this) const override;
 
 	bool has_source_code() const override;
 	String get_source_code() const override;
@@ -268,7 +266,7 @@ public:
 	bool is_tool() const override {
 		return type_info.is_tool;
 	}
-	bool is_valid() const override {
+	bool is_script_valid() const override {
 		return valid;
 	}
 	bool is_abstract() const override {
@@ -434,12 +432,8 @@ class CSharpLanguage : public ScriptLanguage {
 	friend class GDMono;
 
 #ifdef TOOLS_ENABLED
-	Vector<String> pending_file_system_update_paths;
-	bool is_flushing_filesystem_updates = false;
-	void _queue_for_filesystem_update(String p_script_path);
-	void _flush_filesystem_updates();
-
 	EditorPlugin *godotsharp_editor = nullptr;
+	EditorLanguage editor_language;
 
 	static void _editor_init_callback();
 #endif
@@ -505,6 +499,10 @@ public:
 	void finalize();
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	virtual EditorLanguage *get_editor_language() override { return &editor_language; }
+#endif
+
 	Vector<String> get_reserved_words() const override;
 	bool is_control_flow_keyword(const String &p_keyword) const override;
 	Vector<String> get_comment_delimiters() const override;
@@ -518,7 +516,6 @@ public:
 		return true;
 	}
 	String validate_path(const String &p_path) const override;
-	Script *create_script() const override;
 	bool supports_builtin_mode() const override;
 	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
 		return -1;
@@ -589,23 +586,4 @@ public:
 
 	CSharpLanguage();
 	~CSharpLanguage();
-};
-
-class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceFormatLoaderCSharpScript, ResourceFormatLoader);
-
-public:
-	Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	void get_recognized_extensions(List<String> *p_extensions) const override;
-	bool handles_type(const String &p_type) const override;
-	String get_resource_type(const String &p_path) const override;
-};
-
-class ResourceFormatSaverCSharpScript : public ResourceFormatSaver {
-	GDSOFTCLASS(ResourceFormatSaverCSharpScript, ResourceFormatSaver);
-
-public:
-	Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
-	void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
-	bool recognize(const Ref<Resource> &p_resource) const override;
 };

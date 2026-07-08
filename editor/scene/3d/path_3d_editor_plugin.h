@@ -148,6 +148,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	bool handle_clicked = false;
 	bool mirror_handle_angle = true;
 	bool mirror_handle_length = true;
+	bool snap_to_collider = true;
 
 	void _create_curve();
 	void _confirm_clear_points();
@@ -157,7 +158,8 @@ class Path3DEditorPlugin : public EditorPlugin {
 
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
-		HANDLE_OPTION_LENGTH
+		HANDLE_OPTION_LENGTH,
+		HANDLE_OPTION_SNAP_COLLIDER,
 	};
 
 protected:
@@ -167,11 +169,12 @@ protected:
 public:
 	Path3D *get_edited_path() { return path; }
 
+	void update_handles();
+
 	inline static Path3DEditorPlugin *singleton = nullptr;
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
 	virtual String get_plugin_name() const override { return "Path3D"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
@@ -182,4 +185,20 @@ public:
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
 	Path3DEditorPlugin();
+
+private:
+	struct EditData {
+		Vector3 click_ray_dir;
+		Vector3 click_ray_pos;
+		Vector3 origin;
+		Point2 mouse_pos;
+		bool show_rotation_line = false;
+		Ref<Path3DGizmo> gizmo;
+		int gizmo_handle = 0;
+		bool gizmo_handle_secondary = false;
+		Camera3D *gizmo_camera;
+		bool waiting_point_physics = false;
+		bool waiting_handle_physics = false;
+		bool in_physics_frame = false;
+	} _edit;
 };

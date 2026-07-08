@@ -33,6 +33,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/export/editor_export.h"
 #include "editor/settings/editor_settings.h"
 
@@ -259,6 +261,14 @@ Vector<String> EditorExportPreset::get_files_to_export() const {
 	return files;
 }
 
+HashSet<String> EditorExportPreset::get_selected_files() const {
+	return HashSet<String>(selected_files);
+}
+
+void EditorExportPreset::set_selected_files(const HashSet<String> &p_files) {
+	selected_files = p_files;
+}
+
 Dictionary EditorExportPreset::get_customized_files() const {
 	Dictionary files;
 	for (const KeyValue<String, FileExportMode> &E : customized_files) {
@@ -311,17 +321,28 @@ String EditorExportPreset::get_name() const {
 }
 
 void EditorExportPreset::set_runnable(bool p_enable) {
-	runnable = p_enable;
-	EditorExport::singleton->emit_presets_runnable_changed();
-	EditorExport::singleton->save_presets();
+	if (p_enable) {
+		EditorExport::singleton->set_runnable_preset(this);
+	} else {
+		EditorExport::singleton->unset_runnable_preset(this);
+	}
 }
 
 bool EditorExportPreset::is_runnable() const {
-	return runnable;
+	return EditorExport::singleton->get_runnable_preset_for_platform(platform).ptr() == this;
 }
 
 bool EditorExportPreset::are_advanced_options_enabled() const {
-	return EDITOR_GET("_export_preset_advanced_mode");
+	return options_search_active || EDITOR_GET("_export_preset_advanced_mode");
+}
+
+void EditorExportPreset::set_options_search_active(bool p_active) {
+	if (options_search_active == p_active) {
+		return;
+	}
+
+	options_search_active = p_active;
+	notify_property_list_changed();
 }
 
 void EditorExportPreset::set_dedicated_server(bool p_enable) {
@@ -588,10 +609,14 @@ String EditorExportPreset::get_version(const StringName &p_preset_string, bool p
 		// Split and validate version number components.
 		const PackedStringArray result_split = result.split(".", false);
 		bool valid_version = !result_split.is_empty();
-		for (const String &E : result_split) {
-			if (!_check_digits(E)) {
-				valid_version = false;
-				break;
+
+		// Android supports non-numeric characters for version name.
+		if (!platform->is_class("EditorExportPlatformAndroid")) {
+			for (const String &E : result_split) {
+				if (!_check_digits(E)) {
+					valid_version = false;
+					break;
+				}
 			}
 		}
 

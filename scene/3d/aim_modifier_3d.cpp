@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "aim_modifier_3d.h"
+
+#include "core/object/class_db.h"
 #include "scene/3d/look_at_modifier_3d.h"
 
 bool AimModifier3D::_set(const StringName &p_path, const Variant &p_value) {
@@ -170,7 +172,7 @@ void AimModifier3D::set_relative(int p_index, bool p_enabled) {
 }
 
 bool AimModifier3D::is_relative(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), 0);
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
 	AimModifier3DSetting *setting = static_cast<AimModifier3DSetting *>(settings[p_index]);
 	return setting->relative;
 }
@@ -204,8 +206,9 @@ void AimModifier3D::_process_constraint_by_node(int p_index, Skeleton3D *p_skele
 	if (!nd) {
 		return;
 	}
-	Vector3 reference_origin = nd->get_global_transform_interpolated().origin - p_skeleton->get_global_transform_interpolated().origin;
-	_process_aim(p_index, p_skeleton, p_apply_bone, reference_origin, p_amount);
+	Transform3D skel_tr = p_skeleton->get_global_transform_interpolated();
+	Vector3 reference_origin = nd->get_global_transform_interpolated().origin - skel_tr.origin;
+	_process_aim(p_index, p_skeleton, p_apply_bone, skel_tr.basis.get_rotation_quaternion().xform_inv(reference_origin), p_amount);
 }
 
 void AimModifier3D::_process_aim(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, Vector3 p_target, float p_amount) {

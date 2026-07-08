@@ -251,6 +251,7 @@ typedef struct
     Uint64 last_packet;
     int player_index;
     bool player_lights;
+    bool enhanced_rumble;
     Uint8 rumble_left;
     Uint8 rumble_right;
     bool color_set;
@@ -429,6 +430,14 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         */
         if (ReadFeatureReport(device->dev, k_EPS5FeatureReportIdFirmwareInfo, data, USB_PACKET_LENGTH) >= 46) {
             ctx->firmware_version = (Uint16)data[44] | ((Uint16)data[45] << 8);
+        }
+    }
+
+    if (device->vendor_id == USB_VENDOR_SONY) {
+        if (device->product_id == USB_PRODUCT_SONY_DS5_EDGE ||
+            ctx->firmware_version == 0 || // Assume that it's updated firmware over Bluetooth
+            ctx->firmware_version >= 0x0224) {
+            ctx->enhanced_rumble = true;
         }
     }
 
@@ -684,17 +693,17 @@ static bool HIDAPI_DriverPS5_UpdateEffects(SDL_DriverPS5_Context *ctx, int effec
 
     if (ctx->vibration_supported) {
         if (ctx->rumble_left || ctx->rumble_right) {
-            if (ctx->firmware_version < 0x0224) {
+            if (ctx->enhanced_rumble) {
+                effects.ucEnableBits3 |= 0x04; // Enable improved rumble emulation on 2.24 firmware and newer
+
+                effects.ucRumbleLeft = ctx->rumble_left;
+                effects.ucRumbleRight = ctx->rumble_right;
+            } else {
                 effects.ucEnableBits1 |= 0x01; // Enable rumble emulation
 
                 // Shift to reduce effective rumble strength to match Xbox controllers
                 effects.ucRumbleLeft = ctx->rumble_left >> 1;
                 effects.ucRumbleRight = ctx->rumble_right >> 1;
-            } else {
-                effects.ucEnableBits3 |= 0x04; // Enable improved rumble emulation on 2.24 firmware and newer
-
-                effects.ucRumbleLeft = ctx->rumble_left;
-                effects.ucRumbleRight = ctx->rumble_right;
             }
             effects.ucEnableBits1 |= 0x02; // Disable audio haptics
         } else {
@@ -812,14 +821,19 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
     }
 
     if (ctx->sensors_supported) {
+        // Standard DualSense sensor update rate is 250 Hz over USB
+        float update_rate = 250.0f;
+        
         if (ctx->device->is_bluetooth) {
             // Bluetooth sensor update rate appears to be 1000 Hz
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 1000.0f);
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 1000.0f);
-        } else {
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 250.0f);
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 250.0f);
+            update_rate = 1000.0f;
+        } else if (SDL_IsJoystickDualSenseEdge(ctx->device->vendor_id, ctx->device->product_id)) {
+            // DualSense Edge sensor update rate is 1000 Hz over USB
+            update_rate = 1000.0f;
         }
+
+        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, update_rate);
+        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, update_rate);
     }
 
     ctx->report_battery = true;
@@ -1033,6 +1047,9 @@ static bool HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *c
     if (!ctx->enhanced_mode) {
         if (application_usage) {
             HIDAPI_DriverPS5_UpdateEnhancedModeOnApplicationUsage(ctx);
+
+            // Wait briefly before sending additional effects
+            SDL_Delay(10);
         }
 
         if (!ctx->enhanced_mode) {

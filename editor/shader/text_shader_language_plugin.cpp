@@ -30,9 +30,8 @@
 
 #include "text_shader_language_plugin.h"
 
-#include "text_shader_editor.h"
-
 #include "core/string/string_builder.h"
+#include "editor/shader/text_shader_editor.h"
 #include "servers/rendering/shader_types.h"
 
 bool TextShaderLanguagePlugin::handles_shader(const Ref<Shader> &p_shader) const {
@@ -124,6 +123,13 @@ void fog() {
 	// Called once for every froxel that is touched by an axis-aligned bounding box
 	// of the associated FogVolume. This means that froxels that just barely touch
 	// a given FogVolume will still be used.
+}
+)";
+			} break;
+			case Shader::MODE_TEXTURE_BLIT: {
+				code += R"(
+void blit() {
+	// Called for each pixel inside the given rect on the DrawableTexture.
 }
 )";
 			} break;

@@ -133,60 +133,6 @@ static uint32_t ExtraCost_MIPS32(const uint32_t* const population, int length) {
   return ((int64_t)temp0 << 32 | temp1);
 }
 
-// C version of this function:
-//   int i = 0;
-//   int64_t cost = 0;
-//   const uint32_t* pX = &X[4];
-//   const uint32_t* pY = &Y[4];
-//   const uint32_t* LoopEnd = &X[length];
-//   while (pX != LoopEnd) {
-//     const uint32_t xy0 = *pX + *pY;
-//     const uint32_t xy1 = *(pX + 1) + *(pY + 1);
-//     ++i;
-//     cost += i * xy0;
-//     cost += i * xy1;
-//     pX += 2;
-//     pY += 2;
-//   }
-//   return cost;
-static uint32_t ExtraCostCombined_MIPS32(const uint32_t* WEBP_RESTRICT const X,
-                                         const uint32_t* WEBP_RESTRICT const Y,
-                                         int length) {
-  int i, temp0, temp1, temp2, temp3;
-  const uint32_t* pX = &X[4];
-  const uint32_t* pY = &Y[4];
-  const uint32_t* const LoopEnd = &X[length];
-
-  __asm__ volatile(
-    "mult   $zero,    $zero                  \n\t"
-    "xor    %[i],     %[i],       %[i]       \n\t"
-    "beq    %[pX],    %[LoopEnd], 2f         \n\t"
-  "1:                                        \n\t"
-    "lw     %[temp0], 0(%[pX])               \n\t"
-    "lw     %[temp1], 0(%[pY])               \n\t"
-    "lw     %[temp2], 4(%[pX])               \n\t"
-    "lw     %[temp3], 4(%[pY])               \n\t"
-    "addiu  %[i],     %[i],       1          \n\t"
-    "addu   %[temp0], %[temp0],   %[temp1]   \n\t"
-    "addu   %[temp2], %[temp2],   %[temp3]   \n\t"
-    "addiu  %[pX],    %[pX],      8          \n\t"
-    "addiu  %[pY],    %[pY],      8          \n\t"
-    "madd   %[i],     %[temp0]               \n\t"
-    "madd   %[i],     %[temp2]               \n\t"
-    "bne    %[pX],    %[LoopEnd], 1b         \n\t"
-  "2:                                        \n\t"
-    "mfhi   %[temp0]                         \n\t"
-    "mflo   %[temp1]                         \n\t"
-    : [temp0]"=&r"(temp0), [temp1]"=&r"(temp1),
-      [temp2]"=&r"(temp2), [temp3]"=&r"(temp3),
-      [i]"=&r"(i), [pX]"+r"(pX), [pY]"+r"(pY)
-    : [LoopEnd]"r"(LoopEnd)
-    : "memory", "hi", "lo"
-  );
-
-  return ((int64_t)temp0 << 32 | temp1);
-}
-
 #define HUFFMAN_COST_PASS                                 \
   __asm__ volatile(                                       \
     "sll   %[temp1],  %[temp0],    3           \n\t"      \
@@ -299,7 +245,7 @@ static void GetCombinedEntropyUnrefined_MIPS32(
 // A..D - offsets
 // E - temp variable to tell macro
 //     if pointer should be incremented
-// literal_ and successive histograms could be unaligned
+// 'literal' and successive histograms could be unaligned
 // so we must use ulw and usw
 #define ADD_TO_OUT(A, B, C, D, E, P0, P1, P2)           \
     "ulw    %[temp0], " #A "(%[" #P0 "])    \n\t"       \
@@ -388,7 +334,6 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInitMIPS32(void) {
   VP8LFastSLog2Slow = FastSLog2Slow_MIPS32;
   VP8LFastLog2Slow = FastLog2Slow_MIPS32;
   VP8LExtraCost = ExtraCost_MIPS32;
-  VP8LExtraCostCombined = ExtraCostCombined_MIPS32;
   VP8LGetEntropyUnrefined = GetEntropyUnrefined_MIPS32;
   VP8LGetCombinedEntropyUnrefined = GetCombinedEntropyUnrefined_MIPS32;
   VP8LAddVector = AddVector_MIPS32;

@@ -46,6 +46,7 @@ protected:
 	virtual bool _should_use_native_popup() const override;
 	virtual bool _should_hide_file(const String &p_file) const override;
 	virtual Color _get_folder_color(const String &p_path) const override;
+	virtual Vector2i _get_list_mode_icon_size() const override;
 
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;

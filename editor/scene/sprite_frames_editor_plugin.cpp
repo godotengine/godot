@@ -30,9 +30,13 @@
 
 #include "sprite_frames_editor_plugin.h"
 
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -52,6 +56,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/atlas_texture.h"
 
 static void _draw_shadowed_line(Control *p_control, const Point2 &p_from, const Size2 &p_size, const Size2 &p_shadow_offset, Color p_color, Color p_shadow_color) {
@@ -697,7 +702,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			_update_stop_icon();
 
 			autoplay->set_button_icon(get_editor_theme_icon(SNAME("AutoPlay")));
-			anim_loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
+			_update_anim_loop_button();
 			play->set_button_icon(get_editor_theme_icon(SNAME("PlayStart")));
 			play_from->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			play_bw->set_button_icon(get_editor_theme_icon(SNAME("PlayStartBackwards")));
@@ -1361,18 +1366,35 @@ void SpriteFramesEditor::_animation_search_text_changed(const String &p_text) {
 	_update_library();
 }
 
-void SpriteFramesEditor::_animation_loop_changed() {
+void SpriteFramesEditor::_animation_loop_pressed() {
 	if (updating) {
 		return;
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	SpriteFrames::LoopMode to_loop = SpriteFrames::LOOP_NONE;
+	SpriteFrames::LoopMode from_loop = frames->get_animation_loop_mode(edited_anim);
+
+	switch (from_loop) {
+		case SpriteFrames::LOOP_NONE: {
+			to_loop = SpriteFrames::LOOP_LINEAR;
+		} break;
+		case SpriteFrames::LOOP_LINEAR: {
+			to_loop = SpriteFrames::LOOP_PINGPONG;
+		} break;
+		case SpriteFrames::LOOP_PINGPONG: {
+			to_loop = SpriteFrames::LOOP_NONE;
+		} break;
+	}
+
 	undo_redo->create_action(TTR("Change Animation Loop"), UndoRedo::MERGE_DISABLE, frames.ptr());
-	undo_redo->add_do_method(frames.ptr(), "set_animation_loop", edited_anim, anim_loop->is_pressed());
-	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
+	undo_redo->add_do_method(frames.ptr(), "set_animation_loop_mode", edited_anim, to_loop);
+	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop_mode", edited_anim, from_loop);
 	undo_redo->add_do_method(this, "_update_library", true);
 	undo_redo->add_undo_method(this, "_update_library", true);
 	undo_redo->commit_action();
+	_update_anim_loop_button();
 }
 
 void SpriteFramesEditor::_animation_speed_resized() {
@@ -1407,7 +1429,7 @@ void SpriteFramesEditor::_animation_remove_undo_redo(const StringName &p_action_
 	undo_redo->add_undo_method(frames.ptr(), "add_animation", edited_anim);
 	_rename_node_animation(undo_redo, true, edited_anim, edited_anim, edited_anim);
 	undo_redo->add_undo_method(frames.ptr(), "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
-	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
+	undo_redo->add_undo_method(frames.ptr(), "set_animation_loop_mode", edited_anim, frames->get_animation_loop_mode(edited_anim));
 	for (int i = 0; i < frame_count; i++) {
 		Ref<Texture2D> texture;
 		float duration;
@@ -1596,6 +1618,25 @@ void SpriteFramesEditor::_zoom_reset() {
 	frame_list->set_fixed_icon_size(Size2(thumbnail_default_size, thumbnail_default_size));
 }
 
+void SpriteFramesEditor::_update_anim_loop_button() {
+	if (frames.is_null()) {
+		anim_loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
+		return;
+	}
+
+	SpriteFrames::LoopMode loop = frames->get_animation_loop_mode(edited_anim);
+	anim_loop->set_pressed_no_signal(loop != SpriteFrames::LOOP_NONE);
+
+	switch (loop) {
+		case SpriteFrames::LOOP_NONE:
+		case SpriteFrames::LOOP_LINEAR: {
+			anim_loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
+		} break;
+		case SpriteFrames::LOOP_PINGPONG: {
+			anim_loop->set_button_icon(get_editor_theme_icon(SNAME("PingPongLoop")));
+		} break;
+	}
+}
 void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	if (!p_skip_selector) {
 		animations_dirty = true;
@@ -1750,8 +1791,7 @@ void SpriteFramesEditor::_update_library_impl() {
 	}
 
 	anim_speed->set_value_no_signal(frames->get_animation_speed(edited_anim));
-	anim_loop->set_pressed_no_signal(frames->get_animation_loop(edited_anim));
-
+	_update_anim_loop_button();
 	updating = false;
 }
 
@@ -1768,6 +1808,7 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 	if (p_frames.is_null()) {
 		frames.unref();
 		_remove_sprite_node();
+		close();
 		return;
 	}
 
@@ -2002,9 +2043,7 @@ void SpriteFramesEditor::_fetch_sprite_node() {
 	}
 
 	bool show_node_edit = false;
-	AnimatedSprite2D *as2d = Object::cast_to<AnimatedSprite2D>(selected);
-	AnimatedSprite3D *as3d = Object::cast_to<AnimatedSprite3D>(selected);
-	if (as2d || as3d) {
+	if (selected && selected->has_method("get_sprite_frames")) {
 		if (frames != selected->call("get_sprite_frames")) {
 			_remove_sprite_node();
 		} else {
@@ -2121,7 +2160,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	set_name(TTRC("SpriteFrames"));
 	set_icon_name("SpriteFrames");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Open SpriteFrames Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
 	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_global(false);
 	set_transient(true);
@@ -2194,7 +2233,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_loop->set_toggle_mode(true);
 	anim_loop->set_theme_type_variation(SceneStringName(FlatButton));
 	anim_loop->set_tooltip_text(TTRC("Animation Looping"));
-	anim_loop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
+	anim_loop->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_loop_pressed));
 	hbc_animlist->add_child(anim_loop);
 
 	anim_speed = memnew(SpinBox);
@@ -2407,6 +2446,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	frame_list->set_select_mode(ItemList::SELECT_MULTI);
+	frame_list->set_theme_type_variation("ItemListSecondary");
 
 	frame_list->set_max_columns(0);
 	frame_list->set_max_text_lines(2);
@@ -2418,6 +2458,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(frame_list);
 
 	dialog = memnew(AcceptDialog);
+	dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(dialog);
 
 	load->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_load_pressed));
@@ -2468,6 +2509,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	edited_anim = SceneStringName(default_);
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(delete_dialog);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SpriteFramesEditor::_animation_remove_confirmed));
 
@@ -2798,7 +2840,7 @@ Ref<ClipboardAnimation> ClipboardAnimation::from_sprite_frames(const Ref<SpriteF
 	clipboard_anim.instantiate();
 	clipboard_anim->name = p_anim;
 	clipboard_anim->speed = p_frames->get_animation_speed(p_anim);
-	clipboard_anim->loop = p_frames->get_animation_loop(p_anim);
+	clipboard_anim->loop = p_frames->get_animation_loop_mode(p_anim);
 
 	int frame_count = p_frames->get_frame_count(p_anim);
 	for (int i = 0; i < frame_count; ++i) {

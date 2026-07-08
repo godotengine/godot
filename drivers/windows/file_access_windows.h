@@ -33,7 +33,6 @@
 #ifdef WINDOWS_ENABLED
 
 #include "core/io/file_access.h"
-#include "core/os/memory.h"
 
 #include <cstdio>
 

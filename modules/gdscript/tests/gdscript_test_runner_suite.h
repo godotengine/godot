@@ -30,11 +30,17 @@
 
 #pragma once
 
+#include "../gdscript_cache.h"
 #include "gdscript_test_runner.h"
 
-#include "modules/gdscript/gdscript_cache.h"
+#include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "tests/test_macros.h"
 #include "tests/test_utils.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/os/os.h"
+#endif
 
 namespace GDScriptTests {
 
@@ -86,6 +92,7 @@ func _init():
 }
 
 TEST_CASE("[Modules][GDScript] Loading keeps ResourceCache and GDScriptCache in sync") {
+	GDScriptLanguage::get_singleton()->init();
 	const String path = TestUtils::get_temp_path("gdscript_load_test.gd");
 
 	{

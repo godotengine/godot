@@ -45,7 +45,7 @@
  */
 
 template <typename T, typename A = DefaultAllocator>
-class List {
+class _WARN_UNUSED_ List {
 	struct _Data;
 
 public:
@@ -256,35 +256,35 @@ public:
 	/**
 	 * return a const iterator to the beginning of the list.
 	 */
-	_FORCE_INLINE_ const Element *front() const {
+	_FORCE_INLINE_ const Element *front() const _LIFETIME_BOUND_ {
 		return _data ? _data->first : nullptr;
 	}
 
 	/**
 	 * return an iterator to the beginning of the list.
 	 */
-	_FORCE_INLINE_ Element *front() {
+	_FORCE_INLINE_ Element *front() _LIFETIME_BOUND_ {
 		return _data ? _data->first : nullptr;
 	}
 
 	/**
 	 * return a const iterator to the last member of the list.
 	 */
-	_FORCE_INLINE_ const Element *back() const {
+	_FORCE_INLINE_ const Element *back() const _LIFETIME_BOUND_ {
 		return _data ? _data->last : nullptr;
 	}
 
 	/**
 	 * return an iterator to the last member of the list.
 	 */
-	_FORCE_INLINE_ Element *back() {
+	_FORCE_INLINE_ Element *back() _LIFETIME_BOUND_ {
 		return _data ? _data->last : nullptr;
 	}
 
 	/**
 	 * store a new element at the end of the list
 	 */
-	Element *push_back(const T &value) {
+	Element *push_back(const T &value) _LIFETIME_BOUND_ {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
 			_data->first = nullptr;
@@ -323,7 +323,7 @@ public:
 	/**
 	 * store a new element at the beginning of the list
 	 */
-	Element *push_front(const T &value) {
+	Element *push_front(const T &value) _LIFETIME_BOUND_ {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
 			_data->first = nullptr;
@@ -358,7 +358,7 @@ public:
 		}
 	}
 
-	Element *insert_after(Element *p_element, const T &p_value) {
+	Element *insert_after(Element *p_element, const T &p_value) _LIFETIME_BOUND_ {
 		CRASH_COND(p_element && (!_data || p_element->data != _data));
 
 		if (!p_element) {
@@ -384,7 +384,7 @@ public:
 		return n;
 	}
 
-	Element *insert_before(Element *p_element, const T &p_value) {
+	Element *insert_before(Element *p_element, const T &p_value) _LIFETIME_BOUND_ {
 		CRASH_COND(p_element && (!_data || p_element->data != _data));
 
 		if (!p_element) {
@@ -414,7 +414,7 @@ public:
 	 * find an element in the list,
 	 */
 	template <typename T_v>
-	const Element *find(const T_v &p_val) const {
+	const Element *find(const T_v &p_val) const _LIFETIME_BOUND_ {
 		const Element *it = front();
 		while (it) {
 			if (it->value == p_val) {
@@ -427,7 +427,7 @@ public:
 	}
 
 	template <typename T_v>
-	Element *find(const T_v &p_val) {
+	Element *find(const T_v &p_val) _LIFETIME_BOUND_ {
 		Element *it = front();
 		while (it) {
 			if (it->value == p_val) {
@@ -546,7 +546,7 @@ public:
 
 	// Random access to elements, use with care,
 	// do not use for iteration.
-	T &get(int p_index) {
+	T &get(int p_index) _LIFETIME_BOUND_ {
 		CRASH_BAD_INDEX(p_index, size());
 
 		Element *I = front();
@@ -561,7 +561,7 @@ public:
 
 	// Random access to elements, use with care,
 	// do not use for iteration.
-	const T &get(int p_index) const {
+	const T &get(int p_index) const _LIFETIME_BOUND_ {
 		CRASH_BAD_INDEX(p_index, size());
 
 		const Element *I = front();
@@ -685,10 +685,7 @@ public:
 		return (void *)_data;
 	}
 
-	/**
-	 * copy constructor for the list
-	 */
-	List(const List &p_list) {
+	explicit List(const List &p_list) {
 		const Element *it = p_list.front();
 		while (it) {
 			push_back(it->get());

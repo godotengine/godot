@@ -32,8 +32,7 @@
 
 #if defined(UNIX_ENABLED)
 
-#include "core/os/os.h"
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -42,12 +41,9 @@
 #include <sys/xattr.h>
 #endif
 #include <unistd.h>
-#include <cerrno>
 
-#if defined(TOOLS_ENABLED)
-#include <climits>
+#include <cerrno>
 #include <cstdlib>
-#endif
 
 void FileAccessUnix::check_errors(bool p_write) const {
 	ERR_FAIL_NULL_MSG(f, "File must be opened before use.");

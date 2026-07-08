@@ -36,7 +36,6 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/split_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 
@@ -132,6 +131,8 @@ class EditorHelp : public VBoxContainer {
 		Color qualifier_color;
 		Color type_color;
 		Color override_color;
+		Color primary_hr_color;
+		Color secondary_hr_color;
 
 		Ref<Font> doc_font;
 		Ref<Font> doc_bold_font;
@@ -147,8 +148,11 @@ class EditorHelp : public VBoxContainer {
 	} theme_cache;
 
 	int scroll_to = -1;
+	bool need_save_new_history = false;
 
 	void _help_callback(const String &p_topic);
+	void _class_desc_scroll_to_paragraph(int p_line, bool p_save_history);
+	bool _need_save_new_history() const;
 
 	void _add_text(const String &p_bbcode);
 	bool scroll_locked = false;
@@ -174,7 +178,7 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_resized(bool p_force_update_theme);
 	int display_margin = 0;
 
-	Error _goto_desc(const String &p_class);
+	Error _goto_desc(const String &p_class, bool p_can_trigger_save_history);
 	//void _update_history_buttons();
 	void _update_method_list(MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
 	void _update_method_descriptions(const DocData::ClassDoc &p_classdoc, MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods);
@@ -248,6 +252,8 @@ public:
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class);
 	void update_doc();
+	void trigger_history_save_on_navigate();
+	Dictionary get_state();
 
 	Vector<Pair<String, int>> get_sections();
 	void scroll_to_section(int p_section_index);
@@ -348,13 +354,15 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static String get_as_plain_text(const String &p_symbol, const String &p_prologue = String());
+
 	void parse_symbol(const String &p_symbol, const String &p_prologue = String());
 	void set_custom_text(const String &p_type, const String &p_name, const String &p_description);
 
 	void set_content_height_limits(float p_min, float p_max);
 	void update_content_height();
 
-	EditorHelpBit(const String &p_symbol = String(), const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_allow_selection = true);
+	EditorHelpBit(const String &p_symbol = String(), const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_allow_selection = true, bool p_in_tooltip = false);
 };
 
 // Standard tooltips do not allow you to hover over them.
@@ -367,22 +375,26 @@ class EditorHelpBitTooltip : public PopupPanel {
 	Timer *timer = nullptr;
 	uint64_t _enter_tree_time = 0;
 	bool _is_mouse_inside_tooltip = false;
+	bool _is_shortcut_pressed = false;
 
 	static Control *_make_invisible_control();
 
 	void _start_timer();
 	void _target_gui_input(const Ref<InputEvent> &p_event);
+	void _shortcut_pressed(Control *p_target);
 
 protected:
 	void _notification(int p_what);
 
 public:
 	// The returned control is an orphan node, which is to make the standard tooltip invisible.
-	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false);
+	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_shortcut = false);
 
-	void popup_under_cursor();
+	void popup_under_position(const Point2 &p_point);
 
-	EditorHelpBitTooltip(Control *p_target);
+	bool is_shortcut_pressed() const { return _is_shortcut_pressed; }
+
+	EditorHelpBitTooltip(Control *p_target, bool p_shortcut = false);
 };
 
 class EditorSyntaxHighlighter;

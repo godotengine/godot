@@ -30,15 +30,10 @@
 
 #pragma once
 
-#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-#include "core/io/file_access.h"
 #include "core/io/image.h"
-#include "core/io/marshalls.h"
-#include "core/io/resource_saver.h"
-#include "core/os/os.h"
-#include "editor/export/editor_export.h"
-#include "editor/settings/editor_settings.h"
+#include "core/os/process_id.h"
+#include "editor/export/editor_export_platform.h"
 #include "scene/resources/image_texture.h"
 
 #include <sys/stat.h>
@@ -82,7 +77,7 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	Ref<ImageTexture> stop_icon;
 
 	Vector<SSHCleanupCommand> cleanup_commands;
-	OS::ProcessID ssh_pid = 0;
+	ProcessID ssh_pid = 0;
 	int menu_options = 0;
 
 	void _fix_privacy_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist);
@@ -148,7 +143,7 @@ public:
 
 	virtual bool is_executable(const String &p_path) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0, bool p_notify = true) override;
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;

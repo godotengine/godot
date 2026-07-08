@@ -30,6 +30,7 @@
 
 #include "editor_import_plugin.h"
 
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "editor/file_system/editor_file_system.h"
 

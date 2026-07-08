@@ -92,11 +92,14 @@ void CastConvexVsTriangles::Cast(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8
 			static_cast<const ConvexShape *>(mShapeCast.mShape)->GetSupportingFace(SubShapeID(), transform_1_to_2.Multiply3x3Transposed(-contact_normal), mShapeCast.mScale, mCenterOfMassTransform2 * transform_1_to_2, result.mShape1Face);
 
 			// Get face of the triangle
-			triangle.GetSupportingFace(contact_normal, result.mShape2Face);
+			result.mShape2Face.resize(3);
+			result.mShape2Face[0] = mCenterOfMassTransform2 * v0;
+			result.mShape2Face[1] = mCenterOfMassTransform2 * v1;
+			result.mShape2Face[2] = mCenterOfMassTransform2 * v2;
 
-			// Convert to world space
-			for (Vec3 &p : result.mShape2Face)
-				p = mCenterOfMassTransform2 * p;
+			// When inside out, we need to swap the triangle winding
+			if (mScaleSign < 0.0f)
+				std::swap(result.mShape2Face[1], result.mShape2Face[2]);
 		}
 
 		JPH_IF_TRACK_NARROWPHASE_STATS(TrackNarrowPhaseCollector track;)

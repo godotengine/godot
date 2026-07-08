@@ -30,10 +30,14 @@
 
 #include "voxel_gi_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "scene/main/scene_tree.h"
 
 void VoxelGIEditorPlugin::_bake() {
 	if (voxel_gi) {

@@ -34,6 +34,8 @@
 #include "core/io/file_access.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_inspector.h"
+#include "scene/animation/animation_mixer.h"
+#include "scene/resources/animation.h"
 
 Vector<String> EditorFolding::_get_unfolds(const Object *p_object) {
 	Vector<String> sections;
@@ -55,9 +57,20 @@ void EditorFolding::save_resource_folding(const Ref<Resource> &p_resource, const
 	Vector<String> unfolds = _get_unfolds(p_resource.ptr());
 	config->set_value("folding", "sections_unfolded", unfolds);
 
+	Ref<Animation> as_anim = p_resource;
+	if (as_anim.is_valid()) {
+		Vector<String> folded_groups = _get_animation_folds(as_anim.ptr());
+		config->set_value("folding", "animation_groups_folded", folded_groups);
+	}
+
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorPaths::get_singleton()->get_project_settings_dir().path_join(file);
 	config->save(file);
+
+	if (as_anim.is_valid()) {
+		// Folding state have been stored into the .cfg, clear the dirty flag.
+		as_anim->editor_set_folding_dirty(false);
+	}
 }
 
 void EditorFolding::_set_unfolds(Object *p_object, const Vector<String> &p_unfolds) {
@@ -86,9 +99,15 @@ void EditorFolding::load_resource_folding(Ref<Resource> p_resource, const String
 		unfolds = config->get_value("folding", "sections_unfolded");
 	}
 	_set_unfolds(p_resource.ptr(), unfolds);
+
+	Ref<Animation> anim = p_resource;
+	if (anim.is_valid() && config->has_section_key("folding", "animation_groups_folded")) {
+		Vector<String> folded_groups = config->get_value("folding", "animation_groups_folded");
+		_set_animation_folds(anim.ptr(), folded_groups);
+	}
 }
 
-void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Array &nodes_folded, HashSet<Ref<Resource>> &resources) {
+void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Array &nodes_folded, HashSet<Ref<Resource>> &resources, HashSet<Ref<Animation>> &animations, Array &anim_groups_folded, HashSet<Ref<Animation>> &r_external_anims) {
 	if (p_root != p_node) {
 		if (!p_node->get_owner()) {
 			return; //not owned, bye
@@ -108,6 +127,28 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 		p_folds.push_back(unfolds);
 	}
 
+	const AnimationMixer *anim_mixer = Object::cast_to<AnimationMixer>(p_node);
+	if (anim_mixer) {
+		LocalVector<StringName> anim_names;
+		anim_mixer->get_animation_list(&anim_names);
+		for (const StringName &anim_name : anim_names) {
+			Ref<Animation> anim = anim_mixer->get_animation(anim_name);
+			if (anim.is_valid() && !animations.has(anim) && !anim->get_path().is_empty()) {
+				if (anim->get_path().is_resource_file()) {
+					// Save .cfg separate from external animation resource.
+					if (anim->editor_is_folding_dirty()) {
+						r_external_anims.insert(anim);
+					}
+				} else {
+					Vector<String> anim_folds = _get_animation_folds(anim.ptr());
+					anim_groups_folded.push_back(anim->get_path());
+					anim_groups_folded.push_back(anim_folds);
+				}
+				animations.insert(anim);
+			}
+		}
+	}
+
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
 	for (const PropertyInfo &E : plist) {
@@ -125,7 +166,7 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_fill_folds(p_root, p_node->get_child(i), p_folds, resource_folds, nodes_folded, resources);
+		_fill_folds(p_root, p_node->get_child(i), p_folds, resource_folds, nodes_folded, resources, animations, anim_groups_folded, r_external_anims);
 	}
 }
 
@@ -143,15 +184,24 @@ void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path
 	Array unfolds, res_unfolds;
 	HashSet<Ref<Resource>> resources;
 	Array nodes_folded;
-	_fill_folds(p_scene, p_scene, unfolds, res_unfolds, nodes_folded, resources);
+	HashSet<Ref<Animation>> animations;
+	Array anim_groups_folded;
+	HashSet<Ref<Animation>> external_anims;
+	_fill_folds(p_scene, p_scene, unfolds, res_unfolds, nodes_folded, resources, animations, anim_groups_folded, external_anims);
 
 	config->set_value("folding", "node_unfolds", unfolds);
 	config->set_value("folding", "resource_unfolds", res_unfolds);
 	config->set_value("folding", "nodes_folded", nodes_folded);
+	config->set_value("folding", "animation_groups_folded", anim_groups_folded);
 
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorPaths::get_singleton()->get_project_settings_dir().path_join(file);
 	config->save(file);
+
+	// Special case for persist folding for external (resource-file) animations referenced by the scene.
+	for (const Ref<Animation> &anim : external_anims) {
+		save_resource_folding(anim, anim->get_path());
+	}
 }
 
 void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
@@ -178,9 +228,14 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	if (config->has_section_key("folding", "nodes_folded")) {
 		nodes_folded = config->get_value("folding", "nodes_folded");
 	}
+	Array animation_groups_folded;
+	if (config->has_section_key("folding", "animation_groups_folded")) {
+		animation_groups_folded = config->get_value("folding", "animation_groups_folded");
+	}
 
 	ERR_FAIL_COND(unfolds.size() & 1);
 	ERR_FAIL_COND(res_unfolds.size() & 1);
+	ERR_FAIL_COND(animation_groups_folded.size() & 1);
 
 	for (int i = 0; i < unfolds.size(); i += 2) {
 		NodePath path2 = unfolds[i];
@@ -209,6 +264,17 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 			Node *node = p_scene->get_node(fold_path);
 			node->set_display_folded(true);
 		}
+	}
+
+	for (int i = 0; i < animation_groups_folded.size(); i += 2) {
+		String path2 = animation_groups_folded[i];
+		Ref<Animation> anim = ResourceCache::get_ref(path2);
+		if (anim.is_null()) {
+			continue;
+		}
+
+		Vector<String> folded_groups = animation_groups_folded[i + 1];
+		_set_animation_folds(anim.ptr(), folded_groups);
 	}
 }
 
@@ -293,4 +359,25 @@ void EditorFolding::_do_node_unfolds(Node *p_root, Node *p_node, HashSet<Ref<Res
 void EditorFolding::unfold_scene(Node *p_scene) {
 	HashSet<Ref<Resource>> resources;
 	_do_node_unfolds(p_scene, p_scene, resources);
+}
+
+Vector<String> EditorFolding::_get_animation_folds(const Animation *p_animation) {
+	Vector<String> folded_groups;
+	folded_groups.resize(p_animation->editor_get_folded_groups().size());
+	if (folded_groups.size()) {
+		String *w = folded_groups.ptrw();
+		int idx = 0;
+		for (const StringName &group_name : p_animation->editor_get_folded_groups()) {
+			w[idx++] = group_name;
+		}
+	}
+
+	return folded_groups;
+}
+
+void EditorFolding::_set_animation_folds(Animation *p_animation, const Vector<String> &p_folds) {
+	p_animation->editor_clear_folded_groups();
+	for (const String &group_name : p_folds) {
+		p_animation->editor_add_folded_group(group_name);
+	}
 }

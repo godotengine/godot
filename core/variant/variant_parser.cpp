@@ -33,6 +33,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_uid.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/string/string_buffer.h"
 
@@ -1228,7 +1229,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					}
 				} else {
 					Ref<Script> script = resource;
-					if (script.is_valid() && script->is_valid()) {
+					if (script.is_valid() && script->is_script_valid()) {
 						key_type = Variant::OBJECT;
 						key_class_name = script->get_instance_base_type();
 						key_script = script;
@@ -1274,7 +1275,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					}
 				} else {
 					Ref<Script> script = resource;
-					if (script.is_valid() && script->is_valid()) {
+					if (script.is_valid() && script->is_script_valid()) {
 						value_type = Variant::OBJECT;
 						value_class_name = script->get_instance_base_type();
 						value_script = script;
@@ -1364,7 +1365,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					}
 				} else {
 					Ref<Script> script = resource;
-					if (script.is_valid() && script->is_valid()) {
+					if (script.is_valid() && script->is_script_valid()) {
 						array.set_typed(Variant::OBJECT, script->get_instance_base_type(), script);
 					}
 				}

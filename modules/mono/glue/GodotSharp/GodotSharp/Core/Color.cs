@@ -1095,6 +1095,15 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the same value as if the <c>+</c> was not there.
+        /// Unary <c>+</c> does nothing, but sometimes it can make your
+        /// code more readable.
+        /// </summary>
+        /// <param name="color">The color to do nothing to.</param>
+        /// <returns>The original color.</returns>
+        public static Color operator +(Color color) => color;
+
+        /// <summary>
         /// Inverts the given color. This is equivalent to
         /// <c>Colors.White - c</c> or
         /// <c>new Color(1 - c.R, 1 - c.G, 1 - c.B, 1 - c.A)</c>.

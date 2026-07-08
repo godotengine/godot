@@ -31,6 +31,7 @@
 #include "gradient.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 Gradient::Gradient() {
 	//Set initial gradient transition from black to white

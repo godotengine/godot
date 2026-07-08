@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/rb_map.h"
 #include "editor/editor_data.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/property_selector.h"
@@ -39,6 +40,8 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
+
+#include <cfloat> // FLT_MAX
 
 class AnimationMarkerEdit;
 class AnimationTrackEditor;
@@ -480,6 +483,7 @@ class AnimationTrackEdit : public Control {
 	String path_cache;
 
 	void _menu_selected(int p_index);
+	void _popup_key_context_menu(int p_hovering_key_idx, Vector2 p_popup_pos);
 
 	void _path_submitted(const String &p_text);
 	void _play_position_draw();
@@ -519,10 +523,11 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
+	const Ref<Texture2D> &get_key_type_icon() const { return type_icon; }
 	virtual int get_key_height() const;
 	virtual Rect2 get_key_rect(int p_index, float p_pixels_sec);
 	virtual bool is_key_selectable_by_distance() const;
-	virtual void draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right);
+	virtual void draw_key_link(int p_index_from, int p_index_to, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right);
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 	virtual void draw_bg(int p_clip_left, int p_clip_right);
 	virtual void draw_fg(int p_clip_left, int p_clip_right);
@@ -567,6 +572,8 @@ class AnimationMultiTrackKeyEdit;
 class AnimationBezierTrackEdit;
 
 class AnimationTrackEditGroup : public Control {
+	friend class AnimationTrackEditor;
+
 	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture2D> icon;
 	Vector2 icon_size;
@@ -577,7 +584,7 @@ class AnimationTrackEditGroup : public Control {
 	AnimationTrackEditor *editor = nullptr;
 
 	bool hovered = false;
-
+	LocalVector<AnimationTrackEdit *> track_edits;
 	void _zoom_changed();
 
 protected:
@@ -614,11 +621,12 @@ class AnimationTrackEditor : public VBoxContainer {
 	HScrollBar *hscroll = nullptr;
 	ScrollContainer *scroll = nullptr;
 	VBoxContainer *track_vbox = nullptr;
+	MarginContainer *bezier_mc = nullptr;
 	AnimationBezierTrackEdit *bezier_edit = nullptr;
 	VBoxContainer *timeline_vbox = nullptr;
 
-	Control *timeline_rtl_spacer = nullptr;
-	void _update_timeline_rtl_spacer();
+	MarginContainer *timeline_mc = nullptr;
+	void _update_timeline_margins();
 
 	VBoxContainer *info_message_vbox = nullptr;
 	Label *info_message = nullptr;
@@ -896,7 +904,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _pick_track_filter_text_changed(const String &p_newtext);
 	void _pick_track_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
 
-	double snap_unit;
+	double snap_unit = 0;
 	bool fps_compatible = true;
 	int nearest_fps = 0;
 	void _update_snap_unit();
@@ -906,7 +914,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	// Public for use with callable_mp.
+	// Public for use as signal callback.
 	void _clear_selection(bool p_update = false);
 	void _key_selected(int p_key, bool p_single, int p_track);
 	void _key_deselected(int p_key, int p_track);
@@ -965,8 +973,8 @@ public:
 	void set_anim_pos(float p_pos);
 	void insert_node_value_key(Node *p_node, const String &p_property, bool p_only_if_exists = false, bool p_advance = false);
 	void insert_value_key(const String &p_property, bool p_advance);
-	void insert_transform_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value);
-	bool has_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
+	void insert_transform_3d_key(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type, const Variant &p_value);
+	bool has_transform_3d_track(Node3D *p_node, const String &p_sub, const Animation::TrackType p_type);
 	void make_insert_queue();
 	void commit_insert_queue();
 

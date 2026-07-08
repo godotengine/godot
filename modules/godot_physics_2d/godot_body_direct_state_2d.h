@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_body_state_2d.h"
 
 class GodotBody2D;
 

@@ -116,14 +116,14 @@ class PhysicsDirectSpaceState3DDummy : public PhysicsDirectSpaceState3D {
 	GDCLASS(PhysicsDirectSpaceState3DDummy, PhysicsDirectSpaceState3D);
 
 public:
-	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override { return false; }
+	virtual bool intersect_ray(const PS3DT::RayParameters &p_parameters, PS3DT::RayResult &r_result) override { return false; }
 
-	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override { return 0; }
+	virtual int intersect_point(const PS3DT::PointParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) override { return 0; }
 
-	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) override { return 0; }
-	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, ShapeRestInfo *r_info = nullptr) override { return false; }
-	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) override { return false; }
-	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) override { return false; }
+	virtual int intersect_shape(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) override { return 0; }
+	virtual bool cast_motion(const PS3DT::ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, PS3DT::ShapeRestInfo *r_info = nullptr) override { return false; }
+	virtual bool collide_shape(const PS3DT::ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) override { return false; }
+	virtual bool rest_info(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeRestInfo *r_info) override { return false; }
 
 	virtual Vector3 get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const override { return Vector3(); }
 };
@@ -149,7 +149,7 @@ public:
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) override {}
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) override {}
 
-	virtual ShapeType shape_get_type(RID p_shape) const override { return SHAPE_SPHERE; }
+	virtual PS3DE::ShapeType shape_get_type(RID p_shape) const override { return PS3DE::SHAPE_SPHERE; }
 	virtual Variant shape_get_data(RID p_shape) const override { return Variant(); }
 
 	virtual void shape_set_margin(RID p_shape, real_t p_margin) override {}
@@ -163,8 +163,8 @@ public:
 	virtual void space_set_active(RID p_space, bool p_active) override {}
 	virtual bool space_is_active(RID p_space) const override { return false; }
 
-	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) override {}
-	virtual real_t space_get_param(RID p_space, SpaceParameter p_param) const override { return 0; }
+	virtual void space_set_param(RID p_space, PS3DE::SpaceParameter p_param, real_t p_value) override {}
+	virtual real_t space_get_param(RID p_space, PS3DE::SpaceParameter p_param) const override { return 0; }
 
 	virtual PhysicsDirectSpaceState3D *space_get_direct_state(RID p_space) override { return space_state_dummy; }
 
@@ -195,10 +195,10 @@ public:
 	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id) override {}
 	virtual ObjectID area_get_object_instance_id(RID p_area) const override { return ObjectID(); }
 
-	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) override {}
+	virtual void area_set_param(RID p_area, PS3DE::AreaParameter p_param, const Variant &p_value) override {}
 	virtual void area_set_transform(RID p_area, const Transform3D &p_transform) override {}
 
-	virtual Variant area_get_param(RID p_parea, AreaParameter p_param) const override { return Variant(); }
+	virtual Variant area_get_param(RID p_parea, PS3DE::AreaParameter p_param) const override { return Variant(); }
 	virtual Transform3D area_get_transform(RID p_area) const override { return Transform3D(); }
 
 	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) override {}
@@ -221,8 +221,8 @@ public:
 	virtual void body_set_space(RID p_body, RID p_space) override {}
 	virtual RID body_get_space(RID p_body) const override { return RID(); }
 
-	virtual void body_set_mode(RID p_body, BodyMode p_mode) override {}
-	virtual BodyMode body_get_mode(RID p_body) const override { return BodyMode::BODY_MODE_STATIC; }
+	virtual void body_set_mode(RID p_body, PS3DE::BodyMode p_mode) override {}
+	virtual PS3DE::BodyMode body_get_mode(RID p_body) const override { return PS3DE::BodyMode::BODY_MODE_STATIC; }
 
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false) override {}
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) override {}
@@ -255,13 +255,13 @@ public:
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags) override {}
 	virtual uint32_t body_get_user_flags(RID p_body) const override { return 0; }
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) override {}
-	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const override { return Variant(); }
+	virtual void body_set_param(RID p_body, PS3DE::BodyParameter p_param, const Variant &p_value) override {}
+	virtual Variant body_get_param(RID p_body, PS3DE::BodyParameter p_param) const override { return Variant(); }
 
 	virtual void body_reset_mass_properties(RID p_body) override {}
 
-	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override {}
-	virtual Variant body_get_state(RID p_body, BodyState p_state) const override { return Variant(); }
+	virtual void body_set_state(RID p_body, PS3DE::BodyState p_state, const Variant &p_variant) override {}
+	virtual Variant body_get_state(RID p_body, PS3DE::BodyState p_state) const override { return Variant(); }
 
 	virtual void body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) override {}
 	virtual void body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position = Vector3()) override {}
@@ -283,8 +283,8 @@ public:
 
 	virtual void body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) override {}
 
-	virtual void body_set_axis_lock(RID p_body, BodyAxis p_axis, bool p_lock) override {}
-	virtual bool body_is_axis_locked(RID p_body, BodyAxis p_axis) const override { return false; }
+	virtual void body_set_axis_lock(RID p_body, PS3DE::BodyAxis p_axis, bool p_lock) override {}
+	virtual bool body_is_axis_locked(RID p_body, PS3DE::BodyAxis p_axis) const override { return false; }
 
 	virtual void body_add_collision_exception(RID p_body, RID p_body_b) override {}
 	virtual void body_remove_collision_exception(RID p_body, RID p_body_b) override {}
@@ -306,7 +306,7 @@ public:
 
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override { return body_state_dummy; }
 
-	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override { return false; }
+	virtual bool body_test_motion(RID p_body, const PS3DT::MotionParameters &p_parameters, PS3DT::MotionResult *r_result = nullptr) override { return false; }
 
 	/* SOFT BODY */
 
@@ -331,8 +331,8 @@ public:
 	virtual void soft_body_remove_collision_exception(RID p_body, RID p_body_b) override {}
 	virtual void soft_body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) override {}
 
-	virtual void soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override {}
-	virtual Variant soft_body_get_state(RID p_body, BodyState p_state) const override { return Variant(); }
+	virtual void soft_body_set_state(RID p_body, PS3DE::BodyState p_state, const Variant &p_variant) override {}
+	virtual Variant soft_body_get_state(RID p_body, PS3DE::BodyState p_state) const override { return Variant(); }
 
 	virtual void soft_body_set_transform(RID p_body, const Transform3D &p_transform) override {}
 
@@ -377,7 +377,7 @@ public:
 
 	virtual void joint_clear(RID p_joint) override {}
 
-	virtual JointType joint_get_type(RID p_joint) const override { return JointType::JOINT_TYPE_PIN; }
+	virtual PS3DE::JointType joint_get_type(RID p_joint) const override { return PS3DE::JointType::JOINT_TYPE_PIN; }
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override {}
 	virtual int joint_get_solver_priority(RID p_joint) const override { return 0; }
@@ -387,8 +387,8 @@ public:
 
 	virtual void joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) override {}
 
-	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) override {}
-	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const override { return 0; }
+	virtual void pin_joint_set_param(RID p_joint, PS3DE::PinJointParam p_param, real_t p_value) override {}
+	virtual real_t pin_joint_get_param(RID p_joint, PS3DE::PinJointParam p_param) const override { return 0; }
 
 	virtual void pin_joint_set_local_a(RID p_joint, const Vector3 &p_A) override {}
 	virtual Vector3 pin_joint_get_local_a(RID p_joint) const override { return Vector3(); }
@@ -399,29 +399,32 @@ public:
 	virtual void joint_make_hinge(RID p_joint, RID p_body_A, const Transform3D &p_hinge_A, RID p_body_B, const Transform3D &p_hinge_B) override {}
 	virtual void joint_make_hinge_simple(RID p_joint, RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) override {}
 
-	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) override {}
-	virtual real_t hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const override { return 0; }
+	virtual void hinge_joint_set_param(RID p_joint, PS3DE::HingeJointParam p_param, real_t p_value) override {}
+	virtual real_t hinge_joint_get_param(RID p_joint, PS3DE::HingeJointParam p_param) const override { return 0; }
 
-	virtual void hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_enabled) override {}
-	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const override { return false; }
+	virtual void hinge_joint_set_flag(RID p_joint, PS3DE::HingeJointFlag p_flag, bool p_enabled) override {}
+	virtual bool hinge_joint_get_flag(RID p_joint, PS3DE::HingeJointFlag p_flag) const override { return false; }
 
 	virtual void joint_make_slider(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override {}
 
-	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) override {}
-	virtual real_t slider_joint_get_param(RID p_joint, SliderJointParam p_param) const override { return 0; }
+	virtual void slider_joint_set_param(RID p_joint, PS3DE::SliderJointParam p_param, real_t p_value) override {}
+	virtual real_t slider_joint_get_param(RID p_joint, PS3DE::SliderJointParam p_param) const override { return 0; }
 
 	virtual void joint_make_cone_twist(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override {}
 
-	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) override {}
-	virtual real_t cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const override { return 0; }
+	virtual void cone_twist_joint_set_param(RID p_joint, PS3DE::ConeTwistJointParam p_param, real_t p_value) override {}
+	virtual real_t cone_twist_joint_get_param(RID p_joint, PS3DE::ConeTwistJointParam p_param) const override { return 0; }
 
 	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override {}
 
-	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param, real_t p_value) override {}
-	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis, G6DOFJointAxisParam p_param) const override { return 0; }
+	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis, PS3DE::G6DOFJointAxisParam p_param, real_t p_value) override {}
+	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis, PS3DE::G6DOFJointAxisParam p_param) const override { return 0; }
 
-	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) override {}
-	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const override { return false; }
+	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, PS3DE::G6DOFJointAxisFlag p_flag, bool p_enable) override {}
+	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, PS3DE::G6DOFJointAxisFlag p_flag) const override { return false; }
+
+	virtual void generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) override {}
+	virtual Quaternion generic_6dof_joint_get_angular_target_rotation(RID p_joint) const override { return Quaternion(); }
 
 	/* MISC */
 
@@ -443,5 +446,5 @@ public:
 
 	virtual bool is_flushing_queries() const override { return false; }
 
-	virtual int get_process_info(ProcessInfo p_info) override { return 0; }
+	virtual int get_process_info(PS3DE::ProcessInfo p_info) override { return 0; }
 };

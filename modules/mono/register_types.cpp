@@ -31,8 +31,11 @@
 #include "register_types.h"
 
 #include "csharp_script.h"
+#include "csharp_script_resource_format.h"
 
-#include "core/config/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 
 CSharpLanguage *script_language_cs = nullptr;
 Ref<ResourceFormatLoaderCSharpScript> resource_loader_cs;

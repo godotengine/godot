@@ -34,7 +34,10 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"
@@ -47,6 +50,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
 
 void FileDialog::popup_file_dialog() {
 	popup_centered_clamped(Vector2(1050, 700) * get_theme_default_base_scale(), 0.8f);
@@ -79,20 +83,24 @@ void FileDialog::_native_popup() {
 	while (w && w->get_flag(FLAG_POPUP) && w->get_parent_visible_window()) {
 		w = w->get_parent_visible_window();
 	}
-	DisplayServer::WindowID wid = w ? w->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+	DisplayServerEnums::WindowID wid = w ? w->get_window_id() : DisplayServerEnums::INVALID_WINDOW_ID;
 
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
-		DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid);
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA)) {
+		DisplayServer::get_singleton()->file_dialog_with_options_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), root, filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &FileDialog::_native_dialog_cb_with_options), wid);
 	} else {
-		DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid);
+		DisplayServer::get_singleton()->file_dialog_show(get_displayed_title(), ProjectSettings::get_singleton()->globalize_path(full_dir), filename_edit->get_text().get_file(), show_hidden_files, DisplayServerEnums::FileDialogMode(mode), processed_filters, callable_mp(this, &FileDialog::_native_dialog_cb), wid);
 	}
 }
 
 bool FileDialog::_can_use_native_popup() const {
 	if (access == ACCESS_RESOURCES || access == ACCESS_USERDATA || options.size() > 0) {
-		return DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_EXTRA);
+		return DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_EXTRA);
 	}
-	return DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE);
+	return DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE);
+}
+
+Vector2i FileDialog::_get_list_mode_icon_size() const {
+	return theme_cache.file->get_size();
 }
 
 void FileDialog::_popup_base(const Rect2i &p_screen_rect) {
@@ -108,6 +116,11 @@ void FileDialog::_popup_base(const Rect2i &p_screen_rect) {
 	} else {
 		ConfirmationDialog::_popup_base(p_screen_rect);
 	}
+}
+
+void FileDialog::_clear_changed_status() {
+	favorites_changed = false;
+	recents_changed = false;
 }
 
 void FileDialog::set_visible(bool p_visible) {
@@ -258,6 +271,8 @@ void FileDialog::_notification(int p_what) {
 				_update_favorite_list();
 				_update_recent_list();
 				invalidate(); // Put it here to preview in the editor.
+			} else {
+				callable_mp(this, &FileDialog::_clear_changed_status).call_deferred();
 			}
 		} break;
 
@@ -355,11 +370,27 @@ void FileDialog::update_dir() {
 	if (drives->is_visible()) {
 		if (dir_access->get_current_dir().is_network_share_path()) {
 			_update_drives(false);
-			drives->add_item(ETR("Network"));
-			drives->set_item_disabled(-1, true);
-			drives->select(drives->get_item_count() - 1);
+			PopupMenu *pm = drives->get_popup();
+			pm->add_item(ETR("Network"));
+			Dictionary meta;
+			meta["index"] = -1;
+			meta["path"] = String();
+			meta["name"] = ETR("Network");
+			pm->set_item_metadata(-1, meta);
+			pm->set_item_disabled(-1, true);
+			drives->set_text(meta["name"]);
+			selected_drive = pm->get_item_count() - 1;
 		} else {
-			drives->select(dir_access->get_current_drive());
+			PopupMenu *pm = drives->get_popup();
+			int cur = dir_access->get_current_drive();
+			for (int i = 0; i < pm->get_item_count(); i++) {
+				const Dictionary &meta = pm->get_item_metadata(i);
+				if (meta["index"].operator int() == cur) {
+					drives->set_text(meta["name"]);
+					selected_drive = i;
+					break;
+				}
+			}
 		}
 	}
 
@@ -368,18 +399,20 @@ void FileDialog::update_dir() {
 }
 
 void FileDialog::_dir_submitted(String p_dir) {
-	String new_dir = p_dir;
+	String new_dir = OS::get_singleton()->expand_path(p_dir);
 #ifdef WINDOWS_ENABLED
 	if (root_prefix.is_empty() && drives->is_visible() && !new_dir.is_network_share_path() && new_dir.is_absolute_path() && new_dir.find(":/") == -1 && new_dir.find(":\\") == -1) {
 		// Non network path without X:/ prefix on Windows, add drive letter.
-		new_dir = drives->get_item_text(drives->get_selected()).path_join(new_dir);
+		new_dir = drives->get_popup()->get_item_metadata(selected_drive).operator Dictionary()["path"].operator String().path_join(new_dir);
 	}
 #endif
 	if (!root_prefix.is_empty()) {
 		new_dir = root_prefix.path_join(new_dir);
 	}
 	_change_dir(new_dir);
-	filename_edit->set_text("");
+	if (mode != FILE_MODE_SAVE_FILE) {
+		filename_edit->set_text("");
+	}
 	_push_history();
 }
 
@@ -435,6 +468,9 @@ void FileDialog::_action_pressed() {
 	}
 
 	String file_text = filename_edit->get_text();
+
+	file_text = OS::get_singleton()->expand_path(file_text);
+
 	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().path_join(file_text);
 
 	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && (dir_access->file_exists(f) || dir_access->is_bundle(f))) {
@@ -628,7 +664,7 @@ void FileDialog::_file_list_selected(int p_item) {
 		} else {
 			set_default_ok_text(ETR("Open"));
 		}
-	} else if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY || !dir_access->file_exists(filename_edit->get_text())) {
+	} else if (mode != FILE_MODE_SAVE_FILE) {
 		filename_edit->set_text("");
 		if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
 			set_default_ok_text(ETR("Select This Folder"));
@@ -755,15 +791,19 @@ void FileDialog::_popup_menu(const Vector2 &p_pos, int p_for_item) {
 
 	if (p_for_item > -1) {
 		item_menu->add_item(ETR("Copy Path"), ITEM_MENU_COPY_PATH);
+		item_menu->set_item_icon(-1, theme_cache.menu_copy_path);
 		if (customization_flags[CUSTOMIZATION_DELETE]) {
 			item_menu->add_item(ETR("Delete"), ITEM_MENU_DELETE);
+			item_menu->set_item_icon(-1, theme_cache.menu_delete);
 			item_menu->set_item_shortcut(-1, action_shortcuts[ITEM_MENU_DELETE]);
 		}
 	} else {
 		if (can_create_folders) {
 			item_menu->add_item(ETR("New Folder..."), ITEM_MENU_NEW_FOLDER);
+			item_menu->set_item_icon(-1, theme_cache.menu_new_folder);
 		}
 		item_menu->add_item(ETR("Refresh"), ITEM_MENU_REFRESH);
+		item_menu->set_item_icon(-1, theme_cache.menu_refresh);
 		item_menu->set_item_shortcut(-1, action_shortcuts[ITEM_MENU_REFRESH]);
 	}
 
@@ -776,9 +816,11 @@ void FileDialog::_popup_menu(const Vector2 &p_pos, int p_for_item) {
 		meta = file_list->get_item_metadata(p_for_item);
 	}
 
-	item_menu->add_item((p_for_item == -1 || meta["dir"]) ? ETR("Open in File Manager") : ETR("Show in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+	item_menu->add_item((p_for_item == -1 || meta["dir"]) ? OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN) : OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW), ITEM_MENU_SHOW_IN_EXPLORER);
+	item_menu->set_item_icon(-1, theme_cache.menu_show_in_file_manager);
 	if (meta["bundle"]) {
 		item_menu->add_item(ETR("Show Package Contents"), ITEM_MENU_SHOW_BUNDLE_CONTENT);
+		item_menu->set_item_icon(-1, theme_cache.menu_open_bundle);
 	}
 #endif
 
@@ -798,18 +840,20 @@ void FileDialog::update_file_list() {
 	file_list->get_v_scroll_bar()->set_value(0);
 
 	if (display_mode == DISPLAY_THUMBNAILS) {
+		int thumbnail_size = theme_cache.thumbnail_size * get_theme_default_base_scale();
 		file_list->set_max_columns(0);
 		file_list->set_icon_mode(ItemList::ICON_MODE_TOP);
-		file_list->set_fixed_column_width(theme_cache.thumbnail_size * 3 / 2);
+		file_list->set_fixed_column_width(thumbnail_size * 3 / 2);
 		file_list->set_max_text_lines(2);
 		file_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-		file_list->set_fixed_icon_size(Size2(theme_cache.thumbnail_size, theme_cache.thumbnail_size));
+		file_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
+		file_list->set_fixed_tag_icon_size(_get_list_mode_icon_size());
 	} else {
 		file_list->set_icon_mode(ItemList::ICON_MODE_LEFT);
 		file_list->set_max_columns(1);
 		file_list->set_max_text_lines(1);
 		file_list->set_fixed_column_width(0);
-		file_list->set_fixed_icon_size(theme_cache.file->get_size());
+		file_list->set_fixed_icon_size(_get_list_mode_icon_size());
 	}
 
 	dir_access->list_dir_begin();
@@ -1137,7 +1181,7 @@ void FileDialog::update_filters() {
 
 		String native_all_name;
 		native_all_name += all_filters;
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
+		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
 			if (!native_all_name.is_empty()) {
 				native_all_name += ", ";
 			}
@@ -1159,7 +1203,7 @@ void FileDialog::update_filters() {
 		String native_name;
 
 		native_name += flt;
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
+		if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_NATIVE_DIALOG_FILE_MIME)) {
 			if (!native_name.is_empty() && !mime.is_empty()) {
 				native_name += ", ";
 			}
@@ -1275,6 +1319,9 @@ String FileDialog::get_current_path() const {
 }
 
 void FileDialog::set_current_dir(const String &p_dir) {
+	if (p_dir.is_relative_path()) {
+		dir_access->change_dir(OS::get_singleton()->get_resource_dir());
+	}
 	_change_dir(p_dir);
 
 	_push_history();
@@ -1294,12 +1341,15 @@ void FileDialog::set_current_path(const String &p_path) {
 	if (!p_path.size()) {
 		return;
 	}
-	int pos = MAX(p_path.rfind_char('/'), p_path.rfind_char('\\'));
+
+	String path = OS::get_singleton()->expand_path(p_path);
+
+	int pos = MAX(path.rfind_char('/'), path.rfind_char('\\'));
 	if (pos == -1) {
-		set_current_file(p_path);
+		set_current_file(path);
 	} else {
-		String path_dir = p_path.substr(0, pos);
-		String path_file = p_path.substr(pos + 1);
+		String path_dir = path.substr(0, pos);
+		String path_file = path.substr(pos + 1);
 		set_current_dir(path_dir);
 		set_current_file(path_file);
 	}
@@ -1319,6 +1369,7 @@ void FileDialog::set_root_subfolder(const String &p_root) {
 		root_prefix = dir_access->get_current_dir();
 	}
 	invalidate();
+	_update_drives();
 	update_dir();
 }
 
@@ -1528,6 +1579,10 @@ void FileDialog::_invalidate() {
 
 	update_file_list();
 
+	if (ensure_visible_after_invalidating) {
+		file_list->ensure_current_is_visible();
+		ensure_visible_after_invalidating = false;
+	}
 	is_invalidating = false;
 }
 
@@ -1570,13 +1625,22 @@ void FileDialog::_make_dir() {
 }
 
 void FileDialog::_select_drive(int p_idx) {
-	String d = drives->get_item_text(p_idx);
-	_change_dir(d);
+	const Dictionary &meta = drives->get_popup()->get_item_metadata(p_idx);
+	drives->set_text(meta["name"]);
+	selected_drive = p_idx;
+
+	_change_dir(meta["path"]);
 	filename_edit->set_text("");
 	_push_history();
 }
 
 void FileDialog::_change_dir(const String &p_new_dir) {
+	if (access == ACCESS_RESOURCES && p_new_dir.begins_with("user://")) {
+		ERR_FAIL_MSG("Can't change to userdata folder when using ACCESS_RESOURCES.");
+	} else if (access == ACCESS_USERDATA && p_new_dir.begins_with("res://")) {
+		ERR_FAIL_MSG("Can't change to resources folder when using ACCESS_USERDATA.");
+	}
+
 	if (root_prefix.is_empty()) {
 		dir_access->change_dir(p_new_dir);
 	} else {
@@ -1593,11 +1657,26 @@ void FileDialog::_change_dir(const String &p_new_dir) {
 }
 
 void FileDialog::_update_drives(bool p_select) {
+	if (access != ACCESS_FILESYSTEM) {
+		drives->hide();
+		return;
+	}
+
+	HashMap<int, String> drive_map;
 	int dc = dir_access->get_drive_count();
-	if (dc == 0 || access != ACCESS_FILESYSTEM) {
+	int cur = dir_access->get_current_drive();
+	for (int i = 0; i < dc; i++) {
+		String drv = dir_access->get_drive(i);
+		if (!root_prefix.is_empty() && !drv.begins_with(root_prefix)) {
+			continue;
+		}
+		drive_map[i] = drv;
+	}
+	if (drive_map.size() == 0) {
 		drives->hide();
 	} else {
-		drives->clear();
+		PopupMenu *pm = drives->get_popup();
+		pm->clear();
 		Node *dp = drives->get_parent();
 		if (dp) {
 			dp->remove_child(drives);
@@ -1606,12 +1685,24 @@ void FileDialog::_update_drives(bool p_select) {
 		dp->add_child(drives);
 		drives->show();
 
-		for (int i = 0; i < dir_access->get_drive_count(); i++) {
-			drives->add_item(dir_access->get_drive(i));
-		}
+		for (const KeyValue<int, String> &drv : drive_map) {
+			String display_name = drv.value;
+			String lbl = dir_access->get_drive_label(drv.key);
+			if (!lbl.is_empty()) {
+				display_name = drv.value + " (" + lbl + ")";
+			}
+			pm->add_item(display_name);
+			pm->set_item_tooltip(-1, drv.value);
 
-		if (p_select) {
-			drives->select(dir_access->get_current_drive());
+			Dictionary meta;
+			meta["index"] = drv.key;
+			meta["path"] = drv.value;
+			meta["name"] = drv.value;
+			pm->set_item_metadata(-1, meta);
+			if (p_select && drv.key == cur) {
+				drives->set_text(drv.value);
+				selected_drive = drv.key;
+			}
 		}
 	}
 }
@@ -1621,6 +1712,7 @@ void FileDialog::_sort_option_selected(int p_option) {
 		file_sort_button->get_popup()->set_item_checked(i, (i == p_option));
 	}
 	file_sort = FileSortOption(p_option);
+	ensure_visible_after_invalidating = true;
 	invalidate();
 }
 
@@ -1653,6 +1745,7 @@ void FileDialog::_favorite_pressed() {
 	} else {
 		global_favorites.push_back(directory);
 	}
+	favorites_changed = true;
 	_update_favorite_list();
 }
 
@@ -1669,6 +1762,7 @@ void FileDialog::_favorite_move_up() {
 		return;
 	}
 	SWAP(global_favorites[a_idx], global_favorites[b_idx]);
+	favorites_changed = true;
 	_update_favorite_list();
 }
 
@@ -1685,6 +1779,7 @@ void FileDialog::_favorite_move_down() {
 		return;
 	}
 	SWAP(global_favorites[a_idx], global_favorites[b_idx]);
+	favorites_changed = true;
 	_update_favorite_list();
 }
 
@@ -1784,6 +1879,7 @@ void FileDialog::_save_to_recent() {
 		}
 	}
 	global_recents.insert(0, directory);
+	recents_changed = true;
 
 	_update_recent_list();
 }
@@ -2141,15 +2237,22 @@ void FileDialog::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, file_thumbnail);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, folder_thumbnail);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, menu_copy_path);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, menu_delete);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, menu_refresh);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, menu_new_folder);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, menu_show_in_file_manager);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, menu_open_bundle);
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, folder_icon_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, file_icon_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, FileDialog, file_disabled_color);
 
 	// TODO: Define own colors?
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_normal_color, "font_color", "Button");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_hover_color, "font_hover_color", "Button");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_focus_color, "font_focus_color", "Button");
-	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_pressed_color, "font_pressed_color", "Button");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_normal_color, "icon_normal_color", "Button");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_hover_color, "icon_hover_color", "Button");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_focus_color, "icon_focus_color", "Button");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, FileDialog, icon_pressed_color, "icon_pressed_color", "Button");
 
 	Option defaults;
 
@@ -2158,7 +2261,7 @@ void FileDialog::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), defaults.name, &FileDialog::set_option_name, &FileDialog::get_option_name);
 	base_property_helper.register_property(PropertyInfo(Variant::PACKED_STRING_ARRAY, "values"), defaults.values, &FileDialog::set_option_values, &FileDialog::get_option_values);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "default"), defaults.default_idx, &FileDialog::set_option_default, &FileDialog::get_option_default);
-	PropertyListHelper::register_base_helper(&base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 
 	ADD_CLASS_DEPENDENCY("Button");
 	ADD_CLASS_DEPENDENCY("ConfirmationDialog");
@@ -2171,6 +2274,7 @@ void FileDialog::set_show_hidden_files(bool p_show) {
 	if (show_hidden_files == p_show) {
 		return;
 	}
+	show_hidden->set_pressed_no_signal(p_show);
 	show_hidden_files = p_show;
 	invalidate();
 }
@@ -2290,8 +2394,9 @@ FileDialog::FileDialog() {
 	drives_container = memnew(HBoxContainer);
 	top_toolbar->add_child(drives_container);
 
-	drives = memnew(OptionButton);
-	drives->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_select_drive));
+	drives = memnew(MenuButton);
+	drives->set_flat(false);
+	drives->get_popup()->connect("index_pressed", callable_mp(this, &FileDialog::_select_drive));
 	drives->set_accessibility_name(ETR("Drive"));
 	top_toolbar->add_child(drives);
 
@@ -2523,6 +2628,7 @@ FileDialog::FileDialog() {
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // Too many extensions overflows it.
+	filter->set_fit_to_longest_item(false);
 	file_box->add_child(filter);
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_filter_selected));
 
@@ -2541,6 +2647,7 @@ FileDialog::FileDialog() {
 	confirm_save->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_save_confirm_pressed));
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	delete_dialog->set_text(ETR("Delete the selected file?\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 	add_child(delete_dialog, false, INTERNAL_MODE_FRONT);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_delete_confirm));
@@ -2559,10 +2666,12 @@ FileDialog::FileDialog() {
 	make_dir_dialog->register_text_enter(new_dir_name);
 
 	mkdirerr = memnew(AcceptDialog);
+	mkdirerr->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	mkdirerr->set_text(ETR("Could not create folder."));
 	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
 
 	exterr = memnew(AcceptDialog);
+	exterr->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	exterr->set_text(ETR("Invalid extension, or empty filename."));
 	add_child(exterr, false, INTERNAL_MODE_FRONT);
 

@@ -31,8 +31,11 @@
 #include "editor_interface.h"
 #include "editor_interface.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
@@ -46,7 +49,9 @@
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/property_selector.h"
 #include "editor/run/editor_run_bar.h"
+#include "editor/scene/2d/scene_paint_2d_editor_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/scene_tree_editor.h"
 #include "editor/settings/editor_command_palette.h"
@@ -55,12 +60,15 @@
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/visual_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/theme.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
 
@@ -105,17 +113,21 @@ EditorUndoRedoManager *EditorInterface::get_editor_undo_redo() const {
 	return EditorUndoRedoManager::get_singleton();
 }
 
+ScenePaint2DEditor *EditorInterface::get_scene_paint_2d() const {
+	return ScenePaint2DEditor::get_singleton();
+}
+
 AABB EditorInterface::_calculate_aabb_for_scene(Node *p_node, AABB &p_scene_aabb) {
-	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
-	if (mesh_node && mesh_node->get_mesh().is_valid()) {
+	GeometryInstance3D *geom_node = Object::cast_to<GeometryInstance3D>(p_node);
+	if (geom_node != nullptr) {
 		Transform3D accum_xform;
-		Node3D *base = mesh_node;
+		Node3D *base = geom_node;
 		while (base) {
 			accum_xform = base->get_transform() * accum_xform;
 			base = Object::cast_to<Node3D>(base->get_parent());
 		}
 
-		AABB aabb = accum_xform.xform(mesh_node->get_mesh()->get_aabb());
+		AABB aabb = accum_xform.xform(geom_node->get_aabb());
 		p_scene_aabb.merge_with(aabb);
 	}
 
@@ -148,7 +160,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 	RID scenario = RS::get_singleton()->scenario_create();
 
 	RID viewport = RS::get_singleton()->viewport_create();
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ALWAYS);
+	RS::get_singleton()->viewport_set_update_mode(viewport, RSE::VIEWPORT_UPDATE_ALWAYS);
 	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	RS::get_singleton()->viewport_set_size(viewport, size, size);
 	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
@@ -241,7 +253,7 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	ERR_FAIL_NULL_MSG(EditorNode::get_singleton(), "EditorNode doesn't exist.");
 
 	SubViewport *sub_viewport_node = memnew(SubViewport);
-	AABB scene_aabb;
+	AABB scene_aabb = AABB(Vector3(-0.001f, -0.001f, -0.001f), Vector3(0.002f, 0.002f, 0.002f));
 	scene_aabb = _calculate_aabb_for_scene(p_scene, scene_aabb);
 
 	sub_viewport_node->set_update_mode(SubViewport::UPDATE_ALWAYS);
@@ -362,7 +374,7 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 	}
 
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_path);
-	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed"));
+	EditorFileSystem::get_singleton()->filesystem_changed();
 }
 
 void EditorInterface::add_root_node(Node *p_node) {
@@ -694,7 +706,7 @@ void EditorInterface::open_scene_from_path(const String &scene_path, bool p_set_
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
-	EditorNode::get_singleton()->load_scene(scene_path, false, p_set_inherited);
+	EditorNode::get_singleton()->open_scene(scene_path, false, p_set_inherited);
 }
 
 void EditorInterface::reload_scene_from_path(const String &scene_path) {
@@ -724,10 +736,19 @@ PackedStringArray EditorInterface::get_open_scenes() const {
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
 	for (EditorData::EditedScene &edited_scene : scenes) {
-		if (edited_scene.root == nullptr) {
-			continue;
+		ret.push_back(edited_scene.path);
+	}
+	return ret;
+}
+
+PackedStringArray EditorInterface::get_unsaved_scenes() const {
+	PackedStringArray ret;
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
+
+	for (int i = 0; i < scenes.size(); i++) {
+		if (EditorNode::get_singleton()->is_scene_unsaved(i)) {
+			ret.push_back(scenes[i].path);
 		}
-		ret.push_back(edited_scene.root->get_scene_file_path());
 	}
 	return ret;
 }
@@ -839,6 +860,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
 	ClassDB::bind_method(D_METHOD("get_editor_toaster"), &EditorInterface::get_editor_toaster);
 	ClassDB::bind_method(D_METHOD("get_editor_undo_redo"), &EditorInterface::get_editor_undo_redo);
+	ClassDB::bind_method(D_METHOD("get_scene_paint_2d"), &EditorInterface::get_scene_paint_2d);
 
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 
@@ -909,6 +931,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_object_edited", "object"), &EditorInterface::is_object_edited);
 
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
+	ClassDB::bind_method(D_METHOD("get_unsaved_scenes"), &EditorInterface::get_unsaved_scenes);
 	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
 

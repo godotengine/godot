@@ -20,12 +20,16 @@ func run_tests():
 
 	__exec_test(test_callable)
 
+	__exec_test(test_interface_callable_proxy)
+
+	__exec_test(test_interface_object_proxy)
+
 	print("JavaClassWrapper tests finished.")
 	print("Tests started: " + str(_test_started))
 	print("Tests completed: " + str(_test_completed))
 
 
-func test_exceptions() -> void:
+func test_exceptions() -> bool:
 	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
 	#print(TestClass.get_java_method_list())
 
@@ -36,7 +40,9 @@ func test_exceptions() -> void:
 
 	assert_equal(JavaClassWrapper.get_exception(), null)
 
-func test_multiple_signatures() -> void:
+	return true
+
+func test_multiple_signatures() -> bool:
 	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
 
 	var ai := [1, 2]
@@ -55,7 +61,9 @@ func test_multiple_signatures() -> void:
 	]
 	assert_equal(TestClass.testMethod(3, aobjl), "testObjects: 27 135")
 
-func test_array_arguments() -> void:
+	return true
+
+func test_array_arguments() -> bool:
 	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
 
 	assert_equal(TestClass.testArgBoolArray([true, false, true]), "[true, false, true]")
@@ -72,7 +80,9 @@ func test_array_arguments() -> void:
 	assert_equal(TestClass.testArgDoubleArray(PackedFloat64Array([37.1, 38.2, 39.3])), "[37.1, 38.2, 39.3]")
 	assert_equal(TestClass.testArgDoubleArray([37.1, 38.2, 39.3]), "[37.1, 38.2, 39.3]")
 
-func test_array_return() -> void:
+	return true
+
+func test_array_return() -> bool:
 	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
 	#print(TestClass.get_java_method_list())
 
@@ -107,14 +117,17 @@ func test_array_return() -> void:
 	assert_equal(TestClass.testRetStringArray(), PackedStringArray(["I", "am", "String"]))
 	assert_equal(TestClass.testRetCharSequenceArray(), PackedStringArray(["I", "am", "CharSequence"]))
 
-func test_dictionary():
+	return true
+
+func test_dictionary() -> bool:
 	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
 	assert_equal(TestClass.testDictionary({a = 1, b = 2}), "{a=1, b=2}")
 	assert_equal(TestClass.testRetDictionary(), {a = 1, b = 2})
 	assert_equal(TestClass.testRetDictionaryArray(), [{a = 1, b = 2}])
 	assert_equal(TestClass.testDictionaryNested({a = 1, b = [2, 3], c = 4}), "{a: 1, b: [2, 3], c: 4}")
+	return true
 
-func test_object_overload():
+func test_object_overload() -> bool:
 	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
 	var TestClass2: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass2')
 	var TestClass3: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass3')
@@ -130,22 +143,25 @@ func test_object_overload():
 
 	assert_equal(TestClass.testObjectOverloadArray(arr_of_t2), "TestClass2: [33, 34]")
 	assert_equal(TestClass.testObjectOverloadArray(arr_of_t3), "TestClass3: [thirty three, thirty four]")
+	return true
 
-func test_variant_conversion_safe_from_stack_overflow():
+func test_variant_conversion_safe_from_stack_overflow() -> bool:
 	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
 	var arr: Array = [42]
 	var dict: Dictionary = {"arr": arr}
 	arr.append(dict)
 	# The following line will crash with stack overflow if not handled property:
 	TestClass.testDictionary(dict)
+	return true
 
-func test_big_integers():
+func test_big_integers() -> bool:
 	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
 	assert_equal(TestClass.testArgLong(4242424242), "4242424242")
 	assert_equal(TestClass.testArgLong(-4242424242), "-4242424242")
 	assert_equal(TestClass.testDictionary({a = 4242424242, b = -4242424242}), "{a=4242424242, b=-4242424242}")
+	return true
 
-func test_callable():
+func test_callable() -> bool:
 	var android_runtime = Engine.get_singleton("AndroidRuntime")
 	assert_true(android_runtime != null)
 
@@ -155,3 +171,36 @@ func test_callable():
 		return null
 	android_runtime.createRunnableFromGodotCallable(cb1).run()
 	assert_equal(cb1_data['called'], true)
+
+	return true
+
+func test_interface_callable_proxy() -> bool:
+	var cb1_data := {called = false, content = ""}
+	var cb1 = func (content: String) -> void:
+		cb1_data['called'] = true
+		cb1_data['content'] = content
+
+	var printer_proxy = JavaClassWrapper.create_sam_callback("android.util.Printer", cb1)
+	assert_true(printer_proxy != null)
+
+	printer_proxy.println("This is a callback test")
+	assert_equal(cb1_data['called'], true)
+	assert_equal(cb1_data['content'], "This is a callback test")
+	return true
+
+class PrintProxy:
+	var test_data := {called = false, content = ""}
+
+	func println(content: String) -> void:
+		test_data['called'] = true
+		test_data['content'] = content
+
+func test_interface_object_proxy() -> bool:
+	var print_object = PrintProxy.new()
+	var proxy = JavaClassWrapper.create_proxy(print_object, ["android.util.Printer"])
+	assert_true(proxy != null)
+
+	proxy.println("This is proxy test")
+	assert_equal(print_object.test_data['called'], true)
+	assert_equal(print_object.test_data['content'], "This is proxy test")
+	return true

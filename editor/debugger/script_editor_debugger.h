@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/object/script_language.h"
-#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "scene/gui/margin_container.h"
@@ -83,6 +83,12 @@ private:
 		ACTION_DELETE_ALL_BREAKPOINTS,
 	};
 
+	enum VMemMenu {
+		VMEM_MENU_SHOW_IN_FILESYSTEM,
+		VMEM_MENU_SHOW_IN_EXPLORER,
+		VMEM_MENU_OWNERS,
+	};
+
 	AcceptDialog *msgdialog = nullptr;
 
 	LineEdit *clicked_ctrl = nullptr;
@@ -107,10 +113,10 @@ private:
 		SAVE_MONITORS_CSV,
 		SAVE_VRAM_CSV,
 	};
-	FileDialogPurpose file_dialog_purpose;
+	FileDialogPurpose file_dialog_purpose = SAVE_MONITORS_CSV;
 
-	int error_count;
-	int warning_count;
+	int error_count = 0;
+	int warning_count = 0;
 
 	bool skip_breakpoints_value = false;
 	bool ignore_error_breaks_value = false;
@@ -134,11 +140,13 @@ private:
 
 	HashMap<int, String> profiler_signature;
 
+	MarginContainer *vmem_mc = nullptr;
 	Tree *vmem_tree = nullptr;
 	Button *vmem_refresh = nullptr;
 	Button *vmem_export = nullptr;
 	LineEdit *vmem_total = nullptr;
 	TextureRect *vmem_notice_icon = nullptr;
+	PopupMenu *vmem_item_menu = nullptr;
 
 	Tree *stack_dump = nullptr;
 	LineEdit *search = nullptr;
@@ -157,7 +165,7 @@ private:
 	EditorPerformanceProfiler *performance_profiler = nullptr;
 	EditorExpressionEvaluator *expression_evaluator = nullptr;
 
-	OS::ProcessID remote_pid = 0;
+	ProcessID remote_pid = 0;
 	bool move_to_foreground = true;
 	bool can_request_idle_draw = false;
 
@@ -190,7 +198,7 @@ private:
 	void _mute_audio_on_break(bool p_mute);
 	void _send_debug_mute_audio_msg(bool p_mute);
 
-	EditorDebuggerNode::CameraOverride camera_override;
+	EditorDebuggerNode::CameraOverride camera_override = EditorDebuggerNode::OVERRIDE_NONE;
 
 	void _stack_dump_frame_selected();
 
@@ -267,6 +275,8 @@ private:
 	void _collapse_errors_list();
 
 	void _vmem_item_activated();
+	void _vmem_tree_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
+	void _vmem_item_menu_id_pressed(int p_option);
 
 	void _profiler_activate(bool p_enable, int p_profiler);
 	void _profiler_seeked();
@@ -384,6 +394,8 @@ public:
 
 	void send_message(const String &p_message, const Array &p_args);
 	void toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data);
+
+	void update_layout(EditorDock::DockLayout p_layout, int p_slot);
 
 	ScriptEditorDebugger();
 	~ScriptEditorDebugger();

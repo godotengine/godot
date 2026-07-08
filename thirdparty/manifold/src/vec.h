@@ -228,10 +228,14 @@ class Vec : public VecView<T> {
     // Currently it is set to 64 pages (4kB page).
     constexpr size_t ASYNC_FREE_THRESHOLD = 1 << 18;
     TracyFreeS(ptr, 3);
+#if defined(__has_feature)
+#if !__has_feature(address_sanitizer)
 #if (MANIFOLD_PAR == 1)
     if (size * sizeof(T) > ASYNC_FREE_THRESHOLD)
       gc_arena.enqueue([ptr]() { free(ptr); });
     else
+#endif
+#endif
 #endif
       free(ptr);
   }

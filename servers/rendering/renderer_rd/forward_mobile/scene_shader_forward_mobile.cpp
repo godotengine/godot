@@ -29,9 +29,10 @@
 /**************************************************************************/
 
 #include "scene_shader_forward_mobile.h"
+
 #include "core/config/project_settings.h"
 #include "core/math/math_defs.h"
-#include "render_forward_mobile.h"
+#include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 
@@ -57,7 +58,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	depth_test_disabledi = 0;
 	depth_test_invertedi = 0;
 	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
-	cull_mode = RS::CULL_MODE_BACK;
+	cull_mode = RSE::CULL_MODE_BACK;
 
 	uses_point_size = false;
 	uses_alpha = false;
@@ -69,6 +70,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	uses_roughness = false;
 	uses_normal = false;
 	uses_tangent = false;
+	writes_tangent = false;
 	uses_normal_map = false;
 	uses_bent_normal_map = false;
 	wireframe = false;
@@ -111,9 +113,9 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_test_disabledi, 1);
 	actions.render_mode_values["depth_test_inverted"] = Pair<int *, int>(&depth_test_invertedi, 1);
 
-	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_DISABLED);
-	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_FRONT);
-	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_mode, RS::CULL_MODE_BACK);
+	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_mode, RSE::CULL_MODE_DISABLED);
+	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_mode, RSE::CULL_MODE_FRONT);
+	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_mode, RSE::CULL_MODE_BACK);
 
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
@@ -148,6 +150,8 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.write_flag_pointers["MODELVIEW_MATRIX"] = &writes_modelview_or_projection;
 	actions.write_flag_pointers["PROJECTION_MATRIX"] = &writes_modelview_or_projection;
 	actions.write_flag_pointers["VERTEX"] = &uses_vertex;
+	actions.write_flag_pointers["TANGENT"] = &writes_tangent;
+	actions.write_flag_pointers["BINORMAL"] = &writes_tangent;
 
 	actions.stencil_mode_values["read"] = Pair<int *, int>(&stencil_readi, STENCIL_FLAG_READ);
 	actions.stencil_mode_values["write"] = Pair<int *, int>(&stencil_writei, STENCIL_FLAG_WRITE);
@@ -166,7 +170,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.uniforms = &uniforms;
 
 	MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
-	Error err = SceneShaderForwardMobile::singleton->compiler.compile(RS::SHADER_SPATIAL, code, &actions, path, gen_code);
+	Error err = SceneShaderForwardMobile::singleton->compiler.compile(RSE::SHADER_SPATIAL, code, &actions, path, gen_code);
 
 	if (err != OK) {
 		if (version.is_valid()) {
@@ -260,12 +264,12 @@ bool SceneShaderForwardMobile::ShaderData::casts_shadows() const {
 	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test != DEPTH_TEST_ENABLED));
 }
 
-RS::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_source_code() const {
 	if (version.is_valid()) {
 		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		return SceneShaderForwardMobile::singleton->shader.version_get_native_source_code(version);
 	} else {
-		return RS::ShaderNativeSourceCode();
+		return RenderingServerTypes::ShaderNativeSourceCode();
 	}
 }
 
@@ -317,7 +321,7 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 		}
 	}
 
-	RD::RenderPrimitive primitive_rd_table[RS::PRIMITIVE_MAX] = {
+	RD::RenderPrimitive primitive_rd_table[RSE::PRIMITIVE_MAX] = {
 		RD::RENDER_PRIMITIVE_POINTS,
 		RD::RENDER_PRIMITIVE_LINES,
 		RD::RENDER_PRIMITIVE_LINESTRIPS,
@@ -447,6 +451,12 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 	ERR_FAIL_COND(shader_rid.is_null());
 
 	RID pipeline = RD::get_singleton()->render_pipeline_create(shader_rid, p_pipeline_key.framebuffer_format_id, p_pipeline_key.vertex_format_id, primitive_rd, raster_state, multisample_state, depth_stencil_state, blend_state, 0, p_pipeline_key.render_pass, specialization_constants);
+
+	// Don't print error when it's expected.
+	if (unlikely(pipeline.is_null() && RD::get_singleton()->get_driver_workarounds().dont_print_on_render_pipeline_creation_failure)) {
+		return;
+	}
+
 	ERR_FAIL_COND(pipeline.is_null());
 
 	pipeline_hash_map.add_compiled_pipeline(p_pipeline_key.hash(), pipeline);
@@ -528,7 +538,7 @@ RendererRD::MaterialStorage::ShaderData *SceneShaderForwardMobile::_create_shade
 }
 
 void SceneShaderForwardMobile::MaterialData::set_render_priority(int p_priority) {
-	priority = p_priority - RS::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
+	priority = p_priority - RSE::MATERIAL_RENDER_PRIORITY_MIN; //8 bits
 }
 
 void SceneShaderForwardMobile::MaterialData::set_next_pass(RID p_pass) {
@@ -537,8 +547,8 @@ void SceneShaderForwardMobile::MaterialData::set_next_pass(RID p_pass) {
 
 bool SceneShaderForwardMobile::MaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	if (shader_data->version.is_valid()) {
-		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		RID base_shader = SceneShaderForwardMobile::singleton->shader.version_get_shader(shader_data->version, (SceneShaderForwardMobile::singleton->use_fp16 ? SHADER_VERSION_MAX * 2 : 0));
+		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, base_shader, RenderForwardMobile::MATERIAL_UNIFORM_SET, true, true);
 	} else {
 		return false;
@@ -719,6 +729,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
 		actions.renames["NODE_POSITION_VIEW"] = "(read_view_matrix * read_model_matrix)[3].xyz";
 
+		actions.renames["IS_MULTIVIEW"] = "OUTPUT_IS_MULTIVIEW";
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "0";
 		actions.renames["VIEW_RIGHT"] = "1";
@@ -729,6 +740,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["SPECULAR_AMOUNT"] = "specular_amount_highp";
 		actions.renames["LIGHT_COLOR"] = "light_color_highp";
 		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
+		actions.renames["LIGHT_IS_AREA"] = "is_area";
+		actions.renames["LIGHT_AREA_DIFFUSE_MULTIPLIER"] = "area_diffuse";
+		actions.renames["LIGHT_AREA_SPECULAR_MULTIPLIER"] = "area_specular";
 		actions.renames["LIGHT"] = "light_highp";
 		actions.renames["ATTENUATION"] = "attenuation_highp";
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light_highp";
@@ -761,6 +775,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 		actions.usage_defines["LIGHT_VERTEX"] = "#define LIGHT_VERTEX_USED\n";
 		actions.usage_defines["Z_CLIP_SCALE"] = "#define Z_CLIP_SCALE_USED\n";
+		actions.usage_defines["LIGHT_AREA_DIFFUSE_MULTIPLIER"] = "#define AREA_LIGHT_CODE_USED\n";
+		actions.usage_defines["LIGHT_AREA_SPECULAR_MULTIPLIER"] = "@LIGHT_AREA_DIFFUSE_MULTIPLIER";
+		actions.usage_defines["LIGHT_IS_AREA"] = "@LIGHT_AREA_DIFFUSE_MULTIPLIER";
 
 		actions.usage_defines["ALPHA_SCISSOR_THRESHOLD"] = "#define ALPHA_SCISSOR_USED\n";
 		actions.usage_defines["ALPHA_HASH_SCALE"] = "#define ALPHA_HASH_USED\n";
@@ -936,7 +953,7 @@ void SceneShaderForwardMobile::set_default_specialization(const ShaderSpecializa
 	}
 }
 
-uint32_t SceneShaderForwardMobile::get_pipeline_compilations(RS::PipelineSource p_source) {
+uint32_t SceneShaderForwardMobile::get_pipeline_compilations(RSE::PipelineSource p_source) {
 	MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 	return pipeline_compilations[p_source];
 }
@@ -969,6 +986,26 @@ void SceneShaderForwardMobile::enable_multiview_shader_group() {
 
 bool SceneShaderForwardMobile::is_multiview_shader_group_enabled() const {
 	return shader.is_group_enabled(SHADER_GROUP_FP32_MULTIVIEW) || shader.is_group_enabled(SHADER_GROUP_FP16_MULTIVIEW);
+}
+
+RID SceneShaderForwardMobile::get_default_shader_rd(bool p_is_multiview) {
+	RID &shader_rd = p_is_multiview ? default_multiview_shader_rd : default_shader_rd;
+
+	if (shader_rd.is_null()) {
+		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+		ERR_FAIL_NULL_V(material_storage, RID());
+		ERR_FAIL_COND_V(!default_material.is_valid(), RID());
+
+		int variant = p_is_multiview ? SHADER_VERSION_COLOR_PASS_MULTIVIEW : SHADER_VERSION_COLOR_PASS;
+		if (use_fp16) {
+			variant += SHADER_VERSION_MAX * 2;
+		}
+
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(default_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
+		shader_rd = shader.version_get_shader(md->shader_data->version, variant);
+	}
+
+	return shader_rd;
 }
 
 SceneShaderForwardMobile::~SceneShaderForwardMobile() {

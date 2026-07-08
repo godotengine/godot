@@ -32,6 +32,9 @@
 
 #include "noise.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
 NoiseTexture2D::NoiseTexture2D() {
@@ -45,8 +48,9 @@ NoiseTexture2D::~NoiseTexture2D() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free_rid(texture);
 	}
-	if (noise_thread.is_started()) {
-		noise_thread.wait_to_finish();
+	if (current_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		regen_queued = false;
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(current_task_id);
 	}
 }
 
@@ -87,8 +91,8 @@ void NoiseTexture2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater,suffix:px"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "is_generating_mipmaps");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "Noise"), "set_noise", "get_noise");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, Noise::get_class_static()), "set_noise", "get_noise");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, Gradient::get_class_static()), "set_color_ramp", "get_color_ramp");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert"), "set_invert", "get_invert");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "in_3d_space"), "set_in_3d_space", "is_in_3d_space");
@@ -106,9 +110,7 @@ void NoiseTexture2D::_validate_property(PropertyInfo &p_property) const {
 		if (!as_normal_map) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
-	}
-
-	if (p_property.name == "seamless_blend_skirt") {
+	} else if (p_property.name == "seamless_blend_skirt") {
 		if (!seamless) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
@@ -130,17 +132,19 @@ void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
 }
 
 void NoiseTexture2D::_thread_done(const Ref<Image> &p_image) {
+	if (current_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(current_task_id);
+		current_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	}
 	_set_texture_image(p_image);
-	noise_thread.wait_to_finish();
 	if (regen_queued) {
-		noise_thread.start(_thread_function, this);
+		current_task_id = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &NoiseTexture2D::_thread_function), false, "Noise Texture 2D Image generation");
 		regen_queued = false;
 	}
 }
 
-void NoiseTexture2D::_thread_function(void *p_ud) {
-	NoiseTexture2D *tex = static_cast<NoiseTexture2D *>(p_ud);
-	callable_mp(tex, &NoiseTexture2D::_thread_done).call_deferred(tex->_generate_texture());
+void NoiseTexture2D::_thread_function() {
+	callable_mp(this, &NoiseTexture2D::_thread_done).call_deferred(_generate_texture());
 }
 
 void NoiseTexture2D::_queue_update() {
@@ -207,8 +211,8 @@ void NoiseTexture2D::_update_texture() {
 		first_time = false;
 	}
 	if (use_thread) {
-		if (!noise_thread.is_started()) {
-			noise_thread.start(_thread_function, this);
+		if (current_task_id == WorkerThreadPool::INVALID_TASK_ID) {
+			current_task_id = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &NoiseTexture2D::_thread_function), false, "Noise Texture 2D Image generation");
 			regen_queued = false;
 		} else {
 			regen_queued = true;

@@ -30,12 +30,14 @@
 
 #pragma once
 
-#include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
+class CheckBox;
+class CheckButton;
 class EditorSelection;
+class FilterLineEdit;
+class Label;
 class TextureRect;
 class Timer;
 
@@ -145,6 +147,7 @@ class SceneTreeEditor : public Control {
 
 	void _test_update_tree();
 	bool _update_filter(TreeItem *p_parent = nullptr, bool p_scroll_to_selected = false);
+	bool _update_filter_helper(TreeItem *p_parent, bool p_scroll_to_selected, TreeItem *&r_last_selected);
 	bool _node_matches_class_term(const Node *p_item_node, const String &p_term);
 	bool _item_matches_all_terms(TreeItem *p_item, const PackedStringArray &p_terms);
 	void _tree_changed();
@@ -186,8 +189,14 @@ class SceneTreeEditor : public Control {
 	bool pending_selection_update = false;
 	Timer *update_node_tooltip_delay = nullptr;
 
+	bool visibility_drag_value = false;
+	Vector2 visibility_drag_start_pos;
+	ObjectID visibility_drag_start_node;
+	LocalVector<ObjectID> visibility_drag_nodes;
+
 	static void _bind_methods();
 
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _toggle_visible(Node *p_node);
 	void _cell_multi_selected(Object *p_object, int p_cell, bool p_selected);
@@ -200,6 +209,7 @@ class SceneTreeEditor : public Control {
 	void _update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _queue_update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _tree_scroll_to_item(ObjectID p_item_id);
+	void _reset_visibility_drag();
 
 	void _selection_changed();
 	Node *get_scene_node() const;
@@ -217,6 +227,7 @@ class SceneTreeEditor : public Control {
 	Timer *update_timer = nullptr;
 
 	LocalVector<StringName> *script_types;
+	bool _has_drop_selection(TreeItem *p_item, const Point2 &p_point) const;
 	bool _is_script_type(const StringName &p_type) const;
 
 	Vector<StringName> valid_types;
@@ -225,7 +236,7 @@ class SceneTreeEditor : public Control {
 	void _revoke_unique_name();
 
 public:
-	// Public for use with callable_mp.
+	// Public for use as signal callback.
 	void _update_tree(bool p_scroll_to_selected = false);
 
 	void rename_node(Node *p_node, const String &p_name, TreeItem *p_item = nullptr);
@@ -271,7 +282,7 @@ class SceneTreeDialog : public ConfirmationDialog {
 
 	VBoxContainer *content = nullptr;
 	SceneTreeEditor *tree = nullptr;
-	LineEdit *filter = nullptr;
+	FilterLineEdit *filter = nullptr;
 	CheckButton *show_all_nodes = nullptr;
 	LocalVector<TextureRect *> valid_type_icons;
 	HBoxContainer *allowed_types_hbox = nullptr;
@@ -280,7 +291,6 @@ class SceneTreeDialog : public ConfirmationDialog {
 	void _cancel();
 	void _selected_changed();
 	void _filter_changed(const String &p_filter);
-	void _on_filter_gui_input(const Ref<InputEvent> &p_event);
 	void _show_all_nodes_changed(bool p_button_pressed);
 
 protected:
@@ -293,7 +303,7 @@ public:
 	void set_valid_types(const Vector<StringName> &p_valid);
 
 	SceneTreeEditor *get_scene_tree() { return tree; }
-	LineEdit *get_filter_line_edit() { return filter; }
+	LineEdit *get_filter_line_edit();
 
 	SceneTreeDialog();
 };

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/local_vector.h"
 

@@ -1,6 +1,6 @@
 class BaseClass:
 	func _get_property_list():
-		return {"property" : "definition"}
+		return [{"property" : "definition"}]
 
 class SuperClassMethodsRecognized extends BaseClass:
 	func _init():
@@ -11,7 +11,7 @@ class SuperMethodsRecognized extends BaseClass:
 	func _get_property_list():
 		# Recognizes super method.
 		var result = super()
-		result["new"] = "new"
+		result[0]["new"] = "new"
 		return result
 
 func test():

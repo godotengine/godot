@@ -31,7 +31,11 @@
 #include "soft_body_3d.h"
 #include "soft_body_3d.compat.inc"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/3d/physics/physics_body_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 SoftBodyRenderingServerHandler::SoftBodyRenderingServerHandler() {}
 
@@ -43,9 +47,9 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 	mesh = p_mesh;
 	surface = p_surface;
 
-	RS::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh, surface);
+	RenderingServerTypes::SurfaceData surface_data = RS::get_singleton()->mesh_get_surface(mesh, surface);
 
-	uint32_t surface_offsets[RS::ARRAY_MAX];
+	uint32_t surface_offsets[RSE::ARRAY_MAX];
 	uint32_t vertex_stride;
 	uint32_t normal_tangent_stride;
 	uint32_t attrib_stride;
@@ -55,8 +59,8 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 	buffer = surface_data.vertex_data;
 	stride = vertex_stride;
 	normal_stride = normal_tangent_stride;
-	offset_vertices = surface_offsets[RS::ARRAY_VERTEX];
-	offset_normal = surface_offsets[RS::ARRAY_NORMAL];
+	offset_vertices = surface_offsets[RSE::ARRAY_VERTEX];
+	offset_normal = surface_offsets[RSE::ARRAY_NORMAL];
 }
 
 void SoftBodyRenderingServerHandler::clear() {
@@ -374,6 +378,8 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_point_pinned", "point_index", "pinned", "attachment_path", "insert_at"), &SoftBody3D::pin_point, DEFVAL(NodePath()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("is_point_pinned", "point_index"), &SoftBody3D::is_point_pinned);
 
+	ClassDB::bind_method(D_METHOD("get_point_count"), &SoftBody3D::get_point_count);
+
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &SoftBody3D::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &SoftBody3D::is_ray_pickable);
 
@@ -383,7 +389,7 @@ void SoftBody3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "parent_collision_ignore", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject3D"), "set_parent_collision_ignore", "get_parent_collision_ignore");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,exp,suffix:kg"), "set_total_mass", "get_total_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shrinking_factor", PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"), "set_shrinking_factor", "get_shrinking_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pressure_coefficient"), "set_pressure_coefficient", "get_pressure_coefficient");
@@ -391,6 +397,8 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drag_coefficient", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_coefficient", "get_drag_coefficient");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "point_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_point_count");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,KeepActive"), "set_disable_mode", "get_disable_mode");
 
@@ -686,6 +694,16 @@ void SoftBody3D::set_drag_coefficient(real_t p_drag_coefficient) {
 
 Vector3 SoftBody3D::get_point_transform(int p_point_index) {
 	return PhysicsServer3D::get_singleton()->soft_body_get_point_global_position(physics_rid, p_point_index);
+}
+
+int SoftBody3D::get_point_count() const {
+	if (mesh.is_null()) {
+		return 0;
+	}
+
+	const int vertex_count = mesh->surface_get_array_len(0);
+	ERR_FAIL_COND_V(vertex_count < 0, 0);
+	return vertex_count;
 }
 
 void SoftBody3D::apply_impulse(int p_point_index, const Vector3 &p_impulse) {

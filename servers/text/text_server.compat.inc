@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "text_server.h"
+
+#include "core/object/class_db.h"
+
 void TextServer::_font_draw_glyph_bind_compat_104872(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
 	font_draw_glyph(p_font, p_canvas, p_size, p_pos, p_index, p_color, 0.0);
 }
@@ -58,4 +62,4 @@ void TextServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("shaped_text_get_word_breaks", "shaped", "grapheme_flags"), &TextServer::_shaped_text_get_word_breaks_bind_compat_90732, DEFVAL(GRAPHEME_IS_SPACE | GRAPHEME_IS_PUNCTUATION));
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

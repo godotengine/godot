@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSet" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileSet" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Tile library for tilemaps.
 	</brief_description>
@@ -92,6 +92,13 @@
 				Clears tile proxies pointing to invalid tiles.
 			</description>
 		</method>
+		<method name="clear_terrains">
+			<return type="void" />
+			<param index="0" name="terrain_set" type="int" />
+			<description>
+				Clears all terrain properties for the given terrain set.
+			</description>
+		</method>
 		<method name="clear_tile_proxies">
 			<return type="void" />
 			<description>
@@ -104,7 +111,7 @@
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="alternative_from" type="int" />
 			<description>
-				Returns the alternative-level proxy for the given identifiers. The returned array contains the three proxie's target identifiers (source ID, atlas coords ID and alternative tile ID).
+				Returns the alternative-level proxy for the given identifiers. The returned array contains the three proxies' target identifiers (source ID, atlas coordinate ID, and alternative tile ID).
 				If the TileSet has no proxy for the given identifiers, returns an empty Array.
 			</description>
 		</method>
@@ -496,7 +503,7 @@
 		</method>
 		<method name="set_coords_level_tile_proxy">
 			<return type="void" />
-			<param index="0" name="p_source_from" type="int" />
+			<param index="0" name="source_from" type="int" />
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="source_to" type="int" />
 			<param index="3" name="coords_to" type="Vector2i" />

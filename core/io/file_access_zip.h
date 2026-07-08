@@ -34,7 +34,7 @@
 
 #include "core/io/file_access_pack.h"
 
-#include "thirdparty/minizip/unzip.h"
+#include <thirdparty/minizip/unzip.h>
 
 class ZipArchive : public PackSource {
 public:
@@ -61,8 +61,8 @@ public:
 
 	bool file_exists(const String &p_name) const;
 
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
-	Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
+	Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
 
 	static ZipArchive *get_singleton();
 

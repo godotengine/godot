@@ -46,6 +46,7 @@ class QuickSettingsDialog : public AcceptDialog {
 #ifndef ANDROID_ENABLED
 	Vector<String> editor_languages;
 #endif
+	Vector<String> editor_styles;
 	Vector<String> editor_themes;
 	Vector<String> editor_scales;
 	Vector<String> editor_network_modes;
@@ -65,6 +66,7 @@ class QuickSettingsDialog : public AcceptDialog {
 	// Also, the dropdown it spawns is very tall and can't be scrolled without a hardware mouse.
 	OptionButton *language_option_button = nullptr;
 #endif
+	OptionButton *style_option_button = nullptr;
 	OptionButton *theme_option_button = nullptr;
 	OptionButton *scale_option_button = nullptr;
 	OptionButton *network_mode_option_button = nullptr;
@@ -77,6 +79,7 @@ class QuickSettingsDialog : public AcceptDialog {
 #ifndef ANDROID_ENABLED
 	void _language_selected(int p_id);
 #endif
+	void _style_selected(int p_id);
 	void _theme_selected(int p_id);
 	void _scale_selected(int p_id);
 	void _network_mode_selected(int p_id);

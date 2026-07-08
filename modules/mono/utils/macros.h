@@ -40,8 +40,8 @@
 #define GD_UNREACHABLE() __builtin_unreachable()
 #else
 #define GD_UNREACHABLE() \
-	CRASH_NOW();         \
-	do {                 \
+	CRASH_NOW(); \
+	do { \
 	} while (true)
 #endif
 

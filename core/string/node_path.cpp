@@ -33,24 +33,16 @@
 #include "core/variant/variant.h"
 
 void NodePath::_update_hash_cache() const {
-	uint32_t h = data->absolute ? 1 : 0;
-	int pc = data->path.size();
-	const StringName *sn = data->path.ptr();
-	for (int i = 0; i < pc; i++) {
-		h = h ^ sn[i].hash();
-	}
-	int spc = data->subpath.size();
-	const StringName *ssn = data->subpath.ptr();
-	for (int i = 0; i < spc; i++) {
-		h = h ^ ssn[i].hash();
-	}
-
+	StringName path = get_concatenated_names();
+	StringName subpath = get_concatenated_subnames();
+	uint32_t hash = HashMapHasherDefault::hash(Pair<const StringName &, const StringName &>(path, subpath));
+	data->hash_cache = is_absolute() ? hash : ~hash;
 	data->hash_cache_valid = true;
-	data->hash_cache = h;
 }
 
 void NodePath::prepend_period() {
-	if (data->path.size() && data->path[0].operator String() != ".") {
+	if (data->path.size() && data->path[0].string() != ".") {
+		_copy_on_write();
 		data->path.insert(0, ".");
 		data->concatenated_path = StringName();
 		data->hash_cache_valid = false;
@@ -176,6 +168,29 @@ void NodePath::operator=(const NodePath &p_path) {
 	}
 }
 
+void NodePath::_copy_on_write() {
+	if (!data) {
+		return; // No data; nothing to do.
+	}
+
+	if (data->refcount.get() == 1) {
+		return; // Already the only owner of data.
+	}
+
+	// Make a copy.
+	Data *new_data = memnew(Data);
+	new_data->refcount.init();
+	new_data->path = data->path;
+	new_data->subpath = data->subpath;
+	new_data->concatenated_path = data->concatenated_path;
+	new_data->concatenated_subpath = data->concatenated_subpath;
+	new_data->absolute = data->absolute;
+	new_data->hash_cache_valid = data->hash_cache_valid;
+	new_data->hash_cache = data->hash_cache;
+	unref();
+	data = new_data;
+}
+
 NodePath::operator String() const {
 	if (!data) {
 		return String();
@@ -221,7 +236,7 @@ StringName NodePath::get_concatenated_names() const {
 			if (i > 0) {
 				concatenated += "/";
 			}
-			concatenated += sn[i].operator String();
+			concatenated += sn[i].string();
 		}
 		data->concatenated_path = concatenated;
 	}
@@ -239,7 +254,7 @@ StringName NodePath::get_concatenated_subnames() const {
 			if (i > 0) {
 				concatenated += ":";
 			}
-			concatenated += ssn[i].operator String();
+			concatenated += ssn[i].string();
 		}
 		data->concatenated_subpath = concatenated;
 	}
@@ -341,14 +356,15 @@ void NodePath::simplify() {
 	if (!data) {
 		return;
 	}
+	_copy_on_write();
 	for (int i = 0; i < data->path.size(); i++) {
 		if (data->path.size() == 1) {
 			break;
 		}
-		if (data->path[i].operator String() == ".") {
+		if (data->path[i].string() == ".") {
 			data->path.remove_at(i);
 			i--;
-		} else if (i > 0 && data->path[i].operator String() == ".." && data->path[i - 1].operator String() != "." && data->path[i - 1].operator String() != "..") {
+		} else if (i > 0 && data->path[i].string() == ".." && data->path[i - 1].string() != "." && data->path[i - 1].string() != "..") {
 			//remove both
 			data->path.remove_at(i - 1);
 			data->path.remove_at(i - 1);

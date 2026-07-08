@@ -64,6 +64,8 @@ subject to the following restrictions:
 #include "core/templates/a_hash_map.h"
 #include "core/templates/paged_allocator.h"
 
+#include <cfloat> // FLT_MAX
+
 //#define DEBUG_CONVEX_HULL
 //#define SHOW_ITERATIONS
 
@@ -73,17 +75,17 @@ subject to the following restrictions:
 // -- GODOT end --
 
 #ifdef DEBUG_ENABLED
-#define CHULL_ASSERT(m_cond)                                     \
-	if constexpr (true) {                                        \
-		if (unlikely(!(m_cond))) {                               \
+#define CHULL_ASSERT(m_cond) \
+	if constexpr (true) { \
+		if (unlikely(!(m_cond))) { \
 			ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed."); \
-		}                                                        \
-	} else                                                       \
+		} \
+	} else \
 		((void)0)
 #else
 #define CHULL_ASSERT(m_cond) \
-	if constexpr (true) {    \
-	} else                   \
+	if constexpr (true) { \
+	} else \
 		((void)0)
 #endif
 

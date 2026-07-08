@@ -30,6 +30,7 @@
 
 #include "control_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
@@ -243,6 +244,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	options->set_flat(true);
 	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	add_child(options);
@@ -372,7 +374,7 @@ void EditorPropertySizeFlags::setup(const Vector<String> &p_options, bool p_vert
 	}
 
 	HashMap<int, String> flags;
-	for (int i = 0, j = 0; i < p_options.size(); i++, j++) {
+	for (int i = 0; i < p_options.size(); i++) {
 		Vector<String> text_split = p_options[i].split(":");
 		int64_t current_val = text_split[1].to_int();
 		flags[current_val] = text_split[0];
@@ -426,6 +428,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 
 	flag_presets = memnew(OptionButton);
 	flag_presets->set_clip_text(true);
+	flag_presets->set_fit_to_longest_item(false);
 	flag_presets->set_flat(true);
 	flag_presets->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	vb->add_child(flag_presets);
@@ -439,6 +442,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 
 	flag_expand = memnew(CheckBox);
 	flag_expand->set_text(TTR("Expand"));
+	flag_expand->set_clip_text(true);
 	vb->add_child(flag_expand);
 	add_focusable(flag_expand);
 	flag_expand->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertySizeFlags::_expand_toggled));
@@ -585,7 +589,7 @@ void ControlEditorPresetPicker::_add_row_button(HBoxContainer *p_row, const int 
 	b->set_custom_minimum_size(Size2i(36, 36) * EDSCALE);
 	b->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	b->set_tooltip_text(p_name);
-	b->set_flat(true);
+	b->set_theme_type_variation(SceneStringName(FlatButton));
 	p_row->add_child(b);
 	b->connect(SceneStringName(pressed), callable_mp(this, &ControlEditorPresetPicker::_preset_button_pressed).bind(p_preset));
 
@@ -598,8 +602,32 @@ void ControlEditorPresetPicker::_add_separator(BoxContainer *p_box, Separator *p
 	p_box->add_child(p_separator);
 }
 
+void ControlEditorPresetPicker::_update_preset_button_state(int p_preset) {
+	for (KeyValue<int, Button *> &E : preset_buttons) {
+		Button *button = E.value;
+
+		if (!button) {
+			continue;
+		}
+
+		button->begin_bulk_theme_override();
+
+		if (E.key == p_preset) {
+			const Color pressed_color = get_theme_color(SNAME("icon_pressed_color"), "Button");
+			button->add_theme_color_override(SNAME("icon_normal_color"), pressed_color);
+			button->add_theme_color_override(SNAME("icon_hover_color"), pressed_color);
+		} else {
+			button->remove_theme_color_override(SNAME("icon_normal_color"));
+			button->remove_theme_color_override(SNAME("icon_hover_color"));
+		}
+
+		button->end_bulk_theme_override();
+	}
+}
+
 void AnchorPresetPicker::_preset_button_pressed(const int p_preset) {
 	emit_signal("anchors_preset_selected", p_preset);
+	_update_preset_button_state(p_preset);
 }
 
 void AnchorPresetPicker::_notification(int p_notification) {
@@ -628,6 +656,10 @@ void AnchorPresetPicker::_notification(int p_notification) {
 			preset_buttons[PRESET_FULL_RECT]->set_button_icon(get_editor_theme_icon(SNAME("ControlAlignFullRect")));
 		} break;
 	}
+}
+
+void AnchorPresetPicker::set_selected_preset(int p_preset) {
+	_update_preset_button_state(p_preset);
 }
 
 void AnchorPresetPicker::_bind_methods() {
@@ -693,6 +725,7 @@ void SizeFlagPresetPicker::_preset_button_pressed(const int p_preset) {
 	}
 
 	emit_signal("size_flags_selected", flags);
+	_update_preset_button_state(p_preset);
 }
 
 void SizeFlagPresetPicker::_expand_button_pressed() {
@@ -712,6 +745,10 @@ void SizeFlagPresetPicker::set_allowed_flags(Vector<SizeFlags> &p_flags) {
 		expand_button->set_pressed(false);
 		expand_button->set_tooltip_text(TTR("Some parents of the selected nodes do not support the Expand flag."));
 	}
+}
+
+void SizeFlagPresetPicker::set_selected_preset(int p_preset) {
+	_update_preset_button_state(p_preset);
 }
 
 void SizeFlagPresetPicker::set_expand_flag(bool p_expand) {
@@ -775,13 +812,21 @@ void ControlEditorToolbar::_anchors_preset_selected(int p_preset) {
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
+	if (!reposition_button->is_pressed()) {
+		undo_redo->create_action(TTR("Change Anchors, Grow Direction"));
+	} else {
+		undo_redo->create_action(TTR("Change Anchors, Offsets, Grow Direction"));
+	}
 
 	for (Node *E : selection) {
 		Control *control = Object::cast_to<Control>(E);
 		if (control) {
 			undo_redo->add_do_property(control, "layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS);
 			undo_redo->add_do_property(control, "anchors_preset", preset);
+			if (!reposition_button->is_pressed()) {
+				undo_redo->add_do_property(control, "position", control->get_position());
+				undo_redo->add_do_property(control, "size", control->get_size());
+			}
 			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
 		}
 	}
@@ -926,14 +971,107 @@ bool ControlEditorToolbar::_is_node_locked(const Node *p_node) {
 
 List<Control *> ControlEditorToolbar::_get_edited_controls() {
 	List<Control *> selection;
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		Control *control = Object::cast_to<Control>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		Control *control = ObjectDB::get_instance<Control>(E.key);
 		if (control && control->is_visible_in_tree() && control->get_viewport() == EditorNode::get_singleton()->get_scene_root() && !_is_node_locked(control)) {
 			selection.push_back(control);
 		}
 	}
 
 	return selection;
+}
+
+void ControlEditorToolbar::_update_anchor_selection_ui(bool p_pressed) {
+	if (!p_pressed) {
+		return;
+	}
+
+	int nb_valid_controls = 0;
+	int first_preset = -1;
+	bool all_preset_same = true;
+
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	for (Node *E : selection) {
+		Control *control = Object::cast_to<Control>(E);
+		if (!control) {
+			continue;
+		}
+		if (Object::cast_to<Container>(control->get_parent())) {
+			continue;
+		}
+
+		nb_valid_controls++;
+
+		const Dictionary &state = control->_edit_get_state();
+		const int lm = state["layout_mode"];
+
+		if (lm != LayoutMode::LAYOUT_MODE_ANCHORS && lm != LayoutMode::LAYOUT_MODE_UNCONTROLLED) {
+			all_preset_same = false;
+			break;
+		}
+
+		const int preset = state["anchors_layout_preset"];
+
+		if (first_preset == -1) {
+			first_preset = preset;
+		} else if (preset != first_preset) {
+			all_preset_same = false;
+			break;
+		}
+	}
+
+	anchors_picker->set_selected_preset((all_preset_same && nb_valid_controls > 0) ? first_preset : -1);
+}
+
+void ControlEditorToolbar::_update_container_sizing_selection_ui(bool p_pressed) {
+	if (!p_pressed) {
+		return;
+	}
+
+	bool all_h_shrink_fill_same = true;
+	bool all_v_shrink_fill_same = true;
+	bool all_h_expand = true;
+	bool all_v_expand = true;
+	int first_h_flags = -1;
+	int first_v_flags = -1;
+
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	for (Node *E : selection) {
+		Control *control = Object::cast_to<Control>(E);
+		if (!control) {
+			continue;
+		}
+
+		const int h_flags = control->get_h_size_flags();
+		const int v_flags = control->get_v_size_flags();
+		const int h_shrink_fill = h_flags & ~(Control::SIZE_EXPAND);
+		const int v_shrink_fill = v_flags & ~(Control::SIZE_EXPAND);
+
+		if (first_h_flags == -1) {
+			first_h_flags = h_shrink_fill;
+		} else if (h_shrink_fill != first_h_flags) {
+			all_h_shrink_fill_same = false;
+		}
+
+		if (first_v_flags == -1) {
+			first_v_flags = v_shrink_fill;
+		} else if (v_shrink_fill != first_v_flags) {
+			all_v_shrink_fill_same = false;
+		}
+
+		if (!(h_flags & Control::SIZE_EXPAND)) {
+			all_h_expand = false;
+		}
+		if (!(v_flags & Control::SIZE_EXPAND)) {
+			all_v_expand = false;
+		}
+	}
+
+	container_h_picker->set_selected_preset(all_h_shrink_fill_same ? first_h_flags : -1);
+	container_v_picker->set_selected_preset(all_v_shrink_fill_same ? first_v_flags : -1);
+
+	container_h_picker->set_expand_flag(all_h_expand);
+	container_v_picker->set_expand_flag(all_v_expand);
 }
 
 void ControlEditorToolbar::_selection_changed() {
@@ -958,8 +1096,8 @@ void ControlEditorToolbar::_selection_changed() {
 		SIZE_EXPAND,
 	};
 
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		Control *control = Object::cast_to<Control>(E.key);
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		Control *control = ObjectDB::get_instance<Control>(E.key);
 		if (!control) {
 			continue;
 		}
@@ -1049,30 +1187,6 @@ void ControlEditorToolbar::_selection_changed() {
 			container_h_picker->set_allowed_flags(allowed_all_flags);
 			container_v_picker->set_allowed_flags(allowed_all_flags);
 		}
-
-		// Update expand toggles.
-		int nb_valid_controls = 0;
-		int nb_h_expand = 0;
-		int nb_v_expand = 0;
-
-		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-		for (Node *E : selection) {
-			Control *control = Object::cast_to<Control>(E);
-			if (!control) {
-				continue;
-			}
-
-			nb_valid_controls++;
-			if (control->get_h_size_flags() & Control::SIZE_EXPAND) {
-				nb_h_expand++;
-			}
-			if (control->get_v_size_flags() & Control::SIZE_EXPAND) {
-				nb_v_expand++;
-			}
-		}
-
-		container_h_picker->set_expand_flag(nb_valid_controls == nb_h_expand);
-		container_v_picker->set_expand_flag(nb_valid_controls == nb_v_expand);
 	} else {
 		containers_button->set_visible(false);
 	}
@@ -1092,15 +1206,23 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	// Anchor and offset tools.
 	anchors_button = memnew(ControlEditorPopupButton);
 	anchors_button->set_tooltip_text(TTR("Presets for the anchor and offset values of a Control node."));
+	anchors_button->connect(SceneStringName(toggled), callable_mp(this, &ControlEditorToolbar::_update_anchor_selection_ui));
 	add_child(anchors_button);
 
 	Label *anchors_label = memnew(Label);
 	anchors_label->set_text(TTR("Anchor preset"));
 	anchors_button->get_popup_hbox()->add_child(anchors_label);
-	AnchorPresetPicker *anchors_picker = memnew(AnchorPresetPicker);
+	anchors_picker = memnew(AnchorPresetPicker);
 	anchors_picker->set_h_size_flags(SIZE_SHRINK_CENTER);
 	anchors_button->get_popup_hbox()->add_child(anchors_picker);
 	anchors_picker->connect("anchors_preset_selected", callable_mp(this, &ControlEditorToolbar::_anchors_preset_selected));
+
+	reposition_button = memnew(CheckBox);
+	reposition_button->set_text(TTRC("Reposition"));
+	reposition_button->set_tooltip_text(TTRC("If disabled, picking a preset will only adjust the anchors, without moving the Control."));
+	reposition_button->set_h_size_flags(SIZE_SHRINK_CENTER);
+	reposition_button->set_pressed(true);
+	anchors_button->get_popup_hbox()->add_child(reposition_button);
 
 	anchors_button->get_popup_hbox()->add_child(memnew(HSeparator));
 
@@ -1122,6 +1244,7 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	// Container tools.
 	containers_button = memnew(ControlEditorPopupButton);
 	containers_button->set_tooltip_text(TTR("Sizing settings for children of a Container node."));
+	containers_button->connect(SceneStringName(toggled), callable_mp(this, &ControlEditorToolbar::_update_container_sizing_selection_ui));
 	add_child(containers_button);
 
 	Label *container_h_label = memnew(Label);
@@ -1154,10 +1277,78 @@ ControlEditorToolbar *ControlEditorToolbar::singleton = nullptr;
 
 // Editor plugin.
 
+void ControlOffsetTransformPreview::edit(Control *p_control) {
+	if (p_control == selected_control) {
+		return;
+	}
+
+	const Callable update_overlays = callable_mp(plugin, &EditorPlugin::update_overlays);
+
+	if (selected_control) {
+		selected_control->disconnect(SceneStringName(draw), update_overlays);
+	}
+
+	selected_control = p_control;
+
+	if (selected_control) {
+		selected_control->connect(SceneStringName(draw), update_overlays);
+	}
+
+	plugin->update_overlays();
+}
+
+void ControlOffsetTransformPreview::forward_canvas_draw_over_viewport(Control *p_overlay) const {
+	if (!selected_control || !selected_control->is_offset_transform_enabled() || selected_control->is_offset_transform_visual_only()) {
+		return;
+	}
+
+	Point2 top_left = Point2();
+	Point2 bottom_right = selected_control->get_size();
+	Point2 top_right = Point2(bottom_right.x, top_left.y);
+	Point2 bottom_left = Point2(top_left.x, bottom_right.y);
+
+	Transform2D control_transform_without_offset = selected_control->get_global_transform() * selected_control->get_offset_transform().affine_inverse();
+	top_left = control_transform_without_offset.xform(top_left);
+	bottom_right = control_transform_without_offset.xform(bottom_right);
+	top_right = control_transform_without_offset.xform(top_right);
+	bottom_left = control_transform_without_offset.xform(bottom_left);
+
+	Transform2D canvas_transform = CanvasItemEditor::get_singleton()->get_canvas_transform();
+	top_left = canvas_transform.xform(top_left);
+	bottom_right = canvas_transform.xform(bottom_right);
+	top_right = canvas_transform.xform(top_right);
+	bottom_left = canvas_transform.xform(bottom_left);
+
+	Color color = Color(0.5, 0.5, 0.5, 0.75);
+	p_overlay->draw_dashed_line(top_left, top_right, color, 5.0, 4.0);
+	p_overlay->draw_dashed_line(top_right, bottom_right, color, 5.0, 4.0);
+	p_overlay->draw_dashed_line(bottom_right, bottom_left, color, 5.0, 4.0);
+	p_overlay->draw_dashed_line(bottom_left, top_left, color, 5.0, 4.0);
+}
+
+ControlOffsetTransformPreview::ControlOffsetTransformPreview(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
+}
+
+void ControlEditorPlugin::edit(Object *p_object) {
+	offset_transform_preview->edit(Object::cast_to<Control>(p_object));
+}
+
+bool ControlEditorPlugin::handles(Object *p_object) const {
+	return Object::cast_to<Control>(p_object) != nullptr;
+}
+
+void ControlEditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
+	offset_transform_preview->forward_canvas_draw_over_viewport(p_overlay);
+}
+
 ControlEditorPlugin::ControlEditorPlugin() {
 	toolbar = memnew(ControlEditorToolbar);
 	toolbar->hide();
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
+
+	offset_transform_preview = memnew(ControlOffsetTransformPreview(this));
+	EditorNode::get_singleton()->get_gui_base()->add_child(offset_transform_preview);
 
 	Ref<EditorInspectorPluginControl> plugin;
 	plugin.instantiate();

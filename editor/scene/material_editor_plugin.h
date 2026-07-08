@@ -34,6 +34,7 @@
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "scene/resources/3d/primitive_meshes.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/material.h"
 
 class Camera3D;
@@ -56,6 +57,7 @@ class MaterialEditor : public Control {
 	VBoxContainer *layout_error = nullptr;
 	Label *error_label = nullptr;
 	bool is_unsupported_shader_mode = false;
+	bool autohide_buttons = false;
 
 	struct ThemeCache {
 		Ref<Texture2D> light_1_icon;
@@ -109,6 +111,8 @@ protected:
 	void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
+	void set_autohide_buttons(bool p_autohide);
+
 	static Ref<ShaderMaterial> make_shader_material(const Ref<Material> &p_from, bool p_copy_params = true);
 	void edit(Ref<Material> p_material, const Ref<Environment> &p_env);
 	MaterialEditor();
@@ -147,6 +151,15 @@ public:
 
 class CanvasItemMaterialConversionPlugin : public EditorResourceConversionPlugin {
 	GDCLASS(CanvasItemMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+};
+
+class BlitMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(BlitMaterialConversionPlugin, EditorResourceConversionPlugin);
 
 public:
 	virtual String converts_to() const override;

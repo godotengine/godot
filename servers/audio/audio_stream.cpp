@@ -31,6 +31,7 @@
 #include "audio_stream.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 
 void AudioStreamPlayback::start(double p_from_pos) {
 	GDVIRTUAL_CALL(_start, p_from_pos);
@@ -243,11 +244,6 @@ Ref<AudioStreamPlayback> AudioStream::instantiate_playback() {
 	GDVIRTUAL_CALL(_instantiate_playback, ret);
 	return ret;
 }
-String AudioStream::get_stream_name() const {
-	String ret;
-	GDVIRTUAL_CALL(_get_stream_name, ret);
-	return ret;
-}
 
 double AudioStream::get_length() const {
 	double ret = 0;
@@ -339,7 +335,9 @@ void AudioStream::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_meta_stream"), &AudioStream::is_meta_stream);
 
 	GDVIRTUAL_BIND(_instantiate_playback);
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_get_stream_name);
+#endif
 	GDVIRTUAL_BIND(_get_length);
 	GDVIRTUAL_BIND(_is_monophonic);
 	GDVIRTUAL_BIND(_get_bpm)
@@ -364,13 +362,6 @@ Ref<AudioStreamPlayback> AudioStreamMicrophone::instantiate_playback() {
 	playback->active = false;
 
 	return playback;
-}
-
-String AudioStreamMicrophone::get_stream_name() const {
-	//if (audio_stream.is_valid()) {
-	//return "Random: " + audio_stream->get_name();
-	//}
-	return "Microphone";
 }
 
 double AudioStreamMicrophone::get_length() const {
@@ -719,10 +710,6 @@ Ref<AudioStreamPlayback> AudioStreamRandomizer::instantiate_playback() {
 	}
 }
 
-String AudioStreamRandomizer::get_stream_name() const {
-	return "Randomizer";
-}
-
 double AudioStreamRandomizer::get_length() const {
 	if (!last_playback.is_valid()) {
 		return 0;
@@ -779,9 +766,9 @@ void AudioStreamRandomizer::_bind_methods() {
 
 	base_property_helper.set_prefix("stream_");
 	base_property_helper.set_array_length_getter(&AudioStreamRandomizer::get_streams_count);
-	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
+	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), defaults.stream, &AudioStreamRandomizer::set_stream, &AudioStreamRandomizer::get_stream);
 	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "weight", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), defaults.weight, &AudioStreamRandomizer::set_stream_probability_weight, &AudioStreamRandomizer::get_stream_probability_weight);
-	PropertyListHelper::register_base_helper(&base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
 AudioStreamRandomizer::AudioStreamRandomizer() {

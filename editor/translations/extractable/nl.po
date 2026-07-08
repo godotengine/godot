@@ -19,9 +19,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "All Recognized"
-msgstr "Alles Herkend"
-
 msgid "Save"
 msgstr "Opslaan"
 
@@ -42,6 +39,9 @@ msgstr "Huidige Map Selecteren"
 
 msgid "Select This Folder"
 msgstr "Deze map selecteren"
+
+msgid "All Recognized"
+msgstr "Alles Herkend"
 
 msgid "Open a File"
 msgstr "Open een Bestand"

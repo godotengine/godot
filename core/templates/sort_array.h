@@ -33,10 +33,10 @@
 #include "core/error/error_macros.h"
 #include "core/typedefs.h"
 
-#define ERR_BAD_COMPARE(cond)                                         \
-	if (unlikely(cond)) {                                             \
+#define ERR_BAD_COMPARE(cond) \
+	if (unlikely(cond)) { \
 		ERR_PRINT("bad comparison function; sorting will be broken"); \
-		break;                                                        \
+		break; \
 	}
 
 #ifdef DEBUG_ENABLED

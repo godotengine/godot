@@ -62,11 +62,11 @@ class EditorSpinSlider : public Range {
 	Vector2 grabbing_spinner_mouse_pos;
 	double pre_grab_value = 0.0;
 
-	Control *value_input_popup = nullptr;
 	LineEdit *value_input = nullptr;
 	uint64_t value_input_closed_frame = 0;
 	bool value_input_dirty = false;
 	bool value_input_focus_visible = false;
+	bool deferred_drag_mode = false;
 
 public:
 	enum ControlState {
@@ -84,7 +84,7 @@ private:
 	void _grab_end();
 
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
-	void _value_input_closed();
+	void _value_input_hidden();
 	void _value_input_submitted(const String &);
 	void _value_focus_exited();
 	void _value_input_gui_input(const Ref<InputEvent> &p_event);
@@ -92,7 +92,7 @@ private:
 	void _evaluate_input_text();
 
 	void _update_value_input_stylebox();
-	void _ensure_input_popup();
+	void _ensure_value_input();
 	void _draw_spin_slider();
 
 	struct ThemeCache {
@@ -138,6 +138,8 @@ public:
 	bool is_flat() const;
 
 	bool is_grabbing() const;
+	void set_deferred_drag_mode_enabled(bool p_enabled = true);
+	bool is_deferred_drag_mode_enabled() const;
 
 	void setup_and_show() { _focus_entered(); }
 	LineEdit *get_line_edit();

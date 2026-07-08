@@ -17,10 +17,7 @@ void MotionProperties::MoveKinematic(Vec3Arg inDeltaPosition, QuatArg inDeltaRot
 	mLinearVelocity = LockTranslation(inDeltaPosition / inDeltaTime);
 
 	// Calculate required angular velocity
-	Vec3 axis;
-	float angle;
-	inDeltaRotation.GetAxisAngle(axis, angle);
-	mAngularVelocity = LockAngular(axis * (angle / inDeltaTime));
+	mAngularVelocity = LockAngular(inDeltaRotation.GetAngularVelocity(inDeltaTime));
 }
 
 void MotionProperties::ClampLinearVelocity()

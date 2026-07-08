@@ -29,12 +29,14 @@
 /**************************************************************************/
 
 #include "image.h"
+#include "image.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/dictionary.h"
 
@@ -86,17 +88,19 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"RG16Int",
 	"RGB16Int",
 	"RGBA16Int",
+	"ASTC_6x6",
+	"ASTC_6x6_HDR",
 };
 
 // External VRAM compression function pointers.
 
 void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels, Image::BPTCFormat) = nullptr;
 void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
+void (*Image::_image_compress_astc_func)(Image *, Image::UsedChannels, Image::CompressProfile) = nullptr;
 
-Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
+Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels, Image::BPTCFormat) = nullptr;
 Error (*Image::_image_compress_bc_rd_func)(Image *, Image::UsedChannels) = nullptr;
 
 // External VRAM decompression function pointers.
@@ -205,6 +209,10 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1;
 		case FORMAT_ASTC_4x4_HDR:
 			return 1;
+		case FORMAT_ASTC_6x6:
+			return 1;
+		case FORMAT_ASTC_6x6_HDR:
+			return 1;
 		case FORMAT_ASTC_8x8:
 			return 1;
 		case FORMAT_ASTC_8x8_HDR:
@@ -229,6 +237,27 @@ int Image::get_format_pixel_size(Format p_format) {
 		}
 	}
 	return 0;
+}
+
+uint64_t Image::get_format_pixels_shifted(Format p_format, uint64_t p_pixels) {
+	switch (p_format) {
+		case FORMAT_ASTC_8x8:
+		case FORMAT_ASTC_8x8_HDR:
+			return p_pixels >> 2;
+		case FORMAT_ASTC_6x6:
+		case FORMAT_ASTC_6x6_HDR:
+			return (p_pixels * 4) / 9;
+		case FORMAT_DXT1:
+		case FORMAT_RGTC_R:
+		case FORMAT_ETC:
+		case FORMAT_ETC2_R11:
+		case FORMAT_ETC2_R11S:
+		case FORMAT_ETC2_RGB8:
+		case FORMAT_ETC2_RGB8A1:
+			return p_pixels >> 1;
+		default:
+			return p_pixels;
+	}
 }
 
 void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
@@ -268,6 +297,11 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 			r_w = 4;
 			r_h = 4;
 		} break;
+		case FORMAT_ASTC_6x6:
+		case FORMAT_ASTC_6x6_HDR: {
+			r_w = 6;
+			r_h = 6;
+		} break;
 		case FORMAT_ASTC_8x8:
 		case FORMAT_ASTC_8x8_HDR: {
 			r_w = 8;
@@ -277,16 +311,6 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 			r_w = 1;
 			r_h = 1;
 		} break;
-	}
-}
-
-int Image::get_format_pixel_rshift(Format p_format) {
-	if (p_format == FORMAT_ASTC_8x8) {
-		return 2;
-	} else if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
-		return 1;
-	} else {
-		return 0;
 	}
 }
 
@@ -322,6 +346,10 @@ int Image::get_format_block_size(Format p_format) {
 		case FORMAT_ASTC_4x4_HDR: {
 			return 4;
 		}
+		case FORMAT_ASTC_6x6:
+		case FORMAT_ASTC_6x6_HDR: {
+			return 6;
+		}
 		case FORMAT_ASTC_8x8:
 		case FORMAT_ASTC_8x8_HDR: {
 			return 8;
@@ -339,7 +367,6 @@ void Image::_get_mipmap_offset_and_size(int p_mipmap, int64_t &r_offset, int &r_
 	int64_t ofs = 0;
 
 	int pixel_size = get_format_pixel_size(format);
-	int pixel_rshift = get_format_pixel_rshift(format);
 	int block = get_format_block_size(format);
 	int minw, minh;
 	get_format_min_pixel_size(format, minw, minh);
@@ -351,7 +378,7 @@ void Image::_get_mipmap_offset_and_size(int p_mipmap, int64_t &r_offset, int &r_
 		int64_t s = bw * bh;
 
 		s *= pixel_size;
-		s >>= pixel_rshift;
+		s = get_format_pixels_shifted(format, s);
 		ofs += s;
 		w = MAX(minw, w >> 1);
 		h = MAX(minh, h >> 1);
@@ -1231,14 +1258,14 @@ static void _overlay(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst,
 }
 
 bool Image::is_size_po2() const {
-	return is_power_of_2(width) && is_power_of_2(height);
+	return Math::is_power_of_2(width) && Math::is_power_of_2(height);
 }
 
 void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot resize in compressed image formats.");
 
-	int w = next_power_of_2((uint32_t)width);
-	int h = next_power_of_2((uint32_t)height);
+	int w = Math::next_power_of_2((uint32_t)width);
+	int h = Math::next_power_of_2((uint32_t)height);
 	if (p_square) {
 		w = h = MAX(w, h);
 	}
@@ -1255,9 +1282,6 @@ void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(data.is_empty(), "Cannot resize image before creating it, use set_data() first.");
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot resize in compressed image formats.");
-
-	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
-
 	ERR_FAIL_COND_MSG(p_width <= 0, "Image width must be greater than 0.");
 	ERR_FAIL_COND_MSG(p_height <= 0, "Image height must be greater than 0.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, vformat("Image width cannot be greater than %d pixels.", MAX_WIDTH));
@@ -1268,9 +1292,19 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 		return;
 	}
 
+	// Convert the image to 'standard' RGB(A) formats that may be resized.
+	Format original_format = format;
+	if (original_format == FORMAT_RGB565 || original_format == FORMAT_RGBA4444) {
+		convert(FORMAT_RGBA8);
+	} else if (original_format == FORMAT_RGBE9995) {
+		convert(FORMAT_RGBH);
+	}
+
 	Image dst(p_width, p_height, false, format);
 
 	// Setup mipmap-aware scaling
+	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
+
 	Image dst2;
 	int mip1 = 0;
 	int mip2 = 0;
@@ -1614,6 +1648,11 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	}
 
 	_copy_internals_from(dst);
+
+	// Reconvert the image to its original format.
+	if (original_format != format) {
+		convert(original_format);
+	}
 }
 
 void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
@@ -1894,7 +1933,6 @@ int64_t Image::_get_dst_image_size(int p_width, int p_height, Format p_format, i
 	int mm = 0;
 
 	int pixsize = get_format_pixel_size(p_format);
-	int pixshift = get_format_pixel_rshift(p_format);
 	int block = get_format_block_size(p_format);
 
 	// Technically, you can still compress up to 1 px no matter the format, so commenting this.
@@ -1909,7 +1947,7 @@ int64_t Image::_get_dst_image_size(int p_width, int p_height, Format p_format, i
 		int64_t s = bw * bh;
 
 		s *= pixsize;
-		s >>= pixshift;
+		s = get_format_pixels_shifted(p_format, s);
 
 		size += s;
 
@@ -2363,7 +2401,7 @@ bool Image::is_empty() const {
 	return (data.is_empty());
 }
 
-Vector<uint8_t> Image::get_data() const {
+const Vector<uint8_t> &Image::get_data() const {
 	return data;
 }
 
@@ -2600,24 +2638,24 @@ void Image::initialize_data(const char **p_xpm) {
 #define DETECT_ALPHA_MAX_THRESHOLD 254
 #define DETECT_ALPHA_MIN_THRESHOLD 2
 
-#define DETECT_ALPHA(m_value)                          \
-	{                                                  \
-		uint8_t value = m_value;                       \
-		if (value < DETECT_ALPHA_MIN_THRESHOLD)        \
-			bit = true;                                \
+#define DETECT_ALPHA(m_value) \
+	{ \
+		uint8_t value = m_value; \
+		if (value < DETECT_ALPHA_MIN_THRESHOLD) \
+			bit = true; \
 		else if (value < DETECT_ALPHA_MAX_THRESHOLD) { \
-			detected = true;                           \
-			break;                                     \
-		}                                              \
+			detected = true; \
+			break; \
+		} \
 	}
 
 #define DETECT_NON_ALPHA(m_value) \
-	{                             \
-		uint8_t value = m_value;  \
-		if (value > 0) {          \
-			detected = true;      \
-			break;                \
-		}                         \
+	{ \
+		uint8_t value = m_value; \
+		if (value > 0) { \
+			detected = true; \
+			break; \
+		} \
 	}
 
 bool Image::is_invisible() const {
@@ -2807,19 +2845,18 @@ Vector<uint8_t> Image::save_jpg_to_buffer(float p_quality) const {
 	return save_jpg_buffer_func(Ref<Image>((Image *)this), p_quality);
 }
 
-Error Image::save_exr(const String &p_path, bool p_grayscale) const {
+Error Image::save_exr(const String &p_path, bool p_grayscale, bool p_color_image, float p_max_value) const {
 	if (save_exr_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
-
-	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale);
+	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale, p_color_image, p_max_value);
 }
 
-Vector<uint8_t> Image::save_exr_to_buffer(bool p_grayscale) const {
+Vector<uint8_t> Image::save_exr_to_buffer(bool p_grayscale, bool p_color_image, float p_max_value) const {
 	if (save_exr_buffer_func == nullptr) {
 		return Vector<uint8_t>();
 	}
-	return save_exr_buffer_func(Ref<Image>((Image *)this), p_grayscale);
+	return save_exr_buffer_func(Ref<Image>((Image *)this), p_grayscale, p_color_image, p_max_value);
 }
 
 Error Image::save_dds(const String &p_path) const {
@@ -2896,7 +2933,7 @@ bool Image::is_compressed() const {
 }
 
 bool Image::is_format_compressed(Format p_format) {
-	return p_format > FORMAT_RGBE9995 && p_format < FORMAT_R16;
+	return (p_format >= FORMAT_DXT1 && p_format <= FORMAT_ASTC_8x8_HDR) || (p_format >= FORMAT_ASTC_6x6 && p_format <= FORMAT_ASTC_6x6_HDR);
 }
 
 Error Image::decompress() {
@@ -2908,7 +2945,7 @@ Error Image::decompress() {
 		_image_decompress_etc1(this);
 	} else if (format >= FORMAT_ETC2_R11 && format <= FORMAT_ETC2_RA_AS_RG && _image_decompress_etc2) {
 		_image_decompress_etc2(this);
-	} else if (format >= FORMAT_ASTC_4x4 && format <= FORMAT_ASTC_8x8_HDR && _image_decompress_astc) {
+	} else if (((format >= FORMAT_ASTC_4x4 && format <= FORMAT_ASTC_8x8_HDR) || (format >= FORMAT_ASTC_6x6 && format <= FORMAT_ASTC_6x6_HDR)) && _image_decompress_astc) {
 		_image_decompress_astc(this);
 	} else {
 		return ERR_UNAVAILABLE;
@@ -2929,13 +2966,17 @@ bool Image::can_decompress(const String &p_format_tag) {
 	return false;
 }
 
-Error Image::compress(CompressMode p_mode, CompressSource p_source, ASTCFormat p_astc_format) {
+Error Image::compress(CompressMode p_mode, CompressSource p_source, CompressProfile p_profile) {
 	ERR_FAIL_INDEX_V_MSG(p_mode, COMPRESS_MAX, ERR_INVALID_PARAMETER, "Invalid compress mode.");
 	ERR_FAIL_INDEX_V_MSG(p_source, COMPRESS_SOURCE_MAX, ERR_INVALID_PARAMETER, "Invalid compress source.");
-	return compress_from_channels(p_mode, detect_used_channels(p_source), p_astc_format);
+	return compress_from_channels(p_mode, detect_used_channels(p_source), p_profile);
 }
 
-Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format) {
+Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, CompressProfile p_profile) {
+	return _compress_from_channels(p_mode, p_channels, p_profile, BPTC_DETECT);
+}
+
+Error Image::_compress_from_channels(CompressMode p_mode, UsedChannels p_channels, CompressProfile p_profile, BPTCFormat p_bptc_format) {
 	ERR_FAIL_COND_V(data.is_empty(), ERR_INVALID_DATA);
 
 	// RenderingDevice only.
@@ -2944,7 +2985,7 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 			case COMPRESS_BPTC: {
 				// BC7 is unsupported currently.
 				if ((format >= FORMAT_RF && format <= FORMAT_RGBE9995) && _image_compress_bptc_rd_func) {
-					Error result = _image_compress_bptc_rd_func(this, p_channels);
+					Error result = _image_compress_bptc_rd_func(this, p_channels, p_bptc_format);
 
 					// If the image was compressed successfully, we return here. If not, we fall back to the default compression scheme.
 					if (result == OK) {
@@ -2983,11 +3024,11 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 		} break;
 		case COMPRESS_BPTC: {
 			ERR_FAIL_NULL_V(_image_compress_bptc_func, ERR_UNAVAILABLE);
-			_image_compress_bptc_func(this, p_channels);
+			_image_compress_bptc_func(this, p_channels, p_bptc_format);
 		} break;
 		case COMPRESS_ASTC: {
 			ERR_FAIL_NULL_V(_image_compress_astc_func, ERR_UNAVAILABLE);
-			_image_compress_astc_func(this, p_astc_format);
+			_image_compress_astc_func(this, p_channels, p_profile);
 		} break;
 		case COMPRESS_MAX: {
 			ERR_FAIL_V(ERR_INVALID_PARAMETER);
@@ -3866,8 +3907,8 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_png_to_buffer"), &Image::save_png_to_buffer);
 	ClassDB::bind_method(D_METHOD("save_jpg", "path", "quality"), &Image::save_jpg, DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("save_jpg_to_buffer", "quality"), &Image::save_jpg_to_buffer, DEFVAL(0.75));
-	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale"), &Image::save_exr, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::save_exr_to_buffer, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale", "color_image", "max_linear_value"), &Image::save_exr, DEFVAL(false), DEFVAL(false), DEFVAL(-1.0));
+	ClassDB::bind_method(D_METHOD("save_exr_to_buffer", "grayscale", "color_image", "max_linear_value"), &Image::save_exr_to_buffer, DEFVAL(false), DEFVAL(false), DEFVAL(-1.0));
 	ClassDB::bind_method(D_METHOD("save_dds", "path"), &Image::save_dds);
 	ClassDB::bind_method(D_METHOD("save_dds_to_buffer"), &Image::save_dds_to_buffer);
 
@@ -3878,8 +3919,8 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_invisible"), &Image::is_invisible);
 
 	ClassDB::bind_method(D_METHOD("detect_used_channels", "source"), &Image::detect_used_channels, DEFVAL(COMPRESS_SOURCE_GENERIC));
-	ClassDB::bind_method(D_METHOD("compress", "mode", "source", "astc_format"), &Image::compress, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(ASTC_FORMAT_4x4));
-	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "astc_format"), &Image::compress_from_channels, DEFVAL(ASTC_FORMAT_4x4));
+	ClassDB::bind_method(D_METHOD("compress", "mode", "source", "profile"), &Image::compress, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(COMPRESS_PROFILE_AUTOMATIC));
+	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "profile"), &Image::compress_from_channels, DEFVAL(COMPRESS_PROFILE_AUTOMATIC));
 	ClassDB::bind_method(D_METHOD("decompress"), &Image::decompress);
 	ClassDB::bind_method(D_METHOD("is_compressed"), &Image::is_compressed);
 
@@ -3982,6 +4023,8 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_RG16I);
 	BIND_ENUM_CONSTANT(FORMAT_RGB16I);
 	BIND_ENUM_CONSTANT(FORMAT_RGBA16I);
+	BIND_ENUM_CONSTANT(FORMAT_ASTC_6x6);
+	BIND_ENUM_CONSTANT(FORMAT_ASTC_6x6_HDR);
 	BIND_ENUM_CONSTANT(FORMAT_MAX);
 
 	BIND_ENUM_CONSTANT(INTERPOLATE_NEAREST);
@@ -4012,8 +4055,16 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_SRGB);
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_NORMAL);
 
+	BIND_ENUM_CONSTANT(COMPRESS_PROFILE_AUTOMATIC);
+	BIND_ENUM_CONSTANT(COMPRESS_PROFILE_MAX_QUALITY);
+	BIND_ENUM_CONSTANT(COMPRESS_PROFILE_COMPRESSED);
+	BIND_ENUM_CONSTANT(COMPRESS_PROFILE_MAX_COMPRESSION);
+	BIND_ENUM_CONSTANT(COMPRESS_PROFILE_MAX);
+
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(ASTC_FORMAT_4x4);
 	BIND_ENUM_CONSTANT(ASTC_FORMAT_8x8);
+#endif
 }
 
 void Image::normal_map_to_xy() {
@@ -4390,6 +4441,10 @@ uint32_t Image::get_format_component_mask(Format p_format) {
 		case FORMAT_ASTC_4x4:
 			return rgba;
 		case FORMAT_ASTC_4x4_HDR:
+			return rgba;
+		case FORMAT_ASTC_6x6:
+			return rgba;
+		case FORMAT_ASTC_6x6_HDR:
 			return rgba;
 		case FORMAT_ASTC_8x8:
 			return rgba;

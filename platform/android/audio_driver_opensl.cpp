@@ -30,6 +30,8 @@
 
 #include "audio_driver_opensl.h"
 
+#include "core/os/os.h"
+
 #define MAX_NUMBER_INTERFACES 3
 #define MAX_NUMBER_OUTPUT_DEVICES 6
 
@@ -132,11 +134,8 @@ void AudioDriverOpenSL::start() {
 	pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
 	pcm.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
 	pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
-#ifdef BIG_ENDIAN_ENABLED
-	pcm.endianness = SL_BYTEORDER_BIGENDIAN;
-#else
 	pcm.endianness = SL_BYTEORDER_LITTLEENDIAN;
-#endif
+
 	audioSource.pFormat = (void *)&pcm;
 	audioSource.pLocator = (void *)&loc_bufq;
 

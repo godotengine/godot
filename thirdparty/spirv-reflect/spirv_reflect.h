@@ -325,6 +325,7 @@ typedef enum SpvReflectGenerator {
   SPV_REFLECT_GENERATOR_KHRONOS_SPIRV_TOOLS_LINKER            = 17,
   SPV_REFLECT_GENERATOR_WINE_VKD3D_SHADER_COMPILER            = 18,
   SPV_REFLECT_GENERATOR_CLAY_CLAY_SHADER_COMPILER             = 19,
+  SPV_REFLECT_GENERATOR_SLANG_SHADER_COMPILER                 = 40,
 } SpvReflectGenerator;
 
 enum {
@@ -393,7 +394,9 @@ typedef struct SpvReflectTypeDescription {
   const char*                       type_name;
   // Non-NULL if type is member of a struct
   const char*                       struct_member_name;
-  SpvStorageClass                   storage_class;
+
+  // The storage class (SpvStorageClass) if the type, and -1 if it does not have a storage class.
+  int                               storage_class;
   SpvReflectTypeFlags               type_flags;
   SpvReflectDecorationFlags         decoration_flags;
 
@@ -429,7 +432,9 @@ typedef struct SpvReflectInterfaceVariable {
   SpvStorageClass                     storage_class;
   const char*                         semantic;
   SpvReflectDecorationFlags           decoration_flags;
-  SpvBuiltIn                          built_in;
+
+  // The builtin id (SpvBuiltIn) if the variable is a builtin, and -1 otherwise.
+  int                                 built_in;
   SpvReflectNumericTraits             numeric;
   SpvReflectArrayTraits               array;
 
@@ -568,15 +573,6 @@ typedef struct SpvReflectCapability {
 } SpvReflectCapability;
 
 
-/*! @enum SpvReflectSpecializationConstantType
-
-*/
-typedef enum SpvReflectSpecializationConstantType {
-  SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL = 0,
-  SPV_REFLECT_SPECIALIZATION_CONSTANT_INT = 1,
-  SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT = 2,
-} SpvReflectSpecializationConstantType;
-
 /*! @struct SpvReflectSpecId
 
 */
@@ -584,11 +580,21 @@ typedef struct SpvReflectSpecializationConstant {
   uint32_t spirv_id;
   uint32_t constant_id;
   const char* name;
-  SpvReflectSpecializationConstantType constant_type;
-  union {
-    float float_value;
-    uint32_t int_bool_value;
-  } default_value;
+  SpvReflectTypeDescription* type_description;
+
+  // Size of the default value in bytes (always a multiple of 4).
+  // Will be 4 for 8/16/32-bit constants and 8 for 64-bit constants.
+  uint32_t default_value_size;
+
+  // Pointer to the raw default value data.  
+  // The interpretation of this data depends on type_description->op:  
+  // - SpvOpSpecConstantTrue:  size = 4, data = uint32_t(1)  
+  // - SpvOpSpecConstantFalse: size = 4, data = uint32_t(0)  
+  // - SpvOpSpecConstant:      data contains the bit pattern of the default value  
+  //   * The type will be a scalar integer or float.
+  //   * Types 32 bits wide or smaller take one word.  
+  //   * Larger types take multiple words, with low-order words appearing first.  
+  void* default_value;  
 } SpvReflectSpecializationConstant;
 
 /*! @struct SpvReflectShaderModule
@@ -1815,9 +1821,9 @@ inline const char* ShaderModule::GetEntryPointName() const {
   return this->GetEntryPointName(0);
 }
 
-/*! @fn GetEntryPoint
+/*! @fn GetSourceFile
 
-  @return Returns entry point
+  @return Returns source file
 
 */
 inline const char* ShaderModule::GetSourceFile() const {

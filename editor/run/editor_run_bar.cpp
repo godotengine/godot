@@ -30,11 +30,15 @@
 
 #include "editor_run_bar.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/export/editor_export_platform.h"
+#include "editor/export/editor_export_preset.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
@@ -47,6 +51,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/main/scene_tree.h"
 
 #ifndef XR_DISABLED
 #include "servers/xr/xr_server.h"
@@ -260,6 +265,18 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 
 	_reset_play_buttons();
 
+	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
+	if (!resource_path.is_empty()) {
+		String project_file_path = resource_path.path_join("project.godot");
+		if (!FileAccess::exists(project_file_path)) {
+			// TODO: Try to recover the "project.godot" file using ProjectSettings::get_singleton()->save()
+			EditorNode::get_singleton()->show_warning(
+					TTRC("Failed to run the project because the project.godot file is missing."),
+					TTRC("Error!"));
+			return;
+		}
+	}
+
 	String write_movie_file;
 	if (is_movie_maker_enabled()) {
 		if (current_mode == RUN_CURRENT) {
@@ -287,7 +304,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 
 		if (write_movie_file.is_empty()) {
 			// TODO: Provide options to directly resolve the issue with a custom dialog.
-			EditorNode::get_singleton()->show_accept(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the Editor > Movie Writer category.\nAlternatively, for running single scenes, a `movie_file` string metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."), TTR("OK"));
+			EditorNode::get_singleton()->show_warning(TTR("Movie Maker mode is enabled, but no movie file path has been specified.\nA default movie file path can be specified in the project settings under the Editor > Movie Writer category.\nAlternatively, for running single scenes, a `movie_file` string metadata can be added to the root node,\nspecifying the path to a movie file that will be used when recording that scene."));
 			return;
 		}
 	}
@@ -308,7 +325,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 
 			Node *scene_root = get_tree()->get_edited_scene_root();
 			if (!scene_root) {
-				EditorNode::get_singleton()->show_accept(TTR("There is no defined scene to run."), TTR("OK"));
+				EditorNode::get_singleton()->show_warning(TTR("There is no defined scene to run."));
 				return;
 			}
 
@@ -347,7 +364,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 	Error error = editor_run.run(run_filename, write_movie_file, args);
 	if (error != OK) {
 		EditorDebuggerNode::get_singleton()->stop();
-		EditorNode::get_singleton()->show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
+		EditorNode::get_singleton()->show_warning(TTR("Could not start subprocess(es)!"));
 		return;
 	}
 
@@ -478,11 +495,11 @@ Error EditorRunBar::start_native_device(int p_device_id) const {
 	return run_native->start_run_native(p_device_id);
 }
 
-OS::ProcessID EditorRunBar::has_child_process(OS::ProcessID p_pid) const {
+ProcessID EditorRunBar::has_child_process(ProcessID p_pid) const {
 	return editor_run.has_child_process(p_pid);
 }
 
-void EditorRunBar::stop_child_process(OS::ProcessID p_pid) {
+void EditorRunBar::stop_child_process(ProcessID p_pid) {
 	if (!has_child_process(p_pid)) {
 		return;
 	}
@@ -493,7 +510,7 @@ void EditorRunBar::stop_child_process(OS::ProcessID p_pid) {
 	}
 }
 
-OS::ProcessID EditorRunBar::get_current_process() const {
+ProcessID EditorRunBar::get_current_process() const {
 	return editor_run.get_current_process();
 }
 

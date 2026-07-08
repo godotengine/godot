@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LimitAngularVelocityModifier3D" inherits="SkeletonModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="LimitAngularVelocityModifier3D" inherits="SkeletonModifier3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Limit bone rotation angular velocity.
 	</brief_description>
 	<description>
 		This modifier limits bone rotation angular velocity by comparing poses between previous and current frame.
 		You can add bone chains by specifying their root and end bones, then add the bones between them to a list. Modifier processes either that list or the bones excluding those in the list depending on the option [member exclude].
+		[b]Note:[/b] Most methods in this class take an [code]index[/code] parameter. This parameter specifies which setting list entry to return if the IK has multiple entries (e.g. [code]settings/&lt;index&gt;/root_bone_name[/code]).
 	</description>
 	<tutorials>
 	</tutorials>

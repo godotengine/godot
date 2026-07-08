@@ -46,6 +46,7 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/error/error_macros.h"
+#include "core/object/class_db.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/editor_debugger_server.h"
@@ -84,7 +85,4 @@ void uninitialize_websocket_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_CORE) {
 		return;
 	}
-#ifndef WEB_ENABLED
-	WSLPeer::deinitialize();
-#endif
 }

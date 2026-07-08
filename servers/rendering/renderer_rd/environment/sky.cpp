@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "sky.h"
+
 #include "core/config/project_settings.h"
 #include "core/math/math_defs.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
@@ -36,6 +37,7 @@
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
@@ -104,7 +106,7 @@ void SkyRD::SkyShaderData::set_code(const String &p_code) {
 	// !BAS! Contemplate making `SkyShader sky` accessible from this struct or even part of this struct.
 	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
-	Error err = scene_singleton->sky.sky_shader.compiler.compile(RS::SHADER_SKY, code, &actions, path, gen_code);
+	Error err = scene_singleton->sky.sky_shader.compiler.compile(RSE::SHADER_SKY, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
 	if (version.is_null()) {
@@ -162,7 +164,7 @@ bool SkyRD::SkyShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode SkyRD::SkyShaderData::get_native_source_code() const {
+RenderingServerTypes::ShaderNativeSourceCode SkyRD::SkyShaderData::get_native_source_code() const {
 	RendererSceneRenderRD *scene_singleton = static_cast<RendererSceneRenderRD *>(RendererSceneRenderRD::singleton);
 
 	return scene_singleton->sky.sky_shader.shader.version_get_native_source_code(version);
@@ -340,7 +342,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 	tf.format = p_texture_format;
 	tf.width = p_low_quality ? 160 : p_size >> 1; // Always 160x160 when using REALTIME.
 	tf.height = p_low_quality ? 160 : p_size >> 1;
-	tf.mipmaps = p_low_quality ? 7 : mipmaps - 1;
+	tf.mipmaps = p_low_quality ? 5 : mipmaps - 1;
 	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 	if (!use_raster_effect) {
 		tf.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
@@ -378,10 +380,10 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 
 	if (use_raster_effect) {
 		RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
-		copy_effects->octmap_downsample_raster(radiance_base_octmap, downsampled_layer.mipmaps[0].framebuffer, downsampled_layer.mipmaps[0].size, true, uv_border_size);
+		copy_effects->octmap_downsample_raster(radiance_base_octmap, downsampled_layer.mipmaps[0].framebuffer, downsampled_layer.mipmaps[0].size, uv_border_size);
 
 		for (uint32_t i = 1; i < downsampled_layer.mipmaps.size(); i++) {
-			copy_effects->octmap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffer, downsampled_layer.mipmaps[i].size, true, uv_border_size);
+			copy_effects->octmap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffer, downsampled_layer.mipmaps[i].size, uv_border_size);
 		}
 		RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 
@@ -399,10 +401,10 @@ void SkyRD::ReflectionData::create_reflection_fast_filter(bool p_use_arrays) {
 		RD::get_singleton()->draw_command_end_label(); // Filter radiance
 	} else {
 		RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
-		copy_effects->octmap_downsample(radiance_base_octmap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size, true, uv_border_size);
+		copy_effects->octmap_downsample(radiance_base_octmap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size, uv_border_size);
 
 		for (uint32_t i = 1; i < downsampled_layer.mipmaps.size(); i++) {
-			copy_effects->octmap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size, true, uv_border_size);
+			copy_effects->octmap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size, uv_border_size);
 		}
 		RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		Vector<RID> views;
@@ -429,10 +431,10 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 	if (use_raster_effect) {
 		if (p_base_layer == 1) {
 			RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
-			copy_effects->octmap_downsample_raster(radiance_base_octmap, downsampled_layer.mipmaps[0].framebuffer, downsampled_layer.mipmaps[0].size, false, uv_border_size);
+			copy_effects->octmap_downsample_raster(radiance_base_octmap, downsampled_layer.mipmaps[0].framebuffer, downsampled_layer.mipmaps[0].size, uv_border_size);
 
 			for (uint32_t i = 1; i < downsampled_layer.mipmaps.size(); i++) {
-				copy_effects->octmap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffer, downsampled_layer.mipmaps[i].size, false, uv_border_size);
+				copy_effects->octmap_downsample_raster(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].framebuffer, downsampled_layer.mipmaps[i].size, uv_border_size);
 			}
 			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		}
@@ -460,10 +462,10 @@ void SkyRD::ReflectionData::create_reflection_importance_sample(bool p_use_array
 	} else {
 		if (p_base_layer == 1) {
 			RD::get_singleton()->draw_command_begin_label("Downsample Radiance Map");
-			copy_effects->octmap_downsample(radiance_base_octmap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size, false, uv_border_size);
+			copy_effects->octmap_downsample(radiance_base_octmap, downsampled_layer.mipmaps[0].view, downsampled_layer.mipmaps[0].size, uv_border_size);
 
 			for (uint32_t i = 1; i < downsampled_layer.mipmaps.size(); i++) {
-				copy_effects->octmap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size, false, uv_border_size);
+				copy_effects->octmap_downsample(downsampled_layer.mipmaps[i - 1].view, downsampled_layer.mipmaps[i].view, downsampled_layer.mipmaps[i].size, uv_border_size);
 			}
 			RD::get_singleton()->draw_command_end_label(); // Downsample Radiance
 		}
@@ -490,10 +492,10 @@ void SkyRD::ReflectionData::update_reflection_mipmaps(int p_start, int p_end) {
 			Size2i size = layers[i].mipmaps[j + 1].size;
 			if (use_raster_effect) {
 				RID framebuffer = layers[i].mipmaps[j + 1].framebuffer;
-				copy_effects->octmap_downsample_raster(view, framebuffer, size, false, uv_border_size);
+				copy_effects->octmap_downsample_raster(view, framebuffer, size, uv_border_size);
 			} else {
 				RID texture = layers[i].mipmaps[j + 1].view;
-				copy_effects->octmap_downsample(view, texture, size, false, uv_border_size);
+				copy_effects->octmap_downsample(view, texture, size, uv_border_size);
 			}
 		}
 	}
@@ -503,11 +505,21 @@ void SkyRD::ReflectionData::update_reflection_mipmaps(int p_start, int p_end) {
 ////////////////////////////////////////////////////////////////////////////////
 // SkyRD::Sky
 
-void SkyRD::Sky::free() {
+void SkyRD::Sky::free_radiance() {
 	if (radiance.is_valid()) {
 		RD::get_singleton()->free_rid(radiance);
 		radiance = RID();
 	}
+	if (radiance_first_layer_slice.is_valid()) {
+		if (RD::get_singleton()->texture_is_valid(radiance_first_layer_slice)) {
+			RD::get_singleton()->free_rid(radiance_first_layer_slice);
+		}
+		radiance_first_layer_slice = RID();
+	}
+}
+
+void SkyRD::Sky::free() {
+	free_radiance();
 	reflection.clear_reflection_data();
 
 	if (uniform_buffer.is_valid()) {
@@ -520,7 +532,22 @@ void SkyRD::Sky::free() {
 	}
 }
 
-RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, Ref<RenderSceneBuffersRD> p_render_buffers) {
+RID SkyRD::SkyShader::get_default_shader_rd(bool p_is_multiview) {
+	RID &shader_rd = p_is_multiview ? default_multiview_shader_rd : default_shader_rd;
+
+	if (shader_rd.is_null()) {
+		RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+		ERR_FAIL_NULL_V(material_storage, RID());
+		ERR_FAIL_COND_V(!default_material.is_valid(), RID());
+
+		SkyMaterialData *md = static_cast<SkyMaterialData *>(material_storage->material_get_data(default_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
+		shader_rd = shader.version_get_shader(md->shader_data->version, p_is_multiview ? SKY_VERSION_BACKGROUND_MULTIVIEW : SKY_VERSION_BACKGROUND);
+	}
+
+	return shader_rd;
+}
+
+RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shader_rd, bool p_is_multiview, Ref<RenderSceneBuffersRD> p_render_buffers) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	thread_local LocalVector<RD::Uniform> uniforms;
@@ -531,7 +558,7 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 0;
 		if (radiance.is_valid() && p_version <= SKY_TEXTURE_SET_QUARTER_RES) {
-			u.append_id(radiance);
+			u.append_id(radiance_first_layer_slice.is_valid() ? radiance_first_layer_slice : radiance);
 		} else {
 			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK));
 		}
@@ -552,7 +579,7 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 			if (half_texture.is_valid() && p_version != SKY_TEXTURE_SET_HALF_RES) {
 				u.append_id(half_texture);
 			} else {
-				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
+				u.append_id(texture_storage->texture_rd_get_default(p_is_multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
 			}
 		}
 		uniforms.push_back(u);
@@ -572,7 +599,7 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 			if (quarter_texture.is_valid() && p_version != SKY_TEXTURE_SET_QUARTER_RES) {
 				u.append_id(quarter_texture);
 			} else {
-				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
+				u.append_id(texture_storage->texture_rd_get_default(p_is_multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
 			}
 		}
 		uniforms.push_back(u);
@@ -588,15 +615,12 @@ bool SkyRD::Sky::set_radiance_size(int p_radiance_size) {
 	}
 	radiance_size = p_radiance_size;
 
-	if (mode == RS::SKY_MODE_REALTIME && radiance_size != REAL_TIME_SIZE) {
+	if (mode == RSE::SKY_MODE_REALTIME && radiance_size != REAL_TIME_SIZE) {
 		WARN_PRINT(vformat("Realtime Skies can only use a radiance size of %d. Radiance size will be set to %d internally.", REAL_TIME_SIZE, REAL_TIME_SIZE));
 		radiance_size = REAL_TIME_SIZE;
 	}
 
-	if (radiance.is_valid()) {
-		RD::get_singleton()->free_rid(radiance);
-		radiance = RID();
-	}
+	free_radiance();
 	reflection.clear_reflection_data();
 
 	return true;
@@ -606,22 +630,19 @@ int SkyRD::Sky::get_radiance_size() const {
 	return radiance_size;
 }
 
-bool SkyRD::Sky::set_mode(RS::SkyMode p_mode) {
+bool SkyRD::Sky::set_mode(RSE::SkyMode p_mode) {
 	if (mode == p_mode) {
 		return false;
 	}
 
 	mode = p_mode;
 
-	if (mode == RS::SKY_MODE_REALTIME && radiance_size != REAL_TIME_SIZE) {
+	if (mode == RSE::SKY_MODE_REALTIME && radiance_size != REAL_TIME_SIZE) {
 		WARN_PRINT(vformat("Realtime Skies can only use a radiance size of %d. Radiance size will be set to %d internally.", REAL_TIME_SIZE, REAL_TIME_SIZE));
 		set_radiance_size(REAL_TIME_SIZE);
 	}
 
-	if (radiance.is_valid()) {
-		RD::get_singleton()->free_rid(radiance);
-		radiance = RID();
-	}
+	free_radiance();
 	reflection.clear_reflection_data();
 
 	return true;
@@ -889,32 +910,42 @@ void sky() {
 		material_storage->material_initialize(sky_scene_state.fog_material);
 
 		material_storage->material_set_shader(sky_scene_state.fog_material, sky_scene_state.fog_shader);
+	}
+}
+
+RID SkyRD::SkySceneState::get_fog_only_texture_uniform_set(RID p_default_shader_rd, bool p_is_multiview) {
+	RID &uniform_set_rid = p_is_multiview ? fog_only_texture_multiview_uniform_set : fog_only_texture_uniform_set;
+
+	if (uniform_set_rid.is_null()) {
+		RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 0;
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
+			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 1;
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
+			u.append_id(texture_storage->texture_rd_get_default(p_is_multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 2;
-			u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
+			u.append_id(texture_storage->texture_rd_get_default(p_is_multiview ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE));
 			uniforms.push_back(u);
 		}
 
-		sky_scene_state.fog_only_texture_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_TEXTURES);
+		uniform_set_rid = RD::get_singleton()->uniform_set_create(uniforms, p_default_shader_rd, SKY_SET_TEXTURES);
 	}
+
+	return uniform_set_rid;
 }
 
 void SkyRD::set_texture_format(RD::DataFormat p_texture_format) {
@@ -944,8 +975,12 @@ SkyRD::~SkyRD() {
 		RD::get_singleton()->free_rid(sky_scene_state.default_fog_uniform_set);
 	}
 
-	if (RD::get_singleton()->uniform_set_is_valid(sky_scene_state.fog_only_texture_uniform_set)) {
+	if (sky_scene_state.fog_only_texture_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.fog_only_texture_uniform_set)) {
 		RD::get_singleton()->free_rid(sky_scene_state.fog_only_texture_uniform_set);
+	}
+
+	if (sky_scene_state.fog_only_texture_multiview_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.fog_only_texture_multiview_uniform_set)) {
+		RD::get_singleton()->free_rid(sky_scene_state.fog_only_texture_multiview_uniform_set);
 	}
 }
 
@@ -996,6 +1031,29 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 		sky->screen_size.x = p_screen_size.x < 4 ? 4 : p_screen_size.x;
 		sky->screen_size.y = p_screen_size.y < 4 ? 4 : p_screen_size.y;
 
+		RSE::SkyMode sky_mode = sky->mode;
+
+		if (sky_mode == RSE::SKY_MODE_AUTOMATIC) {
+			bool sun_scatter_enabled = RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_render_data->environment) && RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
+
+			if ((shader_data->uses_time || shader_data->uses_position) && sky->radiance_size == Sky::REAL_TIME_SIZE) {
+				sky_mode = RSE::SKY_MODE_REALTIME;
+			} else if (shader_data->uses_light || sun_scatter_enabled || shader_data->ubo_size > 0) {
+				sky_mode = RSE::SKY_MODE_INCREMENTAL;
+			} else {
+				sky_mode = RSE::SKY_MODE_QUALITY;
+			}
+
+			if (sky_mode != sky->internal_mode) {
+				sky->internal_mode = sky_mode;
+
+				sky->free_radiance();
+				sky->reflection.clear_reflection_data();
+			}
+		} else {
+			sky->internal_mode = sky_mode;
+		}
+
 		// Trigger updating radiance buffers.
 		if (sky->radiance.is_null()) {
 			invalidate_sky(sky);
@@ -1039,8 +1097,8 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 
 			ERR_CONTINUE(base.is_null());
 
-			RS::LightType type = light_storage->light_get_type(base);
-			if (type == RS::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
+			RSE::LightType type = light_storage->light_get_type(base);
+			if (type == RSE::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RSE::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
 				SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.ubo.directional_light_count];
 				Transform3D light_transform = light_storage->light_instance_get_base_transform(lights[i]);
 				Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
@@ -1050,10 +1108,10 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 				sky_light_data.direction[2] = world_direction.z;
 
 				float sign = light_storage->light_is_negative(base) ? -1 : 1;
-				sky_light_data.energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
+				sky_light_data.energy = sign * light_storage->light_get_param(base, RSE::LIGHT_PARAM_ENERGY);
 
 				if (RendererSceneRenderRD::get_singleton()->is_using_physical_light_units()) {
-					sky_light_data.energy *= light_storage->light_get_param(base, RS::LIGHT_PARAM_INTENSITY);
+					sky_light_data.energy *= light_storage->light_get_param(base, RSE::LIGHT_PARAM_INTENSITY);
 				}
 
 				if (p_render_data->camera_attributes.is_valid()) {
@@ -1067,7 +1125,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 
 				sky_light_data.enabled = true;
 
-				float angular_diameter = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+				float angular_diameter = light_storage->light_get_param(base, RSE::LIGHT_PARAM_SIZE);
 				sky_light_data.size = Math::deg_to_rad(angular_diameter);
 				sky_scene_state.ubo.directional_light_count++;
 				if (sky_scene_state.ubo.directional_light_count >= sky_scene_state.max_directional_lights) {
@@ -1083,7 +1141,9 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 		if (sky_scene_state.ubo.directional_light_count != sky_scene_state.last_frame_directional_light_count) {
 			light_data_dirty = true;
 			for (uint32_t i = sky_scene_state.ubo.directional_light_count; i < sky_scene_state.max_directional_lights; i++) {
+				sky_scene_state.directional_lights[i] = {};
 				sky_scene_state.directional_lights[i].enabled = false;
+				sky_scene_state.last_frame_directional_lights[i] = {};
 				sky_scene_state.last_frame_directional_lights[i].enabled = false;
 			}
 		}
@@ -1149,10 +1209,6 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 	correction.add_jitter_offset(p_render_data->scene_data->taa_jitter);
 
 	Projection projection = p_render_data->scene_data->cam_projection;
-	if (p_render_data->scene_data->cam_frustum) {
-		// We don't use a full projection matrix for the sky, this is enough to make up for it.
-		projection[2].y = -projection[2].y;
-	}
 
 	float custom_fov = RendererSceneRenderRD::get_singleton()->environment_get_sky_custom_fov(p_render_data->environment);
 
@@ -1172,7 +1228,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 		Projection view_inv_projection = (correction * p_render_data->scene_data->view_projection[i]).inverse();
 		if (p_render_data->scene_data->view_count > 1) {
 			// Reprojection is used when we need to have things in combined space.
-			RendererRD::MaterialStorage::store_camera(p_render_data->scene_data->cam_projection * view_inv_projection, sky_scene_state.ubo.combined_reprojection[i]);
+			RendererRD::MaterialStorage::store_camera(sky_scene_state.cam_projection * view_inv_projection, sky_scene_state.ubo.combined_reprojection[i]);
 		} else {
 			// This is unused so just reset to identity.
 			Projection ident;
@@ -1199,6 +1255,7 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 
 	sky_scene_state.ubo.fog_sky_affect = RendererSceneRenderRD::get_singleton()->environment_get_fog_sky_affect(p_render_data->environment);
 	sky_scene_state.ubo.volumetric_fog_sky_affect = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_sky_affect(p_render_data->environment);
+	sky_scene_state.ubo.fog_use_legacy_blending = RendererSceneRenderRD::get_singleton()->fog_use_legacy_blending_get();
 
 	RD::get_singleton()->buffer_update(sky_scene_state.uniform_buffer, 0, sizeof(SkySceneState::UBO), &sky_scene_state.ubo);
 }
@@ -1233,28 +1290,13 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 
 	ERR_FAIL_NULL(shader_data);
 
-	bool update_single_frame = sky->mode == RS::SKY_MODE_REALTIME || sky->mode == RS::SKY_MODE_QUALITY;
-	RS::SkyMode sky_mode = sky->mode;
+	RSE::SkyMode sky_mode = sky->internal_mode;
+	bool update_single_frame = sky_mode == RSE::SKY_MODE_REALTIME || sky_mode == RSE::SKY_MODE_QUALITY;
 
-	if (sky_mode == RS::SKY_MODE_AUTOMATIC) {
-		bool sun_scatter_enabled = RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_env) && RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_env) > 0.001;
-
-		if ((shader_data->uses_time || shader_data->uses_position) && sky->radiance_size == Sky::REAL_TIME_SIZE) {
-			update_single_frame = true;
-			sky_mode = RS::SKY_MODE_REALTIME;
-		} else if (shader_data->uses_light || sun_scatter_enabled || shader_data->ubo_size > 0) {
-			update_single_frame = false;
-			sky_mode = RS::SKY_MODE_INCREMENTAL;
-		} else {
-			update_single_frame = true;
-			sky_mode = RS::SKY_MODE_QUALITY;
-		}
-	}
-
-	if (sky->processing_layer == 0 && sky_mode == RS::SKY_MODE_INCREMENTAL) {
+	if (sky->processing_layer == 0 && sky_mode == RSE::SKY_MODE_INCREMENTAL) {
 		// On the first frame after creating sky, rebuild in single frame
 		update_single_frame = true;
-		sky_mode = RS::SKY_MODE_QUALITY;
+		sky_mode = RSE::SKY_MODE_QUALITY;
 	}
 
 	int max_processing_layer = sky_use_octmap_array ? sky->reflection.layers.size() : sky->reflection.layers[0].mipmaps.size();
@@ -1277,7 +1319,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 			clear_colors.push_back(Color(0.0, 0.0, 0.0));
 			RD::DrawListID octmap_draw_list;
 
-			RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_OCTMAP_QUARTER_RES, sky_shader.default_shader_rd, p_render_buffers);
+			RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_OCTMAP_QUARTER_RES, sky_shader.default_shader_rd, false, p_render_buffers);
 
 			octmap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[2].framebuffer, RD::DRAW_IGNORE_COLOR_ALL);
 			_render_sky(octmap_draw_list, p_time, sky->reflection.layers[0].mipmaps[2].framebuffer, pipeline, material->uniform_set, texture_uniform_set, cm, Basis(), p_global_pos, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
@@ -1296,7 +1338,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 			clear_colors.push_back(Color(0.0, 0.0, 0.0));
 
 			RD::DrawListID octmap_draw_list;
-			RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_OCTMAP_HALF_RES, sky_shader.default_shader_rd, p_render_buffers);
+			RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_OCTMAP_HALF_RES, sky_shader.default_shader_rd, false, p_render_buffers);
 
 			octmap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[1].framebuffer, RD::DRAW_IGNORE_COLOR_ALL);
 			_render_sky(octmap_draw_list, p_time, sky->reflection.layers[0].mipmaps[1].framebuffer, pipeline, material->uniform_set, texture_uniform_set, cm, Basis(), p_global_pos, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
@@ -1312,7 +1354,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 
 		RD::get_singleton()->draw_command_begin_label("Render Sky Octmap");
 
-		RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_OCTMAP, sky_shader.default_shader_rd, p_render_buffers);
+		RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_OCTMAP, sky_shader.default_shader_rd, false, p_render_buffers);
 
 		octmap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffer, RD::DRAW_IGNORE_COLOR_ALL, Vector<Color>(), 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::SKY_PASS);
 		_render_sky(octmap_draw_list, p_time, sky->reflection.layers[0].mipmaps[0].framebuffer, pipeline, material->uniform_set, texture_uniform_set, cm, Basis(), p_global_pos, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
@@ -1320,7 +1362,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 
 		RD::get_singleton()->draw_command_end_label();
 
-		if (sky_mode == RS::SKY_MODE_REALTIME) {
+		if (sky_mode == RSE::SKY_MODE_REALTIME) {
 			sky->reflection.create_reflection_fast_filter(sky_use_octmap_array);
 			if (sky_use_octmap_array) {
 				sky->reflection.update_reflection_mipmaps(0, sky->reflection.layers.size());
@@ -1345,7 +1387,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 		sky->reflection.dirty = false;
 
 	} else {
-		if (sky_mode == RS::SKY_MODE_INCREMENTAL && sky->processing_layer < max_processing_layer) {
+		if (sky_mode == RSE::SKY_MODE_INCREMENTAL && sky->processing_layer < max_processing_layer) {
 			sky->reflection.create_reflection_importance_sample(sky_use_octmap_array, sky->processing_layer, sky_ggx_samples_quality);
 
 			if (sky_use_octmap_array) {
@@ -1367,9 +1409,9 @@ void SkyRD::update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 	SkyMaterialData *material = nullptr;
 	RID sky_material;
 
-	RS::EnvironmentBG background = RendererSceneRenderRD::get_singleton()->environment_get_background(p_env);
+	RSE::EnvironmentBG background = RendererSceneRenderRD::get_singleton()->environment_get_background(p_env);
 
-	if (!(background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) || sky) {
+	if (!(background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) || sky) {
 		ERR_FAIL_NULL(sky);
 		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
@@ -1386,7 +1428,7 @@ void SkyRD::update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 		}
 	}
 
-	if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
+	if (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) {
 		sky_material = sky_scene_state.fog_material;
 		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 	}
@@ -1413,8 +1455,10 @@ void SkyRD::update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 
 	sky_transform = sky_transform * sky_scene_state.cam_transform.basis;
 
+	bool is_multiview = sky_scene_state.view_count > 1;
+
 	if (shader_data->uses_quarter_res) {
-		PipelineCacheRD *pipeline = &shader_data->pipelines[sky_scene_state.view_count > 1 ? SKY_VERSION_QUARTER_RES_MULTIVIEW : SKY_VERSION_QUARTER_RES];
+		PipelineCacheRD *pipeline = &shader_data->pipelines[is_multiview ? SKY_VERSION_QUARTER_RES_MULTIVIEW : SKY_VERSION_QUARTER_RES];
 
 		// Grab texture and framebuffer from cache, create if needed...
 		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -1422,15 +1466,15 @@ void SkyRD::update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 		RID texture = p_render_buffers->create_texture(RB_SCOPE_SKY, RB_QUARTER_TEXTURE, texture_format, usage_bits, RD::TEXTURE_SAMPLES_1, quarter_size);
 		RID framebuffer = FramebufferCacheRD::get_singleton()->get_cache_multiview(sky_scene_state.view_count, texture);
 
-		RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_QUARTER_RES, sky_shader.default_shader_rd, p_render_buffers);
+		RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_QUARTER_RES, sky_shader.get_default_shader_rd(is_multiview), is_multiview, p_render_buffers);
 
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::DRAW_IGNORE_COLOR_ALL);
-		_render_sky(draw_list, p_time, framebuffer, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, p_luminance_multiplier, p_brightness_multiplier);
+		_render_sky(draw_list, p_time, framebuffer, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
 		RD::get_singleton()->draw_list_end();
 	}
 
 	if (shader_data->uses_half_res) {
-		PipelineCacheRD *pipeline = &shader_data->pipelines[sky_scene_state.view_count > 1 ? SKY_VERSION_HALF_RES_MULTIVIEW : SKY_VERSION_HALF_RES];
+		PipelineCacheRD *pipeline = &shader_data->pipelines[is_multiview ? SKY_VERSION_HALF_RES_MULTIVIEW : SKY_VERSION_HALF_RES];
 
 		// Grab texture and framebuffer from cache, create if needed...
 		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -1438,10 +1482,10 @@ void SkyRD::update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 		RID texture = p_render_buffers->create_texture(RB_SCOPE_SKY, RB_HALF_TEXTURE, texture_format, usage_bits, RD::TEXTURE_SAMPLES_1, half_size);
 		RID framebuffer = FramebufferCacheRD::get_singleton()->get_cache_multiview(sky_scene_state.view_count, texture);
 
-		RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_HALF_RES, sky_shader.default_shader_rd, p_render_buffers);
+		RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_HALF_RES, sky_shader.get_default_shader_rd(is_multiview), is_multiview, p_render_buffers);
 
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::DRAW_IGNORE_COLOR_ALL);
-		_render_sky(draw_list, p_time, framebuffer, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, p_luminance_multiplier, p_brightness_multiplier);
+		_render_sky(draw_list, p_time, framebuffer, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
 		RD::get_singleton()->draw_list_end();
 	}
 
@@ -1458,9 +1502,9 @@ void SkyRD::draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_ren
 	SkyMaterialData *material = nullptr;
 	RID sky_material;
 
-	RS::EnvironmentBG background = RendererSceneRenderRD::get_singleton()->environment_get_background(p_env);
+	RSE::EnvironmentBG background = RendererSceneRenderRD::get_singleton()->environment_get_background(p_env);
 
-	if (!(background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) || sky) {
+	if (!(background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) || sky) {
 		ERR_FAIL_NULL(sky);
 		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
@@ -1477,7 +1521,7 @@ void SkyRD::draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_ren
 		}
 	}
 
-	if (background == RS::ENV_BG_CLEAR_COLOR || background == RS::ENV_BG_COLOR) {
+	if (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) {
 		sky_material = sky_scene_state.fog_material;
 		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
 	}
@@ -1497,16 +1541,22 @@ void SkyRD::draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_ren
 
 	sky_transform = sky_transform * sky_scene_state.cam_transform.basis;
 
-	PipelineCacheRD *pipeline = &shader_data->pipelines[sky_scene_state.view_count > 1 ? SKY_VERSION_BACKGROUND_MULTIVIEW : SKY_VERSION_BACKGROUND];
+	bool is_multiview = sky_scene_state.view_count > 1;
+
+	PipelineCacheRD *pipeline = &shader_data->pipelines[is_multiview ? SKY_VERSION_BACKGROUND_MULTIVIEW : SKY_VERSION_BACKGROUND];
+
+	RID default_shader_rd = sky_shader.get_default_shader_rd(is_multiview);
 
 	RID texture_uniform_set;
+	float border_size = 0.0;
 	if (sky) {
-		texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_BACKGROUND, sky_shader.default_shader_rd, p_render_buffers);
+		texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_BACKGROUND, default_shader_rd, is_multiview, p_render_buffers);
+		border_size = sky->uv_border_size;
 	} else {
-		texture_uniform_set = sky_scene_state.fog_only_texture_uniform_set;
+		texture_uniform_set = sky_scene_state.get_fog_only_texture_uniform_set(default_shader_rd, is_multiview);
 	}
 
-	_render_sky(p_draw_list, p_time, p_fb, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, p_luminance_multiplier, p_brightness_multiplier);
+	_render_sky(p_draw_list, p_time, p_fb, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, p_luminance_multiplier, p_brightness_multiplier, border_size);
 }
 
 void SkyRD::invalidate_sky(Sky *p_sky) {
@@ -1531,11 +1581,9 @@ void SkyRD::update_dirty_skys() {
 			int mipmaps = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBAH) + 1;
 
 			int layers = roughness_layers;
-			if (sky->mode == RS::SKY_MODE_REALTIME) {
+			bool use_realtime = sky->mode == RSE::SKY_MODE_REALTIME || sky->internal_mode == RSE::SKY_MODE_REALTIME;
+			if (use_realtime) {
 				layers = Sky::REAL_TIME_ROUGHNESS_LAYERS;
-				if (roughness_layers != layers) {
-					WARN_PRINT(vformat("When using the Real-Time sky update mode (or Automatic with a sky shader using \"TIME\"), \"rendering/reflections/sky_reflections/roughness_layers\" should be set to %d in the project settings for best quality reflections.", Sky::REAL_TIME_ROUGHNESS_LAYERS));
-				}
 			}
 
 			if (sky_use_octmap_array) {
@@ -1561,7 +1609,10 @@ void SkyRD::update_dirty_skys() {
 
 				sky->radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
-				sky->reflection.update_reflection_data(w, mipmaps, true, sky->radiance, 0, sky->mode == RS::SKY_MODE_REALTIME, roughness_layers, texture_format, sky->uv_border_size);
+				// Create view into the first layer slice for user shaders.
+				sky->radiance_first_layer_slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), sky->radiance, 0, 0, mipmaps, RD::TEXTURE_SLICE_2D, 1);
+
+				sky->reflection.update_reflection_data(w, mipmaps, true, sky->radiance, 0, use_realtime, roughness_layers, texture_format, sky->uv_border_size);
 			} else {
 				// Double size to approximate texel density of cubemaps + add border for proper filtering/mipmapping.
 				uint32_t padding_pixels = (1 << (MIN(mipmaps, layers) - 1));
@@ -1582,7 +1633,9 @@ void SkyRD::update_dirty_skys() {
 
 				sky->radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
-				sky->reflection.update_reflection_data(w, MIN(mipmaps, layers), false, sky->radiance, 0, sky->mode == RS::SKY_MODE_REALTIME, roughness_layers, texture_format, sky->uv_border_size);
+				DEV_ASSERT(sky->radiance_first_layer_slice.is_null());
+
+				sky->reflection.update_reflection_data(w, MIN(mipmaps, layers), false, sky->radiance, 0, use_realtime, roughness_layers, texture_format, sky->uv_border_size);
 			}
 		}
 
@@ -1648,7 +1701,7 @@ int SkyRD::sky_get_radiance_size(RID p_sky) const {
 	return sky->get_radiance_size();
 }
 
-void SkyRD::sky_set_mode(RID p_sky, RS::SkyMode p_mode) {
+void SkyRD::sky_set_mode(RID p_sky, RSE::SkyMode p_mode) {
 	Sky *sky = get_sky(p_sky);
 	ERR_FAIL_NULL(sky);
 

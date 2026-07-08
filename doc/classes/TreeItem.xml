@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TreeItem" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TreeItem" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An internal control for a single item inside [Tree].
 	</brief_description>
@@ -92,6 +92,13 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Returns the text autowrap mode in the given [param column]. By default it is [constant TextServer.AUTOWRAP_OFF].
+			</description>
+		</method>
+		<method name="get_autowrap_trim_flags" qualifiers="const">
+			<return type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the autowrap trim flags for the given [param column]. By default, both [constant TextServer.BREAK_TRIM_START_EDGE_SPACES] and [constant TextServer.BREAK_TRIM_END_EDGE_SPACES] are enabled.
 			</description>
 		</method>
 		<method name="get_button" qualifiers="const">
@@ -411,6 +418,12 @@
 				Returns the [Tree] that owns this TreeItem.
 			</description>
 		</method>
+		<method name="is_accepting_children" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [TreeItem] is allowed to accept children.
+			</description>
+		</method>
 		<method name="is_any_collapsed">
 			<return type="bool" />
 			<param index="0" name="only_visible" type="bool" default="false" />
@@ -517,8 +530,16 @@
 		<method name="select">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
+			<param index="1" name="set_as_cursor" type="bool" default="true" />
 			<description>
-				Selects the given [param column].
+				Selects the given [param column]. If [param set_as_cursor] is [code]true[/code], the [Tree]'s cursor will be moved to this item (only matters if [member Tree.select_mode] is set to [constant Tree.SELECT_MULTI]).
+			</description>
+		</method>
+		<method name="set_accept_children">
+			<return type="void" />
+			<param index="0" name="allowed" type="bool" />
+			<description>
+				Sets [TreeItem]'s ability to accept children.
 			</description>
 		</method>
 		<method name="set_auto_translate_mode">
@@ -536,6 +557,14 @@
 			<param index="1" name="autowrap_mode" type="int" enum="TextServer.AutowrapMode" />
 			<description>
 				Sets the autowrap mode in the given [param column]. If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the cell's bounding rectangle.
+			</description>
+		</method>
+		<method name="set_autowrap_trim_flags">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" />
+			<description>
+				Sets the autowrap trim flags for the given [param column]. These flags control whether leading and trailing spaces are trimmed on wrapped lines. Set to [code]0[/code] to disable all trimming.
 			</description>
 		</method>
 		<method name="set_button">
@@ -649,6 +678,7 @@
 			<description>
 				Sets the given column's custom draw callback. Use an empty [Callable] ([code skip-lint]Callable()[/code]) to clear the custom callback. The cell has to be in [constant CELL_MODE_CUSTOM] to use this feature.
 				The [param callback] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
+				To draw custom content over the native style, please use [method Tree.get_custom_drawing_canvas_item].
 			</description>
 		</method>
 		<method name="set_custom_font">

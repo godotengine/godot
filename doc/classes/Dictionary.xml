@@ -168,6 +168,7 @@
 		[/codeblocks]
 		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
 		[b]Note:[/b] Erasing elements while iterating over dictionaries is [b]not[/b] supported and will result in unpredictable behavior.
+		[b]Note:[/b] In a boolean context, a dictionary will evaluate to [code]false[/code] if it's empty ([code]{}[/code]). Otherwise, a dictionary will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 		<link title="GDScript basics: Dictionary">$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#dictionary</link>
@@ -255,6 +256,13 @@
 			<param index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the corresponding value for the given [param key] in the dictionary. If the [param key] does not exist, returns [param default], or [code]null[/code] if the parameter is omitted.
+				[b]Note:[/b] If the [param default] argument is computationally expensive or has unwanted side effects, consider using the [method has] method instead:
+				[codeblock]
+				# Always calls `expensive_function()`.
+				dict.get("key", expensive_function())
+				# Calls `expensive_function()` only if the key does not exist.
+				dict.get("key") if dict.has("key") else expensive_function()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_or_add">

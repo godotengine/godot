@@ -28,7 +28,10 @@
 #include "../oct_inc.glsl"
 
 layout(push_constant, std430) uniform Params {
+	float border_size;
 	uint size;
+	uint pad1;
+	uint pad2;
 }
 params;
 
@@ -36,9 +39,22 @@ layout(location = 0) out vec2 uv_interp;
 /* clang-format on */
 
 void main() {
-	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
-	gl_Position = vec4(base_arr[gl_VertexIndex], 0.0, 1.0);
-	uv_interp = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
+	// old code, ARM driver bug on Mali-GXXx GPUs and Vulkan API 1.3.xxx
+	// https://github.com/godotengine/godot/pull/92817#issuecomment-2168625982
+	//vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
+	//gl_Position = vec4(base_arr[gl_VertexIndex], 0.0, 1.0);
+	//uv_interp = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
+
+	vec2 vertex_base;
+	if (gl_VertexIndex == 0) {
+		vertex_base = vec2(-1.0, -1.0);
+	} else if (gl_VertexIndex == 1) {
+		vertex_base = vec2(-1.0, 3.0);
+	} else {
+		vertex_base = vec2(3.0, -1.0);
+	}
+	gl_Position = vec4(vertex_base, 0.0, 1.0);
+	uv_interp = clamp(vertex_base, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
 }
 
 /* clang-format off */
@@ -51,7 +67,10 @@ void main() {
 #include "../oct_inc.glsl"
 
 layout(push_constant, std430) uniform Params {
+	float border_size;
 	uint size;
+	uint pad1;
+	uint pad2;
 }
 params;
 
@@ -69,10 +88,10 @@ float calcWeight(float u, float v) {
 void main() {
 #ifdef USE_HIGH_QUALITY
 	float inv_size = 1.0 / float(params.size);
-	float u0 = (uv_interp.x * 2.0f - 0.75) * inv_size - 1.0f;
-	float u1 = (uv_interp.x * 2.0f + 0.75) * inv_size - 1.0f;
-	float v0 = (uv_interp.y * 2.0f - 0.75) * inv_size - 1.0f;
-	float v1 = (uv_interp.y * 2.0f + 0.75) * inv_size - 1.0f;
+	float u0 = (uv_interp.x * 2.0f) + (1.0f - 0.75f) * inv_size - 1.0f;
+	float u1 = (uv_interp.x * 2.0f) + (1.0f + 0.75f) * inv_size - 1.0f;
+	float v0 = (uv_interp.y * 2.0f) + (1.0f - 0.75f) * inv_size - 1.0f;
+	float v1 = (uv_interp.y * 2.0f) + (1.0f + 0.75f) * inv_size - 1.0f;
 	float weights[4];
 	weights[0] = calcWeight(u0, v0);
 	weights[1] = calcWeight(u1, v0);

@@ -39,7 +39,7 @@ class JoltSoftBody3D;
 
 class JoltBody3D final : public JoltShapedObject3D {
 public:
-	typedef PhysicsServer3D::BodyDampMode DampMode;
+	typedef PS3DE::BodyDampMode DampMode;
 
 	struct Contact {
 		Vector3 normal;
@@ -75,34 +75,36 @@ private:
 	Vector3 constant_torque;
 	Vector3 linear_surface_velocity;
 	Vector3 angular_surface_velocity;
-	Vector3 gravity;
+	Vector3 total_gravity;
 
 	Callable state_sync_callback;
 	Callable custom_integration_callback;
 
 	JoltPhysicsDirectBodyState3D *direct_state = nullptr;
 
-	PhysicsServer3D::BodyMode mode = PhysicsServer3D::BODY_MODE_RIGID;
+	PS3DE::BodyMode mode = PS3DE::BODY_MODE_RIGID;
 
-	DampMode linear_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
-	DampMode angular_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
+	DampMode linear_damp_mode = PS3DE::BODY_DAMP_MODE_COMBINE;
+	DampMode angular_damp_mode = PS3DE::BODY_DAMP_MODE_COMBINE;
 
 	float mass = 1.0f;
 	float linear_damp = 0.0f;
 	float angular_damp = 0.0f;
 	float total_linear_damp = 0.0f;
 	float total_angular_damp = 0.0f;
-	float gravity_scale = 1.0f;
 	float collision_priority = 1.0f;
 
 	int contact_count = 0;
 
 	uint32_t locked_axes = 0;
 
+	uint16_t default_area_changed_count = 0;
+
 	bool sleep_allowed = true;
 	bool sleep_initially = false;
 	bool custom_center_of_mass = false;
 	bool custom_integrator = false;
+	bool has_point_gravity = false;
 
 	virtual JPH::BroadPhaseLayer _get_broad_phase_layer() const override;
 	virtual JPH::ObjectLayer _get_object_layer() const override;
@@ -115,8 +117,8 @@ private:
 	void _enqueue_call_queries();
 	void _dequeue_call_queries();
 
-	void _integrate_forces(float p_step, JPH::Body &p_jolt_body);
-	void _move_kinematic(float p_step, JPH::Body &p_jolt_body);
+	void _integrate_forces(float p_step);
+	void _move_kinematic(float p_step);
 
 	JPH::EAllowedDOFs _calculate_allowed_dofs() const;
 
@@ -126,8 +128,8 @@ private:
 	void _on_wake_up();
 
 	void _update_mass_properties();
-	void _update_gravity(JPH::Body &p_jolt_body);
-	void _update_damp();
+	bool _needs_update_environmental_properties() const;
+	void _update_environmental_properties();
 	void _update_kinematic_transform();
 	void _update_group_filter();
 	void _update_joint_constraints();
@@ -136,7 +138,7 @@ private:
 
 	void _destroy_joint_constraints();
 
-	void _exit_all_areas();
+	void _clear_areas();
 
 	void _mode_changed();
 	virtual void _shapes_committed() override;
@@ -157,11 +159,11 @@ public:
 
 	void set_transform(Transform3D p_transform);
 
-	Variant get_state(PhysicsServer3D::BodyState p_state) const;
-	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_value);
+	Variant get_state(PS3DE::BodyState p_state) const;
+	void set_state(PS3DE::BodyState p_state, const Variant &p_value);
 
-	Variant get_param(PhysicsServer3D::BodyParameter p_param) const;
-	void set_param(PhysicsServer3D::BodyParameter p_param, const Variant &p_value);
+	Variant get_param(PS3DE::BodyParameter p_param) const;
+	void set_param(PS3DE::BodyParameter p_param, const Variant &p_value);
 
 	bool has_state_sync_callback() const { return state_sync_callback.is_valid(); }
 	void set_state_sync_callback(const Callable &p_callback) { state_sync_callback = p_callback; }
@@ -241,24 +243,25 @@ public:
 
 	void add_area(JoltArea3D *p_area);
 	void remove_area(JoltArea3D *p_area);
+	void update_area(JoltArea3D *p_area, bool p_priority_changed = false);
 
 	void add_joint(JoltJoint3D *p_joint);
 	void remove_joint(JoltJoint3D *p_joint);
 
 	void call_queries();
 
-	virtual void pre_step(float p_step, JPH::Body &p_jolt_body) override;
+	virtual void pre_step(float p_step) override;
 
 	JoltPhysicsDirectBodyState3D *get_direct_state();
 
-	PhysicsServer3D::BodyMode get_mode() const { return mode; }
+	PS3DE::BodyMode get_mode() const { return mode; }
 
-	void set_mode(PhysicsServer3D::BodyMode p_mode);
+	void set_mode(PS3DE::BodyMode p_mode);
 
-	bool is_static() const { return mode == PhysicsServer3D::BODY_MODE_STATIC; }
-	bool is_kinematic() const { return mode == PhysicsServer3D::BODY_MODE_KINEMATIC; }
-	bool is_rigid_free() const { return mode == PhysicsServer3D::BODY_MODE_RIGID; }
-	bool is_rigid_linear() const { return mode == PhysicsServer3D::BODY_MODE_RIGID_LINEAR; }
+	bool is_static() const { return mode == PS3DE::BODY_MODE_STATIC; }
+	bool is_kinematic() const { return mode == PS3DE::BODY_MODE_KINEMATIC; }
+	bool is_rigid_free() const { return mode == PS3DE::BODY_MODE_RIGID; }
+	bool is_rigid_linear() const { return mode == PS3DE::BODY_MODE_RIGID_LINEAR; }
 	bool is_rigid() const { return is_rigid_free() || is_rigid_linear(); }
 
 	bool is_ccd_enabled() const;
@@ -276,10 +279,10 @@ public:
 	float get_friction() const;
 	void set_friction(float p_friction);
 
-	float get_gravity_scale() const { return gravity_scale; }
+	float get_gravity_scale() const;
 	void set_gravity_scale(float p_scale);
 
-	Vector3 get_gravity() const { return gravity; }
+	Vector3 get_total_gravity() const { return total_gravity; }
 
 	float get_linear_damp() const { return linear_damp; }
 	void set_linear_damp(float p_damp);
@@ -299,8 +302,8 @@ public:
 	DampMode get_angular_damp_mode() const { return angular_damp_mode; }
 	void set_angular_damp_mode(DampMode p_mode);
 
-	bool is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const;
-	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_enabled);
+	bool is_axis_locked(PS3DE::BodyAxis p_axis) const;
+	void set_axis_lock(PS3DE::BodyAxis p_axis, bool p_enabled);
 	bool are_axes_locked() const { return locked_axes != 0; }
 
 	virtual bool can_interact_with(const JoltBody3D &p_other) const override;

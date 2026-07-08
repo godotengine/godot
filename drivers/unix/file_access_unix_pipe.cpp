@@ -32,18 +32,18 @@
 
 #if defined(UNIX_ENABLED)
 
-#include "core/os/os.h"
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include <cerrno>
 #include <csignal>
 
-#ifndef sighandler_t
+#ifndef _GNU_SOURCE
 typedef typeof(void(int)) *sighandler_t;
 #endif
 

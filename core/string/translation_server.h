@@ -37,6 +37,7 @@ class TranslationServer : public Object {
 	GDCLASS(TranslationServer, Object);
 
 	String locale = "en";
+	bool allow_fallback = true;
 	String fallback;
 
 	Ref<TranslationDomain> main_domain;
@@ -92,6 +93,7 @@ class TranslationServer : public Object {
 	static inline HashMap<String, String> variant_map;
 	static inline HashMap<String, String> plural_rules_map;
 	static inline HashMap<String, int> num_system_map;
+	static inline HashMap<String, HashSet<String>> language_script_map;
 
 	void init_locale_info();
 
@@ -108,6 +110,8 @@ public:
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;
+	void set_fallback_allowed(const bool &p_allow);
+	bool is_fallback_allowed() const;
 	void set_fallback_locale(const String &p_locale);
 	String get_fallback_locale() const;
 
@@ -131,6 +135,8 @@ public:
 
 	String get_locale_name(const String &p_locale) const;
 	String get_plural_rules(const String &p_locale) const;
+
+	bool is_script_suppored_by_locale(const String &p_locale, const String &p_script) const;
 
 	PackedStringArray get_loaded_locales() const;
 

@@ -33,6 +33,8 @@
 #include "../openxr_api.h"
 #include "../openxr_api_extension.h"
 
+#include "core/object/class_db.h"
+
 void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_get_requested_extensions, "xr_version");
 	GDVIRTUAL_BIND(_set_system_properties_and_get_next_pointer, "next_pointer");
@@ -43,6 +45,7 @@ void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_set_projection_views_and_get_next_pointer, "view_index", "next_pointer");
 	GDVIRTUAL_BIND(_set_frame_wait_info_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_frame_end_info_and_get_next_pointer, "next_pointer");
+	GDVIRTUAL_BIND(_set_projection_layer_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_view_locate_info_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_reference_space_create_info_and_get_next_pointer, "reference_space_type", "next_pointer");
 	GDVIRTUAL_BIND(_prepare_view_configuration, "view_count");
@@ -52,7 +55,7 @@ void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_get_composition_layer, "index");
 	GDVIRTUAL_BIND(_get_composition_layer_order, "index");
 	GDVIRTUAL_BIND(_get_suggested_tracker_names);
-	GDVIRTUAL_BIND(_on_register_metadata);
+	GDVIRTUAL_BIND(_on_register_metadata, "interaction_profile_metadata");
 	GDVIRTUAL_BIND(_on_before_instance_created);
 	GDVIRTUAL_BIND(_on_instance_created, "instance");
 	GDVIRTUAL_BIND(_on_instance_destroyed);
@@ -82,6 +85,7 @@ void OpenXRExtensionWrapper::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND_COMPAT(_get_requested_extensions_bind_compat_109302);
 	GDVIRTUAL_BIND_COMPAT(_set_instance_create_info_and_get_next_pointer_bind_compat_109302, "next_pointer");
+	GDVIRTUAL_BIND_COMPAT(_on_register_metadata_bind_compat_117399);
 #endif
 
 	ClassDB::bind_method(D_METHOD("get_openxr_api"), &OpenXRExtensionWrapper::_gdextension_get_openxr_api);
@@ -210,6 +214,16 @@ void *OpenXRExtensionWrapper::set_frame_end_info_and_get_next_pointer(void *p_ne
 	return nullptr;
 }
 
+void *OpenXRExtensionWrapper::set_projection_layer_and_get_next_pointer(void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_projection_layer_and_get_next_pointer, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
 void OpenXRExtensionWrapper::prepare_view_configuration(uint32_t p_view_count) {
 	GDVIRTUAL_CALL(_prepare_view_configuration, p_view_count);
 }
@@ -270,8 +284,14 @@ int OpenXRExtensionWrapper::get_composition_layer_order(int p_index) {
 	return order;
 }
 
-void OpenXRExtensionWrapper::on_register_metadata() {
-	GDVIRTUAL_CALL(_on_register_metadata);
+void OpenXRExtensionWrapper::on_register_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata) {
+	if (GDVIRTUAL_CALL(_on_register_metadata, p_interaction_profile_metadata)) {
+		return;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_CALL(_on_register_metadata_bind_compat_117399);
+#endif
 }
 
 void OpenXRExtensionWrapper::on_before_instance_created() {

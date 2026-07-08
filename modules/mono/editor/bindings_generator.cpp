@@ -39,7 +39,6 @@
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
-#include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
@@ -148,6 +147,13 @@ const Vector<String> prop_allowed_inherited_member_hiding = {
 	"GltfAccessor.GetType",
 	"GltfAccessor.MethodName.GetType",
 };
+
+// We force the following enums to always add the 'Enum' suffix which is usually
+// a disambiguator when there are other members in the class with the same name.
+// This avoids hiding the enum when the property is declared in a derived class,
+// and the need for the 'new' keyword. It can also be used to avoid breaking compat
+// later if a new member is added with the same name as the enum.
+const Vector<String> enums_with_forced_suffix = {};
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
@@ -1575,43 +1581,43 @@ void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 	// The class where we put the extensions doesn't matter, so just use "GD".
 	p_output.append("public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n{");
 
-#define ARRAY_IS_EMPTY(m_type)                                                                          \
-	p_output.append("\n" INDENT1 "/// <summary>\n");                                                    \
+#define ARRAY_IS_EMPTY(m_type) \
+	p_output.append("\n" INDENT1 "/// <summary>\n"); \
 	p_output.append(INDENT1 "/// Returns true if this " #m_type " array is empty or doesn't exist.\n"); \
-	p_output.append(INDENT1 "/// </summary>\n");                                                        \
-	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array check.</param>\n");     \
-	p_output.append(INDENT1 "/// <returns>Whether or not the array is empty.</returns>\n");             \
-	p_output.append(INDENT1 "public static bool IsEmpty(this " #m_type "[] instance)\n");               \
-	p_output.append(OPEN_BLOCK_L1);                                                                     \
-	p_output.append(INDENT2 "return instance == null || instance.Length == 0;\n");                      \
+	p_output.append(INDENT1 "/// </summary>\n"); \
+	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array check.</param>\n"); \
+	p_output.append(INDENT1 "/// <returns>Whether or not the array is empty.</returns>\n"); \
+	p_output.append(INDENT1 "public static bool IsEmpty(this " #m_type "[] instance)\n"); \
+	p_output.append(OPEN_BLOCK_L1); \
+	p_output.append(INDENT2 "return instance == null || instance.Length == 0;\n"); \
 	p_output.append(INDENT1 CLOSE_BLOCK);
 
-#define ARRAY_JOIN(m_type)                                                                                          \
-	p_output.append("\n" INDENT1 "/// <summary>\n");                                                                \
-	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string delimited by the given string.\n");    \
-	p_output.append(INDENT1 "/// </summary>\n");                                                                    \
-	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n");            \
-	p_output.append(INDENT1 "/// <param name=\"delimiter\">The delimiter to use between items.</param>\n");         \
-	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n");                            \
-	p_output.append(INDENT1 "public static string Join(this " #m_type "[] instance, string delimiter = \", \")\n"); \
-	p_output.append(OPEN_BLOCK_L1);                                                                                 \
-	p_output.append(INDENT2 "return String.Join(delimiter, instance);\n");                                          \
-	p_output.append(INDENT1 CLOSE_BLOCK);
-
-#define ARRAY_STRINGIFY(m_type)                                                                          \
-	p_output.append("\n" INDENT1 "/// <summary>\n");                                                     \
-	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string with brackets.\n");         \
-	p_output.append(INDENT1 "/// </summary>\n");                                                         \
+#define ARRAY_JOIN(m_type) \
+	p_output.append("\n" INDENT1 "/// <summary>\n"); \
+	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string delimited by the given string.\n"); \
+	p_output.append(INDENT1 "/// </summary>\n"); \
 	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n"); \
-	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n");                 \
-	p_output.append(INDENT1 "public static string Stringify(this " #m_type "[] instance)\n");            \
-	p_output.append(OPEN_BLOCK_L1);                                                                      \
-	p_output.append(INDENT2 "return \"[\" + instance.Join() + \"]\";\n");                                \
+	p_output.append(INDENT1 "/// <param name=\"delimiter\">The delimiter to use between items.</param>\n"); \
+	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n"); \
+	p_output.append(INDENT1 "public static string Join(this " #m_type "[] instance, string delimiter = \", \")\n"); \
+	p_output.append(OPEN_BLOCK_L1); \
+	p_output.append(INDENT2 "return String.Join(delimiter, instance);\n"); \
 	p_output.append(INDENT1 CLOSE_BLOCK);
 
-#define ARRAY_ALL(m_type)  \
+#define ARRAY_STRINGIFY(m_type) \
+	p_output.append("\n" INDENT1 "/// <summary>\n"); \
+	p_output.append(INDENT1 "/// Converts this " #m_type " array to a string with brackets.\n"); \
+	p_output.append(INDENT1 "/// </summary>\n"); \
+	p_output.append(INDENT1 "/// <param name=\"instance\">The " #m_type " array to convert.</param>\n"); \
+	p_output.append(INDENT1 "/// <returns>A single string with all items.</returns>\n"); \
+	p_output.append(INDENT1 "public static string Stringify(this " #m_type "[] instance)\n"); \
+	p_output.append(OPEN_BLOCK_L1); \
+	p_output.append(INDENT2 "return \"[\" + instance.Join() + \"]\";\n"); \
+	p_output.append(INDENT1 CLOSE_BLOCK);
+
+#define ARRAY_ALL(m_type) \
 	ARRAY_IS_EMPTY(m_type) \
-	ARRAY_JOIN(m_type)     \
+	ARRAY_JOIN(m_type) \
 	ARRAY_STRINGIFY(m_type)
 
 	ARRAY_ALL(byte);
@@ -2222,7 +2228,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output.append(CS_SINGLETON_INSTANCE_SUFFIX);
 			}
 		} else {
-			ERR_PRINT("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
+			ERR_PRINT("Base type '" + itype.base_name.string() + "' does not exist, for class '" + itype.name + "'.");
 			return ERR_INVALID_DATA;
 		}
 	}
@@ -2320,7 +2326,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	for (const PropertyInterface &iprop : itype.properties) {
 		Error prop_err = _generate_cs_property(itype, iprop, output);
 		ERR_FAIL_COND_V_MSG(prop_err != OK, prop_err,
-				"Failed to generate property '" + iprop.cname.operator String() +
+				"Failed to generate property '" + iprop.cname.string() +
 						"' for class '" + itype.name + "'.");
 	}
 
@@ -4256,12 +4262,17 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate signals
 
-		const AHashMap<StringName, MethodInfo> &signal_map = class_info->signal_map;
+		const AHashMap<StringName, const MethodInfo *> &signal_map = class_info->gdtype->get_signal_map(true);
 
-		for (const KeyValue<StringName, MethodInfo> &E : signal_map) {
+		for (const KeyValue<StringName, const MethodInfo *> &E : signal_map) {
 			SignalInterface isignal;
 
-			const MethodInfo &method_info = E.value;
+			const MethodInfo &method_info = *E.value;
+
+			if (method_info.name.begins_with("_")) {
+				// Signals starting with an underscore are internal and not meant to be exposed.
+				continue;
+			}
 
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
@@ -4347,27 +4358,24 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
-		const HashMap<StringName, ClassDB::ClassInfo::EnumInfo> &enum_map = class_info->enum_map;
+		const AHashMap<StringName, const GDType::EnumInfo *> &enum_map = class_info->gdtype->get_enum_map(true);
 
-		for (const KeyValue<StringName, ClassDB::ClassInfo::EnumInfo> &E : enum_map) {
-			StringName enum_proxy_cname = E.key;
-			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.operator String());
-			if (itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
+		for (const KeyValue<StringName, const GDType::EnumInfo *> &kv : enum_map) {
+			StringName enum_proxy_cname = kv.key;
+			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.string());
+			if (enums_with_forced_suffix.has(itype.proxy_name + "." + enum_proxy_name) || itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
 				// In case the enum name conflicts with other PascalCase members,
 				// we append 'Enum' to the enum name in those cases.
 				// We have several conflicts between enums and PascalCase properties.
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
-			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, E.value.is_bitfield);
-			const List<StringName> &enum_constants = E.value.constants;
-			for (const StringName &constant_cname : enum_constants) {
-				String constant_name = constant_cname.operator String();
-				int64_t *value = class_info->constant_map.getptr(constant_cname);
-				ERR_FAIL_NULL_V(value, false);
-				constants.erase(constant_name);
+			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, kv.value->is_bitfield);
+			for (const KeyValue<StringName, int64_t> &kv_case : kv.value->values) {
+				String constant_name = kv_case.key.string();
+				constants.erase(kv_case.key);
 
-				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
+				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), kv_case.value);
 
 				iconstant.const_doc = nullptr;
 				for (int i = 0; i < itype.class_doc->constants.size(); i++) {
@@ -4400,7 +4408,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			TypeInterface enum_itype;
 			enum_itype.is_enum = true;
-			enum_itype.name = itype.name + "." + String(E.key);
+			enum_itype.name = itype.name + "." + String(kv.key);
 			enum_itype.cname = StringName(enum_itype.name);
 			enum_itype.proxy_name = itype.proxy_name + "." + enum_proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
@@ -4408,7 +4416,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const String &constant_name : constants) {
-			int64_t *value = class_info->constant_map.getptr(StringName(constant_name));
+			const int64_t *value = class_info->gdtype->get_integer_constant_map(true).getptr(StringName(constant_name));
 			ERR_FAIL_NULL_V(value, false);
 
 			String constant_proxy_name = snake_to_pascal_case(constant_name, true);
@@ -4734,12 +4742,12 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	TypeInterface itype;
 
-#define INSERT_STRUCT_TYPE(m_type, m_proxy_name)                                          \
-	{                                                                                     \
+#define INSERT_STRUCT_TYPE(m_type, m_proxy_name) \
+	{ \
 		itype = TypeInterface::create_value_type(String(#m_type), String(#m_proxy_name)); \
-		itype.cs_in_expr = "&%0";                                                         \
-		itype.cs_in_expr_is_unsafe = true;                                                \
-		builtin_types.insert(itype.cname, itype);                                         \
+		itype.cs_in_expr = "&%0"; \
+		itype.cs_in_expr_is_unsafe = true; \
+		builtin_types.insert(itype.cname, itype); \
 	}
 
 	INSERT_STRUCT_TYPE(Vector2, Vector2)
@@ -4776,21 +4784,21 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	{
 		// C interface for 'uint32_t' is the same as that of enums. Remember to apply
 		// any of the changes done here to 'TypeInterface::postsetup_enum_type' as well.
-#define INSERT_INT_TYPE(m_name, m_int_struct_name)                                             \
-	{                                                                                          \
-		itype = TypeInterface::create_value_type(String(m_name));                              \
-		if (itype.name != "long" && itype.name != "ulong") {                                   \
-			itype.c_in = "%5%0 %1_in = %1;\n";                                                 \
-			itype.c_out = "%5return (%0)(%1);\n";                                              \
-			itype.c_type = "long";                                                             \
-			itype.c_arg_in = "&%s_in";                                                         \
-		} else {                                                                               \
-			itype.c_arg_in = "&%s";                                                            \
-		}                                                                                      \
-		itype.c_type_in = itype.name;                                                          \
-		itype.c_type_out = itype.name;                                                         \
+#define INSERT_INT_TYPE(m_name, m_int_struct_name) \
+	{ \
+		itype = TypeInterface::create_value_type(String(m_name)); \
+		if (itype.name != "long" && itype.name != "ulong") { \
+			itype.c_in = "%5%0 %1_in = %1;\n"; \
+			itype.c_out = "%5return (%0)(%1);\n"; \
+			itype.c_type = "long"; \
+			itype.c_arg_in = "&%s_in"; \
+		} else { \
+			itype.c_arg_in = "&%s"; \
+		} \
+		itype.c_type_in = itype.name; \
+		itype.c_type_out = itype.name; \
 		itype.c_in_vararg = "%5using godot_variant %1_in = VariantUtils.CreateFromInt(%1);\n"; \
-		builtin_types.insert(itype.cname, itype);                                              \
+		builtin_types.insert(itype.cname, itype); \
 	}
 
 		// The expected type for all integers in ptrcall is 'int64_t', so that's what we use for 'c_type'
@@ -4962,22 +4970,22 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.is_span_compatible = true;
 	builtin_types.insert(itype.cname, itype);
 
-#define INSERT_ARRAY_FULL(m_name, m_type, m_managed_type, m_proxy_t)                \
-	{                                                                               \
-		itype = TypeInterface();                                                    \
-		itype.name = #m_name;                                                       \
-		itype.cname = itype.name;                                                   \
-		itype.proxy_name = #m_proxy_t "[]";                                         \
-		itype.cs_type = itype.proxy_name;                                           \
+#define INSERT_ARRAY_FULL(m_name, m_type, m_managed_type, m_proxy_t) \
+	{ \
+		itype = TypeInterface(); \
+		itype.name = #m_name; \
+		itype.cname = itype.name; \
+		itype.proxy_name = #m_proxy_t "[]"; \
+		itype.cs_type = itype.proxy_name; \
 		itype.c_in = "%5using %0 %1_in = " C_METHOD_MONOARRAY_TO(m_type) "(%1);\n"; \
-		itype.c_out = "%5return " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n";        \
-		itype.c_arg_in = "&%s_in";                                                  \
-		itype.c_type = #m_managed_type;                                             \
-		itype.c_type_in = "ReadOnlySpan<" #m_proxy_t ">";                           \
-		itype.c_type_out = itype.proxy_name;                                        \
-		itype.c_type_is_disposable_struct = true;                                   \
-		itype.is_span_compatible = true;                                            \
-		builtin_types.insert(itype.name, itype);                                    \
+		itype.c_out = "%5return " C_METHOD_MONOARRAY_FROM(m_type) "(%1);\n"; \
+		itype.c_arg_in = "&%s_in"; \
+		itype.c_type = #m_managed_type; \
+		itype.c_type_in = "ReadOnlySpan<" #m_proxy_t ">"; \
+		itype.c_type_out = itype.proxy_name; \
+		itype.c_type_is_disposable_struct = true; \
+		itype.is_span_compatible = true; \
+		builtin_types.insert(itype.name, itype); \
 	}
 
 #define INSERT_ARRAY(m_type, m_managed_type, m_proxy_t) INSERT_ARRAY_FULL(m_type, m_type, m_managed_type, m_proxy_t)
@@ -5094,7 +5102,7 @@ void BindingsGenerator::_populate_global_constants() {
 			iconstant.const_doc = const_doc;
 
 			if (enum_name != StringName()) {
-				EnumInterface ienum(enum_name, pascal_to_pascal_case(enum_name.operator String()), CoreConstants::is_global_constant_bitfield(i));
+				EnumInterface ienum(enum_name, pascal_to_pascal_case(enum_name.string()), CoreConstants::is_global_constant_bitfield(i));
 				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
 				if (enum_match) {
 					enum_match->get().constants.push_back(iconstant);
@@ -5110,7 +5118,7 @@ void BindingsGenerator::_populate_global_constants() {
 		for (EnumInterface &ienum : global_enums) {
 			TypeInterface enum_itype;
 			enum_itype.is_enum = true;
-			enum_itype.name = ienum.cname.operator String();
+			enum_itype.name = ienum.cname.string();
 			enum_itype.cname = ienum.cname;
 			enum_itype.proxy_name = ienum.proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
