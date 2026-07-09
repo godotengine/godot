@@ -2361,7 +2361,9 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 		push_error(R"(Expected iterable after "in".)");
 	}
 
-	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "for" condition.)");
+	if (!match(GDScriptTokenizer::Token::COLON)) {
+		push_error(vformat(R"(Expected ":" after "for" condition, found "%s" instead.)", current.get_name()), current);
+	}
 
 	// Save break/continue state.
 	bool could_break = can_break;
@@ -2398,7 +2400,9 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 		push_error(vformat(R"(Expected conditional expression after "%s".)", p_token));
 	}
 
-	consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":" after "%s" condition.)", p_token));
+	if (!match(GDScriptTokenizer::Token::COLON)) {
+		push_error(vformat(R"(Expected ":" after "%s" condition, found "%s" instead.)", p_token, current.get_name()), current);
+	}
 
 	n_if->true_block = parse_suite(vformat(R"("%s" block)", p_token));
 	n_if->true_block->parent_if = n_if;
@@ -2756,7 +2760,9 @@ GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 		push_error(R"(Expected conditional expression after "while".)");
 	}
 
-	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "while" condition.)");
+	if (!match(GDScriptTokenizer::Token::COLON)) {
+		push_error(vformat(R"(Expected ":" after "while" condition, found "%s" instead.)", current.get_name()), current);
+	}
 
 	// Save break/continue state.
 	bool could_break = can_break;
