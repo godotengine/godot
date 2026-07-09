@@ -397,11 +397,11 @@
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
-				tween.TweenCallback(Callable.From(() => WalkTo(600.0f)));
+				tween.TweenCallback(Callable.From(() =&gt; WalkTo(600.0f)));
 				tween.TweenAwait(new Signal(this, SignalName.DestinationReached));
-				tween.TweenCallback(Callable.From(() => SayDialogue("Good day, sir!")));
+				tween.TweenCallback(Callable.From(() =&gt; SayDialogue("Good day, sir!")));
 				tween.TweenAwait(new Signal(this, SignalName.DialogueClosed));
-				tween.TweenCallback(Callable.From(() => WalkTo(0.0f)));
+				tween.TweenCallback(Callable.From(() =&gt; WalkTo(0.0f)));
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If you are awaiting a signal from a callback called in the same [Tween], make sure the signal is emitted [i]after[/i] the await starts. If it can't be reasonably guaranteed, you can await and emit in the same step:
