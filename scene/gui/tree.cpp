@@ -5685,6 +5685,7 @@ void Tree::_notification(int p_what) {
 					rendering_server->canvas_item_set_custom_rect(last_sticky_ci, !is_visibility_clip_disabled(), Rect2(0, last_ofs.y + draw_ofs.y, get_size().x, sticky_stack_end - last_ofs.y));
 					rendering_server->canvas_item_set_custom_rect(content_ci, !is_visibility_clip_disabled(), main_clip_rect.grow_side(SIDE_TOP, -(sticky_stack_end + content_rect.position.y)));
 					rendering_server->canvas_item_set_custom_rect(stylebox_ci, !is_visibility_clip_disabled(), main_clip_rect.grow_side(SIDE_TOP, -(sticky_stack_end + content_rect.position.y)));
+					rendering_server->canvas_item_set_custom_rect(custom_ci, !is_visibility_clip_disabled(), main_clip_rect.grow_side(SIDE_TOP, -(sticky_stack_end + content_rect.position.y)));
 					rendering_server->canvas_item_set_custom_rect(header_ci, !is_visibility_clip_disabled(), header_clip_rect.grow_side(SIDE_BOTTOM, last_ofs.y + content_rect.position.y));
 				}
 			}
