@@ -2155,6 +2155,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	animation = memnew(OptionButton);
 	hb->add_child(animation);
+	animation->set_search_bar_enabled(true);
+	animation->set_search_bar_min_item_count(10);
 	animation->set_accessibility_name(TTRC("Animation"));
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
 	animation->set_tooltip_text(TTRC("Display list of animations in player."));
@@ -2265,6 +2267,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.tree->connect(SNAME("item_edited"), callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
 	blend_editor.next = memnew(OptionButton);
+	blend_editor.next->set_search_bar_enabled(true);
+	blend_editor.next->set_search_bar_min_item_count(10);
 	blend_editor.next->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	blend_editor.next->connect(SceneStringName(item_selected), callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
 	blend_vb->add_margin_child(TTRC("Next (Auto Queue):"), blend_editor.next);
