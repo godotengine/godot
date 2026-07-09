@@ -255,8 +255,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.script_path = path;
 
 				symbol.detail = "const " + symbol.name;
-				if (m.constant->get_datatype().is_hard_type()) {
-					symbol.detail += ": " + m.constant->get_datatype().to_string();
+				if (m.constant->type_constraint.is_hard_type()) {
+					symbol.detail += ": " + m.constant->type_constraint.to_string();
 				}
 
 				const Variant &default_value = m.constant->initializer->reduced_value;
@@ -313,8 +313,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					param_symbol.uri = uri;
 					param_symbol.script_path = path;
 					param_symbol.detail = "var " + param_symbol.name;
-					if (param->get_datatype().is_hard_type()) {
-						param_symbol.detail += ": " + param->get_datatype().to_string();
+					if (param->type_constraint.is_hard_type()) {
+						param_symbol.detail += ": " + param->type_constraint.to_string();
 					}
 					symbol.children.push_back(param_symbol);
 				}
@@ -424,8 +424,8 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			parameters += ", ";
 		}
 		parameters += String(parameter->identifier->name);
-		if (parameter->get_datatype().is_hard_type()) {
-			parameters += ": " + parameter->get_datatype().to_string();
+		if (parameter->type_constraint.is_hard_type()) {
+			parameters += ": " + parameter->type_constraint.to_string();
 		}
 		if (parameter->initializer != nullptr) {
 			parameters += " = " + parameter->initializer->reduced_value.to_json_string();
@@ -436,11 +436,11 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			parameters += ", ";
 		}
 		const ParameterNode *rest_param = p_func->rest_parameter;
-		parameters += "..." + rest_param->identifier->name + ": " + rest_param->get_datatype().to_string();
+		parameters += "..." + rest_param->identifier->name + ": " + rest_param->type_constraint.to_string();
 	}
 	r_symbol.detail += parameters + ")";
 
-	const DataType return_type = p_func->get_datatype();
+	const DataType return_type = p_func->return_type_constraint;
 	if (return_type.is_hard_type()) {
 		if (return_type.kind == DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
 			r_symbol.detail += " -> void";
@@ -814,13 +814,13 @@ Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::Functio
 	ERR_FAIL_NULL_V(p_func, Dictionary());
 	Dictionary func;
 	func["name"] = p_func->identifier->name;
-	func["return_type"] = p_func->get_datatype().to_string();
+	func["return_type"] = p_func->return_type_constraint.to_string();
 	func["rpc_config"] = p_func->rpc_config;
 	Array parameters;
 	for (int i = 0; i < p_func->parameters.size(); i++) {
 		Dictionary arg;
 		arg["name"] = p_func->parameters[i]->identifier->name;
-		arg["type"] = p_func->parameters[i]->get_datatype().to_string();
+		arg["type"] = p_func->parameters[i]->type_constraint.to_string();
 		if (p_func->parameters[i]->initializer != nullptr) {
 			arg["default_value"] = p_func->parameters[i]->initializer->reduced_value;
 		}
@@ -870,7 +870,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 				Dictionary api;
 				api["name"] = m.constant->identifier->name;
 				api["value"] = m.constant->initializer->reduced_value;
-				api["data_type"] = m.constant->get_datatype().to_string();
+				api["data_type"] = m.constant->type_constraint.to_string();
 				if (const LSP::DocumentSymbol *symbol = get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.constant->start_line))) {
 					api["signature"] = symbol->detail;
 					api["description"] = symbol->documentation;
@@ -907,7 +907,7 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 			case ClassNode::Member::VARIABLE: {
 				Dictionary api;
 				api["name"] = m.variable->identifier->name;
-				api["data_type"] = m.variable->get_datatype().to_string();
+				api["data_type"] = m.variable->type_constraint.to_string();
 				api["default_value"] = m.variable->initializer != nullptr ? m.variable->initializer->reduced_value : Variant();
 				api["setter"] = m.variable->setter ? ("@" + String(m.variable->identifier->name) + "_setter") : (m.variable->setter_pointer != nullptr ? String(m.variable->setter_pointer->name) : String());
 				api["getter"] = m.variable->getter ? ("@" + String(m.variable->identifier->name) + "_getter") : (m.variable->getter_pointer != nullptr ? String(m.variable->getter_pointer->name) : String());

@@ -4557,7 +4557,7 @@ bool GDScriptParser::abstract_annotation(AnnotationNode *p_annotation, Node *p_t
 bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@onready" annotation can only be applied to class variables.)");
 
-	if (current_class && !ClassDB::is_parent_class(current_class->get_datatype().native_type, SNAME("Node"))) {
+	if (current_class && !ClassDB::is_parent_class(current_class->self_type.native_type, SNAME("Node"))) {
 		push_error(R"("@onready" can only be used in classes that inherit "Node".)", p_annotation);
 		return false;
 	}
@@ -4769,11 +4769,11 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	variable->export_info.hint_string = hint_string;
 
 	// This is called after the analyzer is done finding the type, so this should be set here.
-	DataType export_type = variable->get_datatype();
+	DataType export_type = variable->type_constraint;
 
 	// Use initializer type if specified type is `Variant`.
-	if (export_type.is_variant() && variable->initializer != nullptr && variable->initializer->datatype.is_set()) {
-		export_type = variable->initializer->get_datatype();
+	if (export_type.is_variant() && variable->initializer != nullptr && variable->initializer->type_constraint.is_set()) {
+		export_type = variable->initializer->type_constraint;
 		export_type.type_source = DataType::INFERRED;
 	}
 
@@ -4787,7 +4787,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	} else if (export_type.is_typed_container_type()) {
 		is_array = true;
 		export_type = export_type.get_typed_container_type();
-		export_type.type_source = variable->datatype.type_source;
+		export_type.type_source = variable->type_constraint.type_source;
 	}
 
 	bool is_dict = false;
@@ -4809,7 +4809,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 		if (export_type.builtin_type != Variant::STRING && export_type.builtin_type != Variant::DICTIONARY) {
 			Vector<Variant::Type> expected_types = { Variant::STRING, Variant::DICTIONARY };
-			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->type_constraint), p_annotation);
 			return false;
 		}
 
@@ -4989,7 +4989,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != enum_type)) {
 			Vector<Variant::Type> expected_types = { Variant::INT, Variant::STRING };
-			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->type_constraint), p_annotation);
 			return false;
 		}
 	}
@@ -5000,7 +5000,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 			// Allow float/int conversion.
 			if ((t_type != Variant::FLOAT || export_type.builtin_type != Variant::INT) && (t_type != Variant::INT || export_type.builtin_type != Variant::FLOAT)) {
 				Vector<Variant::Type> expected_types = { t_type };
-				push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+				push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->type_constraint), p_annotation);
 				return false;
 			}
 		}
@@ -5040,7 +5040,7 @@ bool GDScriptParser::export_storage_annotation(AnnotationNode *p_annotation, Nod
 	variable->exported = true;
 
 	// Save the info because the compiler uses export info for overwriting member info.
-	variable->export_info = variable->get_datatype().to_property_info(variable->identifier->name);
+	variable->export_info = variable->type_constraint.to_property_info(variable->identifier->name);
 	variable->export_info.usage |= PROPERTY_USAGE_STORAGE;
 
 	return true;
@@ -5062,7 +5062,7 @@ bool GDScriptParser::export_custom_annotation(AnnotationNode *p_annotation, Node
 
 	variable->exported = true;
 
-	DataType export_type = variable->get_datatype();
+	DataType export_type = variable->type_constraint;
 
 	variable->export_info.type = export_type.builtin_type;
 	variable->export_info.hint = static_cast<PropertyHint>(p_annotation->resolved_arguments[0].operator int64_t());
@@ -5095,7 +5095,7 @@ bool GDScriptParser::export_tool_button_annotation(AnnotationNode *p_annotation,
 		return false;
 	}
 
-	const DataType variable_type = variable->get_datatype();
+	const DataType variable_type = variable->type_constraint;
 	if (!variable_type.is_variant() && variable_type.is_hard_type()) {
 		if (variable_type.kind != DataType::BUILTIN || variable_type.builtin_type != Variant::CALLABLE) {
 			push_error(vformat(R"("@export_tool_button" annotation requires a variable of type "Callable", but type "%s" was given instead.)", variable_type.to_string()), p_annotation);
@@ -5330,14 +5330,14 @@ bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target
 GDScriptParser::DataType GDScriptParser::SuiteNode::Local::get_datatype() const {
 	switch (type) {
 		case CONSTANT:
-			return constant->get_datatype();
+			return constant->type_constraint;
 		case VARIABLE:
-			return variable->get_datatype();
+			return variable->type_constraint;
 		case PARAMETER:
-			return parameter->get_datatype();
+			return parameter->type_constraint;
 		case FOR_VARIABLE:
 		case PATTERN_BIND:
-			return bind->get_datatype();
+			return bind->type_constraint;
 		case UNDEFINED:
 			return DataType();
 	}
