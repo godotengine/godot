@@ -3829,7 +3829,7 @@ EditorPaginator::EditorPaginator() {
 	add_child(page_count_label);
 
 	next_page_button = memnew(Button);
-	prev_page_button->set_accessibility_name(TTRC("Next Page"));
+	next_page_button->set_accessibility_name(TTRC("Next Page"));
 	next_page_button->set_flat(true);
 	next_page_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPaginator::_next_page_button_pressed));
 	add_child(next_page_button);
