@@ -211,6 +211,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	private var changingOrientationAllowed = false
 	private var distractionFreeModeEnabled = false
 	private var activeWorkspace: String? = null
+	private var currentOrientation = Configuration.ORIENTATION_UNDEFINED
 
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
 
@@ -281,9 +282,13 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	override fun onConfigurationChanged(newConfig: Configuration) {
 		super.onConfigurationChanged(newConfig)
 
-		// Show EditorTitleBar on small screens only in landscape due to width limitations in portrait.
-		// TODO: Enable for portrait once the title bar width is optimized.
-		EditorUtils.toggleTitleBar(isLargeScreen || newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+		// Some editor parts are hidden on small screens due to width limitations in portrait.
+		if (!isLargeScreen && currentOrientation != newConfig.orientation) {
+			currentOrientation = newConfig.orientation
+			godot?.runOnRenderThread {
+				EditorUtils.orientationChanged(currentOrientation == Configuration.ORIENTATION_PORTRAIT)
+			}
+		}
 	}
 
 	override fun onDestroy() {
