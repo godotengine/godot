@@ -1744,8 +1744,10 @@ void EditorProperty::_update_popup() {
 		menu->add_icon_item(theme_cache.help_icon, TTR("Open Documentation"), MENU_OPEN_DOCUMENTATION);
 	}
 
-	Vector<String> property_paths = { String::num_int64(get_edited_object()->get_instance_id()), property_path };
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, property_paths);
+	if (EditorContextMenuPluginManager::get_singleton()) {
+		Vector<String> property_paths = { String::num_int64(get_edited_object()->get_instance_id()), property_path };
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, property_paths);
+	}
 }
 
 ////////////////////////////////////////////////
