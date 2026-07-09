@@ -117,6 +117,16 @@ static bool debug_print_enabled = false;
 #define XDG_TOPLEVEL_CONFIGURE 0
 #define XDG_TOPLEVEL_CLOSE 1
 
+#define ZWP_TABLET_SEAT_V2_TABLET_ADDED 0
+#define ZWP_TABLET_SEAT_V2_TOOL_ADDED 1
+#define ZWP_TABLET_SEAT_V2_PAD_ADDED 2
+
+#define ZWP_TABLET_V2_REMOVED 4
+
+#define ZWP_TABLET_TOOL_V2_PROXIMITY_IN 6
+#define ZWP_TABLET_TOOL_V2_PROXIMITY_OUT 7
+#define ZWP_TABLET_TOOL_V2_DOWN 8
+
 #define GODOT_EMBEDDED_CLIENT_DISCONNECTED 0
 #define GODOT_EMBEDDED_CLIENT_WINDOW_EMBEDDED 1
 #define GODOT_EMBEDDED_CLIENT_WINDOW_FOCUS_IN 2
@@ -646,6 +656,18 @@ Error WaylandEmbedder::Client::send_wl_keyboard_modifiers(uint32_t wl_keyboard, 
 
 Error WaylandEmbedder::Client::send_wl_shm_format(uint32_t wl_shm, uint32_t format) {
 	return send_wayland_event(socket, wl_shm, wl_shm_interface, WL_SHM_FORMAT, { wl_arg_uint(format) });
+}
+
+Error WaylandEmbedder::Client::send_zwp_tablet_seat_v2_tablet_added(uint32_t zwp_tablet_seat_v2, uint32_t id) {
+	return send_wayland_event(socket, zwp_tablet_seat_v2, zwp_tablet_seat_v2_interface, ZWP_TABLET_SEAT_V2_TABLET_ADDED, { wl_arg_new_id(id) });
+}
+
+Error WaylandEmbedder::Client::send_zwp_tablet_seat_v2_tool_added(uint32_t zwp_tablet_seat_v2, uint32_t id) {
+	return send_wayland_event(socket, zwp_tablet_seat_v2, zwp_tablet_seat_v2_interface, ZWP_TABLET_SEAT_V2_TOOL_ADDED, { wl_arg_new_id(id) });
+}
+
+Error WaylandEmbedder::Client::send_zwp_tablet_tool_v2_proximity_in(uint32_t zwp_tablet_tool_v2, uint32_t serial, uint32_t tablet, uint32_t surface) {
+	return send_wayland_event(socket, zwp_tablet_tool_v2, zwp_tablet_tool_v2_interface, ZWP_TABLET_TOOL_V2_PROXIMITY_IN, { wl_arg_uint(serial), wl_arg_object(tablet), wl_arg_object(surface) });
 }
 
 Error WaylandEmbedder::Client::send_xdg_surface_configure(uint32_t xdg_surface, uint32_t serial) {
@@ -1956,6 +1978,22 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 		}
 	}
 
+	if (interface == &zwp_tablet_manager_v2_interface) {
+		if (p_opcode == ZWP_TABLET_MANAGER_V2_GET_TABLET_SEAT) {
+			uint32_t new_local_id = body[0];
+			LocalObjectHandle seat = LocalObjectHandle(client, body[1]);
+
+			TabletSeatData *seat_data = memnew(TabletSeatData);
+			seat_data->wl_seat_name = registry_globals_names[seat.get_global_id()];
+
+			uint32_t new_global_id = client->new_object(new_local_id, &zwp_tablet_seat_v2_interface, object->version, seat_data);
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, MessageStatus::ERROR);
+
+			send_wayland_method(compositor_socket, global_id, zwp_tablet_manager_v2_interface, ZWP_TABLET_MANAGER_V2_GET_TABLET_SEAT, { wl_arg_new_id(new_global_id), wl_arg_object(seat.get_global_id()) });
+			return MessageStatus::HANDLED;
+		}
+	}
+
 	if (interface == &godot_embedded_client_interface) {
 		EmbeddedClientData *eclient_data = (EmbeddedClientData *)object->data;
 		ERR_FAIL_NULL_V(eclient_data, MessageStatus::ERROR);
@@ -2580,6 +2618,129 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 					return MessageStatus::HANDLED;
 				}
 			}
+		}
+	}
+
+	if (object->interface == &zwp_tablet_seat_v2_interface) {
+		if (p_opcode == ZWP_TABLET_SEAT_V2_TABLET_ADDED) {
+			uint32_t new_id = body[0];
+
+			TabletSeatData *seat_data = (TabletSeatData *)object->data;
+			ERR_FAIL_NULL_V(seat_data, MessageStatus::ERROR);
+
+			seat_data->tablets.insert(new_id);
+
+			TabletData *tablet_data = memnew(TabletData);
+			ERR_FAIL_NULL_V(tablet_data, MessageStatus::ERROR);
+
+			tablet_data->seat_id = p_global_id;
+
+			uint32_t new_local_id = client->new_server_object(new_id, &zwp_tablet_v2_interface, object->version, tablet_data);
+
+			client->send_zwp_tablet_seat_v2_tablet_added(local_id, new_local_id);
+
+			return MessageStatus::HANDLED;
+		}
+
+		if (p_opcode == ZWP_TABLET_SEAT_V2_TOOL_ADDED) {
+			uint32_t new_id = body[0];
+
+			TabletSeatData *seat_data = (TabletSeatData *)object->data;
+			ERR_FAIL_NULL_V(seat_data, MessageStatus::ERROR);
+
+			TabletToolData *tool_data = memnew(TabletToolData);
+			ERR_FAIL_NULL_V(tool_data, MessageStatus::ERROR);
+
+			tool_data->seat_id = p_global_id;
+
+			uint32_t new_local_id = client->new_server_object(new_id, &zwp_tablet_tool_v2_interface, object->version, tool_data);
+
+			client->send_zwp_tablet_seat_v2_tool_added(local_id, new_local_id);
+
+			return MessageStatus::HANDLED;
+		}
+	}
+
+	if (object->interface == &zwp_tablet_v2_interface) {
+		if (p_opcode == ZWP_TABLET_V2_REMOVED) {
+			TabletData *tablet_data = (TabletData *)object->data;
+			ERR_FAIL_NULL_V(tablet_data, MessageStatus::ERROR);
+
+			WaylandObject *seat_object = get_object(tablet_data->seat_id);
+			ERR_FAIL_NULL_V(seat_object, MessageStatus::ERROR);
+
+			TabletSeatData *seat_data = (TabletSeatData *)seat_object->data;
+			ERR_FAIL_NULL_V(seat_data, MessageStatus::ERROR);
+
+			seat_data->tablets.erase(p_global_id);
+
+			return MessageStatus::UNHANDLED;
+		}
+	}
+
+	if (object->interface == &zwp_tablet_tool_v2_interface) {
+		TabletToolData *tool_data = (TabletToolData *)object->data;
+		ERR_FAIL_NULL_V(tool_data, MessageStatus::ERROR);
+
+		WaylandObject *seat_object = get_object(tool_data->seat_id);
+		ERR_FAIL_NULL_V(seat_object, MessageStatus::ERROR);
+
+		TabletSeatData *seat_data = (TabletSeatData *)seat_object->data;
+		ERR_FAIL_NULL_V(seat_data, MessageStatus::ERROR);
+
+		if (p_opcode == ZWP_TABLET_TOOL_V2_PROXIMITY_IN) {
+			uint32_t serial = body[0];
+			uint32_t tablet = body[1];
+			uint32_t surface = body[2];
+
+			uint32_t local_tablet_id = client->get_local_id(tablet);
+
+			if (local_tablet_id == INVALID_ID && seat_data->tablets.begin()) {
+				// Client has no idea what this tablet is, likely because the compositor is
+				// reporting an object from another tablet seat (a common implementation
+				// mistake[1]). We can somewhat workaround by reporting a random tablet
+				// instead. This isn't ideal as it might not represent the same thing, but
+				// AFAICS there's no reliable way to 100% identify a tablet from its
+				// description, and Godot does not do anything fancy in the first place.
+				// [1]: https://oftc.catirclogs.org/wayland/2026-07-02#1782988779-1782991085
+				tablet = *seat_data->tablets.begin();
+			}
+
+			local_tablet_id = client->get_local_id(tablet);
+			uint32_t local_surface_id = client->get_local_id(surface);
+			if (local_tablet_id == INVALID_ID || local_surface_id == INVALID_ID) {
+				// We usually error, but in this case this can actually happen, if the
+				// surface or tablet isn't known by the client (e.g. embedded).
+				return MessageStatus::HANDLED;
+			}
+
+			seat_data->proximal_surface = LocalObjectHandle(client, local_surface_id);
+
+			client->send_zwp_tablet_tool_v2_proximity_in(local_id, serial, local_tablet_id, local_surface_id);
+
+			return MessageStatus::HANDLED;
+		}
+
+		if (p_opcode == ZWP_TABLET_TOOL_V2_PROXIMITY_OUT) {
+			seat_data->proximal_surface.invalidate();
+
+			return MessageStatus::UNHANDLED;
+		}
+
+		if (p_opcode == ZWP_TABLET_TOOL_V2_DOWN) {
+			// FIXME: Gracefully handle deleted seats (here and in other seat logic).
+			RegistryGlobalInfo &global_seat_info = registry_globals[seat_data->wl_seat_name];
+			WaylandSeatGlobalData *global_wl_seat_data = (WaylandSeatGlobalData *)global_seat_info.data;
+			ERR_FAIL_NULL_V(global_wl_seat_data, MessageStatus::ERROR);
+
+			if (seat_data->proximal_surface.get_global_id() != INVALID_ID) {
+				seat_name_leave_surface(seat_data->wl_seat_name, global_wl_seat_data->focused_surface_id);
+				seat_name_enter_surface(seat_data->wl_seat_name, seat_data->proximal_surface.get_global_id());
+
+				global_wl_seat_data->focused_surface_id = seat_data->proximal_surface.get_global_id();
+			}
+
+			return MessageStatus::UNHANDLED;
 		}
 	}
 
