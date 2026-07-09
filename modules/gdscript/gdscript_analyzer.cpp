@@ -1880,7 +1880,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			if (p_function->return_type == nullptr) {
 				// GH-118877. We decided to make an exception to maintain compatibility, since the problem can only be detected at runtime.
 #ifdef DISABLE_DEPRECATED
-				p_function->set_datatype(parent_return_type);
+				p_function->return_type_constraint = parent_return_type;
 #else // !DISABLE_DEPRECATED
 				if (function_name == GDScriptLanguage::get_singleton()->strings._get_property_list && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
 					GDScriptParser::DataType array_type;
