@@ -136,7 +136,7 @@ PackedInt64Array OpenXRSpatialCapabilityConfigurationMicroQrCode::_get_enabled_c
 // OpenXRSpatialCapabilityConfigurationAruco
 
 OpenXRSpatialCapabilityConfigurationAruco::OpenXRSpatialCapabilityConfigurationAruco() {
-	int aruco_dict = GLOBAL_GET_CACHED(int, "xr/openxr/extensions/spatial_entity/aruco_dict");
+	int aruco_dict = GLOBAL_GET_CACHED(int, "xr/openxr/extensions/spatial_entity/marker_tracking/aruco_dict");
 	set_aruco_dict((XrSpatialMarkerArucoDictEXT)(XR_SPATIAL_MARKER_ARUCO_DICT_4X4_50_EXT + aruco_dict));
 }
 
@@ -228,7 +228,7 @@ PackedInt64Array OpenXRSpatialCapabilityConfigurationAruco::_get_enabled_compone
 // OpenXRSpatialCapabilityConfigurationAprilTag
 
 OpenXRSpatialCapabilityConfigurationAprilTag::OpenXRSpatialCapabilityConfigurationAprilTag() {
-	int april_tag_dict = GLOBAL_GET_CACHED(int, "xr/openxr/extensions/spatial_entity/april_tag_dict");
+	int april_tag_dict = GLOBAL_GET_CACHED(int, "xr/openxr/extensions/spatial_entity/marker_tracking/april_tag_dict");
 	set_april_dict((XrSpatialMarkerAprilTagDictEXT)(XR_SPATIAL_MARKER_APRIL_TAG_DICT_16H5_EXT + april_tag_dict));
 }
 
@@ -366,6 +366,12 @@ uint32_t OpenXRSpatialComponentMarkerList::get_marker_id(int64_t p_index) const 
 	return marker_data[p_index].markerId;
 }
 
+XrSpatialBufferIdEXT OpenXRSpatialComponentMarkerList::get_marker_buffer_id(int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, marker_data.size(), XR_NULL_SPATIAL_BUFFER_ID_EXT);
+
+	return marker_data[p_index].data.bufferId;
+}
+
 Variant OpenXRSpatialComponentMarkerList::get_marker_data(RID p_snapshot, int64_t p_index) const {
 	ERR_FAIL_INDEX_V(p_index, marker_data.size(), Variant());
 
@@ -431,8 +437,14 @@ uint32_t OpenXRMarkerTracker::get_marker_id() const {
 	return marker_id;
 }
 
+void OpenXRMarkerTracker::set_marker_data_with_buffer_id(const Variant &p_data, XrSpatialBufferIdEXT p_buffer_id) {
+	marker_data = p_data;
+	marker_buffer_id = p_buffer_id;
+}
+
 void OpenXRMarkerTracker::set_marker_data(const Variant &p_data) {
 	marker_data = p_data;
+	marker_buffer_id = XR_NULL_SPATIAL_BUFFER_ID_EXT;
 }
 
 Variant OpenXRMarkerTracker::get_marker_data() const {
@@ -464,12 +476,21 @@ void OpenXRSpatialMarkerTrackingCapability::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("start_entity_discovery", "spatial_context", "component_data", "next_snapshot_create", "next_snapshot_query", "user_callback"), &OpenXRSpatialMarkerTrackingCapability::start_entity_discovery, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("do_entity_update", "spatial_context", "component_data", "next_snapshot_create", "next_snapshot_query"), &OpenXRSpatialMarkerTrackingCapability::do_entity_update, DEFVAL(Variant()), DEFVAL(Variant()));
+
+	ClassDB::bind_method(D_METHOD("get_built_in_tracking_state"), &OpenXRSpatialMarkerTrackingCapability::get_built_in_tracking_state);
+	ClassDB::bind_method(D_METHOD("start_built_in_tracking", "marker_types"), &OpenXRSpatialMarkerTrackingCapability::start_built_in_tracking);
+	ClassDB::bind_method(D_METHOD("stop_built_in_tracking", "clear_trackers"), &OpenXRSpatialMarkerTrackingCapability::stop_built_in_tracking, DEFVAL(true));
+
+	BIND_BITFIELD_FLAG(MARKER_QR_CODE);
+	BIND_BITFIELD_FLAG(MARKER_MICRO_QR_CODE);
+	BIND_BITFIELD_FLAG(MARKER_ARUCO);
+	BIND_BITFIELD_FLAG(MARKER_APRIL_TAG);
 }
 
 HashMap<String, bool *> OpenXRSpatialMarkerTrackingCapability::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
-	if (GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enabled") && GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enable_marker_tracking")) {
+	if (GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enabled") && GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/marker_tracking/enable")) {
 		request_extensions[XR_EXT_SPATIAL_MARKER_TRACKING_EXTENSION_NAME] = &spatial_marker_tracking_ext;
 	}
 
@@ -486,31 +507,19 @@ void OpenXRSpatialMarkerTrackingCapability::on_session_created(const XrSession p
 
 	se_extension->connect(SNAME("spatial_discovery_recommended"), callable_mp(this, &OpenXRSpatialMarkerTrackingCapability::_on_spatial_discovery_recommended));
 
-	if (GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enable_builtin_marker_tracking")) {
-		// Start by creating our spatial context
-		_create_spatial_context();
+	int marker_types = GLOBAL_GET_CACHED(int, "xr/openxr/extensions/spatial_entity/marker_tracking/enable_builtin_for_types");
+	if (marker_types != 0) {
+		// Start our builtin tracking system.
+		start_built_in_tracking(marker_types);
 	}
 }
 
 void OpenXRSpatialMarkerTrackingCapability::on_session_destroyed() {
 	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
 	ERR_FAIL_NULL(se_extension);
-	XRServer *xr_server = XRServer::get_singleton();
-	ERR_FAIL_NULL(xr_server);
 
-	// Free and unregister our anchors
-	for (const KeyValue<RID, HashMap<XrSpatialEntityIdEXT, Ref<OpenXRMarkerTracker>>> &markers : marker_trackers) {
-		for (const KeyValue<XrSpatialEntityIdEXT, Ref<OpenXRMarkerTracker>> &marker_tracker : markers.value) {
-			xr_server->remove_tracker(marker_tracker.value);
-		}
-	}
-	marker_trackers.clear();
-
-	// Free our spatial context
-	if (spatial_context.is_valid()) {
-		se_extension->free_spatial_context(spatial_context);
-		spatial_context = RID();
-	}
+	// Stop our built in tracking (if applicable), this will also clean up any
+	stop_built_in_tracking();
 
 	se_extension->disconnect(SNAME("spatial_discovery_recommended"), callable_mp(this, &OpenXRSpatialMarkerTrackingCapability::_on_spatial_discovery_recommended));
 }
@@ -643,33 +652,79 @@ bool OpenXRSpatialMarkerTrackingCapability::is_april_tag_supported() {
 	return se_extension->supports_capability(XR_SPATIAL_CAPABILITY_MARKER_TRACKING_APRIL_TAG_EXT);
 }
 
+bool OpenXRSpatialMarkerTrackingCapability::start_built_in_tracking(BitField<MarkerTypeFlags> p_marker_types) {
+	ERR_FAIL_COND_V(builtin_tracking_state > 0, false);
+
+	builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_SETTING_UP;
+
+	// Start by creating our spatial context
+	built_in_future = _create_spatial_context(p_marker_types);
+
+	return true;
+}
+
+void OpenXRSpatialMarkerTrackingCapability::stop_built_in_tracking(bool p_clear_trackers) {
+	// Reset our tracking state
+	builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_NOT_ACTIVE;
+
+	if (p_clear_trackers) {
+		XRServer *xr_server = XRServer::get_singleton();
+		ERR_FAIL_NULL(xr_server);
+
+		// Free and unregister our anchors
+		for (const KeyValue<RID, HashMap<XrSpatialEntityIdEXT, Ref<OpenXRMarkerTracker>>> &markers : marker_trackers) {
+			for (const KeyValue<XrSpatialEntityIdEXT, Ref<OpenXRMarkerTracker>> &marker_tracker : markers.value) {
+				xr_server->remove_tracker(marker_tracker.value);
+			}
+		}
+		marker_trackers.clear();
+	}
+
+	// If we have our future object, clean it up.
+	if (built_in_future.is_valid()) {
+		if (built_in_future->get_status() == OpenXRFutureResult::RESULT_RUNNING) {
+			built_in_future->cancel_future();
+		}
+
+		built_in_future.unref();
+	}
+
+	// If we have a spatial context, clean it up.
+	if (spatial_context.is_valid()) {
+		OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
+		ERR_FAIL_NULL(se_extension);
+
+		se_extension->free_spatial_context(spatial_context);
+		spatial_context = RID();
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // Discovery logic
 
-Ref<OpenXRFutureResult> OpenXRSpatialMarkerTrackingCapability::_create_spatial_context() {
+Ref<OpenXRFutureResult> OpenXRSpatialMarkerTrackingCapability::_create_spatial_context(BitField<MarkerTypeFlags> p_marker_types) {
 	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
 	ERR_FAIL_NULL_V(se_extension, nullptr);
 
 	TypedArray<OpenXRSpatialCapabilityConfigurationBaseHeader> capability_configurations;
 
 	// Create our configuration objects.
-	// For now we enable all supported markers, will need to give some more user control over this.
-	if (is_qrcode_supported()) {
+	if (is_qrcode_supported() && p_marker_types.has_flag(MARKER_QR_CODE)) {
 		qrcode_configuration.instantiate();
 		capability_configurations.push_back(qrcode_configuration);
 	}
 
-	if (is_micro_qrcode_supported()) {
+	if (is_micro_qrcode_supported() && p_marker_types.has_flag(MARKER_MICRO_QR_CODE)) {
 		micro_qrcode_configuration.instantiate();
 		capability_configurations.push_back(micro_qrcode_configuration);
 	}
 
-	if (is_aruco_supported()) {
+	if (is_aruco_supported() && p_marker_types.has_flag(MARKER_ARUCO)) {
 		aruco_configuration.instantiate();
 		capability_configurations.push_back(aruco_configuration);
 	}
 
-	if (is_april_tag_supported()) {
+	if (is_april_tag_supported() && p_marker_types.has_flag(MARKER_APRIL_TAG)) {
 		april_tag_configuration.instantiate();
 		capability_configurations.push_back(april_tag_configuration);
 	}
@@ -679,12 +734,36 @@ Ref<OpenXRFutureResult> OpenXRSpatialMarkerTrackingCapability::_create_spatial_c
 		return nullptr;
 	}
 
-	return se_extension->create_spatial_context(capability_configurations, nullptr, callable_mp(this, &OpenXRSpatialMarkerTrackingCapability::_on_spatial_context_created));
+	return se_extension->create_spatial_context(capability_configurations, nullptr, callable_mp(this, &OpenXRSpatialMarkerTrackingCapability::_on_spatial_context_created), callable_mp(this, &OpenXRSpatialMarkerTrackingCapability::_on_spatial_context_creation_failed));
 }
 
 void OpenXRSpatialMarkerTrackingCapability::_on_spatial_context_created(RID p_spatial_context) {
+	builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_ENABLED;
 	spatial_context = p_spatial_context;
 	need_discovery = true;
+
+	// We don't need our future anymore.
+	built_in_future.unref();
+}
+
+void OpenXRSpatialMarkerTrackingCapability::_on_spatial_context_creation_failed(int p_xr_result, bool p_is_completion_failure) {
+	XrResult result = XrResult(p_xr_result);
+
+	switch (result) {
+		case XR_ERROR_PERMISSION_INSUFFICIENT:
+			builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_NO_PERMISSION;
+			break;
+		case XR_ERROR_SPATIAL_CAPABILITY_UNSUPPORTED_EXT:
+			builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_UNSUPPORTED_CAPABILITY;
+			break;
+		// We may wish to support additional error codes that are likely here.
+		default:
+			builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_SETUP_FAILED;
+			break;
+	}
+
+	// We don't need our future anymore.
+	built_in_future.unref();
 }
 
 void OpenXRSpatialMarkerTrackingCapability::_on_spatial_discovery_recommended(RID p_spatial_context) {
@@ -805,7 +884,12 @@ void OpenXRSpatialMarkerTrackingCapability::_process_snapshot(RID p_snapshot, RI
 					if (marker_list.is_valid()) {
 						marker_tracker->set_marker_type(marker_list->get_marker_type(i));
 						marker_tracker->set_marker_id(marker_list->get_marker_id(i));
-						marker_tracker->set_marker_data(marker_list->get_marker_data(p_snapshot, i));
+
+						// If the buffer id is the same, there is no new marker data.
+						XrSpatialBufferIdEXT buffer_id = marker_list->get_marker_buffer_id(i);
+						if (marker_tracker->get_marker_buffer_id() != buffer_id) {
+							marker_tracker->set_marker_data_with_buffer_id(marker_list->get_marker_data(p_snapshot, i), buffer_id);
+						}
 					}
 				}
 
