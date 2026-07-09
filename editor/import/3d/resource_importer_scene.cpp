@@ -938,7 +938,9 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			}
 
 			RigidBody3D *rigid_body = memnew(RigidBody3D);
-			rigid_body->set_name(_fixstr(name, "rigid_body"));
+			String fixed_name = _fixstr(name, "rigid");
+			rigid_body->set_name(fixed_name);
+			mi->set_name(fixed_name);
 			_copy_meta(p_node, rigid_body);
 			p_node->replace_by(rigid_body);
 			rigid_body->set_transform(mi->get_transform());
