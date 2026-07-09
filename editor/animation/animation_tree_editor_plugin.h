@@ -58,6 +58,7 @@ class AnimationTreeEditor : public EditorDock {
 	ScrollContainer *path_edit = nullptr;
 	HBoxContainer *path_hb = nullptr;
 	RichTextLabel *current_scope_error_label = nullptr;
+	Button *copy_path_button = nullptr;
 	Button *error_button = nullptr;
 	ScrollContainer *error_scroll = nullptr;
 	RichTextLabel *error_label = nullptr;
@@ -75,6 +76,8 @@ class AnimationTreeEditor : public EditorDock {
 
 	void _path_button_pressed(int p_path);
 	void _animation_list_changed();
+
+	void _copy_path_pressed();
 
 	void _toggle_error_panel();
 	void _update_error_message();
