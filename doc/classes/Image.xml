@@ -837,7 +837,7 @@
 			Performs bilinear separately on the two most-suited mipmap levels, then linearly interpolates between them.
 			It's slower than [constant INTERPOLATE_BILINEAR], but produces higher-quality results with far fewer aliasing artifacts.
 			If the image does not have mipmaps, they will be generated and used internally, but no mipmaps will be generated on the resulting image.
-			[b]Note:[/b] If you intend to scale multiple copies of the original image, it's better to call [method generate_mipmaps]] on it in advance, to avoid wasting processing power in generating them again and again.
+			[b]Note:[/b] If you intend to scale multiple copies of the original image, it's better to call [method generate_mipmaps] on it in advance, to avoid wasting processing power in generating them again and again.
 			On the other hand, if the image already has mipmaps, they will be used, and a new set will be generated for the resulting image.
 		</constant>
 		<constant name="INTERPOLATE_LANCZOS" value="4" enum="Interpolation">
