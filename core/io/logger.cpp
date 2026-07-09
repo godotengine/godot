@@ -37,13 +37,7 @@
 #include "core/os/time.h"
 #include "core/templates/rb_set.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
 #include <cstdio>
-
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif // MODULE_REGEX_ENABLED
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
@@ -51,6 +45,228 @@
 
 bool Logger::should_log(bool p_err) {
 	return (!p_err || CoreGlobals::print_error_enabled) && (p_err || CoreGlobals::print_line_enabled);
+}
+
+String Logger::_bbcode_to_ansi(const String &p_string) {
+	// Convert a subset of BBCode tags to ANSI escape codes for correct display in the terminal.
+	// Support of those ANSI escape codes varies across terminal emulators,
+	// especially for italic and strikethrough.
+
+	String output;
+	int pos = 0;
+	bool in_named_url = false;
+	while (pos <= p_string.length()) {
+		int brk_pos = p_string.find_char('[', pos);
+
+		if (brk_pos < 0) {
+			brk_pos = p_string.length();
+		}
+
+		String txt = brk_pos > pos ? p_string.substr(pos, brk_pos - pos) : "";
+		if (brk_pos == p_string.length()) {
+			output += txt;
+			break;
+		}
+
+		int brk_end = p_string.find_char(']', brk_pos + 1);
+
+		if (brk_end == -1) {
+			txt += p_string.substr(brk_pos);
+			output += txt;
+			break;
+		}
+		pos = brk_end + 1;
+		output += txt;
+
+		String tag = p_string.substr(brk_pos + 1, brk_end - brk_pos - 1);
+		if (tag == "b") {
+			output += "\u001b[1m";
+		} else if (tag == "/b") {
+			output += "\u001b[22m";
+		} else if (tag == "i") {
+			output += "\u001b[3m";
+		} else if (tag == "/i") {
+			output += "\u001b[23m";
+		} else if (tag == "u") {
+			output += "\u001b[4m";
+		} else if (tag == "/u") {
+			output += "\u001b[24m";
+		} else if (tag == "s") {
+			output += "\u001b[9m";
+		} else if (tag == "/s") {
+			output += "\u001b[29m";
+		} else if (tag == "indent") {
+			output += "    ";
+		} else if (tag == "/indent") {
+			output += "";
+		} else if (tag == "code") {
+			output += "\u001b[2m";
+		} else if (tag == "/code") {
+			output += "\u001b[22m";
+		} else if (tag.begins_with("url=")) {
+			// Support named URLs using OSC 8 escape codes:
+			// <https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda>
+			in_named_url = true;
+			const String url_link = tag.substr(strlen("url="));
+			output += vformat("\u001b]8;;%s\u001b\\", url_link);
+		} else if (tag == "url") {
+			output += "";
+		} else if (tag == "/url") {
+			if (in_named_url) {
+				output += "\u001b]8;;\u001b\\";
+				in_named_url = false;
+			} else {
+				// While it's legal to close an URL that was never opened using OSC 8 escape codes,
+				// it would result in the code being printed to unsupported terminal emulators
+				// when using unnamed URLs.
+				output += "";
+			}
+		} else if (tag == "center") {
+			output += "\n\t\t\t";
+		} else if (tag == "/center") {
+			output += "";
+		} else if (tag == "right") {
+			output += "\n\t\t\t\t\t\t";
+		} else if (tag == "/right") {
+			output += "";
+		} else if (tag.begins_with("color=")) {
+			String color_name = tag.trim_prefix("color=");
+			if (color_name == "black") {
+				output += "\u001b[30m";
+			} else if (color_name == "red") {
+				output += "\u001b[91m";
+			} else if (color_name == "green") {
+				output += "\u001b[92m";
+			} else if (color_name == "lime") {
+				output += "\u001b[92m";
+			} else if (color_name == "yellow") {
+				output += "\u001b[93m";
+			} else if (color_name == "blue") {
+				output += "\u001b[94m";
+			} else if (color_name == "magenta") {
+				output += "\u001b[95m";
+			} else if (color_name == "pink") {
+				output += "\u001b[38;5;218m";
+			} else if (color_name == "purple") {
+				output += "\u001b[38;5;98m";
+			} else if (color_name == "cyan") {
+				output += "\u001b[96m";
+			} else if (color_name == "white") {
+				output += "\u001b[97m";
+			} else if (color_name == "orange") {
+				output += "\u001b[38;5;208m";
+			} else if (color_name == "gray") {
+				output += "\u001b[90m";
+			} else {
+				Color c = Color::from_string(color_name, Color());
+				output += vformat("\u001b[38;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255);
+			}
+		} else if (tag == "/color") {
+			output += "\u001b[39m";
+		} else if (tag.begins_with("bgcolor=")) {
+			String color_name = tag.trim_prefix("bgcolor=");
+			if (color_name == "black") {
+				output += "\u001b[40m";
+			} else if (color_name == "red") {
+				output += "\u001b[101m";
+			} else if (color_name == "green") {
+				output += "\u001b[102m";
+			} else if (color_name == "lime") {
+				output += "\u001b[102m";
+			} else if (color_name == "yellow") {
+				output += "\u001b[103m";
+			} else if (color_name == "blue") {
+				output += "\u001b[104m";
+			} else if (color_name == "magenta") {
+				output += "\u001b[105m";
+			} else if (color_name == "pink") {
+				output += "\u001b[48;5;218m";
+			} else if (color_name == "purple") {
+				output += "\u001b[48;5;98m";
+			} else if (color_name == "cyan") {
+				output += "\u001b[106m";
+			} else if (color_name == "white") {
+				output += "\u001b[107m";
+			} else if (color_name == "orange") {
+				output += "\u001b[48;5;208m";
+			} else if (color_name == "gray") {
+				output += "\u001b[100m";
+			} else {
+				Color c = Color::from_string(color_name, Color());
+				output += vformat("\u001b[48;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255);
+			}
+		} else if (tag == "/bgcolor") {
+			output += "\u001b[49m";
+		} else if (tag.begins_with("fgcolor=")) {
+			String color_name = tag.trim_prefix("fgcolor=");
+			if (color_name == "black") {
+				output += "\u001b[30;40m";
+			} else if (color_name == "red") {
+				output += "\u001b[91;101m";
+			} else if (color_name == "green") {
+				output += "\u001b[92;102m";
+			} else if (color_name == "lime") {
+				output += "\u001b[92;102m";
+			} else if (color_name == "yellow") {
+				output += "\u001b[93;103m";
+			} else if (color_name == "blue") {
+				output += "\u001b[94;104m";
+			} else if (color_name == "magenta") {
+				output += "\u001b[95;105m";
+			} else if (color_name == "pink") {
+				output += "\u001b[38;5;218;48;5;218m";
+			} else if (color_name == "purple") {
+				output += "\u001b[38;5;98;48;5;98m";
+			} else if (color_name == "cyan") {
+				output += "\u001b[96;106m";
+			} else if (color_name == "white") {
+				output += "\u001b[97;107m";
+			} else if (color_name == "orange") {
+				output += "\u001b[38;5;208;48;5;208m";
+			} else if (color_name == "gray") {
+				output += "\u001b[90;100m";
+			} else {
+				Color c = Color::from_string(color_name, Color());
+				output += vformat("\u001b[38;2;%d;%d;%d;48;2;%d;%d;%dm", c.r * 255, c.g * 255, c.b * 255, c.r * 255, c.g * 255, c.b * 255);
+			}
+		} else if (tag == "/fgcolor") {
+			output += "\u001b[39;49m";
+		} else {
+			output += "[";
+			pos = brk_pos + 1;
+		}
+	}
+	output += "\u001b[0m"; // Reset.
+	return output;
+}
+
+String Logger::_bbcode_to_plain(const String &p_string) {
+	String output;
+	int pos = 0;
+	while (pos <= p_string.length()) {
+		int brk_pos = p_string.find_char('[', pos);
+
+		if (brk_pos < 0) {
+			brk_pos = p_string.length();
+		}
+
+		String txt = brk_pos > pos ? p_string.substr(pos, brk_pos - pos) : "";
+		if (brk_pos == p_string.length()) {
+			output += txt;
+			break;
+		}
+
+		int brk_end = p_string.find_char(']', brk_pos + 1);
+
+		if (brk_end == -1) {
+			txt += p_string.substr(brk_pos);
+			output += txt;
+			break;
+		}
+		pos = brk_end + 1;
+		output += txt;
+	}
+	return output;
 }
 
 void Logger::set_flush_stdout_on_print(bool value) {
@@ -173,12 +389,10 @@ RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files)
 		base_path(p_base_path.simplify_path()),
 		max_files(p_max_files > 0 ? p_max_files : 1) {
 	rotate_file();
+}
 
-#ifdef MODULE_REGEX_ENABLED
-	strip_ansi_regex.instantiate();
-	strip_ansi_regex->detach_from_objectdb(); // Note: This RegEx instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
-	strip_ansi_regex->compile("\u001b\\[((?:\\d|;)*)([a-zA-Z])");
-#endif // MODULE_REGEX_ENABLED
+void RotatedFileLogger::logr(const char *p_format, va_list p_list, bool p_err) {
+	logv(p_format, p_list, p_err);
 }
 
 void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
@@ -199,14 +413,9 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		}
 		va_end(list_copy);
 
-#ifdef MODULE_REGEX_ENABLED
-		// Strip ANSI escape codes (such as those inserted by `print_rich()`)
-		// before writing to file, as text editors cannot display those
-		// correctly.
-		file->store_string(strip_ansi_regex->sub(String::utf8(buf), "", true));
-#else
-		file->store_buffer((uint8_t *)buf, len);
-#endif // MODULE_REGEX_ENABLED
+		const String &plain = _bbcode_to_plain(String::utf8(buf));
+		const CharString &cs = plain.utf8();
+		file->store_buffer((uint8_t *)cs.get_data(), cs.length());
 
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);
@@ -217,6 +426,36 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 			// issues when `print()` is spammed in release builds.
 			file->flush();
 		}
+	}
+}
+
+void StdLogger::logr(const char *p_format, va_list p_list, bool p_err) {
+	const int static_buf_size = 512;
+	char static_buf[static_buf_size];
+	char *buf = static_buf;
+	va_list list_copy;
+	va_copy(list_copy, p_list);
+	int len = vsnprintf(buf, static_buf_size, p_format, p_list);
+	if (len >= static_buf_size) {
+		buf = (char *)Memory::alloc_static(len + 1);
+		vsnprintf(buf, len + 1, p_format, list_copy);
+	}
+	va_end(list_copy);
+
+	const String &ansi = _bbcode_to_ansi(String::utf8(buf));
+	if (p_err) {
+		fprintf(stderr, "%s", ansi.utf8().get_data());
+	} else {
+		printf("%s", ansi.utf8().get_data());
+		if (_flush_stdout_on_print) {
+			// Don't always flush when printing stdout to avoid performance
+			// issues when `print()` is spammed in release builds.
+			fflush(stdout);
+		}
+	}
+
+	if (len >= static_buf_size) {
+		Memory::free_static(buf);
 	}
 }
 
@@ -239,6 +478,19 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 
 CompositeLogger::CompositeLogger(const Vector<Logger *> &p_loggers) :
 		loggers(p_loggers) {
+}
+
+void CompositeLogger::logr(const char *p_format, va_list p_list, bool p_err) {
+	if (!should_log(p_err)) {
+		return;
+	}
+
+	for (int i = 0; i < loggers.size(); ++i) {
+		va_list list_copy;
+		va_copy(list_copy, p_list);
+		loggers[i]->logr(p_format, list_copy, p_err);
+		va_end(list_copy);
+	}
 }
 
 void CompositeLogger::logv(const char *p_format, va_list p_list, bool p_err) {

@@ -227,12 +227,22 @@ void ResourceSaver::_bind_methods() {
 ////// Logger ///////
 
 void Logger::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_rich_type"), &Logger::get_rich_type);
+	ClassDB::bind_method(D_METHOD("set_rich_type", "rich_type"), &Logger::set_rich_type);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rich_type", PROPERTY_HINT_ENUM, "BBcode,Plain Text,ANSI Escape Codes"), "set_rich_type", "get_rich_type");
+
 	GDVIRTUAL_BIND(_log_error, "function", "file", "line", "code", "rationale", "editor_notify", "error_type", "script_backtraces");
 	GDVIRTUAL_BIND(_log_message, "message", "error");
+
 	BIND_ENUM_CONSTANT(ERROR_TYPE_ERROR);
 	BIND_ENUM_CONSTANT(ERROR_TYPE_WARNING);
 	BIND_ENUM_CONSTANT(ERROR_TYPE_SCRIPT);
 	BIND_ENUM_CONSTANT(ERROR_TYPE_SHADER);
+
+	BIND_ENUM_CONSTANT(RICH_PRINT_BBCODE);
+	BIND_ENUM_CONSTANT(RICH_PRINT_PLAIN);
+	BIND_ENUM_CONSTANT(RICH_PRINT_ANSI);
 }
 
 void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const TypedArray<ScriptBacktrace> &p_script_backtraces) {
@@ -244,6 +254,45 @@ void Logger::log_message(const String &p_text, bool p_error) {
 }
 
 ////// OS //////
+
+void OS::LoggerBind::logr(const char *p_format, va_list p_list, bool p_err) {
+	if (!should_log(p_err)) {
+		return;
+	}
+
+	constexpr int static_buf_size = 1024;
+	char static_buf[static_buf_size] = { '\0' };
+	char *buf = static_buf;
+	va_list list_copy;
+	va_copy(list_copy, p_list);
+	int len = vsnprintf(buf, static_buf_size, p_format, p_list);
+	if (len >= static_buf_size) {
+		buf = (char *)Memory::alloc_static(len + 1);
+		vsnprintf(buf, len + 1, p_format, list_copy);
+	}
+	va_end(list_copy);
+
+	String str;
+	str.append_utf8(buf, len);
+
+	for (Ref<CoreBind::Logger> &logger : loggers) {
+		switch (logger->get_rich_type()) {
+			case CoreBind::Logger::RICH_PRINT_BBCODE: {
+				logger->log_message(str, p_err);
+			} break;
+			case CoreBind::Logger::RICH_PRINT_PLAIN: {
+				logger->log_message(_bbcode_to_plain(str), p_err);
+			} break;
+			case CoreBind::Logger::RICH_PRINT_ANSI: {
+				logger->log_message(_bbcode_to_ansi(str), p_err);
+			} break;
+		}
+	}
+
+	if (len >= static_buf_size) {
+		Memory::free_static(buf);
+	}
+}
 
 void OS::LoggerBind::logv(const char *p_format, va_list p_list, bool p_err) {
 	if (!should_log(p_err)) {

@@ -34,6 +34,33 @@
 
 #include <syslog.h>
 
+#include <cstdio>
+
+void SyslogLogger::logr(const char *p_format, va_list p_list, bool p_err) {
+	if (!should_log(p_err)) {
+		return;
+	}
+
+	const int static_buf_size = 512;
+	char static_buf[static_buf_size];
+	char *buf = static_buf;
+	va_list list_copy;
+	va_copy(list_copy, p_list);
+	int len = vsnprintf(buf, static_buf_size, p_format, p_list);
+	if (len >= static_buf_size) {
+		buf = (char *)Memory::alloc_static(len + 1);
+		vsnprintf(buf, len + 1, p_format, list_copy);
+	}
+	va_end(list_copy);
+
+	const String &plain = _bbcode_to_plain(String::utf8(buf));
+	syslog(p_err ? LOG_ERR : LOG_INFO, "%s", plain.utf8().get_data());
+
+	if (len >= static_buf_size) {
+		Memory::free_static(buf);
+	}
+}
+
 void SyslogLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	if (!should_log(p_err)) {
 		return;

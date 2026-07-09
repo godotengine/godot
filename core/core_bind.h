@@ -133,12 +133,23 @@ public:
 		ERROR_TYPE_SHADER,
 	};
 
+	enum RichPrintType {
+		RICH_PRINT_BBCODE,
+		RICH_PRINT_PLAIN,
+		RICH_PRINT_ANSI,
+	};
+
+	CoreBind::Logger::RichPrintType rich_type = CoreBind::Logger::RICH_PRINT_PLAIN;
+
 protected:
 	GDVIRTUAL2(_log_message, String, bool);
 	GDVIRTUAL8(_log_error, String, String, int, String, String, bool, int, TypedArray<ScriptBacktrace>);
 	static void _bind_methods();
 
 public:
+	CoreBind::Logger::RichPrintType get_rich_type() const { return rich_type; }
+	void set_rich_type(CoreBind::Logger::RichPrintType p_rich_type) { rich_type = p_rich_type; }
+
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERROR_TYPE_ERROR, const TypedArray<ScriptBacktrace> &p_script_backtraces = {});
 	virtual void log_message(const String &p_text, bool p_error);
 };
@@ -152,6 +163,7 @@ class OS : public Object {
 	public:
 		LocalVector<Ref<CoreBind::Logger>> loggers;
 
+		virtual void logr(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 		virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 		virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
 
@@ -696,6 +708,7 @@ public:
 } // namespace CoreBind
 
 VARIANT_ENUM_CAST(CoreBind::Logger::ErrorType);
+VARIANT_ENUM_CAST(CoreBind::Logger::RichPrintType);
 VARIANT_ENUM_CAST(CoreBind::ResourceLoader::ThreadLoadStatus);
 VARIANT_ENUM_CAST(CoreBind::ResourceLoader::CacheMode);
 
