@@ -4022,10 +4022,10 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 		}
 		// Subpixel X-shift, bits 27, 28
 		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
-			int xshift = (int)(Math::floor(4 * (p_pos.x + 0.125)) - 4 * Math::floor(p_pos.x + 0.125));
+			int xshift = (int)(Math::floor(4 * (p_pos.x * oversampling_factor + 0.125)) - 4 * Math::floor(p_pos.x * oversampling_factor + 0.125));
 			index = index | (xshift << 27);
 		} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
-			int xshift = (int)(Math::floor(2 * (p_pos.x + 0.25)) - 2 * Math::floor(p_pos.x + 0.25));
+			int xshift = (int)(Math::floor(2 * (p_pos.x * oversampling_factor + 0.25)) - 2 * Math::floor(p_pos.x * oversampling_factor + 0.25));
 			index = index | (xshift << 27);
 		}
 	}
@@ -4075,13 +4075,12 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 					Point2 cpos = p_pos;
 					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
 					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
-						cpos.x = cpos.x + 0.125;
+						cpos.x = Math::floor(cpos.x * oversampling_factor + 0.125) / oversampling_factor;
 					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
-						cpos.x = cpos.x + 0.25;
-					}
-					if (scale == 1.0) {
-						cpos.y = Math::floor(cpos.y);
-						cpos.x = Math::floor(cpos.x);
+						cpos.x = Math::floor(cpos.x * oversampling_factor + 0.25) / oversampling_factor;
+					} else if (scale == 1.0) {
+						cpos.y = Math::floor(cpos.y * oversampling_factor) / oversampling_factor;
+						cpos.x = Math::floor(cpos.x * oversampling_factor) / oversampling_factor;
 					}
 					Vector2 gpos = fgl.rect.position;
 					Size2 csize = fgl.rect.size;
@@ -4168,10 +4167,10 @@ void TextServerAdvanced::_font_draw_glyph_outline(const RID &p_font_rid, const R
 		}
 		// Subpixel X-shift, bits 27, 28
 		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
-			int xshift = (int)(Math::floor(4 * (p_pos.x + 0.125)) - 4 * Math::floor(p_pos.x + 0.125));
+			int xshift = (int)(Math::floor(4 * (p_pos.x * oversampling_factor + 0.125)) - 4 * Math::floor(p_pos.x * oversampling_factor + 0.125));
 			index = index | (xshift << 27);
 		} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
-			int xshift = (int)(Math::floor(2 * (p_pos.x + 0.25)) - 2 * Math::floor(p_pos.x + 0.25));
+			int xshift = (int)(Math::floor(2 * (p_pos.x * oversampling_factor + 0.25)) - 2 * Math::floor(p_pos.x * oversampling_factor + 0.25));
 			index = index | (xshift << 27);
 		}
 	}
@@ -4217,13 +4216,12 @@ void TextServerAdvanced::_font_draw_glyph_outline(const RID &p_font_rid, const R
 					Point2 cpos = p_pos;
 					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
 					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
-						cpos.x = cpos.x + 0.125;
+						cpos.x = Math::floor(cpos.x * oversampling_factor + 0.125) / oversampling_factor;
 					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
-						cpos.x = cpos.x + 0.25;
-					}
-					if (scale == 1.0) {
-						cpos.y = Math::floor(cpos.y);
-						cpos.x = Math::floor(cpos.x);
+						cpos.x = Math::floor(cpos.x * oversampling_factor + 0.25) / oversampling_factor;
+					} else if (scale == 1.0) {
+						cpos.y = Math::floor(cpos.y * oversampling_factor) / oversampling_factor;
+						cpos.x = Math::floor(cpos.x * oversampling_factor) / oversampling_factor;
 					}
 					Vector2 gpos = fgl.rect.position;
 					Size2 csize = fgl.rect.size;
