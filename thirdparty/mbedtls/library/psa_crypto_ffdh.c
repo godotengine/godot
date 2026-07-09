@@ -168,6 +168,10 @@ psa_status_t mbedtls_psa_ffdh_export_public_key(
     mbedtls_mpi_init(&X); mbedtls_mpi_init(&P);
 
     size_t key_len = PSA_BITS_TO_BYTES(attributes->bits);
+    if (key_len > data_size) {
+        status = PSA_ERROR_BUFFER_TOO_SMALL;
+        goto cleanup;
+    }
 
     status = mbedtls_psa_ffdh_set_prime_generator(key_len, &P, &G);
 
@@ -266,34 +270,70 @@ psa_status_t mbedtls_psa_ffdh_key_agreement(
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-    mbedtls_mpi P, G, X, GY, K;
-    const size_t calculated_shared_secret_size = peer_key_length;
-
-    if (peer_key_length != key_buffer_size ||
-        calculated_shared_secret_size > shared_secret_size) {
-        return PSA_ERROR_INVALID_ARGUMENT;
-    }
+    mbedtls_mpi P, X, GY, K;
+    const size_t calculated_shared_secret_size = key_buffer_size;
 
     if (!PSA_KEY_TYPE_IS_DH_KEY_PAIR(psa_get_key_type(attributes))) {
         return PSA_ERROR_INVALID_ARGUMENT;
     }
 
-    mbedtls_mpi_init(&P); mbedtls_mpi_init(&G);
+    if (peer_key_length != key_buffer_size) {
+        return PSA_ERROR_INVALID_ARGUMENT;
+    }
+
+    /* This has been checked by the core, but keep a local check too. */
+    if (calculated_shared_secret_size > shared_secret_size) {
+        return PSA_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    mbedtls_mpi_init(&P);
     mbedtls_mpi_init(&X); mbedtls_mpi_init(&GY);
     mbedtls_mpi_init(&K);
 
     status = mbedtls_psa_ffdh_set_prime_generator(
-        PSA_BITS_TO_BYTES(attributes->bits), &P, &G);
+        PSA_BITS_TO_BYTES(attributes->bits), &P, NULL);
 
     if (status != PSA_SUCCESS) {
         goto cleanup;
     }
 
-    MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&X, key_buffer,
-                                            key_buffer_size));
-
     MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&GY, peer_key,
                                             peer_key_length));
+
+    /* RFC 7919 5.1: validate the peer's public key: 1 < GY < P-1
+     *
+     * This check is sufficient to ensure GY is not of low order, because we're
+     * using a safe prime (that is, q = (p-1) / 2 is also prime), so the only
+     * group elements of low order are 1 and p-1. (Obviously we also want to
+     * exclude 0 that is not a group element, and values >= p as they are not
+     * residues mod p.)
+     *
+     * Note: we know we're using a safe prime because the only FFDH groups
+     * defined by the PSA spec are from RFC 7919 (since version 1.0) and RFC
+     * 3525 (since v1.4, not yet supported in tf-psa-crypto as of writing this
+     * comment), which both use safe primes.
+     *
+     * Note: NIST SP 800-56Ar3 5.7.1.1 (2) has the check on the shared secret,
+     * but checking before is equivalent (unless our secret key is exactly
+     * (p-1)/2, which has negligible probability and can't be influenced by the
+     * adversary). Checking before is cleaner in terms of side channel analysis,
+     * as we haven't loaded our secret yet, so no worries about branches.
+     *
+     * Use X as a temporary, since we haven't loaded it yet.
+     */
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&X, &P, 1)); // x = p - 1
+    if (mbedtls_mpi_cmp_mpi(&GY, &X) >= 0) {
+        status = PSA_ERROR_INVALID_ARGUMENT;
+        goto cleanup;
+    }
+    MBEDTLS_MPI_CHK(mbedtls_mpi_lset(&X, 1)); // x = 1
+    if (mbedtls_mpi_cmp_mpi(&GY, &X) <= 0) {
+        status = PSA_ERROR_INVALID_ARGUMENT;
+        goto cleanup;
+    }
+
+    MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&X, key_buffer,
+                                            key_buffer_size));
 
     /* Calculate shared secret public key: K = G^(XY) mod P = GY^X mod P */
     MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&K, &GY, &X, &P, NULL));
@@ -306,7 +346,7 @@ psa_status_t mbedtls_psa_ffdh_key_agreement(
     ret = 0;
 
 cleanup:
-    mbedtls_mpi_free(&P); mbedtls_mpi_free(&G);
+    mbedtls_mpi_free(&P);
     mbedtls_mpi_free(&X); mbedtls_mpi_free(&GY);
     mbedtls_mpi_free(&K);
 
