@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_spatial_entity_extension.h"
+#include "openxr_spatial_entity_extension.compat.inc"
 
 #include "../../openxr_api.h"
 #include "../../openxr_util.h"
@@ -50,7 +51,7 @@ void OpenXRSpatialEntityExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("supports_capability", "capability"), &OpenXRSpatialEntityExtension::_supports_capability);
 	ClassDB::bind_method(D_METHOD("supports_component_type", "capability", "component_type"), &OpenXRSpatialEntityExtension::_supports_component_type);
 
-	ClassDB::bind_method(D_METHOD("create_spatial_context", "capability_configurations", "next", "user_callback"), &OpenXRSpatialEntityExtension::create_spatial_context, DEFVAL(Variant()), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("create_spatial_context", "capability_configurations", "next", "user_callback", "failed_callback"), &OpenXRSpatialEntityExtension::create_spatial_context, DEFVAL(Variant()), DEFVAL(Callable()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("get_spatial_context_ready", "spatial_context"), &OpenXRSpatialEntityExtension::get_spatial_context_ready);
 	ClassDB::bind_method(D_METHOD("free_spatial_context", "spatial_context"), &OpenXRSpatialEntityExtension::free_spatial_context);
 	ClassDB::bind_method(D_METHOD("get_spatial_context_handle", "spatial_context"), &OpenXRSpatialEntityExtension::_get_spatial_context_handle);
@@ -100,6 +101,13 @@ void OpenXRSpatialEntityExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_MARKER);
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_ANCHOR);
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_PERSISTENCE);
+
+	BIND_ENUM_CONSTANT(TRACKING_UNSUPPORTED_CAPABILITY);
+	BIND_ENUM_CONSTANT(TRACKING_NO_PERMISSION);
+	BIND_ENUM_CONSTANT(TRACKING_SETUP_FAILED);
+	BIND_ENUM_CONSTANT(TRACKING_NOT_ACTIVE);
+	BIND_ENUM_CONSTANT(TRACKING_SETTING_UP);
+	BIND_ENUM_CONSTANT(TRACKING_ENABLED);
 }
 
 OpenXRSpatialEntityExtension::OpenXRSpatialEntityExtension() {
@@ -369,7 +377,7 @@ bool OpenXRSpatialEntityExtension::on_event_polled(const XrEventDataBuffer &even
 ////////////////////////////////////////////////////////////////////////////
 // Spatial contexts
 
-Ref<OpenXRFutureResult> OpenXRSpatialEntityExtension::create_spatial_context(const TypedArray<OpenXRSpatialCapabilityConfigurationBaseHeader> &p_capability_configurations, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback) {
+Ref<OpenXRFutureResult> OpenXRSpatialEntityExtension::create_spatial_context(const TypedArray<OpenXRSpatialCapabilityConfigurationBaseHeader> &p_capability_configurations, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback, const Callable &p_failure_callback) {
 	if (!get_active()) {
 		return nullptr;
 	}
@@ -410,12 +418,12 @@ Ref<OpenXRFutureResult> OpenXRSpatialEntityExtension::create_spatial_context(con
 	}
 
 	// Create our future result
-	Ref<OpenXRFutureResult> future_result = future_api->register_future(future, callable_mp(this, &OpenXRSpatialEntityExtension::_on_context_creation_ready).bind(p_user_callback));
+	Ref<OpenXRFutureResult> future_result = future_api->register_future(future, callable_mp(this, &OpenXRSpatialEntityExtension::_on_context_creation_ready).bind(p_user_callback, p_failure_callback));
 
 	return future_result;
 }
 
-void OpenXRSpatialEntityExtension::_on_context_creation_ready(Ref<OpenXRFutureResult> p_future_result, const Callable &p_user_callback) {
+void OpenXRSpatialEntityExtension::_on_context_creation_ready(Ref<OpenXRFutureResult> p_future_result, const Callable &p_user_callback, const Callable &p_failure_callback) {
 	// Complete context creation...
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 	ERR_FAIL_NULL(openxr_api);
@@ -428,10 +436,18 @@ void OpenXRSpatialEntityExtension::_on_context_creation_ready(Ref<OpenXRFutureRe
 	};
 	XrResult result = xrCreateSpatialContextCompleteEXT(openxr_api->get_session(), p_future_result->get_future(), &completion);
 	if (XR_FAILED(result)) { // Did our xrCreateSpatialContextCompleteEXT call fail?
+		if (p_failure_callback.is_valid()) {
+			p_failure_callback.call(int(result), false);
+		}
+
 		// Log issue and fail.
 		ERR_FAIL_MSG("OpenXR: Failed to complete spatial context create future [" + openxr_api->get_error_string(result) + "]");
 	}
 	if (XR_FAILED(completion.futureResult)) { // Did our completion fail?
+		if (p_failure_callback.is_valid()) {
+			p_failure_callback.call(int(completion.futureResult), true);
+		}
+
 		// Log issue and fail.
 		ERR_FAIL_MSG("OpenXR: Failed to complete spatial context creation [" + openxr_api->get_error_string(completion.futureResult) + "]");
 	}
