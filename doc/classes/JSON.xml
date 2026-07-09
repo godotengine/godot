@@ -96,15 +96,16 @@
 			<description>
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
+				[b]Note:[/b] if [param sort_keys] is [code]true[/code], the keys of any [Dictionary]s are sorted alphabetically when converting to JSON. This applies to nested dictionaries as well, but arrays are left untouched. If [param sort_keys] is [code]false[/code], the order of the keys is preserved.
 				[b]Note:[/b] If [param full_precision] is [code]true[/code], when stringifying floats, the unreliable digits are stringified in addition to the reliable digits to guarantee exact decoding.
-				The [param indent] parameter controls if and how something is indented; its contents will be used where there should be an indent in the output. Even spaces like [code]"   "[/code] will work. [code]\t[/code] and [code]\n[/code] can also be used for a tab indent, or to make a newline for each indent respectively.
+				The [param indent] parameter controls if and how values are indented. Its contents will be used where there should be an indent in the output. If set to an empty string, the JSON will be on a single line with no spacing, which allows for smaller file sizes. If set to a non-empty string, each key-value pair will be on its own line and the contents of the string will be used for each level of indentation. Example values for [param indent] are a single tab character ([code]"\t"[/code]) or four spaces ([code]"    "[/code]).
 				[b]Warning:[/b] Non-finite numbers are not supported in JSON. Any occurrences of [constant @GDScript.INF] will be replaced with [code]1e99999[/code], and negative [constant @GDScript.INF] will be replaced with [code]-1e99999[/code], but they will be interpreted correctly as infinity by most JSON parsers. [constant @GDScript.NAN] will be replaced with [code]null[/code], and it will not be interpreted as NaN in JSON parsers. If you expect non-finite numbers, consider passing your data through [method from_native] first.
 				[b]Example output:[/b]
 				[codeblock]
-				## JSON.stringify(my_dictionary)
+				## JSON.stringify(my_dictionary, "", false)
 				{"name":"my_dictionary","version":"1.0.0","entities":[{"name":"entity_0","value":"value_0"},{"name":"entity_1","value":"value_1"}]}
 
-				## JSON.stringify(my_dictionary, "\t")
+				## JSON.stringify(my_dictionary, "\t", false)
 				{
 					"name": "my_dictionary",
 					"version": "1.0.0",
@@ -120,7 +121,7 @@
 					]
 				}
 
-				## JSON.stringify(my_dictionary, "...")
+				## JSON.stringify(my_dictionary, "...", false)
 				{
 				..."name": "my_dictionary",
 				..."version": "1.0.0",
