@@ -492,7 +492,7 @@ bool JoltGeneric6DOFJoint3D::get_flag(Axis p_axis, Flag p_flag) const {
 		case PS3DE::G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING: { // JoltPhysicsServer3D::G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING
 			return spring_enabled[axis_lin];
 		}
-		case PS3DE::G6DOF_JOINT_FLAG_ENABLE_MOTOR: {
+		case PS3DE::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_MOTOR: {
 			return motor_enabled[axis_ang];
 		}
 		case PS3DE::G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR: {
@@ -525,7 +525,7 @@ void JoltGeneric6DOFJoint3D::set_flag(Axis p_axis, Flag p_flag, bool p_enabled) 
 			spring_enabled[axis_lin] = p_enabled;
 			_spring_state_changed(axis_lin);
 		} break;
-		case PS3DE::G6DOF_JOINT_FLAG_ENABLE_MOTOR: {
+		case PS3DE::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_MOTOR: {
 			motor_enabled[axis_ang] = p_enabled;
 			_motor_state_changed(axis_ang);
 		} break;
