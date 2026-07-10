@@ -75,6 +75,7 @@
 #include "editor/shader/text_shader_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
@@ -1739,7 +1740,7 @@ void ScriptEditor::_notification(int p_what) {
 
 			virtual_keyboard_spacer->set_custom_minimum_size(Size2(0, spacer_height));
 			EditorSceneTabs::get_singleton()->set_visible(!kb_height);
-			menu_hb->set_visible(!kb_visible);
+			menu_hflow->set_visible(!kb_visible);
 		} break;
 #endif
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
@@ -2363,8 +2364,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		if (editor_edit_menu && !editor_edit_menu->get_parent()) {
 			editor_edit_menu->hide();
 			editor_menus.push_back(editor_edit_menu);
-			menu_hb->add_child(editor_edit_menu);
-			menu_hb->move_child(editor_edit_menu, 1);
+			menu_hflow->add_child(editor_edit_menu);
+			menu_hflow->move_child(editor_edit_menu, 1);
 			for (int i = 0; i < editor_edit_menu->get_child_count(); ++i) {
 				Control *c = Object::cast_to<Control>(editor_edit_menu->get_child(i));
 				if (c) {
@@ -3932,8 +3933,10 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	add_child(main_container);
 
-	menu_hb = memnew(HBoxContainer);
-	main_container->add_child(menu_hb);
+	menu_hflow = memnew(HFlowContainer);
+	menu_hflow->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	menu_hflow->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_container->add_child(menu_hflow);
 
 	script_split = memnew(HSplitContainer);
 	main_container->add_child(script_split);
@@ -4014,7 +4017,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->set_text(TTRC("File"));
 	file_menu->set_switch_on_hover(true);
 	file_menu->set_shortcut_context(this);
-	menu_hb->add_child(file_menu);
+	menu_hflow->add_child(file_menu);
 
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTRC("New Script..."), KeyModifierMask::CMD_OR_CTRL | Key::N), FILE_MENU_NEW_SCRIPT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTRC("New Text File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_MENU_NEW_TEXTFILE);
@@ -4085,12 +4088,12 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_search_menu->set_switch_on_hover(true);
 	script_search_menu->set_shortcut_context(this);
 	script_search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
-	menu_hb->add_child(script_search_menu);
+	menu_hflow->add_child(script_search_menu);
 
 	MenuButton *debug_menu_btn = memnew(MenuButton);
 	debug_menu_btn->set_flat(false);
 	debug_menu_btn->set_theme_type_variation("FlatMenuButton");
-	menu_hb->add_child(debug_menu_btn);
+	menu_hflow->add_child(debug_menu_btn);
 	debug_menu_btn->hide(); // Handled by EditorDebuggerNode below.
 
 	EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
@@ -4105,7 +4108,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_name_button_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	script_name_button_hbox->add_theme_constant_override("separation", 0);
 	script_name_button_hbox->connect(SceneStringName(item_rect_changed), callable_mp(this, &ScriptEditor::_calculate_script_name_button_ratio));
-	menu_hb->add_child(script_name_button_hbox);
+	menu_hflow->add_child(script_name_button_hbox);
 
 	script_name_button_left_spacer = memnew(Control);
 	script_name_button_left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -4127,23 +4130,23 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	site_search->set_theme_type_variation(SceneStringName(FlatButton));
 	site_search->set_accessibility_name(TTRC("Site Search"));
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_WEBSITE));
-	menu_hb->add_child(site_search);
+	menu_hflow->add_child(site_search);
 
 	help_search = memnew(Button);
 	help_search->set_theme_type_variation(SceneStringName(FlatButton));
 	help_search->set_text(TTRC("Search Help"));
 	help_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_HELP));
-	menu_hb->add_child(help_search);
+	menu_hflow->add_child(help_search);
 	help_search->set_tooltip_text(TTRC("Search the reference documentation."));
 
-	menu_hb->add_child(memnew(VSeparator));
+	menu_hflow->add_child(memnew(VSeparator));
 
 	script_back = memnew(Button);
 	script_back->set_theme_type_variation(SceneStringName(FlatButton));
 	script_back->set_tooltip_text(TTRC("Go to previous edited document."));
 	script_back->set_shortcut(ED_GET_SHORTCUT("script_editor/history_previous"));
 	script_back->set_disabled(true);
-	menu_hb->add_child(script_back);
+	menu_hflow->add_child(script_back);
 	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
 
 	script_forward = memnew(Button);
@@ -4151,16 +4154,16 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_forward->set_tooltip_text(TTRC("Go to next edited document."));
 	script_forward->set_shortcut(ED_GET_SHORTCUT("script_editor/history_next"));
 	script_forward->set_disabled(true);
-	menu_hb->add_child(script_forward);
+	menu_hflow->add_child(script_forward);
 	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
 
-	menu_hb->add_child(memnew(VSeparator));
+	menu_hflow->add_child(memnew(VSeparator));
 
 	make_floating = memnew(ScreenSelect);
 	make_floating->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
 
-	menu_hb->add_child(make_floating);
+	menu_hflow->add_child(make_floating);
 	p_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditor::_window_changed));
 
 	tab_container->connect("tab_changed", callable_mp(this, &ScriptEditor::_tab_changed));
