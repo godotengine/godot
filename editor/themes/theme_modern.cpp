@@ -496,6 +496,14 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_constant("outline_size", "Button", 0);
 		p_theme->set_constant("align_to_largest_stylebox", "Button", 1); // Enabled.
 
+#ifdef ANDROID_ENABLED
+		// Use a larger click margin on the Android editor to improve touchscreen usability.
+		const int click_margin = Math::round(4 * EDSCALE);
+#else
+		const int click_margin = Math::round(2 * EDSCALE);
+#endif
+		p_theme->set_constant("click_margin", "BaseButton", click_margin);
+
 		// MenuBar.
 
 		p_theme->set_stylebox(CoreStringName(normal), "MenuBar", p_config.button_style);
@@ -1956,13 +1964,13 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 			p_theme->set_type_variation("FlatButtonNoIconTint", "FlatButton");
 			p_theme->set_color("icon_pressed_color", "FlatButtonNoIconTint", p_config.icon_normal_color);
-			p_theme->set_color("icon_hover_color", "FlatButtonNoIconTint", p_config.mono_color);
-			p_theme->set_color("icon_hover_pressed_color", "FlatButtonNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_color", "FlatButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
+			p_theme->set_color("icon_hover_pressed_color", "FlatButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
 
 			p_theme->set_type_variation("FlatMenuButtonNoIconTint", "FlatMenuButton");
 			p_theme->set_color("icon_pressed_color", "FlatMenuButtonNoIconTint", p_config.icon_normal_color);
-			p_theme->set_color("icon_hover_color", "FlatMenuButtonNoIconTint", p_config.mono_color);
-			p_theme->set_color("icon_hover_pressed_color", "FlatMenuButtonNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_color", "FlatMenuButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
+			p_theme->set_color("icon_hover_pressed_color", "FlatMenuButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
 
 			// Variation for the AssetLib thumbnails.
 
@@ -1994,8 +2002,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		{
 			p_theme->set_type_variation("CheckBoxNoIconTint", "CheckBox");
 			p_theme->set_color("icon_pressed_color", "CheckBoxNoIconTint", p_config.icon_normal_color);
-			p_theme->set_color("icon_hover_color", "CheckBoxNoIconTint", p_config.mono_color);
-			p_theme->set_color("icon_hover_pressed_color", "CheckBoxNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_color", "CheckBoxNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
+			p_theme->set_color("icon_hover_pressed_color", "CheckBoxNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color_inv);
 		}
 
 		// Buttons styles that stand out against the panel background (e.g. AssetLib).
@@ -2045,17 +2053,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_type_variation("NoBorderHorizontalBottom", "NoBorderHorizontal");
 			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottom", margin);
 
-			margin *= 2;
-
-			// Used in nested containers.
-			p_theme->set_type_variation("NoBorderHorizontalWide", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderHorizontalWide", margin);
-			p_theme->set_constant("margin_right", "NoBorderHorizontalWide", margin);
-
-			// Same as above, including the bottom.
-			p_theme->set_type_variation("NoBorderHorizontalBottomWide", "NoBorderHorizontalWide");
-			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottomWide", margin);
-
 			// Used in the asset library. Specifically, the ("bg", "AssetLib") stylebox.
 
 			margin = -p_config.base_margin * EDSCALE;
@@ -2099,6 +2096,19 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
 			p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
 			p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
+
+			// Used in nested containers.
+			p_theme->set_type_variation("NoBorderHorizontalWide", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderHorizontalWide", margin);
+			p_theme->set_constant("margin_right", "NoBorderHorizontalWide", margin);
+
+			// Same as above, including the bottom.
+			p_theme->set_type_variation("NoBorderHorizontalBottomWide", "NoBorderHorizontalWide");
+			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottomWide", 2 * -bottom_panel_margin);
+
+			// Used in the action map editor.
+			p_theme->set_type_variation("NoBorderActionEditor", "NoBorderHorizontalWide");
+			p_theme->set_constant("margin_bottom", "NoBorderActionEditor", -bottom_panel_margin);
 		}
 
 		// Buttons in material previews.
@@ -2179,6 +2189,18 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_constant("tab_separation", "TabBarInner", p_config.separation_margin);
 
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerTabbarInner", style_tabbar_background_inner);
+		}
+
+		// PanelContainerButtonGroup.
+		{
+			p_theme->set_type_variation("PanelContainerButtonGroup", "PanelContainer");
+
+			Ref<StyleBoxFlat> style_button_group = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
+			style_button_group->set_content_margin_all(p_config.base_margin * EDSCALE);
+			style_button_group->set_corner_radius_all(p_config.corner_radius > 0 ? (p_config.corner_radius + p_config.base_margin) * EDSCALE : 0);
+			style_button_group->set_bg_color(p_config.surface_lower_color.lerp(p_config.mono_color_inv, 0.15).lightened(0.02));
+
+			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
 		}
 
 		// TreeLineEdit.

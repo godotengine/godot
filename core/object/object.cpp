@@ -1033,7 +1033,7 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	if (E) {
 		E->value = p_value;
 	} else {
-		ERR_FAIL_COND_MSG(!p_name.string().is_valid_ascii_identifier(), vformat("Invalid metadata identifier: '%s'.", p_name));
+		ERR_FAIL_COND_MSG(!p_name.string().is_valid_unicode_identifier(), vformat("Invalid metadata identifier: '%s'.", p_name));
 		Variant *V = &metadata.insert(p_name, p_value)->value;
 
 		const String &sname = p_name;
@@ -1539,7 +1539,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 #ifdef TOOLS_ENABLED
 			else {
 				//allow connecting signals anyway if script is invalid, see issue #17070
-				if (!script_instance->get_script()->is_valid()) {
+				if (!script_instance->get_script()->is_script_valid()) {
 					signal_is_valid = true;
 				}
 			}

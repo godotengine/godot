@@ -379,7 +379,7 @@ public:
 	// Returns true when the image is empty (0,0) in size.
 	bool is_empty() const;
 
-	Vector<uint8_t> get_data() const;
+	const Vector<uint8_t> &get_data() const _LIFETIME_BOUND_;
 
 	Error load(const String &p_path);
 	static Ref<Image> load_from_file(const String &p_path);

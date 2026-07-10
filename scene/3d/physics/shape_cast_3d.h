@@ -68,7 +68,7 @@ class ShapeCast3D : public Node3D {
 
 	// Result
 	int max_results = 32;
-	Vector<PhysicsDirectSpaceState3D::ShapeRestInfo> result;
+	Vector<PS3DT::ShapeRestInfo> result;
 	bool collided = false;
 	real_t collision_safe_fraction = 1.0;
 	real_t collision_unsafe_fraction = 1.0;

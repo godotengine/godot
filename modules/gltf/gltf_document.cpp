@@ -1162,17 +1162,6 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 					attributes["COLOR_0"] = GLTFAccessor::encode_new_accessor_from_colors(p_state, a, GLTFBufferView::TARGET_ARRAY_BUFFER);
 				}
 			}
-			HashMap<int, int> joint_i_to_bone_i;
-			for (GLTFNodeIndex node_i = 0; node_i < p_state->nodes.size(); node_i++) {
-				GLTFSkinIndex skin_i = -1;
-				if (p_state->nodes[node_i]->mesh == gltf_mesh_i) {
-					skin_i = p_state->nodes[node_i]->skin;
-				}
-				if (skin_i != -1) {
-					joint_i_to_bone_i = p_state->skins[skin_i]->joint_i_to_bone_i;
-					break;
-				}
-			}
 			{
 				const Array &a = array[Mesh::ARRAY_BONES];
 				const Vector<Vector3> &vertex_array = array[Mesh::ARRAY_VERTEX];
@@ -1834,8 +1823,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			}
 			mesh_surface_tool->index();
 			if (generate_tangents && a.has("TEXCOORD_0")) {
-				//must generate mikktspace tangents.. ergh..
-				mesh_surface_tool->generate_tangents();
+				mesh_surface_tool->generate_tangents(/*split*/ !mesh_prim.has("targets"));
 			}
 			array = mesh_surface_tool->commit_to_arrays();
 
@@ -1974,7 +1962,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					}
 					blend_surface_tool->index();
 					if (generate_tangents) {
-						blend_surface_tool->generate_tangents();
+						blend_surface_tool->generate_tangents(/*split*/ false);
 					}
 					array_copy = blend_surface_tool->commit_to_arrays();
 

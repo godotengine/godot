@@ -1550,7 +1550,7 @@ void ItemList::_notification(int p_what) {
 				bool is_hovered = (hovered == i);
 				bool is_selected = items[i].selected;
 				bool is_disabled = items[i].disabled;
-				bool is_focused = has_focus();
+				bool is_focused = has_focus(true);
 
 				if (is_disabled) {
 					if (is_hovered) {

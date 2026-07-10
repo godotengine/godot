@@ -2161,7 +2161,7 @@ void TileMapLayerEditorTilesPlugin::edit(ObjectID p_tile_map_layer_id) {
 	edited_tile_map_layer_id = p_tile_map_layer_id;
 }
 
-void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	bool is_vertical = (p_layout == EditorDock::DOCK_LAYOUT_VERTICAL);
 	atlas_sources_split_container->set_vertical(is_vertical);
 	atlas_sources_split_container->move_child(split_container_left_side, is_vertical ? -1 : 0);
@@ -3193,7 +3193,6 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 				rect.set_end(tile_set->local_to_map(mpos));
 				rect = rect.abs();
 
-				HashMap<Vector2i, TileSet::TerrainsPattern> to_draw;
 				for (int x = rect.position.x; x <= rect.get_end().x; x++) {
 					for (int y = rect.position.y; y <= rect.get_end().y; y++) {
 						preview.insert(Vector2i(x, y));
@@ -3505,7 +3504,7 @@ void TileMapLayerEditorTerrainsPlugin::edit(ObjectID p_edited_tile_map_layer_id)
 	}
 }
 
-void TileMapLayerEditorTerrainsPlugin::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void TileMapLayerEditorTerrainsPlugin::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
 	// Main Panel.
 	main_box_container->set_vertical(is_vertical);
@@ -4485,7 +4484,7 @@ void TileMapLayerEditor::_update_layer_selector_layout(bool p_is_vertical) {
 	}
 }
 
-void TileMapLayerEditor::update_layout(DockLayout p_layout, DockSlot p_slot) {
+void TileMapLayerEditor::update_layout(DockLayout p_layout, int p_slot) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
 	tile_map_toolbar->set_vertical(is_vertical);
 	layer_selector_separator->set_vertical(is_vertical);

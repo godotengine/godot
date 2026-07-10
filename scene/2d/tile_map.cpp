@@ -720,7 +720,6 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 	const String sname = p_name;
 
-	Vector<String> components = String(p_name).split("/", true, 2);
 	if (p_name == "format") {
 		r_ret = TileMapDataFormat::TILE_MAP_DATA_FORMAT_MAX - 1; // When saving, always save highest format.
 		return true;

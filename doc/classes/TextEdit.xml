@@ -1399,6 +1399,9 @@
 			If [code]true[/code], text can be selected.
 			If [code]false[/code], text can not be selected by the user or by the [method select] or [method select_all] methods.
 		</member>
+		<member name="selection_handle_enabled" type="bool" setter="set_selection_handle_enabled" getter="is_selection_handle_enabled" default="true">
+			If [code]true[/code], enables the handles used for text selection. These handles are only visible on touchscreen and can be dragged to adjust the selected text range.
+		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
 			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
 		</member>

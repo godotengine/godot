@@ -122,8 +122,21 @@ public:
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 
-	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override {}
-	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override { return RID(); }
+	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override {
+		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
+		ERR_FAIL_NULL(m);
+		ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, m->surfaces.size());
+		RenderingServerTypes::SurfaceData s = m->surfaces.get(p_surface);
+		s.material = p_material;
+		m->surfaces.set(p_surface, s);
+		m->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
+	}
+	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override {
+		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
+		ERR_FAIL_NULL_V(m, RID());
+		ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, m->surfaces.size(), RID());
+		return m->surfaces[p_surface].material;
+	}
 
 	virtual RenderingServerTypes::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);

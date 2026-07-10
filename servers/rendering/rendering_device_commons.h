@@ -1072,6 +1072,8 @@ protected:
 	/**** TEXTURE ****/
 	/*****************/
 
+	static const char *const TEXTURE_TYPE_NAMES[TEXTURE_TYPE_MAX];
+
 	static const uint32_t MAX_IMAGE_FORMAT_PLANES = 2;
 
 	static const uint32_t TEXTURE_SAMPLES_COUNT[TEXTURE_SAMPLES_MAX];
@@ -1120,7 +1122,7 @@ public:
 		DataFormat texture_format = DATA_FORMAT_MAX;
 
 		bool operator!=(const ShaderUniform &p_other) const {
-			return binding != p_other.binding || type != p_other.type || writable != p_other.writable || stages != p_other.stages || length != p_other.length;
+			return binding != p_other.binding || type != p_other.type || writable != p_other.writable || stages != p_other.stages || length != p_other.length || texture_type != p_other.texture_type || texture_format != p_other.texture_format;
 		}
 
 		bool operator<(const ShaderUniform &p_other) const {
@@ -1138,6 +1140,12 @@ public:
 			}
 			if (length != p_other.length) {
 				return length < p_other.length;
+			}
+			if (texture_type != p_other.texture_type) {
+				return texture_type < p_other.texture_type;
+			}
+			if (texture_format != p_other.texture_format) {
+				return texture_format < p_other.texture_format;
 			}
 			return false;
 		}

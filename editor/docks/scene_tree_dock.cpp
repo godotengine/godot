@@ -1398,14 +1398,19 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						break;
 					}
 
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
 					placeholder = !placeholder;
+
+					undo_redo->create_action(TTR("Toggle Load as Placeholder"));
+					undo_redo->add_undo_method(node, "set_scene_instance_load_placeholder", !placeholder);
+					undo_redo->add_do_method(node, "set_scene_instance_load_placeholder", placeholder);
 
 					if (placeholder) {
 						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
 					}
 
-					node->set_scene_instance_load_placeholder(placeholder);
-					scene_tree->update_tree();
+					undo_redo->commit_action();
 				}
 			}
 		} break;
@@ -1489,14 +1494,16 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_TOGGLE_SCENE_UNIQUE_NAME: {
 			// Enabling/disabling based on the same node based on which the checkbox in the menu is checked/unchecked.
-			const List<Node *>::Element *first_selected = editor_selection->get_top_selected_node_list().front();
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
+			Node *first_selected = selection.front() ? selection.front()->get() : nullptr;
 			if (first_selected == nullptr) {
 				return;
 			}
-			if (first_selected->get() == EditorNode::get_singleton()->get_edited_scene()) {
+			if (first_selected == EditorNode::get_singleton()->get_edited_scene()) {
 				// Exclude Root Node. It should never be unique name in its own scene!
-				editor_selection->remove_node(first_selected->get());
-				first_selected = editor_selection->get_top_selected_node_list().front();
+				editor_selection->remove_node(first_selected);
+				const List<Node *> selection1 = editor_selection->get_top_selected_node_list();
+				first_selected = selection1.front() ? selection1.front()->get() : nullptr;
 				if (first_selected == nullptr) {
 					return;
 				}
@@ -1518,7 +1525,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				return;
 			}
 
-			bool enabling = !first_selected->get()->is_unique_name_in_owner();
+			bool enabling = !first_selected->is_unique_name_in_owner();
 
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
@@ -5101,7 +5108,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	tree_menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 
 	button_panel = memnew(PanelContainer);
-	button_panel->set_theme_type_variation("PanelContainerTabbarInner");
+	button_panel->set_theme_type_variation("PanelContainerButtonGroup");
 	main_vbox->add_child(button_panel);
 
 	HBoxContainer *button_hb = memnew(HBoxContainer);

@@ -810,7 +810,7 @@ void ProjectDialog::ok_pressed() {
 			}
 		}
 #endif
-		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed());
+		emit_signal(SNAME("project_created"), path, mode == MODE_NEW || edit_check_box->is_pressed());
 	} else if (mode == MODE_DUPLICATE) {
 		emit_signal(SNAME("project_duplicated"), original_project_path, path, edit_check_box->is_visible() && edit_check_box->is_pressed());
 	} else if (mode == MODE_RENAME) {
@@ -905,7 +905,6 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 		create_dir->show();
 		project_status_rect->show();
 		project_browse->show();
-		edit_check_box->show();
 
 		if (mode == MODE_IMPORT) {
 			set_title(TTRC("Import Existing Project"));
@@ -915,6 +914,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			install_path_container->hide();
 			renderer_container->hide();
 			default_files_container->hide();
+			edit_check_box->show();
 
 			// Project path dialog is also opened; no need to change focus.
 		} else if (mode == MODE_NEW) {
@@ -942,6 +942,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			install_path_container->hide();
 			renderer_container->show();
 			default_files_container->show();
+			edit_check_box->hide();
 
 			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();
@@ -955,6 +956,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			install_path_container->hide();
 			renderer_container->hide();
 			default_files_container->hide();
+			edit_check_box->show();
 
 			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred(false);
 		} else if (mode == MODE_DUPLICATE) {
@@ -965,9 +967,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			install_path_container->hide();
 			renderer_container->hide();
 			default_files_container->hide();
-			if (!duplicate_can_edit) {
-				edit_check_box->hide();
-			}
+			edit_check_box->set_visible(duplicate_can_edit);
 
 			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();

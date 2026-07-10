@@ -46,16 +46,10 @@
 struct TTSUtterance;
 
 @interface TTS_MacOS : NSObject <AVSpeechSynthesizerDelegate> {
-	// AVSpeechSynthesizer
 	bool speaking;
 	HashMap<id, int64_t> ids;
 
-	// NSSpeechSynthesizer
-	bool paused;
-	bool have_utterance;
-	int64_t last_utterance;
-
-	id synth; // NSSpeechSynthesizer or AVSpeechSynthesizer
+	id synth;
 	List<TTSUtterance> queue;
 }
 

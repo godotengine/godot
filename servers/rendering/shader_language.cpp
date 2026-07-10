@@ -1544,9 +1544,10 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 		if (r_struct_name) {
 			*r_struct_name = shader->constants[p_identifier].struct_name;
 		}
-		if (r_constant_values) {
-			if (shader->constants[p_identifier].initializer && !shader->constants[p_identifier].initializer->get_values().is_empty()) {
-				*r_constant_values = shader->constants[p_identifier].initializer->get_values();
+		if (r_constant_values && shader->constants[p_identifier].initializer) {
+			Vector<Scalar> values = _get_node_values(p_block, p_function_info, shader->constants[p_identifier].initializer);
+			if (!values.is_empty()) {
+				*r_constant_values = values;
 			}
 		}
 		if (r_type) {
@@ -4265,6 +4266,21 @@ bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_ty
 			p_value->sint = p_constant->values[0].uint;
 		}
 		return true;
+	} else if (p_constant->datatype == TYPE_BOOL && p_to_type == TYPE_FLOAT) {
+		if (p_value) {
+			p_value->real = p_constant->values[0].boolean ? 1.0f : 0.0f;
+		}
+		return true;
+	} else if (p_constant->datatype == TYPE_BOOL && p_to_type == TYPE_UINT) {
+		if (p_value) {
+			p_value->uint = p_constant->values[0].boolean ? 1U : 0U;
+		}
+		return true;
+	} else if (p_constant->datatype == TYPE_BOOL && p_to_type == TYPE_INT) {
+		if (p_value) {
+			p_value->sint = p_constant->values[0].boolean ? 1 : 0;
+		}
+		return true;
 	} else {
 		return false;
 	}
@@ -4295,6 +4311,7 @@ bool ShaderLanguage::is_float_type(DataType p_type) {
 		}
 	}
 }
+
 bool ShaderLanguage::is_sampler_type(DataType p_type) {
 	return p_type > TYPE_MAT4 && p_type < TYPE_STRUCT;
 }

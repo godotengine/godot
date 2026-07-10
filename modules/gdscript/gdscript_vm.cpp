@@ -50,7 +50,7 @@ static bool _profile_count_as_native(const Object *p_base_obj, const StringName 
 }
 
 static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {
-	if (script_type.is_valid() && script_type->is_valid()) {
+	if (script_type.is_valid() && script_type->is_script_valid()) {
 		return GDScript::debug_get_script_name(script_type);
 	} else if (native_type != StringName()) {
 		return native_type.string();
@@ -743,7 +743,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 	bool awaited = false;
-	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptrw() : nullptr };
+	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptr() : nullptr };
 
 #ifdef DEBUG_ENABLED
 	OPCODE_WHILE(ip < _code_size) {
@@ -1924,8 +1924,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
 				Variant::Type base_type = base->get_type();
-				Object *base_obj = base->get_validated_object();
-				StringName base_class = base_obj ? base_obj->get_class_name() : StringName();
+				Object *base_obj = nullptr;
 #endif
 
 				Variant temp_ret;
@@ -1937,9 +1936,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 					if (ret->get_type() == Variant::NIL) {
 						if (base_type == Variant::OBJECT) {
+							if (*methodname == CoreStringName(free_)) {
+								err_text = R"(Trying to get a return value of a method that returns "void")";
+								OPCODE_BREAK;
+							}
+							base_obj = base->get_validated_object();
 							if (base_obj) {
-								MethodBind *method = ClassDB::get_method(base_class, *methodname);
-								if (*methodname == CoreStringName(free_) || (method && !method->has_return())) {
+								MethodBind *method = ClassDB::get_method(base_obj->get_class_name(), *methodname);
+								if (method && !method->has_return()) {
 									err_text = R"(Trying to get a return value of a method that returns "void")";
 									OPCODE_BREAK;
 								}
@@ -1967,14 +1971,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 
 				if (GDScriptLanguage::get_singleton()->profiling) {
+					base_obj = (base_obj == nullptr) ? base->get_validated_object() : base_obj;
 					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
 					if (GDScriptLanguage::get_singleton()->profile_native_calls && _profile_count_as_native(base_obj, *methodname)) {
-						_profile_native_call(t_taken, *methodname, base_class);
+						_profile_native_call(t_taken, *methodname, base_obj->get_class_name());
 					}
 					function_call_time += t_taken;
 				}
 
-				if (err.error != Callable::CallError::CALL_OK) {
+				if (unlikely(err.error != Callable::CallError::CALL_OK)) {
 					String methodstr = *methodname;
 					String basestr = _get_var_type(base);
 					bool is_callable = false;
@@ -3343,7 +3348,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_ITERATE_BEGIN_OBJECT) {
 				CHECK_SPACE(4);
 
-				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(state, 0);
 				GET_VARIANT_PTR(container, 1);
 
 #ifdef DEBUG_ENABLED
@@ -3360,20 +3365,16 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Object *obj = *VariantInternal::get_object(container);
 #endif
 
-				*counter = Variant();
-				Array ref = { *counter };
-				Variant vref;
-				VariantInternal::initialize(&vref, Variant::ARRAY);
-				*VariantInternal::get_array(&vref) = ref;
-
-				const Variant *args[] = { &vref };
+				Array ref = { Variant() };
+				VariantInternal::initialize(state, Variant::ARRAY);
+				*VariantInternal::get_array(state) = ref;
 
 				Callable::CallError ce;
-				Variant has_next = obj->callp(CoreStringName(_iter_init), args, 1, ce);
+				Variant has_next = obj->callp(CoreStringName(_iter_init), const_cast<const Variant **>(&state), 1, ce);
 
 #ifdef DEBUG_ENABLED
 				if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
-					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type %s.)", *container);
+					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
 					OPCODE_BREAK;
 				}
 #endif
@@ -3382,13 +3383,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
 					ip = jumpto;
 				} else {
-					*counter = ref[0];
+					Variant *state_ptr = &(ref[0]);
 
 					GET_VARIANT_PTR(iterator, 2);
-					*iterator = obj->callp(CoreStringName(_iter_get), (const Variant **)&counter, 1, ce);
+					*iterator = obj->callp(CoreStringName(_iter_get), const_cast<const Variant **>(&state_ptr), 1, ce);
 #ifdef DEBUG_ENABLED
 					if (ce.error != Callable::CallError::CALL_OK) {
-						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type %s.)", *container);
+						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
 						OPCODE_BREAK;
 					}
 #endif
@@ -3710,7 +3711,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_ITERATE_OBJECT) {
 				CHECK_SPACE(4);
 
-				GET_VARIANT_PTR(counter, 0);
+				GET_VARIANT_PTR(state, 0);
 				GET_VARIANT_PTR(container, 1);
 
 #ifdef DEBUG_ENABLED
@@ -3727,19 +3728,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Object *obj = *VariantInternal::get_object(container);
 #endif
 
-				Array ref = { *counter };
-				Variant vref;
-				VariantInternal::initialize(&vref, Variant::ARRAY);
-				*VariantInternal::get_array(&vref) = ref;
-
-				const Variant *args[] = { &vref };
-
 				Callable::CallError ce;
-				Variant has_next = obj->callp(CoreStringName(_iter_next), args, 1, ce);
+				Variant has_next = obj->callp(CoreStringName(_iter_next), const_cast<const Variant **>(&state), 1, ce);
 
 #ifdef DEBUG_ENABLED
-				if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
-					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type %s.)", *container);
+				if (VariantInternal::get_array(state)->size() != 1 || ce.error != Callable::CallError::CALL_OK) {
+					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
 					OPCODE_BREAK;
 				}
 #endif
@@ -3748,13 +3742,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
 					ip = jumpto;
 				} else {
-					*counter = ref[0];
+					// For _iter_get(): get a pointer to the single element in the array.
+					Variant *state_ptr = &((*VariantInternal::get_array(state))[0]);
 
 					GET_VARIANT_PTR(iterator, 2);
-					*iterator = obj->callp(CoreStringName(_iter_get), (const Variant **)&counter, 1, ce);
+					*iterator = obj->callp(CoreStringName(_iter_get), const_cast<const Variant **>(&state_ptr), 1, ce);
 #ifdef DEBUG_ENABLED
 					if (ce.error != Callable::CallError::CALL_OK) {
-						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type %s.)", *container);
+						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
 						OPCODE_BREAK;
 					}
 #endif

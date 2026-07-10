@@ -509,7 +509,7 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 
 // MARK: SiriKit
 
-- (id)application:(UIApplication *)application handlerForIntent:(INIntent *)intent API_AVAILABLE(ios(14.0)) {
+- (id)application:(UIApplication *)application handlerForIntent:(INIntent *)intent {
 	for (GDTAppDelegateServiceProtocol *service in services) {
 		if (![service respondsToSelector:_cmd]) {
 			continue;

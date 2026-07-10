@@ -642,6 +642,20 @@ Ref<Image> DisplayServerWayland::clipboard_get_image() const {
 	return image;
 }
 
+bool DisplayServerWayland::clipboard_has_image() const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	return wayland_thread.selection_has_mime("image/png") ||
+			wayland_thread.selection_has_mime("image/jpeg") ||
+			wayland_thread.selection_has_mime("image/webp") ||
+			wayland_thread.selection_has_mime("image/svg+xml") ||
+			wayland_thread.selection_has_mime("image/bmp") ||
+			wayland_thread.selection_has_mime("image/x-tga") ||
+			wayland_thread.selection_has_mime("image/x-targa") ||
+			wayland_thread.selection_has_mime("image/ktx") ||
+			wayland_thread.selection_has_mime("image/x-exr");
+}
+
 void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 

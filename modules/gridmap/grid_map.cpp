@@ -251,7 +251,7 @@ Array GridMap::get_collision_shapes() const {
 	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
 		Octant *g = E.value;
 		RID body = g->static_body;
-		Transform3D body_xform = PhysicsServer3D::get_singleton()->body_get_state(body, PhysicsServer3D::BODY_STATE_TRANSFORM);
+		Transform3D body_xform = PhysicsServer3D::get_singleton()->body_get_state(body, PS3DE::BODY_STATE_TRANSFORM);
 		int nshapes = PhysicsServer3D::get_singleton()->body_get_shape_count(body);
 		for (int i = 0; i < nshapes; i++) {
 			RID shape = PhysicsServer3D::get_singleton()->body_get_shape(body, i);
@@ -549,14 +549,14 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 		g->dirty = true;
 #ifndef PHYSICS_3D_DISABLED
 		g->static_body = PhysicsServer3D::get_singleton()->body_create();
-		PhysicsServer3D::get_singleton()->body_set_mode(g->static_body, PhysicsServer3D::BODY_MODE_STATIC);
+		PhysicsServer3D::get_singleton()->body_set_mode(g->static_body, PS3DE::BODY_MODE_STATIC);
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(g->static_body, get_instance_id());
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(g->static_body, collision_layer);
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(g->static_body, collision_mask);
 		PhysicsServer3D::get_singleton()->body_set_collision_priority(g->static_body, collision_priority);
 		if (physics_material.is_valid()) {
-			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->computed_friction());
-			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PS3DE::BODY_PARAM_FRICTION, physics_material->computed_friction());
+			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PS3DE::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
 		}
 #endif // PHYSICS_3D_DISABLED
 		bool debug_collisions = false;
@@ -743,7 +743,7 @@ void GridMap::_octant_transform(const OctantKey &p_key) {
 	ERR_FAIL_COND(!octant_map.has(p_key));
 	Octant &g = *octant_map[p_key];
 #ifndef PHYSICS_3D_DISABLED
-	PhysicsServer3D::get_singleton()->body_set_state(g.static_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+	PhysicsServer3D::get_singleton()->body_set_state(g.static_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 
 	if (g.collision_debug_instance.is_valid()) {
 		RS::get_singleton()->instance_set_transform(g.collision_debug_instance, get_global_transform());
@@ -1022,8 +1022,8 @@ void GridMap::_update_physics_bodies_characteristics() {
 		bounce = physics_material->computed_bounce();
 	}
 	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
-		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, friction);
-		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, bounce);
+		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PS3DE::BODY_PARAM_FRICTION, friction);
+		PhysicsServer3D::get_singleton()->body_set_param(E.value->static_body, PS3DE::BODY_PARAM_BOUNCE, bounce);
 	}
 }
 #endif // PHYSICS_3D_DISABLED
@@ -1035,7 +1035,7 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 	const RID scenario = get_world_3d()->get_scenario();
 
 #ifndef PHYSICS_3D_DISABLED
-	PhysicsServer3D::get_singleton()->body_set_state(g.static_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+	PhysicsServer3D::get_singleton()->body_set_state(g.static_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 	PhysicsServer3D::get_singleton()->body_set_space(g.static_body, get_world_3d()->get_space());
 
 	if (g.collision_debug_instance.is_valid()) {
@@ -1102,7 +1102,7 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 	Octant &g = *octant_map[p_key];
 
 #ifndef PHYSICS_3D_DISABLED
-	PhysicsServer3D::get_singleton()->body_set_state(g.static_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+	PhysicsServer3D::get_singleton()->body_set_state(g.static_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 	PhysicsServer3D::get_singleton()->body_set_space(g.static_body, RID());
 
 	if (g.collision_debug_instance.is_valid()) {
@@ -1961,7 +1961,7 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 				if (body.is_null()) {
 					continue;
 				}
-				const Transform3D body_xform = PhysicsServer3D::get_singleton()->body_get_state(body, PhysicsServer3D::BODY_STATE_TRANSFORM);
+				const Transform3D body_xform = PhysicsServer3D::get_singleton()->body_get_state(body, PS3DE::BODY_STATE_TRANSFORM);
 				int nshapes = PhysicsServer3D::get_singleton()->body_get_shape_count(body);
 				for (int i = 0; i < nshapes; i++) {
 					RID shape = PhysicsServer3D::get_singleton()->body_get_shape(body, i);
@@ -1977,25 +1977,25 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 
 		for (int i = 0; i < shapes.size(); i += 2) {
 			RID shape = shapes[i + 1];
-			PhysicsServer3D::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);
+			PS3DE::ShapeType type = PhysicsServer3D::get_singleton()->shape_get_type(shape);
 			Variant data = PhysicsServer3D::get_singleton()->shape_get_data(shape);
 
 			switch (type) {
-				case PhysicsServer3D::SHAPE_SPHERE: {
+				case PS3DE::SHAPE_SPHERE: {
 					real_t radius = data;
 					Array arr;
 					arr.resize(RSE::ARRAY_MAX);
 					SphereMesh::create_mesh_array(arr, radius, radius * 2.0);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
-				case PhysicsServer3D::SHAPE_BOX: {
+				case PS3DE::SHAPE_BOX: {
 					Vector3 extents = data;
 					Array arr;
 					arr.resize(RSE::ARRAY_MAX);
 					BoxMesh::create_mesh_array(arr, extents * 2.0);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
-				case PhysicsServer3D::SHAPE_CAPSULE: {
+				case PS3DE::SHAPE_CAPSULE: {
 					Dictionary dict = data;
 					real_t radius = dict["radius"];
 					real_t height = dict["height"];
@@ -2004,7 +2004,7 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 					CapsuleMesh::create_mesh_array(arr, radius, height);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
-				case PhysicsServer3D::SHAPE_CYLINDER: {
+				case PS3DE::SHAPE_CYLINDER: {
 					Dictionary dict = data;
 					real_t radius = dict["radius"];
 					real_t height = dict["height"];
@@ -2013,7 +2013,7 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 					CylinderMesh::create_mesh_array(arr, radius, radius, height);
 					p_source_geometry_data->add_mesh_array(arr, shapes[i]);
 				} break;
-				case PhysicsServer3D::SHAPE_CONVEX_POLYGON: {
+				case PS3DE::SHAPE_CONVEX_POLYGON: {
 					PackedVector3Array vertices = data;
 					Geometry3D::MeshData md;
 
@@ -2033,12 +2033,12 @@ void GridMap::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigat
 						p_source_geometry_data->add_faces(faces, shapes[i]);
 					}
 				} break;
-				case PhysicsServer3D::SHAPE_CONCAVE_POLYGON: {
+				case PS3DE::SHAPE_CONCAVE_POLYGON: {
 					Dictionary dict = data;
 					PackedVector3Array faces = Variant(dict["faces"]);
 					p_source_geometry_data->add_faces(faces, shapes[i]);
 				} break;
-				case PhysicsServer3D::SHAPE_HEIGHTMAP: {
+				case PS3DE::SHAPE_HEIGHTMAP: {
 					Dictionary dict = data;
 					///< dict( int:"width", int:"depth",float:"cell_size", float_array:"heights"
 					int heightmap_depth = dict["depth"];

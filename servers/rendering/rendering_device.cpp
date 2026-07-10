@@ -4109,6 +4109,7 @@ static const char *SHADER_UNIFORM_NAMES[RenderingDevice::UNIFORM_TYPE_MAX] = {
 	"InputAttachment",
 	"UniformBufferDynamic",
 	"StorageBufferDynamic",
+	"AccelerationStructure",
 };
 
 String RenderingDevice::_shader_uniform_debug(RID p_shader, int p_set) {
@@ -4125,6 +4126,16 @@ String RenderingDevice::_shader_uniform_debug(RID p_shader, int p_set) {
 				ret += "\n";
 			}
 			ret += "Set: " + itos(i) + " Binding: " + itos(ui.binding) + " Type: " + SHADER_UNIFORM_NAMES[ui.type] + " Writable: " + (ui.writable ? "Y" : "N") + " Length: " + itos(ui.length);
+
+			if (ui.texture_type != TEXTURE_TYPE_MAX) {
+				ret += " Texture Type: ";
+				ret += TEXTURE_TYPE_NAMES[ui.texture_type];
+			}
+
+			if (ui.texture_format != DATA_FORMAT_MAX) {
+				ret += " Texture Format: ";
+				ret += FORMAT_NAMES[ui.texture_format];
+			}
 		}
 	}
 	return ret;

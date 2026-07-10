@@ -419,6 +419,14 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 		p_theme->set_constant("align_to_largest_stylebox", "Button", 1); // Enabled.
 
+#ifdef ANDROID_ENABLED
+		// Use a larger click margin on the Android editor to improve touchscreen usability.
+		const int click_margin = Math::round(4 * EDSCALE);
+#else
+		const int click_margin = Math::round(2 * EDSCALE);
+#endif
+		p_theme->set_constant("click_margin", "BaseButton", click_margin);
+
 		// MenuBar.
 
 		p_theme->set_stylebox(CoreStringName(normal), "MenuBar", p_config.button_style);
@@ -1898,8 +1906,8 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 			p_theme->set_type_variation("FlatButtonNoIconTint", "FlatButton");
 			p_theme->set_color("icon_pressed_color", "FlatButtonNoIconTint", p_config.icon_normal_color);
-			p_theme->set_color("icon_hover_color", "FlatButtonNoIconTint", p_config.mono_color);
-			p_theme->set_color("icon_hover_pressed_color", "FlatButtonNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_color", "FlatButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color.inverted());
+			p_theme->set_color("icon_hover_pressed_color", "FlatButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color.inverted());
 
 			// Variation for the AssetLib thumbnails.
 
@@ -1912,8 +1920,8 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 
 			p_theme->set_type_variation("FlatMenuButtonNoIconTint", "FlatMenuButton");
 			p_theme->set_color("icon_pressed_color", "FlatMenuButtonNoIconTint", p_config.icon_normal_color);
-			p_theme->set_color("icon_hover_color", "FlatMenuButtonNoIconTint", p_config.mono_color);
-			p_theme->set_color("icon_hover_pressed_color", "FlatMenuButtonNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_color", "FlatMenuButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color.inverted());
+			p_theme->set_color("icon_hover_pressed_color", "FlatMenuButtonNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color.inverted());
 
 			// Variation for Editor Log filter buttons.
 			p_theme->set_type_variation("EditorLogFilterButton", "Button");
@@ -1944,8 +1952,8 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		{
 			p_theme->set_type_variation("CheckBoxNoIconTint", "CheckBox");
 			p_theme->set_color("icon_pressed_color", "CheckBoxNoIconTint", p_config.icon_normal_color);
-			p_theme->set_color("icon_hover_color", "CheckBoxNoIconTint", p_config.mono_color);
-			p_theme->set_color("icon_hover_pressed_color", "CheckBoxNoIconTint", p_config.mono_color);
+			p_theme->set_color("icon_hover_color", "CheckBoxNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color.inverted());
+			p_theme->set_color("icon_hover_pressed_color", "CheckBoxNoIconTint", p_config.dark_icon_and_font ? p_config.mono_color : p_config.mono_color.inverted());
 		}
 
 		// Buttons styles that stand out against the panel background (e.g. AssetLib).
@@ -2071,6 +2079,18 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			// Used by Modern theme.
 			p_theme->set_type_variation("PanelContainerTabbarInner", "PanelContainer");
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerTabbarInner", EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
+		}
+
+		// PanelContainerButtonGroup.
+		{
+			p_theme->set_type_variation("PanelContainerButtonGroup", "PanelContainer");
+
+			Ref<StyleBoxFlat> style_button_group = p_theme->get_stylebox(SNAME("tabbar_background"), SNAME("TabContainer"))->duplicate();
+			style_button_group->set_content_margin_all(p_config.base_margin * EDSCALE);
+			style_button_group->set_corner_radius_all(p_config.corner_radius);
+			style_button_group->set_bg_color(p_config.dark_color_1.lerp(p_config.mono_color, 0.15));
+
+			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
 		}
 
 		// TreeLineEdit.

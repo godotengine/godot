@@ -68,7 +68,7 @@ class GDScriptAnalyzer {
 	Error resolve_class_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive);
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
 
-	void decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement);
+	void decide_pattern_type(GDScriptParser::PatternNode &p_pattern, GDScriptParser::PatternNode *p_statement);
 
 	void resolve_annotation(GDScriptParser::AnnotationNode *p_annotation);
 	void resolve_class_member(GDScriptParser::ClassNode *p_class, const StringName &p_name, const GDScriptParser::Node *p_source = nullptr);
@@ -150,7 +150,7 @@ class GDScriptAnalyzer {
 	bool is_type_compatible_strict_collections(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source);
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin = nullptr);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
-	void downgrade_node_type_source(GDScriptParser::Node *p_node);
+	void downgrade_node_type_source(GDScriptParser::ExpressionNode *p_node);
 	void mark_lambda_use_self();
 	void resolve_pending_lambda_bodies();
 	void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);

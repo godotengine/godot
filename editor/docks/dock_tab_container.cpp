@@ -166,6 +166,7 @@ void EditorDockDragHint::_notification(int p_what) {
 			can_drop_dock = false;
 			mouse_inside = false;
 			highlighted = false;
+			mouse_margin_index = -1;
 			hide();
 		} break;
 
@@ -332,7 +333,7 @@ Rect2 DockTabContainer::get_default_floating_dock_rect(EditorDock *p_dock) {
 	return ret;
 }
 
-DockTabContainer::DockTabContainer(EditorDock::DockSlot p_slot) {
+DockTabContainer::DockTabContainer(int p_slot) {
 	ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
 	dock_slot = p_slot;
 
@@ -357,7 +358,7 @@ Rect2 SideDockTabContainer::get_floating_dock_rect(EditorDock *p_dock) {
 	return Rect2(get_screen_position() + Vector2(0, tab_bar_height), get_size() - Vector2(0, tab_bar_height));
 }
 
-SideDockTabContainer::SideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect) :
+SideDockTabContainer::SideDockTabContainer(int p_slot, const Rect2i &p_slot_rect) :
 		DockTabContainer(p_slot) {
 	grid_rect = p_slot_rect;
 	set_custom_minimum_size(Size2(170 * EDSCALE, 0));
@@ -373,7 +374,7 @@ Rect2 BottomSideDockTabContainer::get_floating_dock_rect(EditorDock *p_dock) {
 	return Rect2(get_screen_position() + Vector2(0, tab_bar_height), get_size() - Vector2(0, tab_bar_height));
 }
 
-BottomSideDockTabContainer::BottomSideDockTabContainer(EditorDock::DockSlot p_slot, const Rect2i &p_slot_rect) :
+BottomSideDockTabContainer::BottomSideDockTabContainer(int p_slot, const Rect2i &p_slot_rect) :
 		DockTabContainer(p_slot) {
 	grid_rect = p_slot_rect;
 	layout = EditorDock::DOCK_LAYOUT_HORIZONTAL;

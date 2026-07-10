@@ -35,6 +35,7 @@
 #include "core/object/class_db.h"
 #include "scene/gui/label.h"
 #include "scene/main/timer.h"
+#include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
 void BaseButton::_unpress_group() {
@@ -63,32 +64,34 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (p_event->get_device() != InputEvent::DEVICE_ID_EMULATION) {
-		Ref<InputEventScreenTouch> touch = p_event;
-		if (touch.is_valid()) {
-			if (status.touch_index == -1) {
-				if (touch->is_pressed()) {
-					status.touch_index = touch->get_index();
-					status.press_attempt = true;
-					status.pressing_inside = has_point(touch->get_position());
-					on_action_event(p_event);
-				}
-			} else if (touch->get_index() == status.touch_index) {
-				if (!touch->is_pressed()) {
-					status.touch_index = -1;
-					on_action_event(p_event);
-				}
+	if (p_event->get_device() == InputEvent::DEVICE_ID_EMULATION) {
+		return;
+	}
+
+	Ref<InputEventScreenTouch> touch = p_event;
+	if (touch.is_valid()) {
+		if (status.touch_index == -1) {
+			if (touch->is_pressed()) {
+				status.touch_index = touch->get_index();
+				status.press_attempt = true;
+				status.pressing_inside = has_point(touch->get_position());
+				on_action_event(p_event);
+			}
+		} else if (touch->get_index() == status.touch_index) {
+			if (!touch->is_pressed()) {
+				status.touch_index = -1;
+				on_action_event(p_event);
 			}
 		}
+	}
 
-		Ref<InputEventScreenDrag> drag = p_event;
-		if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
-			bool last_press_inside = status.pressing_inside;
-			status.pressing_inside = has_point(drag->get_position());
+	Ref<InputEventScreenDrag> drag = p_event;
+	if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
+		bool last_press_inside = status.pressing_inside;
+		status.pressing_inside = has_point(drag->get_position());
 
-			if (last_press_inside != status.pressing_inside) {
-				queue_redraw();
-			}
+		if (last_press_inside != status.pressing_inside) {
+			queue_redraw();
 		}
 	}
 
@@ -394,6 +397,16 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	}
 }
 
+bool BaseButton::has_point(const Point2 &p_point) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	bool ret;
+	if (GDVIRTUAL_CALL(_has_point, p_point, ret)) {
+		return ret;
+	}
+	Rect2 rect = Rect2(Point2(), get_size()).grow(theme_cache.click_margin);
+	return rect.has_area() && rect.has_point(p_point);
+}
+
 void BaseButton::set_toggle_mode(bool p_on) {
 	// Make sure to set 'pressed' to false if we are not in toggle mode
 	if (!p_on) {
@@ -624,6 +637,8 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, BaseButton, click_margin);
 
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);

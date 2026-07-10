@@ -486,8 +486,9 @@ void EditorNode::_update_from_settings() {
 		Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
 		scene_root->set_default_canvas_item_texture_repeat(tr);
 	}
+	bool allow_fallback = GLOBAL_GET("internationalization/locale/allow_fallback");
 	String current_fallback_locale = GLOBAL_GET("internationalization/locale/fallback");
-	if (current_fallback_locale != TranslationServer::get_singleton()->get_fallback_locale()) {
+	if (allow_fallback && current_fallback_locale != TranslationServer::get_singleton()->get_fallback_locale()) {
 		TranslationServer::get_singleton()->set_fallback_locale(current_fallback_locale);
 		Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_main_domain();
 		if (!domain->is_enabled()) {
@@ -4767,7 +4768,6 @@ void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state) {
 
 	Node *old_scene = get_editor_data().get_edited_scene_root();
 
-	resource_count.clear();
 	editor_selection->clear();
 	SceneTreeDock::get_singleton()->clear_previous_node_selection();
 	editor_data.set_edited_scene(p_idx);
@@ -4799,6 +4799,7 @@ void EditorNode::_set_current_scene_nocheck(int p_idx, bool p_ignore_state) {
 
 		EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_scene_history_id(p_idx), false);
 	}
+	resource_count.clear();
 	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
 
 	_update_title();
@@ -6587,7 +6588,7 @@ bool EditorNode::validate_custom_directory() {
 
 void EditorNode::run_editor_script(const Ref<Script> &p_script) {
 	Error err = p_script->reload(true); // Always hard reload the script before running.
-	if (err != OK || !p_script->is_valid()) {
+	if (err != OK || !p_script->is_script_valid()) {
 		EditorToaster::get_singleton()->popup_str(TTR("Cannot run the script because it contains errors, check the output log."), EditorToaster::SEVERITY_WARNING);
 		return;
 	}
@@ -9013,12 +9014,11 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/close_all_scenes", TTRC("Close All Scenes"));
 	ED_SHORTCUT_OVERRIDE("editor/close_scene", "macos", KeyModifierMask::CMD_OR_CTRL + Key::W);
 
-	ED_SHORTCUT_AND_COMMAND("editor/editor_settings", TTRC("Editor Settings..."));
-	ED_SHORTCUT_OVERRIDE("editor/editor_settings", "macos", KeyModifierMask::META + Key::COMMA);
+	ED_SHORTCUT_AND_COMMAND("editor/editor_settings", TTRC("Editor Settings..."), KeyModifierMask::CMD_OR_CTRL + Key::COMMA);
 
 	ED_SHORTCUT_AND_COMMAND("editor/file_quit", TTRC("Quit"), KeyModifierMask::CMD_OR_CTRL + Key::Q);
 
-	ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTRC("Project Settings..."), Key::NONE, TTRC("Project Settings"));
+	ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTRC("Project Settings..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::COMMA, TTRC("Project Settings"));
 	ED_SHORTCUT_AND_COMMAND("editor/find_in_files", TTRC("Find in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F);
 
 	ED_SHORTCUT_AND_COMMAND("editor/export", TTRC("Export..."), Key::NONE, TTRC("Export"));
