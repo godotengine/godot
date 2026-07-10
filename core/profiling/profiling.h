@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "profiling.gen.h" // IWYU pragma: keep.
+#include "core/profiling/profiling.gen.h" // IWYU pragma: keep.
 
 // This header provides profiling primitives (implemented as macros) for various backends.
 // See the "No profiling" branch at the bottom for a short description of the functions.
@@ -49,7 +49,9 @@
 
 #define TRACY_ENABLE
 
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4366) // The result of the unary operator may be unaligned.
 #include <tracy/Tracy.hpp>
+GODOT_MSVC_WARNING_POP
 
 // Hijacking the tracy namespace so we can use their macros.
 namespace tracy {
