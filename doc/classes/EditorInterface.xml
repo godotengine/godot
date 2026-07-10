@@ -548,5 +548,8 @@
 		<member name="movie_maker_enabled" type="bool" setter="set_movie_maker_enabled" getter="is_movie_maker_enabled">
 			If [code]true[/code], the Movie Maker mode is enabled in the editor. See [MovieWriter] for more information.
 		</member>
+		<member name="playing_enabled" type="bool" setter="set_playing_enabled" getter="is_playing_enabled">
+			If [code]false[/code], all buttons that allow playing, such as the play button and its hotkey, will be disabled and attempting to use them through hotkeys will not function.
+		</member>
 	</members>
 </class>
