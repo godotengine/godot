@@ -57,34 +57,47 @@ def configure_instruments() -> bool:
 
 def configure_tracy_shared(env_tracy, profiler_path) -> bool:
     tracylib = env_tracy.add_shared_library("TracyClient", [str((profiler_path / "TracyClient.cpp").absolute())])
+    link_target = None
     to_install = Flatten(tracylib)
 
-    if env["platform"] == "windows":
-        if env.msvc and not methods.using_clang(env):
-            # These two defines control the visibility of symbols within the library
-            # and are required when fvisibility=hidden, which is the default on windows.
-            env_tracy.Append(CPPDEFINES=["TRACY_EXPORTS", "TRACY_IMPORTS"])
+    # These two defines control the visibility of symbols within the library
+    # and are required when fvisibility=hidden, which is the default on windows.
+    env_tracy.AppendUnique(CPPDEFINES=["TRACY_EXPORTS", "TRACY_IMPORTS"])
 
+    if env["platform"] == "windows":
+        if env.msvc and not methods.using_gcc(env):
+            # MSVC or Clang (with MSVC Frontend)
             # required on release build when msvc
-            env_tracy.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS", "/ENTRY:_DllMainCRTStartup", "/DLL"])
+            env_tracy.AppendUnique(LINKFLAGS=["/SUBSYSTEM:WINDOWS", "/ENTRY:_DllMainCRTStartup", "/DLL"])
+
+            # get the link target node
+            link_target = next((n for n in to_install if str(n).endswith(".lib")), None)
 
             # add the pdb to the list of files to install
             if env_tracy.get("debug_symbols"):
                 # Create PDB node with proper dependency because an immediate copy
                 # breaks due to windows file locking.
-                dll_node = next((n for n in to_install if str(n).endswith(".dll")), None)
-                if dll_node:
-                    pdb_node = env_tracy.File(env_tracy.subst("${TARGET.base}.pdb", target=dll_node))
+                if link_target:
+                    pdb_node = env_tracy.File(env_tracy.subst("${TARGET.base}.pdb", target=link_target))
                     to_install.append(pdb_node)
                     # Add explicit dependency so SCons knows PDB is produced by the link step
-                    env_tracy.Depends(pdb_node, dll_node)
+                    env_tracy.Depends(pdb_node, link_target)
+
+            # == LLVM / lld-link does not create an exp file, but scons has a node for it ==
+            if methods.using_clang(env) and env["LINK"] == "lld-link":  # or however you detect lld
+                # lld-link often does not emit .exp (or names it differently)
+                # Only keep files that actually exist
+                to_install = [
+                    f for f in to_install if env_tracy.File(f).exists() or str(f).endswith((".dll", ".lib", ".pdb"))
+                ]
 
         elif methods.using_clang(env):
-            # clang-cl (with MSVC frontend) or MinGW LLVM
+            # MinGW LLVM
             pass
         elif methods.using_gcc(env):
             # MinGW GCC
-            pass
+            # get the link target node
+            link_target = next((n for n in to_install if str(n).endswith(".a")), None)
 
     elif env["platform"] == "linuxbsd":
         if methods.using_clang(env):
@@ -102,9 +115,12 @@ def configure_tracy_shared(env_tracy, profiler_path) -> bool:
             # Upstream Clang on macOS
             pass
 
-    # Add the shared library to the godot dependencies.
-    env.Append(LIBS=["TracyClient"])
-    env.Append(LIBPATH=[tracylib[0].get_dir()])
+    # libtarget fallback
+    if not link_target:
+        link_target = tracylib[0]
+    # Add the shared library to the main Godot build environment
+    env.Append(LIBPATH=[link_target.get_dir()])
+    env.Append(LIBS=[link_target])
 
     # Install(copy) shared lib files [+ pdb] to the bin dir
     env.Install("#bin/", to_install)
