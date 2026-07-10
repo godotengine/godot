@@ -55,6 +55,9 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="grabber_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Grabber modulate [Color].
+		</theme_item>
 		<theme_item name="center_grabber" data_type="constant" type="int" default="0">
 			Boolean constant. If [code]1[/code], the grabber texture size will be ignored and it will fit within slider's bounds based only on its center position.
 		</theme_item>
@@ -68,10 +71,25 @@
 			The texture for the grabber (the draggable element).
 		</theme_item>
 		<theme_item name="grabber_disabled" data_type="icon" type="Texture2D">
-			The texture for the grabber when it's disabled.
+			The texture for the grabber when it's disabled. If this property isn't set the [theme_item grabber] will be used instead.
+		</theme_item>
+		<theme_item name="grabber_disabled_focus" data_type="icon" type="Texture2D">
+			The focus texture to overlay on the grabber when it's disabled and being focused. If this property isn't set the [theme_item grabber_focus] will be used instead.
+		</theme_item>
+		<theme_item name="grabber_focus" data_type="icon" type="Texture2D">
+			The focus texture to overlay on the grabber when it's being focused.
 		</theme_item>
 		<theme_item name="grabber_highlight" data_type="icon" type="Texture2D">
-			The texture for the grabber when it's focused.
+			The texture for the grabber when it's hovered. If this property isn't set the [theme_item grabber] will be used instead.
+		</theme_item>
+		<theme_item name="grabber_highlight_focus" data_type="icon" type="Texture2D">
+			The focus texture to overlay on the grabber when it's hovered and being focused. If this property isn't set the [theme_item grabber_focus] will be used instead.
+		</theme_item>
+		<theme_item name="grabber_pressed" data_type="icon" type="Texture2D">
+			The texture for the grabber when it's pressed. If this property isn't set the [theme_item grabber_highlight] will be used instead.
+		</theme_item>
+		<theme_item name="grabber_pressed_focus" data_type="icon" type="Texture2D">
+			The focus texture to overlay on the grabber when it's pressed and being focused. If this property isn't set the [theme_item grabber_highlight_focus] will be used instead.
 		</theme_item>
 		<theme_item name="tick" data_type="icon" type="Texture2D">
 			The texture for the ticks, visible when [member Slider.tick_count] is greater than 0.
@@ -79,11 +97,38 @@
 		<theme_item name="grabber_area" data_type="style" type="StyleBox">
 			The background of the area to the left or bottom of the grabber.
 		</theme_item>
+		<theme_item name="grabber_area_disabled" data_type="style" type="StyleBox">
+			The background of the area to the left or bottom of the grabber when it's disabled. If this property isn't set the [theme_item grabber_area] will be used instead.
+		</theme_item>
+		<theme_item name="grabber_area_disabled_focus" data_type="style" type="StyleBox">
+			The focus texture to overlay on the grabber area when it's disabled and being focused. If this property isn't set the [theme_item grabber_area_focus] will be used instead.
+		</theme_item>
+		<theme_item name="grabber_area_focus" data_type="style" type="StyleBox">
+			The focus texture to overlay on the grabber area when it's being focused.
+		</theme_item>
 		<theme_item name="grabber_area_highlight" data_type="style" type="StyleBox">
-			The background of the area to the left or bottom of the grabber that displays when it's being hovered or focused.
+			The background of the area to the left or bottom of the grabber that displays when it's being hovered. If this property isn't set the [theme_item grabber_area] will be used instead.
+		</theme_item>
+		<theme_item name="grabber_area_highlight_focus" data_type="style" type="StyleBox">
+			The focus texture to overlay on the grabber area when it's hovered and being focused. If this property isn't set the [theme_item grabber_area_focus] will be used instead.
 		</theme_item>
 		<theme_item name="slider" data_type="style" type="StyleBox">
 			The background for the whole slider. Affects the height or width of the [theme_item grabber_area].
+		</theme_item>
+		<theme_item name="slider_disabled" data_type="style" type="StyleBox">
+			The background for the whole slider when it's disabled. Affects the height or width of the [theme_item grabber_area].
+		</theme_item>
+		<theme_item name="slider_disabled_focus" data_type="style" type="StyleBox">
+			The overlay stylebox for when the slider is disabled and being focused. If this property isn't set the [theme_item slider_focus] will be used instead.
+		</theme_item>
+		<theme_item name="slider_focus" data_type="style" type="StyleBox">
+			The overlay stylebox for when the slider is being focused.
+		</theme_item>
+		<theme_item name="slider_highlight" data_type="style" type="StyleBox">
+			The background for the whole slider when it's being hovered. Affects the height or width of the [theme_item grabber_area].
+		</theme_item>
+		<theme_item name="slider_highlight_focus" data_type="style" type="StyleBox">
+			The overlay stylebox for when the slider is hovered and being focused. If this property isn't set the [theme_item slider_focus] will be used instead.
 		</theme_item>
 	</theme_items>
 </class>
