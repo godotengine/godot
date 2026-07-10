@@ -1118,8 +1118,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool quiet_stdout = false;
 	int separate_thread_render = -1; // Tri-state: -1 = not set, 0 = false, 1 = true.
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	String remotefs;
 	String remotefs_pass;
+#endif
 
 	Vector<String> breakpoints;
 	bool delta_smoothing_override = false;

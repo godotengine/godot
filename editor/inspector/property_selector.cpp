@@ -349,7 +349,6 @@ void PropertySelector::_item_selected() {
 		class_type = instance->get_class();
 	}
 
-	String text;
 	while (!class_type.is_empty()) {
 		if (properties) {
 			if (ClassDB::has_property(class_type, name, true)) {

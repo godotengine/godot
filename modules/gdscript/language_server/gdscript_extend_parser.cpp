@@ -136,7 +136,6 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 				bool exists = fs->file_exists(scr_path);
 
 				if (exists) {
-					String value = const_val;
 					LSP::DocumentLink link;
 					link.target = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(scr_path);
 					link.range = GodotRange(GodotPosition(token.start_line, token.start_column), GodotPosition(token.end_line, token.end_column)).to_lsp();

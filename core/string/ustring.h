@@ -261,7 +261,7 @@ using Char16String = CharStringT<char16_t>;
 /*  String                                                               */
 /*************************************************************************/
 
-class [[nodiscard]] String {
+class [[nodiscard]] _WARN_UNUSED_ String {
 	CowData<char32_t> _cowdata;
 	static constexpr char32_t _null = 0;
 	static constexpr char32_t _replacement_char = 0xfffd;
