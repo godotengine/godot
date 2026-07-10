@@ -1385,6 +1385,9 @@ private:
 	Node *list = nullptr;
 	List<ParserError> errors;
 
+	int get_container_type_depth(TypeNode *p_type) const;
+	String build_container_type_hint(const DataType &p_type) const;
+
 #ifdef DEBUG_ENABLED
 public:
 	struct WarningDirectoryRule {
