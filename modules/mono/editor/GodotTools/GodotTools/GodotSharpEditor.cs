@@ -145,7 +145,7 @@ namespace GodotTools
             }
         }
 
-        private async Task BuildProjectPressed()
+        private void BuildProjectPressed()
         {
             if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
@@ -153,7 +153,7 @@ namespace GodotTools
                     return; // Failed to create project.
             }
 
-            await Instance.MSBuildPanel.BuildProject();
+            _ = Instance.MSBuildPanel.BuildProject();
         }
 
         public void BuildStarted()
@@ -501,7 +501,7 @@ namespace GodotTools
             };
             EditorShortcutOverride("mono/build_solution", "macos", (Key)KeyModifierMask.MaskMeta | (Key)KeyModifierMask.MaskCtrl | Key.B);
 
-            _toolBarBuildButton.Pressed += () => _ = BuildProjectPressed();
+            _toolBarBuildButton.Pressed += BuildProjectPressed;
             _toolBarBuildContainer.AddChild(_toolBarBuildButton);
 
             _toolBarBuildButton.AddChild(_toolBarBuildProgress);

@@ -243,7 +243,7 @@ namespace GodotTools.Build
         {
             if (!File.Exists(buildInfo.Project))
                 return true; // No project to clean.
-            
+
             if (_buildInProgress != null)
                 return false;
 
