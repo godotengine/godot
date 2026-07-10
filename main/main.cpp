@@ -2924,9 +2924,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
-	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
-	set_current_thread_safe_for_nodes(false);
-
 #if defined(STEAMAPI_ENABLED)
 	if (editor || project_manager) {
 		steam_tracker = memnew(SteamTracker);
