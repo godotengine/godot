@@ -258,9 +258,6 @@ void QuickSettingsDialog::_show_full_settings() {
 		eidp.instantiate();
 		EditorInspector::add_inspector_plugin(eidp);
 
-		EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
-		add_child(epnp);
-
 		editor_settings_dialog = memnew(EditorSettingsDialog);
 		get_parent()->add_child(editor_settings_dialog);
 		editor_settings_dialog->connect("restart_requested", callable_mp(this, &QuickSettingsDialog::_request_restart));
