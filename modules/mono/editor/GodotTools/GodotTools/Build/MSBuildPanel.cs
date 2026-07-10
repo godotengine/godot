@@ -53,23 +53,13 @@ namespace GodotTools.Build
 
         private void BuildMenuOptionPressed(long id)
         {
-            switch ((BuildMenuOptions)id)
+            _ = (BuildMenuOptions)id switch
             {
-                case BuildMenuOptions.BuildProject:
-                    BuildProject();
-                    break;
-
-                case BuildMenuOptions.RebuildProject:
-                    RebuildProject();
-                    break;
-
-                case BuildMenuOptions.CleanProject:
-                    CleanProject();
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(id), id, "Invalid build menu option");
-            }
+                BuildMenuOptions.BuildProject => BuildProject(),
+                BuildMenuOptions.RebuildProject => RebuildProject(),
+                BuildMenuOptions.CleanProject => CleanProject(),
+                _ => throw new ArgumentOutOfRangeException(nameof(id), id, "Invalid build menu option")
+            };
         }
 
         public async Task BuildProject()
