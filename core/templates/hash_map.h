@@ -97,9 +97,8 @@ private:
 
 	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t p_idx, const uint32_t p_hash, const uint32_t p_capacity, const uint64_t p_capacity_inv) {
 		const uint32_t original_idx = fastmod(p_hash, p_capacity_inv, p_capacity);
-		const uint32_t distance_idx = p_idx - original_idx + p_capacity;
-		// At most p_capacity over 0, so we can use an if (faster than fastmod).
-		return distance_idx >= p_capacity ? distance_idx - p_capacity : distance_idx;
+		// We can use an if (faster than fastmod) to wrap around.
+		return p_idx >= original_idx ? p_idx - original_idx : p_idx - original_idx + p_capacity;
 	}
 
 	bool _lookup_idx(const TKey &p_key, uint32_t &r_idx) const {
@@ -110,25 +109,55 @@ private:
 	bool _lookup_idx_unchecked(const TKey &p_key, uint32_t p_hash, uint32_t &r_idx) const {
 		const uint32_t capacity = hash_table_size_primes[_capacity_idx];
 		const uint64_t capacity_inv = hash_table_size_primes_inv[_capacity_idx];
-		uint32_t idx = fastmod(p_hash, capacity_inv, capacity);
-		uint32_t distance = 0;
+		const uint32_t starting_idx = fastmod(p_hash, capacity_inv, capacity);
 
+		// Extract first iteration of loop to skip probe length check.
+		if (_hashes[starting_idx] == EMPTY_HASH) {
+			return false;
+		}
+		if (_hashes[starting_idx] == p_hash && likely(Comparator::compare(_elements[starting_idx]->data.key, p_key))) {
+			r_idx = starting_idx;
+			return true;
+		}
+		// First loop: search until end then wrap around.
+		uint32_t idx;
+		for (idx = starting_idx + 1; idx < capacity; idx++) {
+			if (_hashes[idx] == EMPTY_HASH) {
+				return false;
+			}
+			if (_hashes[idx] != p_hash) {
+				const uint32_t original_idx = fastmod(_hashes[idx], capacity_inv, capacity);
+				// Stop search if we probed further than this element, which happens when
+				// we encountered the `original_idx` along the search.
+				// Since we didn't wrap, the interval is simply (starting_idx, idx]
+				if (original_idx > starting_idx && original_idx <= idx) {
+					return false;
+				}
+			} else if (likely(Comparator::compare(_elements[idx]->data.key, p_key))) {
+				r_idx = idx;
+				return true;
+			}
+		}
+		// Second loop: after wrap around, search from beginning.
+		idx = 0;
 		while (true) {
 			if (_hashes[idx] == EMPTY_HASH) {
 				return false;
 			}
-
-			if (distance > _get_probe_length(idx, _hashes[idx], capacity, capacity_inv)) {
-				return false;
-			}
-
-			if (_hashes[idx] == p_hash && Comparator::compare(_elements[idx]->data.key, p_key)) {
+			if (_hashes[idx] != p_hash) {
+				const uint32_t original_idx = fastmod(_hashes[idx], capacity_inv, capacity);
+				// Stop search if we probed further than this element, which happens when
+				// we encountered the `original_idx` along the search.
+				// Since we wrapped around, the search path consists of two intervals
+				// (starting_idx, capacity) and [0, idx]
+				if (original_idx > starting_idx || original_idx <= idx) {
+					return false;
+				}
+			} else if (likely(Comparator::compare(_elements[idx]->data.key, p_key))) {
 				r_idx = idx;
 				return true;
 			}
-
-			_increment_mod(idx, capacity);
-			distance++;
+			idx++;
 		}
 	}
 
