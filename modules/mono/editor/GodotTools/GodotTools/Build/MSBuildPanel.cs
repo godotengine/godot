@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Godot;
 using GodotTools.Internals;
 using static GodotTools.Internals.Globals;
@@ -71,19 +72,25 @@ namespace GodotTools.Build
             }
         }
 
-        public void BuildProject()
+        public async Task BuildProject()
         {
             if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
                 return; // No project to build.
 
-            if (!BuildManager.BuildProjectBlocking("Debug"))
+            GodotSharpEditor.Instance.BuildStarted();
+
+            if (!await BuildManager.BuildProjectAsync("Debug"))
+            {
+                GodotSharpEditor.Instance.BuildEnded();
                 return; // Build failed.
+            }
 
             // Notify running game for hot-reload.
             Internal.EditorDebuggerNodeReloadScripts();
 
             // Hot-reload in the editor.
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
+            GodotSharpEditor.Instance.BuildEnded();
 
             if (Internal.IsAssembliesReloadingNeeded())
             {
@@ -92,19 +99,25 @@ namespace GodotTools.Build
             }
         }
 
-        private void RebuildProject()
+        private async Task RebuildProject()
         {
             if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
                 return; // No project to build.
 
-            if (!BuildManager.BuildProjectBlocking("Debug", rebuild: true))
+            GodotSharpEditor.Instance.BuildStarted();
+
+            if (!await BuildManager.BuildProjectAsync("Debug", rebuild: false))
+            {
+                GodotSharpEditor.Instance.BuildEnded();
                 return; // Build failed.
+            }
 
             // Notify running game for hot-reload.
             Internal.EditorDebuggerNodeReloadScripts();
 
             // Hot-reload in the editor.
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
+            GodotSharpEditor.Instance.BuildEnded();
 
             if (Internal.IsAssembliesReloadingNeeded())
             {
@@ -113,12 +126,14 @@ namespace GodotTools.Build
             }
         }
 
-        private void CleanProject()
+        private async Task CleanProject()
         {
             if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
                 return; // No project to build.
+            GodotSharpEditor.Instance.BuildStarted();
 
-            _ = BuildManager.CleanProjectBlocking("Debug");
+            _ = await BuildManager.CleanProjectAsync("Debug");
+            GodotSharpEditor.Instance.BuildEnded();
         }
 
         private void OpenLogsFolder() => OS.ShellOpen(
@@ -140,6 +155,7 @@ namespace GodotTools.Build
             };
 
             _problemsView.SetDiagnostics(new[] { diagnostic });
+            _buildMenuButton.Disabled = IsBuildingOngoing;
 
             UpdateBuildStateIcon();
         }
@@ -154,6 +170,7 @@ namespace GodotTools.Build
             _outputView.Clear();
 
             _problemsView.UpdateProblemsView();
+            _buildMenuButton.Disabled = IsBuildingOngoing;
 
             UpdateBuildStateIcon();
         }
@@ -167,6 +184,7 @@ namespace GodotTools.Build
             _problemsView.SetDiagnosticsFromFile(csvFile);
 
             _problemsView.UpdateProblemsView();
+            _buildMenuButton.Disabled = IsBuildingOngoing;
 
             UpdateBuildStateIcon();
         }
