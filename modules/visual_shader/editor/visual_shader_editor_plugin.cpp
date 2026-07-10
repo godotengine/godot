@@ -7221,11 +7221,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	const String input_param_for_texture_blit_shader_mode = TTR("'%s' input parameter for blit shader mode.") + translation_gdsl;
 	const String input_param_for_light_shader_mode = TTR("'%s' input parameter for light shader mode.") + translation_gdsl;
 	const String input_param_for_vertex_shader_mode = TTR("'%s' input parameter for vertex shader mode.") + translation_gdsl;
-	const String input_param_for_start_shader_mode = TTR("'%s' input parameter for start shader mode.") + translation_gdsl;
-	const String input_param_for_process_shader_mode = TTR("'%s' input parameter for process shader mode.") + translation_gdsl;
 	const String input_param_for_collide_shader_mode = TTR("'%s' input parameter for collide shader mode." + translation_gdsl);
-	const String input_param_for_start_and_process_shader_mode = TTR("'%s' input parameter for start and process shader modes.") + translation_gdsl;
-	const String input_param_for_process_and_collide_shader_mode = TTR("'%s' input parameter for process and collide shader modes.") + translation_gdsl;
+	// TODO: Check if we are missing registrations for these.
+	// const String input_param_for_start_shader_mode = TTR("'%s' input parameter for start shader mode.") + translation_gdsl;
+	// const String input_param_for_process_shader_mode = TTR("'%s' input parameter for process shader mode.") + translation_gdsl;
+	// const String input_param_for_start_and_process_shader_mode = TTR("'%s' input parameter for start and process shader modes.") + translation_gdsl;
+	// const String input_param_for_process_and_collide_shader_mode = TTR("'%s' input parameter for process and collide shader modes.") + translation_gdsl;
 	const String input_param_for_vertex_and_fragment_shader_mode = TTR("'%s' input parameter for vertex and fragment shader modes.") + translation_gdsl;
 
 	// NODE3D INPUTS

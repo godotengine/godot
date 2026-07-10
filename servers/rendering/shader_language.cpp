@@ -4986,7 +4986,6 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			} else if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_ENUM) {
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_ENUM;
-				String hint_string;
 				pi.hint_string = String(",").join(p_uniform.hint_enum_names);
 			} else {
 				pi.type = Variant::INT;

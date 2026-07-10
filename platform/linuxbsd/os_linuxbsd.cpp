@@ -504,7 +504,6 @@ Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_
 
 Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const {
 	// NOTE: blacklist can be changed to `Vector<String>`, if the need arises.
-	const String sep = ":";
 	Vector<String> values;
 	for (const String &mapping : vendor_device_id_mapping) {
 		String device;

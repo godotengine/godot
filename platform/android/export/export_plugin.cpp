@@ -1322,14 +1322,14 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 				iofs += 28;
 
 				for (uint32_t i = 0; i < attrcount; i++) {
-					uint32_t attr_nspace = decode_uint32(&p_manifest[iofs]);
+					// uint32_t attr_nspace = decode_uint32(&p_manifest[iofs]);
 					uint32_t attr_name = decode_uint32(&p_manifest[iofs + 4]);
 					uint32_t attr_value = decode_uint32(&p_manifest[iofs + 8]);
-					uint32_t attr_resid = decode_uint32(&p_manifest[iofs + 16]);
+					// uint32_t attr_resid = decode_uint32(&p_manifest[iofs + 16]);
 
-					const String value = (attr_value != 0xFFFFFFFF) ? string_table[attr_value] : "Res #" + itos(attr_resid);
+					// const String value = (attr_value != 0xFFFFFFFF) ? string_table[attr_value] : "Res #" + itos(attr_resid);
 					String attrname = string_table[attr_name];
-					const String nspace = (attr_nspace != 0xFFFFFFFF) ? string_table[attr_nspace] : "";
+					// const String nspace = (attr_nspace != 0xFFFFFFFF) ? string_table[attr_nspace] : "";
 
 					//replace project information
 					if (tname == "manifest" && attrname == "package") {
@@ -2472,7 +2472,6 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	String output;
 
 	bool remove_prev = EDITOR_GET("export/android/one_click_deploy_clear_previous_install");
-	String version_name = p_preset->get_version("version/name");
 	String package_name = p_preset->get("package/unique_name");
 
 	if (remove_prev) {
@@ -4139,11 +4138,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	((void)0)
 
 	zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
-
-	String cmdline = p_preset->get("command_line/extra_args");
-
-	String version_name = p_preset->get_version("version/name");
-	String package_name = p_preset->get("package/unique_name");
 
 	Vector<ABI> invalid_abis(enabled_abis);
 

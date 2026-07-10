@@ -575,7 +575,6 @@ Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_st
 	int len = p_json.length();
 	Token token;
 	r_err_line = 0;
-	String aux_key;
 
 	Error err = _get_token(str, idx, len, token, r_err_line, r_err_str);
 	if (err) {

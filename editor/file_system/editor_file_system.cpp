@@ -416,8 +416,6 @@ void EditorFileSystem::_scan_filesystem() {
 	sources_changed.clear();
 	file_cache.clear();
 
-	String project = ProjectSettings::get_singleton()->get_resource_path();
-
 	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().path_join(CACHE_FILE_NAME);
 	{
 		Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::READ);
@@ -457,11 +455,7 @@ void EditorFileSystem::_scan_filesystem() {
 					// The last section (deps) may contain the same splitter, so limit the maxsplit to 8 to get the complete deps.
 					Vector<String> split = l.split("::", true, 8);
 					ERR_CONTINUE(split.size() < 9);
-					String name = split[0];
-					String file;
-
-					file = name;
-					name = cpath.path_join(name);
+					const String name = cpath.path_join(split[0]);
 
 					FileCache fc;
 					fc.type = split[1].get_slicec('/', 0);

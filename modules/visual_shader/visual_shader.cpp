@@ -5621,7 +5621,6 @@ bool VisualShaderNodeVaryingGetter::has_output_port_preview(int p_port) const {
 
 String VisualShaderNodeVaryingGetter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String from = varying_name;
-	String from2;
 
 	if (varying_name == "[None]" || p_for_preview) {
 		switch (varying_type) {

@@ -490,7 +490,6 @@ public:
 Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int p_chmod_flags, bool p_copy_links) {
 	List<String> dirs;
 
-	String curdir = get_current_dir();
 	list_dir_begin();
 	String n = get_next();
 	while (!n.is_empty()) {

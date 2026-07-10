@@ -3329,7 +3329,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 		// Editing.
 		bool bring_up_editor = allow_reselect ? (c.selected && already_selected) : c.selected;
-		String editor_text = c.text;
 
 		switch (c.mode) {
 			case TreeItem::CELL_MODE_STRING: {
@@ -3408,7 +3407,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 						bring_up_editor = false;
 
 					} else {
-						editor_text = String::num(p_item->cells[col].val, Math::range_step_decimals(p_item->cells[col].step));
 						if (select_mode == SELECT_MULTI && get_viewport()->get_processed_events_count() == focus_in_id) {
 							bring_up_editor = false;
 						}

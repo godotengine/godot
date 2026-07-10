@@ -2017,8 +2017,6 @@ Error String::append_utf16(const char16_t *p_utf16, int p_len, bool p_default_li
 		return ERR_INVALID_DATA;
 	}
 
-	String aux;
-
 	int cstr_size = 0;
 	int str_size = 0;
 

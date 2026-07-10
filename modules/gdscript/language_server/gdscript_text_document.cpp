@@ -93,7 +93,6 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 	Dictionary dict = p_param;
 	LSP::TextDocumentIdentifier doc;
 	doc.load(dict["textDocument"]);
-	String text = dict["text"];
 
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
 	Ref<GDScript> scr = ResourceLoader::load(path);

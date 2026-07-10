@@ -7199,8 +7199,6 @@ void EditorNode::reload_scene(const String &p_path) {
 }
 
 void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, HashSet<Node *> &p_instance_list) {
-	String scene_file_path = p_node->get_scene_file_path();
-
 	bool valid_instance_found = false;
 
 	// Attempt to find all the instances matching path we're going to reload.

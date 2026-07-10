@@ -961,7 +961,6 @@ static ScriptLanguage::CodeCompletionOption _calculate_string_insertion(const GD
 }
 
 static void _get_directory_contents(const GDScriptParser::Node *p_current, EditorFileSystemDirectory *p_dir, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_list, const StringName &p_required_type = StringName()) {
-	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 	const bool requires_type = !p_required_type.is_empty();
 
 	for (int i = 0; i < p_dir->get_file_count(); i++) {
@@ -3007,8 +3006,6 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	Variant base = p_base.value;
 	GDScriptParser::DataType base_type = p_base.type;
 	const StringName &method = p_call->function_name;
-
-	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
 	const GDScriptParser::Node *existing_argument = p_call->arguments.size() > p_argidx ? p_call->arguments[p_argidx] : nullptr;
 

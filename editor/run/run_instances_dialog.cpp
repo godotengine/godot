@@ -224,8 +224,6 @@ void RunInstancesDialog::get_argument_list_for_instance(int p_idx, List<String> 
 		raw_custom_args = main_args_edit->get_text();
 	}
 
-	String exec = OS::get_singleton()->get_executable_path();
-
 	if (!raw_custom_args.is_empty()) {
 		// Allow the user to specify a command to run, similar to Steam's launch options.
 		// In this case, Godot will no longer be run directly; it's up to the underlying command
@@ -241,7 +239,6 @@ void RunInstancesDialog::get_argument_list_for_instance(int p_idx, List<String> 
 			// If nothing is placed before `%command%`, behave as if no placeholder was specified.
 			Vector<String> exec_args = _split_cmdline_args(raw_custom_args.substr(0, placeholder_pos));
 			if (exec_args.size() > 0) {
-				exec = exec_args[0];
 				exec_args.remove_at(0);
 
 				// Append the Godot executable name before we append executable arguments

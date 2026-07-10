@@ -1708,8 +1708,6 @@ void EditorPropertySignal::_edit_pressed() {
 }
 
 void EditorPropertySignal::update_property() {
-	String type = base_type;
-
 	Signal signal = get_edited_property_value();
 
 	edit->set_text("Signal: " + signal.get_name());
@@ -1729,8 +1727,6 @@ EditorPropertySignal::EditorPropertySignal() {
 ///////////////////// CALLABLE /////////////////////////
 
 void EditorPropertyCallable::update_property() {
-	String type = base_type;
-
 	Callable callable = get_edited_property_value();
 
 	edit->set_text("Callable");

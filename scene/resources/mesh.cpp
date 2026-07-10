@@ -1359,8 +1359,6 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			get_path()));
 
 	int idx = sname.get_slicec('/', 1).to_int();
-	String what = sname.get_slicec('/', 2);
-
 	if (idx == surfaces.size()) {
 		//create
 		Dictionary d = p_value;
