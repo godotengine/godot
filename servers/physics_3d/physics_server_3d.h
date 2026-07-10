@@ -395,57 +395,6 @@ public:
 	~PhysicsServer3D();
 };
 
-class PhysicsServer3DManager : public Object {
-	GDCLASS(PhysicsServer3DManager, Object);
-
-	static PhysicsServer3DManager *singleton;
-
-	struct ClassInfo {
-		String name;
-		Callable create_callback;
-
-		ClassInfo() {}
-
-		ClassInfo(String p_name, Callable p_create_callback) :
-				name(p_name),
-				create_callback(p_create_callback) {}
-
-		ClassInfo(const ClassInfo &p_ci) :
-				name(p_ci.name),
-				create_callback(p_ci.create_callback) {}
-
-		void operator=(const ClassInfo &p_ci) {
-			name = p_ci.name;
-			create_callback = p_ci.create_callback;
-		}
-	};
-
-	Vector<ClassInfo> physics_servers;
-	int default_server_id = -1;
-	int default_server_priority = -1;
-
-	void on_servers_changed();
-
-protected:
-	static void _bind_methods();
-
-public:
-	static const String setting_property_name;
-
-	static PhysicsServer3DManager *get_singleton();
-
-	void register_server(const String &p_name, const Callable &p_create_callback);
-	void set_default_server(const String &p_name, int p_priority = 0);
-	int find_server_id(const String &p_name);
-	int get_servers_count();
-	String get_server_name(int p_id);
-	PhysicsServer3D *new_default_server();
-	PhysicsServer3D *new_server(const String &p_name);
-
-	PhysicsServer3DManager();
-	~PhysicsServer3DManager();
-};
-
 VARIANT_ENUM_CAST_EXT(PS3DE::ShapeType, PhysicsServer3D::ShapeType);
 VARIANT_ENUM_CAST_EXT(PS3DE::SpaceParameter, PhysicsServer3D::SpaceParameter);
 VARIANT_ENUM_CAST_EXT(PS3DE::AreaParameter, PhysicsServer3D::AreaParameter);
