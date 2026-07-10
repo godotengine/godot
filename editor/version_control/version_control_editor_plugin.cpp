@@ -635,7 +635,6 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 		Dictionary meta_data = commit_list->get_selected()->get_metadata(0);
 		String commit_id = meta_data[SNAME("commit_id")];
 		String commit_subtitle = meta_data[SNAME("commit_subtitle")];
-		String commit_date = meta_data[SNAME("commit_date")];
 		String commit_author = meta_data[SNAME("commit_author")];
 		String commit_date_string = meta_data[SNAME("commit_date_string")];
 
