@@ -1684,6 +1684,17 @@ bool TreeItem::is_custom_set_as_button(int p_column) const {
 	return cells[p_column].custom_button;
 }
 
+void TreeItem::set_downarrow(int p_column, bool p_enabled) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	cells.write[p_column].downarrow = p_enabled;
+	_changed_notify(p_column);
+}
+
+bool TreeItem::has_downarrow(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), true);
+	return cells[p_column].downarrow;
+}
+
 void TreeItem::set_text_alignment(int p_column, HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -2700,33 +2711,37 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						break;
 					}
 
-					Ref<Texture2D> downarrow = theme_cache.select_arrow;
+					if (p_item->cells[i].downarrow) {
+						Ref<Texture2D> downarrow = theme_cache.select_arrow;
 
-					Rect2i ir = item_rect;
+						Rect2i ir = item_rect;
 
-					Point2i arrow_pos = item_rect.position;
-					arrow_pos.x += item_rect.size.x - downarrow->get_width();
-					arrow_pos.y += Math::floor(((item_rect.size.y - downarrow->get_height())) / 2.0);
-					ir.size.width -= downarrow->get_width();
+						Point2i arrow_pos = item_rect.position;
+						arrow_pos.x += item_rect.size.x - downarrow->get_width();
+						arrow_pos.y += Math::floor(((item_rect.size.y - downarrow->get_height())) / 2.0);
+						ir.size.width -= downarrow->get_width();
 
-					if (p_item->cells[i].custom_button) {
-						if (cache.hover_item == p_item && cache.hover_column == i) {
-							if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
-								theme_cache.custom_button_pressed->draw(ci, ir);
+						if (p_item->cells[i].custom_button) {
+							if (cache.hover_item == p_item && cache.hover_column == i) {
+								if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
+									theme_cache.custom_button_pressed->draw(ci, ir);
+								} else {
+									theme_cache.custom_button_hover->draw(ci, ir);
+									cell_color = theme_cache.custom_button_font_highlight;
+								}
 							} else {
-								theme_cache.custom_button_hover->draw(ci, ir);
-								cell_color = theme_cache.custom_button_font_highlight;
+								theme_cache.custom_button->draw(ci, ir);
 							}
-						} else {
-							theme_cache.custom_button->draw(ci, ir);
+							ir.size -= theme_cache.custom_button->get_minimum_size();
+							ir.position += theme_cache.custom_button->get_offset();
 						}
-						ir.size -= theme_cache.custom_button->get_minimum_size();
-						ir.position += theme_cache.custom_button->get_offset();
+
+						draw_item_rect(p_item->cells[i], ir, cell_color, icon_col, outline_size, font_outline_color, ci);
+
+						downarrow->draw(ci, arrow_pos);
+					} else {
+						draw_item_rect(p_item->cells[i], item_rect, cell_color, icon_col, outline_size, font_outline_color, ci);
 					}
-
-					draw_item_rect(p_item->cells[i], ir, cell_color, icon_col, outline_size, font_outline_color, ci);
-
-					downarrow->draw(ci, arrow_pos);
 
 				} break;
 			}
