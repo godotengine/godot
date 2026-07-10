@@ -480,7 +480,6 @@ namespace GodotTools
 
             // Move Build container so it appears to the left of the Play button.
             _toolBarBuildContainer.GetParent().MoveChild(_toolBarBuildContainer, 0);
-            _toolBarBuildContainer.GetParent().PrintTreePretty();
 
             _toolBarBuildProgress = new ProgressBar
             {

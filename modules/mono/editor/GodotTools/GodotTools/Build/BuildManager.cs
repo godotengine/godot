@@ -222,10 +222,7 @@ namespace GodotTools.Build
                 return true; // No project to build.
 
             if (_buildInProgress != null)
-            {
-                //TODO: Toaster notif
                 return false;
-            }
 
             bool success;
             using (var pr = new EditorProgress("dotnet_build_project", "Building .NET project...", 1))
@@ -246,11 +243,10 @@ namespace GodotTools.Build
         {
             if (!File.Exists(buildInfo.Project))
                 return true; // No project to clean.
+            
             if (_buildInProgress != null)
-            {
-                //TODO: Toaster notif
                 return false;
-            }
+
             bool success;
             using (var pr = new EditorProgress("dotnet_clean_project", "Cleaning .NET project...", 1))
             {
@@ -270,11 +266,10 @@ namespace GodotTools.Build
         {
             if (!File.Exists(buildInfo.Project))
                 return true; // No project to publish.
+
             if (_buildInProgress != null)
-            {
-                //TODO: Toaster notif
                 return false;
-            }
+
             bool success;
             using (var pr = new EditorProgress("dotnet_publish_project", "Publishing .NET project...", 1))
             {
@@ -296,13 +291,8 @@ namespace GodotTools.Build
             bool success = await BuildAsync(buildInfo);
 
             if (!success)
-            {
                 ShowBuildErrorDialog("Failed to build project");
-            }
-            else
-            {
-                //TODO: Add toast notif
-            }
+
             return success;
         }
 
@@ -316,13 +306,8 @@ namespace GodotTools.Build
 
             bool success = await BuildAsync(buildInfo);
             if (!success)
-            {
                 ShowBuildErrorDialog("Failed to clean project");
-            }
-            else
-            {
-                //TODO: Toast notif
-            }
+
             return success;
         }
 
