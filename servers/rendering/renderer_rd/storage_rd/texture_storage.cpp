@@ -4394,7 +4394,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		rd_color_multisample_format.usage_bits = render_target_get_color_usage_bits(true);
 		RD::TextureView rd_view_multisample;
 		rd_color_multisample_format.is_resolve_buffer = false;
-		rd_color_multisample_format.is_discardable = true;
+		rd_color_multisample_format.is_discardable = false;
 		rt->color_multisample = RD::get_singleton()->texture_create(rd_color_multisample_format, rd_view_multisample);
 		ERR_FAIL_COND(rt->color_multisample.is_null());
 	}
