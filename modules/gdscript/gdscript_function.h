@@ -449,10 +449,11 @@ private:
 		HashMap<String, NativeProfile> native_calls;
 		HashMap<String, NativeProfile> last_native_calls;
 	} profile;
-#endif
 
 	String _get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
 	String _get_callable_call_error(const String &p_where, const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const;
+#endif
+
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
 public:
