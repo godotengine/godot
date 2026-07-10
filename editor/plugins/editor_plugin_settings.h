@@ -43,6 +43,7 @@ class EditorPluginSettings : public VBoxContainer {
 	};
 
 	enum {
+		COLUMN_SELECT,
 		COLUMN_STATUS,
 		COLUMN_NAME,
 		COLUMN_VERSION,
@@ -54,9 +55,11 @@ class EditorPluginSettings : public VBoxContainer {
 	PluginConfigDialog *plugin_config_dialog = nullptr;
 	TextureRect *recovery_mode_icon = nullptr;
 	Tree *plugin_list = nullptr;
+	Button *reload_plugin_button = nullptr;
 	bool updating = false;
 
 	void _plugin_activity_changed();
+	void _reload_plugins();
 	void _create_clicked();
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 
