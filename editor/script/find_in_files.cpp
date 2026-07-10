@@ -40,6 +40,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/shader/shader_editor_plugin.h"
 #include "editor/shader/text_shader_editor.h"
 #include "editor/themes/editor_scale.h"
@@ -465,21 +466,28 @@ HashSet<String> FindInFilesDialog::get_excludes() const {
 void FindInFilesDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible()) {
-				// Extensions might have changed in the meantime, we clean them and instance them again.
-				for (int i = 0; i < filters_container->get_child_count(); i++) {
-					filters_container->get_child(i)->queue_free();
+			if (is_visible() && extensions_dirty) {
+				// Refresh extension checkboxes when the settings changed.
+				for (Node *child : filters_container->iterate_children()) {
+					child->queue_free();
 				}
-				Array exts = GLOBAL_GET("editor/script/search_in_file_extensions");
-				for (int i = 0; i < exts.size(); ++i) {
+				const PackedStringArray extensions = EDITOR_GET("text_editor/behavior/general/find_in_file_extensions");
+				for (const String &ext : extensions) {
 					CheckBox *cb = memnew(CheckBox);
-					cb->set_text(exts[i]);
-					if (!filters_preferences.has(exts[i])) {
-						filters_preferences[exts[i]] = true;
+					cb->set_text(ext);
+					if (!filters_preferences.has(ext)) {
+						filters_preferences[ext] = true;
 					}
-					cb->set_pressed(filters_preferences[exts[i]]);
+					cb->set_pressed(filters_preferences[ext]);
 					filters_container->add_child(cb);
 				}
+				extensions_dirty = false;
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/behavior/general/find_in_file_extensions")) {
+				extensions_dirty = true;
 			}
 		} break;
 	}
@@ -679,7 +687,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	Label *filter_label = memnew(Label);
 	filter_label->set_text(TTRC("Filters:"));
-	filter_label->set_tooltip_text(TTRC("Include the files with the following extensions. Add or remove them in ProjectSettings."));
+	filter_label->set_tooltip_text(TTRC("Include the files with the following extensions. Add or remove them in EditorSettings:\n\"text_editor/behavior/general/find_in_file_extensions\"."));
 	filter_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	gc->add_child(filter_label);
 
