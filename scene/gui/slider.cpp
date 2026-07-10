@@ -37,8 +37,25 @@
 #include "servers/display/accessibility_server.h"
 
 Size2 Slider::get_minimum_size() const {
-	Size2i ss = theme_cache.slider_style->get_minimum_size();
-	Size2i rs = theme_cache.grabber_icon->get_size();
+	Size2i ss = theme_cache.slider->get_minimum_size();
+	Size2i rs = theme_cache.grabber->get_size();
+
+	if (theme_cache.slider_disabled.is_valid()) {
+		ss = ss.max(theme_cache.slider_disabled->get_minimum_size());
+	}
+	if (theme_cache.slider_highlight.is_valid()) {
+		ss = ss.max(theme_cache.slider_highlight->get_minimum_size());
+	}
+
+	if (theme_cache.grabber_disabled.is_valid()) {
+		rs = rs.max(theme_cache.grabber_disabled->get_size());
+	}
+	if (theme_cache.grabber_highlight.is_valid()) {
+		rs = rs.max(theme_cache.grabber_highlight->get_size());
+	}
+	if (theme_cache.grabber_pressed.is_valid()) {
+		rs = rs.max(theme_cache.grabber_disabled->get_size());
+	}
 
 	if (orientation == HORIZONTAL) {
 		return Size2i(ss.width, MAX(ss.height, rs.height));
@@ -61,9 +78,9 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			if (mb->is_pressed()) {
 				Ref<Texture2D> grabber;
 				if (mouse_inside || has_focus(true)) {
-					grabber = theme_cache.grabber_hl_icon;
+					grabber = theme_cache.grabber_highlight;
 				} else {
-					grabber = theme_cache.grabber_icon;
+					grabber = theme_cache.grabber;
 				}
 
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
@@ -87,6 +104,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				_notify_shared_value_changed();
 			} else {
 				grab.active = false;
+				queue_redraw();
 
 				const bool value_changed = !Math::is_equal_approx((double)grab.value_before_dragging, get_as_ratio());
 				emit_signal(SNAME("drag_ended"), value_changed);
@@ -111,7 +129,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 		if (grab.active) {
 			Size2i size = get_size();
-			Ref<Texture2D> grabber = theme_cache.grabber_hl_icon;
+			Ref<Texture2D> grabber = theme_cache.grabber_highlight;
 			double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
 			double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
@@ -269,6 +287,7 @@ void Slider::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			mouse_inside = false;
 			grab.active = false;
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -276,26 +295,93 @@ void Slider::_notification(int p_what) {
 			Size2i size = get_size();
 			double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
 
-			Ref<StyleBox> style = theme_cache.slider_style;
-			Ref<Texture2D> tick = theme_cache.tick_icon;
+			Ref<Texture2D> tick = theme_cache.tick;
 
 			bool highlighted = editable && (mouse_inside || has_focus(true));
 			Ref<Texture2D> grabber;
+			if (has_theme_icon(SNAME("grabber"))) {
+				grabber = theme_cache.grabber;
+			}
+			Ref<Texture2D> grabber_focus;
+			if (has_theme_icon(SNAME("grabber_focus"))) {
+				grabber_focus = theme_cache.grabber_focus;
+			}
+
 			if (editable) {
 				if (highlighted) {
-					grabber = theme_cache.grabber_hl_icon;
+					if (grab.active && has_theme_icon(SNAME("grabber_pressed"))) {
+						grabber = theme_cache.grabber_pressed;
+					} else if (has_theme_icon(SNAME("grabber_highlight"))) {
+						grabber = theme_cache.grabber_highlight;
+					}
+					if (grab.active && has_theme_icon(SNAME("grabber_pressed_focus"))) {
+						grabber_focus = theme_cache.grabber_pressed_focus;
+					} else if (has_theme_icon(SNAME("grabber_highlight_focus"))) {
+						grabber_focus = theme_cache.grabber_highlight_focus;
+					}
 				} else {
-					grabber = theme_cache.grabber_icon;
+					if (grab.active && has_theme_icon(SNAME("grabber_pressed"))) {
+						grabber = theme_cache.grabber_pressed;
+					}
+					if (grab.active && has_theme_icon(SNAME("grabber_pressed_focus"))) {
+						grabber_focus = theme_cache.grabber_pressed_focus;
+					}
 				}
 			} else {
-				grabber = theme_cache.grabber_disabled_icon;
+				grabber = theme_cache.grabber_disabled;
+				if (has_theme_icon(SNAME("grabber_disabled_focus"))) {
+					grabber_focus = theme_cache.grabber_disabled_focus;
+				}
+			}
+
+			Ref<StyleBox> style;
+			if (editable && has_focus(true) && has_theme_stylebox(SNAME("slider_highlight"))) {
+				style = theme_cache.slider_highlight;
+			} else {
+				style = theme_cache.slider;
+				if (!editable && has_theme_stylebox(SNAME("slider_disabled"))) {
+					style = theme_cache.slider_disabled;
+				}
+			}
+
+			Ref<StyleBox> style_focus;
+			if (has_theme_stylebox("slider_focus")) {
+				style_focus = theme_cache.slider_focus;
+			}
+
+			if (editable && has_focus(true) && has_theme_stylebox(SNAME("slider_highlight_focus"))) {
+				style_focus = theme_cache.slider_highlight_focus;
+			}
+			if (!editable && has_theme_stylebox(SNAME("slider_disabled_focus"))) {
+				style_focus = theme_cache.slider_disabled_focus;
 			}
 
 			Ref<StyleBox> grabber_area;
-			if (highlighted) {
-				grabber_area = theme_cache.grabber_area_hl_style;
-			} else {
-				grabber_area = theme_cache.grabber_area_style;
+			if (has_theme_stylebox("grabber_area")) {
+				grabber_area = theme_cache.grabber_area;
+			}
+
+			if (editable && has_focus(true) && has_theme_stylebox(SNAME("grabber_area_highlight"))) {
+				grabber_area = theme_cache.grabber_area_highlight;
+			}
+			if (!editable && has_theme_stylebox(SNAME("grabber_area_disabled"))) {
+				grabber_area = theme_cache.grabber_area_disabled;
+			}
+
+			Ref<StyleBox> grabber_area_focus;
+			if (has_theme_stylebox("grabber_area_focus")) {
+				grabber_area = theme_cache.grabber_area_focus;
+			}
+			if (editable && has_focus(true) && has_theme_stylebox(SNAME("grabber_area_highlight_focus"))) {
+				grabber_area_focus = theme_cache.grabber_area_highlight_focus;
+			}
+			if (!editable && has_theme_stylebox(SNAME("grabber_area_disabled_focus"))) {
+				grabber_area_focus = theme_cache.grabber_area_disabled_focus;
+			}
+
+			Color grabber_color(1.0, 1.0, 1.0, 1.0);
+			if (has_theme_color(SNAME("grabber_color"))) {
+				grabber_color = theme_cache.grabber_color;
 			}
 
 			if (orientation == VERTICAL) {
@@ -303,7 +389,13 @@ void Slider::_notification(int p_what) {
 				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
 				int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
+				if (style_focus.is_valid() && !style_focus.is_null()) {
+					style_focus->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
+				}
 				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, Math::round(size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift)), Size2i(widget_width, Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift))));
+				if (grabber_area_focus.is_valid() && !grabber_area_focus.is_null()) {
+					grabber_area_focus->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, Math::round(size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift)), Size2i(widget_width, Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift))));
+				}
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_height() / 2 - tick->get_height() / 2);
@@ -314,20 +406,23 @@ void Slider::_notification(int p_what) {
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset - grabber_shift;
 
 						if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
-							tick->draw(ci, Point2i(widget_width + (size.width - widget_width) / 2 + theme_cache.tick_offset, ofs));
+							tick->draw(ci, Point2i(widget_width + (size.width - widget_width) / 2 + theme_cache.tick_offset, ofs), grabber_color);
 						}
 
 						if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
 							Point2i pos = Point2i((size.width - widget_width) / 2 - tick->get_width() - theme_cache.tick_offset, ofs);
-							tick->draw_rect(ci, Rect2i(pos, Size2i(-tick->get_width(), tick->get_height())));
+							tick->draw_rect(ci, Rect2i(pos, Size2i(-tick->get_width(), tick->get_height())), false, grabber_color);
 						}
 
 						if (ticks_position == TICK_POSITION_CENTER) {
-							tick->draw(ci, Point2i((size.width - tick->get_width()) / 2 + theme_cache.tick_offset, ofs));
+							tick->draw(ci, Point2i((size.width - tick->get_width()) / 2 + theme_cache.tick_offset, ofs), grabber_color);
 						}
 					}
 				}
-				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_width() / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber->get_height() + grabber_shift));
+				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_width() / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber->get_height() + grabber_shift), grabber_color);
+				if (has_focus(true) && grabber_focus.is_valid() && !grabber_focus.is_null()) {
+					grabber_focus->draw(ci, Point2i(size.width / 2 - grabber_focus->get_width() / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber_focus->get_height() + grabber_shift), grabber_color);
+				}
 			} else {
 				int widget_height = style->get_minimum_size().height;
 				double areasize = size.width - (theme_cache.center_grabber ? 0 : grabber->get_size().width);
@@ -338,8 +433,14 @@ void Slider::_notification(int p_what) {
 				int p = areasize * (rtl ? 1 - ratio : ratio) + grabber->get_width() / 2 + grabber_shift;
 				if (rtl) {
 					grabber_area->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(size.width - p, widget_height)));
+					if (grabber_area_focus.is_valid() && !grabber_area_focus.is_null()) {
+						grabber_area_focus->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(size.width - p, widget_height)));
+					}
 				} else {
 					grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(p, widget_height)));
+					if (grabber_area_focus.is_valid() && !grabber_area_focus.is_null()) {
+						grabber_area_focus->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(p, widget_height)));
+					}
 				}
 
 				if (ticks > 1) {
@@ -351,20 +452,23 @@ void Slider::_notification(int p_what) {
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset + grabber_shift;
 
 						if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
-							tick->draw(ci, Point2i(ofs, widget_height + (size.height - widget_height) / 2 + theme_cache.tick_offset));
+							tick->draw(ci, Point2i(ofs, widget_height + (size.height - widget_height) / 2 + theme_cache.tick_offset), grabber_color);
 						}
 
 						if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
 							Point2i pos = Point2i(ofs, (size.height - widget_height) / 2 - tick->get_height() - theme_cache.tick_offset);
-							tick->draw_rect(ci, Rect2i(pos, Size2i(tick->get_width(), -tick->get_height())));
+							tick->draw_rect(ci, Rect2i(pos, Size2i(tick->get_width(), -tick->get_height())), false, grabber_color);
 						}
 
 						if (ticks_position == TICK_POSITION_CENTER) {
-							tick->draw(ci, Point2i(ofs, (size.height - tick->get_height()) / 2 + theme_cache.tick_offset));
+							tick->draw(ci, Point2i(ofs, (size.height - tick->get_height()) / 2 + theme_cache.tick_offset), grabber_color);
 						}
 					}
 				}
-				grabber->draw(ci, Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
+				grabber->draw(ci, Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset), grabber_color);
+				if (has_focus(true) && grabber_focus.is_valid() && !grabber_focus.is_null()) {
+					grabber_focus->draw(ci, Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber_focus->get_height() / 2 + theme_cache.grabber_offset), grabber_color);
+				}
 			}
 		} break;
 	}
@@ -477,14 +581,31 @@ void Slider::_bind_methods() {
 	BIND_ENUM_CONSTANT(TICK_POSITION_BOTH);
 	BIND_ENUM_CONSTANT(TICK_POSITION_CENTER);
 
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_style, "slider");
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_style, "grabber_area");
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_hl_style, "grabber_area_highlight");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Slider, grabber_color);
 
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_icon, "grabber");
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_hl_icon, "grabber_highlight");
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, grabber_disabled_icon, "grabber_disabled");
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, tick_icon, "tick");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, slider);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_highlight);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_highlight_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_disabled_focus);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_highlight);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_highlight_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_disabled_focus);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Slider, grabber);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Slider, grabber_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Slider, grabber_highlight);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Slider, grabber_highlight_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Slider, grabber_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Slider, grabber_pressed_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Slider, grabber_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Slider, grabber_disabled_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Slider, tick);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
