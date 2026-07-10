@@ -33,7 +33,7 @@
 #include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 #include "gdscript_warning.h"
 #endif
 
@@ -47,7 +47,7 @@
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 #include "core/string/string_builder.h"
 #endif
 
@@ -1385,7 +1385,7 @@ private:
 	Node *list = nullptr;
 	List<ParserError> errors;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 public:
 	struct WarningDirectoryRule {
 		enum Decision {
@@ -1419,7 +1419,7 @@ private:
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
@@ -1535,7 +1535,7 @@ private:
 	void push_error(const String &p_message, int p_start_line, int p_start_column, int p_end_line, int p_end_column);
 	void push_error(const String &p_message, const GDScriptTokenizer::Token &p_origin);
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
 	template <typename... Symbols>
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
@@ -1548,7 +1548,7 @@ private:
 	}
 	void apply_pending_warnings();
 	void evaluate_warning_directory_rules_for_script_path();
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	// Setting p_force to false will prevent the completion context from being update if a context was already set before.
 	// This should only be done when we push context before we consumed any tokens for the corresponding structure.
@@ -1684,12 +1684,12 @@ public:
 		return List<String>();
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	static void update_project_settings();
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
 	int get_last_line_number() const { return current.end_line; }
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 	static HashMap<String, String> theme_color_names;
@@ -1700,7 +1700,7 @@ public:
 	GDScriptParser();
 	~GDScriptParser();
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	class TreePrinter {
 		int indent_level = 0;
 		String indent;
@@ -1753,6 +1753,6 @@ public:
 	public:
 		void print_tree(const GDScriptParser &p_parser);
 	};
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 	static void cleanup();
 };

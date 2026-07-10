@@ -71,11 +71,11 @@ static MethodInfo info_from_utility_func(const StringName &p_function) {
 	} else {
 		for (int i = 0; i < Variant::get_utility_function_argument_count(p_function); i++) {
 			PropertyInfo pi;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			pi.name = Variant::get_utility_function_argument_name(p_function, i);
 #else
 			pi.name = "arg" + itos(i + 1);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 			pi.type = Variant::get_utility_function_argument_type(p_function, i);
 			info.arguments.push_back(pi);
 		}
@@ -452,11 +452,11 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 				return err;
 			}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (!parser->_is_tool && ext_parser->get_parser()->_is_tool) {
 				parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 			base = ext_parser->get_parser()->head->self_type;
 		} else {
@@ -486,11 +486,11 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 						return err;
 					}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 					if (!parser->_is_tool && base_parser->get_parser()->_is_tool) {
 						parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 					}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 					base = base_parser->get_parser()->head->self_type;
 				}
@@ -513,11 +513,11 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 					return err;
 				}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 				if (!parser->_is_tool && info_parser->get_parser()->_is_tool) {
 					parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 				}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 				base = info_parser->get_parser()->head->self_type;
 			} else if (class_exists(name)) {
@@ -1032,7 +1032,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 	resolving_datatype.kind = GDScriptParser::DataType::RESOLVING;
 
 	{
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		GDScriptParser::Node *member_node = member.get_source_node();
 		if (member_node && member_node->type != GDScriptParser::Node::ANNOTATION) {
 			// Apply @warning_ignore annotations before resolving member.
@@ -1043,7 +1043,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				}
 			}
 		}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		switch (member.type) {
 			case GDScriptParser::ClassNode::Member::VARIABLE: {
 				bool previous_static_context = static_context;
@@ -1065,7 +1065,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 				static_context = previous_static_context;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 				if (member.variable->exported && member.variable->onready) {
 					parser->push_warning(member.variable, GDScriptWarning::ONREADY_WITH_EXPORT);
 				}
@@ -1106,7 +1106,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 						}
 					}
 				}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 			} break;
 			case GDScriptParser::ClassNode::Member::CONSTANT: {
 				check_class_member_name_conflict(p_class, member.constant->identifier->name, member.constant);
@@ -1132,11 +1132,11 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					GDScriptParser::ParameterNode *param = member.signal->parameters[j];
 					GDScriptParser::DataType param_type = type_from_metatype(resolve_datatype(param->datatype_specifier));
 					param->type_constraint = param_type;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 					if (param->datatype_specifier == nullptr) {
 						parser->push_warning(param, GDScriptWarning::UNTYPED_DECLARATION, "Parameter", param->identifier->name);
 					}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 					mi.arguments.push_back(param_type.to_property_info(param->identifier->name));
 					// Signals do not support parameter default values.
 				}
@@ -1184,12 +1184,12 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					enum_type.enum_values[element.identifier->name] = element.value;
 					dictionary[String(element.identifier->name)] = element.value;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 					// Named enum identifiers do not shadow anything since you can only access them with `NamedEnum.ENUM_VALUE`.
 					if (member.m_enum->identifier->name == StringName()) {
 						is_shadowing(element.identifier, "enum member", false);
 					}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 				}
 
 				current_enum = prev_enum;
@@ -1275,9 +1275,9 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 	Ref<GDScriptParserRef> parser_ref = ensure_cached_external_parser_for_class(p_class, nullptr, "Trying to resolve class interface", p_source);
 
 	if (!p_class->resolved_interface) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		bool has_static_data = p_class->has_static_data;
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 		if (!parser->has_class(p_class)) {
 			if (parser_ref.is_null()) {
@@ -1319,17 +1319,17 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 		for (int i = 0; i < p_class->members.size(); i++) {
 			resolve_class_member(p_class, i);
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (!has_static_data) {
 				GDScriptParser::ClassNode::Member member = p_class->members[i];
 				if (member.type == GDScriptParser::ClassNode::Member::CLASS) {
 					has_static_data = member.m_class->has_static_data;
 				}
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		if (!has_static_data && p_class->annotated_static_unload) {
 			GDScriptParser::Node *static_unload = nullptr;
 			for (GDScriptParser::AnnotationNode *node : p_class->annotations) {
@@ -1340,7 +1340,7 @@ void GDScriptAnalyzer::resolve_class_interface(GDScriptParser::ClassNode *p_clas
 			}
 			parser->push_warning(static_unload ? static_unload : p_class, GDScriptWarning::REDUNDANT_STATIC_UNLOAD);
 		}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 	}
 }
 
@@ -1443,11 +1443,11 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 	for (int i = 0; i < p_class->members.size(); i++) {
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (member.variable->usages == 0 && String(member.variable->identifier->name).begins_with("_")) {
 				parser->push_warning(member.variable->identifier, GDScriptWarning::UNUSED_PRIVATE_CLASS_VARIABLE, member.variable->identifier->name);
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 			if (member.variable->property == GDScriptParser::VariableNode::PROP_SETGET) {
 				GDScriptParser::FunctionNode *getter_function = nullptr;
@@ -1477,11 +1477,11 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 
 						} else {
 							has_valid_getter = true;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 							if (member.variable->type_constraint.builtin_type == Variant::INT && return_datatype.builtin_type == Variant::FLOAT) {
 								parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
 							}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 						}
 					}
 				}
@@ -1503,11 +1503,11 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 					} else {
 						has_valid_setter = true;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						if (member.variable->type_constraint.builtin_type == Variant::FLOAT && setter_function->parameters[0]->type_constraint.builtin_type == Variant::INT) {
 							parser->push_warning(member.variable, GDScriptWarning::NARROWING_CONVERSION);
 						}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 					}
 				}
 
@@ -1518,11 +1518,11 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 				}
 			}
 		} else if (member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (member.signal->usages == 0) {
 				parser->push_warning(member.signal->identifier, GDScriptWarning::UNUSED_SIGNAL, member.signal->identifier->name);
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		}
 	}
 
@@ -1700,11 +1700,11 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 		}
 
 		if (value.get_type() != argument_info.type) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (argument_info.type == Variant::INT && value.get_type() == Variant::FLOAT) {
 				parser->push_warning(argument, GDScriptWarning::NARROWING_CONVERSION);
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 			if (!Variant::can_convert_strict(value.get_type(), argument_info.type)) {
 				push_error(vformat(R"(Invalid argument for annotation "%s": argument %d should be "%s" but is "%s".)", p_annotation->name, i + 1, Variant::get_type_name(argument_info.type), argument->type_constraint.to_string()), argument);
@@ -1768,31 +1768,31 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	resolving_datatype.kind = GDScriptParser::DataType::RESOLVING;
 	p_function->return_type_constraint = resolving_datatype;
 
-#ifdef TOOLS_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	int default_value_count = 0;
-#endif // TOOLS_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	String function_visible_name = function_name;
 	if (function_name == StringName()) {
 		function_visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		resolve_parameter(p_function->parameters[i]);
 		method_info.arguments.push_back(p_function->parameters[i]->type_constraint.to_property_info(p_function->parameters[i]->identifier->name));
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_") && !p_function->is_abstract) {
 			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter", true);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 		if (p_function->parameters[i]->initializer) {
-#ifdef TOOLS_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			default_value_count++;
-#endif // TOOLS_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 			if (p_function->parameters[i]->initializer->is_constant) {
 				p_function->default_arg_values.push_back(p_function->parameters[i]->initializer->reduced_value);
@@ -1817,16 +1817,16 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			inferred_type.kind = GDScriptParser::DataType::BUILTIN;
 			inferred_type.builtin_type = Variant::ARRAY;
 			p_function->rest_parameter->type_constraint = inferred_type;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			parser->push_warning(p_function->rest_parameter, GDScriptWarning::UNTYPED_DECLARATION, "Parameter", p_function->rest_parameter->identifier->name);
 #endif
 		}
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		if (p_function->rest_parameter->usages == 0 && !String(p_function->rest_parameter->identifier->name).begins_with("_") && !p_function->is_abstract) {
 			parser->push_warning(p_function->rest_parameter->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->rest_parameter->identifier->name);
 		}
 		is_shadowing(p_function->rest_parameter->identifier, "function parameter", true);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 	}
 
 	if (!p_is_lambda && function_name == GDScriptLanguage::get_singleton()->strings._init) {
@@ -1864,7 +1864,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			p_function->return_type_constraint = return_type;
 		}
 
-#ifdef TOOLS_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		// Check if the function signature matches the parent. If not it's an error since it breaks polymorphism.
 		// Not for the constructor which can vary in signature.
 		GDScriptParser::DataType base_type = parser->current_class->base_type;
@@ -1974,20 +1974,18 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
 			}
-#ifdef DEBUG_ENABLED
 			if (native_base != StringName()) {
 				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, native_base);
 			}
-#endif // DEBUG_ENABLED
 		}
-#endif // TOOLS_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_function->return_type == nullptr) {
 		parser->push_warning(p_function->start_line, p_function->start_column, p_function->header_end_line, p_function->header_end_column, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	method_info.default_arguments.append_array(p_function->default_arg_values);
 	method_info.return_val = p_function->return_type_constraint.to_property_info("");
@@ -2125,14 +2123,14 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 
 	bool is_constant = p_assignable->type == GDScriptParser::Node::CONSTANT;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_assignable->identifier != nullptr && p_assignable->identifier->suite != nullptr && p_assignable->identifier->suite->parent_block != nullptr) {
 		if (p_assignable->identifier->suite->parent_block->has_local(p_assignable->identifier->name)) {
 			const GDScriptParser::SuiteNode::Local &local = p_assignable->identifier->suite->parent_block->get_local(p_assignable->identifier->name);
 			parser->push_warning(p_assignable->identifier, GDScriptWarning::CONFUSABLE_LOCAL_DECLARATION, local.get_name(), p_assignable->identifier->name);
 		}
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	GDScriptParser::DataType specified_type;
 	bool has_specified_type = p_assignable->datatype_specifier != nullptr;
@@ -2178,11 +2176,11 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			} else if (initializer_type.kind == GDScriptParser::DataType::BUILTIN && initializer_type.builtin_type == Variant::NIL && !is_constant) {
 				push_error(vformat(R"(Cannot infer the type of "%s" %s because the value is "null".)", p_assignable->identifier->name, p_kind), p_assignable->initializer);
 			}
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (initializer_type.is_hard_type() && initializer_type.is_variant()) {
 				parser->push_warning(p_assignable, GDScriptWarning::INFERENCE_ON_VARIANT, p_kind);
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		} else {
 			if (!initializer_type.is_set()) {
 				push_error(vformat(R"(Could not resolve type for %s "%s".)", p_kind, p_assignable->identifier->name), p_assignable->initializer);
@@ -2217,15 +2215,15 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 				}
 			} else if ((specified_type.has_container_element_type(0) && !initializer_type.has_container_element_type(0)) || (specified_type.has_container_element_type(1) && !initializer_type.has_container_element_type(1))) {
 				mark_node_unsafe(p_assignable->initializer);
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			} else if (specified_type.builtin_type == Variant::INT && initializer_type.builtin_type == Variant::FLOAT) {
 				parser->push_warning(p_assignable->initializer, GDScriptWarning::NARROWING_CONVERSION);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 			}
 		}
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	const bool is_parameter = p_assignable->type == GDScriptParser::Node::PARAMETER;
 	if (!has_specified_type) {
 		const String declaration_type = is_constant ? "Constant" : (is_parameter ? "Parameter" : "Variable");
@@ -2252,7 +2250,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			parser->push_warning(p_assignable, GDScriptWarning::ENUM_VARIABLE_WITHOUT_DEFAULT, p_assignable->identifier->name);
 		}
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	type.is_constant = is_constant;
 	type.is_read_only = false;
@@ -2263,28 +2261,28 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 	static constexpr const char *kind = "variable";
 	resolve_assignable(p_variable, kind);
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_is_local) {
 		if (p_variable->usages == 0 && !String(p_variable->identifier->name).begins_with("_")) {
 			parser->push_warning(p_variable, GDScriptWarning::UNUSED_VARIABLE, p_variable->identifier->name);
 		}
 	}
 	is_shadowing(p_variable->identifier, kind, p_is_local);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant, bool p_is_local) {
 	static constexpr const char *kind = "constant";
 	resolve_assignable(p_constant, kind);
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_is_local) {
 		if (p_constant->usages == 0 && !String(p_constant->identifier->name).begins_with("_")) {
 			parser->push_warning(p_constant, GDScriptWarning::UNUSED_LOCAL_CONSTANT, p_constant->identifier->name);
 		}
 	}
 	is_shadowing(p_constant->identifier, kind, p_is_local);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parameter) {
@@ -2404,22 +2402,22 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			p_for->variable->type_constraint = specified_type;
 		} else {
 			p_for->variable->type_constraint = variable_type;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (variable_type.is_hard_type()) {
 				parser->push_warning(p_for->variable, GDScriptWarning::INFERRED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
 			} else {
 				parser->push_warning(p_for->variable, GDScriptWarning::UNTYPED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		}
 	}
 
 	resolve_suite(p_for->loop);
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_for->variable) {
 		is_shadowing(p_for->variable, R"("for" iterator variable)", true);
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 void GDScriptAnalyzer::resolve_while(GDScriptParser::WhileNode *p_while) {
@@ -2436,7 +2434,7 @@ void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
 		}
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_assert->condition->is_constant) {
 		if (p_assert->condition->reduced_value.booleanize()) {
 			parser->push_warning(p_assert->condition, GDScriptWarning::ASSERT_ALWAYS_TRUE);
@@ -2444,7 +2442,7 @@ void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
 			parser->push_warning(p_assert->condition, GDScriptWarning::ASSERT_ALWAYS_FALSE);
 		}
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 void GDScriptAnalyzer::resolve_match(GDScriptParser::MatchNode *p_match) {
@@ -2514,12 +2512,12 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				result.kind = GDScriptParser::DataType::VARIANT;
 			}
 			p_match_pattern->bind->type_constraint = result;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			is_shadowing(p_match_pattern->bind, "pattern bind", true);
 			if (p_match_pattern->bind->usages == 0 && !String(p_match_pattern->bind->name).begins_with("_")) {
 				parser->push_warning(p_match_pattern->bind, GDScriptWarning::UNUSED_VARIABLE, p_match_pattern->bind->name);
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 			break;
 		case GDScriptParser::PatternNode::PT_ARRAY:
 			for (int i = 0; i < p_match_pattern->array.size(); i++) {
@@ -2580,9 +2578,9 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 			if (is_call && !return_type.is_hard_type()) {
 				String function_name = parser->current_function->identifier ? parser->current_function->identifier->name.string() : String("<anonymous function>");
 				String called_function_name = static_cast<GDScriptParser::CallNode *>(p_return->return_value)->function_name.string();
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 				parser->push_warning(p_return, GDScriptWarning::UNSAFE_VOID_RETURN, function_name, called_function_name);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 				mark_node_unsafe(p_return);
 			} else if (!is_call) {
 				push_error("A void function cannot return a value.", p_return);
@@ -2620,11 +2618,11 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 			if (!is_type_compatible(expected_type, result)) {
 				p_return->use_conversion = true;
 			}
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (expected_type.builtin_type == Variant::INT && result.builtin_type == Variant::FLOAT) {
 				parser->push_warning(p_return, GDScriptWarning::NARROWING_CONVERSION);
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		}
 	}
 
@@ -2749,7 +2747,7 @@ void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {
 	p_array->type_constraint = arr_type;
 }
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 static bool enum_has_value(const GDScriptParser::DataType p_type, int64_t p_value) {
 	for (const KeyValue<StringName, int64_t> &E : p_type.enum_values) {
 		if (E.value == p_value) {
@@ -2758,7 +2756,7 @@ static bool enum_has_value(const GDScriptParser::DataType p_type, int64_t p_valu
 	}
 	return false;
 }
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::ExpressionNode *p_expression, const GDScriptParser::DataType &p_type, const char *p_usage, bool p_is_cast) {
 	if (p_expression->type_constraint == p_type) {
@@ -2781,11 +2779,11 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 		return;
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_type.kind == GDScriptParser::DataType::ENUM && value_type.builtin_type == Variant::INT && !enum_has_value(p_type, p_expression->reduced_value)) {
 		parser->push_warning(p_expression, GDScriptWarning::INT_AS_ENUM_WITHOUT_MATCH, p_usage, p_expression->reduced_value.stringify(), p_type.to_string());
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	if (value_type.builtin_type == p_type.builtin_type) {
 		p_expression->type_constraint = p_type;
@@ -2801,11 +2799,11 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 		return;
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_type.builtin_type == Variant::INT && value_type.builtin_type == Variant::FLOAT) {
 		parser->push_warning(p_expression, GDScriptWarning::NARROWING_CONVERSION);
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	p_expression->reduced_value = converted_to;
 	p_expression->type_constraint = p_type;
@@ -2893,7 +2891,7 @@ void GDScriptAnalyzer::update_dictionary_literal_element_type(GDScriptParser::Di
 void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assignment) {
 	reduce_expression(p_assignment->assigned_value);
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// Increment assignment count for local variables.
 	// Before we reduce the assignee because we don't want to warn about not being assigned when performing the assignment.
 	if (p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
@@ -2902,11 +2900,11 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 			id->variable_source->assignments++;
 		}
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	reduce_expression(p_assignment->assignee);
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	{
 		bool is_subscript = false;
 		GDScriptParser::ExpressionNode *base = p_assignment->assignee;
@@ -2943,7 +2941,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 	}
 
 	warn_confusable_temporary_modification(p_assignment);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	if (p_assignment->assigned_value == nullptr || p_assignment->assignee == nullptr) {
 		return;
@@ -3080,7 +3078,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		downgrade_node_type_source(p_assignment->assigned_value);
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (assignee_type.is_hard_type() && assignee_type.builtin_type == Variant::INT && assigned_value_type.builtin_type == Variant::FLOAT) {
 		parser->push_warning(p_assignment->assigned_value, GDScriptWarning::NARROWING_CONVERSION);
 	}
@@ -3092,7 +3090,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 			parser->push_warning(p_assignment, GDScriptWarning::UNASSIGNED_VARIABLE_OP_ASSIGN, id->name, Variant::get_operator_name(p_assignment->variant_op));
 		}
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
@@ -3121,12 +3119,12 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 	await_type.is_coroutine = false;
 	p_await->type_constraint = await_type;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	GDScriptParser::DataType to_await_type = p_await->to_await->type_constraint;
 	if (!to_await_type.is_coroutine && !to_await_type.is_variant() && to_await_type.builtin_type != Variant::SIGNAL) {
 		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_op) {
@@ -3146,7 +3144,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 		return;
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_binary_op->variant_op == Variant::OP_DIVIDE &&
 			(left_type.builtin_type == Variant::INT ||
 					left_type.builtin_type == Variant::VECTOR2I ||
@@ -3156,7 +3154,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 					right_type.builtin_type == left_type.builtin_type)) {
 		parser->push_warning(p_binary_op, GDScriptWarning::INTEGER_DIVISION);
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	if (p_binary_op->left_operand->is_constant &&
 			p_binary_op->right_operand->is_constant &&
@@ -3370,7 +3368,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 							return;
 						}
 					} else {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						mark_node_unsafe(p_call);
 						// Constructors support overloads.
 						Vector<String> types;
@@ -3389,7 +3387,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 							expected_types += "\", or \"" + types[types.size() - 1];
 						}
 						parser->push_warning(p_call->arguments[0], GDScriptWarning::UNSAFE_CALL_ARGUMENT, "1", "constructor", function_name, expected_types, "Variant");
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 						p_call->type_constraint = call_type;
 						return;
 					}
@@ -3415,12 +3413,12 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 						if (!is_type_compatible(par_type, arg_type, true)) {
 							types_match = false;
 							break;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						} else {
 							if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
 								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
 							}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 						}
 					}
 
@@ -3430,7 +3428,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 							if (p_call->arguments[i]->is_constant) {
 								update_const_expression_builtin_type(p_call->arguments[i], par_type, "pass");
 							}
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 							if (!(par_type.is_variant() && par_type.is_hard_type())) {
 								GDScriptParser::DataType arg_type = p_call->arguments[i]->type_constraint;
 								if (arg_type.is_variant() || !arg_type.is_hard_type()) {
@@ -3438,7 +3436,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 									parser->push_warning(p_call->arguments[i], GDScriptWarning::UNSAFE_CALL_ARGUMENT, itos(i + 1), "constructor", function_name, par_type.to_string(), arg_type.to_string_strict());
 								}
 							}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 						}
 						match = true;
 						call_type = type_from_property(info.return_val);
@@ -3459,7 +3457,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				}
 			}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			// Consider `Signal(self, "my_signal")` as an implicit use of the signal.
 			if (builtin_type == Variant::SIGNAL && p_call->arguments.size() >= 2) {
 				const GDScriptParser::ExpressionNode *object_arg = p_call->arguments[0];
@@ -3476,7 +3474,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					}
 				}
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 			p_call->type_constraint = call_type;
 			return;
@@ -3635,9 +3633,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			is_self = subscript->base->type == GDScriptParser::Node::SELF;
 		}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		warn_confusable_temporary_modification(subscript);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 	} else {
 		// Invalid call. Error already sent in parser.
 		// TODO: Could check if Callable here too.
@@ -3721,7 +3719,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			push_error(vformat(R"*(Cannot get return value of call to "%s()" because it returns "void".)*", p_call->function_name), p_call);
 		}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		// FIXME: No warning for built-in constructors and utilities due to early return.
 		if (p_is_root && return_type.kind != GDScriptParser::DataType::UNRESOLVED && return_type.builtin_type != Variant::NIL &&
 				!(p_call->is_super && p_call->function_name == GDScriptLanguage::get_singleton()->strings._init)) {
@@ -3747,7 +3745,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				}
 			}
 		}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 		call_type = return_type;
 	} else {
@@ -3778,11 +3776,11 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					} else {
 						push_error(vformat(R"*(Name "%s" called as a function but is a "%s".)*", p_call->function_name, callee_datatype.to_string()), p_call->callee);
 					}
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 				} else if (!is_self && !(base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::BUILTIN)) {
 					parser->push_warning(p_call, GDScriptWarning::UNSAFE_METHOD_ACCESS, p_call->function_name, base_type.to_string());
 					mark_node_unsafe(p_call);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 				}
 			}
 		}
@@ -3807,9 +3805,9 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 	if (call_type.is_coroutine && !p_is_await) {
 		if (p_is_root) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			parser->push_warning(p_call, GDScriptWarning::MISSING_AWAIT);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		} else {
 			push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call);
 		}
@@ -3850,9 +3848,9 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 		GDScriptParser::DataType op_type = p_cast->operand->type_constraint;
 		if (op_type.is_variant() || !op_type.is_hard_type()) {
 			mark_node_unsafe(p_cast);
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, cast_type.to_string());
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		} else {
 			bool valid = false;
 			if (op_type.builtin_type == Variant::INT && cast_type.kind == GDScriptParser::DataType::ENUM) {
@@ -4473,11 +4471,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		case GDScriptParser::IdentifierNode::LOCAL_VARIABLE:
 			p_identifier->type_constraint = p_identifier->variable_source->type_constraint;
 			found_source = true;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			if (p_identifier->variable_source && p_identifier->variable_source->assignments == 0 && !(p_identifier->type_constraint.is_hard_type() && p_identifier->type_constraint.kind == GDScriptParser::DataType::BUILTIN)) {
 				parser->push_warning(p_identifier, GDScriptWarning::UNASSIGNED_VARIABLE, p_identifier->name);
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 			break;
 		case GDScriptParser::IdentifierNode::LOCAL_ITERATOR:
 			p_identifier->type_constraint = p_identifier->bind_source->type_constraint;
@@ -4496,11 +4494,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			break;
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (!found_source && p_identifier->suite != nullptr && p_identifier->suite->has_local(p_identifier->name)) {
 		parser->push_warning(p_identifier, GDScriptWarning::CONFUSABLE_LOCAL_USAGE, p_identifier->name);
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	// Not a local, so check members.
 
@@ -4920,11 +4918,11 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				}
 			} else if (!base_type.is_meta_type || !base_type.is_constant) {
 				valid = base_type.kind != GDScriptParser::DataType::BUILTIN;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 				if (valid) {
 					parser->push_warning(p_subscript, GDScriptWarning::UNSAFE_PROPERTY_ACCESS, p_subscript->attribute->name, base_type.to_string());
 				}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 				result_type.kind = GDScriptParser::DataType::VARIANT;
 				mark_node_unsafe(p_subscript);
 			}
@@ -5180,9 +5178,9 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 
 	p_subscript->type_constraint = result_type;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	warn_confusable_temporary_modification(p_subscript);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op, bool p_is_root) {
@@ -5222,9 +5220,9 @@ void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternar
 			result = false_type;
 			if (!is_type_compatible(false_type, true_type)) {
 				result.kind = GDScriptParser::DataType::VARIANT;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 				parser->push_warning(p_ternary_op, GDScriptWarning::INCOMPATIBLE_TERNARY);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 			}
 		}
 	}
@@ -6065,12 +6063,12 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		if (valid && Engine::get_singleton()->has_singleton(base_native)) {
 			r_method_flags.set_flag(METHOD_FLAG_STATIC);
 		}
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		MethodBind *native_method = ClassDB::get_method(base_native, function_name);
 		if (native_method && r_native_class) {
 			*r_native_class = native_method->get_instance_class();
 		}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		return valid;
 	}
 
@@ -6120,34 +6118,34 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 		GDScriptParser::DataType arg_type = p_call->arguments[i]->type_constraint;
 
 		if (arg_type.is_variant() || !arg_type.is_hard_type()) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			// Argument can be anything, so this is unsafe (unless the parameter is a hard variant).
 			if (!(par_type.is_hard_type() && par_type.is_variant())) {
 				mark_node_unsafe(p_call->arguments[i]);
 				parser->push_warning(p_call->arguments[i], GDScriptWarning::UNSAFE_CALL_ARGUMENT, itos(i + 1), "function", p_call->function_name, par_type.to_string(), arg_type.to_string_strict());
 			}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		} else if (par_type.is_hard_type() && !is_type_compatible(par_type, arg_type, true)) {
 			if (!is_type_compatible(arg_type, par_type)) {
 				push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be "%s" but is "%s".)*",
 								   p_call->function_name, i + 1, par_type.to_string(), arg_type.to_string()),
 						p_call->arguments[i]);
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			} else {
 				// Supertypes are acceptable for dynamic compliance, but it's unsafe.
 				mark_node_unsafe(p_call);
 				parser->push_warning(p_call->arguments[i], GDScriptWarning::UNSAFE_CALL_ARGUMENT, itos(i + 1), "function", p_call->function_name, par_type.to_string(), arg_type.to_string_strict());
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 			}
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		} else if (par_type.kind == GDScriptParser::DataType::BUILTIN && par_type.builtin_type == Variant::INT && arg_type.kind == GDScriptParser::DataType::BUILTIN && arg_type.builtin_type == Variant::FLOAT) {
 			parser->push_warning(p_call->arguments[i], GDScriptWarning::NARROWING_CONVERSION, p_call->function_name);
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 		}
 	}
 }
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 
 void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier, const String &p_context, const bool p_in_local_scope) {
 	const StringName &name = p_identifier->name;
@@ -6283,7 +6281,7 @@ void GDScriptAnalyzer::warn_confusable_temporary_modification(GDScriptParser::Ex
 	}
 }
 
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, bool &r_valid, const GDScriptParser::Node *p_source) {
 	// Unary version.
@@ -6352,7 +6350,7 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 }
 
 bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion, const GDScriptParser::Node *p_source_node) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_source_node) {
 		if (p_target.kind == GDScriptParser::DataType::ENUM) {
 			if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::INT) {
@@ -6360,7 +6358,7 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 			}
 		}
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 	return check_type_compatibility(p_target, p_source, p_allow_implicit_conversion, p_source_node);
 }
 
@@ -6539,7 +6537,7 @@ void GDScriptAnalyzer::push_error(const String &p_message, const GDScriptParser:
 }
 
 void GDScriptAnalyzer::mark_node_unsafe(const GDScriptParser::Node *p_node) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (p_node == nullptr) {
 		return;
 	}
@@ -6547,7 +6545,7 @@ void GDScriptAnalyzer::mark_node_unsafe(const GDScriptParser::Node *p_node) {
 	for (int i = p_node->start_line; i <= p_node->end_line; i++) {
 		parser->unsafe_lines.insert(i);
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 void GDScriptAnalyzer::downgrade_node_type_source(GDScriptParser::ExpressionNode *p_node) {
@@ -6660,10 +6658,10 @@ Error GDScriptAnalyzer::resolve_interface() {
 Error GDScriptAnalyzer::resolve_body() {
 	resolve_class_body(parser->head, true);
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// Apply here, after all `@warning_ignore`s have been resolved and applied.
 	parser->apply_pending_warnings();
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	return parser->errors.is_empty() ? OK : ERR_PARSE_ERROR;
 }

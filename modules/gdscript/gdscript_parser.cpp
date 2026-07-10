@@ -39,7 +39,7 @@
 #include "core/object/class_db.h"
 #include "scene/main/multiplayer_api.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 #include "core/string/string_builder.h"
 #include "servers/text/text_server.h"
 #endif
@@ -65,11 +65,11 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 	return Variant::VARIANT_MAX;
 }
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 bool GDScriptParser::is_project_ignoring_warnings = false;
 GDScriptWarning::WarnLevel GDScriptParser::warning_levels[GDScriptWarning::WARNING_MAX];
 LocalVector<GDScriptParser::WarningDirectoryRule> GDScriptParser::warning_directory_rules;
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 HashMap<String, String> GDScriptParser::theme_color_names;
@@ -92,7 +92,7 @@ bool GDScriptParser::annotation_exists(const String &p_annotation_name) const {
 	return valid_annotations.has(p_annotation_name);
 }
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 void GDScriptParser::update_project_settings() {
 	is_project_ignoring_warnings = !GLOBAL_GET("debug/gdscript/warnings/enable").booleanize();
 
@@ -137,7 +137,7 @@ void GDScriptParser::update_project_settings() {
 
 	warning_directory_rules.sort_custom<RuleSort>();
 }
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 GDScriptParser::GDScriptParser() {
 	// Register valid annotations.
@@ -187,11 +187,11 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "reliable", 0));
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	for (int i = 0; i < GDScriptWarning::WARNING_MAX; i++) {
 		warning_ignore_start_lines[i] = INT_MAX;
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 	if (unlikely(theme_color_names.is_empty())) {
@@ -267,7 +267,7 @@ void GDScriptParser::push_error(const String &p_message, int p_start_line, int p
 	errors.push_back(err);
 }
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
 	ERR_FAIL_NULL(p_source);
 	push_warning(p_source->start_line, p_source->start_column, p_source->end_line, p_source->end_column, p_code, p_symbols);
@@ -353,7 +353,7 @@ void GDScriptParser::evaluate_warning_directory_rules_for_script_path() {
 		}
 	}
 }
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 void GDScriptParser::override_completion_context(const Node *p_for_node, CompletionType p_type, Node *p_node, int p_argument) {
 	if (!for_completion) {
@@ -488,9 +488,9 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 
 	script_path = p_script_path.simplify_path();
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	evaluate_warning_directory_rules_for_script_path();
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	current = tokenizer->scan();
 	// Avoid error or newline as the first token.
@@ -502,7 +502,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		current = tokenizer->scan();
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// Warn about parsing an empty script file:
 	if (current.type == GDScriptTokenizer::Token::TK_EOF) {
 		// Create a dummy Node for the warning, pointing to the very beginning of the file
@@ -512,7 +512,7 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 		nd->end_line = 1;
 		push_warning(nd, GDScriptWarning::EMPTY_FILE);
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	push_multiline(false); // Keep one for the whole parsing.
 	parse_program();
@@ -525,11 +525,11 @@ Error GDScriptParser::parse(const String &p_source_code, const String &p_script_
 	memdelete(text_tokenizer);
 	tokenizer = nullptr;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (multiline_stack.size() > 0) {
 		ERR_PRINT("Parser bug: Imbalanced multiline stack.");
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	if (errors.is_empty()) {
 		return OK;
@@ -551,9 +551,9 @@ Error GDScriptParser::parse_binary(const Vector<uint8_t> &p_binary, const String
 
 	script_path = p_script_path.simplify_path();
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	evaluate_warning_directory_rules_for_script_path();
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	current = tokenizer->scan();
 	// Avoid error or newline as the first token.
@@ -1633,7 +1633,7 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 
 	HashMap<StringName, int> elements;
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	List<MethodInfo> gdscript_funcs;
 	GDScriptLanguage::get_singleton()->get_public_functions(&gdscript_funcs);
 #endif
@@ -2061,7 +2061,7 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 
 GDScriptParser::Node *GDScriptParser::parse_statement() {
 	Node *result = nullptr;
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	bool unreachable = current_suite->has_return && !current_suite->has_unreachable_code;
 #endif
 
@@ -2188,7 +2188,6 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			lambda_ended = lambda_ended || has_ended_lambda;
 			result = expression;
 
-#ifdef DEBUG_ENABLED
 			if (expression != nullptr) {
 				switch (expression->type) {
 					case Node::ASSIGNMENT:
@@ -2197,27 +2196,35 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						// Fine.
 						break;
 					case Node::PRELOAD:
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						// `preload` is a function-like keyword.
 						push_warning(expression, GDScriptWarning::RETURN_VALUE_DISCARDED, "preload");
+#endif
 						break;
 					case Node::LAMBDA:
 						// Standalone lambdas can't be used, so make this an error.
 						push_error("Standalone lambdas cannot be accessed. Consider assigning it to a variable.", expression);
 						break;
 					case Node::LITERAL:
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						// Allow strings as multiline comments.
 						if (static_cast<GDScriptParser::LiteralNode *>(expression)->value.get_type() != Variant::STRING) {
 							push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
 						}
+#endif
 						break;
 					case Node::TERNARY_OPERATOR:
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						push_warning(expression, GDScriptWarning::STANDALONE_TERNARY);
+#endif
 						break;
 					default:
+#ifdef GDSCRIPT_DEBUG_ENABLED
 						push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
+#endif
+						break;
 				}
 			}
-#endif
 			break;
 		}
 	}
@@ -2261,7 +2268,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	}
 #endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (unreachable && result != nullptr) {
 		current_suite->has_unreachable_code = true;
 		if (current_function) {
@@ -2488,7 +2495,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 		}
 		match_branch_annotation_stack.clear();
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 		if (have_wildcard && !branch->patterns.is_empty()) {
 			push_warning(branch->patterns[0], GDScriptWarning::UNREACHABLE_PATTERN);
 		}
@@ -2848,7 +2855,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assi
 
 GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 	IdentifierNode *identifier = static_cast<IdentifierNode *>(parse_identifier(nullptr, false));
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
 	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
 		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.string());
@@ -3164,7 +3171,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 
 	switch (p_previous_operand->type) {
 		case Node::IDENTIFIER: {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			// Get source to store assignment count.
 			// Also remove one usage since assignment isn't usage.
 			IdentifierNode *id = static_cast<IdentifierNode *>(p_previous_operand);
@@ -3698,7 +3705,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			advance();
 
 			String identifier = previous.get_identifier();
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 			// Check spoofing.
 			if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier)) {
 				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier);
@@ -4475,12 +4482,12 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 }
 
 bool GDScriptParser::tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (_is_tool) {
 		push_error(R"("@tool" annotation can only be used once.)", p_annotation);
 		return false;
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 	_is_tool = true;
 	return true;
 }
@@ -4492,7 +4499,7 @@ bool GDScriptParser::icon_annotation(AnnotationNode *p_annotation, Node *p_targe
 	ClassNode *class_node = static_cast<ClassNode *>(p_target);
 	String path = p_annotation->resolved_arguments[0];
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	if (!class_node->icon_path.is_empty()) {
 		push_error(R"("@icon" annotation can only be used once.)", p_annotation);
 		return false;
@@ -4501,7 +4508,7 @@ bool GDScriptParser::icon_annotation(AnnotationNode *p_annotation, Node *p_targe
 		push_error(R"("@icon" annotation argument must contain the path to the icon.)", p_annotation->arguments[0]);
 		return false;
 	}
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 
 	class_node->icon_path = path;
 
@@ -5075,7 +5082,7 @@ bool GDScriptParser::export_custom_annotation(AnnotationNode *p_annotation, Node
 }
 
 bool GDScriptParser::export_tool_button_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-#ifdef TOOLS_ENABLED
+#if defined(GDSCRIPT_DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
 	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
 
@@ -5115,7 +5122,7 @@ bool GDScriptParser::export_tool_button_annotation(AnnotationNode *p_annotation,
 	variable->export_info.hint = PROPERTY_HINT_TOOL_BUTTON;
 	variable->export_info.hint_string = hint_string;
 	variable->export_info.usage = PROPERTY_USAGE_EDITOR;
-#endif // TOOLS_ENABLED
+#endif // defined(GDSCRIPT_DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 
 	return true; // Only available in editor.
 }
@@ -5150,7 +5157,7 @@ bool GDScriptParser::export_group_annotations(AnnotationNode *p_annotation, Node
 }
 
 bool GDScriptParser::warning_ignore_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	bool has_error = false;
 	for (const Variant &warning_name : p_annotation->resolved_arguments) {
 		GDScriptWarning::Code warning_code = GDScriptWarning::get_code_from_name(String(warning_name).to_upper());
@@ -5220,14 +5227,14 @@ bool GDScriptParser::warning_ignore_annotation(AnnotationNode *p_annotation, Nod
 		}
 	}
 	return !has_error;
-#else // !DEBUG_ENABLED
+#else // !GDSCRIPT_DEBUG_ENABLED
 	// Only available in debug builds.
 	return true;
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 bool GDScriptParser::warning_ignore_region_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 	bool has_error = false;
 	const bool is_start = p_annotation->name == SNAME("@warning_ignore_start");
 	for (const Variant &warning_name : p_annotation->resolved_arguments) {
@@ -5259,10 +5266,10 @@ bool GDScriptParser::warning_ignore_region_annotations(AnnotationNode *p_annotat
 		}
 	}
 	return !has_error;
-#else // !DEBUG_ENABLED
+#else // !GDSCRIPT_DEBUG_ENABLED
 	// Only available in debug builds.
 	return true;
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
 }
 
 bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
@@ -5638,7 +5645,7 @@ void GDScriptParser::reset_extents(Node *p_node, Node *p_from) {
 
 /*---------- PRETTY PRINT FOR DEBUG ----------*/
 
-#ifdef DEBUG_ENABLED
+#ifdef GDSCRIPT_DEBUG_ENABLED
 
 void GDScriptParser::TreePrinter::increase_indent() {
 	indent_level++;
@@ -6514,4 +6521,4 @@ void GDScriptParser::TreePrinter::print_tree(const GDScriptParser &p_parser) {
 	print_line(String(printed));
 }
 
-#endif // DEBUG_ENABLED
+#endif // GDSCRIPT_DEBUG_ENABLED
