@@ -53,6 +53,7 @@
 #include "protocol/pointer_warp.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
+#include "protocol/tablet.gen.h"
 #include "protocol/tearing_control_v1.gen.h"
 #include "protocol/text_input.gen.h"
 #include "protocol/viewporter.gen.h"
@@ -65,8 +66,6 @@
 #include "protocol/xdg_shell.gen.h"
 #include "protocol/xdg_system_bell.gen.h"
 #include "protocol/xdg_toplevel_icon.gen.h"
-
-// #include "protocol/tablet.gen.h" // TODO: Needs some extra work
 
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
@@ -209,6 +208,10 @@ class WaylandEmbedder {
 
 		Error send_wl_shm_format(uint32_t wl_shm, uint32_t format);
 
+		Error send_zwp_tablet_seat_v2_tablet_added(uint32_t zwp_tablet_seat_v2, uint32_t id);
+		Error send_zwp_tablet_seat_v2_tool_added(uint32_t zwp_tablet_seat_v2, uint32_t id);
+		Error send_zwp_tablet_tool_v2_proximity_in(uint32_t zwp_tablet_tool_v2, uint32_t serial, uint32_t tablet, uint32_t surface);
+
 		Error send_xdg_surface_configure(uint32_t xdg_surface, uint32_t serial);
 
 		Error send_xdg_toplevel_configure(uint32_t xdg_toplevel, uint32_t width, uint32_t height, struct wl_array *states);
@@ -324,6 +327,22 @@ class WaylandEmbedder {
 		bool disconnected = false;
 	};
 
+	struct TabletSeatData : WaylandObjectData {
+		HashSet<uint32_t> tablets;
+
+		uint32_t wl_seat_name = 0;
+
+		LocalObjectHandle proximal_surface;
+	};
+
+	struct TabletData : WaylandObjectData {
+		uint32_t seat_id = INVALID_ID;
+	};
+
+	struct TabletToolData : WaylandObjectData {
+		uint32_t seat_id = INVALID_ID;
+	};
+
 	struct RegistryGlobalInfo {
 		const struct wl_interface *interface = nullptr;
 		uint32_t version = 0;
@@ -429,14 +448,14 @@ class WaylandEmbedder {
 
 		// tablet
 		// TODO: Needs some extra work
-		//&zwp_tablet_manager_v2_interface,
-		//&zwp_tablet_seat_v2_interface,
-		//&zwp_tablet_tool_v2_interface,
-		//&zwp_tablet_v2_interface,
-		//&zwp_tablet_pad_ring_v2_interface,
-		//&zwp_tablet_pad_strip_v2_interface,
-		//&zwp_tablet_pad_group_v2_interface,
-		//&zwp_tablet_pad_v2_interface,
+		&zwp_tablet_manager_v2_interface,
+		&zwp_tablet_seat_v2_interface,
+		&zwp_tablet_tool_v2_interface,
+		&zwp_tablet_v2_interface,
+		&zwp_tablet_pad_ring_v2_interface,
+		&zwp_tablet_pad_strip_v2_interface,
+		&zwp_tablet_pad_group_v2_interface,
+		&zwp_tablet_pad_v2_interface,
 
 		// text-input
 		&zwp_text_input_v3_interface,
