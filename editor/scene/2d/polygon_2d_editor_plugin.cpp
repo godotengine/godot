@@ -614,8 +614,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 						previous_colors.remove_at(closest);
 					}
 
-					Array polygons = node->get_polygons();
-					polygons = polygons.duplicate(); // Copy because it's a reference.
+					Array polygons = node->get_polygons().duplicate(); // Copy because it's a reference.
 					for (int i = polygons.size() - 1; i >= 0; --i) {
 						Vector<int> points = polygons[i];
 
