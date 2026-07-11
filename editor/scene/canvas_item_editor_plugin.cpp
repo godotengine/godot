@@ -5731,11 +5731,11 @@ CanvasItemEditor::CanvasItemEditor() {
 	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
 
 	viewport = memnew(CanvasItemEditorViewport(this));
-	viewport_scrollable->add_child(viewport);
 	viewport->set_mouse_filter(MOUSE_FILTER_PASS);
 	viewport->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	viewport->set_clip_contents(true);
 	viewport->set_focus_mode(FOCUS_ALL);
+	viewport_scrollable->add_child(viewport);
 	viewport->connect(SceneStringName(draw), callable_mp(this, &CanvasItemEditor::_draw_viewport));
 	viewport->connect(SceneStringName(gui_input), callable_mp(this, &CanvasItemEditor::_gui_input_viewport));
 	viewport->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
@@ -6192,7 +6192,7 @@ CanvasItemEditorPlugin::CanvasItemEditorPlugin() {
 }
 
 void CanvasItemEditorViewport::_on_mouse_exit() {
-	if (!texture_node_type_selector->is_visible()) {
+	if (!texture_node_type_selector->is_visible() && preview_node->get_parent()) {
 		_remove_preview();
 	}
 }
@@ -6533,7 +6533,12 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 	}
 }
 
-void CanvasItemEditorViewport::_show_tooltip(const String &p_title, const String &p_description) const {
+void CanvasItemEditorViewport::set_hint_label(const String &p_title, const String &p_description) const {
+	if (p_title.is_empty() && p_description.is_empty()) {
+		tooltip_panel->hide();
+		return;
+	}
+
 	tooltip_panel->set_text(
 			vformat("[font_size=%s][b][color=%s]%s[/color][/b][/font_size]\n%s",
 					get_theme_default_font_size() + 2,
@@ -6599,12 +6604,12 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 
 	String title = TTRN("Can't drop the file...", "Can't drop the files...", files.size());
 	if (!error_message.is_empty()) {
-		_show_tooltip(title, error_message);
+		set_hint_label(title, error_message);
 		canvas_item_editor->update_viewport();
 		return false;
 	}
 	if (instantiate_type == 0) {
-		_show_tooltip(title, TTR("This file format is not supported."));
+		set_hint_label(title, TTR("This file format is not supported."));
 		return false;
 	}
 
@@ -6660,7 +6665,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 	}
 	desc += "[/ul]";
 
-	_show_tooltip(title, desc);
+	set_hint_label(title, desc);
 
 	return true;
 }
