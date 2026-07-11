@@ -380,6 +380,7 @@ void EditorNode::_update_title() {
 		title = vformat("(*) %s", title);
 	}
 	DisplayServer::get_singleton()->window_set_title(title + String(" - ") + GODOT_VERSION_NAME);
+	bottom_panel->update_project_title();
 	if (project_title) {
 		project_title->set_text(title);
 	}

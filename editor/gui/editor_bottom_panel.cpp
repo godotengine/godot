@@ -30,6 +30,7 @@
 
 #include "editor_bottom_panel.h"
 
+#include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/docks/editor_dock.h"
@@ -285,6 +286,10 @@ void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, EditorDo
 	}
 }
 
+void EditorBottomPanel::update_project_title() {
+	project_name_label->set_text(vformat("%s -", GLOBAL_GET("application/config/name")));
+}
+
 EditorBottomPanel::EditorBottomPanel() :
 		DockTabContainer(EditorDock::DOCK_SLOT_BOTTOM) {
 	layout = EditorDock::DOCK_LAYOUT_HORIZONTAL;
@@ -311,6 +316,10 @@ EditorBottomPanel::EditorBottomPanel() :
 	progress_indicator->set_v_size_flags(SIZE_SHRINK_CENTER);
 	progress_indicator->hide();
 	bottom_hbox->add_child(progress_indicator);
+
+	project_name_label = memnew(Label);
+	update_project_title();
+	bottom_hbox->add_child(project_name_label);
 
 	EditorVersionButton *version_btn = memnew(EditorVersionButton(EditorVersionButton::FORMAT_BASIC));
 	// Fade out the version label to be less prominent, but still readable.

@@ -57,6 +57,7 @@ class EditorBottomPanel : public DockTabContainer {
 
 	HBoxContainer *bottom_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
+	Label *project_name_label = nullptr;
 	ProgressIndicator *progress_indicator = nullptr;
 	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
@@ -93,6 +94,7 @@ public:
 
 	Button *add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut = nullptr, bool p_at_front = false);
 	void remove_item(Control *p_item);
+	void update_project_title();
 	void make_item_visible(Control *p_item, bool p_visible = true, bool p_ignore_lock = false);
 	void hide_bottom_panel();
 	void toggle_last_opened_bottom_panel();
