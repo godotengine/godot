@@ -56,6 +56,11 @@ def configure_instruments() -> bool:
 
 
 def configure_tracy_shared(env_tracy, profiler_path) -> bool:
+    # certain flags that we have inherited by cloning the env have to be removed.
+    if env["platform"] == "macos":
+        for f in [f for f in env["LINKFLAGS"] if "-stack_size" in f]:
+            env_tracy["LINKFLAGS"].remove(f)
+
     tracylib = env_tracy.add_shared_library("TracyClient", [str((profiler_path / "TracyClient.cpp").absolute())])
     link_target = None
     to_install = Flatten(tracylib)
