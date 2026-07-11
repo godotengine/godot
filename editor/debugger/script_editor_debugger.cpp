@@ -497,7 +497,7 @@ void ScriptEditorDebugger::_msg_servers_memory_usage(uint64_t p_thread_id, const
 		// If it does not have a theme icon, just go up the inheritance tree until we find one.
 		if (!has_theme_icon(type, EditorStringName(EditorIcons))) {
 			StringName base_type = type;
-			while (base_type != "Resource" || base_type != "") {
+			while (base_type != "Resource" && base_type != "") {
 				base_type = ClassDB::get_parent_class(base_type);
 				if (has_theme_icon(base_type, EditorStringName(EditorIcons))) {
 					type = base_type;
