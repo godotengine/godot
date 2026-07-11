@@ -513,7 +513,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				toolbar2_hbc->show();
 
 				tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
-				tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+				tree_mc->set_theme_type_variation("NoBorderBottomPanel");
 			}
 			button_file_list_display_mode->hide();
 

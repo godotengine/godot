@@ -4716,7 +4716,7 @@ void SceneTreeDock::_update_create_root_dialog_visibility() {
 		create_root_dialog->show();
 		scene_tree->hide();
 	} else {
-		main_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		main_mc->set_theme_type_variation("NoBorderBottomPanel");
 		create_root_dialog->hide();
 		scene_tree->show();
 	}

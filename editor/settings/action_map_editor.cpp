@@ -624,7 +624,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderActionEditor");
+	mc->set_theme_type_variation("NoBorderBottomPanel");
 	main_vbox->add_child(mc);
 
 	// Action Editor Tree
