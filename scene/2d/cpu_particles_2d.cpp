@@ -914,8 +914,8 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			}
 
 			real_t tex_anim_offset = 1.0;
-			if (curve_parameters[PARAM_ANGLE].is_valid()) {
-				tex_anim_offset = curve_parameters[PARAM_ANGLE]->sample(tv);
+			if (curve_parameters[PARAM_ANIM_OFFSET].is_valid()) {
+				tex_anim_offset = curve_parameters[PARAM_ANIM_OFFSET]->sample(tv);
 			}
 
 			p.seed = seed + uint32_t(i) + i + cycle;
