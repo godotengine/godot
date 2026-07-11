@@ -177,7 +177,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	view_3d_controller->set_z_far(camera_zfar);
 
 	view_3d_controller->set_invert_x_axis(p_settings.get("editors/3d/navigation/invert_x_axis", false));
-	view_3d_controller->set_invert_x_axis(p_settings.get("editors/3d/navigation/invert_y_axis", false));
+	view_3d_controller->set_invert_y_axis(p_settings.get("editors/3d/navigation/invert_y_axis", false));
 
 	view_3d_controller->set_warped_mouse_panning(p_settings.get("editors/3d/navigation/warped_mouse_panning", true));
 
