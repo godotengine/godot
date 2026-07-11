@@ -6288,7 +6288,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						}
 						width = bbcode_value.substr(0, sep).to_float();
 						if (bbcode_value.substr(sep + 1).ends_with("%")) {
-							width_unit = IMAGE_UNIT_PERCENT;
+							height_unit = IMAGE_UNIT_PERCENT;
 						}
 						height = bbcode_value.substr(sep + 1).to_float();
 					}
