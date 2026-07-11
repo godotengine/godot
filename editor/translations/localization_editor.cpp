@@ -770,7 +770,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+		mc->set_theme_type_variation("NoBorderBottomWideWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -808,7 +808,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalWide");
+		mc->set_theme_type_variation("NoBorderHorizontalWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -836,7 +836,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+		mc->set_theme_type_variation("NoBorderBottomWideWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -885,7 +885,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(template_generate_button);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalWide");
+		mc->set_theme_type_variation("NoBorderHorizontalWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 

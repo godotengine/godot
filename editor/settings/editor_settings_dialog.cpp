@@ -1079,7 +1079,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_theme_type_variation("NoBorderBottomPanel");
 	tab_shortcuts->add_child(mc);
 
 	shortcuts = memnew(Tree);
