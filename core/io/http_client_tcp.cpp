@@ -246,6 +246,12 @@ Error HTTPClientTCP::get_response_headers(List<String> *r_response) {
 	return OK;
 }
 
+void HTTPClientTCP::shutdown() {
+	if (tcp_connection.is_valid()) {
+		tcp_connection->shutdown();
+	}
+}
+
 void HTTPClientTCP::close() {
 	if (tcp_connection->get_status() != StreamPeerTCP::STATUS_NONE) {
 		tcp_connection->disconnect_from_host();

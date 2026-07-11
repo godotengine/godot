@@ -145,6 +145,7 @@ void HTTPClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connection"), &HTTPClient::get_connection);
 	ClassDB::bind_method(D_METHOD("request_raw", "method", "url", "headers", "body"), &HTTPClient::_request_raw);
 	ClassDB::bind_method(D_METHOD("request", "method", "url", "headers", "body"), &HTTPClient::_request, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("shutdown"), &HTTPClient::shutdown);
 	ClassDB::bind_method(D_METHOD("close"), &HTTPClient::close);
 
 	ClassDB::bind_method(D_METHOD("has_response"), &HTTPClient::has_response);
