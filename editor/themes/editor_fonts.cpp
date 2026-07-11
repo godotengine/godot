@@ -181,7 +181,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 			var_suffix = { "TC", "HK", "SC", "KR", "JP" };
 		} else if (locale.begins_with("ko")) {
 			var_suffix = { "KR", "HK", "SC", "TC", "JP" };
-		} else if (locale.begins_with("ko")) {
+		} else if (locale.begins_with("ja")) {
 			var_suffix = { "JP", "HK", "KR", "SC", "TC" };
 		} else {
 			var_suffix = { "HK", "KR", "SC", "TC", "JP" };
