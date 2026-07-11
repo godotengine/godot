@@ -3475,7 +3475,7 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_search", &EditorHelp::_search);
 	ClassDB::bind_method("_help_callback", &EditorHelp::_help_callback);
 
-	ADD_SIGNAL(MethodInfo("go_to_help"));
+	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "help")));
 	ADD_SIGNAL(MethodInfo("_request_save_new_history", PropertyInfo(Variant::DICTIONARY, "state")));
 }
 

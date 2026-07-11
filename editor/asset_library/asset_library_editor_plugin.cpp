@@ -138,7 +138,7 @@ void EditorAssetLibraryItem::_license_clicked() {
 
 void EditorAssetLibraryItem::_bind_methods() {
 	ClassDB::bind_method("set_image", &EditorAssetLibraryItem::set_image);
-	ADD_SIGNAL(MethodInfo("asset_selected"));
+	ADD_SIGNAL(MethodInfo("asset_selected", PropertyInfo(Variant::STRING, "asset_path")));
 	ADD_SIGNAL(MethodInfo("author_selected"));
 }
 

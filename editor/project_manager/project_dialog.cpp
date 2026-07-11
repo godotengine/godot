@@ -1012,8 +1012,8 @@ void ProjectDialog::_notification(int p_what) {
 }
 
 void ProjectDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("project_created"));
-	ADD_SIGNAL(MethodInfo("project_duplicated"));
+	ADD_SIGNAL(MethodInfo("project_created", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::BOOL, "new")));
+	ADD_SIGNAL(MethodInfo("project_duplicated", PropertyInfo(Variant::STRING, "original_project_path"), PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::BOOL, "edit")));
 	ADD_SIGNAL(MethodInfo("projects_updated"));
 }
 

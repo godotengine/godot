@@ -41,6 +41,7 @@
 	</members>
 	<signals>
 		<signal name="autoshrink_changed">
+			<param index="0" name="size" type="Vector2" />
 			<description>
 				Emitted when [member autoshrink_enabled] or [member autoshrink_margin] changes.
 			</description>
