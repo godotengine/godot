@@ -1,5 +1,6 @@
 """Functions used to generate source files during build time"""
 
+import hashlib
 import os
 import os.path
 import subprocess
@@ -59,7 +60,7 @@ def make_doc_header(target, source, env):
 
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(f"""\
-inline constexpr const char *_doc_data_hash = "{hash(buffer)}";
+inline constexpr const char *_doc_data_hash = "{hashlib.sha256(buffer).hexdigest()}";
 inline constexpr int _doc_data_compressed_size = {len(buffer)};
 inline constexpr int _doc_data_uncompressed_size = {decomp_size};
 inline constexpr const unsigned char _doc_data_compressed[] = {{
