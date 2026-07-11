@@ -107,7 +107,7 @@ static Color _material_color(const ufbx_material_map &p_map) {
 		float r = float(p_map.value_vec4.x);
 		float g = float(p_map.value_vec4.y);
 		float b = float(p_map.value_vec4.z);
-		float a = float(p_map.value_vec4.z);
+		float a = float(p_map.value_vec4.w);
 		return Color(r, g, b, a);
 	}
 }
