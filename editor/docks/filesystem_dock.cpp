@@ -227,11 +227,21 @@ Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, const String
 	}
 }
 
-void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, const Vector<String> &p_uncollapsed_paths, const Vector<String> &p_selected_paths) {
+void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, const Vector<String> &p_uncollapsed_paths, const Vector<String> &p_selected_paths, bool p_inside_plugin) {
 	// Create a tree item for the subdirectory.
 	TreeItem *subdirectory_item = tree->create_item(p_parent);
 	String dname = p_dir->get_name();
 	String lpath = p_dir->get_path();
+
+	bool is_this_the_top_plugin = false;
+
+	if (!p_inside_plugin && lpath.begins_with("res://addons/")) {
+		if (p_dir->find_file_index("plugin.cfg") != -1) {
+			is_this_the_top_plugin = true;
+			p_inside_plugin = true;
+			plugin_roots_cache.insert(lpath);
+		}
+	}
 
 	if (dname.is_empty()) {
 		dname = "res://";
@@ -262,7 +272,12 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	subdirectory_item->set_text(0, dname);
 	subdirectory_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
-	subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
+	if (is_this_the_top_plugin) {
+		subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("FolderPlugin")));
+	} else {
+		subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
+	}
+
 	if (da->is_link(lpath)) {
 		subdirectory_item->set_icon_overlay(0, get_editor_theme_icon(SNAME("LinkOverlay")));
 		subdirectory_item->set_tooltip_text(0, vformat(TTR("Link to: %s"), da->read_link(lpath)));
@@ -282,7 +297,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	for (int i = reversed ? p_dir->get_subdir_count() - 1 : 0;
 			reversed ? i >= 0 : i < p_dir->get_subdir_count();
 			reversed ? i-- : i++) {
-		_create_tree(subdirectory_item, p_dir->get_subdir(i), p_uncollapsed_paths, p_selected_paths);
+		_create_tree(subdirectory_item, p_dir->get_subdir(i), p_uncollapsed_paths, p_selected_paths, is_this_the_top_plugin);
 	}
 
 	// Create all items for the files in the subdirectory.
@@ -387,6 +402,14 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	TreeItem *root = tree->create_item();
 	root->set_accept_children(false);
 	folder_map.clear();
+	plugin_roots_cache.clear();
+
+	Vector<String> uncollapsed_paths = p_uncollapsed_paths;
+	if (p_uncollapse_root && !uncollapsed_paths.has("res://")) {
+		uncollapsed_paths.push_back("res://");
+	}
+
+	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, previous_selection);
 
 	// Handles the favorites.
 	favorites_item = tree->create_item(root);
@@ -395,6 +418,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	favorites_item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_ALWAYS);
 	favorites_item->set_metadata(0, "Favorites");
 	favorites_item->set_collapsed(!p_uncollapsed_paths.has("Favorites"));
+	favorites_item->move_before(root->get_first_child());
 
 	Vector<String> favorite_paths = EditorSettings::get_singleton()->get_favorites();
 
@@ -431,7 +455,13 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			color = default_folder_color;
 		} else if (favorite.ends_with("/")) {
 			text = favorite.substr(0, favorite.length() - 1).get_file();
-			icon = folder_icon;
+
+			if (plugin_roots_cache.has(favorite)) {
+				icon = get_editor_theme_icon(SNAME("FolderPlugin"));
+			} else {
+				icon = folder_icon;
+			}
+
 			color = FileSystemDock::get_dir_icon_color(favorite, default_folder_color);
 		} else {
 			text = favorite.get_file();
@@ -464,13 +494,6 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		}
 	}
 
-	Vector<String> uncollapsed_paths = p_uncollapsed_paths;
-	if (p_uncollapse_root && !uncollapsed_paths.has("res://")) {
-		uncollapsed_paths.push_back("res://");
-	}
-
-	// Create the remaining of the tree.
-	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, previous_selection);
 	if (!searched_tokens.is_empty()) {
 		_update_filtered_items();
 	}
@@ -1025,6 +1048,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 
 	int thumbnail_size = thumbnail_size_setting * EDSCALE;
 	Ref<Texture2D> folder_thumbnail;
+	Ref<Texture2D> folder_plugin_thumbnail;
 	Ref<Texture2D> file_thumbnail;
 	Ref<Texture2D> file_thumbnail_broken;
 
@@ -1043,10 +1067,12 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 
 		if (thumbnail_size < 64) {
 			folder_thumbnail = get_editor_theme_icon(SNAME("FolderMediumThumb"));
+			folder_plugin_thumbnail = get_editor_theme_icon(SNAME("FolderPluginMediumThumb"));
 			file_thumbnail = get_editor_theme_icon(SNAME("FileMediumThumb"));
 			file_thumbnail_broken = get_editor_theme_icon(SNAME("FileDeadMediumThumb"));
 		} else {
 			folder_thumbnail = get_editor_theme_icon(SNAME("FolderBigThumb"));
+			folder_plugin_thumbnail = get_editor_theme_icon(SNAME("FolderPluginBigThumb"));
 			file_thumbnail = get_editor_theme_icon(SNAME("FileBigThumb"));
 			file_thumbnail_broken = get_editor_theme_icon(SNAME("FileDeadBigThumb"));
 		}
@@ -1061,6 +1087,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 	}
 
 	Ref<Texture2D> folder_icon = (use_thumbnails) ? folder_thumbnail : get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
+	Ref<Texture2D> folder_plugin_icon = (use_thumbnails) ? folder_plugin_thumbnail : get_editor_theme_icon(SNAME("FolderPlugin"));
 	const Color default_folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
 	// Build the FileInfo list.
@@ -1083,7 +1110,12 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 				}
 			} else if (favorite.ends_with("/")) {
 				text = favorite.substr(0, favorite.length() - 1).get_file();
-				icon = folder_icon;
+
+				if (plugin_roots_cache.has(favorite)) {
+					icon = folder_plugin_icon;
+				} else {
+					icon = folder_icon;
+				}
 				if (searched_tokens.is_empty() || _matches_all_search_tokens(text)) {
 					files->add_item(text, icon, true);
 					files->set_item_metadata(-1, favorite);
@@ -1171,7 +1203,14 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 					String dpath = directory.path_join(dname) + "/";
 					bool has_custom_color = assigned_folder_colors.has(dpath);
 
-					files->add_item(dname, folder_icon, true);
+					Ref<Texture2D> icon;
+					if (plugin_roots_cache.has(dpath)) {
+						icon = folder_plugin_icon;
+					} else {
+						icon = folder_icon;
+					}
+
+					files->add_item(dname, icon, true);
 					files->set_item_metadata(-1, dpath);
 					Color this_folder_color = has_custom_color ? folder_colors[assigned_folder_colors[dpath]] : inherited_folder_color;
 					if (!editor_is_dark_icon_and_font && this_folder_color != default_folder_color) {
@@ -2299,6 +2338,68 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_PLUGIN_TOGGLE: {
+			HashSet<String> unique_cfgs;
+			String error_message;
+
+			for (const String &path : p_selected) {
+				String root_path = path;
+				if (!root_path.ends_with("/")) {
+					root_path = path.get_base_dir().path_join("/");
+				}
+
+				if (!plugin_roots_cache.has(root_path)) {
+					error_message = vformat(TTR("Could not find 'plugin.cfg' at: '%s'."), path);
+					break;
+				}
+				String cfg_path = root_path.path_join("plugin.cfg");
+
+				Ref<ConfigFile> cfg;
+				cfg.instantiate();
+				Error err = cfg->load(cfg_path);
+
+				if (err != OK) {
+					error_message = vformat(TTRC("Can't load plugin config at: '%s' (Error code: %d)."), cfg_path, err);
+					break;
+				}
+
+				Vector<String> missing_keys;
+				for (const String required_key : { "name", "author", "version", "description", "script" }) {
+					if (!cfg->has_section_key("plugin", required_key)) {
+						missing_keys.push_back("\"plugin/" + required_key + "\"");
+					}
+				}
+
+				if (!missing_keys.is_empty()) {
+					String keys_str = String(", ").join(missing_keys);
+					error_message = vformat(TTRC("Plugin config at \"%s\" is missing the following keys: %s."), cfg_path, keys_str);
+					break;
+				}
+
+				unique_cfgs.insert(cfg_path);
+			}
+
+			if (!error_message.is_empty()) {
+				EditorNode::get_singleton()->show_warning(vformat(TTRC("Failed to change the enabled state of the selected plugin(s). All changes were canceled.\n%s"), error_message));
+				break;
+			}
+
+			bool should_enable = false;
+			for (const String &cfg_path : unique_cfgs) {
+				if (!EditorNode::get_singleton()->is_addon_plugin_enabled(cfg_path)) {
+					should_enable = true;
+					break;
+				}
+			}
+
+			for (const String &cfg_path : unique_cfgs) {
+				bool is_currently_enabled = EditorNode::get_singleton()->is_addon_plugin_enabled(cfg_path);
+				if (is_currently_enabled != should_enable) {
+					EditorNode::get_singleton()->set_addon_plugin_enabled(cfg_path, should_enable);
+				}
+			}
+		} break;
+
 		case FILE_MENU_OPEN_IN_TERMINAL: {
 			String fpath = current_path;
 			if (current_path == "Favorites") {
@@ -3392,6 +3493,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	Vector<String> filenames;
 	Vector<String> foldernames;
 
+	Vector<String> plugin_roots;
+
 	Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 
 	bool no_paths = p_paths.is_empty();
@@ -3407,10 +3510,19 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		if (fpath.ends_with("/")) {
 			foldernames.push_back(fpath);
 			all_files = false;
+			if (plugin_roots_cache.has(fpath)) {
+				plugin_roots.push_back(fpath.path_join("plugin.cfg"));
+			}
 		} else {
 			filenames.push_back(fpath);
 			all_folders = false;
 			all_files_scenes &= (EditorFileSystem::get_singleton()->get_file_type(fpath) == "PackedScene");
+			if (fpath.ends_with("plugin.cfg")) {
+				String root = fpath.get_base_dir().path_join("/");
+				if (plugin_roots_cache.has(root)) {
+					plugin_roots.push_back(fpath);
+				}
+			}
 		}
 
 		// Check if in favorites.
@@ -3425,6 +3537,34 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			all_not_favorites = false;
 		} else {
 			all_favorites = false;
+		}
+	}
+
+	if (plugin_roots.size() == p_paths.size()) {
+		p_popup->add_check_item(TTRC("Enable Plugin"), FILE_MENU_PLUGIN_TOGGLE);
+		p_popup->set_item_index(p_popup->get_item_count() - 1, 0);
+
+		p_popup->add_separator("", 1);
+
+		bool any_enabled = false;
+		bool any_disabled = false;
+
+		for (const String &plugin : plugin_roots) {
+			if (EditorNode::get_singleton()->is_addon_plugin_enabled(plugin)) {
+				any_enabled = true;
+			} else {
+				any_disabled = true;
+			}
+
+			if (any_enabled && any_disabled) {
+				break;
+			}
+		}
+
+		if (any_enabled && any_disabled) {
+			// indeterminate state can be set here if/when PopupMenu supports it
+		} else {
+			p_popup->set_item_checked(0, any_enabled);
 		}
 	}
 

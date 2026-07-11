@@ -137,6 +137,7 @@ private:
 		FILE_MENU_NEW_SCRIPT,
 		FILE_MENU_NEW_SCENE,
 		FILE_MENU_RUN_SCRIPT,
+		FILE_MENU_PLUGIN_TOGGLE,
 		FILE_MENU_MAX,
 		// Extra shortcuts that don't exist in the menu.
 		EXTRA_FOCUS_PATH,
@@ -162,6 +163,7 @@ private:
 	int split_box_offset_v = 0;
 
 	HashSet<String> favorites;
+	HashSet<String> plugin_roots_cache;
 
 	Button *button_toggle_display_mode = nullptr;
 	Button *button_file_list_display_mode = nullptr;
@@ -277,7 +279,7 @@ private:
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path);
-	void _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, const Vector<String> &p_uncollapsed_paths, const Vector<String> &p_selected_paths);
+	void _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, const Vector<String> &p_uncollapsed_paths, const Vector<String> &p_selected_paths, bool p_inside_plugin = false);
 	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_scroll_to_selected = true, const Vector<String> &p_override_selection = Vector<String>());
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false, bool p_grab_focus = false);
 	bool _update_filtered_items(TreeItem *p_tree_item = nullptr);
