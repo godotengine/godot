@@ -2168,6 +2168,10 @@ void Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
+
+	// Those default values need to be specified for the docs generator,
+	// to avoid using values from a `--quiet` run.
+	ADD_PROPERTY_DEFAULT("print_to_stdout", true);
 }
 
 ////// EngineDebugger //////
