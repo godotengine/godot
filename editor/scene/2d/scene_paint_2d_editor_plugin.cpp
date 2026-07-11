@@ -83,6 +83,7 @@ void ScenePaint2DEditor::_edit(Object *p_object) {
 	}
 
 	_update_node(p_object);
+	_update_hint_label();
 }
 
 void ScenePaint2DEditor::_update_node(Object *p_object) {
@@ -245,6 +246,18 @@ bool ScenePaint2DEditor::_is_instance_valid() {
 void ScenePaint2DEditor::_update_draw_overlay() {
 	if (custom_overlay) {
 		custom_overlay->queue_redraw();
+	}
+}
+
+void ScenePaint2DEditor::_update_hint_label() {
+	if (!is_tool_selected) {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(String(), String());
+	} else if (!cache_node) {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(TTRC("Select a Node2D to enable painting."), TTRC("The node will be used as a parent for the painted scenes."));
+	} else if (!selected_scene) {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(TTRC("Pick a scene for painting."), vformat(TTR("Use the Scene Picker from the toolbar or %s+Click a 2D scene instance."), keycode_get_string(Key::CMD_OR_CTRL)));
+	} else {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(String(), String());
 	}
 }
 
@@ -595,6 +608,7 @@ void ScenePaint2DEditor::_scene_changed() {
 		cache_node = Object::cast_to<Node2D>(SceneTreeDock::get_singleton()->get_tree_editor()->get_selected());
 	}
 	_update_node();
+	_update_hint_label();
 }
 
 void ScenePaint2DEditor::_update_scene_picker(int p_mode, Control *p_control) {
@@ -745,6 +759,16 @@ void ScenePaint2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			advanced_settings_button->set_tooltip_text(TTR("Advanced Settings") + "\n" + TTR("Hold Alt while painting to temporarily switch to the previously used paint snap mode."));
+			if (toolbar->is_visible()) {
+				_update_hint_label();
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			// Dragging something into 2D viewport might override the label, so it needs to be restored.
+			if (toolbar->is_visible()) {
+				callable_mp(this, &ScenePaint2DEditor::_update_hint_label).call_deferred();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -774,6 +798,8 @@ void ScenePaint2DEditor::_notification(int p_what) {
 
 void ScenePaint2DEditor::_set_picked_scene(Node2D *p_scene) {
 	selected_scene = p_scene;
+	_update_hint_label();
+
 	scene_picker_button->set_pressed(false);
 	input_tool = INPUT_TOOL_NONE;
 	if (!selected_scene) {
@@ -943,10 +969,18 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 }
 
 void ScenePaint2DEditorPlugin::_canvas_item_tool_changed(int p_tool) {
+	bool prev_selected = scene_paint_2d_editor->is_tool_selected;
 	scene_paint_2d_editor->is_tool_selected = (CanvasItemEditor::Tool)p_tool == CanvasItemEditor::TOOL_SCENE_PAINT;
+	if (!scene_paint_2d_editor->is_tool_selected && prev_selected) {
+		make_visible(false);
+		scene_paint_2d_editor->_update_hint_label();
+		return;
+	}
+
 	Node *selected_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
 	if (!selected_node) {
 		make_visible(false);
+		scene_paint_2d_editor->_update_hint_label();
 		return;
 	}
 	scene_paint_2d_editor->_set_picked_scene(nullptr);
