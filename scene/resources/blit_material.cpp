@@ -81,12 +81,6 @@ void BlitMaterial::_update_shader(BlendMode p_blend) {
 
 void BlitMaterial::set_blend_mode(BlendMode p_blend_mode) {
 
-	/*if (p_blend_mode 
-		< BLEND_MODE_MIX || p_blend_mode > BLEND_MODE_DISABLED) {
-			ERR_PRINT("Invalid blend mode.");
-			return;
-		}*/
-
 	if (p_blend_mode < BLEND_MODE_MIX || p_blend_mode > BLEND_MODE_DISABLED) {
 			 ERR_PRINT("Invalid blend mode.");
 			 return;	 
