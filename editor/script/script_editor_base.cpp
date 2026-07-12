@@ -53,14 +53,18 @@ void ScriptEditorBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_base_editor"), &ScriptEditorBase::get_base_editor);
 
 	// First use in ScriptTextEditor.
-	ADD_SIGNAL(MethodInfo("request_save_history"));
 	ADD_SIGNAL(MethodInfo("_request_save_new_history", PropertyInfo(Variant::DICTIONARY, "state")));
-	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
+	ADD_SIGNAL(MethodInfo("_request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
 	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "topic")));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::STRING, "method")));
+
+#ifndef DISABLE_DEPRECATED
+	ADD_SIGNAL(MethodInfo("request_save_history"));
+	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
+#endif
 }
 
 String ScriptEditorBase::get_name() {
@@ -543,7 +547,7 @@ void TextEditorBase::_emit_request_save_previous_state() {
 	Dictionary state = get_edit_state();
 	state["ensure_caret_visible"] = true;
 	previous_history_line = state["row"];
-	emit_signal(SNAME("request_save_previous_state"), state);
+	emit_signal(SNAME("_request_save_previous_state"), state);
 }
 
 void TextEditorBase::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
