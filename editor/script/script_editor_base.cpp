@@ -736,4 +736,11 @@ CodeEditorBase::CodeEditorBase() {
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	editor_box->add_child(code_editor);
 	editor_box->add_child(warnings_panel);
+
+	for (const Ref<EditorSyntaxHighlighter>& highlighter : highlighters) {
+		if (Object::cast_to<EditorStandardSyntaxHighlighter>(highlighter.ptr())) {
+			set_syntax_highlighter(highlighter);
+			break;
+		}
+	}
 }
