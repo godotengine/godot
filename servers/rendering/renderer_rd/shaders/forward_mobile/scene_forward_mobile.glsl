@@ -2137,19 +2137,15 @@ void main() {
 			light_compute(normal, hvec3(directional_lights.data[i].direction), view, saturateHalf(size_A),
 					hvec3(directional_lights.data[i].color * directional_lights.data[i].energy * tint),
 					true,
-
 #ifdef LIGHT_FALLOFF_USED
 					1.0,
 #endif
-
 #ifdef LIGHT_SHADOW_USED
 					shadow,
 #endif
-
-#if !(defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED))
+#if (!defined(LIGHT_CODE_USED) || defined(ATTENUATION_USED)) && !(defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED))
 					shadow,
 #endif
-
 					f0, roughness, metallic, half(directional_lights.data[i].specular), albedo, alpha,
 					screen_uv, hvec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
