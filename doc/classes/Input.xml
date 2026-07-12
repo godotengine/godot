@@ -443,6 +443,14 @@
 				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices. Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
+		<method name="is_joy_motion_sensors_auto_calibration_enabled" qualifiers="const" experimental="">
+			<return type="bool" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Returns [code]true[/code] if automatic calibration is enabled on the joypad's motion sensors. Automatic calibration is enabled by default. See [method set_joy_motion_sensors_auto_calibration_enabled].
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
+			</description>
+		</method>
 		<method name="is_joy_motion_sensors_calibrated" qualifiers="const" experimental="">
 			<return type="bool" />
 			<param index="0" name="device" type="int" />
@@ -456,7 +464,7 @@
 			<return type="bool" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns [code]true[/code] if the joypad's motion sensors are currently being calibrated.
+				Returns [code]true[/code] if the joypad's motion sensors are currently being manually calibrated.
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
@@ -665,6 +673,17 @@
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
 			</description>
 		</method>
+		<method name="set_joy_motion_sensors_auto_calibration_enabled" experimental="">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Enables or disables automatic calibration of the joypad's gyroscope. Automatic calibration is enabled by default, so most games don't need to call this or perform any calibration.
+				While enabled, the gyroscope calibration is continuously refined whenever the joypad is detected to be held still, easing corrections in gradually. This removes the need for a dedicated calibration step in most games and keeps up with calibration drift, e.g. from the controller warming up during play.
+				When automatic calibration is disabled, the last calibrated values remain in effect.
+				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
+			</description>
+		</method>
 		<method name="set_joy_motion_sensors_calibration" experimental="">
 			<return type="void" />
 			<param index="0" name="device" type="int" />
@@ -681,6 +700,7 @@
 			<param index="1" name="enable" type="bool" />
 			<description>
 				Enables or disables the motion sensors (gyroscope and/or accelerometer), if available, on the specified joypad.
+				While the motion sensors are enabled, the gyroscope is calibrated automatically by default; see [method set_joy_motion_sensors_auto_calibration_enabled].
 				See [method start_joy_motion_sensors_calibration] for an example on how to use joypad motion sensors and calibration in your games.
 				It's recommended to disable the motion sensors when they're no longer being used, because otherwise it might drain the controller battery faster.
 				[b]Note:[/b] This feature is only supported on Windows, Linux, macOS, and iOS.
@@ -707,8 +727,9 @@
 			<return type="void" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Starts the process of calibrating the specified joypad's gyroscope, if it has one.
+				Starts the process of manually calibrating the specified joypad's gyroscope, if it has one.
 				Once a joypad's gyroscope has been calibrated correctly (e.g. laying still on a table without being rotated), [method get_joy_gyroscope] will return values close or equal to [constant Vector3.ZERO] when the joypad is not being rotated.
+				Since the gyroscope is calibrated automatically by default (see [method set_joy_motion_sensors_auto_calibration_enabled]), most games don't need to calibrate manually. If automatic calibration is enabled, it's paused while the manual calibration is in progress, and resumes when [method stop_joy_motion_sensors_calibration] is called.
 				Here's an example of how to use joypad gyroscope and gyroscope calibration in your games:
 				[codeblocks]
 				[gdscript]

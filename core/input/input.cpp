@@ -46,6 +46,9 @@
 
 #define STANDARD_GRAVITY 9.80665f
 
+static const GamepadMotionHelpers::CalibrationMode CALIBRATION_MODE_AUTO = GamepadMotionHelpers::CalibrationMode::Stillness | GamepadMotionHelpers::CalibrationMode::SensorFusion;
+static const GamepadMotionHelpers::CalibrationMode CALIBRATION_MODE_MANUAL = GamepadMotionHelpers::CalibrationMode::Manual;
+
 static const char *_joy_buttons[(size_t)JoyButton::SDL_MAX] = {
 	"a",
 	"b",
@@ -179,6 +182,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_joy_motion_sensors_calibration", "device", "calibration_info"), &Input::set_joy_motion_sensors_calibration);
 	ClassDB::bind_method(D_METHOD("is_joy_motion_sensors_calibrated", "device"), &Input::is_joy_motion_sensors_calibrated);
 	ClassDB::bind_method(D_METHOD("is_joy_motion_sensors_calibrating", "device"), &Input::is_joy_motion_sensors_calibrating);
+	ClassDB::bind_method(D_METHOD("set_joy_motion_sensors_auto_calibration_enabled", "device", "enable"), &Input::set_joy_motion_sensors_auto_calibration_enabled);
+	ClassDB::bind_method(D_METHOD("is_joy_motion_sensors_auto_calibration_enabled", "device"), &Input::is_joy_motion_sensors_auto_calibration_enabled);
 	ClassDB::bind_method(D_METHOD("get_joy_touchpad_finger_position", "device", "finger", "touchpad"), &Input::get_joy_touchpad_finger_position, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_joy_touchpad_finger_pressure", "device", "finger", "touchpad"), &Input::get_joy_touchpad_finger_pressure, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_joy_touchpad_fingers", "device", "touchpad"), &Input::get_joy_touchpad_fingers, DEFVAL(0));
@@ -1294,7 +1299,7 @@ Dictionary Input::get_joy_motion_sensors_calibration(int p_device) const {
 		return Dictionary();
 	}
 
-	if (!motion->calibrated) {
+	if (!motion->calibrated && !motion->auto_calibration_enabled) {
 		return Dictionary();
 	}
 
@@ -1338,7 +1343,27 @@ bool Input::is_joy_motion_sensors_calibrated(int p_device) const {
 	if (motion == nullptr) {
 		return false;
 	}
-	return motion->calibrated;
+	if (motion->calibrated) {
+		return true;
+	}
+	return motion->auto_calibration_enabled && motion->gamepad_motion->GetAutoCalibrationConfidence() > 0.0f;
+}
+
+void Input::set_joy_motion_sensors_auto_calibration_enabled(int p_device, bool p_enable) {
+	_THREAD_SAFE_METHOD_
+	MotionInfo *motion = joy_motion.getptr(p_device);
+	if (motion == nullptr) {
+		return;
+	}
+
+	motion->auto_calibration_enabled = p_enable;
+	motion->gamepad_motion->SetCalibrationMode(p_enable ? CALIBRATION_MODE_AUTO : CALIBRATION_MODE_MANUAL);
+}
+
+bool Input::is_joy_motion_sensors_auto_calibration_enabled(int p_device) const {
+	_THREAD_SAFE_METHOD_
+	const MotionInfo *motion = joy_motion.getptr(p_device);
+	return motion != nullptr && motion->auto_calibration_enabled;
 }
 
 void Input::set_joy_motion_sensors_rate(int p_device, float p_rate) {
@@ -1966,6 +1991,7 @@ void Input::_update_joypad_features(int p_device) {
 		} else {
 			motion.gamepad_motion->Reset();
 		}
+		motion.gamepad_motion->SetCalibrationMode(motion.auto_calibration_enabled ? CALIBRATION_MODE_AUTO : CALIBRATION_MODE_MANUAL);
 		motion.last_timestamp = OS::get_singleton()->get_ticks_msec();
 	}
 	if (joypad->features->get_joy_num_touchpads() > 0) {
