@@ -225,7 +225,7 @@ public:
 	};
 };
 
-static_assert(std::is_trivial<UVec4>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<UVec4>() && std::is_trivially_copyable<UVec4>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

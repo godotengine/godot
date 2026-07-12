@@ -269,17 +269,17 @@ public:
 	float						GetGravityFactor(const BodyID &inBodyID) const; ///< @see MotionProperties::GetGravityFactor
 	///@}
 
-    ///@name Max linear velocity
-    ///@{
-    void						SetMaxLinearVelocity(const BodyID &inBodyID, float inLinearVelocity); ///< @see MotionProperties::SetMaxLinearVelocity
-    float						GetMaxLinearVelocity(const BodyID &inBodyID) const; ///< @see MotionProperties::GetMaxLinearVelocity
-    ///@}
+	///@name Max linear velocity
+	///@{
+	void						SetMaxLinearVelocity(const BodyID &inBodyID, float inLinearVelocity); ///< @see MotionProperties::SetMaxLinearVelocity
+	float						GetMaxLinearVelocity(const BodyID &inBodyID) const; ///< @see MotionProperties::GetMaxLinearVelocity
+	///@}
 
-    ///@name Max angular velocity
-    ///@{
-    void						SetMaxAngularVelocity(const BodyID &inBodyID, float inAngularVelocity); ///< @see MotionProperties::SetMaxAngularVelocity
-    float						GetMaxAngularVelocity(const BodyID &inBodyID) const; ///< @see MotionProperties::GetMaxAngularVelocity
-    ///@}
+	///@name Max angular velocity
+	///@{
+	void						SetMaxAngularVelocity(const BodyID &inBodyID, float inAngularVelocity); ///< @see MotionProperties::SetMaxAngularVelocity
+	float						GetMaxAngularVelocity(const BodyID &inBodyID) const; ///< @see MotionProperties::GetMaxAngularVelocity
+	///@}
 
 	///@name Manifold reduction
 	///@{
