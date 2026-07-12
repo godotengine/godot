@@ -640,6 +640,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("font_hovered_color", "Tree", p_config.font_hover_color);
 			p_theme->set_color("font_hovered_dimmed_color", "Tree", p_config.font_hover_color);
 			p_theme->set_color("font_hovered_selected_color", "Tree", p_config.mono_color_font);
+			p_theme->set_color("font_pressed_selected_color", "Tree", p_config.mono_color_font);
 			p_theme->set_color("font_selected_color", "Tree", p_config.mono_color_font);
 			p_theme->set_color("font_disabled_color", "Tree", p_config.font_disabled_color);
 			p_theme->set_color("font_outline_color", "Tree", p_config.font_outline_color);
@@ -715,6 +716,9 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 
 			p_theme->set_stylebox("hovered_selected", "Tree", style_tree_hovered_selected);
 			p_theme->set_stylebox("hovered_selected_focus", "Tree", p_config.focus_style);
+
+			p_theme->set_stylebox("pressed_selected", "Tree", style_tree_hovered_selected);
+			p_theme->set_stylebox("pressed_selected_focus", "Tree", p_config.focus_style);
 
 			// Cursor is drawn on top of the item so it needs to be transparent.
 			Ref<StyleBoxFlat> style_tree_cursor = p_config.base_style->duplicate();

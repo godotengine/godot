@@ -112,6 +112,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	const Color style_normal_color = Color(0.1, 0.1, 0.1, 0.6);
 	const Color style_hover_color = Color(0.225, 0.225, 0.225, 0.6);
 	const Color style_hover_selected_color = Color(1, 1, 1, 0.4);
+	const Color style_pressed_selected_color = Color(1, 1, 1, 0.5);
 	const Color style_pressed_color = Color(0, 0, 0, 0.6);
 	const Color style_disabled_color = Color(0.1, 0.1, 0.1, 0.3);
 	const Color style_focus_color = Color(1, 1, 1, 0.75);
@@ -885,6 +886,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("hovered_dimmed", "Tree", make_flat_stylebox(Color(1, 1, 1, 0.03)));
 	theme->set_stylebox("hovered_selected", "Tree", make_flat_stylebox(style_hover_selected_color));
 	theme->set_stylebox("hovered_selected_focus", "Tree", make_flat_stylebox(style_hover_selected_color));
+	theme->set_stylebox("pressed_selected", "Tree", make_flat_stylebox(style_pressed_selected_color));
+	theme->set_stylebox("pressed_selected_focus", "Tree", make_flat_stylebox(style_pressed_selected_color));
 	theme->set_stylebox("selected", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "Tree", focus);
@@ -922,6 +925,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_hovered_color", "Tree", control_font_hover_color);
 	theme->set_color("font_hovered_dimmed_color", "Tree", control_font_color);
 	theme->set_color("font_hovered_selected_color", "Tree", control_font_pressed_color);
+	theme->set_color("font_pressed_selected_color", "Tree", control_font_pressed_color);
 	theme->set_color("font_selected_color", "Tree", control_font_pressed_color);
 	theme->set_color("font_disabled_color", "Tree", control_font_disabled_color);
 	theme->set_color("font_outline_color", "Tree", Color(0, 0, 0));
