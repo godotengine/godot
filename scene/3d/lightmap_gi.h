@@ -266,9 +266,7 @@ private:
 		GenProbesOctree *children[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		~GenProbesOctree() {
 			for (int i = 0; i < 8; i++) {
-				if (children[i] != nullptr) {
-					memdelete(children[i]);
-				}
+				memdelete_notnull(children[i]);
 			}
 		}
 	};

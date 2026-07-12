@@ -115,7 +115,5 @@ TTS_Windows::TTS_Windows() {
 }
 
 TTS_Windows::~TTS_Windows() {
-	if (driver) {
-		memdelete(driver);
-	}
+	memdelete_notnull(driver);
 }

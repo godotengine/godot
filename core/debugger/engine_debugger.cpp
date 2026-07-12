@@ -191,9 +191,7 @@ void EngineDebugger::deinitialize() {
 }
 
 EngineDebugger::~EngineDebugger() {
-	if (script_debugger) {
-		memdelete(script_debugger);
-	}
+	memdelete_notnull(script_debugger);
 	script_debugger = nullptr;
 	singleton = nullptr;
 }

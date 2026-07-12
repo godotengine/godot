@@ -249,9 +249,7 @@ public:
 
 	virtual ~DuplicateGuineaPigData() {
 		Object *obj_ptr = obj.get_validated_object();
-		if (obj_ptr) {
-			memdelete(obj_ptr);
-		}
+		memdelete_notnull(obj_ptr);
 	}
 };
 

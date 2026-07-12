@@ -180,9 +180,7 @@ bool Object::_predelete() {
 
 	// Destruction order starts with the most derived class, and progresses towards the base Object class:
 	// Script subclasses -> GDExtension subclasses -> C++ subclasses -> Object
-	if (script_instance) {
-		memdelete(script_instance);
-	}
+	memdelete_notnull(script_instance);
 	script_instance = nullptr;
 
 	if (_extension) {
@@ -1000,9 +998,7 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 		return;
 	}
 
-	if (script_instance) {
-		memdelete(script_instance);
-	}
+	memdelete_notnull(script_instance);
 
 	script_instance = p_instance;
 }
@@ -2366,9 +2362,7 @@ Object::~Object() {
 		memfree(_instance_bindings);
 	}
 
-	if (signal_mutex) {
-		memdelete(signal_mutex);
-	}
+	memdelete_notnull(signal_mutex);
 }
 
 bool predelete_handler(Object *p_object) {

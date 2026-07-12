@@ -1122,9 +1122,7 @@ void EditorFileSystem::scan() {
 		scanning = true;
 		scan_total = 0;
 		_scan_filesystem();
-		if (filesystem) {
-			memdelete(filesystem);
-		}
+		memdelete_notnull(filesystem);
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
 		new_filesystem = nullptr;
@@ -1758,12 +1756,8 @@ void EditorFileSystem::_notification(int p_what) {
 				set_process(false);
 			}
 
-			if (filesystem) {
-				memdelete(filesystem);
-			}
-			if (new_filesystem) {
-				memdelete(new_filesystem);
-			}
+			memdelete_notnull(filesystem);
+			memdelete_notnull(new_filesystem);
 			filesystem = nullptr;
 			new_filesystem = nullptr;
 		} break;
@@ -1807,9 +1801,7 @@ void EditorFileSystem::_notification(int p_what) {
 				} else if (!scanning && thread.is_started()) {
 					set_process(false);
 
-					if (filesystem) {
-						memdelete(filesystem);
-					}
+					memdelete_notnull(filesystem);
 					filesystem = new_filesystem;
 					new_filesystem = nullptr;
 					thread.wait_to_finish();
@@ -3825,9 +3817,7 @@ EditorFileSystem::EditorFileSystem() {
 }
 
 EditorFileSystem::~EditorFileSystem() {
-	if (filesystem) {
-		memdelete(filesystem);
-	}
+	memdelete_notnull(filesystem);
 	filesystem = nullptr;
 	ResourceSaver::set_get_resource_id_for_path(nullptr);
 }

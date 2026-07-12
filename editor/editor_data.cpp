@@ -1015,9 +1015,7 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 
 void EditorData::clear_edited_scenes() {
 	for (int i = 0; i < edited_scene.size(); i++) {
-		if (edited_scene[i].root) {
-			memdelete(edited_scene[i].root);
-		}
+		memdelete_notnull(edited_scene[i].root);
 	}
 	edited_scene.clear();
 	SceneTree::get_singleton()->set_edited_scene_root(nullptr);

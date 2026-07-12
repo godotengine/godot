@@ -395,7 +395,5 @@ LocalDebugger::LocalDebugger() {
 
 LocalDebugger::~LocalDebugger() {
 	unregister_profiler("scripts");
-	if (scripts_profiler) {
-		memdelete(scripts_profiler);
-	}
+	memdelete_notnull(scripts_profiler);
 }

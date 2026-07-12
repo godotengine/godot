@@ -191,14 +191,10 @@ void OS_AppleEmbedded::initialize_modules() {
 
 void OS_AppleEmbedded::deinitialize_modules() {
 #ifdef SDL_ENABLED
-	if (joypad_sdl) {
-		memdelete(joypad_sdl);
-	}
+	memdelete_notnull(joypad_sdl);
 #endif
 
-	if (apple_embedded) {
-		memdelete(apple_embedded);
-	}
+	memdelete_notnull(apple_embedded);
 }
 
 void OS_AppleEmbedded::set_main_loop(MainLoop *p_main_loop) {

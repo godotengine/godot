@@ -7579,21 +7579,13 @@ DisplayServerX11::~DisplayServerX11() {
 	}
 
 #ifdef SPEECHD_ENABLED
-	if (tts) {
-		memdelete(tts);
-	}
+	memdelete_notnull(tts);
 #endif
 
 #ifdef DBUS_ENABLED
-	if (screensaver) {
-		memdelete(screensaver);
-	}
-	if (portal_desktop) {
-		memdelete(portal_desktop);
-	}
-	if (atspi_monitor) {
-		memdelete(atspi_monitor);
-	}
+	memdelete_notnull(screensaver);
+	memdelete_notnull(portal_desktop);
+	memdelete_notnull(atspi_monitor);
 #endif
 }
 

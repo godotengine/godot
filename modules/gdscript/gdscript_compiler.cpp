@@ -2725,15 +2725,9 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	p_script->static_variables.clear();
 
-	if (p_script->implicit_initializer) {
-		memdelete(p_script->implicit_initializer);
-	}
-	if (p_script->implicit_ready) {
-		memdelete(p_script->implicit_ready);
-	}
-	if (p_script->static_initializer) {
-		memdelete(p_script->static_initializer);
-	}
+	memdelete_notnull(p_script->implicit_initializer);
+	memdelete_notnull(p_script->implicit_ready);
+	memdelete_notnull(p_script->static_initializer);
 
 	p_script->member_functions.clear();
 	p_script->member_indices.clear();

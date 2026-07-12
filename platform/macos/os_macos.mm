@@ -239,9 +239,7 @@ void OS_MacOS::finalize() {
 	delete_main_loop();
 
 #ifdef SDL_ENABLED
-	if (joypad_sdl) {
-		memdelete(joypad_sdl);
-	}
+	memdelete_notnull(joypad_sdl);
 #endif
 }
 

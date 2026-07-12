@@ -569,9 +569,7 @@ class TextServerAdvanced : public TextServerExtension {
 					ubidi_close(bidi_iter[i]);
 				}
 			}
-			if (script_iter) {
-				memdelete(script_iter);
-			}
+			memdelete_notnull(script_iter);
 			if (hb_buffer) {
 				hb_buffer_destroy(hb_buffer);
 			}

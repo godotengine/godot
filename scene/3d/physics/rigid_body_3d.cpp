@@ -833,7 +833,5 @@ RigidBody3D::RigidBody3D() :
 }
 
 RigidBody3D::~RigidBody3D() {
-	if (contact_monitor) {
-		memdelete(contact_monitor);
-	}
+	memdelete_notnull(contact_monitor);
 }

@@ -937,36 +937,22 @@ void Main::test_cleanup() {
 	EngineDebugger::deinitialize();
 	OS::get_singleton()->finalize();
 
-	if (packed_data) {
-		memdelete(packed_data);
-	}
-	if (translation_server) {
-		memdelete(translation_server);
-	}
-	if (tsman) {
-		memdelete(tsman);
-	}
+	memdelete_notnull(packed_data);
+	memdelete_notnull(translation_server);
+	memdelete_notnull(tsman);
 #ifndef PHYSICS_3D_DISABLED
-	if (physics_server_3d_manager) {
-		memdelete(physics_server_3d_manager);
-	}
+	memdelete_notnull(physics_server_3d_manager);
 #endif // PHYSICS_3D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
-	if (physics_server_2d_manager) {
-		memdelete(physics_server_2d_manager);
-	}
+	memdelete_notnull(physics_server_2d_manager);
 #endif // PHYSICS_2D_DISABLED
-	if (globals) {
-		memdelete(globals);
-	}
+	memdelete_notnull(globals);
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 
-	if (engine) {
-		memdelete(engine);
-	}
+	memdelete_notnull(engine);
 
 	unregister_core_types();
 
@@ -2961,44 +2947,28 @@ error:
 
 	EngineDebugger::deinitialize();
 
-	if (performance) {
-		memdelete(performance);
-	}
-	if (input_map) {
-		memdelete(input_map);
-	}
-	if (translation_server) {
-		memdelete(translation_server);
-	}
-	if (globals) {
-		memdelete(globals);
-	}
-	if (packed_data) {
-		memdelete(packed_data);
-	}
+	memdelete_notnull(performance);
+	memdelete_notnull(input_map);
+	memdelete_notnull(translation_server);
+	memdelete_notnull(globals);
+	memdelete_notnull(packed_data);
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 
-	if (engine) {
-		memdelete(engine);
-	}
+	memdelete_notnull(engine);
 
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
 	OS::get_singleton()->_user_args.clear();
 
-	if (message_queue) {
-		memdelete(message_queue);
-	}
+	memdelete_notnull(message_queue);
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 #if defined(STEAMAPI_ENABLED)
-	if (steam_tracker) {
-		memdelete(steam_tracker);
-	}
+	memdelete_notnull(steam_tracker);
 #endif
 
 	OS::get_singleton()->finalize_core();
@@ -3385,29 +3355,19 @@ Error Main::setup2(bool p_show_boot_logo) {
 		if (err != OK || display_server == nullptr) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
 
-			if (display_server) {
-				memdelete(display_server);
-			}
+			memdelete_notnull(display_server);
 
 			GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 			uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 			unregister_server_types();
 
-			if (input) {
-				memdelete(input);
-			}
-			if (tsman) {
-				memdelete(tsman);
-			}
+			memdelete_notnull(input);
+			memdelete_notnull(tsman);
 #ifndef PHYSICS_3D_DISABLED
-			if (physics_server_3d_manager) {
-				memdelete(physics_server_3d_manager);
-			}
+			memdelete_notnull(physics_server_3d_manager);
 #endif // PHYSICS_3D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
-			if (physics_server_2d_manager) {
-				memdelete(physics_server_2d_manager);
-			}
+			memdelete_notnull(physics_server_2d_manager);
 #endif // PHYSICS_2D_DISABLED
 
 			return err;
@@ -4374,9 +4334,7 @@ int Main::start() {
 			Object *obj = ClassDB::instantiate(instance_type);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
-				if (obj) {
-					memdelete(obj);
-				}
+				memdelete_notnull(obj);
 				OS::get_singleton()->alert(vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 				ERR_FAIL_V_MSG(EXIT_FAILURE, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
@@ -4398,9 +4356,7 @@ int Main::start() {
 			Object *obj = ClassDB::instantiate(script_base);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
-				if (obj) {
-					memdelete(obj);
-				}
+				memdelete_notnull(obj);
 				OS::get_singleton()->alert("Error: Invalid MainLoop script base type: " + script_base);
 				ERR_FAIL_V_MSG(EXIT_FAILURE, vformat("The global class %s does not inherit from SceneTree or MainLoop.", main_loop_type));
 			}
@@ -5313,9 +5269,7 @@ void Main::cleanup(bool p_force) {
 	EngineDebugger::deinitialize();
 
 #ifndef XR_DISABLED
-	if (xr_server) {
-		memdelete(xr_server);
-	}
+	memdelete_notnull(xr_server);
 #endif // XR_DISABLED
 
 	if (audio_server) {
@@ -5323,46 +5277,26 @@ void Main::cleanup(bool p_force) {
 		memdelete(audio_server);
 	}
 
-	if (camera_server) {
-		memdelete(camera_server);
-	}
+	memdelete_notnull(camera_server);
 
 	OS::get_singleton()->finalize();
 
 	finalize_display();
 
-	if (input) {
-		memdelete(input);
-	}
+	memdelete_notnull(input);
 
-	if (packed_data) {
-		memdelete(packed_data);
-	}
-	if (performance) {
-		memdelete(performance);
-	}
-	if (input_map) {
-		memdelete(input_map);
-	}
-	if (translation_server) {
-		memdelete(translation_server);
-	}
-	if (tsman) {
-		memdelete(tsman);
-	}
+	memdelete_notnull(packed_data);
+	memdelete_notnull(performance);
+	memdelete_notnull(input_map);
+	memdelete_notnull(translation_server);
+	memdelete_notnull(tsman);
 #ifndef PHYSICS_3D_DISABLED
-	if (physics_server_3d_manager) {
-		memdelete(physics_server_3d_manager);
-	}
+	memdelete_notnull(physics_server_3d_manager);
 #endif // PHYSICS_3D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
-	if (physics_server_2d_manager) {
-		memdelete(physics_server_2d_manager);
-	}
+	memdelete_notnull(physics_server_2d_manager);
 #endif // PHYSICS_2D_DISABLED
-	if (globals) {
-		memdelete(globals);
-	}
+	memdelete_notnull(globals);
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
 		//attempt to restart with arguments
@@ -5376,18 +5310,14 @@ void Main::cleanup(bool p_force) {
 	memdelete(message_queue);
 
 #if defined(STEAMAPI_ENABLED)
-	if (steam_tracker) {
-		memdelete(steam_tracker);
-	}
+	memdelete_notnull(steam_tracker);
 #endif
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 
-	if (engine) {
-		memdelete(engine);
-	}
+	memdelete_notnull(engine);
 
 	unregister_core_types();
 

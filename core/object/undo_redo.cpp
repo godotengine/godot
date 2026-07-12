@@ -44,9 +44,7 @@ void UndoRedo::Operation::delete_reference() {
 		ref.unref();
 	} else {
 		Object *obj = ObjectDB::get_instance(object);
-		if (obj) {
-			memdelete(obj);
-		}
+		memdelete_notnull(obj);
 	}
 }
 

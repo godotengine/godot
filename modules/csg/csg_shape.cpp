@@ -487,9 +487,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	if (!dirty) {
 		return brush;
 	}
-	if (brush) {
-		memdelete(brush);
-	}
+	memdelete_notnull(brush);
 	brush = nullptr;
 	CSGBrush *n = _build_brush();
 	HashMap<int32_t, Ref<Material>> mesh_materials;
@@ -522,9 +520,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	}
 	if (!manifolds.empty()) {
 		manifold::Manifold manifold_result = manifold::Manifold::BatchBoolean(manifolds, current_op);
-		if (n) {
-			memdelete(n);
-		}
+		memdelete_notnull(n);
 		n = memnew(CSGBrush);
 		_unpack_manifold(manifold_result, mesh_materials, n);
 	}

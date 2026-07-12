@@ -8700,12 +8700,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 }
 
 AnimationTrackEditor::~AnimationTrackEditor() {
-	if (key_edit) {
-		memdelete(key_edit);
-	}
-	if (multi_key_edit) {
-		memdelete(multi_key_edit);
-	}
+	memdelete_notnull(key_edit);
+	memdelete_notnull(multi_key_edit);
 }
 
 // AnimationTrackKeyEditEditorPlugin.

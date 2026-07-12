@@ -1549,9 +1549,7 @@ RID LightStorage::reflection_atlas_create() {
 void LightStorage::reflection_atlas_free(RID p_ref_atlas) {
 	reflection_atlas_set_size(p_ref_atlas, 0, 0);
 	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
-	if (ra->cluster_builder) {
-		memdelete(ra->cluster_builder);
-	}
+	memdelete_notnull(ra->cluster_builder);
 	reflection_atlas_owner.free(p_ref_atlas);
 }
 

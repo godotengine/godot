@@ -1885,43 +1885,21 @@ void RendererSceneRenderRD::init() {
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
-	if (forward_id_storage) {
-		memdelete(forward_id_storage);
-	}
+	memdelete_notnull(forward_id_storage);
 
-	if (bokeh_dof) {
-		memdelete(bokeh_dof);
-	}
-	if (copy_effects) {
-		memdelete(copy_effects);
-	}
-	if (debug_effects) {
-		memdelete(debug_effects);
-	}
-	if (luminance) {
-		memdelete(luminance);
-	}
-	if (smaa) {
-		memdelete(smaa);
-	}
-	if (tone_mapper) {
-		memdelete(tone_mapper);
-	}
-	if (vrs) {
-		memdelete(vrs);
-	}
-	if (fsr) {
-		memdelete(fsr);
-	}
+	memdelete_notnull(bokeh_dof);
+	memdelete_notnull(copy_effects);
+	memdelete_notnull(debug_effects);
+	memdelete_notnull(luminance);
+	memdelete_notnull(smaa);
+	memdelete_notnull(tone_mapper);
+	memdelete_notnull(vrs);
+	memdelete_notnull(fsr);
 #ifdef METAL_ENABLED
-	if (mfx_spatial) {
-		memdelete(mfx_spatial);
-	}
+	memdelete_notnull(mfx_spatial);
 #endif
 
-	if (resolve_effects) {
-		memdelete(resolve_effects);
-	}
+	memdelete_notnull(resolve_effects);
 
 	if (sky.sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky.sky_scene_state.uniform_set)) {
 		RD::get_singleton()->free_rid(sky.sky_scene_state.uniform_set);

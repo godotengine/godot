@@ -254,9 +254,7 @@ bool OS_LinuxBSD::is_sandboxed() const {
 }
 
 void OS_LinuxBSD::finalize() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete_notnull(main_loop);
 	main_loop = nullptr;
 
 #ifdef ALSAMIDI_ENABLED
@@ -264,9 +262,7 @@ void OS_LinuxBSD::finalize() {
 #endif
 
 #ifdef SDL_ENABLED
-	if (joypad_sdl) {
-		memdelete(joypad_sdl);
-	}
+	memdelete_notnull(joypad_sdl);
 #endif
 }
 
@@ -275,9 +271,7 @@ MainLoop *OS_LinuxBSD::get_main_loop() const {
 }
 
 void OS_LinuxBSD::delete_main_loop() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete_notnull(main_loop);
 	main_loop = nullptr;
 }
 

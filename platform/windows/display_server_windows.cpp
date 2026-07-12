@@ -8309,9 +8309,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 	}
 
 #ifdef SDL_ENABLED
-	if (joypad_sdl) {
-		memdelete(joypad_sdl);
-	}
+	memdelete_notnull(joypad_sdl);
 #endif
 	touch_state.clear();
 
@@ -8400,9 +8398,7 @@ DisplayServerWindows::~DisplayServerWindows() {
 		gl_manager_native = nullptr;
 	}
 #endif
-	if (tts) {
-		memdelete(tts);
-	}
+	memdelete_notnull(tts);
 
 	OleUninitialize();
 }

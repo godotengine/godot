@@ -595,9 +595,7 @@ void EditorLog::deinit() {
 }
 
 EditorLog::~EditorLog() {
-	if (bbcode_parser) {
-		memdelete(bbcode_parser);
-	}
+	memdelete_notnull(bbcode_parser);
 
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
 		// MSG_TYPE_STD_RICH is connected to the std_filter button, so we do this
