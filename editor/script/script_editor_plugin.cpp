@@ -441,21 +441,6 @@ void ScriptEditor::_update_history_arrows() {
 	script_forward->set_disabled(history_pos >= history.size() - 1);
 }
 
-// For compatibility with the legacy exposed signal request_save_history.
-void ScriptEditor::_save_history(Control *p_control) {
-	Dictionary nav_state;
-	if (Object::cast_to<TextEditorBase>(p_control)) {
-		nav_state.merge(Object::cast_to<TextEditorBase>(p_control)->get_navigation_state());
-		nav_state["ensure_caret_visible"] = true;
-	} else if (Object::cast_to<EditorHelp>(p_control)) {
-		nav_state.merge(Object::cast_to<EditorHelp>(p_control)->get_state());
-	}
-	if (nav_state.is_empty() || !nav_state.has("row")) {
-		return;
-	}
-	_save_new_history(nav_state, p_control);
-}
-
 void ScriptEditor::_save_new_history(const Dictionary &p_state, Control *p_control) {
 	if (restoring_layout) {
 		return;
@@ -2422,9 +2407,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		teb->connect("request_help", callable_mp(this, &ScriptEditor::_help_search));
 		teb->connect("request_open_script_at_line", callable_mp(this, &ScriptEditor::_goto_script_line));
 		teb->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
-		teb->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history).bind(teb));
 		teb->connect("_request_save_new_history", callable_mp(this, &ScriptEditor::_save_new_history).bind(teb));
-		teb->connect("request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state).bind(teb));
+		teb->connect("_request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state).bind(teb));
 		teb->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog).bind(false));
 		teb->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog).bind(true));
 		teb->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
