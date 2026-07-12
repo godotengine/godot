@@ -80,8 +80,16 @@ void BlitMaterial::_update_shader(BlendMode p_blend) {
 }
 
 void BlitMaterial::set_blend_mode(BlendMode p_blend_mode) {
+
+	if (p_blend_mode 
+		< BLEND_MODE_MIX || p_blend_mode > BLEND_MODE_DISABLED) {
+			ERR_PRINT("Invalid blend mode.");
+			return;
+		}
+	
 	blend_mode = p_blend_mode;
 	_update_shader(blend_mode);
+
 	if (shader_set) {
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(blend_mode)]);
 	}
