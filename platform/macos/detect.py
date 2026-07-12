@@ -18,7 +18,7 @@ def get_name():
 
 
 def can_build():
-    if sys.platform == "darwin" or ("OSXCROSS_ROOT" in os.environ):
+    if sys.platform == "darwin" or "OSXCROSS_ROOT" in os.environ or "APPLE_LLVM_CROSS" in os.environ:
         return True
 
     return False
@@ -45,7 +45,7 @@ def get_opts():
 
     return [
         ("osxcross_sdk", "OSXCross SDK version", "darwin16"),
-        ("SWIFT_FRONTEND", "Path to the swift-frontend binary", ""),
+        (("SWIFT_COMPILER", "SWIFT_FRONTEND"), "Path to the swiftc binary", ""),
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ["no", "5.0", "devel"], ignorecase=2),
@@ -133,7 +133,41 @@ def configure(env: "SConsEnvironment"):
     if ccache_path != "":
         ccache_path = ccache_path + " "
 
-    if "osxcross" not in env:  # regular native build
+    if "osxcross" in env:  # osxcross toolchain (cctools-port wrappers)
+        root = os.environ.get("OSXCROSS_ROOT", "")
+        if env["arch"] == "arm64":
+            basecmd = root + "/target/bin/arm64-apple-" + env["osxcross_sdk"] + "-"
+        else:
+            basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
+
+        env["CC"] = ccache_path + basecmd + "cc"
+        env["CXX"] = ccache_path + basecmd + "c++"
+        env["AR"] = basecmd + "ar"
+        env["RANLIB"] = basecmd + "ranlib"
+        env["AS"] = basecmd + "as"
+
+    elif "APPLE_LLVM_CROSS" in os.environ:  # cross-compile from Linux with clang
+        # Opt-in path used by the godot-apple build containers (no osxcross).
+        # clang/clang++ resolve to the LLVM toolchain on PATH; the Apple target
+        # triple and SDK sysroot are passed as flags. No Darwin/SDK version is
+        # encoded here: the deployment target comes from -mmacosx-version-min
+        # (set above) and the build SDK from the MACOS_SDK_PATH option.
+        env["CC"] = ccache_path + "clang"
+        env["CXX"] = ccache_path + "clang++"
+        env["AS"] = ccache_path + "clang"
+        env["AR"] = "llvm-ar"
+        env["RANLIB"] = "llvm-ranlib"
+
+        target_triple = env["arch"] + "-apple-darwin"
+        env.Append(ASFLAGS=["-target", target_triple])
+        env.Append(CCFLAGS=["-target", target_triple])
+        env.Append(LINKFLAGS=["-target", target_triple])
+
+        detect_darwin_sdk_path("macos", env)
+        env.Append(CCFLAGS=["-isysroot", "$MACOS_SDK_PATH"])
+        env.Append(LINKFLAGS=["-isysroot", "$MACOS_SDK_PATH"])
+
+    else:  # regular native build
         if env["macports_clang"] != "no":
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
@@ -149,19 +183,6 @@ def configure(env: "SConsEnvironment"):
         detect_darwin_sdk_path("macos", env)
         env.Append(CCFLAGS=["-isysroot", "$MACOS_SDK_PATH"])
         env.Append(LINKFLAGS=["-isysroot", "$MACOS_SDK_PATH"])
-
-    else:  # osxcross build
-        root = os.environ.get("OSXCROSS_ROOT", "")
-        if env["arch"] == "arm64":
-            basecmd = root + "/target/bin/arm64-apple-" + env["osxcross_sdk"] + "-"
-        else:
-            basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
-
-        env["CC"] = ccache_path + basecmd + "cc"
-        env["CXX"] = ccache_path + basecmd + "c++"
-        env["AR"] = basecmd + "ar"
-        env["RANLIB"] = basecmd + "ranlib"
-        env["AS"] = basecmd + "as"
 
     # LTO
 
