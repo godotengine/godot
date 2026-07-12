@@ -210,7 +210,7 @@
 			The maximum zoom level allowed when [member zoom_limit_enabled] is [code]true[/code]. The X and Y components should generally always be set to the same value.
 		</member>
 		<member name="zoom_limit_min" type="Vector2" setter="set_zoom_min" getter="get_zoom_min" default="Vector2(0.1, 0.1)">
-			The minimum zoom level allowed when [member zoom_limit_enabled] is [code]true[/code]. The X and Y components should generally always be set to the same value.
+			The minimum zoom level allowed when [member zoom_limit_enabled] is [code]true[/code]. The X and Y components should generally be set to the same value.
 		</member>
 		<member name="zoom_smoothing_delta_independent" type="bool" setter="set_zoom_smoothing_delta_independent" getter="is_zoom_smoothing_delta_independent" default="false">
 			If [code]true[/code], the zoom smoothing speed is delta-independent, automatically accounting for frame rate variations. This ensures consistent smoothing behavior across different frame rates. If [code]false[/code], smoothing is frame-dependent using a fixed coefficient per frame.
