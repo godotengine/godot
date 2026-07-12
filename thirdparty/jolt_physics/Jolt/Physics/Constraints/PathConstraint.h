@@ -140,6 +140,9 @@ private:
 	// Internal helper function to calculate the values below
 	void							CalculateConstraintProperties(float inDeltaTime);
 
+	// Internal helper function to calculate the current constraint value C
+	inline float					CalculateConstraintValue() const;
+
 	// CONFIGURATION PROPERTIES FOLLOW
 
 	RefConst<PathConstraintPath>	mPath;													///< The path that attaches the two bodies
