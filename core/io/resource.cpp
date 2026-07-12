@@ -120,6 +120,7 @@ String Resource::get_path() const {
 }
 
 void Resource::set_path_cache(const String &p_path) {
+	ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
 	path_cache = p_path;
 	GDVIRTUAL_CALL(_set_path_cache, p_path);
 }
