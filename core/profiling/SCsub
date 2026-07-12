@@ -112,7 +112,7 @@ def configure_tracy_shared(env_tracy, profiler_path) -> bool:
             # Linux + GCC (default)
             pass
 
-    elif env["platform"] == "macos":
+    elif env["platform"] in ["macos", "ios", "visionos"]:
         # Set install name so the engine binary (and GDExtensions) load via @rpath.
         # platform/macos/detect.py already adds -rpath @executable_path/../Frameworks
         # and -rpath @executable_path (so bin/ next to the unbundled binary also works).
@@ -132,9 +132,15 @@ def configure_tracy_shared(env_tracy, profiler_path) -> bool:
     # libtarget fallback
     if not link_target:
         link_target = tracylib[0]
-    # Add the shared library to the main Godot build environment
-    env.Append(LIBPATH=[link_target.get_dir()])
-    env.Append(LIBS=[link_target])
+
+    # Add the shared library to the main Godot build environment for actual linking.
+    # Apple-embedded platforms (ios/visionos) produce a static libgodot via
+    # libtool -static over env["LIBS"] — a dylib cannot be merged into that archive
+    # and only produces "is a dynamic library, not added to the static library".
+    # Ship the dylib next to bin/ (and via extra_dylibs) for the consumer/Xcode project.
+    if env["platform"] not in ("ios", "visionos"):
+        env.Append(LIBPATH=[link_target.get_dir()])
+        env.Append(LIBS=[link_target])
 
     # Install(copy) shared lib files [+ pdb] to the bin dir
     env.Install("#bin/", to_install)

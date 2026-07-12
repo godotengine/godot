@@ -105,12 +105,14 @@ def configure(env: "SConsEnvironment"):
         env["APPLE_PLATFORM"] = "iossimulator"
         env.Append(ASFLAGS=["-mios-simulator-version-min=15.0"])
         env.Append(CCFLAGS=["-mios-simulator-version-min=15.0"])
+        env.Append(LINKFLAGS=["-mios-simulator-version-min=15.0"])
         env.Append(CPPDEFINES=["IOS_SIMULATOR"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         env["APPLE_PLATFORM"] = "ios"
         env.Append(ASFLAGS=["-miphoneos-version-min=15.0"])
         env.Append(CCFLAGS=["-miphoneos-version-min=15.0"])
+        env.Append(LINKFLAGS=["-miphoneos-version-min=15.0"])
     detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
@@ -129,6 +131,7 @@ def configure(env: "SConsEnvironment"):
             ).split()
         )
         env.Append(ASFLAGS=["-arch", "x86_64"])
+        env.Append(LINKFLAGS=["-arch", "x86_64", "-isysroot", "$APPLE_SDK_PATH"])
     elif env["arch"] == "arm64":
         env.Append(
             CCFLAGS=(
@@ -139,6 +142,7 @@ def configure(env: "SConsEnvironment"):
             )
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
+        env.Append(LINKFLAGS=["-arch", "arm64", "-isysroot", "$APPLE_SDK_PATH"])
 
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
