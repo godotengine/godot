@@ -358,7 +358,7 @@ bool PhysicalBone3D::SliderJointData::_set(const StringName &p_name, const Varia
 	} else if ("joint_constraints/linear_limit_damping" == p_name) {
 		linear_limit_damping = p_value;
 		if (is_valid_slider) {
-			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PS3DE::SLIDER_JOINT_LINEAR_LIMIT_DAMPING, linear_limit_restitution);
+			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PS3DE::SLIDER_JOINT_LINEAR_LIMIT_DAMPING, linear_limit_damping);
 		}
 
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
@@ -382,7 +382,7 @@ bool PhysicalBone3D::SliderJointData::_set(const StringName &p_name, const Varia
 	} else if ("joint_constraints/angular_limit_restitution" == p_name) {
 		angular_limit_restitution = p_value;
 		if (is_valid_slider) {
-			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS, angular_limit_softness);
+			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION, angular_limit_restitution);
 		}
 
 	} else if ("joint_constraints/angular_limit_damping" == p_name) {
@@ -1001,7 +1001,7 @@ void PhysicalBone3D::_reload_joint() {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PS3DE::SLIDER_JOINT_LINEAR_LIMIT_LOWER, sjd->linear_limit_lower);
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PS3DE::SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS, sjd->linear_limit_softness);
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PS3DE::SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION, sjd->linear_limit_restitution);
-			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PS3DE::SLIDER_JOINT_LINEAR_LIMIT_DAMPING, sjd->linear_limit_restitution);
+			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PS3DE::SLIDER_JOINT_LINEAR_LIMIT_DAMPING, sjd->linear_limit_damping);
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_UPPER, sjd->angular_limit_upper);
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_LOWER, sjd->angular_limit_lower);
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(joint, PS3DE::SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS, sjd->angular_limit_softness);
