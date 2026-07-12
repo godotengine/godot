@@ -1945,6 +1945,7 @@ void DisplayServerWayland::process_events() {
 
 	wayland_thread.keyboard_echo_keys();
 
+	bool popup_close_requested = false;
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
 
@@ -2019,11 +2020,18 @@ void DisplayServerWayland::process_events() {
 		Ref<WaylandThread::InputEventMessage> inputev_msg = msg;
 		if (inputev_msg.is_valid()) {
 			bool process_popups = false;
+			bool is_wheel_event = false;
 			Point2 position;
 			DisplayServerEnums::WindowID window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 			Ref<InputEventMouseButton> mb = inputev_msg->event;
 			if (mb.is_valid()) {
+				is_wheel_event = mb->get_button_index() >= MouseButton::WHEEL_UP && mb->get_button_index() <= MouseButton::WHEEL_RIGHT;
+				if (mb->is_pressed() && suppress_next_double_click && !is_wheel_event) {
+					mb->set_double_click(false);
+					suppress_next_double_click = false;
+				}
+
 				process_popups = (mb->is_pressed() && mb->get_button_mask() != last_mouse_monitor_mask);
 				position = mb->get_position();
 				window_id = mb->get_window_id();
@@ -2039,8 +2047,6 @@ void DisplayServerWayland::process_events() {
 
 				last_touch_monitor_pressed = st->is_pressed();
 			}
-
-			bool handled = false;
 
 			if (!popup_menu_list.is_empty() && process_popups) {
 				List<DisplayServerEnums::WindowID>::Element *E = popup_menu_list.back();
@@ -2062,14 +2068,21 @@ void DisplayServerWayland::process_events() {
 				}
 
 				if (C) {
-					handled = true;
+					popup_close_requested = true;
+					if (mb.is_valid()) {
+						// This press is discarded after Wayland's double-click detection.
+						suppress_next_double_click = true;
+					}
 					_send_window_event(DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST, C->get());
 				}
 			}
 
-			if (!handled) {
-				Input::get_singleton()->parse_input_event(inputev_msg->event);
+			if (popup_close_requested) {
+				// Popup visibility changes are deferred. Leave later input queued until the popup is hidden.
+				break;
 			}
+
+			Input::get_singleton()->parse_input_event(inputev_msg->event);
 
 			continue;
 		}
@@ -2147,7 +2160,7 @@ void DisplayServerWayland::process_events() {
 				}
 			}
 
-			if (emulate_vsync) {
+			if (emulate_vsync && !popup_close_requested) {
 				// Due to the way legacy suspension works, we have to treat low processor
 				// usage mode very differently than the regular one.
 				if (OS::get_singleton()->is_in_low_processor_usage_mode()) {

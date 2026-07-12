@@ -148,6 +148,7 @@ class DisplayServerWayland : public DisplayServer {
 	// track of all the generic floating window concept.
 	List<DisplayServerEnums::WindowID> popup_menu_list;
 	BitField<MouseButtonMask> last_mouse_monitor_mask = MouseButtonMask::NONE;
+	bool suppress_next_double_click = false;
 	bool last_touch_monitor_pressed = false;
 
 	String ime_text;
