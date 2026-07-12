@@ -197,7 +197,7 @@
 			The angular, asymptotic speed of the camera's rotation smoothing effect when [member rotation_smoothing_enabled] is [code]true[/code].
 		</member>
 		<member name="smoothing_delta_limit" type="float" setter="set_smoothing_delta_limit" getter="get_smoothing_delta_limit" default="0.1">
-			The maximum delta time used for smoothing calculations, in seconds. This prevents excessive smoothing when frame times are unusually large (e.g., after window focus regain). Must be greater than zero.
+			The maximum delta time used for smoothing calculations, in seconds. This prevents excessive smoothing when frame times are unusually large (e.g. after window focus is regained). Must be greater than zero.
 		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom" default="Vector2(1, 1)">
 			The camera's zoom. Higher values are more zoomed in. For example, a zoom of [code]Vector2(2.0, 2.0)[/code] will be twice as zoomed in on each axis (the view covers an area four times smaller). In contrast, a zoom of [code]Vector2(0.5, 0.5)[/code] will be twice as zoomed out on each axis (the view covers an area four times larger). The X and Y components should generally always be set to the same value, unless you wish to stretch the camera view.
