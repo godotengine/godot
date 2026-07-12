@@ -113,12 +113,21 @@ def configure_tracy_shared(env_tracy, profiler_path) -> bool:
             pass
 
     elif env["platform"] == "macos":
-        if methods.is_apple_clang(env):
-            # AppleClang
-            pass
-        elif methods.using_clang(env):
-            # Upstream Clang on macOS
-            pass
+        # Set install name so the engine binary (and GDExtensions) load via @rpath.
+        # platform/macos/detect.py already adds -rpath @executable_path/../Frameworks
+        # and -rpath @executable_path (so bin/ next to the unbundled binary also works).
+        dylib_node = tracylib[0]
+        dylib_name = pathlib.Path(str(dylib_node)).name
+        env_tracy.AddPostAction(
+            dylib_node,
+            f'install_name_tool -id "@rpath/{dylib_name}" "$TARGET"',
+        )
+
+        # Register for inclusion in the .app bundle. generate_bundle recreates the
+        # .app from a template (shutil.rmtree), so do not Install into Frameworks here.
+        if "extra_dylibs" not in env:
+            env["extra_dylibs"] = []
+        env["extra_dylibs"].extend(to_install)
 
     # libtarget fallback
     if not link_target:
