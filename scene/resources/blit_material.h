@@ -41,12 +41,13 @@ public:
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
 		BLEND_MODE_MUL,
-		BLEND_MODE_DISABLED
+		BLEND_MODE_DISABLED,
+		BLEND_MODE_MAX
 	};
 
 private:
 	static Mutex shader_mutex;
-	static RID shader_cache[5];
+	static RID shader_cache[BLEND_MODE_MAX];
 	static void _update_shader(BlendMode p_blend);
 	mutable bool shader_set = false;
 
