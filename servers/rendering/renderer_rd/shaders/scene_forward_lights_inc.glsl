@@ -100,15 +100,15 @@ hvec3 f0_Clear_Coat_To_Surface(hvec3 f0) {
 
 void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is_directional,
 #ifdef LIGHT_FALLOFF_USED
-	half light_falloff,
+		half light_falloff,
 #endif
 #ifdef LIGHT_SHADOW_USED
-	half light_shadow,
+		half light_shadow,
 #endif
 #if (!defined(LIGHT_CODE_USED) || defined(ATTENUATION_USED)) && !(defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED))
-	half attenuation,
+		half attenuation,
 #endif
-	hvec3 f0, half roughness, half metallic, half specular_amount, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
+		hvec3 f0, half roughness, half metallic, half specular_amount, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 		hvec3 backlight,
 #endif
@@ -177,11 +177,11 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	float light_shadow_highp = float(light_shadow);
 #endif
 #if !defined(LIGHT_CODE_USED) || defined(ATTENUATION_USED)
-	#if defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED)
-		float attenuation_highp = light_falloff_highp * light_shadow_highp;
-	#else
-		float attenuation_highp = float(attenuation);
-	#endif
+#if defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED)
+	float attenuation_highp = light_falloff_highp * light_shadow_highp;
+#else
+	float attenuation_highp = float(attenuation);
+#endif
 #endif
 
 	vec3 diffuse_light_highp = vec3(diffuse_light);
