@@ -98,7 +98,17 @@ hvec3 f0_Clear_Coat_To_Surface(hvec3 f0) {
 	return clamp(f0 * (f0 * (half(0.941892) - half(0.263008) * f0) + half(0.346479)) - half(0.0285998), half(0.0), half(1.0));
 }
 
-void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is_directional, half attenuation, hvec3 f0, half roughness, half metallic, half specular_amount, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
+void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is_directional,
+#ifdef LIGHT_FALLOFF_USED
+	half light_falloff,
+#endif
+#ifdef LIGHT_SHADOW_USED
+	half light_shadow,
+#endif
+#if !(defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED))
+	half attenuation,
+#endif
+	hvec3 f0, half roughness, half metallic, half specular_amount, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 		hvec3 backlight,
 #endif
@@ -159,7 +169,21 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	vec3 view_highp = vec3(V);
 	float specular_amount_highp = float(specular_amount);
 	vec3 light_color_highp = vec3(light_color);
+
+#ifdef LIGHT_FALLOFF_USED
+	float light_falloff_highp = float(light_falloff);
+#endif
+
+#ifdef LIGHT_SHADOW_USED
+	float light_shadow_highp = float(light_shadow);
+#endif
+
+#if defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED)
+	float attenuation_highp = light_falloff_highp * light_shadow_highp;
+#else
 	float attenuation_highp = float(attenuation);
+#endif
+
 	vec3 diffuse_light_highp = vec3(diffuse_light);
 	vec3 specular_light_highp = vec3(specular_light);
 	bool is_area = false;
@@ -729,7 +753,21 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	}
 
 	vec3 light_rel_vec_norm = light_rel_vec / light_length;
-	light_compute(normal, hvec3(light_rel_vec_norm), eye_vec, size, hvec3(color), false, omni_attenuation * shadow, f0, roughness, metallic, half(omni_lights.data[idx].specular_amount), albedo, alpha, screen_uv, energy_compensation,
+	light_compute(normal, hvec3(light_rel_vec_norm), eye_vec, size, hvec3(color), false,
+	
+#ifdef LIGHT_FALLOFF_USED
+	omni_attenuation,
+#endif
+
+#ifdef LIGHT_SHADOW_USED
+	shadow,
+#endif
+
+#if !(defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED))
+	omni_attenuation * shadow,
+#endif
+	
+	f0, roughness, metallic, half(omni_lights.data[idx].specular_amount), albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -931,7 +969,21 @@ void light_process_spot(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		}
 	}
 
-	light_compute(normal, hvec3(light_rel_vec_norm), eye_vec, size, hvec3(color), false, spot_attenuation * shadow, f0, roughness, metallic, half(spot_lights.data[idx].specular_amount), albedo, alpha, screen_uv, energy_compensation,
+	light_compute(normal, hvec3(light_rel_vec_norm), eye_vec, size, hvec3(color), false,
+	
+#ifdef LIGHT_FALLOFF_USED
+	spot_attenuation,
+#endif
+
+#ifdef LIGHT_SHADOW_USED
+	shadow,
+#endif
+
+#if !(defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED))
+	spot_attenuation * shadow,
+#endif
+
+	f0, roughness, metallic, half(spot_lights.data[idx].specular_amount), albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 			backlight,
 #endif
@@ -1190,7 +1242,21 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	vec3 view_highp = vec3(eye_vec);
 	float specular_amount_highp = float(area_lights.data[idx].specular_amount);
 	vec3 light_color_highp = vec3(color);
+	
+#ifdef LIGHT_FALLOFF_USED
+	float light_falloff_highp = float(light_attenuation_raw);
+#endif
+
+#ifdef LIGHT_SHADOW_USED
+	float light_shadow_highp = float(shadow);
+#endif
+
+#if defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED)
+	float attenuation_highp = light_falloff_highp * light_shadow_highp;
+#else
 	float attenuation_highp = float(light_attenuation_ltc);
+#endif
+
 	vec3 diffuse_light_highp = vec3(diffuse_light);
 	vec3 specular_light_highp = vec3(specular_light);
 	bool is_directional = false;
