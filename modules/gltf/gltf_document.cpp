@@ -5120,6 +5120,7 @@ NodePath GLTFDocument::_find_material_node_path(Ref<GLTFState> p_state, const Re
 }
 
 Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTFState> p_state, const String &p_json_pointer) {
+	ERR_FAIL_COND_V_MSG(p_state.is_null(), Ref<GLTFObjectModelProperty>(), "Cannot import object model property because GLTFState is null.");
 	if (p_state->object_model_properties.has(p_json_pointer)) {
 		return p_state->object_model_properties[p_json_pointer];
 	}
