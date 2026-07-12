@@ -946,6 +946,19 @@ bool CodeEditorBase::_edit_option(int p_option) {
 	return true;
 }
 
+void CodeEditorBase::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			for (const Ref<EditorSyntaxHighlighter> &highlighter : highlighters) {
+				if (Object::cast_to<EditorStandardSyntaxHighlighter>(highlighter.ptr())) {
+					set_syntax_highlighter(highlighter);
+					break;
+				}
+			}
+		} break;
+	}
+}
+
 CodeEditorBase::CodeEditorBase() {
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->connect("show_warnings_panel", callable_mp(this, &CodeEditorBase::_show_warnings_panel));
