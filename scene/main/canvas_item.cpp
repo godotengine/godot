@@ -1313,7 +1313,7 @@ void CanvasItem::set_instance_shader_parameter(const StringName &p_name, const V
 	if (p_value.get_type() == Variant::NIL) {
 		Variant def_value = RS::get_singleton()->canvas_item_get_instance_shader_parameter_default_value(get_canvas_item(), p_name);
 		RS::get_singleton()->canvas_item_set_instance_shader_parameter(get_canvas_item(), p_name, def_value);
-		instance_shader_parameters.erase(p_value);
+		instance_shader_parameters.erase(p_name);
 	} else {
 		instance_shader_parameters[p_name] = p_value;
 		if (p_value.get_type() == Variant::OBJECT) {
