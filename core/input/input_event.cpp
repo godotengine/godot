@@ -233,11 +233,11 @@ bool InputEventWithModifiers::is_meta_pressed() const {
 	return meta_pressed;
 }
 
-void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *event) {
-	set_alt_pressed(event->is_alt_pressed());
-	set_shift_pressed(event->is_shift_pressed());
-	set_ctrl_pressed(event->is_ctrl_pressed());
-	set_meta_pressed(event->is_meta_pressed());
+void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *p_event) {
+	set_alt_pressed(p_event->is_alt_pressed());
+	set_shift_pressed(p_event->is_shift_pressed());
+	set_ctrl_pressed(p_event->is_ctrl_pressed());
+	set_meta_pressed(p_event->is_meta_pressed());
 }
 
 BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {

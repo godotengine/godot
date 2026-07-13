@@ -175,14 +175,14 @@ public:
 	}
 
 	template <typename Comparator, bool Validate = SORT_ARRAY_VALIDATE_ENABLED, typename... Args>
-	void sort_custom(Args &&...args) {
+	void sort_custom(Args &&...p_args) {
 		Size len = _cowdata.size();
 		if (len == 0) {
 			return;
 		}
 
 		T *data = ptrw();
-		SortArray<T, Comparator, Validate> sorter{ args... };
+		SortArray<T, Comparator, Validate> sorter{ p_args... };
 		sorter.sort(data, len);
 	}
 
@@ -191,8 +191,8 @@ public:
 	}
 
 	template <typename Comparator, typename Value, typename... Args>
-	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) const {
-		return span().bisect(p_value, p_before, Comparator{ args... });
+	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...p_args) const {
+		return span().bisect(p_value, p_before, Comparator{ p_args... });
 	}
 
 	Vector<T> duplicate() const {
@@ -270,8 +270,8 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return elem_ptr != b.elem_ptr; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return elem_ptr == p_other.elem_ptr; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return elem_ptr != p_other.elem_ptr; }
 
 		Iterator(T *p_ptr) { elem_ptr = p_ptr; }
 		Iterator() {}
@@ -295,8 +295,8 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return elem_ptr != b.elem_ptr; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return elem_ptr == p_other.elem_ptr; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return elem_ptr != p_other.elem_ptr; }
 
 		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
 		ConstIterator() {}

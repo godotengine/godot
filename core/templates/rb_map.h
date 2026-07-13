@@ -122,7 +122,7 @@ public:
 			E = p_it.E;
 			return *this;
 		}
-		Iterator(Element *p_E) { E = p_E; }
+		Iterator(Element *p_element) { E = p_element; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { E = p_it.E; }
 
@@ -154,7 +154,7 @@ public:
 			E = p_it.E;
 			return *this;
 		}
-		ConstIterator(const Element *p_E) { E = p_E; }
+		ConstIterator(const Element *p_element) { E = p_element; }
 		ConstIterator() {}
 		ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
 
@@ -583,16 +583,16 @@ private:
 		ERR_FAIL_COND(_data._nil->color == RED);
 	}
 
-	void _calculate_depth(Element *p_element, int &max_d, int d) const {
+	void _calculate_depth(Element *p_element, int &p_max_d, int p_d) const {
 		if (p_element == _data._nil) {
 			return;
 		}
 
-		_calculate_depth(p_element->left, max_d, d + 1);
-		_calculate_depth(p_element->right, max_d, d + 1);
+		_calculate_depth(p_element->left, p_max_d, p_d + 1);
+		_calculate_depth(p_element->right, p_max_d, p_d + 1);
 
-		if (d > max_d) {
-			max_d = d;
+		if (p_d > p_max_d) {
+			p_max_d = p_d;
 		}
 	}
 
