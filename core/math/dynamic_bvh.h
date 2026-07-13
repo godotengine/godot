@@ -120,8 +120,14 @@ private:
 			return (Math::abs(d.x) + Math::abs(d.y) + Math::abs(d.z));
 		}
 
-		_FORCE_INLINE_ int select_by_proximity(const Volume &a, const Volume &b) const {
-			return (get_proximity_to(a) < get_proximity_to(b) ? 0 : 1);
+		_FORCE_INLINE_ int select_by_proximity(const Volume &a, const Volume &b, uint32_t &tiebreaker) const {
+			real_t prox_a = get_proximity_to(a);
+			real_t prox_b = get_proximity_to(b);
+			if (prox_a == prox_b) {
+				tiebreaker *= 1664525U;
+				return (tiebreaker % 48271U) & 1;
+			}
+			return prox_a < prox_b ? 0 : 1;
 		}
 
 		//
@@ -227,6 +233,7 @@ private:
 	int total_leaves = 0;
 	uint32_t opath = 0;
 	uint32_t index = 0;
+	uint32_t tiebreaker = 134775813U;
 
 	enum {
 		ALLOCA_STACK_SIZE = 128
