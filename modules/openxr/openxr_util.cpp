@@ -189,7 +189,7 @@ XrUuid OpenXRUtil::xruuid_from_string(const String &p_uuid) {
 //              Paul Upchurch, Mathieu Desbrun
 //              Journal of Graphics Tools, Volume 16, Issue 1, 2012
 void OpenXRUtil::XrMatrix4x4f_CreateProjection(XrMatrix4x4f *result, const float tanAngleLeft, const float tanAngleRight,
-		const float tanAngleUp, float const tanAngleDown, const float nearZ, const float farZ) {
+		const float tanAngleUp, const float tanAngleDown, const float nearZ, const float farZ) {
 	const float tanAngleWidth = tanAngleRight - tanAngleLeft;
 
 	// Set to tanAngleUp - tanAngleDown for a clip space with positive Y up.

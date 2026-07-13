@@ -1947,7 +1947,7 @@ Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_na
 
 	Vector<String> ret;
 	for (UINT32 i = 0; i < number_of_files; i++) {
-		void const *reference_key = nullptr;
+		const void *reference_key = nullptr;
 		UINT32 reference_key_size = 0;
 		ComAutoreleaseRef<IDWriteLocalFontFileLoader> loader;
 
@@ -2026,7 +2026,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 	}
 
 	for (UINT32 i = 0; i < number_of_files; i++) {
-		void const *reference_key = nullptr;
+		const void *reference_key = nullptr;
 		UINT32 reference_key_size = 0;
 		ComAutoreleaseRef<IDWriteLocalFontFileLoader> loader;
 

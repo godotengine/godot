@@ -99,7 +99,7 @@ public:
 	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
 	Ref<NavigationMesh> get_navigation_mesh() const { return navmesh; }
 
-	LocalVector<Nav3D::Polygon> const &get_polygons() const;
+	const LocalVector<Nav3D::Polygon> &get_polygons() const;
 
 	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const;
 	Nav3D::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;

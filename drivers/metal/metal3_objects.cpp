@@ -362,7 +362,7 @@ void MDCommandBuffer::clear_color_texture(RDD::TextureID p_texture, RDD::Texture
 		uint32_t layerCnt = p_subresources.layer_count;
 		uint32_t layerEnd = layerStart + layerCnt;
 
-		MetalFeatures const &features = device_driver->get_device_properties().features;
+		const MetalFeatures &features = device_driver->get_device_properties().features;
 
 		// Iterate across mipmap levels and layers, and perform and empty render to clear each.
 		for (uint32_t mipLvl = mipLvlStart; mipLvl < mipLvlEnd; mipLvl++) {
@@ -462,7 +462,7 @@ void MDCommandBuffer::clear_depth_stencil_texture(RDD::TextureID p_texture, RDD:
 		uint32_t layerCnt = p_subresources.layer_count;
 		uint32_t layerEnd = layerStart + layerCnt;
 
-		MetalFeatures const &features = device_driver->get_device_properties().features;
+		const MetalFeatures &features = device_driver->get_device_properties().features;
 
 		// Iterate across mipmap levels and layers, and perform and empty render to clear each.
 		for (uint32_t mipLvl = mipLvlStart; mipLvl < mipLvlEnd; mipLvl++) {
@@ -778,7 +778,7 @@ void MDCommandBuffer::render_clear_attachments(VectorView<RDD::AttachmentClear> 
 	uint32_t stencil_value = 0;
 
 	for (uint32_t i = 0; i < p_attachment_clears.size(); i++) {
-		RDD::AttachmentClear const &attClear = p_attachment_clears[i];
+		const RDD::AttachmentClear &attClear = p_attachment_clears[i];
 		uint32_t attachment_index;
 		if (attClear.aspect.has_flag(RDD::TEXTURE_ASPECT_COLOR_BIT)) {
 			attachment_index = attClear.color_attachment;
@@ -786,7 +786,7 @@ void MDCommandBuffer::render_clear_attachments(VectorView<RDD::AttachmentClear> 
 			attachment_index = subpass.depth_stencil_reference.attachment;
 		}
 
-		MDAttachment const &mda = render.pass->attachments[attachment_index];
+		const MDAttachment &mda = render.pass->attachments[attachment_index];
 		if (attClear.aspect.has_flag(RDD::TEXTURE_ASPECT_COLOR_BIT)) {
 			key.set_color_format(attachment_index, mda.format);
 			clear_colors[attachment_index] = {
@@ -856,7 +856,7 @@ void MDCommandBuffer::_render_set_dirty_state() {
 		}
 	}
 
-	MDSubpass const &subpass = render.get_subpass();
+	const MDSubpass &subpass = render.get_subpass();
 	if (subpass.view_count > 1) {
 		uint32_t view_range[2] = { 0, subpass.view_count };
 		render.encoder->setVertexBytes(view_range, sizeof(view_range), VIEW_MASK_BUFFER_INDEX);
@@ -908,7 +908,7 @@ void MDCommandBuffer::_render_set_dirty_state() {
 }
 
 void ResourceTracker::merge_from(const ::ResourceUsageMap &p_from) {
-	for (KeyValue<StageResourceUsage, ::ResourceVector> const &keyval : p_from) {
+	for (const KeyValue<StageResourceUsage, ::ResourceVector> &keyval : p_from) {
 		ResourceVector *resources = _current.getptr(keyval.key);
 		if (resources == nullptr) {
 			resources = &_current.insert(keyval.key, ResourceVector())->value;
@@ -961,7 +961,7 @@ void ResourceTracker::merge_from(const ::ResourceUsageMap &p_from) {
 }
 
 void ResourceTracker::encode(MTL::RenderCommandEncoder *p_enc) {
-	for (KeyValue<StageResourceUsage, ResourceVector> const &keyval : _current) {
+	for (const KeyValue<StageResourceUsage, ResourceVector> &keyval : _current) {
 		if (keyval.value.is_empty()) {
 			continue;
 		}
@@ -989,7 +989,7 @@ void ResourceTracker::encode(MTL::RenderCommandEncoder *p_enc) {
 }
 
 void ResourceTracker::encode(MTL::ComputeCommandEncoder *p_enc) {
-	for (KeyValue<StageResourceUsage, ResourceVector> const &keyval : _current) {
+	for (const KeyValue<StageResourceUsage, ResourceVector> &keyval : _current) {
 		if (keyval.value.is_empty()) {
 			continue;
 		}
@@ -1088,9 +1088,9 @@ void MDCommandBuffer::render_next_subpass() {
 		render.current_subpass++;
 	}
 
-	MDFrameBuffer const &fb = *render.frameBuffer;
-	MDRenderPass const &pass = *render.pass;
-	MDSubpass const &subpass = render.get_subpass();
+	const MDFrameBuffer &fb = *render.frameBuffer;
+	const MDRenderPass &pass = *render.pass;
+	const MDSubpass &subpass = render.get_subpass();
 
 	NS::SharedPtr<MTL::RenderPassDescriptor> desc = NS::TransferPtr(MTL::RenderPassDescriptor::alloc()->init());
 
@@ -1123,7 +1123,7 @@ void MDCommandBuffer::render_next_subpass() {
 			}
 		}
 
-		MDAttachment const &attachment = pass.attachments[idx];
+		const MDAttachment &attachment = pass.attachments[idx];
 
 		MTL::Texture *tex = fb.get_texture(idx);
 		ERR_FAIL_NULL_MSG(tex, "Frame buffer color texture is null.");
@@ -1139,7 +1139,7 @@ void MDCommandBuffer::render_next_subpass() {
 	if (subpass.depth_stencil_reference.attachment != RDD::AttachmentReference::UNUSED) {
 		attachmentCount += 1;
 		uint32_t idx = subpass.depth_stencil_reference.attachment;
-		MDAttachment const &attachment = pass.attachments[idx];
+		const MDAttachment &attachment = pass.attachments[idx];
 		MTL::Texture *tex = fb.get_texture(idx);
 		ERR_FAIL_NULL_MSG(tex, "Frame buffer depth / stencil texture is null.");
 		if (attachment.type & MDAttachmentType::Depth) {
@@ -1200,7 +1200,7 @@ void MDCommandBuffer::render_draw(uint32_t p_vertex_count,
 
 	_render_set_dirty_state();
 
-	MDSubpass const &subpass = render.get_subpass();
+	const MDSubpass &subpass = render.get_subpass();
 	if (subpass.view_count > 1) {
 		p_instance_count *= subpass.view_count;
 	}
@@ -1276,7 +1276,7 @@ void MDCommandBuffer::render_draw_indexed(uint32_t p_index_count,
 
 	_render_set_dirty_state();
 
-	MDSubpass const &subpass = render.get_subpass();
+	const MDSubpass &subpass = render.get_subpass();
 	if (subpass.view_count > 1) {
 		p_instance_count *= subpass.view_count;
 	}
@@ -1642,7 +1642,7 @@ void MDCommandBuffer::_bind_uniforms_argument_buffers(MDUniformSet *p_set, MDSha
 		uint32_t dynamic_index = 0;
 
 		for (uint32_t i : shader_set.dynamic_uniforms) {
-			RDD::BoundUniform const &uniform = p_set->uniforms[i];
+			const RDD::BoundUniform &uniform = p_set->uniforms[i];
 			const UniformInfo &ui = shader_set.uniforms[i];
 			const UniformInfo::Indexes &idx = ui.arg_buffer;
 
@@ -1666,12 +1666,12 @@ void MDCommandBuffer::_bind_uniforms_argument_buffers(MDUniformSet *p_set, MDSha
 void MDCommandBuffer::_bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_shader, DirectEncoder p_enc, uint32_t p_set_index, uint32_t p_dynamic_offsets) {
 	DEV_ASSERT(!p_shader->uses_argument_buffers);
 
-	UniformSet const &set = p_shader->sets[p_set_index];
+	const UniformSet &set = p_shader->sets[p_set_index];
 	DynamicOffsetLayout layout = p_shader->dynamic_offset_layout;
 	uint32_t dynamic_index = 0;
 
 	for (uint32_t i = 0; i < MIN(p_set->uniforms.size(), set.uniforms.size()); i++) {
-		RDD::BoundUniform const &uniform = p_set->uniforms[i];
+		const RDD::BoundUniform &uniform = p_set->uniforms[i];
 		const UniformInfo &ui = set.uniforms[i];
 		const UniformInfo::Indexes &indexes = ui.slot;
 
@@ -1798,7 +1798,7 @@ void MDCommandBuffer::_bind_uniforms_argument_buffers_compute(MDUniformSet *p_se
 		uint32_t dynamic_index = 0;
 
 		for (uint32_t i : shader_set.dynamic_uniforms) {
-			RDD::BoundUniform const &uniform = p_set->uniforms[i];
+			const RDD::BoundUniform &uniform = p_set->uniforms[i];
 			const UniformInfo &ui = shader_set.uniforms[i];
 			const UniformInfo::Indexes &idx = ui.arg_buffer;
 

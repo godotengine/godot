@@ -3653,7 +3653,7 @@ static String _replace_common(const String &p_this, const String &p_key, const S
 	return new_string;
 }
 
-static String _replace_common(const String &p_this, char const *p_key, char const *p_with, bool p_case_insensitive) {
+static String _replace_common(const String &p_this, const char *p_key, const char *p_with, bool p_case_insensitive) {
 	size_t key_length = strlen(p_key);
 
 	if (key_length == 0 || p_this.is_empty()) {

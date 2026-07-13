@@ -665,7 +665,7 @@ private:
 		SamplerDescriptorHeapAllocation *sampler_descriptor_heap_alloc = nullptr;
 
 		struct DynamicBuffer {
-			BufferDynamicInfo const *info = nullptr;
+			const BufferDynamicInfo *info = nullptr;
 			uint32_t binding = UINT_MAX;
 		};
 

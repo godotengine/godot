@@ -546,7 +546,7 @@ private:
 		VkDescriptorPool vk_descriptor_pool = VK_NULL_HANDLE;
 		VkDescriptorPool vk_linear_descriptor_pool = VK_NULL_HANDLE;
 		DescriptorSetPools::Iterator pool_sets_it;
-		TightLocalVector<BufferInfo const *, uint32_t> dynamic_buffers;
+		TightLocalVector<const BufferInfo *, uint32_t> dynamic_buffers;
 	};
 
 	bool adreno_5xx_empty_descriptor_set_layout_workaround = false;

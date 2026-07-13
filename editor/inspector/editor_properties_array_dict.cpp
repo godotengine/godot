@@ -633,7 +633,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 		for (const String &file : files) {
 			int idx_in_dir;
-			EditorFileSystemDirectory const *dir = EditorFileSystem::get_singleton()->find_file(file, &idx_in_dir);
+			const EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(file, &idx_in_dir);
 			if (!dir) {
 				return false;
 			}
