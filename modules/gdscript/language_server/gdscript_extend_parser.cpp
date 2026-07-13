@@ -62,8 +62,6 @@ GodotRange GodotRange::from_lsp(const LSP::Range &p_range) {
 void ExtendGDScriptParser::update_diagnostics() {
 	diagnostics.clear();
 
-	lsp_code_actions.clear();
-
 	const List<ParserError> &parser_errors = get_errors();
 	for (const ParserError &error : parser_errors) {
 		LSP::Diagnostic diagnostic;
@@ -77,30 +75,6 @@ void ExtendGDScriptParser::update_diagnostics() {
 
 		diagnostic.range = godot_range.to_lsp();
 		diagnostics.push_back(diagnostic);
-
-		for (const ScriptLanguage::CodeActionOperation &op : error.code_actions.actions) {
-			LSP::WorkspaceEdit workspace_edit;
-			for (const ScriptLanguage::DocumentEditOperation &doc_edit : op.document_edits) {
-				for (const ScriptLanguage::TextEdit &edit : doc_edit.edits) {
-					LSP::TextEdit text_edit;
-
-					GodotRange edit_range(
-							GodotPosition(edit.start_line, edit.start_column),
-							GodotPosition(edit.end_line, edit.end_column));
-
-					text_edit.range = edit_range.to_lsp();
-
-					text_edit.newText = edit.new_text;
-					workspace_edit.add_edit(GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(doc_edit.file_path), text_edit);
-				}
-			}
-
-			LSP::CodeAction lsp_action;
-			lsp_action.diagnostics.append(diagnostic);
-			lsp_action.edit = workspace_edit;
-			lsp_action.title = op.description;
-			lsp_code_actions.push_back(lsp_action);
-		}
 	}
 
 	const List<GDScriptWarning> &parser_warnings = get_warnings();
@@ -116,30 +90,6 @@ void ExtendGDScriptParser::update_diagnostics() {
 
 		diagnostic.range = godot_range.to_lsp();
 		diagnostics.push_back(diagnostic);
-
-		for (const ScriptLanguage::CodeActionOperation &op : warning.code_actions.actions) {
-			LSP::WorkspaceEdit workspace_edit;
-			for (const ScriptLanguage::DocumentEditOperation &doc_edit : op.document_edits) {
-				for (const ScriptLanguage::TextEdit &edit : doc_edit.edits) {
-					LSP::TextEdit text_edit;
-
-					GodotRange edit_range(
-							GodotPosition(edit.start_line, edit.start_column),
-							GodotPosition(edit.end_line, edit.end_column));
-
-					text_edit.range = edit_range.to_lsp();
-
-					text_edit.newText = edit.new_text;
-					workspace_edit.add_edit(GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(doc_edit.file_path), text_edit);
-				}
-			}
-
-			LSP::CodeAction lsp_action;
-			lsp_action.diagnostics.append(diagnostic);
-			lsp_action.edit = workspace_edit;
-			lsp_action.title = op.description;
-			lsp_code_actions.push_back(lsp_action);
-		}
 	}
 }
 

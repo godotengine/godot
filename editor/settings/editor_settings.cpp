@@ -59,7 +59,6 @@
 #include "scene/gui/file_dialog.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h" // IWYU pragma: keep.
 #include "scene/resources/animation.h"
 #include "servers/display/display_server.h"
 
@@ -859,9 +858,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Behavior: Documentation
 	_initial_set("text_editor/behavior/documentation/enable_tooltips", true, true);
-
-	// Behavior: Code Actions
-	_initial_set("text_editor/behavior/code_actions/show_code_actions_button", true, true);
 
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true, true);

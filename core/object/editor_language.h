@@ -112,8 +112,6 @@ public:
 	 */
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
 
-	virtual Error get_code_actions(const String &p_code, const String &p_path, Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> *r_actions) { return ERR_UNAVAILABLE; }
-
 	virtual ~EditorLanguage() = default;
 };
 
