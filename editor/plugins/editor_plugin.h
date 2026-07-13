@@ -146,8 +146,8 @@ protected:
 	GDVIRTUAL0(_disable_plugin)
 
 #ifndef DISABLE_DEPRECATED
-	Button *_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title);
-	void _add_control_to_dock_compat_88081(DockSlot p_slot, Control *p_control);
+	Button *_add_control_to_bottom_panel_bind_compat_88081(Control *p_control, const String &p_title);
+	void _add_control_to_dock_bind_compat_88081(DockSlot p_slot, Control *p_control);
 	static void _bind_compatibility_methods();
 
 	void add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut = nullptr);
