@@ -42,8 +42,6 @@ public:
 
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) override;
 
-	virtual Error get_code_actions(const String &p_code, const String &p_path, Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> *r_actions) override;
-
 	GDScriptEditorLanguage() {
 		ERR_FAIL_COND(singleton != nullptr);
 		singleton = this;
