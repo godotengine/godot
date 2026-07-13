@@ -148,7 +148,7 @@ void EditorDock::_bind_methods() {
 	GDVIRTUAL_BIND(_load_layout_from_config, "config", "section");
 
 #ifndef DISABLE_DEPRECATED
-	GDVIRTUAL_BIND_COMPAT(_update_layout_, "layout");
+	GDVIRTUAL_BIND_COMPAT(_update_layout_bind_compat_117080, "layout");
 #endif
 }
 
