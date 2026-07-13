@@ -219,10 +219,10 @@ Ref<StyleBox> Button::_get_current_stylebox_focus() const {
 		} break;
 
 		case DRAW_HOVER_PRESSED: {
-			if (rtl && has_theme_stylebox(SNAME("focus_pressed_mirrored"))) {
-				stylebox = theme_cache.focus_pressed_mirrored;
+			if (rtl && has_theme_stylebox(SNAME("focus_hover_pressed_mirrored"))) {
+				stylebox = theme_cache.focus_hover_pressed_mirrored;
 			} else {
-				stylebox = theme_cache.focus_pressed;
+				stylebox = theme_cache.focus_hover_pressed;
 			}
 			break;
 		}
@@ -966,6 +966,8 @@ void Button::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_hover_mirrored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_pressed);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_pressed_mirrored);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_hover_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_hover_pressed_mirrored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_disabled);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_disabled_mirrored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus_disabled_pressed);

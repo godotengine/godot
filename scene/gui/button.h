@@ -75,6 +75,8 @@ private:
 		Ref<StyleBox> focus_hover_mirrored;
 		Ref<StyleBox> focus_pressed;
 		Ref<StyleBox> focus_pressed_mirrored;
+		Ref<StyleBox> focus_hover_pressed;
+		Ref<StyleBox> focus_hover_pressed_mirrored;
 		Ref<StyleBox> focus_disabled;
 		Ref<StyleBox> focus_disabled_mirrored;
 		Ref<StyleBox> focus_disabled_pressed;
