@@ -454,24 +454,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 #ifdef DEBUG_ENABLED
 			if (!parser->_is_tool && ext_parser->get_parser()->_is_tool) {
-				ScriptLanguage::CodeActionOperation add_tool_action;
-				ScriptLanguage::TextEdit add_tool_op;
-				add_tool_op.start_line = 1;
-				add_tool_op.start_column = 1;
-				add_tool_op.end_line = 1;
-				add_tool_op.end_column = 1;
-				add_tool_op.new_text = "@tool\n";
-				add_tool_action.description = "Add \"@tool\"";
-
-				ScriptLanguage::DocumentEditOperation de;
-				de.edits.append(add_tool_op);
-				de.file_path = parser->script_path;
-				add_tool_action.document_edits.append(de);
-
-				Vector<ScriptLanguage::CodeActionOperation> actions;
-				actions.append(add_tool_action);
-
-				parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL, actions);
+				parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 			}
 #endif // DEBUG_ENABLED
 
@@ -505,23 +488,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 #ifdef DEBUG_ENABLED
 					if (!parser->_is_tool && base_parser->get_parser()->_is_tool) {
-						ScriptLanguage::CodeActionOperation add_tool_action;
-						ScriptLanguage::TextEdit add_tool_op;
-						add_tool_op.start_line = 1;
-						add_tool_op.start_column = 1;
-						add_tool_op.end_line = 1;
-						add_tool_op.end_column = 1;
-						add_tool_op.new_text = "@tool\n";
-						add_tool_action.description = "Add \"@tool\"";
-
-						ScriptLanguage::DocumentEditOperation add_tool_doc_edit;
-						add_tool_doc_edit.edits.append(add_tool_op);
-						add_tool_doc_edit.file_path = parser->script_path;
-						add_tool_action.document_edits.append(add_tool_doc_edit);
-
-						Vector<ScriptLanguage::CodeActionOperation> actions;
-						actions.append(add_tool_action);
-						parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL, actions);
+						parser->push_warning(p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column, GDScriptWarning::MISSING_TOOL);
 					}
 #endif // DEBUG_ENABLED
 
@@ -1135,29 +1102,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 								GDScriptParser::GetNodeNode *get_node_node = static_cast<GDScriptParser::GetNodeNode *>(expr);
 								offending_syntax = get_node_node->use_dollar ? "$" : "%";
 							}
-
-							Vector<String> symbols;
-							symbols.append(offending_syntax);
-
-							// Append @onready annotation
-							ScriptLanguage::CodeActionOperation append_action;
-							ScriptLanguage::TextEdit append_op;
-							append_op.start_line = p_source->start_line;
-							append_op.start_column = p_source->start_column;
-							append_op.end_line = p_source->start_line;
-							append_op.end_column = p_source->start_column;
-							append_op.new_text = "@onready ";
-							append_action.description = "Add \"@onready\"";
-
-							ScriptLanguage::DocumentEditOperation de;
-							de.edits.append(append_op);
-							de.file_path = parser->script_path;
-							append_action.document_edits.append(de);
-
-							Vector<ScriptLanguage::CodeActionOperation> actions;
-							actions.append(append_action);
-
-							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, symbols, actions);
+							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, offending_syntax);
 						}
 					}
 				}
@@ -1189,7 +1134,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					param->type_constraint = param_type;
 #ifdef DEBUG_ENABLED
 					if (param->datatype_specifier == nullptr) {
-						parser->push_warning(param, GDScriptWarning::UNTYPED_DECLARATION, {}, "Parameter", param->identifier->name);
+						parser->push_warning(param, GDScriptWarning::UNTYPED_DECLARATION, "Parameter", param->identifier->name);
 					}
 #endif // DEBUG_ENABLED
 					mi.arguments.push_back(param_type.to_property_info(param->identifier->name));
@@ -1499,46 +1444,8 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
 #ifdef DEBUG_ENABLED
-			// In this case, we check if the name DOES start with an underscore.
-			// If it doesn't, then it's intended to be public, and may not be used
-			// inside the class but somewhere outside it.
-			// If it DOES start with an underscore, then it's intended to be private,
-			// so it shouldn't be accessed outside the class, and if it's not accessed
-			// inside, then it's entirely unused.
 			if (member.variable->usages == 0 && String(member.variable->identifier->name).begins_with("_")) {
-				ScriptLanguage::CodeActionOperation append_action;
-				ScriptLanguage::TextEdit append_op;
-				append_op.start_line = member.variable->identifier->start_line;
-				append_op.start_column = member.variable->identifier->start_column;
-				append_op.end_line = member.variable->identifier->start_line;
-				append_op.end_column = member.variable->identifier->start_column + 1;
-				append_op.new_text = "";
-				append_action.description = "Remove underscore from class variable name";
-
-				ScriptLanguage::DocumentEditOperation append_op_de;
-				append_op_de.edits.append(append_op);
-				append_op_de.file_path = parser->script_path;
-				append_action.document_edits.append(append_op_de);
-
-				ScriptLanguage::CodeActionOperation del_action;
-				ScriptLanguage::TextEdit del_op;
-				del_op.start_line = member.variable->start_line;
-				del_op.start_column = 1;
-				del_op.end_line = member.variable->end_line + 1;
-				del_op.end_column = 1;
-				del_op.new_text = "";
-				del_action.description = "Remove class variable declaration";
-
-				ScriptLanguage::DocumentEditOperation del_op_de;
-				del_op_de.edits.append(del_op);
-				del_op_de.file_path = parser->script_path;
-				del_action.document_edits.append(del_op_de);
-
-				Vector<ScriptLanguage::CodeActionOperation> actions;
-				actions.append(append_action);
-				actions.append(del_action);
-
-				parser->push_warning(member.variable->identifier, GDScriptWarning::UNUSED_PRIVATE_CLASS_VARIABLE, actions, member.variable->identifier->name);
+				parser->push_warning(member.variable->identifier, GDScriptWarning::UNUSED_PRIVATE_CLASS_VARIABLE, member.variable->identifier->name);
 			}
 #endif // DEBUG_ENABLED
 
@@ -1613,7 +1520,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		} else if (member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
 #ifdef DEBUG_ENABLED
 			if (member.signal->usages == 0) {
-				parser->push_warning(member.signal->identifier, GDScriptWarning::UNUSED_SIGNAL, {}, member.signal->identifier->name);
+				parser->push_warning(member.signal->identifier, GDScriptWarning::UNUSED_SIGNAL, member.signal->identifier->name);
 			}
 #endif // DEBUG_ENABLED
 		}
@@ -1877,25 +1784,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		method_info.arguments.push_back(p_function->parameters[i]->type_constraint.to_property_info(p_function->parameters[i]->identifier->name));
 #ifdef DEBUG_ENABLED
 		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_") && !p_function->is_abstract) {
-			GDScriptParser::IdentifierNode *identifier = p_function->parameters[i]->identifier;
-			ScriptLanguage::CodeActionOperation append_action;
-			ScriptLanguage::TextEdit append_op;
-			append_op.start_line = identifier->start_line;
-			append_op.start_column = identifier->start_column;
-			append_op.end_line = identifier->start_line;
-			append_op.end_column = identifier->start_column;
-			append_op.new_text = "_";
-			append_action.description = "Add underscore to parameter name";
-
-			ScriptLanguage::DocumentEditOperation append_op_de;
-			append_op_de.edits.append(append_op);
-			append_op_de.file_path = parser->script_path;
-			append_action.document_edits.append(append_op_de);
-
-			Vector<ScriptLanguage::CodeActionOperation> actions;
-			actions.append(append_action);
-
-			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, actions, function_visible_name, p_function->parameters[i]->identifier->name);
+			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter", true);
 #endif // DEBUG_ENABLED
@@ -1929,48 +1818,12 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			inferred_type.builtin_type = Variant::ARRAY;
 			p_function->rest_parameter->type_constraint = inferred_type;
 #ifdef DEBUG_ENABLED
-			GDScriptParser::ParameterNode *identifier = p_function->rest_parameter;
-			ScriptLanguage::CodeActionOperation append_action;
-			ScriptLanguage::TextEdit append_op;
-			append_op.start_line = identifier->end_line;
-			append_op.start_column = identifier->end_column;
-			append_op.end_line = identifier->end_line;
-			append_op.end_column = identifier->end_column;
-			append_op.new_text = vformat(": %s", p_function->rest_parameter->type_constraint.to_string());
-			append_action.description = vformat("Add type specifier \"%s\"", p_function->rest_parameter->type_constraint.to_string());
-
-			ScriptLanguage::DocumentEditOperation append_op_de;
-			append_op_de.edits.append(append_op);
-			append_op_de.file_path = parser->script_path;
-			append_action.document_edits.append(append_op_de);
-
-			Vector<ScriptLanguage::CodeActionOperation> actions;
-			actions.append(append_action);
-
-			parser->push_warning(p_function->rest_parameter, GDScriptWarning::UNTYPED_DECLARATION, actions, "Parameter", p_function->rest_parameter->identifier->name);
+			parser->push_warning(p_function->rest_parameter, GDScriptWarning::UNTYPED_DECLARATION, "Parameter", p_function->rest_parameter->identifier->name);
 #endif
 		}
 #ifdef DEBUG_ENABLED
 		if (p_function->rest_parameter->usages == 0 && !String(p_function->rest_parameter->identifier->name).begins_with("_") && !p_function->is_abstract) {
-			GDScriptParser::IdentifierNode *identifier = p_function->rest_parameter->identifier;
-			ScriptLanguage::CodeActionOperation append_action;
-			ScriptLanguage::TextEdit append_op;
-			append_op.start_line = identifier->start_line;
-			append_op.start_column = identifier->start_column;
-			append_op.end_line = identifier->start_line;
-			append_op.end_column = identifier->start_column;
-			append_op.new_text = "_";
-			append_action.description = "Add underscore to parameter name";
-
-			ScriptLanguage::DocumentEditOperation append_op_de;
-			append_op_de.edits.append(append_op);
-			append_op_de.file_path = parser->script_path;
-			append_action.document_edits.append(append_op_de);
-
-			Vector<ScriptLanguage::CodeActionOperation> actions;
-			actions.append(append_action);
-
-			parser->push_warning(p_function->rest_parameter->identifier, GDScriptWarning::UNUSED_PARAMETER, actions, function_visible_name, p_function->rest_parameter->identifier->name);
+			parser->push_warning(p_function->rest_parameter->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->rest_parameter->identifier->name);
 		}
 		is_shadowing(p_function->rest_parameter->identifier, "function parameter", true);
 #endif // DEBUG_ENABLED
@@ -2123,7 +1976,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			}
 #ifdef DEBUG_ENABLED
 			if (native_base != StringName()) {
-				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, {}, function_name, native_base);
+				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, native_base);
 			}
 #endif // DEBUG_ENABLED
 		}
@@ -2132,7 +1985,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 #ifdef DEBUG_ENABLED
 	if (p_function->return_type == nullptr) {
-		parser->push_warning(p_function->start_line, p_function->start_column, p_function->header_end_line, p_function->header_end_column, GDScriptWarning::UNTYPED_DECLARATION, {}, "Function", function_visible_name);
+		parser->push_warning(p_function->start_line, p_function->start_column, p_function->header_end_line, p_function->header_end_column, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
 	}
 #endif // DEBUG_ENABLED
 
@@ -2276,7 +2129,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 	if (p_assignable->identifier != nullptr && p_assignable->identifier->suite != nullptr && p_assignable->identifier->suite->parent_block != nullptr) {
 		if (p_assignable->identifier->suite->parent_block->has_local(p_assignable->identifier->name)) {
 			const GDScriptParser::SuiteNode::Local &local = p_assignable->identifier->suite->parent_block->get_local(p_assignable->identifier->name);
-			parser->push_warning(p_assignable->identifier, GDScriptWarning::CONFUSABLE_LOCAL_DECLARATION, {}, local.get_name(), p_assignable->identifier->name);
+			parser->push_warning(p_assignable->identifier, GDScriptWarning::CONFUSABLE_LOCAL_DECLARATION, local.get_name(), p_assignable->identifier->name);
 		}
 	}
 #endif // DEBUG_ENABLED
@@ -2327,7 +2180,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			}
 #ifdef DEBUG_ENABLED
 			if (initializer_type.is_hard_type() && initializer_type.is_variant()) {
-				parser->push_warning(p_assignable, GDScriptWarning::INFERENCE_ON_VARIANT, {}, p_kind);
+				parser->push_warning(p_assignable, GDScriptWarning::INFERENCE_ON_VARIANT, p_kind);
 			}
 #endif // DEBUG_ENABLED
 		} else {
@@ -2376,68 +2229,15 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 	const bool is_parameter = p_assignable->type == GDScriptParser::Node::PARAMETER;
 	if (!has_specified_type) {
 		const String declaration_type = is_constant ? "Constant" : (is_parameter ? "Parameter" : "Variable");
-		Vector<ScriptLanguage::CodeActionOperation> actions;
 		if (p_assignable->infer_datatype || is_constant) {
 			// Do not produce the `INFERRED_DECLARATION` warning on type import because there is no way to specify the true type.
 			// And removing the metatype makes it impossible to use the constant as a type hint (especially for enums).
 			const bool is_type_import = is_constant && p_assignable->initializer != nullptr && p_assignable->initializer->type_constraint.is_meta_type;
 			if (!is_type_import) {
-				GDScriptParser::IdentifierNode *identifier = p_assignable->identifier;
-				if (p_assignable->initializer) {
-					ScriptLanguage::CodeActionOperation append_action;
-
-					// Add type specifier
-					ScriptLanguage::TextEdit append_op;
-					append_op.start_line = identifier->end_line;
-					append_op.start_column = identifier->end_column;
-					append_op.end_line = identifier->end_line;
-					append_op.end_column = identifier->end_column;
-					append_op.new_text = vformat(": %s", p_assignable->initializer->type_constraint.to_string());
-
-					// Replace := with =
-					ScriptLanguage::TextEdit replace_infer_op;
-					replace_infer_op.start_line = identifier->end_line;
-					replace_infer_op.start_column = identifier->end_column;
-					replace_infer_op.end_line = p_assignable->initializer->start_line;
-					replace_infer_op.end_column = p_assignable->initializer->start_column;
-					replace_infer_op.new_text = " = ";
-
-					ScriptLanguage::DocumentEditOperation append_op_de;
-					append_op_de.edits.append(replace_infer_op);
-					append_op_de.edits.append(append_op);
-					append_op_de.file_path = parser->script_path;
-
-					append_action.document_edits.append(append_op_de);
-					append_action.description = vformat("Add type specifier \"%s\"", p_assignable->initializer->type_constraint.to_string());
-
-					actions.append(append_action);
-				}
-
-				parser->push_warning(p_assignable, GDScriptWarning::INFERRED_DECLARATION, actions, declaration_type, p_assignable->identifier->name);
+				parser->push_warning(p_assignable, GDScriptWarning::INFERRED_DECLARATION, declaration_type, p_assignable->identifier->name);
 			}
 		} else {
-			if (p_assignable->identifier && p_assignable->initializer) {
-				GDScriptParser::IdentifierNode *identifier = p_assignable->identifier;
-				ScriptLanguage::CodeActionOperation append_action;
-
-				// Add type specifier
-				ScriptLanguage::TextEdit append_op;
-				append_op.start_line = identifier->end_line;
-				append_op.start_column = identifier->end_column;
-				append_op.end_line = identifier->end_line;
-				append_op.end_column = identifier->end_column;
-				append_op.new_text = vformat(": %s", p_assignable->initializer->type_constraint.to_string());
-
-				ScriptLanguage::DocumentEditOperation append_op_de;
-				append_op_de.edits.append(append_op);
-				append_op_de.file_path = parser->script_path;
-
-				append_action.document_edits.append(append_op_de);
-				append_action.description = vformat("Add type specifier \"%s\"", p_assignable->initializer->type_constraint.to_string());
-
-				actions.append(append_action);
-			}
-			parser->push_warning(p_assignable, GDScriptWarning::UNTYPED_DECLARATION, actions, declaration_type, p_assignable->identifier->name);
+			parser->push_warning(p_assignable, GDScriptWarning::UNTYPED_DECLARATION, declaration_type, p_assignable->identifier->name);
 		}
 	} else if (!is_parameter && specified_type.kind == GDScriptParser::DataType::ENUM && p_assignable->initializer == nullptr) {
 		// Warn about enum variables without default value. Unless the enum defines the "0" value, then it's fine.
@@ -2449,7 +2249,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			}
 		}
 		if (!has_zero_value) {
-			parser->push_warning(p_assignable, GDScriptWarning::ENUM_VARIABLE_WITHOUT_DEFAULT, {}, p_assignable->identifier->name);
+			parser->push_warning(p_assignable, GDScriptWarning::ENUM_VARIABLE_WITHOUT_DEFAULT, p_assignable->identifier->name);
 		}
 	}
 #endif // DEBUG_ENABLED
@@ -2466,39 +2266,7 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 #ifdef DEBUG_ENABLED
 	if (p_is_local) {
 		if (p_variable->usages == 0 && !String(p_variable->identifier->name).begins_with("_")) {
-			ScriptLanguage::CodeActionOperation append_action;
-			ScriptLanguage::TextEdit append_op;
-			append_op.start_line = p_variable->identifier->start_line;
-			append_op.start_column = p_variable->identifier->start_column;
-			append_op.end_line = p_variable->identifier->start_line;
-			append_op.end_column = p_variable->identifier->start_column;
-			append_op.new_text = "_";
-			append_action.description = "Add underscore to variable name";
-
-			ScriptLanguage::DocumentEditOperation append_op_de;
-			append_op_de.edits.append(append_op);
-			append_op_de.file_path = parser->script_path;
-			append_action.document_edits.append(append_op_de);
-
-			ScriptLanguage::CodeActionOperation del_action;
-			ScriptLanguage::TextEdit del_op;
-			del_op.start_line = p_variable->start_line;
-			del_op.start_column = 1;
-			del_op.end_line = p_variable->end_line + 1;
-			del_op.end_column = 1;
-			del_op.new_text = "";
-			del_action.description = "Remove variable declaration";
-
-			ScriptLanguage::DocumentEditOperation del_op_de;
-			del_op_de.edits.append(del_op);
-			del_op_de.file_path = parser->script_path;
-			del_action.document_edits.append(del_op_de);
-
-			Vector<ScriptLanguage::CodeActionOperation> actions;
-			actions.append(append_action);
-			actions.append(del_action);
-
-			parser->push_warning(p_variable, GDScriptWarning::UNUSED_VARIABLE, actions, p_variable->identifier->name);
+			parser->push_warning(p_variable, GDScriptWarning::UNUSED_VARIABLE, p_variable->identifier->name);
 		}
 	}
 	is_shadowing(p_variable->identifier, kind, p_is_local);
@@ -2512,39 +2280,7 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 #ifdef DEBUG_ENABLED
 	if (p_is_local) {
 		if (p_constant->usages == 0 && !String(p_constant->identifier->name).begins_with("_")) {
-			ScriptLanguage::CodeActionOperation append_action;
-			ScriptLanguage::TextEdit append_op;
-			append_op.start_line = p_constant->identifier->start_line;
-			append_op.start_column = p_constant->identifier->start_column;
-			append_op.end_line = p_constant->identifier->start_line;
-			append_op.end_column = p_constant->identifier->start_column;
-			append_op.new_text = "_";
-			append_action.description = "Add underscore to constant name";
-
-			ScriptLanguage::DocumentEditOperation append_op_de;
-			append_op_de.edits.append(append_op);
-			append_op_de.file_path = parser->script_path;
-			append_action.document_edits.append(append_op_de);
-
-			ScriptLanguage::CodeActionOperation del_action;
-			ScriptLanguage::TextEdit del_op;
-			del_op.start_line = p_constant->start_line;
-			del_op.start_column = 1;
-			del_op.end_line = p_constant->end_line + 1;
-			del_op.end_column = 1;
-			del_op.new_text = "";
-			del_action.description = "Remove constant declaration";
-
-			ScriptLanguage::DocumentEditOperation del_op_de;
-			del_op_de.edits.append(del_op);
-			del_op_de.file_path = parser->script_path;
-			del_action.document_edits.append(del_op_de);
-
-			Vector<ScriptLanguage::CodeActionOperation> actions;
-			actions.append(append_action);
-			actions.append(del_action);
-
-			parser->push_warning(p_constant, GDScriptWarning::UNUSED_LOCAL_CONSTANT, actions, p_constant->identifier->name);
+			parser->push_warning(p_constant, GDScriptWarning::UNUSED_LOCAL_CONSTANT, p_constant->identifier->name);
 		}
 	}
 	is_shadowing(p_constant->identifier, kind, p_is_local);
@@ -2670,27 +2406,9 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			p_for->variable->type_constraint = variable_type;
 #ifdef DEBUG_ENABLED
 			if (variable_type.is_hard_type()) {
-				GDScriptParser::IdentifierNode *identifier = p_for->variable;
-				ScriptLanguage::CodeActionOperation append_action;
-				ScriptLanguage::TextEdit append_op;
-				append_op.start_line = identifier->end_line;
-				append_op.start_column = identifier->end_column;
-				append_op.end_line = identifier->end_line;
-				append_op.end_column = identifier->end_column;
-				append_op.new_text = vformat(": %s", identifier->type_constraint.to_string());
-				append_action.description = vformat("Add type specifier \"%s\"", identifier->type_constraint.to_string());
-
-				ScriptLanguage::DocumentEditOperation append_op_de;
-				append_op_de.edits.append(append_op);
-				append_op_de.file_path = parser->script_path;
-				append_action.document_edits.append(append_op_de);
-
-				Vector<ScriptLanguage::CodeActionOperation> actions;
-				actions.append(append_action);
-
-				parser->push_warning(p_for->variable, GDScriptWarning::INFERRED_DECLARATION, actions, R"("for" iterator variable)", p_for->variable->name);
+				parser->push_warning(p_for->variable, GDScriptWarning::INFERRED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
 			} else {
-				parser->push_warning(p_for->variable, GDScriptWarning::UNTYPED_DECLARATION, {}, R"("for" iterator variable)", p_for->variable->name);
+				parser->push_warning(p_for->variable, GDScriptWarning::UNTYPED_DECLARATION, R"("for" iterator variable)", p_for->variable->name);
 			}
 #endif // DEBUG_ENABLED
 		}
@@ -2721,25 +2439,7 @@ void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
 #ifdef DEBUG_ENABLED
 	if (p_assert->condition->is_constant) {
 		if (p_assert->condition->reduced_value.booleanize()) {
-			GDScriptParser::Node *identifier = p_assert;
-			ScriptLanguage::CodeActionOperation append_action;
-			ScriptLanguage::TextEdit append_op;
-			append_op.start_line = identifier->start_line;
-			append_op.start_column = 1;
-			append_op.end_line = identifier->start_line + 1;
-			append_op.end_column = 1;
-			append_op.new_text = "";
-			append_action.description = "Remove assert statement";
-
-			ScriptLanguage::DocumentEditOperation append_op_de;
-			append_op_de.edits.append(append_op);
-			append_op_de.file_path = parser->script_path;
-			append_action.document_edits.append(append_op_de);
-
-			Vector<ScriptLanguage::CodeActionOperation> actions;
-			actions.append(append_action);
-
-			parser->push_warning(p_assert->condition, GDScriptWarning::ASSERT_ALWAYS_TRUE, actions);
+			parser->push_warning(p_assert->condition, GDScriptWarning::ASSERT_ALWAYS_TRUE);
 		} else if (!(p_assert->condition->type == GDScriptParser::Node::LITERAL && static_cast<GDScriptParser::LiteralNode *>(p_assert->condition)->value.get_type() == Variant::BOOL)) {
 			parser->push_warning(p_assert->condition, GDScriptWarning::ASSERT_ALWAYS_FALSE);
 		}
@@ -2817,7 +2517,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 #ifdef DEBUG_ENABLED
 			is_shadowing(p_match_pattern->bind, "pattern bind", true);
 			if (p_match_pattern->bind->usages == 0 && !String(p_match_pattern->bind->name).begins_with("_")) {
-				parser->push_warning(p_match_pattern->bind, GDScriptWarning::UNUSED_VARIABLE, {}, p_match_pattern->bind->name);
+				parser->push_warning(p_match_pattern->bind, GDScriptWarning::UNUSED_VARIABLE, p_match_pattern->bind->name);
 			}
 #endif // DEBUG_ENABLED
 			break;
@@ -2881,7 +2581,7 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 #ifdef DEBUG_ENABLED
 				String function_name = parser->current_function->identifier ? parser->current_function->identifier->name.string() : String("<anonymous function>");
 				String called_function_name = static_cast<GDScriptParser::CallNode *>(p_return->return_value)->function_name.string();
-				parser->push_warning(p_return, GDScriptWarning::UNSAFE_VOID_RETURN, {}, function_name, called_function_name);
+				parser->push_warning(p_return, GDScriptWarning::UNSAFE_VOID_RETURN, function_name, called_function_name);
 #endif // DEBUG_ENABLED
 				mark_node_unsafe(p_return);
 			} else if (!is_call) {
@@ -3083,7 +2783,7 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 
 #ifdef DEBUG_ENABLED
 	if (p_type.kind == GDScriptParser::DataType::ENUM && value_type.builtin_type == Variant::INT && !enum_has_value(p_type, p_expression->reduced_value)) {
-		parser->push_warning(p_expression, GDScriptWarning::INT_AS_ENUM_WITHOUT_MATCH, {}, p_usage, p_expression->reduced_value.stringify(), p_type.to_string());
+		parser->push_warning(p_expression, GDScriptWarning::INT_AS_ENUM_WITHOUT_MATCH, p_usage, p_expression->reduced_value.stringify(), p_type.to_string());
 	}
 #endif // DEBUG_ENABLED
 
@@ -3236,7 +2936,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 					need_warn = true;
 				}
 				if (need_warn) {
-					parser->push_warning(p_assignment, GDScriptWarning::CONFUSABLE_CAPTURE_REASSIGNMENT, {}, id->name);
+					parser->push_warning(p_assignment, GDScriptWarning::CONFUSABLE_CAPTURE_REASSIGNMENT, id->name);
 				}
 			}
 		}
@@ -3389,7 +3089,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee);
 		// Use == 1 here because this assignment was already counted in the beginning of the function.
 		if (id->source == GDScriptParser::IdentifierNode::LOCAL_VARIABLE && id->variable_source && id->variable_source->assignments == 1) {
-			parser->push_warning(p_assignment, GDScriptWarning::UNASSIGNED_VARIABLE_OP_ASSIGN, {}, id->name, Variant::get_operator_name(p_assignment->variant_op));
+			parser->push_warning(p_assignment, GDScriptWarning::UNASSIGNED_VARIABLE_OP_ASSIGN, id->name, Variant::get_operator_name(p_assignment->variant_op));
 		}
 	}
 #endif // DEBUG_ENABLED
@@ -3424,25 +3124,7 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 #ifdef DEBUG_ENABLED
 	GDScriptParser::DataType to_await_type = p_await->to_await->type_constraint;
 	if (!to_await_type.is_coroutine && !to_await_type.is_variant() && to_await_type.builtin_type != Variant::SIGNAL) {
-		GDScriptParser::Node *identifier = p_await;
-		ScriptLanguage::CodeActionOperation append_action;
-		ScriptLanguage::TextEdit append_op;
-		append_op.start_line = identifier->start_line;
-		append_op.start_column = identifier->start_column;
-		append_op.end_line = identifier->end_line;
-		append_op.end_column = p_await->to_await->start_column;
-		append_op.new_text = "";
-		append_action.description = "Remove \"await\"";
-
-		ScriptLanguage::DocumentEditOperation append_op_de;
-		append_op_de.edits.append(append_op);
-		append_op_de.file_path = parser->script_path;
-		append_action.document_edits.append(append_op_de);
-
-		Vector<ScriptLanguage::CodeActionOperation> actions;
-		actions.append(append_action);
-
-		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT, actions);
+		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
 	}
 #endif // DEBUG_ENABLED
 }
@@ -3706,7 +3388,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 							}
 							expected_types += "\", or \"" + types[types.size() - 1];
 						}
-						parser->push_warning(p_call->arguments[0], GDScriptWarning::UNSAFE_CALL_ARGUMENT, {}, "1", "constructor", function_name, expected_types, "Variant");
+						parser->push_warning(p_call->arguments[0], GDScriptWarning::UNSAFE_CALL_ARGUMENT, "1", "constructor", function_name, expected_types, "Variant");
 #endif // DEBUG_ENABLED
 						p_call->type_constraint = call_type;
 						return;
@@ -3736,7 +3418,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 #ifdef DEBUG_ENABLED
 						} else {
 							if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
-								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, {}, function_name);
+								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
 							}
 #endif // DEBUG_ENABLED
 						}
@@ -3753,7 +3435,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 								GDScriptParser::DataType arg_type = p_call->arguments[i]->type_constraint;
 								if (arg_type.is_variant() || !arg_type.is_hard_type()) {
 									mark_node_unsafe(p_call);
-									parser->push_warning(p_call->arguments[i], GDScriptWarning::UNSAFE_CALL_ARGUMENT, {}, itos(i + 1), "constructor", function_name, par_type.to_string(), arg_type.to_string_strict());
+									parser->push_warning(p_call->arguments[i], GDScriptWarning::UNSAFE_CALL_ARGUMENT, itos(i + 1), "constructor", function_name, par_type.to_string(), arg_type.to_string_strict());
 								}
 							}
 #endif // DEBUG_ENABLED
@@ -4043,32 +3725,13 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		// FIXME: No warning for built-in constructors and utilities due to early return.
 		if (p_is_root && return_type.kind != GDScriptParser::DataType::UNRESOLVED && return_type.builtin_type != Variant::NIL &&
 				!(p_call->is_super && p_call->function_name == GDScriptLanguage::get_singleton()->strings._init)) {
-			parser->push_warning(p_call, GDScriptWarning::RETURN_VALUE_DISCARDED, {}, p_call->function_name);
+			parser->push_warning(p_call, GDScriptWarning::RETURN_VALUE_DISCARDED, p_call->function_name);
 		}
 
 		if (method_flags.has_flag(METHOD_FLAG_STATIC) && !is_constructor && !base_type.is_meta_type && !is_self) {
 			String caller_type = base_type.to_string();
 
-			// TODO: Figure out how to replace instance name with type.
-			GDScriptParser::Node *identifier = p_call->callee;
-			ScriptLanguage::CodeActionOperation append_action;
-			ScriptLanguage::TextEdit append_op;
-			append_op.start_line = identifier->start_line;
-			append_op.start_column = identifier->start_column;
-			append_op.end_line = identifier->end_line;
-			append_op.end_column = identifier->end_column;
-			append_op.new_text = vformat("%s.%s", caller_type, p_call->function_name);
-			append_action.description = vformat("Call from type \"%s\"", caller_type);
-
-			ScriptLanguage::DocumentEditOperation append_op_de;
-			append_op_de.edits.append(append_op);
-			append_op_de.file_path = parser->script_path;
-			append_action.document_edits.append(append_op_de);
-
-			Vector<ScriptLanguage::CodeActionOperation> actions;
-			actions.append(append_action);
-
-			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, actions, p_call->function_name, caller_type);
+			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, p_call->function_name, caller_type);
 		}
 
 		// Consider `emit_signal()`, `connect()`, and `disconnect()` as implicit uses of the signal.
@@ -4117,7 +3780,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					}
 #ifdef DEBUG_ENABLED
 				} else if (!is_self && !(base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::BUILTIN)) {
-					parser->push_warning(p_call, GDScriptWarning::UNSAFE_METHOD_ACCESS, {}, p_call->function_name, base_type.to_string());
+					parser->push_warning(p_call, GDScriptWarning::UNSAFE_METHOD_ACCESS, p_call->function_name, base_type.to_string());
 					mark_node_unsafe(p_call);
 #endif // DEBUG_ENABLED
 				}
@@ -4145,25 +3808,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	if (call_type.is_coroutine && !p_is_await) {
 		if (p_is_root) {
 #ifdef DEBUG_ENABLED
-			GDScriptParser::Node *identifier = p_call->callee;
-			ScriptLanguage::CodeActionOperation append_action;
-			ScriptLanguage::TextEdit append_op;
-			append_op.start_line = identifier->start_line;
-			append_op.start_column = identifier->start_column;
-			append_op.end_line = identifier->start_line;
-			append_op.end_column = identifier->start_column;
-			append_op.new_text = "await ";
-			append_action.description = "Add \"await\"";
-
-			ScriptLanguage::DocumentEditOperation append_op_de;
-			append_op_de.edits.append(append_op);
-			append_op_de.file_path = parser->script_path;
-			append_action.document_edits.append(append_op_de);
-
-			Vector<ScriptLanguage::CodeActionOperation> actions;
-			actions.append(append_action);
-
-			parser->push_warning(p_call, GDScriptWarning::MISSING_AWAIT, actions);
+			parser->push_warning(p_call, GDScriptWarning::MISSING_AWAIT);
 #endif // DEBUG_ENABLED
 		} else {
 			push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call);
@@ -4206,7 +3851,7 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 		if (op_type.is_variant() || !op_type.is_hard_type()) {
 			mark_node_unsafe(p_cast);
 #ifdef DEBUG_ENABLED
-			parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, {}, cast_type.to_string());
+			parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, cast_type.to_string());
 #endif // DEBUG_ENABLED
 		} else {
 			bool valid = false;
@@ -4830,7 +4475,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			found_source = true;
 #ifdef DEBUG_ENABLED
 			if (p_identifier->variable_source && p_identifier->variable_source->assignments == 0 && !(p_identifier->type_constraint.is_hard_type() && p_identifier->type_constraint.kind == GDScriptParser::DataType::BUILTIN)) {
-				parser->push_warning(p_identifier, GDScriptWarning::UNASSIGNED_VARIABLE, {}, p_identifier->name);
+				parser->push_warning(p_identifier, GDScriptWarning::UNASSIGNED_VARIABLE, p_identifier->name);
 			}
 #endif // DEBUG_ENABLED
 			break;
@@ -4853,7 +4498,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 
 #ifdef DEBUG_ENABLED
 	if (!found_source && p_identifier->suite != nullptr && p_identifier->suite->has_local(p_identifier->name)) {
-		parser->push_warning(p_identifier, GDScriptWarning::CONFUSABLE_LOCAL_USAGE, {}, p_identifier->name);
+		parser->push_warning(p_identifier, GDScriptWarning::CONFUSABLE_LOCAL_USAGE, p_identifier->name);
 	}
 #endif // DEBUG_ENABLED
 
@@ -5277,7 +4922,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				valid = base_type.kind != GDScriptParser::DataType::BUILTIN;
 #ifdef DEBUG_ENABLED
 				if (valid) {
-					parser->push_warning(p_subscript, GDScriptWarning::UNSAFE_PROPERTY_ACCESS, {}, p_subscript->attribute->name, base_type.to_string());
+					parser->push_warning(p_subscript, GDScriptWarning::UNSAFE_PROPERTY_ACCESS, p_subscript->attribute->name, base_type.to_string());
 				}
 #endif // DEBUG_ENABLED
 				result_type.kind = GDScriptParser::DataType::VARIANT;
@@ -6479,7 +6124,7 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 			// Argument can be anything, so this is unsafe (unless the parameter is a hard variant).
 			if (!(par_type.is_hard_type() && par_type.is_variant())) {
 				mark_node_unsafe(p_call->arguments[i]);
-				parser->push_warning(p_call->arguments[i], GDScriptWarning::UNSAFE_CALL_ARGUMENT, {}, itos(i + 1), "function", p_call->function_name, par_type.to_string(), arg_type.to_string_strict());
+				parser->push_warning(p_call->arguments[i], GDScriptWarning::UNSAFE_CALL_ARGUMENT, itos(i + 1), "function", p_call->function_name, par_type.to_string(), arg_type.to_string_strict());
 			}
 #endif // DEBUG_ENABLED
 		} else if (par_type.is_hard_type() && !is_type_compatible(par_type, arg_type, true)) {
@@ -6491,12 +6136,12 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 			} else {
 				// Supertypes are acceptable for dynamic compliance, but it's unsafe.
 				mark_node_unsafe(p_call);
-				parser->push_warning(p_call->arguments[i], GDScriptWarning::UNSAFE_CALL_ARGUMENT, {}, itos(i + 1), "function", p_call->function_name, par_type.to_string(), arg_type.to_string_strict());
+				parser->push_warning(p_call->arguments[i], GDScriptWarning::UNSAFE_CALL_ARGUMENT, itos(i + 1), "function", p_call->function_name, par_type.to_string(), arg_type.to_string_strict());
 #endif // DEBUG_ENABLED
 			}
 #ifdef DEBUG_ENABLED
 		} else if (par_type.kind == GDScriptParser::DataType::BUILTIN && par_type.builtin_type == Variant::INT && arg_type.kind == GDScriptParser::DataType::BUILTIN && arg_type.builtin_type == Variant::FLOAT) {
-			parser->push_warning(p_call->arguments[i], GDScriptWarning::NARROWING_CONVERSION, {}, p_call->function_name);
+			parser->push_warning(p_call->arguments[i], GDScriptWarning::NARROWING_CONVERSION, p_call->function_name);
 #endif // DEBUG_ENABLED
 		}
 	}
@@ -6513,22 +6158,22 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 
 		for (MethodInfo &info : gdscript_funcs) {
 			if (info.name == name) {
-				parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, {}, p_context, name, "built-in function");
+				parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
 				return;
 			}
 		}
 		if (Variant::has_utility_function(name)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, {}, p_context, name, "built-in function");
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
 			return;
 		} else if (class_exists(name)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, {}, p_context, name, "native class");
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "native class");
 			return;
 		} else if (ScriptServer::is_global_class(name)) {
 			String class_path = ScriptServer::get_global_class_path(name).get_file();
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, {}, p_context, name, vformat(R"(global class defined in "%s")", class_path));
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, vformat(R"(global class defined in "%s")", class_path));
 			return;
 		} else if (GDScriptParser::get_builtin_type(name) < Variant::VARIANT_MAX) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, {}, p_context, name, "built-in type");
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in type");
 			return;
 		}
 	}
@@ -6539,7 +6184,7 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 
 		if (base_class != nullptr) {
 			if (base_class->has_member(name)) {
-				parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE, {}, p_context, p_identifier->name, base_class->get_member(name).get_type_name(), itos(base_class->get_member(name).get_line()));
+				parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE, p_context, p_identifier->name, base_class->get_member(name).get_type_name(), itos(base_class->get_member(name).get_line()));
 				return;
 			}
 			base_class = base_class->base_type.class_type;
@@ -6552,7 +6197,7 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 					base_class_name = base_class->fqcn;
 				}
 
-				parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, {}, p_context, p_identifier->name, base_class->get_member(name).get_type_name(), itos(base_class->get_member(name).get_line()), base_class_name);
+				parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, base_class->get_member(name).get_type_name(), itos(base_class->get_member(name).get_line()), base_class_name);
 				return;
 			}
 			base_class = base_class->base_type.class_type;
@@ -6564,19 +6209,19 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 		ERR_FAIL_COND_MSG(!class_exists(native_base_class), "Non-existent native base class.");
 
 		if (ClassDB::has_method(native_base_class, name, true)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, {}, p_context, p_identifier->name, "method", native_base_class);
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "method", native_base_class);
 			return;
 		} else if (ClassDB::has_signal(native_base_class, name, true)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, {}, p_context, p_identifier->name, "signal", native_base_class);
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "signal", native_base_class);
 			return;
 		} else if (ClassDB::has_property(native_base_class, name, true)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, {}, p_context, p_identifier->name, "property", native_base_class);
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "property", native_base_class);
 			return;
 		} else if (ClassDB::has_integer_constant(native_base_class, name, true)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, {}, p_context, p_identifier->name, "constant", native_base_class);
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "constant", native_base_class);
 			return;
 		} else if (ClassDB::has_enum(native_base_class, name, true)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, {}, p_context, p_identifier->name, "enum", native_base_class);
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "enum", native_base_class);
 			return;
 		}
 		native_base_class = ClassDB::get_parent_class(native_base_class);
@@ -6618,7 +6263,7 @@ void GDScriptAnalyzer::warn_confusable_temporary_modification(GDScriptParser::Ex
 				const StringName &scope_native_type = scope_type.native_type;
 				if (class_exists(scope_native_type) && ClassDB::has_property(scope_native_type, base_id->name)) {
 					if (p_expression->type == GDScriptParser::Node::ASSIGNMENT) {
-						parser->push_warning(p_expression, GDScriptWarning::CONFUSABLE_TEMPORARY_MODIFICATION, {}, scope_native_type, base_id->name);
+						parser->push_warning(p_expression, GDScriptWarning::CONFUSABLE_TEMPORARY_MODIFICATION, scope_native_type, base_id->name);
 					} else if (p_expression->type == GDScriptParser::Node::SUBSCRIPT) {
 						StringName member;
 						if (subscript->is_attribute && subscript->attribute) {
@@ -6627,7 +6272,7 @@ void GDScriptAnalyzer::warn_confusable_temporary_modification(GDScriptParser::Ex
 
 						const Variant::Type builtin_type = base->type_constraint.builtin_type;
 						if (member && Variant::has_builtin_method(builtin_type, member) && !Variant::is_builtin_method_const(builtin_type, member)) {
-							parser->push_warning(subscript, GDScriptWarning::CONFUSABLE_TEMPORARY_MODIFICATION, {}, scope_native_type, base_id->name, member);
+							parser->push_warning(subscript, GDScriptWarning::CONFUSABLE_TEMPORARY_MODIFICATION, scope_native_type, base_id->name, member);
 						}
 					}
 				}
