@@ -220,7 +220,7 @@ public:
 
 private:
 	// Returns true if the texture is a valid linear format.
-	bool is_valid_linear(TextureFormat const &p_format) const;
+	bool is_valid_linear(const TextureFormat &p_format) const;
 
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
@@ -537,7 +537,7 @@ public:
 	MTL::Device *get_device() const { return device; }
 	PixelFormats &get_pixel_formats() const { return *pixel_formats; }
 	MDResourceCache &get_resource_cache() const { return *resource_cache; }
-	MetalDeviceProperties const &get_device_properties() const { return *device_properties; }
+	const MetalDeviceProperties &get_device_properties() const { return *device_properties; }
 
 	_FORCE_INLINE_ uint32_t get_metal_buffer_index_for_vertex_attribute_binding(uint32_t p_binding) {
 		return (device_properties->limits.maxPerStageBufferCount - 1) - p_binding;
