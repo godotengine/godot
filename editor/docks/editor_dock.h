@@ -108,7 +108,7 @@ protected:
 	GDVIRTUAL2(_load_layout_from_config, Ref<ConfigFile>, const String &)
 
 #ifndef DISABLE_DEPRECATED
-	GDVIRTUAL1_COMPAT(_update_layout_, _update_layout, int)
+	GDVIRTUAL1_COMPAT(_update_layout_bind_compat_117080, _update_layout, int)
 #endif
 
 public:

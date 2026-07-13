@@ -291,8 +291,8 @@ protected:
 	void _add_icon_shortcut_bind_compat_36493(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void _clear_bind_compat_79965();
 
-	void _set_system_menu_root_compat_87452(const String &p_special);
-	String _get_system_menu_root_compat_87452() const;
+	void _set_system_menu_root_bind_compat_87452(const String &p_special);
+	String _get_system_menu_root_bind_compat_87452() const;
 
 	static void _bind_compatibility_methods();
 #endif

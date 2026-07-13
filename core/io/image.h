@@ -277,7 +277,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	Error _compress_bind_compat_115003(CompressMode p_mode, CompressSource p_source, ASTCFormat p_format);
-	Error _compress_from_channels_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format);
+	Error _compress_from_channels_bind_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format);
 	Vector<uint8_t> _save_exr_to_buffer_bind_compat_117800(bool p_grayscale = false) const;
 	Error _save_exr_bind_compat_117800(const String &p_path, bool p_grayscale = false) const;
 

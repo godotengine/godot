@@ -729,7 +729,7 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
-	void _set_selection_mode_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
+	void _set_selection_mode_bind_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
 	Point2i _get_line_column_at_pos_bind_compat_100913(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED

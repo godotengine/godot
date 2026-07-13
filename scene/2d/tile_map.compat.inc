@@ -38,11 +38,11 @@ Rect2i TileMap::_get_used_rect_bind_compat_78328() {
 	return get_used_rect();
 }
 
-void TileMap::_set_quadrant_size_compat_81070(int p_quadrant_size) {
+void TileMap::_set_quadrant_size_bind_compat_81070(int p_quadrant_size) {
 	set_rendering_quadrant_size(p_quadrant_size);
 }
 
-int TileMap::_get_quadrant_size_compat_81070() const {
+int TileMap::_get_quadrant_size_bind_compat_81070() const {
 	return get_rendering_quadrant_size();
 }
 
@@ -58,8 +58,8 @@ TileMap::VisibilityMode TileMap::_get_navigation_visibility_mode_bind_compat_871
 
 void TileMap::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("get_used_rect"), &TileMap::_get_used_rect_bind_compat_78328);
-	ClassDB::bind_compatibility_method(D_METHOD("set_quadrant_size", "quadrant_size"), &TileMap::_set_quadrant_size_compat_81070);
-	ClassDB::bind_compatibility_method(D_METHOD("get_quadrant_size"), &TileMap::_get_quadrant_size_compat_81070);
+	ClassDB::bind_compatibility_method(D_METHOD("set_quadrant_size", "quadrant_size"), &TileMap::_set_quadrant_size_bind_compat_81070);
+	ClassDB::bind_compatibility_method(D_METHOD("get_quadrant_size"), &TileMap::_get_quadrant_size_bind_compat_81070);
 	ClassDB::bind_compatibility_method(D_METHOD("get_collision_visibility_mode"), &TileMap::_get_collision_visibility_mode_bind_compat_87115);
 #ifndef NAVIGATION_2D_DISABLED
 	ClassDB::bind_compatibility_method(D_METHOD("get_navigation_visibility_mode"), &TileMap::_get_navigation_visibility_mode_bind_compat_87115);
