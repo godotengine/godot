@@ -6387,10 +6387,6 @@ void CanvasItemEditorViewport::_create_audio_node(Node *p_parent, const String &
 }
 
 void CanvasItemEditorViewport::_create_mesh_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
-	Ref<Mesh> mesh = ResourceCache::get_ref(p_path);
-
 	MeshInstance2D *child = memnew(MeshInstance2D);
 
 	// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
@@ -6399,41 +6395,14 @@ void CanvasItemEditorViewport::_create_mesh_node(Node *p_parent, const String &p
 		child->set_name(node_name);
 	}
 
-	if (p_parent) {
-		undo_redo->add_do_method(p_parent, "add_child", child, true);
-		undo_redo->add_do_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
-		undo_redo->add_do_reference(child);
-		undo_redo->add_undo_method(p_parent, "remove_child", child);
-	} else { // If no parent is selected, set as root node of the scene.
-		undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", child);
-		undo_redo->add_do_method(child, "set_owner", EditorNode::get_singleton()->get_edited_scene());
-		undo_redo->add_do_reference(child);
-		undo_redo->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
-	}
-
-	if (p_parent) {
-		String new_name = p_parent->validate_child_name(child);
-		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		undo_redo->add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), child->get_class(), new_name);
-		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
-	}
-
-	undo_redo->add_do_property(child, "mesh", mesh);
-
 	// Compute the global position
 	Transform2D xform = canvas_item_editor->get_canvas_transform();
 	Point2 target_position = xform.affine_inverse().xform(p_point);
 
-	// There's nothing to be used as source position, so snapping will work as absolute if enabled.
-	target_position = canvas_item_editor->snap_point(target_position);
+	_add_node_to_scene(p_parent, child, target_position);
 
-	CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_parent);
-	Point2 local_target_pos = parent_ci ? parent_ci->get_global_transform().affine_inverse().xform(target_position) : target_position;
-
-	undo_redo->add_do_method(child, "set_position", local_target_pos);
-
-	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
-	undo_redo->add_do_method(editor_selection, "add_node", child);
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_property(child, "mesh", ResourceCache::get_ref(p_path));
 }
 
 bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_path, const Point2 &p_point) {
