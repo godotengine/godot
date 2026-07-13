@@ -95,9 +95,9 @@ using namespace godot;
 // Thirdparty headers.
 
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
-#if defined(__EMSCRIPTEN__) || (defined(__MINGW32__) && __clang_major__ >= 21)
-GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunnecessary-virtual-specifier")
-#endif
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wunknown-warning-option")
+GODOT_CLANG_WARNING_IGNORE("-Wunnecessary-virtual-specifier")
 
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
@@ -113,9 +113,7 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunnecessary-virtual-specifier")
 #include <unicode/utypes.h>
 
 GODOT_GCC_WARNING_POP
-#if defined(__EMSCRIPTEN__) || (defined(__MINGW32__) && __clang_major__ >= 21)
 GODOT_CLANG_WARNING_POP
-#endif
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>
