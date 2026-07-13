@@ -33,6 +33,18 @@ public:
 	/// Construct with all properties
 							CollisionGroup(const GroupFilter *inFilter, GroupID inGroupID, SubGroupID inSubGroupID) : mGroupFilter(inFilter), mGroupID(inGroupID), mSubGroupID(inSubGroupID) { }
 
+
+	/// Test if two collision groups are equal
+	bool					operator == (const CollisionGroup &inRHS) const
+	{
+		return mGroupFilter == inRHS.mGroupFilter && mGroupID == inRHS.mGroupID && mSubGroupID == inRHS.mSubGroupID;
+	}
+
+	bool					operator != (const CollisionGroup &inRHS) const
+	{
+		return !(*this == inRHS);
+	}
+
 	/// Set the collision group filter
 	inline void				SetGroupFilter(const GroupFilter *inFilter)
 	{

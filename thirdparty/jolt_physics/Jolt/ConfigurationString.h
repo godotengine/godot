@@ -38,6 +38,9 @@ inline const char *GetConfigurationString()
 		"32-bit "
 #endif
 		"with instructions: "
+#ifdef JPH_USE_RVV
+		"RVV "
+#endif
 #ifdef JPH_USE_NEON
 		"NEON "
 #endif
@@ -105,6 +108,9 @@ inline const char *GetConfigurationString()
 #endif
 #if defined(__cpp_exceptions) && __cpp_exceptions
 		"(C++ Exceptions) "
+#endif
+#ifdef JPH_SHARED_LIBRARY
+		"(Shared Library) "
 #endif
 		;
 }
