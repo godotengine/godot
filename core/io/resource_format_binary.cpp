@@ -854,20 +854,28 @@ static void save_ustring(Ref<FileAccess> f, const String &p_string) {
 }
 
 static String get_ustring(Ref<FileAccess> f) {
-	int len = f->get_32();
+	uint32_t len = f->get_32();
+	if (len == 0) {
+		return String();
+	}
 	Vector<char> str_buf;
-	str_buf.resize(len);
+	if (str_buf.resize(len) != OK) {
+		return String();
+	}
 	f->get_buffer((uint8_t *)&str_buf[0], len);
 	return String::utf8(&str_buf[0], len);
 }
 
 String ResourceLoaderBinary::get_unicode_string() {
-	int len = f->get_32();
-	if (len > str_buf.size()) {
-		str_buf.resize(len);
-	}
+	uint32_t len = f->get_32();
 	if (len == 0) {
 		return String();
+	}
+	if (len > str_buf.size()) {
+		if (str_buf.resize(len) != OK) {
+			error = ERR_FILE_CORRUPT;
+			return String();
+		}
 	}
 	f->get_buffer((uint8_t *)&str_buf[0], len);
 	return String::utf8(&str_buf[0], len);
