@@ -128,6 +128,9 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 	}
 	int slot = pool.front()->get();
 	pool.pop_front();
+	// Reference-counted temporary types share a pool, so a reused slot may
+	// have different object containment than its previous value.
+	temporaries.write[slot].can_contain_object = p_type.can_contain_object();
 	used_temporaries.push_back(slot);
 	return slot;
 }
