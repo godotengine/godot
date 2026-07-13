@@ -108,7 +108,6 @@ class ExtendGDScriptParser : public GDScriptParser {
 
 	LSP::DocumentSymbol class_symbol;
 	Vector<LSP::Diagnostic> diagnostics;
-	Vector<LSP::CodeAction> lsp_code_actions;
 	List<LSP::DocumentLink> document_links;
 	ClassMembers members;
 	HashMap<String, ClassMembers> inner_classes;
@@ -132,7 +131,6 @@ public:
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }
 	_FORCE_INLINE_ const LSP::DocumentSymbol &get_symbols() const { return class_symbol; }
 	_FORCE_INLINE_ const Vector<LSP::Diagnostic> &get_diagnostics() const { return diagnostics; }
-	_FORCE_INLINE_ const Vector<LSP::CodeAction> &get_lsp_code_actions() const { return lsp_code_actions; }
 	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
 	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
 	Error parse_result;
