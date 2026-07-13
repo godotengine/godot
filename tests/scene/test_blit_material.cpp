@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  blit_material.h                                                       */
+/*  test_blit_material.cpp                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,46 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "tests/test_macros.h"
 
-#include "scene/resources/material.h"
+TEST_FORCE_LINK(test_blit_material)
 
-class BlitMaterial : public Material {
-	GDCLASS(BlitMaterial, Material);
+#include "scene/resources/blit_material.h"
 
-public:
-	enum BlendMode {
-		BLEND_MODE_MIX,
-		BLEND_MODE_ADD,
-		BLEND_MODE_SUB,
-		BLEND_MODE_MUL,
-		BLEND_MODE_DISABLED,
-		BLEND_MODE_MAX
-	};
+namespace TestBlitMaterial {
 
-private:
-	static Mutex shader_mutex;
-	static RID shader_cache[BLEND_MODE_MAX];
-	static void _update_shader(BlendMode p_blend);
-	mutable bool shader_set = false;
+TEST_CASE("[SceneTree][BlitMaterial] Invalid blend modes are rejected") {
+	Ref<BlitMaterial> material;
+	material.instantiate();
+	material->set_blend_mode(BlitMaterial::BLEND_MODE_ADD);
 
-	BlendMode blend_mode = BLEND_MODE_MIX;
+	ERR_PRINT_OFF;
+	SUBCASE("Negative blend mode") {
+		material->set_blend_mode(static_cast<BlitMaterial::BlendMode>(-1));
+	}
+	SUBCASE("Blend mode above the valid range") {
+		material->set_blend_mode(static_cast<BlitMaterial::BlendMode>(static_cast<int>(BlitMaterial::BLEND_MODE_DISABLED) + 1));
+	}
+	ERR_PRINT_ON;
 
-protected:
-	static void _bind_methods();
+	CHECK(material->get_blend_mode() == BlitMaterial::BLEND_MODE_ADD);
+}
 
-public:
-	void set_blend_mode(BlendMode p_blend_mode);
-	BlendMode get_blend_mode() const;
-
-	virtual Shader::Mode get_shader_mode() const override;
-	virtual RID get_shader_rid() const override;
-	virtual RID get_rid() const override;
-
-	static void cleanup_shader();
-
-	BlitMaterial();
-	virtual ~BlitMaterial();
-};
-
-VARIANT_ENUM_CAST(BlitMaterial::BlendMode);
+} // namespace TestBlitMaterial

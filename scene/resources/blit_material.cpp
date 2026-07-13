@@ -80,6 +80,8 @@ void BlitMaterial::_update_shader(BlendMode p_blend) {
 }
 
 void BlitMaterial::set_blend_mode(BlendMode p_blend_mode) {
+	ERR_FAIL_INDEX(p_blend_mode, BLEND_MODE_MAX);
+
 	blend_mode = p_blend_mode;
 	_update_shader(blend_mode);
 	if (shader_set) {
@@ -110,10 +112,10 @@ RID BlitMaterial::get_rid() const {
 }
 
 Mutex BlitMaterial::shader_mutex;
-RID BlitMaterial::shader_cache[5];
+RID BlitMaterial::shader_cache[BLEND_MODE_MAX];
 
 void BlitMaterial::cleanup_shader() {
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < BLEND_MODE_MAX; i++) {
 		if (shader_cache[i].is_valid()) {
 			RS::get_singleton()->free_rid(shader_cache[i]);
 		}
