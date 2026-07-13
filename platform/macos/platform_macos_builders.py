@@ -43,6 +43,15 @@ def generate_bundle(target, source, env):
             os.mkdir(app_dir + "/Contents/MacOS")
         if target_bin != "":
             shutil.copy(target_bin, app_dir + "/Contents/MacOS/Godot")
+
+        # Copy extra dylibs into Frameworks, these are registered by the feature that builds them
+        if env.get("extra_dylibs"):
+            frameworks_dir = os.path.join(app_dir, "Contents", "Frameworks")
+            os.makedirs(frameworks_dir, exist_ok=True)
+            for lib in env["extra_dylibs"]:
+                src = lib.get_abspath() if hasattr(lib, "get_abspath") else str(lib)
+                shutil.copy(src, frameworks_dir)
+
         if "mono" in env.module_version_string:
             shutil.copytree(env.Dir("#bin/GodotSharp").abspath, app_dir + "/Contents/Resources/GodotSharp")
         version = get_version_info("", True)

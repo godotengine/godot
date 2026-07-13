@@ -106,12 +106,14 @@ def configure(env: "SConsEnvironment"):
         env["APPLE_PLATFORM"] = "visionossimulator"
         env.Append(ASFLAGS=["-mtargetos=xros26.0-simulator"])
         env.Append(CCFLAGS=["-mtargetos=xros26.0-simulator"])
+        env.Append(LINKFLAGS=["-mtargetos=xros26.0-simulator"])
         env.Append(CPPDEFINES=["VISIONOS_SIMULATOR"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         env["APPLE_PLATFORM"] = "visionos"
         env.Append(ASFLAGS=["-mtargetos=xros26.0"])
         env.Append(CCFLAGS=["-mtargetos=xros26.0"])
+        env.Append(LINKFLAGS=["-mtargetos=xros26.0"])
     detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
@@ -126,6 +128,7 @@ def configure(env: "SConsEnvironment"):
             )
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
+        env.Append(LINKFLAGS=["-arch", "arm64", "-isysroot", "$APPLE_SDK_PATH"])
 
     # Temp fix for ABS/MAX/MIN macros in visionOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
