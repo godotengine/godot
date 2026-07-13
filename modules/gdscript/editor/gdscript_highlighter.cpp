@@ -1000,6 +1000,9 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	for (int i = 0; i < notice_list.size(); i++) {
 		comment_markers[notice_list[i]] = COMMENT_MARKER_NOTICE;
 	}
+
+	// Force the text edit to update its highlighting.
+	emit_changed();
 }
 
 void GDScriptSyntaxHighlighter::add_color_region(ColorRegion::Type p_type, const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only, bool p_r_prefix) {
