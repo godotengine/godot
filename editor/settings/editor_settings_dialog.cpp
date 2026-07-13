@@ -477,7 +477,7 @@ Array EditorSettingsDialog::_event_list_to_array_helper(const List<Ref<InputEven
 	return events;
 }
 
-TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_action, bool p_is_collapsed) {
+TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const String &p_shortcut_identifier, const String &p_display, Array &p_events, bool p_allow_revert, bool p_is_action, bool p_is_collapsed, const PackedStringArray &p_duplicate_shortcuts) {
 	TreeItem *shortcut_item = shortcuts->create_item(p_parent);
 	shortcut_item->set_collapsed(p_is_collapsed);
 	shortcut_item->set_text(0, p_display);
@@ -504,6 +504,11 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 	if (sc_text == "None") {
 		// Fade out unassigned shortcut labels for easier visual grepping.
 		shortcut_item->set_custom_color(1, get_theme_color(SceneStringName(font_color), SNAME("Label")) * Color(1, 1, 1, 0.5));
+	}
+
+	if (!p_duplicate_shortcuts.is_empty()) {
+		shortcut_item->add_button(1, get_editor_theme_icon(SNAME("NodeWarning")), SHORTCUT_CONFLICT);
+		shortcut_item->set_button_tooltip_text(1, -1, String(" ").join(p_duplicate_shortcuts));
 	}
 
 	if (p_allow_revert) {
@@ -652,7 +657,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		bool same_as_defaults = Shortcut::is_event_array_equal(default_events, action_events);
 		bool collapse = !collapsed.has(action_name) || (collapsed.has(action_name) && collapsed[action_name]);
 
-		TreeItem *item = _create_shortcut_treeitem(common_section, action_name, action_name, action_events, !same_as_defaults, true, collapse);
+		TreeItem *item = _create_shortcut_treeitem(common_section, action_name, action_name, action_events, !same_as_defaults, true, collapse, PackedStringArray());
 		item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED); // `ui_*` input action names are untranslatable identifiers.
 		if (!prev_selected_shortcut.is_empty() && action_name == prev_selected_shortcut) {
 			item->select(0);
@@ -716,7 +721,31 @@ void EditorSettingsDialog::_update_shortcuts() {
 		bool same_as_defaults = Shortcut::is_event_array_equal(original, shortcuts_array);
 		bool collapse = !collapsed.has(E) || (collapsed.has(E) && collapsed[E]);
 
-		TreeItem *shortcut_item = _create_shortcut_treeitem(section, E, sc->get_name(), shortcuts_array, !same_as_defaults, false, collapse);
+		String prefix = E;
+		{
+			int i = prefix.rfind("/");
+			if (i > -1) {
+				prefix = prefix.substr(0, i + 1);
+			}
+			print_line(prefix);
+		}
+
+		PackedStringArray dupes;
+		for (const String &E2 : slist) {
+			if (E2 == E || !E2.begins_with(prefix)) {
+				continue;
+			}
+
+			const Array events2 = EditorSettings::get_singleton()->get_shortcut(E2)->get_events();
+			for (const Variant &ev : events2) {
+				if (sc->matches_event(ev)) {
+					dupes.append(E2);
+					break;
+				}
+			}
+		}
+
+		TreeItem *shortcut_item = _create_shortcut_treeitem(section, E, sc->get_name(), shortcuts_array, !same_as_defaults, false, collapse, dupes);
 		if (!prev_selected_shortcut.is_empty() && sc->get_name() == prev_selected_shortcut) {
 			shortcut_item->select(0);
 		}
