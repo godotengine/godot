@@ -103,10 +103,21 @@ def redirect_emitter(target, source, env):
             pass
         elif base_folder in path.parents:
             item = env.File(f"#bin/obj/{path.relative_to(base_folder)}")
-        elif (alt_base := Path(env.Dir(".").get_abspath()).resolve().parent) in path.parents:
-            item = env.File(f"#bin/obj/external/{path.relative_to(alt_base)}")
         else:
-            print_warning(f'Failed to redirect "{path}"')
+            try:
+                # Try common external bases (e.g., profiler_path parent)
+                alt_base = Path(env.Dir(".").get_abspath()).resolve().parent
+                if alt_base in path.parents:
+                    rel = path.relative_to(alt_base)
+                else:
+                    # Fallback: filename under external/
+                    rel = f"external/{path.name}"
+                item = env.File(f"#bin/obj/{rel}")
+            except (ValueError, RuntimeError, OSError) as e:
+                # ValueError = not a relative subpath
+                # Others = rare filesystem/env issues
+                print_warning(f'Failed to redirect "{path}": {e} — using default location')
+                # item remains the original (no redirect)
         redirected_targets.append(item)
     return redirected_targets, source
 
