@@ -40,6 +40,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="rich_type" type="int" setter="set_rich_type" getter="get_rich_type" enum="Logger.RichPrintType">
+			The format of the [method @GlobalScope.print_rich] text received by [method _log_message].
+		</member>
+	</members>
 	<constants>
 		<constant name="ERROR_TYPE_ERROR" value="0" enum="ErrorType">
 			The message received is an error.
@@ -52,6 +57,15 @@
 		</constant>
 		<constant name="ERROR_TYPE_SHADER" value="3" enum="ErrorType">
 			The message received is a shader error.
+		</constant>
+		<constant name="RICH_PRINT_BBCODE" value="0" enum="RichPrintType">
+			The rich print messages are received as BBCode.
+		</constant>
+		<constant name="RICH_PRINT_PLAIN" value="1" enum="RichPrintType">
+			The rich print messages are received as plain text.
+		</constant>
+		<constant name="RICH_PRINT_ANSI" value="2" enum="RichPrintType">
+			The rich print messages are received as string with ANSI escape sequences.
 		</constant>
 	</constants>
 </class>

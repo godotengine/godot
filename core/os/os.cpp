@@ -129,7 +129,7 @@ void OS::print_rich(const char *p_format, ...) {
 	va_start(argp, p_format);
 
 	if (_logger) {
-		_logger->logv(p_format, argp, false);
+		_logger->logr(p_format, argp, false);
 	}
 
 	va_end(argp);

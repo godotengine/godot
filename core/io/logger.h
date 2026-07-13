@@ -43,6 +43,8 @@ class ScriptBacktrace;
 class Logger {
 protected:
 	bool should_log(bool p_err);
+	static String _bbcode_to_ansi(const String &p_string);
+	static String _bbcode_to_plain(const String &p_string);
 
 	static inline bool _flush_stdout_on_print = true;
 
@@ -85,6 +87,7 @@ public:
 	static void set_flush_stdout_on_print(bool value);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0 = 0;
+	virtual void logr(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0 = 0;
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {});
 
 	void logf(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -98,6 +101,7 @@ public:
  */
 class StdLogger : public Logger {
 public:
+	virtual void logr(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual ~StdLogger() {}
 };
@@ -117,11 +121,10 @@ class RotatedFileLogger : public Logger {
 	void clear_old_backups();
 	void rotate_file();
 
-	Ref<RegEx> strip_ansi_regex;
-
 public:
 	explicit RotatedFileLogger(const String &p_base_path, int p_max_files = 10);
 
+	virtual void logr(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 };
 
@@ -131,6 +134,7 @@ class CompositeLogger : public Logger {
 public:
 	explicit CompositeLogger(const Vector<Logger *> &p_loggers);
 
+	virtual void logr(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
 

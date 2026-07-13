@@ -92,6 +92,27 @@ _FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
 
 class AndroidLogger : public Logger {
 public:
+	virtual void logr(const char *p_format, va_list p_list, bool p_err) {
+		const int static_buf_size = 512;
+		char static_buf[static_buf_size];
+		char *buf = static_buf;
+		va_list list_copy;
+		va_copy(list_copy, p_list);
+		int len = vsnprintf(buf, static_buf_size, p_format, p_list);
+		if (len >= static_buf_size) {
+			buf = (char *)Memory::alloc_static(len + 1);
+			vsnprintf(buf, len + 1, p_format, list_copy);
+		}
+		va_end(list_copy);
+
+		const String &plain = _bbcode_to_plain(String::utf8(buf));
+		__android_log_print(p_err ? ANDROID_LOG_ERROR : ANDROID_LOG_INFO, "godot", "%s", plain.utf8().get_data());
+
+		if (len >= static_buf_size) {
+			Memory::free_static(buf);
+		}
+	}
+
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) {
 		__android_log_vprint(p_err ? ANDROID_LOG_ERROR : ANDROID_LOG_INFO, "godot", p_format, p_list);
 	}
