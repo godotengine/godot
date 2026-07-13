@@ -63,7 +63,6 @@ public:
 	typedef uint64_t USize;
 	static constexpr USize MAX_INT = INT64_MAX;
 
-private:
 	// Alignment:  ↓ max_align_t           ↓ USize          ↓ USize            ↓ MAX_ALIGN
 	//             ┌────────────────────┬──┬───────────────┬──┬─────────────┬──┬───────────...
 	//             │ SafeNumeric<USize> │░░│ USize         │░░│ USize       │░░│ T[]
@@ -76,6 +75,7 @@ private:
 	static constexpr size_t SIZE_OFFSET = Memory::get_aligned_address(CAPACITY_OFFSET + sizeof(USize), alignof(USize));
 	static constexpr size_t DATA_OFFSET = Memory::get_aligned_address(SIZE_OFFSET + sizeof(USize), Memory::MAX_ALIGN);
 
+private:
 	mutable T *_ptr = nullptr;
 
 	// internal helpers
