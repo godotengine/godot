@@ -3,17 +3,17 @@
 
 Checks:
   - -*
-  - performance-move-const-arg
   - bugprone-use-after-move
   - modernize-deprecated-headers
   - modernize-redundant-void-arg
   - modernize-use-bool-literals
-#  - modernize-use-default-member-init # TODO Re-activate
+  - modernize-use-default-member-init
   - modernize-use-nullptr
+  - performance-move-const-arg
   - readability-braces-around-statements
   - readability-identifier-naming
-  - readability-redundant-member-init
   - readability-operators-representation
+  - readability-redundant-member-init
 HeaderFileExtensions: ["", h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]
 HeaderFilterRegex: (core|doc|drivers|editor|main|modules|platform|scene|servers|tests)/
