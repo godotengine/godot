@@ -557,7 +557,7 @@ void EditorInterface::popup_method_selector(Object *p_object, const Callable &p_
 	method_selector->connect(SNAME("canceled"), callback.bind(String(), p_callback), CONNECT_DEFERRED);
 }
 
-void EditorInterface::popup_quick_open(const Callable &p_callback, const TypedArray<StringName> &p_base_types) {
+void EditorInterface::popup_quick_open(const Callable &p_callback, const TypedArray<StringName> &p_base_types, const PackedInt64Array &p_hidden_uids) {
 	StringName required_type = SNAME("Resource");
 	Vector<StringName> base_types;
 	if (p_base_types.is_empty()) {
@@ -572,7 +572,7 @@ void EditorInterface::popup_quick_open(const Callable &p_callback, const TypedAr
 
 	EditorQuickOpenDialog *quick_open = EditorNode::get_singleton()->get_quick_open_dialog();
 	quick_open->connect(SNAME("canceled"), callable_mp(this, &EditorInterface::_quick_open).bind(String(), p_callback));
-	quick_open->popup_dialog(base_types, callable_mp(this, &EditorInterface::_quick_open).bind(p_callback));
+	quick_open->popup_dialog(base_types, callable_mp(this, &EditorInterface::_quick_open).bind(p_callback), false, p_hidden_uids);
 }
 
 void EditorInterface::popup_create_dialog(const Callable &p_callback, const StringName &p_base_type, const String &p_current_type, const String &p_dialog_title, const TypedArray<StringName> &p_custom_type_blocklist) {
@@ -909,7 +909,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_node_selector", "callback", "valid_types", "current_value"), &EditorInterface::popup_node_selector, DEFVAL(TypedArray<StringName>()), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter", "current_value"), &EditorInterface::popup_property_selector, DEFVAL(PackedInt32Array()), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("popup_method_selector", "object", "callback", "current_value"), &EditorInterface::popup_method_selector, DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("popup_quick_open", "callback", "base_types"), &EditorInterface::popup_quick_open, DEFVAL(TypedArray<StringName>()));
+	ClassDB::bind_method(D_METHOD("popup_quick_open", "callback", "base_types", "hidden_uids"), &EditorInterface::popup_quick_open, DEFVAL(TypedArray<StringName>()), DEFVAL(PackedInt64Array()));
 	ClassDB::bind_method(D_METHOD("popup_create_dialog", "callback", "base_type", "current_type", "dialog_title", "type_blocklist"), &EditorInterface::popup_create_dialog, DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(TypedArray<StringName>()));
 
 	// Editor docks.

@@ -688,7 +688,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ "PackedScene" }, callable_mp(this, &SceneTreeDock::_quick_open));
+			PackedInt64Array hidden_uids{};
+			if (const ResourceUID::ID scene_file_path = ResourceLoader::get_resource_uid(scene->get_scene_file_path()); scene_file_path != ResourceUID::INVALID_ID) {
+				hidden_uids.push_back(scene_file_path);
+			}
+
+			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ "PackedScene" }, callable_mp(this, &SceneTreeDock::_quick_open), false, hidden_uids);
 			if (!p_confirm_override) {
 				emit_signal(SNAME("add_node_used"));
 			}

@@ -153,7 +153,7 @@ String EditorQuickOpenDialog::get_dialog_title(const Vector<StringName> &p_base_
 	return vformat(TTR("Select %s"), p_base_types[0]);
 }
 
-void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback, bool p_allow_type_switching) {
+void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback, bool p_allow_type_switching, const PackedInt64Array &p_hidden_uids) {
 	ERR_FAIL_COND(p_base_types.is_empty());
 	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
 
@@ -163,12 +163,12 @@ void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types,
 	allow_type_switching = p_allow_type_switching;
 
 	is_cycling_items = false;
-	container->init(p_base_types);
+	container->init(p_base_types, p_hidden_uids);
 	container->set_instant_preview_toggle_visible(false);
 	_finish_dialog_setup(p_base_types);
 }
 
-void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &p_base_types, Object *p_obj, const StringName &p_path, const Callable &p_item_selected_callback) {
+void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &p_base_types, Object *p_obj, const StringName &p_path, const Callable &p_item_selected_callback, const PackedInt64Array &p_hidden_uids) {
 	ERR_FAIL_NULL(p_obj);
 	ERR_FAIL_COND(p_base_types.is_empty());
 	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
@@ -183,7 +183,7 @@ void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &
 	// the window.
 	initial_selection_performed = false;
 
-	container->init(p_base_types);
+	container->init(p_base_types, p_hidden_uids);
 	container->set_instant_preview_toggle_visible(true);
 	_finish_dialog_setup(p_base_types);
 }
@@ -507,9 +507,10 @@ void QuickOpenResultContainer::_ensure_result_vector_capacity() {
 	}
 }
 
-void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
+void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types, const PackedInt64Array &p_hidden_uids) {
 	_ensure_result_vector_capacity();
 	base_types = p_base_types;
+	hidden_uids = p_hidden_uids;
 
 	const int display_mode_behavior = EDITOR_GET("filesystem/quick_open_dialog/default_display_mode");
 	const bool adaptive_display_mode = (display_mode_behavior == 0);
@@ -733,6 +734,10 @@ QuickOpenResultCandidate QuickOpenResultCandidate::from_result(Ref<FuzzySearchMa
 
 void QuickOpenResultContainer::_add_candidate(QuickOpenResultCandidate &p_candidate) {
 	ERR_FAIL_COND(!ResourceUID::get_singleton()->has_id(p_candidate.uid));
+
+	if (hidden_uids.has(p_candidate.uid)) {
+		return;
+	}
 
 	StringName actual_type;
 	{
