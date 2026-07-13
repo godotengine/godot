@@ -44,6 +44,10 @@
 #include "servers/text/text_server.h"
 #endif
 
+#ifdef TOOLS_ENABLED
+#include "editor/settings/editor_settings.h"
+#endif
+
 // This function is used to determine that a type is "built-in" as opposed to native
 // and custom classes. So `Variant::NIL` and `Variant::OBJECT` are excluded:
 // `Variant::NIL` - `null` is literal, not a type.
@@ -228,7 +232,7 @@ void GDScriptParser::clear() {
 	*this = GDScriptParser();
 }
 
-void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
+void GDScriptParser::push_error(const String &p_message, const Node *p_origin, const ScriptLanguage::CodeActionGroup &p_code_actions) {
 	// TODO: Improve error reporting by pointing at source code.
 	// TODO: Errors might point at more than one place at once (e.g. show previous declaration).
 	panic_mode = true;
@@ -247,6 +251,8 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 		err.end_column = p_origin->end_column;
 	}
 
+	err.code_actions = p_code_actions;
+
 	errors.push_back(err);
 }
 
@@ -254,7 +260,7 @@ void GDScriptParser::push_error(const String &p_message, const GDScriptTokenizer
 	push_error(p_message, p_origin.start_line, p_origin.start_column, p_origin.end_line, p_origin.end_column);
 }
 
-void GDScriptParser::push_error(const String &p_message, int p_start_line, int p_start_column, int p_end_line, int p_end_column) {
+void GDScriptParser::push_error(const String &p_message, int p_start_line, int p_start_column, int p_end_line, int p_end_column, const ScriptLanguage::CodeActionGroup &p_code_actions) {
 	panic_mode = true;
 	ParserError err;
 	err.message = p_message;
@@ -263,17 +269,18 @@ void GDScriptParser::push_error(const String &p_message, int p_start_line, int p
 	err.start_column = p_start_column;
 	err.end_line = p_end_line;
 	err.end_column = p_end_column;
+	err.code_actions = p_code_actions;
 
 	errors.push_back(err);
 }
 
 #ifdef DEBUG_ENABLED
-void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
+void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols = {}, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions = {}) {
 	ERR_FAIL_NULL(p_source);
-	push_warning(p_source->start_line, p_source->start_column, p_source->end_line, p_source->end_column, p_code, p_symbols);
+	push_warning(p_source->start_line, p_source->start_column, p_source->end_line, p_source->end_column, p_code, p_code_actions, p_symbols);
 }
 
-void GDScriptParser::push_warning(int p_start_line, int p_start_column, int p_end_line, int p_end_column, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
+void GDScriptParser::push_warning(int p_start_line, int p_start_column, int p_end_line, int p_end_column, GDScriptWarning::Code p_code, const Vector<String> &p_symbols = {}, const Vector<ScriptLanguage::CodeActionOperation> &p_code_actions = {}) {
 	ERR_FAIL_INDEX(p_code, GDScriptWarning::WARNING_MAX);
 
 	if (is_project_ignoring_warnings || is_script_ignoring_warnings) {
@@ -285,6 +292,73 @@ void GDScriptParser::push_warning(int p_start_line, int p_start_column, int p_en
 		return;
 	}
 
+	ScriptLanguage::CodeActionGroup action_group;
+	action_group.title = GDScriptWarning::get_name_from_code(p_code);
+	action_group.actions.append_array(p_code_actions);
+
+#ifdef TOOLS_ENABLED
+	// Create the ignore code action.
+	ScriptLanguage::CodeActionOperation ignore_action;
+	ScriptLanguage::TextEdit ignore_op;
+
+	String warning_name = GDScriptWarning::get_name_from_code(p_code);
+
+	// Find the existing leading whitespace/indentation used for this line of
+	// code, and copy it for after the newline.
+	PackedStringArray lines = source.split("\n");
+	String line = lines[p_start_line - 1];
+	String leading_whitespace;
+	for (int i = 0; i < line.length() - 1; i++) {
+		if (line[i] == '\t' || line[i] == ' ') {
+			leading_whitespace += line[i];
+		} else {
+			break;
+		}
+	}
+
+	ignore_op.start_line = p_start_line;
+	ignore_op.start_column = 1;
+	ignore_op.end_line = p_start_line;
+	ignore_op.end_column = 1;
+
+	const String code = warning_name.to_lower();
+
+	String quote_style = "\"";
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton() && _EDITOR_GET("text_editor/completion/use_single_quotes")) {
+		quote_style = "'";
+	}
+#endif // TOOLS_ENABLED
+
+	ignore_op.new_text = vformat("%s@warning_ignore(%s)\n", leading_whitespace, code.quote(quote_style));
+
+	// Determine if there's an existing @warning_ignore here; if so, rather than
+	// inserting a new line and a new @warning_ignore, just add this warning to its list.
+	// (Logic mostly copied from ScriptTextEditor::_warning_clicked.)
+	if (p_start_line - 2 >= 0) {
+		String line_before = lines[p_start_line - 2];
+		if (line_before.strip_edges().begins_with("@warning_ignore(")) {
+			const int closing_bracket_idx = line_before.find_char(')');
+			const String text_to_insert = ", " + code.quote(quote_style);
+
+			ignore_op.new_text = text_to_insert;
+			ignore_op.start_line = p_start_line - 1;
+			ignore_op.start_column = closing_bracket_idx + 1;
+			ignore_op.end_line = p_start_line - 1;
+			ignore_op.end_column = closing_bracket_idx + 1;
+		}
+	}
+
+	ignore_action.description = vformat("Ignore \"%s\"", warning_name);
+
+	ScriptLanguage::DocumentEditOperation doc_edit;
+	doc_edit.file_path = script_path;
+	doc_edit.edits.append(ignore_op);
+
+	ignore_action.document_edits.append(doc_edit);
+	action_group.actions.append(ignore_action);
+#endif // TOOLS_ENABLED
+
 	PendingWarning pw;
 	pw.start_line = p_start_line;
 	pw.start_column = p_start_column;
@@ -293,6 +367,7 @@ void GDScriptParser::push_warning(int p_start_line, int p_start_column, int p_en
 	pw.code = p_code;
 	pw.treated_as_error = warn_level == GDScriptWarning::ERROR;
 	pw.symbols = p_symbols;
+	pw.code_actions = action_group;
 
 	pending_warnings.push_back(pw);
 }
@@ -313,9 +388,10 @@ void GDScriptParser::apply_pending_warnings() {
 		warning.start_column = pw.start_column;
 		warning.end_line = pw.end_line;
 		warning.end_column = pw.end_column;
+		warning.code_actions = pw.code_actions;
 
 		if (pw.treated_as_error) {
-			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.start_line, pw.start_column, pw.end_line, pw.end_column);
+			push_error(warning.get_message() + String(" (Warning treated as error.)"), pw.start_line, pw.start_column, pw.end_line, pw.end_column, warning.code_actions);
 			continue;
 		}
 
@@ -449,7 +525,7 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion, bool p_parse_body) {
 	clear();
 
-	String source = p_source_code;
+	source = p_source_code;
 	int cursor_line = -1;
 	int cursor_column = -1;
 	for_completion = p_for_completion;
@@ -2198,7 +2274,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						break;
 					case Node::PRELOAD:
 						// `preload` is a function-like keyword.
-						push_warning(expression, GDScriptWarning::RETURN_VALUE_DISCARDED, "preload");
+						push_warning(expression, GDScriptWarning::RETURN_VALUE_DISCARDED, {}, "preload");
 						break;
 					case Node::LAMBDA:
 						// Standalone lambdas can't be used, so make this an error.
@@ -2265,7 +2341,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 	if (unreachable && result != nullptr) {
 		current_suite->has_unreachable_code = true;
 		if (current_function) {
-			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
+			push_warning(result, GDScriptWarning::UNREACHABLE_CODE, {}, current_function->identifier ? current_function->identifier->name : "<anonymous lambda>");
 		} else {
 			// TODO: Properties setters and getters with unreachable code are not being warned
 		}
@@ -2851,7 +2927,7 @@ GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 #ifdef DEBUG_ENABLED
 	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
 	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
-		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.string());
+		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, {}, identifier->name.string());
 	}
 #endif
 	return identifier;
@@ -3701,7 +3777,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 #ifdef DEBUG_ENABLED
 			// Check spoofing.
 			if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier)) {
-				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier);
+				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, {}, identifier);
 			}
 #endif
 			get_node->full_path += identifier;
