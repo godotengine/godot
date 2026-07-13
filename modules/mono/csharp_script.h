@@ -205,11 +205,19 @@ private:
 
 	HashMap<StringName, PropertyInfo> member_info;
 
+#ifdef TOOLS_ENABLED
+	// Exported member name -> normalized /// <summary> text (Tool scripts only).
+	HashMap<StringName, String> member_docs;
+	// Class-level /// <summary> text (Tool scripts only).
+	String class_doc_brief;
+#endif
+
 	void _clear();
 
 	static void GD_CLR_STDCALL _add_property_info_list_callback(CSharpScript *p_script, const String *p_current_class_name, void *p_props, int32_t p_count);
 #ifdef TOOLS_ENABLED
 	static void GD_CLR_STDCALL _add_property_default_values_callback(CSharpScript *p_script, void *p_def_vals, int32_t p_count);
+	static void GD_CLR_STDCALL _add_property_doc_callback(CSharpScript *p_script, const String *p_class_name, const String *p_member, const String *p_summary);
 #endif
 	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
@@ -241,12 +249,8 @@ public:
 	void set_source_code(const String &p_code) override;
 
 #ifdef TOOLS_ENABLED
-	virtual StringName get_doc_class_name() const override { return StringName(); } // TODO
-	virtual Vector<DocData::ClassDoc> get_documentation() const override {
-		// TODO
-		Vector<DocData::ClassDoc> docs;
-		return docs;
-	}
+	virtual StringName get_doc_class_name() const override { return type_info.class_name; }
+	virtual Vector<DocData::ClassDoc> get_documentation() const override;
 	virtual String get_class_icon_path() const override {
 		return type_info.icon_path;
 	}
@@ -517,6 +521,9 @@ public:
 	}
 	String validate_path(const String &p_path) const override;
 	bool supports_builtin_mode() const override;
+#ifdef TOOLS_ENABLED
+	bool supports_documentation() const override { return true; }
+#endif
 	/* TODO? */ int find_function(const String &p_function, const String &p_code) const override {
 		return -1;
 	}

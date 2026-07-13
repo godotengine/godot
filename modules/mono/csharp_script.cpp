@@ -2118,6 +2118,15 @@ void GD_CLR_STDCALL CSharpScript::_add_property_default_values_callback(CSharpSc
 		p_script->exported_members_defval_cache[name] = value;
 	}
 }
+
+void GD_CLR_STDCALL CSharpScript::_add_property_doc_callback(CSharpScript *p_script, const String *p_class_name, const String *p_member, const String *p_summary) {
+	if (p_member->is_empty()) {
+		// Class-level summary.
+		p_script->class_doc_brief = *p_summary;
+		return;
+	}
+	p_script->member_docs[StringName(*p_member)] = *p_summary;
+}
 #endif
 
 bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_update) {
@@ -2148,6 +2157,8 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 #ifdef TOOLS_ENABLED
 		exported_members_cache.clear();
 		exported_members_defval_cache.clear();
+		member_docs.clear();
+		class_doc_brief = String();
 #endif
 
 		if (GDMonoCache::godot_api_cache_updated) {
@@ -2155,6 +2166,11 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 
 #ifdef TOOLS_ENABLED
 			GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyDefaultValues(this, &_add_property_default_values_callback);
+
+			// Tool scripts can surface their exported members' /// <summary> XML docs as Inspector tooltips.
+			if (is_tool() && GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyDocumentation) {
+				GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyDocumentation(this, &_add_property_doc_callback);
+			}
 #endif
 		}
 	}
@@ -2721,6 +2737,44 @@ Ref<Script> CSharpScript::get_base_script() const {
 StringName CSharpScript::get_global_name() const {
 	return type_info.is_global_class ? StringName(type_info.class_name) : StringName();
 }
+
+#ifdef TOOLS_ENABLED
+Vector<DocData::ClassDoc> CSharpScript::get_documentation() const {
+	Vector<DocData::ClassDoc> docs;
+
+	if (member_docs.is_empty() && class_doc_brief.is_empty()) {
+		// Nothing to document; behavior stays unchanged.
+		return docs;
+	}
+
+	DocData::ClassDoc doc;
+	// Must match the class name the inspector uses to look up property docs
+	// (see EditorInspector::update_tree, which reads get_doc_class_name()).
+	doc.name = get_doc_class_name();
+	doc.is_script_doc = true;
+	doc.script_path = get_path();
+
+	if (!class_doc_brief.is_empty()) {
+		doc.brief_description = class_doc_brief;
+		doc.description = class_doc_brief;
+	}
+
+	for (const KeyValue<StringName, String> &E : member_docs) {
+		// Only document members that are actually exported/known on this script.
+		if (!member_info.has(E.key)) {
+			continue;
+		}
+
+		DocData::PropertyDoc prop_doc;
+		prop_doc.name = E.key;
+		prop_doc.description = E.value;
+		doc.properties.push_back(prop_doc);
+	}
+
+	docs.push_back(doc);
+	return docs;
+}
+#endif // TOOLS_ENABLED
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 #ifdef TOOLS_ENABLED
