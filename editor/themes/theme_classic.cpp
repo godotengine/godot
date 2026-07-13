@@ -1807,12 +1807,6 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_icon("updown", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUpdown"), EditorStringName(EditorIcons)));
 		p_theme->set_icon("updown_disabled", "EditorSpinSlider", p_theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), EditorStringName(EditorIcons)));
 
-		// EditorSpinSliders with a label have more space on the left, so add an
-		// higher margin to match the location where the text begins.
-		// The margin values below were determined by empirical testing.
-		p_theme->set_constant("line_edit_margin", "EditorSpinSlider", 24 * EDSCALE);
-		p_theme->set_constant("line_edit_margin_empty", "EditorSpinSlider", 16 * EDSCALE);
-
 		// Launch Pad and Play buttons.
 		Ref<StyleBoxFlat> style_launch_pad = EditorThemeManager::make_flat_stylebox(p_config.dark_color_1, 2 * EDSCALE, 0, 2 * EDSCALE, 0, p_config.corner_radius);
 		style_launch_pad->set_corner_radius_all(p_config.corner_radius * EDSCALE);

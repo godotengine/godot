@@ -41,6 +41,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
 #include "scene/theme/theme_db.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
@@ -331,13 +332,7 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 		return;
 	}
 
-	// Add a left margin to the stylebox to make the number align with the Label
-	// when it's edited. The LineEdit "focus" stylebox uses the "normal" stylebox's
-	// default margins.
 	Ref<StyleBox> stylebox = get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"))->duplicate();
-	// TODO: Handle this internally instead of relying on the theme.
-	int margin = get_theme_constant(get_label().is_empty() ? SNAME("line_edit_margin_empty") : SNAME("line_edit_margin"), SNAME("EditorSpinSlider"));
-	stylebox->set_content_margin(is_layout_rtl() ? SIDE_RIGHT : SIDE_LEFT, margin);
 
 	value_input->add_theme_style_override(CoreStringName(normal), stylebox);
 }
@@ -355,11 +350,15 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
-	int sep_base = 4 * EDSCALE;
-	int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
 	int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
-	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
+	int label_margin = 0;
+	int label_box_width = 0;
+	if (label_width > 0) {
+		label_margin = sb->get_offset().x; // make it have the same margin on both sides, looks better
+		label_box_width = label_margin * 2 + label_width;
+	}
+	int number_width = size.width - label_box_width - sb->get_minimum_size().width;
 
 	String numstr = get_text_value();
 
@@ -370,11 +369,8 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	if (flat && !label.is_empty()) {
 		Ref<StyleBox> label_bg = get_theme_stylebox(SNAME("label_bg"), SNAME("EditorSpinSlider"));
-		if (rtl) {
-			draw_style_box(label_bg, Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
-		} else {
-			draw_style_box(label_bg, Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
-		}
+		Vector2 label_pos = rtl ? Vector2(size.width - label_box_width, 0) : Vector2();
+		draw_style_box(label_bg, Rect2(label_pos, Vector2(label_box_width, size.height)));
 	}
 
 	if (has_focus(true)) {
@@ -383,16 +379,16 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 
 	if (rtl) {
-		draw_string(font, Vector2(Math::round(size.width - sb->get_offset().x - label_width), vofs), label, HORIZONTAL_ALIGNMENT_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(Math::round(size.width - label_margin - label_width), vofs), label, HORIZONTAL_ALIGNMENT_RIGHT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 	} else {
-		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
+		draw_string(font, Vector2(label_margin, vofs), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 	}
 
 	int suffix_start = numstr.length();
 	RID num_rid = TS->create_shaped_text();
 	TS->shaped_text_add_string(num_rid, numstr + U"\u2009" + suffix, font->get_rids(), font_size, font->get_opentype_features());
 
-	float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(sb->get_offset().x + label_width + sep);
+	float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(label_box_width + sb->get_offset().x);
 	Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - TS->shaped_text_get_width(num_rid)), vofs) : Vector2(text_start, vofs);
 	int v_size = TS->shaped_text_get_glyph_count(num_rid);
 	const Glyph *glyphs = TS->shaped_text_get_glyphs(num_rid);
@@ -798,12 +794,29 @@ void EditorSpinSlider::_ensure_value_input() {
 	value_input->set_emoji_menu_enabled(false);
 	value_input->set_focus_mode(FOCUS_CLICK);
 	value_input->add_theme_constant_override(SNAME("minimum_character_width"), 0);
-	add_child(value_input);
-	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	value_input->set_h_size_flags(SIZE_EXPAND_FILL);
 	value_input->connect(SceneStringName(hidden), callable_mp(this, &EditorSpinSlider::_value_input_hidden));
 	value_input->connect(SceneStringName(text_submitted), callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect(SceneStringName(focus_exited), callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input->connect(SceneStringName(gui_input), callable_mp(this, &EditorSpinSlider::_value_input_gui_input));
+
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->add_theme_constant_override("separation", 0);
+	if (!label.is_empty()) {
+		Control *space = memnew(Control);
+		space->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
+		Ref<StyleBox> sb = get_theme_stylebox(read_only ? SNAME("read_only") : CoreStringName(normal), SNAME("LineEdit"));
+		Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
+		int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
+		int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
+		int label_margin = sb->get_offset().x;
+		space->set_custom_minimum_size(Size2(label_margin * 2 + label_width, 0));
+
+		hb->add_child(space);
+	}
+	hb->add_child(value_input);
+	hb->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	add_child(hb);
 
 	if (is_inside_tree()) {
 		_update_value_input_stylebox();
