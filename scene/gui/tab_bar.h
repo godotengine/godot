@@ -116,6 +116,7 @@ private:
 	int rb_hover = -1;
 	bool rb_pressing = false;
 	bool tab_style_v_flip = false;
+	bool vertical = false;
 
 	bool select_with_rmb = false;
 	bool deselect_enabled = false;
@@ -159,7 +160,12 @@ private:
 		Ref<Texture2D> increment_hl_icon;
 		Ref<Texture2D> decrement_icon;
 		Ref<Texture2D> decrement_hl_icon;
+		Ref<Texture2D> increment_vertical_icon;
+		Ref<Texture2D> increment_vertical_hl_icon;
+		Ref<Texture2D> decrement_vertical_icon;
+		Ref<Texture2D> decrement_vertical_hl_icon;
 		Ref<Texture2D> drop_mark_icon;
+		Ref<Texture2D> vertical_drop_mark_icon;
 		Color drop_mark_color;
 
 		Ref<Font> font;
@@ -186,14 +192,31 @@ private:
 
 	int get_tab_width(int p_idx) const;
 	Size2 _get_tab_icon_size(int p_idx) const;
+	Size2 _get_vertical_popup_button_min_size() const;
+	int _get_reserved_vertical_buttons_row_height(bool p_assume_buttons_visible = false) const;
+	bool _is_point_primary_before_or_at_mid(const Point2 &p_point, const Rect2 &p_rect) const;
+	bool _is_point_primary_after_mid(const Point2 &p_point, const Rect2 &p_rect) const;
+	bool _is_point_before_first_tab(const Point2 &p_point) const;
+	bool _compare_primary_coordinate(float p_point_coord, float p_rect_coord, bool p_less_than) const;
+	Rect2 _get_tabs_content_rect(bool p_assume_buttons_visible = false) const;
 	void _ensure_no_over_offset();
 	bool _can_deselect() const;
+	Ref<Texture2D> _get_decrement_icon() const;
+	Ref<Texture2D> _get_increment_icon() const;
+	Ref<Texture2D> _get_decrement_highlight_icon() const;
+	Ref<Texture2D> _get_increment_highlight_icon() const;
+	Ref<Texture2D> _get_drop_mark_icon() const;
+
+	bool _is_close_button_visible(int p_tab_idx) const;
+	void _get_vertical_button_rects(Rect2 &r_dec_rect, Rect2 &r_inc_rect) const;
+	void _draw_button(const Ref<Texture2D> &p_icon, const Rect2 &p_rect, bool p_hovered, bool p_pressed, const Color &p_color = Color(1, 1, 1, 1)) const;
 
 	void _update_hover();
 	void _update_cache(bool p_update_hover = true);
 	void _hover_switch_timeout();
 
 	void _on_mouse_exited();
+	void _on_maximum_size_changed();
 
 	void _shape(int p_tab);
 	void _draw_tab(Ref<StyleBox> &p_tab_style, const Color &p_font_color, const Color &p_icon_color, int p_index, float p_x, bool p_focus);
@@ -274,6 +297,10 @@ public:
 	bool get_clip_tabs() const;
 
 	void set_tab_style_v_flip(bool p_tab_style_v_flip);
+	bool get_tab_style_v_flip() const;
+
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
 
 	void move_tab(int p_from, int p_to);
 
@@ -300,6 +327,7 @@ public:
 	void set_tab_offset(int p_offset);
 	int get_tab_offset() const;
 	bool get_offset_buttons_visible() const;
+	int get_vertical_buttons_row_top() const;
 
 	void remove_tab(int p_idx);
 
