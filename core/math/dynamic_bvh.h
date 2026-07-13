@@ -74,27 +74,27 @@ private:
 		_FORCE_INLINE_ Vector3 get_center() const { return ((min + max) / 2); }
 		_FORCE_INLINE_ Vector3 get_length() const { return (max - min); }
 
-		_FORCE_INLINE_ bool contains(const Volume &a) const {
-			return ((min.x <= a.min.x) &&
-					(min.y <= a.min.y) &&
-					(min.z <= a.min.z) &&
-					(max.x >= a.max.x) &&
-					(max.y >= a.max.y) &&
-					(max.z >= a.max.z));
+		_FORCE_INLINE_ bool contains(const Volume &p_a) const {
+			return ((min.x <= p_a.min.x) &&
+					(min.y <= p_a.min.y) &&
+					(min.z <= p_a.min.z) &&
+					(max.x >= p_a.max.x) &&
+					(max.y >= p_a.max.y) &&
+					(max.z >= p_a.max.z));
 		}
 
-		_FORCE_INLINE_ Volume merge(const Volume &b) const {
+		_FORCE_INLINE_ Volume merge(const Volume &p_b) const {
 			Volume r;
 			for (int i = 0; i < 3; ++i) {
-				if (min[i] < b.min[i]) {
+				if (min[i] < p_b.min[i]) {
 					r.min[i] = min[i];
 				} else {
-					r.min[i] = b.min[i];
+					r.min[i] = p_b.min[i];
 				}
-				if (max[i] > b.max[i]) {
+				if (max[i] > p_b.max[i]) {
 					r.max[i] = max[i];
 				} else {
-					r.max[i] = b.max[i];
+					r.max[i] = p_b.max[i];
 				}
 			}
 			return r;
@@ -106,32 +106,32 @@ private:
 					edges.x + edges.y + edges.z);
 		}
 
-		_FORCE_INLINE_ bool is_not_equal_to(const Volume &b) const {
-			return ((min.x != b.min.x) ||
-					(min.y != b.min.y) ||
-					(min.z != b.min.z) ||
-					(max.x != b.max.x) ||
-					(max.y != b.max.y) ||
-					(max.z != b.max.z));
+		_FORCE_INLINE_ bool is_not_equal_to(const Volume &p_b) const {
+			return ((min.x != p_b.min.x) ||
+					(min.y != p_b.min.y) ||
+					(min.z != p_b.min.z) ||
+					(max.x != p_b.max.x) ||
+					(max.y != p_b.max.y) ||
+					(max.z != p_b.max.z));
 		}
 
-		_FORCE_INLINE_ real_t get_proximity_to(const Volume &b) const {
-			const Vector3 d = (min + max) - (b.min + b.max);
+		_FORCE_INLINE_ real_t get_proximity_to(const Volume &p_b) const {
+			const Vector3 d = (min + max) - (p_b.min + p_b.max);
 			return (Math::abs(d.x) + Math::abs(d.y) + Math::abs(d.z));
 		}
 
-		_FORCE_INLINE_ int select_by_proximity(const Volume &a, const Volume &b) const {
-			return (get_proximity_to(a) < get_proximity_to(b) ? 0 : 1);
+		_FORCE_INLINE_ int select_by_proximity(const Volume &p_a, const Volume &p_b) const {
+			return (get_proximity_to(p_a) < get_proximity_to(p_b) ? 0 : 1);
 		}
 
 		//
-		_FORCE_INLINE_ bool intersects(const Volume &b) const {
-			return ((min.x <= b.max.x) &&
-					(max.x >= b.min.x) &&
-					(min.y <= b.max.y) &&
-					(max.y >= b.min.y) &&
-					(min.z <= b.max.z) &&
-					(max.z >= b.min.z));
+		_FORCE_INLINE_ bool intersects(const Volume &p_b) const {
+			return ((min.x <= p_b.max.x) &&
+					(max.x >= p_b.min.x) &&
+					(min.y <= p_b.max.y) &&
+					(max.y >= p_b.min.y) &&
+					(min.z <= p_b.max.z) &&
+					(max.z >= p_b.min.z));
 		}
 
 		_FORCE_INLINE_ bool intersects_convex(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const {
@@ -192,12 +192,12 @@ private:
 			ERR_FAIL_NULL_V(parent, 0);
 			return (parent->children[1] == this) ? 1 : 0;
 		}
-		void get_max_depth(int depth, int &maxdepth) {
+		void get_max_depth(int p_depth, int &r_maxdepth) {
 			if (is_internal()) {
-				children[0]->get_max_depth(depth + 1, maxdepth);
-				children[1]->get_max_depth(depth + 1, maxdepth);
+				children[0]->get_max_depth(p_depth + 1, r_maxdepth);
+				children[1]->get_max_depth(p_depth + 1, r_maxdepth);
 			} else {
-				maxdepth = MAX(maxdepth, depth);
+				r_maxdepth = MAX(r_maxdepth, p_depth);
 			}
 		}
 
@@ -210,8 +210,8 @@ private:
 			}
 		}
 
-		bool is_left_of_axis(const Vector3 &org, const Vector3 &axis) const {
-			return axis.dot(volume.get_center() - org) <= 0;
+		bool is_left_of_axis(const Vector3 &p_org, const Vector3 &p_axis) const {
+			return p_axis.dot(volume.get_center() - p_org) <= 0;
 		}
 
 		Node() {
@@ -237,50 +237,50 @@ private:
 	_FORCE_INLINE_ Node *_create_node(Node *p_parent, void *p_data);
 	_FORCE_INLINE_ DynamicBVH::Node *_create_node_with_volume(Node *p_parent, const Volume &p_volume, void *p_data);
 	_FORCE_INLINE_ void _insert_leaf(Node *p_root, Node *p_leaf);
-	_FORCE_INLINE_ Node *_remove_leaf(Node *leaf);
+	_FORCE_INLINE_ Node *_remove_leaf(Node *r_leaf);
 	void _fetch_leaves(Node *p_root, LocalVector<Node *> &r_leaves, int p_depth = -1);
-	static int _split(Node **leaves, int p_count, const Vector3 &p_org, const Vector3 &p_axis);
-	static Volume _bounds(Node **leaves, int p_count);
-	void _bottom_up(Node **leaves, int p_count);
-	Node *_top_down(Node **leaves, int p_count, int p_bu_threshold);
-	Node *_node_sort(Node *n, Node *&r);
+	static int _split(Node **r_leaves, int p_count, const Vector3 &p_org, const Vector3 &p_axis);
+	static Volume _bounds(Node **r_leaves, int p_count);
+	void _bottom_up(Node **r_leaves, int p_count);
+	Node *_top_down(Node **r_leaves, int p_count, int p_bu_threshold);
+	Node *_node_sort(Node *r_node, Node *&r_root);
 
-	_FORCE_INLINE_ void _update(Node *leaf, int lookahead = -1);
+	_FORCE_INLINE_ void _update(Node *r_leaf, int p_lookahead = -1);
 
 	void _extract_leaves(Node *p_node, List<ID> *r_elements);
 
-	_FORCE_INLINE_ bool _ray_aabb(const Vector3 &rayFrom, const Vector3 &rayInvDirection, const unsigned int raySign[3], const Vector3 bounds[2], real_t &tmin, real_t lambda_min, real_t lambda_max) {
+	_FORCE_INLINE_ bool _ray_aabb(const Vector3 &p_ray_from, const Vector3 &p_ray_inv_direction, const unsigned int p_ray_sign[3], const Vector3 p_bounds[2], real_t &r_tmin, real_t p_lambda_min, real_t p_lambda_max) {
 		real_t tmax, tymin, tymax, tzmin, tzmax;
-		tmin = (bounds[raySign[0]].x - rayFrom.x) * rayInvDirection.x;
-		tmax = (bounds[1 - raySign[0]].x - rayFrom.x) * rayInvDirection.x;
-		tymin = (bounds[raySign[1]].y - rayFrom.y) * rayInvDirection.y;
-		tymax = (bounds[1 - raySign[1]].y - rayFrom.y) * rayInvDirection.y;
+		r_tmin = (p_bounds[p_ray_sign[0]].x - p_ray_from.x) * p_ray_inv_direction.x;
+		tmax = (p_bounds[1 - p_ray_sign[0]].x - p_ray_from.x) * p_ray_inv_direction.x;
+		tymin = (p_bounds[p_ray_sign[1]].y - p_ray_from.y) * p_ray_inv_direction.y;
+		tymax = (p_bounds[1 - p_ray_sign[1]].y - p_ray_from.y) * p_ray_inv_direction.y;
 
-		if ((tmin > tymax) || (tymin > tmax)) {
+		if ((r_tmin > tymax) || (tymin > tmax)) {
 			return false;
 		}
 
-		if (tymin > tmin) {
-			tmin = tymin;
+		if (tymin > r_tmin) {
+			r_tmin = tymin;
 		}
 
 		if (tymax < tmax) {
 			tmax = tymax;
 		}
 
-		tzmin = (bounds[raySign[2]].z - rayFrom.z) * rayInvDirection.z;
-		tzmax = (bounds[1 - raySign[2]].z - rayFrom.z) * rayInvDirection.z;
+		tzmin = (p_bounds[p_ray_sign[2]].z - p_ray_from.z) * p_ray_inv_direction.z;
+		tzmax = (p_bounds[1 - p_ray_sign[2]].z - p_ray_from.z) * p_ray_inv_direction.z;
 
-		if ((tmin > tzmax) || (tzmin > tmax)) {
+		if ((r_tmin > tzmax) || (tzmin > tmax)) {
 			return false;
 		}
-		if (tzmin > tmin) {
-			tmin = tzmin;
+		if (tzmin > r_tmin) {
+			r_tmin = tzmin;
 		}
 		if (tzmax < tmax) {
 			tmax = tzmax;
 		}
-		return ((tmin < lambda_max) && (tmax > lambda_min));
+		return ((r_tmin < p_lambda_max) && (tmax > p_lambda_min));
 	}
 
 public:
@@ -288,8 +288,8 @@ public:
 	void clear();
 	bool is_empty() const { return (nullptr == bvh_root); }
 	void optimize_bottom_up();
-	void optimize_top_down(int bu_threshold = 128);
-	void optimize_incremental(int passes);
+	void optimize_top_down(int p_bu_threshold = 128);
+	void optimize_incremental(int p_passes);
 	ID insert(const AABB &p_box, void *p_userdata);
 	bool update(const ID &p_id, const AABB &p_box);
 	void remove(const ID &p_id);
