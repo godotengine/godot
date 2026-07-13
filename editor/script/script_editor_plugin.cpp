@@ -1922,6 +1922,7 @@ struct _ScriptEditorItemData {
 	bool used = false;
 	int category = 0;
 	Node *ref = nullptr;
+	String path;
 
 	bool operator<(const _ScriptEditorItemData &id) const {
 		if (category == id.category) {
@@ -2018,6 +2019,7 @@ void ScriptEditor::_update_script_names() {
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
+			sd.path = path;
 			sd.name = name;
 			sd.tooltip = saved ? path : TTR("Unsaved file.");
 			sd.index = i;
@@ -2070,6 +2072,7 @@ void ScriptEditor::_update_script_names() {
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
+			sd.path = eh->get_class().unquote();
 			sd.name = name;
 			sd.sort_key = name.to_lower();
 			sd.tooltip = tooltip;
@@ -2099,7 +2102,7 @@ void ScriptEditor::_update_script_names() {
 		}
 
 		disambiguated_script_names.append(name);
-		full_script_paths.append(sedata[j].tooltip);
+		full_script_paths.append(sedata[j].path);
 	}
 
 	EditorNode::disambiguate_filenames(full_script_paths, disambiguated_script_names);
