@@ -723,6 +723,16 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Compiler configuration
 
+    # Cross-compilation
+    host_is_64_bit = sys.maxsize > 2**32
+    if host_is_64_bit and env["arch"] == "x86_32":
+        env.Append(CCFLAGS=["-m32"])
+        env.Append(LINKFLAGS=["-m32"])
+    elif not host_is_64_bit and env["arch"] == "x86_64":
+        env.Append(CCFLAGS=["-m64"])
+        env.Append(LINKFLAGS=["-m64"])
+    # arm32/arm64 usually don't need explicit -m flags with the prefixed toolchain
+
     if env["arch"] == "x86_32":
         if env["use_static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
