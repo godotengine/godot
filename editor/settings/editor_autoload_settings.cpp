@@ -911,7 +911,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+	mc->set_theme_type_variation("NoBorderBottomWideWindow");
 	add_child(mc);
 
 	tree = memnew(Tree);
