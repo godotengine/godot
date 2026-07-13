@@ -99,6 +99,11 @@ using namespace godot;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 #endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wunnecessary-virtual-specifier"
+#endif
 
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
@@ -115,6 +120,9 @@ using namespace godot;
 
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
+#endif
+#if defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 #ifdef MODULE_FREETYPE_ENABLED

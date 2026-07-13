@@ -1920,6 +1920,9 @@ id<MTLDepthStencilState> MDResourceCache::get_depth_stencil_state(bool p_use_dep
 	return *val;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-designator"
+
 static const char *SHADER_STAGE_NAMES[] = {
 	[RD::SHADER_STAGE_VERTEX] = "vert",
 	[RD::SHADER_STAGE_FRAGMENT] = "frag",
@@ -1927,6 +1930,8 @@ static const char *SHADER_STAGE_NAMES[] = {
 	[RD::SHADER_STAGE_TESSELATION_EVALUATION] = "tess_eval",
 	[RD::SHADER_STAGE_COMPUTE] = "comp",
 };
+
+#pragma clang diagnostic pop
 
 void ShaderCacheEntry::notify_free() const {
 	owner.shader_cache_free_entry(key);
