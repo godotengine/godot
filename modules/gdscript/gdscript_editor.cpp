@@ -231,7 +231,8 @@ bool GDScriptLanguage::supports_documentation() const {
 	return true;
 }
 
-int GDScriptLanguage::find_function(const String &p_function, const String &p_code) const {
+#ifdef TOOLS_ENABLED
+int32_t GDScriptEditorLanguage::find_function(const String &p_function, const String &p_code) const {
 	GDScriptTokenizerText tokenizer;
 	tokenizer.set_source_code(p_code);
 	int indent = 0;
@@ -255,6 +256,7 @@ int GDScriptLanguage::find_function(const String &p_function, const String &p_co
 	}
 	return -1;
 }
+#endif // TOOLS_ENABLED
 
 /* DEBUGGER FUNCTIONS */
 

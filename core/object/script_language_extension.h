@@ -279,6 +279,10 @@ private:
 			return script_language->lookup_code(p_code, p_symbol, p_path, p_owner, r_result);
 		}
 
+		virtual int32_t find_function(const String &p_function, const String &p_code) const override {
+			return script_language->find_function(p_function, p_code);
+		}
+
 		EditorAdapter(ScriptLanguageExtension *p_script_language) {
 			script_language = p_script_language;
 		}
@@ -425,7 +429,17 @@ public:
 	EXBIND0RC(bool, supports_documentation)
 	EXBIND0RC(bool, can_inherit_from_file)
 
-	EXBIND2RC(int, find_function, const String &, const String &)
+	GDVIRTUAL2RC_REQUIRED(int, _find_function, const String &, const String &)
+#ifdef TOOLS_ENABLED
+	int32_t find_function(const String &p_function, const String &p_code) {
+		int32_t ret = -1;
+		if (GDVIRTUAL_CALL(_find_function, p_function, p_code, ret)) {
+			return ret;
+		}
+		return -1;
+	}
+#endif // TOOLS_ENABLED
+
 	EXBIND3RC(String, make_function, const String &, const String &, const PackedStringArray &)
 	EXBIND0RC(bool, can_make_function)
 	EXBIND3R(Error, open_in_external_editor, const Ref<Script> &, int, int)
