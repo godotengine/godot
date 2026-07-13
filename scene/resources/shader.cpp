@@ -42,11 +42,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/doc/editor_help.h"
-
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif
 #endif
 
 Shader::Mode Shader::get_mode() const {
@@ -166,6 +161,8 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 		class_doc.is_script_doc = true;
 		class_doc.inherits = "Shader";
 	}
+#define GETCHAR(m_idx) (((char_idx + m_idx) < code.length()) ? code[char_idx + m_idx] : char32_t(0))
+	int char_idx = 0;
 #endif
 
 	for (PropertyInfo &pi : local) {
@@ -187,15 +184,129 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 			if (generate_doc) {
 				DocData::PropertyDoc prop_doc;
 				prop_doc.name = "shader_parameter/" + pi.name;
-				const RegEx pattern("/\\*\\*\\s([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/\\s*uniform\\s+\\w+\\s+" + pi.name + "(?=[\\s:;=])");
-				Ref<RegExMatch> pattern_ref = pattern.search(code);
-				if (pattern_ref.is_valid()) {
-					RegExMatch *match = pattern_ref.ptr();
-					const RegEx pattern_tip("\\/\\*\\*([\\s\\S]*?)\\*/");
-					Ref<RegExMatch> pattern_tip_ref = pattern_tip.search(match->get_string(0));
-					RegExMatch *match_tip = pattern_tip_ref.ptr();
-					const RegEx pattern_stripped("\\n\\s*\\*\\s*");
-					prop_doc.description = pattern_stripped.sub(match_tip->get_string(1), "\n", true);
+
+				Vector<char32_t> comment_chars;
+				String comment;
+				bool found = false;
+				while (!found && char_idx < code.length()) {
+					char_idx++;
+
+					switch (GETCHAR(-1)) {
+						case '(':
+						case ')':
+						case '{':
+						case '}':
+						case ';':
+						case '=':
+						case ':': {
+							// if tokens are there, that means doc comment doesn't immediately precede uniform
+							comment_chars.clear();
+							continue;
+						}
+						case '"': {
+							// string constant
+							comment_chars.clear();
+							
+							bool _previous_backslash = false;
+
+							while (true) {
+								bool _ended = false;
+								char32_t c = GETCHAR(0);
+								if (c == 0) {
+									// EOF
+									break;
+								}
+								switch (c) {
+									case '"': {
+										if (_previous_backslash) {
+											_previous_backslash = false;
+										} else {
+											_ended = true;
+										}
+										break;
+									}
+									case '\\': {
+										_previous_backslash = !_previous_backslash;
+										break;
+									}
+								}
+
+								char_idx++;
+								if (_ended) {
+									break;
+								}
+							}
+						} break;
+						case '/': {
+							// doc comment
+							if (GETCHAR(0) == '*' && GETCHAR(1) == '*') {
+								char_idx += 2;
+
+								while (true) {
+									// EOF
+									if (GETCHAR(0) == 0) {
+										break;
+									}
+									// New comment
+									if (GETCHAR(0) == '/' && GETCHAR(1) == '*' && GETCHAR(2) == '*') {
+										char_idx += 3;
+
+										//reset since property name was not found since previous comment
+										comment_chars.clear();
+										continue;
+									}
+									// End of comment
+									if (GETCHAR(0) == '*' && GETCHAR(1) == '/') {
+										char_idx += 2;
+										break;
+									}
+									// Skip duplicate or trailing whitespace
+									if (is_whitespace(GETCHAR(0)) && !is_linebreak(GETCHAR(0)) && (comment_chars.is_empty() || is_whitespace(comment_chars.get(comment_chars.size() - 1)))) {
+										char_idx++;
+										continue;
+									}
+									// Skip asterisks at beginning of line
+									if (GETCHAR(0) == '*' && !comment_chars.is_empty() && is_linebreak(comment_chars.get(comment_chars.size() - 1))) {
+										char_idx++;
+										continue;
+									}
+
+									comment_chars.push_back(GETCHAR(0));
+									char_idx++;
+								}
+							}
+
+							continue; //a comment, continue to next token
+						} break;
+						default: {
+							// Only alphabet and underscores can begin a property name
+							if (is_ascii_alphabet_char(GETCHAR(-1)) || is_underscore(GETCHAR(-1))) {
+								String str;
+
+								while (is_ascii_identifier_char(GETCHAR(-1))) {
+									str += char32_t(GETCHAR(-1));
+									char_idx++;
+								}
+
+								if (StringName(str) == pi.name) {
+									found = true;
+									if (comment_chars.is_empty()) {
+										break;
+									}
+									comment.resize_uninitialized(comment_chars.size() + 1);
+									char32_t *ret_ptrw = comment.ptrw();
+									for (char32_t &chr : comment_chars) {
+										memcpy(ret_ptrw, &chr, sizeof(char32_t));
+										ret_ptrw += 1;
+									}
+									*ret_ptrw = 0;
+								}
+							}
+						} break;
+					}
+				}
+				if (found) {
+					prop_doc.description = comment;
 
 					pi.class_name = class_doc.name;
 					class_doc.properties.push_back(prop_doc);
