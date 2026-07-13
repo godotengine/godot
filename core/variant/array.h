@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/shared_ptr.h"
 #include "core/templates/span.h"
 #include "core/typedefs.h"
 #include "core/variant/variant_deep_duplicate.h"
@@ -45,9 +46,7 @@ struct ArrayPrivate;
 struct ContainerType;
 
 class Array {
-	mutable ArrayPrivate *_p;
-	void _ref(const Array &p_from) const;
-	void _unref() const;
+	SharedPtr<ArrayPrivate> _p;
 
 public:
 	struct ConstIterator {

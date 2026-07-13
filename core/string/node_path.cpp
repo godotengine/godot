@@ -93,13 +93,6 @@ int NodePath::get_total_name_count() const {
 	return data->path.size() + data->subpath.size();
 }
 
-void NodePath::unref() {
-	if (data && data->refcount.unref()) {
-		memdelete(data);
-	}
-	data = nullptr;
-}
-
 bool NodePath::operator==(const NodePath &p_path) const {
 	if (data == p_path.data) {
 		return true;
@@ -157,15 +150,7 @@ bool NodePath::operator!=(const NodePath &p_path) const {
 }
 
 void NodePath::operator=(const NodePath &p_path) {
-	if (this == &p_path) {
-		return;
-	}
-
-	unref();
-
-	if (p_path.data && p_path.data->refcount.ref()) {
-		data = p_path.data;
-	}
+	data = p_path.data;
 }
 
 void NodePath::_copy_on_write() {
@@ -390,8 +375,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 		return;
 	}
 
-	data = memnew(Data);
-	data->refcount.init();
+	data = SharedPtr<Data>::make();
 	data->absolute = p_absolute;
 	data->path = p_path;
 	data->hash_cache_valid = false;
@@ -402,19 +386,15 @@ NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p
 		return;
 	}
 
-	data = memnew(Data);
-	data->refcount.init();
+	data = SharedPtr<Data>::make();
 	data->absolute = p_absolute;
 	data->path = p_path;
 	data->subpath = p_subpath;
 	data->hash_cache_valid = false;
 }
 
-NodePath::NodePath(const NodePath &p_path) {
-	if (p_path.data && p_path.data->refcount.ref()) {
-		data = p_path.data;
-	}
-}
+NodePath::NodePath(const NodePath &p_path) :
+		data(p_path.data) {}
 
 NodePath::NodePath(const String &p_path) {
 	if (p_path.length() == 0) {
@@ -467,8 +447,7 @@ NodePath::NodePath(const String &p_path) {
 		return;
 	}
 
-	data = memnew(Data);
-	data->refcount.init();
+	data = SharedPtr<Data>::make();
 	data->absolute = absolute;
 	data->subpath = subpath;
 	data->hash_cache_valid = false;
@@ -496,6 +475,4 @@ NodePath::NodePath(const String &p_path) {
 	}
 }
 
-NodePath::~NodePath() {
-	unref();
-}
+NodePath::~NodePath() {}
