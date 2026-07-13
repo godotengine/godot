@@ -136,20 +136,20 @@ public:
 
 	struct AlphCompare {
 		template <typename LT, typename RT>
-		_FORCE_INLINE_ bool operator()(const LT &l, const RT &r) const {
-			return compare(l, r);
+		_FORCE_INLINE_ bool operator()(const LT &p_left, const RT &p_right) const {
+			return compare(p_left, p_right);
 		}
-		_FORCE_INLINE_ static bool compare(const StringName &l, const StringName &r) {
-			return str_compare(l.get_data(), r.get_data()) < 0;
+		_FORCE_INLINE_ static bool compare(const StringName &p_left, const StringName &p_right) {
+			return str_compare(p_left.get_data(), p_right.get_data()) < 0;
 		}
-		_FORCE_INLINE_ static bool compare(const String &l, const StringName &r) {
-			return str_compare(l.get_data(), r.get_data()) < 0;
+		_FORCE_INLINE_ static bool compare(const String &p_left, const StringName &p_right) {
+			return str_compare(p_left.get_data(), p_right.get_data()) < 0;
 		}
-		_FORCE_INLINE_ static bool compare(const StringName &l, const String &r) {
-			return str_compare(l.get_data(), r.get_data()) < 0;
+		_FORCE_INLINE_ static bool compare(const StringName &p_left, const String &p_right) {
+			return str_compare(p_left.get_data(), p_right.get_data()) < 0;
 		}
-		_FORCE_INLINE_ static bool compare(const String &l, const String &r) {
-			return str_compare(l.get_data(), r.get_data()) < 0;
+		_FORCE_INLINE_ static bool compare(const String &p_left, const String &p_right) {
+			return str_compare(p_left.get_data(), p_right.get_data()) < 0;
 		}
 	};
 

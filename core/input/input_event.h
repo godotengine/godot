@@ -140,7 +140,7 @@ public:
 	void set_meta_pressed(bool p_pressed);
 	bool is_meta_pressed() const;
 
-	void set_modifiers_from_event(const InputEventWithModifiers *event);
+	void set_modifiers_from_event(const InputEventWithModifiers *p_event);
 
 	BitField<KeyModifierMask> get_modifiers_mask() const;
 

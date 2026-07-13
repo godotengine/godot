@@ -71,10 +71,10 @@ class JSON : public Resource {
 
 	static void _add_indent(String &r_result, const String &p_indent, int p_size);
 	static void _stringify(String &r_result, const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision);
-	static Error _get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
-	static Error _parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
-	static Error _parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
-	static Error _parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
+	static Error _get_token(const char32_t *p_str, int &r_index, int p_len, Token &r_token, int &r_line, String &r_err_str);
+	static Error _parse_value(Variant &r_value, Token &r_token, const char32_t *p_str, int &r_index, int p_len, int &r_line, int p_depth, String &r_err_str);
+	static Error _parse_array(Array &r_array, const char32_t *p_str, int &r_index, int p_len, int &r_line, int p_depth, String &r_err_str);
+	static Error _parse_object(Dictionary &r_object, const char32_t *p_str, int &r_index, int p_len, int &r_line, int p_depth, String &r_err_str);
 	static Error _parse_string(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
 
 	static Variant _from_native(const Variant &p_variant, bool p_full_objects, int p_depth);

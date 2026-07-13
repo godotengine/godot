@@ -152,10 +152,10 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return E == p_other.E; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return E != p_other.E; }
 
-		_FORCE_INLINE_ ConstIterator(const Element *p_E) { E = p_E; }
+		_FORCE_INLINE_ ConstIterator(const Element *p_element) { E = p_element; }
 		_FORCE_INLINE_ ConstIterator() {}
 		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
 
@@ -177,10 +177,10 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return E == p_other.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return E != p_other.E; }
 
-		Iterator(Element *p_E) { E = p_E; }
+		Iterator(Element *p_element) { E = p_element; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { E = p_it.E; }
 
@@ -223,27 +223,27 @@ private:
 		Element *last = nullptr;
 		int size_cache = 0;
 
-		bool erase(Element *p_I) {
-			ERR_FAIL_NULL_V(p_I, false);
-			ERR_FAIL_COND_V(p_I->data != this, false);
+		bool erase(Element *p_element) {
+			ERR_FAIL_NULL_V(p_element, false);
+			ERR_FAIL_COND_V(p_element->data != this, false);
 
-			if (first == p_I) {
-				first = p_I->next_ptr;
+			if (first == p_element) {
+				first = p_element->next_ptr;
 			}
 
-			if (last == p_I) {
-				last = p_I->prev_ptr;
+			if (last == p_element) {
+				last = p_element->prev_ptr;
 			}
 
-			if (p_I->prev_ptr) {
-				p_I->prev_ptr->next_ptr = p_I->next_ptr;
+			if (p_element->prev_ptr) {
+				p_element->prev_ptr->next_ptr = p_element->next_ptr;
 			}
 
-			if (p_I->next_ptr) {
-				p_I->next_ptr->prev_ptr = p_I->prev_ptr;
+			if (p_element->next_ptr) {
+				p_element->next_ptr->prev_ptr = p_element->prev_ptr;
 			}
 
-			memdelete_allocator<Element, A>(p_I);
+			memdelete_allocator<Element, A>(p_element);
 			size_cache--;
 
 			return true;
@@ -284,7 +284,7 @@ public:
 	/**
 	 * store a new element at the end of the list
 	 */
-	Element *push_back(const T &value) _LIFETIME_BOUND_ {
+	Element *push_back(const T &p_value) _LIFETIME_BOUND_ {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
 			_data->first = nullptr;
@@ -293,7 +293,7 @@ public:
 		}
 
 		Element *n = memnew_allocator(Element, A);
-		n->value = (T &)value;
+		n->value = (T &)p_value;
 
 		n->prev_ptr = _data->last;
 		n->next_ptr = nullptr;
@@ -323,7 +323,7 @@ public:
 	/**
 	 * store a new element at the beginning of the list
 	 */
-	Element *push_front(const T &value) _LIFETIME_BOUND_ {
+	Element *push_front(const T &p_value) _LIFETIME_BOUND_ {
 		if (!_data) {
 			_data = memnew_allocator(_Data, A);
 			_data->first = nullptr;
@@ -332,7 +332,7 @@ public:
 		}
 
 		Element *n = memnew_allocator(Element, A);
-		n->value = (T &)value;
+		n->value = (T &)p_value;
 		n->prev_ptr = nullptr;
 		n->next_ptr = _data->first;
 		n->data = _data;
@@ -442,9 +442,9 @@ public:
 	/**
 	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
 	 */
-	bool erase(Element *p_I) {
-		if (_data && p_I) {
-			bool ret = _data->erase(p_I);
+	bool erase(Element *p_element) {
+		if (_data && p_element) {
+			bool ret = _data->erase(p_element);
 
 			if (_data->size_cache == 0) {
 				memdelete_allocator<_Data, A>(_data);
@@ -460,8 +460,8 @@ public:
 	/**
 	 * erase the first element in the list, that contains value
 	 */
-	bool erase(const T &value) {
-		Element *I = find(value);
+	bool erase(const T &p_value) {
+		Element *I = find(p_value);
 		return erase(I);
 	}
 
@@ -485,43 +485,43 @@ public:
 		return _data ? _data->size_cache : 0;
 	}
 
-	void swap(Element *p_A, Element *p_B) {
-		ERR_FAIL_COND(!p_A || !p_B);
-		ERR_FAIL_COND(p_A->data != _data);
-		ERR_FAIL_COND(p_B->data != _data);
+	void swap(Element *p_left, Element *p_right) {
+		ERR_FAIL_COND(!p_left || !p_right);
+		ERR_FAIL_COND(p_left->data != _data);
+		ERR_FAIL_COND(p_right->data != _data);
 
-		if (p_A == p_B) {
+		if (p_left == p_right) {
 			return;
 		}
-		Element *A_prev = p_A->prev_ptr;
-		Element *A_next = p_A->next_ptr;
-		Element *B_prev = p_B->prev_ptr;
-		Element *B_next = p_B->next_ptr;
+		Element *A_prev = p_left->prev_ptr;
+		Element *A_next = p_left->next_ptr;
+		Element *B_prev = p_right->prev_ptr;
+		Element *B_next = p_right->next_ptr;
 
 		if (A_prev) {
-			A_prev->next_ptr = p_B;
+			A_prev->next_ptr = p_right;
 		} else {
-			_data->first = p_B;
+			_data->first = p_right;
 		}
 		if (B_prev) {
-			B_prev->next_ptr = p_A;
+			B_prev->next_ptr = p_left;
 		} else {
-			_data->first = p_A;
+			_data->first = p_left;
 		}
 		if (A_next) {
-			A_next->prev_ptr = p_B;
+			A_next->prev_ptr = p_right;
 		} else {
-			_data->last = p_B;
+			_data->last = p_right;
 		}
 		if (B_next) {
-			B_next->prev_ptr = p_A;
+			B_next->prev_ptr = p_left;
 		} else {
-			_data->last = p_A;
+			_data->last = p_left;
 		}
-		p_A->prev_ptr = A_next == p_B ? p_B : B_prev;
-		p_A->next_ptr = B_next == p_A ? p_B : B_next;
-		p_B->prev_ptr = B_next == p_A ? p_A : A_prev;
-		p_B->next_ptr = A_next == p_B ? p_A : A_next;
+		p_left->prev_ptr = A_next == p_right ? p_right : B_prev;
+		p_left->next_ptr = B_next == p_left ? p_right : B_next;
+		p_right->prev_ptr = B_next == p_left ? p_left : A_prev;
+		p_right->next_ptr = A_next == p_right ? p_left : A_next;
 	}
 	/**
 	 * copy the list
@@ -574,30 +574,30 @@ public:
 		return I->get();
 	}
 
-	void move_to_back(Element *p_I) {
-		ERR_FAIL_COND(p_I->data != _data);
-		if (!p_I->next_ptr) {
+	void move_to_back(Element *p_element) {
+		ERR_FAIL_COND(p_element->data != _data);
+		if (!p_element->next_ptr) {
 			return;
 		}
 
-		if (_data->first == p_I) {
-			_data->first = p_I->next_ptr;
+		if (_data->first == p_element) {
+			_data->first = p_element->next_ptr;
 		}
 
-		if (_data->last == p_I) {
-			_data->last = p_I->prev_ptr;
+		if (_data->last == p_element) {
+			_data->last = p_element->prev_ptr;
 		}
 
-		if (p_I->prev_ptr) {
-			p_I->prev_ptr->next_ptr = p_I->next_ptr;
+		if (p_element->prev_ptr) {
+			p_element->prev_ptr->next_ptr = p_element->next_ptr;
 		}
 
-		p_I->next_ptr->prev_ptr = p_I->prev_ptr;
+		p_element->next_ptr->prev_ptr = p_element->prev_ptr;
 
-		_data->last->next_ptr = p_I;
-		p_I->prev_ptr = _data->last;
-		p_I->next_ptr = nullptr;
-		_data->last = p_I;
+		_data->last->next_ptr = p_element;
+		p_element->prev_ptr = _data->last;
+		p_element->next_ptr = nullptr;
+		_data->last = p_element;
 	}
 
 	void reverse() {
@@ -611,60 +611,60 @@ public:
 		}
 	}
 
-	void move_to_front(Element *p_I) {
-		ERR_FAIL_COND(p_I->data != _data);
-		if (!p_I->prev_ptr) {
+	void move_to_front(Element *p_element) {
+		ERR_FAIL_COND(p_element->data != _data);
+		if (!p_element->prev_ptr) {
 			return;
 		}
 
-		if (_data->first == p_I) {
-			_data->first = p_I->next_ptr;
+		if (_data->first == p_element) {
+			_data->first = p_element->next_ptr;
 		}
 
-		if (_data->last == p_I) {
-			_data->last = p_I->prev_ptr;
+		if (_data->last == p_element) {
+			_data->last = p_element->prev_ptr;
 		}
 
-		p_I->prev_ptr->next_ptr = p_I->next_ptr;
+		p_element->prev_ptr->next_ptr = p_element->next_ptr;
 
-		if (p_I->next_ptr) {
-			p_I->next_ptr->prev_ptr = p_I->prev_ptr;
+		if (p_element->next_ptr) {
+			p_element->next_ptr->prev_ptr = p_element->prev_ptr;
 		}
 
-		_data->first->prev_ptr = p_I;
-		p_I->next_ptr = _data->first;
-		p_I->prev_ptr = nullptr;
-		_data->first = p_I;
+		_data->first->prev_ptr = p_element;
+		p_element->next_ptr = _data->first;
+		p_element->prev_ptr = nullptr;
+		_data->first = p_element;
 	}
 
-	void move_before(Element *value, Element *where) {
-		if (value->prev_ptr) {
-			value->prev_ptr->next_ptr = value->next_ptr;
+	void move_before(Element *p_value, Element *p_where) {
+		if (p_value->prev_ptr) {
+			p_value->prev_ptr->next_ptr = p_value->next_ptr;
 		} else {
-			_data->first = value->next_ptr;
+			_data->first = p_value->next_ptr;
 		}
-		if (value->next_ptr) {
-			value->next_ptr->prev_ptr = value->prev_ptr;
+		if (p_value->next_ptr) {
+			p_value->next_ptr->prev_ptr = p_value->prev_ptr;
 		} else {
-			_data->last = value->prev_ptr;
+			_data->last = p_value->prev_ptr;
 		}
 
-		value->next_ptr = where;
-		if (!where) {
-			value->prev_ptr = _data->last;
-			_data->last = value;
+		p_value->next_ptr = p_where;
+		if (!p_where) {
+			p_value->prev_ptr = _data->last;
+			_data->last = p_value;
 			return;
 		}
 
-		value->prev_ptr = where->prev_ptr;
+		p_value->prev_ptr = p_where->prev_ptr;
 
-		if (where->prev_ptr) {
-			where->prev_ptr->next_ptr = value;
+		if (p_where->prev_ptr) {
+			p_where->prev_ptr->next_ptr = p_value;
 		} else {
-			_data->first = value;
+			_data->first = p_value;
 		}
 
-		where->prev_ptr = value;
+		p_where->prev_ptr = p_value;
 	}
 
 	void sort() {
