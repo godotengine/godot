@@ -33,17 +33,17 @@
 #include "core/math/vector2.h"
 #include "core/typedefs.h"
 
-static _FORCE_INLINE_ float undenormalize(float f) {
+static _FORCE_INLINE_ float undenormalize(float p_value) {
 	union {
 		uint32_t i;
 		float f;
 	} v;
 
-	v.f = f;
+	v.f = p_value;
 
 	// original: return (v.i & 0x7f800000) == 0 ? 0.0f : f;
 	// version from Tim Blechmann:
-	return (v.i & 0x7f800000) < 0x08000000 ? 0.0f : f;
+	return (v.i & 0x7f800000) < 0x08000000 ? 0.0f : p_value;
 }
 
 static const float AUDIO_PEAK_OFFSET = 0.0000000001f;

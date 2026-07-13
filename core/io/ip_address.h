@@ -98,7 +98,7 @@ public:
 
 	explicit operator String() const;
 	IPAddress(const String &p_string);
-	IPAddress(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool is_v6 = false);
+	IPAddress(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool p_is_v6 = false);
 	IPAddress() { clear(); }
 };
 

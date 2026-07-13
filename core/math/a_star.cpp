@@ -124,7 +124,7 @@ void AStar3D::remove_point(int64_t p_id) {
 	last_free_id = p_id;
 }
 
-void AStar3D::connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional) {
+void AStar3D::connect_points(int64_t p_id, int64_t p_with_id, bool p_bidirectional) {
 	ERR_FAIL_COND_MSG(p_id == p_with_id, vformat("Can't connect point with id: %d to itself.", p_id));
 
 	Point **a_entry = points.getptr(p_id);
@@ -137,14 +137,14 @@ void AStar3D::connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional
 
 	a->neighbors.insert(b->id, b);
 
-	if (bidirectional) {
+	if (p_bidirectional) {
 		b->neighbors.insert(a->id, a);
 	} else {
 		b->unlinked_neighbours.insert(a->id, a);
 	}
 
 	Segment s(p_id, p_with_id);
-	if (bidirectional) {
+	if (p_bidirectional) {
 		s.direction = Segment::BIDIRECTIONAL;
 	}
 
@@ -162,7 +162,7 @@ void AStar3D::connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional
 	segments.insert(s);
 }
 
-void AStar3D::disconnect_points(int64_t p_id, int64_t p_with_id, bool bidirectional) {
+void AStar3D::disconnect_points(int64_t p_id, int64_t p_with_id, bool p_bidirectional) {
 	Point **a_entry = points.getptr(p_id);
 	ERR_FAIL_COND_MSG(!a_entry, vformat("Can't disconnect points. Point with id: %d doesn't exist.", p_id));
 	Point *a = *a_entry;
@@ -172,7 +172,7 @@ void AStar3D::disconnect_points(int64_t p_id, int64_t p_with_id, bool bidirectio
 	Point *b = *b_entry;
 
 	Segment s(p_id, p_with_id);
-	int remove_direction = bidirectional ? (int)Segment::BIDIRECTIONAL : (int)s.direction;
+	int remove_direction = p_bidirectional ? (int)Segment::BIDIRECTIONAL : (int)s.direction;
 
 	HashSet<Segment, Segment>::Iterator element = segments.find(s);
 	if (element) {
@@ -181,7 +181,7 @@ void AStar3D::disconnect_points(int64_t p_id, int64_t p_with_id, bool bidirectio
 		s.direction = (element->direction & ~remove_direction);
 
 		a->neighbors.erase(b->id);
-		if (bidirectional) {
+		if (p_bidirectional) {
 			b->neighbors.erase(a->id);
 			if (element->direction != Segment::BIDIRECTIONAL) {
 				a->unlinked_neighbours.erase(b->id);
@@ -229,12 +229,12 @@ Vector<int64_t> AStar3D::get_point_connections(int64_t p_id) {
 	return point_list;
 }
 
-bool AStar3D::are_points_connected(int64_t p_id, int64_t p_with_id, bool bidirectional) const {
+bool AStar3D::are_points_connected(int64_t p_id, int64_t p_with_id, bool p_bidirectional) const {
 	Segment s(p_id, p_with_id);
 	const HashSet<Segment, Segment>::Iterator element = segments.find(s);
 
 	return element &&
-			(bidirectional || (element->direction & s.direction) == s.direction);
+			(p_bidirectional || (element->direction & s.direction) == s.direction);
 }
 
 void AStar3D::clear() {

@@ -40,100 +40,100 @@
 #include "core/variant/variant_parser.h"
 
 // Math
-double VariantUtilityFunctions::sin(double arg) {
-	return Math::sin(arg);
+double VariantUtilityFunctions::sin(double p_arg) {
+	return Math::sin(p_arg);
 }
 
-double VariantUtilityFunctions::cos(double arg) {
-	return Math::cos(arg);
+double VariantUtilityFunctions::cos(double p_arg) {
+	return Math::cos(p_arg);
 }
 
-double VariantUtilityFunctions::tan(double arg) {
-	return Math::tan(arg);
+double VariantUtilityFunctions::tan(double p_arg) {
+	return Math::tan(p_arg);
 }
 
-double VariantUtilityFunctions::sinh(double arg) {
-	return Math::sinh(arg);
+double VariantUtilityFunctions::sinh(double p_arg) {
+	return Math::sinh(p_arg);
 }
 
-double VariantUtilityFunctions::cosh(double arg) {
-	return Math::cosh(arg);
+double VariantUtilityFunctions::cosh(double p_arg) {
+	return Math::cosh(p_arg);
 }
 
-double VariantUtilityFunctions::tanh(double arg) {
-	return Math::tanh(arg);
+double VariantUtilityFunctions::tanh(double p_arg) {
+	return Math::tanh(p_arg);
 }
 
-double VariantUtilityFunctions::asin(double arg) {
-	return Math::asin(arg);
+double VariantUtilityFunctions::asin(double p_arg) {
+	return Math::asin(p_arg);
 }
 
-double VariantUtilityFunctions::acos(double arg) {
-	return Math::acos(arg);
+double VariantUtilityFunctions::acos(double p_arg) {
+	return Math::acos(p_arg);
 }
 
-double VariantUtilityFunctions::atan(double arg) {
-	return Math::atan(arg);
+double VariantUtilityFunctions::atan(double p_arg) {
+	return Math::atan(p_arg);
 }
 
-double VariantUtilityFunctions::atan2(double y, double x) {
-	return Math::atan2(y, x);
+double VariantUtilityFunctions::atan2(double p_y, double p_x) {
+	return Math::atan2(p_y, p_x);
 }
 
-double VariantUtilityFunctions::asinh(double arg) {
-	return Math::asinh(arg);
+double VariantUtilityFunctions::asinh(double p_arg) {
+	return Math::asinh(p_arg);
 }
 
-double VariantUtilityFunctions::acosh(double arg) {
-	return Math::acosh(arg);
+double VariantUtilityFunctions::acosh(double p_arg) {
+	return Math::acosh(p_arg);
 }
 
-double VariantUtilityFunctions::atanh(double arg) {
-	return Math::atanh(arg);
+double VariantUtilityFunctions::atanh(double p_arg) {
+	return Math::atanh(p_arg);
 }
 
-double VariantUtilityFunctions::sqrt(double x) {
-	return Math::sqrt(x);
+double VariantUtilityFunctions::sqrt(double p_x) {
+	return Math::sqrt(p_x);
 }
 
-double VariantUtilityFunctions::fmod(double b, double r) {
-	return Math::fmod(b, r);
+double VariantUtilityFunctions::fmod(double p_b, double p_r) {
+	return Math::fmod(p_b, p_r);
 }
 
-double VariantUtilityFunctions::fposmod(double b, double r) {
-	return Math::fposmod(b, r);
+double VariantUtilityFunctions::fposmod(double p_b, double p_r) {
+	return Math::fposmod(p_b, p_r);
 }
 
-int64_t VariantUtilityFunctions::posmod(int64_t b, int64_t r) {
-	return Math::posmod(b, r);
+int64_t VariantUtilityFunctions::posmod(int64_t p_b, int64_t p_r) {
+	return Math::posmod(p_b, p_r);
 }
 
-Variant VariantUtilityFunctions::floor(const Variant &x, Callable::CallError &r_error) {
+Variant VariantUtilityFunctions::floor(const Variant &p_x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
-	switch (x.get_type()) {
+	switch (p_x.get_type()) {
 		case Variant::INT: {
-			return VariantInternalAccessor<int64_t>::get(&x);
+			return VariantInternalAccessor<int64_t>::get(&p_x);
 		} break;
 		case Variant::FLOAT: {
-			return Math::floor(VariantInternalAccessor<double>::get(&x));
+			return Math::floor(VariantInternalAccessor<double>::get(&p_x));
 		} break;
 		case Variant::VECTOR2: {
-			return VariantInternalAccessor<Vector2>::get(&x).floor();
+			return VariantInternalAccessor<Vector2>::get(&p_x).floor();
 		} break;
 		case Variant::VECTOR2I: {
-			return VariantInternalAccessor<Vector2i>::get(&x);
+			return VariantInternalAccessor<Vector2i>::get(&p_x);
 		} break;
 		case Variant::VECTOR3: {
-			return VariantInternalAccessor<Vector3>::get(&x).floor();
+			return VariantInternalAccessor<Vector3>::get(&p_x).floor();
 		} break;
 		case Variant::VECTOR3I: {
-			return VariantInternalAccessor<Vector3i>::get(&x);
+			return VariantInternalAccessor<Vector3i>::get(&p_x);
 		} break;
 		case Variant::VECTOR4: {
-			return VariantInternalAccessor<Vector4>::get(&x).floor();
+			return VariantInternalAccessor<Vector4>::get(&p_x).floor();
 		} break;
 		case Variant::VECTOR4I: {
-			return VariantInternalAccessor<Vector4i>::get(&x);
+			return VariantInternalAccessor<Vector4i>::get(&p_x);
 		} break;
 		default: {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -144,40 +144,40 @@ Variant VariantUtilityFunctions::floor(const Variant &x, Callable::CallError &r_
 	}
 }
 
-double VariantUtilityFunctions::floorf(double x) {
-	return Math::floor(x);
+double VariantUtilityFunctions::floorf(double p_x) {
+	return Math::floor(p_x);
 }
 
-int64_t VariantUtilityFunctions::floori(double x) {
-	return int64_t(Math::floor(x));
+int64_t VariantUtilityFunctions::floori(double p_x) {
+	return int64_t(Math::floor(p_x));
 }
 
-Variant VariantUtilityFunctions::ceil(const Variant &x, Callable::CallError &r_error) {
+Variant VariantUtilityFunctions::ceil(const Variant &p_x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
-	switch (x.get_type()) {
+	switch (p_x.get_type()) {
 		case Variant::INT: {
-			return VariantInternalAccessor<int64_t>::get(&x);
+			return VariantInternalAccessor<int64_t>::get(&p_x);
 		} break;
 		case Variant::FLOAT: {
-			return Math::ceil(VariantInternalAccessor<double>::get(&x));
+			return Math::ceil(VariantInternalAccessor<double>::get(&p_x));
 		} break;
 		case Variant::VECTOR2: {
-			return VariantInternalAccessor<Vector2>::get(&x).ceil();
+			return VariantInternalAccessor<Vector2>::get(&p_x).ceil();
 		} break;
 		case Variant::VECTOR2I: {
-			return VariantInternalAccessor<Vector2i>::get(&x);
+			return VariantInternalAccessor<Vector2i>::get(&p_x);
 		} break;
 		case Variant::VECTOR3: {
-			return VariantInternalAccessor<Vector3>::get(&x).ceil();
+			return VariantInternalAccessor<Vector3>::get(&p_x).ceil();
 		} break;
 		case Variant::VECTOR3I: {
-			return VariantInternalAccessor<Vector3i>::get(&x);
+			return VariantInternalAccessor<Vector3i>::get(&p_x);
 		} break;
 		case Variant::VECTOR4: {
-			return VariantInternalAccessor<Vector4>::get(&x).ceil();
+			return VariantInternalAccessor<Vector4>::get(&p_x).ceil();
 		} break;
 		case Variant::VECTOR4I: {
-			return VariantInternalAccessor<Vector4i>::get(&x);
+			return VariantInternalAccessor<Vector4i>::get(&p_x);
 		} break;
 		default: {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -188,40 +188,40 @@ Variant VariantUtilityFunctions::ceil(const Variant &x, Callable::CallError &r_e
 	}
 }
 
-double VariantUtilityFunctions::ceilf(double x) {
-	return Math::ceil(x);
+double VariantUtilityFunctions::ceilf(double p_x) {
+	return Math::ceil(p_x);
 }
 
-int64_t VariantUtilityFunctions::ceili(double x) {
-	return int64_t(Math::ceil(x));
+int64_t VariantUtilityFunctions::ceili(double p_x) {
+	return int64_t(Math::ceil(p_x));
 }
 
-Variant VariantUtilityFunctions::round(const Variant &x, Callable::CallError &r_error) {
+Variant VariantUtilityFunctions::round(const Variant &p_x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
-	switch (x.get_type()) {
+	switch (p_x.get_type()) {
 		case Variant::INT: {
-			return VariantInternalAccessor<int64_t>::get(&x);
+			return VariantInternalAccessor<int64_t>::get(&p_x);
 		} break;
 		case Variant::FLOAT: {
-			return Math::round(VariantInternalAccessor<double>::get(&x));
+			return Math::round(VariantInternalAccessor<double>::get(&p_x));
 		} break;
 		case Variant::VECTOR2: {
-			return VariantInternalAccessor<Vector2>::get(&x).round();
+			return VariantInternalAccessor<Vector2>::get(&p_x).round();
 		} break;
 		case Variant::VECTOR2I: {
-			return VariantInternalAccessor<Vector2i>::get(&x);
+			return VariantInternalAccessor<Vector2i>::get(&p_x);
 		} break;
 		case Variant::VECTOR3: {
-			return VariantInternalAccessor<Vector3>::get(&x).round();
+			return VariantInternalAccessor<Vector3>::get(&p_x).round();
 		} break;
 		case Variant::VECTOR3I: {
-			return VariantInternalAccessor<Vector3i>::get(&x);
+			return VariantInternalAccessor<Vector3i>::get(&p_x);
 		} break;
 		case Variant::VECTOR4: {
-			return VariantInternalAccessor<Vector4>::get(&x).round();
+			return VariantInternalAccessor<Vector4>::get(&p_x).round();
 		} break;
 		case Variant::VECTOR4I: {
-			return VariantInternalAccessor<Vector4i>::get(&x);
+			return VariantInternalAccessor<Vector4i>::get(&p_x);
 		} break;
 		default: {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -232,40 +232,40 @@ Variant VariantUtilityFunctions::round(const Variant &x, Callable::CallError &r_
 	}
 }
 
-double VariantUtilityFunctions::roundf(double x) {
-	return Math::round(x);
+double VariantUtilityFunctions::roundf(double p_x) {
+	return Math::round(p_x);
 }
 
-int64_t VariantUtilityFunctions::roundi(double x) {
-	return int64_t(Math::round(x));
+int64_t VariantUtilityFunctions::roundi(double p_x) {
+	return int64_t(Math::round(p_x));
 }
 
-Variant VariantUtilityFunctions::abs(const Variant &x, Callable::CallError &r_error) {
+Variant VariantUtilityFunctions::abs(const Variant &p_x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
-	switch (x.get_type()) {
+	switch (p_x.get_type()) {
 		case Variant::INT: {
-			return Math::abs(VariantInternalAccessor<int64_t>::get(&x));
+			return Math::abs(VariantInternalAccessor<int64_t>::get(&p_x));
 		} break;
 		case Variant::FLOAT: {
-			return Math::abs(VariantInternalAccessor<double>::get(&x));
+			return Math::abs(VariantInternalAccessor<double>::get(&p_x));
 		} break;
 		case Variant::VECTOR2: {
-			return VariantInternalAccessor<Vector2>::get(&x).abs();
+			return VariantInternalAccessor<Vector2>::get(&p_x).abs();
 		} break;
 		case Variant::VECTOR2I: {
-			return VariantInternalAccessor<Vector2i>::get(&x).abs();
+			return VariantInternalAccessor<Vector2i>::get(&p_x).abs();
 		} break;
 		case Variant::VECTOR3: {
-			return VariantInternalAccessor<Vector3>::get(&x).abs();
+			return VariantInternalAccessor<Vector3>::get(&p_x).abs();
 		} break;
 		case Variant::VECTOR3I: {
-			return VariantInternalAccessor<Vector3i>::get(&x).abs();
+			return VariantInternalAccessor<Vector3i>::get(&p_x).abs();
 		} break;
 		case Variant::VECTOR4: {
-			return VariantInternalAccessor<Vector4>::get(&x).abs();
+			return VariantInternalAccessor<Vector4>::get(&p_x).abs();
 		} break;
 		case Variant::VECTOR4I: {
-			return VariantInternalAccessor<Vector4i>::get(&x).abs();
+			return VariantInternalAccessor<Vector4i>::get(&p_x).abs();
 		} break;
 		default: {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -276,40 +276,40 @@ Variant VariantUtilityFunctions::abs(const Variant &x, Callable::CallError &r_er
 	}
 }
 
-double VariantUtilityFunctions::absf(double x) {
-	return Math::abs(x);
+double VariantUtilityFunctions::absf(double p_x) {
+	return Math::abs(p_x);
 }
 
-int64_t VariantUtilityFunctions::absi(int64_t x) {
-	return Math::abs(x);
+int64_t VariantUtilityFunctions::absi(int64_t p_x) {
+	return Math::abs(p_x);
 }
 
-Variant VariantUtilityFunctions::sign(const Variant &x, Callable::CallError &r_error) {
+Variant VariantUtilityFunctions::sign(const Variant &p_x, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
-	switch (x.get_type()) {
+	switch (p_x.get_type()) {
 		case Variant::INT: {
-			return SIGN(VariantInternalAccessor<int64_t>::get(&x));
+			return SIGN(VariantInternalAccessor<int64_t>::get(&p_x));
 		} break;
 		case Variant::FLOAT: {
-			return SIGN(VariantInternalAccessor<double>::get(&x));
+			return SIGN(VariantInternalAccessor<double>::get(&p_x));
 		} break;
 		case Variant::VECTOR2: {
-			return VariantInternalAccessor<Vector2>::get(&x).sign();
+			return VariantInternalAccessor<Vector2>::get(&p_x).sign();
 		} break;
 		case Variant::VECTOR2I: {
-			return VariantInternalAccessor<Vector2i>::get(&x).sign();
+			return VariantInternalAccessor<Vector2i>::get(&p_x).sign();
 		} break;
 		case Variant::VECTOR3: {
-			return VariantInternalAccessor<Vector3>::get(&x).sign();
+			return VariantInternalAccessor<Vector3>::get(&p_x).sign();
 		} break;
 		case Variant::VECTOR3I: {
-			return VariantInternalAccessor<Vector3i>::get(&x).sign();
+			return VariantInternalAccessor<Vector3i>::get(&p_x).sign();
 		} break;
 		case Variant::VECTOR4: {
-			return VariantInternalAccessor<Vector4>::get(&x).sign();
+			return VariantInternalAccessor<Vector4>::get(&p_x).sign();
 		} break;
 		case Variant::VECTOR4I: {
-			return VariantInternalAccessor<Vector4i>::get(&x).sign();
+			return VariantInternalAccessor<Vector4i>::get(&p_x).sign();
 		} break;
 		default: {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -320,56 +320,56 @@ Variant VariantUtilityFunctions::sign(const Variant &x, Callable::CallError &r_e
 	}
 }
 
-double VariantUtilityFunctions::signf(double x) {
-	return SIGN(x);
+double VariantUtilityFunctions::signf(double p_x) {
+	return SIGN(p_x);
 }
 
-int64_t VariantUtilityFunctions::signi(int64_t x) {
-	return SIGN(x);
+int64_t VariantUtilityFunctions::signi(int64_t p_x) {
+	return SIGN(p_x);
 }
 
-double VariantUtilityFunctions::pow(double x, double y) {
-	return Math::pow(x, y);
+double VariantUtilityFunctions::pow(double p_x, double p_y) {
+	return Math::pow(p_x, p_y);
 }
 
-double VariantUtilityFunctions::log(double x) {
-	return Math::log(x);
+double VariantUtilityFunctions::log(double p_x) {
+	return Math::log(p_x);
 }
 
-double VariantUtilityFunctions::exp(double x) {
-	return Math::exp(x);
+double VariantUtilityFunctions::exp(double p_x) {
+	return Math::exp(p_x);
 }
 
-bool VariantUtilityFunctions::is_nan(double x) {
-	return Math::is_nan(x);
+bool VariantUtilityFunctions::is_nan(double p_x) {
+	return Math::is_nan(p_x);
 }
 
-bool VariantUtilityFunctions::is_inf(double x) {
-	return Math::is_inf(x);
+bool VariantUtilityFunctions::is_inf(double p_x) {
+	return Math::is_inf(p_x);
 }
 
-bool VariantUtilityFunctions::is_equal_approx(double x, double y) {
-	return Math::is_equal_approx(x, y);
+bool VariantUtilityFunctions::is_equal_approx(double p_x, double p_y) {
+	return Math::is_equal_approx(p_x, p_y);
 }
 
-bool VariantUtilityFunctions::is_zero_approx(double x) {
-	return Math::is_zero_approx(x);
+bool VariantUtilityFunctions::is_zero_approx(double p_x) {
+	return Math::is_zero_approx(p_x);
 }
 
-bool VariantUtilityFunctions::is_finite(double x) {
-	return Math::is_finite(x);
+bool VariantUtilityFunctions::is_finite(double p_x) {
+	return Math::is_finite(p_x);
 }
 
-double VariantUtilityFunctions::ease(double x, double curve) {
-	return Math::ease(x, curve);
+double VariantUtilityFunctions::ease(double p_x, double p_curve) {
+	return Math::ease(p_x, p_curve);
 }
 
-int VariantUtilityFunctions::step_decimals(double step) {
-	return Math::step_decimals(step);
+int VariantUtilityFunctions::step_decimals(double p_step) {
+	return Math::step_decimals(p_step);
 }
 
-Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, Callable::CallError &r_error) {
-	switch (x.get_type()) {
+Variant VariantUtilityFunctions::snapped(const Variant &p_x, const Variant &p_step, Callable::CallError &r_error) {
+	switch (p_x.get_type()) {
 		case Variant::INT:
 		case Variant::FLOAT:
 		case Variant::VECTOR2:
@@ -386,9 +386,9 @@ Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, 
 			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
 	}
 
-	if (x.get_type() != step.get_type()) {
-		if (x.get_type() == Variant::INT || x.get_type() == Variant::FLOAT) {
-			if (step.get_type() != Variant::INT && step.get_type() != Variant::FLOAT) {
+	if (p_x.get_type() != p_step.get_type()) {
+		if (p_x.get_type() == Variant::INT || p_x.get_type() == Variant::FLOAT) {
+			if (p_step.get_type() != Variant::INT && p_step.get_type() != Variant::FLOAT) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 1;
 				r_error.expected = Variant::NIL;
@@ -397,36 +397,36 @@ Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, 
 		} else {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 			r_error.argument = 1;
-			r_error.expected = x.get_type();
+			r_error.expected = p_x.get_type();
 			return Variant();
 		}
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
-	switch (step.get_type()) {
+	switch (p_step.get_type()) {
 		case Variant::INT: {
-			return snappedi(x, VariantInternalAccessor<int64_t>::get(&step));
+			return snappedi(p_x, VariantInternalAccessor<int64_t>::get(&p_step));
 		} break;
 		case Variant::FLOAT: {
-			return snappedf(x, VariantInternalAccessor<double>::get(&step));
+			return snappedf(p_x, VariantInternalAccessor<double>::get(&p_step));
 		} break;
 		case Variant::VECTOR2: {
-			return VariantInternalAccessor<Vector2>::get(&x).snapped(VariantInternalAccessor<Vector2>::get(&step));
+			return VariantInternalAccessor<Vector2>::get(&p_x).snapped(VariantInternalAccessor<Vector2>::get(&p_step));
 		} break;
 		case Variant::VECTOR2I: {
-			return VariantInternalAccessor<Vector2i>::get(&x).snapped(VariantInternalAccessor<Vector2i>::get(&step));
+			return VariantInternalAccessor<Vector2i>::get(&p_x).snapped(VariantInternalAccessor<Vector2i>::get(&p_step));
 		} break;
 		case Variant::VECTOR3: {
-			return VariantInternalAccessor<Vector3>::get(&x).snapped(VariantInternalAccessor<Vector3>::get(&step));
+			return VariantInternalAccessor<Vector3>::get(&p_x).snapped(VariantInternalAccessor<Vector3>::get(&p_step));
 		} break;
 		case Variant::VECTOR3I: {
-			return VariantInternalAccessor<Vector3i>::get(&x).snapped(VariantInternalAccessor<Vector3i>::get(&step));
+			return VariantInternalAccessor<Vector3i>::get(&p_x).snapped(VariantInternalAccessor<Vector3i>::get(&p_step));
 		} break;
 		case Variant::VECTOR4: {
-			return VariantInternalAccessor<Vector4>::get(&x).snapped(VariantInternalAccessor<Vector4>::get(&step));
+			return VariantInternalAccessor<Vector4>::get(&p_x).snapped(VariantInternalAccessor<Vector4>::get(&p_step));
 		} break;
 		case Variant::VECTOR4I: {
-			return VariantInternalAccessor<Vector4i>::get(&x).snapped(VariantInternalAccessor<Vector4i>::get(&step));
+			return VariantInternalAccessor<Vector4i>::get(&p_x).snapped(VariantInternalAccessor<Vector4i>::get(&p_step));
 		} break;
 		default: {
 			return Variant(); // Already handled.
@@ -434,16 +434,16 @@ Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, 
 	}
 }
 
-double VariantUtilityFunctions::snappedf(double x, double step) {
-	return Math::snapped(x, step);
+double VariantUtilityFunctions::snappedf(double p_x, double p_step) {
+	return Math::snapped(p_x, p_step);
 }
 
-int64_t VariantUtilityFunctions::snappedi(double x, int64_t step) {
-	return Math::snapped(x, step);
+int64_t VariantUtilityFunctions::snappedi(double p_x, int64_t p_step) {
+	return Math::snapped(p_x, p_step);
 }
 
-Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, double weight, Callable::CallError &r_error) {
-	switch (from.get_type()) {
+Variant VariantUtilityFunctions::lerp(const Variant &p_from, const Variant &p_to, double p_weight, Callable::CallError &r_error) {
+	switch (p_from.get_type()) {
 		case Variant::INT:
 		case Variant::FLOAT:
 		case Variant::VECTOR2:
@@ -462,44 +462,44 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 			return R"(Argument "from" must be "int", "float", "Vector2", "Vector3", "Vector4", "Color", "Quaternion", "Basis", "Transform2D", or "Transform3D".)";
 	}
 
-	if (from.get_type() != to.get_type()) {
+	if (p_from.get_type() != p_to.get_type()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
-		r_error.expected = from.get_type();
+		r_error.expected = p_from.get_type();
 		return Variant();
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
-	switch (from.get_type()) {
+	switch (p_from.get_type()) {
 		case Variant::INT: {
-			return lerpf(VariantInternalAccessor<int64_t>::get(&from), to, weight);
+			return lerpf(VariantInternalAccessor<int64_t>::get(&p_from), p_to, p_weight);
 		} break;
 		case Variant::FLOAT: {
-			return lerpf(VariantInternalAccessor<double>::get(&from), to, weight);
+			return lerpf(VariantInternalAccessor<double>::get(&p_from), p_to, p_weight);
 		} break;
 		case Variant::VECTOR2: {
-			return VariantInternalAccessor<Vector2>::get(&from).lerp(VariantInternalAccessor<Vector2>::get(&to), weight);
+			return VariantInternalAccessor<Vector2>::get(&p_from).lerp(VariantInternalAccessor<Vector2>::get(&p_to), p_weight);
 		} break;
 		case Variant::VECTOR3: {
-			return VariantInternalAccessor<Vector3>::get(&from).lerp(VariantInternalAccessor<Vector3>::get(&to), weight);
+			return VariantInternalAccessor<Vector3>::get(&p_from).lerp(VariantInternalAccessor<Vector3>::get(&p_to), p_weight);
 		} break;
 		case Variant::VECTOR4: {
-			return VariantInternalAccessor<Vector4>::get(&from).lerp(VariantInternalAccessor<Vector4>::get(&to), weight);
+			return VariantInternalAccessor<Vector4>::get(&p_from).lerp(VariantInternalAccessor<Vector4>::get(&p_to), p_weight);
 		} break;
 		case Variant::QUATERNION: {
-			return VariantInternalAccessor<Quaternion>::get(&from).slerp(VariantInternalAccessor<Quaternion>::get(&to), weight);
+			return VariantInternalAccessor<Quaternion>::get(&p_from).slerp(VariantInternalAccessor<Quaternion>::get(&p_to), p_weight);
 		} break;
 		case Variant::BASIS: {
-			return VariantInternalAccessor<Basis>::get(&from).slerp(VariantInternalAccessor<Basis>::get(&to), weight);
+			return VariantInternalAccessor<Basis>::get(&p_from).slerp(VariantInternalAccessor<Basis>::get(&p_to), p_weight);
 		} break;
 		case Variant::TRANSFORM2D: {
-			return VariantInternalAccessor<Transform2D>::get(&from).interpolate_with(VariantInternalAccessor<Transform2D>::get(&to), weight);
+			return VariantInternalAccessor<Transform2D>::get(&p_from).interpolate_with(VariantInternalAccessor<Transform2D>::get(&p_to), p_weight);
 		} break;
 		case Variant::TRANSFORM3D: {
-			return VariantInternalAccessor<Transform3D>::get(&from).interpolate_with(VariantInternalAccessor<Transform3D>::get(&to), weight);
+			return VariantInternalAccessor<Transform3D>::get(&p_from).interpolate_with(VariantInternalAccessor<Transform3D>::get(&p_to), p_weight);
 		} break;
 		case Variant::COLOR: {
-			return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
+			return VariantInternalAccessor<Color>::get(&p_from).lerp(VariantInternalAccessor<Color>::get(&p_to), p_weight);
 		} break;
 		default: {
 			return Variant(); // Already handled.
@@ -507,26 +507,26 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 	}
 }
 
-double VariantUtilityFunctions::lerpf(double from, double to, double weight) {
-	return Math::lerp(from, to, weight);
+double VariantUtilityFunctions::lerpf(double p_from, double p_to, double p_weight) {
+	return Math::lerp(p_from, p_to, p_weight);
 }
 
-double VariantUtilityFunctions::cubic_interpolate(double from, double to, double pre, double post, double weight) {
-	return Math::cubic_interpolate(from, to, pre, post, weight);
+double VariantUtilityFunctions::cubic_interpolate(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
+	return Math::cubic_interpolate(p_from, p_to, p_pre, p_post, p_weight);
 }
 
-double VariantUtilityFunctions::cubic_interpolate_angle(double from, double to, double pre, double post, double weight) {
-	return Math::cubic_interpolate_angle(from, to, pre, post, weight);
+double VariantUtilityFunctions::cubic_interpolate_angle(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
+	return Math::cubic_interpolate_angle(p_from, p_to, p_pre, p_post, p_weight);
 }
 
-double VariantUtilityFunctions::cubic_interpolate_in_time(double from, double to, double pre, double post, double weight,
-		double to_t, double pre_t, double post_t) {
-	return Math::cubic_interpolate_in_time(from, to, pre, post, weight, to_t, pre_t, post_t);
+double VariantUtilityFunctions::cubic_interpolate_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
+		double p_to_t, double p_pre_t, double p_post_t) {
+	return Math::cubic_interpolate_in_time(p_from, p_to, p_pre, p_post, p_weight, p_to_t, p_pre_t, p_post_t);
 }
 
-double VariantUtilityFunctions::cubic_interpolate_angle_in_time(double from, double to, double pre, double post, double weight,
-		double to_t, double pre_t, double post_t) {
-	return Math::cubic_interpolate_angle_in_time(from, to, pre, post, weight, to_t, pre_t, post_t);
+double VariantUtilityFunctions::cubic_interpolate_angle_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
+		double p_to_t, double p_pre_t, double p_post_t) {
+	return Math::cubic_interpolate_angle_in_time(p_from, p_to, p_pre, p_post, p_weight, p_to_t, p_pre_t, p_post_t);
 }
 
 double VariantUtilityFunctions::bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
@@ -537,48 +537,48 @@ double VariantUtilityFunctions::bezier_derivative(double p_start, double p_contr
 	return Math::bezier_derivative(p_start, p_control_1, p_control_2, p_end, p_t);
 }
 
-double VariantUtilityFunctions::angle_difference(double from, double to) {
-	return Math::angle_difference(from, to);
+double VariantUtilityFunctions::angle_difference(double p_from, double p_to) {
+	return Math::angle_difference(p_from, p_to);
 }
 
-double VariantUtilityFunctions::lerp_angle(double from, double to, double weight) {
-	return Math::lerp_angle(from, to, weight);
+double VariantUtilityFunctions::lerp_angle(double p_from, double p_to, double p_weight) {
+	return Math::lerp_angle(p_from, p_to, p_weight);
 }
 
-double VariantUtilityFunctions::inverse_lerp(double from, double to, double weight) {
-	return Math::inverse_lerp(from, to, weight);
+double VariantUtilityFunctions::inverse_lerp(double p_from, double p_to, double p_weight) {
+	return Math::inverse_lerp(p_from, p_to, p_weight);
 }
 
-double VariantUtilityFunctions::remap(double value, double istart, double istop, double ostart, double ostop) {
-	return Math::remap(value, istart, istop, ostart, ostop);
+double VariantUtilityFunctions::remap(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) {
+	return Math::remap(p_value, p_istart, p_istop, p_ostart, p_ostop);
 }
 
-double VariantUtilityFunctions::smoothstep(double from, double to, double val) {
-	return Math::smoothstep(from, to, val);
+double VariantUtilityFunctions::smoothstep(double p_from, double p_to, double p_step) {
+	return Math::smoothstep(p_from, p_to, p_step);
 }
 
-double VariantUtilityFunctions::move_toward(double from, double to, double delta) {
-	return Math::move_toward(from, to, delta);
+double VariantUtilityFunctions::move_toward(double p_from, double p_to, double p_delta) {
+	return Math::move_toward(p_from, p_to, p_delta);
 }
 
-double VariantUtilityFunctions::rotate_toward(double from, double to, double delta) {
-	return Math::rotate_toward(from, to, delta);
+double VariantUtilityFunctions::rotate_toward(double p_from, double p_to, double p_delta) {
+	return Math::rotate_toward(p_from, p_to, p_delta);
 }
 
-double VariantUtilityFunctions::deg_to_rad(double angle_deg) {
-	return Math::deg_to_rad(angle_deg);
+double VariantUtilityFunctions::deg_to_rad(double p_angle_deg) {
+	return Math::deg_to_rad(p_angle_deg);
 }
 
-double VariantUtilityFunctions::rad_to_deg(double angle_rad) {
-	return Math::rad_to_deg(angle_rad);
+double VariantUtilityFunctions::rad_to_deg(double p_angle_rad) {
+	return Math::rad_to_deg(p_angle_rad);
 }
 
-double VariantUtilityFunctions::linear_to_db(double linear) {
-	return Math::linear_to_db(linear);
+double VariantUtilityFunctions::linear_to_db(double p_linear) {
+	return Math::linear_to_db(p_linear);
 }
 
-double VariantUtilityFunctions::db_to_linear(double db) {
-	return Math::db_to_linear(db);
+double VariantUtilityFunctions::db_to_linear(double p_db) {
+	return Math::db_to_linear(p_db);
 }
 
 Variant VariantUtilityFunctions::wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
@@ -627,16 +627,16 @@ Variant VariantUtilityFunctions::wrap(const Variant &p_x, const Variant &p_min, 
 	return value;
 }
 
-int64_t VariantUtilityFunctions::wrapi(int64_t value, int64_t min, int64_t max) {
-	return Math::wrapi(value, min, max);
+int64_t VariantUtilityFunctions::wrapi(int64_t p_value, int64_t p_min, int64_t p_max) {
+	return Math::wrapi(p_value, p_min, p_max);
 }
 
-double VariantUtilityFunctions::wrapf(double value, double min, double max) {
-	return Math::wrapf(value, min, max);
+double VariantUtilityFunctions::wrapf(double p_value, double p_min, double p_max) {
+	return Math::wrapf(p_value, p_min, p_max);
 }
 
-double VariantUtilityFunctions::pingpong(double value, double length) {
-	return Math::pingpong(value, length);
+double VariantUtilityFunctions::pingpong(double p_value, double p_length) {
+	return Math::pingpong(p_value, p_length);
 }
 
 Variant VariantUtilityFunctions::max(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -675,12 +675,12 @@ Variant VariantUtilityFunctions::max(const Variant **p_args, int p_argcount, Cal
 	return base;
 }
 
-double VariantUtilityFunctions::maxf(double x, double y) {
-	return MAX(x, y);
+double VariantUtilityFunctions::maxf(double p_x, double p_y) {
+	return MAX(p_x, p_y);
 }
 
-int64_t VariantUtilityFunctions::maxi(int64_t x, int64_t y) {
-	return MAX(x, y);
+int64_t VariantUtilityFunctions::maxi(int64_t p_x, int64_t p_y) {
+	return MAX(p_x, p_y);
 }
 
 Variant VariantUtilityFunctions::min(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -719,21 +719,21 @@ Variant VariantUtilityFunctions::min(const Variant **p_args, int p_argcount, Cal
 	return base;
 }
 
-double VariantUtilityFunctions::minf(double x, double y) {
-	return MIN(x, y);
+double VariantUtilityFunctions::minf(double p_x, double p_y) {
+	return MIN(p_x, p_y);
 }
 
-int64_t VariantUtilityFunctions::mini(int64_t x, int64_t y) {
-	return MIN(x, y);
+int64_t VariantUtilityFunctions::mini(int64_t p_x, int64_t p_y) {
+	return MIN(p_x, p_y);
 }
 
-Variant VariantUtilityFunctions::clamp(const Variant &x, const Variant &min, const Variant &max, Callable::CallError &r_error) {
-	Variant value = x;
+Variant VariantUtilityFunctions::clamp(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
+	Variant value = p_x;
 
 	Variant ret;
 
 	bool valid;
-	Variant::evaluate(Variant::OP_LESS, value, min, ret, valid);
+	Variant::evaluate(Variant::OP_LESS, value, p_min, ret, valid);
 	if (!valid) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
@@ -741,9 +741,9 @@ Variant VariantUtilityFunctions::clamp(const Variant &x, const Variant &min, con
 		return Variant();
 	}
 	if (ret.booleanize()) {
-		value = min;
+		value = p_min;
 	}
-	Variant::evaluate(Variant::OP_GREATER, value, max, ret, valid);
+	Variant::evaluate(Variant::OP_GREATER, value, p_max, ret, valid);
 	if (!valid) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 2;
@@ -751,7 +751,7 @@ Variant VariantUtilityFunctions::clamp(const Variant &x, const Variant &min, con
 		return Variant();
 	}
 	if (ret.booleanize()) {
-		value = max;
+		value = p_max;
 	}
 
 	r_error.error = Callable::CallError::CALL_OK;
@@ -759,16 +759,16 @@ Variant VariantUtilityFunctions::clamp(const Variant &x, const Variant &min, con
 	return value;
 }
 
-double VariantUtilityFunctions::clampf(double x, double min, double max) {
-	return CLAMP(x, min, max);
+double VariantUtilityFunctions::clampf(double p_x, double p_min, double p_max) {
+	return CLAMP(p_x, p_min, p_max);
 }
 
-int64_t VariantUtilityFunctions::clampi(int64_t x, int64_t min, int64_t max) {
-	return CLAMP(x, min, max);
+int64_t VariantUtilityFunctions::clampi(int64_t p_x, int64_t p_min, int64_t p_max) {
+	return CLAMP(p_x, p_min, p_max);
 }
 
-int64_t VariantUtilityFunctions::nearest_po2(int64_t x) {
-	return Math::nearest_power_of_2_templated(uint64_t(x));
+int64_t VariantUtilityFunctions::nearest_po2(int64_t p_x) {
+	return Math::nearest_power_of_2_templated(uint64_t(p_x));
 }
 
 // Random
@@ -785,24 +785,24 @@ double VariantUtilityFunctions::randf() {
 	return Math::randf();
 }
 
-double VariantUtilityFunctions::randfn(double mean, double deviation) {
-	return Math::randfn(mean, deviation);
+double VariantUtilityFunctions::randfn(double p_mean, double p_deviation) {
+	return Math::randfn(p_mean, p_deviation);
 }
 
-int64_t VariantUtilityFunctions::randi_range(int64_t from, int64_t to) {
-	return Math::random((int32_t)from, (int32_t)to);
+int64_t VariantUtilityFunctions::randi_range(int64_t p_from, int64_t p_to) {
+	return Math::random((int32_t)p_from, (int32_t)p_to);
 }
 
-double VariantUtilityFunctions::randf_range(double from, double to) {
-	return Math::random(from, to);
+double VariantUtilityFunctions::randf_range(double p_from, double p_to) {
+	return Math::random(p_from, p_to);
 }
 
-void VariantUtilityFunctions::seed(int64_t s) {
-	return Math::seed(s);
+void VariantUtilityFunctions::seed(int64_t p_seed) {
+	return Math::seed(p_seed);
 }
 
-PackedInt64Array VariantUtilityFunctions::rand_from_seed(int64_t seed) {
-	uint64_t s = seed;
+PackedInt64Array VariantUtilityFunctions::rand_from_seed(int64_t p_seed) {
+	uint64_t s = p_seed;
 	PackedInt64Array arr;
 	arr.resize(2);
 	arr.write[0] = Math::rand_from_seed(&s);
@@ -812,25 +812,25 @@ PackedInt64Array VariantUtilityFunctions::rand_from_seed(int64_t seed) {
 
 // Utility
 
-Variant VariantUtilityFunctions::weakref(const Variant &obj, Callable::CallError &r_error) {
-	if (obj.get_type() == Variant::OBJECT) {
+Variant VariantUtilityFunctions::weakref(const Variant &p_obj, Callable::CallError &r_error) {
+	if (p_obj.get_type() == Variant::OBJECT) {
 		r_error.error = Callable::CallError::CALL_OK;
-		if (obj.is_ref_counted()) {
+		if (p_obj.is_ref_counted()) {
 			Ref<WeakRef> wref = memnew(WeakRef);
-			Ref<RefCounted> r = obj;
+			Ref<RefCounted> r = p_obj;
 			if (r.is_valid()) {
 				wref->set_ref(r);
 			}
 			return wref;
 		} else {
 			Ref<WeakRef> wref = memnew(WeakRef);
-			Object *o = obj.get_validated_object();
+			Object *o = p_obj.get_validated_object();
 			if (o) {
 				wref->set_obj(o);
 			}
 			return wref;
 		}
-	} else if (obj.get_type() == Variant::NIL) {
+	} else if (p_obj.get_type() == Variant::NIL) {
 		r_error.error = Callable::CallError::CALL_OK;
 		Ref<WeakRef> wref = memnew(WeakRef);
 		return wref;
@@ -842,8 +842,8 @@ Variant VariantUtilityFunctions::weakref(const Variant &obj, Callable::CallError
 	}
 }
 
-int64_t VariantUtilityFunctions::_typeof(const Variant &obj) {
-	return obj.get_type();
+int64_t VariantUtilityFunctions::_typeof(const Variant &p_obj) {
+	return p_obj.get_type();
 }
 
 Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const Variant::Type p_type) {
@@ -927,7 +927,7 @@ Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const Va
 		case Variant::Type::PACKED_VECTOR4_ARRAY:
 			return p_variant.operator PackedVector4Array();
 		case Variant::Type::VARIANT_MAX:
-			ERR_PRINT("Invalid type argument to type_convert(), use the TYPE_* constants. Returning the unconverted Variant.");
+			ERR_PRINT("Invalid type argument p_to type_convert(), use the TYPE_* constants. Returning the unconverted Variant.");
 	}
 	return p_variant;
 }
@@ -944,16 +944,16 @@ String VariantUtilityFunctions::str(const Variant **p_args, int p_arg_count, Cal
 	return join_string(p_args, p_arg_count);
 }
 
-String VariantUtilityFunctions::error_string(Error error) {
-	if (error < 0 || error >= ERR_MAX) {
+String VariantUtilityFunctions::error_string(Error p_error) {
+	if (p_error < 0 || p_error >= ERR_MAX) {
 		return String("(invalid error code)");
 	}
 
-	return String(error_names[error]);
+	return String(error_names[p_error]);
 }
 
 String VariantUtilityFunctions::type_string(Variant::Type p_type) {
-	ERR_FAIL_INDEX_V_MSG((int)p_type, (int)Variant::VARIANT_MAX, "<invalid type>", "Invalid type argument to type_string(), use the TYPE_* constants.");
+	ERR_FAIL_INDEX_V_MSG((int)p_type, (int)Variant::VARIANT_MAX, "<invalid type>", "Invalid type argument p_to type_string(), use the TYPE_* constants.");
 	return Variant::get_type_name(p_type);
 }
 
@@ -969,7 +969,7 @@ void VariantUtilityFunctions::print_rich(const Variant **p_args, int p_arg_count
 
 void VariantUtilityFunctions::_print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		// No need to use `print_verbose()` as this call already only happens
+		// No need p_to use `print_verbose()` as this call already only happens
 		// when verbose mode is enabled. This avoids performing string argument concatenation
 		// when not needed.
 		print_line(join_string(p_args, p_arg_count));
@@ -1159,15 +1159,15 @@ String VariantUtilityFunctions::join_string(const Variant **p_args, int p_arg_co
 }
 
 #ifdef DEBUG_ENABLED
-#define VCALLR *ret = p_func(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...)
+#define VCALLR *r_ret = p_func(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...)
 #define VCALL p_func(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...)
 #else
-#define VCALLR *ret = p_func(VariantCaster<P>::cast(*p_args[Is])...)
+#define VCALLR *r_ret = p_func(VariantCaster<P>::cast(*p_args[Is])...)
 #define VCALL p_func(VariantCaster<P>::cast(*p_args[Is])...)
 #endif // DEBUG_ENABLED
 
 template <typename R, typename... P, size_t... Is>
-static _FORCE_INLINE_ void call_helperpr(R (*p_func)(P...), Variant *ret, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
+static _FORCE_INLINE_ void call_helperpr(R (*p_func)(P...), Variant *r_ret, const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 	VCALLR;
 	(void)p_args; // avoid gcc warning
@@ -1175,30 +1175,30 @@ static _FORCE_INLINE_ void call_helperpr(R (*p_func)(P...), Variant *ret, const 
 }
 
 template <typename R, typename... P, size_t... Is>
-static _FORCE_INLINE_ void validated_call_helperpr(R (*p_func)(P...), Variant *ret, const Variant **p_args, IndexSequence<Is...>) {
-	*ret = p_func(VariantCaster<P>::cast(*p_args[Is])...);
+static _FORCE_INLINE_ void validated_call_helperpr(R (*p_func)(P...), Variant *r_ret, const Variant **p_args, IndexSequence<Is...>) {
+	*r_ret = p_func(VariantCaster<P>::cast(*p_args[Is])...);
 	(void)p_args;
 }
 
 template <typename R, typename... P, size_t... Is>
-static _FORCE_INLINE_ void ptr_call_helperpr(R (*p_func)(P...), void *ret, const void **p_args, IndexSequence<Is...>) {
-	PtrToArg<R>::encode(p_func(PtrToArg<P>::convert(p_args[Is])...), ret);
+static _FORCE_INLINE_ void ptr_call_helperpr(R (*p_func)(P...), void *r_ret, const void **p_args, IndexSequence<Is...>) {
+	PtrToArg<R>::encode(p_func(PtrToArg<P>::convert(p_args[Is])...), r_ret);
 	(void)p_args;
 }
 
 template <typename R, typename... P>
-static _FORCE_INLINE_ void call_helperr(R (*p_func)(P...), Variant *ret, const Variant **p_args, Callable::CallError &r_error) {
-	call_helperpr(p_func, ret, p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
+static _FORCE_INLINE_ void call_helperr(R (*p_func)(P...), Variant *r_ret, const Variant **p_args, Callable::CallError &r_error) {
+	call_helperpr(p_func, r_ret, p_args, r_error, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename R, typename... P>
-static _FORCE_INLINE_ void validated_call_helperr(R (*p_func)(P...), Variant *ret, const Variant **p_args) {
-	validated_call_helperpr(p_func, ret, p_args, BuildIndexSequence<sizeof...(P)>{});
+static _FORCE_INLINE_ void validated_call_helperr(R (*p_func)(P...), Variant *r_ret, const Variant **p_args) {
+	validated_call_helperpr(p_func, r_ret, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename R, typename... P>
-static _FORCE_INLINE_ void ptr_call_helperr(R (*p_func)(P...), void *ret, const void **p_args) {
-	ptr_call_helperpr(p_func, ret, p_args, BuildIndexSequence<sizeof...(P)>{});
+static _FORCE_INLINE_ void ptr_call_helperr(R (*p_func)(P...), void *r_ret, const void **p_args) {
+	ptr_call_helperpr(p_func, r_ret, p_args, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <typename R, typename... P>
@@ -1277,8 +1277,8 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) { \
 			validated_call_helperr(VariantUtilityFunctions::m_func, r_ret, p_args); \
 		} \
-		static void ptrcall(void *ret, const void **p_args, int p_argcount) { \
-			ptr_call_helperr(VariantUtilityFunctions::m_func, ret, p_args); \
+		static void ptrcall(void *r_ret, const void **p_args, int p_argcount) { \
+			ptr_call_helperr(VariantUtilityFunctions::m_func, r_ret, p_args); \
 		} \
 		static int get_argument_count() { \
 			return get_arg_count_helperr(VariantUtilityFunctions::m_func); \
@@ -1312,9 +1312,9 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			Callable::CallError ce; \
 			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], ce); \
 		} \
-		static void ptrcall(void *ret, const void **p_args, int p_argcount) { \
+		static void ptrcall(void *r_ret, const void **p_args, int p_argcount) { \
 			Callable::CallError ce; \
-			PtrToArg<Variant>::encode(VariantUtilityFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), ce), ret); \
+			PtrToArg<Variant>::encode(VariantUtilityFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), ce), r_ret); \
 		} \
 		static int get_argument_count() { \
 			return 1; \
@@ -1348,11 +1348,11 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			Callable::CallError ce; \
 			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], *p_args[1], ce); \
 		} \
-		static void ptrcall(void *ret, const void **p_args, int p_argcount) { \
+		static void ptrcall(void *r_ret, const void **p_args, int p_argcount) { \
 			Callable::CallError ce; \
 			Variant r; \
 			r = VariantUtilityFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), PtrToArg<Variant>::convert(p_args[1]), ce); \
-			PtrToArg<Variant>::encode(r, ret); \
+			PtrToArg<Variant>::encode(r, r_ret); \
 		} \
 		static int get_argument_count() { \
 			return 2; \
@@ -1386,11 +1386,11 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			Callable::CallError ce; \
 			*r_ret = VariantUtilityFunctions::m_func(*p_args[0], *p_args[1], *p_args[2], ce); \
 		} \
-		static void ptrcall(void *ret, const void **p_args, int p_argcount) { \
+		static void ptrcall(void *r_ret, const void **p_args, int p_argcount) { \
 			Callable::CallError ce; \
 			Variant r; \
 			r = VariantUtilityFunctions::m_func(PtrToArg<Variant>::convert(p_args[0]), PtrToArg<Variant>::convert(p_args[1]), PtrToArg<Variant>::convert(p_args[2]), ce); \
-			PtrToArg<Variant>::encode(r, ret); \
+			PtrToArg<Variant>::encode(r, r_ret); \
 		} \
 		static int get_argument_count() { \
 			return 3; \
@@ -1424,7 +1424,7 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			Callable::CallError c; \
 			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, c); \
 		} \
-		static void ptrcall(void *ret, const void **p_args, int p_argcount) { \
+		static void ptrcall(void *r_ret, const void **p_args, int p_argcount) { \
 			Vector<Variant> args; \
 			for (int i = 0; i < p_argcount; i++) { \
 				args.push_back(PtrToArg<Variant>::convert(p_args[i])); \
@@ -1435,7 +1435,7 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			} \
 			Variant r; \
 			validated_call(&r, (const Variant **)argsp.ptr(), p_argcount); \
-			PtrToArg<Variant>::encode(r, ret); \
+			PtrToArg<Variant>::encode(r, r_ret); \
 		} \
 		static int get_argument_count() { \
 			return 2; \
@@ -1469,7 +1469,7 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			Callable::CallError c; \
 			*r_ret = VariantUtilityFunctions::m_func(p_args, p_argcount, c); \
 		} \
-		static void ptrcall(void *ret, const void **p_args, int p_argcount) { \
+		static void ptrcall(void *r_ret, const void **p_args, int p_argcount) { \
 			Vector<Variant> args; \
 			for (int i = 0; i < p_argcount; i++) { \
 				args.push_back(PtrToArg<Variant>::convert(p_args[i])); \
@@ -1480,7 +1480,7 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			} \
 			Variant r; \
 			validated_call(&r, (const Variant **)argsp.ptr(), p_argcount); \
-			PtrToArg<String>::encode(r.operator String(), ret); \
+			PtrToArg<String>::encode(r.operator String(), r_ret); \
 		} \
 		static int get_argument_count() { \
 			return 1; \
@@ -1514,7 +1514,7 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 			Callable::CallError c; \
 			VariantUtilityFunctions::m_func_cname(p_args, p_argcount, c); \
 		} \
-		static void ptrcall(void *ret, const void **p_args, int p_argcount) { \
+		static void ptrcall(void *r_ret, const void **p_args, int p_argcount) { \
 			Vector<Variant> args; \
 			for (int i = 0; i < p_argcount; i++) { \
 				args.push_back(PtrToArg<Variant>::convert(p_args[i])); \
@@ -1558,7 +1558,7 @@ static _FORCE_INLINE_ Variant::Type get_ret_type_helper(void (*p_func)(P...)) {
 		static void validated_call(Variant *r_ret, const Variant **p_args, int p_argcount) { \
 			validated_call_helper(VariantUtilityFunctions::m_func, p_args); \
 		} \
-		static void ptrcall(void *ret, const void **p_args, int p_argcount) { \
+		static void ptrcall(void *r_ret, const void **p_args, int p_argcount) { \
 			ptr_call_helper(VariantUtilityFunctions::m_func, p_args); \
 		} \
 		static int get_argument_count() { \
@@ -1599,7 +1599,7 @@ static AHashMap<StringName, VariantUtilityFunctionInfo> utility_function_table;
 static List<StringName> utility_function_name_table;
 
 template <typename T>
-static void register_utility_function(const String &p_name, const Vector<String> &argnames) {
+static void register_utility_function(const String &p_name, const Vector<String> &p_argnames) {
 	String name = p_name;
 	if (name.begins_with("_")) {
 		name = name.substr(1);
@@ -1612,10 +1612,10 @@ static void register_utility_function(const String &p_name, const Vector<String>
 	bfi.validated_call_utility = T::validated_call;
 	bfi.ptr_call_utility = T::ptrcall;
 	bfi.is_vararg = T::is_vararg();
-	bfi.argnames = argnames;
+	bfi.argnames = p_argnames;
 	bfi.argcount = T::get_argument_count();
 	if (!bfi.is_vararg) {
-		ERR_FAIL_COND_MSG(argnames.size() != bfi.argcount, vformat("Wrong number of arguments binding utility function: '%s'.", name));
+		ERR_FAIL_COND_MSG(p_argnames.size() != bfi.argcount, vformat("Wrong number of arguments binding utility function: '%s'.", name));
 	}
 	bfi.get_arg_type = T::get_argument_type;
 	bfi.return_type = T::get_return_type();
@@ -1854,10 +1854,10 @@ MethodInfo Variant::get_utility_function_info(const StringName &p_name) {
 			info.flags |= METHOD_FLAG_VARARG;
 		}
 		for (int i = 0; i < bfi->argnames.size(); ++i) {
-			PropertyInfo arg;
-			arg.type = bfi->get_arg_type(i);
-			arg.name = bfi->argnames[i];
-			info.arguments.push_back(arg);
+			PropertyInfo p_arg;
+			p_arg.type = bfi->get_arg_type(i);
+			p_arg.name = bfi->argnames[i];
+			info.arguments.push_back(p_arg);
 		}
 	}
 	return info;

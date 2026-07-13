@@ -95,14 +95,14 @@ _FORCE_INLINE_ uint32_t hash_one_uint64(const uint64_t p_int) {
 	return uint32_t(v);
 }
 
-_FORCE_INLINE_ uint64_t hash64_murmur3_64(uint64_t key, uint64_t seed) {
-	key ^= seed;
-	key ^= key >> 33;
-	key *= 0xff51afd7ed558ccd;
-	key ^= key >> 33;
-	key *= 0xc4ceb9fe1a85ec53;
-	key ^= key >> 33;
-	return key;
+_FORCE_INLINE_ uint64_t hash64_murmur3_64(uint64_t p_key, uint64_t p_seed) {
+	p_key ^= p_seed;
+	p_key ^= p_key >> 33;
+	p_key *= 0xff51afd7ed558ccd;
+	p_key ^= p_key >> 33;
+	p_key *= 0xc4ceb9fe1a85ec53;
+	p_key ^= p_key >> 33;
+	return p_key;
 }
 
 #define HASH_MURMUR3_SEED 0x7F07C65
@@ -137,21 +137,21 @@ _FORCE_INLINE_ uint32_t hash_murmur3_one_real(real_t p_in, uint32_t p_seed = HAS
 #endif
 }
 
-_FORCE_INLINE_ uint32_t hash_rotl32(uint32_t x, int8_t r) {
-	return (x << r) | (x >> (32 - r));
+_FORCE_INLINE_ uint32_t hash_rotl32(uint32_t p_x, int8_t p_r) {
+	return (p_x << p_r) | (p_x >> (32 - p_r));
 }
 
-_FORCE_INLINE_ uint32_t hash_fmix32(uint32_t h) {
-	h ^= h >> 16;
-	h *= 0x85ebca6b;
-	h ^= h >> 13;
-	h *= 0xc2b2ae35;
-	h ^= h >> 16;
+_FORCE_INLINE_ uint32_t hash_fmix32(uint32_t p_h) {
+	p_h ^= p_h >> 16;
+	p_h *= 0x85ebca6b;
+	p_h ^= p_h >> 13;
+	p_h *= 0xc2b2ae35;
+	p_h ^= p_h >> 16;
 
-	return h;
+	return p_h;
 }
 
-uint32_t hash_murmur3_buffer(const void *key, int length, uint32_t seed = HASH_MURMUR3_SEED);
+uint32_t hash_murmur3_buffer(const void *p_key, int p_length, uint32_t p_seed = HASH_MURMUR3_SEED);
 
 uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381);
 uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_prev = 5381);
@@ -291,10 +291,10 @@ template <typename T>
 constexpr bool has_is_same_method_v = has_is_same_method<T>::value;
 
 struct HashHasher {
-	static _FORCE_INLINE_ uint32_t hash(const int32_t hash) { return hash; }
-	static _FORCE_INLINE_ uint32_t hash(const uint32_t hash) { return hash; }
-	static _FORCE_INLINE_ uint64_t hash(const int64_t hash) { return hash; }
-	static _FORCE_INLINE_ uint64_t hash(const uint64_t hash) { return hash; }
+	static _FORCE_INLINE_ uint32_t hash(const int32_t p_hash) { return p_hash; }
+	static _FORCE_INLINE_ uint32_t hash(const uint32_t p_hash) { return p_hash; }
+	static _FORCE_INLINE_ uint64_t hash(const int64_t p_hash) { return p_hash; }
+	static _FORCE_INLINE_ uint64_t hash(const uint64_t p_hash) { return p_hash; }
 };
 
 template <typename T, typename = void>
@@ -399,25 +399,25 @@ inline constexpr uint64_t hash_table_size_primes_inv[HASH_TABLE_SIZE_MAX] = {
  * Faster Remainder by Direct Computation: Applications to Compilers and Software Libraries
  * https://arxiv.org/abs/1902.01961
  */
-static _FORCE_INLINE_ uint32_t fastmod(const uint32_t n, const uint64_t c, const uint32_t d) {
+static _FORCE_INLINE_ uint32_t fastmod(const uint32_t p_n, const uint64_t p_c, const uint32_t p_d) {
 #if defined(_MSC_VER)
 	// Returns the upper 64 bits of the product of two 64-bit unsigned integers.
 	// This intrinsic function is required since MSVC does not support unsigned 128-bit integers.
 #if defined(_M_X64) || defined(_M_ARM64)
-	return __umulh(c * n, d);
+	return __umulh(p_c * p_n, p_d);
 #else
 	// Fallback to the slower method for 32-bit platforms.
-	return n % d;
+	return p_n % p_d;
 #endif // _M_X64 || _M_ARM64
 #else
 #ifdef __SIZEOF_INT128__
 	// Prevent compiler warning, because we know what we are doing.
-	uint64_t lowbits = c * n;
+	uint64_t lowbits = p_c * p_n;
 	__extension__ typedef unsigned __int128 uint128;
-	return static_cast<uint64_t>(((uint128)lowbits * d) >> 64);
+	return static_cast<uint64_t>(((uint128)lowbits * p_d) >> 64);
 #else
 	// Fallback to the slower method if no 128-bit unsigned integer type is available.
-	return n % d;
+	return p_n % p_d;
 #endif // __SIZEOF_INT128__
 #endif // _MSC_VER
 }

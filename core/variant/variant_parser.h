@@ -87,7 +87,7 @@ public:
 		StreamString(bool p_readahead_enabled = true) { readahead_enabled = p_readahead_enabled; }
 	};
 
-	typedef Error (*ParseResourceFunc)(void *p_self, Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);
+	typedef Error (*ParseResourceFunc)(void *p_self, Stream *p_stream, Ref<Resource> &r_res, int &r_line, String &r_err_str);
 
 	struct ResourceParser {
 		void *userdata = nullptr;
@@ -138,26 +138,26 @@ private:
 	static const char *tk_name[TK_MAX];
 
 	template <typename T>
-	static Error _parse_construct(Stream *p_stream, Vector<T> &r_construct, int &line, String &r_err_str);
-	static Error _parse_byte_array(Stream *p_stream, Vector<uint8_t> &r_construct, int &line, String &r_err_str);
-	static Error _parse_enginecfg(Stream *p_stream, Vector<String> &strings, int &line, String &r_err_str);
-	static Error _parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
-	static Error _parse_array(Array &array, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
-	static Error _parse_tag(Token &token, Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
+	static Error _parse_construct(Stream *p_stream, Vector<T> &r_construct, int &r_line, String &r_err_str);
+	static Error _parse_byte_array(Stream *p_stream, Vector<uint8_t> &r_construct, int &r_line, String &r_err_str);
+	static Error _parse_enginecfg(Stream *p_stream, Vector<String> &r_strings, int &r_line, String &r_err_str);
+	static Error _parse_dictionary(Dictionary &r_object, Stream *p_stream, int &r_line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
+	static Error _parse_array(Array &r_array, Stream *p_stream, int &r_line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
+	static Error _parse_tag(Token &r_token, Stream *p_stream, int &r_line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
 
 public:
-	static Error parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
-	static Error parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
+	static Error parse_tag(Stream *p_stream, int &r_line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
+	static Error parse_tag_assign_eof(Stream *p_stream, int &r_line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser = nullptr, bool p_simple_tag = false);
 
-	static Error parse_value(Token &token, Variant &value, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
-	static Error get_token(Stream *p_stream, Token &r_token, int &line, String &r_err_str);
+	static Error parse_value(Token &r_token, Variant &r_value, Stream *p_stream, int &r_line, String &r_err_str, ResourceParser *p_res_parser = nullptr);
+	static Error get_token(Stream *p_stream, Token &r_token, int &r_line, String &r_err_str);
 	static Error parse(Stream *p_stream, Variant &r_ret, String &r_err_str, int &r_err_line, ResourceParser *p_res_parser = nullptr);
 };
 
 class VariantWriter {
 public:
-	typedef Error (*StoreStringFunc)(void *ud, const String &p_string);
-	typedef String (*EncodeResourceFunc)(void *ud, const Ref<Resource> &p_resource);
+	typedef Error (*StoreStringFunc)(void *p_ud, const String &p_string);
+	typedef String (*EncodeResourceFunc)(void *p_ud, const Ref<Resource> &p_resource);
 
 	static Error write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, int p_recursion_count = 0, bool p_compat = true);
 	static Error write_to_string(const Variant &p_variant, String &r_string, EncodeResourceFunc p_encode_res_func = nullptr, void *p_encode_res_ud = nullptr, bool p_compat = true);

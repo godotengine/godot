@@ -574,10 +574,10 @@ private:
 
 	// find all the existing paired aabbs that are no longer
 	// paired, and send callbacks
-	void _find_leavers(BVHHandle p_handle, const BVHABB_CLASS &expanded_abb_from, bool p_full_check) {
+	void _find_leavers(BVHHandle p_handle, const BVHABB_CLASS &p_expanded_abb_from, bool p_full_check) {
 		typename BVHTREE_CLASS::ItemPairs &p_from = tree._pairs[p_handle.id()];
 
-		BVHABB_CLASS abb_from = expanded_abb_from;
+		BVHABB_CLASS abb_from = p_expanded_abb_from;
 
 		// remove from pairing list for every partner
 		for (unsigned int n = 0; n < p_from.extended_pairs.size(); n++) {
@@ -692,7 +692,7 @@ private:
 		_tick++;
 	}
 
-	void _add_changed_item(BVHHandle p_handle, const BOUNDS &aabb, bool p_check_aabb = true) {
+	void _add_changed_item(BVHHandle p_handle, const BOUNDS &p_aabb, bool p_check_aabb = true) {
 		// Note that non pairable items can pair with pairable,
 		// so all types must be added to the list
 
@@ -709,13 +709,13 @@ private:
 		// passing p_check_aabb false disables the optimization which prevents collision checks if
 		// the aabb hasn't changed. This is needed where set_pairable has been called, but the position
 		// has not changed.
-		if (p_check_aabb && tree.expanded_aabb_encloses_not_shrink(expanded_aabb, aabb)) {
+		if (p_check_aabb && tree.expanded_aabb_encloses_not_shrink(expanded_aabb, p_aabb)) {
 			return;
 		}
 
 		// ALWAYS update the new expanded aabb, even if already changed once
 		// this tick, because it is vital that the AABB is kept up to date
-		expanded_aabb = aabb;
+		expanded_aabb = p_aabb;
 		expanded_aabb.grow_by(tree._pairing_expansion);
 #endif
 

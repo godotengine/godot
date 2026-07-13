@@ -86,10 +86,10 @@ public:
 
 	bool operator==(const Dictionary &p_dictionary) const;
 	bool operator!=(const Dictionary &p_dictionary) const;
-	bool recursive_equal(const Dictionary &p_dictionary, int recursion_count) const;
+	bool recursive_equal(const Dictionary &p_dictionary, int p_recursion_count) const;
 
 	uint32_t hash() const;
-	uint32_t recursive_hash(int recursion_count) const;
+	uint32_t recursive_hash(int p_recursion_count) const;
 	void operator=(const Dictionary &p_dictionary);
 
 	void assign(const Dictionary &p_dictionary);
@@ -100,7 +100,7 @@ public:
 
 	Dictionary duplicate(bool p_deep = false) const;
 	Dictionary duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
-	Dictionary recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
+	Dictionary recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const;
 
 	void set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type);
 	void set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script);

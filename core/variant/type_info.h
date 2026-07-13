@@ -256,7 +256,7 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 	};
 
 template <typename T>
-inline StringName __constant_get_enum_name(T param) {
+inline StringName __constant_get_enum_name(T p_param) {
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 
@@ -285,7 +285,7 @@ inline StringName __constant_get_enum_value_name(const char *p_name) {
 	};
 
 template <typename T>
-inline StringName __constant_get_bitfield_name(T param) {
+inline StringName __constant_get_bitfield_name(T p_param) {
 	return GetTypeInfo<BitField<T>>::get_class_info().class_name;
 }
 #define CLASS_INFO(m_type) (GetTypeInfo<m_type *>::get_class_info())
@@ -300,9 +300,9 @@ inline StringName __constant_get_bitfield_name(T param) {
 // No initialization by default, except for scalar types.
 template <typename T>
 struct ZeroInitializer {
-	static void initialize(T &value) {
+	static void initialize(T &r_value) {
 		if constexpr (std::is_scalar_v<T>) {
-			value = {};
+			r_value = {};
 		}
 	}
 };

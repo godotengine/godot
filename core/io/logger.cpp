@@ -53,8 +53,8 @@ bool Logger::should_log(bool p_err) {
 	return (!p_err || CoreGlobals::print_error_enabled) && (p_err || CoreGlobals::print_line_enabled);
 }
 
-void Logger::set_flush_stdout_on_print(bool value) {
-	_flush_stdout_on_print = value;
+void Logger::set_flush_stdout_on_print(bool p_value) {
+	_flush_stdout_on_print = p_value;
 }
 
 void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {

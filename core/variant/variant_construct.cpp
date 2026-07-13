@@ -42,8 +42,8 @@ struct VariantConstructData {
 static LocalVector<VariantConstructData> construct_data[Variant::VARIANT_MAX];
 
 template <typename T>
-static void add_constructor(const Vector<String> &arg_names) {
-	ERR_FAIL_COND_MSG(arg_names.size() != T::get_argument_count(), vformat("Argument names size mismatch for '%s'.", Variant::get_type_name(T::get_base_type())));
+static void add_constructor(const Vector<String> &p_arg_names) {
+	ERR_FAIL_COND_MSG(p_arg_names.size() != T::get_argument_count(), vformat("Argument names size mismatch for '%s'.", Variant::get_type_name(T::get_base_type())));
 
 	VariantConstructData cd;
 	cd.construct = T::construct;
@@ -51,7 +51,7 @@ static void add_constructor(const Vector<String> &arg_names) {
 	cd.ptr_construct = T::ptr_construct;
 	cd.get_argument_type = T::get_argument_type;
 	cd.argument_count = T::get_argument_count();
-	cd.arg_names = arg_names;
+	cd.arg_names = p_arg_names;
 	construct_data[T::get_base_type()].push_back(cd);
 }
 
@@ -261,7 +261,7 @@ void Variant::_unregister_variant_constructors() {
 	}
 }
 
-void Variant::construct(Variant::Type p_type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void Variant::construct(Variant::Type p_type, Variant &p_base, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 	uint32_t s = construct_data[p_type].size();
 	for (uint32_t i = 0; i < s; i++) {
@@ -281,7 +281,7 @@ void Variant::construct(Variant::Type p_type, Variant &base, const Variant **p_a
 			continue;
 		}
 
-		construct_data[p_type][i].construct(base, p_args, r_error);
+		construct_data[p_type][i].construct(p_base, p_args, r_error);
 		return;
 	}
 

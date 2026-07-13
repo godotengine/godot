@@ -89,10 +89,10 @@ enum ContainerTypeKind {
 #define GET_CONTAINER_TYPE_KIND(m_header, m_field) \
 	((ContainerTypeKind)(((m_header) & HEADER_DATA_FIELD_##m_field##_MASK) >> HEADER_DATA_FIELD_##m_field##_SHIFT))
 
-static Error _decode_string(const uint8_t *&buf, int &len, int *r_len, String &r_string) {
-	ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
+static Error _decode_string(const uint8_t *&p_buffer, int &r_left, int *r_len, String &r_string) {
+	ERR_FAIL_COND_V(r_left < 4, ERR_INVALID_DATA);
 
-	int32_t strlen = decode_uint32(buf);
+	int32_t strlen = decode_uint32(p_buffer);
 	int32_t pad = 0;
 
 	// Handle padding.
@@ -100,23 +100,23 @@ static Error _decode_string(const uint8_t *&buf, int &len, int *r_len, String &r
 		pad = 4 - strlen % 4;
 	}
 
-	buf += 4;
-	len -= 4;
+	p_buffer += 4;
+	r_left -= 4;
 
 	// Ensure buffer is big enough.
 	ERR_FAIL_ADD_OF(strlen, pad, ERR_FILE_EOF);
-	ERR_FAIL_COND_V(strlen < 0 || strlen + pad > len, ERR_FILE_EOF);
+	ERR_FAIL_COND_V(strlen < 0 || strlen + pad > r_left, ERR_FILE_EOF);
 
 	String str;
-	ERR_FAIL_COND_V(str.append_utf8((const char *)buf, strlen) != OK, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(str.append_utf8((const char *)p_buffer, strlen) != OK, ERR_INVALID_DATA);
 	r_string = str;
 
 	// Add padding.
 	strlen += pad;
 
 	// Update buffer pos, left data count, and return size.
-	buf += strlen;
-	len -= strlen;
+	p_buffer += strlen;
+	r_left -= strlen;
 	if (r_len) {
 		(*r_len) += 4 + strlen;
 	}
@@ -124,17 +124,17 @@ static Error _decode_string(const uint8_t *&buf, int &len, int *r_len, String &r
 	return OK;
 }
 
-static Error _decode_container_type(const uint8_t *&buf, int &len, int *r_len, bool p_allow_objects, ContainerTypeKind p_type_kind, ContainerType &r_type) {
+static Error _decode_container_type(const uint8_t *&p_buffer, int &r_left, int *r_len, bool p_allow_objects, ContainerTypeKind p_type_kind, ContainerType &r_type) {
 	switch (p_type_kind) {
 		case CONTAINER_TYPE_KIND_NONE: {
 			return OK;
 		} break;
 		case CONTAINER_TYPE_KIND_BUILTIN: {
-			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(r_left < 4, ERR_INVALID_DATA);
 
-			int32_t bt = decode_uint32(buf);
-			buf += 4;
-			len -= 4;
+			int32_t bt = decode_uint32(p_buffer);
+			p_buffer += 4;
+			r_left -= 4;
 			if (r_len) {
 				(*r_len) += 4;
 			}
@@ -148,7 +148,7 @@ static Error _decode_container_type(const uint8_t *&buf, int &len, int *r_len, b
 		} break;
 		case CONTAINER_TYPE_KIND_CLASS_NAME: {
 			String str;
-			Error err = _decode_string(buf, len, r_len, str);
+			Error err = _decode_string(p_buffer, r_left, r_len, str);
 			if (err) {
 				return err;
 			}
@@ -163,7 +163,7 @@ static Error _decode_container_type(const uint8_t *&buf, int &len, int *r_len, b
 		} break;
 		case CONTAINER_TYPE_KIND_SCRIPT: {
 			String path;
-			Error err = _decode_string(buf, len, r_len, path);
+			Error err = _decode_string(p_buffer, r_left, r_len, path);
 			if (err) {
 				return err;
 			}
@@ -1303,55 +1303,55 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 	return OK;
 }
 
-static void _encode_string(const String &p_string, uint8_t *&buf, int &r_len) {
+static void _encode_string(const String &p_string, uint8_t *&p_buffer, int &r_len) {
 	CharString utf8 = p_string.utf8();
 
-	if (buf) {
-		encode_uint32(utf8.length(), buf);
-		buf += 4;
-		memcpy(buf, utf8.get_data(), utf8.length());
-		buf += utf8.length();
+	if (p_buffer) {
+		encode_uint32(utf8.length(), p_buffer);
+		p_buffer += 4;
+		memcpy(p_buffer, utf8.get_data(), utf8.length());
+		p_buffer += utf8.length();
 	}
 
 	r_len += 4 + utf8.length();
 	while (r_len % 4) {
 		r_len++; // Pad.
-		if (buf) {
-			*(buf++) = 0;
+		if (p_buffer) {
+			*(p_buffer++) = 0;
 		}
 	}
 }
 
-static void _encode_container_type_header(const ContainerType &p_type, uint32_t &header, uint32_t p_shift, bool p_full_objects) {
+static void _encode_container_type_header(const ContainerType &p_type, uint32_t &r_header, uint32_t p_shift, bool p_full_objects) {
 	if (p_type.builtin_type != Variant::NIL) {
 		if (p_type.script.is_valid()) {
-			header |= (p_full_objects ? CONTAINER_TYPE_KIND_SCRIPT : CONTAINER_TYPE_KIND_CLASS_NAME) << p_shift;
+			r_header |= (p_full_objects ? CONTAINER_TYPE_KIND_SCRIPT : CONTAINER_TYPE_KIND_CLASS_NAME) << p_shift;
 		} else if (p_type.class_name != StringName()) {
-			header |= CONTAINER_TYPE_KIND_CLASS_NAME << p_shift;
+			r_header |= CONTAINER_TYPE_KIND_CLASS_NAME << p_shift;
 		} else {
 			// No need to check `p_full_objects` since `class_name` should be non-empty for `builtin_type == Variant::OBJECT`.
-			header |= CONTAINER_TYPE_KIND_BUILTIN << p_shift;
+			r_header |= CONTAINER_TYPE_KIND_BUILTIN << p_shift;
 		}
 	}
 }
 
-static Error _encode_container_type(const ContainerType &p_type, uint8_t *&buf, int &r_len, bool p_full_objects) {
+static Error _encode_container_type(const ContainerType &p_type, uint8_t *&p_buffer, int &r_len, bool p_full_objects) {
 	if (p_type.builtin_type != Variant::NIL) {
 		if (p_type.script.is_valid()) {
 			if (p_full_objects) {
 				String path = p_type.script->get_path();
 				ERR_FAIL_COND_V_MSG(path.is_empty() || !path.begins_with("res://"), ERR_UNAVAILABLE, "Failed to encode a path to a custom script for a container type.");
-				_encode_string(path, buf, r_len);
+				_encode_string(path, p_buffer, r_len);
 			} else {
-				_encode_string(EncodedObjectAsID::get_class_static(), buf, r_len);
+				_encode_string(EncodedObjectAsID::get_class_static(), p_buffer, r_len);
 			}
 		} else if (p_type.class_name != StringName()) {
-			_encode_string(p_full_objects ? p_type.class_name : EncodedObjectAsID::get_class_static(), buf, r_len);
+			_encode_string(p_full_objects ? p_type.class_name : EncodedObjectAsID::get_class_static(), p_buffer, r_len);
 		} else {
 			// No need to check `p_full_objects` since `class_name` should be non-empty for `builtin_type == Variant::OBJECT`.
-			if (buf) {
-				encode_uint32(p_type.builtin_type, buf);
-				buf += 4;
+			if (p_buffer) {
+				encode_uint32(p_type.builtin_type, p_buffer);
+				p_buffer += 4;
 			}
 			r_len += 4;
 		}
@@ -1359,9 +1359,9 @@ static Error _encode_container_type(const ContainerType &p_type, uint8_t *&buf, 
 	return OK;
 }
 
-Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_full_objects, int p_depth) {
+Error encode_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len, bool p_full_objects, int p_depth) {
 	ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ERR_OUT_OF_MEMORY, "Potential infinite recursion detected. Bailing.");
-	uint8_t *buf = r_buffer;
+	uint8_t *buf = p_buffer;
 
 	r_len = 0;
 
@@ -2133,19 +2133,19 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 	return OK;
 }
 
-Vector<float> vector3_to_float32_array(const Vector3 *vecs, size_t count) {
+Vector<float> vector3_to_float32_array(const Vector3 *p_vecs, size_t p_count) {
 	// We always allocate a new array, and we don't `memcpy()`.
 	// We also don't consider returning a pointer to the passed vectors when `sizeof(real_t) == 4`.
 	// One reason is that we could decide to put a 4th component in `Vector3` for SIMD/mobile performance,
 	// which would cause trouble with these optimizations.
 	Vector<float> floats;
-	if (count == 0) {
+	if (p_count == 0) {
 		return floats;
 	}
-	floats.resize(count * 3);
+	floats.resize(p_count * 3);
 	float *floats_w = floats.ptrw();
-	for (size_t i = 0; i < count; ++i) {
-		const Vector3 v = vecs[i];
+	for (size_t i = 0; i < p_count; ++i) {
+		const Vector3 v = p_vecs[i];
 		floats_w[0] = v.x;
 		floats_w[1] = v.y;
 		floats_w[2] = v.z;

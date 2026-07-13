@@ -159,7 +159,7 @@ static double stor_fix(const String &p_str) {
 	return -1;
 }
 
-Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, String &r_err_str) {
+Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &r_line, String &r_err_str) {
 	bool string_name = false;
 
 	while (true) {
@@ -177,7 +177,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 
 		switch (cchar) {
 			case '\n': {
-				line++;
+				r_line++;
 				break;
 			}
 			case 0: {
@@ -220,7 +220,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 						return OK;
 					}
 					if (ch == '\n') {
-						line++;
+						r_line++;
 						break;
 					}
 				}
@@ -386,7 +386,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 							return ERR_PARSE_ERROR;
 						}
 						if (ch == '\n') {
-							line++;
+							r_line++;
 						}
 						str += ch;
 					}
@@ -519,9 +519,9 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 	return ERR_PARSE_ERROR;
 }
 
-Error VariantParser::_parse_enginecfg(Stream *p_stream, Vector<String> &strings, int &line, String &r_err_str) {
+Error VariantParser::_parse_enginecfg(Stream *p_stream, Vector<String> &r_strings, int &r_line, String &r_err_str) {
 	Token token;
-	get_token(p_stream, token, line, r_err_str);
+	get_token(p_stream, token, r_line, r_err_str);
 	if (token.type != TK_PARENTHESIS_OPEN) {
 		r_err_str = "Expected '(' in old-style project.godot construct";
 		return ERR_PARSE_ERROR;
@@ -538,21 +538,21 @@ Error VariantParser::_parse_enginecfg(Stream *p_stream, Vector<String> &strings,
 		}
 
 		if (c == ',') {
-			strings.push_back(accum.strip_edges());
+			r_strings.push_back(accum.strip_edges());
 			accum = String();
 		} else if (c == ')') {
-			strings.push_back(accum.strip_edges());
+			r_strings.push_back(accum.strip_edges());
 			return OK;
 		} else if (c == '\n') {
-			line++;
+			r_line++;
 		}
 	}
 }
 
 template <typename T>
-Error VariantParser::_parse_construct(Stream *p_stream, Vector<T> &r_construct, int &line, String &r_err_str) {
+Error VariantParser::_parse_construct(Stream *p_stream, Vector<T> &r_construct, int &r_line, String &r_err_str) {
 	Token token;
-	get_token(p_stream, token, line, r_err_str);
+	get_token(p_stream, token, r_line, r_err_str);
 	if (token.type != TK_PARENTHESIS_OPEN) {
 		r_err_str = "Expected '(' in constructor";
 		return ERR_PARSE_ERROR;
@@ -561,7 +561,7 @@ Error VariantParser::_parse_construct(Stream *p_stream, Vector<T> &r_construct, 
 	bool first = true;
 	while (true) {
 		if (!first) {
-			get_token(p_stream, token, line, r_err_str);
+			get_token(p_stream, token, r_line, r_err_str);
 			if (token.type == TK_COMMA) {
 				//do none
 			} else if (token.type == TK_PARENTHESIS_CLOSE) {
@@ -571,7 +571,7 @@ Error VariantParser::_parse_construct(Stream *p_stream, Vector<T> &r_construct, 
 				return ERR_PARSE_ERROR;
 			}
 		}
-		get_token(p_stream, token, line, r_err_str);
+		get_token(p_stream, token, r_line, r_err_str);
 
 		if (first && token.type == TK_PARENTHESIS_CLOSE) {
 			break;
@@ -598,15 +598,15 @@ Error VariantParser::_parse_construct(Stream *p_stream, Vector<T> &r_construct, 
 	return OK;
 }
 
-Error VariantParser::_parse_byte_array(Stream *p_stream, Vector<uint8_t> &r_construct, int &line, String &r_err_str) {
+Error VariantParser::_parse_byte_array(Stream *p_stream, Vector<uint8_t> &r_construct, int &r_line, String &r_err_str) {
 	Token token;
-	get_token(p_stream, token, line, r_err_str);
+	get_token(p_stream, token, r_line, r_err_str);
 	if (token.type != TK_PARENTHESIS_OPEN) {
 		r_err_str = "Expected '(' in constructor";
 		return ERR_PARSE_ERROR;
 	}
 
-	get_token(p_stream, token, line, r_err_str);
+	get_token(p_stream, token, r_line, r_err_str);
 	if (token.type == TK_STRING) {
 		// Base64 encoded array.
 		String base64_encoded_string = token.value;
@@ -623,7 +623,7 @@ Error VariantParser::_parse_byte_array(Stream *p_stream, Vector<uint8_t> &r_cons
 		}
 		r_construct.resize(arr_len);
 
-		get_token(p_stream, token, line, r_err_str);
+		get_token(p_stream, token, r_line, r_err_str);
 		if (token.type != TK_PARENTHESIS_CLOSE) {
 			r_err_str = "Expected ')' in constructor";
 			return ERR_PARSE_ERROR;
@@ -650,7 +650,7 @@ Error VariantParser::_parse_byte_array(Stream *p_stream, Vector<uint8_t> &r_cons
 
 			r_construct.push_back(token.value);
 
-			get_token(p_stream, token, line, r_err_str);
+			get_token(p_stream, token, r_line, r_err_str);
 
 			if (token.type == TK_COMMA) {
 				//do none
@@ -661,7 +661,7 @@ Error VariantParser::_parse_byte_array(Stream *p_stream, Vector<uint8_t> &r_cons
 				return ERR_PARSE_ERROR;
 			}
 
-			get_token(p_stream, token, line, r_err_str);
+			get_token(p_stream, token, r_line, r_err_str);
 		}
 	} else if (token.type == TK_PARENTHESIS_CLOSE) {
 		// Empty array.
@@ -674,41 +674,41 @@ Error VariantParser::_parse_byte_array(Stream *p_stream, Vector<uint8_t> &r_cons
 	return OK;
 }
 
-Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
-	if (token.type == TK_CURLY_BRACKET_OPEN) {
+Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_stream, int &r_line, String &r_err_str, ResourceParser *p_res_parser) {
+	if (r_token.type == TK_CURLY_BRACKET_OPEN) {
 		Dictionary d;
-		Error err = _parse_dictionary(d, p_stream, line, r_err_str, p_res_parser);
+		Error err = _parse_dictionary(d, p_stream, r_line, r_err_str, p_res_parser);
 		if (err) {
 			return err;
 		}
-		value = d;
+		r_value = d;
 		return OK;
-	} else if (token.type == TK_BRACKET_OPEN) {
+	} else if (r_token.type == TK_BRACKET_OPEN) {
 		Array a;
-		Error err = _parse_array(a, p_stream, line, r_err_str, p_res_parser);
+		Error err = _parse_array(a, p_stream, r_line, r_err_str, p_res_parser);
 		if (err) {
 			return err;
 		}
-		value = a;
+		r_value = a;
 		return OK;
-	} else if (token.type == TK_IDENTIFIER) {
-		String id = token.value;
+	} else if (r_token.type == TK_IDENTIFIER) {
+		String id = r_token.value;
 		if (id == "true") {
-			value = true;
+			r_value = true;
 		} else if (id == "false") {
-			value = false;
+			r_value = false;
 		} else if (id == "null" || id == "nil") {
-			value = Variant();
+			r_value = Variant();
 		} else if (id == "inf") {
-			value = Math::INF;
+			r_value = Math::INF;
 		} else if (id == "-inf" || id == "inf_neg") {
 			// inf_neg kept for compatibility.
-			value = -Math::INF;
+			r_value = -Math::INF;
 		} else if (id == "nan") {
-			value = Math::NaN;
+			r_value = Math::NaN;
 		} else if (id == "Vector2") {
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -718,10 +718,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Vector2(args[0], args[1]);
+			r_value = Vector2(args[0], args[1]);
 		} else if (id == "Vector2i") {
 			Vector<int32_t> args;
-			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<int32_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -731,10 +731,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Vector2i(args[0], args[1]);
+			r_value = Vector2i(args[0], args[1]);
 		} else if (id == "Rect2") {
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -744,10 +744,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Rect2(args[0], args[1], args[2], args[3]);
+			r_value = Rect2(args[0], args[1], args[2], args[3]);
 		} else if (id == "Rect2i") {
 			Vector<int32_t> args;
-			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<int32_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -757,10 +757,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Rect2i(args[0], args[1], args[2], args[3]);
+			r_value = Rect2i(args[0], args[1], args[2], args[3]);
 		} else if (id == "Vector3") {
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -770,10 +770,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Vector3(args[0], args[1], args[2]);
+			r_value = Vector3(args[0], args[1], args[2]);
 		} else if (id == "Vector3i") {
 			Vector<int32_t> args;
-			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<int32_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -783,10 +783,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Vector3i(args[0], args[1], args[2]);
+			r_value = Vector3i(args[0], args[1], args[2]);
 		} else if (id == "Vector4") {
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -796,10 +796,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Vector4(args[0], args[1], args[2], args[3]);
+			r_value = Vector4(args[0], args[1], args[2], args[3]);
 		} else if (id == "Vector4i") {
 			Vector<int32_t> args;
-			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<int32_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -809,10 +809,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Vector4i(args[0], args[1], args[2], args[3]);
+			r_value = Vector4i(args[0], args[1], args[2], args[3]);
 		} else if (id == "Transform2D" || id == "Matrix32") { //compatibility
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -826,10 +826,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			m[0] = Vector2(args[0], args[1]);
 			m[1] = Vector2(args[2], args[3]);
 			m[2] = Vector2(args[4], args[5]);
-			value = m;
+			r_value = m;
 		} else if (id == "Plane") {
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -839,10 +839,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Plane(args[0], args[1], args[2], args[3]);
+			r_value = Plane(args[0], args[1], args[2], args[3]);
 		} else if (id == "Quaternion" || id == "Quat") { // "Quat" kept for compatibility
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -852,10 +852,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Quaternion(args[0], args[1], args[2], args[3]);
+			r_value = Quaternion(args[0], args[1], args[2], args[3]);
 		} else if (id == "AABB" || id == "Rect3") {
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -865,10 +865,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = AABB(Vector3(args[0], args[1], args[2]), Vector3(args[3], args[4], args[5]));
+			r_value = AABB(Vector3(args[0], args[1], args[2]), Vector3(args[3], args[4], args[5]));
 		} else if (id == "Basis" || id == "Matrix3") { //compatibility
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -878,10 +878,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
+			r_value = Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
 		} else if (id == "Transform3D" || id == "Transform") { // "Transform" kept for compatibility with Godot <4.
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -891,10 +891,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Transform3D(Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]), Vector3(args[9], args[10], args[11]));
+			r_value = Transform3D(Basis(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]), Vector3(args[9], args[10], args[11]));
 		} else if (id == "Projection") { // "Transform" kept for compatibility with Godot <4.
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -904,10 +904,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Projection(Vector4(args[0], args[1], args[2], args[3]), Vector4(args[4], args[5], args[6], args[7]), Vector4(args[8], args[9], args[10], args[11]), Vector4(args[12], args[13], args[14], args[15]));
+			r_value = Projection(Vector4(args[0], args[1], args[2], args[3]), Vector4(args[4], args[5], args[6], args[7]), Vector4(args[8], args[9], args[10], args[11]), Vector4(args[12], args[13], args[14], args[15]));
 		} else if (id == "Color") {
 			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<float>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -917,96 +917,96 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			value = Color(args[0], args[1], args[2], args[3]);
+			r_value = Color(args[0], args[1], args[2], args[3]);
 		} else if (id == "NodePath") {
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_OPEN) {
 				r_err_str = "Expected '('";
 				return ERR_PARSE_ERROR;
 			}
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_STRING) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_STRING) {
 				r_err_str = "Expected string as argument for NodePath()";
 				return ERR_PARSE_ERROR;
 			}
 
-			value = NodePath(String(token.value));
+			r_value = NodePath(String(r_token.value));
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_CLOSE) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_CLOSE) {
 				r_err_str = "Expected ')'";
 				return ERR_PARSE_ERROR;
 			}
 		} else if (id == "RID") {
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_OPEN) {
 				r_err_str = "Expected '('";
 				return ERR_PARSE_ERROR;
 			}
 
-			get_token(p_stream, token, line, r_err_str);
+			get_token(p_stream, r_token, r_line, r_err_str);
 			// Permit empty RID.
-			if (token.type == TK_PARENTHESIS_CLOSE) {
-				value = RID();
+			if (r_token.type == TK_PARENTHESIS_CLOSE) {
+				r_value = RID();
 				return OK;
-			} else if (token.type != TK_NUMBER) {
+			} else if (r_token.type != TK_NUMBER) {
 				r_err_str = "Expected number as argument or ')'";
 				return ERR_PARSE_ERROR;
 			}
 
-			value = RID::from_uint64(token.value);
+			r_value = RID::from_uint64(r_token.value);
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_CLOSE) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_CLOSE) {
 				r_err_str = "Expected ')'";
 				return ERR_PARSE_ERROR;
 			}
 		} else if (id == "Signal") {
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_OPEN) {
 				r_err_str = "Expected '('";
 				return ERR_PARSE_ERROR;
 			}
 
 			// Load as empty.
-			value = Signal();
+			r_value = Signal();
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_CLOSE) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_CLOSE) {
 				r_err_str = "Expected ')'";
 				return ERR_PARSE_ERROR;
 			}
 		} else if (id == "Callable") {
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_OPEN) {
 				r_err_str = "Expected '('";
 				return ERR_PARSE_ERROR;
 			}
 
 			// Load as empty.
-			value = Callable();
+			r_value = Callable();
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_CLOSE) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_CLOSE) {
 				r_err_str = "Expected ')'";
 				return ERR_PARSE_ERROR;
 			}
 		} else if (id == "Object") {
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_OPEN) {
 				r_err_str = "Expected '('";
 				return ERR_PARSE_ERROR;
 			}
 
-			get_token(p_stream, token, line, r_err_str);
+			get_token(p_stream, r_token, r_line, r_err_str);
 
-			if (token.type != TK_IDENTIFIER) {
+			if (r_token.type != TK_IDENTIFIER) {
 				r_err_str = "Expected identifier with type of object";
 				return ERR_PARSE_ERROR;
 			}
 
-			String type = token.value;
+			String type = r_token.value;
 
 			Object *obj = ClassDB::instantiate(type);
 
@@ -1017,8 +1017,8 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			Ref<RefCounted> ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_COMMA) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_COMMA) {
 				r_err_str = "Expected ',' after object type";
 				return ERR_PARSE_ERROR;
 			}
@@ -1034,18 +1034,18 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 
 				if (at_key) {
-					Error err = get_token(p_stream, token, line, r_err_str);
+					Error err = get_token(p_stream, r_token, r_line, r_err_str);
 					if (err != OK) {
 						return err;
 					}
 
-					if (token.type == TK_PARENTHESIS_CLOSE) {
-						value = ref.is_valid() ? Variant(ref) : Variant(obj);
+					if (r_token.type == TK_PARENTHESIS_CLOSE) {
+						r_value = ref.is_valid() ? Variant(ref) : Variant(obj);
 						return OK;
 					}
 
 					if (need_comma) {
-						if (token.type != TK_COMMA) {
+						if (r_token.type != TK_COMMA) {
 							r_err_str = "Expected '}' or ','";
 							return ERR_PARSE_ERROR;
 						} else {
@@ -1054,31 +1054,31 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						}
 					}
 
-					if (token.type != TK_STRING) {
+					if (r_token.type != TK_STRING) {
 						r_err_str = "Expected property name as string";
 						return ERR_PARSE_ERROR;
 					}
 
-					key = token.value;
+					key = r_token.value;
 
-					err = get_token(p_stream, token, line, r_err_str);
+					err = get_token(p_stream, r_token, r_line, r_err_str);
 
 					if (err != OK) {
 						return err;
 					}
-					if (token.type != TK_COLON) {
+					if (r_token.type != TK_COLON) {
 						r_err_str = "Expected ':'";
 						return ERR_PARSE_ERROR;
 					}
 					at_key = false;
 				} else {
-					Error err = get_token(p_stream, token, line, r_err_str);
+					Error err = get_token(p_stream, r_token, r_line, r_err_str);
 					if (err != OK) {
 						return err;
 					}
 
 					Variant v;
-					err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
+					err = parse_value(r_token, v, p_stream, r_line, r_err_str, p_res_parser);
 					if (err) {
 						return err;
 					}
@@ -1088,23 +1088,23 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 		} else if (id == "Resource" || id == "SubResource" || id == "ExtResource") {
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_OPEN) {
 				r_err_str = "Expected '('";
 				return ERR_PARSE_ERROR;
 			}
 
 			if (p_res_parser && id == "Resource" && p_res_parser->func) {
 				Ref<Resource> res;
-				Error err = p_res_parser->func(p_res_parser->userdata, p_stream, res, line, r_err_str);
+				Error err = p_res_parser->func(p_res_parser->userdata, p_stream, res, r_line, r_err_str);
 				if (err) {
 					return err;
 				}
 
-				value = res;
+				r_value = res;
 			} else if (p_res_parser && id == "ExtResource" && p_res_parser->ext_func) {
 				Ref<Resource> res;
-				Error err = p_res_parser->ext_func(p_res_parser->userdata, p_stream, res, line, r_err_str);
+				Error err = p_res_parser->ext_func(p_res_parser->userdata, p_stream, res, r_line, r_err_str);
 				if (err) {
 					// If the file is missing, the error can be ignored.
 					if (err != ERR_FILE_NOT_FOUND && err != ERR_CANT_OPEN && err != ERR_FILE_CANT_OPEN) {
@@ -1112,34 +1112,34 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					}
 				}
 
-				value = res;
+				r_value = res;
 			} else if (p_res_parser && id == "SubResource" && p_res_parser->sub_func) {
 				Ref<Resource> res;
-				Error err = p_res_parser->sub_func(p_res_parser->userdata, p_stream, res, line, r_err_str);
+				Error err = p_res_parser->sub_func(p_res_parser->userdata, p_stream, res, r_line, r_err_str);
 				if (err) {
 					return err;
 				}
 
-				value = res;
+				r_value = res;
 			} else {
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type == TK_STRING) {
-					String path = token.value;
+				get_token(p_stream, r_token, r_line, r_err_str);
+				if (r_token.type == TK_STRING) {
+					String path = r_token.value;
 					String uid_string;
 
-					get_token(p_stream, token, line, r_err_str);
+					get_token(p_stream, r_token, r_line, r_err_str);
 
 					if (path.begins_with("uid://")) {
 						uid_string = path;
 						path = "";
 					}
-					if (token.type == TK_COMMA) {
-						get_token(p_stream, token, line, r_err_str);
-						if (token.type != TK_STRING) {
+					if (r_token.type == TK_COMMA) {
+						get_token(p_stream, r_token, r_line, r_err_str);
+						if (r_token.type != TK_STRING) {
 							r_err_str = "Expected string in Resource reference";
 							return ERR_PARSE_ERROR;
 						}
-						String extra_path = token.value;
+						String extra_path = r_token.value;
 						if (extra_path.begins_with("uid://")) {
 							if (!uid_string.is_empty()) {
 								r_err_str = "Two uid:// paths in one Resource reference";
@@ -1153,7 +1153,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 							}
 							path = extra_path;
 						}
-						get_token(p_stream, token, line, r_err_str);
+						get_token(p_stream, r_token, r_line, r_err_str);
 					}
 
 					Ref<Resource> res;
@@ -1174,12 +1174,12 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						return ERR_PARSE_ERROR;
 					}
 
-					if (token.type != TK_PARENTHESIS_CLOSE) {
+					if (r_token.type != TK_PARENTHESIS_CLOSE) {
 						r_err_str = "Expected ')'";
 						return ERR_PARSE_ERROR;
 					}
 
-					value = res;
+					r_value = res;
 				} else {
 					r_err_str = "Expected string as argument for Resource()";
 					return ERR_PARSE_ERROR;
@@ -1188,14 +1188,14 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		} else if (id == "Dictionary") {
 			Error err = OK;
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_BRACKET_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_BRACKET_OPEN) {
 				r_err_str = "Expected '['";
 				return ERR_PARSE_ERROR;
 			}
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_IDENTIFIER) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_IDENTIFIER) {
 				r_err_str = "Expected type identifier for key";
 				return ERR_PARSE_ERROR;
 			}
@@ -1212,17 +1212,17 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			StringName key_class_name;
 			Variant key_script;
 			bool got_comma_token = false;
-			if (builtin_types.has(token.value)) {
-				key_type = builtin_types.get(token.value);
-			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+			if (builtin_types.has(r_token.value)) {
+				key_type = builtin_types.get(r_token.value);
+			} else if (r_token.value == "Resource" || r_token.value == "SubResource" || r_token.value == "ExtResource") {
 				Variant resource;
-				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
+				err = parse_value(r_token, resource, p_stream, r_line, r_err_str, p_res_parser);
 				if (err) {
-					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_COMMA) {
+					if (r_token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && r_token.type == TK_COMMA) {
 						err = OK;
 						r_err_str = String();
 						key_type = Variant::OBJECT;
-						key_class_name = token.value;
+						key_class_name = r_token.value;
 						got_comma_token = true;
 					} else {
 						return err;
@@ -1235,21 +1235,21 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						key_script = script;
 					}
 				}
-			} else if (ClassDB::class_exists(token.value)) {
+			} else if (ClassDB::class_exists(r_token.value)) {
 				key_type = Variant::OBJECT;
-				key_class_name = token.value;
+				key_class_name = r_token.value;
 			}
 
 			if (!got_comma_token) {
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_COMMA) {
+				get_token(p_stream, r_token, r_line, r_err_str);
+				if (r_token.type != TK_COMMA) {
 					r_err_str = "Expected ',' after key type";
 					return ERR_PARSE_ERROR;
 				}
 			}
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_IDENTIFIER) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_IDENTIFIER) {
 				r_err_str = "Expected type identifier for value";
 				return ERR_PARSE_ERROR;
 			}
@@ -1258,17 +1258,17 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			StringName value_class_name;
 			Variant value_script;
 			bool got_bracket_token = false;
-			if (builtin_types.has(token.value)) {
-				value_type = builtin_types.get(token.value);
-			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+			if (builtin_types.has(r_token.value)) {
+				value_type = builtin_types.get(r_token.value);
+			} else if (r_token.value == "Resource" || r_token.value == "SubResource" || r_token.value == "ExtResource") {
 				Variant resource;
-				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
+				err = parse_value(r_token, resource, p_stream, r_line, r_err_str, p_res_parser);
 				if (err) {
-					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
+					if (r_token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && r_token.type == TK_BRACKET_CLOSE) {
 						err = OK;
 						r_err_str = String();
 						value_type = Variant::OBJECT;
-						value_class_name = token.value;
+						value_class_name = r_token.value;
 						got_bracket_token = true;
 					} else {
 						return err;
@@ -1281,9 +1281,9 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						value_script = script;
 					}
 				}
-			} else if (ClassDB::class_exists(token.value)) {
+			} else if (ClassDB::class_exists(r_token.value)) {
 				value_type = Variant::OBJECT;
-				value_class_name = token.value;
+				value_class_name = r_token.value;
 			}
 
 			if (key_type != Variant::NIL || value_type != Variant::NIL) {
@@ -1291,51 +1291,51 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			if (!got_bracket_token) {
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_BRACKET_CLOSE) {
+				get_token(p_stream, r_token, r_line, r_err_str);
+				if (r_token.type != TK_BRACKET_CLOSE) {
 					r_err_str = "Expected ']'";
 					return ERR_PARSE_ERROR;
 				}
 			}
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_OPEN) {
 				r_err_str = "Expected '('";
 				return ERR_PARSE_ERROR;
 			}
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_CURLY_BRACKET_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_CURLY_BRACKET_OPEN) {
 				r_err_str = "Expected '{'";
 				return ERR_PARSE_ERROR;
 			}
 
 			Dictionary values;
-			err = _parse_dictionary(values, p_stream, line, r_err_str, p_res_parser);
+			err = _parse_dictionary(values, p_stream, r_line, r_err_str, p_res_parser);
 			if (err) {
 				return err;
 			}
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_CLOSE) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_CLOSE) {
 				r_err_str = "Expected ')'";
 				return ERR_PARSE_ERROR;
 			}
 
 			dict.assign(values);
 
-			value = dict;
+			r_value = dict;
 		} else if (id == "Array") {
 			Error err = OK;
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_BRACKET_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_BRACKET_OPEN) {
 				r_err_str = "Expected '['";
 				return ERR_PARSE_ERROR;
 			}
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_IDENTIFIER) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_IDENTIFIER) {
 				r_err_str = "Expected type identifier";
 				return ERR_PARSE_ERROR;
 			}
@@ -1349,16 +1349,16 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			Array array = Array();
 			bool got_bracket_token = false;
-			if (builtin_types.has(token.value)) {
-				array.set_typed(builtin_types.get(token.value), StringName(), Variant());
-			} else if (token.value == "Resource" || token.value == "SubResource" || token.value == "ExtResource") {
+			if (builtin_types.has(r_token.value)) {
+				array.set_typed(builtin_types.get(r_token.value), StringName(), Variant());
+			} else if (r_token.value == "Resource" || r_token.value == "SubResource" || r_token.value == "ExtResource") {
 				Variant resource;
-				err = parse_value(token, resource, p_stream, line, r_err_str, p_res_parser);
+				err = parse_value(r_token, resource, p_stream, r_line, r_err_str, p_res_parser);
 				if (err) {
-					if (token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && token.type == TK_BRACKET_CLOSE) {
+					if (r_token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && r_token.type == TK_BRACKET_CLOSE) {
 						err = OK;
 						r_err_str = String();
-						array.set_typed(Variant::OBJECT, token.value, Variant());
+						array.set_typed(Variant::OBJECT, r_token.value, Variant());
 						got_bracket_token = true;
 					} else {
 						return err;
@@ -1369,48 +1369,48 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						array.set_typed(Variant::OBJECT, script->get_instance_base_type(), script);
 					}
 				}
-			} else if (ClassDB::class_exists(token.value)) {
-				array.set_typed(Variant::OBJECT, token.value, Variant());
+			} else if (ClassDB::class_exists(r_token.value)) {
+				array.set_typed(Variant::OBJECT, r_token.value, Variant());
 			}
 
 			if (!got_bracket_token) {
-				get_token(p_stream, token, line, r_err_str);
-				if (token.type != TK_BRACKET_CLOSE) {
+				get_token(p_stream, r_token, r_line, r_err_str);
+				if (r_token.type != TK_BRACKET_CLOSE) {
 					r_err_str = "Expected ']'";
 					return ERR_PARSE_ERROR;
 				}
 			}
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_OPEN) {
 				r_err_str = "Expected '('";
 				return ERR_PARSE_ERROR;
 			}
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_BRACKET_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_BRACKET_OPEN) {
 				r_err_str = "Expected '['";
 				return ERR_PARSE_ERROR;
 			}
 
 			Array values;
-			err = _parse_array(values, p_stream, line, r_err_str, p_res_parser);
+			err = _parse_array(values, p_stream, r_line, r_err_str, p_res_parser);
 			if (err) {
 				return err;
 			}
 
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_CLOSE) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_CLOSE) {
 				r_err_str = "Expected ')'";
 				return ERR_PARSE_ERROR;
 			}
 
 			array.assign(values);
 
-			value = array;
+			r_value = array;
 		} else if (id == "PackedByteArray" || id == "PoolByteArray" || id == "ByteArray") {
 			Vector<uint8_t> args;
-			Error err = _parse_byte_array(p_stream, args, line, r_err_str);
+			Error err = _parse_byte_array(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -1425,10 +1425,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			value = arr;
+			r_value = arr;
 		} else if (id == "PackedInt32Array" || id == "PackedIntArray" || id == "PoolIntArray" || id == "IntArray") {
 			Vector<int32_t> args;
-			Error err = _parse_construct<int32_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<int32_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -1443,10 +1443,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			value = arr;
+			r_value = arr;
 		} else if (id == "PackedInt64Array") {
 			Vector<int64_t> args;
-			Error err = _parse_construct<int64_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<int64_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -1461,10 +1461,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			value = arr;
+			r_value = arr;
 		} else if (id == "PackedFloat32Array" || id == "PackedRealArray" || id == "PoolRealArray" || id == "FloatArray") {
 			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<float>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -1479,10 +1479,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			value = arr;
+			r_value = arr;
 		} else if (id == "PackedFloat64Array") {
 			Vector<double> args;
-			Error err = _parse_construct<double>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<double>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -1497,10 +1497,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			value = arr;
+			r_value = arr;
 		} else if (id == "PackedStringArray" || id == "PoolStringArray" || id == "StringArray") {
-			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_PARENTHESIS_OPEN) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+			if (r_token.type != TK_PARENTHESIS_OPEN) {
 				r_err_str = "Expected '('";
 				return ERR_PARSE_ERROR;
 			}
@@ -1510,27 +1510,27 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			bool first = true;
 			while (true) {
 				if (!first) {
-					get_token(p_stream, token, line, r_err_str);
-					if (token.type == TK_COMMA) {
+					get_token(p_stream, r_token, r_line, r_err_str);
+					if (r_token.type == TK_COMMA) {
 						//do none
-					} else if (token.type == TK_PARENTHESIS_CLOSE) {
+					} else if (r_token.type == TK_PARENTHESIS_CLOSE) {
 						break;
 					} else {
 						r_err_str = "Expected ',' or ')'";
 						return ERR_PARSE_ERROR;
 					}
 				}
-				get_token(p_stream, token, line, r_err_str);
+				get_token(p_stream, r_token, r_line, r_err_str);
 
-				if (token.type == TK_PARENTHESIS_CLOSE) {
+				if (r_token.type == TK_PARENTHESIS_CLOSE) {
 					break;
-				} else if (token.type != TK_STRING) {
+				} else if (r_token.type != TK_STRING) {
 					r_err_str = "Expected string";
 					return ERR_PARSE_ERROR;
 				}
 
 				first = false;
-				cs.push_back(token.value);
+				cs.push_back(r_token.value);
 			}
 
 			Vector<String> arr;
@@ -1543,10 +1543,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			value = arr;
+			r_value = arr;
 		} else if (id == "PackedVector2Array" || id == "PoolVector2Array" || id == "Vector2Array") {
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -1561,10 +1561,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			value = arr;
+			r_value = arr;
 		} else if (id == "PackedVector3Array" || id == "PoolVector3Array" || id == "Vector3Array") {
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -1579,10 +1579,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			value = arr;
+			r_value = arr;
 		} else if (id == "PackedVector4Array" || id == "PoolVector4Array" || id == "Vector4Array") {
 			Vector<real_t> args;
-			Error err = _parse_construct<real_t>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<real_t>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -1597,10 +1597,10 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			value = arr;
+			r_value = arr;
 		} else if (id == "PackedColorArray" || id == "PoolColorArray" || id == "ColorArray") {
 			Vector<float> args;
-			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
+			Error err = _parse_construct<float>(p_stream, args, r_line, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -1615,7 +1615,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				}
 			}
 
-			value = arr;
+			r_value = arr;
 		} else {
 			r_err_str = vformat("Unexpected identifier '%s'", id);
 			return ERR_PARSE_ERROR;
@@ -1623,25 +1623,25 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 		// All above branches end up here unless they had an early return.
 		return OK;
-	} else if (token.type == TK_NUMBER) {
-		value = token.value;
+	} else if (r_token.type == TK_NUMBER) {
+		r_value = r_token.value;
 		return OK;
-	} else if (token.type == TK_STRING) {
-		value = token.value;
+	} else if (r_token.type == TK_STRING) {
+		r_value = r_token.value;
 		return OK;
-	} else if (token.type == TK_STRING_NAME) {
-		value = token.value;
+	} else if (r_token.type == TK_STRING_NAME) {
+		r_value = r_token.value;
 		return OK;
-	} else if (token.type == TK_COLOR) {
-		value = token.value;
+	} else if (r_token.type == TK_COLOR) {
+		r_value = r_token.value;
 		return OK;
 	} else {
-		r_err_str = vformat("Expected value, got '%s'", String(tk_name[token.type]));
+		r_err_str = vformat("Expected value, got '%s'", String(tk_name[r_token.type]));
 		return ERR_PARSE_ERROR;
 	}
 }
 
-Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
+Error VariantParser::_parse_array(Array &r_array, Stream *p_stream, int &r_line, String &r_err_str, ResourceParser *p_res_parser) {
 	Token token;
 	bool need_comma = false;
 
@@ -1651,7 +1651,7 @@ Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, Str
 			return ERR_FILE_CORRUPT;
 		}
 
-		Error err = get_token(p_stream, token, line, r_err_str);
+		Error err = get_token(p_stream, token, r_line, r_err_str);
 		if (err != OK) {
 			return err;
 		}
@@ -1671,17 +1671,17 @@ Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, Str
 		}
 
 		Variant v;
-		err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
+		err = parse_value(token, v, p_stream, r_line, r_err_str, p_res_parser);
 		if (err) {
 			return err;
 		}
 
-		array.push_back(v);
+		r_array.push_back(v);
 		need_comma = true;
 	}
 }
 
-Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
+Error VariantParser::_parse_dictionary(Dictionary &r_object, Stream *p_stream, int &r_line, String &r_err_str, ResourceParser *p_res_parser) {
 	bool at_key = true;
 	Variant key;
 	Token token;
@@ -1694,7 +1694,7 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 		}
 
 		if (at_key) {
-			Error err = get_token(p_stream, token, line, r_err_str);
+			Error err = get_token(p_stream, token, r_line, r_err_str);
 			if (err != OK) {
 				return err;
 			}
@@ -1713,13 +1713,13 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 				}
 			}
 
-			err = parse_value(token, key, p_stream, line, r_err_str, p_res_parser);
+			err = parse_value(token, key, p_stream, r_line, r_err_str, p_res_parser);
 
 			if (err) {
 				return err;
 			}
 
-			err = get_token(p_stream, token, line, r_err_str);
+			err = get_token(p_stream, token, r_line, r_err_str);
 
 			if (err != OK) {
 				return err;
@@ -1730,27 +1730,27 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 			}
 			at_key = false;
 		} else {
-			Error err = get_token(p_stream, token, line, r_err_str);
+			Error err = get_token(p_stream, token, r_line, r_err_str);
 			if (err != OK) {
 				return err;
 			}
 
 			Variant v;
-			err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
+			err = parse_value(token, v, p_stream, r_line, r_err_str, p_res_parser);
 			if (err && err != ERR_FILE_MISSING_DEPENDENCIES) {
 				return err;
 			}
-			object[key] = v;
+			r_object[key] = v;
 			need_comma = true;
 			at_key = true;
 		}
 	}
 }
 
-Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
+Error VariantParser::_parse_tag(Token &r_token, Stream *p_stream, int &r_line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
 	r_tag.fields.clear();
 
-	if (token.type != TK_BRACKET_OPEN) {
+	if (r_token.type != TK_BRACKET_OPEN) {
 		r_err_str = "Expected '['";
 		return ERR_PARSE_ERROR;
 	}
@@ -1810,14 +1810,14 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 		return OK;
 	}
 
-	get_token(p_stream, token, line, r_err_str);
+	get_token(p_stream, r_token, r_line, r_err_str);
 
-	if (token.type != TK_IDENTIFIER) {
+	if (r_token.type != TK_IDENTIFIER) {
 		r_err_str = "Expected identifier (tag name)";
 		return ERR_PARSE_ERROR;
 	}
 
-	r_tag.name = token.value;
+	r_tag.name = r_token.value;
 	bool parsing_tag = true;
 
 	while (true) {
@@ -1826,42 +1826,42 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 			return ERR_FILE_CORRUPT;
 		}
 
-		get_token(p_stream, token, line, r_err_str);
-		if (token.type == TK_BRACKET_CLOSE) {
+		get_token(p_stream, r_token, r_line, r_err_str);
+		if (r_token.type == TK_BRACKET_CLOSE) {
 			break;
 		}
 
-		if (parsing_tag && token.type == TK_PERIOD) {
+		if (parsing_tag && r_token.type == TK_PERIOD) {
 			r_tag.name += "."; //support tags such as [someprop.Android] for specific platforms
-			get_token(p_stream, token, line, r_err_str);
-		} else if (parsing_tag && token.type == TK_COLON) {
+			get_token(p_stream, r_token, r_line, r_err_str);
+		} else if (parsing_tag && r_token.type == TK_COLON) {
 			r_tag.name += ":"; //support tags such as [someprop.Android] for specific platforms
-			get_token(p_stream, token, line, r_err_str);
+			get_token(p_stream, r_token, r_line, r_err_str);
 		} else {
 			parsing_tag = false;
 		}
 
-		if (token.type != TK_IDENTIFIER) {
+		if (r_token.type != TK_IDENTIFIER) {
 			r_err_str = "Expected identifier";
 			return ERR_PARSE_ERROR;
 		}
 
-		String id = token.value;
+		String id = r_token.value;
 
 		if (parsing_tag) {
 			r_tag.name += id;
 			continue;
 		}
 
-		get_token(p_stream, token, line, r_err_str);
-		if (token.type != TK_EQUAL) {
+		get_token(p_stream, r_token, r_line, r_err_str);
+		if (r_token.type != TK_EQUAL) {
 			r_err_str = "Expected '=' after identifier";
 			return ERR_PARSE_ERROR;
 		}
 
-		get_token(p_stream, token, line, r_err_str);
+		get_token(p_stream, r_token, r_line, r_err_str);
 		Variant value;
-		Error err = parse_value(token, value, p_stream, line, r_err_str, p_res_parser);
+		Error err = parse_value(r_token, value, p_stream, r_line, r_err_str, p_res_parser);
 		if (err) {
 			return err;
 		}
@@ -1872,9 +1872,9 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 	return OK;
 }
 
-Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
+Error VariantParser::parse_tag(Stream *p_stream, int &r_line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
 	Token token;
-	get_token(p_stream, token, line, r_err_str);
+	get_token(p_stream, token, r_line, r_err_str);
 
 	if (token.type == TK_EOF) {
 		return ERR_FILE_EOF;
@@ -1885,10 +1885,10 @@ Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, T
 		return ERR_PARSE_ERROR;
 	}
 
-	return _parse_tag(token, p_stream, line, r_err_str, r_tag, p_res_parser, p_simple_tag);
+	return _parse_tag(token, p_stream, r_line, r_err_str, r_tag, p_res_parser, p_simple_tag);
 }
 
-Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser, bool p_simple_tag) {
+Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &r_line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser, bool p_simple_tag) {
 	//assign..
 	r_assign = "";
 	String what;
@@ -1914,7 +1914,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 					return ERR_FILE_EOF;
 				}
 				if (ch == '\n') {
-					line++;
+					r_line++;
 					break;
 				}
 			}
@@ -1925,7 +1925,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 			//it's a tag!
 			p_stream->saved = '['; //go back one
 
-			Error err = parse_tag(p_stream, line, r_err_str, r_tag, p_res_parser, p_simple_tag);
+			Error err = parse_tag(p_stream, r_line, r_err_str, r_tag, p_res_parser, p_simple_tag);
 
 			return err;
 		}
@@ -1934,7 +1934,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 			if (c == '"') { //quoted
 				p_stream->saved = '"';
 				Token tk;
-				Error err = get_token(p_stream, tk, line, r_err_str);
+				Error err = get_token(p_stream, tk, r_line, r_err_str);
 				if (err) {
 					return err;
 				}
@@ -1950,12 +1950,12 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 			} else {
 				r_assign = what;
 				Token token;
-				get_token(p_stream, token, line, r_err_str);
-				Error err = parse_value(token, r_value, p_stream, line, r_err_str, p_res_parser);
+				get_token(p_stream, token, r_line, r_err_str);
+				Error err = parse_value(token, r_value, p_stream, r_line, r_err_str, p_res_parser);
 				return err;
 			}
 		} else if (c == '\n') {
-			line++;
+			r_line++;
 		}
 	}
 }
@@ -1999,13 +1999,13 @@ static String rtos_fix(double p_value, bool p_compat) {
 	return String::num_scientific(p_value);
 }
 
-static String encode_resource_reference(const String &path) {
-	ResourceUID::ID uid = ResourceLoader::get_resource_uid(path);
+static String encode_resource_reference(const String &p_path) {
+	ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_path);
 	if (uid != ResourceUID::INVALID_ID) {
 		return "Resource(\"" + ResourceUID::get_singleton()->id_to_text(uid) +
-				"\", \"" + path.c_escape_multiline() + "\")";
+				"\", \"" + p_path.c_escape_multiline() + "\")";
 	} else {
-		return "Resource(\"" + path.c_escape_multiline() + "\")";
+		return "Resource(\"" + p_path.c_escape_multiline() + "\")";
 	}
 }
 
@@ -2562,8 +2562,8 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 	return OK;
 }
 
-static Error _write_to_str(void *ud, const String &p_string) {
-	String *str = (String *)ud;
+static Error _write_to_str(void *p_ud, const String &p_string) {
+	String *str = (String *)p_ud;
 	(*str) += p_string;
 	return OK;
 }

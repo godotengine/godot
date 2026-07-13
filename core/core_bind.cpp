@@ -946,9 +946,9 @@ Variant Geometry2D::line_intersects_line(const Vector2 &p_from_a, const Vector2 
 	}
 }
 
-Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
+Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p_p1, const Vector2 &p_q1, const Vector2 &p_p2, const Vector2 &p_q2) {
 	Vector2 r1, r2;
-	::Geometry2D::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
+	::Geometry2D::get_closest_points_between_segments(p_p1, p_q1, p_p2, p_q2, r1, r2);
 	Vector<Vector2> r = { r1, r2 };
 	return r;
 }
@@ -961,8 +961,8 @@ Vector2 Geometry2D::get_closest_point_to_segment_uncapped(const Vector2 &p_point
 	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
-bool Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
-	return ::Geometry2D::is_point_in_triangle(s, a, b, c);
+bool Geometry2D::point_is_inside_triangle(const Vector2 &p_s, const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_c) const {
+	return ::Geometry2D::is_point_in_triangle(p_s, p_a, p_b, p_c);
 }
 
 bool Geometry2D::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
@@ -1205,9 +1205,9 @@ TypedArray<Plane> Geometry3D::build_capsule_planes(float p_radius, float p_heigh
 	return ret;
 }
 
-Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
+Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p_p1, const Vector3 &p_p2, const Vector3 &p_q1, const Vector3 &p_q2) {
 	Vector3 r1, r2;
-	::Geometry3D::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
+	::Geometry3D::get_closest_points_between_segments(p_p1, p_p2, p_q1, p_q2, r1, r2);
 	Vector<Vector3> r = { r1, r2 };
 	return r;
 }
@@ -1461,8 +1461,8 @@ void Mutex::_bind_methods() {
 
 ////// Thread //////
 
-void Thread::_start_func(void *ud) {
-	Ref<Thread> *tud = (Ref<Thread> *)ud;
+void Thread::_start_func(void *p_ud) {
+	Ref<Thread> *tud = (Ref<Thread> *)p_ud;
 	Ref<Thread> t = *tud;
 	memdelete(tud);
 

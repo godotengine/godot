@@ -75,7 +75,7 @@ private:
 		}
 	};
 
-	int _create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &max_depth, int &max_alloc);
+	int _create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc);
 
 	Vector<BVH> bvh;
 	int max_depth = 0;
