@@ -1158,6 +1158,9 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 #ifndef DISABLE_DEPRECATED
 	effect_list.erase("AudioEffectLimiter");
 #endif
+	// TODO Godot 5.0: AudioEffectEQ and AudioEffectFilter should be abstract
+	effect_list.erase("AudioEffectEQ"); // Base classes, shouldn't be used directly.
+	effect_list.erase("AudioEffectFilter");
 	effect_list.sort_custom<StringName::AlphCompare>();
 	for (const StringName &E : effect_list) {
 		if (!ClassDB::can_instantiate(E) || ClassDB::is_virtual(E)) {
