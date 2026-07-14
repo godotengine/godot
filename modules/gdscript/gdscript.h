@@ -84,7 +84,7 @@ class GDScript : public Script {
 	GDScript *_owner = nullptr; //for subclasses
 
 	// Members are just indices to the instantiated script.
-	HashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
+	AHashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
 	HashSet<StringName> members; // Only members of the current class.
 
 	// Only static variables of the current class.
@@ -261,7 +261,7 @@ public:
 	bool is_abstract() const override { return _is_abstract; }
 	Ref<GDScript> get_base() const;
 
-	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
+	const AHashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
 	const HashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 	StringName debug_get_static_var_by_index(int p_idx) const;

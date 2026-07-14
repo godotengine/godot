@@ -1553,7 +1553,7 @@ GDScript::~GDScript() {
 
 bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	{
-		HashMap<StringName, GDScript::MemberInfo>::Iterator E = script->member_indices.find(p_name);
+		AHashMap<StringName, GDScript::MemberInfo>::Iterator E = script->member_indices.find(p_name);
 		if (E) {
 			const GDScript::MemberInfo *member = &E->value;
 			Variant value = p_value;
@@ -1626,7 +1626,7 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 
 bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	{
-		HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = script->member_indices.find(p_name);
+		AHashMap<StringName, GDScript::MemberInfo>::ConstIterator E = script->member_indices.find(p_name);
 		if (E) {
 			if (likely(script->valid) && E->value.getter) {
 				Callable::CallError err;
