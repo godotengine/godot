@@ -7763,7 +7763,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 
 	HMODULE comctl32 = LoadLibraryW(L"comctl32.dll");
 	if (comctl32) {
-		typedef BOOL(WINAPI * InitCommonControlsExPtr)(_In_ const INITCOMMONCONTROLSEX *picce);
+		typedef BOOL(WINAPI * InitCommonControlsExPtr)(const _In_ INITCOMMONCONTROLSEX *picce);
 		InitCommonControlsExPtr init_common_controls_ex = (InitCommonControlsExPtr)(void *)GetProcAddress(comctl32, "InitCommonControlsEx");
 
 		// Fails if the incorrect version was loaded. Probably not a big enough deal to print an error about.

@@ -3005,7 +3005,7 @@ void RendererCanvasRenderRD::_canvas_texture_invalidation_callback(bool p_delete
 	}
 }
 
-void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasShaderData *p_shader_data, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, Batch const *p_batch, RenderingServerTypes::RenderInfo *r_render_info) {
+void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasShaderData *p_shader_data, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, const Batch *p_batch, RenderingServerTypes::RenderInfo *r_render_info) {
 	{
 		RendererRD::TextureStorage *ts = RendererRD::TextureStorage::get_singleton();
 
