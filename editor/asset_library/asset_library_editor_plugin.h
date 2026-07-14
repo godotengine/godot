@@ -60,6 +60,7 @@ class EditorAssetLibraryItem : public MarginContainer {
 	MarginContainer *margin = nullptr;
 	Button *button = nullptr;
 	TextureRect *icon = nullptr;
+	MarginContainer *text_margin = nullptr;
 	Label *title = nullptr;
 	LinkButton *author = nullptr;
 	TextureRect *verified = nullptr;
@@ -315,7 +316,7 @@ class EditorAssetLibrary : public PanelContainer {
 	static const char *sort_key[SORT_MAX];
 	static const char *sort_text[SORT_MAX];
 
-	constexpr static Size2 THUMBNAIL_SIZE = Size2(114, 64);
+	constexpr static Size2 THUMBNAIL_SIZE = Size2(160, 90);
 
 	enum ImageType {
 		IMAGE_QUEUE_THUMBNAIL,
