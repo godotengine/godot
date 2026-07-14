@@ -557,14 +557,13 @@ void TextEdit::Text::remove_range(int p_from_line, int p_to_line) {
 		}
 		total_visible_line_count -= text_line.line_count;
 	}
+	ERR_FAIL_COND(total_visible_line_count < 0); // BUG
 
 	int diff = p_to_line - p_from_line;
 	for (int i = p_to_line + 1; i < text.size(); i++) {
 		text.write[i - diff] = text[i];
 	}
 	text.resize(text.size() - diff);
-
-	ERR_FAIL_COND(total_visible_line_count < 0); // BUG
 }
 
 void TextEdit::Text::add_gutter(int p_at) {
