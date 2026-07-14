@@ -903,8 +903,8 @@ void Viewport::_process_picking() {
 			pos = st->get_position();
 		}
 
-		if (!get_visible_rect().has_point(pos)) {
-			// Skip this event if the event position is outside of the viewport
+		if (!is_mouse && !get_visible_rect().has_point(pos)) {
+			// Skip this event if it is a touch event and the event position is outside of the viewport
 			continue;
 		}
 
