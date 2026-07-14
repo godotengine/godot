@@ -1,0 +1,7 @@
+GDTEST_OK
+test1 (untyped Array default)
+    TestRefCounted released
+    end of statement
+test2 (typed Array[String] default)
+    TestRefCounted released
+    end of statement
