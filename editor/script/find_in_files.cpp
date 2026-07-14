@@ -74,10 +74,10 @@ static bool find_next(const String &p_line, const String &p_pattern, int p_from,
 		r_out_end = end;
 
 		if (p_whole_words) {
-			if (begin > 0 && is_ascii_identifier_char(p_line[begin - 1])) {
+			if (begin > 0 && !is_symbol(p_line[begin - 1])) {
 				continue;
 			}
-			if (end < p_line.size() && is_ascii_identifier_char(p_line[end])) {
+			if (end < p_line.length() && !is_symbol(p_line[end])) {
 				continue;
 			}
 		}
