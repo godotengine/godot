@@ -60,12 +60,12 @@ struct BVH_ABB {
 	POINT min;
 	POINT neg_max;
 
-	bool operator==(const BVH_ABB &o) const { return (min == o.min) && (neg_max == o.neg_max); }
-	bool operator!=(const BVH_ABB &o) const { return (*this == o) == false; }
+	bool operator==(const BVH_ABB &p_other) const { return (min == p_other.min) && (neg_max == p_other.neg_max); }
+	bool operator!=(const BVH_ABB &p_other) const { return (*this == p_other) == false; }
 
-	void set(const POINT &_min, const POINT &_max) {
-		min = _min;
-		neg_max = -_max;
+	void set(const POINT &p_min, const POINT &p_max) {
+		min = p_min;
+		neg_max = -p_max;
 	}
 
 	// to and from standard AABB

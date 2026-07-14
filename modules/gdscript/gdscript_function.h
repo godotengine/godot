@@ -517,7 +517,17 @@ class GDScriptFunctionState : public RefCounted {
 protected:
 	static void _bind_methods();
 
+private:
+	bool cleared = false;
+
 public:
+	/**
+	 * Transfers the object into a zombie state, in which it has no functionality anymore and can outlive `GDScriptLanguage`.
+	 * A cleared function state does not hold any references and thus can not be locked up in a ref cycle.
+	 * Callers SHOULD hold a reference to the object while calling `clear`.
+	 */
+	void clear();
+
 #ifdef DEBUG_ENABLED
 	// Returns a human-readable representation of the function.
 	String get_readable_function() {

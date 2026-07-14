@@ -38,8 +38,8 @@
 
 struct LocalDebugger::ScriptsProfiler {
 	struct ProfileInfoSort {
-		bool operator()(const ScriptLanguage::ProfilingInfo &A, const ScriptLanguage::ProfilingInfo &B) const {
-			return A.total_time > B.total_time;
+		bool operator()(const ScriptLanguage::ProfilingInfo &p_left, const ScriptLanguage::ProfilingInfo &p_right) const {
+			return p_left.total_time > p_right.total_time;
 		}
 	};
 
@@ -330,20 +330,20 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	}
 }
 
-void LocalDebugger::print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix) {
+void LocalDebugger::print_variables(const List<String> &p_names, const List<Variant> &p_values, const String &p_variable_prefix) {
 	String value;
 	Vector<String> value_lines;
-	const List<Variant>::Element *V = values.front();
-	for (const String &E : names) {
+	const List<Variant>::Element *V = p_values.front();
+	for (const String &E : p_names) {
 		value = String(V->get());
 
-		if (variable_prefix.is_empty()) {
+		if (p_variable_prefix.is_empty()) {
 			print_line(E + ": " + String(V->get()));
 		} else {
 			print_line(E + ":");
 			value_lines = value.split("\n");
 			for (int i = 0; i < value_lines.size(); ++i) {
-				print_line(variable_prefix + value_lines[i]);
+				print_line(p_variable_prefix + value_lines[i]);
 			}
 		}
 

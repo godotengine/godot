@@ -345,14 +345,14 @@ void UndoRedo::commit_action(bool p_execute) {
 	}
 }
 
-void UndoRedo::_process_operation_list(List<Operation>::Element *E, bool p_execute) {
+void UndoRedo::_process_operation_list(List<Operation>::Element *r_elements, bool p_execute) {
 	const int PREALLOCATE_ARGS_COUNT = 16;
 
 	LocalVector<const Variant *> args;
 	args.reserve(PREALLOCATE_ARGS_COUNT);
 
-	for (; E; E = E->next()) {
-		Operation &op = E->get();
+	for (; r_elements; r_elements = r_elements->next()) {
+		Operation &op = r_elements->get();
 
 		Object *obj = ObjectDB::get_instance(op.object);
 		if (!obj) { //may have been deleted and this is fine

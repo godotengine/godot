@@ -498,8 +498,6 @@ void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
 	bool scl_enabled = key_scale_button->is_pressed();
 
 	int bone_len = skeleton->get_bone_count();
-	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
-	String path = String(root->get_path_to(skeleton));
 
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	te->make_insert_queue();

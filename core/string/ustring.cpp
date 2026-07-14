@@ -61,8 +61,8 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Object);
 
 static const int MAX_DECIMALS = 32;
 
-static _FORCE_INLINE_ char32_t lower_case(char32_t c) {
-	return (is_ascii_upper_case(c) ? (c + ('a' - 'A')) : c);
+static _FORCE_INLINE_ char32_t lower_case(char32_t p_char) {
+	return (is_ascii_upper_case(p_char) ? (p_char + ('a' - 'A')) : p_char);
 }
 
 // Case-insensitive version of are_spans_equal
@@ -1316,17 +1316,17 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 	return ret;
 }
 
-String String::join(const Vector<String> &parts) const {
-	if (parts.is_empty()) {
+String String::join(const Vector<String> &p_parts) const {
+	if (p_parts.is_empty()) {
 		return String();
-	} else if (parts.size() == 1) {
-		return parts[0];
+	} else if (p_parts.size() == 1) {
+		return p_parts[0];
 	}
 
 	const int this_length = length();
 
-	int new_size = (parts.size() - 1) * this_length;
-	for (const String &part : parts) {
+	int new_size = (p_parts.size() - 1) * this_length;
+	for (const String &part : p_parts) {
 		new_size += part.length();
 	}
 	new_size += 1;
@@ -1337,7 +1337,7 @@ String String::join(const Vector<String> &parts) const {
 	const char32_t *this_ptr = ptr();
 
 	bool first = true;
-	for (const String &part : parts) {
+	for (const String &part : p_parts) {
 		if (first) {
 			first = false;
 		} else if (this_length) {
@@ -1499,8 +1499,8 @@ String String::num(double p_num, int p_decimals) {
 	return buf;
 }
 
-String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
-	ERR_FAIL_COND_V_MSG(base < 2 || base > 36, "", "Cannot convert to base " + itos(base) + ", since the value is " + (base < 2 ? "less than 2." : "greater than 36."));
+String String::num_int64(int64_t p_num, int p_base, bool p_capitalize_hex) {
+	ERR_FAIL_COND_V_MSG(p_base < 2 || p_base > 36, "", "Cannot convert to base " + itos(p_base) + ", since the value is " + (p_base < 2 ? "less than 2." : "greater than 36."));
 
 	bool sign = p_num < 0;
 
@@ -1508,7 +1508,7 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 
 	int chars = 0;
 	do {
-		n /= base;
+		n /= p_base;
 		chars++;
 	} while (n);
 
@@ -1521,15 +1521,15 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = Math::abs(n % base);
+		int mod = Math::abs(n % p_base);
 		if (mod >= 10) {
-			char a = (capitalize_hex ? 'A' : 'a');
+			char a = (p_capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
 		} else {
 			c[--chars] = '0' + mod;
 		}
 
-		n /= base;
+		n /= p_base;
 	} while (n);
 
 	if (sign) {
@@ -1539,14 +1539,14 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	return s;
 }
 
-String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
-	ERR_FAIL_COND_V_MSG(base < 2 || base > 36, "", "Cannot convert to base " + itos(base) + ", since the value is " + (base < 2 ? "less than 2." : "greater than 36."));
+String String::num_uint64(uint64_t p_num, int p_base, bool p_capitalize_hex) {
+	ERR_FAIL_COND_V_MSG(p_base < 2 || p_base > 36, "", "Cannot convert to base " + itos(p_base) + ", since the value is " + (p_base < 2 ? "less than 2." : "greater than 36."));
 
 	uint64_t n = p_num;
 
 	int chars = 0;
 	do {
-		n /= base;
+		n /= p_base;
 		chars++;
 	} while (n);
 
@@ -1556,15 +1556,15 @@ String String::num_uint64(uint64_t p_num, int base, bool capitalize_hex) {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = n % base;
+		int mod = n % p_base;
 		if (mod >= 10) {
-			char a = (capitalize_hex ? 'A' : 'a');
+			char a = (p_capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
 		} else {
 			c[--chars] = '0' + mod;
 		}
 
-		n /= base;
+		n /= p_base;
 	} while (n);
 
 	return s;
@@ -2017,8 +2017,6 @@ Error String::append_utf16(const char16_t *p_utf16, int p_len, bool p_default_li
 		return ERR_INVALID_DATA;
 	}
 
-	String aux;
-
 	int cstr_size = 0;
 	int str_size = 0;
 
@@ -2262,7 +2260,7 @@ int64_t String::bin_to_int() const {
 }
 
 template <typename C, typename T>
-_ALWAYS_INLINE_ int64_t _to_int(const T &p_in, int to) {
+_ALWAYS_INLINE_ int64_t _to_int(const T &p_in, int p_to) {
 	// Accumulate the total number in an unsigned integer as the range is:
 	// +9223372036854775807 to -9223372036854775808 and the smallest negative
 	// number does not fit inside an int64_t. So we accumulate the positive
@@ -2272,7 +2270,7 @@ _ALWAYS_INLINE_ int64_t _to_int(const T &p_in, int to) {
 	uint8_t digits = 0;
 	bool positive = true;
 
-	for (int i = 0; i < to; i++) {
+	for (int i = 0; i < p_to; i++) {
 		C c = p_in[i];
 		if (is_digit(c)) {
 			// No need to do expensive checks unless we're approaching INT64_MAX / INT64_MIN.
@@ -2371,10 +2369,10 @@ static double built_in_strtod(
 		 * necessary unless F is present. The "E" may
 		 * actually be an "e". E and X may both be
 		 * omitted (but not just one). */
-		const C *string,
+		const C *p_string,
 		/* If non-nullptr, store terminating Cacter's
 		 * address here. */
-		C **endPtr = nullptr) {
+		C **r_end = nullptr) {
 	/* Largest possible base 10 exponent. Any
 	 * exponent larger than this will already
 	 * produce underflow or overflow, so there's
@@ -2423,7 +2421,7 @@ static double built_in_strtod(
 	 * Strip off leading blanks and check for a sign.
 	 */
 
-	p = string;
+	p = p_string;
 	while (*p == ' ' || *p == '\t' || *p == '\n') {
 		p += 1;
 	}
@@ -2476,7 +2474,7 @@ static double built_in_strtod(
 	}
 	if (mantSize == 0) {
 		fraction = 0.0;
-		p = string;
+		p = p_string;
 		goto done;
 	} else {
 		int frac1, frac2;
@@ -2565,8 +2563,8 @@ static double built_in_strtod(
 	}
 
 done:
-	if (endPtr != nullptr) {
-		*endPtr = (C *)p;
+	if (r_end != nullptr) {
+		*r_end = (C *)p;
 	}
 
 	if (sign) {
@@ -3439,7 +3437,7 @@ int String::countn(const char *p_string, int p_from, int p_to) const {
 	return _count(p_string, p_from, p_to, true);
 }
 
-bool String::_base_is_subsequence_of(const String &p_string, bool case_insensitive) const {
+bool String::_base_is_subsequence_of(const String &p_string, bool p_case_insensitive) const {
 	int len = length();
 	if (len == 0) {
 		// Technically an empty string is subsequence of any string
@@ -3455,7 +3453,7 @@ bool String::_base_is_subsequence_of(const String &p_string, bool case_insensiti
 
 	for (; *src && *tgt; tgt++) {
 		bool match = false;
-		if (case_insensitive) {
+		if (p_case_insensitive) {
 			char32_t srcc = _find_lower(*src);
 			char32_t tgtc = _find_lower(*tgt);
 			match = srcc == tgtc;
@@ -3547,11 +3545,11 @@ bool String::matchn(const String &p_wildcard) const {
 	return _wildcard_match(p_wildcard.get_data(), get_data(), false);
 }
 
-String String::format(const Variant &values, const String &placeholder) const {
+String String::format(const Variant &p_values, const String &p_placeholder) const {
 	String new_string = *this;
 
-	if (values.get_type() == Variant::ARRAY) {
-		Array values_arr = values;
+	if (p_values.get_type() == Variant::ARRAY) {
+		Array values_arr = p_values;
 
 		for (int i = 0; i < values_arr.size(); i++) {
 			if (values_arr[i].get_type() == Variant::ARRAY) { //Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
@@ -3561,35 +3559,35 @@ String String::format(const Variant &values, const String &placeholder) const {
 					String key = value_arr[0];
 					String val = value_arr[1];
 
-					new_string = new_string.replace(placeholder.replace("_", key), val);
+					new_string = new_string.replace(p_placeholder.replace("_", key), val);
 				} else {
 					ERR_PRINT(vformat("Invalid format: the inner Array at index %d needs to contain only 2 elements, as a key-value pair.", i).ascii().get_data());
 				}
 			} else { //Array structure ["RobotGuy","Logis","rookie"]
 				String val = values_arr[i];
 
-				if (placeholder.contains_char('_')) {
-					new_string = new_string.replace(placeholder.replace("_", String::num_int64(i)), val);
+				if (p_placeholder.contains_char('_')) {
+					new_string = new_string.replace(p_placeholder.replace("_", String::num_int64(i)), val);
 				} else {
-					new_string = new_string.replace_first(placeholder, val);
+					new_string = new_string.replace_first(p_placeholder, val);
 				}
 			}
 		}
-	} else if (values.get_type() == Variant::DICTIONARY) {
-		Dictionary d = values;
+	} else if (p_values.get_type() == Variant::DICTIONARY) {
+		Dictionary d = p_values;
 
 		for (const KeyValue<Variant, Variant> &kv : d) {
-			new_string = new_string.replace(placeholder.replace("_", kv.key), kv.value);
+			new_string = new_string.replace(p_placeholder.replace("_", kv.key), kv.value);
 		}
-	} else if (values.get_type() == Variant::OBJECT) {
-		Object *obj = values.get_validated_object();
+	} else if (p_values.get_type() == Variant::OBJECT) {
+		Object *obj = p_values.get_validated_object();
 		ERR_FAIL_NULL_V(obj, new_string);
 
 		List<PropertyInfo> props;
 		obj->get_property_list(&props);
 
 		for (const PropertyInfo &E : props) {
-			new_string = new_string.replace(placeholder.replace("_", E.name), obj->get(E.name));
+			new_string = new_string.replace(p_placeholder.replace("_", E.name), obj->get(E.name));
 		}
 	} else {
 		ERR_PRINT(String("Invalid type: use Array, Dictionary or Object.").ascii().get_data());
@@ -4064,11 +4062,11 @@ String String::dedent() const {
 	return new_string;
 }
 
-String String::strip_edges(bool left, bool right) const {
+String String::strip_edges(bool p_left, bool p_right) const {
 	int len = length();
 	int beg = 0, end = len;
 
-	if (left) {
+	if (p_left) {
 		for (int i = 0; i < len; i++) {
 			if (operator[](i) <= 32) {
 				beg++;
@@ -4078,7 +4076,7 @@ String String::strip_edges(bool left, bool right) const {
 		}
 	}
 
-	if (right) {
+	if (p_right) {
 		for (int i = len - 1; i >= 0; i--) {
 			if (operator[](i) <= 32) {
 				end--;
@@ -5156,21 +5154,21 @@ String rtoss(double p_val) {
 }
 
 // Right-pad with a character.
-String String::rpad(int min_length, const String &character) const {
+String String::rpad(int p_min_length, const String &p_character) const {
 	String s = *this;
-	int padding = min_length - s.length();
+	int padding = p_min_length - s.length();
 	if (padding > 0) {
-		s += character.repeat(padding);
+		s += p_character.repeat(padding);
 	}
 	return s;
 }
 
 // Left-pad with a character.
-String String::lpad(int min_length, const String &character) const {
+String String::lpad(int p_min_length, const String &p_character) const {
 	String s = *this;
-	int padding = min_length - s.length();
+	int padding = p_min_length - s.length();
 	if (padding > 0) {
-		s = character.repeat(padding) + s;
+		s = p_character.repeat(padding) + s;
 	}
 	return s;
 }
@@ -5179,14 +5177,14 @@ String String::lpad(int min_length, const String &character) const {
 //   "fish %s pie" % "frog"
 //   "fish %s %d pie" % ["frog", 12]
 // In case of an error, the string returned is the error description and "error" is true.
-String String::sprintf(const Span<Variant> &values, bool *error) const {
+String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 	static const String ZERO("0");
 	static const String SPACE(" ");
 	static const String MINUS("-");
 	static const String PLUS("+");
 
 	LocalVector<bool> used_args;
-	used_args.resize_initialized(values.size());
+	used_args.resize_initialized(p_values.size());
 	String formatted;
 	char32_t *self = (char32_t *)get_data();
 	bool in_format = false;
@@ -5200,8 +5198,8 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 	bool show_sign = false;
 	bool as_unsigned = false;
 
-	if (error) {
-		*error = true;
+	if (r_error) {
+		*r_error = true;
 	}
 
 	for (; *self; self++) {
@@ -5219,15 +5217,15 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				case 'x': // Hexadecimal (lowercase)
 				case 'X': { // Hexadecimal (uppercase)
 					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
-					if (index >= values.size()) {
+					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					if (!values[index].is_num()) {
+					if (!p_values[index].is_num()) {
 						return "a number is required";
 					}
 
-					int64_t value = values[index];
+					int64_t value = p_values[index];
 					int base = 16;
 					bool capitalize = false;
 					switch (c) {
@@ -5293,15 +5291,15 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 				case 'f': { // Float
 					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
-					if (index >= values.size()) {
+					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					if (!values[index].is_num()) {
+					if (!p_values[index].is_num()) {
 						return "a number is required";
 					}
 
-					double value = values[index];
+					double value = p_values[index];
 					bool is_negative = std::signbit(value);
 					String str = String::num(Math::abs(value), min_decimals);
 					const bool is_finite = Math::is_finite(value);
@@ -5342,12 +5340,12 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 				case 'v': { // Vector2/3/4/2i/3i/4i
 					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
-					if (index >= values.size()) {
+					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
 					int count;
-					switch (values[index].get_type()) {
+					switch (p_values[index].get_type()) {
 						case Variant::VECTOR2:
 						case Variant::VECTOR2I: {
 							count = 2;
@@ -5365,7 +5363,7 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 						}
 					}
 
-					Vector4 vec = values[index];
+					Vector4 vec = p_values[index];
 					String str = "(";
 					for (int i = 0; i < count; i++) {
 						double val = vec[i];
@@ -5416,11 +5414,11 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 				case 's': { // String
 					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
-					if (index >= values.size()) {
+					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					String str = values[index];
+					String str = p_values[index];
 					// Padding.
 					if (left_justified) {
 						str = str.rpad(min_chars);
@@ -5438,14 +5436,14 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 				}
 				case 'c': {
 					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
-					if (index >= values.size()) {
+					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
 					// Convert to character.
 					String str;
-					if (values[index].is_num()) {
-						int value = values[index];
+					if (p_values[index].is_num()) {
+						int value = p_values[index];
 						if (value < 0) {
 							return "unsigned integer is lower than minimum";
 						} else if (value >= 0xd800 && value <= 0xdfff) {
@@ -5453,9 +5451,9 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 						} else if (value > 0x10ffff) {
 							return "unsigned integer is greater than maximum";
 						}
-						str = chr(values[index]);
-					} else if (values[index].get_type() == Variant::STRING) {
-						str = values[index];
+						str = chr(p_values[index]);
+					} else if (p_values[index].get_type() == Variant::STRING) {
+						str = p_values[index];
 						if (str.length() != 1) {
 							return "%c requires number or single-character string";
 						}
@@ -5537,19 +5535,19 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 
 				case '*': { // Dynamic width, based on value.
 					uint64_t index = (selected_index >= 0 ? selected_index : value_index);
-					if (index >= values.size()) {
+					if (index >= p_values.size()) {
 						return "not enough arguments for format string";
 					}
 
-					Variant::Type value_type = values[index].get_type();
-					if (!values[index].is_num() &&
+					Variant::Type value_type = p_values[index].get_type();
+					if (!p_values[index].is_num() &&
 							value_type != Variant::VECTOR2 && value_type != Variant::VECTOR2I &&
 							value_type != Variant::VECTOR3 && value_type != Variant::VECTOR3I &&
 							value_type != Variant::VECTOR4 && value_type != Variant::VECTOR4I) {
 						return "* wants number or vector";
 					}
 
-					int size = values[index];
+					int size = p_values[index];
 
 					if (in_decimals) {
 						min_decimals = size;
@@ -5596,14 +5594,14 @@ String String::sprintf(const Span<Variant> &values, bool *error) const {
 		}
 	}
 
-	if (error) {
-		*error = false;
+	if (r_error) {
+		*r_error = false;
 	}
 	return formatted;
 }
 
-String String::quote(const String &quotechar) const {
-	return quotechar + *this + quotechar;
+String String::quote(const String &p_quotechar) const {
+	return p_quotechar + *this + p_quotechar;
 }
 
 String String::unquote() const {

@@ -224,13 +224,13 @@ struct [[nodiscard]] Color {
 	explicit operator String() const;
 
 	// For the binder.
-	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0f); }
+	_FORCE_INLINE_ void set_r8(int32_t p_r8) { r = (CLAMP(p_r8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_r8() const { return int32_t(CLAMP(Math::round(r * 255.0f), 0.0f, 255.0f)); }
-	_FORCE_INLINE_ void set_g8(int32_t g8) { g = (CLAMP(g8, 0, 255) / 255.0f); }
+	_FORCE_INLINE_ void set_g8(int32_t p_g8) { g = (CLAMP(p_g8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_g8() const { return int32_t(CLAMP(Math::round(g * 255.0f), 0.0f, 255.0f)); }
-	_FORCE_INLINE_ void set_b8(int32_t b8) { b = (CLAMP(b8, 0, 255) / 255.0f); }
+	_FORCE_INLINE_ void set_b8(int32_t p_b8) { b = (CLAMP(p_b8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_b8() const { return int32_t(CLAMP(Math::round(b * 255.0f), 0.0f, 255.0f)); }
-	_FORCE_INLINE_ void set_a8(int32_t a8) { a = (CLAMP(a8, 0, 255) / 255.0f); }
+	_FORCE_INLINE_ void set_a8(int32_t p_a8) { a = (CLAMP(p_a8, 0, 255) / 255.0f); }
 	_FORCE_INLINE_ int32_t get_a8() const { return int32_t(CLAMP(Math::round(a * 255.0f), 0.0f, 255.0f)); }
 
 	_FORCE_INLINE_ void set_h(float p_h) { set_hsv(p_h, get_s(), get_v(), a); }
@@ -242,7 +242,7 @@ struct [[nodiscard]] Color {
 
 	uint32_t hash() const {
 		uint32_t h = hash_murmur3_one_float(r);
-		h = hash_murmur3_one_float(r, h);
+		h = hash_murmur3_one_float(g, h);
 		h = hash_murmur3_one_float(b, h);
 		h = hash_murmur3_one_float(a, h);
 		return hash_fmix32(h);

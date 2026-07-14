@@ -233,12 +233,16 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_CHANGE_TYPE);
 	} else if (ED_IS_SHORTCUT("scene_tree/attach_script", p_event)) {
 		_tool_selected(TOOL_ATTACH_SCRIPT);
+	} else if (ED_IS_SHORTCUT("scene_tree/extend_script", p_event)) {
+		_tool_selected(TOOL_EXTEND_SCRIPT);
 	} else if (ED_IS_SHORTCUT("scene_tree/detach_script", p_event)) {
 		_tool_selected(TOOL_DETACH_SCRIPT);
 	} else if (ED_IS_SHORTCUT("scene_tree/reparent", p_event)) {
 		_tool_selected(TOOL_REPARENT);
 	} else if (ED_IS_SHORTCUT("scene_tree/reparent_to_new_node", p_event)) {
 		_tool_selected(TOOL_REPARENT_TO_NEW_NODE);
+	} else if (ED_IS_SHORTCUT("scene_tree/make_root", p_event)) {
+		_tool_selected(TOOL_MAKE_ROOT);
 	} else if (ED_IS_SHORTCUT("scene_tree/save_branch_as_scene", p_event)) {
 		_tool_selected(TOOL_NEW_SCENE_FROM);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete_no_confirm", p_event)) {
@@ -4342,7 +4346,7 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 
 	String inherits = selected->get_class();
 
-	if (p_extend && existing.is_valid()) {
+	if (p_extend && existing.is_valid() && !existing->is_built_in()) {
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *l = ScriptServer::get_language(i);
 			if (l->get_type() == existing->get_class()) {
@@ -4355,6 +4359,8 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 				break;
 			}
 		}
+	} else if (p_extend) {
+		return;
 	}
 
 	script_create_dialog->connect("script_created", callable_mp(this, &SceneTreeDock::_script_created));
@@ -4723,7 +4729,7 @@ void SceneTreeDock::_update_create_root_dialog_visibility() {
 		create_root_dialog->show();
 		scene_tree->hide();
 	} else {
-		main_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		main_mc->set_theme_type_variation("NoBorderBottomPanel");
 		create_root_dialog->hide();
 		scene_tree->show();
 	}

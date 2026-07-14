@@ -260,7 +260,7 @@ bool Dictionary::operator!=(const Dictionary &p_dictionary) const {
 	return !recursive_equal(p_dictionary, 0);
 }
 
-bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_count) const {
+bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int p_recursion_count) const {
 	// Cheap checks
 	if (_p == p_dictionary._p) {
 		return true;
@@ -270,14 +270,14 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 	}
 
 	// Heavy O(n) check
-	if (recursion_count > MAX_RECURSION) {
+	if (p_recursion_count > MAX_RECURSION) {
 		ERR_PRINT("Max recursion reached");
 		return true;
 	}
-	recursion_count++;
+	p_recursion_count++;
 	for (const KeyValue<Variant, Variant> &this_E : _p->variant_map) {
 		HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
-		if (!other_E || !this_E.value.hash_compare(other_E->value, recursion_count, false)) {
+		if (!other_E || !this_E.value.hash_compare(other_E->value, p_recursion_count, false)) {
 			return false;
 		}
 	}
@@ -366,18 +366,18 @@ uint32_t Dictionary::hash() const {
 	return recursive_hash(0);
 }
 
-uint32_t Dictionary::recursive_hash(int recursion_count) const {
-	if (recursion_count > MAX_RECURSION) {
+uint32_t Dictionary::recursive_hash(int p_recursion_count) const {
+	if (p_recursion_count > MAX_RECURSION) {
 		ERR_PRINT("Max recursion reached");
 		return 0;
 	}
 
 	uint32_t h = hash_murmur3_one_32(Variant::DICTIONARY);
 
-	recursion_count++;
+	p_recursion_count++;
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
-		h = hash_murmur3_one_32(E.key.recursive_hash(recursion_count), h);
-		h = hash_murmur3_one_32(E.value.recursive_hash(recursion_count), h);
+		h = hash_murmur3_one_32(E.key.recursive_hash(p_recursion_count), h);
+		h = hash_murmur3_one_32(E.value.recursive_hash(p_recursion_count), h);
 	}
 
 	return hash_fmix32(h);
@@ -605,23 +605,23 @@ bool Dictionary::is_read_only() const {
 	return _p->read_only != nullptr;
 }
 
-Dictionary Dictionary::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const {
+Dictionary Dictionary::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const {
 	Dictionary n;
 	n._p->typed_key = _p->typed_key;
 	n._p->typed_value = _p->typed_value;
 
-	if (recursion_count > MAX_RECURSION) {
+	if (p_recursion_count > MAX_RECURSION) {
 		ERR_PRINT("Max recursion reached");
 		return n;
 	}
 
 	n.reserve(_p->variant_map.size());
 	if (p_deep) {
-		bool is_call_chain_end = recursion_count == 0;
+		bool is_call_chain_end = p_recursion_count == 0;
 
-		recursion_count++;
+		p_recursion_count++;
 		for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
-			n[E.key.recursive_duplicate(true, p_deep_subresources_mode, recursion_count)] = E.value.recursive_duplicate(true, p_deep_subresources_mode, recursion_count);
+			n[E.key.recursive_duplicate(true, p_deep_subresources_mode, p_recursion_count)] = E.value.recursive_duplicate(true, p_deep_subresources_mode, p_recursion_count);
 		}
 
 		// Variant::recursive_duplicate() may have created a remap cache by now.
@@ -638,7 +638,7 @@ Dictionary Dictionary::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMod
 }
 
 void Dictionary::set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type) {
-	set_typed(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, p_value_type.builtin_type, p_value_type.class_name, p_key_type.script);
+	set_typed(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, p_value_type.builtin_type, p_value_type.class_name, p_value_type.script);
 }
 
 void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {

@@ -6,12 +6,13 @@
 
 #include <Jolt/Core/Reference.h>
 #include <Jolt/Core/Result.h>
-#include <Jolt/Core/StreamUtils.h>
 #include <Jolt/ObjectStream/SerializableObject.h>
 
 JPH_NAMESPACE_BEGIN
 
 class SkeletonPose;
+class StreamIn;
+class StreamOut;
 
 /// Resource for a skinned animation
 class JPH_EXPORT SkeletalAnimation : public RefTarget<SkeletalAnimation>
