@@ -118,7 +118,7 @@ private:
 	PropertyListHelper property_helper;
 
 	mutable Vector<CachedTab> pending_tabs;
-	CachedTab &get_pending_tab(int p_idx) const;
+	CachedTab *get_pending_tab(int p_idx) const;
 
 	HashMap<Node *, RID> tab_panels;
 
