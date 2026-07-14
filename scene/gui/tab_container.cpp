@@ -38,11 +38,13 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
-TabContainer::CachedTab &TabContainer::get_pending_tab(int p_idx) const {
+TabContainer::CachedTab *TabContainer::get_pending_tab(int p_idx) const {
 	if (p_idx >= pending_tabs.size()) {
-		pending_tabs.resize(p_idx + 1);
+		ERR_FAIL_COND_V(pending_tabs.resize(p_idx + 1) != OK, nullptr);
 	}
-	return pending_tabs.write[p_idx];
+	ERR_FAIL_INDEX_V(p_idx, pending_tabs.size(), nullptr);
+
+	return pending_tabs.ptrw() + p_idx;
 }
 
 int TabContainer::_get_tab_height() const {
@@ -848,9 +850,10 @@ bool TabContainer::is_all_tabs_in_front() const {
 void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		CachedTab &tab = get_pending_tab(p_tab);
-		tab.title = p_title;
-		tab.has_title = true;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->title = p_title;
+		tab->has_title = true;
 		return;
 	}
 	ERR_FAIL_NULL(child);
@@ -886,7 +889,9 @@ String TabContainer::get_tab_tooltip(int p_tab) const {
 void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		get_pending_tab(p_tab).icon = p_icon;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->icon = p_icon;
 		return;
 	}
 
@@ -924,7 +929,9 @@ int TabContainer::get_tab_icon_max_width(int p_tab) const {
 void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		get_pending_tab(p_tab).disabled = p_disabled;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->disabled = p_disabled;
 		return;
 	}
 
@@ -948,7 +955,9 @@ bool TabContainer::is_tab_disabled(int p_tab) const {
 void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		get_pending_tab(p_tab).hidden = p_hidden;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->hidden = p_hidden;
 		return;
 	}
 	ERR_FAIL_NULL(child);
