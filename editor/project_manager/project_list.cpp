@@ -336,7 +336,7 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 					project_different_version->set_focus_mode(FOCUS_ACCESSIBILITY);
 					project_different_version->set_tooltip_text(project_version_tooltip_text);
 					project_different_version->show();
-				} else if (p_features[i] == TTR("Unknown version")) {
+				} else if (p_features[i] == "u-ver") {
 					unknown_version = true;
 					project_different_version->hide();
 				}
@@ -849,7 +849,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 			unsupported_features.push_back("3.x");
 			project_version = "3.x";
 		} else {
-			unsupported_features.push_back(TTR("Unknown version"));
+			unsupported_features.push_back("u-ver");
 		}
 	}
 
