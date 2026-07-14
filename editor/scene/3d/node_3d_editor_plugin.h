@@ -243,6 +243,7 @@ private:
 	SpinBox *settings_znear = nullptr;
 	SpinBox *settings_zfar = nullptr;
 
+	void _update_snap_input();
 	void _snap_changed();
 	void _snap_update();
 	void _update_vertex_snap_tooltips();
