@@ -1162,7 +1162,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_auto_tangent_mode->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_auto_tangent_mode->set_toggle_mode(true);
 	curve_auto_tangent_mode->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	curve_auto_tangent_mode->set_tooltip_text(TTR("Auto Tangent Mode"));
+	curve_auto_tangent_mode->set_tooltip_text(TTRC("Auto Tangent Mode"));
 	curve_auto_tangent_mode->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_AUTO_TANGENT));
 	toolbar->add_child(curve_auto_tangent_mode);
 
