@@ -30,6 +30,7 @@
 
 #include "expression.h"
 
+#include "core/core_constants.h"
 #include "core/object/class_db.h"
 
 Error Expression::_get_token(Token &r_token) {
@@ -716,11 +717,17 @@ Expression::ENode *Expression::_parse_expression() {
 						input->index = input_index;
 						expr = input;
 					} else {
-						NamedIndexNode *index = alloc_node<NamedIndexNode>();
-						SelfNode *self_node = alloc_node<SelfNode>();
-						index->base = self_node;
-						index->name = identifier;
-						expr = index;
+						if (StringName n = identifier; CoreConstants::is_global_constant(n)) {
+							ConstantNode *constant = alloc_node<ConstantNode>();
+							constant->value = CoreConstants::get_global_constant_value(CoreConstants::get_global_constant_index(n));
+							expr = constant;
+						} else {
+							NamedIndexNode *index = alloc_node<NamedIndexNode>();
+							SelfNode *self_node = alloc_node<SelfNode>();
+							index->base = self_node;
+							index->name = identifier;
+							expr = index;
+						}
 					}
 				}
 			} break;
@@ -743,41 +750,56 @@ Expression::ENode *Expression::_parse_expression() {
 
 				Variant::Type bt = Variant::Type(int(tk.value));
 				_get_token(tk);
-				if (tk.type != TK_PARENTHESIS_OPEN) {
+				if (tk.type != TK_PARENTHESIS_OPEN && tk.type != TK_PERIOD) {
 					_set_error("Expected '('");
 					return nullptr;
 				}
 
-				ConstructorNode *constructor = alloc_node<ConstructorNode>();
-				constructor->data_type = bt;
-
-				while (true) {
-					int cofs = str_ofs;
+				if (tk.type == TK_PERIOD) {
 					_get_token(tk);
-					if (tk.type == TK_PARENTHESIS_CLOSE) {
-						break;
-					}
-					str_ofs = cofs; //revert
-					//parse an expression
-					ENode *subexpr = _parse_expression();
-					if (!subexpr) {
+					if (tk.type != TK_IDENTIFIER) {
+						_set_error("Expected identifier");
 						return nullptr;
 					}
-
-					constructor->arguments.push_back(subexpr);
-
-					cofs = str_ofs;
-					_get_token(tk);
-					if (tk.type == TK_COMMA) {
-						//all good
-					} else if (tk.type == TK_PARENTHESIS_CLOSE) {
-						str_ofs = cofs;
-					} else {
-						_set_error("Expected ',' or ')'");
+					ConstantNode *constant = alloc_node<ConstantNode>();
+					bool is_valid;
+					constant->value = Variant::get_constant_value(bt, tk.value, &is_valid);
+					if (!is_valid) {
+						_set_error(vformat("Invalid constant name %s for type %s", String(tk.value), Variant::get_type_name(bt)));
 					}
-				}
+					expr = constant;
+				} else {
+					ConstructorNode *constructor = alloc_node<ConstructorNode>();
+					constructor->data_type = bt;
 
-				expr = constructor;
+					while (true) {
+						int cofs = str_ofs;
+						_get_token(tk);
+						if (tk.type == TK_PARENTHESIS_CLOSE) {
+							break;
+						}
+						str_ofs = cofs; //revert
+						//parse an expression
+						ENode *subexpr = _parse_expression();
+						if (!subexpr) {
+							return nullptr;
+						}
+
+						constructor->arguments.push_back(subexpr);
+
+						cofs = str_ofs;
+						_get_token(tk);
+						if (tk.type == TK_COMMA) {
+							//all good
+						} else if (tk.type == TK_PARENTHESIS_CLOSE) {
+							str_ofs = cofs;
+						} else {
+							_set_error("Expected ',' or ')'");
+						}
+					}
+
+					expr = constructor;
+				}
 
 			} break;
 			case TK_BUILTIN_FUNC: {
