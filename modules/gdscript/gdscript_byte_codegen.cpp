@@ -109,7 +109,7 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 			case Variant::PACKED_COLOR_ARRAY:
 			case Variant::PACKED_VECTOR4_ARRAY:
 			case Variant::VARIANT_MAX:
-				// Arrays, dictionaries, and objects are reference counted, so we don't use the pool for them.
+				// Arrays, dictionaries, and objects are reference counted, so we use the same pool for them.
 				temp_type = Variant::NIL;
 				break;
 		}
@@ -121,7 +121,7 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 
 	List<int> &pool = temporaries_pool[temp_type];
 	if (pool.is_empty()) {
-		StackSlot new_temp(temp_type, p_type.can_contain_object());
+		StackSlot new_temp(temp_type, temp_type == Variant::NIL);
 		int idx = temporaries.size();
 		pool.push_back(idx);
 		temporaries.push_back(new_temp);
