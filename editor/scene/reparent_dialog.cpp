@@ -61,6 +61,7 @@ void ReparentDialog::_reparent() {
 
 void ReparentDialog::set_current(const HashSet<Node *> &p_selection) {
 	tree->set_marked(p_selection, false, false);
+	tree->get_scene_tree()->deselect_all();
 	tree->set_selected(nullptr);
 }
 
