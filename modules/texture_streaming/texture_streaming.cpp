@@ -809,12 +809,18 @@ void TextureStreaming::_do_texture_reload(RID p_state_rid) {
 	if (!is_flushing && setting_max_ops_per_second > 0) {
 		const uint64_t min_interval_usec = 1000000 / setting_max_ops_per_second;
 		if (min_interval_usec > 0) {
-			uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
-			uint64_t elapsed = current_ticks - last_io_op_ticks;
-			if (elapsed < min_interval_usec) {
-				OS::get_singleton()->delay_usec(min_interval_usec - elapsed);
+			const uint64_t sleep_threshold_usec = 2000;
+			next_io_op_ticks += min_interval_usec;
+			const uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
+			if (next_io_op_ticks > current_ticks) {
+				const uint64_t ahead = next_io_op_ticks - current_ticks;
+				if (ahead >= sleep_threshold_usec) {
+					OS::get_singleton()->delay_usec(ahead);
+				}
+			} else {
+				// reset so credit can't accumulate across I/O stalls.
+				next_io_op_ticks = current_ticks;
 			}
-			last_io_op_ticks = OS::get_singleton()->get_ticks_usec();
 		}
 	}
 

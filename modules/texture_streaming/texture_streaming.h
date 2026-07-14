@@ -505,7 +505,7 @@ private:
 	void _do_texture_reload(RID p_state_rid);
 	void _texture_remove_finalize(RID p_state_rid);
 
-	uint64_t last_io_op_ticks = 0;
+	uint64_t next_io_op_ticks = 0;
 	std::atomic<uint64_t> texture_streaming_total_memory = 0;
 
 	void _feedback_handle_data(const PackedByteArray &p_array, RID p_buffer);
