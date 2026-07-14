@@ -174,10 +174,20 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	icon->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	hb->add_child(icon);
 
+	text_margin = memnew(MarginContainer);
+	text_margin->add_theme_constant_override(SNAME("margin_left"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_right"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_top"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_bottom"), margin_size);
+	text_margin->set_h_size_flags(SIZE_EXPAND_FILL);
+	text_margin->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	text_margin->set_clip_contents(true);
+	hb->add_child(text_margin);
+
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	hb->add_child(vb);
+	text_margin->add_child(vb);
 
 	Ref<StyleBoxEmpty> label_margin;
 	label_margin.instantiate();
@@ -225,7 +235,9 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	author_license_hbox->add_child(license);
 	license->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItem::_license_clicked));
 
-	vb->add_spacer();
+	// Ensure the entire asset card can be clicked.
+	Control *spacer = vb->add_spacer();
+	spacer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 
 	HBoxContainer *rating_hbox = memnew(HBoxContainer);
 	rating_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -237,9 +249,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	rating_hbox->add_child(rating_icon);
 
 	rating_count = memnew(Label);
-	rating_count->set_mouse_filter(MOUSE_FILTER_STOP);
 	rating_count->set_theme_type_variation("LabelNoMargin");
-	rating_count->set_tooltip_text(TTRC("Review Score"));
 	rating_count->set_accessibility_name(TTRC("Review Score"));
 	rating_hbox->add_child(rating_count);
 
@@ -1813,8 +1823,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			_update_asset_items_columns();
-			asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
-			asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("h_separation", 0);
+			asset_items->add_theme_constant_override("v_separation", 0);
 
 			library_vb->add_child(asset_items);
 
