@@ -745,6 +745,7 @@ void Main::test_cleanup() {}
 // are initialized here. This also combines `Main::setup2()` initialization.
 Error Main::test_setup() {
 	Thread::make_main_thread();
+
 	set_current_thread_safe_for_nodes(true);
 
 	OS::get_singleton()->initialize();
@@ -884,6 +885,8 @@ Error Main::test_setup() {
 void Main::test_cleanup() {
 	ERR_FAIL_COND(!_start_success);
 
+	Thread::make_main_thread();
+
 	// Printing in the usual way can become problematic during/after cleanup.
 	CoreGlobals::print_ready = false;
 
@@ -971,6 +974,8 @@ void Main::test_cleanup() {
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
+
+	Thread::release_main_thread();
 }
 #endif // TESTS_ENABLED
 
@@ -3003,6 +3008,8 @@ error:
 
 	OS::get_singleton()->finalize_core();
 	locale = String();
+
+	Thread::release_main_thread();
 
 	return exit_err;
 }
@@ -5210,6 +5217,8 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
+	Thread::make_main_thread();
+
 	GodotProfileZone("cleanup");
 	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Main::Cleanup");
 	if (!p_force) {
@@ -5395,4 +5404,6 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();
+
+	Thread::release_main_thread();
 }
