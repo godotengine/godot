@@ -31,6 +31,9 @@
 #include "zip_packer.h"
 #include "zip_packer.compat.inc"
 
+#include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/zip_io.h"
 #include "core/object/class_db.h"
 #include "core/os/time.h"
@@ -195,6 +198,131 @@ Error ZIPPacker::add_directory(const String &p_path, BitField<FileAccess::UnixPe
 	return OK;
 }
 
+Error ZIPPacker::compress(const PackedStringArray &p_input_paths, const String &p_output_path, int p_compression_level, ZipAppend p_append) {
+	int err = UNZ_OK;
+	Error gdErr = OK;
+
+	// Open the zip file.
+	ZIPPacker zip_packer = ZIPPacker();
+	zip_packer.set_compression_level(p_compression_level);
+	gdErr = zip_packer.open(p_output_path, p_append);
+	if (gdErr != OK) {
+		return gdErr;
+	}
+
+	// Create a queue of pending input paths to check.
+	struct PendingPath {
+		String input_path;
+		String output_path;
+	};
+	LocalVector<PendingPath> pending_paths;
+	pending_paths.reserve((int32_t)p_input_paths.size());
+	for (const String &input_path : p_input_paths) {
+		pending_paths.push_back({ input_path,
+				input_path.trim_suffix("/").trim_suffix("\\").get_file() });
+	}
+
+	// Write each file/directory to the zip file.
+	while (!pending_paths.is_empty()) {
+		// Get the current file/directory to write to the zip file.
+		PendingPath current_path = pending_paths[pending_paths.size() - 1];
+		pending_paths.remove_at(pending_paths.size() - 1);
+
+		// The current file/directory is a directory.
+		if (DirAccess::dir_exists_absolute(current_path.input_path)) {
+			// Open the current directory.
+			Ref<DirAccess> current_dir = DirAccess::open(current_path.input_path, &gdErr);
+			if (current_dir.is_null()) {
+				return gdErr;
+			}
+
+			// Start listing the files in the current directory.
+			gdErr = current_dir->list_dir_begin();
+			if (gdErr != OK) {
+				return gdErr;
+			}
+
+			// Add each file/directory in the current directory to the queue.
+			while (true) {
+				String next_in_dir = current_dir->get_next();
+				if (next_in_dir.is_empty()) {
+					break;
+				}
+				if (next_in_dir == "." || next_in_dir == "..") {
+					continue;
+				}
+				pending_paths.push_back({ current_path.input_path.path_join(next_in_dir),
+						current_path.output_path.path_join(next_in_dir) });
+			}
+
+			// Stop listing the files in the current directory.
+			current_dir->list_dir_end();
+
+			// Add a slash to the end of the directory path in the zip file.
+			if (!current_path.output_path.ends_with("/") && !current_path.output_path.ends_with("\\")) {
+				current_path.output_path += '/';
+			}
+
+			// Get the last modified time of the current directory.
+			uint64_t last_modified_time = 0; // TODO: There is currently no DirAccess::get_modified_time method.
+
+			// Write the current directory to the zip file.
+			gdErr = zip_packer.start_file(current_path.output_path, 0644, last_modified_time);
+			if (gdErr != OK) {
+				return gdErr;
+			}
+
+			// Finish writing the current directory to the zip file.
+			gdErr = zip_packer.close_file();
+			if (gdErr != OK) {
+				return gdErr;
+			}
+		}
+		// The current file/directory is a file.
+		else {
+			// Open the current file.
+			Ref<FileAccess> current_file = FileAccess::open(current_path.input_path, FileAccess::ModeFlags::READ, &gdErr);
+			if (current_file.is_null()) {
+				return gdErr;
+			}
+
+			// Get the last modified time of the current file.
+			uint64_t last_modified_time = FileAccess::get_modified_time(current_path.input_path);
+
+			// Start writing the current file to the zip file.
+			gdErr = zip_packer.start_file(current_path.output_path, 0644, last_modified_time);
+			if (gdErr != OK) {
+				return gdErr;
+			}
+
+			// Write each chunk of the current file to the zip file.
+			uint8_t buffer[64 * 1024]; // 64KiB buffer
+			while (!current_file->eof_reached()) {
+				// Read a chunk of the current file.
+				uint64_t bytes_read = current_file->get_buffer(buffer, sizeof(buffer));
+
+				// Reached the end of the current file.
+				if (bytes_read == 0) {
+					break;
+				}
+
+				// Write the current chunk to the output file in the zip file.
+				err = zipWriteInFileInZip(zip_packer.zf, buffer, bytes_read);
+				ERR_FAIL_COND_V(err != ZIP_OK, ERR_FILE_CANT_WRITE);
+			}
+
+			// Finish writing the current file to the zip file.
+			gdErr = zip_packer.close_file();
+			if (gdErr != OK) {
+				return gdErr;
+			}
+		}
+	}
+
+	// The zip file was successfully created.
+	return OK;
+}
+
 void ZIPPacker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open", "path", "append"), &ZIPPacker::open, DEFVAL(Variant(APPEND_CREATE)));
 	ClassDB::bind_method(D_METHOD("set_compression_level", "compression_level"), &ZIPPacker::set_compression_level);
@@ -205,6 +333,8 @@ void ZIPPacker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("write_file", "data"), &ZIPPacker::write_file);
 	ClassDB::bind_method(D_METHOD("close_file"), &ZIPPacker::close_file);
 	ClassDB::bind_method(D_METHOD("close"), &ZIPPacker::close);
+
+	ClassDB::bind_static_method("ZIPPacker", D_METHOD("compress", "input_paths", "output_path", "compression_level", "append"), &ZIPPacker::compress, DEFVAL(COMPRESSION_DEFAULT), DEFVAL(APPEND_CREATE));
 
 	BIND_ENUM_CONSTANT(APPEND_CREATE);
 	BIND_ENUM_CONSTANT(APPEND_CREATEAFTER);
