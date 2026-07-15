@@ -29,6 +29,67 @@
 				[b]Note:[/b] CSG mesh data updates are deferred, which means they are updated with a delay of one rendered frame. To avoid getting an empty mesh or outdated mesh data, make sure to call [code]await get_tree().process_frame[/code] before using [method bake_static_mesh] in [method Node._ready] or after changing properties on the [CSGShape3D].
 			</description>
 		</method>
+		<method name="brush_modified">
+			<return type="void" />
+			<description>
+				Forces an update of the root CSG shape visuals.
+			</description>
+		</method>
+		<method name="calculate_cube_map">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedInt32Array" />
+			<param index="1" name="uv_scale" type="Vector3" />
+			<param index="2" name="use_global" type="bool" />
+			<description>
+				Generates cube map UVs for the selected faces. This is a simple unwrapping that calculates the UVs based on the direction of the face.
+				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
+				[param uv_scale]: Can be used to scale the UVs. If any of the components is [code]0[/code], it will be set to [code]1[/code] to prevent bad UVs.
+				[param use_global]: When set to [code]true[/code], calculates the UVs in global space instead of local space.
+			</description>
+		</method>
+		<method name="calculate_cylinder_map">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedInt32Array" />
+			<param index="1" name="uv_scale" type="Vector3" />
+			<param index="2" name="use_global" type="bool" />
+			<description>
+				Generates cylinder UVs for the selected faces. This is a simple unwrapping that calculates the side UVs based on the angle from the center.
+				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
+				[param uv_scale]: Can be used to scale the UVs. If any of the components is [code]0[/code], it will be set to [code]1[/code] to prevent bad UVs. Only the first two components will be taken into account.
+				[param use_global]: When set to [code]true[/code], calculates the UVs in global space instead of local space.
+				[b]Note:[/b] [code]use_global = true[/code] will not take position into account and instead calculate UVs around the center of the node to prevent bad UVs.
+			</description>
+		</method>
+		<method name="flip_x">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedInt32Array" />
+			<description>
+				Flips [param faces] in X.
+				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
+			</description>
+		</method>
+		<method name="flip_y">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedInt32Array" />
+			<description>
+				Flips [param faces] in Y.
+				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
+			</description>
+		</method>
+		<method name="get_all_csg_faces">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns a [PackedInt32Array] of all the faces of the CSGBrush, with each face being represented by a number.
+				Equivalent to doing [code]range(get_csg_num_faces())[/code].
+			</description>
+		</method>
+		<method name="get_brush_uvs">
+			<return type="PackedVector2Array" />
+			<description>
+				Returns a [PackedVector2Array] with the UVs of CSGBrush, where every [code]3[/code] elements represents a face.
+				This is intended for creating a UV editor for more advanced UV unwrapping.
+			</description>
+		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -43,6 +104,39 @@
 				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
+		<method name="get_csg_face_smooth_group">
+			<return type="int" />
+			<param index="0" name="face" type="int" />
+			<description>
+				Returns the smooth value of the face.
+			</description>
+		</method>
+		<method name="get_csg_ngon_colliders">
+			<return type="PackedVector3Array[]" />
+			<description>
+				Returns an array of triangles for creating colliders for gizmos.
+			</description>
+		</method>
+		<method name="get_csg_num_faces">
+			<return type="int" />
+			<description>
+				Returns the number of faces of the CSGBrush.
+			</description>
+		</method>
+		<method name="get_face_material">
+			<return type="Material" />
+			<param index="0" name="face" type="int" />
+			<description>
+				Gets the material of [param face] in the CSGBrush.
+			</description>
+		</method>
+		<method name="get_faces_from_ngon">
+			<return type="PackedInt32Array" />
+			<param index="0" name="ngon" type="int" />
+			<description>
+				Returns the ID of the faces assigned to ngon [param ngon].
+			</description>
+		</method>
 		<method name="get_meshes" qualifiers="const">
 			<return type="Array" />
 			<description>
@@ -50,10 +144,72 @@
 				[b]Note:[/b] CSG mesh data updates are deferred, which means they are updated with a delay of one rendered frame. To avoid getting an empty shape or outdated mesh data, make sure to call [code]await get_tree().process_frame[/code] before using [method get_meshes] in [method Node._ready] or after changing properties on the [CSGShape3D].
 			</description>
 		</method>
+		<method name="get_selected_faces">
+			<return type="PackedVector3Array" />
+			<param index="0" name="faces" type="PackedInt32Array" />
+			<description>
+				Returns the vertices used to generate the selected faces. This is intended for generating a mesh to display the selected faces in the editor.
+				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
+			</description>
+		</method>
+		<method name="get_uv_offsets">
+			<return type="Vector2" />
+			<param index="0" name="face" type="int" />
+			<description>
+				Returns the calculated offset of the UVs of the [param face] of the CSGBrush.
+			</description>
+		</method>
+		<method name="get_uv_scale">
+			<return type="Vector2" />
+			<param index="0" name="face" type="int" />
+			<description>
+				Returns the calculated scale of the UVs of the [param face] of the CSGBrush.
+			</description>
+		</method>
+		<method name="get_vertices">
+			<return type="PackedVector3Array" />
+			<description>
+				Returns a [PackedVector3Array] with the positions of the vertices of the CSGBrush. This method ignores duplicated positions and is intended to be used with [method set_vertex_position].
+			</description>
+		</method>
 		<method name="is_root_shape" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this is a root shape and is thus the object that is rendered.
+			</description>
+		</method>
+		<method name="rebuild_brush">
+			<return type="void" />
+			<description>
+				Rebuilds the CSGBrush based on the properties of the CSG node. Overrides any changes to the faces or vertices. Internally sets [code]painted[/code] to false.
+			</description>
+		</method>
+		<method name="resize_brush">
+			<return type="bool" />
+			<param index="0" name="prev_size" type="Vector3" />
+			<param index="1" name="size" type="Vector3" />
+			<description>
+				Resizes the CSGBrush from [param prev_size] to [param size].
+				For a [CSGBox3D], [param prev_size] would be the size property, and [param size] the new dimensions.
+				[b]Note:[/b] Both components of [param size] and both components of [param prev_size] must be non-zero.
+			</description>
+		</method>
+		<method name="rotate_uv">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedInt32Array" />
+			<param index="1" name="angle" type="float" />
+			<description>
+				Rotates [param faces] of the CSGBrush by [param angle].
+				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
+				[param angle] must be in radians.
+			</description>
+		</method>
+		<method name="set_brush_uvs">
+			<return type="void" />
+			<param index="0" name="uvs" type="PackedVector2Array" />
+			<description>
+				Sets the UVs of CSGBrush from [param uvs].
+				[b]Note:[/b][param uvs] must be divisible by 3.
 			</description>
 		</method>
 		<method name="set_collision_layer_value">
@@ -72,8 +228,96 @@
 				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
+		<method name="set_csg_face_smooth_group">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedInt32Array" />
+			<param index="1" name="smooth" type="int" />
+			<description>
+				Sets the smoothing of [param faces]. A value of [code]0[/code] will make the face flat while any value above will make it smooth.
+				[b]Note:[/b] This is a work in progress, at the moment, all values above [code]0[/code] will blend together.
+				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
+			</description>
+		</method>
+		<method name="set_face_material">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedInt32Array" />
+			<param index="1" name="material" type="Material" />
+			<description>
+				Sets [param material] on [param faces].
+				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
+			</description>
+		</method>
+		<method name="set_uv_offsets">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedInt32Array" />
+			<param index="1" name="prev_offset" type="Vector2" />
+			<param index="2" name="offset" type="Vector2" />
+			<description>
+				Sets the UVs of [param faces] of the CSGBrush using [param offset].
+				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
+				Usage:
+				[codeblocks]
+				[gdscript]
+				# Offset the first and second faces of CSGBrush.
+				var faces = PackedInt32Array([0, 1])
+				set_uv_offsets(faces, get_uv_offsets(faces[0]), get_uv_offsets(faces[0]) + Vector2(0.25, 0.0))
+				[/gdscript]
+				[csharp]
+				// Offset the first and second faces of CSGBrush.
+				var faces = new PackedInt32Array([0, 1]);
+				SetUvOffsets(faces, GetUvOffsets(faces[0]), GetUvOffsets(faces[0]) + new Vector2(0.1f, 0.0f));
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="set_uv_scale">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedInt32Array" />
+			<param index="1" name="prev_scale" type="Vector2" />
+			<param index="2" name="scale" type="Vector2" />
+			<description>
+				Sets the UVs of [param faces] of the CSGBrush using [param scale].
+				[param faces]: Must be a [PackedInt32Array] containing valid indices of faces in the CSGBrush.
+				Usage:
+				[codeblocks]
+				[gdscript]
+				# Scale the first and second faces of CSGBrush.
+				var faces = PackedInt32Array([0, 1])
+				var curr_scale = get_uv_scale(faces[0])
+				set_uv_scale(faces, curr_scale, Vector2(2.0, 2.0))
+				[/gdscript]
+				[csharp]
+				// Scale the first and second faces of CSGBrush.
+				var faces = new PackedInt32Array([0, 1]);
+				var currentUvScale = GetUvScale(faces[0]);
+				SetUvScale(faces, currentUvScale, new Vector2(2.0f, 2.0f));
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] Both components of [param scale] must be non-zero.
+			</description>
+		</method>
+		<method name="set_vertex_position">
+			<return type="void" />
+			<param index="0" name="from" type="Vector3" />
+			<param index="1" name="to" type="Vector3" />
+			<description>
+				Sets all the vertices of the CSGBrush in position [param from] to [param to].
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="_csg_brush" type="Dictionary" setter="set_csg_brush" getter="get_csg_brush" default="{ &quot;painted&quot;: false }">
+			The CSGBrush of the node as a [Dictionary] containing the following entries:
+			- [code]material_id[/code]: [PackedByteArray] with the IDs of the material assigned to each face. See [code]materials[/code].
+			- [code]vertices[/code]: [PackedVector3Array] containing the positions of the triangles that make up the CSGBrush, must be divisible by 3.
+			- [code]uvs[/code]: [PackedVector2Array] containing the UVs of the triangles of the CSGBrush, must be divisible by 3.
+			- [code]smooth[/code]: [PackedByteArray] with the smoothing groups of the faces of the CSGBrush. A value of [code]0[/code] disables the effect and any value above enables it.
+			[b]NOTE:[/b] This is a work in progress, at the moment, all values above [code]0[/code] will blend together.
+			- [code]inverted[/code]: Needed since [code]flip_faces[/code] is a property of [CSGPrimitive3D] and not [CSGShape3D].
+			- [code]materials[/code]: [Array] of [Material]s of the CSGBrush.
+			- [code]painted[/code]: When set to [code]true[/code], tells the engine not to rebuild the CSGBrush. Must always be [code]true[/code] for this to work.
+			- [code]ngons[/code]: [PackedInt32Array] with the ngons assigned to each face.
+		</member>
 		<member name="autosmooth" type="bool" setter="set_autosmooth" getter="is_autosmooth" default="false">
 			Enables automatic smoothing. This overrides any smoothing on the CSG node and instead uses [member smoothing_angle] to calculate normals based on the angle between faces.
 			Children of a [CSGCombiner3D] node will be treated as a single mesh.
