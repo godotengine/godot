@@ -57,6 +57,7 @@ class SceneTreeEditor : public Control {
 		BUTTON_GROUPS = 7,
 		BUTTON_PIN = 8,
 		BUTTON_UNIQUE = 9,
+		BUTTON_VIEWPORT = 10,
 	};
 
 	struct CachedNode {
@@ -210,6 +211,7 @@ class SceneTreeEditor : public Control {
 	void _queue_update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _tree_scroll_to_item(ObjectID p_item_id);
 	void _reset_visibility_drag();
+	bool _is_overriding_viewport(Node *p_node) const;
 
 	void _selection_changed();
 	Node *get_scene_node() const;
