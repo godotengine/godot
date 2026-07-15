@@ -398,6 +398,7 @@ private:
 		bool drag_attempted = false;
 		Variant drag_data; // Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
 		ObjectID drag_preview_id;
+		ObjectID drag_preview_window_id;
 		String drag_description;
 		Ref<SceneTreeTimer> tooltip_timer;
 		double tooltip_delay = 0.0;
@@ -471,6 +472,8 @@ private:
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
 	Control *_gui_get_drag_preview();
+	Window *_gui_get_drag_preview_window();
+	void _gui_delete_drag_preview();
 
 	void _gui_remove_focus_for_window(Node *p_window);
 	void _gui_unfocus_control(Control *p_control);
