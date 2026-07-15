@@ -320,6 +320,9 @@
 		<member name="docks/scene_tree/center_node_on_reparent" type="bool" setter="" getter="">
 			If [code]true[/code], new node created when reparenting node(s) will be positioned at the average position of the selected node(s).
 		</member>
+		<member name="docks/scene_tree/derive_script_globals_by_name" type="bool" setter="" getter="">
+			If [code]true[/code], when extending a script, the global class name of the script is inserted in the script creation dialog, if it exists. If [code]false[/code], the script's file path is always inserted.
+		</member>
 		<member name="docks/scene_tree/hide_filtered_out_parents" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will only show nodes that match the filter, without showing parents that don't. This settings can also be changed in the Scene dock's top menu.
 		</member>
@@ -1132,9 +1135,6 @@
 		<member name="interface/editor/timers/unfocused_low_processor_mode_sleep_usec" type="int" setter="" getter="">
 			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 10 FPS when the editor window is unfocused. See also [member interface/editor/timers/low_processor_mode_sleep_usec].
 			[b]Note:[/b] This setting is ignored if [member interface/editor/display/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
-		</member>
-		<member name="interface/editors/derive_script_globals_by_name" type="bool" setter="" getter="">
-			If [code]true[/code], when extending a script, the global class name of the script is inserted in the script creation dialog, if it exists. If [code]false[/code], the script's file path is always inserted.
 		</member>
 		<member name="interface/inspector/auto_unfold_foreign_scenes" type="bool" setter="" getter="">
 			If [code]true[/code], automatically unfolds Inspector property groups containing modified values when opening a scene for the first time. Only affects scenes without saved folding preferences and only unfolds groups with properties that have been changed from their default values.
