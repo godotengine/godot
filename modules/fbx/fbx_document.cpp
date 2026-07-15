@@ -107,7 +107,7 @@ static Color _material_color(const ufbx_material_map &p_map) {
 		float r = float(p_map.value_vec4.x);
 		float g = float(p_map.value_vec4.y);
 		float b = float(p_map.value_vec4.z);
-		float a = float(p_map.value_vec4.z);
+		float a = float(p_map.value_vec4.w);
 		return Color(r, g, b, a);
 	}
 }
@@ -928,7 +928,7 @@ Ref<Image> FBXDocument::_parse_image_bytes_into_image(Ref<FBXState> p_state, con
 		r_image->load_jpg_from_buffer(p_bytes);
 	}
 	if (r_image->is_empty()) { // And then TGA.
-		r_image->load_jpg_from_buffer(p_bytes);
+		r_image->load_tga_from_buffer(p_bytes);
 	}
 	// If it still can't be loaded, give up and insert an empty image as placeholder.
 	if (r_image->is_empty()) {

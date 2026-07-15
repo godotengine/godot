@@ -3583,6 +3583,10 @@
 			If [code]true[/code] the frame synthesis extension will be activated if supported by the platform.
 			[b]Note:[/b] This feature should not be enabled in conjunction with Application Space Warp, if supported this replaces ASW.
 		</member>
+		<member name="xr/openxr/extensions/frame_synthesis/flip_y" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] the Y value of the motion vectors submitted to the frame synthesis extension will be flipped.
+			[b]Note:[/b] Since this is only needed on some platforms, it should usually be set using a feature tag, for example, to target Android XR: [code]xr/openxr/extensions/frame_synthesis/flip_y.androidxr[/code]
+		</member>
 		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] the hand interaction profile extension will be activated if supported by the platform.
 		</member>

@@ -3329,7 +3329,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 		// Editing.
 		bool bring_up_editor = allow_reselect ? (c.selected && already_selected) : c.selected;
-		String editor_text = c.text;
 
 		switch (c.mode) {
 			case TreeItem::CELL_MODE_STRING: {
@@ -3408,7 +3407,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 						bring_up_editor = false;
 
 					} else {
-						editor_text = String::num(p_item->cells[col].val, Math::range_step_decimals(p_item->cells[col].step));
 						if (select_mode == SELECT_MULTI && get_viewport()->get_processed_events_count() == focus_in_id) {
 							bring_up_editor = false;
 						}
@@ -3899,7 +3897,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	bool is_command = k.is_valid() && k->is_command_or_control_pressed();
-	if (p_event->is_action(cache.rtl ? "ui_left" : "ui_right") && p_event->is_pressed()) {
+	if (p_event->is_action_just_pressed_or_echo(cache.rtl ? "ui_left" : "ui_right")) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3917,7 +3915,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			_go_down();
 		}
-	} else if (p_event->is_action(cache.rtl ? "ui_right" : "ui_left") && p_event->is_pressed()) {
+	} else if (p_event->is_action_just_pressed_or_echo(cache.rtl ? "ui_right" : "ui_left")) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3935,7 +3933,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			_go_up();
 		}
-	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && !is_command) {
+	} else if (p_event->is_action_just_pressed_or_echo("ui_up") && !is_command) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3947,7 +3945,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			_go_up();
 		}
 
-	} else if (p_event->is_action("ui_down") && p_event->is_pressed() && !is_command) {
+	} else if (p_event->is_action_just_pressed_or_echo("ui_down") && !is_command) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}

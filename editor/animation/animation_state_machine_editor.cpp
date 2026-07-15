@@ -863,8 +863,6 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 }
 
 bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path) {
-	String prev_path;
-
 	LocalVector<StringName> nodes = p_nodesm->get_node_list();
 
 	PopupMenu *nodes_menu = memnew(PopupMenu);

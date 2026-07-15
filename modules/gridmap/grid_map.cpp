@@ -558,7 +558,7 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PS3DE::BODY_PARAM_FRICTION, physics_material->computed_friction());
 			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PS3DE::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
 		}
-#endif // PHYSICS_3D_DISABLED
+
 		bool debug_collisions = false;
 		switch (collision_visibility_mode) {
 			case DEBUG_VISIBILITY_MODE_DEFAULT: {
@@ -577,6 +577,7 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 			g->collision_debug_instance = RS::get_singleton()->instance_create();
 			RS::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
 		}
+#endif // PHYSICS_3D_DISABLED
 
 		octant_map[octantkey] = g;
 
@@ -2103,6 +2104,11 @@ GridMap::~GridMap() {
 
 #ifdef DEBUG_ENABLED
 	_debug_clear_octants();
+
+	if (debug_octant_line_mesh_rid.is_valid()) {
+		RS::get_singleton()->free_rid(debug_octant_line_mesh_rid);
+		debug_octant_line_mesh_rid = RID();
+	}
 
 #ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3D::get_singleton()->disconnect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));

@@ -2426,10 +2426,10 @@ Vector<ShaderLanguage::Scalar> ShaderLanguage::_eval_vector_transform(const Vect
 			} else { // m * v
 				Vector4 v = Vector4(p_vb[0].real, p_vb[1].real, p_vb[2].real, p_vb[3].real);
 
-				w[0].real = (p_vb[0].real * v.x + p_vb[4].real * v.y + p_vb[8].real * v.z + p_vb[12].real * v.w);
-				w[1].real = (p_vb[1].real * v.x + p_vb[5].real * v.y + p_vb[9].real * v.z + p_vb[13].real * v.w);
-				w[2].real = (p_vb[2].real * v.x + p_vb[6].real * v.y + p_vb[10].real * v.z + p_vb[14].real * v.w);
-				w[3].real = (p_vb[3].real * v.x + p_vb[7].real * v.y + p_vb[11].real * v.z + p_vb[15].real * v.w);
+				w[0].real = (p_va[0].real * v.x + p_va[4].real * v.y + p_va[8].real * v.z + p_va[12].real * v.w);
+				w[1].real = (p_va[1].real * v.x + p_va[5].real * v.y + p_va[9].real * v.z + p_va[13].real * v.w);
+				w[2].real = (p_va[2].real * v.x + p_va[6].real * v.y + p_va[10].real * v.z + p_va[14].real * v.w);
+				w[3].real = (p_va[3].real * v.x + p_va[7].real * v.y + p_va[11].real * v.z + p_va[15].real * v.w);
 			}
 		} break;
 		default: {
@@ -4986,7 +4986,6 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			} else if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_ENUM) {
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_ENUM;
-				String hint_string;
 				pi.hint_string = String(",").join(p_uniform.hint_enum_names);
 			} else {
 				pi.type = Variant::INT;

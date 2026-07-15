@@ -72,20 +72,20 @@ int godot_unzip_locate_file(unzFile p_zip_file, const String &p_filepath, bool p
 
 //
 
-void *zipio_open(voidpf opaque, const char *p_fname, int mode) {
-	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+void *zipio_open(voidpf p_opaque, const char *p_fname, int p_mode) {
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, nullptr);
 
 	String fname = String::utf8(p_fname);
 
 	int file_access_mode = 0;
-	if (mode & ZLIB_FILEFUNC_MODE_READ) {
+	if (p_mode & ZLIB_FILEFUNC_MODE_READ) {
 		file_access_mode |= FileAccess::READ;
 	}
-	if (mode & ZLIB_FILEFUNC_MODE_WRITE) {
+	if (p_mode & ZLIB_FILEFUNC_MODE_WRITE) {
 		file_access_mode |= FileAccess::WRITE;
 	}
-	if (mode & ZLIB_FILEFUNC_MODE_CREATE) {
+	if (p_mode & ZLIB_FILEFUNC_MODE_CREATE) {
 		file_access_mode |= FileAccess::WRITE_READ;
 	}
 
@@ -94,51 +94,51 @@ void *zipio_open(voidpf opaque, const char *p_fname, int mode) {
 		return nullptr;
 	}
 
-	return opaque;
+	return p_opaque;
 }
 
-uLong zipio_read(voidpf opaque, voidpf stream, void *buf, uLong size) {
-	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+uLong zipio_read(voidpf p_opaque, voidpf p_stream, void *p_buf, uLong p_size) {
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
-	return (*fa)->get_buffer((uint8_t *)buf, size);
+	return (*fa)->get_buffer((uint8_t *)p_buf, p_size);
 }
 
-uLong zipio_write(voidpf opaque, voidpf stream, const void *buf, uLong size) {
-	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+uLong zipio_write(voidpf p_opaque, voidpf p_stream, const void *p_buf, uLong p_size) {
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
-	bool fa_success = (*fa)->store_buffer((uint8_t *)buf, size);
+	bool fa_success = (*fa)->store_buffer((uint8_t *)p_buf, p_size);
 
 	if (fa_success) {
-		return size;
+		return p_size;
 	}
 
 	return 0;
 }
 
-long zipio_tell(voidpf opaque, voidpf stream) {
-	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+long zipio_tell(voidpf p_opaque, voidpf p_stream) {
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
 	return (*fa)->get_position();
 }
 
-long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
-	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+long zipio_seek(voidpf p_opaque, voidpf p_stream, uLong p_offset, int p_origin) {
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
-	uint64_t pos = offset;
-	switch (origin) {
+	uint64_t pos = p_offset;
+	switch (p_origin) {
 		case ZLIB_FILEFUNC_SEEK_CUR:
-			pos = (*fa)->get_position() + offset;
+			pos = (*fa)->get_position() + p_offset;
 			break;
 		case ZLIB_FILEFUNC_SEEK_END:
-			pos = (*fa)->get_length() + offset;
+			pos = (*fa)->get_length() + p_offset;
 			break;
 		default:
 			break;
@@ -148,8 +148,8 @@ long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 	return 0;
 }
 
-int zipio_close(voidpf opaque, voidpf stream) {
-	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+int zipio_close(voidpf p_opaque, voidpf p_stream) {
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, 0);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
@@ -157,21 +157,21 @@ int zipio_close(voidpf opaque, voidpf stream) {
 	return 0;
 }
 
-int zipio_testerror(voidpf opaque, voidpf stream) {
-	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
+int zipio_testerror(voidpf p_opaque, voidpf p_stream) {
+	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(p_opaque);
 	ERR_FAIL_NULL_V(fa, 1);
 	ERR_FAIL_COND_V(fa->is_null(), 0);
 
 	return (fa->is_valid() && (*fa)->get_error() != OK) ? 1 : 0;
 }
 
-voidpf zipio_alloc(voidpf opaque, uInt items, uInt size) {
-	voidpf ptr = memalloc_zeroed((size_t)items * size);
+voidpf zipio_alloc(voidpf p_opaque, uInt p_items, uInt p_size) {
+	voidpf ptr = memalloc_zeroed((size_t)p_items * p_size);
 	return ptr;
 }
 
-void zipio_free(voidpf opaque, voidpf address) {
-	memfree(address);
+void zipio_free(voidpf p_opaque, voidpf r_address) {
+	memfree(r_address);
 }
 
 zlib_filefunc_def zipio_create_io(Ref<FileAccess> *p_data) {

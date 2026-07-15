@@ -94,6 +94,10 @@ protected:
 	void _set_triangles(const Vector<int> &p_triangles);
 	Vector<int> _get_triangles() const;
 
+#ifndef DISABLE_DEPRECATED
+	void _retry_set_triangles(const Vector<int> &p_triangles);
+#endif // DISABLE_DEPRECATED
+
 	void _blend_triangle(const Vector2 &p_pos, const LocalVector<Vector2> &p_points, LocalVector<float> &r_weights);
 
 	bool auto_triangles = true;

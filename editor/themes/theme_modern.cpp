@@ -780,6 +780,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("scroll_hint_color", "ItemList", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));
 			p_theme->set_constant("v_separation", "ItemList", p_config.base_margin * 1.5 * EDSCALE);
 			p_theme->set_constant("h_separation", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
+			p_theme->set_constant("scroll_bar_h_separation", "ItemList", style_itemlist_bg->get_margin(SIDE_RIGHT));
 			p_theme->set_constant("icon_margin", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
 			p_theme->set_constant(SceneStringName(line_separation), "ItemList", p_config.separation_margin);
 			p_theme->set_constant("outline_size", "ItemList", 0);
@@ -2080,7 +2081,25 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManagerHorizontal", margin);
 
 			int bottom_panel_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
-			margin = -panel_margin - bottom_panel_margin;
+
+			p_theme->set_type_variation("NoBorderPanel", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderPanel", -bottom_panel_margin);
+			p_theme->set_constant("margin_right", "NoBorderPanel", -bottom_panel_margin);
+
+			p_theme->set_type_variation("NoBorderBottomPanel", "NoBorderPanel");
+			p_theme->set_constant("margin_bottom", "NoBorderBottomPanel", -bottom_panel_margin);
+
+			margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("AcceptDialog"))->get_content_margin(SIDE_LEFT);
+
+			p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
+			p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
+			p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
+
+			margin = 2 * -bottom_panel_margin;
+
+			// Same as above, including the bottom.
+			p_theme->set_type_variation("NoBorderBottomWideWindow", "NoBorderHorizontalWindow");
+			p_theme->set_constant("margin_bottom", "NoBorderBottomWideWindow", margin);
 
 			// Used in the animation track editor.
 			p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
@@ -2090,25 +2109,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			// Used in the OpenXR action map editor.
 			p_theme->set_type_variation("NoBorderOpenXR", "NoBorderAnimation");
 			p_theme->set_constant("margin_bottom", "NoBorderOpenXR", -panel_margin);
-
-			margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("AcceptDialog"))->get_content_margin(SIDE_LEFT);
-
-			p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
-			p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
-
-			// Used in nested containers.
-			p_theme->set_type_variation("NoBorderHorizontalWide", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderHorizontalWide", margin);
-			p_theme->set_constant("margin_right", "NoBorderHorizontalWide", margin);
-
-			// Same as above, including the bottom.
-			p_theme->set_type_variation("NoBorderHorizontalBottomWide", "NoBorderHorizontalWide");
-			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottomWide", 2 * -bottom_panel_margin);
-
-			// Used in the action map editor.
-			p_theme->set_type_variation("NoBorderActionEditor", "NoBorderHorizontalWide");
-			p_theme->set_constant("margin_bottom", "NoBorderActionEditor", -bottom_panel_margin);
 		}
 
 		// Buttons in material previews.
@@ -2240,6 +2240,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(panel), "ScrollContainerSecondary", style_sidebar);
 			p_theme->set_stylebox(SceneStringName(panel), "TreeSecondary", style_sidebar);
 			p_theme->set_stylebox(SceneStringName(panel), "ItemListSecondary", style_sidebar);
+			p_theme->set_constant("scroll_bar_h_separation", "ItemListSecondary", style_sidebar->get_margin(SIDE_RIGHT));
 			// Use it for EditorDebuggerInspector in StackTrace to keep the default 3-column layout,
 			// as the debugger inspector is too small to be considered a main area.
 			p_theme->set_stylebox(SceneStringName(panel), "EditorDebuggerInspector", style_sidebar);

@@ -448,7 +448,7 @@ void ScriptTextEditor::add_callback(const String &p_function, const PackedString
 	code_editor->get_text_editor()->remove_secondary_carets();
 	code_editor->get_text_editor()->deselect();
 	String code = code_editor->get_text_editor()->get_text();
-	int pos = language->find_function(p_function, code);
+	int32_t pos = language->get_editor_language()->find_function(p_function, code);
 	if (pos == -1) {
 		// Function does not exist, create it at the end of the file.
 		int last_line = code_editor->get_text_editor()->get_line_count() - 1;
@@ -1005,7 +1005,6 @@ void ScriptTextEditor::_update_errors() {
 
 		errors_panel->push_indent(1);
 		errors_panel->push_table(2);
-		String filename = KV.key.get_file();
 		for (const ScriptLanguage::ScriptError &err : KV.value) {
 			Dictionary click_meta;
 			click_meta["path"] = KV.key;

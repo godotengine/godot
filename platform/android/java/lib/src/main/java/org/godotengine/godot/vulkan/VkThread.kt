@@ -243,7 +243,7 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 
 				// Run queued event.
 				if (event != null) {
-					event?.run()
+					event.run()
 					continue
 				}
 

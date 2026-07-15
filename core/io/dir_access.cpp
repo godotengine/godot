@@ -75,39 +75,39 @@ bool DirAccess::drives_are_shortcuts() {
 	return false;
 }
 
-static Error _erase_recursive(DirAccess *da) {
+static Error _erase_recursive(DirAccess *p_dir) {
 	List<String> dirs;
 	List<String> files;
 
-	da->list_dir_begin();
-	String n = da->get_next();
+	p_dir->list_dir_begin();
+	String n = p_dir->get_next();
 	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
-			if (da->current_is_dir() && !da->is_link(n)) {
+			if (p_dir->current_is_dir() && !p_dir->is_link(n)) {
 				dirs.push_back(n);
 			} else {
 				files.push_back(n);
 			}
 		}
 
-		n = da->get_next();
+		n = p_dir->get_next();
 	}
 
-	da->list_dir_end();
+	p_dir->list_dir_end();
 
 	for (const String &E : dirs) {
-		Error err = da->change_dir(E);
+		Error err = p_dir->change_dir(E);
 		if (err == OK) {
-			err = _erase_recursive(da);
+			err = _erase_recursive(p_dir);
 			if (err) {
-				da->change_dir("..");
+				p_dir->change_dir("..");
 				return err;
 			}
-			err = da->change_dir("..");
+			err = p_dir->change_dir("..");
 			if (err) {
 				return err;
 			}
-			err = da->remove(da->get_current_dir().path_join(E));
+			err = p_dir->remove(p_dir->get_current_dir().path_join(E));
 			if (err) {
 				return err;
 			}
@@ -117,7 +117,7 @@ static Error _erase_recursive(DirAccess *da) {
 	}
 
 	for (const String &E : files) {
-		Error err = da->remove(da->get_current_dir().path_join(E));
+		Error err = p_dir->remove(p_dir->get_current_dir().path_join(E));
 		if (err) {
 			return err;
 		}
@@ -330,7 +330,7 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error *r_error) {
 	const String ERROR_COMMON_PREFIX = "Error while creating temporary directory";
 
-	if (!p_prefix.is_valid_filename()) {
+	if (!p_prefix.is_empty() && !p_prefix.is_valid_filename()) {
 		*r_error = ERR_FILE_BAD_PATH;
 		ERR_FAIL_V_MSG(Ref<DirAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
 	}
@@ -490,7 +490,6 @@ public:
 Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int p_chmod_flags, bool p_copy_links) {
 	List<String> dirs;
 
-	String curdir = get_current_dir();
 	list_dir_begin();
 	String n = get_next();
 	while (!n.is_empty()) {

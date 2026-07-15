@@ -218,28 +218,28 @@ void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_form
 	--saver_count;
 }
 
-Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(const String &path) {
+Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(const String &p_path) {
 	for (int i = 0; i < saver_count; ++i) {
-		if (saver[i]->get_script_instance() && saver[i]->get_script_instance()->get_script()->get_path() == path) {
+		if (saver[i]->get_script_instance() && saver[i]->get_script_instance()->get_script()->get_path() == p_path) {
 			return saver[i];
 		}
 	}
 	return Ref<ResourceFormatSaver>();
 }
 
-bool ResourceSaver::add_custom_resource_format_saver(const String &script_path) {
-	if (_find_custom_resource_format_saver(script_path).is_valid()) {
+bool ResourceSaver::add_custom_resource_format_saver(const String &p_script_path) {
+	if (_find_custom_resource_format_saver(p_script_path).is_valid()) {
 		return false;
 	}
 
-	Ref<Resource> res = ResourceLoader::load(script_path);
+	Ref<Resource> res = ResourceLoader::load(p_script_path);
 	ERR_FAIL_COND_V(res.is_null(), false);
 	ERR_FAIL_COND_V(!res->is_class("Script"), false);
 
 	Ref<Script> s = res;
 	StringName ibt = s->get_instance_base_type();
 	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatSaver");
-	ERR_FAIL_COND_V_MSG(!valid_type, false, vformat("Failed to add a custom resource saver, script '%s' does not inherit 'ResourceFormatSaver'.", script_path));
+	ERR_FAIL_COND_V_MSG(!valid_type, false, vformat("Failed to add a custom resource saver, script '%s' does not inherit 'ResourceFormatSaver'.", p_script_path));
 
 	Object *obj = ClassDB::instantiate(ibt);
 	ERR_FAIL_NULL_V_MSG(obj, false, vformat("Failed to add a custom resource saver, cannot instantiate '%s'.", ibt));

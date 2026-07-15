@@ -306,11 +306,11 @@ private:
 
 	void _set_joypad_mapping(Joypad &p_js, int p_map_index);
 
-	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button);
-	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range);
-	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
-	JoyButton _get_output_button(const String &output);
-	JoyAxis _get_output_axis(const String &output);
+	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &p_mapping, JoyButton p_button);
+	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &p_mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range);
+	void _get_mapped_hat_events(const JoyDeviceMapping &p_mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
+	JoyButton _get_output_button(const String &p_output);
+	JoyAxis _get_output_axis(const String &p_output);
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);

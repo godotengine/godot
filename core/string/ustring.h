@@ -106,17 +106,17 @@ constexpr size_t strnlen(const wchar_t *p_str, size_t p_clip_to_len) {
 }
 
 template <typename L, typename R>
-constexpr int64_t str_compare(const L *l_ptr, const R *r_ptr) {
+constexpr int64_t str_compare(const L *p_left, const R *p_right) {
 	while (true) {
-		const char32_t l = *l_ptr;
-		const char32_t r = *r_ptr;
+		const char32_t l = *p_left;
+		const char32_t r = *p_right;
 
 		if (l == 0 || l != r) {
 			return static_cast<int64_t>(l) - static_cast<int64_t>(r);
 		}
 
-		l_ptr++;
-		r_ptr++;
+		p_left++;
+		p_right++;
 	}
 }
 
@@ -261,7 +261,7 @@ using Char16String = CharStringT<char16_t>;
 /*  String                                                               */
 /*************************************************************************/
 
-class [[nodiscard]] String {
+class [[nodiscard]] _WARN_UNUSED_ String {
 	CowData<char32_t> _cowdata;
 	static constexpr char32_t _null = 0;
 	static constexpr char32_t _replacement_char = 0xfffd;
@@ -283,7 +283,7 @@ class [[nodiscard]] String {
 #endif
 	}
 
-	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive) const;
+	bool _base_is_subsequence_of(const String &p_string, bool p_case_insensitive) const;
 	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
 	int _count(const char *p_string, int p_from, int p_to, bool p_case_insensitive) const;
 	String _separate_compound_words() const;
@@ -405,7 +405,7 @@ public:
 	bool is_lowercase() const;
 	Vector<String> bigrams() const;
 	float similarity(const String &p_string) const;
-	String format(const Variant &values, const String &placeholder = "{_}") const;
+	String format(const Variant &p_values, const String &p_placeholder = "{_}") const;
 	String replace_first(const String &p_key, const String &p_with) const;
 	String replace_first(const char *p_key, const char *p_with) const;
 	String replace(const String &p_key, const String &p_with) const;
@@ -428,18 +428,18 @@ public:
 	String trim_prefix(const char *p_prefix) const;
 	String trim_suffix(const String &p_suffix) const;
 	String trim_suffix(const char *p_suffix) const;
-	String lpad(int min_length, const String &character = " ") const;
-	String rpad(int min_length, const String &character = " ") const;
-	String sprintf(const Span<Variant> &values, bool *error) const;
-	String quote(const String &quotechar = "\"") const;
+	String lpad(int p_min_length, const String &p_character = " ") const;
+	String rpad(int p_min_length, const String &p_character = " ") const;
+	String sprintf(const Span<Variant> &p_values, bool *r_error) const;
+	String quote(const String &p_quotechar = "\"") const;
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
 	static String num_scientific(double p_num);
 	static String num_scientific(float p_num);
 	static String num_real(double p_num, bool p_trailing = true);
 	static String num_real(float p_num, bool p_trailing = true);
-	static String num_int64(int64_t p_num, int base = 10, bool capitalize_hex = false);
-	static String num_uint64(uint64_t p_num, int base = 10, bool capitalize_hex = false);
+	static String num_int64(int64_t p_num, int p_base = 10, bool p_capitalize_hex = false);
+	static String num_uint64(uint64_t p_num, int p_base = 10, bool p_capitalize_hex = false);
 	static String chr(char32_t p_char) {
 		String string;
 		string.append_utf32(Span(&p_char, 1));
@@ -488,7 +488,7 @@ public:
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<int> split_ints_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 
-	String join(const Vector<String> &parts) const;
+	String join(const Vector<String> &p_parts) const;
 
 	static char32_t char_uppercase(char32_t p_char);
 	static char32_t char_lowercase(char32_t p_char);
@@ -504,7 +504,7 @@ public:
 	String right(int p_len) const;
 	String indent(const String &p_prefix) const;
 	String dedent() const;
-	String strip_edges(bool left = true, bool right = true) const;
+	String strip_edges(bool p_left = true, bool p_right = true) const;
 	String strip_escapes() const;
 	String lstrip(const String &p_chars) const;
 	String rstrip(const String &p_chars) const;

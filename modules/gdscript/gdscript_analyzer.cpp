@@ -1880,7 +1880,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			if (p_function->return_type == nullptr) {
 				// GH-118877. We decided to make an exception to maintain compatibility, since the problem can only be detected at runtime.
 #ifdef DISABLE_DEPRECATED
-				p_function->set_datatype(parent_return_type);
+				p_function->return_type_constraint = parent_return_type;
 #else // !DISABLE_DEPRECATED
 				if (function_name == GDScriptLanguage::get_singleton()->strings._get_property_list && method_flags.has_flag(METHOD_FLAG_VIRTUAL)) {
 					GDScriptParser::DataType array_type;
@@ -2578,9 +2578,9 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 			p_return->void_return = true;
 			const GDScriptParser::DataType &return_type = p_return->return_value->type_constraint;
 			if (is_call && !return_type.is_hard_type()) {
+#ifdef DEBUG_ENABLED
 				String function_name = parser->current_function->identifier ? parser->current_function->identifier->name.string() : String("<anonymous function>");
 				String called_function_name = static_cast<GDScriptParser::CallNode *>(p_return->return_value)->function_name.string();
-#ifdef DEBUG_ENABLED
 				parser->push_warning(p_return, GDScriptWarning::UNSAFE_VOID_RETURN, function_name, called_function_name);
 #endif // DEBUG_ENABLED
 				mark_node_unsafe(p_return);

@@ -103,8 +103,8 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	Rect2i _get_used_rect_bind_compat_78328();
-	void _set_quadrant_size_compat_81070(int p_quadrant_size);
-	int _get_quadrant_size_compat_81070() const;
+	void _set_quadrant_size_bind_compat_81070(int p_quadrant_size);
+	int _get_quadrant_size_bind_compat_81070() const;
 	VisibilityMode _get_collision_visibility_mode_bind_compat_87115();
 #ifndef NAVIGATION_2D_DISABLED
 	VisibilityMode _get_navigation_visibility_mode_bind_compat_87115();

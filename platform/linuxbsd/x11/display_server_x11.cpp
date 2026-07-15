@@ -3241,7 +3241,7 @@ void DisplayServerX11::_update_window_icon(WindowData &p_wd) {
 			const uint8_t *r = w_icon->get_data().ptr();
 
 			long *wr = &pd.write[2];
-			uint8_t const *pr = r;
+			const uint8_t *pr = r;
 
 			for (int i = 0; i < w * h; i++) {
 				long v = 0;

@@ -346,7 +346,7 @@ void VehicleCollisionTesterCastCylinder::PredictContactProperties(PhysicsSystem 
 		// Get the support point of this normal in local space of the cylinder
 		// See CylinderShape::Cylinder::GetSupport
 		float x = inverse_local_normal.GetX(), y = inverse_local_normal.GetY(), z = inverse_local_normal.GetZ();
-		float o = sqrt(Square(x) + Square(z));
+		float o = Sqrt(Square(x) + Square(z));
 		Vec3 support_point;
 		if (o > 0.0f)
 			support_point = Vec3((radius * x) / o, Sign(y) * half_width, (radius * z) / o);
