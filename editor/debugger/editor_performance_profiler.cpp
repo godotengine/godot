@@ -31,13 +31,13 @@
 #include "editor_performance_profiler.h"
 
 #include "core/object/callable_mp.h"
+#include "core/profiling/performance.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "main/performance.h"
 
 EditorPerformanceProfiler::Monitor::Monitor(const String &p_name, const String &p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
 	type = p_type;
