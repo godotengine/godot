@@ -304,9 +304,9 @@ layout(set = 0, binding = 16) uniform texture2D best_fit_normal_texture;
 
 layout(set = 0, binding = 17) uniform texture2D dfg;
 
-layout(set = 0, binding = 18) uniform sampler2D ltc_lut1;
+layout(set = 0, binding = 18) uniform texture2D ltc_lut1;
 
-layout(set = 0, binding = 19) uniform sampler2D ltc_lut2;
+layout(set = 0, binding = 19) uniform texture2D ltc_lut2;
 
 layout(set = 0, binding = 20) uniform texture2D area_light_atlas;
 /* Set 1: Render Pass (changes per render pass) */
