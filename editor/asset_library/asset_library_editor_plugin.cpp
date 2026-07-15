@@ -1261,8 +1261,6 @@ void EditorAssetLibrary::_image_update(void *p_image_queue) {
 			parsed_image = Image::_webp_mem_loader_func(r, len);
 		} else if ((memcmp(&r[0], &bmp_signature[0], 2) == 0) && Image::_bmp_mem_loader_func) {
 			parsed_image = Image::_bmp_mem_loader_func(r, len);
-		} else if (Image::_svg_scalable_mem_loader_func) {
-			parsed_image = Image::_svg_scalable_mem_loader_func(r, len, 1.0);
 		}
 
 		if (parsed_image.is_null()) {
