@@ -278,7 +278,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		// Add the game menu bar.
 		setupGameMenuBar()
 
-		if (!isLargeScreen) {
+		if (!isLargeScreen && !isNativeXRDevice(applicationContext) && godot?.isEditorHint() == true) {
 			// Lock the editor screen orientation to landscape on small screens.
 			changingOrientationAllowed = true
 			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
