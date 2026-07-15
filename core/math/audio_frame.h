@@ -54,16 +54,17 @@ struct AudioFrame {
 	float left = 0.0f;
 	float right = 0.0f;
 
-	_ALWAYS_INLINE_ const float &operator[](int p_idx) const {
-		// The pointer math below assumes that the two floats are placed back-to-back, like in an array.
-		// This is always true in practice, but technically not guaranteed. So we safety-check it here.
-		static_assert(offsetof(AudioFrame, left) == 0);
-		static_assert(offsetof(AudioFrame, right) == sizeof(float));
+	constexpr float &operator[](int p_idx) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(AudioFrame, left) == 0 * sizeof(float));
+		static_assert(offsetof(AudioFrame, right) == 1 * sizeof(float));
+		static_assert(sizeof(AudioFrame) == 2 * sizeof(float));
 
 		DEV_ASSERT((unsigned int)p_idx < 2);
 		return (&left)[p_idx];
 	}
-	_ALWAYS_INLINE_ float &operator[](int p_idx) {
+	constexpr const float &operator[](int p_idx) const {
 		DEV_ASSERT((unsigned int)p_idx < 2);
 		return (&left)[p_idx];
 	}
