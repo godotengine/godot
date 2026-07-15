@@ -1368,19 +1368,6 @@ void GDScriptByteCodeGenerator::write_call_self_async(const Address &p_target, c
 	ct.cleanup();
 }
 
-void GDScriptByteCodeGenerator::write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) {
-	append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
-	for (int i = 0; i < p_arguments.size(); i++) {
-		append(p_arguments[i]);
-	}
-	append(p_base);
-	CallTarget ct = get_call_target(p_target);
-	append(ct.target);
-	append(p_arguments.size());
-	append(p_function_name);
-	ct.cleanup();
-}
-
 void GDScriptByteCodeGenerator::write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures, bool p_use_self) {
 	append_opcode_and_argcount(p_use_self ? GDScriptFunction::OPCODE_CREATE_SELF_LAMBDA : GDScriptFunction::OPCODE_CREATE_LAMBDA, 1 + p_captures.size());
 	for (int i = 0; i < p_captures.size(); i++) {
