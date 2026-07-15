@@ -1274,7 +1274,7 @@ void EditorSelection::_node_removed(Node *p_node) {
 	}
 
 	Object *meta = selection[nid];
-	memdelete_notnull(meta);
+	memdelete(meta);
 	selection.erase(nid);
 	changed = true;
 	node_list_changed = true;
@@ -1312,7 +1312,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	changed = true;
 	node_list_changed = true;
 	Object *meta = selection[nid];
-	memdelete_notnull(meta);
+	memdelete(meta);
 	selection.erase(nid);
 
 	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));

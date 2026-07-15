@@ -2383,7 +2383,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 }
 
 void EditorNode::_close_save_scene_progress() {
-	memdelete_notnull(save_scene_progress);
+	memdelete(save_scene_progress);
 	save_scene_progress = nullptr;
 }
 
@@ -8268,7 +8268,7 @@ void EditorNode::_update_main_menu_type() {
 		memdelete(main_menu_button);
 		main_menu_button = nullptr;
 	}
-	memdelete_notnull(menu_btn_spacer);
+	memdelete(menu_btn_spacer);
 	menu_btn_spacer = nullptr;
 
 	// Create new menu.
