@@ -4351,7 +4351,7 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 			ScriptLanguage *l = ScriptServer::get_language(i);
 			if (l->get_type() == existing->get_class()) {
 				String name = l->get_global_class_name(existing->get_path());
-				if (ScriptServer::is_global_class(name) && EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
+				if (ScriptServer::is_global_class(name) && EDITOR_GET("docks/scene_tree/derive_script_globals_by_name").operator bool()) {
 					inherits = name;
 				} else if (l->can_inherit_from_file()) {
 					inherits = "\"" + existing->get_path() + "\"";
