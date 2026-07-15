@@ -975,7 +975,6 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
 	Array arr = p_existing->surface_get_blend_shape_arrays(p_surface);
-	Array blend_shape_names;
 	int32_t shape_idx = -1;
 	for (int32_t i = 0; i < p_existing->get_blend_shape_count(); i++) {
 		String name = p_existing->get_blend_shape_name(i);

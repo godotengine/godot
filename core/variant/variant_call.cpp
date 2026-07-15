@@ -572,7 +572,6 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*p_method)(T *, P...), void *p_base,
 			Callable::CallError ce; \
 			m_method_ptr(&base, vars_ptrs.ptr(), p_argcount, ret, ce); \
 			if (m_has_return) { \
-				m_return_type r = ret; \
 				PtrToArg<m_return_type>::encode(ret, r_ret); \
 			} \
 		} \
@@ -2649,9 +2648,9 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, back, sarray(), varray());
 	bind_method(Array, pick_random, sarray(), varray());
 	bind_method(Array, find, sarray("what", "from"), varray(0));
-	bind_method(Array, find_custom, sarray("method", "from"), varray(0));
+	bind_method(Array, find_custom, sarray("callable", "from"), varray(0));
 	bind_method(Array, rfind, sarray("what", "from"), varray(-1));
-	bind_method(Array, rfind_custom, sarray("method", "from"), varray(-1));
+	bind_method(Array, rfind_custom, sarray("callable", "from"), varray(-1));
 	bind_method(Array, count, sarray("value"), varray());
 	bind_method(Array, has, sarray("value"), varray());
 	bind_method(Array, pop_back, sarray(), varray());
@@ -2666,11 +2665,11 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, duplicate, sarray("deep"), varray(false));
 	bind_method(Array, duplicate_deep, sarray("deep_subresources_mode"), varray(RESOURCE_DEEP_DUPLICATE_INTERNAL));
 	bind_method(Array, slice, sarray("begin", "end", "step", "deep"), varray(INT_MAX, 1, false));
-	bind_method(Array, filter, sarray("method"), varray());
-	bind_method(Array, map, sarray("method"), varray());
-	bind_method(Array, reduce, sarray("method", "accum"), varray(Variant()));
-	bind_method(Array, any, sarray("method"), varray());
-	bind_method(Array, all, sarray("method"), varray());
+	bind_method(Array, filter, sarray("callable"), varray());
+	bind_method(Array, map, sarray("callable"), varray());
+	bind_method(Array, reduce, sarray("callable", "accum"), varray(Variant()));
+	bind_method(Array, any, sarray("callable"), varray());
+	bind_method(Array, all, sarray("callable"), varray());
 	bind_method(Array, max, sarray(), varray());
 	bind_method(Array, min, sarray(), varray());
 	bind_method(Array, is_typed, sarray(), varray());
