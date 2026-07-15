@@ -43,7 +43,7 @@ struct ContainerTypeValidate;
 struct DictionaryPrivate;
 struct StringLikeVariantComparator;
 
-class Dictionary {
+class _WARN_UNUSED_ Dictionary {
 	mutable DictionaryPrivate *_p;
 
 	void _ref(const Dictionary &p_from) const;

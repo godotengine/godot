@@ -44,7 +44,7 @@ class Variant;
 struct ArrayPrivate;
 struct ContainerType;
 
-class Array {
+class _WARN_UNUSED_ Array {
 	mutable ArrayPrivate *_p;
 	void _ref(const Array &p_from) const;
 	void _unref() const;
