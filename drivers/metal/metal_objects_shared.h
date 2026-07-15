@@ -97,6 +97,26 @@ struct ClearAttKey {
 	}
 };
 
+#pragma mark - Cached Buffer
+
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDCachedBuffer {
+	MTL::Buffer *buffer = nullptr;
+	void *contents = nullptr;
+	uint64_t gpu_address = 0;
+	NS::UInteger length = 0;
+
+	MDCachedBuffer() = default;
+
+	explicit MDCachedBuffer(MTL::Buffer *p_buffer) :
+			buffer(p_buffer),
+			contents(p_buffer->contents()),
+			length(p_buffer->length()) {
+		if (__builtin_available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+			gpu_address = p_buffer->gpuAddress();
+		}
+	}
+};
+
 #pragma mark - Ring Buffer
 
 /// A ring buffer backed by MTLBuffer instances for transient GPU allocations.
@@ -120,6 +140,7 @@ public:
 private:
 	MTL::Device *device = nullptr;
 	LocalVector<MTL::Buffer *> buffers;
+	LocalVector<MDCachedBuffer> cached_buffers;
 	LocalVector<uint32_t> heads;
 	uint32_t current_segment = 0;
 	uint32_t buffer_size = DEFAULT_BUFFER_SIZE;
@@ -128,6 +149,7 @@ private:
 	_FORCE_INLINE_ uint32_t alloc_segment() {
 		MTL::Buffer *buffer = device->newBuffer(buffer_size, MTL::ResourceStorageModeShared | MTL::ResourceHazardTrackingModeUntracked);
 		buffers.push_back(buffer);
+		cached_buffers.push_back(MDCachedBuffer(buffer));
 		heads.push_back(0);
 		changed = true;
 
@@ -177,14 +199,12 @@ public:
 			}
 		}
 
-		MTL::Buffer *buffer = buffers[current_segment];
+		MDCachedBuffer &cb = cached_buffers[current_segment];
 		Allocation alloc;
-		alloc.buffer = buffer;
+		alloc.buffer = cb.buffer;
 		alloc.offset = aligned_head;
-		alloc.ptr = static_cast<uint8_t *>(buffer->contents()) + aligned_head;
-		if (__builtin_available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
-			alloc.gpu_address = buffer->gpuAddress() + aligned_head;
-		}
+		alloc.ptr = static_cast<uint8_t *>(cb.contents) + aligned_head;
+		alloc.gpu_address = cb.gpu_address + aligned_head;
 		heads[current_segment] = aligned_head + p_size;
 
 		return alloc;
@@ -284,40 +304,44 @@ _FORCE_INLINE_ static uint32_t to_index(RDD::ShaderStage p_s) {
 }
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDFrameBuffer {
+public:
+	Size2i size;
+
+	virtual MTL::Texture *get_texture(uint32_t p_idx) const = 0;
+	virtual bool has_texture(uint32_t p_idx) const = 0;
+
+	virtual ~MDFrameBuffer() = default;
+};
+
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDFrameBufferTexture : public MDFrameBuffer {
 	Vector<MTL::Texture *> textures;
 
 public:
-	Size2i size;
-	MDFrameBuffer(Vector<MTL::Texture *> p_textures, Size2i p_size) :
-			textures(p_textures), size(p_size) {}
-	MDFrameBuffer() {}
+	MDFrameBufferTexture(Vector<MTL::Texture *> p_textures, Size2i p_size) {
+		textures = p_textures;
+		size = p_size;
+	}
+	MDFrameBufferTexture() {}
 
-	/// Returns the texture at the given index.
-	_ALWAYS_INLINE_ MTL::Texture *get_texture(uint32_t p_idx) const {
+	MTL::Texture *get_texture(uint32_t p_idx) const override {
 		return textures[p_idx];
 	}
 
-	/// Returns true if the texture at the given index is not nil.
-	_ALWAYS_INLINE_ bool has_texture(uint32_t p_idx) const {
+	bool has_texture(uint32_t p_idx) const override {
 		return textures[p_idx] != nullptr;
 	}
 
-	/// Set the texture at the given index.
-	_ALWAYS_INLINE_ void set_texture(uint32_t p_idx, MTL::Texture *p_texture) {
+	void set_texture(uint32_t p_idx, MTL::Texture *p_texture) {
 		textures.write[p_idx] = p_texture;
 	}
 
-	/// Unset or nil the texture at the given index.
-	_ALWAYS_INLINE_ void unset_texture(uint32_t p_idx) {
+	void unset_texture(uint32_t p_idx) {
 		textures.write[p_idx] = nullptr;
 	}
 
-	/// Resizes buffers to the specified size.
-	_ALWAYS_INLINE_ void set_texture_count(uint32_t p_size) {
+	void set_texture_count(uint32_t p_size) {
 		textures.resize(p_size);
 	}
-
-	virtual ~MDFrameBuffer() = default;
 };
 
 template <>
@@ -478,14 +502,14 @@ public:
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDRenderPass {
 public:
-	Vector<MDAttachment> attachments;
-	Vector<MDSubpass> subpasses;
+	LocalVector<MDAttachment> attachments;
+	LocalVector<MDSubpass> subpasses;
 
 	uint32_t get_sample_count() const {
 		return attachments.is_empty() ? 1 : attachments[0].samples;
 	}
 
-	MDRenderPass(Vector<MDAttachment> &p_attachments, Vector<MDSubpass> &p_subpasses);
+	MDRenderPass(LocalVector<MDAttachment> &&p_attachments, LocalVector<MDSubpass> &&p_subpasses);
 };
 
 #pragma mark - Command Buffer Helpers
@@ -606,10 +630,11 @@ GODOT_CLANG_WARNING_POP
 #pragma mark - Command Buffer Base
 
 enum class MDCommandBufferStateType {
-	None,
-	Render,
-	Compute,
-	Blit, // Only used by Metal 3
+	None, // No encoder is currently active.
+	Render, // A render pass encoder opened by the regular render-pass flow is active.
+	InlineRender, // A one-off render encoder for clear/resolve helper commands is active.
+	Compute, // A compute encoder is active.
+	Blit, // A blit-style encoder is active.
 };
 
 /// Base struct for render state shared between MTL3 and MTL4 implementations.
@@ -646,16 +671,29 @@ protected:
 
 	MDCommandBufferStateType type = MDCommandBufferStateType::None;
 
-	uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE];
+	uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE] = {};
 	uint32_t push_constant_data_len = 0;
 	uint32_t push_constant_binding = UINT32_MAX;
 
 	::RenderingDeviceDriverMetal *device_driver = nullptr;
 
+	// Tracks where each begin_label() pushed its debug group, so that end_label()
+	// can pop from the matching place. When an encoder is closed it pops every
+	// label still on it (keeping the encoder balanced) and flags those entries
+	// stale so the matching end_label() consumes the stack as a no-op.
+	struct LabelStackEntry {
+		MDCommandBufferStateType type;
+		bool stale;
+	};
+	LocalVector<LabelStackEntry> label_stack;
+
 	void release_resources();
 
 	/// Called when push constants are modified to mark the appropriate dirty flags.
 	virtual void mark_push_constants_dirty() = 0;
+	virtual void _begin() = 0;
+	virtual void _commit() = 0;
+	virtual void _end() = 0;
 
 	/// Returns a reference to the render state base for viewport/scissor/blend operations.
 	virtual RenderStateBase &get_render_state_base() = 0;
@@ -677,11 +715,11 @@ protected:
 	void _render_clear_render_area();
 
 public:
-	virtual ~MDCommandBufferBase() { release_resources(); }
+	virtual ~MDCommandBufferBase();
 
-	virtual void begin() = 0;
-	virtual void commit() = 0;
-	virtual void end() = 0;
+	void begin();
+	void commit();
+	void end();
 
 	virtual void bind_pipeline(RDD::PipelineID p_pipeline) = 0;
 	void encode_push_constant_data(RDD::ShaderID p_shader, VectorView<uint32_t> p_data);
@@ -723,6 +761,8 @@ public:
 
 #pragma mark - Compute Commands
 
+	virtual void compute_begin_pass() = 0;
+	virtual void compute_end_pass() = 0;
 	virtual void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) = 0;
 	virtual void compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
 	virtual void compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset) = 0;
@@ -785,6 +825,8 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) UniformI
 				return slot;
 			case IndexType::ARG:
 				return arg_buffer;
+			default:
+				CRASH_NOW_MSG("Invalid IndexType");
 		}
 	}
 };
@@ -999,8 +1041,6 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDRenderP
 public:
 	NS::SharedPtr<MTL::RenderPipelineState> state;
 	NS::SharedPtr<MTL::DepthStencilState> depth_stencil;
-	uint32_t push_constant_size = 0;
-	uint32_t push_constant_stages_mask = 0;
 	SampleCount sample_count = SampleCount1;
 
 	struct {
@@ -1073,7 +1113,7 @@ public:
 
 	MDRenderPipeline() :
 			MDPipeline(MDPipelineType::Render) {}
-	~MDRenderPipeline() final = default;
+	~MDRenderPipeline() override = default;
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDComputePipeline final : public MDPipeline {
@@ -1087,5 +1127,5 @@ public:
 
 	explicit MDComputePipeline(NS::SharedPtr<MTL::ComputePipelineState> p_state) :
 			MDPipeline(MDPipelineType::Compute), state(std::move(p_state)) {}
-	~MDComputePipeline() final = default;
+	~MDComputePipeline() override = default;
 };

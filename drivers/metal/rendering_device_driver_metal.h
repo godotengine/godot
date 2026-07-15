@@ -65,6 +65,12 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	template <typename T>
 	using Result = std::variant<T, Error>;
 
+public:
+	enum SyncMode {
+		HazardTracking = 0,
+		Barriers,
+	};
+
 #pragma mark - Generic
 
 protected:
@@ -104,9 +110,6 @@ protected:
 	Mutex copy_queue_mutex;
 	/// A command queue used for internal copy operations.
 	NS::SharedPtr<MTL::CommandQueue> copy_queue;
-	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-	NS::SharedPtr<MTL::ResidencySet> copy_queue_rs;
-	GODOT_CLANG_WARNING_POP
 	// If this is not nullptr, there are pending copy operations.
 	NS::SharedPtr<MTL::CommandBuffer> copy_queue_command_buffer;
 	NS::SharedPtr<MTL::BlitCommandEncoder> copy_queue_blit_encoder;
@@ -160,7 +163,7 @@ protected:
 	NS::SharedPtr<MTL::ResidencySet> main_residency_set;
 	GODOT_CLANG_WARNING_POP
 
-	bool use_barriers = false;
+	SyncMode sync_mode = HazardTracking;
 	MTL::ResourceOptions base_hazard_tracking = MTL::ResourceHazardTrackingModeTracked;
 
 	virtual Error _create_device();
@@ -451,6 +454,9 @@ public:
 
 	// ----- COMMANDS -----
 
+	virtual void command_begin_compute_pass(CommandBufferID p_cmd_buffer) override final;
+	virtual void command_end_compute_pass(CommandBufferID p_cmd_buffer) override final;
+
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) override final;
 	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override final;
@@ -493,19 +499,20 @@ public:
 	// ----- TIMESTAMP -----
 
 	// Basic.
-	virtual QueryPoolID timestamp_query_pool_create(uint32_t p_query_count) override final;
-	virtual void timestamp_query_pool_free(QueryPoolID p_pool_id) override final;
-	virtual void timestamp_query_pool_get_results(QueryPoolID p_pool_id, uint32_t p_query_count, uint64_t *r_results) override final;
-	virtual uint64_t timestamp_query_result_to_time(uint64_t p_result) override final;
+	virtual QueryPoolID timestamp_query_pool_create(uint32_t p_query_count) override;
+	virtual void timestamp_query_pool_free(QueryPoolID p_pool_id) override;
+	virtual void timestamp_query_pool_get_results(QueryPoolID p_pool_id, uint32_t p_query_count, uint64_t *r_results) override;
+	virtual uint64_t timestamp_query_result_to_time(uint64_t p_result) override;
 
 	// Commands.
-	virtual void command_timestamp_query_pool_reset(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_query_count) override final;
-	virtual void command_timestamp_write(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_index) override final;
+	virtual void command_timestamp_query_pool_reset(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_query_count) override;
+	virtual void command_timestamp_write(CommandBufferID p_cmd_buffer, QueryPoolID p_pool_id, uint32_t p_index) override;
 
 #pragma mark - Labels
 
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) override final;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) override final;
+	virtual void command_group_end(CommandBufferID p_cmd_buffer) override final;
 
 #pragma mark - Debug
 
