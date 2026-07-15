@@ -451,14 +451,18 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 
 		Ref<PackedScene> scene = scenes_collection_source->get_scene_tile_scene(scene_id);
 
+		Dictionary custom_metadata;
+		custom_metadata["scene_id"] = scene_id;
+
 		int item_index = 0;
 		if (scene.is_valid()) {
+			custom_metadata["path"] = "ID:" + itos(scene->get_instance_id());
 			item_index = scene_tiles_list->add_item(vformat("%s (Path: %s, ID: %d)", scene->get_path().get_file().get_basename(), scene->get_path(), scene_id));
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, callable_mp(this, &TileMapLayerEditorTilesPlugin::_scene_thumbnail_done).bind(i));
 		} else {
 			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), tiles_bottom_panel->get_editor_theme_icon(SNAME("PackedScene")));
 		}
-		scene_tiles_list->set_item_metadata(item_index, scene_id);
+		scene_tiles_list->set_item_metadata(item_index, custom_metadata);
 
 		// Check if in selection.
 		if (tile_set_selection.has(TileMapCell(source_id, Vector2i(), scene_id))) {
@@ -476,9 +480,16 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 }
 
 void TileMapLayerEditorTilesPlugin::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index) {
-	if (p_index >= 0 && p_index < scene_tiles_list->get_item_count()) {
-		scene_tiles_list->set_item_icon(p_index, p_preview);
+	if (p_index < 0 && p_index >= scene_tiles_list->get_item_count()) {
+		return;
 	}
+
+	Dictionary custom_metadata = scene_tiles_list->get_item_metadata(p_index);
+	if (unlikely(custom_metadata.get("path", String()) != p_path)) {
+		return;
+	}
+
+	scene_tiles_list->set_item_icon(p_index, p_preview);
 }
 
 void TileMapLayerEditorTilesPlugin::_scenes_list_multi_selected(int p_index, bool p_selected) {
@@ -493,7 +504,8 @@ void TileMapLayerEditorTilesPlugin::_scenes_list_multi_selected(int p_index, boo
 	}
 
 	// Add or remove the Tile form the selection.
-	int scene_id = scene_tiles_list->get_item_metadata(p_index);
+	Dictionary custom_metadata = scene_tiles_list->get_item_metadata(p_index);
+	int scene_id = custom_metadata["scene_id"];
 	int source_id = sources_list->get_item_metadata(sources_list->get_current());
 	TileSetSource *source = *tile_set->get_source(source_id);
 	TileSetScenesCollectionSource *scenes_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
