@@ -14,7 +14,8 @@ def get_name():
 
 
 def can_build():
-    if sys.platform == "darwin" or ("OSXCROSS_IOS" in os.environ):
+    # OSXCROSS_IOS kept for compatibility with previous build-containers.
+    if sys.platform == "darwin" or "APPLE_LLVM_CROSS" in os.environ or "OSXCROSS_IOS" in os.environ:
         return True
 
     return False

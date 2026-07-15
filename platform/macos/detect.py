@@ -99,10 +99,6 @@ def configure(env: "SConsEnvironment"):
 
     ## Compiler configuration
 
-    # Save this in environment for use by other modules
-    if "OSXCROSS_ROOT" in os.environ:
-        env["osxcross"] = True
-
     # CPU architecture.
     if env["arch"] == "arm64":
         print("Building for macOS 13.0+.")
@@ -133,7 +129,7 @@ def configure(env: "SConsEnvironment"):
     if ccache_path != "":
         ccache_path = ccache_path + " "
 
-    if "osxcross" in env:  # osxcross toolchain (cctools-port wrappers)
+    if "OSXCROSS_ROOT" in os.environ:  # osxcross toolchain (cctools-port wrappers)
         root = os.environ.get("OSXCROSS_ROOT", "")
         if env["arch"] == "arm64":
             basecmd = root + "/target/bin/arm64-apple-" + env["osxcross_sdk"] + "-"
