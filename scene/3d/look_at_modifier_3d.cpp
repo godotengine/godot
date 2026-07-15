@@ -61,7 +61,7 @@ void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if ((!use_angle_limitation &&
-				(p_property.name == "symmetry_limitation" || p_property.name.ends_with("limit_angle") || p_property.name.ends_with("damp_threshold"))) ||
+				(p_property.name == "symmetry_limitation" || p_property.name == "use_rest_for_limitation" || p_property.name.ends_with("limit_angle") || p_property.name.ends_with("damp_threshold"))) ||
 			(!use_secondary_rotation && p_property.name.begins_with("secondary_")) ||
 			(!symmetry_limitation && (p_property.name == "primary_limit_angle" || p_property.name == "primary_damp_threshold" || p_property.name == "secondary_limit_angle" || p_property.name == "secondary_damp_threshold")) ||
 			(symmetry_limitation && (p_property.name.begins_with("primary_positive") || p_property.name.begins_with("primary_negative") || p_property.name.begins_with("secondary_positive") || (p_property.name.begins_with("secondary_negative"))))) {
@@ -288,6 +288,14 @@ bool LookAtModifier3D::is_limitation_symmetry() const {
 	return symmetry_limitation;
 }
 
+void LookAtModifier3D::set_use_rest_for_limitation(bool p_enabled) {
+	use_rest_for_limitation = p_enabled;
+}
+
+bool LookAtModifier3D::is_using_rest_for_limitation() const {
+	return use_rest_for_limitation;
+}
+
 void LookAtModifier3D::set_primary_limit_angle(float p_angle) {
 	primary_limit_angle = p_angle;
 }
@@ -440,6 +448,8 @@ void LookAtModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_using_angle_limitation"), &LookAtModifier3D::is_using_angle_limitation);
 	ClassDB::bind_method(D_METHOD("set_symmetry_limitation", "enabled"), &LookAtModifier3D::set_symmetry_limitation);
 	ClassDB::bind_method(D_METHOD("is_limitation_symmetry"), &LookAtModifier3D::is_limitation_symmetry);
+	ClassDB::bind_method(D_METHOD("set_use_rest_for_limitation", "enabled"), &LookAtModifier3D::set_use_rest_for_limitation);
+	ClassDB::bind_method(D_METHOD("is_using_rest_for_limitation"), &LookAtModifier3D::is_using_rest_for_limitation);
 
 	ClassDB::bind_method(D_METHOD("set_primary_limit_angle", "angle"), &LookAtModifier3D::set_primary_limit_angle);
 	ClassDB::bind_method(D_METHOD("get_primary_limit_angle"), &LookAtModifier3D::get_primary_limit_angle);
@@ -497,6 +507,7 @@ void LookAtModifier3D::_bind_methods() {
 
 	ADD_GROUP("Angle Limitation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_angle_limitation"), "set_use_angle_limitation", "is_using_angle_limitation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_rest_for_limitation"), "set_use_rest_for_limitation", "is_using_rest_for_limitation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symmetry_limitation"), "set_symmetry_limitation", "is_limitation_symmetry");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "primary_limit_angle", PROPERTY_HINT_RANGE, "0,360,0.01,radians_as_degrees"), "set_primary_limit_angle", "get_primary_limit_angle");
@@ -542,6 +553,15 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 	is_within_limitations = true;
 	Vector3 prev_forward_vector = forward_vector;
 	Quaternion destination;
+	Quaternion interpolation_rest = bone_rest.basis.get_rotation_quaternion();
+	Quaternion bone_rest_rotation;
+	Quaternion current_twist;
+	if (use_rest_for_limitation) {
+		bone_rest_rotation = skeleton->get_bone_rest(bone).basis.get_rotation_quaternion();
+		Vector3 forward_axis_vector = get_vector_from_bone_axis(forward_axis);
+		Quaternion pose_from_rest = (bone_rest_rotation.inverse() * bone_rest.basis.get_rotation_quaternion()).normalized();
+		current_twist = Quaternion(forward_axis_vector, get_roll_angle(pose_from_rest, forward_axis_vector));
+	}
 	Node3D *target = Object::cast_to<Node3D>(get_node_or_null(target_node));
 	if (!target) {
 		destination = skeleton->get_bone_pose_rotation(bone);
@@ -564,6 +584,12 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 		if (forward_vector_nrm.abs().is_equal_approx(get_vector_from_axis(primary_rotation_axis))) {
 			destination = skeleton->get_bone_pose_rotation(bone);
 			forward_vector = Vector3(0, 0, 0); // The zero-vector to be used for checking in the line immediately below to avoid animation glitch.
+		} else if (use_rest_for_limitation) {
+			Transform3D rest_transform = bone_rest;
+			rest_transform.basis = Basis(bone_rest_rotation);
+			destination = (look_at_with_axes(rest_transform).basis.get_rotation_quaternion() * current_twist).normalized();
+			forward_vector = bone_rest_rotation.xform_inv(forward_vector_nrm);
+			interpolation_rest = bone_rest_rotation * current_twist;
 		} else {
 			destination = look_at_with_axes(bone_rest).basis.get_rotation_quaternion();
 			forward_vector = bone_rest.basis.xform_inv(forward_vector_nrm); // Forward vector in the "current" bone rest.
@@ -601,18 +627,20 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 	// Do time-based interpolation.
 	if (remaining > 0) {
 		remaining = MAX(0, remaining - time_step * p_delta);
+		Quaternion from = from_q * from_twist.inverse() * current_twist;
 		if (is_flippable) {
 			// Interpolate through the rest same as AnimationTree blending for preventing to penetrate the bone into the body.
-			Quaternion rest = bone_rest.basis.get_rotation_quaternion();
+			Quaternion rest = interpolation_rest;
 			float weight = Tween::run_equation(transition_type, ease_type, 1 - remaining, 0.0, 1.0, 1.0);
-			destination = Animation::interpolate_via_rest(Animation::interpolate_via_rest(rest, from_q, 1 - weight, rest), destination, weight, rest);
+			destination = Animation::interpolate_via_rest(Animation::interpolate_via_rest(rest, from, 1 - weight, rest), destination, weight, rest);
 		} else {
-			destination = from_q.slerp(destination, Tween::run_equation(transition_type, ease_type, 1 - remaining, 0.0, 1.0, 1.0));
+			destination = from.slerp(destination, Tween::run_equation(transition_type, ease_type, 1 - remaining, 0.0, 1.0, 1.0));
 		}
 	}
 
 	skeleton->set_bone_pose_rotation(bone, destination);
 	prev_q = destination;
+	prev_twist = current_twist;
 }
 
 bool LookAtModifier3D::is_intersecting_axis(const Vector3 &p_prev, const Vector3 &p_current, Vector3::Axis p_flipping_axis, Vector3::Axis p_check_axis, bool p_check_plane) const {
@@ -794,5 +822,6 @@ void LookAtModifier3D::init_transition() {
 		return;
 	}
 	from_q = prev_q;
+	from_twist = prev_twist;
 	remaining = 1.0;
 }

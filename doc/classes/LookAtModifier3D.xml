@@ -90,10 +90,10 @@
 		</member>
 		<member name="primary_rotation_axis" type="int" setter="set_primary_rotation_axis" getter="get_primary_rotation_axis" enum="Vector3.Axis" default="1">
 			The axis of the first rotation. This [SkeletonModifier3D] works by compositing the rotation by Euler angles to prevent to rotate the [member forward_axis].
+			[b]Note:[/b] Since [LookAtModifier3D] never modifies the twist when [member use_secondary_rotation] is [code]false[/code] and [member relative] is [code]true[/code], the twist is not fixed even if [member use_rest_for_limitation] is [code]true[/code].
 		</member>
 		<member name="relative" type="bool" setter="set_relative" getter="is_relative" default="false">
 			The relative option. If [code]true[/code], the rotation is applied relative to the pose. If [code]false[/code], the rotation is applied relative to the rest. It means to replace the current pose with the [LookAtModifier3D]'s result.
-			[b]Note:[/b] This option affects the base angle for [member use_angle_limitation]. Since the [LookAtModifier3D] relies strongly on Euler rotation, the axis that determines the limitation and the actual rotation are strongly tied together.
 		</member>
 		<member name="secondary_damp_threshold" type="float" setter="set_secondary_damp_threshold" getter="get_secondary_damp_threshold">
 			The threshold to start damping for [member secondary_limit_angle].
@@ -115,7 +115,7 @@
 		</member>
 		<member name="symmetry_limitation" type="bool" setter="set_symmetry_limitation" getter="is_limitation_symmetry">
 			If [code]true[/code], the limitations are spread from the bone symmetrically.
-			If [code]false[/code], the limitation can be specified separately for each side of the bone rest.
+			If [code]false[/code], the limitation can be specified separately for each side of the reference pose. In here, the reference pose is the bone pose immediately before processing this modifier.
 		</member>
 		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The [NodePath] to the node that is the target for the look at modification. This node is what the modification will rotate the bone to.
@@ -127,6 +127,11 @@
 			If [code]true[/code], limits the amount of rotation. For example, this helps to prevent a character's neck from rotating 360 degrees.
 			[b]Note:[/b] As with [AnimationTree] blending, interpolation is provided that favors [method Skeleton3D.get_bone_rest] or [method Skeleton3D.get_bone_pose] depends on the [member relative] option. This means that interpolation does not select the shortest path in some cases.
 			[b]Note:[/b] Some values for [member transition_type] (such as [constant Tween.TRANS_BACK], [constant Tween.TRANS_ELASTIC], and [constant Tween.TRANS_SPRING]) may exceed the limitations. If interpolation occurs while overshooting the limitations, the result might not respect the bone rest.
+		</member>
+		<member name="use_rest_for_limitation" type="bool" setter="set_use_rest_for_limitation" getter="is_using_rest_for_limitation">
+			If [code]true[/code], the angle limitation and the rotation axes are applied based on the [method Skeleton3D.get_bone_rest].
+			If [code]false[/code], the angle limitation is applied based on the reference pose. In here, the reference pose is the bone pose immediately before processing this modifier.
+			[b]Note:[/b] The limitation is applied to the rotation computed by this modifier. If the reference pose is rotated around the same axis, the limitation behaves as if it also limits the rotation of the reference pose. A rotation that this modifier does not change, such as the twist, is not limited.
 		</member>
 		<member name="use_secondary_rotation" type="bool" setter="set_use_secondary_rotation" getter="is_using_secondary_rotation" default="true">
 			If [code]true[/code], provides rotation by two axes.
