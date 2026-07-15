@@ -1772,20 +1772,10 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	int default_value_count = 0;
 #endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
-	String function_visible_name = function_name;
-	if (function_name == StringName()) {
-		function_visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
-	}
-#endif // DEBUG_ENABLED
-
 	for (int i = 0; i < p_function->parameters.size(); i++) {
 		resolve_parameter(p_function->parameters[i]);
 		method_info.arguments.push_back(p_function->parameters[i]->type_constraint.to_property_info(p_function->parameters[i]->identifier->name));
 #ifdef DEBUG_ENABLED
-		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_") && !p_function->is_abstract) {
-			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->parameters[i]->identifier->name);
-		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter", true);
 #endif // DEBUG_ENABLED
 
@@ -1822,9 +1812,6 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 #endif
 		}
 #ifdef DEBUG_ENABLED
-		if (p_function->rest_parameter->usages == 0 && !String(p_function->rest_parameter->identifier->name).begins_with("_") && !p_function->is_abstract) {
-			parser->push_warning(p_function->rest_parameter->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->rest_parameter->identifier->name);
-		}
 		is_shadowing(p_function->rest_parameter->identifier, "function parameter", true);
 #endif // DEBUG_ENABLED
 	}
@@ -1984,6 +1971,10 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	}
 
 #ifdef DEBUG_ENABLED
+	String function_visible_name = function_name;
+	if (function_name == StringName()) {
+		function_visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
+	}
 	if (p_function->return_type == nullptr) {
 		parser->push_warning(p_function->start_line, p_function->start_column, p_function->header_end_line, p_function->header_end_column, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
 	}
@@ -2030,6 +2021,24 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	static_context = p_function->is_static;
 
 	resolve_suite(p_function->body);
+#ifdef DEBUG_ENABLED
+	const StringName function_name = p_function->identifier != nullptr ? p_function->identifier->name : StringName();
+	String function_visible_name = function_name;
+	if (function_name == StringName()) {
+		function_visible_name = p_is_lambda ? "<anonymous lambda>" : "<unknown function>";
+	}
+
+	for (const GDScriptParser::ParameterNode *const param : p_function->parameters) {
+		if (param->usages == 0 && !String(param->identifier->name).begins_with("_")) {
+			parser->push_warning(param->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, param->identifier->name);
+		}
+	}
+
+	if (p_function->is_vararg() && p_function->rest_parameter->usages == 0 && !String(p_function->rest_parameter->identifier->name).begins_with("_")) {
+		parser->push_warning(p_function->rest_parameter->identifier, GDScriptWarning::UNUSED_PARAMETER, function_visible_name, p_function->rest_parameter->identifier->name);
+	}
+
+#endif //DEBUG_ENABLED
 
 	if (!p_function->return_type_constraint.is_hard_type() && p_function->body->suite_type.is_set()) {
 		// Use the suite inferred type if return isn't explicitly set.
@@ -2117,6 +2126,32 @@ void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite, bool p_
 			p_suite->suite_type.type_source = GDScriptParser::DataType::INFERRED;
 		}
 	}
+#ifdef DEBUG_ENABLED
+	for (const GDScriptParser::SuiteNode::Local &local : p_suite->locals) {
+		int usages = -1;
+		GDScriptWarning::Code warning;
+		const GDScriptParser::Node *node;
+
+		switch (local.type) {
+			case GDScriptParser::SuiteNode::Local::VARIABLE:
+				usages = local.variable->usages;
+				warning = GDScriptWarning::UNUSED_VARIABLE;
+				node = local.variable;
+				break;
+			case GDScriptParser::SuiteNode::Local::CONSTANT:
+				usages = local.constant->usages;
+				warning = GDScriptWarning::UNUSED_LOCAL_CONSTANT;
+				node = local.constant;
+				break;
+			default:
+				continue;
+		}
+		if (usages == 0 && !String(local.name).begins_with("_")) {
+			parser->push_warning(node, warning, local.name);
+		}
+	}
+
+#endif // DEBUG_ENABLED
 }
 
 void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assignable, const char *p_kind) {
@@ -2264,11 +2299,6 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 	resolve_assignable(p_variable, kind);
 
 #ifdef DEBUG_ENABLED
-	if (p_is_local) {
-		if (p_variable->usages == 0 && !String(p_variable->identifier->name).begins_with("_")) {
-			parser->push_warning(p_variable, GDScriptWarning::UNUSED_VARIABLE, p_variable->identifier->name);
-		}
-	}
 	is_shadowing(p_variable->identifier, kind, p_is_local);
 #endif // DEBUG_ENABLED
 }
@@ -2278,11 +2308,6 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 	resolve_assignable(p_constant, kind);
 
 #ifdef DEBUG_ENABLED
-	if (p_is_local) {
-		if (p_constant->usages == 0 && !String(p_constant->identifier->name).begins_with("_")) {
-			parser->push_warning(p_constant, GDScriptWarning::UNUSED_LOCAL_CONSTANT, p_constant->identifier->name);
-		}
-	}
 	is_shadowing(p_constant->identifier, kind, p_is_local);
 #endif // DEBUG_ENABLED
 }
@@ -2471,6 +2496,16 @@ void GDScriptAnalyzer::resolve_match_branch(GDScriptParser::MatchBranchNode *p_m
 	}
 
 	resolve_suite(p_match_branch->block);
+
+#ifdef DEBUG_ENABLED
+	if (p_match_branch->patterns.size() == 1) {
+		for (const KeyValue<StringName, GDScriptParser::IdentifierNode *> &E : p_match_branch->patterns[0]->binds) {
+			if (E.value->usages == 0 && !String(E.value->name).begins_with("_")) {
+				parser->push_warning(E.value, GDScriptWarning::UNUSED_VARIABLE, E.value->name);
+			}
+		}
+	}
+#endif // DEBUG_ENABLED
 }
 
 void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_match_pattern, GDScriptParser::ExpressionNode *p_match_test) {
@@ -2516,9 +2551,6 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 			p_match_pattern->bind->type_constraint = result;
 #ifdef DEBUG_ENABLED
 			is_shadowing(p_match_pattern->bind, "pattern bind", true);
-			if (p_match_pattern->bind->usages == 0 && !String(p_match_pattern->bind->name).begins_with("_")) {
-				parser->push_warning(p_match_pattern->bind, GDScriptWarning::UNUSED_VARIABLE, p_match_pattern->bind->name);
-			}
 #endif // DEBUG_ENABLED
 			break;
 		case GDScriptParser::PatternNode::PT_ARRAY:
@@ -2900,6 +2932,9 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		GDScriptParser::IdentifierNode *id = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee);
 		if (id->source == GDScriptParser::IdentifierNode::LOCAL_VARIABLE && id->variable_source) {
 			id->variable_source->assignments++;
+			id->variable_source->usages--;
+		} else if (id->source == GDScriptParser::IdentifierNode::FUNCTION_PARAMETER && id->parameter_source) {
+			id->parameter_source->usages--;
 		}
 	}
 #endif // DEBUG_ENABLED
@@ -4450,8 +4485,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		case GDScriptParser::IdentifierNode::FUNCTION_PARAMETER:
 			p_identifier->type_constraint = p_identifier->parameter_source->type_constraint;
 			found_source = true;
+			p_identifier->parameter_source->usages++;
 			break;
 		case GDScriptParser::IdentifierNode::LOCAL_CONSTANT:
+			p_identifier->constant_source->usages++;
+			[[fallthrough]];
 		case GDScriptParser::IdentifierNode::MEMBER_CONSTANT:
 			p_identifier->type_constraint = p_identifier->constant_source->type_constraint;
 			p_identifier->is_constant = true;
@@ -4467,10 +4505,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			break;
 		case GDScriptParser::IdentifierNode::MEMBER_VARIABLE:
 			mark_lambda_use_self();
+			[[fallthrough]];
+		case GDScriptParser::IdentifierNode::LOCAL_VARIABLE:
 			p_identifier->variable_source->usages++;
 			[[fallthrough]];
 		case GDScriptParser::IdentifierNode::STATIC_VARIABLE:
-		case GDScriptParser::IdentifierNode::LOCAL_VARIABLE:
 			p_identifier->type_constraint = p_identifier->variable_source->type_constraint;
 			found_source = true;
 #ifdef DEBUG_ENABLED
@@ -4482,12 +4521,14 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		case GDScriptParser::IdentifierNode::LOCAL_ITERATOR:
 			p_identifier->type_constraint = p_identifier->bind_source->type_constraint;
 			found_source = true;
+			p_identifier->bind_source->usages++;
 			break;
 		case GDScriptParser::IdentifierNode::LOCAL_BIND: {
 			GDScriptParser::DataType result = p_identifier->bind_source->type_constraint;
 			result.is_constant = true;
 			p_identifier->type_constraint = result;
 			found_source = true;
+			p_identifier->bind_source->usages++;
 		} break;
 		case GDScriptParser::IdentifierNode::UNDEFINED_SOURCE:
 		case GDScriptParser::IdentifierNode::MEMBER_FUNCTION:
