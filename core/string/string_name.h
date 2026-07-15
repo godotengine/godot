@@ -37,7 +37,7 @@
 
 class Main;
 
-class [[nodiscard]] StringName {
+class [[nodiscard]] _WARN_UNUSED_ StringName {
 	struct Table;
 
 	struct _Data {

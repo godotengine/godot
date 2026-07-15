@@ -91,7 +91,7 @@ typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
 typedef Vector<Vector4> PackedVector4Array;
 
-class Variant {
+class _WARN_UNUSED_ Variant {
 public:
 	// If this changes the table in variant_op must be updated
 	enum Type {

@@ -1690,7 +1690,6 @@ Variant ClassDB::class_get_property(RequiredParam<Object> rp_object, const Strin
 
 Error ClassDB::class_set_property(RequiredParam<Object> rp_object, const StringName &p_property, const Variant &p_value) const {
 	EXTRACT_PARAM_OR_FAIL_V(p_object, rp_object, ERR_INVALID_PARAMETER);
-	Variant ret;
 	bool valid;
 	if (!::ClassDB::set_property(p_object, p_property, p_value, &valid)) {
 		return ERR_UNAVAILABLE;

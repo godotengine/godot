@@ -521,7 +521,6 @@ void GraphEditArranger::_place_block(const StringName &p_v, float p_delta, const
 	}
 
 	StringName predecessor;
-	StringName successor;
 	Vector2 pos = r_node_positions[p_v];
 
 	if (pos.y == FLT_MAX) {

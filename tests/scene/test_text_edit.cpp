@@ -1211,8 +1211,6 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 		SIGNAL_WATCH(text_edit, "lines_edited_from");
 		SIGNAL_WATCH(text_edit, "caret_changed");
 
-		Array lines_edited_args = { { 0, 0 }, { 0, 0 } };
-
 		SUBCASE("[TextEdit] select all") {
 			// Select when there is no text does not select.
 			text_edit->select_all();

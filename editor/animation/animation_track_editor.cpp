@@ -869,8 +869,6 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 						}
 					}
 
-					Variant prev = animation->track_get_key_value(track, key);
-
 					if (!setting) {
 						if (mergeable) {
 							undo_redo->create_action(TTR("Animation Multi Change Call"), UndoRedo::MERGE_ENDS);

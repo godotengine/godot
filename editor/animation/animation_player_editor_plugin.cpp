@@ -1540,8 +1540,6 @@ void AnimationPlayerEditor::_current_animation_changed(const StringName &p_name)
 			}
 		}
 
-		StringName library_name = player->find_animation_library(anim);
-
 		bool animation_is_readonly = EditorNode::get_singleton()->is_resource_read_only(anim);
 
 		track_editor->set_animation(anim, animation_is_readonly);

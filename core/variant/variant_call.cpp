@@ -572,7 +572,6 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*p_method)(T *, P...), void *p_base,
 			Callable::CallError ce; \
 			m_method_ptr(&base, vars_ptrs.ptr(), p_argcount, ret, ce); \
 			if (m_has_return) { \
-				m_return_type r = ret; \
 				PtrToArg<m_return_type>::encode(ret, r_ret); \
 			} \
 		} \

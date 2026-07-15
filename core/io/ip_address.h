@@ -32,7 +32,7 @@
 
 #include "core/string/ustring.h"
 
-struct [[nodiscard]] IPAddress {
+struct [[nodiscard]] _WARN_UNUSED_ IPAddress {
 private:
 	union {
 		uint8_t field8[16];
