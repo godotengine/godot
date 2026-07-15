@@ -130,6 +130,7 @@ protected:
 public:
 	void set_search_text(const String &p_text);
 	void set_replace_text(const String &p_text);
+	void set_folder(const String &folder);
 
 	void set_replace_mode(bool p_replace);
 
@@ -290,7 +291,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void open_dialog(const String &p_initial_text, bool p_replace = false);
+	void open_dialog(const String &p_initial_text, bool p_replace = false, const String &p_folder = "");
 
 	FindInFiles();
 };
