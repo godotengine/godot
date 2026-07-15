@@ -2711,6 +2711,31 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				EditorNode::get_singleton()->run_editor_script(scr);
 			}
 		} break;
+		case FILE_MENU_EXTEND_SCRIPT: {
+			if (p_selected.size() == 1) {
+				const String &fpath = p_selected[0];
+				Ref<Script> scr = ResourceLoader::load(fpath);
+				ERR_FAIL_COND(scr.is_null());
+				String path = scr->get_path();
+				String inherits = "RefCounted";
+				if (scr.is_valid()) {
+					for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+						ScriptLanguage *l = ScriptServer::get_language(i);
+						if (l->get_type() == scr->get_class()) {
+							String name = l->get_global_class_name(scr->get_path());
+							if (ScriptServer::is_global_class(name) && EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
+								inherits = name;
+							} else if (l->can_inherit_from_file()) {
+								inherits = "\"" + scr->get_path() + "\"";
+							}
+							break;
+						}
+					}
+				}
+				make_script_dialog->config(inherits, path, false, false);
+				make_script_dialog->popup_centered();
+			}
+		} break;
 
 		case EXTRA_FOCUS_PATH: {
 			focus_on_filter();
@@ -3472,6 +3497,14 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 
 		p_popup->add_submenu_node_item(TTRC("Create New"), new_menu, FILE_MENU_NEW);
 		p_popup->set_item_icon(-1, get_editor_theme_icon(SNAME("Add")));
+
+		String type = EditorFileSystem::get_singleton()->get_file_type(filenames[0]);
+		if (ClassDB::is_parent_class(type, "Script")) {
+			Ref<Script> scr = ResourceLoader::load(filenames[0]);
+			if (scr.is_valid()) {
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("ScriptExtend")), TTRC("Extend Script..."), FILE_MENU_EXTEND_SCRIPT);
+			}
+		}
 		p_popup->add_separator();
 	}
 
