@@ -2251,9 +2251,7 @@ void MaterialStorage::shader_free(RID p_rid) {
 	}
 
 	//clear data if exists
-	if (shader->data) {
-		memdelete(shader->data);
-	}
+	memdelete(shader->data);
 	shader_owner.free(p_rid);
 }
 

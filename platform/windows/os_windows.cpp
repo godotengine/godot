@@ -347,9 +347,7 @@ void OS_Windows::initialize() {
 }
 
 void OS_Windows::delete_main_loop() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 	main_loop = nullptr;
 }
 
@@ -378,9 +376,7 @@ void OS_Windows::finalize() {
 	driver_midi.close();
 #endif
 
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 
 	main_loop = nullptr;
 }
@@ -2770,9 +2766,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	}
 
 #ifdef GLES3_ENABLED
-	if (test_gl_manager_native) {
-		memdelete(test_gl_manager_native);
-	}
+	memdelete(test_gl_manager_native);
 #endif
 
 	DestroyWindow(hWnd);

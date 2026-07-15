@@ -245,9 +245,7 @@ bool PropertyListHelper::property_get_revert(const String &p_property, Variant &
 void PropertyListHelper::clear() {
 	if (is_initialized()) {
 		memdelete(array_length_getter);
-		if (property_filter) {
-			memdelete(property_filter);
-		}
+		memdelete(property_filter);
 
 		for (const KeyValue<String, Property> &E : property_list) {
 			if (E.value.setter) {

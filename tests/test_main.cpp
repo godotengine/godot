@@ -296,9 +296,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			MessageQueue::get_singleton()->flush();
 		}
 
-		if (SceneTree::get_singleton()) {
-			memdelete(SceneTree::get_singleton());
-		}
+		memdelete(SceneTree::get_singleton());
 
 #ifndef NAVIGATION_3D_DISABLED
 		if (navigation_server_3d) {
@@ -330,25 +328,15 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 #endif // PHYSICS_2D_DISABLED
 
-		if (Input::get_singleton()) {
-			memdelete(Input::get_singleton());
-		}
+		memdelete(Input::get_singleton());
 
 		if (RenderingServer::get_singleton()) {
 			ThemeDB::get_singleton()->finalize_theme();
 		}
 
-		if (AccessibilityServer::get_singleton()) {
-			memdelete(AccessibilityServer::get_singleton());
-		}
-
-		if (DisplayServer::get_singleton()) {
-			memdelete(DisplayServer::get_singleton());
-		}
-
-		if (InputMap::get_singleton()) {
-			memdelete(InputMap::get_singleton());
-		}
+		memdelete(AccessibilityServer::get_singleton());
+		memdelete(DisplayServer::get_singleton());
+		memdelete(InputMap::get_singleton());
 
 		if (AudioServer::get_singleton()) {
 			AudioServer::get_singleton()->finish();

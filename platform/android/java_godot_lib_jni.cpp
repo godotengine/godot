@@ -101,9 +101,7 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	// Unregister android plugins
 	unregister_plugins_singletons();
 
-	if (java_class_wrapper) {
-		memdelete(java_class_wrapper);
-	}
+	memdelete(java_class_wrapper);
 	if (input_handler) {
 		delete input_handler;
 	}

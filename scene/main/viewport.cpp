@@ -2522,9 +2522,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
 	Control *drag_preview = _gui_get_drag_preview();
-	if (drag_preview) {
-		memdelete(drag_preview);
-	}
+	memdelete(drag_preview);
 	p_control->set_as_top_level(true);
 	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); // Add as child of viewport.
