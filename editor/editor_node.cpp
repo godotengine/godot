@@ -1053,7 +1053,7 @@ void EditorNode::_notification(int p_what) {
 			// Save the project after opening to mark it as last modified, except in headless mode.
 			// Also use this opportunity to ensure default settings are applied to new projects created from the command line
 			// using `touch project.godot`.
-			if (DisplayServer::get_singleton()->window_can_draw()) {
+			if (!cmdline_mode) {
 				const String project_settings_path = ProjectSettings::get_singleton()->get_resource_path().path_join("project.godot");
 				// Check the file's size in bytes as an optimization. If it's under 10 bytes, the file is assumed to be empty.
 				if (FileAccess::get_size(project_settings_path) < 10) {
@@ -8396,9 +8396,7 @@ EditorNode::EditorNode() {
 	singleton = this;
 
 	// Detecting headless mode, that means the editor is running in command line.
-	if (!DisplayServer::get_singleton()->window_can_draw()) {
-		cmdline_mode = true;
-	}
+	cmdline_mode = (DisplayServer::get_singleton()->get_name() == "headless");
 
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
