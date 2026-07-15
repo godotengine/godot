@@ -28,7 +28,7 @@
 				Play an [AudioStream] at a given offset, volume, pitch scale, playback type, and bus. Playback starts immediately.
 				The return value is a unique integer ID that is associated to this playback stream and which can be used to control it.
 				This ID becomes invalid when the stream ends (if it does not loop), when the [AudioStreamPlaybackPolyphonic] is stopped, or when [method stop_stream] is called.
-				This function returns [constant INVALID_ID] if the amount of streams currently playing equals [member AudioStreamPolyphonic.polyphony] and [member AudioStreamPolyphonic.stop_oldest] is set to [code]false[/code]. If you need a higher amount of maximum polyphony, raise this value.
+				This function returns [constant INVALID_ID] if the amount of streams currently playing equals [member AudioStreamPolyphonic.polyphony] and [member AudioStreamPolyphonic.polyphony_mode] is set to [constant AudioStreamPolyphonic.PREVENT_NEW]. If you need a higher amount of maximum polyphony, raise this value.
 			</description>
 		</method>
 		<method name="set_stream_pitch_scale">

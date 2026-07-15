@@ -41,7 +41,7 @@ Ref<AudioStreamPlayback> AudioStreamPolyphonic::instantiate_playback() {
 	Ref<AudioStreamPlaybackPolyphonic> playback;
 	playback.instantiate();
 	playback->streams.resize(polyphony);
-	playback->stop_oldest_playback = stop_oldest;
+	playback->polyphony_mode_playback = polyphony_mode;
 	return playback;
 }
 
@@ -57,22 +57,25 @@ int AudioStreamPolyphonic::get_polyphony() const {
 	return polyphony;
 }
 
-void AudioStreamPolyphonic::set_stop_oldest(bool p_stop) {
-	stop_oldest = p_stop;
+void AudioStreamPolyphonic::set_polyphony_mode(PolyphonyMode p_mode) {
+	polyphony_mode = p_mode;
 }
 
-bool AudioStreamPolyphonic::get_stop_oldest() const {
-	return stop_oldest;
+AudioStreamPolyphonic::PolyphonyMode AudioStreamPolyphonic::get_polyphony_mode() const {
+	return polyphony_mode;
 }
 
 void AudioStreamPolyphonic::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polyphony", "voices"), &AudioStreamPolyphonic::set_polyphony);
 	ClassDB::bind_method(D_METHOD("get_polyphony"), &AudioStreamPolyphonic::get_polyphony);
-	ClassDB::bind_method(D_METHOD("set_stop_oldest", "stop"), &AudioStreamPolyphonic::set_stop_oldest);
-	ClassDB::bind_method(D_METHOD("get_stop_oldest"), &AudioStreamPolyphonic::get_stop_oldest);
+	ClassDB::bind_method(D_METHOD("set_polyphony_mode", "mode"), &AudioStreamPolyphonic::set_polyphony_mode);
+	ClassDB::bind_method(D_METHOD("get_polyphony_mode"), &AudioStreamPolyphonic::get_polyphony_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "polyphony", PROPERTY_HINT_RANGE, "1,128,1"), "set_polyphony", "get_polyphony");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stop_oldest"), "set_stop_oldest", "get_stop_oldest");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "polyphony_mode", PROPERTY_HINT_ENUM, "Prevent New,Stop Oldest"), "set_polyphony_mode", "get_polyphony_mode");
+
+	BIND_ENUM_CONSTANT(PREVENT_NEW);
+	BIND_ENUM_CONSTANT(STOP_OLDEST);
 }
 
 AudioStreamPolyphonic::AudioStreamPolyphonic() {
@@ -232,7 +235,7 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 			? AudioServer::get_singleton()->get_default_playback_type()
 			: p_playback_type;
 
-	if (stop_oldest_playback && active_ids.size() == streams.size()) {
+	if (!active_ids.is_empty() && active_ids.size() == streams.size() && polyphony_mode_playback == AudioStreamPolyphonic::STOP_OLDEST) {
 		Stream *s = _find_stream(active_ids[0]);
 		if (!s) {
 			return INVALID_ID;
