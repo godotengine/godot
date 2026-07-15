@@ -68,9 +68,7 @@ void TextureStorage::Texture::cleanup() {
 	if (RD::get_singleton()->texture_is_valid(rd_texture)) {
 		RD::get_singleton()->free_rid(rd_texture);
 	}
-	if (canvas_texture) {
-		memdelete(canvas_texture);
-	}
+	memdelete(canvas_texture);
 }
 
 ///////////////////////////////////////////////////////////////////////////

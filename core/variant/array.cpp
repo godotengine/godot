@@ -77,9 +77,7 @@ void Array::_unref() const {
 	}
 
 	if (_p->refcount.unref()) {
-		if (_p->read_only) {
-			memdelete(_p->read_only);
-		}
+		memdelete(_p->read_only);
 		memdelete(_p);
 	}
 	_p = nullptr;

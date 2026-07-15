@@ -814,9 +814,7 @@ RigidBody2D::RigidBody2D() :
 }
 
 RigidBody2D::~RigidBody2D() {
-	if (contact_monitor) {
-		memdelete(contact_monitor);
-	}
+	memdelete(contact_monitor);
 }
 
 void RigidBody2D::_reload_physics_characteristics() {

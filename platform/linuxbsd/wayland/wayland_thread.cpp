@@ -1169,9 +1169,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 			for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
 				TabletToolState *state = wp_tablet_tool_get_state(tool);
-				if (state) {
-					memdelete(state);
-				}
+				memdelete(state);
 
 				zwp_tablet_tool_v2_destroy(tool);
 			}
@@ -1236,9 +1234,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 					for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
 						TabletToolState *state = wp_tablet_tool_get_state(tool);
-						if (state) {
-							memdelete(state);
-						}
+						memdelete(state);
 
 						zwp_tablet_tool_v2_destroy(tool);
 					}
@@ -3262,9 +3258,7 @@ void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_too
 	if (E && E->get()) {
 		struct zwp_tablet_tool_v2 *tool = E->get();
 		TabletToolState *state = wp_tablet_tool_get_state(tool);
-		if (state) {
-			memdelete(state);
-		}
+		memdelete(state);
 
 		zwp_tablet_tool_v2_destroy(tool);
 		ss->tablet_tools.erase(E);

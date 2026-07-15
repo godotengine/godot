@@ -754,10 +754,6 @@ GodotBody2D::GodotBody2D() :
 }
 
 GodotBody2D::~GodotBody2D() {
-	if (fi_callback_data) {
-		memdelete(fi_callback_data);
-	}
-	if (direct_state) {
-		memdelete(direct_state);
-	}
+	memdelete(fi_callback_data);
+	memdelete(direct_state);
 }

@@ -1023,9 +1023,7 @@ void TextureStorage::texture_free(RID p_texture) {
 	ERR_FAIL_NULL(t);
 	ERR_FAIL_COND(t->is_render_target);
 
-	if (t->canvas_texture) {
-		memdelete(t->canvas_texture);
-	}
+	memdelete(t->canvas_texture);
 
 	bool must_free_data = false;
 	if (t->is_proxy) {

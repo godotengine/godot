@@ -216,9 +216,7 @@ static void test_directory(const String &p_dir) {
 			CHECK(expected_call_hint == call_hint);
 			CHECK(expected_forced == forced);
 
-			if (scene) {
-				memdelete(scene);
-			}
+			memdelete(scene);
 		}
 		next = dir->get_next();
 	}

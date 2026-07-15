@@ -5223,9 +5223,7 @@ Control::Control() {
 Control::~Control() {
 	memdelete(data.theme_owner);
 
-	if (data.offset_transform != nullptr) {
-		memdelete(data.offset_transform);
-	}
+	memdelete(data.offset_transform);
 
 	// Resources need to be disconnected.
 	for (KeyValue<StringName, Ref<Texture2D>> &E : data.theme_icon_override) {

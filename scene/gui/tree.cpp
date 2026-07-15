@@ -7724,9 +7724,7 @@ Tree::Tree() {
 }
 
 Tree::~Tree() {
-	if (root) {
-		memdelete(root);
-	}
+	memdelete(root);
 	RenderingServer::get_singleton()->free_rid(drop_indicator_ci);
 	RenderingServer::get_singleton()->free_rid(content_ci);
 	RenderingServer::get_singleton()->free_rid(custom_ci);

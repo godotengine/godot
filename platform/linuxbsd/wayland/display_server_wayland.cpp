@@ -2599,31 +2599,18 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	// Destroy all drivers.
 #ifdef RD_ENABLED
-	if (rendering_device) {
-		memdelete(rendering_device);
-	}
-
-	if (rendering_context) {
-		memdelete(rendering_context);
-	}
+	memdelete(rendering_device);
+	memdelete(rendering_context);
 #endif
 
 #ifdef SPEECHD_ENABLED
-	if (tts) {
-		memdelete(tts);
-	}
+	memdelete(tts);
 #endif
 
 #ifdef DBUS_ENABLED
-	if (portal_desktop) {
-		memdelete(portal_desktop);
-	}
-	if (screensaver) {
-		memdelete(screensaver);
-	}
-	if (atspi_monitor) {
-		memdelete(atspi_monitor);
-	}
+	memdelete(portal_desktop);
+	memdelete(screensaver);
+	memdelete(atspi_monitor);
 #endif
 }
 
