@@ -61,7 +61,7 @@ class CowData {
 	friend class VMap;
 
 private:
-	mutable T *_ptr;
+	mutable T *_ptr = nullptr;
 
 	// internal helpers
 
@@ -187,7 +187,7 @@ public:
 
 	int find(const T &p_val, int p_from = 0) const;
 
-	_FORCE_INLINE_ CowData();
+	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData();
 	_FORCE_INLINE_ CowData(CowData<T> &p_from) { _ref(p_from); }
 	_FORCE_INLINE_ explicit CowData(Span<T> p_span);
@@ -374,11 +374,6 @@ void CowData<T>::_ref(const CowData &p_from) {
 	if (p_from._get_refcount()->conditional_increment() > 0) { // could reference
 		_ptr = p_from._ptr;
 	}
-}
-
-template <class T>
-CowData<T>::CowData() {
-	_ptr = nullptr;
 }
 
 template <typename T>
