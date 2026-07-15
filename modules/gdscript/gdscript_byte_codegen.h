@@ -149,6 +149,12 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<int> logic_op_jump_pos1;
 	List<int> logic_op_jump_pos2;
 
+	// Used to patch jumps for conditional statements with `and` and `or` operators with short-circuit.
+	// These jump directly to the conditional success/fail branches.
+	List<int> expr_cond_jumps[2] = {};
+	List<int> expr_cond_buffer_restore_point[2] = {};
+	List<int> expr_cond_end_jumps;
+
 	List<Address> ternary_result;
 	List<int> ternary_jump_fail_pos;
 	List<int> ternary_jump_skip_pos;
@@ -468,6 +474,13 @@ public:
 
 	virtual void write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) override;
 	virtual GDScriptFunction *write_end() override;
+
+	virtual void start_expr_cond_buffer(BranchType p_type) override;
+	virtual void flush_expr_cond_buffer(BranchType p_type) override;
+	virtual void write_expr_cond_jump_if(BranchType p_type, const Address &p_condition) override;
+	virtual void write_expr_cond_jump(BranchType p_type) override;
+	virtual void write_expr_cond_jump_end() override;
+	virtual void write_expr_cond_end() override;
 
 #ifdef DEBUG_ENABLED
 	virtual void set_signature(const String &p_signature) override;
