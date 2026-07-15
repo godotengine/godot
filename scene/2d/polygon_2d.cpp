@@ -29,11 +29,14 @@
 /**************************************************************************/
 
 #include "polygon_2d.h"
+#include "polygon_2d.compat.inc"
 
 #include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/property_info.h"
+#include "core/variant/variant.h"
 #include "scene/2d/skeleton_2d.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -309,19 +312,10 @@ void Polygon2D::_notification(int p_what) {
 			}
 
 			Vector<Color> colors;
-			colors.resize(len);
 
-			if (vertex_colors.size() == points.size()) {
-				const Color *color_r = vertex_colors.ptr();
-				for (int i = 0; i < len; i++) {
-					colors.write[i] = color_r[i];
-				}
-			} else {
-				for (int i = 0; i < len; i++) {
-					colors.write[i] = color;
-				}
+			for (int i = 0; i < len; i++) {
+				colors.append(get_vertex_colors().get(i, color));
 			}
-
 			Vector<int> index_array;
 
 			if (invert || polygons.is_empty()) {
@@ -482,12 +476,12 @@ Color Polygon2D::get_color() const {
 	return color;
 }
 
-void Polygon2D::set_vertex_colors(const Vector<Color> &p_colors) {
+void Polygon2D::set_vertex_colors(const TypedDictionary<int, Color> &p_colors) {
 	vertex_colors = p_colors;
 	queue_redraw();
 }
 
-Vector<Color> Polygon2D::get_vertex_colors() const {
+TypedDictionary<int, Color> Polygon2D::get_vertex_colors() const {
 	return vertex_colors;
 }
 
@@ -749,7 +743,7 @@ void Polygon2D::_bind_methods() {
 	ADD_GROUP("Data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "uv"), "set_uv", "get_uv");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "vertex_colors"), "set_vertex_colors", "get_vertex_colors");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "vertex_colors", PROPERTY_HINT_DICTIONARY_TYPE, vformat("%s/%s:0,2147483647;Color", Variant::INT, PROPERTY_HINT_RANGE)), "set_vertex_colors", "get_vertex_colors");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_TYPE_STRING, "PackedInt32Array"), "set_polygons", "get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_bones", "_get_bones");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "internal_vertex_count", PROPERTY_HINT_RANGE, "0,1000"), "set_internal_vertex_count", "get_internal_vertex_count");

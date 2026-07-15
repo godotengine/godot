@@ -30,6 +30,9 @@
 
 #pragma once
 
+#include "core/math/color.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/typed_dictionary.h"
 #include "scene/2d/node_2d.h"
 
 class NavigationPolygon;
@@ -40,7 +43,7 @@ class Polygon2D : public Node2D {
 
 	Vector<Vector2> polygon;
 	Vector<Vector2> uv;
-	Vector<Color> vertex_colors;
+	TypedDictionary<int, Color> vertex_colors;
 	Array polygons;
 	int internal_vertices = 0;
 
@@ -84,6 +87,12 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _set_vertex_colors_118023(const Vector<Color> &p_colors);
+	Vector<Color> _get_vertex_colors_118023() const;
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 #ifdef TOOLS_ENABLED
 	virtual Dictionary _edit_get_state() const override;
@@ -116,8 +125,8 @@ public:
 	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	void set_vertex_colors(const Vector<Color> &p_colors);
-	Vector<Color> get_vertex_colors() const;
+	void set_vertex_colors(const TypedDictionary<int, Color> &p_colors);
+	TypedDictionary<int, Color> get_vertex_colors() const;
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
