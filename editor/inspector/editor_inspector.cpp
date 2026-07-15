@@ -2637,7 +2637,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 		bool is_valid_revert = false;
 		if (can_revert && revert_rect.has_point(pos)) {
-			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, related_enable_property, &is_valid_revert);
+			EditorPropertyRevert::get_property_revert_value(object, related_enable_property, &is_valid_revert);
 			ERR_FAIL_COND(!is_valid_revert);
 		}
 		if (is_valid_revert || (checkable && check_rect.has_point(pos))) {

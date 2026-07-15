@@ -1710,11 +1710,9 @@ void EditorPropertyLocalizableString::update_property() {
 		for (int i = 0; i < amount; i++) {
 			String prop_name;
 			Variant key;
-			Variant value;
 
 			prop_name = "indices/" + itos(i + offset);
 			key = dict.get_key_at_index(i + offset);
-			value = dict.get_value_at_index(i + offset);
 
 			EditorProperty *prop = memnew(EditorPropertyText);
 
