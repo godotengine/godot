@@ -422,12 +422,12 @@ real_t Node2D::get_angle_to(const Vector2 &p_pos) const {
 	return (to_local(p_pos) * get_scale()).angle();
 }
 
-Point2 Node2D::to_local(Point2 p_global) const {
+Point2 Node2D::to_local(const Point2 &p_global) const {
 	ERR_READ_THREAD_GUARD_V(Point2());
 	return get_global_transform().affine_inverse().xform(p_global);
 }
 
-Point2 Node2D::to_global(Point2 p_local) const {
+Point2 Node2D::to_global(const Point2 &p_local) const {
 	ERR_READ_THREAD_GUARD_V(Point2());
 	return get_global_transform().xform(p_local);
 }
