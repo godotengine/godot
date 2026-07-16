@@ -2774,6 +2774,12 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return FILE_MENU_NEW_RESOURCE;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/new_textfile", p_key)) {
 		return FILE_MENU_NEW_TEXTFILE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/new_inherited_scene", p_key)) {
+		return FILE_MENU_INHERIT;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/set_as_main_scene", p_key)) {
+		return FILE_MENU_MAIN_SCENE;
+	} else if (ED_IS_SHORTCUT("filesystem_dock/instantiate", p_key)) {
+		return FILE_MENU_INSTANTIATE;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_key)) {
 		return FILE_MENU_RENAME;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_key)) {
@@ -3432,14 +3438,14 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		if (all_files_scenes) {
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scene"), FILE_MENU_OPEN);
-				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTRC("New Inherited Scene"), FILE_MENU_INHERIT);
+				p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), ED_GET_SHORTCUT("filesystem_dock/new_inherited_scene"), FILE_MENU_INHERIT);
 				if (main_scene_path != filenames[0]) {
-					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTRC("Set as Main Scene"), FILE_MENU_MAIN_SCENE);
+					p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("PlayScene")), ED_GET_SHORTCUT("filesystem_dock/set_as_main_scene"), FILE_MENU_MAIN_SCENE);
 				}
 			} else {
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scenes"), FILE_MENU_OPEN);
 			}
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Instance")), TTRC("Instantiate"), FILE_MENU_INSTANTIATE);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("filesystem_dock/instantiate"), FILE_MENU_INSTANTIATE);
 			p_popup->add_separator();
 		} else if (filenames.size() == 1) {
 			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open"), FILE_MENU_OPEN);
@@ -4419,6 +4425,9 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/duplicate", TTRC("Duplicate..."), KeyModifierMask::CMD_OR_CTRL | Key::D);
 	ED_SHORTCUT("filesystem_dock/delete", TTRC("Delete"), Key::KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/new_folder", TTRC("New Folder..."), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/new_inherited_scene", TTRC("New Inherited Scene..."), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/set_as_main_scene", TTRC("Set as Main Scene"), Key::NONE);
+	ED_SHORTCUT("filesystem_dock/instantiate", TTRC("Instantiate"), Key::NONE);
 	ED_SHORTCUT("filesystem_dock/new_scene", TTRC("New Scene..."), Key::NONE);
 	ED_SHORTCUT("filesystem_dock/new_script", TTRC("New Script..."), Key::NONE);
 	ED_SHORTCUT("filesystem_dock/new_resource", TTRC("New Resource..."), Key::NONE);
