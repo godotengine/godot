@@ -34,6 +34,10 @@
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/world_2d.h"
 
+#ifndef PHYSICS_2D_DISABLED
+#include "servers/physics_2d/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
+
 bool SkeletonModification2DJiggle::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
