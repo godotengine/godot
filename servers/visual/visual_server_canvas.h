@@ -308,8 +308,8 @@ public:
 	void canvas_light_occluder_transform_physics_interpolation(RID p_occluder, const Transform2D &p_transform);
 
 	RID canvas_occluder_polygon_create();
-	void canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const PoolVector<Vector2> &p_shape, bool p_closed);
-	void canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon, const PoolVector<Vector2> &p_shape);
+	void canvas_occluder_polygon_set_shape(RID p_occluder_polygon, PoolVector<Vector2> p_shape, bool p_closed);
+	void canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon, PoolVector<Vector2> p_shape);
 
 	void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon, VS::CanvasOccluderPolygonCullMode p_mode);
 

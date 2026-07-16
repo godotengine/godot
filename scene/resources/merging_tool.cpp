@@ -465,12 +465,12 @@ bool MergingTool::clean_mesh_instance(MeshInstance &p_mi) {
 
 int MergingTool::_clean_mesh_surface(const String &p_source_name, const Transform &p_xform, Ref<Mesh> &p_rmesh, int p_surface_id, Ref<ArrayMesh> r_dest_mesh) {
 	Array arrays = p_rmesh->surface_get_arrays(p_surface_id);
-	LocalVector<Vector3> verts = PoolVector<Vector3>(arrays[VS::ARRAY_VERTEX]);
+	LocalVector<Vector3> verts(PoolVector<Vector3>(arrays[VS::ARRAY_VERTEX]).span());
 	if (!verts.size()) {
 		// Early out if there are no vertices, no point in doing anything else.
 		return 0;
 	}
-	LocalVector<int> indices = PoolVector<int>(arrays[VS::ARRAY_INDEX]);
+	LocalVector<int> indices(PoolVector<int>(arrays[VS::ARRAY_INDEX]).span());
 
 	// Transform verts to world space.
 	for (uint32_t n = 0; n < verts.size(); n++) {

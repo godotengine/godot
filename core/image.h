@@ -156,6 +156,9 @@ public:
 
 	PoolVector<uint8_t>::Write write_lock;
 
+	// Use this, NOT write_lock.ptr() (because that will be NULL for zero size images).
+	bool _is_locked() const { return write_lock.is_active(); }
+
 protected:
 	static void _bind_methods();
 

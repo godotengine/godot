@@ -285,7 +285,6 @@ public:
 	void material_set_line_width(RID p_material, float p_width) {}
 
 	void material_set_next_pass(RID p_material, RID p_next_material) {}
-
 	bool material_is_animated(RID p_material) { return false; }
 	bool material_casts_shadows(RID p_material) { return false; }
 
@@ -302,7 +301,7 @@ public:
 		return mesh_owner.make_rid(mesh);
 	}
 
-	void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes = Vector<PoolVector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) {
+	void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, PoolVector<uint8_t> p_array, int p_vertex_count, PoolVector<uint8_t> p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes = Vector<PoolVector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) {
 		DummyMesh *m = mesh_owner.getornull(p_mesh);
 		ERR_FAIL_COND(!m);
 
@@ -352,7 +351,7 @@ public:
 		return m->blend_shape_values;
 	}
 
-	void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {}
+	void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, PoolVector<uint8_t> p_data) {}
 
 	void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {}
 	RID mesh_surface_get_material(RID p_mesh, int p_surface) const { return RID(); }
@@ -450,7 +449,7 @@ public:
 	Transform2D _multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const { return Transform2D(); }
 	Color _multimesh_instance_get_color(RID p_multimesh, int p_index) const { return Color(); }
 	Color _multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const { return Color(); }
-	void _multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {}
+	void _multimesh_set_as_bulk_array(RID p_multimesh, PoolVector<float> p_array) {}
 	void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
 	int _multimesh_get_visible_instances(RID p_multimesh) const { return 0; }
 	AABB _multimesh_get_aabb(RID p_multimesh) const { return AABB(); }
@@ -574,7 +573,7 @@ public:
 	void gi_probe_set_to_cell_xform(RID p_probe, const Transform &p_xform) {}
 	Transform gi_probe_get_to_cell_xform(RID p_probe) const { return Transform(); }
 
-	void gi_probe_set_dynamic_data(RID p_probe, const PoolVector<int> &p_data) {}
+	void gi_probe_set_dynamic_data(RID p_probe, PoolVector<int> p_data) {}
 	PoolVector<int> gi_probe_get_dynamic_data(RID p_probe) const {
 		PoolVector<int> p;
 		return p;
@@ -647,7 +646,7 @@ public:
 	mutable RID_Owner<LightmapCapture> lightmap_capture_data_owner;
 	void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {}
 	AABB lightmap_capture_get_bounds(RID p_capture) const { return AABB(); }
-	void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) {}
+	void lightmap_capture_set_octree(RID p_capture, PoolVector<uint8_t> p_octree) {}
 	RID lightmap_capture_create() {
 		LightmapCapture *capture = memnew(LightmapCapture);
 		return lightmap_capture_data_owner.make_rid(capture);
@@ -730,7 +729,7 @@ public:
 	/* LIGHT SHADOW MAPPING */
 
 	RID canvas_light_occluder_create() { return RID(); }
-	void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) {}
+	void canvas_light_occluder_set_polylines(RID p_occluder, PoolVector<Vector2> p_lines) {}
 
 	VS::InstanceType get_base_type(RID p_rid) const {
 		if (mesh_owner.owns(p_rid)) {
