@@ -219,8 +219,12 @@ void ViewportNavigationControl::_update_navigation() {
 
 			const Vector3 direction = forward + right;
 			const Vector3 motion = direction * speed;
-			viewport->view_3d_controller->cursor.pos += motion;
-			viewport->view_3d_controller->cursor.eye_pos += motion;
+			viewport->view_3d_controller->cursor.pos_x += motion.x;
+			viewport->view_3d_controller->cursor.pos_y += motion.y;
+			viewport->view_3d_controller->cursor.pos_z += motion.z;
+			viewport->view_3d_controller->cursor.eye_pos_x += motion.x;
+			viewport->view_3d_controller->cursor.eye_pos_y += motion.y;
+			viewport->view_3d_controller->cursor.eye_pos_z += motion.z;
 		} break;
 
 		case View3DController::NAV_MODE_LOOK: {
@@ -1187,7 +1191,7 @@ Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 	Vector2 screen_he = cm.get_viewport_half_extents();
 
 	Transform3D camera_transform;
-	camera_transform.translate_local(view_3d_controller->cursor.pos);
+	camera_transform.translate_local(Vector3(view_3d_controller->cursor.pos_x, view_3d_controller->cursor.pos_y, view_3d_controller->cursor.pos_z));
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -view_3d_controller->cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -view_3d_controller->cursor.y_rot);
 	camera_transform.translate_local(0, 0, view_3d_controller->cursor.distance);
@@ -4373,7 +4377,9 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 		} break;
 		case VIEW_CENTER_TO_ORIGIN: {
-			view_3d_controller->cursor.pos = Vector3(0, 0, 0);
+			view_3d_controller->cursor.pos_x = 0;
+			view_3d_controller->cursor.pos_y = 0;
+			view_3d_controller->cursor.pos_z = 0;
 			_disable_follow_mode();
 
 		} break;
@@ -4405,7 +4411,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Transform3D xform = camera_transform;
 				if (view_3d_controller->is_orthogonal()) {
 					Vector3 offset = camera_transform.basis.xform(Vector3(0, 0, view_3d_controller->cursor.distance));
-					xform.origin = view_3d_controller->cursor.pos + offset;
+					xform.origin = Vector3(view_3d_controller->cursor.pos_x, view_3d_controller->cursor.pos_y, view_3d_controller->cursor.pos_z) + offset;
 				} else {
 					xform.scale_basis(sp->get_scale());
 				}
@@ -4724,7 +4730,9 @@ void Node3DEditorViewport::_preview_camera_property_changed() {
 void Node3DEditorViewport::_sync_cursor_from_transform(const Transform3D &p_transform) {
 	const Basis basis = p_transform.basis;
 
-	view_3d_controller->cursor.eye_pos = p_transform.origin;
+	view_3d_controller->cursor.eye_pos_x = p_transform.origin.x;
+	view_3d_controller->cursor.eye_pos_y = p_transform.origin.y;
+	view_3d_controller->cursor.eye_pos_z = p_transform.origin.z;
 	view_3d_controller->cursor.x_rot = -basis.get_euler().x;
 	view_3d_controller->cursor.y_rot = -basis.get_euler().y;
 	view_3d_controller->cursor.unsnapped_x_rot = view_3d_controller->cursor.x_rot;
@@ -4734,7 +4742,9 @@ void Node3DEditorViewport::_sync_cursor_from_transform(const Transform3D &p_tran
 	if (view_3d_controller->is_orthogonal()) {
 		distance = (get_zfar() - get_znear()) / 2.0;
 	}
-	view_3d_controller->cursor.pos = p_transform.origin - basis.get_column(2) * distance;
+	view_3d_controller->cursor.pos_x = p_transform.origin.x - basis.get_column(2).x * distance;
+	view_3d_controller->cursor.pos_y = p_transform.origin.y - basis.get_column(2).y * distance;
+	view_3d_controller->cursor.pos_z = p_transform.origin.z - basis.get_column(2).z * distance;
 }
 
 void Node3DEditorViewport::_update_centered_labels() {
@@ -5120,7 +5130,10 @@ void Node3DEditorViewport::update_transform_gizmo_highlight() {
 
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 	if (p_state.has("position")) {
-		view_3d_controller->cursor.pos = p_state["position"];
+		Vector3 pos = p_state["position"];
+		view_3d_controller->cursor.pos_x = pos.x;
+		view_3d_controller->cursor.pos_y = pos.y;
+		view_3d_controller->cursor.pos_z = pos.z;
 	}
 	if (p_state.has("x_rotation")) {
 		view_3d_controller->cursor.x_rot = p_state["x_rotation"];
@@ -5276,7 +5289,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 
 Dictionary Node3DEditorViewport::get_state() const {
 	Dictionary d;
-	d["position"] = view_3d_controller->cursor.pos;
+	d["position"] = Vector3(view_3d_controller->cursor.pos_x, view_3d_controller->cursor.pos_y, view_3d_controller->cursor.pos_z);
 	d["x_rotation"] = view_3d_controller->cursor.x_rot;
 	d["y_rotation"] = view_3d_controller->cursor.y_rot;
 	d["distance"] = view_3d_controller->cursor.distance;
@@ -5376,7 +5389,9 @@ void Node3DEditorViewport::focus_selection() {
 		center /= count;
 	}
 
-	view_3d_controller->cursor.pos = center;
+	view_3d_controller->cursor.pos_x = center.x;
+	view_3d_controller->cursor.pos_y = center.y;
+	view_3d_controller->cursor.pos_z = center.z;
 }
 
 void Node3DEditorViewport::assign_pending_data_pointers(Node3D *p_preview_node, AABB *p_preview_bounds, AcceptDialog *p_accept) {
@@ -5469,7 +5484,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 
 	// Plane facing the camera using fallback distance.
 	if (is_orthogonal) {
-		plane = Plane(world_ray, view_3d_controller->cursor.pos - world_ray * (view_3d_controller->cursor.distance - FALLBACK_DISTANCE));
+		plane = Plane(world_ray, Vector3(view_3d_controller->cursor.pos_x, view_3d_controller->cursor.pos_y, view_3d_controller->cursor.pos_z) - world_ray * (view_3d_controller->cursor.distance - FALLBACK_DISTANCE));
 	} else {
 		plane = Plane(world_ray, world_pos + world_ray * FALLBACK_DISTANCE);
 	}
