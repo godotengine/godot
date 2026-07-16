@@ -1295,80 +1295,113 @@ void CodeTextEditor::duplicate_selection() {
 }
 
 void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
-	text_editor->begin_complex_operation();
-	if (text_editor->is_selection_active()) {
-		int begin = text_editor->get_selection_from_line();
-		int end = text_editor->get_selection_to_line();
+    text_editor->begin_complex_operation();
 
-		// End of selection ends on the first column of the last line, ignore it.
-		if (text_editor->get_selection_to_column() == 0) {
-			end -= 1;
-		}
+    int delimiter_length = delimiter.length();
 
-		int col_to = text_editor->get_selection_to_column();
-		int cursor_pos = text_editor->cursor_get_column();
+    if (text_editor->is_selection_active()) {
+        int begin = text_editor->get_selection_from_line();
+        int end = text_editor->get_selection_to_line();
 
-		// Check if all lines in the selected block are commented.
-		bool is_commented = true;
-		for (int i = begin; i <= end; i++) {
-			if (!text_editor->get_line(i).begins_with(delimiter)) {
-				is_commented = false;
-				break;
-			}
-		}
-		for (int i = begin; i <= end; i++) {
-			String line_text = text_editor->get_line(i);
+        // End of selection ends on the first column of the last line, ignore it.
+        if (text_editor->get_selection_to_column() == 0) {
+            end -= 1;
+        }
 
-			if (line_text.strip_edges().empty()) {
-				line_text = delimiter;
-			} else {
-				if (is_commented) {
-					line_text = line_text.substr(delimiter.length(), line_text.length());
-				} else {
-					line_text = delimiter + line_text;
-				}
-			}
-			text_editor->set_line(i, line_text);
-		}
+        int col_from = text_editor->get_selection_from_column();
+        int col_to = text_editor->get_selection_to_column();
+        int cursor_pos = text_editor->cursor_get_column();
+        int cursor_line = text_editor->cursor_get_line();
 
-		// Adjust selection & cursor position.
-		int offset = (is_commented ? -1 : 1) * delimiter.length();
-		int col_from = text_editor->get_selection_from_column() > 0 ? text_editor->get_selection_from_column() + offset : 0;
+        int begin_offset = 0;
+        int end_offset = 0;
+        int cursor_offset = 0;
 
-		if (is_commented && text_editor->cursor_get_column() == text_editor->get_line(text_editor->cursor_get_line()).length() + 1) {
-			cursor_pos += 1;
-		}
+        for (int i = begin; i <= end; i++) {
+            String line_text = text_editor->get_line(i);
 
-		if (text_editor->get_selection_to_column() != 0 && col_to != text_editor->get_line(text_editor->get_selection_to_line()).length() + 1) {
-			col_to += offset;
-		}
+            // Skip empty or whitespace-only lines completely
+            if (line_text.strip_edges().empty()) {
+                continue;
+            }
 
-		if (text_editor->cursor_get_column() != 0) {
-			cursor_pos += offset;
-		}
+            // Find the first non-whitespace character
+            int first_non_ws = 0;
+            while (first_non_ws < line_text.length() && (line_text[first_non_ws] == ' ' || line_text[first_non_ws] == '\t')) {
+                first_non_ws++;
+            }
 
-		text_editor->select(begin, col_from, text_editor->get_selection_to_line(), col_to);
-		text_editor->cursor_set_column(cursor_pos);
+            int line_offset = 0;
+            // Check if this specific line is commented right after its indentation
+            if (line_text.substr(first_non_ws).begins_with(delimiter)) {
+                // Uncomment: Strip the delimiter
+                line_text = line_text.left(first_non_ws) + line_text.substr(first_non_ws + delimiter_length);
+                line_offset = -delimiter_length;
+            } else {
+                // Comment: Inject the delimiter after the leading whitespace
+                line_text = line_text.left(first_non_ws) + delimiter + line_text.substr(first_non_ws);
+                line_offset = delimiter_length;
+            }
 
-	} else {
-		int begin = text_editor->cursor_get_line();
-		String line_text = text_editor->get_line(begin);
-		int delimiter_length = delimiter.length();
+            text_editor->set_line(i, line_text);
 
-		int col = text_editor->cursor_get_column();
-		if (line_text.begins_with(delimiter)) {
-			line_text = line_text.substr(delimiter_length, line_text.length());
-			col -= delimiter_length;
-		} else {
-			line_text = delimiter + line_text;
-			col += delimiter_length;
-		}
+            // Track individual offsets for selection and cursor adjustments
+            if (i == begin) {
+                begin_offset = line_offset;
+            }
+            if (i == end) {
+                end_offset = line_offset;
+            }
+            if (i == cursor_line) {
+                cursor_offset = line_offset;
+            }
+        }
 
-		text_editor->set_line(begin, line_text);
-		text_editor->cursor_set_column(col);
-	}
-	text_editor->end_complex_operation();
-	text_editor->update();
+        // Adjust selection columns
+        if (col_from > 0) {
+            col_from = MAX(0, col_from + begin_offset);
+        }
+        if (text_editor->get_selection_to_column() != 0) {
+            col_to = MAX(0, col_to + end_offset);
+        }
+        if (text_editor->cursor_get_column() != 0) {
+            cursor_pos = MAX(0, cursor_pos + cursor_offset);
+        }
+
+        text_editor->select(begin, col_from, text_editor->get_selection_to_line(), col_to);
+        text_editor->cursor_set_column(cursor_pos);
+
+    } else {
+        // No selection active - single line behavior
+        int begin = text_editor->cursor_get_line();
+        String line_text = text_editor->get_line(begin);
+
+        // Do nothing if the single line is empty or whitespace-only
+        if (!line_text.strip_edges().empty()) {
+            int col = text_editor->cursor_get_column();
+
+            int first_non_ws = 0;
+            while (first_non_ws < line_text.length() && (line_text[first_non_ws] == ' ' || line_text[first_non_ws] == '\t')) {
+                first_non_ws++;
+            }
+
+            if (line_text.substr(first_non_ws).begins_with(delimiter)) {
+                // Uncomment
+                line_text = line_text.left(first_non_ws) + line_text.substr(first_non_ws + delimiter_length);
+                col -= delimiter_length;
+            } else {
+                // Comment
+                line_text = line_text.left(first_non_ws) + delimiter + line_text.substr(first_non_ws);
+                col += delimiter_length;
+            }
+
+            text_editor->set_line(begin, line_text);
+            text_editor->cursor_set_column(MAX(0, col));
+        }
+    }
+
+    text_editor->end_complex_operation();
+    text_editor->update();
 }
 
 void CodeTextEditor::goto_line(int p_line) {
