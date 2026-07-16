@@ -273,6 +273,15 @@ Error ScriptServer::unregister_language(const ScriptLanguage *p_language) {
 }
 
 void ScriptServer::init_languages() {
+	// Make sure ScriptBacktrace's class is registered in ClassDB before backtraces can be
+	// captured: error macros may capture backtraces while the calling thread holds the
+	// ClassDB lock, and lazily registering the class at that point would upgrade a read
+	// lock to a write lock and crash. This is only reachable when a build profile has
+	// disabled the class, which skips its registration on startup. Must be called outside
+	// `languages_mutex` to avoid lock-order inversion with the error path, which holds
+	// the ClassDB lock while capturing backtraces.
+	ScriptBacktrace::initialize_class();
+
 	{ // Load global classes.
 		global_classes_clear();
 #ifndef DISABLE_DEPRECATED
