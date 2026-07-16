@@ -33,6 +33,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/material.h"
+#include "servers/physics_3d/physics_server_3d_types.h"
 
 class CollisionObject3D;
 

@@ -40,6 +40,7 @@
 #include "scene/resources/surface_tool.h"
 
 #ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
 #include "servers/rendering/rendering_server.h" // Only used for debug collision shapes.
 #endif // PHYSICS_3D_DISABLED
 

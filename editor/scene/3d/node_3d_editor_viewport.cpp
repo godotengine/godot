@@ -75,6 +75,10 @@
 #include "servers/physics_3d/physics_server_3d_types.h"
 #include "servers/rendering/rendering_server.h"
 
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
+#endif // PHYSICS_3D_DISABLED
+
 using namespace Node3DEditorConstants;
 
 Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {

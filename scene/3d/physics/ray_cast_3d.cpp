@@ -35,6 +35,7 @@
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #include "servers/rendering/rendering_server.h"
 
 void RayCast3D::set_target_position(const Vector3 &p_point) {

@@ -61,6 +61,7 @@
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
 #endif // PHYSICS_3D_DISABLED
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
