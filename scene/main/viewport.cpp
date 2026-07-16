@@ -77,6 +77,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_object_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef XR_DISABLED
