@@ -1464,11 +1464,11 @@ void RendererCanvasCull::canvas_item_add_rect(RID p_item, const Rect2 &p_rect, c
 	}
 }
 
-void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos, float p_major, float p_minor, const Color &p_color, bool p_antialiased) {
+void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos, float p_major, float p_minor, const Color &p_color, bool p_antialiased, int p_resolution) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
-	static const int ellipse_segments = 64;
+	static const int ellipse_segments = MAX(3,p_resolution);
 
 	float major = p_major;
 	float minor = p_minor;
@@ -1563,8 +1563,8 @@ void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos
 	}
 }
 
-void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color, bool p_antialiased) {
-	canvas_item_add_ellipse(p_item, p_pos, p_radius, p_radius, p_color, p_antialiased);
+void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos, float p_radius, const Color &p_color, bool p_antialiased, int p_resolution) {
+	canvas_item_add_ellipse(p_item, p_pos, p_radius, p_radius, p_color, p_antialiased, p_resolution);
 }
 
 void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile, const Color &p_modulate, bool p_transpose) {
