@@ -123,22 +123,17 @@ void Shortcut::_bind_methods() {
 }
 
 bool Shortcut::is_event_array_equal(const Array &p_event_array1, const Array &p_event_array2) {
-	if (p_event_array1.size() != p_event_array2.size()) {
-		return false;
-	}
-
-	bool is_same = true;
-	for (int i = 0; i < p_event_array1.size(); i++) {
+    const int size = p_event_array1.size();
+    if(size != p_event_array2.size())
+    return false;
+	for (int i = 0; i < size; i++) {
 		Ref<InputEvent> ie_1 = p_event_array1[i];
 		Ref<InputEvent> ie_2 = p_event_array2[i];
 
-		is_same = ie_1->is_match(ie_2);
-
 		// Break on the first that doesn't match - don't need to check further.
-		if (!is_same) {
-			break;
-		}
+		if(!(ie_1->is_match(ie_2)))
+        return false;
 	}
 
-	return is_same;
+	return true;
 }
