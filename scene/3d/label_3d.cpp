@@ -340,6 +340,8 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 	Vector2 gl_of;
 	Vector2 gl_sz;
 	Rect2 gl_uv;
+	int64_t gl_off = 0;
+	double gl_src_sz = 48.0;
 	Size2 texs;
 	RID tex;
 
@@ -349,6 +351,8 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			gl_of = (TS->font_get_glyph_offset(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) + Vector2(p_glyph.x_off, p_glyph.y_off)) * pixel_size;
 			gl_sz = TS->font_get_glyph_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index) * pixel_size;
 			gl_uv = TS->font_get_glyph_uv_rect(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
+			gl_off = TS->font_get_glyph_data_offset(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
+			gl_src_sz = TS->font_get_source_size(p_glyph.font_rid);
 			texs = TS->font_get_glyph_texture_size(p_glyph.font_rid, Vector2i(p_glyph.font_size, p_outline_size), p_glyph.index);
 		}
 	} else if (((p_glyph.flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((p_glyph.flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
@@ -361,7 +365,9 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 		return;
 	}
 
-	bool msdf = TS->font_is_multichannel_signed_distance_field(p_glyph.font_rid);
+	bool msdf = TS->font_get_render_mode(p_glyph.font_rid) == TextServer::FONT_RENDER_MSDF;
+	bool slug = TS->font_get_render_mode(p_glyph.font_rid) == TextServer::FONT_RENDER_HB_SLUG;
+	bool color = TS->font_has_color_paint(p_glyph.font_rid);
 
 	for (int j = 0; j < p_glyph.repeat; j++) {
 		SurfaceKey key = SurfaceKey(tex.get_id(), p_priority, p_outline_size);
@@ -384,6 +390,9 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 				RS::get_singleton()->material_set_param(surf.material, "msdf_pixel_range", TS->font_get_msdf_pixel_range(p_glyph.font_rid));
 				RS::get_singleton()->material_set_param(surf.material, "msdf_outline_size", p_outline_size);
 			}
+			if (slug) {
+				RS::get_singleton()->material_set_param(surf.material, "slug_scale", (double)p_glyph.font_size / gl_src_sz);
+			}
 
 			BaseMaterial3D::Transparency mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA;
 			if (get_alpha_cut_mode() == ALPHA_CUT_DISCARD) {
@@ -395,10 +404,14 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			}
 
 			RID shader_rid;
-			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, alpha_antialiasing_mode, false, &shader_rid);
+			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, slug && !color, slug && color, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, alpha_antialiasing_mode, false, &shader_rid);
 
 			RS::get_singleton()->material_set_shader(surf.material, shader_rid);
-			RS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
+			if (slug) {
+				RS::get_singleton()->material_set_param(surf.material, "texture_slug", tex);
+			} else {
+				RS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
+			}
 			RS::get_singleton()->material_set_param(surf.material, "albedo_texture_size", texs);
 			if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
 				RS::get_singleton()->material_set_render_priority(surf.material, p_priority);
@@ -431,11 +444,18 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			s.mesh_uvs.write[(s.offset * 4) + i] = Vector2();
 		}
 
-		if (tex.is_valid()) {
-			s.mesh_uvs.write[(s.offset * 4) + 3] = Vector2(gl_uv.position.x / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
-			s.mesh_uvs.write[(s.offset * 4) + 2] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
-			s.mesh_uvs.write[(s.offset * 4) + 1] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, gl_uv.position.y / texs.y);
-			s.mesh_uvs.write[(s.offset * 4) + 0] = Vector2(gl_uv.position.x / texs.x, gl_uv.position.y / texs.y);
+		if (slug) {
+			s.mesh_uvs.write[(s.offset * 4) + 3] = Vector2(gl_uv.position.x, (gl_uv.position.y + gl_uv.size.y));
+			s.mesh_uvs.write[(s.offset * 4) + 2] = Vector2((gl_uv.position.x + gl_uv.size.x), (gl_uv.position.y + gl_uv.size.y));
+			s.mesh_uvs.write[(s.offset * 4) + 1] = Vector2((gl_uv.position.x + gl_uv.size.x), gl_uv.position.y);
+			s.mesh_uvs.write[(s.offset * 4) + 0] = Vector2(gl_uv.position.x, gl_uv.position.y);
+		} else {
+			if (tex.is_valid()) {
+				s.mesh_uvs.write[(s.offset * 4) + 3] = Vector2(gl_uv.position.x / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
+				s.mesh_uvs.write[(s.offset * 4) + 2] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, (gl_uv.position.y + gl_uv.size.y) / texs.y);
+				s.mesh_uvs.write[(s.offset * 4) + 1] = Vector2((gl_uv.position.x + gl_uv.size.x) / texs.x, gl_uv.position.y / texs.y);
+				s.mesh_uvs.write[(s.offset * 4) + 0] = Vector2(gl_uv.position.x / texs.x, gl_uv.position.y / texs.y);
+			}
 		}
 
 		s.indices.resize((s.offset + 1) * 6);
@@ -445,6 +465,14 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 		s.indices.write[(s.offset * 6) + 3] = (s.offset * 4) + 0;
 		s.indices.write[(s.offset * 6) + 4] = (s.offset * 4) + 2;
 		s.indices.write[(s.offset * 6) + 5] = (s.offset * 4) + 3;
+
+		s.offsets.resize((s.offset + 1) * 16);
+		for (int i = 0; i < 4; i++) {
+			s.offsets.write[(s.offset * 16) + (i * 4) + 0] = gl_off;
+			s.offsets.write[(s.offset * 16) + (i * 4) + 1] = i;
+			s.offsets.write[(s.offset * 16) + (i * 4) + 2] = 0;
+			s.offsets.write[(s.offset * 16) + (i * 4) + 3] = 0;
+		}
 
 		s.offset++;
 		r_offset.x += p_glyph.advance * pixel_size;
@@ -651,9 +679,10 @@ void Label3D::_shape() {
 		mesh_array[RSE::ARRAY_COLOR] = E.value.mesh_colors;
 		mesh_array[RSE::ARRAY_TEX_UV] = E.value.mesh_uvs;
 		mesh_array[RSE::ARRAY_INDEX] = E.value.indices;
+		mesh_array[RSE::ARRAY_BONES] = E.value.offsets;
 
 		RenderingServerTypes::SurfaceData sd;
-		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RSE::PRIMITIVE_TRIANGLES, mesh_array);
+		RS::get_singleton()->mesh_create_surface_data_from_arrays(&sd, RSE::PRIMITIVE_TRIANGLES, mesh_array, Array(), Dictionary());
 
 		sd.material = E.value.material;
 

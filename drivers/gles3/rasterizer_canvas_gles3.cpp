@@ -912,7 +912,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 		RSE::CanvasItemTextureRepeat texture_repeat = base_texture_repeat;
 		if (c->type == Item::Command::TYPE_RECT) {
 			const Item::CommandRect *rect = static_cast<const Item::CommandRect *>(c);
-			if (rect->flags & CANVAS_RECT_LCD) {
+			if ((rect->flags & CANVAS_RECT_SPECIAL_RENDER_MODE_MASK) == CANVAS_RECT_LCD) {
 				blend_mode = GLES3::CanvasShaderData::BLEND_MODE_LCD;
 				blend_color = rect->modulate * base_color;
 			}
@@ -993,14 +993,28 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					src_rect = Rect2(0, 0, 1, 1);
 				}
 
-				if (rect->flags & CANVAS_RECT_MSDF) {
+				if ((rect->flags & CANVAS_RECT_SPECIAL_RENDER_MODE_MASK) == CANVAS_RECT_MSDF) {
 					state.instance_data_array[r_index].flags |= INSTANCE_FLAGS_USE_MSDF;
-					state.instance_data_array[r_index].msdf[0] = rect->px_range; // Pixel range.
-					state.instance_data_array[r_index].msdf[1] = rect->outline; // Outline size.
-					state.instance_data_array[r_index].msdf[2] = 0.f; // Reserved.
-					state.instance_data_array[r_index].msdf[3] = 0.f; // Reserved.
-				} else if (rect->flags & CANVAS_RECT_LCD) {
+					state.instance_data_array[r_index].msdf_slug[0] = rect->px_range; // Pixel range.
+					state.instance_data_array[r_index].msdf_slug[1] = rect->outline; // Outline size.
+					state.instance_data_array[r_index].msdf_slug[2] = 0.f; // Reserved.
+					state.instance_data_array[r_index].msdf_slug[3] = 0.f; // Reserved.
+				} else if ((rect->flags & CANVAS_RECT_SPECIAL_RENDER_MODE_MASK) == CANVAS_RECT_LCD) {
 					state.instance_data_array[r_index].flags |= INSTANCE_FLAGS_USE_LCD;
+				} else if ((rect->flags & CANVAS_RECT_SPECIAL_RENDER_MODE_MASK) == CANVAS_RECT_SLUG) {
+					state.instance_data_array[r_index].flags |= INSTANCE_FLAGS_USE_SLUG;
+					state.instance_data_array[r_index].msdf_slug[0] = rect->scale; // Scale.
+					state.instance_data_array[r_index].msdf_slug[1] = 0.f; // Reserved.
+					state.instance_data_array[r_index].msdf_slug[2] = 0.f; // Reserved.
+					state.instance_data_array[r_index].msdf_slug[3] = 0.f; // Reserved.
+					src_rect = rect->source;
+				} else if ((rect->flags & CANVAS_RECT_SPECIAL_RENDER_MODE_MASK) == CANVAS_RECT_SLUG_COLOR) {
+					state.instance_data_array[r_index].flags |= INSTANCE_FLAGS_USE_SLUG_COLOR;
+					state.instance_data_array[r_index].msdf_slug[0] = rect->scale; // Scale.
+					state.instance_data_array[r_index].msdf_slug[1] = 0.f; // Reserved.
+					state.instance_data_array[r_index].msdf_slug[2] = 0.f; // Reserved.
+					state.instance_data_array[r_index].msdf_slug[3] = 0.f; // Reserved.
+					src_rect = rect->source;
 				}
 
 				state.instance_data_array[r_index].modulation[0] = rect->modulate.r * base_color.r;
@@ -1017,6 +1031,9 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 				state.instance_data_array[r_index].dst_rect[1] = dst_rect.position.y;
 				state.instance_data_array[r_index].dst_rect[2] = dst_rect.size.width;
 				state.instance_data_array[r_index].dst_rect[3] = dst_rect.size.height;
+
+				state.instance_data_array[r_index].offset[0] = rect->offset;
+				state.instance_data_array[r_index].offset[1] = 0;
 
 				_add_to_batch(r_index, r_batch_broken);
 			} break;
@@ -2329,6 +2346,17 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RSE::CanvasItemT
 			specular_map->render_target->used_in_frame = true;
 		}
 	}
+
+	GLES3::Texture *slug = texture_storage->get_texture(ct->slug);
+
+	if (!slug) {
+		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 8);
+		GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_SLUG));
+		glBindTexture(GL_TEXTURE_2D, tex->tex_id);
+	} else {
+		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 8);
+		glBindTexture(GL_TEXTURE_2D, slug->tex_id);
+	}
 }
 
 void RasterizerCanvasGLES3::_prepare_canvas_texture(RID p_texture, RSE::CanvasItemTextureFilter p_base_filter, RSE::CanvasItemTextureRepeat p_base_repeat, uint32_t &r_index, Size2 &r_texpixel_size) {
@@ -2347,6 +2375,14 @@ void RasterizerCanvasGLES3::_prepare_canvas_texture(RID p_texture, RSE::CanvasIt
 		if (!t->canvas_texture) {
 			t->canvas_texture = memnew(GLES3::CanvasTexture);
 			t->canvas_texture->diffuse = p_texture;
+			if (t->format == Image::FORMAT_RGBA16SI) {
+				t->canvas_texture->diffuse = texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_WHITE);
+				t->canvas_texture->slug = p_texture;
+				t->canvas_texture->texture_filter = RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST;
+				t->canvas_texture->texture_repeat = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+			} else {
+				t->canvas_texture->diffuse = p_texture;
+			}
 		}
 
 		ct = t->canvas_texture;

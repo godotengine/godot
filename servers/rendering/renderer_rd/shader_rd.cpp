@@ -37,12 +37,13 @@
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_include_db.h"
 
 #define ENABLE_SHADER_CACHE 1
 
-void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
-	Vector<String> lines = String(p_code).split("\n");
+void ShaderRD::_add_stage(const String &p_code, StageType p_stage_type) {
+	Vector<String> lines = p_code.split("\n");
 
 	String text;
 
@@ -151,16 +152,24 @@ void ShaderRD::_add_stage(const char *p_code, StageType p_stage_type) {
 void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name) {
 	name = p_name;
 
+	String vertex_code = String::utf8(p_vertex_code);
+	String fragment_code = String::utf8(p_fragment_code);
+	String compute_code = String::utf8(p_compute_code);
+
+	vertex_code = RenderingServer::include_vertex_module_code(vertex_code);
+	fragment_code = RenderingServer::include_fragment_module_code(fragment_code);
+	compute_code = RenderingServer::include_compute_module_code(compute_code);
+
 	if (p_compute_code) {
-		_add_stage(p_compute_code, STAGE_TYPE_COMPUTE);
+		_add_stage(compute_code, STAGE_TYPE_COMPUTE);
 		pipeline_type = RD::PIPELINE_TYPE_COMPUTE;
 	} else {
 		pipeline_type = RD::PIPELINE_TYPE_RASTERIZATION;
 		if (p_vertex_code) {
-			_add_stage(p_vertex_code, STAGE_TYPE_VERTEX);
+			_add_stage(vertex_code, STAGE_TYPE_VERTEX);
 		}
 		if (p_fragment_code) {
-			_add_stage(p_fragment_code, STAGE_TYPE_FRAGMENT);
+			_add_stage(fragment_code, STAGE_TYPE_FRAGMENT);
 		}
 	}
 
@@ -170,11 +179,11 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 	tohash.append("[GodotVersionHash]");
 	tohash.append(GODOT_VERSION_HASH);
 	tohash.append("[Vertex]");
-	tohash.append(p_vertex_code ? p_vertex_code : "");
+	tohash.append(p_vertex_code ? vertex_code : "");
 	tohash.append("[Fragment]");
-	tohash.append(p_fragment_code ? p_fragment_code : "");
+	tohash.append(p_fragment_code ? fragment_code : "");
 	tohash.append("[Compute]");
-	tohash.append(p_compute_code ? p_compute_code : "");
+	tohash.append(p_compute_code ? compute_code : "");
 	tohash.append("[DebugInfo]");
 	tohash.append(Engine::get_singleton()->is_generate_spirv_debug_info_enabled() ? "1" : "0");
 

@@ -402,6 +402,20 @@
 				Sets a [Transform2D] that will be used to transform subsequent canvas item commands.
 			</description>
 		</method>
+		<method name="canvas_item_add_slug_texture">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="texture" type="RID" />
+			<param index="3" name="offset" type="int" />
+			<param index="4" name="scr_rect" type="Rect2" />
+			<param index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="6" name="scale" type="float" default="1.0" />
+			<param index="7" name="color" type="bool" default="false" />
+			<description>
+				Draws a textured rectangle region of the HargBuzz/SLUG texture at a given position, optionally modulated by a color. The [param rect] is defined in local space. See [member FontFile.render_mode].
+			</description>
+		</method>
 		<method name="canvas_item_add_texture_rect">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -3927,6 +3941,17 @@
 				[b]Note:[/b] The [param image] must have the same width, height and format as the current [param texture] data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height or format, use [method texture_replace] instead.
 			</description>
 		</method>
+		<method name="texture_2d_update_partial">
+			<return type="void" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="offset" type="Vector2i" />
+			<param index="2" name="image" type="Image" />
+			<param index="3" name="layer" type="int" />
+			<description>
+				Updates part of the texture specified by the [param texture] [RID] with the data in [param image]. A [param layer] must also be specified, which should be [code]0[/code] when updating a single-layer texture ([Texture2D]).
+				[b]Note:[/b] The [param image] must have the same format as the current [param texture] data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different format, use [method texture_replace] instead.
+			</description>
+		</method>
 		<method name="texture_3d_create">
 			<return type="RID" />
 			<param index="0" name="format" type="int" enum="Image.Format" />
@@ -6089,6 +6114,9 @@
 		</constant>
 		<constant name="CANVAS_TEXTURE_CHANNEL_SPECULAR" value="2" enum="CanvasTextureChannel">
 			Specular map canvas texture ([member CanvasTexture.specular_texture]).
+		</constant>
+		<constant name="CANVAS_TEXTURE_CHANNEL_SLUG" value="3" enum="CanvasTextureChannel">
+			Texture used for HarfBuzz/SLUG text rendering mode ([member CanvasTexture.slug_texture]).
 		</constant>
 		<constant name="NINE_PATCH_STRETCH" value="0" enum="NinePatchAxisMode">
 			The nine patch gets stretched where needed.

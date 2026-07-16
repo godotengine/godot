@@ -616,9 +616,9 @@ _FORCE_INLINE_ bool FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_antialiasing(cache[p_cache_index], antialiasing);
 			TS->font_set_generate_mipmaps(cache[p_cache_index], mipmaps);
 			TS->font_set_disable_embedded_bitmaps(cache[p_cache_index], disable_embedded_bitmaps);
-			TS->font_set_multichannel_signed_distance_field(cache[p_cache_index], msdf);
+			TS->font_set_render_mode(cache[p_cache_index], mode);
 			TS->font_set_msdf_pixel_range(cache[p_cache_index], msdf_pixel_range);
-			TS->font_set_msdf_size(cache[p_cache_index], msdf_size);
+			TS->font_set_source_size(cache[p_cache_index], source_size);
 			TS->font_set_fixed_size(cache[p_cache_index], fixed_size);
 			TS->font_set_fixed_size_scale_mode(cache[p_cache_index], fixed_size_scale_mode);
 			TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
@@ -937,14 +937,22 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_generate_mipmaps", "generate_mipmaps"), &FontFile::set_generate_mipmaps);
 	ClassDB::bind_method(D_METHOD("get_generate_mipmaps"), &FontFile::get_generate_mipmaps);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_multichannel_signed_distance_field", "msdf"), &FontFile::set_multichannel_signed_distance_field);
 	ClassDB::bind_method(D_METHOD("is_multichannel_signed_distance_field"), &FontFile::is_multichannel_signed_distance_field);
+#endif
+	ClassDB::bind_method(D_METHOD("set_render_mode", "mode"), &FontFile::set_render_mode);
+	ClassDB::bind_method(D_METHOD("get_render_mode"), &FontFile::get_render_mode);
 
 	ClassDB::bind_method(D_METHOD("set_msdf_pixel_range", "msdf_pixel_range"), &FontFile::set_msdf_pixel_range);
 	ClassDB::bind_method(D_METHOD("get_msdf_pixel_range"), &FontFile::get_msdf_pixel_range);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_msdf_size", "msdf_size"), &FontFile::set_msdf_size);
 	ClassDB::bind_method(D_METHOD("get_msdf_size"), &FontFile::get_msdf_size);
+#endif
+	ClassDB::bind_method(D_METHOD("set_source_size", "source_size"), &FontFile::set_source_size);
+	ClassDB::bind_method(D_METHOD("get_source_size"), &FontFile::get_source_size);
 
 	ClassDB::bind_method(D_METHOD("set_fixed_size", "fixed_size"), &FontFile::set_fixed_size);
 	ClassDB::bind_method(D_METHOD("get_fixed_size"), &FontFile::get_fixed_size);
@@ -1040,6 +1048,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_glyph_uv_rect", "cache_index", "size", "glyph", "uv_rect"), &FontFile::set_glyph_uv_rect);
 	ClassDB::bind_method(D_METHOD("get_glyph_uv_rect", "cache_index", "size", "glyph"), &FontFile::get_glyph_uv_rect);
 
+	ClassDB::bind_method(D_METHOD("set_glyph_data_offset", "cache_index", "size", "glyph", "data_offset"), &FontFile::set_glyph_data_offset);
+	ClassDB::bind_method(D_METHOD("get_glyph_data_offset", "cache_index", "size", "glyph"), &FontFile::get_glyph_data_offset);
+
 	ClassDB::bind_method(D_METHOD("set_glyph_texture_idx", "cache_index", "size", "glyph", "texture_idx"), &FontFile::set_glyph_texture_idx);
 	ClassDB::bind_method(D_METHOD("get_glyph_texture_idx", "cache_index", "size", "glyph"), &FontFile::get_glyph_texture_idx);
 
@@ -1081,9 +1092,9 @@ void FontFile::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel", PROPERTY_USAGE_STORAGE), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_rounding_remainders", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_keep_rounding_remainders", "get_keep_rounding_remainders");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_mode", PROPERTY_HINT_ENUM, "Raster,MSDF,HarfBuzz/SLUG", PROPERTY_USAGE_STORAGE), "set_render_mode", "get_render_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_pixel_range", "get_msdf_pixel_range");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_msdf_size", "get_msdf_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "source_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_source_size", "get_source_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "modulate_color_glyphs", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_modulate_color_glyphs", "is_modulate_color_glyphs");
@@ -1107,6 +1118,14 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> tokens = p_name.string().split("/");
 
 #ifndef DISABLE_DEPRECATED
+	if (p_name == "multichannel_signed_distance_field") {
+		set_render_mode(p_value.operator bool() ? TextServer::FONT_RENDER_MSDF : TextServer::FONT_RENDER_RASTER);
+		return true;
+	}
+	if (p_name == "msdf_size") {
+		set_source_size(p_value);
+		return true;
+	}
 	if (tokens.size() == 1 && tokens[0] == "font_path") {
 		// Compatibility, DynamicFontData.
 		load_dynamic_font(p_value);
@@ -1267,6 +1286,9 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 				} else if (tokens[6] == "uv_rect") {
 					set_glyph_uv_rect(cache_index, sz, glyph_index, p_value);
 					return true;
+				} else if (tokens[6] == "data_offset") {
+					set_glyph_data_offset(cache_index, sz, glyph_index, p_value);
+					return true;
 				} else if (tokens[6] == "texture_idx") {
 					set_glyph_texture_idx(cache_index, sz, glyph_index, p_value);
 					return true;
@@ -1361,6 +1383,9 @@ bool FontFile::_get(const StringName &p_name, Variant &r_ret) const {
 				} else if (tokens[6] == "uv_rect") {
 					r_ret = get_glyph_uv_rect(cache_index, sz, glyph_index);
 					return true;
+				} else if (tokens[6] == "data_offset") {
+					r_ret = get_glyph_data_offset(cache_index, sz, glyph_index);
+					return true;
 				} else if (tokens[6] == "texture_idx") {
 					r_ret = get_glyph_texture_idx(cache_index, sz, glyph_index);
 					return true;
@@ -1422,6 +1447,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "glyphs/" + itos(gl) + "/offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "glyphs/" + itos(gl) + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 				p_list->push_back(PropertyInfo(Variant::RECT2, prefix_sz + "glyphs/" + itos(gl) + "/uv_rect", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+				p_list->push_back(PropertyInfo(Variant::INT, prefix_sz + "glyphs/" + itos(gl) + "/data_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 				p_list->push_back(PropertyInfo(Variant::INT, prefix_sz + "glyphs/" + itos(gl) + "/texture_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 			}
 			if (sz.y == 0) {
@@ -1445,7 +1471,7 @@ void FontFile::reset_state() {
 	antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	mipmaps = false;
 	disable_embedded_bitmaps = true;
-	msdf = false;
+	mode = TextServer::FONT_RENDER_RASTER;
 	force_autohinter = false;
 	modulate_color_glyphs = false;
 	allow_system_fallback = true;
@@ -1454,7 +1480,7 @@ void FontFile::reset_state() {
 	keep_rounding_remainders = true;
 	oversampling_override = 0.0;
 	msdf_pixel_range = 14;
-	msdf_size = 128;
+	source_size = 128;
 	fixed_size = 0;
 	fixed_size_scale_mode = TextServer::FIXED_SIZE_SCALE_DISABLE;
 
@@ -1486,7 +1512,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 	antialiasing = TextServer::FONT_ANTIALIASING_NONE;
 	mipmaps = false;
 	disable_embedded_bitmaps = true;
-	msdf = false;
+	mode = TextServer::FONT_RENDER_RASTER;
 	force_autohinter = false;
 	modulate_color_glyphs = false;
 	allow_system_fallback = true;
@@ -2203,19 +2229,29 @@ bool FontFile::get_generate_mipmaps() const {
 	return mipmaps;
 }
 
+#ifndef DISABLE_DEPRECATED
 void FontFile::set_multichannel_signed_distance_field(bool p_msdf) {
-	if (msdf != p_msdf) {
-		msdf = p_msdf;
+	set_render_mode(p_msdf ? TextServer::FONT_RENDER_MSDF : TextServer::FONT_RENDER_RASTER);
+}
+
+bool FontFile::is_multichannel_signed_distance_field() const {
+	return get_render_mode() == TextServer::FONT_RENDER_MSDF;
+}
+#endif
+
+void FontFile::set_render_mode(TextServer::FontRenderMode p_render_mode) {
+	if (mode != p_render_mode) {
+		mode = p_render_mode;
 		for (int i = 0; i < cache.size(); i++) {
 			ERR_CONTINUE(!_ensure_rid(i));
-			TS->font_set_multichannel_signed_distance_field(cache[i], msdf);
+			TS->font_set_render_mode(cache[i], mode);
 		}
 		emit_changed();
 	}
 }
 
-bool FontFile::is_multichannel_signed_distance_field() const {
-	return msdf;
+TextServer::FontRenderMode FontFile::get_render_mode() const {
+	return mode;
 }
 
 void FontFile::set_msdf_pixel_range(int p_msdf_pixel_range) {
@@ -2233,19 +2269,29 @@ int FontFile::get_msdf_pixel_range() const {
 	return msdf_pixel_range;
 }
 
+#ifndef DISABLE_DEPRECATED
 void FontFile::set_msdf_size(int p_msdf_size) {
-	if (msdf_size != p_msdf_size) {
-		msdf_size = p_msdf_size;
+	set_source_size(p_msdf_size);
+}
+
+int FontFile::get_msdf_size() const {
+	return get_source_size();
+}
+#endif
+
+void FontFile::set_source_size(int p_source_size) {
+	if (source_size != p_source_size) {
+		source_size = p_source_size;
 		for (int i = 0; i < cache.size(); i++) {
 			ERR_CONTINUE(!_ensure_rid(i));
-			TS->font_set_msdf_size(cache[i], msdf_size);
+			TS->font_set_source_size(cache[i], source_size);
 		}
 		emit_changed();
 	}
 }
 
-int FontFile::get_msdf_size() const {
-	return msdf_size;
+int FontFile::get_source_size() const {
+	return source_size;
 }
 
 void FontFile::set_fixed_size(int p_fixed_size) {
@@ -2748,6 +2794,18 @@ Rect2 FontFile::get_glyph_uv_rect(int p_cache_index, const Vector2i &p_size, int
 	ERR_FAIL_COND_V(p_cache_index < 0, Rect2());
 	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Rect2());
 	return TS->font_get_glyph_uv_rect(cache[p_cache_index], p_size, p_glyph);
+}
+
+void FontFile::set_glyph_data_offset(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, int64_t p_data_offset) {
+	ERR_FAIL_COND(p_cache_index < 0);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
+	TS->font_set_glyph_data_offset(cache[p_cache_index], p_size, p_glyph, p_data_offset);
+}
+
+int64_t FontFile::get_glyph_data_offset(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const {
+	ERR_FAIL_COND_V(p_cache_index < 0, 0);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0);
+	return TS->font_get_glyph_data_offset(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontFile::set_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, int p_texture_idx) {
@@ -3270,14 +3328,22 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_keep_rounding_remainders", "keep_rounding_remainders"), &SystemFont::set_keep_rounding_remainders);
 	ClassDB::bind_method(D_METHOD("get_keep_rounding_remainders"), &SystemFont::get_keep_rounding_remainders);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_multichannel_signed_distance_field", "msdf"), &SystemFont::set_multichannel_signed_distance_field);
 	ClassDB::bind_method(D_METHOD("is_multichannel_signed_distance_field"), &SystemFont::is_multichannel_signed_distance_field);
+#endif
+	ClassDB::bind_method(D_METHOD("set_render_mode", "mode"), &SystemFont::set_render_mode);
+	ClassDB::bind_method(D_METHOD("get_render_mode"), &SystemFont::get_render_mode);
 
 	ClassDB::bind_method(D_METHOD("set_msdf_pixel_range", "msdf_pixel_range"), &SystemFont::set_msdf_pixel_range);
 	ClassDB::bind_method(D_METHOD("get_msdf_pixel_range"), &SystemFont::get_msdf_pixel_range);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_msdf_size", "msdf_size"), &SystemFont::set_msdf_size);
 	ClassDB::bind_method(D_METHOD("get_msdf_size"), &SystemFont::get_msdf_size);
+#endif
+	ClassDB::bind_method(D_METHOD("set_source_size", "source_size"), &SystemFont::set_source_size);
+	ClassDB::bind_method(D_METHOD("get_source_size"), &SystemFont::get_source_size);
 
 	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &SystemFont::set_oversampling);
 	ClassDB::bind_method(D_METHOD("get_oversampling"), &SystemFont::get_oversampling);
@@ -3303,11 +3369,25 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), "set_keep_rounding_remainders", "get_keep_rounding_remainders");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field"), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_mode", PROPERTY_HINT_ENUM, "Raster,MSDF,HarfBuzz/SLUG", PROPERTY_USAGE_STORAGE), "set_render_mode", "get_render_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range"), "set_msdf_pixel_range", "get_msdf_pixel_range");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size"), "set_msdf_size", "get_msdf_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "source_size"), "set_source_size", "get_source_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling"), "set_oversampling", "get_oversampling");
 }
+
+#ifndef DISABLE_DEPRECATED
+bool SystemFont::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "multichannel_signed_distance_field") {
+		set_render_mode(p_value.operator bool() ? TextServer::FONT_RENDER_MSDF : TextServer::FONT_RENDER_RASTER);
+		return true;
+	}
+	if (p_name == "msdf_size") {
+		set_source_size(p_value);
+		return true;
+	}
+	return false;
+}
+#endif
 
 void SystemFont::_update_rids() const {
 	Ref<Font> f = _get_base_font_or_default();
@@ -3411,9 +3491,9 @@ void SystemFont::_update_base_font() {
 		file->set_subpixel_positioning(subpixel_positioning);
 		file->set_keep_rounding_remainders(keep_rounding_remainders);
 		file->set_oversampling(oversampling_override);
-		file->set_multichannel_signed_distance_field(msdf);
+		file->set_render_mode(mode);
 		file->set_msdf_pixel_range(msdf_pixel_range);
-		file->set_msdf_size(msdf_size);
+		file->set_source_size(source_size);
 
 		base_font = file;
 
@@ -3456,7 +3536,7 @@ void SystemFont::reset_state() {
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	keep_rounding_remainders = true;
 	oversampling_override = 0.0;
-	msdf = false;
+	mode = TextServer::FONT_RENDER_RASTER;
 
 	Font::reset_state();
 }
@@ -3650,18 +3730,28 @@ real_t SystemFont::get_oversampling() const {
 	return oversampling_override;
 }
 
+#ifndef DISABLE_DEPRECATED
 void SystemFont::set_multichannel_signed_distance_field(bool p_msdf) {
-	if (msdf != p_msdf) {
-		msdf = p_msdf;
+	set_render_mode(p_msdf ? TextServer::FONT_RENDER_MSDF : TextServer::FONT_RENDER_RASTER);
+}
+
+bool SystemFont::is_multichannel_signed_distance_field() const {
+	return get_render_mode() == TextServer::FONT_RENDER_MSDF;
+}
+#endif
+
+void SystemFont::set_render_mode(TextServer::FontRenderMode p_render_mode) {
+	if (mode != p_render_mode) {
+		mode = p_render_mode;
 		if (base_font.is_valid()) {
-			base_font->set_multichannel_signed_distance_field(msdf);
+			base_font->set_render_mode(mode);
 		}
 		emit_changed();
 	}
 }
 
-bool SystemFont::is_multichannel_signed_distance_field() const {
-	return msdf;
+TextServer::FontRenderMode SystemFont::get_render_mode() const {
+	return mode;
 }
 
 void SystemFont::set_msdf_pixel_range(int p_msdf_pixel_range) {
@@ -3678,18 +3768,28 @@ int SystemFont::get_msdf_pixel_range() const {
 	return msdf_pixel_range;
 }
 
+#ifndef DISABLE_DEPRECATED
 void SystemFont::set_msdf_size(int p_msdf_size) {
-	if (msdf_size != p_msdf_size) {
-		msdf_size = p_msdf_size;
+	set_source_size(p_msdf_size);
+}
+
+int SystemFont::get_msdf_size() const {
+	return get_source_size();
+}
+#endif
+
+void SystemFont::set_source_size(int p_source_size) {
+	if (source_size != p_source_size) {
+		source_size = p_source_size;
 		if (base_font.is_valid()) {
-			base_font->set_msdf_size(msdf_size);
+			base_font->set_source_size(source_size);
 		}
 		emit_changed();
 	}
 }
 
-int SystemFont::get_msdf_size() const {
-	return msdf_size;
+int SystemFont::get_source_size() const {
+	return source_size;
 }
 
 void SystemFont::set_font_names(const PackedStringArray &p_names) {

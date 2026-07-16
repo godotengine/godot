@@ -170,6 +170,7 @@ DDSFormat _image_format_to_dds_format(Image::Format p_image_format) {
 		case Image::FORMAT_RG16I: {
 			return DDS_RG16I;
 		}
+		case Image::FORMAT_RGBA16SI:
 		case Image::FORMAT_RGBA16I: {
 			return DDS_RGBA16I;
 		}
@@ -256,6 +257,7 @@ uint32_t _image_format_to_dxgi_format(Image::Format p_format) {
 		case Image::FORMAT_RG16I:
 			return DXGI_R16G16_UINT;
 		case Image::FORMAT_RGBA16I:
+		case Image::FORMAT_RGBA16SI:
 			return DXGI_R16G16B16A16_UINT;
 
 		default:

@@ -1,0 +1,7 @@
+Validate extension JSON: API was removed: classes/FontFile/properties/msdf_size
+Validate extension JSON: API was removed: classes/FontFile/properties/multichannel_signed_distance_field
+Validate extension JSON: API was removed: classes/SystemFont/properties/msdf_size
+Validate extension JSON: API was removed: classes/SystemFont/properties/multichannel_signed_distance_field
+
+Properties superseded by "source_size" and "render_mode".
+Compatibility dynamic property setter added.
