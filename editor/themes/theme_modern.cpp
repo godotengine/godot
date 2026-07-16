@@ -780,7 +780,11 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("scroll_hint_color", "ItemList", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));
 			p_theme->set_constant("v_separation", "ItemList", p_config.base_margin * 1.5 * EDSCALE);
 			p_theme->set_constant("h_separation", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
-			p_theme->set_constant("scroll_bar_h_separation", "ItemList", style_itemlist_bg->get_margin(SIDE_RIGHT));
+			p_theme->set_constant("scrollbar_margin_left", "ItemList", 0);
+			p_theme->set_constant("scrollbar_margin_top", "ItemList", 0);
+			p_theme->set_constant("scrollbar_margin_right", "ItemList", 0);
+			p_theme->set_constant("scrollbar_margin_bottom", "ItemList", 0);
+			p_theme->set_constant("scrollbar_h_separation", "ItemList", 1 * EDSCALE);
 			p_theme->set_constant("icon_margin", "ItemList", (p_config.increased_margin + 2) * EDSCALE);
 			p_theme->set_constant(SceneStringName(line_separation), "ItemList", p_config.separation_margin);
 			p_theme->set_constant("outline_size", "ItemList", 0);
