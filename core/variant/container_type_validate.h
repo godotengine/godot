@@ -47,30 +47,30 @@ struct ContainerTypeValidate {
 	const char *where = "container";
 
 private:
-	_FORCE_INLINE_ bool _internal_validate(Variant &inout_variant, const char *p_operation, bool p_output_errors) const {
+	_FORCE_INLINE_ bool _internal_validate(Variant &r_inout_variant, const char *p_operation, bool p_output_errors) const {
 		if (type == Variant::NIL) {
 			return true;
 		}
 
-		if (type != inout_variant.get_type()) {
-			if (inout_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
+		if (type != r_inout_variant.get_type()) {
+			if (r_inout_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
 				return true;
 			}
 
-			if (Variant::can_convert_strict(inout_variant.get_type(), type)) {
+			if (Variant::can_convert_strict(r_inout_variant.get_type(), type)) {
 				Variant converted_to;
-				const Variant *converted_from = &inout_variant;
+				const Variant *converted_from = &r_inout_variant;
 				Callable::CallError call_error;
 				Variant::construct(type, converted_to, &converted_from, 1, call_error);
 
 				if (call_error.error == Callable::CallError::CALL_OK) {
-					inout_variant = converted_to;
+					r_inout_variant = converted_to;
 					return true;
 				}
 			}
 
 			if (p_output_errors) {
-				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of incompatible type '%s'.", String(p_operation), Variant::get_type_name(inout_variant.get_type()), where, Variant::get_type_name(type)));
+				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of incompatible type '%s'.", String(p_operation), Variant::get_type_name(r_inout_variant.get_type()), where, Variant::get_type_name(type)));
 			} else {
 				return false;
 			}
@@ -80,7 +80,7 @@ private:
 			return true;
 		}
 
-		return _internal_validate_object(inout_variant, p_operation, p_output_errors);
+		return _internal_validate_object(r_inout_variant, p_operation, p_output_errors);
 	}
 
 	_FORCE_INLINE_ bool _internal_validate_object(const Variant &p_variant, const char *p_operation, bool p_output_errors) const {
@@ -150,8 +150,8 @@ private:
 	}
 
 public:
-	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
-		return _internal_validate(inout_variant, p_operation, true);
+	_FORCE_INLINE_ bool validate(Variant &r_inout_variant, const char *p_operation = "use") const {
+		return _internal_validate(r_inout_variant, p_operation, true);
 	}
 
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {

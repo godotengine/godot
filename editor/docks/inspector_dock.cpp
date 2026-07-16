@@ -867,7 +867,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	MarginContainer *mc = memnew(MarginContainer);
 	main_vb->add_child(mc);
-	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_theme_type_variation("NoBorderBottomPanel");
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	inspector = EditorInspector::create_default_inspector(search);

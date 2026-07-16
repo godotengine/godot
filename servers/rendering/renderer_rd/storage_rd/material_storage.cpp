@@ -452,7 +452,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 3; i++) {
-				gui[i] = c.components[i];
+				gui[i] = c[i];
 			}
 
 		} break;
@@ -465,7 +465,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 4; i++) {
-				gui[i] = c.components[i];
+				gui[i] = c[i];
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {

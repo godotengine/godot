@@ -3244,8 +3244,6 @@ Node3DEditor::Node3DEditor() {
 	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
 	main_flow->add_child(main_menu_hbox);
 
-	String sct;
-
 	tool_button[TOOL_MODE_TRANSFORM] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_TRANSFORM]);
 	tool_button[TOOL_MODE_TRANSFORM]->set_toggle_mode(true);

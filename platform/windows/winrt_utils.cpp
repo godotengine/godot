@@ -184,8 +184,6 @@ bool WinRTUtils::window_has_display_info(const WinRTWindowData *p_data) {
 
 void WinRTUtils::window_get_advanced_color_info(const WinRTWindowData *p_data, bool &r_hdr_supported, float &r_min_luminance, float &r_max_luminance, float &r_max_average_luminance, float &r_sdr_white_level) {
 	if (p_data && p_data->has_disp_info) {
-		Dictionary info;
-
 		AdvancedColorInfo adv_info = p_data->disp_info.GetAdvancedColorInfo();
 
 		r_hdr_supported = (adv_info.CurrentAdvancedColorKind() == AdvancedColorKind::HighDynamicRange);

@@ -88,9 +88,9 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 	return get_builtin_or_variant_type_name(p_info.type);
 }
 
-static String get_type_meta_name(const GodotTypeInfo::Metadata metadata) {
+static String get_type_meta_name(const GodotTypeInfo::Metadata p_metadata) {
 	static const char *argmeta[14] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double", "char16", "char32", "required" };
-	return argmeta[metadata];
+	return argmeta[p_metadata];
 }
 
 static String fix_doc_description(const String &p_bbcode) {
@@ -143,8 +143,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			uint32_t size_64_bits_real_double;
 
 			// For compile-time size check.
-			constexpr uint32_t operator[](int index) const {
-				switch (index) {
+			constexpr uint32_t operator[](int p_index) const {
+				switch (p_index) {
 #ifndef REAL_T_IS_DOUBLE
 					case sizeof(uint32_t):
 						return size_32_bits_real_float;

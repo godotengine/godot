@@ -149,7 +149,7 @@ public:
 	virtual Vec3	GetSupport(Vec3Arg inDirection) const override
 	{
 		float x = inDirection.GetX(), y = inDirection.GetY(), z = inDirection.GetZ();
-		float o = sqrt(Square(x) + Square(z));
+		float o = Sqrt(Square(x) + Square(z));
 		if (o > 0.0f)
 		{
 			Vec3 top_support((mTopRadius * x) / o, mTop, (mTopRadius * z) / o);
@@ -263,7 +263,7 @@ void TaperedCylinderShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec
 		float y_sq = Square(inDirection.GetY());
 		if (xz_sq > 0.00765427f * y_sq)
 		{
-			base_x /= sqrt(xz_sq);
+			base_x /= Sqrt(xz_sq);
 			Vec4 base_z = base_x.Swizzle<SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W>() * Vec4(-1, 0, 1, 0);
 			transform = transform * Mat44(base_x, Vec4(0, 1, 0, 0), base_z, Vec4(0, 0, 0, 1));
 		}

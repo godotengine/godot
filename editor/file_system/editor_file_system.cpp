@@ -416,8 +416,6 @@ void EditorFileSystem::_scan_filesystem() {
 	sources_changed.clear();
 	file_cache.clear();
 
-	String project = ProjectSettings::get_singleton()->get_resource_path();
-
 	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().path_join(CACHE_FILE_NAME);
 	{
 		Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::READ);
@@ -457,11 +455,7 @@ void EditorFileSystem::_scan_filesystem() {
 					// The last section (deps) may contain the same splitter, so limit the maxsplit to 8 to get the complete deps.
 					Vector<String> split = l.split("::", true, 8);
 					ERR_CONTINUE(split.size() < 9);
-					String name = split[0];
-					String file;
-
-					file = name;
-					name = cpath.path_join(name);
+					const String name = cpath.path_join(split[0]);
 
 					FileCache fc;
 					fc.type = split[1].get_slicec('/', 0);
@@ -1031,7 +1025,7 @@ bool EditorFileSystem::_update_scan_actions() {
 		}
 	}
 
-	memdelete_notnull(ep);
+	memdelete(ep);
 
 	if (_scan_extensions()) {
 		//needs editor restart
@@ -2187,7 +2181,7 @@ void EditorFileSystem::_update_script_classes() {
 			}
 		}
 
-		memdelete_notnull(ep);
+		memdelete(ep);
 
 		update_script_paths.clear();
 	}
@@ -2284,7 +2278,7 @@ void EditorFileSystem::_update_script_documentation() {
 		}
 	}
 
-	memdelete_notnull(ep);
+	memdelete(ep);
 
 	update_script_paths_documentation.clear();
 }
@@ -2359,7 +2353,7 @@ void EditorFileSystem::_update_scene_groups() {
 			}
 		}
 
-		memdelete_notnull(ep);
+		memdelete(ep);
 		update_scene_paths.clear();
 	}
 
@@ -3422,7 +3416,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	ResourceUID::get_singleton()->update_cache(); // After reimporting, update the cache.
 	_save_filesystem_cache();
 
-	memdelete_notnull(ep);
+	memdelete(ep);
 
 	_process_update_pending();
 
@@ -3438,7 +3432,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		emit_signal(SNAME("filesystem_changed"));
 	}
 	emit_signal(SNAME("resources_reimported"), reloads);
-	memdelete_notnull(ep);
+	memdelete(ep);
 }
 
 Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters) {
@@ -3634,7 +3628,7 @@ Error EditorFileSystem::copy_directory(const String &p_from, const String &p_to)
 				ep->step(tuple.key.get_file(), i++, false);
 			}
 		}
-		memdelete_notnull(ep);
+		memdelete(ep);
 	}
 
 	// Now remap any internal dependencies (within the folder) to use the new files.
@@ -3653,7 +3647,7 @@ Error EditorFileSystem::copy_directory(const String &p_from, const String &p_to)
 				ep->step(tuple.key.get_file(), i++, false);
 			}
 		}
-		memdelete_notnull(ep);
+		memdelete(ep);
 	}
 
 	EditorFileSystemDirectory *efd = get_filesystem_path(p_to);

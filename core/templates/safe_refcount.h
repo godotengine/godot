@@ -164,8 +164,16 @@ public:
 		flag.store(true, std::memory_order_release);
 	}
 
+	_ALWAYS_INLINE_ bool set_if_clear() {
+		return !flag.exchange(true, std::memory_order_acq_rel);
+	}
+
 	_ALWAYS_INLINE_ void clear() {
 		flag.store(false, std::memory_order_release);
+	}
+
+	_ALWAYS_INLINE_ bool clear_if_set() {
+		return flag.exchange(false, std::memory_order_acq_rel);
 	}
 
 	_ALWAYS_INLINE_ void set_to(bool p_value) {

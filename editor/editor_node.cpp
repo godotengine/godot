@@ -2383,7 +2383,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 }
 
 void EditorNode::_close_save_scene_progress() {
-	memdelete_notnull(save_scene_progress);
+	memdelete(save_scene_progress);
 	save_scene_progress = nullptr;
 }
 
@@ -7199,8 +7199,6 @@ void EditorNode::reload_scene(const String &p_path) {
 }
 
 void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, HashSet<Node *> &p_instance_list) {
-	String scene_file_path = p_node->get_scene_file_path();
-
 	bool valid_instance_found = false;
 
 	// Attempt to find all the instances matching path we're going to reload.
@@ -8270,7 +8268,7 @@ void EditorNode::_update_main_menu_type() {
 		memdelete(main_menu_button);
 		main_menu_button = nullptr;
 	}
-	memdelete_notnull(menu_btn_spacer);
+	memdelete(menu_btn_spacer);
 	menu_btn_spacer = nullptr;
 
 	// Create new menu.

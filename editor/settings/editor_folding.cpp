@@ -208,7 +208,6 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	Ref<ConfigFile> config;
 	config.instantiate();
 
-	String path = EditorPaths::get_singleton()->get_project_settings_dir();
 	String file = p_path.get_file() + "-folding-" + p_path.md5_text() + ".cfg";
 	file = EditorPaths::get_singleton()->get_project_settings_dir().path_join(file);
 

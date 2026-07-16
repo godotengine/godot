@@ -633,7 +633,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 		for (const String &file : files) {
 			int idx_in_dir;
-			EditorFileSystemDirectory const *dir = EditorFileSystem::get_singleton()->find_file(file, &idx_in_dir);
+			const EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(file, &idx_in_dir);
 			if (!dir) {
 				return false;
 			}
@@ -1710,11 +1710,9 @@ void EditorPropertyLocalizableString::update_property() {
 		for (int i = 0; i < amount; i++) {
 			String prop_name;
 			Variant key;
-			Variant value;
 
 			prop_name = "indices/" + itos(i + offset);
 			key = dict.get_key_at_index(i + offset);
-			value = dict.get_value_at_index(i + offset);
 
 			EditorProperty *prop = memnew(EditorPropertyText);
 

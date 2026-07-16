@@ -277,7 +277,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	Error _compress_bind_compat_115003(CompressMode p_mode, CompressSource p_source, ASTCFormat p_format);
-	Error _compress_from_channels_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format);
+	Error _compress_from_channels_bind_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format);
 	Vector<uint8_t> _save_exr_to_buffer_bind_compat_117800(bool p_grayscale = false) const;
 	Error _save_exr_bind_compat_117800(const String &p_path, bool p_grayscale = false) const;
 
@@ -293,8 +293,8 @@ private:
 
 	void _copy_internals_from(const Image &p_image);
 
-	_FORCE_INLINE_ Color _get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const;
-	_FORCE_INLINE_ void _set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color);
+	_FORCE_INLINE_ Color _get_color_at_ofs(const uint8_t *p_ptr, uint32_t p_ofs) const;
+	_FORCE_INLINE_ void _set_color_at_ofs(uint8_t *r_ptr, uint32_t p_ofs, const Color &p_color);
 
 	_FORCE_INLINE_ void _get_mipmap_offset_and_size(int p_mipmap, int64_t &r_offset, int &r_width, int &r_height) const; // Get where the mipmap begins in data.
 
@@ -342,7 +342,7 @@ public:
 	// Get where the mipmap begins in data.
 	int64_t get_mipmap_offset(int p_mipmap) const;
 	void get_mipmap_offset_and_size(int p_mipmap, int64_t &r_ofs, int64_t &r_size) const;
-	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int64_t &r_ofs, int64_t &r_size, int &w, int &h) const;
+	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int64_t &r_ofs, int64_t &r_size, int &p_w, int &p_h) const;
 
 	static Image3DValidateError validate_3d_image(Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_images);
 	static String get_3d_image_validation_error_text(Image3DValidateError p_error);
@@ -434,7 +434,7 @@ public:
 	void normal_map_to_xy();
 	Ref<Image> rgbe_to_srgb();
 	Ref<Image> get_image_from_mipmap(int p_mipmap) const;
-	void bump_map_to_normal_map(float bump_scale = 1.0);
+	void bump_map_to_normal_map(float p_bump_scale = 1.0);
 
 	bool detect_signed(bool p_include_mips = true) const;
 
@@ -460,8 +460,8 @@ public:
 	Error load_dds_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_exr_from_buffer(const Vector<uint8_t> &p_array);
 
-	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale = 1.0);
-	Error load_svg_from_string(const String &p_svg_str, float scale = 1.0);
+	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float p_scale = 1.0);
+	Error load_svg_from_string(const String &p_svg_str, float p_scale = 1.0);
 
 	void convert_rg_to_ra_rgba8();
 	void convert_ra_rgba8_to_rg();
