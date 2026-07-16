@@ -160,6 +160,7 @@ private:
 	bool checked = false;
 	bool draw_warning = false;
 	bool draw_prop_warning = false;
+	bool is_deprecated = false;
 	bool keying = false;
 	bool deletable = false;
 	bool label_overlayed = false;
