@@ -4504,8 +4504,6 @@ EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 #ifndef ANDROID_ENABLED
 	_stop_check_for_changes_poll_thread();
 #else
-	if (android_editor_gradle_runner) {
-		memdelete(android_editor_gradle_runner);
-	}
+	memdelete(android_editor_gradle_runner);
 #endif
 }

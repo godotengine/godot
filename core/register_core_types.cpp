@@ -439,9 +439,7 @@ void unregister_core_types() {
 
 	memdelete(resource_uid);
 
-	if (ip) {
-		memdelete(ip);
-	}
+	memdelete(ip);
 
 	if constexpr (GD_IS_CLASS_ENABLED(Image)) {
 		ResourceLoader::remove_resource_format_loader(resource_format_image);

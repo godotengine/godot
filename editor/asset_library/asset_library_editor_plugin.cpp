@@ -1914,9 +1914,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				}
 			}
 
-			if (description) {
-				memdelete(description);
-			}
+			memdelete(description);
 
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);

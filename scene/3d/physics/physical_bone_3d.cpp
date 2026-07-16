@@ -1099,9 +1099,7 @@ void PhysicalBone3D::set_joint_type(JointType p_joint_type) {
 		return;
 	}
 
-	if (joint_data) {
-		memdelete(joint_data);
-	}
+	memdelete(joint_data);
 	joint_data = nullptr;
 	switch (p_joint_type) {
 		case JOINT_TYPE_PIN:
@@ -1292,9 +1290,7 @@ PhysicalBone3D::PhysicalBone3D() :
 }
 
 PhysicalBone3D::~PhysicalBone3D() {
-	if (joint_data) {
-		memdelete(joint_data);
-	}
+	memdelete(joint_data);
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
 	PhysicsServer3D::get_singleton()->free_rid(joint);
 }
