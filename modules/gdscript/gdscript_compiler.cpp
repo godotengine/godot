@@ -3181,7 +3181,7 @@ GDScriptCompiler::FunctionLambdaInfo GDScriptCompiler::_get_function_replacement
 Vector<GDScriptCompiler::FunctionLambdaInfo> GDScriptCompiler::_get_function_lambda_replacement_info(GDScriptFunction *p_func, int p_depth, GDScriptFunction *p_parent_func) {
 	Vector<FunctionLambdaInfo> result;
 	// Only scrape the lambdas inside p_func.
-	for (int i = 0; i < p_func->lambdas.size(); ++i) {
+	for (uint32_t i = 0; i < p_func->lambdas.size(); ++i) {
 		result.push_back(_get_function_replacement_info(p_func->lambdas[i], i, p_depth + 1, p_func));
 	}
 	return result;

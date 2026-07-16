@@ -255,7 +255,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	char32_t indent_char = '\0';
 	int position = 0;
 	int length = 0;
-	Vector<int> continuation_lines;
+	LocalVector<int> continuation_lines;
 #ifdef DEBUG_ENABLED
 	Vector<String> keyword_list;
 #endif // DEBUG_ENABLED
@@ -298,7 +298,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 public:
 	void set_source_code(const String &p_source_code);
 
-	const Vector<int> &get_continuation_lines() const { return continuation_lines; }
+	const LocalVector<int> &get_continuation_lines() const { return continuation_lines; }
 
 #ifdef TOOLS_ENABLED
 	virtual int get_current_position() const override { return position; }

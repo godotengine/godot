@@ -151,13 +151,13 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 
 /////////////////////
 
-Variant GDScriptFunction::get_constant(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, constants.size(), "<errconst>");
+Variant GDScriptFunction::get_constant(uint32_t p_idx) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_idx, constants.size(), "<errconst>");
 	return constants[p_idx];
 }
 
-StringName GDScriptFunction::get_global_name(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, global_names.size(), "<errgname>");
+StringName GDScriptFunction::get_global_name(uint32_t p_idx) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_idx, global_names.size(), "<errgname>");
 	return global_names[p_idx];
 }
 
@@ -236,12 +236,12 @@ GDScriptFunction::GDScriptFunction() {
 GDScriptFunction::~GDScriptFunction() {
 	get_script()->member_functions.erase(name);
 
-	for (int i = 0; i < lambdas.size(); i++) {
-		memdelete(lambdas[i]);
+	for (GDScriptFunction *lambda : lambdas) {
+		memdelete(lambda);
 	}
 
-	for (int i = 0; i < argument_types.size(); i++) {
-		argument_types.write[i].script_type_ref = Ref<Script>();
+	for (GDScriptDataType &arg_type : argument_types) {
+		arg_type.script_type_ref = Ref<Script>();
 	}
 	return_type.script_type_ref = Ref<Script>();
 
