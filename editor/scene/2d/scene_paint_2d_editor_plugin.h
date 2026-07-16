@@ -129,6 +129,7 @@ class ScenePaint2DEditor : public Control {
 
 	void _draw_overlay();
 	void _update_draw_overlay();
+	void _update_hint_label();
 
 	void _gui_input_viewport(const Ref<InputEvent> &p_event);
 	void _add_node_at_pos();
