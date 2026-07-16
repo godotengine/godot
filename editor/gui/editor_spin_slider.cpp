@@ -36,7 +36,6 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
@@ -53,9 +52,8 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 			tooltip += "\n" + TTR(base_tooltip);
 		}
 
-		Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 		if (!editing_integer) {
-			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), find_keycode_name(key));
+			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), keycode_get_string(Key::CMD_OR_CTRL));
 		}
 		return tooltip + "\n" + TTR("Hold Shift for more precise changes.");
 	}
