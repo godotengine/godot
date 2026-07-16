@@ -519,7 +519,7 @@ void RasterizerStorage::_multimesh_add_to_interpolation_lists(RID p_multimesh, M
 	}
 }
 
-void RasterizerStorage::multimesh_set_as_bulk_array_interpolated(RID p_multimesh, const PoolVector<float> &p_array, const PoolVector<float> &p_array_prev) {
+void RasterizerStorage::multimesh_set_as_bulk_array_interpolated(RID p_multimesh, PoolVector<float> p_array, PoolVector<float> p_array_prev) {
 	MMInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
 		ERR_FAIL_COND_MSG(p_array.size() != mmi->_data_curr.size(), vformat("Array for current frame should have %d elements, got %d instead.", mmi->_data_curr.size(), p_array.size()));
@@ -540,7 +540,7 @@ void RasterizerStorage::multimesh_set_as_bulk_array_interpolated(RID p_multimesh
 	}
 }
 
-void RasterizerStorage::multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {
+void RasterizerStorage::multimesh_set_as_bulk_array(RID p_multimesh, PoolVector<float> p_array) {
 	MMInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
 		if (mmi->interpolated) {

@@ -202,13 +202,16 @@ HeightMapShape::HeightMapShape() :
 	map_width = 2;
 	map_depth = 2;
 	map_data.resize(map_width * map_depth);
-	PoolRealArray::Write w = map_data.write();
-	w[0] = 0.0;
-	w[1] = 0.0;
-	w[2] = 0.0;
-	w[3] = 0.0;
-	min_height = 0.0;
-	max_height = 0.0;
+	// Ensure the Write is closed before attempting to copy map_data.
+	{
+		PoolRealArray::Write w = map_data.write();
+		w[0] = 0.0;
+		w[1] = 0.0;
+		w[2] = 0.0;
+		w[3] = 0.0;
+		min_height = 0.0;
+		max_height = 0.0;
+	}
 
 	_update_shape();
 }

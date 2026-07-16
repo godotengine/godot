@@ -227,7 +227,7 @@ public:
 
 	BIND0R(RID, mesh_create)
 
-	BIND10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t>> &, const Vector<AABB> &)
+	BIND10(mesh_add_surface, RID, uint32_t, PrimitiveType, PoolVector<uint8_t>, int, PoolVector<uint8_t>, int, const AABB &, const Vector<PoolVector<uint8_t>> &, const Vector<AABB> &)
 
 	BIND2(mesh_set_blend_shape_count, RID, int)
 	BIND1RC(int, mesh_get_blend_shape_count, RID)
@@ -235,7 +235,7 @@ public:
 	BIND2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
 	BIND1RC(BlendShapeMode, mesh_get_blend_shape_mode, RID)
 
-	BIND4(mesh_surface_update_region, RID, int, int, const PoolVector<uint8_t> &)
+	BIND4(mesh_surface_update_region, RID, int, int, PoolVector<uint8_t>)
 
 	BIND3(mesh_surface_set_material, RID, int, RID)
 	BIND2RC(RID, mesh_surface_get_material, RID, int)
@@ -282,9 +282,9 @@ public:
 	BIND2RC(Color, multimesh_instance_get_color, RID, int)
 	BIND2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
-	BIND2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+	BIND2(multimesh_set_as_bulk_array, RID, PoolVector<float>)
 
-	BIND3(multimesh_set_as_bulk_array_interpolated, RID, const PoolVector<float> &, const PoolVector<float> &)
+	BIND3(multimesh_set_as_bulk_array_interpolated, RID, PoolVector<float>, PoolVector<float>)
 	BIND2(multimesh_set_physics_interpolated, RID, bool)
 	BIND2(multimesh_set_physics_interpolation_quality, RID, MultimeshPhysicsInterpolationQuality)
 	BIND2(multimesh_instance_reset_physics_interpolation, RID, int)
@@ -395,7 +395,7 @@ public:
 	BIND2(gi_probe_set_compress, RID, bool)
 	BIND1RC(bool, gi_probe_is_compressed, RID)
 
-	BIND2(gi_probe_set_dynamic_data, RID, const PoolVector<int> &)
+	BIND2(gi_probe_set_dynamic_data, RID, PoolVector<int>)
 	BIND1RC(PoolVector<int>, gi_probe_get_dynamic_data, RID)
 
 	/* LIGHTMAP CAPTURE */
@@ -405,7 +405,7 @@ public:
 	BIND2(lightmap_capture_set_bounds, RID, const AABB &)
 	BIND1RC(AABB, lightmap_capture_get_bounds, RID)
 
-	BIND2(lightmap_capture_set_octree, RID, const PoolVector<uint8_t> &)
+	BIND2(lightmap_capture_set_octree, RID, PoolVector<uint8_t>)
 	BIND1RC(PoolVector<uint8_t>, lightmap_capture_get_octree, RID)
 
 	BIND2(lightmap_capture_set_octree_cell_transform, RID, const Transform &)
@@ -781,8 +781,8 @@ public:
 	BIND2(canvas_light_occluder_transform_physics_interpolation, RID, const Transform2D &)
 
 	BIND0R(RID, canvas_occluder_polygon_create)
-	BIND3(canvas_occluder_polygon_set_shape, RID, const PoolVector<Vector2> &, bool)
-	BIND2(canvas_occluder_polygon_set_shape_as_lines, RID, const PoolVector<Vector2> &)
+	BIND3(canvas_occluder_polygon_set_shape, RID, PoolVector<Vector2>, bool)
+	BIND2(canvas_occluder_polygon_set_shape_as_lines, RID, PoolVector<Vector2>)
 
 	BIND2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)
 

@@ -2625,7 +2625,7 @@ void VisualServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::M
 	mesh_add_surface_from_arrays(p_mesh, PRIMITIVE_TRIANGLES, d);
 }
 
-void VisualServer::mesh_add_surface_from_planes(RID p_mesh, const PoolVector<Plane> &p_planes) {
+void VisualServer::mesh_add_surface_from_planes(RID p_mesh, PoolVector<Plane> p_planes) {
 	Geometry::MeshData mdata = Geometry::build_convex_mesh(p_planes);
 	mesh_add_surface_from_mesh_data(p_mesh, mdata);
 }
