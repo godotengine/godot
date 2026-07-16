@@ -1032,7 +1032,7 @@ void Node3DEditorViewport::_vertex_snap_cancel() {
 		}
 	}
 	vertex_snap_original_positions.clear();
-	set_message(TTR("Vertex Snap Canceled."), 3);
+	set_message(TTR("Vertex snap canceled."), 3);
 	surface->queue_redraw();
 }
 
