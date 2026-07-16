@@ -617,6 +617,30 @@ TextureStorage::TextureStorage() {
 	}
 
 	{
+		// Create default SLUG image texture.
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R16G16B16A16_SINT;
+		tformat.width = 4;
+		tformat.height = 1;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+
+		uint32_t pixel_size = RD::get_image_format_pixel_size(tformat.format);
+		Vector<uint8_t> pv;
+		pv.resize(4 * pixel_size);
+		for (int i = 0; i < pv.size(); i++) {
+			pv.set(i, 0);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_SLUG] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+	}
+
+	{
 		Vector<String> sdf_modes;
 		sdf_modes.push_back("\n#define MODE_LOAD\n");
 		sdf_modes.push_back("\n#define MODE_LOAD_SHRINK\n");
@@ -827,6 +851,9 @@ void TextureStorage::canvas_texture_set_channel(RID p_canvas_texture, RSE::Canva
 		case RSE::CANVAS_TEXTURE_CHANNEL_SPECULAR: {
 			ct->specular = p_texture;
 		} break;
+		case RSE::CANVAS_TEXTURE_CHANNEL_SLUG: {
+			ct->slug = p_texture;
+		} break;
 	}
 	ct->clear_cache();
 }
@@ -865,7 +892,15 @@ TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_
 		//regular texture
 		if (!t->canvas_texture) {
 			t->canvas_texture = memnew(CanvasTexture);
-			t->canvas_texture->diffuse = p_texture;
+			if (t->format == Image::FORMAT_RGBA16SI) {
+				t->canvas_texture->diffuse = texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
+				t->canvas_texture->size_cache = Size2i(1, 1);
+				t->canvas_texture->slug = p_texture;
+				t->canvas_texture->texture_filter = RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST;
+				t->canvas_texture->texture_repeat = RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+			} else {
+				t->canvas_texture->diffuse = p_texture;
+			}
 		}
 
 		ct = t->canvas_texture;
@@ -889,7 +924,8 @@ TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_
 	CanvasTextureCache &ctc = ct->info_cache[int(p_use_srgb)];
 	if (!RD::get_singleton()->texture_is_valid(ctc.diffuse) ||
 			!RD::get_singleton()->texture_is_valid(ctc.normal) ||
-			!RD::get_singleton()->texture_is_valid(ctc.specular)) {
+			!RD::get_singleton()->texture_is_valid(ctc.specular) ||
+			!RD::get_singleton()->texture_is_valid(ctc.slug)) {
 		{ //diffuse
 			t = get_texture(ct->diffuse);
 			if (!t) {
@@ -929,6 +965,14 @@ TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_
 				}
 			}
 		}
+		{ //slug
+			t = get_texture(ct->slug);
+			if (!t) {
+				ctc.slug = texture_rd_get_default(DEFAULT_RD_TEXTURE_SLUG);
+			} else {
+				ctc.slug = t->rd_texture;
+			}
+		}
 	}
 
 	CanvasTextureInfo res;
@@ -936,6 +980,7 @@ TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_
 	res.normal = ctc.normal;
 	res.specular = ctc.specular;
 	res.sampler = material_storage->sampler_rd_get_default(filter, repeat);
+	res.slug = ctc.slug;
 	res.size = ct->size_cache;
 	res.specular_color = ct->specular_color;
 	res.use_normal = ct->use_normal_cache;
@@ -1005,7 +1050,6 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 	texture.depth = 1;
 	texture.format = p_image->get_format();
 	texture.validated_format = image->get_format();
-
 	texture.rd_type = RD::TEXTURE_TYPE_2D;
 	texture.rd_format = ret_format.format;
 	texture.rd_format_srgb = ret_format.format_srgb;
@@ -1641,6 +1685,27 @@ void TextureStorage::_texture_2d_update(RID p_texture, const Ref<Image> &p_image
 	RD::get_singleton()->texture_update(tex->rd_texture, p_layer, validated->get_data());
 }
 
+void TextureStorage::_texture_2d_update_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer, bool p_immediate) {
+	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
+
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(tex);
+	ERR_FAIL_COND(tex->is_render_target);
+	ERR_FAIL_COND(p_image->get_format() != tex->format);
+
+	if (tex->type == TextureStorage::TYPE_LAYERED) {
+		ERR_FAIL_INDEX(p_layer, tex->layers);
+	}
+
+#ifdef TOOLS_ENABLED
+	tex->image_cache_2d.unref();
+#endif
+	TextureToRDFormat f;
+	Ref<Image> validated = _validate_texture_format(p_image, f);
+
+	RD::get_singleton()->texture_update_partial(tex->rd_texture, p_layer, p_offset, validated->get_size(), validated->get_data());
+}
+
 void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer) {
 	_texture_2d_update(p_texture, p_image, p_layer, false);
 }
@@ -1681,6 +1746,10 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 	}
 
 	RD::get_singleton()->texture_update(tex->rd_texture, 0, all_data);
+}
+
+void TextureStorage::texture_2d_update_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer) {
+	_texture_2d_update_partial(p_texture, p_offset, p_image, p_layer);
 }
 
 void TextureStorage::texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {
@@ -2946,6 +3015,13 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
+		case Image::FORMAT_RGBA16SI: {
+			r_format.format = RD::DATA_FORMAT_R16G16B16A16_SINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break;
 
 		default: {
 		}
@@ -3439,6 +3515,14 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 		case RD::DATA_FORMAT_R16G16B16A16_UINT: {
 			r_format.image_format = Image::FORMAT_RGBA16I;
 			r_format.rd_format = RD::DATA_FORMAT_R16G16B16A16_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break;
+		case RD::DATA_FORMAT_R16G16B16A16_SINT: {
+			r_format.image_format = Image::FORMAT_RGBA16SI;
+			r_format.rd_format = RD::DATA_FORMAT_R16G16B16A16_SINT;
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;

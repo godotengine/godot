@@ -54,12 +54,14 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 		INSTANCE_FLAGS_TRANSPOSE_RECT = (1 << 5),
 		INSTANCE_FLAGS_USE_MSDF = (1 << 6),
 		INSTANCE_FLAGS_USE_LCD = (1 << 7),
+		INSTANCE_FLAGS_USE_SLUG = (1 << 8),
+		INSTANCE_FLAGS_USE_SLUG_COLOR = (1 << 8) | (1 << 7),
 
-		INSTANCE_FLAGS_NINEPACH_DRAW_CENTER = (1 << 8),
-		INSTANCE_FLAGS_NINEPATCH_H_MODE_SHIFT = 9,
-		INSTANCE_FLAGS_NINEPATCH_V_MODE_SHIFT = 11,
+		INSTANCE_FLAGS_NINEPACH_DRAW_CENTER = (1 << 9),
+		INSTANCE_FLAGS_NINEPATCH_H_MODE_SHIFT = 10,
+		INSTANCE_FLAGS_NINEPATCH_V_MODE_SHIFT = 12,
 
-		INSTANCE_FLAGS_SHADOW_MASKED_SHIFT = 13, // 16 bits.
+		INSTANCE_FLAGS_SHADOW_MASKED_SHIFT = 14, // 16 bits.
 	};
 
 	enum {
@@ -206,12 +208,12 @@ public:
 			struct {
 				float modulation[4];
 				union {
-					float msdf[4];
+					float msdf_slug[4];
 					float ninepatch_margins[4];
 				};
 				float dst_rect[4];
 				float src_rect[4];
-				float pad[2];
+				uint32_t offset[2];
 			};
 			//primitive
 			struct {
