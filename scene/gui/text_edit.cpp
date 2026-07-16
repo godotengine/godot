@@ -6303,26 +6303,21 @@ bool TextEdit::can_fold(int p_line) const {
 	if (is_line_hidden(p_line)) {
 		return false;
 	}
-	if (is_line_comment(p_line)) {
-		return false;
-	}
-
+	
 	int start_indent = get_indent_level(p_line);
-
+	
 	for (int i = p_line + 1; i < text.size(); i++) {
 		if (text[i].strip_edges().size() == 0) {
 			continue;
 		}
 		int next_indent = get_indent_level(i);
-		if (is_line_comment(i)) {
-			continue;
-		} else if (next_indent > start_indent) {
+		if (next_indent > start_indent) {
 			return true;
 		} else {
 			return false;
 		}
 	}
-
+	
 	return false;
 }
 
