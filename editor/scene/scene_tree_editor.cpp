@@ -245,6 +245,43 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			undo_redo->add_do_method(node_3d_editor, "update_transform_gizmo");
 			undo_redo->add_undo_method(node_3d_editor, "update_transform_gizmo");
 		}
+		if (n->get_parent()) {
+			_check_convert_parent_to_single_lock(n->get_parent(), undo_redo, n);
+		}
+		undo_redo->commit_action();
+	} else if (p_id == BUTTON_LOCK_MULTIPLE) {
+		bool any_child_locked = false;
+		for (int i = 0; i < n->get_child_count(false); i++) {
+			if (n->get_child(i, false)->has_meta("_edit_lock_")) {
+				any_child_locked = true;
+				break;
+			}
+		}
+
+		if (any_child_locked) {
+			undo_redo->create_action(TTR("Unlock Node and Children"));
+			_lock_multiple_undo(n, undo_redo, false);
+		} else {
+			undo_redo->create_action(TTR("Convert to Single Lock"));
+			undo_redo->add_do_method(n, "remove_meta", "_edit_lock_multiple_");
+			undo_redo->add_undo_method(n, "set_meta", "_edit_lock_multiple_", true);
+		}
+
+		undo_redo->add_do_method(this, "emit_signal", "node_changed");
+		undo_redo->add_undo_method(this, "emit_signal", "node_changed");
+
+		if (Object::cast_to<CanvasItem>(n)) {
+			undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+			undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+		} else if (Object::cast_to<Node3D>(n)) {
+			Node3DEditor *node_3d_editor = Node3DEditor::get_singleton();
+			undo_redo->add_do_method(node_3d_editor, "emit_signal", "item_lock_status_changed");
+			undo_redo->add_undo_method(node_3d_editor, "emit_signal", "item_lock_status_changed");
+			undo_redo->add_do_method(node_3d_editor, "_refresh_menu_icons");
+			undo_redo->add_undo_method(node_3d_editor, "_refresh_menu_icons");
+			undo_redo->add_do_method(node_3d_editor, "update_transform_gizmo");
+			undo_redo->add_undo_method(node_3d_editor, "update_transform_gizmo");
+		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
 		if (n->is_class("AnimationMixer")) {
@@ -351,6 +388,54 @@ void SceneTreeEditor::_toggle_visible(Node *p_node) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->add_do_method(p_node, "set_visible", !v);
 		undo_redo->add_undo_method(p_node, "set_visible", v);
+	}
+}
+
+void SceneTreeEditor::_lock_multiple_undo(Node *p_node, EditorUndoRedoManager *undo_redo, bool p_lock) {
+	if (p_lock) {
+		undo_redo->add_do_method(p_node, "set_meta", "_edit_lock_multiple_", true);
+		undo_redo->add_undo_method(p_node, "remove_meta", "_edit_lock_multiple_");
+	} else {
+		undo_redo->add_do_method(p_node, "remove_meta", "_edit_lock_multiple_");
+		undo_redo->add_undo_method(p_node, "set_meta", "_edit_lock_multiple_", true);
+	}
+	if (p_lock) {
+		undo_redo->add_do_method(p_node, "set_meta", "_edit_lock_", true);
+		undo_redo->add_undo_method(p_node, "remove_meta", "_edit_lock_");
+	} else {
+		undo_redo->add_do_method(p_node, "remove_meta", "_edit_lock_");
+		undo_redo->add_undo_method(p_node, "set_meta", "_edit_lock_", true);
+	}
+	for (int i = 0; i < p_node->get_child_count(false); i++) {
+		Node *child = p_node->get_child(i, false);
+		if (p_lock) {
+			undo_redo->add_do_method(child, "set_meta", "_edit_lock_", true);
+			undo_redo->add_undo_method(child, "remove_meta", "_edit_lock_");
+		} else {
+			undo_redo->add_do_method(child, "remove_meta", "_edit_lock_");
+			undo_redo->add_undo_method(child, "set_meta", "_edit_lock_", true);
+		}
+	}
+}
+
+void SceneTreeEditor::_check_convert_parent_to_single_lock(Node *p_node, EditorUndoRedoManager *undo_redo, Node *p_exclude_child) {
+	if (!p_node->has_meta("_edit_lock_multiple_")) {
+		return;
+	}
+	bool any_child_locked = false;
+	for (int i = 0; i < p_node->get_child_count(false); i++) {
+		Node *child = p_node->get_child(i, false);
+		if (child == p_exclude_child) {
+			continue;
+		}
+		if (child->has_meta("_edit_lock_")) {
+			any_child_locked = true;
+			break;
+		}
+	}
+	if (!any_child_locked) {
+		undo_redo->add_do_method(p_node, "remove_meta", "_edit_lock_multiple_");
+		undo_redo->add_undo_method(p_node, "set_meta", "_edit_lock_multiple_", true);
 	}
 }
 
@@ -705,7 +790,20 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			p_item->set_button_color(0, p_item->get_button_count(0) - 1, button_color);
 		}
 
-		if (p_node->has_meta("_edit_lock_")) {
+		if (p_node->has_meta("_edit_lock_multiple_")) {
+			bool any_child_locked = false;
+			for (int i = 0; i < p_node->get_child_count(false); i++) {
+				if (p_node->get_child(i, false)->has_meta("_edit_lock_")) {
+					any_child_locked = true;
+					break;
+				}
+			}
+			if (any_child_locked) {
+				p_item->add_button(0, get_editor_theme_icon(SNAME("UnLockMultiple")), BUTTON_LOCK_MULTIPLE, false, TTR("Node and children are locked.\nClick to unlock them."));
+			} else {
+				p_item->add_button(0, get_editor_theme_icon(SNAME("LockMultiple")), BUTTON_LOCK_MULTIPLE, false, TTR("Lock node and children."));
+			}
+		} else if (p_node->has_meta("_edit_lock_")) {
 			p_item->add_button(0, get_editor_theme_icon(SNAME("Lock")), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
 		}
 		if (p_node->has_meta("_edit_group_")) {

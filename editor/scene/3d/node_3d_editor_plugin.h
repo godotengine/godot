@@ -72,6 +72,8 @@ public:
 		TOOL_MODE_LIST_SELECT,
 		TOOL_LOCK_SELECTED,
 		TOOL_UNLOCK_SELECTED,
+		TOOL_LOCK_MULTIPLE_SELECTED,
+		TOOL_UNLOCK_MULTIPLE_SELECTED,
 		TOOL_GROUP_SELECTED,
 		TOOL_UNGROUP_SELECTED,
 		TOOL_RULER,
@@ -200,6 +202,8 @@ private:
 		MENU_VIEW_CAMERA_SETTINGS,
 		MENU_LOCK_SELECTED,
 		MENU_UNLOCK_SELECTED,
+		MENU_LOCK_MULTIPLE_SELECTED,
+		MENU_UNLOCK_MULTIPLE_SELECTED,
 		MENU_GROUP_SELECTED,
 		MENU_UNGROUP_SELECTED,
 		MENU_SNAP_TO_FLOOR,
@@ -383,6 +387,8 @@ private:
 	void _add_environment_to_scene(bool p_already_added_sun = false);
 
 	void _update_theme();
+
+	void _lock_node3d_and_children(Node *p_node, EditorUndoRedoManager *undo_redo, bool p_lock);
 
 	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, const String &p_property, const Variant &p_new_value);
 
