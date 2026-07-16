@@ -205,7 +205,7 @@ def get_opts():
 
     # Dependencies folder.
     deps_folder = os.getenv("LOCALAPPDATA")
-    if deps_folder:
+    if deps_folder and not os.getenv("MSYSTEM"):
         deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
     else:
         # Cross-compiling, the deps install script puts things in `bin`.
@@ -272,6 +272,9 @@ def get_opts():
             "pix_path",
             "Path to the PIX runtime distribution (optional for D3D12)",
             os.path.join(deps_folder, "pix"),
+        ),
+        BoolVariable(
+            "prefer_high_performance_gpu", "Prefer high-performance GPU on NVIDIA Optimus/AMD PowerXpress systems", True
         ),
     ]
 
@@ -1037,6 +1040,9 @@ def configure(env: "SConsEnvironment"):
 
     # At this point the env has been set up with basic tools/compilers.
     env.Prepend(CPPPATH=["#platform/windows"])
+
+    if env["prefer_high_performance_gpu"]:
+        env.Append(CPPDEFINES=["ENABLE_PREFER_HIGH_PERFORMANCE_GPU"])
 
     env.msvc = "mingw" not in env["TOOLS"]
     if env.msvc:

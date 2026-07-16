@@ -1335,11 +1335,11 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 
 	Variant projection_v = Projection();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
-	quaternion_v = vec3_v;
-	CHECK(quaternion_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
+	projection_v = vec3_v;
+	CHECK(projection_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
-	quaternion_v = vec3_v;
-	CHECK(quaternion_v.get_type() == Variant::VECTOR3);
+	projection_v = vec3_v;
+	CHECK(projection_v.get_type() == Variant::VECTOR3);
 
 	Variant rid_v = RID();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);

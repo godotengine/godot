@@ -198,7 +198,7 @@ void SphereShape::GetSubmergedVolume(Mat44Arg inCenterOfMassTransform, Vec3Arg i
 		if (sDrawSubmergedVolumes)
 		{
 			Vec3 circle_center = inCenterOfMassTransform.GetTranslation() - distance_to_surface * inSurface.GetNormal();
-			float circle_radius = sqrt(Square(scaled_radius) - Square(distance_to_surface));
+			float circle_radius = Sqrt(Square(scaled_radius) - Square(distance_to_surface));
 			DebugRenderer::sInstance->DrawPie(inBaseOffset + circle_center, circle_radius, inSurface.GetNormal(), inSurface.GetNormal().GetNormalizedPerpendicular(), -JPH_PI, JPH_PI, Color::sGreen, DebugRenderer::ECastShadow::Off);
 		}
 	#endif // JPH_DEBUG_RENDERER

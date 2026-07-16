@@ -615,6 +615,8 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 		}
 	}
 
+	_register_requested_device_extension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+
 	uint32_t device_extension_count = 0;
 	VkResult err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, nullptr);
 	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't get Vulkan device extension count (VkResult error %d).", err));
@@ -682,6 +684,88 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	}
 
 	return OK;
+}
+
+void RenderingDeviceDriverVulkan::_check_driver_workarounds(const VkPhysicalDeviceProperties &p_device_properties, const VkPhysicalDeviceDriverPropertiesKHR *p_driver_properties) {
+	// Workaround a driver bug on Adreno 5XX GPUs that causes a crash when
+	// there are empty descriptor set layouts placed between non-empty ones.
+	adreno_5xx_empty_descriptor_set_layout_workaround =
+			p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+			p_device_properties.deviceID >= 0x5000000 &&
+			p_device_properties.deviceID < 0x6000000;
+
+	// Workaround for the Adreno 6XX family of devices.
+	//
+	// There's a known issue with the Vulkan driver in this family of devices where it'll crash if a dynamic state for drawing is
+	// used in a command buffer before a dispatch call is issued. As both dynamic scissor and viewport are basic requirements for
+	// the engine to not bake this state into the PSO, the only known way to fix this issue is to reset the command buffer entirely.
+	//
+	// As the render graph has no built in limitations of whether it'll issue compute work before anything needs to draw on the
+	// frame, and there's no guarantee that compute work will never be dependent on rasterization in the future, this workaround
+	// will end recording on the current command buffer any time a compute list is encountered after a draw list was executed.
+	// A new command buffer will be created afterwards and the appropriate synchronization primitives will be inserted.
+	//
+	// Executing this workaround has the added cost of synchronization between all the command buffers that are created as well as
+	// all the individual submissions. This performance hit is accepted for the sake of being able to support these devices without
+	// limiting the design of the renderer.
+	//
+	// This bug was fixed in driver version 512.503.0, so we only enabled it on devices older than this.
+	//
+	driver_workarounds.avoid_compute_after_draw =
+			p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+			p_device_properties.deviceID >= 0x6000000 && // Adreno 6xx
+			p_device_properties.driverVersion < VK_MAKE_VERSION(512, 503, 0) &&
+			strstr(p_device_properties.deviceName, "Turnip") == nullptr;
+
+	// Don't print pipeline compilation errors on Adreno 660, as they are expected to happen on this device with ubershaders.
+	// Unhandled error cases will still pop up elsewhere in RD. (eg. when attempting to bind an invalid pipeline.)
+	driver_workarounds.dont_print_on_render_pipeline_creation_failure =
+			p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+			p_device_properties.deviceID == 0x6060001 && // Adreno 660
+			strstr(p_device_properties.deviceName, "Turnip") == nullptr;
+
+	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
+	// Which eventually run out of memory. In such case we should not be using linear allocated pools
+	// Bug introduced in driver 512.597.0 and fixed in 512.671.0.
+	// Confirmed by Qualcomm.
+	if (linear_descriptor_pools_enabled) {
+		const uint32_t reset_descriptor_pool_broken_driver_begin = VK_MAKE_VERSION(512u, 597u, 0u);
+		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION(512u, 671u, 0u);
+
+		linear_descriptor_pools_enabled =
+				p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+				(p_device_properties.driverVersion < reset_descriptor_pool_broken_driver_begin || p_device_properties.driverVersion > reset_descriptor_pool_fixed_driver_begin);
+	}
+
+	if (p_driver_properties != nullptr) {
+		// Workaround for Adreno drivers where ubershaders with a lot of constant literals crash the compiler.
+		driver_workarounds.disable_ubershaders =
+				p_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
+				strstr(p_driver_properties->driverInfo, "Compiler Version: EV031.32.02.") != nullptr;
+	}
+}
+
+void RenderingDeviceDriverVulkan::_get_device_properties() {
+	const RenderingContextDriverVulkan::Functions &functions = context_driver->functions_get();
+
+	if (functions.GetPhysicalDeviceProperties2 != nullptr && enabled_device_extension_names.has(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME)) {
+		VkPhysicalDeviceProperties2KHR device_props = {};
+		device_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+
+		VkPhysicalDeviceDriverPropertiesKHR driver_props = {};
+		driver_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
+		device_props.pNext = &driver_props;
+
+		functions.GetPhysicalDeviceProperties2(physical_device, &device_props);
+		physical_device_properties = device_props.properties;
+
+		_check_driver_workarounds(physical_device_properties, &driver_props);
+
+	} else {
+		vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
+
+		_check_driver_workarounds(physical_device_properties, nullptr);
+	}
 }
 
 Error RenderingDeviceDriverVulkan::_check_device_features() {
@@ -1451,10 +1535,15 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		// Device raytracing extensions.
 		if (enabled_device_extension_names.has(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)) {
 			device_functions.CreateAccelerationStructureKHR = PFN_vkCreateAccelerationStructureKHR(functions.GetDeviceProcAddr(vk_device, "vkCreateAccelerationStructureKHR"));
+			device_functions.DestroyAccelerationStructureKHR = PFN_vkDestroyAccelerationStructureKHR(functions.GetDeviceProcAddr(vk_device, "vkDestroyAccelerationStructureKHR"));
+			device_functions.GetAccelerationStructureBuildSizesKHR = PFN_vkGetAccelerationStructureBuildSizesKHR(functions.GetDeviceProcAddr(vk_device, "vkGetAccelerationStructureBuildSizesKHR"));
+			device_functions.CmdBuildAccelerationStructuresKHR = PFN_vkCmdBuildAccelerationStructuresKHR(functions.GetDeviceProcAddr(vk_device, "vkCmdBuildAccelerationStructuresKHR"));
 		}
 
 		if (enabled_device_extension_names.has(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME)) {
 			device_functions.CreateRaytracingPipelinesKHR = PFN_vkCreateRayTracingPipelinesKHR(functions.GetDeviceProcAddr(vk_device, "vkCreateRayTracingPipelinesKHR"));
+			device_functions.GetRayTracingShaderGroupHandlesKHR = PFN_vkGetRayTracingShaderGroupHandlesKHR(functions.GetDeviceProcAddr(vk_device, "vkGetRayTracingShaderGroupHandlesKHR"));
+			device_functions.CmdTraceRaysKHR = PFN_vkCmdTraceRaysKHR(functions.GetDeviceProcAddr(vk_device, "vkCmdTraceRaysKHR"));
 		}
 	}
 
@@ -1742,25 +1831,6 @@ void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, u
 Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t p_frame_count) {
 	context_device = context_driver->device_get(p_device_index);
 	physical_device = context_driver->physical_device_get(p_device_index);
-	vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
-
-	// Workaround a driver bug on Adreno 730 GPUs that keeps leaking memory on each call to vkResetDescriptorPool.
-	// Which eventually run out of memory. In such case we should not be using linear allocated pools
-	// Bug introduced in driver 512.597.0 and fixed in 512.671.0.
-	// Confirmed by Qualcomm.
-	if (linear_descriptor_pools_enabled) {
-		const uint32_t reset_descriptor_pool_broken_driver_begin = VK_MAKE_VERSION(512u, 597u, 0u);
-		const uint32_t reset_descriptor_pool_fixed_driver_begin = VK_MAKE_VERSION(512u, 671u, 0u);
-		linear_descriptor_pools_enabled = physical_device_properties.driverVersion < reset_descriptor_pool_broken_driver_begin || physical_device_properties.driverVersion > reset_descriptor_pool_fixed_driver_begin;
-	}
-
-	// Workaround a driver bug on Adreno 5XX GPUs that causes a crash when
-	// there are empty descriptor set layouts placed between non-empty ones.
-	adreno_5xx_empty_descriptor_set_layout_workaround =
-			physical_device_properties.vendorID == RenderingContextDriver::Vendor::VENDOR_QUALCOMM &&
-			physical_device_properties.deviceID >= 0x5000000 &&
-			physical_device_properties.deviceID < 0x6000000;
-
 	frame_count = p_frame_count;
 
 	// Copy the queue family properties the context already retrieved.
@@ -1772,6 +1842,8 @@ Error RenderingDeviceDriverVulkan::initialize(uint32_t p_device_index, uint32_t 
 
 	Error err = _initialize_device_extensions();
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't initialize Vulkan device extensions. This may be caused by an incompatible or outdated graphics driver.");
+
+	_get_device_properties();
 
 	err = _check_device_features();
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't initialize Vulkan device features. This may be caused by an incompatible or outdated graphics driver.");
@@ -5090,7 +5162,7 @@ void RenderingDeviceDriverVulkan::command_resolve_texture(CommandBufferID p_cmd_
 
 void RenderingDeviceDriverVulkan::command_clear_color_texture(CommandBufferID p_cmd_buffer, TextureID p_texture, TextureLayout p_texture_layout, const Color &p_color, const TextureSubresourceRange &p_subresources) {
 	VkClearColorValue vk_color = {};
-	memcpy(&vk_color.float32, p_color.components, sizeof(VkClearColorValue::float32));
+	memcpy(&vk_color.float32, p_color.as_float4_buffer(), sizeof(VkClearColorValue::float32));
 
 	VkImageSubresourceRange vk_subresources = {};
 	_texture_subresource_range_to_vk(p_subresources, &vk_subresources);
@@ -5720,7 +5792,7 @@ void RenderingDeviceDriverVulkan::command_render_bind_index_buffer(CommandBuffer
 
 void RenderingDeviceDriverVulkan::command_render_set_blend_constants(CommandBufferID p_cmd_buffer, const Color &p_constants) {
 	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	vkCmdSetBlendConstants(command_buffer->vk_command_buffer, p_constants.components);
+	vkCmdSetBlendConstants(command_buffer->vk_command_buffer, p_constants.as_float4_buffer());
 }
 
 void RenderingDeviceDriverVulkan::command_render_set_line_width(CommandBufferID p_cmd_buffer, float p_width) {
@@ -6156,6 +6228,12 @@ RDD::PipelineID RenderingDeviceDriverVulkan::render_pipeline_create(
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
 	VkResult err = vkCreateGraphicsPipelines(vk_device, pipelines_cache.vk_cache, 1, &pipeline_create_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_PIPELINE), &vk_pipeline);
+
+	// Don't print error for VK_ERROR_UNKNOWN on Adreno 660.
+	if (unlikely(err == VK_ERROR_UNKNOWN && driver_workarounds.dont_print_on_render_pipeline_creation_failure)) {
+		return PipelineID();
+	}
+
 	ERR_FAIL_COND_V_MSG(err, PipelineID(), vformat("Couldn't create Vulkan graphics pipelines (VkResult error %d).", err));
 
 #if RECORD_PIPELINE_STATISTICS
@@ -6258,7 +6336,7 @@ RDD::AccelerationStructureID RenderingDeviceDriverVulkan::blas_create(VectorView
 	VkAccelerationStructureBuildSizesInfoKHR size_info = {};
 	size_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
 
-	vkGetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, max_primitive_counts.ptr(), &size_info);
+	device_functions.GetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, max_primitive_counts.ptr(), &size_info);
 	_acceleration_structure_create(VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR, size_info, accel_info);
 
 	return AccelerationStructureID(accel_info);
@@ -6303,7 +6381,7 @@ RDD::AccelerationStructureID RenderingDeviceDriverVulkan::tlas_create(uint32_t p
 
 	VkAccelerationStructureBuildSizesInfoKHR size_info = {};
 	size_info.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
-	vkGetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, &p_max_instance_count, &size_info);
+	device_functions.GetAccelerationStructureBuildSizesKHR(vk_device, VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR, &accel_info->build_info, &p_max_instance_count, &size_info);
 
 	accel_info->range_infos.resize_initialized(1);
 
@@ -6352,7 +6430,7 @@ void RenderingDeviceDriverVulkan::_acceleration_structure_create(VkAccelerationS
 	accel_create_info.type = p_type;
 	accel_create_info.size = p_size_info.accelerationStructureSize;
 	accel_create_info.buffer = ((const BufferInfo *)buffer.id)->vk_buffer;
-	VkResult err = vkCreateAccelerationStructureKHR(vk_device, &accel_create_info, nullptr, &r_accel_info->vk_acceleration_structure);
+	VkResult err = device_functions.CreateAccelerationStructureKHR(vk_device, &accel_create_info, nullptr, &r_accel_info->vk_acceleration_structure);
 	ERR_FAIL_COND_MSG(err, vformat("Couldn't create Vulkan raytracing acceleration structure (VkResult error %d).", err));
 	r_accel_info->build_info.dstAccelerationStructure = r_accel_info->vk_acceleration_structure;
 #endif
@@ -6366,7 +6444,7 @@ void RenderingDeviceDriverVulkan::acceleration_structure_free(AccelerationStruct
 		buffer_free(accel_info->buffer);
 	}
 	if (accel_info->vk_acceleration_structure) {
-		vkDestroyAccelerationStructureKHR(vk_device, accel_info->vk_acceleration_structure, nullptr);
+		device_functions.DestroyAccelerationStructureKHR(vk_device, accel_info->vk_acceleration_structure, nullptr);
 	}
 	VersatileResource::free(resources_allocator, accel_info);
 #endif
@@ -6404,7 +6482,7 @@ void RenderingDeviceDriverVulkan::command_build_blas(CommandBufferID p_cmd_buffe
 
 	const VkAccelerationStructureBuildRangeInfoKHR *range_infos = accel_info->range_infos.ptr();
 
-	vkCmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_infos);
+	device_functions.CmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_infos);
 #endif
 }
 
@@ -6422,7 +6500,7 @@ void RenderingDeviceDriverVulkan::command_build_tlas(CommandBufferID p_cmd_buffe
 
 	const VkAccelerationStructureBuildRangeInfoKHR *range_infos = accel_info->range_infos.ptr();
 
-	vkCmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_infos);
+	device_functions.CmdBuildAccelerationStructuresKHR(command_buffer->vk_command_buffer, 1, build_info, &range_infos);
 #endif
 }
 
@@ -6445,7 +6523,7 @@ void RenderingDeviceDriverVulkan::command_trace_rays(CommandBufferID p_cmd_buffe
 	VkStridedDeviceAddressRegionKHR miss_sbt = _sbt_to_vk_strided_device_address_region(p_miss_sbt);
 	VkStridedDeviceAddressRegionKHR hit_sbt = _sbt_to_vk_strided_device_address_region(p_hit_sbt);
 	VkStridedDeviceAddressRegionKHR callable_sbt = {};
-	vkCmdTraceRaysKHR(command_buffer->vk_command_buffer, &raygen_sbt, &miss_sbt, &hit_sbt, &callable_sbt, p_width, p_height, p_depth);
+	device_functions.CmdTraceRaysKHR(command_buffer->vk_command_buffer, &raygen_sbt, &miss_sbt, &hit_sbt, &callable_sbt, p_width, p_height, p_depth);
 #endif
 }
 
@@ -6541,7 +6619,7 @@ RDD::RaytracingPipelineID RenderingDeviceDriverVulkan::raytracing_pipeline_creat
 	pipeline_create_info.maxPipelineRayRecursionDepth = p_max_trace_recursion_depth;
 
 	VkPipeline vk_pipeline = VK_NULL_HANDLE;
-	VkResult err = vkCreateRayTracingPipelinesKHR(vk_device, VK_NULL_HANDLE, pipelines_cache.vk_cache, 1, &pipeline_create_info, nullptr, &vk_pipeline);
+	VkResult err = device_functions.CreateRaytracingPipelinesKHR(vk_device, VK_NULL_HANDLE, pipelines_cache.vk_cache, 1, &pipeline_create_info, nullptr, &vk_pipeline);
 	ERR_FAIL_COND_V_MSG(err, RaytracingPipelineID(), vformat("Couldn't create Vulkan raytracing pipelines (VkResult error %d).", err));
 
 	return RaytracingPipelineID(vk_pipeline);
@@ -6564,7 +6642,7 @@ bool RenderingDeviceDriverVulkan::raytracing_pipeline_get_shader_group_handles(R
 			vformat("Data stride (%d) must be greater than or equal to the size of the shader group handles (%d).", p_data_stride_bytes, raytracing_capabilities.shader_group_handle_size));
 
 	for (uint32_t i = 0; i < p_group_indices.size(); i++) {
-		VkResult err = vkGetRayTracingShaderGroupHandlesKHR(vk_device, (VkPipeline)p_pipeline.id, p_group_index_offset + p_group_indices[i], 1, raytracing_capabilities.shader_group_handle_size, r_data);
+		VkResult err = device_functions.GetRayTracingShaderGroupHandlesKHR(vk_device, (VkPipeline)p_pipeline.id, p_group_index_offset + p_group_indices[i], 1, raytracing_capabilities.shader_group_handle_size, r_data);
 		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, false, vformat("Couldn't get Vulkan raytracing shader group handles (VkResult error %d).", err));
 		r_data += p_data_stride_bytes;
 	}
@@ -7386,6 +7464,10 @@ bool RenderingDeviceDriverVulkan::is_composite_alpha_supported(CommandQueueID p_
 		return has_comp_alpha[(uint64_t)p_queue.id];
 	}
 	return false;
+}
+
+RenderingDeviceDriver::DriverWorkarounds RenderingDeviceDriverVulkan::get_driver_workarounds() const {
+	return driver_workarounds;
 }
 
 /******************/

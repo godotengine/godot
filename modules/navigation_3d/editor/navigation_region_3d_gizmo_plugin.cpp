@@ -174,8 +174,6 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
 			polygon_color.a = debug_navigation_geometry_face_color.a;
 
-			Vector<int> polygon = navigationmesh->get_polygon(i);
-
 			face_color_array.push_back(polygon_color);
 			face_color_array.push_back(polygon_color);
 			face_color_array.push_back(polygon_color);
@@ -184,7 +182,23 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
-	p_gizmo->add_mesh(debug_mesh, navigationregion->is_enabled() ? get_material("face_material", p_gizmo) : get_material("face_material_disabled", p_gizmo));
+
+	const String face_material_name = navigationregion->is_enabled() ? "face_material" : "face_material_disabled";
+	Ref<StandardMaterial3D> face_material = get_material(face_material_name, p_gizmo);
+	if (navigationregion->is_enabled()) {
+		Color mat_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+		if (!p_gizmo->is_selected()) {
+			mat_color.a *= 0.3;
+		}
+		face_material->set_albedo(mat_color);
+	} else {
+		Color mat_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color();
+		if (!p_gizmo->is_selected()) {
+			mat_color.a *= 0.3;
+		}
+		face_material->set_albedo(mat_color);
+	}
+	p_gizmo->add_mesh(debug_mesh, face_material);
 
 	// if enabled build geometry edge line surface
 	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
@@ -203,6 +217,21 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			line_vertex_array.push_back(vertices[polygon[0]]);
 		}
 
-		p_gizmo->add_lines(line_vertex_array, navigationregion->is_enabled() ? get_material("edge_material", p_gizmo) : get_material("edge_material_disabled", p_gizmo));
+		const String line_material_name = navigationregion->is_enabled() ? "edge_material" : "edge_material_disabled";
+		Ref<StandardMaterial3D> line_material = get_material(line_material_name, p_gizmo);
+		if (navigationregion->is_enabled()) {
+			Color mat_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_color();
+			if (!p_gizmo->is_selected()) {
+				mat_color.a *= 0.3;
+			}
+			line_material->set_albedo(mat_color);
+		} else {
+			Color mat_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_color();
+			if (!p_gizmo->is_selected()) {
+				mat_color.a *= 0.3;
+			}
+			line_material->set_albedo(mat_color);
+		}
+		p_gizmo->add_lines(line_vertex_array, line_material);
 	}
 }

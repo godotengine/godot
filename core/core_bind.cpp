@@ -138,6 +138,10 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	return ::ResourceLoader::get_resource_uid(p_path);
 }
 
+String ResourceLoader::get_resource_type(const String &p_path) {
+	return ::ResourceLoader::get_resource_type(p_path);
+}
+
 Vector<String> ResourceLoader::list_directory(const String &p_directory) {
 	return ::ResourceLoader::list_directory(p_directory);
 }
@@ -157,6 +161,7 @@ void ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cached_ref", "path"), &ResourceLoader::get_cached_ref);
 	ClassDB::bind_method(D_METHOD("exists", "path", "type_hint"), &ResourceLoader::exists, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_resource_uid", "path"), &ResourceLoader::get_resource_uid);
+	ClassDB::bind_method(D_METHOD("get_resource_type", "path"), &ResourceLoader::get_resource_type);
 	ClassDB::bind_method(D_METHOD("list_directory", "directory_path"), &ResourceLoader::list_directory);
 
 	BIND_ENUM_CONSTANT(THREAD_LOAD_INVALID_RESOURCE);
@@ -562,6 +567,10 @@ String OS::get_locale() const {
 	return ::OS::get_singleton()->get_locale();
 }
 
+Vector<String> OS::get_preferred_locales() const {
+	return ::OS::get_singleton()->get_preferred_locales();
+}
+
 String OS::get_locale_language() const {
 	return ::OS::get_singleton()->get_locale_language();
 }
@@ -818,6 +827,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &OS::delay_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &OS::get_locale);
+	ClassDB::bind_method(D_METHOD("get_preferred_locales"), &OS::get_preferred_locales);
 	ClassDB::bind_method(D_METHOD("get_locale_language"), &OS::get_locale_language);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &OS::get_model_name);
 
@@ -936,9 +946,9 @@ Variant Geometry2D::line_intersects_line(const Vector2 &p_from_a, const Vector2 
 	}
 }
 
-Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
+Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p_p1, const Vector2 &p_q1, const Vector2 &p_p2, const Vector2 &p_q2) {
 	Vector2 r1, r2;
-	::Geometry2D::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
+	::Geometry2D::get_closest_points_between_segments(p_p1, p_q1, p_p2, p_q2, r1, r2);
 	Vector<Vector2> r = { r1, r2 };
 	return r;
 }
@@ -951,8 +961,8 @@ Vector2 Geometry2D::get_closest_point_to_segment_uncapped(const Vector2 &p_point
 	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
-bool Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
-	return ::Geometry2D::is_point_in_triangle(s, a, b, c);
+bool Geometry2D::point_is_inside_triangle(const Vector2 &p_s, const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_c) const {
+	return ::Geometry2D::is_point_in_triangle(p_s, p_a, p_b, p_c);
 }
 
 bool Geometry2D::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
@@ -1195,9 +1205,9 @@ TypedArray<Plane> Geometry3D::build_capsule_planes(float p_radius, float p_heigh
 	return ret;
 }
 
-Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
+Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p_p1, const Vector3 &p_p2, const Vector3 &p_q1, const Vector3 &p_q2) {
 	Vector3 r1, r2;
-	::Geometry3D::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
+	::Geometry3D::get_closest_points_between_segments(p_p1, p_p2, p_q1, p_q2, r1, r2);
 	Vector<Vector3> r = { r1, r2 };
 	return r;
 }
@@ -1451,8 +1461,8 @@ void Mutex::_bind_methods() {
 
 ////// Thread //////
 
-void Thread::_start_func(void *ud) {
-	Ref<Thread> *tud = (Ref<Thread> *)ud;
+void Thread::_start_func(void *p_ud) {
+	Ref<Thread> *tud = (Ref<Thread> *)p_ud;
 	Ref<Thread> t = *tud;
 	memdelete(tud);
 
@@ -1680,7 +1690,6 @@ Variant ClassDB::class_get_property(RequiredParam<Object> rp_object, const Strin
 
 Error ClassDB::class_set_property(RequiredParam<Object> rp_object, const StringName &p_property, const Variant &p_value) const {
 	EXTRACT_PARAM_OR_FAIL_V(p_object, rp_object, ERR_INVALID_PARAMETER);
-	Variant ret;
 	bool valid;
 	if (!::ClassDB::set_property(p_object, p_property, p_value, &valid)) {
 		return ERR_UNAVAILABLE;
@@ -1826,7 +1835,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 		::ClassDB::get_class_list(classes);
 		for (const StringName &E : classes) {
 			if (::ClassDB::is_class_exposed(E)) {
-				r_options->push_back(E.operator String().quote());
+				r_options->push_back(E.string().quote());
 			}
 		}
 	}

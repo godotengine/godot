@@ -854,6 +854,8 @@ void ShaderEditorPlugin::shortcut_input(const Ref<InputEvent> &p_event) {
 }
 
 ShaderEditorPlugin::ShaderEditorPlugin() {
+	shader_editor_plugin = this;
+
 	ED_SHORTCUT("shader_editor/new", TTRC("New Shader..."), KeyModifierMask::CMD_OR_CTRL | Key::N);
 	ED_SHORTCUT("shader_editor/new_include", TTRC("New Shader Include..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N);
 	ED_SHORTCUT("shader_editor/open", TTRC("Load Shader File..."), KeyModifierMask::CMD_OR_CTRL | Key::O);

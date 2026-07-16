@@ -41,6 +41,10 @@ class ScriptLanguage;
 template <typename T>
 class TypedArray;
 
+#ifdef TOOLS_ENABLED
+class EditorLanguage;
+#endif // TOOLS_ENABLED
+
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
 
 class ScriptServer {
@@ -173,7 +177,7 @@ public:
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
 	virtual bool is_tool() const = 0;
-	virtual bool is_valid() const = 0;
+	virtual bool is_script_valid() const = 0;
 	virtual bool is_abstract() const = 0;
 
 	virtual ScriptLanguage *get_language() const = 0;
@@ -221,6 +225,11 @@ public:
 	virtual void finish() = 0;
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	// Must not return `nullptr`. `EditorLanguage` can be used as default implementation for languages without editor support.
+	virtual EditorLanguage *get_editor_language() = 0;
+#endif // TOOLS_ENABLED
+
 	struct Warning {
 		/// One-based.
 		int start_line = 0;
@@ -281,7 +290,6 @@ public:
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }
 	virtual bool can_inherit_from_file() const { return false; }
-	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const = 0;
 	virtual bool can_make_function() const { return true; }
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
@@ -359,53 +367,6 @@ public:
 	private:
 		TypedArray<int> charac;
 	};
-
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
-
-	enum LookupResultType {
-		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.
-		LOOKUP_RESULT_CLASS,
-		LOOKUP_RESULT_CLASS_CONSTANT,
-		LOOKUP_RESULT_CLASS_PROPERTY,
-		LOOKUP_RESULT_CLASS_METHOD,
-		LOOKUP_RESULT_CLASS_SIGNAL,
-		LOOKUP_RESULT_CLASS_ENUM,
-		LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE, // Deprecated.
-		LOOKUP_RESULT_CLASS_ANNOTATION,
-		LOOKUP_RESULT_LOCAL_CONSTANT,
-		LOOKUP_RESULT_LOCAL_VARIABLE,
-		LOOKUP_RESULT_MAX,
-	};
-
-	struct LookupResult {
-		LookupResultType type;
-
-		// For `CLASS_*`.
-		String class_name;
-		String class_member;
-
-		// For `LOCAL_*`.
-		String description;
-		bool is_deprecated = false;
-		String deprecated_message;
-		bool is_experimental = false;
-		String experimental_message;
-
-		// For `LOCAL_*`.
-		String doc_type;
-		String enumeration;
-		bool is_bitfield = false;
-
-		// For `LOCAL_*`.
-		String value;
-
-		// `SCRIPT_LOCATION` and `LOCAL_*` must have, `CLASS_*` can have.
-		Ref<Script> script;
-		String script_path;
-		int location = -1;
-	};
-
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
 
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;

@@ -62,7 +62,7 @@ bool DebuggerMarshalls::ScriptStackDump::deserialize(const Array &p_arr) {
 	return true;
 }
 
-Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
+Array DebuggerMarshalls::ScriptStackVariable::serialize(int p_max_size) {
 	Array arr = { name, type, value.get_type() };
 
 	Variant var = value;
@@ -76,7 +76,7 @@ Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
 		ERR_PRINT("Failed to encode variant.");
 	}
 
-	if (len > max_size) {
+	if (len > p_max_size) {
 		arr.push_back(Variant());
 	} else {
 		arr.push_back(var);

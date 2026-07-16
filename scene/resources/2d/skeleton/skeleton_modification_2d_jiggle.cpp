@@ -197,9 +197,9 @@ void SkeletonModification2DJiggle::_execute_jiggle_joint(int p_joint_idx, Node2D
 			Ref<World2D> world_2d = stack->skeleton->get_world_2d();
 			ERR_FAIL_COND(world_2d.is_null());
 			PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
-			PhysicsDirectSpaceState2D::RayResult ray_result;
+			PS2DT::RayResult ray_result;
 
-			PhysicsDirectSpaceState2D::RayParameters ray_params;
+			PS2DT::RayParameters ray_params;
 			ray_params.from = operation_bone_trans.get_origin();
 			ray_params.to = jiggle_data_chain[p_joint_idx].dynamic_position;
 			ray_params.collision_mask = collision_mask;

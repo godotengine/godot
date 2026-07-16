@@ -108,8 +108,6 @@ public:
 		G6DOF_JOINT_LINEAR_LIMIT_SPRING_FREQUENCY,
 		G6DOF_JOINT_LINEAR_LIMIT_SPRING_DAMPING,
 		G6DOF_JOINT_ANGULAR_SPRING_FREQUENCY,
-		G6DOF_JOINT_LINEAR_SPRING_MAX_FORCE,
-		G6DOF_JOINT_ANGULAR_SPRING_MAX_TORQUE,
 	};
 
 	enum G6DOFJointAxisFlagJolt {
@@ -146,7 +144,7 @@ public:
 	virtual void shape_set_margin(RID p_shape, real_t p_margin) override;
 	virtual real_t shape_get_margin(RID p_shape) const override;
 
-	virtual PhysicsServer3D::ShapeType shape_get_type(RID p_shape) const override;
+	virtual PS3DE::ShapeType shape_get_type(RID p_shape) const override;
 
 	virtual real_t shape_get_custom_solver_bias(RID p_shape) const override;
 
@@ -155,8 +153,8 @@ public:
 	virtual void space_set_active(RID p_space, bool p_active) override;
 	virtual bool space_is_active(RID p_space) const override;
 
-	virtual void space_set_param(RID p_space, PhysicsServer3D::SpaceParameter p_param, real_t p_value) override;
-	virtual real_t space_get_param(RID p_space, PhysicsServer3D::SpaceParameter p_param) const override;
+	virtual void space_set_param(RID p_space, PS3DE::SpaceParameter p_param, real_t p_value) override;
+	virtual real_t space_get_param(RID p_space, PS3DE::SpaceParameter p_param) const override;
 
 	virtual PhysicsDirectSpaceState3D *space_get_direct_state(RID p_space) override;
 
@@ -187,8 +185,8 @@ public:
 	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id) override;
 	virtual ObjectID area_get_object_instance_id(RID p_area) const override;
 
-	virtual void area_set_param(RID p_area, PhysicsServer3D::AreaParameter p_param, const Variant &p_value) override;
-	virtual Variant area_get_param(RID p_area, PhysicsServer3D::AreaParameter p_param) const override;
+	virtual void area_set_param(RID p_area, PS3DE::AreaParameter p_param, const Variant &p_value) override;
+	virtual Variant area_get_param(RID p_area, PS3DE::AreaParameter p_param) const override;
 
 	virtual void area_set_transform(RID p_area, const Transform3D &p_transform) override;
 	virtual Transform3D area_get_transform(RID p_area) const override;
@@ -211,8 +209,8 @@ public:
 	virtual void body_set_space(RID p_body, RID p_space) override;
 	virtual RID body_get_space(RID p_body) const override;
 
-	virtual void body_set_mode(RID p_body, PhysicsServer3D::BodyMode p_mode) override;
-	virtual PhysicsServer3D::BodyMode body_get_mode(RID p_body) const override;
+	virtual void body_set_mode(RID p_body, PS3DE::BodyMode p_mode) override;
+	virtual PS3DE::BodyMode body_get_mode(RID p_body) const override;
 
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform3D &p_transform, bool p_disabled) override;
 
@@ -247,13 +245,13 @@ public:
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags) override;
 	virtual uint32_t body_get_user_flags(RID p_body) const override;
 
-	virtual void body_set_param(RID p_body, PhysicsServer3D::BodyParameter p_param, const Variant &p_value) override;
-	virtual Variant body_get_param(RID p_body, PhysicsServer3D::BodyParameter p_param) const override;
+	virtual void body_set_param(RID p_body, PS3DE::BodyParameter p_param, const Variant &p_value) override;
+	virtual Variant body_get_param(RID p_body, PS3DE::BodyParameter p_param) const override;
 
 	virtual void body_reset_mass_properties(RID p_body) override;
 
-	virtual void body_set_state(RID p_body, PhysicsServer3D::BodyState p_state, const Variant &p_value) override;
-	virtual Variant body_get_state(RID p_body, PhysicsServer3D::BodyState p_state) const override;
+	virtual void body_set_state(RID p_body, PS3DE::BodyState p_state, const Variant &p_value) override;
+	virtual Variant body_get_state(RID p_body, PS3DE::BodyState p_state) const override;
 
 	virtual void body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) override;
 	virtual void body_apply_impulse(RID p_body, const Vector3 &p_impulse, const Vector3 &p_position) override;
@@ -275,8 +273,8 @@ public:
 
 	virtual void body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) override;
 
-	virtual void body_set_axis_lock(RID p_body, PhysicsServer3D::BodyAxis p_axis, bool p_lock) override;
-	virtual bool body_is_axis_locked(RID p_body, PhysicsServer3D::BodyAxis p_axis) const override;
+	virtual void body_set_axis_lock(RID p_body, PS3DE::BodyAxis p_axis, bool p_lock) override;
+	virtual bool body_is_axis_locked(RID p_body, PS3DE::BodyAxis p_axis) const override;
 
 	virtual void body_add_collision_exception(RID p_body, RID p_excepted_body) override;
 	virtual void body_remove_collision_exception(RID p_body, RID p_excepted_body) override;
@@ -296,7 +294,7 @@ public:
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable) override;
 
-	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result) override;
+	virtual bool body_test_motion(RID p_body, const PS3DT::MotionParameters &p_parameters, PS3DT::MotionResult *r_result) override;
 
 	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override;
 
@@ -319,8 +317,8 @@ public:
 	virtual void soft_body_remove_collision_exception(RID p_body, RID p_excepted_body) override;
 	virtual void soft_body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) override;
 
-	virtual void soft_body_set_state(RID p_body, PhysicsServer3D::BodyState p_state, const Variant &p_value) override;
-	virtual Variant soft_body_get_state(RID p_body, PhysicsServer3D::BodyState p_state) const override;
+	virtual void soft_body_set_state(RID p_body, PS3DE::BodyState p_state, const Variant &p_value) override;
+	virtual Variant soft_body_get_state(RID p_body, PS3DE::BodyState p_state) const override;
 
 	virtual void soft_body_set_transform(RID p_body, const Transform3D &p_transform) override;
 
@@ -368,8 +366,8 @@ public:
 
 	virtual void joint_make_pin(RID p_joint, RID p_body_a, const Vector3 &p_local_a, RID p_body_b, const Vector3 &p_local_b) override;
 
-	virtual void pin_joint_set_param(RID p_joint, PhysicsServer3D::PinJointParam p_param, real_t p_value) override;
-	virtual real_t pin_joint_get_param(RID p_joint, PhysicsServer3D::PinJointParam p_param) const override;
+	virtual void pin_joint_set_param(RID p_joint, PS3DE::PinJointParam p_param, real_t p_value) override;
+	virtual real_t pin_joint_get_param(RID p_joint, PS3DE::PinJointParam p_param) const override;
 
 	virtual void pin_joint_set_local_a(RID p_joint, const Vector3 &p_local_a) override;
 	virtual Vector3 pin_joint_get_local_a(RID p_joint) const override;
@@ -381,31 +379,34 @@ public:
 
 	virtual void joint_make_hinge_simple(RID p_joint, RID p_body_a, const Vector3 &p_pivot_a, const Vector3 &p_axis_a, RID p_body_b, const Vector3 &p_pivot_b, const Vector3 &p_axis_b) override;
 
-	virtual void hinge_joint_set_param(RID p_joint, PhysicsServer3D::HingeJointParam p_param, real_t p_value) override;
-	virtual real_t hinge_joint_get_param(RID p_joint, PhysicsServer3D::HingeJointParam p_param) const override;
+	virtual void hinge_joint_set_param(RID p_joint, PS3DE::HingeJointParam p_param, real_t p_value) override;
+	virtual real_t hinge_joint_get_param(RID p_joint, PS3DE::HingeJointParam p_param) const override;
 
-	virtual void hinge_joint_set_flag(RID p_joint, PhysicsServer3D::HingeJointFlag p_flag, bool p_enabled) override;
-	virtual bool hinge_joint_get_flag(RID p_joint, PhysicsServer3D::HingeJointFlag p_flag) const override;
+	virtual void hinge_joint_set_flag(RID p_joint, PS3DE::HingeJointFlag p_flag, bool p_enabled) override;
+	virtual bool hinge_joint_get_flag(RID p_joint, PS3DE::HingeJointFlag p_flag) const override;
 
 	virtual void joint_make_slider(RID p_joint, RID p_body_a, const Transform3D &p_local_ref_a, RID p_body_b, const Transform3D &p_local_ref_b) override;
 
-	virtual void slider_joint_set_param(RID p_joint, PhysicsServer3D::SliderJointParam p_param, real_t p_value) override;
-	virtual real_t slider_joint_get_param(RID p_joint, PhysicsServer3D::SliderJointParam p_param) const override;
+	virtual void slider_joint_set_param(RID p_joint, PS3DE::SliderJointParam p_param, real_t p_value) override;
+	virtual real_t slider_joint_get_param(RID p_joint, PS3DE::SliderJointParam p_param) const override;
 
 	virtual void joint_make_cone_twist(RID p_joint, RID p_body_a, const Transform3D &p_local_ref_a, RID p_body_b, const Transform3D &p_local_ref_b) override;
 
-	virtual void cone_twist_joint_set_param(RID p_joint, PhysicsServer3D::ConeTwistJointParam p_param, real_t p_value) override;
-	virtual real_t cone_twist_joint_get_param(RID p_joint, PhysicsServer3D::ConeTwistJointParam p_param) const override;
+	virtual void cone_twist_joint_set_param(RID p_joint, PS3DE::ConeTwistJointParam p_param, real_t p_value) override;
+	virtual real_t cone_twist_joint_get_param(RID p_joint, PS3DE::ConeTwistJointParam p_param) const override;
 
 	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_a, const Transform3D &p_local_ref_a, RID p_body_b, const Transform3D &p_local_ref_b) override;
 
-	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param, real_t p_value) override;
-	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param) const override;
+	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, PS3DE::G6DOFJointAxisParam p_param, real_t p_value) override;
+	virtual real_t generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, PS3DE::G6DOFJointAxisParam p_param) const override;
 
-	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag, bool p_enable) override;
-	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const override;
+	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, PS3DE::G6DOFJointAxisFlag p_flag, bool p_enable) override;
+	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, PS3DE::G6DOFJointAxisFlag p_flag) const override;
 
-	virtual PhysicsServer3D::JointType joint_get_type(RID p_joint) const override;
+	virtual void generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) override;
+	virtual Quaternion generic_6dof_joint_get_angular_target_rotation(RID p_joint) const override;
+
+	virtual PS3DE::JointType joint_get_type(RID p_joint) const override;
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override;
 	virtual int joint_get_solver_priority(RID p_joint) const override;
@@ -428,7 +429,7 @@ public:
 	virtual void flush_queries() override;
 	virtual bool is_flushing_queries() const override;
 
-	virtual int get_process_info(PhysicsServer3D::ProcessInfo p_process_info) override;
+	virtual int get_process_info(PS3DE::ProcessInfo p_process_info) override;
 
 	bool is_on_separate_thread() const { return on_separate_thread; }
 	bool is_active() const { return active; }

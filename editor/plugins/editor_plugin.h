@@ -146,8 +146,8 @@ protected:
 	GDVIRTUAL0(_disable_plugin)
 
 #ifndef DISABLE_DEPRECATED
-	Button *_add_control_to_bottom_panel_compat_88081(Control *p_control, const String &p_title);
-	void _add_control_to_dock_compat_88081(DockSlot p_slot, Control *p_control);
+	Button *_add_control_to_bottom_panel_bind_compat_88081(Control *p_control, const String &p_title);
+	void _add_control_to_dock_bind_compat_88081(DockSlot p_slot, Control *p_control);
 	static void _bind_compatibility_methods();
 
 	void add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut = nullptr);
@@ -246,14 +246,14 @@ public:
 	void add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 	void remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin);
 
-	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
-	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
-
 	void add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority = false);
 	void remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer);
 
 	void add_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_importer);
+
+	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
+	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);

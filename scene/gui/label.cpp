@@ -154,7 +154,11 @@ void Label::_shape() const {
 		if (maximum_width <= 0) {
 			maximum_width = 1;
 		}
-		width = maximum_width;
+		if (width > 0 && !is_expanded_by_desired_size()) {
+			width = MIN(width, maximum_width);
+		} else {
+			width = maximum_width;
+		}
 	}
 
 	if (text_dirty) {
@@ -647,8 +651,8 @@ PackedStringArray Label::get_configuration_warnings() const {
 	// but for now we have to warn about this impossible to resolve combination.
 	// See GH-83546.
 	if (is_inside_tree() && get_tree()->get_edited_scene_root() != this) {
-		if (autowrap_mode != TextServer::AUTOWRAP_OFF && get_combined_maximum_size().width <= 0) {
-			warnings.push_back(RTR("Labels with autowrapping enabled must have a positive custom maximum width configured to work correctly."));
+		if (autowrap_mode != TextServer::AUTOWRAP_OFF && get_combined_maximum_size().width <= 0 && get_custom_minimum_size().width <= 0) {
+			warnings.push_back(RTR("Labels with autowrapping enabled must have a positive custom minimum or maximum width configured to work correctly."));
 		}
 	}
 

@@ -950,6 +950,8 @@ public:
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const { return false; }
 
+	virtual DriverWorkarounds get_driver_workarounds() const { return DriverWorkarounds(); }
+
 	/******************/
 
 	virtual ~RenderingDeviceDriver();

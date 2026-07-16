@@ -791,7 +791,53 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		return p_node;
 	}
 
-	if (_teststr(name, "colonly") || _teststr(name, "convcolonly")) {
+	if (_teststr(name, "occ") || _teststr(name, "occonly")) {
+		if (isroot) {
+			return p_node;
+		}
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+		if (mi) {
+			Ref<ImporterMesh> mesh = mi->get_mesh();
+
+			if (mesh.is_valid()) {
+				if (r_occluder_arrays) {
+					OccluderInstance3D::bake_single_node(mi, 0.0f, r_occluder_arrays->first, r_occluder_arrays->second);
+				}
+				if (_teststr(name, "occ")) {
+					String fixed_name = _fixstr(name, "occ");
+					if (!fixed_name.is_empty()) {
+						if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
+							mi->set_name(fixed_name);
+						}
+					}
+				} else {
+					p_node->set_owner(nullptr);
+					memdelete(p_node);
+					p_node = nullptr;
+				}
+			}
+		}
+	} else if (_teststr(name, "navmesh") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		if (isroot) {
+			return p_node;
+		}
+
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+
+		Ref<ImporterMesh> mesh = mi->get_mesh();
+		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
+		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
+
+		nmi->set_name(_fixstr(name, "navmesh"));
+		Ref<NavigationMesh> nmesh = mesh->create_navigation_mesh();
+		nmi->set_navigation_mesh(nmesh);
+		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
+		_copy_meta(p_node, nmi);
+		p_node->replace_by(nmi);
+		p_node->set_owner(nullptr);
+		memdelete(p_node);
+		p_node = nmi;
+	} else if (_teststr(name, "colonly") || _teststr(name, "convcolonly")) {
 		if (isroot) {
 			return p_node;
 		}
@@ -940,53 +986,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				col->set_owner(mi->get_owner());
 
 				_add_shapes(col, shapes);
-			}
-		}
-
-	} else if (_teststr(name, "navmesh") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
-		if (isroot) {
-			return p_node;
-		}
-
-		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
-
-		Ref<ImporterMesh> mesh = mi->get_mesh();
-		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
-		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
-
-		nmi->set_name(_fixstr(name, "navmesh"));
-		Ref<NavigationMesh> nmesh = mesh->create_navigation_mesh();
-		nmi->set_navigation_mesh(nmesh);
-		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
-		_copy_meta(p_node, nmi);
-		p_node->replace_by(nmi);
-		p_node->set_owner(nullptr);
-		memdelete(p_node);
-		p_node = nmi;
-	} else if (_teststr(name, "occ") || _teststr(name, "occonly")) {
-		if (isroot) {
-			return p_node;
-		}
-		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
-		if (mi) {
-			Ref<ImporterMesh> mesh = mi->get_mesh();
-
-			if (mesh.is_valid()) {
-				if (r_occluder_arrays) {
-					OccluderInstance3D::bake_single_node(mi, 0.0f, r_occluder_arrays->first, r_occluder_arrays->second);
-				}
-				if (_teststr(name, "occ")) {
-					String fixed_name = _fixstr(name, "occ");
-					if (!fixed_name.is_empty()) {
-						if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
-							mi->set_name(fixed_name);
-						}
-					}
-				} else {
-					p_node->set_owner(nullptr);
-					memdelete(p_node);
-					p_node = nullptr;
-				}
 			}
 		}
 	} else if (_teststr(name, "vehicle")) {
@@ -1613,12 +1612,35 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						continue;
 					}
 					const String mat_id = mat->get_meta("import_id", mat->get_name());
-					if (mat_id.is_empty() || !p_material_data.has(mat_id)) {
+					if (mat_id.is_empty()) {
 						continue;
 					}
-					Dictionary matdata = p_material_data[mat_id];
+					// Start with per-material import settings, if any. This is populated by the
+					// Advanced Import Settings dialog, but may be empty when using only the Import dock.
+					Dictionary matdata;
+					if (p_material_data.has(mat_id)) {
+						matdata = p_material_data[mat_id];
+					}
+					String file_path;
+					// Read any existing "use_external" settings to get the enabled status and file path.
+					if (matdata.has("use_external/enabled")) {
+						const bool enabled = bool(matdata["use_external/enabled"]);
+						// If the user has explicitly overwrote this material to not be external, skip it.
+						if (!enabled) {
+							continue;
+						}
+						// Read any existing file path from this material's import settings, if present.
+						if (matdata.has("use_external/fallback_path")) {
+							file_path = matdata["use_external/fallback_path"];
+						} else if (matdata.has("use_external/path")) {
+							file_path = matdata["use_external/path"];
+							if (file_path.begins_with("uid://")) {
+								file_path = ResourceUID::get_singleton()->uid_to_path(file_path);
+							}
+						}
+					}
+					// For any material settings that are missing, fill them with default values.
 					{
-						//fill node settings for this node with default values
 						List<ImportOption> iopts;
 						get_internal_import_options(INTERNAL_IMPORT_CATEGORY_MATERIAL, &iopts);
 						for (const ImportOption &E : iopts) {
@@ -1631,18 +1653,21 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						post_importer_plugins.write[j]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL, p_root, p_node, mat, matdata);
 					}
 					if (extract_mat != 0) {
-						const String ext = material_extension[p_options.has("materials/extract_format") ? (int)p_options["materials/extract_format"] : 0];
-						const String path = spath.path_join(mat_id.validate_filename() + ext);
-						const String uid_path = ResourceUID::path_to_uid(path);
-
-						matdata["use_external/enabled"] = true;
-						matdata["use_external/path"] = uid_path;
-						matdata["use_external/fallback_path"] = path;
-						if (!FileAccess::exists(path) || extract_mat == 2 /*overwrite*/) {
-							ResourceSaver::save(mat, path);
+						// If no file path was specified, generate one based on the material name and the selected format.
+						if (file_path.is_empty()) {
+							const String ext = material_extension[p_options.has("materials/extract_format") ? (int)p_options["materials/extract_format"] : 0];
+							file_path = spath.path_join(mat_id.validate_filename() + ext);
+							const String uid_path = ResourceUID::path_to_uid(file_path);
+							matdata["use_external/enabled"] = true;
+							matdata["use_external/path"] = uid_path;
+							matdata["use_external/fallback_path"] = file_path;
+						}
+						// Write the file if it doesn't exist, or if the user has selected to overwrite existing files.
+						if (!FileAccess::exists(file_path) || extract_mat == 2 /*overwrite*/) {
+							ResourceSaver::save(mat, file_path);
 						}
 
-						Ref<Material> external_mat = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
+						Ref<Material> external_mat = ResourceLoader::load(file_path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
 						if (external_mat.is_valid()) {
 							m->set_surface_material(i, external_mat);
 						}
@@ -1986,7 +2011,6 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 		Ref<Animation> new_anim = memnew(Animation);
 
 		for (int j = 0; j < anim->get_track_count(); j++) {
-			List<float> keys;
 			int kc = anim->track_get_key_count(j);
 			int dtrack = -1;
 			for (int k = 0; k < kc; k++) {
@@ -2144,8 +2168,11 @@ void ResourceImporterScene::_compress_animations(AnimationPlayer *anim, int p_pa
 Error ResourceImporterScene::_save_scene_as_mesh_library(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags) {
 	TypedArray<Node> mesh_instances = p_godot_scene->find_children("*", "MeshInstance3D", true, false);
 	const int mesh_inst_count = mesh_instances.size();
-	HashSet<Ref<Mesh>> unique_meshes;
+	AHashMap<Ref<Mesh>, StringName> unique_meshes;
+
 	const bool use_node_names_as_mesh_names = p_options.has("mesh_library/use_node_names_as_mesh_names") && p_options["mesh_library/use_node_names_as_mesh_names"];
+	const bool create_categories_from_hierarchy = p_options.has("mesh_library/create_categories_from_hierarchy") && p_options["mesh_library/create_categories_from_hierarchy"];
+
 	for (int mesh_inst_i = 0; mesh_inst_i < mesh_inst_count; mesh_inst_i++) {
 		MeshInstance3D *mesh_inst = Object::cast_to<MeshInstance3D>(mesh_instances[mesh_inst_i]);
 		Ref<Mesh> mesh = mesh_inst->get_mesh();
@@ -2153,22 +2180,36 @@ Error ResourceImporterScene::_save_scene_as_mesh_library(const String &p_source_
 			if (unique_meshes.has(mesh)) {
 				continue;
 			}
+
 			if (use_node_names_as_mesh_names) {
 				mesh->set_name(mesh_inst->get_name());
 			}
-			unique_meshes.insert(mesh);
+
+			String category;
+			if (create_categories_from_hierarchy) {
+				Node *parent = mesh_inst->get_parent();
+				while (parent) {
+					category = category.path_join(parent->get_name());
+					parent = parent->get_parent();
+				}
+			}
+
+			unique_meshes.insert(mesh, category);
 		}
 	}
+
 	Ref<MeshLibrary> mesh_library;
 	mesh_library.instantiate();
-	for (Ref<Mesh> mesh : unique_meshes) {
+	for (KeyValue<Ref<Mesh>, StringName> kv : unique_meshes) {
 		// The scene importers guarantee mesh names to be unique and non-empty, so we can use it safely without fallback.
-		const String mesh_name = mesh->get_name();
+		const String mesh_name = kv.key->get_name();
 		const int id = mesh_library->get_last_unused_item_id();
 		mesh_library->create_item(id);
 		mesh_library->set_item_name(id, mesh_name);
-		mesh_library->set_item_mesh(id, mesh);
+		mesh_library->set_item_mesh(id, kv.key);
+		mesh_library->set_item_category(id, kv.value);
 	}
+
 	return ResourceSaver::save(mesh_library, p_save_path + ".res", p_flags);
 }
 
@@ -2611,6 +2652,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	bool trimming_defaults_on = p_path.has_extension("fbx");
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mesh_library/use_node_names_as_mesh_names"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mesh_library/create_categories_from_hierarchy"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "array_mesh/deduplicate_surfaces"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
@@ -3358,7 +3400,6 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		if (f.is_valid()) {
 			f->store_32(mesh_lightmap_caches.size());
 			for (int i = 0; i < mesh_lightmap_caches.size(); i++) {
-				String md5 = String::md5(mesh_lightmap_caches[i].ptr());
 				f->store_buffer(mesh_lightmap_caches[i].ptr(), mesh_lightmap_caches[i].size());
 			}
 		}

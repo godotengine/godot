@@ -1630,9 +1630,6 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 		return String();
 	}
 
-	List<String> input_names;
-	List<String> output_names;
-
 	for (int i = 0; i < p_node->get_input_port_count(); i++) {
 		if (!p_output && i == p_port_id) {
 			continue;
@@ -5624,7 +5621,6 @@ bool VisualShaderNodeVaryingGetter::has_output_port_preview(int p_port) const {
 
 String VisualShaderNodeVaryingGetter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String from = varying_name;
-	String from2;
 
 	if (varying_name == "[None]" || p_for_preview) {
 		switch (varying_type) {

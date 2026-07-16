@@ -44,10 +44,6 @@ Ref<AudioStreamPlayback> AudioStreamInteractive::instantiate_playback() {
 	return playback_transitioner;
 }
 
-String AudioStreamInteractive::get_stream_name() const {
-	return "Transitioner";
-}
-
 void AudioStreamInteractive::set_clip_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0 || p_count > MAX_CLIPS);
 
@@ -888,12 +884,19 @@ void AudioStreamPlaybackInteractive::_mix_internal(int p_frames) {
 		mix_buffer[i] = AudioFrame(0, 0);
 	}
 
+	bool any_active = false;
 	for (int i = 0; i < stream->clip_count; i++) {
 		if (!states[i].active) {
 			continue;
 		}
 
 		_mix_internal_state(i, p_frames);
+
+		any_active = states[i].active || any_active;
+	}
+	if (!any_active) {
+		active = false;
+		playback_current = -1;
 	}
 }
 

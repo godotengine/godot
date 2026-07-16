@@ -44,7 +44,7 @@ GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Warray-bounds")
  *
  */
 template <class T, uint32_t CAPACITY>
-class FixedVector {
+class _WARN_UNUSED_ FixedVector {
 	// This declaration allows us to access other FixedVector's private members.
 	template <class T_, uint32_t CAPACITY_>
 	friend class FixedVector;
@@ -125,11 +125,11 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ constexpr T *ptr() { return (T *)(_data); }
-	_FORCE_INLINE_ constexpr const T *ptr() const { return (const T *)(_data); }
+	_FORCE_INLINE_ constexpr T *ptr() _LIFETIME_BOUND_ { return (T *)(_data); }
+	_FORCE_INLINE_ constexpr const T *ptr() const _LIFETIME_BOUND_ { return (const T *)(_data); }
 
-	_FORCE_INLINE_ constexpr operator Span<T>() const { return Span<T>(ptr(), size()); }
-	_FORCE_INLINE_ constexpr Span<T> span() const { return operator Span<T>(); }
+	_FORCE_INLINE_ constexpr operator Span<T>() const _LIFETIME_BOUND_ { return Span<T>(ptr(), size()); }
+	_FORCE_INLINE_ constexpr Span<T> span() const _LIFETIME_BOUND_ { return operator Span<T>(); }
 
 	_FORCE_INLINE_ constexpr uint32_t size() const { return _size; }
 	_FORCE_INLINE_ constexpr bool is_empty() const { return !_size; }
@@ -188,21 +188,21 @@ public:
 	// NOTE: Subscripts sanity check the bounds to avoid undefined behavior.
 	//       This is slower than direct buffer access and can prevent autovectorization.
 	//       If the bounds are known, use ptr() subscript instead.
-	constexpr const T &operator[](uint32_t p_index) const {
+	constexpr const T &operator[](uint32_t p_index) const _LIFETIME_BOUND_ {
 		CRASH_COND(p_index >= _size);
 		return ptr()[p_index];
 	}
 
-	constexpr T &operator[](uint32_t p_index) {
+	constexpr T &operator[](uint32_t p_index) _LIFETIME_BOUND_ {
 		CRASH_COND(p_index >= _size);
 		return ptr()[p_index];
 	}
 
-	_FORCE_INLINE_ constexpr T *begin() { return ptr(); }
-	_FORCE_INLINE_ constexpr T *end() { return ptr() + _size; }
+	_FORCE_INLINE_ constexpr T *begin() _LIFETIME_BOUND_ { return ptr(); }
+	_FORCE_INLINE_ constexpr T *end() _LIFETIME_BOUND_ { return ptr() + _size; }
 
-	_FORCE_INLINE_ constexpr const T *begin() const { return ptr(); }
-	_FORCE_INLINE_ constexpr const T *end() const { return ptr() + _size; }
+	_FORCE_INLINE_ constexpr const T *begin() const _LIFETIME_BOUND_ { return ptr(); }
+	_FORCE_INLINE_ constexpr const T *end() const _LIFETIME_BOUND_ { return ptr() + _size; }
 };
 
 GODOT_GCC_WARNING_POP

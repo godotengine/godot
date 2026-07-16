@@ -63,10 +63,10 @@ RID World2D::get_space() const {
 	if (space.is_null()) {
 		space = PhysicsServer2D::get_singleton()->space_create();
 		PhysicsServer2D::get_singleton()->space_set_active(space, true);
-		PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY, GLOBAL_GET("physics/2d/default_gravity"));
-		PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_GET("physics/2d/default_gravity_vector"));
-		PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_LINEAR_DAMP, GLOBAL_GET("physics/2d/default_linear_damp"));
-		PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_GET("physics/2d/default_angular_damp"));
+		PhysicsServer2D::get_singleton()->area_set_param(space, PS2DE::AREA_PARAM_GRAVITY, GLOBAL_GET("physics/2d/default_gravity"));
+		PhysicsServer2D::get_singleton()->area_set_param(space, PS2DE::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_GET("physics/2d/default_gravity_vector"));
+		PhysicsServer2D::get_singleton()->area_set_param(space, PS2DE::AREA_PARAM_LINEAR_DAMP, GLOBAL_GET("physics/2d/default_linear_damp"));
+		PhysicsServer2D::get_singleton()->area_set_param(space, PS2DE::AREA_PARAM_ANGULAR_DAMP, GLOBAL_GET("physics/2d/default_angular_damp"));
 	}
 	return space;
 }

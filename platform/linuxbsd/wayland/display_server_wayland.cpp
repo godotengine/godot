@@ -141,6 +141,11 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 
 		// Send to a single window.
 		if (windows.has(window_id)) {
+			Ref<InputEventMouse> iev_mouse = p_event;
+			if (iev_mouse.is_valid()) {
+				mouse_pos = iev_mouse->get_position() + windows[window_id].rect.position;
+			}
+
 			Callable callable = windows[window_id].input_event_callback;
 			if (callable.is_valid()) {
 				callable.call(p_event);
@@ -169,11 +174,11 @@ void DisplayServerWayland::_delete_window(DisplayServerEnums::WindowID p_window_
 	ERR_FAIL_COND(!windows.has(wd.root_id));
 	WindowData &root_wd = windows[wd.root_id];
 
-	// NOTE: By the time the Wayland thread will send a `WINDOW_EVENT_MOUSE_EXIT`
-	// the window will be gone and the message will be discarded, confusing the
-	// engine. We thus have to send it ourselves.
-	if (wayland_thread.pointer_get_pointed_window_id() == p_window_id) {
-		_send_window_event(DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT, p_window_id);
+	// We need to clear the hovered window now. By the time we'll get a hover
+	// change from the thread, it will be already gone and we won't have anywhere
+	// to send the mouse exit event to.
+	if (hovered_window_id == p_window_id) {
+		_hover_window(DisplayServerEnums::INVALID_WINDOW_ID);
 	}
 
 	// The XDG shell specification requires us to clear all popups in reverse order.
@@ -243,6 +248,33 @@ void DisplayServerWayland::_update_window_rect(const Rect2i &p_rect, DisplayServ
 
 	if (wd.rect_changed_callback.is_valid()) {
 		wd.rect_changed_callback.call(wd.rect);
+	}
+}
+
+void DisplayServerWayland::_hover_window(DisplayServerEnums::WindowID p_window_id) {
+	if (hovered_window_id == p_window_id) {
+		return;
+	}
+
+	// NOTE: _send_window_event invokes callbacks and might have side effects!
+	// (e.g. a popup indirectly calling this method again). Make sure to do all of
+	// your bookkeping BEFORE sending window events!
+
+	DisplayServerEnums::WindowID old_hover = hovered_window_id;
+
+	if (old_hover != DisplayServerEnums::INVALID_WINDOW_ID) {
+		hovered_window_id = DisplayServerEnums::INVALID_WINDOW_ID;
+
+		DEBUG_LOG_WAYLAND(vformat("[DEBUG] Notifying mouse exit to window %d.", old_hover));
+		_send_window_event(DisplayServerEnums::WINDOW_EVENT_MOUSE_EXIT, old_hover);
+	}
+
+	// The window might have been destroyed in the meantime.
+	if (p_window_id != DisplayServerEnums::INVALID_WINDOW_ID && windows.has(p_window_id)) {
+		hovered_window_id = p_window_id;
+
+		DEBUG_LOG_WAYLAND(vformat("[DEBUG] Notifying mouse enter to window %d.", p_window_id));
+		_send_window_event(DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER, p_window_id);
 	}
 }
 
@@ -477,12 +509,6 @@ void DisplayServerWayland::_mouse_update_mode() {
 
 	wayland_thread.pointer_set_constraint(constraint);
 
-	if (wanted_mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
-		WindowData *pointed_win = windows.getptr(wayland_thread.pointer_get_pointed_window_id());
-		ERR_FAIL_NULL(pointed_win);
-		wayland_thread.pointer_set_hint(pointed_win->rect.size / 2);
-	}
-
 	mouse_mode = wanted_mouse_mode;
 }
 
@@ -532,15 +558,7 @@ void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 Point2i DisplayServerWayland::mouse_get_position() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	DisplayServerEnums::WindowID pointed_id = wayland_thread.pointer_get_pointed_window_id();
-
-	if (pointed_id != DisplayServerEnums::INVALID_WINDOW_ID && windows.has(pointed_id)) {
-		return Input::get_singleton()->get_mouse_position() + windows[pointed_id].rect.position;
-	}
-
-	// We can't properly implement this method by design.
-	// This is the best we can do unfortunately.
-	return Input::get_singleton()->get_mouse_position();
+	return mouse_pos;
 }
 
 BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {
@@ -616,6 +634,20 @@ Ref<Image> DisplayServerWayland::clipboard_get_image() const {
 	ERR_FAIL_COND_V(err != OK, Ref<Image>());
 
 	return image;
+}
+
+bool DisplayServerWayland::clipboard_has_image() const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	return wayland_thread.selection_has_mime("image/png") ||
+			wayland_thread.selection_has_mime("image/jpeg") ||
+			wayland_thread.selection_has_mime("image/webp") ||
+			wayland_thread.selection_has_mime("image/svg+xml") ||
+			wayland_thread.selection_has_mime("image/bmp") ||
+			wayland_thread.selection_has_mime("image/x-tga") ||
+			wayland_thread.selection_has_mime("image/x-targa") ||
+			wayland_thread.selection_has_mime("image/ktx") ||
+			wayland_thread.selection_has_mime("image/x-exr");
 }
 
 void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
@@ -1905,12 +1937,29 @@ void DisplayServerWayland::try_suspend() {
 void DisplayServerWayland::process_events() {
 	wayland_thread.mutex.lock();
 
-	wayland_thread.keyboard_echo_keys();
+	// Some behavior depends on the progress of the main thread.
+	wayland_thread.main_loop_callback();
 
 	while (wayland_thread.has_message()) {
 		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
 
-		// Generic check. Not actual message handling.
+		Ref<WaylandThread::WindowHoverMessage> winhov_msg = msg;
+		if (winhov_msg.is_valid()) {
+			DisplayServerEnums::WindowID winhov_id = winhov_msg->id;
+			if (winhov_id != DisplayServerEnums::INVALID_WINDOW_ID && !windows.has(winhov_id)) {
+				// The window got deleted in the meantime. We can't depend on this message
+				// as we likely done all the relevant handling ourselves here, in the main
+				// thread.
+				continue;
+			}
+
+			_hover_window(winhov_id);
+
+			continue;
+		}
+
+		// The following `WindowMessage`s do not accept invalid windows. We can thus
+		// consolidate everything in a single check.
 		Ref<WaylandThread::WindowMessage> win_msg = msg;
 		if (win_msg.is_valid()) {
 			ERR_CONTINUE_MSG(win_msg->id == DisplayServerEnums::INVALID_WINDOW_ID, "Invalid window ID received from Wayland thread.");

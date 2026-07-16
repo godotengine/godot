@@ -147,6 +147,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val GAME_MENU_ACTION_SET_NODE_TYPE = "setNodeType"
 		internal const val GAME_MENU_ACTION_SET_SELECT_MODE = "setSelectMode"
 		internal const val GAME_MENU_ACTION_SET_SELECTION_VISIBLE = "setSelectionVisible"
+		internal const val GAME_MENU_ACTION_SET_SELECTION_AVOID_LOCKED = "setSelectionAvoidLocked"
+		internal const val GAME_MENU_ACTION_SET_SELECTION_PREFER_GROUP = "setSelectionPreferGroup"
 		internal const val GAME_MENU_ACTION_SET_CAMERA_OVERRIDE = "setCameraOverride"
 		internal const val GAME_MENU_ACTION_SET_CAMERA_MANIPULATE_MODE = "setCameraManipulateMode"
 		internal const val GAME_MENU_ACTION_RESET_CAMERA_2D_POSITION = "resetCamera2DPosition"
@@ -209,6 +211,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	private var changingOrientationAllowed = false
 	private var distractionFreeModeEnabled = false
 	private var activeWorkspace: String? = null
+	private var currentOrientation = Configuration.ORIENTATION_UNDEFINED
 
 	override fun getGodotAppLayout() = R.layout.godot_editor_layout
 
@@ -279,9 +282,13 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	override fun onConfigurationChanged(newConfig: Configuration) {
 		super.onConfigurationChanged(newConfig)
 
-		// Show EditorTitleBar on small screens only in landscape due to width limitations in portrait.
-		// TODO: Enable for portrait once the title bar width is optimized.
-		EditorUtils.toggleTitleBar(isLargeScreen || newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
+		// Some editor parts are hidden on small screens due to width limitations in portrait.
+		if (!isLargeScreen && currentOrientation != newConfig.orientation) {
+			currentOrientation = newConfig.orientation
+			godot?.runOnRenderThread {
+				EditorUtils.orientationChanged(currentOrientation == Configuration.ORIENTATION_PORTRAIT)
+			}
+		}
 	}
 
 	override fun onDestroy() {
@@ -980,6 +987,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
 				toggleSelectionVisibility(enabled)
 			}
+			GAME_MENU_ACTION_SET_SELECTION_AVOID_LOCKED -> {
+				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
+				toggleSelectionAvoidLocked(enabled)
+			}
+			GAME_MENU_ACTION_SET_SELECTION_PREFER_GROUP -> {
+				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
+				toggleSelectionPreferGroup(enabled)
+			}
 			GAME_MENU_ACTION_SET_CAMERA_OVERRIDE -> {
 				val enabled = actionData.getBoolean(KEY_GAME_MENU_ACTION_PARAM1)
 				overrideCamera(enabled)
@@ -1037,6 +1052,20 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_SELECTION_VISIBLE, enabled)
 		godot?.runOnRenderThread {
 			GameMenuUtils.setSelectionVisible(enabled)
+		}
+	}
+
+	override fun toggleSelectionAvoidLocked(enabled: Boolean) {
+		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_SELECTION_AVOID_LOCKED, enabled)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setSelectionAvoidLocked(enabled)
+		}
+	}
+
+	override fun toggleSelectionPreferGroup(enabled: Boolean) {
+		gameMenuState.putBoolean(GAME_MENU_ACTION_SET_SELECTION_PREFER_GROUP, enabled)
+		godot?.runOnRenderThread {
+			GameMenuUtils.setSelectionPreferGroup(enabled)
 		}
 	}
 

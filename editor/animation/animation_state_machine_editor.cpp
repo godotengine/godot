@@ -72,8 +72,6 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 		connected_nodes.clear();
 		_update_mode();
 		_update_graph();
-	} else {
-		AnimationTreeEditor::get_singleton()->current_playback_error = String();
 	}
 
 	if (read_only) {
@@ -742,9 +740,6 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				bool is_start_closer = dist_to_start < dist_to_end;
 
 				if ((near_start || near_end) && d < closest_d_highlight) {
-					StringName from_node = transition_lines[i].from_node;
-					StringName to_node = transition_lines[i].to_node;
-
 					bool is_start_endpoint = near_start && (is_start_closer || !near_end);
 					closest_d_highlight = d;
 					closest_for_highlight = i;
@@ -865,8 +860,6 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 }
 
 bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path) {
-	String prev_path;
-
 	LocalVector<StringName> nodes = p_nodesm->get_node_list();
 
 	PopupMenu *nodes_menu = memnew(PopupMenu);
@@ -1694,7 +1687,6 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 			const String playback_path = AnimationTreeEditor::get_singleton()->get_base_path() + "playback";
 			Ref<AnimationNodeStateMachinePlayback> playback = tree->get(playback_path);
-			AnimationTreeEditor::get_singleton()->current_playback_error = playback.is_null() ? vformat(TTR("No playback resource set at path: %s."), playback_path) : String();
 
 			for (int i = 0; i < transition_lines.size(); i++) {
 				int tidx = -1;
@@ -1831,8 +1823,6 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			hovered_node_name = StringName();
 			hovered_node_area = HOVER_NODE_NONE;
 			set_process(is_visible_in_tree());
-
-			AnimationTreeEditor::get_singleton()->current_playback_error = String();
 		} break;
 	}
 }

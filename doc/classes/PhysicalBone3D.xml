@@ -43,6 +43,12 @@
 				Returns the unique identifier of the PhysicsBone3D.
 			</description>
 		</method>
+		<method name="get_joint_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the joint's internal [RID] from the [PhysicsServer3D].
+			</description>
+		</method>
 		<method name="get_simulate_physics">
 			<return type="bool" />
 			<description>

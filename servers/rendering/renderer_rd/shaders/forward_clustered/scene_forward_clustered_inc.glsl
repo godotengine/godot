@@ -142,6 +142,10 @@ bool sc_fog_use_legacy_blending() {
 	return ((sc_packed_1() >> 4) & 1U) != 0;
 }
 
+bool sc_cluster_has_area_light() {
+	return ((sc_packed_1() >> 5) & 1U) != 0;
+}
+
 float sc_luminance_multiplier() {
 	// Not used in clustered renderer but we share some code with the mobile renderer that requires this.
 	return 1.0;
@@ -488,9 +492,9 @@ vec4 normal_roughness_compatibility(vec4 p_normal_roughness) {
 }
 
 // https://google.github.io/filament/Filament.html#toc5.3.4.7
-// Note: The roughness value is inverted
-vec3 prefiltered_dfg(float lod, float NoV) {
-	return textureLod(sampler2D(dfg, SAMPLER_LINEAR_CLAMP), vec2(NoV, 1.0 - lod), 0.0).rgb;
+// Note: We have an inverted Y-axis in the DFG; therefore, the roughness value must be inverted.
+vec2 prefiltered_dfg(float lod, float NoV) {
+	return textureLod(sampler2D(dfg, SAMPLER_LINEAR_CLAMP), vec2(NoV, 1.0 - lod), 0.0).rg;
 }
 
 // Compute multiscatter compensation

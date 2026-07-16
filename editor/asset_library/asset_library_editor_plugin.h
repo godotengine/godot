@@ -60,6 +60,7 @@ class EditorAssetLibraryItem : public MarginContainer {
 	MarginContainer *margin = nullptr;
 	Button *button = nullptr;
 	TextureRect *icon = nullptr;
+	MarginContainer *text_margin = nullptr;
 	Label *title = nullptr;
 	LinkButton *author = nullptr;
 	TextureRect *verified = nullptr;
@@ -296,6 +297,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _force_online_mode();
 
 	LocalVector<bool> licenses_toggled;
+	bool licenses_all_toggled = true;
 
 	void _licenses_id_pressed(int p_id);
 	void _licenses_popup_hide();
@@ -314,7 +316,7 @@ class EditorAssetLibrary : public PanelContainer {
 	static const char *sort_key[SORT_MAX];
 	static const char *sort_text[SORT_MAX];
 
-	constexpr static Size2 THUMBNAIL_SIZE = Size2(114, 64);
+	constexpr static Size2 THUMBNAIL_SIZE = Size2(160, 90);
 
 	enum ImageType {
 		IMAGE_QUEUE_THUMBNAIL,
@@ -351,6 +353,7 @@ class EditorAssetLibrary : public PanelContainer {
 	int current_page = 0;
 
 	HBoxContainer *_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items);
+	void _update_button_icon(Button *p_button, const StringName &p_icon);
 
 	enum RequestType {
 		REQUESTING_NONE,

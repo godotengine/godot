@@ -188,6 +188,20 @@ void EditorProfiler::_item_edited() {
 	_update_plot();
 }
 
+void EditorProfiler::_item_collapsed(TreeItem *p_item) {
+	if (!p_item) {
+		return;
+	}
+	StringName signature = p_item->get_metadata(0);
+	bool collapsed = p_item->is_collapsed();
+
+	if (collapsed) {
+		collapsed_categories.insert(signature);
+	} else {
+		collapsed_categories.erase(signature);
+	}
+}
+
 void EditorProfiler::_update_plot() {
 	const int w = MAX(1, graph->get_size().width); // Clamp to 1 to prevent from crashing when profiler is autostarted.
 	const int h = MAX(1, graph->get_size().height);
@@ -363,6 +377,10 @@ void EditorProfiler::_update_frame() {
 		category->set_text(0, String(m.categories[i].name));
 		category->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		category->set_text(1, _get_time_as_text(m, m.categories[i].total_time, 1));
+
+		if (collapsed_categories.has(m.categories[i].signature)) {
+			category->set_collapsed(true);
+		}
 
 		if (plot_sigs.has(m.categories[i].signature)) {
 			category->set_checked(0, true);
@@ -757,7 +775,6 @@ EditorProfiler::EditorProfiler() {
 
 	variables = memnew(Tree);
 	variables->set_custom_minimum_size(Size2(320, 0) * EDSCALE);
-	variables->set_hide_folding(true);
 	h_split->add_child(variables);
 	variables->set_hide_root(true);
 	variables->set_columns(3);
@@ -776,6 +793,7 @@ EditorProfiler::EditorProfiler() {
 	variables->set_column_custom_minimum_width(2, 50 * EDSCALE);
 	variables->set_theme_type_variation("TreeSecondary");
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
+	variables->connect("item_collapsed", callable_mp(this, &EditorProfiler::_item_collapsed));
 
 	graph = memnew(TextureRect);
 	graph->set_custom_minimum_size(Size2(250 * EDSCALE, 0));

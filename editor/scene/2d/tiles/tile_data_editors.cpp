@@ -414,11 +414,11 @@ void GenericTilePolygonEditor::_grab_polygon_point(Vector2 p_pos, const Transfor
 	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 	r_polygon_index = -1;
 	r_point_index = -1;
-	float closest_distance = grab_threshold + 1.0;
+	real_t closest_distance = grab_threshold + 1.0f;
 	for (unsigned int i = 0; i < polygons.size(); i++) {
 		const Vector<Vector2> &polygon = polygons[i];
 		for (int j = 0; j < polygon.size(); j++) {
-			float distance = p_pos.distance_to(p_polygon_xform.xform(polygon[j]));
+			real_t distance = p_pos.distance_to(p_polygon_xform.xform(polygon[j]));
 			if (distance < grab_threshold && distance < closest_distance) {
 				r_polygon_index = i;
 				r_point_index = j;
@@ -965,6 +965,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_advanced_menu->get_popup()->add_item(TTR("Flip Vertically"), FLIP_VERTICALLY, Key::V);
 	button_advanced_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GenericTilePolygonEditor::_advanced_menu_item_pressed));
 	button_advanced_menu->set_focus_mode(FOCUS_ALL);
+	button_advanced_menu->set_shortcut_context(this);
 	toolbar->add_child(button_advanced_menu);
 
 	toolbar->add_child(memnew(VSeparator));

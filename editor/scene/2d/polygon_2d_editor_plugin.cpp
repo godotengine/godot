@@ -64,14 +64,19 @@ Node2D *Polygon2DEditor::_get_node() const {
 }
 
 void Polygon2DEditor::_set_node(Node *p_polygon) {
+	CanvasItem *ci_editor_control = CanvasItemEditor::get_singleton()->get_viewport_control();
+
 	CanvasItem *draw = Object::cast_to<CanvasItem>(canvas);
 	if (node) {
 		node->disconnect(SceneStringName(draw), callable_mp(draw, &CanvasItem::queue_redraw));
 		node->disconnect(SceneStringName(draw), callable_mp(this, &Polygon2DEditor::_update_available_modes));
+		node->disconnect(SceneStringName(draw), callable_mp(ci_editor_control, &CanvasItem::queue_redraw));
 	}
+
 	node = Object::cast_to<Polygon2D>(p_polygon);
 	_update_polygon_editing_state();
 	canvas->queue_redraw();
+
 	if (node) {
 		canvas->set_texture_filter(node->get_texture_filter_in_tree());
 
@@ -87,6 +92,8 @@ void Polygon2DEditor::_set_node(Node *p_polygon) {
 		// Whenever polygon gets redrawn, there's possible changes for the editor as well.
 		node->connect(SceneStringName(draw), callable_mp(draw, &CanvasItem::queue_redraw));
 		node->connect(SceneStringName(draw), callable_mp(this, &Polygon2DEditor::_update_available_modes));
+		// Update the canvas overlay.
+		node->connect(SceneStringName(draw), callable_mp(ci_editor_control, &CanvasItem::queue_redraw));
 	}
 }
 
@@ -1067,8 +1074,6 @@ void Polygon2DEditor::_canvas_draw() {
 
 	Ref<Texture2D> base_tex = node->get_texture();
 
-	String warning;
-
 	Transform2D mtx;
 	mtx.columns[2] = -draw_offset * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
@@ -1570,6 +1575,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	canvas->set_focus_mode(FOCUS_CLICK);
 
 	error = memnew(AcceptDialog);
+	error->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(error);
 }
 

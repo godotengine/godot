@@ -1553,7 +1553,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 			// Optimized version of the code below:
 			// String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
 			uint32_t c = node_hrcr_count.get();
-			String cn = p_child->get_class_name().operator String();
+			String cn = p_child->get_class_name().string();
 			const char32_t *cn_ptr = cn.ptr();
 			uint32_t cn_length = cn.length();
 			uint32_t c_chars = String::num_characters(c);
@@ -1768,7 +1768,25 @@ void Node::remove_child(RequiredParam<Node> rp_child) {
 
 	data.blocked--;
 
-	data.children_cache_dirty = true;
+	if (!data.children_cache_dirty && !data.children_cache.is_empty() && data.children_cache[data.children_cache.size() - 1] == p_child) {
+		// Removing the last child keeps the cache and the counters valid, so pop it
+		// instead of dirtying the cache. This keeps interleaving removals with reads
+		// (like get_child()) linear, as long as children are removed back to front.
+		data.children_cache.resize(data.children_cache.size() - 1);
+		switch (p_child->data.internal_mode) {
+			case INTERNAL_MODE_DISABLED: {
+				data.external_children_count_cache--;
+			} break;
+			case INTERNAL_MODE_FRONT: {
+				data.internal_children_front_count_cache--;
+			} break;
+			case INTERNAL_MODE_BACK: {
+				data.internal_children_back_count_cache--;
+			} break;
+		}
+	} else {
+		data.children_cache_dirty = true;
+	}
 	bool success = data.children.erase(p_child->data.name);
 	ERR_FAIL_COND_MSG(!success, "Children name does not match parent name in hashtable, this is a bug.");
 
@@ -1996,7 +2014,7 @@ Node *Node::find_child(const String &p_pattern, bool p_recursive, bool p_owned) 
 		if (p_owned && !cptr[i]->data.owner) {
 			continue;
 		}
-		if (cptr[i]->data.name.operator String().match(p_pattern)) {
+		if (cptr[i]->data.name.string().match(p_pattern)) {
 			return cptr[i];
 		}
 
@@ -2027,7 +2045,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			continue;
 		}
 
-		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
+		if (p_pattern.is_empty() || cptr[i]->data.name.string().match(p_pattern)) {
 			if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
 				ret.append(cptr[i]);
 			} else if (cptr[i]->get_script_instance()) {
@@ -2105,7 +2123,7 @@ Node *Node::find_parent(const String &p_pattern) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *p = data.parent;
 	while (p) {
-		if (p->data.name.operator String().match(p_pattern)) {
+		if (p->data.name.string().match(p_pattern)) {
 			return p;
 		}
 		p = p->data.parent;
@@ -2150,12 +2168,23 @@ Window *Node::get_last_exclusive_window() const {
 
 bool Node::is_ancestor_of(RequiredParam<const Node> rp_node) const {
 	EXTRACT_PARAM_OR_FAIL_V(p_node, rp_node, false);
-	Node *p = p_node->data.parent;
-	while (p) {
-		if (p == this) {
+
+	const Node *n = p_node;
+
+	if (is_inside_tree() && p_node->data.tree == data.tree) {
+		const int depth = data.depth;
+		while (n->data.depth > depth) {
+			n = n->data.parent;
+		}
+		return n == this;
+	}
+
+	n = p_node->data.parent;
+	while (n) {
+		if (n == this) {
 			return true;
 		}
-		p = p->data.parent;
+		n = n->data.parent;
 	}
 
 	return false;
@@ -2223,7 +2252,7 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 
 void Node::_release_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Safety check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.string());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which == nullptr || *which != this) {
 		return; // Ignore.
@@ -2233,7 +2262,7 @@ void Node::_release_unique_name_in_owner() {
 
 void Node::_acquire_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Safety check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.string());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
 		String which_path = String(is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which));
@@ -2683,7 +2712,7 @@ Node *Node::get_deepest_editable_node(Node *p_start_node) const {
 	ERR_FAIL_NULL_V(p_start_node, nullptr);
 	ERR_FAIL_COND_V(!is_ancestor_of(p_start_node), p_start_node);
 
-	Node const *iterated_item = p_start_node;
+	const Node *iterated_item = p_start_node;
 	Node *node = p_start_node;
 
 	while (iterated_item->get_owner() && iterated_item->get_owner() != this) {
@@ -2732,6 +2761,7 @@ StringName Node::get_property_store_alias(const StringName &p_property) const {
 
 bool Node::is_part_of_edited_scene() const {
 	return Engine::get_singleton()->is_editor_hint() && is_inside_tree() && data.tree->get_edited_scene_root() &&
+			data.tree->get_edited_scene_root()->get_parent() && // Defend against edge cases when creating new scenes and they are not fully added to the tree yet.
 			data.tree->get_edited_scene_root()->get_parent()->is_ancestor_of(this);
 }
 #endif
@@ -3493,7 +3523,7 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 	} else if (p_idx == 0 && (pf == "add_to_group" || pf == "remove_from_group" || pf == "is_in_group")) {
 		HashMap<StringName, String> global_groups(ProjectSettings::get_singleton()->get_global_groups_list());
 		for (const KeyValue<StringName, String> &E : global_groups) {
-			r_options->push_back(E.key.operator String().quote());
+			r_options->push_back(E.key.string().quote());
 		}
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);

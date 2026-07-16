@@ -38,6 +38,7 @@
 #include "core/math/expression.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/editor_help.h"
@@ -49,6 +50,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -177,7 +179,9 @@ void ScriptTextEditor::EditMenusSTE::_breakpoint_item_pressed(int p_idx) {
 	if (p_idx < 4) { // Any item before the separator.
 		_edit_option(breakpoints_menu->get_item_id(p_idx));
 	} else {
+		ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 		script_text_editor->get_code_editor()->goto_line_centered(breakpoints_menu->get_item_metadata(p_idx));
+		ScriptEditorNavigationMarker::get_singleton()->locate_end();
 	}
 }
 
@@ -444,7 +448,7 @@ void ScriptTextEditor::add_callback(const String &p_function, const PackedString
 	code_editor->get_text_editor()->remove_secondary_carets();
 	code_editor->get_text_editor()->deselect();
 	String code = code_editor->get_text_editor()->get_text();
-	int pos = language->find_function(p_function, code);
+	int32_t pos = language->get_editor_language()->find_function(p_function, code);
 	if (pos == -1) {
 		// Function does not exist, create it at the end of the file.
 		int last_line = code_editor->get_text_editor()->get_line_count() - 1;
@@ -460,6 +464,7 @@ void ScriptTextEditor::add_callback(const String &p_function, const PackedString
 	code_editor->get_text_editor()->set_caret_line(pos, true, true, -1);
 	code_editor->get_text_editor()->set_caret_column(indent_column);
 	code_editor->get_text_editor()->end_complex_operation();
+	code_editor->center_viewport_to_caret();
 }
 
 bool ScriptTextEditor::_is_valid_color_info(const Dictionary &p_info) {
@@ -775,6 +780,9 @@ void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 	}
 
 	Dictionary state = p_state;
+	if (state.has("row")) {
+		previous_history_line = state["row"];
+	}
 	if (state.has("syntax_highlighter")) {
 		for (const Ref<EditorSyntaxHighlighter> &highlighter : highlighters) {
 			if (highlighter->_get_name() == String(state["syntax_highlighter"])) {
@@ -997,7 +1005,6 @@ void ScriptTextEditor::_update_errors() {
 
 		errors_panel->push_indent(1);
 		errors_panel->push_table(2);
-		String filename = KV.key.get_file();
 		for (const ScriptLanguage::ScriptError &err : KV.value) {
 			Dictionary click_meta;
 			click_meta["path"] = KV.key;
@@ -1152,7 +1159,7 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		base = _find_node_for_script(base, base, script);
 	}
 	String hint;
-	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
+	Error err = script->get_language()->get_editor_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
 
 	if (err == OK) {
 		code_editor->get_text_editor()->set_code_hint(hint);
@@ -1166,6 +1173,9 @@ void ScriptTextEditor::_breakpoint_toggled(int p_row) {
 }
 
 void ScriptTextEditor::_on_caret_moved() {
+	if (ScriptEditorNavigationMarker::get_singleton()->is_locate_just_occured() || ScriptEditorNavigationMarker::get_singleton()->is_traverse_just_occured() || ScriptEditorNavigationMarker::get_singleton()->is_locating() || ScriptEditorNavigationMarker::get_singleton()->is_traversing()) {
+		return;
+	}
 	if (code_editor->is_previewing_navigation_change()) {
 		return;
 	}
@@ -1173,30 +1183,26 @@ void ScriptTextEditor::_on_caret_moved() {
 		call_on_all_layout_pending_finished(callable_mp(this, &ScriptTextEditor::_on_caret_moved));
 		return;
 	}
-	// When previous_line < 0, it means the user has just switched to this editor from a different one
-	// (which already saved a state in the history). In this case, we should not save this editor's previous state.
 	int current_line = code_editor->get_text_editor()->get_caret_line();
-	if (previous_line >= 0 && Math::abs(current_line - previous_line) >= 10) {
-		Dictionary nav_state = get_navigation_state();
-		nav_state["row"] = previous_line;
-		nav_state["scroll_position"] = -1;
-		nav_state["ensure_caret_visible"] = true;
-		emit_signal(SNAME("request_save_previous_state"), nav_state);
+	if (Math::abs(current_line - previous_history_line) >= 10) {
+		_emit_request_save_new_history();
 		store_previous_state();
+	} else {
+		_emit_request_save_previous_state();
 	}
-	previous_line = current_line;
 }
 
 void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_column) {
+	ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 	Ref<Script> script = edited_res;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		base = _find_node_for_script(base, base, script);
 	}
 
-	ScriptLanguage::LookupResult result;
+	EditorLanguage::LookupResult result;
 	String code_text = code_editor->get_text_editor()->get_text_with_cursor_char(p_row, p_column);
-	Error lc_error = script->get_language()->lookup_code(code_text, p_symbol, script->get_path(), base, result);
+	Error lc_error = script->get_language()->get_editor_language()->lookup_code(code_text, p_symbol, script->get_path(), base, result);
 	if (ScriptServer::is_global_class(p_symbol)) {
 		EditorNode::get_singleton()->load_resource(ScriptServer::get_global_class_path(p_symbol));
 	} else if (p_symbol.is_resource_file() || p_symbol.begins_with("uid://")) {
@@ -1206,14 +1212,14 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			EditorNode::get_singleton()->load_scene_or_resource(p_symbol);
 		}
 	} else if (lc_error == OK) {
-		_goto_line(p_row);
+		goto_line_without_history(p_row, p_column);
 
 		if (!result.class_name.is_empty() && EditorHelp::get_doc_data()->class_list.has(result.class_name) && !EditorHelp::get_doc_data()->class_list[result.class_name].is_script_doc) {
 			switch (result.type) {
-				case ScriptLanguage::LOOKUP_RESULT_CLASS: {
+				case EditorLanguage::LookupResult::Type::CLASS: {
 					emit_signal(SNAME("go_to_help"), "class_name:" + result.class_name);
 				} break;
-				case ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT: {
+				case EditorLanguage::LookupResult::Type::CLASS_CONSTANT: {
 					StringName cname = result.class_name;
 					while (ClassDB::class_exists(cname)) {
 						if (ClassDB::has_integer_constant(cname, result.class_member, true)) {
@@ -1224,7 +1230,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 					}
 					emit_signal(SNAME("go_to_help"), "class_constant:" + result.class_name + ":" + result.class_member);
 				} break;
-				case ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY: {
+				case EditorLanguage::LookupResult::Type::CLASS_PROPERTY: {
 					StringName cname = result.class_name;
 					while (ClassDB::class_exists(cname)) {
 						if (ClassDB::has_property(cname, result.class_member, true)) {
@@ -1235,7 +1241,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 					}
 					emit_signal(SNAME("go_to_help"), "class_property:" + result.class_name + ":" + result.class_member);
 				} break;
-				case ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD: {
+				case EditorLanguage::LookupResult::Type::CLASS_METHOD: {
 					StringName cname = result.class_name;
 					while (ClassDB::class_exists(cname)) {
 						if (ClassDB::has_method(cname, result.class_member, true)) {
@@ -1246,7 +1252,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 					}
 					emit_signal(SNAME("go_to_help"), "class_method:" + result.class_name + ":" + result.class_member);
 				} break;
-				case ScriptLanguage::LOOKUP_RESULT_CLASS_SIGNAL: {
+				case EditorLanguage::LookupResult::Type::CLASS_SIGNAL: {
 					StringName cname = result.class_name;
 					while (ClassDB::class_exists(cname)) {
 						if (ClassDB::has_signal(cname, result.class_member, true)) {
@@ -1257,7 +1263,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 					}
 					emit_signal(SNAME("go_to_help"), "class_signal:" + result.class_name + ":" + result.class_member);
 				} break;
-				case ScriptLanguage::LOOKUP_RESULT_CLASS_ENUM: {
+				case EditorLanguage::LookupResult::Type::CLASS_ENUM: {
 					StringName cname = result.class_name;
 					while (ClassDB::class_exists(cname)) {
 						if (ClassDB::has_enum(cname, result.class_member, true)) {
@@ -1268,24 +1274,25 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 					}
 					emit_signal(SNAME("go_to_help"), "class_enum:" + result.class_name + ":" + result.class_member);
 				} break;
-				case ScriptLanguage::LOOKUP_RESULT_CLASS_ANNOTATION: {
+				case EditorLanguage::LookupResult::Type::CLASS_ANNOTATION: {
 					emit_signal(SNAME("go_to_help"), "class_annotation:" + result.class_name + ":" + result.class_member);
 				} break;
-				case ScriptLanguage::LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE: { // Deprecated.
+					GODOT_PUSH_IGNORE_DEPRECATION()
+				case EditorLanguage::LookupResult::Type::CLASS_TBD_GLOBALSCOPE: { // Deprecated.
 					emit_signal(SNAME("go_to_help"), "class_global:" + result.class_name + ":" + result.class_member);
 				} break;
-				case ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION:
-				case ScriptLanguage::LOOKUP_RESULT_LOCAL_CONSTANT:
-				case ScriptLanguage::LOOKUP_RESULT_LOCAL_VARIABLE:
-				case ScriptLanguage::LOOKUP_RESULT_MAX: {
+					GODOT_POP_IGNORE_DEPRECATION()
+				case EditorLanguage::LookupResult::Type::SCRIPT_LOCATION:
+				case EditorLanguage::LookupResult::Type::LOCAL_CONSTANT:
+				case EditorLanguage::LookupResult::Type::LOCAL_VARIABLE: {
 					// Nothing to do.
 				} break;
 			}
 		} else if (result.location >= 0) {
-			if (result.script.is_valid()) {
-				emit_signal(SNAME("request_open_script_at_line"), result.script, result.location - 1);
+			if (!result.script_path.is_empty()) {
+				Ref<Script> scr = ResourceLoader::load(result.script_path);
+				emit_signal(SNAME("request_open_script_at_line"), scr, result.location - 1);
 			} else {
-				emit_signal(SNAME("request_save_history"));
 				goto_line_centered(result.location - 1);
 			}
 		}
@@ -1302,6 +1309,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			EditorNode::get_singleton()->load_scene_or_resource(path);
 		}
 	}
+	ScriptEditorNavigationMarker::get_singleton()->locate_end();
 }
 
 void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
@@ -1313,9 +1321,9 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 		base = _find_node_for_script(base, base, script);
 	}
 
-	ScriptLanguage::LookupResult result;
+	EditorLanguage::LookupResult result;
 	String lc_text = code_editor->get_text_editor()->get_text_for_symbol_lookup();
-	Error lc_error = script->get_language()->lookup_code(lc_text, p_symbol, script->get_path(), base, result);
+	Error lc_error = script->get_language()->get_editor_language()->lookup_code(lc_text, p_symbol, script->get_path(), base, result);
 	bool is_singleton = ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton;
 	if (lc_error == OK || is_singleton || ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || p_symbol.begins_with("uid://")) {
 		text_edit->set_symbol_lookup_word_as_valid(true);
@@ -1348,16 +1356,16 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 		base = _find_node_for_script(base, base, script);
 	}
 
-	ScriptLanguage::LookupResult result;
+	EditorLanguage::LookupResult result;
 	String doc_symbol;
 	const String code_text = code_editor->get_text_editor()->get_text_with_cursor_char(p_row, p_column);
-	const Error lc_error = script->get_language()->lookup_code(code_text, p_symbol, script->get_path(), base, result);
+	const Error lc_error = script->get_language()->get_editor_language()->lookup_code(code_text, p_symbol, script->get_path(), base, result);
 	if (lc_error == OK) {
 		switch (result.type) {
-			case ScriptLanguage::LOOKUP_RESULT_CLASS: {
+			case EditorLanguage::LookupResult::Type::CLASS: {
 				doc_symbol = "class|" + result.class_name + "|";
 			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT: {
+			case EditorLanguage::LookupResult::Type::CLASS_CONSTANT: {
 				StringName cname = result.class_name;
 				while (ClassDB::class_exists(cname)) {
 					if (ClassDB::has_integer_constant(cname, result.class_member, true)) {
@@ -1368,7 +1376,7 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 				}
 				doc_symbol = "constant|" + result.class_name + "|" + result.class_member;
 			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY: {
+			case EditorLanguage::LookupResult::Type::CLASS_PROPERTY: {
 				StringName cname = result.class_name;
 				while (ClassDB::class_exists(cname)) {
 					if (ClassDB::has_property(cname, result.class_member, true)) {
@@ -1379,7 +1387,7 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 				}
 				doc_symbol = "property|" + result.class_name + "|" + result.class_member;
 			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD: {
+			case EditorLanguage::LookupResult::Type::CLASS_METHOD: {
 				StringName cname = result.class_name;
 				while (ClassDB::class_exists(cname)) {
 					if (ClassDB::has_method(cname, result.class_member, true)) {
@@ -1390,7 +1398,7 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 				}
 				doc_symbol = "method|" + result.class_name + "|" + result.class_member;
 			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_SIGNAL: {
+			case EditorLanguage::LookupResult::Type::CLASS_SIGNAL: {
 				StringName cname = result.class_name;
 				while (ClassDB::class_exists(cname)) {
 					if (ClassDB::has_signal(cname, result.class_member, true)) {
@@ -1401,7 +1409,7 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 				}
 				doc_symbol = "signal|" + result.class_name + "|" + result.class_member;
 			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_ENUM: {
+			case EditorLanguage::LookupResult::Type::CLASS_ENUM: {
 				StringName cname = result.class_name;
 				while (ClassDB::class_exists(cname)) {
 					if (ClassDB::has_enum(cname, result.class_member, true)) {
@@ -1412,12 +1420,12 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 				}
 				doc_symbol = "enum|" + result.class_name + "|" + result.class_member;
 			} break;
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_ANNOTATION: {
+			case EditorLanguage::LookupResult::Type::CLASS_ANNOTATION: {
 				doc_symbol = "annotation|" + result.class_name + "|" + result.class_member;
 			} break;
-			case ScriptLanguage::LOOKUP_RESULT_LOCAL_CONSTANT:
-			case ScriptLanguage::LOOKUP_RESULT_LOCAL_VARIABLE: {
-				const String item_type = (result.type == ScriptLanguage::LOOKUP_RESULT_LOCAL_CONSTANT) ? "local_constant" : "local_variable";
+			case EditorLanguage::LookupResult::Type::LOCAL_CONSTANT:
+			case EditorLanguage::LookupResult::Type::LOCAL_VARIABLE: {
+				const String item_type = (result.type == EditorLanguage::LookupResult::Type::LOCAL_CONSTANT) ? "local_constant" : "local_variable";
 				Dictionary item_data;
 				item_data["description"] = result.description;
 				item_data["is_deprecated"] = result.is_deprecated;
@@ -1430,11 +1438,12 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 				item_data["value"] = result.value;
 				doc_symbol = item_type + "||" + p_symbol + "|" + JSON::stringify(item_data);
 			} break;
-			case ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION:
-			case ScriptLanguage::LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE: // Deprecated.
-			case ScriptLanguage::LOOKUP_RESULT_MAX: {
+				GODOT_PUSH_IGNORE_DEPRECATION()
+			case EditorLanguage::LookupResult::Type::SCRIPT_LOCATION:
+			case EditorLanguage::LookupResult::Type::CLASS_TBD_GLOBALSCOPE: {
 				// Nothing to do.
 			} break;
+				GODOT_POP_IGNORE_DEPRECATION()
 		}
 	}
 
@@ -1458,6 +1467,12 @@ String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
 	String base_path = edited_res->get_path().get_base_dir();
 	String path = base_path.path_join(rel_path);
 	return path.replace("///", "//").simplify_path();
+}
+
+void ScriptTextEditor::_goto_line(int p_line) {
+	ScriptEditorNavigationMarker::get_singleton()->locate_begin();
+	goto_line(p_line);
+	ScriptEditorNavigationMarker::get_singleton()->locate_end();
 }
 
 void ScriptTextEditor::_update_connected_methods() {
@@ -1807,7 +1822,9 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 					bpoint_idx++;
 				}
 			}
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 			code_editor->goto_line_centered(bpoints[bpoint_idx]);
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		} break;
 		case DEBUG_GOTO_PREV_BREAKPOINT: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
@@ -1822,7 +1839,9 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 					bpoint_idx--;
 				}
 			}
+			ScriptEditorNavigationMarker::get_singleton()->locate_begin();
 			code_editor->goto_line_centered(bpoints[bpoint_idx]);
+			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		} break;
 		case SHOW_TOOLTIP_AT_CARET: {
 			_show_symbol_tooltip(tx->get_word_under_caret(), tx->get_caret_line(), tx->get_caret_column(), true);
@@ -1902,11 +1921,6 @@ void ScriptTextEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAG_END: {
 			drag_info_label->hide();
-		} break;
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible()) {
-				previous_line = -1;
-			}
 		} break;
 	}
 }
@@ -2024,7 +2038,7 @@ static String _get_dropped_resource_as_member(const Ref<Resource> &p_resource, b
 			path = ResourceUID::get_singleton()->id_to_text(id);
 		}
 	}
-	const bool is_script = ClassDB::is_parent_class(p_resource->get_class(), "Script");
+	const bool is_script = p_resource->is_class(SNAME("Script"));
 
 	if (!p_create_field) {
 		return vformat("preload(%s)", _quote_drop_data(path));
@@ -2473,8 +2487,8 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 			if (base) {
 				base = _find_node_for_script(base, base, script);
 			}
-			ScriptLanguage::LookupResult result;
-			if (script->get_language()->lookup_code(tx->get_text_for_symbol_lookup(), word_at_pos, script->get_path(), base, result) == OK) {
+			EditorLanguage::LookupResult result;
+			if (script->get_language()->get_editor_language()->lookup_code(tx->get_text_for_symbol_lookup(), word_at_pos, script->get_path(), base, result) == OK) {
 				open_docs = true;
 			}
 		}

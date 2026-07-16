@@ -183,8 +183,14 @@ public:
 	/// Lower level version of DriveToPoseUsingKinematics that directly takes the world space joint matrices
 	void								DriveToPoseUsingKinematics(RVec3Arg inRootOffset, const Mat44 *inJointMatrices, float inDeltaTime, bool inLockBodies = true);
 
-	/// Drive the ragdoll to a specific pose by activating the motors on each constraint
+	/// Drive the ragdoll to a specific pose by activating the motors on each constraint.
 	void								DriveToPoseUsingMotors(const SkeletonPose &inPose);
+
+	/// Drive the ragdoll to a specific pose by activating the motors on each constraint. Drives both to target position and velocity.
+	/// @param inPrevPose The previous pose of the ragdoll, used to calculate the target velocity for each motor
+	/// @param inPose The target pose of the ragdoll, used to calculate the target position for each motor
+	/// @param inDeltaTime The time between inPrevPose and inPose, used to calculate the target velocity for each motor
+	void								DriveToPoseUsingMotors(const SkeletonPose &inPrevPose, const SkeletonPose &inPose, float inDeltaTime);
 
 	/// Control the linear and velocity of all bodies in the ragdoll
 	void								SetLinearAndAngularVelocity(Vec3Arg inLinearVelocity, Vec3Arg inAngularVelocity, bool inLockBodies = true);

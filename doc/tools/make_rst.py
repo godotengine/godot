@@ -166,6 +166,7 @@ class State:
 
         # Additional content and structure checks and validators.
         self.script_language_parity_check: ScriptLanguageParityCheck = ScriptLanguageParityCheck()
+        self.reserved_tag_check: ReservedTagCheck = ReservedTagCheck()
 
     def parse_class(self, class_root: ET.Element, filepath: str) -> None:
         class_name = class_root.attrib["name"]
@@ -663,6 +664,56 @@ class ScriptLanguageParityCheck:
             self.hit_map[class_name] = []
 
         self.hit_map[class_name].append((context, error))
+
+
+# Checks if reserved tags have matching opening/closing pairs.
+class ReservedTagCheck:
+    def __init__(self) -> None:
+        self.tag_depth = 0  # Number of opening tags - closing tags.
+        self.tag_stack: list[
+            str
+        ] = []  # List of unmatched opening tags. When tags mismatch, len(tag_stack) may differ from tag_depth.
+        self.tag_stack_error: str = ""  # First occurrence of a mismatched/duplicated opening/closing tag.
+
+    def reset(self) -> None:
+        self.tag_depth = 0
+        self.tag_stack.clear()
+        self.tag_stack_error = ""
+
+    def run_final_check(self) -> None:
+        if len(self.tag_stack) > 0:
+            if self.tag_stack_error == "":
+                self.tag_stack_error = f"unmatched opening tag(s) [{']['.join(self.tag_stack)}]"
+
+    def add_opening_tag(self, tag_state_name: str) -> None:
+        self.tag_depth += 1
+
+        if tag_state_name in self.tag_stack:
+            if self.tag_stack_error == "":
+                self.tag_stack_error = f"duplicated opening tags [{']['.join(self.tag_stack)}][{tag_state_name}]"
+
+        self.tag_stack.append(tag_state_name)
+
+    def add_closing_tag(self, tag_state_name: str) -> None:
+        self.tag_depth -= 1
+
+        if len(self.tag_stack) <= 0:
+            if self.tag_stack_error == "":
+                self.tag_stack_error = f"extra closing tag [/{tag_state_name}]"
+        elif tag_state_name != self.tag_stack[-1]:
+            if tag_state_name in self.tag_stack:
+                if self.tag_stack_error == "":
+                    self.tag_stack_error = f"mismatched closing tag [{']['.join(self.tag_stack)}][/{tag_state_name}]"
+
+                self.tag_stack.reverse()
+                self.tag_stack.remove(tag_state_name)
+                self.tag_stack.reverse()
+            else:
+                if self.tag_stack_error == "":
+                    self.tag_stack_error = f"unmatched closing tag [{']['.join(self.tag_stack)}][/{tag_state_name}]"
+        else:
+            # Correct closing tag.
+            self.tag_stack.pop()
 
 
 # Entry point for the RST generator.
@@ -1857,18 +1908,18 @@ def format_text_block(
     has_codeblocks_csharp = False
 
     pos = 0
-    tag_depth = 0
-    debug_tag_stack: list[str] = []
+    state.reserved_tag_check.reset()
     while True:
-        if tag_depth > 2 or (
-            tag_depth == 2
+        if state.reserved_tag_check.tag_depth > 2 or (
+            state.reserved_tag_check.tag_depth == 2
             and not (
-                debug_tag_stack[0] == "codeblocks"
-                and (debug_tag_stack[1] == "gdscript" or debug_tag_stack[1] == "csharp")
+                len(state.reserved_tag_check.tag_stack) == 2
+                and state.reserved_tag_check.tag_stack[0] == "codeblocks"
+                and state.reserved_tag_check.tag_stack[1] in ("gdscript", "csharp")
             )
         ):
             print_warning(
-                f"{state.current_class}.xml: Found nested tags [{']['.join(debug_tag_stack)}] in {context_name} (online doc will contain invalid RST markup).",
+                f"{state.current_class}.xml: Found nested tags [{']['.join(state.reserved_tag_check.tag_stack)}] in {context_name} (online doc will contain invalid RST markup).",
                 state,
             )
 
@@ -1909,8 +1960,7 @@ def format_text_block(
                 if tag_state.closing and tag_state.name == inside_code_tag:
                     if is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
                         tag_text = ""
-                        tag_depth -= 1
-                        debug_tag_stack.pop()
+                        state.reserved_tag_check.add_closing_tag(tag_state.name)
                         inside_code = False
                         ignore_code_warnings = False
                         # Strip newline if the tag was alone on one
@@ -1919,8 +1969,7 @@ def format_text_block(
 
                     elif is_in_tagset(tag_state.name, ["code"]):
                         tag_text = "``"
-                        tag_depth -= 1
-                        debug_tag_stack.pop()
+                        state.reserved_tag_check.add_closing_tag(tag_state.name)
                         inside_code = False
                         ignore_code_warnings = False
                         escape_post = True
@@ -1949,19 +1998,16 @@ def format_text_block(
                     has_codeblocks_gdscript = False
                     has_codeblocks_csharp = False
 
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     tag_text = ""
                     inside_code_tabs = False
                 else:
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     tag_text = "\n.. tabs::"
                     inside_code_tabs = True
 
             elif is_in_tagset(tag_state.name, RESERVED_CODEBLOCK_TAGS):
-                tag_depth += 1
-                debug_tag_stack.append(tag_state.name)
+                state.reserved_tag_check.add_opening_tag(tag_state.name)
 
                 if tag_state.name == "gdscript":
                     if not inside_code_tabs:
@@ -2000,8 +2046,7 @@ def format_text_block(
 
             elif is_in_tagset(tag_state.name, ["code"]):
                 tag_text = "``"
-                tag_depth += 1
-                debug_tag_stack.append(tag_state.name)
+                state.reserved_tag_check.add_opening_tag(tag_state.name)
 
                 inside_code = True
                 inside_code_tag = "code"
@@ -2294,6 +2339,11 @@ def format_text_block(
                                 f"{state.current_class}.xml: Found nested tags [url][{rft}] in {context_name} (online doc will contain invalid RST markup).",
                                 state,
                             )
+                        elif link_title.find(f"[/{rft}]") != -1:
+                            print_warning(
+                                f"{state.current_class}.xml: Found nested tags [url][/{rft}] in {context_name} (online doc will contain invalid RST markup).",
+                                state,
+                            )
                     tag_text = make_link(url_target, link_title)
 
                     pre_text = text[:pos]
@@ -2317,43 +2367,35 @@ def format_text_block(
 
             elif tag_state.name == "center":
                 if tag_state.closing:
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                 else:
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                 tag_text = ""
 
             elif tag_state.name == "i":
                 if tag_state.closing:
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
                 tag_text = "*"
 
             elif tag_state.name == "b":
                 if tag_state.closing:
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
                 tag_text = "**"
 
             elif tag_state.name == "u":
                 if tag_state.closing:
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
                 tag_text = ""
 
@@ -2366,13 +2408,11 @@ def format_text_block(
             elif tag_state.name == "kbd":
                 tag_text = "`"
                 if tag_state.closing:
-                    tag_depth -= 1
-                    debug_tag_stack.pop()
+                    state.reserved_tag_check.add_closing_tag(tag_state.name)
                     escape_post = True
                 else:
                     tag_text = ":kbd:" + tag_text
-                    tag_depth += 1
-                    debug_tag_stack.append(tag_state.name)
+                    state.reserved_tag_check.add_opening_tag(tag_state.name)
                     escape_pre = True
 
             # Invalid syntax.
@@ -2423,9 +2463,17 @@ def format_text_block(
         text = pre_text + tag_text + post_text
         pos = len(pre_text) + len(tag_text)
 
-    if tag_depth > 0:
+    if state.reserved_tag_check.tag_depth != 0:
         print_error(
             f"{state.current_class}.xml: Tag depth mismatch: too many (or too few) open/close tags in {context_name}.",
+            state,
+        )
+
+    state.reserved_tag_check.run_final_check()
+
+    if state.reserved_tag_check.tag_stack_error != "":
+        print_error(
+            f"{state.current_class}.xml: Tag order mismatch: {state.reserved_tag_check.tag_stack_error} in {context_name}.",
             state,
         )
 

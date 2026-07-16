@@ -404,7 +404,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 			List<StringName> snames;
 
 			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
-				String name = F.key.operator String();
+				String name = F.key.string();
 
 				ERR_CONTINUE(name.is_empty());
 
@@ -862,7 +862,7 @@ bool ClassDB::can_instantiate(const StringName &p_class) {
 
 use_script:
 	Ref<Script> scr = ResourceLoader::load(script_path);
-	return scr.is_valid() && scr->is_valid() && !scr->is_abstract();
+	return scr.is_valid() && scr->is_script_valid() && !scr->is_abstract();
 }
 
 bool ClassDB::is_abstract(const StringName &p_class) {
@@ -894,7 +894,7 @@ bool ClassDB::is_abstract(const StringName &p_class) {
 
 use_script:
 	Ref<Script> scr = ResourceLoader::load(script_path);
-	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
+	return scr.is_valid() && scr->is_script_valid() && scr->is_abstract();
 }
 
 bool ClassDB::is_virtual(const StringName &p_class) {
@@ -920,7 +920,7 @@ bool ClassDB::is_virtual(const StringName &p_class) {
 
 use_script:
 	Ref<Script> scr = ResourceLoader::load(script_path);
-	return scr.is_valid() && scr->is_valid() && scr->is_abstract();
+	return scr.is_valid() && scr->is_script_valid() && scr->is_abstract();
 }
 
 bool ClassDB::is_gdextension(const StringName &p_class) {
@@ -1822,11 +1822,11 @@ void ClassDB::bind_compatibility_method_custom(const StringName &p_class, Method
 	_bind_method_custom(p_class, p_method, true);
 }
 
-void ClassDB::_bind_compatibility(ClassInfo *type, MethodBind *p_method) {
-	if (!type->method_map_compatibility.has(p_method->get_name())) {
-		type->method_map_compatibility.insert(p_method->get_name(), LocalVector<MethodBind *>());
+void ClassDB::_bind_compatibility(ClassInfo *r_type, MethodBind *p_method) {
+	if (!r_type->method_map_compatibility.has(p_method->get_name())) {
+		r_type->method_map_compatibility.insert(p_method->get_name(), LocalVector<MethodBind *>());
 	}
-	type->method_map_compatibility[p_method->get_name()].push_back(p_method);
+	r_type->method_map_compatibility[p_method->get_name()].push_back(p_method);
 }
 
 void ClassDB::_bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility) {
@@ -1892,11 +1892,11 @@ MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p
 }
 
 #ifdef DEBUG_ENABLED
-MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
-	StringName mdname = method_name.name;
+MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const MethodDefinition &p_method_name, const Variant **p_defs, int p_defcount) {
+	StringName mdname = p_method_name.name;
 #else
-MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount) {
-	StringName mdname = StringName(method_name);
+MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *p_method_name, const Variant **p_defs, int p_defcount) {
+	StringName mdname = StringName(p_method_name);
 #endif // DEBUG_ENABLED
 
 	Locker::Lock lock(Locker::STATE_WRITE);
@@ -1924,7 +1924,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 
 #ifdef DEBUG_ENABLED
 
-	if (method_name.args.size() > p_bind->get_argument_count()) {
+	if (p_method_name.args.size() > p_bind->get_argument_count()) {
 		memdelete(p_bind);
 		ERR_FAIL_V_MSG(nullptr, vformat("Method definition provides more arguments than the method actually has '%s::%s'.", instance_type, mdname));
 	}
@@ -1934,7 +1934,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 		ERR_FAIL_V_MSG(nullptr, vformat("Method definition for '%s::%s' provides more default arguments than the method has arguments.", instance_type, mdname));
 	}
 
-	p_bind->set_argument_names(method_name.args);
+	p_bind->set_argument_names(p_method_name.args);
 
 	if (!p_compatibility) {
 		type->method_order.push_back(mdname);
