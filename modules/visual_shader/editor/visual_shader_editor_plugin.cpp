@@ -7530,7 +7530,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	texture2d_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("WorldPositionFromDepth", "Textures/Functions", "VisualShaderNodeWorldPositionFromDepth", TTR("Reconstructs the World Position of the Node from the depth texture."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	texture2d_node_option_idx = add_options.size();
-	add_options.push_back(AddOption("ScreenNormalWorldSpace", "Textures/Functions", "VisualShaderNodeScreenNormalWorldSpace", TTR("Unpacks the Screen Normal Texture in World Space"), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("ScreenNormalWorldSpace", "Textures/Functions", "VisualShaderNodeScreenNormalWorldSpace", TTR("Unpacks the Screen Normal Texture in World Space."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	texture2d_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture2D", "Textures/Functions", "VisualShaderNodeTexture", TTR("Perform the 2D texture lookup."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
 	texture2d_array_node_option_idx = add_options.size();
@@ -7575,7 +7575,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("DistanceFade", "Utility", "VisualShaderNodeDistanceFade", TTR("The distance fade effect fades out each pixel based on its distance to another object."), {}, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("ProximityFade", "Utility", "VisualShaderNodeProximityFade", TTR("The proximity fade effect fades out each pixel based on its distance to another object."), {}, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("RandomRange", "Utility", "VisualShaderNodeRandomRange", TTR("Returns a random value between the minimum and maximum input values."), {}, VisualShaderNode::PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", TTR("Builds a rotation matrix from the given axis and angle, multiply the input vector by it and returns both this vector and a matrix."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", TTR("Builds a rotation matrix from the given axis and angle, multiplies the input vector by it, and returns both this vector and a matrix."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 
 	// VECTOR
 
