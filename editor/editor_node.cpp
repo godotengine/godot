@@ -1902,6 +1902,8 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	}
 	// Lowest provided extension priority.
 	List<String>::Element *res_element = preferred.find("res");
+	// VoxelGIData should favor being saved to binary `.res` to reduce file size,
+	// so keep that extension as the preferred one.
 	if (res_element && !p_resource->is_class("VoxelGIData")) {
 		preferred.move_to_back(res_element);
 	}
