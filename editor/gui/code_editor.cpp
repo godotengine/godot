@@ -1702,7 +1702,7 @@ void CodeTextEditor::_update_font_ligatures() {
 			} break;
 		}
 		Vector<String> variation_tags = String(EDITOR_GET("interface/editor/fonts/code_font_custom_variations")).split(",");
-		Dictionary variations_mono;
+		Dictionary variations_mono = fc->get_variation_opentype();
 		for (int i = 0; i < variation_tags.size(); i++) {
 			Vector<String> subtag_a = variation_tags[i].split("=");
 			if (subtag_a.size() == 2) {
