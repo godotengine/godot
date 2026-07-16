@@ -144,7 +144,7 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 Error MovieWriterPNGWAV::write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) {
 	ERR_FAIL_COND_V(f_wav.is_null(), ERR_UNCONFIGURED);
 
-	Vector<uint8_t> png_buffer = p_image->save_png_to_buffer();
+	Vector<uint8_t> png_buffer = p_image->_save_png_to_buffer(true);
 
 	Ref<FileAccess> fi = FileAccess::open(base_path + zeros_str(frame_count) + ".png", FileAccess::WRITE);
 	fi->store_buffer(png_buffer.ptr(), png_buffer.size());

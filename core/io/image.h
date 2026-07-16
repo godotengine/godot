@@ -44,7 +44,7 @@ class Image;
 // Function pointer prototypes.
 
 typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
-typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
+typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img, bool p_fast);
 
 typedef Error (*SaveJPGFunc)(const String &p_path, const Ref<Image> &p_img, float p_quality);
 typedef Vector<uint8_t> (*SaveJPGBufferFunc)(const Ref<Image> &p_img, float p_quality);
@@ -387,6 +387,7 @@ public:
 	Error save_jpg(const String &p_path, float p_quality = 0.75) const;
 	Error save_dds(const String &p_path) const;
 	Vector<uint8_t> save_png_to_buffer() const;
+	Vector<uint8_t> _save_png_to_buffer(bool p_fast = false) const;
 	Vector<uint8_t> save_jpg_to_buffer(float p_quality = 0.75) const;
 	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false, bool p_color_image = false, float p_max_value = -1.0f) const;
 	Vector<uint8_t> save_dds_to_buffer() const;
