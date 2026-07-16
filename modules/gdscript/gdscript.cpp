@@ -113,6 +113,7 @@ Variant GDScriptNativeClass::callp(const StringName &p_method, const Variant **p
 		// Constructor.
 		return Object::callp(p_method, p_args, p_argcount, r_error);
 	}
+
 	MethodBind *method = ClassDB::get_method(name, p_method);
 	if (method && method->is_static()) {
 		// Native static method.
@@ -211,12 +212,16 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	/* STEP 1, CREATE */
 
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+
 	if (!valid) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}
 
-	r_error.error = Callable::CallError::CALL_OK;
+	if (_is_abstract) {
+		return "Can't instantiate an abstract class.";
+	}
+
 	Ref<RefCounted> ref;
 	Object *owner = nullptr;
 
@@ -226,6 +231,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 	}
 
 	ERR_FAIL_COND_V(_baseptr->native.is_null(), Variant());
+
 	if (_baseptr->native.ptr()) {
 		owner = _baseptr->native->instantiate();
 
@@ -234,19 +240,23 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 			ref = Ref<RefCounted>(r);
 		}
 	} else {
-		ref = memnew(RefCounted); // By default, no base means use reference.
+		ref = memnew(RefCounted); // By default, no base means use `RefCounted`.
 		owner = ref.ptr();
 	}
-	ERR_FAIL_NULL_V_MSG(owner, Variant(), "Can't inherit from a virtual class.");
+
+	if (owner == nullptr) {
+		return "Can't inherit from a virtual class.";
+	}
 
 	GDScriptInstance *instance = _create_instance(p_args, p_argcount, owner, r_error);
 	if (!instance) {
 		if (ref.is_null()) {
-			memdelete(owner); //no owner, sorry
+			memdelete(owner);
 		}
 		return Variant();
 	}
 
+	r_error.error = Callable::CallError::CALL_OK;
 	if (ref.is_valid()) {
 		return ref;
 	} else {
@@ -256,9 +266,9 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 
 bool GDScript::can_instantiate() const {
 #ifdef TOOLS_ENABLED
-	return valid && (tool || ScriptServer::is_scripting_enabled()) && !Engine::get_singleton()->is_recovery_mode_hint();
+	return valid && !_is_abstract && (tool || ScriptServer::is_scripting_enabled()) && !Engine::get_singleton()->is_recovery_mode_hint();
 #else
-	return valid;
+	return valid && !_is_abstract;
 #endif
 }
 
@@ -274,7 +284,7 @@ StringName GDScript::get_instance_base_type() const {
 	if (native.is_valid()) {
 		return native->get_name();
 	}
-	if (base.is_valid() && base->is_valid()) {
+	if (base.is_valid() && base->is_script_valid()) {
 		return base->get_instance_base_type();
 	}
 	return StringName();
@@ -406,6 +416,7 @@ bool GDScript::get_property_default_value(const StringName &p_property, Variant 
 
 ScriptInstance *GDScript::instance_create(Object *p_this) {
 	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Script is invalid!");
+	ERR_FAIL_COND_V_MSG(_is_abstract, nullptr, "Can't instantiate an abstract class.");
 
 	GDScript *top = this;
 	while (top->base.ptr()) {
@@ -583,7 +594,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 	placeholder_fallback_enabled = false;
 
-	if (base_cache.is_valid() && base_cache->is_valid()) {
+	if (base_cache.is_valid() && base_cache->is_script_valid()) {
 		for (int i = 0; i < base_caches.size(); i++) {
 			if (base_caches[i] == base_cache.ptr()) {
 				if (r_err) {
@@ -804,7 +815,7 @@ Error GDScript::reload(bool p_keep_state) {
 	bool can_run = ScriptServer::is_scripting_enabled() || is_tool();
 
 #ifdef TOOLS_ENABLED
-	if (p_keep_state && can_run && is_valid()) {
+	if (p_keep_state && can_run && is_script_valid()) {
 		_save_old_static_data();
 	}
 #endif
@@ -932,7 +943,10 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 		if (likely(top->valid)) {
 			HashMap<StringName, GDScriptFunction *>::Iterator E = top->member_functions.find(p_method);
 			if (E) {
-				ERR_FAIL_COND_V_MSG(!E->value->is_static(), Variant(), "Can't call non-static function '" + String(p_method) + "' in script.");
+				if (!E->value->is_static()) {
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+					return "Can't call non-static function '" + String(p_method) + "' in script.";
+				}
 
 				return E->value->call(nullptr, p_args, p_argcount, r_error);
 			}
@@ -945,6 +959,11 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 		if (r_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 			return ret;
 		}
+	}
+
+	if (_is_abstract && p_method == SNAME("new")) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return "Can't instantiate an abstract class.";
 	}
 
 	if (native.is_valid()) {
@@ -1431,6 +1450,7 @@ void GDScript::clear() {
 		return;
 	}
 	clearing = true;
+	ERR_FAIL_NULL_MSG(GDScriptLanguage::singleton, vformat("GDScript bug (please report): GDScript '%s' was not cleared before language shutdown.", fully_qualified_name));
 
 	RBSet<GDScriptFunction *> functions_to_clear;
 
@@ -1488,33 +1508,33 @@ void GDScript::clear() {
 	base_cache = Ref<GDScript>();
 #endif
 	base = Ref<GDScript>();
+
+	cancel_pending_functions(false);
+
+	{
+		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+
+		script_list.remove_from_list();
+	}
 }
 
 void GDScript::cancel_pending_functions(bool warn) {
 	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
 	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-		// Order matters since clearing the stack may already cause
-		// the GDScriptFunctionState to be destroyed and thus removed from the list.
-		pending_func_states.remove(E);
-		GDScriptFunctionState *state = E->self();
+		Ref<GDScriptFunctionState> state = E->self();
+		state->clear();
+
 #ifdef DEBUG_ENABLED
 		if (warn) {
 			WARN_PRINT("Canceling suspended execution of \"" + state->get_readable_function() + "\" due to a script reload.");
 		}
 #endif
-		ObjectID state_id = state->get_instance_id();
-		state->_clear_connections();
-		if (ObjectDB::get_instance(state_id)) {
-			state->_clear_stack();
-		}
 	}
 }
 
 GDScript::~GDScript() {
-	if (destructing) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(destructing, "GDScript bug (please report): Double free on GDScript.");
 	destructing = true;
 
 	if (is_print_verbose_enabled()) {
@@ -1525,14 +1545,6 @@ GDScript::~GDScript() {
 	}
 
 	clear();
-
-	cancel_pending_functions(false);
-
-	{
-		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
-
-		script_list.remove_from_list();
-	}
 }
 
 //////////////////////////////
@@ -1723,7 +1735,7 @@ void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
 				const Variant *args[1] = { &property };
 
 				Callable::CallError err;
-				Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
+				E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
 				if (err.error == Callable::CallError::CALL_OK) {
 					p_property = PropertyInfo::from_dict(property);
 					return;
@@ -1769,7 +1781,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 							String elem_type;
 							if (arr.is_typed()) {
 								const Ref<Script> script_type = arr.get_typed_script();
-								if (script_type.is_valid() && script_type->is_valid()) {
+								if (script_type.is_valid() && script_type->is_script_valid()) {
 									elem_type = GDScript::debug_get_script_name(script_type);
 								} else if (!arr.get_typed_class_name().is_empty()) {
 									elem_type = arr.get_typed_class_name();
@@ -2069,20 +2081,11 @@ GDScriptInstance::~GDScriptInstance() {
 	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
 	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-		// Order matters since clearing the stack may already cause
-		// the GDSCriptFunctionState to be destroyed and thus removed from the list.
-		pending_func_states.remove(E);
-		GDScriptFunctionState *state = E->self();
-		ObjectID state_id = state->get_instance_id();
-		state->_clear_connections();
-		if (ObjectDB::get_instance(state_id)) {
-			state->_clear_stack();
-		}
+		Ref<GDScriptFunctionState> state = E->self();
+		state->clear();
 	}
 
-	if (script.is_valid()) {
-		script->instances.remove(&script_instance_list);
-	}
+	script_instance_list.remove_from_list();
 }
 
 /************* SCRIPT LANGUAGE **************/
@@ -2228,44 +2231,78 @@ String GDScriptLanguage::get_extension() const {
 }
 
 void GDScriptLanguage::finish() {
-	if (finishing) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(finishing, "GDScript bug (please report): GDScriptLanguage double finish.");
 	finishing = true;
 
-	// Clear the cache before parsing the script_list
+	// Clear the cache before parsing the `script_list`. Some `GDScript` instances will drop to a ref count of zero and destruct on their own.
+	// TODO: This might lead to issues when trying to load a script from within `NOTIFICATION_PREDELETE`, we ignore this issue for now.
 	GDScriptCache::clear();
 
-	// Clear dependencies between scripts, to ensure cyclic references are broken
-	// (to avoid leaks at exit).
-	SelfList<GDScript> *s = script_list.first();
-	while (s) {
-		// This ensures the current script is not released before we can check
-		// what's the next one in the list (we can't get the next upfront because we
-		// don't know if the reference breaking will cause it -or any other after
-		// it, for that matter- to be released so the next one is not the same as
-		// before).
-		Ref<GDScript> scr = s->self();
-		if (scr.is_valid()) {
-			for (KeyValue<StringName, GDScriptFunction *> &E : scr->member_functions) {
-				GDScriptFunction *func = E.value;
-				for (int i = 0; i < func->argument_types.size(); i++) {
-					func->argument_types.write[i].script_type_ref = Ref<Script>();
-				}
-				func->return_type.script_type_ref = Ref<Script>();
+	// All remaining scripts in `script_list` are still referenced. There can be two reasons for this:
+	// 1. They have a cyclic dependency among them-selves.
+	// 2. They are referenced from another engine component, which shuts down later (e.g. an instance is stored in the metadata of `Engine`).
+
+	// 1. Pass: Gracefully clear static data, so that GDScript instances stored in static variables can react to `NOTIFICATION_PREDELETE`.
+	//          Due to Static Deinitialization Order Fiasco it is a user error if `NOTIFICATION_PREDELETE` interacts with static data. In this case
+	//          static data becomes subject to non-graceful clearing.
+	{
+		// Make a copy of the script list to avoid problems if it is changed during `NOTIFICATION_PREDELETE`.
+		LocalVector<Ref<GDScript>> needs_static_data_clear;
+		for (const SelfList<GDScript> *E = script_list.first(); E != nullptr; E = E->next()) {
+			ERR_CONTINUE_MSG(E->self() == nullptr, "GDScript bug (please report): `nullptr` in `script_list`.");
+			needs_static_data_clear.push_back(E->self());
+		}
+		for (const Ref<GDScript> &script : needs_static_data_clear) {
+			script->static_variables_indices.clear();
+			script->static_variables.clear();
+		}
+	}
+
+	// 2. Pass: Ungracefully cancel pending functions and detach dangling instances.
+	//          We have no obligations towards user-code at this point. We only need to ensure we do not crash.
+	{
+		// In case the last reference to the script comes from a dangling instance we need to ensure it stays alive till we are done.
+		LocalVector<Ref<GDScript>> needs_dangling_clear;
+		for (const SelfList<GDScript> *E = script_list.first(); E != nullptr; E = E->next()) {
+			ERR_CONTINUE_MSG(E->self() == nullptr, "GDScript bug (please report): `nullptr` in `script_list`.");
+			needs_dangling_clear.push_back(E->self());
+		}
+		for (const Ref<GDScript> &script : needs_dangling_clear) {
+			script->cancel_pending_functions(false);
+			while (script->instances.first() != nullptr) {
+				// Turns instances into core objects that can outlive `GDScriptLanguage`.
+				const SelfList<GDScriptInstance> *elem = script->instances.first();
+				elem->self()->get_owner()->set_script(Variant());
+				ERR_BREAK_MSG(script->instances.first() == elem, "GDScript bug (please report): Detaching a script does not destruct instance.");
 			}
-			for (KeyValue<StringName, GDScript::MemberInfo> &E : scr->member_indices) {
-				E.value.data_type.script_type_ref = Ref<Script>();
+		}
+	}
+
+	// TODO: We might want to clean up `GDScriptLambdaCallables` at this point, to prevent leaks from set & forget lambda setups. See GH-102327.
+
+	// 3. Pass: Clear remaining internal references and turn the scripts into zombies that can outlive `GDScriptLanguage`.
+	{
+		while (SelfList<GDScript> *s = script_list.first()) {
+			Ref<GDScript> scr = s->self();
+			if (scr.is_null()) { // Not sure if this can happen. But the original code did check for it, so let's keep for now.
+				ERR_PRINT("GDScript bug (please report): `nullptr` in `script_list`.");
+				s->remove_from_list();
+				continue;
 			}
 
-			// Clear backup for scripts that could slip out of the cyclic reference
-			// check
 			scr->clear();
+			ERR_BREAK_MSG(script_list.first() == s || s->in_list(), "GDScript bug (please report): cleared script in `script_list`.");
 		}
-		s = s->next();
 	}
-	script_list.clear();
-	function_list.clear();
+
+	if (script_list.first() != nullptr) {
+		ERR_PRINT("GDScript bug (please report): Dangling script in script_list after language shutdown.");
+		script_list.clear();
+	}
+	if (function_list.first() != nullptr) {
+		ERR_PRINT("GDScript bug (please report): Dangling function in function_list after language shutdown.");
+		function_list.clear();
+	}
 
 	finishing = false;
 }

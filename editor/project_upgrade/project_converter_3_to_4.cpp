@@ -1108,7 +1108,6 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 // Validate in all arrays if names don't do cyclic renames "Node" -> "Node2D" | "Node2D" -> "2DNode"
 bool ProjectConverter3To4::test_array_names() {
 	bool valid = true;
-	Vector<String> names = Vector<String>();
 
 	// Validate if all classes are valid.
 	{

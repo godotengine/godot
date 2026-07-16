@@ -857,7 +857,7 @@
 		</method>
 		<method name="get_display_cutouts" qualifiers="const">
 			<return type="Rect2[]" />
-			<param index="0" name="screen" type="int" />
+			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns an [Array] of [Rect2], each of which is the bounding rectangle for a display cutout or notch. These are non-functional areas on edge-to-edge screens used by cameras and sensors. Returns an empty array if the device does not have cutouts. See also [method get_display_safe_area].
 				[b]Note:[/b] The returned rectangles are relative to the physical screen and not the virtual desktop.
@@ -867,7 +867,7 @@
 		</method>
 		<method name="get_display_safe_area" qualifiers="const">
 			<return type="Rect2i" />
-			<param index="0" name="screen" type="int" />
+			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the unobscured area of the display where interactive controls should be rendered. See also [method get_display_cutouts].
 				[b]Note:[/b] The returned rectangle is relative to the physical screen and not the virtual desktop.

@@ -846,11 +846,19 @@ protected:
 		GLES3::SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position = Vector3(0.0, 0.0, 0.0);
 		float prev_time = 0.0f;
+		float prev_fog_aerial_perspective = 0.0;
+		Color prev_fog_light_color;
+		float prev_fog_sun_scatter = 0.0;
+		bool prev_fog_enabled = false;
+		float prev_fog_density = 0.0;
+		float prev_fog_sky_affect = 0.0;
+		float prev_fog_light_energy = 0.0;
 	};
 
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 
+	GLES3::SkyMaterialData *_get_sky_material_data(RID p_env);
 	void _setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();

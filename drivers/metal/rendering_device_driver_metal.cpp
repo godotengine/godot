@@ -222,7 +222,7 @@ static const MTL::TextureType TEXTURE_TYPE[RDD::TEXTURE_TYPE_MAX] = {
 	MTL::TextureTypeCubeArray,
 };
 
-bool RenderingDeviceDriverMetal::is_valid_linear(TextureFormat const &p_format) const {
+bool RenderingDeviceDriverMetal::is_valid_linear(const TextureFormat &p_format) const {
 	MTLFormatType ft = pixel_formats->getFormatType(p_format.format);
 
 	return p_format.texture_type == TEXTURE_TYPE_2D // Linear textures must be 2D textures.
@@ -893,7 +893,7 @@ void RenderingDeviceDriverMetal::_swap_chain_release_buffers(SwapChain *p_swap_c
 }
 
 RDD::SwapChainID RenderingDeviceDriverMetal::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
-	RenderingContextDriverMetal::Surface const *surface = (RenderingContextDriverMetal::Surface *)(p_surface);
+	const RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(p_surface);
 	if (use_barriers) {
 		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 		add_residency_set_to_main_queue(surface->get_residency_set());
@@ -1014,7 +1014,7 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 	textures.resize(p_attachments.size());
 
 	for (uint32_t i = 0; i < p_attachments.size(); i += 1) {
-		MDAttachment const &a = pass->attachments[i];
+		const MDAttachment &a = pass->attachments[i];
 		MTL::Texture *tex = reinterpret_cast<MTL::Texture *>(p_attachments[i].id);
 		if (tex == nullptr) {
 #if DEV_ENABLED
@@ -1419,7 +1419,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 #undef ADD_USAGE
 
 		if (!use_barriers) {
-			for (KeyValue<MTL::Resource *, StageResourceUsage> const &keyval : bound_resources) {
+			for (const KeyValue<MTL::Resource *, StageResourceUsage> &keyval : bound_resources) {
 				ResourceVector *resources = set->usage_to_resources.getptr(keyval.value);
 				if (resources == nullptr) {
 					resources = &set->usage_to_resources.insert(keyval.value, ResourceVector())->value;
@@ -1643,7 +1643,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 	attachments.resize(p_attachments.size());
 
 	for (uint32_t i = 0; i < p_attachments.size(); i++) {
-		Attachment const &a = p_attachments[i];
+		const Attachment &a = p_attachments[i];
 		MDAttachment &mda = attachments.write[i];
 		MTL::PixelFormat format = pf.getMTLPixelFormat(a.format);
 		mda.format = format;
@@ -1827,7 +1827,7 @@ RenderingDeviceDriverMetal::Result<NS::SharedPtr<MTL::Function>> RenderingDevice
 	uint32_t j = 0;
 	while (i < constants.size() && j < p_specialization_constants.size()) {
 		MTL::FunctionConstant *curr = (MTL::FunctionConstant *)constants[i];
-		PipelineSpecializationConstant const &sc = p_specialization_constants[indexes[j]];
+		const PipelineSpecializationConstant &sc = p_specialization_constants[indexes[j]];
 		if (curr->index() == sc.constant_id) {
 			switch (curr->type()) {
 				case MTL::DataTypeBool:
@@ -1916,18 +1916,18 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 	NS::SharedPtr<MTL::RenderPipelineDescriptor> desc = NS::TransferPtr(MTL::RenderPipelineDescriptor::alloc()->init());
 
 	{
-		MDSubpass const &subpass = pass->subpasses[p_render_subpass];
+		const MDSubpass &subpass = pass->subpasses[p_render_subpass];
 		for (uint32_t i = 0; i < subpass.color_references.size(); i++) {
 			uint32_t attachment = subpass.color_references[i].attachment;
 			if (attachment != AttachmentReference::UNUSED) {
-				MDAttachment const &a = pass->attachments[attachment];
+				const MDAttachment &a = pass->attachments[attachment];
 				desc->colorAttachments()->object(i)->setPixelFormat(a.format);
 			}
 		}
 
 		if (subpass.depth_stencil_reference.attachment != AttachmentReference::UNUSED) {
 			uint32_t attachment = subpass.depth_stencil_reference.attachment;
-			MDAttachment const &a = pass->attachments[attachment];
+			const MDAttachment &a = pass->attachments[attachment];
 
 			if (a.type & MDAttachmentType::Depth) {
 				desc->setDepthAttachmentPixelFormat(a.format);
@@ -2558,8 +2558,8 @@ uint64_t RenderingDeviceDriverMetal::get_lazily_memory_used() {
 }
 
 uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
-	MetalDeviceProperties const &props = (*device_properties);
-	MetalLimits const &limits = props.limits;
+	const MetalDeviceProperties &props = (*device_properties);
+	const MetalLimits &limits = props.limits;
 	uint64_t safe_unbounded = ((uint64_t)1 << 30);
 #if defined(DEV_ENABLED)
 #define UNKNOWN(NAME) \
@@ -2775,17 +2775,9 @@ RenderingDeviceDriverMetal::~RenderingDeviceDriverMetal() {
 		memdelete(kv.value);
 	}
 
-	if (shader_container_format != nullptr) {
-		memdelete(shader_container_format);
-	}
-
-	if (pixel_formats != nullptr) {
-		memdelete(pixel_formats);
-	}
-
-	if (device_properties != nullptr) {
-		memdelete(device_properties);
-	}
+	memdelete(shader_container_format);
+	memdelete(pixel_formats);
+	memdelete(device_properties);
 }
 
 #pragma mark - Initialization

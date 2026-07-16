@@ -64,32 +64,34 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (p_event->get_device() != InputEvent::DEVICE_ID_EMULATION) {
-		Ref<InputEventScreenTouch> touch = p_event;
-		if (touch.is_valid()) {
-			if (status.touch_index == -1) {
-				if (touch->is_pressed()) {
-					status.touch_index = touch->get_index();
-					status.press_attempt = true;
-					status.pressing_inside = has_point(touch->get_position());
-					on_action_event(p_event);
-				}
-			} else if (touch->get_index() == status.touch_index) {
-				if (!touch->is_pressed()) {
-					status.touch_index = -1;
-					on_action_event(p_event);
-				}
+	if (p_event->get_device() == InputEvent::DEVICE_ID_EMULATION) {
+		return;
+	}
+
+	Ref<InputEventScreenTouch> touch = p_event;
+	if (touch.is_valid()) {
+		if (status.touch_index == -1) {
+			if (touch->is_pressed()) {
+				status.touch_index = touch->get_index();
+				status.press_attempt = true;
+				status.pressing_inside = has_point(touch->get_position());
+				on_action_event(p_event);
+			}
+		} else if (touch->get_index() == status.touch_index) {
+			if (!touch->is_pressed()) {
+				status.touch_index = -1;
+				on_action_event(p_event);
 			}
 		}
+	}
 
-		Ref<InputEventScreenDrag> drag = p_event;
-		if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
-			bool last_press_inside = status.pressing_inside;
-			status.pressing_inside = has_point(drag->get_position());
+	Ref<InputEventScreenDrag> drag = p_event;
+	if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
+		bool last_press_inside = status.pressing_inside;
+		status.pressing_inside = has_point(drag->get_position());
 
-			if (last_press_inside != status.pressing_inside) {
-				queue_redraw();
-			}
+		if (last_press_inside != status.pressing_inside) {
+			queue_redraw();
 		}
 	}
 
@@ -252,8 +254,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 
 	if (status.press_attempt && status.pressing_inside) {
 		if (toggle_mode) {
-			bool is_pressed = p_event->is_pressed();
-			if ((is_pressed && action_mode == ACTION_MODE_BUTTON_PRESS) || (!is_pressed && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (p_event->is_released() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
@@ -269,7 +270,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				queue_accessibility_update();
 			}
 		} else {
-			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (p_event->is_released() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				_pressed();
 			}
 		}

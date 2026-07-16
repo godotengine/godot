@@ -1254,8 +1254,6 @@ PackedInt32Array TextServer::shaped_text_get_word_breaks(const RID &p_shaped, Bi
 }
 
 CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_position) const {
-	Vector<Rect2> carets;
-
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	const Vector2 &range = shaped_text_get_range(p_shaped);
 	real_t ascent = shaped_text_get_ascent(p_shaped);

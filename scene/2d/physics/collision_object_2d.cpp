@@ -41,7 +41,7 @@ void CollisionObject2D::_notification(int p_what) {
 			if (area) {
 				PhysicsServer2D::get_singleton()->area_set_transform(rid, gl_transform);
 			} else {
-				PhysicsServer2D::get_singleton()->body_set_state(rid, PhysicsServer2D::BODY_STATE_TRANSFORM, gl_transform);
+				PhysicsServer2D::get_singleton()->body_set_state(rid, PS2DE::BODY_STATE_TRANSFORM, gl_transform);
 			}
 
 			bool disabled = !is_enabled();
@@ -87,7 +87,7 @@ void CollisionObject2D::_notification(int p_what) {
 			if (area) {
 				PhysicsServer2D::get_singleton()->area_set_transform(rid, gl_transform);
 			} else {
-				PhysicsServer2D::get_singleton()->body_set_state(rid, PhysicsServer2D::BODY_STATE_TRANSFORM, gl_transform);
+				PhysicsServer2D::get_singleton()->body_set_state(rid, PS2DE::BODY_STATE_TRANSFORM, gl_transform);
 			}
 		} break;
 
@@ -255,8 +255,8 @@ void CollisionObject2D::_apply_disabled() {
 		} break;
 
 		case DISABLE_MODE_MAKE_STATIC: {
-			if (!area && (body_mode != PhysicsServer2D::BODY_MODE_STATIC)) {
-				PhysicsServer2D::get_singleton()->body_set_mode(rid, PhysicsServer2D::BODY_MODE_STATIC);
+			if (!area && (body_mode != PS2DE::BODY_MODE_STATIC)) {
+				PhysicsServer2D::get_singleton()->body_set_mode(rid, PS2DE::BODY_MODE_STATIC);
 			}
 		} break;
 
@@ -281,7 +281,7 @@ void CollisionObject2D::_apply_enabled() {
 		} break;
 
 		case DISABLE_MODE_MAKE_STATIC: {
-			if (!area && (body_mode != PhysicsServer2D::BODY_MODE_STATIC)) {
+			if (!area && (body_mode != PS2DE::BODY_MODE_STATIC)) {
 				PhysicsServer2D::get_singleton()->body_set_mode(rid, body_mode);
 			}
 		} break;
@@ -570,7 +570,7 @@ bool CollisionObject2D::is_only_update_transform_changes_enabled() const {
 	return only_update_transform_changes;
 }
 
-void CollisionObject2D::set_body_mode(PhysicsServer2D::BodyMode p_mode) {
+void CollisionObject2D::set_body_mode(PS2DE::BodyMode p_mode) {
 	ERR_FAIL_COND(area);
 
 	if (body_mode == p_mode) {

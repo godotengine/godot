@@ -229,7 +229,7 @@ public:
 	// Cancels all functions of the script that are are waiting to be resumed after using await.
 	void cancel_pending_functions(bool warn);
 
-	virtual bool is_valid() const override { return valid; }
+	virtual bool is_script_valid() const override { return valid; }
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -443,6 +443,10 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	friend class GDScript;
 
+	/**
+	 * Linked list of all GDScripts.
+	 * When clearing a script GDScript gives up ownership of that script to whoever is holding the reference alive, thus cleared scripts do not appear in this list.
+	 */
 	SelfList<GDScript>::List script_list;
 	friend class GDScriptFunction;
 
@@ -596,11 +600,7 @@ public:
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
 	virtual bool can_inherit_from_file() const override { return true; }
-	virtual int find_function(const String &p_function, const String &p_code) const override;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
-#ifdef TOOLS_ENABLED
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) override;
-#endif
 	virtual String _get_indentation() const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) override;

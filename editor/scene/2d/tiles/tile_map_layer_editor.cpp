@@ -36,7 +36,6 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_resource_preview.h"
@@ -2161,7 +2160,7 @@ void TileMapLayerEditorTilesPlugin::edit(ObjectID p_tile_map_layer_id) {
 	edited_tile_map_layer_id = p_tile_map_layer_id;
 }
 
-void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void TileMapLayerEditorTilesPlugin::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	bool is_vertical = (p_layout == EditorDock::DOCK_LAYOUT_VERTICAL);
 	atlas_sources_split_container->set_vertical(is_vertical);
 	atlas_sources_split_container->move_child(split_container_left_side, is_vertical ? -1 : 0);
@@ -2268,8 +2267,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	picker_button->set_theme_type_variation(SceneStringName(FlatButton));
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
-	Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
-	picker_button->set_tooltip_text(vformat(TTRC("Alternatively hold %s with other tools to pick tile."), find_keycode_name(key)));
+	picker_button->set_tooltip_text(vformat(TTRC("Alternatively hold %s with other tools to pick tile."), keycode_get_string(Key::CMD_OR_CTRL)));
 	picker_button->connect(SceneStringName(pressed), callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	picker_button->set_accessibility_name(TTRC("Pick"));
 	tools_settings->add_child(picker_button);
@@ -3193,7 +3191,6 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 				rect.set_end(tile_set->local_to_map(mpos));
 				rect = rect.abs();
 
-				HashMap<Vector2i, TileSet::TerrainsPattern> to_draw;
 				for (int x = rect.position.x; x <= rect.get_end().x; x++) {
 					for (int y = rect.position.y; y <= rect.get_end().y; y++) {
 						preview.insert(Vector2i(x, y));
@@ -3505,7 +3502,7 @@ void TileMapLayerEditorTerrainsPlugin::edit(ObjectID p_edited_tile_map_layer_id)
 	}
 }
 
-void TileMapLayerEditorTerrainsPlugin::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void TileMapLayerEditorTerrainsPlugin::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
 	// Main Panel.
 	main_box_container->set_vertical(is_vertical);
@@ -4485,7 +4482,7 @@ void TileMapLayerEditor::_update_layer_selector_layout(bool p_is_vertical) {
 	}
 }
 
-void TileMapLayerEditor::update_layout(DockLayout p_layout, DockSlot p_slot) {
+void TileMapLayerEditor::update_layout(DockLayout p_layout, int p_slot) {
 	bool is_vertical = (p_layout == EditorDock::DockLayout::DOCK_LAYOUT_VERTICAL);
 	tile_map_toolbar->set_vertical(is_vertical);
 	layer_selector_separator->set_vertical(is_vertical);

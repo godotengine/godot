@@ -31,14 +31,25 @@
 #pragma once
 
 #include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
 
 class Button;
 class EditorSettingsDialog;
-class Label;
 class MarginContainer;
 class OptionButton;
 class PanelContainer;
 class VBoxContainer;
+
+class SettingLabel : public Label {
+	GDCLASS(SettingLabel, Label);
+
+	String setting_name;
+
+public:
+	virtual Control *make_custom_tooltip(const String &p_text) const override;
+
+	SettingLabel(const String &p_text, const String &p_setting);
+};
 
 class QuickSettingsDialog : public AcceptDialog {
 	GDCLASS(QuickSettingsDialog, AcceptDialog);
@@ -59,7 +70,7 @@ class QuickSettingsDialog : public AcceptDialog {
 	PanelContainer *settings_list_panel = nullptr;
 	VBoxContainer *settings_list = nullptr;
 
-	void _add_setting_control(const String &p_text, Control *p_control);
+	void _add_setting_control(const String &p_text, const String &p_setting, Control *p_control);
 
 #ifndef ANDROID_ENABLED
 	// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.

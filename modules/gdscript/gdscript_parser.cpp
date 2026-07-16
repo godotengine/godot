@@ -2361,7 +2361,9 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 		push_error(R"(Expected iterable after "in".)");
 	}
 
-	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "for" condition.)");
+	if (!match(GDScriptTokenizer::Token::COLON)) {
+		push_error(vformat(R"(Expected ":" after "for" condition, found "%s" instead.)", current.get_name()), current);
+	}
 
 	// Save break/continue state.
 	bool could_break = can_break;
@@ -2398,7 +2400,9 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 		push_error(vformat(R"(Expected conditional expression after "%s".)", p_token));
 	}
 
-	consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":" after "%s" condition.)", p_token));
+	if (!match(GDScriptTokenizer::Token::COLON)) {
+		push_error(vformat(R"(Expected ":" after "%s" condition, found "%s" instead.)", p_token, current.get_name()), current);
+	}
 
 	n_if->true_block = parse_suite(vformat(R"("%s" block)", p_token));
 	n_if->true_block->parent_if = n_if;
@@ -2756,7 +2760,9 @@ GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 		push_error(R"(Expected conditional expression after "while".)");
 	}
 
-	consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "while" condition.)");
+	if (!match(GDScriptTokenizer::Token::COLON)) {
+		push_error(vformat(R"(Expected ":" after "while" condition, found "%s" instead.)", current.get_name()), current);
+	}
 
 	// Save break/continue state.
 	bool could_break = can_break;
@@ -2877,27 +2883,22 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 			case SuiteNode::Local::CONSTANT:
 				identifier->source = IdentifierNode::LOCAL_CONSTANT;
 				identifier->constant_source = declaration.constant;
-				declaration.constant->usages++;
 				break;
 			case SuiteNode::Local::VARIABLE:
 				identifier->source = IdentifierNode::LOCAL_VARIABLE;
 				identifier->variable_source = declaration.variable;
-				declaration.variable->usages++;
 				break;
 			case SuiteNode::Local::PARAMETER:
 				identifier->source = IdentifierNode::FUNCTION_PARAMETER;
 				identifier->parameter_source = declaration.parameter;
-				declaration.parameter->usages++;
 				break;
 			case SuiteNode::Local::FOR_VARIABLE:
 				identifier->source = IdentifierNode::LOCAL_ITERATOR;
 				identifier->bind_source = declaration.bind;
-				declaration.bind->usages++;
 				break;
 			case SuiteNode::Local::PATTERN_BIND:
 				identifier->source = IdentifierNode::LOCAL_BIND;
 				identifier->bind_source = declaration.bind;
-				declaration.bind->usages++;
 				break;
 			case SuiteNode::Local::UNDEFINED:
 				ERR_FAIL_V_MSG(nullptr, "Undefined local found.");
@@ -3162,37 +3163,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 		return parse_expression(false); // Return the following expression.
 	}
 
-	switch (p_previous_operand->type) {
-		case Node::IDENTIFIER: {
-#ifdef DEBUG_ENABLED
-			// Get source to store assignment count.
-			// Also remove one usage since assignment isn't usage.
-			IdentifierNode *id = static_cast<IdentifierNode *>(p_previous_operand);
-			switch (id->source) {
-				case IdentifierNode::LOCAL_VARIABLE:
-					id->variable_source->usages--;
-					break;
-				case IdentifierNode::LOCAL_CONSTANT:
-					id->constant_source->usages--;
-					break;
-				case IdentifierNode::FUNCTION_PARAMETER:
-					id->parameter_source->usages--;
-					break;
-				case IdentifierNode::LOCAL_ITERATOR:
-				case IdentifierNode::LOCAL_BIND:
-					id->bind_source->usages--;
-					break;
-				default:
-					break;
-			}
-#endif
-		} break;
-		case Node::SUBSCRIPT:
-			// Okay.
-			break;
-		default:
-			push_error(R"(Only identifier, attribute access, and subscription access can be used as assignment target.)");
-			return parse_expression(false); // Return the following expression.
+	if (p_previous_operand->type != Node::SUBSCRIPT && p_previous_operand->type != Node::IDENTIFIER) {
+		push_error(R"(Only identifier, attribute access, and subscription access can be used as assignment target.)");
+		return parse_expression(false); // Return the following expression.
 	}
 
 	AssignmentNode *assignment = alloc_node<AssignmentNode>();
@@ -4557,7 +4530,7 @@ bool GDScriptParser::abstract_annotation(AnnotationNode *p_annotation, Node *p_t
 bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, R"("@onready" annotation can only be applied to class variables.)");
 
-	if (current_class && !ClassDB::is_parent_class(current_class->get_datatype().native_type, SNAME("Node"))) {
+	if (current_class && !ClassDB::is_parent_class(current_class->self_type.native_type, SNAME("Node"))) {
 		push_error(R"("@onready" can only be used in classes that inherit "Node".)", p_annotation);
 		return false;
 	}
@@ -4769,11 +4742,11 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	variable->export_info.hint_string = hint_string;
 
 	// This is called after the analyzer is done finding the type, so this should be set here.
-	DataType export_type = variable->get_datatype();
+	DataType export_type = variable->type_constraint;
 
 	// Use initializer type if specified type is `Variant`.
-	if (export_type.is_variant() && variable->initializer != nullptr && variable->initializer->datatype.is_set()) {
-		export_type = variable->initializer->get_datatype();
+	if (export_type.is_variant() && variable->initializer != nullptr && variable->initializer->type_constraint.is_set()) {
+		export_type = variable->initializer->type_constraint;
 		export_type.type_source = DataType::INFERRED;
 	}
 
@@ -4787,7 +4760,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	} else if (export_type.is_typed_container_type()) {
 		is_array = true;
 		export_type = export_type.get_typed_container_type();
-		export_type.type_source = variable->datatype.type_source;
+		export_type.type_source = variable->type_constraint.type_source;
 	}
 
 	bool is_dict = false;
@@ -4809,7 +4782,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 		if (export_type.builtin_type != Variant::STRING && export_type.builtin_type != Variant::DICTIONARY) {
 			Vector<Variant::Type> expected_types = { Variant::STRING, Variant::DICTIONARY };
-			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->type_constraint), p_annotation);
 			return false;
 		}
 
@@ -4989,7 +4962,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != enum_type)) {
 			Vector<Variant::Type> expected_types = { Variant::INT, Variant::STRING };
-			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->type_constraint), p_annotation);
 			return false;
 		}
 	}
@@ -5000,7 +4973,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 			// Allow float/int conversion.
 			if ((t_type != Variant::FLOAT || export_type.builtin_type != Variant::INT) && (t_type != Variant::INT || export_type.builtin_type != Variant::FLOAT)) {
 				Vector<Variant::Type> expected_types = { t_type };
-				push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+				push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->type_constraint), p_annotation);
 				return false;
 			}
 		}
@@ -5040,7 +5013,7 @@ bool GDScriptParser::export_storage_annotation(AnnotationNode *p_annotation, Nod
 	variable->exported = true;
 
 	// Save the info because the compiler uses export info for overwriting member info.
-	variable->export_info = variable->get_datatype().to_property_info(variable->identifier->name);
+	variable->export_info = variable->type_constraint.to_property_info(variable->identifier->name);
 	variable->export_info.usage |= PROPERTY_USAGE_STORAGE;
 
 	return true;
@@ -5062,7 +5035,7 @@ bool GDScriptParser::export_custom_annotation(AnnotationNode *p_annotation, Node
 
 	variable->exported = true;
 
-	DataType export_type = variable->get_datatype();
+	DataType export_type = variable->type_constraint;
 
 	variable->export_info.type = export_type.builtin_type;
 	variable->export_info.hint = static_cast<PropertyHint>(p_annotation->resolved_arguments[0].operator int64_t());
@@ -5095,7 +5068,7 @@ bool GDScriptParser::export_tool_button_annotation(AnnotationNode *p_annotation,
 		return false;
 	}
 
-	const DataType variable_type = variable->get_datatype();
+	const DataType variable_type = variable->type_constraint;
 	if (!variable_type.is_variant() && variable_type.is_hard_type()) {
 		if (variable_type.kind != DataType::BUILTIN || variable_type.builtin_type != Variant::CALLABLE) {
 			push_error(vformat(R"("@export_tool_button" annotation requires a variable of type "Callable", but type "%s" was given instead.)", variable_type.to_string()), p_annotation);
@@ -5330,14 +5303,14 @@ bool GDScriptParser::rpc_annotation(AnnotationNode *p_annotation, Node *p_target
 GDScriptParser::DataType GDScriptParser::SuiteNode::Local::get_datatype() const {
 	switch (type) {
 		case CONSTANT:
-			return constant->get_datatype();
+			return constant->type_constraint;
 		case VARIABLE:
-			return variable->get_datatype();
+			return variable->type_constraint;
 		case PARAMETER:
-			return parameter->get_datatype();
+			return parameter->type_constraint;
 		case FOR_VARIABLE:
 		case PATTERN_BIND:
-			return bind->get_datatype();
+			return bind->type_constraint;
 		case UNDEFINED:
 			return DataType();
 	}

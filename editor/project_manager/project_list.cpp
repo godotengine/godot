@@ -336,7 +336,7 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 					project_different_version->set_focus_mode(FOCUS_ACCESSIBILITY);
 					project_different_version->set_tooltip_text(project_version_tooltip_text);
 					project_different_version->show();
-				} else if (p_features[i] == TTR("Unknown version")) {
+				} else if (p_features[i] == "u-ver") {
 					unknown_version = true;
 					project_different_version->hide();
 				}
@@ -663,8 +663,10 @@ void ProjectList::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_ready()) {
-				// FIXME: Technically this only needs to update some dynamic texts, not the whole list.
-				update_project_list();
+				for (const Item &item : _projects) {
+					_update_project_control_translatable_fields(item);
+				}
+				update_dock_menu();
 			}
 		} break;
 
@@ -849,23 +851,23 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 			unsupported_features.push_back("3.x");
 			project_version = "3.x";
 		} else {
-			unsupported_features.push_back(TTR("Unknown version"));
+			unsupported_features.push_back("u-ver");
 		}
 	}
 
 	uint64_t last_edited = 0;
 	if (cf_err == OK) {
-		// The modification date marks the date the project was last edited.
-		// This is because the `project.godot` file will always be modified
-		// when editing a project (but not when running it).
-		last_edited = FileAccess::get_modified_time(conf);
-
-		String fscache = p_path.path_join(".fscache");
-		if (FileAccess::exists(fscache)) {
-			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
-			if (cache_modified > last_edited) {
-				last_edited = cache_modified;
-			}
+		int *cached_time = modified_time_cache.getptr(p_path);
+		if (cached_time) {
+			// Modified time may change as a result of Project Manager actions, which will affect sorting.
+			// For that reason, the time is read only once.
+			last_edited = *cached_time;
+		} else {
+			// The modification date marks the date the project was last edited.
+			// This is because the `project.godot` file will always be modified
+			// when editing a project (but not when running it).
+			last_edited = FileAccess::get_modified_time(conf);
+			modified_time_cache[p_path] = last_edited;
 		}
 	} else {
 		grayed = true;
@@ -1208,15 +1210,16 @@ void ProjectList::_create_project_item_control(int p_index) {
 	ERR_FAIL_COND(item.control != nullptr); // Already created
 
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
+	item.control = hb;
+
 	hb->add_theme_constant_override("separation", 10 * EDSCALE);
 
-	hb->set_project_title(!item.missing ? item.project_name : TTR("Missing Project"));
+	_update_project_control_translatable_fields(item);
+
 	hb->set_project_path(item.path);
 	hb->set_tooltip_text(item.description);
 	hb->set_tags(item.tags, this);
-	hb->set_unsupported_features(item.unsupported_features.duplicate());
 	hb->set_project_version(item.project_version);
-	hb->set_last_edited_info(item.get_last_edited_string());
 
 	hb->set_is_favorite(item.favorite);
 	hb->set_is_missing(item.missing);
@@ -1240,7 +1243,14 @@ void ProjectList::_create_project_item_control(int p_index) {
 	}
 
 	project_list_vbox->add_child(hb);
-	item.control = hb;
+}
+
+void ProjectList::_update_project_control_translatable_fields(const Item &item) {
+	ProjectListItemControl *control = item.control;
+
+	control->set_project_title(!item.missing ? item.project_name : TTR("Missing Project"));
+	control->set_last_edited_info(item.get_last_edited_string());
+	control->set_unsupported_features(item.unsupported_features.duplicate());
 }
 
 void ProjectList::_toggle_project(int p_index) {

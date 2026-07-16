@@ -206,7 +206,7 @@ class GameView : public VBoxContainer {
 	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
 
-	int const DEFAULT_TIME_SCALE_INDEX = 5;
+	const int DEFAULT_TIME_SCALE_INDEX = 5;
 	Array time_scale_range = { 0.0625f, 0.125f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 4.0f, 8.0f, 16.0f };
 	Array time_scale_label = { "1/16", "1/8", "1/4", "1/2", "3/4", "1.0", "1.25", "1.5", "1.75", "2.0", "4.0", "8.0", "16.0" };
 	int time_scale_index = DEFAULT_TIME_SCALE_INDEX;

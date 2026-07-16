@@ -965,6 +965,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_advanced_menu->get_popup()->add_item(TTR("Flip Vertically"), FLIP_VERTICALLY, Key::V);
 	button_advanced_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GenericTilePolygonEditor::_advanced_menu_item_pressed));
 	button_advanced_menu->set_focus_mode(FOCUS_ALL);
+	button_advanced_menu->set_shortcut_context(this);
 	toolbar->add_child(button_advanced_menu);
 
 	toolbar->add_child(memnew(VSeparator));

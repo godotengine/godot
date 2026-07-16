@@ -58,6 +58,7 @@
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/editor_resource_tooltip_plugins.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "editor/run/editor_run_bar.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/scene_create_dialog.h"
 #include "editor/settings/editor_command_palette.h"
@@ -513,7 +514,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				toolbar2_hbc->show();
 
 				tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
-				tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+				tree_mc->set_theme_type_variation("NoBorderBottomPanel");
 			}
 			button_file_list_display_mode->hide();
 
@@ -2712,6 +2713,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_RUN_SCENE: {
+			if (p_selected.size() == 1) {
+				EditorRunBar::get_singleton()->play_custom_scene(p_selected[0]);
+			}
+		} break;
+
 		case EXTRA_FOCUS_PATH: {
 			focus_on_filter();
 		} break;
@@ -3432,6 +3439,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		if (all_files_scenes) {
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scene"), FILE_MENU_OPEN);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Play")), TTRC("Play Scene"), FILE_MENU_RUN_SCENE);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTRC("New Inherited Scene"), FILE_MENU_INHERIT);
 				if (main_scene_path != filenames[0]) {
 					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTRC("Set as Main Scene"), FILE_MENU_MAIN_SCENE);
@@ -4171,7 +4179,7 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 	return button;
 }
 
-void FileSystemDock::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void FileSystemDock::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	bool new_horizontal = (p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL);
 	bool new_touches_bottom = (p_slot != EditorDock::DOCK_SLOT_BOTTOM);
 	if (horizontal == new_horizontal && touches_bottom == new_touches_bottom) {

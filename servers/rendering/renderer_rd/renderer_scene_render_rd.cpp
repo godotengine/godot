@@ -716,7 +716,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			}
 
 		} else {
-			tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+			tonemap.glow_texture = texture_storage->texture_rd_get_default(rb->get_view_count() > 1 ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 			tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
@@ -772,9 +772,9 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			// If we use a spatial upscaler to upscale or SMAA to antialias we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
 			dest_fb_format = rb->get_base_data_format();
-			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), dest_fb_format, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
+			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), dest_fb_format, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, color_size, 0, 1, true, true);
 			dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
-			tonemap.dest_texture_size = rb->get_internal_size();
+			tonemap.dest_texture_size = color_size;
 		} else {
 			// If we do a nearest or bilinear upscale, we just render into our render target and our shader will upscale automatically.
 			// Target size in this case is lying as we never get our real target size communicated.
@@ -950,7 +950,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	}
 
 	tonemap.use_glow = false;
-	tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+	tonemap.glow_texture = texture_storage->texture_rd_get_default(rb->get_view_count() > 1 ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 	tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 	tonemap.use_auto_exposure = false;
 	tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
@@ -1885,43 +1885,21 @@ void RendererSceneRenderRD::init() {
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
-	if (forward_id_storage) {
-		memdelete(forward_id_storage);
-	}
+	memdelete(forward_id_storage);
 
-	if (bokeh_dof) {
-		memdelete(bokeh_dof);
-	}
-	if (copy_effects) {
-		memdelete(copy_effects);
-	}
-	if (debug_effects) {
-		memdelete(debug_effects);
-	}
-	if (luminance) {
-		memdelete(luminance);
-	}
-	if (smaa) {
-		memdelete(smaa);
-	}
-	if (tone_mapper) {
-		memdelete(tone_mapper);
-	}
-	if (vrs) {
-		memdelete(vrs);
-	}
-	if (fsr) {
-		memdelete(fsr);
-	}
+	memdelete(bokeh_dof);
+	memdelete(copy_effects);
+	memdelete(debug_effects);
+	memdelete(luminance);
+	memdelete(smaa);
+	memdelete(tone_mapper);
+	memdelete(vrs);
+	memdelete(fsr);
 #ifdef METAL_ENABLED
-	if (mfx_spatial) {
-		memdelete(mfx_spatial);
-	}
+	memdelete(mfx_spatial);
 #endif
 
-	if (resolve_effects) {
-		memdelete(resolve_effects);
-	}
+	memdelete(resolve_effects);
 
 	if (sky.sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky.sky_scene_state.uniform_set)) {
 		RD::get_singleton()->free_rid(sky.sky_scene_state.uniform_set);

@@ -50,7 +50,7 @@ static bool _profile_count_as_native(const Object *p_base_obj, const StringName 
 }
 
 static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {
-	if (script_type.is_valid() && script_type->is_valid()) {
+	if (script_type.is_valid() && script_type->is_script_valid()) {
 		return GDScript::debug_get_script_name(script_type);
 	} else if (native_type != StringName()) {
 		return native_type.string();
@@ -152,6 +152,7 @@ Variant GDScriptFunction::_get_default_variant_for_data_type(const GDScriptDataT
 	return Variant();
 }
 
+#ifdef DEBUG_ENABLED
 String GDScriptFunction::_get_call_error(const String &p_where, const Variant **p_argptrs, int p_argcount, const Variant &p_ret, const Callable::CallError &p_err) const {
 	switch (p_err.error) {
 		case Callable::CallError::CALL_OK:
@@ -165,7 +166,6 @@ String GDScriptFunction::_get_call_error(const String &p_where, const Variant **
 			ERR_FAIL_INDEX_V_MSG(p_err.argument, p_argcount, "Bug: Invalid call error argument index.", "Bug: Invalid call error argument index.");
 			ERR_FAIL_NULL_V_MSG(p_argptrs[p_err.argument], "Bug: Argument is null pointer.", "Bug: Argument is null pointer.");
 			// Handle the Object to Object case separately as we don't have further class details.
-#ifdef DEBUG_ENABLED
 			if (p_err.expected == Variant::OBJECT && p_argptrs[p_err.argument]->get_type() == p_err.expected) {
 				return "Invalid type in " + p_where + ". The Object-derived class of argument " + itos(p_err.argument + 1) + " (" + _get_var_type(p_argptrs[p_err.argument]) + ") is not a subclass of the expected argument class.";
 			}
@@ -175,7 +175,6 @@ String GDScriptFunction::_get_call_error(const String &p_where, const Variant **
 			if (p_err.expected == Variant::DICTIONARY && p_argptrs[p_err.argument]->get_type() == p_err.expected) {
 				return "Invalid type in " + p_where + ". The dictionary of argument " + itos(p_err.argument + 1) + " (" + _get_var_type(p_argptrs[p_err.argument]) + ") does not have the same element type as the expected typed dictionary argument.";
 			}
-#endif // DEBUG_ENABLED
 			return "Invalid type in " + p_where + ". Cannot convert argument " + itos(p_err.argument + 1) + " from " + Variant::get_type_name(p_argptrs[p_err.argument]->get_type()) + " to " + Variant::get_type_name(Variant::Type(p_err.expected)) + ".";
 		case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 		case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
@@ -208,6 +207,7 @@ String GDScriptFunction::_get_callable_call_error(const String &p_where, const C
 		return _get_call_error(p_where, (const Variant **)argptrs.ptr(), argptrs.size(), p_ret, p_err);
 	}
 }
+#endif // DEBUG_ENABLED
 
 void (*type_init_function_table[])(Variant *) = {
 	nullptr, // NIL (shouldn't be called).
@@ -662,7 +662,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 	memnew_placement(&stack[ADDR_STACK_NIL], Variant);
 
+#ifdef DEBUG_ENABLED
 	String err_text;
+#endif
 
 	GDScriptLanguage::CallLevel call_level;
 	GDScriptLanguage::get_singleton()->enter_function(&call_level, p_instance, this, stack, &ip, &line);
@@ -937,7 +939,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				bool was_freed = false;
 				Object *object = value->get_validated_object_with_check(was_freed);
 				if (was_freed) {
+#ifdef DEBUG_ENABLED
 					err_text = "Left operand of 'is' is a previously freed instance.";
+#endif
 					OPCODE_BREAK;
 				}
 
@@ -959,7 +963,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				bool was_freed = false;
 				Object *object = value->get_validated_object_with_check(was_freed);
 				if (was_freed) {
+#ifdef DEBUG_ENABLED
 					err_text = "Left operand of 'is' is a previously freed instance.";
+#endif
 					OPCODE_BREAK;
 				}
 
@@ -1924,8 +1930,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					call_time = OS::get_singleton()->get_ticks_usec();
 				}
 				Variant::Type base_type = base->get_type();
-				Object *base_obj = base->get_validated_object();
-				StringName base_class = base_obj ? base_obj->get_class_name() : StringName();
+				Object *base_obj = nullptr;
 #endif
 
 				Variant temp_ret;
@@ -1937,9 +1942,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 					if (ret->get_type() == Variant::NIL) {
 						if (base_type == Variant::OBJECT) {
+							if (*methodname == CoreStringName(free_)) {
+								err_text = R"(Trying to get a return value of a method that returns "void")";
+								OPCODE_BREAK;
+							}
+							base_obj = base->get_validated_object();
 							if (base_obj) {
-								MethodBind *method = ClassDB::get_method(base_class, *methodname);
-								if (*methodname == CoreStringName(free_) || (method && !method->has_return())) {
+								MethodBind *method = ClassDB::get_method(base_obj->get_class_name(), *methodname);
+								if (method && !method->has_return()) {
 									err_text = R"(Trying to get a return value of a method that returns "void")";
 									OPCODE_BREAK;
 								}
@@ -1967,14 +1977,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 
 				if (GDScriptLanguage::get_singleton()->profiling) {
+					base_obj = (base_obj == nullptr) ? base->get_validated_object() : base_obj;
 					uint64_t t_taken = OS::get_singleton()->get_ticks_usec() - call_time;
 					if (GDScriptLanguage::get_singleton()->profile_native_calls && _profile_count_as_native(base_obj, *methodname)) {
-						_profile_native_call(t_taken, *methodname, base_class);
+						_profile_native_call(t_taken, *methodname, base_obj->get_class_name());
 					}
 					function_call_time += t_taken;
 				}
 
-				if (err.error != Callable::CallError::CALL_OK) {
+				if (unlikely(err.error != Callable::CallError::CALL_OK)) {
 					String methodstr = *methodname;
 					String basestr = _get_var_type(base);
 					bool is_callable = false;
@@ -2181,7 +2192,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 				if (err.error != Callable::CallError::CALL_OK) {
+#ifdef DEBUG_ENABLED
 					err_text = _get_call_error("static function '" + method->get_name().string() + "' in type '" + method->get_instance_class().string() + "'", argptrs, argc, *ret, err);
+#endif
 					OPCODE_BREAK;
 				}
 
@@ -2545,8 +2558,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 
 				if (err.error != Callable::CallError::CALL_OK) {
+#ifdef DEBUG_ENABLED
 					String methodstr = *methodname;
 					err_text = _get_call_error("function '" + methodstr + "'", (const Variant **)argptrs, argc, *dst, err);
+#endif
 
 					OPCODE_BREAK;
 				}
@@ -2572,7 +2587,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						Object *obj = argobj->get_validated_object_with_check(was_freed);
 
 						if (was_freed) {
+#ifdef DEBUG_ENABLED
 							err_text = "Trying to await on a freed object.";
+#endif
 							OPCODE_BREAK;
 						}
 
@@ -2637,7 +2654,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					Error err = sig.connect(Callable(gdfs.ptr(), "_signal_callback").bind(retvalue), Object::CONNECT_ONE_SHOT);
 					if (err != OK) {
+#ifdef DEBUG_ENABLED
 						err_text = "Error connecting to signal: " + sig.get_name() + " during await.";
+#endif
 						OPCODE_BREAK;
 					}
 
@@ -3799,7 +3818,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(globalname_idx < 0 || globalname_idx >= _global_names_count);
 				const StringName *globalname = &_global_names_ptr[globalname_idx];
 				if (unlikely(!GDScriptLanguage::get_singleton()->get_named_globals_map().has(*globalname))) {
+#ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to access non-existent autoload singleton "%s".)", *globalname);
+#endif
 					OPCODE_BREAK;
 				}
 

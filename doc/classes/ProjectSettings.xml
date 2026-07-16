@@ -1726,8 +1726,12 @@
 		<member name="input_devices/sensors/enable_magnetometer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the magnetometer sensor is enabled and [method Input.get_magnetometer] returns valid data.
 		</member>
+		<member name="internationalization/locale/allow_fallback" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the locale will fall back to [member internationalization/locale/fallback] when a translation isn't available in a given language.
+			[b]Note:[/b] Not to be confused with [TextServerFallback].
+		</member>
 		<member name="internationalization/locale/fallback" type="String" setter="" getter="" default="&quot;en&quot;">
-			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
+			The locale to fall back to if a translation isn't available in a given language if [member internationalization/locale/allow_fallback] is [code]true[/code]. If left empty, [code]en[/code] (English) will be used.
 			[b]Note:[/b] Not to be confused with [TextServerFallback].
 		</member>
 		<member name="internationalization/locale/include_text_server_data" type="bool" setter="" getter="" default="false">
@@ -3578,6 +3582,10 @@
 		<member name="xr/openxr/extensions/frame_synthesis" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] the frame synthesis extension will be activated if supported by the platform.
 			[b]Note:[/b] This feature should not be enabled in conjunction with Application Space Warp, if supported this replaces ASW.
+		</member>
+		<member name="xr/openxr/extensions/frame_synthesis/flip_y" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] the Y value of the motion vectors submitted to the frame synthesis extension will be flipped.
+			[b]Note:[/b] Since this is only needed on some platforms, it should usually be set using a feature tag, for example, to target Android XR: [code]xr/openxr/extensions/frame_synthesis/flip_y.androidxr[/code]
 		</member>
 		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] the hand interaction profile extension will be activated if supported by the platform.

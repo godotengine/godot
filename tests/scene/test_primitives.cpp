@@ -190,7 +190,6 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 		int subdivide_height{ 2 };
 		int subdivide_depth{ 8 };
 		BoxMesh::create_mesh_array(data, size, subdivide_width, subdivide_height, subdivide_depth);
-		Vector<Vector3> points = data[RSE::ARRAY_VERTEX];
 		Vector<Vector3> normals = data[RSE::ARRAY_NORMAL];
 
 		SUBCASE("Only 6 distinct normals.") {

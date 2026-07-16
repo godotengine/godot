@@ -39,7 +39,7 @@
 // Note that NodePath is (effectively) const: If you hold a NodePath,
 // you can expect it to remain unchanged, even if you make copies of
 // it. This is achieved through copy-on-write (CoW).
-class [[nodiscard]] NodePath {
+class [[nodiscard]] _WARN_UNUSED_ NodePath {
 	struct Data {
 		SafeRefCount refcount;
 		Vector<StringName> path;

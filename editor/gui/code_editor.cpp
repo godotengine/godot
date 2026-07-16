@@ -222,7 +222,6 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 			text_editor->select(pos.y, pos.x, pos.y, pos.x + text.length());
 			text_editor->center_viewport_to_caret(0);
 			text_editor->set_code_hint("");
-			text_editor->cancel_code_completion();
 
 			line_col_changed_for_result = true;
 		}
@@ -1411,7 +1410,6 @@ void CodeTextEditor::goto_line_without_history(int p_line, int p_column) {
 	text_editor->set_caret_line(p_line, false);
 	text_editor->set_caret_column(p_column, false);
 	text_editor->set_code_hint("");
-	text_editor->cancel_code_completion();
 	adjust_viewport_to_caret();
 }
 
@@ -1425,7 +1423,6 @@ void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
 	text_editor->select(p_line, p_begin, p_line, p_end);
 	text_editor->set_code_hint("");
-	text_editor->cancel_code_completion();
 	adjust_viewport_to_caret();
 	trigger_history_save_on_navigate();
 }
@@ -1437,7 +1434,6 @@ void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
 	text_editor->set_caret_line(p_line, false);
 	text_editor->set_caret_column(p_column, false);
 	text_editor->set_code_hint("");
-	text_editor->cancel_code_completion();
 	center_viewport_to_caret();
 	trigger_history_save_on_navigate();
 }
@@ -1706,7 +1702,7 @@ void CodeTextEditor::_update_font_ligatures() {
 			} break;
 		}
 		Vector<String> variation_tags = String(EDITOR_GET("interface/editor/fonts/code_font_custom_variations")).split(",");
-		Dictionary variations_mono;
+		Dictionary variations_mono = fc->get_variation_opentype();
 		for (int i = 0; i < variation_tags.size(); i++) {
 			Vector<String> subtag_a = variation_tags[i].split("=");
 			if (subtag_a.size() == 2) {

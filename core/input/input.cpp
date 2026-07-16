@@ -1973,11 +1973,11 @@ void Input::_update_joypad_features(int p_device) {
 	}
 }
 
-Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {
+Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &p_mapping, JoyButton p_button) {
 	JoyEvent event;
 
-	for (int i = 0; i < mapping.bindings.size(); i++) {
-		const JoyBinding binding = mapping.bindings[i];
+	for (int i = 0; i < p_mapping.bindings.size(); i++) {
+		const JoyBinding binding = p_mapping.bindings[i];
 		if (binding.inputType == TYPE_BUTTON && binding.input.button == p_button) {
 			event.type = binding.outputType;
 			switch (binding.outputType) {
@@ -2008,11 +2008,11 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 	return event;
 }
 
-Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range) {
+Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &p_mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range) {
 	JoyEvent event;
 
-	for (int i = 0; i < mapping.bindings.size(); i++) {
-		const JoyBinding binding = mapping.bindings[i];
+	for (int i = 0; i < p_mapping.bindings.size(); i++) {
+		const JoyBinding binding = p_mapping.bindings[i];
 		if (binding.inputType == TYPE_AXIS && binding.input.axis.axis == p_axis) {
 			float value = p_value;
 			if (binding.input.axis.invert) {
@@ -2078,9 +2078,9 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, J
 	return event;
 }
 
-void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]) {
-	for (int i = 0; i < mapping.bindings.size(); i++) {
-		const JoyBinding binding = mapping.bindings[i];
+void Input::_get_mapped_hat_events(const JoyDeviceMapping &p_mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]) {
+	for (int i = 0; i < p_mapping.bindings.size(); i++) {
+		const JoyBinding binding = p_mapping.bindings[i];
 		if (binding.inputType == TYPE_HAT && binding.input.hat.hat == p_hat) {
 			HatDir hat_direction;
 			switch (binding.input.hat.hat_mask) {
@@ -2129,18 +2129,18 @@ void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat
 	}
 }
 
-JoyButton Input::_get_output_button(const String &output) {
+JoyButton Input::_get_output_button(const String &p_output) {
 	for (int i = 0; i < (int)JoyButton::SDL_MAX; i++) {
-		if (output == _joy_buttons[i]) {
+		if (p_output == _joy_buttons[i]) {
 			return JoyButton(i);
 		}
 	}
 	return JoyButton::INVALID;
 }
 
-JoyAxis Input::_get_output_axis(const String &output) {
+JoyAxis Input::_get_output_axis(const String &p_output) {
 	for (int i = 0; i < (int)JoyAxis::SDL_MAX; i++) {
-		if (output == _joy_axes[i]) {
+		if (p_output == _joy_axes[i]) {
 			return JoyAxis(i);
 		}
 	}

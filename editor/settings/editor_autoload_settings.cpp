@@ -40,12 +40,15 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "editor/scene/scene_create_dialog.h"
 #include "editor/settings/project_settings_editor.h"
+#include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
 #include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
 #define PREVIEW_LIST_MAX_SIZE 10
@@ -131,6 +134,14 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	}
 
 	return true;
+}
+
+void EditorAutoloadSettings::_validate_autoload_name() {
+	String error;
+	bool is_valid = _autoload_name_is_valid(name_edit->get_text(), &error);
+	if (!is_valid) {
+		name_validator->set_message(0, error, EditorValidationPanel::MSG_ERROR);
+	}
 }
 
 void EditorAutoloadSettings::_autoload_selected() {
@@ -337,7 +348,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 
 		Ref<Script> scr = res;
 		if (scr.is_valid()) {
-			ERR_FAIL_COND_V_MSG(!scr->is_valid(), nullptr, vformat("Failed to create an autoload, script '%s' is not compiling.", p_path));
+			ERR_FAIL_COND_V_MSG(!scr->is_script_valid(), nullptr, vformat("Failed to create an autoload, script '%s' is not compiling.", p_path));
 
 			StringName ibt = scr->get_instance_base_type();
 			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
@@ -402,7 +413,8 @@ void EditorAutoloadSettings::init_autoloads() {
 }
 
 void EditorAutoloadSettings::_autoload_file_selected(const String &p_path) {
-	_add_autoload(p_path.get_file().get_basename(), p_path);
+	// Convert the file name to PascalCase, which is the convention for classes in GDScript.
+	_try_add_autoload(p_path.get_file().get_basename().to_pascal_case(), p_path);
 }
 
 void EditorAutoloadSettings::_scene_file_selected(const String &p_path) {
@@ -418,7 +430,7 @@ void EditorAutoloadSettings::_scene_file_selected(const String &p_path) {
 void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
 	FileSystemDock::get_singleton()->get_script_create_dialog()->hide();
 	path = p_script->get_path().get_base_dir();
-	_add_autoload(p_script->get_path().get_file().get_basename(), p_script->get_path());
+	_try_add_autoload(p_script->get_path().get_file().get_basename().to_pascal_case(), p_script->get_path());
 }
 
 void EditorAutoloadSettings::_scene_created() {
@@ -434,21 +446,29 @@ void EditorAutoloadSettings::_scene_created() {
 		return;
 	}
 
-	_add_autoload(scene_create_dialog->get_root_name(), scene_create_dialog->get_scene_path());
+	_try_add_autoload(scene_create_dialog->get_root_name().to_pascal_case(), scene_create_dialog->get_scene_path());
 }
 
 void EditorAutoloadSettings::_add_autoload(const String &p_name, const String &p_path) {
-	// Convert the file name to PascalCase, which is the convention for classes in GDScript.
-	String autoload_name = p_name.to_pascal_case();
+	autoload_add(p_name, p_path, true);
+}
 
-	// If the name collides with a built-in class, prefix the name to make it possible to add without having to edit the name.
-	// The prefix is subjective, but it provides better UX than throwing an error :)
-	if (ClassDB::class_exists(autoload_name)) {
-		autoload_name += "Global";
+void EditorAutoloadSettings::_try_add_autoload(const String &p_name, const String &p_path) {
+	if (_autoload_name_is_valid(p_name)) {
+		_add_autoload(p_name, p_path);
+		return;
 	}
+	pending_autoload_path = p_path;
 
-	autoload_name = autoload_name.validate_ascii_identifier();
-	autoload_add(autoload_name, p_path, true);
+	name_edit->set_text(p_name);
+	name_validator->update();
+	name_dialog->popup_centered(Vector2i(600 * EDSCALE, 0));
+	name_edit->grab_focus();
+	name_edit->select_all();
+}
+
+void EditorAutoloadSettings::_confirm_autoload_name() {
+	_add_autoload(name_edit->get_text(), pending_autoload_path);
 }
 
 void EditorAutoloadSettings::update_autoload() {
@@ -502,7 +522,7 @@ void EditorAutoloadSettings::update_autoload() {
 			if (old_info.path == info.path) {
 				// Still the same resource, check status
 				info.node = old_info.node;
-				if (info.node) {
+				if (info.node && info.node->is_instance()) {
 					Ref<Script> scr = info.node->get_script();
 					info.in_editor = scr.is_valid() && scr->is_tool();
 					if (info.is_singleton == old_info.is_singleton && info.in_editor == old_info.in_editor) {
@@ -891,7 +911,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+	mc->set_theme_type_variation("NoBorderBottomWideWindow");
 	add_child(mc);
 
 	tree = memnew(Tree);
@@ -932,6 +952,25 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->connect("item_activated", callable_mp(this, &EditorAutoloadSettings::_autoload_activated));
 
 	mc->add_child(tree, true);
+
+	name_dialog = memnew(ConfirmationDialog);
+	name_dialog->set_title(TTRC("Enter Autoload Name"));
+	add_child(name_dialog);
+	name_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorAutoloadSettings::_confirm_autoload_name));
+
+	VBoxContainer *name_vbox = memnew(VBoxContainer);
+	name_dialog->add_child(name_vbox);
+
+	name_edit = memnew(LineEdit);
+	name_vbox->add_child(name_edit);
+	name_dialog->register_text_enter(name_edit);
+
+	name_validator = memnew(EditorValidationPanel);
+	name_validator->set_accept_button(name_dialog->get_ok_button());
+	name_validator->set_update_callback(callable_mp(this, &EditorAutoloadSettings::_validate_autoload_name));
+	name_validator->add_line(0, TTRC("Autoload name is valid."));
+	name_vbox->add_child(name_validator);
+	name_edit->connect(SceneStringName(text_changed), callable_mp(name_validator, &EditorValidationPanel::update).unbind(1));
 }
 
 EditorAutoloadSettings::~EditorAutoloadSettings() {

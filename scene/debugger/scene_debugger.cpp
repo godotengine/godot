@@ -102,9 +102,7 @@ void SceneDebugger::initialize() {
 }
 
 void SceneDebugger::deinitialize() {
-	if (singleton) {
-		memdelete(singleton);
-	}
+	memdelete(singleton);
 }
 
 #ifdef DEBUG_ENABLED

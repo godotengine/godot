@@ -498,8 +498,6 @@ void Skeleton3DEditor::_insert_keys(const bool p_all_bones) {
 	bool scl_enabled = key_scale_button->is_pressed();
 
 	int bone_len = skeleton->get_bone_count();
-	Node *root = EditorNode::get_singleton()->get_tree()->get_root();
-	String path = String(root->get_path_to(skeleton));
 
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
 	te->make_insert_queue();
@@ -1202,6 +1200,7 @@ void Skeleton3DEditor::create_editors() {
 	joint_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	joint_tree->set_h_size_flags(SIZE_EXPAND_FILL);
 	joint_tree->set_allow_rmb_select(true);
+	joint_tree->add_theme_constant_override("scroll_max_sticky_items", 0);
 	joint_tree->set_theme_type_variation("TreeSecondary");
 	SET_DRAG_FORWARDING_GCD(joint_tree, Skeleton3DEditor);
 	s_con->add_child(joint_tree);

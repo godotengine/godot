@@ -254,9 +254,7 @@ bool OS_LinuxBSD::is_sandboxed() const {
 }
 
 void OS_LinuxBSD::finalize() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 	main_loop = nullptr;
 
 #ifdef ALSAMIDI_ENABLED
@@ -264,9 +262,7 @@ void OS_LinuxBSD::finalize() {
 #endif
 
 #ifdef SDL_ENABLED
-	if (joypad_sdl) {
-		memdelete(joypad_sdl);
-	}
+	memdelete(joypad_sdl);
 #endif
 }
 
@@ -275,9 +271,7 @@ MainLoop *OS_LinuxBSD::get_main_loop() const {
 }
 
 void OS_LinuxBSD::delete_main_loop() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 	main_loop = nullptr;
 }
 
@@ -504,7 +498,6 @@ Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_
 
 Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const {
 	// NOTE: blacklist can be changed to `Vector<String>`, if the need arises.
-	const String sep = ":";
 	Vector<String> values;
 	for (const String &mapping : vendor_device_id_mapping) {
 		String device;

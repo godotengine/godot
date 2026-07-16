@@ -32,23 +32,49 @@
 
 #include "core/object/class_db.h"
 
+using AESMode = CryptoCore::AESContext::Mode;
+using AESCipher = CryptoCore::AESContext::Cipher;
+
 Error AESContext::start(Mode p_mode, const PackedByteArray &p_key, const PackedByteArray &p_iv) {
 	ERR_FAIL_COND_V_MSG(mode != MODE_MAX, ERR_ALREADY_IN_USE, "AESContext already started. Call 'finish' before starting a new one.");
 	ERR_FAIL_COND_V_MSG(p_mode < 0 || p_mode >= MODE_MAX, ERR_INVALID_PARAMETER, "Invalid mode requested.");
 	// Key check.
 	int key_bits = p_key.size() << 3;
 	ERR_FAIL_COND_V_MSG(key_bits != 128 && key_bits != 256, ERR_INVALID_PARAMETER, "AES key must be either 16 or 32 bytes");
-	// Initialization vector.
-	if (p_mode == MODE_CBC_ENCRYPT || p_mode == MODE_CBC_DECRYPT) {
-		ERR_FAIL_COND_V_MSG(p_iv.size() != 16, ERR_INVALID_PARAMETER, "The initialization vector (IV) must be exactly 16 bytes.");
-		iv.resize(0);
-		iv.append_array(p_iv);
+
+	AESMode ctx_mode = AESMode::NONE;
+	AESCipher ctx_cipher = AESCipher::NONE;
+	switch (p_mode) {
+		case MODE_ECB_ENCRYPT:
+			ctx_mode = AESMode::ENCRYPT;
+			ctx_cipher = AESCipher::ECB;
+			break;
+		case MODE_ECB_DECRYPT:
+			ctx_mode = AESMode::DECRYPT;
+			ctx_cipher = AESCipher::ECB;
+			break;
+		case MODE_CBC_ENCRYPT:
+			ctx_mode = AESMode::ENCRYPT;
+			ctx_cipher = AESCipher::CBC;
+			break;
+		case MODE_CBC_DECRYPT:
+			ctx_mode = AESMode::DECRYPT;
+			ctx_cipher = AESCipher::CBC;
+			break;
+		default:
+			ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
-	// Encryption/decryption key.
-	if (p_mode == MODE_CBC_ENCRYPT || p_mode == MODE_ECB_ENCRYPT) {
-		ctx.set_encode_key(p_key.ptr(), key_bits);
-	} else {
-		ctx.set_decode_key(p_key.ptr(), key_bits);
+
+	// Initialization vector.
+	PackedByteArray iv = p_iv;
+	ERR_FAIL_COND_V_MSG(ctx_cipher == AESCipher::CBC && iv.size() != 16, ERR_INVALID_PARAMETER, "The initialization vector (IV) must be exactly 16 bytes.");
+	if (unlikely(ctx_cipher == AESCipher::ECB && iv.size())) {
+		WARN_PRINT("ECB mode does not require an initialization vector (IV). Pass an empty IV argument when using ECB.");
+		iv.clear();
+	}
+	Error err = ctx.setup(ctx_mode, ctx_cipher, p_key.ptr(), p_key.size(), iv.size() ? iv.ptr() : nullptr, iv.size());
+	if (err != OK) {
+		return err;
 	}
 	mode = p_mode;
 	return OK;
@@ -60,45 +86,18 @@ PackedByteArray AESContext::update(const PackedByteArray &p_src) {
 	ERR_FAIL_COND_V_MSG(len % 16, PackedByteArray(), "The number of bytes to be encrypted must be multiple of 16. Add padding if needed");
 	PackedByteArray out;
 	out.resize(len);
-	const uint8_t *src_ptr = p_src.ptr();
-	uint8_t *out_ptr = out.ptrw();
-	switch (mode) {
-		case MODE_ECB_ENCRYPT: {
-			for (int i = 0; i < len; i += 16) {
-				Error err = ctx.encrypt_ecb(src_ptr + i, out_ptr + i);
-				ERR_FAIL_COND_V(err != OK, PackedByteArray());
-			}
-		} break;
-		case MODE_ECB_DECRYPT: {
-			for (int i = 0; i < len; i += 16) {
-				Error err = ctx.decrypt_ecb(src_ptr + i, out_ptr + i);
-				ERR_FAIL_COND_V(err != OK, PackedByteArray());
-			}
-		} break;
-		case MODE_CBC_ENCRYPT: {
-			Error err = ctx.encrypt_cbc(len, iv.ptrw(), p_src.ptr(), out.ptrw());
-			ERR_FAIL_COND_V(err != OK, PackedByteArray());
-		} break;
-		case MODE_CBC_DECRYPT: {
-			Error err = ctx.decrypt_cbc(len, iv.ptrw(), p_src.ptr(), out.ptrw());
-			ERR_FAIL_COND_V(err != OK, PackedByteArray());
-		} break;
-		default:
-			ERR_FAIL_V_MSG(PackedByteArray(), "Bug!");
-	}
+	Error err = ctx.update(p_src.ptr(), len, out.ptrw(), len);
+	ERR_FAIL_COND_V(err != OK, PackedByteArray());
 	return out;
 }
 
 PackedByteArray AESContext::get_iv_state() {
-	ERR_FAIL_COND_V_MSG(mode != MODE_CBC_ENCRYPT && mode != MODE_CBC_DECRYPT, PackedByteArray(), "Calling 'get_iv_state' only makes sense when the context is started in CBC mode.");
-	PackedByteArray out;
-	out.append_array(iv);
-	return out;
+	ERR_FAIL_V_MSG(PackedByteArray(), "Calling 'get_iv_state' is no longer supported.");
 }
 
 void AESContext::finish() {
+	ctx.finish(nullptr, 0);
 	mode = MODE_MAX;
-	iv.resize(0);
 }
 
 void AESContext::_bind_methods() {

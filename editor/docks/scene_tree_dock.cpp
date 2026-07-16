@@ -233,12 +233,16 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_CHANGE_TYPE);
 	} else if (ED_IS_SHORTCUT("scene_tree/attach_script", p_event)) {
 		_tool_selected(TOOL_ATTACH_SCRIPT);
+	} else if (ED_IS_SHORTCUT("scene_tree/extend_script", p_event)) {
+		_tool_selected(TOOL_EXTEND_SCRIPT);
 	} else if (ED_IS_SHORTCUT("scene_tree/detach_script", p_event)) {
 		_tool_selected(TOOL_DETACH_SCRIPT);
 	} else if (ED_IS_SHORTCUT("scene_tree/reparent", p_event)) {
 		_tool_selected(TOOL_REPARENT);
 	} else if (ED_IS_SHORTCUT("scene_tree/reparent_to_new_node", p_event)) {
 		_tool_selected(TOOL_REPARENT_TO_NEW_NODE);
+	} else if (ED_IS_SHORTCUT("scene_tree/make_root", p_event)) {
+		_tool_selected(TOOL_MAKE_ROOT);
 	} else if (ED_IS_SHORTCUT("scene_tree/save_branch_as_scene", p_event)) {
 		_tool_selected(TOOL_NEW_SCENE_FROM);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete_no_confirm", p_event)) {
@@ -1398,14 +1402,19 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						break;
 					}
 
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
 					placeholder = !placeholder;
+
+					undo_redo->create_action(TTR("Toggle Load as Placeholder"));
+					undo_redo->add_undo_method(node, "set_scene_instance_load_placeholder", !placeholder);
+					undo_redo->add_do_method(node, "set_scene_instance_load_placeholder", placeholder);
 
 					if (placeholder) {
 						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
 					}
 
-					node->set_scene_instance_load_placeholder(placeholder);
-					scene_tree->update_tree();
+					undo_redo->commit_action();
 				}
 			}
 		} break;
@@ -1489,14 +1498,16 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_TOGGLE_SCENE_UNIQUE_NAME: {
 			// Enabling/disabling based on the same node based on which the checkbox in the menu is checked/unchecked.
-			const List<Node *>::Element *first_selected = editor_selection->get_top_selected_node_list().front();
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
+			Node *first_selected = selection.front() ? selection.front()->get() : nullptr;
 			if (first_selected == nullptr) {
 				return;
 			}
-			if (first_selected->get() == EditorNode::get_singleton()->get_edited_scene()) {
+			if (first_selected == EditorNode::get_singleton()->get_edited_scene()) {
 				// Exclude Root Node. It should never be unique name in its own scene!
-				editor_selection->remove_node(first_selected->get());
-				first_selected = editor_selection->get_top_selected_node_list().front();
+				editor_selection->remove_node(first_selected);
+				const List<Node *> selection1 = editor_selection->get_top_selected_node_list();
+				first_selected = selection1.front() ? selection1.front()->get() : nullptr;
 				if (first_selected == nullptr) {
 					return;
 				}
@@ -1518,7 +1529,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				return;
 			}
 
-			bool enabling = !first_selected->get()->is_unique_name_in_owner();
+			bool enabling = !first_selected->is_unique_name_in_owner();
 
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
@@ -4335,12 +4346,12 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 
 	String inherits = selected->get_class();
 
-	if (p_extend && existing.is_valid()) {
+	if (p_extend && existing.is_valid() && !existing->is_built_in()) {
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *l = ScriptServer::get_language(i);
 			if (l->get_type() == existing->get_class()) {
 				String name = l->get_global_class_name(existing->get_path());
-				if (ScriptServer::is_global_class(name) && EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
+				if (ScriptServer::is_global_class(name) && EDITOR_GET("docks/scene_tree/derive_script_globals_by_name").operator bool()) {
 					inherits = name;
 				} else if (l->can_inherit_from_file()) {
 					inherits = "\"" + existing->get_path() + "\"";
@@ -4348,6 +4359,8 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 				break;
 			}
 		}
+	} else if (p_extend) {
+		return;
 	}
 
 	script_create_dialog->connect("script_created", callable_mp(this, &SceneTreeDock::_script_created));
@@ -4716,7 +4729,7 @@ void SceneTreeDock::_update_create_root_dialog_visibility() {
 		create_root_dialog->show();
 		scene_tree->hide();
 	} else {
-		main_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		main_mc->set_theme_type_variation("NoBorderBottomPanel");
 		create_root_dialog->hide();
 		scene_tree->show();
 	}

@@ -273,6 +273,16 @@ const char *const RenderingDeviceCommons::FORMAT_NAMES[DATA_FORMAT_MAX] = {
 /**** TEXTURE ****/
 /*****************/
 
+const char *const RenderingDeviceCommons::TEXTURE_TYPE_NAMES[TEXTURE_TYPE_MAX] = {
+	"1D",
+	"2D",
+	"3D",
+	"Cube",
+	"1DArray",
+	"2DArray",
+	"CubeArray",
+};
+
 const uint32_t RenderingDeviceCommons::TEXTURE_SAMPLES_COUNT[TEXTURE_SAMPLES_MAX] = { 1, 2, 4, 8, 16, 32, 64 };
 
 uint32_t RenderingDeviceCommons::get_image_format_pixel_size(DataFormat p_format) {

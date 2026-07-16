@@ -80,7 +80,7 @@ class Variant;
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
-class AHashMap {
+class _WARN_UNUSED_ AHashMap {
 public:
 	// Must be a power of two.
 	static constexpr uint32_t INITIAL_CAPACITY = 16;
@@ -302,7 +302,7 @@ public:
 		_size = 0;
 	}
 
-	TValue &get(const TKey &p_key) {
+	TValue &get(const TKey &p_key) _LIFETIME_BOUND_ {
 		uint32_t element_idx = 0;
 		uint32_t meta_idx = 0;
 		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
@@ -310,7 +310,7 @@ public:
 		return _elements[element_idx].value;
 	}
 
-	const TValue &get(const TKey &p_key) const {
+	const TValue &get(const TKey &p_key) const _LIFETIME_BOUND_ {
 		uint32_t element_idx = 0;
 		uint32_t meta_idx = 0;
 		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
@@ -318,7 +318,7 @@ public:
 		return _elements[element_idx].value;
 	}
 
-	const TValue *getptr(const TKey &p_key) const {
+	const TValue *getptr(const TKey &p_key) const _LIFETIME_BOUND_ {
 		uint32_t element_idx = 0;
 		uint32_t meta_idx = 0;
 		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
@@ -329,7 +329,7 @@ public:
 		return nullptr;
 	}
 
-	TValue *getptr(const TKey &p_key) {
+	TValue *getptr(const TKey &p_key) _LIFETIME_BOUND_ {
 		uint32_t element_idx = 0;
 		uint32_t meta_idx = 0;
 		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
@@ -447,8 +447,8 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return pair == b.pair; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return pair != b.pair; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return pair == p_other.pair; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return pair != p_other.pair; }
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return pair != end;
@@ -496,8 +496,8 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return pair == b.pair; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return pair != b.pair; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return pair == p_other.pair; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return pair != p_other.pair; }
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return pair != end;
@@ -530,20 +530,20 @@ public:
 		MapKeyValue *end = nullptr;
 	};
 
-	_FORCE_INLINE_ Iterator begin() {
+	_FORCE_INLINE_ Iterator begin() _LIFETIME_BOUND_ {
 		return Iterator(_elements, _elements, _elements + _size);
 	}
-	_FORCE_INLINE_ Iterator end() {
+	_FORCE_INLINE_ Iterator end() _LIFETIME_BOUND_ {
 		return Iterator(_elements + _size, _elements, _elements + _size);
 	}
-	_FORCE_INLINE_ Iterator last() {
+	_FORCE_INLINE_ Iterator last() _LIFETIME_BOUND_ {
 		if (unlikely(_size == 0)) {
 			return Iterator(nullptr, nullptr, nullptr);
 		}
 		return Iterator(_elements + _size - 1, _elements, _elements + _size);
 	}
 
-	Iterator find(const TKey &p_key) {
+	Iterator find(const TKey &p_key) _LIFETIME_BOUND_ {
 		uint32_t meta_idx = 0;
 		uint32_t element_idx = 0;
 		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
@@ -559,20 +559,20 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ ConstIterator begin() const {
+	_FORCE_INLINE_ ConstIterator begin() const _LIFETIME_BOUND_ {
 		return ConstIterator(_elements, _elements, _elements + _size);
 	}
-	_FORCE_INLINE_ ConstIterator end() const {
+	_FORCE_INLINE_ ConstIterator end() const _LIFETIME_BOUND_ {
 		return ConstIterator(_elements + _size, _elements, _elements + _size);
 	}
-	_FORCE_INLINE_ ConstIterator last() const {
+	_FORCE_INLINE_ ConstIterator last() const _LIFETIME_BOUND_ {
 		if (unlikely(_size == 0)) {
 			return ConstIterator(nullptr, nullptr, nullptr);
 		}
 		return ConstIterator(_elements + _size - 1, _elements, _elements + _size);
 	}
 
-	ConstIterator find(const TKey &p_key) const {
+	ConstIterator find(const TKey &p_key) const _LIFETIME_BOUND_ {
 		uint32_t element_idx = 0;
 		uint32_t meta_idx = 0;
 		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
@@ -584,7 +584,7 @@ public:
 
 	/* Indexing */
 
-	const TValue &operator[](const TKey &p_key) const {
+	const TValue &operator[](const TKey &p_key) const _LIFETIME_BOUND_ {
 		uint32_t element_idx = 0;
 		uint32_t meta_idx = 0;
 		bool exists = _lookup_idx(p_key, element_idx, meta_idx);
@@ -592,7 +592,7 @@ public:
 		return _elements[element_idx].value;
 	}
 
-	TValue &operator[](const TKey &p_key) {
+	TValue &operator[](const TKey &p_key) _LIFETIME_BOUND_ {
 		uint32_t element_idx = 0;
 		uint32_t meta_idx = 0;
 		uint32_t hash = _hash(p_key);
@@ -608,7 +608,7 @@ public:
 
 	/* Insert */
 
-	Iterator insert(const TKey &p_key, const TValue &p_value) {
+	Iterator insert(const TKey &p_key, const TValue &p_value) _LIFETIME_BOUND_ {
 		uint32_t element_idx = 0;
 		uint32_t meta_idx = 0;
 		uint32_t hash = _hash(p_key);
@@ -623,7 +623,7 @@ public:
 	}
 
 	// Inserts an element without checking if it already exists.
-	Iterator insert_new(const TKey &p_key, const TValue &p_value) {
+	Iterator insert_new(const TKey &p_key, const TValue &p_value) _LIFETIME_BOUND_ {
 		DEV_ASSERT(!has(p_key));
 		uint32_t hash = _hash(p_key);
 		uint32_t element_idx = _insert_element(p_key, p_value, hash);
@@ -633,7 +633,7 @@ public:
 	/* Array methods. */
 
 	// Unsafe. Changing keys and going outside the bounds of an array can lead to undefined behavior.
-	KeyValue<TKey, TValue> *get_elements_ptr() {
+	KeyValue<TKey, TValue> *get_elements_ptr() _LIFETIME_BOUND_ {
 		return _elements;
 	}
 
@@ -648,7 +648,7 @@ public:
 		return element_idx;
 	}
 
-	KeyValue<TKey, TValue> &get_by_index(uint32_t p_index) {
+	KeyValue<TKey, TValue> &get_by_index(uint32_t p_index) _LIFETIME_BOUND_ {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, _size);
 		return _elements[p_index];
 	}

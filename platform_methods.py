@@ -311,10 +311,10 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         target_suffix = "macosx10.9"
 
     elif apple_platform == "ios":
-        target_suffix = "ios14.0"  # iOS 14.0 needed for SwiftUI lifecycle
+        target_suffix = "ios15.0"  # iOS 15.0 needed for SwiftUI lifecycle
 
     elif apple_platform == "iossimulator":
-        target_suffix = "ios14.0-simulator"  # iOS 14.0 needed for SwiftUI lifecycle
+        target_suffix = "ios15.0-simulator"  # iOS 15.0 needed for SwiftUI lifecycle
 
     elif apple_platform == "visionos":
         target_suffix = "xros26.0"
@@ -329,18 +329,18 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
 
     env["ALL_SWIFT_FILES"] = all_swift_files
     env["CURRENT_PATH"] = current_path
-    if "SWIFT_FRONTEND" in env and env["SWIFT_FRONTEND"] != "":
-        frontend_path = env["SWIFT_FRONTEND"]
+    if "SWIFT_COMPILER" in env and env["SWIFT_COMPILER"] != "":
+        swiftc_path = env["SWIFT_COMPILER"]
     elif "osxcross" not in env:
-        frontend_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/swift-frontend"
+        swiftc_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/swiftc"
     else:
-        frontend_path = None
+        swiftc_path = None
 
-    if frontend_path is None:
-        raise Exception("Swift frontend path is not set. Please set SWIFT_FRONTEND.")
+    if swiftc_path is None:
+        raise Exception("Swift compiler path is not set. Please set SWIFT_COMPILER.")
 
     bridging_header_path = current_path + "/" + bridging_header_filename
-    env["SWIFTC"] = frontend_path + " -frontend -c"  # Swift compiler
+    env["SWIFTC"] = swiftc_path + " -frontend -c"  # Swift compiler
     env["SWIFTCFLAGS"] = [
         "-cxx-interoperability-mode=default",
         "-emit-object",

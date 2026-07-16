@@ -72,7 +72,7 @@ void CodeEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			set_gutter_width(main_gutter, get_line_height());
+			_update_draw_main_gutter();
 			_update_line_number_gutter_width();
 			set_gutter_width(fold_gutter, get_line_height() / 1.2);
 			_clear_line_number_text_cache();
@@ -816,7 +816,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			accept_event();
 			return;
 		}
-		if (k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_line_end", true)) {
+		if (k->is_action("ui_text_caret_line_end", true)) {
 			cancel_code_completion();
 		}
 		if (k->is_action("ui_text_completion_replace", true) || k->is_action("ui_text_completion_accept", true)) {
@@ -1550,6 +1550,8 @@ String CodeEdit::get_auto_brace_completion_close_key(const String &p_open_key) c
 /* Main Gutter */
 void CodeEdit::_update_draw_main_gutter() {
 	set_gutter_draw(main_gutter, draw_breakpoints || draw_bookmarks || draw_executing_lines);
+	int main_gutter_width = get_line_height() / (_is_bookmark_only() ? 2 : 1);
+	set_gutter_width(main_gutter, main_gutter_width);
 }
 
 void CodeEdit::set_draw_breakpoints_gutter(bool p_draw) {
@@ -1606,7 +1608,7 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
 		if (bookmarked || (hovering && !is_dragging_cursor() && shift_pressed)) {
-			int horizontal_padding = p_region.size.x / 2;
+			int horizontal_padding = p_region.size.x / (_is_bookmark_only() ? 8 : 2);
 			int vertical_padding = p_region.size.y / 4;
 
 			Color use_color = theme_cache.bookmark_color;
@@ -1820,12 +1822,14 @@ void CodeEdit::_clear_line_number_text_cache() {
 }
 
 void CodeEdit::_update_line_number_gutter_width() {
-	set_gutter_width(line_number_gutter, (line_number_digits + 1) * theme_cache.font->get_char_size('0', theme_cache.font_size).width);
+	int width_in_chars = line_number_digits + (!is_drawing_fold_gutter() ? 1 : 0); // Extra padding if there is no fold gutter.
+	set_gutter_width(line_number_gutter, width_in_chars * theme_cache.font->get_char_size('0', theme_cache.font_size).width);
 }
 
 /* Fold Gutter */
 void CodeEdit::set_draw_fold_gutter(bool p_draw) {
 	set_gutter_draw(fold_gutter, p_draw);
+	_update_line_number_gutter_width();
 }
 
 bool CodeEdit::is_drawing_fold_gutter() const {
@@ -2525,6 +2529,7 @@ void CodeEdit::update_code_completion_options(bool p_forced) {
 	code_completion_forced = p_forced;
 	code_completion_option_sources = code_completion_option_submitted;
 	code_completion_option_submitted.clear();
+	code_completion_caret_line = get_caret_line();
 	_filter_code_completion_candidates_impl();
 }
 
@@ -3805,6 +3810,11 @@ void CodeEdit::_update_scroll_selected_line(float p_mouse_y) {
 void CodeEdit::_filter_code_completion_candidates_impl() {
 	int line_height = get_line_height();
 
+	const int caret_line = get_caret_line();
+	const int caret_column = get_caret_column();
+	const String line = get_line(caret_line);
+	ERR_FAIL_INDEX_MSG(caret_column, line.length() + 1, "Caret column exceeds line length.");
+
 	if (GDVIRTUAL_IS_OVERRIDDEN(_filter_code_completion_candidates)) {
 		Vector<ScriptLanguage::CodeCompletionOption> code_completion_options_new;
 		code_completion_base = "";
@@ -3872,6 +3882,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		code_completion_options = code_completion_options_new;
 		code_completion_ac_items.resize_initialized(code_completion_options.size());
 
+		code_completion_caret_column = caret_column;
+		code_completion_line = line;
 		code_completion_longest_line = MIN(max_width, theme_cache.code_completion_max_width * theme_cache.font_size);
 		code_completion_force_item_center = -1;
 		code_completion_active = true;
@@ -3879,11 +3891,6 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		queue_redraw();
 		return;
 	}
-
-	const int caret_line = get_caret_line();
-	const int caret_column = get_caret_column();
-	const String line = get_line(caret_line);
-	ERR_FAIL_INDEX_MSG(caret_column, line.length() + 1, "Caret column exceeds line length.");
 
 	if (caret_column > 0 && line[caret_column - 1] == '(' && !code_completion_forced) {
 		cancel_code_completion();
@@ -4099,6 +4106,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	code_completion_options = code_completion_options_new;
 	code_completion_ac_items.resize_initialized(code_completion_options.size());
 
+	code_completion_caret_column = caret_column;
+	code_completion_line = line;
 	code_completion_longest_line = MIN(max_width, theme_cache.code_completion_max_width * theme_cache.font_size);
 	code_completion_force_item_center = -1;
 	code_completion_active = true;
@@ -4142,6 +4151,10 @@ void CodeEdit::_text_set() {
 }
 
 void CodeEdit::_text_changed() {
+	if (code_completion_active && get_line(get_caret_line()) != code_completion_line) {
+		cancel_code_completion();
+	}
+
 	if (lines_edited_from == -1) {
 		return;
 	}
@@ -4177,6 +4190,16 @@ void CodeEdit::_text_changed() {
 	lines_edited_from = -1;
 	lines_edited_to = -1;
 	lines_edited_changed = 0;
+}
+
+void CodeEdit::_line_col_changed() {
+	if (!code_completion_active) {
+		return;
+	}
+
+	if (get_caret_line() != code_completion_caret_line || get_caret_column() != code_completion_caret_column) {
+		cancel_code_completion();
+	}
 }
 
 CodeEdit::CodeEdit() {
@@ -4241,6 +4264,7 @@ CodeEdit::CodeEdit() {
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));
 	connect("text_set", callable_mp(this, &CodeEdit::_text_set));
+	connect("caret_changed", callable_mp(this, &CodeEdit::_line_col_changed));
 	connect(SceneStringName(text_changed), callable_mp(this, &CodeEdit::_text_changed));
 
 	connect("gutter_clicked", callable_mp(this, &CodeEdit::_gutter_clicked));

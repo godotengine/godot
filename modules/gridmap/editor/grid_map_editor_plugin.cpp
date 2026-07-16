@@ -1139,7 +1139,7 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 	update_palette();
 }
 
-void GridMapEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void GridMapEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	if (categories->is_visible()) {
 		item_palette_mc->set_theme_type_variation("");
 		mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_DISABLED);
@@ -2231,7 +2231,7 @@ void GridMapEditorPlugin::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			EditorDockManager::get_singleton()->remove_dock(grid_map_editor);
-			memdelete_notnull(grid_map_editor);
+			memdelete(grid_map_editor);
 			grid_map_editor = nullptr;
 		} break;
 	}

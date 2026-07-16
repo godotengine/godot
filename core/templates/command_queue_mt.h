@@ -134,9 +134,9 @@ class CommandQueueMT {
 	}
 
 	template <typename T, bool NeedsSync, typename... Args>
-	_FORCE_INLINE_ void _push_internal(Args &&...args) {
+	_FORCE_INLINE_ void _push_internal(Args &&...p_args) {
 		MutexLock mlock(mutex);
-		create_command<T>(std::forward<Args>(args)...);
+		create_command<T>(std::forward<Args>(p_args)...);
 
 		if (pump_task_id != WorkerThreadPool::INVALID_TASK_ID) {
 			WorkerThreadPool::get_singleton()->notify_yield_over(pump_task_id);

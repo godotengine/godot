@@ -30,11 +30,11 @@
 
 #include "wayland_thread.h"
 
+#ifdef WAYLAND_ENABLED
+
 #include "core/config/engine.h"
 #include "core/io/image.h"
 #include "core/os/os.h"
-
-#ifdef WAYLAND_ENABLED
 
 #ifdef __FreeBSD__
 #include <dev/evdev/input-event-codes.h>
@@ -401,7 +401,6 @@ void WaylandThread::_set_current_seat(struct wl_seat *p_seat) {
 	seat_state_unlock_pointer(new_state);
 
 	wl_seat_current = p_seat;
-	pointer_set_constraint(pointer_constraint);
 }
 
 void WaylandThread::_window_hover(DisplayServerEnums::WindowID p_window_id) {
@@ -1170,9 +1169,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 			for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
 				TabletToolState *state = wp_tablet_tool_get_state(tool);
-				if (state) {
-					memdelete(state);
-				}
+				memdelete(state);
 
 				zwp_tablet_tool_v2_destroy(tool);
 			}
@@ -1237,9 +1234,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 					for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
 						TabletToolState *state = wp_tablet_tool_get_state(tool);
-						if (state) {
-							memdelete(state);
-						}
+						memdelete(state);
 
 						zwp_tablet_tool_v2_destroy(tool);
 					}
@@ -2110,6 +2105,19 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 	}
 
 	if (ws != nullptr) {
+		if (hover_changed && pd.pointed_id != DisplayServerEnums::INVALID_WINDOW_ID) {
+			// We update the constraint only on enter.
+
+			wayland_thread->seat_state_unlock_pointer(ss);
+			if (wayland_thread->pointer_constraint == PointerConstraint::LOCKED) {
+				wayland_thread->seat_state_lock_pointer(ss, ws->wl_surface);
+				// Godot always expects a centered pointer when locked.
+				wayland_thread->seat_state_set_hint(ss, ws->rect.size.x / 2, ws->rect.size.y / 2);
+			} else if (wayland_thread->pointer_constraint == PointerConstraint::CONFINED) {
+				wayland_thread->seat_state_confine_pointer(ss, ws->wl_surface);
+			}
+		}
+
 		double scale = window_state_get_scale_factor(ws);
 
 		wayland_thread->_set_current_seat(ss->wl_seat);
@@ -2871,6 +2879,28 @@ void WaylandThread::_wl_data_source_on_dnd_finished(void *data, struct wl_data_s
 void WaylandThread::_wl_data_source_on_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action) {
 }
 
+void WaylandThread::_zwp_locked_pointer_v1_on_locked(void *data, struct zwp_locked_pointer_v1 *zwp_locked_pointer_v1) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->pointer_locked = true;
+
+	// Maybe by the time we lock the legacy constraint warp has already been
+	// committed. Let's give it a shot.
+	if (ss->constraint_warp_committed) {
+		PointerConstraint old_constraint = ss->wayland_thread->pointer_constraint;
+		ss->wayland_thread->pointer_set_constraint(PointerConstraint::NONE);
+		ss->wayland_thread->pointer_set_constraint(old_constraint);
+
+		ss->pointer_locked = false;
+		ss->constraint_warping = false;
+		ss->constraint_warp_committed = false;
+	}
+}
+
+void WaylandThread::_zwp_locked_pointer_v1_on_unlocked(void *data, struct zwp_locked_pointer_v1 *zwp_locked_pointer_v1) {
+}
+
 void WaylandThread::_wp_color_manager_on_supported_intent(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t render_intent) {
 	ColorManagementState *cms = (ColorManagementState *)data;
 	ERR_FAIL_NULL(cms);
@@ -3228,9 +3258,7 @@ void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_too
 	if (E && E->get()) {
 		struct zwp_tablet_tool_v2 *tool = E->get();
 		TabletToolState *state = wp_tablet_tool_get_state(tool);
-		if (state) {
-			memdelete(state);
-		}
+		memdelete(state);
 
 		zwp_tablet_tool_v2_destroy(tool);
 		ss->tablet_tools.erase(E);
@@ -4113,10 +4141,13 @@ void WaylandThread::seat_state_unlock_pointer(SeatState *p_ss) {
 		zwp_confined_pointer_v1_destroy(p_ss->wp_confined_pointer);
 		p_ss->wp_confined_pointer = nullptr;
 	}
+
+	p_ss->pointer_locked = false;
 }
 
-void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
+void WaylandThread::seat_state_lock_pointer(SeatState *p_ss, struct wl_surface *p_surface) {
 	ERR_FAIL_NULL(p_ss);
+	ERR_FAIL_NULL(p_surface);
 
 	if (p_ss->wl_pointer == nullptr) {
 		WARN_PRINT("Can't lock - no pointer?");
@@ -4128,15 +4159,12 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 		return;
 	}
 
-	if (p_ss->wp_locked_pointer == nullptr) {
-		struct wl_surface *locked_surface = window_get_wl_surface(p_ss->pointer_data.last_pointed_id);
-		if (locked_surface == nullptr) {
-			locked_surface = window_get_wl_surface(DisplayServerEnums::MAIN_WINDOW_ID);
-		}
-		ERR_FAIL_NULL(locked_surface);
+	p_ss->pointer_locked = false;
 
-		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-	}
+	// We always set a listener that tracks the locking status. This is useful as
+	// this constraint might be reused for the legacy warp hack.
+	p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, p_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+	zwp_locked_pointer_v1_add_listener(p_ss->wp_locked_pointer, &zwp_locked_pointer_v1_listener, p_ss);
 }
 
 void WaylandThread::seat_state_set_hint(SeatState *p_ss, int p_x, int p_y) {
@@ -4162,8 +4190,9 @@ void WaylandThread::seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y) {
 	wp_pointer_warp_v1_warp_pointer(registry.wp_pointer_warp, surface, p_ss->wl_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y), p_ss->pointer_enter_serial);
 }
 
-void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
+void WaylandThread::seat_state_confine_pointer(SeatState *p_ss, struct wl_surface *p_surface) {
 	ERR_FAIL_NULL(p_ss);
+	ERR_FAIL_NULL(p_surface);
 
 	if (p_ss->wl_pointer == nullptr) {
 		return;
@@ -4174,10 +4203,7 @@ void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
 	}
 
 	if (p_ss->wp_confined_pointer == nullptr) {
-		struct wl_surface *confined_surface = window_get_wl_surface(p_ss->pointer_data.last_pointed_id);
-		ERR_FAIL_NULL(confined_surface);
-
-		p_ss->wp_confined_pointer = zwp_pointer_constraints_v1_confine_pointer(registry.wp_pointer_constraints, confined_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+		p_ss->wp_confined_pointer = zwp_pointer_constraints_v1_confine_pointer(registry.wp_pointer_constraints, p_surface, p_ss->wl_pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 	}
 }
 
@@ -5378,19 +5404,22 @@ DisplayServerEnums::WindowID WaylandThread::pointer_get_last_pointed_window_id()
 }
 
 void WaylandThread::pointer_set_constraint(PointerConstraint p_constraint) {
+	pointer_constraint = p_constraint;
+
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	ERR_FAIL_NULL(ss);
 
-	if (ss) {
+	WindowState *ws = window_get_state(ss->pointer_data.pointed_id);
+	if (ws) {
 		seat_state_unlock_pointer(ss);
-
-		if (p_constraint == PointerConstraint::LOCKED) {
-			seat_state_lock_pointer(ss);
-		} else if (p_constraint == PointerConstraint::CONFINED) {
-			seat_state_confine_pointer(ss);
+		if (pointer_constraint == PointerConstraint::LOCKED) {
+			seat_state_lock_pointer(ss, ws->wl_surface);
+			// Godot always expects a centered pointer when locked.
+			seat_state_set_hint(ss, ws->rect.size.x / 2, ws->rect.size.y / 2);
+		} else if (pointer_constraint == PointerConstraint::CONFINED) {
+			seat_state_confine_pointer(ss, ws->wl_surface);
 		}
 	}
-
-	pointer_constraint = p_constraint;
 }
 
 void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
@@ -5406,7 +5435,7 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 
 	// NOTE: It looks like it's not really recommended to convert from
 	// "godot-space" to "wayland-space" and in general I received mixed feelings
-	// discussing about this. I'm not really sure about the maths behind this but,
+	// discussing about this. I'm not really sure about the math behind this but,
 	// oh well, we're setting a cursor hint. ¯\_(ツ)_/¯
 	// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
 	int hint_x = Math::round(p_hint.x / window_state_get_scale_factor(ws));
@@ -5418,19 +5447,6 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 }
 
 void WaylandThread::pointer_warp(const Point2i &p_to) {
-	// NOTE: This is for compositors that don't support the pointer-warp protocol.
-	// It's hacked together and not guaranteed to work.
-	if (registry.wp_pointer_warp == nullptr) {
-		PointerConstraint old_constraint = pointer_get_constraint();
-
-		pointer_set_constraint(PointerConstraint::LOCKED);
-		pointer_set_hint(p_to);
-
-		pointer_set_constraint(old_constraint);
-
-		return;
-	}
-
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 	if (!ss) {
 		return;
@@ -5441,9 +5457,38 @@ void WaylandThread::pointer_warp(const Point2i &p_to) {
 		return;
 	}
 
+	// NOTE: This is for compositors that don't support the pointer-warp protocol.
+	// It's hacked together and not guaranteed to work.
+	if (registry.wp_pointer_warp == nullptr) {
+		if (ss->constraint_warping) {
+			return;
+		}
+
+		if (!ss->wp_locked_pointer) {
+			seat_state_unlock_pointer(ss);
+			seat_state_lock_pointer(ss, ws->wl_surface);
+		}
+
+		pointer_set_hint(p_to);
+
+		ss->constraint_warping = true;
+		ss->constraint_warp_committed = false;
+
+		if (!ss->wp_locked_pointer) {
+			seat_state_unlock_pointer(ss);
+			seat_state_lock_pointer(ss, ws->wl_surface);
+		}
+
+		pointer_set_hint(p_to);
+
+		// Gotta wait a frame... Not ideal but, y'know.
+
+		return;
+	}
+
 	// NOTE: It looks like it's not really recommended to convert from
 	// "godot-space" to "wayland-space" and in general I received mixed feelings
-	// discussing about this. I'm not really sure about the maths behind this but,
+	// discussing about this. I'm not really sure about the math behind this but,
 	// oh well. ¯\_(ツ)_/¯
 	// See: https://oftc.irclog.whitequark.org/wayland/2023-08-23#1692756914-1692816818
 	int wl_pos_x = Math::round(p_to.x / window_state_get_scale_factor(ws));
@@ -5506,7 +5551,8 @@ Error WaylandThread::init() {
 
 	if (embedder_enabled && Engine::get_singleton()->is_editor_hint() && !Engine::get_singleton()->is_project_manager_hint()) {
 		print_verbose("Initializing Wayland embedder.");
-		Error embedder_status = embedder.init();
+		bool embedder_debug = OS::get_singleton()->get_environment("GODOT_WAYLAND_EMBEDDER_DEBUG") == "1";
+		Error embedder_status = embedder.init(embedder_debug);
 		ERR_FAIL_COND_V_MSG(embedder_status != OK, ERR_CANT_CREATE, "Can't initialize Wayland embedder.");
 
 		embedder_socket_path = embedder.get_socket_path();
@@ -6131,6 +6177,32 @@ bool WaylandThread::window_is_suspended(DisplayServerEnums::WindowID p_window_id
 
 bool WaylandThread::is_fifo_available() const {
 	return registry.wp_fifo_manager_name != 0;
+}
+
+void WaylandThread::main_loop_callback() {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss) {
+		seat_state_echo_keys(ss);
+
+		// We need to wait a commit before "finalizing" the "legacy warp" hack. This
+		// callback is called *after* a commit, but we don't know when the warp
+		// request has been made, so we first wait one commit, then "finalize" on the
+		// next. Additionally, we also wait for the pointer to be locked, as otherwise
+		// it's not guaranteed for the position hint to even be acknowledged, AFAICT.
+		if (ss->constraint_warping && ss->pointer_locked) {
+			if (ss->constraint_warp_committed) {
+				PointerConstraint old_constraint = pointer_constraint;
+				pointer_set_constraint(PointerConstraint::NONE);
+				pointer_set_constraint(old_constraint);
+
+				ss->constraint_warping = false;
+				ss->constraint_warp_committed = false;
+			} else {
+				ss->constraint_warp_committed = true;
+			}
+		}
+	}
 }
 
 bool WaylandThread::is_suspended() const {

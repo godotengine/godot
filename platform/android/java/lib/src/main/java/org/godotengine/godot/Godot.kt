@@ -75,6 +75,7 @@ import org.godotengine.godot.utils.useBenchmark
 import org.godotengine.godot.xr.XRMode
 import java.util.*
 import java.util.concurrent.Callable
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -882,6 +883,8 @@ class Godot private constructor(val context: Context) {
 	@JvmOverloads
 	fun alert(message: String, title: String, okCallback: Runnable? = null) {
 		val activity = getActivity() ?: return
+
+		val renderLatch = CountDownLatch(1)
 		runOnHostThread {
 			val builder = AlertDialog.Builder(activity)
 			builder.setMessage(message).setTitle(title)
@@ -890,9 +893,25 @@ class Godot private constructor(val context: Context) {
 			) { dialog: DialogInterface, _: Int ->
 				okCallback?.run()
 				dialog.cancel()
+				renderLatch.countDown()
+			}
+			builder.setOnCancelListener {
+				renderLatch.countDown()
 			}
 			val dialog = builder.create()
 			dialog.show()
+		}
+
+		// We only block the render thread.
+		val blockerRunnable = Runnable {
+			try {
+				renderLatch.await()
+			} catch (_: InterruptedException) {}
+		}
+		if (Thread.currentThread() == Looper.getMainLooper().thread) {
+			runOnRenderThread(blockerRunnable)
+		} else {
+			blockerRunnable.run()
 		}
 	}
 
@@ -1025,6 +1044,7 @@ class Godot private constructor(val context: Context) {
 
 	fun onBackPressed() {
 		for (plugin in pluginRegistry.allPlugins) {
+			Log.v(TAG, "Invoking onMainBackPressed for plugin ${plugin.pluginName}")
 			plugin.onMainBackPressed()
 		}
 		runOnRenderThread { GodotLib.back() }

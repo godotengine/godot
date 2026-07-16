@@ -1359,8 +1359,6 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			get_path()));
 
 	int idx = sname.get_slicec('/', 1).to_int();
-	String what = sname.get_slicec('/', 2);
-
 	if (idx == surfaces.size()) {
 		//create
 		Dictionary d = p_value;
@@ -2092,7 +2090,6 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 	LocalVector<float> vertices;
 	LocalVector<float> normals;
 	LocalVector<int> indices;
-	LocalVector<float> uv;
 	LocalVector<Pair<int, int>> uv_indices;
 
 	Vector<ArrayMeshLightmapSurface> lightmap_surfaces;

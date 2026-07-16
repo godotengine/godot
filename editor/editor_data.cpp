@@ -1015,9 +1015,7 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 
 void EditorData::clear_edited_scenes() {
 	for (int i = 0; i < edited_scene.size(); i++) {
-		if (edited_scene[i].root) {
-			memdelete(edited_scene[i].root);
-		}
+		memdelete(edited_scene[i].root);
 	}
 	edited_scene.clear();
 	SceneTree::get_singleton()->set_edited_scene_root(nullptr);
@@ -1274,7 +1272,7 @@ void EditorSelection::_node_removed(Node *p_node) {
 	}
 
 	Object *meta = selection[nid];
-	memdelete_notnull(meta);
+	memdelete(meta);
 	selection.erase(nid);
 	changed = true;
 	node_list_changed = true;
@@ -1312,7 +1310,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	changed = true;
 	node_list_changed = true;
 	Object *meta = selection[nid];
-	memdelete_notnull(meta);
+	memdelete(meta);
 	selection.erase(nid);
 
 	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));

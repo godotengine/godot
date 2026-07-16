@@ -142,7 +142,7 @@ void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callba
 			for (const ShapeIndexPair &shape_indices : overlap.pending_added) {
 				int &ref_count = overlap.ref_counts[shape_indices];
 				if (ref_count++ == 0) {
-					_report_event(p_callback, PhysicsServer3D::AREA_BODY_ADDED, overlap.rid, overlap.instance_id, shape_indices.other, shape_indices.self);
+					_report_event(p_callback, PS3DE::AREA_BODY_ADDED, overlap.rid, overlap.instance_id, shape_indices.other, shape_indices.self);
 				}
 			}
 
@@ -150,7 +150,7 @@ void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callba
 				int &ref_count = overlap.ref_counts[shape_indices];
 				ERR_CONTINUE(ref_count <= 0);
 				if (--ref_count == 0) {
-					_report_event(p_callback, PhysicsServer3D::AREA_BODY_REMOVED, overlap.rid, overlap.instance_id, shape_indices.other, shape_indices.self);
+					_report_event(p_callback, PS3DE::AREA_BODY_REMOVED, overlap.rid, overlap.instance_id, shape_indices.other, shape_indices.self);
 					overlap.ref_counts.erase(shape_indices);
 				}
 			}
@@ -170,7 +170,7 @@ void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callba
 	}
 }
 
-void JoltArea3D::_report_event(const Callable &p_callback, PhysicsServer3D::AreaBodyStatus p_status, const RID &p_other_rid, ObjectID p_other_instance_id, int p_other_shape_index, int p_self_shape_index) const {
+void JoltArea3D::_report_event(const Callable &p_callback, PS3DE::AreaBodyStatus p_status, const RID &p_other_rid, ObjectID p_other_instance_id, int p_other_shape_index, int p_self_shape_index) const {
 	ERR_FAIL_COND(!p_callback.is_valid());
 
 	const Variant arg1 = p_status;
@@ -300,49 +300,49 @@ void JoltArea3D::set_transform(Transform3D p_transform) {
 	}
 }
 
-Variant JoltArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
+Variant JoltArea3D::get_param(PS3DE::AreaParameter p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE: {
 			return get_gravity_mode();
 		}
-		case PhysicsServer3D::AREA_PARAM_GRAVITY: {
+		case PS3DE::AREA_PARAM_GRAVITY: {
 			return get_gravity();
 		}
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR: {
+		case PS3DE::AREA_PARAM_GRAVITY_VECTOR: {
 			return get_gravity_vector();
 		}
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT: {
+		case PS3DE::AREA_PARAM_GRAVITY_IS_POINT: {
 			return is_point_gravity();
 		}
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE: {
+		case PS3DE::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE: {
 			return get_point_gravity_distance();
 		}
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE: {
 			return get_linear_damp_mode();
 		}
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP: {
+		case PS3DE::AREA_PARAM_LINEAR_DAMP: {
 			return get_linear_damp();
 		}
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE: {
 			return get_angular_damp_mode();
 		}
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP: {
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP: {
 			return get_angular_damp();
 		}
-		case PhysicsServer3D::AREA_PARAM_PRIORITY: {
+		case PS3DE::AREA_PARAM_PRIORITY: {
 			return get_priority();
 		}
-		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
+		case PS3DE::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
 			// This parameter is named incorrectly. It's actually a pressure.
 			return get_wind_pressure();
 		}
-		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE: {
+		case PS3DE::AREA_PARAM_WIND_SOURCE: {
 			return get_wind_source();
 		}
-		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION: {
+		case PS3DE::AREA_PARAM_WIND_DIRECTION: {
 			return get_wind_direction();
 		}
-		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
+		case PS3DE::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
 			return get_wind_attenuation_factor();
 		}
 		default: {
@@ -351,49 +351,49 @@ Variant JoltArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
 	}
 }
 
-void JoltArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value) {
+void JoltArea3D::set_param(PS3DE::AreaParameter p_param, const Variant &p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE: {
 			set_gravity_mode((OverrideMode)(int)p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY: {
+		case PS3DE::AREA_PARAM_GRAVITY: {
 			set_gravity(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR: {
+		case PS3DE::AREA_PARAM_GRAVITY_VECTOR: {
 			set_gravity_vector(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT: {
+		case PS3DE::AREA_PARAM_GRAVITY_IS_POINT: {
 			set_point_gravity(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE: {
+		case PS3DE::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE: {
 			set_point_gravity_distance(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE: {
 			set_linear_damp_mode((OverrideMode)(int)p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP: {
+		case PS3DE::AREA_PARAM_LINEAR_DAMP: {
 			set_linear_damp(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE: {
 			set_angular_damp_mode((OverrideMode)(int)p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP: {
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP: {
 			set_angular_damp(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_PRIORITY: {
+		case PS3DE::AREA_PARAM_PRIORITY: {
 			set_priority(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
+		case PS3DE::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
 			// This parameter is named incorrectly. It's actually a pressure.
 			set_wind_pressure(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE: {
+		case PS3DE::AREA_PARAM_WIND_SOURCE: {
 			set_wind_source(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION: {
+		case PS3DE::AREA_PARAM_WIND_DIRECTION: {
 			set_wind_direction(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
+		case PS3DE::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
 			set_wind_attenuation_factor(p_value);
 		} break;
 		default: {

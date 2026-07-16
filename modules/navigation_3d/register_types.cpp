@@ -82,8 +82,6 @@ void uninitialize_navigation_3d_module(ModuleInitializationLevel p_level) {
 	}
 
 #ifndef DISABLE_DEPRECATED
-	if (_nav_mesh_generator) {
-		memdelete(_nav_mesh_generator);
-	}
+	memdelete(_nav_mesh_generator);
 #endif // DISABLE_DEPRECATED
 }

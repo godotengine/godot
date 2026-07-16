@@ -115,7 +115,7 @@ private:
 protected:
 	void _notification(int p_what);
 
-	virtual void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 public:
 	_FORCE_INLINE_ static TileSetEditor *get_singleton() { return singleton; }

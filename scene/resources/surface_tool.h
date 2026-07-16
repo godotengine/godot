@@ -35,8 +35,6 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/rendering_server_enums.h"
 
-#include <thirdparty/misc/mikktspace.h>
-
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);
 
@@ -95,6 +93,8 @@ public:
 		SIMPLIFY_REGULARIZE = 1 << 4, // From meshopt_SimplifyRegularize
 		/* Allow collapses across attribute discontinuities, except for vertices that are tagged with 0x02 in vertex_lock. */
 		SIMPLIFY_PERMISSIVE = 1 << 5, // From meshopt_SimplifyPermissive
+		/* Produce tangents compatible with MikkTSpace (same weighting and fallbacks) at the cost of reduced quality. Not recommended unless normal maps are baked. */
+		TANGENT_COMPATIBLE = 1 << 0, // From meshopt_TangentCompatible
 	};
 
 	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
@@ -113,6 +113,8 @@ public:
 	static RemapVertexFunc remap_vertex_func;
 	typedef void (*RemapIndexFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const unsigned int *remap);
 	static RemapIndexFunc remap_index_func;
+	typedef void (*GenerateTangentsFunc)(float *result, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, const float *vertex_normals, size_t vertex_normals_stride, const float *vertex_uvs, size_t vertex_uvs_stride, unsigned int options);
+	static GenerateTangentsFunc generate_tangents_func;
 	static void strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
 
 private:
@@ -176,16 +178,9 @@ private:
 	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
 	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
 
-	//mikktspace callbacks
-	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
-	static int mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace);
-	static void mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert);
-	static void mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert);
-	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
-	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
-			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
-
 	void _add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const TypedArray<Plane> &p_tangents = TypedArray<Plane>());
+
+	void _generate_tangents_bind();
 
 protected:
 	static void _bind_methods();
@@ -220,7 +215,7 @@ public:
 	void index();
 	void deindex();
 	void generate_normals(bool p_flip = false);
-	void generate_tangents();
+	void generate_tangents(bool p_split = false);
 
 	void optimize_indices_for_cache();
 	AABB get_aabb() const;

@@ -157,13 +157,13 @@ TEST_CASE("[SceneTree][PhysicsServer3D][Generic6DOFJoint3D] Drive force and torq
 	constexpr real_t angular_values[] = { 7.0, 8.0, 9.0 };
 
 	for (int i = 0; i < 3; i++) {
-		physics_server->generic_6dof_joint_set_param(joint, axes[i], PhysicsServer3D::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT, linear_values[i]);
-		physics_server->generic_6dof_joint_set_param(joint, axes[i], PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT, angular_values[i]);
+		physics_server->generic_6dof_joint_set_param(joint, axes[i], PS3DE::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT, linear_values[i]);
+		physics_server->generic_6dof_joint_set_param(joint, axes[i], PS3DE::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT, angular_values[i]);
 	}
 
 	for (int i = 0; i < 3; i++) {
-		CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, axes[i], PhysicsServer3D::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT), doctest::Approx(linear_values[i]));
-		CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, axes[i], PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT), doctest::Approx(angular_values[i]));
+		CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, axes[i], PS3DE::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT), doctest::Approx(linear_values[i]));
+		CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, axes[i], PS3DE::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT), doctest::Approx(angular_values[i]));
 	}
 
 	physics_server->free_rid(joint);
@@ -179,13 +179,13 @@ TEST_CASE("[SceneTree][PhysicsServer3D][Generic6DOFJoint3D] Drive force and torq
 	RID body_b;
 	RID joint = make_configured_generic_6dof_joint(physics_server, body_a, body_b);
 
-	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_X, PhysicsServer3D::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT), FLT_MAX);
-	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_Y, PhysicsServer3D::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT), FLT_MAX);
-	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_Z, PhysicsServer3D::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT), FLT_MAX);
+	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_X, PS3DE::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT), FLT_MAX);
+	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_Y, PS3DE::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT), FLT_MAX);
+	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_Z, PS3DE::G6DOF_JOINT_LINEAR_DRIVE_FORCE_LIMIT), FLT_MAX);
 
-	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_X, PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT), FLT_MAX);
-	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_Y, PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT), FLT_MAX);
-	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_Z, PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT), FLT_MAX);
+	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_X, PS3DE::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT), FLT_MAX);
+	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_Y, PS3DE::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT), FLT_MAX);
+	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_Z, PS3DE::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT), FLT_MAX);
 
 	physics_server->free_rid(joint);
 	physics_server->free_rid(body_a);
@@ -216,10 +216,10 @@ TEST_CASE("[SceneTree][PhysicsServer3D][Generic6DOFJoint3D] DRIVE FLT_MAX after 
 	RID joint = make_configured_generic_6dof_joint(physics_server, body_a, body_b);
 
 	// Legacy motor limit set first, then explicit DRIVE FLT_MAX
-	physics_server->generic_6dof_joint_set_param(joint, Vector3::AXIS_X, PhysicsServer3D::G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT, 50.0);
-	physics_server->generic_6dof_joint_set_param(joint, Vector3::AXIS_X, PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT, FLT_MAX);
+	physics_server->generic_6dof_joint_set_param(joint, Vector3::AXIS_X, PS3DE::G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT, 50.0);
+	physics_server->generic_6dof_joint_set_param(joint, Vector3::AXIS_X, PS3DE::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT, FLT_MAX);
 
-	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_X, PhysicsServer3D::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT), FLT_MAX);
+	CHECK_EQ(physics_server->generic_6dof_joint_get_param(joint, Vector3::AXIS_X, PS3DE::G6DOF_JOINT_ANGULAR_DRIVE_TORQUE_LIMIT), FLT_MAX);
 
 	physics_server->free_rid(joint);
 	physics_server->free_rid(body_a);

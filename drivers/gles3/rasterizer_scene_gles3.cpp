@@ -652,40 +652,49 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 	dirty_sky_list = nullptr;
 }
 
-void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size) {
-	GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
+GLES3::SkyMaterialData *RasterizerSceneGLES3::_get_sky_material_data(RID p_env) {
+	ERR_FAIL_COND_V(p_env.is_null(), nullptr);
+
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
-	ERR_FAIL_COND(p_render_data->environment.is_null());
+	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_env));
+	RSE::EnvironmentBG background = environment_get_background(p_env);
 
-	GLES3::SkyMaterialData *material = nullptr;
-	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_render_data->environment));
-
+	GLES3::SkyMaterialData *material_data = nullptr;
 	RID sky_material;
 
-	GLES3::SkyShaderData *shader_data = nullptr;
-
-	if (sky) {
+	if (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) {
+		sky_material = sky_globals.fog_material;
+		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
+	} else if (sky) {
 		sky_material = sky->material;
 
 		if (sky_material.is_valid()) {
-			material = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
-			if (!material || !material->shader_data->valid) {
-				material = nullptr;
+			material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
+			if (!material_data || !material_data->shader_data->valid) {
+				material_data = nullptr;
 			}
 		}
 	}
 
-	if (!material) {
+	if (!material_data) {
 		sky_material = sky_globals.default_material;
-		material = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
+		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
 	}
 
-	ERR_FAIL_NULL(material);
+	return material_data;
+}
 
-	shader_data = material->shader_data;
+void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size) {
+	GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
+	ERR_FAIL_COND(p_render_data->environment.is_null());
 
+	GLES3::SkyMaterialData *material_data = _get_sky_material_data(p_render_data->environment);
+	ERR_FAIL_NULL(material_data);
+
+	GLES3::SkyShaderData *shader_data = material_data->shader_data;
 	ERR_FAIL_NULL(shader_data);
 
+	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_render_data->environment));
 	if (sky) {
 		RSE::SkyMode sky_mode = sky->mode;
 
@@ -708,13 +717,55 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 			RenderingServerDefault::redraw_request();
 		}
 
-		if (material != sky->prev_material) {
-			sky->prev_material = material;
+		if (environment_get_fog_aerial_perspective(p_render_data->environment) != sky->prev_fog_aerial_perspective) {
+			sky->prev_fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_light_color(p_render_data->environment) != sky->prev_fog_light_color) {
+			sky->prev_fog_light_color = environment_get_fog_light_color(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_sun_scatter(p_render_data->environment) != sky->prev_fog_sun_scatter) {
+			sky->prev_fog_sun_scatter = environment_get_fog_sun_scatter(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_enabled(p_render_data->environment) != sky->prev_fog_enabled) {
+			sky->prev_fog_enabled = environment_get_fog_enabled(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_density(p_render_data->environment) != sky->prev_fog_density) {
+			sky->prev_fog_density = environment_get_fog_density(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_sky_affect(p_render_data->environment) != sky->prev_fog_sky_affect) {
+			sky->prev_fog_sky_affect = environment_get_fog_sky_affect(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (environment_get_fog_light_energy(p_render_data->environment) != sky->prev_fog_light_energy) {
+			sky->prev_fog_light_energy = environment_get_fog_light_energy(p_render_data->environment);
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (material_data != sky->prev_material) {
+			sky->prev_material = material_data;
 			sky->reflection_dirty = true;
 		}
 
-		if (material->uniform_set_updated) {
-			material->uniform_set_updated = false;
+		if (material_data->uniform_set_updated) {
+			material_data->uniform_set_updated = false;
 			sky->reflection_dirty = true;
 		}
 
@@ -829,13 +880,14 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 }
 
 void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_sky_energy_multiplier, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y, bool p_apply_environment_effects_in_post) {
-	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
 
-	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_env));
+	GLES3::SkyMaterialData *material_data = _get_sky_material_data(p_env);
+	ERR_FAIL_NULL(material_data);
+	material_data->bind_uniforms();
 
-	GLES3::SkyMaterialData *material_data = nullptr;
-	RID sky_material;
+	GLES3::SkyShaderData *shader_data = material_data->shader_data;
+	ERR_FAIL_NULL(shader_data);
 
 	uint64_t spec_constants = p_use_multiview ? SkyShaderGLES3::USE_MULTIVIEW : 0;
 	if (p_flip_y) {
@@ -844,34 +896,6 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	if (!p_apply_environment_effects_in_post) {
 		spec_constants |= SkyShaderGLES3::APPLY_TONEMAPPING;
 	}
-
-	RSE::EnvironmentBG background = environment_get_background(p_env);
-
-	if (sky) {
-		sky_material = sky->material;
-
-		if (sky_material.is_valid()) {
-			material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
-			if (!material_data || !material_data->shader_data->valid) {
-				material_data = nullptr;
-			}
-		}
-
-		if (!material_data) {
-			sky_material = sky_globals.default_material;
-			material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
-		}
-	} else if (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) {
-		sky_material = sky_globals.fog_material;
-		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
-	}
-
-	ERR_FAIL_NULL(material_data);
-	material_data->bind_uniforms();
-
-	GLES3::SkyShaderData *shader_data = material_data->shader_data;
-
-	ERR_FAIL_NULL(shader_data);
 
 	// Camera
 	Projection camera;
@@ -894,6 +918,7 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	sky_transform.invert();
 	sky_transform = sky_transform * p_transform.basis;
 
+	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	bool success = material_storage->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_BACKGROUND, spec_constants);
 	if (!success) {
 		return;
@@ -926,44 +951,16 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 
 void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_sky_energy_multiplier) {
 	GLES3::CubemapFilter *cubemap_filter = GLES3::CubemapFilter::get_singleton();
-	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
 
-	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_env));
-	ERR_FAIL_NULL(sky);
-
-	GLES3::SkyMaterialData *material_data = nullptr;
-	RID sky_material;
-
-	RSE::EnvironmentBG background = environment_get_background(p_env);
-
-	if (sky) {
-		ERR_FAIL_NULL(sky);
-		sky_material = sky->material;
-
-		if (sky_material.is_valid()) {
-			material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
-			if (!material_data || !material_data->shader_data->valid) {
-				material_data = nullptr;
-			}
-		}
-
-		if (!material_data) {
-			sky_material = sky_globals.default_material;
-			material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
-		}
-	} else if (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) {
-		sky_material = sky_globals.fog_material;
-		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
-	}
-
+	GLES3::SkyMaterialData *material_data = _get_sky_material_data(p_env);
 	ERR_FAIL_NULL(material_data);
 	material_data->bind_uniforms();
 
 	GLES3::SkyShaderData *shader_data = material_data->shader_data;
-
 	ERR_FAIL_NULL(shader_data);
 
+	Sky *sky = sky_owner.get_or_null(environment_get_sky(p_env));
 	RSE::SkyMode sky_mode = sky->internal_mode;
 	bool update_single_frame = sky_mode == RSE::SKY_MODE_REALTIME || sky_mode == RSE::SKY_MODE_QUALITY;
 
@@ -1000,6 +997,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		correction.set_depth_correction(false, true, false);
 		cm = correction * cm;
 
+		GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 		bool success = material_storage->shaders.sky_shader.version_bind_shader(shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 		if (!success) {
 			return;
@@ -1010,6 +1008,15 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::PROJECTION, cm.columns[2][0], cm.columns[0][0], cm.columns[2][1], cm.columns[1][1], shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::SKY_ENERGY_MULTIPLIER, p_sky_energy_multiplier, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::LUMINANCE_MULTIPLIER, 1.0, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+
+		Color fog_color = environment_get_fog_light_color(p_env).srgb_to_linear() * environment_get_fog_light_energy(p_env);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_ENABLED, environment_get_fog_enabled(p_env), shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_AERIAL_PERSPECTIVE, environment_get_fog_aerial_perspective(p_env), shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_LIGHT_COLOR, fog_color, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_SUN_SCATTER, environment_get_fog_sun_scatter(p_env), shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_DENSITY, environment_get_fog_density(p_env), shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::FOG_SKY_AFFECT, environment_get_fog_sky_affect(p_env), shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
+		material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::DIRECTIONAL_LIGHT_COUNT, sky_globals.directional_light_count, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 
 		glBindVertexArray(sky_globals.screen_triangle_array);
 
@@ -2784,7 +2791,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	// b) We are rendering to a non-intermediate framebuffer with ENV_BG_CANVAS (shared between 2D and 3D).
 	if (!keep_color && (!draw_canvas || (rt && fbo != rt->fbo))) {
 		clear_color.a = render_data.transparent_bg ? 0.0f : 1.0f;
-		glClearBufferfv(GL_COLOR, 0, clear_color.components);
+		glClearBufferfv(GL_COLOR, 0, clear_color.as_float4_buffer());
 	}
 	if ((keep_color || draw_canvas) && rt && fbo != rt->fbo) {
 		// Need to copy our current contents to our intermediate/MSAA buffer
