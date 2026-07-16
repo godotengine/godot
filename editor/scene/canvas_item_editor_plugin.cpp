@@ -1000,8 +1000,6 @@ void CanvasItemEditor::_selection_menu_hide() {
 }
 
 void CanvasItemEditor::_add_node_pressed(int p_result) {
-	List<Node *> nodes_to_move;
-
 	switch (p_result) {
 		case ADD_NODE: {
 			SceneTreeDock::get_singleton()->open_add_child_dialog();
@@ -1010,11 +1008,28 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 			SceneTreeDock::get_singleton()->open_instance_child_dialog();
 		} break;
 		case ADD_PASTE: {
-			nodes_to_move = SceneTreeDock::get_singleton()->paste_nodes();
-			[[fallthrough]];
-		}
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action_for_history(TTR("Paste Node(s) at Position"), EditorNode::get_editor_data().get_current_edited_scene_history_id());
+
+			List<Node *> pasted_nodes = SceneTreeDock::get_singleton()->paste_nodes();
+			if (pasted_nodes.is_empty()) {
+				_reset_create_position();
+				return;
+			}
+
+			for (Node *node : pasted_nodes) {
+				CanvasItem *ci = Object::cast_to<CanvasItem>(node);
+				if (ci) {
+					Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse() * ci->get_transform();
+					undo_redo->add_do_method(ci, "_edit_set_position", xform.xform(node_create_position));
+					undo_redo->add_undo_method(ci, "_edit_set_position", ci->_edit_get_position());
+				}
+			}
+			undo_redo->commit_action();
+			_reset_create_position();
+		} break;
 		case ADD_MOVE: {
-			nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
+			List<Node *> nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
 			if (nodes_to_move.is_empty()) {
 				return;
 			}
