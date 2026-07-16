@@ -173,13 +173,6 @@ protected:
 #endif
 
 public:
-	enum RenderingDriver {
-		RENDERING_DRIVER_VULKAN,
-		RENDERING_DRIVER_OPENGL3,
-		RENDERING_DRIVER_D3D12,
-		RENDERING_DRIVER_METAL,
-	};
-
 	PackedByteArray get_entropy(int p_bytes);
 	String get_system_ca_certificates();
 
@@ -702,7 +695,6 @@ VARIANT_ENUM_CAST(CoreBind::ResourceLoader::CacheMode);
 
 VARIANT_BITFIELD_CAST(CoreBind::ResourceSaver::SaverFlags);
 
-VARIANT_ENUM_CAST(CoreBind::OS::RenderingDriver);
 VARIANT_ENUM_CAST(CoreBind::OS::SystemDir);
 VARIANT_ENUM_CAST(CoreBind::OS::StdHandleType);
 
