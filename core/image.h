@@ -52,6 +52,8 @@ typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_png, int p_size);
 
 typedef Error (*SaveEXRFunc)(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
 
+extern thread_local uint32_t godot_tls_locked_images_count;
+
 class Image : public Resource {
 	GDCLASS(Image, Resource);
 
@@ -154,10 +156,41 @@ public:
 	static PoolVector<uint8_t> (*png_packer)(const Ref<Image> &p_image);
 	static Ref<Image> (*png_unpacker)(const PoolVector<uint8_t> &p_buffer);
 
-	PoolVector<uint8_t>::Write write_lock;
+	mutable PoolVector<uint8_t>::Write write_lock;
 
-	// Use this, NOT write_lock.ptr() (because that will be NULL for zero size images).
-	bool _is_locked() const { return write_lock.is_active(); }
+	mutable Mutex _mutex;
+
+	// By keeping a refcount on locks, we can allow users
+	// to manually lock, but still allow calling functions which require their own lock,
+	// by reusing the existing lock.
+	mutable SafeNumeric<uint32_t> _lock_refcount;
+
+	bool _is_locked() const { return _lock_refcount.get() > 0; }
+
+	// Returns pointer to locked data, or NULL on failure.
+	uint8_t *_lock_refcounted() const;
+	bool _try_lock_refcounted() const;
+	bool _unlock_refcounted() const;
+
+	struct ImageLock {
+		ImageLock(const Image &p_image) :
+				image(p_image) {
+			data = image._lock_refcounted();
+		}
+
+		~ImageLock() {
+			image._unlock_refcounted();
+		}
+
+		uint8_t *ptr() const { return data; }
+
+		ImageLock(const ImageLock &) = delete;
+		ImageLock &operator=(const ImageLock &) = delete;
+
+	private:
+		const Image &image;
+		uint8_t *data = nullptr;
+	};
 
 protected:
 	static void _bind_methods();
@@ -172,7 +205,7 @@ private:
 	}
 
 	Format format;
-	PoolVector<uint8_t> data;
+	mutable PoolVector<uint8_t> data;
 	int width, height;
 	bool mipmaps;
 
@@ -184,17 +217,18 @@ private:
 		data = p_image.data;
 	}
 
-	_FORCE_INLINE_ void _get_mipmap_offset_and_size(int p_mipmap, int &r_offset, int &r_width, int &r_height) const; //get where the mipmap begins in data
+	void _get_mipmap_offset_and_size(int p_mipmap, int &r_offset, int &r_width, int &r_height) const; //get where the mipmap begins in data
 
 	static int _get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps = -1);
 	bool _can_modify(Format p_format) const;
 
-	_FORCE_INLINE_ void _get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2i &p_src_rect, const Point2i &p_dest, Rect2i &r_clipped_src_rect, Rect2i &r_clipped_dest_rect) const;
+	void _get_clipped_src_and_dest_rects(const Image &p_src, const Rect2i &p_src_rect, const Point2i &p_dest, Rect2i &r_clipped_src_rect, Rect2i &r_clipped_dest_rect) const;
+	void _blit_rect(const Image &p_src, const Rect2i &p_src_rect, const Point2i &p_dest);
 
-	_FORCE_INLINE_ void _put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel);
-	_FORCE_INLINE_ void _get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel);
+	void _put_pixelb(int p_x, int p_y, uint32_t p_pixel_size, uint8_t *p_data, const uint8_t *p_pixel);
+	void _get_pixelb(int p_x, int p_y, uint32_t p_pixel_size, const uint8_t *p_data, uint8_t *p_pixel);
 
-	_FORCE_INLINE_ void _repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_size, int p_count);
+	void _repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_size, int p_count);
 
 	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
@@ -375,6 +409,24 @@ public:
 
 	void copy_internals_from(const Ref<Image> &p_image) {
 		ERR_FAIL_COND_MSG(p_image.is_null(), "It's not a reference to a valid Image object.");
+
+		if (this == p_image.ptr()) {
+			return;
+		}
+
+		// Sort mutexes by pointer order for consistent locking.
+		Mutex *mutex_first = &_mutex;
+		Mutex *mutex_second = &p_image->_mutex;
+		if (mutex_second < mutex_first) {
+			SWAP(mutex_first, mutex_second);
+		}
+		MutexLock lock_first(*mutex_first);
+		MutexLock lock_second(*mutex_second);
+
+		// If either is write locked, this operation is unsafe.
+		ERR_FAIL_COND_MSG(_is_locked(), "Cannot copy_internals_from when Image is locked.");
+		ERR_FAIL_COND_MSG(p_image->_is_locked(), "Cannot copy_internals_from when Image is locked.");
+
 		format = p_image->format;
 		width = p_image->width;
 		height = p_image->height;
@@ -383,6 +435,110 @@ public:
 	}
 
 	~Image();
+
+private:
+	// Locks must be aquired and released in consistent global order
+	// to prevent deadlocks.
+	// This helper struct can handle this.
+	struct ImageLockGroup {
+		Image *items[3] = {};
+		uint32_t count = 0;
+
+		void add(const Image *p_img) {
+			if (!p_img || count >= 3) {
+				return;
+			}
+			Image *img = const_cast<Image *>(p_img);
+
+			// Check for duplicates.
+			for (uint32_t i = 0; i < count; i++) {
+				if (items[i] == img) {
+					return;
+				}
+			}
+			items[count] = img;
+			count++;
+		}
+
+		bool lock() {
+			if (count < 2) {
+				if (count == 1) {
+					return items[0]->_lock_refcounted() != nullptr;
+				}
+				return true;
+			}
+
+			// Sort items by memory address to prevent standard deadlocks.
+			for (uint32_t i = 0; i < count - 1; i++) {
+				for (uint32_t j = i + 1; j < count; j++) {
+					if (items[j] < items[i]) {
+						Image *temp = items[i];
+						items[i] = items[j];
+						items[j] = temp;
+					}
+				}
+			}
+
+			// If this thread holds zero other locks, we are 100% safe to block
+			// and wait for the sorted locks without try_lock/fail overhead.
+			if (godot_tls_locked_images_count == 0) {
+				for (uint32_t i = 0; i < count; i++) {
+					items[i]->_lock_refcounted();
+				}
+				return true;
+			}
+
+#define GODOT_IMAGE_DEADLOCK_PROTECTION
+#ifdef GODOT_IMAGE_DEADLOCK_PROTECTION
+			// Although this can be achieved, the user SHOULD NOT
+			// be attempting an ImageLockGroup when some of those images
+			// are already locked.
+			// It is correct that it should fail and output a warning message.
+			uint32_t locked_count = 0;
+			for (uint32_t i = 0; i < count; i++) {
+				if (items[i]->_try_lock_refcounted()) {
+					locked_count++;
+				} else {
+					// We failed to acquire a lock because another thread holds it.
+					// To prevent a deadlock, release all locks we just acquired and fail.
+					for (uint32_t j = locked_count; j > 0; j--) {
+						items[j - 1]->_unlock_refcounted();
+					}
+					count = 0;
+					return false;
+				}
+			}
+#else
+			// Rely instead on consistent order of locks to prevent deadlocks.
+			// This is less likely to provide false positives under heavy contention.
+			for (uint32_t i = 0; i < count; i++) {
+				items[i]->_lock_refcounted();
+			}
+#endif
+			return true;
+		}
+
+		void unlock() {
+			// Unlock in reverse order.
+			for (uint32_t i = count; i > 0; i--) {
+				items[i - 1]->_unlock_refcounted();
+			}
+			count = 0;
+		}
+
+		uint8_t *get_ptr(const Image *p_img) const {
+			for (uint32_t i = 0; i < count; i++) {
+				if (items[i] == p_img) {
+					return items[i]->write_lock.ptr();
+				}
+			}
+			return nullptr;
+		}
+
+		~ImageLockGroup() {
+			unlock();
+		}
+	};
 };
 
 VARIANT_ENUM_CAST(Image::Format)
