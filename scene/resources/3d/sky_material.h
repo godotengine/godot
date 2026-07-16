@@ -192,7 +192,7 @@ public:
 	void set_rayleigh_coefficient(float p_rayleigh);
 	float get_rayleigh_coefficient() const;
 
-	void set_rayleigh_color(Color p_rayleigh_color);
+	void set_rayleigh_color(const Color &p_rayleigh_color);
 	Color get_rayleigh_color() const;
 
 	void set_turbidity(float p_turbidity);
@@ -204,13 +204,13 @@ public:
 	void set_mie_eccentricity(float p_eccentricity);
 	float get_mie_eccentricity() const;
 
-	void set_mie_color(Color p_mie_color);
+	void set_mie_color(const Color &p_mie_color);
 	Color get_mie_color() const;
 
 	void set_sun_disk_scale(float p_sun_disk_scale);
 	float get_sun_disk_scale() const;
 
-	void set_ground_color(Color p_ground_color);
+	void set_ground_color(const Color &p_ground_color);
 	Color get_ground_color() const;
 
 	void set_energy_multiplier(float p_multiplier);

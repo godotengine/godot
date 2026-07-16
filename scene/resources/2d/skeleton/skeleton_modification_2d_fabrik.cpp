@@ -408,7 +408,7 @@ int SkeletonModification2DFABRIK::get_fabrik_joint_bone_index(int p_joint_idx) c
 	return fabrik_data_chain[p_joint_idx].bone_idx;
 }
 
-void SkeletonModification2DFABRIK::set_fabrik_joint_magnet_position(int p_joint_idx, Vector2 p_magnet_position) {
+void SkeletonModification2DFABRIK::set_fabrik_joint_magnet_position(int p_joint_idx, const Vector2 &p_magnet_position) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "FABRIK joint out of range!");
 	fabrik_data_chain.write[p_joint_idx].magnet_position = p_magnet_position;
 }

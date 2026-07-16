@@ -2140,7 +2140,7 @@ void TextEdit::_notification(int p_what) {
 	}
 }
 
-void TextEdit::_draw_selection_handle(Vector2 p_pos) const {
+void TextEdit::_draw_selection_handle(const Vector2 &p_pos) const {
 	Color handle_color = theme_cache.caret_color;
 	int line_height = get_line_height();
 

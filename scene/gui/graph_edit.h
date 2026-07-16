@@ -312,8 +312,8 @@ private:
 
 	Dictionary type_names;
 
-	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
-	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
+	void _pan_callback(const Vector2 &p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, const Vector2 &p_origin, Ref<InputEvent> p_event);
 
 	void _zoom_minus();
 	void _zoom_reset();
@@ -464,7 +464,7 @@ public:
 	void set_zoom_step(float p_zoom_step);
 	float get_zoom_step() const;
 
-	void set_minimap_size(Vector2 p_size);
+	void set_minimap_size(const Vector2 &p_size);
 	Vector2 get_minimap_size() const;
 	void set_minimap_opacity(float p_opacity);
 	float get_minimap_opacity() const;

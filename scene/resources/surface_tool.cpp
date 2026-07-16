@@ -290,7 +290,7 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 	format |= Mesh::ARRAY_FORMAT_VERTEX;
 }
 
-void SurfaceTool::set_color(Color p_color) {
+void SurfaceTool::set_color(const Color &p_color) {
 	ERR_FAIL_COND(!begun);
 
 	ERR_FAIL_COND(!first && !(format & Mesh::ARRAY_FORMAT_COLOR));

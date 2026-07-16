@@ -394,7 +394,7 @@ bool NavigationLink3D::get_navigation_layer_value(int p_layer_number) const {
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
-void NavigationLink3D::set_start_position(Vector3 p_position) {
+void NavigationLink3D::set_start_position(const Vector3 &p_position) {
 	if (start_position.is_equal_approx(p_position)) {
 		return;
 	}
@@ -415,7 +415,7 @@ void NavigationLink3D::set_start_position(Vector3 p_position) {
 	update_configuration_warnings();
 }
 
-void NavigationLink3D::set_end_position(Vector3 p_position) {
+void NavigationLink3D::set_end_position(const Vector3 &p_position) {
 	if (end_position.is_equal_approx(p_position)) {
 		return;
 	}
@@ -436,7 +436,7 @@ void NavigationLink3D::set_end_position(Vector3 p_position) {
 	update_configuration_warnings();
 }
 
-void NavigationLink3D::set_global_start_position(Vector3 p_position) {
+void NavigationLink3D::set_global_start_position(const Vector3 &p_position) {
 	if (is_inside_tree()) {
 		set_start_position(to_local(p_position));
 	} else {
@@ -452,7 +452,7 @@ Vector3 NavigationLink3D::get_global_start_position() const {
 	}
 }
 
-void NavigationLink3D::set_global_end_position(Vector3 p_position) {
+void NavigationLink3D::set_global_end_position(const Vector3 &p_position) {
 	if (is_inside_tree()) {
 		set_end_position(to_local(p_position));
 	} else {

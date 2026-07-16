@@ -339,7 +339,7 @@ bool TileMap::is_layer_enabled(int p_layer) const {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, false, is_enabled);
 }
 
-void TileMap::set_layer_modulate(int p_layer, Color p_modulate) {
+void TileMap::set_layer_modulate(int p_layer, const Color &p_modulate) {
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_modulate, p_modulate);
 }
 
@@ -448,7 +448,7 @@ void TileMap::set_y_sort_enabled(bool p_enable) {
 	update_configuration_warnings();
 }
 
-void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
+void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile) {
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_cell, p_coords, p_source_id, p_atlas_coords, p_alternative_tile);
 }
 
@@ -764,7 +764,7 @@ TypedArray<Vector2i> TileMap::get_used_cells(int p_layer) const {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, TypedArray<Vector2i>(), get_used_cells);
 }
 
-TypedArray<Vector2i> TileMap::get_used_cells_by_id(int p_layer, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) const {
+TypedArray<Vector2i> TileMap::get_used_cells_by_id(int p_layer, int p_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile) const {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, TypedArray<Vector2i>(), get_used_cells_by_id, p_source_id, p_atlas_coords, p_alternative_tile);
 }
 

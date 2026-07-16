@@ -143,7 +143,7 @@ protected:
 	void _button_pressed(const String &p_name);
 	void _button_released(const String &p_name);
 	void _input_float_changed(const String &p_name, float p_value);
-	void _input_vector2_changed(const String &p_name, Vector2 p_value);
+	void _input_vector2_changed(const String &p_name, const Vector2 &p_value);
 	void _profile_changed(const String &p_role);
 
 public:

@@ -530,7 +530,7 @@ float PhysicalSkyMaterial::get_rayleigh_coefficient() const {
 	return rayleigh;
 }
 
-void PhysicalSkyMaterial::set_rayleigh_color(Color p_rayleigh_color) {
+void PhysicalSkyMaterial::set_rayleigh_color(const Color &p_rayleigh_color) {
 	rayleigh_color = p_rayleigh_color;
 	RS::get_singleton()->material_set_param(_get_material(), "rayleigh_color", rayleigh_color);
 }
@@ -557,7 +557,7 @@ float PhysicalSkyMaterial::get_mie_eccentricity() const {
 	return mie_eccentricity;
 }
 
-void PhysicalSkyMaterial::set_mie_color(Color p_mie_color) {
+void PhysicalSkyMaterial::set_mie_color(const Color &p_mie_color) {
 	mie_color = p_mie_color;
 	RS::get_singleton()->material_set_param(_get_material(), "mie_color", mie_color);
 }
@@ -584,7 +584,7 @@ float PhysicalSkyMaterial::get_sun_disk_scale() const {
 	return sun_disk_scale;
 }
 
-void PhysicalSkyMaterial::set_ground_color(Color p_ground_color) {
+void PhysicalSkyMaterial::set_ground_color(const Color &p_ground_color) {
 	ground_color = p_ground_color;
 	RS::get_singleton()->material_set_param(_get_material(), "ground_color", ground_color);
 }

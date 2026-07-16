@@ -65,7 +65,7 @@ private:
 	}
 	static Vector3 _basis_orthonormalize(Basis &r_basis);
 	static Method _test_basis(Basis p_basis, bool r_needed_normalize, Quaternion &r_quat);
-	static Basis _basis_slerp_unchecked(Basis p_from, Basis p_to, real_t p_fraction);
+	static Basis _basis_slerp_unchecked(const Basis &p_from, const Basis &p_to, real_t p_fraction);
 	static Quaternion _quat_slerp_unchecked(const Quaternion &p_from, const Quaternion &p_to, real_t p_fraction);
 	static Quaternion _basis_to_quat_unchecked(const Basis &p_basis);
 	static bool _basis_is_orthogonal(const Basis &p_basis, real_t p_epsilon = 0.01f);

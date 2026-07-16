@@ -267,7 +267,7 @@ public:
 
 	///////////////////
 
-	void set_direction(Vector3 p_direction);
+	void set_direction(const Vector3 &p_direction);
 	Vector3 get_direction() const;
 
 	void set_spread(real_t p_spread);
@@ -299,11 +299,11 @@ public:
 
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(real_t p_radius);
-	void set_emission_box_extents(Vector3 p_extents);
+	void set_emission_box_extents(const Vector3 &p_extents);
 	void set_emission_points(const Vector<Vector3> &p_points);
 	void set_emission_normals(const Vector<Vector3> &p_normals);
 	void set_emission_colors(const Vector<Color> &p_colors);
-	void set_emission_ring_axis(Vector3 p_axis);
+	void set_emission_ring_axis(const Vector3 &p_axis);
 	void set_emission_ring_height(real_t p_height);
 	void set_emission_ring_radius(real_t p_radius);
 	void set_emission_ring_inner_radius(real_t p_radius);

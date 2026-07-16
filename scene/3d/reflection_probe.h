@@ -84,7 +84,7 @@ public:
 	void set_ambient_mode(AmbientMode p_mode);
 	AmbientMode get_ambient_mode() const;
 
-	void set_ambient_color(Color p_ambient);
+	void set_ambient_color(const Color &p_ambient);
 	Color get_ambient_color() const;
 
 	void set_ambient_color_energy(float p_energy);

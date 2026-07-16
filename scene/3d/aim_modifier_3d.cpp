@@ -211,7 +211,7 @@ void AimModifier3D::_process_constraint_by_node(int p_index, Skeleton3D *p_skele
 	_process_aim(p_index, p_skeleton, p_apply_bone, skel_tr.basis.get_rotation_quaternion().xform_inv(reference_origin), p_amount);
 }
 
-void AimModifier3D::_process_aim(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, Vector3 p_target, float p_amount) {
+void AimModifier3D::_process_aim(int p_index, Skeleton3D *p_skeleton, int p_apply_bone, const Vector3 &p_target, float p_amount) {
 	AimModifier3DSetting *setting = static_cast<AimModifier3DSetting *>(settings[p_index]);
 
 	// Prepare forward_vector and rest.

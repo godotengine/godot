@@ -615,7 +615,7 @@ Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_co
 		max = x2; \
 	}
 
-_FORCE_INLINE_ bool planeBoxOverlap(Vector3 p_normal, real_t p_d, Vector3 p_maxbox) {
+_FORCE_INLINE_ bool planeBoxOverlap(const Vector3 &p_normal, real_t p_d, const Vector3 &p_maxbox) {
 	int q;
 	Vector3 vmin, vmax;
 	for (q = 0; q <= 2; q++) {

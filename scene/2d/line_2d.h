@@ -67,14 +67,14 @@ public:
 	void set_points(const Vector<Vector2> &p_points);
 	Vector<Vector2> get_points() const;
 
-	void set_point_position(int i, Vector2 pos);
+	void set_point_position(int i, const Vector2 &pos);
 	Vector2 get_point_position(int i) const;
 
 	int get_point_count() const;
 
 	void clear_points();
 
-	void add_point(Vector2 pos, int atpos = -1);
+	void add_point(const Vector2 &pos, int atpos = -1);
 	void remove_point(int i);
 
 	void set_closed(bool p_closed);
@@ -86,7 +86,7 @@ public:
 	void set_curve(const Ref<Curve> &curve);
 	Ref<Curve> get_curve() const;
 
-	void set_default_color(Color color);
+	void set_default_color(const Color &color);
 	Color get_default_color() const;
 
 	void set_gradient(const Ref<Gradient> &gradient);

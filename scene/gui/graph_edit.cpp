@@ -2328,7 +2328,7 @@ void GraphEdit::key_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-void GraphEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
+void GraphEdit::_pan_callback(const Vector2 &p_scroll_vec, Ref<InputEvent> p_event) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 
 	scroll_offset = (scroll_offset - p_scroll_vec).clamp(min_scroll_offset, max_scroll_offset - get_size());
@@ -2343,7 +2343,7 @@ void GraphEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	connections_layer->queue_redraw();
 }
 
-void GraphEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+void GraphEdit::_zoom_callback(float p_zoom_factor, const Vector2 &p_origin, Ref<InputEvent> p_event) {
 	// We need to invalidate all connections since we don't know whether
 	// the user is zooming/panning at the same time.
 	_invalidate_connection_line_cache();
@@ -2772,7 +2772,7 @@ void GraphEdit::_show_grid_toggled() {
 	queue_redraw();
 }
 
-void GraphEdit::set_minimap_size(Vector2 p_size) {
+void GraphEdit::set_minimap_size(const Vector2 &p_size) {
 	minimap->set_size(p_size);
 	Vector2 minimap_size = minimap->get_size(); // The size might've been adjusted by the minimum size.
 

@@ -59,10 +59,10 @@ public:
 	void set_density(float p_density);
 	float get_density() const;
 
-	void set_albedo(Color p_color);
+	void set_albedo(const Color &p_color);
 	Color get_albedo() const;
 
-	void set_emission(Color p_color);
+	void set_emission(const Color &p_color);
 	Color get_emission() const;
 
 	void set_height_falloff(float p_falloff);

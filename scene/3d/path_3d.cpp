@@ -373,7 +373,7 @@ PackedStringArray PathFollow3D::get_configuration_warnings() const {
 	return warnings;
 }
 
-Transform3D PathFollow3D::correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode) {
+Transform3D PathFollow3D::correct_posture(const Transform3D &p_transform, PathFollow3D::RotationMode p_rotation_mode) {
 	Transform3D t = p_transform;
 
 	// Modify frame according to rotation mode.

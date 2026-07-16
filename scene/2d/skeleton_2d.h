@@ -163,7 +163,7 @@ public:
 
 	RID get_skeleton() const;
 
-	void set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, real_t p_amount, bool p_persistent = true);
+	void set_bone_local_pose_override(int p_bone_idx, const Transform2D &p_override, real_t p_amount, bool p_persistent = true);
 	Transform2D get_bone_local_pose_override(int p_bone_idx);
 
 	Ref<SkeletonModificationStack2D> get_modification_stack() const;

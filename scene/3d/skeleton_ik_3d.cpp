@@ -126,7 +126,7 @@ bool FabrikInverseKinematic::build_chain(Task *p_task, bool p_force_simple_chain
 	return true;
 }
 
-void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet, Vector3 p_origin_pos) {
+void FabrikInverseKinematic::solve_simple(Task *p_task, bool p_solve_magnet, const Vector3 &p_origin_pos) {
 	real_t distance_to_goal(1e4);
 	real_t previous_distance_to_goal(0);
 	int can_solve(p_task->max_iterations);
@@ -173,7 +173,7 @@ void FabrikInverseKinematic::solve_simple_backwards(const Chain &r_chain, bool p
 	}
 }
 
-void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_magnet, Vector3 p_origin_pos) {
+void FabrikInverseKinematic::solve_simple_forwards(Chain &r_chain, bool p_solve_magnet, const Vector3 &p_origin_pos) {
 	if (p_solve_magnet && !r_chain.middle_chain_item) {
 		return;
 	}

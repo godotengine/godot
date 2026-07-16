@@ -106,9 +106,9 @@ protected:
 	void _draw_multiline_string_outline_bind_compat_104872(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
 	real_t _draw_char_bind_compat_104872(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
 	real_t _draw_char_outline_bind_compat_104872(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
-	RID _find_variation_bind_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const;
-	RID _find_variation_bind_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const;
-	RID _find_variation_bind_compat_117149(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const;
+	RID _find_variation_bind_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, const Transform2D &p_transform = Transform2D()) const;
+	RID _find_variation_bind_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, const Transform2D &p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const;
+	RID _find_variation_bind_compat_117149(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, const Transform2D &p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const;
 	static void _bind_compatibility_methods();
 #endif
 
@@ -124,7 +124,7 @@ public:
 	virtual TypedArray<Font> get_fallbacks() const;
 
 	// Output.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, int64_t p_palette_index = 0, const Vector<Color> &p_custom_colors = Vector<Color>()) const { return RID(); }
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, const Transform2D &p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, int64_t p_palette_index = 0, const Vector<Color> &p_custom_colors = Vector<Color>()) const { return RID(); }
 	virtual RID _get_rid() const { return RID(); }
 	virtual TypedArray<RID> get_rids() const;
 
@@ -305,7 +305,7 @@ public:
 	virtual real_t get_oversampling() const;
 
 	// Cache.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, int64_t p_palette_index = 0, const Vector<Color> &p_custom_colors = Vector<Color>()) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, const Transform2D &p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, int64_t p_palette_index = 0, const Vector<Color> &p_custom_colors = Vector<Color>()) const override;
 	virtual RID _get_rid() const override;
 
 	virtual int get_cache_count() const;
@@ -322,7 +322,7 @@ public:
 	virtual void set_embolden(int p_cache_index, float p_strength);
 	virtual float get_embolden(int p_cache_index) const;
 
-	virtual void set_transform(int p_cache_index, Transform2D p_transform);
+	virtual void set_transform(int p_cache_index, const Transform2D &p_transform);
 	virtual Transform2D get_transform(int p_cache_index) const;
 
 	virtual void set_extra_spacing(int p_cache_index, TextServer::SpacingType p_spacing, int64_t p_value);
@@ -454,7 +454,7 @@ public:
 	virtual void set_variation_embolden(float p_strength);
 	virtual float get_variation_embolden() const;
 
-	virtual void set_variation_transform(Transform2D p_transform);
+	virtual void set_variation_transform(const Transform2D &p_transform);
 	virtual Transform2D get_variation_transform() const;
 
 	virtual void set_variation_face_index(int p_face_index);
@@ -476,7 +476,7 @@ public:
 	virtual void set_palette_custom_colors(const Vector<Color> &p_colors);
 
 	// Output.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, int64_t p_palette_index = 0, const Vector<Color> &p_custom_colors = Vector<Color>()) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, const Transform2D &p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, int64_t p_palette_index = 0, const Vector<Color> &p_custom_colors = Vector<Color>()) const override;
 	virtual RID _get_rid() const override;
 
 	FontVariation();
@@ -582,7 +582,7 @@ public:
 
 	virtual int get_spacing(TextServer::SpacingType p_spacing) const override;
 
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, int64_t p_palette_index = 0, const Vector<Color> &p_custom_colors = Vector<Color>()) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, const Transform2D &p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, int64_t p_palette_index = 0, const Vector<Color> &p_custom_colors = Vector<Color>()) const override;
 	virtual RID _get_rid() const override;
 
 	int64_t get_face_count() const override;

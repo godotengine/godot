@@ -72,7 +72,7 @@ private:
 		}
 	}
 
-	_FORCE_INLINE_ Color transform_color_space(const Color p_color) const {
+	_FORCE_INLINE_ Color transform_color_space(const Color &p_color) const {
 		switch (interpolation_color_space) {
 			case GRADIENT_COLOR_SPACE_SRGB:
 			default:
@@ -96,7 +96,7 @@ private:
 		}
 	}
 
-	_FORCE_INLINE_ Color inv_transform_color_space(const Color p_color) const {
+	_FORCE_INLINE_ Color inv_transform_color_space(const Color &p_color) const {
 		switch (interpolation_color_space) {
 			case GRADIENT_COLOR_SPACE_SRGB:
 			default:

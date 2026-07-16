@@ -578,7 +578,7 @@ void XRController3D::_input_float_changed(const String &p_name, float p_value) {
 	emit_signal(SNAME("input_float_changed"), p_name, p_value);
 }
 
-void XRController3D::_input_vector2_changed(const String &p_name, Vector2 p_value) {
+void XRController3D::_input_vector2_changed(const String &p_name, const Vector2 &p_value) {
 	emit_signal(SNAME("input_vector2_changed"), p_name, p_value);
 }
 

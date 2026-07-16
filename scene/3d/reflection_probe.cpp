@@ -63,7 +63,7 @@ ReflectionProbe::AmbientMode ReflectionProbe::get_ambient_mode() const {
 	return ambient_mode;
 }
 
-void ReflectionProbe::set_ambient_color(Color p_ambient) {
+void ReflectionProbe::set_ambient_color(const Color &p_ambient) {
 	ambient_color = p_ambient;
 	RS::get_singleton()->reflection_probe_set_ambient_color(probe, p_ambient);
 }

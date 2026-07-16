@@ -96,7 +96,7 @@ void SpriteBase3D::_notification(int p_what) {
 	}
 }
 
-void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect) {
+void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, const Rect2 &p_dst_rect, const Rect2 &p_src_rect) {
 	ERR_FAIL_COND(p_texture.is_null());
 
 	Rect2 final_rect;

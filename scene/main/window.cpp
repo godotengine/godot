@@ -3309,7 +3309,7 @@ bool Window::is_attached_in_viewport() const {
 	return get_embedder();
 }
 
-void Window::_update_mouse_over(Vector2 p_pos) {
+void Window::_update_mouse_over(const Vector2 &p_pos) {
 	if (!mouse_in_window) {
 		if (is_embedded()) {
 			mouse_in_window = true;

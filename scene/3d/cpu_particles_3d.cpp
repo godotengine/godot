@@ -267,7 +267,7 @@ void CPUParticles3D::restart(bool p_keep_seed) {
 	_set_emitting();
 }
 
-void CPUParticles3D::set_direction(Vector3 p_direction) {
+void CPUParticles3D::set_direction(const Vector3 &p_direction) {
 	direction = p_direction;
 }
 
@@ -435,7 +435,7 @@ void CPUParticles3D::set_emission_sphere_radius(real_t p_radius) {
 	update_gizmos();
 }
 
-void CPUParticles3D::set_emission_box_extents(Vector3 p_extents) {
+void CPUParticles3D::set_emission_box_extents(const Vector3 &p_extents) {
 	emission_box_extents = p_extents;
 	update_gizmos();
 }
@@ -452,7 +452,7 @@ void CPUParticles3D::set_emission_colors(const Vector<Color> &p_colors) {
 	emission_colors = p_colors;
 }
 
-void CPUParticles3D::set_emission_ring_axis(Vector3 p_axis) {
+void CPUParticles3D::set_emission_ring_axis(const Vector3 &p_axis) {
 	emission_ring_axis = p_axis;
 	update_gizmos();
 }

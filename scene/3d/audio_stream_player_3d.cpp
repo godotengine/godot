@@ -162,7 +162,7 @@ AudioFrame AudioStreamPlayer3D::_calc_output_vol_stereo(const Vector3 &source_di
 }
 
 #ifndef PHYSICS_3D_DISABLED
-void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, const FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &direct_path_vol, FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &reverb_vol) {
+void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, const Vector3 &listener_area_pos, const FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &direct_path_vol, FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &reverb_vol) {
 	reverb_vol.resize_uninitialized(VOLUME_VECTOR_SIZE);
 	for (AudioFrame &frame : reverb_vol) {
 		frame = AudioFrame(0, 0);

@@ -948,14 +948,14 @@ void Environment::set_volumetric_fog_density(float p_density) {
 float Environment::get_volumetric_fog_density() const {
 	return volumetric_fog_density;
 }
-void Environment::set_volumetric_fog_albedo(Color p_color) {
+void Environment::set_volumetric_fog_albedo(const Color &p_color) {
 	volumetric_fog_albedo = p_color;
 	_update_volumetric_fog();
 }
 Color Environment::get_volumetric_fog_albedo() const {
 	return volumetric_fog_albedo;
 }
-void Environment::set_volumetric_fog_emission(Color p_color) {
+void Environment::set_volumetric_fog_emission(const Color &p_color) {
 	volumetric_fog_emission = p_color;
 	_update_volumetric_fog();
 }

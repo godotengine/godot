@@ -259,7 +259,7 @@ private:
 	virtual bool _can_consume_input_events() const override;
 
 	bool mouse_in_window = false;
-	void _update_mouse_over(Vector2 p_pos) override;
+	void _update_mouse_over(const Vector2 &p_pos) override;
 	void _mouse_leave_viewport() override;
 
 	void _update_displayed_title();

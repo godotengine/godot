@@ -134,7 +134,7 @@ public:
 
 	void update_transform();
 
-	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
+	static Transform3D correct_posture(const Transform3D &p_transform, PathFollow3D::RotationMode p_rotation_mode);
 };
 
 VARIANT_ENUM_CAST(PathFollow3D::RotationMode);

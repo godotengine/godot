@@ -124,9 +124,9 @@ public:
 
 	void set_fill(Fill p_fill);
 	Fill get_fill() const;
-	void set_fill_from(Vector2 p_fill_from);
+	void set_fill_from(const Vector2 &p_fill_from);
 	Vector2 get_fill_from() const;
-	void set_fill_to(Vector2 p_fill_to);
+	void set_fill_to(const Vector2 &p_fill_to);
 	Vector2 get_fill_to() const;
 
 	void set_repeat(Repeat p_repeat);

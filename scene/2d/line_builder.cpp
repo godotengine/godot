@@ -431,7 +431,7 @@ void LineBuilder::build() {
 	}
 }
 
-void LineBuilder::strip_begin(Vector2 up, Vector2 down, Color color, float uvx) {
+void LineBuilder::strip_begin(const Vector2 &up, const Vector2 &down, const Color &color, float uvx) {
 	int vi = vertices.size();
 
 	vertices.push_back(up);
@@ -451,7 +451,7 @@ void LineBuilder::strip_begin(Vector2 up, Vector2 down, Color color, float uvx) 
 	_last_index[DOWN] = vi + 1;
 }
 
-void LineBuilder::strip_add_quad(Vector2 up, Vector2 down, Color color, float uvx) {
+void LineBuilder::strip_add_quad(const Vector2 &up, const Vector2 &down, const Color &color, float uvx) {
 	int vi = vertices.size();
 
 	vertices.push_back(up);
@@ -478,7 +478,7 @@ void LineBuilder::strip_add_quad(Vector2 up, Vector2 down, Color color, float uv
 	_last_index[DOWN] = vi + 1;
 }
 
-void LineBuilder::strip_add_tri(Vector2 up, Orientation orientation) {
+void LineBuilder::strip_add_tri(const Vector2 &up, Orientation orientation) {
 	int vi = vertices.size();
 
 	vertices.push_back(up);
@@ -502,7 +502,7 @@ void LineBuilder::strip_add_tri(Vector2 up, Orientation orientation) {
 	_last_index[opposite_orientation] = vi;
 }
 
-void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation orientation) {
+void LineBuilder::strip_add_arc(const Vector2 &center, float angle_delta, Orientation orientation) {
 	// Take the two last vertices and extrude an arc made of triangles
 	// that all share one of the initial vertices
 
@@ -531,7 +531,7 @@ void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation o
 	strip_add_tri(rpos, orientation);
 }
 
-void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Color color, Rect2 uv_rect) {
+void LineBuilder::new_arc(const Vector2 &center, const Vector2 &vbegin, float angle_delta, const Color &color, const Rect2 &uv_rect) {
 	// Make a standalone arc that doesn't use existing vertices,
 	// with undistorted UVs from within a square section
 

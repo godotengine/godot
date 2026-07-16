@@ -95,7 +95,7 @@ public:
 	void set_fabrik_joint_bone_index(int p_joint_idx, int p_bone_idx);
 	int get_fabrik_joint_bone_index(int p_joint_idx) const;
 
-	void set_fabrik_joint_magnet_position(int p_joint_idx, Vector2 p_magnet_position);
+	void set_fabrik_joint_magnet_position(int p_joint_idx, const Vector2 &p_magnet_position);
 	Vector2 get_fabrik_joint_magnet_position(int p_joint_idx) const;
 	void set_fabrik_joint_use_target_rotation(int p_joint_idx, bool p_use_target_rotation);
 	bool get_fabrik_joint_use_target_rotation(int p_joint_idx) const;

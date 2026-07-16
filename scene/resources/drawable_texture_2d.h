@@ -80,8 +80,8 @@ public:
 
 	void setup(int p_width, int p_height, DrawableFormat p_format, const Color &p_modulate = Color(1, 1, 1, 1), bool p_use_mipmaps = false);
 
-	void blit_rect(const Rect2i p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate = Color(1, 1, 1, 1), int p_mipmap = 0, const Ref<Material> &p_material = Ref<Material>());
-	void blit_rect_multi(const Rect2i p_rect, const TypedArray<Texture2D> &p_sources, const TypedArray<DrawableTexture2D> &p_extra_targets, const Color &p_modulate = Color(1, 1, 1, 1), int p_mipmap = 0, const Ref<Material> &p_material = Ref<Material>());
+	void blit_rect(const Rect2i &p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate = Color(1, 1, 1, 1), int p_mipmap = 0, const Ref<Material> &p_material = Ref<Material>());
+	void blit_rect_multi(const Rect2i &p_rect, const TypedArray<Texture2D> &p_sources, const TypedArray<DrawableTexture2D> &p_extra_targets, const Color &p_modulate = Color(1, 1, 1, 1), int p_mipmap = 0, const Ref<Material> &p_material = Ref<Material>());
 
 	virtual Ref<Image> get_image() const override;
 

@@ -76,7 +76,7 @@ struct [[nodiscard]] Basis {
 	void get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) const;
 	Quaternion get_rotation_quaternion() const;
 
-	void rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction);
+	void rotate_to_align(const Vector3 &p_start_direction, const Vector3 &p_end_direction);
 
 	Vector3 rotref_posscale_decomposition(Basis &r_rotref) const;
 

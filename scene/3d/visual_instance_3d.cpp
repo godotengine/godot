@@ -420,7 +420,7 @@ Variant GeometryInstance3D::get_instance_shader_parameter(const StringName &p_na
 	return RS::get_singleton()->instance_geometry_get_shader_parameter(get_instance(), p_name);
 }
 
-void GeometryInstance3D::set_custom_aabb(AABB p_aabb) {
+void GeometryInstance3D::set_custom_aabb(const AABB &p_aabb) {
 	if (p_aabb == custom_aabb) {
 		return;
 	}

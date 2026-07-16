@@ -504,7 +504,7 @@ private:
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
 	void _update_mouse_over(const Ref<InputEventMouse> &p_mm);
-	virtual void _update_mouse_over(Vector2 p_pos);
+	virtual void _update_mouse_over(const Vector2 &p_pos);
 	virtual void _mouse_leave_viewport();
 
 	virtual bool _can_consume_input_events() const { return true; }

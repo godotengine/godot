@@ -309,7 +309,7 @@ bool NavigationObstacle2D::get_avoidance_enabled() const {
 	return avoidance_enabled;
 }
 
-void NavigationObstacle2D::set_velocity(const Vector2 p_velocity) {
+void NavigationObstacle2D::set_velocity(const Vector2 &p_velocity) {
 	velocity = p_velocity;
 	velocity_submitted = true;
 }
@@ -423,7 +423,7 @@ void NavigationObstacle2D::_update_map(RID p_map) {
 	NavigationServer2D::get_singleton()->obstacle_set_map(obstacle, p_map);
 }
 
-void NavigationObstacle2D::_update_position(const Vector2 p_position) {
+void NavigationObstacle2D::_update_position(const Vector2 &p_position) {
 	NavigationServer2D::get_singleton()->obstacle_set_position(obstacle, p_position);
 #ifdef DEBUG_ENABLED
 	queue_redraw();

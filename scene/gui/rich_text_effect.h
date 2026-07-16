@@ -76,7 +76,7 @@ public:
 	void set_offset(Point2 p_offset) { offset = p_offset; }
 
 	Color get_color() { return color; }
-	void set_color(Color p_color) { color = p_color; }
+	void set_color(const Color &p_color) { color = p_color; }
 
 	uint32_t get_glyph_index() const { return glyph_index; }
 	void set_glyph_index(uint32_t p_glyph_index) { glyph_index = p_glyph_index; }

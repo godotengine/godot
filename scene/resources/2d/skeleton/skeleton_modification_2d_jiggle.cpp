@@ -365,7 +365,7 @@ bool SkeletonModification2DJiggle::get_use_gravity() const {
 	return use_gravity;
 }
 
-void SkeletonModification2DJiggle::set_gravity(Vector2 p_gravity) {
+void SkeletonModification2DJiggle::set_gravity(const Vector2 &p_gravity) {
 	gravity = p_gravity;
 	_update_jiggle_joint_data();
 }
@@ -497,7 +497,7 @@ bool SkeletonModification2DJiggle::get_jiggle_joint_use_gravity(int p_joint_idx)
 	return jiggle_data_chain[p_joint_idx].use_gravity;
 }
 
-void SkeletonModification2DJiggle::set_jiggle_joint_gravity(int p_joint_idx, Vector2 p_gravity) {
+void SkeletonModification2DJiggle::set_jiggle_joint_gravity(int p_joint_idx, const Vector2 &p_gravity) {
 	ERR_FAIL_INDEX(p_joint_idx, jiggle_data_chain.size());
 	jiggle_data_chain.write[p_joint_idx].gravity = p_gravity;
 }

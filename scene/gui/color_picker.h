@@ -75,7 +75,7 @@ public:
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
-	ColorPresetButton(Color p_color, int p_size, bool p_recent);
+	ColorPresetButton(const Color &p_color, int p_size, bool p_recent);
 	~ColorPresetButton();
 };
 

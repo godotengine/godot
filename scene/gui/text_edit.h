@@ -534,7 +534,7 @@ private:
 	bool selection_handle_enabled = true;
 	Vector<Point2i> _get_selection_handles_pos(int p_cursor) const;
 	bool _is_first_column(int p_line, int p_column) const;
-	void _draw_selection_handle(Vector2 p_pos) const;
+	void _draw_selection_handle(const Vector2 &p_pos) const;
 
 	void _cancel_inertial_scroll();
 

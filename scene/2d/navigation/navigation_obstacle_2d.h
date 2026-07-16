@@ -104,10 +104,10 @@ public:
 	void set_avoidance_layer_value(int p_layer_number, bool p_value);
 	bool get_avoidance_layer_value(int p_layer_number) const;
 
-	void set_velocity(const Vector2 p_velocity);
+	void set_velocity(const Vector2 &p_velocity);
 	Vector2 get_velocity() const { return velocity; }
 
-	void _avoidance_done(Vector3 p_new_velocity); // Dummy
+	void _avoidance_done(const Vector3 &p_new_velocity); // Dummy
 
 	void set_affect_navigation_mesh(bool p_enabled);
 	bool get_affect_navigation_mesh() const;
@@ -127,6 +127,6 @@ public:
 
 private:
 	void _update_map(RID p_map);
-	void _update_position(const Vector2 p_position);
+	void _update_position(const Vector2 &p_position);
 	void _update_transform();
 };

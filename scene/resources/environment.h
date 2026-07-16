@@ -414,9 +414,9 @@ public:
 	bool is_volumetric_fog_enabled() const;
 	void set_volumetric_fog_density(float p_density);
 	float get_volumetric_fog_density() const;
-	void set_volumetric_fog_albedo(Color p_color);
+	void set_volumetric_fog_albedo(const Color &p_color);
 	Color get_volumetric_fog_albedo() const;
-	void set_volumetric_fog_emission(Color p_color);
+	void set_volumetric_fog_emission(const Color &p_color);
 	Color get_volumetric_fog_emission() const;
 	void set_volumetric_fog_emission_energy(float p_begin);
 	float get_volumetric_fog_emission_energy() const;

@@ -173,7 +173,7 @@ bool StyleBoxFlat::is_draw_center_enabled() const {
 	return draw_center;
 }
 
-void StyleBoxFlat::set_skew(Vector2 p_skew) {
+void StyleBoxFlat::set_skew(const Vector2 &p_skew) {
 	skew = p_skew;
 	emit_changed();
 }

@@ -617,7 +617,7 @@ void CodeHighlighter::set_uint_suffix_enabled(bool p_enabled) {
 	uint_suffix_enabled = p_enabled;
 }
 
-void CodeHighlighter::set_number_color(Color p_color) {
+void CodeHighlighter::set_number_color(const Color &p_color) {
 	number_color = p_color;
 	clear_highlighting_cache();
 }
@@ -626,7 +626,7 @@ Color CodeHighlighter::get_number_color() const {
 	return number_color;
 }
 
-void CodeHighlighter::set_symbol_color(Color p_color) {
+void CodeHighlighter::set_symbol_color(const Color &p_color) {
 	symbol_color = p_color;
 	clear_highlighting_cache();
 }
@@ -635,7 +635,7 @@ Color CodeHighlighter::get_symbol_color() const {
 	return symbol_color;
 }
 
-void CodeHighlighter::set_function_color(Color p_color) {
+void CodeHighlighter::set_function_color(const Color &p_color) {
 	function_color = p_color;
 	clear_highlighting_cache();
 }
@@ -644,7 +644,7 @@ Color CodeHighlighter::get_function_color() const {
 	return function_color;
 }
 
-void CodeHighlighter::set_member_variable_color(Color p_color) {
+void CodeHighlighter::set_member_variable_color(const Color &p_color) {
 	member_color = p_color;
 	clear_highlighting_cache();
 }
