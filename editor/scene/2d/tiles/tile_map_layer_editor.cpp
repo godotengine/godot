@@ -36,7 +36,6 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_resource_preview.h"
@@ -2268,8 +2267,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	picker_button->set_theme_type_variation(SceneStringName(FlatButton));
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
-	Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
-	picker_button->set_tooltip_text(vformat(TTRC("Alternatively hold %s with other tools to pick tile."), find_keycode_name(key)));
+	picker_button->set_tooltip_text(vformat(TTRC("Alternatively hold %s with other tools to pick tile."), keycode_get_string(Key::CMD_OR_CTRL)));
 	picker_button->connect(SceneStringName(pressed), callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	picker_button->set_accessibility_name(TTRC("Pick"));
 	tools_settings->add_child(picker_button);
