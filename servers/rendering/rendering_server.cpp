@@ -2272,6 +2272,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("texture_2d_update", "texture", "image", "layer"), &RenderingServer::texture_2d_update);
 	ClassDB::bind_method(D_METHOD("texture_3d_update", "texture", "data"), &RenderingServer::_texture_3d_update);
+	ClassDB::bind_method(D_METHOD("texture_2d_update_partial", "texture", "offset", "image", "layer"), &RenderingServer::texture_2d_update_partial);
 	ClassDB::bind_method(D_METHOD("texture_proxy_update", "texture", "proxy_to"), &RenderingServer::texture_proxy_update);
 
 	ClassDB::bind_method(D_METHOD("texture_drawable_blit_rect", "textures", "rect", "material", "modulate", "source_textures", "to_mipmap"), &RenderingServer::texture_drawable_blit_rect, DEFVAL(0));

@@ -230,6 +230,7 @@ private:
 
 	Ref<Image> _validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format);
 	void _texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0, bool p_immediate = false);
+	void _texture_2d_update_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer = 0, bool p_immediate = false);
 
 	struct TextureFromRDFormat {
 		Image::Format image_format;
@@ -601,6 +602,7 @@ public:
 
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
+	virtual void texture_2d_update_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
 

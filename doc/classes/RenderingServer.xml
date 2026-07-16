@@ -3910,6 +3910,17 @@
 				[b]Note:[/b] The [param image] must have the same width, height and format as the current [param texture] data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height or format, use [method texture_replace] instead.
 			</description>
 		</method>
+		<method name="texture_2d_update_partial">
+			<return type="void" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="offset" type="Vector2i" />
+			<param index="2" name="image" type="Image" />
+			<param index="3" name="layer" type="int" />
+			<description>
+				Updates part of the texture specified by the [param texture] [RID] with the data in [param image]. A [param layer] must also be specified, which should be [code]0[/code] when updating a single-layer texture ([Texture2D]).
+				[b]Note:[/b] The [param image] must have the same format as the current [param texture] data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different format, use [method texture_replace] instead.
+			</description>
+		</method>
 		<method name="texture_3d_create">
 			<return type="RID" />
 			<param index="0" name="format" type="int" enum="Image.Format" />

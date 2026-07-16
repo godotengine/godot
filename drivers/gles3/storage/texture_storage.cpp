@@ -1315,6 +1315,18 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 #endif
 }
 
+void TextureStorage::texture_2d_update_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer) {
+	_texture_set_data_partial(p_texture, p_offset, p_image, p_layer);
+
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(tex);
+	GLES3::Utilities::get_singleton()->texture_resize_data(tex->tex_id, tex->total_data_size);
+
+#ifdef TOOLS_ENABLED
+	tex->image_cache_2d.unref();
+#endif
+}
+
 void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) {
 	Texture *tex = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(tex);
@@ -2113,6 +2125,90 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 		texture->total_data_size = tsize * texture->layers;
 	} else {
 		texture->total_data_size = tsize;
+	}
+
+	texture->stored_cube_sides |= (1 << p_layer);
+
+	texture->mipmaps = mipmaps;
+}
+
+void TextureStorage::_texture_set_data_partial(RID p_texture, const Vector2i &p_offset, const Ref<Image> &p_image, int p_layer) {
+	Texture *texture = texture_owner.get_or_null(p_texture);
+
+	ERR_FAIL_NULL(texture);
+	if (texture->target == GL_TEXTURE_3D) {
+		// Target is set to a 3D texture or array texture, exit early to avoid spamming errors
+		return;
+	}
+	ERR_FAIL_COND(!texture->active);
+	ERR_FAIL_COND(texture->is_render_target);
+	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(texture->format != p_image->get_format());
+
+	ERR_FAIL_COND(!p_image->get_width());
+	ERR_FAIL_COND(!p_image->get_height());
+
+	GLenum type;
+	GLenum format;
+	GLenum internal_format;
+	bool compressed = false;
+
+	bool needs_decompress = texture->resize_to_po2;
+
+	// Support for RGTC-compressed Texture Arrays isn't mandated by GLES3/WebGL.
+	if (!RasterizerUtilGLES3::is_gles_over_gl() && texture->target == GL_TEXTURE_2D_ARRAY) {
+		if (p_image->get_format() == Image::FORMAT_RGTC_R || p_image->get_format() == Image::FORMAT_RGTC_RG) {
+			needs_decompress = true;
+		}
+	}
+
+	Image::Format real_format;
+	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), real_format, format, internal_format, type, compressed, needs_decompress);
+	ERR_FAIL_COND(img.is_null());
+
+	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP) ? _cube_side_enum[p_layer] : texture->target;
+
+	Vector<uint8_t> read = img->get_data();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(texture->target, texture->tex_id);
+	_texture_set_swizzle(texture, real_format);
+
+	int mipmaps = img->has_mipmaps() ? img->get_mipmap_count() + 1 : 1;
+
+	// Set filtering and repeat state to default.
+	if (mipmaps > 1) {
+		texture->gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	} else {
+		texture->gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	}
+
+	texture->gl_set_repeat(RSE::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+
+	int w = img->get_width();
+	int h = img->get_height();
+
+	for (int i = 0; i < mipmaps; i++) {
+		int64_t size, ofs;
+		img->get_mipmap_offset_and_size(i, ofs, size);
+		if (compressed) {
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+			if (texture->target == GL_TEXTURE_2D_ARRAY) {
+				glCompressedTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, p_offset.x, p_offset.y, p_layer, w, h, 1, internal_format, size, &read[ofs]);
+			} else {
+				glCompressedTexSubImage2D(blit_target, i, p_offset.x, p_offset.y, w, h, format, size, &read[ofs]);
+			}
+		} else {
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			if (texture->target == GL_TEXTURE_2D_ARRAY) {
+				glTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, p_offset.x, p_offset.y, p_layer, w, h, 1, format, type, &read[ofs]);
+			} else {
+				glTexSubImage2D(blit_target, i, p_offset.x, p_offset.y, w, h, format, type, &read[ofs]);
+			}
+		}
+
+		w = MAX(1, w >> 1);
+		h = MAX(1, h >> 1);
 	}
 
 	texture->stored_cube_sides |= (1 << p_layer);
