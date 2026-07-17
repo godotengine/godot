@@ -449,6 +449,8 @@ private:
 
 	bool middle_mouse_paste_enabled;
 
+	bool paste_selected = false;
+
 	int executing_line;
 
 	void _generate_context_menu();
@@ -875,6 +877,9 @@ public:
 
 	void set_middle_mouse_paste_enabled(bool p_enabled);
 	bool is_middle_mouse_paste_enabled() const;
+
+	void set_paste_selected(bool p_enabled);
+	bool is_paste_selected() const;
 
 	PopupMenu *get_menu() const;
 

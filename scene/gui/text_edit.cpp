@@ -5670,9 +5670,21 @@ void TextEdit::paste() {
 		clipboard += ins;
 	}
 
-	_insert_text_at_cursor(clipboard);
-	end_complex_operation();
+	// Capture the start coordinates before the text is inserted
+	int start_line = cursor_get_line();
+	int start_column = cursor_get_column();
 
+	_insert_text_at_cursor(clipboard);
+
+	// If the option is enabled and we actually pasted something, select it
+	if (paste_selected && !clipboard.empty()) {
+		int end_line = cursor_get_line();
+		int end_column = cursor_get_column();
+		
+		select(start_line, start_column, end_line, end_column);
+	}
+
+	end_complex_operation();
 	update();
 }
 
@@ -7353,6 +7365,10 @@ void TextEdit::set_middle_mouse_paste_enabled(bool p_enabled) {
 	middle_mouse_paste_enabled = p_enabled;
 }
 
+void TextEdit::set_paste_selected(bool p_enabled) {
+	paste_selected = p_enabled;
+}
+
 void TextEdit::set_selecting_enabled(bool p_enabled) {
 	selecting_enabled = p_enabled;
 
@@ -7396,6 +7412,10 @@ bool TextEdit::is_virtual_keyboard_enabled() const {
 
 bool TextEdit::is_middle_mouse_paste_enabled() const {
 	return middle_mouse_paste_enabled;
+}
+
+bool TextEdit::is_paste_selected() const {
+	return paste_selected;
 }
 
 PopupMenu *TextEdit::get_menu() const {
@@ -7498,6 +7518,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &TextEdit::is_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("set_middle_mouse_paste_enabled", "enable"), &TextEdit::set_middle_mouse_paste_enabled);
 	ClassDB::bind_method(D_METHOD("is_middle_mouse_paste_enabled"), &TextEdit::is_middle_mouse_paste_enabled);
+	ClassDB::bind_method(D_METHOD("set_paste_selected", "enabled"), &TextEdit::set_paste_selected);
+	ClassDB::bind_method(D_METHOD("is_paste_selected"), &TextEdit::is_paste_selected);
 	ClassDB::bind_method(D_METHOD("set_selecting_enabled", "enable"), &TextEdit::set_selecting_enabled);
 	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &TextEdit::is_selecting_enabled);
 	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &TextEdit::set_deselect_on_focus_loss_enabled);
@@ -7616,6 +7638,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paste_selected"), "set_paste_selected", "is_paste_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
