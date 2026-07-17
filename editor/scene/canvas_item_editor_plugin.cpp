@@ -4478,8 +4478,8 @@ void CanvasItemEditor::_project_settings_changed() {
 void CanvasItemEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			const String show_list_tooltip = TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.");
-			select_button->set_tooltip_text(vformat(TTR("%s+Drag: Rotate selected node around pivot."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("Alt+Drag: Move selected node.") + "\n" + vformat(TTR("%s+Alt+Drag: Scale selected node."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("V: Set selected node's pivot position.") + "\n" + show_list_tooltip + "\n" + TTR("RMB: Add node at position clicked."));
+			const String show_list_tooltip = vformat(TTR("%s+RMB: Show list of all nodes at position clicked, including locked."), keycode_get_string((Key)KeyModifierMask::ALT));
+			select_button->set_tooltip_text(vformat(TTR("%s+Drag: Rotate selected node around pivot."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + vformat(TTR("%s+Drag: Move selected node."), keycode_get_string((Key)KeyModifierMask::ALT)) + "\n" + vformat(TTR("%s+%s+Drag: Scale selected node."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), keycode_get_string((Key)KeyModifierMask::ALT)) + "\n" + TTR("V: Set selected node's pivot position.") + "\n" + show_list_tooltip + "\n" + TTR("RMB: Add node at position clicked."));
 			move_button->set_tooltip_text(show_list_tooltip);
 			rotate_button->set_tooltip_text(show_list_tooltip);
 			scale_button->set_tooltip_text(TTR("Shift: Scale proportionally.") + "\n" + show_list_tooltip);
@@ -6694,9 +6694,10 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 					"[b]Hold Shift:[/b] Add as children of selected node.",
 					files.size()) +
 			"\n" +
-			TTRN("[b]Hold Alt:[/b] Add as child of root node.",
-					"[b]Hold Alt:[/b] Add as children of root node.",
-					files.size());
+			vformat(TTRN("[b]Hold %s:[/b] Add as child of root node.",
+							"[b]Hold %s:[/b] Add as children of root node.",
+							files.size()),
+					keycode_get_string((Key)KeyModifierMask::ALT));
 
 	if (files.size() > 1) {
 		title = TTR("Dropping multiple files...");
@@ -6711,7 +6712,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 		title = TTR("Dropping a Mesh file...");
 	}
 	if (instantiate_type & TEXTURE) {
-		desc += "\n" + TTR("[b]Hold Alt + Shift:[/b] Add Texture as a different node type.");
+		desc += "\n" + vformat(TTR("[b]Hold %s + Shift:[/b] Add Texture as a different node type."), keycode_get_string((Key)KeyModifierMask::ALT));
 	}
 	desc += "[/ul]";
 

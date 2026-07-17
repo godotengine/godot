@@ -768,7 +768,7 @@ void ScenePaint2DEditor::_bind_methods() {
 void ScenePaint2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			advanced_settings_button->set_tooltip_text(TTR("Advanced Settings") + "\n" + TTR("Hold Alt while painting to temporarily switch to the previously used paint snap mode."));
+			advanced_settings_button->set_tooltip_text(TTR("Advanced Settings") + "\n" + vformat(TTR("Hold %s while painting to temporarily switch to the previously used paint snap mode."), keycode_get_string((Key)KeyModifierMask::ALT)));
 			if (toolbar->is_visible()) {
 				_update_hint_label();
 			}
