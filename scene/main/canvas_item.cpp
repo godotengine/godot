@@ -933,8 +933,8 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 void CanvasItem::draw_ellipse(const Point2 &p_pos, real_t p_major, real_t p_minor, const Color &p_color, bool p_filled, real_t p_width, bool p_antialiased, int p_resolution) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
-	// Tessellation count is hardcoded. Keep in sync with the same variable in `RendererCanvasCull::canvas_item_add_circle()`.
-	const int circle_segments = MAX(3,p_resolution);
+	// Tessellation count is defaulted to 64. Keep in sync with the same variable in `RendererCanvasCull::canvas_item_add_circle()`.
+	const int circle_segments = MAX(3, p_resolution);
 
 	if (p_filled) {
 		if (p_width != -1.0) {
@@ -1489,7 +1489,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_multiline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_multiline_colors, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled", "width", "antialiased"), &CanvasItem::draw_rect, DEFVAL(true), DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_circle", "position", "radius", "color", "filled", "width", "antialiased", "resolution"), &CanvasItem::draw_circle, DEFVAL(true), DEFVAL(-1.0), DEFVAL(false), DEFVAL(64));
-	ClassDB::bind_method(D_METHOD("draw_ellipse", "position", "major", "minor", "color", "filled", "width", "antialiased","resolution"), &CanvasItem::draw_ellipse, DEFVAL(true), DEFVAL(-1.0), DEFVAL(false), DEFVAL(64));
+	ClassDB::bind_method(D_METHOD("draw_ellipse", "position", "major", "minor", "color", "filled", "width", "antialiased", "resolution"), &CanvasItem::draw_ellipse, DEFVAL(true), DEFVAL(-1.0), DEFVAL(false), DEFVAL(64));
 	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(true));

@@ -1468,7 +1468,7 @@ void RendererCanvasCull::canvas_item_add_ellipse(RID p_item, const Point2 &p_pos
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);
 
-	static const int ellipse_segments = MAX(3,p_resolution);
+	static const int ellipse_segments = MAX(3, p_resolution);
 
 	float major = p_major;
 	float minor = p_minor;
