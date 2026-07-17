@@ -3680,6 +3680,12 @@
 		<member name="xr/shaders/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], Godot will compile shaders required for XR.
 		</member>
+		<member name="xr/visionos/enable_controller_tracking" type="bool" setter="" getter="" default="false">
+			Enables and initializes visionOS controller tracking.
+		</member>
+		<member name="xr/visionos/enable_hand_tracking" type="bool" setter="" getter="" default="false">
+			Enables and initializes visionOS hand tracking.
+		</member>
 	</members>
 	<signals>
 		<signal name="settings_changed">
