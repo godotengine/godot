@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  navigation_server_2d_manager.h                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,63 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "2d/godot_navigation_server_2d.h"
+#include "core/object/object.h"
 
-#include "core/object/callable_mp.h"
-#include "servers/navigation_2d/navigation_server_2d.h"
-#include "servers/navigation_2d/navigation_server_2d_manager.h"
+class NavigationServer2D;
 
-#ifdef TOOLS_ENABLED
-#include "editor/navigation_link_2d_editor_plugin.h"
-#include "editor/navigation_obstacle_2d_editor_plugin.h"
-#include "editor/navigation_region_2d_editor_plugin.h"
-#endif
+class NavigationServer2DManager : public Object {
+	GDCLASS(NavigationServer2DManager, Object);
 
-static NavigationServer2D *_createGodotNavigation2DCallback() {
-	return memnew(GodotNavigationServer2D);
-}
+	static inline NavigationServer2DManager *singleton = nullptr;
 
-void initialize_navigation_2d_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer2DManager::get_singleton()->register_server("GodotNavigation2D", callable_mp_static(_createGodotNavigation2DCallback));
-		NavigationServer2DManager::get_singleton()->set_default_server("GodotNavigation2D");
-	}
+	struct ClassInfo {
+		String name;
+		Callable create_callback;
 
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<NavigationLink2DEditorPlugin>();
-		EditorPlugins::add_by_type<NavigationRegion2DEditorPlugin>();
-		EditorPlugins::add_by_type<NavigationObstacle2DEditorPlugin>();
-	}
-#endif
-}
+		ClassInfo() {}
 
-void uninitialize_navigation_2d_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
-	}
-}
+		ClassInfo(const String &p_name, const Callable &p_create_callback) :
+				name(p_name),
+				create_callback(p_create_callback) {}
+
+		ClassInfo(const ClassInfo &p_ci) :
+				name(p_ci.name),
+				create_callback(p_ci.create_callback) {}
+
+		void operator=(const ClassInfo &p_ci) {
+			name = p_ci.name;
+			create_callback = p_ci.create_callback;
+		}
+	};
+
+	Vector<ClassInfo> navigation_servers;
+	int default_server_id = -1;
+	int default_server_priority = -1;
+
+	void on_servers_changed();
+
+protected:
+	static void _bind_methods();
+
+public:
+	static const String setting_property_name;
+
+	static NavigationServer2DManager *get_singleton();
+
+	void register_server(const String &p_name, const Callable &p_create_callback);
+	void set_default_server(const String &p_name, int p_priority = 0);
+	int find_server_id(const String &p_name);
+	int get_servers_count();
+	String get_server_name(int p_id);
+	NavigationServer2D *new_default_server();
+	NavigationServer2D *new_server(const String &p_name);
+
+	static void initialize_server();
+	static void finalize_server();
+
+	static void initialize_server_manager();
+	static void finalize_server_manager();
+	static NavigationServer2D *create_dummy_server_callback();
+};
