@@ -224,6 +224,7 @@
 			<param index="2" name="radius" type="float" />
 			<param index="3" name="color" type="Color" />
 			<param index="4" name="antialiased" type="bool" default="false" />
+			<param index="5" name="resolution" type="int" default="64" />
 			<description>
 				Draws a circle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_circle].
 			</description>
@@ -244,6 +245,7 @@
 			<param index="3" name="minor" type="float" />
 			<param index="4" name="color" type="Color" />
 			<param index="5" name="antialiased" type="bool" default="false" />
+			<param index="6" name="resolution" type="int" default="64" />
 			<description>
 				Draws an ellipse with semi-major axis [param major] and semi-minor axis [param minor] on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_ellipse].
 			</description>

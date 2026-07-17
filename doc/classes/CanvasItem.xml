@@ -82,11 +82,12 @@
 			<param index="3" name="filled" type="bool" default="true" />
 			<param index="4" name="width" type="float" default="-1.0" />
 			<param index="5" name="antialiased" type="bool" default="false" />
+			<param index="6" name="resolution" type="int" default="64" />
 			<description>
 				Draws a circle, with [param position] defined in local space. See also [method draw_ellipse], [method draw_arc], [method draw_polyline], and [method draw_polygon].
 				If [param filled] is [code]true[/code], the circle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the circle will be drawn as a stroke with the [param color] and [param width] specified.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
-				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
+				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth. [param resolution] determines how many points the polygon of the circle will have.
 				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
 			</description>
 		</method>
@@ -128,8 +129,10 @@
 			<param index="4" name="filled" type="bool" default="true" />
 			<param index="5" name="width" type="float" default="-1.0" />
 			<param index="6" name="antialiased" type="bool" default="false" />
+			<param index="7" name="resolution" type="int" default="64" />
+
 			<description>
-				Draws an ellipse with semi-major axis [param major] and semi-minor axis [param minor]. See also [method draw_circle], [method draw_ellipse_arc], [method draw_polyline], and [method draw_polygon].
+				Draws an ellipse with semi-major axis [param major] and semi-minor axis [param minor]. [param resolution] determines how many points the polygon of the circle will have. See also [method draw_circle], [method draw_ellipse_arc], [method draw_polyline], and [method draw_polygon].
 				If [param filled] is [code]true[/code], the ellipse will be filled with the [param color] specified. If [param filled] is [code]false[/code], the ellipse will be drawn as a stroke with the [param color] and [param width] specified.
 				If [param width] is negative, then two-point primitives will be drawn instead of four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
