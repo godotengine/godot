@@ -122,7 +122,7 @@ class ProjectManager : public Control {
 
 	AcceptDialog *error_dialog = nullptr;
 
-	void _show_error(const String &p_message, const Size2 &p_min_size = Size2());
+	void _show_error(const String &p_message, const Size2 &p_min_size = Size2(), bool p_autowrap = false);
 	void _dim_window();
 
 	// Quick settings.
@@ -207,6 +207,7 @@ class ProjectManager : public Control {
 	void _open_donate_page();
 
 	void _on_project_created(const String &dir, bool edit);
+	void _on_project_imported(const String &p_dir, bool p_edit);
 	void _on_project_duplicated(const String &p_original_path, const String &p_duplicate_path, bool p_edit);
 	void _on_projects_updated();
 	void _on_open_options_selected(int p_option);
@@ -216,6 +217,44 @@ class ProjectManager : public Control {
 	void _on_order_option_changed(int p_idx);
 	void _on_search_term_changed(const String &p_term);
 	void _on_search_term_submitted(const String &p_text);
+
+	// Project directory management.
+
+	String dir_config_path;
+
+	bool multi_dir = false;
+	HashMap<String, bool> dir_set;
+	HashMap<String, bool> temp_dir_set;
+	String current_dir;
+	String dir_to_make_active;
+
+	Button *manage_dir_btn = nullptr;
+	HFlowContainer *project_directories = nullptr;
+	Button *add_dir_btn = nullptr;
+
+	ConfirmationDialog *dir_manage_dialog = nullptr;
+	ConfirmationDialog *confirm_dialog = nullptr;
+	EditorFileDialog *dir_fdialog = nullptr;
+
+	OptionButton *dir_option_btn = nullptr;
+
+	void _manage_project_dirs();
+	void _load_project_dirs();
+	void _update_dir_list();
+
+	void _remove_project_dir(Button *p_dir);
+	void _remove_active_dir(Button *p_dir);
+	void _add_project_dir(const String &p_dir);
+	void _apply_project_dirs();
+	void _create_project_dirs(const PackedStringArray &p_dirs);
+
+	void _dir_option_selected(const int p_id);
+	void _dir_path_selected(const String &p_dir);
+
+	void _show_dir_file_dialog();
+
+	void _update_new_active_dir_projects(const String &p_dir) const;
+	void update_active_dir();
 
 	// Project tag management.
 
@@ -237,7 +276,7 @@ class ProjectManager : public Control {
 	void _add_project_tag(const String &p_tag);
 	void _delete_project_tag(const String &p_tag);
 	void _apply_project_tags();
-	void _set_new_tag_name(const String p_name);
+	void _set_new_tag_name(const String p_dir);
 	void _create_new_tag();
 
 	// Project converter/migration tool.
@@ -281,6 +320,10 @@ public:
 
 	bool is_initialized() const { return initialized; }
 	LineEdit *get_search_box();
+
+	// Project directory management.
+
+	void update_dir_list(const String &p_dir);
 
 	// Project tag management.
 
