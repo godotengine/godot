@@ -39,6 +39,10 @@
 #include "servers/navigation_2d/navigation_server_2d.h"
 #endif // NAVIGATION_2D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
+#include "servers/physics_2d/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
+
 RID World2D::get_canvas() const {
 	return canvas;
 }
