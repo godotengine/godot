@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  physics_server_2d_manager.h                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,38 +28,62 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "godot_physics_server_3d.h"
+#include "core/object/object.h"
 
-#include "core/config/project_settings.h"
-#include "core/object/callable_mp.h"
-#include "servers/physics_3d/physics_server_3d.h"
-#include "servers/physics_3d/physics_server_3d_manager.h"
-#include "servers/physics_3d/physics_server_3d_wrap_mt.h"
+class PhysicsServer2D;
 
-static PhysicsServer3D *_createGodotPhysics3DCallback() {
-#ifdef THREADS_ENABLED
-	bool using_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
-#else
-	bool using_threads = false;
-#endif
+class PhysicsServer2DManager : public Object {
+	GDCLASS(PhysicsServer2DManager, Object);
 
-	PhysicsServer3D *physics_server_3d = memnew(GodotPhysicsServer3D(using_threads));
+	static PhysicsServer2DManager *singleton;
 
-	return memnew(PhysicsServer3DWrapMT(physics_server_3d, using_threads));
-}
+	struct ClassInfo {
+		String name;
+		Callable create_callback;
 
-void initialize_godot_physics_3d_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
-	}
-	PhysicsServer3DManager::get_singleton()->register_server("GodotPhysics3D", callable_mp_static(_createGodotPhysics3DCallback));
-	PhysicsServer3DManager::get_singleton()->set_default_server("GodotPhysics3D");
-}
+		ClassInfo() {}
 
-void uninitialize_godot_physics_3d_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
-	}
-}
+		ClassInfo(String p_name, Callable p_create_callback) :
+				name(p_name),
+				create_callback(p_create_callback) {}
+
+		ClassInfo(const ClassInfo &p_ci) :
+				name(p_ci.name),
+				create_callback(p_ci.create_callback) {}
+
+		void operator=(const ClassInfo &p_ci) {
+			name = p_ci.name;
+			create_callback = p_ci.create_callback;
+		}
+	};
+
+	Vector<ClassInfo> physics_2d_servers;
+	int default_server_id = -1;
+	int default_server_priority = -1;
+
+	void on_servers_changed();
+
+protected:
+	static void _bind_methods();
+
+public:
+	static const String setting_property_name;
+
+	static PhysicsServer2DManager *get_singleton();
+
+	void register_server(const String &p_name, const Callable &p_create_callback);
+	void set_default_server(const String &p_name, int p_priority = 0);
+	int find_server_id(const String &p_name);
+	int get_servers_count();
+	String get_server_name(int p_id);
+	PhysicsServer2D *new_default_server();
+	PhysicsServer2D *new_server(const String &p_name);
+
+	static void initialize_server();
+	static void finalize_server();
+
+	static void initialize_server_manager();
+	static void finalize_server_manager();
+};
