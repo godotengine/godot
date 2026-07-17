@@ -131,7 +131,6 @@
 			<param index="5" name="width" type="float" default="-1.0" />
 			<param index="6" name="antialiased" type="bool" default="false" />
 			<param index="7" name="resolution" type="int" default="64" />
-
 			<description>
 				Draws an ellipse with semi-major axis [param major] and semi-minor axis [param minor]. See also [method draw_circle], [method draw_ellipse_arc], [method draw_polyline], and [method draw_polygon].
 				If [param filled] is [code]true[/code], the ellipse will be filled with the [param color] specified. If [param filled] is [code]false[/code], the ellipse will be drawn as a stroke with the [param color] and [param width] specified.
