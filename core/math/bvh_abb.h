@@ -31,6 +31,8 @@
 #ifndef BVH_ABB_H
 #define BVH_ABB_H
 
+#include <float.h>
+
 // special optimized version of axis aligned bounding box
 template <class BOUNDS = AABB, class POINT = Vector3>
 struct BVH_ABB {
@@ -256,7 +258,7 @@ struct BVH_ABB {
 	}
 
 	// Actually surface area metric.
-	float get_area() const {
+	real_t get_area() const {
 		POINT d = calculate_size();
 		return 2 * (d.x * d.y + d.y * d.z + d.z * d.x);
 	}
