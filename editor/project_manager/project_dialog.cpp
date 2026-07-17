@@ -39,6 +39,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
@@ -406,7 +407,7 @@ void ProjectDialog::_install_path_changed() {
 void ProjectDialog::_browse_project_path() {
 	String path = project_path->get_text();
 	if (path.is_relative_path()) {
-		path = EDITOR_GET("filesystem/directories/default_project_path");
+		path = current_dir;
 	}
 	if (mode == MODE_IMPORT && install_path->is_visible_in_tree()) {
 		// Select last ZIP file.
@@ -437,7 +438,7 @@ void ProjectDialog::_browse_install_path() {
 
 	String path = install_path->get_text();
 	if (path.is_relative_path() || !DirAccess::dir_exists_absolute(path)) {
-		path = EDITOR_GET("filesystem/directories/default_project_path");
+		path = current_dir;
 	}
 	if (create_dir->is_pressed()) {
 		// Select parent directory of install path.
@@ -810,7 +811,11 @@ void ProjectDialog::ok_pressed() {
 			}
 		}
 #endif
-		emit_signal(SNAME("project_created"), path, mode == MODE_NEW || edit_check_box->is_pressed());
+		if (multi_dir && mode == MODE_IMPORT) {
+			emit_signal(SNAME("project_imported"), path, edit_check_box->is_pressed());
+		} else {
+			emit_signal(SNAME("project_created"), path, mode == MODE_NEW || edit_check_box->is_pressed());
+		}
 	} else if (mode == MODE_DUPLICATE) {
 		emit_signal(SNAME("project_duplicated"), original_project_path, path, edit_check_box->is_visible() && edit_check_box->is_pressed());
 	} else if (mode == MODE_RENAME) {
@@ -844,6 +849,10 @@ void ProjectDialog::set_project_name(const String &p_name) {
 
 void ProjectDialog::set_project_path(const String &p_path) {
 	project_path->set_text(p_path);
+}
+
+void ProjectDialog::set_current_directory(const String &p_dir) {
+	current_dir = p_dir;
 }
 
 void ProjectDialog::ask_for_path_and_show() {
@@ -888,7 +897,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			install_path->set_text(original_dir);
 			fdialog_project->set_current_dir(original_dir);
 		} else {
-			String fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
+			String fav_dir = current_dir;
 			fav_dir = fav_dir.simplify_path();
 			if (!fav_dir.is_empty()) {
 				project_path->set_text(fav_dir);
@@ -1015,6 +1024,7 @@ void ProjectDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("project_created"));
 	ADD_SIGNAL(MethodInfo("project_duplicated"));
 	ADD_SIGNAL(MethodInfo("projects_updated"));
+	ADD_SIGNAL(MethodInfo("project_imported"));
 }
 
 ProjectDialog::ProjectDialog() {
@@ -1245,4 +1255,7 @@ ProjectDialog::ProjectDialog() {
 
 	dialog_error = memnew(AcceptDialog);
 	add_child(dialog_error);
+
+	multi_dir = EDITOR_GET("filesystem/directories/enable_multiple_project_directories");
+	current_dir = EDITOR_GET("filesystem/directories/default_project_path");
 }
