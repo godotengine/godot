@@ -67,6 +67,7 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
+#ifndef NAVIGATION_3D_DISABLED
 	int index = components[1].to_int();
 	if (components[2] == "navmesh") { // Renamed in 4.0 beta 9.
 		set_item_navigation_mesh(index, p_value);
@@ -75,6 +76,7 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 		set_item_navigation_mesh_transform(index, p_value);
 		return true;
 	}
+#endif // NAVIGATION_3D_DISABLED
 #endif // DISABLE_DEPRECATED
 
 	return false;
@@ -96,6 +98,7 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 		return false;
 	}
 
+#ifndef NAVIGATION_3D_DISABLED
 	int index = components[1].to_int();
 	if (components[2] == "navmesh") { // Renamed in 4.0 beta 9.
 		r_ret = get_item_navigation_mesh(index);
@@ -104,6 +107,7 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_item_navigation_mesh_transform(index);
 		return true;
 	}
+#endif // NAVIGATION_3D_DISABLED
 #endif // DISABLE_DEPRECATED
 
 	return false;
@@ -168,6 +172,7 @@ void MeshLibrary::set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes)
 }
 #endif // PHYSICS_3D_DISABLED
 
+#ifndef NAVIGATION_3D_DISABLED
 void MeshLibrary::set_item_navigation_mesh(int p_item, const Ref<NavigationMesh> &p_navigation_mesh) {
 	if (_validate_index(p_item)) {
 		item_map[p_item].navigation_mesh = p_navigation_mesh;
@@ -188,6 +193,7 @@ void MeshLibrary::set_item_navigation_layers(int p_item, uint32_t p_navigation_l
 		emit_changed();
 	}
 }
+#endif // NAVIGATION_3D_DISABLED
 
 void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) {
 	if (_validate_index(p_item)) {
@@ -228,6 +234,7 @@ Vector<MeshLibrary::ShapeData> MeshLibrary::get_item_shapes(int p_item) const {
 }
 #endif // PHYSICS_3D_DISABLED
 
+#ifndef NAVIGATION_3D_DISABLED
 Ref<NavigationMesh> MeshLibrary::get_item_navigation_mesh(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<NavigationMesh>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].navigation_mesh;
@@ -242,6 +249,7 @@ uint32_t MeshLibrary::get_item_navigation_layers(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), 0, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].navigation_layers;
 }
+#endif // NAVIGATION_3D_DISABLED
 
 Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture2D>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
