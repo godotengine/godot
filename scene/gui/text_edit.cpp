@@ -2137,55 +2137,68 @@ void TextEdit::backspace_at_cursor() {
 }
 
 void TextEdit::indent_right() {
-	int start_line;
-	int end_line;
+    int start_line;
+    int end_line;
 
-	// This value informs us by how much we changed selection position by indenting right.
-	// Default is 1 for tab indentation.
-	int selection_offset = 1;
-	begin_complex_operation();
+    int selection_offset = 1;
+    int begin_line_offset = 1;
+    int end_line_offset = 1;
 
-	if (is_selection_active()) {
-		start_line = get_selection_from_line();
-		end_line = get_selection_to_line();
-	} else {
-		start_line = cursor.line;
-		end_line = start_line;
-	}
+    begin_complex_operation();
 
-	// Ignore if the cursor is not past the first column.
-	if (is_selection_active() && get_selection_to_column() == 0) {
-		selection_offset = 0;
-		end_line--;
-	}
+    if (is_selection_active()) {
+        start_line = get_selection_from_line();
+        end_line = get_selection_to_line();
+    } else {
+        start_line = cursor.line;
+        end_line = start_line;
+    }
 
-	for (int i = start_line; i <= end_line; i++) {
-		String line_text = get_line(i);
-		if (line_text.size() == 0 && is_selection_active()) {
-			continue;
-		}
-		if (indent_using_spaces) {
-			// We don't really care where selection is - we just need to know indentation level at the beginning of the line.
-			int left = _find_first_non_whitespace_column_of_line(line_text);
-			int spaces_to_add = _calculate_spaces_till_next_right_indent(left);
-			// Since we will add this much spaces we want move whole selection and cursor by this much.
-			selection_offset = spaces_to_add;
-			for (int j = 0; j < spaces_to_add; j++) {
-				line_text = ' ' + line_text;
-			}
-		} else {
-			line_text = '\t' + line_text;
-		}
-		set_line(i, line_text);
-	}
+    // FIXED CHECK: Only decrement end_line if column is 0 AND the line isn't empty.
+    if (is_selection_active() && get_selection_to_column() == 0 && get_line(end_line).length() > 0) {
+        selection_offset = 0;
+        begin_line_offset = 0;
+        end_line_offset = 0;
+        end_line--;
+    }
 
-	// Fix selection and cursor being off after shifting selection right.
-	if (is_selection_active()) {
-		select(selection.from_line, selection.from_column + selection_offset, selection.to_line, selection.to_column + selection_offset);
-	}
-	cursor_set_column(cursor.column + selection_offset, false);
-	end_complex_operation();
-	update();
+    for (int i = start_line; i <= end_line; i++) {
+        String line_text = get_line(i);
+
+        int current_line_offset = 1;
+
+        if (indent_using_spaces) {
+            int left = _find_first_non_whitespace_column_of_line(line_text);
+            int spaces_to_add = _calculate_spaces_till_next_right_indent(left);
+            current_line_offset = spaces_to_add;
+            
+            for (int j = 0; j < spaces_to_add; j++) {
+                line_text = ' ' + line_text;
+            }
+        } else {
+            line_text = '\t' + line_text;
+        }
+        
+        set_line(i, line_text);
+
+        if (i == selection.from_line) {
+            begin_line_offset = current_line_offset;
+        }
+        if (i == selection.to_line) {
+            end_line_offset = current_line_offset;
+        }
+        if (i == cursor.line) {
+            selection_offset = current_line_offset;
+        }
+    }
+
+    if (is_selection_active()) {
+        select(selection.from_line, selection.from_column + begin_line_offset, selection.to_line, selection.to_column + end_line_offset);
+    }
+    cursor_set_column(cursor.column + selection_offset, false);
+    
+    end_complex_operation();
+    update();
 }
 
 void TextEdit::indent_left() {
