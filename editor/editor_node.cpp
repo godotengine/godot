@@ -622,6 +622,9 @@ void EditorNode::_update_from_settings() {
 	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines_xray"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/3d/enable_geometry_face_random_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_obstacles_radius_color(GLOBAL_GET("debug/shapes/avoidance/3d/obstacles_radius_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_static_obstacle_pushin_edge_color(GLOBAL_GET("debug/shapes/avoidance/3d/obstacles_static_edge_pushin_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_static_obstacle_pushout_edge_color(GLOBAL_GET("debug/shapes/avoidance/3d/obstacles_static_edge_pushout_color"));
 #endif // DEBUG_ENABLED
 }
 
