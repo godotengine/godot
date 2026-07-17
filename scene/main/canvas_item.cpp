@@ -945,7 +945,6 @@ void CanvasItem::draw_ellipse(const Point2 &p_pos, real_t p_major, real_t p_mino
 	} else if (p_width >= 2.0 * MAX(p_major, p_minor)) {
 		RenderingServer::get_singleton()->canvas_item_add_ellipse(canvas_item, p_pos, p_major + 0.5 * p_width, p_minor + 0.5 * p_width, p_color, p_antialiased, p_resolution);
 	} else {
-
 		Vector<Vector2> points;
 		points.resize(circle_segments + 1);
 
