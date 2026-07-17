@@ -3593,6 +3593,25 @@ const ShaderLanguage::BuiltinEntry ShaderLanguage::frag_only_func_defs[] = {
 	{ nullptr }
 };
 
+const ShaderLanguage::BuiltinEntry ShaderLanguage::builtin_vectorized_constructors[] = {
+	{ "vec2" },
+	{ "vec3" },
+	{ "vec4" },
+	{ "ivec2" },
+	{ "ivec3" },
+	{ "ivec4" },
+	{ "uvec2" },
+	{ "uvec3" },
+	{ "uvec4" },
+	{ "bvec2" },
+	{ "bvec3" },
+	{ "bvec4" },
+	{ "mat2" },
+	{ "mat3" },
+	{ "mat4" },
+	{ nullptr }
+};
+
 bool ShaderLanguage::is_const_suffix_lut_initialized = false;
 
 bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_func, DataType *r_ret_type, StringName *r_ret_type_str, bool *r_is_custom_function) {
@@ -3697,9 +3716,20 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 							break;
 						}
 					}
-					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::NODE_TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i])) {
-						// All good, but needs implicit conversion later.
-					} else if (args[i] != builtin_func_defs[idx].args[i]) {
+
+					bool converted = false;
+					if (get_scalar_type(args[i]) == args[i]) {
+						if (p_func->arguments[i + 1]->type == Node::NODE_TYPE_CONSTANT) {
+							if (convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i], nullptr, is_builtin_vec_constructor(name))) {
+								converted = true;
+							}
+						} else if (p_func->arguments[i + 1]->type == Node::NODE_TYPE_OPERATOR) {
+							if (convert_operator(static_cast<OperatorNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i], nullptr, is_builtin_vec_constructor(name))) {
+								converted = true;
+							}
+						}
+					}
+					if (!converted && args[i] != builtin_func_defs[idx].args[i]) {
 						fail = true;
 						break;
 					}
@@ -4232,58 +4262,117 @@ bool ShaderLanguage::is_token_hint(TokenType p_type) {
 	return int(p_type) > int(TK_STENCIL_MODE) && int(p_type) < int(TK_SHADER_TYPE);
 }
 
-bool ShaderLanguage::convert_constant(ConstantNode *p_constant, DataType p_to_type, Scalar *p_value) {
-	if (p_constant->datatype == p_to_type) {
+bool ShaderLanguage::convert_operator(const OperatorNode *p_operator, DataType p_to_type, Scalar *p_value, bool p_in_constructor) {
+	if (p_operator->values.is_empty()) {
+		if (convert_scalar(p_operator->get_datatype(), p_to_type)) {
+			return true;
+		}
+		if (p_in_constructor) {
+			return convert_boolean_scalar(p_operator->get_datatype(), p_to_type);
+		}
+		return false;
+	}
+	if (p_operator->get_datatype() == p_to_type) {
+		if (p_value) {
+			for (int i = 0; i < p_operator->values.size(); i++) {
+				p_value[i] = p_operator->values[i];
+			}
+		}
+		return true;
+	}
+	if (convert_scalar(p_operator->get_datatype(), p_to_type, &p_operator->values[0], p_value)) {
+		return true;
+	}
+	if (p_in_constructor) {
+		return convert_boolean_scalar(p_operator->get_datatype(), p_to_type, &p_operator->values[0], p_value);
+	}
+	return false;
+}
+
+bool ShaderLanguage::convert_constant(const ConstantNode *p_constant, DataType p_to_type, Scalar *p_value, bool p_in_constructor) {
+	if (p_constant->values.is_empty()) {
+		if (convert_scalar(p_constant->get_datatype(), p_to_type)) {
+			return true;
+		}
+		if (p_in_constructor) {
+			return convert_boolean_scalar(p_constant->get_datatype(), p_to_type);
+		}
+		return false;
+	}
+	if (p_constant->get_datatype() == p_to_type) {
 		if (p_value) {
 			for (int i = 0; i < p_constant->values.size(); i++) {
 				p_value[i] = p_constant->values[i];
 			}
 		}
 		return true;
-	} else if (p_constant->datatype == TYPE_INT && p_to_type == TYPE_FLOAT) {
-		if (p_value) {
-			p_value->real = p_constant->values[0].sint;
+	}
+	if (convert_scalar(p_constant->get_datatype(), p_to_type, &p_constant->values[0], p_value)) {
+		return true;
+	}
+	if (p_in_constructor) {
+		return convert_boolean_scalar(p_constant->get_datatype(), p_to_type, &p_constant->values[0], p_value);
+	}
+	return false;
+}
+
+bool ShaderLanguage::convert_scalar(DataType p_from_type, DataType p_to_type, const Scalar *p_scalar, Scalar *p_value) {
+	if (p_from_type == TYPE_INT && p_to_type == TYPE_FLOAT) {
+		if (p_scalar && p_value) {
+			p_value->real = p_scalar->sint;
 		}
 		return true;
-	} else if (p_constant->datatype == TYPE_UINT && p_to_type == TYPE_FLOAT) {
-		if (p_value) {
-			p_value->real = p_constant->values[0].uint;
+	} else if (p_from_type == TYPE_UINT && p_to_type == TYPE_FLOAT) {
+		if (p_scalar && p_value) {
+			p_value->real = p_scalar->uint;
 		}
 		return true;
-	} else if (p_constant->datatype == TYPE_INT && p_to_type == TYPE_UINT) {
-		if (p_constant->values[0].sint < 0) {
-			return false;
-		}
-		if (p_value) {
-			p_value->uint = p_constant->values[0].sint;
-		}
-		return true;
-	} else if (p_constant->datatype == TYPE_UINT && p_to_type == TYPE_INT) {
-		if (p_constant->values[0].uint > 0x7FFFFFFF) {
-			return false;
-		}
-		if (p_value) {
-			p_value->sint = p_constant->values[0].uint;
+	} else if (p_from_type == TYPE_INT && p_to_type == TYPE_UINT) {
+		if (p_scalar) {
+			if (p_scalar->sint < 0) {
+				return false;
+			}
+			if (p_value) {
+				p_value->uint = p_scalar->sint;
+			}
 		}
 		return true;
-	} else if (p_constant->datatype == TYPE_BOOL && p_to_type == TYPE_FLOAT) {
-		if (p_value) {
-			p_value->real = p_constant->values[0].boolean ? 1.0f : 0.0f;
-		}
-		return true;
-	} else if (p_constant->datatype == TYPE_BOOL && p_to_type == TYPE_UINT) {
-		if (p_value) {
-			p_value->uint = p_constant->values[0].boolean ? 1U : 0U;
-		}
-		return true;
-	} else if (p_constant->datatype == TYPE_BOOL && p_to_type == TYPE_INT) {
-		if (p_value) {
-			p_value->sint = p_constant->values[0].boolean ? 1 : 0;
+	} else if (p_from_type == TYPE_UINT && p_to_type == TYPE_INT) {
+		if (p_scalar) {
+			if (p_scalar->uint > 0x7FFFFFFF) {
+				return false;
+			}
+			if (p_value) {
+				p_value->sint = p_scalar->uint;
+			}
 		}
 		return true;
 	} else {
 		return false;
 	}
+}
+
+bool ShaderLanguage::convert_boolean_scalar(DataType p_from_type, DataType p_to_type, const Scalar *p_scalar, Scalar *p_value) {
+	if (p_from_type != TYPE_BOOL) {
+		return false;
+	}
+	if (p_to_type == TYPE_FLOAT) {
+		if (p_scalar && p_value) {
+			p_value->real = p_scalar->boolean ? 1.0f : 0.0f;
+		}
+		return true;
+	} else if (p_to_type == TYPE_UINT) {
+		if (p_scalar && p_value) {
+			p_value->uint = p_scalar->boolean ? 1U : 0U;
+		}
+		return true;
+	} else if (p_to_type == TYPE_INT) {
+		if (p_scalar && p_value) {
+			p_value->sint = p_scalar->boolean ? 1 : 0;
+		}
+		return true;
+	}
+	return false;
 }
 
 bool ShaderLanguage::is_scalar_type(DataType p_type) {
@@ -11405,6 +11494,17 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 	}
 
 	return String();
+}
+
+bool ShaderLanguage::is_builtin_vec_constructor(const String &p_name) {
+	int i = 0;
+	while (builtin_vectorized_constructors[i].name) {
+		if (p_name == builtin_vectorized_constructors[i].name) {
+			return true;
+		}
+		i++;
+	}
+	return false;
 }
 
 bool ShaderLanguage::is_builtin_func_out_parameter(const String &p_name, int p_param) {
