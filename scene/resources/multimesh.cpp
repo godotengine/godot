@@ -266,7 +266,6 @@ void MultiMesh::set_instance_transform_2d(int p_instance, const Transform2D &p_t
 	ERR_FAIL_INDEX_MSG(p_instance, instance_count, "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
 	ERR_FAIL_COND_MSG(transform_format == TRANSFORM_3D, "Can't set Transform2D on a Multimesh configured to use Transform3D. Ensure that you have set the `transform_format` to `TRANSFORM_2D`.");
 	RenderingServer::get_singleton()->multimesh_instance_set_transform_2d(multimesh, p_instance, p_transform);
-	emit_changed();
 }
 
 Transform3D MultiMesh::get_instance_transform(int p_instance) const {
