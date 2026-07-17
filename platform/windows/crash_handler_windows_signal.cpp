@@ -46,7 +46,6 @@
 #include <psapi.h>
 
 #include <algorithm>
-#include <csignal>
 #include <cstdlib>
 #include <iterator>
 #include <vector>
@@ -209,7 +208,7 @@ int64_t get_image_base(const String &p_path) {
 	}
 }
 
-extern void CrashHandlerException(int signal) {
+static void handle_crash(int signal) {
 	CrashHandlerData data;
 
 	if (OS::get_singleton() == nullptr || OS::get_singleton()->is_disable_crash_handler() || IsDebuggerPresent()) {
@@ -310,9 +309,9 @@ void CrashHandler::disable() {
 	}
 
 #if defined(CRASH_HANDLER_EXCEPTION)
-	signal(SIGSEGV, nullptr);
-	signal(SIGFPE, nullptr);
-	signal(SIGILL, nullptr);
+	signal(SIGSEGV, old_sig_segf);
+	signal(SIGFPE, old_sig_fpe);
+	signal(SIGILL, old_sig_ill);
 #endif
 
 	disabled = true;
@@ -320,8 +319,8 @@ void CrashHandler::disable() {
 
 void CrashHandler::initialize() {
 #if defined(CRASH_HANDLER_EXCEPTION)
-	signal(SIGSEGV, CrashHandlerException);
-	signal(SIGFPE, CrashHandlerException);
-	signal(SIGILL, CrashHandlerException);
+	old_sig_segf = signal(SIGSEGV, handle_crash);
+	old_sig_fpe = signal(SIGFPE, handle_crash);
+	old_sig_ill = signal(SIGILL, handle_crash);
 #endif
 }

@@ -30,8 +30,24 @@
 
 #pragma once
 
+#ifndef DEBUG_ENABLED
+#undef CRASH_HANDLER_ENABLED
+#endif
+
+#include <csignal>
+
+#ifndef _GNU_SOURCE
+typedef typeof(void(int)) *sighandler_t;
+#endif
+
 class CrashHandler {
 	bool disabled;
+
+#ifdef CRASH_HANDLER_ENABLED
+	sighandler_t old_sig_segf = nullptr;
+	sighandler_t old_sig_fpe = nullptr;
+	sighandler_t old_sig_ill = nullptr;
+#endif
 
 public:
 	void initialize();
