@@ -378,6 +378,9 @@ void CowData<T>::_ref(const CowData &p_from) {
 
 template <typename T>
 CowData<T>::CowData(Span<T> p_span) {
+	if (p_span.is_empty()) {
+		return;
+	}
 	CRASH_COND(resize(p_span.size()));
 	for (size_t i = 0; i < p_span.size(); i++) {
 		_ptr[i] = p_span[i];
