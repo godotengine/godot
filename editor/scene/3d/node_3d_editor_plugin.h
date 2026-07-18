@@ -291,6 +291,7 @@ private:
 
 	void _node_added(Node *p_node);
 	void _node_removed(Node *p_node);
+	static void _viewport_world_3d_changed();
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_priority;
 	Vector<Ref<EditorNode3DGizmoPlugin>> gizmo_plugins_by_name;
 
@@ -311,8 +312,8 @@ private:
 		virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	};
 
-	uint32_t world_env_count = 0;
-	uint32_t directional_light_count = 0;
+	LocalVector<DirectionalLight3D *> directional_light_list;
+	LocalVector<WorldEnvironment *> world_environment_list;
 
 	Button *sun_button = nullptr;
 	Label *sun_state = nullptr;
@@ -374,6 +375,8 @@ private:
 	void _environ_set_gi();
 
 	void _load_default_preview_settings();
+	uint32_t _get_directional_light_count() const;
+	uint32_t _get_world_environment_count() const;
 	void _update_preview_environment();
 
 	void _preview_settings_changed();

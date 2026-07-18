@@ -102,7 +102,9 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/main/scene_tree.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/3d/sky_material.h"
+#include "scene/resources/3d/world_3d.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/physics_3d/physics_server_3d_types.h"
@@ -2315,7 +2317,7 @@ void Node3DEditor::_sun_environ_settings_pressed() {
 void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	sun_environ_popup->hide();
 
-	if (!p_already_added_environment && world_env_count == 0 && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+	if (!p_already_added_environment && _get_world_environment_count() == 0 && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		// Prevent infinite feedback loop between the sun and environment methods.
 		_add_environment_to_scene(true);
 	}
@@ -2344,7 +2346,7 @@ void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 	sun_environ_popup->hide();
 
-	if (!p_already_added_sun && directional_light_count == 0 && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+	if (!p_already_added_sun && _get_directional_light_count() == 0 && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 		// Prevent infinite feedback loop between the sun and environment methods.
 		_add_sun_to_scene(true);
 	}
@@ -2436,6 +2438,7 @@ void Node3DEditor::_notification(int p_what) {
 
 			get_tree()->connect("node_removed", callable_mp(this, &Node3DEditor::_node_removed));
 			get_tree()->connect("node_added", callable_mp(this, &Node3DEditor::_node_added));
+			Viewport::world_3d_changed_callback = _viewport_world_3d_changed;
 			SceneTreeDock::get_singleton()->get_tree_editor()->connect("node_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
 			editor_selection->connect("selection_changed", callable_mp(this, &Node3DEditor::_selection_changed));
 
@@ -2797,15 +2800,11 @@ void Node3DEditor::_viewport_clicked(int p_viewport_idx) {
 void Node3DEditor::_node_added(Node *p_node) {
 	if (EditorNode::get_singleton()->get_scene_root()->is_ancestor_of(p_node)) {
 		if (Object::cast_to<WorldEnvironment>(p_node)) {
-			world_env_count++;
-			if (world_env_count == 1) {
-				_update_preview_environment();
-			}
+			world_environment_list.push_back(Object::cast_to<WorldEnvironment>(p_node));
+			_update_preview_environment();
 		} else if (Object::cast_to<DirectionalLight3D>(p_node)) {
-			directional_light_count++;
-			if (directional_light_count == 1) {
-				_update_preview_environment();
-			}
+			directional_light_list.push_back(Object::cast_to<DirectionalLight3D>(p_node));
+			_update_preview_environment();
 		}
 	}
 }
@@ -2813,15 +2812,11 @@ void Node3DEditor::_node_added(Node *p_node) {
 void Node3DEditor::_node_removed(Node *p_node) {
 	if (EditorNode::get_singleton()->get_scene_root()->is_ancestor_of(p_node)) {
 		if (Object::cast_to<WorldEnvironment>(p_node)) {
-			world_env_count--;
-			if (world_env_count == 0) {
-				_update_preview_environment();
-			}
+			world_environment_list.erase(Object::cast_to<WorldEnvironment>(p_node));
+			_update_preview_environment();
 		} else if (Object::cast_to<DirectionalLight3D>(p_node)) {
-			directional_light_count--;
-			if (directional_light_count == 0) {
-				_update_preview_environment();
-			}
+			directional_light_list.erase(Object::cast_to<DirectionalLight3D>(p_node));
+			_update_preview_environment();
 		}
 	}
 
@@ -2833,6 +2828,12 @@ void Node3DEditor::_node_removed(Node *p_node) {
 		}
 		selected = nullptr;
 		update_transform_gizmo();
+	}
+}
+
+void Node3DEditor::_viewport_world_3d_changed() {
+	if (singleton) {
+		singleton->_update_preview_environment();
 	}
 }
 
@@ -3001,7 +3002,49 @@ void Node3DEditor::_load_default_preview_settings() {
 	sun_environ_updating = false;
 }
 
+uint32_t Node3DEditor::_get_directional_light_count() const {
+	const Viewport *editor_viewport = get_viewport();
+	if (!editor_viewport) {
+		return 0;
+	}
+	const Ref<World3D> editor_world = editor_viewport->find_world_3d();
+	if (editor_world.is_null()) {
+		return 0;
+	}
+
+	uint32_t count = 0;
+	for (const DirectionalLight3D *dl : directional_light_list) {
+		const Viewport *light_viewport = dl->get_viewport();
+		if (light_viewport && light_viewport->find_world_3d() == editor_world) {
+			count++;
+		}
+	}
+	return count;
+}
+
+uint32_t Node3DEditor::_get_world_environment_count() const {
+	const Viewport *editor_viewport = get_viewport();
+	if (!editor_viewport) {
+		return 0;
+	}
+	const Ref<World3D> editor_world = editor_viewport->find_world_3d();
+	if (editor_world.is_null()) {
+		return 0;
+	}
+
+	uint32_t count = 0;
+	for (const WorldEnvironment *we : world_environment_list) {
+		const Viewport *env_viewport = we->get_viewport();
+		if (env_viewport && env_viewport->find_world_3d() == editor_world) {
+			count++;
+		}
+	}
+	return count;
+}
+
 void Node3DEditor::_update_preview_environment() {
+	const uint32_t directional_light_count = _get_directional_light_count();
+
 	bool disable_light = directional_light_count > 0 || !sun_button->is_pressed();
 
 	sun_button->set_disabled(directional_light_count > 0);
@@ -3031,6 +3074,8 @@ void Node3DEditor::_update_preview_environment() {
 
 	sun_angle_altitude->set_value_no_signal(-Math::rad_to_deg(sun_rotation.x));
 	sun_angle_azimuth->set_value_no_signal(180.0 - Math::rad_to_deg(sun_rotation.y));
+
+	const uint32_t world_env_count = _get_world_environment_count();
 
 	bool disable_env = world_env_count > 0 || !environ_button->is_pressed();
 
