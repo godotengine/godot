@@ -295,12 +295,16 @@ void Main::print_help(const char *p_binary) {
 #endif
 	OS::get_singleton()->print("  -q, --quit                       Quit after the first iteration.\n");
 	OS::get_singleton()->print("  -l, --language <locale>          Use a specific locale (<locale> being a two-letter code).\n");
+#if defined(OVERRIDE_PATH_ENABLED)
 	OS::get_singleton()->print("  --path <directory>               Path to a project (<directory> must contain a 'project.godot' file).\n");
 	OS::get_singleton()->print("  -u, --upwards                    Scan folders upwards for project.godot file.\n");
 	OS::get_singleton()->print("  --main-pack <file>               Path to a pack (.pck) file to load.\n");
+#endif
 	OS::get_singleton()->print("  --render-thread <mode>           Render thread mode ('unsafe', 'safe', 'separate').\n");
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	OS::get_singleton()->print("  --remote-fs <address>            Remote filesystem (<host/IP>[:<port>] address).\n");
 	OS::get_singleton()->print("  --remote-fs-password <password>  Password for remote filesystem.\n");
+#endif
 	OS::get_singleton()->print("  --audio-driver <driver>          Audio driver (");
 	for (int i = 0; i < OS::get_singleton()->get_audio_driver_count(); i++) {
 		if (i != 0) {
@@ -348,7 +352,9 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -d, --debug                      Debug (local stdout debugger).\n");
 	OS::get_singleton()->print("  -b, --breakpoints                Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
 	OS::get_singleton()->print("  --profiling                      Enable profiling in the script debugger.\n");
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	OS::get_singleton()->print("  --remote-debug <address>         Remote debug (<host/IP>:<port> address).\n");
+#endif
 #if defined(DEBUG_ENABLED) && !defined(SERVER_ENABLED)
 	OS::get_singleton()->print("  --debug-collisions               Show collision shapes when running the scene.\n");
 	OS::get_singleton()->print("  --debug-navigation               Show navigation polygons when running the scene.\n");
@@ -362,9 +368,11 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --print-fps                      Print the frames per second to the stdout.\n");
 	OS::get_singleton()->print("\n");
 
+#if defined(OVERRIDE_PATH_ENABLED)
 	OS::get_singleton()->print("Standalone tools:\n");
 	OS::get_singleton()->print("  -s, --script <script>            Run a script.\n");
 	OS::get_singleton()->print("  --check-only                     Only parse for errors and quit (use with --script).\n");
+#endif
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  --export <preset> <path>         Export the project using the given preset and matching release template. The preset name should match one defined in export_presets.cfg.\n");
 	OS::get_singleton()->print("                                   <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
@@ -424,6 +432,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	RID_OwnerBase::init_rid();
 
 	OS::get_singleton()->initialize_core();
+
+#if !defined(OVERRIDE_PATH_ENABLED)
+#ifdef OSX_ENABLED
+	String new_cwd = OS::get_singleton()->get_bundle_resource_dir();
+	if (new_cwd.empty() || !new_cwd.is_abs_path()) {
+		new_cwd = OS::get_singleton()->get_executable_path().get_base_dir();
+	}
+#else
+	String new_cwd = OS::get_singleton()->get_executable_path().get_base_dir();
+#endif
+	if (!new_cwd.empty()) {
+		OS::get_singleton()->set_cwd(new_cwd);
+	}
+#endif
 
 	// Benchmark tracking must be done after `OS::get_singleton()->initialize_core()` as on some
 	// platforms, it's used to set up the time utilities.
@@ -761,9 +783,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing language argument, aborting.\n");
 				goto error;
 			}
-
 		} else if (I->get() == "--remote-fs") { // remote filesystem
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			if (I->next()) {
 				remotefs = I->next()->get();
 				N = I->next()->next();
@@ -771,8 +793,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote filesystem address, aborting.\n");
 				goto error;
 			}
+#else
+			ERR_PRINT(
+					"`--remote-fs` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+			goto error;
+#endif
 		} else if (I->get() == "--remote-fs-password") { // remote filesystem password
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			if (I->next()) {
 				remotefs_pass = I->next()->get();
 				N = I->next()->next();
@@ -780,6 +809,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote filesystem password, aborting.\n");
 				goto error;
 			}
+#else
+			ERR_PRINT(
+					"`--remote-fs-password` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+			goto error;
+#endif
 		} else if (I->get() == "--render-thread") { // render thread mode
 
 			if (I->next()) {
@@ -835,6 +870,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
+#if defined(OVERRIDE_PATH_ENABLED)
 			if (I->next()) {
 				String p = I->next()->get();
 				if (OS::get_singleton()->set_cwd(p) == OK) {
@@ -847,11 +883,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing relative or absolute path, aborting.\n");
 				goto error;
 			}
+#else
+			ERR_PRINT(
+					"`--path` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+			goto error;
+#endif
 		} else if (I->get() == "-u" || I->get() == "--upwards") { // scan folders upwards
+
+#if defined(OVERRIDE_PATH_ENABLED)
 			upwards = true;
+#else
+			ERR_PRINT(
+					"`--upwards` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+			goto error;
+#endif
 		} else if (I->get() == "-q" || I->get() == "--quit") { // Auto quit at the end of the first main loop iteration
 			auto_quit = true;
 		} else if (I->get().ends_with("project.godot")) {
+#if defined(OVERRIDE_PATH_ENABLED)
 			String path;
 			String file = I->get();
 			int sep = MAX(file.rfind("/"), file.rfind("\\"));
@@ -867,6 +918,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 #ifdef TOOLS_ENABLED
 			editor = true;
+#endif
+#else
+			ERR_PRINT(
+					"`project.godot` path was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+			goto error;
 #endif
 		} else if (I->get() == "-b" || I->get() == "--breakpoints") { // add breakpoints
 
@@ -898,8 +955,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing time scale argument, aborting.\n");
 				goto error;
 			}
-
 		} else if (I->get() == "--main-pack") {
+#if defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) // Note: main-pack is always used on web and can't be disabled.
 			if (I->next()) {
 				main_pack = I->next()->get();
 				N = I->next()->next();
@@ -907,7 +964,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing path to main pack file, aborting.\n");
 				goto error;
 			};
-
+#else
+			ERR_PRINT(
+					"`--main-pack` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+			goto error;
+#endif
 		} else if (I->get() == "-d" || I->get() == "--debug") {
 			debug_mode = "local";
 			OS::get_singleton()->_debug_stdout = true;
@@ -920,6 +982,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			debug_shader_fallbacks = true;
 #endif
 		} else if (I->get() == "--remote-debug") {
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			if (I->next()) {
 				debug_mode = "remote";
 				debug_host = I->next()->get();
@@ -932,6 +995,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing remote debug host address, aborting.\n");
 				goto error;
 			}
+#else
+			ERR_PRINT(
+					"`--remote-debug` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+			goto error;
+#endif
 		} else if (I->get() == "--allow_focus_steal_pid") { // not exposed to user
 			if (I->next()) {
 				allow_focus_steal_pid = I->next()->get().to_int64();
@@ -1001,6 +1070,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Network file system needs to be configured before globals, since globals are based on the
 	// 'project.godot' file which will only be available through the network if this is enabled
 	FileAccessNetwork::configure();
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	if (remotefs != "") {
 		file_access_network_client = memnew(FileAccessNetworkClient);
 		int port;
@@ -1019,6 +1089,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
 	}
+#endif
 
 	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
 #ifdef TOOLS_ENABLED
@@ -1736,16 +1807,30 @@ bool Main::start() {
 				// or other file extensions without trouble. This can be used to implement
 				// "drag-and-drop onto executable" logic, which can prove helpful
 				// for non-game applications.
+#if defined(OVERRIDE_PATH_ENABLED)
 				game_path = args[i];
+#else
+				ERR_PRINT(
+						"Scene path was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+						"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+				return false;
+#endif
 			}
 		}
 		//parameters that have an argument to the right
 		else if (i < (args.size() - 1)) {
 			bool parsed_pair = true;
-			if (args[i] == "-s" || args[i] == "--script") {
-				script = args[i + 1];
-			} else if (args[i] == "--test") {
+			if (args[i] == "--test") {
 				test = args[i + 1];
+			} else if (args[i] == "-s" || args[i] == "--script") {
+#if defined(OVERRIDE_PATH_ENABLED)
+				script = args[i + 1];
+#else
+				ERR_PRINT(
+						"`--script` was specified on the command line, but this Godot binary was compiled without support for path overrides. Aborting.\n"
+						"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
+				return false;
+#endif
 #ifdef TOOLS_ENABLED
 			} else if (args[i] == "--doctool") {
 				doc_tool_path = args[i + 1];
@@ -1864,6 +1949,17 @@ bool Main::start() {
 		return false;
 	}
 
+#endif
+
+#if defined(OVERRIDE_PATH_ENABLED)
+	bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+	if (disable_override) {
+		script = String();
+		game_path = String();
+	}
+#else
+	script = String();
+	game_path = String();
 #endif
 
 	if (script == "" && game_path == "" && String(GLOBAL_DEF("application/run/main_scene", "")) != "") {
