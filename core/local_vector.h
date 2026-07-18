@@ -254,13 +254,8 @@ public:
 	}
 
 	void ordered_insert(T p_val) {
-		U i;
-		for (i = 0; i < count; i++) {
-			if (p_val < data[i]) {
-				break;
-			}
-		}
-		insert(i, p_val);
+		U idx = span().bisect(p_val, false);
+		insert(idx, std::move(p_val));
 	}
 
 	explicit operator PoolVector<T>() const {
