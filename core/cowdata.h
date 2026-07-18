@@ -145,6 +145,12 @@ public:
 		_ptr[p_index] = p_elem;
 	}
 
+	_FORCE_INLINE_ void set(int p_index, const T &&p_elem) {
+		CRASH_BAD_INDEX(p_index, size());
+		_copy_on_write();
+		_ptr[p_index] = std::move(p_elem);
+	}
+
 	_FORCE_INLINE_ T &get_m(int p_index) {
 		CRASH_BAD_INDEX(p_index, size());
 		_copy_on_write();
@@ -191,6 +197,20 @@ public:
 	_FORCE_INLINE_ ~CowData();
 	_FORCE_INLINE_ CowData(CowData<T> &p_from) { _ref(p_from); }
 	_FORCE_INLINE_ explicit CowData(Span<T> p_span);
+
+	_FORCE_INLINE_ CowData(CowData<T> &&p_from) {
+		_ptr = p_from._ptr;
+		p_from._ptr = nullptr;
+	}
+
+	_FORCE_INLINE_ CowData &operator=(CowData<T> &&p_from) {
+		if (this != &p_from) {
+			_unref(_ptr);
+			_ptr = p_from._ptr;
+			p_from._ptr = nullptr;
+		}
+		return *this;
+	}
 };
 
 template <class T>
