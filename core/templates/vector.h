@@ -200,13 +200,8 @@ public:
 	}
 
 	void ordered_insert(const T &p_val) {
-		Size i;
-		for (i = 0; i < _cowdata.size(); i++) {
-			if (p_val < operator[](i)) {
-				break;
-			}
-		}
-		insert(i, p_val);
+		int idx = span().bisect(p_val, false);
+		insert(idx, p_val);
 	}
 
 	void operator=(const Vector &p_from) { _cowdata = p_from._cowdata; }
