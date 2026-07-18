@@ -192,6 +192,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "MenuBar", Color(0, 0, 0));
 
 	theme->set_constant("h_separation", "MenuBar", Math::round(4 * scale));
+	theme->set_constant("popup_offset_x", "MenuBar", 0);
+	theme->set_constant("popup_offset_y", "MenuBar", 0);
 
 	// LinkButton
 
