@@ -190,7 +190,7 @@ String SectionedInspector::get_full_item_path(const String &p_item) {
 
 void SectionedInspector::edit(Object *p_object) {
 	if (!p_object) {
-		obj = 0;
+		obj = ObjectID();
 		sections->clear();
 
 		filter->set_edited(nullptr);
@@ -341,7 +341,6 @@ EditorInspector *SectionedInspector::get_inspector() {
 }
 
 SectionedInspector::SectionedInspector() :
-		obj(0),
 		sections(memnew(Tree)),
 		filter(memnew(SectionedInspectorFilter)),
 		inspector(memnew(EditorInspector)),

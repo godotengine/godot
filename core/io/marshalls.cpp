@@ -52,8 +52,7 @@ ObjectID EncodedObjectAsID::get_object_id() const {
 	return id;
 }
 
-EncodedObjectAsID::EncodedObjectAsID() :
-		id(0) {
+EncodedObjectAsID::EncodedObjectAsID() {
 }
 
 #define _S(a) ((int32_t)a)
@@ -383,12 +382,12 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			if (type & ENCODE_FLAG_OBJECT_AS_ID) {
 				//this _is_ allowed
 				ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
-				ObjectID val = decode_uint64(buf);
+				ObjectID val = ObjectID(decode_uint64(buf));
 				if (r_len) {
 					(*r_len) += 8;
 				}
 
-				if (val == 0) {
+				if (!val.is_valid()) {
 					r_variant = (Object *)nullptr;
 				} else {
 					Ref<EncodedObjectAsID> obj_as_id;
@@ -1088,7 +1087,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			} else {
 				if (buf) {
 					Object *obj = p_variant;
-					ObjectID id = 0;
+					ObjectID id;
 					if (obj) {
 						id = obj->get_instance_id();
 					}

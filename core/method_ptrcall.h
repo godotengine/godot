@@ -161,6 +161,19 @@ struct PtrToArg<const T *> {
 	}
 };
 
+//this is for ObjectID
+
+template <>
+struct PtrToArg<ObjectID> {
+	_FORCE_INLINE_ static const ObjectID convert(const void *p_ptr) {
+		return ObjectID(*reinterpret_cast<const uint64_t *>(p_ptr));
+	}
+
+	_FORCE_INLINE_ static void encode(const ObjectID &p_val, void *p_ptr) {
+		*((uint64_t *)p_ptr) = p_val;
+	}
+};
+
 //this is for the special cases used by Variant
 
 #define MAKE_VECARG(m_type)                                                                      \

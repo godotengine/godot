@@ -61,10 +61,6 @@ Portal::Portal() {
 	// the visual server portal lifetime is linked to the lifetime of this object
 	_portal_rid = RID_PRIME(VisualServer::get_singleton()->portal_create());
 
-#ifdef TOOLS_ENABLED
-	_room_manager_godot_ID = 0;
-#endif
-
 	// portals are defined COUNTER clockwise,
 	// because they point OUTWARD from the room in the direction
 	// of the normal
