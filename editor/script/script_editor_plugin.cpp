@@ -179,10 +179,9 @@ void DocumentOutline::_notification(int p_what) {
 	}
 }
 
-void DocumentOutline::_item_list_selected(int p_idx) {
+void DocumentOutline::_tree_selected() {
 	Control *active_editor = ScriptEditor::get_singleton()->get_active_editor();
-
-	int line = item_list->get_item_metadata(p_idx);
+	int line = tree->get_selected()->get_metadata(0);
 	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(active_editor)) {
 		teb->goto_line_centered(line);
 	} else if (EditorHelp *eh = Object::cast_to<EditorHelp>(active_editor)) {
@@ -202,8 +201,19 @@ void DocumentOutline::update_editor_settings() {
 }
 
 void DocumentOutline::update_outline() {
+	String selected;
+	if (tree->is_anything_selected()) {
+		selected = tree->get_selected()->get_meta("function");
+	}
+
 	Control *active_editor = ScriptEditor::get_singleton()->get_active_editor();
-	item_list->clear();
+	if (current_editor != active_editor) {
+		selected = ""; // Script/doc changed, forget the last selection.
+	}
+	current_editor = active_editor;
+
+	tree->clear();
+	tree->create_item();
 
 	if (CodeEditorBase *ceb = Object::cast_to<CodeEditorBase>(active_editor)) {
 		PackedStringArray functions = ceb->get_functions();
@@ -212,10 +222,42 @@ void DocumentOutline::update_outline() {
 		}
 
 		const String &filter_text = filter->get_text();
+		HashMap<String, TreeItem *> parents;
+		Color disabled_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
+
 		if (filter_text.is_empty()) {
 			for (const String &function_name : functions) {
-				item_list->add_item(function_name.get_slicec(':', 0));
-				item_list->set_item_metadata(-1, function_name.get_slicec(':', 1).to_int() - 1);
+				TreeItem *parent = tree->get_root();
+				String name = function_name.get_slicec(':', 0);
+
+				// Organize functions inside subclasses.
+				Vector<String> subclasses = name.split(".");
+				if (!subclasses.is_empty()) {
+					int last = subclasses.size() - 1;
+					name = subclasses[last];
+					subclasses.remove_at(last); // Remove the function itself.
+
+					for (const String &subclass : subclasses) {
+						if (parents.has(subclass)) {
+							parent = parents[subclass];
+						} else {
+							parent = tree->create_item(parent);
+							parent->set_text(0, subclass);
+							parent->set_selectable(0, false);
+							parent->set_custom_color(0, disabled_color);
+							parents[subclass] = parent;
+						}
+					}
+				}
+
+				TreeItem *ti = tree->create_item(parent);
+				ti->set_text(0, name);
+				int line = function_name.get_slicec(':', 1).to_int() - 1;
+				ti->set_metadata(0, line);
+				ti->set_meta("function", function_name);
+				if (selected == function_name) {
+					ti->select(0);
+				}
 			}
 		} else {
 			PackedStringArray search_names;
@@ -228,17 +270,50 @@ void DocumentOutline::update_outline() {
 			Vector<Ref<FuzzySearchMatch>> results = fuzzy.search_all(filter_text, search_names);
 
 			for (const Ref<FuzzySearchMatch> &res : results) {
-				String name = functions[res->get_original_index()].get_slicec(':', 0);
-				int line = functions[res->get_original_index()].get_slicec(':', 1).to_int() - 1;
-				item_list->add_item(name);
-				item_list->set_item_metadata(-1, line);
+				TreeItem *parent = tree->get_root();
+				String function_name = functions[res->get_original_index()];
+				String name = function_name.get_slicec(':', 0);
+
+				// Organize functions inside subclasses.
+				Vector<String> subclasses = name.split(".");
+				if (!subclasses.is_empty()) {
+					int last = subclasses.size() - 1;
+					name = subclasses[last];
+					subclasses.remove_at(last); // Remove the function itself.
+
+					for (const String &subclass : subclasses) {
+						if (parents.has(subclass)) {
+							parent = parents[subclass];
+						} else {
+							parent = tree->create_item(parent);
+							parent->set_text(0, subclass);
+							parent->set_selectable(0, false);
+							parent->set_custom_color(0, disabled_color);
+							parents[subclass] = parent;
+						}
+					}
+				}
+
+				TreeItem *ti = tree->create_item(parent);
+				ti->set_text(0, name);
+				int line = function_name.get_slicec(':', 1).to_int() - 1;
+				ti->set_metadata(0, line);
+				ti->set_meta("function", function_name);
+				if (selected == function_name) {
+					ti->select(0);
+				}
 			}
 		}
 	} else if (EditorHelp *eh = Object::cast_to<EditorHelp>(active_editor)) {
 		const Vector<Pair<String, int>> sections = eh->get_sections();
 		for (const Pair<String, int> &section : sections) {
-			item_list->add_item(section.first);
-			item_list->set_item_metadata(-1, section.second);
+			TreeItem *ti = tree->create_item();
+			ti->set_text(0, section.first);
+			ti->set_metadata(0, section.second);
+			ti->set_meta("function", section.first);
+			if (selected == section.first) {
+				ti->select(0);
+			}
 		}
 	}
 }
@@ -257,11 +332,11 @@ void DocumentOutline::update_visibility() {
 	bool use_monospace_font = members_overview_visible && EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
 	if (use_monospace_font) {
 		Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
-		if (item_list->get_theme_font(SceneStringName(font)) != monospace_font) {
-			item_list->add_theme_font_override(SceneStringName(font), monospace_font);
+		if (tree->get_theme_font(SceneStringName(font)) != monospace_font) {
+			tree->add_theme_font_override(SceneStringName(font), monospace_font);
 		}
-	} else if (item_list->has_theme_font_override(SceneStringName(font))) {
-		item_list->remove_theme_font_override(SceneStringName(font));
+	} else if (tree->has_theme_font_override(SceneStringName(font))) {
+		tree->remove_theme_font_override(SceneStringName(font));
 	}
 }
 
@@ -286,16 +361,19 @@ DocumentOutline::DocumentOutline() {
 
 	add_child(buttons_hbox);
 
-	item_list = memnew(ItemList);
-	filter->set_forward_control(item_list);
-	item_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	item_list->set_theme_type_variation("ItemListSecondary");
-	item_list->set_allow_reselect(true);
-	item_list->set_allow_rmb_select(true);
-	item_list->set_custom_minimum_size(Size2(0, 60) * EDSCALE);
-	item_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	item_list->connect(SceneStringName(item_selected), callable_mp(this, &DocumentOutline::_item_list_selected));
-	add_child(item_list);
+	tree = memnew(Tree);
+	filter->set_forward_control(tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	tree->set_theme_type_variation("TreeSecondary");
+	tree->add_theme_constant_override("h_separation", 0);
+	tree->set_allow_reselect(true);
+	tree->set_allow_rmb_select(true);
+	tree->set_hide_root(true);
+	tree->set_hide_folding(true);
+	tree->set_custom_minimum_size(Size2(0, 60) * EDSCALE);
+	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->connect(SceneStringName(item_selected), callable_mp(this, &DocumentOutline::_tree_selected));
+	add_child(tree);
 }
 
 /////////////////////////////////
