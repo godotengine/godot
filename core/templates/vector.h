@@ -165,8 +165,8 @@ public:
 	}
 	Size count(const T &p_val) const { return span().count(p_val); }
 
-	// Must take a copy instead of a reference (see GH-31736).
-	void append_array(Vector<T> p_other);
+	void append_array(const Vector<T> &p_other) { _cowdata.append(p_other._cowdata); }
+	void append_array(Span<T> p_other) { _cowdata.append(p_other); }
 
 	_FORCE_INLINE_ bool has(const T &p_val) const { return find(p_val) != -1; }
 
@@ -329,20 +329,6 @@ void Vector<T>::reverse() {
 	T *p = ptrw();
 	for (Size i = 0; i < size() / 2; i++) {
 		SWAP(p[i], p[size() - i - 1]);
-	}
-}
-
-template <typename T>
-void Vector<T>::append_array(Vector<T> p_other) {
-	const Size ds = p_other.size();
-	if (ds == 0) {
-		return;
-	}
-	const Size bs = size();
-	resize(bs + ds);
-	T *p = ptrw();
-	for (Size i = 0; i < ds; ++i) {
-		p[bs + i] = p_other[i];
 	}
 }
 
