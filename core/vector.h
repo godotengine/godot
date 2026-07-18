@@ -181,9 +181,13 @@ public:
 
 template <class T>
 void Vector<T>::invert() {
-	for (int i = 0; i < size() / 2; i++) {
-		T *p = ptrw();
-		SWAP(p[i], p[size() - i - 1]);
+	int len = size();
+	if (len <= 1) {
+		return;
+	}
+	T *p = ptrw();
+	for (int i = 0; i < len / 2; i++) {
+		SWAP(p[i], p[len - i - 1]);
 	}
 }
 
@@ -195,8 +199,11 @@ void Vector<T>::append_array(Vector<T> p_other) {
 	}
 	const int bs = size();
 	resize(bs + ds);
+
+	T *w = ptrw();
+	const T *r = p_other.ptr();
 	for (int i = 0; i < ds; ++i) {
-		ptrw()[bs + i] = p_other[i];
+		w[bs + i] = r[i];
 	}
 }
 
