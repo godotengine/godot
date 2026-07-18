@@ -35,7 +35,7 @@
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/animation_library.h"
-#include "scene/resources/audio_stream_polyphonic.h"
+#include "scene/resources/audio/audio_stream_polyphonic.h"
 
 class AnimatedValuesBackup;
 
@@ -280,7 +280,7 @@ protected:
 		Ref<AudioStreamPolyphonic> audio_stream;
 		Ref<AudioStreamPlaybackPolyphonic> audio_stream_playback;
 		HashMap<ObjectID, PlayingAudioTrackInfo> playing_streams; // Key is Animation resource ObjectID.
-		AudioServer::PlaybackType playback_type;
+		AuSE::PlaybackType playback_type;
 		StringName bus;
 
 		TrackCacheAudio(const TrackCacheAudio &p_other) :
@@ -318,7 +318,7 @@ protected:
 	void _create_track_num_to_track_cache_for_animation(const Ref<Animation> &p_animation);
 
 	/* ---- Audio ---- */
-	AudioServer::PlaybackType playback_type;
+	AuSE::PlaybackType playback_type;
 
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;

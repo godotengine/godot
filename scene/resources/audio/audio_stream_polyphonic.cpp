@@ -205,10 +205,10 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 	return p_frames;
 }
 
-AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(const Ref<AudioStream> &p_stream, float p_from_offset, float p_volume_db, float p_pitch_scale, AudioServer::PlaybackType p_playback_type, const StringName &p_bus) {
+AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(const Ref<AudioStream> &p_stream, float p_from_offset, float p_volume_db, float p_pitch_scale, AuSE::PlaybackType p_playback_type, const StringName &p_bus) {
 	ERR_FAIL_COND_V(p_stream.is_null(), INVALID_ID);
 
-	AudioServer::PlaybackType playback_type = p_playback_type == AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT
+	AuSE::PlaybackType playback_type = p_playback_type == AuSE::PlaybackType::PLAYBACK_TYPE_DEFAULT
 			? AudioServer::get_singleton()->get_default_playback_type()
 			: p_playback_type;
 
@@ -234,7 +234,7 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 			streams[i].active.set();
 
 			// Sample playback.
-			if (playback_type == AudioServer::PlaybackType::PLAYBACK_TYPE_SAMPLE && p_stream->can_be_sampled()) {
+			if (playback_type == AuSE::PlaybackType::PLAYBACK_TYPE_SAMPLE && p_stream->can_be_sampled()) {
 				streams[i].stream_playback->set_is_sample(true);
 				if (!AudioServer::get_singleton()->is_stream_registered_as_sample(p_stream)) {
 					AudioServer::get_singleton()->register_stream_as_sample(p_stream);

@@ -34,7 +34,8 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/audio/audio_stream_player_internal.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
+#include "servers/audio/audio_server.h"
 #include "servers/display/accessibility_server.h"
 
 void AudioStreamPlayer::_notification(int p_what) {
@@ -194,7 +195,7 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 
 	// Set the volume vector up according to the speaker mode and mix target.
 	// TODO do we need to scale the volume down when we output to more channels?
-	if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
+	if (AudioServer::get_singleton()->get_speaker_mode() == AuSE::SPEAKER_MODE_STEREO) {
 		volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
 	} else {
 		switch (mix_target) {
@@ -229,11 +230,11 @@ Ref<AudioStreamPlayback> AudioStreamPlayer::get_stream_playback() {
 	return internal->get_stream_playback();
 }
 
-AudioServer::PlaybackType AudioStreamPlayer::get_playback_type() const {
+AuSE::PlaybackType AudioStreamPlayer::get_playback_type() const {
 	return internal->get_playback_type();
 }
 
-void AudioStreamPlayer::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+void AudioStreamPlayer::set_playback_type(AuSE::PlaybackType p_playback_type) {
 	internal->set_playback_type(p_playback_type);
 }
 

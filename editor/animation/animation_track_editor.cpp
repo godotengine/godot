@@ -67,7 +67,7 @@
 #include "scene/gui/view_panner.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
 
 constexpr double FPS_DECIMAL = 1.0;
 constexpr double SECOND_DECIMAL = 0.0001;

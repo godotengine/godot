@@ -35,8 +35,8 @@
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "servers/audio/audio_effect.h"
+#include "servers/audio/audio_frame.h"
 #include "servers/audio/audio_server.h"
-#include "servers/audio/audio_stream.h"
 #include "servers/audio/effects/audio_effect_amplify.h"
 #include "servers/audio/effects/audio_effect_capture.h"
 #include "servers/audio/effects/audio_effect_chorus.h"
@@ -53,7 +53,6 @@
 #include "servers/audio/effects/audio_effect_reverb.h"
 #include "servers/audio/effects/audio_effect_spectrum_analyzer.h"
 #include "servers/audio/effects/audio_effect_stereo_enhance.h"
-#include "servers/audio/effects/audio_stream_generator.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
 #include "servers/debugger/servers_debugger.h"
@@ -171,7 +170,9 @@ void register_server_types() {
 	GDREGISTER_ABSTRACT_CLASS(AccessibilityServer);
 	GDREGISTER_ABSTRACT_CLASS(DisplayServer);
 	GDREGISTER_ABSTRACT_CLASS(RenderingServer);
+
 	GDREGISTER_CLASS(AudioServer);
+	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 
 	GDREGISTER_CLASS(NativeMenu);
 
@@ -179,11 +180,6 @@ void register_server_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 
-	GDREGISTER_CLASS(AudioStream);
-	GDREGISTER_CLASS(AudioStreamPlayback);
-	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlaybackResampled);
-	GDREGISTER_CLASS(AudioStreamMicrophone);
-	GDREGISTER_CLASS(AudioStreamRandomizer);
 	GDREGISTER_CLASS(AudioSample);
 	GDREGISTER_CLASS(AudioSamplePlayback);
 	GDREGISTER_VIRTUAL_CLASS(AudioEffect);
@@ -191,9 +187,6 @@ void register_server_types() {
 	GDREGISTER_CLASS(AudioEffectEQ);
 	GDREGISTER_CLASS(AudioEffectFilter);
 	GDREGISTER_CLASS(AudioBusLayout);
-
-	GDREGISTER_CLASS(AudioStreamGenerator);
-	GDREGISTER_ABSTRACT_CLASS(AudioStreamGeneratorPlayback);
 
 	{
 		//audio effects

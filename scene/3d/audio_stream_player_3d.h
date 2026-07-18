@@ -32,7 +32,8 @@
 
 #include "core/templates/fixed_vector.h"
 #include "scene/3d/node_3d.h"
-#include "servers/audio/audio_server.h"
+#include "servers/audio/audio_server_constants.h"
+#include "servers/audio/audio_server_enums.h"
 
 #ifndef PHYSICS_3D_DISABLED
 class Area3D;
@@ -67,7 +68,7 @@ private:
 
 	};
 
-	static constexpr int64_t VOLUME_VECTOR_SIZE = AudioServer::MAX_CHANNELS_PER_BUS;
+	static constexpr int64_t VOLUME_VECTOR_SIZE = AuSC::MAX_CHANNELS_PER_BUS;
 
 	AudioStreamPlayerInternal *internal = nullptr;
 
@@ -102,7 +103,7 @@ private:
 
 	uint32_t area_mask = 0;
 
-	AudioServer::PlaybackType playback_type = AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT;
+	AuSE::PlaybackType playback_type = AuSE::PlaybackType::PLAYBACK_TYPE_DEFAULT;
 
 	bool emission_angle_enabled = false;
 	float emission_angle = 45.0;
@@ -212,8 +213,8 @@ public:
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
-	AudioServer::PlaybackType get_playback_type() const;
-	void set_playback_type(AudioServer::PlaybackType p_playback_type);
+	AuSE::PlaybackType get_playback_type() const;
+	void set_playback_type(AuSE::PlaybackType p_playback_type);
 
 	AudioStreamPlayer3D();
 	~AudioStreamPlayer3D();

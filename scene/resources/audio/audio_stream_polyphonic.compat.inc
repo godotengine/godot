@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_stream_preview.h                                                */
+/*  audio_stream_polyphonic.compat.inc                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,79 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "core/object/worker_thread_pool.h"
-#include "core/templates/safe_refcount.h"
-#include "scene/main/node.h"
-#include "scene/resources/audio/audio_stream.h"
+#include "audio_stream_polyphonic.h"
 
-class AudioStreamPreview : public RefCounted {
-	GDCLASS(AudioStreamPreview, RefCounted);
-	friend class AudioStream;
-	Vector<uint8_t> preview;
-	float length;
+#include "core/object/class_db.h"
 
-	friend class AudioStreamPreviewGenerator;
-	uint64_t version = 1;
+AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::_play_stream_bind_compat_91382(const Ref<AudioStream> &p_stream, float p_from_offset, float p_volume_db, float p_pitch_scale) {
+	return play_stream(p_stream, p_from_offset, p_volume_db, p_pitch_scale, AudioServerEnums::PlaybackType::PLAYBACK_TYPE_DEFAULT, SceneStringName(Master));
+}
 
-public:
-	uint64_t get_version() const { return version; }
-	float get_length() const;
-	float get_max(float p_time, float p_time_next) const;
-	float get_min(float p_time, float p_time_next) const;
+void AudioStreamPlaybackPolyphonic::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("play_stream", "stream", "from_offset", "volume_db", "pitch_scale"), &AudioStreamPlaybackPolyphonic::_play_stream_bind_compat_91382, DEFVAL(0), DEFVAL(0), DEFVAL(1.0));
+}
 
-	AudioStreamPreview();
-};
-
-class AudioStreamPreviewGenerator : public Node {
-	GDCLASS(AudioStreamPreviewGenerator, Node);
-
-	static AudioStreamPreviewGenerator *singleton;
-
-	struct Preview {
-		Ref<AudioStreamPreview> preview;
-		Ref<AudioStream> base_stream;
-		Ref<AudioStreamPlayback> playback;
-		SafeFlag generating;
-		ObjectID id;
-		WorkerThreadPool::TaskID task_id = WorkerThreadPool::INVALID_TASK_ID;
-
-		// Needed for the bookkeeping of the Map
-		void operator=(const Preview &p_rhs) {
-			preview = p_rhs.preview;
-			base_stream = p_rhs.base_stream;
-			playback = p_rhs.playback;
-			generating.set_to(generating.is_set());
-			id = p_rhs.id;
-			task_id = p_rhs.task_id;
-		}
-		Preview(const Preview &p_rhs) {
-			preview = p_rhs.preview;
-			base_stream = p_rhs.base_stream;
-			playback = p_rhs.playback;
-			generating.set_to(generating.is_set());
-			id = p_rhs.id;
-			task_id = p_rhs.task_id;
-		}
-		Preview() {}
-	};
-
-	HashMap<ObjectID, Preview> previews;
-
-	static void _preview_thread(void *p_preview);
-
-	void _update_emit(ObjectID p_id);
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	static AudioStreamPreviewGenerator *get_singleton() { return singleton; }
-
-	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_stream);
-
-	AudioStreamPreviewGenerator();
-	~AudioStreamPreviewGenerator();
-};
+#endif // DISABLE_DEPRECATED

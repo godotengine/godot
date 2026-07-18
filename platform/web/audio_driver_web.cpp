@@ -35,7 +35,8 @@
 #include "core/config/engine.h"
 #include "core/math/math_funcs_binary.h"
 #include "core/object/object.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
+#include "servers/audio/audio_server.h"
 
 #include <emscripten.h>
 
@@ -275,7 +276,7 @@ void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_pla
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
 	ERR_FAIL_COND_MSG(p_playback->stream.is_null(), "Parameter p_playback->stream is null.");
 
-	constexpr int real_max_channels = AudioServer::MAX_CHANNELS_PER_BUS * 2;
+	constexpr int real_max_channels = AuSC::MAX_CHANNELS_PER_BUS * 2;
 	PackedFloat32Array volume;
 	volume.resize(real_max_channels);
 	float *volume_ptrw = volume.ptrw();
@@ -328,19 +329,19 @@ void AudioDriverWeb::update_sample_playback_pitch_scale(const Ref<AudioSamplePla
 void AudioDriverWeb::set_sample_playback_bus_volumes_linear(const Ref<AudioSamplePlayback> &p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
 
-	constexpr int real_max_channels = AudioServer::MAX_CHANNELS_PER_BUS * 2;
+	constexpr int real_max_channels = AuSC::MAX_CHANNELS_PER_BUS * 2;
 
 	PackedInt32Array buses;
 	buses.resize(p_bus_volumes.size());
 	int32_t *buses_ptrw = buses.ptrw();
 	PackedFloat32Array values;
-	values.resize(p_bus_volumes.size() * AudioServer::MAX_CHANNELS_PER_BUS * 2);
+	values.resize(p_bus_volumes.size() * AuSC::MAX_CHANNELS_PER_BUS * 2);
 	float *values_ptrw = values.ptrw();
 	int idx = 0;
 	for (KeyValue<StringName, Vector<AudioFrame>> pair : p_bus_volumes) {
 		int bus_index = AudioServer::get_singleton()->get_bus_index(pair.key);
 		buses_ptrw[idx] = bus_index;
-		ERR_FAIL_COND(pair.value.size() != AudioServer::MAX_CHANNELS_PER_BUS);
+		ERR_FAIL_COND(pair.value.size() != AuSC::MAX_CHANNELS_PER_BUS);
 		for (int i = 0; i < real_max_channels; i += 2) {
 			const AudioFrame &frame = pair.value[i / 2];
 			values_ptrw[(idx * real_max_channels) + i] = frame.left;

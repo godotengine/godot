@@ -33,6 +33,8 @@
 #include "core/config/engine.h"
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
+#include "servers/audio/audio_driver.h"
+#include "servers/audio/audio_server.h"
 
 AudioStreamInteractive::AudioStreamInteractive() {
 }

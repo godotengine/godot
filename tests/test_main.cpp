@@ -40,6 +40,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
+#include "servers/audio/audio_driver.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
