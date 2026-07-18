@@ -113,13 +113,8 @@ public:
 	}
 
 	void ordered_insert(const T &p_val) {
-		int i;
-		for (i = 0; i < _cowdata.size(); i++) {
-			if (p_val < operator[](i)) {
-				break;
-			};
-		};
-		insert(i, p_val);
+		int idx = span().bisect(p_val, false);
+		insert(idx, p_val);
 	}
 
 	_FORCE_INLINE_ Vector() {}
