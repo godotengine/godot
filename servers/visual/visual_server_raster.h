@@ -588,6 +588,11 @@ public:
 
 	BIND2(instance_set_extra_visibility_margin, RID, real_t)
 
+	BIND0R(RID, fti_instance_create)
+	BIND1R(RID, fti_instance_get_instance, RID)
+	BIND2(fti_instance_set_transform, RID, const Transform &)
+	BIND1(fti_instance_reset, RID)
+
 	/* BLOB SHADOWS */
 	BIND0R(RID, capsule_shadow_create)
 	BIND5(capsule_shadow_update, RID, const Vector3 &, real_t, const Vector3 &, real_t)
