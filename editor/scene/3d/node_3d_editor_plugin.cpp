@@ -76,6 +76,7 @@
 #include "editor/scene/3d/gizmos/physics/soft_body_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/physics/spring_arm_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/physics/vehicle_body_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/primitive_geometry_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/reflection_probe_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/spring_bone_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/sprite_base_3d_gizmo_plugin.h"
@@ -2842,6 +2843,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<AudioStreamPlayer3DGizmoPlugin>(memnew(AudioStreamPlayer3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<AudioListener3DGizmoPlugin>(memnew(AudioListener3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<MeshInstance3DGizmoPlugin>(memnew(MeshInstance3DGizmoPlugin)));
+	add_gizmo_plugin(Ref<PrimitiveGeometry3DGizmoPlugin>(memnew(PrimitiveGeometry3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<OccluderInstance3DGizmoPlugin>(memnew(OccluderInstance3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<SpriteBase3DGizmoPlugin>(memnew(SpriteBase3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<Label3DGizmoPlugin>(memnew(Label3DGizmoPlugin)));

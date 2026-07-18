@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Capsule3D" inherits="PrimitiveGeometry3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A primitive capsule shape.
+	</brief_description>
+	<description>
+		A quick capsule shape with optional collision.
+		[b]Performance:[/b] Primitive Geometry nodes are intended both for fast level prototyping as well as finished games, as they have a cheap CPU cost due to using primitive meshes and collision.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			The height of the capsule.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
+			The radius of the capsule.
+		</member>
+	</members>
+</class>

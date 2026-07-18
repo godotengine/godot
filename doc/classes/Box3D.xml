@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Box3D" inherits="PrimitiveGeometry3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A primitive box shape.
+	</brief_description>
+	<description>
+		A quick box shape with optional collision.
+		[b]Performance:[/b] Primitive Geometry nodes are intended both for fast level prototyping as well as finished games, as they have a cheap CPU cost due to using primitive meshes and collision.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
+			The box's width, height and depth.
+		</member>
+	</members>
+</class>

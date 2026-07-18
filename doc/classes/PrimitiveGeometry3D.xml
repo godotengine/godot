@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PrimitiveGeometry3D" inherits="GeometryInstance3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		The base class for Primitive Geometry shapes.
+	</brief_description>
+	<description>
+		This is the base class for primitive geometry shapes.
+		Each shape has paramaters such as size, radius, or height, which can be adjusted to change the proportions of the shape. They can also be translated and rotated.
+		[b]Performance:[/b] Primitive Geometry nodes are intended both for fast level prototyping as well as finished games, as they have a cheap CPU cost due to using primitive meshes and collision.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collision_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_collision_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_collision_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member collision_layer], given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_collision_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
+			The physics layers this PrimitiveGeometry3D [b]is in[/b]. Collision objects can exist in one or more of 32 different layers. See also [member collision_mask].
+			[b]Note:[/b] Object A can detect a contact with object B only if object B is in any of the layers that object A scans. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]C
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The physics layers this PrimitiveGeometry3D [b]scans[/b]. Collision objects can scan one or more of 32 different layers. See also [member collision_layer].
+			[b]Note:[/b] Object A can detect a contact with object B only if object B is in any of the layers that object A scans. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
+			The priority used to solve colliding when occurring penetration. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+			The material used to render the shape.
+		</member>
+		<member name="use_collision" type="bool" setter="set_use_collision" getter="is_using_collision" default="false">
+			Adds a collision shape to the physics engine for this node. This will always act like a static body. Note that the collision shape is still active even if the node itself is hidden. See also [member collision_mask] and [member collision_priority].
+		</member>
+	</members>
+</class>
