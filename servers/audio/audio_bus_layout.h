@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_stream_preview.h                                                */
+/*  audio_bus_layout.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,77 +30,41 @@
 
 #pragma once
 
-#include "core/object/worker_thread_pool.h"
-#include "core/templates/safe_refcount.h"
-#include "scene/main/node.h"
-#include "scene/resources/audio/audio_stream.h"
+#include "core/io/resource.h"
 
-class AudioStreamPreview : public RefCounted {
-	GDCLASS(AudioStreamPreview, RefCounted);
-	friend class AudioStream;
-	Vector<uint8_t> preview;
-	float length;
+class AudioEffect;
 
-	friend class AudioStreamPreviewGenerator;
-	uint64_t version = 1;
+class AudioBusLayout : public Resource {
+	GDCLASS(AudioBusLayout, Resource);
 
-public:
-	uint64_t get_version() const { return version; }
-	float get_length() const;
-	float get_max(float p_time, float p_time_next) const;
-	float get_min(float p_time, float p_time_next) const;
+	friend class AudioServer;
 
-	AudioStreamPreview();
-};
+	struct Bus {
+		StringName name;
+		bool solo = false;
+		bool mute = false;
+		bool bypass = false;
 
-class AudioStreamPreviewGenerator : public Node {
-	GDCLASS(AudioStreamPreviewGenerator, Node);
+		struct Effect {
+			Ref<AudioEffect> effect;
+			bool enabled = false;
+		};
 
-	static AudioStreamPreviewGenerator *singleton;
+		Vector<Effect> effects;
 
-	struct Preview {
-		Ref<AudioStreamPreview> preview;
-		Ref<AudioStream> base_stream;
-		Ref<AudioStreamPlayback> playback;
-		SafeFlag generating;
-		ObjectID id;
-		WorkerThreadPool::TaskID task_id = WorkerThreadPool::INVALID_TASK_ID;
+		float volume_db = 0.0f;
+		StringName send;
 
-		// Needed for the bookkeeping of the Map
-		void operator=(const Preview &p_rhs) {
-			preview = p_rhs.preview;
-			base_stream = p_rhs.base_stream;
-			playback = p_rhs.playback;
-			generating.set_to(generating.is_set());
-			id = p_rhs.id;
-			task_id = p_rhs.task_id;
-		}
-		Preview(const Preview &p_rhs) {
-			preview = p_rhs.preview;
-			base_stream = p_rhs.base_stream;
-			playback = p_rhs.playback;
-			generating.set_to(generating.is_set());
-			id = p_rhs.id;
-			task_id = p_rhs.task_id;
-		}
-		Preview() {}
+		Bus() {}
 	};
 
-	HashMap<ObjectID, Preview> previews;
-
-	static void _preview_thread(void *p_preview);
-
-	void _update_emit(ObjectID p_id);
+	Vector<Bus> buses;
 
 protected:
-	void _notification(int p_what);
-	static void _bind_methods();
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	static AudioStreamPreviewGenerator *get_singleton() { return singleton; }
-
-	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_stream);
-
-	AudioStreamPreviewGenerator();
-	~AudioStreamPreviewGenerator();
+	AudioBusLayout();
 };

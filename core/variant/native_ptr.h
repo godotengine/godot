@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include "core/math/audio_frame.h"
 #include "core/variant/method_ptrcall.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant_caster.h"
 #include "core/variant/variant_internal.h"
+
+struct AudioFrame;
 
 // Metafunction for pointee name. Specialized in GDVIRTUAL_NATIVE_PTR; takes into account const; falls back to "void".
 template <typename T>

@@ -37,7 +37,7 @@
 uint32_t MovieWriterPNGWAV::get_audio_mix_rate() const {
 	return mix_rate;
 }
-AudioServer::SpeakerMode MovieWriterPNGWAV::get_audio_speaker_mode() const {
+AuSE::SpeakerMode MovieWriterPNGWAV::get_audio_speaker_mode() const {
 	return speaker_mode;
 }
 
@@ -99,16 +99,16 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 
 	uint32_t channels = 2;
 	switch (speaker_mode) {
-		case AudioServer::SPEAKER_MODE_STEREO:
+		case AuSE::SPEAKER_MODE_STEREO:
 			channels = 2;
 			break;
-		case AudioServer::SPEAKER_SURROUND_31:
+		case AuSE::SPEAKER_SURROUND_31:
 			channels = 4;
 			break;
-		case AudioServer::SPEAKER_SURROUND_51:
+		case AuSE::SPEAKER_SURROUND_51:
 			channels = 6;
 			break;
-		case AudioServer::SPEAKER_SURROUND_71:
+		case AuSE::SPEAKER_SURROUND_71:
 			channels = 8;
 			break;
 	}
@@ -168,5 +168,5 @@ void MovieWriterPNGWAV::write_end() {
 
 MovieWriterPNGWAV::MovieWriterPNGWAV() {
 	mix_rate = GLOBAL_GET("editor/movie_writer/mix_rate");
-	speaker_mode = AudioServer::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
+	speaker_mode = AuSE::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
 }

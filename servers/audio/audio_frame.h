@@ -46,9 +46,6 @@ static _FORCE_INLINE_ float undenormalize(float p_value) {
 	return (v.i & 0x7f800000) < 0x08000000 ? 0.0f : p_value;
 }
 
-static const float AUDIO_PEAK_OFFSET = 0.0000000001f;
-static const float AUDIO_MIN_PEAK_DB = -200.0f; // linear_to_db(AUDIO_PEAK_OFFSET)
-
 struct AudioFrame {
 	// Left and right samples.
 	float left = 0.0f;
