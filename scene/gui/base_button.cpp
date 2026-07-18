@@ -35,6 +35,7 @@
 #include "core/object/class_db.h"
 #include "scene/gui/label.h"
 #include "scene/main/timer.h"
+#include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
 void BaseButton::_unpress_group() {
@@ -64,14 +65,6 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->get_device() == InputEvent::DEVICE_ID_EMULATION) {
-		return;
-	}
-
-	if (p_event->is_pressed() && status.touch_index == -1) {
-		status.device_id = p_event->get_device();
-	}
-
-	if (p_event->get_device() != status.device_id) {
 		return;
 	}
 
@@ -110,17 +103,15 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		was_mouse_pressed = button_masked;
 		on_action_event(p_event);
 		was_mouse_pressed = false;
-
-		return;
-	}
-
-	Ref<InputEventMouseMotion> mouse_motion = p_event;
-	if (mouse_motion.is_valid()) {
-		if (status.press_attempt) {
-			bool last_press_inside = status.pressing_inside;
-			status.pressing_inside = has_point(mouse_motion->get_position());
-			if (last_press_inside != status.pressing_inside) {
-				queue_redraw();
+	} else {
+		Ref<InputEventMouseMotion> mouse_motion = p_event;
+		if (mouse_motion.is_valid()) {
+			if (status.press_attempt) {
+				bool last_press_inside = status.pressing_inside;
+				status.pressing_inside = has_point(mouse_motion->get_position());
+				if (last_press_inside != status.pressing_inside) {
+					queue_redraw();
+				}
 			}
 		}
 	}
@@ -263,8 +254,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 
 	if (status.press_attempt && status.pressing_inside) {
 		if (toggle_mode) {
-			bool is_pressed = p_event->is_pressed();
-			if ((is_pressed && action_mode == ACTION_MODE_BUTTON_PRESS) || (!is_pressed && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (p_event->is_released() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
@@ -280,7 +270,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				queue_accessibility_update();
 			}
 		} else {
-			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (p_event->is_released() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				_pressed();
 			}
 		}
@@ -406,6 +396,16 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	}
 }
 
+bool BaseButton::has_point(const Point2 &p_point) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	bool ret;
+	if (GDVIRTUAL_CALL(_has_point, p_point, ret)) {
+		return ret;
+	}
+	Rect2 rect = Rect2(Point2(), get_size()).grow(theme_cache.click_margin);
+	return rect.has_area() && rect.has_point(p_point);
+}
+
 void BaseButton::set_toggle_mode(bool p_on) {
 	// Make sure to set 'pressed' to false if we are not in toggle mode
 	if (!p_on) {
@@ -506,6 +506,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 			if (shortcut_feedback_timer == nullptr) {
 				shortcut_feedback_timer = memnew(Timer);
 				shortcut_feedback_timer->set_one_shot(true);
+				shortcut_feedback_timer->set_ignore_time_scale(true);
 				add_child(shortcut_feedback_timer, false, INTERNAL_MODE_BACK);
 				shortcut_feedback_timer->set_wait_time(GLOBAL_GET_CACHED(double, "gui/timers/button_shortcut_feedback_highlight_time"));
 				shortcut_feedback_timer->connect("timeout", callable_mp(this, &BaseButton::_shortcut_feedback_timeout));
@@ -635,6 +636,8 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, BaseButton, click_margin);
 
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);

@@ -62,6 +62,20 @@ String GDScriptDocGen::_get_class_name(const GDP::ClassNode &p_class) {
 	return full_name;
 }
 
+String GDScriptDocGen::_get_gdscript_name(const GDScript *p_script) {
+	if (p_script->local_name.is_empty()) {
+		// This is an outer unnamed class.
+		return _get_script_name(p_script->get_script_path());
+	} else {
+		// This is an inner or global outer class.
+		String name = p_script->local_name;
+		if (p_script->_owner) {
+			name = _get_gdscript_name(p_script->_owner) + "." + name;
+		}
+		return name;
+	}
+}
+
 void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String &r_enum, bool p_is_return) {
 	if (!p_gdtype.is_hard_type()) {
 		r_type = "Variant";
@@ -305,7 +319,7 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 		case GDP::Node::CALL: {
 			const GDP::CallNode *call = static_cast<const GDP::CallNode *>(p_expression);
 			if (call->get_callee_type() == GDP::Node::IDENTIFIER) {
-				return call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+				return call->function_name.string() + (call->arguments.is_empty() ? "()" : "(...)");
 			}
 		} break;
 		case GDP::Node::DICTIONARY: {
@@ -336,27 +350,16 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 
 	doc.is_script_doc = true;
 
-	if (p_script->local_name == StringName()) {
-		// This is an outer unnamed class.
-		doc.name = _get_script_name(p_script->get_script_path());
-	} else {
-		// This is an inner or global outer class.
-		doc.name = p_script->local_name;
-		if (p_script->_owner) {
-			doc.name = p_script->_owner->doc.name + "." + doc.name;
-		}
-	}
+	doc.name = _get_gdscript_name(p_script);
 
 	doc.script_path = p_script->get_script_path();
 
-	if (p_script->base.is_valid() && p_script->base->is_valid()) {
-		if (!p_script->base->doc.name.is_empty()) {
-			doc.inherits = p_script->base->doc.name;
-		} else {
-			doc.inherits = p_script->base->get_instance_base_type();
-		}
-	} else if (p_script->native.is_valid()) {
-		doc.inherits = p_script->native->get_name();
+	if (p_script->base.is_valid() && p_script->base->is_script_valid()) {
+		// See GH-105926. Evaluate the doc name of the base class instead of using `p_script->base->doc.name`
+		// to avoid load/compile order issues in case of complex circular dependencies.
+		doc.inherits = _get_gdscript_name(p_script->base.ptr());
+	} else {
+		doc.inherits = p_script->get_instance_base_type();
 	}
 
 	doc.brief_description = p_class->doc_data.brief;
@@ -395,7 +398,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				const_doc.name = const_name;
 				const_doc.value = _docvalue_from_variant(m_const->initializer->reduced_value);
 				const_doc.is_value_valid = true;
-				_doctype_from_gdtype(m_const->get_datatype(), const_doc.type, const_doc.enumeration);
+				_doctype_from_gdtype(m_const->type_constraint, const_doc.type, const_doc.enumeration);
 				const_doc.description = m_const->doc_data.description;
 				const_doc.is_deprecated = m_const->doc_data.is_deprecated;
 				const_doc.deprecated_message = m_const->doc_data.deprecated_message;
@@ -424,7 +427,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 					}
 					method_doc.qualifiers += "vararg";
 					method_doc.rest_argument.name = m_func->rest_parameter->identifier->name;
-					_doctype_from_gdtype(m_func->rest_parameter->get_datatype(), method_doc.rest_argument.type, method_doc.rest_argument.enumeration);
+					_doctype_from_gdtype(m_func->rest_parameter->type_constraint, method_doc.rest_argument.type, method_doc.rest_argument.enumeration);
 				}
 				if (m_func->is_abstract) {
 					if (!method_doc.qualifiers.is_empty()) {
@@ -441,11 +444,8 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 
 				if (func_name == "_init" || func_name == "_static_init") {
 					method_doc.return_type = "void";
-				} else if (!m_func->get_datatype().is_variant()) {
-					_doctype_from_gdtype(m_func->get_datatype(), method_doc.return_type, method_doc.return_enum, true);
-				} else if (!m_func->body->has_return) {
-					// If no `return` statement, then return type is `void`, not `Variant`.
-					method_doc.return_type = "void";
+				} else if (!m_func->return_type_constraint.is_variant()) {
+					_doctype_from_gdtype(m_func->return_type_constraint, method_doc.return_type, method_doc.return_enum, true);
 				} else {
 					method_doc.return_type = "Variant";
 				}
@@ -453,7 +453,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				for (const GDP::ParameterNode *p : m_func->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
-					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
+					_doctype_from_gdtype(p->type_constraint, arg_doc.type, arg_doc.enumeration);
 					if (p->initializer != nullptr) {
 						arg_doc.default_value = docvalue_from_expression(p->initializer);
 					}
@@ -480,7 +480,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				for (const GDP::ParameterNode *p : m_signal->parameters) {
 					DocData::ArgumentDoc arg_doc;
 					arg_doc.name = p->identifier->name;
-					_doctype_from_gdtype(p->get_datatype(), arg_doc.type, arg_doc.enumeration);
+					_doctype_from_gdtype(p->type_constraint, arg_doc.type, arg_doc.enumeration);
 					signal_doc.arguments.push_back(arg_doc);
 				}
 
@@ -500,7 +500,7 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				prop_doc.deprecated_message = m_var->doc_data.deprecated_message;
 				prop_doc.is_experimental = m_var->doc_data.is_experimental;
 				prop_doc.experimental_message = m_var->doc_data.experimental_message;
-				_doctype_from_gdtype(m_var->get_datatype(), prop_doc.type, prop_doc.enumeration);
+				_doctype_from_gdtype(m_var->type_constraint, prop_doc.type, prop_doc.enumeration);
 
 				switch (m_var->property) {
 					case GDP::VariableNode::PROP_NONE:

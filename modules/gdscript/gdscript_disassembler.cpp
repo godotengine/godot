@@ -163,7 +163,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
 				StringName native_type = get_global_name(_code_ptr[ip + 5]);
 
-				if (script_type.is_valid() && script_type->is_valid()) {
+				if (script_type.is_valid() && script_type->is_script_valid()) {
 					text += "script(";
 					text += GDScript::debug_get_script_name(script_type);
 					text += ")";
@@ -188,7 +188,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				Variant::Type key_builtin_type = (Variant::Type)_code_ptr[ip + 5];
 				StringName key_native_type = get_global_name(_code_ptr[ip + 6]);
 
-				if (key_script_type.is_valid() && key_script_type->is_valid()) {
+				if (key_script_type.is_valid() && key_script_type->is_script_valid()) {
 					text += "script(";
 					text += GDScript::debug_get_script_name(key_script_type);
 					text += ")";
@@ -204,7 +204,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				Variant::Type value_builtin_type = (Variant::Type)_code_ptr[ip + 7];
 				StringName value_native_type = get_global_name(_code_ptr[ip + 8]);
 
-				if (value_script_type.is_valid() && value_script_type->is_valid()) {
+				if (value_script_type.is_valid() && value_script_type->is_script_valid()) {
 					text += "script(";
 					text += GDScript::debug_get_script_name(value_script_type);
 					text += ")";
@@ -578,7 +578,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				StringName native_type = get_global_name(_code_ptr[ip + argc + 5]);
 
 				String type_name;
-				if (script_type.is_valid() && script_type->is_valid()) {
+				if (script_type.is_valid() && script_type->is_script_valid()) {
 					type_name = "script(" + GDScript::debug_get_script_name(script_type) + ")";
 				} else if (native_type != StringName()) {
 					type_name = native_type;
@@ -633,7 +633,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				StringName key_native_type = get_global_name(_code_ptr[ip + argc * 2 + 6]);
 
 				String key_type_name;
-				if (key_script_type.is_valid() && key_script_type->is_valid()) {
+				if (key_script_type.is_valid() && key_script_type->is_script_valid()) {
 					key_type_name = "script(" + GDScript::debug_get_script_name(key_script_type) + ")";
 				} else if (key_native_type != StringName()) {
 					key_type_name = key_native_type;
@@ -646,7 +646,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				StringName value_native_type = get_global_name(_code_ptr[ip + argc * 2 + 8]);
 
 				String value_type_name;
-				if (value_script_type.is_valid() && value_script_type->is_valid()) {
+				if (value_script_type.is_valid() && value_script_type->is_script_valid()) {
 					value_type_name = "script(" + GDScript::debug_get_script_name(value_script_type) + ")";
 				} else if (value_native_type != StringName()) {
 					value_type_name = value_native_type;
@@ -753,7 +753,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += Variant::get_type_name(type);
 				text += ".";
-				text += _global_names_ptr[_code_ptr[ip + 2 + instr_var_args]].operator String();
+				text += _global_names_ptr[_code_ptr[ip + 2 + instr_var_args]].string();
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -1004,7 +1004,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += DADDR(1 + captures_count);
 				text += "create lambda from ";
-				text += lambda->name.operator String();
+				text += lambda->name.string();
 				text += "function, captures (";
 
 				for (int i = 0; i < captures_count; i++) {
@@ -1024,7 +1024,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += DADDR(1 + captures_count);
 				text += "create self lambda from ";
-				text += lambda->name.operator String();
+				text += lambda->name.string();
 				text += "function, captures (";
 
 				for (int i = 0; i < captures_count; i++) {

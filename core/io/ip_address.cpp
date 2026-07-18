@@ -135,8 +135,8 @@ bool IPAddress::_parse_ipv6(const String &p_string, IPAddress &r_ip) {
 		return cur == 8; // Should have parsed 8 16-bits ints.
 	} else if (shift > 7) {
 		return false; // Can't shorten more than this.
-	} else if (shift == cur) {
-		return true; // Nothing to do, end is assumed zeroized.
+	} else if (shift == cur || cur == 8) {
+		return true; // Nothing to do (fields are assumed zeroized).
 	}
 	// Shift bytes.
 	int pad = 8 - cur;
@@ -146,6 +146,7 @@ bool IPAddress::_parse_ipv6(const String &p_string, IPAddress &r_ip) {
 			r_ip.field16[i] = 0;
 		} else {
 			r_ip.field16[i] = r_ip.field16[i - pad];
+			r_ip.field16[i - pad] = 0;
 		}
 	}
 	return true;
@@ -263,10 +264,10 @@ _FORCE_INLINE_ static void _32_to_buf(uint8_t *p_dst, uint32_t p_n) {
 	p_dst[3] = (p_n >> 0) & 0xff;
 }
 
-IPAddress::IPAddress(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool is_v6) {
+IPAddress::IPAddress(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool p_is_v6) {
 	clear();
 	valid = true;
-	if (!is_v6) {
+	if (!p_is_v6) {
 		// Mapped to IPv6.
 		field16[5] = 0xffff;
 		field8[12] = p_a;

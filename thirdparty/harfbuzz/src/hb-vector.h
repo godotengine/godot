@@ -35,6 +35,7 @@ HB_BEGIN_DECLS
  * hb_vector_format_t:
  * @HB_VECTOR_FORMAT_INVALID: Invalid format.
  * @HB_VECTOR_FORMAT_SVG: SVG output.
+ * @HB_VECTOR_FORMAT_PDF: PDF output.
  *
  * Output format for vector conversion.
  *
@@ -43,6 +44,7 @@ HB_BEGIN_DECLS
 typedef enum {
   HB_VECTOR_FORMAT_INVALID = HB_TAG_NONE,
   HB_VECTOR_FORMAT_SVG = HB_TAG ('s','v','g',' '),
+  HB_VECTOR_FORMAT_PDF = HB_TAG ('p','d','f',' '),
 } hb_vector_format_t;
 
 /**
@@ -75,6 +77,8 @@ typedef enum {
   HB_VECTOR_EXTENTS_MODE_EXPAND = 1,
 } hb_vector_extents_mode_t;
 
+/* hb_vector_draw_t */
+
 /**
  * hb_vector_draw_t:
  *
@@ -83,17 +87,6 @@ typedef enum {
  * Since: 13.0.0
  */
 typedef struct hb_vector_draw_t hb_vector_draw_t;
-
-/**
- * hb_vector_paint_t:
- *
- * Opaque paint context for vector color-glyph conversion.
- *
- * Since: 13.0.0
- */
-typedef struct hb_vector_paint_t hb_vector_paint_t;
-
-/* hb_vector_draw_t */
 
 HB_EXTERN hb_vector_draw_t *
 hb_vector_draw_create_or_fail (hb_vector_format_t format);
@@ -112,7 +105,7 @@ hb_vector_draw_set_user_data (hb_vector_draw_t   *draw,
                               hb_bool_t           replace);
 
 HB_EXTERN void *
-hb_vector_draw_get_user_data (hb_vector_draw_t   *draw,
+hb_vector_draw_get_user_data (const hb_vector_draw_t   *draw,
                               hb_user_data_key_t *key);
 
 HB_EXTERN void
@@ -122,7 +115,7 @@ hb_vector_draw_set_transform (hb_vector_draw_t *draw,
                               float dx, float dy);
 
 HB_EXTERN void
-hb_vector_draw_get_transform (hb_vector_draw_t *draw,
+hb_vector_draw_get_transform (const hb_vector_draw_t *draw,
                               float *xx, float *yx,
                               float *xy, float *yy,
                               float *dx, float *dy);
@@ -133,7 +126,7 @@ hb_vector_draw_set_scale_factor (hb_vector_draw_t *draw,
                                  float y_scale_factor);
 
 HB_EXTERN void
-hb_vector_draw_get_scale_factor (hb_vector_draw_t *draw,
+hb_vector_draw_get_scale_factor (const hb_vector_draw_t *draw,
                                  float *x_scale_factor,
                                  float *y_scale_factor);
 
@@ -142,34 +135,60 @@ hb_vector_draw_set_extents (hb_vector_draw_t *draw,
                             const hb_vector_extents_t *extents);
 
 HB_EXTERN hb_bool_t
-hb_vector_draw_get_extents (hb_vector_draw_t *draw,
+hb_vector_draw_get_extents (const hb_vector_draw_t *draw,
                             hb_vector_extents_t *extents);
 
 HB_EXTERN hb_bool_t
 hb_vector_draw_set_glyph_extents (hb_vector_draw_t *draw,
                                   const hb_glyph_extents_t *glyph_extents);
 
-HB_EXTERN hb_draw_funcs_t *
-hb_vector_draw_get_funcs (void);
+HB_EXTERN hb_vector_format_t
+hb_vector_draw_get_format (const hb_vector_draw_t *draw);
 
-HB_EXTERN hb_bool_t
+HB_EXTERN hb_draw_funcs_t *
+hb_vector_draw_get_funcs (const hb_vector_draw_t *draw);
+
+HB_EXTERN void
+hb_vector_draw_new_path (hb_vector_draw_t *draw);
+
+HB_EXTERN void
 hb_vector_draw_glyph (hb_vector_draw_t *draw,
                       hb_font_t *font,
                       hb_codepoint_t glyph,
-                      float pen_x,
-                      float pen_y,
                       hb_vector_extents_mode_t extents_mode);
 
-HB_EXTERN void
-hb_vector_svg_set_flat (hb_vector_draw_t *draw,
-                        hb_bool_t flat);
+HB_EXTERN hb_bool_t
+hb_vector_draw_glyph_or_fail (hb_vector_draw_t *draw,
+                              hb_font_t *font,
+                              hb_codepoint_t glyph,
+                              hb_vector_extents_mode_t extents_mode);
 
 HB_EXTERN void
-hb_vector_svg_set_precision (hb_vector_draw_t *draw,
+hb_vector_draw_set_precision (hb_vector_draw_t *draw,
                              unsigned precision);
+
+HB_EXTERN unsigned
+hb_vector_draw_get_precision (const hb_vector_draw_t *draw);
+
+HB_EXTERN void
+hb_vector_draw_set_foreground (hb_vector_draw_t *draw,
+                               hb_color_t foreground);
+
+HB_EXTERN hb_color_t
+hb_vector_draw_get_foreground (const hb_vector_draw_t *draw);
+
+HB_EXTERN void
+hb_vector_draw_set_background (hb_vector_draw_t *draw,
+                               hb_color_t background);
+
+HB_EXTERN hb_color_t
+hb_vector_draw_get_background (const hb_vector_draw_t *draw);
 
 HB_EXTERN hb_blob_t *
 hb_vector_draw_render (hb_vector_draw_t *draw);
+
+HB_EXTERN void
+hb_vector_draw_clear (hb_vector_draw_t *draw);
 
 HB_EXTERN void
 hb_vector_draw_reset (hb_vector_draw_t *draw);
@@ -180,6 +199,15 @@ hb_vector_draw_recycle_blob (hb_vector_draw_t *draw,
 
 
 /* hb_vector_paint_t */
+
+/**
+ * hb_vector_paint_t:
+ *
+ * Opaque paint context for vector color-glyph conversion.
+ *
+ * Since: 13.0.0
+ */
+typedef struct hb_vector_paint_t hb_vector_paint_t;
 
 HB_EXTERN hb_vector_paint_t *
 hb_vector_paint_create_or_fail (hb_vector_format_t format);
@@ -198,7 +226,7 @@ hb_vector_paint_set_user_data (hb_vector_paint_t  *paint,
                                hb_bool_t           replace);
 
 HB_EXTERN void *
-hb_vector_paint_get_user_data (hb_vector_paint_t  *paint,
+hb_vector_paint_get_user_data (const hb_vector_paint_t  *paint,
                                hb_user_data_key_t *key);
 
 HB_EXTERN void
@@ -208,7 +236,7 @@ hb_vector_paint_set_transform (hb_vector_paint_t *paint,
                                float dx, float dy);
 
 HB_EXTERN void
-hb_vector_paint_get_transform (hb_vector_paint_t *paint,
+hb_vector_paint_get_transform (const hb_vector_paint_t *paint,
                                float *xx, float *yx,
                                float *xy, float *yy,
                                float *dx, float *dy);
@@ -219,7 +247,7 @@ hb_vector_paint_set_scale_factor (hb_vector_paint_t *paint,
                                   float y_scale_factor);
 
 HB_EXTERN void
-hb_vector_paint_get_scale_factor (hb_vector_paint_t *paint,
+hb_vector_paint_get_scale_factor (const hb_vector_paint_t *paint,
                                   float *x_scale_factor,
                                   float *y_scale_factor);
 
@@ -228,7 +256,7 @@ hb_vector_paint_set_extents (hb_vector_paint_t *paint,
                              const hb_vector_extents_t *extents);
 
 HB_EXTERN hb_bool_t
-hb_vector_paint_get_extents (hb_vector_paint_t *paint,
+hb_vector_paint_get_extents (const hb_vector_paint_t *paint,
                              hb_vector_extents_t *extents);
 
 HB_EXTERN hb_bool_t
@@ -239,9 +267,22 @@ HB_EXTERN void
 hb_vector_paint_set_foreground (hb_vector_paint_t *paint,
                                 hb_color_t foreground);
 
+HB_EXTERN hb_color_t
+hb_vector_paint_get_foreground (const hb_vector_paint_t *paint);
+
+HB_EXTERN void
+hb_vector_paint_set_background (hb_vector_paint_t *paint,
+                                hb_color_t background);
+
+HB_EXTERN hb_color_t
+hb_vector_paint_get_background (const hb_vector_paint_t *paint);
+
 HB_EXTERN void
 hb_vector_paint_set_palette (hb_vector_paint_t *paint,
                              int palette);
+
+HB_EXTERN int
+hb_vector_paint_get_palette (const hb_vector_paint_t *paint);
 
 HB_EXTERN void
 hb_vector_paint_set_custom_palette_color (hb_vector_paint_t *paint,
@@ -251,27 +292,43 @@ hb_vector_paint_set_custom_palette_color (hb_vector_paint_t *paint,
 HB_EXTERN void
 hb_vector_paint_clear_custom_palette_colors (hb_vector_paint_t *paint);
 
-HB_EXTERN hb_paint_funcs_t *
-hb_vector_paint_get_funcs (void);
+HB_EXTERN hb_vector_format_t
+hb_vector_paint_get_format (const hb_vector_paint_t *paint);
 
-HB_EXTERN hb_bool_t
+HB_EXTERN hb_paint_funcs_t *
+hb_vector_paint_get_funcs (const hb_vector_paint_t *paint);
+
+HB_EXTERN void
 hb_vector_paint_glyph (hb_vector_paint_t *paint,
 		       hb_font_t         *font,
 		       hb_codepoint_t     glyph,
-		       float              pen_x,
-		       float              pen_y,
 		       hb_vector_extents_mode_t extents_mode);
 
-HB_EXTERN void
-hb_vector_svg_paint_set_flat (hb_vector_paint_t *paint,
-                              hb_bool_t flat);
+HB_EXTERN hb_bool_t
+hb_vector_paint_glyph_or_fail (hb_vector_paint_t *paint,
+			       hb_font_t         *font,
+			       hb_codepoint_t     glyph,
+			       hb_vector_extents_mode_t extents_mode);
 
 HB_EXTERN void
-hb_vector_svg_paint_set_precision (hb_vector_paint_t *paint,
+hb_vector_paint_set_precision (hb_vector_paint_t *paint,
                                    unsigned precision);
+
+HB_EXTERN unsigned
+hb_vector_paint_get_precision (const hb_vector_paint_t *paint);
+
+HB_EXTERN void
+hb_vector_paint_set_svg_prefix (hb_vector_paint_t *paint,
+                                const char *prefix);
+
+HB_EXTERN const char *
+hb_vector_paint_get_svg_prefix (const hb_vector_paint_t *paint);
 
 HB_EXTERN hb_blob_t *
 hb_vector_paint_render (hb_vector_paint_t *paint);
+
+HB_EXTERN void
+hb_vector_paint_clear (hb_vector_paint_t *paint);
 
 HB_EXTERN void
 hb_vector_paint_reset (hb_vector_paint_t *paint);
@@ -281,5 +338,13 @@ hb_vector_paint_recycle_blob (hb_vector_paint_t *paint,
                               hb_blob_t *blob);
 
 HB_END_DECLS
+
+
+#if defined(__cplusplus) && defined(HB_CPLUSPLUS_HH)
+namespace hb {
+HB_DEFINE_VTABLE (vector_draw,  nullptr);
+HB_DEFINE_VTABLE (vector_paint, nullptr);
+} // namespace hb
+#endif
 
 #endif /* HB_VECTOR_H */

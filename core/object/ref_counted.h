@@ -37,6 +37,7 @@ class RefCounted : public Object {
 	GDCLASS(RefCounted, Object);
 	SafeRefCount refcount;
 	SafeRefCount refcount_init;
+	SafeNumeric<uint32_t> dereference_count;
 
 protected:
 	static void _bind_methods();

@@ -95,8 +95,9 @@ class EditorAudioBus : public PanelContainer {
 	Ref<StyleBoxFlat> peak_indicator_stylebox_l;
 	Ref<StyleBoxFlat> peak_indicator_stylebox_r;
 
-	// VU size - peak indicator size
-	const float peak_indicator_range = 126.0;
+	const float vu_width = 16;
+	const float vu_height = 128;
+	float peak_indicator_range;
 
 	OptionButton *send = nullptr;
 
@@ -180,6 +181,13 @@ protected:
 class EditorAudioBuses : public EditorDock {
 	GDCLASS(EditorAudioBuses, EditorDock);
 
+	enum class MenuOption {
+		LOAD,
+		SAVE_AS,
+		LOAD_DEFAULT,
+		CREATE,
+	};
+
 	HBoxContainer *top_hb = nullptr;
 
 	MarginContainer *bus_mc = nullptr;
@@ -191,15 +199,10 @@ class EditorAudioBuses : public EditorDock {
 	Label *file = nullptr;
 
 	Button *add = nullptr;
-	Button *load = nullptr;
-	Button *save_as = nullptr;
-	Button *_default = nullptr;
-	Button *_new = nullptr;
+	MenuButton *menu = nullptr;
 
 	Timer *save_timer = nullptr;
 	String edited_path;
-
-	bool floating = false;
 
 	void _update_file_label();
 	void _update_file_label_size();
@@ -224,6 +227,7 @@ class EditorAudioBuses : public EditorDock {
 	void _save_as_layout();
 	void _load_default_layout();
 	void _new_layout();
+	void _menu_option(int p_option);
 
 	EditorFileDialog *file_dialog = nullptr;
 	bool new_layout = false;
@@ -234,7 +238,7 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 public:
 	void open_layout(const String &p_path);

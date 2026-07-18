@@ -78,7 +78,12 @@ void AnimationNodeBlendSpace1D::validate_node(const AnimationTree *p_tree, const
 	AnimationRootNode::validate_node(p_tree, p_path);
 
 	if (get_blend_point_count() == 0) {
-		add_validation_error(p_tree, p_path, RTR("No blend points exist, so blending cannot take place."));
+		add_validation_error(p_tree, p_path, RTR(ERR_NO_BLEND_POINT));
+	}
+
+	const_cast<AnimationNodeBlendSpace1D *>(this)->_check_can_sync();
+	if (is_contain_invalid_point) {
+		add_validation_error(p_tree, p_path, RTR(ERR_INVALID_POINT));
 	}
 }
 
@@ -169,7 +174,7 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 	if (p_at_index == -1 || p_at_index == blend_points_used) {
 		p_at_index = blend_points_used;
 	} else {
-		for (int i = blend_points_used - 1; i > p_at_index; i--) {
+		for (int i = blend_points_used; i > p_at_index; i--) {
 			blend_points[i] = blend_points[i - 1];
 		}
 	}
@@ -247,6 +252,7 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
 	ERR_FAIL_COND(blend_points[p_point].node.is_null());
+	String removed_name = blend_points[p_point].name;
 	_remove_node(blend_points[p_point].node);
 
 	for (int i = p_point; i < blend_points_used - 1; i++) {
@@ -255,10 +261,10 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 
 	blend_points_used--;
 
-	blend_points[blend_points_used].name = StringName();
+	blend_points[blend_points_used].reset();
 	lengths_dirty = true;
 
-	emit_signal(SNAME("animation_node_removed"), get_instance_id(), itos(p_point));
+	emit_signal(SNAME("animation_node_removed"), get_instance_id(), removed_name);
 	_tree_changed();
 }
 
@@ -423,7 +429,16 @@ void AnimationNodeBlendSpace1D::_check_can_sync() {
 }
 
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
-	if (!blend_points_used || is_contain_invalid_point) {
+	if (!blend_points_used) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, RTR(ERR_NO_BLEND_POINT));
+		}
+		return NodeTimeInfo();
+	}
+	if (is_contain_invalid_point) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, RTR(ERR_INVALID_POINT));
+		}
 		return NodeTimeInfo();
 	}
 
@@ -447,7 +462,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_
 	deltas.resize_initialized(blend_points_used);
 	if (sync_mode == SYNC_MODE_NONE) {
 		for (int i = 0; i < blend_points_used; i++) {
-			deltas[i] = -1; // Not process.
+			deltas[i] = NAN; // Not process.
 		}
 	}
 
@@ -556,8 +571,8 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_
 	}
 
 	// Special case for discrete carry.
-	AnimationNodeInstance *instance_current_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(cur_closest));
 	if (new_closest != cur_closest && new_closest != -1 && cur_closest != -1 && blend_mode == BLEND_MODE_DISCRETE_CARRY && sync_mode < SYNC_MODE_CYCLIC_MUTABLE) {
+		AnimationNodeInstance *instance_current_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(cur_closest));
 		AnimationNodeInstance *instance_new_closest = p_instance.get_child_instance_by_path_or_null(get_blend_point_name(new_closest));
 		NodeTimeInfo from;
 		// For ping-pong loop.
@@ -576,12 +591,12 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_
 		pi.seeked = true;
 		pi.weight = 1.0;
 		mind = blend_node(p_process_state, p_instance, instance_new_closest, pi, FILTER_IGNORE, true, p_test_only);
-		deltas[new_closest] = -1; // No more blend new_closest point.
+		deltas[new_closest] = NAN; // No more blend new_closest point.
 	}
 
 	// Normal case, blend all points.
 	for (int i = 0; i < blend_points_used; i++) {
-		if (std::signbit(deltas[i])) {
+		if (Math::is_nan(deltas[i])) {
 			continue;
 		}
 		pi = p_playback_info;

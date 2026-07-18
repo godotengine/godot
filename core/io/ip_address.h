@@ -32,7 +32,7 @@
 
 #include "core/string/ustring.h"
 
-struct [[nodiscard]] IPAddress {
+struct [[nodiscard]] _WARN_UNUSED_ IPAddress {
 private:
 	union {
 		uint8_t field8[16];
@@ -98,7 +98,7 @@ public:
 
 	explicit operator String() const;
 	IPAddress(const String &p_string);
-	IPAddress(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool is_v6 = false);
+	IPAddress(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool p_is_v6 = false);
 	IPAddress() { clear(); }
 };
 

@@ -1322,14 +1322,14 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 				iofs += 28;
 
 				for (uint32_t i = 0; i < attrcount; i++) {
-					uint32_t attr_nspace = decode_uint32(&p_manifest[iofs]);
+					// uint32_t attr_nspace = decode_uint32(&p_manifest[iofs]);
 					uint32_t attr_name = decode_uint32(&p_manifest[iofs + 4]);
 					uint32_t attr_value = decode_uint32(&p_manifest[iofs + 8]);
-					uint32_t attr_resid = decode_uint32(&p_manifest[iofs + 16]);
+					// uint32_t attr_resid = decode_uint32(&p_manifest[iofs + 16]);
 
-					const String value = (attr_value != 0xFFFFFFFF) ? string_table[attr_value] : "Res #" + itos(attr_resid);
+					// const String value = (attr_value != 0xFFFFFFFF) ? string_table[attr_value] : "Res #" + itos(attr_resid);
 					String attrname = string_table[attr_name];
-					const String nspace = (attr_nspace != 0xFFFFFFFF) ? string_table[attr_nspace] : "";
+					// const String nspace = (attr_nspace != 0xFFFFFFFF) ? string_table[attr_nspace] : "";
 
 					//replace project information
 					if (tname == "manifest" && attrname == "package") {
@@ -2106,11 +2106,6 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (!enabled_deprecated_plugins_names.is_empty() && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
 			}
-#ifdef ANDROID_ENABLED
-			if (gradle_build_enabled) {
-				return TTR("Support for \"Use Gradle Build\" on Android is currently experimental.");
-			}
-#endif // ANDROID_ENABLED
 		} else if (p_name == "gradle_build/compress_native_libraries") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (bool(p_preset->get("gradle_build/compress_native_libraries")) && !gradle_build_enabled) {
@@ -2142,7 +2137,7 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			int target_sdk_int = DEFAULT_TARGET_SDK_VERSION;
 
 			String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-			int min_sdk_int = VULKAN_MIN_SDK_VERSION;
+			int min_sdk_int = _uses_vulkan(Ref<EditorExportPreset>(p_preset)) ? VULKAN_MIN_SDK_VERSION : DEFAULT_MIN_SDK_VERSION;
 			if (min_sdk_str.is_valid_int()) {
 				min_sdk_int = min_sdk_str.to_int();
 			}
@@ -2203,7 +2198,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "gradle_build/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK, false, true));
 	// Using String instead of int to default to an empty string (no override) with placeholder for instructions (see GH-62465).
 	// This implies doing validation that the string is a proper int.
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", VULKAN_MIN_SDK_VERSION)), "", false, true));
+	const String min_sdk_placeholder = _uses_vulkan(nullptr) ? vformat("%d (Vulkan default)", VULKAN_MIN_SDK_VERSION) : vformat("%d (default)", DEFAULT_MIN_SDK_VERSION);
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, min_sdk_placeholder), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), "", false, true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "gradle_build/custom_theme_attributes", PROPERTY_HINT_DICTIONARY_TYPE, "String;String"), Dictionary()));
@@ -2476,7 +2472,6 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	String output;
 
 	bool remove_prev = EDITOR_GET("export/android/one_click_deploy_clear_previous_install");
-	String version_name = p_preset->get_version("version/name");
 	String package_name = p_preset->get("package/unique_name");
 
 	if (remove_prev) {
@@ -3152,7 +3147,7 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 		valid = false;
 		if (EditorNode::is_cmdline_mode()) {
-			err += TTR("ETC2/ASTC texture compression is required for Android export. In Project Settings, search for 'ETC2' in the search field, or enable 'Advanced Settings' and go to Rendering > Textures > VRAM Compression to enable 'Import ETC2 ASTC'.") + "\n";
+			err += TTR("ETC2/ASTC texture compression is required for Android export. In the Project Settings, search for 'ETC2' in the search field, or enable 'Advanced Settings', and go to Rendering > Textures > VRAM Compression to enable 'Import ETC2 ASTC'.") + "\n";
 		}
 	}
 
@@ -3196,18 +3191,20 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		err += "\n";
 	}
 
-	String min_sdk_str = p_preset->get("gradle_build/min_sdk");
-	int min_sdk_int = VULKAN_MIN_SDK_VERSION;
-	if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
-		if (min_sdk_str.is_valid_int()) {
-			min_sdk_int = min_sdk_str.to_int();
+	if (_uses_vulkan(p_preset)) {
+		String min_sdk_str = p_preset->get("gradle_build/min_sdk");
+		int min_sdk_int = VULKAN_MIN_SDK_VERSION;
+		if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
+			if (min_sdk_str.is_valid_int()) {
+				min_sdk_int = min_sdk_str.to_int();
+			}
 		}
-	}
-	bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-	if (_uses_vulkan(p_preset) && min_sdk_int < VULKAN_MIN_SDK_VERSION && !fallback_to_opengl3) {
-		// Warning only, so don't override `valid`.
-		err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
-		err += "\n";
+		bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+		if (min_sdk_int < VULKAN_MIN_SDK_VERSION && !fallback_to_opengl3) {
+			// Warning only, so don't override `valid`.
+			err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
+			err += "\n";
+		}
 	}
 
 	String package_name = p_preset->get("package/unique_name");
@@ -3605,7 +3602,7 @@ bool EditorExportPlatformAndroid::_is_clean_build_required(const Ref<EditorExpor
 	return have_plugins_changed || has_build_dir_changed || first_build;
 }
 
-Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	int export_format = int(p_preset->get("gradle_build/export_format"));
 	bool should_sign = p_preset->get("package/signed");
 	return export_project_helper(p_preset, p_debug, p_path, export_format, should_sign, p_flags);
@@ -3879,7 +3876,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String version_name = p_preset->get_version("version/name");
 		String min_sdk_version = p_preset->get("gradle_build/min_sdk");
 		if (!min_sdk_version.is_valid_int()) {
-			min_sdk_version = itos(VULKAN_MIN_SDK_VERSION);
+			min_sdk_version = _uses_vulkan(p_preset) ? itos(VULKAN_MIN_SDK_VERSION) : itos(DEFAULT_MIN_SDK_VERSION);
 		}
 		String target_sdk_version = p_preset->get("gradle_build/target_sdk");
 		if (!target_sdk_version.is_valid_int()) {
@@ -4141,11 +4138,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	((void)0)
 
 	zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
-
-	String cmdline = p_preset->get("command_line/extra_args");
-
-	String version_name = p_preset->get_version("version/name");
-	String package_name = p_preset->get("package/unique_name");
 
 	Vector<ABI> invalid_abis(enabled_abis);
 
@@ -4512,8 +4504,6 @@ EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 #ifndef ANDROID_ENABLED
 	_stop_check_for_changes_poll_thread();
 #else
-	if (android_editor_gradle_runner) {
-		memdelete(android_editor_gradle_runner);
-	}
+	memdelete(android_editor_gradle_runner);
 #endif
 }

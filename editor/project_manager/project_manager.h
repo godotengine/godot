@@ -247,6 +247,7 @@ class ProjectManager : public Control {
 	VBoxContainer *ask_update_vb = nullptr;
 	Label *ask_update_label = nullptr;
 	CheckBox *ask_update_backup = nullptr;
+	CheckBox *ask_upgrade_tool = nullptr;
 	Button *full_convert_button = nullptr;
 	Button *migration_guide_button = nullptr;
 
@@ -284,6 +285,9 @@ public:
 	// Project tag management.
 
 	void add_new_tag(const String &p_tag);
+
+	// Theme.
+	Ref<Theme> get_theme() const { return theme; }
 
 	ProjectManager();
 	~ProjectManager();

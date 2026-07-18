@@ -251,6 +251,7 @@ NavigationRegion3DEditor::NavigationRegion3DEditor() {
 	bake_hbox->add_child(bake_info);
 
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 
 	multibake_dialog = memnew(ConfirmationDialog);

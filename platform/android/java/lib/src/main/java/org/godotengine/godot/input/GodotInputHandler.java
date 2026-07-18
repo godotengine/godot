@@ -88,8 +88,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	private final Godot godot;
 	private final InputManager mInputManager;
 	private final WindowManager windowManager;
-	private final GestureDetector gestureDetector;
-	private final ScaleGestureDetector scaleGestureDetector;
+	final GestureDetector gestureDetector;
+	final ScaleGestureDetector scaleGestureDetector;
 	private final GodotGestureHandler godotGestureHandler;
 
 	/**
@@ -112,9 +112,12 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 		this.godotGestureHandler = new GodotGestureHandler(this);
 		this.gestureDetector = new GestureDetector(context, godotGestureHandler);
-		this.gestureDetector.setIsLongpressEnabled(false);
+		enableLongPress(false);
+
 		this.scaleGestureDetector = new ScaleGestureDetector(context, godotGestureHandler);
 		this.scaleGestureDetector.setStylusScaleEnabled(true);
+		this.scaleGestureDetector.setQuickScaleEnabled(false);
+
 		Configuration config = context.getResources().getConfiguration();
 		hasHardwareKeyboardConfig = config.keyboard != Configuration.KEYBOARD_NOKEYS &&
 				config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
@@ -125,6 +128,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	 */
 	public void enableLongPress(boolean enable) {
 		this.gestureDetector.setIsLongpressEnabled(enable);
+		this.godotGestureHandler.setLongPressEnabled(enable);
 	}
 
 	/**
@@ -157,7 +161,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	 * Note: This may interfere with multi-touch handling / support.
 	 */
 	public void enablePanningAndScalingGestures(boolean enable) {
-		this.godotGestureHandler.setPanningAndScalingEnabled(enable);
+		this.godotGestureHandler.setPanningEnabled(enable);
+		this.godotGestureHandler.setScalingEnabled(enable);
 	}
 
 	/**

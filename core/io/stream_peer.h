@@ -102,10 +102,10 @@ protected:
 
 public:
 	virtual Error put_data(const uint8_t *p_data, int p_bytes) override;
-	GDVIRTUAL3R(Error, _put_data, GDExtensionConstPtr<const uint8_t>, int, GDExtensionPtr<int>);
+	GDVIRTUAL3R(Error, _put_data, GDExtensionPtr<const uint8_t>, int, GDExtensionPtr<int>);
 
 	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
-	GDVIRTUAL3R(Error, _put_partial_data, GDExtensionConstPtr<const uint8_t>, int, GDExtensionPtr<int>);
+	GDVIRTUAL3R(Error, _put_partial_data, GDExtensionPtr<const uint8_t>, int, GDExtensionPtr<int>);
 
 	virtual Error get_data(uint8_t *p_buffer, int p_bytes) override;
 	GDVIRTUAL3R(Error, _get_data, GDExtensionPtr<uint8_t>, int, GDExtensionPtr<int>);
@@ -140,7 +140,7 @@ public:
 	void resize(int p_size);
 
 	void set_data_array(const Vector<uint8_t> &p_data);
-	Vector<uint8_t> get_data_array() const;
+	const Vector<uint8_t> &get_data_array() const _LIFETIME_BOUND_;
 
 	void clear();
 

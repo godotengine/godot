@@ -1288,7 +1288,6 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 			relaxed_casting_format_count++;
 		}
 
-		HashMap<DataFormat, D3D12_RESOURCE_FLAGS> aliases_forbidden_flags;
 		for (int i = 0; i < p_format.shareable_formats.size(); i++) {
 			DataFormat curr_format = p_format.shareable_formats[i];
 			String format_text = "'" + String(FORMAT_NAMES[p_format.format]) + "'";
@@ -2577,18 +2576,9 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 
 	ComPtr<ID3D12GraphicsCommandList> cmd_list;
 	{
-		ComPtr<ID3D12Device4> device_4;
-		device->QueryInterface(device_4.GetAddressOf());
-		HRESULT res = E_FAIL;
-		if (device_4) {
-			res = device_4->CreateCommandList1(0, list_type, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(cmd_list.GetAddressOf()));
-		} else {
-			res = device->CreateCommandList(0, list_type, cmd_allocator.Get(), nullptr, IID_PPV_ARGS(cmd_list.GetAddressOf()));
-		}
+		HRESULT res = device->CreateCommandList(0, list_type, cmd_allocator.Get(), nullptr, IID_PPV_ARGS(cmd_list.GetAddressOf()));
 		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), CommandBufferID(), "CreateCommandList failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
-		if (!device_4) {
-			cmd_list->Close();
-		}
+		cmd_list->Close();
 	}
 
 	CPUDescriptorHeapPool::Allocation uav_alloc;
@@ -2975,6 +2965,11 @@ RDD::DataFormat RenderingDeviceDriverD3D12::swap_chain_get_format(SwapChainID p_
 RDD::ColorSpace RenderingDeviceDriverD3D12::swap_chain_get_color_space(SwapChainID p_swap_chain) {
 	const SwapChain *swap_chain = (const SwapChain *)(p_swap_chain.id);
 	return swap_chain->color_space;
+}
+
+bool RenderingDeviceDriverD3D12::swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) {
+	// Our minimum supported version of D3D12 requires support for our HDR colorspaces.
+	return true;
 }
 
 void RenderingDeviceDriverD3D12::swap_chain_free(SwapChainID p_swap_chain) {
@@ -3975,7 +3970,7 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 
 			cmd_buf_info->cmd_list->ClearRenderTargetView(
 					cmd_buf_info->rtv_alloc.cpu_handle,
-					p_color.components,
+					p_color.as_float4_buffer(),
 					0,
 					nullptr);
 		}
@@ -4008,7 +4003,7 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 					shader_visible_descriptor_allocation.gpu_handle,
 					cmd_buf_info->uav_alloc.cpu_handle,
 					tex_info->resource,
-					p_color.components,
+					p_color.as_float4_buffer(),
 					0,
 					nullptr);
 		}
@@ -4508,8 +4503,9 @@ void RenderingDeviceDriverD3D12::_end_render_pass(CommandBufferID p_cmd_buffer) 
 		uint32_t dst_subres = 0;
 		DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
 	};
-	Resolve *resolves = ALLOCA_ARRAY(Resolve, subpass.resolve_references.size());
-	uint32_t num_resolves = 0;
+
+	thread_local LocalVector<Resolve> resolves;
+	resolves.clear();
 
 	for (uint32_t i = 0; i < subpass.resolve_references.size(); i++) {
 		uint32_t color_index = subpass.color_references[i].attachment;
@@ -4520,41 +4516,49 @@ void RenderingDeviceDriverD3D12::_end_render_pass(CommandBufferID p_cmd_buffer) 
 		}
 
 		TextureInfo *src_tex_info = (TextureInfo *)fb_info->attachments[color_index].id;
-		uint32_t src_subresource = D3D12CalcSubresource(src_tex_info->base_mip, src_tex_info->base_layer, 0, src_tex_info->desc.MipLevels, src_tex_info->desc.ArraySize());
-
-		if (barrier_capabilities.enhanced_barriers_supported) {
-			cmd_buf_info->render_pass_state.attachment_layouts[color_index].aspect_layouts[TEXTURE_ASPECT_COLOR].expected_layout = TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL;
-		} else {
-			_resource_transition_batch(cmd_buf_info, src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
-		}
-
 		TextureInfo *dst_tex_info = (TextureInfo *)fb_info->attachments[resolve_index].id;
-		uint32_t dst_subresource = D3D12CalcSubresource(dst_tex_info->base_mip, dst_tex_info->base_layer, 0, dst_tex_info->desc.MipLevels, dst_tex_info->desc.ArraySize());
 
-		if (barrier_capabilities.enhanced_barriers_supported) {
-			// This should have already been done when beginning the subpass.
-			DEV_ASSERT(cmd_buf_info->render_pass_state.attachment_layouts[resolve_index].aspect_layouts[TEXTURE_ASPECT_COLOR].expected_layout == TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL);
-		} else {
-			_resource_transition_batch(cmd_buf_info, dst_tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_DEST);
+		DEV_ASSERT(src_tex_info->mipmaps == dst_tex_info->mipmaps && src_tex_info->layers == dst_tex_info->layers);
+
+		for (uint32_t mip = 0; mip < src_tex_info->mipmaps; mip++) {
+			for (uint32_t layer = 0; layer < src_tex_info->layers; layer++) {
+				uint32_t src_subresource = D3D12CalcSubresource(src_tex_info->base_mip + mip, src_tex_info->base_layer + layer, 0, src_tex_info->desc.MipLevels, src_tex_info->desc.ArraySize());
+
+				if (barrier_capabilities.enhanced_barriers_supported) {
+					cmd_buf_info->render_pass_state.attachment_layouts[color_index].aspect_layouts[TEXTURE_ASPECT_COLOR].expected_layout = TEXTURE_LAYOUT_RESOLVE_SRC_OPTIMAL;
+				} else {
+					_resource_transition_batch(cmd_buf_info, src_tex_info, src_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+				}
+
+				uint32_t dst_subresource = D3D12CalcSubresource(dst_tex_info->base_mip + mip, dst_tex_info->base_layer + layer, 0, dst_tex_info->desc.MipLevels, dst_tex_info->desc.ArraySize());
+
+				if (barrier_capabilities.enhanced_barriers_supported) {
+					// This should have already been done when beginning the subpass.
+					DEV_ASSERT(cmd_buf_info->render_pass_state.attachment_layouts[resolve_index].aspect_layouts[TEXTURE_ASPECT_COLOR].expected_layout == TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL);
+				} else {
+					_resource_transition_batch(cmd_buf_info, dst_tex_info, dst_subresource, 1, D3D12_RESOURCE_STATE_RESOLVE_DEST);
+				}
+
+				Resolve resolve = {};
+				resolve.src_res = src_tex_info->resource;
+				resolve.src_subres = src_subresource;
+				resolve.dst_res = dst_tex_info->resource;
+				resolve.dst_subres = dst_subresource;
+				resolve.format = RD_TO_D3D12_FORMAT[src_tex_info->format].general_format;
+				resolves.push_back(resolve);
+			}
 		}
-
-		resolves[num_resolves].src_res = src_tex_info->resource;
-		resolves[num_resolves].src_subres = src_subresource;
-		resolves[num_resolves].dst_res = dst_tex_info->resource;
-		resolves[num_resolves].dst_subres = dst_subresource;
-		resolves[num_resolves].format = RD_TO_D3D12_FORMAT[src_tex_info->format].general_format;
-		num_resolves++;
 	}
 
 	_resource_transitions_flush(cmd_buf_info);
 
 	// There can be enhanced barriers to flush only when we need to resolve textures.
-	if (num_resolves != 0) {
+	if (!resolves.is_empty()) {
 		_render_pass_enhanced_barriers_flush(p_cmd_buffer);
 	}
 
-	for (uint32_t i = 0; i < num_resolves; i++) {
-		cmd_buf_info->cmd_list->ResolveSubresource(resolves[i].dst_res, resolves[i].dst_subres, resolves[i].src_res, resolves[i].src_subres, resolves[i].format);
+	for (const Resolve &resolve : resolves) {
+		cmd_buf_info->cmd_list->ResolveSubresource(resolve.dst_res, resolve.dst_subres, resolve.src_res, resolve.src_subres, resolve.format);
 	}
 }
 
@@ -4758,7 +4762,7 @@ void RenderingDeviceDriverD3D12::command_render_clear_attachments(CommandBufferI
 				uint32_t color_idx = fb_info->attachments_handle_inds[attachment];
 				cmd_buf_info->cmd_list->ClearRenderTargetView(
 						get_cpu_handle(fb_info->rtv_alloc.cpu_handle, color_idx, rtv_descriptor_heap_pool.increment_size),
-						p_attachment_clears[i].value.color.components,
+						p_attachment_clears[i].value.color.as_float4_buffer(),
 						rect_ptr ? 1 : 0,
 						rect_ptr);
 			} else {
@@ -4794,6 +4798,9 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 
 		cmd_buf_info->graphics_pso = pipeline_info->pso.Get();
 		cmd_buf_info->compute_pso = nullptr;
+
+		cmd_buf_info->nir_graphics_runtime_data_root_param_idx = shader_info_in->nir_runtime_data_root_param_idx;
+		cmd_buf_info->nir_compute_runtime_data_root_param_idx = UINT32_MAX;
 	}
 
 	if (cmd_buf_info->graphics_root_signature_crc != shader_info_in->root_signature_crc) {
@@ -4807,7 +4814,7 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 	}
 
 	if (cmd_buf_info->pending_dyn_params || (cmd_buf_info->dyn_params.blend_constant != render_info.dyn_params.blend_constant)) {
-		cmd_buf_info->cmd_list->OMSetBlendFactor(render_info.dyn_params.blend_constant.components);
+		cmd_buf_info->cmd_list->OMSetBlendFactor(render_info.dyn_params.blend_constant.as_float4_buffer());
 		cmd_buf_info->dyn_params.blend_constant = render_info.dyn_params.blend_constant;
 	}
 
@@ -4997,7 +5004,7 @@ void RenderingDeviceDriverD3D12::_bind_vertex_buffers(CommandBufferInfo *p_cmd_b
 
 void RenderingDeviceDriverD3D12::command_render_set_blend_constants(CommandBufferID p_cmd_buffer, const Color &p_constants) {
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
-	cmd_buf_info->cmd_list->OMSetBlendFactor(p_constants.components);
+	cmd_buf_info->cmd_list->OMSetBlendFactor(p_constants.as_float4_buffer());
 }
 
 void RenderingDeviceDriverD3D12::command_render_set_line_width(CommandBufferID p_cmd_buffer, float p_width) {
@@ -5123,7 +5130,6 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 	RenderPipelineInfo render_info;
 
 	// Attachments.
-	LocalVector<uint32_t> color_attachments;
 	{
 		const Subpass &subpass = pass_info->subpasses[p_render_subpass];
 
@@ -5376,6 +5382,9 @@ void RenderingDeviceDriverD3D12::command_bind_compute_pipeline(CommandBufferID p
 
 		cmd_buf_info->compute_pso = pipeline_info->pso.Get();
 		cmd_buf_info->graphics_pso = nullptr;
+
+		cmd_buf_info->nir_compute_runtime_data_root_param_idx = shader_info_in->nir_runtime_data_root_param_idx;
+		cmd_buf_info->nir_graphics_runtime_data_root_param_idx = UINT32_MAX;
 	}
 
 	if (cmd_buf_info->compute_root_signature_crc != shader_info_in->root_signature_crc) {
@@ -5430,6 +5439,14 @@ void RenderingDeviceDriverD3D12::command_compute_dispatch(CommandBufferID p_cmd_
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	if (!barrier_capabilities.enhanced_barriers_supported) {
 		_resource_transitions_flush(cmd_buf_info);
+	}
+
+	if (cmd_buf_info->nir_compute_runtime_data_root_param_idx != UINT32_MAX) {
+		dxil_spirv_compute_runtime_data runtime_data = {};
+		runtime_data.group_count_x = p_x_groups;
+		runtime_data.group_count_y = p_y_groups;
+		runtime_data.group_count_z = p_z_groups;
+		cmd_buf_info->cmd_list->SetComputeRoot32BitConstants(cmd_buf_info->nir_compute_runtime_data_root_param_idx, sizeof(dxil_spirv_compute_runtime_data) / sizeof(uint32_t), &runtime_data, 0);
 	}
 
 	cmd_buf_info->cmd_list->Dispatch(p_x_groups, p_y_groups, p_z_groups);

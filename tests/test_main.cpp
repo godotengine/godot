@@ -56,18 +56,22 @@
 
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d_manager.h"
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d_manager.h"
 #endif // NAVIGATION_3D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"
 #include "servers/physics_2d/physics_server_2d_dummy.h"
+#include "servers/physics_2d/physics_server_2d_manager.h"
 #endif // PHYSICS_2D_DISABLED
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_3d/physics_server_3d.h"
 #include "servers/physics_3d/physics_server_3d_dummy.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 #endif // PHYSICS_3D_DISABLED
 
 #include "modules/modules_tests.gen.h" // IWYU pragma: keep // TODO: Migrate module tests to compilation files.
@@ -296,9 +300,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			MessageQueue::get_singleton()->flush();
 		}
 
-		if (SceneTree::get_singleton()) {
-			memdelete(SceneTree::get_singleton());
-		}
+		memdelete(SceneTree::get_singleton());
 
 #ifndef NAVIGATION_3D_DISABLED
 		if (navigation_server_3d) {
@@ -330,25 +332,15 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 #endif // PHYSICS_2D_DISABLED
 
-		if (Input::get_singleton()) {
-			memdelete(Input::get_singleton());
-		}
+		memdelete(Input::get_singleton());
 
 		if (RenderingServer::get_singleton()) {
 			ThemeDB::get_singleton()->finalize_theme();
 		}
 
-		if (AccessibilityServer::get_singleton()) {
-			memdelete(AccessibilityServer::get_singleton());
-		}
-
-		if (DisplayServer::get_singleton()) {
-			memdelete(DisplayServer::get_singleton());
-		}
-
-		if (InputMap::get_singleton()) {
-			memdelete(InputMap::get_singleton());
-		}
+		memdelete(AccessibilityServer::get_singleton());
+		memdelete(DisplayServer::get_singleton());
+		memdelete(InputMap::get_singleton());
 
 		if (AudioServer::get_singleton()) {
 			AudioServer::get_singleton()->finish();

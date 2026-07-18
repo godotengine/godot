@@ -1164,8 +1164,8 @@ void GDScriptTokenizerText::check_indent() {
 		while (!_is_at_end()) {
 			char32_t space = _peek();
 			if (space == '\t') {
-				// Consider individual tab columns.
-				column += tab_size - 1;
+				// Counting tab indent with the configured tab size, allows error tolerant parsing in the editor,
+				// so that autocompletion still is functional when a file contains mixed indentation.
 				indent_count += tab_size;
 			} else if (space == ' ') {
 				indent_count += 1;
@@ -1307,12 +1307,8 @@ void GDScriptTokenizerText::_skip_whitespace() {
 		char32_t c = _peek();
 		switch (c) {
 			case ' ':
-				_advance();
-				break;
 			case '\t':
 				_advance();
-				// Consider individual tab columns.
-				column += tab_size - 1;
 				break;
 			case '\r':
 				_advance(); // Consume either way.

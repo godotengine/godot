@@ -38,11 +38,13 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
-TabContainer::CachedTab &TabContainer::get_pending_tab(int p_idx) const {
+TabContainer::CachedTab *TabContainer::get_pending_tab(int p_idx) const {
 	if (p_idx >= pending_tabs.size()) {
-		pending_tabs.resize(p_idx + 1);
+		ERR_FAIL_COND_V(pending_tabs.resize(p_idx + 1) != OK, nullptr);
 	}
-	return pending_tabs.write[p_idx];
+	ERR_FAIL_INDEX_V(p_idx, pending_tabs.size(), nullptr);
+
+	return pending_tabs.ptrw() + p_idx;
 }
 
 int TabContainer::_get_tab_height() const {
@@ -147,21 +149,7 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_READY: {
-			for (int i = 0; i < pending_tabs.size(); i++) {
-				const CachedTab &tab = pending_tabs[i];
-				if (tab.has_title) {
-					set_tab_title(i, tab.title);
-				}
-				set_tab_icon(i, tab.icon);
-				set_tab_disabled(i, tab.disabled);
-				set_tab_hidden(i, tab.hidden);
-			}
-			pending_tabs.clear();
-
-			[[fallthrough]];
-		}
-
+		case NOTIFICATION_READY:
 		case NOTIFICATION_RESIZED: {
 			_update_margins();
 		} break;
@@ -266,6 +254,7 @@ void TabContainer::_on_theme_changed() {
 		_repaint();
 	} else {
 		update_minimum_size();
+		update_desired_size();
 	}
 	queue_redraw();
 
@@ -598,7 +587,23 @@ void TabContainer::add_child_notify(Node *p_child) {
 	c->hide();
 
 	tab_bar->add_tab(p_child->get_meta("_tab_name", p_child->get_name()));
-	c->set_meta("_tab_index", tab_bar->get_tab_count() - 1);
+	int idx = tab_bar->get_tab_count() - 1;
+	c->set_meta("_tab_index", idx);
+
+	if (idx < pending_tabs.size()) {
+		const CachedTab &tab = pending_tabs[idx];
+		if (tab.has_title) {
+			set_tab_title(idx, tab.title);
+		}
+		set_tab_icon(idx, tab.icon);
+		set_tab_disabled(idx, tab.disabled);
+		set_tab_hidden(idx, tab.hidden);
+
+		if (idx == pending_tabs.size() - 1) {
+			// Last tab was assigned.
+			pending_tabs.clear();
+		}
+	}
 
 	_update_margins();
 	if (get_tab_count() == 1) {
@@ -832,23 +837,23 @@ bool TabContainer::are_tabs_visible() const {
 
 #ifndef DISABLE_DEPRECATED
 void TabContainer::set_all_tabs_in_front(bool p_in_front) {
-	all_tabs_in_front = p_in_front;
-	if (all_tabs_in_front) {
+	if (p_in_front) {
 		WARN_PRINT_ONCE("Due to internal changes, `all_tabs_in_front` doesn't do anything anymore, as they're always in front.");
 	}
 }
 
 bool TabContainer::is_all_tabs_in_front() const {
-	return all_tabs_in_front;
+	return false;
 }
 #endif
 
 void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		CachedTab &tab = get_pending_tab(p_tab);
-		tab.title = p_title;
-		tab.has_title = true;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->title = p_title;
+		tab->has_title = true;
 		return;
 	}
 	ERR_FAIL_NULL(child);
@@ -884,7 +889,9 @@ String TabContainer::get_tab_tooltip(int p_tab) const {
 void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		get_pending_tab(p_tab).icon = p_icon;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->icon = p_icon;
 		return;
 	}
 
@@ -922,7 +929,9 @@ int TabContainer::get_tab_icon_max_width(int p_tab) const {
 void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		get_pending_tab(p_tab).disabled = p_disabled;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->disabled = p_disabled;
 		return;
 	}
 
@@ -933,6 +942,7 @@ void TabContainer::set_tab_disabled(int p_tab, bool p_disabled) {
 	tab_bar->set_tab_disabled(p_tab, p_disabled);
 
 	_update_margins();
+	update_desired_size();
 	if (!get_clip_tabs()) {
 		update_minimum_size();
 	}
@@ -945,7 +955,9 @@ bool TabContainer::is_tab_disabled(int p_tab) const {
 void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	Control *child = get_tab_control(p_tab);
 	if (!child && !is_ready()) {
-		get_pending_tab(p_tab).hidden = p_hidden;
+		CachedTab *tab = get_pending_tab(p_tab);
+		ERR_FAIL_NULL(tab);
+		tab->hidden = p_hidden;
 		return;
 	}
 	ERR_FAIL_NULL(child);
@@ -958,6 +970,7 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	child->hide();
 
 	_update_margins();
+	update_desired_size();
 	if (!get_clip_tabs()) {
 		update_minimum_size();
 	}
@@ -987,16 +1000,16 @@ Ref<Texture2D> TabContainer::get_tab_button_icon(int p_tab) const {
 	return tab_bar->get_tab_button_icon(p_tab);
 }
 
-Size2 TabContainer::get_minimum_size() const {
+Size2 TabContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	Size2 ms;
 
 	if (tabs_visible) {
-		ms = tab_bar->get_minimum_size();
+		ms = p_use_desired_sizes ? tab_bar->get_bound_desired_size() : tab_bar->get_minimum_size();
 		ms.width += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
 		ms.height += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
 
 		if (get_popup()) {
-			ms.width += popup_button->get_minimum_size().x;
+			ms.width += p_use_desired_sizes ? popup_button->get_bound_desired_size().x : popup_button->get_minimum_size().x;
 		}
 
 		if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
@@ -1014,7 +1027,7 @@ Size2 TabContainer::get_minimum_size() const {
 			continue;
 		}
 
-		Size2 cms = c->get_bound_minimum_size();
+		Size2 cms = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
 		largest_child_min_size = largest_child_min_size.max(cms);
 	}
 	ms.height += largest_child_min_size.height;
@@ -1025,6 +1038,14 @@ Size2 TabContainer::get_minimum_size() const {
 	ms.height += panel_ms.height;
 
 	return ms;
+}
+
+Size2 TabContainer::get_minimum_size() const {
+	return _get_minimum_size(false);
+}
+
+Size2 TabContainer::get_desired_size() const {
+	return _get_minimum_size(true);
 }
 
 Size2 TabContainer::get_inner_combined_maximum_size() const {
@@ -1105,6 +1126,7 @@ void TabContainer::set_popup(Node *p_popup) {
 		popup_button->set_visible(popup != nullptr);
 		_update_margins();
 		update_minimum_size();
+		update_desired_size();
 	}
 }
 
@@ -1155,6 +1177,7 @@ void TabContainer::set_use_hidden_tabs_for_min_size(bool p_use_hidden_tabs) {
 
 	use_hidden_tabs_for_min_size = p_use_hidden_tabs;
 	update_minimum_size();
+	update_desired_size();
 }
 
 bool TabContainer::get_use_hidden_tabs_for_min_size() const {
@@ -1240,7 +1263,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_tabs"), "set_clip_tabs", "get_clip_tabs");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 #ifndef DISABLE_DEPRECATED
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_all_tabs_in_front", "is_all_tabs_in_front");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "all_tabs_in_front", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_all_tabs_in_front", "is_all_tabs_in_front");
 #endif
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_drag_hover"), "set_switch_on_drag_hover", "get_switch_on_drag_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");

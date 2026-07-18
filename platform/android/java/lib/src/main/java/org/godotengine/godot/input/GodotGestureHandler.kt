@@ -30,13 +30,10 @@
 
 package org.godotengine.godot.input
 
-import android.os.Build
 import android.view.GestureDetector.SimpleOnGestureListener
-import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.OnScaleGestureListener
-import org.godotengine.godot.GodotLib
 
 /**
  * Handles regular and scale gesture input related events for the [GodotView] view.
@@ -51,11 +48,18 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 	}
 
 	/**
-	 * Enable pan and scale gestures
+	 * Enable panning gestures.
 	 */
-	var panningAndScalingEnabled = false
+	var panningEnabled = false
+
+	/**
+	 * Enable scaling gestures.
+	 */
+	var scalingEnabled = false
 
 	var scrollDeadzoneDisabled = false
+
+	var longPressEnabled = false
 
 	/**
 	 * Enable haptic feedback on long-press right-click
@@ -181,8 +185,12 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 	override fun onDoubleTapEvent(event: MotionEvent): Boolean {
 		if (event.actionMasked == MotionEvent.ACTION_UP) {
 			nextDownIsDoubleTap = false
-			inputHandler.handleMotionEvent(event)
-		} else if (event.actionMasked == MotionEvent.ACTION_MOVE && !panningAndScalingEnabled) {
+
+			// Long press is restored to its previous value.
+			inputHandler.gestureDetector.setIsLongpressEnabled(longPressEnabled)
+
+			inputHandler.handleMotionEvent(event, event.actionMasked, true)
+		} else if (event.actionMasked == MotionEvent.ACTION_MOVE && !(scalingEnabled && inputHandler.scaleGestureDetector.isQuickScaleEnabled)) {
 			inputHandler.handleMotionEvent(event)
 		}
 
@@ -190,6 +198,9 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 	}
 
 	override fun onDoubleTap(event: MotionEvent): Boolean {
+		// Long press is disabled as it interferes with double tap events.
+		inputHandler.gestureDetector.setIsLongpressEnabled(false)
+
 		nextDownIsDoubleTap = true
 		return true
 	}
@@ -214,7 +225,7 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 
 		val x = terminusEvent.x
 		val y = terminusEvent.y
-		if (terminusEvent.pointerCount >= 2 && panningAndScalingEnabled && !pointerCaptureInProgress && !dragInProgress) {
+		if (terminusEvent.pointerCount >= 2 && panningEnabled && !pointerCaptureInProgress && !dragInProgress) {
 			inputHandler.handlePanEvent(x, y, distanceX / 5f, distanceY / 5f)
 		} else if (!scaleInProgress) {
 			dragInProgress = true
@@ -226,7 +237,7 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 	}
 
 	override fun onScale(detector: ScaleGestureDetector): Boolean {
-		if (!panningAndScalingEnabled || pointerCaptureInProgress || dragInProgress) {
+		if (!scalingEnabled || pointerCaptureInProgress || dragInProgress) {
 			return false
 		}
 
@@ -237,7 +248,7 @@ internal class GodotGestureHandler(private val inputHandler: GodotInputHandler) 
 	}
 
 	override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-		if (!panningAndScalingEnabled || pointerCaptureInProgress || dragInProgress) {
+		if (!scalingEnabled || pointerCaptureInProgress || dragInProgress) {
 			return false
 		}
 		scaleInProgress = true

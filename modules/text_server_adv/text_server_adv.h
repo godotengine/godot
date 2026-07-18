@@ -569,9 +569,7 @@ class TextServerAdvanced : public TextServerExtension {
 					ubidi_close(bidi_iter[i]);
 				}
 			}
-			if (script_iter) {
-				memdelete(script_iter);
-			}
+			memdelete(script_iter);
 			if (hb_buffer) {
 				hb_buffer_destroy(hb_buffer);
 			}
@@ -819,6 +817,7 @@ protected:
 public:
 	MODBIND1RC(bool, has_feature, Feature);
 	MODBIND0RC(String, get_name);
+	MODBIND0RC(String, get_short_name);
 	MODBIND0RC(int64_t, get_features);
 
 	MODBIND1(free_rid, const RID &);

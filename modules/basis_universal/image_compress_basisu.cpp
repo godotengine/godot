@@ -301,15 +301,15 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 
 	switch (decompress_format) {
 		case BASIS_DECOMPRESS_R: {
-			if (rgtc_supported) {
+			if (etc2_supported) {
+				basisu_format = basist::transcoder_texture_format::cTFETC2_EAC_R11;
+				image_format = Image::FORMAT_ETC2_R11;
+			} else if (rgtc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFBC4_R;
 				image_format = Image::FORMAT_RGTC_R;
 			} else if (s3tc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFBC1;
 				image_format = Image::FORMAT_DXT1;
-			} else if (etc2_supported) {
-				basisu_format = basist::transcoder_texture_format::cTFETC2_EAC_R11;
-				image_format = Image::FORMAT_ETC2_R11;
 			} else {
 				// No supported VRAM compression formats, decompress.
 				basisu_format = basist::transcoder_texture_format::cTFRGBA32;
@@ -318,32 +318,17 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 			}
 
 		} break;
-		case BASIS_DECOMPRESS_RG: {
-			if (rgtc_supported) {
+		case BASIS_DECOMPRESS_RG:
+		case BASIS_DECOMPRESS_RG_AS_RA: {
+			if (etc2_supported) {
+				basisu_format = basist::transcoder_texture_format::cTFETC2_EAC_RG11;
+				image_format = Image::FORMAT_ETC2_RG11;
+			} else if (rgtc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFBC5_RG;
 				image_format = Image::FORMAT_RGTC_RG;
 			} else if (s3tc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFBC3;
 				image_format = Image::FORMAT_DXT5_RA_AS_RG;
-			} else if (etc2_supported) {
-				basisu_format = basist::transcoder_texture_format::cTFETC2_EAC_RG11;
-				image_format = Image::FORMAT_ETC2_RG11;
-			} else {
-				// No supported VRAM compression formats, decompress.
-				basisu_format = basist::transcoder_texture_format::cTFRGBA32;
-				image_format = Image::FORMAT_RGBA8;
-				needs_ra_rg_swap = true;
-				needs_rg_trim = true;
-			}
-
-		} break;
-		case BASIS_DECOMPRESS_RG_AS_RA: {
-			if (s3tc_supported) {
-				basisu_format = basist::transcoder_texture_format::cTFBC3;
-				image_format = Image::FORMAT_DXT5_RA_AS_RG;
-			} else if (etc2_supported) {
-				basisu_format = basist::transcoder_texture_format::cTFETC2;
-				image_format = Image::FORMAT_ETC2_RA_AS_RG;
 			} else {
 				// No supported VRAM compression formats, decompress.
 				basisu_format = basist::transcoder_texture_format::cTFRGBA32;
@@ -354,18 +339,18 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 
 		} break;
 		case BASIS_DECOMPRESS_RGB: {
-			if (bptc_supported) {
-				basisu_format = basist::transcoder_texture_format::cTFBC7_M6_OPAQUE_ONLY;
-				image_format = Image::FORMAT_BPTC_RGBA;
-			} else if (astc_supported) {
+			if (astc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFASTC_4x4_RGBA;
 				image_format = Image::FORMAT_ASTC_4x4;
-			} else if (s3tc_supported) {
-				basisu_format = basist::transcoder_texture_format::cTFBC1;
-				image_format = Image::FORMAT_DXT1;
+			} else if (bptc_supported) {
+				basisu_format = basist::transcoder_texture_format::cTFBC7_M6_OPAQUE_ONLY;
+				image_format = Image::FORMAT_BPTC_RGBA;
 			} else if (etc2_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFETC1;
 				image_format = Image::FORMAT_ETC2_RGB8;
+			} else if (s3tc_supported) {
+				basisu_format = basist::transcoder_texture_format::cTFBC1;
+				image_format = Image::FORMAT_DXT1;
 			} else {
 				// No supported VRAM compression formats, decompress.
 				basisu_format = basist::transcoder_texture_format::cTFRGBA32;
@@ -374,18 +359,18 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 
 		} break;
 		case BASIS_DECOMPRESS_RGBA: {
-			if (bptc_supported) {
-				basisu_format = basist::transcoder_texture_format::cTFBC7_M5;
-				image_format = Image::FORMAT_BPTC_RGBA;
-			} else if (astc_supported) {
+			if (astc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFASTC_4x4_RGBA;
 				image_format = Image::FORMAT_ASTC_4x4;
-			} else if (s3tc_supported) {
-				basisu_format = basist::transcoder_texture_format::cTFBC3;
-				image_format = Image::FORMAT_DXT5;
+			} else if (bptc_supported) {
+				basisu_format = basist::transcoder_texture_format::cTFBC7_M5;
+				image_format = Image::FORMAT_BPTC_RGBA;
 			} else if (etc2_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFETC2;
 				image_format = Image::FORMAT_ETC2_RGBA8;
+			} else if (s3tc_supported) {
+				basisu_format = basist::transcoder_texture_format::cTFBC3;
+				image_format = Image::FORMAT_DXT5;
 			} else {
 				// No supported VRAM compression formats, decompress.
 				basisu_format = basist::transcoder_texture_format::cTFRGBA32;
@@ -394,12 +379,12 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 
 		} break;
 		case BASIS_DECOMPRESS_HDR_RGB: {
-			if (bptc_supported) {
-				basisu_format = basist::transcoder_texture_format::cTFBC6H;
-				image_format = Image::FORMAT_BPTC_RGBFU;
-			} else if (astc_hdr_supported) {
+			if (astc_hdr_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFASTC_HDR_4x4_RGBA;
 				image_format = Image::FORMAT_ASTC_4x4_HDR;
+			} else if (bptc_supported) {
+				basisu_format = basist::transcoder_texture_format::cTFBC6H;
+				image_format = Image::FORMAT_BPTC_RGBFU;
 			} else {
 				// No supported VRAM compression formats, decompress.
 				basisu_format = basist::transcoder_texture_format::cTFRGB_9E5;

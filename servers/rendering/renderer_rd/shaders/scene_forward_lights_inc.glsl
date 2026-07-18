@@ -1265,7 +1265,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	float cc_specular_ltc = 0.0;
 	vec2 cc_fresnel;
 	ltc_evaluate_specular(vec3(vertex_normal), vec3(eye_vec), sqrt(mix(0.001, 0.1, float(clearcoat_roughness))), points, area_lights.data[idx].projector_rect, max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP, ltc_lut1, ltc_lut2, cc_specular_ltc, cc_fresnel, cc_specular_tex_color);
-	half Fr = half(0.04) * max(half(cc_fresnel.x), half(0.0)) + half(1.0 - 0.04) * max(half(cc_fresnel.y), half(0.0)) * clearcoat;
+	half Fr = (half(0.04) * max(half(cc_fresnel.x), half(0.0)) + half(1.0 - 0.04) * max(half(cc_fresnel.y), half(0.0))) * clearcoat;
 	cc_attenuation = half(1.0) - Fr;
 	specular_light += half(cc_specular_ltc) * hvec3(cc_specular_tex_color) * Fr * color * light_attenuation_ltc * specular_amount;
 #endif // LIGHT_CLEARCOAT_USED
@@ -1312,9 +1312,9 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #endif // LIGHT_CODE_USED
 }
 
-void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal, half roughness, hvec3 ambient_light, hvec3 specular_light,
+void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal, half roughness, hvec3 ambient_light,
 #ifdef LIGHT_CLEARCOAT_USED
-		hvec3 cc_specular_light, hvec3 cc_ref_vec, half cc_roughness, inout hvec3 cc_reflection_accum,
+		hvec3 cc_ref_vec, half cc_roughness, inout hvec4 cc_reflection_accum,
 #endif
 		inout hvec4 ambient_accum, inout hvec4 reflection_accum) {
 	vec3 box_extents = reflections.data[ref_index].box_extents;
@@ -1367,30 +1367,36 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 	}
 
 #ifdef LIGHT_CLEARCOAT_USED
-	vec3 local_cc_ref_vec = (reflections.data[ref_index].local_matrix * vec4(cc_ref_vec, 0.0)).xyz;
+	if (reflections.data[ref_index].intensity > 0.0 && cc_reflection_accum.a < half(1.0)) { // compute clearcoat reflection
+		vec3 local_cc_ref_vec = (reflections.data[ref_index].local_matrix * vec4(cc_ref_vec, 0.0)).xyz;
 
-	if (reflections.data[ref_index].box_project) { // Box project.
+		if (reflections.data[ref_index].box_project) { // Box project.
 
-		vec3 nrdir = normalize(local_cc_ref_vec);
-		vec3 rbmax = (box_extents - local_pos) / nrdir;
-		vec3 rbmin = (-box_extents - local_pos) / nrdir;
+			vec3 nrdir = normalize(local_cc_ref_vec);
+			vec3 rbmax = (box_extents - local_pos) / nrdir;
+			vec3 rbmin = (-box_extents - local_pos) / nrdir;
 
-		vec3 rbminmax = mix(rbmin, rbmax, greaterThan(nrdir, vec3(0.0, 0.0, 0.0)));
+			vec3 rbminmax = mix(rbmin, rbmax, greaterThan(nrdir, vec3(0.0, 0.0, 0.0)));
 
-		float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
-		vec3 posonbox = local_pos + nrdir * fa;
-		local_cc_ref_vec = posonbox - reflections.data[ref_index].box_offset;
+			float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+			vec3 posonbox = local_pos + nrdir * fa;
+			local_cc_ref_vec = posonbox - reflections.data[ref_index].box_offset;
+		}
+
+		hvec4 cc_reflection;
+		half cc_reflection_blend = max(half(0.0), blend - cc_reflection_accum.a);
+
+		float cc_roughness_lod = sqrt(cc_roughness) * MAX_ROUGHNESS_LOD;
+		vec2 cc_reflection_uv = vec3_to_oct_with_border(local_cc_ref_vec, border_size);
+		cc_reflection.rgb = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cc_reflection_uv, reflections.data[ref_index].index), cc_roughness_lod).rgb) * REFLECTION_MULTIPLIER;
+		cc_reflection.rgb *= half(reflections.data[ref_index].exposure_normalization);
+		cc_reflection.a = cc_reflection_blend;
+
+		cc_reflection.rgb *= half(reflections.data[ref_index].intensity);
+		cc_reflection.rgb *= cc_reflection.a;
+
+		cc_reflection_accum += cc_reflection;
 	}
-
-	float cc_roughness_lod = sqrt(cc_roughness) * MAX_ROUGHNESS_LOD;
-	vec2 cc_reflection_uv = vec3_to_oct_with_border(local_cc_ref_vec, border_size);
-	hvec3 cc_reflection = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cc_reflection_uv, reflections.data[ref_index].index), cc_roughness_lod).rgb) * REFLECTION_MULTIPLIER;
-	cc_reflection *= half(reflections.data[ref_index].exposure_normalization);
-	if (reflections.data[ref_index].exterior) {
-		cc_reflection = mix(cc_specular_light, cc_reflection, blend);
-	}
-	cc_reflection *= half(reflections.data[ref_index].intensity) * blend;
-	cc_reflection_accum += cc_reflection;
 #endif // LIGHT_CLEARCOAT_USED
 
 	if (ambient_accum.a >= half(1.0)) {

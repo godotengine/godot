@@ -31,7 +31,6 @@
 #include "editor_run_native.h"
 
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "editor/editor_node.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
@@ -58,7 +57,6 @@ void EditorRunNative::_notification(int p_what) {
 						continue;
 					}
 					const int device_count = MIN(eep->get_options_count(), 9000);
-					String error;
 					if (device_count > 0) {
 						popup->add_icon_item(eep->get_run_icon(), eep->get_name(), -1);
 						popup->set_item_disabled(-1, true);

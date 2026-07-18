@@ -302,9 +302,9 @@ Error AnimationMixer::add_animation_library(const StringName &p_name, const Ref<
 
 	for (const AnimationLibraryData &lib : animation_libraries) {
 		ERR_FAIL_COND_V_MSG(lib.name == p_name, ERR_ALREADY_EXISTS, "Can't add animation library twice with name: " + String(p_name));
-		ERR_FAIL_COND_V_MSG(lib.library == p_animation_library, ERR_ALREADY_EXISTS, "Can't add animation library twice (adding as '" + p_name.operator String() + "', exists as '" + lib.name.operator String() + "'.");
+		ERR_FAIL_COND_V_MSG(lib.library == p_animation_library, ERR_ALREADY_EXISTS, "Can't add animation library twice (adding as '" + p_name.string() + "', exists as '" + lib.name.string() + "'.");
 
-		if (lib.name.operator String() >= p_name.operator String()) {
+		if (lib.name.string() >= p_name.string()) {
 			break;
 		}
 
@@ -583,18 +583,20 @@ bool AnimationMixer::is_dummy() const {
 /* -- Caches for blending --------------------- */
 /* -------------------------------------------- */
 
-void AnimationMixer::_clear_caches() {
+void AnimationMixer::_clear_caches(bool p_clear_track_cache) {
 	_init_root_motion_cache();
 	_clear_audio_streams();
 	_clear_playing_caches();
+	capture_cache.clear();
+	if (!p_clear_track_cache) {
+		return;
+	}
 	for (KeyValue<Animation::TrackCacheID, TrackCache *> &K : track_cache) {
 		memdelete(K.value);
 	}
 	track_cache.clear();
 	animation_track_num_to_track_cache.clear();
 	cache_valid = false;
-	capture_cache.clear();
-
 	emit_signal(SNAME("caches_cleared"));
 }
 
@@ -604,6 +606,15 @@ void AnimationMixer::_clear_audio_streams() {
 		playing_audio_stream_players[i]->call(SNAME("set_stream"), Ref<AudioStream>());
 	}
 	playing_audio_stream_players.clear();
+
+	// Unref the playback handle so it doesn't keep the AudioStreamPlaybackPolyphonic
+	// alive after the AudioStreamPlayer node may have been deleted while stopped.
+	// It is re-acquired lazily on the next play.
+	for (KeyValue<Animation::TrackCacheID, TrackCache *> &K : track_cache) {
+		if (K.value->type == Animation::TYPE_AUDIO) {
+			static_cast<TrackCacheAudio *>(K.value)->audio_stream_playback.unref();
+		}
+	}
 }
 
 void AnimationMixer::_clear_playing_caches() {
@@ -732,7 +743,10 @@ bool AnimationMixer::_update_caches() {
 					case Animation::TYPE_VALUE: {
 						// If a value track without a key is cached first, the initial value cannot be determined.
 						// It is a corner case, but which may cause problems with blending.
-						ERR_CONTINUE_MSG(anim->track_get_key_count(i) == 0, mixer_name + ": '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
+						if (anim->track_get_key_count(i) == 0) {
+							WARN_VERBOSE(mixer_name + ": '" + String(E) + "', Value Track:  '" + String(path) + "' must have at least one key to cache for blending.");
+							continue;
+						}
 
 						TrackCacheValue *track_value = memnew(TrackCacheValue);
 
@@ -2528,13 +2542,13 @@ void AnimationMixer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_DISCRETE_RECESSIVE);
 	BIND_ENUM_CONSTANT(ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS);
 
-	ADD_SIGNAL(MethodInfo(SNAME("animation_list_changed")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_libraries_updated")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_finished"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
-	ADD_SIGNAL(MethodInfo(SNAME("animation_started"), PropertyInfo(Variant::STRING_NAME, "anim_name")));
-	ADD_SIGNAL(MethodInfo(SNAME("caches_cleared")));
-	ADD_SIGNAL(MethodInfo(SNAME("mixer_applied")));
-	ADD_SIGNAL(MethodInfo(SNAME("mixer_updated"))); // For updating dummy player.
+	ADD_SIGNAL(MethodInfo("animation_list_changed"));
+	ADD_SIGNAL(MethodInfo("animation_libraries_updated"));
+	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("caches_cleared"));
+	ADD_SIGNAL(MethodInfo("mixer_applied"));
+	ADD_SIGNAL(MethodInfo("mixer_updated")); // For updating dummy player.
 
 	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
 	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);

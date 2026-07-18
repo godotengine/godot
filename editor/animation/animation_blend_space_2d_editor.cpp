@@ -141,9 +141,15 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			menu->add_submenu_node_item(TTR("Add Animation"), animations_menu);
 
-			for (const StringName &E : tree->get_sorted_animation_list()) {
-				animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
-				animations_to_add.push_back(E);
+			const LocalVector<StringName> &animation_list = tree->get_sorted_animation_list();
+			if (animation_list.is_empty()) {
+				animations_menu->add_item(TTR("No available animations"));
+				animations_menu->set_item_disabled(-1, true);
+			} else {
+				for (const StringName &E : animation_list) {
+					animations_menu->add_icon_item(get_editor_theme_icon(SNAME("Animation")), E);
+					animations_to_add.push_back(E);
+				}
 			}
 
 			for (const StringName &E : classes) {
@@ -630,7 +636,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 		blend_space_draw->draw_primitive(bl_points, colors, Vector<Vector2>());
 	}
 
-	bool does_include_invalid_key = false;
 	points.clear();
 	for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
 		Vector2 point = blend_space->get_blend_point_position(i);
@@ -656,7 +661,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			Ref<AnimationNodeAnimation> anim_node = node;
 			if (anim_node.is_null()) {
 				is_key_valid = false;
-				does_include_invalid_key = true;
 			}
 		}
 		Vector2 gui_point = (ofs + point - icon->get_size() / 2).floor();
@@ -682,9 +686,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			text_rects.write[i] = Rect2(Vector2(text_pos.x, text_pos.y - font->get_ascent(font_size)), text_size);
 		}
 	}
-	AnimationTreeEditor::get_singleton()->current_playback_error = does_include_invalid_key
-			? TTR("Cyclic sync modes require that all blend points in BlendSpace use non-nested Animation nodes with a finite, immutable length.")
-			: String();
 
 	if (making_triangle.size()) {
 		Vector<Vector2> bl_points;
@@ -747,7 +748,7 @@ void AnimationNodeBlendSpace2DEditor::_snap_toggled() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_update_space() {
-	if (updating) {
+	if (updating || blend_space.is_null()) {
 		return;
 	}
 
@@ -891,7 +892,7 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_update_edited_point_pos() {
-	if (updating) {
+	if (updating || blend_space.is_null()) {
 		return;
 	}
 
@@ -968,6 +969,9 @@ void AnimationNodeBlendSpace2DEditor::_edit_point_index(double p_index) {
 
 void AnimationNodeBlendSpace2DEditor::_set_selected_point(int p_index) {
 	selected_point = p_index;
+	if (blend_space.is_null()) {
+		return;
+	}
 	_update_tool_erase();
 	if (p_index != -1) {
 		_update_edited_point_pos();
@@ -1020,11 +1024,6 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackCapture")), TTR("Capture"), 2);
-		} break;
-		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (!is_visible_in_tree()) {
-				AnimationTreeEditor::get_singleton()->current_playback_error = String();
-			}
 		} break;
 	}
 }

@@ -44,6 +44,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
@@ -55,7 +56,7 @@
 #include "scene/resources/style_box_flat.h"
 
 static inline void setup_http_request(HTTPRequest *request) {
-	request->set_use_threads(EDITOR_GET("asset_library/use_threads"));
+	request->set_use_threads(EDITOR_GET("asset_store/use_threads"));
 
 	const String proxy_host = EDITOR_GET("network/http_proxy/host");
 	const int proxy_port = EDITOR_GET("network/http_proxy/port");
@@ -63,13 +64,14 @@ static inline void setup_http_request(HTTPRequest *request) {
 	request->set_https_proxy(proxy_host, proxy_port);
 }
 
-void EditorAssetLibraryItem::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, const String &p_license_type, const String &p_license_url, int p_rating) {
+void EditorAssetLibraryItem::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating) {
 	title_text = p_title;
 	title->set_text(title_text);
 	title->set_tooltip_text(title_text);
 	asset_id = p_asset_id;
 	author->set_text(p_author);
 	author_id = p_author_id;
+	verified->set_visible(p_verified);
 	license->set_text(p_license_type);
 	license_url = p_license_url;
 	rating_count->set_text(itos(p_rating));
@@ -98,6 +100,7 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			author->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("faded_text"), SNAME("AssetLib")));
 			license->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("faded_text"), SNAME("AssetLib")));
+			verified->set_texture(get_editor_theme_icon(SNAME("Verified")));
 			rating_icon->set_texture(get_editor_theme_icon(SNAME("ThumbsUp")));
 
 			_calculate_misc_links_size();
@@ -171,10 +174,20 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	icon->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	hb->add_child(icon);
 
+	text_margin = memnew(MarginContainer);
+	text_margin->add_theme_constant_override(SNAME("margin_left"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_right"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_top"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_bottom"), margin_size);
+	text_margin->set_h_size_flags(SIZE_EXPAND_FILL);
+	text_margin->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	text_margin->set_clip_contents(true);
+	hb->add_child(text_margin);
+
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	hb->add_child(vb);
+	text_margin->add_child(vb);
 
 	Ref<StyleBoxEmpty> label_margin;
 	label_margin.instantiate();
@@ -203,6 +216,12 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	author_license_hbox->add_child(author);
 	author->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItem::_author_clicked));
 
+	verified = memnew(TextureRect);
+	verified->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	verified->set_tooltip_text(TTRC("Verified Author"));
+	verified->hide();
+	author_license_hbox->add_child(verified);
+
 	separator = memnew(HSeparator);
 	separator->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	author_license_hbox->add_child(separator);
@@ -216,6 +235,10 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	author_license_hbox->add_child(license);
 	license->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItem::_license_clicked));
 
+	// Ensure the entire asset card can be clicked.
+	Control *spacer = vb->add_spacer();
+	spacer->set_mouse_filter(MOUSE_FILTER_IGNORE);
+
 	HBoxContainer *rating_hbox = memnew(HBoxContainer);
 	rating_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	vb->add_child(rating_hbox);
@@ -226,12 +249,11 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	rating_hbox->add_child(rating_icon);
 
 	rating_count = memnew(Label);
-	rating_count->set_mouse_filter(MOUSE_FILTER_STOP);
-	rating_count->set_tooltip_text(TTRC("Review Score"));
-	rating_count->set_accessibility_name(TTRC("Review score"));
+	rating_count->set_theme_type_variation("LabelNoMargin");
+	rating_count->set_accessibility_name(TTRC("Review Score"));
 	rating_hbox->add_child(rating_count);
 
-	set_accessibility_name(TTRC("Open asset details"));
+	set_accessibility_name(TTRC("Open Asset Details"));
 	set_custom_minimum_size(Size2(250, 80) * EDSCALE);
 	set_h_size_flags(SIZE_EXPAND_FILL);
 }
@@ -260,10 +282,20 @@ void EditorAssetLibraryZoomMode::input(const Ref<InputEvent> &p_event) {
 }
 
 EditorAssetLibraryZoomMode::EditorAssetLibraryZoomMode(Control *p_previews) {
+	ERR_FAIL_NULL(p_previews);
 	ERR_FAIL_COND(p_previews->get_parent());
 
+	Ref<Theme> theme;
+	if (EditorNode::get_singleton()) {
+		theme = EditorNode::get_singleton()->get_editor_theme();
+	} else if (ProjectManager::get_singleton()) {
+		theme = ProjectManager::get_singleton()->get_theme();
+	} else {
+		return;
+	}
+
 	ColorRect *dim = memnew(ColorRect);
-	dim->set_color(EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("base_color"), EditorStringName(Editor)));
+	dim->set_color(theme->get_color(SNAME("base_color"), EditorStringName(Editor)));
 	dim->set_anchors_preset(Control::PRESET_FULL_RECT);
 	add_child(dim);
 
@@ -337,6 +369,14 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 			next_preview->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			previews_bg->add_theme_style_override(SceneStringName(panel), previews->get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit")));
 			zoom_button->set_button_icon(get_editor_theme_icon(SNAME("DistractionFree")));
+
+			Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), SNAME("OptionButton"));
+			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("OptionButton"));
+			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("OptionButton"));
+
+			int height = sb->get_minimum_size().height;
+			height += font->get_height(font_size);
+			version->set_custom_minimum_size(Size2(0, height));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -449,10 +489,10 @@ void EditorAssetLibraryItemDescription::_zoom_toggled(bool p_pressed) {
 	}
 }
 
-void EditorAssetLibraryItemDescription::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url) {
+void EditorAssetLibraryItemDescription::configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url) {
 	asset_id = p_asset_id;
 	title = p_title;
-	item->configure(p_title, p_asset_id, p_author, p_author_id, p_license_type, p_license_url, p_rating);
+	item->configure(p_title, p_asset_id, p_author, p_author_id, p_verified, p_license_type, p_license_url, p_rating);
 
 	releases.clear();
 
@@ -603,14 +643,18 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	contents->add_child(version_label);
 
 	version = memnew(Label);
+	version->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	version->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	version->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	version->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	version->set_theme_type_variation("LabelNoMargin");
 	contents->add_child(version);
 
 	version_list = memnew(OptionButton);
 	version_list->set_fit_to_longest_item(false);
 	version_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	version_list->set_tooltip_text(TTRC("Download other versions."));
+	version_list->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	version_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	version_list->hide(); // Will be shown if multiple versions are available.
 	contents->add_child(version_list);
@@ -933,7 +977,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	vb->add_child(title_hb);
 	title = memnew(Label);
 	title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-	title->set_theme_type_variation("LabelVMarginless");
+	title->set_theme_type_variation("LabelNoMarginVertical");
 	title->set_focus_mode(FOCUS_ACCESSIBILITY);
 	title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	title_hb->add_child(title);
@@ -945,7 +989,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	version = memnew(Label);
 	version->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	version->set_theme_type_variation("LabelVMarginless");
+	version->set_theme_type_variation("LabelNoMarginVertical");
 	vb->add_child(version);
 
 	spacer = memnew(Control);
@@ -1063,6 +1107,18 @@ void EditorAssetLibrary::_notification(int p_what) {
 				to_delete.pop_front();
 			}
 
+			const bool no_downloads = downloads_hb->get_child_count() == 0;
+			if (no_downloads == downloads_scroll->is_visible()) {
+				downloads_scroll->set_visible(!no_downloads);
+
+				if (Engine::get_singleton()->is_project_manager_hint()) {
+					library_mc->set_theme_type_variation(no_downloads ? "NoBorderAssetLibProjectManager" : "NoBorderAssetLibProjectManagerHorizontal");
+				} else {
+					library_mc->set_theme_type_variation(no_downloads ? "NoBorderAssetLib" : "NoBorderAssetLibHorizontal");
+				}
+				library_scroll->set_scroll_hint_mode(no_downloads ? ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT : ScrollContainer::SCROLL_HINT_MODE_ALL);
+			}
+
 			if (image_queue.is_empty()) {
 				set_process(false);
 			}
@@ -1073,20 +1129,27 @@ void EditorAssetLibrary::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("asset_library") &&
-					!EditorSettings::get_singleton()->check_changed_settings_in_group("network")) {
-				break;
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("asset_store/use_threads") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("network/http_proxy")) {
+				setup_http_request(request);
 			}
 
-			_update_repository_options();
-			setup_http_request(request);
-
-			const bool loading_blocked_new = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
-			if (loading_blocked_new != loading_blocked) {
-				loading_blocked = loading_blocked_new;
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("asset_store/available_urls")) {
+				_update_repository_options();
 
 				if (!loading_blocked && is_visible()) {
-					_request_current_config(); // Reload config now that the network is available.
+					_request_current_config();
+				}
+			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("network/connection/network_mode")) {
+				const bool loading_blocked_new = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
+				if (loading_blocked_new != loading_blocked) {
+					loading_blocked = loading_blocked_new;
+
+					if (!loading_blocked && is_visible()) {
+						_request_current_config(); // Reload config now that the network is available.
+					}
 				}
 			}
 		} break;
@@ -1094,10 +1157,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 }
 
 void EditorAssetLibrary::_update_repository_options() {
-	// TODO: Move to editor_settings.cpp
-	Dictionary default_urls;
-	default_urls["godotengine.org (Official)"] = "https://store.godotengine.org/api/v1";
-	Dictionary available_urls = _EDITOR_DEF("asset_library/available_urls", default_urls, true);
+	Dictionary available_urls = EDITOR_GET("asset_store/available_urls");
 	repository->clear();
 	int i = 0;
 	for (const KeyValue<Variant, Variant> &kv : available_urls) {
@@ -1211,8 +1271,6 @@ void EditorAssetLibrary::_image_update(void *p_image_queue) {
 			parsed_image = Image::_webp_mem_loader_func(r, len);
 		} else if ((memcmp(&r[0], &bmp_signature[0], 2) == 0) && Image::_bmp_mem_loader_func) {
 			parsed_image = Image::_bmp_mem_loader_func(r, len);
-		} else if (Image::_svg_scalable_mem_loader_func) {
-			parsed_image = Image::_svg_scalable_mem_loader_func(r, len, 1.0);
 		}
 
 		if (parsed_image.is_null()) {
@@ -1385,9 +1443,20 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, int p_asset_id, const St
 void EditorAssetLibrary::_repository_changed(int p_repository_id) {
 	_set_library_message(TTRC("Loading..."));
 
-	asset_top_page->hide();
-	asset_bottom_page->hide();
-	asset_items->hide();
+	if (asset_items) {
+		memdelete(asset_items);
+		asset_items = nullptr;
+	}
+
+	if (asset_top_page) {
+		memdelete(asset_top_page);
+		asset_top_page = nullptr;
+	}
+
+	if (asset_bottom_page) {
+		memdelete(asset_bottom_page);
+		asset_bottom_page = nullptr;
+	}
 
 	filter->set_editable(false);
 	sort->set_disabled(true);
@@ -1402,6 +1471,8 @@ void EditorAssetLibrary::_licenses_id_pressed(int p_id) {
 }
 
 void EditorAssetLibrary::_licenses_popup_hide() {
+	licenses_all_toggled = true;
+
 	bool research = false;
 	PopupMenu *pm = licenses->get_popup();
 	for (unsigned int i = 0; i < licenses_toggled.size(); i++) {
@@ -1409,6 +1480,10 @@ void EditorAssetLibrary::_licenses_popup_hide() {
 		if (toggled != licenses_toggled[i]) {
 			licenses_toggled[i] = toggled;
 			research = true;
+		}
+
+		if (!toggled) {
+			licenses_all_toggled = false;
 		}
 	}
 
@@ -1423,29 +1498,27 @@ void EditorAssetLibrary::_search(int p_page) {
 	String search = filter->get_text().to_lower();
 	String args = "?query=" + search.uri_encode();
 
-	if (templates_only) {
-		args += "%23template";
-	} else if (categories->get_selected() > 0) {
-		args = args.replace("%23template", ""); // Bad user, no templates in projects!
+	if (categories->get_selected() > 0) {
 		args += "%23" + (String)categories->get_item_metadata(categories->get_selected());
 	}
 
 	args += "&require_release=true";
+	args += "&type=" + String(templates_only ? "1" : "0");
+	args += "&sort=" + String(sort_key[sort->get_selected()]);
 
-	Dictionary version = Engine::get_singleton()->get_version_info();
-	args += "&compatibility=" + (String)version["major"] + (String)version["minor"];
-	if ((int)version["patch"] > 0) {
-		args += (String)version["patch"];
+	args += "&compatibility=" + itos(GODOT_VERSION_MAJOR) + "." + itos(GODOT_VERSION_MINOR);
+	if (GODOT_VERSION_PATCH > 0) {
+		args += "." + itos(GODOT_VERSION_PATCH);
 	}
 
-	args += String() + "&sort=" + sort_key[sort->get_selected()];
-
-	int license_count = licenses->get_item_count();
-	if (license_count > 0) {
-		PopupMenu *popup = licenses->get_popup();
-		for (int i = 0; i < license_count; i++) {
-			if (popup->is_item_checked(i)) {
-				args += "&licenses=" + (String)popup->get_item_metadata(i);
+	if (!licenses_all_toggled) {
+		int license_count = licenses->get_item_count();
+		if (license_count > 0) {
+			PopupMenu *popup = licenses->get_popup();
+			for (int i = 0; i < license_count; i++) {
+				if (popup->is_item_checked(i)) {
+					args += "&licenses=" + (String)popup->get_item_metadata(i);
+				}
 			}
 		}
 	}
@@ -1465,7 +1538,7 @@ void EditorAssetLibrary::_request_current_config() {
 HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
-	if (p_page_count < 2) {
+	if (p_page_count < 1) {
 		return hbc;
 	}
 
@@ -1483,7 +1556,8 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
-	first->set_text(TTR("First", "Pagination"));
+	first->set_button_icon(get_editor_theme_icon(SNAME("BackStart")));
+	first->set_tooltip_text(TTR("First", "Pagination"));
 	first->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page != 1) {
 		first->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(1));
@@ -1492,9 +1566,11 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		first->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(first);
+	first->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(first, SNAME("BackStart")));
 
 	Button *prev = memnew(Button);
-	prev->set_text(TTR("Previous", "Pagination"));
+	prev->set_button_icon(get_editor_theme_icon(SNAME("Back")));
+	prev->set_tooltip_text(TTR("Previous", "Pagination"));
 	prev->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page > 1) {
 		prev->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page - 1));
@@ -1503,6 +1579,8 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		prev->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(prev);
+	prev->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(prev, SNAME("Back")));
+
 	hbc->add_child(memnew(VSeparator));
 
 	for (int i = from; i <= to; i++) {
@@ -1519,8 +1597,11 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		hbc->add_child(current);
 	}
 
+	hbc->add_child(memnew(VSeparator));
+
 	Button *next = memnew(Button);
-	next->set_text(TTR("Next", "Pagination"));
+	next->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
+	next->set_tooltip_text(TTR("Next", "Pagination"));
 	next->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page < p_page_count) {
 		next->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page + 1));
@@ -1528,11 +1609,12 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		next->set_disabled(true);
 		next->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
-	hbc->add_child(memnew(VSeparator));
 	hbc->add_child(next);
+	next->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(next, SNAME("Forward")));
 
 	Button *last = memnew(Button);
-	last->set_text(TTR("Last", "Pagination"));
+	last->set_button_icon(get_editor_theme_icon(SNAME("ForwardEnd")));
+	last->set_tooltip_text(TTR("Last", "Pagination"));
 	last->set_theme_type_variation("PanelBackgroundButton");
 	if (p_page != p_page_count) {
 		last->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page_count));
@@ -1541,10 +1623,15 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		last->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	}
 	hbc->add_child(last);
+	last->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_button_icon).bind(last, SNAME("ForwardEnd")));
 
 	hbc->add_spacer();
 
 	return hbc;
+}
+
+void EditorAssetLibrary::_update_button_icon(Button *p_button, const StringName &p_icon) {
+	p_button->set_button_icon(get_editor_theme_icon(p_icon));
 }
 
 void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_request_type, bool p_is_parallel) {
@@ -1681,6 +1768,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 		case REQUESTING_LICENSES: {
 			licenses_toggled.clear();
+			licenses_all_toggled = true;
 
 			Array arr = dt;
 			PopupMenu *popup = licenses->get_popup();
@@ -1703,23 +1791,30 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			if (asset_items) {
 				memdelete(asset_items);
+				asset_items = nullptr;
 			}
 
 			if (asset_top_page) {
 				memdelete(asset_top_page);
+				asset_top_page = nullptr;
 			}
 
 			if (asset_bottom_page) {
 				memdelete(asset_bottom_page);
+				asset_bottom_page = nullptr;
 			}
 
 			Dictionary d = dt;
-			ERR_FAIL_COND(!d.has("count"));
-			ERR_FAIL_COND(!d.has("hits"));
+			if (!d.has("count") || !d.has("hits")) {
+				_set_library_message_with_action(TTRC("Repository returned with invalid data."), TTRC("Retry"), callable_mp(this, &EditorAssetLibrary::_request_current_config));
+				error_hb->show();
+
+				return;
+			}
 
 			int page_len = 24; // API's default batch size.
 			int total_items = d["count"];
-			int pages = total_items / page_len;
+			int pages = MAX(1, total_items / page_len);
 			current_page = MIN(current_page, pages);
 			Array result = d["hits"];
 
@@ -1728,8 +1823,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			_update_asset_items_columns();
-			asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
-			asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("h_separation", 0);
+			asset_items->add_theme_constant_override("v_separation", 0);
 
 			library_vb->add_child(asset_items);
 
@@ -1775,7 +1870,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem(true));
 				asset_items->add_child(item);
-				item->configure(r["name"], r["slug"], p["name"], author_id, r["license_type"], r["license_url"], r["reviews_score"]);
+				item->configure(r["name"], r["slug"], p["name"], author_id, p["verified"], r["license_type"], r["license_url"], r["reviews_score"]);
 				item->connect("asset_selected", callable_mp(this, &EditorAssetLibrary::_select_asset));
 
 				if (r.has("thumbnail") && !r["thumbnail"].operator String().is_empty()) {
@@ -1805,6 +1900,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			Dictionary p = d["publisher"];
 			ERR_FAIL_COND(!p.has("name"));
 			ERR_FAIL_COND(!p.has("slug"));
+			ERR_FAIL_COND(!p.has("verified"));
 
 			HashMap<String, String> tags;
 			if (d.has("tags")) {
@@ -1818,16 +1914,14 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				}
 			}
 
-			if (description) {
-				memdelete(description);
-			}
+			memdelete(description);
 
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);
 			description->connect(SNAME("install_requested"), callable_mp(this, &EditorAssetLibrary::_install_asset));
 			description->connect(SNAME("tag_clicked"), callable_mp(this, &EditorAssetLibrary::_tag_clicked));
 
-			description->configure(d["name"], d["slug"], p["name"], p["slug"], d["license_type"], d["license_url"], d["reviews_score"], d["body_bbcode"], tags, d["store_url"], d["source"]);
+			description->configure(d["name"], d["slug"], p["name"], p["slug"], p["verified"], d["license_type"], d["license_url"], d["reviews_score"], d["body_bbcode"], tags, d["store_url"], d["source"]);
 
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(d["slug"]);
 			if (download_item) {
@@ -1876,15 +1970,52 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				return;
 			}
 
-			Array arr = dt;
-			// Iterate backwards, so the newer releases are added first.
-			for (int i = arr.size() - 1; i >= 0; i--) {
-				Dictionary d = arr[i];
-
+			LocalVector<int> engine_version = { GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR, GODOT_VERSION_PATCH };
+			for (const Dictionary d : (Array)dt) {
 				ERR_FAIL_COND(!d.has("download_url"));
 				ERR_FAIL_COND(!d.has("version"));
 				ERR_FAIL_COND(!d.has("stable"));
+				ERR_FAIL_COND(!d.has("min_godot_version"));
+				ERR_FAIL_COND(!d.has("max_godot_version"));
 				ERR_FAIL_COND(!d.has("changes_bbcode"));
+
+				if (d["min_godot_version"].get_type() != Variant::NIL) {
+					Vector<String> compat_version = String(d["min_godot_version"]).split(".", false);
+					compat_version.resize_initialized(3);
+
+					bool is_compat = true;
+					for (int j = 0; j < compat_version.size(); j++) {
+						const int number = compat_version[j].to_int();
+						if (number != engine_version[j]) {
+							if (number > engine_version[j]) {
+								is_compat = false;
+							}
+							break;
+						}
+					}
+					if (!is_compat) {
+						continue; // This release is for a newer version of Godot.
+					}
+				}
+
+				if (d["max_godot_version"].get_type() != Variant::NIL) {
+					Vector<String> compat_version = String(d["max_godot_version"]).split(".", false);
+					compat_version.resize_initialized(3);
+
+					bool is_compat = true;
+					for (int j = 0; j < compat_version.size(); j++) {
+						const int number = compat_version[j].to_int();
+						if (number != engine_version[j]) {
+							if (number < engine_version[j]) {
+								is_compat = false;
+							}
+							break;
+						}
+					}
+					if (!is_compat) {
+						continue; // This release is for an older version of Godot.
+					}
+				}
 
 				String version = d["version"];
 				if (!d["stable"]) {
@@ -1937,6 +2068,10 @@ void EditorAssetLibrary::_install_external_asset(const String &p_zip_path, const
 }
 
 void EditorAssetLibrary::_update_asset_items_columns() {
+	if (!asset_items) {
+		return;
+	}
+
 	int new_columns = get_size().x / (450.0 * EDSCALE);
 	new_columns = MAX(1, new_columns);
 
@@ -1962,6 +2097,17 @@ void EditorAssetLibrary::_set_library_message(const String &p_message) {
 	library_message_button->hide();
 
 	library_message_box->show();
+
+	// Remove pagination, as an error message is being shown and there are no assets to list.
+	// Pagination is recreated when the next search is performed.
+	if (asset_top_page) {
+		memdelete(asset_top_page);
+		asset_top_page = nullptr;
+	}
+	if (asset_bottom_page) {
+		memdelete(asset_bottom_page);
+		asset_bottom_page = nullptr;
+	}
 }
 
 void EditorAssetLibrary::_set_library_message_with_action(const String &p_message, const String &p_action_text, const Callable &p_action) {
@@ -2048,10 +2194,14 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 		sort->add_item(sort_text[i]);
 	}
 
+	// TODO: Remove this once "Relevance" sorting is fixed.
+	sort->select(SORT_REVIEWS);
+
 	search_hb2->add_child(sort);
 
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sort->set_clip_text(true);
+	sort->set_fit_to_longest_item(false);
 	sort->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
 
 	search_hb2->add_child(memnew(Label(TTRC("Category:"))));
@@ -2063,6 +2213,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	}
 	categories->set_disabled(true);
 	categories->set_clip_text(true);
+	categories->set_fit_to_longest_item(false);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_hb2->add_child(categories);
 	categories->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
@@ -2071,6 +2222,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	repository = memnew(OptionButton);
 	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	repository->set_clip_text(true);
+	repository->set_fit_to_longest_item(false);
 	search_hb2->add_child(repository);
 	repository->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_repository_changed));
 	_update_repository_options();

@@ -61,6 +61,7 @@
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
 #endif // PHYSICS_3D_DISABLED
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
@@ -128,6 +129,22 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	camera_znear = p_settings.get("editors/3d/default_z_near", 0.05);
 	camera_zfar = p_settings.get("editors/3d/default_z_far", 4'000);
 
+	int freelook_mod_idx = p_settings.get("editors/3d/freelook/freelook_activation_modifier", 0);
+	switch (freelook_mod_idx) {
+		case 1: {
+			freelook_modifier = Key::SHIFT;
+		} break;
+		case 2: {
+			freelook_modifier = Key::ALT;
+		} break;
+		case 3: {
+			freelook_modifier = Key::META;
+		} break;
+		case 4: {
+			freelook_modifier = Key::CTRL;
+		} break;
+	}
+
 	// View3DController Setup
 
 	view_3d_controller.instantiate();
@@ -161,12 +178,23 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	view_3d_controller->set_z_far(camera_zfar);
 
 	view_3d_controller->set_invert_x_axis(p_settings.get("editors/3d/navigation/invert_x_axis", false));
-	view_3d_controller->set_invert_x_axis(p_settings.get("editors/3d/navigation/invert_y_axis", false));
+	view_3d_controller->set_invert_y_axis(p_settings.get("editors/3d/navigation/invert_y_axis", false));
 
 	view_3d_controller->set_warped_mouse_panning(p_settings.get("editors/3d/navigation/warped_mouse_panning", true));
 
 	view_3d_controller->connect("fov_scaled", callable_mp(this, &RuntimeNodeSelect::_fov_scaled));
 	view_3d_controller->connect("cursor_interpolated", callable_mp(this, &RuntimeNodeSelect::_cursor_interpolated));
+
+	freelook_toggle = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get("spatial_editor/freelook_toggle", Array()).operator Array());
+	if (freelook_toggle.is_valid()) {
+		for (Ref<InputEventKey> k : freelook_toggle->get_events()) {
+			if (k->get_physical_keycode() == Key::NONE) {
+				k->set_keycode(view_3d_controller->emulate_numpad_key(k->get_keycode()));
+			} else {
+				k->set_physical_keycode(view_3d_controller->emulate_numpad_key(k->get_physical_keycode()));
+			}
+		}
+	}
 
 #define SET_SHORTCUT(p_name, p_setting) \
 	{ \
@@ -295,8 +323,14 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	Ref<InputEventMouseButton> b = p_event;
+
+	if (b.is_valid() && b->is_pressed()) {
+		list_shortcut_pressed = node_select_mode == SELECT_MODE_SINGLE && b->get_button_index() == MouseButton::RIGHT && b->is_alt_pressed();
+	}
+
 	bool is_dragging_camera = false;
-	if (camera_override) {
+	if (camera_override && !list_shortcut_pressed) {
 		if (node_select_type == NODE_TYPE_2D) {
 			is_dragging_camera = panner->gui_input(p_event, Rect2(Vector2(), root->get_visible_rect().get_size()));
 #ifndef _3D_DISABLED
@@ -307,8 +341,6 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 #endif // _3D_DISABLED
 		}
 	}
-
-	Ref<InputEventMouseButton> b = p_event;
 
 	if (selection_drag_state == SELECTION_DRAG_MOVE) {
 		Ref<InputEventMouseMotion> m = p_event;
@@ -343,7 +375,6 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 
 	if (!is_dragging_camera && b->is_pressed()) {
 		multi_shortcut_pressed = b->is_shift_pressed();
-		list_shortcut_pressed = node_select_mode == SELECT_MODE_SINGLE && b->get_button_index() == MouseButton::RIGHT && b->is_alt_pressed();
 		if (list_shortcut_pressed || b->get_button_index() == MouseButton::LEFT) {
 			selection_position = root->get_screen_transform().affine_inverse().xform(b->get_position());
 		}
@@ -376,7 +407,7 @@ void RuntimeNodeSelect::_update_input_state() {
 void RuntimeNodeSelect::_process_frame() {
 #ifndef _3D_DISABLED
 	// Calculate the process time manually, as the time scale can be frozen.
-	const double process_time = (1.0 / Engine::get_singleton()->get_frames_per_second()) * Engine::get_singleton()->get_unfrozen_time_scale();
+	const double process_time = (1.0 / Engine::get_singleton()->get_frames_per_second());
 
 	if (view_3d_controller->is_freelook_enabled()) {
 		Input *input = Input::get_singleton();
@@ -404,7 +435,7 @@ void RuntimeNodeSelect::_process_frame() {
 }
 
 void RuntimeNodeSelect::_physics_frame() {
-	if (selection_drag_state != SELECTION_DRAG_END && (selection_drag_state == SELECTION_DRAG_MOVE || Math::is_inf(selection_position.x))) {
+	if (selection_drag_state != SELECTION_DRAG_END && (selection_drag_state == SELECTION_DRAG_MOVE || !selection_position.is_finite())) {
 		return;
 	}
 
@@ -417,7 +448,7 @@ void RuntimeNodeSelect::_physics_frame() {
 			for (int i = 0; i < root->get_child_count(); i++) {
 				_find_canvas_items_at_rect(selection_drag_area, root->get_child(i), items);
 			}
-		} else if (!Math::is_inf(selection_position.x)) {
+		} else if (selection_position.is_finite()) {
 			for (int i = 0; i < root->get_child_count(); i++) {
 				_find_canvas_items_at_pos(selection_position, root->get_child(i), items);
 			}
@@ -427,7 +458,7 @@ void RuntimeNodeSelect::_physics_frame() {
 	} else if (node_select_type == NODE_TYPE_3D) {
 		if (selection_drag_valid) {
 			_find_3d_items_at_rect(selection_drag_area, items);
-		} else {
+		} else if (selection_position.is_finite()) {
 			_find_3d_items_at_pos(selection_position, items);
 		}
 #endif // _3D_DISABLED
@@ -510,7 +541,7 @@ void RuntimeNodeSelect::_physics_frame() {
 		} break;
 
 		case SELECTION_DRAG_NONE: {
-			if (node_select_mode == SELECT_MODE_LIST) {
+			if (list_shortcut_pressed || node_select_mode == SELECT_MODE_LIST) {
 				break;
 			}
 
@@ -1174,6 +1205,7 @@ void RuntimeNodeSelect::_update_view_2d() {
 	ERR_FAIL_COND(!root->is_camera_2d_override_enabled());
 
 	Camera2D *override_camera = root->get_override_camera_2d();
+	ERR_FAIL_NULL(override_camera);
 	override_camera->set_anchor_mode(Camera2D::ANCHOR_MODE_FIXED_TOP_LEFT);
 	override_camera->set_zoom(Vector2(view_2d_zoom, view_2d_zoom));
 	override_camera->set_offset(view_2d_offset);
@@ -1199,9 +1231,9 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 #ifndef PHYSICS_3D_DISABLED
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::RayResult result;
+	PS3DT::RayResult result;
 	HashSet<RID> excluded;
-	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	PS3DT::RayParameters ray_params;
 	ray_params.from = pos;
 	ray_params.to = to;
 	ray_params.collide_with_areas = true;
@@ -1325,13 +1357,17 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::ShapeResult results[32];
-	PhysicsDirectSpaceState3D::ShapeParameters shape_params;
+	PS3DT::ShapeResult results[32];
+	PS3DT::ShapeParameters shape_params;
 	shape_params.shape_rid = shape->get_rid();
 	shape_params.collide_with_areas = true;
 	const int num_hits = ss->intersect_shape(shape_params, results, 32);
 	for (int i = 0; i < num_hits; i++) {
-		const PhysicsDirectSpaceState3D::ShapeResult &result = results[i];
+		const PS3DT::ShapeResult &result = results[i];
+		if (!result.collider) {
+			continue;
+		}
+
 		SelectResult res;
 		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
@@ -1447,8 +1483,42 @@ bool RuntimeNodeSelect::_handle_3d_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> b = p_event;
 	if (b.is_valid() && b->get_button_index() == MouseButton::RIGHT) {
-		view_3d_controller->set_freelook_enabled(b->is_pressed());
+		bool enable_freelook = b->is_pressed();
+		if (enable_freelook && freelook_modifier != Key::NONE) {
+			switch (freelook_modifier) {
+				case Key::SHIFT: {
+					enable_freelook = b->is_shift_pressed();
+				} break;
+				case Key::ALT: {
+					enable_freelook = b->is_alt_pressed();
+				} break;
+				case Key::META: {
+					enable_freelook = b->is_meta_pressed();
+				} break;
+				case Key::CTRL: {
+					enable_freelook = b->is_ctrl_pressed();
+				} break;
+				default:
+					break;
+			}
+
+			if (!enable_freelook) {
+				return false;
+			}
+		}
+
+		view_3d_controller->set_freelook_enabled(enable_freelook);
 		return true;
+	}
+
+	if (freelook_toggle.is_valid()) {
+		const Array shortcuts = freelook_toggle->get_events();
+		for (Ref<InputEventKey> k : shortcuts) {
+			if (k.is_valid() && p_event->is_match(k) && p_event->is_pressed()) {
+				view_3d_controller->set_freelook_enabled(!view_3d_controller->is_freelook_enabled());
+				return true;
+			}
+		}
 	}
 
 	Ref<InputEventKey> k = p_event;

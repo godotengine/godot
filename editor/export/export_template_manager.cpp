@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/error/error_list.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
@@ -45,6 +46,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_bottom_panel.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -56,9 +58,9 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
-#include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void ExportTemplateManager::_request_mirrors() {
 	mirrors_list->clear();
@@ -187,22 +189,203 @@ void ExportTemplateManager::_open_mirror() {
 	OS::get_singleton()->shell_open(_get_current_mirror_url());
 }
 
-void ExportTemplateManager::_delete_confirmed() {
-	const String selected_version = version_list->get_item_text(version_list->get_current());
-	const String template_directory = _get_template_folder_path(selected_version);
+void ExportTemplateManager::_delete_all() {
+	item_to_delete = installed_templates_tree->get_root();
+	confirm_delete->set_text(TTRC("Remove all installed template files? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
+	confirm_delete->popup_centered();
+}
 
-	if (_item_is_file(item_to_delete)) {
-		OS::get_singleton()->move_to_trash(template_directory.path_join(item_to_delete->get_text(0)));
-		file_metadata.erase(item_to_delete->get_text(0));
-	} else {
-		for (TreeItem *child = item_to_delete->get_first_child(); child; child = child->get_next()) {
-			if (!_get_file_metadata(child)->is_missing) {
-				OS::get_singleton()->move_to_trash(template_directory.path_join(child->get_text(0)));
-			}
-			file_metadata.erase(child->get_text(0));
-		}
+void ExportTemplateManager::_delete_confirmed() {
+	_delete_file(item_to_delete);
+
+	const String selected_version = version_list->get_item_text(version_list->get_current());
+	if (selected_version != GODOT_VERSION_FULL_CONFIG) {
+		// Deleting all installed templates removes the version from list.
+		_update_version_list();
 	}
 	_update_template_tree();
+	item_to_delete = nullptr;
+}
+
+void ExportTemplateManager::_delete_file(const TreeItem *p_item) {
+	if (_item_is_file(p_item)) {
+		const String selected_version = version_list->get_item_text(version_list->get_current());
+		const String full_path = _get_template_folder_path(selected_version).path_join(p_item->get_text(0));
+
+		if (FileAccess::exists(full_path)) {
+			OS::get_singleton()->move_to_trash(full_path);
+		}
+		file_metadata.erase(p_item->get_text(0));
+	} else {
+		for (TreeItem *child = p_item->get_first_child(); child; child = child->get_next()) {
+			_delete_file(child);
+		}
+	}
+}
+
+void ExportTemplateManager::_tpz_file_selected(const String &p_file) {
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+	unzFile pkg = unzOpen2(p_file.utf8().get_data(), &io);
+	if (!pkg) {
+		EditorNode::get_singleton()->show_warning(TTR("Can't open the export templates file."));
+		return;
+	}
+	int ret = unzGoToFirstFile(pkg);
+
+	// Count them and find version.
+	int fc = 0;
+	String version;
+	String contents_dir;
+
+	while (ret == UNZ_OK) {
+		unz_file_info info;
+		char fname[16384];
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
+
+		String file = String::utf8(fname);
+
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (file.begins_with("__MACOSX")) {
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
+		if (file.ends_with("version.txt")) {
+			Vector<uint8_t> uncomp_data;
+			uncomp_data.resize(info.uncompressed_size);
+
+			// Read.
+			unzOpenCurrentFile(pkg);
+			ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
+			ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
+			unzCloseCurrentFile(pkg);
+
+			String data_str = String::utf8((const char *)uncomp_data.ptr(), uncomp_data.size());
+			data_str = data_str.strip_edges();
+
+			// Version number should be of the form major.minor[.patch].status[.module_config]
+			// so it can in theory have 3 or more slices.
+			if (data_str.get_slice_count(".") < 3) {
+				EditorNode::get_singleton()->show_warning(vformat(TTR("Invalid version.txt format inside the export templates file: %s."), data_str));
+				unzClose(pkg);
+				return;
+			}
+
+			version = data_str;
+			contents_dir = file.get_base_dir().trim_suffix("/").trim_suffix("\\");
+		}
+
+		if (file.get_file().size() != 0) {
+			fc++;
+		}
+
+		ret = unzGoToNextFile(pkg);
+	}
+
+	if (version.is_empty()) {
+		EditorNode::get_singleton()->show_warning(TTR("No version.txt found inside the export templates file."));
+		unzClose(pkg);
+		return;
+	}
+
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(version);
+	Error err = d->make_dir_recursive(template_path);
+	if (err != OK) {
+		EditorNode::get_singleton()->show_warning(TTR("Error creating path for extracting templates:") + "\n" + template_path);
+		unzClose(pkg);
+		return;
+	}
+
+	EditorProgress ep("export_tpz", TTR("Extracting Export Templates"), fc);
+
+	fc = 0;
+	ret = unzGoToFirstFile(pkg);
+	while (ret == UNZ_OK) {
+		// Get filename.
+		unz_file_info info;
+		char fname[16384];
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
+
+		if (String::utf8(fname).ends_with("/")) {
+			// File is a directory, ignore it.
+			// Directories will be created when extracting each file.
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
+		String file_path(String::utf8(fname).simplify_path());
+
+		String file = file_path.get_file();
+
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (file.is_empty() || file.begins_with("__MACOSX")) {
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
+		Vector<uint8_t> uncomp_data;
+		uncomp_data.resize(info.uncompressed_size);
+
+		// Read
+		unzOpenCurrentFile(pkg);
+		ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
+		ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
+		unzCloseCurrentFile(pkg);
+
+		String base_dir = file_path.get_base_dir().trim_suffix("/");
+
+		if (base_dir != contents_dir && base_dir.begins_with(contents_dir)) {
+			base_dir = base_dir.substr(contents_dir.length(), file_path.length()).trim_prefix("/");
+			file = base_dir.path_join(file);
+
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			ERR_CONTINUE(da.is_null());
+
+			String output_dir = template_path.path_join(base_dir);
+
+			if (!DirAccess::exists(output_dir)) {
+				Error mkdir_err = da->make_dir_recursive(output_dir);
+				ERR_CONTINUE(mkdir_err != OK);
+			}
+		}
+		ep.step(TTR("Importing:") + " " + file, fc);
+
+		String to_write = template_path.path_join(file);
+		Ref<FileAccess> f = FileAccess::open(to_write, FileAccess::WRITE);
+
+		if (f.is_null()) {
+			ret = unzGoToNextFile(pkg);
+			fc++;
+			ERR_CONTINUE_MSG(true, "Can't open file from path '" + String(to_write) + "'.");
+		}
+
+		f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
+		f.unref(); // close file.
+#ifndef WINDOWS_ENABLED
+		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
+#endif
+
+		ret = unzGoToNextFile(pkg);
+		fc++;
+	}
+
+	unzClose(pkg);
+
+	EditorSettings::get_singleton()->set("_export_template_download_directory", p_file.get_base_dir());
+
+	const String selected_version = version_list->get_item_text(version_list->get_current());
+	if (selected_version == version) {
+		_update_template_tree();
+	}
 }
 
 void ExportTemplateManager::_initialize_template_data() {
@@ -276,7 +459,7 @@ void ExportTemplateManager::_initialize_template_data() {
 	{
 		TemplateInfo info;
 		info.name = TTR("Web with Extensions");
-		info.description = TTRC("Web build with support for GDExtextensions. Only useful if you use GDExtensions, otherwise it only increases build size.");
+		info.description = TTRC("Web build with support for GDExtensions. Only useful if you use GDExtensions, otherwise it only increases build size.");
 		info.file_list = { "web_dlink_debug.zip", "web_dlink_release.zip" };
 		template_data[TemplateID::WEB_EXTENSIONS] = info;
 	}
@@ -298,16 +481,9 @@ void ExportTemplateManager::_initialize_template_data() {
 	{
 		TemplateInfo info;
 		info.name = "Android";
-		info.description = TTRC("Basic Android APK template.");
-		info.file_list = { "android_debug.apk", "android_release.apk" };
+		info.description = TTRC("Android APK template and source for Gradle builds.");
+		info.file_list = { "android_debug.apk", "android_release.apk", "android_source.zip" };
 		template_data[TemplateID::ANDROID] = info;
-	}
-	{
-		TemplateInfo info;
-		info.name = TTR("Android Source");
-		info.description = TTRC("Template for Gradle builds for Android.");
-		info.file_list = { "android_source.zip" };
-		template_data[TemplateID::ANDROID_SOURCE] = info;
 	}
 
 	{
@@ -355,7 +531,7 @@ void ExportTemplateManager::_initialize_template_data() {
 		PlatformInfo info;
 		info.name = "Android";
 		info.icon = _get_platform_icon("Android");
-		info.templates = { TemplateID::ANDROID, TemplateID::ANDROID_SOURCE };
+		info.templates = { TemplateID::ANDROID };
 		info.group = TTR("Mobile", "Platform Group");
 		platform_map[PlatformID::ANDROID] = info;
 	}
@@ -383,19 +559,51 @@ void ExportTemplateManager::_initialize_template_data() {
 	}
 
 	// Template directory status.
-	DirAccess::make_dir_recursive_absolute(_get_template_folder_path(VERSION_FULL_CONFIG));
+	DirAccess::make_dir_recursive_absolute(_get_template_folder_path(GODOT_VERSION_FULL_CONFIG));
+	_update_version_list();
+}
+
+void ExportTemplateManager::_update_version_list() {
+	String current_selected;
+	if (version_list->get_current() > -1) {
+		current_selected = version_list->get_item_text(version_list->get_current());
+	}
+	version_list->clear();
+
 	Ref<DirAccess> templates_dir = DirAccess::open(EditorPaths::get_singleton()->get_export_templates_dir());
 	ERR_FAIL_COND(templates_dir.is_null());
 
+	int current_version_id = -1;
 	for (const String &dir : templates_dir->get_directories()) {
 		if (dir == GODOT_VERSION_FULL_CONFIG) {
 			version_list->add_item(dir);
 			version_list->set_item_custom_fg_color(-1, theme_cache.current_version_color);
-			version_list->select(version_list->get_item_count() - 1);
+			current_version_id = version_list->get_item_count() - 1;
 		} else {
+			bool recognized = false;
+			for (const String &file : DirAccess::get_files_at(templates_dir->get_current_dir().path_join(dir))) {
+				for (const KeyValue<TemplateID, TemplateInfo> &KV : template_data) {
+					if (KV.value.file_list.has(file)) {
+						recognized = true;
+						break;
+					}
+				}
+				if (recognized) {
+					break;
+				}
+			}
+			if (!recognized) {
+				continue;
+			}
 			version_list->add_item(dir);
+			if (dir == current_selected) {
+				version_list->select(version_list->get_item_count() - 1);
+			}
 		}
 		version_list->set_item_metadata(-1, dir);
+	}
+	if (version_list->get_current() == -1) {
+		version_list->select(current_version_id);
 	}
 }
 
@@ -421,28 +629,6 @@ void ExportTemplateManager::_update_template_tree() {
 
 	_fill_template_tree(available_templates_tree, installed_template_files, is_current_version);
 	_fill_template_tree(installed_templates_tree, installed_template_files, is_current_version);
-}
-
-void ExportTemplateManager::_update_template_tree_theme(Tree *p_tree) {
-	if (is_downloading()) {
-		// Prevents hiding progress bar.
-		Ref<StyleBoxEmpty> empty_style;
-		empty_style.instantiate();
-
-		p_tree->add_theme_style_override(SNAME("hovered"), empty_style);
-		p_tree->add_theme_style_override(SNAME("hovered_dimmed"), empty_style);
-		p_tree->add_theme_style_override(SNAME("selected"), empty_style);
-		p_tree->add_theme_style_override(SNAME("selected_focus"), empty_style);
-		p_tree->add_theme_style_override(SNAME("hovered_selected"), empty_style);
-		p_tree->add_theme_style_override(SNAME("hovered_selected_focus"), empty_style);
-	} else {
-		p_tree->remove_theme_style_override(SNAME("hovered"));
-		p_tree->remove_theme_style_override(SNAME("hovered_dimmed"));
-		p_tree->remove_theme_style_override(SNAME("selected"));
-		p_tree->remove_theme_style_override(SNAME("selected_focus"));
-		p_tree->remove_theme_style_override(SNAME("hovered_selected"));
-		p_tree->remove_theme_style_override(SNAME("hovered_selected_focus"));
-	}
 }
 
 void ExportTemplateManager::_fill_template_tree(Tree *p_tree, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_current_version) {
@@ -612,6 +798,9 @@ void ExportTemplateManager::_fill_template_tree(Tree *p_tree, const HashMap<Temp
 		_apply_item_folding(platform_item);
 	}
 
+	if (is_installed_tree) {
+		delete_all_button->set_disabled(p_tree->get_root()->get_child_count() == 0);
+	}
 	if (p_tree->get_root()->get_child_count() == 0) {
 		TreeItem *empty = p_tree->create_item();
 		empty->set_text(0, is_available_tree ? TTR("All templates installed.") : TTR("No templates installed."));
@@ -642,10 +831,10 @@ void ExportTemplateManager::_update_install_button() {
 
 	install_button->set_disabled(!_can_download_templates());
 	if (install_button->is_disabled()) {
-		if (mirrors_empty) {
-			install_button->set_tooltip_text(TTRC("No mirrors available for download."));
-		} else if (!_is_online()) {
+		if (!_is_online()) {
 			install_button->set_tooltip_text(TTRC("Download not available in offline mode."));
+		} else if (mirrors_empty) {
+			install_button->set_tooltip_text(TTRC("No mirrors available for download."));
 		} else {
 			install_button->set_tooltip_text(TTRC("Downloads are only available for the current Godot version."));
 		}
@@ -688,10 +877,8 @@ Ref<Texture2D> ExportTemplateManager::_get_platform_icon(const String &p_platfor
 }
 
 void ExportTemplateManager::_version_selected() {
-	if (!is_downloading()) {
-		file_metadata.clear();
-		_update_template_tree();
-	}
+	file_metadata.clear();
+	_update_template_tree();
 	_update_install_button();
 }
 
@@ -708,6 +895,7 @@ void ExportTemplateManager::_tree_button_clicked(TreeItem *p_item, int p_column,
 
 		case ButtonID::REMOVE: {
 			item_to_delete = p_item;
+			confirm_delete->set_text(TTRC("Remove the selected template files? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 			confirm_delete->popup_centered();
 		} break;
 
@@ -755,8 +943,11 @@ void ExportTemplateManager::_install_templates(TreeItem *p_files) {
 	_update_template_tree();
 	_process_download_queue();
 	_update_install_button();
-	_update_template_tree_theme(installed_templates_tree);
-	_update_template_tree_theme(available_templates_tree);
+
+	// Don't allow changing selected version while downloading.
+	for (int i = 0; i < version_list->get_item_count(); i++) {
+		version_list->set_item_disabled(i, true);
+	}
 
 	ProgressIndicator *indicator = EditorNode::get_bottom_panel()->get_progress_indicator();
 	indicator->set_tooltip_text(TTRC("Downloading export templates..."));
@@ -826,10 +1017,12 @@ void ExportTemplateManager::_process_download_queue() {
 		queued_templates.clear();
 		downloading_items.clear();
 		set_process_internal(false);
-		_update_template_tree_theme(installed_templates_tree);
-		_update_template_tree_theme(available_templates_tree);
 		_update_install_button();
 		EditorNode::get_bottom_panel()->get_progress_indicator()->hide();
+
+		for (int i = 0; i < version_list->get_item_count(); i++) {
+			version_list->set_item_disabled(i, false);
+		}
 	} else {
 		set_process_internal(true);
 	}
@@ -1033,7 +1226,7 @@ String ExportTemplateManager::_get_item_path(TreeItem *p_item) const {
 	return p_item->get_meta(PATH_META, String());
 }
 
-bool ExportTemplateManager::_item_is_file(TreeItem *p_item) const {
+bool ExportTemplateManager::_item_is_file(const TreeItem *p_item) const {
 	return p_item->get_meta(FILE_META, false).operator bool();
 }
 
@@ -1065,7 +1258,8 @@ float ExportTemplateManager::_get_download_progress(const TreeItem *p_item) cons
 
 void ExportTemplateManager::_draw_item_progress(TreeItem *p_item, const Rect2 &p_rect) {
 	Tree *owning_tree = p_item->get_tree();
-	owning_tree->draw_rect(p_rect, Color(0, 0, 0, 0.5));
+	RID ci = owning_tree->get_custom_drawing_canvas_item();
+	RS::get_singleton()->canvas_item_add_rect(ci, p_rect, Color(0, 0, 0, 0.5));
 
 	if (!_item_is_file(p_item)) {
 		float progress = 0.0;
@@ -1083,7 +1277,7 @@ void ExportTemplateManager::_draw_item_progress(TreeItem *p_item, const Rect2 &p
 			has_fail = has_fail || meta->download_status == DownloadStatus::FAILED;
 		}
 		progress /= item_count;
-		owning_tree->draw_rect(Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), has_fail ? theme_cache.download_failed_color : theme_cache.download_progress_color);
+		RS::get_singleton()->canvas_item_add_rect(ci, Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), has_fail ? theme_cache.download_failed_color : theme_cache.download_progress_color);
 		return;
 	}
 
@@ -1095,21 +1289,22 @@ void ExportTemplateManager::_draw_item_progress(TreeItem *p_item, const Rect2 &p
 		case DownloadStatus::PENDING: {
 			uint64_t frame = Engine::get_singleton()->get_frames_drawn();
 			const Ref<Texture2D> progress_texture = theme_cache.progress_icons[frame / 4 % 8];
-			owning_tree->draw_texture(progress_texture, Vector2(p_rect.get_end().x - progress_texture->get_width(), p_rect.position.y + p_rect.size.y * 0.5 - progress_texture->get_height() * 0.5));
+			const Rect2 rect = Rect2(Vector2(p_rect.get_end().x - progress_texture->get_width(), p_rect.position.y + p_rect.size.y * 0.5 - progress_texture->get_height() * 0.5), progress_texture->get_size());
+			RS::get_singleton()->canvas_item_add_texture_rect(ci, rect, progress_texture->get_rid());
 		} break;
 
 		case DownloadStatus::IN_PROGRESS: {
 			float progress = _get_download_progress(p_item);
 			meta->progress_cache = progress;
-			owning_tree->draw_rect(Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), theme_cache.download_progress_color);
+			RS::get_singleton()->canvas_item_add_rect(ci, Rect2(p_rect.position, Vector2(p_rect.size.x * progress, p_rect.size.y)), theme_cache.download_progress_color);
 		} break;
 
 		case DownloadStatus::COMPLETED: {
-			owning_tree->draw_rect(p_rect, theme_cache.download_progress_color);
+			RS::get_singleton()->canvas_item_add_rect(ci, p_rect, theme_cache.download_progress_color);
 		} break;
 
 		case DownloadStatus::FAILED: {
-			owning_tree->draw_rect(Rect2(p_rect.position, Vector2(p_rect.size.x * _get_download_progress(p_item), p_rect.size.y)), theme_cache.download_failed_color);
+			RS::get_singleton()->canvas_item_add_rect(ci, Rect2(p_rect.position, Vector2(p_rect.size.x * _get_download_progress(p_item), p_rect.size.y)), theme_cache.download_failed_color);
 		} break;
 	}
 }
@@ -1118,6 +1313,12 @@ void ExportTemplateManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			EditorNode::get_bottom_panel()->get_progress_indicator()->connect("clicked", callable_mp(this, &ExportTemplateManager::popup_manager));
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				center_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
+			}
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1134,14 +1335,17 @@ void ExportTemplateManager::_notification(int p_what) {
 			template_data[TemplateID::WEB_EXTENSIONS].name = TTR("Web with Extensions");
 			template_data[TemplateID::WEB_NOTHREADS].name = TTR("Web Single-Threaded");
 			template_data[TemplateID::WEB_EXTENSIONS_NOTHREADS].name = TTR("Web with Extensions Single-Threaded");
-			template_data[TemplateID::ANDROID_SOURCE].name = TTR("Android Source");
-			template_data[TemplateID::ANDROID_SOURCE].name = TTR("ICU Data");
+			template_data[TemplateID::ICU_DATA].name = TTR("ICU Data");
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
 			open_folder_button->set_button_icon(get_editor_theme_icon("Folder"));
 			install_button->set_button_icon(get_editor_theme_icon("AssetStore"));
 			open_mirror->set_button_icon(get_editor_theme_icon("ExternalLink"));
+			delete_all_button->set_button_icon(get_editor_theme_icon("Remove"));
+			tpz_button->set_button_icon(get_editor_theme_icon("FileBrowse"));
+
+			offline_mode_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 			theme_cache.install_icon = get_editor_theme_icon("AssetStore");
 			theme_cache.remove_icon = get_editor_theme_icon("Remove");
@@ -1378,6 +1582,21 @@ ExportTemplateManager::ExportTemplateManager() {
 	download_header->add_child(install_button);
 	install_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_install_templates).bind((TreeItem *)nullptr));
 
+	tpz_button = memnew(Button);
+	tpz_button->set_tooltip_text(TTRC("Install from a TPZ file."));
+	download_header->add_child(tpz_button);
+
+	tpz_selection_dialog = memnew(EditorFileDialog);
+	tpz_selection_dialog->set_title(TTRC("Select Template File"));
+	tpz_selection_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
+	tpz_selection_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
+	tpz_selection_dialog->set_current_dir(EDITOR_DEF("_export_template_download_directory", ""));
+	tpz_selection_dialog->add_filter("*.tpz", TTRC("Godot Export Templates"));
+	tpz_selection_dialog->connect("file_selected", callable_mp(this, &ExportTemplateManager::_tpz_file_selected));
+	add_child(tpz_selection_dialog);
+
+	tpz_button->connect(SceneStringName(pressed), callable_mp((FileDialog *)tpz_selection_dialog, &FileDialog::popup_file_dialog));
+
 	HSplitContainer *main_split = memnew(HSplitContainer);
 	main_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_vb->add_child(main_split);
@@ -1396,14 +1615,9 @@ ExportTemplateManager::ExportTemplateManager() {
 	side_vb->add_child(version_list);
 	version_list->connect(SceneStringName(item_selected), callable_mp(this, &ExportTemplateManager::_version_selected).unbind(1));
 
-	open_folder_button = memnew(Button);
-	open_folder_button->set_tooltip_text(TTRC("Open templates directory."));
-	open_folder_button->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
-	side_vb->add_child(open_folder_button);
-	open_folder_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_open_template_directory));
-
-	VSplitContainer *center_split = memnew(VSplitContainer);
+	center_split = memnew(VSplitContainer);
 	center_split->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	center_split->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
 	main_split->add_child(center_split);
 
 	VBoxContainer *available_templates_container = memnew(VBoxContainer);
@@ -1429,9 +1643,23 @@ ExportTemplateManager::ExportTemplateManager() {
 	installed_templates_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	center_split->add_child(installed_templates_container);
 
+	HBoxContainer *installed_header = memnew(HBoxContainer);
+	installed_templates_container->add_child(installed_header);
+
 	Label *template_header = memnew(Label(TTRC("Installed Templates")));
 	template_header->set_theme_type_variation("HeaderSmall");
-	installed_templates_container->add_child(template_header);
+	installed_header->add_child(template_header);
+
+	open_folder_button = memnew(Button);
+	open_folder_button->set_tooltip_text(TTRC("Open templates directory."));
+	open_folder_button->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
+	installed_header->add_child(open_folder_button);
+	open_folder_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_open_template_directory));
+
+	delete_all_button = memnew(Button);
+	delete_all_button->set_tooltip_text(TTRC("Remove all installed templates."));
+	installed_header->add_child(delete_all_button);
+	delete_all_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_delete_all));
 
 	installed_templates_tree = memnew(Tree);
 	installed_templates_tree->set_accessibility_name(TTRC("Installed Templates"));
@@ -1447,16 +1675,17 @@ ExportTemplateManager::ExportTemplateManager() {
 	offline_container->hide();
 	main_vb->add_child(offline_container);
 
-	Label *offline_mode_label = memnew(Label(TTRC("Offline mode, some functionality is not available.")));
+	offline_mode_label = memnew(Label(TTRC("Offline mode, some functionality is not available.")));
 	offline_container->add_child(offline_mode_label);
 
 	LinkButton *enable_online_button = memnew(LinkButton);
 	enable_online_button->set_text(TTRC("Go Online"));
+	enable_online_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	offline_container->add_child(enable_online_button);
 	enable_online_button->connect(SceneStringName(pressed), callable_mp(this, &ExportTemplateManager::_force_online_mode));
 
 	confirm_delete = memnew(ConfirmationDialog);
-	confirm_delete->set_text(TTRC("Remove the selected template files? (Cannot be undone.)\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
+	confirm_delete->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(confirm_delete);
 	confirm_delete->connect(SceneStringName(confirmed), callable_mp(this, &ExportTemplateManager::_delete_confirmed));
 
@@ -1508,6 +1737,8 @@ String TemplateDownloader::_get_download_error(int p_result, int p_response_code
 			return TTR("Can't connect to the mirror");
 		case HTTPRequest::RESULT_NO_RESPONSE:
 			return TTR("No response from the mirror");
+		case HTTPRequest::RESULT_TIMEOUT:
+			return TTR("Request timed out");
 		case HTTPRequest::RESULT_REQUEST_FAILED:
 			return TTR("Request failed");
 		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED:
@@ -1605,13 +1836,15 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 				return;
 			}
 
-			int start_byte = file_info.offset;
-			int end_byte = file_info.offset + file_info.compressed_size + file_info.raw_record.size();
-
+			fragment_start_byte = file_info.offset;
+			fragment_end_byte = file_info.offset + file_info.compressed_size + file_info.raw_record.size();
+			request_start_partial_size = 0;
+			retry_count = 0;
+			range_restart_attempted = false;
+			_clear_partial_download();
 			current_step = Step::DOWNLOADING;
-			const String data_range = vformat("Range: bytes=%d-%d", start_byte, end_byte);
 
-			Error err = request(url, PackedStringArray{ data_range }, HTTPClient::METHOD_GET);
+			Error err = _request_file_fragment();
 			if (err != OK) {
 				_download_failed(vformat(TTR("Download request failed: %s."), TTR(error_names[err])));
 			}
@@ -1619,126 +1852,32 @@ void TemplateDownloader::_request_completed(int p_result, int p_response_code, c
 
 		case Step::DOWNLOADING: {
 			if (p_result != HTTPRequest::RESULT_SUCCESS || p_response_code != HTTPClient::RESPONSE_PARTIAL_CONTENT) {
+				if (p_result == HTTPRequest::RESULT_SUCCESS && p_response_code == HTTPClient::RESPONSE_REQUESTED_RANGE_NOT_SATISFIABLE && !range_restart_attempted) {
+					range_restart_attempted = true;
+					retry_count = 0;
+					request_start_partial_size = 0;
+					_clear_partial_download();
+
+					Error err = _request_file_fragment();
+					if (err != OK) {
+						_download_failed(vformat(TTR("Download request failed: %s."), TTR(error_names[err])));
+					}
+					return;
+				}
+
+				if (_is_retryable_result(p_result, p_response_code)) {
+					if (p_result == HTTPRequest::RESULT_SUCCESS) {
+						request_start_partial_size = 0;
+						_clear_partial_download();
+					}
+					_retry_file_fragment(_get_download_error(p_result, p_response_code));
+					return;
+				}
+
 				_download_failed(_get_download_error(p_result, p_response_code));
 				return;
 			}
-			const String mini_zip_path = EditorPaths::get_singleton()->get_temp_dir().path_join(filename + ".zip");
-			const uint8_t *fragment = p_body.ptr();
-
-			int local_name_len = decode_uint16(fragment + 26);
-			int local_extra_len = decode_uint16(fragment + 28);
-			int full_file_chunk_size = 30 + local_name_len + local_extra_len + file_info.compressed_size;
-
-			if (p_body.size() < full_file_chunk_size) {
-				_download_failed(vformat(TTR("Archive fragment too small. Loaded: %d, required: %d."), p_body.size(), full_file_chunk_size));
-				return;
-			}
-
-			const PackedByteArray clean_fragment = p_body.slice(0, full_file_chunk_size);
-
-			PackedByteArray cd_record = file_info.raw_record.duplicate();
-			uint8_t *record_write = cd_record.ptrw();
-			encode_uint32(0, record_write + 42); // IMPORTANT: Set the offset to 0, as the file is at the very beginning of the mini-ZIP.
-
-			// EOCD (End of Central Directory)
-			PackedByteArray eocd;
-			eocd.resize_initialized(22);
-
-			uint8_t *eocd_write = eocd.ptrw();
-			encode_uint32(0x06054b50, eocd_write); // Signature (4 bytes).
-			// Offsets 4-7 remain 0 (disk numbers).
-			encode_uint16(1, eocd_write + 8); // Number of entries on this disk (2 bytes).
-			encode_uint16(1, eocd_write + 10); // Total number of entries (2 bytes).
-			encode_uint32(cd_record.size(), eocd_write + 12); // Central Directory size (4 bytes).
-			encode_uint32(clean_fragment.size(), eocd_write + 16); // CD start offset (after file data) (4 bytes).
-
-			// Write Mini-Zip to a file.
-			Ref<FileAccess> f = FileAccess::open(mini_zip_path, FileAccess::WRITE);
-			if (f.is_null()) {
-				_download_failed(TTR("Failed to open mini-ZIP for writing."));
-				return;
-			}
-			f->store_buffer(clean_fragment);
-			f->store_buffer(cd_record);
-			f->store_buffer(eocd);
-			f.unref();
-
-			PackedByteArray extracted_data;
-			{
-				// Read back the mini-ZIP.
-				Ref<FileAccess> zip_access;
-				zlib_filefunc_def io = zipio_create_io(&zip_access);
-				unzFile uzf = unzOpen2(mini_zip_path.utf8().get_data(), &io);
-				if (!uzf) {
-					_download_failed(TTR("ZIP reader could not open mini-ZIP."));
-					return;
-				}
-
-				// IMPORTANT: The path in the ZIP reader must exactly match the one in the CD.
-
-				int err = UNZ_OK;
-
-				// Locate and open the file.
-				err = godot_unzip_locate_file(uzf, file_info.name, true);
-				if (err != UNZ_OK) {
-					_download_failed(TTR("File does not exist in zip archive."));
-					return;
-				}
-
-				err = unzOpenCurrentFile(uzf);
-				if (err != UNZ_OK) {
-					_download_failed(TTR("Could not open file within zip archive."));
-					return;
-				}
-
-				// Read the file info.
-				unz_file_info info;
-				err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
-				if (err != UNZ_OK) {
-					_download_failed(TTR("Unable to read file information from zip archive."));
-					return;
-				}
-
-				// Read the file data.
-				extracted_data.resize(info.uncompressed_size);
-				uint8_t *buffer = extracted_data.ptrw();
-				int to_read = extracted_data.size();
-				while (to_read > 0) {
-					int bytes_read = unzReadCurrentFile(uzf, buffer, to_read);
-					if (bytes_read < 0 || (bytes_read == UNZ_EOF && to_read != 0)) {
-						_download_failed(TTR("IO/zlib error reading file from zip archive."));
-						return;
-					}
-					buffer += bytes_read;
-					to_read -= bytes_read;
-				}
-
-				// Verify the data and return.
-				err = unzCloseCurrentFile(uzf);
-				if (err != UNZ_OK) {
-					_download_failed(TTR("CRC error reading file from zip archive."));
-					return;
-				}
-			}
-
-			if (extracted_data.is_empty()) {
-				_download_failed(TTR("Mini-ZIP data was empty."));
-				// The mini-ZIP is not deleted for inspection.
-				return;
-			} else {
-				DirAccess::remove_absolute(mini_zip_path);
-
-				f = FileAccess::open(target_directory.path_join(filename), FileAccess::WRITE);
-				if (f.is_null()) {
-					_download_failed(TTR("Failed to template file for writing."));
-					return;
-				}
-				f->store_buffer(extracted_data);
-				f.unref();
-
-				current_step = Step::WAITING;
-				emit_signal(SNAME("download_completed"), filename);
-			}
+			_download_completed();
 		} break;
 	}
 }
@@ -1747,6 +1886,255 @@ void TemplateDownloader::_download_failed(const String &p_reason) {
 	const String failed_file = filename;
 	cancel_download();
 	emit_signal(SNAME("download_failed"), failed_file, p_reason);
+}
+
+bool TemplateDownloader::_is_retryable_result(int p_result, int p_response_code) const {
+	switch (p_result) {
+		case HTTPRequest::RESULT_CONNECTION_ERROR:
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
+		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR:
+		case HTTPRequest::RESULT_CANT_CONNECT:
+		case HTTPRequest::RESULT_NO_RESPONSE:
+		case HTTPRequest::RESULT_TIMEOUT:
+			return true;
+	}
+
+	return p_result == HTTPRequest::RESULT_SUCCESS &&
+			(p_response_code == HTTPClient::RESPONSE_REQUEST_TIMEOUT ||
+					p_response_code == HTTPClient::RESPONSE_TOO_MANY_REQUESTS ||
+					p_response_code == HTTPClient::RESPONSE_INTERNAL_SERVER_ERROR ||
+					p_response_code == HTTPClient::RESPONSE_BAD_GATEWAY ||
+					p_response_code == HTTPClient::RESPONSE_SERVICE_UNAVAILABLE ||
+					p_response_code == HTTPClient::RESPONSE_GATEWAY_TIMEOUT);
+}
+
+int64_t TemplateDownloader::_get_fragment_download_size() const {
+	if (fragment_end_byte < fragment_start_byte) {
+		return 0;
+	}
+	return fragment_end_byte - fragment_start_byte + 1;
+}
+
+int64_t TemplateDownloader::_get_partial_download_size() const {
+	if (partial_download_path.is_empty() || !FileAccess::exists(partial_download_path)) {
+		return 0;
+	}
+
+	Ref<FileAccess> f = FileAccess::open(partial_download_path, FileAccess::READ);
+	if (f.is_null()) {
+		return 0;
+	}
+	return MIN((int64_t)f->get_length(), _get_fragment_download_size());
+}
+
+void TemplateDownloader::_clear_partial_download() {
+	if (!partial_download_path.is_empty() && FileAccess::exists(partial_download_path)) {
+		DirAccess::remove_absolute(partial_download_path);
+	}
+}
+
+Error TemplateDownloader::_request_file_fragment() {
+	const int64_t fragment_size = _get_fragment_download_size();
+	if (fragment_size <= 0) {
+		return ERR_INVALID_DATA;
+	}
+
+	int64_t partial_size = _get_partial_download_size();
+	if (partial_size >= fragment_size) {
+		_download_completed();
+		return OK;
+	}
+
+	request_start_partial_size = partial_size;
+	const int64_t request_start_byte = fragment_start_byte + partial_size;
+	const String data_range = vformat("Range: bytes=%d-%d", request_start_byte, fragment_end_byte);
+
+	set_download_file(partial_download_path);
+	set_keep_partial_download(true);
+	set_append_to_download_file(partial_size > 0);
+	return request(url, PackedStringArray{ data_range }, HTTPClient::METHOD_GET);
+}
+
+bool TemplateDownloader::_retry_file_fragment(const String &p_reason) {
+	if (retry_count >= MAX_DOWNLOAD_RETRIES) {
+		_download_failed(vformat(TTR("%s. Download failed after %d retries."), p_reason, MAX_DOWNLOAD_RETRIES));
+		return false;
+	}
+
+	retry_count++;
+	Error err = _request_file_fragment();
+	if (err != OK) {
+		_download_failed(vformat(TTR("Download request failed: %s."), TTR(error_names[err])));
+		return false;
+	}
+	return true;
+}
+
+void TemplateDownloader::_download_completed() {
+	Ref<FileAccess> fragment_file = FileAccess::open(partial_download_path, FileAccess::READ);
+	if (fragment_file.is_null()) {
+		_download_failed(TTR("Failed to open downloaded template fragment."));
+		return;
+	}
+
+	const int64_t fragment_size = fragment_file->get_length();
+	PackedByteArray fragment_data;
+	fragment_data.resize(fragment_size);
+	const uint64_t bytes_read = fragment_file->get_buffer(fragment_data.ptrw(), fragment_data.size());
+	fragment_file.unref();
+	if (bytes_read != (uint64_t)fragment_size) {
+		_download_failed(TTR("Failed to read downloaded template fragment."));
+		return;
+	}
+
+	const String mini_zip_path = EditorPaths::get_singleton()->get_temp_dir().path_join(filename + ".zip");
+	const uint8_t *fragment = fragment_data.ptr();
+
+	const int local_file_header_size = 30;
+	if (fragment_data.size() < local_file_header_size) {
+		_download_failed(vformat(TTR("Archive fragment too small. Loaded: %d, required: %d."), fragment_data.size(), local_file_header_size));
+		return;
+	}
+
+	int local_name_len = decode_uint16(fragment + 26);
+	int local_extra_len = decode_uint16(fragment + 28);
+	int full_file_chunk_size = local_file_header_size + local_name_len + local_extra_len + file_info.compressed_size;
+
+	if (fragment_data.size() < full_file_chunk_size) {
+		_download_failed(vformat(TTR("Archive fragment too small. Loaded: %d, required: %d."), fragment_data.size(), full_file_chunk_size));
+		return;
+	}
+
+	const PackedByteArray clean_fragment = fragment_data.slice(0, full_file_chunk_size);
+
+	PackedByteArray cd_record = file_info.raw_record.duplicate();
+	uint8_t *record_write = cd_record.ptrw();
+	encode_uint32(0, record_write + 42); // IMPORTANT: Set the offset to 0, as the file is at the very beginning of the mini-ZIP.
+
+	// EOCD (End of Central Directory)
+	PackedByteArray eocd;
+	eocd.resize_initialized(22);
+
+	uint8_t *eocd_write = eocd.ptrw();
+	encode_uint32(0x06054b50, eocd_write); // Signature (4 bytes).
+	// Offsets 4-7 remain 0 (disk numbers).
+	encode_uint16(1, eocd_write + 8); // Number of entries on this disk (2 bytes).
+	encode_uint16(1, eocd_write + 10); // Total number of entries (2 bytes).
+	encode_uint32(cd_record.size(), eocd_write + 12); // Central Directory size (4 bytes).
+	encode_uint32(clean_fragment.size(), eocd_write + 16); // CD start offset (after file data) (4 bytes).
+
+	// Write Mini-Zip to a file.
+	Ref<FileAccess> f = FileAccess::open(mini_zip_path, FileAccess::WRITE);
+	if (f.is_null()) {
+		_download_failed(TTR("Failed to open mini-ZIP for writing."));
+		return;
+	}
+	f->store_buffer(clean_fragment);
+	f->store_buffer(cd_record);
+	f->store_buffer(eocd);
+	f.unref();
+
+	PackedByteArray extracted_data;
+	{
+		// Read back the mini-ZIP.
+		Ref<FileAccess> zip_access;
+		zlib_filefunc_def io = zipio_create_io(&zip_access);
+		unzFile uzf = unzOpen2(mini_zip_path.utf8().get_data(), &io);
+		if (!uzf) {
+			_download_failed(TTR("ZIP reader could not open mini-ZIP."));
+			return;
+		}
+
+		// IMPORTANT: The path in the ZIP reader must exactly match the one in the CD.
+
+		int err = UNZ_OK;
+
+		// Locate and open the file.
+		err = godot_unzip_locate_file(uzf, file_info.name, true);
+		if (err != UNZ_OK) {
+			unzClose(uzf);
+			_download_failed(TTR("File does not exist in ZIP archive."));
+			return;
+		}
+
+		err = unzOpenCurrentFile(uzf);
+		if (err != UNZ_OK) {
+			unzClose(uzf);
+			_download_failed(TTR("Could not open file within ZIP archive."));
+			return;
+		}
+
+		// Read the file info.
+		unz_file_info info;
+		err = unzGetCurrentFileInfo(uzf, &info, nullptr, 0, nullptr, 0, nullptr, 0);
+		if (err != UNZ_OK) {
+			unzCloseCurrentFile(uzf);
+			unzClose(uzf);
+			_download_failed(TTR("Unable to read file information from ZIP archive."));
+			return;
+		}
+
+		// Read the file data.
+		extracted_data.resize(info.uncompressed_size);
+		uint8_t *buffer = extracted_data.ptrw();
+		int to_read = extracted_data.size();
+		while (to_read > 0) {
+			int bytes_read_current = unzReadCurrentFile(uzf, buffer, to_read);
+			if (bytes_read_current < 0 || (bytes_read_current == UNZ_EOF && to_read != 0)) {
+				unzCloseCurrentFile(uzf);
+				unzClose(uzf);
+				_download_failed(TTR("IO/zlib error reading file from ZIP archive."));
+				return;
+			}
+			buffer += bytes_read_current;
+			to_read -= bytes_read_current;
+		}
+
+		// Verify the data and return.
+		err = unzCloseCurrentFile(uzf);
+		if (err != UNZ_OK) {
+			unzClose(uzf);
+			_download_failed(TTR("CRC error reading file from ZIP archive."));
+			return;
+		}
+		unzClose(uzf);
+	}
+
+	if (extracted_data.is_empty()) {
+		_download_failed(TTR("Mini-ZIP data was empty."));
+		// The mini-ZIP is not deleted for inspection.
+		return;
+	}
+
+	DirAccess::remove_absolute(mini_zip_path);
+
+	f = FileAccess::open(target_directory.path_join(filename), FileAccess::WRITE);
+	if (f.is_null()) {
+		_download_failed(TTR("Failed to open template file for writing."));
+		return;
+	}
+	f->store_buffer(extracted_data);
+	f.unref();
+
+	const String completed_file = filename;
+	_clear_partial_download();
+	set_download_file(String());
+	set_keep_partial_download(false);
+	set_append_to_download_file(false);
+
+	current_step = Step::WAITING;
+	filename = String();
+	url = String();
+	file_size = 0;
+	file_info = FileInfo();
+	fragment_start_byte = 0;
+	fragment_end_byte = 0;
+	request_start_partial_size = 0;
+	retry_count = 0;
+	range_restart_attempted = false;
+	partial_download_path = String();
+
+	emit_signal(SNAME("download_completed"), completed_file);
 }
 
 void TemplateDownloader::_notification(int p_what) {
@@ -1765,24 +2153,44 @@ void TemplateDownloader::_bind_methods() {
 Error TemplateDownloader::download_template(const String &p_file_name, const String &p_source) {
 	url = p_source;
 	filename = p_file_name;
+	partial_download_path = EditorPaths::get_singleton()->get_temp_dir().path_join((filename + "-" + url).md5_text() + "-" + filename.validate_filename() + ".part");
+	_clear_partial_download();
 
+	set_download_file(String());
+	set_keep_partial_download(false);
+	set_append_to_download_file(false);
+	request_start_partial_size = 0;
+	retry_count = 0;
+	range_restart_attempted = false;
 	current_step = Step::QUERYING;
 	return request(p_source, PackedStringArray(), HTTPClient::METHOD_HEAD);
 }
 
 void TemplateDownloader::cancel_download() {
 	cancel_request();
+	_clear_partial_download();
 
 	current_step = Step::WAITING;
 	filename = String();
 	url = String();
+	partial_download_path = String();
 	file_size = 0;
 	file_info = FileInfo();
+	fragment_start_byte = 0;
+	fragment_end_byte = 0;
+	request_start_partial_size = 0;
+	retry_count = 0;
+	range_restart_attempted = false;
 }
 
 float TemplateDownloader::get_download_progress() const {
 	if (current_step == Step::DOWNLOADING) {
-		return (float)get_downloaded_bytes() / get_body_size();
+		const int64_t fragment_size = _get_fragment_download_size();
+		if (fragment_size <= 0) {
+			return 0.0f;
+		}
+		const int64_t downloaded_size = MIN(request_start_partial_size + get_downloaded_bytes(), fragment_size);
+		return (float)downloaded_size / (float)fragment_size;
 	}
 	return 0.0f;
 }

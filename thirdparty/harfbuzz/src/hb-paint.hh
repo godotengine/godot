@@ -36,6 +36,8 @@
   HB_PAINT_FUNC_IMPLEMENT (color_glyph) \
   HB_PAINT_FUNC_IMPLEMENT (push_clip_glyph) \
   HB_PAINT_FUNC_IMPLEMENT (push_clip_rectangle) \
+  HB_PAINT_FUNC_IMPLEMENT (push_clip_path_start) \
+  HB_PAINT_FUNC_IMPLEMENT (push_clip_path_end) \
   HB_PAINT_FUNC_IMPLEMENT (pop_clip) \
   HB_PAINT_FUNC_IMPLEMENT (color) \
   HB_PAINT_FUNC_IMPLEMENT (image) \
@@ -43,6 +45,7 @@
   HB_PAINT_FUNC_IMPLEMENT (radial_gradient) \
   HB_PAINT_FUNC_IMPLEMENT (sweep_gradient) \
   HB_PAINT_FUNC_IMPLEMENT (push_group) \
+  HB_PAINT_FUNC_IMPLEMENT (push_group_for) \
   HB_PAINT_FUNC_IMPLEMENT (pop_group) \
   HB_PAINT_FUNC_IMPLEMENT (custom_palette_color) \
   /* ^--- Add new callbacks here */
@@ -102,6 +105,13 @@ struct hb_paint_funcs_t
   { func.push_clip_rectangle (this, paint_data,
                               xmin, ymin, xmax, ymax,
                               !user_data ? nullptr : user_data->push_clip_rectangle); }
+  hb_draw_funcs_t *push_clip_path_start (void *paint_data,
+                                         void **draw_data)
+  { return func.push_clip_path_start (this, paint_data, draw_data,
+                                      !user_data ? nullptr : user_data->push_clip_path_start); }
+  void push_clip_path_end (void *paint_data)
+  { func.push_clip_path_end (this, paint_data,
+                             !user_data ? nullptr : user_data->push_clip_path_end); }
   void pop_clip (void *paint_data)
   { func.pop_clip (this, paint_data,
                    !user_data ? nullptr : user_data->pop_clip); }
@@ -146,6 +156,11 @@ struct hb_paint_funcs_t
   void push_group (void *paint_data)
   { func.push_group (this, paint_data,
                      !user_data ? nullptr : user_data->push_group); }
+  void push_group_for (void *paint_data,
+                       hb_paint_composite_mode_t mode)
+  { func.push_group_for (this, paint_data,
+                         mode,
+                         !user_data ? nullptr : user_data->push_group_for); }
   void pop_group (void *paint_data,
                   hb_paint_composite_mode_t mode)
   { func.pop_group (this, paint_data,
@@ -244,5 +259,18 @@ struct hb_paint_funcs_t
 };
 DECLARE_NULL_INSTANCE (hb_paint_funcs_t);
 
+
+/* Linearly interpolate between two hb_color_t values, component-wise,
+ * in byte-channel space with rounding. */
+static inline hb_color_t
+hb_color_lerp (hb_color_t c0, hb_color_t c1, float t)
+{
+  auto lerp = [&] (unsigned shift) -> unsigned {
+    unsigned v0 = (c0 >> shift) & 0xFF;
+    unsigned v1 = (c1 >> shift) & 0xFF;
+    return (unsigned) (v0 + t * ((float) v1 - (float) v0) + 0.5f);
+  };
+  return HB_COLOR (lerp (0), lerp (8), lerp (16), lerp (24));
+}
 
 #endif /* HB_PAINT_HH */

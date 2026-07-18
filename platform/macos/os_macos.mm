@@ -118,18 +118,12 @@ bool OS_MacOS::is_sandboxed() const {
 }
 
 bool OS_MacOS::request_permission(const String &p_name) {
-	if (@available(macOS 11.0, *)) {
-		if (p_name == "macos.permission.RECORD_SCREEN") {
-			if (CGPreflightScreenCaptureAccess()) {
-				return true;
-			} else {
-				CGRequestScreenCaptureAccess();
-				return false;
-			}
-		}
-	} else {
-		if (p_name == "macos.permission.RECORD_SCREEN") {
+	if (p_name == "macos.permission.RECORD_SCREEN") {
+		if (CGPreflightScreenCaptureAccess()) {
 			return true;
+		} else {
+			CGRequestScreenCaptureAccess();
+			return false;
 		}
 	}
 	return false;
@@ -138,11 +132,7 @@ bool OS_MacOS::request_permission(const String &p_name) {
 Vector<String> OS_MacOS::get_granted_permissions() const {
 	Vector<String> ret;
 
-	if (@available(macOS 11.0, *)) {
-		if (CGPreflightScreenCaptureAccess()) {
-			ret.push_back("macos.permission.RECORD_SCREEN");
-		}
-	} else {
+	if (CGPreflightScreenCaptureAccess()) {
 		ret.push_back("macos.permission.RECORD_SCREEN");
 	}
 
@@ -249,9 +239,7 @@ void OS_MacOS::finalize() {
 	delete_main_loop();
 
 #ifdef SDL_ENABLED
-	if (joypad_sdl) {
-		memdelete(joypad_sdl);
-	}
+	memdelete(joypad_sdl);
 #endif
 }
 
@@ -585,6 +573,14 @@ String OS_MacOS::get_locale() const {
 	return String([locale_code UTF8String]).replace_char('-', '_');
 }
 
+Vector<String> OS_MacOS::get_preferred_locales() const {
+	Vector<String> out;
+	for (NSString *locale_code in [NSLocale preferredLanguages]) {
+		out.push_back(String([locale_code UTF8String]).replace_char('-', '_'));
+	}
+	return out;
+}
+
 Vector<String> OS_MacOS::get_system_fonts() const {
 	HashSet<String> font_names;
 	CFArrayRef fonts = CTFontManagerCopyAvailableFontFamilyNames();
@@ -814,59 +810,35 @@ Error OS_MacOS::create_process(const String &p_path, const List<String> &p_argum
 		for (const String &arg : p_arguments) {
 			[arguments addObject:[NSString stringWithUTF8String:arg.utf8().get_data()]];
 		}
-#if defined(__x86_64__)
-		if (@available(macOS 10.15, *)) {
-#endif
-			NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
-			[configuration setArguments:arguments];
-			[configuration setCreatesNewApplicationInstance:YES];
-			[configuration setEnvironment:[[NSProcessInfo processInfo] environment]];
-			__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
-			__block Error err = ERR_TIMEOUT;
-			__block pid_t pid = 0;
+		NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
+		[configuration setArguments:arguments];
+		[configuration setCreatesNewApplicationInstance:YES];
+		[configuration setEnvironment:[[NSProcessInfo processInfo] environment]];
+		__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
+		__block Error err = ERR_TIMEOUT;
+		__block pid_t pid = 0;
 
-			[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
-												  configuration:configuration
-											  completionHandler:^(NSRunningApplication *app, NSError *error) {
-												  if (error) {
-													  err = ERR_CANT_FORK;
-													  NSLog(@"Failed to execute: %@", error.localizedDescription);
-												  } else {
-													  pid = [app processIdentifier];
-													  err = OK;
-												  }
-												  dispatch_semaphore_signal(lock);
-											  }];
-			dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
+		[[NSWorkspace sharedWorkspace] openApplicationAtURL:url
+											  configuration:configuration
+										  completionHandler:^(NSRunningApplication *app, NSError *error) {
+											  if (error) {
+												  err = ERR_CANT_FORK;
+												  NSLog(@"Failed to execute: %@", error.localizedDescription);
+											  } else {
+												  pid = [app processIdentifier];
+												  err = OK;
+											  }
+											  dispatch_semaphore_signal(lock);
+										  }];
+		dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
 
-			if (err == OK) {
-				if (r_child_id) {
-					*r_child_id = (ProcessID)pid;
-				}
+		if (err == OK) {
+			if (r_child_id) {
+				*r_child_id = (ProcessID)pid;
 			}
-
-			return err;
-#if defined(__x86_64__)
-		} else {
-			Error err = ERR_TIMEOUT;
-			NSError *error = nullptr;
-			NSDictionary *config = @{
-				NSWorkspaceLaunchConfigurationArguments : arguments,
-				NSWorkspaceLaunchConfigurationEnvironment : [[NSProcessInfo processInfo] environment]
-			};
-			NSRunningApplication *app = [[NSWorkspace sharedWorkspace] launchApplicationAtURL:url options:NSWorkspaceLaunchNewInstance configuration:config error:&error];
-			if (error) {
-				err = ERR_CANT_FORK;
-				NSLog(@"Failed to execute: %@", error.localizedDescription);
-			} else {
-				if (r_child_id) {
-					*r_child_id = (ProcessID)[app processIdentifier];
-				}
-				err = OK;
-			}
-			return err;
 		}
-#endif
+
+		return err;
 	} else {
 		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
 	}
@@ -925,39 +897,26 @@ Error OS_MacOS::open_with_program(const String &p_program_path, const List<Strin
 		return ERR_INVALID_PARAMETER;
 	}
 
-#if defined(__x86_64__)
-	if (@available(macOS 10.15, *)) {
-#endif
-		NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
-		[configuration setCreatesNewApplicationInstance:NO];
-		__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
-		__block Error err = ERR_TIMEOUT;
+	NSWorkspaceOpenConfiguration *configuration = [[NSWorkspaceOpenConfiguration alloc] init];
+	[configuration setCreatesNewApplicationInstance:NO];
+	__block dispatch_semaphore_t lock = dispatch_semaphore_create(0);
+	__block Error err = ERR_TIMEOUT;
 
-		[[NSWorkspace sharedWorkspace] openURLs:urls_to_open
-						   withApplicationAtURL:app_url
-								  configuration:configuration
-							  completionHandler:^(NSRunningApplication *app, NSError *error) {
-								  if (error) {
-									  err = ERR_CANT_FORK;
-									  NSLog(@"Failed to open paths: %@", error.localizedDescription);
-								  } else {
-									  err = OK;
-								  }
-								  dispatch_semaphore_signal(lock);
-							  }];
-		dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
+	[[NSWorkspace sharedWorkspace] openURLs:urls_to_open
+					   withApplicationAtURL:app_url
+							  configuration:configuration
+						  completionHandler:^(NSRunningApplication *app, NSError *error) {
+							  if (error) {
+								  err = ERR_CANT_FORK;
+								  NSLog(@"Failed to open paths: %@", error.localizedDescription);
+							  } else {
+								  err = OK;
+							  }
+							  dispatch_semaphore_signal(lock);
+						  }];
+	dispatch_semaphore_wait(lock, dispatch_time(DISPATCH_TIME_NOW, 20000000000)); // 20 sec timeout, wait for app to launch.
 
-		return err;
-#if defined(__x86_64__)
-	} else {
-		NSError *error = nullptr;
-		[[NSWorkspace sharedWorkspace] openURLs:urls_to_open withApplicationAtURL:app_url options:NSWorkspaceLaunchDefault configuration:@{} error:&error];
-		if (error) {
-			return ERR_CANT_FORK;
-		}
-		return OK;
-	}
-#endif
+	return err;
 }
 
 bool OS_MacOS::is_process_running(const ProcessID &p_pid) const {
@@ -973,7 +932,11 @@ String OS_MacOS::get_unique_id() const {
 	static String serial_number;
 
 	if (serial_number.is_empty()) {
+#if defined(__x86_64) || defined(__x86_64__)
 		io_service_t platform_expert = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+#else
+		io_service_t platform_expert = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+#endif
 		CFStringRef serial_number_cf_string = nullptr;
 		if (platform_expert) {
 			serial_number_cf_string = (CFStringRef)IORegistryEntryCreateCFProperty(platform_expert, CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault, 0);

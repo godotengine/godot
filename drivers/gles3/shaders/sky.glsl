@@ -119,7 +119,7 @@ layout(std140) uniform MaterialUniforms{ //ubo:3
 #endif
 
 #ifdef USE_MULTIVIEW
-layout(std140) uniform MultiviewData { // ubo:11
+layout(std140) uniform MultiviewData { // ubo:12
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
@@ -244,12 +244,12 @@ void main() {
 #CODE : SKY
 	}
 
-	color *= sky_energy_multiplier;
-
 	// Convert to Linear for tonemapping so color matches scene shader better
 	color = srgb_to_linear(color);
 
-#if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
+	color *= sky_energy_multiplier;
+
+#if !defined(DISABLE_FOG)
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	if (fog_enabled) {

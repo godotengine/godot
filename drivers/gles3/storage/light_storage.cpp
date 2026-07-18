@@ -712,7 +712,7 @@ Dependency *LightStorage::reflection_probe_get_dependency(RID p_probe) const {
 /* REFLECTION ATLAS */
 
 RID LightStorage::reflection_atlas_create() {
-	ReflectionAtlas ra;
+	ReflectionAtlas ra = {};
 	ra.count = GLOBAL_GET("rendering/reflections/reflection_atlas/reflection_count");
 	ra.size = GLOBAL_GET("rendering/reflections/reflection_atlas/reflection_size");
 

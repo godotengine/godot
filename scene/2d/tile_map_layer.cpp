@@ -40,7 +40,6 @@
 #include "scene/2d/tile_map.h"
 #include "scene/gui/control.h"
 #include "scene/main/scene_tree.h"
-#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/material.h"
 #include "scene/resources/world_2d.h"
 #include "servers/rendering/rendering_server.h"
@@ -50,6 +49,7 @@
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef NAVIGATION_2D_DISABLED
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 Callable TileMapLayer::_navmesh_source_geometry_parsing_callback;
 RID TileMapLayer::_navmesh_source_geometry_parser;
@@ -890,27 +890,27 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 								bodies_coords[body] = physics_quadrant->quadrant_coords;
 
 								// Create or update the body.
-								ps->body_set_mode(body, use_kinematic_bodies ? PhysicsServer2D::BODY_MODE_KINEMATIC : PhysicsServer2D::BODY_MODE_STATIC);
+								ps->body_set_mode(body, use_kinematic_bodies ? PS2DE::BODY_MODE_KINEMATIC : PS2DE::BODY_MODE_STATIC);
 								ps->body_set_space(body, space);
 
 								Transform2D xform;
 								xform.set_origin(quadrant_origin);
 								xform = gl_transform * xform;
-								ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
+								ps->body_set_state(body, PS2DE::BODY_STATE_TRANSFORM, xform);
 
 								ps->body_attach_object_instance_id(body, tile_map_node ? tile_map_node->get_instance_id() : get_instance_id());
 								ps->body_set_collision_layer(body, physics_layer);
 								ps->body_set_collision_mask(body, physics_mask);
 								ps->body_set_pickable(body, false);
-								ps->body_set_state(body, PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
-								ps->body_set_state(body, PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
+								ps->body_set_state(body, PS2DE::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
+								ps->body_set_state(body, PS2DE::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
 
 								if (!physics_material.is_valid()) {
-									ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_BOUNCE, 0);
-									ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_FRICTION, 1);
+									ps->body_set_param(body, PS2DE::BODY_PARAM_BOUNCE, 0);
+									ps->body_set_param(body, PS2DE::BODY_PARAM_FRICTION, 1);
 								} else {
-									ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
-									ps->body_set_param(body, PhysicsServer2D::BODY_PARAM_FRICTION, physics_material->computed_friction());
+									ps->body_set_param(body, PS2DE::BODY_PARAM_BOUNCE, physics_material->computed_bounce());
+									ps->body_set_param(body, PS2DE::BODY_PARAM_FRICTION, physics_material->computed_friction());
 								}
 							}
 
@@ -972,7 +972,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 			for (KeyValue<Vector2i, Ref<PhysicsQuadrant>> &kv : physics_quadrant_map) {
 				Ref<PhysicsQuadrant> &physics_quadrant = kv.value;
 				for (const KeyValue<PhysicsQuadrant::PhysicsBodyKey, PhysicsQuadrant::PhysicsBodyValue> &kvbody : physics_quadrant->bodies) {
-					ps->body_set_mode(kvbody.value.body, use_kinematic_bodies ? PhysicsServer2D::BODY_MODE_KINEMATIC : PhysicsServer2D::BODY_MODE_STATIC);
+					ps->body_set_mode(kvbody.value.body, use_kinematic_bodies ? PS2DE::BODY_MODE_KINEMATIC : PS2DE::BODY_MODE_STATIC);
 				}
 			}
 		}
@@ -1062,7 +1062,7 @@ void TileMapLayer::_physics_notification(int p_what) {
 						const RID &body = kvbody.value.body;
 						Transform2D xform(0, tile_set->map_to_local(kv.key));
 						xform = gl_transform * xform;
-						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
+						ps->body_set_state(body, PS2DE::BODY_STATE_TRANSFORM, xform);
 					}
 				}
 			}
@@ -1165,7 +1165,7 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 				if (shape_count == 0) {
 					continue;
 				}
-				const Transform2D body_to_quadrant = global_to_debug_quadrant * Transform2D(ps->body_get_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM));
+				const Transform2D body_to_quadrant = global_to_debug_quadrant * Transform2D(ps->body_get_state(body, PS2DE::BODY_STATE_TRANSFORM));
 
 				Color face_random_variation_color;
 				face_random_variation_color.set_hsv(
@@ -1178,9 +1178,9 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 				for (int shape_index = 0; shape_index < shape_count; shape_index++) {
 					const RID &shape = ps->body_get_shape(body, shape_index);
 					const Transform2D &shape_xform = ps->body_get_shape_transform(body, shape_index);
-					const PhysicsServer2D::ShapeType &type = ps->shape_get_type(shape);
+					const PS2DE::ShapeType &type = ps->shape_get_type(shape);
 
-					if (type == PhysicsServer2D::SHAPE_CONVEX_POLYGON) {
+					if (type == PS2DE::SHAPE_CONVEX_POLYGON) {
 						PackedVector2Array outline = ps->shape_get_data(shape);
 						const int outline_size = outline.size();
 						if (outline_size < 3) {
@@ -2431,7 +2431,6 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_constrain
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_connect(const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) const {
 	ERR_FAIL_COND_V(tile_set.is_null(), (HashMap<Vector2i, TileSet::TerrainsPattern>()));
 	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), (HashMap<Vector2i, TileSet::TerrainsPattern>()));
-	HashMap<Vector2i, TileSet::TerrainsPattern> output;
 
 	// Build list and set of tiles that can be modified (painted and their surroundings).
 	Vector<Vector2i> can_modify_list;
@@ -2607,7 +2606,6 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_path(cons
 HashMap<Vector2i, TileSet::TerrainsPattern> TileMapLayer::terrain_fill_pattern(const Vector<Vector2i> &p_coords_array, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern, bool p_ignore_empty_terrains) const {
 	ERR_FAIL_COND_V(tile_set.is_null(), (HashMap<Vector2i, TileSet::TerrainsPattern>()));
 	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), (HashMap<Vector2i, TileSet::TerrainsPattern>()));
-	HashMap<Vector2i, TileSet::TerrainsPattern> output;
 
 	// Build list and set of tiles that can be modified (painted and their surroundings).
 	Vector<Vector2i> can_modify_list;

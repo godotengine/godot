@@ -81,7 +81,7 @@ Variant PostImportPluginSkeletonRestFixer::get_internal_option_visibility(Intern
 			return int(p_options["retarget/rest_fixer/retarget_method"]) == 2 && bool(p_options["retarget/bone_renamer/rename_bones"]) == false;
 		}
 	}
-	return true;
+	return Variant();
 }
 
 void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory p_category, Node *p_base_scene, Node *p_node, Ref<Resource> p_resource, const Dictionary &p_options) {
@@ -597,7 +597,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 											Vector<StringName> names = anim->track_get_path(i).get_names();
 											names.remove_at(0);
 											for (int j = 0; j < names.size(); j++) {
-												path_string += "/" + names[j].operator String();
+												path_string += "/" + names[j].string();
 											}
 										}
 										if (anim->track_get_path(i).get_subname_count() > 0) {

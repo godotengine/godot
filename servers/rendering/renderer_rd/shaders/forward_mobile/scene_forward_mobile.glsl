@@ -1666,7 +1666,7 @@ void main() {
 		float lod;
 		half blend = half(modf(roughness_lod, lod));
 
-		float ref_lod = vec3_to_oct_lod(dFdx(cc_radiance_ref_vec), dFdy(cc_radiance_ref_vec), scene_data_block.data.radiance_pixel_size);
+		float ref_lod = vec3_to_oct_lod(dFdx(vec3(cc_radiance_ref_vec)), dFdy(vec3(cc_radiance_ref_vec)), scene_data_block.data.radiance_pixel_size);
 		vec2 ref_uv = vec3_to_oct_with_border(cc_radiance_ref_vec, vec2(scene_data_block.data.radiance_border_size, 1.0 - scene_data_block.data.radiance_border_size * 2.0));
 		hvec3 clearcoat_sample_a = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod), ref_lod).rgb);
 		hvec3 clearcoat_sample_b = hvec3(textureLod(sampler2DArray(radiance_octmap, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ref_uv, lod + 1), ref_lod).rgb);
@@ -1769,7 +1769,7 @@ void main() {
 		hvec4 reflection_accum = hvec4(0.0);
 		hvec4 ambient_accum = hvec4(0.0);
 #ifdef LIGHT_CLEARCOAT_USED
-		hvec3 cc_reflection_accum = hvec3(0.0);
+		hvec4 cc_reflection_accum = hvec4(0.0);
 #endif
 
 #ifdef LIGHT_ANISOTROPY_USED
@@ -1792,13 +1792,19 @@ void main() {
 				break;
 			}
 
+#ifndef LIGHT_CLEARCOAT_USED
 			if (reflection_accum.a >= half(1.0) && ambient_accum.a >= half(1.0)) {
 				break;
 			}
+#else
+			if (reflection_accum.a >= half(1.0) && cc_reflection_accum.a >= half(1.0) && ambient_accum.a >= half(1.0)) {
+				break;
+			}
+#endif // LIGHT_CLEARCOAT_USED
 
-			reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, indirect_specular_light,
+			reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light,
 #ifdef LIGHT_CLEARCOAT_USED
-					cc_specular_light, cc_ref_vec, mix(half(0.001), half(0.1), clearcoat_roughness), cc_reflection_accum,
+					cc_ref_vec, mix(half(0.001), half(0.1), clearcoat_roughness), cc_reflection_accum,
 #endif
 					ambient_accum, reflection_accum);
 		}
@@ -1811,12 +1817,21 @@ void main() {
 			reflection_accum.rgb = indirect_specular_light * (half(1.0) - reflection_accum.a) + reflection_accum.rgb;
 		}
 
+#ifdef LIGHT_CLEARCOAT_USED
+		if (cc_reflection_accum.a < half(1.0)) {
+			cc_reflection_accum.rgb = cc_specular_light * (half(1.0) - reflection_accum.a) + cc_reflection_accum.rgb;
+		}
+#endif
+
 		if (reflection_accum.a > half(0.0)) {
 			indirect_specular_light = reflection_accum.rgb;
-#ifdef LIGHT_CLEARCOAT_USED
-			cc_specular_light = cc_reflection_accum.rgb;
-#endif
 		}
+
+#ifdef LIGHT_CLEARCOAT_USED
+		if (cc_reflection_accum.a > half(0.0)) {
+			cc_specular_light = cc_reflection_accum.rgb;
+		}
+#endif
 
 #if !defined(USE_LIGHTMAP)
 		if (ambient_accum.a > half(0.0)) {

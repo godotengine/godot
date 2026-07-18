@@ -34,7 +34,6 @@
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/os/os.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
@@ -64,14 +63,19 @@ Node2D *Polygon2DEditor::_get_node() const {
 }
 
 void Polygon2DEditor::_set_node(Node *p_polygon) {
+	CanvasItem *ci_editor_control = CanvasItemEditor::get_singleton()->get_viewport_control();
+
 	CanvasItem *draw = Object::cast_to<CanvasItem>(canvas);
 	if (node) {
 		node->disconnect(SceneStringName(draw), callable_mp(draw, &CanvasItem::queue_redraw));
 		node->disconnect(SceneStringName(draw), callable_mp(this, &Polygon2DEditor::_update_available_modes));
+		node->disconnect(SceneStringName(draw), callable_mp(ci_editor_control, &CanvasItem::queue_redraw));
 	}
+
 	node = Object::cast_to<Polygon2D>(p_polygon);
 	_update_polygon_editing_state();
 	canvas->queue_redraw();
+
 	if (node) {
 		canvas->set_texture_filter(node->get_texture_filter_in_tree());
 
@@ -87,6 +91,8 @@ void Polygon2DEditor::_set_node(Node *p_polygon) {
 		// Whenever polygon gets redrawn, there's possible changes for the editor as well.
 		node->connect(SceneStringName(draw), callable_mp(draw, &CanvasItem::queue_redraw));
 		node->connect(SceneStringName(draw), callable_mp(this, &Polygon2DEditor::_update_available_modes));
+		// Update the canvas overlay.
+		node->connect(SceneStringName(draw), callable_mp(ci_editor_control, &CanvasItem::queue_redraw));
 	}
 }
 
@@ -1067,8 +1073,6 @@ void Polygon2DEditor::_canvas_draw() {
 
 	Ref<Texture2D> base_tex = node->get_texture();
 
-	String warning;
-
 	Transform2D mtx;
 	mtx.columns[2] = -draw_offset * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
@@ -1385,9 +1389,8 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_CREATE]->set_tooltip_text(TTR("Create Polygon"));
 	action_buttons[ACTION_CREATE_INTERNAL]->set_tooltip_text(TTR("Create Internal Vertex"));
 	action_buttons[ACTION_REMOVE_INTERNAL]->set_tooltip_text(TTR("Remove Internal Vertex"));
-	Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 	// TRANSLATORS: %s is Control or Command key name.
-	action_buttons[ACTION_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), find_keycode_name(key)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), find_keycode_name(key)));
+	action_buttons[ACTION_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), keycode_get_string(Key::CMD_OR_CTRL)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), keycode_get_string(Key::CMD_OR_CTRL)));
 	action_buttons[ACTION_MOVE]->set_tooltip_text(TTR("Move Polygon"));
 	action_buttons[ACTION_ROTATE]->set_tooltip_text(TTR("Rotate Polygon"));
 	action_buttons[ACTION_SCALE]->set_tooltip_text(TTR("Scale Polygon"));
@@ -1570,6 +1573,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	canvas->set_focus_mode(FOCUS_CLICK);
 
 	error = memnew(AcceptDialog);
+	error->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(error);
 }
 

@@ -70,6 +70,7 @@ void ScenePaint2DEditor::_edit(Object *p_object) {
 		} else {
 			grid = CanvasItemEditor::get_singleton()->is_grid_visible();
 			grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
+			grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
 		}
 	}
 
@@ -82,6 +83,7 @@ void ScenePaint2DEditor::_edit(Object *p_object) {
 	}
 
 	_update_node(p_object);
+	_update_hint_label();
 }
 
 void ScenePaint2DEditor::_update_node(Object *p_object) {
@@ -125,10 +127,10 @@ void ScenePaint2DEditor::_draw_overlay() {
 			for (int i = 1; i < 4; i++) {
 				bounds.expand_to(corners[i]);
 			}
-			int start_x = Math::floor(bounds.position.x / grid_step.x) * grid_step.x;
-			int end_x = Math::ceil((bounds.position.x + bounds.size.x) / grid_step.x) * grid_step.x;
-			int start_y = Math::floor(bounds.position.y / grid_step.y) * grid_step.y;
-			int end_y = Math::ceil((bounds.position.y + bounds.size.y) / grid_step.y) * grid_step.y;
+			int start_x = Math::floor((bounds.position.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x;
+			int end_x = Math::ceil(((bounds.position.x + bounds.size.x) - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x;
+			int start_y = Math::floor((bounds.position.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y;
+			int end_y = Math::ceil(((bounds.position.y + bounds.size.y) - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y;
 			Vector2 hint_distance = xform.get_scale() * grid_step;
 			float scale_fade = MIN(1.0, (MIN(hint_distance.x, hint_distance.y) - 5) / 5);
 			if (scale_fade > 0) {
@@ -152,8 +154,8 @@ void ScenePaint2DEditor::_draw_overlay() {
 			Vector2 mouse_canvas = viewport->get_local_mouse_position();
 			Vector2 mouse_local = xform.affine_inverse().xform(mouse_canvas);
 			Vector2 snapped_local = Vector2(
-					Math::floor(mouse_local.x / grid_step.x) * grid_step.x,
-					Math::floor(mouse_local.y / grid_step.y) * grid_step.y);
+					Math::floor((mouse_local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+					Math::floor((mouse_local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 			Vector2 corners[4] = {
 				snapped_local, snapped_local + Vector2(grid_step.x, 0),
 				snapped_local + Vector2(grid_step.x, grid_step.y),
@@ -189,12 +191,12 @@ void ScenePaint2DEditor::_draw_overlay() {
 			Vector2 snapped_local;
 			if (paint_mode == PAINT_MODE_SNAP_GRID_CELL_CENTER) {
 				snapped_local = Vector2(
-						Math::floor(mouse_local.x / grid_step.x) * grid_step.x,
-						Math::floor(mouse_local.y / grid_step.y) * grid_step.y);
+						Math::floor((mouse_local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+						Math::floor((mouse_local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 			} else if (paint_mode == PAINT_MODE_SNAP_GRID) {
 				snapped_local = Vector2(
-						Math::round(mouse_local.x / grid_step.x) * grid_step.x,
-						Math::round(mouse_local.y / grid_step.y) * grid_step.y);
+						Math::round((mouse_local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+						Math::round((mouse_local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 			}
 			final_local = (paint_mode != PAINT_MODE_FREE)
 					? (paint_mode == PAINT_MODE_SNAP_GRID ? snapped_local : (snapped_local + grid_step / 2.0))
@@ -203,6 +205,7 @@ void ScenePaint2DEditor::_draw_overlay() {
 		instance_container->set_position(xform.xform(final_local));
 		instance_container->set_rotation(xform.get_rotation());
 		instance_container->set_scale(xform.get_scale());
+		instance_container->set_skew(xform.get_skew());
 		_edit_properties();
 	}
 }
@@ -246,6 +249,18 @@ void ScenePaint2DEditor::_update_draw_overlay() {
 	}
 }
 
+void ScenePaint2DEditor::_update_hint_label() {
+	if (!is_tool_selected) {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(String(), String());
+	} else if (!cache_node) {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(TTRC("Select a Node2D to enable painting."), TTRC("The node will be used as a parent for the painted scenes."));
+	} else if (!selected_scene) {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(TTRC("Pick a scene for painting."), vformat(TTR("Use the Scene Picker from the toolbar or %s+Click a 2D scene instance."), keycode_get_string(Key::CMD_OR_CTRL)));
+	} else {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(String(), String());
+	}
+}
+
 void ScenePaint2DEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	if (!is_visible_in_tree() || !is_tool_selected) {
 		return;
@@ -276,21 +291,21 @@ void ScenePaint2DEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && input_tool != INPUT_TOOL_PAN) {
 		if (input_tool == INPUT_TOOL_PICK || input_tool == INPUT_TOOL_QUICK_PICK) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-				callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_CANVAS_ITEM);
+				callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_CANVAS_ITEM, (Control *)nullptr);
 			}
 		} else if (mb->is_pressed()) {
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (!node) {
 					EditorNode::get_singleton()->show_warning(
-							"No target node selected. Please select a Node2D compatible node in the SceneTree where painted scenes will be added.");
+							TTR("No target node selected. Please select a Node2D compatible node in the SceneTree where painted scenes will be added."));
 					return;
 				} else if (!selected_scene) {
 					EditorNode::get_singleton()->show_warning(
-							"No scene selected for painting. Use the Scene Picker from the toolbar to choose a scene before painting.");
+							TTR("No scene selected for painting. Use the Scene Picker from the toolbar to choose a scene before painting."));
 					return;
 				} else if (!FileAccess::exists(selected_scene->get_scene_file_path())) {
 					EditorNode::get_singleton()->show_warning(
-							vformat("The selected scene '%s' no longer exists on disk. Please select a valid scene to paint.",
+							vformat(TTR("The selected scene '%s' no longer exists on disk. Please select a valid scene to paint."),
 									selected_scene->get_scene_file_path()));
 					_set_picked_scene(nullptr);
 					return;
@@ -348,7 +363,8 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 			for (const CanvasItemEditor::SelectResult &result : results) {
 				Node2D *root = _get_node_root(result.item);
 				if (_is_scene_painted(root)) {
-					if (pos == root->get_position()) {
+					Vector2 root_pos = node->get_global_transform().xform(root->get_position());
+					if (pos.is_equal_approx(root_pos)) {
 						return;
 					}
 				}
@@ -432,12 +448,12 @@ Vector2 ScenePaint2DEditor::_get_mouse_grid_cell() {
 	Vector2 snapped;
 	if (paint_mode == PAINT_MODE_SNAP_GRID_CELL_CENTER) {
 		snapped = Vector2(
-				Math::floor(local.x / grid_step.x) * grid_step.x,
-				Math::floor(local.y / grid_step.y) * grid_step.y);
+				Math::floor((local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+				Math::floor((local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 	} else if (paint_mode == PAINT_MODE_SNAP_GRID) {
 		snapped = Vector2(
-				Math::round(local.x / grid_step.x) * grid_step.x,
-				Math::round(local.y / grid_step.y) * grid_step.y);
+				Math::round((local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+				Math::round((local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 	}
 
 	return node->get_global_transform().xform(snapped);
@@ -445,13 +461,14 @@ Vector2 ScenePaint2DEditor::_get_mouse_grid_cell() {
 
 void ScenePaint2DEditor::_edit_properties() {
 	if (!_is_instance_valid() || !edit_properties) {
-		InspectorDock::get_singleton()->set_info("", "", false);
 		return;
 	}
-	InspectorDock::get_inspector_singleton()->edit(instance);
-	InspectorDock::get_singleton()->set_info(
-			TTR("Editing instance properties"),
-			TTR("Edit the properties of the scene instance being painted.\nEdited properties will be stored locally in the current scene. If overused, this can significantly increase the scene's size and its loading time."), true);
+	if (InspectorDock::get_inspector_singleton()->get_edited_object() != instance) {
+		InspectorDock::get_inspector_singleton()->edit(instance);
+		InspectorDock::get_singleton()->set_info(
+				TTR("Editing instance properties"),
+				TTR("Edited properties will apply to the newly painted instances. They will be stored locally in the current scene."), true);
+	}
 }
 
 void ScenePaint2DEditor::_scene_picker_toggled(bool p_pressed) {
@@ -467,7 +484,7 @@ void ScenePaint2DEditor::_file_system_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_FILE_SYSTEM);
+		callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_FILE_SYSTEM, (Control *)nullptr);
 	}
 }
 
@@ -480,7 +497,7 @@ void ScenePaint2DEditor::_scene_tree_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_released() && mb->get_button_index() == MouseButton::LEFT) {
-		callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_SCENE_TREE);
+		callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_SCENE_TREE, (Control *)nullptr);
 	}
 }
 
@@ -492,7 +509,41 @@ void ScenePaint2DEditor::_recent_item_selected(int p_idx) {
 		EditorSettings::get_singleton()->set_project_metadata("scene_paint_2d_editor", "recent_scenes", PackedStringArray());
 		return;
 	}
-	callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_RECENT_LIST);
+	callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_RECENT_LIST, (Control *)nullptr);
+}
+
+void ScenePaint2DEditor::_custom_source_input(const Ref<InputEvent> &p_event, Control *p_control) {
+	if (input_tool != INPUT_TOOL_PICK || input_tool == INPUT_TOOL_QUICK_PICK) {
+		input_tool = INPUT_TOOL_NONE;
+		scene_picker_button->set_pressed(false);
+		return;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+		callable_mp(this, &ScenePaint2DEditor::_update_scene_picker).call_deferred(PICK_CUSTOM_SOURCE, p_control);
+	}
+}
+
+Node2D *ScenePaint2DEditor::_get_scene_from_path(const String &p_path) {
+	if (!ResourceLoader::exists(p_path, "PackedScene")) {
+		EditorNode::get_singleton()->show_warning(TTR("The selected scene could not be found. It may have been moved or deleted."));
+		return nullptr;
+	}
+
+	Ref<PackedScene> scene = ResourceLoader::load(p_path);
+	if (scene.is_null()) {
+		return nullptr;
+	}
+
+	Node *new_node = scene->instantiate();
+	ERR_FAIL_NULL_V_EDMSG(new_node, nullptr, "The selected scene is invalid.");
+	Node2D *node_2d = Object::cast_to<Node2D>(new_node);
+	if (!node_2d) {
+		new_node->queue_free();
+		return nullptr;
+	}
+	return node_2d;
 }
 
 bool ScenePaint2DEditor::_is_selected_scene_valid(Node2D *p_node) const {
@@ -522,7 +573,7 @@ void ScenePaint2DEditor::_set_pinned(bool p_pinned, Node *p_pinned_node) {
 	pin_node_button->set_pressed_no_signal(pinned);
 	String tooltip_text = TTR("Pin the current node.\nWhen enabled, the painting parent node will not change when selecting other nodes in the scene.");
 	if (p_pinned_node && pinned) {
-		tooltip_text += vformat(TTR("\nPinned Node: %s"), EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_pinned_node));
+		tooltip_text += vformat("\n" + TTR("Pinned Node: %s"), EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_pinned_node));
 	}
 	pin_node_button->set_tooltip_text(tooltip_text);
 }
@@ -557,9 +608,10 @@ void ScenePaint2DEditor::_scene_changed() {
 		cache_node = Object::cast_to<Node2D>(SceneTreeDock::get_singleton()->get_tree_editor()->get_selected());
 	}
 	_update_node();
+	_update_hint_label();
 }
 
-void ScenePaint2DEditor::_update_scene_picker(int p_mode) {
+void ScenePaint2DEditor::_update_scene_picker(int p_mode, Control *p_control) {
 	if (!is_tool_selected) {
 		return;
 	}
@@ -568,23 +620,7 @@ void ScenePaint2DEditor::_update_scene_picker(int p_mode) {
 	PickMode pick_mode = (PickMode)p_mode;
 	switch (pick_mode) {
 		case PICK_FILE_SYSTEM: {
-			String scene_path = FileSystemDock::get_singleton()->get_current_path();
-			Ref<PackedScene> scene = ResourceLoader::load(scene_path);
-			if (scene.is_null()) {
-				return;
-			}
-			Ref<SceneState> scene_state = scene->get_state();
-			String type;
-			while (scene_state.is_valid() && type.is_empty()) {
-				ERR_FAIL_COND(scene_state->get_node_count() < 1);
-				type = scene_state->get_node_type(0);
-				scene_state = scene_state->get_base_scene_state();
-			}
-			ERR_FAIL_COND_EDMSG(type.is_empty(), "The selected scene is invalid.");
-			bool extends_current_class = ClassDB::is_parent_class(type, "Node2D");
-			if (scene.is_valid() && extends_current_class) {
-				node_2d = Object::cast_to<Node2D>(scene->instantiate());
-			}
+			node_2d = _get_scene_from_path(FileSystemDock::get_singleton()->get_current_path());
 		} break;
 		case PICK_SCENE_TREE: {
 			node_2d = Object::cast_to<Node2D>(SceneTreeDock::get_singleton()->get_tree_editor()->get_selected());
@@ -605,21 +641,26 @@ void ScenePaint2DEditor::_update_scene_picker(int p_mode) {
 		} break;
 		case PICK_RECENT_LIST: {
 			String scene_path = recent_scenes_button->get_item_metadata(recent_idx);
-			if (!ResourceLoader::exists(scene_path)) {
-				EditorNode::get_singleton()->show_accept(
-						TTR("The selected scene could not be found. It may have been moved or deleted."),
-						TTR("OK"));
+			node_2d = _get_scene_from_path(scene_path);
+			if (!node_2d) {
 				PackedStringArray rc = EditorSettings::get_singleton()->get_project_metadata("scene_paint_2d_editor", "recent_scenes", PackedStringArray());
 				rc.erase(scene_path);
 				EditorSettings::get_singleton()->set_project_metadata("scene_paint_2d_editor", "recent_scenes", rc);
 				callable_mp(this, &ScenePaint2DEditor::_update_recent_scenes).call_deferred();
 				return;
 			}
-			Ref<PackedScene> scene = ResourceLoader::load(scene_path);
-			if (scene.is_valid()) {
-				node_2d = Object::cast_to<Node2D>(scene->instantiate());
+		} break;
+		case PICK_CUSTOM_SOURCE: {
+			Callable callback = custom_sources[p_control];
+			Callable::CallError ce;
+			Variant ret;
+			const Variant *args[1];
+			callback.callp(args, 0, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Error calling scene provider callback: %s", Variant::get_callable_error_text(callback, args, 1, ce)));
 			}
-		}
+			node_2d = Object::cast_to<Node2D>(ret.get_validated_object());
+		} break;
 	}
 
 	if (_is_selected_scene_valid(node_2d)) {
@@ -636,6 +677,10 @@ void ScenePaint2DEditor::_edit_properties_toggled(bool p_pressed) {
 			InspectorDock::get_inspector_singleton()->edit(selected_node);
 		} else if (node) {
 			InspectorDock::get_inspector_singleton()->edit(node);
+		}
+		Object *edited_object = InspectorDock::get_inspector_singleton()->get_edited_object();
+		if (edited_object == node || edited_object == selected_node) {
+			InspectorDock::get_singleton()->set_info("", "", false);
 		}
 	}
 	_edit_properties();
@@ -700,10 +745,32 @@ ScenePaint2DEditor::PaintMode ScenePaint2DEditor::_reload_paint_mode() {
 
 void ScenePaint2DEditor::_grid_step_changed() {
 	grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
+	grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
+}
+
+void ScenePaint2DEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("register_scene_provider", "control", "callback"), &ScenePaint2DEditor::register_scene_provider);
+	ClassDB::bind_method(D_METHOD("unregister_scene_provider", "control"), &ScenePaint2DEditor::unregister_scene_provider);
+	ClassDB::bind_method(D_METHOD("set_painted_scene", "scene"), &ScenePaint2DEditor::set_painted_scene);
+	ClassDB::bind_method(D_METHOD("get_painted_scene"), &ScenePaint2DEditor::get_painted_scene);
 }
 
 void ScenePaint2DEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			advanced_settings_button->set_tooltip_text(TTR("Advanced Settings") + "\n" + TTR("Hold Alt while painting to temporarily switch to the previously used paint snap mode."));
+			if (toolbar->is_visible()) {
+				_update_hint_label();
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			// Dragging something into 2D viewport might override the label, so it needs to be restored.
+			if (toolbar->is_visible()) {
+				callable_mp(this, &ScenePaint2DEditor::_update_hint_label).call_deferred();
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			pin_node_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 			scene_picker_button->set_button_icon(get_editor_theme_icon(SNAME("ColorPick")));
@@ -731,10 +798,15 @@ void ScenePaint2DEditor::_notification(int p_what) {
 
 void ScenePaint2DEditor::_set_picked_scene(Node2D *p_scene) {
 	selected_scene = p_scene;
+	_update_hint_label();
+
 	scene_picker_button->set_pressed(false);
 	input_tool = INPUT_TOOL_NONE;
 	if (!selected_scene) {
 		recent_scenes_button->select(-1);
+		if (edit_properties) {
+			edit_properties_button->set_pressed(false);
+		}
 	}
 	String scene_path = selected_scene ? selected_scene->get_scene_file_path() : String();
 	callable_mp(this, &ScenePaint2DEditor::_add_to_recent_scenes).call_deferred(scene_path);
@@ -800,7 +872,33 @@ void ScenePaint2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 	}
 }
 
+void ScenePaint2DEditor::register_scene_provider(Control *p_control, const Callable &p_callback) {
+	ERR_FAIL_COND_MSG(custom_sources.has(p_control), "Provider already registered.");
+	custom_sources[p_control] = p_callback;
+	p_control->connect(SceneStringName(gui_input), callable_mp(this, &ScenePaint2DEditor::_custom_source_input).bind(p_control));
+}
+
+void ScenePaint2DEditor::unregister_scene_provider(Control *p_control) {
+	ERR_FAIL_COND_MSG(!custom_sources.has(p_control), "Provider not found.");
+	custom_sources.erase(p_control);
+	p_control->disconnect(SceneStringName(gui_input), callable_mp(this, &ScenePaint2DEditor::_custom_source_input));
+}
+
+void ScenePaint2DEditor::set_painted_scene(Node2D *p_scene) {
+	if (_is_selected_scene_valid(p_scene)) {
+		_set_picked_scene(p_scene);
+	} else {
+		_set_picked_scene(nullptr);
+	}
+}
+
+Node2D *ScenePaint2DEditor::get_painted_scene() const {
+	return instance;
+}
+
 ScenePaint2DEditor::ScenePaint2DEditor() {
+	singleton = this;
+
 	toolbar = memnew(HBoxContainer);
 	CanvasItemEditor *canvas_item_editor = CanvasItemEditor::get_singleton();
 	canvas_item_editor->add_control_to_menu_panel(toolbar);
@@ -810,7 +908,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	pin_node_button->set_toggle_mode(true);
 	pin_node_button->set_accessibility_name(TTRC("Pin Node"));
 	pin_node_button->set_theme_type_variation(SceneStringName(FlatButton));
-	pin_node_button->set_tooltip_text(TTRC("Pin the current node.\nWhen enabled, the painting parent node will not change when selecting other nodes in the scene."));
+	pin_node_button->set_tooltip_text(TTRC("When enabled, the painting parent node will not change when selecting other nodes in the scene."));
 	pin_node_button->connect(SceneStringName(toggled), callable_mp(this, &ScenePaint2DEditor::_pinned_toggled));
 	pin_node_button->set_shortcut(ED_SHORTCUT("scene_painter/pin_node", TTRC("Pin Node"), Key::P));
 	pin_node_button->set_shortcut_context(canvas_item_editor);
@@ -820,7 +918,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	scene_picker_button->set_toggle_mode(true);
 	scene_picker_button->set_accessibility_name(TTRC("Scene Picker"));
 	scene_picker_button->set_theme_type_variation(SceneStringName(FlatButton));
-	scene_picker_button->set_tooltip_text(TTRC("Toggle scene picker mode.\nWhen enabled, you can select scenes from the FileSystem dock, Scene dock, or 2D editor's viewport.\nHolding Ctrl enables picking from the 2D editor's viewport."));
+	scene_picker_button->set_tooltip_text(TTRC("When enabled, you can select scenes from the FileSystem dock, Scene dock, or 2D editor's viewport.\nHolding Ctrl enables picking from the 2D editor's viewport."));
 	scene_picker_button->connect(SceneStringName(toggled), callable_mp(this, &ScenePaint2DEditor::_scene_picker_toggled));
 	scene_picker_button->set_shortcut(ED_SHORTCUT("scene_painter/scene_picker", TTRC("Scene Picker"), Key::I));
 	scene_picker_button->set_shortcut_context(CanvasItemEditor::get_singleton());
@@ -850,7 +948,6 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	advanced_settings_button = memnew(Button);
 	advanced_settings_button->set_accessibility_name(TTRC("Advanced Settings"));
 	advanced_settings_button->set_theme_type_variation(SceneStringName(FlatButton));
-	advanced_settings_button->set_tooltip_text(TTRC("Open advanced settings.\nHolding alt temporarily switches to previously used paint mode."));
 	advanced_settings_button->connect(SceneStringName(pressed), callable_mp(this, &ScenePaint2DEditor::_advanced_settings_pressed));
 	toolbar->add_child(advanced_settings_button);
 
@@ -859,26 +956,31 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 
 	advanced_settings_popup->add_item(TTRC("Free Paint"), MENU_ITEM_FREE_PAINT_MODE);
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_FREE);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Enable free painting without snapping."));
 	advanced_settings_popup->add_item(TTRC("Snap to Grid"), MENU_ITEM_SNAP_TO_GRID_PAINT_MODE);
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_SNAP_GRID);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Enable snapping to grid when painting."));
 	advanced_settings_popup->add_item(TTRC("Snap to Grid Cell Center"), MENU_ITEM_SNAP_TO_GRID_CELL_CENTER_PAINT_MODE);
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_SNAP_GRID_CELL_CENTER);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Enable snapping to grid cell center when painting."));
 	advanced_settings_popup->add_separator();
 	advanced_settings_popup->add_check_item(TTRC("Allow Overlapping"), MENU_ITEM_ALLOW_OVERLAPPING);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Allow painting over existing painted scenes.\nHolding shift temporarily toggles this option."));
+	advanced_settings_popup->set_item_tooltip(-1, TTRC("Allow painting over existing painted scenes.\nHold Shift while painting to temporarily toggle this option."));
 	advanced_settings_popup->set_item_disabled(-1, true);
 
 	advanced_settings_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ScenePaint2DEditor::_advanced_settings_id_pressed));
 }
 
 void ScenePaint2DEditorPlugin::_canvas_item_tool_changed(int p_tool) {
+	bool prev_selected = scene_paint_2d_editor->is_tool_selected;
 	scene_paint_2d_editor->is_tool_selected = (CanvasItemEditor::Tool)p_tool == CanvasItemEditor::TOOL_SCENE_PAINT;
+	if (!scene_paint_2d_editor->is_tool_selected && prev_selected) {
+		make_visible(false);
+		scene_paint_2d_editor->_update_hint_label();
+		return;
+	}
+
 	Node *selected_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
 	if (!selected_node) {
 		make_visible(false);
+		scene_paint_2d_editor->_update_hint_label();
 		return;
 	}
 	scene_paint_2d_editor->_set_picked_scene(nullptr);

@@ -396,6 +396,7 @@ struct MDSubpass {
 	LocalVector<RDD::AttachmentReference> color_references;
 	RDD::AttachmentReference depth_stencil_reference;
 	LocalVector<RDD::AttachmentReference> resolve_references;
+	RDD::AttachmentReference depth_resolve_reference;
 
 	MTLFmtCaps getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const;
 };
@@ -420,7 +421,7 @@ public:
 	 * @param p_subpass
 	 * @return
 	 */
-	_FORCE_INLINE_ bool isFirstUseOf(MDSubpass const &p_subpass) const {
+	_FORCE_INLINE_ bool isFirstUseOf(const MDSubpass &p_subpass) const {
 		return p_subpass.subpass_index == firstUseSubpassIndex;
 	}
 
@@ -429,20 +430,20 @@ public:
 	 * @param p_subpass
 	 * @return
 	 */
-	_FORCE_INLINE_ bool isLastUseOf(MDSubpass const &p_subpass) const {
+	_FORCE_INLINE_ bool isLastUseOf(const MDSubpass &p_subpass) const {
 		return p_subpass.subpass_index == lastUseSubpassIndex;
 	}
 
-	void linkToSubpass(MDRenderPass const &p_pass);
+	void linkToSubpass(const MDRenderPass &p_pass);
 
-	MTL::StoreAction getMTLStoreAction(MDSubpass const &p_subpass,
+	MTL::StoreAction getMTLStoreAction(const MDSubpass &p_subpass,
 			bool p_is_rendering_entire_area,
 			bool p_has_resolve,
 			bool p_can_resolve,
 			bool p_is_stencil) const;
 	bool configureDescriptor(MTL::RenderPassAttachmentDescriptor *p_desc,
 			PixelFormats &p_pf,
-			MDSubpass const &p_subpass,
+			const MDSubpass &p_subpass,
 			MTL::Texture *p_attachment,
 			bool p_is_rendering_entire_area,
 			bool p_has_resolve,
@@ -472,7 +473,7 @@ public:
 	}
 
 	/** Returns whether this attachment should be cleared in the subpass. */
-	bool shouldClear(MDSubpass const &p_subpass, bool p_is_stencil) const;
+	bool shouldClear(const MDSubpass &p_subpass, bool p_is_stencil) const;
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDRenderPass {
@@ -671,7 +672,7 @@ protected:
 	virtual void end_render_encoding() = 0;
 
 	void _populate_vertices(simd::float4 *p_vertices, Size2i p_fb_size, VectorView<Rect2i> p_rects);
-	uint32_t _populate_vertices(simd::float4 *p_vertices, uint32_t p_index, Rect2i const &p_rect, Size2i p_fb_size);
+	uint32_t _populate_vertices(simd::float4 *p_vertices, uint32_t p_index, const Rect2i &p_rect, Size2i p_fb_size);
 	void _end_render_pass();
 	void _render_clear_render_area();
 
@@ -889,7 +890,7 @@ struct ShaderCacheEntry {
 	std::weak_ptr<MDLibrary> library;
 
 	/// Notify the cache that this entry is no longer needed.
-	void notify_free() const;
+	void notify_free();
 
 	ShaderCacheEntry(RenderingDeviceDriverMetal &p_owner, SHA256Digest p_key) :
 			owner(p_owner), key(p_key) {

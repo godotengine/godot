@@ -35,7 +35,7 @@
 #include "core/templates/command_queue_mt.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
-#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 #define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 #define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
 
@@ -80,7 +80,7 @@ class PhysicsServer3DWrapMT : public PhysicsServer3D {
 	void _thread_sync();
 
 public:
-	//FUNC1RID(shape,ShapeType); todo fix
+	//FUNC1RID(shape,PS3DE::ShapeType); todo fix
 	FUNCRID(world_boundary_shape)
 	FUNCRID(separation_ray_shape)
 	FUNCRID(sphere_shape)
@@ -98,7 +98,7 @@ public:
 	FUNC2(shape_set_margin, RID, real_t)
 	FUNC1RC(real_t, shape_get_margin, RID)
 
-	FUNC1RC(ShapeType, shape_get_type, RID);
+	FUNC1RC(PS3DE::ShapeType, shape_get_type, RID);
 	FUNC1RC(Variant, shape_get_data, RID);
 	FUNC1RC(real_t, shape_get_custom_solver_bias, RID);
 #if 0
@@ -114,8 +114,8 @@ public:
 	FUNC2(space_set_active, RID, bool);
 	FUNC1RC(bool, space_is_active, RID);
 
-	FUNC3(space_set_param, RID, SpaceParameter, real_t);
-	FUNC2RC(real_t, space_get_param, RID, SpaceParameter);
+	FUNC3(space_set_param, RID, PS3DE::SpaceParameter, real_t);
+	FUNC2RC(real_t, space_get_param, RID, PS3DE::SpaceParameter);
 
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectSpaceState3D *space_get_direct_state(RID p_space) override {
@@ -156,10 +156,10 @@ public:
 	FUNC2(area_attach_object_instance_id, RID, ObjectID);
 	FUNC1RC(ObjectID, area_get_object_instance_id, RID);
 
-	FUNC3(area_set_param, RID, AreaParameter, const Variant &);
+	FUNC3(area_set_param, RID, PS3DE::AreaParameter, const Variant &);
 	FUNC2(area_set_transform, RID, const Transform3D &);
 
-	FUNC2RC(Variant, area_get_param, RID, AreaParameter);
+	FUNC2RC(Variant, area_get_param, RID, PS3DE::AreaParameter);
 	FUNC1RC(Transform3D, area_get_transform, RID);
 
 	FUNC2(area_set_collision_layer, RID, uint32_t);
@@ -182,8 +182,8 @@ public:
 	FUNC2(body_set_space, RID, RID);
 	FUNC1RC(RID, body_get_space, RID);
 
-	FUNC2(body_set_mode, RID, BodyMode);
-	FUNC1RC(BodyMode, body_get_mode, RID);
+	FUNC2(body_set_mode, RID, PS3DE::BodyMode);
+	FUNC1RC(PS3DE::BodyMode, body_get_mode, RID);
 
 	FUNC4(body_add_shape, RID, RID, const Transform3D &, bool);
 	FUNC3(body_set_shape, RID, int, RID);
@@ -216,13 +216,13 @@ public:
 	FUNC2(body_set_user_flags, RID, uint32_t);
 	FUNC1RC(uint32_t, body_get_user_flags, RID);
 
-	FUNC3(body_set_param, RID, BodyParameter, const Variant &);
-	FUNC2RC(Variant, body_get_param, RID, BodyParameter);
+	FUNC3(body_set_param, RID, PS3DE::BodyParameter, const Variant &);
+	FUNC2RC(Variant, body_get_param, RID, PS3DE::BodyParameter);
 
 	FUNC1(body_reset_mass_properties, RID);
 
-	FUNC3(body_set_state, RID, BodyState, const Variant &);
-	FUNC2RC(Variant, body_get_state, RID, BodyState);
+	FUNC3(body_set_state, RID, PS3DE::BodyState, const Variant &);
+	FUNC2RC(Variant, body_get_state, RID, PS3DE::BodyState);
 
 	FUNC2(body_apply_torque_impulse, RID, const Vector3 &);
 	FUNC2(body_apply_central_impulse, RID, const Vector3 &);
@@ -249,8 +249,8 @@ public:
 
 	FUNC2(body_set_axis_velocity, RID, const Vector3 &);
 
-	FUNC3(body_set_axis_lock, RID, BodyAxis, bool);
-	FUNC2RC(bool, body_is_axis_locked, RID, BodyAxis);
+	FUNC3(body_set_axis_lock, RID, PS3DE::BodyAxis, bool);
+	FUNC2RC(bool, body_is_axis_locked, RID, PS3DE::BodyAxis);
 
 	FUNC2(body_add_collision_exception, RID, RID);
 	FUNC2(body_remove_collision_exception, RID, RID);
@@ -270,7 +270,7 @@ public:
 
 	FUNC2(body_set_ray_pickable, RID, bool);
 
-	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
+	bool body_test_motion(RID p_body, const PS3DT::MotionParameters &p_parameters, PS3DT::MotionResult *r_result = nullptr) override {
 		ERR_FAIL_COND_V(!Thread::is_main_thread(), false);
 		return physics_server_3d->body_test_motion(p_body, p_parameters, r_result);
 	}
@@ -302,8 +302,8 @@ public:
 	FUNC2(soft_body_remove_collision_exception, RID, RID)
 	FUNC2S(soft_body_get_collision_exceptions, RID, List<RID> *)
 
-	FUNC3(soft_body_set_state, RID, BodyState, const Variant &);
-	FUNC2RC(Variant, soft_body_get_state, RID, BodyState);
+	FUNC3(soft_body_set_state, RID, PS3DE::BodyState, const Variant &);
+	FUNC2RC(Variant, soft_body_get_state, RID, PS3DE::BodyState);
 
 	FUNC2(soft_body_set_transform, RID, const Transform3D &);
 
@@ -347,8 +347,8 @@ public:
 
 	FUNC5(joint_make_pin, RID, RID, const Vector3 &, RID, const Vector3 &)
 
-	FUNC3(pin_joint_set_param, RID, PinJointParam, real_t)
-	FUNC2RC(real_t, pin_joint_get_param, RID, PinJointParam)
+	FUNC3(pin_joint_set_param, RID, PS3DE::PinJointParam, real_t)
+	FUNC2RC(real_t, pin_joint_get_param, RID, PS3DE::PinJointParam)
 
 	FUNC2(pin_joint_set_local_a, RID, const Vector3 &)
 	FUNC1RC(Vector3, pin_joint_get_local_a, RID)
@@ -359,31 +359,34 @@ public:
 	FUNC5(joint_make_hinge, RID, RID, const Transform3D &, RID, const Transform3D &)
 	FUNC7(joint_make_hinge_simple, RID, RID, const Vector3 &, const Vector3 &, RID, const Vector3 &, const Vector3 &)
 
-	FUNC3(hinge_joint_set_param, RID, HingeJointParam, real_t)
-	FUNC2RC(real_t, hinge_joint_get_param, RID, HingeJointParam)
+	FUNC3(hinge_joint_set_param, RID, PS3DE::HingeJointParam, real_t)
+	FUNC2RC(real_t, hinge_joint_get_param, RID, PS3DE::HingeJointParam)
 
-	FUNC3(hinge_joint_set_flag, RID, HingeJointFlag, bool)
-	FUNC2RC(bool, hinge_joint_get_flag, RID, HingeJointFlag)
+	FUNC3(hinge_joint_set_flag, RID, PS3DE::HingeJointFlag, bool)
+	FUNC2RC(bool, hinge_joint_get_flag, RID, PS3DE::HingeJointFlag)
 
 	FUNC5(joint_make_slider, RID, RID, const Transform3D &, RID, const Transform3D &)
 
-	FUNC3(slider_joint_set_param, RID, SliderJointParam, real_t)
-	FUNC2RC(real_t, slider_joint_get_param, RID, SliderJointParam)
+	FUNC3(slider_joint_set_param, RID, PS3DE::SliderJointParam, real_t)
+	FUNC2RC(real_t, slider_joint_get_param, RID, PS3DE::SliderJointParam)
 
 	FUNC5(joint_make_cone_twist, RID, RID, const Transform3D &, RID, const Transform3D &)
 
-	FUNC3(cone_twist_joint_set_param, RID, ConeTwistJointParam, real_t)
-	FUNC2RC(real_t, cone_twist_joint_get_param, RID, ConeTwistJointParam)
+	FUNC3(cone_twist_joint_set_param, RID, PS3DE::ConeTwistJointParam, real_t)
+	FUNC2RC(real_t, cone_twist_joint_get_param, RID, PS3DE::ConeTwistJointParam)
 
 	FUNC5(joint_make_generic_6dof, RID, RID, const Transform3D &, RID, const Transform3D &)
 
-	FUNC4(generic_6dof_joint_set_param, RID, Vector3::Axis, G6DOFJointAxisParam, real_t)
-	FUNC3RC(real_t, generic_6dof_joint_get_param, RID, Vector3::Axis, G6DOFJointAxisParam)
+	FUNC4(generic_6dof_joint_set_param, RID, Vector3::Axis, PS3DE::G6DOFJointAxisParam, real_t)
+	FUNC3RC(real_t, generic_6dof_joint_get_param, RID, Vector3::Axis, PS3DE::G6DOFJointAxisParam)
 
-	FUNC4(generic_6dof_joint_set_flag, RID, Vector3::Axis, G6DOFJointAxisFlag, bool)
-	FUNC3RC(bool, generic_6dof_joint_get_flag, RID, Vector3::Axis, G6DOFJointAxisFlag)
+	FUNC4(generic_6dof_joint_set_flag, RID, Vector3::Axis, PS3DE::G6DOFJointAxisFlag, bool)
+	FUNC3RC(bool, generic_6dof_joint_get_flag, RID, Vector3::Axis, PS3DE::G6DOFJointAxisFlag)
 
-	FUNC1RC(JointType, joint_get_type, RID);
+	FUNC2(generic_6dof_joint_set_angular_target_rotation, RID, const Quaternion &)
+	FUNC1RC(Quaternion, generic_6dof_joint_get_angular_target_rotation, RID)
+
+	FUNC1RC(PS3DE::JointType, joint_get_type, RID);
 
 	FUNC2(joint_set_solver_priority, RID, int);
 	FUNC1RC(int, joint_get_solver_priority, RID);
@@ -407,7 +410,7 @@ public:
 		return physics_server_3d->is_flushing_queries();
 	}
 
-	int get_process_info(ProcessInfo p_info) override {
+	int get_process_info(PS3DE::ProcessInfo p_info) override {
 		return physics_server_3d->get_process_info(p_info);
 	}
 

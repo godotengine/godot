@@ -230,6 +230,7 @@ void DisplayServerAndroid::emit_input_dialog_callback(String p_text) {
 }
 
 Error DisplayServerAndroid::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, DisplayServerEnums::WindowID p_window_id) {
+	ERR_FAIL_COND_V(p_window_id != DisplayServerEnums::MAIN_WINDOW_ID, ERR_UNAVAILABLE);
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL_V(godot_java, FAILED);
 	file_picker_callback = p_callback;
@@ -254,13 +255,21 @@ Color DisplayServerAndroid::get_base_color() const {
 	return godot_java->get_base_color();
 }
 
-TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts() const {
+TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, TypedArray<Rect2>());
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Array());
 	return godot_io_java->get_display_cutouts();
 }
 
-Rect2i DisplayServerAndroid::get_display_safe_area() const {
+Rect2i DisplayServerAndroid::get_display_safe_area(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, Rect2i());
 	return godot_io_java->get_display_safe_area();
@@ -429,18 +438,22 @@ bool DisplayServerAndroid::has_hardware_keyboard() const {
 }
 
 void DisplayServerAndroid::window_set_window_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
 	window_event_callback = p_callable;
 }
 
 void DisplayServerAndroid::window_set_input_event_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
 	input_event_callback = p_callable;
 }
 
 void DisplayServerAndroid::window_set_input_text_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
 	input_text_callback = p_callable;
 }
 
 void DisplayServerAndroid::window_set_rect_changed_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
 	rect_changed_callback = p_callable;
 }
 
@@ -523,10 +536,12 @@ int64_t DisplayServerAndroid::window_get_native_handle(DisplayServerEnums::Handl
 }
 
 void DisplayServerAndroid::window_attach_instance_id(ObjectID p_instance, DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
 	window_attached_instance_id = p_instance;
 }
 
 ObjectID DisplayServerAndroid::window_get_attached_instance_id(DisplayServerEnums::WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != DisplayServerEnums::MAIN_WINDOW_ID, ObjectID());
 	return window_attached_instance_id;
 }
 
@@ -841,9 +856,7 @@ DisplayServerAndroid::~DisplayServerAndroid() {
 	}
 
 #if defined(RD_ENABLED)
-	if (rendering_device) {
-		memdelete(rendering_device);
-	}
+	memdelete(rendering_device);
 
 	free_vulkan_global_context();
 #endif

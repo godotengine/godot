@@ -34,6 +34,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/shape_3d.h"
+#include "servers/physics_3d/physics_server_3d_enums.h"
 
 class CollisionObject3D : public Node3D {
 	GDCLASS(CollisionObject3D, Node3D);
@@ -59,7 +60,7 @@ private:
 
 	DisableMode disable_mode = DISABLE_MODE_REMOVE;
 
-	PhysicsServer3D::BodyMode body_mode = PhysicsServer3D::BODY_MODE_STATIC;
+	PS3DE::BodyMode body_mode = PS3DE::BODY_MODE_STATIC;
 
 	struct ShapeData {
 		ObjectID owner_id;
@@ -117,7 +118,7 @@ protected:
 	virtual void _mouse_enter();
 	virtual void _mouse_exit();
 
-	void set_body_mode(PhysicsServer3D::BodyMode p_mode);
+	void set_body_mode(PS3DE::BodyMode p_mode);
 
 	virtual void _space_changed(const RID &p_new_space);
 

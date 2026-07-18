@@ -201,7 +201,7 @@ private:
 	bool selection_menu_additive_selection = false;
 
 	Tool tool = TOOL_SELECT;
-	Control *viewport = nullptr;
+	CanvasItemEditorViewport *viewport = nullptr;
 	Control *viewport_scrollable = nullptr;
 
 	HScrollBar *h_scroll = nullptr;
@@ -604,7 +604,7 @@ public:
 
 	VSplitContainer *get_bottom_split();
 
-	Control *get_viewport_control() { return viewport; }
+	CanvasItemEditorViewport *get_viewport_control() { return viewport; }
 
 	Control *get_controls_container() { return controls_vb; }
 
@@ -617,6 +617,7 @@ public:
 
 	bool is_grid_visible() const;
 	Vector2 get_grid_step() const { return grid_step; }
+	Vector2 get_grid_offset() const { return grid_offset; }
 
 	void edit(CanvasItem *p_canvas_item);
 
@@ -685,14 +686,14 @@ class CanvasItemEditorViewport : public Control {
 
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
 	bool _is_any_texture_selected() const;
+	void _add_node_to_scene(Node *p_parent, Node *p_child, const Vector2 &p_target_position);
 	void _create_texture_node(Node *p_parent, Node *p_child, const String &p_path, const Point2 &p_point);
 	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
+	void _create_mesh_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();
 	void _update_theme();
-
-	void _show_tooltip(const String &p_title, const String &p_description) const;
 
 protected:
 	void _notification(int p_what);
@@ -700,6 +701,8 @@ protected:
 public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
+
+	void set_hint_label(const String &p_title, const String &p_description) const;
 
 	CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor);
 	~CanvasItemEditorViewport();

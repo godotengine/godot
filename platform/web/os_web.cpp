@@ -90,9 +90,7 @@ bool OS_Web::main_loop_iterate() {
 }
 
 void OS_Web::delete_main_loop() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 	main_loop = nullptr;
 }
 

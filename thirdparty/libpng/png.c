@@ -13,7 +13,7 @@
 #include "pngpriv.h"
 
 /* Generate a compiler error if there is an old png.h in the search path. */
-typedef png_libpng_version_1_6_55 Your_png_h_is_not_version_1_6_55;
+typedef png_libpng_version_1_6_58 Your_png_h_is_not_version_1_6_58;
 
 /* Sanity check the chunks definitions - PNG_KNOWN_CHUNKS from pngpriv.h and the
  * corresponding macro definitions.  This causes a compile time failure if
@@ -820,7 +820,7 @@ png_get_copyright(png_const_structrp png_ptr)
    return PNG_STRING_COPYRIGHT
 #else
    return PNG_STRING_NEWLINE \
-      "libpng version 1.6.55" PNG_STRING_NEWLINE \
+      "libpng version 1.6.58" PNG_STRING_NEWLINE \
       "Copyright (c) 2018-2026 Cosmin Truta" PNG_STRING_NEWLINE \
       "Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson" \
       PNG_STRING_NEWLINE \
@@ -1170,7 +1170,7 @@ png_xy_from_XYZ(png_xy *xy, const png_XYZ *XYZ)
       return 1;
 
    /* The reference white is simply the sum of the end-point (X,Y,Z) vectors so
-    * the fillowing calculates (X+Y+Z) of the reference white (media white,
+    * the following calculates (X+Y+Z) of the reference white (media white,
     * encoding white) itself:
     */
    d = dblue;
@@ -1215,9 +1215,9 @@ png_XYZ_from_xy(png_XYZ *XYZ, const png_xy *xy)
     * (-0.0770) because the PNG spec itself requires the xy values to be
     * unsigned.  whitey is also required to be 5 or more to avoid overflow.
     *
-    * Instead the upper limits have been relaxed to accomodate ACES AP1 where
+    * Instead the upper limits have been relaxed to accommodate ACES AP1 where
     * redz ends up as -600 (-0.006).  ProPhotoRGB was already "in range."
-    * The new limit accomodates the AP0 and AP1 ranges for z but not AP0 redy.
+    * The new limit accommodates the AP0 and AP1 ranges for z but not AP0 redy.
     */
    const png_fixed_point fpLimit = PNG_FP_1+(PNG_FP_1/10);
    if (xy->redx   < 0 || xy->redx > fpLimit) return 1;
@@ -1328,7 +1328,7 @@ png_XYZ_from_xy(png_XYZ *XYZ, const png_xy *xy)
     *    red-scale + green-scale + blue-scale = 1/white-y = white-scale
     *
     * So now we have a Cramer's rule solution where the determinants are just
-    * 3x3 - far more tractible.  Unfortunately 3x3 determinants still involve
+    * 3x3 - far more tractable.  Unfortunately 3x3 determinants still involve
     * multiplication of three coefficients so we can't guarantee to avoid
     * overflow in the libpng fixed point representation.  Using Cramer's rule in
     * floating point is probably a good choice here, but it's not an option for
@@ -1697,7 +1697,7 @@ png_icc_check_header(png_const_structrp png_ptr, png_const_charp name,
     * into R, G and B channels.
     *
     * Previously it was suggested that an RGB profile on grayscale data could be
-    * handled.  However it it is clear that using an RGB profile in this context
+    * handled.  However it is clear that using an RGB profile in this context
     * must be an error - there is no specification of what it means.  Thus it is
     * almost certainly more correct to ignore the profile.
     */
@@ -2915,7 +2915,7 @@ png_gamma_significant(png_fixed_point gamma_val)
     *
     *    2.2/(2+51/256) == 1.00035524
     *
-    * I.e. vanishly small (<4E-4) but still detectable in 16-bit linear (+/-
+    * I.e. vanishingly small (<4E-4) but still detectable in 16-bit linear (+/-
     * 23).  Note that the Adobe choice seems to be something intended to give an
     * exact number with 8 binary fractional digits - it is the closest to 2.2
     * that is possible a base 2 .8p representation.

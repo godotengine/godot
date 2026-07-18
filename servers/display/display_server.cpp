@@ -1304,7 +1304,7 @@ bool DisplayServer::window_is_hdr_output_supported(DisplayServerEnums::WindowID 
 
 void DisplayServer::window_request_hdr_output(const bool p_enable, DisplayServerEnums::WindowID p_window) {
 	if (p_enable) {
-		WARN_PRINT_ED("HDR output is not supported by this display server.");
+		WARN_PRINT("HDR output requested, but it is not supported by this display server.");
 	}
 }
 
@@ -1317,7 +1317,7 @@ bool DisplayServer::window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_
 }
 
 void DisplayServer::window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window) {
-	WARN_PRINT_ED("HDR output is not supported by this display server.");
+	WARN_PRINT("Attempting to set reference luminance, but HDR output is not supported by this display server.");
 }
 
 float DisplayServer::window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window) const {
@@ -1329,7 +1329,7 @@ float DisplayServer::window_get_hdr_output_current_reference_luminance(DisplaySe
 }
 
 void DisplayServer::window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window) {
-	WARN_PRINT_ED("HDR output is not supported by this display server.");
+	WARN_PRINT("Attempting to set max luminance, but HDR output is not supported by this display server.");
 }
 
 float DisplayServer::window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window) const {
@@ -1462,8 +1462,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
 	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
 
-	ClassDB::bind_method(D_METHOD("get_display_cutouts"), &DisplayServer::get_display_cutouts);
-	ClassDB::bind_method(D_METHOD("get_display_safe_area"), &DisplayServer::get_display_safe_area);
+	ClassDB::bind_method(D_METHOD("get_display_cutouts", "screen"), &DisplayServer::get_display_cutouts, DEFVAL(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("get_display_safe_area", "screen"), &DisplayServer::get_display_safe_area, DEFVAL(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW));
 
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &DisplayServer::get_screen_count);
 	ClassDB::bind_method(D_METHOD("get_primary_screen"), &DisplayServer::get_primary_screen);
@@ -1871,6 +1871,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCROLL_HINT_BOTTOM_EDGE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCROLL_HINT_LEFT_EDGE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCROLL_HINT_RIGHT_EDGE);
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_HIDDEN);
@@ -1878,7 +1879,6 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_MAX);
-#endif // DISABLE_DEPRECATED
 
 	BIND_CONSTANT(DisplayServerEnums::INVALID_SCREEN);
 	BIND_CONSTANT(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS);

@@ -77,6 +77,31 @@ public:
 	ScriptEditorQuickOpen();
 };
 
+class DocumentOutline : public VBoxContainer {
+	GDCLASS(DocumentOutline, VBoxContainer);
+
+	ItemList *item_list = nullptr;
+	HBoxContainer *buttons_hbox = nullptr;
+	FilterLineEdit *filter = nullptr;
+	Button *sort_button = nullptr;
+
+	bool members_overview_enabled = false;
+	bool help_overview_enabled = false;
+
+	void _toggle_sort(bool p_alphabetic_sort);
+	void _item_list_selected(int p_idx);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void update_editor_settings();
+	void update_outline();
+	void update_visibility();
+
+	DocumentOutline();
+};
+
 class EditorScriptCodeCompletionCache;
 class FindInFiles;
 
@@ -167,16 +192,9 @@ class ScriptEditor : public PanelContainer {
 
 	ItemList *script_list = nullptr;
 	HSplitContainer *script_split = nullptr;
-	ItemList *members_overview = nullptr;
+	DocumentOutline *document_outline = nullptr;
 	LineEdit *filter_scripts = nullptr;
-	LineEdit *filter_methods = nullptr;
 	VBoxContainer *scripts_vbox = nullptr;
-	VBoxContainer *overview_vbox = nullptr;
-	HBoxContainer *buttons_hbox = nullptr;
-	Button *members_overview_alphabeta_sort_button = nullptr;
-	bool members_overview_enabled;
-	ItemList *help_overview = nullptr;
-	bool help_overview_enabled;
 	VSplitContainer *list_split = nullptr;
 	TabContainer *tab_container = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
@@ -216,7 +234,7 @@ class ScriptEditor : public PanelContainer {
 
 	struct ScriptHistory {
 		Control *control = nullptr;
-		Variant state;
+		Dictionary state;
 	};
 
 	Vector<ScriptHistory> history;
@@ -252,10 +270,10 @@ class ScriptEditor : public PanelContainer {
 
 	void _show_error_dialog(const String &p_path);
 
-	void _close_tab(int p_idx, bool p_save = true, bool p_history_back = true);
+	void _close_tab(int p_idx, bool p_save = true);
 	void _update_find_replace_bar();
 
-	void _close_current_tab(bool p_save = true, bool p_history_back = true);
+	void _close_current_tab(bool p_save = true);
 	void _close_discard_current_tab(const String &p_str);
 	void _close_docs_tab();
 	void _close_other_tabs();
@@ -288,6 +306,7 @@ class ScriptEditor : public PanelContainer {
 	bool trim_final_newlines_on_save;
 	bool convert_indent_on_save;
 	bool external_editor_active;
+	bool highlight_scene_scripts = false;
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(Ref<RefCounted> p_script, int p_line);
@@ -315,26 +334,17 @@ class ScriptEditor : public PanelContainer {
 	void _reload_scripts(bool p_refresh_only = false);
 	void _auto_format_text(ScriptEditorBase *p_seb);
 
-	void _update_members_overview_visibility();
-	void _update_members_overview();
-	void _toggle_members_overview_alpha_sort(bool p_alphabetic_sort);
 	void _filter_scripts_text_changed(const String &p_newtext);
-	void _filter_methods_text_changed(const String &p_newtext);
+
+	void _connect_to_scene();
+	void _connect_to_scene_recursive(Node *p_current, Node *p_base);
+	void _queue_update_script_names();
 	void _update_script_names();
 	bool _sort_list_on_update;
 
-	void _members_overview_selected(int p_idx);
 	void _script_selected(int p_idx);
 
-	void _update_help_overview_visibility();
-	void _update_help_overview();
-	void _help_overview_selected(int p_idx);
-
 	void _update_online_doc();
-
-	void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &used);
-
-	void _tree_changed();
 
 	void _split_dragged(float);
 
@@ -355,18 +365,19 @@ class ScriptEditor : public PanelContainer {
 
 	void _history_forward();
 	void _history_back();
+	void _roll_back_to_pre_tab();
 
-	bool waiting_update_names;
-	bool lock_history = false;
-	void _unlock_history();
+	bool script_names_update_queued = false;
 
 	void _help_class_open(const String &p_class);
 	void _help_class_goto(const String &p_desc);
 	bool _help_tab_goto(const String &p_name, const String &p_desc);
 	void _update_history_arrows();
-	void _save_history();
-	void _save_previous_state(Dictionary p_state);
-	void _go_to_tab(int p_idx);
+	void _save_history(Control *p_control);
+	void _save_new_history(const Dictionary &p_state, Control *p_control);
+	void _save_previous_state(const Dictionary &p_state, Control *p_control);
+	void _compress_history_patterns(bool p_once);
+	void _go_to_tab(int p_idx, bool p_save_history = false);
 	void _update_history_pos(int p_new_pos);
 	void _update_script_colors();
 	void _update_modified_scripts_for_external_editor(Ref<Script> p_for_script = Ref<Script>());
@@ -418,6 +429,8 @@ public:
 	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true);
 
+	Control *get_active_editor() const;
+
 	Vector<String> _get_breakpoints();
 	void get_breakpoints(List<String> *p_breakpoints);
 
@@ -433,6 +446,7 @@ public:
 
 	void set_scene_root_script(Ref<Script> p_script);
 	Vector<Ref<Script>> get_open_scripts() const;
+	ScriptEditorBase *get_script_editor(Ref<Resource> p_script) const;
 
 	ScriptEditorBase *get_current_editor() const { return _get_current_editor(); }
 
@@ -476,10 +490,14 @@ class ScriptEditorPlugin : public EditorPlugin {
 	void _save_last_editor(const String &p_editor);
 	void _window_visibility_changed(bool p_visible);
 
+	static inline ScriptEditorPlugin *script_editor_plugin = nullptr;
+
 protected:
 	void _notification(int p_what);
 
 public:
+	static ScriptEditorPlugin *get_singleton() { return script_editor_plugin; }
+
 	static bool open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project = false);
 
 	virtual String get_plugin_name() const override { return TTRC("Script"); }

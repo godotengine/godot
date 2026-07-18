@@ -38,6 +38,10 @@
 #include "scene/main/viewport.h"
 #include "servers/rendering/rendering_server.h"
 
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
+
 void Camera3D::_update_audio_listener_state() {
 }
 
@@ -735,7 +739,7 @@ Camera3D::ProjectionType Camera3D::get_projection() const {
 }
 
 void Camera3D::set_fov(real_t p_fov) {
-	ERR_FAIL_COND(p_fov < 1 || p_fov > 179);
+	ERR_FAIL_COND(p_fov <= CMP_EPSILON || p_fov >= 180.0 - CMP_EPSILON);
 	fov = p_fov;
 	_update_camera_mode();
 }

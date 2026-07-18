@@ -43,8 +43,10 @@ GODOT_CLANG_WARNING_PUSH
 GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
 
 #include <inspectable.h>
+#include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.Graphics.Display.h>
+#include <winrt/Windows.System.UserProfile.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Windows.UI.Input.h>
 #include <winrt/Windows.UI.ViewManagement.Core.h>
@@ -66,7 +68,8 @@ struct DispatcherQueueOptions {
 	DISPATCHERQUEUE_THREAD_APARTMENTTYPE apartmentType;
 };
 
-extern "C" HRESULT __declspec(dllexport) WINAPI CreateDispatcherQueueController(DispatcherQueueOptions options, void *dispatcherQueueController);
+typedef HRESULT(WINAPI *CreateDispatcherQueueControllerPtr)(DispatcherQueueOptions options, void *dispatcherQueueController);
+CreateDispatcherQueueControllerPtr CreateDispatcherQueueController;
 
 #ifndef E_BOUNDS
 #define E_BOUNDS _HRESULT_TYPEDEF_(0x8000000B)
@@ -109,7 +112,9 @@ GODOT_CLANG_WARNING_POP
 
 using namespace winrt::Windows::Graphics::Display;
 using namespace winrt::Windows::System;
+using namespace winrt::Windows::System::UserProfile;
 using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Foundation::Metadata;
 using namespace winrt::Windows::UI::ViewManagement::Core;
 
@@ -126,13 +131,40 @@ class WinRTWindowData {
 };
 
 bool WinRTUtils::create_queue() {
+	HMODULE coremessaging = LoadLibraryW(L"coremessaging.dll");
+	if (!coremessaging) {
+		return false;
+	}
+	CreateDispatcherQueueController = (CreateDispatcherQueueControllerPtr)(void *)GetProcAddress(coremessaging, "CreateDispatcherQueueController");
+	if (!CreateDispatcherQueueController) {
+		return false;
+	}
+
 	DispatcherQueueOptions options{ sizeof(options), DQTYPE_THREAD_CURRENT, DQTAT_COM_NONE };
 	HRESULT res = CreateDispatcherQueueController(options, winrt::put_abi(controller));
 	return SUCCEEDED(res);
 }
 
 void WinRTUtils::destroy_queue() {
-	controller.ShutdownQueueAsync();
+	IAsyncAction action = controller.ShutdownQueueAsync();
+	while (action.Status() == AsyncStatus::Started) {
+		MSG msg = {};
+		while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+	}
+	ERR_FAIL_COND_MSG(action.Status() == AsyncStatus::Error, "DispatcherQueueController shutdown failed.");
+}
+
+Vector<String> WinRTUtils::get_preferred_locales() {
+	Vector<String> out;
+	IVectorView<winrt::hstring> languages = GlobalizationPreferences::Languages();
+	for (uint32_t i = 0; i < languages.Size(); i++) {
+		winrt::hstring lang = languages.GetAt(i);
+		out.push_back(String::utf16((const char16_t *)lang.c_str(), lang.size()).replace_char('-', '_'));
+	}
+	return out;
 }
 
 bool WinRTUtils::try_show_onecore_emoji_picker() {
@@ -152,8 +184,6 @@ bool WinRTUtils::window_has_display_info(const WinRTWindowData *p_data) {
 
 void WinRTUtils::window_get_advanced_color_info(const WinRTWindowData *p_data, bool &r_hdr_supported, float &r_min_luminance, float &r_max_luminance, float &r_max_average_luminance, float &r_sdr_white_level) {
 	if (p_data && p_data->has_disp_info) {
-		Dictionary info;
-
 		AdvancedColorInfo adv_info = p_data->disp_info.GetAdvancedColorInfo();
 
 		r_hdr_supported = (adv_info.CurrentAdvancedColorKind() == AdvancedColorKind::HighDynamicRange);
@@ -209,6 +239,10 @@ bool WinRTUtils::create_queue() {
 }
 
 void WinRTUtils::destroy_queue() {}
+
+Vector<String> WinRTUtils::get_preferred_locales() {
+	return Vector<String>();
+}
 
 bool WinRTUtils::window_has_display_info(const WinRTWindowData *p_data) {
 	return false;

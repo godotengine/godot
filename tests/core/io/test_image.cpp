@@ -80,7 +80,9 @@ TEST_CASE("[Image] Instantiation") {
 TEST_CASE("[Image] Saving and loading") {
 	Ref<Image> image = memnew(Image(4, 4, false, Image::FORMAT_RGBA8));
 	const String save_path_png = TestUtils::get_temp_path("image.png");
+#ifdef TOOLS_ENABLED
 	const String save_path_exr = TestUtils::get_temp_path("image.exr");
+#endif // TOOLS_ENABLED
 
 	// Save PNG
 	Error err;

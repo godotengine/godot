@@ -256,8 +256,8 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 		return false;
 	}
 
-	collide_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC) && A->collides_with(B);
-	collide_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC) && B->collides_with(A);
+	collide_A = (A->get_mode() > PS2DE::BODY_MODE_KINEMATIC) && A->collides_with(B);
+	collide_B = (B->get_mode() > PS2DE::BODY_MODE_KINEMATIC) && B->collides_with(A);
 
 	report_contacts_only = false;
 	if (!collide_A && !collide_B) {
@@ -287,10 +287,10 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 
 	Vector2 motion_A, motion_B;
 
-	if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_SHAPE) {
+	if (A->get_continuous_collision_detection_mode() == PS2DE::CCD_MODE_CAST_SHAPE) {
 		motion_A = A->get_motion();
 	}
-	if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_SHAPE) {
+	if (B->get_continuous_collision_detection_mode() == PS2DE::CCD_MODE_CAST_SHAPE) {
 		motion_B = B->get_motion();
 	}
 
@@ -300,12 +300,12 @@ bool GodotBodyPair2D::setup(real_t p_step) {
 	if (!collided) {
 		oneway_disabled = false;
 
-		if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_A) {
+		if (A->get_continuous_collision_detection_mode() == PS2DE::CCD_MODE_CAST_RAY && collide_A) {
 			check_ccd = true;
 			return true;
 		}
 
-		if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_B) {
+		if (B->get_continuous_collision_detection_mode() == PS2DE::CCD_MODE_CAST_RAY && collide_B) {
 			check_ccd = true;
 			return true;
 		}
@@ -375,11 +375,11 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 			xform_Bu.columns[2] -= offset_A;
 			Transform2D xform_B = xform_Bu * B->get_shape_transform(shape_B);
 
-			if (A->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_A) {
+			if (A->get_continuous_collision_detection_mode() == PS2DE::CCD_MODE_CAST_RAY && collide_A) {
 				_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B);
 			}
 
-			if (B->get_continuous_collision_detection_mode() == PhysicsServer2D::CCD_MODE_CAST_RAY && collide_B) {
+			if (B->get_continuous_collision_detection_mode() == PS2DE::CCD_MODE_CAST_RAY && collide_B) {
 				_test_ccd(p_step, B, shape_B, xform_B, A, shape_A, xform_A);
 			}
 		}

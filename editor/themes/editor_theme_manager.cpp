@@ -268,6 +268,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 	config.gizmo_handle_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
 	config.subresource_hue_tint = EDITOR_GET("docks/property_editor/subresource_hue_tint");
 	config.dragging_hover_wait_msec = (float)EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds") * 1000;
+	config.max_sticky_tree_items = EDITOR_GET("interface/editor/appearance/max_sticky_tree_items");
 
 	// Handle theme style.
 	if (config.preset != "Custom") {
@@ -372,11 +373,6 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/icon_saturation", config.icon_saturation);
-		}
-
-		if (follow_system_theme && system_base_color != Color(0, 0, 0, 0)) {
-			config.base_color = system_base_color;
-			config.preset = "Custom";
 		}
 
 		if (use_system_accent_color && system_accent_color != Color(0, 0, 0, 0)) {
@@ -528,7 +524,9 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/selection_color"] = p_config.selection_color;
 			colors["text_editor/theme/highlighting/brace_mismatch_color"] = p_config.dark_icon_and_font ? p_config.error_color : Color(1, 0.08, 0, 1);
 			colors["text_editor/theme/highlighting/current_line_color"] = alpha1;
-			colors["text_editor/theme/highlighting/line_length_guideline_color"] = p_config.dark_icon_and_font ? p_config.base_color : p_config.dark_color_2;
+			// Contrast is positive in dark themes and negative in light themes. Lerping with a negative weight
+			// gives us lighter lines than base_color in dark themes and darker lines in light themes.
+			colors["text_editor/theme/highlighting/line_length_guideline_color"] = p_config.base_color.lerp(Color(0, 0, 0), p_config.contrast * -1.25).clamp();
 			colors["text_editor/theme/highlighting/word_highlighted_color"] = alpha1;
 			colors["text_editor/theme/highlighting/number_color"] = p_config.dark_icon_and_font ? Color(0.63, 1, 0.88) : Color(0, 0.55, 0.28, 1);
 			colors["text_editor/theme/highlighting/function_color"] = p_config.dark_icon_and_font ? Color(0.34, 0.7, 1.0) : Color(0, 0.225, 0.9, 1);
@@ -597,7 +595,7 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	p_theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 
 	const Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
-	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(background_color, p_config.widget_margin.x, p_config.widget_margin.y, p_config.widget_margin.x, p_config.widget_margin.y, p_config.corner_radius);
+	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(background_color, 0, p_config.widget_margin.y, p_config.widget_margin.x, p_config.widget_margin.y, p_config.corner_radius);
 	p_theme->set_stylebox(CoreStringName(normal), "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("focus", "CodeEdit", memnew(StyleBoxEmpty));
@@ -718,6 +716,7 @@ bool EditorThemeManager::is_generated_theme_outdated() {
 		// TODO: We can use this information more intelligently to do partial theme updates and speed things up.
 		outdated_cache = EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/fonts") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/appearance/max_sticky_tree_items") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/enable_touch_optimizations") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("editors/visual_editors") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||

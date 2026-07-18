@@ -34,12 +34,13 @@
 #include "godot_collision_object_3d.h"
 
 #include "core/templates/vset.h"
+#include "servers/physics_3d/physics_server_3d_constants.h"
 
 class GodotConstraint3D;
 class GodotPhysicsDirectBodyState3D;
 
 class GodotBody3D : public GodotCollisionObject3D {
-	PhysicsServer3D::BodyMode mode = PhysicsServer3D::BODY_MODE_RIGID;
+	PS3DE::BodyMode mode = PS3DE::BODY_MODE_RIGID;
 
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;
@@ -57,8 +58,8 @@ class GodotBody3D : public GodotCollisionObject3D {
 	real_t friction = 1.0;
 	Vector3 inertia;
 
-	PhysicsServer3D::BodyDampMode linear_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
-	PhysicsServer3D::BodyDampMode angular_damp_mode = PhysicsServer3D::BODY_DAMP_MODE_COMBINE;
+	PS3DE::BodyDampMode linear_damp_mode = PS3DE::BODY_DAMP_MODE_COMBINE;
+	PS3DE::BodyDampMode angular_damp_mode = PS3DE::BODY_DAMP_MODE_COMBINE;
 
 	real_t linear_damp = 0.0;
 	real_t angular_damp = 0.0;
@@ -175,10 +176,10 @@ public:
 	}
 
 	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) {
-		ERR_FAIL_INDEX(p_size, MAX_CONTACTS_REPORTED_3D_MAX);
+		ERR_FAIL_INDEX(p_size, PS3DC::MAX_CONTACTS_REPORTED_3D_MAX);
 		contacts.resize(p_size);
 		contact_count = 0;
-		if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC && p_size) {
+		if (mode == PS3DE::BODY_MODE_KINEMATIC && p_size) {
 			set_active(true);
 		}
 	}
@@ -284,20 +285,20 @@ public:
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
 	_FORCE_INLINE_ void wakeup() {
-		if ((!get_space()) || mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
+		if ((!get_space()) || mode == PS3DE::BODY_MODE_STATIC || mode == PS3DE::BODY_MODE_KINEMATIC) {
 			return;
 		}
 		set_active(true);
 	}
 
-	void set_param(PhysicsServer3D::BodyParameter p_param, const Variant &p_value);
-	Variant get_param(PhysicsServer3D::BodyParameter p_param) const;
+	void set_param(PS3DE::BodyParameter p_param, const Variant &p_value);
+	Variant get_param(PS3DE::BodyParameter p_param) const;
 
-	void set_mode(PhysicsServer3D::BodyMode p_mode);
-	PhysicsServer3D::BodyMode get_mode() const;
+	void set_mode(PS3DE::BodyMode p_mode);
+	PS3DE::BodyMode get_mode() const;
 
-	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant);
-	Variant get_state(PhysicsServer3D::BodyState p_state) const;
+	void set_state(PS3DE::BodyState p_state, const Variant &p_variant);
+	Variant get_state(PS3DE::BodyState p_state) const;
 
 	_FORCE_INLINE_ void set_continuous_collision_detection(bool p_enable) { continuous_cd = p_enable; }
 	_FORCE_INLINE_ bool is_continuous_collision_detection_enabled() const { return continuous_cd; }
@@ -313,8 +314,8 @@ public:
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
-	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock);
-	bool is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const;
+	void set_axis_lock(PS3DE::BodyAxis p_axis, bool lock);
+	bool is_axis_locked(PS3DE::BodyAxis p_axis) const;
 
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);

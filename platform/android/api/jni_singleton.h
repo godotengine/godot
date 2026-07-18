@@ -48,6 +48,7 @@ class JNISingleton : public Object {
 
 protected:
 	static void _bind_methods();
+	bool _get(const StringName &p_name, Variant &r_property) const;
 
 public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;

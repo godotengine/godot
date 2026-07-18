@@ -35,6 +35,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/shape_3d.h"
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
 
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {
@@ -157,7 +158,7 @@ void SpringArm3D::process_spring() {
 			Transform3D base_transform = camera->get_global_transform();
 			base_transform.origin = get_global_transform().origin;
 
-			PhysicsDirectSpaceState3D::ShapeParameters shape_params;
+			PS3DT::ShapeParameters shape_params;
 			shape_params.shape_rid = camera->get_pyramid_shape_rid();
 			shape_params.transform = base_transform;
 			shape_params.motion = motion;
@@ -166,13 +167,13 @@ void SpringArm3D::process_spring() {
 
 			get_world_3d()->get_direct_space_state()->cast_motion(shape_params, motion_delta, motion_delta_unsafe);
 		} else {
-			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			PS3DT::RayParameters ray_params;
 			ray_params.from = get_global_transform().origin;
 			ray_params.to = get_global_transform().origin + motion;
 			ray_params.exclude = excluded_objects;
 			ray_params.collision_mask = mask;
 
-			PhysicsDirectSpaceState3D::RayResult r;
+			PS3DT::RayResult r;
 			bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(ray_params, r);
 			if (intersected) {
 				real_t dist = get_global_transform().origin.distance_to(r.position);
@@ -181,7 +182,7 @@ void SpringArm3D::process_spring() {
 			}
 		}
 	} else {
-		PhysicsDirectSpaceState3D::ShapeParameters shape_params;
+		PS3DT::ShapeParameters shape_params;
 		shape_params.shape_rid = shape->get_rid();
 		shape_params.transform = get_global_transform();
 		shape_params.motion = motion;

@@ -39,12 +39,17 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/curve.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	Ref<Curve3D> c = path->get_curve();
@@ -130,10 +135,10 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		if (Path3DEditorPlugin::singleton->snap_to_collider) {
 			PhysicsDirectSpaceState3D *ss = p_camera->get_world_3d()->get_direct_space_state();
 
-			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			PS3DT::RayParameters ray_params;
 			ray_params.from = ray_from;
 			ray_params.to = ray_from + ray_dir * p_camera->get_far();
-			PhysicsDirectSpaceState3D::RayResult result;
+			PS3DT::RayResult result;
 			if (ss->intersect_ray(ray_params, result)) {
 				Vector3 local = gi.xform(result.position);
 				c->set_point_position(idx, local);
@@ -963,8 +968,8 @@ void Path3DEditorPlugin::_notification(int p_what) {
 				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 				PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
 				if (ss) {
-					PhysicsDirectSpaceState3D::RayParameters ray_params;
-					PhysicsDirectSpaceState3D::RayResult result;
+					PS3DT::RayParameters ray_params;
+					PS3DT::RayResult result;
 					ray_params.from = _edit.click_ray_pos;
 					ray_params.to = ray_params.from + _edit.click_ray_dir;
 					bool hit_something = false;
@@ -1086,6 +1091,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	toolbar->add_child(curve_clear_points);
 
 	clear_points_dialog = memnew(ConfirmationDialog);
+	clear_points_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	clear_points_dialog->set_title(TTR("Please Confirm..."));
 	clear_points_dialog->set_text(TTR("Remove all curve points?"));
 	clear_points_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Path3DEditorPlugin::_clear_points));

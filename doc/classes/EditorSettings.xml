@@ -244,7 +244,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="asset_library/use_threads" type="bool" setter="" getter="">
+		<member name="asset_store/available_urls" type="Dictionary" setter="" getter="">
+			A list of the available URLs that can be chosen in the Asset Store to fetch asset data. With the key being the name, and the value being the URL.
+		</member>
+		<member name="asset_store/use_threads" type="bool" setter="" getter="">
 			If [code]true[/code], the Asset Store uses multiple threads for its HTTP requests. This prevents the Asset Store from blocking the main thread for every loaded asset.
 		</member>
 		<member name="debugger/auto_switch_to_remote_scene_tree" type="bool" setter="" getter="">
@@ -316,6 +319,9 @@
 		</member>
 		<member name="docks/scene_tree/center_node_on_reparent" type="bool" setter="" getter="">
 			If [code]true[/code], new node created when reparenting node(s) will be positioned at the average position of the selected node(s).
+		</member>
+		<member name="docks/scene_tree/derive_script_globals_by_name" type="bool" setter="" getter="">
+			If [code]true[/code], when extending a script, the global class name of the script is inserted in the script creation dialog, if it exists. If [code]false[/code], the script's file path is always inserted.
 		</member>
 		<member name="docks/scene_tree/hide_filtered_out_parents" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will only show nodes that match the filter, without showing parents that don't. This settings can also be changed in the Scene dock's top menu.
@@ -983,6 +989,9 @@
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
 			Specific to the macOS platform.
 		</member>
+		<member name="interface/editor/appearance/max_sticky_tree_items" type="int" setter="" getter="">
+			The maximum number of tree items allowed to stick to the top while its children are in view. A value of [code]0[/code] disables sticking.
+		</member>
 		<member name="interface/editor/appearance/project_manager_screen" type="int" setter="" getter="">
 			The preferred monitor to display the project manager.
 		</member>
@@ -1127,9 +1136,6 @@
 			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 10 FPS when the editor window is unfocused. See also [member interface/editor/timers/low_processor_mode_sleep_usec].
 			[b]Note:[/b] This setting is ignored if [member interface/editor/display/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
-		<member name="interface/editors/derive_script_globals_by_name" type="bool" setter="" getter="">
-			If [code]true[/code], when extending a script, the global class name of the script is inserted in the script creation dialog, if it exists. If [code]false[/code], the script's file path is always inserted.
-		</member>
 		<member name="interface/inspector/auto_unfold_foreign_scenes" type="bool" setter="" getter="">
 			If [code]true[/code], automatically unfolds Inspector property groups containing modified values when opening a scene for the first time. Only affects scenes without saved folding preferences and only unfolds groups with properties that have been changed from their default values.
 			[b]Note:[/b] This setting only works in specific scenarios: when opening a scene brought in from another project, or when opening a new scene that already has modified properties (e.g., from version control). Duplicated scenes are not considered foreign, so this setting will not affect them.
@@ -1241,7 +1247,7 @@
 			The editor color preset to use.
 		</member>
 		<member name="interface/theme/contrast" type="float" setter="" getter="">
-			The contrast factor to use when deriving the editor theme's base color (see [member interface/theme/base_color]). When using a positive values, the derived colors will be [i]darker[/i] than the base color. This contrast factor can be set to a negative value, which will make the derived colors [i]brighter[/i] than the base color. Negative contrast rates often look better for light themes.
+			The contrast factor to use when deriving the editor theme's base color (see [member interface/theme/base_color]). When using positive values, the derived colors will be [i]darker[/i] than the base color. This contrast factor can be set to a negative value, which will make the derived colors [i]brighter[/i] than the base color. Negative contrast rates often look better for light themes.
 		</member>
 		<member name="interface/theme/corner_radius" type="int" setter="" getter="">
 			The corner radius to use for interface elements (in pixels). [code]0[/code] is square.
@@ -1525,6 +1531,9 @@
 		</member>
 		<member name="text_editor/behavior/general/empty_selection_clipboard" type="bool" setter="" getter="">
 			If [code]true[/code], copying or cutting without a selection is performed on all lines with a caret. Otherwise, copy and cut require a selection.
+		</member>
+		<member name="text_editor/behavior/general/find_in_file_extensions" type="PackedStringArray" setter="" getter="">
+			Text-based file extensions to include in the editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.
