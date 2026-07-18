@@ -202,6 +202,8 @@ if env["builtin_bullet"]:
     env_bullet.Prepend(CPPPATH=[thirdparty_dir])
 
     env_bullet.Append(CPPDEFINES=["BT_USE_OLD_DAMPING_METHOD", "BT_THREADSAFE"])
+    if env["builtin_bullet_double_precision"]:
+        env_bullet.Append(CPPDEFINES=["BT_USE_DOUBLE_PRECISION"])
 
     env_thirdparty = env_bullet.Clone()
     env_thirdparty.disable_warnings()
