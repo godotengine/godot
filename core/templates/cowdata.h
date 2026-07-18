@@ -572,6 +572,9 @@ void CowData<T>::_ref(const CowData &p_from) {
 
 template <typename T>
 CowData<T>::CowData(std::initializer_list<T> p_init) {
+	if (!p_init.size()) {
+		return;
+	}
 	CRASH_COND(_alloc_exact(p_init.size()));
 
 	copy_arr_placement(_ptr, p_init.begin(), p_init.size());
@@ -580,6 +583,9 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 
 template <typename T>
 CowData<T>::CowData(Span<T> p_span) {
+	if (p_span.is_empty()) {
+		return;
+	}
 	CRASH_COND(_alloc_exact(p_span.size()));
 
 	copy_arr_placement(_ptr, p_span.begin(), p_span.size());
