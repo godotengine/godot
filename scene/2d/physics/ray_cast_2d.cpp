@@ -36,6 +36,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/world_2d.h"
 #include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void RayCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
