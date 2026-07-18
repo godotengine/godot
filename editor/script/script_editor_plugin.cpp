@@ -1715,12 +1715,10 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 			}
 		} break;
-		case SEARCH_IN_FILES: {
-			open_find_in_files_dialog("");
-		} break;
+		case SEARCH_IN_FILES:
 		case REPLACE_IN_FILES: {
-			open_find_in_files_dialog("", true);
-		} break;
+			FindInFiles::get_singleton()->open_dock("", REPLACE_IN_FILES == p_option);
+		}; break;
 		case SEARCH_HELP: {
 			script_editor->help_search_dialog->popup_dialog();
 		} break;
@@ -2498,8 +2496,6 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		teb->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 		teb->connect("_request_save_new_history", callable_mp(this, &ScriptEditor::_save_new_history).bind(teb));
 		teb->connect("_request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state).bind(teb));
-		teb->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog).bind(false));
-		teb->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog).bind(true));
 		teb->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
 
 		if (script_editor_cache->has_section(p_resource->get_path())) {
@@ -2773,10 +2769,6 @@ void ScriptEditor::_auto_format_text(ScriptEditorBase *p_seb) {
 			teb->convert_indent();
 		}
 	}
-}
-
-void ScriptEditor::open_find_in_files_dialog(const String &p_initial_text, bool p_replace) {
-	script_editor->find_in_files->open_dialog(p_initial_text, p_replace);
 }
 
 void ScriptEditor::open_script_create_dialog(const String &p_base_name, const String &p_base_path) {
@@ -3675,12 +3667,12 @@ void ScriptEditor::_update_selected_editor_menu() {
 		search_popup->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTRC("Find Previous"), KeyModifierMask::SHIFT | Key::F3), HELP_SEARCH_FIND_PREVIOUS);
 		search_popup->add_separator();
 		search_popup->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
-		search_popup->add_shortcut(ED_GET_SHORTCUT("script_editor/replace_in_files"), REPLACE_IN_FILES);
+		search_popup->add_shortcut(ED_GET_SHORTCUT("editor/replace_in_files"), REPLACE_IN_FILES);
 		script_search_menu->show();
 	} else {
 		if (tab_container->get_tab_count() == 0) {
 			search_popup->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
-			search_popup->add_shortcut(ED_GET_SHORTCUT("script_editor/replace_in_files"), REPLACE_IN_FILES);
+			search_popup->add_shortcut(ED_GET_SHORTCUT("editor/replace_in_files"), REPLACE_IN_FILES);
 			script_search_menu->show();
 		} else {
 			script_search_menu->hide();
@@ -4328,7 +4320,7 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 		add_child(help_search_dialog);
 		help_search_dialog->connect("go_to_help", callable_mp(this, &ScriptEditor::_help_class_goto));
 
-		find_in_files = memnew(FindInFiles);
+		FindInFilesContainer *find_in_files = FindInFiles::get_singleton()->get_container();
 		find_in_files->connect("result_selected", callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 		find_in_files->connect("files_modified", callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
 	}
@@ -4360,9 +4352,6 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 
 ScriptEditor::~ScriptEditor() {
 	ScriptEditorNavigationMarker::release_singleton();
-	if (this == script_editor) {
-		memdelete(find_in_files);
-	}
 }
 
 void ScriptEditorPlugin::_focus_another_editor() {
@@ -4594,7 +4583,6 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 
 	ED_SHORTCUT("script_editor/reopen_closed_script", TTRC("Reopen Closed Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::T);
 	ED_SHORTCUT("script_editor/clear_recent", TTRC("Clear Recent Scripts"));
-	ED_SHORTCUT("script_editor/replace_in_files", TTRC("Replace in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
 
 	ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTRC("Uppercase"), KeyModifierMask::SHIFT | Key::F4);
 	ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTRC("Lowercase"), KeyModifierMask::SHIFT | Key::F5);
@@ -4603,6 +4591,7 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	window_wrapper = memnew(WindowWrapper);
 	window_wrapper->set_margins_enabled(true);
 
+	memnew(FindInFiles);
 	script_editor = memnew(ScriptEditor("ScriptEditor", "script_editor_cache.cfg", window_wrapper));
 	script_editor->set_handled_resource_types({ "GDScript", "Script", "JSON" });
 	Ref<Shortcut> make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("script_editor/make_floating", TTRC("Make Floating"));
@@ -4614,4 +4603,8 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	window_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditorPlugin::_window_visibility_changed));
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save"));
+}
+
+ScriptEditorPlugin::~ScriptEditorPlugin() {
+	memdelete(FindInFiles::get_singleton());
 }

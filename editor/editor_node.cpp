@@ -135,6 +135,7 @@
 #include "editor/scene/material_editor_plugin.h"
 #include "editor/scene/particle_process_material_editor_plugin.h"
 #include "editor/script/editor_script.h"
+#include "editor/script/find_in_files.h"
 #include "editor/script/script_text_editor.h"
 #include "editor/script/text_editor.h"
 #include "editor/settings/editor_build_profile.h"
@@ -3716,8 +3717,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			project_settings_editor->popup_project_settings();
 		} break;
 
-		case PROJECT_FIND_IN_FILES: {
-			ScriptEditor::get_singleton()->open_find_in_files_dialog("");
+		case PROJECT_FIND_IN_FILES:
+		case PROJECT_REPLACE_IN_FILES: {
+			FindInFiles::get_singleton()->open_dock("", PROJECT_REPLACE_IN_FILES == p_option);
 		} break;
 
 		case PROJECT_INSTALL_ANDROID_SOURCE: {
@@ -8099,6 +8101,7 @@ void EditorNode::_build_project_menu(bool p_dark_mode) {
 
 	project_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("ClassList"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/project_settings"), PROJECT_OPEN_SETTINGS);
 	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), PROJECT_FIND_IN_FILES);
+	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/replace_in_files"), PROJECT_REPLACE_IN_FILES);
 	project_menu->add_separator();
 
 	project_menu->add_item(TTRC("Version Control"), PROJECT_VERSION_CONTROL);
@@ -9023,6 +9026,7 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTRC("Project Settings..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::COMMA, TTRC("Project Settings"));
 	ED_SHORTCUT_AND_COMMAND("editor/find_in_files", TTRC("Find in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F);
+	ED_SHORTCUT_AND_COMMAND("editor/replace_in_files", TTRC("Replace in Files..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
 
 	ED_SHORTCUT_AND_COMMAND("editor/export", TTRC("Export..."), Key::NONE, TTRC("Export"));
 

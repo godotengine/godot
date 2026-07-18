@@ -1358,6 +1358,7 @@ void EditorSettings::_handle_setting_compatibility() {
 	_rename_shortcut("script_editor/window_move_up", "script_editor/move_document_up");
 	_rename_shortcut("script_editor/window_move_down", "script_editor/move_document_down");
 	_rename_shortcut("script_editor/window_sort", "script_editor/sort_documents");
+	_rename_shortcut("script_text_editor/replace_in_files", "editor/replace_in_files");
 }
 
 void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {
