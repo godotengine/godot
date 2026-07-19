@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  atlas_merging_dialog.h                                                */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,56 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "register_types.h"
 
-#include "editor/inspector/editor_properties.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/resources/2d/tile_set.h"
+#ifndef DISABLE_DEPRECATED
+#include "tile_map.h"
+#endif
+#include "tile_map_layer.h"
+#include "tile_set.h"
 
-class EditorFileDialog;
-class EditorPropertyVector2i;
+#ifdef TOOLS_ENABLED
+#include "editor/tiles_editor_plugin.h"
+#endif
 
-class AtlasMergingDialog : public ConfirmationDialog {
-	GDCLASS(AtlasMergingDialog, ConfirmationDialog);
+#include "core/object/class_db.h"
 
-private:
-	int committed_actions_count = 0;
-	bool delete_original_atlases = true;
-	Ref<TileSetAtlasSource> merged;
-	LocalVector<HashMap<Vector2i, Vector2i>> merged_mapping;
-	Ref<TileSet> tile_set;
+void initialize_tilemap_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		GDREGISTER_CLASS(TileSet);
+		GDREGISTER_ABSTRACT_CLASS(TileSetSource);
+		GDREGISTER_CLASS(TileSetAtlasSource);
+		GDREGISTER_CLASS(TileSetScenesCollectionSource);
+		GDREGISTER_CLASS(TileMapPattern);
+		GDREGISTER_CLASS(TileData);
+		GDREGISTER_CLASS(TileMapLayer);
+#ifndef DISABLE_DEPRECATED
+		GDREGISTER_CLASS(TileMap);
+		TileMap::navmesh_parse_init();
+#endif
+		TileMapLayer::navmesh_parse_init();
+	}
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorPlugins::add_by_type<TileSetEditorPlugin>();
+		EditorPlugins::add_by_type<TileMapEditorPlugin>();
+	}
+#endif
+}
 
-	// Settings.
-	int next_line_after_column = 30;
-
-	// GUI.
-	ItemList *atlas_merging_atlases_list = nullptr;
-	EditorPropertyInteger *columns_editor_property = nullptr;
-	TextureRect *preview = nullptr;
-	Label *select_2_atlases_label = nullptr;
-	EditorFileDialog *editor_file_dialog = nullptr;
-	Button *merge_button = nullptr;
-
-	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
-
-	void _generate_merged(const Vector<Ref<TileSetAtlasSource>> &p_atlas_sources, int p_max_columns);
-	void _update_texture();
-	void _merge_confirmed(const String &p_path);
-
-protected:
-	virtual void ok_pressed() override;
-	virtual void cancel_pressed() override;
-	virtual void custom_action(const String &) override;
-
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-
-	void _notification(int p_what);
-
-public:
-	void update_tile_set(Ref<TileSet> p_tile_set);
-
-	AtlasMergingDialog();
-};
+void uninitialize_tilemap_module(ModuleInitializationLevel p_level) {}

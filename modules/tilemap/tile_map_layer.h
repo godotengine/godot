@@ -30,7 +30,8 @@
 
 #pragma once
 
-#include "scene/resources/2d/tile_set.h"
+#include "tile_set.h"
+
 #include "servers/rendering/rendering_server_enums.h"
 
 #ifndef NAVIGATION_2D_DISABLED
