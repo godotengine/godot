@@ -205,6 +205,9 @@
 /modules/regex/                               @godotengine/core
 /modules/regex/doc_classes/                   @godotengine/core @godotengine/documentation
 /modules/regex/tests/                         @godotengine/core @godotengine/tests
+/modules/tilemap/                             @godotengine/2d-nodes
+/modules/tilemap/doc_classes/                 @godotengine/2d-nodes @godotengine/documentation
+/modules/tilemap/editor/                      @godotengine/2d-nodes @godotengine/editor
 /modules/zip/                                 @godotengine/core
 /modules/zip/doc_classes/                     @godotengine/core @godotengine/documentation
 /modules/zip/tests/                           @godotengine/core @godotengine/tests

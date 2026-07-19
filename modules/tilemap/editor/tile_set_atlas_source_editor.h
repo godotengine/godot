@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include "editor/scene/2d/tiles/tile_atlas_view.h"
-#include "editor/scene/2d/tiles/tile_data_editors.h"
+#include "../tile_set.h"
+#include "tile_atlas_view.h"
+#include "tile_data_editors.h"
+
 #include "scene/gui/split_container.h"
-#include "scene/resources/2d/tile_set.h"
 
 class Popup;
 class TileSet;

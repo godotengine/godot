@@ -30,10 +30,11 @@
 
 #pragma once
 
+#include "tile_atlas_view.h"
+
 #include "core/math/random_pcg.h"
 #include "core/os/thread.h"
 #include "editor/docks/editor_dock.h"
-#include "editor/scene/2d/tiles/tile_atlas_view.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/flow_container.h"

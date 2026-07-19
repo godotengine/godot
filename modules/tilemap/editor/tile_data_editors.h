@@ -30,8 +30,9 @@
 
 #pragma once
 
+#include "tile_atlas_view.h"
+
 #include "editor/inspector/editor_properties.h"
-#include "editor/scene/2d/tiles/tile_atlas_view.h"
 #include "scene/gui/box_container.h"
 
 class Label;

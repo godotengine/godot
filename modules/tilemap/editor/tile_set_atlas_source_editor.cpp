@@ -30,6 +30,9 @@
 
 #include "tile_set_atlas_source_editor.h"
 
+#include "tile_set_editor.h"
+#include "tiles_editor_plugin.h"
+
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
@@ -40,8 +43,6 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_inspector.h"
-#include "editor/scene/2d/tiles/tile_set_editor.h"
-#include "editor/scene/2d/tiles/tiles_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
