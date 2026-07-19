@@ -66,10 +66,11 @@ private:
 	StringName _get_actual_bus();
 	void _update_panning();
 
-	RID debug_canvas_item;
+	RID visualization_canvas_item;
 	void _draw_audio_range();
-	bool debug_range = false;
-	Color debug_color = Color(0.0, 0.5, 0.9, 1.0);
+	bool visualization_enabled = false;
+	bool visualization_attenuation_enabled = false;
+	Color visualization_color = Color(0.0, 0.5, 0.9, .42);
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
 
@@ -132,11 +133,14 @@ public:
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
 
-	void set_debug_range(bool p_debug);
-	bool get_debug_range() const;
+	void set_visualization(bool p_visualization);
+	bool get_visualization() const;
 
-	void set_debug_color(const Color &p_color);
-	Color get_debug_color() const;
+	void set_visualization_color(const Color &p_color);
+	Color get_visualization_color() const;
+
+	void set_visualization_attenuation(bool p_visualization_attenuation);
+	bool get_visualization_attenuation() const;
 
 	void set_max_polyphony(int p_max_polyphony);
 	int get_max_polyphony() const;

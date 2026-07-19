@@ -66,12 +66,6 @@
 			Bus on which this audio is playing.
 			[b]Note:[/b] When setting this property, keep in mind that no validation is performed to see if the given name matches an existing bus. This is because audio bus layouts might be loaded after this property is set. If this given name can't be resolved at runtime, it will fall back to [code]"Master"[/code].
 		</member>
-		<member name="debug_range_color" type="Color" setter="set_debug_color" getter="get_debug_color" default="Color(0, 0.5, 0.9, 1)">
-			If [member debug_range_enabled] is [code]true[/code], uses this color to draw the debug visualization.
-		</member>
-		<member name="debug_range_enabled" type="bool" setter="set_debug_range" getter="get_debug_range" default="false">
-			If [code]true[/code], draws the audible range and attenuation in the editor for debugging purposes.
-		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="2000.0">
 			Maximum distance from which audio is still hearable.
 		</member>
@@ -95,6 +89,16 @@
 		</member>
 		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
 			If [code]true[/code], the playback is paused. You can resume it by setting [member stream_paused] to [code]false[/code].
+		</member>
+		<member name="visualization_color" type="Color" setter="set_visualization_color" getter="get_visualization_color" default="Color(0, 0.5, 0.9, 0.42)">
+			Specifies the color used to draw the visualization.
+		</member>
+		<member name="visualization_enabled" type="bool" setter="set_visualization" getter="get_visualization" default="false">
+			If [code]true[/code], draws a visualization using [member max_distance] and [member visualization_color].
+			[b]Note:[/b] If enabled and [b]Debug &gt; Visible Audio Visualization[/b] is checked in the editor, the visualization is also drawn while the project is running using [member visualization_color].
+		</member>
+		<member name="visualization_show_attenuation" type="bool" setter="set_visualization_attenuation" getter="get_visualization_attenuation" default="false">
+			If [code]true[/code], draws a representation of the current volume using [member visualization_color]. The visualization takes [member max_distance] and [member attenuation] into account, with higher opacity indicating a louder sound.
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
 			Base volume before attenuation, in decibels.
