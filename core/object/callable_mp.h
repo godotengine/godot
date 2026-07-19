@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/object.h"
+#include "core/object/object_db.h"
 #include "core/variant/binder_common.h"
 #include "core/variant/callable.h"
 

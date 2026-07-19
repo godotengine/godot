@@ -34,6 +34,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/object/object.h"
+#include "core/object/object_db.h"
 
 static Callable _generate_callable(JNIEnv *p_env, jlong p_object_id, jstring p_method_name, jobjectArray p_parameters) {
 	Object *obj = ObjectDB::get_instance(ObjectID(p_object_id));
