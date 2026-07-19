@@ -38,6 +38,10 @@
 #include "scene/main/viewport.h"
 #include "servers/rendering/rendering_server.h"
 
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
+
 void Camera3D::_update_audio_listener_state() {
 }
 

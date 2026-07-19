@@ -86,22 +86,30 @@
 
 // 2D physics and navigation.
 #ifndef NAVIGATION_2D_DISABLED
+#include "servers/navigation_2d/navigation_path_query_parameters_2d.h"
+#include "servers/navigation_2d/navigation_path_query_result_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d_manager.h"
 #endif // NAVIGATION_2D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"
 #include "servers/physics_2d/physics_server_2d_dummy.h"
 #include "servers/physics_2d/physics_server_2d_extension.h"
+#include "servers/physics_2d/physics_server_2d_manager.h"
 #endif // PHYSICS_2D_DISABLED
 
 // 3D physics and navigation.
 #ifndef NAVIGATION_3D_DISABLED
+#include "servers/navigation_3d/navigation_path_query_parameters_3d.h"
+#include "servers/navigation_3d/navigation_path_query_result_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d_manager.h"
 #endif // NAVIGATION_3D_DISABLED
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_3d/physics_server_3d.h"
 #include "servers/physics_3d/physics_server_3d_dummy.h"
 #include "servers/physics_3d/physics_server_3d_extension.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 #endif // PHYSICS_3D_DISABLED
 
 // XR

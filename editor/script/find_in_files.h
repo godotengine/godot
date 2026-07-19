@@ -103,6 +103,7 @@ class FindInFilesDialog : public AcceptDialog {
 
 	String _validate_filter_wildcard(const String &p_expression) const;
 
+	bool extensions_dirty = true;
 	bool replace_mode = false;
 	LineEdit *search_text_line_edit = nullptr;
 

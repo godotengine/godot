@@ -34,7 +34,6 @@
 #include "core/math/geometry_2d.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/os/os.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
@@ -1390,9 +1389,8 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_CREATE]->set_tooltip_text(TTR("Create Polygon"));
 	action_buttons[ACTION_CREATE_INTERNAL]->set_tooltip_text(TTR("Create Internal Vertex"));
 	action_buttons[ACTION_REMOVE_INTERNAL]->set_tooltip_text(TTR("Remove Internal Vertex"));
-	Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 	// TRANSLATORS: %s is Control or Command key name.
-	action_buttons[ACTION_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), find_keycode_name(key)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), find_keycode_name(key)));
+	action_buttons[ACTION_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), keycode_get_string(Key::CMD_OR_CTRL)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), keycode_get_string(Key::CMD_OR_CTRL)));
 	action_buttons[ACTION_MOVE]->set_tooltip_text(TTR("Move Polygon"));
 	action_buttons[ACTION_ROTATE]->set_tooltip_text(TTR("Rotate Polygon"));
 	action_buttons[ACTION_SCALE]->set_tooltip_text(TTR("Scale Polygon"));

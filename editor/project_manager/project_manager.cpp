@@ -2009,6 +2009,8 @@ ProjectManager::~ProjectManager() {
 	singleton = nullptr;
 	EditorInspector::cleanup_plugins();
 
+	EditorHelp::cleanup_doc();
+
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 	EditorHelpHighlighter::free_singleton();
 #endif

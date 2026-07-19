@@ -1053,7 +1053,7 @@ void EditorNode::_notification(int p_what) {
 			// Save the project after opening to mark it as last modified, except in headless mode.
 			// Also use this opportunity to ensure default settings are applied to new projects created from the command line
 			// using `touch project.godot`.
-			if (DisplayServer::get_singleton()->window_can_draw()) {
+			if (!cmdline_mode) {
 				const String project_settings_path = ProjectSettings::get_singleton()->get_resource_path().path_join("project.godot");
 				// Check the file's size in bytes as an optimization. If it's under 10 bytes, the file is assumed to be empty.
 				if (FileAccess::get_size(project_settings_path) < 10) {
@@ -3421,6 +3421,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		current_menu_option = (MenuOptions)p_option;
 	}
 
+	constexpr int button_mask_full = int(MouseButtonMask::LEFT | MouseButtonMask::RIGHT | MouseButtonMask::MIDDLE | MouseButtonMask::MB_XBUTTON1 | MouseButtonMask::MB_XBUTTON2);
+
 	switch (p_option) {
 		case SCENE_NEW_SCENE: {
 			new_scene();
@@ -3625,7 +3627,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case SCENE_UNDO: {
-			if ((int)Input::get_singleton()->get_mouse_button_mask() & 0x7) {
+			if ((int)Input::get_singleton()->get_mouse_button_mask() & button_mask_full) {
 				log->add_message(TTR("Can't undo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -3650,7 +3652,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SCENE_REDO: {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			if ((int)Input::get_singleton()->get_mouse_button_mask() & 0x7) {
+			if ((int)Input::get_singleton()->get_mouse_button_mask() & button_mask_full) {
 				log->add_message(TTR("Can't redo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				if (!undo_redo->redo()) {
@@ -8396,9 +8398,7 @@ EditorNode::EditorNode() {
 	singleton = this;
 
 	// Detecting headless mode, that means the editor is running in command line.
-	if (!DisplayServer::get_singleton()->window_can_draw()) {
-		cmdline_mode = true;
-	}
+	cmdline_mode = (DisplayServer::get_singleton()->get_name() == "headless");
 
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 

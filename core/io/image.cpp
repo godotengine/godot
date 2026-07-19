@@ -2830,11 +2830,15 @@ Error Image::save_jpg(const String &p_path, float p_quality) const {
 }
 
 Vector<uint8_t> Image::save_png_to_buffer() const {
+	return _save_png_to_buffer();
+}
+
+Vector<uint8_t> Image::_save_png_to_buffer(bool p_fast) const {
 	if (save_png_buffer_func == nullptr) {
 		return Vector<uint8_t>();
 	}
 
-	return save_png_buffer_func(Ref<Image>((Image *)this));
+	return save_png_buffer_func(Ref<Image>((Image *)this), p_fast);
 }
 
 Vector<uint8_t> Image::save_jpg_to_buffer(float p_quality) const {

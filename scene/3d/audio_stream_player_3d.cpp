@@ -43,6 +43,7 @@
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/area_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)

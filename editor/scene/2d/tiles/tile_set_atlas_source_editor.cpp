@@ -47,6 +47,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::set_id(int p_id) {
@@ -605,6 +606,7 @@ void TileSetAtlasSourceEditor::_update_atlas_source_inspector() {
 
 void TileSetAtlasSourceEditor::_update_tile_inspector() {
 	// Update visibility.
+	tile_inspector->edit(nullptr);
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		if (!selection.is_empty()) {
 			tile_proxy_object.instantiate(this);

@@ -1060,10 +1060,11 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 	Ref<Texture2D> tex;
 	switch (p_option.kind) {
 		case ScriptLanguage::CODE_COMPLETION_KIND_CLASS: {
-			if (has_theme_icon(p_option.display, EditorStringName(EditorIcons))) {
-				tex = get_editor_theme_icon(p_option.display);
+			const String formatted_class_name = p_option.display.unquote();
+			if (has_theme_icon(formatted_class_name, EditorStringName(EditorIcons))) {
+				tex = get_editor_theme_icon(formatted_class_name);
 			} else {
-				tex = EditorNode::get_singleton()->get_class_icon(p_option.display);
+				tex = EditorNode::get_singleton()->get_class_icon(formatted_class_name);
 				if (tex.is_null()) {
 					tex = get_editor_theme_icon(SNAME("Object"));
 				}
@@ -1702,7 +1703,7 @@ void CodeTextEditor::_update_font_ligatures() {
 			} break;
 		}
 		Vector<String> variation_tags = String(EDITOR_GET("interface/editor/fonts/code_font_custom_variations")).split(",");
-		Dictionary variations_mono;
+		Dictionary variations_mono = fc->get_variation_opentype();
 		for (int i = 0; i < variation_tags.size(); i++) {
 			Vector<String> subtag_a = variation_tags[i].split("=");
 			if (subtag_a.size() == 2) {

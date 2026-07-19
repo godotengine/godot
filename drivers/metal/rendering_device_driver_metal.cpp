@@ -2775,17 +2775,9 @@ RenderingDeviceDriverMetal::~RenderingDeviceDriverMetal() {
 		memdelete(kv.value);
 	}
 
-	if (shader_container_format != nullptr) {
-		memdelete(shader_container_format);
-	}
-
-	if (pixel_formats != nullptr) {
-		memdelete(pixel_formats);
-	}
-
-	if (device_properties != nullptr) {
-		memdelete(device_properties);
-	}
+	memdelete(shader_container_format);
+	memdelete(pixel_formats);
+	memdelete(device_properties);
 }
 
 #pragma mark - Initialization
