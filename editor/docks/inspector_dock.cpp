@@ -738,9 +738,13 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	HBoxContainer *general_options_hb = memnew(HBoxContainer);
 	main_vb->add_child(general_options_hb);
 
+	HBoxContainer *button_hb = memnew(HBoxContainer);
+	button_hb->add_theme_constant_override("separation", 0);
+	general_options_hb->add_child(button_hb);
+
 	backward_button = memnew(Button);
 	backward_button->set_theme_type_variation(SceneStringName(FlatButton));
-	general_options_hb->add_child(backward_button);
+	button_hb->add_child(backward_button);
 	backward_button->set_tooltip_text(TTR("Go to previous edited object in history.") + "\n" + TTR("Right-click to show history of edited objects."));
 	backward_button->set_disabled(true);
 	backward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_back_pressed));
@@ -754,7 +758,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	forward_button = memnew(Button);
 	forward_button->set_theme_type_variation(SceneStringName(FlatButton));
-	general_options_hb->add_child(forward_button);
+	button_hb->add_child(forward_button);
 	forward_button->set_tooltip_text(TTRC("Go to next edited object in history."));
 	forward_button->set_disabled(true);
 	forward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_forward));
