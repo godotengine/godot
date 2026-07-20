@@ -766,12 +766,26 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 	shader->set_code(full_truncated_text);
 	shader_material->set_shader(shader);
 
+	const Callable sync_callback = callable_mp(this, &TextShaderPreview::sync_shader_parameters);
 	const Ref<ShaderMaterial> src_mat = _get_source_material();
+
+	bool has_changed = src_mat != cached_source_material;
+	bool is_cached_valid = cached_source_material.is_valid();
+
+	if (has_changed && is_cached_valid && cached_source_material->is_connected(CoreStringName(changed), sync_callback)) {
+		cached_source_material->disconnect_changed(sync_callback);
+	}
+
 	if (src_mat.is_valid()) {
+		if (!src_mat->is_connected(CoreStringName(changed), sync_callback)) {
+			src_mat->connect_changed(sync_callback);
+		}
 		_sync_shader_parameters(src_mat, shader_material);
 	} else {
 		_reset_shader_parameters(shader_material);
 	}
+
+	cached_source_material = src_mat;
 
 	error_container->hide();
 	surface_container->show();
@@ -1688,7 +1702,6 @@ void TextShaderEditor::_notification(int p_what) {
 			preview_style->set_corner_radius_all(tab_style->get_corner_radius(CORNER_TOP_LEFT));
 			preview_panel->add_theme_style_override(SceneStringName(panel), preview_style);
 
-			update_params_btn->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 			remove_all_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		} break;
 
@@ -2306,15 +2319,6 @@ TextShaderEditor::TextShaderEditor() {
 	HBoxContainer *tools_row = memnew(HBoxContainer);
 	tools_row->set_custom_minimum_size(Size2(0, 24 * EDSCALE)); // To match code editor's toolbar.
 	preview_box->add_child(tools_row);
-
-	update_params_btn = memnew(Button);
-	update_params_btn->set_text(TTRC("Update Parameters"));
-	update_params_btn->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_WORD);
-	update_params_btn->set_h_size_flags(SIZE_EXPAND_FILL);
-	update_params_btn->set_theme_type_variation("FlatMenuButton");
-	update_params_btn->connect(SceneStringName(pressed), callable_mp(code_editor, &ShaderTextEditor::update_parameters));
-	update_params_btn->set_tooltip_text(TTRC("Update shader parameters in previews to match the values in the current ShaderMaterial inspector."));
-	tools_row->add_child(update_params_btn);
 
 	remove_all_btn = memnew(Button);
 	remove_all_btn->set_theme_type_variation("FlatMenuButton");

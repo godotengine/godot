@@ -72,6 +72,7 @@ private:
 	MarginContainer *surface_container = nullptr;
 	MaterialEditor *surface = nullptr;
 	Ref<ShaderMaterial> shader_material;
+	Ref<ShaderMaterial> cached_source_material;
 	Ref<Environment> env;
 	MarginContainer *error_container = nullptr;
 	TextureRect *error_icon = nullptr;
@@ -290,7 +291,6 @@ class TextShaderEditor : public ShaderEditor {
 	bool pending_update_shader_previews = false;
 
 private:
-	Button *update_params_btn = nullptr;
 	Button *remove_all_btn = nullptr;
 
 protected:
