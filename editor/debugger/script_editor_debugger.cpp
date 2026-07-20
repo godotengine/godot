@@ -1714,6 +1714,11 @@ void ScriptEditorDebugger::_mute_audio_on_break(bool p_mute) {
 	audio_muted_on_break = p_mute;
 }
 
+void ScriptEditorDebugger::set_debug_collisions(bool p_enable) {
+	Array msg = { p_enable };
+	_put_msg("scene:set_debug_collisions", msg);
+}
+
 CameraOverride ScriptEditorDebugger::get_camera_override() const {
 	return camera_override;
 }
