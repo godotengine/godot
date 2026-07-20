@@ -3657,6 +3657,10 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 	}
 }
 
+void EditorPropertyResource::make_passthrough(bool p_passthrough) {
+	resource_picker->make_passthrough(p_passthrough);
+}
+
 void EditorPropertyResource::update_property() {
 	Ref<Resource> res = get_edited_property_display_value();
 
