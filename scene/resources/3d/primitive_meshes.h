@@ -220,6 +220,9 @@ public:
 	void set_bottom_radius(const float p_radius);
 	float get_bottom_radius() const;
 
+	void set_radius(const float p_radius);
+	float get_radius() const;
+
 	void set_height(const float p_height);
 	float get_height() const;
 
