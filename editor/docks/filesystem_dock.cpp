@@ -1259,7 +1259,6 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 
 		if (!p_keep_selection && !file.is_empty() && fname == file) {
 			files->select(item_index, true);
-			files->ensure_current_is_visible();
 		}
 
 		// Tooltip.
@@ -1274,6 +1273,10 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 	// If we have any selected items retained, one must be set as the current one.
 	if (files->get_current() == -1 && !valid_selection.is_empty()) {
 		files->set_current(*valid_selection.begin());
+	}
+
+	if (!p_keep_selection) {
+		files->center_on_current();
 	}
 }
 
