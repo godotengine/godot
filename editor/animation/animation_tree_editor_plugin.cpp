@@ -41,6 +41,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
@@ -293,6 +294,10 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 
 	Vector<String> path;
 	if (tree) {
+		// Initialize history with root path when opening a new tree.
+		path_history.clear();
+		path_history.push_back(path);
+		path_history_pos = 0;
 		edit_path(path);
 	}
 }
@@ -304,11 +309,90 @@ void AnimationTreeEditor::_node_removed(Node *p_node) {
 	}
 }
 
+bool AnimationTreeEditor::_is_path_valid(const Vector<String> &p_path) const {
+	if (!tree) {
+		return false;
+	}
+
+	Ref<AnimationNode> node = tree->get_root_animation_node();
+	if (node.is_null()) {
+		return false;
+	}
+
+	for (int i = 0; i < p_path.size(); i++) {
+		LocalVector<AnimationNode::ChildNode> children;
+		node->get_child_nodes(&children);
+		Ref<AnimationNode> next;
+		for (const AnimationNode::ChildNode &child : children) {
+			if (child.name == p_path[i]) {
+				next = child.node;
+				break;
+			}
+		}
+		if (next.is_null()) {
+			return false;
+		}
+		node = next;
+	}
+
+	return true;
+}
+
 void AnimationTreeEditor::_path_button_pressed(int p_path) {
 	edited_path.clear();
 	for (int i = 0; i <= p_path; i++) {
 		edited_path.push_back(button_path[i]);
 	}
+
+	// Check if this path exists in backward or forward history.
+	int found_history_pos = -1;
+	for (int i = 0; i < path_history.size(); i++) {
+		if (path_history[i] == edited_path) {
+			found_history_pos = i;
+			break;
+		}
+	}
+
+	if (found_history_pos >= 0) {
+		// Path exists in history, navigate to it without clearing forward history.
+		_update_history_pos(found_history_pos);
+	} else {
+		// New path, add to history and clear forward history.
+		if (path_history_pos >= 0 && path_history_pos < path_history.size() - 1) {
+			path_history.resize(path_history_pos + 1);
+		}
+		path_history.push_back(edited_path);
+		path_history_pos = path_history.size() - 1;
+		edit_path(edited_path);
+	}
+}
+
+void AnimationTreeEditor::_history_forward() {
+	if (path_history_pos < path_history.size() - 1) {
+		_update_history_pos(path_history_pos + 1);
+	}
+}
+
+void AnimationTreeEditor::_history_back() {
+	if (path_history_pos > 0) {
+		_update_history_pos(path_history_pos - 1);
+	}
+}
+
+void AnimationTreeEditor::_update_history_pos(int p_new_pos) {
+	if (p_new_pos < 0 || p_new_pos >= path_history.size()) {
+		return;
+	}
+
+	if (!_is_path_valid(path_history[p_new_pos])) {
+		path_history.remove_at(p_new_pos);
+		path_history_pos = MIN(path_history_pos, path_history.size() - 1);
+		_update_path();
+		return;
+	}
+
+	path_history_pos = p_new_pos;
+	edit_path(path_history[path_history_pos]);
 }
 
 void AnimationTreeEditor::_animation_list_changed() {
@@ -323,35 +407,76 @@ void AnimationTreeEditor::_update_path() {
 		memdelete(path_hb->get_child(1));
 	}
 
+	// Prune forward history entries that are no longer valid from breadcrumbs.
+	for (int i = path_history.size() - 1; i > path_history_pos; i--) {
+		if (!_is_path_valid(path_history[i])) {
+			path_history.remove_at(i);
+		}
+	}
+
 	Ref<ButtonGroup> group;
 	group.instantiate();
 
-	Button *b = memnew(Button);
-	b->set_text(TTR("Root"));
-	b->set_toggle_mode(true);
-	b->set_button_group(group);
-	b->set_pressed(true);
-	b->set_focus_mode(FOCUS_ACCESSIBILITY);
-	b->connect(SceneStringName(pressed), callable_mp(this, &AnimationTreeEditor::_path_button_pressed).bind(-1));
-	path_hb->add_child(b);
-	for (int i = 0; i < button_path.size(); i++) {
-		// bread crumbs.
+	int max_depth = button_path.size();
+	for (int i = path_history_pos + 1; i < path_history.size(); i++) {
+		max_depth = MAX(max_depth, (int)path_history[i].size());
+	}
+
+	// Create buttons for each depth level.
+	for (int depth = -1; depth < max_depth; depth++) {
+		Button *b = memnew(Button);
+		b->set_toggle_mode(true);
+		b->set_button_group(group);
+		b->set_focus_mode(FOCUS_ACCESSIBILITY);
+
+		if (depth == -1) {
+			// Root button.
+			b->set_text(TTR("Root"));
+			b->connect(SceneStringName(pressed), callable_mp(this, &AnimationTreeEditor::_path_button_pressed).bind(-1), CONNECT_DEFERRED);
+			if (button_path.size() == 0) {
+				b->set_pressed(true);
+			}
+			path_hb->add_child(b);
+			continue;
+		}
+
 		TextureRect *texture_rect = memnew(TextureRect);
 		texture_rect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 		texture_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 		texture_rect->set_custom_minimum_size(Size2(16, 16) * EDSCALE);
 		texture_rect->set_texture(get_editor_theme_icon(SNAME("GuiTreeArrowRight")));
-		path_hb->add_child(texture_rect);
 
-		b = memnew(Button);
-		b->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-		b->set_text(button_path[i]);
-		b->set_toggle_mode(true);
-		b->set_button_group(group);
+		if (depth < button_path.size()) {
+			// Current path button.
+			b->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+			b->set_text(button_path[depth]);
+			b->connect(SceneStringName(pressed), callable_mp(this, &AnimationTreeEditor::_path_button_pressed).bind(depth), CONNECT_DEFERRED);
+			if (depth == button_path.size() - 1) {
+				b->set_pressed(true);
+			}
+		} else {
+			// Forward history button - clickable to navigate forward.
+			String path_name;
+			int target_history_pos = -1;
+			for (int i = path_history_pos + 1; i < path_history.size(); i++) {
+				if (depth < path_history[i].size()) {
+					path_name = path_history[i][depth];
+					target_history_pos = i;
+					break;
+				}
+			}
+
+			b->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+			b->set_text(path_name);
+			if (target_history_pos >= 0) {
+				b->connect(SceneStringName(pressed), callable_mp(this, &AnimationTreeEditor::_update_history_pos).bind(target_history_pos), CONNECT_DEFERRED);
+			}
+			b->set_modulate(Color(1, 1, 1, 0.6));
+			texture_rect->set_modulate(Color(1, 1, 1, 0.6));
+		}
+
+		path_hb->add_child(texture_rect);
 		path_hb->add_child(b);
-		b->set_pressed(true);
-		b->set_focus_mode(FOCUS_ACCESSIBILITY);
-		b->connect(SceneStringName(pressed), callable_mp(this, &AnimationTreeEditor::_path_button_pressed).bind(i));
 	}
 }
 
@@ -412,7 +537,41 @@ Vector<String> AnimationTreeEditor::get_edited_path() const {
 void AnimationTreeEditor::enter_editor(const String &p_path) {
 	Vector<String> path = edited_path;
 	path.push_back(p_path);
+
+	// Add to history when entering a sub-editor.
+	// Don't add if it's the same as the current history position.
+	if (path_history_pos < 0 || path_history[path_history_pos] != path) {
+		if (path_history_pos >= 0 && path_history_pos < path_history.size() - 1) {
+			// Clear forward history when navigating from a middle position.
+			path_history.resize(path_history_pos + 1);
+		}
+		path_history.push_back(path);
+		path_history_pos = path_history.size() - 1;
+	}
+
 	edit_path(path);
+}
+
+void AnimationTreeEditor::input(const Ref<InputEvent> &p_event) {
+	if (EDITOR_GET("interface/editor/mouse_extra_buttons_navigate_history")) {
+		const Ref<InputEventMouseButton> mb = p_event;
+
+		// Navigate the path history using additional mouse buttons present on some mice.
+		// This must be hardcoded as the editor shortcuts dialog doesn't allow assigning
+		// more than one shortcut per action.
+		if (mb.is_valid() && mb->is_pressed() && is_visible_in_tree()) {
+			// Only trigger if the mouse is over the animation tree editor panel.
+			if (get_global_rect().has_point(get_global_mouse_position())) {
+				if (mb->get_button_index() == MouseButton::MB_XBUTTON1) {
+					_history_back();
+				}
+
+				if (mb->get_button_index() == MouseButton::MB_XBUTTON2) {
+					_history_forward();
+				}
+			}
+		}
+	}
 }
 
 void AnimationTreeEditor::_notification(int p_what) {
@@ -441,7 +600,11 @@ void AnimationTreeEditor::_notification(int p_what) {
 			}
 
 			if (button_path.size() != edited_path.size()) {
-				edit_path(edited_path);
+				if (_is_path_valid(edited_path)) {
+					edit_path(edited_path);
+				} else {
+					edit_path(Vector<String>());
+				}
 			}
 
 			if (tree) {
@@ -494,14 +657,10 @@ bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
 }
 
 LocalVector<StringName> AnimationTreeEditor::get_animation_list() {
-	// This can be called off the main thread due to resource preview generation. Quit early in that case.
-	if (!singleton->tree || !Thread::is_main_thread() || !singleton->is_visible()) {
-		// When tree is empty, singleton not in the main thread.
-		return LocalVector<StringName>();
-	}
-
 	AnimationTree *tree = singleton->tree;
-	if (!tree) {
+
+	// This can be called off the main thread due to resource preview generation. Quit early in that case.
+	if (!tree || !Thread::is_main_thread() || !singleton->is_visible()) {
 		return LocalVector<StringName>();
 	}
 
@@ -514,6 +673,9 @@ void AnimationTreeEditor::_toggle_error_panel() {
 
 AnimationTreeEditor::AnimationTreeEditor() {
 	singleton = this;
+	set_process_input(true);
+	set_process_shortcut_input(true);
+
 	AnimationNodeAnimation::get_editable_animation_list = get_animation_list;
 
 	set_name(TTRC("AnimationTree"));
