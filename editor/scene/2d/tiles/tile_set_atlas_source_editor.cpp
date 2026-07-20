@@ -982,12 +982,16 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 	if (tile_set.is_null()) {
 		return;
 	} else {
+		String cmd_or_ctrl = keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL);
 		if (tools_button_group->get_pressed_button() == tool_setup_atlas_source_button) {
 			help_label->set_visible(true);
-			help_label->set_text(TTR("Hold Ctrl to create multiple tiles.") + "\n" + TTR("Hold Shift to create big tiles."));
+			help_label->set_text(vformat(TTR("Hold %s to create multiple tiles."), cmd_or_ctrl) + "\n" + TTR("Hold Shift to create big tiles."));
 		} else if (tools_button_group->get_pressed_button() == tool_select_button) {
 			help_label->set_visible(true);
 			help_label->set_text(TTR("Hold Shift to select multiple regions."));
+		} else if (tools_button_group->get_pressed_button() == tool_paint_button) {
+			help_label->set_visible(true);
+			help_label->set_text(vformat(TTR("Hold %s to pick a tile's value."), cmd_or_ctrl) + "\n" + vformat(TTR("Hold %s+Shift to paint multiple tiles."), cmd_or_ctrl));
 		} else {
 			help_label->set_visible(false);
 		}
