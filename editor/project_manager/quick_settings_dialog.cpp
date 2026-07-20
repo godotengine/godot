@@ -33,6 +33,7 @@
 #include "core/object/callable_mp.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/editor_settings_dialog.h"
@@ -136,6 +137,8 @@ void QuickSettingsDialog::_update_current_values() {
 				scale_option_button->select(i);
 			}
 		}
+
+		custom_scale_spin->set_value_no_signal(EDITOR_GET("interface/editor/appearance/custom_display_scale"));
 	}
 
 	// Network mode options.
@@ -216,6 +219,10 @@ void QuickSettingsDialog::_theme_selected(int p_id) {
 
 void QuickSettingsDialog::_scale_selected(int p_id) {
 	_set_setting_value("interface/editor/appearance/display_scale", p_id, true);
+}
+
+void QuickSettingsDialog::_custom_scale_changed(double p_value) {
+	_set_setting_value("interface/editor/appearance/custom_display_scale", p_value, true);
 }
 
 void QuickSettingsDialog::_network_mode_selected(int p_id) {
@@ -383,6 +390,14 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			}
 
 			_add_setting_control(TTRC("Display Scale"), "interface/editor/appearance/display_scale", scale_option_button);
+
+			custom_scale_spin = memnew(EditorSpinSlider);
+			custom_scale_spin->set_flat(true);
+			custom_scale_spin->set_min(0.5);
+			custom_scale_spin->set_max(3.0);
+			custom_scale_spin->set_step(0.01);
+			custom_scale_spin->connect(SceneStringName(value_changed), callable_mp(this, &QuickSettingsDialog::_custom_scale_changed));
+			_add_setting_control(TTRC("Custom Display Scale"), "interface/editor/appearance/custom_display_scale", custom_scale_spin);
 		}
 
 		// Network mode options.
