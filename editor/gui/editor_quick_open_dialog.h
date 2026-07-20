@@ -91,7 +91,7 @@ class QuickOpenResultContainer : public VBoxContainer {
 	};
 
 public:
-	void init(const Vector<StringName> &p_base_types);
+	void init(const Vector<StringName> &p_base_types, const PackedInt64Array &p_hidden_uids = {});
 	void handle_search_box_input(const Ref<InputEvent> &p_ie);
 	void set_query_and_update(const String &p_query);
 	void update_results();
@@ -116,6 +116,7 @@ private:
 	static constexpr int MAX_HISTORY_SIZE = 20;
 
 	Vector<StringName> base_types;
+	PackedInt64Array hidden_uids;
 	LocalVector<ResourceUID::ID> uids;
 	AHashMap<ResourceUID::ID, StringName> filetypes;
 	Vector<QuickOpenResultCandidate> candidates;
@@ -259,8 +260,8 @@ class EditorQuickOpenDialog : public AcceptDialog {
 	GDCLASS(EditorQuickOpenDialog, AcceptDialog);
 
 public:
-	void popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback, bool p_allow_type_switching = false);
-	void popup_dialog_for_property(const Vector<StringName> &p_base_types, Object *p_obj, const StringName &p_path, const Callable &p_item_selected_callback);
+	void popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback, bool p_allow_type_switching = false, const PackedInt64Array &p_hidden_uids = {});
+	void popup_dialog_for_property(const Vector<StringName> &p_base_types, Object *p_obj, const StringName &p_path, const Callable &p_item_selected_callback, const PackedInt64Array &p_hidden_uids = {});
 	EditorQuickOpenDialog();
 
 protected:

@@ -34,6 +34,10 @@
 
 #include "core/object/class_db.h"
 
+void EditorInterface::_popup_quick_open_bind_compat_121354(const Callable &p_callback, const TypedArray<StringName> &p_base_types) {
+	popup_quick_open(p_callback, p_base_types, {});
+}
+
 void EditorInterface::_popup_node_selector_bind_compat_94323(const Callable &p_callback, const TypedArray<StringName> &p_valid_types) {
 	popup_node_selector(p_callback, p_valid_types, nullptr);
 }
@@ -47,6 +51,7 @@ void EditorInterface::_open_scene_from_path_bind_compat_90057(const String &scen
 }
 
 void EditorInterface::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("popup_quick_open", "callback", "valid_types"), &EditorInterface::_popup_quick_open_bind_compat_121354, DEFVAL(TypedArray<StringName>()));
 	ClassDB::bind_compatibility_method(D_METHOD("popup_node_selector", "callback", "valid_types"), &EditorInterface::_popup_node_selector_bind_compat_94323, DEFVAL(TypedArray<StringName>()));
 	ClassDB::bind_compatibility_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter"), &EditorInterface::_popup_property_selector_bind_compat_94323, DEFVAL(PackedInt32Array()));
 	ClassDB::bind_compatibility_method(D_METHOD("open_scene_from_path", "scene_path"), &EditorInterface::_open_scene_from_path_bind_compat_90057);
