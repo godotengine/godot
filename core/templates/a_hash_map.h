@@ -43,39 +43,13 @@ class StringName;
 class Variant;
 
 /**
- * An array-based implementation of a hash map. It is very efficient in terms of performance and
- * memory usage. Works like a dynamic array, adding elements to the end of the array, and
- * allows you to access array elements by their index by using `get_by_index` method.
- * Example:
- * ```
- *  AHashMap<int, Object *> map;
+ * Key-value container (aka hash table or dictionary) using robin-hood hashing.
  *
- *  int get_object_id_by_number(int p_number) {
- *		int id = map.get_index(p_number);
- *		return id;
- *  }
+ * Key-values are not pointer-stable.
+ * Indices are stable as long as no elements are removed; otherwise arbitrary.
  *
- *  Object *get_object_by_id(int p_id) {
- *		map.get_by_index(p_id).value;
- *  }
- * ```
- * Still, don`t erase the elements because ID can break.
- *
- * When an element erase, its place is taken by the element from the end.
- *
- *        <-------------
- *      |               |
- *  6 8 X 9 32 -1 5 -10 7 X X X
- *  6 8 7 9 32 -1 5 -10 X X X X
- *
- *
- * Use RBMap if you need to iterate over sorted elements.
- *
- * Use HashMap if:
- *   - You need to keep an iterator or const pointer to Key and you intend to add/remove elements in the meantime.
- *   - You need to preserve the insertion order when using erase.
- *
- * It is recommended to use `HashMap` if `KeyValue` size is very large.
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  */
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,

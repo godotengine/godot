@@ -39,8 +39,14 @@
 #include <initializer_list>
 #include <type_traits>
 
-// If tight, it grows strictly as much as needed.
-// Otherwise, it grows exponentially (the default and what you want in most cases).
+/**
+ * Array-like container with unique ownership.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ *
+ * @tparam tight Disable exponential growth (reallocate element-by-element instead).
+ */
 template <typename T, typename U = uint32_t, bool force_trivial = false, bool tight = false>
 class _WARN_UNUSED_ LocalVector {
 	static_assert(!force_trivial, "force_trivial is no longer supported. Use resize_uninitialized instead.");

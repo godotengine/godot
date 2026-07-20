@@ -346,6 +346,12 @@ private:
 class ClassDB;
 class ScriptInstance;
 
+/**
+ * Base class for all OBJECT Variant types.
+ *
+ * For documentation, see:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/object_class.html
+ */
 class Object {
 public:
 	typedef Object self_type;
