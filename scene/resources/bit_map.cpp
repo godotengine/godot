@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "bit_map.h"
+#include "bit_map.compat.inc"
 
 #include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
