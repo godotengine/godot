@@ -32,6 +32,7 @@ USE_EIGHT_WEIGHTS = false
 
 // These come from the source mesh and the output from previous passes.
 layout(location = 0) in highp VFORMAT in_vertex;
+/* clang-format on */
 #ifdef MODE_BLEND_PASS
 #ifdef USE_NORMAL
 layout(location = 1) in highp uvec2 in_normal;
@@ -273,10 +274,7 @@ void main() {
 #endif // MODE_2D
 }
 
-/* clang-format off */
 #[fragment]
 
 void main() {
-
 }
-/* clang-format on */

@@ -21,8 +21,7 @@ layout(std430, binding = 2) readonly restrict buffer globalBuffer {
 layout(push_constant, std430) uniform Params {
 	uint p_numRefinements;
 	uint p_padding[3];
-}
-params;
+} params;
 
 layout(local_size_x = 8, //
 		local_size_y = 8, //

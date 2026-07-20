@@ -97,8 +97,7 @@ layout(set = 0, binding = 10, std430) restrict buffer DispatchData {
 	uint y;
 	uint z;
 	uint total_count;
-}
-dispatch_data;
+} dispatch_data;
 
 struct ProcessVoxel {
 	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
@@ -110,8 +109,7 @@ struct ProcessVoxel {
 
 layout(set = 0, binding = 11, std430) restrict buffer writeonly ProcessVoxels {
 	ProcessVoxel data[];
-}
-dst_process_voxels;
+} dst_process_voxels;
 
 shared ProcessVoxel store_positions[4 * 4 * 4];
 shared uint store_position_count;
@@ -130,8 +128,7 @@ layout(set = 0, binding = 5, std430) restrict buffer readonly DispatchData {
 	uint y;
 	uint z;
 	uint total_count;
-}
-dispatch_data;
+} dispatch_data;
 
 struct ProcessVoxel {
 	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
@@ -143,8 +140,7 @@ struct ProcessVoxel {
 
 layout(set = 0, binding = 6, std430) restrict buffer readonly ProcessVoxels {
 	ProcessVoxel data[];
-}
-src_process_voxels;
+} src_process_voxels;
 
 #endif
 
@@ -167,8 +163,7 @@ layout(push_constant, std430) uniform Params {
 	uint occlusion_index;
 	int cascade;
 	uint pad;
-}
-params;
+} params;
 
 void main() {
 #ifdef MODE_SCROLL

@@ -29,8 +29,7 @@ layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	int sample_count;
 	uint pad;
-}
-params;
+} params;
 
 void main() {
 	// Pixel being shaded

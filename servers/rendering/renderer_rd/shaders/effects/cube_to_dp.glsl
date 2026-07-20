@@ -8,8 +8,7 @@ layout(push_constant, std430) uniform Params {
 	float z_far;
 	float z_near;
 	vec2 texel_size;
-}
-params;
+} params;
 
 layout(location = 0) out vec2 uv_interp;
 
@@ -33,8 +32,7 @@ layout(push_constant, std430) uniform Params {
 	float z_far;
 	float z_near;
 	vec2 texel_size;
-}
-params;
+} params;
 
 void main() {
 	vec2 uv = uv_interp;

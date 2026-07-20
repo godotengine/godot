@@ -27,8 +27,7 @@ struct CascadeData {
 
 layout(set = 0, binding = 7, std140) uniform Cascades {
 	CascadeData data[MAX_CASCADES];
-}
-cascades;
+} cascades;
 
 layout(r32ui, set = 0, binding = 8) uniform restrict uimage2DArray lightprobe_texture_data;
 layout(rgba16i, set = 0, binding = 9) uniform restrict iimage2DArray lightprobe_history_texture;
@@ -80,8 +79,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 sky_irradiance_border_size;
 	bool store_ambient_texture;
 	uint pad;
-}
-params;
+} params;
 
 const float PI = 3.14159265f;
 const float GOLDEN_ANGLE = PI * (3.0 - sqrt(5.0));
@@ -292,9 +290,9 @@ void main() {
 
 		vec3 ray_dir2 = ray_dir * ray_dir;
 
-#define SH_ACCUM(m_idx, m_value)                       \
-	{                                                  \
-		vec3 l = light.rgb * (m_value);                \
+#define SH_ACCUM(m_idx, m_value) \
+	{ \
+		vec3 l = light.rgb * (m_value); \
 		sh_accum[probe_index].c[m_idx * 3 + 0] += l.r; \
 		sh_accum[probe_index].c[m_idx * 3 + 1] += l.g; \
 		sh_accum[probe_index].c[m_idx * 3 + 2] += l.b; \

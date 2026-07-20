@@ -99,8 +99,7 @@ layout(push_constant, std430) uniform Params {
 
 	float depth_scale;
 	uint pad[3];
-}
-params;
+} params;
 
 layout(set = 0, binding = 0) uniform sampler2D source_image;
 layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;

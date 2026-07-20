@@ -14,8 +14,7 @@ layout(rgba8, set = 0, binding = 3) uniform restrict writeonly image2D dest_norm
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	ivec2 pad;
-}
-params;
+} params;
 
 void get_sample(ivec2 sample_pos, inout float depth, inout ivec2 winner_sample_pos) {
 	float sample_depth = texelFetch(source_depth, sample_pos, 0).x;

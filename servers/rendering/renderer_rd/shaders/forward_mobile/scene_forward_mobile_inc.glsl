@@ -24,8 +24,7 @@ layout(push_constant, std430) uniform DrawCall {
 	float sc_packed_2;
 	uint uc_packed_0;
 #endif
-}
-draw_call;
+} draw_call;
 
 /* Specialization Constants */
 
@@ -260,28 +259,23 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
-}
-omni_lights;
+} omni_lights;
 
 layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
 	LightData data[];
-}
-spot_lights;
+} spot_lights;
 
 layout(set = 0, binding = 5, std430) restrict readonly buffer AreaLights {
 	LightData data[];
-}
-area_lights;
+} area_lights;
 
 layout(set = 0, binding = 6, std430) restrict readonly buffer ReflectionProbeData {
 	ReflectionData data[];
-}
-reflections;
+} reflections;
 
 layout(set = 0, binding = 7, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-}
-directional_lights;
+} directional_lights;
 
 #define LIGHTMAP_FLAG_USE_DIRECTION 1
 #define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
@@ -300,8 +294,7 @@ struct Lightmap {
 
 layout(set = 0, binding = 8, std140) restrict readonly buffer Lightmaps {
 	Lightmap data[];
-}
-lightmaps;
+} lightmaps;
 
 struct LightmapCapture {
 	vec4 sh[9];
@@ -309,21 +302,18 @@ struct LightmapCapture {
 
 layout(set = 0, binding = 9, std140) restrict readonly buffer LightmapCaptures {
 	LightmapCapture data[];
-}
-lightmap_captures;
+} lightmap_captures;
 
 layout(set = 0, binding = 10) uniform texture2D decal_atlas;
 layout(set = 0, binding = 11) uniform texture2D decal_atlas_srgb;
 
 layout(set = 0, binding = 12, std430) restrict readonly buffer Decals {
 	DecalData data[];
-}
-decals;
+} decals;
 
 layout(set = 0, binding = 13, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
-}
-global_shader_uniforms;
+} global_shader_uniforms;
 
 layout(set = 0, binding = 14) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP;
 
@@ -338,8 +328,7 @@ layout(set = 0, binding = 17) uniform texture2D area_light_atlas;
 layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
 	SceneData data;
 	SceneData prev_data;
-}
-scene_data_block;
+} scene_data_block;
 
 struct InstanceData {
 	highp mat3x4 transform;
@@ -420,7 +409,6 @@ layout(set = 1, binding = 13 + 11) uniform sampler SAMPLER_LINEAR_WITH_MIPMAPS_A
 
 layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
 	vec4 data[];
-}
-transforms;
+} transforms;
 
 /* Set 3 User Material */

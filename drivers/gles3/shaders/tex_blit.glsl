@@ -13,7 +13,7 @@ USE_OUTPUT3 = true
 #[vertex]
 
 layout(location = 0) in vec2 vertex_attrib;
-
+/* clang-format on */
 uniform vec2 offset;
 uniform vec2 size;
 
@@ -22,7 +22,7 @@ out vec2 uv;
 void main() {
 	uv = vertex_attrib * 0.5 + 0.5;
 	// This math scales the Vertex Attribute Quad to match the Rect the user passed in, based on Offset & Size
-	gl_Position = vec4( (offset * 2.0 - 1.0) + (size * (vertex_attrib + 1.0)), 1.0, 1.0);
+	gl_Position = vec4((offset * 2.0 - 1.0) + (size * (vertex_attrib + 1.0)), 1.0, 1.0);
 }
 
 #[fragment]
@@ -46,26 +46,23 @@ uniform float time;
 
 in vec2 uv;
 
-layout (location = 0) out vec4 out_color0;
+layout(location = 0) out vec4 out_color0;
 
 #ifdef USE_OUTPUT1
-layout (location = 1) out vec4 out_color1;
+layout(location = 1) out vec4 out_color1;
 #endif
 
 #ifdef USE_OUTPUT2
-layout (location = 2) out vec4 out_color2;
+layout(location = 2) out vec4 out_color2;
 #endif
 
 #ifdef USE_OUTPUT3
-layout (location = 3) out vec4 out_color3;
+layout(location = 3) out vec4 out_color3;
 #endif
 
-// This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{ //ubo:0
-
+layout(std140) uniform MaterialUniforms { //ubo:0
 #MATERIAL_UNIFORMS
-
 };
 #endif
 

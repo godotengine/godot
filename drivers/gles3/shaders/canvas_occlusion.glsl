@@ -11,6 +11,8 @@ mode_shadow_RGBA = #define MODE_SHADOW \n#define USE_RGBA_SHADOWS
 
 layout(location = 0) in vec3 vertex;
 
+/* clang-format on */
+
 uniform highp mat4 projection;
 uniform highp vec4 modelview1;
 uniform highp vec4 modelview2;
@@ -32,7 +34,6 @@ void main() {
 
 #[fragment]
 
-
 uniform highp mat4 projection;
 uniform highp vec4 modelview1;
 uniform highp vec4 modelview2;
@@ -50,7 +51,7 @@ layout(location = 0) out highp float out_buf;
 #endif
 
 void main() {
-    float out_depth = 1.0;
+	float out_depth = 1.0;
 
 #ifdef MODE_SHADOW
 	out_depth = depth / z_far;

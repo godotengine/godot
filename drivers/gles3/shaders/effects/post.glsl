@@ -28,9 +28,7 @@ void main() {
 	gl_Position = vec4(vertex_attrib, 1.0, 1.0);
 }
 
-/* clang-format off */
 #[fragment]
-/* clang-format on */
 
 // If we reach this code, we always tonemap.
 #define APPLY_TONEMAPPING

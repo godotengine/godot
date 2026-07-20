@@ -95,8 +95,7 @@ layout(push_constant, std430) uniform Params {
 
 	float output_max_value;
 	float pad[3];
-}
-params;
+} params;
 
 layout(location = 0) out vec4 frag_color;
 
