@@ -87,6 +87,7 @@ public:
 	}
 
 	void reverse();
+	Vector<T> reversed() const;
 
 	_FORCE_INLINE_ T *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
@@ -330,6 +331,13 @@ void Vector<T>::reverse() {
 	for (Size i = 0; i < size() / 2; i++) {
 		SWAP(p[i], p[size() - i - 1]);
 	}
+}
+
+template <typename T>
+Vector<T> Vector<T>::reversed() const {
+	Vector<T> result = *this;
+	result.reverse();
+	return result;
 }
 
 template <typename T>
