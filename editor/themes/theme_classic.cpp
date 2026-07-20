@@ -526,43 +526,48 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 		p_theme->set_constant("h_separation", "CheckButton", 8 * EDSCALE);
 		p_theme->set_constant("check_v_offset", "CheckButton", 0);
 		p_theme->set_constant("outline_size", "CheckButton", 0);
+		p_theme->set_constant("button_on_right", "CheckButton", 1);
 
-		// CheckBox.
+		// ToggleButton.
 		{
 			Ref<StyleBoxFlat> checkbox_style = p_config.panel_container_style->duplicate();
 
-			p_theme->set_stylebox(CoreStringName(normal), "CheckBox", checkbox_style);
-			p_theme->set_stylebox(SceneStringName(pressed), "CheckBox", checkbox_style);
-			p_theme->set_stylebox("disabled", "CheckBox", checkbox_style);
-			p_theme->set_stylebox(SceneStringName(hover), "CheckBox", checkbox_style);
-			p_theme->set_stylebox("hover_pressed", "CheckBox", checkbox_style);
+			p_theme->set_stylebox(CoreStringName(normal), "ToggleButton", checkbox_style);
+			p_theme->set_stylebox(SceneStringName(pressed), "ToggleButton", checkbox_style);
+			p_theme->set_stylebox("disabled", "ToggleButton", checkbox_style);
+			p_theme->set_stylebox(SceneStringName(hover), "ToggleButton", checkbox_style);
+			p_theme->set_stylebox("hover_pressed", "ToggleButton", checkbox_style);
 
-			p_theme->set_icon("checked", "CheckBox", p_theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("unchecked", "CheckBox", p_theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("radio_checked", "CheckBox", p_theme->get_icon(SNAME("GuiRadioChecked"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("radio_unchecked", "CheckBox", p_theme->get_icon(SNAME("GuiRadioUnchecked"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("checked_disabled", "CheckBox", p_theme->get_icon(SNAME("GuiCheckedDisabled"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("unchecked_disabled", "CheckBox", p_theme->get_icon(SNAME("GuiUncheckedDisabled"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("radio_checked_disabled", "CheckBox", p_theme->get_icon(SNAME("GuiRadioCheckedDisabled"), EditorStringName(EditorIcons)));
-			p_theme->set_icon("radio_unchecked_disabled", "CheckBox", p_theme->get_icon(SNAME("GuiRadioUncheckedDisabled"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("checked", "ToggleButton", p_theme->get_icon(SNAME("GuiChecked"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("unchecked", "ToggleButton", p_theme->get_icon(SNAME("GuiUnchecked"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("checked_disabled", "ToggleButton", p_theme->get_icon(SNAME("GuiCheckedDisabled"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("unchecked_disabled", "ToggleButton", p_theme->get_icon(SNAME("GuiUncheckedDisabled"), EditorStringName(EditorIcons)));
 
-			p_theme->set_color(SceneStringName(font_color), "CheckBox", p_config.font_color);
-			p_theme->set_color("font_hover_color", "CheckBox", p_config.font_hover_color);
-			p_theme->set_color("font_hover_pressed_color", "CheckBox", p_config.font_hover_pressed_color);
-			p_theme->set_color("font_focus_color", "CheckBox", p_config.font_focus_color);
-			p_theme->set_color("font_pressed_color", "CheckBox", p_config.font_pressed_color);
-			p_theme->set_color("font_disabled_color", "CheckBox", p_config.font_disabled_color);
-			p_theme->set_color("font_outline_color", "CheckBox", p_config.font_outline_color);
+			p_theme->set_color(SceneStringName(font_color), "ToggleButton", p_config.font_color);
+			p_theme->set_color("font_hover_color", "ToggleButton", p_config.font_hover_color);
+			p_theme->set_color("font_hover_pressed_color", "ToggleButton", p_config.font_hover_pressed_color);
+			p_theme->set_color("font_focus_color", "ToggleButton", p_config.font_focus_color);
+			p_theme->set_color("font_pressed_color", "ToggleButton", p_config.font_pressed_color);
+			p_theme->set_color("font_disabled_color", "ToggleButton", p_config.font_disabled_color);
+			p_theme->set_color("font_outline_color", "ToggleButton", p_config.font_outline_color);
 
-			p_theme->set_color("icon_normal_color", "CheckBox", p_config.icon_normal_color);
-			p_theme->set_color("icon_hover_color", "CheckBox", p_config.icon_hover_color);
-			p_theme->set_color("icon_focus_color", "CheckBox", p_config.icon_focus_color);
-			p_theme->set_color("icon_pressed_color", "CheckBox", p_config.icon_pressed_color);
-			p_theme->set_color("icon_disabled_color", "CheckBox", p_config.icon_disabled_color);
+			p_theme->set_color("icon_normal_color", "ToggleButton", p_config.icon_normal_color);
+			p_theme->set_color("icon_hover_color", "ToggleButton", p_config.icon_hover_color);
+			p_theme->set_color("icon_focus_color", "ToggleButton", p_config.icon_focus_color);
+			p_theme->set_color("icon_pressed_color", "ToggleButton", p_config.icon_pressed_color);
+			p_theme->set_color("icon_disabled_color", "ToggleButton", p_config.icon_disabled_color);
 
-			p_theme->set_constant("h_separation", "CheckBox", 8 * EDSCALE);
-			p_theme->set_constant("check_v_offset", "CheckBox", 0);
-			p_theme->set_constant("outline_size", "CheckBox", 0);
+			p_theme->set_constant("h_separation", "ToggleButton", 8 * EDSCALE);
+			p_theme->set_constant("check_v_offset", "ToggleButton", 0);
+			p_theme->set_constant("outline_size", "ToggleButton", 0);
+		}
+
+		// RadioButton
+		{
+			p_theme->set_icon("checked", "RadioButton", p_theme->get_icon(SNAME("GuiRadioChecked"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("unchecked", "RadioButton", p_theme->get_icon(SNAME("GuiRadioUnchecked"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("checked_disabled", "RadioButton", p_theme->get_icon(SNAME("GuiRadioCheckedDisabled"), EditorStringName(EditorIcons)));
+			p_theme->set_icon("unchecked_disabled", "RadioButton", p_theme->get_icon(SNAME("GuiRadioUncheckedDisabled"), EditorStringName(EditorIcons)));
 		}
 
 		// LinkButton.

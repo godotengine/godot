@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  check_button.h                                                        */
+/*  toggle_button.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,35 +32,75 @@
 
 #include "scene/gui/button.h"
 
-class CheckButton : public Button {
-	GDCLASS(CheckButton, Button);
+class ToggleButton : public Button {
+	GDCLASS(ToggleButton, Button);
 
 	struct ThemeCache {
 		int h_separation = 0;
 		int check_v_offset = 0;
+		int button_on_right = 0;
 		Ref<StyleBox> normal_style;
 
 		Ref<Texture2D> checked;
-		Ref<Texture2D> unchecked;
+		Ref<Texture2D> checked_hover;
+		Ref<Texture2D> checked_pressed;
+		Ref<Texture2D> checked_hover_pressed;
 		Ref<Texture2D> checked_disabled;
-		Ref<Texture2D> unchecked_disabled;
-		Ref<Texture2D> checked_mirrored;
-		Ref<Texture2D> unchecked_mirrored;
-		Ref<Texture2D> checked_disabled_mirrored;
-		Ref<Texture2D> unchecked_disabled_mirrored;
 
-		Color button_checked_color;
-		Color button_unchecked_color;
+		Ref<Texture2D> checked_focus;
+		Ref<Texture2D> checked_hover_focus;
+		Ref<Texture2D> checked_pressed_focus;
+		Ref<Texture2D> checked_hover_pressed_focus;
+		Ref<Texture2D> checked_disabled_focus;
+
+		Ref<Texture2D> unchecked;
+		Ref<Texture2D> unchecked_hover;
+		Ref<Texture2D> unchecked_pressed;
+		Ref<Texture2D> unchecked_hover_pressed;
+		Ref<Texture2D> unchecked_disabled;
+
+		Ref<Texture2D> unchecked_focus;
+		Ref<Texture2D> unchecked_hover_focus;
+		Ref<Texture2D> unchecked_pressed_focus;
+		Ref<Texture2D> unchecked_hover_pressed_focus;
+		Ref<Texture2D> unchecked_disabled_focus;
+
+		Color checkbox_checked_color;
+		Color checkbox_unchecked_color;
 	} theme_cache;
 
 protected:
 	Size2 get_icon_size() const;
-	virtual Size2 get_minimum_size() const override;
+	Size2 get_minimum_size() const override;
+
+	std::tuple<Ref<Texture2D>, Ref<Texture2D>> _get_current_icon() const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual bool is_radio() const;
+
 public:
-	CheckButton(const String &p_text = String());
-	~CheckButton();
+	ToggleButton(const String &p_text = String());
+};
+
+class CheckBox : public ToggleButton {
+	GDCLASS(CheckBox, ToggleButton);
+
+public:
+	CheckBox(const String &p_text = String()) : ToggleButton(p_text) {}
+};
+
+class RadioButton : public ToggleButton {
+	GDCLASS(RadioButton, ToggleButton);
+
+public:
+	RadioButton(const String &p_text = String()) : ToggleButton(p_text) {}
+};
+
+class CheckButton : public ToggleButton {
+	GDCLASS(CheckButton, ToggleButton);
+
+public:
+	CheckButton(const String &p_text = String()) : ToggleButton(p_text) {}
 };

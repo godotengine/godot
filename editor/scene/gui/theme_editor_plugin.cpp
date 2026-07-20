@@ -50,7 +50,6 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/option_button.h"
@@ -61,6 +60,7 @@
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/theme/theme_db.h"
 
 static void _rename_theme_type(EditorUndoRedoManager *p_ur, Theme *p_theme, const String &p_old_theme_type, const String &p_new_theme_type) {

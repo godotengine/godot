@@ -32,7 +32,7 @@
 
 #include "scene/gui/dialogs.h"
 
-class Button;
+class CheckButton;
 class HBoxContainer;
 class VBoxContainer;
 class LineEdit;
@@ -50,8 +50,8 @@ class EditorLocaleDialog : public ConfirmationDialog {
 	HBoxContainer *hb_locale = nullptr;
 	VBoxContainer *vb_script_list = nullptr;
 	OptionButton *filter_mode = nullptr;
-	Button *edit_filters = nullptr;
-	Button *advanced = nullptr;
+	CheckButton *edit_filters = nullptr;
+	CheckButton *advanced = nullptr;
 	LineEdit *lang_code = nullptr;
 	LineEdit *script_code = nullptr;
 	LineEdit *country_code = nullptr;

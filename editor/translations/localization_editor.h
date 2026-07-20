@@ -31,7 +31,7 @@
 #pragma once
 
 #include "editor/translations/editor_locale_dialog.h"
-#include "scene/gui/check_box.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;

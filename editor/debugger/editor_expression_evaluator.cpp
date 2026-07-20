@@ -35,8 +35,8 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_string_names.h"
 #include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/toggle_button.h"
 
 void EditorExpressionEvaluator::on_start() {
 	expression_input->set_editable(false);

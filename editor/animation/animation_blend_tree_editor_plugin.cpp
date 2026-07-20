@@ -43,7 +43,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/skeleton_3d.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
@@ -51,6 +50,7 @@
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/toggle_button.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
 

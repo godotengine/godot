@@ -43,13 +43,12 @@
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/version_control/editor_vcs_interface.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/toggle_button.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -1123,7 +1122,7 @@ ProjectDialog::ProjectDialog() {
 		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 	}
 
-	Button *rs_button = memnew(CheckBox);
+	RadioButton *rs_button = memnew(RadioButton);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Forward+"));
 	rs_button->set_accessibility_name(TTRC("Renderer:"));
@@ -1136,7 +1135,7 @@ ProjectDialog::ProjectDialog() {
 	if (default_renderer_type == "forward_plus") {
 		rs_button->set_pressed(true);
 	}
-	rs_button = memnew(CheckBox);
+	rs_button = memnew(RadioButton);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Mobile"));
 	rs_button->set_accessibility_name(TTRC("Renderer:"));
@@ -1149,7 +1148,7 @@ ProjectDialog::ProjectDialog() {
 	if (default_renderer_type == "mobile") {
 		rs_button->set_pressed(true);
 	}
-	rs_button = memnew(CheckBox);
+	rs_button = memnew(RadioButton);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Compatibility"));
 	rs_button->set_accessibility_name(TTRC("Renderer:"));
