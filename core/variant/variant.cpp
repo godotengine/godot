@@ -3592,6 +3592,20 @@ String Variant::get_callable_error_text(const Callable &p_callable, const Varian
 	}
 }
 
+String Variant::get_callable_error_text(const Callable &p_callable, const Vector<Variant> &p_arguments, const Callable::CallError &p_ce) {
+	const Variant **argptrs = nullptr;
+	int argcount = p_arguments.size();
+	if (argcount > 0) {
+		argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		int i = 0;
+		for (const Variant &v : p_arguments) {
+			argptrs[i] = &v;
+			i++;
+		}
+	}
+	return get_callable_error_text(p_callable, argptrs, argcount, p_ce);
+}
+
 void Variant::register_types() {
 	_register_variant_gdtypes();
 	_register_variant_operators();
