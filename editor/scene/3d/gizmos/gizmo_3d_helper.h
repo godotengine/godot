@@ -85,6 +85,19 @@ public:
 		cylinder_commit_handle(p_id, p_radius_action_name, p_height_action_name, p_cancel, p_position_object, p_height_object, p_radius_object, p_position_property, p_height_property, p_radius_property);
 	}
 
+	// Tapered Capsule and Cylinder
+
+	Vector<Vector3> tapered_capsule_cylinder_get_handles(real_t p_top_radius, real_t p_bottom_radius, real_t p_height);
+	String tapered_capsule_cylinder_get_handle_name(int p_id);
+
+	// Tapered capsule
+	void tapered_capsule_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_top_radius, real_t &r_bottom_radius, real_t &r_mid_height);
+	void tapered_capsule_commit_handle(int p_id, bool p_cancel, Object *p_object);
+
+	// Tapered cylinder
+	void tapered_cylinder_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_top_radius, real_t &r_bottom_radius, real_t &r_height);
+	void tapered_cylinder_commit_handle(int p_id, bool p_cancel, Object *p_object);
+
 	// Cone frustum
 
 	Vector<Vector3> cone_frustum_get_handles(real_t p_height, real_t p_radius_top, real_t p_radius_bottom);

@@ -1279,6 +1279,8 @@ void CylinderMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_top_radius"), &CylinderMesh::get_top_radius);
 	ClassDB::bind_method(D_METHOD("set_bottom_radius", "radius"), &CylinderMesh::set_bottom_radius);
 	ClassDB::bind_method(D_METHOD("get_bottom_radius"), &CylinderMesh::get_bottom_radius);
+	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CylinderMesh::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"), &CylinderMesh::get_radius);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &CylinderMesh::set_height);
 	ClassDB::bind_method(D_METHOD("get_height"), &CylinderMesh::get_height);
 
@@ -1295,6 +1297,7 @@ void CylinderMesh::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_top_radius", "get_top_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m", PROPERTY_USAGE_NONE), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_rings", "get_rings");
@@ -1328,6 +1331,15 @@ void CylinderMesh::set_bottom_radius(const float p_radius) {
 
 float CylinderMesh::get_bottom_radius() const {
 	return bottom_radius;
+}
+
+void CylinderMesh::set_radius(const float p_radius) {
+	set_top_radius(p_radius);
+	set_bottom_radius(p_radius);
+}
+
+float CylinderMesh::get_radius() const {
+	return (get_top_radius() + get_bottom_radius()) / 2;
 }
 
 void CylinderMesh::set_height(const float p_height) {
