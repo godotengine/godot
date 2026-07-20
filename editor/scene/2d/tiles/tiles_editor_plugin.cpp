@@ -111,7 +111,7 @@ void TilesEditorUtils::_thread() {
 						Vector2i coords = tile_map_layer->get_cell_atlas_coords(cell);
 						int alternative = tile_map_layer->get_cell_alternative_tile(cell);
 
-						if (atlas_source->has_tile(coords) && atlas_source->has_alternative_tile(coords, alternative)) {
+						if (atlas_source->has_tile_with_alternative(coords, alternative)) {
 							Vector2 center = world_pos - atlas_source->get_tile_data(coords, alternative)->get_texture_origin();
 							encompassing_rect.expand_to(center - atlas_source->get_tile_texture_region(coords).size / 2);
 							encompassing_rect.expand_to(center + atlas_source->get_tile_texture_region(coords).size / 2);
