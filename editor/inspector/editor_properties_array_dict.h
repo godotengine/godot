@@ -252,6 +252,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 	void _change_type(Object *p_button, int p_slot_index);
 	void _change_type_menu(int p_index);
+	void _make_editor_property_passthrough(EditorProperty *p_prop);
 
 	void _add_key_value();
 	void _object_id_selected(const StringName &p_property, ObjectID p_id);

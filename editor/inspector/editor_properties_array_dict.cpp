@@ -44,6 +44,7 @@
 #include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/inspector/editor_properties_vector.h"
+#include "editor/inspector/editor_resource_picker.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
@@ -1189,6 +1190,46 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 	}
 }
 
+void EditorPropertyDictionary::_make_editor_property_passthrough(EditorProperty *p_prop) {
+	EditorPropertyArray *array_prop = Object::cast_to<EditorPropertyArray>(p_prop);
+	EditorPropertyDictionary *dict_prop = Object::cast_to<EditorPropertyDictionary>(p_prop);
+	EditorPropertyResource *res_prop = Object::cast_to<EditorPropertyResource>(p_prop);
+	p_prop->set_mouse_filter(MOUSE_FILTER_PASS);
+	if (array_prop || dict_prop) {
+		for (Variant child : p_prop->get_children()) {
+			Button *edit_btn = Object::cast_to<Button>(child);
+			if (edit_btn) {
+				edit_btn->set_mouse_filter(MOUSE_FILTER_PASS);
+			}
+		}
+	} else if (res_prop) {
+		EditorResourcePicker *picker = nullptr;
+		for (Variant child : p_prop->get_children()) {
+			picker = Object::cast_to<EditorResourcePicker>(child);
+			if (picker) {
+				break;
+			}
+		}
+		picker->set_mouse_filter(MOUSE_FILTER_PASS);
+		for (Variant child : picker->get_children()) {
+			Button *btn = Object::cast_to<Button>(child);
+			if (btn) {
+				btn->set_mouse_filter(MOUSE_FILTER_PASS);
+			}
+		}
+		List<Object::Connection> r_connections;
+		picker->get_signals_connected_to_this(&r_connections);
+		for (const Object::Connection &connection : r_connections) {
+			if (connection.signal.get_name() == SceneStringName(gui_input)) {
+				connection.signal.get_object()->disconnect(SceneStringName(gui_input), connection.callable);
+			}
+		}
+
+	} else {
+		p_prop->set_mouse_behavior_recursive(MOUSE_BEHAVIOR_DISABLED);
+	}
+}
+
 void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_string) {
 	PackedStringArray types = p_hint_string.split(";", true, 1);
 	if (types.size() > 0 && !types[0].is_empty()) {
@@ -1414,9 +1455,8 @@ void EditorPropertyDictionary::update_property() {
 					new_prop->set_draw_background(false);
 					new_prop->set_use_folding(is_using_folding());
 					new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
+					_make_editor_property_passthrough(new_prop);
 					new_prop->set_draw_label(false);
-					new_prop->set_mouse_filter(MOUSE_FILTER_PASS);
-					new_prop->set_mouse_behavior_recursive(MOUSE_BEHAVIOR_DISABLED);
 					EditorPropertyArray *arr_prop = Object::cast_to<EditorPropertyArray>(new_prop);
 					if (arr_prop) {
 						arr_prop->set_preview_value(true);
