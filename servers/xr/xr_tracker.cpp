@@ -39,7 +39,7 @@ void XRTracker::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_tracker_name"), &XRTracker::get_tracker_name);
 	ClassDB::bind_method(D_METHOD("set_tracker_name", "name"), &XRTracker::set_tracker_name);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "set_tracker_name", "get_tracker_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name"), "set_tracker_name", "get_tracker_name");
 
 	ClassDB::bind_method(D_METHOD("get_tracker_desc"), &XRTracker::get_tracker_desc);
 	ClassDB::bind_method(D_METHOD("set_tracker_desc", "description"), &XRTracker::set_tracker_desc);
