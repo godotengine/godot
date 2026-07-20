@@ -762,6 +762,17 @@
 				[b]Note:[/b] Avoid storing lambda callables in member variables of [RefCounted]-based classes (e.g. resources), as this can lead to memory leaks. Use only method callables and optionally [method Callable.bind] or [method Callable.unbind].
 			</description>
 		</annotation>
+		<annotation name="@export_translation">
+			<return type="void" />
+			<description>
+				Export a [String], [Array][lb][String][rb], or [PackedStringArray] property and mark them to be included in the translation template.
+				See also [constant PROPERTY_USAGE_TRANSLATION].
+				[codeblock]
+				@export_translation var character_biography
+				@export_translation var npc_dialogs: Array[String]
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@icon">
 			<return type="void" />
 			<param index="0" name="icon_path" type="String" />

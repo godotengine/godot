@@ -1600,6 +1600,7 @@ private:
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool export_translation_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_storage_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_custom_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_tool_button_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);

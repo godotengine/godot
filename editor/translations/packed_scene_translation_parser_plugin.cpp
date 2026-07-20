@@ -35,8 +35,34 @@
 #include "core/object/script_language.h"
 #include "scene/resources/packed_scene.h"
 
+#include "modules/gdscript/gdscript.h"
+
 void PackedSceneEditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", r_extensions);
+}
+
+Vector<String> get_resource_translatable_strings(Ref<Resource> resource) {
+	Vector<String> translatable_strings = Vector<String>();
+
+	Ref<Script> script = resource->get_script();
+	Object *o = ClassDB::instantiate(script->get_instance_base_type());
+	o->set_script(script);
+	Ref<Resource> default_res(o);
+
+	List<PropertyInfo> *property_list = new List<PropertyInfo>();
+	resource->get_property_list(property_list);
+	for (int i = 0; i < property_list->size(); i++) {
+		if (property_list->get(i).usage & PROPERTY_USAGE_TRANSLATION) {
+			// Don't include default values
+			if (resource->get(property_list->get(i).name) != default_res->get(property_list->get(i).name)) {
+				translatable_strings.push_back(resource->get(property_list->get(i).name));
+			}
+		} else if (resource->get(property_list->get(i).name).get_type() == Variant::OBJECT && !resource->get(property_list->get(i).name).is_null() && static_cast<Ref<RefCounted>>(resource->get(property_list->get(i).name))->get_class() == "Resource") {
+			translatable_strings.append_array(get_resource_translatable_strings(static_cast<Ref<Resource>>(resource->get(property_list->get(i).name))));
+		}
+	}
+
+	return translatable_strings;
 }
 
 Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vector<String>> *r_translations) {
@@ -173,6 +199,17 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			tabcontainer_paths.push_back(String(state->get_node_path(i)));
 		}
 
+		// Get property list of the node's script
+		List<PropertyInfo> *script_property_list = nullptr;
+		for (int j = 0; j < state->get_node_property_count(i); j++) {
+			if (state->get_node_property_name(i, j) == "script" && state->get_node_property_value(i, j).get_type() == Variant::OBJECT && !state->get_node_property_value(i, j).is_null()) {
+				script_property_list = new List<PropertyInfo>();
+				Ref<GDScript> o = state->get_node_property_value(i, j);
+				o->get_script_property_list(script_property_list);
+				break;
+			}
+		}
+
 		for (int j = 0; j < state->get_node_property_count(i); j++) {
 			String property_name = state->get_node_property_name(i, j);
 
@@ -192,6 +229,11 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				if (EditorTranslationParser::get_singleton()->can_parse(extension)) {
 					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(s->get_path(), r_translations);
 				}
+			} else if (property_value.get_type() == Variant::OBJECT && !property_value.is_null() && static_cast<Ref<RefCounted>>(property_value)->get_class() == "Resource") {
+				Vector<String> translatable_strings = get_resource_translatable_strings(static_cast<Ref<Resource>>(property_value));
+				for (int k = 0; k < translatable_strings.size(); k++) {
+					r_translations->push_back({ translatable_strings[k] });
+				}
 			} else if ((node_type == "FileDialog" || node_type == "EditorFileDialog") && property_name == "filters") {
 				// Extract FileDialog's filters property with values in format "*.png ; PNG Images","*.gd ; GDScript Files".
 				Vector<String> str_values = property_value;
@@ -202,10 +244,60 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 					}
 				}
 			} else if (property_value.get_type() == Variant::STRING) {
-				String str_value = String(property_value);
-				// Prevent reading text containing only spaces.
-				if (!str_value.strip_edges().is_empty()) {
-					r_translations->push_back({ str_value, translation_context });
+				bool in_list = false;
+				int usage = -1;
+				// Check if property is in the script's property list
+				if (script_property_list != nullptr) {
+					for (int k = 0; k < script_property_list->size(); k++) {
+						if (script_property_list->get(k).name == property_name) {
+							usage = script_property_list->get(k).usage;
+							in_list = true;
+							break;
+						}
+					}
+				}
+				if (in_list && usage & PROPERTY_USAGE_TRANSLATION) {
+					String str_value = String(property_value);
+					// Prevent reading text containing only spaces.
+					if (!str_value.strip_edges().is_empty()) {
+						r_translations->push_back({ str_value, translation_context });
+					}
+				} else if (!in_list) {
+					// If property is not in the script,
+					// match for lookup_properties to not include things like ellipsis_char
+					for (const String &lookup_property : lookup_properties) {
+						if (property_name.match(lookup_property)) {
+							String str_value = String(property_value);
+							// Prevent reading text containing only spaces.
+							if (!str_value.strip_edges().is_empty()) {
+								r_translations->push_back({ str_value, translation_context });
+							}
+							break;
+						}
+					}
+				}
+			} else if (property_value.get_type() == Variant::ARRAY || property_value.get_type() == Variant::PACKED_STRING_ARRAY) {
+				bool in_list = false;
+				int usage = -1;
+				// Check if property is in the script's property list
+				if (script_property_list != nullptr) {
+					for (int k = 0; k < script_property_list->size(); k++) {
+						if (script_property_list->get(k).name == property_name) {
+							usage = script_property_list->get(k).usage;
+							in_list = true;
+							break;
+						}
+					}
+				}
+				if (in_list && usage & PROPERTY_USAGE_TRANSLATION) {
+					PackedStringArray arr = property_value;
+					for (int k = 0; k < arr.size(); k++) {
+						String str_value = String(arr[k]);
+						// Prevent reading text containing only spaces.
+						if (!str_value.strip_edges().is_empty()) {
+							r_translations->push_back({ str_value, translation_context });
+						}
+					}
 				}
 			}
 		}
@@ -226,12 +318,7 @@ bool PackedSceneEditorTranslationParserPlugin::match_property(const String &p_pr
 			}
 		}
 	}
-	for (const String &lookup_property : lookup_properties) {
-		if (p_property_name.match(lookup_property)) {
-			return true;
-		}
-	}
-	return false;
+	return true;
 }
 
 PackedSceneEditorTranslationParserPlugin::PackedSceneEditorTranslationParserPlugin() {

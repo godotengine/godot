@@ -171,6 +171,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@export_flags_3d_physics"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_PHYSICS, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_3d_navigation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_3D_NAVIGATION, Variant::INT>);
 		register_annotation(MethodInfo("@export_flags_avoidance"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_LAYERS_AVOIDANCE, Variant::INT>);
+		register_annotation(MethodInfo("@export_translation"), AnnotationInfo::VARIABLE, &GDScriptParser::export_translation_annotation);
 		register_annotation(MethodInfo("@export_storage"), AnnotationInfo::VARIABLE, &GDScriptParser::export_storage_annotation);
 		register_annotation(MethodInfo("@export_custom", PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_ENUM, "PropertyHint"), PropertyInfo(Variant::STRING, "hint_string"), PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CLASS_IS_BITFIELD, "PropertyUsageFlags")), AnnotationInfo::VARIABLE, &GDScriptParser::export_custom_annotation, varray(PROPERTY_USAGE_DEFAULT));
 		register_annotation(MethodInfo("@export_tool_button", PropertyInfo(Variant::STRING, "text"), PropertyInfo(Variant::STRING, "icon")), AnnotationInfo::VARIABLE, &GDScriptParser::export_tool_button_annotation, varray(""));
@@ -4990,6 +4991,48 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		variable->export_info.usage = PROPERTY_USAGE_DEFAULT;
 		variable->export_info.class_name = StringName();
 	}
+
+	return true;
+}
+
+bool GDScriptParser::export_translation_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
+
+	VariableNode *variable = static_cast<VariableNode *>(p_target);
+	if (variable->is_static) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to a static variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
+	if (variable->exported) {
+		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	DataType export_type = variable->type_constraint;
+
+	bool is_array = false;
+	if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type(0)) {
+		is_array = true;
+		export_type = export_type.get_container_element_type(0);
+	} else if (export_type.is_typed_container_type()) {
+		is_array = true;
+		export_type = export_type.get_typed_container_type();
+		export_type.type_source = variable->type_constraint.type_source;
+	}
+
+	// Throw error if type is unexpected.
+	if (export_type.builtin_type != Variant::STRING) {
+		Vector<Variant::Type> expected_types = { Variant::STRING };
+		push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->type_constraint), p_annotation);
+		return false;
+	}
+
+	variable->exported = true;
+
+	// Save the info because the compiler uses export info for overwriting member info.
+	variable->export_info = variable->type_constraint.to_property_info(variable->identifier->name);
+	variable->export_info.usage |= PROPERTY_USAGE_DEFAULT;
+	variable->export_info.usage |= PROPERTY_USAGE_TRANSLATION;
 
 	return true;
 }

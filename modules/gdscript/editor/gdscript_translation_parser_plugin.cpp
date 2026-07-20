@@ -151,7 +151,15 @@ void GDScriptEditorTranslationParserPlugin::_traverse_class(const GDScriptParser
 				_traverse_function(m.function);
 				break;
 			case GDScriptParser::ClassNode::Member::VARIABLE:
-				_assess_expression(m.variable->initializer);
+				if (m.variable->exported && m.variable->export_info.usage & PROPERTY_USAGE_TRANSLATION) {
+					if (m.variable->initializer && !m.variable->initializer->reduced_value.is_null()) {
+						_add_id(m.variable->initializer->reduced_value, m.variable->initializer->start_line);
+					} else {
+						_assess_expression(m.variable->initializer);
+					}
+				} else {
+					_assess_expression(m.variable->initializer);
+				}
 				if (m.variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
 					_traverse_function(m.variable->setter);
 					_traverse_function(m.variable->getter);
