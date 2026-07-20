@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "editor/editor_node.h"
@@ -1029,11 +1030,12 @@ void CodeTextEditor::_code_complete_timer_timeout() {
 
 void CodeTextEditor::_complete_request() {
 	List<ScriptLanguage::CodeCompletionOption> entries;
-	String ctext = text_editor->get_text_for_code_completion();
-	_code_complete_script(ctext, &entries);
+	EditorLanguage::Position pos(text_editor->get_caret_line(), text_editor->get_caret_column());
+	String ctext = text_editor->get_text();
+	_code_complete_script(ctext, pos, &entries);
 	bool forced = false;
 	if (code_complete_func) {
-		code_complete_func(code_complete_ud, ctext, &entries, forced);
+		code_complete_func(code_complete_ud, ctext, pos, &entries, forced);
 	}
 
 	for (const ScriptLanguage::CodeCompletionOption &e : entries) {

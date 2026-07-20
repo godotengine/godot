@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "editor/gui/code_editor.h"
 #include "editor/script/script_editor_base.h"
 #include "editor/script/script_editor_plugin.h"
@@ -164,8 +165,8 @@ protected:
 	void _update_warnings();
 	void _update_errors();
 
-	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) override;
+	static void _code_complete_scripts(void *p_ud, const String &p_code, EditorLanguage::Position p_position, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force);
+	virtual void _code_complete_script(const String &p_code, EditorLanguage::Position p_position, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) override;
 
 	void _set_theme_for_script();
 	void _show_errors_panel(bool p_show);

@@ -1143,12 +1143,12 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	}
 }
 
-void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+void ScriptTextEditor::_code_complete_scripts(void *p_ud, const String &p_code, EditorLanguage::Position p_position, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
 	ScriptTextEditor *ste = (ScriptTextEditor *)p_ud;
-	ste->_code_complete_script(p_code, r_options, r_force);
+	ste->_code_complete_script(p_code, p_position, r_options, r_force);
 }
 
-void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+void ScriptTextEditor::_code_complete_script(const String &p_code, EditorLanguage::Position p_position, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
 	if (color_panel->is_visible()) {
 		return;
 	}
@@ -1159,7 +1159,7 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 		base = _find_node_for_script(base, base, script);
 	}
 	String hint;
-	Error err = script->get_language()->get_editor_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
+	Error err = script->get_language()->get_editor_language()->complete_code(p_code, p_position, script->get_path(), base, r_options, r_force, hint);
 
 	if (err == OK) {
 		code_editor->get_text_editor()->set_code_hint(hint);

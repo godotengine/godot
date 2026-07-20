@@ -34,6 +34,8 @@
 #include "gdscript_tokenizer.h"
 #include "gdscript_utility_functions.h"
 
+#include "core/object/editor_language.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
 #include "editor/gdscript_editor_language.h"
@@ -156,7 +158,7 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 	GDScriptParser parser;
 	GDScriptAnalyzer analyzer(&parser);
 
-	Error err = parser.parse(p_script, p_path, false);
+	Error err = parser.parse(p_script, p_path, GDScriptParser::EditorOptions::none());
 	if (err == OK) {
 		err = analyzer.analyze();
 	}
@@ -3438,13 +3440,13 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	r_forced = r_result.size() > 0;
 }
 
-::Error GDScriptEditorLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
+::Error GDScriptEditorLanguage::complete_code(const String &p_code, Position p_position, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
 	GDScriptParser parser;
 	GDScriptAnalyzer analyzer(&parser);
 
-	parser.parse(p_code, p_path, true);
+	parser.parse(p_code, p_path, GDScriptParser::EditorOptions::completion(p_position.line, p_position.column));
 	analyzer.analyze();
 
 	r_forced = false;
@@ -4311,8 +4313,10 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		return OK;
 	}
 
+	// TODO: Pass position directly.
+	EditorLanguage::Position pos = EditorStringUtils::find_char(p_code, 0xFFFF);
 	GDScriptParser parser;
-	parser.parse(p_code, p_path, true);
+	parser.parse(p_code.remove_char(0xFFFF), p_path, GDScriptParser::EditorOptions::completion(pos.line, pos.column));
 
 	GDScriptParser::CompletionContext context = parser.get_completion_context();
 	context.base = p_owner;

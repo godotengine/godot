@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "editor/gui/code_editor.h"
 #include "editor/shader/shader_editor.h"
 #include "scene/gui/menu_button.h"
@@ -170,7 +171,7 @@ protected:
 	static void _bind_methods();
 	virtual void _load_theme_settings() override;
 
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) override;
+	virtual void _code_complete_script(const String &p_code, EditorLanguage::Position p_position, List<ScriptLanguage::CodeCompletionOption> *r_options) override;
 
 public:
 	void set_block_shader_changed(bool p_block) { block_shader_changed = p_block; }
