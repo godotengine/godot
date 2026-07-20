@@ -469,6 +469,7 @@ private:
 
 	String saving_scene;
 	EditorProgress *save_scene_progress = nullptr;
+	List<String> queued_save_scene_files;
 
 	DynamicFontImportSettingsDialog *fontdata_import_settings = nullptr;
 	SceneImportSettingsDialog *scene_import_settings = nullptr;
