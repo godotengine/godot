@@ -373,6 +373,9 @@ void TileSet::set_tile_offset_axis(TileSet::TileOffsetAxis p_alignment) {
 
 	terrain_bits_meshes_dirty = true;
 	tile_meshes_dirty = true;
+	if (tile_shape == TILE_SHAPE_HEXAGON) {
+		notify_property_list_changed();
+	}
 	emit_changed();
 }
 TileSet::TileOffsetAxis TileSet::get_tile_offset_axis() const {
@@ -384,10 +387,45 @@ void TileSet::set_tile_size(Size2i p_size) {
 	tile_size = p_size;
 	terrain_bits_meshes_dirty = true;
 	tile_meshes_dirty = true;
+	if (tile_shape == TILE_SHAPE_HEXAGON) {
+		notify_property_list_changed();
+	}
 	emit_changed();
 }
 Size2i TileSet::get_tile_size() const {
 	return tile_size;
+}
+
+void TileSet::set_hexagon_tile_overlap(float p_tile_overlap) {
+	hexagon_tile_overlap = p_tile_overlap;
+
+	terrain_bits_meshes_dirty = true;
+	tile_meshes_dirty = true;
+	emit_changed();
+}
+float TileSet::get_hexagon_tile_overlap() const {
+	return hexagon_tile_overlap;
+}
+
+void TileSet::_set_hexagon_flat_side_length(float p_flat_side_length) {
+	int side_size;
+	if (tile_offset_axis == TILE_OFFSET_AXIS_HORIZONTAL) {
+		side_size = tile_size.y;
+	} else { // TILE_OFFSET_AXIS_VERTICAL
+		side_size = tile_size.x;
+	}
+
+	float overlap = (1.0f - p_flat_side_length / side_size) / 2.0f;
+	set_hexagon_tile_overlap(overlap);
+}
+float TileSet::_get_hexagon_flat_side_length() const {
+	int side_size;
+	if (tile_offset_axis == TILE_OFFSET_AXIS_HORIZONTAL) {
+		side_size = tile_size.y;
+	} else { // TILE_OFFSET_AXIS_VERTICAL
+		side_size = tile_size.x;
+	}
+	return (1.0f - hexagon_tile_overlap * 2.0f) * side_size;
 }
 
 int TileSet::get_next_source_id() const {
@@ -1472,17 +1510,7 @@ Vector<Vector2> TileSet::get_tile_shape_polygon() const {
 		points.push_back(Vector2(0.0, 0.5));
 		points.push_back(Vector2(0.5, 0.0));
 	} else {
-		float overlap = 0.0;
-		switch (tile_shape) {
-			case TileSet::TILE_SHAPE_HEXAGON:
-				overlap = 0.25;
-				break;
-			case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
-				overlap = 0.0;
-				break;
-			default:
-				break;
-		}
+		float overlap = _get_tile_overlap();
 
 		points.push_back(Vector2(0.0, -0.5));
 		points.push_back(Vector2(-0.5, overlap - 0.5));
@@ -1549,8 +1577,8 @@ Vector2 TileSet::map_to_local(const Vector2i &p_pos) const {
 	Vector2 ret = p_pos;
 
 	if (tile_shape == TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE || tile_shape == TileSet::TILE_SHAPE_HEXAGON || tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
-		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap.
+		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels of overlap.
+		// square = no overlap, hexagon = hexagon_tile_overlap, isometric = 0.5 overlap.
 		if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
 			switch (tile_layout) {
 				case TileSet::TILE_LAYOUT_STACKED:
@@ -1597,20 +1625,10 @@ Vector2 TileSet::map_to_local(const Vector2i &p_pos) const {
 	}
 
 	// Multiply by the overlapping ratio.
-	double overlapping_ratio = 1.0;
+	double overlapping_ratio = 1.0 - _get_tile_overlap();
 	if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-			overlapping_ratio = 0.5;
-		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
-			overlapping_ratio = 0.75;
-		}
 		ret.y *= overlapping_ratio;
 	} else { // TILE_OFFSET_AXIS_VERTICAL.
-		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-			overlapping_ratio = 0.5;
-		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
-			overlapping_ratio = 0.75;
-		}
 		ret.x *= overlapping_ratio;
 	}
 
@@ -1622,27 +1640,17 @@ Vector2i TileSet::local_to_map(const Vector2 &p_local_position) const {
 	ret /= tile_size;
 
 	// Divide by the overlapping ratio.
-	double overlapping_ratio = 1.0;
+	double overlapping_ratio = 1.0 - _get_tile_overlap();
 	if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
-		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-			overlapping_ratio = 0.5;
-		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
-			overlapping_ratio = 0.75;
-		}
 		ret.y /= overlapping_ratio;
 	} else { // TILE_OFFSET_AXIS_VERTICAL.
-		if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-			overlapping_ratio = 0.5;
-		} else if (tile_shape == TileSet::TILE_SHAPE_HEXAGON) {
-			overlapping_ratio = 0.75;
-		}
 		ret.x /= overlapping_ratio;
 	}
 
 	// For each half-offset shape, we check if we are in the corner of the tile, and thus should correct the local position accordingly.
 	if (tile_shape == TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE || tile_shape == TileSet::TILE_SHAPE_HEXAGON || tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
-		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
-		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap.
+		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels of overlap.
+		// square = no overlap, hexagon = hexagon_tile_overlap, isometric = 0.5 overlap.
 		if (tile_offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
 			// Smart floor of the position
 			Vector2 raw_pos = ret;
@@ -2252,17 +2260,7 @@ Vector<Point2> TileSet::get_terrain_polygon(int p_terrain_set) {
 	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
 		return _get_isometric_terrain_polygon(tile_size);
 	} else {
-		float overlap = 0.0;
-		switch (tile_shape) {
-			case TileSet::TILE_SHAPE_HEXAGON:
-				overlap = 0.25;
-				break;
-			case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
-				overlap = 0.0;
-				break;
-			default:
-				break;
-		}
+		float overlap = _get_tile_overlap();
 		return _get_half_offset_terrain_polygon(tile_size, overlap, tile_offset_axis);
 	}
 }
@@ -2289,17 +2287,7 @@ Vector<Point2> TileSet::get_terrain_peering_bit_polygon(int p_terrain_set, TileS
 			return _get_isometric_side_terrain_peering_bit_polygon(tile_size, p_bit);
 		}
 	} else {
-		float overlap = 0.0;
-		switch (tile_shape) {
-			case TileSet::TILE_SHAPE_HEXAGON:
-				overlap = 0.25;
-				break;
-			case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
-				overlap = 0.0;
-				break;
-			default:
-				break;
-		}
+		float overlap = _get_tile_overlap();
 		if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
 			return _get_half_offset_corner_or_side_terrain_peering_bit_polygon(tile_size, overlap, tile_offset_axis, p_bit);
 		} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
@@ -2329,17 +2317,7 @@ void TileSet::draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, 
 			} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
 				polygon = _get_isometric_terrain_polygon(tile_size);
 			} else {
-				float overlap = 0.0;
-				switch (tile_shape) {
-					case TileSet::TILE_SHAPE_HEXAGON:
-						overlap = 0.25;
-						break;
-					case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
-						overlap = 0.0;
-						break;
-					default:
-						break;
-				}
+				float overlap = _get_tile_overlap();
 				polygon = _get_half_offset_terrain_polygon(tile_size, overlap, tile_offset_axis);
 			}
 			{
@@ -2381,17 +2359,7 @@ void TileSet::draw_terrains(CanvasItem *p_canvas_item, Transform2D p_transform, 
 							polygon = _get_isometric_side_terrain_peering_bit_polygon(tile_size, bit);
 						}
 					} else {
-						float overlap = 0.0;
-						switch (tile_shape) {
-							case TileSet::TILE_SHAPE_HEXAGON:
-								overlap = 0.25;
-								break;
-							case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
-								overlap = 0.0;
-								break;
-							default:
-								break;
-						}
+						float overlap = _get_tile_overlap();
 						if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS_AND_SIDES) {
 							polygon = _get_half_offset_corner_or_side_terrain_peering_bit_polygon(tile_size, overlap, tile_offset_axis, bit);
 						} else if (terrain_mode == TileSet::TERRAIN_MODE_MATCH_CORNERS) {
@@ -2552,6 +2520,26 @@ Vector<Vector<Ref<Texture2D>>> TileSet::generate_terrains_icons(Size2i p_size) {
 void TileSet::_source_changed() {
 	terrains_cache_dirty = true;
 	emit_changed();
+}
+
+// Returns the fraction to which tiles wedge into each other.
+// 0.0 - tiles do not interlock (half-offset square). 0.5 - tiles interlock by half of total width/height (isometric).
+float TileSet::_get_tile_overlap() const {
+	float overlap = 0.0;
+	switch (tile_shape) {
+		case TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE:
+			overlap = 0.0;
+			break;
+		case TileSet::TILE_SHAPE_HEXAGON:
+			overlap = hexagon_tile_overlap;
+			break;
+		case TileSet::TILE_SHAPE_ISOMETRIC:
+			overlap = 0.5;
+			break;
+		default:
+			break;
+	}
+	return overlap;
 }
 
 Vector<Point2> TileSet::_get_square_terrain_polygon(Vector2i p_size) {
@@ -3671,6 +3659,11 @@ Array TileSet::compatibility_tilemap_map(int p_tile_id, Vector2i p_coords, bool 
 #endif // DISABLE_DEPRECATED
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "flat_side_length") {
+		_set_hexagon_flat_side_length(p_value);
+		return true;
+	}
+
 	Vector<String> components = String(p_name).split("/", true, 2);
 
 #ifndef DISABLE_DEPRECATED
@@ -4016,6 +4009,11 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "flat_side_length") {
+		r_ret = _get_hexagon_flat_side_length();
+		return true;
+	}
+
 	Vector<String> components = String(p_name).split("/", true, 2);
 
 	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
@@ -4150,6 +4148,26 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 
 void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	PropertyInfo property_info;
+
+	// Flat side length.
+	if (tile_shape == TILE_SHAPE_HEXAGON) {
+		int side_size;
+		if (tile_offset_axis == TILE_OFFSET_AXIS_HORIZONTAL) {
+			side_size = tile_size.y;
+		} else { // TILE_OFFSET_AXIS_VERTICAL
+			side_size = tile_size.x;
+		}
+		property_info = PropertyInfo(Variant::FLOAT, "flat_side_length", PROPERTY_HINT_RANGE, vformat("0.1,%f,0.1,suffix:px", side_size - 0.1), PROPERTY_USAGE_EDITOR);
+
+		// Push after tile_size
+		for (List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
+			if (E->get().name == "tile_size") {
+				p_list->insert_after(E, property_info);
+				break;
+			}
+		}
+	}
+
 	// Rendering.
 	p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Rendering", ""), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < occlusion_layers.size(); i++) {
@@ -4254,6 +4272,27 @@ void TileSet::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+bool TileSet::_property_can_revert(const StringName &p_name) const {
+	if (p_name == "flat_side_length") {
+		return true;
+	}
+	return false;
+}
+
+bool TileSet::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "flat_side_length") {
+		int side_size;
+		if (tile_offset_axis == TILE_OFFSET_AXIS_HORIZONTAL) {
+			side_size = tile_size.y;
+		} else { // TILE_OFFSET_AXIS_VERTICAL
+			side_size = tile_size.x;
+		}
+		r_property = side_size / 2.0f;
+		return true;
+	}
+	return false;
+}
+
 void TileSet::_bind_methods() {
 	// Sources management.
 	ClassDB::bind_method(D_METHOD("get_next_source_id"), &TileSet::get_next_source_id);
@@ -4274,11 +4313,14 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tile_offset_axis"), &TileSet::get_tile_offset_axis);
 	ClassDB::bind_method(D_METHOD("set_tile_size", "size"), &TileSet::set_tile_size);
 	ClassDB::bind_method(D_METHOD("get_tile_size"), &TileSet::get_tile_size);
+	ClassDB::bind_method(D_METHOD("set_hexagon_tile_overlap", "modifier"), &TileSet::set_hexagon_tile_overlap);
+	ClassDB::bind_method(D_METHOD("get_hexagon_tile_overlap"), &TileSet::get_hexagon_tile_overlap);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_shape", PROPERTY_HINT_ENUM, "Square,Isometric,Half-Offset Square,Hexagon"), "set_tile_shape", "get_tile_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_layout", PROPERTY_HINT_ENUM, "Stacked,Stacked Offset,Stairs Right,Stairs Down,Diamond Right,Diamond Down"), "set_tile_layout", "get_tile_layout");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tile_offset_axis", PROPERTY_HINT_ENUM, "Horizontal Offset,Vertical Offset"), "set_tile_offset_axis", "get_tile_offset_axis");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "tile_size", PROPERTY_HINT_NONE, "suffix:px"), "set_tile_size", "get_tile_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "hexagon_tile_overlap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_hexagon_tile_overlap", "get_hexagon_tile_overlap");
 
 	// Rendering.
 	ClassDB::bind_method(D_METHOD("set_uv_clipping", "uv_clipping"), &TileSet::set_uv_clipping);
