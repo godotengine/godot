@@ -656,8 +656,14 @@ public:
 	}
 
 	EXBIND0(reload_all_scripts)
-	EXBIND2(reload_scripts, const Array &, bool)
-	EXBIND2(reload_tool_script, const Ref<Script> &, bool)
+	GDVIRTUAL2_REQUIRED(_reload_scripts, const Array &, bool);
+	virtual void reload_scripts(const Array &p_scripts) override {
+		GDVIRTUAL_CALL(_reload_scripts, p_scripts, true);
+	}
+	GDVIRTUAL2_REQUIRED(_reload_tool_script, const Ref<Script> &, bool);
+	virtual void reload_tool_script(const Ref<Script> &p_script) override {
+		GDVIRTUAL_CALL(_reload_tool_script, p_script, true);
+	}
 	/* LOADER FUNCTIONS */
 
 	GDVIRTUAL0RC_REQUIRED(PackedStringArray, _get_recognized_extensions)
