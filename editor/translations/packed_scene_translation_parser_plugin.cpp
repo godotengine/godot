@@ -59,6 +59,13 @@ Vector<String> get_resource_translatable_strings(Ref<Resource> resource) {
 			}
 		} else if (resource->get(property_list->get(i).name).get_type() == Variant::OBJECT && !resource->get(property_list->get(i).name).is_null() && static_cast<Ref<RefCounted>>(resource->get(property_list->get(i).name))->get_class() == "Resource") {
 			translatable_strings.append_array(get_resource_translatable_strings(static_cast<Ref<Resource>>(resource->get(property_list->get(i).name))));
+		} else if (resource->get(property_list->get(i).name).get_type() == Variant::ARRAY) {
+			Array arr = resource->get(property_list->get(i).name);
+			for (int k = 0; k < arr.size(); k++) {
+				if (arr[k].get_type() == Variant::OBJECT && !arr[k].is_null() && static_cast<Ref<RefCounted>>(arr[k])->get_class() == "Resource") {
+					translatable_strings.append_array(get_resource_translatable_strings(static_cast<Ref<Resource>>(arr[k])));
+				}
+			}
 		}
 	}
 
@@ -232,7 +239,17 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			} else if (property_value.get_type() == Variant::OBJECT && !property_value.is_null() && static_cast<Ref<RefCounted>>(property_value)->get_class() == "Resource") {
 				Vector<String> translatable_strings = get_resource_translatable_strings(static_cast<Ref<Resource>>(property_value));
 				for (int k = 0; k < translatable_strings.size(); k++) {
-					r_translations->push_back({ translatable_strings[k] });
+					r_translations->push_back({ translatable_strings[k], translation_context });
+				}
+			} else if (property_value.get_type() == Variant::ARRAY) {
+				Array arr = property_value;
+				for (int k = 0; k < arr.size(); k++) {
+					if (arr[k].get_type() == Variant::OBJECT && !arr[k].is_null() && static_cast<Ref<RefCounted>>(arr[k])->get_class() == "Resource") {
+						Vector<String> translatable_strings = get_resource_translatable_strings(static_cast<Ref<Resource>>(arr[k]));
+						for (int l = 0; l < translatable_strings.size(); l++) {
+							r_translations->push_back({ translatable_strings[l], translation_context });
+						}
+					}
 				}
 			} else if ((node_type == "FileDialog" || node_type == "EditorFileDialog") && property_name == "filters") {
 				// Extract FileDialog's filters property with values in format "*.png ; PNG Images","*.gd ; GDScript Files".
