@@ -13,8 +13,7 @@ layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	uint mip_level;
 	int pad;
-}
-params;
+} params;
 
 shared vec4 cache[16][16];
 

@@ -30,8 +30,7 @@ layout(push_constant, std430) uniform Params {
 	uint pad1;
 	uint pad2;
 	uint pad3;
-}
-params;
+} params;
 
 void main() {
 	vec3 dir = oct_to_vec3_with_border(uv_interp * 0.5 + 0.5, params.border_size);

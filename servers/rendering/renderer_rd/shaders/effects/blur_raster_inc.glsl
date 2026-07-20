@@ -20,5 +20,4 @@ layout(push_constant, std430) uniform Blur {
 	float glow_white; // 04 - 56
 	float glow_luminance_cap; // 04 - 60
 	float luminance_multiplier; // 04 - 64
-}
-blur;
+} blur;

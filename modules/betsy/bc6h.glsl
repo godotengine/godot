@@ -35,8 +35,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 p_textureSizeRcp;
 	uint padding0;
 	uint padding1;
-}
-params;
+} params;
 
 const float HALF_MAX = 65504.0f;
 const uint PATTERN_NUM = 32u;

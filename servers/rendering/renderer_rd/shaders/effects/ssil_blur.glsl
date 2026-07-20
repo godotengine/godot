@@ -36,8 +36,7 @@ layout(push_constant, std430) uniform Params {
 	float edge_sharpness;
 	float pad;
 	vec2 half_screen_pixel_size;
-}
-params;
+} params;
 
 vec4 unpack_edges(float p_packed_val) {
 	uint packed_val = uint(p_packed_val * 255.5);

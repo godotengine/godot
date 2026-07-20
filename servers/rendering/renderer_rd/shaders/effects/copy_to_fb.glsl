@@ -32,8 +32,7 @@ layout(push_constant, std430) uniform Params {
 	uint flags;
 
 	vec4 color;
-}
-params;
+} params;
 
 void main() {
 	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
@@ -79,8 +78,7 @@ layout(push_constant, std430) uniform Params {
 	uint flags;
 
 	vec4 color;
-}
-params;
+} params;
 
 #ifndef MODE_SET_COLOR
 #ifdef USE_MULTIVIEW

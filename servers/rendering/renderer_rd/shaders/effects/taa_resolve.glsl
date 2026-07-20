@@ -54,8 +54,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 resolution;
 	float disocclusion_threshold; // 0.1 / max(params.resolution.x, params.resolution.y)
 	float variance_dynamic;
-}
-params;
+} params;
 
 const ivec2 kOffsets3x3[9] = {
 	ivec2(-1, -1),

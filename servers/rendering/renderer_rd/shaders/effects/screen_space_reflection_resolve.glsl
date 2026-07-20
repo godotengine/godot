@@ -17,8 +17,7 @@ layout(rgba16f, set = 0, binding = 6) uniform restrict writeonly image2D output_
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	ivec2 pad;
-}
-params;
+} params;
 
 void get_sample(float depth, vec3 normal, float roughness, ivec2 pixel_pos, out vec4 color, out float weight) {
 	float sample_depth = texelFetch(source_depth_half, pixel_pos, 0).x;

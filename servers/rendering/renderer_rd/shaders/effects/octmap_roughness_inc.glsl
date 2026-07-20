@@ -9,8 +9,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 border_size;
 	bool use_direct_write;
 	uint pad;
-}
-params;
+} params;
 
 vec3 ImportanceSampleGGX(vec2 xi, float roughness4) {
 	// Compute distribution direction
