@@ -3852,9 +3852,9 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 	if (text_file.is_valid()) {
 		edit(text_file);
 
-		TextEditor *te = Object::cast_to<TextEditor>(_get_current_editor());
-		if (te) {
-			te->goto_line_selection(line_number - 1, begin, end);
+		TextEditor *text_editor = Object::cast_to<TextEditor>(_get_current_editor());
+		if (text_editor) {
+			text_editor->goto_line_selection(line_number - 1, begin, end);
 		}
 	}
 	ScriptEditorNavigationMarker::get_singleton()->locate_end();

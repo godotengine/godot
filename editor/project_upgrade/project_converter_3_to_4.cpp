@@ -764,7 +764,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 
 	valid = valid && test_conversion_basic("audio/channel_disable_threshold_db", "audio/buses/channel_disable_threshold_db", RenamesMap3To4::project_settings_renames, reg_container.project_settings_regexes, "project setting");
 
-	valid = valid && test_conversion_basic("\"device\":-1,\"alt\":false,\"shift\":false,\"control\":false,\"meta\":false,\"doubleclick\":false,\"scancode\":0,\"physical_scancode\":16777254,\"script\":null", "\"device\":-1,\"alt_pressed\":false,\"shift_pressed\":false,\"ctrl_pressed\":false,\"meta_pressed\":false,\"double_click\":false,\"keycode\":0,\"physical_keycode\":16777254,\"script\":null", RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, "input map");
+	valid = valid && test_conversion_basic("\"device\":-1,\"alt\":false,\"shift\":false,\"control\":false,\"meta\":false,\"doubleclick\":false,\"scancode\":0,\"physical_scancode\":16777254,\"script\":null", "\"device\":-1,\"alt_pressed\":false,\"shift_pressed\":false,\"ctrl_pressed\":false,\"meta_pressed\":false,\"double_click\":false,\"keycode\":0,\"physical_keycode\":16777254,\"script\":null", RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, "input map"); // codespell:ignore doubleclick.
 
 	valid = valid && test_conversion_basic("Transform", "Transform3D", RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, "builtin type");
 

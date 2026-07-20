@@ -135,7 +135,7 @@ final class InputEventRunnable implements Runnable {
 	private float pressure;
 	private float tiltX;
 	private float tiltY;
-	void setMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY) {
+	void setMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY) { // codespell:ignore doubleclick.
 		this.currentEventType = EventType.MOUSE;
 		this.eventAction = eventAction;
 		this.buttonsMask = buttonsMask;
@@ -143,7 +143,7 @@ final class InputEventRunnable implements Runnable {
 		this.eventY = y;
 		this.eventDeltaX = deltaX;
 		this.eventDeltaY = deltaY;
-		this.doubleTap = doubleClick;
+		this.doubleTap = doubleClick; // codespell:ignore doubleclick.
 		this.sourceMouseRelative = sourceMouseRelative;
 		this.pressure = pressure;
 		this.tiltX = tiltX;

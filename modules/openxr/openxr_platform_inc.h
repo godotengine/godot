@@ -82,7 +82,7 @@
 #ifdef WINDOWS_ENABLED
 #define COM_NO_WINDOWS_H
 #include <objbase.h>
-#include <unknwn.h> // codespell:ignore unknwn
+#include <unknwn.h> // codespell:ignore unknwn.
 #endif // WINDOWS_ENABLED
 
 #ifdef ANDROID_ENABLED

@@ -559,9 +559,9 @@ void TextEditorBase::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highl
 void TextEditorBase::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 	ERR_FAIL_COND(p_highlighter.is_null());
 
-	CodeEdit *te = code_editor->get_text_editor();
+	CodeEdit *text_editor = code_editor->get_text_editor();
 	p_highlighter->_set_edited_resource(edited_res);
-	te->set_syntax_highlighter(p_highlighter);
+	text_editor->set_syntax_highlighter(p_highlighter);
 }
 
 void TextEditorBase::set_edited_resource(const Ref<Resource> &p_res) {
@@ -601,33 +601,33 @@ void TextEditorBase::tag_saved_version() {
 void TextEditorBase::reload_text() {
 	ERR_FAIL_COND(edited_res.is_null());
 
-	CodeEdit *te = code_editor->get_text_editor();
-	int column = te->get_caret_column();
-	int row = te->get_caret_line();
-	int h = te->get_h_scroll();
-	int v = te->get_v_scroll();
+	CodeEdit *text_editor = code_editor->get_text_editor();
+	int column = text_editor->get_caret_column();
+	int row = text_editor->get_caret_line();
+	int h = text_editor->get_h_scroll();
+	int v = text_editor->get_v_scroll();
 
 	Ref<TextFile> text_file = edited_res;
 	if (text_file.is_valid()) {
-		te->set_text(text_file->get_text());
+		text_editor->set_text(text_file->get_text());
 	}
 
 	Ref<JSON> json_file = edited_res;
 	if (json_file.is_valid()) {
-		te->set_text(json_file->get_parsed_text());
+		text_editor->set_text(json_file->get_parsed_text());
 	}
 
 	Ref<Script> script = edited_res;
 	if (script.is_valid()) {
-		te->set_text(script->get_source_code());
+		text_editor->set_text(script->get_source_code());
 	}
 
-	te->set_caret_line(row);
-	te->set_caret_column(column);
-	te->set_h_scroll(h);
-	te->set_v_scroll(v);
+	text_editor->set_caret_line(row);
+	text_editor->set_caret_column(column);
+	text_editor->set_h_scroll(h);
+	text_editor->set_v_scroll(v);
 
-	te->tag_saved_version();
+	text_editor->tag_saved_version();
 
 	code_editor->update_line_and_column();
 	if (editor_enabled) {

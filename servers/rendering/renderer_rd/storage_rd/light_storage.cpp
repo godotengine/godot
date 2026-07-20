@@ -1658,7 +1658,7 @@ void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 	// TODO investigate if this is enough? shouldn't we be freeing our textures and framebuffers?
 
 	if (rpi->rendering) {
-		// We were cancelled mid rendering, trigger refresh.
+		// We were canceled mid rendering, trigger refresh.
 		rpi->rendering = false;
 		rpi->dirty = true;
 		rpi->processing_layer = 1;

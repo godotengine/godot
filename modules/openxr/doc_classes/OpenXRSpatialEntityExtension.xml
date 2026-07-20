@@ -62,7 +62,7 @@
 			<return type="void" />
 			<param index="0" name="spatial_context" type="RID" />
 			<description>
-				Frees a spatial context previously created when calling [method create_spatial_context]. If the spatial context creation is still ongoing, the asynchronous process is cancelled.
+				Frees a spatial context previously created when calling [method create_spatial_context]. If the spatial context creation is still ongoing, the asynchronous process is canceled.
 			</description>
 		</method>
 		<method name="free_spatial_entity">
@@ -76,7 +76,7 @@
 			<return type="void" />
 			<param index="0" name="spatial_snapshot" type="RID" />
 			<description>
-				Frees a spatial snapshot previously created when calling [method discover_spatial_entities]. If the spatial snapshot creation is still ongoing, the asynchronous process is cancelled.
+				Frees a spatial snapshot previously created when calling [method discover_spatial_entities]. If the spatial snapshot creation is still ongoing, the asynchronous process is canceled.
 			</description>
 		</method>
 		<method name="get_float_buffer" qualifiers="const">

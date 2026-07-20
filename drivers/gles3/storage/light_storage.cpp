@@ -824,7 +824,7 @@ void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 	atlas->reflections.write[rpi->atlas_index].owner = RID();
 
 	if (rpi->rendering) {
-		// We were cancelled mid rendering, trigger refresh.
+		// We were canceled mid rendering, trigger refresh.
 		rpi->rendering = false;
 		rpi->dirty = true;
 		rpi->processing_layer = 0;

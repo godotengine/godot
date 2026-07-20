@@ -382,10 +382,10 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	le->set_text(TTR("Disabled LineEdit"));
 	le->set_editable(false);
 	second_vb->add_child(le);
-	TextEdit *te = memnew(TextEdit);
-	te->set_text("TextEdit");
-	te->set_custom_minimum_size(Size2(0, 100));
-	second_vb->add_child(te);
+	TextEdit *text_edit = memnew(TextEdit);
+	text_edit->set_text("TextEdit");
+	text_edit->set_custom_minimum_size(Size2(0, 100));
+	second_vb->add_child(text_edit);
 	second_vb->add_child(memnew(SpinBox));
 
 	HBoxContainer *vhb = memnew(HBoxContainer);

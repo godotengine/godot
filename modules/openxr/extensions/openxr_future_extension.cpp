@@ -173,7 +173,7 @@ void OpenXRFutureExtension::on_session_destroyed() {
 			WARN_PRINT("OpenXR: Failed to cancel future [" + openxr_api->get_error_string(result) + "]");
 		}
 
-		// Make sure we mark our future result as cancelled
+		// Make sure we mark our future result as canceled.
 		element.value->_mark_as_cancelled();
 	}
 	futures.clear();
@@ -214,7 +214,7 @@ void OpenXRFutureExtension::cancel_future(XrFutureEXT p_future) {
 		WARN_PRINT("OpenXR: Failed to cancel future [" + openxr_api->get_error_string(result) + "]");
 	}
 
-	// Make sure we mark our future result as cancelled
+	// Make sure we mark our future result as canceled.
 	futures[p_future]->_mark_as_cancelled();
 
 	// And erase it from the futures we track

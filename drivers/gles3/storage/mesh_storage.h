@@ -253,7 +253,7 @@ private:
 
 	mutable RID_Owner<Mesh, true> mesh_owner;
 
-	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &v, Mesh::Surface *s, uint64_t p_input_mask, bool p_uses_motion_vectors, MeshInstance::Surface *mis = nullptr, int p_current_vertex_buffer = 0, int p_prev_vertex_buffer = 0);
+	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface::Version &p_version, Mesh::Surface *p_mesh_surface, uint64_t p_input_mask, bool p_uses_motion_vectors, MeshInstance::Surface *p_mesh_instance_surface = nullptr, int p_current_vertex_buffer = 0, int p_prev_vertex_buffer = 0);
 	void _mesh_surface_clear(Mesh *mesh, int p_surface);
 
 	/* Mesh Instance API */
@@ -487,40 +487,40 @@ public:
 		Mesh *mesh = mi->mesh;
 		ERR_FAIL_UNSIGNED_INDEX(p_surface_index, mesh->surface_count);
 
-		MeshInstance::Surface *mis = &mi->surfaces[p_surface_index];
+		MeshInstance::Surface *mi_surface = &mi->surfaces[p_surface_index];
 		Mesh::Surface *s = mesh->surfaces[p_surface_index];
 
-		uint32_t current_buffer = mis->current_vertex_buffer;
+		uint32_t current_buffer = mi_surface->current_vertex_buffer;
 
 		// Using the previous buffer is only allowed if the surface was updated this frame and motion vectors are required.
-		uint32_t previous_buffer = p_uses_motion_vectors && (RSG::rasterizer->get_frame_number() == mis->last_change) ? mis->prev_vertex_buffer : current_buffer;
+		uint32_t previous_buffer = p_uses_motion_vectors && (RSG::rasterizer->get_frame_number() == mi_surface->last_change) ? mi_surface->prev_vertex_buffer : current_buffer;
 
 		s->version_lock.lock();
 
 		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
 
-		for (uint32_t i = 0; i < mis->version_count; i++) {
-			if (mis->versions[i].input_mask != p_input_mask || mis->versions[i].uses_motion_vectors != p_uses_motion_vectors) {
+		for (uint32_t i = 0; i < mi_surface->version_count; i++) {
+			if (mi_surface->versions[i].input_mask != p_input_mask || mi_surface->versions[i].uses_motion_vectors != p_uses_motion_vectors) {
 				continue;
 			}
 
-			if (mis->versions[i].current_vertex_buffer != current_buffer || mis->versions[i].prev_vertex_buffer != previous_buffer) {
+			if (mi_surface->versions[i].current_vertex_buffer != current_buffer || mi_surface->versions[i].prev_vertex_buffer != previous_buffer) {
 				continue;
 			}
 
 			//we have this version, hooray
-			r_vertex_array_gl = mis->versions[i].vertex_array;
+			r_vertex_array_gl = mi_surface->versions[i].vertex_array;
 			s->version_lock.unlock();
 			return;
 		}
 
-		uint32_t version = mis->version_count;
-		mis->version_count++;
-		mis->versions = (Mesh::Surface::Version *)memrealloc(mis->versions, sizeof(Mesh::Surface::Version) * mis->version_count);
+		uint32_t version = mi_surface->version_count;
+		mi_surface->version_count++;
+		mi_surface->versions = (Mesh::Surface::Version *)memrealloc(mi_surface->versions, sizeof(Mesh::Surface::Version) * mi_surface->version_count);
 
-		_mesh_surface_generate_version_for_input_mask(mis->versions[version], s, p_input_mask, p_uses_motion_vectors, mis, current_buffer, previous_buffer);
+		_mesh_surface_generate_version_for_input_mask(mi_surface->versions[version], s, p_input_mask, p_uses_motion_vectors, mi_surface, current_buffer, previous_buffer);
 
-		r_vertex_array_gl = mis->versions[version].vertex_array;
+		r_vertex_array_gl = mi_surface->versions[version].vertex_array;
 
 		s->version_lock.unlock();
 	}

@@ -395,7 +395,7 @@ static LocalVector<String> _get_skipped_locales() {
 		locales_to_skip.push_back("ml"); // Malayalam.
 		locales_to_skip.push_back("si"); // Sinhala.
 		locales_to_skip.push_back("ta"); // Tamil.
-		locales_to_skip.push_back("te"); // Telugu.
+		locales_to_skip.push_back("te"); // Telugu. // codespell:ignore te.
 	}
 	return locales_to_skip;
 }

@@ -952,19 +952,19 @@ void ShaderTextEditor::reload_text() {
 		code = shader_inc->get_code();
 	}
 
-	CodeEdit *te = get_text_editor();
-	int column = te->get_caret_column();
-	int row = te->get_caret_line();
-	int h = te->get_h_scroll();
-	int v = te->get_v_scroll();
+	CodeEdit *teditor = get_text_editor();
+	int column = teditor->get_caret_column();
+	int row = teditor->get_caret_line();
+	int h = teditor->get_h_scroll();
+	int v = teditor->get_v_scroll();
 
-	te->set_text(code);
-	te->set_caret_line(row);
-	te->set_caret_column(column);
-	te->set_h_scroll(h);
-	te->set_v_scroll(v);
+	teditor->set_text(code);
+	teditor->set_caret_line(row);
+	teditor->set_caret_column(column);
+	teditor->set_h_scroll(h);
+	teditor->set_v_scroll(v);
 
-	te->tag_saved_version();
+	teditor->tag_saved_version();
 
 	update_line_and_column();
 }
@@ -974,12 +974,12 @@ void ShaderTextEditor::set_warnings_panel(RichTextLabel *p_warnings_panel) {
 }
 
 void ShaderTextEditor::_load_theme_settings() {
-	CodeEdit *te = get_text_editor();
+	CodeEdit *teditor = get_text_editor();
 	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
 	if (updated_marked_line_color != marked_line_color) {
-		for (int i = 0; i < te->get_line_count(); i++) {
-			if (te->get_line_background_color(i) == marked_line_color) {
-				te->set_line_background_color(i, updated_marked_line_color);
+		for (int i = 0; i < teditor->get_line_count(); i++) {
+			if (teditor->get_line_background_color(i) == marked_line_color) {
+				teditor->set_line_background_color(i, updated_marked_line_color);
 			}
 		}
 		marked_line_color = updated_marked_line_color;
@@ -1110,12 +1110,12 @@ void ShaderTextEditor::_load_theme_settings() {
 	// Disabled preprocessor branches use translucent text color to be easier to distinguish from comments.
 	syntax_highlighter->set_disabled_branch_color(Color(EDITOR_GET("text_editor/theme/highlighting/text_color")) * Color(1, 1, 1, 0.5));
 
-	te->clear_comment_delimiters();
-	te->add_comment_delimiter("/*", "*/", false);
-	te->add_comment_delimiter("//", "", true);
+	teditor->clear_comment_delimiters();
+	teditor->add_comment_delimiter("/*", "*/", false);
+	teditor->add_comment_delimiter("//", "", true);
 
-	if (!te->has_auto_brace_completion_open_key("/*")) {
-		te->add_auto_brace_completion_pair("/*", "*/");
+	if (!teditor->has_auto_brace_completion_open_key("/*")) {
+		teditor->add_auto_brace_completion_pair("/*", "*/");
 	}
 
 	// Colorize preprocessor include strings.

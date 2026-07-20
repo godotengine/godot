@@ -546,9 +546,9 @@ bool GodotConvexPolygonShape2D::intersect_segment(const Vector2 &p_begin, const 
 			continue;
 		}
 
-		real_t nd = n.dot(res);
-		if (nd < d) {
-			d = nd;
+		real_t ndist = n.dot(res);
+		if (ndist < d) {
+			d = ndist;
 			r_point = res;
 			r_normal = points[i].normal;
 			inters = true;
@@ -719,9 +719,9 @@ bool GodotConcavePolygonShape2D::intersect_segment(const Vector2 &p_begin, const
 						Vector2 res;
 
 						if (Geometry2D::segment_intersects_segment(p_begin, p_end, a, b, &res)) {
-							real_t nd = n.dot(res);
-							if (nd < d) {
-								d = nd;
+							real_t ndist = n.dot(res);
+							if (ndist < d) {
+								d = ndist;
 								r_point = res;
 								r_normal = (b - a).orthogonal().normalized();
 								inters = true;

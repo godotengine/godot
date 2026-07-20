@@ -733,7 +733,7 @@ void DisplayServerX11::clipboard_set_primary(const String &p_text) {
 }
 
 Bool DisplayServerX11::_predicate_clipboard_selection(Display *display, XEvent *event, XPointer arg) {
-	if (event->type == SelectionNotify && event->xselection.requestor == *(Window *)arg) {
+	if (event->type == SelectionNotify && event->xselection.requestor == *(Window *)arg) { // codespell:ignore requestor.
 		return True;
 	} else {
 		return False;
@@ -4397,17 +4397,17 @@ void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p
 		unsigned long len;
 		unsigned long remaining;
 		unsigned char *data = nullptr;
-		if (XGetWindowProperty(x11_display, p_event->requestor, p_event->property, 0, LONG_MAX, False, atom_pair, &type, &format, &len, &remaining, &data) == Success) {
+		if (XGetWindowProperty(x11_display, p_event->requestor, p_event->property, 0, LONG_MAX, False, atom_pair, &type, &format, &len, &remaining, &data) == Success) { // codespell:ignore requestor.
 			if ((len >= 2) && data) {
 				Atom *targets = (Atom *)data;
 				for (uint64_t i = 0; i < len; i += 2) {
 					Atom target = targets[i];
 					Atom &property = targets[i + 1];
-					property = _process_selection_request_target(target, p_event->requestor, property, p_event->selection);
+					property = _process_selection_request_target(target, p_event->requestor, property, p_event->selection); // codespell:ignore requestor.
 				}
 
 				XChangeProperty(x11_display,
-						p_event->requestor,
+						p_event->requestor, // codespell:ignore requestor.
 						p_event->property,
 						atom_pair,
 						32,
@@ -4421,17 +4421,17 @@ void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p
 		}
 	} else {
 		// Request for target conversion.
-		respond.xselection.property = _process_selection_request_target(p_event->target, p_event->requestor, p_event->property, p_event->selection);
+		respond.xselection.property = _process_selection_request_target(p_event->target, p_event->requestor, p_event->property, p_event->selection); // codespell:ignore requestor.
 	}
 
 	respond.xselection.type = SelectionNotify;
 	respond.xselection.display = p_event->display;
-	respond.xselection.requestor = p_event->requestor;
+	respond.xselection.requestor = p_event->requestor; // codespell:ignore requestor.
 	respond.xselection.selection = p_event->selection;
 	respond.xselection.target = p_event->target;
 	respond.xselection.time = p_event->time;
 
-	XSendEvent(x11_display, p_event->requestor, True, NoEventMask, &respond);
+	XSendEvent(x11_display, p_event->requestor, True, NoEventMask, &respond); // codespell:ignore requestor.
 	XFlush(x11_display);
 }
 

@@ -572,11 +572,11 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			// Setting to a shorter line, selection and caret should be adjusted. Also works if not editable.
 			text_edit->set_editable(false);
-			text_edit->set_line(0, "te");
+			text_edit->set_line(0, "te"); // codespell:ignore te.
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_line(0) == "te");
+			CHECK(text_edit->get_line(0) == "te"); // codespell:ignore te.
 			CHECK(text_edit->has_selection());
-			CHECK(text_edit->get_selected_text() == "te");
+			CHECK(text_edit->get_selected_text() == "te"); // codespell:ignore te.
 			CHECK(text_edit->get_caret_column() == 2);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
@@ -598,7 +598,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->redo();
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_line(0) == "te");
+			CHECK(text_edit->get_line(0) == "te"); // codespell:ignore te.
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_caret_column() == 2);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
@@ -610,7 +610,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			ERR_PRINT_OFF;
 			text_edit->set_line(-1, "test");
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_line(0) == "te");
+			CHECK(text_edit->get_line(0) == "te"); // codespell:ignore te.
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 			SIGNAL_CHECK_FALSE("caret_changed");
 			SIGNAL_CHECK_FALSE("text_changed");
@@ -618,7 +618,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->set_line(1, "test");
 			MessageQueue::get_singleton()->flush();
-			CHECK(text_edit->get_line(0) == "te");
+			CHECK(text_edit->get_line(0) == "te"); // codespell:ignore te.
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 			SIGNAL_CHECK_FALSE("caret_changed");
 			SIGNAL_CHECK_FALSE("text_changed");
@@ -5403,7 +5403,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_caret_after_selection_origin(0));
 
 			CHECK(text_edit->has_selection(1));
-			CHECK(text_edit->get_selected_text(1) == "some te");
+			CHECK(text_edit->get_selected_text(1) == "some te"); // codespell:ignore te.
 			CHECK(text_edit->get_caret_line(1) == 2);
 			CHECK(text_edit->get_caret_column(1) == 8);
 			CHECK(text_edit->get_selection_origin_line(1) == 2);
@@ -5683,7 +5683,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->is_caret_after_selection_origin(0));
 
 			CHECK(text_edit->has_selection(1));
-			CHECK(text_edit->get_selected_text(1) == " te");
+			CHECK(text_edit->get_selected_text(1) == " te"); // codespell:ignore te.
 			CHECK(text_edit->get_caret_line(1) == 2);
 			CHECK(text_edit->get_caret_column(1) == 12);
 			CHECK(text_edit->get_selection_origin_line(1) == 2);
@@ -5785,7 +5785,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_count() == 2);
 			CHECK(text_edit->has_selection(0));
-			CHECK(text_edit->get_selected_text(0) == "st te");
+			CHECK(text_edit->get_selected_text(0) == "st te"); // codespell:ignore te.
 			CHECK(text_edit->get_caret_line(0) == 0);
 			CHECK(text_edit->get_caret_column(0) == 20);
 			CHECK(text_edit->get_selection_origin_line(0) == 0);

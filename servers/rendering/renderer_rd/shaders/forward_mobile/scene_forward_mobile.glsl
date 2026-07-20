@@ -188,12 +188,12 @@ vec3 two_sum(vec3 a, vec3 b, out vec3 out_p) {
 }
 
 vec3 double_add_vec3(vec3 base_a, vec3 prec_a, vec3 base_b, vec3 prec_b, out vec3 out_precision) {
-	vec3 s, t, se, te;
+	vec3 s, t, se, te; // codespell:ignore te.
 	s = two_sum(base_a, base_b, se);
-	t = two_sum(prec_a, prec_b, te);
+	t = two_sum(prec_a, prec_b, te); // codespell:ignore te.
 	se += t;
 	s = quick_two_sum(s, se, se);
-	se += te;
+	se += te; // codespell:ignore te.
 	s = quick_two_sum(s, se, out_precision);
 	return s;
 }

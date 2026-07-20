@@ -108,7 +108,7 @@ void GotoLinePopup::_notification(int p_what) {
 
 void GotoLinePopup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (p_event->is_action_pressed(SNAME("ui_cancel"), false, true)) {
-		// Cancelled, go back to original state.
+		// Canceled, go back to original state.
 		text_editor->set_edit_state(original_state);
 	}
 	PopupPanel::_input_from_window(p_event);

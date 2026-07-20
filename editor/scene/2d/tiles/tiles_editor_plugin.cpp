@@ -63,9 +63,9 @@ void TilesEditorUtils::_pattern_preview_done() {
 }
 
 void TilesEditorUtils::_thread_func(void *ud) {
-	TilesEditorUtils *te = static_cast<TilesEditorUtils *>(ud);
+	TilesEditorUtils *utils = static_cast<TilesEditorUtils *>(ud);
 	set_current_thread_safe_for_nodes(true);
-	te->_thread();
+	utils->_thread();
 }
 
 void TilesEditorUtils::_thread() {
