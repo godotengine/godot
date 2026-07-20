@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_config_file)
 
+#include "core/input/input_event.h"
 #include "core/io/config_file.h"
 
 #ifdef WINDOWS_ENABLED
@@ -160,6 +161,45 @@ antiAliasing=false
 	Ref<FileAccess> file = FileAccess::open(config_path, FileAccess::READ);
 	CHECK_MESSAGE(file->get_as_utf8_string() == contents,
 			"The saved configuration file should match the expected format.");
+}
+
+TEST_CASE("[ConfigFile] Saving pretty printed Objects") {
+	ConfigFile config_file;
+
+	Ref<InputEventKey> key;
+	key.instantiate();
+	key->set_keycode(Key::SPACE);
+
+	Dictionary d_ui_accept({ { "deadzone", 0.5 }, { "events", Array({ key }) } });
+
+	config_file.set_value("input", "ui_accept", d_ui_accept);
+
+	const String expected = R"([input]
+
+ui_accept={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,
+"resource_local_to_scene": false,
+"resource_name": "",
+"device": 16,
+"window_id": 0,
+"alt_pressed": false,
+"shift_pressed": false,
+"ctrl_pressed": false,
+"meta_pressed": false,
+"pressed": false,
+"keycode": 32,
+"physical_keycode": 0,
+"key_label": 0,
+"unicode": 0,
+"location": 0,
+"echo": false,
+"script": null
+)]
+}
+)";
+
+	CHECK_MESSAGE(config_file.encode_to_text() == expected, "Object properties should be on new lines.");
 }
 
 } // namespace TestConfigFile
