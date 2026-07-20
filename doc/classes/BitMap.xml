@@ -69,7 +69,7 @@
 			<return type="PackedVector2Array[]" />
 			<param index="0" name="rect" type="Rect2i" />
 			<param index="1" name="epsilon" type="float" default="2.0" />
-			<param index="2" name="star_rdp" type="bool" default="false" />
+			<param index="2" name="advanced_rdp" type="bool" default="false" />
 			<description>
 				Creates an [Array] of polygons covering a rectangular portion of the bitmap. It uses a marching squares algorithm, followed by Ramer-Douglas-Peucker (RDP) reduction of the number of vertices. Each polygon is described as a [PackedVector2Array] of its vertices.
 				To get polygons covering the whole bitmap, pass:
@@ -77,7 +77,7 @@
 				Rect2(Vector2(), get_size())
 				[/codeblock]
 				[param epsilon] is passed to RDP to control how accurately the polygons cover the bitmap: a lower [param epsilon] corresponds to more points in the polygons.
-				[param star_rdp] is a flag to switch between the faster RDP algorithm and a slower star-region RDP algorithm that prevents self-intersections.
+				[param advanced_rdp] is a flag to switch between the faster RDP algorithm and a more advanced RDP algorithm that prevents self-intersections.
 			</description>
 		</method>
 		<method name="resize">

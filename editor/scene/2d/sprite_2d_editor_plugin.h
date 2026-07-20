@@ -86,7 +86,7 @@ class Sprite2DEditor : public Control {
 	SpinBox *simplification = nullptr;
 	SpinBox *grow_pixels = nullptr;
 	SpinBox *shrink_pixels = nullptr;
-	CheckBox *enable_star_rdp = nullptr;
+	CheckBox *enable_advanced_rdp = nullptr;
 	Button *update_preview = nullptr;
 
 	void _menu_option(int p_option);
