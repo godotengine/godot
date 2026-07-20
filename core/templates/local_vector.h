@@ -314,13 +314,8 @@ public:
 	}
 
 	void ordered_insert(T p_val) {
-		U i;
-		for (i = 0; i < count; i++) {
-			if (p_val < data[i]) {
-				break;
-			}
-		}
-		insert(i, p_val);
+		U idx = span().bisect(p_val, false);
+		insert(idx, std::move(p_val));
 	}
 
 	Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
