@@ -81,7 +81,8 @@ class QuickSettingsDialog : public AcceptDialog {
 	OptionButton *style_option_button = nullptr;
 	OptionButton *theme_option_button = nullptr;
 	OptionButton *scale_option_button = nullptr;
-	EditorSpinSlider *custom_scale_spin = nullptr;
+	EditorSpinSlider *custom_scale_slider = nullptr;
+	Control *custom_scale_container = nullptr;
 	OptionButton *network_mode_option_button = nullptr;
 	OptionButton *check_for_update_button = nullptr;
 	OptionButton *directory_naming_convention_button = nullptr;
