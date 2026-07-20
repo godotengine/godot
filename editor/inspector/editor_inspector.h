@@ -911,6 +911,10 @@ public:
 	bool is_main_editor_inspector() const;
 	String get_selected_path() const;
 
+	bool has_section(const String &p_section) const;
+	void set_section_fold(const String &p_section, bool p_fold);
+	HashMap<String, bool> get_sections_fold() const;
+
 	void update_tree();
 	void update_property(const String &p_prop);
 	void edit(Object *p_object);

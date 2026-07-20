@@ -605,6 +605,8 @@ void TileSetAtlasSourceEditor::_update_atlas_source_inspector() {
 }
 
 void TileSetAtlasSourceEditor::_update_tile_inspector() {
+	HashMap<String, bool> sections_fold = tile_inspector->get_sections_fold();
+	int scroll_offset = tile_inspector->get_scroll_offset();
 	// Update visibility.
 	tile_inspector->edit(nullptr);
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
@@ -613,6 +615,12 @@ void TileSetAtlasSourceEditor::_update_tile_inspector() {
 			tile_proxy_object->connect(CoreStringName(changed), callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
 			tile_proxy_object->edit(tile_set_atlas_source, selection);
 			tile_inspector->edit(tile_proxy_object.ptr());
+			for (const KeyValue<String, bool> &E : sections_fold) {
+				if (tile_inspector->has_section(E.key)) {
+					tile_inspector->set_section_fold(E.key, E.value);
+				}
+			}
+			callable_mp(tile_inspector, &EditorInspector::set_scroll_offset).call_deferred(scroll_offset);
 		}
 		tile_inspector->set_visible(!selection.is_empty());
 		tile_inspector_no_tile_selected_label->set_visible(selection.is_empty());
