@@ -1865,7 +1865,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 					};
 
 					DragType resize_drag = DRAG_NONE;
-					real_t radius = select_handle->get_size().width * (1.5f / 2.0f);
+					const real_t radius = select_handle->get_size().width * (1.5f / 2.0f);
 
 					for (int i = 0; i < 4; i++) {
 						int prev = (i + 3) % 4;
