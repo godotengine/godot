@@ -44,6 +44,7 @@ class EditorHelpSearch;
 class FilterLineEdit;
 class FindReplaceBar;
 class HSplitContainer;
+class HFlowContainer;
 class ItemList;
 class MenuButton;
 class TabContainer;
@@ -173,7 +174,7 @@ class ScriptEditor : public PanelContainer {
 		DISPLAY_FULL_PATH,
 	};
 
-	HBoxContainer *menu_hb = nullptr;
+	HFlowContainer *menu_hflow = nullptr;
 	MenuButton *file_menu = nullptr;
 	MenuButton *script_search_menu = nullptr;
 	MenuButton *debug_menu = nullptr;
