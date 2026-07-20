@@ -246,6 +246,7 @@ public:
 		real_t angular_velocity = 0.0;
 
 		bool one_way_collision = false;
+		Vector2 one_way_collision_direction = Vector2(0, 1);
 		real_t one_way_collision_margin = 0.0;
 
 		int64_t y_origin = 0; // This is only used if one_way_collision is on, to avoid merging polygons vertically in that case.

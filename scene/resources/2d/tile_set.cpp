@@ -6455,6 +6455,19 @@ bool TileData::is_collision_polygon_one_way(int p_layer_id, int p_polygon_index)
 	return physics[p_layer_id].polygons[p_polygon_index].one_way;
 }
 
+void TileData::set_collision_polygon_one_way_direction(int p_layer_id, int p_polygon_index, const Vector2 &p_one_way_direction) {
+	ERR_FAIL_INDEX(p_layer_id, physics.size());
+	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
+	physics.write[p_layer_id].polygons.write[p_polygon_index].one_way_direction = p_one_way_direction;
+	emit_signal(CoreStringName(changed));
+}
+
+Vector2 TileData::get_collision_polygon_one_way_margin_direction(int p_layer_id, int p_polygon_index) const {
+	ERR_FAIL_INDEX_V(p_layer_id, physics.size(), Vector2(0, -1));
+	ERR_FAIL_INDEX_V(p_polygon_index, physics[p_layer_id].polygons.size(), Vector2(0, 1));
+	return physics[p_layer_id].polygons[p_polygon_index].one_way_direction;
+}
+
 void TileData::set_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index, float p_one_way_margin) {
 	ERR_FAIL_INDEX(p_layer_id, physics.size());
 	ERR_FAIL_INDEX(p_polygon_index, physics[p_layer_id].polygons.size());
@@ -6801,7 +6814,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 			int polygon_index = components[1].trim_prefix("polygon_").to_int();
 			ERR_FAIL_COND_V(polygon_index < 0, false);
 
-			if (components[2] == "points" || components[2] == "one_way" || components[2] == "one_way_margin") {
+			if (components[2] == "points" || components[2] == "one_way" || components[2] == "one_way_direction" || components[2] == "one_way_margin") {
 				if (layer_index >= physics.size()) {
 					if (tile_set) {
 						return false;
@@ -6820,6 +6833,8 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 				return true;
 			} else if (components[2] == "one_way") {
 				set_collision_polygon_one_way(layer_index, polygon_index, p_value);
+			} else if (components[2] == "one_way_direction") {
+				set_collision_polygon_one_way_direction(layer_index, polygon_index, p_value);
 				return true;
 			} else if (components[2] == "one_way_margin") {
 				set_collision_polygon_one_way_margin(layer_index, polygon_index, p_value);
@@ -6953,6 +6968,9 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 				} else if (components[2] == "one_way") {
 					r_ret = is_collision_polygon_one_way(layer_index, polygon_index);
 					return true;
+				} else if (components[2] == "one_way_direction") {
+					r_ret = get_collision_polygon_one_way_margin_direction(layer_index, polygon_index);
+					return true;
 				} else if (components[2] == "one_way_margin") {
 					r_ret = get_collision_polygon_one_way_margin(layer_index, polygon_index);
 					return true;
@@ -7048,6 +7066,13 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 				// physics_layer_%d/polygon_%d/one_way
 				property_info = PropertyInfo(Variant::BOOL, vformat("physics_layer_%d/polygon_%d/%s", i, j, PNAME("one_way")));
 				if (physics[i].polygons[j].one_way == false) {
+					property_info.usage ^= PROPERTY_USAGE_STORAGE;
+				}
+				p_list->push_back(property_info);
+
+				// physics_layer_%d/polygon_%d/one_way_direction
+				property_info = PropertyInfo(Variant::VECTOR2, vformat("physics_layer_%d/polygon_%d/%s", i, j, PNAME("one_way_direction")));
+				if (physics[i].polygons[j].one_way_direction == Vector2(0, 1)) {
 					property_info.usage ^= PROPERTY_USAGE_STORAGE;
 				}
 				p_list->push_back(property_info);

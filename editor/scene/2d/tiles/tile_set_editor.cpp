@@ -609,6 +609,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 							for (int polygon_index = 0; polygon_index < tile_data->get_collision_polygons_count(layer_index); polygon_index++) {
 								ADD_UNDO(tile_data, vformat("physics_layer_%d/polygon_%d/points", layer_index, polygon_index));
 								ADD_UNDO(tile_data, vformat("physics_layer_%d/polygon_%d/one_way", layer_index, polygon_index));
+								ADD_UNDO(tile_data, vformat("physics_layer_%d/polygon_%d/one_way_direction", layer_index, polygon_index));
 								ADD_UNDO(tile_data, vformat("physics_layer_%d/polygon_%d/one_way_margin", layer_index, polygon_index));
 							}
 						}
