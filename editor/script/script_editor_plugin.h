@@ -80,7 +80,7 @@ public:
 class DocumentOutline : public VBoxContainer {
 	GDCLASS(DocumentOutline, VBoxContainer);
 
-	ItemList *item_list = nullptr;
+	Tree *tree = nullptr;
 	HBoxContainer *buttons_hbox = nullptr;
 	FilterLineEdit *filter = nullptr;
 	Button *sort_button = nullptr;
@@ -88,8 +88,10 @@ class DocumentOutline : public VBoxContainer {
 	bool members_overview_enabled = false;
 	bool help_overview_enabled = false;
 
+	Control *current_editor;
+
 	void _toggle_sort(bool p_alphabetic_sort);
-	void _item_list_selected(int p_idx);
+	void _tree_selected();
 
 protected:
 	void _notification(int p_what);
