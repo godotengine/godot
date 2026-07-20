@@ -63,8 +63,12 @@ RID PhysicsServer3D::shape_create(PS3DE::ShapeType p_shape) {
 			return box_shape_create();
 		case PS3DE::SHAPE_CAPSULE:
 			return capsule_shape_create();
+		case PS3DE::SHAPE_TAPERED_CAPSULE:
+			return tapered_capsule_shape_create();
 		case PS3DE::SHAPE_CYLINDER:
 			return cylinder_shape_create();
+		case PS3DE::SHAPE_TAPERED_CYLINDER:
+			return tapered_cylinder_shape_create();
 		case PS3DE::SHAPE_CONVEX_POLYGON:
 			return convex_polygon_shape_create();
 		case PS3DE::SHAPE_CONCAVE_POLYGON:

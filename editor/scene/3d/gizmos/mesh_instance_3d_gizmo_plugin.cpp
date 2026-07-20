@@ -34,6 +34,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/soft_body_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
+#include "scene/resources/3d/tapered_capsule_mesh.h"
 
 bool MeshInstance3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<MeshInstance3D>(p_spatial) != nullptr && Object::cast_to<SoftBody3D>(p_spatial) == nullptr;
@@ -66,6 +67,10 @@ String MeshInstance3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_giz
 		return helper->box_get_handle_name(p_id);
 	}
 
+	if (Object::cast_to<TaperedCapsuleMesh>(*mesh->get_mesh())) {
+		return helper->tapered_capsule_cylinder_get_handle_name(p_id);
+	}
+
 	return "";
 }
 
@@ -85,6 +90,11 @@ Variant MeshInstance3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_g
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
 	if (box_mesh.is_valid()) {
 		return box_mesh->get_size();
+	}
+
+	const Ref<TaperedCapsuleMesh> tapered_capsule_mesh = mesh->get_mesh();
+	if (tapered_capsule_mesh.is_valid()) {
+		return Vector3(tapered_capsule_mesh->get_top_radius(), tapered_capsule_mesh->get_bottom_radius(), tapered_capsule_mesh->get_mid_height());
 	}
 
 	return Variant();
@@ -128,6 +138,17 @@ void MeshInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int
 		box_mesh->set_size(box_size);
 		mesh->set_global_position(position);
 	}
+
+	const Ref<TaperedCapsuleMesh> tapered_capsule_mesh = mesh->get_mesh();
+	if (tapered_capsule_mesh.is_valid()) {
+		real_t top_radius = tapered_capsule_mesh->get_top_radius();
+		real_t bottom_radius = tapered_capsule_mesh->get_bottom_radius();
+		real_t mid_height = tapered_capsule_mesh->get_mid_height();
+		helper->tapered_capsule_set_handle(segment, p_id, top_radius, bottom_radius, mid_height);
+		tapered_capsule_mesh->set_top_radius(top_radius);
+		tapered_capsule_mesh->set_bottom_radius(bottom_radius);
+		tapered_capsule_mesh->set_mid_height(mid_height);
+	}
 }
 
 void MeshInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
@@ -146,6 +167,11 @@ void MeshInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, 
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
 	if (box_mesh.is_valid()) {
 		helper->box_commit_handle(TTR("Change Box Mesh Size"), p_cancel, mesh, *box_mesh);
+	}
+
+	const Ref<TaperedCapsuleMesh> tapered_capsule_mesh = mesh->get_mesh();
+	if (tapered_capsule_mesh.is_valid()) {
+		helper->tapered_capsule_commit_handle(p_id, p_cancel, *tapered_capsule_mesh);
 	}
 }
 
@@ -197,6 +223,12 @@ void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
 	if (box_mesh.is_valid()) {
 		const Vector<Vector3> handles = helper->box_get_handles(box_mesh->get_size());
+		p_gizmo->add_handles(handles, handles_material);
+	}
+
+	const Ref<TaperedCapsuleMesh> tapered_capsule_mesh = mesh->get_mesh();
+	if (tapered_capsule_mesh.is_valid()) {
+		Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(tapered_capsule_mesh->get_top_radius(), tapered_capsule_mesh->get_bottom_radius(), tapered_capsule_mesh->get_mid_height());
 		p_gizmo->add_handles(handles, handles_material);
 	}
 }
