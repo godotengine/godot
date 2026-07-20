@@ -4347,11 +4347,29 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 	ws.registry = &registry;
 	ws.wayland_thread = this;
 
-	ws.rect.size = p_size.maxi(1);
+	// Inherit scale from the parent window if available
+	WindowState *parent_ws = windows.getptr(p_parent_id);
+	if (!parent_ws && p_window_id != DisplayServerEnums::MAIN_WINDOW_ID) {
+		parent_ws = windows.getptr(DisplayServerEnums::MAIN_WINDOW_ID);
+	}
+
+	if (parent_ws) {
+		ws.preferred_fractional_scale = parent_ws->preferred_fractional_scale;
+		ws.fractional_scale = parent_ws->fractional_scale;
+		ws.buffer_scale = parent_ws->fractional_scale > 0 ? 1 : parent_ws->buffer_scale;
+	}
+
+	// Convert physical size to logical size
+	double scale = window_state_get_scale_factor(&ws);
+	ws.rect.size = scale_vector2i(p_size, scale > 0 ? 1.0 / scale : 1.0).maxi(1);
 
 	ws.wl_surface = wl_compositor_create_surface(registry.wl_compositor);
 	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
 	wl_surface_add_listener(ws.wl_surface, &wl_surface_listener, &ws);
+
+	if (ws.buffer_scale != 1) {
+		wl_surface_set_buffer_scale(ws.wl_surface, ws.buffer_scale);
+	}
 
 	if (registry.wp_viewporter) {
 		ws.wp_viewport = wp_viewporter_get_viewport(registry.wp_viewporter, ws.wl_surface);
@@ -4449,7 +4467,7 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 	// the resizing routines will get confused and scale once more.
 	ws.preferred_fractional_scale = parent.preferred_fractional_scale;
 	ws.fractional_scale = parent.fractional_scale;
-	ws.buffer_scale = parent.buffer_scale;
+	ws.buffer_scale = parent.fractional_scale > 0 ? 1 : parent.buffer_scale;
 
 	ws.id = p_window_id;
 	ws.parent_id = p_parent_id;
@@ -4461,6 +4479,10 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 	ws.wl_surface = wl_compositor_create_surface(registry.wl_compositor);
 	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
 	wl_surface_add_listener(ws.wl_surface, &wl_surface_listener, &ws);
+
+	if (ws.buffer_scale != 1) {
+		wl_surface_set_buffer_scale(ws.wl_surface, ws.buffer_scale);
+	}
 
 	if (registry.wp_viewporter) {
 		ws.wp_viewport = wp_viewporter_get_viewport(registry.wp_viewporter, ws.wl_surface);

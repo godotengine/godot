@@ -166,6 +166,11 @@ private:
 	String accessibility_name;
 	String accessibility_description;
 
+	Point2i self_fitting_restore_position;
+	Size2i self_fitting_restore_size;
+	bool self_fitting_restore_position_valid = false;
+	bool self_fitting_restore_size_valid = false;
+
 	void _make_window();
 	void _clear_window();
 	void _update_from_window();
