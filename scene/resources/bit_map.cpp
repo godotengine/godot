@@ -443,13 +443,13 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 }
 
 // Check if ABC is counterclockwise
-static float ccw(const Vector2 &A, const Vector2 &B, const Vector2 &C) {
+static bool cntrcw(const Vector2 &A, const Vector2 &B, const Vector2 &C) {
 	return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x);
 }
 
 // Line segments AB and CD intersect check
 static bool intersect(const Vector2 &A, const Vector2 &B, const Vector2 &C, const Vector2 &D) {
-	return ccw(A, C, D) != ccw(B, C, D) && ccw(A, B, C) != ccw(A, B, D);
+	return cntrcw(A, C, D) != cntrcw(B, C, D) && cntrcw(A, B, C) != cntrcw(A, B, D);
 }
 
 static float angle_between_two_pnts(const Vector2 center_pnt, const Vector2 prev_pnt, const Vector2 new_pnt) {
@@ -551,12 +551,12 @@ int fix_polyline_intersection(Vector<Vector2> &simplified_pl, Vector<Vector2> &p
 					prob_end = simplified_pl[furthest_intersecting_pnt_idx - 1];
 				}
 			}
-			bool furthest_pnt_orientation = ccw(start, furthest_intersecting_pnt, end);
+			bool furthest_pnt_orientation = cntrcw(start, furthest_intersecting_pnt, end);
 			bool special_orientation = is_between(furthest_intersecting_pnt, start, end);
 			bool fixed = false;
 			for (int pl_i = convex_segment[segment[0]] + 1; pl_i < convex_segment[segment[1]]; ++pl_i) {
 				Vector2 pnt = pl[pl_i];
-				if ((furthest_pnt_orientation == ccw(start, pnt, end)) || special_orientation) { // Only look through points that have the same orientation
+				if ((furthest_pnt_orientation == cntrcw(start, pnt, end)) || special_orientation) { // Only look through points that have the same orientation
 					if (!intersect(start, pnt, furthest_intersecting_pnt, prob_end) && !intersect(pnt, end, furthest_intersecting_pnt, prob_end) && !is_between(furthest_intersecting_pnt, start, pnt) && !is_between(furthest_intersecting_pnt, pnt, end)) {
 						simplified_pl.insert(segment[0] + 1, pnt);
 						convex_segment.insert(segment_i + 1, pl_i);
@@ -716,7 +716,7 @@ static Vector<Vector2> star_shaped_rdp(Vector<Vector2> &v, Vector<Vector2> &orig
 	return v;
 }
 
-static Vector<Vector2> reduce(Vector<Vector2> &points, const Rect2i &rect, float epsilon) {
+static Vector<Vector2> reduce(Vector<Vector2> &points, const Rect2i &rect, float epsilon, bool p_star_rdp) {
 	int size = points.size();
 	// If there are less than 3 points, then we have nothing.
 	ERR_FAIL_COND_V(size < 3, Vector<Vector2>());
@@ -728,9 +728,14 @@ static Vector<Vector2> reduce(Vector<Vector2> &points, const Rect2i &rect, float
 	float maxEp = MIN(rect.size.width, rect.size.height);
 	float ep = CLAMP(epsilon, 0.0, maxEp / 2);
 
-	Vector<Vector2> orig_points(points); // For the self-intersection fix
-	Vector<Vector2> result = star_shaped_rdp(points, orig_points, ep);
-	fix_polyline_intersection(result, orig_points);
+	Vector<Vector2> result;
+	if (p_star_rdp) {
+		Vector<Vector2> orig_points(points); // For the self-intersection fix
+		result = star_shaped_rdp(points, orig_points, ep);
+		fix_polyline_intersection(result, orig_points);
+	} else {
+		result = rdp(points, epsilon);
+	}
 
 	Vector2 last = result[result.size() - 1];
 
@@ -816,7 +821,7 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 	} while (reenter || popped);
 }
 
-Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon) const {
+Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, float p_epsilon, bool p_star_rdp) const {
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect);
 
 	Ref<BitMap> fill;
@@ -830,7 +835,7 @@ Vector<Vector<Vector2>> BitMap::clip_opaque_to_polygons(const Rect2i &p_rect, fl
 				fill_bits(this, fill, Point2i(j, i), r);
 
 				for (Vector<Vector2> polygon : _march_square(r, Point2i(j, i))) {
-					polygon = reduce(polygon, r, p_epsilon);
+					polygon = reduce(polygon, r, p_epsilon, p_star_rdp);
 
 					if (polygon.size() < 3) {
 						print_verbose("Invalid polygon, skipped");
@@ -909,8 +914,8 @@ void BitMap::shrink_mask(int p_pixels, const Rect2i &p_rect) {
 	grow_mask(-p_pixels, p_rect);
 }
 
-TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon) const {
-	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon);
+TypedArray<PackedVector2Array> BitMap::_opaque_to_polygons_bind(const Rect2i &p_rect, float p_epsilon, bool p_star_rdp) const {
+	Vector<Vector<Vector2>> result = clip_opaque_to_polygons(p_rect, p_epsilon, p_star_rdp);
 
 	// Convert result to bindable types.
 
@@ -1019,7 +1024,7 @@ void BitMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("grow_mask", "pixels", "rect"), &BitMap::grow_mask);
 	ClassDB::bind_method(D_METHOD("convert_to_image"), &BitMap::convert_to_image);
-	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0));
+	ClassDB::bind_method(D_METHOD("opaque_to_polygons", "rect", "epsilon", "star_rdp"), &BitMap::_opaque_to_polygons_bind, DEFVAL(2.0), DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
