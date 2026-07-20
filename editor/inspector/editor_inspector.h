@@ -267,6 +267,7 @@ public:
 	void set_doc_path(const String &p_doc_path);
 	void set_internal(bool p_internal);
 
+	virtual void make_passthrough(bool p_passthrough);
 	virtual void update_property();
 	void update_editor_property_status();
 

@@ -1170,6 +1170,15 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 	return types;
 }
 
+void EditorResourcePicker::make_passthrough(bool p_passthrough) {
+	assign_button->set_mouse_filter(p_passthrough ? Control::MOUSE_FILTER_PASS : Control::MOUSE_FILTER_STOP);
+	if (p_passthrough) {
+		assign_button->disconnect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
+	} else {
+		assign_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
+	}
+}
+
 bool EditorResourcePicker::is_resource_allowed(const Ref<Resource> &p_resource) {
 	if (p_resource.is_null()) {
 		return true;
