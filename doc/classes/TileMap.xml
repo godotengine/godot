@@ -8,6 +8,7 @@
 		For performance reasons, all TileMap updates are batched at the end of a frame. Notably, this means that scene tiles from a [TileSetScenesCollectionSource] may be initialized after their parent. This is only queued when inside the scene tree.
 		To force an update earlier on, call [method update_internals].
 		[b]Note:[/b] For performance and compatibility reasons, the coordinates serialized by [TileMap] are limited to 16-bit signed integers, i.e. the range for X and Y coordinates is from [code]-32768[/code] to [code]32767[/code]. When saving tile data, tiles outside this range are wrapped.
+		[b]Note:[/b] Physics queries against TileMap are only effective 2 physics frames after the TileMap has been added to the scene. This means that when performing physics queries in [method Node._ready], you need to wait for 2 physics frames before physics queries will acknowledge the TileMap's presence. This can be done by calling [code]await get_tree().physics_frame[/code] twice in a row [i]before[/i] performing physics queries.
 	</description>
 	<tutorials>
 		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
