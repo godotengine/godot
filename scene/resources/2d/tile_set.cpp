@@ -4714,6 +4714,9 @@ void TileSetAtlasSource::set_texture_region_size(Vector2i p_tile_size) {
 	if (p_tile_size.x <= 0 || p_tile_size.y <= 0) {
 		WARN_PRINT("Atlas source tile_size should be strictly positive.");
 		texture_region_size = p_tile_size.maxi(1);
+	} else if (texture.is_valid() && (p_tile_size.x > texture->get_size().x || p_tile_size.y > texture->get_size().y)) {
+		WARN_PRINT("Atlas source tile_size should be less than the texture's size.");
+		texture_region_size = p_tile_size.min(texture->get_size());
 	} else {
 		texture_region_size = p_tile_size;
 	}
