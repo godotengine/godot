@@ -695,6 +695,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 							polygon_create.clear();
 						} else if (!polygon_create.has(closest)) {
+							create_to = mtx.affine_inverse().xform(mb->get_position());
 							//add temporarily if not exists
 							polygon_create.push_back(closest);
 						}
