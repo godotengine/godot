@@ -4070,6 +4070,41 @@ String EditorInspector::get_selected_path() const {
 	return property_selected;
 }
 
+bool EditorInspector::has_section(const String &p_section) const {
+	for (EditorInspectorSection *section : sections) {
+		if (section->get_section() == p_section) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void EditorInspector::set_section_fold(const String &p_section, bool p_fold) {
+	ERR_FAIL_COND(!has_section(p_section));
+
+	for (EditorInspectorSection *section : sections) {
+		if (section->get_section() == p_section) {
+			if (p_fold) {
+				section->fold();
+			} else {
+				section->unfold();
+			}
+			return;
+		}
+	}
+}
+
+HashMap<String, bool> EditorInspector::get_sections_fold() const {
+	HashMap<String, bool> fold_state;
+	for (EditorInspectorSection *section : sections) {
+		if (!section->object) {
+			continue;
+		}
+		fold_state.insert(section->get_section(), !section->object->editor_is_section_unfolded(section->get_section()));
+	}
+	return fold_state;
+}
+
 void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> p_plugin) {
 	for (const EditorInspectorPlugin::AddedEditor &F : p_plugin->added_editors) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
@@ -4733,6 +4768,7 @@ void EditorInspector::update_tree() {
 			if (editor_inspector_array) {
 				_add_section_in_tree(editor_inspector_array, current_vbox);
 				editor_inspector_array_per_prefix[array_element_prefix] = editor_inspector_array;
+				sections.push_back(editor_inspector_array);
 			}
 
 			continue;
