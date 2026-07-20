@@ -772,6 +772,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual void make_passthrough(bool p_passthrough) override;
 	virtual void update_property() override;
 	void setup(Object *p_object, const String &p_path, const String &p_base_type);
 	EditorResourcePicker *get_resource_picker() const { return resource_picker; }
