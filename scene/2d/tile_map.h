@@ -139,7 +139,7 @@ public:
 	String get_layer_name(int p_layer) const;
 	void set_layer_enabled(int p_layer, bool p_visible);
 	bool is_layer_enabled(int p_layer) const;
-	void set_layer_modulate(int p_layer, Color p_modulate);
+	void set_layer_modulate(int p_layer, const Color &p_modulate);
 	Color get_layer_modulate(int p_layer) const;
 	void set_layer_y_sort_enabled(int p_layer, bool p_enabled);
 	bool is_layer_y_sort_enabled(int p_layer) const;
@@ -167,7 +167,7 @@ public:
 #endif // NAVIGATION_2D_DISABLED
 
 	// Cells accessors.
-	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
+	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i &p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
 	void erase_cell(int p_layer, const Vector2i &p_coords);
 	int get_cell_source_id(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	Vector2i get_cell_atlas_coords(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
@@ -206,7 +206,7 @@ public:
 	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
 
 	TypedArray<Vector2i> get_used_cells(int p_layer) const;
-	TypedArray<Vector2i> get_used_cells_by_id(int p_layer, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE) const;
+	TypedArray<Vector2i> get_used_cells_by_id(int p_layer, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i &p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE) const;
 	Rect2i get_used_rect() const;
 
 	// Override some methods of the CanvasItem class to pass the changes to the quadrants CanvasItems.

@@ -293,7 +293,7 @@ public:
 
 	void set_disable_gizmos(bool p_enabled);
 	void update_gizmos();
-	void set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
+	void set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, const Transform3D &p_transform = Transform3D());
 	void clear_subgizmo_selection();
 	Vector<Ref<Node3DGizmo>> get_gizmos() const;
 	TypedArray<Node3DGizmo> get_gizmos_bind() const;
@@ -330,8 +330,8 @@ public:
 	void look_at(const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false);
 	void look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up = Vector3::UP, bool p_use_model_front = false);
 
-	Vector3 to_local(Vector3 p_global) const;
-	Vector3 to_global(Vector3 p_local) const;
+	Vector3 to_local(const Vector3 &p_global) const;
+	Vector3 to_global(const Vector3 &p_local) const;
 
 	void set_notify_transform(bool p_enabled);
 	bool is_transform_notification_enabled() const;

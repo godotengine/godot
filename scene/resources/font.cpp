@@ -2383,7 +2383,7 @@ real_t FontFile::get_oversampling() const {
 	return oversampling_override;
 }
 
-RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, int64_t p_palette_index, const Vector<Color> &p_custom_colors) const {
+RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, const Transform2D &p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, int64_t p_palette_index, const Vector<Color> &p_custom_colors) const {
 	// Find existing variation cache.
 	const Dictionary &supported_coords = get_supported_variation_list();
 	int make_linked_from = -1;
@@ -2531,7 +2531,7 @@ float FontFile::get_embolden(int p_cache_index) const {
 	return TS->font_get_embolden(cache[p_cache_index]);
 }
 
-void FontFile::set_transform(int p_cache_index, Transform2D p_transform) {
+void FontFile::set_transform(int p_cache_index, const Transform2D &p_transform) {
 	ERR_FAIL_COND(p_cache_index < 0);
 	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_transform(cache[p_cache_index], p_transform);
@@ -3134,7 +3134,7 @@ float FontVariation::get_variation_embolden() const {
 	return variation.embolden;
 }
 
-void FontVariation::set_variation_transform(Transform2D p_transform) {
+void FontVariation::set_variation_transform(const Transform2D &p_transform) {
 	if (variation.transform != p_transform) {
 		variation.transform = p_transform;
 		_invalidate_rids();
@@ -3213,7 +3213,7 @@ Vector<Color> FontVariation::get_palette_custom_colors() const {
 	return custom_colors;
 }
 
-RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, int64_t p_palette_index, const Vector<Color> &p_custom_colors) const {
+RID FontVariation::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, const Transform2D &p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, int64_t p_palette_index, const Vector<Color> &p_custom_colors) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
 		return f->find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset, p_palette_index, p_custom_colors);
@@ -3744,7 +3744,7 @@ int SystemFont::get_spacing(TextServer::SpacingType p_spacing) const {
 	}
 }
 
-RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, int64_t p_palette_index, const Vector<Color> &p_custom_colors) const {
+RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, const Transform2D &p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset, int64_t p_palette_index, const Vector<Color> &p_custom_colors) const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
 		Dictionary var = p_variation_coordinates;

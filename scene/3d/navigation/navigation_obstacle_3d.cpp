@@ -389,7 +389,7 @@ void NavigationObstacle3D::set_use_3d_avoidance(bool p_use_3d_avoidance) {
 	notify_property_list_changed();
 }
 
-void NavigationObstacle3D::set_velocity(const Vector3 p_velocity) {
+void NavigationObstacle3D::set_velocity(const Vector3 &p_velocity) {
 	velocity = p_velocity;
 	velocity_submitted = true;
 }
@@ -506,7 +506,7 @@ void NavigationObstacle3D::_update_map(RID p_map) {
 	map_current = p_map;
 }
 
-void NavigationObstacle3D::_update_position(const Vector3 p_position) {
+void NavigationObstacle3D::_update_position(const Vector3 &p_position) {
 	NavigationServer3D::get_singleton()->obstacle_set_position(obstacle, p_position);
 }
 

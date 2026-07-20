@@ -180,7 +180,7 @@ public:
 	void set_path_max_distance(real_t p_pmd);
 	real_t get_path_max_distance();
 
-	void set_target_position(Vector2 p_position);
+	void set_target_position(const Vector2 &p_position);
 	Vector2 get_target_position() const;
 
 	void set_simplify_path(bool p_enabled);
@@ -217,12 +217,12 @@ public:
 	bool is_navigation_finished();
 	Vector2 get_final_position();
 
-	void set_velocity(const Vector2 p_velocity);
+	void set_velocity(const Vector2 &p_velocity);
 	Vector2 get_velocity() { return velocity; }
 
-	void set_velocity_forced(const Vector2 p_velocity);
+	void set_velocity_forced(const Vector2 &p_velocity);
 
-	void _avoidance_done(Vector2 p_new_velocity);
+	void _avoidance_done(const Vector2 &p_new_velocity);
 
 	PackedStringArray get_configuration_warnings() const override;
 
@@ -247,7 +247,7 @@ public:
 	void set_debug_use_custom(bool p_enabled);
 	bool get_debug_use_custom() const;
 
-	void set_debug_path_custom_color(Color p_color);
+	void set_debug_path_custom_color(const Color &p_color);
 	Color get_debug_path_custom_color() const;
 
 	void set_debug_path_custom_point_size(float p_point_size);

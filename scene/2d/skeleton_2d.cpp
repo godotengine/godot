@@ -737,7 +737,7 @@ RID Skeleton2D::get_skeleton() const {
 	return skeleton;
 }
 
-void Skeleton2D::set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, real_t p_amount, bool p_persistent) {
+void Skeleton2D::set_bone_local_pose_override(int p_bone_idx, const Transform2D &p_override, real_t p_amount, bool p_persistent) {
 	ERR_FAIL_INDEX_MSG(p_bone_idx, (int)bones.size(), "Bone index is out of range!");
 	bones[p_bone_idx].local_pose_override = p_override;
 	bones[p_bone_idx].local_pose_override_amount = p_amount;

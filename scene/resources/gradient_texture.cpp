@@ -360,7 +360,7 @@ bool GradientTexture2D::is_using_hdr() const {
 	return use_hdr;
 }
 
-void GradientTexture2D::set_fill_from(Vector2 p_fill_from) {
+void GradientTexture2D::set_fill_from(const Vector2 &p_fill_from) {
 	fill_from = p_fill_from;
 	_queue_update();
 	emit_changed();
@@ -370,7 +370,7 @@ Vector2 GradientTexture2D::get_fill_from() const {
 	return fill_from;
 }
 
-void GradientTexture2D::set_fill_to(Vector2 p_fill_to) {
+void GradientTexture2D::set_fill_to(const Vector2 &p_fill_to) {
 	fill_to = p_fill_to;
 	_queue_update();
 	emit_changed();

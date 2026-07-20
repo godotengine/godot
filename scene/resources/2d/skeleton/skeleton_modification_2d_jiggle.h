@@ -103,7 +103,7 @@ public:
 	float get_damping() const;
 	void set_use_gravity(bool p_use_gravity);
 	bool get_use_gravity() const;
-	void set_gravity(Vector2 p_gravity);
+	void set_gravity(const Vector2 &p_gravity);
 	Vector2 get_gravity() const;
 
 	void set_use_colliders(bool p_use_colliders);
@@ -129,7 +129,7 @@ public:
 	float get_jiggle_joint_damping(int p_joint_idx) const;
 	void set_jiggle_joint_use_gravity(int p_joint_idx, bool p_use_gravity);
 	bool get_jiggle_joint_use_gravity(int p_joint_idx) const;
-	void set_jiggle_joint_gravity(int p_joint_idx, Vector2 p_gravity);
+	void set_jiggle_joint_gravity(int p_joint_idx, const Vector2 &p_gravity);
 	Vector2 get_jiggle_joint_gravity(int p_joint_idx) const;
 
 	SkeletonModification2DJiggle();

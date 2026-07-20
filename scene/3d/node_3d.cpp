@@ -876,7 +876,7 @@ void Node3D::update_gizmos() {
 #endif
 }
 
-void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform) {
+void Node3D::set_subgizmo_selection(Ref<Node3DGizmo> p_gizmo, int p_id, const Transform3D &p_transform) {
 	ERR_THREAD_GUARD;
 #ifdef TOOLS_ENABLED
 	if (!is_inside_world()) {
@@ -1259,12 +1259,12 @@ void Node3D::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target
 	set_scale(original_scale);
 }
 
-Vector3 Node3D::to_local(Vector3 p_global) const {
+Vector3 Node3D::to_local(const Vector3 &p_global) const {
 	ERR_READ_THREAD_GUARD_V(Vector3());
 	return get_global_transform().affine_inverse().xform(p_global);
 }
 
-Vector3 Node3D::to_global(Vector3 p_local) const {
+Vector3 Node3D::to_global(const Vector3 &p_local) const {
 	ERR_READ_THREAD_GUARD_V(Vector3());
 	return get_global_transform().xform(p_local);
 }

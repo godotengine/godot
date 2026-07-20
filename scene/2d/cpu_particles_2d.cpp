@@ -338,7 +338,7 @@ void CPUParticles2D::restart(bool p_keep_seed) {
 	_set_emitting();
 }
 
-void CPUParticles2D::set_direction(Vector2 p_direction) {
+void CPUParticles2D::set_direction(const Vector2 &p_direction) {
 	direction = p_direction;
 }
 
@@ -505,7 +505,7 @@ void CPUParticles2D::set_emission_sphere_radius(real_t p_radius) {
 #endif
 }
 
-void CPUParticles2D::set_emission_rect_extents(Vector2 p_extents) {
+void CPUParticles2D::set_emission_rect_extents(const Vector2 &p_extents) {
 	if (p_extents == emission_rect_extents) {
 		return;
 	}

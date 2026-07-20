@@ -105,7 +105,7 @@ public:
 	bool is_panning() const;
 	void set_force_drag(bool p_force);
 
-	bool gui_input(const Ref<InputEvent> &p_ev, Rect2 p_canvas_rect = Rect2());
+	bool gui_input(const Ref<InputEvent> &p_ev, const Rect2 &p_canvas_rect = Rect2());
 	void release_pan_key();
 
 	ViewPanner();

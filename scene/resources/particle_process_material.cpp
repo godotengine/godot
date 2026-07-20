@@ -1400,7 +1400,7 @@ bool ParticleProcessMaterial::has_min_max_property(const String &p_name) {
 	return min_max_properties.has(p_name);
 }
 
-void ParticleProcessMaterial::set_direction(Vector3 p_direction) {
+void ParticleProcessMaterial::set_direction(const Vector3 &p_direction) {
 	direction = p_direction;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->direction, direction);
 }
@@ -1797,7 +1797,7 @@ void ParticleProcessMaterial::set_emission_sphere_radius(real_t p_radius) {
 #endif
 }
 
-void ParticleProcessMaterial::set_emission_box_extents(Vector3 p_extents) {
+void ParticleProcessMaterial::set_emission_box_extents(const Vector3 &p_extents) {
 	emission_box_extents = p_extents;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_box_extents, p_extents);
 #ifdef TOOLS_ENABLED
@@ -1829,7 +1829,7 @@ void ParticleProcessMaterial::set_emission_point_count(int p_count) {
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_point_count, p_count);
 }
 
-void ParticleProcessMaterial::set_emission_ring_axis(Vector3 p_axis) {
+void ParticleProcessMaterial::set_emission_ring_axis(const Vector3 &p_axis) {
 	emission_ring_axis = p_axis;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_axis, p_axis);
 #ifdef TOOLS_ENABLED

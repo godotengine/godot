@@ -331,7 +331,7 @@ void PrimitiveMesh::set_uv2_padding(float p_padding) {
 	request_update();
 }
 
-Vector2 PrimitiveMesh::get_uv2_scale(Vector2 p_margin_scale) const {
+Vector2 PrimitiveMesh::get_uv2_scale(const Vector2 &p_margin_scale) const {
 	Vector2 uv2_scale;
 	Vector2 lightmap_size = get_lightmap_size_hint();
 
@@ -726,7 +726,7 @@ void BoxMesh::_create_mesh_array(Array &p_arr) const {
 	BoxMesh::create_mesh_array(p_arr, size, subdivide_w, subdivide_h, subdivide_d, _add_uv2, _uv2_padding);
 }
 
-void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int subdivide_h, int subdivide_d, bool p_add_uv2, const float p_uv2_padding) {
+void BoxMesh::create_mesh_array(Array &p_arr, const Vector3 &size, int subdivide_w, int subdivide_h, int subdivide_d, bool p_add_uv2, const float p_uv2_padding) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 	float onethird = 1.0 / 3.0;
@@ -1565,7 +1565,7 @@ int PlaneMesh::get_subdivide_depth() const {
 	return subdivide_d;
 }
 
-void PlaneMesh::set_center_offset(const Vector3 p_offset) {
+void PlaneMesh::set_center_offset(const Vector3 &p_offset) {
 	if (p_offset.is_equal_approx(center_offset)) {
 		return;
 	}

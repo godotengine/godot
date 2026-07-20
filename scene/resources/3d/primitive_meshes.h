@@ -75,7 +75,7 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const {}
 	GDVIRTUAL0RC(Array, _create_mesh_array)
 
-	Vector2 get_uv2_scale(Vector2 p_margin_scale = Vector2(1.0, 1.0)) const;
+	Vector2 get_uv2_scale(const Vector2 &p_margin_scale = Vector2(1.0, 1.0)) const;
 	float get_lightmap_texel_size() const;
 	virtual void _update_lightmap_size() {}
 
@@ -174,7 +174,7 @@ protected:
 	virtual void _update_lightmap_size() override;
 
 public:
-	static void create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w = 0, int subdivide_h = 0, int subdivide_d = 0, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
+	static void create_mesh_array(Array &p_arr, const Vector3 &size, int subdivide_w = 0, int subdivide_h = 0, int subdivide_d = 0, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
 
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
@@ -272,7 +272,7 @@ public:
 	void set_subdivide_depth(const int p_divisions);
 	int get_subdivide_depth() const;
 
-	void set_center_offset(const Vector3 p_offset);
+	void set_center_offset(const Vector3 &p_offset);
 	Vector3 get_center_offset() const;
 
 	void set_orientation(const Orientation p_orientation);

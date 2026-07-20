@@ -82,7 +82,7 @@ public:
 	void set_albedo_mix(real_t p_mix);
 	real_t get_albedo_mix() const;
 
-	void set_modulate(Color p_modulate);
+	void set_modulate(const Color &p_modulate);
 	Color get_modulate() const;
 
 	void set_upper_fade(real_t p_energy);

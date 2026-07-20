@@ -196,7 +196,7 @@ public:
 
 	void begin(Mesh::PrimitiveType p_primitive);
 
-	void set_color(Color p_color);
+	void set_color(const Color &p_color);
 	void set_normal(const Vector3 &p_normal);
 	void set_tangent(const Plane &p_tangent);
 	void set_uv(const Vector2 &p_uv);

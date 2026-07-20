@@ -46,7 +46,7 @@ float FogMaterial::get_density() const {
 	return density;
 }
 
-void FogMaterial::set_albedo(Color p_albedo) {
+void FogMaterial::set_albedo(const Color &p_albedo) {
 	albedo = p_albedo;
 	RS::get_singleton()->material_set_param(_get_material(), "albedo", albedo);
 }
@@ -55,7 +55,7 @@ Color FogMaterial::get_albedo() const {
 	return albedo;
 }
 
-void FogMaterial::set_emission(Color p_emission) {
+void FogMaterial::set_emission(const Color &p_emission) {
 	emission = p_emission;
 	RS::get_singleton()->material_set_param(_get_material(), "emission", emission);
 }

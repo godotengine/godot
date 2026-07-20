@@ -231,7 +231,7 @@ bool NavigationLink2D::get_navigation_layer_value(int p_layer_number) const {
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
-void NavigationLink2D::set_start_position(Vector2 p_position) {
+void NavigationLink2D::set_start_position(const Vector2 &p_position) {
 	if (start_position.is_equal_approx(p_position)) {
 		return;
 	}
@@ -251,7 +251,7 @@ void NavigationLink2D::set_start_position(Vector2 p_position) {
 #endif // DEBUG_ENABLED
 }
 
-void NavigationLink2D::set_end_position(Vector2 p_position) {
+void NavigationLink2D::set_end_position(const Vector2 &p_position) {
 	if (end_position.is_equal_approx(p_position)) {
 		return;
 	}
@@ -271,7 +271,7 @@ void NavigationLink2D::set_end_position(Vector2 p_position) {
 #endif // DEBUG_ENABLED
 }
 
-void NavigationLink2D::set_global_start_position(Vector2 p_position) {
+void NavigationLink2D::set_global_start_position(const Vector2 &p_position) {
 	if (is_inside_tree()) {
 		set_start_position(to_local(p_position));
 	} else {
@@ -287,7 +287,7 @@ Vector2 NavigationLink2D::get_global_start_position() const {
 	}
 }
 
-void NavigationLink2D::set_global_end_position(Vector2 p_position) {
+void NavigationLink2D::set_global_end_position(const Vector2 &p_position) {
 	if (is_inside_tree()) {
 		set_end_position(to_local(p_position));
 	} else {

@@ -69,13 +69,13 @@ private:
 	};
 
 	// Triangle-strip methods
-	void strip_begin(Vector2 up, Vector2 down, Color color, float uvx);
-	void strip_new_quad(Vector2 up, Vector2 down, Color color, float uvx);
-	void strip_add_quad(Vector2 up, Vector2 down, Color color, float uvx);
-	void strip_add_tri(Vector2 up, Orientation orientation);
-	void strip_add_arc(Vector2 center, float angle_delta, Orientation orientation);
+	void strip_begin(const Vector2 &up, const Vector2 &down, const Color &color, float uvx);
+	void strip_new_quad(const Vector2 &up, const Vector2 &down, const Color &color, float uvx);
+	void strip_add_quad(const Vector2 &up, const Vector2 &down, const Color &color, float uvx);
+	void strip_add_tri(const Vector2 &up, Orientation orientation);
+	void strip_add_arc(const Vector2 &center, float angle_delta, Orientation orientation);
 
-	void new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Color color, Rect2 uv_rect);
+	void new_arc(const Vector2 &center, const Vector2 &vbegin, float angle_delta, const Color &color, const Rect2 &uv_rect);
 
 private:
 	bool _interpolate_color = false;

@@ -129,16 +129,16 @@ public:
 	void clear_color_regions();
 	Dictionary get_color_regions() const;
 
-	void set_number_color(Color p_color);
+	void set_number_color(const Color &p_color);
 	Color get_number_color() const;
 
-	void set_symbol_color(Color p_color);
+	void set_symbol_color(const Color &p_color);
 	Color get_symbol_color() const;
 
-	void set_function_color(Color p_color);
+	void set_function_color(const Color &p_color);
 	Color get_function_color() const;
 
-	void set_member_variable_color(Color p_color);
+	void set_member_variable_color(const Color &p_color);
 	Color get_member_variable_color() const;
 
 	void set_uint_suffix_enabled(bool p_enabled);

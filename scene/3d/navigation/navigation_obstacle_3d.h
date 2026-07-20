@@ -113,10 +113,10 @@ public:
 	void set_use_3d_avoidance(bool p_use_3d_avoidance);
 	bool get_use_3d_avoidance() const { return use_3d_avoidance; }
 
-	void set_velocity(const Vector3 p_velocity);
+	void set_velocity(const Vector3 &p_velocity);
 	Vector3 get_velocity() const { return velocity; }
 
-	void _avoidance_done(Vector3 p_new_velocity); // Dummy
+	void _avoidance_done(const Vector3 &p_new_velocity); // Dummy
 
 	void set_affect_navigation_mesh(bool p_enabled);
 	bool get_affect_navigation_mesh() const;
@@ -136,7 +136,7 @@ public:
 
 private:
 	void _update_map(RID p_map);
-	void _update_position(const Vector3 p_position);
+	void _update_position(const Vector3 &p_position);
 	void _update_transform();
 	void _update_use_3d_avoidance(bool p_use_3d_avoidance);
 };

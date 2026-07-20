@@ -1151,7 +1151,7 @@ void RuntimeNodeSelect::_find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_
 	}
 }
 
-void RuntimeNodeSelect::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
+void RuntimeNodeSelect::_pan_callback(const Vector2 &p_scroll_vec, Ref<InputEvent> p_event) {
 	Vector2 scroll = SceneTree::get_singleton()->get_root()->get_screen_transform().affine_inverse().xform(p_scroll_vec);
 	view_2d_offset.x -= scroll.x / view_2d_zoom;
 	view_2d_offset.y -= scroll.y / view_2d_zoom;
@@ -1160,7 +1160,7 @@ void RuntimeNodeSelect::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_ev
 }
 
 // A very shallow copy of the same function inside CanvasItemEditor.
-void RuntimeNodeSelect::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+void RuntimeNodeSelect::_zoom_callback(float p_zoom_factor, const Vector2 &p_origin, Ref<InputEvent> p_event) {
 	real_t prev_zoom = view_2d_zoom;
 	view_2d_zoom = CLAMP(view_2d_zoom * p_zoom_factor, VIEW_2D_MIN_ZOOM, VIEW_2D_MAX_ZOOM);
 

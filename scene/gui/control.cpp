@@ -948,7 +948,7 @@ Control::GrowDirection Control::get_v_grow_direction() const {
 	return data.v_grow;
 }
 
-void Control::_compute_layout_rect(Rect2 p_rect, bool p_keep_offsets) {
+void Control::_compute_layout_rect(const Rect2 &p_rect, bool p_keep_offsets) {
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
 
 	if (p_keep_offsets) {

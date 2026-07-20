@@ -58,15 +58,15 @@ real_t Font::_draw_char_outline_bind_compat_104872(RID p_canvas_item, const Poin
 	return draw_char_outline(p_canvas_item, p_pos, p_char, p_font_size, p_size, p_modulate, 0.0);
 }
 
-RID Font::_find_variation_bind_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform) const {
+RID Font::_find_variation_bind_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, const Transform2D &p_transform) const {
 	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, 0, 0, 0, 0, 0.0, 0, Vector<Color>());
 }
 
-RID Font::_find_variation_bind_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
+RID Font::_find_variation_bind_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, const Transform2D &p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph) const {
 	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, 0.0, 0, Vector<Color>());
 }
 
-RID Font::_find_variation_bind_compat_117149(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
+RID Font::_find_variation_bind_compat_117149(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, const Transform2D &p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
 	return find_variation(p_variation_coordinates, p_face_index, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset, 0, Vector<Color>());
 }
 

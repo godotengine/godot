@@ -271,7 +271,7 @@ public:
 
 	///////////////////
 
-	void set_direction(Vector2 p_direction);
+	void set_direction(const Vector2 &p_direction);
 	Vector2 get_direction() const;
 
 	void set_spread(real_t p_spread);
@@ -300,7 +300,7 @@ public:
 
 	void set_emission_shape(EmissionShape p_shape);
 	void set_emission_sphere_radius(real_t p_radius);
-	void set_emission_rect_extents(Vector2 p_extents);
+	void set_emission_rect_extents(const Vector2 &p_extents);
 	void set_emission_points(const Vector<Vector2> &p_points);
 	void set_emission_normals(const Vector<Vector2> &p_normals);
 	void set_emission_colors(const Vector<Color> &p_colors);

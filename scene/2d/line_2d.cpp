@@ -126,7 +126,7 @@ Vector<Vector2> Line2D::get_points() const {
 	return _points;
 }
 
-void Line2D::set_point_position(int i, Vector2 p_pos) {
+void Line2D::set_point_position(int i, const Vector2 &p_pos) {
 	ERR_FAIL_INDEX(i, _points.size());
 	_points.set(i, p_pos);
 	queue_redraw();
@@ -149,7 +149,7 @@ void Line2D::clear_points() {
 	}
 }
 
-void Line2D::add_point(Vector2 p_pos, int p_atpos) {
+void Line2D::add_point(const Vector2 &p_pos, int p_atpos) {
 	if (p_atpos < 0 || _points.size() < p_atpos) {
 		_points.push_back(p_pos);
 	} else {
@@ -163,7 +163,7 @@ void Line2D::remove_point(int i) {
 	queue_redraw();
 }
 
-void Line2D::set_default_color(Color p_color) {
+void Line2D::set_default_color(const Color &p_color) {
 	_default_color = p_color;
 	queue_redraw();
 }

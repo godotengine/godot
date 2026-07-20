@@ -138,7 +138,7 @@ public:
 
 	void set_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far);
 	void set_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far);
-	void set_frustum(real_t p_size, Vector2 p_offset, real_t p_z_near, real_t p_z_far);
+	void set_frustum(real_t p_size, const Vector2 &p_offset, real_t p_z_near, real_t p_z_far);
 	void set_projection(Camera3D::ProjectionType p_mode);
 
 	void make_current();
@@ -160,7 +160,7 @@ public:
 	void set_size(real_t p_size);
 	void set_far(real_t p_far);
 	void set_near(real_t p_near);
-	void set_frustum_offset(Vector2 p_offset);
+	void set_frustum_offset(const Vector2 &p_offset);
 
 	virtual Transform3D get_camera_transform() const;
 	virtual Projection get_camera_projection() const;

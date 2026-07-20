@@ -150,7 +150,7 @@ void DrawableTexture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect,
 }
 
 // Perform a blit operation from the given source to the given rect on self.
-void DrawableTexture2D::blit_rect(const Rect2i p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate, int p_mipmap, const Ref<Material> &p_material) {
+void DrawableTexture2D::blit_rect(const Rect2i &p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate, int p_mipmap, const Ref<Material> &p_material) {
 	// Use user Shader if exists.
 	RID material = default_material;
 	if (p_material.is_valid()) {
@@ -180,7 +180,7 @@ void DrawableTexture2D::blit_rect(const Rect2i p_rect, const Ref<Texture2D> &p_s
 }
 
 // Perform a blit operation from the given sources to the given rect on self and extra targets
-void DrawableTexture2D::blit_rect_multi(const Rect2i p_rect, const TypedArray<Texture2D> &p_sources, const TypedArray<DrawableTexture2D> &p_extra_targets, const Color &p_modulate, int p_mipmap, const Ref<Material> &p_material) {
+void DrawableTexture2D::blit_rect_multi(const Rect2i &p_rect, const TypedArray<Texture2D> &p_sources, const TypedArray<DrawableTexture2D> &p_extra_targets, const Color &p_modulate, int p_mipmap, const Ref<Material> &p_material) {
 	RID material = default_material;
 	if (p_material.is_valid()) {
 		material = p_material->get_rid();

@@ -3285,7 +3285,7 @@ void Viewport::_update_mouse_over(const Ref<InputEventMouse> &p_mm) {
 	}
 }
 
-void Viewport::_update_mouse_over(Vector2 p_pos) {
+void Viewport::_update_mouse_over(const Vector2 &p_pos) {
 	gui.last_mouse_pos = p_pos; // Necessary, because mouse cursor can be over Viewports that are not reached by the InputEvent.
 	// Look for embedded windows at mouse position.
 	if (is_embedding_subwindows()) {

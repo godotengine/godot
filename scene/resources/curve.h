@@ -79,12 +79,12 @@ public:
 
 	void set_point_count(int p_count);
 
-	int add_point(Vector2 p_position,
+	int add_point(const Vector2 &p_position,
 			real_t p_left_tangent = 0,
 			real_t p_right_tangent = 0,
 			TangentMode p_left_mode = TANGENT_FREE,
 			TangentMode p_right_mode = TANGENT_FREE);
-	int add_point_no_update(Vector2 p_position,
+	int add_point_no_update(const Vector2 &p_position,
 			real_t p_left_tangent = 0,
 			real_t p_right_tangent = 0,
 			TangentMode p_left_mode = TANGENT_FREE,

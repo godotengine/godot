@@ -116,7 +116,7 @@ real_t Decal::get_normal_fade() const {
 	return normal_fade;
 }
 
-void Decal::set_modulate(Color p_modulate) {
+void Decal::set_modulate(const Color &p_modulate) {
 	modulate = p_modulate;
 	RS::get_singleton()->decal_set_modulate(decal, p_modulate);
 }

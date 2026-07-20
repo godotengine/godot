@@ -642,7 +642,7 @@ real_t NavigationAgent2D::get_path_max_distance() {
 	return path_max_distance;
 }
 
-void NavigationAgent2D::set_target_position(Vector2 p_position) {
+void NavigationAgent2D::set_target_position(const Vector2 &p_position) {
 	// Intentionally not checking for equality of the parameter, as we want to update the path even if the target position is the same in case the world changed.
 	// Revisit later when the navigation server can update the path without requesting a new path.
 
@@ -704,7 +704,7 @@ Vector2 NavigationAgent2D::_get_final_position() const {
 	return navigation_path[navigation_path.size() - 1];
 }
 
-void NavigationAgent2D::set_velocity_forced(Vector2 p_velocity) {
+void NavigationAgent2D::set_velocity_forced(const Vector2 &p_velocity) {
 	// Intentionally not checking for equality of the parameter.
 	// We need to always submit the velocity to the navigation server, even when it is the same, in order to run avoidance every frame.
 	// Revisit later when the navigation server can update avoidance without users resubmitting the velocity.
@@ -713,12 +713,12 @@ void NavigationAgent2D::set_velocity_forced(Vector2 p_velocity) {
 	velocity_forced_submitted = true;
 }
 
-void NavigationAgent2D::set_velocity(const Vector2 p_velocity) {
+void NavigationAgent2D::set_velocity(const Vector2 &p_velocity) {
 	velocity = p_velocity;
 	velocity_submitted = true;
 }
 
-void NavigationAgent2D::_avoidance_done(Vector2 p_new_velocity) {
+void NavigationAgent2D::_avoidance_done(const Vector2 &p_new_velocity) {
 	safe_velocity = p_new_velocity;
 	emit_signal(SNAME("velocity_computed"), safe_velocity);
 }
@@ -1030,7 +1030,7 @@ bool NavigationAgent2D::get_debug_use_custom() const {
 	return debug_use_custom;
 }
 
-void NavigationAgent2D::set_debug_path_custom_color(Color p_color) {
+void NavigationAgent2D::set_debug_path_custom_color(const Color &p_color) {
 #ifdef DEBUG_ENABLED
 	if (debug_path_custom_color == p_color) {
 		return;

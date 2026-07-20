@@ -337,7 +337,7 @@ void Camera3D::set_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far) {
 	update_gizmos();
 }
 
-void Camera3D::set_frustum(real_t p_size, Vector2 p_offset, real_t p_z_near, real_t p_z_far) {
+void Camera3D::set_frustum(real_t p_size, const Vector2 &p_offset, real_t p_z_near, real_t p_z_far) {
 	if (!force_change && size == p_size && frustum_offset == p_offset && p_z_near == _near && p_z_far == _far && mode == PROJECTION_FRUSTUM) {
 		return;
 	}
@@ -755,7 +755,7 @@ void Camera3D::set_near(real_t p_near) {
 	_update_camera_mode();
 }
 
-void Camera3D::set_frustum_offset(Vector2 p_offset) {
+void Camera3D::set_frustum_offset(const Vector2 &p_offset) {
 	frustum_offset = p_offset;
 	_update_camera_mode();
 }

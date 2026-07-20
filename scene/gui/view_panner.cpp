@@ -35,7 +35,7 @@
 #include "core/os/keyboard.h"
 #include "scene/main/viewport.h"
 
-bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) {
+bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_canvas_rect) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		Vector2 scroll_vec = Vector2((mb->get_button_index() == MouseButton::WHEEL_RIGHT) - (mb->get_button_index() == MouseButton::WHEEL_LEFT), (mb->get_button_index() == MouseButton::WHEEL_DOWN) - (mb->get_button_index() == MouseButton::WHEEL_UP));

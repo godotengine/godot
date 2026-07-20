@@ -153,7 +153,7 @@ Quaternion TransformInterpolator::_quat_slerp_unchecked(const Quaternion &p_from
 			scale0 * p_from.w + scale1 * to1.w);
 }
 
-Basis TransformInterpolator::_basis_slerp_unchecked(Basis p_from, Basis p_to, real_t p_fraction) {
+Basis TransformInterpolator::_basis_slerp_unchecked(const Basis &p_from, const Basis &p_to, real_t p_fraction) {
 	Quaternion from = _basis_to_quat_unchecked(p_from);
 	Quaternion to = _basis_to_quat_unchecked(p_to);
 

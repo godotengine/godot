@@ -2672,7 +2672,7 @@ void ColorPresetButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPresetButton, overbright_indicator);
 }
 
-ColorPresetButton::ColorPresetButton(Color p_color, int p_size, bool p_recent) {
+ColorPresetButton::ColorPresetButton(const Color &p_color, int p_size, bool p_recent) {
 	preset_color = p_color;
 	recent = p_recent;
 	set_toggle_mode(true);
