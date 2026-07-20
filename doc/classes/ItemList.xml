@@ -572,8 +572,20 @@
 			The size of the item text outline.
 			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
-		<theme_item name="scroll_bar_h_separation" data_type="constant" type="int" default="4">
+		<theme_item name="scrollbar_h_separation" data_type="constant" type="int" default="4">
 			The horizontal separation of items and the vertical scrollbar.
+		</theme_item>
+		<theme_item name="scrollbar_margin_bottom" data_type="constant" type="int" default="-1">
+			The bottom margin of the horizontal scrollbar. When negative, uses [theme_item panel] left margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_left" data_type="constant" type="int" default="-1">
+			The left margin of the horizontal scrollbar. When negative, uses [theme_item panel] left margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_right" data_type="constant" type="int" default="-1">
+			The right margin of the horizontal scrollbar. When negative, uses [theme_item panel] left margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_top" data_type="constant" type="int" default="-1">
+			The top margin of the horizontal scrollbar. When negative, uses [theme_item panel] left margin.
 		</theme_item>
 		<theme_item name="v_separation" data_type="constant" type="int" default="4">
 			The vertical spacing between items.
