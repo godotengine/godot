@@ -123,6 +123,7 @@ protected:
 		EDIT_JOIN_LINES,
 
 		BASE_ENUM_COUNT,
+		ERROR_GOTO_NEXT,
 	};
 
 	class EditMenus : public HBoxContainer {
