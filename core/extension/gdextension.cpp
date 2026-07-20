@@ -806,6 +806,9 @@ Error GDExtension::open_library(const String &p_path, const Ref<GDExtensionLoade
 	loader = p_loader;
 
 	Error err = loader->open_library(p_path);
+	if (err == ERR_SKIP) {
+		return err;
+	}
 
 	ERR_FAIL_COND_V_MSG(err == ERR_FILE_NOT_FOUND, err, vformat("GDExtension dynamic library not found: '%s'.", p_path));
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Can't open GDExtension dynamic library: '%s'.", p_path));
