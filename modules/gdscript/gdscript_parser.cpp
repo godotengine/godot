@@ -5010,12 +5010,9 @@ bool GDScriptParser::export_translation_annotation(AnnotationNode *p_annotation,
 
 	DataType export_type = variable->type_constraint;
 
-	bool is_array = false;
 	if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type(0)) {
-		is_array = true;
 		export_type = export_type.get_container_element_type(0);
 	} else if (export_type.is_typed_container_type()) {
-		is_array = true;
 		export_type = export_type.get_typed_container_type();
 		export_type.type_source = variable->type_constraint.type_source;
 	}
