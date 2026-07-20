@@ -197,6 +197,23 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 		Array prop = { pi.name, pi.type };
 		PropertyHint hint = pi.hint;
 		String hint_string = pi.hint_string;
+
+		if (res.is_valid()) {
+			hint_string = res->get_class();
+			// Check the script to see if there's a custom class name.
+			ScriptInstance *si = res->get_script_instance();
+			if (si) {
+				Ref<Script> script = si->get_script();
+				while (script.is_valid()) {
+					if (!script->get_global_name().is_empty()) {
+						hint_string = script->get_global_name();
+						break;
+					}
+					script = script->get_base_script();
+				}
+			}
+		}
+
 		if (res.is_valid() && !res->get_path().is_empty()) {
 			// HACK: Overwrite `PropertyInfo` with the current runtime type.
 			// This allows untyped variables to be displayed correctly.
