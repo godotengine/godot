@@ -1007,14 +1007,14 @@ void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, Lis
 		} else {
 			// There are no points that can be added to fix the chain
 			new_chain_end_nodes.push_back(chain_node_to_split);
-			new_chain_end_nodes.push_back(NULL);
+			new_chain_end_nodes.push_back(nullptr);
 		}
 	}
 	// Check the new chains against chains whose AABBs intersected the unsplit chain's AABB
 	for (int i = 0; i < new_chain_end_nodes.size(); ++i) {
 		List<Vector2>::Element *new_chain = new_chain_end_nodes[i];
 
-		if (new_chain != NULL) {
+		if (new_chain != nullptr) {
 			for (const ChainBoxData *colliding_obb : obb_collisions_mapping[obb_collision[i / 2]]) {
 				List<List<Vector2>::Element *>::Element *col_chain_start = colliding_obb->chain_start_node;
 				List<List<Vector2>::Element *>::Element *col_chain_end = colliding_obb->chain_end_node;
@@ -1058,6 +1058,9 @@ void find_intersections(List<List<Vector2>::Element *> &mono_chain_lst, List<Vec
 		}
 		obb_collisions_mapping[box0].push_back(box1);
 		obb_collisions_mapping[box1].push_back(box0);
+
+		obb_cache[{ ch1_start_node->get()->get(), ch1_end_node->get()->get() }] = obb1;
+		obb_cache[{ ch2_start_node->get()->get(), ch2_end_node->get()->get() }] = obb2;
 
 		recursive_obb_collision_check(ch1_start_node, ch1_start_node->get(), ch1_end_node->get(),
 				ch2_start_node, ch2_start_node->get(), ch2_end_node->get(),

@@ -30,6 +30,7 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 
 Vector<Vector<Vector2>> BitMap::_clip_opaque_to_polygons_bind_compat_94602(const Rect2i &p_rect, float p_epsilon) const {
