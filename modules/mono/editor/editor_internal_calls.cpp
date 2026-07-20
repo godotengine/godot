@@ -152,9 +152,9 @@ bool godot_icall_Internal_IsAssembliesReloadingNeeded() {
 #endif
 }
 
-void godot_icall_Internal_ReloadAssemblies(bool p_soft_reload) {
+void godot_icall_Internal_ReloadAssemblies() {
 #ifdef GD_MONO_HOT_RELOAD
-	callable_mp(MonoBind::GodotSharp::get_singleton(), &MonoBind::GodotSharp::reload_assemblies).call_deferred(p_soft_reload);
+	callable_mp(MonoBind::GodotSharp::get_singleton(), &MonoBind::GodotSharp::reload_assemblies).call_deferred();
 #endif
 }
 
