@@ -329,6 +329,7 @@ class ScriptEditor : public PanelContainer {
 	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
 	void _apply_editor_settings();
+	void _project_settings_changed();
 	void _files_moved(const String &p_old_file, const String &p_new_file);
 	void _file_removed(const String &p_file);
 	void _autosave_scripts();
