@@ -832,6 +832,9 @@ public:
 	void set_editable(bool p_editable);
 	bool is_editable() const;
 
+	void set_undo_enabled(bool p_enabled);
+	bool is_undo_enabled() const;
+
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
 
