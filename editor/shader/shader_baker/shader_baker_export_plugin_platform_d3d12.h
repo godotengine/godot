@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/export/shader_baker_export_plugin.h"
+#include "editor/export/shader_baker/shader_baker_export_plugin.h"
 
 class ShaderBakerExportPluginPlatformD3D12 : public ShaderBakerExportPluginPlatform {
 	GDCLASS(ShaderBakerExportPluginPlatformD3D12, ShaderBakerExportPluginPlatform);
