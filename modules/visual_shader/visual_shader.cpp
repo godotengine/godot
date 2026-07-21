@@ -2120,10 +2120,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 				continue;
 			}
 
-			Error err = _write_node(type, p_global_code, p_global_code_per_node, p_global_code_per_func, r_code, r_def_tex_params, p_input_connections, from_node, r_processed, p_for_preview, r_classes);
-			if (err) {
-				return err;
-			}
+			GUARD_OK(_write_node(type, p_global_code, p_global_code_per_node, p_global_code_per_func, r_code, r_def_tex_params, p_input_connections, from_node, r_processed, p_for_preview, r_classes));
 		}
 	}
 

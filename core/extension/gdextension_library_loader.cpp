@@ -176,10 +176,7 @@ String GDExtensionLibraryLoader::find_extension_library(const String &p_path, Re
 }
 
 Error GDExtensionLibraryLoader::open_library(const String &p_path) {
-	Error err = parse_gdextension_file(p_path);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(parse_gdextension_file(p_path));
 
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(library_path);
 
@@ -198,7 +195,7 @@ Error GDExtensionLibraryLoader::open_library(const String &p_path) {
 	};
 
 	// Apple has a complex lookup system which goes beyond looking up the filename, so we try that first.
-	err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
+	Error err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
 	if (err != OK) {
 #ifdef APPLE_EMBEDDED_ENABLED
 		err = OS::get_singleton()->open_dynamic_library(String(), library, &data);

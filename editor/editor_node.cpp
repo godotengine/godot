@@ -5026,10 +5026,7 @@ Error EditorNode::open_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		}
 	}
 
-	Error err = load_scene(p_scene, p_ignore_broken_deps, p_set_inherited, p_force_open_imported);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(load_scene(p_scene, p_ignore_broken_deps, p_set_inherited, p_force_open_imported));
 
 	int current_scene_idx = editor_data.get_edited_scene_count() - 1;
 	Node *new_scene = editor_data.get_edited_scene_root(current_scene_idx);

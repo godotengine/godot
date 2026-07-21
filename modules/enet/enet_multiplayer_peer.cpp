@@ -64,10 +64,7 @@ Error ENetMultiplayerPeer::create_server(int p_port, int p_max_clients, int p_ma
 	set_refuse_new_connections(false);
 	Ref<ENetConnection> host;
 	host.instantiate();
-	Error err = host->create_host_bound(bind_ip, p_port, p_max_clients, 0, p_max_channels > 0 ? p_max_channels + SYSCH_MAX : 0, p_out_bandwidth);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(host->create_host_bound(bind_ip, p_port, p_max_clients, 0, p_max_channels > 0 ? p_max_channels + SYSCH_MAX : 0, p_out_bandwidth));
 
 	active_mode = MODE_SERVER;
 	unique_id = 1;

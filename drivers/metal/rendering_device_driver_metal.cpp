@@ -931,10 +931,7 @@ Error RenderingDeviceDriverMetal::swap_chain_resize(CommandQueueID p_cmd_queue, 
 
 	DataFormat new_data_format = DATA_FORMAT_MAX;
 	ColorSpace new_color_space = COLOR_SPACE_MAX;
-	Error err = surface->resize(p_desired_framebuffer_count, new_data_format, new_color_space);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(surface->resize(p_desired_framebuffer_count, new_data_format, new_color_space));
 
 	if (new_data_format != swap_chain->data_format) {
 		_swap_chain_release(swap_chain);

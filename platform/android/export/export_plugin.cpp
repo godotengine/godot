@@ -837,10 +837,7 @@ Error EditorExportPlatformAndroid::save_apk_file(const Ref<EditorExportPreset> &
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd));
 
 	String dst_path;
 	if (ed->pd.salt.length() == 32) {

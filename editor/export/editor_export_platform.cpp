@@ -447,10 +447,7 @@ Error EditorExportPlatform::_save_pack_file(const Ref<EditorExportPreset> &p_pre
 	sd.ofs = (pd->use_sparse_pck) ? 0 : pd->f->get_position();
 	sd.size = p_data.size();
 	sd.delta = p_delta;
-	Error err = _encrypt_and_store_data(ftmp, simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, sd.encrypted);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_encrypt_and_store_data(ftmp, simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, sd.encrypted));
 	if (!pd->use_sparse_pck) {
 		ERR_FAIL_COND_V(pd->f->get_position() - sd.ofs < (uint64_t)p_data.size(), ERR_FILE_CANT_WRITE);
 	}
@@ -520,10 +517,7 @@ Error EditorExportPlatform::_save_pack_patch_file(const Ref<EditorExportPreset> 
 	Vector<uint8_t> patch_data = p_data;
 
 	if (delta) {
-		Error err = DeltaEncoding::encode_delta(old_data, p_data, patch_data, p_preset->get_patch_delta_zstd_level());
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(DeltaEncoding::encode_delta(old_data, p_data, patch_data, p_preset->get_patch_delta_zstd_level()));
 
 		int64_t reduction_bytes = MAX(0, p_data.size() - patch_data.size());
 		double reduction_ratio = reduction_bytes / (double)p_data.size();
@@ -2473,22 +2467,16 @@ Error EditorExportPlatform::export_zip(const Ref<EditorExportPreset> &p_preset, 
 
 Error EditorExportPlatform::export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	Error err = _load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches);
-	if (err != OK) {
-		return err;
-	}
-	err = save_pack_patch(p_preset, p_debug, p_path);
+	GUARD_OK(_load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches));
+	Error err = save_pack_patch(p_preset, p_debug, p_path);
 	_unload_patches();
 	return err;
 }
 
 Error EditorExportPlatform::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
-	Error err = _load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches);
-	if (err != OK) {
-		return err;
-	}
-	err = save_zip_patch(p_preset, p_debug, p_path);
+	GUARD_OK(_load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches));
+	Error err = save_zip_patch(p_preset, p_debug, p_path);
 	_unload_patches();
 	return err;
 }
@@ -2712,10 +2700,8 @@ Error EditorExportPlatform::ssh_push_to_remote(const String &p_host, const Strin
 		OS::get_singleton()->print("\n");
 	}
 
-	Error err = OS::get_singleton()->execute(scp_path, args, &out, &exit_code, true);
-	if (err != OK) {
-		return err;
-	} else if (exit_code != 0) {
+	GUARD_OK(OS::get_singleton()->execute(scp_path, args, &out, &exit_code, true));
+	if (exit_code != 0) {
 		if (!out.is_empty()) {
 			print_line(out);
 		}

@@ -72,10 +72,7 @@ Error AESContext::start(Mode p_mode, const PackedByteArray &p_key, const PackedB
 		WARN_PRINT("ECB mode does not require an initialization vector (IV). Pass an empty IV argument when using ECB.");
 		iv.clear();
 	}
-	Error err = ctx.setup(ctx_mode, ctx_cipher, p_key.ptr(), p_key.size(), iv.size() ? iv.ptr() : nullptr, iv.size());
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(ctx.setup(ctx_mode, ctx_cipher, p_key.ptr(), p_key.size(), iv.size() ? iv.ptr() : nullptr, iv.size()));
 	mode = p_mode;
 	return OK;
 }

@@ -123,10 +123,7 @@ Error StreamPeerGZIP::_process(uint8_t *p_dst, int p_dst_size, const uint8_t *p_
 
 Error StreamPeerGZIP::put_data(const uint8_t *p_data, int p_bytes) {
 	int wrote = 0;
-	Error err = put_partial_data(p_data, p_bytes, wrote);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(put_partial_data(p_data, p_bytes, wrote));
 	ERR_FAIL_COND_V(p_bytes != wrote, ERR_OUT_OF_MEMORY);
 	return OK;
 }
@@ -145,10 +142,7 @@ Error StreamPeerGZIP::put_partial_data(const uint8_t *p_data, int p_bytes, int &
 		int sent = 0;
 		int to_write = 0;
 		// Compress or decompress
-		Error err = _process(buffer.ptrw(), MIN(buffer.size(), rb.space_left()), p_data + r_sent, p_bytes - r_sent, sent, to_write);
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(_process(buffer.ptrw(), MIN(buffer.size(), rb.space_left()), p_data + r_sent, p_bytes - r_sent, sent, to_write));
 		// When decompressing, we might need to do another round.
 		r_sent += sent;
 
@@ -167,10 +161,7 @@ Error StreamPeerGZIP::put_partial_data(const uint8_t *p_data, int p_bytes, int &
 
 Error StreamPeerGZIP::get_data(uint8_t *p_buffer, int p_bytes) {
 	int received = 0;
-	Error err = get_partial_data(p_buffer, p_bytes, received);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(get_partial_data(p_buffer, p_bytes, received));
 	ERR_FAIL_COND_V(p_bytes != received, ERR_UNAVAILABLE);
 	return OK;
 }

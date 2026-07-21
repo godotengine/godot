@@ -7238,11 +7238,8 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	p_state->set_base_path(p_path.get_base_dir());
 	p_state->filename = p_path.get_file();
-	Error err = _serialize(p_state);
-	if (err != OK) {
-		return err;
-	}
-	err = _serialize_file(p_state, p_path);
+	GUARD_OK(_serialize(p_state));
+	Error err = _serialize_file(p_state, p_path);
 	if (err != OK) {
 		return Error::FAILED;
 	}

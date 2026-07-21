@@ -3117,10 +3117,7 @@ void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file
 Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (FileAccess::exists(p_from + ".import")) {
-		Error err = da->copy(p_from, p_to);
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(da->copy(p_from, p_to));
 
 		// Save the new .import file
 		Ref<ConfigFile> cfg;
@@ -3129,26 +3126,19 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		String importer_name = cfg->get_value("remap", "importer");
 
 		if (importer_name == "keep" || importer_name == "skip") {
-			err = da->copy(p_from + ".import", p_to + ".import");
-			return err;
+			return da->copy(p_from + ".import", p_to + ".import");
 		}
 
 		// Roll a new uid for this copied .import file to avoid conflict.
 		ResourceUID::ID res_uid = ResourceUID::get_singleton()->create_id_for_path(p_to);
 		cfg->set_value("remap", "uid", ResourceUID::get_singleton()->id_to_text(res_uid));
-		err = cfg->save(p_to + ".import");
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(cfg->save(p_to + ".import"));
 
 		// Make sure it's immediately added to the map so we can remap dependencies if we want to after this.
 		ResourceUID::get_singleton()->add_id(res_uid, p_to);
 	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
 		// Files which do not use an uid can just be copied.
-		Error err = da->copy(p_from, p_to);
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(da->copy(p_from, p_to));
 	} else {
 		// Load the resource and save it again in the new location (this generates a new UID).
 		Error err = OK;
@@ -3589,10 +3579,7 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 }
 
 Error EditorFileSystem::copy_file(const String &p_from, const String &p_to) {
-	Error err = _copy_file(p_from, p_to);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_copy_file(p_from, p_to));
 
 	EditorFileSystemDirectory *parent = get_filesystem_path(p_to.get_base_dir());
 	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);

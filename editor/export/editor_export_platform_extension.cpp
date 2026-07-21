@@ -311,10 +311,7 @@ Error EditorExportPlatformExtension::export_zip(const Ref<EditorExportPreset> &p
 Error EditorExportPlatformExtension::export_pack_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
-	Error err = _load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches));
 
 	Error ret = FAILED;
 	if (GDVIRTUAL_CALL(_export_pack_patch, p_preset, p_debug, p_path, p_patches, p_flags, ret)) {
@@ -322,7 +319,7 @@ Error EditorExportPlatformExtension::export_pack_patch(const Ref<EditorExportPre
 		return ret;
 	}
 
-	err = save_pack_patch(p_preset, p_debug, p_path);
+	Error err = save_pack_patch(p_preset, p_debug, p_path);
 	_unload_patches();
 	return err;
 }
@@ -330,10 +327,7 @@ Error EditorExportPlatformExtension::export_pack_patch(const Ref<EditorExportPre
 Error EditorExportPlatformExtension::export_zip_patch(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, const Vector<String> &p_patches, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
-	Error err = _load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_load_patches(p_preset, p_patches.is_empty() ? p_preset->get_patches() : p_patches));
 
 	Error ret = FAILED;
 	if (GDVIRTUAL_CALL(_export_zip_patch, p_preset, p_debug, p_path, p_patches, p_flags, ret)) {
@@ -341,7 +335,7 @@ Error EditorExportPlatformExtension::export_zip_patch(const Ref<EditorExportPres
 		return ret;
 	}
 
-	err = save_zip_patch(p_preset, p_debug, p_path);
+	Error err = save_zip_patch(p_preset, p_debug, p_path);
 	_unload_patches();
 	return err;
 }
