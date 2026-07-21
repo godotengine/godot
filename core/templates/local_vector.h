@@ -328,20 +328,26 @@ public:
 		return ret;
 	}
 
-	_FORCE_INLINE_ LocalVector() {}
-	_FORCE_INLINE_ LocalVector(std::initializer_list<T> p_init) {
+	LocalVector() = default;
+	LocalVector(std::initializer_list<T> p_init) {
 		reserve(p_init.size());
-		for (const T &element : p_init) {
-			push_back(element);
+		size_t i = 0;
+		for (const T &value : p_init) {
+			memnew_placement(&data[i], T(value));
+			i++;
 		}
+		count = p_init.size();
 	}
-	_FORCE_INLINE_ explicit LocalVector(const LocalVector &p_from) {
-		resize(p_from.size());
-		for (U i = 0; i < p_from.count; i++) {
-			data[i] = p_from.data[i];
+	explicit LocalVector(Span<T> p_span) {
+		reserve(p_span.size());
+		for (size_t i = 0; i < p_span.size(); i++) {
+			memnew_placement(&data[i], T(p_span.ptr()[i]));
 		}
+		count = p_span.size();
 	}
-	_FORCE_INLINE_ LocalVector(LocalVector &&p_from) {
+	explicit LocalVector(const LocalVector &p_vector) :
+			LocalVector(p_vector.span()) {}
+	LocalVector(LocalVector &&p_from) {
 		data = p_from.data;
 		count = p_from.count;
 		capacity = p_from.capacity;
@@ -351,19 +357,14 @@ public:
 		p_from.capacity = 0;
 	}
 
-	inline void operator=(const LocalVector &p_from) {
+	void operator=(Span<T> p_from) {
 		resize(p_from.size());
-		for (U i = 0; i < p_from.count; i++) {
-			data[i] = p_from.data[i];
-		}
-	}
-	inline void operator=(const Vector<T> &p_from) {
-		resize(p_from.size());
-		for (U i = 0; i < count; i++) {
+		for (size_t i = 0; i < p_from.size(); i++) {
 			data[i] = p_from[i];
 		}
 	}
-	inline void operator=(LocalVector &&p_from) {
+	void operator=(const LocalVector &p_vector) { operator=(p_vector.span()); }
+	void operator=(LocalVector &&p_from) {
 		if (unlikely(this == &p_from)) {
 			return;
 		}
@@ -377,14 +378,14 @@ public:
 		p_from.count = 0;
 		p_from.capacity = 0;
 	}
-	inline void operator=(Vector<T> &&p_from) {
+	void operator=(Vector<T> &&p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < count; i++) {
 			data[i] = std::move(p_from[i]);
 		}
 	}
 
-	_FORCE_INLINE_ ~LocalVector() {
+	~LocalVector() {
 		if (data) {
 			reset();
 		}
