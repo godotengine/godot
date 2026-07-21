@@ -322,6 +322,16 @@ void AudioStreamPlayerInternal::set_pitch_scale(float p_pitch_scale) {
 	}
 }
 
+void AudioStreamPlayerInternal::set_mute(bool p_mute) {
+	muted = p_mute;
+
+	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_muted(playback, p_mute);
+	}
+
+	node->emit_signal(SceneStringName(mute_toggled));
+}
+
 void AudioStreamPlayerInternal::set_max_polyphony(int p_max_polyphony) {
 	if (p_max_polyphony > 0) {
 		max_polyphony = p_max_polyphony;

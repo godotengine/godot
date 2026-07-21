@@ -131,6 +131,8 @@ public:
 
 	const StringName Master = "Master"; // Audio bus name.
 
+	const StringName mute_toggled = "mute_toggled";
+
 	const StringName theme_changed = "theme_changed";
 	const StringName shader = "shader";
 	const StringName shader_overrides_group = "_shader_overrides_group_";

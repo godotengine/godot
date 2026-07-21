@@ -82,6 +82,9 @@ public:
 	void set_volume_linear(float p_volume);
 	float get_volume_linear() const;
 
+	void set_mute(bool p_mute);
+	bool is_muted() const;
+
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
 
