@@ -54,6 +54,7 @@
 
 #include "core/local_vector.h"
 #include "core/math/math_defs.h"
+#include "core/pool_vector.h"
 
 #include <stdint.h>
 
