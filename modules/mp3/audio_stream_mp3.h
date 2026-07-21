@@ -48,7 +48,7 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 	bool looping_override = false;
 	bool looping = false;
 	drmp3 mp3d = {};
-	uint32_t frames_mixed = 0;
+	int frames_mixed = 0;
 	bool active = false;
 	int loops = 0;
 
@@ -82,6 +82,8 @@ public:
 
 	virtual void set_parameter(const StringName &p_name, const Variant &p_value) override;
 	virtual Variant get_parameter(const StringName &p_name) const override;
+
+	bool is_beat_loop() const;
 
 	AudioStreamPlaybackMP3() {}
 	~AudioStreamPlaybackMP3();

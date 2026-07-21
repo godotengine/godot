@@ -46,12 +46,19 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 	int todo = p_frames;
 
+	if (frames_mixed < 0) {
+		size_t prepad_frames = MIN(frames_mixed, todo);
+
+		memset(p_buffer, 0, sizeof(AudioFrame) * prepad_frames);
+		todo -= prepad_frames;
+	}
+
 	int frames_mixed_this_step = p_frames;
 
 	int beat_length_frames = -1;
 	bool use_loop = looping_override ? looping : mp3_stream->loop;
 
-	bool beat_loop = use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
+	bool beat_loop = is_beat_loop();
 	if (beat_loop) {
 		beat_length_frames = mp3_stream->get_beat_count() * mp3_stream->sample_rate * 60 / mp3_stream->get_bpm();
 	}
@@ -135,12 +142,21 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 		return;
 	}
 
-	if (p_time >= mp3_stream->get_length()) {
-		p_time = 0;
+	const bool beat_loop = is_beat_loop();
+	frames_mixed = mp3_stream->sample_rate * p_time;
+	if (!beat_loop && frames_mixed > mp3_stream->get_length()) {
+		stop(); // Seeking past the end of the stream; instantly stop.
+		return;
+	} else if (beat_loop && frames_mixed > 0) {
+		// Roll p_time over before seeking to seek into the stream at the correct location.
+		p_time = Math::fmod(p_time - mp3_stream->loop_offset, mp3_stream->beat_count / mp3_stream->get_bpm() * 60.0) + mp3_stream->loop_offset;
 	}
 
+	uint64_t start_sample = mp3_stream->sample_rate * p_time;
+	// p_time might be negative, in which case we insert silence frames when mixing.
+	drmp3_seek_to_pcm_frame(&mp3d, MAX(start_sample, 0u));
+
 	frames_mixed = uint32_t(mp3_stream->sample_rate * p_time);
-	drmp3_seek_to_pcm_frame(&mp3d, (uint64_t)frames_mixed);
 }
 
 void AudioStreamPlaybackMP3::tag_used_streams() {
@@ -183,6 +199,11 @@ Variant AudioStreamPlaybackMP3::get_parameter(const StringName &p_name) const {
 		return looping;
 	}
 	return Variant();
+}
+
+bool AudioStreamPlaybackMP3::is_beat_loop() const {
+	bool use_loop = looping_override ? looping : mp3_stream->loop;
+	return use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
 }
 
 AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
