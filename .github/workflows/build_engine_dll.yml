@@ -1,0 +1,31 @@
+name: Build Real LibGodot DLL
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows-dll:
+    runs-on: windows-latest
+
+    steps:
+    - name: 소스코드 체크아웃
+      uses: actions/checkout@v4
+
+    - name: 파이썬 및 SCons 설치
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: SCons 패키지 설치
+      run: pip install scons
+
+    - name: 윈도우용 메인 엔진 DLL 빌드
+      # library_type=shared_library 옵션이 엔진을 DLL로 만들어주는 핵심 키포인트입니다.
+      run: |
+        scons platform=windows target=template_release arch=x86_64 library_type=shared_library
+
+    - name: 빌드 완료된 DLL 파일 업로드
+      uses: actions/upload-artifact@v4
+      with:
+        name: godot-windows-dll-release
+        path: bin/godot.windows.template_release.x86_64.dll
