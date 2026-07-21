@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include "../tile_set.h"
+
 #include "editor/inspector/editor_inspector.h"
 #include "scene/gui/box_container.h"
-#include "scene/resources/2d/tile_set.h"
 
 class Button;
 class ItemList;

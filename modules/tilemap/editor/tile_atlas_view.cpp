@@ -30,10 +30,11 @@
 
 #include "tile_atlas_view.h"
 
+#include "../tile_map_layer.h"
+
 #include "core/object/callable_mp.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/2d/tile_map_layer.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"

@@ -195,7 +195,6 @@
 #include "scene/2d/remote_transform_2d.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
-#include "scene/2d/tile_map_layer.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
 #include "scene/resources/2d/polygon_path_finder.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
@@ -205,12 +204,10 @@
 #include "scene/resources/2d/skeleton/skeleton_modification_2d_stackholder.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_2d_twoboneik.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_stack_2d.h"
-#include "scene/resources/2d/tile_set.h"
 #include "scene/resources/world_2d.h"
 #ifndef DISABLE_DEPRECATED
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
-#include "scene/2d/tile_map.h"
 #endif
 
 #ifndef NAVIGATION_2D_DISABLED
@@ -838,20 +835,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(DampedSpringJoint2D);
 	GDREGISTER_CLASS(TouchScreenButton);
 #endif // PHYSICS_2D_DISABLED
-	GDREGISTER_CLASS(TileSet);
-	GDREGISTER_ABSTRACT_CLASS(TileSetSource);
-	GDREGISTER_CLASS(TileSetAtlasSource);
-	GDREGISTER_CLASS(TileSetScenesCollectionSource);
-	GDREGISTER_CLASS(TileMapPattern);
-	GDREGISTER_CLASS(TileData);
-	GDREGISTER_CLASS(TileMapLayer);
 	GDREGISTER_CLASS(Parallax2D);
 	GDREGISTER_CLASS(RemoteTransform2D);
 
 #ifndef DISABLE_DEPRECATED
 	GDREGISTER_CLASS(ParallaxBackground);
 	GDREGISTER_CLASS(ParallaxLayer);
-	GDREGISTER_CLASS(TileMap);
 #endif
 
 	GDREGISTER_CLASS(SkeletonModificationStack2D);
@@ -1060,10 +1049,6 @@ void register_scene_types() {
 	MultiMeshInstance2D::navmesh_parse_init();
 	NavigationObstacle2D::navmesh_parse_init();
 	Polygon2D::navmesh_parse_init();
-#ifndef DISABLE_DEPRECATED
-	TileMap::navmesh_parse_init();
-#endif
-	TileMapLayer::navmesh_parse_init();
 #ifndef PHYSICS_2D_DISABLED
 	StaticBody2D::navmesh_parse_init();
 #endif // PHYSICS_2D_DISABLED
