@@ -72,6 +72,10 @@
 			The bus on which this audio is playing.
 			[b]Note:[/b] When setting this property, keep in mind that no validation is performed to see if the given name matches an existing bus. This is because audio bus layouts might be loaded after this property is set. If this given name can't be resolved at runtime, it will fall back to [code]"Master"[/code].
 		</member>
+		<member name="bypass_global_polyphony" type="bool" setter="set_bypass_global_polyphony" getter="is_bypassing_global_polyphony" default="false">
+			If [code]true[/code], sounds played from this node won't count towards the global polyphony limit, as defined in [member ProjectSettings.audio/general/max_global_polyphony], and will not be cut off from that limit being reached.
+			Use this for sounds like music, ambience, or announcements that should not be interrupted.
+		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="AudioStreamPlayer3D.DopplerTracking" default="0">
 			Decides in which step the Doppler effect should be calculated.
 			[b]Note:[/b] If [member doppler_tracking] is not [constant DOPPLER_TRACKING_DISABLED] but the current [Camera3D]/[AudioListener3D] has doppler tracking disabled, the Doppler effect will be heard but will not take the movement of the current listener into account. If accurate Doppler effect is desired, doppler tracking should be enabled on both the [AudioStreamPlayer3D] and the current [Camera3D]/[AudioListener3D].
@@ -93,6 +97,7 @@
 		</member>
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
 			The maximum number of sounds this node can play at the same time. Playing additional sounds after this value is reached will cut off the oldest sounds.
+			Unlike [member ProjectSettings.audio/general/max_global_polyphony], this limit considers only sounds played by this node.
 		</member>
 		<member name="panning_strength" type="float" setter="set_panning_strength" getter="get_panning_strength" default="1.0">
 			Scales the panning strength for this node by multiplying the base [member ProjectSettings.audio/general/3d_panning_strength] by this factor. If the product is [code]0.0[/code] then stereo panning is disabled and the volume is the same for all channels. If the product is [code]1.0[/code] then one of the channels will be muted when the sound is located exactly to the left (or right) of the listener.

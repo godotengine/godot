@@ -130,6 +130,9 @@ public:
 	void set_max_polyphony(int p_max_polyphony);
 	int get_max_polyphony() const;
 
+	void set_bypass_global_polyphony(bool p_bypass);
+	bool is_bypassing_global_polyphony() const;
+
 	void set_panning_strength(float p_panning_strength);
 	float get_panning_strength() const;
 

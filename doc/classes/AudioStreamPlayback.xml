@@ -97,6 +97,12 @@
 				Returns the [AudioSamplePlayback] associated with this [AudioStreamPlayback] for playing back the audio sample of this stream.
 			</description>
 		</method>
+		<method name="is_bypassing_global_polyphony" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the stream is set to bypass global polyphony (see [member AudioStreamPlayer.bypass_global_polyphony]).
+			</description>
+		</method>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool" />
 			<description>
