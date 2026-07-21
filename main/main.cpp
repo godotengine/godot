@@ -264,6 +264,7 @@ static bool force_res = false;
 static bool use_debug_profiler = false;
 #ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
+static bool debug_audio_visualization = false;
 static bool debug_paths = false;
 static bool debug_navigation = false;
 static bool debug_avoidance = false;
@@ -1828,6 +1829,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(DEBUG_ENABLED)
 		} else if (arg == "--debug-collisions") {
 			debug_collisions = true;
+		} else if (arg == "--debug-audio-visualization") {
+			debug_audio_visualization = true;
 		} else if (arg == "--debug-paths") {
 			debug_paths = true;
 		} else if (arg == "--debug-navigation") {
@@ -4334,6 +4337,9 @@ int Main::start() {
 #ifdef DEBUG_ENABLED
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
+		}
+		if (debug_audio_visualization) {
+			sml->set_debug_audio_visualization_hint(true);
 		}
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);

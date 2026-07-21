@@ -71,6 +71,9 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTRC("Visible Collision Shapes")), RUN_DEBUG_COLLISIONS);
 	debug_menu->set_item_tooltip(-1,
 			TTRC("When this option is enabled, collision shapes and raycast nodes (for 2D and 3D) will be visible in the running project."));
+	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_audio_visualization", TTRC("Visible Audio Visualization")), RUN_DEBUG_AUDIO_VISUALIZATION);
+	debug_menu->set_item_tooltip(-1,
+			TTRC("When this option is enabled, audio visualization (for 2D only 3D NOT YET) will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_paths", TTRC("Visible Paths")), RUN_DEBUG_PATHS);
 	debug_menu->set_item_tooltip(-1,
 			TTRC("When this option is enabled, curve resources used by path nodes will be visible in the running project."));
@@ -154,6 +157,14 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			}
 
 		} break;
+		case RUN_DEBUG_AUDIO_VISUALIZATION: {
+			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_AUDIO_VISUALIZATION));
+			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_AUDIO_VISUALIZATION), !ischecked);
+			if (!initializing) {
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_audio_visualization", !ischecked);
+			}
+
+		} break;
 		case RUN_DEBUG_PATHS: {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS), !ischecked);
@@ -230,6 +241,7 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_deploy_remote = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", true);
 	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
 	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisions", false);
+	bool check_debug_audio_visualization = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_audio_visualization", false);
 	bool check_debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
 	bool check_debug_avoidance = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_avoidance", false);
@@ -246,6 +258,9 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	}
 	if (check_debug_collisions) {
 		_menu_option(RUN_DEBUG_COLLISIONS);
+	}
+	if (check_debug_audio_visualization) {
+		_menu_option(RUN_DEBUG_AUDIO_VISUALIZATION);
 	}
 	if (check_debug_paths) {
 		_menu_option(RUN_DEBUG_PATHS);
