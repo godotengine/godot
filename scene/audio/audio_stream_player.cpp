@@ -160,11 +160,11 @@ bool AudioStreamPlayer::is_autoplay_enabled() const {
 	return internal->autoplay;
 }
 
-void AudioStreamPlayer::set_mix_target(MixTarget p_target) {
+void AudioStreamPlayer::set_mix_target(AudioServer::MixTarget p_target) {
 	mix_target = p_target;
 }
 
-AudioStreamPlayer::MixTarget AudioStreamPlayer::get_mix_target() const {
+AudioServer::MixTarget AudioStreamPlayer::get_mix_target() const {
 	return mix_target;
 }
 
@@ -181,40 +181,7 @@ bool AudioStreamPlayer::get_stream_paused() const {
 }
 
 Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
-	Vector<AudioFrame> volume_vector;
-	// We need at most four stereo pairs (for 7.1 systems).
-	volume_vector.resize(4);
-
-	// Initialize the volume vector to zero.
-	for (AudioFrame &channel_volume_db : volume_vector) {
-		channel_volume_db = AudioFrame(0, 0);
-	}
-
-	float volume_linear = Math::db_to_linear(internal->volume_db);
-
-	// Set the volume vector up according to the speaker mode and mix target.
-	// TODO do we need to scale the volume down when we output to more channels?
-	if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
-		volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
-	} else {
-		switch (mix_target) {
-			case MIX_TARGET_STEREO: {
-				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
-			} break;
-			case MIX_TARGET_SURROUND: {
-				// TODO Make sure this is right.
-				volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
-				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
-				volume_vector.write[2] = AudioFrame(volume_linear, volume_linear);
-				volume_vector.write[3] = AudioFrame(volume_linear, volume_linear);
-			} break;
-			case MIX_TARGET_CENTER: {
-				// TODO Make sure this is right.
-				volume_vector.write[1] = AudioFrame(volume_linear, /* LFE= */ 1.0f);
-			} break;
-		}
-	}
-	return volume_vector;
+	return AudioServer::get_singleton()->create_volume_vector(internal->volume_db, mix_target);
 }
 
 void AudioStreamPlayer::_validate_property(PropertyInfo &p_property) const {
@@ -293,10 +260,6 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 
 	ADD_SIGNAL(MethodInfo("finished"));
-
-	BIND_ENUM_CONSTANT(MIX_TARGET_STEREO);
-	BIND_ENUM_CONSTANT(MIX_TARGET_SURROUND);
-	BIND_ENUM_CONSTANT(MIX_TARGET_CENTER);
 }
 
 AudioStreamPlayer::AudioStreamPlayer() {

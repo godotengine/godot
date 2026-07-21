@@ -40,6 +40,13 @@ bool AudioStreamPlayer::_is_autoplay_enabled_bind_compat_86907() {
 
 void AudioStreamPlayer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer::_is_autoplay_enabled_bind_compat_86907);
+
+	ClassDB::bind_compatibility_method(D_METHOD("set_mix_target", "target"), (void (AudioStreamPlayer::*)(MixTarget))&AudioStreamPlayer::set_mix_target);
+	ClassDB::bind_compatibility_method(D_METHOD("get_mix_target"), (MixTarget (AudioStreamPlayer::*)() const) & AudioStreamPlayer::get_mix_target);
+
+	BIND_ENUM_CONSTANT(MIX_TARGET_STEREO);
+	BIND_ENUM_CONSTANT(MIX_TARGET_SURROUND);
+	BIND_ENUM_CONSTANT(MIX_TARGET_CENTER);
 }
 
 #endif // DISABLE_DEPRECATED
