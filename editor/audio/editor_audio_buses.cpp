@@ -1463,7 +1463,7 @@ void EditorAudioBuses::_file_moved(const String &p_old_path, const String &p_new
 }
 
 void EditorAudioBuses::_file_removed(const String &p_file_path) {
-	if (p_file_path == "res://" + file->get_text()) {
+	if (p_file_path == ResourceUID::uid_to_path(edited_path)) {
 		edited_path = "";
 		file->set_text("");
 	}
