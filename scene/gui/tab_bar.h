@@ -71,6 +71,7 @@ private:
 		Color font_color_overrides[DrawMode::DRAW_MAX] = { Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0), Color(0, 0, 0, 0) };
 
 		String text;
+		String ac_name;
 		String tooltip;
 
 		String language;
@@ -232,6 +233,9 @@ public:
 
 	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
+
+	void set_tab_accessibility_name(int p_tab, const String &p_name);
+	String get_tab_accessibility_name(int p_tab) const;
 
 	void set_tab_tooltip(int p_tab, const String &p_tooltip);
 	String get_tab_tooltip(int p_tab) const;
