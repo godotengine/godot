@@ -137,6 +137,26 @@ TEST_CASE("[SceneTree][RichTextLabel] Sizing with fit content") {
 	memdelete(test_label);
 }
 
+TEST_CASE("[SceneTree][RichTextLabel] Font size wrapping paragraph does not add empty first line") {
+	RichTextLabel *test_label = memnew(RichTextLabel);
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(test_label);
+
+	test_label->set_use_bbcode(true);
+
+	test_label->set_text("[p][font_size=22]aaa[/font_size][/p]");
+	SceneTree::get_singleton()->process(0);
+	CHECK(test_label->get_paragraph_count() == 1);
+	CHECK(test_label->get_character_line(0) == 0);
+
+	test_label->set_text("[font_size=22][p]aaa[/p][/font_size]");
+	SceneTree::get_singleton()->process(0);
+	CHECK(test_label->get_paragraph_count() == 1);
+	CHECK(test_label->get_character_line(0) == 0);
+
+	memdelete(test_label);
+}
+
 } // namespace TestRichTextLabel
 
 #endif // ADVANCED_GUI_DISABLED
