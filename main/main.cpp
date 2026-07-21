@@ -4218,12 +4218,14 @@ int Main::start() {
 #endif // TOOLS_ENABLED
 
 #if defined(OVERRIDE_PATH_ENABLED)
+#ifndef TOOLS_ENABLED
 	bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
 	if (disable_override) {
 		script = String();
 		game_path = String();
 		main_loop_type = String();
 	}
+#endif // TOOLS_ENABLED
 #else
 	script = String();
 	game_path = String();
