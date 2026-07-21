@@ -3135,6 +3135,9 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		subpass.resolve_references = p_subpasses[i].resolve_references;
 	}
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-designator"
+
 	static const MTLLoadAction LOAD_ACTIONS[] = {
 		[ATTACHMENT_LOAD_OP_LOAD] = MTLLoadActionLoad,
 		[ATTACHMENT_LOAD_OP_CLEAR] = MTLLoadActionClear,
@@ -3145,6 +3148,8 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		[ATTACHMENT_STORE_OP_STORE] = MTLStoreActionStore,
 		[ATTACHMENT_STORE_OP_DONT_CARE] = MTLStoreActionDontCare,
 	};
+
+#pragma clang diagnostic pop
 
 	Vector<MDAttachment> attachments;
 	attachments.resize(p_attachments.size());

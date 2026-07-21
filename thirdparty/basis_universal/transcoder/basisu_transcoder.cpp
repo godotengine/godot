@@ -17097,7 +17097,7 @@ namespace basist
 		m_pData = static_cast<const uint8_t *>(pData);
 		m_data_size = data_size;
 
-		memcpy(&m_header, pData, sizeof(m_header));
+		memcpy((void *)&m_header, pData, sizeof(m_header));
 
 		// We only support UASTC LDR, UASTC HDR and ETC1S.
 		// Note the DFD's contents are what we are guided by for decoding the KTX2 file, not this format field (currently).
@@ -17195,7 +17195,7 @@ namespace basist
 			return false;
 		}
 
-		memcpy(&m_levels[0], m_pData + sizeof(ktx2_header), level_index_size_in_bytes);
+		memcpy((void *)&m_levels[0], m_pData + sizeof(ktx2_header), level_index_size_in_bytes);
 		
 		// Sanity check the level offsets and byte sizes
 		for (uint32_t i = 0; i < m_levels.size(); i++)
@@ -17732,7 +17732,7 @@ namespace basist
 
 		const uint8_t* pSrc = m_pData + m_header.m_sgd_byte_offset;
 
-		memcpy(&m_etc1s_header, pSrc, sizeof(ktx2_etc1s_global_data_header));
+		memcpy((void *)&m_etc1s_header, pSrc, sizeof(ktx2_etc1s_global_data_header));
 		pSrc += sizeof(ktx2_etc1s_global_data_header);
 
 		if ((!m_etc1s_header.m_endpoints_byte_length) || (!m_etc1s_header.m_selectors_byte_length) || (!m_etc1s_header.m_tables_byte_length))
@@ -17765,7 +17765,7 @@ namespace basist
 			return false;
 		}
 		
-		memcpy(m_etc1s_image_descs.data(), pSrc, sizeof(ktx2_etc1s_image_desc) * image_count);
+		memcpy((void *)m_etc1s_image_descs.data(), pSrc, sizeof(ktx2_etc1s_image_desc) * image_count);
 		pSrc += sizeof(ktx2_etc1s_image_desc) * image_count;
 
 		// Sanity check the ETC1S image descs
