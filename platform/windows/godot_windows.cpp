@@ -65,8 +65,12 @@ char *wc_to_utf8(const wchar_t *wc) {
 	return ubuf;
 }
 
-int widechar_main(int argc, wchar_t **argv) {
+// 기존 코드: int widechar_main(int argc, wchar_t **argv) {
+// 변경 코드: 아래처럼 extern "C" __declspec(dllexport) 를 추가합니다.
+
+extern "C" __declspec(dllexport) int widechar_main(int argc, wchar_t **argv) {
 	godot_init_profiler();
+    // ... (이후 코드는 수정 없이 그대로 유지) ...
 
 	OS_Windows os(nullptr);
 
