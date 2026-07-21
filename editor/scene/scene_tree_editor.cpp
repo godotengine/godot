@@ -104,6 +104,17 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 			if (mb->is_pressed()) {
 				Vector2 tree_mouse_pos = tree->get_transform().xform_inv(mb->get_position());
 				int tree_button_id = tree->get_button_id_at_position(tree_mouse_pos);
+				if (tree_button_id == BUTTON_MUTE) {
+					TreeItem *tree_item = tree->get_item_at_position(tree_mouse_pos);
+					ERR_FAIL_NULL(tree_item);
+					NodePath node_path = tree_item->get_metadata(0);
+					Node *node = get_node_or_null(node_path);
+					if (node != nullptr) {
+						mute_drag_value = !node->call("is_muted");
+						mute_drag_start_pos = tree_mouse_pos;
+						mute_drag_start_node = node->get_instance_id();
+					}
+				}
 				if (tree_button_id == BUTTON_VISIBILITY) {
 					TreeItem *tree_item = tree->get_item_at_position(tree_mouse_pos);
 					ERR_FAIL_NULL(tree_item);
@@ -115,8 +126,21 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 						visibility_drag_start_node = node->get_instance_id();
 					}
 				}
-			} else if (mb->is_released() && visibility_drag_start_node.is_valid()) {
-				if (!visibility_drag_nodes.is_empty()) {
+			} else if (mb->is_released()) {
+				if (mute_drag_start_node.is_valid() && !mute_drag_nodes.is_empty()) {
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+					undo_redo->create_action(vformat(TTR("Toggle Mute of %d Nodes"), mute_drag_nodes.size()));
+
+					for (ObjectID id : mute_drag_nodes) {
+						Node *node = ObjectDB::get_instance<Node>(id);
+						if (node != nullptr) {
+							undo_redo->add_do_method(node, "set_mute", mute_drag_value);
+							undo_redo->add_undo_method(node, "set_mute", !mute_drag_value);
+						}
+					}
+
+					undo_redo->commit_action(false);
+				} else if (visibility_drag_start_node.is_valid() && !visibility_drag_nodes.is_empty()) {
 					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 					undo_redo->create_action(vformat(TTR("Toggle Visibility of %d Nodes"), visibility_drag_nodes.size()));
 
@@ -131,12 +155,18 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 					undo_redo->commit_action(false);
 				}
 
-				// Defer this so that `_cell_button_pressed` can still react to the dragging.
+				// Defer these so that `_cell_button_pressed` can still react to the dragging.
+				callable_mp(this, &SceneTreeEditor::_reset_mute_drag).call_deferred();
 				callable_mp(this, &SceneTreeEditor::_reset_visibility_drag).call_deferred();
 			}
-		} else if (mb->get_button_index() == MouseButton::RIGHT && visibility_drag_start_node.is_valid()) {
-			_reset_visibility_drag();
-			accept_event();
+		} else if (mb->get_button_index() == MouseButton::RIGHT) {
+			if (mute_drag_start_node.is_valid()) {
+				_reset_mute_drag();
+				accept_event();
+			} else if (visibility_drag_start_node.is_valid()) {
+				_reset_visibility_drag();
+				accept_event();
+			}
 		}
 
 		return;
@@ -144,7 +174,27 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
-		if (visibility_drag_start_node.is_valid()) {
+		if (mute_drag_start_node.is_valid()) {
+			Vector2 tree_mouse_pos = tree->get_transform().xform_inv(mm->get_position());
+			int tree_button_id = tree->get_button_id_at_position(tree_mouse_pos);
+			bool crossed_drag_threshold = mute_drag_start_pos.distance_to(tree_mouse_pos) > get_viewport()->get_drag_threshold();
+			if (tree_button_id == BUTTON_MUTE && (crossed_drag_threshold || !mute_drag_nodes.is_empty())) {
+				Node *start_node = ObjectDB::get_instance<Node>(mute_drag_start_node);
+				if (start_node != nullptr && (bool)start_node->call("is_muted") != mute_drag_value) {
+					start_node->call("set_mute", mute_drag_value);
+					mute_drag_nodes.push_back(mute_drag_start_node);
+				}
+
+				TreeItem *tree_item = tree->get_item_at_position(tree_mouse_pos);
+				ERR_FAIL_NULL(tree_item);
+				NodePath node_path = tree_item->get_metadata(0);
+				Node *node = get_node_or_null(node_path);
+				if (node != nullptr && (bool)node->call("is_muted") != mute_drag_value) {
+					node->call("set_mute", mute_drag_value);
+					mute_drag_nodes.push_back(node->get_instance_id());
+				}
+			}
+		} else if (visibility_drag_start_node.is_valid()) {
 			Vector2 tree_mouse_pos = tree->get_transform().xform_inv(mm->get_position());
 			int tree_button_id = tree->get_button_id_at_position(tree_mouse_pos);
 			bool crossed_drag_threshold = visibility_drag_start_pos.distance_to(tree_mouse_pos) > get_viewport()->get_drag_threshold();
@@ -170,9 +220,14 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_action_type()) {
-		if (p_event->is_action_pressed(SNAME("ui_cancel")) && visibility_drag_start_node.is_valid()) {
-			_reset_visibility_drag();
-			accept_event();
+		if (p_event->is_action_pressed(SNAME("ui_cancel"))) {
+			if (mute_drag_start_node.is_valid()) {
+				_reset_mute_drag();
+				accept_event();
+			} else if (visibility_drag_start_node.is_valid()) {
+				_reset_visibility_drag();
+				accept_event();
+			}
 		}
 	}
 }
@@ -208,7 +263,24 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		if (script_typed.is_valid()) {
 			emit_signal(SNAME("open_script"), script_typed);
 		}
+	} else if (p_id == BUTTON_MUTE) {
+		if (!mute_drag_nodes.is_empty()) {
+			return;
+		}
 
+		undo_redo->create_action(TTR("Toggle Mute"));
+		_toggle_mute(n);
+		List<Node *> selection = editor_selection->get_top_selected_node_list();
+		if (selection.size() > 1 && selection.find(n) != nullptr) {
+			for (Node *nv : selection) {
+				ERR_FAIL_NULL(nv);
+				if (nv == n) {
+					continue;
+				}
+				_toggle_mute(nv);
+			}
+		}
+		undo_redo->commit_action();
 	} else if (p_id == BUTTON_VISIBILITY) {
 		if (!visibility_drag_nodes.is_empty()) {
 			return;
@@ -343,6 +415,15 @@ void SceneTreeEditor::_revoke_unique_name() {
 	undo_redo->add_do_method(this, "_update_tree");
 	undo_redo->add_undo_method(this, "_update_tree");
 	undo_redo->commit_action();
+}
+
+void SceneTreeEditor::_toggle_mute(Node *p_node) {
+	if (p_node->has_method("is_muted") && p_node->has_method("set_mute")) {
+		bool muted = bool(p_node->call("is_muted"));
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->add_do_method(p_node, "set_mute", !muted);
+		undo_redo->add_undo_method(p_node, "set_mute", muted);
+	}
 }
 
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
@@ -712,6 +793,19 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			p_item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
 		}
 
+		if (p_node->has_method("is_muted") && p_node->has_method("set_mute") && p_node->has_signal(SceneStringName(mute_toggled))) {
+			bool is_muted = p_node->call("is_muted");
+			if (!is_muted) {
+				p_item->add_button(0, get_editor_theme_icon(SNAME("AudioStreamPlayer")), BUTTON_MUTE, false, TTR("Toggle Mute"));
+			} else {
+				p_item->add_button(0, get_editor_theme_icon(SNAME("AudioMute")), BUTTON_MUTE, false, TTR("Toggle Mute"));
+			}
+			const Callable mute_toggled_clb = callable_mp(this, &SceneTreeEditor::_node_mute_toggled);
+			if (!p_node->is_connected(SceneStringName(mute_toggled), mute_toggled_clb)) {
+				p_node->connect(SceneStringName(mute_toggled), mute_toggled_clb.bind(p_node));
+			}
+		}
+
 		if (p_node->has_method("is_visible") && p_node->has_method("set_visible") && p_node->has_signal(SceneStringName(visibility_changed))) {
 			bool is_visible = p_node->call("is_visible");
 			if (is_visible) {
@@ -801,6 +895,45 @@ void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
 	}
 
 	p_item->set_tooltip_text(0, tooltip);
+}
+
+void SceneTreeEditor::_node_mute_toggled(Node *p_node) {
+	HashMap<Node *, CachedNode>::Iterator I = node_cache.get(p_node, false);
+	if (!I) {
+		// We leave these signals connected when switching tabs.
+		// If the node is not in cache it was for a different tab.
+		return;
+	}
+
+	if (!p_node || (p_node != get_scene_node() && !p_node->get_owner())) {
+		return;
+	}
+
+	TreeItem *item;
+	if (I->value.item && I->value.item->get_metadata(0) == p_node->get_path()) {
+		item = I->value.item;
+	} else {
+		item = _find(tree->get_root(), p_node->get_path());
+	}
+
+	if (!item) {
+		return;
+	}
+
+	int idx = item->get_button_by_id(0, BUTTON_MUTE);
+	ERR_FAIL_COND(idx == -1);
+
+	bool node_muted = false;
+
+	if (p_node->has_method("is_muted")) {
+		node_muted = p_node->call("is_muted");
+	}
+
+	if (!node_muted) {
+		item->set_button(0, idx, get_editor_theme_icon(SNAME("AudioStreamPlayer")));
+	} else {
+		item->set_button(0, idx, get_editor_theme_icon(SNAME("AudioMute")));
+	}
 }
 
 void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
@@ -1467,6 +1600,13 @@ void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
 	}
 }
 
+void SceneTreeEditor::_reset_mute_drag() {
+	mute_drag_value = false;
+	mute_drag_start_pos = Vector2();
+	mute_drag_start_node = ObjectID();
+	mute_drag_nodes.clear();
+}
+
 void SceneTreeEditor::_reset_visibility_drag() {
 	visibility_drag_value = false;
 	visibility_drag_start_pos = Vector2();
@@ -1540,6 +1680,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT:
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			_reset_mute_drag();
 			_reset_visibility_drag();
 		} break;
 	}

@@ -72,6 +72,10 @@
 		<member name="mix_target" type="int" setter="set_mix_target" getter="get_mix_target" enum="AudioStreamPlayer.MixTarget" default="0">
 			The mix target channels. Has no effect when two speakers or less are detected (see [enum AudioServer.SpeakerMode]).
 		</member>
+		<member name="mute" type="bool" setter="set_mute" getter="is_muted" default="false">
+			The mute control. If [code]true[/code], audio will be silenced, while continuing to play.
+			[b]Note:[/b] This only works if [member playback_type] is set to [constant AudioServer.PLAYBACK_TYPE_STREAM].
+		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The audio's pitch and tempo, as a multiplier of the [member stream]'s sample rate. A value of [code]2.0[/code] doubles the audio's pitch, while a value of [code]0.5[/code] halves the pitch.
 		</member>
@@ -101,6 +105,11 @@
 		<signal name="finished">
 			<description>
 				Emitted when a sound finishes playing without interruptions. This signal is [i]not[/i] emitted when calling [method stop], or when exiting the tree while sounds are playing.
+			</description>
+		</signal>
+		<signal name="mute_toggled">
+			<description>
+				Emitted when [member mute] is toggled.
 			</description>
 		</signal>
 	</signals>
