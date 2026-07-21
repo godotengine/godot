@@ -43,6 +43,13 @@ static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
 GODOT_GCC_WARNING_PUSH
 GODOT_GCC_WARNING_IGNORE("-Wplacement-new") // Silence a false positive warning (see GH-52119).
 GODOT_GCC_WARNING_IGNORE("-Wmaybe-uninitialized") // False positive raised when using constexpr.
+GODOT_GCC_WARNING_IGNORE("-Warray-bounds")
+GODOT_GCC_WARNING_IGNORE("-Wrestrict")
+GODOT_GCC_WARNING_IGNORE("-Wstringop-overflow=")
+#ifdef WINDOWS_ENABLED
+GODOT_GCC_WARNING_IGNORE("-Wdangling-pointer=")
+#endif
+GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4724) // Potential mod by 0.
 
 template <typename T>
 class CowData {
@@ -441,6 +448,7 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 }
 
 GODOT_GCC_WARNING_POP
+GODOT_MSVC_WARNING_POP
 
 // Zero-constructing CowData initializes _ptr to nullptr (and thus empty).
 template <typename T>

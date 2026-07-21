@@ -107,20 +107,7 @@ namespace basisu
 		debug_puts(res.c_str());
 	}
 
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
-#endif                  
-#endif
-		
-	template <typename T> inline void clear_obj(T& obj) { memset(&obj, 0, sizeof(obj)); }
-
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif                            
-#endif
+	template <typename T> inline void clear_obj(T& obj) { memset((void *)&obj, 0, sizeof(obj)); }
 
 	constexpr double cPiD = 3.14159265358979323846264338327950288;
 	constexpr float REALLY_SMALL_FLOAT_VAL = .000000125f;

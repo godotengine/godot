@@ -1503,22 +1503,10 @@ namespace basisu
 
 			if (BASISU_IS_BITWISE_COPYABLE(T))
 			{
-
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
-#endif                  
-#endif
 				if ((m_p) && (other.m_p))
 				{
-					memcpy(m_p, other.m_p, m_size * sizeof(T));
+					memcpy((void *)m_p, other.m_p, m_size * sizeof(T));
 				}
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif                
-#endif
 			}
 			else
 			{
@@ -1649,19 +1637,8 @@ namespace basisu
 
 			if (BASISU_IS_BITWISE_COPYABLE(T))
 			{
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
-#endif         
-#endif
 				if ((m_p) && (other.m_p))
-					memcpy(m_p, other.m_p, other.m_size * sizeof(T));
-#ifndef __EMSCRIPTEN__          
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif                            
-#endif
+					memcpy((void *)m_p, other.m_p, other.m_size * sizeof(T));
 			}
 			else
 			{
@@ -2233,21 +2210,7 @@ namespace basisu
 				}
 
 				// Copy "down" the objects to preserve, filling in the empty slots.
-
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
-#endif
-#endif
-
-				memmove(pDst, pSrc, num_to_move * sizeof(T));
-
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif            
-#endif
+				memmove((void *)pDst, pSrc, num_to_move * sizeof(T));
 			}
 			else
 			{
@@ -2492,19 +2455,7 @@ namespace basisu
 		{
 			if ((sizeof(T) == 1) && (scalar_type<T>::cFlag))
 			{
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
-#endif              
-#endif
-				memset(m_p, *reinterpret_cast<const uint8_t*>(&o), m_size);
-
-#ifndef __EMSCRIPTEN__            
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif                        
-#endif
+				memset((void *)m_p, *reinterpret_cast<const uint8_t*>(&o), m_size);
 			}
 			else
 			{
