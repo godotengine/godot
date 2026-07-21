@@ -1583,9 +1583,6 @@
 		<member name="text_editor/completion/add_string_name_literals" type="bool" setter="" getter="">
 			If [code]true[/code], uses [StringName] instead of [String] when appropriate for code autocompletion.
 		</member>
-		<member name="text_editor/completion/private_dragged_onready_variables" type="bool" setter="" getter="">
-			If [code]true[/code], prefixes an underscore on variables created by dropping nodes from the Scene Dock while holding [kbd]Ctrl[/kbd].
-		</member>
 		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
 			If [code]true[/code], automatically adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] (such as [code]-&gt; void[/code] and [code]: int[/code]) in many situations where it's possible to, including when:
 			- Accepting a suggestion from code autocompletion;
@@ -1613,6 +1610,9 @@
 		</member>
 		<member name="text_editor/completion/idle_parse_delay_with_errors_found" type="float" setter="" getter="">
 			The delay used instead of [member text_editor/completion/idle_parse_delay], when the parser has found errors. A lower value should feel more responsive while fixing code, but may cause notable stuttering and increase CPU usage.
+		</member>
+		<member name="text_editor/completion/private_dragged_onready_variables" type="bool" setter="" getter="">
+			If [code]true[/code], prefixes an underscore on variables created by dropping nodes from the Scene Dock while holding [kbd]Ctrl[/kbd].
 		</member>
 		<member name="text_editor/completion/put_callhint_tooltip_below_current_line" type="bool" setter="" getter="">
 			If [code]true[/code], the code completion tooltip will appear below the current line unless there is no space on screen below the current line. If [code]false[/code], the code completion tooltip will appear above the current line.
