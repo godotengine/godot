@@ -221,6 +221,7 @@ class EditorAudioBuses : public EditorDock {
 
 	void _server_save();
 	void _file_moved(const String &p_old_path, const String &p_new_path);
+	void _file_removed(const String &p_file_path);
 
 	void _select_layout();
 	void _load_layout();
