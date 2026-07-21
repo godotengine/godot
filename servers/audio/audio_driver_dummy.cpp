@@ -40,7 +40,7 @@ Error AudioDriverDummy::init() {
 	samples_in = nullptr;
 
 	if (mix_rate == -1) {
-		mix_rate = _get_configured_mix_rate();
+		mix_rate = get_configured_mix_rate();
 	}
 
 	channels = get_channels();
