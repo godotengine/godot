@@ -333,6 +333,10 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			pi.usage |= PROPERTY_USAGE_RESTART_IF_CHANGED;
 		}
 
+		if (E.name == "interface/editor/appearance/custom_display_scale" && int(get("interface/editor/appearance/display_scale")) != 7) {
+			pi.usage &= ~PROPERTY_USAGE_EDITOR;
+		}
+
 		p_list->push_back(pi);
 	}
 
@@ -481,7 +485,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Display what the Auto display scale setting effectively corresponds to.
 	const String display_scale_hint_string = vformat("Auto (%d%%),75%%,100%%,125%%,150%%,175%%,200%%,Custom", Math::round(get_auto_display_scale() * 100));
-	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/appearance/display_scale", 0, display_scale_hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/appearance/display_scale", 0, display_scale_hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED)
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/appearance/custom_display_scale", 1.0, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 
 	String ed_screen_hints = "Auto (Remembers last position):-5,Screen With Mouse Pointer:-4,Screen With Keyboard Focus:-3,Primary Screen:-2";
