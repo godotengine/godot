@@ -5281,19 +5281,26 @@ void Main::cleanup(bool p_force) {
 
 #include "main/main.h"
 
-// 컴파일러 최적화와 관계없이 무조건 DLL 외부로 내보내도록 강제 선언합니다.
 extern "C" __declspec(dllexport) int libgodot_main(int argc, char **argv) {
-    // 고도 엔진 내부의 정식 셋업 및 스타트 함수를 호출합니다.
+    // 🎯 수정: 기존 &argv 대신 argv 포인터 배열을 그대로 전달합니다.
+    // 고도 엔진은 첫 번째 인자(argv[0])를 실행 파일명으로 인식하므로 
+    // argc와 argv를 원본 그대로 자연스럽게 넘겨주어야 합니다.
     Error err = Main::setup(argv[0], argc - 1, &argv[1]);
+    
     if (err != OK) {
+        if (err == ERR_HELP) { 
+            return 0; // --help 또는 --version 호출 시 정상 종료 처리
+        }
         return 1;
     }
+    
     if (Main::start() == 0) {
-        // 메인 루프 실행 (창이 닫힐 때까지 대기)
+        // 고도 엔진 창이 닫힐 때까지 1프레임씩 메인 루프를 반복 구동합니다.
         while (Main::iteration() == false) {
-            // 엔진 프레임을 반복합니다.
+            // 엔진 프레임 내부 프로세싱
         }
     }
+    
     Main::cleanup();
     return 0;
 }
