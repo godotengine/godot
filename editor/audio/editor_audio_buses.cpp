@@ -1462,8 +1462,8 @@ void EditorAudioBuses::_file_moved(const String &p_old_path, const String &p_new
 	}
 }
 
-void EditorAudioBuses::_file_removed(const String &p_file_path) {
-	if (p_file_path == ResourceUID::uid_to_path(edited_path)) {
+void EditorAudioBuses::_resource_removed(Ref<Resource> p_res) {
+	if (p_res->get_path() == ResourceUID::uid_to_path(edited_path)) {
 		edited_path = "";
 		file->set_text("");
 	}
@@ -1637,7 +1637,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &EditorAudioBuses::_rebuild_buses));
 	AudioServer::get_singleton()->connect("bus_renamed", callable_mp(this, &EditorAudioBuses::_rebuild_buses).unbind(3));
 	FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &EditorAudioBuses::_file_moved));
-	FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &EditorAudioBuses::_file_removed));
+	FileSystemDock::get_singleton()->connect("resource_removed", callable_mp(this, &EditorAudioBuses::_resource_removed));
 
 	set_process(true);
 }
