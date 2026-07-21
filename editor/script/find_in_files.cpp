@@ -43,7 +43,6 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/shader/shader_editor_plugin.h"
-#include "editor/shader/text_shader_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -295,18 +294,19 @@ CodeTextEditor *get_code_edit(const String &p_fpath) {
 	ShaderEditorPlugin *shader_editor_plugin = ShaderEditorPlugin::get_singleton();
 	ScriptEditorPlugin *script_editor_plugin = ScriptEditorPlugin::get_singleton();
 
+	ScriptEditor *script_editor = nullptr;
 	if (shader_editor_plugin && shader_editor_plugin->handles(res.ptr())) {
-		TextShaderEditor *tse = Object::cast_to<TextShaderEditor>(shader_editor_plugin->get_shader_editor(res));
-		if (tse) {
-			return tse->get_code_editor();
-		}
+		script_editor = ScriptEditor::get_bottom_script_editor();
 	} else if (script_editor_plugin && script_editor_plugin->handles(res.ptr())) {
-		ScriptEditor *script_editor = ScriptEditor::get_singleton();
-		TextEditorBase *teb = Object::cast_to<TextEditorBase>(script_editor->get_script_editor(res));
+		script_editor = ScriptEditor::get_singleton();
+	}
+	if (script_editor) {
+		TextEditorBase *teb = Object::cast_to<TextEditorBase>(script_editor->get_resource_editor(res));
 		if (teb) {
 			return teb->get_code_editor();
 		}
 	}
+
 	return nullptr;
 }
 

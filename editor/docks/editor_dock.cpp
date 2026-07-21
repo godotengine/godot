@@ -162,8 +162,16 @@ void EditorDock::make_visible() {
 	EditorDockManager::get_singleton()->open_dock(this, true);
 }
 
-void EditorDock::make_floating() {
+void EditorDock::make_floating(int p_screen) {
 	EditorDockManager::get_singleton()->make_dock_floating(this);
+
+	if (p_screen < 0) {
+		return;
+	}
+	Window *current_window = get_window();
+	if (current_window) {
+		current_window->set_current_screen(p_screen);
+	}
 }
 
 void EditorDock::close() {
