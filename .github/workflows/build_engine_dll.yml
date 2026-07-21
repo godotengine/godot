@@ -20,9 +20,9 @@ jobs:
       run: pip install scons
 
     - name: 윈도우용 메인 엔진 DLL 빌드
-      # library_type=shared_library 옵션이 엔진을 DLL로 만들어주는 핵심 키포인트입니다.
+      # accesskit=no와 d3d12=no 옵션을 추가하여 누락된 의존성 검사를 건너뜁니다.
       run: |
-        scons platform=windows target=template_release arch=x86_64 library_type=shared_library
+        scons platform=windows target=template_release arch=x86_64 library_type=shared_library accesskit=no d3d12=no
 
     - name: 빌드 완료된 DLL 파일 업로드
       uses: actions/upload-artifact@v4
