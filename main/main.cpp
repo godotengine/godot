@@ -5278,3 +5278,22 @@ void Main::cleanup(bool p_force) {
 
 	Thread::release_main_thread();
 }
+
+#include "main/main.h"
+
+// 컴파일러 최적화와 관계없이 무조건 DLL 외부로 내보내도록 강제 선언합니다.
+extern "C" __declspec(dllexport) int libgodot_main(int argc, char **argv) {
+    // 고도 엔진 내부의 정식 셋업 및 스타트 함수를 호출합니다.
+    Error err = Main::setup(argv[0], argc - 1, &argv[1]);
+    if (err != OK) {
+        return 1;
+    }
+    if (Main::start() == 0) {
+        // 메인 루프 실행 (창이 닫힐 때까지 대기)
+        while (Main::iteration() == false) {
+            // 엔진 프레임을 반복합니다.
+        }
+    }
+    Main::cleanup();
+    return 0;
+}
