@@ -37,7 +37,17 @@
 
 class AudioStreamPolyphonic : public AudioStream {
 	GDCLASS(AudioStreamPolyphonic, AudioStream)
+
+public:
+	enum PolyphonyMode {
+		PREVENT_NEW = 0,
+		STOP_OLDEST = 1,
+	};
+
+private:
 	int polyphony = 32;
+
+	PolyphonyMode polyphony_mode = PREVENT_NEW;
 
 	AudioServer::PlaybackType playback_type;
 
@@ -49,6 +59,9 @@ public:
 
 	void set_polyphony(int p_voices);
 	int get_polyphony() const;
+
+	void set_polyphony_mode(PolyphonyMode p_mode);
+	PolyphonyMode get_polyphony_mode() const;
 
 	virtual bool is_meta_stream() const override { return true; }
 
@@ -81,6 +94,9 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 
 	bool active = false;
 	uint32_t id_counter = 1;
+
+	AudioStreamPolyphonic::PolyphonyMode polyphony_mode_playback;
+	Vector<int64_t> active_ids;
 
 	bool _is_sample = false;
 	Ref<AudioSamplePlayback> sample_playback;
@@ -132,3 +148,5 @@ private:
 public:
 	AudioStreamPlaybackPolyphonic();
 };
+
+VARIANT_ENUM_CAST(AudioStreamPolyphonic::PolyphonyMode)

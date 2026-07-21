@@ -41,6 +41,7 @@ Ref<AudioStreamPlayback> AudioStreamPolyphonic::instantiate_playback() {
 	Ref<AudioStreamPlaybackPolyphonic> playback;
 	playback.instantiate();
 	playback->streams.resize(polyphony);
+	playback->polyphony_mode_playback = polyphony_mode;
 	return playback;
 }
 
@@ -56,11 +57,25 @@ int AudioStreamPolyphonic::get_polyphony() const {
 	return polyphony;
 }
 
+void AudioStreamPolyphonic::set_polyphony_mode(PolyphonyMode p_mode) {
+	polyphony_mode = p_mode;
+}
+
+AudioStreamPolyphonic::PolyphonyMode AudioStreamPolyphonic::get_polyphony_mode() const {
+	return polyphony_mode;
+}
+
 void AudioStreamPolyphonic::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polyphony", "voices"), &AudioStreamPolyphonic::set_polyphony);
 	ClassDB::bind_method(D_METHOD("get_polyphony"), &AudioStreamPolyphonic::get_polyphony);
+	ClassDB::bind_method(D_METHOD("set_polyphony_mode", "mode"), &AudioStreamPolyphonic::set_polyphony_mode);
+	ClassDB::bind_method(D_METHOD("get_polyphony_mode"), &AudioStreamPolyphonic::get_polyphony_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "polyphony", PROPERTY_HINT_RANGE, "1,128,1"), "set_polyphony", "get_polyphony");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "polyphony_mode", PROPERTY_HINT_ENUM, "Prevent New,Stop Oldest"), "set_polyphony_mode", "get_polyphony_mode");
+
+	BIND_ENUM_CONSTANT(PREVENT_NEW);
+	BIND_ENUM_CONSTANT(STOP_OLDEST);
 }
 
 AudioStreamPolyphonic::AudioStreamPolyphonic() {
@@ -96,6 +111,8 @@ void AudioStreamPlaybackPolyphonic::stop() {
 	if (locked) {
 		AudioServer::get_singleton()->unlock();
 	}
+
+	active_ids.clear();
 
 	active = false;
 }
@@ -133,7 +150,10 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 		p_buffer[i] = AudioFrame(0, 0);
 	}
 
+	int32_t stream_index = -1;
 	for (Stream &s : streams) {
+		stream_index++;
+		int64_t stream_id = (ID(stream_index) << INDEX_SHIFT) | ID(s.id);
 		if (!s.active.is_set()) {
 			continue;
 		}
@@ -154,6 +174,7 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 			if (s.pending_play.is_set()) {
 				// Did not get the chance to play, was finalized too soon.
 				s.active.clear();
+				active_ids.erase(stream_id);
 				continue;
 			}
 			next_volume = 0;
@@ -194,10 +215,12 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 		}
 
 		if (stream_done) {
+			active_ids.erase(stream_id);
 			continue;
 		}
 
 		if (s.finish_request.is_set()) {
+			active_ids.erase(stream_id);
 			s.active.clear();
 		}
 	}
@@ -211,6 +234,16 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 	AudioServer::PlaybackType playback_type = p_playback_type == AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT
 			? AudioServer::get_singleton()->get_default_playback_type()
 			: p_playback_type;
+
+	if (!active_ids.is_empty() && active_ids.size() == streams.size() && polyphony_mode_playback == AudioStreamPolyphonic::STOP_OLDEST) {
+		Stream *s = _find_stream(active_ids[0]);
+		if (!s) {
+			return INVALID_ID;
+		}
+		s->finish_request.set();
+		s->active.clear();
+		active_ids.remove_at(0);
+	}
 
 	for (uint32_t i = 0; i < streams.size(); i++) {
 		if (streams[i].active.is_set() && streams[i].stream_playback->get_is_sample()) {
@@ -259,7 +292,10 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 				AudioServer::get_singleton()->start_sample_playback(sp);
 			}
 
-			return (ID(i) << INDEX_SHIFT) | ID(streams[i].id);
+			ID ret = (ID(i) << INDEX_SHIFT) | ID(streams[i].id);
+			active_ids.push_back(ret);
+
+			return ret;
 		}
 	}
 
