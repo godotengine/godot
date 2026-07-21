@@ -32,6 +32,7 @@
 
 #ifdef COREAUDIO_ENABLED
 
+#include "core/templates/safe_refcount.h"
 #include "servers/audio/audio_server.h"
 
 #import <AudioUnit/AudioUnit.h>
@@ -62,14 +63,26 @@ class AudioDriverCoreAudio : public AudioDriver {
 	unsigned int buffer_size = 0;
 
 #ifdef MACOS_ENABLED
+	AudioDeviceID input_device_id = 0;
+	SafeFlag input_reconfig_pending;
+	Mutex input_reconfig_mutex;
+	bool input_running = false;
+
 	PackedStringArray _get_device_list(bool capture = false);
 	void _set_device(const String &output_device, bool capture = false);
+
+	void _set_input_sample_rate_listener(AudioDeviceID device_id, bool add);
+	void _reconfigure_input_device();
 
 	static OSStatus input_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 			void *inClientData);
 
 	static OSStatus output_device_address_cb(AudioObjectID inObjectID,
+			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
+			void *inClientData);
+
+	static OSStatus input_sample_rate_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
 			void *inClientData);
 #endif

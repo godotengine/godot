@@ -69,6 +69,16 @@ OSStatus AudioDriverCoreAudio::output_device_address_cb(AudioObjectID inObjectID
 	return noErr;
 }
 
+OSStatus AudioDriverCoreAudio::input_sample_rate_cb(AudioObjectID inObjectID,
+		UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
+		void *inClientData) {
+	AudioDriverCoreAudio *driver = static_cast<AudioDriverCoreAudio *>(inClientData);
+
+	driver->_reconfigure_input_device();
+
+	return noErr;
+}
+
 // Switch to kAudioObjectPropertyElementMain everywhere to remove deprecated warnings.
 #if (TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED < 120000) || (TARGET_OS_IOS && __IPHONE_OS_VERSION_MAX_ALLOWED < 150000)
 #define kAudioObjectPropertyElementMain kAudioObjectPropertyElementMaster
@@ -237,6 +247,13 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	if (!ad->active) {
 		return 0;
 	}
+
+#ifdef MACOS_ENABLED
+	// skip audio render while reconfiguring input device
+	if (ad->input_reconfig_pending.is_set()) {
+		return 0;
+	}
+#endif
 
 	ad->lock();
 	ad->start_counting_ticks();
@@ -418,7 +435,11 @@ Error AudioDriverCoreAudio::init_input_device() {
 	AudioStreamBasicDescription strdesc;
 	memset(&strdesc, 0, sizeof(strdesc));
 	size = sizeof(strdesc);
+#ifdef MACOS_ENABLED
+	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kInputBus, &strdesc, &size);
+#else
 	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, &size);
+#endif
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	switch (strdesc.mChannelsPerFrame) {
@@ -477,7 +498,12 @@ Error AudioDriverCoreAudio::init_input_device() {
 	result = AudioUnitInitialize(input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	print_verbose("CoreAudio: input sampling rate: " + itos(capture_mix_rate) + " Hz");
+#ifdef MACOS_ENABLED
+	input_device_id = device_id;
+	_set_input_sample_rate_listener(input_device_id, true);
+#endif
+
+	print_verbose("CoreAudio: input sampling rate: " + itos(capture_mix_rate) + " Hz, input device channels: " + itos(capture_channels));
 	print_verbose("CoreAudio: input audio buffer frames: " + itos(capture_buffer_frames) + " calculated latency: " + itos(capture_buffer_frames * 1000 / capture_mix_rate) + "ms");
 
 	return OK;
@@ -500,6 +526,9 @@ void AudioDriverCoreAudio::finish_input_device() {
 		}
 
 #ifdef MACOS_ENABLED
+		_set_input_sample_rate_listener(input_device_id, false);
+		input_device_id = 0;
+
 		AudioObjectPropertyAddress prop;
 		prop.mSelector = kAudioHardwarePropertyDefaultInputDevice;
 		prop.mScope = kAudioObjectPropertyScopeGlobal;
@@ -530,6 +559,11 @@ Error AudioDriverCoreAudio::input_start() {
 	if (result != noErr) {
 		ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
 	}
+#ifdef MACOS_ENABLED
+	else {
+		input_running = true;
+	}
+#endif
 
 	return OK;
 }
@@ -540,12 +574,124 @@ Error AudioDriverCoreAudio::input_stop() {
 		if (result != noErr) {
 			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
 		}
+#ifdef MACOS_ENABLED
+		else {
+			input_running = false;
+		}
+#endif
 	}
 
 	return OK;
 }
 
 #ifdef MACOS_ENABLED
+
+void AudioDriverCoreAudio::_set_input_sample_rate_listener(AudioDeviceID device_id, bool add) {
+	if (device_id == 0) {
+		return;
+	}
+
+	AudioObjectPropertyAddress property_sr = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
+
+	OSStatus result;
+	if (add) {
+		result = AudioObjectAddPropertyListener(device_id, &property_sr, &input_sample_rate_cb, this);
+	} else {
+		result = AudioObjectRemovePropertyListener(device_id, &property_sr, &input_sample_rate_cb, this);
+	}
+	if (result != noErr) {
+		String action = add ? "Add" : "Remove";
+		ERR_PRINT("AudioObject " + action + " PropertyListener failed, code: " + itos(result));
+	}
+}
+
+void AudioDriverCoreAudio::_reconfigure_input_device() {
+	MutexLock reconfig_lock(input_reconfig_mutex);
+
+	input_reconfig_pending.set();
+
+	bool was_running = input_running;
+	if (was_running) {
+		OSStatus result = AudioOutputUnitStop(input_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioOutputUnitStop failed, code: " + itos(result));
+		}
+	}
+
+	lock();
+
+	OSStatus result = AudioUnitUninitialize(input_unit);
+	if (result != noErr) {
+		ERR_PRINT("AudioUnitUninitialize failed, code: " + itos(result));
+	}
+
+	// update existing device_id, if changed
+	AudioDeviceID device_id = input_device_id;
+	UInt32 dev_id_size = sizeof(AudioDeviceID);
+	result = AudioUnitGetProperty(input_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &device_id, &dev_id_size);
+	if (result == noErr && device_id != input_device_id) {
+		_set_input_sample_rate_listener(input_device_id, false);
+		_set_input_sample_rate_listener(device_id, true);
+		input_device_id = device_id;
+	}
+
+	// update actual input channels
+	AudioStreamBasicDescription strdesc;
+	memset(&strdesc, 0, sizeof(strdesc));
+	UInt32 size = sizeof(strdesc);
+	result = AudioUnitGetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kInputBus, &strdesc, &size);
+	if (result == noErr) {
+		capture_channels = (strdesc.mChannelsPerFrame == 1) ? 1 : 2;
+	}
+
+	// update actual mix rate
+	double hw_mix_rate;
+	UInt32 hw_mix_rate_size = sizeof(hw_mix_rate);
+	AudioObjectPropertyAddress property_sr = { kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
+	result = AudioObjectGetPropertyData(device_id, &property_sr, 0, nullptr, &hw_mix_rate_size, &hw_mix_rate);
+	if (result == noErr) {
+		capture_mix_rate = hw_mix_rate;
+	}
+
+	// update capture channels count
+	memset(&strdesc, 0, sizeof(strdesc));
+	strdesc.mFormatID = kAudioFormatLinearPCM;
+	strdesc.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
+	strdesc.mChannelsPerFrame = capture_channels;
+	strdesc.mSampleRate = capture_mix_rate;
+	strdesc.mFramesPerPacket = 1;
+	strdesc.mBitsPerChannel = 16;
+	strdesc.mBytesPerFrame = strdesc.mBitsPerChannel * strdesc.mChannelsPerFrame / 8;
+	strdesc.mBytesPerPacket = strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
+
+	result = AudioUnitSetProperty(input_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, kInputBus, &strdesc, sizeof(strdesc));
+	if (result != noErr) {
+		ERR_PRINT("AudioUnitSetProperty (StreamFormat) failed, code: " + itos(result));
+	}
+
+	// update capture buffer size
+	uint32_t latency = Engine::get_singleton()->get_audio_output_latency();
+	capture_buffer_frames = Math::closest_power_of_2(latency * (uint32_t)capture_mix_rate / (uint32_t)1000);
+	buffer_size = capture_buffer_frames * capture_channels;
+
+	result = AudioUnitInitialize(input_unit);
+	if (result != noErr) {
+		ERR_PRINT("AudioUnitInitialize failed, code: " + itos(result));
+	}
+
+	input_buffer_init(capture_buffer_frames);
+
+	if (was_running) {
+		result = AudioOutputUnitStart(input_unit);
+		if (result != noErr) {
+			ERR_PRINT("AudioOutputUnitStart failed, code: " + itos(result));
+		}
+	}
+
+	print_verbose("CoreAudio: input device reinitialized; input sampling rate: " + itos(capture_mix_rate) + " Hz, input device channels: " + itos(capture_channels));
+	input_reconfig_pending.clear();
+	unlock();
+}
 
 PackedStringArray AudioDriverCoreAudio::_get_device_list(bool input) {
 	PackedStringArray list;
@@ -684,9 +830,9 @@ void AudioDriverCoreAudio::_set_device(const String &output_device, bool input) 
 		ERR_FAIL_COND(result != noErr);
 
 		if (input) {
+			// Reinitialize input device, also
 			// Reset audio input to keep synchronization.
-			input_position = 0;
-			input_size = 0;
+			_reconfigure_input_device();
 		}
 	}
 }
