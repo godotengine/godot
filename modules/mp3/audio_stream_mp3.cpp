@@ -51,7 +51,7 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int beat_length_frames = -1;
 	bool use_loop = looping_override ? looping : mp3_stream->loop;
 
-	bool beat_loop = use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
+	bool beat_loop = is_beat_loop();
 	if (beat_loop) {
 		beat_length_frames = mp3_stream->get_beat_count() * mp3_stream->sample_rate * 60 / mp3_stream->get_bpm();
 	}
@@ -135,8 +135,14 @@ void AudioStreamPlaybackMP3::seek(double p_time) {
 		return;
 	}
 
-	if (p_time >= mp3_stream->get_length()) {
-		p_time = 0;
+	bool beat_loop = is_beat_loop();
+	double real_length = beat_loop ? 60.0 / mp3_stream->get_bpm() * mp3_stream->beat_count : mp3_stream->get_length();
+
+	if (p_time > real_length || p_time < 0) {
+		stop();
+		ERR_FAIL_MSG(vformat("Seek of value %f is out of bounds (0.0 to %f). Stopping the stream %s.", p_time, real_length, mp3_stream->get_path().get_file()));
+	} else if (p_time == real_length) {
+		p_time = real_length - 0.001;
 	}
 
 	frames_mixed = uint32_t(mp3_stream->sample_rate * p_time);
@@ -183,6 +189,11 @@ Variant AudioStreamPlaybackMP3::get_parameter(const StringName &p_name) const {
 		return looping;
 	}
 	return Variant();
+}
+
+bool AudioStreamPlaybackMP3::is_beat_loop() const {
+	bool use_loop = looping_override ? looping : mp3_stream->loop;
+	return use_loop && mp3_stream->get_bpm() > 0 && mp3_stream->get_beat_count() > 0;
 }
 
 AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
