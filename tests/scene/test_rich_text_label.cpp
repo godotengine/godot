@@ -146,13 +146,13 @@ TEST_CASE("[SceneTree][RichTextLabel] Font size wrapping paragraph does not add 
 
 	test_label->set_text("[p][font_size=22]aaa[/font_size][/p]");
 	SceneTree::get_singleton()->process(0);
-	CHECK(test_label->get_line_count() == 1);
 	CHECK(test_label->get_paragraph_count() == 1);
+	CHECK(test_label->get_character_line(0) == 0);
 
 	test_label->set_text("[font_size=22][p]aaa[/p][/font_size]");
 	SceneTree::get_singleton()->process(0);
-	CHECK(test_label->get_line_count() == 1);
 	CHECK(test_label->get_paragraph_count() == 1);
+	CHECK(test_label->get_character_line(0) == 0);
 
 	memdelete(test_label);
 }
