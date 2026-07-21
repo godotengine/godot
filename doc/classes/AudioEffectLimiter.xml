@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectLimiter" inherits="AudioEffect" api_type="core" deprecated="Use [AudioEffectHardLimiter] instead." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a soft-clip limiter audio effect to an audio bus.
+		Adds a soft-clip limiter audio effect.
 	</brief_description>
 	<description>
 		A "limiter" is an audio effect designed to stop audio signals from exceeding a specified volume threshold level, and usually works by decreasing the volume or soft-clipping the audio. Adding one in the Master bus is always recommended to prevent clipping when the volume goes above 0 dB.
