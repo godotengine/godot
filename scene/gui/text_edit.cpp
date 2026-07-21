@@ -4154,6 +4154,21 @@ bool TextEdit::is_editable() const {
 	return editable;
 }
 
+void TextEdit::set_undo_enabled(bool p_enabled) {
+	if (undo_enabled == p_enabled) {
+		return;
+	}
+
+	undo_enabled = p_enabled;
+	if (!undo_enabled) {
+		clear_undo_history();
+	}
+}
+
+bool TextEdit::is_undo_enabled() const {
+	return undo_enabled;
+}
+
 void TextEdit::set_text_direction(Control::TextDirection p_text_direction) {
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (text_direction != p_text_direction) {
@@ -5146,6 +5161,9 @@ void TextEdit::end_complex_operation() {
 }
 
 bool TextEdit::has_undo() const {
+	if (!undo_enabled) {
+		return false;
+	}
 	if (undo_stack_pos == nullptr) {
 		int pending = current_op.type == TextOperation::TYPE_NONE ? 0 : 1;
 		return undo_stack.size() + pending > 0;
@@ -5154,11 +5172,11 @@ bool TextEdit::has_undo() const {
 }
 
 bool TextEdit::has_redo() const {
-	return undo_stack_pos != nullptr;
+	return undo_enabled && undo_stack_pos != nullptr;
 }
 
 void TextEdit::undo() {
-	if (!editable) {
+	if (!editable || !undo_enabled) {
 		return;
 	}
 
@@ -5224,7 +5242,7 @@ void TextEdit::undo() {
 }
 
 void TextEdit::redo() {
-	if (!editable) {
+	if (!editable || !undo_enabled) {
 		return;
 	}
 
@@ -7585,6 +7603,9 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &TextEdit::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &TextEdit::is_editable);
 
+	ClassDB::bind_method(D_METHOD("set_undo_enabled", "enabled"), &TextEdit::set_undo_enabled);
+	ClassDB::bind_method(D_METHOD("is_undo_enabled"), &TextEdit::is_undo_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &TextEdit::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &TextEdit::get_text_direction);
 
@@ -8027,6 +8048,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text", PROPERTY_HINT_MULTILINE_TEXT), "set_placeholder", "get_placeholder");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "undo_enabled"), "set_undo_enabled", "is_undo_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emoji_menu_enabled"), "set_emoji_menu_enabled", "is_emoji_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "backspace_deletes_composite_character_enabled"), "set_backspace_deletes_composite_character_enabled", "is_backspace_deletes_composite_character_enabled");

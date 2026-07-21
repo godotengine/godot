@@ -8138,6 +8138,42 @@ TEST_CASE("[SceneTree][TextEdit] setter getters") {
 		CHECK_FALSE(text_edit->is_drawing_minimap());
 	}
 
+	SUBCASE("[TextEdit] undo enabled") {
+		text_edit->set_undo_enabled(true);
+		CHECK(text_edit->is_undo_enabled());
+
+		text_edit->insert_text_at_caret("x");
+		CHECK(text_edit->get_text() == "x");
+		CHECK(text_edit->has_undo());
+		CHECK_FALSE(text_edit->has_redo());
+
+		text_edit->undo();
+		CHECK(text_edit->get_text() == "");
+		CHECK_FALSE(text_edit->has_undo());
+		CHECK(text_edit->has_redo());
+		text_edit->redo();
+		CHECK(text_edit->get_text() == "x");
+		CHECK(text_edit->has_undo());
+		CHECK_FALSE(text_edit->has_redo());
+
+		text_edit->set_undo_enabled(false);
+		CHECK_FALSE(text_edit->is_undo_enabled());
+
+		text_edit->insert_text_at_caret("y");
+		CHECK(text_edit->get_text() == "xy");
+		CHECK_FALSE(text_edit->has_undo());
+		CHECK_FALSE(text_edit->has_redo());
+
+		text_edit->undo();
+		CHECK(text_edit->get_text() == "xy");
+		CHECK_FALSE(text_edit->has_undo());
+		CHECK_FALSE(text_edit->has_redo());
+		text_edit->redo();
+		CHECK(text_edit->get_text() == "xy");
+		CHECK_FALSE(text_edit->has_undo());
+		CHECK_FALSE(text_edit->has_redo());
+	}
+
 	SUBCASE("[TextEdit] minimap width") {
 		text_edit->set_minimap_width(-1);
 		CHECK(text_edit->get_minimap_width() == -1);
