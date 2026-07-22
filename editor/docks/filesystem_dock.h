@@ -55,6 +55,7 @@ class LineEdit;
 class ProgressBar;
 class SceneCreateDialog;
 class ShaderCreateDialog;
+class Timer;
 class DirectoryCreateDialog;
 class EditorResourceTooltipPlugin;
 class VBoxContainer;
@@ -175,6 +176,9 @@ private:
 	LineEdit *tree_search_box = nullptr;
 	MenuButton *tree_button_sort = nullptr;
 
+	HBoxContainer *bottom_toolbar_hbc = nullptr;
+	HSlider *thumbnail_size_slider = nullptr;
+
 	LineEdit *file_list_search_box = nullptr;
 	MenuButton *file_list_button_sort = nullptr;
 
@@ -223,6 +227,7 @@ private:
 
 	bool always_show_folders = false;
 	int thumbnail_size_setting = 0;
+	Timer *thumbnail_debounce_timer = nullptr;
 
 	bool editor_is_dark_icon_and_font = false;
 
@@ -362,6 +367,8 @@ private:
 	void _file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _tree_empty_click(const Vector2 &p_pos, MouseButton p_button);
 	void _tree_empty_selected();
+	void _thumbnail_size_changed(float p_value);
+	void _thumbnail_size_timeout();
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
