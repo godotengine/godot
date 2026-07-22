@@ -2062,9 +2062,15 @@ bool ShaderLanguage::_validate_operator(const BlockNode *p_block, const Function
 		*r_ret_struct_name = ret_struct_name;
 	}
 
-	if (valid && (!p_block || p_block->use_op_eval)) {
-		// Need to be placed here and not in the `_reduce_expression` because otherwise expressions like `1 + 2 / 2` will not work correctly.
-		valid = _eval_operator(p_block, p_function_info, p_op);
+	if (valid) {
+		if (p_op->arguments[0]->get_datatype() == TYPE_STRUCT) {
+			return true; // Only applies on ==/!= operators for structs.
+		}
+
+		if (!p_block || p_block->use_op_eval) {
+			// Need to be placed here and not in the `_reduce_expression` because otherwise expressions like `1 + 2 / 2` will not work correctly.
+			valid = _eval_operator(p_block, p_function_info, p_op);
+		}
 	}
 
 	return valid;
