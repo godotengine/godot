@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/object/object.h"
-#include "core/templates/simple_type.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
@@ -65,7 +64,7 @@ template <typename T, typename = void>
 struct GetTypeInfo;
 
 template <typename T>
-struct GetTypeInfo<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : GetTypeInfo<GetSimpleTypeT<T>> {};
+struct GetTypeInfo<T, std::enable_if_t<!std::is_same_v<T, std::decay_t<T>>>> : GetTypeInfo<std::decay_t<T>> {};
 
 #define MAKE_TYPE_INFO(m_type, m_var_type) \
 	template <> \
