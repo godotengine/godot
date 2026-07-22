@@ -31,6 +31,7 @@
 #include "audio_driver_opensl.h"
 
 #include "core/os/os.h"
+#include "servers/audio/audio_server.h"
 
 #define MAX_NUMBER_INTERFACES 3
 #define MAX_NUMBER_OUTPUT_DEVICES 6

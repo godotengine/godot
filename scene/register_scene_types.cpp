@@ -113,8 +113,11 @@
 #include "scene/main/window.h"
 #include "scene/resources/animation_library.h"
 #include "scene/resources/atlas_texture.h"
-#include "scene/resources/audio_stream_polyphonic.h"
-#include "scene/resources/audio_stream_wav.h"
+#include "scene/resources/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream_microphone.h"
+#include "scene/resources/audio/audio_stream_polyphonic.h"
+#include "scene/resources/audio/audio_stream_randomizer.h"
+#include "scene/resources/audio/audio_stream_wav.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/blit_material.h"
 #include "scene/resources/bone_map.h"
@@ -142,6 +145,7 @@
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 #include "scene/resources/navigation_mesh.h"
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
+#include "scene/resources/audio/audio_stream_generator.h"
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particle_process_material.h"
@@ -1005,9 +1009,16 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
+	GDREGISTER_CLASS(AudioStream);
+	GDREGISTER_CLASS(AudioStreamPlayback);
+	GDREGISTER_VIRTUAL_CLASS(AudioStreamPlaybackResampled);
 	GDREGISTER_CLASS(AudioStreamPlayer);
 	GDREGISTER_CLASS(AudioStreamWAV);
+	GDREGISTER_CLASS(AudioStreamMicrophone);
 	GDREGISTER_CLASS(AudioStreamPolyphonic);
+	GDREGISTER_CLASS(AudioStreamRandomizer);
+	GDREGISTER_CLASS(AudioStreamGenerator);
+	GDREGISTER_ABSTRACT_CLASS(AudioStreamGeneratorPlayback);
 	GDREGISTER_ABSTRACT_CLASS(AudioStreamPlaybackPolyphonic);
 
 	OS::get_singleton()->yield(); // may take time to init

@@ -177,6 +177,7 @@
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_server.h"
+#include "servers/audio/audio_server_enums.h"
 #include "servers/display/display_server.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
@@ -6099,19 +6100,19 @@ String EditorNode::_get_system_info() const {
 	const String audio_driver_name = AudioServer::get_singleton()->get_driver_name();
 	const float mix_rate = AudioServer::get_singleton()->get_mix_rate();
 
-	AudioServer::SpeakerMode speaker_mode = AudioServer::get_singleton()->get_speaker_mode();
+	AuSE::SpeakerMode speaker_mode = AudioServer::get_singleton()->get_speaker_mode();
 	String speaker_mode_string;
 	switch (speaker_mode) {
-		case AudioServer::SpeakerMode::SPEAKER_MODE_STEREO:
+		case AuSE::SpeakerMode::SPEAKER_MODE_STEREO:
 			speaker_mode_string = "Stereo/mono";
 			break;
-		case AudioServer::SpeakerMode::SPEAKER_SURROUND_31:
+		case AuSE::SpeakerMode::SPEAKER_SURROUND_31:
 			speaker_mode_string = "Surround 3.1";
 			break;
-		case AudioServer::SpeakerMode::SPEAKER_SURROUND_51:
+		case AuSE::SpeakerMode::SPEAKER_SURROUND_51:
 			speaker_mode_string = "Surround 5.1";
 			break;
-		case AudioServer::SpeakerMode::SPEAKER_SURROUND_71:
+		case AuSE::SpeakerMode::SPEAKER_SURROUND_71:
 			speaker_mode_string = "Surround 7.1";
 			break;
 	}

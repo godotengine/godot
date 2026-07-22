@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/ring_buffer.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
 
 class AudioStreamGenerator : public AudioStream {
 	GDCLASS(AudioStreamGenerator, AudioStream);
