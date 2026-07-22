@@ -123,7 +123,6 @@ private:
 	// Decrements the reference count. Deallocates the backing buffer if needed.
 	// After this function, _ptr is guaranteed to be NULL.
 	void _unref();
-	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
 
 	/// Allocates a backing array of the given capacity. The reference count is initialized to 1, size to 0.
@@ -531,11 +530,6 @@ Error CowData<T>::_copy_on_write() {
 
 	// Fork to become the only reference.
 	return _insert_uninitialized(size(), 0, capacity());
-}
-
-template <typename T>
-void CowData<T>::_ref(const CowData *p_from) {
-	_ref(*p_from);
 }
 
 template <typename T>
