@@ -476,7 +476,7 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 
 	// For BaseMaterial3D, if a roughness or metallic textures is being assigned to an empty slot,
 	// set the respective metallic or roughness factor to 1.0 as a convenience feature
-	BaseMaterial3D *base_material = Object::cast_to<StandardMaterial3D>(p_edited);
+	BaseMaterial3D *base_material = Object::cast_to<BaseMaterial3D>(p_edited);
 	if (base_material) {
 		Texture2D *texture = Object::cast_to<Texture2D>(p_new_value);
 		if (texture) {
@@ -498,6 +498,16 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 					Variant value = p_edited->get("metallic", &valid);
 					if (valid) {
 						undo_redo->add_undo_property(p_edited, "metallic", value);
+					}
+				}
+			} else if (p_property == "orm_texture") {
+				if (base_material->get_texture(ORMMaterial3D::TEXTURE_ORM).is_null()) {
+					undo_redo->add_do_property(p_edited, "ao_enabled", true);
+
+					bool valid = false;
+					Variant value = p_edited->get("ao_enabled", &valid);
+					if (valid) {
+						undo_redo->add_undo_property(p_edited, "ao_enabled", value);
 					}
 				}
 			}
