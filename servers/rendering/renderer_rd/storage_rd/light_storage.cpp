@@ -50,7 +50,7 @@ LightStorage::LightStorage() {
 
 	TextureStorage *texture_storage = TextureStorage::get_singleton();
 
-	directional_shadow.size = CLAMP(int(GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size")), 256, 16384);
+	directional_shadow.size = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size");
 	directional_shadow.use_16_bits = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits");
 
 	using_lightmap_array = true; // high end
