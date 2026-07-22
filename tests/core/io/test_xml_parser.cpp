@@ -231,4 +231,19 @@ TEST_CASE("[XMLParser] CDATA") {
 	CHECK_EQ(parser.get_node_name(), "a");
 }
 
+TEST_CASE("[XMLParser] GDExtension raw buffer parsing") {
+	const char *input = "<a>value</a>";
+	XMLParser parser;
+	REQUIRE_EQ(parser._open_buffer((const uint8_t *)input, 12), OK);
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+	CHECK_EQ(parser.get_node_name(), "a");
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_TEXT);
+	CHECK_EQ(parser.get_node_data(), "value");
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+	CHECK_EQ(parser.get_node_name(), "a");
+}
+
 } // namespace TestXMLParser
