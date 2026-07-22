@@ -1205,6 +1205,15 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 	List<String> extensions;
 	ClassDB::get_extensions_for_type(p_type, &extensions);
 
+	if (extensions.is_empty() && ScriptServer::is_global_class(p_type)) {
+		// Script global classes are not registered in ClassDB, so resolve the
+		// native class they ultimately extend to find the right extensions.
+		const StringName native_base = ScriptServer::get_global_class_native_base(p_type);
+		if (native_base != StringName()) {
+			ClassDB::get_extensions_for_type(native_base, &extensions);
+		}
+	}
+
 	extensions.sort();
 
 	for (const String &E : extensions) {

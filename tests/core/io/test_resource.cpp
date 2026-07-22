@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_resource)
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "scene/main/node.h"
 #include "tests/test_utils.h"
 
@@ -569,6 +570,31 @@ TEST_CASE("[Resource] Saving and loading") {
 	CHECK_MESSAGE(
 			loaded_child_resource_text->get_name() == "I'm a child resource",
 			"The loaded child resource name should be equal to the expected value.");
+}
+
+TEST_CASE("[Resource] Loading with a script class type hint") {
+	Ref<Resource> resource = memnew(Resource);
+	resource->set_name("Type hinted");
+
+	const String save_path_binary = TestUtils::get_temp_path("type_hint.res");
+	const String save_path_text = TestUtils::get_temp_path("type_hint.tres");
+	ResourceSaver::save(resource, save_path_binary);
+	ResourceSaver::save(resource, save_path_text);
+
+	const StringName script_class = "TestTypeHintResource";
+	ScriptServer::add_global_class(script_class, "Resource", "GDScript", "res://test_type_hint_resource.gd", false, false);
+
+	const Ref<Resource> loaded_text = ResourceLoader::load(save_path_text, script_class);
+	CHECK_MESSAGE(
+			loaded_text.is_valid(),
+			"A text resource should load when the type hint is a script global class.");
+
+	const Ref<Resource> loaded_binary = ResourceLoader::load(save_path_binary, script_class);
+	CHECK_MESSAGE(
+			loaded_binary.is_valid(),
+			"A binary resource should load when the type hint is a script global class.");
+
+	ScriptServer::remove_global_class(script_class);
 }
 
 TEST_CASE("[Resource] Breaking circular references on save") {
