@@ -139,6 +139,9 @@ static const char *token_names[] = {
 	"$", // DOLLAR,
 	"->", // FORWARD_ARROW,
 	"_", // UNDERSCORE,
+	// Formatted String
+	"Formatted string begin", // FORMATTED_STRING_BEGIN,
+	"Formatted string end", // FORMATTED_STRING_END,
 	// Whitespace
 	"Newline", // NEWLINE,
 	"Indent", // INDENT,
@@ -337,6 +340,14 @@ void GDScriptTokenizerText::push_paren(char32_t p_char) {
 	paren_stack.push_back(p_char);
 }
 
+// Peek p_offset levels up the stack.
+char32_t GDScriptTokenizerText::peek_paren() {
+	if (paren_stack.is_empty()) {
+		return 0;
+	}
+	return paren_stack.back()->get();
+}
+
 bool GDScriptTokenizerText::pop_paren(char32_t p_expected) {
 	if (paren_stack.is_empty()) {
 		return false;
@@ -345,6 +356,20 @@ bool GDScriptTokenizerText::pop_paren(char32_t p_expected) {
 	paren_stack.pop_back();
 
 	return actual == p_expected;
+}
+
+void GDScriptTokenizerText::push_fstring_config(char32_t p_quote_char, bool p_is_raw, bool p_is_multiline) {
+	fstring_config_stack.push_back(FormattedStringConfig(p_is_raw, p_is_multiline, p_quote_char));
+}
+
+GDScriptTokenizerText::FormattedStringConfig GDScriptTokenizerText::peek_fstring_config() {
+	DEV_ASSERT(!fstring_config_stack.is_empty());
+	return fstring_config_stack.back()->get();
+}
+
+void GDScriptTokenizerText::pop_fstring_config() {
+	DEV_ASSERT(!fstring_config_stack.is_empty());
+	fstring_config_stack.pop_back();
 }
 
 GDScriptTokenizer::Token GDScriptTokenizerText::pop_error() {
@@ -885,8 +910,16 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 		_advance();
 	}
 
-	Token string_token = string_piece(is_raw, is_multiline, quote_char);
+	Token string_token = string_piece(is_raw, is_multiline, /*is_fstring=*/false, quote_char);
 	if (string_token.type == Token::ERROR) {
+		// string_piece() only ever returns an ERROR token for the unterminated (end-of-file) case;
+		// other string errors are pushed onto the error stack and it returns a literal.
+		// If we've hit the end of the file while parsing a formatted string slot, we never closed the slot.
+		// This is likely to happen inside of the string parser because the ending quote from the formatted
+		// string will be taken to be the starting quote of a string inside of the slot.
+		if (get_fstring_parse_context() == IN_SLOT) {
+			string_token.literal = "Unterminated slot.";
+		}
 		return string_token;
 	}
 	_advance(); // Consume the terminating quote.
@@ -904,6 +937,16 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 	}
 }
 
+GDScriptTokenizerText::FormattedStringParseContext GDScriptTokenizerText::get_fstring_parse_context() {
+	if (fstring_parse_depth == 0) {
+		return NOT_IN_FORMATTED_STRING;
+	}
+	if (fstring_parse_depth % 2 == 1) {
+		return NOT_IN_SLOT;
+	}
+	return IN_SLOT;
+}
+
 std::optional<GDScriptTokenizer::Token> GDScriptTokenizerText::try_raw_string() {
 	if (_peek() != 'r') {
 		return std::nullopt;
@@ -915,8 +958,67 @@ std::optional<GDScriptTokenizer::Token> GDScriptTokenizerText::try_raw_string() 
 	return string();
 }
 
+std::optional<GDScriptTokenizer::Token> GDScriptTokenizerText::try_fstring_begin() {
+	if (_peek() != 'f') {
+		return std::nullopt;
+	}
+	int quote_pos = 1; // Where can we expect to find the quote character.
+	int prefix_size = 1; // How many characters precede the body of the string.
+	bool is_raw = false;
+	if (_peek(1) == 'r') {
+		++quote_pos;
+		++prefix_size;
+		is_raw = true;
+	}
+	char32_t quote_char = _peek(quote_pos);
+	if (quote_char != '"' && quote_char != '\'') {
+		return std::nullopt;
+	}
+	++prefix_size;
+
+	bool is_multiline = false;
+	if (_peek(quote_pos + 1) == quote_char && _peek(quote_pos + 2) == quote_char) {
+		is_multiline = true;
+		prefix_size += 2;
+	}
+
+	// Consume the full string prefix.
+	while (prefix_size > 0) {
+		_advance();
+		--prefix_size;
+	}
+
+	push_fstring_config(quote_char, is_raw, is_multiline);
+	++fstring_parse_depth;
+	push_paren('<'); // We use '<' as the formatted string paren character to enforce paren nesting.
+
+	return make_token(Token::FORMATTED_STRING_BEGIN);
+}
+
+GDScriptTokenizer::Token GDScriptTokenizerText::fstring_piece() {
+	DEV_ASSERT(get_fstring_parse_context() == NOT_IN_SLOT);
+	FormattedStringConfig fconfig = peek_fstring_config();
+	if (_peek() == fconfig.quote_char) { // Closing quote.
+		_advance();
+		--fstring_parse_depth;
+		pop_fstring_config();
+		if (!pop_paren('<')) {
+			return make_paren_error(_peek(-1));
+		}
+		return make_token(Token::FORMATTED_STRING_END);
+	}
+	if (_peek() == '{') { // Start a slot.
+		_advance();
+		++fstring_parse_depth;
+		push_paren('{');
+		return make_token(Token::BRACE_OPEN);
+	}
+	// else we'll consume a string until the start of the next slot or end of the formatted string.
+	return string_piece(fconfig.is_raw, fconfig.is_multiline, /*is_fstring=*/true, fconfig.quote_char);
+}
+
 GDScriptTokenizer::Token GDScriptTokenizerText::string_piece(
-		bool is_raw, bool is_multiline, char32_t quote_char) {
+		bool is_raw, bool is_multiline, bool is_fstring, char32_t quote_char) {
 	String result;
 	char32_t prev = 0;
 	int prev_pos = 0;
@@ -927,6 +1029,20 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string_piece(
 			return make_error("Unterminated string.");
 		}
 		char32_t ch = _peek();
+
+		// Handle fstring brace escaping first so we don't prematurely end the string.
+		if (is_fstring && ch == '{' && _peek(1) == '{') {
+			_advance();
+			_advance();
+			result += '{';
+			continue;
+		}
+		if (is_fstring && ch == '}' && _peek(1) == '}') {
+			_advance();
+			_advance();
+			result += '}';
+			continue;
+		}
 
 		if (ch == quote_char) {
 			if (prev != 0) {
@@ -953,6 +1069,16 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string_piece(
 				// Leave last quote for the caller to consume.
 				break;
 			}
+		} else if (is_fstring && ch == '{') {
+			// We've hit the next slot, so we're done with this string piece.
+			if (prev != 0) {
+				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+				error.start_column = prev_pos;
+				push_error(error);
+				prev = 0;
+			}
+			// Leave the '{' for the caller to consume.
+			break;
 		}
 
 		if (ch == 0x200E || ch == 0x200F || (ch >= 0x202A && ch <= 0x202E) || (ch >= 0x2066 && ch <= 0x2069)) {
@@ -1393,6 +1519,16 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 		return pop_error();
 	}
 
+	// Handle the formatted string early to avoid the whitespace/indent handling within a formatted string.
+	if (get_fstring_parse_context() == NOT_IN_SLOT) {
+		// Since we're shortcutting the normal tokenization flow, we need to repeat some setup work here.
+		if (_is_at_end()) {
+			return make_token(Token::TK_EOF);
+		}
+		init_extents();
+		return fstring_piece();
+	}
+
 	_skip_whitespace();
 	init_extents();
 
@@ -1458,6 +1594,8 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 		return number();
 	} else if (std::optional<Token> raw_string_token = try_raw_string(); raw_string_token.has_value()) {
 		return *raw_string_token;
+	} else if (std::optional<Token> fstring_begin_token = try_fstring_begin(); fstring_begin_token.has_value()) {
+		return *fstring_begin_token;
 	} else if (is_unicode_identifier_start(c)) {
 		return potential_identifier();
 	}
@@ -1523,6 +1661,13 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 			_advance();
 			if (!pop_paren('{')) {
 				return make_paren_error(c);
+			}
+			// Check whether this is a formatted string slot ending.
+			// Even if we're inside a slot, this is only true if this closing brace has returned us to
+			// the paren level of a formatted string. Otherwise this is just a nested brace close
+			// within the slot expression.
+			if (get_fstring_parse_context() == IN_SLOT && peek_paren() == '<') {
+				--fstring_parse_depth;
 			}
 			return make_token(Token::BRACE_CLOSE);
 
