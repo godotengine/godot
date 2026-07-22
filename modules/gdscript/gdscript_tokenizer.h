@@ -35,6 +35,8 @@
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
+#include <optional>
+
 class GDScriptTokenizer {
 public:
 	enum CursorPlace {
@@ -255,6 +257,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	char32_t indent_char = '\0';
 	int position = 0;
 	int length = 0;
+
 	Vector<int> continuation_lines;
 #ifdef DEBUG_ENABLED
 	Vector<String> keyword_list;
@@ -273,6 +276,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	String _get_indent_char_name(char32_t ch);
 	void _skip_whitespace();
 	void check_indent();
+	void init_extents();
 
 #ifdef DEBUG_ENABLED
 	void make_keyword_list();
@@ -294,6 +298,16 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	Token potential_identifier();
 	Token string();
 	Token annotation();
+
+	// If the current tokenizing position is at the start of a raw string, this will return it.
+	// Otherwise this will return an empty optional.
+	std::optional<Token> try_raw_string();
+
+	// Fetch and return the next piece of a string until a string end character is found.
+	// On success it returns the string literal. On tokenization error it returns an error token.
+	// Precondition: _peek() refers to the first character within the string to tokenize (or the end string char if there is no string left).
+	// Postcondition: _peek() refers to the quote_char after the found string.
+	Token string_piece(bool is_raw, bool is_multiline, char32_t quote_char);
 
 public:
 	void set_source_code(const String &p_source_code);
