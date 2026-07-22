@@ -325,7 +325,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 				Button *button = preview_images[i].button;
 				float button_texture_height = button->get_size().height - button->get_theme_stylebox(CoreStringName(normal), SNAME("Button"))->get_minimum_size().height;
 				float scale_ratio = button_texture_height / p_image->get_height();
-				button->set_custom_minimum_size(Size2(p_image->get_width() * scale_ratio * EDSCALE, 0));
+				button->set_custom_minimum_size(Size2(p_image->get_width() * scale_ratio, 0));
 
 				if (preview_images[i].is_video) {
 					Ref<Image> overlay = previews->get_editor_theme_icon(SNAME("PlayOverlay"))->get_image();
