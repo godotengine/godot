@@ -37,6 +37,15 @@
 
 class Main;
 
+/**
+ * String (UTF-32 Unicode array) with interning semantics.
+ *
+ * Two different StringNames with the same String contents use the same buffer (by interning).
+ * By this, lookup of (existing) StringName, as well as equality checks, are fast.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
 class [[nodiscard]] _WARN_UNUSED_ StringName {
 	struct Table;
 

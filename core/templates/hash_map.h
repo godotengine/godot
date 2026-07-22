@@ -38,20 +38,6 @@
 
 #include <initializer_list>
 
-/**
- * A HashMap implementation that uses open addressing with Robin Hood hashing.
- * Robin Hood hashing swaps out entries that have a smaller probing distance
- * than the to-be-inserted entry, that evens out the average probing distance
- * and enables faster lookups. Backward shift deletion is employed to further
- * improve the performance and to avoid infinite loops in rare cases.
- *
- * Keys and values are stored in a double linked list by insertion order. This
- * has a slight performance overhead on lookup, which can be mostly compensated
- * using a paged allocator if required.
- *
- * The assignment operator copy the pairs from one map to the other.
- */
-
 template <typename TKey, typename TValue>
 struct HashMapElement {
 	HashMapElement *next = nullptr;
@@ -62,6 +48,15 @@ struct HashMapElement {
 			data(p_key, p_value) {}
 };
 
+/**
+ * Key-value container (aka hash table or dictionary) using robin-hood hashing.
+ *
+ * Key-values are pointer-stable across HashMap mutations.
+ * Remembers insertion order and iterates by it.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>,

@@ -30,14 +30,6 @@
 
 #pragma once
 
-/**
- * @class Vector
- * Vector container. Simple copy-on-write container.
- *
- * LocalVector is an alternative available for internal use when COW is not
- * required.
- */
-
 #include "core/error/error_macros.h"
 #include "core/templates/cowdata.h"
 #include "core/templates/sort_array.h"
@@ -58,6 +50,12 @@ public:
 	}
 };
 
+/**
+ * Array-like container with copy-on-write semantics.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
 template <typename T>
 class _WARN_UNUSED_ Vector {
 	friend class VectorWriteProxy<T>;

@@ -37,13 +37,13 @@
 #include <initializer_list>
 
 /**
- * Generic Templatized Linked List Implementation.
- * The implementation differs from the STL one because
- * a compatible preallocated linked list can be written
- * using the same API, or features such as erasing an element
- * from the iterator.
+ * Ordered storage implemented as a doubly linked list.
+ *
+ * Elements are pointer stable.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  */
-
 template <typename T, typename A = DefaultAllocator>
 class _WARN_UNUSED_ List {
 	struct _Data;
