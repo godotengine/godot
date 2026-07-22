@@ -251,7 +251,7 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
     return 0
 
 
-def generate_sdk_package_versions():
+def generate_sdk_package_versions(precision="single"):
     # I can't believe importing files in Python is so convoluted when not
     # following the golden standard for packages/modules.
     import os
@@ -302,6 +302,13 @@ def generate_sdk_package_versions():
 
         godotsharp_version_str += f"-{godotsharp_version_status}"
         godot_dotnet_version_str += f"-{godot_dotnet_version_status}"
+
+    # Local fork: give double-precision builds their own package version. The global NuGet
+    # cache is keyed by id+version regardless of source, so packages sharing the public
+    # version number would collide with the single-precision ones from nuget.org and
+    # whichever restored last would silently win for every project on the machine.
+    if precision == "double":
+        godotsharp_version_str += "-double"
 
     import version
 
@@ -361,7 +368,7 @@ def build_all(
     msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision, no_deprecated, werror
 ):
     # Generate SdkPackageVersions.props and VersionDocsUrl constant
-    generate_sdk_package_versions()
+    generate_sdk_package_versions(precision)
 
     # Godot API
     exit_code = build_godot_api(
