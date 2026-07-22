@@ -53,9 +53,14 @@ void initialize_tilemap_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(TileMapLayer);
 #ifndef DISABLE_DEPRECATED
 		GDREGISTER_CLASS(TileMap);
+#endif
+
+#ifndef NAVIGATION_2D_DISABLED
+		TileMapLayer::navmesh_parse_init();
+#ifndef DISABLE_DEPRECATED
 		TileMap::navmesh_parse_init();
 #endif
-		TileMapLayer::navmesh_parse_init();
+#endif // NAVIGATION_2D_DISABLED
 	}
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
