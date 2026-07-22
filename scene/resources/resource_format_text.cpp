@@ -196,6 +196,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			int instance = -1;
 			int index = -1;
 			int unique_id = Node::UNIQUE_SCENE_ID_UNASSIGNED;
+			bool placeholder = false;
 
 			//int base_scene=-1;
 
@@ -255,6 +256,10 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				instance = path_v | SceneState::FLAG_INSTANCE_IS_PLACEHOLDER;
 			}
 
+			if (next_tag.fields.has("placeholder")) {
+				placeholder = true;
+			}
+
 			if (next_tag.fields.has("owner")) {
 				PackedInt32Array np_id;
 				if (next_tag.fields.has("owner_uid_path")) {
@@ -271,7 +276,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				index = next_tag.fields["index"];
 			}
 
-			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance, index, unique_id);
+			int node_id = packed_scene->get_state()->add_node(parent, owner, type, name, instance, placeholder, index, unique_id);
 
 			if (next_tag.fields.has("groups")) {
 				Array groups = next_tag.fields["groups"];
@@ -2018,6 +2023,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 			NodePath owner = state->get_node_owner_path(i);
 			Ref<PackedScene> instance = state->get_node_instance(i);
 			String instance_placeholder = state->get_node_instance_placeholder(i);
+			bool is_placeholder = state->is_node_placeholder(i);
 			Vector<StringName> groups = state->get_node_groups(i);
 			Vector<String> deferred_node_paths = state->get_node_deferred_nodepath_properties(i);
 
@@ -2074,6 +2080,10 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				f->store_string(" instance_placeholder=");
 				VariantWriter::write_to_string(instance_placeholder, vars, true, _write_resources, this, use_compat);
 				f->store_string(vars);
+			}
+
+			if (is_placeholder) {
+				f->store_string(" placeholder=true");
 			}
 
 			if (instance.is_valid()) {
