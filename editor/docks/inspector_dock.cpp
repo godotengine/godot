@@ -516,6 +516,25 @@ void InspectorDock::edit_resource(const Ref<Resource> &p_resource) {
 	_resource_selected(p_resource, "");
 }
 
+void InspectorDock::_new_inspector_dock() {
+	EditorNode::get_singleton()->create_inspector_dock();
+}
+
+void InspectorDock::_lock_toggled(bool p_locked) {
+	locked = p_locked;
+	if (!locked && !is_primary_instance) {
+		follow_primary(InspectorDock::get_singleton()->get_current_object());
+	}
+}
+
+void InspectorDock::follow_primary(Object *p_object) {
+	if (is_primary_instance || locked) {
+		return;
+	}
+	inspector->edit(p_object);
+	update(p_object);
+}
+
 void InspectorDock::open_resource(const String &p_type) {
 	_load_resource(p_type);
 }
@@ -555,6 +574,13 @@ void InspectorDock::update(Object *p_object) {
 	object_selector->update_path();
 
 	current = p_object;
+	if (is_primary_instance) {
+		for (InspectorDock *dock : instances) {
+			if (dock != this) {
+				dock->follow_primary(p_object);
+			}
+		}
+	}
 
 	const bool is_object = p_object != nullptr;
 	const bool is_resource = is_object && p_object->is_class("Resource");
@@ -581,10 +607,19 @@ void InspectorDock::update(Object *p_object) {
 	PopupMenu *p = object_menu->get_popup();
 
 	p->clear();
-	p->add_icon_shortcut(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), ED_SHORTCUT("property_editor/expand_all", TTRC("Expand All")), EXPAND_ALL);
-	p->add_icon_shortcut(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), ED_SHORTCUT("property_editor/collapse_all", TTRC("Collapse All")), COLLAPSE_ALL);
+	if (is_primary_instance) {
+		p->add_icon_shortcut(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), ED_SHORTCUT("property_editor/expand_all", TTRC("Expand All")), EXPAND_ALL);
+		p->add_icon_shortcut(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), ED_SHORTCUT("property_editor/collapse_all", TTRC("Collapse All")), COLLAPSE_ALL);
+	} else {
+		p->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand All"), EXPAND_ALL);
+		p->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse All"), COLLAPSE_ALL);
+	}
 	// Calling it 'revertable' internally, because that's what the implementation is based on, but labeling it as 'non-default' because that's more user friendly, even if not 100% accurate.
-	p->add_shortcut(ED_SHORTCUT("property_editor/expand_revertable", TTRC("Expand Non-Default")), EXPAND_REVERTABLE);
+	if (is_primary_instance) {
+		p->add_shortcut(ED_SHORTCUT("property_editor/expand_revertable", TTRC("Expand Non-Default")), EXPAND_REVERTABLE);
+	} else {
+		p->add_item(TTRC("Expand Non-Default"), EXPAND_REVERTABLE);
+	}
 
 	p->add_separator(TTRC("Property Name Style"));
 	p->add_radio_check_item(vformat(TTR("Raw (e.g. \"%s\")"), "z_index"), PROPERTY_NAME_STYLE_RAW);
@@ -599,12 +634,21 @@ void InspectorDock::update(Object *p_object) {
 	}
 
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTRC("Copy Properties")), OBJECT_COPY_PARAMS);
-	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTRC("Paste Properties")), OBJECT_PASTE_PARAMS);
+	if (is_primary_instance) {
+		p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTRC("Copy Properties")), OBJECT_COPY_PARAMS);
+		p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTRC("Paste Properties")), OBJECT_PASTE_PARAMS);
+	} else {
+		p->add_item(TTRC("Copy Properties"), OBJECT_COPY_PARAMS);
+		p->add_item(TTRC("Paste Properties"), OBJECT_PASTE_PARAMS);
+	}
 
 	if (is_resource || is_node) {
 		p->add_separator();
-		p->add_shortcut(ED_SHORTCUT("property_editor/make_subresources_unique", TTRC("Make Sub-Resources Unique")), OBJECT_UNIQUE_RESOURCES);
+		if (is_primary_instance) {
+			p->add_shortcut(ED_SHORTCUT("property_editor/make_subresources_unique", TTRC("Make Sub-Resources Unique")), OBJECT_UNIQUE_RESOURCES);
+		} else {
+			p->add_item(TTRC("Make Sub-Resources Unique"), OBJECT_UNIQUE_RESOURCES);
+		}
 	}
 
 	List<MethodInfo> methods;
@@ -712,10 +756,16 @@ void InspectorDock::shortcut_input(const Ref<InputEvent> &p_event) {
 }
 
 InspectorDock::InspectorDock(EditorData &p_editor_data) {
-	singleton = this;
+	is_primary_instance = singleton == nullptr;
+	if (is_primary_instance) {
+		singleton = this;
+	}
+	instances.push_back(this);
 	set_name(TTRC("Inspector"));
 	set_icon_name("AnimationTrackList");
-	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_inspector", TTRC("Open Inspector Dock")));
+	if (is_primary_instance) {
+		set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_inspector", TTRC("Open Inspector Dock")));
+	}
 	set_default_slot(EditorDock::DOCK_SLOT_RIGHT_UL);
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
@@ -727,6 +777,20 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	HBoxContainer *general_options_hb = memnew(HBoxContainer);
 	main_vb->add_child(general_options_hb);
+
+	Button *new_inspector_button = memnew(Button);
+	new_inspector_button->set_text(TTRC("New Inspector"));
+	new_inspector_button->set_tooltip_text(TTRC("Create another Inspector dock."));
+	new_inspector_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_new_inspector_dock));
+	general_options_hb->add_child(new_inspector_button);
+
+	lock_button = memnew(Button);
+	lock_button->set_text(TTRC("Lock"));
+	lock_button->set_toggle_mode(true);
+	lock_button->set_tooltip_text(TTRC("Keep this Inspector focused on its current object."));
+	lock_button->connect(SceneStringName(toggled), callable_mp(this, &InspectorDock::_lock_toggled));
+	lock_button->set_visible(!is_primary_instance);
+	general_options_hb->add_child(lock_button);
 
 	resource_new_button = memnew(Button);
 	resource_new_button->set_theme_type_variation("FlatMenuButton");
@@ -759,12 +823,22 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_extra_button->set_tooltip_text(TTRC("Extra resource options."));
 	general_options_hb->add_child(resource_extra_button);
 	resource_extra_button->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_resource_extra_popup));
-	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTRC("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
-	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/copy_resource", TTRC("Copy Resource")), RESOURCE_COPY);
+	if (is_primary_instance) {
+		resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTRC("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
+		resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/copy_resource", TTRC("Copy Resource")), RESOURCE_COPY);
+	} else {
+		resource_extra_button->get_popup()->add_item(TTRC("Edit Resource from Clipboard"), RESOURCE_EDIT_CLIPBOARD);
+		resource_extra_button->get_popup()->add_item(TTRC("Copy Resource"), RESOURCE_COPY);
+	}
 	resource_extra_button->get_popup()->set_item_disabled(1, true);
 	resource_extra_button->get_popup()->add_separator();
-	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/show_in_filesystem", TTRC("Show in FileSystem")), RESOURCE_SHOW_IN_FILESYSTEM);
-	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTRC("Make Resource Built-In")), RESOURCE_MAKE_BUILT_IN);
+	if (is_primary_instance) {
+		resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/show_in_filesystem", TTRC("Show in FileSystem")), RESOURCE_SHOW_IN_FILESYSTEM);
+		resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTRC("Make Resource Built-In")), RESOURCE_MAKE_BUILT_IN);
+	} else {
+		resource_extra_button->get_popup()->add_item(TTRC("Show in FileSystem"), RESOURCE_SHOW_IN_FILESYSTEM);
+		resource_extra_button->get_popup()->add_item(TTRC("Make Resource Built-In"), RESOURCE_MAKE_BUILT_IN);
+	}
 	resource_extra_button->get_popup()->set_item_disabled(3, true);
 	resource_extra_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_menu_option));
 
@@ -803,7 +877,9 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	open_docs_button->set_theme_type_variation("FlatMenuButton");
 	open_docs_button->set_disabled(true);
 	open_docs_button->set_tooltip_text(TTRC("Open documentation for this object."));
-	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTRC("Open Documentation")));
+	if (is_primary_instance) {
+		open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTRC("Open Documentation")));
+	}
 	subresource_hb->add_child(open_docs_button);
 	open_docs_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_menu_option).bind(OBJECT_REQUEST_HELP));
 
@@ -880,5 +956,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 }
 
 InspectorDock::~InspectorDock() {
-	singleton = nullptr;
+	instances.erase(this);
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }

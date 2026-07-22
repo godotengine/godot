@@ -76,6 +76,9 @@ class InspectorDock : public EditorDock {
 	EditorInspector *inspector = nullptr;
 
 	Object *current = nullptr;
+	bool is_primary_instance = false;
+	bool locked = false;
+	Button *lock_button = nullptr;
 
 	Button *backward_button = nullptr;
 	Button *forward_button = nullptr;
@@ -132,11 +135,14 @@ class InspectorDock : public EditorDock {
 	void _menu_expand_revertable();
 	void _select_history(int p_idx);
 	void _prepare_history();
+	void _new_inspector_dock();
+	void _lock_toggled(bool p_locked);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 private:
 	static inline InspectorDock *singleton = nullptr;
+	static inline LocalVector<InspectorDock *> instances;
 
 public:
 	static InspectorDock *get_singleton() { return singleton; }
@@ -153,6 +159,9 @@ public:
 	void clear();
 	void set_info(const String &p_button_text, const String &p_message, bool p_is_warning);
 	void update(Object *p_object);
+	void follow_primary(Object *p_object);
+	bool is_locked() const { return locked; }
+	Object *get_current_object() const { return current; }
 	Container *get_addon_area();
 	EditorInspector *get_inspector() { return inspector; }
 

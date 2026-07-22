@@ -389,8 +389,11 @@ private:
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
 	void _on_open_editor_settings_file_exts();
+	void _new_file_system_dock();
 
 private:
+	// The primary dock remains the target of EditorInterface and existing editor
+	// integrations. Additional FileSystemDock instances are independent views.
 	inline static FileSystemDock *singleton = nullptr;
 
 public:

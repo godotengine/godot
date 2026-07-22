@@ -81,6 +81,7 @@ class EditorFeatureProfileManager;
 class EditorFileDialog;
 class EditorIconManager;
 class EditorFolding;
+class InspectorDock;
 class EditorLayoutsDialog;
 class EditorLog;
 class EditorMainScreen;
@@ -275,6 +276,10 @@ private:
 	EditorSelection *editor_selection = nullptr;
 	EditorSettingsDialog *editor_settings_dialog = nullptr;
 	HistoryDock *history_dock = nullptr;
+	int filesystem_dock_instance_count = 1;
+	Vector<String> filesystem_dock_instance_keys;
+	int inspector_dock_instance_count = 1;
+	Vector<String> inspector_dock_instance_keys;
 
 	ProjectExportDialog *project_export = nullptr;
 	ProjectSettingsEditor *project_settings_editor = nullptr;
@@ -804,6 +809,8 @@ public:
 	EditorSelectionHistory *get_editor_selection_history() { return &editor_history; }
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings_editor; }
+	FileSystemDock *create_file_system_dock(const String &p_layout_key = String());
+	InspectorDock *create_inspector_dock(const String &p_layout_key = String());
 
 	void trigger_menu_option(int p_option, bool p_confirmed);
 	bool has_previous_closed_scenes() const;

@@ -886,6 +886,10 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 	_update_import_dock();
 }
 
+void FileSystemDock::_new_file_system_dock() {
+	EditorNode::get_singleton()->create_file_system_dock();
+}
+
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index, const String &p_filename) {
 	if (p_preview.is_valid()) {
 		if (p_index < files->get_item_count() && files->get_item_text(p_index) == p_filename && files->get_item_metadata(p_index) == p_path) {
@@ -4224,6 +4228,7 @@ void FileSystemDock::save_layout_to_config(Ref<ConfigFile> &p_layout, const Stri
 	p_layout->set_value(p_section, "display_mode", get_display_mode());
 	p_layout->set_value(p_section, "file_sort", (int)get_file_sort());
 	p_layout->set_value(p_section, "file_list_display_mode", get_file_list_display_mode());
+	p_layout->set_value(p_section, "current_path", current_path);
 	p_layout->set_value(p_section, "selected_paths", get_selected_paths());
 	p_layout->set_value(p_section, "uncollapsed_paths", searched_tokens.is_empty() ? get_uncollapsed_paths() : uncollapsed_paths_before_search);
 }
@@ -4252,6 +4257,10 @@ void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, co
 	if (p_layout->has_section_key(p_section, "file_list_display_mode")) {
 		FileListDisplayMode dock_filesystem_file_list_display_mode = FileListDisplayMode(int(p_layout->get_value(p_section, "file_list_display_mode")));
 		set_file_list_display_mode(dock_filesystem_file_list_display_mode);
+	}
+
+	if (p_layout->has_section_key(p_section, "current_path")) {
+		_navigate_to_path(p_layout->get_value(p_section, "current_path"));
 	}
 
 	// Restore uncollapsed state.
@@ -4411,39 +4420,44 @@ void FileSystemDock::_bind_methods() {
 }
 
 FileSystemDock::FileSystemDock() {
-	singleton = this;
+	const bool is_primary_dock = singleton == nullptr;
+	if (is_primary_dock) {
+		singleton = this;
+	}
 	set_name(TTRC("FileSystem"));
 	set_icon_name("Folder");
-	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_filesystem", TTRC("Open FileSystem Dock"), KeyModifierMask::ALT | Key::F));
 	set_default_slot(EditorDock::DOCK_SLOT_LEFT_BR);
 	set_available_layouts(DOCK_LAYOUT_ALL);
 
-	ProjectSettings::get_singleton()->add_hidden_prefix("file_customization/");
+	if (is_primary_dock) {
+		set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_filesystem", TTRC("Open FileSystem Dock"), KeyModifierMask::ALT | Key::F));
+		ProjectSettings::get_singleton()->add_hidden_prefix("file_customization/");
 
-	// `KeyModifierMask::CMD_OR_CTRL | Key::C` conflicts with other editor shortcuts.
-	ED_SHORTCUT("filesystem_dock/copy_path", TTRC("Copy Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
-	ED_SHORTCUT("filesystem_dock/copy_absolute_path", TTRC("Copy Absolute Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::C);
-	ED_SHORTCUT("filesystem_dock/copy_uid", TTRC("Copy UID"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::C);
-	ED_SHORTCUT("filesystem_dock/duplicate", TTRC("Duplicate..."), KeyModifierMask::CMD_OR_CTRL | Key::D);
-	ED_SHORTCUT("filesystem_dock/delete", TTRC("Delete"), Key::KEY_DELETE);
-	ED_SHORTCUT("filesystem_dock/new_folder", TTRC("New Folder..."), Key::NONE);
-	ED_SHORTCUT("filesystem_dock/new_scene", TTRC("New Scene..."), Key::NONE);
-	ED_SHORTCUT("filesystem_dock/new_script", TTRC("New Script..."), Key::NONE);
-	ED_SHORTCUT("filesystem_dock/new_resource", TTRC("New Resource..."), Key::NONE);
-	ED_SHORTCUT("filesystem_dock/new_textfile", TTRC("New TextFile..."), Key::NONE);
-	ED_SHORTCUT("filesystem_dock/rename", TTRC("Rename..."), Key::F2);
-	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
+		// `KeyModifierMask::CMD_OR_CTRL | Key::C` conflicts with other editor shortcuts.
+		ED_SHORTCUT("filesystem_dock/copy_path", TTRC("Copy Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
+		ED_SHORTCUT("filesystem_dock/copy_absolute_path", TTRC("Copy Absolute Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::C);
+		ED_SHORTCUT("filesystem_dock/copy_uid", TTRC("Copy UID"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | KeyModifierMask::SHIFT | Key::C);
+		ED_SHORTCUT("filesystem_dock/duplicate", TTRC("Duplicate..."), KeyModifierMask::CMD_OR_CTRL | Key::D);
+		ED_SHORTCUT("filesystem_dock/delete", TTRC("Delete"), Key::KEY_DELETE);
+		ED_SHORTCUT("filesystem_dock/new_folder", TTRC("New Folder..."), Key::NONE);
+		ED_SHORTCUT("filesystem_dock/new_scene", TTRC("New Scene..."), Key::NONE);
+		ED_SHORTCUT("filesystem_dock/new_script", TTRC("New Script..."), Key::NONE);
+		ED_SHORTCUT("filesystem_dock/new_resource", TTRC("New Resource..."), Key::NONE);
+		ED_SHORTCUT("filesystem_dock/new_textfile", TTRC("New TextFile..."), Key::NONE);
+		ED_SHORTCUT("filesystem_dock/rename", TTRC("Rename..."), Key::F2);
+		ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-	// Opening the system file manager or opening in an external program is not supported on the Android and web editors.
-	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTRC("Open in File Manager"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::R);
-	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTRC("Open in External Program"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::E);
-	ED_SHORTCUT("filesystem_dock/open_in_terminal", TTRC("Open in Terminal"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::T);
+		// Opening the system file manager or opening in an external program is not supported on the Android and web editors.
+		ED_SHORTCUT("filesystem_dock/show_in_explorer", TTRC("Open in File Manager"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::R);
+		ED_SHORTCUT("filesystem_dock/open_in_external_program", TTRC("Open in External Program"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::E);
+		ED_SHORTCUT("filesystem_dock/open_in_terminal", TTRC("Open in Terminal"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::T);
 #endif
 
-	ED_SHORTCUT("filesystem_dock/focus_path", TTRC("Focus Path"), KeyModifierMask::CMD_OR_CTRL | Key::L);
-	// Allow both Cmd + L and Cmd + Shift + G to match Safari's and Finder's shortcuts respectively.
-	ED_SHORTCUT_OVERRIDE_ARRAY("filesystem_dock/focus_path", "macos",
-			{ int32_t(KeyModifierMask::META | Key::L), int32_t(KeyModifierMask::META | KeyModifierMask::SHIFT | Key::G) });
+		ED_SHORTCUT("filesystem_dock/focus_path", TTRC("Focus Path"), KeyModifierMask::CMD_OR_CTRL | Key::L);
+		// Allow both Cmd + L and Cmd + Shift + G to match Safari's and Finder's shortcuts respectively.
+		ED_SHORTCUT_OVERRIDE_ARRAY("filesystem_dock/focus_path", "macos",
+				{ int32_t(KeyModifierMask::META | Key::L), int32_t(KeyModifierMask::META | KeyModifierMask::SHIFT | Key::G) });
+	}
 
 	// Properly translating color names would require a separate HashMap, so for simplicity they are provided as comments.
 	folder_colors["red"] = Color(1.0, 0.271, 0.271); // TTR("Red")
@@ -4500,6 +4514,12 @@ FileSystemDock::FileSystemDock() {
 	button_toggle_display_mode->set_tooltip_text(TTRC("Change Split Mode"));
 	button_toggle_display_mode->set_theme_type_variation("FlatMenuButton");
 	toolbar_hbc->add_child(button_toggle_display_mode);
+
+	Button *new_file_browser_button = memnew(Button);
+	new_file_browser_button->set_text(TTRC("New File Browser"));
+	new_file_browser_button->set_tooltip_text(TTRC("Create another FileSystem dock with its own path and selection."));
+	new_file_browser_button->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_new_file_system_dock));
+	toolbar_hbc->add_child(new_file_browser_button);
 
 	toolbar2_hbc = memnew(HBoxContainer);
 	top_vbc->add_child(toolbar2_hbc);
@@ -4720,5 +4740,7 @@ FileSystemDock::FileSystemDock() {
 }
 
 FileSystemDock::~FileSystemDock() {
-	singleton = nullptr;
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
