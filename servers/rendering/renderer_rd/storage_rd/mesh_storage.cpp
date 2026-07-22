@@ -1578,7 +1578,7 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RSE
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL(multimesh);
 
-	if (multimesh->instances == p_instances && multimesh->xform_format == p_transform_format && multimesh->uses_colors == p_use_colors && multimesh->uses_custom_data == p_use_custom_data) {
+	if (multimesh->instances == p_instances && multimesh->xform_format == p_transform_format && multimesh->uses_colors == p_use_colors && multimesh->uses_custom_data == p_use_custom_data && multimesh->indirect == p_use_indirect) {
 		return;
 	}
 
@@ -1587,6 +1587,11 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RSE
 		multimesh->buffer = RID();
 		multimesh->uniform_set_2d = RID(); //cleared by dependency
 		multimesh->uniform_set_3d = RID(); //cleared by dependency
+	}
+
+	if (multimesh->command_buffer.is_valid()) {
+		RD::get_singleton()->free_rid(multimesh->command_buffer);
+		multimesh->command_buffer = RID();
 	}
 
 	if (multimesh->data_cache_dirty_regions) {
@@ -1611,7 +1616,10 @@ void MeshStorage::_multimesh_allocate_data(RID p_multimesh, int p_instances, RSE
 	multimesh->buffer_set = false;
 
 	multimesh->indirect = p_use_indirect;
-	multimesh->command_buffer = RID();
+
+	if (p_use_indirect && multimesh->mesh.is_valid()) {
+		_multimesh_create_indirect_command_buffer(multimesh);
+	}
 
 	//print_line("allocate, elements: " + itos(p_instances) + " 2D: " + itos(p_transform_format == RSE::MULTIMESH_TRANSFORM_2D) + " colors " + itos(multimesh->uses_colors) + " data " + itos(multimesh->uses_custom_data) + " stride " + itos(multimesh->stride_cache) + " total size " + itos(multimesh->stride_cache * multimesh->instances));
 	multimesh->data_cache = Vector<float>();
@@ -1704,27 +1712,12 @@ void MeshStorage::_multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	multimesh->mesh = p_mesh;
 
 	if (multimesh->indirect) {
-		Mesh *mesh = mesh_owner.get_or_null(p_mesh);
-		ERR_FAIL_NULL(mesh);
-		if (mesh->surface_count > 0) {
-			if (multimesh->command_buffer.is_valid()) {
-				RD::get_singleton()->free_rid(multimesh->command_buffer);
-			}
-
-			Vector<uint8_t> newVector;
-			newVector.resize_initialized(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count);
-
-			for (uint32_t i = 0; i < mesh->surface_count; i++) {
-				uint32_t count = mesh_surface_get_vertices_drawn_count(mesh->surfaces[i]);
-				newVector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE, static_cast<uint8_t>(count));
-				newVector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE + 1, static_cast<uint8_t>(count >> 8));
-				newVector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE + 2, static_cast<uint8_t>(count >> 16));
-				newVector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE + 3, static_cast<uint8_t>(count >> 24));
-			}
-
-			RID newBuffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count, newVector, RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
-			multimesh->command_buffer = newBuffer;
+		ERR_FAIL_COND(p_mesh.is_null());
+		if (multimesh->command_buffer.is_valid()) {
+			RD::get_singleton()->free_rid(multimesh->command_buffer);
+			multimesh->command_buffer = RID();
 		}
+		_multimesh_create_indirect_command_buffer(multimesh);
 	}
 
 	if (multimesh->instances == 0) {
@@ -1907,6 +1900,29 @@ void MeshStorage::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p
 	}
 
 	multimesh->aabb = aabb;
+}
+
+void MeshStorage::_multimesh_create_indirect_command_buffer(MultiMesh *multimesh) {
+	ERR_FAIL_COND(!multimesh->indirect);
+	ERR_FAIL_COND(multimesh->command_buffer.is_valid());
+	Mesh *mesh = mesh_owner.get_or_null(multimesh->mesh);
+	ERR_FAIL_NULL(mesh);
+	if (mesh->surface_count == 0) {
+		return;
+	}
+	Vector<uint8_t> new_vector;
+	new_vector.resize_initialized(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count);
+
+	for (uint32_t i = 0; i < mesh->surface_count; i++) {
+		uint32_t count = mesh_surface_get_vertices_drawn_count(mesh->surfaces[i]);
+		new_vector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE, static_cast<uint8_t>(count));
+		new_vector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE + 1, static_cast<uint8_t>(count >> 8));
+		new_vector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE + 2, static_cast<uint8_t>(count >> 16));
+		new_vector.set(i * sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE + 3, static_cast<uint8_t>(count >> 24));
+	}
+
+	RID new_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * INDIRECT_MULTIMESH_COMMAND_STRIDE * mesh->surface_count, new_vector, RD::STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+	multimesh->command_buffer = new_buffer;
 }
 
 void MeshStorage::_multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform3D &p_transform) {
