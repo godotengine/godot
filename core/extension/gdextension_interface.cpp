@@ -1580,7 +1580,7 @@ static void gdextension_placeholder_script_instance_update(GDExtensionScriptInst
 	placeholder->update(properties_list, values_map);
 }
 
-static GDExtensionScriptInstancePtr gdextension_object_get_script_instance(GDExtensionConstObjectPtr p_object, GDExtensionConstObjectPtr p_language) {
+static GDExtensionScriptInstanceDataPtr gdextension_object_get_script_instance(GDExtensionConstObjectPtr p_object, GDExtensionConstObjectPtr p_language) {
 	if (!p_object || !p_language) {
 		return nullptr;
 	}
