@@ -517,7 +517,8 @@ void EditorNode::_update_from_settings() {
 	uint32_t directional_shadow_size = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size");
 	if (directional_shadow_size < 256 || directional_shadow_size > 16384){
 		directional_shadow_size = uint32_t(CLAMP(int(directional_shadow_size), 256, 16384));
-		ProjectSettings::get_singleton()->set_setting("rendering/lights_and_shadows/directional_shadow/size", int(directional_shadow_size));
+		ProjectSettings::get_singleton()->set_setting("rendering/lights_and_shadows/directional_shadow/size", directional_shadow_size);
+		WARN_PRINT(vformat("directional_shadow_size out of range. Clamped to %s", directional_shadow_size));
 	}
 
 	uint32_t directional_shadow_16_bits = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits");
