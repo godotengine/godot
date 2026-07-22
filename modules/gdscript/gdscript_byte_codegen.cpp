@@ -1850,7 +1850,9 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value, bool
 		return;
 	}
 
-	switch (function->return_type.kind) {
+	const GDScriptDataType &return_type = function->return_type;
+
+	switch (return_type.kind) {
 		case GDScriptDataType::VARIANT: {
 			ERR_PRINT("Compiler bug: Unresolved return.");
 
@@ -1859,16 +1861,18 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value, bool
 			append(p_return_value);
 		} break;
 		case GDScriptDataType::BUILTIN: {
-			if (function->return_type.builtin_type == Variant::ARRAY && function->return_type.has_container_element_type(0)) {
-				const GDScriptDataType &element_type = function->return_type.get_container_element_type(0);
+			if (return_type.builtin_type == Variant::ARRAY && return_type.has_container_element_type(0)) {
+				const GDScriptDataType &element_type = return_type.get_container_element_type(0);
+
 				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_ARRAY);
 				append(p_return_value);
 				append(get_constant_pos(element_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
 				append(element_type.builtin_type);
 				append(element_type.native_type);
-			} else if (function->return_type.builtin_type == Variant::DICTIONARY && function->return_type.has_container_element_types()) {
-				const GDScriptDataType &key_type = function->return_type.get_container_element_type_or_variant(0);
-				const GDScriptDataType &value_type = function->return_type.get_container_element_type_or_variant(1);
+			} else if (return_type.builtin_type == Variant::DICTIONARY && return_type.has_container_element_types()) {
+				const GDScriptDataType &key_type = return_type.get_container_element_type_or_variant(0);
+				const GDScriptDataType &value_type = return_type.get_container_element_type_or_variant(1);
+
 				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_DICTIONARY);
 				append(p_return_value);
 				append(get_constant_pos(key_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
@@ -1880,21 +1884,22 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value, bool
 			} else {
 				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_BUILTIN);
 				append(p_return_value);
-				append(function->return_type.builtin_type);
+				append(return_type.builtin_type);
 			}
 		} break;
 		case GDScriptDataType::NATIVE: {
+			const int nc_idx = GDScriptLanguage::get_singleton()->get_global_map()[return_type.native_type];
+			const Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[nc_idx];
+			const int class_idx = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+
 			append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_NATIVE);
 			append(p_return_value);
-			int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[function->return_type.native_type];
-			Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
-			class_idx = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 			append(class_idx);
 		} break;
 		case GDScriptDataType::SCRIPT:
 		case GDScriptDataType::GDSCRIPT: {
-			Variant script = function->return_type.script_type;
-			int script_idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+			const Variant script = return_type.script_type;
+			const int script_idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 
 			append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_SCRIPT);
 			append(p_return_value);
