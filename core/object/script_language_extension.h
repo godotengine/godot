@@ -279,7 +279,7 @@ private:
 			return script_language->lookup_code(p_code, p_symbol, p_path, p_owner, r_result);
 		}
 
-		virtual int32_t find_function(const String &p_function, const String &p_code) const override {
+		virtual int32_t find_function(const String &p_function, const String &p_code, const String &p_path) const override {
 			return script_language->find_function(p_function, p_code);
 		}
 
