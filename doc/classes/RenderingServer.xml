@@ -1890,6 +1890,14 @@
 				Returns a dictionary of per-instance shader uniform names of the per-instance shader uniform from the specified 3D geometry instance. The returned dictionary is in PropertyInfo format, with the keys [code]name[/code], [code]class_name[/code], [code]type[/code], [code]hint[/code], [code]hint_string[/code] and [code]usage[/code]. Equivalent to [method GeometryInstance3D.get_instance_shader_parameter].
 			</description>
 		</method>
+		<method name="instance_geometry_set_custom_shader_uniforms_offset">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="offset" type="int" />
+			<description>
+				Sets the base offset into the custom instance uniforms SSBO ([code]custom_instance_uniforms[/code]) for the specified 3D geometry instance. This offset is used by the scene shader to read per-instance data written by compute shaders via [code]custom uniform[/code] declarations. Equivalent to [method GeometryInstance3D.set_custom_shader_uniforms_offset].
+			</description>
+		</method>
 		<method name="instance_geometry_set_cast_shadows_setting">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
