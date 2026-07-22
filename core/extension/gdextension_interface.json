@@ -8332,14 +8332,14 @@
                 },
                 {
                     "name": "p_script_instance",
-                    "type": "GDExtensionScriptInstanceDataPtr",
+                    "type": "GDExtensionScriptInstancePtr",
                     "description": [
-                        "A pointer to the script instance data to attach to this object."
+                        "A pointer to the script instance to attach to this object. Create a script instance through the latest version of \"script_instance_create()\"."
                     ]
                 }
             ],
             "description": [
-                "Set the script instance data attached to this object."
+                "Set the script instance attached to this object."
             ],
             "since": "4.5"
         },
