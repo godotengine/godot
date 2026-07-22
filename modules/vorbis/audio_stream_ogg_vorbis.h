@@ -133,6 +133,7 @@ class AudioStreamOggVorbis : public AudioStream {
 	double bpm = 0;
 	int beat_count = 0;
 	int bar_beats = 4;
+	Dictionary tags;
 
 protected:
 	static void _bind_methods();
@@ -156,8 +157,10 @@ public:
 	void set_bar_beats(int p_bar_beats);
 	virtual int get_bar_beats() const override;
 
+	void set_tags(const Dictionary &p_tags);
+	virtual Dictionary get_tags() const override;
+
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 
 	void set_packet_sequence(Ref<OggPacketSequence> p_packet_sequence);
 	Ref<OggPacketSequence> get_packet_sequence() const;
@@ -172,7 +175,4 @@ public:
 		return true;
 	}
 	virtual Ref<AudioSample> generate_sample() const override;
-
-	AudioStreamOggVorbis();
-	virtual ~AudioStreamOggVorbis();
 };

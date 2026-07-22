@@ -12,6 +12,7 @@
 	<string>$name</string>
 	<key>CFBundleIconFile</key>
 	<string>icon.icns</string>
+$liquid_glass_icon
 	<key>CFBundleIdentifier</key>
 	<string>$bundle_identifier</string>
 	<key>CFBundleInfoDictionaryVersion</key>

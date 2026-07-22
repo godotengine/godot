@@ -32,7 +32,7 @@
 
 #include "../misc/jolt_type_conversions.h"
 
-#include "Jolt/Physics/Collision/Shape/CapsuleShape.h"
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 
 JPH::ShapeRefC JoltCapsuleShape3D::_build() const {
 	ERR_FAIL_COND_V_MSG(radius <= 0.0f, nullptr, vformat("Failed to build Jolt Physics capsule shape with %s. Its radius must be greater than 0. This shape belongs to %s.", to_string(), _owners_to_string()));

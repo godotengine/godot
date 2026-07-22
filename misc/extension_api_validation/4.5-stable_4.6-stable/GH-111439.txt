@@ -1,0 +1,5 @@
+GH-111439
+---------
+Validate extension JSON: Error: Field 'classes/FileDialog/methods/add_filter/arguments': size changed value in new API, from 2 to 3.
+
+Optional argument added. Compatibility method registered.

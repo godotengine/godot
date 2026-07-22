@@ -31,12 +31,15 @@
 #include "local_debugger.h"
 
 #include "core/debugger/script_debugger.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
+
+#include <cstdio>
 
 struct LocalDebugger::ScriptsProfiler {
 	struct ProfileInfoSort {
-		bool operator()(const ScriptLanguage::ProfilingInfo &A, const ScriptLanguage::ProfilingInfo &B) const {
-			return A.total_time > B.total_time;
+		bool operator()(const ScriptLanguage::ProfilingInfo &p_left, const ScriptLanguage::ProfilingInfo &p_right) const {
+			return p_left.total_time > p_right.total_time;
 		}
 	};
 
@@ -114,6 +117,10 @@ struct LocalDebugger::ScriptsProfiler {
 };
 
 void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
+	if (script_debugger->is_ignoring_error_breaks() && p_is_error_breakpoint) {
+		return;
+	}
+
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 
 	if (!target_function.is_empty()) {
@@ -224,6 +231,10 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			script_debugger->set_depth(0);
 			script_debugger->set_lines_left(1);
 			break;
+		} else if (line == "o" || line == "out") {
+			script_debugger->set_depth(1);
+			script_debugger->set_lines_left(1);
+			break;
 		} else if (line == "fin" || line == "finish") {
 			String current_function = script_lang->debug_get_stack_level_function(0);
 
@@ -319,20 +330,20 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	}
 }
 
-void LocalDebugger::print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix) {
+void LocalDebugger::print_variables(const List<String> &p_names, const List<Variant> &p_values, const String &p_variable_prefix) {
 	String value;
 	Vector<String> value_lines;
-	const List<Variant>::Element *V = values.front();
-	for (const String &E : names) {
+	const List<Variant>::Element *V = p_values.front();
+	for (const String &E : p_names) {
 		value = String(V->get());
 
-		if (variable_prefix.is_empty()) {
+		if (p_variable_prefix.is_empty()) {
 			print_line(E + ": " + String(V->get()));
 		} else {
 			print_line(E + ":");
 			value_lines = value.split("\n");
 			for (int i = 0; i < value_lines.size(); ++i) {
-				print_line(variable_prefix + value_lines[i]);
+				print_line(p_variable_prefix + value_lines[i]);
 			}
 		}
 
@@ -362,7 +373,7 @@ void LocalDebugger::send_message(const String &p_message, const Array &p_args) {
 }
 
 void LocalDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type) {
-	print_line("ERROR: '" + (p_descr.is_empty() ? p_err : p_descr) + "'");
+	_err_print_error(p_func.utf8().get_data(), p_file.utf8().get_data(), p_line, p_err, p_descr, p_editor_notify, p_type);
 }
 
 LocalDebugger::LocalDebugger() {
@@ -384,7 +395,5 @@ LocalDebugger::LocalDebugger() {
 
 LocalDebugger::~LocalDebugger() {
 	unregister_profiler("scripts");
-	if (scripts_profiler) {
-		memdelete(scripts_profiler);
-	}
+	memdelete(scripts_profiler);
 }

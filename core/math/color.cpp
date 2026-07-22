@@ -30,12 +30,12 @@
 
 #include "color.h"
 
-#include "color_names.inc"
+#include "core/math/color_names.inc"
 #include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 
-#include "thirdparty/misc/ok_color.h"
+#include <thirdparty/misc/ok_color.h>
 
 uint32_t Color::to_argb32() const {
 	uint32_t c = (uint8_t)Math::round(a * 255.0f);
@@ -109,17 +109,17 @@ uint64_t Color::to_rgba64() const {
 	return c;
 }
 
-void _append_hex(float p_val, char32_t *string) {
+void _append_hex(float p_val, char32_t *r_string) {
 	int v = Math::round(p_val * 255.0f);
 	v = CLAMP(v, 0, 255);
 
-	string[0] = hex_char_table_lower[(v >> 4) & 0xF];
-	string[1] = hex_char_table_lower[v & 0xF];
+	r_string[0] = hex_char_table_lower[(v >> 4) & 0xF];
+	r_string[1] = hex_char_table_lower[v & 0xF];
 }
 
 String Color::to_html(bool p_alpha) const {
 	String txt;
-	txt.resize(p_alpha ? 9 : 7);
+	txt.resize_uninitialized(p_alpha ? 9 : 7);
 	char32_t *ptr = txt.ptrw();
 
 	_append_hex(r, ptr + 0);
@@ -239,6 +239,19 @@ void Color::set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	hsl.s = p_s;
 	hsl.l = p_l;
 	ok_color::RGB rgb = ok_color::okhsl_to_srgb(hsl);
+	Color c = Color(rgb.r, rgb.g, rgb.b, p_alpha).clamp();
+	r = c.r;
+	g = c.g;
+	b = c.b;
+	a = c.a;
+}
+
+void Color::set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha) {
+	ok_color::HSV hsv;
+	hsv.h = p_h;
+	hsv.s = p_s;
+	hsv.v = p_v;
+	ok_color::RGB rgb = ok_color::okhsv_to_srgb(hsv);
 	Color c = Color(rgb.r, rgb.g, rgb.b, p_alpha).clamp();
 	r = c.r;
 	g = c.g;
@@ -419,7 +432,7 @@ int Color::find_named_color(const String &p_name) {
 }
 
 int Color::get_named_color_count() {
-	return std::size(named_colors);
+	return std_size(named_colors);
 }
 
 String Color::get_named_color_name(int p_idx) {
@@ -473,6 +486,12 @@ Color::operator String() const {
 Color Color::from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	Color c;
 	c.set_ok_hsl(p_h, p_s, p_l, p_alpha);
+	return c;
+}
+
+Color Color::from_ok_hsv(float p_h, float p_s, float p_l, float p_alpha) {
+	Color c;
+	c.set_ok_hsv(p_h, p_s, p_l, p_alpha);
 	return c;
 }
 

@@ -31,8 +31,9 @@
 #pragma once
 
 #include "core/os/shared_object.h"
-#include "editor_export_platform.h"
-#include "editor_export_preset.h"
+#include "core/variant/typed_array.h"
+#include "editor/export/editor_export_platform.h"
+#include "editor/export/editor_export_preset.h"
 #include "scene/main/node.h"
 
 class EditorExportPlugin : public RefCounted {
@@ -42,6 +43,7 @@ class EditorExportPlugin : public RefCounted {
 	friend class EditorExportPlatform;
 	friend class EditorExportPreset;
 
+	String export_base_path;
 	Ref<EditorExportPreset> export_preset;
 
 	Vector<SharedObject> shared_objects;
@@ -87,6 +89,8 @@ class EditorExportPlugin : public RefCounted {
 	String _has_valid_export_configuration(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset);
 
 protected:
+	void set_export_base_path(const String &p_export_base_path);
+	const String &get_export_base_path() const;
 	void set_export_preset(const Ref<EditorExportPreset> &p_preset);
 	Ref<EditorExportPreset> get_export_preset() const;
 	Ref<EditorExportPlatform> get_export_platform() const;
@@ -109,12 +113,14 @@ protected:
 	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features);
 	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags);
 	virtual void _export_end();
+	virtual void _end_generate_apple_embedded_project(const String &p_path, bool p_will_build_archive);
 
 	static void _bind_methods();
 
 	GDVIRTUAL3(_export_file, String, String, Vector<String>)
 	GDVIRTUAL4(_export_begin, Vector<String>, bool, String, uint32_t)
 	GDVIRTUAL0(_export_end)
+	GDVIRTUAL2(_end_generate_apple_embedded_project, const String &, bool)
 
 	GDVIRTUAL2RC(bool, _begin_customize_resources, const Ref<EditorExportPlatform> &, const Vector<String> &)
 	GDVIRTUAL2R_REQUIRED(Ref<Resource>, _customize_resource, const Ref<Resource> &, String)
@@ -168,6 +174,8 @@ public:
 
 	virtual bool supports_platform(const Ref<EditorExportPlatform> &p_export_platform) const;
 	PackedStringArray get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+
+	void end_generate_apple_embedded_project(const String &p_path, bool p_will_build_archive);
 
 	virtual PackedStringArray get_android_dependencies(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual PackedStringArray get_android_dependencies_maven_repos(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;

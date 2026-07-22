@@ -65,7 +65,6 @@ public:
 	float get_buffer_length() const;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 
 	virtual double get_length() const override;
 	virtual bool is_monophonic() const override;

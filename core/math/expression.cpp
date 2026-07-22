@@ -823,7 +823,7 @@ Expression::ENode *Expression::_parse_expression() {
 				if (!Variant::is_utility_function_vararg(bifunc->func)) {
 					int expected_args = Variant::get_utility_function_argument_count(bifunc->func);
 					if (expected_args != bifunc->arguments.size()) {
-						_set_error("Builtin func '" + String(bifunc->func) + "' expects " + itos(expected_args) + " arguments.");
+						_set_error("Builtin func '" + String(bifunc->func) + "' expects " + itos(expected_args) + " argument(s).");
 					}
 				}
 
@@ -1225,9 +1225,7 @@ bool Expression::_compile_expression() {
 
 	if (error_set) {
 		root = nullptr;
-		if (nodes) {
-			memdelete(nodes);
-		}
+		memdelete(nodes);
 		nodes = nullptr;
 		return true;
 	}
@@ -1481,9 +1479,7 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 
 	if (error_set) {
 		root = nullptr;
-		if (nodes) {
-			memdelete(nodes);
-		}
+		memdelete(nodes);
 		nodes = nullptr;
 		return ERR_INVALID_PARAMETER;
 	}
@@ -1523,7 +1519,5 @@ void Expression::_bind_methods() {
 }
 
 Expression::~Expression() {
-	if (nodes) {
-		memdelete(nodes);
-	}
+	memdelete(nodes);
 }

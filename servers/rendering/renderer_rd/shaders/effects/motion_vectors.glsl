@@ -30,7 +30,8 @@ layout(location = 0) out vec4 frag_color;
 layout(push_constant, std430) uniform Params {
 	highp mat4 reprojection_matrix;
 	vec2 resolution;
-	bool force_derive_from_depth;
+	uint force_derive_from_depth;
+	uint pad;
 }
 params;
 
@@ -55,7 +56,7 @@ void main() {
 	vec2 cell_pos_pixel = floor(pos_pixel / cell_size) * cell_size + (cell_size * 0.5f);
 	vec2 cell_pos_uv = cell_pos_pixel / params.resolution;
 	vec2 cell_pos_velocity = textureLod(source_velocity, cell_pos_uv, 0.0f).xy;
-	bool derive_velocity = params.force_derive_from_depth || all(lessThanEqual(cell_pos_velocity, vec2(-1.0f, -1.0f)));
+	bool derive_velocity = bool(params.force_derive_from_depth) || all(lessThanEqual(cell_pos_velocity, vec2(-1.0f, -1.0f)));
 	if (derive_velocity) {
 		float depth = textureLod(source_depth, cell_pos_uv, 0.0f).x;
 		cell_pos_velocity = derive_motion_vector(cell_pos_uv, depth, params.reprojection_matrix);

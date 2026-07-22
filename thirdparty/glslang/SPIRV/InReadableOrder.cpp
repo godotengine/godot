@@ -85,7 +85,7 @@ public:
             Id mergeId = mergeInst->getIdOperand(0);
             mergeBlock = block->getParent().getParent().getInstruction(mergeId)->getBlock();
             delayed_.insert(mergeBlock);
-            if (mergeInst->getOpCode() == spv::OpLoopMerge) {
+            if (mergeInst->getOpCode() == spv::Op::OpLoopMerge) {
                 Id continueId = mergeInst->getIdOperand(1);
                 continueBlock =
                     block->getParent().getParent().getInstruction(continueId)->getBlock();

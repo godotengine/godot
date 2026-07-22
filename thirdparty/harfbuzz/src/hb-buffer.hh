@@ -32,6 +32,7 @@
 
 #include "hb.hh"
 #include "hb-unicode.hh"
+#include "hb-set-digest.hh"
 
 
 static_assert ((sizeof (hb_glyph_info_t) == 20), "");
@@ -44,14 +45,14 @@ HB_MARK_AS_FLAG_T (hb_buffer_diff_flags_t);
 
 enum hb_buffer_scratch_flags_t {
   HB_BUFFER_SCRATCH_FLAG_DEFAULT			= 0x00000000u,
-  HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII			= 0x00000001u,
+  HB_BUFFER_SCRATCH_FLAG_HAS_FRACTION_SLASH		= 0x00000001u,
   HB_BUFFER_SCRATCH_FLAG_HAS_DEFAULT_IGNORABLES		= 0x00000002u,
   HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK		= 0x00000004u,
   HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT		= 0x00000008u,
   HB_BUFFER_SCRATCH_FLAG_HAS_CGJ			= 0x00000010u,
-  HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS		= 0x00000020u,
-  HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE		= 0x00000040u,
-  HB_BUFFER_SCRATCH_FLAG_HAS_VARIATION_SELECTOR_FALLBACK= 0x00000080u,
+  HB_BUFFER_SCRATCH_FLAG_HAS_BROKEN_SYLLABLE		= 0x00000020u,
+  HB_BUFFER_SCRATCH_FLAG_HAS_VARIATION_SELECTOR_FALLBACK= 0x00000040u,
+  HB_BUFFER_SCRATCH_FLAG_HAS_CONTINUATIONS		= 0x00000080u,
 
   /* Reserved for shapers' internal use. */
   HB_BUFFER_SCRATCH_FLAG_SHAPER0			= 0x01000000u,
@@ -90,7 +91,6 @@ struct hb_buffer_t
   hb_segment_properties_t props; /* Script, language, direction */
 
   bool successful; /* Allocations successful */
-  bool shaping_failed; /* Shaping failure */
   bool have_output; /* Whether we have an output buffer going on */
   bool have_positions; /* Whether we have positions */
 
@@ -110,6 +110,7 @@ struct hb_buffer_t
   hb_codepoint_t context[2][CONTEXT_LENGTH];
   unsigned int context_len[2];
 
+  hb_set_digest_t digest; /* Manually updated sometimes */
 
   /*
    * Managed by enter / leave
@@ -129,9 +130,13 @@ struct hb_buffer_t
    */
 
 #ifndef HB_NO_BUFFER_MESSAGE
+  typedef void (*changed_func_t) (hb_buffer_t *buffer, void *user_data);
+
   hb_buffer_message_func_t message_func;
   void *message_data;
   hb_destroy_func_t message_destroy;
+  changed_func_t changed_func;
+  void *changed_data;
   unsigned message_depth; /* How deeply are we inside a message callback? */
 #else
   static constexpr unsigned message_depth = 0u;
@@ -200,6 +205,12 @@ struct hb_buffer_t
   void collect_codepoints (set_t &d) const
   { d.clear (); d.add_array (&info[0].codepoint, len, sizeof (info[0])); }
 
+  void update_digest ()
+  {
+    digest = hb_set_digest_t ();
+    collect_codepoints (digest);
+  }
+
   HB_INTERNAL void similar (const hb_buffer_t &src);
   HB_INTERNAL void reset ();
   HB_INTERNAL void clear ();
@@ -229,6 +240,8 @@ struct hb_buffer_t
   HB_INTERNAL void add (hb_codepoint_t  codepoint,
 			unsigned int    cluster);
   HB_INTERNAL void add_info (const hb_glyph_info_t &glyph_info);
+  HB_INTERNAL void add_info_and_pos (const hb_glyph_info_t &glyph_info,
+				     const hb_glyph_position_t &glyph_pos);
 
   void reverse_range (unsigned start, unsigned end)
   {
@@ -344,7 +357,7 @@ struct hb_buffer_t
     {
       if (out_info != info || out_len != idx)
       {
-	if (unlikely (!make_room_for (1, 1))) return false;
+	if (unlikely (!ensure (out_len + 1))) return false;
 	out_info[out_len] = info[idx];
       }
       out_len++;
@@ -361,7 +374,7 @@ struct hb_buffer_t
     {
       if (out_info != info || out_len != idx)
       {
-	if (unlikely (!make_room_for (n, n))) return false;
+	if (unlikely (!ensure (out_len + n))) return false;
 	memmove (out_info + out_len, info + idx, n * sizeof (out_info[0]));
       }
       out_len += n;
@@ -389,10 +402,42 @@ struct hb_buffer_t
   {
     if (end - start < 2)
       return;
+    if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (cluster_level))
+    {
+      unsafe_to_break (start, end);
+      return;
+    }
+    merge_clusters_impl (start, end);
+  }
+  void merge_grapheme_clusters (unsigned int start, unsigned int end)
+  {
+    if (end - start < 2)
+      return;
+    if (!HB_BUFFER_CLUSTER_LEVEL_IS_GRAPHEMES (cluster_level))
+    {
+      unsafe_to_break (start, end);
+      return;
+    }
     merge_clusters_impl (start, end);
   }
   HB_INTERNAL void merge_clusters_impl (unsigned int start, unsigned int end);
-  HB_INTERNAL void merge_out_clusters (unsigned int start, unsigned int end);
+  void merge_out_clusters (unsigned int start, unsigned int end)
+  {
+    if (end - start < 2)
+      return;
+    if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (cluster_level))
+      return;
+    merge_out_clusters_impl (start, end);
+  }
+  void merge_out_grapheme_clusters (unsigned int start, unsigned int end)
+  {
+    if (end - start < 2)
+      return;
+    if (!HB_BUFFER_CLUSTER_LEVEL_IS_GRAPHEMES (cluster_level))
+      return;
+    merge_out_clusters_impl (start, end);
+  }
+  HB_INTERNAL void merge_out_clusters_impl (unsigned int start, unsigned int end);
   /* Merge clusters for deleting current glyph, and skip it. */
   HB_INTERNAL void delete_glyph ();
   HB_INTERNAL void delete_glyphs_inplace (bool (*filter) (const hb_glyph_info_t *info));
@@ -402,19 +447,12 @@ struct hb_buffer_t
   /* Adds glyph flags in mask to infos with clusters between start and end.
    * The start index will be from out-buffer if from_out_buffer is true.
    * If interior is true, then the cluster having the minimum value is skipped. */
-  void _set_glyph_flags (hb_mask_t mask,
-			 unsigned start = 0,
-			 unsigned end = (unsigned) -1,
-			 bool interior = false,
-			 bool from_out_buffer = false)
+  void _set_glyph_flags_impl (hb_mask_t mask,
+			      unsigned start,
+			      unsigned end,
+			      bool interior,
+			      bool from_out_buffer)
   {
-    end = hb_min (end, len);
-
-    if (interior && !from_out_buffer && end - start < 2)
-      return;
-
-    scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
-
     if (!from_out_buffer || !have_output)
     {
       if (!interior)
@@ -450,6 +488,25 @@ struct hb_buffer_t
       }
     }
   }
+
+  HB_ALWAYS_INLINE
+  void _set_glyph_flags (hb_mask_t mask,
+			 unsigned start = 0,
+			 unsigned end = (unsigned) -1,
+			 bool interior = false,
+			 bool from_out_buffer = false)
+  {
+    if (unlikely (end != (unsigned) -1 && end - start > 255))
+      return;
+
+    end = hb_min (end, len);
+
+    if (interior && !from_out_buffer && end - start < 2)
+      return;
+
+    _set_glyph_flags_impl (mask, start, end, interior, from_out_buffer);
+  }
+
 
   void unsafe_to_break (unsigned int start = 0, unsigned int end = -1)
   {
@@ -584,6 +641,7 @@ struct hb_buffer_t
 #endif
   }
   HB_INTERNAL bool message_impl (hb_font_t *font, const char *fmt, va_list ap) HB_PRINTF_FUNC(3, 0);
+  HB_INTERNAL void changed ();
 
   static void
   set_cluster (hb_glyph_info_t &inf, unsigned int cluster, unsigned int mask = 0)
@@ -601,6 +659,10 @@ struct hb_buffer_t
     if (unlikely (start == end))
       return;
 
+    max_ops -= end - start;
+    if (unlikely (max_ops < 0))
+      successful = false;
+
     unsigned cluster_first = infos[start].cluster;
     unsigned cluster_last = infos[end - 1].cluster;
 
@@ -609,10 +671,7 @@ struct hb_buffer_t
     {
       for (unsigned int i = start; i < end; i++)
 	if (cluster != infos[i].cluster)
-	{
-	  scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
 	  infos[i].mask |= mask;
-	}
       return;
     }
 
@@ -621,18 +680,12 @@ struct hb_buffer_t
     if (cluster == cluster_first)
     {
       for (unsigned int i = end; start < i && infos[i - 1].cluster != cluster_first; i--)
-      {
-	scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
 	infos[i - 1].mask |= mask;
-      }
     }
     else /* cluster == cluster_last */
     {
       for (unsigned int i = start; i < end && infos[i].cluster != cluster_last; i++)
-      {
-	scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GLYPH_FLAGS;
 	infos[i].mask |= mask;
-      }
     }
   }
   unsigned

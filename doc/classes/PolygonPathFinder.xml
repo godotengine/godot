@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PolygonPathFinder" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PolygonPathFinder" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -56,9 +56,9 @@
 				var polygonPathFinder = new PolygonPathFinder();
 				Vector2[] points =
 				[
-				    new Vector2(0.0f, 0.0f),
-				    new Vector2(1.0f, 0.0f),
-				    new Vector2(0.0f, 1.0f)
+					new Vector2(0.0f, 0.0f),
+					new Vector2(1.0f, 0.0f),
+					new Vector2(0.0f, 1.0f)
 				];
 				int[] connections = [0, 1, 1, 2, 2, 0];
 				polygonPathFinder.Setup(points, connections);
@@ -93,9 +93,9 @@
 				var polygonPathFinder = new PolygonPathFinder();
 				Vector2[] points =
 				[
-				    new Vector2(0.0f, 0.0f),
-				    new Vector2(1.0f, 0.0f),
-				    new Vector2(0.0f, 1.0f)
+					new Vector2(0.0f, 0.0f),
+					new Vector2(1.0f, 0.0f),
+					new Vector2(0.0f, 1.0f)
 				];
 				int[] connections = [0, 1, 1, 2, 2, 0];
 				polygonPathFinder.Setup(points, connections);

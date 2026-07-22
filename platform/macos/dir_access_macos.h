@@ -32,7 +32,6 @@
 
 #if defined(UNIX_ENABLED)
 
-#include "core/io/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
 
 #include <dirent.h>
@@ -51,6 +50,8 @@ protected:
 
 	virtual bool is_hidden(const String &p_name) override;
 	virtual bool is_case_sensitive(const String &p_path) const override;
+
+	virtual String get_filesystem_type() const override;
 
 	virtual bool is_bundle(const String &p_file) const override;
 };

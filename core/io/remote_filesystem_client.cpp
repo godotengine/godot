@@ -33,6 +33,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/stream_peer_tcp.h"
+#include "core/os/os.h"
 #include "core/string/string_builder.h"
 
 #define FILESYSTEM_CACHE_VERSION 1
@@ -84,8 +85,8 @@ Vector<RemoteFilesystemClient::FileCache> RemoteFilesystemClient::_load_cache_fi
 	return file_cache;
 }
 
-Error RemoteFilesystemClient::_store_file(const String &p_path, const LocalVector<uint8_t> &p_file, uint64_t &modified_time) {
-	modified_time = 0;
+Error RemoteFilesystemClient::_store_file(const String &p_path, const LocalVector<uint8_t> &p_file, uint64_t &r_modified_time) {
+	r_modified_time = 0;
 	String full_path = cache_path.path_join(FILES_SUBFOLDER).path_join(p_path);
 	String base_file_dir = full_path.get_base_dir();
 
@@ -104,7 +105,7 @@ Error RemoteFilesystemClient::_store_file(const String &p_path, const LocalVecto
 	}
 	f.unref(); // Unref to ensure file is not locked and modified time can be obtained.
 
-	modified_time = FileAccess::get_modified_time(full_path);
+	r_modified_time = FileAccess::get_modified_time(full_path);
 	return OK;
 }
 
@@ -215,7 +216,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 	Vector<uint8_t> file_cache_buffer;
 	if (file_cache.size()) {
 		StringBuilder sbuild;
-		for (int i = 0; i < file_cache.size(); i++) {
+		for (int64_t i = 0; i < file_cache.size(); i++) {
 			sbuild.append(file_cache[i].path);
 			sbuild.append("::");
 			sbuild.append(itos(file_cache[i].server_modified_time));
@@ -224,7 +225,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 		String s = sbuild.as_string();
 		CharString cs = s.utf8();
 		file_cache_buffer.resize(Compression::get_max_compressed_buffer_size(cs.length(), Compression::MODE_ZSTD));
-		int res_len = Compression::compress(file_cache_buffer.ptrw(), (const uint8_t *)cs.ptr(), cs.length(), Compression::MODE_ZSTD);
+		const int64_t res_len = Compression::compress(file_cache_buffer.ptrw(), (const uint8_t *)cs.ptr(), cs.length(), Compression::MODE_ZSTD);
 		file_cache_buffer.resize(res_len);
 
 		tcp_client->put_32(cs.length()); // Size of buffer uncompressed

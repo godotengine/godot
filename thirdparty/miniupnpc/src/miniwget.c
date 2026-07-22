@@ -1,8 +1,8 @@
-/* $Id: miniwget.c,v 1.85 2023/06/15 21:47:50 nanard Exp $ */
+/* $Id: miniwget.c,v 1.88 2025/05/25 21:56:49 nanard Exp $ */
 /* Project : miniupnp
  * Website : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas Bernard
- * Copyright (c) 2005-2024 Thomas Bernard
+ * Copyright (c) 2005-2025 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file provided in this distribution. */
 
@@ -11,6 +11,7 @@
 #include <string.h>
 #include <ctype.h>
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <io.h>

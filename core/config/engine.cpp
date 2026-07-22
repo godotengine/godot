@@ -34,26 +34,43 @@
 #include "core/config/project_settings.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
+#include "core/object/object.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
+void Engine::_update_time_scale() {
+	_time_scale = _user_time_scale * _game_time_scale;
+	user_ips = MAX(1, ips * _user_time_scale);
+	max_user_physics_steps_per_frame = MAX(max_physics_steps_per_frame, max_physics_steps_per_frame * _user_time_scale);
+}
+
 void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
+	_update_time_scale();
 }
 
 int Engine::get_physics_ticks_per_second() const {
 	return ips;
 }
 
+int Engine::get_user_physics_ticks_per_second() const {
+	return user_ips;
+}
+
 void Engine::set_max_physics_steps_per_frame(int p_max_physics_steps) {
 	ERR_FAIL_COND_MSG(p_max_physics_steps <= 0, "Maximum number of physics steps per frame must be greater than 0.");
 	max_physics_steps_per_frame = p_max_physics_steps;
+	_update_time_scale();
 }
 
 int Engine::get_max_physics_steps_per_frame() const {
 	return max_physics_steps_per_frame;
+}
+
+int Engine::get_user_max_physics_steps_per_frame() const {
+	return max_user_physics_steps_per_frame;
 }
 
 void Engine::set_physics_jitter_fix(double p_threshold) {
@@ -112,11 +129,21 @@ uint32_t Engine::get_frame_delay() const {
 }
 
 void Engine::set_time_scale(double p_scale) {
-	_time_scale = p_scale;
+	_game_time_scale = p_scale;
+	_update_time_scale();
 }
 
 double Engine::get_time_scale() const {
-	return freeze_time_scale ? 0 : _time_scale;
+	return freeze_time_scale ? 0.0 : _game_time_scale;
+}
+
+void Engine::set_user_time_scale(double p_scale) {
+	_user_time_scale = p_scale;
+	_update_time_scale();
+}
+
+double Engine::get_effective_time_scale() const {
+	return freeze_time_scale ? 0.0 : _time_scale;
 }
 
 double Engine::get_unfrozen_time_scale() const {
@@ -147,18 +174,18 @@ Dictionary Engine::get_version_info() const {
 	return dict;
 }
 
-static Array array_from_info(const char *const *info_list) {
+static Array array_from_info(const char *const *p_info_list) {
 	Array arr;
-	for (int i = 0; info_list[i] != nullptr; i++) {
-		arr.push_back(String::utf8(info_list[i]));
+	for (int i = 0; p_info_list[i] != nullptr; i++) {
+		arr.push_back(String::utf8(p_info_list[i]));
 	}
 	return arr;
 }
 
-static Array array_from_info_count(const char *const *info_list, int info_count) {
+static Array array_from_info_count(const char *const *p_info_list, int p_info_count) {
 	Array arr;
-	for (int i = 0; i < info_count; i++) {
-		arr.push_back(String::utf8(info_list[i]));
+	for (int i = 0; i < p_info_count; i++) {
+		arr.push_back(String::utf8(p_info_list[i]));
 	}
 	return arr;
 }
@@ -224,39 +251,22 @@ String Engine::get_license_text() const {
 String Engine::get_architecture_name() const {
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	return "x86_64";
-
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
 	return "x86_32";
-
 #elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 	return "arm64";
-
 #elif defined(__arm__) || defined(_M_ARM)
 	return "arm32";
-
 #elif defined(__riscv)
-#if __riscv_xlen == 8
 	return "rv64";
-#else
-	return "riscv";
-#endif
-
-#elif defined(__powerpc__)
-#if defined(__powerpc64__)
+#elif defined(__powerpc64__)
 	return "ppc64";
-#else
-	return "ppc";
-#endif
-
 #elif defined(__loongarch64)
 	return "loongarch64";
-
-#elif defined(__wasm__)
-#if defined(__wasm64__)
+#elif defined(__wasm64__)
 	return "wasm64";
 #elif defined(__wasm32__)
 	return "wasm32";
-#endif
 #endif
 }
 
@@ -316,6 +326,11 @@ void Engine::print_header_rich(const String &p_string) const {
 
 void Engine::add_singleton(const Singleton &p_singleton) {
 	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), vformat("Can't register singleton '%s' because it already exists.", p_singleton.name));
+#ifdef DEBUG_ENABLED
+	if (p_singleton.ptr && p_singleton.ptr->is_ref_counted()) {
+		WARN_PRINT(vformat("RefCounted singleton '%s' will be disallowed soon; raw pointer will dangle when last Ref is released. Use Object singleton.", p_singleton.name));
+	}
+#endif
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
@@ -435,10 +450,4 @@ Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr, const Stri
 		name(p_name),
 		ptr(p_ptr),
 		class_name(p_class_name) {
-#ifdef DEBUG_ENABLED
-	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
-	if (rc && !rc->is_referenced()) {
-		WARN_PRINT("You must use Ref<> to ensure the lifetime of a RefCounted object intended to be used as a singleton.");
-	}
-#endif
 }

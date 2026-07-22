@@ -34,6 +34,7 @@
 #include "multiplayer_synchronizer.h"
 
 #include "core/object/ref_counted.h"
+#include "core/templates/rb_set.h"
 
 class SceneMultiplayer;
 class SceneCacheInterface;
@@ -72,7 +73,7 @@ private:
 	HashMap<int, PeerInfo> peers_info;
 	uint32_t last_net_id = 0;
 	HashMap<ObjectID, TrackedNode> tracked_nodes;
-	HashSet<ObjectID> spawned_nodes;
+	RBSet<ObjectID> spawned_nodes;
 	HashSet<ObjectID> sync_nodes;
 
 	// Pending local spawn information (handles spawning nested nodes during ready).

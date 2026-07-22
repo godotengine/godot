@@ -30,17 +30,31 @@
 
 #include "csg_shape.h"
 
+#include "core/config/engine.h"
+#include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/navigation_mesh.h"
+#include "scene/resources/surface_tool.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/rendering/rendering_server.h" // Only used for debug collision shapes.
+#endif // PHYSICS_3D_DISABLED
+
 #ifdef DEV_ENABLED
 #include "core/io/json.h"
 #endif // DEV_ENABLED
-#include "core/math/geometry_2d.h"
-#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "scene/resources/navigation_mesh.h"
+
 #ifndef NAVIGATION_3D_DISABLED
-#include "servers/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
 
 #include <manifold/manifold.h>
+
+#include <cfloat> // FLT_EPSILON
 
 #ifndef NAVIGATION_3D_DISABLED
 Callable CSGShape3D::_navmesh_source_geometry_parsing_callback;
@@ -95,22 +109,23 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 
 	if (use_collision) {
 		root_collision_shape.instantiate();
-		root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
-		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
-		PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
-		PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
-		PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
-		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+		root_collision_body = PhysicsServer3D::get_singleton()->body_create();
+		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PS3DE::BODY_MODE_STATIC);
+		PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
+		PhysicsServer3D::get_singleton()->body_add_shape(root_collision_body, root_collision_shape->get_rid());
+		PhysicsServer3D::get_singleton()->body_set_space(root_collision_body, get_world_3d()->get_space());
+		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_body, get_instance_id());
 		set_collision_layer(collision_layer);
 		set_collision_mask(collision_mask);
 		set_collision_priority(collision_priority);
 		_make_dirty(); //force update
 	} else {
-		PhysicsServer3D::get_singleton()->free(root_collision_instance);
-		root_collision_instance = RID();
+		PhysicsServer3D::get_singleton()->free_rid(root_collision_body);
+		root_collision_body = RID();
 		root_collision_shape.unref();
 	}
 	notify_property_list_changed();
+	update_gizmos();
 }
 
 bool CSGShape3D::is_using_collision() const {
@@ -119,8 +134,8 @@ bool CSGShape3D::is_using_collision() const {
 
 void CSGShape3D::set_collision_layer(uint32_t p_layer) {
 	collision_layer = p_layer;
-	if (root_collision_instance.is_valid()) {
-		PhysicsServer3D::get_singleton()->body_set_collision_layer(root_collision_instance, p_layer);
+	if (root_collision_body.is_valid()) {
+		PhysicsServer3D::get_singleton()->body_set_collision_layer(root_collision_body, p_layer);
 	}
 }
 
@@ -130,8 +145,8 @@ uint32_t CSGShape3D::get_collision_layer() const {
 
 void CSGShape3D::set_collision_mask(uint32_t p_mask) {
 	collision_mask = p_mask;
-	if (root_collision_instance.is_valid()) {
-		PhysicsServer3D::get_singleton()->body_set_collision_mask(root_collision_instance, p_mask);
+	if (root_collision_body.is_valid()) {
+		PhysicsServer3D::get_singleton()->body_set_collision_mask(root_collision_body, p_mask);
 	}
 }
 
@@ -176,8 +191,8 @@ bool CSGShape3D::get_collision_mask_value(int p_layer_number) const {
 }
 
 RID CSGShape3D::_get_root_collision_instance() const {
-	if (root_collision_instance.is_valid()) {
-		return root_collision_instance;
+	if (root_collision_body.is_valid()) {
+		return root_collision_body;
 	} else if (parent_shape) {
 		return parent_shape->_get_root_collision_instance();
 	}
@@ -187,8 +202,8 @@ RID CSGShape3D::_get_root_collision_instance() const {
 
 void CSGShape3D::set_collision_priority(real_t p_priority) {
 	collision_priority = p_priority;
-	if (root_collision_instance.is_valid()) {
-		PhysicsServer3D::get_singleton()->body_set_collision_priority(root_collision_instance, p_priority);
+	if (root_collision_body.is_valid()) {
+		PhysicsServer3D::get_singleton()->body_set_collision_priority(root_collision_body, p_priority);
 	}
 }
 
@@ -196,6 +211,25 @@ real_t CSGShape3D::get_collision_priority() const {
 	return collision_priority;
 }
 #endif // PHYSICS_3D_DISABLED
+
+void CSGShape3D::set_autosmooth(bool p_smooth) {
+	autosmooth = p_smooth;
+	_make_dirty();
+	notify_property_list_changed();
+}
+
+bool CSGShape3D::is_autosmooth() const {
+	return autosmooth;
+}
+
+void CSGShape3D::set_smoothing_angle(const float p_angle) {
+	smoothing_angle = p_angle;
+	_make_dirty();
+}
+
+float CSGShape3D::get_smoothing_angle() const {
+	return smoothing_angle;
+}
 
 bool CSGShape3D::is_root_shape() const {
 	return !parent_shape;
@@ -454,9 +488,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	if (!dirty) {
 		return brush;
 	}
-	if (brush) {
-		memdelete(brush);
-	}
+	memdelete(brush);
 	brush = nullptr;
 	CSGBrush *n = _build_brush();
 	HashMap<int32_t, Ref<Material>> mesh_materials;
@@ -489,9 +521,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	}
 	if (!manifolds.empty()) {
 		manifold::Manifold manifold_result = manifold::Manifold::BatchBoolean(manifolds, current_op);
-		if (n) {
-			memdelete(n);
-		}
+		memdelete(n);
 		n = memnew(CSGBrush);
 		_unpack_manifold(manifold_result, mesh_materials, n);
 	}
@@ -511,58 +541,42 @@ CSGBrush *CSGShape3D::_get_brush() {
 	return brush;
 }
 
-int CSGShape3D::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+static void _generate_tangents_unindexed(float *p_tangents, size_t p_count, const Vector3 *p_positions, const Vector3 *p_normals, const Vector2 *p_uvs) {
+	ERR_FAIL_COND_MSG(!SurfaceTool::generate_tangents_func, "Meshoptimizer library is not initialized.");
+	ERR_FAIL_COND(p_count % 3 != 0);
 
-	return surface.vertices.size() / 3;
-}
+	if (p_count == 0) {
+		return;
+	}
 
-int CSGShape3D::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
-	// always 3
-	return 3;
-}
+	struct TangentVertex {
+		float position[3];
+		float normal[3];
+		float uv[2];
+	};
 
-void CSGShape3D::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+	// We can't operate on input arrays directly because in double-precision builds, vectors use double components
+	// So we convert the inputs to single precision floats before generating tangents.
+	LocalVector<TangentVertex> tangent_vertices;
+	tangent_vertices.resize(p_count);
 
-	Vector3 v = surface.verticesw[iFace * 3 + iVert];
-	fvPosOut[0] = v.x;
-	fvPosOut[1] = v.y;
-	fvPosOut[2] = v.z;
-}
+	for (size_t i = 0; i < p_count; i++) {
+		TangentVertex &tangent_vertex = tangent_vertices[i];
 
-void CSGShape3D::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
+		tangent_vertex.position[0] = p_positions[i].x;
+		tangent_vertex.position[1] = p_positions[i].y;
+		tangent_vertex.position[2] = p_positions[i].z;
+		tangent_vertex.normal[0] = p_normals[i].x;
+		tangent_vertex.normal[1] = p_normals[i].y;
+		tangent_vertex.normal[2] = p_normals[i].z;
+		tangent_vertex.uv[0] = p_uvs[i].x;
+		tangent_vertex.uv[1] = p_uvs[i].y;
+	}
 
-	Vector3 n = surface.normalsw[iFace * 3 + iVert];
-	fvNormOut[0] = n.x;
-	fvNormOut[1] = n.y;
-	fvNormOut[2] = n.z;
-}
-
-void CSGShape3D::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
-
-	Vector2 t = surface.uvsw[iFace * 3 + iVert];
-	fvTexcOut[0] = t.x;
-	fvTexcOut[1] = t.y;
-}
-
-void CSGShape3D::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
-		const tbool bIsOrientationPreserving, const int iFace, const int iVert) {
-	ShapeUpdateSurface &surface = *((ShapeUpdateSurface *)pContext->m_pUserData);
-
-	int i = iFace * 3 + iVert;
-	Vector3 normal = surface.normalsw[i];
-	Vector3 tangent = Vector3(fvTangent[0], fvTangent[1], fvTangent[2]);
-	Vector3 bitangent = Vector3(-fvBiTangent[0], -fvBiTangent[1], -fvBiTangent[2]); // for some reason these are reversed, something with the coordinate system in Godot
-	float d = bitangent.dot(normal.cross(tangent));
-
-	i *= 4;
-	surface.tansw[i++] = tangent.x;
-	surface.tansw[i++] = tangent.y;
-	surface.tansw[i++] = tangent.z;
-	surface.tansw[i++] = d < 0 ? -1 : 1;
+	SurfaceTool::generate_tangents_func(p_tangents, nullptr, p_count,
+			tangent_vertices.ptr()->position, p_count, sizeof(TangentVertex),
+			tangent_vertices.ptr()->normal, sizeof(TangentVertex),
+			tangent_vertices.ptr()->uv, sizeof(TangentVertex), 0);
 }
 
 void CSGShape3D::update_shape() {
@@ -576,110 +590,17 @@ void CSGShape3D::update_shape() {
 	CSGBrush *n = _get_brush();
 	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
-	OAHashMap<Vector3, Vector3> vec_map;
-
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
-	for (int i = 0; i < face_count.size(); i++) {
-		face_count.write[i] = 0;
-	}
-
-	for (int i = 0; i < n->faces.size(); i++) {
-		int mat = n->faces[i].material;
-		ERR_CONTINUE(mat < -1 || mat >= face_count.size());
-		int idx = mat == -1 ? face_count.size() - 1 : mat;
-
-		if (n->faces[i].smooth) {
-			Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
-
-			for (int j = 0; j < 3; j++) {
-				Vector3 v = n->faces[i].vertices[j];
-				Vector3 add;
-				if (vec_map.lookup(v, add)) {
-					add += p.normal;
-				} else {
-					add = p.normal;
-				}
-				vec_map.set(v, add);
-			}
-		}
-
-		face_count.write[idx]++;
-	}
+	face_count.fill(0);
 
 	Vector<ShapeUpdateSurface> surfaces;
-
 	surfaces.resize(face_count.size());
 
-	//create arrays
-	for (int i = 0; i < surfaces.size(); i++) {
-		surfaces.write[i].vertices.resize(face_count[i] * 3);
-		surfaces.write[i].normals.resize(face_count[i] * 3);
-		surfaces.write[i].uvs.resize(face_count[i] * 3);
-		if (calculate_tangents) {
-			surfaces.write[i].tans.resize(face_count[i] * 3 * 4);
-		}
-		surfaces.write[i].last_added = 0;
-
-		if (i != surfaces.size() - 1) {
-			surfaces.write[i].material = n->materials[i];
-		}
-
-		surfaces.write[i].verticesw = surfaces.write[i].vertices.ptrw();
-		surfaces.write[i].normalsw = surfaces.write[i].normals.ptrw();
-		surfaces.write[i].uvsw = surfaces.write[i].uvs.ptrw();
-		if (calculate_tangents) {
-			surfaces.write[i].tansw = surfaces.write[i].tans.ptrw();
-		}
-	}
-
-	//fill arrays
-	{
-		for (int i = 0; i < n->faces.size(); i++) {
-			int order[3] = { 0, 1, 2 };
-
-			if (n->faces[i].invert) {
-				SWAP(order[1], order[2]);
-			}
-
-			int mat = n->faces[i].material;
-			ERR_CONTINUE(mat < -1 || mat >= face_count.size());
-			int idx = mat == -1 ? face_count.size() - 1 : mat;
-
-			int last = surfaces[idx].last_added;
-
-			Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
-
-			for (int j = 0; j < 3; j++) {
-				Vector3 v = n->faces[i].vertices[j];
-
-				Vector3 normal = p.normal;
-
-				if (n->faces[i].smooth && vec_map.lookup(v, normal)) {
-					normal.normalize();
-				}
-
-				if (n->faces[i].invert) {
-					normal = -normal;
-				}
-
-				int k = last + order[j];
-				surfaces[idx].verticesw[k] = v;
-				surfaces[idx].uvsw[k] = n->faces[i].uvs[j];
-				surfaces[idx].normalsw[k] = normal;
-
-				if (calculate_tangents) {
-					// zero out our tangents for now
-					k *= 4;
-					surfaces[idx].tansw[k++] = 0.0;
-					surfaces[idx].tansw[k++] = 0.0;
-					surfaces[idx].tansw[k++] = 0.0;
-					surfaces[idx].tansw[k++] = 0.0;
-				}
-			}
-
-			surfaces.write[idx].last_added += 3;
-		}
+	if (autosmooth) {
+		_build_surfaces_smoothed(n, surfaces, face_count);
+	} else {
+		_build_surfaces_default(n, surfaces, face_count);
 	}
 
 	root_mesh.instantiate();
@@ -687,21 +608,11 @@ void CSGShape3D::update_shape() {
 
 	for (int i = 0; i < surfaces.size(); i++) {
 		// calculate tangents for this surface
-		bool have_tangents = calculate_tangents;
+		bool have_tangents = calculate_tangents && SurfaceTool::generate_tangents_func;
 		if (have_tangents) {
-			SMikkTSpaceInterface mkif;
-			mkif.m_getNormal = mikktGetNormal;
-			mkif.m_getNumFaces = mikktGetNumFaces;
-			mkif.m_getNumVerticesOfFace = mikktGetNumVerticesOfFace;
-			mkif.m_getPosition = mikktGetPosition;
-			mkif.m_getTexCoord = mikktGetTexCoord;
-			mkif.m_setTSpace = mikktSetTSpaceDefault;
-			mkif.m_setTSpaceBasic = nullptr;
+			ShapeUpdateSurface &surface = surfaces.write[i];
 
-			SMikkTSpaceContext msc;
-			msc.m_pInterface = &mkif;
-			msc.m_pUserData = &surfaces.write[i];
-			have_tangents = genTangSpaceDefault(&msc);
+			_generate_tangents_unindexed(surface.tansw, surface.vertices.size(), surface.verticesw, surface.normalsw, surface.uvsw);
 		}
 
 		if (surfaces[i].last_added == 0) {
@@ -726,9 +637,236 @@ void CSGShape3D::update_shape() {
 
 	set_base(root_mesh->get_rid());
 
+	update_gizmos();
+
 #ifndef PHYSICS_3D_DISABLED
 	_update_collision_faces();
 #endif // PHYSICS_3D_DISABLED
+}
+
+void CSGShape3D::_build_surfaces_smoothed(CSGBrush *p_brush, Vector<CSGShape3D::ShapeUpdateSurface> &r_surfaces, Vector<int> &r_face_count) {
+	Vector<Vector3> smooth_faces;
+	LocalVector<Vector3> smooth_vertex;
+	smooth_faces.resize(p_brush->faces.size());
+	smooth_vertex.resize(p_brush->faces.size() * 3);
+
+	Vector3 *smooth_faces_ptrw = smooth_faces.ptrw();
+	int *face_count_ptrw = r_face_count.ptrw();
+
+	for (int i = 0; i < p_brush->faces.size(); i++) {
+		int mat = p_brush->faces[i].material;
+		ERR_CONTINUE(mat < -1 || mat >= r_face_count.size());
+		int idx = mat == -1 ? r_face_count.size() - 1 : mat;
+
+		Plane p(p_brush->faces[i].vertices[0], p_brush->faces[i].vertices[1], p_brush->faces[i].vertices[2]);
+
+		smooth_faces_ptrw[i] = p.normal;
+		// Not sure if resize populates the LocalVector.
+		smooth_vertex[i * 3 + 0] = Vector3(p.normal);
+		smooth_vertex[i * 3 + 1] = Vector3(p.normal);
+		smooth_vertex[i * 3 + 2] = Vector3(p.normal);
+		// We could use a AHashMap Vector3, int to store the number of connections of each vertex position and end the loop earlier. But I'm not sure if the performance gains outweigh the cost.
+		face_count_ptrw[idx]++;
+	}
+
+	const Vector3 *smooth_faces_ptr = smooth_faces.ptr();
+	const int smooth_faces_size = smooth_faces.size();
+
+	// We could add a `use_groups` property later to only apply autosmooth on smooth faces or respect smoothing groups in some way.
+	if (smoothing_angle > 0.1) {
+		float smooth_angle_rad = Math::cos(Math::deg_to_rad(smoothing_angle));
+		for (int i = 0; i < smooth_faces_size; i++) {
+			for (int k = 0; k < 3; k++) {
+				int curr_vert = i * 3 + k;
+				// Skip the other vertices of the face as they will never occupy the same position.
+				Vector3 vert_a = p_brush->faces[i].vertices[k];
+				for (int j = i + 1; j < smooth_faces_size; j++) {
+					// Compare the angles of faces instead of vertices.
+					if (smooth_faces_ptr[i].dot(smooth_faces_ptr[j]) > smooth_angle_rad) {
+						for (int h = 0; h < 3; h++) {
+							Vector3 vert_b = p_brush->faces[j].vertices[h];
+							if (vert_a == vert_b) {
+								int curr_j = j * 3 + h;
+								smooth_vertex[curr_vert] += smooth_faces_ptr[j];
+								smooth_vertex[curr_j] += smooth_faces_ptr[i];
+								// Skip the other 2 vertices as only one vertex of each face can connect with one vertex of other face.
+								break;
+							}
+						}
+					}
+				}
+				smooth_vertex[curr_vert].normalize();
+			}
+		}
+	}
+
+	//create arrays
+	for (int i = 0; i < r_surfaces.size(); i++) {
+		r_surfaces.write[i].vertices.resize(r_face_count[i] * 3);
+		r_surfaces.write[i].normals.resize(r_face_count[i] * 3);
+		r_surfaces.write[i].uvs.resize(r_face_count[i] * 3);
+		if (calculate_tangents) {
+			r_surfaces.write[i].tans.resize(r_face_count[i] * 3 * 4);
+		}
+		r_surfaces.write[i].last_added = 0;
+
+		if (i != r_surfaces.size() - 1) {
+			r_surfaces.write[i].material = p_brush->materials[i];
+		}
+
+		r_surfaces.write[i].verticesw = r_surfaces.write[i].vertices.ptrw();
+		r_surfaces.write[i].normalsw = r_surfaces.write[i].normals.ptrw();
+		r_surfaces.write[i].uvsw = r_surfaces.write[i].uvs.ptrw();
+		if (calculate_tangents) {
+			r_surfaces.write[i].tansw = r_surfaces.write[i].tans.ptrw();
+		}
+	}
+
+	//fill arrays
+	{
+		for (int i = 0; i < p_brush->faces.size(); i++) {
+			int order[3] = { 0, 1, 2 };
+
+			if (p_brush->faces[i].invert) {
+				SWAP(order[1], order[2]);
+			}
+
+			int mat = p_brush->faces[i].material;
+			ERR_CONTINUE(mat < -1 || mat >= r_face_count.size());
+			int idx = mat == -1 ? r_face_count.size() - 1 : mat;
+
+			int last = r_surfaces[idx].last_added;
+
+			int face_pos_i = i * 3;
+
+			for (int j = 0; j < 3; j++) {
+				Vector3 v = p_brush->faces[i].vertices[j];
+
+				Vector3 normal = smooth_vertex[face_pos_i + j];
+
+				if (p_brush->faces[i].invert) {
+					normal = -normal;
+				}
+
+				int k = last + order[j];
+				r_surfaces[idx].verticesw[k] = v;
+				r_surfaces[idx].uvsw[k] = p_brush->faces[i].uvs[j];
+				r_surfaces[idx].normalsw[k] = normal;
+
+				if (calculate_tangents) {
+					// zero out our tangents for now
+					k *= 4;
+					r_surfaces[idx].tansw[k++] = 0.0;
+					r_surfaces[idx].tansw[k++] = 0.0;
+					r_surfaces[idx].tansw[k++] = 0.0;
+					r_surfaces[idx].tansw[k++] = 0.0;
+				}
+			}
+
+			r_surfaces.write[idx].last_added += 3;
+		}
+	}
+}
+
+void CSGShape3D::_build_surfaces_default(CSGBrush *p_brush, Vector<CSGShape3D::ShapeUpdateSurface> &r_surfaces, Vector<int> &r_face_count) {
+	AHashMap<Vector3, Vector3> vec_map;
+	vec_map.reserve(p_brush->faces.size() * 3);
+
+	for (int i = 0; i < p_brush->faces.size(); i++) {
+		int mat = p_brush->faces[i].material;
+		ERR_CONTINUE(mat < -1 || mat >= r_face_count.size());
+		int idx = mat == -1 ? r_face_count.size() - 1 : mat;
+
+		if (p_brush->faces[i].smooth) {
+			Plane p(p_brush->faces[i].vertices[0], p_brush->faces[i].vertices[1], p_brush->faces[i].vertices[2]);
+
+			for (int j = 0; j < 3; j++) {
+				Vector3 v = p_brush->faces[i].vertices[j];
+				Vector3 *vec = vec_map.getptr(v);
+				if (vec) {
+					*vec += p.normal;
+				} else {
+					vec_map.insert(v, p.normal);
+				}
+			}
+		}
+
+		r_face_count.write[idx]++;
+	}
+
+	//create arrays
+	for (int i = 0; i < r_surfaces.size(); i++) {
+		r_surfaces.write[i].vertices.resize(r_face_count[i] * 3);
+		r_surfaces.write[i].normals.resize(r_face_count[i] * 3);
+		r_surfaces.write[i].uvs.resize(r_face_count[i] * 3);
+		if (calculate_tangents) {
+			r_surfaces.write[i].tans.resize(r_face_count[i] * 3 * 4);
+		}
+		r_surfaces.write[i].last_added = 0;
+
+		if (i != r_surfaces.size() - 1) {
+			r_surfaces.write[i].material = p_brush->materials[i];
+		}
+
+		r_surfaces.write[i].verticesw = r_surfaces.write[i].vertices.ptrw();
+		r_surfaces.write[i].normalsw = r_surfaces.write[i].normals.ptrw();
+		r_surfaces.write[i].uvsw = r_surfaces.write[i].uvs.ptrw();
+		if (calculate_tangents) {
+			r_surfaces.write[i].tansw = r_surfaces.write[i].tans.ptrw();
+		}
+	}
+
+	//fill arrays
+	{
+		for (int i = 0; i < p_brush->faces.size(); i++) {
+			int order[3] = { 0, 1, 2 };
+
+			if (p_brush->faces[i].invert) {
+				SWAP(order[1], order[2]);
+			}
+
+			int mat = p_brush->faces[i].material;
+			ERR_CONTINUE(mat < -1 || mat >= r_face_count.size());
+			int idx = mat == -1 ? r_face_count.size() - 1 : mat;
+
+			int last = r_surfaces[idx].last_added;
+
+			Plane p(p_brush->faces[i].vertices[0], p_brush->faces[i].vertices[1], p_brush->faces[i].vertices[2]);
+
+			for (int j = 0; j < 3; j++) {
+				Vector3 v = p_brush->faces[i].vertices[j];
+
+				Vector3 normal = p.normal;
+
+				if (p_brush->faces[i].smooth) {
+					Vector3 *ptr = vec_map.getptr(v);
+					if (ptr) {
+						normal = ptr->normalized();
+					}
+				}
+
+				if (p_brush->faces[i].invert) {
+					normal = -normal;
+				}
+
+				int k = last + order[j];
+				r_surfaces[idx].verticesw[k] = v;
+				r_surfaces[idx].uvsw[k] = p_brush->faces[i].uvs[j];
+				r_surfaces[idx].normalsw[k] = normal;
+
+				if (calculate_tangents) {
+					// zero out our tangents for now
+					k *= 4;
+					r_surfaces[idx].tansw[k++] = 0.0;
+					r_surfaces[idx].tansw[k++] = 0.0;
+					r_surfaces[idx].tansw[k++] = 0.0;
+					r_surfaces[idx].tansw[k++] = 0.0;
+				}
+			}
+
+			r_surfaces.write[idx].last_added += 3;
+		}
+	}
 }
 
 Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
@@ -807,7 +945,7 @@ void CSGShape3D::_update_debug_collision_shape() {
 
 void CSGShape3D::_clear_debug_collision_shape() {
 	if (root_collision_debug_instance.is_valid()) {
-		RS::get_singleton()->free(root_collision_debug_instance);
+		RS::get_singleton()->free_rid(root_collision_debug_instance);
 		root_collision_debug_instance = RID();
 	}
 }
@@ -895,12 +1033,12 @@ void CSGShape3D::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (use_collision && is_root_shape()) {
 				root_collision_shape.instantiate();
-				root_collision_instance = PhysicsServer3D::get_singleton()->body_create();
-				PhysicsServer3D::get_singleton()->body_set_mode(root_collision_instance, PhysicsServer3D::BODY_MODE_STATIC);
-				PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
-				PhysicsServer3D::get_singleton()->body_add_shape(root_collision_instance, root_collision_shape->get_rid());
-				PhysicsServer3D::get_singleton()->body_set_space(root_collision_instance, get_world_3d()->get_space());
-				PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
+				root_collision_body = PhysicsServer3D::get_singleton()->body_create();
+				PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PS3DE::BODY_MODE_STATIC);
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
+				PhysicsServer3D::get_singleton()->body_add_shape(root_collision_body, root_collision_shape->get_rid());
+				PhysicsServer3D::get_singleton()->body_set_space(root_collision_body, get_world_3d()->get_space());
+				PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_body, get_instance_id());
 				set_collision_layer(collision_layer);
 				set_collision_mask(collision_mask);
 				set_collision_priority(collision_priority);
@@ -910,17 +1048,17 @@ void CSGShape3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-				PhysicsServer3D::get_singleton()->free(root_collision_instance);
-				root_collision_instance = RID();
+			if (use_collision && is_root_shape() && root_collision_body.is_valid()) {
+				PhysicsServer3D::get_singleton()->free_rid(root_collision_body);
+				root_collision_body = RID();
 				root_collision_shape.unref();
 				_clear_debug_collision_shape();
 			}
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
-				PhysicsServer3D::get_singleton()->body_set_state(root_collision_instance, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+			if (use_collision && is_root_shape() && root_collision_body.is_valid()) {
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 			}
 			_on_transform_changed();
 		} break;
@@ -948,6 +1086,22 @@ bool CSGShape3D::is_calculating_tangents() const {
 }
 
 void CSGShape3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+
+	if (p_property.name == "smoothing_angle") {
+		if (!autosmooth || (is_inside_tree() && !is_root_shape())) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
+	if (p_property.name == "autosmooth") {
+		if (is_inside_tree() && !is_root_shape()) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
 	bool is_collision_prefixed = p_property.name.begins_with("collision_");
 	if ((is_collision_prefixed || p_property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
@@ -1031,6 +1185,15 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_meshes"), &CSGShape3D::get_meshes);
 
 	ClassDB::bind_method(D_METHOD("bake_static_mesh"), &CSGShape3D::bake_static_mesh);
+
+	ClassDB::bind_method(D_METHOD("set_autosmooth", "autosmooth"), &CSGShape3D::set_autosmooth);
+	ClassDB::bind_method(D_METHOD("is_autosmooth"), &CSGShape3D::is_autosmooth);
+
+	ClassDB::bind_method(D_METHOD("set_smoothing_angle", "smoothing_angle"), &CSGShape3D::set_smoothing_angle);
+	ClassDB::bind_method(D_METHOD("get_smoothing_angle"), &CSGShape3D::get_smoothing_angle);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autosmooth"), "set_autosmooth", "is_autosmooth");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "smoothing_angle", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), "set_smoothing_angle", "get_smoothing_angle");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 #ifndef DISABLE_DEPRECATED
@@ -2268,7 +2431,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		}
 
 		if (mode == MODE_PATH) {
-			if (!path_local) {
+			if (!path_local && path->is_inside_tree()) {
 				base_xform = path->get_global_transform();
 			}
 

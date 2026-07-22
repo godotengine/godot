@@ -32,7 +32,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
 
 class AudioStream;
 class AudioStreamPlayback;

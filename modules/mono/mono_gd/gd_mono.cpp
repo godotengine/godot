@@ -30,7 +30,6 @@
 
 #include "gd_mono.h"
 
-#include "../csharp_script.h"
 #include "../glue/runtime_interop.h"
 #include "../godotsharp_dirs.h"
 #include "../thirdparty/coreclr_delegates.h"
@@ -38,12 +37,17 @@
 #include "../utils/path_utils.h"
 #include "gd_mono_cache.h"
 
-#ifdef TOOLS_ENABLED
-#include "../editor/hostfxr_resolver.h"
+#ifdef DEBUG_ENABLED
+#include "core/object/class_db.h"
 #endif
 
+#ifdef TOOLS_ENABLED
+#include "../editor/hostfxr_resolver.h"
+#include "../editor/semver.h"
+#endif
+
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
@@ -105,6 +109,60 @@ const char_t *get_data(const HostFxrCharString &p_char_str) {
 	return (const char_t *)p_char_str.get_data();
 }
 
+#ifdef TOOLS_ENABLED
+bool try_get_dotnet_root_from_command_line(String &r_dotnet_root) {
+	String pipe;
+	List<String> args;
+	args.push_back("--list-sdks");
+
+	int exitcode;
+	Error err = OS::get_singleton()->execute("dotnet", args, &pipe, &exitcode, true);
+
+	ERR_FAIL_COND_V_MSG(err != OK, false, String(".NET failed to get list of installed SDKs. Error: ") + error_names[err]);
+	ERR_FAIL_COND_V_MSG(exitcode != 0, false, pipe);
+
+	Vector<String> sdks = pipe.strip_edges().replace("\r\n", "\n").split("\n", false);
+
+	godotsharp::SemVerParser sem_ver_parser;
+
+	godotsharp::SemVer latest_sdk_version;
+	String latest_sdk_path;
+
+	for (const String &sdk : sdks) {
+		// The format of the SDK lines is:
+		// 8.0.401 [/usr/share/dotnet/sdk]
+		String version_string = sdk.get_slice(" ", 0);
+		String path = sdk.get_slice(" ", 1);
+		path = path.substr(1, path.length() - 2);
+
+		godotsharp::SemVer version;
+		if (!sem_ver_parser.parse(version_string, version)) {
+			WARN_PRINT("Unable to parse .NET SDK version '" + version_string + "'.");
+			continue;
+		}
+
+		if (!DirAccess::exists(path)) {
+			WARN_PRINT("Found .NET SDK version '" + version_string + "' with invalid path '" + path + "'.");
+			continue;
+		}
+
+		if (version > latest_sdk_version) {
+			latest_sdk_version = version;
+			latest_sdk_path = path;
+		}
+	}
+
+	if (!latest_sdk_path.is_empty()) {
+		print_verbose("Found .NET SDK at " + latest_sdk_path);
+		// The `dotnet_root` is the parent directory.
+		r_dotnet_root = latest_sdk_path.path_join("..").simplify_path();
+		return true;
+	}
+
+	return false;
+}
+#endif
+
 String find_hostfxr() {
 #ifdef TOOLS_ENABLED
 	String dotnet_root;
@@ -113,23 +171,9 @@ String find_hostfxr() {
 		return fxr_path;
 	}
 
-	// hostfxr_resolver doesn't look for dotnet in `PATH`. If it fails, we try to find the dotnet
-	// executable in `PATH` here and pass its location as `dotnet_root` to `get_hostfxr_path`.
-	String dotnet_exe = Path::find_executable("dotnet");
-
-	if (!dotnet_exe.is_empty()) {
-		// The file found in PATH may be a symlink
-		dotnet_exe = Path::abspath(Path::realpath(dotnet_exe));
-
-		// TODO:
-		// Sometimes, the symlink may not point to the dotnet executable in the dotnet root.
-		// That's the case with snaps. The snap install should have been found with the
-		// previous `get_hostfxr_path`, but it would still be better to do this properly
-		// and use something like `dotnet --list-sdks/runtimes` to find the actual location.
-		// This way we could also check if the proper sdk or runtime is installed. This would
-		// allow us to fail gracefully and show some helpful information in the editor.
-
-		dotnet_root = dotnet_exe.get_base_dir();
+	// hostfxr_resolver doesn't look for dotnet in `PATH`. If it fails, we try to use the dotnet
+	// executable in `PATH` to find the `dotnet_root` and get the `hostfxr_path` from there.
+	if (try_get_dotnet_root_from_command_line(dotnet_root)) {
 		if (godotsharp::hostfxr_resolver::try_get_path_from_dotnet_root(dotnet_root, fxr_path)) {
 			return fxr_path;
 		}
@@ -699,6 +743,23 @@ void GDMono::_init_godot_api_hashes() {
 #endif // TOOLS_ENABLED
 #endif // DEBUG_ENABLED
 }
+
+#ifdef DEBUG_ENABLED
+uint64_t GDMono::get_api_core_hash() {
+	if (api_core_hash == 0) {
+		api_core_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
+	}
+	return api_core_hash;
+}
+#ifdef TOOLS_ENABLED
+uint64_t GDMono::get_api_editor_hash() {
+	if (api_editor_hash == 0) {
+		api_editor_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
+	}
+	return api_editor_hash;
+}
+#endif // TOOLS_ENABLED
+#endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 bool GDMono::_load_project_assembly() {

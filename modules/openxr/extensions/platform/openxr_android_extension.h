@@ -41,9 +41,9 @@ public:
 
 	OpenXRAndroidExtension();
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 	virtual void on_before_instance_created() override;
-	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer) override;
+	virtual void *set_instance_create_info_and_get_next_pointer(XrVersion p_xr_version, void *p_next_pointer) override;
 
 	virtual ~OpenXRAndroidExtension() override;
 

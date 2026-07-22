@@ -104,7 +104,9 @@ internal class EditorMessageDispatcher(private val editor: BaseGodotEditor) {
 				MSG_REGISTER_MESSENGER -> {
 					val editorId = msg.arg1
 					val messenger = msg.replyTo
-					registerMessenger(editorId, messenger)
+					registerMessenger(editorId, messenger) {
+						editor.onEditorDisconnected(editorId)
+					}
 				}
 
 				MSG_DISPATCH_GAME_MENU_ACTION -> {
@@ -211,8 +213,8 @@ internal class EditorMessageDispatcher(private val editor: BaseGodotEditor) {
 			} else if (messenger.binder.isBinderAlive) {
 				messenger.binder.linkToDeath({
 					Log.v(TAG, "Removing messenger for $editorId")
-					cleanEditorConnection(editorId)
 					messengerDeathCallback?.run()
+					cleanEditorConnection(editorId)
 				}, 0)
 				editorConnectionsInfos[editorId] = EditorConnectionInfo(messenger)
 				editor.onEditorConnected(editorId)
@@ -234,7 +236,8 @@ internal class EditorMessageDispatcher(private val editor: BaseGodotEditor) {
 	/**
 	 * Utility method to register a [Messenger] attached to this handler with a host.
 	 *
-	 * This is done so that the host can send request to the editor instance attached to this handle.
+	 * This is done so that the host can send request (e.g: force-quit when the host exits) to the editor instance
+	 * attached to this handle.
 	 *
 	 * Note that this is only done when the editor instance is internal (not exported) to prevent
 	 * arbitrary apps from having the ability to send requests.

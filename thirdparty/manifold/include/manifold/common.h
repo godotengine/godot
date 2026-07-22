@@ -20,7 +20,8 @@
 #include <chrono>
 #endif
 
-#include "manifold/linalg.h"
+#include "linalg.h"
+#include "optional_assert.h"
 
 namespace manifold {
 /** @addtogroup Math
@@ -487,80 +488,12 @@ constexpr double DEFAULT_LENGTH = 1.0;
  */
 class Quality {
  private:
-  inline static int circularSegments_ = DEFAULT_SEGMENTS;
-  inline static double circularAngle_ = DEFAULT_ANGLE;
-  inline static double circularEdgeLength_ = DEFAULT_LENGTH;
-
  public:
-  /**
-   * Sets an angle constraint the default number of circular segments for the
-   * CrossSection::Circle(), Manifold::Cylinder(), Manifold::Sphere(), and
-   * Manifold::Revolve() constructors. The number of segments will be rounded up
-   * to the nearest factor of four.
-   *
-   * @param angle The minimum angle in degrees between consecutive segments. The
-   * angle will increase if the the segments hit the minimum edge length.
-   * Default is 10 degrees.
-   */
-  static void SetMinCircularAngle(double angle) {
-    if (angle <= 0) return;
-    circularAngle_ = angle;
-  }
-
-  /**
-   * Sets a length constraint the default number of circular segments for the
-   * CrossSection::Circle(), Manifold::Cylinder(), Manifold::Sphere(), and
-   * Manifold::Revolve() constructors. The number of segments will be rounded up
-   * to the nearest factor of four.
-   *
-   * @param length The minimum length of segments. The length will
-   * increase if the the segments hit the minimum angle. Default is 1.0.
-   */
-  static void SetMinCircularEdgeLength(double length) {
-    if (length <= 0) return;
-    circularEdgeLength_ = length;
-  }
-
-  /**
-   * Sets the default number of circular segments for the
-   * CrossSection::Circle(), Manifold::Cylinder(), Manifold::Sphere(), and
-   * Manifold::Revolve() constructors. Overrides the edge length and angle
-   * constraints and sets the number of segments to exactly this value.
-   *
-   * @param number Number of circular segments. Default is 0, meaning no
-   * constraint is applied.
-   */
-  static void SetCircularSegments(int number) {
-    if (number < 3 && number != 0) return;
-    circularSegments_ = number;
-  }
-
-  /**
-   * Determine the result of the SetMinCircularAngle(),
-   * SetMinCircularEdgeLength(), and SetCircularSegments() defaults.
-   *
-   * @param radius For a given radius of circle, determine how many default
-   * segments there will be.
-   */
-  static int GetCircularSegments(double radius) {
-    if (circularSegments_ > 0) return circularSegments_;
-    int nSegA = 360.0 / circularAngle_;
-    int nSegL = 2.0 * radius * kPi / circularEdgeLength_;
-    int nSeg = fmin(nSegA, nSegL) + 3;
-    nSeg -= nSeg % 4;
-    return std::max(nSeg, 3);
-  }
-
-  /**
-   * Resets the circular construction parameters to their defaults if
-   * SetMinCircularAngle, SetMinCircularEdgeLength, or SetCircularSegments have
-   * been called.
-   */
-  static void ResetToDefaults() {
-    circularSegments_ = DEFAULT_SEGMENTS;
-    circularAngle_ = DEFAULT_ANGLE;
-    circularEdgeLength_ = DEFAULT_LENGTH;
-  }
+  static void SetMinCircularAngle(double angle);
+  static void SetMinCircularEdgeLength(double length);
+  static void SetCircularSegments(int number);
+  static int GetCircularSegments(double radius);
+  static void ResetToDefaults();
 };
 /** @} */
 
@@ -577,21 +510,29 @@ struct ExecutionParams {
   /// Perform extra sanity checks and assertions on the intermediate data
   /// structures.
   bool intermediateChecks = false;
-  /// Verbose output primarily of the Boolean, including timing info and vector
-  /// sizes.
-  bool verbose = false;
+  /// Perform 3D mesh self-intersection test on intermediate boolean results to
+  /// test for ϵ-validity. For debug purposes only.
+  bool selfIntersectionChecks = false;
   /// If processOverlaps is false, a geometric check will be performed to assert
   /// all triangles are CCW.
   bool processOverlaps = true;
   /// Suppresses printed errors regarding CW triangles. Has no effect if
   /// processOverlaps is true.
   bool suppressErrors = false;
-  /// Perform optional but recommended triangle cleanups in SimplifyTopology()
+  /// Deprecated! This value no longer has any effect, as cleanup now only
+  /// occurs on intersected triangles.
   bool cleanupTriangles = true;
+  /// Verbose level:
+  /// - 0 for no verbose output
+  /// - 1 for verbose output for the Boolean, including timing info and vector
+  /// sizes.
+  /// - 2 for verbose output with triangulator action as well.
+  int verbose = 0;
 };
 /** @} */
 
 #ifdef MANIFOLD_DEBUG
+
 inline std::ostream& operator<<(std::ostream& stream, const Box& box) {
   return stream << "min: " << box.min << ", "
                 << "max: " << box.max;
@@ -600,6 +541,11 @@ inline std::ostream& operator<<(std::ostream& stream, const Box& box) {
 inline std::ostream& operator<<(std::ostream& stream, const Rect& box) {
   return stream << "min: " << box.min << ", "
                 << "max: " << box.max;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const Smoothness& s) {
+  return stream << "halfedge: " << s.halfedge << ", "
+                << "smoothness: " << s.smoothness;
 }
 
 /**

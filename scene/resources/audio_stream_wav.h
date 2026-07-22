@@ -32,7 +32,7 @@
 
 #include "servers/audio/audio_stream.h"
 
-#include "thirdparty/misc/qoa.h"
+#include <thirdparty/misc/qoa.h>
 
 class AudioStreamWAV;
 
@@ -52,10 +52,9 @@ class AudioStreamPlaybackWAV : public AudioStreamPlaybackResampled {
 
 	struct QOA_State {
 		qoa_desc desc = {};
-		uint32_t data_ofs = 0;
+		uint64_t data_ofs = 0;
 		uint32_t frame_len = 0;
-		LocalVector<int16_t> dec;
-		uint32_t dec_len = 0;
+		TightLocalVector<int16_t> dec;
 	} qoa;
 
 	int64_t offset = 0;
@@ -118,11 +117,12 @@ private:
 	Format format = FORMAT_8_BITS;
 	LoopMode loop_mode = LOOP_DISABLED;
 	bool stereo = false;
-	int loop_begin = 0;
-	int loop_end = 0;
-	int mix_rate = 44100;
-	LocalVector<uint8_t> data;
-	uint32_t data_bytes = 0;
+	int64_t loop_begin = 0;
+	int64_t loop_end = 0;
+	uint32_t mix_rate = 44100;
+	TightLocalVector<uint8_t, uint64_t> data;
+
+	Dictionary tags;
 
 protected:
 	static void _bind_methods();
@@ -149,6 +149,9 @@ public:
 	void set_stereo(bool p_enable);
 	bool is_stereo() const;
 
+	void set_tags(const Dictionary &p_tags);
+	virtual Dictionary get_tags() const override;
+
 	virtual double get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
@@ -159,7 +162,6 @@ public:
 	Error save_to_wav(const String &p_path);
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 
 	virtual bool can_be_sampled() const override {
 		return true;
@@ -269,7 +271,7 @@ public:
 			p_desc->lms[c].weights[3] = (1 << 14);
 		}
 
-		LocalVector<int16_t> data16;
+		TightLocalVector<int16_t> data16;
 		data16.resize(QOA_FRAME_LEN * p_desc->channels);
 
 		uint8_t *dst_ptr = dst_data.ptrw();

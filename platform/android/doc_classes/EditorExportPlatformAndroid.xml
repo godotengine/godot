@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlatformAndroid" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPlatformAndroid" inherits="EditorExportPlatform" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Exporter for Android.
 	</brief_description>
@@ -11,16 +11,6 @@
 		<link title="Android plugins documentation index">$DOCS_URL/tutorials/platform/index.html</link>
 	</tutorials>
 	<members>
-		<member name="apk_expansion/SALT" type="String" setter="" getter="">
-			Array of random bytes that the licensing Policy uses to create an [url=https://developer.android.com/google/play/licensing/adding-licensing#impl-Obfuscator]Obfuscator[/url].
-		</member>
-		<member name="apk_expansion/enable" type="bool" setter="" getter="">
-			If [code]true[/code], project resources are stored in the separate APK expansion file, instead of the APK.
-			[b]Note:[/b] APK expansion should be enabled to use PCK encryption. See [url=https://developer.android.com/google/play/expansion-files]APK Expansion Files[/url]
-		</member>
-		<member name="apk_expansion/public_key" type="String" setter="" getter="">
-			Base64 encoded RSA public key for your publisher account, available from the profile page on the "Google Play Console".
-		</member>
 		<member name="architectures/arm64-v8a" type="bool" setter="" getter="">
 			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.
 		</member>
@@ -51,6 +41,17 @@
 		</member>
 		<member name="gradle_build/android_source_template" type="String" setter="" getter="">
 			Path to a ZIP file holding the source for the export template used in a Gradle build. If left empty, the default template is used.
+		</member>
+		<member name="gradle_build/compress_native_libraries" type="bool" setter="" getter="">
+			If [code]true[/code], native libraries are compressed when performing a Gradle build.
+			[b]Note:[/b] While enabling compression can reduce the size of the binary, it may result in slower application startup because the native libraries must be extracted before use, rather than being loaded directly.
+			If you're distributing your app via the Play Store, it's generally recommended to keep this option [code]false[/code], see [url=https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs]official documentation[/url].
+		</member>
+		<member name="gradle_build/custom_theme_attributes" type="Dictionary" setter="" getter="">
+			A dictionary of custom theme attributes to include in the exported Android project. Each entry defines a theme attribute name and its value, and will be added to the [b]GodotAppMainTheme[/b].
+			For example, the key [code]android:windowSwipeToDismiss[/code] with the value [code]false[/code] is resolved to [code]&lt;item name="android:windowSwipeToDismiss"&gt;false&lt;/item&gt;[/code].
+			[b]Note:[/b] To add a custom attribute to the [b]GodotAppSplashTheme[/b], prefix the attribute name with [code][splash][/code].
+			[b]Note:[/b] Reserved attributes configured via other export options or project settings cannot be overridden by [code]custom_theme_attributes[/code] and are skipped during export.
 		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
 			Application export format (*.apk or *.aab).
@@ -363,6 +364,9 @@
 		<member name="permissions/manage_external_storage" type="bool" setter="" getter="">
 			Allows an application a broad access to external storage in scoped storage. See [url=https://developer.android.com/reference/android/Manifest.permission#MANAGE_EXTERNAL_STORAGE]MANAGE_EXTERNAL_STORAGE[/url].
 		</member>
+		<member name="permissions/manage_media" type="bool" setter="" getter="">
+			Allows an application to modify and delete media files on this device or any connected storage device without user confirmation. Applications must already be granted the [code]READ_EXTERNAL_STORAGE[/code] or [code]MANAGE_EXTERNAL_STORAGE[/code] permissions for this permission to take effect. See [url=https://developer.android.com/reference/android/Manifest.permission#MANAGE_MEDIA]MANAGE_MEDIA[/url].
+		</member>
 		<member name="permissions/master_clear" type="bool" setter="" getter="">
 			See [url=https://developer.android.com/reference/android/Manifest.permission#MASTER_CLEAR]MASTER_CLEAR[/url].
 		</member>
@@ -592,6 +596,13 @@
 		<member name="permissions/write_user_dictionary" type="bool" setter="" getter="">
 			Allows an application to write to the user dictionary.
 		</member>
+		<member name="screen/background_color" type="Color" setter="" getter="">
+			The background color used for the root window. By default it's [constant Color.BLACK].
+		</member>
+		<member name="screen/edge_to_edge" type="bool" setter="" getter="">
+			If [code]true[/code], this makes the navigation and status bars translucent and allows the application content to extend edge to edge.
+			[b]Note:[/b] You should ensure that none of the application content is occluded by system elements by using the [method DisplayServer.get_display_safe_area] and [method DisplayServer.get_display_cutouts] methods.
+		</member>
 		<member name="screen/immersive_mode" type="bool" setter="" getter="">
 			If [code]true[/code], hides the navigation and status bar. Set [method DisplayServer.window_set_mode] to change this at runtime.
 		</member>
@@ -606,6 +617,26 @@
 		</member>
 		<member name="screen/support_xlarge" type="bool" setter="" getter="">
 			Indicates whether the application supports extra large screen form-factors.
+		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
+			[b]Note:[/b] When exporting as a dedicated server, the shader baker is always disabled since no rendering is performed.
+		</member>
+		<member name="splash_screen/background_color" type="Color" setter="" getter="">
+			The background color used for the system splash screen window.
+			If not set, it will fallback to [member EditorExportPlatformAndroid.launcher_icons/adaptive_background_432x432].
+			[b]Note:[/b] This is only applied if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is enabled.
+		</member>
+		<member name="splash_screen/branding_image" type="String" setter="" getter="">
+			System splash screen branding image file. If left empty, no branding image will be used. See [url=https://developer.android.com/develop/ui/views/launch/splash-screen#dimensions]splash-screen dimensions[/url].
+			[b]Note:[/b] Can be used to set an image to be shown at the bottom of the splash screen.
+		</member>
+		<member name="splash_screen/disable_godot_boot_splash" type="bool" setter="" getter="">
+			If [code]true[/code], Godot's boot splash will not be shown, and the system boot splash will remain visible for a longer time, until the mainloop starts.
+		</member>
+		<member name="splash_screen/icon" type="String" setter="" getter="">
+			System splash screen icon file. If left empty, it will fall back to [member EditorExportPlatformAndroid.launcher_icons/adaptive_foreground_432x432]. See [url=https://developer.android.com/develop/ui/views/launch/splash-screen#dimensions]splash-screen dimensions[/url].
+			[b]Note:[/b] You can provide an [url=https://developer.android.com/reference/android/graphics/drawable/AnimatedVectorDrawable]AnimatedVectorDrawable (AVD)[/url] XML. However, the XML file will only be used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is enabled. If not, it will fall back to [member EditorExportPlatformAndroid.launcher_icons/adaptive_background_432x432].
 		</member>
 		<member name="user_data_backup/allow" type="bool" setter="" getter="">
 			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.

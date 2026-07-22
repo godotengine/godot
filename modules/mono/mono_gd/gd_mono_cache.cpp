@@ -40,11 +40,11 @@ bool godot_api_cache_updated = false;
 void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	int checked_count = 0;
 
-#define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method)                             \
-	{                                                                                      \
-		ERR_FAIL_NULL_MSG(m_var,                                                           \
+#define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method) \
+	{ \
+		ERR_FAIL_NULL_MSG(m_var, \
 				"Mono Cache: Managed callback for '" #m_class "_" #m_method "' is null."); \
-		checked_count += 1;                                                                \
+		checked_count += 1; \
 	}
 
 #define CHECK_CALLBACK_NOT_NULL(m_class, m_method) CHECK_CALLBACK_NOT_NULL_IMPL(p_managed_callbacks.m_class##_##m_method, m_class, m_method)

@@ -83,9 +83,9 @@ static void TransformColor_MIPSdspR2(
     int num_pixels) {
   int temp0, temp1, temp2, temp3, temp4, temp5;
   uint32_t argb, argb1, new_red, new_red1;
-  const uint32_t G_to_R = m->green_to_red_;
-  const uint32_t G_to_B = m->green_to_blue_;
-  const uint32_t R_to_B = m->red_to_blue_;
+  const uint32_t G_to_R = m->green_to_red;
+  const uint32_t G_to_B = m->green_to_blue;
+  const uint32_t R_to_B = m->red_to_blue;
   uint32_t* const p_loop_end = data + (num_pixels & ~1);
   __asm__ volatile (
     ".set            push                                    \n\t"
@@ -152,10 +152,10 @@ static void TransformColor_MIPSdspR2(
     const uint32_t red = argb_ >> 16;
     uint32_t new_blue = argb_;
     new_red = red;
-    new_red -= ColorTransformDelta(m->green_to_red_, green);
+    new_red -= ColorTransformDelta(m->green_to_red, green);
     new_red &= 0xff;
-    new_blue -= ColorTransformDelta(m->green_to_blue_, green);
-    new_blue -= ColorTransformDelta(m->red_to_blue_, red);
+    new_blue -= ColorTransformDelta(m->green_to_blue, green);
+    new_blue -= ColorTransformDelta(m->red_to_blue, red);
     new_blue &= 0xff;
     data[0] = (argb_ & 0xff00ff00u) | (new_red << 16) | (new_blue);
   }

@@ -37,8 +37,10 @@ class Sprite2D : public Node2D {
 	GDCLASS(Sprite2D, Node2D);
 
 	Ref<Texture2D> texture;
-	Color specular_color;
-	real_t shininess = 0.0;
+
+#ifdef TOOLS_ENABLED
+	bool dragging_to_resize_rect = false;
+#endif // TOOLS_ENABLED
 
 	bool centered = true;
 	Point2 offset;
@@ -86,6 +88,11 @@ public:
 	virtual bool _edit_use_rect() const override;
 #endif // DEBUG_ENABLED
 
+#ifdef TOOLS_ENABLED
+	void _editor_set_dragging_to_resize_rect(bool p_dragging_to_resize_rect);
+	bool _editor_is_dragging_to_resiz_rect() const;
+#endif
+
 	bool is_pixel_opaque(const Point2 &p_point) const;
 	bool is_editor_region_rect_draggable() const;
 
@@ -129,5 +136,4 @@ public:
 	virtual Rect2 get_anchorable_rect() const override;
 
 	Sprite2D();
-	~Sprite2D();
 };

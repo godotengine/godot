@@ -1,7 +1,7 @@
-diff --git a/thirdparty/libktx/lib/dfdutils/vk2dfd.inl b/thirdparty/libktx/lib/dfdutils/vk2dfd.inl
-index 5104c8fcb4..3398441e8c 100644
---- a/thirdparty/libktx/lib/dfdutils/vk2dfd.inl
-+++ b/thirdparty/libktx/lib/dfdutils/vk2dfd.inl
+diff --git a/thirdparty/libktx/external/dfdutils/vk2dfd.inl b/thirdparty/libktx/external/dfdutils/vk2dfd.inl
+index 0ed0fbb820..f1f97a75ca 100644
+--- a/thirdparty/libktx/external/dfdutils/vk2dfd.inl
++++ b/thirdparty/libktx/external/dfdutils/vk2dfd.inl
 @@ -370,6 +370,7 @@ case VK_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG: return createDFDCompressed(c_PVRTC, 8
  case VK_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG: return createDFDCompressed(c_PVRTC, 4, 4, 1, s_SRGB);
  case VK_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG: return createDFDCompressed(c_PVRTC2, 8, 4, 1, s_SRGB);
@@ -15,6 +15,6 @@ index 5104c8fcb4..3398441e8c 100644
  case VK_FORMAT_ASTC_6x6x6_SRGB_BLOCK_EXT: return createDFDCompressed(c_ASTC, 6, 6, 6, s_SRGB);
  case VK_FORMAT_ASTC_6x6x6_SFLOAT_BLOCK_EXT: return createDFDCompressed(c_ASTC, 6, 6, 6, s_SFLOAT);
 +#endif
- case VK_FORMAT_R16G16_S10_5_NV: return createDFDUnpacked(0, 2, 2, 0, s_S10_5);
+ case VK_FORMAT_R16G16_SFIXED5_NV: return createDFDUnpacked(0, 2, 2, 0, s_SFIXED5);
  case VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR: {
      int channels[] = {0,1,2,3}; int bits[] = {5,5,5,1};

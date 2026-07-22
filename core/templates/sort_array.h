@@ -33,10 +33,10 @@
 #include "core/error/error_macros.h"
 #include "core/typedefs.h"
 
-#define ERR_BAD_COMPARE(cond)                                         \
-	if (unlikely(cond)) {                                             \
+#define ERR_BAD_COMPARE(cond) \
+	if (unlikely(cond)) { \
 		ERR_PRINT("bad comparison function; sorting will be broken"); \
-		break;                                                        \
+		break; \
 	}
 
 #ifdef DEBUG_ENABLED
@@ -54,30 +54,30 @@ class SortArray {
 public:
 	Comparator compare;
 
-	inline int64_t median_of_3_index(const T *p_ptr, int64_t a_index, int64_t b_index, int64_t c_index) const {
-		const T &a = p_ptr[a_index];
-		const T &b = p_ptr[b_index];
-		const T &c = p_ptr[c_index];
+	inline int64_t median_of_3_index(const T *p_ptr, int64_t p_a_index, int64_t p_b_index, int64_t p_c_index) const {
+		const T &a = p_ptr[p_a_index];
+		const T &b = p_ptr[p_b_index];
+		const T &c = p_ptr[p_c_index];
 		if (compare(a, b)) {
 			if (compare(b, c)) {
-				return b_index;
+				return p_b_index;
 			} else if (compare(a, c)) {
-				return c_index;
+				return p_c_index;
 			} else {
-				return a_index;
+				return p_a_index;
 			}
 		} else if (compare(a, c)) {
-			return a_index;
+			return p_a_index;
 		} else if (compare(b, c)) {
-			return c_index;
+			return p_c_index;
 		} else {
-			return b_index;
+			return p_b_index;
 		}
 	}
 
-	inline int64_t bitlog(int64_t n) const {
+	inline int64_t bitlog(int64_t p_n) const {
 		int64_t k;
-		for (k = 0; n != 1; n >>= 1) {
+		for (k = 0; p_n != 1; p_n >>= 1) {
 			++k;
 		}
 		return k;
@@ -168,17 +168,17 @@ public:
 	inline int64_t partitioner(int64_t p_first, int64_t p_last, int64_t p_pivot, T *p_array) const {
 		const int64_t unmodified_first = p_first;
 		const int64_t unmodified_last = p_last;
-		const T &pivot_element = p_array[p_pivot];
+		const T *pivot_element_location = &p_array[p_pivot];
 
 		while (true) {
-			while (p_first != p_pivot && compare(p_array[p_first], pivot_element)) {
+			while (p_first != p_pivot && compare(p_array[p_first], *pivot_element_location)) {
 				if constexpr (Validate) {
 					ERR_BAD_COMPARE(p_first == unmodified_last - 1);
 				}
 				p_first++;
 			}
 			p_last--;
-			while (p_last != p_pivot && compare(pivot_element, p_array[p_last])) {
+			while (p_last != p_pivot && compare(*pivot_element_location, p_array[p_last])) {
 				if constexpr (Validate) {
 					ERR_BAD_COMPARE(p_last == unmodified_first);
 				}
@@ -189,6 +189,11 @@ public:
 				return p_first;
 			}
 
+			if (pivot_element_location == &p_array[p_first]) {
+				pivot_element_location = &p_array[p_last];
+			} else if (pivot_element_location == &p_array[p_last]) {
+				pivot_element_location = &p_array[p_first];
+			}
 			SWAP(p_array[p_first], p_array[p_last]);
 			p_first++;
 		}

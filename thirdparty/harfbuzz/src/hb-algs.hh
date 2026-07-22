@@ -78,8 +78,9 @@
 
 
 /*
- * Big-endian integers.
+ * Fixed-endian integers / floats.
  */
+
 
 /* Endian swap, used in Windows related backends */
 static inline constexpr uint16_t hb_uint16_swap (uint16_t v)
@@ -87,119 +88,244 @@ static inline constexpr uint16_t hb_uint16_swap (uint16_t v)
 static inline constexpr uint32_t hb_uint32_swap (uint32_t v)
 { return (hb_uint16_swap (v) << 16) | hb_uint16_swap (v >> 16); }
 
-#ifndef HB_FAST_INT_ACCESS
+template <typename Type>
+struct __attribute__((packed)) hb_packed_t
+{
+  hb_packed_t () = default;
+  constexpr hb_packed_t (Type V) : v (V) {}
+  operator Type () const { return v; }
+  hb_packed_t & operator = (Type V) { v = V; return *this; }
+
+  private:
+  Type v;
+};
+
+#ifndef HB_FAST_NUM_ACCESS
+
 #if defined(__OPTIMIZE__) && \
     defined(__BYTE_ORDER) && \
     (__BYTE_ORDER == __BIG_ENDIAN || \
      (__BYTE_ORDER == __LITTLE_ENDIAN && \
       hb_has_builtin(__builtin_bswap16) && \
-      hb_has_builtin(__builtin_bswap32)))
-#define HB_FAST_INT_ACCESS 1
+      hb_has_builtin(__builtin_bswap32) && \
+      hb_has_builtin(__builtin_bswap64)))
+#define HB_FAST_NUM_ACCESS 1
 #else
-#define HB_FAST_INT_ACCESS 0
-#endif
+#define HB_FAST_NUM_ACCESS 0
 #endif
 
-template <typename Type, int Bytes = sizeof (Type)>
-struct BEInt;
-template <typename Type>
-struct BEInt<Type, 1>
+// https://github.com/harfbuzz/harfbuzz/issues/5456
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ <= 12)
+#undef HB_FAST_NUM_ACCESS
+#define HB_FAST_NUM_ACCESS 0
+#endif
+
+#endif
+
+template <bool BE, typename Type, int Bytes = sizeof (Type)>
+struct HBInt;
+template <bool BE, typename Type>
+struct HBInt<BE, Type, 1>
 {
   public:
-  BEInt () = default;
-  constexpr BEInt (Type V) : v {uint8_t (V)} {}
+  HBInt () = default;
+  constexpr HBInt (Type V) : v {uint8_t (V)} {}
   constexpr operator Type () const { return v; }
   private: uint8_t v;
 };
-template <typename Type>
-struct BEInt<Type, 2>
+template <bool BE, typename Type>
+struct HBInt<BE, Type, 2>
 {
-  struct __attribute__((packed)) packed_uint16_t { uint16_t v; };
-
   public:
-  BEInt () = default;
+  HBInt () = default;
 
-  BEInt (Type V)
-#if HB_FAST_INT_ACCESS
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-  { ((packed_uint16_t *) v)->v = __builtin_bswap16 (V); }
-#else /* __BYTE_ORDER == __BIG_ENDIAN */
-  { ((packed_uint16_t *) v)->v = V; }
-#endif
+  HBInt (Type V)
+#if HB_FAST_NUM_ACCESS
+  {
+    if (BE == (__BYTE_ORDER == __BIG_ENDIAN))
+      *((hb_packed_t<uint16_t> *) v) = V;
+    else
+      *((hb_packed_t<uint16_t> *) v) = __builtin_bswap16 (V);
+  }
 #else
-    : v {uint8_t ((V >>  8) & 0xFF),
-	 uint8_t ((V      ) & 0xFF)} {}
+    : v {BE ? uint8_t ((V >>  8) & 0xFF) : uint8_t ((V      ) & 0xFF),
+	 BE ? uint8_t ((V      ) & 0xFF) : uint8_t ((V >>  8) & 0xFF)} {}
 #endif
 
-  constexpr operator Type () const {
-#if HB_FAST_INT_ACCESS
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-    return __builtin_bswap16 (((packed_uint16_t *) v)->v);
-#else /* __BYTE_ORDER == __BIG_ENDIAN */
-    return ((packed_uint16_t *) v)->v;
-#endif
+  constexpr operator Type () const
+  {
+#if HB_FAST_NUM_ACCESS
+    return (BE == (__BYTE_ORDER == __BIG_ENDIAN)) ?
+      (uint16_t) *((const hb_packed_t<uint16_t> *) v)
+    :
+      __builtin_bswap16 ((uint16_t) *((const hb_packed_t<uint16_t> *) v))
+    ;
 #else
-    return (v[0] <<  8)
-	 + (v[1]      );
+    return (BE ? (v[0] <<  8) : (v[0]      ))
+	 + (BE ? (v[1]      ) : (v[1] <<  8));
 #endif
   }
   private: uint8_t v[2];
 };
-template <typename Type>
-struct BEInt<Type, 3>
+template <bool BE, typename Type>
+struct HBInt<BE, Type, 3>
 {
   static_assert (!std::is_signed<Type>::value, "");
   public:
-  BEInt () = default;
-  constexpr BEInt (Type V) : v {uint8_t ((V >> 16) & 0xFF),
-				uint8_t ((V >>  8) & 0xFF),
-				uint8_t ((V      ) & 0xFF)} {}
+  HBInt () = default;
+  constexpr HBInt (Type V) : v {BE ? uint8_t ((V >> 16) & 0xFF) : uint8_t ((V >> 16) & 0xFF),
+				BE ? uint8_t ((V >>  8) & 0xFF) : uint8_t ((V >>  8) & 0xFF),
+				BE ? uint8_t ((V      ) & 0xFF) : uint8_t ((V      ) & 0xFF)} {}
 
-  constexpr operator Type () const { return (v[0] << 16)
-					  + (v[1] <<  8)
-					  + (v[2]      ); }
+  constexpr operator Type () const { return (BE ? (v[0] << 16) : (v[0]      ))
+					  + (BE ? (v[1] <<  8) : (v[1] <<  8))
+					  + (BE ? (v[2]      ) : (v[2] << 16)); }
   private: uint8_t v[3];
 };
-template <typename Type>
-struct BEInt<Type, 4>
+template <bool BE, typename Type>
+struct HBInt<BE, Type, 4>
 {
-  struct __attribute__((packed)) packed_uint32_t { uint32_t v; };
+  template <bool, typename, int>
+  friend struct HBFloat;
 
   public:
-  BEInt () = default;
+  HBInt () = default;
 
-  BEInt (Type V)
-#if HB_FAST_INT_ACCESS
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-  { ((packed_uint32_t *) v)->v = __builtin_bswap32 (V); }
-#else /* __BYTE_ORDER == __BIG_ENDIAN */
-  { ((packed_uint32_t *) v)->v = V; }
-#endif
+  HBInt (Type V)
+#if HB_FAST_NUM_ACCESS
+  {
+    if (BE == (__BYTE_ORDER == __BIG_ENDIAN))
+      *((hb_packed_t<uint32_t> *) v) = V;
+    else
+      *((hb_packed_t<uint32_t> *) v) = __builtin_bswap32 (V);
+  }
 #else
-    : v {uint8_t ((V >> 24) & 0xFF),
-	 uint8_t ((V >> 16) & 0xFF),
-	 uint8_t ((V >>  8) & 0xFF),
-	 uint8_t ((V      ) & 0xFF)} {}
+    : v {BE ? uint8_t ((V >> 24) & 0xFF) : uint8_t ((V      ) & 0xFF),
+	 BE ? uint8_t ((V >> 16) & 0xFF) : uint8_t ((V >>  8) & 0xFF),
+	 BE ? uint8_t ((V >>  8) & 0xFF) : uint8_t ((V >> 16) & 0xFF),
+	 BE ? uint8_t ((V      ) & 0xFF) : uint8_t ((V >> 24) & 0xFF)} {}
 #endif
 
   constexpr operator Type () const {
-#if HB_FAST_INT_ACCESS
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-    return __builtin_bswap32 (((packed_uint32_t *) v)->v);
-#else /* __BYTE_ORDER == __BIG_ENDIAN */
-    return ((packed_uint32_t *) v)->v;
-#endif
+#if HB_FAST_NUM_ACCESS
+    return (BE == (__BYTE_ORDER == __BIG_ENDIAN)) ?
+      (uint32_t) *((const hb_packed_t<uint32_t> *) v)
+    :
+      __builtin_bswap32 ((uint32_t) *((const hb_packed_t<uint32_t> *) v))
+    ;
 #else
-    return (v[0] << 24)
-	 + (v[1] << 16)
-	 + (v[2] <<  8)
-	 + (v[3]      );
+    return (BE ? (v[0] << 24) : (v[0]      ))
+	 + (BE ? (v[1] << 16) : (v[1] <<  8))
+	 + (BE ? (v[2] <<  8) : (v[2] << 16))
+	 + (BE ? (v[3]      ) : (v[3] << 24));
 #endif
   }
   private: uint8_t v[4];
 };
+template <bool BE, typename Type>
+struct HBInt<BE, Type, 8>
+{
+  template <bool, typename, int>
+  friend struct HBFloat;
+
+  public:
+  HBInt () = default;
+
+  HBInt (Type V)
+#if HB_FAST_NUM_ACCESS
+  {
+    if (BE == (__BYTE_ORDER == __BIG_ENDIAN))
+      *((hb_packed_t<uint64_t> *) v) = V;
+    else
+      *((hb_packed_t<uint64_t> *) v) = __builtin_bswap64 (V);
+  }
+#else
+    : v {BE ? uint8_t ((V >> 56) & 0xFF) : uint8_t ((V      ) & 0xFF),
+	 BE ? uint8_t ((V >> 48) & 0xFF) : uint8_t ((V >>  8) & 0xFF),
+	 BE ? uint8_t ((V >> 40) & 0xFF) : uint8_t ((V >> 16) & 0xFF),
+	 BE ? uint8_t ((V >> 32) & 0xFF) : uint8_t ((V >> 24) & 0xFF),
+	 BE ? uint8_t ((V >> 24) & 0xFF) : uint8_t ((V >> 32) & 0xFF),
+	 BE ? uint8_t ((V >> 16) & 0xFF) : uint8_t ((V >> 40) & 0xFF),
+	 BE ? uint8_t ((V >>  8) & 0xFF) : uint8_t ((V >> 48) & 0xFF),
+	 BE ? uint8_t ((V      ) & 0xFF) : uint8_t ((V >> 56) & 0xFF)} {}
+#endif
+
+  constexpr operator Type () const {
+#if HB_FAST_NUM_ACCESS
+    return (BE == (__BYTE_ORDER == __BIG_ENDIAN)) ?
+      (uint64_t) *((const hb_packed_t<uint64_t> *) v)
+    :
+      __builtin_bswap64 ((uint64_t) *((const hb_packed_t<uint64_t> *) v))
+    ;
+#else
+    return (BE ? (uint64_t (v[0]) << 56) : (uint64_t (v[0])      ))
+	 + (BE ? (uint64_t (v[1]) << 48) : (uint64_t (v[1]) <<  8))
+	 + (BE ? (uint64_t (v[2]) << 40) : (uint64_t (v[2]) << 16))
+	 + (BE ? (uint64_t (v[3]) << 32) : (uint64_t (v[3]) << 24))
+	 + (BE ? (uint64_t (v[4]) << 24) : (uint64_t (v[4]) << 32))
+	 + (BE ? (uint64_t (v[5]) << 16) : (uint64_t (v[5]) << 40))
+	 + (BE ? (uint64_t (v[6]) <<  8) : (uint64_t (v[6]) << 48))
+	 + (BE ? (uint64_t (v[7])      ) : (uint64_t (v[7]) << 56));
+#endif
+  }
+  private: uint8_t v[8];
+};
 
 /* Floats. */
+
+template <bool BE, typename Type, int Bytes>
+struct HBFloat
+{
+  using IntType = typename std::conditional<Bytes == 4, uint32_t, uint64_t>::type;
+
+  public:
+  HBFloat () = default;
+
+  HBFloat (Type V)
+  {
+#if HB_FAST_NUM_ACCESS
+    {
+	      if (BE == (__BYTE_ORDER == __BIG_ENDIAN))
+	      {
+	        *((hb_packed_t<Type> *) v) = V;
+	        return;
+	      }
+	    }
+#endif
+
+    union {
+      hb_packed_t<Type> f;
+      hb_packed_t<IntType> i;
+    } u = {{V}};
+
+    const HBInt<BE, IntType> I = (IntType) u.i;
+    for (unsigned i = 0; i < Bytes; i++)
+      v[i] = I.v[i];
+  }
+
+  /* c++14 constexpr */ operator Type () const
+  {
+#if HB_FAST_NUM_ACCESS
+	    {
+	      if (BE == (__BYTE_ORDER == __BIG_ENDIAN))
+		return (Type) *((const hb_packed_t<Type> *) v);
+	    }
+#endif
+
+    HBInt<BE, IntType> I;
+    for (unsigned i = 0; i < Bytes; i++)
+      I.v[i] = v[i];
+
+    union {
+      hb_packed_t<IntType> i;
+      hb_packed_t<Type> f;
+    } u = {{I}};
+
+    return (Type) u.f;
+  }
+  private: uint8_t v[Bytes];
+};
+
 
 /* We want our rounding towards +infinity. */
 static inline double
@@ -209,6 +335,27 @@ static inline float
 _hb_roundf (float x) { return floorf (x + .5f); }
 
 #define roundf(x) _hb_roundf(x)
+
+static inline void
+hb_sincos (float rotation, float &s, float &c)
+{
+#ifdef HAVE_SINCOSF
+  sincosf (rotation, &s, &c);
+#else
+  c = cosf (rotation);
+  s = sinf (rotation);
+#endif
+}
+static inline void
+hb_sincos (double rotation, double &s, double &c)
+{
+#ifdef HAVE_SINCOS
+  sincos (rotation, &s, &c);
+#else
+  c = cos (rotation);
+  s = sin (rotation);
+#endif
+}
 
 
 /* Encodes three unsigned integers in one 64-bit number.  If the inputs have more than 21 bits,
@@ -734,6 +881,17 @@ HB_FUNCOBJ (hb_clamp);
  * Bithacks.
  */
 
+/* Return the number of 1 bits in a uint8_t; faster than hb_popcount() */
+static inline unsigned
+hb_popcount8 (uint8_t v)
+{
+  static const uint8_t popcount4[16] = {
+    0, 1, 1, 2, 1, 2, 2, 3,
+    1, 2, 2, 3, 2, 3, 3, 4
+  };
+  return popcount4[v & 0xF] + popcount4[v >> 4];
+}
+
 /* Return the number of 1 bits in v. */
 template <typename T>
 static inline unsigned int
@@ -1042,6 +1200,21 @@ hb_unsigned_mul_overflows (unsigned int count, unsigned int size, unsigned *resu
   return (size > 0) && (count >= ((unsigned int) -1) / size);
 }
 
+static inline bool
+hb_unsigned_add_overflows (unsigned int a, unsigned int b, unsigned *result = nullptr)
+{
+#if hb_has_builtin(__builtin_add_overflow)
+  unsigned stack_result;
+  if (!result)
+    result = &stack_result;
+  return __builtin_add_overflow (a, b, result);
+#endif
+
+  if (result)
+    *result = a + b;
+  return b > (unsigned int) -1 - a;
+}
+
 
 /*
  * Sort and search.
@@ -1070,6 +1243,7 @@ _hb_cmp_operator (const void *pkey, const void *pval)
 }
 
 template <typename V, typename K, typename ...Ts>
+HB_HOT
 static inline bool
 hb_bsearch_impl (unsigned *pos, /* Out */
 		 const K& key,
@@ -1165,15 +1339,12 @@ static inline void sort_r_swap(char *__restrict a, char *__restrict b,
 /* swap a, b iff a>b */
 /* a and b must not be equal! */
 /* __restrict is same as restrict but better support on old machines */
-template <typename ...Ts>
+template <typename Compar>
 static inline int sort_r_cmpswap(char *__restrict a,
                                  char *__restrict b, size_t w,
-                                 int (*compar)(const void *_a,
-                                               const void *_b,
-                                               Ts... _ds),
-                                 Ts... ds)
+                                 Compar compar)
 {
-  if(compar(a, b, ds...) > 0) {
+  if(compar(a, b) > 0) {
     sort_r_swap(a, b, w);
     return 1;
   }
@@ -1198,23 +1369,17 @@ static inline void sort_r_swap_blocks(char *ptr, size_t na, size_t nb)
 
 /* Implement recursive quicksort ourselves */
 /* Note: quicksort is not stable, equivalent values may be swapped */
-template <typename ...Ts>
+template <typename Compar>
 static inline void sort_r_simple(void *base, size_t nel, size_t w,
-                                 int (*compar)(const void *_a,
-                                               const void *_b,
-                                               Ts... _ds),
-                                 Ts... ds)
+                                 Compar compar)
 {
   char *b = (char *)base, *end = b + nel*w;
-
-  /* for(size_t i=0; i<nel; i++) {printf("%4i", *(int*)(b + i*sizeof(int)));}
-  printf("\n"); */
 
   if(nel < 10) {
     /* Insertion sort for arbitrarily small inputs */
     char *pi, *pj;
     for(pi = b+w; pi < end; pi += w) {
-      for(pj = pi; pj > b && sort_r_cmpswap(pj-w,pj,w,compar,ds...); pj -= w) {}
+      for(pj = pi; pj > b && sort_r_cmpswap(pj-w,pj,w,compar); pj -= w) {}
     }
   }
   else
@@ -1225,68 +1390,36 @@ static inline void sort_r_simple(void *base, size_t nel, size_t w,
     char *pl, *ple, *pr, *pre, *pivot;
     char *last = b+w*(nel-1), *tmp;
 
-    /*
-    Use median of second, middle and second-last items as pivot.
-    First and last may have been swapped with pivot and therefore be extreme
-    */
     char *l[3];
     l[0] = b + w;
     l[1] = b+w*(nel/2);
     l[2] = last - w;
 
-    /* printf("pivots: %i, %i, %i\n", *(int*)l[0], *(int*)l[1], *(int*)l[2]); */
-
-    if(compar(l[0],l[1],ds...) > 0) { SORT_R_SWAP(l[0], l[1], tmp); }
-    if(compar(l[1],l[2],ds...) > 0) {
+    if(compar(l[0],l[1]) > 0) { SORT_R_SWAP(l[0], l[1], tmp); }
+    if(compar(l[1],l[2]) > 0) {
       SORT_R_SWAP(l[1], l[2], tmp);
-      if(compar(l[0],l[1],ds...) > 0) { SORT_R_SWAP(l[0], l[1], tmp); }
+      if(compar(l[0],l[1]) > 0) { SORT_R_SWAP(l[0], l[1], tmp); }
     }
 
-    /* swap mid value (l[1]), and last element to put pivot as last element */
     if(l[1] != last) { sort_r_swap(l[1], last, w); }
 
-    /*
-    pl is the next item on the left to be compared to the pivot
-    pr is the last item on the right that was compared to the pivot
-    ple is the left position to put the next item that equals the pivot
-    ple is the last right position where we put an item that equals the pivot
-                                           v- end (beyond the array)
-      EEEEEELLLLLLLLuuuuuuuuGGGGGGGEEEEEEEE.
-      ^- b  ^- ple  ^- pl   ^- pr  ^- pre ^- last (where the pivot is)
-    Pivot comparison key:
-      E = equal, L = less than, u = unknown, G = greater than, E = equal
-    */
     pivot = last;
     ple = pl = b;
     pre = pr = last;
 
-    /*
-    Strategy:
-    Loop into the list from the left and right at the same time to find:
-    - an item on the left that is greater than the pivot
-    - an item on the right that is less than the pivot
-    Once found, they are swapped and the loop continues.
-    Meanwhile items that are equal to the pivot are moved to the edges of the
-    array.
-    */
     while(pl < pr) {
-      /* Move left hand items which are equal to the pivot to the far left.
-         break when we find an item that is greater than the pivot */
       for(; pl < pr; pl += w) {
-        cmp = compar(pl, pivot, ds...);
+        cmp = compar(pl, pivot);
         if(cmp > 0) { break; }
         else if(cmp == 0) {
           if(ple < pl) { sort_r_swap(ple, pl, w); }
           ple += w;
         }
       }
-      /* break if last batch of left hand items were equal to pivot */
       if(pl >= pr) { break; }
-      /* Move right hand items which are equal to the pivot to the far right.
-         break when we find an item that is less than the pivot */
       for(; pl < pr; ) {
-        pr -= w; /* Move right pointer onto an unprocessed item */
-        cmp = compar(pr, pivot, ds...);
+        pr -= w;
+        cmp = compar(pr, pivot);
         if(cmp == 0) {
           pre -= w;
           if(pr < pre) { sort_r_swap(pr, pre, w); }
@@ -1299,22 +1432,13 @@ static inline void sort_r_simple(void *base, size_t nel, size_t w,
       }
     }
 
-    pl = pr; /* pr may have gone below pl */
+    pl = pr;
 
-    /*
-    Now we need to go from: EEELLLGGGGEEEE
-                        to: LLLEEEEEEEGGGG
-    Pivot comparison key:
-      E = equal, L = less than, u = unknown, G = greater than, E = equal
-    */
     sort_r_swap_blocks(b, ple-b, pl-ple);
     sort_r_swap_blocks(pr, pre-pr, end-pre);
 
-    /*for(size_t i=0; i<nel; i++) {printf("%4i", *(int*)(b + i*sizeof(int)));}
-    printf("\n");*/
-
-    sort_r_simple(b, (pl-ple)/w, w, compar, ds...);
-    sort_r_simple(end-(pre-pr), (pre-pr)/w, w, compar, ds...);
+    sort_r_simple(b, (pl-ple)/w, w, compar);
+    sort_r_simple(end-(pre-pr), (pre-pr)/w, w, compar);
   }
 }
 
@@ -1322,24 +1446,10 @@ static inline void
 hb_qsort (void *base, size_t nel, size_t width,
 	  int (*compar)(const void *_a, const void *_b))
 {
-#if defined(__OPTIMIZE_SIZE__) && !defined(HB_USE_INTERNAL_QSORT)
   qsort (base, nel, width, compar);
-#else
-  sort_r_simple (base, nel, width, compar);
-#endif
 }
 
-static inline void
-hb_qsort (void *base, size_t nel, size_t width,
-	  int (*compar)(const void *_a, const void *_b, void *_arg),
-	  void *arg)
-{
-#ifdef HAVE_GNU_QSORT_R
-  qsort_r (base, nel, width, compar, arg);
-#else
-  sort_r_simple (base, nel, width, compar, arg);
-#endif
-}
+
 
 
 template <typename T, typename T2, typename T3 = int> static inline void
@@ -1514,6 +1624,13 @@ double solve_itp (func_t f,
 		  double min_y, double max_y,
 		  double &ya, double &yb, double &y)
 {
+  // Guard against degenerate interval
+  if (b - a <= 0.0)
+  {
+    y = ya;
+    return a;
+  }
+
   unsigned n1_2 = (unsigned) (hb_max (ceil (log2 ((b - a) / epsilon)) - 1.0, 0.0));
   const unsigned n0 = 1; // Hardwired
   const double k1 = 0.2 / (b - a); // Hardwired.
@@ -1524,7 +1641,8 @@ double solve_itp (func_t f,
   {
     double x1_2 = 0.5 * (a + b);
     double r = scaled_epsilon - 0.5 * (b - a);
-    double xf = (yb * a - ya * b) / (yb - ya);
+    // Guard against yb == ya to prevent division by zero
+    double xf = (yb != ya) ? (yb * a - ya * b) / (yb - ya) : x1_2;
     double sigma = x1_2 - xf;
     double b_a = b - a;
     // This has k2 = 2 hardwired for efficiency.
@@ -1553,6 +1671,53 @@ double solve_itp (func_t f,
   }
   return 0.5 * (a + b);
 }
+
+
+/*
+ * Scope guard: runs a callable at scope exit (RAII cleanup for
+ * non-HB-type resources — raw malloc'd buffers, paired init/end
+ * calls like inflateInit/inflateEnd, FT_Done_* handles, etc.).
+ *
+ * Prefer hb_unique_ptr_t<hb_blob_t> etc. for HB types; this is
+ * for the long tail of cleanup that those wrappers don't cover.
+ *
+ * Usage:
+ *   void *buf = hb_malloc (len);
+ *   if (!buf) return false;
+ *   HB_SCOPE_GUARD (hb_free (buf));
+ *   ... multiple fallible operations ...
+ *   return true;  // buf freed automatically on any return path
+ */
+template <typename F>
+struct hb_scope_guard_t
+{
+  explicit hb_scope_guard_t (F &&f) : f (std::move (f)), active (true) {}
+  hb_scope_guard_t (hb_scope_guard_t &&o) noexcept
+    : f (std::move (o.f)), active (o.active) { o.active = false; }
+  hb_scope_guard_t (const hb_scope_guard_t &) = delete;
+  hb_scope_guard_t &operator= (const hb_scope_guard_t &) = delete;
+  hb_scope_guard_t &operator= (hb_scope_guard_t &&) = delete;
+  ~hb_scope_guard_t () { if (active) f (); }
+
+  /* Release: dismiss the guard so the cleanup does NOT run.  Use
+   * when transferring ownership out of the scope. */
+  void release () { active = false; }
+
+  private:
+  F f;
+  bool active;
+};
+
+template <typename F>
+static inline hb_scope_guard_t<F> hb_make_scope_guard (F &&f)
+{ return hb_scope_guard_t<F> (std::forward<F> (f)); }
+
+#define HB_SCOPE_GUARD_NAME_(line) hb_scope_guard_##line
+#define HB_SCOPE_GUARD_NAME(line) HB_SCOPE_GUARD_NAME_(line)
+#define HB_SCOPE_GUARD(stmt) \
+  auto HB_SCOPE_GUARD_NAME(__LINE__) = \
+    hb_make_scope_guard ([&]() { stmt; }); \
+  (void) HB_SCOPE_GUARD_NAME(__LINE__)
 
 
 #endif /* HB_ALGS_HH */

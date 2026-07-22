@@ -30,12 +30,14 @@
 
 #include "fbx_document.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/image.h"
+#include "core/io/resource_loader.h"
 #include "core/math/color.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
@@ -53,13 +55,8 @@
 #include "modules/gltf/structures/gltf_camera.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #endif
-
-// FIXME: Hardcoded to avoid editor dependency.
-#define FBX_IMPORT_USE_NAMED_SKIN_BINDS 16
-#define FBX_IMPORT_DISCARD_MESHES_AND_MATERIALS 32
-#define FBX_IMPORT_FORCE_DISABLE_MESH_COMPRESSION 64
 
 #include <ufbx.h>
 
@@ -110,7 +107,7 @@ static Color _material_color(const ufbx_material_map &p_map) {
 		float r = float(p_map.value_vec4.x);
 		float g = float(p_map.value_vec4.y);
 		float b = float(p_map.value_vec4.z);
-		float a = float(p_map.value_vec4.z);
+		float a = float(p_map.value_vec4.w);
 		return Color(r, g, b, a);
 	}
 }
@@ -761,8 +758,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 				mesh_surface_tool->set_skin_weight_count(num_skin_weights == 8 ? SurfaceTool::SKIN_8_WEIGHTS : SurfaceTool::SKIN_4_WEIGHTS);
 				mesh_surface_tool->index();
 				if (generate_tangents) {
-					//must generate mikktspace tangents.. ergh..
-					mesh_surface_tool->generate_tangents();
+					mesh_surface_tool->generate_tangents(/*split*/ !use_blend_shapes);
 				}
 				array = mesh_surface_tool->commit_to_arrays();
 
@@ -831,8 +827,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 							blend_surface_tool->create_from_triangle_arrays(array_copy);
 							blend_surface_tool->set_skin_weight_count(num_skin_weights == 8 ? SurfaceTool::SKIN_8_WEIGHTS : SurfaceTool::SKIN_4_WEIGHTS);
 							if (generate_tangents) {
-								//must generate mikktspace tangents.. ergh..
-								blend_surface_tool->generate_tangents();
+								blend_surface_tool->generate_tangents(/*split*/ false);
 							}
 							array_copy = blend_surface_tool->commit_to_arrays();
 
@@ -933,7 +928,7 @@ Ref<Image> FBXDocument::_parse_image_bytes_into_image(Ref<FBXState> p_state, con
 		r_image->load_jpg_from_buffer(p_bytes);
 	}
 	if (r_image->is_empty()) { // And then TGA.
-		r_image->load_jpg_from_buffer(p_bytes);
+		r_image->load_tga_from_buffer(p_bytes);
 	}
 	// If it still can't be loaded, give up and insert an empty image as placeholder.
 	if (r_image->is_empty()) {
@@ -943,8 +938,8 @@ Ref<Image> FBXDocument::_parse_image_bytes_into_image(Ref<FBXState> p_state, con
 }
 
 GLTFImageIndex FBXDocument::_parse_image_save_image(Ref<FBXState> p_state, const Vector<uint8_t> &p_bytes, const String &p_file_extension, int p_index, Ref<Image> p_image) {
-	FBXState::GLTFHandleBinary handling = FBXState::GLTFHandleBinary(p_state->handle_binary_image);
-	if (p_image->is_empty() || handling == FBXState::GLTFHandleBinary::HANDLE_BINARY_DISCARD_TEXTURES) {
+	FBXState::HandleBinaryImageMode handling = FBXState::HandleBinaryImageMode(p_state->handle_binary_image_mode);
+	if (p_image->is_empty() || handling == FBXState::HandleBinaryImageMode::HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES) {
 		if (p_index < 0) {
 			return -1;
 		}
@@ -953,7 +948,7 @@ GLTFImageIndex FBXDocument::_parse_image_save_image(Ref<FBXState> p_state, const
 		return p_state->images.size() - 1;
 	}
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && handling == FBXState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
+	if (Engine::get_singleton()->is_editor_hint() && handling == FBXState::HandleBinaryImageMode::HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES) {
 		if (p_state->base_path.is_empty()) {
 			if (p_index < 0) {
 				return -1;
@@ -1030,7 +1025,7 @@ GLTFImageIndex FBXDocument::_parse_image_save_image(Ref<FBXState> p_state, const
 		return p_state->images.size() - 1;
 	}
 #endif // TOOLS_ENABLED
-	if (handling == FBXState::HANDLE_BINARY_EMBED_AS_BASISU) {
+	if (handling == FBXState::HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU) {
 		Ref<PortableCompressedTexture2D> tex;
 		tex.instantiate();
 		tex->set_name(p_image->get_name());
@@ -1040,8 +1035,8 @@ GLTFImageIndex FBXDocument::_parse_image_save_image(Ref<FBXState> p_state, const
 		p_state->source_images.push_back(p_image);
 		return p_state->images.size() - 1;
 	}
-	// This handles the case of HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, and it also serves
-	// as a fallback for HANDLE_BINARY_EXTRACT_TEXTURES when this is not the editor.
+	// This handles the case of HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED, and it also serves
+	// as a fallback for HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES when this is not the editor.
 	Ref<ImageTexture> tex;
 	tex.instantiate();
 	tex->set_name(p_image->get_name());
@@ -1112,7 +1107,7 @@ Ref<Texture2D> FBXDocument::_get_texture(Ref<FBXState> p_state, const GLTFTextur
 	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
 	ERR_FAIL_INDEX_V(image, p_state->images.size(), Ref<Texture2D>());
-	if (FBXState::GLTFHandleBinary(p_state->handle_binary_image) == FBXState::HANDLE_BINARY_EMBED_AS_BASISU) {
+	if (FBXState::HandleBinaryImageMode(p_state->handle_binary_image_mode) == FBXState::HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU) {
 		ERR_FAIL_INDEX_V(image, p_state->source_images.size(), Ref<Texture2D>());
 		Ref<PortableCompressedTexture2D> portable_texture;
 		portable_texture.instantiate();
@@ -1144,7 +1139,6 @@ Error FBXDocument::_parse_materials(Ref<FBXState> p_state) {
 			material->set_name(vformat("material_%s", itos(material_i)));
 		}
 		material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		Dictionary material_extensions;
 
 		if (fbx_material->pbr.base_color.has_value) {
 			Color albedo = _material_color(fbx_material->pbr.base_color, fbx_material->pbr.base_factor);
@@ -1798,7 +1792,7 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 			const Skeleton3D *sk = p_state->skeletons[fbx_node->skeleton]->godot_skeleton;
 			ERR_FAIL_NULL(sk);
 
-			const String path = p_animation_player->get_parent()->get_path_to(sk);
+			const String path = String(p_animation_player->get_parent()->get_path_to(sk));
 			const String bone = fbx_node->get_name();
 			transform_node_path = path + ":" + bone;
 		} else {
@@ -2021,7 +2015,7 @@ void FBXDocument::_process_mesh_instances(Ref<FBXState> p_state, Node *p_scene_r
 	}
 }
 
-Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> p_file) {
+Error FBXDocument::_parse(Ref<FBXState> p_state, const String &p_path, Ref<FileAccess> p_file) {
 	p_state->scene.reset();
 
 	Error err = ERR_INVALID_DATA;
@@ -2164,13 +2158,13 @@ Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool
 	return root;
 }
 
-Error FBXDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags) {
+Error FBXDocument::append_from_buffer(const PackedByteArray &p_bytes, const String &p_base_path, Ref<GLTFState> p_state, uint32_t p_flags) {
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_bytes.ptr(), ERR_INVALID_DATA);
 	Error err = FAILED;
-	state->use_named_skin_binds = p_flags & FBX_IMPORT_USE_NAMED_SKIN_BINDS;
-	state->discard_meshes_and_materials = p_flags & FBX_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	state->use_named_skin_binds = p_flags & GLTFDocument::ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTFDocument::ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
 
 	Ref<FileAccessMemory> file_access;
 	file_access.instantiate();
@@ -2217,11 +2211,15 @@ Error FBXDocument::_parse_fbx_state(Ref<FBXState> p_state, const String &p_searc
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* DETERMINE SKELETONS */
-	err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, p_state->get_import_as_skeleton_bones() ? p_state->root_nodes : Vector<GLTFNodeIndex>());
+	if (p_state->get_import_as_skeleton_bones()) {
+		err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, p_state->root_nodes, true);
+	} else {
+		err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, Vector<GLTFNodeIndex>(), _naming_version < 2);
+	}
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* CREATE SKELETONS */
-	err = SkinTool::_create_skeletons(p_state->unique_names, p_state->skins, p_state->nodes, p_state->skeleton3d_to_fbx_skeleton, p_state->skeletons, p_state->scene_nodes);
+	err = SkinTool::_create_skeletons(p_state->unique_names, p_state->skins, p_state->nodes, p_state->skeleton3d_to_fbx_skeleton, p_state->skeletons, p_state->scene_nodes, _naming_version);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* CREATE SKINS */
@@ -2255,7 +2253,7 @@ Error FBXDocument::_parse_fbx_state(Ref<FBXState> p_state, const String &p_searc
 	return OK;
 }
 
-Error FBXDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags, String p_base_path) {
+Error FBXDocument::append_from_file(const String &p_path, Ref<GLTFState> p_state, uint32_t p_flags, const String &p_base_path) {
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_path.is_empty(), ERR_FILE_NOT_FOUND);
@@ -2263,8 +2261,8 @@ Error FBXDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint3
 		p_state.instantiate();
 	}
 	state->filename = p_path.get_file().get_basename();
-	state->use_named_skin_binds = p_flags & FBX_IMPORT_USE_NAMED_SKIN_BINDS;
-	state->discard_meshes_and_materials = p_flags & FBX_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	state->use_named_skin_binds = p_flags & GLTFDocument::ImportFlags::IMPORT_FLAG_USE_NAMED_SKIN_BINDS;
+	state->discard_meshes_and_materials = p_flags & GLTFDocument::ImportFlags::IMPORT_FLAG_DISCARD_MESHES_AND_MATERIALS;
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
@@ -2488,6 +2486,14 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 Error FBXDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags) {
 	return ERR_UNAVAILABLE;
+}
+
+void FBXDocument::set_naming_version(int p_version) {
+	_naming_version = p_version;
+}
+
+int FBXDocument::get_naming_version() const {
+	return _naming_version;
 }
 
 Vector3 FBXDocument::_as_vec3(const ufbx_vec3 &p_vector) {

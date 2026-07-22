@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,9 @@
 void PngLoader::clear()
 {
     png_image_free(image);
-    free(image);
+    tvg::free(image);
     image = nullptr;
 }
-
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -40,23 +39,23 @@ void PngLoader::clear()
 
 PngLoader::PngLoader() : ImageLoader(FileType::Png)
 {
-    image = static_cast<png_imagep>(calloc(1, sizeof(png_image)));
+    image = tvg::calloc<png_image>(1, sizeof(png_image));
     image->version = PNG_IMAGE_VERSION;
-    image->opaque = NULL;
+    image->opaque = nullptr;
 }
 
 PngLoader::~PngLoader()
 {
     clear();
-    free((void*)surface.buf32);
+    tvg::free(surface.buf32);
 }
 
 
-bool PngLoader::open(const string& path)
+bool PngLoader::open(const char* path)
 {
-    image->opaque = NULL;
+    image->opaque = nullptr;
 
-    if (!png_image_begin_read_from_file(image, path.c_str())) return false;
+    if (!png_image_begin_read_from_file(image, path)) return false;
 
     w = (float)image->width;
     h = (float)image->height;
@@ -65,10 +64,10 @@ bool PngLoader::open(const string& path)
 }
 
 
-bool PngLoader::open(const char* data, uint32_t size, bool copy)
+bool PngLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rpath, bool copy)
 {
 #ifdef THORVG_FILE_IO_SUPPORT
-    image->opaque = NULL;
+    image->opaque = nullptr;
 
     if (!png_image_begin_read_from_memory(image, data, size)) return false;
 
@@ -96,9 +95,9 @@ bool PngLoader::read()
         surface.cs = ColorSpace::ABGR8888S;
     }
 
-    auto buffer = static_cast<png_bytep>(malloc(PNG_IMAGE_SIZE((*image))));
+    auto buffer = tvg::malloc<png_byte>(PNG_IMAGE_SIZE((*image)));
     if (!png_image_finish_read(image, NULL, buffer, 0, NULL)) {
-        free(buffer);
+        tvg::free(buffer);
         return false;
     }
 

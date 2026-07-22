@@ -33,7 +33,6 @@
 #include "../regex.h"
 
 #include "core/string/ustring.h"
-
 #include "tests/test_macros.h"
 
 namespace TestRegEx {
@@ -185,8 +184,6 @@ TEST_CASE("[RegEx] Uninitialized use") {
 }
 
 TEST_CASE("[RegEx] Empty pattern") {
-	const String s = "Godot";
-
 	RegEx re;
 	CHECK(re.compile("") == OK);
 	CHECK(re.is_valid());

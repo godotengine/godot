@@ -47,11 +47,11 @@ inline constexpr double INF = std::numeric_limits<double>::infinity();
 inline constexpr double NaN = std::numeric_limits<double>::quiet_NaN();
 } // namespace Math
 
-#define CMP_EPSILON 0.00001
-#define CMP_EPSILON2 (CMP_EPSILON * CMP_EPSILON)
+inline constexpr double CMP_EPSILON = 0.00001;
+inline constexpr double CMP_EPSILON2 = CMP_EPSILON * CMP_EPSILON;
 
-#define CMP_NORMALIZE_TOLERANCE 0.000001
-#define CMP_POINT_IN_PLANE_EPSILON 0.00001
+inline constexpr double CMP_NORMALIZE_TOLERANCE = 0.000001;
+inline constexpr double CMP_POINT_IN_PLANE_EPSILON = 0.00001;
 
 #ifdef DEBUG_ENABLED
 #define MATH_CHECKS
@@ -59,10 +59,10 @@ inline constexpr double NaN = std::numeric_limits<double>::quiet_NaN();
 
 //this epsilon is for values related to a unit size (scalar or vector len)
 #ifdef PRECISE_MATH_CHECKS
-#define UNIT_EPSILON 0.00001
+inline constexpr double UNIT_EPSILON = 0.00001;
 #else
 //tolerate some more floating point error normally
-#define UNIT_EPSILON 0.001
+inline constexpr double UNIT_EPSILON = 0.001;
 #endif
 
 #define USEC_TO_SEC(m_usec) ((m_usec) / 1000000.0)
@@ -145,3 +145,16 @@ typedef double real_t;
 #else
 typedef float real_t;
 #endif
+
+/**
+ * Rarely, there will be a scenario where a function/variable expects one of the builtin integral
+ *  types that do NOT utilize the fixed-width constants. In practice, the only discrepancies are
+ *  with `long` or `long long` (and their unsigned equivalents) not being declared when most/all
+ *  other integral constants are. We'll account for this with `int_alt_t` and `uint_alt_t`,
+ *  which assign to the unused fixed-width slot. As this will only be used rarely, keep the types
+ *  scoped to `Math` instead of the global namespace.
+ */
+namespace Math {
+using int_alt_t = std::conditional_t<std::is_same_v<int64_t, long>, long long, long>;
+using uint_alt_t = std::conditional_t<std::is_same_v<uint64_t, unsigned long>, unsigned long long, unsigned long>;
+} //namespace Math

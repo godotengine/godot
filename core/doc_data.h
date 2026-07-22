@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/io/xml_parser.h"
 #include "core/variant/variant.h"
 
 class DocData {
@@ -107,6 +106,8 @@ public:
 		bool is_experimental = false;
 		String experimental_message;
 		Vector<ArgumentDoc> arguments;
+		// NOTE: Only for GDScript for now. The rest argument is not saved to the XML file.
+		ArgumentDoc rest_argument;
 		Vector<int> errors_returned;
 		String keywords;
 		bool operator<(const MethodDoc &p_method) const {
@@ -697,6 +698,7 @@ public:
 	struct ClassDoc {
 		String name;
 		String inherits;
+		String api_type;
 		String brief_description;
 		String description;
 		String keywords;
@@ -728,6 +730,10 @@ public:
 
 			if (p_dict.has("inherits")) {
 				doc.inherits = p_dict["inherits"];
+			}
+
+			if (p_dict.has("api_type")) {
+				doc.api_type = p_dict["api_type"];
 			}
 
 			if (p_dict.has("brief_description")) {
@@ -861,6 +867,10 @@ public:
 
 			if (!p_doc.inherits.is_empty()) {
 				dict["inherits"] = p_doc.inherits;
+			}
+
+			if (!p_doc.api_type.is_empty()) {
+				dict["api_type"] = p_doc.api_type;
 			}
 
 			if (!p_doc.brief_description.is_empty()) {

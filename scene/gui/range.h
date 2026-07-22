@@ -62,6 +62,8 @@ class Range : public Control {
 	void _set_value_no_signal(double p_val);
 
 protected:
+	static double _snapped_r128(double p_value, double p_step);
+	double _calc_value(double p_val, double p_step) const;
 	virtual void _value_changed(double p_value);
 	void _notify_shared_value_changed() { shared->emit_value_changed(); }
 	void _notification(int p_what);

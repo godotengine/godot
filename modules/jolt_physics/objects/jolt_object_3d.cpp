@@ -31,8 +31,6 @@
 #include "jolt_object_3d.h"
 
 #include "../jolt_physics_server_3d.h"
-#include "../jolt_project_settings.h"
-#include "../spaces/jolt_layers.h"
 #include "../spaces/jolt_space_3d.h"
 #include "jolt_group_filter.h"
 
@@ -41,7 +39,7 @@ void JoltObject3D::_remove_from_space() {
 		return;
 	}
 
-	space->remove_body(jolt_body->GetID());
+	space->remove_object(jolt_body->GetID());
 	jolt_body = nullptr;
 }
 

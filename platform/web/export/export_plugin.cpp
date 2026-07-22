@@ -34,14 +34,18 @@
 #include "run_icon_svg.gen.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/zip_io.h"
+#include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #include "modules/svg/image_loader_svg.h"
 
 Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
@@ -149,6 +153,9 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	config["fileSizes"] = p_file_sizes;
 	config["ensureCrossOriginIsolationHeaders"] = (bool)p_preset->get("progressive_web_app/ensure_cross_origin_isolation_headers");
 
+	config["godotPoolSize"] = p_preset->get("threads/godot_pool_size");
+	config["emscriptenPoolSize"] = p_preset->get("threads/emscripten_pool_size");
+
 	String head_include;
 	if (p_preset->get("html/export_icon")) {
 		head_include += "<link id=\"-gd-engine-icon\" rel=\"icon\" type=\"image/png\" href=\"" + p_name + ".icon.png\" />\n";
@@ -169,9 +176,10 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	replaces["$GODOT_CONFIG"] = str_config;
 	replaces["$GODOT_SPLASH_COLOR"] = "#" + Color(get_project_setting(p_preset, "application/boot_splash/bg_color")).to_html(false);
 
-	LocalVector<String> godot_splash_classes;
+	Vector<String> godot_splash_classes;
 	godot_splash_classes.push_back("show-image--" + String(get_project_setting(p_preset, "application/boot_splash/show_image")));
-	godot_splash_classes.push_back("fullsize--" + String(get_project_setting(p_preset, "application/boot_splash/fullsize")));
+	RSE::SplashStretchMode boot_splash_stretch_mode = get_project_setting(p_preset, "application/boot_splash/stretch_mode");
+	godot_splash_classes.push_back("fullsize--" + String(((boot_splash_stretch_mode != RSE::SplashStretchMode::SPLASH_STRETCH_MODE_DISABLED) ? "true" : "false")));
 	godot_splash_classes.push_back("use-filter--" + String(get_project_setting(p_preset, "application/boot_splash/use_filter")));
 	replaces["$GODOT_SPLASH_CLASSES"] = String(" ").join(godot_splash_classes);
 	replaces["$GODOT_SPLASH"] = p_name + ".png";
@@ -351,6 +359,11 @@ void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> 
 	} else {
 		r_features->push_back("nothreads");
 	}
+	if (p_preset->get("variant/extensions_support").operator bool()) {
+		r_features->push_back("web_extensions");
+	} else {
+		r_features->push_back("web_noextensions");
+	}
 	r_features->push_back("wasm32");
 }
 
@@ -359,13 +372,13 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/extensions_support"), false)); // GDExtension support.
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/thread_support"), false)); // Thread support (i.e. run with or without COEP/COOP headers).
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/thread_support"), false, true)); // Thread support (i.e. run with or without COEP/COOP headers).
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/export_icon"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "html/canvas_resize_policy", PROPERTY_HINT_ENUM, "None,Project,Adaptive"), 2));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/focus_canvas_on_start"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "html/experimental_virtual_keyboard"), false));
@@ -378,13 +391,19 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_180x180", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_512x512", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "progressive_web_app/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "threads/emscripten_pool_size"), 8));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "threads/godot_pool_size"), 4));
 }
 
 bool EditorExportPlatformWeb::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
-	if (p_option == "custom_template/debug" ||
-			p_option == "custom_template/release") {
+	if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
 		return advanced_options_enabled;
+	}
+
+	if (p_option == "threads/godot_pool_size" || p_option == "threads/emscripten_pool_size") {
+		return p_preset->get("variant/thread_support").operator bool();
 	}
 
 	return true;
@@ -451,6 +470,9 @@ bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorEx
 
 	if (p_preset->get("vram_texture_compression/for_mobile")) {
 		if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
+			if (EditorNode::is_cmdline_mode()) {
+				err += TTR("ETC2/ASTC texture compression is required for Web export. In the Project Settings, search for 'ETC2' in the search field, or enable 'Advanced Settings', and go to Rendering > Textures > VRAM Compression to enable 'Import ETC2 ASTC'.") + "\n";
+			}
 			valid = false;
 		}
 	}
@@ -468,8 +490,8 @@ List<String> EditorExportPlatformWeb::get_binary_extensions(const Ref<EditorExpo
 	return list;
 }
 
-Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
 	const String custom_debug = p_preset->get("custom_template/debug");
 	const String custom_release = p_preset->get("custom_template/release");
@@ -598,26 +620,21 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 }
 
 bool EditorExportPlatformWeb::poll_export() {
-	Ref<EditorExportPreset> preset;
-
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
-		if (ep->is_runnable() && ep->get_platform() == this) {
-			preset = ep;
-			break;
-		}
-	}
+	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_runnable_preset_for_platform(this);
 
 	RemoteDebugState prev_remote_debug_state = remote_debug_state;
 	remote_debug_state = REMOTE_DEBUG_STATE_UNAVAILABLE;
 
 	if (preset.is_valid()) {
 		const bool debug = true;
-		// Throwaway variables to pass to `can_export`.
+		// Throwaway variables to pass to validation functions.
 		String err;
 		bool missing_templates;
 
-		if (can_export(preset, err, missing_templates, debug)) {
+		bool valid = has_valid_export_configuration(preset, err, missing_templates, debug) &&
+				has_valid_project_configuration(preset, err);
+
+		if (valid) {
 			if (server->is_listening()) {
 				remote_debug_state = REMOTE_DEBUG_STATE_SERVING;
 			} else {
@@ -633,8 +650,8 @@ bool EditorExportPlatformWeb::poll_export() {
 	return remote_debug_state != prev_remote_debug_state;
 }
 
-Ref<ImageTexture> EditorExportPlatformWeb::get_option_icon(int p_index) const {
-	Ref<ImageTexture> play_icon = EditorExportPlatform::get_option_icon(p_index);
+Ref<Texture2D> EditorExportPlatformWeb::get_option_icon(int p_index) const {
+	Ref<Texture2D> play_icon = EditorExportPlatform::get_option_icon(p_index);
 
 	switch (remote_debug_state) {
 		case REMOTE_DEBUG_STATE_UNAVAILABLE: {
@@ -902,7 +919,7 @@ Ref<Texture2D> EditorExportPlatformWeb::get_run_icon() const {
 	return run_icon;
 }
 
-EditorExportPlatformWeb::EditorExportPlatformWeb() {
+void EditorExportPlatformWeb::initialize() {
 	if (EditorNode::get_singleton()) {
 		server.instantiate();
 

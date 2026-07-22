@@ -30,10 +30,12 @@
 
 #include "gdextension_library_loader.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/extension/gdextension.h"
 #include "core/io/dir_access.h"
+#include "core/os/os.h"
 #include "core/version.h"
-#include "gdextension.h"
 
 Vector<SharedObject> GDExtensionLibraryLoader::find_extension_dependencies(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature) {
 	Vector<SharedObject> dependencies_shared_objects;
@@ -195,9 +197,16 @@ Error GDExtensionLibraryLoader::open_library(const String &p_path) {
 		&abs_dependencies_paths, // library_dependencies
 	};
 
-	err = OS::get_singleton()->open_dynamic_library(is_static_library ? String() : abs_path, library, &data);
+	// Apple has a complex lookup system which goes beyond looking up the filename, so we try that first.
+	err = OS::get_singleton()->open_dynamic_library(abs_path, library, &data);
 	if (err != OK) {
-		return err;
+#ifdef APPLE_EMBEDDED_ENABLED
+		err = OS::get_singleton()->open_dynamic_library(String(), library, &data);
+#endif
+
+		if (err != OK) {
+			return err;
+		}
 	}
 
 	return OK;
@@ -313,7 +322,9 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 		compatible = GODOT_VERSION_PATCH >= compatibility_minimum[2];
 	}
 	if (!compatible) {
-		ERR_PRINT(vformat("GDExtension only compatible with Godot version %d.%d.%d or later: %s", compatibility_minimum[0], compatibility_minimum[1], compatibility_minimum[2], p_path));
+		ERR_PRINT(vformat("GDExtension only compatible with Godot version %d.%d.%d or later: %s, but your Godot version is %d.%d.%d",
+				compatibility_minimum[0], compatibility_minimum[1], compatibility_minimum[2], p_path,
+				GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR, GODOT_VERSION_PATCH));
 		return ERR_INVALID_DATA;
 	}
 
@@ -345,7 +356,8 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 #endif
 
 		if (!compatible) {
-			ERR_PRINT(vformat("GDExtension only compatible with Godot version %s or earlier: %s", compat_string, p_path));
+			ERR_PRINT(vformat("GDExtension only compatible with Godot version %s or earlier: %s, but your Godot version is %d.%d.%d",
+					compat_string, p_path, GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR, GODOT_VERSION_PATCH));
 			return ERR_INVALID_DATA;
 		}
 	}
@@ -357,8 +369,6 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 		ERR_PRINT(vformat("No GDExtension library found for current OS and architecture (%s) in configuration file: %s", os_arch, p_path));
 		return ERR_FILE_NOT_FOUND;
 	}
-
-	is_static_library = library_path.ends_with(".a") || library_path.ends_with(".xcframework");
 
 	if (!library_path.is_resource_file() && !library_path.is_absolute_path()) {
 		library_path = p_path.get_base_dir().path_join(library_path);

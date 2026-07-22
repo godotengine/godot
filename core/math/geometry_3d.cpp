@@ -186,13 +186,11 @@ struct _FaceClassify {
 			face = -1;
 			edge = -1;
 		}
-		_Link() {}
 	};
 	bool valid = false;
 	int group = -1;
 	_Link links[3];
 	Face3 face;
-	_FaceClassify() {}
 };
 
 /*** GEOMETRY WRAPPER ***/
@@ -220,34 +218,34 @@ enum _CellFlags {
 	_CELL_PREV_FIRST = 7 << 5,
 };
 
-static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z, const Vector3 &voxelsize, const Face3 &p_face) {
-	AABB aabb(Vector3(x, y, z), Vector3(len_x, len_y, len_z));
-	aabb.position = aabb.position * voxelsize;
-	aabb.size = aabb.size * voxelsize;
+static inline void _plot_face(uint8_t ***p_cell_status, int p_x, int p_y, int p_z, int p_len_x, int p_len_y, int p_len_z, const Vector3 &p_voxelsize, const Face3 &p_face) {
+	AABB aabb(Vector3(p_x, p_y, p_z), Vector3(p_len_x, p_len_y, p_len_z));
+	aabb.position = aabb.position * p_voxelsize;
+	aabb.size = aabb.size * p_voxelsize;
 
 	if (!p_face.intersects_aabb(aabb)) {
 		return;
 	}
 
-	if (len_x == 1 && len_y == 1 && len_z == 1) {
-		p_cell_status[x][y][z] = _CELL_SOLID;
+	if (p_len_x == 1 && p_len_y == 1 && p_len_z == 1) {
+		p_cell_status[p_x][p_y][p_z] = _CELL_SOLID;
 		return;
 	}
 
-	int div_x = len_x > 1 ? 2 : 1;
-	int div_y = len_y > 1 ? 2 : 1;
-	int div_z = len_z > 1 ? 2 : 1;
+	int div_x = p_len_x > 1 ? 2 : 1;
+	int div_y = p_len_y > 1 ? 2 : 1;
+	int div_z = p_len_z > 1 ? 2 : 1;
 
 #define SPLIT_DIV(m_i, m_div, m_v, m_len_v, m_new_v, m_new_len_v) \
-	if (m_div == 1) {                                             \
-		m_new_v = m_v;                                            \
-		m_new_len_v = 1;                                          \
-	} else if (m_i == 0) {                                        \
-		m_new_v = m_v;                                            \
-		m_new_len_v = m_len_v / 2;                                \
-	} else {                                                      \
-		m_new_v = m_v + m_len_v / 2;                              \
-		m_new_len_v = m_len_v - m_len_v / 2;                      \
+	if (m_div == 1) { \
+		m_new_v = m_v; \
+		m_new_len_v = 1; \
+	} else if (m_i == 0) { \
+		m_new_v = m_v; \
+		m_new_len_v = m_len_v / 2; \
+	} else { \
+		m_new_v = m_v + m_len_v / 2; \
+		m_new_len_v = m_len_v - m_len_v / 2; \
 	}
 
 	int new_x;
@@ -258,15 +256,15 @@ static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int
 	int new_len_z;
 
 	for (int i = 0; i < div_x; i++) {
-		SPLIT_DIV(i, div_x, x, len_x, new_x, new_len_x);
+		SPLIT_DIV(i, div_x, p_x, p_len_x, new_x, new_len_x);
 
 		for (int j = 0; j < div_y; j++) {
-			SPLIT_DIV(j, div_y, y, len_y, new_y, new_len_y);
+			SPLIT_DIV(j, div_y, p_y, p_len_y, new_y, new_len_y);
 
 			for (int k = 0; k < div_z; k++) {
-				SPLIT_DIV(k, div_z, z, len_z, new_z, new_len_z);
+				SPLIT_DIV(k, div_z, p_z, p_len_z, new_z, new_len_z);
 
-				_plot_face(p_cell_status, new_x, new_y, new_z, new_len_x, new_len_y, new_len_z, voxelsize, p_face);
+				_plot_face(p_cell_status, new_x, new_y, new_z, new_len_x, new_len_y, new_len_z, p_voxelsize, p_face);
 			}
 		}
 	}
@@ -274,19 +272,19 @@ static inline void _plot_face(uint8_t ***p_cell_status, int x, int y, int z, int
 #undef SPLIT_DIV
 }
 
-static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z) {
-	if (p_cell_status[x][y][z] & 3) {
+static inline void _mark_outside(uint8_t ***p_cell_status, int p_x, int p_y, int p_z, int p_len_x, int p_len_y, int p_len_z) {
+	if (p_cell_status[p_x][p_y][p_z] & 3) {
 		return; // Nothing to do, already used and/or visited.
 	}
 
-	p_cell_status[x][y][z] = _CELL_PREV_FIRST;
+	p_cell_status[p_x][p_y][p_z] = _CELL_PREV_FIRST;
 
 	while (true) {
-		uint8_t &c = p_cell_status[x][y][z];
+		uint8_t &c = p_cell_status[p_x][p_y][p_z];
 
 		if ((c & _CELL_STEP_MASK) == _CELL_STEP_NONE) {
 			// Haven't been in here, mark as outside.
-			p_cell_status[x][y][z] |= _CELL_EXTERIOR;
+			p_cell_status[p_x][p_y][p_z] |= _CELL_EXTERIOR;
 		}
 
 		if ((c & _CELL_STEP_MASK) != _CELL_STEP_DONE) {
@@ -301,28 +299,28 @@ static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, 
 					return;
 				} break;
 				case _CELL_PREV_Y_POS: {
-					y++;
-					ERR_FAIL_COND(y >= len_y);
+					p_y++;
+					ERR_FAIL_COND(p_y >= p_len_y);
 				} break;
 				case _CELL_PREV_Y_NEG: {
-					y--;
-					ERR_FAIL_COND(y < 0);
+					p_y--;
+					ERR_FAIL_COND(p_y < 0);
 				} break;
 				case _CELL_PREV_X_POS: {
-					x++;
-					ERR_FAIL_COND(x >= len_x);
+					p_x++;
+					ERR_FAIL_COND(p_x >= p_len_x);
 				} break;
 				case _CELL_PREV_X_NEG: {
-					x--;
-					ERR_FAIL_COND(x < 0);
+					p_x--;
+					ERR_FAIL_COND(p_x < 0);
 				} break;
 				case _CELL_PREV_Z_POS: {
-					z++;
-					ERR_FAIL_COND(z >= len_z);
+					p_z++;
+					ERR_FAIL_COND(p_z >= p_len_z);
 				} break;
 				case _CELL_PREV_Z_NEG: {
-					z--;
-					ERR_FAIL_COND(z < 0);
+					p_z--;
+					ERR_FAIL_COND(p_z < 0);
 				} break;
 				default: {
 					ERR_FAIL();
@@ -331,7 +329,7 @@ static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, 
 			continue;
 		}
 
-		int next_x = x, next_y = y, next_z = z;
+		int next_x = p_x, next_y = p_y, next_z = p_z;
 		uint8_t prev = 0;
 
 		switch (c & _CELL_STEP_MASK) {
@@ -363,13 +361,13 @@ static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, 
 				ERR_FAIL();
 		}
 
-		if (next_x < 0 || next_x >= len_x) {
+		if (next_x < 0 || next_x >= p_len_x) {
 			continue;
 		}
-		if (next_y < 0 || next_y >= len_y) {
+		if (next_y < 0 || next_y >= p_len_y) {
 			continue;
 		}
-		if (next_z < 0 || next_z >= len_z) {
+		if (next_z < 0 || next_z >= p_len_z) {
 			continue;
 		}
 
@@ -377,19 +375,19 @@ static inline void _mark_outside(uint8_t ***p_cell_status, int x, int y, int z, 
 			continue;
 		}
 
-		x = next_x;
-		y = next_y;
-		z = next_z;
-		p_cell_status[x][y][z] |= prev;
+		p_x = next_x;
+		p_y = next_y;
+		p_z = next_z;
+		p_cell_status[p_x][p_y][p_z] |= prev;
 	}
 }
 
-static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, int len_x, int len_y, int len_z, Vector<Face3> &p_faces) {
-	ERR_FAIL_INDEX(x, len_x);
-	ERR_FAIL_INDEX(y, len_y);
-	ERR_FAIL_INDEX(z, len_z);
+static inline void _build_faces(uint8_t ***p_cell_status, int p_x, int p_y, int p_z, int p_len_x, int p_len_y, int p_len_z, Vector<Face3> &r_faces) {
+	ERR_FAIL_INDEX(p_x, p_len_x);
+	ERR_FAIL_INDEX(p_y, p_len_y);
+	ERR_FAIL_INDEX(p_z, p_len_z);
 
-	if (p_cell_status[x][y][z] & _CELL_EXTERIOR) {
+	if (p_cell_status[p_x][p_y][p_z] & _CELL_EXTERIOR) {
 		return;
 	}
 
@@ -407,19 +405,19 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 
 	for (int i = 0; i < 6; i++) {
 		Vector3 face_points[4];
-		int disp_x = x + ((i % 3) == 0 ? ((i < 3) ? 1 : -1) : 0);
-		int disp_y = y + (((i - 1) % 3) == 0 ? ((i < 3) ? 1 : -1) : 0);
-		int disp_z = z + (((i - 2) % 3) == 0 ? ((i < 3) ? 1 : -1) : 0);
+		int disp_x = p_x + ((i % 3) == 0 ? ((i < 3) ? 1 : -1) : 0);
+		int disp_y = p_y + (((i - 1) % 3) == 0 ? ((i < 3) ? 1 : -1) : 0);
+		int disp_z = p_z + (((i - 2) % 3) == 0 ? ((i < 3) ? 1 : -1) : 0);
 
 		bool plot = false;
 
-		if (disp_x < 0 || disp_x >= len_x) {
+		if (disp_x < 0 || disp_x >= p_len_x) {
 			plot = true;
 		}
-		if (disp_y < 0 || disp_y >= len_y) {
+		if (disp_y < 0 || disp_y >= p_len_y) {
 			plot = true;
 		}
-		if (disp_z < 0 || disp_z >= len_z) {
+		if (disp_z < 0 || disp_z >= p_len_z) {
 			plot = true;
 		}
 
@@ -432,16 +430,16 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 		}
 
 		for (int j = 0; j < 4; j++) {
-			face_points[j] = vert(indices[i][j]) + Vector3(x, y, z);
+			face_points[j] = vert(indices[i][j]) + Vector3(p_x, p_y, p_z);
 		}
 
-		p_faces.push_back(
+		r_faces.push_back(
 				Face3(
 						face_points[0],
 						face_points[1],
 						face_points[2]));
 
-		p_faces.push_back(
+		r_faces.push_back(
 				Face3(
 						face_points[2],
 						face_points[3],
@@ -449,7 +447,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 	}
 }
 
-Vector<Face3> Geometry3D::wrap_geometry(const Vector<Face3> &p_array, real_t *p_error) {
+Vector<Face3> Geometry3D::wrap_geometry(const Vector<Face3> &p_array, real_t *r_error) {
 	int face_count = p_array.size();
 	const Face3 *faces = p_array.ptr();
 	constexpr double min_size = 1.0;
@@ -577,8 +575,8 @@ Vector<Face3> Geometry3D::wrap_geometry(const Vector<Face3> &p_array, real_t *p_
 	}
 
 	memdelete_arr(cell_status);
-	if (p_error) {
-		*p_error = voxelsize.length();
+	if (r_error) {
+		*r_error = voxelsize.length();
 	}
 
 	return wrapped_faces;
@@ -862,40 +860,41 @@ Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Plane *p_planes, in
 }
 
 #define square(m_s) ((m_s) * (m_s))
+#define BIG_VAL 1e20
 
 /* dt of 1d function using squared distance */
-static void edt(float *f, int stride, int n) {
-	float *d = (float *)alloca(sizeof(float) * n + sizeof(int) * n + sizeof(float) * (n + 1));
-	int *v = reinterpret_cast<int *>(&(d[n]));
-	float *z = reinterpret_cast<float *>(&v[n]);
+static void edt(float *p_f, int p_stride, int p_n) {
+	float *d = (float *)alloca(sizeof(float) * p_n + sizeof(int) * p_n + sizeof(float) * (p_n + 1));
+	int *v = reinterpret_cast<int *>(&(d[p_n]));
+	float *z = reinterpret_cast<float *>(&v[p_n]);
 
 	int k = 0;
 	v[0] = 0;
-	z[0] = -Math::INF;
-	z[1] = +Math::INF;
-	for (int q = 1; q <= n - 1; q++) {
-		float s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
+	z[0] = -BIG_VAL;
+	z[1] = +BIG_VAL;
+	for (int q = 1; q <= p_n - 1; q++) {
+		float s = ((p_f[q * p_stride] + square(q)) - (p_f[v[k] * p_stride] + square(v[k]))) / (2 * q - 2 * v[k]);
 		while (s <= z[k]) {
 			k--;
-			s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
+			s = ((p_f[q * p_stride] + square(q)) - (p_f[v[k] * p_stride] + square(v[k]))) / (2 * q - 2 * v[k]);
 		}
 		k++;
 		v[k] = q;
 
 		z[k] = s;
-		z[k + 1] = +Math::INF;
+		z[k + 1] = +BIG_VAL;
 	}
 
 	k = 0;
-	for (int q = 0; q <= n - 1; q++) {
+	for (int q = 0; q <= p_n - 1; q++) {
 		while (z[k + 1] < q) {
 			k++;
 		}
-		d[q] = square(q - v[k]) + f[v[k] * stride];
+		d[q] = square(q - v[k]) + p_f[v[k] * p_stride];
 	}
 
-	for (int i = 0; i < n; i++) {
-		f[i * stride] = d[i];
+	for (int i = 0; i < p_n; i++) {
+		p_f[i * p_stride] = d[i];
 	}
 }
 
@@ -908,7 +907,7 @@ Vector<uint32_t> Geometry3D::generate_edf(const Vector<bool> &p_voxels, const Ve
 
 	float *work_memory = memnew_arr(float, float_count);
 	for (uint32_t i = 0; i < float_count; i++) {
-		work_memory[i] = Math::INF;
+		work_memory[i] = BIG_VAL;
 	}
 
 	uint32_t y_mult = p_size.x;
@@ -966,6 +965,8 @@ Vector<uint32_t> Geometry3D::generate_edf(const Vector<bool> &p_voxels, const Ve
 
 	return ret;
 }
+
+#undef BIG_VAL
 
 Vector<int8_t> Geometry3D::generate_sdf8(const Vector<uint32_t> &p_positive, const Vector<uint32_t> &p_negative) {
 	ERR_FAIL_COND_V(p_positive.size() != p_negative.size(), Vector<int8_t>());

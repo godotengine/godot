@@ -32,8 +32,6 @@
 
 #include "core/version_generated.gen.h" // IWYU pragma: export
 
-#include <stdint.h> // NOLINT(modernize-deprecated-headers) FIXME: MinGW compilation fails when changing to C++ Header.
-
 // Copied from typedefs.h to stay lean.
 #ifndef _STR
 #define _STR(m_x) #m_x
@@ -85,7 +83,7 @@ extern const char *const GODOT_VERSION_HASH;
 
 // Git commit date UNIX timestamp (in seconds), generated at build time in `core/version_hash.gen.cpp`.
 // Set to 0 if unknown.
-extern const uint64_t GODOT_VERSION_TIMESTAMP;
+extern const unsigned long long GODOT_VERSION_TIMESTAMP;
 
 #ifndef DISABLE_DEPRECATED
 // Compatibility with pre-4.5 modules.

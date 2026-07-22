@@ -1,0 +1,5 @@
+GH-84472
+--------
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_circle/arguments': size changed value in new API, from 3 to 6.
+
+Optional arguments added. Compatibility methods registered.

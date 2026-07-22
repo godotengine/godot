@@ -68,7 +68,7 @@ public:
 	{
 		auto itr = visit_order.find(block);
 		assert(itr != std::end(visit_order));
-		int v = itr->second.get();
+		int v = itr->second.order;
 		assert(v > 0);
 		return uint32_t(v);
 	}
@@ -114,17 +114,9 @@ public:
 private:
 	struct VisitOrder
 	{
-		int &get()
-		{
-			return v;
-		}
-
-		const int &get() const
-		{
-			return v;
-		}
-
-		int v = -1;
+		int order = -1;
+		bool visited_resolve = false;
+		bool visited_branches = false;
 	};
 
 	Compiler &compiler;
@@ -139,11 +131,17 @@ private:
 	void add_branch(uint32_t from, uint32_t to);
 	void build_post_order_visit_order();
 	void build_immediate_dominators();
-	bool post_order_visit(uint32_t block);
+	void post_order_visit_branches(uint32_t block);
+	void post_order_visit_resolve(uint32_t block);
+	void post_order_visit_entry(uint32_t block);
 	uint32_t visit_count = 0;
 
 	bool is_back_edge(uint32_t to) const;
-	bool has_visited_forward_edge(uint32_t to) const;
+	bool has_visited_branch(uint32_t to) const;
+	void visit_branch(uint32_t block_id);
+
+	SmallVector<uint32_t> visit_stack;
+	size_t last_visited_size = 0;
 };
 
 class DominatorBuilder

@@ -32,8 +32,8 @@
 
 #include "core/templates/local_vector.h"
 #include "scene/scene_string_names.h"
+#include "servers/audio/audio_server.h"
 #include "servers/audio/audio_stream.h"
-#include "servers/audio_server.h"
 
 class AudioStreamPolyphonic : public AudioStream {
 	GDCLASS(AudioStreamPolyphonic, AudioStream)
@@ -45,7 +45,6 @@ class AudioStreamPolyphonic : public AudioStream {
 
 public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 	virtual bool is_monophonic() const override;
 
 	void set_polyphony(int p_voices);

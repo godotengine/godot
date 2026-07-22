@@ -142,7 +142,7 @@ struct hb_lockable_set_t
 
 struct hb_reference_count_t
 {
-  mutable hb_atomic_int_t ref_count;
+  mutable hb_atomic_t<int> ref_count;
 
   void init (int v = 1) { ref_count = v; }
   int get_relaxed () const { return ref_count; }
@@ -213,8 +213,8 @@ struct hb_user_data_array_t
 struct hb_object_header_t
 {
   hb_reference_count_t ref_count;
-  mutable hb_atomic_int_t writable = 0;
-  hb_atomic_ptr_t<hb_user_data_array_t> user_data;
+  mutable hb_atomic_t<bool> writable = false;
+  hb_atomic_t<hb_user_data_array_t *> user_data;
 
   bool is_inert () const { return !ref_count.get_relaxed (); }
 };
@@ -272,6 +272,8 @@ static inline void hb_object_make_immutable (const Type *obj)
   obj->header.writable = false;
 }
 template <typename Type>
+static inline void hb_object_fini (Type *obj);
+template <typename Type>
 static inline Type *hb_object_reference (Type *obj)
 {
   hb_object_trace (obj, HB_FUNC);
@@ -282,7 +284,7 @@ static inline Type *hb_object_reference (Type *obj)
   return obj;
 }
 template <typename Type>
-static inline bool hb_object_destroy (Type *obj)
+static inline bool hb_object_should_destroy (Type *obj)
 {
   hb_object_trace (obj, HB_FUNC);
   if (unlikely (!obj || obj->header.is_inert ()))
@@ -290,12 +292,25 @@ static inline bool hb_object_destroy (Type *obj)
   assert (hb_object_is_valid (obj));
   if (obj->header.ref_count.dec () != 1)
     return false;
+  return true;
+}
 
+template <typename Type>
+static inline void hb_object_actually_destroy (Type *obj)
+{
   hb_object_fini (obj);
 
   if (!std::is_trivially_destructible<Type>::value)
     obj->~Type ();
+}
 
+template <typename Type>
+static inline bool hb_object_destroy (Type *obj)
+{
+  if (!hb_object_should_destroy (obj))
+    return false;
+
+  hb_object_actually_destroy (obj);
   return true;
 }
 template <typename Type>

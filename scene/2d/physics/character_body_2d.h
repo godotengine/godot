@@ -68,7 +68,7 @@ public:
 	const Vector2 &get_platform_velocity() const;
 
 	int get_slide_collision_count() const;
-	PhysicsServer2D::MotionResult get_slide_collision(int p_bounce) const;
+	PS2DT::MotionResult get_slide_collision(int p_bounce) const;
 
 	void set_safe_margin(real_t p_margin);
 	real_t get_safe_margin() const;
@@ -143,7 +143,7 @@ private:
 	bool on_ceiling = false;
 	bool on_wall = false;
 
-	Vector<PhysicsServer2D::MotionResult> motion_results;
+	Vector<PS2DT::MotionResult> motion_results;
 	Vector<Ref<KinematicCollision2D>> slide_colliders;
 
 	void _move_and_slide_floating(double p_delta);
@@ -154,8 +154,8 @@ private:
 	const Vector2 &get_up_direction() const;
 	bool _on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_facing_up);
 	void set_up_direction(const Vector2 &p_up_direction);
-	void _set_collision_direction(const PhysicsServer2D::MotionResult &p_result);
-	void _set_platform_data(const PhysicsServer2D::MotionResult &p_result);
+	void _set_collision_direction(const PS2DT::MotionResult &p_result);
+	void _set_platform_data(const PS2DT::MotionResult &p_result);
 	void _apply_floor_snap(bool p_wall_as_floor = false);
 	void _snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up, bool p_wall_as_floor = false);
 

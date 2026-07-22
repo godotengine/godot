@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MobileVRInterface" inherits="XRInterface" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="MobileVRInterface" inherits="XRInterface" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Generic mobile VR implementation.
 	</brief_description>
@@ -10,7 +10,7 @@
 		[codeblock]
 		var interface = XRServer.find_interface("Native mobile")
 		if interface and interface.initialize():
-		    get_viewport().use_xr = true
+			get_viewport().use_xr = true
 		[/codeblock]
 		[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_accelerometer], [member ProjectSettings.input_devices/sensors/enable_gravity], [member ProjectSettings.input_devices/sensors/enable_gyroscope] and [member ProjectSettings.input_devices/sensors/enable_magnetometer] must be enabled.
 	</description>

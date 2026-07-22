@@ -30,13 +30,14 @@
 
 #pragma once
 
-#include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "editor/plugins/editor_plugin.h"
+#include "editor/scene/2d/abstract_polygon_2d_editor.h"
 
 class AcceptDialog;
 class HBoxContainer;
 class NavigationPolygon;
 class NavigationRegion2D;
+class Timer;
 
 class NavigationRegion2DEditor : public AbstractPolygon2DEditor {
 	friend class NavigationRegion2DEditorPlugin;

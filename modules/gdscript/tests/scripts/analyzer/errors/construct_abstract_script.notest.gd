@@ -1,1 +1,1 @@
-abstract class_name AbstractScript
+@abstract class_name AbstractScript

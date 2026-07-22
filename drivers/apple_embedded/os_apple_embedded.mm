@@ -32,31 +32,40 @@
 
 #ifdef APPLE_EMBEDDED_ENABLED
 
-#import "app_delegate_service.h"
-#import "display_server_apple_embedded.h"
-#import "godot_view_apple_embedded.h"
-#import "terminal_logger_apple_embedded.h"
-#import "view_controller.h"
-
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_pack.h"
-#include "drivers/unix/syslog_logger.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/profiling/profiling.h"
+#import "drivers/apple/os_log_logger.h"
+#import "drivers/apple_embedded/app_delegate_service.h"
+#import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_controller.h"
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 #include "main/main.h"
+#include "servers/camera/camera_server.h"
 
+#import <AVFoundation/AVFAudio.h>
 #import <AudioToolbox/AudioServices.h>
 #import <CoreText/CoreText.h>
 #import <UIKit/UIKit.h>
 #import <dlfcn.h>
 #include <sys/sysctl.h>
 
+#include <iterator>
+
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+
 #import <QuartzCore/CAMetalLayer.h>
 
 #if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/godot_vulkan.h"
+#include <drivers/vulkan/godot_vulkan.h>
 #endif // VULKAN_ENABLED
 #endif
 
@@ -142,7 +151,7 @@ OS_AppleEmbedded::OS_AppleEmbedded() {
 	main_loop = nullptr;
 
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(TerminalLoggerAppleEmbedded));
+	loggers.push_back(memnew(OsLogLogger(NSBundle.mainBundle.bundleIdentifier.UTF8String)));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	AudioDriverManager::add_driver(&audio_driver);
@@ -165,7 +174,14 @@ void OS_AppleEmbedded::initialize() {
 }
 
 void OS_AppleEmbedded::initialize_joypads() {
-	joypad_apple = memnew(JoypadApple);
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
 }
 
 void OS_AppleEmbedded::initialize_modules() {
@@ -174,13 +190,10 @@ void OS_AppleEmbedded::initialize_modules() {
 }
 
 void OS_AppleEmbedded::deinitialize_modules() {
-	if (joypad_apple) {
-		memdelete(joypad_apple);
-	}
-
-	if (apple_embedded) {
-		memdelete(apple_embedded);
-	}
+#ifdef SDL_ENABLED
+	memdelete(joypad_sdl);
+#endif
+	memdelete(apple_embedded);
 }
 
 void OS_AppleEmbedded::set_main_loop(MainLoop *p_main_loop) {
@@ -205,11 +218,18 @@ bool OS_AppleEmbedded::iterate() {
 		return true;
 	}
 
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_AppleEmbedded::iterate");
+
 	if (DisplayServer::get_singleton()) {
 		DisplayServer::get_singleton()->process_events();
 	}
 
-	joypad_apple->process_joypads();
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		joypad_sdl->process_events();
+	}
+#endif
 
 	return Main::iteration();
 }
@@ -276,6 +296,11 @@ Error OS_AppleEmbedded::open_dynamic_library(const String &p_path, void *&p_libr
 	}
 
 	if (!FileAccess::exists(path)) {
+		// Load .dylib from within the executable path.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join(p_path.get_file().get_basename() + ".dylib"));
+	}
+
+	if (!FileAccess::exists(path)) {
 		// Load .dylib or framework from a standard iOS location.
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file()));
 	}
@@ -285,8 +310,23 @@ Error OS_AppleEmbedded::open_dynamic_library(const String &p_path, void *&p_libr
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file().get_basename() + ".framework"));
 	}
 
-	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+	if (!FileAccess::exists(path)) {
+		// Load .dylib from a standard iOS location.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file().get_basename() + ".dylib"));
+	}
 
+	if (!FileAccess::exists(path) && (p_path.ends_with(".a") || p_path.ends_with(".xcframework"))) {
+		// Static library already linked into the binary — use RTLD_SELF.
+		p_library_handle = RTLD_SELF;
+
+		if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+			*p_data->r_resolved_path = p_path;
+		}
+
+		return OK;
+	} else {
+		ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
+	}
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
 	ERR_FAIL_NULL_V_MSG(p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
@@ -383,6 +423,31 @@ String OS_AppleEmbedded::get_temp_path() const {
 	return ret;
 }
 
+String OS_AppleEmbedded::get_resource_dir() const {
+#ifdef TOOLS_ENABLED
+	return OS_Unix::get_resource_dir();
+#else
+	if (remote_fs_dir.is_empty()) {
+		return OS_Unix::get_resource_dir();
+	} else {
+		return remote_fs_dir;
+	}
+#endif
+}
+
+String OS_AppleEmbedded::get_bundle_resource_dir() const {
+	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
+	if (!str) {
+		return OS_Unix::get_bundle_resource_dir();
+	} else {
+		String res_path = String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+		if (res_path.is_relative_path()) {
+			res_path = String::utf8([[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSUTF8StringEncoding]).path_join(res_path);
+		}
+		return res_path;
+	}
+}
+
 String OS_AppleEmbedded::get_locale() const {
 	NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject;
 
@@ -394,18 +459,81 @@ String OS_AppleEmbedded::get_locale() const {
 	return String::utf8([localeIdentifier UTF8String]).replace_char('-', '_');
 }
 
+Vector<String> OS_AppleEmbedded::get_preferred_locales() const {
+	Vector<String> out;
+	for (NSString *locale_code in [NSLocale preferredLanguages]) {
+		out.push_back(String([locale_code UTF8String]).replace_char('-', '_'));
+	}
+	if (out.is_empty()) {
+		NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
+		out.push_back(String::utf8([localeIdentifier UTF8String]).replace_char('-', '_'));
+	}
+	return out;
+}
+
 String OS_AppleEmbedded::get_unique_id() const {
 	NSString *uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
 	return String::utf8([uuid UTF8String]);
 }
 
+struct _ModelInfo {
+	Vector<String> model;
+	String soc;
+};
+
+static const _ModelInfo _models[] = {
+	{ { "iPhone1,1", "iPhone1,2", "iPod1,1" }, "Samsung S5L8900" },
+	{ { "iPod2,1" }, "Samsung S5L8720" },
+	{ { "iPhone2,1" }, "Samsung S5L8920" },
+	{ { "iPod3,1" }, "Samsung S5L8922" },
+	{ { "iPhone3,1", "iPhone3,2", "iPhone3,3", "iPad1,1", "iPad1,2", "iPod4,1", "AppleTV2,1" }, "Apple A4" },
+	{ { "iPhone4,1", "iPad2,1", "iPad2,2", "iPad2,3", "iPad2,4", "iPad2,5", "iPad2,6", "iPad2,7", "iPod5,1", "AppleTV3,1", "AppleTV3,2" }, "Apple A5" },
+	{ { "iPad3,1", "iPad3,2", "iPad3,3" }, "Apple A5X" },
+	{ { "iPhone5,1", "iPhone5,2", "iPhone5,3", "iPhone5,4" }, "Apple A6" },
+	{ { "iPad3,4", "iPad3,5", "iPad3,6" }, "Apple A6X" },
+	{ { "iPhone6,1", "iPhone6,2", "iPad4,1", "iPad4,2", "iPad4,3", "iPad4,4", "iPad4,5", "iPad4,6", "iPad4,7", "iPad4,8", "iPad4,9" }, "Apple A7" },
+	{ { "iPhone7,1", "iPhone7,2", "iPad5,1", "iPad5,2", "iPod7,1", "AppleTV5,3" }, "Apple A8" },
+	{ { "iPad5,3", "iPad5,4" }, "Apple A8X" },
+	{ { "iPhone8,1", "iPhone8,2", "iPhone8,4", "iPad6,11", "iPad6,12" }, "Apple A9" },
+	{ { "iPad6,3", "iPad6,4", "iPad6,7", "iPad6,8" }, "Apple A9X" },
+	{ { "iPhone9,1", "iPhone9,2", "iPhone9,3", "iPhone9,4", "iPad7,5", "iPad7,6", "iPad7,11", "iPad7,12", "iPod9,1" }, "Apple A10 Fusion" },
+	{ { "iPad7,1", "iPad7,2", "iPad7,3", "iPad7,4", "AppleTV6,2" }, "Apple A10X Fusion" },
+	{ { "iPhone10,1", "iPhone10,2", "iPhone10,3", "iPhone10,4", "iPhone10,5", "iPhone10,6" }, "Apple A11 Bionic" },
+	{ { "iPhone11,2", "iPhone11,4", "iPhone11,6", "iPhone11,8", "iPad11,1", "iPad11,2", "iPad11,3", "iPad11,4", "iPad11,6", "iPad11,7", "AppleTV11,1" }, "Apple A12 Bionic" },
+	{ { "iPad8,1", "iPad8,2", "iPad8,3", "iPad8,4", "iPad8,5", "iPad8,6", "iPad8,7", "iPad8,8" }, "Apple A12X Bionic" },
+	{ { "iPad8,9", "iPad8,10", "iPad8,11", "iPad8,12" }, "Apple A12Z Bionic" },
+	{ { "iPhone12,1", "iPhone12,3", "iPhone12,5", "iPhone12,8", "iPad12,1", "iPad12,2" }, "Apple A13 Bionic" },
+	{ { "iPhone13,1", "iPhone13,2", "iPhone13,3", "iPhone13,4", "iPad13,1", "iPad13,2", "iPad13,18", "iPad13,19" }, "Apple A14 Bionic" },
+	{ { "iPad13,4", "iPad13,5", "iPad13,6", "iPad13,7", "iPad13,8", "iPad13,9", "iPad13,10", "iPad13,11", "iPad13,16", "iPad13,17" }, "Apple M1" },
+	{ { "iPhone14,2", "iPhone14,3", "iPhone14,4", "iPhone14,5", "iPhone14,6", "iPhone14,7", "iPhone14,8", "iPad14,1", "iPad14,2", "AppleTV14,1" }, "Apple A15 Bionic" },
+	{ { "iPhone15,2", "iPhone15,3", "iPhone15,4", "iPhone15,5", "iPad15,7", "iPad15,8" }, "Apple A16 Bionic" },
+	{ { "iPad14,3", "iPad14,4", "iPad14,5", "iPad14,6", "iPad14,8", "iPad14,9", "iPad14,10", "iPad14,11", "RealityDevice14,1" }, "Apple M2" },
+	{ { "iPhone16,1", "iPhone16,2", "iPad16,1", "iPad16,2" }, "Apple A17 Pro" },
+	{ { "iPad15,3", "iPad15,4", "iPad15,5", "iPad15,6" }, "Apple M3" },
+	{ { "iPad16,3", "iPad16,4", "iPad16,5", "iPad16,6" }, "Apple M4" },
+	{ { "iPad17,1", "iPad17,2", "iPad17,3", "iPad17,4", "RealityDevice17,1" }, "Apple M5" },
+	{ { "iPhone17,3", "iPhone17,4", "iPhone17,5" }, "Apple A18" },
+	{ { "iPhone17,1", "iPhone17,2" }, "Apple A18 Pro" },
+	{ { "iPhone18,3", "iPhone18,5" }, "Apple A19" },
+	{ { "iPhone18,1", "iPhone18,2", "iPhone18,4" }, "Apple A19 Pro" },
+};
+
 String OS_AppleEmbedded::get_processor_name() const {
-	char buffer[256];
-	size_t buffer_len = 256;
-	if (sysctlbyname("machdep.cpu.brand_string", &buffer, &buffer_len, nullptr, 0) == 0) {
-		return String::utf8(buffer, buffer_len);
+#if defined(IOS_SIMULATOR) || defined(VISIONOS_SIMULATOR)
+	return "Simulator";
+#else
+	if (apple_embedded) {
+		String model = apple_embedded->get_model();
+		for (unsigned int i = 0; i < std::size(_models); i++) {
+			for (const String &m : _models[i].model) {
+				if (model.contains(m)) {
+					return _models[i].soc;
+				}
+			}
+		}
 	}
-	ERR_FAIL_V_MSG("", String("Couldn't get the CPU model name. Returning an empty string."));
+#endif
+	return OS::get_processor_name();
 }
 
 Vector<String> OS_AppleEmbedded::get_system_fonts() const {
@@ -641,12 +769,21 @@ bool OS_AppleEmbedded::_check_internal_feature_support(const String &p_feature) 
 	return false;
 }
 
+Error OS_AppleEmbedded::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
+	r_project_path = OS::get_user_data_dir();
+	Error err = OS_Unix::setup_remote_filesystem(p_server_host, p_port, p_password, r_project_path);
+	if (err == OK) {
+		remote_fs_dir = r_project_path;
+	}
+	return err;
+}
+
 void OS_AppleEmbedded::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
-			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {
@@ -664,7 +801,7 @@ void OS_AppleEmbedded::on_focus_in() {
 		is_focused = true;
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
-			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {
@@ -680,6 +817,11 @@ void OS_AppleEmbedded::on_focus_in() {
 void OS_AppleEmbedded::on_enter_background() {
 	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
 
+	CameraServer *camera_server = CameraServer::get_singleton();
+	if (camera_server) {
+		camera_server->handle_application_pause();
+	}
+
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
@@ -693,6 +835,11 @@ void OS_AppleEmbedded::on_exit_background() {
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
+		}
+
+		CameraServer *camera_server = CameraServer::get_singleton();
+		if (camera_server) {
+			camera_server->handle_application_resume();
 		}
 	}
 }
@@ -714,4 +861,35 @@ Rect2 OS_AppleEmbedded::calculate_boot_screen_rect(const Size2 &p_window_size, c
 	}
 }
 
+bool OS_AppleEmbedded::request_permission(const String &p_name) {
+	if (p_name == "appleembedded.permission.AUDIO_RECORD") {
+		if (@available(iOS 17.0, *)) {
+			AVAudioApplicationRecordPermission permission = [AVAudioApplication sharedInstance].recordPermission;
+			if (permission == AVAudioApplicationRecordPermissionGranted) {
+				// Permission already granted, you can start recording.
+				return true;
+			} else if (permission == AVAudioApplicationRecordPermissionDenied) {
+				// Permission denied, or not yet granted.
+				return false;
+			} else {
+				// Request the permission, but for now return false as documented.
+				[AVAudioApplication requestRecordPermissionWithCompletionHandler:^(BOOL granted) {
+					get_main_loop()->emit_signal(SNAME("on_request_permissions_result"), p_name, granted);
+				}];
+			}
+		}
+	}
+	return false;
+}
+
+Vector<String> OS_AppleEmbedded::get_granted_permissions() const {
+	Vector<String> ret;
+
+	if (@available(iOS 17.0, *)) {
+		if ([AVAudioApplication sharedInstance].recordPermission == AVAudioApplicationRecordPermissionGranted) {
+			ret.push_back("appleembedded.permission.AUDIO_RECORD");
+		}
+	}
+	return ret;
+}
 #endif // APPLE_EMBEDDED_ENABLED

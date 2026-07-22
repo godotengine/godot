@@ -66,7 +66,7 @@ public:
 
 	String get_name_with_set() const; // Retrieve the name of this action as <action_set>/<action>
 
-	void set_localized_name(const String p_localized_name); // Set the localized name of this action
+	void set_localized_name(const String &p_localized_name); // Set the localized name of this action
 	String get_localized_name() const; // Get the localized name of this action
 
 	void set_action_type(const ActionType p_action_type); // Set the type of this action
@@ -75,10 +75,10 @@ public:
 	void set_toplevel_paths(const PackedStringArray p_toplevel_paths); // Set the toplevel paths of this action
 	PackedStringArray get_toplevel_paths() const; // Get the toplevel paths of this action
 
-	void add_toplevel_path(const String p_toplevel_path); // Add a top level path to this action
-	void rem_toplevel_path(const String p_toplevel_path); // Remove a toplevel path from this action
+	void add_toplevel_path(const String &p_toplevel_path); // Add a top level path to this action
+	void rem_toplevel_path(const String &p_toplevel_path); // Remove a toplevel path from this action
 
-	void parse_toplevel_paths(const String p_toplevel_paths); // Parse and set the top level paths from a comma separated string
+	void parse_toplevel_paths(const String &p_toplevel_paths); // Parse and set the top level paths from a comma separated string
 };
 
 VARIANT_ENUM_CAST(OpenXRAction::ActionType);

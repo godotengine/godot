@@ -30,7 +30,8 @@
 
 #import "godot_app_delegate.h"
 
-#import "app_delegate_service.h"
+#include "core/typedefs.h"
+#import "drivers/apple_embedded/app_delegate_service.h"
 
 @implementation GDTApplicationDelegate
 
@@ -108,17 +109,101 @@ static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 	return result;
 }
 
-/* Can be handled by Info.plist. Not yet supported by Godot.
-
 // MARK: Scene
 
-- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options {}
+- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	UISceneConfiguration *config = [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+	config.delegateClass = [GDTApplicationDelegate class];
+	return config;
+}
 
-- (void)application:(UIApplication *)application didDiscardSceneSessions:(NSSet<UISceneSession *> *)sceneSessions {}
+- (void)application:(UIApplication *)application didDiscardSceneSessions:(NSSet<UISceneSession *> *)sceneSessions API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+}
 
-*/
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service scene:scene willConnectToSession:session options:connectionOptions];
+	}
+}
+
+- (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service scene:scene openURLContexts:URLContexts];
+	}
+}
+
+- (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service scene:scene continueUserActivity:userActivity];
+	}
+}
 
 // MARK: Life-Cycle
+
+- (void)sceneDidDisconnect:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service sceneDidDisconnect:scene];
+	}
+}
+
+- (void)sceneDidBecomeActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service sceneDidBecomeActive:scene];
+	}
+}
+
+- (void)sceneWillResignActive:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service sceneWillResignActive:scene];
+	}
+}
+
+- (void)sceneDidEnterBackground:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service sceneDidEnterBackground:scene];
+	}
+}
+
+- (void)sceneWillEnterForeground:(UIScene *)scene API_AVAILABLE(ios(13.0), tvos(13.0), visionos(1.0)) {
+	for (GDTAppDelegateServiceProtocol *service in services) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
+		}
+
+		[service sceneWillEnterForeground:scene];
+	}
+}
+
+// UIApplication lifecycle has become deprecated in favor of UIScene lifecycle
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
 	for (GDTAppDelegateServiceProtocol *service in services) {
@@ -424,7 +509,7 @@ static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 
 // MARK: SiriKit
 
-- (id)application:(UIApplication *)application handlerForIntent:(INIntent *)intent API_AVAILABLE(ios(14.0)) {
+- (id)application:(UIApplication *)application handlerForIntent:(INIntent *)intent {
 	for (GDTAppDelegateServiceProtocol *service in services) {
 		if (![service respondsToSelector:_cmd]) {
 			continue;
@@ -461,3 +546,5 @@ static NSMutableArray<GDTAppDelegateServiceProtocol *> *services = nil;
 */
 
 @end
+
+GODOT_CLANG_WARNING_POP

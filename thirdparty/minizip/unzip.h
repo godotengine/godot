@@ -1,14 +1,13 @@
 /* unzip.h -- IO for uncompress .zip files using zlib
-   Version 1.1, February 14h, 2010
-   part of the MiniZip project - ( http://www.winimage.com/zLibDll/minizip.html )
+   part of the MiniZip project - ( https://www.winimage.com/zLibDll/minizip.html )
 
-         Copyright (C) 1998-2010 Gilles Vollant (minizip) ( http://www.winimage.com/zLibDll/minizip.html )
+         Copyright (C) 1998-2026 Gilles Vollant (minizip) ( https://www.winimage.com/zLibDll/minizip.html )
 
          Modifications of Unzip for Zip64
          Copyright (C) 2007-2008 Even Rouault
 
          Modifications for Zip64 support on both zip and unzip
-         Copyright (C) 2009-2010 Mathias Svensson ( http://result42.com )
+         Copyright (C) 2009-2010 Mathias Svensson ( https://result42.com )
 
          For more info read MiniZip_info.txt
 
@@ -69,6 +68,8 @@ typedef unzFile__ *unzFile;
 #else
 typedef voidp unzFile;
 #endif
+
+extern const char unz_copyright[];
 
 
 #define UNZ_OK                          (0)
@@ -315,6 +316,10 @@ extern int ZEXPORT unzGetCurrentFileInfo(unzFile file,
             This is the Central-header version of the extra field
   if szComment!=NULL, the comment string of the file will be copied in szComment
             (commentBufferSize is the size of the buffer)
+  The file name and comment will be zero-terminated if there is room in the
+  provided buffer. Otherwise the buffer will contain as much as will fit. If at
+  least 65537 bytes of room is provided, then the result will always be
+  complete and zero-terminated.
 */
 
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConfirmationDialog" inherits="AcceptDialog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ConfirmationDialog" inherits="AcceptDialog" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A dialog used for confirmation of actions.
 	</brief_description>
@@ -14,6 +14,7 @@
 		GetCancelButton().Pressed += OnCanceled;
 		[/csharp]
 		[/codeblocks]
+		[b]Note:[/b] [AcceptDialog] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
 	</description>
 	<tutorials>
 	</tutorials>

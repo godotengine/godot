@@ -71,7 +71,7 @@ Vector3 VelocityTracker3D::get_tracked_linear_velocity() const {
 	if (position_history_len) {
 		if (physics_step) {
 			uint64_t base = Engine::get_singleton()->get_physics_frames();
-			base_time = double(base - position_history[0].frame) / Engine::get_singleton()->get_physics_ticks_per_second();
+			base_time = double(base - position_history[0].frame) / Engine::get_singleton()->get_user_physics_ticks_per_second();
 		} else {
 			uint64_t base = Engine::get_singleton()->get_frame_ticks();
 			base_time = double(base - position_history[0].frame) / 1000000.0;
@@ -84,7 +84,7 @@ Vector3 VelocityTracker3D::get_tracked_linear_velocity() const {
 		Vector3 distance = position_history[i].position - position_history[i + 1].position;
 
 		if (physics_step) {
-			delta = double(diff) / Engine::get_singleton()->get_physics_ticks_per_second();
+			delta = double(diff) / Engine::get_singleton()->get_user_physics_ticks_per_second();
 		} else {
 			delta = double(diff) / 1000000.0;
 		}
@@ -115,16 +115,6 @@ void VelocityTracker3D::reset(const Vector3 &p_new_pos) {
 
 	position_history.write[0] = ph;
 	position_history_len = 1;
-}
-
-void VelocityTracker3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_track_physics_step", "enable"), &VelocityTracker3D::set_track_physics_step);
-	ClassDB::bind_method(D_METHOD("is_tracking_physics_step"), &VelocityTracker3D::is_tracking_physics_step);
-	ClassDB::bind_method(D_METHOD("update_position", "position"), &VelocityTracker3D::update_position);
-	ClassDB::bind_method(D_METHOD("get_tracked_linear_velocity"), &VelocityTracker3D::get_tracked_linear_velocity);
-	ClassDB::bind_method(D_METHOD("reset", "position"), &VelocityTracker3D::reset);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "track_physics_step"), "set_track_physics_step", "is_tracking_physics_step");
 }
 
 VelocityTracker3D::VelocityTracker3D() {

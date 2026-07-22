@@ -2,7 +2,7 @@ extends RefCounted
 
 const AbstractScript = preload("./construct_abstract_script.notest.gd")
 
-abstract class AbstractClass:
+@abstract class AbstractClass:
 	pass
 
 func test():

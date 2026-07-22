@@ -35,11 +35,12 @@
 #include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
+#include "core/object/class_db.h"
 #include "core/templates/pair.h"
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {
@@ -87,16 +88,16 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 	return get_builtin_or_variant_type_name(p_info.type);
 }
 
-static String get_type_meta_name(const GodotTypeInfo::Metadata metadata) {
-	static const char *argmeta[13] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double", "char16", "char32" };
-	return argmeta[metadata];
+static String get_type_meta_name(const GodotTypeInfo::Metadata p_metadata) {
+	static const char *argmeta[14] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double", "char16", "char32", "required" };
+	return argmeta[p_metadata];
 }
 
 static String fix_doc_description(const String &p_bbcode) {
 	// Based on what EditorHelp does.
 
 	return p_bbcode.dedent()
-			.remove_chars("\t\r")
+			.remove_chars("\r")
 			.strip_edges();
 }
 
@@ -142,8 +143,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 			uint32_t size_64_bits_real_double;
 
 			// For compile-time size check.
-			constexpr uint32_t operator[](int index) const {
-				switch (index) {
+			constexpr uint32_t operator[](int p_index) const {
+				switch (p_index) {
 #ifndef REAL_T_IS_DOUBLE
 					case sizeof(uint32_t):
 						return size_32_bits_real_float;
@@ -281,59 +282,59 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		// Member offsets, meta types and sizes.
 
 #define REAL_MEMBER_OFFSET(type, member) \
-	{                                    \
-		type,                            \
-		member,                          \
-		"float",                         \
-		sizeof(float),                   \
-		"float",                         \
-		sizeof(float),                   \
-		"double",                        \
-		sizeof(double),                  \
-		"double",                        \
-		sizeof(double),                  \
+	{ \
+		type, \
+		member, \
+		"float", \
+		sizeof(float), \
+		"float", \
+		sizeof(float), \
+		"double", \
+		sizeof(double), \
+		"double", \
+		sizeof(double), \
 	}
 
 #define INT32_MEMBER_OFFSET(type, member) \
-	{                                     \
-		type,                             \
-		member,                           \
-		"int32",                          \
-		sizeof(int32_t),                  \
-		"int32",                          \
-		sizeof(int32_t),                  \
-		"int32",                          \
-		sizeof(int32_t),                  \
-		"int32",                          \
-		sizeof(int32_t),                  \
+	{ \
+		type, \
+		member, \
+		"int32", \
+		sizeof(int32_t), \
+		"int32", \
+		sizeof(int32_t), \
+		"int32", \
+		sizeof(int32_t), \
+		"int32", \
+		sizeof(int32_t), \
 	}
 
 #define INT32_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
-	{                                                                              \
-		type,                                                                      \
-		member,                                                                    \
-		member_type,                                                               \
-		sizeof(int32_t) * member_elems,                                            \
-		member_type,                                                               \
-		sizeof(int32_t) * member_elems,                                            \
-		member_type,                                                               \
-		sizeof(int32_t) * member_elems,                                            \
-		member_type,                                                               \
-		sizeof(int32_t) * member_elems,                                            \
+	{ \
+		type, \
+		member, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
+		member_type, \
+		sizeof(int32_t) * member_elems, \
 	}
 
 #define REAL_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
-	{                                                                             \
-		type,                                                                     \
-				member,                                                           \
-				member_type,                                                      \
-				sizeof(float) * member_elems,                                     \
-				member_type,                                                      \
-				sizeof(float) * member_elems,                                     \
-				member_type,                                                      \
-				sizeof(double) * member_elems,                                    \
-				member_type,                                                      \
-				sizeof(double) * member_elems,                                    \
+	{ \
+		type, \
+				member, \
+				member_type, \
+				sizeof(float) * member_elems, \
+				member_type, \
+				sizeof(float) * member_elems, \
+				member_type, \
+				sizeof(double) * member_elems, \
+				member_type, \
+				sizeof(double) * member_elems, \
 	}
 
 		struct {
@@ -797,6 +798,17 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					d2["is_static"] = Variant::is_builtin_method_static(type, method_name);
 					d2["hash"] = Variant::get_builtin_method_hash(type, method_name);
 
+					Vector<uint32_t> compat_hashes = Variant::get_builtin_method_compatibility_hashes(type, method_name);
+					Array compatibility;
+					if (compat_hashes.size()) {
+						for (int j = 0; j < compat_hashes.size(); j++) {
+							compatibility.push_back(compat_hashes[j]);
+						}
+					}
+					if (compatibility.size() > 0) {
+						d2["hash_compatibility"] = compatibility;
+					}
+
 					Vector<Variant> default_args = Variant::get_builtin_method_default_arguments(type, method_name);
 
 					Array arguments;
@@ -900,11 +912,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		// classes
 		Array classes;
 
-		List<StringName> class_list;
+		LocalVector<StringName> class_list;
 
-		ClassDB::get_class_list(&class_list);
-
-		class_list.sort_custom<StringName::AlphCompare>();
+		ClassDB::get_class_list(class_list);
 
 		for (const StringName &class_name : class_list) {
 			if (!ClassDB::is_class_exposed(class_name)) {
@@ -1173,6 +1183,10 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 				List<MethodInfo> signal_list;
 				ClassDB::get_signal_list(class_name, &signal_list, true);
 				for (const MethodInfo &F : signal_list) {
+					if (F.name.begins_with("_")) {
+						continue; // Hidden signal.
+					}
+
 					StringName signal_name = F.name;
 					Dictionary d2;
 					d2["name"] = String(signal_name);

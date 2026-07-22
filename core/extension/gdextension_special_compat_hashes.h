@@ -36,6 +36,8 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 
+class Array;
+
 // Note: In most situations, compatibility methods should be registered via ClassDB::bind_compatibility_method().
 //       This class is only meant to be used in exceptional circumstances, for example, when Godot's hashing
 //       algorithm changes and registering compatibility methods for all affect methods would be onerous.

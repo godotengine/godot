@@ -321,7 +321,7 @@ _hb_generate_unique_face_name (wchar_t *face_name, unsigned int *plen)
 
 /* Destroys blob. */
 static hb_blob_t *
-_hb_rename_font (hb_blob_t *blob, wchar_t *new_name)
+_hb_rename_font (hb_blob_t *blob_in, wchar_t *new_name)
 {
   /* Create a copy of the font data, with the 'name' table replaced by a
    * table that names the font with our private F_* name created above.
@@ -332,7 +332,7 @@ _hb_rename_font (hb_blob_t *blob, wchar_t *new_name)
    * full, PS. All of them point to the same name data with our unique name.
    */
 
-  blob = hb_sanitize_context_t ().sanitize_blob<OT::OpenTypeFontFile> (blob);
+  hb_unique_ptr_t<hb_blob_t> blob (hb_sanitize_context_t ().sanitize_blob<OT::OpenTypeFontFile> (blob_in));
 
   unsigned int length, new_length, name_str_len;
   const char *orig_sfnt_data = hb_blob_get_data (blob, &length);
@@ -350,10 +350,8 @@ _hb_rename_font (hb_blob_t *blob, wchar_t *new_name)
   new_length = name_table_offset + padded_name_table_length;
   void *new_sfnt_data = hb_calloc (1, new_length);
   if (!new_sfnt_data)
-  {
-    hb_blob_destroy (blob);
     return nullptr;
-  }
+  auto sfnt_guard = hb_make_scope_guard ([&]() { hb_free (new_sfnt_data); });
 
   hb_memcpy(new_sfnt_data, orig_sfnt_data, length);
 
@@ -397,18 +395,14 @@ _hb_rename_font (hb_blob_t *blob, wchar_t *new_name)
       record.length = name_table_length;
     }
     else if (face_index == 0) /* Fail if first face doesn't have 'name' table. */
-    {
-      hb_free (new_sfnt_data);
-      hb_blob_destroy (blob);
       return nullptr;
-    }
   }
 
   /* The checkSumAdjustment field in the 'head' table is now wrong,
    * but that doesn't actually seem to cause any problems so we don't
    * bother. */
 
-  hb_blob_destroy (blob);
+  sfnt_guard.release ();
   return hb_blob_create ((const char *) new_sfnt_data, new_length,
 			 HB_MEMORY_MODE_WRITABLE, new_sfnt_data, hb_free);
 }

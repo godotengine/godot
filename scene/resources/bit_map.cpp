@@ -30,6 +30,7 @@
 
 #include "bit_map.h"
 
+#include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 
 void BitMap::create(const Size2i &p_size) {

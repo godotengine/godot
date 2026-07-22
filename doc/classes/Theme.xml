@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Theme" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Theme" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A resource used for styling/skinning [Control]s and [Window]s.
 	</brief_description>
@@ -460,6 +460,15 @@
 				Renames the theme property of [param data_type] defined by [param old_name] and [param theme_type] to [param name], if it exists.
 				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_theme_item] to check for existence, and [method clear_theme_item] to remove the existing property.
 				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+			</description>
+		</method>
+		<method name="rename_type">
+			<return type="void" />
+			<param index="0" name="old_theme_type" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" />
+			<description>
+				Renames the theme type [param old_theme_type] to [param theme_type], if the old type exists and the new one doesn't exist.
+				[b]Note:[/b] Renaming a theme type to an empty name or a variation to a type associated with a built-in class removes type variation connections in a way that cannot be undone by reversing the rename alone.
 			</description>
 		</method>
 		<method name="set_color">

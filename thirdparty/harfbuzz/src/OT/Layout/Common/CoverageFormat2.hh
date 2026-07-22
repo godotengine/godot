@@ -40,7 +40,7 @@ struct CoverageFormat2_4
 {
   friend struct Coverage;
 
-  protected:
+  public:
   HBUINT16      coverageFormat; /* Format identifier--format = 2 */
   SortedArray16Of<RangeRecord<Types>>
                 rangeRecord;    /* Array of glyph ranges--ordered by
@@ -120,7 +120,7 @@ struct CoverageFormat2_4
 
   bool intersects (const hb_set_t *glyphs) const
   {
-    if (rangeRecord.len > glyphs->get_population () * hb_bit_storage ((unsigned) rangeRecord.len) / 2)
+    if (rangeRecord.len > glyphs->get_population () * hb_bit_storage ((unsigned) rangeRecord.len))
     {
       for (auto g : *glyphs)
         if (get_coverage (g) != NOT_COVERED)

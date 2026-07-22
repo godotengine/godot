@@ -32,14 +32,20 @@
 
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
+#include "template_modifier.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/image_loader.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/io/zip_io.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/resources/image_texture.h"
 
 #include "modules/svg/image_loader_svg.h"
 
@@ -52,7 +58,7 @@ static String fix_path(const String &p_path) {
 	if (p_path.is_relative_path()) {
 		Char16String current_dir_name;
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
-		current_dir_name.resize(str_len + 1);
+		current_dir_name.resize_uninitialized(str_len + 1);
 		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(path);
 	}
@@ -119,7 +125,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 		Ref<Image> src_image = _load_icon_or_splash_image(p_src_path, &err);
 		ERR_FAIL_COND_V(err != OK || src_image.is_null() || src_image->is_empty(), ERR_CANT_OPEN);
 
-		for (size_t i = 0; i < std::size(icon_size); ++i) {
+		for (size_t i = 0; i < std_size(icon_size); ++i) {
 			int size = (icon_size[i] == 0) ? 256 : icon_size[i];
 
 			Ref<Image> res_image = src_image->duplicate();
@@ -130,7 +136,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 	}
 
 	uint16_t valid_icon_count = 0;
-	for (size_t i = 0; i < std::size(icon_size); ++i) {
+	for (size_t i = 0; i < std_size(icon_size); ++i) {
 		if (images.has(icon_size[i])) {
 			valid_icon_count++;
 		} else {
@@ -152,7 +158,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 
 	// Write ICONDIRENTRY.
 	uint32_t img_offset = 6 + 16 * valid_icon_count;
-	for (size_t i = 0; i < std::size(icon_size); ++i) {
+	for (size_t i = 0; i < std_size(icon_size); ++i) {
 		if (images.has(icon_size[i])) {
 			const IconData &di = images[icon_size[i]];
 			fw->store_8(icon_size[i]); // Width in pixels.
@@ -169,7 +175,7 @@ Error EditorExportPlatformWindows::_process_icon(const Ref<EditorExportPreset> &
 	}
 
 	// Write image data.
-	for (size_t i = 0; i < std::size(icon_size); ++i) {
+	for (size_t i = 0; i < std_size(icon_size); ++i) {
 		if (images.has(icon_size[i])) {
 			const IconData &di = images[icon_size[i]];
 			fw->store_buffer(di.data.ptr(), di.data.size());
@@ -188,16 +194,16 @@ Error EditorExportPlatformWindows::sign_shared_object(const Ref<EditorExportPres
 
 Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	if (p_preset->get("application/modify_resources")) {
-		_rcedit_add_data(p_preset, p_path, false);
+		_add_data(p_preset, p_path, false);
 		String wrapper_path = p_path.get_basename() + ".console.exe";
 		if (FileAccess::exists(wrapper_path)) {
-			_rcedit_add_data(p_preset, wrapper_path, true);
+			_add_data(p_preset, wrapper_path, true);
 		}
 	}
 	return OK;
 }
 
-Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	String custom_debug = p_preset->get("custom_template/debug");
 	String custom_release = p_preset->get("custom_template/release");
 	String arch = p_preset->get("binary_format/architecture");
@@ -300,7 +306,9 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		pck_path = pck_path.get_basename() + ".tmp";
 	}
 
-	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags);
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, export_as_zip);
+
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags, !export_as_zip);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;
@@ -496,38 +504,13 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), run_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), cleanup_script));
 }
 
-Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon) {
-	String rcedit_path = EDITOR_GET("export/windows/rcedit");
-
-	if (rcedit_path != String() && !FileAccess::exists(rcedit_path)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Could not find rcedit executable at \"%s\"."), rcedit_path));
-		return ERR_FILE_NOT_FOUND;
-	}
-
-	if (rcedit_path == String()) {
-		rcedit_path = "rcedit"; // try to run rcedit from PATH
-	}
-
-#ifndef WINDOWS_ENABLED
-	// On non-Windows we need WINE to run rcedit
-	String wine_path = EDITOR_GET("export/windows/wine");
-
-	if (!wine_path.is_empty() && !FileAccess::exists(wine_path)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Could not find wine executable at \"%s\"."), wine_path));
-		return ERR_FILE_NOT_FOUND;
-	}
-
-	if (wine_path.is_empty()) {
-		wine_path = "wine"; // try to run wine from PATH
-	}
-#endif
-
+Error EditorExportPlatformWindows::_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon) {
 	String icon_path;
 	if (p_preset->get("application/icon") != "") {
 		icon_path = p_preset->get("application/icon");
@@ -545,7 +528,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		}
 	}
 
-	String tmp_icon_path = EditorPaths::get_singleton()->get_temp_dir().path_join("_rcedit.ico");
+	String tmp_icon_path = EditorPaths::get_singleton()->get_temp_dir().path_join("_tmp.ico");
 	if (!icon_path.is_empty()) {
 		if (_process_icon(p_preset, icon_path, tmp_icon_path) != OK) {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("Invalid icon file \"%s\"."), icon_path));
@@ -553,77 +536,10 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		}
 	}
 
-	String file_version = p_preset->get_version("application/file_version", true);
-	String product_version = p_preset->get_version("application/product_version", true);
-	String company_name = p_preset->get("application/company_name");
-	String product_name = p_preset->get("application/product_name");
-	String file_description = p_preset->get("application/file_description");
-	String copyright = p_preset->get("application/copyright");
-	String trademarks = p_preset->get("application/trademarks");
-	String comments = p_preset->get("application/comments");
-
-	List<String> args;
-	args.push_back(p_path);
-	if (!icon_path.is_empty()) {
-		args.push_back("--set-icon");
-		args.push_back(tmp_icon_path);
-	}
-	if (!file_version.is_empty()) {
-		args.push_back("--set-file-version");
-		args.push_back(file_version);
-	}
-	if (!product_version.is_empty()) {
-		args.push_back("--set-product-version");
-		args.push_back(product_version);
-	}
-	if (!company_name.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("CompanyName");
-		args.push_back(company_name);
-	}
-	if (!product_name.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("ProductName");
-		args.push_back(product_name);
-	}
-	if (!file_description.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("FileDescription");
-		args.push_back(file_description);
-	}
-	if (!copyright.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("LegalCopyright");
-		args.push_back(copyright);
-	}
-	if (!trademarks.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("LegalTrademarks");
-		args.push_back(trademarks);
-	}
-
-#ifndef WINDOWS_ENABLED
-	// On non-Windows we need WINE to run rcedit
-	args.push_front(rcedit_path);
-	rcedit_path = wine_path;
-#endif
-
-	String str;
-	Error err = OS::get_singleton()->execute(rcedit_path, args, &str, nullptr, true);
+	TemplateModifier::modify(p_preset, p_path, tmp_icon_path);
 
 	if (FileAccess::exists(tmp_icon_path)) {
 		DirAccess::remove_file_or_error(tmp_icon_path);
-	}
-
-	if (err != OK || str.contains("not found") || str.contains("not recognized")) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), TTR("Could not start rcedit executable. Configure rcedit path in the Editor Settings (Export > Windows > rcedit), or disable \"Application > Modify Resources\" in the export preset."));
-		return err;
-	}
-	print_line("rcedit (" + p_path + "): " + str);
-
-	if (str.contains("Fatal error")) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), vformat(TTR("rcedit failed to modify executable: %s."), str));
-		return FAILED;
 	}
 
 	return OK;
@@ -823,11 +739,6 @@ bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<Edito
 		}
 	}
 
-	String rcedit_path = EDITOR_GET("export/windows/rcedit");
-	if (p_preset->get("application/modify_resources") && rcedit_path.is_empty()) {
-		err += TTR("The rcedit tool must be configured in the Editor Settings (Export > Windows > rcedit) to change the icon or app information data.") + "\n";
-	}
-
 	if (!err.is_empty()) {
 		r_error = err;
 	}
@@ -898,9 +809,9 @@ String EditorExportPlatformWindows::_get_exe_arch(const String &p_path) const {
 }
 
 Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
-	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data
+	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data.
 
-	if (p_embedded_size + p_embedded_start >= 0x100000000) { // Check for total executable size
+	if (p_embedded_size + p_embedded_start >= 0x100000000) { // Check for total executable size.
 		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Windows executables cannot be >= 4 GiB."));
 		return ERR_INVALID_DATA;
 	}
@@ -911,7 +822,7 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		return ERR_CANT_OPEN;
 	}
 
-	// Jump to the PE header and check the magic number
+	// Jump to the PE header and check the magic number.
 	{
 		f->seek(0x3c);
 		uint32_t pe_pos = f->get_32();
@@ -924,27 +835,36 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		}
 	}
 
-	// Process header
-
+	// Process header.
+	uint32_t sect_alignment = 0x1000;
+	uint32_t image_size = 0;
 	int num_sections;
-	{
-		int64_t header_pos = f->get_position();
 
+	int64_t header_pos = f->get_position();
+	int64_t opt_header_pos = 0;
+	{
 		f->seek(header_pos + 2);
 		num_sections = f->get_16();
 		f->seek(header_pos + 16);
 		uint16_t opt_header_size = f->get_16();
+		opt_header_pos = f->get_position() + 2;
 
-		// Skip rest of header + optional header to go to the section headers
-		f->seek(f->get_position() + 2 + opt_header_size);
+		f->seek(opt_header_pos + 32);
+		sect_alignment = f->get_32();
+
+		f->seek(opt_header_pos + 56);
+		image_size = f->get_32();
+
+		// Skip rest of header + optional header to go to the section headers.
+		f->seek(opt_header_pos + opt_header_size);
 	}
 
-	// Search for the "pck" section
+	// Search for the "pck" section.
 
 	int64_t section_table_pos = f->get_position();
 
-	bool found = false;
-	for (int i = 0; i < num_sections; ++i) {
+	int pck_old_pos = -1;
+	for (int i = 0; i < num_sections; i++) {
 		int64_t section_header_pos = section_table_pos + i * 40;
 		f->seek(section_header_pos);
 
@@ -953,27 +873,57 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		section_name[8] = '\0';
 
 		if (strcmp((char *)section_name, "pck") == 0) {
-			// "pck" section found, let's patch!
+			pck_old_pos = i;
 
-			// Set virtual size to a little to avoid it taking memory (zero would give issues)
-			f->seek(section_header_pos + 8);
-			f->store_32(8);
-
-			f->seek(section_header_pos + 16);
-			f->store_32(p_embedded_size);
-			f->seek(section_header_pos + 20);
-			f->store_32(p_embedded_start);
-
-			found = true;
+			// Update virtual size of previous section to avoid gaps in the virtual addresses.
+			f->seek(section_table_pos + (i - 1) * 40 + 8);
+			uint32_t virt_size = f->get_32();
+			f->seek(section_table_pos + (i - 1) * 40 + 8);
+			f->store_32(virt_size + sect_alignment);
 			break;
 		}
 	}
+	if (pck_old_pos >= 0) {
+		// Move section data.
+		uint8_t section_data[40];
+		for (int i = pck_old_pos; i < num_sections - 1; i++) {
+			f->seek(section_table_pos + (i + 1) * 40);
+			f->get_buffer(section_data, 40);
+			f->seek(section_table_pos + i * 40);
+			f->store_buffer(section_data, 40);
+		}
 
-	if (!found) {
+		// Add "pck" at the end.
+		f->seek(section_table_pos + (num_sections - 1) * 40);
+		uint8_t section_name[8] = { 'p', 'c', 'k', '\0', '\0', '\0', '\0', '\0' };
+		f->store_buffer(section_name, 8); // Name.
+		f->store_32(8); // VirtualSize, set to a little to avoid it taking memory (zero would give issues).
+		f->store_32(image_size); // VirtualAddress.
+		f->store_32(p_embedded_size); // SizeOfRawData.
+		f->store_32(p_embedded_start); // PointerToRawData.
+		f->store_32(0); // PointerToRelocations, not used.
+		f->store_32(0); // PointerToLinenumbers, not used.
+		f->store_16(0); // NumberOfRelocations.
+		f->store_16(0); // NumberOfLinenumbers.
+		f->store_32(0x40000000); // Characteristics: Read.
+
+		// Update image virtual size.
+		f->seek(opt_header_pos + 56);
+		f->store_32(image_size + sect_alignment);
+	}
+
+	f->close();
+
+	if (pck_old_pos == -1) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable \"pck\" section not found."));
 		return ERR_FILE_CORRUPT;
 	}
 	return OK;
+}
+
+void EditorExportPlatformWindows::get_platform_features(List<String> *r_features) const {
+	EditorExportPlatformPC::get_platform_features(r_features);
+	r_features->push_back("windows");
 }
 
 Ref<Texture2D> EditorExportPlatformWindows::get_run_icon() const {
@@ -981,15 +931,7 @@ Ref<Texture2D> EditorExportPlatformWindows::get_run_icon() const {
 }
 
 bool EditorExportPlatformWindows::poll_export() {
-	Ref<EditorExportPreset> preset;
-
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
-		if (ep->is_runnable() && ep->get_platform() == this) {
-			preset = ep;
-			break;
-		}
-	}
+	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_runnable_preset_for_platform(this);
 
 	int prev = menu_options;
 	menu_options = (preset.is_valid() && preset->get("ssh_remote_deploy/enabled").operator bool());
@@ -1003,8 +945,12 @@ bool EditorExportPlatformWindows::poll_export() {
 	return menu_options != prev;
 }
 
-Ref<ImageTexture> EditorExportPlatformWindows::get_option_icon(int p_index) const {
-	return p_index == 1 ? stop_icon : EditorExportPlatform::get_option_icon(p_index);
+Ref<Texture2D> EditorExportPlatformWindows::get_option_icon(int p_index) const {
+	if (p_index == 1) {
+		return stop_icon;
+	} else {
+		return EditorExportPlatform::get_option_icon(p_index);
+	}
 }
 
 int EditorExportPlatformWindows::get_options_count() const {
@@ -1068,19 +1014,19 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 
 	const String basepath = dest.path_join("tmp_windows_export");
 
-#define CLEANUP_AND_RETURN(m_err)                       \
-	{                                                   \
-		if (da->file_exists(basepath + ".zip")) {       \
-			da->remove(basepath + ".zip");              \
-		}                                               \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
+		if (da->file_exists(basepath + ".zip")) { \
+			da->remove(basepath + ".zip"); \
+		} \
 		if (da->file_exists(basepath + "_start.ps1")) { \
-			da->remove(basepath + "_start.ps1");        \
-		}                                               \
+			da->remove(basepath + "_start.ps1"); \
+		} \
 		if (da->file_exists(basepath + "_clean.ps1")) { \
-			da->remove(basepath + "_clean.ps1");        \
-		}                                               \
-		return m_err;                                   \
-	}                                                   \
+			da->remove(basepath + "_clean.ps1"); \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	if (ep.step(TTR("Exporting project..."), 1)) {
@@ -1104,7 +1050,7 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 	}
 
 	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
-	int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
+	int dbg_port = EDITOR_GET("network/debug/remote_port");
 
 	print_line("Creating temporary directory...");
 	ep.step(TTR("Creating temporary directory..."), 2);
@@ -1186,7 +1132,7 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 #undef CLEANUP_AND_RETURN
 }
 
-EditorExportPlatformWindows::EditorExportPlatformWindows() {
+void EditorExportPlatformWindows::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);

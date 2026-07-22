@@ -5,6 +5,7 @@
 
 #include "alloc.h"
 #include <algorithm>
+#include <type_traits>
 
 namespace embree
 {

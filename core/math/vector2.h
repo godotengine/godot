@@ -32,12 +32,18 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Vector2i;
 
 struct [[nodiscard]] Vector2 {
-	static const int AXIS_COUNT = 2;
+	static const Vector2 LEFT;
+	static const Vector2 RIGHT;
+	static const Vector2 UP;
+	static const Vector2 DOWN;
+
+	static constexpr int AXIS_COUNT = 2;
 
 	enum Axis {
 		AXIS_X,
@@ -45,28 +51,29 @@ struct [[nodiscard]] Vector2 {
 	};
 
 	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			real_t x;
-			real_t y;
-		};
-
-		struct {
-			real_t width;
-			real_t height;
-		};
-
-		real_t coord[2] = { 0 };
-		// NOLINTEND(modernize-use-default-member-init)
+		real_t x = 0.0f;
+		real_t width;
+	};
+	union {
+		real_t y = 0.0f;
+		real_t height;
 	};
 
-	_FORCE_INLINE_ real_t &operator[](int p_axis) {
+	constexpr real_t &operator[](int p_axis) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(Vector2, x) == 0 * sizeof(real_t));
+		static_assert(offsetof(Vector2, width) == 0 * sizeof(real_t));
+		static_assert(offsetof(Vector2, y) == 1 * sizeof(real_t));
+		static_assert(offsetof(Vector2, height) == 1 * sizeof(real_t));
+		static_assert(sizeof(Vector2) == 2 * sizeof(real_t));
+
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
-	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
+	constexpr const real_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
 
 	_FORCE_INLINE_ Vector2::Axis min_axis_index() const {
@@ -84,6 +91,8 @@ struct [[nodiscard]] Vector2 {
 	real_t length() const;
 	real_t length_squared() const;
 	Vector2 limit_length(real_t p_len = 1.0) const;
+
+	void zero() { x = y = 0; }
 
 	Vector2 min(const Vector2 &p_vector2) const {
 		return Vector2(MIN(x, p_vector2.x), MIN(y, p_vector2.y));
@@ -182,16 +191,24 @@ struct [[nodiscard]] Vector2 {
 	Vector2 clampf(real_t p_min, real_t p_max) const;
 	real_t aspect() const { return width / height; }
 
-	operator String() const;
+	explicit operator String() const;
 	operator Vector2i() const;
 
-	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
-	constexpr Vector2() :
-			x(0), y(0) {}
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(x);
+		h = hash_murmur3_one_real(y, h);
+		return hash_fmix32(h);
+	}
+
+	constexpr Vector2() = default;
 	constexpr Vector2(real_t p_x, real_t p_y) :
 			x(p_x), y(p_y) {}
-	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
+
+inline constexpr Vector2 Vector2::LEFT = { -1, 0 };
+inline constexpr Vector2 Vector2::RIGHT = { 1, 0 };
+inline constexpr Vector2 Vector2::UP = { 0, -1 };
+inline constexpr Vector2 Vector2::DOWN = { 0, 1 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {
 	return p_vec - *this * (dot(p_vec) - p_d);

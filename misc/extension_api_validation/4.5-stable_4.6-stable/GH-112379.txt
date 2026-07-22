@@ -1,0 +1,5 @@
+GH-112379
+---------
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/tts_speak/arguments/5': meta changed value in new API, from "int32" to "int64".
+
+`utterance_id` argument changed from `int32` to `int64`. No compatibility method needed.

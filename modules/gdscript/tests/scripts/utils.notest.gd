@@ -1,10 +1,27 @@
+@warning_ignore_start("unsafe_call_argument")
+
 class_name Utils
+
 
 # `assert()` is not evaluated in non-debug builds. Do not use `assert()`
 # for anything other than testing the `assert()` itself.
 static func check(condition: Variant) -> void:
-	if not condition:
-		printerr("Check failed.")
+	if condition:
+		return
+
+	printerr("Check failed. Backtrace (most recent call first):")
+	var stack: Array = get_stack()
+	var dir: String
+	for i: int in stack.size():
+		var frame: Dictionary = stack[i]
+		if i == 0:
+			dir = str(frame.source).trim_suffix("utils.notest.gd")
+		else:
+			printerr("  %s:%d @ %s()" % [
+				str(frame.source).trim_prefix(dir),
+				frame.line,
+				frame.function,
+			])
 
 
 static func get_type(property: Dictionary, is_return: bool = false) -> String:
@@ -34,7 +51,11 @@ static func get_type(property: Dictionary, is_return: bool = false) -> String:
 	return type_string(property.type)
 
 
-static func get_property_signature(property: Dictionary, base: Object = null, is_static: bool = false) -> String:
+static func get_property_signature(
+		property: Dictionary,
+		base: Object = null,
+		is_static: bool = false,
+) -> String:
 	if property.usage & PROPERTY_USAGE_CATEGORY:
 		return '@export_category("%s")' % str(property.name).c_escape()
 	if property.usage & PROPERTY_USAGE_GROUP:
@@ -53,53 +74,24 @@ static func get_property_signature(property: Dictionary, base: Object = null, is
 	return result
 
 
-static func get_human_readable_hint_string(property: Dictionary) -> String:
-	if property.type >= TYPE_ARRAY and property.hint == PROPERTY_HINT_TYPE_STRING:
-		var type_hint_prefixes: String = ""
-		var hint_string: String = property.hint_string
-
-		while true:
-			if not hint_string.contains(":"):
-				printerr("Invalid PROPERTY_HINT_TYPE_STRING format.")
-			var elem_type_hint: String = hint_string.get_slice(":", 0)
-			hint_string = hint_string.substr(elem_type_hint.length() + 1)
-
-			var elem_type: int
-			var elem_hint: int
-
-			if elem_type_hint.is_valid_int():
-				elem_type = elem_type_hint.to_int()
-				type_hint_prefixes += "<%s>:" % type_string(elem_type)
-			else:
-				if elem_type_hint.count("/") != 1:
-					printerr("Invalid PROPERTY_HINT_TYPE_STRING format.")
-				elem_type = elem_type_hint.get_slice("/", 0).to_int()
-				elem_hint = elem_type_hint.get_slice("/", 1).to_int()
-				type_hint_prefixes += "<%s>/<%s>:" % [
-					type_string(elem_type),
-					get_property_hint_name(elem_hint).trim_prefix("PROPERTY_HINT_"),
-				]
-
-			if elem_type < TYPE_ARRAY or hint_string.is_empty():
-				break
-
-		return type_hint_prefixes + hint_string
-
-	return property.hint_string
-
-
-static func print_property_extended_info(property: Dictionary, base: Object = null, is_static: bool = false) -> void:
-	print(get_property_signature(property, base, is_static))
-	print('  hint=%s hint_string="%s" usage=%s class_name=&"%s"' % [
+static func get_property_extended_info(
+		property: Dictionary,
+		base: Object = null,
+		is_static: bool = false,
+) -> String:
+	return '%s\n  hint=%s hint_string="%s" usage=%s class_name=&"%s"' % [
+		get_property_signature(property, base, is_static),
 		get_property_hint_name(property.hint).trim_prefix("PROPERTY_HINT_"),
-		get_human_readable_hint_string(property).c_escape(),
+		get_property_hint_string(property).c_escape(),
 		get_property_usage_string(property.usage).replace("PROPERTY_USAGE_", ""),
-		property.class_name.c_escape(),
-	])
+		str(property.class_name).c_escape(),
+	]
 
 
 static func get_method_signature(method: Dictionary, is_signal: bool = false) -> String:
 	var result: String = ""
+	if method.flags & METHOD_FLAG_VIRTUAL_REQUIRED:
+		result += "@abstract "
 	if method.flags & METHOD_FLAG_STATIC:
 		result += "static "
 	result += ("signal " if is_signal else "func ") + method.name + "("
@@ -107,13 +99,17 @@ static func get_method_signature(method: Dictionary, is_signal: bool = false) ->
 	var args: Array[Dictionary] = method.args
 	var default_args: Array = method.default_args
 	var mandatory_argc: int = args.size() - default_args.size()
-	for i in args.size():
+	for i: int in args.size():
 		if i > 0:
 			result += ", "
 		var arg: Dictionary = args[i]
 		result += arg.name + ": " + get_type(arg)
 		if i >= mandatory_argc:
 			result += " = " + var_to_str(default_args[i - mandatory_argc])
+
+	if method.flags & METHOD_FLAG_VARARG:
+		# `MethodInfo` does not support the rest parameter name.
+		result += "...args" if args.is_empty() else ", ...args"
 
 	result += ")"
 	if is_signal:
@@ -206,11 +202,52 @@ static func get_property_hint_name(hint: PropertyHint) -> String:
 			return "PROPERTY_HINT_PASSWORD"
 		PROPERTY_HINT_TOOL_BUTTON:
 			return "PROPERTY_HINT_TOOL_BUTTON"
+		PROPERTY_HINT_ONESHOT:
+			return "PROPERTY_HINT_ONESHOT"
+		PROPERTY_HINT_GROUP_ENABLE:
+			return "PROPERTY_HINT_GROUP_ENABLE"
 		PROPERTY_HINT_INPUT_NAME:
 			return "PROPERTY_HINT_INPUT_NAME"
+		PROPERTY_HINT_FILE_PATH:
+			return "PROPERTY_HINT_FILE_PATH"
 
 	printerr("Argument `hint` is invalid. Use `PROPERTY_HINT_*` constants.")
 	return "<invalid hint>"
+
+
+static func get_property_hint_string(property: Dictionary) -> String:
+	if property.type >= TYPE_ARRAY and property.hint == PROPERTY_HINT_TYPE_STRING:
+		var type_hint_prefixes: String = ""
+		var hint_string: String = property.hint_string
+
+		while true:
+			if not hint_string.contains(":"):
+				printerr("Invalid `PROPERTY_HINT_TYPE_STRING` format.")
+			var elem_type_hint: String = hint_string.get_slice(":", 0)
+			hint_string = hint_string.substr(elem_type_hint.length() + 1)
+
+			var elem_type: int
+			var elem_hint: int
+
+			if elem_type_hint.is_valid_int():
+				elem_type = elem_type_hint.to_int()
+				type_hint_prefixes += "<%s>:" % type_string(elem_type)
+			else:
+				if elem_type_hint.count("/") != 1:
+					printerr("Invalid `PROPERTY_HINT_TYPE_STRING` format.")
+				elem_type = elem_type_hint.get_slice("/", 0).to_int()
+				elem_hint = elem_type_hint.get_slice("/", 1).to_int()
+				type_hint_prefixes += "<%s>/<%s>:" % [
+					type_string(elem_type),
+					get_property_hint_name(elem_hint).trim_prefix("PROPERTY_HINT_"),
+				]
+
+			if elem_type < TYPE_ARRAY or hint_string.is_empty():
+				break
+
+		return type_hint_prefixes + hint_string
+
+	return property.hint_string
 
 
 static func get_property_usage_string(usage: int) -> String:
@@ -255,7 +292,7 @@ static func get_property_usage_string(usage: int) -> String:
 		result += "PROPERTY_USAGE_DEFAULT|"
 		usage &= ~PROPERTY_USAGE_DEFAULT
 
-	for flag in FLAGS:
+	for flag: Array in FLAGS:
 		if usage & flag[0]:
 			result += flag[1] + "|"
 			usage &= ~flag[0]
