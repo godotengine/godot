@@ -116,6 +116,24 @@
 				[b]Note:[/b] To retrieve the colliding bodies, use [method get_colliding_bodies].
 			</description>
 		</method>
+		<method name="get_velocity_at_local_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="local_position" type="Vector2" />
+			<description>
+				Returns the body's velocity at the given relative position.
+				[param local_position] is the offset from the body origin in global coordinates.
+				See also [method get_velocity_at_position].
+			</description>
+		</method>
+		<method name="get_velocity_at_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="global_point" type="Vector2" />
+			<description>
+				Returns the body's velocity at the given global position.
+				This is equivalent to [code]get_velocity_at_local_position(global_point - global_position)[/code].
+				See also [method get_velocity_at_local_position].
+			</description>
+		</method>
 		<method name="set_axis_velocity">
 			<return type="void" />
 			<param index="0" name="axis_velocity" type="Vector2" />
