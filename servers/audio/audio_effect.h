@@ -32,14 +32,14 @@
 
 #include "core/io/resource.h"
 #include "core/math/audio_frame.h"
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/variant/native_ptr.h"
 
 class AudioEffectInstance : public RefCounted {
 	GDCLASS(AudioEffectInstance, RefCounted);
 
 protected:
-	GDVIRTUAL3_REQUIRED(_process, GDExtensionConstPtr<AudioFrame>, GDExtensionPtr<AudioFrame>, int)
+	GDVIRTUAL3_REQUIRED(_process, GDExtensionPtr<const AudioFrame>, GDExtensionPtr<AudioFrame>, int)
 	GDVIRTUAL0RC(bool, _process_silence)
 	static void _bind_methods();
 

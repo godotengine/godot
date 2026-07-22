@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CubemapArray" inherits="ImageTextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CubemapArray" inherits="ImageTextureLayered" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An array of [Cubemap]s, stored together and with a single reference.
 	</brief_description>
@@ -13,7 +13,7 @@
 		- [url=https://raw.githubusercontent.com/godotengine/godot-docs/master/tutorials/assets_pipeline/img/cubemap_template_3x2.webp]3×2 cubemap template[/url]
 		- [url=https://raw.githubusercontent.com/godotengine/godot-docs/master/tutorials/assets_pipeline/img/cubemap_template_1x6.webp]1×6 cubemap template[/url]
 		- [url=https://raw.githubusercontent.com/godotengine/godot-docs/master/tutorials/assets_pipeline/img/cubemap_template_6x1.webp]6×1 cubemap template[/url]
-		Multiple layers are stacked on top of each other when using the default vertical import option (with the first layer at the top). Alternatively, you can choose an horizontal layout in the import options (with the first layer at the left).
+		Multiple layers are stacked on top of each other when using the default vertical import option (with the first layer at the top). Alternatively, you can choose a horizontal layout in the import options (with the first layer at the left).
 		[b]Note:[/b] [CubemapArray] is not supported in the Compatibility renderer due to graphics API limitations.
 	</description>
 	<tutorials>

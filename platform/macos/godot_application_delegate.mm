@@ -31,10 +31,14 @@
 #import "godot_application_delegate.h"
 
 #import "display_server_macos.h"
+#import "godot_menu_item.h"
 #import "key_mapping_macos.h"
 #import "native_menu_macos.h"
 #import "os_macos.h"
 
+#import "core/input/input.h"
+#import "core/input/input_event.h"
+#import "core/os/main_loop.h"
 #import "main/main.h"
 
 #import <Carbon/Carbon.h>
@@ -57,6 +61,17 @@
 	if (self) {
 		os_mac = os;
 	}
+
+	[[NSWorkspace sharedWorkspace] addObserver:self forKeyPath:@"voiceOverEnabled" options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld) context:(void *)godot_ac_ctx];
+	[[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self selector:@selector(accessibilityDisplayOptionsChange:) name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification object:nil];
+	high_contrast = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldIncreaseContrast];
+	reduce_motion = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
+	reduce_transparency = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
+	voice_over = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
+
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleColorPreferencesChangedNotification" object:nil];
+
 	return self;
 }
 
@@ -118,7 +133,7 @@
 }
 
 - (void)system_theme_changed:(NSNotification *)notification {
-	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
+	DisplayServerMacOSBase *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds) {
 		ds->emit_system_theme_changed();
 	}
@@ -129,22 +144,6 @@
 }
 
 static const char *godot_ac_ctx = "gd_accessibility_observer_ctx";
-
-- (id)init {
-	self = [super init];
-
-	[[NSWorkspace sharedWorkspace] addObserver:self forKeyPath:@"voiceOverEnabled" options:(NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld) context:(void *)godot_ac_ctx];
-	[[[NSWorkspace sharedWorkspace] notificationCenter] addObserver:self selector:@selector(accessibilityDisplayOptionsChange:) name:NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification object:nil];
-	high_contrast = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldIncreaseContrast];
-	reduce_motion = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
-	reduce_transparency = [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
-	voice_over = [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
-
-	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleInterfaceThemeChangedNotification" object:nil];
-	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(system_theme_changed:) name:@"AppleColorPreferencesChangedNotification" object:nil];
-
-	return self;
-}
 
 - (void)dealloc {
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"AppleInterfaceThemeChangedNotification" object:nil];
@@ -263,7 +262,7 @@ constexpr static NSEventModifierFlags FLAGS = NSEventModifierFlagCommand | NSEve
 		return;
 	}
 
-	DisplayServer::WindowID window_id = ds->get_focused_window();
+	DisplayServerEnums::WindowID window_id = ds->get_focused_window();
 	NSEventModifierFlags flags = static_cast<NSEventModifierFlags>(mod);
 
 	for (const CGKeyCode key : modifiers) {
@@ -284,6 +283,16 @@ constexpr static NSEventModifierFlags FLAGS = NSEventModifierFlagCommand | NSEve
 		ke->set_location(KeyMappingMacOS::translate_location(key));
 		input->parse_input_event(ke);
 	}
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)item {
+	if (item) {
+		GodotMenuItem *value = [item representedObject];
+		if (value) {
+			return value->enabled;
+		}
+	}
+	return YES;
 }
 
 - (void)globalMenuCallback:(id)sender {
@@ -313,8 +322,8 @@ constexpr static NSEventModifierFlags FLAGS = NSEventModifierFlagCommand | NSEve
 	}
 
 	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
-	if (ds && ds->has_window(DisplayServerMacOS::MAIN_WINDOW_ID)) {
-		ds->send_window_event(ds->get_window(DisplayServerMacOS::MAIN_WINDOW_ID), DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
+	if (ds && ds->has_window(DisplayServerEnums::MAIN_WINDOW_ID)) {
+		ds->send_window_event(ds->get_window(DisplayServerEnums::MAIN_WINDOW_ID), DisplayServerEnums::WINDOW_EVENT_CLOSE_REQUEST);
 	}
 
 	return NSTerminateCancel;

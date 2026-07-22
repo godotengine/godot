@@ -94,7 +94,7 @@ class VideoStream : public Resource {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL0R(Ref<VideoStreamPlayback>, _instantiate_playback);
+	GDVIRTUAL0R_REQUIRED(Ref<VideoStreamPlayback>, _instantiate_playback);
 
 	String file;
 	int audio_track = 0;

@@ -34,6 +34,10 @@
 
 #include <emscripten.h>
 
+#ifdef PROXY_TO_PTHREAD_ENABLED
+#include "core/object/callable_mp.h"
+#endif
+
 extern "C" {
 extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
 }
@@ -254,7 +258,6 @@ void JavaScriptObjectImpl::callback(void *p_ref, int p_args_id, int p_argc) {
 	const JavaScriptObjectImpl *obj = (JavaScriptObjectImpl *)p_ref;
 	ERR_FAIL_COND_MSG(!obj->_callable.is_valid(), "JavaScript callback failed.");
 
-	Vector<const Variant *> argp;
 	Array arg_arr;
 	for (int i = 0; i < p_argc; i++) {
 		godot_js_wrapper_ex exchange;

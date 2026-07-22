@@ -30,7 +30,9 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/os/thread_safe.h"
+#include "core/templates/rb_map.h"
 
 template <typename T>
 class TypedArray;
@@ -46,9 +48,14 @@ class ProjectSettings : public Object {
 	// and will always detect the initial project settings as a "change".
 	uint32_t _version = 1;
 
+	// Track changed settings for get_changed_settings functionality
+	HashSet<StringName> changed_settings;
+
 public:
 	typedef HashMap<String, Variant> CustomMap;
+	// This constant is used to make the ".godot" folder and paths like "res://.godot/editor".
 	static inline const String PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
+	static inline const String EDITOR_SETTING_OVERRIDE_PREFIX = PNAME("editor_overrides") + String("/");
 
 	// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
 	constexpr static const int32_t NO_BUILTIN_ORDER_BASE = 1 << 16;
@@ -117,7 +124,7 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
-	void _queue_changed();
+	void _queue_changed(const StringName &p_name);
 	void _emit_changed();
 
 	static inline ProjectSettings *singleton = nullptr;
@@ -126,8 +133,8 @@ protected:
 	Error _load_settings_binary(const String &p_path);
 	Error _load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path);
 
-	Error _save_settings_text(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
-	Error _save_settings_binary(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
+	Error _save_settings_text(const String &p_file, const RBMap<String, List<String>> &p_props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
+	Error _save_settings_binary(const String &p_file, const RBMap<String, List<String>> &p_props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 
 	Error _save_custom_bnd(const String &p_file);
 
@@ -137,6 +144,9 @@ protected:
 #endif // TOOLS_ENABLED
 
 	void _convert_to_last_version(int p_from_version);
+#ifndef DISABLE_DEPRECATED
+	void _handle_editor_setting_compat(const String &p_original_setting, const String &p_new_setting);
+#endif
 
 	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset);
 	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false);
@@ -152,6 +162,10 @@ protected:
 
 public:
 	static const int CONFIG_VERSION = 5;
+
+#ifdef TOOLS_ENABLED
+	HashMap<String, PropertyInfo> editor_settings_info;
+#endif
 
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting, const Variant &p_default_value = Variant()) const;
@@ -194,7 +208,7 @@ public:
 	const HashMap<StringName, PropertyInfo> &get_custom_property_info() const;
 	uint64_t get_last_saved_time() { return last_save_time; }
 
-	List<String> get_input_presets() const { return input_presets; }
+	List<String> get_input_presets() const { return List<String>(input_presets); }
 
 	Variant get_setting_with_override(const StringName &p_name) const;
 	Variant get_setting_with_override_and_custom_features(const StringName &p_name, const Vector<String> &p_features) const;
@@ -204,11 +218,16 @@ public:
 
 	bool has_custom_feature(const String &p_feature) const;
 
+	// Change tracking methods
+	PackedStringArray get_changed_settings() const;
+	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
+
 	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
-	void add_autoload(const AutoloadInfo &p_autoload);
+	void add_autoload(const AutoloadInfo &p_autoload, bool p_front_insert = false);
 	void remove_autoload(const StringName &p_autoload);
 	bool has_autoload(const StringName &p_autoload) const;
 	AutoloadInfo get_autoload(const StringName &p_name) const;
+	void fix_autoload_paths();
 
 	const HashMap<StringName, String> &get_global_groups_list() const;
 	void add_global_group(const StringName &p_name, const String &p_description);
@@ -228,6 +247,10 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
+
+	void set_editor_setting_override(const String &p_setting, const Variant &p_value);
+	bool has_editor_setting_override(const String &p_setting) const;
+	Variant get_editor_setting_override(const String &p_setting) const;
 
 	ProjectSettings();
 	ProjectSettings(const String &p_path);

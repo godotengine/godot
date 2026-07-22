@@ -1,0 +1,8 @@
+GH-114355
+---------
+Validate extension JSON: API was removed: classes/AudioEffectSpectrumAnalyzer/methods/set_tap_back_pos
+Validate extension JSON: API was removed: classes/AudioEffectSpectrumAnalyzer/methods/get_tap_back_pos
+Validate extension JSON: API was removed: classes/AudioEffectSpectrumAnalyzer/properties/tap_back_pos
+
+Removed this property because it caused buggy behavior for no discernible benefit.
+Compatibility methods registered.

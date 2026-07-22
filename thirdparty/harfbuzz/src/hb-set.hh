@@ -30,6 +30,7 @@
 
 #include "hb.hh"
 #include "hb-bit-set-invertible.hh"
+#include "hb-bit-vector.hh" // Just to include
 
 
 template <typename impl_t>

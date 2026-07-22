@@ -1,21 +1,30 @@
+# If you change this file, please format all files of the codebase as part of your PR:
+# prek run --hook-stage manual clang-tidy --all
+
 Checks:
   - -*
-  - cppcoreguidelines-pro-type-member-init
+  - bugprone-use-after-move
   - modernize-deprecated-headers
   - modernize-redundant-void-arg
   - modernize-use-bool-literals
   - modernize-use-default-member-init
   - modernize-use-nullptr
+  - performance-move-const-arg
   - readability-braces-around-statements
+  - readability-identifier-naming
+  - readability-operators-representation
   - readability-redundant-member-init
 HeaderFileExtensions: ["", h, hh, hpp, hxx, inc, glsl]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]
 HeaderFilterRegex: (core|doc|drivers|editor|main|modules|platform|scene|servers|tests)/
 FormatStyle: file
 CheckOptions:
-  cppcoreguidelines-pro-type-member-init.IgnoreArrays: true
-  cppcoreguidelines-pro-type-member-init.UseAssignment: true
   modernize-deprecated-headers.CheckHeaderFile: true
   modernize-use-bool-literals.IgnoreMacros: false
   modernize-use-default-member-init.IgnoreMacros: false
   modernize-use-default-member-init.UseAssignment: true
+  readability-identifier-naming.ParameterCase: lower_case
+  readability-identifier-naming.ParameterIgnoredRegexp: ^rp?_[^A-Z]*
+  readability-identifier-naming.ParameterPrefix: p_
+  readability-operators-representation.BinaryOperators: "&&;&=;&;|;~;!;!=;||;|=;^;^="
+  readability-operators-representation.OverloadedOperators: "&&;&=;&;|;~;!;!=;||;|=;^;^="

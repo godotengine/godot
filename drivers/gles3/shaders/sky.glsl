@@ -40,7 +40,7 @@ in vec2 uv_interp;
 
 /* clang-format on */
 
-uniform samplerCube radiance; //texunit:-1
+uniform samplerCube radiance; //texunit:-2
 #ifdef USE_CUBEMAP_PASS
 uniform samplerCube half_res; //texunit:-2
 uniform samplerCube quarter_res; //texunit:-3
@@ -59,13 +59,34 @@ layout(std140) uniform GlobalShaderUniformData { //ubo:1
 struct DirectionalLightData {
 	vec4 direction_energy;
 	vec4 color_size;
-	bool enabled;
+	uint enabled_bake_mode;
+	float shadow_opacity;
+	float specular;
+	uint mask;
 };
 
 layout(std140) uniform DirectionalLights { //ubo:4
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
 directional_lights;
+
+#define DIRECTIONAL_LIGHT_ENABLED uint(1 << 0)
+
+// mat4 is a waste of space, but we don't have an easy way to set a mat3 uniform for now
+uniform mat4 orientation;
+uniform vec4 projection;
+uniform vec3 position;
+uniform float time;
+uniform float sky_energy_multiplier;
+uniform float luminance_multiplier;
+
+uniform float fog_aerial_perspective;
+uniform vec4 fog_light_color;
+uniform float fog_sun_scatter;
+uniform bool fog_enabled;
+uniform float fog_density;
+uniform float fog_sky_affect;
+uniform uint directional_light_count;
 
 /* clang-format off */
 
@@ -97,24 +118,8 @@ layout(std140) uniform MaterialUniforms{ //ubo:3
 #define AT_QUARTER_RES_PASS false
 #endif
 
-// mat4 is a waste of space, but we don't have an easy way to set a mat3 uniform for now
-uniform mat4 orientation;
-uniform vec4 projection;
-uniform vec3 position;
-uniform float time;
-uniform float sky_energy_multiplier;
-uniform float luminance_multiplier;
-
-uniform float fog_aerial_perspective;
-uniform vec4 fog_light_color;
-uniform float fog_sun_scatter;
-uniform bool fog_enabled;
-uniform float fog_density;
-uniform float fog_sky_affect;
-uniform uint directional_light_count;
-
 #ifdef USE_MULTIVIEW
-layout(std140) uniform MultiviewData { // ubo:11
+layout(std140) uniform MultiviewData { // ubo:12
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
@@ -141,8 +146,8 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 		vec4 sun_scatter = vec4(0.0);
 		float sun_total = 0.0;
 		for (uint i = 0u; i < directional_light_count; i++) {
-			vec3 light_color = directional_lights.data[i].color_size.xyz * directional_lights.data[i].direction_energy.w;
-			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0);
+			vec3 light_color = srgb_to_linear(directional_lights.data[i].color_size.xyz) * directional_lights.data[i].direction_energy.w;
+			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0) * M_PI;
 			fog_color += light_color * light_amount * fog_sun_scatter;
 		}
 	}
@@ -190,7 +195,7 @@ void main() {
 #else
 	cube_normal.z = -1.0;
 	cube_normal.x = (uv_interp.x + projection.x) / projection.y;
-	cube_normal.y = (-uv_interp.y - projection.z) / projection.w;
+	cube_normal.y = (uv_interp.y + projection.z) / projection.w;
 #endif
 	cube_normal = mat3(orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
@@ -213,24 +218,24 @@ void main() {
 
 #ifdef USE_CUBEMAP_PASS
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal);
+	half_res_color = texture(half_res, cube_normal);
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal);
+	quarter_res_color = texture(quarter_res, cube_normal);
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
 #ifdef USE_MULTIVIEW
-	half_res_color = textureLod(sampler2DArray(half_res, SAMPLER_LINEAR_CLAMP), vec3(uv, ViewIndex), 0.0);
+	half_res_color = textureLod(half_res, vec3(uv, ViewIndex), 0.0);
 #else
-	half_res_color = textureLod(sampler2D(half_res, SAMPLER_LINEAR_CLAMP), uv, 0.0);
+	half_res_color = textureLod(half_res, uv, 0.0);
 #endif
 #endif
 #ifdef USES_QUARTER_RES_COLOR
 #ifdef USE_MULTIVIEW
-	quarter_res_color = textureLod(sampler2DArray(quarter_res, SAMPLER_LINEAR_CLAMP), vec3(uv, ViewIndex), 0.0);
+	quarter_res_color = textureLod(quarter_res, vec3(uv, ViewIndex), 0.0);
 #else
-	quarter_res_color = textureLod(sampler2D(quarter_res, SAMPLER_LINEAR_CLAMP), uv, 0.0);
+	quarter_res_color = textureLod(quarter_res, uv, 0.0);
 #endif
 #endif
 #endif
@@ -239,12 +244,12 @@ void main() {
 #CODE : SKY
 	}
 
-	color *= sky_energy_multiplier;
-
 	// Convert to Linear for tonemapping so color matches scene shader better
 	color = srgb_to_linear(color);
 
-#if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
+	color *= sky_energy_multiplier;
+
+#if !defined(DISABLE_FOG)
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	if (fog_enabled) {
@@ -260,7 +265,7 @@ void main() {
 
 	color *= exposure;
 #ifdef APPLY_TONEMAPPING
-	color = apply_tonemapping(color, white);
+	color = apply_tonemapping(color);
 #endif
 	color = linear_to_srgb(color);
 

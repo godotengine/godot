@@ -29,6 +29,9 @@
 /**************************************************************************/
 
 #include "skeleton_modification_2d_ccdik.h"
+
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/2d/skeleton_2d.h"
 
 bool SkeletonModification2DCCDIK::_set(const StringName &p_path, const Variant &p_value) {
@@ -251,6 +254,9 @@ void SkeletonModification2DCCDIK::_draw_editor_gizmo() {
 
 	for (int i = 0; i < ccdik_data_chain.size(); i++) {
 		if (!ccdik_data_chain[i].editor_draw_gizmo) {
+			continue;
+		}
+		if (ccdik_data_chain[i].bone_idx < 0) {
 			continue;
 		}
 

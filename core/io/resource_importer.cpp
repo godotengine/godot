@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/image.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 
@@ -392,6 +393,17 @@ String ResourceFormatImporter::get_resource_type(const String &p_path) const {
 	return pat.type;
 }
 
+String ResourceFormatImporter::get_resource_script_class(const String &p_path) const {
+	PathAndType pat;
+	Error err = _get_path_and_type(p_path, pat, false);
+
+	if (err != OK) {
+		return String();
+	}
+
+	return ResourceLoader::get_resource_script_class(pat.path);
+}
+
 ResourceUID::ID ResourceFormatImporter::get_resource_uid(const String &p_path) const {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat, false);
@@ -434,6 +446,7 @@ Variant ResourceFormatImporter::get_resource_metadata(const String &p_path) cons
 
 	return pat.metadata;
 }
+
 void ResourceFormatImporter::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat, false);
@@ -454,6 +467,18 @@ void ResourceFormatImporter::get_dependencies(const String &p_path, List<String>
 	}
 
 	ResourceLoader::get_dependencies(pat.path, p_dependencies, p_add_types);
+}
+
+void ResourceFormatImporter::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {
+	if (!exists(p_path)) {
+		return;
+	}
+
+	List<Ref<ResourceImporter>> valid_importers;
+	get_importers_for_file(p_path, &valid_importers);
+	for (Ref<ResourceImporter> importer : valid_importers) {
+		importer->get_build_dependencies(p_path, r_dependencies);
+	}
 }
 
 Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_name(const String &p_name) const {
@@ -555,9 +580,21 @@ ResourceFormatImporter::ResourceFormatImporter() {
 
 //////////////
 
+void ResourceImporter::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {
+	Vector<String> ret;
+	if (GDVIRTUAL_CALL(_get_build_dependencies, p_path, ret)) {
+		for (int i = 0; i < ret.size(); i++) {
+			r_dependencies->insert(ret[i]);
+		}
+		return;
+	}
+}
+
 void ResourceImporter::_bind_methods() {
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);
+
+	GDVIRTUAL_BIND(_get_build_dependencies, "path");
 }
 
 /////

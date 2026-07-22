@@ -32,12 +32,18 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Vector2;
 
 struct [[nodiscard]] Vector2i {
-	static const int AXIS_COUNT = 2;
+	static const Vector2i LEFT;
+	static const Vector2i RIGHT;
+	static const Vector2i UP;
+	static const Vector2i DOWN;
+
+	static constexpr int AXIS_COUNT = 2;
 
 	enum Axis {
 		AXIS_X,
@@ -45,28 +51,29 @@ struct [[nodiscard]] Vector2i {
 	};
 
 	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			int32_t x;
-			int32_t y;
-		};
-
-		struct {
-			int32_t width;
-			int32_t height;
-		};
-
-		int32_t coord[2] = { 0 };
-		// NOLINTEND(modernize-use-default-member-init)
+		int32_t x = 0;
+		int32_t width;
+	};
+	union {
+		int32_t y = 0;
+		int32_t height;
 	};
 
-	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
+	constexpr int32_t &operator[](int p_axis) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(Vector2i, x) == 0 * sizeof(int32_t));
+		static_assert(offsetof(Vector2i, width) == 0 * sizeof(int32_t));
+		static_assert(offsetof(Vector2i, y) == 1 * sizeof(int32_t));
+		static_assert(offsetof(Vector2i, height) == 1 * sizeof(int32_t));
+		static_assert(sizeof(Vector2i) == 2 * sizeof(int32_t));
+
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
-	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
+	constexpr const int32_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
 
 	_FORCE_INLINE_ Vector2i::Axis min_axis_index() const {
@@ -139,16 +146,24 @@ struct [[nodiscard]] Vector2i {
 	Vector2i snapped(const Vector2i &p_step) const;
 	Vector2i snappedi(int32_t p_step) const;
 
-	operator String() const;
+	explicit operator String() const;
 	operator Vector2() const;
 
-	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
-	constexpr Vector2i() :
-			x(0), y(0) {}
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_32(uint32_t(x));
+		h = hash_murmur3_one_32(uint32_t(y), h);
+		return hash_fmix32(h);
+	}
+
+	constexpr Vector2i() = default;
 	constexpr Vector2i(int32_t p_x, int32_t p_y) :
 			x(p_x), y(p_y) {}
-	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
+
+inline constexpr Vector2i Vector2i::LEFT = { -1, 0 };
+inline constexpr Vector2i Vector2i::RIGHT = { 1, 0 };
+inline constexpr Vector2i Vector2i::UP = { 0, -1 };
+inline constexpr Vector2i Vector2i::DOWN = { 0, 1 };
 
 constexpr Vector2i Vector2i::operator+(const Vector2i &p_v) const {
 	return Vector2i(x + p_v.x, y + p_v.y);

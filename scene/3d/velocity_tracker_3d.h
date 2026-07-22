@@ -33,6 +33,8 @@
 #include "core/object/ref_counted.h"
 
 class VelocityTracker3D : public RefCounted {
+	GDSOFTCLASS(VelocityTracker3D, RefCounted);
+
 	struct PositionHistory {
 		uint64_t frame = 0;
 		Vector3 position;
@@ -41,9 +43,6 @@ class VelocityTracker3D : public RefCounted {
 	bool physics_step = false;
 	Vector<PositionHistory> position_history;
 	int position_history_len = 0;
-
-protected:
-	static void _bind_methods();
 
 public:
 	void reset(const Vector3 &p_new_pos);

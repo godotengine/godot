@@ -17,10 +17,7 @@ void MotionProperties::MoveKinematic(Vec3Arg inDeltaPosition, QuatArg inDeltaRot
 	mLinearVelocity = LockTranslation(inDeltaPosition / inDeltaTime);
 
 	// Calculate required angular velocity
-	Vec3 axis;
-	float angle;
-	inDeltaRotation.GetAxisAngle(axis, angle);
-	mAngularVelocity = LockAngular(axis * (angle / inDeltaTime));
+	mAngularVelocity = LockAngular(inDeltaRotation.GetAngularVelocity(inDeltaTime));
 }
 
 void MotionProperties::ClampLinearVelocity()
@@ -30,7 +27,7 @@ void MotionProperties::ClampLinearVelocity()
 	float len_sq = mLinearVelocity.LengthSq();
 	JPH_ASSERT(isfinite(len_sq));
 	if (len_sq > Square(mMaxLinearVelocity))
-		mLinearVelocity *= mMaxLinearVelocity / sqrt(len_sq);
+		mLinearVelocity *= mMaxLinearVelocity / Sqrt(len_sq);
 }
 
 void MotionProperties::ClampAngularVelocity()
@@ -40,7 +37,7 @@ void MotionProperties::ClampAngularVelocity()
 	float len_sq = mAngularVelocity.LengthSq();
 	JPH_ASSERT(isfinite(len_sq));
 	if (len_sq > Square(mMaxAngularVelocity))
-		mAngularVelocity *= mMaxAngularVelocity / sqrt(len_sq);
+		mAngularVelocity *= mMaxAngularVelocity / Sqrt(len_sq);
 }
 
 inline Mat44 MotionProperties::GetLocalSpaceInverseInertiaUnchecked() const
@@ -113,7 +110,7 @@ void MotionProperties::ApplyGyroscopicForceInternal(QuatArg inBodyRotation, floa
 
 	// Calculate local space angular momentum
 	Quat inertia_space_to_world_space = inBodyRotation * mInertiaRotation;
-	Vec3 local_angular_velocity = inertia_space_to_world_space.Conjugated() * mAngularVelocity;
+	Vec3 local_angular_velocity = inertia_space_to_world_space.InverseRotate(mAngularVelocity);
 	Vec3 local_momentum = local_inertia * local_angular_velocity;
 
 	// The gyroscopic force applies a torque: T = -w x I w where w is angular velocity and I the inertia tensor
@@ -121,7 +118,7 @@ void MotionProperties::ApplyGyroscopicForceInternal(QuatArg inBodyRotation, floa
 	// to avoid introducing energy into the system due to the Euler step
 	Vec3 new_local_momentum = local_momentum - inDeltaTime * local_angular_velocity.Cross(local_momentum);
 	float new_local_momentum_len_sq = new_local_momentum.LengthSq();
-	new_local_momentum = new_local_momentum_len_sq > 0.0f? new_local_momentum * sqrt(local_momentum.LengthSq() / new_local_momentum_len_sq) : Vec3::sZero();
+	new_local_momentum = new_local_momentum_len_sq > 0.0f? new_local_momentum * Sqrt(local_momentum.LengthSq() / new_local_momentum_len_sq) : Vec3::sZero();
 
 	// Convert back to world space angular velocity
 	mAngularVelocity = inertia_space_to_world_space * (mInvInertiaDiagonal * new_local_momentum);

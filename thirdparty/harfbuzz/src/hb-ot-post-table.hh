@@ -194,7 +194,11 @@ struct post
 
 	for (unsigned int i = 0; i < count; i++)
 	  gids[i] = i;
-	hb_qsort (gids, count, sizeof (gids[0]), cmp_gids, (void *) this);
+	auto thiz = this;
+	hb_array_t<uint16_t> (gids, count)
+	  .qsort ([thiz] (const uint16_t &a, const uint16_t &b) {
+	    return thiz->find_glyph_name (a).cmp (thiz->find_glyph_name (b)) > 0;
+	  });
 
 	if (unlikely (!gids_sorted_by_name.cmpexch (nullptr, gids)))
 	{
@@ -233,14 +237,6 @@ struct post
       }
 
       return 0;
-    }
-
-    static int cmp_gids (const void *pa, const void *pb, void *arg)
-    {
-      const accelerator_t *thiz = (const accelerator_t *) arg;
-      uint16_t a = * (const uint16_t *) pa;
-      uint16_t b = * (const uint16_t *) pb;
-      return thiz->find_glyph_name (b).cmp (thiz->find_glyph_name (a));
     }
 
     static int cmp_key (const void *pk, const void *po, void *arg)
@@ -290,7 +286,7 @@ struct post
     const Array16Of<HBUINT16> *glyphNameIndex = nullptr;
     hb_vector_t<uint32_t> index_to_offset;
     const uint8_t *pool = nullptr;
-    hb_atomic_ptr_t<uint16_t *> gids_sorted_by_name;
+    mutable hb_atomic_t<uint16_t *> gids_sorted_by_name;
   };
 
   bool has_data () const { return version.to_int (); }

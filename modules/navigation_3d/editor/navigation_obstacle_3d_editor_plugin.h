@@ -31,7 +31,7 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "editor/plugins/node_3d_editor_gizmos.h"
+#include "editor/scene/3d/node_3d_editor_gizmos.h"
 #include "scene/gui/box_container.h"
 
 class Button;
@@ -124,7 +124,6 @@ public:
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
 	virtual String get_plugin_name() const override { return "NavigationObstacle3DEditor"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

@@ -82,7 +82,7 @@ struct QR {
   mat3 Q, R;
 };
 // Calculates the squared norm of the vector.
-inline double Dist2(vec3 v) { return la::dot(v, v); }
+inline double Dist2(vec3 v) { return manifold::la::dot(v, v); }
 // For an explanation of the math see
 // http://pages.cs.wisc.edu/~sifakis/papers/SVD_TR1690.pdf Computing the
 // Singular Value Decomposition of 3 x 3 matrices with minimal branching and
@@ -101,29 +101,26 @@ inline Givens ApproximateGivensQuaternion(Symmetric3x3& A) {
 inline void JacobiConjugation(const int32_t x, const int32_t y, const int32_t z,
                               Symmetric3x3& S, vec4& q) {
   auto g = ApproximateGivensQuaternion(S);
-  double scale = 1.0 / fma(g.ch, g.ch, g.sh * g.sh);
-  double a = fma(g.ch, g.ch, -g.sh * g.sh) * scale;
+  double scale = 1.0 / (g.ch * g.ch + g.sh * g.sh);
+  double a = (g.ch * g.ch - g.sh * g.sh) * scale;
   double b = 2.0 * g.sh * g.ch * scale;
   Symmetric3x3 _S = S;
   // perform conjugation S = Q'*S*Q
-  S.m_00 =
-      fma(a, fma(a, _S.m_00, b * _S.m_10), b * (fma(a, _S.m_10, b * _S.m_11)));
-  S.m_10 = fma(a, fma(-b, _S.m_00, a * _S.m_10),
-               b * (fma(-b, _S.m_10, a * _S.m_11)));
-  S.m_11 = fma(-b, fma(-b, _S.m_00, a * _S.m_10),
-               a * (fma(-b, _S.m_10, a * _S.m_11)));
-  S.m_20 = fma(a, _S.m_20, b * _S.m_21);
-  S.m_21 = fma(-b, _S.m_20, a * _S.m_21);
+  S.m_00 = a * (a * _S.m_00 + b * _S.m_10) + b * (a * _S.m_10 + b * _S.m_11);
+  S.m_10 = a * (-b * _S.m_00 + a * _S.m_10) + b * (-b * _S.m_10 + a * _S.m_11);
+  S.m_11 = -b * (-b * _S.m_00 + a * _S.m_10) + a * (-b * _S.m_10 + a * _S.m_11);
+  S.m_20 = a * _S.m_20 + b * _S.m_21;
+  S.m_21 = -b * _S.m_20 + a * _S.m_21;
   S.m_22 = _S.m_22;
   // update cumulative rotation qV
   vec3 tmp = g.sh * vec3(q);
   g.sh *= q[3];
   // (x,y,z) corresponds to ((0,1,2),(1,2,0),(2,0,1)) for (p,q) =
   // ((0,1),(1,2),(0,2))
-  q[z] = fma(q[z], g.ch, g.sh);
-  q[3] = fma(q[3], g.ch, -tmp[z]);  // w
-  q[x] = fma(q[x], g.ch, tmp[y]);
-  q[y] = fma(q[y], g.ch, -tmp[x]);
+  q[z] = q[z] * g.ch + g.sh;
+  q[3] = q[3] * g.ch + -tmp[z];  // w
+  q[x] = q[x] * g.ch + tmp[y];
+  q[y] = q[y] * g.ch + -tmp[x];
   // re-arrange matrix for next iteration
   _S.m_00 = S.m_11;
   _S.m_10 = S.m_21;
@@ -148,15 +145,15 @@ inline mat3 JacobiEigenAnalysis(Symmetric3x3 S) {
     JacobiConjugation(1, 2, 0, S, q);
     JacobiConjugation(2, 0, 1, S, q);
   }
-  return mat3({1.0 - 2.0 * (fma(q.y, q.y, q.z * q.z)),  //
-               2.0 * fma(q.x, q.y, +q.w * q.z),         //
-               2.0 * fma(q.x, q.z, -q.w * q.y)},        //
-              {2 * fma(q.x, q.y, -q.w * q.z),           //
-               1 - 2 * fma(q.x, q.x, q.z * q.z),        //
-               2 * fma(q.y, q.z, q.w * q.x)},           //
-              {2 * fma(q.x, q.z, q.w * q.y),            //
-               2 * fma(q.y, q.z, -q.w * q.x),           //
-               1 - 2 * fma(q.x, q.x, q.y * q.y)});
+  return mat3({1.0 - 2.0 * (q.y * q.y + q.z * q.z),  //
+               2.0 * (q.x * q.y + +q.w * q.z),       //
+               2.0 * (q.x * q.z + -q.w * q.y)},      //
+              {2 * (q.x * q.y + -q.w * q.z),         //
+               1 - 2 * (q.x * q.x + q.z * q.z),      //
+               2 * (q.y * q.z + q.w * q.x)},         //
+              {2 * (q.x * q.z + q.w * q.y),          //
+               2 * (q.y * q.z + -q.w * q.x),         //
+               1 - 2 * (q.x * q.x + q.y * q.y)});
 }
 // Implementation of Algorithm 3
 inline void SortSingularValues(mat3& B, mat3& V) {
@@ -207,65 +204,64 @@ inline QR QRDecomposition(mat3& B) {
   mat3 Q, R;
   // first Givens rotation (ch,0,0,sh)
   auto g1 = QRGivensQuaternion(B[0][0], B[0][1]);
-  auto a = fma(-2.0, g1.sh * g1.sh, 1.0);
+  auto a = -2.0 * g1.sh * g1.sh + 1.0;
   auto b = 2.0 * g1.ch * g1.sh;
   // apply B = Q' * B
-  R[0][0] = fma(a, B[0][0], b * B[0][1]);
-  R[1][0] = fma(a, B[1][0], b * B[1][1]);
-  R[2][0] = fma(a, B[2][0], b * B[2][1]);
-  R[0][1] = fma(-b, B[0][0], a * B[0][1]);
-  R[1][1] = fma(-b, B[1][0], a * B[1][1]);
-  R[2][1] = fma(-b, B[2][0], a * B[2][1]);
+  R[0][0] = a * B[0][0] + b * B[0][1];
+  R[1][0] = a * B[1][0] + b * B[1][1];
+  R[2][0] = a * B[2][0] + b * B[2][1];
+  R[0][1] = -b * B[0][0] + a * B[0][1];
+  R[1][1] = -b * B[1][0] + a * B[1][1];
+  R[2][1] = -b * B[2][0] + a * B[2][1];
   R[0][2] = B[0][2];
   R[1][2] = B[1][2];
   R[2][2] = B[2][2];
   // second Givens rotation (ch,0,-sh,0)
   auto g2 = QRGivensQuaternion(R[0][0], R[0][2]);
-  a = fma(-2.0, g2.sh * g2.sh, 1.0);
+  a = -2.0 * g2.sh * g2.sh + 1.0;
   b = 2.0 * g2.ch * g2.sh;
   // apply B = Q' * B;
-  B[0][0] = fma(a, R[0][0], b * R[0][2]);
-  B[1][0] = fma(a, R[1][0], b * R[1][2]);
-  B[2][0] = fma(a, R[2][0], b * R[2][2]);
+  B[0][0] = a * R[0][0] + b * R[0][2];
+  B[1][0] = a * R[1][0] + b * R[1][2];
+  B[2][0] = a * R[2][0] + b * R[2][2];
   B[0][1] = R[0][1];
   B[1][1] = R[1][1];
   B[2][1] = R[2][1];
-  B[0][2] = fma(-b, R[0][0], a * R[0][2]);
-  B[1][2] = fma(-b, R[1][0], a * R[1][2]);
-  B[2][2] = fma(-b, R[2][0], a * R[2][2]);
+  B[0][2] = -b * R[0][0] + a * R[0][2];
+  B[1][2] = -b * R[1][0] + a * R[1][2];
+  B[2][2] = -b * R[2][0] + a * R[2][2];
   // third Givens rotation (ch,sh,0,0)
   auto g3 = QRGivensQuaternion(B[1][1], B[1][2]);
-  a = fma(-2.0, g3.sh * g3.sh, 1.0);
+  a = -2.0 * g3.sh * g3.sh + 1.0;
   b = 2.0 * g3.ch * g3.sh;
   // R is now set to desired value
   R[0][0] = B[0][0];
   R[1][0] = B[1][0];
   R[2][0] = B[2][0];
-  R[0][1] = fma(a, B[0][1], b * B[0][2]);
-  R[1][1] = fma(a, B[1][1], b * B[1][2]);
-  R[2][1] = fma(a, B[2][1], b * B[2][2]);
-  R[0][2] = fma(-b, B[0][1], a * B[0][2]);
-  R[1][2] = fma(-b, B[1][1], a * B[1][2]);
-  R[2][2] = fma(-b, B[2][1], a * B[2][2]);
+  R[0][1] = a * B[0][1] + b * B[0][2];
+  R[1][1] = a * B[1][1] + b * B[1][2];
+  R[2][1] = a * B[2][1] + b * B[2][2];
+  R[0][2] = -b * B[0][1] + a * B[0][2];
+  R[1][2] = -b * B[1][1] + a * B[1][2];
+  R[2][2] = -b * B[2][1] + a * B[2][2];
   // construct the cumulative rotation Q=Q1 * Q2 * Q3
   // the number of floating point operations for three quaternion
   // multiplications is more or less comparable to the explicit form of the
   // joined matrix. certainly more memory-efficient!
-  auto sh12 = 2.0 * fma(g1.sh, g1.sh, -0.5);
-  auto sh22 = 2.0 * fma(g2.sh, g2.sh, -0.5);
-  auto sh32 = 2.0 * fma(g3.sh, g3.sh, -0.5);
+  auto sh12 = 2.0 * (g1.sh * g1.sh + -0.5);
+  auto sh22 = 2.0 * (g2.sh * g2.sh + -0.5);
+  auto sh32 = 2.0 * (g3.sh * g3.sh + -0.5);
   Q[0][0] = sh12 * sh22;
-  Q[1][0] = fma(4.0 * g2.ch * g3.ch, sh12 * g2.sh * g3.sh,
-                2.0 * g1.ch * g1.sh * sh32);
-  Q[2][0] = fma(4.0 * g1.ch * g3.ch, g1.sh * g3.sh,
-                -2.0 * g2.ch * sh12 * g2.sh * sh32);
+  Q[1][0] =
+      4.0 * g2.ch * g3.ch * sh12 * g2.sh * g3.sh + 2.0 * g1.ch * g1.sh * sh32;
+  Q[2][0] =
+      4.0 * g1.ch * g3.ch * g1.sh * g3.sh + -2.0 * g2.ch * sh12 * g2.sh * sh32;
 
   Q[0][1] = -2.0 * g1.ch * g1.sh * sh22;
-  Q[1][1] =
-      fma(-8.0 * g1.ch * g2.ch * g3.ch, g1.sh * g2.sh * g3.sh, sh12 * sh32);
-  Q[2][1] = fma(
-      -2.0 * g3.ch, g3.sh,
-      4.0 * g1.sh * fma(g3.ch * g1.sh, g3.sh, g1.ch * g2.ch * g2.sh * sh32));
+  Q[1][1] = -8.0 * g1.ch * g2.ch * g3.ch * g1.sh * g2.sh * g3.sh + sh12 * sh32;
+  Q[2][1] =
+      -2.0 * g3.ch * g3.sh +
+      4.0 * g1.sh * (g3.ch * g1.sh * g3.sh + g1.ch * g2.ch * g2.sh * sh32);
 
   Q[0][2] = 2.0 * g2.ch * g2.sh;
   Q[1][2] = -2.0 * g3.ch * sh22 * g3.sh;

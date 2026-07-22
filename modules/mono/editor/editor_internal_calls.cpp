@@ -30,12 +30,18 @@
 
 #include "editor_internal_calls.h"
 
-#include "../csharp_script.h"
 #include "../godotsharp_dirs.h"
 #include "../interop_types.h"
-#include "../utils/macos_utils.h"
 #include "../utils/path_utils.h"
 #include "code_completion.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "../csharp_script.h"
+#endif
+
+#ifdef MACOS_ENABLED
+#include "../utils/macos_utils.h"
+#endif
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
@@ -43,13 +49,17 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/export/lipo.h"
-#include "editor/gui/editor_run_bar.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "core/object/callable_mp.h"
+#endif
 
 #ifdef UNIX_ENABLED
 #include <unistd.h> // access

@@ -30,8 +30,11 @@
 
 #include "sprite_2d.h"
 
-#include "core/input/input.h"
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "servers/display/accessibility_server.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {
@@ -64,7 +67,7 @@ void Sprite2D::_edit_set_rect(const Rect2 &p_rect) {
 	if (texture.is_null()) {
 		return;
 	}
-	if (!(region_enabled && hframes <= 1 && vframes <= 1 && Input::get_singleton()->is_key_label_pressed(Key::CTRL))) {
+	if (!region_enabled || hframes > 1 || vframes > 1 || !dragging_to_resize_rect) {
 		Node2D::_edit_set_rect(p_rect);
 		return;
 	}
@@ -150,9 +153,9 @@ void Sprite2D::_notification(int p_what) {
 
 			Rect2 dst_rect = get_rect();
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_IMAGE);
-			DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_transform());
-			DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, dst_rect);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_IMAGE);
+			AccessibilityServer::get_singleton()->update_set_transform(ae, get_transform());
+			AccessibilityServer::get_singleton()->update_set_bounds(ae, dst_rect);
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -257,7 +260,6 @@ void Sprite2D::set_region_enabled(bool p_region_enabled) {
 	region_enabled = p_region_enabled;
 	_emit_region_rect_enabled();
 	queue_redraw();
-	notify_property_list_changed();
 }
 
 bool Sprite2D::is_region_enabled() const {
@@ -428,6 +430,15 @@ bool Sprite2D::is_editor_region_rect_draggable() const {
 	return hframes <= 1 && vframes <= 1 && region_enabled;
 }
 
+#ifdef TOOLS_ENABLED
+void Sprite2D::_editor_set_dragging_to_resize_rect(bool p_dragging_to_resize_rect) {
+	dragging_to_resize_rect = p_dragging_to_resize_rect;
+}
+bool Sprite2D::_editor_is_dragging_to_resiz_rect() const {
+	return dragging_to_resize_rect;
+}
+#endif
+
 Rect2 Sprite2D::get_rect() const {
 	if (texture.is_null()) {
 		return Rect2(0, 0, 1, 1);
@@ -453,18 +464,15 @@ Rect2 Sprite2D::get_rect() const {
 }
 
 void Sprite2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "frame") {
 		p_property.hint = PROPERTY_HINT_RANGE;
 		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
-	}
-
-	if (p_property.name == "frame_coords") {
+	} else if (p_property.name == "frame_coords") {
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
-	}
-
-	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip_enabled")) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -477,7 +485,9 @@ void Sprite2D::_texture_changed() {
 }
 
 void Sprite2D::_emit_region_rect_enabled() {
-	emit_signal("_editor_region_rect_enabled", is_editor_region_rect_draggable());
+	if (Engine::get_singleton()->is_editor_hint()) {
+		emit_signal("_editor_region_rect_enabled");
+	}
 }
 
 void Sprite2D::_bind_methods() {
@@ -524,7 +534,7 @@ void Sprite2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
@@ -543,10 +553,7 @@ void Sprite2D::_bind_methods() {
 }
 
 Sprite2D::Sprite2D() {
-#ifdef TOOLS_ENABLED
-	add_user_signal(MethodInfo("_editor_region_rect_enabled", PropertyInfo(Variant::BOOL, "enabled"))); // Sprite2DEditorPlugin listens to this.
-#endif
-}
-
-Sprite2D::~Sprite2D() {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		add_user_signal(MethodInfo("_editor_region_rect_enabled"));
+	}
 }

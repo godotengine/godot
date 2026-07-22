@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Material" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Material" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Virtual base class for applying visual properties to an object, such as color and roughness.
 	</brief_description>
@@ -24,13 +24,13 @@
 				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally to determine if [member render_priority] should be shown in the editor or not.
 			</description>
 		</method>
-		<method name="_get_shader_mode" qualifiers="virtual const">
+		<method name="_get_shader_mode" qualifiers="virtual required const">
 			<return type="int" enum="Shader.Mode" />
 			<description>
 				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally by various editor tools.
 			</description>
 		</method>
-		<method name="_get_shader_rid" qualifiers="virtual const">
+		<method name="_get_shader_rid" qualifiers="virtual required const">
 			<return type="RID" />
 			<description>
 				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally by various editor tools. Used to access the RID of the [Material]'s [Shader].

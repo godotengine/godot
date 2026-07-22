@@ -30,7 +30,8 @@
 
 #include "multimesh.h"
 
-#include "servers/rendering_server.h"
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef DISABLE_DEPRECATED
 // Kept for compatibility from 3.x to 4.0.
@@ -230,7 +231,7 @@ Ref<Mesh> MultiMesh::get_mesh() const {
 
 void MultiMesh::set_instance_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
-	RenderingServer::get_singleton()->multimesh_allocate_data(multimesh, p_count, RS::MultimeshTransformFormat(transform_format), use_colors, use_custom_data);
+	RenderingServer::get_singleton()->multimesh_allocate_data(multimesh, p_count, RSE::MultimeshTransformFormat(transform_format), use_colors, use_custom_data);
 	instance_count = p_count;
 }
 
@@ -251,7 +252,7 @@ int MultiMesh::get_visible_instance_count() const {
 
 void MultiMesh::set_physics_interpolation_quality(PhysicsInterpolationQuality p_quality) {
 	_physics_interpolation_quality = p_quality;
-	RenderingServer::get_singleton()->multimesh_set_physics_interpolation_quality(multimesh, (RS::MultimeshPhysicsInterpolationQuality)p_quality);
+	RenderingServer::get_singleton()->multimesh_set_physics_interpolation_quality(multimesh, (RSE::MultimeshPhysicsInterpolationQuality)p_quality);
 }
 
 void MultiMesh::set_instance_transform(int p_instance, const Transform3D &p_transform) {
@@ -306,6 +307,10 @@ Color MultiMesh::get_instance_custom_data(int p_instance) const {
 void MultiMesh::reset_instance_physics_interpolation(int p_instance) {
 	ERR_FAIL_INDEX_MSG(p_instance, instance_count, "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
 	RenderingServer::get_singleton()->multimesh_instance_reset_physics_interpolation(multimesh, p_instance);
+}
+
+void MultiMesh::reset_instances_physics_interpolation() {
+	RenderingServer::get_singleton()->multimesh_instances_reset_physics_interpolation(multimesh);
 }
 
 void MultiMesh::set_physics_interpolated(bool p_interpolated) {
@@ -382,6 +387,7 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_instance_custom_data", "instance", "custom_data"), &MultiMesh::set_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("get_instance_custom_data", "instance"), &MultiMesh::get_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("reset_instance_physics_interpolation", "instance"), &MultiMesh::reset_instance_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("reset_instances_physics_interpolation"), &MultiMesh::reset_instances_physics_interpolation);
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &MultiMesh::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &MultiMesh::get_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &MultiMesh::get_aabb);
@@ -397,7 +403,7 @@ void MultiMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "instance_count", PROPERTY_HINT_RANGE, "0,16384,1,or_greater"), "set_instance_count", "get_instance_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_instance_count", PROPERTY_HINT_RANGE, "-1,16384,1,or_greater"), "set_visible_instance_count", "get_visible_instance_count");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "buffer", PROPERTY_HINT_NONE), "set_buffer", "get_buffer");
 
 #ifndef DISABLE_DEPRECATED
@@ -433,5 +439,5 @@ MultiMesh::MultiMesh() {
 
 MultiMesh::~MultiMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(multimesh);
+	RenderingServer::get_singleton()->free_rid(multimesh);
 }

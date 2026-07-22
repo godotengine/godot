@@ -32,7 +32,7 @@
 
 #include "nav_rid_3d.h"
 
-#include "core/object/class_db.h"
+#include "core/math/vector3.h"
 #include "core/templates/self_list.h"
 
 class NavAgent3D;

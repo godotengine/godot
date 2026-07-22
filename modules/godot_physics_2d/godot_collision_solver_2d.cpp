@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "godot_collision_solver_2d.h"
+
 #include "godot_collision_solver_2d_sat.h"
 
 #define collision_solver sat_2d_calculate_penetration
@@ -36,7 +37,7 @@
 
 bool GodotCollisionSolver2D::solve_static_world_boundary(const GodotShape2D *p_shape_A, const Transform2D &p_transform_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin) {
 	const GodotWorldBoundaryShape2D *world_boundary = static_cast<const GodotWorldBoundaryShape2D *>(p_shape_A);
-	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_WORLD_BOUNDARY) {
+	if (p_shape_B->get_type() == PS2DE::SHAPE_WORLD_BOUNDARY) {
 		return false;
 	}
 
@@ -77,7 +78,7 @@ bool GodotCollisionSolver2D::solve_static_world_boundary(const GodotShape2D *p_s
 
 bool GodotCollisionSolver2D::solve_separation_ray(const GodotShape2D *p_shape_A, const Vector2 &p_motion_A, const Transform2D &p_transform_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, Vector2 *r_sep_axis, real_t p_margin) {
 	const GodotSeparationRayShape2D *ray = static_cast<const GodotSeparationRayShape2D *>(p_shape_A);
-	if (p_shape_B->get_type() == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
+	if (p_shape_B->get_type() == PS2DE::SHAPE_SEPARATION_RAY) {
 		return false;
 	}
 
@@ -217,8 +218,8 @@ bool GodotCollisionSolver2D::solve_concave(const GodotShape2D *p_shape_A, const 
 }
 
 bool GodotCollisionSolver2D::solve(const GodotShape2D *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CallbackResult p_result_callback, void *p_userdata, Vector2 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {
-	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();
-	PhysicsServer2D::ShapeType type_B = p_shape_B->get_type();
+	PS2DE::ShapeType type_A = p_shape_A->get_type();
+	PS2DE::ShapeType type_B = p_shape_B->get_type();
 	bool concave_A = p_shape_A->is_concave();
 	bool concave_B = p_shape_B->is_concave();
 	real_t margin_A = p_margin_A, margin_B = p_margin_B;
@@ -232,8 +233,8 @@ bool GodotCollisionSolver2D::solve(const GodotShape2D *p_shape_A, const Transfor
 		swap = true;
 	}
 
-	if (type_A == PhysicsServer2D::SHAPE_WORLD_BOUNDARY) {
-		if (type_B == PhysicsServer2D::SHAPE_WORLD_BOUNDARY) {
+	if (type_A == PS2DE::SHAPE_WORLD_BOUNDARY) {
+		if (type_B == PS2DE::SHAPE_WORLD_BOUNDARY) {
 			WARN_PRINT_ONCE("Collisions between world boundaries are not supported.");
 			return false;
 		}
@@ -244,8 +245,8 @@ bool GodotCollisionSolver2D::solve(const GodotShape2D *p_shape_A, const Transfor
 			return solve_static_world_boundary(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, p_margin_B);
 		}
 
-	} else if (type_A == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
-		if (type_B == PhysicsServer2D::SHAPE_SEPARATION_RAY) {
+	} else if (type_A == PS2DE::SHAPE_SEPARATION_RAY) {
+		if (type_B == PS2DE::SHAPE_SEPARATION_RAY) {
 			WARN_PRINT_ONCE("Collisions between two rays are not supported.");
 			return false; //no ray-ray
 		}

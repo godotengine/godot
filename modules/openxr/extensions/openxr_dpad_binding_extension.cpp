@@ -29,8 +29,11 @@
 /**************************************************************************/
 
 #include "openxr_dpad_binding_extension.h"
+
 #include "../openxr_api.h"
+
 #include "core/math/math_funcs.h"
+#include "core/object/class_db.h"
 
 // Implementation for:
 // https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_EXT_dpad_binding
@@ -52,7 +55,7 @@ OpenXRDPadBindingExtension::~OpenXRDPadBindingExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRDPadBindingExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRDPadBindingExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	// Note, we're dependent on the binding modifier extension, this may be requested by multiple extension wrappers.
@@ -72,7 +75,7 @@ bool OpenXRDPadBindingExtension::is_available() {
 void OpenXRDpadBindingModifier::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_action_set", "action_set"), &OpenXRDpadBindingModifier::set_action_set);
 	ClassDB::bind_method(D_METHOD("get_action_set"), &OpenXRDpadBindingModifier::get_action_set);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "action_set", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRActionSet"), "set_action_set", "get_action_set");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "action_set", PROPERTY_HINT_RESOURCE_TYPE, OpenXRActionSet::get_class_static()), "set_action_set", "get_action_set");
 
 	ClassDB::bind_method(D_METHOD("set_input_path", "input_path"), &OpenXRDpadBindingModifier::set_input_path);
 	ClassDB::bind_method(D_METHOD("get_input_path"), &OpenXRDpadBindingModifier::get_input_path);
@@ -100,15 +103,15 @@ void OpenXRDpadBindingModifier::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_on_haptic", "haptic"), &OpenXRDpadBindingModifier::set_on_haptic);
 	ClassDB::bind_method(D_METHOD("get_on_haptic"), &OpenXRDpadBindingModifier::get_on_haptic);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "on_haptic", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRHapticBase"), "set_on_haptic", "get_on_haptic");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "on_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_on_haptic", "get_on_haptic");
 
 	ClassDB::bind_method(D_METHOD("set_off_haptic", "haptic"), &OpenXRDpadBindingModifier::set_off_haptic);
 	ClassDB::bind_method(D_METHOD("get_off_haptic"), &OpenXRDpadBindingModifier::get_off_haptic);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "off_haptic", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRHapticBase"), "set_off_haptic", "get_off_haptic");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "off_haptic", PROPERTY_HINT_RESOURCE_TYPE, OpenXRHapticBase::get_class_static()), "set_off_haptic", "get_off_haptic");
 }
 
 OpenXRDpadBindingModifier::OpenXRDpadBindingModifier() {
-	ERR_FAIL_COND(dpad_bindings_data.resize_zeroed(sizeof(XrInteractionProfileDpadBindingEXT)) != OK);
+	ERR_FAIL_COND(dpad_bindings_data.resize_initialized(sizeof(XrInteractionProfileDpadBindingEXT)) != OK);
 	dpad_bindings = (XrInteractionProfileDpadBindingEXT *)dpad_bindings_data.ptrw();
 
 	dpad_bindings->type = XR_TYPE_INTERACTION_PROFILE_DPAD_BINDING_EXT;
@@ -121,7 +124,7 @@ OpenXRDpadBindingModifier::OpenXRDpadBindingModifier() {
 	dpad_bindings->isSticky = false;
 }
 
-void OpenXRDpadBindingModifier::set_action_set(const Ref<OpenXRActionSet> p_action_set) {
+void OpenXRDpadBindingModifier::set_action_set(const Ref<OpenXRActionSet> &p_action_set) {
 	action_set = p_action_set;
 }
 

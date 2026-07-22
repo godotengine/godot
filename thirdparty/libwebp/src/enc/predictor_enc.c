@@ -831,24 +831,24 @@ int VP8LResidualImage(int width, int height, int min_bits, int max_bits,
 // Color transform functions.
 
 static WEBP_INLINE void MultipliersClear(VP8LMultipliers* const m) {
-  m->green_to_red_ = 0;
-  m->green_to_blue_ = 0;
-  m->red_to_blue_ = 0;
+  m->green_to_red = 0;
+  m->green_to_blue = 0;
+  m->red_to_blue = 0;
 }
 
 static WEBP_INLINE void ColorCodeToMultipliers(uint32_t color_code,
                                                VP8LMultipliers* const m) {
-  m->green_to_red_  = (color_code >>  0) & 0xff;
-  m->green_to_blue_ = (color_code >>  8) & 0xff;
-  m->red_to_blue_   = (color_code >> 16) & 0xff;
+  m->green_to_red  = (color_code >>  0) & 0xff;
+  m->green_to_blue = (color_code >>  8) & 0xff;
+  m->red_to_blue   = (color_code >> 16) & 0xff;
 }
 
 static WEBP_INLINE uint32_t MultipliersToColorCode(
     const VP8LMultipliers* const m) {
   return 0xff000000u |
-         ((uint32_t)(m->red_to_blue_) << 16) |
-         ((uint32_t)(m->green_to_blue_) << 8) |
-         m->green_to_red_;
+         ((uint32_t)(m->red_to_blue) << 16) |
+         ((uint32_t)(m->green_to_blue) << 8) |
+         m->green_to_red;
 }
 
 static int64_t PredictionCostCrossColor(const uint32_t accumulated[256],
@@ -871,11 +871,11 @@ static int64_t GetPredictionCostCrossColorRed(
                                 green_to_red, histo);
 
   cur_diff = PredictionCostCrossColor(accumulated_red_histo, histo);
-  if ((uint8_t)green_to_red == prev_x.green_to_red_) {
+  if ((uint8_t)green_to_red == prev_x.green_to_red) {
     // favor keeping the areas locally similar
     cur_diff -= 3ll << LOG_2_PRECISION_BITS;
   }
-  if ((uint8_t)green_to_red == prev_y.green_to_red_) {
+  if ((uint8_t)green_to_red == prev_y.green_to_red) {
     // favor keeping the areas locally similar
     cur_diff -= 3ll << LOG_2_PRECISION_BITS;
   }
@@ -913,7 +913,7 @@ static void GetBestGreenToRed(const uint32_t* argb, int stride, int tile_width,
       }
     }
   }
-  best_tx->green_to_red_ = (green_to_red_best & 0xff);
+  best_tx->green_to_red = (green_to_red_best & 0xff);
 }
 
 static int64_t GetPredictionCostCrossColorBlue(
@@ -927,19 +927,19 @@ static int64_t GetPredictionCostCrossColorBlue(
                                  green_to_blue, red_to_blue, histo);
 
   cur_diff = PredictionCostCrossColor(accumulated_blue_histo, histo);
-  if ((uint8_t)green_to_blue == prev_x.green_to_blue_) {
+  if ((uint8_t)green_to_blue == prev_x.green_to_blue) {
     // favor keeping the areas locally similar
     cur_diff -= 3ll << LOG_2_PRECISION_BITS;
   }
-  if ((uint8_t)green_to_blue == prev_y.green_to_blue_) {
+  if ((uint8_t)green_to_blue == prev_y.green_to_blue) {
     // favor keeping the areas locally similar
     cur_diff -= 3ll << LOG_2_PRECISION_BITS;
   }
-  if ((uint8_t)red_to_blue == prev_x.red_to_blue_) {
+  if ((uint8_t)red_to_blue == prev_x.red_to_blue) {
     // favor keeping the areas locally similar
     cur_diff -= 3ll << LOG_2_PRECISION_BITS;
   }
-  if ((uint8_t)red_to_blue == prev_y.red_to_blue_) {
+  if ((uint8_t)red_to_blue == prev_y.red_to_blue) {
     // favor keeping the areas locally similar
     cur_diff -= 3ll << LOG_2_PRECISION_BITS;
   }
@@ -997,8 +997,8 @@ static void GetBestGreenRedToBlue(const uint32_t* argb, int stride,
       break;  // out of iter-loop.
     }
   }
-  best_tx->green_to_blue_ = green_to_blue_best & 0xff;
-  best_tx->red_to_blue_ = red_to_blue_best & 0xff;
+  best_tx->green_to_blue = green_to_blue_best & 0xff;
+  best_tx->red_to_blue = red_to_blue_best & 0xff;
 }
 #undef kGreenRedToBlueMaxIters
 #undef kGreenRedToBlueNumAxis

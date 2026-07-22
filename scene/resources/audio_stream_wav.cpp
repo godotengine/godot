@@ -32,6 +32,7 @@
 
 #include "core/io/file_access_memory.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
 
 const float TRIM_DB_LIMIT = -50;
 const int TRIM_FADE_OUT_FRAMES = 500;
@@ -174,12 +175,12 @@ void AudioStreamPlaybackWAV::decode_samples(const Depth *p_src, AudioFrame *p_ds
 			}
 
 		} else if (is_qoa) {
-			uint32_t new_data_ofs = 8 + pos / QOA_FRAME_LEN * p_qoa->frame_len;
+			uint64_t new_data_ofs = 8 + pos / QOA_FRAME_LEN * p_qoa->frame_len;
 
 			if (p_qoa->data_ofs != new_data_ofs) {
 				p_qoa->data_ofs = new_data_ofs;
 				const uint8_t *ofs_src = (uint8_t *)p_src + p_qoa->data_ofs;
-				qoa_decode_frame(ofs_src, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec.ptr(), &p_qoa->dec_len);
+				qoa_decode_frame(ofs_src, p_qoa->frame_len, &p_qoa->desc, p_qoa->dec.ptr(), nullptr);
 			}
 
 			uint32_t dec_idx = pos % QOA_FRAME_LEN << (is_stereo ? 1 : 0);
@@ -222,7 +223,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 		return 0;
 	}
 
-	uint32_t len = base->data_bytes;
+	uint64_t len = base->data.size();
 	switch (base->format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			len /= 1;
@@ -327,7 +328,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 				}
 			} else {
 				/* no loop, check for end of sample */
-				if (offset >= len) {
+				if ((uint64_t)offset >= len) {
 					active = false;
 					break;
 				}
@@ -477,8 +478,16 @@ bool AudioStreamWAV::is_stereo() const {
 	return stereo;
 }
 
+void AudioStreamWAV::set_tags(const Dictionary &p_tags) {
+	tags = p_tags;
+}
+
+Dictionary AudioStreamWAV::get_tags() const {
+	return tags;
+}
+
 double AudioStreamWAV::get_length() const {
-	int len = data_bytes;
+	uint64_t len = data.size();
 	switch (format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			len /= 1;
@@ -491,7 +500,7 @@ double AudioStreamWAV::get_length() const {
 			break;
 		case AudioStreamWAV::FORMAT_QOA:
 			qoa_desc desc = {};
-			qoa_decode_header(data.ptr(), data_bytes, &desc);
+			qoa_decode_header(data.ptr(), len, &desc);
 			len = desc.samples * desc.channels;
 			break;
 	}
@@ -511,13 +520,12 @@ void AudioStreamWAV::set_data(const Vector<uint8_t> &p_data) {
 	AudioServer::get_singleton()->lock();
 
 	data = p_data;
-	data_bytes = p_data.size();
 
 	AudioServer::get_singleton()->unlock();
 }
 
 Vector<uint8_t> AudioStreamWAV::get_data() const {
-	return data;
+	return Vector<uint8_t>(data);
 }
 
 Error AudioStreamWAV::save_to_wav(const String &p_path) {
@@ -526,7 +534,8 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 		return ERR_UNAVAILABLE;
 	}
 
-	int sub_chunk_2_size = data_bytes; //Subchunk2Size = Size of data in bytes
+	uint64_t sub_chunk_2_size = data.size(); // Subchunk2Size = Size of data in bytes
+	ERR_FAIL_COND_V_MSG(sub_chunk_2_size > UINT32_MAX - 36, ERR_FILE_CANT_WRITE, "Data size exceeds maximum WAV file size of 4 GiB.");
 
 	// Format code
 	// 1:PCM format (for 8 or 16 bit)
@@ -562,7 +571,7 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 
 	// Create WAV Header
 	file->store_string("RIFF"); //ChunkID
-	file->store_32(sub_chunk_2_size + 36); //ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bits for this and previous header)
+	file->store_32(sub_chunk_2_size + 36); // ChunkSize = 36 + SubChunk2Size (size of entire file minus the 8 bytes for this and previous header)
 	file->store_string("WAVE"); //Format
 	file->store_string("fmt "); //Subchunk1ID
 	file->store_32(16); //Subchunk1Size = 16
@@ -576,18 +585,17 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
-	Vector<uint8_t> stream_data = get_data();
-	const uint8_t *read_data = stream_data.ptr();
+	const uint8_t *read_data = data.ptr();
 	switch (format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
-			for (unsigned int i = 0; i < data_bytes; i++) {
+			for (uint64_t i = 0; i < sub_chunk_2_size; i++) {
 				uint8_t data_point = (read_data[i] + 128);
 				file->store_8(data_point);
 			}
 			break;
 		case AudioStreamWAV::FORMAT_16_BITS:
 		case AudioStreamWAV::FORMAT_QOA:
-			for (unsigned int i = 0; i < data_bytes / 2; i++) {
+			for (uint64_t i = 0; i < sub_chunk_2_size / 2; i++) {
 				uint16_t data_point = decode_uint16(&read_data[i * 2]);
 				file->store_16(data_point);
 			}
@@ -606,19 +614,15 @@ Ref<AudioStreamPlayback> AudioStreamWAV::instantiate_playback() {
 	sample->base = Ref<AudioStreamWAV>(this);
 
 	if (format == AudioStreamWAV::FORMAT_QOA) {
-		uint32_t ffp = qoa_decode_header(data.ptr(), data_bytes, &sample->qoa.desc);
+		uint32_t ffp = qoa_decode_header(data.ptr(), data.size(), &sample->qoa.desc);
 		ERR_FAIL_COND_V(ffp != 8, Ref<AudioStreamPlaybackWAV>());
 		sample->qoa.frame_len = qoa_max_frame_size(&sample->qoa.desc);
-		int samples_len = (sample->qoa.desc.samples > QOA_FRAME_LEN ? QOA_FRAME_LEN : sample->qoa.desc.samples);
-		int dec_len = sample->qoa.desc.channels * samples_len;
+		uint32_t samples_len = MIN(sample->qoa.desc.samples + 1, (uint32_t)QOA_FRAME_LEN);
+		uint32_t dec_len = sample->qoa.desc.channels * samples_len;
 		sample->qoa.dec.resize(dec_len);
 	}
 
 	return sample;
-}
-
-String AudioStreamWAV::get_stream_name() const {
-	return "";
 }
 
 Ref<AudioSample> AudioStreamWAV::generate_sample() const {
@@ -688,21 +692,23 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 	// Let users override potential loop points from the WAV.
 	// We parse the WAV loop points only with "Detect From WAV" (0).
-	int import_loop_mode = p_options["edit/loop_mode"];
+	int import_loop_mode = p_options.get("edit/loop_mode", 0);
 
-	int format_bits = 0;
-	int format_channels = 0;
+	uint16_t format_bits = 0;
+	uint16_t format_channels = 0;
 
 	AudioStreamWAV::LoopMode loop_mode = AudioStreamWAV::LOOP_DISABLED;
 	uint16_t compression_code = 1;
 	bool format_found = false;
 	bool data_found = false;
-	int format_freq = 0;
-	int loop_begin = 0;
-	int loop_end = 0;
-	int frames = 0;
+	uint32_t format_freq = 0;
+	int64_t loop_begin = 0;
+	int64_t loop_end = 0;
+	int64_t frames = 0;
 
 	Vector<float> data;
+
+	HashMap<String, String> tag_map;
 
 	while (!file->eof_reached()) {
 		/* chunk */
@@ -776,23 +782,25 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			print_line("bits: "+itos(format_bits));
 			*/
 
-			data.resize(frames * format_channels);
+			ERR_FAIL_COND_V(data.resize(frames * format_channels) != OK, Ref<AudioStreamWAV>());
+
+			float *data_ptrw = data.ptrw();
 
 			if (compression_code == 1) {
 				if (format_bits == 8) {
-					for (int i = 0; i < frames * format_channels; i++) {
+					for (int64_t i = 0; i < frames * format_channels; i++) {
 						// 8 bit samples are UNSIGNED
 
-						data.write[i] = int8_t(file->get_8() - 128) / 128.f;
+						data_ptrw[i] = int8_t(file->get_8() - 128) / 128.f;
 					}
 				} else if (format_bits == 16) {
-					for (int i = 0; i < frames * format_channels; i++) {
+					for (int64_t i = 0; i < frames * format_channels; i++) {
 						//16 bit SIGNED
 
-						data.write[i] = int16_t(file->get_16()) / 32768.f;
+						data_ptrw[i] = int16_t(file->get_16()) / 32768.f;
 					}
 				} else {
-					for (int i = 0; i < frames * format_channels; i++) {
+					for (int64_t i = 0; i < frames * format_channels; i++) {
 						//16+ bits samples are SIGNED
 						// if sample is > 16 bits, just read extra bytes
 
@@ -802,21 +810,21 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 						}
 						s <<= (32 - format_bits);
 
-						data.write[i] = (int32_t(s) >> 16) / 32768.f;
+						data_ptrw[i] = (int32_t(s) >> 16) / 32768.f;
 					}
 				}
 			} else if (compression_code == 3) {
 				if (format_bits == 32) {
-					for (int i = 0; i < frames * format_channels; i++) {
+					for (int64_t i = 0; i < frames * format_channels; i++) {
 						//32 bit IEEE Float
 
-						data.write[i] = file->get_float();
+						data_ptrw[i] = file->get_float();
 					}
 				} else if (format_bits == 64) {
-					for (int i = 0; i < frames * format_channels; i++) {
+					for (int64_t i = 0; i < frames * format_channels; i++) {
 						//64 bit IEEE Float
 
-						data.write[i] = file->get_double();
+						data_ptrw[i] = file->get_double();
 					}
 				}
 			}
@@ -846,7 +854,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			// only read 0x00 (loop forward), 0x01 (loop ping-pong) and 0x02 (loop backward)
 			// Skip anything else because it's not supported, reserved for future uses or sampler specific
 			// from https://sites.google.com/site/musicgapi/technical-documents/wav-file-format#smpl (loop type values table)
-			int loop_type = file->get_32();
+			uint32_t loop_type = file->get_32();
 			if (loop_type == 0x00 || loop_type == 0x01 || loop_type == 0x02) {
 				if (loop_type == 0x00) {
 					loop_mode = AudioStreamWAV::LOOP_FORWARD;
@@ -859,6 +867,49 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 				loop_end = file->get_32();
 			}
 		}
+
+		if (chunk_id[0] == 'L' && chunk_id[1] == 'I' && chunk_id[2] == 'S' && chunk_id[3] == 'T') {
+			// RIFF 'LIST' chunk.
+			// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
+
+			char list_id[4];
+			file->get_buffer((uint8_t *)&list_id, 4);
+			uint32_t end_of_chunk = file_pos + chunksize - 8;
+
+			if (list_id[0] == 'I' && list_id[1] == 'N' && list_id[2] == 'F' && list_id[3] == 'O') {
+				// 'INFO' list type.
+				// The size of an entry can be arbitrary.
+				while (file->get_position() < end_of_chunk) {
+					ERR_BREAK_MSG(file->eof_reached(), "EOF reached while reading INFO chunk.");
+					char info_id[4];
+					file->get_buffer((uint8_t *)&info_id, 4);
+
+					uint32_t text_size = file->get_32();
+					if (text_size == 0) {
+						continue;
+					}
+
+					Vector<char> text;
+					ERR_FAIL_COND_V(text.resize(text_size) != OK, Ref<AudioStreamWAV>());
+					file->get_buffer((uint8_t *)&text[0], text_size);
+
+					// Skip padding byte if text_size is odd
+					if (text_size & 1) {
+						file->get_8();
+					}
+
+					// The data is always an ASCII string. ASCII is a subset of UTF-8.
+					String tag;
+					tag.append_utf8(&info_id[0], 4);
+
+					String tag_value;
+					tag_value.append_utf8(&text[0], text_size);
+
+					tag_map[tag] = tag_value;
+				}
+			}
+		}
+
 		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
 		// chunk sizes.
 		file->seek(file_pos + chunksize + (chunksize & 1));
@@ -867,7 +918,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	// STEP 2, APPLY CONVERSIONS
 
 	bool is16 = format_bits != 8;
-	int rate = format_freq;
+	uint32_t rate = format_freq;
 
 	/*
 	print_line("Input Sample: ");
@@ -882,41 +933,45 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 	//apply frequency limit
 
-	bool limit_rate = p_options["force/max_rate"];
-	int limit_rate_hz = p_options["force/max_rate_hz"];
+	bool limit_rate = p_options.get("force/max_rate", false);
+	uint32_t limit_rate_hz = p_options.get("force/max_rate_hz", 0);
 	if (limit_rate && rate > limit_rate_hz && rate > 0 && frames > 0) {
 		// resample!
-		int new_data_frames = (int)(frames * (float)limit_rate_hz / (float)rate);
+		int64_t new_data_frames = (int64_t)(frames * (float)limit_rate_hz / (float)rate);
 
 		Vector<float> new_data;
-		new_data.resize(new_data_frames * format_channels);
+		ERR_FAIL_COND_V(new_data.resize(new_data_frames * format_channels) != OK, Ref<AudioStreamWAV>());
+
+		const float *data_ptr = data.ptr();
+		float *new_data_ptrw = new_data.ptrw();
+
 		for (int c = 0; c < format_channels; c++) {
 			float frac = 0.0;
-			int ipos = 0;
+			int64_t ipos = 0;
 
-			for (int i = 0; i < new_data_frames; i++) {
+			for (int64_t i = 0; i < new_data_frames; i++) {
 				// Cubic interpolation should be enough.
 
-				float y0 = data[MAX(0, ipos - 1) * format_channels + c];
-				float y1 = data[ipos * format_channels + c];
-				float y2 = data[MIN(frames - 1, ipos + 1) * format_channels + c];
-				float y3 = data[MIN(frames - 1, ipos + 2) * format_channels + c];
+				float y0 = data_ptr[MAX(0, ipos - 1) * format_channels + c];
+				float y1 = data_ptr[ipos * format_channels + c];
+				float y2 = data_ptr[MIN(frames - 1, ipos + 1) * format_channels + c];
+				float y3 = data_ptr[MIN(frames - 1, ipos + 2) * format_channels + c];
 
-				new_data.write[i * format_channels + c] = Math::cubic_interpolate(y1, y2, y0, y3, frac);
+				new_data_ptrw[i * format_channels + c] = Math::cubic_interpolate(y1, y2, y0, y3, frac);
 
 				// update position and always keep fractional part within ]0...1]
 				// in order to avoid 32bit floating point precision errors
 
 				frac += (float)rate / (float)limit_rate_hz;
-				int tpos = (int)Math::floor(frac);
+				int64_t tpos = (int64_t)Math::floor(frac);
 				ipos += tpos;
 				frac -= tpos;
 			}
 		}
 
 		if (loop_mode) {
-			loop_begin = (int)(loop_begin * (float)new_data_frames / (float)frames);
-			loop_end = (int)(loop_end * (float)new_data_frames / (float)frames);
+			loop_begin = (int64_t)(loop_begin * (float)new_data_frames / (float)frames);
+			loop_end = (int64_t)(loop_end * (float)new_data_frames / (float)frames);
 		}
 
 		data = new_data;
@@ -924,12 +979,16 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		frames = new_data_frames;
 	}
 
-	bool normalize = p_options["edit/normalize"];
+	bool normalize = p_options.get("edit/normalize", false);
 
 	if (normalize) {
 		float max = 0.0;
+
+		const float *data_ptr = data.ptr();
+		float *data_ptrw = data.ptrw();
+
 		for (int i = 0; i < data.size(); i++) {
-			float amp = Math::abs(data[i]);
+			float amp = Math::abs(data_ptr[i]);
 			if (amp > max) {
 				max = amp;
 			}
@@ -937,24 +996,27 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 		if (max > 0) {
 			float mult = 1.0 / max;
+
 			for (int i = 0; i < data.size(); i++) {
-				data.write[i] *= mult;
+				data_ptrw[i] = data_ptr[i] * mult;
 			}
 		}
 	}
 
-	bool trim = p_options["edit/trim"];
+	bool trim = p_options.get("edit/trim", false);
 
 	if (trim && (loop_mode == AudioStreamWAV::LOOP_DISABLED) && format_channels > 0) {
-		int first = 0;
-		int last = (frames / format_channels) - 1;
+		int64_t first = 0;
+		int64_t last = (frames / format_channels) - 1;
 		bool found = false;
 		float limit = Math::db_to_linear(TRIM_DB_LIMIT);
 
-		for (int i = 0; i < data.size() / format_channels; i++) {
+		const float *data_ptr = data.ptr();
+
+		for (int64_t i = 0; i < data.size() / format_channels; i++) {
 			float amp_channel_sum = 0.0;
-			for (int j = 0; j < format_channels; j++) {
-				amp_channel_sum += Math::abs(data[(i * format_channels) + j]);
+			for (uint16_t j = 0; j < format_channels; j++) {
+				amp_channel_sum += Math::abs(data_ptr[(i * format_channels) + j]);
 			}
 
 			float amp = Math::abs(amp_channel_sum / (float)format_channels);
@@ -971,16 +1033,19 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 		if (first < last) {
 			Vector<float> new_data;
-			new_data.resize((last - first) * format_channels);
-			for (int i = first; i < last; i++) {
+			ERR_FAIL_COND_V(new_data.resize((last - first) * format_channels) != OK, Ref<AudioStreamWAV>());
+
+			float *new_data_ptrw = new_data.ptrw();
+
+			for (int64_t i = first; i < last; i++) {
 				float fade_out_mult = 1.0;
 
 				if (last - i < TRIM_FADE_OUT_FRAMES) {
 					fade_out_mult = ((float)(last - i - 1) / (float)TRIM_FADE_OUT_FRAMES);
 				}
 
-				for (int j = 0; j < format_channels; j++) {
-					new_data.write[((i - first) * format_channels) + j] = data[(i * format_channels) + j] * fade_out_mult;
+				for (uint16_t j = 0; j < format_channels; j++) {
+					new_data_ptrw[((i - first) * format_channels) + j] = data_ptr[(i * format_channels) + j] * fade_out_mult;
 				}
 			}
 
@@ -991,8 +1056,8 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 	if (import_loop_mode >= 2) {
 		loop_mode = (AudioStreamWAV::LoopMode)(import_loop_mode - 1);
-		loop_begin = p_options["edit/loop_begin"];
-		loop_end = p_options["edit/loop_end"];
+		loop_begin = p_options.get("edit/loop_begin", 0);
+		loop_end = p_options.get("edit/loop_end", 0);
 		// Wrap around to max frames, so `-1` can be used to select the end, etc.
 		if (loop_begin < 0) {
 			loop_begin = CLAMP(loop_begin + frames, 0, frames - 1);
@@ -1002,21 +1067,25 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		}
 	}
 
-	int compression = p_options["compress/mode"];
-	bool force_mono = p_options["force/mono"];
+	int compression = p_options.get("compress/mode", 0);
+	bool force_mono = p_options.get("force/mono", false);
 
 	if (force_mono && format_channels == 2) {
 		Vector<float> new_data;
-		new_data.resize(data.size() / 2);
-		for (int i = 0; i < frames; i++) {
-			new_data.write[i] = (data[i * 2 + 0] + data[i * 2 + 1]) / 2.0;
+		ERR_FAIL_COND_V(new_data.resize(data.size() / 2) != OK, Ref<AudioStreamWAV>());
+
+		const float *data_ptr = data.ptr();
+		float *new_data_ptrw = new_data.ptrw();
+
+		for (int64_t i = 0; i < frames; i++) {
+			new_data_ptrw[i] = (data_ptr[i * 2 + 0] + data_ptr[i * 2 + 1]) / 2.0;
 		}
 
 		data = new_data;
 		format_channels = 1;
 	}
 
-	bool force_8_bit = p_options["force/8_bit"];
+	bool force_8_bit = p_options.get("force/8_bit", false);
 	if (force_8_bit) {
 		is16 = false;
 	}
@@ -1033,13 +1102,17 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			Vector<float> left;
 			Vector<float> right;
 
-			int tframes = data.size() / 2;
-			left.resize(tframes);
-			right.resize(tframes);
+			int64_t tframes = data.size() / 2;
+			ERR_FAIL_COND_V(left.resize(tframes) != OK, Ref<AudioStreamWAV>());
+			ERR_FAIL_COND_V(right.resize(tframes) != OK, Ref<AudioStreamWAV>());
 
-			for (int i = 0; i < tframes; i++) {
-				left.write[i] = data[i * 2 + 0];
-				right.write[i] = data[i * 2 + 1];
+			const float *data_ptr = data.ptr();
+			float *left_ptrw = left.ptrw();
+			float *right_ptrw = right.ptrw();
+
+			for (int64_t i = 0; i < tframes; i++) {
+				left_ptrw[i] = data_ptr[i * 2 + 0];
+				right_ptrw[i] = data_ptr[i * 2 + 1];
 			}
 
 			Vector<uint8_t> bleft;
@@ -1049,7 +1122,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			_compress_ima_adpcm(right, bright);
 
 			int dl = bleft.size();
-			dst_data.resize(dl * 2);
+			ERR_FAIL_COND_V(dst_data.resize(dl * 2) != OK, Ref<AudioStreamWAV>());
 
 			uint8_t *w = dst_data.ptrw();
 			const uint8_t *rl = bleft.ptr();
@@ -1072,17 +1145,18 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		_compress_qoa(data, dst_data, &desc);
 	} else {
 		dst_format = is16 ? AudioStreamWAV::FORMAT_16_BITS : AudioStreamWAV::FORMAT_8_BITS;
-		dst_data.resize(data.size() * (is16 ? 2 : 1));
+		ERR_FAIL_COND_V(dst_data.resize(data.size() * (is16 ? 2 : 1)) != OK, Ref<AudioStreamWAV>());
 		{
 			uint8_t *w = dst_data.ptrw();
+			const float *data_ptr = data.ptr();
 
 			int ds = data.size();
 			for (int i = 0; i < ds; i++) {
 				if (is16) {
-					int16_t v = CLAMP(data[i] * 32768, -32768, 32767);
+					int16_t v = CLAMP(data_ptr[i] * 32768, -32768, 32767);
 					encode_uint16(v, &w[i * 2]);
 				} else {
-					int8_t v = CLAMP(data[i] * 128, -128, 127);
+					int8_t v = CLAMP(data_ptr[i] * 128, -128, 127);
 					w[i] = v;
 				}
 			}
@@ -1098,6 +1172,52 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	sample->set_loop_begin(loop_begin);
 	sample->set_loop_end(loop_end);
 	sample->set_stereo(format_channels == 2);
+
+	if (!tag_map.is_empty()) {
+		// Used to make the metadata tags more unified across different AudioStreams.
+		// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
+		// https://wiki.hydrogenaudio.org/index.php?title=Tag_Mapping#Mapping_Tables
+		HashMap<String, String> tag_id_remaps;
+		tag_id_remaps.reserve(15);
+		tag_id_remaps["IARL"] = "location";
+		tag_id_remaps["IART"] = "artist";
+		tag_id_remaps["ICMS"] = "organization";
+		tag_id_remaps["ICMT"] = "comment";
+		tag_id_remaps["ICNT"] = "releasecountry";
+		tag_id_remaps["ICOP"] = "copyright";
+		tag_id_remaps["ICRD"] = "date";
+		tag_id_remaps["IENC"] = "encodedby";
+		tag_id_remaps["IENG"] = "engineer";
+		tag_id_remaps["IFRM"] = "tracktotal";
+		tag_id_remaps["IGNR"] = "genre";
+		tag_id_remaps["IKEY"] = "keywords";
+		tag_id_remaps["ILNG"] = "language";
+		tag_id_remaps["IMED"] = "media";
+		tag_id_remaps["IMUS"] = "composer";
+		tag_id_remaps["INAM"] = "title";
+		tag_id_remaps["IPRD"] = "album";
+		tag_id_remaps["IPRO"] = "producer";
+		tag_id_remaps["IPRT"] = "tracknumber";
+		tag_id_remaps["ISBJ"] = "description";
+		tag_id_remaps["ISFT"] = "encoder";
+		tag_id_remaps["ISRF"] = "media";
+		tag_id_remaps["ITCH"] = "encodedby";
+		tag_id_remaps["ITRK"] = "tracknumber";
+		tag_id_remaps["IWRI"] = "author";
+		tag_id_remaps["TLEN"] = "length";
+		Dictionary tag_dictionary;
+		for (const KeyValue<String, String> &E : tag_map) {
+			HashMap<String, String>::ConstIterator remap = tag_id_remaps.find(E.key);
+			String tag_key = E.key;
+			if (remap) {
+				tag_key = remap->value;
+			}
+
+			tag_dictionary[tag_key] = E.value;
+		}
+		sample->set_tags(tag_dictionary);
+	}
+
 	return sample;
 }
 
@@ -1132,6 +1252,9 @@ void AudioStreamWAV::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stereo", "stereo"), &AudioStreamWAV::set_stereo);
 	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamWAV::is_stereo);
 
+	ClassDB::bind_method(D_METHOD("set_tags", "tags"), &AudioStreamWAV::set_tags);
+	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamWAV::get_tags);
+
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamWAV::save_to_wav);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
@@ -1141,6 +1264,7 @@ void AudioStreamWAV::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_end"), "set_loop_end", "get_loop_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_rate"), "set_mix_rate", "get_mix_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stereo"), "set_stereo", "is_stereo");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "tags", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tags", "get_tags");
 
 	BIND_ENUM_CONSTANT(FORMAT_8_BITS);
 	BIND_ENUM_CONSTANT(FORMAT_16_BITS);

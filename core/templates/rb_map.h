@@ -40,7 +40,7 @@
 // https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
 template <typename K, typename V, typename C = Comparator<K>, typename A = DefaultAllocator>
-class RBMap {
+class _WARN_UNUSED_ RBMap {
 	enum Color {
 		RED,
 		BLACK
@@ -122,7 +122,7 @@ public:
 			E = p_it.E;
 			return *this;
 		}
-		Iterator(Element *p_E) { E = p_E; }
+		Iterator(Element *p_element) { E = p_element; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { E = p_it.E; }
 
@@ -154,7 +154,7 @@ public:
 			E = p_it.E;
 			return *this;
 		}
-		ConstIterator(const Element *p_E) { E = p_E; }
+		ConstIterator(const Element *p_element) { E = p_element; }
 		ConstIterator() {}
 		ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
 
@@ -356,6 +356,23 @@ private:
 		}
 
 		return prev;
+	}
+
+	Element *_lower_bound(const K &p_key) const {
+		Element *node = _data._root->left;
+		Element *result = nullptr;
+		C less;
+
+		while (node != _data._nil) {
+			if (!less(node->_data.key, p_key)) {
+				result = node;
+				node = node->left;
+			} else {
+				node = node->right;
+			}
+		}
+
+		return result;
 	}
 
 	void _insert_rb_fix(Element *p_new_node) {
@@ -566,16 +583,16 @@ private:
 		ERR_FAIL_COND(_data._nil->color == RED);
 	}
 
-	void _calculate_depth(Element *p_element, int &max_d, int d) const {
+	void _calculate_depth(Element *p_element, int &p_max_d, int p_d) const {
 		if (p_element == _data._nil) {
 			return;
 		}
 
-		_calculate_depth(p_element->left, max_d, d + 1);
-		_calculate_depth(p_element->right, max_d, d + 1);
+		_calculate_depth(p_element->left, p_max_d, p_d + 1);
+		_calculate_depth(p_element->right, p_max_d, p_d + 1);
 
-		if (d > max_d) {
-			max_d = d;
+		if (p_d > p_max_d) {
+			p_max_d = p_d;
 		}
 	}
 
@@ -632,6 +649,20 @@ public:
 
 		Element *res = _find_closest(p_key);
 		return res;
+	}
+
+	Element *lower_bound(const K &p_key) {
+		if (!_data._root) {
+			return nullptr;
+		}
+		return _lower_bound(p_key);
+	}
+
+	const Element *lower_bound(const K &p_key) const {
+		if (!_data._root) {
+			return nullptr;
+		}
+		return _lower_bound(p_key);
 	}
 
 	bool has(const K &p_key) const {
@@ -757,11 +788,32 @@ public:
 	}
 
 	void operator=(const RBMap &p_map) {
+		if (this == &p_map) {
+			return;
+		}
+
 		_copy_from(p_map);
 	}
 
-	RBMap(const RBMap &p_map) {
+	void operator=(RBMap &&p_map) {
+		if (this == &p_map) {
+			return;
+		}
+
+		SWAP(_data._root, p_map._data._root);
+		SWAP(_data.size_cache, p_map._data.size_cache);
+	}
+
+	explicit RBMap(const RBMap &p_map) {
 		_copy_from(p_map);
+	}
+
+	RBMap(RBMap &&p_map) {
+		_data._root = p_map._data._root;
+		_data.size_cache = p_map._data.size_cache;
+
+		p_map._data._root = nullptr;
+		p_map._data.size_cache = 0;
 	}
 
 	RBMap(std::initializer_list<KeyValue<K, V>> p_init) {

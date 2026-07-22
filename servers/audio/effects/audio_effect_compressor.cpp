@@ -29,7 +29,10 @@
 /**************************************************************************/
 
 #include "audio_effect_compressor.h"
-#include "servers/audio_server.h"
+
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float threshold = Math::db_to_linear(base->threshold);
@@ -185,6 +188,9 @@ StringName AudioEffectCompressor::get_sidechain() const {
 }
 
 void AudioEffectCompressor::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "sidechain") {
 		String buses = "";
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
@@ -218,9 +224,9 @@ void AudioEffectCompressor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sidechain", "sidechain"), &AudioEffectCompressor::set_sidechain);
 	ClassDB::bind_method(D_METHOD("get_sidechain"), &AudioEffectCompressor::get_sidechain);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "threshold", PROPERTY_HINT_RANGE, "-60,0,0.1"), "set_threshold", "get_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "threshold", PROPERTY_HINT_RANGE, "-60,0,0.1,suffix:dB"), "set_threshold", "get_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "1,48,0.1"), "set_ratio", "get_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gain", PROPERTY_HINT_RANGE, "-20,20,0.1"), "set_gain", "get_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gain", PROPERTY_HINT_RANGE, "-20,20,0.1,suffix:dB"), "set_gain", "get_gain");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attack_us", PROPERTY_HINT_RANGE, U"20,2000,1,suffix:\u00B5s"), "set_attack_us", "get_attack_us");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "release_ms", PROPERTY_HINT_RANGE, "20,2000,1,suffix:ms"), "set_release_ms", "get_release_ms");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mix", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_mix", "get_mix");

@@ -81,7 +81,7 @@ _ALWAYS_INLINE_ static void _cpu_pause() {
 	__builtin_ia32_pause();
 #elif defined(__arm__) || defined(__aarch64__) // ARM.
 	asm volatile("yield");
-#elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__) // PowerPC.
+#elif defined(__powerpc__) // PowerPC.
 	asm volatile("or 27,27,27");
 #elif defined(__riscv) // RISC-V.
 	asm volatile(".insn i 0x0F, 0, x0, x0, 0x010");
@@ -93,7 +93,11 @@ static_assert(std::atomic_bool::is_always_lock_free);
 
 class SpinLock {
 	union {
+#if __cplusplus >= 202002L
+		mutable std::atomic<bool> locked = false;
+#else
 		mutable std::atomic<bool> locked = ATOMIC_VAR_INIT(false);
+#endif
 		char aligner[Thread::CACHE_LINE_BYTES];
 	};
 

@@ -17,10 +17,9 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
-#include <unordered_map>
 
-#include "./vec.h"
 #include "manifold/common.h"
+#include "vec.h"
 
 #ifndef MANIFOLD_PAR
 #error "MANIFOLD_PAR must be defined to either 1 (parallel) or -1 (series)"
@@ -33,7 +32,7 @@
 #endif
 #endif
 
-#include "./parallel.h"
+#include "parallel.h"
 
 #if __has_include(<tracy/Tracy.hpp>)
 #include <tracy/Tracy.hpp>
@@ -72,7 +71,7 @@ inline int Prev3(int i) {
 template <typename T, typename T1>
 void Permute(Vec<T>& inOut, const Vec<T1>& new2Old) {
   Vec<T> tmp(std::move(inOut));
-  inOut.resize(new2Old.size());
+  inOut.resize_nofill(new2Old.size());
   gather(new2Old.begin(), new2Old.end(), tmp.begin(), inOut.begin());
 }
 
@@ -106,6 +105,12 @@ class ConcurrentSharedPtr {
   ConcurrentSharedPtr(T value) : impl(std::make_shared<T>(value)) {}
   ConcurrentSharedPtr(const ConcurrentSharedPtr<T>& other)
       : impl(other.impl), mutex(other.mutex) {}
+  ConcurrentSharedPtr& operator=(const ConcurrentSharedPtr<T>& other) {
+    if (this == &other) return *this;
+    impl = other.impl;
+    mutex = other.mutex;
+    return *this;
+  }
   class SharedPtrGuard {
    public:
     SharedPtrGuard(std::recursive_mutex* mutex, T* content)
@@ -128,63 +133,6 @@ class ConcurrentSharedPtr {
   std::shared_ptr<T> impl;
   std::shared_ptr<std::recursive_mutex> mutex =
       std::make_shared<std::recursive_mutex>();
-};
-
-template <typename I = int, typename R = unsigned char>
-struct UnionFind {
-  Vec<I> parents;
-  // we do union by rank
-  // note that we shift rank by 1, rank 0 means it is not connected to anything
-  // else
-  Vec<R> ranks;
-
-  UnionFind(I numNodes) : parents(numNodes), ranks(numNodes, 0) {
-    sequence(parents.begin(), parents.end());
-  }
-
-  I find(I x) {
-    while (parents[x] != x) {
-      parents[x] = parents[parents[x]];
-      x = parents[x];
-    }
-    return x;
-  }
-
-  void unionXY(I x, I y) {
-    if (x == y) return;
-    if (ranks[x] == 0) ranks[x] = 1;
-    if (ranks[y] == 0) ranks[y] = 1;
-    x = find(x);
-    y = find(y);
-    if (x == y) return;
-    if (ranks[x] < ranks[y]) std::swap(x, y);
-    if (ranks[x] == ranks[y]) ranks[x]++;
-    parents[y] = x;
-  }
-
-  I connectedComponents(std::vector<I>& components) {
-    components.resize(parents.size());
-    I lonelyNodes = 0;
-    std::unordered_map<I, I> toLabel;
-    for (size_t i = 0; i < parents.size(); ++i) {
-      // we optimize for connected component of size 1
-      // no need to put them into the hashmap
-      if (ranks[i] == 0) {
-        components[i] = static_cast<I>(toLabel.size()) + lonelyNodes++;
-        continue;
-      }
-      parents[i] = find(i);
-      auto iter = toLabel.find(parents[i]);
-      if (iter == toLabel.end()) {
-        I s = static_cast<I>(toLabel.size()) + lonelyNodes;
-        toLabel.insert(std::make_pair(parents[i], s));
-        components[i] = s;
-      } else {
-        components[i] = iter->second;
-      }
-    }
-    return toLabel.size() + lonelyNodes;
-  }
 };
 
 template <typename T>
@@ -211,7 +159,7 @@ struct Negate {
 inline int CCW(vec2 p0, vec2 p1, vec2 p2, double tol) {
   vec2 v1 = p1 - p0;
   vec2 v2 = p2 - p0;
-  double area = fma(v1.x, v2.y, -v1.y * v2.x);
+  double area = v1.x * v2.y - v1.y * v2.x;
   double base2 = la::max(la::dot(v1, v1), la::dot(v2, v2));
   if (area * area * 4 <= base2 * tol * tol)
     return 0;
@@ -224,4 +172,11 @@ inline mat4 Mat4(mat3x4 a) {
 }
 inline mat3 Mat3(mat2x3 a) { return mat3({a[0], 0}, {a[1], 0}, {a[2], 1}); }
 
+// https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
+constexpr uint64_t hash64bit(uint64_t x) {
+  x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ull;
+  x = (x ^ (x >> 27)) * 0x94d049bb133111ebull;
+  x = x ^ (x >> 31);
+  return x;
+}
 }  // namespace manifold

@@ -32,6 +32,8 @@
 
 #include "thread_jandroid.h"
 
+#include "core/string/ustring.h"
+
 GodotJavaViewWrapper::GodotJavaViewWrapper(jobject godot_view) {
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL(env);

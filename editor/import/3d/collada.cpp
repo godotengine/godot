@@ -1197,7 +1197,6 @@ void Collada::_parse_skin_controller(XMLParser &p_parser, const String &p_id) {
 
 	/* STORE REST MATRICES */
 
-	Vector<Transform3D> rests;
 	ERR_FAIL_COND(!skindata.joints.sources.has("JOINT"));
 	ERR_FAIL_COND(!skindata.joints.sources.has("INV_BIND_MATRIX"));
 
@@ -2022,7 +2021,7 @@ void Collada::_remove_node(VisualScene *p_vscene, Node *p_node) {
 		}
 	}
 
-	ERR_PRINT("ERROR: Not found node to remove?");
+	ERR_PRINT("Not found node to remove?");
 }
 
 void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {

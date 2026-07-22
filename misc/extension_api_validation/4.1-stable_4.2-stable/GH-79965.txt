@@ -1,0 +1,3 @@
+GH-79965
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/PopupMenu/methods/clear': arguments

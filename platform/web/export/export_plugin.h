@@ -32,15 +32,12 @@
 
 #include "editor_http_server.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/image_loader.h"
-#include "core/io/stream_peer_tls.h"
-#include "core/io/tcp_server.h"
-#include "core/io/zip_io.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export_platform.h"
 #include "main/splash.gen.h"
+
+class ImageTexture;
 
 class EditorExportPlatformWeb : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformWeb, EditorExportPlatform);
@@ -128,13 +125,13 @@ public:
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0, bool p_notify = true) override;
 
 	virtual bool poll_export() override;
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual Ref<Texture2D> get_run_icon() const override;
 
@@ -148,6 +145,6 @@ public:
 
 	String get_debug_protocol() const override { return "ws://"; }
 
-	EditorExportPlatformWeb();
+	virtual void initialize() override;
 	~EditorExportPlatformWeb();
 };

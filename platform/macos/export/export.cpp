@@ -32,6 +32,10 @@
 
 #include "export_plugin.h"
 
+#include "core/object/class_db.h"
+#include "editor/export/editor_export.h"
+#include "editor/settings/editor_settings.h"
+
 void register_macos_exporter_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformMacOS);
 }
@@ -45,6 +49,8 @@ void register_macos_exporter() {
 #else
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/macos/rcodesign", PROPERTY_HINT_GLOBAL_FILE));
 #endif
+	EDITOR_DEF_BASIC("export/macos/actool", "");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/macos/actool", PROPERTY_HINT_GLOBAL_FILE));
 #endif
 
 	Ref<EditorExportPlatformMacOS> platform;

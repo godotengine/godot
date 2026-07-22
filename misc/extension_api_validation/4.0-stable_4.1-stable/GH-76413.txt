@@ -1,0 +1,5 @@
+GH-76413
+--------
+Validate extension JSON: API was removed: classes/AnimationTrackEditPlugin
+
+This class does nothing and is not useful in any way.

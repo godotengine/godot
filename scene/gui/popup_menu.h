@@ -35,11 +35,18 @@
 #include "scene/gui/scroll_container.h"
 #include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
+#include "servers/display/native_menu.h"
 
 class PanelContainer;
+class VBoxContainer;
+class LineEdit;
+class Timer;
+class PopupMenuItems;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
+
+	friend class PopupMenuItems;
 
 	static HashMap<NativeMenu::SystemMenus, PopupMenu *> system_menus;
 
@@ -60,6 +67,7 @@ class PopupMenu : public Popup {
 		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 		bool checked = false;
+		bool visible = true;
 		enum {
 			CHECKABLE_TYPE_NONE,
 			CHECKABLE_TYPE_CHECK_BOX,
@@ -69,6 +77,7 @@ class PopupMenu : public Popup {
 		int state = 0;
 		bool separator = false;
 		bool disabled = false;
+		bool indeterminate = false;
 		bool dirty = true;
 		int id = 0;
 		Variant metadata;
@@ -115,10 +124,10 @@ class PopupMenu : public Popup {
 	NativeMenu::SystemMenus system_menu_id = NativeMenu::INVALID_MENU_ID;
 	bool prefer_native = false;
 
-	bool close_allowed = false;
 	bool activated_by_keyboard = false;
 
-	Timer *minimum_lifetime_timer = nullptr;
+	Timer *close_suspended_timer = nullptr;
+	bool close_was_suspended = false;
 	Timer *submenu_timer = nullptr;
 	List<Rect2> autohide_areas;
 	mutable Vector<Item> items;
@@ -128,6 +137,16 @@ class PopupMenu : public Popup {
 	int mouse_over = -1;
 	int prev_mouse_over = -1;
 	int submenu_over = -1;
+	int this_submenu_index = -1; // Always -1 for the parent popup, and always a positive int for every open submenu.
+	int active_submenu_index = -1; // A positive int for the parent popup if any submenu is open.
+	bool is_active_submenu_left = false;
+	Vector<Point2> active_submenu_target_line;
+	Point2 last_submenu_mouse_position;
+	int submenu_mouse_exited_ticks_msec = -1;
+	bool mouse_movement_was_tested = false;
+	Point2 panel_offset_start;
+	float submenu_timer_popup_delay = 0.2;
+	const float CLOSE_SUSPENDED_TIMER_DELAY = 0.5;
 	String _get_accel_text(const Item &p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
 	void _mouse_over_update(const Point2 &p_over);
@@ -143,6 +162,9 @@ class PopupMenu : public Popup {
 
 	void _activate_submenu(int p_over, bool p_by_keyboard = false);
 	void _submenu_timeout();
+	bool _is_mouse_moving_toward_submenu(const Vector2 &p_relative, bool p_is_submenu_left, const Vector2 &p_mouse_position, const Vector<Point2> &p_active_submenu_target_line) const;
+	void _close_or_suspend();
+	void _close_suspended_timeout();
 
 	uint64_t popup_time_msec = 0;
 	bool hide_on_item_selection = true;
@@ -161,13 +183,20 @@ class PopupMenu : public Popup {
 	uint64_t search_time_msec = 0;
 	String search_string = "";
 
+	bool search_bar_enabled = false;
+	int search_bar_min_item_count = 0;
+	bool search_bar_fuzzy_search_enabled = true;
+	int search_bar_fuzzy_search_max_misses = 2;
 	PanelContainer *panel = nullptr;
+	VBoxContainer *vbox_container = nullptr;
+	LineEdit *search_bar = nullptr;
 	ScrollContainer *scroll_container = nullptr;
-	Control *control = nullptr;
+	PopupMenuItems *control = nullptr;
 
 	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
 	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
 	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+	bool joypad_event_process = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
@@ -179,20 +208,25 @@ class PopupMenu : public Popup {
 
 		int v_separation = 0;
 		int h_separation = 0;
+		int search_bar_separation = 0;
 		int indent = 0;
 		int item_start_padding = 0;
 		int item_end_padding = 0;
 		int icon_max_width = 0;
+		int gutter_compact = 0;
 
 		Ref<Texture2D> checked;
 		Ref<Texture2D> checked_disabled;
 		Ref<Texture2D> unchecked;
 		Ref<Texture2D> unchecked_disabled;
+		Ref<Texture2D> indeterminate;
+		Ref<Texture2D> indeterminate_disabled;
 		Ref<Texture2D> radio_checked;
 		Ref<Texture2D> radio_checked_disabled;
 		Ref<Texture2D> radio_unchecked;
 		Ref<Texture2D> radio_unchecked_disabled;
 
+		Ref<Texture2D> search;
 		Ref<Texture2D> submenu;
 		Ref<Texture2D> submenu_mirrored;
 
@@ -214,8 +248,12 @@ class PopupMenu : public Popup {
 	} theme_cache;
 
 	void _draw_items();
+	void _update_search_bar_visibility();
+	void _items_focus_entered();
+	void _search_bar_text_changed(const String &p_new_text);
+	void _search_bar_focus_entered();
+	void _filter_items(const String &p_query);
 
-	void _minimum_lifetime_timeout();
 	void _close_pressed();
 	void _menu_changed();
 	void _input_from_window_internal(const Ref<InputEvent> &p_event);
@@ -224,14 +262,20 @@ class PopupMenu : public Popup {
 	int _get_item_checkable_type(int p_index) const;
 	void _native_popup(const Rect2i &p_rect);
 	String _atr(int p_idx, const String &p_text) const;
+	void _submenu_hidden();
+
+	bool shrink_height = true;
+	bool shrink_width = true;
 
 protected:
+	virtual void _pre_popup(const Size2i &p_size) override;
 	virtual Rect2i _popup_adjust_rect() const override;
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
+	virtual void _popup_base(const Rect2i &p_bounds = Rect2i()) override;
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
@@ -240,13 +284,15 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
 
+	virtual String _get_accessibility_name() const override;
+
 #ifndef DISABLE_DEPRECATED
 	void _add_shortcut_bind_compat_36493(const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void _add_icon_shortcut_bind_compat_36493(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void _clear_bind_compat_79965();
 
-	void _set_system_menu_root_compat_87452(const String &p_special);
-	String _get_system_menu_root_compat_87452() const;
+	void _set_system_menu_root_bind_compat_87452(const String &p_special);
+	String _get_system_menu_root_bind_compat_87452() const;
 
 	static void _bind_compatibility_methods();
 #endif
@@ -295,6 +341,7 @@ public:
 	void set_item_icon_max_width(int p_idx, int p_width);
 	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
 	void set_item_checked(int p_idx, bool p_checked);
+	void set_item_indeterminate(int p_idx, bool p_indeterminate);
 	void set_item_id(int p_idx, int p_id);
 	void set_item_accelerator(int p_idx, Key p_accel);
 	void set_item_metadata(int p_idx, const Variant &p_meta);
@@ -311,6 +358,7 @@ public:
 	void set_item_multistate(int p_idx, int p_state);
 	void toggle_item_multistate(int p_idx);
 	void set_item_shortcut_disabled(int p_idx, bool p_disabled);
+	void set_item_index(int p_idx, int p_target_idx);
 
 	void toggle_item_checked(int p_idx);
 
@@ -324,6 +372,7 @@ public:
 	int get_item_icon_max_width(int p_idx) const;
 	Color get_item_icon_modulate(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
+	bool is_item_indeterminate(int p_idx) const;
 	int get_item_id(int p_idx) const;
 	int get_item_index(int p_id) const;
 	Key get_item_accelerator(int p_idx) const;
@@ -351,6 +400,18 @@ public:
 	void set_prefer_native_menu(bool p_enabled);
 	bool is_prefer_native_menu() const;
 
+	void set_search_bar_enabled(bool p_enabled);
+	bool is_search_bar_enabled() const;
+
+	void set_search_bar_min_item_count(int p_count);
+	int get_search_bar_min_item_count() const;
+
+	void set_search_bar_fuzzy_search_enabled(bool p_enabled);
+	bool is_search_bar_fuzzy_search_enabled() const;
+
+	void set_search_bar_fuzzy_search_max_misses(int p_max_misses);
+	int get_search_bar_fuzzy_search_max_misses() const;
+
 	bool is_native_menu() const;
 
 	void scroll_to_item(int p_idx);
@@ -366,8 +427,6 @@ public:
 	void add_separator(const String &p_text = String(), int p_id = -1);
 
 	void clear(bool p_free_submenus = true);
-
-	virtual String get_tooltip(const Point2 &p_pos) const;
 
 #ifdef TOOLS_ENABLED
 	PackedStringArray get_configuration_warnings() const override;
@@ -391,9 +450,27 @@ public:
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
 
-	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
+	void set_shrink_height(bool p_shrink);
+	bool get_shrink_height() const;
+
+	void set_shrink_width(bool p_shrink);
+	bool get_shrink_width() const;
+
 	virtual void set_visible(bool p_visible) override;
 
 	PopupMenu();
 	~PopupMenu();
+};
+
+class PopupMenuItems : public Control {
+	GDCLASS(PopupMenuItems, Control);
+
+	PopupMenu *popup = nullptr;
+
+public:
+	PopupMenuItems(PopupMenu *p_popup) : popup(p_popup) {}
+
+	virtual RID get_focused_accessibility_element() const override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 };

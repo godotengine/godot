@@ -31,9 +31,12 @@
 #include "graph_edit.h"
 #include "graph_edit.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "scene/2d/line_2d.h"
 #include "scene/gui/box_container.h"
@@ -44,6 +47,7 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
+#include "scene/resources/material.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
 
@@ -115,11 +119,11 @@ Vector2 GraphEditMinimap::_get_render_size() {
 }
 
 Vector2 GraphEditMinimap::_get_graph_offset() {
-	return Vector2(ge->h_scrollbar->get_min(), ge->v_scrollbar->get_min());
+	return ge->min_scroll_offset;
 }
 
 Vector2 GraphEditMinimap::_get_graph_size() {
-	Vector2 graph_size = Vector2(ge->h_scrollbar->get_max(), ge->v_scrollbar->get_max()) - Vector2(ge->h_scrollbar->get_min(), ge->v_scrollbar->get_min());
+	Vector2 graph_size = ge->max_scroll_offset - ge->min_scroll_offset;
 
 	if (graph_size.width == 0) {
 		graph_size.width = 1;
@@ -249,14 +253,6 @@ Control::CursorShape GraphEdit::get_cursor_shape(const Point2 &p_pos) const {
 	}
 
 	return Control::get_cursor_shape(p_pos);
-}
-
-PackedStringArray GraphEdit::get_configuration_warnings() const {
-	PackedStringArray warnings = Control::get_configuration_warnings();
-
-	warnings.push_back(RTR("Please be aware that GraphEdit and GraphNode will undergo extensive refactoring in a future 4.x version involving compatibility-breaking API changes."));
-
-	return warnings;
 }
 
 Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, bool p_keep_alive) {
@@ -411,17 +407,25 @@ String GraphEdit::get_connections_description(const StringName &p_node, int p_po
 
 void GraphEdit::set_scroll_offset(const Vector2 &p_offset) {
 	setting_scroll_offset = true;
-	h_scrollbar->set_value(p_offset.x);
-	v_scrollbar->set_value(p_offset.y);
-	_update_scroll();
+	scroll_offset = p_offset.clamp(min_scroll_offset, max_scroll_offset - get_size());
+	if (!awaiting_scroll_offset_update) {
+		callable_mp(this, &GraphEdit::_update_scroll_offset).call_deferred();
+		awaiting_scroll_offset_update = true;
+	}
+	minimap->queue_redraw();
+	queue_redraw();
+	_update_scrollbars();
+	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
 	setting_scroll_offset = false;
 }
 
 Vector2 GraphEdit::get_scroll_offset() const {
-	return Vector2(h_scrollbar->get_value(), v_scrollbar->get_value());
+	return scroll_offset;
 }
 
-void GraphEdit::_scroll_moved(double) {
+void GraphEdit::_scrollbar_moved(double) {
+	scroll_offset.x = h_scrollbar->get_value();
+	scroll_offset.y = v_scrollbar->get_value();
 	if (!awaiting_scroll_offset_update) {
 		callable_mp(this, &GraphEdit::_update_scroll_offset).call_deferred();
 		awaiting_scroll_offset_update = true;
@@ -443,14 +447,14 @@ void GraphEdit::_update_scroll_offset() {
 		}
 
 		Point2 pos = graph_element->get_position_offset() * zoom;
-		pos -= Point2(h_scrollbar->get_value(), v_scrollbar->get_value());
+		pos -= scroll_offset;
 		graph_element->set_position(pos);
 		if (graph_element->get_scale() != Vector2(zoom, zoom)) {
 			graph_element->set_scale(Vector2(zoom, zoom));
 		}
 	}
 
-	connections_layer->set_position(-Point2(h_scrollbar->get_value(), v_scrollbar->get_value()));
+	connections_layer->set_position(-scroll_offset);
 	set_block_minimum_size_adjust(false);
 	awaiting_scroll_offset_update = false;
 
@@ -460,14 +464,18 @@ void GraphEdit::_update_scroll_offset() {
 	}
 }
 
-void GraphEdit::_update_scroll() {
+void GraphEdit::_update_scrollbars() {
 	if (updating) {
 		return;
 	}
 	updating = true;
 
+	h_scrollbar->set_value_no_signal(scroll_offset.x);
+	v_scrollbar->set_value_no_signal(scroll_offset.y);
+
 	set_block_minimum_size_adjust(true);
 
+	// Determine the graph "canvas" size in screen space.
 	Rect2 screen_rect;
 	for (int i = 0; i < get_child_count(); i++) {
 		GraphElement *graph_element = Object::cast_to<GraphElement>(get_child(i));
@@ -483,6 +491,9 @@ void GraphEdit::_update_scroll() {
 
 	screen_rect.position -= get_size();
 	screen_rect.size += get_size() * 2.0;
+
+	min_scroll_offset = screen_rect.position;
+	max_scroll_offset = screen_rect.position + screen_rect.size;
 
 	h_scrollbar->set_min(screen_rect.position.x);
 	h_scrollbar->set_max(screen_rect.position.x + screen_rect.size.width);
@@ -503,8 +514,8 @@ void GraphEdit::_update_scroll() {
 		v_scrollbar->show();
 	}
 
-	Size2 hmin = h_scrollbar->get_combined_minimum_size();
-	Size2 vmin = v_scrollbar->get_combined_minimum_size();
+	Size2 hmin = h_scrollbar->get_bound_minimum_size();
+	Size2 vmin = v_scrollbar->get_bound_minimum_size();
 
 	// Avoid scrollbar overlapping.
 	h_scrollbar->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, v_scrollbar->is_visible() ? -vmin.width : 0);
@@ -572,6 +583,12 @@ void GraphEdit::_graph_element_deselected(Node *p_node) {
 	emit_signal(SNAME("node_deselected"), graph_element);
 }
 
+void GraphEdit::_graph_element_visibility_changed(GraphElement *p_graph_element) {
+	if (p_graph_element->is_selected() && !p_graph_element->is_visible()) {
+		p_graph_element->set_selected(false);
+	}
+}
+
 void GraphEdit::_graph_element_resize_request(const Vector2 &p_new_minsize, Node *p_node) {
 	GraphElement *graph_element = Object::cast_to<GraphElement>(p_node);
 	ERR_FAIL_NULL(graph_element);
@@ -579,7 +596,7 @@ void GraphEdit::_graph_element_resize_request(const Vector2 &p_new_minsize, Node
 	// Snap the new size to the grid if snapping is enabled.
 	Vector2 new_size = p_new_minsize;
 	if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-		new_size = new_size.snappedf(snapping_distance);
+		new_size = new_size.snappedf(snapping_distance * snapping_distance_scale);
 	}
 
 	// Disallow resizing the frame to a size smaller than the minimum size of the attached nodes.
@@ -685,6 +702,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		graph_element->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_element_moved).bind(graph_element));
 		graph_element->connect("node_selected", callable_mp(this, &GraphEdit::_graph_element_selected).bind(graph_element));
 		graph_element->connect("node_deselected", callable_mp(this, &GraphEdit::_graph_element_deselected).bind(graph_element));
+		graph_element->connect(SceneStringName(visibility_changed), callable_mp(this, &GraphEdit::_graph_element_visibility_changed).bind(graph_element));
 
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
@@ -707,7 +725,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		}
 		graph_element->connect("raise_request", callable_mp(this, &GraphEdit::_ensure_node_order_from).bind(graph_element));
 		graph_element->connect("resize_request", callable_mp(this, &GraphEdit::_graph_element_resize_request).bind(graph_element));
-		if (connections_layer != nullptr && connections_layer->is_inside_tree()) {
+		if (connections_layer != nullptr) {
 			graph_element->connect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
 		}
 		graph_element->connect(SceneStringName(item_rect_changed), callable_mp((CanvasItem *)minimap, &GraphEditMinimap::queue_redraw));
@@ -741,6 +759,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 		graph_element->disconnect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_element_moved));
 		graph_element->disconnect("node_selected", callable_mp(this, &GraphEdit::_graph_element_selected));
 		graph_element->disconnect("node_deselected", callable_mp(this, &GraphEdit::_graph_element_deselected));
+		graph_element->disconnect(SceneStringName(visibility_changed), callable_mp(this, &GraphEdit::_graph_element_visibility_changed));
 
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
@@ -821,8 +840,8 @@ void GraphEdit::_notification(int p_what) {
 			menu_panel->add_theme_style_override(SceneStringName(panel), theme_cache.menu_panel);
 		} break;
 		case NOTIFICATION_READY: {
-			Size2 hmin = h_scrollbar->get_combined_minimum_size();
-			Size2 vmin = v_scrollbar->get_combined_minimum_size();
+			Size2 hmin = h_scrollbar->get_bound_minimum_size();
+			Size2 vmin = v_scrollbar->get_bound_minimum_size();
 
 			h_scrollbar->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
 			h_scrollbar->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
@@ -838,7 +857,7 @@ void GraphEdit::_notification(int p_what) {
 			// Draw background fill.
 			draw_style_box(theme_cache.panel, Rect2(Point2(), get_size()));
 
-			if (has_focus()) {
+			if (has_focus(true)) {
 				draw_style_box(theme_cache.panel_focus, Rect2(Point2(), get_size()));
 			}
 
@@ -849,7 +868,7 @@ void GraphEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESIZED: {
-			_update_scroll();
+			_update_scrollbars();
 			minimap->queue_redraw();
 			callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
 		} break;
@@ -962,7 +981,7 @@ void GraphEdit::_set_position_of_frame_attached_nodes(GraphFrame *p_frame, const
 
 		Vector2 pos = (attached_node->get_drag_from() * zoom + drag_accum) / zoom;
 		if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-			pos = pos.snappedf(snapping_distance);
+			pos = pos.snappedf(snapping_distance * snapping_distance_scale);
 		}
 
 		// Recursively move graph frames.
@@ -1592,7 +1611,7 @@ void GraphEdit::_draw_minimap_connection_line(const Vector2 &p_from_graph_positi
 		colors.push_back(p_from_color.lerp(p_to_color, normalized_curve_position));
 	}
 
-	minimap->draw_polyline_colors(points, colors, 0.5, lines_antialiased);
+	minimap->draw_polyline_colors(points, Vector<Color>(colors), 0.5, lines_antialiased);
 }
 
 void GraphEdit::_update_connections() {
@@ -1714,7 +1733,7 @@ void GraphEdit::_top_layer_draw() {
 }
 
 void GraphEdit::_update_top_connection_layer() {
-	_update_scroll();
+	_update_scrollbars();
 
 	if (!connecting) {
 		dragged_connection_line->clear_points();
@@ -1813,7 +1832,7 @@ void GraphEdit::_minimap_draw() {
 		Vector2 node_size = minimap->_convert_from_graph_position(graph_frame->get_size() * zoom);
 		Rect2 node_rect = Rect2(node_position, node_size);
 
-		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
+		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style;
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
 		Ref<StyleBoxFlat> sb_frame = graph_frame->get_theme_stylebox(graph_frame->is_selected() ? SNAME("panel_selected") : SceneStringName(panel));
@@ -1822,6 +1841,7 @@ void GraphEdit::_minimap_draw() {
 			if (graph_frame->is_tint_color_enabled()) {
 				node_color = graph_frame->get_tint_color();
 			}
+			sb_minimap = sb_minimap->duplicate();
 			sb_minimap->set_bg_color(node_color);
 		}
 
@@ -1839,12 +1859,13 @@ void GraphEdit::_minimap_draw() {
 		Vector2 node_size = minimap->_convert_from_graph_position(graph_node->get_size() * zoom);
 		Rect2 node_rect = Rect2(node_position, node_size);
 
-		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
+		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style;
 
 		// Override default values with colors provided by the GraphNode's stylebox, if possible.
 		Ref<StyleBoxFlat> sb_frame = graph_node->is_selected() ? graph_node->theme_cache.panel_selected : graph_node->theme_cache.panel;
 		if (sb_frame.is_valid()) {
 			Color node_color = sb_frame->get_bg_color();
+			sb_minimap = sb_minimap->duplicate();
 			sb_minimap->set_bg_color(node_color);
 		}
 
@@ -1880,8 +1901,9 @@ void GraphEdit::_draw_grid() {
 	Vector2 offset = get_scroll_offset() / zoom;
 	Size2 size = get_size() / zoom;
 
-	Point2i from_pos = (offset / float(snapping_distance)).floor();
-	Point2i len = (size / float(snapping_distance)).floor() + Vector2(1, 1);
+	float snapping_scaled = snapping_distance * snapping_distance_scale;
+	Point2i from_pos = (offset / snapping_scaled).floor();
+	Point2i len = (size / snapping_scaled).floor() + Vector2(1, 1);
 
 	switch (grid_pattern) {
 		case GRID_PATTERN_LINES: {
@@ -1894,7 +1916,7 @@ void GraphEdit::_draw_grid() {
 					color = theme_cache.grid_minor;
 				}
 
-				float base_offset = i * snapping_distance * zoom - offset.x * zoom;
+				float base_offset = i * snapping_scaled * zoom - offset.x * zoom;
 				draw_line(Vector2(base_offset, 0), Vector2(base_offset, get_size().height), color);
 			}
 
@@ -1907,7 +1929,7 @@ void GraphEdit::_draw_grid() {
 					color = theme_cache.grid_minor;
 				}
 
-				float base_offset = i * snapping_distance * zoom - offset.y * zoom;
+				float base_offset = i * snapping_scaled * zoom - offset.y * zoom;
 				draw_line(Vector2(0, base_offset), Vector2(get_size().width, base_offset), color);
 			}
 		} break;
@@ -1923,8 +1945,8 @@ void GraphEdit::_draw_grid() {
 							continue;
 						}
 
-						float base_offset_x = i * snapping_distance * zoom - offset.x * zoom;
-						float base_offset_y = j * snapping_distance * zoom - offset.y * zoom;
+						float base_offset_x = i * snapping_scaled * zoom - offset.x * zoom;
+						float base_offset_y = j * snapping_scaled * zoom - offset.y * zoom;
 
 						draw_rect(Rect2(base_offset_x - 1, base_offset_y - 1, 3, 3), transparent_grid_minor);
 					}
@@ -1935,8 +1957,8 @@ void GraphEdit::_draw_grid() {
 			if (theme_cache.grid_major.a != 0) {
 				for (int i = from_pos.x - from_pos.x % GRID_MINOR_STEPS_PER_MAJOR_DOT; i < from_pos.x + len.x; i += GRID_MINOR_STEPS_PER_MAJOR_DOT) {
 					for (int j = from_pos.y - from_pos.y % GRID_MINOR_STEPS_PER_MAJOR_DOT; j < from_pos.y + len.y; j += GRID_MINOR_STEPS_PER_MAJOR_DOT) {
-						float base_offset_x = i * snapping_distance * zoom - offset.x * zoom;
-						float base_offset_y = j * snapping_distance * zoom - offset.y * zoom;
+						float base_offset_x = i * snapping_scaled * zoom - offset.x * zoom;
+						float base_offset_y = j * snapping_scaled * zoom - offset.y * zoom;
 
 						draw_rect(Rect2(base_offset_x - 1, base_offset_y - 1, 3, 3), theme_cache.grid_major);
 					}
@@ -1993,7 +2015,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
 				if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					pos = pos.snappedf(snapping_distance);
+					pos = pos.snappedf(snapping_distance * snapping_distance_scale);
 				}
 
 				graph_element->set_position_offset(pos);
@@ -2023,6 +2045,10 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphElement *graph_element = Object::cast_to<GraphElement>(get_child(i));
 			if (!graph_element) {
+				continue;
+			}
+
+			if (!graph_element->is_visible()) {
 				continue;
 			}
 
@@ -2156,6 +2182,10 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				GraphElement *selected_element = Object::cast_to<GraphElement>(get_child(i));
 
 				if (!selected_element) {
+					continue;
+				}
+
+				if (!selected_element->is_visible()) {
 					continue;
 				}
 
@@ -2302,9 +2332,15 @@ void GraphEdit::key_input(const Ref<InputEvent> &p_ev) {
 void GraphEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 
-	h_scrollbar->set_value(h_scrollbar->get_value() - p_scroll_vec.x);
-	v_scrollbar->set_value(v_scrollbar->get_value() - p_scroll_vec.y);
+	scroll_offset = (scroll_offset - p_scroll_vec).clamp(min_scroll_offset, max_scroll_offset - get_size());
 
+	if (!awaiting_scroll_offset_update) {
+		callable_mp(this, &GraphEdit::_update_scroll_offset).call_deferred();
+		awaiting_scroll_offset_update = true;
+	}
+	minimap->queue_redraw();
+	queue_redraw();
+	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
 	connections_layer->queue_redraw();
 }
 
@@ -2406,7 +2442,7 @@ void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 		return;
 	}
 
-	Vector2 scrollbar_offset = (Vector2(h_scrollbar->get_value(), v_scrollbar->get_value()) + p_center) / zoom;
+	Point2 zoom_anchor = (scroll_offset + p_center) / zoom;
 
 	zoom = p_zoom;
 
@@ -2415,14 +2451,12 @@ void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 	zoom_minus_button->set_disabled(zoom == zoom_min);
 	zoom_plus_button->set_disabled(zoom == zoom_max);
 
-	_update_scroll();
+	_update_scrollbars();
 	minimap->queue_redraw();
 	connections_layer->queue_redraw();
 
 	if (is_visible_in_tree()) {
-		Vector2 offset = scrollbar_offset * zoom - p_center;
-		h_scrollbar->set_value(offset.x);
-		v_scrollbar->set_value(offset.y);
+		scroll_offset = zoom_anchor * zoom - p_center;
 	}
 
 	_update_zoom_label();
@@ -2562,7 +2596,7 @@ TypedArray<Dictionary> GraphEdit::_get_connections_intersecting_with_rect(const 
 TypedArray<Dictionary> GraphEdit::_get_connection_list_from_node(const StringName &p_node) const {
 	ERR_FAIL_COND_V(!connection_map.has(p_node), TypedArray<Dictionary>());
 
-	List<Ref<GraphEdit::Connection>> connections_from_node = connection_map.get(p_node);
+	List<Ref<GraphEdit::Connection>> connections_from_node(connection_map.get(p_node));
 	TypedArray<Dictionary> connections_from_node_dict;
 
 	for (const Ref<Connection> &conn : connections_from_node) {
@@ -2687,8 +2721,8 @@ bool GraphEdit::is_snapping_enabled() const {
 }
 
 void GraphEdit::set_snapping_distance(int p_snapping_distance) {
-	ERR_FAIL_COND_MSG(p_snapping_distance < GRID_MIN_SNAPPING_DISTANCE || p_snapping_distance > GRID_MAX_SNAPPING_DISTANCE,
-			vformat("GraphEdit's snapping distance must be between %d and %d (inclusive)", GRID_MIN_SNAPPING_DISTANCE, GRID_MAX_SNAPPING_DISTANCE));
+	ERR_FAIL_COND_MSG(p_snapping_distance < GRID_MIN_SNAPPING_DISTANCE * snapping_distance_scale || p_snapping_distance > GRID_MAX_SNAPPING_DISTANCE * snapping_distance_scale,
+			vformat("GraphEdit's snapping distance must be between %d and %d (inclusive)", GRID_MIN_SNAPPING_DISTANCE * snapping_distance_scale, GRID_MAX_SNAPPING_DISTANCE * snapping_distance_scale));
 	snapping_distance = p_snapping_distance;
 	snapping_distance_spinbox->set_value(p_snapping_distance);
 	queue_redraw();
@@ -2696,6 +2730,15 @@ void GraphEdit::set_snapping_distance(int p_snapping_distance) {
 
 int GraphEdit::get_snapping_distance() const {
 	return snapping_distance;
+}
+
+void GraphEdit::set_snapping_distance_scale(float p_snapping_distance_scale) {
+	snapping_distance_scale = p_snapping_distance_scale;
+	queue_redraw();
+}
+
+float GraphEdit::get_snapping_distance_scale() const {
+	return snapping_distance_scale;
 }
 
 void GraphEdit::set_show_grid(bool p_show) {
@@ -2921,7 +2964,7 @@ void GraphEdit::set_warped_panning(bool p_warped) {
 }
 
 void GraphEdit::update_warped_panning() {
-	panner->setup_warped_panning(get_viewport(), warped_panning);
+	panner->setup_warped_panning(this, warped_panning);
 }
 
 void GraphEdit::arrange_nodes() {
@@ -3061,7 +3104,7 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "zoom_step"), "set_zoom_step", "get_zoom_step");
 
 	ADD_GROUP("Minimap", "minimap_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_minimap_enabled", "is_minimap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_size", "get_minimap_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "minimap_opacity"), "set_minimap_opacity", "get_minimap_opacity");
 
@@ -3086,9 +3129,9 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request", PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_ARRAY_TYPE, "StringName")));
 
-	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("node_deselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
-	ADD_SIGNAL(MethodInfo("frame_rect_changed", PropertyInfo(Variant::OBJECT, "frame", PROPERTY_HINT_RESOURCE_TYPE, "GraphFrame"), PropertyInfo(Variant::RECT2, "new_rect")));
+	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
+	ADD_SIGNAL(MethodInfo("node_deselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
+	ADD_SIGNAL(MethodInfo("frame_rect_changed", PropertyInfo(Variant::OBJECT, "frame", PROPERTY_HINT_RESOURCE_TYPE, GraphFrame::get_class_static()), PropertyInfo(Variant::RECT2, "new_rect")));
 
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2, "at_position")));
 
@@ -3129,6 +3172,13 @@ void GraphEdit::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphEdit, port_hotzone_inner_extent);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphEdit, port_hotzone_outer_extent);
+
+	ADD_CLASS_DEPENDENCY("Button");
+	ADD_CLASS_DEPENDENCY("GraphFrame");
+	ADD_CLASS_DEPENDENCY("GraphNode");
+	ADD_CLASS_DEPENDENCY("HScrollBar");
+	ADD_CLASS_DEPENDENCY("SpinBox");
+	ADD_CLASS_DEPENDENCY("VScrollBar");
 }
 
 GraphEdit::GraphEdit() {
@@ -3145,16 +3195,18 @@ GraphEdit::GraphEdit() {
 	panner->set_callbacks(callable_mp(this, &GraphEdit::_pan_callback), callable_mp(this, &GraphEdit::_zoom_callback));
 
 	top_layer = memnew(Control);
+	top_layer->set_name(StringName("_top_layer"));
 	add_child(top_layer, false, INTERNAL_MODE_BACK);
 	top_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	top_layer->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	top_layer->set_use_parent_material(true);
 	top_layer->connect(SceneStringName(draw), callable_mp(this, &GraphEdit::_top_layer_draw));
 	top_layer->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
 
 	connections_layer = memnew(Control);
 	add_child(connections_layer, false);
 	connections_layer->connect(SceneStringName(draw), callable_mp(this, &GraphEdit::_update_connections));
-	connections_layer->set_name("_connection_layer");
+	connections_layer->set_name(StringName("_connection_layer"));
 	connections_layer->set_disable_visibility_clip(true); // Necessary, so it can draw freely and be offset.
 	connections_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 
@@ -3172,11 +3224,13 @@ GraphEdit::GraphEdit() {
 	top_connection_layer->add_child(dragged_connection_line);
 
 	h_scrollbar = memnew(HScrollBar);
-	h_scrollbar->set_name("_h_scroll");
+	h_scrollbar->set_name(StringName("_h_scroll"));
+	h_scrollbar->set_use_parent_material(true);
 	top_layer->add_child(h_scrollbar);
 
 	v_scrollbar = memnew(VScrollBar);
-	v_scrollbar->set_name("_v_scroll");
+	v_scrollbar->set_name(StringName("_v_scroll"));
+	v_scrollbar->set_use_parent_material(true);
 	top_layer->add_child(v_scrollbar);
 
 	// Set large minmax so it can scroll even if not resized yet.
@@ -3186,112 +3240,123 @@ GraphEdit::GraphEdit() {
 	v_scrollbar->set_min(-10000);
 	v_scrollbar->set_max(10000);
 
-	h_scrollbar->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_scroll_moved));
-	v_scrollbar->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_scroll_moved));
+	h_scrollbar->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_scrollbar_moved));
+	v_scrollbar->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_scrollbar_moved));
 
 	// Toolbar menu.
 
 	menu_panel = memnew(PanelContainer);
 	menu_panel->set_visible(show_menu);
+	menu_panel->set_use_parent_material(true);
 	top_layer->add_child(menu_panel);
 	menu_panel->set_position(Vector2(10, 10));
 
 	menu_hbox = memnew(HBoxContainer);
+	menu_hbox->set_name(StringName("_menu_hbox"));
 	menu_panel->add_child(menu_hbox);
 
 	// Zoom label and controls.
 
 	zoom_label = memnew(Label);
+	zoom_label->set_name(StringName("_zoom_label"));
 	zoom_label->set_visible(show_zoom_label);
 	zoom_label->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	zoom_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	zoom_label->set_custom_minimum_size(Size2(48, 0));
+	zoom_label->set_use_parent_material(true);
 	menu_hbox->add_child(zoom_label);
 	_update_zoom_label();
 
 	zoom_minus_button = memnew(Button);
+	zoom_minus_button->set_name(StringName("_zoom_minus_button"));
 	zoom_minus_button->set_theme_type_variation(SceneStringName(FlatButton));
 	zoom_minus_button->set_visible(show_zoom_buttons);
 	zoom_minus_button->set_tooltip_text(ETR("Zoom Out"));
-	zoom_minus_button->set_accessibility_name(ETR("Zoom Out"));
 	zoom_minus_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	zoom_minus_button->set_use_parent_material(true);
 	menu_hbox->add_child(zoom_minus_button);
 	zoom_minus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_minus));
 
 	zoom_reset_button = memnew(Button);
+	zoom_reset_button->set_name(StringName("_zoom_reset_button"));
 	zoom_reset_button->set_theme_type_variation(SceneStringName(FlatButton));
 	zoom_reset_button->set_visible(show_zoom_buttons);
 	zoom_reset_button->set_tooltip_text(ETR("Zoom Reset"));
-	zoom_reset_button->set_accessibility_name(ETR("Zoom Reset"));
 	zoom_reset_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	zoom_reset_button->set_use_parent_material(true);
 	menu_hbox->add_child(zoom_reset_button);
 	zoom_reset_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_reset));
 
 	zoom_plus_button = memnew(Button);
+	zoom_plus_button->set_name(StringName("_zoom_plus_button"));
 	zoom_plus_button->set_theme_type_variation(SceneStringName(FlatButton));
 	zoom_plus_button->set_visible(show_zoom_buttons);
 	zoom_plus_button->set_tooltip_text(ETR("Zoom In"));
-	zoom_plus_button->set_accessibility_name(ETR("Zoom In"));
 	zoom_plus_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	zoom_plus_button->set_use_parent_material(true);
 	menu_hbox->add_child(zoom_plus_button);
 	zoom_plus_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_zoom_plus));
 
 	// Grid controls.
 
 	toggle_grid_button = memnew(Button);
+	toggle_grid_button->set_name(StringName("_toggle_grid_button"));
 	toggle_grid_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_grid_button->set_visible(show_grid_buttons);
 	toggle_grid_button->set_toggle_mode(true);
 	toggle_grid_button->set_pressed(true);
 	toggle_grid_button->set_tooltip_text(ETR("Toggle the visual grid."));
-	toggle_grid_button->set_accessibility_name(ETR("Grid"));
-	toggle_grid_button->set_focus_mode(FOCUS_NONE);
+	toggle_grid_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	toggle_grid_button->set_use_parent_material(true);
 	menu_hbox->add_child(toggle_grid_button);
 	toggle_grid_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_show_grid_toggled));
 
 	toggle_snapping_button = memnew(Button);
+	toggle_snapping_button->set_name(StringName("_toggle_snapping_button"));
 	toggle_snapping_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_snapping_button->set_visible(show_grid_buttons);
 	toggle_snapping_button->set_toggle_mode(true);
 	toggle_snapping_button->set_tooltip_text(ETR("Toggle snapping to the grid."));
-	toggle_snapping_button->set_accessibility_name(ETR("Snap to Grid"));
 	toggle_snapping_button->set_pressed(snapping_enabled);
-	toggle_snapping_button->set_focus_mode(FOCUS_NONE);
+	toggle_snapping_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	menu_hbox->add_child(toggle_snapping_button);
 	toggle_snapping_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_snapping_toggled));
 
 	snapping_distance_spinbox = memnew(SpinBox);
+	snapping_distance_spinbox->set_name(StringName("_snapping_distance_spinbox"));
 	snapping_distance_spinbox->set_visible(show_grid_buttons);
 	snapping_distance_spinbox->set_min(GRID_MIN_SNAPPING_DISTANCE);
 	snapping_distance_spinbox->set_max(GRID_MAX_SNAPPING_DISTANCE);
 	snapping_distance_spinbox->set_step(1);
 	snapping_distance_spinbox->set_value(snapping_distance);
 	snapping_distance_spinbox->set_tooltip_text(ETR("Change the snapping distance."));
-	snapping_distance_spinbox->set_accessibility_name(ETR("Snapping Distance"));
+	snapping_distance_spinbox->set_use_parent_material(true);
 	menu_hbox->add_child(snapping_distance_spinbox);
 	snapping_distance_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_snapping_distance_changed));
 
 	// Extra controls.
 
 	minimap_button = memnew(Button);
+	minimap_button->set_name(StringName("_minimap_button"));
 	minimap_button->set_theme_type_variation(SceneStringName(FlatButton));
 	minimap_button->set_visible(show_minimap_button);
 	minimap_button->set_toggle_mode(true);
 	minimap_button->set_tooltip_text(ETR("Toggle the graph minimap."));
-	minimap_button->set_accessibility_name(ETR("Minimap"));
 	minimap_button->set_pressed(show_grid);
-	minimap_button->set_focus_mode(FOCUS_NONE);
+	minimap_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	minimap_button->set_use_parent_material(true);
 	menu_hbox->add_child(minimap_button);
 	minimap_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::_minimap_toggled));
 
 	arrange_button = memnew(Button);
+	arrange_button->set_name(StringName("_arrange_button"));
 	arrange_button->set_theme_type_variation(SceneStringName(FlatButton));
 	arrange_button->set_visible(show_arrange_button);
-	arrange_button->set_accessibility_name(ETR("Auto Arrange"));
-	arrange_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::arrange_nodes));
-	arrange_button->set_focus_mode(FOCUS_NONE);
-	menu_hbox->add_child(arrange_button);
 	arrange_button->set_tooltip_text(ETR("Automatically arrange selected nodes."));
+	arrange_button->connect(SceneStringName(pressed), callable_mp(this, &GraphEdit::arrange_nodes));
+	arrange_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	arrange_button->set_use_parent_material(true);
+	menu_hbox->add_child(arrange_button);
 
 	// Minimap.
 
@@ -3299,8 +3364,8 @@ GraphEdit::GraphEdit() {
 	const float minimap_opacity = 0.65;
 
 	minimap = memnew(GraphEditMinimap(this));
+	minimap->set_name(StringName("_minimap"));
 	top_layer->add_child(minimap);
-	minimap->set_name("_minimap");
 	minimap->set_modulate(Color(1, 1, 1, minimap_opacity));
 	minimap->set_mouse_filter(MOUSE_FILTER_PASS);
 	minimap->set_custom_minimum_size(Vector2(50, 50));
@@ -3310,6 +3375,7 @@ GraphEdit::GraphEdit() {
 	minimap->set_offset(Side::SIDE_TOP, -minimap_size.height - MINIMAP_OFFSET);
 	minimap->set_offset(Side::SIDE_RIGHT, -MINIMAP_OFFSET);
 	minimap->set_offset(Side::SIDE_BOTTOM, -MINIMAP_OFFSET);
+	minimap->set_use_parent_material(true);
 	minimap->connect(SceneStringName(draw), callable_mp(this, &GraphEdit::_minimap_draw));
 
 	set_clip_contents(true);

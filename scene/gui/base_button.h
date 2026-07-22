@@ -34,6 +34,7 @@
 #include "scene/gui/control.h"
 
 class ButtonGroup;
+class Timer;
 
 class BaseButton : public Control {
 	GDCLASS(BaseButton, Control);
@@ -45,6 +46,10 @@ public:
 	};
 
 private:
+	struct ThemeCache {
+		int click_margin = 0;
+	} theme_cache;
+
 	BitField<MouseButtonMask> button_mask = MouseButtonMask::LEFT;
 	bool toggle_mode = false;
 	bool shortcut_in_tooltip = true;
@@ -62,7 +67,7 @@ private:
 		bool pressing_inside = false;
 		bool pressed_down_with_focus = false;
 		bool disabled = false;
-
+		int touch_index = -1;
 	} status;
 
 	Ref<ButtonGroup> button_group;
@@ -101,6 +106,8 @@ public:
 	};
 
 	DrawMode get_draw_mode() const;
+
+	virtual bool has_point(const Point2 &p_point) const override;
 
 	/* Signals */
 

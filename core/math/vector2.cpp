@@ -50,8 +50,18 @@ real_t Vector2::length_squared() const {
 }
 
 void Vector2::normalize() {
-	real_t l = x * x + y * y;
-	if (l != 0) {
+	if (!is_finite()) {
+#ifdef MATH_CHECKS
+		WARN_PRINT("Vector2 cannot be normalized, the elements must be finite. Making (0, 0) as a fallback.");
+#endif // MATH_CHECKS
+		zero();
+		return;
+	}
+
+	real_t l = length_squared();
+	if (l == 0) {
+		zero();
+	} else {
 		l = Math::sqrt(l);
 		x /= l;
 		y /= l;

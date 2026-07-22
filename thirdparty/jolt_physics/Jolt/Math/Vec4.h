@@ -63,6 +63,9 @@ public:
 	/// Return the maximum of each of the components
 	static JPH_INLINE Vec4		sMax(Vec4Arg inV1, Vec4Arg inV2);
 
+	/// Clamp a vector between min and max (component wise)
+	static JPH_INLINE Vec4		sClamp(Vec4Arg inV, Vec4Arg inMin, Vec4Arg inMax);
+
 	/// Equals (component wise)
 	static JPH_INLINE UVec4		sEquals(Vec4Arg inV1, Vec4Arg inV2);
 
@@ -139,6 +142,9 @@ public:
 	/// Test if two vectors are close
 	JPH_INLINE bool				IsClose(Vec4Arg inV2, float inMaxDistSq = 1.0e-12f) const;
 
+	/// Test if vector is near zero
+	JPH_INLINE bool				IsNearZero(float inMaxDistSq = 1.0e-12f) const;
+
 	/// Test if vector is normalized
 	JPH_INLINE bool				IsNormalized(float inTolerance = 1.0e-6f) const;
 
@@ -200,13 +206,34 @@ public:
 	/// Replicate the W component to all components
 	JPH_INLINE Vec4				SplatW() const;
 
+	/// Replicate the X component to all components
+	JPH_INLINE Vec3				SplatX3() const;
+
+	/// Replicate the Y component to all components
+	JPH_INLINE Vec3				SplatY3() const;
+
+	/// Replicate the Z component to all components
+	JPH_INLINE Vec3				SplatZ3() const;
+
+	/// Replicate the W component to all components
+	JPH_INLINE Vec3				SplatW3() const;
+
+	/// Get index of component with lowest value
+	JPH_INLINE int				GetLowestComponentIndex() const;
+
+	/// Get index of component with highest value
+	JPH_INLINE int				GetHighestComponentIndex() const;
+
 	/// Return the absolute value of each of the components
 	JPH_INLINE Vec4				Abs() const;
 
 	/// Reciprocal vector (1 / value) for each of the components
 	JPH_INLINE Vec4				Reciprocal() const;
 
-	/// Dot product, returns the dot product in X, Y and Z components
+	/// Calculates inA * inB - inC * inD with more precision when FMA instructions are available. See DifferenceOfProducts.
+	JPH_INLINE static Vec4		sDifferenceOfProducts(Vec4Arg inA, Vec4Arg inB, Vec4Arg inC, Vec4Arg inD);
+
+	/// Dot product, returns the dot product in X, Y, Z and W components
 	JPH_INLINE Vec4				DotV(Vec4Arg inV2) const;
 
 	/// Dot product
@@ -239,11 +266,18 @@ public:
 	/// Get the maximum of X, Y, Z and W
 	JPH_INLINE float			ReduceMax() const;
 
+	/// Sum X, Y, Z and W
+	JPH_INLINE float			ReduceSum() const;
+
 	/// Component wise square root
 	JPH_INLINE Vec4				Sqrt() const;
 
 	/// Get vector that contains the sign of each element (returns 1.0f if positive, -1.0f if negative)
 	JPH_INLINE Vec4				GetSign() const;
+
+	/// Flips the signs of the components, e.g. FlipSign<-1, 1, -1, 1>() will flip the signs of the X and Z components
+	template <int X, int Y, int Z, int W>
+	JPH_INLINE Vec4				FlipSign() const;
 
 	/// Calculate the sine and cosine for each element of this vector (input in radians)
 	inline void					SinCos(Vec4 &outSin, Vec4 &outCos) const;
@@ -265,6 +299,12 @@ public:
 	/// Calculate the arc tangent of y / x using the signs of the arguments to determine the correct quadrant (returns value in the range [-PI, PI])
 	inline static Vec4			sATan2(Vec4Arg inY, Vec4Arg inX);
 
+	/// Compress a unit vector to a 32 bit value, precision is around 0.5 * 10^-3
+	JPH_INLINE uint32			CompressUnitVector() const;
+
+	/// Decompress a unit vector from a 32 bit value
+	JPH_INLINE static Vec4		sDecompressUnitVector(uint32 inValue);
+
 	/// To String
 	friend ostream &			operator << (ostream &inStream, Vec4Arg inV)
 	{
@@ -279,7 +319,7 @@ public:
 	};
 };
 
-static_assert(std::is_trivial<Vec4>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<Vec4>() && std::is_trivially_copyable<Vec4>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

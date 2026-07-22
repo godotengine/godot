@@ -31,7 +31,7 @@
 #pragma once
 
 #include "scene/3d/mesh_instance_3d.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class PhysicsBody3D;
 
@@ -151,6 +151,7 @@ public:
 
 	void set_parent_collision_ignore(const NodePath &p_parent_collision_ignore);
 	const NodePath &get_parent_collision_ignore() const;
+	int get_point_count() const;
 
 	void set_pinned_points_indices(Vector<PinnedPoint> p_pinned_points_indices);
 	Vector<PinnedPoint> get_pinned_points_indices();
@@ -164,6 +165,9 @@ public:
 	void set_linear_stiffness(real_t p_linear_stiffness);
 	real_t get_linear_stiffness();
 
+	void set_shrinking_factor(real_t p_shrinking_factor);
+	real_t get_shrinking_factor();
+
 	void set_pressure_coefficient(real_t p_pressure_coefficient);
 	real_t get_pressure_coefficient();
 
@@ -174,12 +178,11 @@ public:
 	real_t get_drag_coefficient();
 
 	TypedArray<PhysicsBody3D> get_collision_exceptions();
-	void add_collision_exception_with(Node *p_node);
-	void remove_collision_exception_with(Node *p_node);
+	void add_collision_exception_with(RequiredParam<Node> rp_node);
+	void remove_collision_exception_with(RequiredParam<Node> rp_node);
 
 	Vector3 get_point_transform(int p_point_index);
 
-	void pin_point_toggle(int p_point_index);
 	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1);
 	bool is_point_pinned(int p_point_index) const;
 
@@ -187,6 +190,11 @@ public:
 
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;
+
+	void apply_impulse(int p_point_index, const Vector3 &p_impulse);
+	void apply_force(int p_point_index, const Vector3 &p_force);
+	void apply_central_impulse(const Vector3 &p_impulse);
+	void apply_central_force(const Vector3 &p_force);
 
 	SoftBody3D();
 	~SoftBody3D();

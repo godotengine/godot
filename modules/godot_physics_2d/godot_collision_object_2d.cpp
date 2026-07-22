@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "godot_collision_object_2d.h"
+
 #include "godot_physics_server_2d.h"
 #include "godot_space_2d.h"
 
@@ -41,6 +42,7 @@ void GodotCollisionObject2D::add_shape(GodotShape2D *p_shape, const Transform2D 
 	s.disabled = p_disabled;
 	s.one_way_collision = false;
 	s.one_way_collision_margin = 0;
+	s.one_way_collision_direction = Vector2(0, 1);
 	shapes.push_back(s);
 	p_shape->add_owner(this);
 

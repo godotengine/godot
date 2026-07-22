@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GPUParticles2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GPUParticles2D" inherits="Node2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D particle emitter.
 	</brief_description>
@@ -44,9 +44,10 @@
 		<method name="request_particles_process">
 			<return type="void" />
 			<param index="0" name="process_time" type="float" />
+			<param index="1" name="process_time_residual" type="float" default="0" />
 			<description>
 				Requests the particles to process for extra process time during a single frame.
-				Useful for particle playback, if used in combination with [member use_fixed_seed] or by calling [method restart] with parameter [code]keep_seed[/code] set to [code]true[/code].
+				[param process_time] defines the time that the particles will process while emitting is on. [param process_time_residual] defines the time that particles will process with emitting turned off for the simulation. When combined with [member speed_scale] set to [code]0.0[/code], this is useful to be able to seek a particle system timeline.
 			</description>
 		</method>
 		<method name="restart">
@@ -73,7 +74,7 @@
 			[b]Note:[/b] Particles always have a spherical collision shape.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="GPUParticles2D.DrawOrder" default="1">
-			Particle draw order. Uses [enum DrawOrder] values.
+			Particle draw order.
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" default="true">
 			If [code]true[/code], particles are being emitted. [member emitting] can be used to start and stop particles from emitting. However, if [member one_shot] is [code]true[/code] setting [member emitting] to [code]true[/code] will not restart the emission cycle unless all active particles have finished processing. Use the [signal finished] signal to be notified once all active particles finish processing.

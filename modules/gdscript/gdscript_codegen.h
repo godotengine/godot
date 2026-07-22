@@ -31,7 +31,6 @@
 #pragma once
 
 #include "gdscript_function.h"
-#include "gdscript_utility_functions.h"
 
 #include "core/string/string_name.h"
 #include "core/variant/variant.h"
@@ -135,7 +134,6 @@ public:
 	virtual void write_call_method_bind_validated(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
 	virtual void write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
-	virtual void write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) = 0;
 	virtual void write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures, bool p_use_self) = 0;
 	virtual void write_construct(const Address &p_target, Variant::Type p_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) = 0;
@@ -148,10 +146,11 @@ public:
 	virtual void write_endif() = 0;
 	virtual void write_jump_if_shared(const Address &p_value) = 0;
 	virtual void write_end_jump_if_shared() = 0;
-	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) = 0;
-	virtual void write_for_assignment(const Address &p_list) = 0;
-	virtual void write_for(const Address &p_variable, bool p_use_conversion) = 0;
-	virtual void write_endfor() = 0;
+	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type, bool p_is_range) = 0;
+	virtual void write_for_list_assignment(const Address &p_list) = 0;
+	virtual void write_for_range_assignment(const Address &p_from, const Address &p_to, const Address &p_step) = 0;
+	virtual void write_for(const Address &p_variable, bool p_use_conversion, bool p_is_range) = 0;
+	virtual void write_endfor(bool p_is_range) = 0;
 	virtual void start_while_condition() = 0; // Used to allow a jump to the expression evaluation.
 	virtual void write_while(const Address &p_condition) = 0;
 	virtual void write_endwhile() = 0;
@@ -159,7 +158,7 @@ public:
 	virtual void write_continue() = 0;
 	virtual void write_breakpoint() = 0;
 	virtual void write_newline(int p_line) = 0;
-	virtual void write_return(const Address &p_return_value) = 0;
+	virtual void write_return(const Address &p_return_value, bool p_use_conversion) = 0;
 	virtual void write_assert(const Address &p_test, const Address &p_message) = 0;
 
 	virtual ~GDScriptCodeGenerator() {}

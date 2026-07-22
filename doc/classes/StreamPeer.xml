@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="StreamPeer" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for interacting with streams.
 	</brief_description>
@@ -44,7 +44,7 @@
 			<return type="Array" />
 			<param index="0" name="bytes" type="int" />
 			<description>
-				Returns a chunk data with the received bytes. The number of bytes to be received can be requested in the [param bytes] argument. If not enough bytes are available, the function will block until the desired amount is received. This function returns two values, an [enum Error] code and a data array.
+				Returns a chunk data with the received bytes, as an [Array] containing two elements: an [enum Error] constant and a [PackedByteArray]. [param bytes] is the number of bytes to be received. If not enough bytes are available, the function will block until the desired amount is received.
 			</description>
 		</method>
 		<method name="get_double">
@@ -69,7 +69,7 @@
 			<return type="Array" />
 			<param index="0" name="bytes" type="int" />
 			<description>
-				Returns a chunk data with the received bytes. The number of bytes to be received can be requested in the [param bytes] argument. If not enough bytes are available, the function will return how many were actually received. This function returns two values: an [enum Error] code and a data array.
+				Returns a chunk data with the received bytes, as an [Array] containing two elements: an [enum Error] constant and a [PackedByteArray]. [param bytes] is the number of bytes to be received. If not enough bytes are available, the function will return how many were actually received.
 			</description>
 		</method>
 		<method name="get_string">

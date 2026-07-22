@@ -32,7 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
 #include "scene/resources/bit_map.h"
+#include "servers/rendering/rendering_server.h"
 
 static const char *compression_mode_names[7] = {
 	"Lossless", "Lossy", "Basis Universal", "S3TC", "ETC2", "BPTC", "ASTC"
@@ -45,7 +47,7 @@ static PortableCompressedTexture2D::CompressionMode get_expected_compression_mod
 		return PortableCompressedTexture2D::COMPRESSION_MODE_ETC2;
 	} else if (format >= Image::FORMAT_BPTC_RGBA && format <= Image::FORMAT_BPTC_RGBFU) {
 		return PortableCompressedTexture2D::COMPRESSION_MODE_BPTC;
-	} else if (format >= Image::FORMAT_ASTC_4x4 && format <= Image::FORMAT_ASTC_8x8_HDR) {
+	} else if ((format >= Image::FORMAT_ASTC_4x4 && format <= Image::FORMAT_ASTC_8x8_HDR) || (format >= Image::FORMAT_ASTC_6x6 && format <= Image::FORMAT_ASTC_6x6_HDR)) {
 		return PortableCompressedTexture2D::COMPRESSION_MODE_ASTC;
 	}
 	ERR_FAIL_V(PortableCompressedTexture2D::COMPRESSION_MODE_LOSSLESS);
@@ -313,8 +315,8 @@ bool PortableCompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 		int x = p_x * aw / size.width;
 		int y = p_y * ah / size.height;
 
-		x = CLAMP(x, 0, aw);
-		y = CLAMP(y, 0, ah);
+		x = CLAMP(x, 0, aw - 1);
+		y = CLAMP(y, 0, ah - 1);
 
 		return alpha_cache->get_bit(x, y);
 	}
@@ -367,7 +369,6 @@ void PortableCompressedTexture2D::set_basisu_compressor_params(int p_uastc_level
 
 void PortableCompressedTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_from_image", "image", "compression_mode", "normal_map", "lossy_quality"), &PortableCompressedTexture2D::create_from_image, DEFVAL(false), DEFVAL(0.8));
-	ClassDB::bind_method(D_METHOD("get_format"), &PortableCompressedTexture2D::get_format);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &PortableCompressedTexture2D::get_compression_mode);
 
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &PortableCompressedTexture2D::set_size_override);
@@ -400,6 +401,6 @@ void PortableCompressedTexture2D::_bind_methods() {
 PortableCompressedTexture2D::~PortableCompressedTexture2D() {
 	if (texture.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(texture);
+		RenderingServer::get_singleton()->free_rid(texture);
 	}
 }

@@ -173,7 +173,14 @@ struct hb_bit_set_invertible_t
   bool is_subset (const hb_bit_set_invertible_t &larger_set) const
   {
     if (unlikely (inverted != larger_set.inverted))
-      return hb_all (hb_iter (s) | hb_map (larger_set.s));
+    {
+      if (inverted)
+	return hb_all (iter (), larger_set.s);
+      else
+        // larger set is inverted so larger_set.s is the set of things that are not present
+        // in larger_set, therefore if s has any of those it can't be a subset.
+	return !s.intersects (larger_set.s);
+    }
     else
       return unlikely (inverted) ? larger_set.s.is_subset (s) : s.is_subset (larger_set.s);
   }
@@ -368,7 +375,7 @@ struct hb_bit_set_invertible_t
     unsigned __len__ () const { return l; }
     iter_t end () const { return iter_t (*s, false); }
     bool operator != (const iter_t& o) const
-    { return v != o.v || s != o.s; }
+    { return v != o.v; }
 
     protected:
     const hb_bit_set_invertible_t *s;

@@ -34,7 +34,6 @@
 
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
 
 class GodotJavaWrapper;
 class GodotIOJavaWrapper;
@@ -106,8 +105,6 @@ public:
 
 	virtual void finalize() override;
 
-	typedef int64_t ProcessID;
-
 	static OS_Android *get_singleton();
 	GodotJavaWrapper *get_godot_java();
 	GodotIOJavaWrapper *get_godot_io_java();
@@ -123,6 +120,8 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+	virtual String get_version_alias() const override;
+
 	virtual MainLoop *get_main_loop() const override;
 
 	void main_loop_begin();
@@ -152,6 +151,7 @@ public:
 	virtual String get_resource_dir() const override;
 	virtual String get_locale() const override;
 	virtual String get_model_name() const override;
+	virtual String get_processor_name() const override;
 
 	virtual String get_unique_id() const override;
 
@@ -189,5 +189,6 @@ private:
 
 #ifdef TOOLS_ENABLED
 	static void _on_main_screen_changed(const String &p_screen_name);
+	static void _on_distraction_free_mode_changed(bool p_enable);
 #endif
 };

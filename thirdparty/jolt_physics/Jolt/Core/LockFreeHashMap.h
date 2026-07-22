@@ -128,6 +128,9 @@ public:
 	/// Convert uint32 handle back to key and value
 	inline const KeyValue *	FromHandle(uint32 inHandle) const;
 
+	/// Convert uint32 handle back to key and value (note that it is illegal to change the key this way)
+	inline KeyValue *		FromHandle(uint32 inHandle);
+
 #ifdef JPH_ENABLE_ASSERTS
 	/// Get the number of key value pairs that this map currently contains.
 	/// Available only when asserts are enabled because adding elements creates contention on this atomic and negatively affects performance.

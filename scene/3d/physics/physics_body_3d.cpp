@@ -30,6 +30,9 @@
 
 #include "physics_body_3d.h"
 
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
+
 void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "motion", "test_only", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("test_move", "from", "motion", "collision", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
@@ -43,16 +46,17 @@ void PhysicsBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &PhysicsBody3D::remove_collision_exception_with);
 
 	ADD_GROUP("Axis Lock", "axis_lock_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_X);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_LINEAR_Z);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_x"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_X);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_y"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_Y);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_z"), "set_axis_lock", "get_axis_lock", PhysicsServer3D::BODY_AXIS_ANGULAR_Z);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_x"), "set_axis_lock", "get_axis_lock", PS3DE::BODY_AXIS_LINEAR_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_y"), "set_axis_lock", "get_axis_lock", PS3DE::BODY_AXIS_LINEAR_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_linear_z"), "set_axis_lock", "get_axis_lock", PS3DE::BODY_AXIS_LINEAR_Z);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_x"), "set_axis_lock", "get_axis_lock", PS3DE::BODY_AXIS_ANGULAR_X);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_y"), "set_axis_lock", "get_axis_lock", PS3DE::BODY_AXIS_ANGULAR_Y);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_z"), "set_axis_lock", "get_axis_lock", PS3DE::BODY_AXIS_ANGULAR_Z);
 }
 
-PhysicsBody3D::PhysicsBody3D(PhysicsServer3D::BodyMode p_mode) :
+PhysicsBody3D::PhysicsBody3D(PS3DE::BodyMode p_mode) :
 		CollisionObject3D(PhysicsServer3D::get_singleton()->body_create(), false) {
+	_define_ancestry(AncestralClass::PHYSICS_BODY_3D);
 	set_body_mode(p_mode);
 }
 
@@ -69,26 +73,26 @@ TypedArray<PhysicsBody3D> PhysicsBody3D::get_collision_exceptions() {
 	return ret;
 }
 
-void PhysicsBody3D::add_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void PhysicsBody3D::add_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
 	ERR_FAIL_NULL_MSG(collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
 	PhysicsServer3D::get_singleton()->body_add_collision_exception(get_rid(), collision_object->get_rid());
 }
 
-void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
-	ERR_FAIL_NULL(p_node);
+void PhysicsBody3D::remove_collision_exception_with(RequiredParam<Node> rp_node) {
+	EXTRACT_PARAM_OR_FAIL(p_node, rp_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
 	ERR_FAIL_NULL_MSG(collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
 Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_test_only, real_t p_margin, bool p_recovery_as_collision, int p_max_collisions) {
-	PhysicsServer3D::MotionParameters parameters(get_global_transform(), p_motion, p_margin);
+	PS3DT::MotionParameters parameters(get_global_transform(), p_motion, p_margin);
 	parameters.max_collisions = p_max_collisions;
 	parameters.recovery_as_collision = p_recovery_as_collision;
 
-	PhysicsServer3D::MotionResult result;
+	PS3DT::MotionResult result;
 
 	if (move_and_collide(parameters, result, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
@@ -105,7 +109,7 @@ Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_motion, bool p_t
 	return Ref<KinematicCollision3D>();
 }
 
-bool PhysicsBody3D::move_and_collide(const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult &r_result, bool p_test_only, bool p_cancel_sliding) {
+bool PhysicsBody3D::move_and_collide(const PS3DT::MotionParameters &p_parameters, PS3DT::MotionResult &r_result, bool p_test_only, bool p_cancel_sliding) {
 	bool colliding = PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), p_parameters, &r_result);
 
 	// Restore direction of motion to be along original motion,
@@ -164,15 +168,15 @@ bool PhysicsBody3D::move_and_collide(const PhysicsServer3D::MotionParameters &p_
 bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_motion, const Ref<KinematicCollision3D> &r_collision, real_t p_margin, bool p_recovery_as_collision, int p_max_collisions) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	PhysicsServer3D::MotionResult *r = nullptr;
-	PhysicsServer3D::MotionResult temp_result;
+	PS3DT::MotionResult *r = nullptr;
+	PS3DT::MotionResult temp_result;
 	if (r_collision.is_valid()) {
 		r = &r_collision->result;
 	} else {
 		r = &temp_result;
 	}
 
-	PhysicsServer3D::MotionParameters parameters(p_from, p_motion, p_margin);
+	PS3DT::MotionParameters parameters(p_from, p_motion, p_margin);
 	parameters.recovery_as_collision = p_recovery_as_collision;
 	parameters.max_collisions = p_max_collisions;
 
@@ -185,7 +189,7 @@ Vector3 PhysicsBody3D::get_gravity() const {
 	return state->get_total_gravity();
 }
 
-void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
+void PhysicsBody3D::set_axis_lock(PS3DE::BodyAxis p_axis, bool p_lock) {
 	if (p_lock) {
 		locked_axis |= p_axis;
 	} else {
@@ -194,7 +198,7 @@ void PhysicsBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock)
 	PhysicsServer3D::get_singleton()->body_set_axis_lock(get_rid(), p_axis, p_lock);
 }
 
-bool PhysicsBody3D::get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const {
+bool PhysicsBody3D::get_axis_lock(PS3DE::BodyAxis p_axis) const {
 	return (locked_axis & p_axis);
 }
 
@@ -208,6 +212,16 @@ Vector3 PhysicsBody3D::get_angular_velocity() const {
 
 real_t PhysicsBody3D::get_inverse_mass() const {
 	return 0;
+}
+
+PackedStringArray PhysicsBody3D::get_configuration_warnings() const {
+	PackedStringArray warnings = CollisionObject3D::get_configuration_warnings();
+
+	if (SceneTree::is_fti_enabled_in_project() && !is_physics_interpolated()) {
+		warnings.push_back(RTR("PhysicsBody3D will not work correctly on a non-interpolated branch of the SceneTree.\nCheck the node's inherited physics_interpolation_mode."));
+	}
+
+	return warnings;
 }
 
 ///////////////////////////////////////

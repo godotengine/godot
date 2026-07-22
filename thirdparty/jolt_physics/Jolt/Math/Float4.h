@@ -15,11 +15,22 @@ public:
 				Float4() = default; ///< Intentionally not initialized for performance reasons
 				Float4(const Float4 &inRHS) = default;
 				Float4(float inX, float inY, float inZ, float inW) : x(inX), y(inY), z(inZ), w(inW) { }
+	Float4 &	operator = (const Float4 &inRHS) = default;
 
 	float		operator [] (int inCoordinate) const
 	{
 		JPH_ASSERT(inCoordinate < 4);
 		return *(&x + inCoordinate);
+	}
+
+	bool		operator == (const Float4 &inRHS) const
+	{
+		return x == inRHS.x && y == inRHS.y && z == inRHS.z && w == inRHS.w;
+	}
+
+	bool		operator != (const Float4 &inRHS) const
+	{
+		return x != inRHS.x || y != inRHS.y || z != inRHS.z || w != inRHS.w;
 	}
 
 	float		x;
@@ -28,6 +39,6 @@ public:
 	float		w;
 };
 
-static_assert(std::is_trivial<Float4>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<Float4>() && std::is_trivially_copyable<Float4>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END

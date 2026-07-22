@@ -1,8 +1,8 @@
 diff --git a/thirdparty/vulkan/vk_mem_alloc.h b/thirdparty/vulkan/vk_mem_alloc.h
-index ecb84094b9..c436209896 100644
+index 42ba704beb..ef158a8e57 100644
 --- a/thirdparty/vulkan/vk_mem_alloc.h
 +++ b/thirdparty/vulkan/vk_mem_alloc.h
-@@ -1713,6 +1713,19 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
+@@ -1794,6 +1794,19 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
      VmaAllocator VMA_NOT_NULL allocator,
      VmaTotalStatistics* VMA_NOT_NULL pStats);
  
@@ -22,7 +22,7 @@ index ecb84094b9..c436209896 100644
  /** \brief Retrieves information about current memory usage and budget for all memory heaps.
  
  \param allocator
-@@ -14912,6 +14925,26 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
+@@ -15297,6 +15310,26 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
      allocator->CalculateStatistics(pStats);
  }
  

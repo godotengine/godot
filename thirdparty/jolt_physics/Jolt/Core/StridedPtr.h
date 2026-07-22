@@ -10,7 +10,7 @@ JPH_NAMESPACE_BEGIN
 /// elements that the pointer points to can be part of a larger structure.
 /// The stride gives the number of bytes from one element to the next.
 template <class T>
-class JPH_EXPORT StridedPtr
+class StridedPtr
 {
 public:
 	using value_type = T;

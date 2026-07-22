@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PacketPeerUDP" inherits="PacketPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PacketPeerUDP" inherits="PacketPeer" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		UDP packet peer.
 	</brief_description>
@@ -20,15 +20,15 @@
 		var peer
 
 		func _ready():
-		    peer = PacketPeerUDP.new()
-		    peer.bind(4433)
+			peer = PacketPeerUDP.new()
+			peer.bind(4433)
 
 
 		func _process(_delta):
-		    if peer.get_available_packet_count() &gt; 0:
-		        var array_bytes = peer.get_packet()
-		        var packet_string = array_bytes.get_string_from_ascii()
-		        print("Received message: ", packet_string)
+			if peer.get_available_packet_count() &gt; 0:
+				var array_bytes = peer.get_packet()
+				var packet_string = array_bytes.get_string_from_ascii()
+				print("Received message: ", packet_string)
 		[/codeblock]
 		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
@@ -141,9 +141,9 @@
 
 				# Client
 				while socket.wait() == OK:
-				    var data = socket.get_packet().get_string_from_ascii()
-				    if data == "Time to stop":
-				        return
+					var data = socket.get_packet().get_string_from_ascii()
+					if data == "Time to stop":
+						return
 				[/gdscript]
 				[csharp]
 				var socket = new PacketPeerUdp();
@@ -154,11 +154,11 @@
 				// Client
 				while (socket.Wait() == OK)
 				{
-				    string data = socket.GetPacket().GetStringFromASCII();
-				    if (data == "Time to stop")
-				    {
-				        return;
-				    }
+					string data = socket.GetPacket().GetStringFromASCII();
+					if (data == "Time to stop")
+					{
+						return;
+					}
 				}
 				[/csharp]
 				[/codeblocks]

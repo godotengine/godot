@@ -30,12 +30,11 @@
 
 #pragma once
 
-#include "box_container.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/texture_button.h"
 #include "scene/main/window.h"
 
 class LineEdit;
@@ -65,7 +64,7 @@ class AcceptDialog : public Window {
 	} theme_cache;
 
 	void _custom_action(const String &p_action);
-	void _custom_button_visibility_changed(Button *button);
+	void _button_visibility_changed(Button *button);
 	void _update_child_rects();
 	void _update_ok_text();
 

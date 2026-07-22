@@ -33,17 +33,17 @@
 #include "core/math/vector2.h"
 #include "core/typedefs.h"
 
-static _FORCE_INLINE_ float undenormalize(float f) {
+static _FORCE_INLINE_ float undenormalize(float p_value) {
 	union {
 		uint32_t i;
 		float f;
 	} v;
 
-	v.f = f;
+	v.f = p_value;
 
 	// original: return (v.i & 0x7f800000) == 0 ? 0.0f : f;
 	// version from Tim Blechmann:
-	return (v.i & 0x7f800000) < 0x08000000 ? 0.0f : f;
+	return (v.i & 0x7f800000) < 0x08000000 ? 0.0f : p_value;
 }
 
 static const float AUDIO_PEAK_OFFSET = 0.0000000001f;
@@ -51,29 +51,22 @@ static const float AUDIO_MIN_PEAK_DB = -200.0f; // linear_to_db(AUDIO_PEAK_OFFSE
 
 struct AudioFrame {
 	// Left and right samples.
-	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			float left;
-			float right;
-		};
-#ifndef DISABLE_DEPRECATED
-		struct {
-			float l;
-			float r;
-		};
-#endif
-		float levels[2] = { 0.0 };
-		// NOLINTEND(modernize-use-default-member-init)
-	};
+	float left = 0.0f;
+	float right = 0.0f;
 
-	_ALWAYS_INLINE_ const float &operator[](int p_idx) const {
+	constexpr float &operator[](int p_idx) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(AudioFrame, left) == 0 * sizeof(float));
+		static_assert(offsetof(AudioFrame, right) == 1 * sizeof(float));
+		static_assert(sizeof(AudioFrame) == 2 * sizeof(float));
+
 		DEV_ASSERT((unsigned int)p_idx < 2);
-		return levels[p_idx];
+		return (&left)[p_idx];
 	}
-	_ALWAYS_INLINE_ float &operator[](int p_idx) {
+	constexpr const float &operator[](int p_idx) const {
 		DEV_ASSERT((unsigned int)p_idx < 2);
-		return levels[p_idx];
+		return (&left)[p_idx];
 	}
 
 	constexpr AudioFrame operator+(const AudioFrame &p_frame) const { return AudioFrame(left + p_frame.left, right + p_frame.right); }
@@ -134,28 +127,16 @@ struct AudioFrame {
 		return res;
 	}
 
-	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
-	constexpr AudioFrame(float p_left, float p_right) :
-			left(p_left), right(p_right) {}
-	constexpr AudioFrame(const AudioFrame &p_frame) :
-			left(p_frame.left), right(p_frame.right) {}
-	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
-
-	constexpr void operator=(const AudioFrame &p_frame) {
-		left = p_frame.left;
-		right = p_frame.right;
-	}
-
-	constexpr operator Vector2() const {
+	constexpr explicit operator Vector2() const {
 		return Vector2(left, right);
 	}
 
-	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
-	constexpr AudioFrame(const Vector2 &p_v2) :
+	constexpr AudioFrame() = default;
+
+	constexpr AudioFrame(float p_left, float p_right) :
+			left(p_left), right(p_right) {}
+	constexpr explicit AudioFrame(const Vector2 &p_v2) :
 			left(p_v2.x), right(p_v2.y) {}
-	constexpr AudioFrame() :
-			left(0), right(0) {}
-	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
 
 constexpr AudioFrame operator*(float p_scalar, const AudioFrame &p_frame) {

@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "core/core_string_names.h"
-#include "core/input/input_enums.h"
+#include "core/core_string_names.h" // IWYU pragma: export. Make available everywhere.
+#include "core/error/error_macros.h"
 #include "core/io/ip_address.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -51,17 +51,19 @@
 #include "core/math/vector4.h"
 #include "core/math/vector4i.h"
 #include "core/object/object_id.h"
-#include "core/os/keyboard.h"
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
 #include "core/templates/bit_field.h"
+#include "core/templates/hashfuncs.h"
 #include "core/templates/list.h"
-#include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
+#include "core/typedefs.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/variant_deep_duplicate.h"
 
+class GDType;
 class Object;
 class RefCounted;
 
@@ -69,6 +71,10 @@ template <typename T>
 class Ref;
 template <typename T>
 class BitField;
+template <typename T>
+class TypedArray;
+template <typename K, typename V>
+class TypedDictionary;
 
 struct PropertyInfo;
 struct MethodInfo;
@@ -85,7 +91,7 @@ typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
 typedef Vector<Vector4> PackedVector4Array;
 
-class Variant {
+class _WARN_UNUSED_ Variant {
 public:
 	// If this changes the table in variant_op must be updated
 	enum Type {
@@ -146,38 +152,24 @@ public:
 	};
 
 private:
-	struct Pools {
-		union BucketSmall {
-			BucketSmall() {}
-			~BucketSmall() {}
-			Transform2D _transform2d;
-			::AABB _aabb;
-		};
-		union BucketMedium {
-			BucketMedium() {}
-			~BucketMedium() {}
-			Basis _basis;
-			Transform3D _transform3d;
-		};
-		union BucketLarge {
-			BucketLarge() {}
-			~BucketLarge() {}
-			Projection _projection;
-		};
-
-		static PagedAllocator<BucketSmall, true> _bucket_small;
-		static PagedAllocator<BucketMedium, true> _bucket_medium;
-		static PagedAllocator<BucketLarge, true> _bucket_large;
-	};
-
 	friend struct _VariantCall;
 	friend class VariantInternal;
+	template <typename>
+	friend struct _VariantInternalAccessorLocal;
+	template <typename>
+	friend struct _VariantInternalAccessorElsewhere;
+	template <typename>
+	friend struct _VariantInternalAccessorPackedArrayRef;
 	// Variant takes 24 bytes when real_t is float, and 40 bytes if double.
 	// It only allocates extra memory for AABB/Transform2D (24, 48 if double),
 	// Basis/Transform3D (48, 96 if double), Projection (64, 128 if double),
 	// and PackedArray/Array/Dictionary (platform-dependent).
 
 	Type type = NIL;
+
+	static GDType &_get_gdtype_for_type(Variant::Type p_type);
+	static void _register_variant_gdtypes();
+	static void _unregister_variant_gdtypes();
 
 	struct ObjData {
 		ObjectID id;
@@ -344,7 +336,7 @@ private:
 	static void _register_variant_utility_functions();
 	static void _unregister_variant_utility_functions();
 
-	void _variant_call_error(const String &p_method, Callable::CallError &error);
+	void _variant_call_error(const String &p_method, Callable::CallError &r_error);
 
 	template <typename T>
 	_ALWAYS_INLINE_ T _to_int() const {
@@ -425,10 +417,12 @@ public:
 	operator int32_t() const;
 	operator int16_t() const;
 	operator int8_t() const;
+	operator Math::int_alt_t() const;
 	operator uint64_t() const;
 	operator uint32_t() const;
 	operator uint16_t() const;
 	operator uint8_t() const;
+	operator Math::uint_alt_t() const;
 
 	operator ObjectID() const;
 
@@ -488,6 +482,10 @@ public:
 	_FORCE_INLINE_ operator T() const { return static_cast<T>(operator int64_t()); }
 	template <typename T>
 	_FORCE_INLINE_ operator BitField<T>() const { return static_cast<T>(operator uint64_t()); }
+	template <typename T>
+	_FORCE_INLINE_ operator TypedArray<T>() const { return operator Array(); }
+	template <typename K, typename V>
+	_FORCE_INLINE_ operator TypedDictionary<K, V>() const { return operator Dictionary(); }
 
 	Object *get_validated_object() const;
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
@@ -497,10 +495,12 @@ public:
 	Variant(int32_t p_int32);
 	Variant(int16_t p_int16);
 	Variant(int8_t p_int8);
+	Variant(Math::int_alt_t p_int_alt);
 	Variant(uint64_t p_uint64);
 	Variant(uint32_t p_uint32);
 	Variant(uint16_t p_uint16);
 	Variant(uint8_t p_uint8);
+	Variant(Math::uint_alt_t p_uint_alt);
 	Variant(float p_float);
 	Variant(double p_double);
 	Variant(const ObjectID &p_id);
@@ -558,6 +558,12 @@ public:
 	template <typename T>
 	_FORCE_INLINE_ Variant(BitField<T> p_bitfield) :
 			Variant(static_cast<uint64_t>(p_bitfield)) {}
+	template <typename T>
+	_FORCE_INLINE_ Variant(const TypedArray<T> &p_typed_array) :
+			Variant(static_cast<const Array &>(p_typed_array)) {}
+	template <typename K, typename V>
+	_FORCE_INLINE_ Variant(const TypedDictionary<K, V> &p_typed_dictionary) :
+			Variant(static_cast<const Dictionary &>(p_typed_dictionary)) {}
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {
@@ -605,24 +611,26 @@ public:
 	}
 
 	static Variant::Type get_operator_return_type(Operator p_operator, Type p_type_a, Type p_type_b);
-	typedef void (*ValidatedOperatorEvaluator)(const Variant *left, const Variant *right, Variant *r_ret);
+	typedef void (*ValidatedOperatorEvaluator)(const Variant *p_left, const Variant *p_right, Variant *r_ret);
 	static ValidatedOperatorEvaluator get_validated_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
-	typedef void (*PTROperatorEvaluator)(const void *left, const void *right, void *r_ret);
+	typedef void (*PTROperatorEvaluator)(const void *p_left, const void *p_right, void *r_ret);
 	static PTROperatorEvaluator get_ptr_operator_evaluator(Operator p_operator, Type p_type_a, Type p_type_b);
 
 	void zero();
 	Variant duplicate(bool p_deep = false) const;
-	Variant recursive_duplicate(bool p_deep, int recursion_count) const;
+	Variant duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
+	Variant recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const;
 
 	/* Built-In Methods */
 
-	typedef void (*ValidatedBuiltInMethod)(Variant *base, const Variant **p_args, int p_argcount, Variant *r_ret);
+	typedef void (*ValidatedBuiltInMethod)(Variant *p_base, const Variant **p_args, int p_argcount, Variant *r_ret);
 	typedef void (*PTRBuiltInMethod)(void *p_base, const void **p_args, void *r_ret, int p_argcount);
 
 	static bool has_builtin_method(Variant::Type p_type, const StringName &p_method);
 
 	static ValidatedBuiltInMethod get_validated_builtin_method(Variant::Type p_type, const StringName &p_method);
 	static PTRBuiltInMethod get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method);
+	static PTRBuiltInMethod get_ptr_builtin_method_with_compatibility(Variant::Type p_type, const StringName &p_method, uint32_t p_hash);
 
 	static MethodInfo get_builtin_method_info(Variant::Type p_type, const StringName &p_method);
 	static int get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method);
@@ -637,6 +645,7 @@ public:
 	static void get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list);
 	static int get_builtin_method_count(Variant::Type p_type);
 	static uint32_t get_builtin_method_hash(Variant::Type p_type, const StringName &p_method);
+	static Vector<uint32_t> get_builtin_method_compatibility_hashes(Variant::Type p_type, const StringName &p_method);
 
 	void callp(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
@@ -659,9 +668,9 @@ public:
 	void call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 	static void call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error);
 
-	static String get_call_error_text(const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
-	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
-	static String get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce);
+	static String get_call_error_text(const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &p_ce);
+	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Callable::CallError &p_ce);
+	static String get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &p_ce);
 
 	//dynamic (includes Object)
 	void get_method_list(List<MethodInfo> *p_list) const;
@@ -670,7 +679,7 @@ public:
 	/* Constructors */
 
 	typedef void (*ValidatedConstructor)(Variant *r_base, const Variant **p_args);
-	typedef void (*PTRConstructor)(void *base, const void **p_args);
+	typedef void (*PTRConstructor)(void *r_base, const void **p_args);
 
 	static int get_constructor_count(Variant::Type p_type);
 	static ValidatedConstructor get_validated_constructor(Variant::Type p_type, int p_constructor);
@@ -678,14 +687,14 @@ public:
 	static int get_constructor_argument_count(Variant::Type p_type, int p_constructor);
 	static Variant::Type get_constructor_argument_type(Variant::Type p_type, int p_constructor, int p_argument);
 	static String get_constructor_argument_name(Variant::Type p_type, int p_constructor, int p_argument);
-	static void construct(Variant::Type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	static void construct(Variant::Type p_type, Variant &r_base, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	static void get_constructor_list(Type p_type, List<MethodInfo> *r_list); //convenience
 
 	/* Destructors */
 
 	// Only ptrcall is available.
-	typedef void (*PTRDestructor)(void *base);
+	typedef void (*PTRDestructor)(void *r_base);
 
 	static PTRDestructor get_ptr_destructor(Variant::Type p_type);
 	static bool has_destructor(Variant::Type p_type);
@@ -695,8 +704,8 @@ public:
 	void set_named(const StringName &p_member, const Variant &p_value, bool &r_valid);
 	Variant get_named(const StringName &p_member, bool &r_valid) const;
 
-	typedef void (*ValidatedSetter)(Variant *base, const Variant *value);
-	typedef void (*ValidatedGetter)(const Variant *base, Variant *value);
+	typedef void (*ValidatedSetter)(Variant *r_base, const Variant *p_value);
+	typedef void (*ValidatedGetter)(const Variant *p_base, Variant *r_value);
 
 	static bool has_member(Variant::Type p_type, const StringName &p_member);
 	static Variant::Type get_member_type(Variant::Type p_type, const StringName &p_member);
@@ -706,8 +715,8 @@ public:
 	static ValidatedSetter get_member_validated_setter(Variant::Type p_type, const StringName &p_member);
 	static ValidatedGetter get_member_validated_getter(Variant::Type p_type, const StringName &p_member);
 
-	typedef void (*PTRSetter)(void *base, const void *value);
-	typedef void (*PTRGetter)(const void *base, void *value);
+	typedef void (*PTRSetter)(void *r_base, const void *p_value);
+	typedef void (*PTRGetter)(const void *p_base, void *r_value);
 
 	static PTRSetter get_member_ptr_setter(Variant::Type p_type, const StringName &p_member);
 	static PTRGetter get_member_ptr_getter(Variant::Type p_type, const StringName &p_member);
@@ -718,14 +727,14 @@ public:
 	static Variant::Type get_indexed_element_type(Variant::Type p_type);
 	static uint32_t get_indexed_element_usage(Variant::Type p_type);
 
-	typedef void (*ValidatedIndexedSetter)(Variant *base, int64_t index, const Variant *value, bool *oob);
-	typedef void (*ValidatedIndexedGetter)(const Variant *base, int64_t index, Variant *value, bool *oob);
+	typedef void (*ValidatedIndexedSetter)(Variant *r_base, int64_t p_index, const Variant *p_value, bool *r_oob);
+	typedef void (*ValidatedIndexedGetter)(const Variant *p_base, int64_t p_index, Variant *r_value, bool *r_oob);
 
 	static ValidatedIndexedSetter get_member_validated_indexed_setter(Variant::Type p_type);
 	static ValidatedIndexedGetter get_member_validated_indexed_getter(Variant::Type p_type);
 
-	typedef void (*PTRIndexedSetter)(void *base, int64_t index, const void *value);
-	typedef void (*PTRIndexedGetter)(const void *base, int64_t index, void *value);
+	typedef void (*PTRIndexedSetter)(void *r_base, int64_t p_index, const void *p_value);
+	typedef void (*PTRIndexedGetter)(const void *p_base, int64_t p_index, void *r_value);
 
 	static PTRIndexedSetter get_member_ptr_indexed_setter(Variant::Type p_type);
 	static PTRIndexedGetter get_member_ptr_indexed_getter(Variant::Type p_type);
@@ -739,17 +748,17 @@ public:
 
 	static bool is_keyed(Variant::Type p_type);
 
-	typedef void (*ValidatedKeyedSetter)(Variant *base, const Variant *key, const Variant *value, bool *valid);
-	typedef void (*ValidatedKeyedGetter)(const Variant *base, const Variant *key, Variant *value, bool *valid);
-	typedef bool (*ValidatedKeyedChecker)(const Variant *base, const Variant *key, bool *valid);
+	typedef void (*ValidatedKeyedSetter)(Variant *p_base, const Variant *p_key, const Variant *p_value, bool *r_valid);
+	typedef void (*ValidatedKeyedGetter)(const Variant *p_base, const Variant *p_key, Variant *p_value, bool *r_valid);
+	typedef bool (*ValidatedKeyedChecker)(const Variant *p_base, const Variant *p_key, bool *r_valid);
 
 	static ValidatedKeyedSetter get_member_validated_keyed_setter(Variant::Type p_type);
 	static ValidatedKeyedGetter get_member_validated_keyed_getter(Variant::Type p_type);
 	static ValidatedKeyedChecker get_member_validated_keyed_checker(Variant::Type p_type);
 
-	typedef void (*PTRKeyedSetter)(void *base, const void *key, const void *value);
-	typedef void (*PTRKeyedGetter)(const void *base, const void *key, void *value);
-	typedef uint32_t (*PTRKeyedChecker)(const void *base, const void *key);
+	typedef void (*PTRKeyedSetter)(void *p_base, const void *p_key, const void *p_value);
+	typedef void (*PTRKeyedGetter)(const void *p_base, const void *p_key, void *r_value);
+	typedef uint32_t (*PTRKeyedChecker)(const void *p_base, const void *p_key);
 
 	static PTRKeyedSetter get_member_ptr_keyed_setter(Variant::Type p_type);
 	static PTRKeyedGetter get_member_ptr_keyed_getter(Variant::Type p_type);
@@ -772,8 +781,8 @@ public:
 		GET_NAMED_ERR,
 		GET_INDEXED_ERR
 	};
-	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr, VariantSetError *err_code = nullptr);
-	Variant get(const Variant &p_index, bool *r_valid = nullptr, VariantGetError *err_code = nullptr) const;
+	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = nullptr, VariantSetError *r_err_code = nullptr);
+	Variant get(const Variant &p_index, bool *r_valid = nullptr, VariantGetError *r_err_code = nullptr) const;
 	bool in(const Variant &p_index, bool *r_valid = nullptr) const;
 
 	bool iter_init(Variant &r_iter, bool &r_valid) const;
@@ -811,19 +820,21 @@ public:
 	static void get_utility_function_list(List<StringName> *r_functions);
 	static int get_utility_function_count();
 
-	//argsVariant call()
+	[[nodiscard]] bool operator==(const Variant &p_variant) const;
+	[[nodiscard]] bool operator<(const Variant &p_variant) const;
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator!=(const Variant &p_variant) const { return !(*this == p_variant); }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator<=(const Variant &p_variant) const { return !(p_variant < *this); }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator>(const Variant &p_variant) const { return p_variant < *this; }
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator>=(const Variant &p_variant) const { return !(*this < p_variant); }
 
-	bool operator==(const Variant &p_variant) const;
-	bool operator!=(const Variant &p_variant) const;
-	bool operator<(const Variant &p_variant) const;
 	uint32_t hash() const;
-	uint32_t recursive_hash(int recursion_count) const;
+	uint32_t recursive_hash(int p_recursion_count) const;
 
-	// By default, performs a semantic comparison. Otherwise, numeric/binary comparison (if appropriate).
-	bool hash_compare(const Variant &p_variant, int recursion_count = 0, bool semantic_comparison = true) const;
+	// Performs a semantic comparison (where NaN == NaN). Falls back to normal equality comparison (OP_EQUAL) when no special handling is needed.
+	bool hash_compare(const Variant &p_variant, int p_recursion_count = 0, bool p_semantic_comparison = true) const;
 	bool identity_compare(const Variant &p_variant) const;
 	bool booleanize() const;
-	String stringify(int recursion_count = 0) const;
+	String stringify(int p_recursion_count = 0) const;
 	String to_json_string() const;
 
 	static void get_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
@@ -837,8 +848,8 @@ public:
 	static bool has_enum(Variant::Type p_type, const StringName &p_enum_name);
 	static StringName get_enum_for_enumeration(Variant::Type p_type, const StringName &p_enumeration);
 
-	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
-	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
+	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *p_ud);
+	typedef void (*ObjectConstruct)(const String &p_text, void *p_ud, Variant &r_value);
 
 	String get_construct_string() const;
 	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = nullptr, void *p_construct_ud = nullptr);
@@ -871,33 +882,14 @@ public:
 	}
 };
 
-//typedef Dictionary Dictionary; no
-//typedef Array Array;
-
 template <typename... VarArgs>
 Vector<Variant> varray(VarArgs... p_args) {
-	Vector<Variant> v;
-
-	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-	uint32_t argc = sizeof...(p_args);
-
-	if (argc > 0) {
-		v.resize(argc);
-		Variant *vw = v.ptrw();
-
-		for (uint32_t i = 0; i < argc; i++) {
-			vw[i] = args[i];
-		}
-	}
-	return v;
+	return Vector<Variant>{ p_args... };
 }
 
-struct VariantHasher {
-	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
-};
-
-struct VariantComparator {
-	static _FORCE_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
+template <>
+struct HashMapComparatorDefault<Variant> {
+	static bool compare(const Variant &p_lhs, const Variant &p_rhs) { return p_lhs.hash_compare(p_rhs); }
 };
 
 struct StringLikeVariantComparator {
@@ -923,14 +915,9 @@ const Variant::ObjData &Variant::_get_obj() const {
 template <typename... VarArgs>
 String vformat(const String &p_text, const VarArgs... p_args) {
 	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-	Array args_array;
-	args_array.resize(sizeof...(p_args));
-	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-		args_array[i] = args[i];
-	}
 
 	bool error = false;
-	String fmt = p_text.sprintf(args_array, &error);
+	String fmt = p_text.sprintf(Span(args, sizeof...(p_args)), &error);
 
 	ERR_FAIL_COND_V_MSG(error, String(), String("Formatting error in string \"") + p_text + "\": " + fmt + ".");
 
@@ -985,14 +972,6 @@ Array::Iterator &Array::Iterator::operator++() {
 Array::Iterator &Array::Iterator::operator--() {
 	element_ptr--;
 	return *this;
-}
-
-const Variant &Array::ConstIterator::operator*() const {
-	return *element_ptr;
-}
-
-const Variant *Array::ConstIterator::operator->() const {
-	return element_ptr;
 }
 
 Array::ConstIterator &Array::ConstIterator::operator++() {

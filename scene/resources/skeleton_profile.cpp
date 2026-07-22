@@ -30,6 +30,9 @@
 
 #include "skeleton_profile.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+
 bool SkeletonProfile::_set(const StringName &p_path, const Variant &p_value) {
 	ERR_FAIL_COND_V(is_read_only, false);
 	String path = p_path;
@@ -133,6 +136,9 @@ bool SkeletonProfile::_get(const StringName &p_path, Variant &r_ret) const {
 }
 
 void SkeletonProfile::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (is_read_only) {
 		if (p_property.name == ("group_size") || p_property.name == ("bone_size") || p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -150,13 +156,6 @@ void SkeletonProfile::_validate_property(PropertyInfo &p_property) const {
 		}
 		p_property.hint_string = hint;
 	}
-
-	PackedStringArray split = p_property.name.split("/");
-	if (split.size() == 3 && split[0] == "bones") {
-		if (split[2] == "bone_tail" && get_tail_direction(split[1].to_int()) != TAIL_DIRECTION_SPECIFIC_CHILD) {
-			p_property.usage = PROPERTY_USAGE_NONE;
-		}
-	}
 }
 
 void SkeletonProfile::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -167,7 +166,7 @@ void SkeletonProfile::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < groups.size(); i++) {
 		String path = "groups/" + itos(i) + "/";
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "group_name"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, path + "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()));
 		if (i > 0) {
 			group_names = group_names + ",";
 		}
@@ -175,18 +174,16 @@ void SkeletonProfile::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 	for (int i = 0; i < bones.size(); i++) {
 		String path = "bones/" + itos(i) + "/";
+		int bone_tail_usage = (get_tail_direction(i) != TAIL_DIRECTION_SPECIFIC_CHILD) ? PROPERTY_USAGE_NONE : PROPERTY_USAGE_DEFAULT;
+
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "bone_name"));
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "bone_parent"));
 		p_list->push_back(PropertyInfo(Variant::INT, path + "tail_direction", PROPERTY_HINT_ENUM, "AverageChildren,SpecificChild,End"));
-		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "bone_tail"));
+		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "bone_tail", PROPERTY_HINT_NONE, "", bone_tail_usage));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, path + "reference_pose"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, path + "handle_offset"));
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, path + "group", PROPERTY_HINT_ENUM, group_names));
 		p_list->push_back(PropertyInfo(Variant::BOOL, path + "require"));
-	}
-
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
 	}
 }
 

@@ -39,7 +39,7 @@
 // https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
 
 template <typename T, typename C = Comparator<T>, typename A = DefaultAllocator>
-class RBSet {
+class _WARN_UNUSED_ RBSet {
 	enum Color {
 		RED,
 		BLACK
@@ -78,7 +78,6 @@ public:
 		const T &get() const {
 			return value;
 		}
-		Element() {}
 	};
 
 	typedef T ValueType;
@@ -97,11 +96,11 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return E == p_other.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return E != p_other.E; }
 
 		explicit operator bool() const { return E != nullptr; }
-		Iterator(Element *p_E) { E = p_E; }
+		Iterator(Element *p_element) { E = p_element; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { E = p_it.E; }
 
@@ -123,10 +122,10 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return E == p_other.E; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return E != p_other.E; }
 
-		_FORCE_INLINE_ ConstIterator(const Element *p_E) { E = p_E; }
+		_FORCE_INLINE_ ConstIterator(const Element *p_element) { E = p_element; }
 		_FORCE_INLINE_ ConstIterator() {}
 		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
 
@@ -535,16 +534,16 @@ private:
 		ERR_FAIL_COND(_data._nil->color == RED);
 	}
 
-	void _calculate_depth(Element *p_element, int &max_d, int d) const {
+	void _calculate_depth(Element *p_element, int &p_max_d, int p_d) const {
 		if (p_element == _data._nil) {
 			return;
 		}
 
-		_calculate_depth(p_element->left, max_d, d + 1);
-		_calculate_depth(p_element->right, max_d, d + 1);
+		_calculate_depth(p_element->left, p_max_d, p_d + 1);
+		_calculate_depth(p_element->right, p_max_d, p_d + 1);
 
-		if (d > max_d) {
-			max_d = d;
+		if (p_d > p_max_d) {
+			p_max_d = p_d;
 		}
 	}
 
@@ -695,11 +694,32 @@ public:
 	}
 
 	void operator=(const RBSet &p_set) {
+		if (this == &p_set) {
+			return;
+		}
+
 		_copy_from(p_set);
 	}
 
-	RBSet(const RBSet &p_set) {
+	void operator=(RBSet &&p_set) {
+		if (this == &p_set) {
+			return;
+		}
+
+		SWAP(_data._root, p_set._data._root);
+		SWAP(_data.size_cache, p_set._data.size_cache);
+	}
+
+	explicit RBSet(const RBSet &p_set) {
 		_copy_from(p_set);
+	}
+
+	RBSet(RBSet &&p_set) {
+		_data._root = p_set._data._root;
+		_data.size_cache = p_set._data.size_cache;
+
+		p_set._data._root = nullptr;
+		p_set._data.size_cache = 0;
 	}
 
 	RBSet(std::initializer_list<T> p_init) {

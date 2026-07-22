@@ -6,12 +6,12 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
+ * by the Xiph.Org Foundation and contributors                      *
+ * https://www.xiph.org/                                            *
  *                                                                  *
  ********************************************************************
 
   function:
-    last mod: $Id$
 
  ********************************************************************/
 #if !defined(_internal_H)
@@ -44,6 +44,10 @@
 # if __GNUC_PREREQ(4,2)
 #  pragma GCC diagnostic ignored "-Wparentheses"
 # endif
+/*Et tu, clang.*/
+# if defined(__clang__)
+#  pragma clang diagnostic ignored "-Wparentheses"
+# endif
 
 /*Some assembly constructs require aligned operands.
   The following macros are _only_ intended for structure member declarations.
@@ -72,7 +76,7 @@
 
 
 /*This library's version.*/
-# define OC_VENDOR_STRING "Xiph.Org libtheora 1.2.0alpha 20100924 (Ptalarbvorm)"
+# define OC_VENDOR_STRING "Xiph.Org libtheora 1.2.0 20250329 (Ptalarbvorm)"
 
 /*Theora bitstream version.*/
 # define TH_VERSION_MAJOR (3)

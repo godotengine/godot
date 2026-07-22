@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/abstract_polygon_2d_editor.h"
+#include "editor/scene/2d/abstract_polygon_2d_editor.h"
 #include "scene/2d/navigation/navigation_obstacle_2d.h"
 
 class NavigationObstacle2DEditor : public AbstractPolygon2DEditor {

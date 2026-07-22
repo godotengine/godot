@@ -111,8 +111,8 @@ public:
 	/* WebSocketPeer */
 	virtual Ref<WebSocketPeer> get_peer(int p_peer_id) const;
 
-	Error create_client(const String &p_url, Ref<TLSOptions> p_options);
-	Error create_server(int p_port, IPAddress p_bind_ip, Ref<TLSOptions> p_options);
+	Error create_client(const String &p_url, const Ref<TLSOptions> &p_options);
+	Error create_server(int p_port, IPAddress p_bind_ip, const Ref<TLSOptions> &p_options);
 
 	void set_supported_protocols(const Vector<String> &p_protocols);
 	Vector<String> get_supported_protocols() const;

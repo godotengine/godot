@@ -16,7 +16,7 @@ export default {
 			},
 		},
 		"convertStyleToAttrs",
-		"removeScriptElement",
+		"removeScripts",
 		"removeStyleElement",
 		"reusePaths",
 		"sortAttrs",

@@ -32,12 +32,14 @@
 
 #include "crash_handler_macos.h"
 
-#include "core/input/input.h"
-#import "drivers/apple/joypad_apple.h"
+#include "core/input/input_event.h"
+#include "core/templates/rb_map.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
+
+class JoypadSDL;
 
 class OS_MacOS : public OS_Unix {
 #ifdef COREAUDIO_ENABLED
@@ -62,8 +64,11 @@ protected:
 	int argc = 0;
 	char **argv = nullptr;
 
-	JoypadApple *joypad_apple = nullptr;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 	MainLoop *main_loop = nullptr;
+	CFRunLoopTimerRef wait_timer = nil;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
@@ -75,8 +80,29 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
+	static inline const char *headless_args[] = {
+		"--headless",
+		"-h",
+		"--help",
+		"/?",
+		"--version",
+		"--dump-gdextension-interface",
+		"--dump-extension-api",
+		"--dump-gdextension-interface-json",
+		"--dump-extension-api-with-docs",
+		"--validate-extension-api",
+		"--convert-3to4",
+		"--validate-conversion-3to4",
+		"--doctool",
+		"--test",
+	};
+
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
+
 	virtual void set_cmdline_platform_args(const List<String> &p_args);
 	virtual List<String> get_cmdline_platform_args() const override;
+
+	virtual void load_shell_environment() const override;
 
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
@@ -95,6 +121,7 @@ public:
 	virtual String get_temp_path() const override;
 	virtual String get_bundle_resource_dir() const override;
 	virtual String get_bundle_icon_path() const override;
+	virtual String get_bundle_icon_name() const override;
 	virtual String get_godot_dir_name() const override;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
@@ -103,6 +130,7 @@ public:
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
 
 	virtual String get_locale() const override;
+	virtual Vector<String> get_preferred_locales() const override;
 
 	virtual Vector<String> get_system_fonts() const override;
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
@@ -110,6 +138,7 @@ public:
 	virtual String get_executable_path() const override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual Error open_with_program(const String &p_program_path, const List<String> &p_paths) override;
 	virtual bool is_process_running(const ProcessID &p_pid) const override;
 
 	virtual String get_unique_id() const override;
@@ -139,6 +168,17 @@ public:
 
 	virtual void run() = 0;
 
+	virtual String get_platform_string(PlatformString p_platform_string) const override {
+		switch (p_platform_string) {
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in Finder");
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in Finder");
+			default:
+				return OS::get_platform_string(p_platform_string);
+		}
+	}
+
 	OS_MacOS(const char *p_execpath, int p_argc, char **p_argv);
 };
 
@@ -162,7 +202,14 @@ public:
 	OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv);
 };
 
-#ifdef DEBUG_ENABLED
+class OS_MacOS_Headless : public OS_MacOS {
+public:
+	virtual void run() override;
+
+	OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv);
+};
+
+#ifdef TOOLS_ENABLED
 
 class OS_MacOS_Embedded : public OS_MacOS {
 public:
