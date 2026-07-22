@@ -146,6 +146,10 @@ def configure(env: "SConsEnvironment"):
         env.extra_suffix += ".san"
         env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
 
+        if not env["use_llvm"] and env["arch"] == "x86_64":
+            env.Append(CCFLAGS=["-mcmodel=medium"])
+            env.Append(LINKFLAGS=["-mcmodel=medium"])
+
         if env["use_ubsan"]:
             env.Append(
                 CCFLAGS=[
