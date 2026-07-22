@@ -1540,7 +1540,9 @@ void RuntimeNodeSelect::_reset_camera_3d() {
 	if (game_camera) {
 		Transform3D transform = game_camera->get_camera_transform();
 		transform.translate_local(0, 0, -cursor.distance);
-		cursor.pos = transform.origin;
+		cursor.pos_x = transform.origin.x;
+		cursor.pos_y = transform.origin.y;
+		cursor.pos_z = transform.origin.z;
 
 		cursor.x_rot = -game_camera->get_global_rotation().x;
 		cursor.y_rot = -game_camera->get_global_rotation().y;

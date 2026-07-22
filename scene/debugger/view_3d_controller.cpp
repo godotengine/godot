@@ -42,7 +42,7 @@ using namespace View3DControllerConsts;
 
 Transform3D View3DController::_to_camera_transform(const Cursor &p_cursor) const {
 	Transform3D camera_transform;
-	camera_transform.translate_local(p_cursor.pos);
+	camera_transform.translate_local(Vector3(p_cursor.pos_x, p_cursor.pos_y, p_cursor.pos_z));
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -p_cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -p_cursor.y_rot);
 
@@ -334,7 +334,7 @@ void View3DController::cursor_pan(const Ref<InputEventWithModifiers> &p_event, c
 
 	Transform3D camera_transform;
 
-	camera_transform.translate_local(cursor.pos);
+	camera_transform.translate_local(Vector3(cursor.pos_x, cursor.pos_y, cursor.pos_z));
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
 	Vector3 translation(
@@ -343,7 +343,9 @@ void View3DController::cursor_pan(const Ref<InputEventWithModifiers> &p_event, c
 			0);
 	translation *= cursor.distance / DISTANCE_DEFAULT;
 	camera_transform.translate_local(translation);
-	cursor.pos = camera_transform.origin;
+	cursor.pos_x = camera_transform.origin.x;
+	cursor.pos_y = camera_transform.origin.y;
+	cursor.pos_z = camera_transform.origin.z;
 
 	emit_signal(SNAME("cursor_panned"));
 }
@@ -439,7 +441,9 @@ void View3DController::cursor_look(const Ref<InputEventWithModifiers> &p_event, 
 	Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
 	Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
 	Vector3 diff = prev_pos - pos;
-	cursor.pos += diff;
+	cursor.pos_x += diff.x;
+	cursor.pos_y += diff.y;
+	cursor.pos_z += diff.z;
 
 	set_view_type(VIEW_TYPE_USER);
 }
@@ -476,10 +480,12 @@ void View3DController::update_camera(const real_t p_delta) {
 		if (freelook) {
 			// Higher inertia should increase "lag" (lerp with factor between 0 and 1).
 			// Inertia of zero should produce instant movement (lerp with factor of 1) in this case it returns a really high value and gets clamped to 1.
-			float factor = (1.0 / freelook_inertia) * p_delta;
+			double factor = (1.0 / freelook_inertia) * p_delta;
 
 			// We interpolate a different point here, because in freelook mode the focus point (cursor.pos) orbits around eye_pos
-			cursor_interp.eye_pos = old_camera_cursor.eye_pos.lerp(cursor.eye_pos, CLAMP(factor, 0, 1));
+			cursor_interp.eye_pos_x = Math::lerp(old_camera_cursor.eye_pos_x, cursor.eye_pos_x, CLAMP(factor, 0, 1));
+			cursor_interp.eye_pos_y = Math::lerp(old_camera_cursor.eye_pos_y, cursor.eye_pos_y, CLAMP(factor, 0, 1));
+			cursor_interp.eye_pos_z = Math::lerp(old_camera_cursor.eye_pos_z, cursor.eye_pos_z, CLAMP(factor, 0, 1));
 		}
 
 		cursor_interp.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_delta * (1 / orbit_inertia)));
@@ -494,18 +500,24 @@ void View3DController::update_camera(const real_t p_delta) {
 
 		if (freelook) {
 			Vector3 forward = _to_camera_transform(cursor_interp).basis.xform(Vector3(0, 0, -1));
-			cursor_interp.pos = cursor_interp.eye_pos + forward * cursor_interp.distance;
+			cursor_interp.pos_x = cursor_interp.eye_pos_x + forward.x * cursor_interp.distance;
+			cursor_interp.pos_y = cursor_interp.eye_pos_y + forward.y * cursor_interp.distance;
+			cursor_interp.pos_z = cursor_interp.eye_pos_z + forward.z * cursor_interp.distance;
 		} else {
-			cursor_interp.pos = old_camera_cursor.pos.lerp(cursor.pos, MIN(1.f, p_delta * (1 / translation_inertia)));
+			cursor_interp.pos_x = Math::lerp(old_camera_cursor.pos_x, cursor.pos_x, MIN(1.0, p_delta * (1 / translation_inertia)));
+			cursor_interp.pos_y = Math::lerp(old_camera_cursor.pos_y, cursor.pos_y, MIN(1.0, p_delta * (1 / translation_inertia)));
+			cursor_interp.pos_z = Math::lerp(old_camera_cursor.pos_z, cursor.pos_z, MIN(1.0, p_delta * (1 / translation_inertia)));
 			cursor_interp.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN((float)1.0, p_delta * (1 / zoom_inertia)));
 		}
 
 		// Apply camera transform.
 
 		const real_t tolerance = 0.001;
+		// Use a smaller tolerance for position, as it's always stored in doubles.
+		const double pos_tolerance = 0.000001;
 		if (!Math::is_equal_approx(old_camera_cursor.x_rot, cursor_interp.x_rot, tolerance) || !Math::is_equal_approx(old_camera_cursor.y_rot, cursor_interp.y_rot, tolerance)) {
 			equal = false;
-		} else if (!old_camera_cursor.pos.is_equal_approx(cursor_interp.pos)) {
+		} else if (!Math::is_equal_approx(old_camera_cursor.pos_x, cursor_interp.pos_x, pos_tolerance) || !Math::is_equal_approx(old_camera_cursor.pos_y, cursor_interp.pos_y, pos_tolerance) || !Math::is_equal_approx(old_camera_cursor.pos_z, cursor_interp.pos_z, pos_tolerance)) {
 			equal = false;
 		} else if (!Math::is_equal_approx(old_camera_cursor.distance, cursor_interp.distance, tolerance)) {
 			equal = false;
@@ -576,8 +588,12 @@ void View3DController::update_freelook(const float p_delta) {
 	}
 
 	const Vector3 motion = direction * speed * p_delta;
-	cursor.pos += motion;
-	cursor.eye_pos += motion;
+	cursor.pos_x += motion.x;
+	cursor.pos_y += motion.y;
+	cursor.pos_z += motion.z;
+	cursor.eye_pos_x += motion.x;
+	cursor.eye_pos_y += motion.y;
+	cursor.eye_pos_z += motion.z;
 }
 
 void View3DController::scale_freelook_speed(const float p_scale) {
@@ -717,9 +733,13 @@ void View3DController::set_freelook_enabled(const bool p_enabled) {
 	if (freelook) {
 		// Make sure eye_pos is synced, because freelook referential is eye pos rather than orbit pos.
 		Vector3 forward = to_camera_transform().basis.xform(Vector3(0, 0, -1));
-		cursor.eye_pos = cursor.pos - cursor.distance * forward;
+		cursor.eye_pos_x = cursor.pos_x - cursor.distance * forward.x;
+		cursor.eye_pos_y = cursor.pos_y - cursor.distance * forward.y;
+		cursor.eye_pos_z = cursor.pos_z - cursor.distance * forward.z;
 		// Also sync the interpolated cursor's eye_pos, otherwise switching to freelook will be trippy if inertia is active.
-		cursor_interp.eye_pos = cursor.eye_pos;
+		cursor_interp.eye_pos_x = cursor.eye_pos_x;
+		cursor_interp.eye_pos_y = cursor.eye_pos_y;
+		cursor_interp.eye_pos_z = cursor.eye_pos_z;
 
 		if (freelook_speed_zoom_link) {
 			// Re-adjust freelook speed from the current zoom level.
