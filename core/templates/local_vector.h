@@ -99,7 +99,7 @@ public:
 	/// Removes the item copying the last value into the position of the one to
 	/// remove. It's generally faster than `remove_at`.
 	void remove_at_unordered(U p_index) {
-		ERR_FAIL_INDEX(p_index, count);
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
 		count--;
 		if (count > p_index) {
 			data[p_index] = std::move(data[count]);
