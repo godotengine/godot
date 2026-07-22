@@ -244,6 +244,11 @@ TEST_CASE("[XMLParser] GDExtension raw buffer parsing") {
 	REQUIRE_EQ(parser.read(), OK);
 	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
 	CHECK_EQ(parser.get_node_name(), "a");
+
+	// A non-null-terminated buffer should fail and return ERR_INVALID_DATA.
+	XMLParser parser_fail;
+	const char input_no_null[] = { '<', 'a', '>', 'v', 'a', 'l', 'u', 'e', '<', '/', 'a', '>', 'X' };
+	REQUIRE_EQ(parser_fail._open_buffer((const uint8_t *)input_no_null, 12), ERR_INVALID_DATA);
 }
 
 } // namespace TestXMLParser

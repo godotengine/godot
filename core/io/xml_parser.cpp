@@ -477,7 +477,7 @@ Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
 Error XMLParser::_open_buffer(const uint8_t *p_buffer, size_t p_size) {
 	ERR_FAIL_COND_V(p_size == 0, ERR_INVALID_DATA);
 	ERR_FAIL_NULL_V(p_buffer, ERR_INVALID_DATA);
-	DEV_ASSERT(p_buffer[p_size] == 0);
+	ERR_FAIL_COND_V(p_buffer[p_size] != 0, ERR_INVALID_DATA);
 
 	if (data_copy) {
 		memdelete_arr(data_copy);
