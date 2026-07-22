@@ -1608,6 +1608,7 @@ void ScriptEditor::_notification(int p_what) {
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ScriptEditor::_close_builtin_scripts_from_scene));
 			EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &ScriptEditor::_res_saved_callback));
 			EditorNode::get_singleton()->connect("scene_saved", callable_mp(this, &ScriptEditor::_scene_saved_callback));
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptEditor::_project_settings_changed));
 			// Connect to scene_root child entered instead of scene_changed for new scenes.
 			EditorNode::get_singleton()->get_scene_root()->connect("child_entered_tree", callable_mp(this, &ScriptEditor::_connect_to_scene).unbind(1));
 			FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &ScriptEditor::_files_moved));
@@ -2802,6 +2803,18 @@ void ScriptEditor::_apply_editor_settings() {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(tab_container->get_tab_control(i))) {
 			teb->update_settings();
+		}
+	}
+}
+
+void ScriptEditor::_project_settings_changed() {
+	if (!ProjectSettings::get_singleton()->check_changed_settings_in_group("debug/gdscript/warnings")) {
+		return;
+	}
+
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		if (ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i))) {
+			seb->validate_script();
 		}
 	}
 }
