@@ -692,6 +692,7 @@ public:
 				SCOPE_LOCAL,
 				SCOPE_INSTANCE,
 				SCOPE_GLOBAL,
+				SCOPE_CUSTOM_INSTANCE,
 			};
 
 			int order = 0;

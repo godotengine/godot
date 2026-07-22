@@ -769,6 +769,9 @@ public:
 	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &) const = 0;
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
 
+	// Custom instance uniforms — set base offset into custom_instance_uniforms SSBO
+	virtual void instance_geometry_set_custom_shader_uniforms_offset(RID p_instance, int32_t p_offset) = 0;
+
 	/* BAKE API */
 
 	virtual TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) = 0;

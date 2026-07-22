@@ -9575,6 +9575,20 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						}
 						uniform_scope = ShaderNode::Uniform::SCOPE_INSTANCE;
 					}
+				} else if (ident == "custom") {
+					// custom uniform — like instance uniform but reads from custom_instance_uniforms SSBO
+					if (shader_type_identifier != StringName() && String(shader_type_identifier) != "spatial" && String(shader_type_identifier) != "canvas_item") {
+						_set_error(vformat(RTR("Custom instance uniforms are not yet implemented for '%s' shaders."), shader_type_identifier));
+						return ERR_PARSE_ERROR;
+					}
+					if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {
+						tk = _get_token();
+						if (tk.type != TK_UNIFORM) {
+							_set_expected_after_error("uniform", "custom");
+							return ERR_PARSE_ERROR;
+						}
+						uniform_scope = ShaderNode::Uniform::SCOPE_CUSTOM_INSTANCE;
+					}
 				}
 			};
 				[[fallthrough]];

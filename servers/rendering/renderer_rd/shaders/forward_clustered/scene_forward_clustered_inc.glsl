@@ -261,6 +261,12 @@ layout(set = 0, binding = 13, std430) restrict readonly buffer GlobalShaderUnifo
 }
 global_shader_uniforms;
 
+// Custom instance uniforms SSBO — written by compute shader, read by vertex/fragment shaders
+layout(set = 0, binding = 21, std430) buffer restrict readonly CustomInstanceUniformData {
+	vec4 data[];
+}
+custom_instance_uniforms;
+
 struct SDFVoxelGICascadeData {
 	vec3 position;
 	float to_probe;
@@ -356,6 +362,7 @@ struct InstanceData {
 	vec4 uv_scale;
 	uint flags;
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
+	uint custom_uniforms_ofs; //base offset in custom_instance_uniforms SSBO for custom instance variables
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 	uint layer_mask;
 	mat3x4 prev_transform;

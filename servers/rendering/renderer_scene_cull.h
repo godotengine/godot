@@ -442,6 +442,9 @@ public:
 
 		InstanceUniforms instance_uniforms;
 
+		// Custom instance uniforms offset (into custom_instance_uniforms SSBO)
+		int32_t custom_shader_uniforms_offset = -1;
+
 		//
 
 		RID self;
@@ -1069,6 +1072,9 @@ public:
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const;
 	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const;
+
+	// Custom instance uniforms — set base offset into custom_instance_uniforms SSBO
+	virtual void instance_geometry_set_custom_shader_uniforms_offset(RID p_instance, int32_t p_offset);
 
 	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation);
 	virtual uint32_t get_pipeline_compilations(RSE::PipelineSource p_source);

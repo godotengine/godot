@@ -978,6 +978,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							//instance variable, index it as such
 							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + "u)";
 							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_CUSTOM_INSTANCE) {
+							//custom instance variable, index into custom SSBO
+							code = "(" + p_default_actions.custom_instance_uniform_index_variable + "+" + itos(u.instance_index) + "u)";
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.custom_global_buffer_array_variable, code, u.type);
 						} else {
 							//regular uniform, index from UBO
 							code = actions.base_uniform_string + _mkid(vnode->name);
@@ -1087,6 +1091,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							//instance variable, index it as such
 							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + "u)";
 							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_CUSTOM_INSTANCE) {
+							//custom instance variable, index into custom SSBO
+							code = "(" + p_default_actions.custom_instance_uniform_index_variable + "+" + itos(u.instance_index) + "u)";
+							code = _get_global_shader_uniform_from_type_and_index(p_default_actions.custom_global_buffer_array_variable, code, u.type);
 						} else {
 							//regular uniform, index from UBO
 							code = actions.base_uniform_string + _mkid(anode->name);

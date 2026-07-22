@@ -1584,6 +1584,14 @@ Variant RendererSceneCull::instance_geometry_get_shader_parameter_default_value(
 	return instance->instance_uniforms.get_default(p_parameter);
 }
 
+void RendererSceneCull::instance_geometry_set_custom_shader_uniforms_offset(RID p_instance, int32_t p_offset) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL(instance);
+
+	instance->custom_shader_uniforms_offset = p_offset;
+	instance->version++;
+}
+
 void RendererSceneCull::mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) {
 	scene_render->mesh_generate_pipelines(p_mesh, p_background_compilation);
 }
@@ -4364,6 +4372,9 @@ void RendererSceneCull::update_dirty_instances() const {
 }
 
 void RendererSceneCull::update() {
+	// Pre-render compute hook for GDExtension (e.g., compute shader uniform updates)
+	pre_render_compute();
+
 	//optimize bvhs
 
 	uint32_t rid_count = scenario_owner.get_rid_count();
