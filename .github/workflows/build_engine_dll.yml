@@ -19,10 +19,10 @@ jobs:
     - name: SCons 패키지 설치
       run: pip install scons
 
-    - name: 윈도우용 메인 엔진 DLL 빌드
-      # accesskit=no와 d3d12=no 옵션을 추가하여 누락된 의존성 검사를 건너뜁니다.
+    - name: 윈도우용 초경량 메인 엔진 DLL 빌드
+      # 3D 차단, GDScript 모듈 차단, C# 차단 옵션을 조합한 최종 초경량 2D 전용 DLL 컴파일 명령어입니다.
       run: |
-        scons platform=windows target=template_release arch=x86_64 library_type=shared_library accesskit=no d3d12=no
+        scons platform=windows target=template_release arch=x86_64 library_type=shared_library accesskit=no d3d12=no optimize=size disable_3d=yes module_gdscript_enabled=no module_mono_enabled=no
 
     - name: 빌드 완료된 DLL 파일 업로드
       uses: actions/upload-artifact@v4
