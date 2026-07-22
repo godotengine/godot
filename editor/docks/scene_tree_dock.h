@@ -268,6 +268,15 @@ class SceneTreeDock : public EditorDock {
 	void _files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type);
 	void _script_dropped(const String &p_file, NodePath p_to);
 	void _quick_open(const String &p_file_path);
+	void _scene_tree_context_menu_closed();
+	// Connects `_scene_tree_context_menu_closed` to a Window-based dialog's
+	// `visibility_changed` signal. Window-based dialogs (AcceptDialog,
+	// ConfirmationDialog, CreateDialog, RenameDialog, ReparentDialog,
+	// EditorFileDialog) do not expose the `popup_hide` signal that
+	// Popup-derived classes have; `visibility_changed` is the equivalent
+	// and fires on both show and hide, so the handler filters to hide-only.
+	void _connect_dialog_visibility(Window *p_dialog);
+	void _on_dialog_visibility_changed(Window *p_dialog);
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
 	void _setup_tree_menu();
@@ -338,6 +347,8 @@ public:
 	void fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<Node *, NodePath> *p_renames);
 	void perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims = nullptr, LocalVector<Pair<StringName, StringName>> *r_folded_group_renames = nullptr);
 	void perform_node_replace(Node *p_base, Node *p_node, Node *p_by_node);
+	void focus_scene_tree();
+	virtual void grab_dock_focus() override;
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
 	EditorData *get_editor_data() { return editor_data; }
 

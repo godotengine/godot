@@ -138,7 +138,12 @@ private:
 	};
 
 	mutable RID accessibility_row_element;
+	mutable RID accessibility_group_element;
+
+public:
 	mutable bool accessibility_row_dirty = true;
+
+private:
 
 	Vector<Cell> cells;
 
@@ -190,6 +195,10 @@ private:
 		if (accessibility_row_element.is_valid()) {
 			AccessibilityServer::get_singleton()->free_element(accessibility_row_element);
 			accessibility_row_element = RID();
+		}
+		if (accessibility_group_element.is_valid()) {
+			AccessibilityServer::get_singleton()->free_element(accessibility_group_element);
+			accessibility_group_element = RID();
 		}
 		for (Cell &cell : cells) {
 			if (cell.accessibility_cell_element.is_valid()) {
@@ -804,6 +813,8 @@ private:
 
 	bool enable_auto_tooltip = true;
 
+	bool accessibility_as_grid = false;
+
 	bool hovered_update_queued = false;
 	void _determine_hovered_item();
 	void _queue_update_hovered_item();
@@ -826,6 +837,8 @@ private:
 	void _check_item_accessibility(TreeItem *p_item, PackedStringArray &r_warnings, int &r_row) const;
 
 	void _accessibility_clean_info(TreeItem *p_item);
+	void _accessibility_ensure_element(TreeItem *p_item);
+	RID _accessibility_get_item_parent_element(TreeItem *p_item) const;
 	void _accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_row, int p_level);
 
 protected:
@@ -960,6 +973,9 @@ public:
 
 	void set_hide_folding(bool p_hide);
 	bool is_folding_hidden() const;
+
+	void set_accessibility_as_grid(bool p_enable);
+	bool is_accessibility_as_grid() const;
 
 	void set_enable_recursive_folding(bool p_enable);
 	bool is_recursive_folding_enabled() const;

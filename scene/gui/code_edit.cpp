@@ -207,7 +207,6 @@ void CodeEdit::_notification(int p_what) {
 					RID item = code_completion_ac_items[i];
 					AccessibilityServer::get_singleton()->update_set_role(item, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU_ITEM);
 					AccessibilityServer::get_singleton()->update_set_list_item_index(item, i);
-					AccessibilityServer::get_singleton()->update_set_list_item_level(item, 0);
 					AccessibilityServer::get_singleton()->update_set_list_item_selected(item, i == code_completion_current_selected);
 					AccessibilityServer::get_singleton()->update_set_name(item, code_completion_options[i].display);
 					AccessibilityServer::get_singleton()->update_set_bounds(item, Rect2(code_completion_rect.position.x, code_completion_rect.position.y + row_height * i, code_completion_rect.size.x, row_height));
