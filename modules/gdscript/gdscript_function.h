@@ -347,6 +347,8 @@ private:
 	StringName source;
 	bool _static = false;
 	Vector<GDScriptDataType> argument_types;
+	// NOTE: This is the expected return type, but coroutines can actually return a `GDScriptFunctionState` object.
+	// Currently, it is only used to return a default value on error (as a fallback).
 	GDScriptDataType return_type;
 	MethodInfo method_info;
 	Variant rpc_config;

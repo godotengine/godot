@@ -88,6 +88,7 @@ void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::N
 }
 
 GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::DataType &p_datatype, GDScript *p_owner, bool p_handle_metatype) {
+	// TODO: Remove the `p_datatype.is_coroutine` condition in the future?
 	if (!p_datatype.is_set() || !p_datatype.is_hard_type() || p_datatype.is_coroutine) {
 		return GDScriptDataType();
 	}
@@ -2299,7 +2300,9 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	StringName func_name;
 	bool is_abstract = false;
 	bool is_static = false;
+	MethodInfo method_info;
 	Variant rpc_config;
+
 	GDScriptDataType return_type;
 	return_type.kind = GDScriptDataType::BUILTIN;
 	return_type.builtin_type = Variant::NIL;
@@ -2313,7 +2316,14 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		is_abstract = p_func->is_abstract;
 		is_static = p_func->is_static;
 		rpc_config = p_func->rpc_config;
-		return_type = _gdtype_from_datatype(p_func->return_type_constraint, p_script);
+
+		// NOTE: `_gdtype_from_datatype()` always uses `Variant` for coroutines, so we compensate for that here.
+		// Perhaps the behavior of `_gdtype_from_datatype()` should be changed instead.
+		GDScriptParser::DataType type = p_func->return_type_constraint;
+		type.is_coroutine = false;
+		return_type = _gdtype_from_datatype(type, p_script);
+
+		method_info.return_val = p_func->return_type_constraint.to_property_info(String());
 	} else {
 		if (p_for_ready) {
 			func_name = "@implicit_ready";
@@ -2322,10 +2332,9 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		}
 	}
 
-	MethodInfo method_info;
-
 	codegen.function_name = func_name;
 	method_info.name = func_name;
+
 	codegen.is_static = is_static;
 	if (is_abstract) {
 		method_info.flags |= METHOD_FLAG_VIRTUAL_REQUIRED;
@@ -2333,6 +2342,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	if (is_static) {
 		method_info.flags |= METHOD_FLAG_STATIC;
 	}
+
 	codegen.generator->write_start(p_script, func_name, is_static, rpc_config, return_type);
 
 	int optional_parameters = 0;
@@ -2512,13 +2522,8 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		p_script->implicit_ready = gd_function;
 	}
 
-	if (p_func) {
-		gd_function->return_type = _gdtype_from_datatype(p_func->return_type_constraint, p_script);
-		method_info.return_val = p_func->return_type_constraint.to_property_info(String());
-
-		if (p_func->is_vararg()) {
-			gd_function->_vararg_index = vararg_addr.address;
-		}
+	if (p_func && p_func->is_vararg()) {
+		gd_function->_vararg_index = vararg_addr.address;
 	}
 
 	gd_function->method_info = method_info;
@@ -2543,6 +2548,7 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 	StringName func_name = SNAME("@static_initializer");
 	bool is_static = true;
 	Variant rpc_config;
+
 	GDScriptDataType return_type;
 	return_type.kind = GDScriptDataType::BUILTIN;
 	return_type.builtin_type = Variant::NIL;
