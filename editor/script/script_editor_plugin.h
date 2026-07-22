@@ -471,6 +471,7 @@ public:
 	void notify_script_close(const Ref<Script> &p_script);
 	void notify_script_changed(const Ref<Script> &p_script);
 
+	void replace_help_class(const String &p_old_name, const String &p_new_name);
 	void goto_help(const String &p_desc) { _help_class_goto(p_desc); }
 	void update_doc(const String &p_name);
 	void clear_docs_from_script(const Ref<Script> &p_script);
