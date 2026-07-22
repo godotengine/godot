@@ -5031,13 +5031,13 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 							case Variant::RECT2:
 							case Variant::RECT2I:
 							case Variant::PLANE:
-							case Variant::QUATERNION:
 							case Variant::AABB:
 							case Variant::OBJECT:
 								error = index_type.builtin_type != Variant::STRING && index_type.builtin_type != Variant::STRING_NAME;
 								break;
 							// Expect String or number.
 							case Variant::BASIS:
+							case Variant::QUATERNION:
 							case Variant::VECTOR2:
 							case Variant::VECTOR2I:
 							case Variant::VECTOR3:
