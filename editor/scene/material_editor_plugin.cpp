@@ -474,8 +474,9 @@ void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo
 	EditorUndoRedoManager *undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
 	ERR_FAIL_NULL(undo_redo);
 
-	// For BaseMaterial3D, if a roughness or metallic textures is being assigned to an empty slot,
-	// set the respective metallic or roughness factor to 1.0 as a convenience feature
+	// For StandardMaterial3D, if a roughness or metallic textures is being assigned to an empty slot,
+	// set the respective metallic or roughness factor to 1.0 as a convenience feature.
+	// For ORMMaterial3D, if an ORM texture is being assigned, set ao_enabled to true.
 	BaseMaterial3D *base_material = Object::cast_to<BaseMaterial3D>(p_edited);
 	if (base_material) {
 		Texture2D *texture = Object::cast_to<Texture2D>(p_new_value);
