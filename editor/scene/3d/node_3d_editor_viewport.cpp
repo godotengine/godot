@@ -1511,6 +1511,23 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 			}
 		}
 
+		// Center.
+		bool is_view_move = false;
+		{
+			const Vector3 grabber_pos = gt.origin;
+			const real_t grabber_radius = gizmo_scale * GIZMO_CENTER_SIZE * 0.5;
+			Vector3 r;
+			const real_t effective_radius = grabber_radius * 1.5;
+			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, effective_radius, &r)) {
+				const real_t d = r.distance_to(ray_pos);
+				if (d < col_d) {
+					col_d = d;
+					col_axis = 0;
+					is_view_move = true;
+				}
+			}
+		}
+
 		bool is_plane_translate = false;
 		// plane select
 		if (col_axis == -1) {
@@ -1546,13 +1563,13 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 		if (col_axis != -1) {
 			if (p_highlight_only) {
-				spatial_editor->select_gizmo_highlight_axis(col_axis + (is_plane_translate ? 6 : 0));
+				spatial_editor->select_gizmo_highlight_axis(col_axis + (is_plane_translate ? 6 : 0) + (is_view_move ? 17 : 0));
 
 			} else {
 				//handle plane translate
 				_edit.mode = TRANSFORM_TRANSLATE;
 				_compute_edit(p_screenpos);
-				_edit.plane = TransformPlane(TRANSFORM_X_AXIS + col_axis + (is_plane_translate ? 3 : 0));
+				_edit.plane = TransformPlane(TRANSFORM_X_AXIS + col_axis + (is_plane_translate ? 3 : 0) + (is_view_move ? -1 : 0));
 			}
 			return true;
 		}
@@ -1684,6 +1701,23 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 			}
 		}
 
+		// Center.
+		bool is_uniform_scale = false;
+		{
+			const Vector3 grabber_pos = gt.origin;
+			const real_t grabber_radius = gizmo_scale * GIZMO_CENTER_SIZE * 0.5;
+			Vector3 r;
+			const real_t effective_radius = grabber_radius * 1.5;
+			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, effective_radius, &r)) {
+				const real_t d = r.distance_to(ray_pos);
+				if (d < col_d) {
+					col_d = d;
+					col_axis = 0;
+					is_uniform_scale = true;
+				}
+			}
+		}
+
 		bool is_plane_scale = false;
 		// plane select
 		if (col_axis == -1) {
@@ -1719,13 +1753,13 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 		if (col_axis != -1) {
 			if (p_highlight_only) {
-				spatial_editor->select_gizmo_highlight_axis(col_axis + (is_plane_scale ? 12 : 9));
+				spatial_editor->select_gizmo_highlight_axis(col_axis + (is_plane_scale ? 12 : 9) + (is_uniform_scale ? 9 : 0));
 
 			} else {
 				//handle scale
 				_edit.mode = TRANSFORM_SCALE;
 				_compute_edit(p_screenpos);
-				_edit.plane = TransformPlane(TRANSFORM_X_AXIS + col_axis + (is_plane_scale ? 3 : 0));
+				_edit.plane = TransformPlane(TRANSFORM_X_AXIS + col_axis + (is_plane_scale ? 3 : 0) + (is_uniform_scale ? -1 : 0));
 			}
 			return true;
 		}
@@ -4750,7 +4784,7 @@ void Node3DEditorViewport::_update_centered_labels() {
 void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 	uint32_t layer = 1 << (GIZMO_BASE_LAYER + p_idx);
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 4; i++) {
 		move_gizmo_instance[i] = RS::get_singleton()->instance_create();
 		RS::get_singleton()->instance_set_base(move_gizmo_instance[i], spatial_editor->get_move_gizmo(i)->get_rid());
 		RS::get_singleton()->instance_set_scenario(move_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
@@ -4760,14 +4794,14 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 		RS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 		RS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-		move_plane_gizmo_instance[i] = RS::get_singleton()->instance_create();
-		RS::get_singleton()->instance_set_base(move_plane_gizmo_instance[i], spatial_editor->get_move_plane_gizmo(i)->get_rid());
-		RS::get_singleton()->instance_set_scenario(move_plane_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_plane_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(move_plane_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		rotate_gizmo_instance[i] = RS::get_singleton()->instance_create();
+		RS::get_singleton()->instance_set_base(rotate_gizmo_instance[i], spatial_editor->get_rotate_gizmo(i)->get_rid());
+		RS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+		RS::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
+		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
+		RS::get_singleton()->instance_set_layer_mask(rotate_gizmo_instance[i], layer);
+		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
 		scale_gizmo_instance[i] = RS::get_singleton()->instance_create();
 		RS::get_singleton()->instance_set_base(scale_gizmo_instance[i], spatial_editor->get_scale_gizmo(i)->get_rid());
@@ -4778,37 +4812,34 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 		RS::get_singleton()->instance_geometry_set_flag(scale_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 		RS::get_singleton()->instance_geometry_set_flag(scale_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-		scale_plane_gizmo_instance[i] = RS::get_singleton()->instance_create();
-		RS::get_singleton()->instance_set_base(scale_plane_gizmo_instance[i], spatial_editor->get_scale_plane_gizmo(i)->get_rid());
-		RS::get_singleton()->instance_set_scenario(scale_plane_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_plane_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(scale_plane_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		if (i < 3) {
+			move_plane_gizmo_instance[i] = RS::get_singleton()->instance_create();
+			RS::get_singleton()->instance_set_base(move_plane_gizmo_instance[i], spatial_editor->get_move_plane_gizmo(i)->get_rid());
+			RS::get_singleton()->instance_set_scenario(move_plane_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+			RS::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
+			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_plane_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
+			RS::get_singleton()->instance_set_layer_mask(move_plane_gizmo_instance[i], layer);
+			RS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+			RS::get_singleton()->instance_geometry_set_flag(move_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-		axis_gizmo_instance[i] = RS::get_singleton()->instance_create();
-	}
+			scale_plane_gizmo_instance[i] = RS::get_singleton()->instance_create();
+			RS::get_singleton()->instance_set_base(scale_plane_gizmo_instance[i], spatial_editor->get_scale_plane_gizmo(i)->get_rid());
+			RS::get_singleton()->instance_set_scenario(scale_plane_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+			RS::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
+			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(scale_plane_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
+			RS::get_singleton()->instance_set_layer_mask(scale_plane_gizmo_instance[i], layer);
+			RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+			RS::get_singleton()->instance_geometry_set_flag(scale_plane_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-	for (int i = 0; i < 3; i++) {
-		RS::get_singleton()->instance_set_base(axis_gizmo_instance[i], spatial_editor->get_axis_gizmo(i)->get_rid());
-		RS::get_singleton()->instance_set_scenario(axis_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(axis_gizmo_instance[i], true);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(axis_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(axis_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(axis_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(axis_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-	}
-
-	for (int i = 0; i < 4; i++) {
-		rotate_gizmo_instance[i] = RS::get_singleton()->instance_create();
-		RS::get_singleton()->instance_set_base(rotate_gizmo_instance[i], spatial_editor->get_rotate_gizmo(i)->get_rid());
-		RS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
-		RS::get_singleton()->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
-		RS::get_singleton()->instance_set_layer_mask(rotate_gizmo_instance[i], layer);
-		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
-		RS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			axis_gizmo_instance[i] = RS::get_singleton()->instance_create();
+			RS::get_singleton()->instance_set_base(axis_gizmo_instance[i], spatial_editor->get_axis_gizmo(i)->get_rid());
+			RS::get_singleton()->instance_set_scenario(axis_gizmo_instance[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+			RS::get_singleton()->instance_set_visible(axis_gizmo_instance[i], true);
+			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(axis_gizmo_instance[i], RSE::SHADOW_CASTING_SETTING_OFF);
+			RS::get_singleton()->instance_set_layer_mask(axis_gizmo_instance[i], layer);
+			RS::get_singleton()->instance_geometry_set_flag(axis_gizmo_instance[i], RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
+			RS::get_singleton()->instance_geometry_set_flag(axis_gizmo_instance[i], RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+		}
 	}
 
 	// Create trackball sphere instance
@@ -4824,16 +4855,16 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 
 void Node3DEditorViewport::_finish_gizmo_instances() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 4; i++) {
 		RS::get_singleton()->free_rid(move_gizmo_instance[i]);
-		RS::get_singleton()->free_rid(move_plane_gizmo_instance[i]);
 		RS::get_singleton()->free_rid(rotate_gizmo_instance[i]);
 		RS::get_singleton()->free_rid(scale_gizmo_instance[i]);
-		RS::get_singleton()->free_rid(scale_plane_gizmo_instance[i]);
-		RS::get_singleton()->free_rid(axis_gizmo_instance[i]);
+		if (i < 3) {
+			RS::get_singleton()->free_rid(move_plane_gizmo_instance[i]);
+			RS::get_singleton()->free_rid(scale_plane_gizmo_instance[i]);
+			RS::get_singleton()->free_rid(axis_gizmo_instance[i]);
+		}
 	}
-	// Rotation white outline
-	RS::get_singleton()->free_rid(rotate_gizmo_instance[3]);
 
 	RS::get_singleton()->free_rid(trackball_sphere_instance);
 }
@@ -4989,15 +5020,16 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	Transform3D camera_xform = camera->get_transform();
 
 	if (xform.origin.is_equal_approx(camera_xform.origin)) {
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
 			RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
 			RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(axis_gizmo_instance[i], false);
+			if (i < 3) {
+				RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
+				RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
+				RenderingServer::get_singleton()->instance_set_visible(axis_gizmo_instance[i], false);
+			}
 		}
-		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], false);
 		return;
 	}
 
@@ -5021,15 +5053,16 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	// If the determinant is zero, we should disable the gizmo from being rendered,
 	// this prevents supplying bad values to the renderer and then having to filter it out again.
 	if (xform.basis.determinant() == 0) {
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
 			RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
 			RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
-			RenderingServer::get_singleton()->instance_set_visible(axis_gizmo_instance[i], false);
+			if (i < 3) {
+				RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
+				RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
+				RenderingServer::get_singleton()->instance_set_visible(axis_gizmo_instance[i], false);
+			}
 		}
-		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[3], false);
 		return;
 	}
 
@@ -5083,6 +5116,17 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 		RenderingServer::get_singleton()->instance_set_transform(axis_gizmo_instance[i], xform);
 	}
+
+	Transform3D axis_angle;
+	if (xform.basis.get_column(2).normalized().dot(xform.basis.get_column(0).normalized()) < 1.0) {
+		axis_angle = axis_angle.looking_at(xform.basis.get_column(2).normalized(), xform.basis.get_column(0).normalized());
+	}
+	axis_angle.basis.scale(scale);
+	axis_angle.origin = xform.origin;
+	RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[3], axis_angle);
+	RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[3], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+	RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[3], axis_angle);
+	RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[3], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 
 	Transform3D view_rotation_xform = xform;
 	view_rotation_xform.orthonormalize();

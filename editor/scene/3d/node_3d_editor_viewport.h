@@ -438,7 +438,7 @@ private:
 	real_t zoom_indicator_delay;
 	int zoom_failed_attempts_count = 0;
 
-	RID move_gizmo_instance[3], move_plane_gizmo_instance[3], rotate_gizmo_instance[4], scale_gizmo_instance[3], scale_plane_gizmo_instance[3], axis_gizmo_instance[3];
+	RID move_gizmo_instance[4], move_plane_gizmo_instance[3], rotate_gizmo_instance[4], scale_gizmo_instance[4], scale_plane_gizmo_instance[3], axis_gizmo_instance[3];
 	RID trackball_sphere_instance;
 
 	String last_message;
