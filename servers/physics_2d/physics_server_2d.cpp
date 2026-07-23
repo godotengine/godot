@@ -162,9 +162,11 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_apply_central_impulse", "body", "impulse"), &PhysicsServer2D::body_apply_central_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_torque_impulse", "body", "impulse"), &PhysicsServer2D::body_apply_torque_impulse);
 	ClassDB::bind_method(D_METHOD("body_apply_impulse", "body", "impulse", "position"), &PhysicsServer2D::body_apply_impulse, Vector2());
+	ClassDB::bind_method(D_METHOD("body_apply_impulse_at_position", "body", "impulse", "global_position"), &PhysicsServer2D::body_apply_impulse_at_position, Vector2());
 
 	ClassDB::bind_method(D_METHOD("body_apply_central_force", "body", "force"), &PhysicsServer2D::body_apply_central_force);
 	ClassDB::bind_method(D_METHOD("body_apply_force", "body", "force", "position"), &PhysicsServer2D::body_apply_force, Vector2());
+	ClassDB::bind_method(D_METHOD("body_apply_force_at_position", "body", "force", "global_position"), &PhysicsServer2D::body_apply_force_at_position, Vector2());
 	ClassDB::bind_method(D_METHOD("body_apply_torque", "body", "torque"), &PhysicsServer2D::body_apply_torque);
 
 	ClassDB::bind_method(D_METHOD("body_add_constant_central_force", "body", "force"), &PhysicsServer2D::body_add_constant_central_force);
