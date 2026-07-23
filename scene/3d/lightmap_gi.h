@@ -354,6 +354,7 @@ public:
 	AABB get_aabb() const override;
 
 	BakeError bake(Node *p_from_node, String p_image_data_path = "", Lightmapper::BakeStepFunc p_bake_step = nullptr, void *p_bake_userdata = nullptr);
+	BakeError bake_from_script(Node *p_from_node, String p_image_data_path = "");
 
 	virtual PackedStringArray get_configuration_warnings() const override;
 
