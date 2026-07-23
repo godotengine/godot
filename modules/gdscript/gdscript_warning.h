@@ -32,6 +32,7 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "core/object/script_language.h"
 #include "core/templates/vector.h"
 
 class String;
@@ -166,6 +167,7 @@ public:
 	int end_line;
 	int end_column;
 	Vector<String> symbols;
+	ScriptLanguage::CodeActionGroup code_actions;
 
 	String get_name() const;
 	String get_message() const;
