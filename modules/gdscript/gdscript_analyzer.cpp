@@ -4819,7 +4819,7 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 		return;
 	}
 
-	if (p_preload->path->reduced_value.get_type() != Variant::STRING) {
+	if (!Variant::can_convert_strict(p_preload->path->reduced_value.get_type(), Variant::STRING)) {
 		push_error("Preloaded path must be a constant string.", p_preload->path);
 	} else {
 		p_preload->resolved_path = p_preload->path->reduced_value;
