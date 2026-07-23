@@ -200,7 +200,7 @@ void main() {
 	cube_normal = mat3(orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
 
-	vec2 uv = gl_FragCoord.xy; // uv_interp * 0.5 + 0.5;
+	vec2 uv = uv_interp * 0.5 + 0.5;
 
 	vec2 panorama_coords = vec2(atan2_approx(cube_normal.x, -cube_normal.z), acos_approx(cube_normal.y));
 
