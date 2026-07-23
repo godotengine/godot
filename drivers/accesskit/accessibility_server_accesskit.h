@@ -85,9 +85,10 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 		int popup_type = 0; // accesskit_has_popup value (0=clear)
 		int list_item_count = 0;
 		int list_item_index = -1;
-		int level = 0;
+		int level = -1;
 		int checked_state = 0; // 0=none, 1=false, 2=true, 3=mixed
 		int selected_state = 0; // 0=none, 1=false, 2=true
+		int live_mode = 0; // 0=off, 1=polite, 2=assertive
 		String description;
 		String tooltip;
 		String placeholder;

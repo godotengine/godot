@@ -1019,6 +1019,12 @@ _FORCE_INLINE_ void AccessibilityServerAccessKit::_ensure_node(const RID &p_id, 
 			accesskit_node_set_selected(p_ae->node, true);
 		}
 
+		if (p_ae->live_mode == 1) {
+			accesskit_node_set_live(p_ae->node, ACCESSKIT_LIVE_POLITE);
+		} else if (p_ae->live_mode == 2) {
+			accesskit_node_set_live(p_ae->node, ACCESSKIT_LIVE_ASSERTIVE);
+		}
+
 		if (!p_ae->state_description.is_empty()) {
 			accesskit_node_set_state_description(p_ae->node, p_ae->state_description.utf8().ptr());
 		}
@@ -1540,6 +1546,7 @@ void AccessibilityServerAccessKit::update_set_live(const RID &p_id, Accessibilit
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
+	ae->live_mode = (int)p_live;
 	_ensure_node(p_id, ae);
 
 	switch (p_live) {
