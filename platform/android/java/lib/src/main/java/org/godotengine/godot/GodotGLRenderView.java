@@ -108,6 +108,7 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 			// Pause the renderer
 			godotRenderer.onActivityPaused();
 		});
+		pauseGLThread();
 	}
 
 	@Override
