@@ -567,6 +567,10 @@ void EditorPropertyArray::update_property() {
 					new_prop->add_inline_control(slot.remove_button, INLINE_CONTROL_RIGHT);
 				}
 
+				// Move the right container to be the last child, so that focusing on the next Control behaves in the expected order.
+				Control *right_cont = new_prop->get_inline_container(INLINE_CONTROL_RIGHT);
+				right_cont->get_parent()->move_child(right_cont, new_prop->get_child_count() - 1);
+
 				slot.prop->add_sibling(new_prop, false);
 				slot.prop->queue_free();
 				slot.prop = new_prop;
@@ -1487,6 +1491,10 @@ void EditorPropertyDictionary::update_property() {
 				if (slot.prop_key) {
 					new_prop->add_inline_control(slot.prop_key, INLINE_CONTROL_LEFT);
 				}
+
+				// Move the right container to be the last child, so that focusing on the next Control behaves in the expected order.
+				Control *right_cont = new_prop->get_inline_container(INLINE_CONTROL_RIGHT);
+				right_cont->get_parent()->move_child(right_cont, new_prop->get_child_count() - 1);
 
 				slot.set_prop(new_prop);
 
