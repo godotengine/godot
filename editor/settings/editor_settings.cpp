@@ -464,7 +464,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Editor
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/localization/localize_settings", true, "")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", 1, "Text Only,Icon Only,Text and Icon")
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/localization/ui_layout_direction", 0, "Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// Display what the Auto display scale setting effectively corresponds to.
@@ -1332,6 +1332,10 @@ void EditorSettings::_handle_setting_compatibility() {
 		set_manually("interface/theme/color_preset", "Graphite");
 		set_manually("interface/theme/spacing_preset", "Ultra-Compact");
 		set_manually("interface/theme/graphite_default_applied", true);
+	}
+	if (!has_setting("interface/editor/docks/bottom_tabs_iconized")) {
+		set_manually("interface/editor/docks/bottom_dock_tab_style", 1);
+		set_manually("interface/editor/docks/bottom_tabs_iconized", true);
 	}
 }
 

@@ -60,6 +60,7 @@
 #include "scene/gui/color_picker.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/popup.h"
 #include "scene/gui/texture_button.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -1415,17 +1416,50 @@ void EditorPropertyLayers::_notification(int p_what) {
 
 void EditorPropertyLayers::_set_read_only(bool p_read_only) {
 	button->set_disabled(p_read_only);
+	summary_button->set_disabled(p_read_only);
 	grid->set_read_only(p_read_only);
 }
 
 void EditorPropertyLayers::_grid_changed(uint32_t p_grid) {
 	emit_changed(get_edited_property(), p_grid);
+	_update_summary();
+}
+
+void EditorPropertyLayers::_summary_pressed() {
+	Rect2 gr = summary_button->get_screen_rect();
+	grid_popup->reset_size();
+	grid_popup->set_position(gr.position + Vector2(0, gr.size.y));
+	grid_popup->popup();
+}
+
+void EditorPropertyLayers::_update_summary() {
+	if (!summary_button) {
+		return;
+	}
+	String txt;
+	int shown = 0;
+	for (uint32_t i = 0; i < grid->layer_count; i++) {
+		if (!(grid->value & (1u << i))) {
+			continue;
+		}
+		if (shown >= 8) {
+			txt += ", ...";
+			break;
+		}
+		if (!txt.is_empty()) {
+			txt += ", ";
+		}
+		txt += itos(i + 1);
+		shown++;
+	}
+	summary_button->set_text(txt.is_empty() ? TTR("(none)") : txt);
 }
 
 void EditorPropertyLayers::update_property() {
 	uint32_t value = get_edited_property_value();
 
 	grid->set_flag(value);
+	_update_summary();
 }
 
 void EditorPropertyLayers::setup(LayerType p_layer_type) {
@@ -1562,11 +1596,23 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_clip_contents(true);
 	add_child(hb);
+
+	summary_button = memnew(Button);
+	summary_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	summary_button->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+	summary_button->set_clip_text(true);
+	summary_button->set_accessibility_name(TTRC("Layers"));
+	summary_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLayers::_summary_pressed));
+	hb->add_child(summary_button);
+
+	grid_popup = memnew(PopupPanel);
+	add_child(grid_popup);
 	grid = memnew(EditorPropertyLayersGrid);
 	grid->connect("flag_changed", callable_mp(this, &EditorPropertyLayers::_grid_changed));
 	grid->connect("rename_confirmed", callable_mp(this, &EditorPropertyLayers::set_layer_name));
 	grid->set_h_size_flags(SIZE_EXPAND_FILL);
-	hb->add_child(grid);
+	grid->set_custom_minimum_size(Size2(320 * EDSCALE, 0));
+	grid_popup->add_child(grid);
 
 	button = memnew(TextureButton);
 	button->set_accessibility_name(TTRC("Layers"));

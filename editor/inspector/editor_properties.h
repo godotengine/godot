@@ -42,6 +42,7 @@ class EditorResourcePicker;
 class EditorSpinSlider;
 class EditorVariantTypePopupMenu;
 class MenuButton;
+class PopupPanel;
 class SceneTreeDialog;
 class TextEdit;
 class TextureButton;
@@ -379,9 +380,13 @@ private:
 	LayerType layer_type;
 	PopupMenu *layers = nullptr;
 	TextureButton *button = nullptr;
+	Button *summary_button = nullptr;
+	PopupPanel *grid_popup = nullptr;
 
 	void _button_pressed();
 	void _menu_pressed(int p_menu);
+	void _summary_pressed();
+	void _update_summary();
 	void _refresh_names();
 
 protected:

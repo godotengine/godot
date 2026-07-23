@@ -1883,30 +1883,12 @@ void EditorInspectorCategory::_notification(int p_what) {
 			const Ref<Font> &font = theme_cache.bold_font;
 			int font_size = theme_cache.bold_font_size;
 
-			int hs = theme_cache.horizontal_separation;
-			int icon_size = theme_cache.class_icon_size;
-
 			int w = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
-			if (icon.is_valid()) {
-				w += hs + icon_size;
-			}
 			w = MIN(w, get_size().width - sb->get_minimum_size().width);
 
-			int ofs = (get_size().width - w) / 2;
+			int ofs = sb->get_content_margin(SIDE_LEFT) + Math::round(2 * EDSCALE);
 
 			float v_margin_offset = sb->get_content_margin(SIDE_TOP) - sb->get_content_margin(SIDE_BOTTOM);
-
-			if (icon.is_valid()) {
-				Size2 rect_size = Size2(icon_size, icon_size);
-				Point2 rect_pos = Point2(ofs, (get_size().height - icon_size) / 2 + v_margin_offset).round();
-				if (is_layout_rtl()) {
-					rect_pos.x = get_size().width - rect_pos.x - icon_size;
-				}
-				draw_texture_rect(icon, Rect2(rect_pos, rect_size));
-
-				ofs += hs + icon_size;
-				w -= hs + icon_size;
-			}
 
 			if (is_layout_rtl()) {
 				ofs = get_size().width - ofs - w;
@@ -2244,12 +2226,18 @@ void EditorInspectorSection::_notification(int p_what) {
 			// Draw header area.
 			int header_height = _get_header_height();
 			Rect2 header_rect = Rect2(Vector2(header_offset_x, 0.0), Vector2(header_width, header_height));
-			Color c = bg_color;
-			c.a *= 0.4;
 			if (header_hover) {
+				Color c = bg_color;
+				c.a *= 0.4;
 				c = c.lightened(Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT) ? -0.05 : 0.2);
+				draw_rect(header_rect, c);
 			}
-			draw_rect(header_rect, c);
+			{
+				Color sep = theme_cache.font_color;
+				sep.a *= 0.09;
+				const float sep_th = MAX(1.0f, (float)EDSCALE);
+				draw_rect(Rect2(header_rect.position.x, header_rect.position.y + header_rect.size.height - sep_th, header_rect.size.width, sep_th), sep);
+			}
 
 			// Draw header title, folding arrow and count of revertable properties.
 			{
