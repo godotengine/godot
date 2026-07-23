@@ -2222,7 +2222,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	}
 
 	if (use_external_editor &&
-			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
+			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || (EditorDebuggerNode::get_singleton()->get_debug_with_external_editor() && scr.is_valid())) &&
 			p_resource->get_path().is_resource_file()) {
 		if (ScriptEditorPlugin::open_in_external_editor(ProjectSettings::get_singleton()->globalize_path(p_resource->get_path()), p_line, p_col)) {
 			return false;
