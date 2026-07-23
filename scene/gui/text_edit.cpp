@@ -2137,55 +2137,68 @@ void TextEdit::backspace_at_cursor() {
 }
 
 void TextEdit::indent_right() {
-	int start_line;
-	int end_line;
+    int start_line;
+    int end_line;
 
-	// This value informs us by how much we changed selection position by indenting right.
-	// Default is 1 for tab indentation.
-	int selection_offset = 1;
-	begin_complex_operation();
+    int selection_offset = 1;
+    int begin_line_offset = 1;
+    int end_line_offset = 1;
 
-	if (is_selection_active()) {
-		start_line = get_selection_from_line();
-		end_line = get_selection_to_line();
-	} else {
-		start_line = cursor.line;
-		end_line = start_line;
-	}
+    begin_complex_operation();
 
-	// Ignore if the cursor is not past the first column.
-	if (is_selection_active() && get_selection_to_column() == 0) {
-		selection_offset = 0;
-		end_line--;
-	}
+    if (is_selection_active()) {
+        start_line = get_selection_from_line();
+        end_line = get_selection_to_line();
+    } else {
+        start_line = cursor.line;
+        end_line = start_line;
+    }
 
-	for (int i = start_line; i <= end_line; i++) {
-		String line_text = get_line(i);
-		if (line_text.size() == 0 && is_selection_active()) {
-			continue;
-		}
-		if (indent_using_spaces) {
-			// We don't really care where selection is - we just need to know indentation level at the beginning of the line.
-			int left = _find_first_non_whitespace_column_of_line(line_text);
-			int spaces_to_add = _calculate_spaces_till_next_right_indent(left);
-			// Since we will add this much spaces we want move whole selection and cursor by this much.
-			selection_offset = spaces_to_add;
-			for (int j = 0; j < spaces_to_add; j++) {
-				line_text = ' ' + line_text;
-			}
-		} else {
-			line_text = '\t' + line_text;
-		}
-		set_line(i, line_text);
-	}
+    // FIXED CHECK: Only decrement end_line if column is 0 AND the line isn't empty.
+    if (is_selection_active() && get_selection_to_column() == 0 && get_line(end_line).length() > 0) {
+        selection_offset = 0;
+        begin_line_offset = 0;
+        end_line_offset = 0;
+        end_line--;
+    }
 
-	// Fix selection and cursor being off after shifting selection right.
-	if (is_selection_active()) {
-		select(selection.from_line, selection.from_column + selection_offset, selection.to_line, selection.to_column + selection_offset);
-	}
-	cursor_set_column(cursor.column + selection_offset, false);
-	end_complex_operation();
-	update();
+    for (int i = start_line; i <= end_line; i++) {
+        String line_text = get_line(i);
+
+        int current_line_offset = 1;
+
+        if (indent_using_spaces) {
+            int left = _find_first_non_whitespace_column_of_line(line_text);
+            int spaces_to_add = _calculate_spaces_till_next_right_indent(left);
+            current_line_offset = spaces_to_add;
+            
+            for (int j = 0; j < spaces_to_add; j++) {
+                line_text = ' ' + line_text;
+            }
+        } else {
+            line_text = '\t' + line_text;
+        }
+        
+        set_line(i, line_text);
+
+        if (i == selection.from_line) {
+            begin_line_offset = current_line_offset;
+        }
+        if (i == selection.to_line) {
+            end_line_offset = current_line_offset;
+        }
+        if (i == cursor.line) {
+            selection_offset = current_line_offset;
+        }
+    }
+
+    if (is_selection_active()) {
+        select(selection.from_line, selection.from_column + begin_line_offset, selection.to_line, selection.to_column + end_line_offset);
+    }
+    cursor_set_column(cursor.column + selection_offset, false);
+    
+    end_complex_operation();
+    update();
 }
 
 void TextEdit::indent_left() {
@@ -5670,9 +5683,21 @@ void TextEdit::paste() {
 		clipboard += ins;
 	}
 
-	_insert_text_at_cursor(clipboard);
-	end_complex_operation();
+	// Capture the start coordinates before the text is inserted
+	int start_line = cursor_get_line();
+	int start_column = cursor_get_column();
 
+	_insert_text_at_cursor(clipboard);
+
+	// If the option is enabled and we actually pasted something, select it
+	if (paste_selected && !clipboard.empty()) {
+		int end_line = cursor_get_line();
+		int end_column = cursor_get_column();
+		
+		select(start_line, start_column, end_line, end_column);
+	}
+
+	end_complex_operation();
 	update();
 }
 
@@ -6119,6 +6144,14 @@ void TextEdit::clear_info_icons() {
 	update();
 }
 
+void TextEdit::set_line_as_folded(int p_line, bool p_folded) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	if (is_hiding_enabled() || !p_folded) {
+		text.set_folded(p_line, p_folded);
+	}
+	update();
+}
+
 void TextEdit::set_line_as_hidden(int p_line, bool p_hidden) {
 	ERR_FAIL_INDEX(p_line, text.size());
 	if (is_hiding_enabled() || !p_hidden) {
@@ -6133,8 +6166,11 @@ bool TextEdit::is_line_hidden(int p_line) const {
 }
 
 void TextEdit::fold_all_lines() {
-	for (int i = 0; i < text.size(); i++) {
-		fold_line(i);
+	// Fold bottom-up so child blocks fold before parent blocks
+	for (int i = text.size() - 1; i >= 0; i--) {
+		if (can_fold(i)) {
+			fold_line(i);
+		}
 	}
 	_update_scrollbars();
 	update();
@@ -6143,6 +6179,7 @@ void TextEdit::fold_all_lines() {
 void TextEdit::unhide_all_lines() {
 	for (int i = 0; i < text.size(); i++) {
 		text.set_hidden(i, false);
+		text.set_folded(i, false); // Clear explicit fold state on every line
 	}
 	_update_scrollbars();
 	update();
@@ -6294,32 +6331,24 @@ bool TextEdit::can_fold(int p_line) const {
 	if (p_line + 1 >= text.size()) {
 		return false;
 	}
-	if (text[p_line].strip_edges().size() == 0) {
+	if (text[p_line].strip_edges().empty()) {
 		return false;
 	}
 	if (is_folded(p_line)) {
-		return false;
-	}
-	if (is_line_hidden(p_line)) {
-		return false;
-	}
-	if (is_line_comment(p_line)) {
 		return false;
 	}
 
 	int start_indent = get_indent_level(p_line);
 
 	for (int i = p_line + 1; i < text.size(); i++) {
-		if (text[i].strip_edges().size() == 0) {
+		if (text[i].strip_edges().empty()) {
 			continue;
 		}
 		int next_indent = get_indent_level(i);
-		if (is_line_comment(i)) {
-			continue;
-		} else if (next_indent > start_indent) {
-			return true;
+		if (next_indent > start_indent) {
+			return true; // Found at least one deeper line
 		} else {
-			return false;
+			return false; // Scope ended without deeper lines
 		}
 	}
 
@@ -6328,10 +6357,7 @@ bool TextEdit::can_fold(int p_line) const {
 
 bool TextEdit::is_folded(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	if (p_line + 1 >= text.size()) {
-		return false;
-	}
-	return !is_line_hidden(p_line) && is_line_hidden(p_line + 1);
+	return text.is_folded(p_line);
 }
 
 Vector<int> TextEdit::get_folded_lines() const {
@@ -6354,9 +6380,12 @@ void TextEdit::fold_line(int p_line) {
 		return;
 	}
 
-	// Hide lines below this one.
+	// 1. Mark this line as explicitly folded
+	set_line_as_folded(p_line, true);
+
+	// 2. Find the scope end line
 	int start_indent = get_indent_level(p_line);
-	int last_line = start_indent;
+	int last_line = p_line;
 	for (int i = p_line + 1; i < text.size(); i++) {
 		if (text[i].strip_edges().size() != 0) {
 			if (is_line_comment(i) && get_indent_level(i) <= start_indent) {
@@ -6369,11 +6398,13 @@ void TextEdit::fold_line(int p_line) {
 			}
 		}
 	}
+
+	// 3. Hide all child lines within the block scope
 	for (int i = p_line + 1; i <= last_line; i++) {
 		set_line_as_hidden(i, true);
 	}
 
-	// Fix selection.
+	// Fix selection
 	if (is_selection_active()) {
 		if (is_line_hidden(selection.from_line) && is_line_hidden(selection.to_line)) {
 			deselect();
@@ -6384,11 +6415,12 @@ void TextEdit::fold_line(int p_line) {
 		}
 	}
 
-	// Reset cursor.
+	// Reset cursor
 	if (is_line_hidden(cursor.line)) {
 		cursor_set_line(p_line, false, false);
 		cursor_set_column(get_line(p_line).length(), false);
 	}
+
 	_update_scrollbars();
 	update();
 }
@@ -6396,24 +6428,67 @@ void TextEdit::fold_line(int p_line) {
 void TextEdit::unfold_line(int p_line) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
-	if (!is_folded(p_line) && !is_line_hidden(p_line)) {
+	if (!is_folded(p_line)) {
 		return;
 	}
-	int fold_start;
-	for (fold_start = p_line; fold_start > 0; fold_start--) {
-		if (is_folded(fold_start)) {
-			break;
-		}
-	}
-	fold_start = is_folded(fold_start) ? fold_start : p_line;
 
-	for (int i = fold_start + 1; i < text.size(); i++) {
-		if (is_line_hidden(i)) {
-			set_line_as_hidden(i, false);
-		} else {
-			break;
+	// 1. Unmark this line as folded
+	set_line_as_folded(p_line, false);
+
+	// 2. Retrieve remaining active folds across the document
+	Vector<int> folded_lines = get_folded_lines();
+
+	// 3. Determine the end of p_line's block scope
+	int start_indent = get_indent_level(p_line);
+	int last_line = p_line;
+	for (int i = p_line + 1; i < text.size(); i++) {
+		if (text[i].strip_edges().size() != 0) {
+			if (is_line_comment(i) && get_indent_level(i) <= start_indent) {
+				continue;
+			} else if (get_indent_level(i) > start_indent) {
+				last_line = i;
+			} else {
+				break;
+			}
 		}
 	}
+
+	// 4. Update visibility for lines inside this block scope
+	for (int i = p_line + 1; i <= last_line; i++) {
+		bool should_stay_hidden = false;
+
+		// Check if line 'i' belongs to ANY active nested fold scope
+		for (int f = 0; f < folded_lines.size(); f++) {
+			int fold_idx = folded_lines[f];
+			if (fold_idx == p_line) {
+				continue;
+			}
+
+			// Find boundary for this active fold
+			int f_indent = get_indent_level(fold_idx);
+			int f_last_line = fold_idx;
+			for (int j = fold_idx + 1; j < text.size(); j++) {
+				if (text[j].strip_edges().size() != 0) {
+					if (is_line_comment(j) && get_indent_level(j) <= f_indent) {
+						continue;
+					} else if (get_indent_level(j) > f_indent) {
+						f_last_line = j;
+					} else {
+						break;
+					}
+				}
+			}
+
+			// If line 'i' is inside an active folded range, keep it hidden
+			if (i > fold_idx && i <= f_last_line) {
+				should_stay_hidden = true;
+				break;
+			}
+		}
+
+		set_line_as_hidden(i, should_stay_hidden);
+	}
+
 	_update_scrollbars();
 	update();
 }
@@ -6421,10 +6496,10 @@ void TextEdit::unfold_line(int p_line) {
 void TextEdit::toggle_fold_line(int p_line) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
-	if (!is_folded(p_line)) {
-		fold_line(p_line);
-	} else {
+	if (is_folded(p_line)) {
 		unfold_line(p_line);
+	} else {
+		fold_line(p_line);
 	}
 }
 
@@ -7358,6 +7433,10 @@ void TextEdit::set_middle_mouse_paste_enabled(bool p_enabled) {
 	middle_mouse_paste_enabled = p_enabled;
 }
 
+void TextEdit::set_paste_selected(bool p_enabled) {
+	paste_selected = p_enabled;
+}
+
 void TextEdit::set_selecting_enabled(bool p_enabled) {
 	selecting_enabled = p_enabled;
 
@@ -7401,6 +7480,10 @@ bool TextEdit::is_virtual_keyboard_enabled() const {
 
 bool TextEdit::is_middle_mouse_paste_enabled() const {
 	return middle_mouse_paste_enabled;
+}
+
+bool TextEdit::is_paste_selected() const {
+	return paste_selected;
 }
 
 PopupMenu *TextEdit::get_menu() const {
@@ -7503,6 +7586,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &TextEdit::is_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("set_middle_mouse_paste_enabled", "enable"), &TextEdit::set_middle_mouse_paste_enabled);
 	ClassDB::bind_method(D_METHOD("is_middle_mouse_paste_enabled"), &TextEdit::is_middle_mouse_paste_enabled);
+	ClassDB::bind_method(D_METHOD("set_paste_selected", "enabled"), &TextEdit::set_paste_selected);
+	ClassDB::bind_method(D_METHOD("is_paste_selected"), &TextEdit::is_paste_selected);
 	ClassDB::bind_method(D_METHOD("set_selecting_enabled", "enable"), &TextEdit::set_selecting_enabled);
 	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &TextEdit::is_selecting_enabled);
 	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &TextEdit::set_deselect_on_focus_loss_enabled);
@@ -7621,6 +7706,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paste_selected"), "set_paste_selected", "is_paste_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
