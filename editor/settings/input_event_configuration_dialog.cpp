@@ -316,8 +316,15 @@ void InputEventConfigurationDialog::_update_input_list() {
 		kb_root->set_collapsed(collapse);
 		kb_root->set_meta("__type", INPUT_KEY);
 
+		HashSet<int> keycodes_found;
 		for (int i = 0; i < keycode_get_count(); i++) {
 			String name = keycode_get_name_by_index(i);
+			int keycode = keycode_get_value_by_index(i);
+
+			// To avoid duplicate entries
+			if (keycodes_found.has(keycode)) {
+				continue;
+			}
 
 			if (!search_term.is_empty() && !name.containsn(search_term)) {
 				continue;
@@ -325,7 +332,8 @@ void InputEventConfigurationDialog::_update_input_list() {
 
 			TreeItem *item = input_list_tree->create_item(kb_root);
 			item->set_text(0, name);
-			item->set_meta("__keycode", keycode_get_value_by_index(i));
+			item->set_meta("__keycode", keycode);
+			keycodes_found.insert(keycode);
 		}
 	}
 
