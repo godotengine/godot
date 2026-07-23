@@ -5059,6 +5059,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	// The "Filter Nodes" text input above the Scene Tree Editor.
 	filter = memnew(LineEdit);
+	filter->set_theme_type_variation("FilterLineEdit");
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTRC("Filter Nodes"));
 	filter->set_accessibility_name(TTRC("Filter Nodes"));

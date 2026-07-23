@@ -782,13 +782,17 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		Ref<StyleBoxFlat> style_tab_selected = p_config.base_style->duplicate();
 		style_tab_selected->set_content_margin_individual(p_config.base_margin * 4 * EDSCALE, p_config.base_margin * 2.1 * EDSCALE, p_config.base_margin * 4 * EDSCALE, p_config.base_margin * 2.1 * EDSCALE);
 		style_tab_selected->set_corner_radius_individual(p_config.corner_radius * EDSCALE, p_config.corner_radius * EDSCALE, 0, 0);
+		style_tab_selected->set_border_width_all(0);
+		style_tab_selected->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
+		style_tab_selected->set_border_color(p_config.accent_color);
+		style_tab_selected->set_bg_color(p_config.base_color);
 
 		Ref<StyleBoxFlat> style_tab_focus = style_tab_selected->duplicate();
 		style_tab_focus->set_bg_color(p_config.base_color);
 		style_tab_focus->set_border_color(p_config.accent_color);
 
 		Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
-		style_tab_unselected->set_bg_color(p_config.surface_lowest_color);
+		style_tab_unselected->set_bg_color(Color(0, 0, 0, 0));
 		style_tab_unselected->set_border_width_all(0);
 
 		Ref<StyleBoxFlat> style_tab_hovered = style_tab_unselected->duplicate();
@@ -908,6 +912,20 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		p_theme->set_constant("minimum_character_width", "LineEdit", 4);
 		p_theme->set_constant("outline_size", "LineEdit", 0);
 		p_theme->set_constant("caret_width", "LineEdit", 1);
+
+		// Flush, borderless filter/search inputs (FilterLineEdit).
+		Ref<StyleBoxFlat> filter_normal;
+		filter_normal.instantiate();
+		filter_normal->set_bg_color(p_config.surface_lower_color);
+		filter_normal->set_corner_radius_all(0);
+		filter_normal->set_border_width_all(0);
+		filter_normal->set_content_margin_individual(p_config.base_margin * 2 * EDSCALE, p_config.base_margin * EDSCALE, p_config.base_margin * 2 * EDSCALE, p_config.base_margin * EDSCALE);
+		Ref<StyleBoxFlat> filter_focus = filter_normal->duplicate();
+		filter_focus->set_border_width(SIDE_BOTTOM, Math::round(EDSCALE));
+		filter_focus->set_border_color(p_config.accent_color);
+		p_theme->set_stylebox(CoreStringName(normal), "FilterLineEdit", filter_normal);
+		p_theme->set_stylebox("focus", "FilterLineEdit", filter_focus);
+		p_theme->set_stylebox("read_only", "FilterLineEdit", filter_normal);
 
 		// TextEdit.
 
@@ -1722,12 +1740,20 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		// Main menu.
 		p_theme->set_stylebox(CoreStringName(normal), "MainScreenButton", p_config.base_empty_wide_style);
 		p_theme->set_stylebox("normal_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox(SceneStringName(pressed), "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("pressed_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
+		Ref<StyleBoxFlat> mainscreen_active;
+		mainscreen_active.instantiate();
+		mainscreen_active->set_bg_color(Color(0, 0, 0, 0));
+		mainscreen_active->set_corner_radius_all(0);
+		mainscreen_active->set_border_width_all(0);
+		mainscreen_active->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
+		mainscreen_active->set_border_color(p_config.accent_color);
+		mainscreen_active->set_content_margin_individual(p_config.base_empty_wide_style->get_content_margin(SIDE_LEFT), p_config.base_empty_wide_style->get_content_margin(SIDE_TOP), p_config.base_empty_wide_style->get_content_margin(SIDE_RIGHT), p_config.base_empty_wide_style->get_content_margin(SIDE_BOTTOM));
+		p_theme->set_stylebox(SceneStringName(pressed), "MainScreenButton", mainscreen_active);
+		p_theme->set_stylebox("pressed_mirrored", "MainScreenButton", mainscreen_active);
 		p_theme->set_stylebox(SceneStringName(hover), "MainScreenButton", p_config.base_empty_wide_style);
 		p_theme->set_stylebox("hover_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("hover_pressed", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("hover_pressed_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
+		p_theme->set_stylebox("hover_pressed", "MainScreenButton", mainscreen_active);
+		p_theme->set_stylebox("hover_pressed_mirrored", "MainScreenButton", mainscreen_active);
 
 		// Main screen buttons.
 		const Color mb_font_color = p_config.font_color * Color(1, 1, 1, 0.95);

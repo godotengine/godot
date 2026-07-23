@@ -808,6 +808,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	main_vb->add_child(property_tools_hb);
 
 	search = memnew(LineEdit);
+	search->set_theme_type_variation("FilterLineEdit");
 	search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search->set_placeholder(TTRC("Filter Properties"));
 	search->set_clear_button_enabled(true);

@@ -61,4 +61,5 @@ void FilterLineEdit::set_forward_control(Control *p_control) {
 
 FilterLineEdit::FilterLineEdit() {
 	set_clear_button_enabled(true);
+	set_theme_type_variation("FilterLineEdit");
 }
