@@ -5459,6 +5459,10 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 		const Vector3 bb_basis_z = bb_basis_x.cross(bb_basis_y);
 		const Basis bb_basis = Basis(bb_basis_x, bb_basis_y, bb_basis_z);
 
+		if (preview_use_origin_anchor && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+			return result.position;
+		}
+
 		// This normal-aligned Basis allows us to create an AABB that can fit on the surface plane as snugly as possible.
 		const Transform3D bb_transform = Transform3D(bb_basis, p_node->get_global_transform().origin);
 		const AABB p_node_bb = _calculate_spatial_bounds(p_node, true, &bb_transform);
@@ -5972,6 +5976,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	// continue to check if the rest of the scenes are valid (don't have cyclic dependencies).
 	bool is_other_valid = false;
 	// Check if at least one of the dragged files is a mesh, material, texture, or scene.
+	preview_use_origin_anchor = false;
 	for (int i = 0; i < files.size(); i++) {
 		const String &res_type = ResourceLoader::get_resource_type(files[i]);
 		bool is_scene = ClassDB::is_parent_class(res_type, "PackedScene");
@@ -5991,6 +5996,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			Ref<Texture2D> tex = res;
 			Ref<AudioStream> audio = res;
 			if (scn.is_valid()) {
+				preview_use_origin_anchor = true;
 				Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 				if (!instantiated_scene) {
 					continue;
@@ -6065,7 +6071,10 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			"\n" +
 			TTRN("[b]Hold Alt:[/b] Add as child of root node.",
 					"[b]Hold Alt:[/b] Add as children of root node.",
-					files.size());
+					files.size()) +
+			"\n" +
+			vformat(TTR("[b]Hold %s:[/b] Place scenes using their origin instead of their AABB."),
+					keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL));
 
 	if (files.size() > 1) {
 		title = TTR("Dropping multiple files...");
