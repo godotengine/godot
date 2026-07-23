@@ -1326,6 +1326,13 @@ void EditorSettings::_handle_setting_compatibility() {
 	_rename_setting("interface/editor/update_continuously", "interface/editor/display/update_continuously");
 	_rename_setting("interface/editor/collapse_main_menu", "interface/editor/appearance/collapse_main_menu");
 	_rename_setting("asset_library/use_threads", "asset_store/use_threads");
+
+	// One-time switch of existing profiles to the Graphite / Ultra-Compact default look.
+	if (!has_setting("interface/theme/graphite_default_applied")) {
+		set_manually("interface/theme/color_preset", "Graphite");
+		set_manually("interface/theme/spacing_preset", "Ultra-Compact");
+		set_manually("interface/theme/graphite_default_applied", true);
+	}
 }
 
 void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {
