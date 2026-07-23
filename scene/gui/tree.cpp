@@ -5128,6 +5128,9 @@ RID Tree::_accessibility_get_item_parent_element(TreeItem *p_item) const {
 	}
 	if (parent) {
 		const_cast<Tree *>(this)->_accessibility_ensure_element(parent);
+		if (parent->accessibility_group_element.is_valid() && AccessibilityServer::get_singleton()->has_element(parent->accessibility_group_element)) {
+			return parent->accessibility_group_element;
+		}
 		return parent->accessibility_row_element;
 	}
 	return get_accessibility_element();
@@ -5226,7 +5229,14 @@ void Tree::_accessibility_update_item(Point2 &r_ofs, TreeItem *p_item, int &r_ro
 		Size2 item_size = Size2(get_size().width, compute_item_height(p_item));
 		AccessibilityServer::get_singleton()->update_set_bounds(p_item->accessibility_row_element, Rect2(Vector2(), item_size));
 
-		if (p_item->accessibility_group_element.is_valid()) {
+		if (has_children) {
+			if (p_item->accessibility_group_element.is_null() || !AccessibilityServer::get_singleton()->has_element(p_item->accessibility_group_element)) {
+				p_item->accessibility_group_element = AccessibilityServer::get_singleton()->create_sub_element(p_item->accessibility_row_element, AccessibilityServerEnums::AccessibilityRole::ROLE_GROUP);
+			}
+			AccessibilityServer::get_singleton()->element_set_parent(p_item->accessibility_group_element, p_item->accessibility_row_element);
+			AccessibilityServer::get_singleton()->update_set_role(p_item->accessibility_group_element, AccessibilityServerEnums::AccessibilityRole::ROLE_GROUP);
+			AccessibilityServer::get_singleton()->update_set_name(p_item->accessibility_group_element, row_name);
+		} else if (p_item->accessibility_group_element.is_valid()) {
 			AccessibilityServer::get_singleton()->free_element(p_item->accessibility_group_element);
 			p_item->accessibility_group_element = RID();
 		}

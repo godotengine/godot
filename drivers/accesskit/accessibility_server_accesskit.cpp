@@ -1001,6 +1001,10 @@ _FORCE_INLINE_ void AccessibilityServerAccessKit::_ensure_node(const RID &p_id, 
 			accesskit_node_set_position_in_set(p_ae->node, p_ae->list_item_index);
 		}
 
+		if (p_ae->level > 0) {
+			accesskit_node_set_level(p_ae->node, p_ae->level);
+		}
+
 		if (p_ae->checked_state == 1) {
 			accesskit_node_set_toggled(p_ae->node, ACCESSKIT_TOGGLED_FALSE);
 		} else if (p_ae->checked_state == 2) {
@@ -1675,6 +1679,7 @@ void AccessibilityServerAccessKit::update_set_list_item_level(const RID &p_id, i
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
+	ae->level = p_level;
 	if (p_level > 0) {
 		accesskit_node_set_level(ae->node, p_level);
 	}
