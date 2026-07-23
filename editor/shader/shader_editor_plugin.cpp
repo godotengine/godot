@@ -48,19 +48,19 @@ void ShaderEditorPlugin::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (make_floating_shortcut.is_valid() && make_floating_shortcut->matches_event(p_event)) {
-		script_editor->make_floating();
+		shader_dock->make_floating();
 	}
 }
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		script_editor->open();
+		shader_dock->open();
 	}
 }
 
 void ShaderEditorPlugin::set_current() {
-	script_editor->make_visible();
-	TextEditorBase *text_shader_editor = Object::cast_to<TextEditorBase>(script_editor->get_current_editor());
+	shader_dock->make_visible();
+	TextEditorBase *text_shader_editor = Object::cast_to<TextEditorBase>(shader_container->get_current_editor());
 	if (text_shader_editor) {
 		text_shader_editor->ensure_focus();
 	}
@@ -72,7 +72,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 	}
 
 	if (Object::cast_to<Shader>(p_object) || Object::cast_to<ShaderInclude>(p_object)) {
-		script_editor->edit(Object::cast_to<Resource>(p_object), false);
+		shader_container->edit(Object::cast_to<Resource>(p_object), false);
 	}
 }
 
@@ -90,7 +90,7 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 #endif
 
 	if (bool(EDITOR_GET("editors/shader_editor/behavior/files/restore_shaders_on_load"))) {
-		script_editor->set_window_layout(p_layout);
+		shader_container->set_window_layout(p_layout);
 	}
 }
 
@@ -103,11 +103,11 @@ void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 	}
 #endif
 
-	script_editor->get_window_layout(p_layout);
+	shader_container->get_window_layout(p_layout);
 }
 
 String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
-	const PackedStringArray unsaved_scripts = script_editor->get_unsaved_scripts();
+	const PackedStringArray unsaved_scripts = shader_container->get_unsaved_scripts();
 	if (unsaved_scripts.is_empty()) {
 		return String();
 	}
@@ -139,7 +139,7 @@ String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 
 void ShaderEditorPlugin::save_external_data() {
 	if (!EditorNode::get_singleton()->is_exiting()) {
-		script_editor->save_all_scripts();
+		shader_container->save_all_scripts();
 	}
 }
 
@@ -154,15 +154,18 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 
 	make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("shader_editor/make_floating", TTRC("Make Floating"));
 
-	script_editor = memnew(ScriptEditor(config_section, "shader_editor_cache.cfg"));
-	script_editor->set_handled_resource_types({ "Shader", "VisualShader", "ShaderInclude" });
+	shader_dock = memnew(EditorDock);
+	shader_dock->set_name(TTRC("Shader Editor"));
+	shader_dock->set_icon_name("ShaderDock");
+	shader_dock->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Dock"), KeyModifierMask::ALT | Key::S));
+	shader_dock->set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
+	shader_dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	EditorDockManager::get_singleton()->add_dock(shader_dock);
 
-	script_editor->set_name(TTRC("Shader Editor"));
-	script_editor->set_icon_name("ShaderDock");
-	script_editor->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Dock"), KeyModifierMask::ALT | Key::S));
-	script_editor->set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
-	script_editor->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
-	EditorDockManager::get_singleton()->add_dock(script_editor);
+	shader_container = memnew(DocumentEditorContainer(false, config_section, "shader_editor_cache.cfg"));
+	shader_container->set_handled_resource_types({ "Shader", "VisualShader", "ShaderInclude" });
+
+	shader_dock->add_child(shader_container);
 }
 
 ShaderEditorPlugin::~ShaderEditorPlugin() {
