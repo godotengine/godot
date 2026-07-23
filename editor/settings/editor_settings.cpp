@@ -474,6 +474,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Interface */
 
 	// Editor
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/localization/localize_editor", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/localization/localize_documentation", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/localization/localize_settings", true, "")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", 0, "Text Only,Icon Only,Text and Icon")
@@ -1501,6 +1503,9 @@ void EditorSettings::setup_language(bool p_initial_setup) {
 		}
 	}
 
+	TranslationServer::get_singleton()->get_editor_domain()->set_locale_override((has_setting("interface/editor/localization/localize_editor") && !get_setting("interface/editor/localization/localize_editor")) ? "en" : "");
+	TranslationServer::get_singleton()->get_doc_domain()->set_locale_override((has_setting("interface/editor/localization/localize_documentation") && !get_setting("interface/editor/localization/localize_documentation")) ? "en" : "");
+
 	if (lang == "en") {
 		TranslationServer::get_singleton()->set_locale(lang);
 		emit_signal("_translation_changed");
@@ -2409,7 +2414,7 @@ void EditorSettings::notify_changes() {
 	}
 	root->propagate_notification(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
 
-	if (check_changed_settings_in_group("interface/editor/localization/editor_language")) {
+	if (check_changed_settings_in_group("interface/editor/localization/editor_language") || check_changed_settings_in_group("interface/editor/localization/localize_editor") || check_changed_settings_in_group("interface/editor/localization/localize_documentation")) {
 		setup_language(false);
 	}
 }

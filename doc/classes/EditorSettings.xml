@@ -1118,8 +1118,14 @@
 			The language to use for the editor interface. If set to [b]Auto[/b], the language is automatically determined based on the system locale. See also [method EditorInterface.get_editor_language].
 			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
 		</member>
+		<member name="interface/editor/localization/localize_documentation" type="bool" setter="" getter="">
+			If [code]true[/code], the documentation and tooltips in the editor are localized when possible. See also [member interface/editor/localization/localize_editor] and [member interface/editor/localization/localize_settings].
+		</member>
+		<member name="interface/editor/localization/localize_editor" type="bool" setter="" getter="">
+			If [code]true[/code], the editor and project manager are localized when possible. See also [member interface/editor/localization/localize_documentation] and [member interface/editor/localization/localize_settings].
+		</member>
 		<member name="interface/editor/localization/localize_settings" type="bool" setter="" getter="">
-			If [code]true[/code], setting names in the editor are localized when possible.
+			If [code]true[/code], setting names in the editor are localized when possible. See also [member interface/editor/localization/localize_documentation] and [member interface/editor/localization/localize_editor].
 			[b]Note:[/b] This setting affects most [EditorInspector]s in the editor UI, primarily Project Settings and Editor Settings. To control names displayed in the Inspector dock, use [member interface/inspector/default_property_name_style] instead.
 		</member>
 		<member name="interface/editor/localization/ui_layout_direction" type="int" setter="" getter="">
