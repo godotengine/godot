@@ -30,27 +30,6 @@
 
 #include "winrt_utils.h"
 
-#include "core/typedefs.h"
-
-#ifdef WINRT_ENABLED
-
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wctor-dtor-privacy")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wstrict-aliasing")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-
-#include <inspectable.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.Foundation.Metadata.h>
-#include <winrt/Windows.Graphics.Display.h>
-#include <winrt/Windows.System.UserProfile.h>
-#include <winrt/Windows.System.h>
-#include <winrt/Windows.UI.Input.h>
-#include <winrt/Windows.UI.ViewManagement.Core.h>
-
 enum DISPATCHERQUEUE_THREAD_APARTMENTTYPE {
 	DQTAT_COM_NONE = 0,
 	DQTAT_COM_ASTA = 1,
@@ -69,112 +48,249 @@ struct DispatcherQueueOptions {
 };
 
 typedef HRESULT(WINAPI *CreateDispatcherQueueControllerPtr)(DispatcherQueueOptions options, void *dispatcherQueueController);
-CreateDispatcherQueueControllerPtr CreateDispatcherQueueController;
+CreateDispatcherQueueControllerPtr GD_CreateDispatcherQueueController;
 
-#ifndef E_BOUNDS
-#define E_BOUNDS _HRESULT_TYPEDEF_(0x8000000B)
-#endif // E_BOUNDS
+typedef HRESULT(WINAPI *RoGetActivationFactoryPtr)(void *classId, REFIID iid, void **factory);
+RoGetActivationFactoryPtr GD_RoGetActivationFactory;
 
-#if defined __MINGW32__ || defined __MINGW64__
+typedef HRESULT(WINAPI *CoIncrementMTAUsagePtr)(void **pCookie);
+CoIncrementMTAUsagePtr GD_CoIncrementMTAUsage;
 
-#ifndef __IDisplayInformationStaticsInterop_INTERFACE_DEFINED__
-#define __IDisplayInformationStaticsInterop_INTERFACE_DEFINED__
+typedef HRESULT(WINAPI *CoDecrementMTAUsagePtr)(void *pCookie);
+CoDecrementMTAUsagePtr GD_CoDecrementMTAUsage;
 
-// clang-format off
-MIDL_INTERFACE("7449121c-382b-4705-8da7-a795ba482013")
-IDisplayInformationStaticsInterop : public IInspectable {
+static const WCHAR *RODisplayInformationName = L"Windows.Graphics.Display.DisplayInformation";
+static const WCHAR *ROGlobalizationPreferencesStaticsName = L"Windows.System.UserProfile.GlobalizationPreferences";
+static const WCHAR *ROCoreInputViewName = L"Windows.UI.ViewManagement.Core.CoreInputView";
+static const WCHAR *ROApiInformationName = L"Windows.Foundation.Metadata.ApiInformation";
+
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_GCC_WARNING_IGNORE("-Wctor-dtor-privacy")
+GODOT_GCC_WARNING_IGNORE("-Wshadow")
+GODOT_GCC_WARNING_IGNORE("-Wstrict-aliasing")
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
+
+/**************************************************************************/
+/* DisplayInformation5 events                                             */
+/**************************************************************************/
+
+class GodotAdvancedColorInfoChangedEventHandler : public ROTypedEventHandler {
+	TYPED_EVENT_HANDLER_CLASS(GodotAdvancedColorInfoChangedEventHandler, ROTypedEventHandler)
+
+private:
+	int64_t id = 0;
+	Callable cb;
+
 public:
-	virtual HRESULT STDMETHODCALLTYPE GetForWindow(
-			HWND window,
-			REFIID riid,
-			void **displayInfo) = 0;
+	HRESULT STDMETHODCALLTYPE Invoke(void *p_sender, IInspectable *p_args) {
+		cb.call_deferred(id);
+		return S_OK;
+	}
 
-	virtual HRESULT STDMETHODCALLTYPE GetForMonitor(
-			HMONITOR monitor,
-			REFIID riid,
-			void **displayInfo) = 0;
+	GodotAdvancedColorInfoChangedEventHandler(int64_t p_id, const Callable &p_cb) {
+		id = p_id;
+		cb = p_cb;
+	}
 };
-// clang-format on
-#ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(IDisplayInformationStaticsInterop, 0x7449121c, 0x382b, 0x4705, 0x8d, 0xa7, 0xa7, 0x95, 0xba, 0x48, 0x20, 0x13)
-#endif // __CRT_UUID_DECL
-
-#endif // __IDisplayInformationStaticsInterop_INTERFACE_DEFINED__
-
-#else // defined __MINGW32__ || defined __MINGW64__
-
-#include <windows.graphics.display.interop.h>
-
-#endif // defined __MINGW32__ || defined __MINGW64__
 
 GODOT_GCC_WARNING_POP
 GODOT_CLANG_WARNING_POP
 
-using namespace winrt::Windows::Graphics::Display;
-using namespace winrt::Windows::System;
-using namespace winrt::Windows::System::UserProfile;
-using namespace winrt::Windows::Foundation;
-using namespace winrt::Windows::Foundation::Collections;
-using namespace winrt::Windows::Foundation::Metadata;
-using namespace winrt::Windows::UI::ViewManagement::Core;
+/**************************************************************************/
+/* WinRTUtils                                                             */
+/**************************************************************************/
 
-DispatcherQueueController controller{ nullptr };
+ComPtr<RODispatcherQueueController> queue_ctrl;
+void *mta_cookie = nullptr;
+bool api_initialized = false;
+
+bool WinRTUtils::is_api_contract_present(const String &p_contract, uint16_t p_version) {
+	ComPtr<ROApiInformationStatics> api_info;
+	HRESULT res = activation_factory(ROApiInformationName, IID_PPV_ARGS(&api_info));
+	if (FAILED(res)) {
+		return false;
+	}
+	Ref<HStringWrapper> name;
+	name.instantiate();
+	name->set_string(p_contract);
+
+	bool ret = false;
+	ERR_FAIL_COND_V(FAILED(api_info->IsApiContractPresentByMajor(name->get_ptr(), p_version, &ret)), false);
+	return ret;
+}
+
+bool WinRTUtils::is_type_present(const String &p_type) {
+	ComPtr<ROApiInformationStatics> api_info;
+	HRESULT res = activation_factory(ROApiInformationName, IID_PPV_ARGS(&api_info));
+	if (FAILED(res)) {
+		return false;
+	}
+	Ref<HStringWrapper> name;
+	name.instantiate();
+	name->set_string(p_type);
+
+	bool ret = false;
+	ERR_FAIL_COND_V(FAILED(api_info->IsTypePresent(name->get_ptr(), &ret)), false);
+	return ret;
+}
+
+HRESULT WinRTUtils::activation_factory(const String &p_class_name, REFIID p_iid, void **p_factory) {
+	Ref<HStringWrapper> name;
+	name.instantiate();
+	name->set_string(p_class_name);
+
+	HRESULT res = GD_RoGetActivationFactory(name->get_ptr(), p_iid, p_factory);
+	if (res == (HRESULT)0x800401F0 && !mta_cookie) {
+		ERR_FAIL_COND_V(FAILED(GD_CoIncrementMTAUsage(&mta_cookie)), E_ABORT);
+		res = GD_RoGetActivationFactory(name->get_ptr(), p_iid, p_factory);
+	}
+	if (res == (HRESULT)0x80004001 || res == (HRESULT)0x80004002) {
+		print_verbose(vformat("RoGetActivationFactory(%s) not supported.", p_class_name));
+		return res;
+	}
+	ERR_FAIL_COND_V_MSG(FAILED(res), res, vformat("RoGetActivationFactory(%s) failed with error 0x%08ux.", p_class_name, (uint64_t)res));
+
+	return res;
+}
 
 class WinRTWindowData {
 	friend class WinRTUtils;
 
-	int64_t id = 0;
 	bool has_disp_info = false;
-	DisplayInformation disp_info{ nullptr };
-	Callable cb;
-	winrt::event_token token{};
+	ComPtr<RODisplayInformation5> disp_info;
+	ComPtr<ROTypedEventHandler> handler;
+	ROEventToken token;
 };
 
+bool WinRTUtils::is_initialized() {
+	return api_initialized;
+}
+
+void WinRTUtils::init() {
+	HMODULE combase = LoadLibraryW(L"combase.dll");
+	if (!combase) {
+		return;
+	}
+	GD_RoGetActivationFactory = (RoGetActivationFactoryPtr)(void *)GetProcAddress(combase, "RoGetActivationFactory");
+	if (!GD_RoGetActivationFactory) {
+		return;
+	}
+	GD_CoIncrementMTAUsage = (CoIncrementMTAUsagePtr)(void *)GetProcAddress(combase, "CoIncrementMTAUsage");
+	if (!GD_CoIncrementMTAUsage) {
+		return;
+	}
+	GD_CoDecrementMTAUsage = (CoDecrementMTAUsagePtr)(void *)GetProcAddress(combase, "CoDecrementMTAUsage");
+	if (!GD_CoDecrementMTAUsage) {
+		return;
+	}
+	api_initialized = true;
+}
+
 bool WinRTUtils::create_queue() {
+	ERR_FAIL_COND_V(!api_initialized, false);
+
 	HMODULE coremessaging = LoadLibraryW(L"coremessaging.dll");
 	if (!coremessaging) {
 		return false;
 	}
-	CreateDispatcherQueueController = (CreateDispatcherQueueControllerPtr)(void *)GetProcAddress(coremessaging, "CreateDispatcherQueueController");
-	if (!CreateDispatcherQueueController) {
+	GD_CreateDispatcherQueueController = (CreateDispatcherQueueControllerPtr)(void *)GetProcAddress(coremessaging, "CreateDispatcherQueueController");
+	if (!GD_CreateDispatcherQueueController) {
 		return false;
 	}
 
 	DispatcherQueueOptions options{ sizeof(options), DQTYPE_THREAD_CURRENT, DQTAT_COM_NONE };
-	HRESULT res = CreateDispatcherQueueController(options, winrt::put_abi(controller));
-	return SUCCEEDED(res);
+	HRESULT res = GD_CreateDispatcherQueueController(options, queue_ctrl.GetAddressOf());
+	ERR_FAIL_COND_V_MSG(FAILED(res), false, "CreateDispatcherQueueController failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+
+	return true;
 }
 
 void WinRTUtils::destroy_queue() {
-	IAsyncAction action = controller.ShutdownQueueAsync();
-	while (action.Status() == AsyncStatus::Started) {
+	ERR_FAIL_COND(!api_initialized);
+
+	ComPtr<ROAsyncAction> action;
+	ERR_FAIL_COND(FAILED(queue_ctrl->ShutdownQueueAsync((void **)action.GetAddressOf())));
+
+	ComPtr<ROAsyncInfo> info;
+	ERR_FAIL_COND(FAILED(action.As(&info)));
+
+	ROAsyncStatus status = ROAsyncStatus::Started;
+	while (status == ROAsyncStatus::Started) {
+		info->get_Status((int32_t *)&status);
 		MSG msg = {};
 		while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
 		}
 	}
-	ERR_FAIL_COND_MSG(action.Status() == AsyncStatus::Error, "DispatcherQueueController shutdown failed.");
+	ERR_FAIL_COND_MSG(status == ROAsyncStatus::Error, "DispatcherQueueController shutdown failed.");
+}
+
+void WinRTUtils::cleanup() {
+	if (mta_cookie) {
+		GD_CoDecrementMTAUsage(mta_cookie);
+		mta_cookie = nullptr;
+	}
 }
 
 Vector<String> WinRTUtils::get_preferred_locales() {
 	Vector<String> out;
-	IVectorView<winrt::hstring> languages = GlobalizationPreferences::Languages();
-	for (uint32_t i = 0; i < languages.Size(); i++) {
-		winrt::hstring lang = languages.GetAt(i);
-		out.push_back(String::utf16((const char16_t *)lang.c_str(), lang.size()).replace_char('-', '_'));
+	ERR_FAIL_COND_V(!api_initialized, out);
+
+	ComPtr<ROGlobalizationPreferencesStatics> glob_prefs;
+	if (FAILED(activation_factory(ROGlobalizationPreferencesStaticsName, IID_PPV_ARGS(&glob_prefs)))) {
+		return out;
 	}
+
+	ComPtr<ROVectorView_HSTRING> languages;
+	HRESULT res = glob_prefs->get_Languages((void **)languages.GetAddressOf());
+	ERR_FAIL_COND_V_MSG(FAILED(res), out, "GlobalizationPreferencesStatics::get_Languages failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+
+	uint32_t size = 0;
+	res = languages->get_Size(&size);
+	ERR_FAIL_COND_V_MSG(FAILED(res), out, "VectorView<HSTRING>::get_Size failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+
+	for (uint32_t i = 0; i < size; i++) {
+		Ref<HStringWrapper> lang;
+		lang.instantiate();
+		ERR_CONTINUE(FAILED(languages->GetAt(i, lang->get_ptrw())));
+
+		String lang_str = lang->get_string();
+		if (!lang_str.is_empty()) {
+			out.push_back(lang_str.replace_char('-', '_'));
+		}
+	}
+
 	return out;
 }
 
 bool WinRTUtils::try_show_onecore_emoji_picker() {
-	if (ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7)) { // Windows 10, 1809+
-		return CoreInputView::GetForCurrentView().TryShow(CoreInputViewKind::Emoji);
+	ERR_FAIL_COND_V(!api_initialized, false);
+
+	if (!WinRTUtils::is_api_contract_present(L"Windows.Foundation.UniversalApiContract", 7)) {
+		return false;
 	}
-	return false;
+
+	ComPtr<ROCoreInputViewStatics> core_view;
+	if (FAILED(activation_factory(ROCoreInputViewName, IID_PPV_ARGS(&core_view)))) {
+		return false;
+	}
+
+	ComPtr<IInspectable> core_input_view_ii;
+	ComPtr<ROCoreInputView3> core_input_view;
+	ERR_FAIL_COND_V(FAILED(core_view->GetForCurrentView((void **)core_input_view_ii.GetAddressOf())), false);
+	ERR_FAIL_COND_V(FAILED(core_input_view_ii.As(&core_input_view)), false);
+
+	bool status = false;
+	ERR_FAIL_COND_V(FAILED(core_input_view->TryShowWithKind((int32_t)ROCoreInputViewKind::Emoji, &status)), false);
+	return status;
 }
 
 bool WinRTUtils::window_has_display_info(const WinRTWindowData *p_data) {
+	ERR_FAIL_COND_V(!api_initialized, false);
+
 	if (p_data) {
 		return p_data->has_disp_info;
 	} else {
@@ -183,77 +299,51 @@ bool WinRTUtils::window_has_display_info(const WinRTWindowData *p_data) {
 }
 
 void WinRTUtils::window_get_advanced_color_info(const WinRTWindowData *p_data, bool &r_hdr_supported, float &r_min_luminance, float &r_max_luminance, float &r_max_average_luminance, float &r_sdr_white_level) {
-	if (p_data && p_data->has_disp_info) {
-		AdvancedColorInfo adv_info = p_data->disp_info.GetAdvancedColorInfo();
+	ERR_FAIL_COND(!api_initialized);
 
-		r_hdr_supported = (adv_info.CurrentAdvancedColorKind() == AdvancedColorKind::HighDynamicRange);
-		r_min_luminance = adv_info.MinLuminanceInNits();
-		r_max_luminance = adv_info.MaxLuminanceInNits();
-		r_max_average_luminance = adv_info.MaxAverageFullFrameLuminanceInNits();
-		r_sdr_white_level = adv_info.SdrWhiteLevelInNits();
+	if (p_data && p_data->has_disp_info) {
+		ComPtr<ROAdvancedColorInfo> adv_info;
+
+		ERR_FAIL_COND(FAILED(p_data->disp_info->GetAdvancedColorInfo((void **)adv_info.GetAddressOf())));
+
+		ROAdvancedColorKind color_type = ROAdvancedColorKind::StandardDynamicRange;
+		ERR_FAIL_COND(FAILED(adv_info->get_CurrentAdvancedColorKind((int32_t *)&color_type)));
+		r_hdr_supported = (color_type == ROAdvancedColorKind::HighDynamicRange);
+
+		ERR_FAIL_COND(FAILED(adv_info->get_MinLuminanceInNits(&r_min_luminance)));
+		ERR_FAIL_COND(FAILED(adv_info->get_MaxLuminanceInNits(&r_max_luminance)));
+		ERR_FAIL_COND(FAILED(adv_info->get_MaxAverageFullFrameLuminanceInNits(&r_max_average_luminance)));
+		ERR_FAIL_COND(FAILED(adv_info->get_SdrWhiteLevelInNits(&r_sdr_white_level)));
 	}
 }
 
 WinRTWindowData *WinRTUtils::create_wd(HWND p_window, const Callable &p_color_cb, int64_t p_window_id) {
 	WinRTWindowData *wd = memnew(WinRTWindowData);
 
-	wd->id = p_window_id;
-	wd->cb = p_color_cb;
-	if (ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 6)) {
-		try {
-			HRESULT res = winrt::get_activation_factory<DisplayInformation, IDisplayInformationStaticsInterop>()->GetForWindow(p_window, winrt::guid_of<DisplayInformation>(), winrt::put_abi(wd->disp_info));
-			if (res == S_OK && wd->disp_info) {
-				wd->has_disp_info = true;
-				wd->token = wd->disp_info.AdvancedColorInfoChanged([wd](const DisplayInformation &p_sender, auto &&) {
-					wd->cb.call_deferred(wd->id);
-				});
-			}
-		} catch (...) {
-			memdelete(wd);
-			return nullptr;
+	ERR_FAIL_COND_V(!api_initialized, wd);
+	if (WinRTUtils::is_api_contract_present(L"Windows.Foundation.UniversalApiContract", 6)) {
+		ComPtr<RODisplayInformationStaticsInterop> interop;
+		if (FAILED(activation_factory(RODisplayInformationName, IID_PPV_ARGS(&interop)))) {
+			return wd;
 		}
-	}
 
+		ERR_FAIL_COND_V(FAILED(interop->GetForWindow(p_window, IID_PPV_ARGS(&wd->disp_info))), wd);
+
+		GodotAdvancedColorInfoChangedEventHandler *handler = new GodotAdvancedColorInfoChangedEventHandler(p_window_id, p_color_cb);
+		ERR_FAIL_COND_V(FAILED(handler->QueryInterface(IID_PPV_ARGS(&wd->handler))), wd);
+		ERR_FAIL_COND_V(FAILED(wd->disp_info->add_AdvancedColorInfoChanged(wd->handler.Get(), &wd->token)), wd);
+
+		wd->has_disp_info = true;
+	}
 	return wd;
 }
 
 void WinRTUtils::destroy_wd(WinRTWindowData *p_data) {
+	ERR_FAIL_COND(!api_initialized);
 	if (p_data) {
 		if (p_data->token) {
-			p_data->disp_info.AdvancedColorInfoChanged(p_data->token);
+			p_data->disp_info->remove_AdvancedColorInfoChanged(p_data->token);
 		}
-		p_data->disp_info = nullptr;
-
 		memdelete(p_data);
 	}
 }
-
-#else
-
-bool WinRTUtils::try_show_onecore_emoji_picker() {
-	return false;
-}
-
-bool WinRTUtils::create_queue() {
-	return false;
-}
-
-void WinRTUtils::destroy_queue() {}
-
-Vector<String> WinRTUtils::get_preferred_locales() {
-	return Vector<String>();
-}
-
-bool WinRTUtils::window_has_display_info(const WinRTWindowData *p_data) {
-	return false;
-}
-
-void WinRTUtils::window_get_advanced_color_info(const WinRTWindowData *p_data, bool &r_hdr_supported, float &r_min_luminance, float &r_max_luminance, float &r_max_average_luminance, float &r_sdr_white_level) {}
-
-WinRTWindowData *WinRTUtils::create_wd(HWND p_window, const Callable &p_color_cb, int64_t p_window_id) {
-	return nullptr;
-}
-
-void WinRTUtils::destroy_wd(WinRTWindowData *p_data) {}
-
-#endif
