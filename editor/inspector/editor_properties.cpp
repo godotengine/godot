@@ -3060,7 +3060,11 @@ void EditorPropertyNodePath::_node_assign() {
 		scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 		scene_tree->set_valid_types(valid_types);
 		add_child(scene_tree);
-		scene_tree->connect("selected", callable_mp(this, &EditorPropertyNodePath::_node_selected).bind(true));
+		if (is_property_selector) {
+			scene_tree->connect("selected", callable_mp(this, &EditorPropertyNodePath::_property_assign).bind(true));
+		} else {
+			scene_tree->connect("selected", callable_mp(this, &EditorPropertyNodePath::_node_selected).bind(true));
+		}
 	}
 
 	Variant val = get_edited_property_value();
@@ -3072,6 +3076,44 @@ void EditorPropertyNodePath::_node_assign() {
 		n = Object::cast_to<Node>(val);
 	}
 	scene_tree->popup_scenetree_dialog(n, get_base_node());
+}
+
+void EditorPropertyNodePath::_property_selected(const String &p_name) {
+	emit_changed(get_edited_property(), adding_property_path.with_subnames({ p_name }));
+	update_property();
+}
+
+void EditorPropertyNodePath::_property_assign(const NodePath &p_path, bool p_absolute) {
+	Node *base_node = get_base_node();
+
+	if (!property_selector) {
+		property_selector = memnew(PropertySelector);
+		add_child(property_selector);
+		property_selector->connect("selected", callable_mp(this, &EditorPropertyNodePath::_property_selected));
+		if (!valid_property_types.is_empty()) {
+			Vector<Variant::Type> valid_variants;
+			for (const StringName &property_type : valid_property_types) {
+				valid_variants.append(Variant::get_type_by_name(property_type));
+			}
+			property_selector->set_type_filter(valid_variants);
+		}
+	}
+
+	if (!base_node && Object::cast_to<RefCounted>(get_edited_object())) {
+		Node *to_node = get_node(p_path);
+		ERR_FAIL_NULL(to_node);
+		adding_property_path = get_tree()->get_edited_scene_root()->get_path_to(to_node);
+	}
+
+	if (p_absolute && base_node) {
+		adding_property_path = base_node->get_path().rel_path_to(p_path);
+	}
+
+	if (!base_node) {
+		property_selector->select_property_from_instance(get_tree()->get_edited_scene_root()->get_node(adding_property_path));
+	} else {
+		property_selector->select_property_from_instance(base_node->get_node(adding_property_path));
+	}
 }
 
 void EditorPropertyNodePath::_assign_draw() {
@@ -3167,16 +3209,46 @@ bool EditorPropertyNodePath::can_drop_data_fw(const Point2 &p_point, const Varia
 void EditorPropertyNodePath::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	ERR_FAIL_COND(!is_drop_valid(p_data));
 	Dictionary data_dict = p_data;
-	Array nodes = data_dict["nodes"];
-	Node *node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
-
-	if (node) {
-		_node_selected(node->get_path());
+	Node *node;
+	if (data_dict["type"] == "obj_property") {
+		node = Object::cast_to<Node>(data_dict["object"]);
+		if (node) {
+			String property_name = data_dict["property"];
+			_node_selected(node->get_path().with_subnames({ property_name }));
+		}
+	}
+	if (data_dict["type"] == "nodes") {
+		Array nodes = data_dict["nodes"];
+		node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
+		if (node) {
+			_node_selected(node->get_path());
+		}
 	}
 }
 
 bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const {
-	if (!p_drag_data.has("type") || p_drag_data["type"] != "nodes") {
+	if (!p_drag_data.has("type")) {
+		return false;
+	}
+	const String type_value = p_drag_data["type"];
+	if (type_value == "obj_property" && !is_node_only) {
+		if (valid_property_types.is_empty()) {
+			return true;
+		}
+
+		Node *node = Object::cast_to<Node>(p_drag_data["object"]);
+		if (node) {
+			String property_name = p_drag_data["property"];
+			Variant value = node->get(property_name);
+			for (const StringName &type_name : valid_property_types) {
+				if (value.get_type() == Variant::get_type_by_name(type_name)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+	if (type_value != "nodes" || is_property_selector) {
 		return false;
 	}
 	Array nodes = p_drag_data["nodes"];
@@ -3245,16 +3317,36 @@ void EditorPropertyNodePath::update_property() {
 	}
 
 	if (p.get_subname_count() > 0) {
-		new_text += ":" + p.get_concatenated_subnames();
+		String property_name = String(p.get_concatenated_subnames());
+		Variant value = target_node->get(property_name);
+
+		new_text += ":" + property_name;
+		assign->set_text(new_text);
+		assign->set_button_icon(EditorNode::get_singleton()->get_class_icon(Variant::get_type_name(value.get_type())));
+		return;
 	}
 	assign->set_text(new_text);
 	assign->set_button_icon(EditorNode::get_singleton()->get_object_icon(target_node));
 }
 
-void EditorPropertyNodePath::setup(const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
+void EditorPropertyNodePath::setup_node_path(const Vector<StringName> &p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
 	valid_types = p_valid_types;
 	editing_node = p_editing_node;
 	use_path_from_scene_root = p_use_path_from_scene_root;
+	is_node_only = true;
+}
+
+void EditorPropertyNodePath::setup_node_path() {
+	is_node_only = true;
+}
+
+void EditorPropertyNodePath::setup_property_path(const Vector<StringName> &p_valid_property_types) {
+	valid_property_types = p_valid_property_types;
+	is_property_selector = true;
+}
+
+void EditorPropertyNodePath::setup_property_path() {
+	is_property_selector = true;
 }
 
 void EditorPropertyNodePath::_notification(int p_what) {
@@ -4244,10 +4336,13 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::NODE_PATH: {
 			EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
-			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && !p_hint_text.is_empty()) {
-				Vector<String> types = p_hint_text.split(",", false);
-				Vector<StringName> sn = Variant(types); //convert via variant
-				editor->setup(sn, (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));
+			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES) {
+				if (!p_hint_text.is_empty()) {
+					Vector<String> types = p_hint_text.split(",", false);
+					Vector<StringName> sn = Variant(types); //convert via variant
+					editor->setup_node_path(sn, (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));
+				}
+				editor->setup_node_path();
 			}
 			return editor;
 
@@ -4261,7 +4356,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyNodePath *editor = memnew(EditorPropertyNodePath);
 				Vector<String> types = p_hint_text.split(",", false);
 				Vector<StringName> sn = Variant(types); //convert via variant
-				editor->setup(sn, false, true);
+				editor->setup_node_path(sn, false, true);
 				return editor;
 			} else {
 				EditorPropertyResource *editor = memnew(EditorPropertyResource);
