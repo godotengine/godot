@@ -77,6 +77,7 @@ public:
 			bool marked : 1;
 			bool breakpoint : 1;
 			bool bookmark : 1;
+			bool folded : 1;
 			bool hidden : 1;
 			bool safe : 1;
 			bool has_info : 1;
@@ -90,6 +91,7 @@ public:
 				marked = false;
 				breakpoint = false;
 				bookmark = false;
+				folded = false;
 				hidden = false;
 				safe = false;
 				has_info = false;
@@ -126,6 +128,8 @@ public:
 		bool is_breakpoint(int p_line) const { return text[p_line].breakpoint; }
 		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
+		void set_folded(int p_line, bool p_folded) { text.write[p_line].folded = p_folded; }
+		bool is_folded(int p_line) const { return text[p_line].folded; }
 		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
 		bool is_safe(int p_line) const { return text[p_line].safe; }
 		void set_info_icon(int p_line, Ref<Texture> p_icon, String p_info) {
@@ -646,6 +650,7 @@ public:
 	void set_line_info_icon(int p_line, Ref<Texture> p_icon, String p_info = "");
 	void clear_info_icons();
 
+	void set_line_as_folded(int p_line, bool p_folded);
 	void set_line_as_hidden(int p_line, bool p_hidden);
 	bool is_line_hidden(int p_line) const;
 	void fold_all_lines();

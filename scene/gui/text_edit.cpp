@@ -6144,6 +6144,14 @@ void TextEdit::clear_info_icons() {
 	update();
 }
 
+void TextEdit::set_line_as_folded(int p_line, bool p_folded) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	if (is_hiding_enabled() || !p_folded) {
+		text.set_folded(p_line, p_folded);
+	}
+	update();
+}
+
 void TextEdit::set_line_as_hidden(int p_line, bool p_hidden) {
 	ERR_FAIL_INDEX(p_line, text.size());
 	if (is_hiding_enabled() || !p_hidden) {
@@ -6158,8 +6166,11 @@ bool TextEdit::is_line_hidden(int p_line) const {
 }
 
 void TextEdit::fold_all_lines() {
-	for (int i = 0; i < text.size(); i++) {
-		fold_line(i);
+	// Fold bottom-up so child blocks fold before parent blocks
+	for (int i = text.size() - 1; i >= 0; i--) {
+		if (can_fold(i)) {
+			fold_line(i);
+		}
 	}
 	_update_scrollbars();
 	update();
@@ -6168,6 +6179,7 @@ void TextEdit::fold_all_lines() {
 void TextEdit::unhide_all_lines() {
 	for (int i = 0; i < text.size(); i++) {
 		text.set_hidden(i, false);
+		text.set_folded(i, false); // Clear explicit fold state on every line
 	}
 	_update_scrollbars();
 	update();
@@ -6319,39 +6331,33 @@ bool TextEdit::can_fold(int p_line) const {
 	if (p_line + 1 >= text.size()) {
 		return false;
 	}
-	if (text[p_line].strip_edges().size() == 0) {
+	if (text[p_line].strip_edges().empty()) {
 		return false;
 	}
 	if (is_folded(p_line)) {
 		return false;
 	}
-	if (is_line_hidden(p_line)) {
-		return false;
-	}
-	
+
 	int start_indent = get_indent_level(p_line);
-	
+
 	for (int i = p_line + 1; i < text.size(); i++) {
-		if (text[i].strip_edges().size() == 0) {
+		if (text[i].strip_edges().empty()) {
 			continue;
 		}
 		int next_indent = get_indent_level(i);
 		if (next_indent > start_indent) {
-			return true;
+			return true; // Found at least one deeper line
 		} else {
-			return false;
+			return false; // Scope ended without deeper lines
 		}
 	}
-	
+
 	return false;
 }
 
 bool TextEdit::is_folded(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
-	if (p_line + 1 >= text.size()) {
-		return false;
-	}
-	return !is_line_hidden(p_line) && is_line_hidden(p_line + 1);
+	return text.is_folded(p_line);
 }
 
 Vector<int> TextEdit::get_folded_lines() const {
@@ -6374,9 +6380,12 @@ void TextEdit::fold_line(int p_line) {
 		return;
 	}
 
-	// Hide lines below this one.
+	// 1. Mark this line as explicitly folded
+	set_line_as_folded(p_line, true);
+
+	// 2. Find the scope end line
 	int start_indent = get_indent_level(p_line);
-	int last_line = start_indent;
+	int last_line = p_line;
 	for (int i = p_line + 1; i < text.size(); i++) {
 		if (text[i].strip_edges().size() != 0) {
 			if (is_line_comment(i) && get_indent_level(i) <= start_indent) {
@@ -6389,11 +6398,13 @@ void TextEdit::fold_line(int p_line) {
 			}
 		}
 	}
+
+	// 3. Hide all child lines within the block scope
 	for (int i = p_line + 1; i <= last_line; i++) {
 		set_line_as_hidden(i, true);
 	}
 
-	// Fix selection.
+	// Fix selection
 	if (is_selection_active()) {
 		if (is_line_hidden(selection.from_line) && is_line_hidden(selection.to_line)) {
 			deselect();
@@ -6404,11 +6415,12 @@ void TextEdit::fold_line(int p_line) {
 		}
 	}
 
-	// Reset cursor.
+	// Reset cursor
 	if (is_line_hidden(cursor.line)) {
 		cursor_set_line(p_line, false, false);
 		cursor_set_column(get_line(p_line).length(), false);
 	}
+
 	_update_scrollbars();
 	update();
 }
@@ -6416,24 +6428,67 @@ void TextEdit::fold_line(int p_line) {
 void TextEdit::unfold_line(int p_line) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
-	if (!is_folded(p_line) && !is_line_hidden(p_line)) {
+	if (!is_folded(p_line)) {
 		return;
 	}
-	int fold_start;
-	for (fold_start = p_line; fold_start > 0; fold_start--) {
-		if (is_folded(fold_start)) {
-			break;
-		}
-	}
-	fold_start = is_folded(fold_start) ? fold_start : p_line;
 
-	for (int i = fold_start + 1; i < text.size(); i++) {
-		if (is_line_hidden(i)) {
-			set_line_as_hidden(i, false);
-		} else {
-			break;
+	// 1. Unmark this line as folded
+	set_line_as_folded(p_line, false);
+
+	// 2. Retrieve remaining active folds across the document
+	Vector<int> folded_lines = get_folded_lines();
+
+	// 3. Determine the end of p_line's block scope
+	int start_indent = get_indent_level(p_line);
+	int last_line = p_line;
+	for (int i = p_line + 1; i < text.size(); i++) {
+		if (text[i].strip_edges().size() != 0) {
+			if (is_line_comment(i) && get_indent_level(i) <= start_indent) {
+				continue;
+			} else if (get_indent_level(i) > start_indent) {
+				last_line = i;
+			} else {
+				break;
+			}
 		}
 	}
+
+	// 4. Update visibility for lines inside this block scope
+	for (int i = p_line + 1; i <= last_line; i++) {
+		bool should_stay_hidden = false;
+
+		// Check if line 'i' belongs to ANY active nested fold scope
+		for (int f = 0; f < folded_lines.size(); f++) {
+			int fold_idx = folded_lines[f];
+			if (fold_idx == p_line) {
+				continue;
+			}
+
+			// Find boundary for this active fold
+			int f_indent = get_indent_level(fold_idx);
+			int f_last_line = fold_idx;
+			for (int j = fold_idx + 1; j < text.size(); j++) {
+				if (text[j].strip_edges().size() != 0) {
+					if (is_line_comment(j) && get_indent_level(j) <= f_indent) {
+						continue;
+					} else if (get_indent_level(j) > f_indent) {
+						f_last_line = j;
+					} else {
+						break;
+					}
+				}
+			}
+
+			// If line 'i' is inside an active folded range, keep it hidden
+			if (i > fold_idx && i <= f_last_line) {
+				should_stay_hidden = true;
+				break;
+			}
+		}
+
+		set_line_as_hidden(i, should_stay_hidden);
+	}
+
 	_update_scrollbars();
 	update();
 }
@@ -6441,10 +6496,10 @@ void TextEdit::unfold_line(int p_line) {
 void TextEdit::toggle_fold_line(int p_line) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
-	if (!is_folded(p_line)) {
-		fold_line(p_line);
-	} else {
+	if (is_folded(p_line)) {
 		unfold_line(p_line);
+	} else {
+		fold_line(p_line);
 	}
 }
 
