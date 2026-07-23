@@ -340,6 +340,11 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				preset_accent_color = Color(0.44, 0.73, 0.98);
 				preset_base_color = Color(0.21, 0.24, 0.29);
 				preset_icon_saturation = 1;
+			} else if (config.preset == "Graphite") {
+				preset_accent_color = Color(0.247, 0.78, 1.0);
+				preset_base_color = Color(0.078, 0.078, 0.091);
+				preset_contrast = 0.36;
+				preset_draw_extra_borders = true;
 			} else if (config.preset == "Gray") {
 				preset_accent_color = Color(0.44, 0.73, 0.98);
 				preset_base_color = Color(0.24, 0.24, 0.24);
@@ -395,7 +400,11 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			int preset_extra_spacing = 0;
 			Size2 preset_dialogs_buttons_min_size;
 
-			if (config.spacing_preset == "Compact") {
+			if (config.spacing_preset == "Ultra-Compact") {
+				preset_base_spacing = 2;
+				preset_extra_spacing = 0;
+				preset_dialogs_buttons_min_size = Size2(84, 22);
+			} else if (config.spacing_preset == "Compact") {
 				preset_base_spacing = 2;
 				preset_extra_spacing = 2;
 				preset_dialogs_buttons_min_size = Size2(90, 26);
