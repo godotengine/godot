@@ -1012,32 +1012,46 @@ EditorPropertyEnum::EditorPropertyEnum() {
 ///////////////////// FLAGS /////////////////////////
 
 void EditorPropertyFlags::_set_read_only(bool p_read_only) {
-	for (CheckBox *check : flags) {
-		check->set_disabled(p_read_only);
-	}
+	menu->set_disabled(p_read_only);
 }
 
-void EditorPropertyFlags::_flag_toggled(int p_index) {
+void EditorPropertyFlags::_flag_selected(int p_index) {
 	uint32_t value = get_edited_property_value();
-	if (flags[p_index]->is_pressed()) {
+	PopupMenu *popup = menu->get_popup();
+	popup->toggle_item_checked(p_index);
+	if (popup->is_item_checked(p_index)) {
 		value |= flag_values[p_index];
 	} else {
 		value &= ~flag_values[p_index];
 	}
 
+	_update_button_text(value);
 	emit_changed(get_edited_property(), value);
+}
+
+void EditorPropertyFlags::_update_button_text(uint32_t p_value) {
+	Vector<String> selected_options;
+	for (int i = 0; i < flag_names.size(); i++) {
+		if ((p_value & flag_values[i]) == flag_values[i]) {
+			selected_options.push_back(flag_names[i]);
+		}
+	}
+
+	menu->set_text(selected_options.is_empty() ? TTR("None") : String(", ").join(selected_options));
 }
 
 void EditorPropertyFlags::update_property() {
 	uint32_t value = get_edited_property_value();
+	PopupMenu *popup = menu->get_popup();
 
-	for (int i = 0; i < flags.size(); i++) {
-		flags[i]->set_pressed((value & flag_values[i]) == flag_values[i]);
+	for (int i = 0; i < flag_values.size(); i++) {
+		popup->set_item_checked(i, (value & flag_values[i]) == flag_values[i]);
 	}
+	_update_button_text(value);
 }
 
 void EditorPropertyFlags::setup(const Vector<String> &p_options) {
-	ERR_FAIL_COND(flags.size());
+	ERR_FAIL_COND(!flag_values.is_empty());
 
 	bool first = true;
 	uint32_t current_val;
@@ -1047,7 +1061,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 		if (option.is_empty()) {
 			continue;
 		}
-		const int flag_index = flags.size(); // Index of the next element (added by the code below).
+		const int flag_index = flag_values.size(); // Index of the next element (added by the code below).
 
 		// Value for a flag can be explicitly overridden.
 		Vector<String> text_split = option.split(":");
@@ -1061,28 +1075,31 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 			current_val = 1u << i;
 		}
 		flag_values.push_back(current_val);
-
-		// Create a CheckBox for the current flag.
-		CheckBox *cb = memnew(CheckBox);
-		cb->set_text(text_split[0]);
-		cb->set_clip_text(true);
-		cb->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(flag_index));
-		add_focusable(cb);
-		vbox->add_child(cb);
-		flags.push_back(cb);
+		flag_names.push_back(text_split[0]);
+		
+		// Add a CheckBox item for the current flag to the dropdown menu.
+		menu->get_popup()->add_check_item(text_split[0], flag_index);
 
 		// Can't use `i == 0` because we want to find the first none-empty option.
 		if (first) {
-			set_label_reference(cb);
+			set_label_reference(menu);
 			first = false;
 		}
 	}
 }
 
 EditorPropertyFlags::EditorPropertyFlags() {
-	vbox = memnew(VBoxContainer);
-	vbox->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	add_child(vbox);
+	menu = memnew(MenuButton);
+	menu->set_clip_text(true);
+	menu->set_flat(true);
+	menu->set_theme_type_variation(SNAME("EditorInspectorButton"));
+	menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	menu->get_popup()->set_hide_on_checkable_item_selection(false);
+	menu->get_popup()->set_search_bar_enabled(true);
+	menu->get_popup()->set_search_bar_min_item_count(10);
+	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyFlags::_flag_selected));
+	add_child(menu);
+	add_focusable(menu);
 }
 
 ///////////////////// LAYERS /////////////////////////
