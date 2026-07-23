@@ -78,6 +78,7 @@ def get_doc_path():
 def get_flags():
     return {
         "arch": "wasm32",
+        "supported": ["mono"],
         "target": "template_debug",
         "builtin_pcre2_with_jit": False,
         "vulkan": False,

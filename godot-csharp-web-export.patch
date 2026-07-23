@@ -1,0 +1,168 @@
+diff --git a/modules/mono/godotsharp_dirs.cpp b/modules/mono/godotsharp_dirs.cpp
+index 3cbd2bd..d875194 100644
+--- a/modules/mono/godotsharp_dirs.cpp
++++ b/modules/mono/godotsharp_dirs.cpp
+@@ -46,7 +46,7 @@
+ 
+ #ifndef TOOLS_ENABLED
+ #include "core/config/engine.h"
+-#ifndef ANDROID_ENABLED
++#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+ #include "core/io/file_access.h"
+ #endif
+ #endif
+@@ -180,9 +180,9 @@ private:
+ 		String arch = Engine::get_singleton()->get_architecture_name();
+ 		String appname_safe = Path::get_csharp_project_name();
+ 		String packed_path = "res://.godot/mono/publish/" + arch;
+-#ifdef ANDROID_ENABLED
++#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
+ 		api_assemblies_dir = packed_path;
+-		print_verbose(".NET: Android platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
++		print_verbose(".NET: Android/Web platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
+ #else
+ 		if (DirAccess::exists(packed_path)) {
+ 			// The dotnet publish data is packed in the pck/zip.
+@@ -229,7 +229,7 @@ private:
+ #endif
+ 			api_assemblies_dir = data_dir_root;
+ 		}
+-#endif // ANDROID_ENABLED
++#endif // ANDROID_ENABLED || WEB_ENABLED
+ #endif
+ 	}
+ 
+diff --git a/modules/mono/mono_gd/gd_mono.cpp b/modules/mono/mono_gd/gd_mono.cpp
+index 8805ab6..a14c076 100644
+--- a/modules/mono/mono_gd/gd_mono.cpp
++++ b/modules/mono/mono_gd/gd_mono.cpp
+@@ -58,7 +58,7 @@
+ #endif
+ 
+ #ifndef TOOLS_ENABLED
+-#ifdef ANDROID_ENABLED
++#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
+ #include "../thirdparty/mono_delegates.h"
+ #endif
+ #endif
+@@ -78,7 +78,7 @@ typedef int(CORECLR_DELEGATE_CALLTYPE *coreclr_initialize_fn)(const char *exePat
+ coreclr_create_delegate_fn coreclr_create_delegate = nullptr;
+ coreclr_initialize_fn coreclr_initialize = nullptr;
+ 
+-#ifdef ANDROID_ENABLED
++#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
+ mono_install_assembly_preload_hook_fn mono_install_assembly_preload_hook = nullptr;
+ mono_assembly_name_get_name_fn mono_assembly_name_get_name = nullptr;
+ mono_assembly_name_get_culture_fn mono_assembly_name_get_culture = nullptr;
+@@ -192,6 +192,10 @@ String find_hostfxr() {
+ #elif defined(MACOS_ENABLED)
+ 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+ 								.path_join("libhostfxr.dylib");
++#elif defined(WEB_ENABLED)
++	// Web platform: hostfxr is compiled to WASM and loaded via Emscripten dlopen.
++	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
++								.path_join("libhostfxr.so");
+ #elif defined(UNIX_ENABLED)
+ 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+ 								.path_join("libhostfxr.so");
+@@ -221,6 +225,10 @@ String find_monosgen() {
+ #elif defined(MACOS_ENABLED)
+ 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+ 								.path_join("libmonosgen-2.0.dylib");
++#elif defined(WEB_ENABLED)
++	// Web platform: Mono runtime is compiled to WASM and loaded as a side module.
++	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
++								.path_join("libmonosgen-2.0.so");
+ #elif defined(UNIX_ENABLED)
+ 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+ 								.path_join("libmonosgen-2.0.so");
+@@ -243,6 +251,10 @@ String find_coreclr() {
+ #elif defined(MACOS_ENABLED)
+ 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+ 								.path_join("libcoreclr.dylib");
++#elif defined(WEB_ENABLED)
++	// Web platform: CoreCLR is compiled to WASM and loaded as a side module via Emscripten dlopen.
++	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
++								.path_join("libcoreclr.so");
+ #elif defined(UNIX_ENABLED)
+ 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+ 								.path_join("libcoreclr.so");
+@@ -334,7 +346,7 @@ bool load_coreclr(void *&r_coreclr_dll_handle) {
+ 	ERR_FAIL_COND_V(err != OK, false);
+ 	coreclr_create_delegate = (coreclr_create_delegate_fn)symbol;
+ 
+-#ifdef ANDROID_ENABLED
++#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
+ 	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "mono_install_assembly_preload_hook", symbol);
+ 	ERR_FAIL_COND_V(err != OK, false);
+ 	mono_install_assembly_preload_hook = (mono_install_assembly_preload_hook_fn)symbol;
+@@ -498,6 +510,9 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
+ 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dylib");
+ #elif defined(ANDROID_ENABLED)
+ 	String native_aot_so_path = "lib" + assembly_name + ".so";
++#elif defined(WEB_ENABLED)
++	// Web platform: NativeAOT-compiled C# assembly is a WASM side module.
++	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".wasm");
+ #elif defined(UNIX_ENABLED)
+ 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".so");
+ #else
+@@ -521,7 +536,7 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
+ #endif
+ 
+ #ifndef TOOLS_ENABLED
+-#ifdef ANDROID_ENABLED
++#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
+ MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p_assemblies_path, void *p_user_data) {
+ 	constexpr bool ref_only = false;
+ 
+@@ -580,9 +595,9 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
+ 
+ 	String assembly_name = Path::get_csharp_project_name();
+ 
+-#ifdef ANDROID_ENABLED
+-	// Android requires installing a preload hook to load assemblies from inside the APK,
+-	// other platforms can find the assemblies with the default lookup.
++#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
++	// Android and Web require installing a preload hook to load assemblies from
++	// inside the APK/PCK, other platforms can find the assemblies with the default lookup.
+ 	if (mono_install_assembly_preload_hook != nullptr) {
+ 		mono_install_assembly_preload_hook(&load_assembly_from_pck, nullptr);
+ 	}
+diff --git a/platform/web/detect.py b/platform/web/detect.py
+index fb7c20f..92a8578 100644
+--- a/platform/web/detect.py
++++ b/platform/web/detect.py
+@@ -78,6 +78,7 @@ def get_doc_path():
+ def get_flags():
+     return {
+         "arch": "wasm32",
++        "supported": ["mono"],
+         "target": "template_debug",
+         "builtin_pcre2_with_jit": False,
+         "vulkan": False,
+diff --git a/platform/web/export/export_plugin.cpp b/platform/web/export/export_plugin.cpp
+index aaed406..11799ff 100644
+--- a/platform/web/export/export_plugin.cpp
++++ b/platform/web/export/export_plugin.cpp
+@@ -422,13 +422,6 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
+ }
+ 
+ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
+-#ifdef MODULE_MONO_ENABLED
+-	// Don't check for additional errors, as this particular error cannot be resolved.
+-	r_error += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
+-	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
+-	return false;
+-#else
+-
+ 	String err;
+ 	bool valid = false;
+ 	bool extensions = (bool)p_preset->get("variant/extensions_support");
+@@ -459,7 +452,6 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
+ 	}
+ 
+ 	return valid;
+-#endif // !MODULE_MONO_ENABLED
+ }
+ 
+ bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {

@@ -46,7 +46,7 @@
 
 #ifndef TOOLS_ENABLED
 #include "core/config/engine.h"
-#ifndef ANDROID_ENABLED
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 #include "core/io/file_access.h"
 #endif
 #endif
@@ -180,9 +180,9 @@ private:
 		String arch = Engine::get_singleton()->get_architecture_name();
 		String appname_safe = Path::get_csharp_project_name();
 		String packed_path = "res://.godot/mono/publish/" + arch;
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 		api_assemblies_dir = packed_path;
-		print_verbose(".NET: Android platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
+		print_verbose(".NET: Android/Web platform detected. Setting api_assemblies_dir directly to pck path: " + api_assemblies_dir);
 #else
 		if (DirAccess::exists(packed_path)) {
 			// The dotnet publish data is packed in the pck/zip.
@@ -229,7 +229,7 @@ private:
 #endif
 			api_assemblies_dir = data_dir_root;
 		}
-#endif // ANDROID_ENABLED
+#endif // ANDROID_ENABLED || WEB_ENABLED
 #endif
 	}
 

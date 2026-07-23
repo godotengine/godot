@@ -58,7 +58,7 @@
 #endif
 
 #ifndef TOOLS_ENABLED
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 #include "../thirdparty/mono_delegates.h"
 #endif
 #endif
@@ -78,7 +78,7 @@ typedef int(CORECLR_DELEGATE_CALLTYPE *coreclr_initialize_fn)(const char *exePat
 coreclr_create_delegate_fn coreclr_create_delegate = nullptr;
 coreclr_initialize_fn coreclr_initialize = nullptr;
 
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 mono_install_assembly_preload_hook_fn mono_install_assembly_preload_hook = nullptr;
 mono_assembly_name_get_name_fn mono_assembly_name_get_name = nullptr;
 mono_assembly_name_get_culture_fn mono_assembly_name_get_culture = nullptr;
@@ -192,6 +192,10 @@ String find_hostfxr() {
 #elif defined(MACOS_ENABLED)
 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
 								.path_join("libhostfxr.dylib");
+#elif defined(WEB_ENABLED)
+	// Web platform: hostfxr is compiled to WASM and loaded via Emscripten dlopen.
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.path_join("libhostfxr.so");
 #elif defined(UNIX_ENABLED)
 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
 								.path_join("libhostfxr.so");
@@ -221,6 +225,10 @@ String find_monosgen() {
 #elif defined(MACOS_ENABLED)
 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
 								.path_join("libmonosgen-2.0.dylib");
+#elif defined(WEB_ENABLED)
+	// Web platform: Mono runtime is compiled to WASM and loaded as a side module.
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.path_join("libmonosgen-2.0.so");
 #elif defined(UNIX_ENABLED)
 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
 								.path_join("libmonosgen-2.0.so");
@@ -243,6 +251,10 @@ String find_coreclr() {
 #elif defined(MACOS_ENABLED)
 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
 								.path_join("libcoreclr.dylib");
+#elif defined(WEB_ENABLED)
+	// Web platform: CoreCLR is compiled to WASM and loaded as a side module via Emscripten dlopen.
+	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
+								.path_join("libcoreclr.so");
 #elif defined(UNIX_ENABLED)
 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
 								.path_join("libcoreclr.so");
@@ -334,7 +346,7 @@ bool load_coreclr(void *&r_coreclr_dll_handle) {
 	ERR_FAIL_COND_V(err != OK, false);
 	coreclr_create_delegate = (coreclr_create_delegate_fn)symbol;
 
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "mono_install_assembly_preload_hook", symbol);
 	ERR_FAIL_COND_V(err != OK, false);
 	mono_install_assembly_preload_hook = (mono_install_assembly_preload_hook_fn)symbol;
@@ -498,6 +510,9 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dylib");
 #elif defined(ANDROID_ENABLED)
 	String native_aot_so_path = "lib" + assembly_name + ".so";
+#elif defined(WEB_ENABLED)
+	// Web platform: NativeAOT-compiled C# assembly is a WASM side module.
+	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".wasm");
 #elif defined(UNIX_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".so");
 #else
@@ -521,7 +536,7 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 #endif
 
 #ifndef TOOLS_ENABLED
-#ifdef ANDROID_ENABLED
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p_assemblies_path, void *p_user_data) {
 	constexpr bool ref_only = false;
 
@@ -580,9 +595,9 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
 
 	String assembly_name = Path::get_csharp_project_name();
 
-#ifdef ANDROID_ENABLED
-	// Android requires installing a preload hook to load assemblies from inside the APK,
-	// other platforms can find the assemblies with the default lookup.
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
+	// Android and Web require installing a preload hook to load assemblies from
+	// inside the APK/PCK, other platforms can find the assemblies with the default lookup.
 	if (mono_install_assembly_preload_hook != nullptr) {
 		mono_install_assembly_preload_hook(&load_assembly_from_pck, nullptr);
 	}
