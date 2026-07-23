@@ -51,6 +51,7 @@
 #include "editor/scene/material_editor_plugin.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/shader/shader_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/animation/tween.h"
@@ -8322,7 +8323,7 @@ void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 		return;
 	}
 
-	VisualShaderEditor *editor = Object::cast_to<VisualShaderEditor>(ScriptEditor::get_bottom_script_editor()->get_resource_editor(visual_shader));
+	VisualShaderEditor *editor = Object::cast_to<VisualShaderEditor>(ShaderEditorPlugin::get_singleton()->get_shader_container()->get_resource_editor(visual_shader));
 	if (!editor) {
 		return;
 	}

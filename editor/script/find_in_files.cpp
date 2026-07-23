@@ -294,14 +294,14 @@ CodeTextEditor *get_code_edit(const String &p_fpath) {
 	ShaderEditorPlugin *shader_editor_plugin = ShaderEditorPlugin::get_singleton();
 	ScriptEditorPlugin *script_editor_plugin = ScriptEditorPlugin::get_singleton();
 
-	ScriptEditor *script_editor = nullptr;
+	DocumentEditorContainer *document_editor_container = nullptr;
 	if (shader_editor_plugin && shader_editor_plugin->handles(res.ptr())) {
-		script_editor = ScriptEditor::get_bottom_script_editor();
+		document_editor_container = shader_editor_plugin->get_shader_container();
 	} else if (script_editor_plugin && script_editor_plugin->handles(res.ptr())) {
-		script_editor = ScriptEditor::get_singleton();
+		document_editor_container = ScriptEditor::get_singleton()->get_script_container();
 	}
-	if (script_editor) {
-		TextEditorBase *teb = Object::cast_to<TextEditorBase>(script_editor->get_resource_editor(res));
+	if (document_editor_container) {
+		TextEditorBase *teb = Object::cast_to<TextEditorBase>(document_editor_container->get_resource_editor(res));
 		if (teb) {
 			return teb->get_code_editor();
 		}
