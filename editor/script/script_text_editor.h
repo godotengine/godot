@@ -132,7 +132,7 @@ class ScriptTextEditor : public CodeEditorBase {
 	public:
 		virtual bool handles(ScriptEditorBase *p_seb) override { return Object::cast_to<ScriptTextEditor>(p_seb); }
 
-		EditMenusScTE(ScriptEditor *p_se);
+		EditMenusScTE(DocumentEditorContainer *p_document_editor_container);
 	};
 
 	void _script_res_changed();
@@ -214,7 +214,7 @@ public:
 	virtual void enable_editor() override;
 	virtual Vector<String> get_functions() override;
 
-	virtual EditMenusBase *create_edit_menu(ScriptEditor *p_se) override { return memnew(EditMenusScTE(p_se)); }
+	virtual EditMenusBase *create_edit_menu(DocumentEditorContainer *p_document_editor_container) override { return memnew(EditMenusScTE(p_document_editor_container)); }
 
 	virtual Ref<Texture2D> get_theme_icon() override;
 

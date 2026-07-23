@@ -35,7 +35,7 @@
 class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
-	ScriptEditor *script_editor = nullptr;
+	DocumentEditorContainer *shader_container = nullptr;
 
 	EditorDock *shader_dock = nullptr;
 	Ref<Shortcut> make_floating_shortcut;
@@ -61,6 +61,8 @@ protected:
 public:
 	static ShaderEditorPlugin *get_singleton() { return shader_editor_plugin; }
 
+	DocumentEditorContainer *get_shader_container() const { return shader_container; }
+
 	virtual String get_plugin_name() const override { return "Shader"; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -72,7 +74,7 @@ public:
 
 	virtual String get_unsaved_status(const String &p_for_scene) const override;
 	virtual void save_external_data() override;
-	virtual void apply_changes() override { script_editor->apply_scripts(); }
+	virtual void apply_changes() override { shader_container->apply_scripts(); }
 
 	ShaderEditorPlugin();
 	~ShaderEditorPlugin();

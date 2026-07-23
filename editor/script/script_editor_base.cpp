@@ -50,7 +50,6 @@ void ScriptEditorBase::_bind_methods() {
 
 	// First use in TextEditorBase.
 	ADD_SIGNAL(MethodInfo("edited_script_changed"));
-	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &ScriptEditorBase::add_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("get_base_editor"), &ScriptEditorBase::get_base_editor);
 
@@ -60,12 +59,14 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "topic")));
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
-	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::STRING, "method")));
 
 #ifndef DISABLE_DEPRECATED
 	ADD_SIGNAL(MethodInfo("request_save_history"));
 	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
+
+	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
+	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 #endif
 }
 
@@ -99,8 +100,8 @@ void ScriptEditorBase::tag_saved_version() {
 //// TextEditorBase
 
 TextEditorBase *TextEditorBase::EditMenus::_get_active_editor() {
-	if (se) {
-		return Object::cast_to<TextEditorBase>(se->get_current_editor());
+	if (document_editor_container) {
+		return Object::cast_to<TextEditorBase>(document_editor_container->get_current_editor());
 	}
 	return nullptr;
 }
@@ -187,8 +188,8 @@ void TextEditorBase::EditMenus::_bookmark_item_pressed(int p_idx) {
 	}
 }
 
-TextEditorBase::EditMenus::EditMenus(ScriptEditor *p_se) {
-	se = p_se;
+TextEditorBase::EditMenus::EditMenus(DocumentEditorContainer *p_document_editor_container) {
+	document_editor_container = p_document_editor_container;
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_flat(false);
@@ -810,7 +811,7 @@ void CodeEditorBase::EditMenusCEB::_notification(int p_what) {
 	}
 }
 
-CodeEditorBase::EditMenusCEB::EditMenusCEB(ScriptEditor *p_se, String p_breakpoint_menu_name) : EditMenus(p_se) {
+CodeEditorBase::EditMenusCEB::EditMenusCEB(DocumentEditorContainer *p_document_editor_container, String p_breakpoint_menu_name) : EditMenus(p_document_editor_container) {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
 	_popup_move_item(EDIT_TRIM_TRAILING_WHITESAPCE, edit_menu->get_popup(), false);
 	edit_menu_line->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
