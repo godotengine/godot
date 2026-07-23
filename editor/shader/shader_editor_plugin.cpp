@@ -89,8 +89,12 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 	}
 #endif
 
+	ScriptEditorBase *current_editor = script_editor->get_current_editor();
 	if (bool(EDITOR_GET("editors/shader_editor/behavior/files/restore_shaders_on_load"))) {
 		script_editor->set_window_layout(p_layout);
+	}
+	if (current_editor) {
+		script_editor->edit(current_editor->get_edited_resource());
 	}
 }
 
