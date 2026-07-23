@@ -361,6 +361,7 @@ Size2 BoxContainer::get_desired_size() const {
 void BoxContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
+			update_minimum_size();
 			_resort();
 		} break;
 
