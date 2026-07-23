@@ -37,13 +37,14 @@
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/audio/audio_stream.h"
 #include "scene/resources/world_2d.h"
 #include "servers/audio/audio_server.h"
-#include "servers/audio/audio_stream.h"
-#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
 
 #ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/area_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
 void AudioStreamPlayer2D::_notification(int p_what) {
@@ -361,11 +362,11 @@ float AudioStreamPlayer2D::get_panning_strength() const {
 	return panning_strength;
 }
 
-AudioServer::PlaybackType AudioStreamPlayer2D::get_playback_type() const {
+AuSE::PlaybackType AudioStreamPlayer2D::get_playback_type() const {
 	return internal->get_playback_type();
 }
 
-void AudioStreamPlayer2D::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+void AudioStreamPlayer2D::set_playback_type(AuSE::PlaybackType p_playback_type) {
 	internal->set_playback_type(p_playback_type);
 }
 

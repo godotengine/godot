@@ -36,9 +36,18 @@
 
 #include <initializer_list>
 
-// based on the very nice implementation of rb-trees by:
-// https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
-
+/**
+ * Key-value container (aka dictionary) using a red-black tree for lookup.
+ *
+ * Elements are ordered by key (using the < comparison operator).
+ * Key-Values are pointer-stable until removed.
+ *
+ * Implementation based on:
+ * https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
 template <typename K, typename V, typename C = Comparator<K>, typename A = DefaultAllocator>
 class _WARN_UNUSED_ RBMap {
 	enum Color {

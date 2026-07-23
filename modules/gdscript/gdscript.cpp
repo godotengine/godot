@@ -1735,7 +1735,7 @@ void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
 				const Variant *args[1] = { &property };
 
 				Callable::CallError err;
-				Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
+				E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
 				if (err.error == Callable::CallError::CALL_OK) {
 					p_property = PropertyInfo::from_dict(property);
 					return;

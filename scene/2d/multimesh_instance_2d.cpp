@@ -79,7 +79,7 @@ void MultiMeshInstance2D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, MultiMesh::get_class_static()), "set_multimesh", "get_multimesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, MultiMesh::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_multimesh", "get_multimesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
 }
 

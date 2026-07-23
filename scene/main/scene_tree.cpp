@@ -1628,9 +1628,7 @@ void SceneTree::_flush_delete_queue() {
 
 	while (delete_queue.size()) {
 		Object *obj = ObjectDB::get_instance(delete_queue.front()->get());
-		if (obj) {
-			memdelete(obj);
-		}
+		memdelete(obj);
 		delete_queue.pop_front();
 	}
 }
@@ -1674,9 +1672,7 @@ void SceneTree::_flush_scene_change() {
 	if (prev_scene_id.is_valid()) {
 		// Might have already been freed externally.
 		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
-		if (prev_scene) {
-			memdelete(prev_scene);
-		}
+		memdelete(prev_scene);
 		prev_scene_id = ObjectID();
 	}
 
@@ -2229,16 +2225,12 @@ SceneTree::SceneTree() {
 SceneTree::~SceneTree() {
 	if (prev_scene_id.is_valid()) {
 		Node *prev_scene = ObjectDB::get_instance<Node>(prev_scene_id);
-		if (prev_scene) {
-			memdelete(prev_scene);
-		}
+		memdelete(prev_scene);
 		prev_scene_id = ObjectID();
 	}
 	if (pending_new_scene_id.is_valid()) {
 		Node *pending_new_scene = ObjectDB::get_instance<Node>(pending_new_scene_id);
-		if (pending_new_scene) {
-			memdelete(pending_new_scene);
-		}
+		memdelete(pending_new_scene);
 		pending_new_scene_id = ObjectID();
 	}
 	if (root) {

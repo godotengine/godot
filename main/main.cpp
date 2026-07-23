@@ -89,21 +89,23 @@
 // 2D
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"
+#include "servers/navigation_2d/navigation_server_2d_manager.h"
 #endif // NAVIGATION_2D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"
-#include "servers/physics_2d/physics_server_2d_dummy.h"
+#include "servers/physics_2d/physics_server_2d_manager.h"
 #endif // PHYSICS_2D_DISABLED
 
 // 3D
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d_manager.h"
 #endif // NAVIGATION_3D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_3d/physics_server_3d.h"
-#include "servers/physics_3d/physics_server_3d_dummy.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef XR_DISABLED
@@ -185,14 +187,6 @@ static DisplayServer *display_server = nullptr;
 static RenderingServer *rendering_server = nullptr;
 static TextServerManager *tsman = nullptr;
 static ThemeDB *theme_db = nullptr;
-#ifndef PHYSICS_2D_DISABLED
-static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
-static PhysicsServer2D *physics_server_2d = nullptr;
-#endif // PHYSICS_2D_DISABLED
-#ifndef PHYSICS_3D_DISABLED
-static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
-static PhysicsServer3D *physics_server_3d = nullptr;
-#endif // PHYSICS_3D_DISABLED
 #ifndef XR_DISABLED
 static XRServer *xr_server = nullptr;
 #endif // XR_DISABLED
@@ -354,61 +348,6 @@ static Vector<String> get_files_with_extension(const String &p_root, const Strin
 	return paths;
 }
 #endif
-
-// FIXME: Could maybe be moved to have less code in main.cpp.
-void initialize_physics() {
-#ifndef PHYSICS_3D_DISABLED
-	/// 3D Physics Server
-	physics_server_3d = PhysicsServer3DManager::get_singleton()->new_server(
-			GLOBAL_GET(PhysicsServer3DManager::setting_property_name));
-	if (!physics_server_3d) {
-		// Physics server not found, Use the default physics
-		physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
-	}
-
-	// Fall back to dummy if no default server has been registered.
-	if (!physics_server_3d) {
-		WARN_PRINT(vformat("Falling back to dummy PhysicsServer3D; 3D physics functionality will be disabled. If this is intended, set the %s project setting to Dummy.", PhysicsServer3DManager::setting_property_name));
-		physics_server_3d = memnew(PhysicsServer3DDummy);
-	}
-
-	// Should be impossible, but make sure it's not null.
-	ERR_FAIL_NULL_MSG(physics_server_3d, "Failed to initialize PhysicsServer3D.");
-	physics_server_3d->init();
-#endif // PHYSICS_3D_DISABLED
-
-#ifndef PHYSICS_2D_DISABLED
-	// 2D Physics server
-	physics_server_2d = PhysicsServer2DManager::get_singleton()->new_server(
-			GLOBAL_GET(PhysicsServer2DManager::get_singleton()->setting_property_name));
-	if (!physics_server_2d) {
-		// Physics server not found, Use the default physics
-		physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
-	}
-
-	// Fall back to dummy if no default server has been registered.
-	if (!physics_server_2d) {
-		WARN_PRINT(vformat("Falling back to dummy PhysicsServer2D; 2D physics functionality will be disabled. If this is intended, set the %s project setting to Dummy.", PhysicsServer2DManager::setting_property_name));
-		physics_server_2d = memnew(PhysicsServer2DDummy);
-	}
-
-	// Should be impossible, but make sure it's not null.
-	ERR_FAIL_NULL_MSG(physics_server_2d, "Failed to initialize PhysicsServer2D.");
-	physics_server_2d->init();
-#endif // PHYSICS_2D_DISABLED
-}
-
-void finalize_physics() {
-#ifndef PHYSICS_3D_DISABLED
-	physics_server_3d->finish();
-	memdelete(physics_server_3d);
-#endif // PHYSICS_3D_DISABLED
-
-#ifndef PHYSICS_2D_DISABLED
-	physics_server_2d->finish();
-	memdelete(physics_server_2d);
-#endif // PHYSICS_2D_DISABLED
-}
 
 void finalize_display() {
 	rendering_server->finish();
@@ -745,6 +684,7 @@ void Main::test_cleanup() {}
 // are initialized here. This also combines `Main::setup2()` initialization.
 Error Main::test_setup() {
 	Thread::make_main_thread();
+
 	set_current_thread_safe_for_nodes(true);
 
 	OS::get_singleton()->initialize();
@@ -772,10 +712,10 @@ Error Main::test_setup() {
 	}
 
 #ifndef PHYSICS_3D_DISABLED
-	physics_server_3d_manager = memnew(PhysicsServer3DManager);
+	PhysicsServer3DManager::initialize_server_manager();
 #endif // PHYSICS_3D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
-	physics_server_2d_manager = memnew(PhysicsServer2DManager);
+	PhysicsServer2DManager::initialize_server_manager();
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef NAVIGATION_2D_DISABLED
@@ -884,6 +824,8 @@ Error Main::test_setup() {
 void Main::test_cleanup() {
 	ERR_FAIL_COND(!_start_success);
 
+	Thread::make_main_thread();
+
 	// Printing in the usual way can become problematic during/after cleanup.
 	CoreGlobals::print_ready = false;
 
@@ -937,40 +879,28 @@ void Main::test_cleanup() {
 	EngineDebugger::deinitialize();
 	OS::get_singleton()->finalize();
 
-	if (packed_data) {
-		memdelete(packed_data);
-	}
-	if (translation_server) {
-		memdelete(translation_server);
-	}
-	if (tsman) {
-		memdelete(tsman);
-	}
+	memdelete(packed_data);
+	memdelete(translation_server);
+	memdelete(tsman);
 #ifndef PHYSICS_3D_DISABLED
-	if (physics_server_3d_manager) {
-		memdelete(physics_server_3d_manager);
-	}
+	PhysicsServer3DManager::finalize_server_manager();
 #endif // PHYSICS_3D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
-	if (physics_server_2d_manager) {
-		memdelete(physics_server_2d_manager);
-	}
+	PhysicsServer2DManager::finalize_server_manager();
 #endif // PHYSICS_2D_DISABLED
-	if (globals) {
-		memdelete(globals);
-	}
+	memdelete(globals);
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 
-	if (engine) {
-		memdelete(engine);
-	}
+	memdelete(engine);
 
 	unregister_core_types();
 
 	OS::get_singleton()->finalize_core();
+
+	Thread::release_main_thread();
 }
 #endif // TESTS_ENABLED
 
@@ -2922,9 +2852,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
-	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
-	set_current_thread_safe_for_nodes(false);
-
 #if defined(STEAMAPI_ENABLED)
 	if (editor || project_manager) {
 		steam_tracker = memnew(SteamTracker);
@@ -2964,48 +2891,34 @@ error:
 
 	EngineDebugger::deinitialize();
 
-	if (performance) {
-		memdelete(performance);
-	}
-	if (input_map) {
-		memdelete(input_map);
-	}
-	if (translation_server) {
-		memdelete(translation_server);
-	}
-	if (globals) {
-		memdelete(globals);
-	}
-	if (packed_data) {
-		memdelete(packed_data);
-	}
+	memdelete(performance);
+	memdelete(input_map);
+	memdelete(translation_server);
+	memdelete(globals);
+	memdelete(packed_data);
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 
-	if (engine) {
-		memdelete(engine);
-	}
+	memdelete(engine);
 
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
 	OS::get_singleton()->_user_args.clear();
 
-	if (message_queue) {
-		memdelete(message_queue);
-	}
+	memdelete(message_queue);
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Main::Setup");
 
 #if defined(STEAMAPI_ENABLED)
-	if (steam_tracker) {
-		memdelete(steam_tracker);
-	}
+	memdelete(steam_tracker);
 #endif
 
 	OS::get_singleton()->finalize_core();
 	locale = String();
+
+	Thread::release_main_thread();
 
 	return exit_err;
 }
@@ -3205,10 +3118,10 @@ Error Main::setup2(bool p_show_boot_logo) {
 	}
 
 #ifndef PHYSICS_3D_DISABLED
-	physics_server_3d_manager = memnew(PhysicsServer3DManager);
+	PhysicsServer3DManager::initialize_server_manager();
 #endif // PHYSICS_3D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
-	physics_server_2d_manager = memnew(PhysicsServer2DManager);
+	PhysicsServer2DManager::initialize_server_manager();
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef NAVIGATION_2D_DISABLED
@@ -3388,29 +3301,19 @@ Error Main::setup2(bool p_show_boot_logo) {
 		if (err != OK || display_server == nullptr) {
 			ERR_PRINT("Unable to create DisplayServer, all display drivers failed.\nUse \"--headless\" command line argument to run the engine in headless mode if this is desired (e.g. for continuous integration).");
 
-			if (display_server) {
-				memdelete(display_server);
-			}
+			memdelete(display_server);
 
 			GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 			uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 			unregister_server_types();
 
-			if (input) {
-				memdelete(input);
-			}
-			if (tsman) {
-				memdelete(tsman);
-			}
+			memdelete(input);
+			memdelete(tsman);
 #ifndef PHYSICS_3D_DISABLED
-			if (physics_server_3d_manager) {
-				memdelete(physics_server_3d_manager);
-			}
+			PhysicsServer3DManager::finalize_server_manager();
 #endif // PHYSICS_3D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
-			if (physics_server_2d_manager) {
-				memdelete(physics_server_2d_manager);
-			}
+			PhysicsServer2DManager::finalize_server_manager();
 #endif // PHYSICS_2D_DISABLED
 
 			return err;
@@ -3803,15 +3706,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 		}
 	}
-
-	PackedStringArray extensions;
-	extensions.push_back("gd");
-	if (ClassDB::class_exists("CSharpScript")) {
-		extensions.push_back("cs");
-	}
-	extensions.push_back("gdshader");
-	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/script/search_in_file_extensions"), extensions); // Note: should be defined after Scene level modules init to see .NET.
-
 	OS::get_singleton()->benchmark_end_measure("Startup", "Scene");
 
 #ifdef TOOLS_ENABLED
@@ -3858,7 +3752,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 	MAIN_PRINT("Main: Load Physics");
 
-	initialize_physics();
+#ifndef PHYSICS_2D_DISABLED
+	PhysicsServer2DManager::initialize_server();
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
+	PhysicsServer3DManager::initialize_server();
+#endif // PHYSICS_3D_DISABLED
 
 	register_server_singletons();
 
@@ -4319,12 +4218,14 @@ int Main::start() {
 #endif // TOOLS_ENABLED
 
 #if defined(OVERRIDE_PATH_ENABLED)
+#ifndef TOOLS_ENABLED
 	bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
 	if (disable_override) {
 		script = String();
 		game_path = String();
 		main_loop_type = String();
 	}
+#endif // TOOLS_ENABLED
 #else
 	script = String();
 	game_path = String();
@@ -4377,9 +4278,7 @@ int Main::start() {
 			Object *obj = ClassDB::instantiate(instance_type);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
-				if (obj) {
-					memdelete(obj);
-				}
+				memdelete(obj);
 				OS::get_singleton()->alert(vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 				ERR_FAIL_V_MSG(EXIT_FAILURE, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
@@ -4401,9 +4300,7 @@ int Main::start() {
 			Object *obj = ClassDB::instantiate(script_base);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
-				if (obj) {
-					memdelete(obj);
-				}
+				memdelete(obj);
 				OS::get_singleton()->alert("Error: Invalid MainLoop script base type: " + script_base);
 				ERR_FAIL_V_MSG(EXIT_FAILURE, vformat("The global class %s does not inherit from SceneTree or MainLoop.", main_loop_type));
 			}
@@ -5213,6 +5110,8 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
+	Thread::make_main_thread();
+
 	GodotProfileZone("cleanup");
 	OS::get_singleton()->benchmark_begin_measure("Shutdown", "Main::Cleanup");
 	if (!p_force) {
@@ -5307,7 +5206,13 @@ void Main::cleanup(bool p_force) {
 	NavigationServer3DManager::finalize_server();
 	NavigationServer3DManager::finalize_server_manager();
 #endif // NAVIGATION_3D_DISABLED
-	finalize_physics();
+
+#ifndef PHYSICS_2D_DISABLED
+	PhysicsServer2DManager::finalize_server();
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
+	PhysicsServer3DManager::finalize_server();
+#endif // PHYSICS_3D_DISABLED
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
@@ -5316,9 +5221,7 @@ void Main::cleanup(bool p_force) {
 	EngineDebugger::deinitialize();
 
 #ifndef XR_DISABLED
-	if (xr_server) {
-		memdelete(xr_server);
-	}
+	memdelete(xr_server);
 #endif // XR_DISABLED
 
 	if (audio_server) {
@@ -5326,46 +5229,26 @@ void Main::cleanup(bool p_force) {
 		memdelete(audio_server);
 	}
 
-	if (camera_server) {
-		memdelete(camera_server);
-	}
+	memdelete(camera_server);
 
 	OS::get_singleton()->finalize();
 
 	finalize_display();
 
-	if (input) {
-		memdelete(input);
-	}
+	memdelete(input);
 
-	if (packed_data) {
-		memdelete(packed_data);
-	}
-	if (performance) {
-		memdelete(performance);
-	}
-	if (input_map) {
-		memdelete(input_map);
-	}
-	if (translation_server) {
-		memdelete(translation_server);
-	}
-	if (tsman) {
-		memdelete(tsman);
-	}
-#ifndef PHYSICS_3D_DISABLED
-	if (physics_server_3d_manager) {
-		memdelete(physics_server_3d_manager);
-	}
-#endif // PHYSICS_3D_DISABLED
+	memdelete(packed_data);
+	memdelete(performance);
+	memdelete(input_map);
+	memdelete(translation_server);
+	memdelete(tsman);
 #ifndef PHYSICS_2D_DISABLED
-	if (physics_server_2d_manager) {
-		memdelete(physics_server_2d_manager);
-	}
+	PhysicsServer2DManager::finalize_server_manager();
 #endif // PHYSICS_2D_DISABLED
-	if (globals) {
-		memdelete(globals);
-	}
+#ifndef PHYSICS_3D_DISABLED
+	PhysicsServer3DManager::finalize_server_manager();
+#endif // PHYSICS_3D_DISABLED
+	memdelete(globals);
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
 		//attempt to restart with arguments
@@ -5379,18 +5262,14 @@ void Main::cleanup(bool p_force) {
 	memdelete(message_queue);
 
 #if defined(STEAMAPI_ENABLED)
-	if (steam_tracker) {
-		memdelete(steam_tracker);
-	}
+	memdelete(steam_tracker);
 #endif
 
 	unregister_core_driver_types();
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 
-	if (engine) {
-		memdelete(engine);
-	}
+	memdelete(engine);
 
 	unregister_core_types();
 
@@ -5398,4 +5277,6 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();
+
+	Thread::release_main_thread();
 }

@@ -44,7 +44,13 @@ class Variant;
 struct ArrayPrivate;
 struct ContainerType;
 
-class Array {
+/**
+ * Array-like Variant container with ref semantics on top of copy-on-write semantics.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
+class _WARN_UNUSED_ Array {
 	mutable ArrayPrivate *_p;
 	void _ref(const Array &p_from) const;
 	void _unref() const;

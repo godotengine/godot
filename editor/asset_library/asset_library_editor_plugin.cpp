@@ -174,10 +174,20 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	icon->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	hb->add_child(icon);
 
+	text_margin = memnew(MarginContainer);
+	text_margin->add_theme_constant_override(SNAME("margin_left"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_right"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_top"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_bottom"), margin_size);
+	text_margin->set_h_size_flags(SIZE_EXPAND_FILL);
+	text_margin->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	text_margin->set_clip_contents(true);
+	hb->add_child(text_margin);
+
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	hb->add_child(vb);
+	text_margin->add_child(vb);
 
 	Ref<StyleBoxEmpty> label_margin;
 	label_margin.instantiate();
@@ -225,7 +235,9 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	author_license_hbox->add_child(license);
 	license->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItem::_license_clicked));
 
-	vb->add_spacer();
+	// Ensure the entire asset card can be clicked.
+	Control *spacer = vb->add_spacer();
+	spacer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 
 	HBoxContainer *rating_hbox = memnew(HBoxContainer);
 	rating_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -237,9 +249,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	rating_hbox->add_child(rating_icon);
 
 	rating_count = memnew(Label);
-	rating_count->set_mouse_filter(MOUSE_FILTER_STOP);
 	rating_count->set_theme_type_variation("LabelNoMargin");
-	rating_count->set_tooltip_text(TTRC("Review Score"));
 	rating_count->set_accessibility_name(TTRC("Review Score"));
 	rating_hbox->add_child(rating_count);
 
@@ -315,7 +325,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 				Button *button = preview_images[i].button;
 				float button_texture_height = button->get_size().height - button->get_theme_stylebox(CoreStringName(normal), SNAME("Button"))->get_minimum_size().height;
 				float scale_ratio = button_texture_height / p_image->get_height();
-				button->set_custom_minimum_size(Size2(p_image->get_width() * scale_ratio * EDSCALE, 0));
+				button->set_custom_minimum_size(Size2(p_image->get_width() * scale_ratio, 0));
 
 				if (preview_images[i].is_video) {
 					Ref<Image> overlay = previews->get_editor_theme_icon(SNAME("PlayOverlay"))->get_image();
@@ -1261,8 +1271,6 @@ void EditorAssetLibrary::_image_update(void *p_image_queue) {
 			parsed_image = Image::_webp_mem_loader_func(r, len);
 		} else if ((memcmp(&r[0], &bmp_signature[0], 2) == 0) && Image::_bmp_mem_loader_func) {
 			parsed_image = Image::_bmp_mem_loader_func(r, len);
-		} else if (Image::_svg_scalable_mem_loader_func) {
-			parsed_image = Image::_svg_scalable_mem_loader_func(r, len, 1.0);
 		}
 
 		if (parsed_image.is_null()) {
@@ -1815,8 +1823,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			_update_asset_items_columns();
-			asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
-			asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("h_separation", 0);
+			asset_items->add_theme_constant_override("v_separation", 0);
 
 			library_vb->add_child(asset_items);
 
@@ -1906,9 +1914,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				}
 			}
 
-			if (description) {
-				memdelete(description);
-			}
+			memdelete(description);
 
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);

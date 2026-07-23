@@ -581,7 +581,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/show_renderer_selector", false, "")
 
-	_initial_set("interface/editors/derive_script_globals_by_name", true);
+	_initial_set("docks/scene_tree/derive_script_globals_by_name", true);
 	_initial_set("docks/scene_tree/ask_before_revoking_unique_name", true);
 
 	// Inspector
@@ -725,7 +725,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/scene_tree/accessibility_warnings", false);
 
 	// FileSystem
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "docks/filesystem/thumbnail_size", 64, "32,128,16")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "docks/filesystem/thumbnail_size", 64, "32,224,16")
 	_initial_set("docks/filesystem/always_show_folders", true);
 	_initial_set("docks/filesystem/textfile_extensions", "txt,md,cfg,ini,log,json,yml,yaml,toml,xml");
 	_initial_set("docks/filesystem/other_file_extensions", "ico,icns");
@@ -826,6 +826,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Behavior
 	// Behavior: General
 	_initial_set("text_editor/behavior/general/empty_selection_clipboard", true);
+
+	PackedStringArray extensions;
+	if (ClassDB::class_exists("GDScript")) {
+		extensions.push_back("gd");
+	}
+	if (ClassDB::class_exists("CSharpScript")) {
+		extensions.push_back("cs");
+	}
+	extensions.push_back("gdshader");
+	_initial_set("text_editor/behavior/general/find_in_file_extensions", extensions);
 
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true, true);
@@ -997,7 +1007,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// 3D: Freelook
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_navigation_scheme", 0, "Default,Partially Axis-Locked (id Tech),Fully Axis-Locked (Minecraft)")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_sensitivity", 0.25, "0.01,2,0.001")
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_inertia", 0.0, "0,1,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_inertia", 0.05, "0,1,0.001")
 	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/freelook/freelook_base_speed", 5.0, "0,10,0.01,or_greater")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/freelook/freelook_activation_modifier", 0, "None,Shift,Alt,Meta,Ctrl")
 	_initial_set("editors/3d/freelook/freelook_invert_y_axis", false);
@@ -1339,6 +1349,7 @@ void EditorSettings::_handle_setting_compatibility() {
 	_rename_setting("interface/editor/update_continuously", "interface/editor/display/update_continuously");
 	_rename_setting("interface/editor/collapse_main_menu", "interface/editor/appearance/collapse_main_menu");
 	_rename_setting("asset_library/use_threads", "asset_store/use_threads");
+	_rename_setting("interface/editors/derive_script_globals_by_name", "docks/scene_tree/derive_script_globals_by_name");
 
 	// Handle renamed shortcuts.
 	_rename_shortcut("editor/editor_assetlib", "editor/editor_asset_store");

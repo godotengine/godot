@@ -206,7 +206,7 @@ String EditorExportPlatformAppleEmbedded::get_export_option_warning(const Editor
 			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 				return TTR("\"Shader Baker\" doesn't work with the Compatibility renderer.");
 			} else if (OS::get_singleton()->get_current_rendering_method() != export_renderer) {
-				return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include core shaders. Switch to \"%s\" renderer temporarily to fix this."), export_renderer);
+				return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include core shaders. Switch to the \"%s\" renderer temporarily to fix this."), export_renderer);
 			}
 		}
 	}
@@ -1659,14 +1659,36 @@ Error EditorExportPlatformAppleEmbedded::_export_apple_embedded_plugins(const Re
 		pbx_id.low_bits = 0;
 
 		HashMap<String, PluginConfigAppleEmbedded::SPMPackage> unique_packages;
+
+		// Collect from .gdip plugin configs
 		for (int i = 0; i < enabled_plugins.size(); i++) {
 			for (const PluginConfigAppleEmbedded::SPMPackage &package : enabled_plugins[i].spm_packages) {
 				if (!unique_packages.has(package.url)) {
 					unique_packages[package.url] = package;
 				} else {
 					for (const String &product : package.products) {
-						if (unique_packages[package.url].products.find(product) == -1) {
+						if (!unique_packages[package.url].products.has(product)) {
 							unique_packages[package.url].products.push_back(product);
+						}
+					}
+				}
+			}
+		}
+
+		// Also collect from EditorExportPlugins (added using add_apple_embedded_platform_spm_package() method)
+		Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+		for (int i = 0; i < export_plugins.size(); i++) {
+			for (const EditorExportPlugin::AppleEmbeddedSPMPackage &ep_package : export_plugins[i]->get_apple_embedded_platform_spm_packages()) {
+				if (!unique_packages.has(ep_package.url)) {
+					PluginConfigAppleEmbedded::SPMPackage package;
+					package.url = ep_package.url;
+					package.version = ep_package.version;
+					package.products = ep_package.products;
+					unique_packages[ep_package.url] = package;
+				} else {
+					for (const String &product : ep_package.products) {
+						if (!unique_packages[ep_package.url].products.has(product)) {
+							unique_packages[ep_package.url].products.push_back(product);
 						}
 					}
 				}

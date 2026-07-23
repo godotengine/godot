@@ -160,6 +160,7 @@ private:
 	bool checked = false;
 	bool draw_warning = false;
 	bool draw_prop_warning = false;
+	bool is_deprecated = false;
 	bool keying = false;
 	bool deletable = false;
 	bool label_overlayed = false;
@@ -191,7 +192,7 @@ private:
 
 	void _update_popup();
 	void _focusable_focused(int p_index);
-	int _get_v_separation() const { return bottom_editor ? 0 : theme_cache.vertical_separation; }
+	int _get_v_separation() const { return bottom_editor && bottom_editor_seperation ? theme_cache.vertical_separation : 0; }
 
 	bool selectable = true;
 	bool selected = false;
@@ -218,6 +219,7 @@ private:
 protected:
 	bool has_borders = false;
 	bool can_override = false;
+	bool bottom_editor_seperation = false;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -266,6 +268,7 @@ public:
 	void set_doc_path(const String &p_doc_path);
 	void set_internal(bool p_internal);
 
+	virtual void make_passthrough(bool p_passthrough);
 	virtual void update_property();
 	void update_editor_property_status();
 

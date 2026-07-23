@@ -740,9 +740,6 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				bool is_start_closer = dist_to_start < dist_to_end;
 
 				if ((near_start || near_end) && d < closest_d_highlight) {
-					StringName from_node = transition_lines[i].from_node;
-					StringName to_node = transition_lines[i].to_node;
-
 					bool is_start_endpoint = near_start && (is_start_closer || !near_end);
 					closest_d_highlight = d;
 					closest_for_highlight = i;

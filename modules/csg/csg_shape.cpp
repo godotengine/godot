@@ -40,6 +40,7 @@
 #include "scene/resources/surface_tool.h"
 
 #ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
 #include "servers/rendering/rendering_server.h" // Only used for debug collision shapes.
 #endif // PHYSICS_3D_DISABLED
 
@@ -487,9 +488,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	if (!dirty) {
 		return brush;
 	}
-	if (brush) {
-		memdelete(brush);
-	}
+	memdelete(brush);
 	brush = nullptr;
 	CSGBrush *n = _build_brush();
 	HashMap<int32_t, Ref<Material>> mesh_materials;
@@ -522,9 +521,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	}
 	if (!manifolds.empty()) {
 		manifold::Manifold manifold_result = manifold::Manifold::BatchBoolean(manifolds, current_op);
-		if (n) {
-			memdelete(n);
-		}
+		memdelete(n);
 		n = memnew(CSGBrush);
 		_unpack_manifold(manifold_result, mesh_materials, n);
 	}

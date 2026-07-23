@@ -1023,9 +1023,7 @@ void TextureStorage::texture_free(RID p_texture) {
 	ERR_FAIL_NULL(t);
 	ERR_FAIL_COND(t->is_render_target);
 
-	if (t->canvas_texture) {
-		memdelete(t->canvas_texture);
-	}
+	memdelete(t->canvas_texture);
 
 	bool must_free_data = false;
 	if (t->is_proxy) {
@@ -1502,6 +1500,11 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 
 		case GLES3::TexBlitShaderData::BLEND_MODE_DISABLED:
 			glDisable(GL_BLEND);
+			break;
+
+		case GLES3::TexBlitShaderData::BLEND_MODE_PREMULTIPLIED_ALPHA:
+			glBlendEquation(GL_FUNC_ADD);
+			glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 			break;
 	}
 
@@ -3325,7 +3328,7 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 
-	glClearBufferfv(GL_COLOR, 0, rt->clear_color.components);
+	glClearBufferfv(GL_COLOR, 0, rt->clear_color.as_float4_buffer());
 	rt->clear_requested = false;
 	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 }

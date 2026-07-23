@@ -173,6 +173,7 @@ protected:
 public:
 	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
 	void set_preview_value(bool p_preview_value);
+	virtual void make_passthrough(bool p_passthrough) override;
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyArray();
@@ -271,6 +272,7 @@ protected:
 public:
 	void setup(PropertyHint p_hint, const String &p_hint_string = "");
 	void set_preview_value(bool p_preview_value);
+	virtual void make_passthrough(bool p_passthrough) override;
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyDictionary();

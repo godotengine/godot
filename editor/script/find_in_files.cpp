@@ -37,8 +37,12 @@
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/shader/shader_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -74,10 +78,10 @@ static bool find_next(const String &p_line, const String &p_pattern, int p_from,
 		r_out_end = end;
 
 		if (p_whole_words) {
-			if (begin > 0 && is_ascii_identifier_char(p_line[begin - 1])) {
+			if (begin > 0 && !is_symbol(p_line[begin - 1])) {
 				continue;
 			}
-			if (end < p_line.size() && is_ascii_identifier_char(p_line[end])) {
+			if (end < p_line.length() && !is_symbol(p_line[end])) {
 				continue;
 			}
 		}
@@ -281,23 +285,50 @@ void FindInFilesSearch::_scan_dir(const String &p_path, PackedStringArray &r_out
 	}
 }
 
+CodeTextEditor *get_code_edit(const String &p_fpath) {
+	Ref<Resource> res = ResourceCache::get_ref(p_fpath);
+	if (res.is_null()) {
+		return nullptr;
+	}
+
+	ShaderEditorPlugin *shader_editor_plugin = ShaderEditorPlugin::get_singleton();
+	ScriptEditorPlugin *script_editor_plugin = ScriptEditorPlugin::get_singleton();
+
+	ScriptEditor *script_editor = nullptr;
+	if (shader_editor_plugin && shader_editor_plugin->handles(res.ptr())) {
+		script_editor = ScriptEditor::get_bottom_script_editor();
+	} else if (script_editor_plugin && script_editor_plugin->handles(res.ptr())) {
+		script_editor = ScriptEditor::get_singleton();
+	}
+	if (script_editor) {
+		TextEditorBase *teb = Object::cast_to<TextEditorBase>(script_editor->get_resource_editor(res));
+		if (teb) {
+			return teb->get_code_editor();
+		}
+	}
+
+	return nullptr;
+}
+
 void FindInFilesSearch::_scan_file(const String &p_fpath) {
-	Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
-	if (f.is_null()) {
-		print_verbose("Cannot open file " + p_fpath);
-		return;
+	Vector<String> lines;
+
+	CodeTextEditor *code_text_editor = get_code_edit(p_fpath);
+	if (code_text_editor) {
+		lines = code_text_editor->get_text_editor()->get_text().split("\n");
+	} else {
+		Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
+		lines = f->get_as_text().split("\n");
 	}
 
 	int line_number = 0;
 
-	while (!f->eof_reached()) {
+	for (const String &line : lines) {
 		// Line number starts at 1.
 		++line_number;
-
 		int begin = 0;
 		int end = 0;
-
-		String line = f->get_line();
 
 		while (find_next(line, pattern, end, match_case, whole_words, begin, end)) {
 			emit_signal(SNAME("result_found"), p_fpath, line_number, begin, end, line);
@@ -436,21 +467,28 @@ HashSet<String> FindInFilesDialog::get_excludes() const {
 void FindInFilesDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible()) {
-				// Extensions might have changed in the meantime, we clean them and instance them again.
-				for (int i = 0; i < filters_container->get_child_count(); i++) {
-					filters_container->get_child(i)->queue_free();
+			if (is_visible() && extensions_dirty) {
+				// Refresh extension checkboxes when the settings changed.
+				for (Node *child : filters_container->iterate_children()) {
+					child->queue_free();
 				}
-				Array exts = GLOBAL_GET("editor/script/search_in_file_extensions");
-				for (int i = 0; i < exts.size(); ++i) {
+				const PackedStringArray extensions = EDITOR_GET("text_editor/behavior/general/find_in_file_extensions");
+				for (const String &ext : extensions) {
 					CheckBox *cb = memnew(CheckBox);
-					cb->set_text(exts[i]);
-					if (!filters_preferences.has(exts[i])) {
-						filters_preferences[exts[i]] = true;
+					cb->set_text(ext);
+					if (!filters_preferences.has(ext)) {
+						filters_preferences[ext] = true;
 					}
-					cb->set_pressed(filters_preferences[exts[i]]);
+					cb->set_pressed(filters_preferences[ext]);
 					filters_container->add_child(cb);
 				}
+				extensions_dirty = false;
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/behavior/general/find_in_file_extensions")) {
+				extensions_dirty = true;
 			}
 		} break;
 	}
@@ -650,7 +688,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	Label *filter_label = memnew(Label);
 	filter_label->set_text(TTRC("Filters:"));
-	filter_label->set_tooltip_text(TTRC("Include the files with the following extensions. Add or remove them in ProjectSettings."));
+	filter_label->set_tooltip_text(TTRC("Include the files with the following extensions. Add or remove them in EditorSettings:\n\"text_editor/behavior/general/find_in_file_extensions\"."));
 	filter_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	gc->add_child(filter_label);
 
@@ -1046,94 +1084,65 @@ void FindInFilesPanel::_on_button_clicked(TreeItem *p_item, int p_column, int p_
 	_update_matches_text();
 }
 
-// Same as get_line, but preserves line ending characters.
-class ConservativeGetLine {
-public:
-	String get_line(Ref<FileAccess> p_file) {
-		_line_buffer.clear();
-
-		char32_t c = p_file->get_8();
-
-		while (!p_file->eof_reached()) {
-			if (c == '\n') {
-				_line_buffer.push_back(c);
-				_line_buffer.push_back(0);
-				return String::utf8(_line_buffer.ptr());
-
-			} else if (c == '\0') {
-				_line_buffer.push_back(c);
-				return String::utf8(_line_buffer.ptr());
-
-			} else if (c != '\r') {
-				_line_buffer.push_back(c);
-			}
-
-			c = p_file->get_8();
-		}
-
-		_line_buffer.push_back(0);
-		return String::utf8(_line_buffer.ptr());
-	}
-
-private:
-	Vector<char> _line_buffer;
-};
-
 void FindInFilesPanel::_apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text) {
-	// If the file is already open, I assume the editor will reload it.
-	// If there are unsaved changes, the user will be asked on focus,
-	// however that means either losing changes or losing replaces.
+	CodeTextEditor *code_text_editor = get_code_edit(p_fpath);
+	CodeEdit *code_edit = nullptr;
+	if (code_text_editor) {
+		code_edit = code_text_editor->get_text_editor();
+	}
+	Ref<FileAccess> f;
+	Vector<String> lines;
 
-	Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
+	if (code_edit) {
+		lines = code_edit->get_text().split("\n");
+	} else {
+		f = FileAccess::open(p_fpath, FileAccess::READ);
+		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
+		lines = f->get_as_text().split("\n");
+	}
 
-	String buffer;
-	int current_line = 1;
-
-	ConservativeGetLine conservative;
-
-	String line = conservative.get_line(f);
 	String search_text = finder->get_search_text();
+	int placeholder;
+	int repl_line_number = 0;
 
-	int offset = 0;
+	// Iterate backwards so changes don't affect the location of the next change in the same line.
+	for (int i = p_locations.size() - 1; i >= 0; i--) {
+		const Result &location = p_locations[i];
+		repl_line_number = location.line_number - 1;
 
-	for (int i = 0; i < p_locations.size(); ++i) {
-		int repl_line_number = p_locations[i].line_number;
-
-		while (current_line < repl_line_number) {
-			buffer += line;
-			line = conservative.get_line(f);
-			++current_line;
-			offset = 0;
+		if (repl_line_number >= 0 && repl_line_number < lines.size()) {
+			String &line = lines.write[repl_line_number];
+			if (find_next(line, search_text, location.begin, finder->is_match_case(), finder->is_whole_words(), placeholder, placeholder)) {
+				line = line.left(location.begin) + p_new_text + line.substr(location.end);
+			} else {
+				print_verbose(vformat(R"(Occurrence no longer matches, replace will be ignored in "%s": line %d, col %d.)", p_fpath, repl_line_number, location.begin));
+			}
 		}
-
-		int repl_begin = p_locations[i].begin + offset;
-		int repl_end = p_locations[i].end + offset;
-
-		int _;
-		if (!find_next(line, search_text, repl_begin, finder->is_match_case(), finder->is_whole_words(), _, _)) {
-			// Make sure the replace is still valid in case the file was tampered with.
-			print_verbose(vformat(R"(Occurrence no longer matches, replace will be ignored in "%s": line %d, col %d.)", p_fpath, repl_line_number, repl_begin));
-			continue;
-		}
-
-		line = line.left(repl_begin) + p_new_text + line.substr(repl_end);
-		// Keep an offset in case there are successive replaces in the same line.
-		offset += p_new_text.length() - (repl_end - repl_begin);
 	}
 
-	buffer += line;
+	String final_text = String("\n").join(lines);
 
-	while (!f->eof_reached()) {
-		buffer += conservative.get_line(f);
+	if (code_edit) {
+		code_edit->begin_complex_operation();
+		Variant nav_state = code_text_editor->get_navigation_state();
+		code_edit->set_text(final_text);
+		code_edit->emit_signal(SceneStringName(text_changed));
+		code_text_editor->set_edit_state(nav_state);
+		code_edit->end_complex_operation();
+	} else {
+		// Now the modified contents are in the buffer, rewrite the file with our changes.
+		Error err = f->reopen(p_fpath, FileAccess::WRITE);
+		ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + p_fpath + "'.");
+		f->store_string(final_text);
+		f->close();
+
+		Ref<Resource> res = ResourceCache::get_ref(p_fpath);
+		if (res.is_valid()) {
+			res->reload_from_file();
+		}
+
+		EditorFileSystem::get_singleton()->update_file(p_fpath);
 	}
-
-	// Now the modified contents are in the buffer, rewrite the file with our changes.
-
-	Error err = f->reopen(p_fpath, FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + p_fpath + "'.");
-
-	f->store_string(buffer);
 }
 
 String FindInFilesPanel::_get_replace_text() {

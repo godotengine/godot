@@ -773,7 +773,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			// Note that this is cached so we only create the texture the first time.
 			dest_fb_format = rb->get_base_data_format();
 			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), dest_fb_format, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, color_size, 0, 1, true, true);
-			dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
+			dest_fb = FramebufferCacheRD::get_singleton()->get_cache_multiview(rb->get_view_count(), dest_texture);
 			tonemap.dest_texture_size = color_size;
 		} else {
 			// If we do a nearest or bilinear upscale, we just render into our render target and our shader will upscale automatically.
@@ -878,7 +878,12 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			// This is only necessary if screen-space antialiasing is active, otherwise this happens automatically during tonemapping.
 			RID source_texture = rb->get_texture(use_smaa ? SNAME("SMAA") : SNAME("Tonemapper"), SNAME("destination"));
 			RID dest_texture = texture_storage->render_target_get_rd_texture(render_target);
-			RID dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
+
+			// Create an explicit pass, since the automatic pass in "framebuffer_create" can incorrectly put the texture as a resolve attachment.
+			RD::FramebufferPass pass;
+			pass.color_attachments.push_back(0);
+
+			RID dest_fb = FramebufferCacheRD::get_singleton()->get_cache_multipass(Vector<RID>{ dest_texture }, Vector<RD::FramebufferPass>{ pass }, rb->get_view_count());
 			copy_effects->copy_to_fb_rect(source_texture, dest_fb, Rect2i(Point2i(), rb->get_target_size()), false, false, false, false, RID(), rb->get_view_count() > 1, false, false, false, Rect2(), 1.0, scale_mode != RSE::VIEWPORT_SCALING_3D_MODE_NEAREST);
 		}
 
@@ -1885,43 +1890,21 @@ void RendererSceneRenderRD::init() {
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
-	if (forward_id_storage) {
-		memdelete(forward_id_storage);
-	}
+	memdelete(forward_id_storage);
 
-	if (bokeh_dof) {
-		memdelete(bokeh_dof);
-	}
-	if (copy_effects) {
-		memdelete(copy_effects);
-	}
-	if (debug_effects) {
-		memdelete(debug_effects);
-	}
-	if (luminance) {
-		memdelete(luminance);
-	}
-	if (smaa) {
-		memdelete(smaa);
-	}
-	if (tone_mapper) {
-		memdelete(tone_mapper);
-	}
-	if (vrs) {
-		memdelete(vrs);
-	}
-	if (fsr) {
-		memdelete(fsr);
-	}
+	memdelete(bokeh_dof);
+	memdelete(copy_effects);
+	memdelete(debug_effects);
+	memdelete(luminance);
+	memdelete(smaa);
+	memdelete(tone_mapper);
+	memdelete(vrs);
+	memdelete(fsr);
 #ifdef METAL_ENABLED
-	if (mfx_spatial) {
-		memdelete(mfx_spatial);
-	}
+	memdelete(mfx_spatial);
 #endif
 
-	if (resolve_effects) {
-		memdelete(resolve_effects);
-	}
+	memdelete(resolve_effects);
 
 	if (sky.sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky.sky_scene_state.uniform_set)) {
 		RD::get_singleton()->free_rid(sky.sky_scene_state.uniform_set);

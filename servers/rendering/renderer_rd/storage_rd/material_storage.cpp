@@ -452,7 +452,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 3; i++) {
-				gui[i] = c.components[i];
+				gui[i] = c[i];
 			}
 
 		} break;
@@ -465,7 +465,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 4; i++) {
-				gui[i] = c.components[i];
+				gui[i] = c[i];
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
@@ -1282,6 +1282,7 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
 	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
 	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_modei, BLEND_MODE_DISABLED);
+	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_modei, BLEND_MODE_PREMULTIPLIED_ALPHA);
 
 	actions.uniforms = &uniforms;
 	Error err = texture_storage->tex_blit_shader.compiler.compile(RSE::SHADER_TEXTURE_BLIT, code, &actions, path, gen_code);
@@ -1359,6 +1360,15 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+		} break;
+		case BLEND_MODE_PREMULTIPLIED_ALPHA: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		} break;
 		case BLEND_MODE_DISABLED:
 		default: {
@@ -2189,9 +2199,7 @@ void MaterialStorage::shader_free(RID p_rid) {
 		}
 
 		//clear data if exists
-		if (shader->data) {
-			memdelete(shader->data);
-		}
+		memdelete(shader->data);
 	}
 
 	if (shader->embedded) {

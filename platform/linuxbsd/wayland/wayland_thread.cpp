@@ -1169,9 +1169,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 			for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
 				TabletToolState *state = wp_tablet_tool_get_state(tool);
-				if (state) {
-					memdelete(state);
-				}
+				memdelete(state);
 
 				zwp_tablet_tool_v2_destroy(tool);
 			}
@@ -1236,9 +1234,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 					for (struct zwp_tablet_tool_v2 *tool : ss->tablet_tools) {
 						TabletToolState *state = wp_tablet_tool_get_state(tool);
-						if (state) {
-							memdelete(state);
-						}
+						memdelete(state);
 
 						zwp_tablet_tool_v2_destroy(tool);
 					}
@@ -3262,9 +3258,7 @@ void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_too
 	if (E && E->get()) {
 		struct zwp_tablet_tool_v2 *tool = E->get();
 		TabletToolState *state = wp_tablet_tool_get_state(tool);
-		if (state) {
-			memdelete(state);
-		}
+		memdelete(state);
 
 		zwp_tablet_tool_v2_destroy(tool);
 		ss->tablet_tools.erase(E);
@@ -5800,7 +5794,10 @@ void WaylandThread::window_set_ime_position(const Point2i &p_pos, DisplayServerE
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss && ss->wp_text_input && ss->ime_enabled) {
-		ss->ime_rect = Rect2i(p_pos, Size2i(1, 10));
+		WindowState *ws = window_get_state(p_window_id);
+		double scale = ws ? window_state_get_scale_factor(ws) : 1.0;
+		Point2i logical_pos = scale_vector2i(p_pos, 1.0 / scale);
+		ss->ime_rect = Rect2i(logical_pos, Size2i(1, 10));
 		zwp_text_input_v3_set_cursor_rectangle(ss->wp_text_input, ss->ime_rect.position.x, ss->ime_rect.position.y, ss->ime_rect.size.x, ss->ime_rect.size.y);
 		zwp_text_input_v3_commit(ss->wp_text_input);
 	}

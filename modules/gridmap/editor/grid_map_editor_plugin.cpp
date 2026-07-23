@@ -2231,7 +2231,7 @@ void GridMapEditorPlugin::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			EditorDockManager::get_singleton()->remove_dock(grid_map_editor);
-			memdelete_notnull(grid_map_editor);
+			memdelete(grid_map_editor);
 			grid_map_editor = nullptr;
 		} break;
 	}

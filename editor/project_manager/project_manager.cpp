@@ -472,6 +472,12 @@ void ProjectManager::_dim_window() {
 // Quick settings.
 
 void ProjectManager::_show_quick_settings() {
+	if (!EditorPropertyNameProcessor::get_singleton()) {
+		EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+		add_child(epnp);
+
+		EditorHelp::generate_doc();
+	}
 	quick_settings_dialog->popup_centered(Size2(640, 200) * EDSCALE);
 }
 
@@ -1664,7 +1670,7 @@ ProjectManager::ProjectManager() {
 
 			// The side bar with the edit, run, rename, etc. buttons.
 			VBoxContainer *project_list_sidebar = memnew(VBoxContainer);
-			project_list_sidebar->set_custom_minimum_size(Size2(120, 120));
+			project_list_sidebar->set_custom_minimum_size(Size2(120, 120) * EDSCALE);
 			project_list_hbox->add_child(project_list_sidebar);
 
 			project_list_sidebar->add_child(memnew(HSeparator));
@@ -2002,6 +2008,8 @@ ProjectManager::ProjectManager() {
 ProjectManager::~ProjectManager() {
 	singleton = nullptr;
 	EditorInspector::cleanup_plugins();
+
+	EditorHelp::cleanup_doc();
 
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 	EditorHelpHighlighter::free_singleton();

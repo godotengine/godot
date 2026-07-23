@@ -31,9 +31,9 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "core/math/audio_frame.h"
 #include "core/object/gdvirtual.gen.h"
 #include "core/variant/native_ptr.h"
+#include "servers/audio/audio_frame.h"
 
 class AudioEffectInstance : public RefCounted {
 	GDCLASS(AudioEffectInstance, RefCounted);

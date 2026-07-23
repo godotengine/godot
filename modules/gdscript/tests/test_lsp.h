@@ -102,7 +102,7 @@ GDScriptLanguageProtocol *initialize(const String &p_root) {
 	init_language(absolute_root);
 
 	// Recreate the singleton for each test, to ensure a clean state.
-	memdelete_notnull(GDScriptLanguageProtocol::get_singleton());
+	memdelete(GDScriptLanguageProtocol::get_singleton());
 	GDScriptLanguageProtocol *proto = memnew(GDScriptLanguageProtocol);
 	TestGDScriptLanguageProtocolInitializer::setup_client();
 

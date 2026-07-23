@@ -32,8 +32,7 @@
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-
-/////////////////////
+#include "servers/audio/audio_server.h"
 
 float AudioStreamPreview::get_length() const {
 	return length;

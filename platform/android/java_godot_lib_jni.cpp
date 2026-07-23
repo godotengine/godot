@@ -50,6 +50,8 @@
 #include "core/input/input.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
+#include "core/os/thread.h"
+#include "core/os/thread_safe.h"
 #include "core/profiling/profiling.h"
 #include "main/main.h"
 #include "servers/camera/camera_server.h"
@@ -99,9 +101,7 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	// Unregister android plugins
 	unregister_plugins_singletons();
 
-	if (java_class_wrapper) {
-		memdelete(java_class_wrapper);
-	}
+	memdelete(java_class_wrapper);
 	if (input_handler) {
 		delete input_handler;
 	}
@@ -229,6 +229,9 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env
 	if (err != OK) {
 		return false;
 	}
+
+	Thread::release_main_thread(); // setup2 will be called from another thread.
+	set_current_thread_safe_for_nodes(false);
 
 	TTS_Android::setup(p_godot_tts);
 

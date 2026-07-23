@@ -67,7 +67,7 @@
 #include "scene/gui/view_panner.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
 
 constexpr double FPS_DECIMAL = 1.0;
 constexpr double SECOND_DECIMAL = 0.0001;
@@ -868,8 +868,6 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 							mergeable = true;
 						}
 					}
-
-					Variant prev = animation->track_get_key_value(track, key);
 
 					if (!setting) {
 						if (mergeable) {
@@ -8015,7 +8013,7 @@ void AnimationTrackEditor::_show_imported_anim_warning() {
 
 void AnimationTrackEditor::_show_dummy_player_warning() {
 	EditorNode::get_singleton()->show_warning(
-			TTR("Some AnimationPlayerEditor's options are disabled since this is the dummy AnimationPlayer for preview.\n\nThe dummy player is forced active, non-deterministic and doesn't have the root motion track. Furthermore, the original node is inactive temporary."));
+			TTR("Some AnimationPlayerEditor options are disabled since this is the dummy AnimationPlayer for preview.\n\nThe dummy player is forced active, non-deterministic, and doesn't have the root motion track. Furthermore, the original node is temporarily inactive."));
 }
 
 void AnimationTrackEditor::_show_inactive_player_warning() {
@@ -8700,12 +8698,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 }
 
 AnimationTrackEditor::~AnimationTrackEditor() {
-	if (key_edit) {
-		memdelete(key_edit);
-	}
-	if (multi_key_edit) {
-		memdelete(multi_key_edit);
-	}
+	memdelete(key_edit);
+	memdelete(multi_key_edit);
 }
 
 // AnimationTrackKeyEditEditorPlugin.

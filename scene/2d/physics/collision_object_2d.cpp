@@ -32,6 +32,7 @@
 
 #include "core/object/class_db.h"
 #include "scene/resources/world_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void CollisionObject2D::_notification(int p_what) {
 	switch (p_what) {

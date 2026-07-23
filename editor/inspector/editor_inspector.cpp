@@ -542,7 +542,7 @@ void EditorProperty::_notification(int p_what) {
 			Color color;
 			if (draw_warning || draw_prop_warning) {
 				color = is_read_only() ? theme_cache.readonly_warning_color : theme_cache.warning_color;
-			} else if (is_read_only()) {
+			} else if (is_deprecated || is_read_only()) {
 				color = (sub_inspector_color_level >= 0) ? theme_cache.sub_inspector_property_color : theme_cache.readonly_property_color;
 			} else {
 				color = (sub_inspector_color_level >= 0) ? theme_cache.sub_inspector_property_color : theme_cache.property_color;
@@ -852,6 +852,10 @@ void EditorProperty::set_internal(bool p_internal) {
 	internal = p_internal;
 }
 
+void EditorProperty::make_passthrough(bool p_passthrough) {
+	set_mouse_behavior_recursive(p_passthrough ? MOUSE_BEHAVIOR_DISABLED : MOUSE_BEHAVIOR_INHERITED);
+}
+
 void EditorProperty::update_property() {
 	GDVIRTUAL_CALL(_update_property);
 }
@@ -949,6 +953,24 @@ void EditorProperty::update_editor_property_status() {
 	bool new_warning = false;
 	if (object->has_method("_get_property_warning")) {
 		new_warning = !String(object->call("_get_property_warning", property)).is_empty();
+	}
+
+	// Check if the property is deprecated.
+	if (!new_warning && !doc_path.is_empty()) {
+		EditorInspector *inspector = get_parent_inspector();
+		if (inspector) {
+			const String classname = doc_path.get_slicec(':', 1);
+			const String propname = doc_path.get_slicec(':', 2);
+			DocData::ClassDoc *cd = EditorHelp::get_doc(classname);
+			if (cd) {
+				for (const DocData::PropertyDoc &prop : cd->properties) {
+					if (prop.name == propname) {
+						is_deprecated = prop.is_deprecated;
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	Variant current = object->get(_get_revert_property());
@@ -2637,7 +2659,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 		bool is_valid_revert = false;
 		if (can_revert && revert_rect.has_point(pos)) {
-			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, related_enable_property, &is_valid_revert);
+			EditorPropertyRevert::get_property_revert_value(object, related_enable_property, &is_valid_revert);
 			ERR_FAIL_COND(!is_valid_revert);
 		}
 		if (is_valid_revert || (checkable && check_rect.has_point(pos))) {
