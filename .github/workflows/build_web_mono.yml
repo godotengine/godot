@@ -1,0 +1,99 @@
+name: 🌐 Web C# (Mono) Build
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "platform/web/**"
+      - "modules/mono/**"
+      - "godot-csharp-web-export.patch"
+
+env:
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    debug_symbols=no
+    use_closure_compiler=yes
+  EM_VERSION: 4.0.11
+
+jobs:
+  web-mono-template:
+    runs-on: ubuntu-24.04
+    name: ${{ matrix.name }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: C# Template w/ threads, 32-bit (target=template_release, use_mono=yes, arch=wasm32)
+            cache-name: web-mono-template
+            target: template_release
+            scons-flags: use_mono=yes arch=wasm32
+            artifact: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Apply C# Web Export patch
+        run: |
+          if [ -f godot-csharp-web-export.patch ]; then
+            git apply --verbose godot-csharp-web-export.patch
+            echo "Patch applied successfully."
+          else
+            echo "No patch file found — assuming changes are already in the tree."
+          fi
+
+      - name: Set up Emscripten ${{ env.EM_VERSION }}
+        uses: emscripten-core/setup-emsdk@v16
+        with:
+          version: ${{ env.EM_VERSION }}
+          no-cache: true
+
+      - name: Verify Emscripten setup
+        run: emcc -v
+
+      - name: Set up .NET 8.0 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Verify .NET setup
+        run: |
+          dotnet --version
+          dotnet --list-sdks
+
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
+          platform: web
+          target: ${{ matrix.target }}
+
+      - name: Verify build artifacts
+        run: |
+          echo "=== Build artifacts ==="
+          ls -lh bin/
+          echo "=== Checking for WASM output ==="
+          find bin/ -name "*.wasm" -o -name "*.js" -o -name "*.html" | head -20
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        if: matrix.artifact
+        with:
+          name: ${{ matrix.cache-name }}
