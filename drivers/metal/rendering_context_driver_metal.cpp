@@ -95,10 +95,42 @@ void RenderingContextDriverMetal::driver_free(RenderingDeviceDriver *p_driver) {
 	memdelete(p_driver);
 }
 
-class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) SurfaceLayer : public RenderingContextDriverMetal::Surface {
+/// A framebuffer that defers drawable acquisition from a CAMetalLayer
+/// until the texture is actually needed (via get_texture).
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDFrameBufferLayer final : public MDFrameBuffer {
 	CA::MetalLayer *layer = nullptr;
-	LocalVector<MDFrameBuffer> frame_buffers;
-	LocalVector<MTL::Drawable *> drawables;
+	mutable CA::MetalDrawable *drawable = nullptr;
+
+public:
+	MDFrameBufferLayer() {}
+	MDFrameBufferLayer(CA::MetalLayer *p_layer) :
+			layer(p_layer) {}
+
+	MTL::Texture *get_texture(uint32_t p_idx) const override {
+		DEV_ASSERT(p_idx == 0);
+		return get_drawable()->texture();
+	}
+
+	bool has_texture(uint32_t p_idx) const override {
+		DEV_ASSERT(p_idx == 0);
+		return drawable != nullptr;
+	}
+
+	CA::MetalDrawable *get_drawable() const {
+		if (drawable == nullptr) {
+			drawable = layer->nextDrawable();
+		}
+		return drawable;
+	}
+
+	void reset() {
+		drawable = nullptr;
+	}
+};
+
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) SurfaceLayer final : public RenderingContextDriverMetal::Surface {
+	CA::MetalLayer *layer = nullptr;
+	LocalVector<MDFrameBufferLayer> frame_buffers;
 	uint32_t rear = -1;
 	uint32_t front = 0;
 	uint32_t count = 0;
@@ -146,11 +178,9 @@ public:
 				break;
 		}
 #endif
-		drawables.resize(p_desired_framebuffer_count);
 		frame_buffers.resize(p_desired_framebuffer_count);
 		for (uint32_t i = 0; i < p_desired_framebuffer_count; i++) {
-			// Reserve space for the drawable texture.
-			frame_buffers[i].set_texture_count(1);
+			frame_buffers[i] = MDFrameBufferLayer(layer);
 		}
 
 		if (hdr_output) {
@@ -178,7 +208,7 @@ public:
 		return OK;
 	}
 
-	RDD::FramebufferID acquire_next_frame_buffer() override final {
+	RDD::FramebufferID acquire_next_frame_buffer() override {
 		if (count == frame_buffers.size()) {
 			return RDD::FramebufferID();
 		}
@@ -186,46 +216,42 @@ public:
 		rear = (rear + 1) % frame_buffers.size();
 		count++;
 
-		MDFrameBuffer &frame_buffer = frame_buffers[rear];
+		MDFrameBufferLayer &frame_buffer = frame_buffers[rear];
 		frame_buffer.size = Size2i(width, height);
-
-		CA::MetalDrawable *drawable = layer->nextDrawable();
-		ERR_FAIL_NULL_V_MSG(drawable, RDD::FramebufferID(), "no drawable available");
-		drawables[rear] = drawable;
-		frame_buffer.set_texture(0, drawable->texture());
+		frame_buffer.reset();
 
 		return RDD::FramebufferID(&frame_buffer);
 	}
 
-	void present(MTL3::MDCommandBuffer *p_cmd_buffer) override final {
+	void present(MTL3::MDCommandBuffer *p_cmd_buffer) override {
 		if (count == 0) {
 			return;
 		}
 
-		// Release texture and drawable.
-		frame_buffers[front].unset_texture(0);
-		MTL::Drawable *drawable = drawables[front];
-		drawables[front] = nullptr;
+		MDFrameBufferLayer &frame_buffer = frame_buffers[front];
+		CA::MetalDrawable *drawable = frame_buffer.get_drawable();
+		frame_buffer.reset();
 
 		count--;
 		front = (front + 1) % frame_buffers.size();
 
-		if (vsync_mode != DisplayServerEnums::VSYNC_DISABLED) {
-			p_cmd_buffer->get_command_buffer()->presentDrawableAfterMinimumDuration(drawable, present_minimum_duration);
-		} else {
-			p_cmd_buffer->get_command_buffer()->presentDrawable(drawable);
+		if (drawable != nullptr) {
+			if (vsync_mode != DisplayServerEnums::VSYNC_DISABLED) {
+				p_cmd_buffer->get_command_buffer()->presentDrawableAfterMinimumDuration(drawable, present_minimum_duration);
+			} else {
+				p_cmd_buffer->get_command_buffer()->presentDrawable(drawable);
+			}
 		}
 	}
 
-	MTL::Drawable *next_drawable() override final {
+	MTL::Drawable *next_drawable() override {
 		if (count == 0) {
 			return nullptr;
 		}
 
-		// Release texture and drawable.
-		frame_buffers[front].unset_texture(0);
-		MTL::Drawable *drawable = drawables[front];
-		drawables[front] = nullptr;
+		MDFrameBufferLayer &frame_buffer = frame_buffers[front];
+		CA::MetalDrawable *drawable = frame_buffer.get_drawable();
+		frame_buffer.reset();
 
 		count--;
 		front = (front + 1) % frame_buffers.size();
@@ -234,14 +260,14 @@ public:
 	}
 
 	API_AVAILABLE(macos(26.0), ios(26.0))
-	MTL::ResidencySet *get_residency_set() const override final {
+	MTL::ResidencySet *get_residency_set() const override {
 		return layer->residencySet();
 	}
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) SurfaceOffscreen : public RenderingContextDriverMetal::Surface {
-	int frame_buffer_size = 3;
-	MDFrameBuffer *frame_buffers;
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) SurfaceOffscreen final : public RenderingContextDriverMetal::Surface {
+	static constexpr int frame_buffer_size = 3;
+	MDFrameBufferTexture frame_buffers[frame_buffer_size];
 	LocalVector<MTL::Texture *> textures;
 	LocalVector<MTL::Drawable *> drawables;
 
@@ -266,14 +292,12 @@ public:
 		textures.resize(frame_buffer_size);
 		drawables.resize(frame_buffer_size);
 
-		frame_buffers = memnew_arr(MDFrameBuffer, frame_buffer_size);
 		for (int i = 0; i < frame_buffer_size; i++) {
 			frame_buffers[i].set_texture_count(1);
 		}
 	}
 
 	~SurfaceOffscreen() override {
-		memdelete_arr(frame_buffers);
 		for (MTL::Texture *texture : textures) {
 			if (texture) {
 				texture->release();
@@ -281,7 +305,7 @@ public:
 		}
 	}
 
-	Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) override final {
+	Error resize(uint32_t p_desired_framebuffer_count, RDD::DataFormat &r_format, RDD::ColorSpace &r_color_space) override {
 		if (width == 0 || height == 0) {
 			// Very likely the window is minimized, don't create a swap chain.
 			return ERR_SKIP;
@@ -318,7 +342,7 @@ public:
 		return OK;
 	}
 
-	RDD::FramebufferID acquire_next_frame_buffer() override final {
+	RDD::FramebufferID acquire_next_frame_buffer() override {
 		if (count.load(std::memory_order_relaxed) == 3) {
 			// Wait for a frame to be presented.
 			return RDD::FramebufferID();
@@ -327,7 +351,7 @@ public:
 		rear = (rear + 1) % 3;
 		count.fetch_add(1, std::memory_order_relaxed);
 
-		MDFrameBuffer &frame_buffer = frame_buffers[rear];
+		MDFrameBufferTexture &frame_buffer = frame_buffers[rear];
 
 		MTL::Texture *texture = textures[rear];
 		if (texture == nullptr || texture->width() != width || texture->height() != height || texture->pixelFormat() != pixel_format) {
@@ -357,8 +381,8 @@ public:
 		return RDD::FramebufferID(&frame_buffers[rear]);
 	}
 
-	void present(MTL3::MDCommandBuffer *p_cmd_buffer) override final {
-		MDFrameBuffer *frame_buffer = &frame_buffers[rear];
+	void present(MTL3::MDCommandBuffer *p_cmd_buffer) override {
+		MDFrameBufferTexture *frame_buffer = &frame_buffers[rear];
 
 		if (drawables[rear] != nullptr) {
 			p_cmd_buffer->get_command_buffer()->presentDrawable(drawables[rear]);
@@ -371,12 +395,12 @@ public:
 		});
 	}
 
-	MTL::Drawable *next_drawable() override final {
+	MTL::Drawable *next_drawable() override {
 		if (count == 0) {
 			return nullptr;
 		}
 
-		MDFrameBuffer *frame_buffer = &frame_buffers[rear];
+		MDFrameBufferTexture *frame_buffer = &frame_buffers[rear];
 
 		MTL::Drawable *next = drawables[rear];
 		drawables[rear] = nullptr;
@@ -388,7 +412,7 @@ public:
 	}
 
 	API_AVAILABLE(macos(26.0), ios(26.0))
-	MTL::ResidencySet *get_residency_set() const override final {
+	MTL::ResidencySet *get_residency_set() const override {
 		return layer->residencySet();
 	}
 };
