@@ -39,7 +39,7 @@
 #include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
 
 class GodotPhysicsDirectSpaceState2D : public PhysicsDirectSpaceState2D {
-	GDCLASS(GodotPhysicsDirectSpaceState2D, PhysicsDirectSpaceState2D);
+	GDSOFTCLASS(GodotPhysicsDirectSpaceState2D, PhysicsDirectSpaceState2D);
 
 public:
 	GodotSpace2D *space = nullptr;
