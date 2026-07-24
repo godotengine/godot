@@ -1130,6 +1130,21 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("color_script", "ColorPicker", icons["script"]);
 	theme->set_icon("color_copy", "ColorPicker", icons["action_copy"]);
 
+	theme->set_icon("dbg_tab_menu", "SceneDebuggerToolbar", icons["dbg_tab_menu"]);
+	theme->set_icon("dbg_audio_mute", "SceneDebuggerToolbar", icons["dbg_audio_mute"]);
+	theme->set_icon("dbg_input", "SceneDebuggerToolbar", icons["dbg_input"]);
+	theme->set_icon("dbg_node_2d", "SceneDebuggerToolbar", icons["dbg_node_2d"]);
+	theme->set_icon("dbg_suspend", "SceneDebuggerToolbar", icons["dbg_suspend"]);
+	theme->set_icon("dbg_visibility_visible", "SceneDebuggerToolbar", icons["dbg_visibility_visible"]);
+	theme->set_icon("dbg_audio_play", "SceneDebuggerToolbar", icons["dbg_audio_play"]);
+	theme->set_icon("dbg_list_select", "SceneDebuggerToolbar", icons["dbg_list_select"]);
+	theme->set_icon("dbg_node_3d", "SceneDebuggerToolbar", icons["dbg_node_3d"]);
+	theme->set_icon("dbg_tool_select", "SceneDebuggerToolbar", icons["dbg_tool_select"]);
+	theme->set_icon("dbg_camera", "SceneDebuggerToolbar", icons["dbg_camera"]);
+	theme->set_icon("dbg_next_frame", "SceneDebuggerToolbar", icons["dbg_next_frame"]);
+	theme->set_icon("dbg_reload", "SceneDebuggerToolbar", icons["dbg_reload"]);
+	theme->set_icon("dbg_visibility_hidden", "SceneDebuggerToolbar", icons["dbg_visibility_hidden"]);
+
 	{
 		const int precision = 7;
 
