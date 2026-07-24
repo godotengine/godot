@@ -738,14 +738,15 @@ void EditorBuildProfileManager::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			String last_file = EditorSettings::get_singleton()->get_project_metadata("build_profile", "last_file_path", "");
-			if (!last_file.is_empty()) {
-				_import_profile(last_file);
+			if (!last_file.is_empty() && !_import_profile(last_file)) {
+				// Keep the profile path if it fails, in case the user recovers or recreates it.
+				_set_profile_path(last_file);
 			}
+
 			if (edited.is_null()) {
 				edited.instantiate();
 				_update_edited_profile();
 			}
-
 		} break;
 	}
 }
@@ -764,8 +765,8 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 		} break;
 
 		case ACTION_SAVE: {
-			if (!profile_path->get_text().is_empty()) {
-				Error err = edited->save_to_file(profile_path->get_text());
+			if (!profile_path.is_empty() && FileAccess::exists(profile_path)) {
+				Error err = edited->save_to_file(profile_path);
 				if (err != OK) {
 					EditorNode::get_singleton()->show_warning(TTRC("File saving failed."));
 				}
@@ -775,11 +776,11 @@ void EditorBuildProfileManager::_profile_action(int p_action) {
 		}
 		case ACTION_SAVE_AS: {
 			export_profile->popup_file_dialog();
-			export_profile->set_current_file(profile_path->get_text());
+			export_profile->set_current_file(profile_path);
 		} break;
 
 		case ACTION_NEW: {
-			confirm_dialog->set_text(TTRC("Create a new profile?"));
+			confirm_dialog->set_text(TTRC("Unset the current profile?"));
 			confirm_dialog->popup_centered();
 		} break;
 
@@ -1124,7 +1125,7 @@ void EditorBuildProfileManager::_action_confirm() {
 		} break;
 
 		case ACTION_NEW: {
-			profile_path->set_text("");
+			_set_profile_path("");
 			edited.instantiate();
 			_update_edited_profile();
 		} break;
@@ -1321,21 +1322,28 @@ void EditorBuildProfileManager::_force_detect_classes_changed(const String &p_te
 	edited->set_force_detect_classes(force_detect_classes->get_text());
 }
 
-void EditorBuildProfileManager::_import_profile(const String &p_path) {
+void EditorBuildProfileManager::_set_profile_path(const String &p_path) {
+	profile_label->set_text(p_path.is_empty() ? TTR("[Unsaved Profile]") : ProjectSettings::get_singleton()->localize_path(p_path));
+	profile_path = p_path;
+	profile_actions[ACTION_NEW]->set_disabled(p_path.is_empty());
+	EditorSettings::get_singleton()->set_project_metadata("build_profile", "last_file_path", p_path);
+}
+
+bool EditorBuildProfileManager::_import_profile(const String &p_path) {
 	Ref<EditorBuildProfile> profile;
 	profile.instantiate();
 	Error err = profile->load_from_file(p_path);
 	String basefile = p_path.get_file();
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("File '%s' format is invalid, import aborted."), basefile));
-		return;
+		return false;
 	}
 
-	profile_path->set_text(p_path);
-	EditorSettings::get_singleton()->set_project_metadata("build_profile", "last_file_path", p_path);
-
+	_set_profile_path(p_path);
 	edited = profile;
 	_update_edited_profile();
+
+	return true;
 }
 
 void EditorBuildProfileManager::_export_profile(const String &p_path) {
@@ -1344,8 +1352,7 @@ void EditorBuildProfileManager::_export_profile(const String &p_path) {
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving profile to path: '%s'."), p_path));
 	} else {
-		profile_path->set_text(p_path);
-		EditorSettings::get_singleton()->set_project_metadata("build_profile", "last_file_path", p_path);
+		_set_profile_path(p_path);
 	}
 }
 
@@ -1364,14 +1371,17 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	add_child(main_vbc);
 
 	HBoxContainer *path_hbc = memnew(HBoxContainer);
-	profile_path = memnew(LineEdit);
-	path_hbc->add_child(profile_path);
-	profile_path->set_accessibility_name(TTRC("Profile Path"));
-	profile_path->set_editable(true);
-	profile_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	profile_label = memnew(Label);
+	path_hbc->add_child(profile_label);
+	profile_label->set_text(TTR("[Unsaved Profile]"));
+	profile_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	profile_label->set_accessibility_name(TTRC("Profile Path"));
+	profile_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	profile_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	profile_actions[ACTION_NEW] = memnew(Button(TTRC("New")));
+	profile_actions[ACTION_NEW] = memnew(Button(TTRC("New/Unset")));
 	path_hbc->add_child(profile_actions[ACTION_NEW]);
+	profile_actions[ACTION_NEW]->set_disabled(true);
 	profile_actions[ACTION_NEW]->connect(SceneStringName(pressed), callable_mp(this, &EditorBuildProfileManager::_profile_action).bind(ACTION_NEW));
 
 	profile_actions[ACTION_LOAD] = memnew(Button(TTRC("Load")));

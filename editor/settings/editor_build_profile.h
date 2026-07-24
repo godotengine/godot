@@ -168,7 +168,8 @@ class EditorBuildProfileManager : public AcceptDialog {
 	EditorFileDialog *import_profile = nullptr;
 	EditorFileDialog *export_profile = nullptr;
 
-	LineEdit *profile_path = nullptr;
+	Label *profile_label = nullptr;
+	String profile_path;
 
 	LineEdit *force_detect_classes = nullptr;
 
@@ -181,7 +182,9 @@ class EditorBuildProfileManager : public AcceptDialog {
 
 	Ref<EditorBuildProfile> edited;
 
-	void _import_profile(const String &p_path);
+	void _set_profile_path(const String &p_path);
+
+	bool _import_profile(const String &p_path);
 	void _export_profile(const String &p_path);
 
 	bool updating_build_options = false;
