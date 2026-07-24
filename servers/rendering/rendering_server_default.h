@@ -349,6 +349,7 @@ public:
 	FUNC2RC(Variant, material_get_param, RID, const StringName &)
 
 	FUNC2(material_set_render_priority, RID, int)
+	FUNC2(material_set_layer_mask, RID, uint32_t)
 	FUNC2(material_set_next_pass, RID, RID)
 
 	/* MESH API */
