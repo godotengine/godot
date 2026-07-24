@@ -36,7 +36,7 @@
 class EditorSyntaxHighlighter;
 class MenuButton;
 class VSplitContainer;
-class ScriptEditor;
+class DocumentEditorContainer;
 
 class ScriptEditorBase : public VBoxContainer {
 	GDCLASS(ScriptEditorBase, VBoxContainer);
@@ -51,7 +51,7 @@ public:
 		GDCLASS(EditMenusBase, HBoxContainer);
 
 	protected:
-		ScriptEditor *se = nullptr;
+		DocumentEditorContainer *document_editor_container = nullptr;
 
 	public:
 		virtual bool handles(ScriptEditorBase *p_seb) = 0;
@@ -160,7 +160,7 @@ protected:
 		void _bookmark_item_pressed(int p_idx);
 
 	public:
-		EditMenus(ScriptEditor *p_se);
+		EditMenus(DocumentEditorContainer *p_document_editor_container);
 	};
 
 	static void _popup_move_item(int p_target_id, PopupMenu *r_popup, bool p_move_after = true, int p_idx = -1) {
@@ -210,7 +210,7 @@ public:
 	virtual void reload_text();
 	virtual void enable_editor();
 
-	virtual EditMenusBase *create_edit_menu(ScriptEditor *p_se) = 0;
+	virtual EditMenusBase *create_edit_menu(DocumentEditorContainer *p_document_editor_container) = 0;
 
 	virtual Control *get_base_editor() const override { return code_editor->get_text_editor(); }
 	virtual CodeTextEditor *get_code_editor() const { return code_editor; }
@@ -280,7 +280,7 @@ protected:
 		void _notification(int p_what);
 
 	public:
-		EditMenusCEB(ScriptEditor *p_se, String p_breakpoint_menu_name);
+		EditMenusCEB(DocumentEditorContainer *p_document_editor_container, String p_breakpoint_menu_name);
 	};
 
 	VSplitContainer *editor_box = nullptr;

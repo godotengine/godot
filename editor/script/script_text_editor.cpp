@@ -149,7 +149,7 @@ void ScriptTextEditor::EditMenusScTE::EditMenusScTE::_update_breakpoint_list() {
 	breakpoints_menu->set_item_index(-1, 0);
 }
 
-ScriptTextEditor::EditMenusScTE::EditMenusScTE(ScriptEditor *p_se) : EditMenusCEB(p_se, "Breakpoints") {
+ScriptTextEditor::EditMenusScTE::EditMenusScTE(DocumentEditorContainer *p_document_editor_container) : EditMenusCEB(p_document_editor_container, "Breakpoints") {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
 	_popup_move_item(EDIT_DUPLICATE_LINES, edit_menu->get_popup());
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_function"), SEARCH_LOCATE_FUNCTION);
@@ -1044,63 +1044,6 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 	}
 
 	return nullptr;
-}
-
-static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, HashSet<Ref<Script>> &r_scripts) {
-	if (p_current->get_owner() != p_base && p_base != p_current) {
-		return;
-	}
-	Ref<Script> c = p_current->get_script();
-
-	if (c.is_valid()) {
-		r_scripts.insert(c);
-	}
-
-	for (int i = 0; i < p_current->get_child_count(); i++) {
-		_find_changed_scripts_for_external_editor(p_base, p_current->get_child(i), r_scripts);
-	}
-}
-
-void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_for_script) {
-	bool use_external_editor = bool(EDITOR_GET("text_editor/external/use_external_editor"));
-
-	ERR_FAIL_NULL(get_tree());
-
-	HashSet<Ref<Script>> scripts;
-
-	Node *base = get_tree()->get_edited_scene_root();
-	if (base) {
-		_find_changed_scripts_for_external_editor(base, base, scripts);
-	}
-
-	for (const Ref<Script> &E : scripts) {
-		Ref<Script> scr = E;
-
-		if (!use_external_editor && !scr->get_language()->overrides_external_editor()) {
-			continue; // We're not using an external editor for this script.
-		}
-
-		if (p_for_script.is_valid() && p_for_script != scr) {
-			continue;
-		}
-
-		if (scr->is_built_in()) {
-			continue; //internal script, who cares, though weird
-		}
-
-		uint64_t last_date = scr->get_last_modified_time();
-		uint64_t date = FileAccess::get_modified_time(scr->get_path());
-
-		if (last_date != date) {
-			Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-			ERR_CONTINUE(rel_scr.is_null());
-			scr->set_source_code(rel_scr->get_source_code());
-			scr->set_last_modified_time(rel_scr->get_last_modified_time());
-			scr->update_exports();
-
-			trigger_live_script_reload(scr->get_path());
-		}
-	}
 }
 
 void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
