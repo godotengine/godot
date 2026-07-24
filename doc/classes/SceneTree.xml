@@ -263,6 +263,10 @@
 			The root node of the currently loaded main scene, usually as a direct child of [member root]. See also [method change_scene_to_file], [method change_scene_to_packed], and [method reload_current_scene].
 			[b]Warning:[/b] Setting this property directly may not work as expected, as it does [i]not[/i] add or remove any nodes from this tree.
 		</member>
+		<member name="debug_audio_visualization_hint" type="bool" setter="set_debug_audio_visualization_hint" getter="is_debugging_audio_visualization_hint" default="false">
+			If [code]true[/code], audio visualizations will be visible when running the game from the editor for debugging purposes.
+			[b]Note:[/b] This property is not designed to be changed at run-time. Changing the value of [member debug_audio_visualization_hint] while the project is running will not have the desired effect.
+		</member>
 		<member name="debug_collisions_hint" type="bool" setter="set_debug_collisions_hint" getter="is_debugging_collisions_hint" default="false">
 			If [code]true[/code], collision shapes will be visible when running the game from the editor for debugging purposes.
 			[b]Note:[/b] This property is not designed to be changed at run-time. Changing the value of [member debug_collisions_hint] while the project is running will not have the desired effect.

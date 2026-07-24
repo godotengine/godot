@@ -139,6 +139,7 @@ private:
 
 #ifdef DEBUG_ENABLED
 	bool debug_collisions_hint = false;
+	bool debug_audio_visualization_hint = false;
 	bool debug_paths_hint = false;
 	bool debug_navigation_hint = false;
 #endif
@@ -371,6 +372,9 @@ public:
 	void set_debug_collisions_hint(bool p_enabled);
 	bool is_debugging_collisions_hint() const;
 
+	void set_debug_audio_visualization_hint(bool p_enabled);
+	bool is_debugging_audio_visualization_hint() const;
+
 	void set_debug_paths_hint(bool p_enabled);
 	bool is_debugging_paths_hint() const;
 
@@ -379,6 +383,9 @@ public:
 #else
 	void set_debug_collisions_hint(bool p_enabled) {}
 	bool is_debugging_collisions_hint() const { return false; }
+
+	void set_debug_audio_visualization_hint(bool p_enabled) {}
+	bool is_debugging_audio_visualization_hint() { return false; }
 
 	void set_debug_paths_hint(bool p_enabled) {}
 	bool is_debugging_paths_hint() const { return false; }

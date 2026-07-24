@@ -973,6 +973,14 @@ bool SceneTree::is_debugging_collisions_hint() const {
 	return debug_collisions_hint;
 }
 
+void SceneTree::set_debug_audio_visualization_hint(bool p_enabled) {
+	debug_audio_visualization_hint = p_enabled;
+}
+
+bool SceneTree::is_debugging_audio_visualization_hint() const {
+	return debug_audio_visualization_hint;
+}
+
 void SceneTree::set_debug_paths_hint(bool p_enabled) {
 	debug_paths_hint = p_enabled;
 }
@@ -1897,6 +1905,8 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_debug_collisions_hint", "enable"), &SceneTree::set_debug_collisions_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_collisions_hint"), &SceneTree::is_debugging_collisions_hint);
+	ClassDB::bind_method(D_METHOD("set_debug_audio_visualization_hint", "enable"), &SceneTree::set_debug_audio_visualization_hint);
+	ClassDB::bind_method(D_METHOD("is_debugging_audio_visualization_hint"), &SceneTree::is_debugging_audio_visualization_hint);
 	ClassDB::bind_method(D_METHOD("set_debug_paths_hint", "enable"), &SceneTree::set_debug_paths_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_paths_hint"), &SceneTree::is_debugging_paths_hint);
 	ClassDB::bind_method(D_METHOD("set_debug_navigation_hint", "enable"), &SceneTree::set_debug_navigation_hint);
@@ -1964,6 +1974,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_audio_visualization_hint"), "set_debug_audio_visualization_hint", "is_debugging_audio_visualization_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_paths_hint"), "set_debug_paths_hint", "is_debugging_paths_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");

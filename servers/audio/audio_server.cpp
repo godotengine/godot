@@ -43,6 +43,7 @@
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #define MARK_EDITED set_edited(true);
@@ -1548,6 +1549,102 @@ void AudioServer::init() {
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/video/video_delay_compensation_ms", PROPERTY_HINT_RANGE, "-1000,1000,1,suffix:ms"), 0);
 }
 
+#ifdef DEBUG_ENABLED
+void AudioServer::init_debug_visualization() {
+	RenderingServer *rs = RS::get_singleton();
+	debug_visualization_circle_mesh_rid = rs->mesh_create();
+
+	const int segments = 32;
+
+	// center
+	Vector<Vector2> circle_vertices;
+	circle_vertices.resize(segments * 3);
+
+	Vector2 *w = circle_vertices.ptrw();
+	int ic = 0;
+	for (int i = 0; i < segments; i++) {
+		float phi0 = (Math::TAU / segments) * i;
+		float phi1 = (Math::TAU / segments) * (i + 1);
+
+		Vector2 p0 = Vector2(Math::cos(phi0), Math::sin(phi0));
+		Vector2 p1 = Vector2(Math::cos(phi1), Math::sin(phi1));
+
+		w[ic++] = Vector2(0, 0);
+		w[ic++] = p0;
+		w[ic++] = p1;
+	}
+
+	Array ring_mesh_array;
+	ring_mesh_array.resize(RSE::ARRAY_MAX);
+	ring_mesh_array[RSE::ARRAY_VERTEX] = circle_vertices;
+
+	rs->mesh_add_surface_from_arrays(debug_visualization_circle_mesh_rid, RSE::PRIMITIVE_TRIANGLES, ring_mesh_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
+
+	// rings
+	debug_visualization_rings_mesh_rids.resize(debug_visualization_ring_count);
+	for (int r = 0; r < debug_visualization_ring_count; r++) {
+		float inner_radius = (r * 1) + 0.5f;
+		float outer_radius = ((r + 1) * 1) + 0.5f;
+
+		RID r_mesh = rs->mesh_create();
+		Vector<Vector2> ring_v;
+		ring_v.resize((segments + 1) * 2);
+
+		Vector2 *v_ptr = ring_v.ptrw();
+		int idx = 0;
+		for (int i = 0; i <= segments; i++) {
+			float a = Math::TAU * float(i) / segments;
+			float cos_a = Math::cos(a);
+			float sin_a = Math::sin(a);
+
+			v_ptr[idx++] = Vector2(cos_a * inner_radius, sin_a * inner_radius);
+			v_ptr[idx++] = Vector2(cos_a * outer_radius, sin_a * outer_radius);
+		}
+
+		Array arrays_ring;
+		arrays_ring.resize(RSE::ARRAY_MAX);
+		arrays_ring[RSE::ARRAY_VERTEX] = ring_v;
+
+		rs->mesh_add_surface_from_arrays(r_mesh, RSE::PRIMITIVE_TRIANGLE_STRIP, arrays_ring, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
+		debug_visualization_rings_mesh_rids.write[r] = r_mesh;
+	}
+
+	// outline
+	debug_visualization_outline_mesh_rid = rs->mesh_create();
+
+	Vector<Vector2> outline_vertices;
+	outline_vertices.resize(segments + 1);
+	for (int i = 0; i <= segments; i++) {
+		float phi = (Math::TAU / segments) * i;
+		outline_vertices.write[i] = Vector2(Math::cos(phi), Math::sin(phi));
+	}
+
+	Array outline_mesh_array;
+	outline_mesh_array.resize(RSE::ARRAY_MAX);
+	outline_mesh_array[RSE::ARRAY_VERTEX] = outline_vertices;
+
+	rs->mesh_add_surface_from_arrays(debug_visualization_outline_mesh_rid, RSE::PRIMITIVE_LINE_STRIP, outline_mesh_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
+}
+
+void AudioServer::finish_debug_visualization() {
+	RenderingServer *rs = RS::get_singleton();
+	rs->free_rid(debug_visualization_circle_mesh_rid);
+	for (int r = 0; r < debug_visualization_ring_count; r++) {
+		rs->free_rid(debug_visualization_rings_mesh_rids[r]);
+	}
+	rs->free_rid(debug_visualization_outline_mesh_rid);
+}
+
+void AudioServer::set_debug_audio_visualization_enabled(bool p_enabled) {
+	debug_audio_visualization_enabled = p_enabled;
+}
+
+bool AudioServer::get_debug_audio_visualization_enabled() const {
+	return debug_audio_visualization_enabled;
+}
+
+#endif // DEBUG_ENABLED
+
 void AudioServer::update() {
 #ifdef DEBUG_ENABLED
 	if (EngineDebugger::is_profiling(SNAME("servers"))) {
@@ -2137,6 +2234,9 @@ void AudioServer::_bind_methods() {
 
 AudioServer::AudioServer() {
 	singleton = this;
+#ifdef DEBUG_ENABLED
+	init_debug_visualization();
+#endif // DEBUG_ENABLED
 }
 
 AudioServer::~AudioServer() {
@@ -2145,6 +2245,10 @@ AudioServer::~AudioServer() {
 	_cleanup_lists();
 
 	singleton = nullptr;
+
+#ifdef DEBUG_ENABLED
+	finish_debug_visualization();
+#endif // DEBUG_ENABLED
 }
 
 /////////////////////////////////

@@ -378,6 +378,30 @@ public:
 	bool get_debug_mute() const;
 #endif // DEBUG_ENABLED
 
+#ifdef DEBUG_ENABLED
+private:
+	RID debug_visualization_circle_mesh_rid;
+	Vector<RID> debug_visualization_rings_mesh_rids;
+	RID debug_visualization_outline_mesh_rid;
+
+	int debug_visualization_ring_count = 12;
+
+	void init_debug_visualization();
+	void finish_debug_visualization();
+
+	bool debug_audio_visualization_enabled = false;
+
+public:
+	RID get_debug_visualization_circle_mesh_rid() const { return debug_visualization_circle_mesh_rid; }
+	Vector<RID> get_debug_visualization_rings_mesh_rids() const { return debug_visualization_rings_mesh_rids; }
+	RID get_debug_visualization_outline_mesh_rid() const { return debug_visualization_outline_mesh_rid; }
+
+	int get_debug_visualization_ring_count() const { return debug_visualization_ring_count; }
+
+	void set_debug_audio_visualization_enabled(bool p_enabled);
+	bool get_debug_audio_visualization_enabled() const;
+#endif // DEBUG_ENABLED
+
 	void set_bus_count(int p_count);
 	int get_bus_count() const;
 
