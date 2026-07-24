@@ -46,10 +46,23 @@
 namespace gdmono {
 
 #ifdef TOOLS_ENABLED
+// Keep in sync with UNLOAD_OPCODE_* constants in GodotPlugins/Main.cs.
+enum UnloadOpcode : int32_t {
+	UNLOAD_OPCODE_OK = 0,
+	UNLOAD_OPCODE_ALC_LEAKED = 1,
+	UNLOAD_OPCODE_NOT_COLLECTIBLE = 2,
+	UNLOAD_OPCODE_EXCEPTION = 3,
+};
+
+struct UnloadPluginResult {
+	int32_t opcode;
+	int32_t leaked_alc_count;
+};
+
 struct PluginCallbacks {
 	using FuncLoadProjectAssemblyCallback = bool(GD_CLR_STDCALL *)(const char16_t *, String *);
 	using FuncLoadToolsAssemblyCallback = Object *(GD_CLR_STDCALL *)(const char16_t *, const void **, int32_t);
-	using FuncUnloadProjectPluginCallback = bool(GD_CLR_STDCALL *)();
+	using FuncUnloadProjectPluginCallback = UnloadPluginResult(GD_CLR_STDCALL *)();
 	FuncLoadProjectAssemblyCallback LoadProjectAssemblyCallback = nullptr;
 	FuncLoadToolsAssemblyCallback LoadToolsAssemblyCallback = nullptr;
 	FuncUnloadProjectPluginCallback UnloadProjectPluginCallback = nullptr;
