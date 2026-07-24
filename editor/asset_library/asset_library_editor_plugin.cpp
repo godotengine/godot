@@ -819,7 +819,8 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 
 	if (!error_text.is_empty()) {
 		download_error->set_text(TTR("Asset Download Error:") + "\n" + error_text);
-		download_error->popup_centered();
+		download_error->set_autowrap(true);
+		download_error->popup_centered(get_window()->get_size_with_decorations() / 3);
 		// Let the user retry the download.
 		retry_button->show();
 		return;
