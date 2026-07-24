@@ -48,6 +48,18 @@
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #include "modules/svg/image_loader_svg.h"
 
+#ifdef MODULE_MONO_ENABLED
+static bool _project_contains_dotnet() {
+	const String project_path = ProjectSettings::get_singleton()->get_resource_path();
+	for (const String &file : DirAccess::get_files_at(project_path)) {
+		if (file.ends_with(".csproj") || file.ends_with(".sln") || file.ends_with(".slnx")) {
+			return true;
+		}
+	}
+	return false;
+}
+#endif
+
 Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
@@ -423,11 +435,12 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
 
 bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 #ifdef MODULE_MONO_ENABLED
-	// Don't check for additional errors, as this particular error cannot be resolved.
-	r_error += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
-	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
-	return false;
-#else
+	if (_project_contains_dotnet()) {
+		// Don't check for additional errors, as this particular error cannot be resolved.
+		r_error += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
+		return false;
+	}
+#endif
 
 	String err;
 	bool valid = false;
@@ -459,7 +472,6 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 	}
 
 	return valid;
-#endif // !MODULE_MONO_ENABLED
 }
 
 bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
