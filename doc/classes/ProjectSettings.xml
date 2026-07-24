@@ -764,6 +764,18 @@
 		<member name="debug/shader_language/warnings/unused_varying" type="bool" setter="" getter="" default="true">
 			When set to [code]true[/code], produces a warning when a varying is never used.
 		</member>
+		<member name="debug/shapes/audio/2d/audio_visualization_color" type="Color" setter="" getter="" default="Color(0, 0.5, 0.9, 1)">
+			The color used to display the audio visualization for [AudioStreamPlayer2D] when [member debug/shapes/audio/2d/audio_visualization_mode] is enabled.
+		</member>
+		<member name="debug/shapes/audio/2d/audio_visualization_mode" type="int" setter="" getter="" default="1">
+			Sets how audio is visualized for [AudioStreamPlayer2D].
+			[b]Disabled[/b] does not draw any visualization.
+			[b]Draw Max Range[/b] draws a circle representing the [member AudioStreamPlayer2D.max_distance].
+			[b]Draw Attenuation[/b] draws a radial gradient representing the [member AudioStreamPlayer2D.max_distance] combined with its [member AudioStreamPlayer2D.attenuation].
+		</member>
+		<member name="debug/shapes/audio/2d/audio_visualization_ring_count" type="int" setter="" getter="" default="12">
+			The number of rings used to represent attenuation when [member debug/shapes/audio/2d/audio_visualization_mode] is set to [b]Draw Attenuation[/b].
+		</member>
 		<member name="debug/shapes/avoidance/2d/agents_radius_color" type="Color" setter="" getter="" default="Color(1, 1, 0, 0.25)">
 			Color of the avoidance agents' radius, visible when "Visible Avoidance" is enabled in the Debug menu.
 		</member>

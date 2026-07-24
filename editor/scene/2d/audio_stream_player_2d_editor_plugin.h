@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  debugger_editor_plugin.h                                              */
+/*  audio_stream_player_2d_editor_plugin.h                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,43 +31,44 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
+#include "editor/scene/canvas_item_editor_plugin.h"
+#include "scene/2d/audio_stream_player_2d.h"
 
-class EditorFileServer;
-class MenuButton;
-class PopupMenu;
-class RunInstancesDialog;
+class AudioStreamPlayer2DEditor : public Control {
+	GDCLASS(AudioStreamPlayer2DEditor, Control);
 
-class DebuggerEditorPlugin : public EditorPlugin {
-	GDCLASS(DebuggerEditorPlugin, EditorPlugin);
+	CanvasItemEditor *canvas_item_editor = nullptr;
+	AudioStreamPlayer2D *node = nullptr;
 
-private:
-	PopupMenu *debug_menu = nullptr;
-	EditorFileServer *file_server = nullptr;
-	RunInstancesDialog *run_instances_dialog = nullptr;
+	bool pressed = false;
+	float original_max_distance = 0.0;
+	float grab_threshold = 8.0;
 
-	enum MenuOptions {
-		RUN_FILE_SERVER,
-		RUN_LIVE_DEBUG,
-		RUN_DEBUG_COLLISIONS,
-		RUN_DEBUG_PATHS,
-		RUN_DEBUG_NAVIGATION,
-		RUN_DEBUG_AVOIDANCE,
-		RUN_DEBUG_CANVAS_REDRAW,
-		RUN_DEPLOY_REMOTE_DEBUG,
-		RUN_RELOAD_SCRIPTS,
-		SERVER_KEEP_OPEN,
-		RUN_MULTIPLE_INSTANCES,
-	};
-
-	bool initializing = true;
-
-	void _update_debug_options();
+protected:
+	void _node_removed(Node *p_node);
 	void _notification(int p_what);
-	void _menu_option(int p_option);
 
 public:
-	virtual String get_plugin_name() const override { return "Debugger"; }
+	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
+	void forward_canvas_draw_over_viewport(Control *p_overlay);
+	void edit(AudioStreamPlayer2D *p_node);
 
-	DebuggerEditorPlugin(PopupMenu *p_menu);
-	~DebuggerEditorPlugin();
+	AudioStreamPlayer2DEditor();
+};
+
+class AudioStreamPlayer2DEditorPlugin : public EditorPlugin {
+	GDCLASS(AudioStreamPlayer2DEditorPlugin, EditorPlugin);
+
+	AudioStreamPlayer2DEditor *audio_editor = nullptr;
+
+public:
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return audio_editor->forward_canvas_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { audio_editor->forward_canvas_draw_over_viewport(p_overlay); }
+
+	virtual String get_plugin_name() const override { return "AudioStreamPlayer2D"; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+
+	AudioStreamPlayer2DEditorPlugin();
 };

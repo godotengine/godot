@@ -177,6 +177,9 @@
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_server.h"
+#ifdef DEBUG_ENABLED
+#include "servers/audio/audio_server_debug.h"
+#endif // DEBUG_ENABLED
 #include "servers/audio/audio_server_enums.h"
 #include "servers/display/display_server.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
@@ -601,6 +604,10 @@ void EditorNode::_update_from_settings() {
 	ResourceImporterTexture::get_singleton()->update_imports();
 
 	_update_translations();
+
+#ifdef DEBUG_ENABLED
+	AudioServerDebug::get_singleton()->update_from_settings();
+#endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 	NavigationServer2D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/2d/edge_connection_color"));

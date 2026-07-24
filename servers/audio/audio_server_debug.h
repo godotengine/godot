@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  debugger_editor_plugin.h                                              */
+/*  audio_server_debug.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,44 +30,51 @@
 
 #pragma once
 
-#include "editor/plugins/editor_plugin.h"
+#ifdef DEBUG_ENABLED
 
-class EditorFileServer;
-class MenuButton;
-class PopupMenu;
-class RunInstancesDialog;
+#include "core/math/color.h"
+#include "core/variant/variant.h"
 
-class DebuggerEditorPlugin : public EditorPlugin {
-	GDCLASS(DebuggerEditorPlugin, EditorPlugin);
+class AudioServerDebug {
+	static AudioServerDebug *singleton;
 
-private:
-	PopupMenu *debug_menu = nullptr;
-	EditorFileServer *file_server = nullptr;
-	RunInstancesDialog *run_instances_dialog = nullptr;
+	bool debug_audio_2d_visualization_enabled = false;
 
-	enum MenuOptions {
-		RUN_FILE_SERVER,
-		RUN_LIVE_DEBUG,
-		RUN_DEBUG_COLLISIONS,
-		RUN_DEBUG_PATHS,
-		RUN_DEBUG_NAVIGATION,
-		RUN_DEBUG_AVOIDANCE,
-		RUN_DEBUG_CANVAS_REDRAW,
-		RUN_DEPLOY_REMOTE_DEBUG,
-		RUN_RELOAD_SCRIPTS,
-		SERVER_KEEP_OPEN,
-		RUN_MULTIPLE_INSTANCES,
-	};
+	RID debug_audio_2d_visualization_circle_mesh_rid;
+	Vector<RID> debug_audio_2d_visualization_rings_mesh_rids;
+	RID debug_audio_2d_visualization_outline_mesh_rid;
 
-	bool initializing = true;
-
-	void _update_debug_options();
-	void _notification(int p_what);
-	void _menu_option(int p_option);
+	int debug_audio_2d_visualization_ring_count;
+	Color debug_audio_2d_visualization_color;
+	int debug_audio_2d_visualization_mode;
 
 public:
-	virtual String get_plugin_name() const override { return "Debugger"; }
+	static AudioServerDebug *get_singleton();
 
-	DebuggerEditorPlugin(PopupMenu *p_menu);
-	~DebuggerEditorPlugin();
+	void register_settings();
+	void update_from_settings();
+
+	void generate_rids();
+	void clear_rids();
+
+	RID get_debug_audio_2d_visualization_circle_mesh_rid() const;
+	Vector<RID> get_debug_audio_2d_visualization_rings_mesh_rids() const;
+	RID get_debug_audio_2d_visualization_outline_mesh_rid() const;
+
+	int get_debug_audio_2d_visualization_ring_count() const;
+	void set_debug_audio_2d_visualization_ring_count(int p_count);
+
+	Color get_debug_audio_2d_visualization_color() const;
+	void set_debug_audio_2d_visualization_color(const Color &p_color);
+
+	int get_debug_audio_2d_visualization_mode() const;
+	void set_debug_audio_2d_visualization_mode(int p_mode);
+
+	void set_debug_audio_2d_visualization_enabled(bool p_enabled);
+	bool get_debug_audio_2d_visualization_enabled() const;
+
+	AudioServerDebug();
+	~AudioServerDebug();
 };
+
+#endif // DEBUG_ENABLED

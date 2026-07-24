@@ -264,7 +264,6 @@ static bool force_res = false;
 static bool use_debug_profiler = false;
 #ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
-static bool debug_audio_visualization = false;
 static bool debug_paths = false;
 static bool debug_navigation = false;
 static bool debug_avoidance = false;
@@ -1829,8 +1828,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(DEBUG_ENABLED)
 		} else if (arg == "--debug-collisions") {
 			debug_collisions = true;
-		} else if (arg == "--debug-audio-visualization") {
-			debug_audio_visualization = true;
 		} else if (arg == "--debug-paths") {
 			debug_paths = true;
 		} else if (arg == "--debug-navigation") {
@@ -4343,14 +4340,7 @@ int Main::start() {
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);
 		}
-		if (debug_audio_visualization) {
-#ifndef AUDIO_VISUALIZATION_2D_DISABLED
-			AudioServer::get_singleton()->set_debug_audio_visualization_enabled(true);
-#endif // AUDIO_VISUALIZATION_2D_DISABLED
-#ifndef AUDIO_VISUALIZATION_3D_DISABLED
-			AudioServer::get_singleton()->set_debug_audio_visualization_enabled(true);
-#endif // AUDIO_VISUALIZATION_3D_DISABLED
-		}
+
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
 #ifndef NAVIGATION_2D_DISABLED
