@@ -119,6 +119,7 @@ struct ROEventToken {
 		value = 0;
 	}
 };
+
 enum class ROAdvancedColorKind : int32_t {
 	StandardDynamicRange = 0,
 	WideColorGamut = 1,
@@ -159,6 +160,17 @@ enum class RoTimedMetadataTrackPresentationMode : int32_t {
 	Hidden = 1,
 	ApplicationPresented = 2,
 	PlatformPresented = 3,
+};
+
+enum class ROToastTemplateType : int32_t {
+	ToastImageAndText01 = 0,
+	ToastImageAndText02 = 1,
+	ToastImageAndText03 = 2,
+	ToastImageAndText04 = 3,
+	ToastText01 = 4,
+	ToastText02 = 5,
+	ToastText03 = 6,
+	ToastText04 = 7,
 };
 
 GODOT_GCC_WARNING_PUSH
@@ -583,6 +595,149 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE get_ContentType(void **) = 0;
 };
 
+MIDL_INTERFACE("50AC103F-D235-4598-BBEF-98FE4D1A3AD4")
+ROToastNotificationManagerStatics : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE CreateToastNotifier(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateToastNotifierWithId(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetTemplateContent(int32_t, void **) = 0;
+};
+
+MIDL_INTERFACE("75927B93-03F3-41EC-91D3-6E5BAC1B38E7")
+ROToastNotifier : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE Show(void *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE Hide(void *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_Setting(int32_t *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE AddToSchedule(void *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE RemoveFromSchedule(void *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetScheduledToastNotifications(void **) = 0;
+};
+
+MIDL_INTERFACE("04124B20-82C6-4229-B109-FD9ED4662B53")
+ROToastNotificationFactory : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE CreateToastNotification(void *, void **) = 0;
+};
+
+MIDL_INTERFACE("997E2675-059E-4E60-8B06-1760917C8B80")
+ROToastNotification : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE get_Content(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE put_ExpirationTime(void *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_ExpirationTime(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE add_Dismissed(void *, ROEventToken *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE remove_Dismissed(ROEventToken) = 0;
+	virtual HRESULT STDMETHODCALLTYPE add_Activated(void *, ROEventToken *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE remove_Activated(ROEventToken) = 0;
+	virtual HRESULT STDMETHODCALLTYPE add_Failed(void *, ROEventToken *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE remove_Failed(ROEventToken) = 0;
+};
+
+MIDL_INTERFACE("F7F3A506-1E87-42D6-BCFB-B8C809FA5494")
+ROXmlDocument : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE get_Doctype(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_Implementation(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_DocumentElement(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateElement(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateDocumentFragment(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateTextNode(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateComment(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateProcessingInstruction(void *, void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateAttribute(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateEntityReference(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetElementsByTagName(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateCDataSection(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_DocumentUri(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateAttributeNS(void *, void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CreateElementNS(void *, void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetElementById(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE ImportNode(void *, bool, void **) = 0;
+};
+
+MIDL_INTERFACE("63DBBA8B-D0DB-4FE1-B745-F9433AFDC25B")
+ROXmlNodeSelector : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE SelectSingleNode(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SelectNodes(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SelectSingleNodeNS(void *, void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SelectNodesNS(void *, void *, void **) = 0;
+};
+
+MIDL_INTERFACE("1C741D59-2122-47D5-A856-83F3D4214875")
+ROXmlNode : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE get_NodeValue(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE put_NodeValue(void *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_NodeType(int32_t*) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_NodeName(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_ParentNode(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_ChildNodes(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_FirstChild(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_LastChild(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_PreviousSibling(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_NextSibling(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_Attributes(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE HasChildNodes(bool*) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_OwnerDocument(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE InsertBefore(void *, void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE ReplaceChild(void *, void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE RemoveChild(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE AppendChild(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE CloneNode(bool, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_NamespaceUri(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_LocalName(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_Prefix(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE Normalize() = 0;
+	virtual HRESULT STDMETHODCALLTYPE put_Prefix(void *) = 0;
+};
+
+MIDL_INTERFACE("5CC5B382-E6DD-4991-ABEF-06D8D2E7BD0C")
+ROXmlNodeSerializer : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE GetXml(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE get_InnerText(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE put_InnerText(void *) = 0;
+};
+
+MIDL_INTERFACE("2DFB8A1F-6B10-4EF8-9F83-EFCCE8FAEC37")
+ROXmlElement : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE get_TagName(void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetAttribute(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetAttribute(void *, void *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE RemoveAttribute(void *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetAttributeNode(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetAttributeNode(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE RemoveAttributeNode(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetElementsByTagName(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetAttributeNS(void *, void *, void *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetAttributeNS(void *, void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE RemoveAttributeNS(void *, void *) = 0;
+	virtual HRESULT STDMETHODCALLTYPE SetAttributeNodeNS(void *, void **) = 0;
+	virtual HRESULT STDMETHODCALLTYPE GetAttributeNodeNS(void *, void *, void **) = 0;
+};
+
+MIDL_INTERFACE("3F89D935-D9CB-4538-A0F0-FFE7659938F8")
+ROToastDismissedEventArgs : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE get_Reason(int32_t *) = 0;
+};
+
+MIDL_INTERFACE("35176862-CFD4-44F8-AD64-F500FD896C3B")
+ROToastFailedEventArgs : public IInspectable {
+	virtual HRESULT STDMETHODCALLTYPE get_ErrorCode(HRESULT *) = 0;
+};
+
+MIDL_INTERFACE("61C2402F-0ED0-5A18-AB69-59F4AA99A368")
+ROTypedEventHandler_ToastNotification_ToastDismissedEventArgs : public IUnknown {
+public:
+	virtual HRESULT STDMETHODCALLTYPE Invoke(ROToastNotification *, ROToastDismissedEventArgs *) = 0;
+};
+
+MIDL_INTERFACE("AB54DE2D-97D9-5528-B6AD-105AFE156530")
+ROTypedEventHandler_ToastNotification_IInspectable : public IUnknown {
+public:
+	virtual HRESULT STDMETHODCALLTYPE Invoke(ROToastNotification *, IInspectable *) = 0;
+};
+
+MIDL_INTERFACE("95E3E803-C969-5E3A-9753-EA2AD22A9A33")
+ROTypedEventHandler_ToastNotification_ToastFailedEventArgs : public IUnknown {
+public:
+	virtual HRESULT STDMETHODCALLTYPE Invoke(ROToastNotification *, ROToastFailedEventArgs *) = 0;
+};
+
 // clang-format on
 
 #ifdef __CRT_UUID_DECL
@@ -629,6 +784,21 @@ __CRT_UUID_DECL(ROMediaCue, 0xC7D15E5D, 0x59DC, 0x431F, 0xA0, 0xEE, 0x27, 0x74, 
 __CRT_UUID_DECL(ROSpeechCue, 0xAEE254DC, 0x1725, 0x4BAD, 0x80, 0x43, 0xA9, 0x84, 0x99, 0xB0, 0x17, 0xA2)
 __CRT_UUID_DECL(ROMediaPlayerFailedEventArgs, 0x2744E9B9, 0xA7E3, 0x4F16, 0xBA, 0xC4, 0x79, 0x14, 0xEB, 0xC0, 0x83, 0x01)
 __CRT_UUID_DECL(ROContentTypeProvider, 0x97D098A5, 0x3B99, 0x4DE9, 0x88, 0xA5, 0xE1, 0x1D, 0x2F, 0x50, 0xC7, 0x95)
+__CRT_UUID_DECL(ROToastNotificationManagerStatics, 0x50AC103F, 0xD235, 0x4598, 0xBB, 0xEF, 0x98, 0xFE, 0x4D, 0x1A, 0x3A, 0xD4)
+__CRT_UUID_DECL(ROToastNotifier, 0x75927B93, 0x03F3, 0x41EC, 0x91, 0xD3, 0x6E, 0x5B, 0xAC, 0x1B, 0x38, 0xE7)
+__CRT_UUID_DECL(ROToastNotificationFactory, 0x04124B20, 0x82C6, 0x4229, 0xB1, 0x09, 0xFD, 0x9E, 0xD4, 0x66, 0x2B, 0x53)
+__CRT_UUID_DECL(ROToastNotification, 0x997E2675, 0x059E, 0x4E60, 0x8B, 0x06, 0x17, 0x60, 0x91, 0x7C, 0x8B, 0x80)
+__CRT_UUID_DECL(ROXmlDocument, 0xF7F3A506, 0x1E87, 0x42D6, 0xBC, 0xFB, 0xB8, 0xC8, 0x09, 0xFA, 0x54, 0x94)
+__CRT_UUID_DECL(ROXmlNodeSelector, 0x63DBBA8B, 0xD0DB, 0x4FE1, 0xB7, 0x45, 0xF9, 0x43, 0x3A, 0xFD, 0xC2, 0x5B)
+__CRT_UUID_DECL(ROXmlNode, 0x1C741D59, 0x2122, 0x47D5, 0xA8, 0x56, 0x83, 0xF3, 0xD4, 0x21, 0x48, 0x75)
+__CRT_UUID_DECL(ROXmlNodeSerializer, 0x5CC5B382, 0xE6DD, 0x4991, 0xAB, 0xEF, 0x06, 0xD8, 0xD2, 0xE7, 0xBD, 0x0C)
+__CRT_UUID_DECL(ROXmlElement, 0x2DFB8A1F, 0x6B10, 0x4EF8, 0x9F, 0x83, 0xEF, 0xCC, 0xE8, 0xFA, 0xEC, 0x37)
+__CRT_UUID_DECL(ROToastDismissedEventArgs, 0x3F89D935, 0xD9CB, 0x4538, 0xA0, 0xF0, 0xFF, 0xE7, 0x65, 0x99, 0x38, 0xF8)
+__CRT_UUID_DECL(ROToastFailedEventArgs, 0x35176862, 0xCFD4, 0x44F8, 0xAD, 0x64, 0xF5, 0x00, 0xFD, 0x89, 0x6C, 0x3B)
+__CRT_UUID_DECL(ROTypedEventHandler_ToastNotification_ToastDismissedEventArgs, 0x61C2402F, 0x0ED0, 0x5A18, 0xAB, 0x69, 0x59, 0xF4, 0xAA, 0x99, 0xA3, 0x68)
+__CRT_UUID_DECL(ROTypedEventHandler_ToastNotification_IInspectable, 0xAB54DE2D, 0x97D9, 0x5528, 0xB6, 0xAD, 0x10, 0x5A, 0xFE, 0x15, 0x65, 0x30)
+__CRT_UUID_DECL(ROTypedEventHandler_ToastNotification_ToastFailedEventArgs, 0x95E3E803, 0xC969, 0x5E3A, 0x97, 0x53, 0xEA, 0x2A, 0xD2, 0x2A, 0x9A, 0x33)
+
 #endif // __CRT_UUID_DECL
 
 GODOT_GCC_WARNING_POP
