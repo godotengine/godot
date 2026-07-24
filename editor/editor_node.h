@@ -500,6 +500,9 @@ private:
 	static int plugin_init_callback_count;
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
+	// For method call track security control.
+	bool anim_cache_cleared_this_frame = false;
+
 	String _get_system_info() const;
 
 	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
@@ -727,6 +730,10 @@ private:
 	void _add_to_main_menu(const String &p_name, PopupMenu *p_menu);
 
 	void _bottom_panel_resized();
+
+	// For force_clear_anim_cache_in_subtree().
+	void _clear_force_clear_anim_cache_log();
+	void _force_clear_anim_cache_in_subtree(Node *p_node);
 
 protected:
 	friend class FileSystemDock;
@@ -1051,6 +1058,9 @@ public:
 	bool validate_custom_directory();
 	void run_editor_script(const Ref<Script> &p_script);
 	bool is_scene_unsaved(int p_idx);
+
+	// For method call track security control.
+	void force_clear_anim_cache_in_subtree();
 };
 
 struct EditorProgressBG {

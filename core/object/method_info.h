@@ -42,6 +42,7 @@ enum MethodFlags {
 	METHOD_FLAG_STATIC = 32,
 	METHOD_FLAG_OBJECT_CORE = 64,
 	METHOD_FLAG_VIRTUAL_REQUIRED = 128,
+	METHOD_FLAG_EDITOR_ALLOW_ANIMATION_CALL = 256,
 	METHOD_FLAGS_DEFAULT = METHOD_FLAG_NORMAL,
 };
 
@@ -64,6 +65,7 @@ struct MethodInfo {
 	}
 
 	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id && name == p_method.name; }
+	inline bool operator!=(const MethodInfo &p_method) const { return id != p_method.id || name != p_method.name; }
 	inline bool operator<(const MethodInfo &p_method) const { return id == p_method.id ? (name < p_method.name) : (id < p_method.id); }
 
 	operator Dictionary() const;

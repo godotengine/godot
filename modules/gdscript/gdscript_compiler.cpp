@@ -2299,6 +2299,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	StringName func_name;
 	bool is_abstract = false;
 	bool is_static = false;
+	bool editor_allow_animation_call = false;
 	Variant rpc_config;
 	GDScriptDataType return_type;
 	return_type.kind = GDScriptDataType::BUILTIN;
@@ -2312,6 +2313,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		}
 		is_abstract = p_func->is_abstract;
 		is_static = p_func->is_static;
+		editor_allow_animation_call = p_func->editor_allow_animation_call;
 		rpc_config = p_func->rpc_config;
 		return_type = _gdtype_from_datatype(p_func->return_type_constraint, p_script);
 	} else {
@@ -2332,6 +2334,9 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	}
 	if (is_static) {
 		method_info.flags |= METHOD_FLAG_STATIC;
+	}
+	if (editor_allow_animation_call) {
+		method_info.flags |= METHOD_FLAG_EDITOR_ALLOW_ANIMATION_CALL;
 	}
 	codegen.generator->write_start(p_script, func_name, is_static, rpc_config, return_type);
 

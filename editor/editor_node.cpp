@@ -8332,6 +8332,54 @@ void EditorNode::_bottom_panel_resized() {
 	bottom_panel->set_bottom_panel_offset(center_split->get_split_offset());
 }
 
+void EditorNode::_clear_force_clear_anim_cache_log() {
+	anim_cache_cleared_this_frame = false;
+}
+
+void EditorNode::_force_clear_anim_cache_in_subtree(Node* p_node) {
+	if (!p_node) {
+		SceneTree *tree = get_tree();
+		if (!tree) {
+			return;
+		}
+		p_node = tree->get_edited_scene_root();
+		if (!p_node) {
+			return;
+		}
+	}
+
+	AnimationMixer* anim_mixer = Object::cast_to<AnimationMixer>(p_node);
+	if (anim_mixer) {
+		anim_mixer->clear_caches();
+	}
+	for (Variant child : p_node->get_children(true)) {
+		Node *child_node = Object::cast_to<Node>(child);
+		if (child_node) {
+			_force_clear_anim_cache_in_subtree(child_node);
+		}
+	}
+}
+
+void EditorNode::force_clear_anim_cache_in_subtree() {
+	// do this at most once per frame
+	if (anim_cache_cleared_this_frame) {
+		return;
+	}
+
+	SceneTree* tree = get_tree();
+	if (!tree) {
+		return;
+	}
+	Node *node = tree->get_edited_scene_root();
+	if (!node) {
+		return;
+	}
+	_force_clear_anim_cache_in_subtree(node);
+
+	anim_cache_cleared_this_frame = true;
+	callable_mp(this, &EditorNode::_clear_force_clear_anim_cache_log).call_deferred();
+}
+
 #ifdef ANDROID_ENABLED
 void EditorNode::_touch_actions_panel_mode_changed() {
 	int panel_mode = EDITOR_GET("interface/touchscreen/touch_actions_panel");
