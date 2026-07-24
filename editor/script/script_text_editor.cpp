@@ -1861,12 +1861,12 @@ void ScriptTextEditor::_set_drop_info_text(const Dictionary &p_info) const {
 		text = TTRN("Drop file path.", "Drop file paths.", files.size()) +
 				"\n" + vformat(TTRN("Hold %s: Add const preload by %s.", "Hold %s: Add const preloads by %s.", files.size()), c, default_drop_option) +
 				"\n" + vformat(TTRN("Hold %s+Shift: Add const preload by %s.", "Hold %s+Shift: Add const preloads by %s.", files.size()), c, alternate_drop_option) +
-				"\n" + TTRN("Hold Alt: Add @export var pointing to the resource.", "Hold Alt: Add @export vars pointing to the resources.", files.size());
+				"\n" + vformat(TTRN("Hold %s: Add @export var pointing to the resource.", "Hold %s: Add @export vars pointing to the resources.", files.size()), keycode_get_string((Key)KeyModifierMask::ALT));
 	} else if (type == "nodes") {
 		Array nodes = p_info["nodes"];
 		text = TTRN("Drop node path.", "Drop node paths.", nodes.size()) +
 				"\n" + vformat(TTRN("Hold %s: Add @onready var pointing to the node path.", "Hold %s: Add @onready vars pointing to the node paths.", nodes.size()), c) +
-				"\n" + TTRN("Hold Alt: Add @export var pointing to the node.", "Hold Alt: Add @export vars pointing to the nodes.", nodes.size());
+				"\n" + vformat(TTRN("Hold %s: Add @export var pointing to the node.", "Hold %s: Add @export vars pointing to the nodes.", nodes.size()), keycode_get_string((Key)KeyModifierMask::ALT));
 	} else if (type == "obj_property") {
 		text = TTR("Drop property path.");
 	}
