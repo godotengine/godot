@@ -38,16 +38,21 @@ class ProjectTag : public HBoxContainer {
 	GDCLASS(ProjectTag, HBoxContainer);
 
 	String tag_string;
-	bool display_close = false;
+	bool is_add_button = false;
+	bool is_aux_button_visible = false;
 
 	Button *button = nullptr;
+	Button *aux_button = nullptr;
 
 protected:
 	void _notification(int p_what);
 
 public:
+	void update_aux_button_visibility(bool p_show);
 	void connect_button_to(const Callable &p_callable);
+	void connect_aux_button_to(const Callable &p_callable);
+	Size2 get_aux_button_size() const;
 	const String get_tag() const;
 
-	ProjectTag(const String &p_text, bool p_display_close = false);
+	ProjectTag(const String &p_text, bool p_aux_is_add_button = false, bool p_aux_button_visible = true);
 };

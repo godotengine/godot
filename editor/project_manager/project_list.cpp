@@ -102,10 +102,17 @@ void ProjectListItemControl::_notification(int p_what) {
 
 			if (project_is_missing) {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
+				add_tag_button->hide();
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 			} else {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+				add_tag_button->show();
 #endif
+			}
+			if (tag_container) {
+				add_tag_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+				add_tag_button->set_custom_maximum_size(Vector2(24, 24) * EDSCALE);
+				add_tag_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			}
 			if (touch_menu_button) {
 				touch_menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
@@ -242,6 +249,10 @@ void ProjectListItemControl::_explore_button_pressed() {
 	emit_signal(SNAME("explore_pressed"));
 }
 
+void ProjectListItemControl::_add_tag_button_pressed() {
+	emit_signal(SNAME("add_tag_pressed"));
+}
+
 void ProjectListItemControl::_request_menu() {
 	emit_signal(SNAME("request_menu"), Vector2(touch_menu_button->get_position()));
 }
@@ -260,9 +271,10 @@ void ProjectListItemControl::set_project_path(const String &p_path) {
 
 void ProjectListItemControl::set_tags(const PackedStringArray &p_tags, ProjectList *p_parent_list) {
 	for (const String &tag : p_tags) {
-		ProjectTag *tag_control = memnew(ProjectTag(tag));
+		ProjectTag *tag_control = memnew(ProjectTag(tag, false, false));
 		tag_container->add_child(tag_control);
 		tag_control->connect_button_to(callable_mp(p_parent_list, &ProjectList::add_search_tag).bind(tag));
+		tag_control->connect_aux_button_to(callable_mp(p_parent_list, &ProjectList::_remove_project_tag).bind(tag));
 	}
 }
 
@@ -432,14 +444,14 @@ void ProjectListItemControl::set_project_title_autowrap() {
 	title_fullsize_cache = project_title->get_size().x;
 	window_size_cache = get_window()->get_size().x;
 
-	int tag_size = 0;
+	int tag_size = add_tag_button->get_size().x;
 	int tag_maxsize = 0;
 	for (Node *child : tag_container->iterate_children()) {
 		ProjectTag *tag = Object::cast_to<ProjectTag>(child);
-		tag_size += tag->get_size().x;
+		tag_size += tag->get_size().x + tag->get_aux_button_size().x;
 
 		if (tag_maxsize == 0) {
-			tag_maxsize = tag->get_custom_maximum_size().x;
+			tag_maxsize = tag->get_custom_maximum_size().x + add_tag_button->get_size().x;
 		}
 	}
 	tag_size_cache = MIN(tag_size, tag_maxsize);
@@ -475,7 +487,7 @@ void ProjectListItemControl::resize_project_title() {
 		return;
 	}
 	ProjectTag tag = ProjectTag("dummy");
-	int tag_maxsize = tag.get_custom_maximum_size().x;
+	int tag_maxsize = tag.get_custom_maximum_size().x + add_tag_button->get_size().x;
 	int title_maxsize = title_size_cache - tag_size_cache;
 	int title_minsize = title_size_cache - tag_maxsize;
 
@@ -494,9 +506,20 @@ void ProjectListItemControl::resize_project_title() {
 	}
 }
 
+ProjectTag *ProjectListItemControl::get_tag_control(const String &p_tag) {
+	for (Node *child : tag_container->iterate_children()) {
+		ProjectTag *tag_control = Object::cast_to<ProjectTag>(child);
+		if (tag_control && tag_control->get_tag() == p_tag) {
+			return tag_control;
+		}
+	}
+	return nullptr;
+}
+
 void ProjectListItemControl::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("favorite_pressed"));
 	ADD_SIGNAL(MethodInfo("explore_pressed"));
+	ADD_SIGNAL(MethodInfo("add_tag_pressed"));
 	ADD_SIGNAL(MethodInfo("request_menu"));
 }
 
@@ -550,7 +573,16 @@ ProjectListItemControl::ProjectListItemControl() {
 		tag_container = memnew(HFlowContainer);
 		tag_container->set_alignment(FlowContainer::ALIGNMENT_END);
 		tag_container->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		tag_container->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 		title_hb->add_child(tag_container);
+
+		add_tag_button = memnew(Button);
+		add_tag_button->set_v_size_flags(SIZE_SHRINK_CENTER);
+		add_tag_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		add_tag_button->set_mouse_filter(MOUSE_FILTER_PASS);
+		add_tag_button->set_tooltip_text(TTRC("Add tag"));
+		title_hb->add_child(add_tag_button);
+		add_tag_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_add_tag_button_pressed));
 	}
 
 	// Bottom half, containing the path and view folder button.
@@ -1209,6 +1241,10 @@ void ProjectList::_create_project_item_control(int p_index) {
 	Item &item = _projects.write[p_index];
 	ERR_FAIL_COND(item.control != nullptr); // Already created
 
+	project_title_index_count = item.project_title_index == -1 ? project_title_index_count + 1 : project_title_index_count;
+	item.project_title_index = item.project_title_index == -1 ? project_title_index_count : item.project_title_index;
+	title_size_cache[project_title_index_count] = item.project_title_index == project_title_index_count ? 0 : title_size_cache[project_title_index_count];
+
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
 	item.control = hb;
 
@@ -1224,23 +1260,17 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->set_is_favorite(item.favorite);
 	hb->set_is_missing(item.missing);
 	hb->set_is_grayed(item.grayed);
+	hb->set_project_title_index(item.project_title_index);
 
 	hb->connect(SceneStringName(gui_input), callable_mp(this, &ProjectList::_list_item_input).bind(hb));
 	hb->connect("favorite_pressed", callable_mp(this, &ProjectList::_on_favorite_pressed).bind(hb));
-
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	hb->connect("explore_pressed", callable_mp(this, &ProjectList::_on_explore_pressed).bind(item.path));
 #endif
+	hb->connect("add_tag_pressed", callable_mp(this, &ProjectList::_on_add_tag_pressed));
 	hb->connect("request_menu", callable_mp(this, &ProjectList::_open_menu).bind(hb));
-
-	if (item.project_title_index == -1) {
-		project_title_index_count++;
-		title_size_cache[project_title_index_count] = 0;
-		item.project_title_index = project_title_index_count;
-		hb->set_project_title_index(project_title_index_count);
-	} else {
-		hb->set_project_title_index(item.project_title_index);
-	}
+	hb->connect(SceneStringName(mouse_entered), callable_mp(this, &ProjectList::_update_tag_aux_button_visibility).bind(hb, true));
+	hb->connect(SceneStringName(mouse_exited), callable_mp(this, &ProjectList::_update_tag_aux_button_visibility).bind(hb, false));
 
 	project_list_vbox->add_child(hb);
 }
@@ -1376,6 +1406,25 @@ void ProjectList::_on_favorite_pressed(Node *p_hb) {
 
 void ProjectList::_on_explore_pressed(const String &p_path) {
 	OS::get_singleton()->shell_show_in_file_manager(p_path, true);
+}
+
+void ProjectList::_on_add_tag_pressed() {
+	ProjectManager::get_singleton()->manage_project_tags();
+}
+
+void ProjectList::_update_tag_aux_button_visibility(ProjectListItemControl *p_control, bool p_show) {
+	int idx = get_index(p_control);
+	Item &item = _projects.write[idx];
+	for (const String &tag : item.tags) {
+		ProjectTag *tag_control = item.control->get_tag_control(tag);
+		if (tag_control) {
+			tag_control->update_aux_button_visibility(p_show);
+		}
+	}
+}
+
+void ProjectList::_remove_project_tag(const String &p_tag) {
+	ProjectManager::get_singleton()->show_remove_tag_warning_dialog(p_tag);
 }
 
 void ProjectList::_open_menu(const Vector2 &p_at, Control *p_hb) {

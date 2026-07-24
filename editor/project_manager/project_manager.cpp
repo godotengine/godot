@@ -50,7 +50,6 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/project_manager/engine_update_label.h"
 #include "editor/project_manager/project_dialog.h"
-#include "editor/project_manager/project_list.h"
 #include "editor/project_manager/project_tag.h"
 #include "editor/project_manager/quick_settings_dialog.h"
 #include "editor/settings/editor_settings.h"
@@ -300,6 +299,11 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			open_btn_container->add_theme_constant_override("separation", 0);
 			open_options_popup->set_item_icon(0, get_editor_theme_icon("Notification"));
 			open_options_popup->set_item_icon(1, get_editor_theme_icon("NodeWarning"));
+
+			//prettify create tag button
+			create_tag_btn->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+			create_tag_btn->set_custom_maximum_size(Vector2(24, 24) * EDSCALE);
+			create_tag_btn->set_v_size_flags(SIZE_SHRINK_CENTER);
 		}
 
 		// Dialogs.
@@ -440,7 +444,7 @@ void ProjectManager::_project_list_menu_option(int p_option) {
 			break;
 
 		case ProjectList::MENU_MANAGE_TAGS:
-			_manage_project_tags();
+			manage_project_tags();
 			break;
 
 		case ProjectList::MENU_DUPLICATE:
@@ -453,9 +457,10 @@ void ProjectManager::_project_list_menu_option(int p_option) {
 	}
 }
 
-void ProjectManager::_show_error(const String &p_message, const Size2 &p_min_size) {
+void ProjectManager::_show_error(const String &p_message, const Size2 &p_min_size, bool p_autowrap) {
 	error_dialog->set_text(p_message);
-	error_dialog->popup_centered(p_min_size);
+	error_dialog->set_autowrap(p_autowrap);
+	error_dialog->popup_centered(p_min_size * EDSCALE);
 }
 
 void ProjectManager::_dim_window() {
@@ -1020,7 +1025,7 @@ LineEdit *ProjectManager::get_search_box() {
 
 // Project tag management.
 
-void ProjectManager::_manage_project_tags() {
+void ProjectManager::manage_project_tags() {
 	for (int i = 0; i < project_tags->get_child_count(); i++) {
 		project_tags->get_child(i)->queue_free();
 	}
@@ -1028,9 +1033,10 @@ void ProjectManager::_manage_project_tags() {
 	const ProjectList::Item item = project_list->get_selected_projects()[0];
 	current_project_tags = item.tags;
 	for (const String &tag : current_project_tags) {
-		ProjectTag *tag_control = memnew(ProjectTag(tag, true));
+		ProjectTag *tag_control = memnew(ProjectTag(tag));
 		project_tags->add_child(tag_control);
 		tag_control->connect_button_to(callable_mp(this, &ProjectManager::_delete_project_tag).bind(tag));
+		tag_control->connect_aux_button_to(callable_mp(this, &ProjectManager::_delete_project_tag).bind(tag));
 	}
 
 	tag_edit_error->hide();
@@ -1043,9 +1049,35 @@ void ProjectManager::_add_project_tag(const String &p_tag) {
 	}
 	current_project_tags.append(p_tag);
 
-	ProjectTag *tag_control = memnew(ProjectTag(p_tag, true));
+	ProjectTag *tag_control = memnew(ProjectTag(p_tag));
 	project_tags->add_child(tag_control);
 	tag_control->connect_button_to(callable_mp(this, &ProjectManager::_delete_project_tag).bind(p_tag));
+	tag_control->connect_aux_button_to(callable_mp(this, &ProjectManager::_delete_project_tag).bind(p_tag));
+}
+
+void ProjectManager::_remove_project_tag() {
+	if (del_tag_warning_cb->is_pressed()) {
+		EditorSettings::get_singleton()->set_setting("project_manager/show_warning_on_tag_deletion", false);
+		del_tag_warning_cb->set_pressed(false);
+	}
+
+	const ProjectList::Item item = project_list->get_selected_projects()[0];
+	const String project_godot = item.path.path_join("project.godot");
+
+	// So tags aren't removed from an invalid project.
+	if (!FileAccess::exists(project_godot)) {
+		_show_error(vformat(TTR("Couldn't load project at\n%s.\nIt may be missing."), project_godot));
+		error_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &ProjectManager::_on_projects_updated), CONNECT_ONE_SHOT);
+		return;
+	}
+
+	current_project_tags = item.tags;
+	current_project_tags.erase(tag_to_del);
+	ProjectTag *tag_control = item.control->get_tag_control(tag_to_del);
+	if (tag_control) {
+		memdelete(tag_control);
+		_apply_project_tags();
+	}
 }
 
 void ProjectManager::_delete_project_tag(const String &p_tag) {
@@ -1060,34 +1092,26 @@ void ProjectManager::_delete_project_tag(const String &p_tag) {
 }
 
 void ProjectManager::_apply_project_tags() {
-	PackedStringArray tags;
-	for (int i = 0; i < project_tags->get_child_count(); i++) {
-		ProjectTag *tag_control = Object::cast_to<ProjectTag>(project_tags->get_child(i));
-		if (tag_control) {
-			tags.append(tag_control->get_tag());
-		}
-	}
-
 	const String project_godot = project_list->get_selected_projects()[0].path.path_join("project.godot");
 	ProjectSettings *cfg = memnew(ProjectSettings(project_godot));
+
 	if (!cfg->is_project_loaded()) {
 		memdelete(cfg);
-		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s'. It may be missing or corrupted."), project_godot));
-		tag_edit_error->show();
-		callable_mp((Window *)tag_manage_dialog, &Window::show).call_deferred(); // Make sure the dialog does not disappear.
+		_show_error(vformat(TTR("Couldn't load project at\n%s.\nIt may be missing or corrupted."), project_godot), Vector2(500, 0), true);
+		error_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &ProjectManager::_on_projects_updated), CONNECT_ONE_SHOT);
 		return;
-	} else {
-		tags.sort();
-		cfg->set("application/config/tags", tags);
-		Error err = cfg->save_custom(project_godot);
-		memdelete(cfg);
+	}
+	PackedStringArray tags = current_project_tags;
 
-		if (err != OK) {
-			tag_edit_error->set_text(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err));
-			tag_edit_error->show();
-			callable_mp((Window *)tag_manage_dialog, &Window::show).call_deferred();
-			return;
-		}
+	tags.sort();
+	cfg->set("application/config/tags", tags);
+	Error err = cfg->save_custom(project_godot);
+	memdelete(cfg);
+
+	if (err != OK) {
+		_show_error(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err), Vector2(500, 0), true);
+		error_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &ProjectManager::_on_projects_updated), CONNECT_ONE_SHOT);
+		return;
 	}
 
 	_on_projects_updated();
@@ -1146,11 +1170,23 @@ void ProjectManager::_create_new_tag() {
 void ProjectManager::add_new_tag(const String &p_tag) {
 	if (!tag_set.has(p_tag)) {
 		tag_set.insert(p_tag);
-		ProjectTag *tag_control = memnew(ProjectTag(p_tag));
+		ProjectTag *tag_control = memnew(ProjectTag(p_tag, true));
 		all_tags->add_child(tag_control);
 		all_tags->move_child(tag_control, -2);
 		tag_control->connect_button_to(callable_mp(this, &ProjectManager::_add_project_tag).bind(p_tag));
+		tag_control->connect_aux_button_to(callable_mp(this, &ProjectManager::_add_project_tag).bind(p_tag));
 	}
+}
+
+void ProjectManager::show_remove_tag_warning_dialog(const String &p_tag) {
+	tag_to_del = p_tag;
+	bool bypass = Input::get_singleton()->is_physical_key_pressed(Key::SHIFT);
+	if (bypass || !EDITOR_GET("project_manager/show_warning_on_tag_deletion")) {
+		_remove_project_tag();
+		return;
+	}
+
+	del_tag_warning_dialog->popup_centered(Vector2(300, 0) * EDSCALE);
 }
 
 // Project converter/migration tool.
@@ -1896,7 +1932,7 @@ ProjectManager::ProjectManager() {
 		add_child(tag_manage_dialog);
 		tag_manage_dialog->set_title(TTRC("Manage Project Tags"));
 		tag_manage_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_apply_project_tags));
-		manage_tags_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_manage_project_tags));
+		manage_tags_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::manage_project_tags));
 
 		VBoxContainer *tag_vb = memnew(VBoxContainer);
 		tag_manage_dialog->add_child(tag_vb);
@@ -1961,6 +1997,24 @@ ProjectManager::ProjectManager() {
 		create_tag_btn->set_accessibility_name(TTRC("Create Tag"));
 		all_tags->add_child(create_tag_btn);
 		create_tag_btn->connect(SceneStringName(pressed), callable_mp((Window *)create_tag_dialog, &Window::popup_centered).bind(Vector2i(500, 0) * EDSCALE));
+
+		del_tag_warning_dialog = memnew(ConfirmationDialog);
+		add_child(del_tag_warning_dialog);
+		del_tag_warning_dialog->set_title(TTRC("Delete Tag"));
+		del_tag_warning_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ProjectManager::_remove_project_tag));
+
+		VBoxContainer *vb = memnew(VBoxContainer);
+		del_tag_warning_dialog->add_child(vb);
+
+		label = memnew(Label);
+		vb->add_child(label);
+		label->set_text(vformat(TTR("Are you sure you want to remove this tag?\nHold Shift when deleting to skip this dialog.")));
+		label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+
+		del_tag_warning_cb = memnew(CheckBox);
+		vb->add_child(del_tag_warning_cb);
+		del_tag_warning_cb->set_text("Don't Show Again");
+		del_tag_warning_cb->set_h_size_flags(SIZE_SHRINK_CENTER);
 
 		_set_new_tag_name("");
 	}

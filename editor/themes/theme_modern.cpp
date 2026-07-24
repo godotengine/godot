@@ -1630,27 +1630,44 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 			Ref<StyleBoxFlat> tag = p_config.button_style->duplicate();
 			tag->set_border_width_all(0);
-			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
-			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
-			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			tag->set_corner_radius_all(0);
 			p_theme->set_stylebox(CoreStringName(normal), "ProjectTagButton", tag);
 
 			tag = p_config.button_style_hover->duplicate();
 			tag->set_border_width_all(0);
-			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
-			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
-			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			tag->set_corner_radius_all(0);
 			p_theme->set_stylebox(SceneStringName(hover), "ProjectTagButton", tag);
 
 			tag = p_config.button_style_pressed->duplicate();
 			tag->set_border_width_all(0);
-			tag->set_corner_radius(CORNER_TOP_LEFT, 0);
-			tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
-			tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
-			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			tag->set_corner_radius_all(0);
 			p_theme->set_stylebox(SceneStringName(pressed), "ProjectTagButton", tag);
+
+			p_theme->set_type_variation("ProjectTagAuxButton", "Button");
+
+			Ref<StyleBoxFlat> tag_aux = p_config.button_style->duplicate();
+			tag_aux->set_border_width_all(0);
+			tag_aux->set_corner_radius(CORNER_TOP_LEFT, 0);
+			tag_aux->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+			tag_aux->set_corner_radius(CORNER_TOP_RIGHT, 4);
+			tag_aux->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			p_theme->set_stylebox(CoreStringName(normal), "ProjectTagAuxButton", tag_aux);
+
+			tag_aux = p_config.button_style_hover->duplicate();
+			tag_aux->set_border_width_all(0);
+			tag_aux->set_corner_radius(CORNER_TOP_LEFT, 0);
+			tag_aux->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+			tag_aux->set_corner_radius(CORNER_TOP_RIGHT, 4);
+			tag_aux->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			p_theme->set_stylebox(SceneStringName(hover), "ProjectTagAuxButton", tag_aux);
+
+			tag_aux = p_config.button_style_pressed->duplicate();
+			tag_aux->set_border_width_all(0);
+			tag_aux->set_corner_radius(CORNER_TOP_LEFT, 0);
+			tag_aux->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+			tag_aux->set_corner_radius(CORNER_TOP_RIGHT, 4);
+			tag_aux->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+			p_theme->set_stylebox(SceneStringName(pressed), "ProjectTagAuxButton", tag_aux);
 		}
 	}
 
