@@ -693,11 +693,13 @@ void FileSystemDock::_notification(int p_what) {
 				do_redraw = true;
 			}
 
-			int new_thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
-			if (new_thumbnail_size_setting != thumbnail_size_setting) {
-				thumbnail_size_setting = new_thumbnail_size_setting;
-				thumbnail_size_slider->set_value(thumbnail_size_setting);
-				do_redraw = true;
+			if (thumbnail_debounce_timer->is_stopped()) {
+				int new_thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
+				if (new_thumbnail_size_setting != thumbnail_size_setting) {
+					thumbnail_size_setting = new_thumbnail_size_setting;
+					thumbnail_size_slider->set_value(thumbnail_size_setting);
+					do_redraw = true;
+				}
 			}
 
 			if (do_redraw) {
