@@ -7,6 +7,7 @@
 		Base class of [SkeletonModifier3D] to approach the goal by repeating small rotations.
 		Each bone chain (setting) has one effector, which is processed in order of the setting list. You can set some limitations for each joint.
 		[b]Note:[/b] All the methods in this class take an [code]index[/code] parameter. This parameter specifies which setting list entry to return if the IK has multiple entries (e.g. [code]settings/&lt;index&gt;/target_node[/code]).
+		[b]Note:[/b] When [method set_joint_rotation_axis] or [method set_joint_limitation] is set, the IK tip may not reach the target. This occurs because IK calculates the path through iterations, and in some cases, it may hit a limit during the process and fail to resolve. In some cases, this can be resolved by splitting the IK into several [SkeletonModifier3D]s and setting the iteration order manually.
 	</description>
 	<tutorials>
 	</tutorials>
