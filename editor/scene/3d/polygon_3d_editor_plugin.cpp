@@ -55,7 +55,6 @@ void Polygon3DEditor::_notification(int p_what) {
 			button_create->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			button_edit->set_button_icon(get_editor_theme_icon(SNAME("MovePoint")));
 			button_edit->set_pressed(true);
-			get_tree()->connect("node_removed", callable_mp(this, &Polygon3DEditor::_node_removed));
 
 		} break;
 
@@ -73,17 +72,6 @@ void Polygon3DEditor::_notification(int p_what) {
 	}
 }
 
-void Polygon3DEditor::_node_removed(Node *p_node) {
-	if (p_node == node) {
-		node = nullptr;
-		if (imgeom->get_parent() == p_node) {
-			p_node->remove_child(imgeom);
-		}
-		hide();
-		set_process(false);
-	}
-}
-
 void Polygon3DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MODE_CREATE: {
@@ -97,6 +85,24 @@ void Polygon3DEditor::_menu_option(int p_option) {
 			button_edit->set_pressed(true);
 		} break;
 	}
+}
+
+void Polygon3DEditor::_update_resource() {
+	Ref<Resource> new_resource;
+	if (node && using_resource) {
+		new_resource = node->call("_get_editable_3d_polygon_resource");
+	}
+	if (new_resource != node_resource) {
+		if (node_resource.is_valid()) {
+			node_resource->disconnect_changed(callable_mp(this, &Polygon3DEditor::_polygon_draw));
+		}
+		node_resource = new_resource;
+		if (node_resource.is_valid()) {
+			node_resource->connect_changed(callable_mp(this, &Polygon3DEditor::_polygon_draw));
+		}
+	}
+	_polygon_draw();
+	set_process(_get_edited_object());
 }
 
 void Polygon3DEditor::_wip_close() {
@@ -118,7 +124,7 @@ void Polygon3DEditor::_wip_close() {
 }
 
 EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-	if (!node) {
+	if (_get_edited_object() == nullptr) {
 		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}
 
@@ -349,10 +355,18 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }
 
-float Polygon3DEditor::_get_depth() {
-	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_NULL_V_MSG(obj, 0.0f, "Edited object is not valid.");
+Object *Polygon3DEditor::_get_edited_object() const {
+	if (using_resource) {
+		return node_resource.ptr();
+	}
+	return node;
+}
 
+float Polygon3DEditor::_get_depth() {
+	Object *obj = _get_edited_object();
+	if (!obj) {
+		return 0.0f;
+	}
 	if (bool(obj->call("_has_editable_3d_polygon_no_depth"))) {
 		return 0.0f;
 	}
@@ -361,19 +375,24 @@ float Polygon3DEditor::_get_depth() {
 }
 
 PackedVector2Array Polygon3DEditor::_get_polygon() {
-	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_NULL_V_MSG(obj, PackedVector2Array(), "Edited object is not valid.");
-	return PackedVector2Array(obj->call("get_polygon"));
+	Object *obj = _get_edited_object();
+	if (obj) {
+		return PackedVector2Array(obj->call("get_polygon"));
+	}
+	return PackedVector2Array();
 }
 
 void Polygon3DEditor::_set_polygon(const PackedVector2Array &p_poly) {
-	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
-	ERR_FAIL_NULL_MSG(obj, "Edited object is not valid.");
-	obj->call("set_polygon", p_poly);
+	Object *obj = _get_edited_object();
+	if (obj) {
+		obj->call("set_polygon", p_poly);
+	}
 }
 
 void Polygon3DEditor::_polygon_draw() {
-	if (!node) {
+	if (!_get_edited_object()) {
+		m->clear_surfaces();
+		imesh->clear_surfaces();
 		return;
 	}
 
@@ -494,13 +513,23 @@ void Polygon3DEditor::_polygon_draw() {
 }
 
 void Polygon3DEditor::edit(Node *p_node) {
+	if (node == p_node) {
+		return;
+	}
+
+	if (node && node->has_signal("_editable_3d_polygon_changed")) {
+		node->disconnect("_editable_3d_polygon_changed", callable_mp(this, &Polygon3DEditor::_update_resource));
+	}
+
 	if (p_node) {
 		node = Object::cast_to<Node3D>(p_node);
-		node_resource = node->call("_get_editable_3d_polygon_resource");
+		using_resource = node->has_method("_get_editable_3d_polygon_resource");
 
-		if (node_resource.is_valid()) {
-			node_resource->connect_changed(callable_mp(this, &Polygon3DEditor::_polygon_draw));
+		if (p_node->has_signal("_editable_3d_polygon_changed")) {
+			node->connect("_editable_3d_polygon_changed", callable_mp(this, &Polygon3DEditor::_update_resource));
 		}
+		_update_resource();
+
 		//Enable the pencil tool if the polygon is empty
 		if (_get_polygon().is_empty()) {
 			_menu_option(MODE_CREATE);
@@ -513,22 +542,15 @@ void Polygon3DEditor::edit(Node *p_node) {
 		} else {
 			p_node->add_child(imgeom);
 		}
-		_polygon_draw();
-		set_process(true);
 		prev_depth = -1;
 
 	} else {
 		node = nullptr;
-		if (node_resource.is_valid()) {
-			node_resource->disconnect_changed(callable_mp(this, &Polygon3DEditor::_polygon_draw));
-		}
-		node_resource.unref();
+		_update_resource();
 
 		if (imgeom->get_parent()) {
 			imgeom->get_parent()->remove_child(imgeom);
 		}
-
-		set_process(false);
 	}
 }
 

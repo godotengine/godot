@@ -57,9 +57,11 @@ class Polygon3DEditor : public HBoxContainer {
 	Ref<StandardMaterial3D> line_material;
 	Ref<StandardMaterial3D> handle_material;
 
-	Panel *panel = nullptr;
 	Node3D *node = nullptr;
 	Ref<Resource> node_resource;
+	bool using_resource = false;
+
+	Panel *panel = nullptr;
 	Ref<ImmediateMesh> imesh;
 	MeshInstance3D *imgeom = nullptr;
 	MeshInstance3D *pointsm = nullptr;
@@ -74,17 +76,18 @@ class Polygon3DEditor : public HBoxContainer {
 
 	float prev_depth = 0.0f;
 
+	void _update_resource();
 	void _wip_close();
 	void _polygon_draw();
 	void _menu_option(int p_option);
 
+	Object *_get_edited_object() const;
 	float _get_depth();
 	PackedVector2Array _get_polygon();
 	void _set_polygon(const PackedVector2Array &p_poly);
 
 protected:
 	void _notification(int p_what);
-	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
 public:
