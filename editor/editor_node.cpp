@@ -516,6 +516,12 @@ void EditorNode::_update_from_settings() {
 	RS::get_singleton()->sub_surface_scattering_set_scale(sss_scale, sss_depth_scale);
 
 	uint32_t directional_shadow_size = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size");
+	if (directional_shadow_size < 256 || directional_shadow_size > 16384) {
+		directional_shadow_size = uint32_t(CLAMP(int(directional_shadow_size), 256, 16384));
+		ProjectSettings::get_singleton()->set_setting("rendering/lights_and_shadows/directional_shadow/size", directional_shadow_size);
+		WARN_PRINT(vformat("directional_shadow_size out of range. Clamped to %s", directional_shadow_size));
+	}
+
 	uint32_t directional_shadow_16_bits = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits");
 	RS::get_singleton()->directional_shadow_atlas_set_size(directional_shadow_size, directional_shadow_16_bits);
 
