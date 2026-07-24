@@ -1433,6 +1433,105 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 	}
 }
 
+// This function is an optimized version of `_parse_expression` when the result will be used as a jump condition.
+//
+// It optimizes the expansion of logical operators to jump directly to where they need to go instead of setting a boolean value.
+// `NOT_TAKEN` jumps are used when the expression is `false` and `TAKEN` jumps are used when the expression is `true`.
+//
+// It currently only supports `OP_LOGIC_AND` and `OP_LOGIC_OR`. All other expression types will defer to `_parse_expression`.
+//
+// Use `start_expr_cond_buffer` before calling this. Then call `flush_expr_cond_buffer` afterwards to patch all the jump locations.
+//
+// When this function returns a valid Address, the result of the expression is stored there. Otherwise, success (TAKEN) may fall-through.
+GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression_cond(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression) {
+	if (p_expression->is_constant && !(p_expression->type_constraint.is_meta_type && p_expression->type_constraint.kind == GDScriptParser::DataType::CLASS)) {
+		return codegen.add_constant(p_expression->reduced_value);
+	}
+
+	GDScriptCodeGenerator *gen = codegen.generator;
+
+	if (p_expression->type == GDScriptParser::Node::BINARY_OPERATOR) {
+		const GDScriptParser::BinaryOpNode *binary = static_cast<const GDScriptParser::BinaryOpNode *>(p_expression);
+
+		switch (binary->operation) {
+			case GDScriptParser::BinaryOpNode::OP_LOGIC_AND: {
+				// Short-circuit when left operand is `false`. We don't touch NOT_TAKEN jumps.
+				// Meanwhile when left operand is `true`, we still need to check the right operand
+				// so we patch TAKEN jumps to the right operand.
+				gen->start_expr_cond_buffer(GDScriptCodeGenerator::BranchType::TAKEN);
+				GDScriptCodeGenerator::Address left_addr = _parse_expression_cond(codegen, r_error, binary->left_operand);
+				if (r_error) {
+					return GDScriptCodeGenerator::Address();
+				}
+				if (left_addr.mode != GDScriptCodeGenerator::Address::NIL) {
+					// Check the result, if false, take NOT_TAKEN jump shortcut.
+					// True falls-through to right operand.
+					gen->write_expr_cond_jump_if(GDScriptCodeGenerator::BranchType::NOT_TAKEN, left_addr);
+					if (left_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						gen->pop_temporary();
+					}
+				}
+				// Right operand starts here. Patch all left `true` jumps here.
+				gen->flush_expr_cond_buffer(GDScriptCodeGenerator::BranchType::TAKEN);
+
+				GDScriptCodeGenerator::Address right_addr = _parse_expression_cond(codegen, r_error, binary->right_operand);
+				if (r_error) {
+					return GDScriptCodeGenerator::Address();
+				}
+				if (right_addr.mode != GDScriptCodeGenerator::Address::NIL) {
+					// `false` jumps to else branch, `true` falls-through.
+					gen->write_expr_cond_jump_if(GDScriptCodeGenerator::BranchType::NOT_TAKEN, right_addr);
+					if (right_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						gen->pop_temporary();
+					}
+				}
+				// No result stored, all handled through jumps.
+				return GDScriptCodeGenerator::Address();
+			} break;
+			case GDScriptParser::BinaryOpNode::OP_LOGIC_OR: {
+				// Short-circuit when left operand is `true`. We don't touch TAKEN jumps.
+				// Meanwhile when left operand is `false`, we still need to check the right operand
+				// so we patch NOT_TAKEN jumps to the right operand.
+				gen->start_expr_cond_buffer(GDScriptCodeGenerator::BranchType::NOT_TAKEN);
+				GDScriptCodeGenerator::Address left_addr = _parse_expression_cond(codegen, r_error, binary->left_operand);
+				if (r_error) {
+					return GDScriptCodeGenerator::Address();
+				}
+				if (left_addr.mode != GDScriptCodeGenerator::Address::NIL) {
+					// Let `false` fall-through and when `true` take shortcut jump.
+					gen->write_expr_cond_jump_if(GDScriptCodeGenerator::BranchType::TAKEN, left_addr);
+					if (left_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						gen->pop_temporary();
+					}
+				} else {
+					// In the case that left operand is `true` and falls-through, we unconditionally go to TAKEN branch.
+					gen->write_expr_cond_jump(GDScriptCodeGenerator::BranchType::TAKEN);
+				}
+				// Right operand starts here. Patch all left `false` jumps here.
+				gen->flush_expr_cond_buffer(GDScriptCodeGenerator::BranchType::NOT_TAKEN);
+
+				GDScriptCodeGenerator::Address right_addr = _parse_expression_cond(codegen, r_error, binary->right_operand);
+				if (r_error) {
+					return GDScriptCodeGenerator::Address();
+				}
+				if (right_addr.mode != GDScriptCodeGenerator::Address::NIL) {
+					// `false` jumps to NOT_TAKEN branch, `true` falls-through.
+					gen->write_expr_cond_jump_if(GDScriptCodeGenerator::BranchType::NOT_TAKEN, right_addr);
+					if (right_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						gen->pop_temporary();
+					}
+				}
+				// No result stored, all handled through jumps.
+				return GDScriptCodeGenerator::Address();
+			} break;
+			default:
+				break;
+		}
+	}
+	// Unhandled case.
+	return _parse_expression(codegen, r_error, p_expression);
+}
+
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &codegen, Error &r_error, const GDScriptParser::PatternNode *p_pattern, const GDScriptCodeGenerator::Address &p_value_addr, const GDScriptCodeGenerator::Address &p_type_addr, const GDScriptCodeGenerator::Address &p_previous_test, bool p_is_first, bool p_is_nested) {
 	switch (p_pattern->pattern_type) {
 		case GDScriptParser::PatternNode::PT_LITERAL: {
@@ -2008,16 +2107,29 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 			} break;
 			case GDScriptParser::Node::IF: {
 				const GDScriptParser::IfNode *if_n = static_cast<const GDScriptParser::IfNode *>(s);
-				GDScriptCodeGenerator::Address condition = _parse_expression(codegen, err, if_n->condition);
+
+				// TAKEN jumps to true_block
+				gen->start_expr_cond_buffer(GDScriptCodeGenerator::BranchType::TAKEN);
+				// NOT_TAKEN jumps to false_block
+				gen->start_expr_cond_buffer(GDScriptCodeGenerator::BranchType::NOT_TAKEN);
+
+				GDScriptCodeGenerator::Address condition = _parse_expression_cond(codegen, err, if_n->condition);
 				if (err) {
 					return err;
 				}
 
-				gen->write_if(condition);
+				if (condition.mode != GDScriptCodeGenerator::Address::NIL) {
+					// Check the result of the condition. We choose to jump false to the else branch
+					// and let true fall-through.
+					gen->write_expr_cond_jump_if(GDScriptCodeGenerator::BranchType::NOT_TAKEN, condition);
 
-				if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
+					if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						codegen.generator->pop_temporary();
+					}
 				}
+
+				// Our if branch starts here. Patch all taken jumps.
+				gen->flush_expr_cond_buffer(GDScriptCodeGenerator::BranchType::TAKEN);
 
 				err = _parse_block(codegen, if_n->true_block);
 				if (err) {
@@ -2025,15 +2137,20 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				}
 
 				if (if_n->false_block) {
-					gen->write_else();
+					// Success branch ends, jump to end.
+					gen->write_expr_cond_jump_end();
+					// Our failure branch starts here. Patch all failure jumps.
+					gen->flush_expr_cond_buffer(GDScriptCodeGenerator::BranchType::NOT_TAKEN);
 
 					err = _parse_block(codegen, if_n->false_block);
 					if (err) {
 						return err;
 					}
+					gen->write_expr_cond_end();
+				} else {
+					// Patch all failure jumps to after the statement.
+					gen->flush_expr_cond_buffer(GDScriptCodeGenerator::BranchType::NOT_TAKEN);
 				}
-
-				gen->write_endif();
 			} break;
 			case GDScriptParser::Node::FOR: {
 				const GDScriptParser::ForNode *for_n = static_cast<const GDScriptParser::ForNode *>(s);
