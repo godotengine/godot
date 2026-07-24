@@ -230,7 +230,7 @@ Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, const String
 	}
 }
 
-void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, const Vector<String> &p_uncollapsed_paths, const Vector<String> &p_selected_paths) {
+void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, const Vector<String> &p_uncollapsed_paths, const Vector<String> &p_selected_paths, bool p_favorite_tree, bool p_select_current_path, const String &p_cursor_path) {
 	// Create a tree item for the subdirectory.
 	TreeItem *subdirectory_item = tree->create_item(p_parent);
 	String dname = p_dir->get_name();
@@ -272,24 +272,27 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	}
 	subdirectory_item->set_selectable(0, true);
 	subdirectory_item->set_metadata(0, lpath);
-	folder_map[lpath] = subdirectory_item;
-
-	if (current_path == lpath || p_selected_paths.has(lpath) || ((display_mode != DISPLAY_MODE_TREE_ONLY) && (current_path.get_base_dir() == lpath))) {
-		subdirectory_item->select(0, current_path == lpath);
+	if (!p_favorite_tree) {
+		folder_map[lpath] = subdirectory_item;
 	}
 
-	subdirectory_item->set_collapsed(!p_uncollapsed_paths.has(lpath));
+	const bool is_current_path = p_select_current_path && !p_favorite_tree && current_path == lpath;
+	if (is_current_path || p_selected_paths.has(lpath) || (p_select_current_path && !p_favorite_tree && (display_mode != DISPLAY_MODE_TREE_ONLY) && (current_path.get_base_dir() == lpath))) {
+		subdirectory_item->select(0, is_current_path || p_cursor_path == lpath);
+	}
+
+	const String collapse_key = p_favorite_tree ? "Favorites:" + lpath : lpath;
+	subdirectory_item->set_collapsed(!p_uncollapsed_paths.has(collapse_key));
 
 	// Create items for all subdirectories.
 	bool reversed = file_sort == FileSortOption::FILE_SORT_NAME_REVERSE;
 	for (int i = reversed ? p_dir->get_subdir_count() - 1 : 0;
 			reversed ? i >= 0 : i < p_dir->get_subdir_count();
 			reversed ? i-- : i++) {
-		_create_tree(subdirectory_item, p_dir->get_subdir(i), p_uncollapsed_paths, p_selected_paths);
+		_create_tree(subdirectory_item, p_dir->get_subdir(i), p_uncollapsed_paths, p_selected_paths, p_favorite_tree, p_select_current_path, p_cursor_path);
 	}
 
-	// Create all items for the files in the subdirectory.
-	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
+	if (display_mode == DISPLAY_MODE_TREE_ONLY || p_favorite_tree) {
 		// Build the list of the files to display.
 		List<FileInfo> file_list;
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
@@ -335,15 +338,16 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			}
 			file_item->set_metadata(0, file_metadata);
 			file_item->set_accept_children(false);
-			if (current_path == file_metadata || p_selected_paths.has(file_metadata)) {
-				file_item->select(0, current_path == file_metadata);
+			const bool is_current_file = p_select_current_path && !p_favorite_tree && current_path == file_metadata;
+			if (is_current_file || p_selected_paths.has(file_metadata)) {
+				file_item->select(0, is_current_file || p_cursor_path == file_metadata);
 			}
 			if (main_scene_path == file_metadata) {
 				file_item->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 			}
 			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, callable_mp(this, &FileSystemDock::_tree_thumbnail_done).bind(tree_update_id, file_item->get_instance_id()));
 		}
-	} else if (lpath.get_base_dir() == current_path.get_base_dir()) {
+	} else if (p_select_current_path && lpath.get_base_dir() == current_path.get_base_dir()) {
 		subdirectory_item->select(0);
 	}
 }
@@ -352,28 +356,30 @@ Vector<String> FileSystemDock::get_uncollapsed_paths() const {
 	Vector<String> uncollapsed_paths;
 	TreeItem *root = tree->get_root();
 	if (root) {
-		if (!favorites_item->is_collapsed()) {
-			uncollapsed_paths.push_back(favorites_item->get_metadata(0));
-		}
+		// Namespace favorite paths to preserve separate expansion states.
+		List<TreeItem *> queue;
+		queue.push_back(root);
 
-		// BFS to find all uncollapsed paths of the resource directory.
-		TreeItem *res_subtree = root->get_first_child()->get_next();
-		if (res_subtree) {
-			List<TreeItem *> queue;
-			queue.push_back(res_subtree);
-
-			while (!queue.is_empty()) {
-				TreeItem *ti = queue.back()->get();
-				queue.pop_back();
-				if (!ti->is_collapsed() && ti->get_child_count() > 0) {
-					Variant path = ti->get_metadata(0);
-					if (path) {
-						uncollapsed_paths.push_back(path);
+		while (!queue.is_empty()) {
+			TreeItem *ti = queue.back()->get();
+			queue.pop_back();
+			if (!ti->is_collapsed() && ti->get_child_count() > 0) {
+				Variant path = ti->get_metadata(0);
+				if (path) {
+					bool in_favorites = false;
+					TreeItem *ancestor = ti;
+					while (ancestor) {
+						if (ancestor == favorites_item) {
+							in_favorites = ti != favorites_item;
+							break;
+						}
+						ancestor = ancestor->get_parent();
 					}
+					uncollapsed_paths.push_back(in_favorites ? "Favorites:" + String(path) : String(path));
 				}
-				for (int i = 0; i < ti->get_child_count(); i++) {
-					queue.push_back(ti->get_child(i));
-				}
+			}
+			for (int i = 0; i < ti->get_child_count(); i++) {
+				queue.push_back(ti->get_child(i));
 			}
 		}
 	}
@@ -381,7 +387,43 @@ Vector<String> FileSystemDock::get_uncollapsed_paths() const {
 }
 
 void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, bool p_uncollapse_root, bool p_scroll_to_selected, const Vector<String> &p_override_selection) {
-	const Vector<String> previous_selection = p_override_selection.is_empty() ? _tree_get_selected(false) : p_override_selection;
+	Vector<String> favorite_selection;
+	Vector<String> filesystem_selection;
+	String favorite_cursor_path;
+
+	bool cursor_in_favorites = false;
+	if (p_override_selection.is_empty()) {
+		TreeItem *cursor_item = tree->get_selected();
+		if (cursor_item) {
+			TreeItem *ancestor = cursor_item;
+			while (ancestor && ancestor->get_parent() != favorites_item) {
+				ancestor = ancestor->get_parent();
+			}
+			cursor_in_favorites = ancestor && ancestor->get_parent() == favorites_item;
+			if (cursor_in_favorites) {
+				favorite_cursor_path = cursor_item->get_metadata(0);
+			}
+		}
+
+		TreeItem *selected = tree->get_root();
+		selected = tree->get_next_selected(selected);
+		while (selected) {
+			TreeItem *ancestor = selected;
+			while (ancestor && ancestor->get_parent() != favorites_item) {
+				ancestor = ancestor->get_parent();
+			}
+			const bool selected_in_favorites = ancestor && ancestor->get_parent() == favorites_item;
+			if (selected_in_favorites) {
+				favorite_selection.push_back(selected->get_metadata(0));
+			} else if (selected != favorites_item && (!cursor_in_favorites || selected->get_metadata(0) != cursor_item->get_metadata(0))) {
+				// Avoid selecting both copies of a resource.
+				filesystem_selection.push_back(selected->get_metadata(0));
+			}
+			selected = tree->get_next_selected(selected);
+		}
+	} else {
+		filesystem_selection = p_override_selection;
+	}
 
 	// Recreate the tree.
 	tree->clear();
@@ -448,15 +490,30 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			color = Color(1, 1, 1);
 		}
 
-		TreeItem *ti = tree->create_item(favorites_item);
-		ti->set_text(0, text);
-		ti->set_icon(0, icon);
-		ti->set_icon_modulate(0, color);
+		TreeItem *ti = nullptr;
+		if (favorite.ends_with("/")) {
+			EditorFileSystemDirectory *favorite_dir = EditorFileSystem::get_singleton()->get_filesystem_path(favorite);
+			if (favorite_dir) {
+				_create_tree(favorites_item, favorite_dir, p_uncollapsed_paths, favorite_selection, true, false, favorite_cursor_path);
+				ti = favorites_item->get_last_child();
+			}
+		}
+
+		if (!ti) {
+			ti = tree->create_item(favorites_item);
+			ti->set_text(0, text);
+			ti->set_icon(0, icon);
+			ti->set_icon_modulate(0, color);
+			ti->set_selectable(0, true);
+			ti->set_metadata(0, favorite);
+			ti->set_accept_children(false);
+			if (favorite_selection.has(favorite)) {
+				ti->select(0, favorite_cursor_path == favorite);
+			}
+		}
+
 		ti->set_icon_max_width(0, icon_size);
 		ti->set_tooltip_text(0, favorite);
-		ti->set_selectable(0, true);
-		ti->set_metadata(0, favorite);
-		ti->set_accept_children(false);
 
 		if (favorite == main_scene_path) {
 			ti->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
@@ -473,7 +530,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	}
 
 	// Create the remaining of the tree.
-	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, previous_selection);
+	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, filesystem_selection, false, !cursor_in_favorites);
 	if (!searched_tokens.is_empty()) {
 		_update_filtered_items();
 	}
@@ -728,8 +785,30 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 		return;
 	}
 
-	if (selected->get_parent() == favorites_item && !String(selected->get_metadata(0)).ends_with("/")) {
-		// Go to the favorites if we click in the favorites and the path has changed.
+	TreeItem *favorite_root = selected;
+	while (favorite_root && favorite_root->get_parent() != favorites_item) {
+		favorite_root = favorite_root->get_parent();
+	}
+	const bool is_in_favorites = favorite_root && favorite_root->get_parent() == favorites_item;
+
+	// Deselect the resource's copy in the other tree section.
+	TreeItem *other = tree->get_next_selected(tree->get_root());
+	while (other) {
+		TreeItem *next = tree->get_next_selected(other);
+		if (other != selected && other != favorites_item && other->get_metadata(0) == selected->get_metadata(0)) {
+			TreeItem *other_favorite_root = other;
+			while (other_favorite_root && other_favorite_root->get_parent() != favorites_item) {
+				other_favorite_root = other_favorite_root->get_parent();
+			}
+			const bool other_is_in_favorites = other_favorite_root && other_favorite_root->get_parent() == favorites_item;
+			if (is_in_favorites != other_is_in_favorites) {
+				other->deselect(0);
+			}
+		}
+		other = next;
+	}
+
+	if (is_in_favorites && !String(selected->get_metadata(0)).ends_with("/")) {
 		current_path = "Favorites";
 	} else {
 		current_path = selected->get_metadata(0);
@@ -1395,15 +1474,13 @@ void FileSystemDock::_tree_activate_file() {
 	TreeItem *selected = tree->get_selected();
 	if (selected) {
 		String file_path = selected->get_metadata(0);
-		TreeItem *parent = selected->get_parent();
-		bool is_favorite = parent != nullptr && parent->get_metadata(0) == "Favorites";
 		bool is_folder = file_path.ends_with("/");
 
-		if ((!is_favorite && is_folder) || file_path == "Favorites") {
+		if (is_folder || file_path == "Favorites") {
 			bool collapsed = selected->is_collapsed();
 			selected->set_collapsed(!collapsed);
 		} else {
-			_select_file(file_path, is_favorite && !is_folder, is_favorite && is_folder);
+			_select_file(file_path, false, false);
 		}
 	}
 }
@@ -3035,7 +3112,7 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 	Vector<String> paths;
 
 	if (p_from == tree) {
-		// Check if the first selected is in favorite.
+		// Only top-level items are favorites.
 		TreeItem *selected = tree->get_next_selected(tree->get_root());
 		while (selected) {
 			if (selected == favorites_item) {
@@ -3043,14 +3120,15 @@ Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 				return Variant();
 			}
 
-			bool is_favorite = selected->get_parent() != nullptr && tree->get_root()->get_first_child() == selected->get_parent();
+			bool is_favorite = selected->get_parent() == favorites_item;
 			all_favorites &= is_favorite;
 			all_not_favorites &= !is_favorite;
+			if (is_favorite) {
+				paths.push_back(selected->get_metadata(0));
+			}
 			selected = tree->get_next_selected(selected);
 		}
-		if (!all_not_favorites) {
-			paths = _tree_get_selected(false);
-		} else {
+		if (all_not_favorites) {
 			paths = _tree_get_selected();
 		}
 	} else if (p_from == files) {
@@ -3098,7 +3176,8 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 			return (drop_section == 1); // The parent, first fav.
 		}
 		if (ti->get_parent() && favorites_item == ti->get_parent()) {
-			return true; // A favorite
+			// Dropping onto a favorite folder moves files instead of reordering.
+			return drop_section != 0;
 		}
 		if (ti == resources_item) {
 			return (drop_section == -1); // The tree, last fav.
@@ -3319,12 +3398,16 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 		if (ti) {
 			int section = (p_point == Vector2(Math::INF, Math::INF)) ? tree->get_drop_section_at_position(tree->get_item_rect(ti).position) : tree->get_drop_section_at_position(p_point);
 
-			// Check the favorites first.
-			if (ti == tree->get_root()->get_first_child() && section >= 0) {
+			if (ti == favorites_item && section >= 0) {
 				target_favorites = true;
 				return;
-			} else if (ti->get_parent() == tree->get_root()->get_first_child()) {
-				target_favorites = true;
+			} else if (ti->get_parent() == favorites_item) {
+				String favorite_path = ti->get_metadata(0);
+				if (section == 0 && favorite_path.ends_with("/")) {
+					target = favorite_path;
+				} else {
+					target_favorites = true;
+				}
 				return;
 			} else {
 				String fpath = ti->get_metadata(0);
