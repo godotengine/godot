@@ -42,6 +42,7 @@
 #include "editor/inspector/editor_properties.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/themes/editor_theme_manager.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
@@ -181,6 +182,7 @@ void AnimationNodeBlendTreeEditor::update_graph_immediately() {
 
 		node->set_title(agnode->get_caption());
 		node->set_name(E);
+		node->set_theme(ab_msdf_fonts_theme);
 		node->set_meta(animation_node_name_meta, E);
 
 		int base = 0;
@@ -381,6 +383,15 @@ void AnimationNodeBlendTreeEditor::pan_to_node(const StringName &p_node_name, in
 	pan_to_tween->set_trans(Tween::TRANS_LINEAR)
 			->set_ease(Tween::EASE_OUT)
 			->tween_property(target_node, NodePath("modulate"), Color(1, 1, 1, 1), 0.3);
+}
+
+void AnimationNodeBlendTreeEditor::update_theme() {
+	Ref<Font> label_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_msdf", EditorStringName(EditorFonts));
+	Ref<Font> label_bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_bold_msdf", EditorStringName(EditorFonts));
+	ab_msdf_fonts_theme->set_font(SceneStringName(font), "Label", label_font);
+	ab_msdf_fonts_theme->set_font(SceneStringName(font), "GraphNodeTitleLabel", label_bold_font);
+	ab_msdf_fonts_theme->set_font(SceneStringName(font), "LineEdit", label_font);
+	ab_msdf_fonts_theme->set_font(SceneStringName(font), "Button", label_font);
 }
 
 void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
@@ -1046,6 +1057,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				update_graph();
 			}
+			update_theme();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1351,6 +1363,10 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	animation_node_inspector_plugin.instantiate();
 	EditorInspector::add_inspector_plugin(animation_node_inspector_plugin);
+
+	ab_msdf_fonts_theme.instantiate();
+
+	update_theme();
 }
 
 // EditorPluginAnimationNodeAnimation
