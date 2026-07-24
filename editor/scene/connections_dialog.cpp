@@ -215,7 +215,6 @@ void ConnectDialog::_tree_node_selected() {
 
 	cdbinds->update_base_node_relative(current);
 
-	_update_method_tree();
 	_update_warning_label();
 	_update_ok_enabled();
 }
@@ -463,6 +462,7 @@ void ConnectDialog::_open_method_popup() {
 	method_popup->popup_centered();
 	method_search->clear();
 	method_search->grab_focus();
+	_update_method_tree();
 }
 
 /*
