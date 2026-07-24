@@ -123,7 +123,7 @@ def generate_char_range_inc() -> None:
     source += "\n"
 
     char_range_path: str = os.path.join(os.path.dirname(__file__), "../../core/string/char_range.cpp")
-    with open(char_range_path, "w", newline="\n") as f:
+    with open(char_range_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(source)
 
     print("`char_range.cpp` generated successfully.")
