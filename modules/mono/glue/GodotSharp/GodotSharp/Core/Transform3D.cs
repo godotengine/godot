@@ -1,7 +1,8 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -24,11 +25,13 @@ namespace Godot
         /// The <see cref="Godot.Basis"/> of this transform. Contains the X, Y, and Z basis
         /// vectors (columns 0 to 2) and is responsible for rotation and scale.
         /// </summary>
+        [JsonInclude]
         public Basis Basis;
 
         /// <summary>
         /// The origin vector (column 3, the fourth column). Equivalent to array index <c>[3]</c>.
         /// </summary>
+        [JsonInclude]
         public Vector3 Origin;
 
         /// <summary>
@@ -39,6 +42,7 @@ namespace Godot
         /// <exception cref="ArgumentOutOfRangeException">
         /// <paramref name="column"/> is not 0, 1, 2 or 3.
         /// </exception>
+        [JsonIgnore]
         public Vector3 this[int column]
         {
             readonly get
@@ -85,6 +89,7 @@ namespace Godot
         /// </summary>
         /// <param name="column">Which column, the matrix horizontal position.</param>
         /// <param name="row">Which row, the matrix vertical position.</param>
+        [JsonIgnore]
         public real_t this[int column, int row]
         {
             readonly get

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -16,7 +17,9 @@ namespace Godot
     [StructLayout(LayoutKind.Sequential)]
     public struct Plane : IEquatable<Plane>
     {
+        [JsonIgnore]
         private Vector3 _normal;
+        [JsonIgnore]
         private real_t _d;
 
         /// <summary>
@@ -25,6 +28,7 @@ namespace Godot
         /// the vector <c>(a, b, c)</c>, where <c>d</c> is the <see cref="D"/> property.
         /// </summary>
         /// <value>Equivalent to <see cref="X"/>, <see cref="Y"/>, and <see cref="Z"/>.</value>
+        [JsonInclude]
         public Vector3 Normal
         {
             readonly get { return _normal; }
@@ -39,6 +43,7 @@ namespace Godot
         /// by the <see cref="Normal"/> property.
         /// </summary>
         /// <value>The plane's distance from the origin.</value>
+        [JsonInclude]
         public real_t D
         {
             readonly get { return _d; }
@@ -49,6 +54,7 @@ namespace Godot
         /// The X component of the plane's normal vector.
         /// </summary>
         /// <value>Equivalent to <see cref="Normal"/>'s X value.</value>
+        [JsonIgnore]
         public real_t X
         {
             readonly get
@@ -65,6 +71,7 @@ namespace Godot
         /// The Y component of the plane's normal vector.
         /// </summary>
         /// <value>Equivalent to <see cref="Normal"/>'s Y value.</value>
+        [JsonIgnore]
         public real_t Y
         {
             readonly get
@@ -81,6 +88,7 @@ namespace Godot
         /// The Z component of the plane's normal vector.
         /// </summary>
         /// <value>Equivalent to <see cref="Normal"/>'s Z value.</value>
+        [JsonIgnore]
         public real_t Z
         {
             readonly get
