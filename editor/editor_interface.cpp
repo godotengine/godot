@@ -707,17 +707,10 @@ void EditorInterface::edit_script(const Ref<Script> &p_script, int p_line, int p
 }
 
 void EditorInterface::open_scene_from_path(const String &scene_path, bool p_set_inherited) {
-	if (EditorNode::get_singleton()->is_changing_scene()) {
-		return;
-	}
 	EditorNode::get_singleton()->open_scene(scene_path, false, p_set_inherited);
 }
 
 void EditorInterface::reload_scene_from_path(const String &scene_path) {
-	if (EditorNode::get_singleton()->is_changing_scene()) {
-		return;
-	}
-
 	EditorNode::get_singleton()->reload_scene(scene_path);
 }
 
