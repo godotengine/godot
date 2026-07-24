@@ -1353,6 +1353,7 @@ void EditorSettings::_handle_setting_compatibility() {
 
 	// Handle renamed shortcuts.
 	_rename_shortcut("editor/editor_assetlib", "editor/editor_asset_store");
+	_rename_shortcut("script_text_editor/replace_in_files", "editor/replace_in_files");
 }
 
 void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {
