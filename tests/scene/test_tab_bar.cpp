@@ -468,6 +468,268 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_CHECK_FALSE("tab_changed");
 	}
 
+	SUBCASE("[TabBar] get previous/next available") {
+		SUBCASE("[TabBar] get previous/next available: No tabs") {
+			CHECK(tab_bar->get_previous_available(-1, false) == -1);
+			CHECK(tab_bar->get_previous_available(-1, true) == -1);
+			CHECK(tab_bar->get_next_available(-1, false) == -1);
+			CHECK(tab_bar->get_next_available(-1, true) == -1);
+		}
+		SUBCASE("[TabBar] get previous/next available: One tab") {
+			tab_bar->add_tab("tab0");
+			CHECK(tab_bar->get_previous_available(-1, false) == -1);
+			CHECK(tab_bar->get_previous_available(-1, true) == -1);
+			CHECK(tab_bar->get_next_available(-1, false) == -1);
+			CHECK(tab_bar->get_next_available(-1, true) == -1);
+
+			CHECK(tab_bar->get_previous_available(0, false) == -1);
+			CHECK(tab_bar->get_previous_available(0, true) == -1);
+			CHECK(tab_bar->get_next_available(0, false) == -1);
+			CHECK(tab_bar->get_next_available(0, true) == -1);
+		}
+		SUBCASE("[TabBar] get previous/next available: Four tabs") {
+			tab_bar->add_tab("tab0");
+			tab_bar->add_tab("tab1");
+			tab_bar->add_tab("tab2");
+			tab_bar->add_tab("tab3");
+
+			SUBCASE("[TabBar] get previous/next available: Four tabs / all enabled and visible") {
+				CHECK(tab_bar->get_previous_available(0, false) == -1);
+				CHECK(tab_bar->get_previous_available(0, true) == 3);
+				CHECK(tab_bar->get_next_available(0, false) == 1);
+				CHECK(tab_bar->get_next_available(0, true) == 1);
+
+				CHECK(tab_bar->get_previous_available(1, false) == 0);
+				CHECK(tab_bar->get_previous_available(1, true) == 0);
+				CHECK(tab_bar->get_next_available(1, false) == 2);
+				CHECK(tab_bar->get_next_available(1, true) == 2);
+
+				CHECK(tab_bar->get_previous_available(2, false) == 1);
+				CHECK(tab_bar->get_previous_available(2, true) == 1);
+				CHECK(tab_bar->get_next_available(2, false) == 3);
+				CHECK(tab_bar->get_next_available(2, true) == 3);
+
+				CHECK(tab_bar->get_previous_available(3, false) == 2);
+				CHECK(tab_bar->get_previous_available(3, true) == 2);
+				CHECK(tab_bar->get_next_available(3, false) == -1);
+				CHECK(tab_bar->get_next_available(3, true) == 0);
+			}
+			// Hidden and disabled tab have exactly the same behaviors so I use either
+			// one or the other in the test to limit test code duplication
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab0 disabled") {
+				tab_bar->set_tab_disabled(0, true);
+				CHECK(tab_bar->get_previous_available(0, false) == -1);
+				CHECK(tab_bar->get_previous_available(0, true) == 3);
+				CHECK(tab_bar->get_next_available(0, false) == 1);
+				CHECK(tab_bar->get_next_available(0, true) == 1);
+
+				CHECK(tab_bar->get_previous_available(1, false) == -1);
+				CHECK(tab_bar->get_previous_available(1, true) == 3);
+
+				CHECK(tab_bar->get_next_available(3, false) == -1);
+				CHECK(tab_bar->get_next_available(3, true) == 1);
+			}
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab1 disabled") {
+				tab_bar->set_tab_disabled(1, true);
+
+				CHECK(tab_bar->get_next_available(0, false) == 2);
+				CHECK(tab_bar->get_next_available(0, true) == 2);
+
+				CHECK(tab_bar->get_previous_available(1, false) == 0);
+				CHECK(tab_bar->get_previous_available(1, true) == 0);
+				CHECK(tab_bar->get_next_available(1, false) == 2);
+				CHECK(tab_bar->get_next_available(1, true) == 2);
+
+				CHECK(tab_bar->get_previous_available(2, false) == 0);
+				CHECK(tab_bar->get_previous_available(2, true) == 0);
+			}
+
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab2 disabled") {
+				tab_bar->set_tab_disabled(2, true);
+
+				CHECK(tab_bar->get_next_available(1, false) == 3);
+				CHECK(tab_bar->get_next_available(1, true) == 3);
+
+				CHECK(tab_bar->get_next_available(2, false) == 3);
+				CHECK(tab_bar->get_next_available(2, true) == 3);
+
+				CHECK(tab_bar->get_previous_available(3, false) == 1);
+				CHECK(tab_bar->get_previous_available(3, true) == 1);
+			}
+
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab3 disabled") {
+				tab_bar->set_tab_disabled(3, true);
+				CHECK(tab_bar->get_previous_available(0, false) == -1);
+				CHECK(tab_bar->get_previous_available(0, true) == 2);
+
+				CHECK(tab_bar->get_next_available(2, false) == -1);
+				CHECK(tab_bar->get_next_available(2, true) == 0);
+
+				CHECK(tab_bar->get_previous_available(3, false) == 2);
+				CHECK(tab_bar->get_previous_available(3, true) == 2);
+				CHECK(tab_bar->get_next_available(3, false) == -1);
+				CHECK(tab_bar->get_next_available(3, true) == 0);
+			}
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab0 and tab1 visible") {
+				tab_bar->set_tab_hidden(2, true);
+				tab_bar->set_tab_hidden(3, true);
+
+				CHECK(tab_bar->get_previous_available(0, false) == -1);
+				CHECK(tab_bar->get_previous_available(0, true) == 1);
+
+				CHECK(tab_bar->get_previous_available(1, false) == 0);
+				CHECK(tab_bar->get_previous_available(1, true) == 0);
+				CHECK(tab_bar->get_next_available(1, false) == -1);
+				CHECK(tab_bar->get_next_available(1, true) == 0);
+
+				CHECK(tab_bar->get_previous_available(2, false) == 1);
+				CHECK(tab_bar->get_previous_available(2, true) == 1);
+				CHECK(tab_bar->get_next_available(2, false) == -1);
+				CHECK(tab_bar->get_next_available(2, true) == 0);
+
+				CHECK(tab_bar->get_previous_available(3, false) == 1);
+				CHECK(tab_bar->get_previous_available(3, true) == 1);
+				CHECK(tab_bar->get_next_available(3, false) == -1);
+				CHECK(tab_bar->get_next_available(3, true) == 0);
+			}
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab1 and tab2 visible") {
+				tab_bar->set_tab_hidden(0, true);
+				tab_bar->set_tab_hidden(3, true);
+
+				CHECK(tab_bar->get_previous_available(0, false) == -1);
+				CHECK(tab_bar->get_previous_available(0, true) == 2);
+				CHECK(tab_bar->get_next_available(0, false) == 1);
+				CHECK(tab_bar->get_next_available(0, true) == 1);
+
+				CHECK(tab_bar->get_previous_available(1, false) == -1);
+				CHECK(tab_bar->get_previous_available(1, true) == 2);
+				CHECK(tab_bar->get_next_available(1, false) == 2);
+				CHECK(tab_bar->get_next_available(1, true) == 2);
+
+				CHECK(tab_bar->get_next_available(2, false) == -1);
+				CHECK(tab_bar->get_next_available(2, true) == 1);
+
+				CHECK(tab_bar->get_previous_available(3, false) == 2);
+				CHECK(tab_bar->get_previous_available(3, true) == 2);
+				CHECK(tab_bar->get_next_available(3, false) == -1);
+				CHECK(tab_bar->get_next_available(3, true) == 1);
+			}
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab2 and tab3 visible") {
+				tab_bar->set_tab_hidden(0, true);
+				tab_bar->set_tab_hidden(1, true);
+
+				CHECK(tab_bar->get_previous_available(0, false) == -1);
+				CHECK(tab_bar->get_previous_available(0, true) == 3);
+				CHECK(tab_bar->get_next_available(0, false) == 2);
+				CHECK(tab_bar->get_next_available(0, true) == 2);
+
+				CHECK(tab_bar->get_next_available(1, false) == 2);
+				CHECK(tab_bar->get_next_available(1, true) == 2);
+
+				CHECK(tab_bar->get_previous_available(2, false) == -1);
+				CHECK(tab_bar->get_previous_available(2, true) == 3);
+				CHECK(tab_bar->get_next_available(2, false) == 3);
+				CHECK(tab_bar->get_next_available(2, true) == 3);
+
+				CHECK(tab_bar->get_previous_available(3, false) == 2);
+				CHECK(tab_bar->get_previous_available(3, true) == 2);
+				CHECK(tab_bar->get_next_available(3, false) == -1);
+				CHECK(tab_bar->get_next_available(3, true) == 2);
+			}
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab0 visible") {
+				tab_bar->set_tab_hidden(1, true);
+				tab_bar->set_tab_hidden(2, true);
+				tab_bar->set_tab_hidden(3, true);
+
+				CHECK(tab_bar->get_previous_available(0, false) == -1);
+				CHECK(tab_bar->get_previous_available(0, true) == -1);
+				CHECK(tab_bar->get_next_available(0, false) == -1);
+				CHECK(tab_bar->get_next_available(0, true) == -1);
+
+				CHECK(tab_bar->get_previous_available(1, false) == 0);
+				CHECK(tab_bar->get_previous_available(1, true) == 0);
+				CHECK(tab_bar->get_next_available(1, false) == -1);
+				CHECK(tab_bar->get_next_available(1, true) == 0);
+
+				CHECK(tab_bar->get_previous_available(3, false) == 0);
+				CHECK(tab_bar->get_previous_available(3, true) == 0);
+				CHECK(tab_bar->get_next_available(3, false) == -1);
+				CHECK(tab_bar->get_next_available(3, true) == 0);
+			}
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab1 visible") {
+				tab_bar->set_tab_hidden(0, true);
+				tab_bar->set_tab_hidden(2, true);
+				tab_bar->set_tab_hidden(3, true);
+
+				CHECK(tab_bar->get_previous_available(0, false) == -1);
+				CHECK(tab_bar->get_previous_available(0, true) == 1);
+				CHECK(tab_bar->get_next_available(0, false) == 1);
+				CHECK(tab_bar->get_next_available(0, true) == 1);
+
+				CHECK(tab_bar->get_previous_available(1, false) == -1);
+				CHECK(tab_bar->get_previous_available(1, true) == -1);
+				CHECK(tab_bar->get_next_available(1, false) == -1);
+				CHECK(tab_bar->get_next_available(1, true) == -1);
+
+				CHECK(tab_bar->get_previous_available(2, false) == 1);
+				CHECK(tab_bar->get_previous_available(2, true) == 1);
+				CHECK(tab_bar->get_next_available(2, false) == -1);
+				CHECK(tab_bar->get_next_available(2, true) == 1);
+
+				CHECK(tab_bar->get_previous_available(3, false) == 1);
+				CHECK(tab_bar->get_previous_available(3, true) == 1);
+				CHECK(tab_bar->get_next_available(3, false) == -1);
+				CHECK(tab_bar->get_next_available(3, true) == 1);
+			}
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab2 visible") {
+				tab_bar->set_tab_hidden(0, true);
+				tab_bar->set_tab_hidden(1, true);
+				tab_bar->set_tab_hidden(3, true);
+
+				CHECK(tab_bar->get_previous_available(0, false) == -1);
+				CHECK(tab_bar->get_previous_available(0, true) == 2);
+
+				CHECK(tab_bar->get_previous_available(1, false) == -1);
+				CHECK(tab_bar->get_previous_available(1, true) == 2);
+				CHECK(tab_bar->get_next_available(1, false) == 2);
+				CHECK(tab_bar->get_next_available(1, true) == 2);
+
+				CHECK(tab_bar->get_previous_available(2, false) == -1);
+				CHECK(tab_bar->get_previous_available(2, true) == -1);
+				CHECK(tab_bar->get_next_available(2, false) == -1);
+				CHECK(tab_bar->get_next_available(2, true) == -1);
+
+				CHECK(tab_bar->get_previous_available(3, false) == 2);
+				CHECK(tab_bar->get_previous_available(3, true) == 2);
+				CHECK(tab_bar->get_next_available(3, false) == -1);
+				CHECK(tab_bar->get_next_available(3, true) == 2);
+			}
+			SUBCASE("[TabBar] get previous/next available: Four tabs / tab3 visible") {
+				tab_bar->set_tab_hidden(0, true);
+				tab_bar->set_tab_hidden(1, true);
+				tab_bar->set_tab_hidden(2, true);
+
+				CHECK(tab_bar->get_previous_available(0, false) == -1);
+				CHECK(tab_bar->get_previous_available(0, true) == 3);
+				CHECK(tab_bar->get_next_available(0, false) == 3);
+				CHECK(tab_bar->get_next_available(0, true) == 3);
+
+				CHECK(tab_bar->get_previous_available(1, false) == -1);
+				CHECK(tab_bar->get_previous_available(1, true) == 3);
+
+				CHECK(tab_bar->get_previous_available(2, false) == -1);
+				CHECK(tab_bar->get_previous_available(2, true) == 3);
+				CHECK(tab_bar->get_next_available(2, false) == 3);
+				CHECK(tab_bar->get_next_available(2, true) == 3);
+
+				CHECK(tab_bar->get_previous_available(3, false) == -1);
+				CHECK(tab_bar->get_previous_available(3, true) == -1);
+				CHECK(tab_bar->get_next_available(3, false) == -1);
+				CHECK(tab_bar->get_next_available(3, true) == -1);
+			}
+		}
+	}
+
 	SUBCASE("[TabBar] select next available") {
 		tab_bar->add_tab("tab0");
 		tab_bar->add_tab("tab1");
@@ -483,21 +745,21 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_DISCARD("tab_changed");
 
 		// Selects the next tab.
-		CHECK(tab_bar->select_next_available());
+		CHECK(tab_bar->select_next_available(false));
 		CHECK(tab_bar->get_current_tab() == 1);
 		CHECK(tab_bar->get_previous_tab() == 0);
 		SIGNAL_CHECK("tab_selected", { { 1 } });
 		SIGNAL_CHECK("tab_changed", { { 1 } });
 
 		// Skips over disabled and hidden tabs.
-		CHECK(tab_bar->select_next_available());
+		CHECK(tab_bar->select_next_available(false));
 		CHECK(tab_bar->get_current_tab() == 4);
 		CHECK(tab_bar->get_previous_tab() == 1);
 		SIGNAL_CHECK("tab_selected", { { 4 } });
 		SIGNAL_CHECK("tab_changed", { { 4 } });
 
 		// Does not wrap around.
-		CHECK_FALSE(tab_bar->select_next_available());
+		CHECK_FALSE(tab_bar->select_next_available(false));
 		CHECK(tab_bar->get_current_tab() == 4);
 		CHECK(tab_bar->get_previous_tab() == 1);
 		SIGNAL_CHECK_FALSE("tab_selected");
@@ -511,7 +773,7 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_DISCARD("tab_selected");
 		SIGNAL_DISCARD("tab_changed");
 
-		CHECK_FALSE(tab_bar->select_next_available());
+		CHECK_FALSE(tab_bar->select_next_available(false));
 		CHECK(tab_bar->get_current_tab() == 0);
 		CHECK(tab_bar->get_previous_tab() == 0);
 		SIGNAL_CHECK_FALSE("tab_selected");
@@ -524,7 +786,7 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_DISCARD("tab_selected");
 		SIGNAL_DISCARD("tab_changed");
 
-		CHECK_FALSE(tab_bar->select_next_available());
+		CHECK_FALSE(tab_bar->select_next_available(false));
 		CHECK(tab_bar->get_current_tab() == -1);
 		CHECK(tab_bar->get_previous_tab() == 0);
 		SIGNAL_CHECK_FALSE("tab_selected");
@@ -537,11 +799,26 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_DISCARD("tab_selected");
 		SIGNAL_DISCARD("tab_changed");
 
-		CHECK_FALSE(tab_bar->select_next_available());
+		CHECK_FALSE(tab_bar->select_next_available(false));
 		CHECK(tab_bar->get_current_tab() == -1);
 		CHECK(tab_bar->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
+	}
+
+	SUBCASE("[TabBar] select next available with wrap") {
+		tab_bar->add_tab("tab0");
+		tab_bar->add_tab("tab1");
+		tab_bar->add_tab("tab2");
+
+		CHECK(tab_bar->select_next_available(true));
+		CHECK(tab_bar->get_current_tab() == 1);
+
+		CHECK(tab_bar->select_next_available(true));
+		CHECK(tab_bar->get_current_tab() == 2);
+
+		CHECK(tab_bar->select_next_available(true));
+		CHECK(tab_bar->get_current_tab() == 0);
 	}
 
 	SUBCASE("[TabBar] select previous available") {
@@ -566,18 +843,37 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_CHECK("tab_changed", { { 3 } });
 
 		// Skips over disabled and hidden tabs.
-		CHECK(tab_bar->select_previous_available());
+		CHECK(tab_bar->select_previous_available(false));
 		CHECK(tab_bar->get_current_tab() == 0);
 		CHECK(tab_bar->get_previous_tab() == 3);
 		SIGNAL_CHECK("tab_selected", { { 0 } });
 		SIGNAL_CHECK("tab_changed", { { 0 } });
 
 		// Does not wrap around.
-		CHECK_FALSE(tab_bar->select_previous_available());
+		CHECK_FALSE(tab_bar->select_previous_available(false));
 		CHECK(tab_bar->get_current_tab() == 0);
 		CHECK(tab_bar->get_previous_tab() == 3);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
+
+		// Wrap around.
+		CHECK(tab_bar->select_previous_available(true));
+		CHECK(tab_bar->get_current_tab() == 4);
+		CHECK(tab_bar->get_previous_tab() == 0);
+		SIGNAL_CHECK("tab_selected", { { 4 } });
+		SIGNAL_CHECK("tab_changed", { { 4 } });
+
+		CHECK(tab_bar->select_previous_available(true));
+		CHECK(tab_bar->get_current_tab() == 3);
+		CHECK(tab_bar->get_previous_tab() == 4);
+		SIGNAL_CHECK("tab_selected", { { 3 } });
+		SIGNAL_CHECK("tab_changed", { { 3 } });
+
+		CHECK(tab_bar->select_previous_available(true));
+		CHECK(tab_bar->get_current_tab() == 0);
+		CHECK(tab_bar->get_previous_tab() == 3);
+		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_changed", { { 0 } });
 
 		// Fails if there is only one valid tab.
 		tab_bar->remove_tab(4);
@@ -587,7 +883,7 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_DISCARD("tab_selected");
 		SIGNAL_DISCARD("tab_changed");
 
-		CHECK_FALSE(tab_bar->select_previous_available());
+		CHECK_FALSE(tab_bar->select_previous_available(false));
 		CHECK(tab_bar->get_current_tab() == 0);
 		CHECK(tab_bar->get_previous_tab() == 2);
 		SIGNAL_CHECK_FALSE("tab_selected");
@@ -600,7 +896,7 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_DISCARD("tab_selected");
 		SIGNAL_DISCARD("tab_changed");
 
-		CHECK_FALSE(tab_bar->select_previous_available());
+		CHECK_FALSE(tab_bar->select_previous_available(false));
 		CHECK(tab_bar->get_current_tab() == -1);
 		CHECK(tab_bar->get_previous_tab() == 1);
 		SIGNAL_CHECK_FALSE("tab_selected");
@@ -613,11 +909,26 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_DISCARD("tab_selected");
 		SIGNAL_DISCARD("tab_changed");
 
-		CHECK_FALSE(tab_bar->select_previous_available());
+		CHECK_FALSE(tab_bar->select_previous_available(false));
 		CHECK(tab_bar->get_current_tab() == -1);
 		CHECK(tab_bar->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
 		SIGNAL_CHECK_FALSE("tab_changed");
+	}
+
+	SUBCASE("[TabBar] select previous available with wrap") {
+		tab_bar->add_tab("tab0");
+		tab_bar->add_tab("tab1");
+		tab_bar->add_tab("tab2");
+
+		CHECK(tab_bar->select_previous_available(true));
+		CHECK(tab_bar->get_current_tab() == 2);
+
+		CHECK(tab_bar->select_previous_available(true));
+		CHECK(tab_bar->get_current_tab() == 1);
+
+		CHECK(tab_bar->select_previous_available(true));
+		CHECK(tab_bar->get_current_tab() == 0);
 	}
 
 	SIGNAL_UNWATCH(tab_bar, "tab_selected");

@@ -317,6 +317,15 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			handled = true;
 		}
 
+		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
+			tab_container->select_next_available(true);
+			handled = true;
+		}
+		if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
+			tab_container->select_previous_available(true);
+			handled = true;
+		}
+
 		if (handled) {
 			set_input_as_handled();
 		}

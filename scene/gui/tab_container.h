@@ -165,6 +165,11 @@ protected:
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _select_previous_available_bind_compat_115349();
+	bool _select_next_available_bind_compat_115349();
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	virtual bool accessibility_override_tree_hierarchy() const override { return true; }
@@ -227,8 +232,8 @@ public:
 	int get_current_tab() const;
 	int get_previous_tab() const;
 
-	bool select_previous_available();
-	bool select_next_available();
+	bool select_previous_available(bool p_wrap = false);
+	bool select_next_available(bool p_wrap = false);
 
 	void set_deselect_enabled(bool p_enabled);
 	bool get_deselect_enabled() const;

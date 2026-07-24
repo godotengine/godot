@@ -353,6 +353,15 @@ void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 				EditorNode::get_singleton()->redo();
 				handled = true;
 			}
+
+			if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
+				tabs->select_next_available(true);
+				handled = true;
+			}
+			if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
+				tabs->select_previous_available(true);
+				handled = true;
+			}
 		}
 
 		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
