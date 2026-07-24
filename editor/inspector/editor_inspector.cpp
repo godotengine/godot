@@ -4637,7 +4637,10 @@ void EditorInspector::update_tree() {
 		Vector<String> components = path.split("/");
 		for (int i = 0; i < components.size(); i++) {
 			const String &component = components[i];
-			acc_path += (i > 0) ? "/" + component : component;
+
+			if (component != "") {
+				acc_path += (i > 0) ? "/" + component : String(doc_name) + "_" + component;
+			}
 
 			if (!vbox_per_path[root_vbox].has(acc_path)) {
 				// If the section does not exists, create it.
