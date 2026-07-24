@@ -100,6 +100,10 @@ class SplitContainer : public Container {
 	friend class SplitContainerDragger;
 	friend class SplitContainerMultiDragger;
 
+#ifdef TOOLS_ENABLED
+	friend class ContainerEditorPlugin;
+#endif
+
 public:
 	enum DraggerVisibility {
 		DRAGGER_VISIBLE,
