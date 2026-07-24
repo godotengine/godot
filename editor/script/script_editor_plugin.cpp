@@ -38,6 +38,7 @@
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/fuzzy_search.h"
@@ -2848,6 +2849,30 @@ Error ScriptEditor::close_file(const String &p_file) {
 		}
 	}
 	return ERR_FILE_NOT_FOUND;
+}
+
+void ScriptEditor::rename_symbol(const String &p_symbol, const String &p_new_name, const EditorLanguage::LookupResult &p_lookup) {
+	FindInFilesPanel *panel = find_in_files->get_dock()->get_panel_for_results(TTR("Rename symbol:") + " " + p_symbol);
+	FindInFilesSearch *finder = panel->get_finder();
+
+	HashSet<String> exts;
+
+	Ref<Script> scr = ResourceLoader::load(p_lookup.script_path);
+	ERR_FAIL_COND(scr.is_null());
+	exts.insert(scr->get_language()->get_extension());
+
+	finder->set_search_text(p_symbol);
+	finder->set_match_case(true);
+	finder->set_whole_words(true);
+	finder->set_folder(String());
+	finder->set_filter(exts);
+	finder->set_includes(HashSet<String>());
+	finder->set_excludes(HashSet<String>());
+
+	panel->set_symbol_rename(p_lookup, p_new_name);
+	panel->start_search();
+
+	find_in_files->get_dock()->make_visible();
 }
 
 void ScriptEditor::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {

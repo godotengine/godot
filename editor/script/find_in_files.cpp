@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/docks/editor_dock_manager.h"
@@ -378,6 +379,12 @@ void FindInFilesDialog::set_search_text(const String &p_text) {
 
 void FindInFilesDialog::set_replace_text(const String &p_text) {
 	replace_text_line_edit->set_text(p_text);
+}
+
+void FindInFilesPanel::set_symbol_rename(const EditorLanguage::LookupResult &p_symbol, const String &p_new_name) {
+	symbol_rename = p_symbol;
+	set_with_replace(true);
+	set_replace_text(p_new_name);
 }
 
 void FindInFilesDialog::set_replace_mode(bool p_replace) {
@@ -875,8 +882,37 @@ void FindInFilesPanel::_on_result_found(const String &p_fpath, int p_line_number
 	result_items[item] = r;
 
 	if (with_replace) {
+		bool check_item = false;
+		if (!symbol_rename.script_path.is_empty()) {
+			if (ResourceLoader::exists(p_fpath, "Script")) {
+				Ref<Script> source_script = ResourceLoader::load(p_fpath);
+				if (source_script.is_valid()) {
+					PackedStringArray lines = source_script->get_source_code().split("\n");
+					const String current_line = lines[p_line_number - 1];
+					lines.write[p_line_number - 1] = current_line.insert(p_begin, String::chr(0xFFFF));
+
+					EditorLanguage::LookupResult result;
+					Error err = source_script->get_language()->get_editor_language()->lookup_code_for_rename(String("\n").join(lines), current_line.substr(p_begin, p_end - p_begin), source_script->get_path(), result);
+					if (err == OK) {
+						check_item = result.type == symbol_rename.type &&
+								result.class_name == symbol_rename.class_name &&
+								result.class_member == symbol_rename.class_member &&
+								result.description == symbol_rename.description &&
+								result.doc_type == symbol_rename.doc_type &&
+								result.enumeration == symbol_rename.enumeration &&
+								result.is_bitfield == symbol_rename.is_bitfield &&
+								result.value == symbol_rename.value &&
+								result.script_path == symbol_rename.script_path &&
+								result.location == symbol_rename.location;
+					}
+				}
+			}
+		} else {
+			check_item = true;
+		}
+
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_checked(0, true);
+		item->set_checked(0, check_item);
 		item->set_editable(0, true);
 		item->add_button(1, replace_texture, FIND_BUTTON_REPLACE, false, TTR("Replace"));
 		item->add_button(1, remove_texture, FIND_BUTTON_REMOVE, false, TTR("Remove result"));
@@ -1005,8 +1041,31 @@ void FindInFilesPanel::_on_replace_text_changed(const String &p_text) {
 	_update_replace_buttons();
 }
 
-void FindInFilesPanel::_on_replace_all_clicked() {
-	String replace_text = _get_replace_text();
+void FindInFilesPanel::_on_replace_all_clicked(bool p_confirmed) {
+	const String replace_text = _get_replace_text();
+	if (symbol_rename.type == EditorLanguage::LookupResult::Type::CLASS_PROPERTY && !p_confirmed) {
+		const Ref<Script> script = ResourceLoader::load(symbol_rename.script_path);
+		const String old_symbol = finder->get_search_text();
+
+		List<PropertyInfo> script_properties;
+		script->get_script_property_list(&script_properties);
+		for (const PropertyInfo &pi : script_properties) {
+			if (pi.name == old_symbol) {
+				if (pi.usage & PROPERTY_USAGE_STORAGE) {
+					if (!rename_confirm) {
+						rename_confirm = memnew(ConfirmationDialog);
+						rename_confirm->set_text(TTRC("The renamed symbol is an exported variable. Renaming it may result in losing values stored in scene files. They have to be updated manually."));
+						add_child(rename_confirm);
+						rename_confirm->connect(SceneStringName(confirmed), callable_mp(this, &FindInFilesPanel::_on_replace_all_clicked).bind(true));
+					}
+					rename_confirm->popup_centered();
+					return;
+				} else {
+					break;
+				}
+			}
+		}
+	}
 
 	for (KeyValue<String, TreeItem *> &E : file_items) {
 		TreeItem *file_item = E.value;
@@ -1292,7 +1351,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		replace_all_button = memnew(Button);
 		replace_all_button->set_text(TTRC("Replace all (no undo)"));
-		replace_all_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_replace_all_clicked));
+		replace_all_button->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesPanel::_on_replace_all_clicked).bind(false));
 		replace_container->add_child(replace_all_button);
 
 		replace_container->hide();

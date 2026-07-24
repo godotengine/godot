@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "core/templates/hash_map.h"
 #include "editor/docks/editor_dock.h"
 #include "scene/gui/dialogs.h"
@@ -183,6 +184,9 @@ class FindInFilesPanel : public MarginContainer {
 	HashMap<TreeItem *, Result> result_items;
 	bool with_replace = false;
 
+	ConfirmationDialog *rename_confirm = nullptr;
+	EditorLanguage::LookupResult symbol_rename;
+
 	HBoxContainer *replace_container = nullptr;
 	LineEdit *replace_line_edit = nullptr;
 	Button *replace_all_button = nullptr;
@@ -199,7 +203,7 @@ class FindInFilesPanel : public MarginContainer {
 	void _on_result_selected();
 	void _on_item_edited();
 	void _on_replace_text_changed(const String &p_text);
-	void _on_replace_all_clicked();
+	void _on_replace_all_clicked(bool p_confirmed);
 
 	void _apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text);
 	void _update_replace_buttons();
@@ -219,6 +223,7 @@ public:
 
 	void set_with_replace(bool p_with_replace);
 	void set_replace_text(const String &p_text);
+	void set_symbol_rename(const EditorLanguage::LookupResult &p_symbol, const String &p_new_name);
 	bool is_keep_results() const;
 	void set_search_labels_visibility(bool p_visible);
 
@@ -292,6 +297,8 @@ protected:
 
 public:
 	void open_dialog(const String &p_initial_text, bool p_replace = false);
+
+	FindInFilesContainer *get_dock() const { return container; }
 
 	FindInFiles();
 };
