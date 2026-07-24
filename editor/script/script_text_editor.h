@@ -209,6 +209,8 @@ protected:
 public:
 	void _update_connected_methods();
 
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
 	virtual void apply_code() override;
 	virtual void set_edited_resource(const Ref<Resource> &p_res) override;
 	virtual void enable_editor() override;
