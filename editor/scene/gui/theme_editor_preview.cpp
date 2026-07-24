@@ -395,6 +395,11 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	VScrollBar *vsb = memnew(VScrollBar);
 	vsb->set_page(25);
 	vhb->add_child(vsb);
+	VSlider *vs = memnew(VSlider);
+	vs->set_editable(false);
+	vs->set_max(100);
+	vs->set_value(50);
+	vhb->add_child(vs);
 	vhb->add_child(memnew(VSeparator));
 	VBoxContainer *hvb = memnew(VBoxContainer);
 	vhb->add_child(hvb);
@@ -406,6 +411,8 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	hvb->add_child(hsb);
 	HSlider *hs = memnew(HSlider);
 	hs->set_editable(false);
+	hs->set_max(100);
+	hs->set_value(50);
 	hvb->add_child(hs);
 	hvb->add_child(memnew(HSeparator));
 	ProgressBar *pb = memnew(ProgressBar);

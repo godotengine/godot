@@ -65,14 +65,32 @@ private:
 	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
 
 	struct ThemeCache {
-		Ref<StyleBox> slider_style;
-		Ref<StyleBox> grabber_area_style;
-		Ref<StyleBox> grabber_area_hl_style;
+		Color grabber_color;
 
-		Ref<Texture2D> grabber_icon;
-		Ref<Texture2D> grabber_hl_icon;
-		Ref<Texture2D> grabber_disabled_icon;
-		Ref<Texture2D> tick_icon;
+		Ref<StyleBox> slider;
+		Ref<StyleBox> slider_focus;
+		Ref<StyleBox> slider_highlight;
+		Ref<StyleBox> slider_highlight_focus;
+		Ref<StyleBox> slider_disabled;
+		Ref<StyleBox> slider_disabled_focus;
+
+		Ref<StyleBox> grabber_area;
+		Ref<StyleBox> grabber_area_focus;
+		Ref<StyleBox> grabber_area_highlight;
+		Ref<StyleBox> grabber_area_highlight_focus;
+		Ref<StyleBox> grabber_area_disabled;
+		Ref<StyleBox> grabber_area_disabled_focus;
+
+		Ref<Texture2D> grabber;
+		Ref<Texture2D> grabber_focus;
+		Ref<Texture2D> grabber_highlight;
+		Ref<Texture2D> grabber_highlight_focus;
+		Ref<Texture2D> grabber_pressed;
+		Ref<Texture2D> grabber_pressed_focus;
+		Ref<Texture2D> grabber_disabled;
+		Ref<Texture2D> grabber_disabled_focus;
+
+		Ref<Texture2D> tick;
 
 		bool center_grabber = false;
 		int grabber_offset = 0;

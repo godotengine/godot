@@ -595,6 +595,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("grabber_offset", "HSlider", 0);
 	theme->set_constant("tick_offset", "HSlider", 0);
 
+	theme->set_color("grabber_color", "HSlider", Color(1.0, 1.0, 1.0, 1.0));
+
 	// VSlider
 
 	theme->set_stylebox("slider", "VSlider", style_slider);
@@ -609,6 +611,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("center_grabber", "VSlider", 0);
 	theme->set_constant("grabber_offset", "VSlider", 0);
 	theme->set_constant("tick_offset", "VSlider", 0);
+
+	theme->set_color("grabber_color", "VSlider", Color(1.0, 1.0, 1.0, 1.0));
 
 	// SpinBox
 
