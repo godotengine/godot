@@ -131,18 +131,22 @@ class WinRTWindowData {
 };
 
 bool WinRTUtils::create_queue() {
-	HMODULE coremessaging = LoadLibraryW(L"coremessaging.dll");
-	if (!coremessaging) {
-		return false;
-	}
-	CreateDispatcherQueueController = (CreateDispatcherQueueControllerPtr)(void *)GetProcAddress(coremessaging, "CreateDispatcherQueueController");
-	if (!CreateDispatcherQueueController) {
-		return false;
-	}
+	try {
+		HMODULE coremessaging = LoadLibraryW(L"coremessaging.dll");
+		if (!coremessaging) {
+			return false;
+		}
+		CreateDispatcherQueueController = (CreateDispatcherQueueControllerPtr)(void *)GetProcAddress(coremessaging, "CreateDispatcherQueueController");
+		if (!CreateDispatcherQueueController) {
+			return false;
+		}
 
-	DispatcherQueueOptions options{ sizeof(options), DQTYPE_THREAD_CURRENT, DQTAT_COM_NONE };
-	HRESULT res = CreateDispatcherQueueController(options, winrt::put_abi(controller));
-	return SUCCEEDED(res);
+		DispatcherQueueOptions options{ sizeof(options), DQTYPE_THREAD_CURRENT, DQTAT_COM_NONE };
+		HRESULT res = CreateDispatcherQueueController(options, winrt::put_abi(controller));
+		return SUCCEEDED(res);
+	} catch (...) {
+		return false;
+	}
 }
 
 void WinRTUtils::destroy_queue() {
