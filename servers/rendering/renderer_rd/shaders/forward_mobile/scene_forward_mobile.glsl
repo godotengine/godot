@@ -2348,7 +2348,8 @@ void main() {
 
 #ifndef FOG_DISABLED
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
-	out_color.rgb = mix(out_color.rgb, fog.rgb, fog.a);
+	// Avoid mix() producing NaN for Inf out_color on some backends.
+	out_color.rgb = fog.a >= half(1.0) ? fog.rgb : out_color.rgb * (half(1.0) - fog.a) + fog.rgb * fog.a;
 #endif // !FOG_DISABLED
 
 	// On mobile we use a UNORM buffer with 10bpp which results in a range from 0.0 - 1.0 resulting in HDR breaking
