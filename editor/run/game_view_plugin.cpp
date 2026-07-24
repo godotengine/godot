@@ -1224,8 +1224,6 @@ void GameView::_notification(int p_what) {
 				_update_embed_buttons();
 				_update_embed_menu_options();
 
-				EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &GameView::_play_pressed));
-				EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &GameView::_stop_pressed));
 				EditorRun::instance_starting_callback = _instance_starting_static;
 				EditorRun::instance_rq_screenshot_callback = _instance_rq_screenshot_static;
 
@@ -1236,6 +1234,9 @@ void GameView::_notification(int p_what) {
 				// Embedding not available.
 				embedding_hb->hide();
 			}
+
+			EditorRunBar::get_singleton()->connect("play_pressed", callable_mp(this, &GameView::_play_pressed));
+			EditorRunBar::get_singleton()->connect("stop_pressed", callable_mp(this, &GameView::_stop_pressed));
 
 			_update_ui();
 		} break;

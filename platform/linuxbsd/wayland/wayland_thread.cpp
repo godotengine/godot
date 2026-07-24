@@ -5446,6 +5446,10 @@ void WaylandThread::pointer_set_hint(const Point2i &p_hint) {
 	}
 }
 
+bool WaylandThread::is_pointer_warp_supported() const {
+	return registry.wp_pointer_warp != nullptr;
+}
+
 void WaylandThread::pointer_warp(const Point2i &p_to) {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 	if (!ss) {

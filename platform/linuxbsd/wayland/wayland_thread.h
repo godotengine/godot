@@ -1334,6 +1334,7 @@ public:
 	void pointer_set_constraint(PointerConstraint p_constraint);
 	void pointer_set_hint(const Point2i &p_hint);
 	void pointer_warp(const Point2i &p_to);
+	bool is_pointer_warp_supported() const;
 	PointerConstraint pointer_get_constraint() const;
 	DisplayServerEnums::WindowID pointer_get_pointed_window_id() const;
 	DisplayServerEnums::WindowID pointer_get_last_pointed_window_id() const;

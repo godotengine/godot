@@ -86,6 +86,25 @@ constexpr int GODOT4_CONFIG_VERSION = 5;
 
 ProjectManager *ProjectManager::singleton = nullptr;
 
+#ifdef WAYLAND_ENABLED
+static ObjectID xwayland_btn_id;
+
+static void _xwayland_timer_tick() {
+	Button *btn = ObjectDB::get_instance<Button>(xwayland_btn_id);
+	if (!btn) {
+		return;
+	}
+	int remaining = (int)btn->get_meta(SNAME("xwayland_timeout")) - 1;
+	btn->set_meta(SNAME("xwayland_timeout"), remaining);
+	if (remaining <= 0) {
+		btn->set_text(TTR("I know what I am doing"));
+		btn->set_disabled(false);
+	} else {
+		btn->set_text(vformat(TTR("I know what I am doing (%ds)"), remaining));
+	}
+}
+#endif
+
 // Notifications.
 
 void ProjectManager::_notification(int p_what) {
@@ -112,6 +131,37 @@ void ProjectManager::_notification(int p_what) {
 			_select_main_view(MAIN_VIEW_PROJECTS);
 			_update_list_placeholder();
 			_titlebar_resized();
+
+#ifdef WAYLAND_ENABLED
+			if (DisplayServer::get_singleton()->get_name() == "X11" && OS::get_singleton()->has_environment("WAYLAND_DISPLAY")) {
+				if (!EditorSettings::get_singleton()->has_setting("interface/editor/xwayland_warning_dismissed") || !(bool)EditorSettings::get_singleton()->get_setting("interface/editor/xwayland_warning_dismissed")) {
+					AcceptDialog *xwayland_dlg = memnew(AcceptDialog);
+					xwayland_dlg->set_title(TTR("Xwayland Detected"));
+					xwayland_dlg->set_text(TTR("You are running Godot under XWayland. You really shouldn't do this.\n\nLaunch Godot with the native Wayland display server instead.\n\nSeriously."));
+					xwayland_dlg->set_autowrap(true);
+					xwayland_dlg->set_min_size(Vector2i(500, 0));
+					xwayland_dlg->set_unparent_when_invisible(true);
+
+					xwayland_dlg->set_ok_button_text(TTR("Close Godot"));
+					xwayland_dlg->connect(SceneStringName(confirmed), callable_mp(get_tree(), &SceneTree::quit).bind(0), CONNECT_DEFERRED);
+
+					Button *reckless_btn = xwayland_dlg->add_button(TTR("I know what I am doing (10s)"), false, "reckless");
+					reckless_btn->set_meta(SNAME("xwayland_timeout"), 10);
+					reckless_btn->set_disabled(true);
+					reckless_btn->connect(SceneStringName(pressed), callable_mp(EditorSettings::get_singleton(), &EditorSettings::set_setting).bind("interface/editor/xwayland_warning_dismissed", true));
+					reckless_btn->connect(SceneStringName(pressed), callable_mp((Window *)xwayland_dlg, &Window::hide));
+
+					xwayland_btn_id = reckless_btn->get_instance_id();
+
+					for (int i = 1; i <= 10; i++) {
+						get_tree()->create_timer(i, false)->connect(SNAME("timeout"), callable_mp_static(&_xwayland_timer_tick));
+					}
+
+					add_child(xwayland_dlg);
+					xwayland_dlg->popup_centered();
+				}
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
