@@ -8937,20 +8937,6 @@ bool AnimationMarkerEdit::_is_ui_pos_in_current_section(const Point2 &p_pos) {
 	return false;
 }
 
-HBoxContainer *AnimationMarkerEdit::_create_hbox_labeled_control(const String &p_text, Control *p_control) const {
-	HBoxContainer *hbox = memnew(HBoxContainer);
-	Label *label = memnew(Label);
-	label->set_text(p_text);
-	hbox->add_child(label);
-	hbox->add_child(p_control);
-	hbox->set_h_size_flags(SIZE_EXPAND_FILL);
-	label->set_h_size_flags(SIZE_EXPAND_FILL);
-	label->set_stretch_ratio(1.0);
-	p_control->set_h_size_flags(SIZE_EXPAND_FILL);
-	p_control->set_stretch_ratio(1.0);
-	return hbox;
-}
-
 void AnimationMarkerEdit::_update_key_edit() {
 	_clear_key_edit();
 	if (animation.is_null()) {
@@ -9753,17 +9739,29 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	marker_insert_confirm->set_hide_on_ok(false);
 	marker_insert_confirm->connect(SceneStringName(confirmed), callable_mp(this, &AnimationMarkerEdit::_marker_insert_confirmed));
 	add_child(marker_insert_confirm);
-	VBoxContainer *marker_insert_vbox = memnew(VBoxContainer);
-	marker_insert_vbox->set_anchors_and_offsets_preset(Control::LayoutPreset::PRESET_FULL_RECT);
-	marker_insert_confirm->add_child(marker_insert_vbox);
+
+	GridContainer *marker_insert_container = memnew(GridContainer);
+	marker_insert_container->set_columns(2);
+	marker_insert_confirm->add_child(marker_insert_container);
+
+	Label *label = memnew(Label(TTRC("Marker Name")));
+	marker_insert_container->add_child(label);
+
 	marker_insert_new_name = memnew(LineEdit);
+	marker_insert_new_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	marker_insert_new_name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationMarkerEdit::_marker_insert_new_name_changed));
 	marker_insert_confirm->register_text_enter(marker_insert_new_name);
-	marker_insert_vbox->add_child(_create_hbox_labeled_control(TTRC("Marker Name"), marker_insert_new_name));
+	marker_insert_container->add_child(marker_insert_new_name);
+
+	label = memnew(Label(TTRC("Marker Color")));
+	marker_insert_container->add_child(label);
+
 	marker_insert_color = memnew(ColorPickerButton);
+	marker_insert_color->set_h_size_flags(SIZE_EXPAND_FILL);
 	marker_insert_color->set_edit_alpha(false);
 	marker_insert_color->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(marker_insert_color->get_picker()));
-	marker_insert_vbox->add_child(_create_hbox_labeled_control(TTRC("Marker Color"), marker_insert_color));
+	marker_insert_container->add_child(marker_insert_color);
+
 	marker_insert_error_dialog = memnew(AcceptDialog);
 	marker_insert_error_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	marker_insert_error_dialog->set_ok_button_text(TTRC("Close"));
