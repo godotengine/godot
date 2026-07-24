@@ -647,6 +647,12 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 	}
 	// Automatically adds overrides for project settings that were changed to editor settings.
 	_handle_editor_setting_compat("editor/script/search_in_file_extensions", "text_editor/behavior/general/find_in_file_extensions");
+	_handle_editor_setting_compat("editor/naming/scene_name_casing", "naming/scene_name_casing");
+	_handle_editor_setting_compat("editor/naming/script_name_casing", "naming/script_name_casing");
+	_handle_editor_setting_compat("editor/naming/node_name_casing", "naming/node_name_casing");
+	_handle_editor_setting_compat("editor/naming/node_name_num_separator", "naming/node_name_num_separator");
+	_handle_editor_setting_compat("editor/naming/default_signal_callback_to_self_name", "naming/default_signal_callback_to_self_name");
+	_handle_editor_setting_compat("editor/naming/default_signal_callback_name", "naming/default_signal_callback_name");
 #endif // DISABLE_DEPRECATED
 }
 
@@ -1358,6 +1364,23 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 	return ret;
 }
 
+Variant _GLOBAL_EDITOR_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_basic) {
+	return _GLOBAL_EDITOR_DEF(PropertyInfo(p_default.get_type(), p_var), p_default, p_restart_if_changed, p_basic);
+}
+
+Variant _GLOBAL_EDITOR_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p_restart_if_changed, bool p_basic) {
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	ps->editor_fallbacks[p_info.name] = p_default;
+#ifdef TOOLS_ENABLED
+	if (ps->editor_settings) {
+		return ps->call(SNAME("_define_from_project_setting"), p_info.operator Dictionary(), p_default, p_restart_if_changed, p_basic);
+	} else {
+		ps->pending_editor_settings[p_info.name] = Array{ p_info.operator Dictionary(), p_default, p_restart_if_changed, p_basic };
+	}
+#endif
+	return ps->get_editor_setting(p_info.name);
+}
+
 void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 	ERR_FAIL_COND_MSG(!p_info.has("name"), "Property info is missing \"name\" field.");
 	ERR_FAIL_COND_MSG(!p_info.has("type"), "Property info is missing \"type\" field.");
@@ -1423,6 +1446,27 @@ Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_d
 	} else {
 		return p_default_value;
 	}
+}
+
+Variant ProjectSettings::get_editor_setting(const String &p_setting, const Variant &p_default_value) const {
+	const String override_name = EDITOR_SETTING_OVERRIDE_PREFIX + p_setting;
+	if (has_setting(override_name)) {
+		return get_setting(override_name);
+	}
+#ifdef TOOLS_ENABLED
+	if (editor_settings) {
+		bool valid;
+		const Variant editor_value = editor_settings->get(p_setting, &valid);
+		if (valid) {
+			return editor_value;
+		}
+	}
+#endif
+	const Variant *fallback = editor_fallbacks.getptr(p_setting);
+	if (fallback) {
+		return *fallback;
+	}
+	return p_default_value;
 }
 
 PackedStringArray ProjectSettings::get_changed_settings() const {
