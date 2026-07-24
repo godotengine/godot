@@ -780,7 +780,13 @@ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data, const Vector2i
 				ERR_FAIL_V_MSG(false, "FreeType: Failed to load glyph stroker.");
 			}
 
-			FT_Stroker_Set(stroker, (int)(fd->size.y * 16.0), FT_STROKER_LINECAP_BUTT, FT_STROKER_LINEJOIN_ROUND, 0);
+			double sz = double(fd->size.x) / 64.0;
+			double out_sz = double(fd->size.y);
+			if (sz > 2048.0) {
+				out_sz /= fd->scale;
+			}
+
+			FT_Stroker_Set(stroker, (int)(out_sz * 16.0), FT_STROKER_LINECAP_BUTT, FT_STROKER_LINEJOIN_ROUND, 0);
 			FT_Glyph glyph;
 			FT_BitmapGlyph glyph_bitmap;
 
