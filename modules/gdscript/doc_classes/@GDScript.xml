@@ -727,6 +727,21 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_suffix" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="suffix" type="String" />
+			<param index="1" name="extra_hints" type="String" default="&quot;&quot;" />
+			<description>
+				Export an [int], [float], or vector property with a custom unit suffix. The suffix must be defined by [param suffix], and extra hints can be added as additional parameters.
+				Using the hint [code]"radians_as_degrees"[/code], you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock.
+				See also [constant PROPERTY_HINT_SUFFIX].
+				[codeblock]
+				@export_suffix("m/s") var speed: float
+				@export_suffix("wheels") var number_of_wheels: int
+				@export_suffix("m") var checkpoints: Array[float]
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_tool_button">
 			<return type="void" />
 			<param index="0" name="text" type="String" />
