@@ -93,6 +93,9 @@ void EditorSettingsDialog::_settings_property_edited() {
 	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
 		update_3d_navigation_preset();
 		_update_shortcuts();
+	} else if (full_name == "interface/editor/appearance/custom_display_scale") {
+		// The "Custom" display scale is index 7 in the setting's enum hint.
+		EditorSettings::get_singleton()->set_manually("interface/editor/appearance/display_scale", 7);
 	}
 }
 
