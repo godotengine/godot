@@ -153,7 +153,7 @@ public:
 		_FORCE_INLINE_ static DataType get_variant_type() { // Default DataType for container elements.
 			DataType datatype;
 			datatype.kind = VARIANT;
-			datatype.type_source = INFERRED;
+			datatype.type_source = ANNOTATED_INFERRED;
 			return datatype;
 		}
 
@@ -212,7 +212,17 @@ public:
 				case VARIANT:
 					return true; // All variants are the same.
 				case BUILTIN:
-					return builtin_type == p_other.builtin_type;
+					if (builtin_type != p_other.builtin_type) {
+						return false;
+					}
+					if (builtin_type == Variant::ARRAY) {
+						return get_container_element_type_or_variant(0) == p_other.get_container_element_type_or_variant(0);
+					}
+					if (builtin_type == Variant::DICTIONARY) {
+						return get_container_element_type_or_variant(0) == p_other.get_container_element_type_or_variant(0) &&
+								get_container_element_type_or_variant(1) == p_other.get_container_element_type_or_variant(1);
+					}
+					return true;
 				case NATIVE:
 				case ENUM: // Enums use native_type to identify the enum and its base class.
 					return native_type == p_other.native_type;

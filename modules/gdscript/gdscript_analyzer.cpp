@@ -3904,7 +3904,7 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 		if (op_type.is_variant() || !op_type.is_hard_type()) {
 			mark_node_unsafe(p_cast);
 #ifdef DEBUG_ENABLED
-			parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, cast_type.to_string());
+			parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, "Variant", cast_type.to_string());
 #endif // DEBUG_ENABLED
 		} else {
 			bool valid = false;
@@ -3915,6 +3915,36 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 				valid = true;
 			} else if (op_type.kind == GDScriptParser::DataType::BUILTIN && cast_type.kind == GDScriptParser::DataType::BUILTIN) {
 				valid = Variant::can_convert(op_type.builtin_type, cast_type.builtin_type);
+				if (valid && cast_type.builtin_type == Variant::ARRAY && !cast_type.get_container_element_type_or_variant(0).is_variant()) {
+					if (op_type.builtin_type == Variant::ARRAY) {
+						if (p_cast->operand->type == GDScriptParser::Node::ARRAY || op_type == cast_type) {
+							valid = true;
+						} else if (op_type.get_container_element_type_or_variant(0).is_variant()) {
+							valid = true;
+							mark_node_unsafe(p_cast);
+#ifdef DEBUG_ENABLED
+							parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, op_type.to_string_strict(), cast_type.to_string());
+#endif // DEBUG_ENABLED
+						} else {
+							valid = false;
+						}
+					}
+				}
+				if (valid && cast_type.builtin_type == Variant::DICTIONARY && (!cast_type.get_container_element_type_or_variant(0).is_variant() || !cast_type.get_container_element_type_or_variant(1).is_variant())) {
+					if (op_type.builtin_type == Variant::DICTIONARY) {
+						if (p_cast->operand->type == GDScriptParser::Node::DICTIONARY || op_type == cast_type) {
+							valid = true;
+						} else if (op_type.get_container_element_type_or_variant(0).is_variant() && op_type.get_container_element_type_or_variant(1).is_variant()) {
+							valid = true;
+							mark_node_unsafe(p_cast);
+#ifdef DEBUG_ENABLED
+							parser->push_warning(p_cast, GDScriptWarning::UNSAFE_CAST, op_type.to_string_strict(), cast_type.to_string());
+#endif // DEBUG_ENABLED
+						} else {
+							valid = false;
+						}
+					}
+				}
 			} else if (op_type.kind != GDScriptParser::DataType::BUILTIN && cast_type.kind != GDScriptParser::DataType::BUILTIN) {
 				valid = is_type_compatible(cast_type, op_type) || is_type_compatible(op_type, cast_type);
 			}
