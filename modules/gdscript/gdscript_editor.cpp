@@ -3168,17 +3168,8 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				}
 
 				if (p_argidx == 0 && ClassDB::is_parent_class(class_name, SNAME("Node")) && (method == SNAME("get_node") || method == SNAME("has_node"))) {
-					// Get autoloads
-					List<PropertyInfo> props;
-					ProjectSettings::get_singleton()->get_property_list(&props);
-
-					for (const PropertyInfo &E : props) {
-						String s = E.name;
-						if (!s.begins_with("autoload/")) {
-							continue;
-						}
-						String name = s.get_slicec('/', 1);
-						ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, "/root/" + name, Variant::NODE_PATH);
+					for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
+						ScriptLanguage::CodeCompletionOption option = _calculate_string_insertion(existing_argument, "/root/" + E.value.name, Variant::NODE_PATH);
 						option.kind = ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH;
 						r_result.insert(option.display, option);
 					}
