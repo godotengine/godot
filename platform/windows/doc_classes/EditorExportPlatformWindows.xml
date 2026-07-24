@@ -98,6 +98,11 @@
 		<member name="debug/export_console_wrapper" type="int" setter="" getter="">
 			If [code]true[/code], a console wrapper executable is exported alongside the main executable, which allows running the project with enabled console output.
 		</member>
+		<member name="debug/export_debug_symbols" type="int" setter="" getter="">
+			If [code]true[/code], a debug symbol file ([code].debugsymbols[/code]) is exported alongside the main executable. This also applies to the console wrapper if enabled.
+			[b]Note:[/b] This requires separate debug symbols to be present alongside the export template binary in the export template folder with a [code].debugsymbols[/code] extension.
+			[b]Note:[/b] If debug symbols are embedded in the export template binary, they will still be embedded in the exported project binary regardless of this option.
+		</member>
 		<member name="shader_baker/enabled" type="bool" setter="" getter="">
 			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ and Mobile renderers.
 			[b]Note:[/b] When exporting as a dedicated server, the shader baker is always disabled since no rendering is performed.
