@@ -302,8 +302,18 @@ void Slider::_notification(int p_what) {
 				int widget_width = style->get_minimum_size().width;
 				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
 				int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
-				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, Math::round(size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift)), Size2i(widget_width, Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift))));
+				int grabber_area_size = Math::round(areasize * ratio + grabber->get_height() / 2 - grabber_shift);
+
+				style->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, 0), Size2i(widget_width, size.height)));
+
+				if (theme_cache.grabber_anchored) {
+					grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - grabber_area_size), Size2i(widget_width, grabber_area_size)));
+				} else {
+					// Texture anchored at the bottom - flip Y so the style renders from bottom to top.
+					draw_set_transform(Point2(0, size.height), 0, Vector2(1, -1));
+					grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, grabber_area_size), Size2i(widget_width, -grabber_area_size)));
+					draw_set_transform(Point2(), 0, Vector2(1, 1));
+				}
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_height() / 2 - tick->get_height() / 2);
@@ -336,8 +346,23 @@ void Slider::_notification(int p_what) {
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
 				int p = areasize * (rtl ? 1 - ratio : ratio) + grabber->get_width() / 2 + grabber_shift;
-				if (rtl) {
-					grabber_area->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(size.width - p, widget_height)));
+				int wp = size.width - p;
+
+				if (rtl && theme_cache.grabber_anchored) {
+					grabber_area->draw(ci, Rect2i(Point2i(size.width, (size.height - widget_height) / 2), Size2i(-wp, widget_height)));
+
+				} else if (rtl && !theme_cache.grabber_anchored) {
+					// Texture anchored at the right - flip x so the style renders from right to left.
+					draw_set_transform(Point2(size.width, 0), 0, Vector2(-1, 1));
+					grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(wp, widget_height)));
+					draw_set_transform(Point2(), 0, Vector2(1, 1));
+
+				} else if (!rtl && theme_cache.grabber_anchored) {
+					// Texture anchored at the grabber - flip x so the style renders from grabber to left.
+					draw_set_transform(Point2(p, 0), 0, Vector2(-1, 1));
+					grabber_area->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(-p, widget_height)));
+					draw_set_transform(Point2(), 0, Vector2(1, 1));
+
 				} else {
 					grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(p, widget_height)));
 				}
@@ -487,6 +512,7 @@ void Slider::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, Slider, tick_icon, "tick");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_anchored);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, tick_offset);
 }

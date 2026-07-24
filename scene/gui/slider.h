@@ -75,6 +75,7 @@ private:
 		Ref<Texture2D> tick_icon;
 
 		bool center_grabber = false;
+		bool grabber_anchored = false;
 		int grabber_offset = 0;
 		int tick_offset = 0;
 	} theme_cache;
