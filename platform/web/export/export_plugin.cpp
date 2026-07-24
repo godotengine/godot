@@ -52,10 +52,23 @@
 static bool _project_contains_dotnet() {
 	const String project_path = ProjectSettings::get_singleton()->get_resource_path();
 	for (const String &file : DirAccess::get_files_at(project_path)) {
-		if (file.ends_with(".csproj") || file.ends_with(".sln") || file.ends_with(".slnx")) {
+		if (file.ends_with(".csproj")) {
 			return true;
 		}
 	}
+
+	String solution_directory = GLOBAL_GET("dotnet/project/solution_directory");
+	if (solution_directory.is_empty()) {
+		solution_directory = project_path;
+	} else {
+		solution_directory = project_path.path_join(solution_directory);
+	}
+	for (const String &file : DirAccess::get_files_at(solution_directory)) {
+		if (file.ends_with(".sln") || file.ends_with(".slnx")) {
+			return true;
+		}
+	}
+
 	return false;
 }
 #endif
