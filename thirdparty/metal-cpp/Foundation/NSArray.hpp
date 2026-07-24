@@ -1,124 +1,102 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Foundation/NSArray.hpp
-//
-// Copyright 2020-2024 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#include "NSDefines.hpp"
+#include "NSBlocks.hpp"
+#include "NSStructs.hpp"
+#include "NSBridge.hpp"
 #include "NSObject.hpp"
 #include "NSTypes.hpp"
+#include "NSRange.hpp"
 #include "NSEnumerator.hpp"
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+namespace NS {
+    class Object;
+}
 
 namespace NS
 {
-class Array : public Copying<Array>
+
+_NS_OPTIONS(NS::UInteger, BinarySearchingOptions) {
+    BinarySearchingFirstEqual = (1UL << 8),
+    BinarySearchingLastEqual = (1UL << 9),
+    BinarySearchingInsertionIndex = (1UL << 10),
+};
+
+
+class Array : public NS::SecureCoding<Array>
 {
 public:
-    static Array* array();
-    static Array* array(const Object* pObject);
-    static Array* array(const Object* const* pObjects, UInteger count);
-
     static Array* alloc();
+    Array*        init() const;
 
-    Array*        init();
-    Array*        init(const Object* const* pObjects, UInteger count);
-    Array*        init(const class Coder* pCoder);
+    static NS::Array* array();
+    static NS::Array* array(NS::Object* anObject);
+    static NS::Array* array(const NS::Object* const * objects, NS::UInteger cnt);
 
+    NS::UInteger         count() const;
+    NS::Array*           init(const NS::Object* const * objects, NS::UInteger cnt);
+    NS::Array*           init(void* coder);
     template <class _Object = Object>
-    _Object*            object(UInteger index) const;
-    UInteger            count() const;
-    Enumerator<Object>* objectEnumerator() const;
+    _Object*             object(NS::UInteger index);
+    template <class _Object = Object>
+    Enumerator<_Object>* objectEnumerator();
+
 };
-}
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+} // namespace NS
 
-_NS_INLINE NS::Array* NS::Array::array()
-{
-    return Object::sendMessage<Array*>(_NS_PRIVATE_CLS(NSArray), _NS_PRIVATE_SEL(array));
-}
+// --- Class symbols + inline implementations ---
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Array* NS::Array::array(const Object* pObject)
-{
-    return Object::sendMessage<Array*>(_NS_PRIVATE_CLS(NSArray), _NS_PRIVATE_SEL(arrayWithObject_), pObject);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Array* NS::Array::array(const Object* const* pObjects, UInteger count)
-{
-    return Object::sendMessage<Array*>(_NS_PRIVATE_CLS(NSArray), _NS_PRIVATE_SEL(arrayWithObjects_count_), pObjects, count);
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern "C" void *OBJC_CLASS_$_NSArray;
 
 _NS_INLINE NS::Array* NS::Array::alloc()
 {
-    return NS::Object::alloc<Array>(_NS_PRIVATE_CLS(NSArray));
+    return _NS_msg_NS__Arrayp_alloc((const void*)&OBJC_CLASS_$_NSArray, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Array* NS::Array::init()
+_NS_INLINE NS::Array* NS::Array::init() const
 {
-    return NS::Object::init<Array>();
+    return _NS_msg_NS__Arrayp_init((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Array* NS::Array::init(const Object* const* pObjects, UInteger count)
+_NS_INLINE NS::Array* NS::Array::array()
 {
-    return Object::sendMessage<Array*>(this, _NS_PRIVATE_SEL(initWithObjects_count_), pObjects, count);
+    return _NS_msg_NS__Arrayp_array((const void*)&OBJC_CLASS_$_NSArray, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Array* NS::Array::init(const class Coder* pCoder)
+_NS_INLINE NS::Array* NS::Array::array(NS::Object* anObject)
 {
-    return Object::sendMessage<Array*>(this, _NS_PRIVATE_SEL(initWithCoder_), pCoder);
+    return _NS_msg_NS__Arrayp_arrayWithObject__NS__Objectp((const void*)&OBJC_CLASS_$_NSArray, nullptr, anObject);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_NS_INLINE NS::Array* NS::Array::array(const NS::Object* const * objects, NS::UInteger cnt)
+{
+    return _NS_msg_NS__Arrayp_arrayWithObjects_count__constNS__Objectpconstp_NS__UInteger((const void*)&OBJC_CLASS_$_NSArray, nullptr, objects, cnt);
+}
 
 _NS_INLINE NS::UInteger NS::Array::count() const
 {
-    return Object::sendMessage<UInteger>(this, _NS_PRIVATE_SEL(count));
+    return _NS_msg_NS__UInteger_count((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 template <class _Object>
-_NS_INLINE _Object* NS::Array::object(UInteger index) const
+_NS_INLINE _Object* NS::Array::object(NS::UInteger index)
 {
-    return Object::sendMessage<_Object*>(this, _NS_PRIVATE_SEL(objectAtIndex_), index);
+    return reinterpret_cast<_Object*>(_NS_msg_NS__Objectp_objectAtIndex__NS__UInteger((const void*)this, nullptr, index));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_NS_INLINE NS::Enumerator<NS::Object>* NS::Array::objectEnumerator() const
+_NS_INLINE NS::Array* NS::Array::init(const NS::Object* const * objects, NS::UInteger cnt)
 {
-    return NS::Object::sendMessage<Enumerator<NS::Object>*>(this, _NS_PRIVATE_SEL(objectEnumerator));
+    return _NS_msg_NS__Arrayp_initWithObjects_count__constNS__Objectpconstp_NS__UInteger((const void*)this, nullptr, objects, cnt);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_NS_INLINE NS::Array* NS::Array::init(void* coder)
+{
+    return _NS_msg_NS__Arrayp_initWithCoder__voidp((const void*)this, nullptr, coder);
+}
+
+template <class _Object>
+_NS_INLINE NS::Enumerator<_Object>* NS::Array::objectEnumerator()
+{
+    return reinterpret_cast<NS::Enumerator<_Object>*>(_NS_msg_NS__EnumeratorLNS__ObjectGp_objectEnumerator((const void*)this, nullptr));
+}

@@ -1,31 +1,23 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Foundation/NSEnumerator.hpp
-//
-// Copyright 2020-2024 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// NS::Enumerator / NS::FastEnumeration — emitted by tools/generate.py
+// (used to live verbatim under metal-cpp-apple). The kept-upstream
+// version routed through `_NS_PRIVATE_SEL`; this version dispatches
+// directly through the linker-synthesized `_objc_msgSend$<sel>` stubs
+// so it stops pulling Apple's selector-registration machinery into the
+// tree.
 
+#include "NSDefines.hpp"
 #include "NSObject.hpp"
 #include "NSTypes.hpp"
+#include "NSBridge.hpp"
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+namespace NS
+{
+class Array;
+class FastEnumeration;
+template <class _ObjectType> class Enumerator;
+} // namespace NS
 
 namespace NS
 {
@@ -50,29 +42,26 @@ public:
     _ObjectType* nextObject();
     class Array* allObjects();
 };
-}
+} // namespace NS
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --- Inline implementations ---
 
-_NS_INLINE NS::UInteger NS::FastEnumeration::countByEnumerating(FastEnumerationState* pState, Object** pBuffer, NS::UInteger len)
+_NS_INLINE NS::UInteger NS::FastEnumeration::countByEnumerating(
+    FastEnumerationState* pState, Object** pBuffer, NS::UInteger len)
 {
-    return Object::sendMessage<UInteger>(this, _NS_PRIVATE_SEL(countByEnumeratingWithState_objects_count_), pState, pBuffer, len);
+    return _NS_msg_NS__UInteger_countByEnumeratingWithState_objects_count__voidp_NS__Objectpp_NS__UInteger(
+        (const void*)this, nullptr, pState, pBuffer, len);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 template <class _ObjectType>
 _NS_INLINE _ObjectType* NS::Enumerator<_ObjectType>::nextObject()
 {
-    return Object::sendMessage<_ObjectType*>(this, _NS_PRIVATE_SEL(nextObject));
+    return reinterpret_cast<_ObjectType*>(
+        _NS_msg_voidp_nextObject((const void*)this, nullptr));
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 template <class _ObjectType>
 _NS_INLINE NS::Array* NS::Enumerator<_ObjectType>::allObjects()
 {
-    return Object::sendMessage<Array*>(this, _NS_PRIVATE_SEL(allObjects));
+    return _NS_msg_NS__Arrayp_allObjects((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------

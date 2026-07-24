@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://godotengine.org/schemas/metal-cpp-config.json",
+  "title": "metal-cpp generator configuration",
+  "description": "Schema for config.yaml. Drives generate.py, which parses Apple-framework headers via libclang and emits metal-cpp-shaped C++ wrappers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sdks", "frameworks"],
+  "properties": {
+    "sdks": {
+      "type": "array",
+      "description": "Apple SDKs to generate against. Each entry is parsed in turn; the `--sdk <name>` CLI flag can restrict generation to a single entry.",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/sdk" }
+    },
+    "frameworks": {
+      "type": "array",
+      "description": "Apple frameworks to wrap. Processed in declaration order; cross-framework class references resolve to whatever is already registered, so put base namespaces (Foundation, then Metal) before dependents.",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/framework" }
+    }
+  },
+
+  "$defs": {
+    "sdk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "xcrun_sdk"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Logical SDK identifier (e.g. `macos`, `iphoneos`, `visionos`). Filterable via the `--sdk` CLI flag. Must be unique across the sdks list.",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "xcrun_sdk": {
+          "type": "string",
+          "description": "Argument passed to `xcrun --sdk <value> --show-sdk-path` to locate the SDK on disk. Apple's canonical names: `macosx`, `iphoneos`, `iphonesimulator`, `xros`, `xrsimulator`, `appletvos`, `appletvsimulator`, `watchos`, `watchsimulator`."
+        }
+      }
+    },
+
+    "framework": {
+      "type": "object",
+      "description": "Apple framework wrapper definition. Two flavors: ObjC frameworks (default) parse @interface / @protocol via libclang; C-API frameworks (`api_notes: true`) parse `.apinotes` + C function prototypes.",
+      "additionalProperties": false,
+      "required": ["name", "namespace", "prefix", "sdks"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Framework directory name on disk under `<sdk>/System/Library/Frameworks/`. Also the output subdirectory name unless overridden by `output_subdir`. For virtual frameworks (Metal4, Metal4FX) this is a logical name and `sdk_framework` points at the actual on-disk framework.",
+          "pattern": "^[A-Z][A-Za-z0-9]+$"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "C++ namespace emitted for this framework's classes/enums/blocks/structs (e.g. `NS`, `MTL`, `MTL4`, `MTLFX`, `MTL4FX`, `CA`).",
+          "pattern": "^[A-Z][A-Za-z0-9]*$"
+        },
+        "prefix": {
+          "type": "string",
+          "description": "C-style prefix used by Apple in selector and class-name macros (`MTL`, `MTL4`, `CA`, ...). Drives `_<PREFIX>_INLINE`, `_<PREFIX>_ENUM`, `_<PREFIX>_PACKED`, etc. in the emitted code.",
+          "pattern": "^[A-Z][A-Za-z0-9]*$"
+        },
+        "strip_prefix": {
+          "type": "string",
+          "description": "Prefix stripped from Apple's ObjC names when generating C++ names (`MTLDevice` → `Device` with `strip_prefix: MTL`). Usually identical to `prefix`. Defaults to empty (no stripping).",
+          "default": ""
+        },
+        "sdks": {
+          "type": "array",
+          "description": "Subset of top-level `sdks[].name` entries this framework should be parsed against. Frameworks that don't ship for a given SDK should omit it here.",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "headers": {
+          "type": "array",
+          "description": "SDK header filenames (relative to `<framework>/Headers/`) to parse. Each header yields a matching `<Header>.hpp` next to other generated files. Order matters: type-defining headers (`MTLTypes.h`, `MTLPixelFormat.h`, ...) should come first so cross-header references in later headers resolve.",
+          "items": { "type": "string", "pattern": "^[A-Za-z0-9_]+\\.h$" }
+        },
+        "include": { "$ref": "#/$defs/includeFilter" },
+        "exclude": { "$ref": "#/$defs/excludeFilter" },
+        "class_overrides": {
+          "type": "object",
+          "description": "Per-class / per-struct / per-protocol override knobs, keyed by the ObjC name (`MTLRenderCommandEncoder`, `MTLSize`, `NSString`, ...). See `classOverride` schema for the available fields.",
+          "additionalProperties": { "$ref": "#/$defs/classOverride" }
+        },
+        "keep_upstream": {
+          "type": "array",
+          "description": "Bare hpp basenames (no `.hpp` extension) that should be copied verbatim from `<--metal-cpp>/<framework>/<name>.hpp` (Apple's checkout supplied via `generate.py --metal-cpp`) into the generated tree. Used for hand-written infrastructure the generator can't emit: SEL/class macros (`NSPrivate`, `MTLPrivate`), CRTP bases (`NSObject`), SIMD-typed structs (`MTLAccelerationStructureTypes`), template containers (`NSDictionary`, `NSEnumerator`), etc. Listed files are also added to the framework umbrella include list.",
+          "items": { "type": "string" }
+        },
+        "sdk_framework": {
+          "type": "string",
+          "description": "SDK framework directory to read headers from when it differs from `name`. Used by virtual frameworks that re-namespace a subset of another framework's headers (`Metal4`/`Metal4FX` both have `sdk_framework: Metal`/`MetalFX` and pick up the `MTL4*.h` / `MTL4FX*.h` headers in a separate namespace).",
+          "default": ""
+        },
+        "output_subdir": {
+          "type": "string",
+          "description": "Directory under `metal-cpp/` to write generated files into, if different from `name`. Defaults to `name`. Set when a virtual framework should share a directory with its host framework (`Metal4` writes into `Metal/`).",
+          "default": ""
+        },
+        "extra_umbrella_includes": {
+          "type": "array",
+          "description": "Extra `#include` lines appended to the framework's umbrella `<Framework>.hpp`. Used to surface sibling virtual frameworks (`Metal.hpp` pulls in `Metal4.hpp`) and hand-written supplementary headers (`MetalFX.hpp` pulls in `Metal4FX.hpp`).",
+          "items": { "type": "string" }
+        },
+        "api_notes": {
+          "type": "boolean",
+          "description": "When true, treat this as a C-API framework: parse the `<Framework>.apinotes` YAML alongside C function signatures from `headers`. Used for CoreGraphics-style APIs. ObjC frameworks (the default) ignore apinotes here and consume them per-framework for SwiftName-derived method renames.",
+          "default": false
+        },
+        "shared": {
+          "type": "boolean",
+          "description": "When true, the framework is generated once across all SDK passes rather than re-generated per SDK. Use for frameworks whose surface is platform-invariant (e.g. QuartzCore).",
+          "default": false
+        }
+      }
+    },
+
+    "includeFilter": {
+      "type": "object",
+      "description": "Inclusion filter. When present, only members matching the listed regex patterns are kept. Omitting a sub-key means \"keep nothing of this kind\".",
+      "additionalProperties": false,
+      "properties": {
+        "classes": {
+          "type": "array",
+          "description": "Regex patterns matched against ObjC class/protocol names. Use `[\".*\"]` to keep all (the typical setting).",
+          "items": { "type": "string", "format": "regex" }
+        },
+        "methods": {
+          "type": "array",
+          "description": "Regex patterns matched against either the ObjC selector or the generator-computed C++ method name.",
+          "items": { "type": "string", "format": "regex" }
+        },
+        "properties": {
+          "type": "array",
+          "description": "Regex patterns matched against ObjC property names.",
+          "items": { "type": "string", "format": "regex" }
+        },
+        "globals": {
+          "type": "array",
+          "description": "C-API framework only (`api_notes: true`). Regex patterns matched against apinotes global names.",
+          "items": { "type": "string", "format": "regex" }
+        }
+      }
+    },
+
+    "excludeFilter": {
+      "type": "object",
+      "description": "Exclusion filter. Applied after include filters; anything matched here is dropped. Use case-insensitive regexes (`(?i)deprecated`) to skip whole categories of methods.",
+      "additionalProperties": false,
+      "properties": {
+        "classes": {
+          "type": "array",
+          "description": "Framework-level only. Regex patterns matched against ObjC class/protocol names — anything matching is dropped before per-class filtering runs. Use to skip whole classes (`NSBundleResourceRequest`) without restructuring the framework's `include.classes` allow-list.",
+          "items": { "type": "string", "format": "regex" }
+        },
+        "methods": {
+          "type": "array",
+          "description": "Regex patterns matched against the ObjC selector. Common entry: `[\"(?i)deprecated\"]` to drop everything Apple marked deprecated in the selector text or attribute.",
+          "items": { "type": "string", "format": "regex" }
+        },
+        "properties": {
+          "type": "array",
+          "description": "Regex patterns matched against ObjC property names.",
+          "items": { "type": "string", "format": "regex" }
+        }
+      }
+    },
+
+    "perClassMemberFilter": {
+      "type": "object",
+      "description": "Per-class member filter. `members:` is the only key — a flat allow/deny list keyed by ObjC selector (for methods) or property name (for properties). `methods`/`properties`/`classes`/`globals` from the framework-level filter don't apply at this scope.",
+      "additionalProperties": false,
+      "properties": {
+        "members": {
+          "type": "array",
+          "description": "Regex patterns (or plain literal selectors / property names) matched against `m.selector` for each method and `p.name` for each property. Use literals for surgical allow-lists (`setBlendColorRed:green:blue:alpha:`) and regex when you want a wildcard (`set.*`).",
+          "items": { "type": "string", "format": "regex" }
+        }
+      }
+    },
+
+    "classOverride": {
+      "type": "object",
+      "description": "Per-class/struct/protocol override. Different keys apply to different ObjC kinds — ObjC classes accept `include`/`exclude`/`rename`/`prepend`/`append`; structs accept `skip`/`packed`/`cpp_name`/`members`. The generator silently ignores unrelated keys for an entity (e.g. `packed` on a class) so it's safe to mix freely if multiple ObjC names happen to alias to the same C++ key.",
+      "additionalProperties": false,
+      "properties": {
+        "include": {
+          "$ref": "#/$defs/perClassMemberFilter",
+          "description": "ObjC-class-only. Per-class include filter — when present, only members named in `members:` pass through."
+        },
+        "exclude": {
+          "$ref": "#/$defs/perClassMemberFilter",
+          "description": "ObjC-class-only. Per-class exclude filter — drops members named in `members:`. Applied after `include:` and after the framework-level filters."
+        },
+        "rename": {
+          "type": "object",
+          "description": "ObjC-class-only. Map from ObjC selector (e.g. `setBlendColorRed:green:blue:alpha:`) to a custom C++ method name. Used to override the generator's heuristic / apinotes-derived name when upstream metal-cpp picked something else (`encodeWaitForEvent:value:` → `encodeWait`).",
+          "additionalProperties": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" }
+        },
+        "prepend": {
+          "type": "string",
+          "description": "ObjC-class-only. Raw C++ source injected at the top of the generated class body, before the auto-emitted `alloc()`/`init()`. Use multi-line YAML scalars (`|`) to keep formatting."
+        },
+        "append": {
+          "type": "string",
+          "description": "ObjC-class-only. Raw C++ source injected at the bottom of the generated class body. Useful for class-scoped macros (`MTLSTR`) or hand-written conveniences."
+        },
+        "skip": {
+          "type": "boolean",
+          "description": "Struct-only. Register the type with the resolver so cross-references resolve, but don't emit a definition. Use for structs whose canonical definition lives in a kept-upstream header (e.g. `MTLPackedFloat3` lives in `MTLAccelerationStructureTypes.hpp`).",
+          "default": false
+        },
+        "packed": {
+          "type": "boolean",
+          "description": "Struct-only. Emit the struct with the `_<PREFIX>_PACKED` macro to match upstream metal-cpp's layout for SDK structs marked `_MTL_PACKED` (the SDK headers don't carry `__attribute__((packed))` directly).",
+          "default": false
+        },
+        "cpp_name": {
+          "type": "string",
+          "description": "Struct-only. Explicit fully-qualified C++ name to register for a skipped struct, overriding the default prefix-strip. Useful when an SDK struct lives in a sibling namespace upstream (`MTL4BufferRange` lives in `MTL4::` even though the SDK name starts with `MTL`)."
+        },
+        "members": {
+          "type": "string",
+          "description": "Struct-only. Raw C++ source injected at the top of the generated struct body, before the field declarations. Use for hand-written constructors and `Make`/`Default` factories that mirror upstream metal-cpp's convenience helpers (`MTL::Size::Make`, `MTL::Region::Make3D`)."
+        }
+      }
+    }
+  }
+}
