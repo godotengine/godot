@@ -61,7 +61,7 @@
             android:exported="false"
             android:icon="@mipmap/themed_icon"
             android:launchMode="singleInstancePerTask"
-            android:screenOrientation="userLandscape">
+            android:screenOrientation="user">
             <layout
                 android:defaultWidth="@dimen/editor_default_window_width"
                 android:defaultHeight="@dimen/editor_default_window_height" />
