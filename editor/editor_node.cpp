@@ -6921,6 +6921,10 @@ void EditorNode::set_distraction_free_mode(bool p_enter) {
 		if (editor_dock_manager->are_docks_visible()) {
 			editor_dock_manager->set_docks_visible(false);
 		}
+
+		if (editor_main_screen->get_selected_index() == EditorMainScreen::EDITOR_GAME) {
+			editor_dock_manager->close_docks_by_slot(EditorDock::DOCK_SLOT_BOTTOM);
+		}
 	} else {
 		editor_dock_manager->set_docks_visible(true);
 	}
