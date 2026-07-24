@@ -90,6 +90,40 @@
 				Returns the current path being viewed in the [FileSystemDock].
 			</description>
 		</method>
+		<method name="get_documentation" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="class_name" type="StringName" />
+			<description>
+				Returns the documentation the editor has for the given class.
+				For example:
+				[codeblock]
+				{
+					"name": "Node",
+					"brief_description": "Base class for all scene objects.",
+					"description": "Nodes are Godot's building blocks...",
+					"inherits": "Object",
+					"methods": [
+						{
+							"name": "add_to_group",
+							"description": "Adds the node to the [param group]...",
+							"return_type": "void",
+							"arguments": [
+								{
+									"name": "group",
+									"type": "StringName"
+								},
+								{
+									"name": "persistent",
+									"type": "bool",
+									"default_value": "false",
+								}
+							]
+						}
+					]
+				}
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_edited_scene_root" qualifiers="const">
 			<return type="Node" />
 			<description>
