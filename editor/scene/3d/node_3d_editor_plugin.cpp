@@ -102,6 +102,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/main/scene_tree.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/sky_material.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/surface_tool.h"
@@ -121,6 +122,9 @@ void Node3DEditor::select_gizmo_highlight_axis(int p_axis) {
 		scale_gizmo[i]->surface_set_material(0, (i + 9) == p_axis ? gizmo_color_hl[i] : gizmo_color[i]);
 		scale_plane_gizmo[i]->surface_set_material(0, (i + 12) == p_axis ? plane_gizmo_color_hl[i] : plane_gizmo_color[i]);
 	}
+
+	move_gizmo[3]->surface_set_material(0, GIZMO_HIGHLIGHT_AXIS_VIEW_MOVEMENT == p_axis ? gizmo_color_hl[3] : gizmo_color[3]);
+	scale_gizmo[3]->surface_set_material(0, GIZMO_HIGHLIGHT_AXIS_UNIFORM_SCALE == p_axis ? gizmo_color_hl[3] : gizmo_color[3]);
 
 	for (int i = 0; i < 4; i++) {
 		bool highlight;
@@ -1296,8 +1300,8 @@ void fragment() {
 			Ref<StandardMaterial3D> mat;
 			Ref<StandardMaterial3D> mat_hl;
 
-			if (i < 3) {
-				// Only create standard materials for X, Y, Z axes (move/scale gizmos).
+			if (i < 4) {
+				// Only create standard materials for X, Y, Z axes + center (move/scale gizmos).
 				mat.instantiate();
 				mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 				mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
@@ -1643,6 +1647,41 @@ void fragment() {
 					surftool->commit(axis_gizmo[i]);
 				}
 			}
+
+			// Create center gizmo.
+			if (i == 3) {
+				// Move.
+				move_gizmo[i].instantiate();
+				{
+					Ref<SurfaceTool> surftool;
+					surftool.instantiate();
+
+					Array sphere_array;
+					sphere_array.resize(RSE::ARRAY_MAX);
+					float radius = (GIZMO_CENTER_SIZE / 2.0) * 1.5;
+					SphereMesh::create_mesh_array(sphere_array, radius, 2.0 * radius, 16, 8);
+
+					surftool->create_from_arrays(sphere_array, Mesh::PRIMITIVE_TRIANGLES);
+					surftool->set_material(gizmo_color[i]);
+					surftool->commit(move_gizmo[i]);
+				}
+
+				// Scale.
+				scale_gizmo[i].instantiate();
+				{
+					Ref<SurfaceTool> surftool;
+					surftool.instantiate();
+
+					Array box_array;
+					box_array.resize(RSE::ARRAY_MAX);
+					Vector3 size(GIZMO_CENTER_SIZE, GIZMO_CENTER_SIZE, GIZMO_CENTER_SIZE);
+					BoxMesh::create_mesh_array(box_array, size);
+
+					surftool->create_from_arrays(box_array, Mesh::PRIMITIVE_TRIANGLES);
+					surftool->set_material(gizmo_color[i]);
+					surftool->commit(scale_gizmo[i]);
+				}
+			}
 		}
 	}
 
@@ -1965,7 +2004,7 @@ void Node3DEditor::update_gizmo_opacity() {
 
 	const float opacity = EDITOR_GET("editors/3d/manipulator_gizmo_opacity");
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 4; i++) {
 		Color col = gizmo_color[i]->get_albedo();
 		col.a = opacity;
 		gizmo_color[i]->set_albedo(col);
@@ -1974,13 +2013,15 @@ void Node3DEditor::update_gizmo_opacity() {
 		col.a = 1.0;
 		gizmo_color_hl[i]->set_albedo(col);
 
-		col = plane_gizmo_color[i]->get_albedo();
-		col.a = opacity;
-		plane_gizmo_color[i]->set_albedo(col);
+		if (i < 3) {
+			col = plane_gizmo_color[i]->get_albedo();
+			col.a = opacity;
+			plane_gizmo_color[i]->set_albedo(col);
 
-		col = plane_gizmo_color_hl[i]->get_albedo();
-		col.a = 1.0;
-		plane_gizmo_color_hl[i]->set_albedo(col);
+			col = plane_gizmo_color_hl[i]->get_albedo();
+			col.a = 1.0;
+			plane_gizmo_color_hl[i]->set_albedo(col);
+		}
 	}
 }
 
