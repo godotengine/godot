@@ -1612,6 +1612,22 @@ void ThemeClassic::populate_editor_styles(const Ref<EditorTheme> &p_theme, Edito
 			tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
 			p_theme->set_stylebox(SceneStringName(pressed), "ProjectTagButton", tag);
 		}
+
+		// Project Directory
+		{
+			p_theme->set_type_variation("ProjectDirectoryActiveButton", "Button");
+			Ref<StyleBoxFlat> dir = p_config.button_style->duplicate();
+			dir->set_bg_color(Color("#68768A").darkened(0.2));
+			p_theme->set_stylebox(CoreStringName(normal), "ProjectDirectoryActiveButton", dir);
+
+			dir = p_config.button_style_hover->duplicate();
+			dir->set_bg_color(Color("#68768A").darkened(0.2));
+			p_theme->set_stylebox(SceneStringName(hover), "ProjectDirectoryActiveButton", dir);
+
+			dir = p_config.button_style_pressed->duplicate();
+			dir->set_bg_color(Color("#68768A").darkened(0.2));
+			p_theme->set_stylebox(SceneStringName(pressed), "ProjectDirectoryActiveButton", dir);
+		}
 	}
 
 	// Editor and main screen.

@@ -788,6 +788,11 @@ void ProjectList::save_config() {
 	_config.save(_config_path);
 }
 
+void ProjectList::reload_config() {
+	_config.clear();
+	_config.load(_config_path);
+}
+
 // Load project data from p_property_key and return it in a ProjectList::Item.
 // p_favorite is passed directly into the Item.
 ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_favorite) {
@@ -971,6 +976,28 @@ void ProjectList::update_project_list() {
 	queue_accessibility_update();
 }
 
+void ProjectList::update_directory_projects(const String &p_dir) {
+	_current_dir = p_dir;
+	for (int i = 0; i < _projects.size(); i++) {
+		_remove_project(i, false);
+		i--;
+	}
+
+	load_project_list();
+
+	for (int i = 0; i < _projects.size(); i++) {
+		_create_project_item_control(i);
+	}
+
+	sort_projects();
+	_update_icons_async();
+	update_dock_menu();
+
+	set_v_scroll(0);
+	emit_signal(SNAME(SIGNAL_LIST_CHANGED));
+	queue_accessibility_update();
+}
+
 void ProjectList::sort_projects() {
 	SortArray<Item, ProjectListComparator> sorter;
 	sorter.compare.order_option = _order_option;
@@ -1082,12 +1109,32 @@ void ProjectList::find_projects_multiple(const PackedStringArray &p_paths) {
 }
 
 void ProjectList::load_project_list() {
-	_config.load(_config_path);
-	Vector<String> sections = _config.get_sections();
+	if (multi_dir) {
+		_config.load(_config_path);
 
-	for (const String &path : sections) {
-		bool favorite = _config.get_value(path, "favorite", false);
-		_projects.push_back(load_project_data(path, favorite));
+		if (!_config.has_section(_current_dir)) {
+			return;
+		}
+
+		PackedStringArray keys = _config.get_section_keys(_current_dir);
+		for (const String &key : keys) {
+			if (key == active) {
+				continue;
+			}
+
+			Vector<Variant> p = _config.get_value(_current_dir, key, Variant());
+			const String path = p[0];
+			const bool favorite = p[1];
+			_projects.push_back(load_project_data(path, favorite));
+		}
+	} else {
+		_config.load(_config_path);
+		Vector<String> sections = _config.get_sections();
+
+		for (const String &path : sections) {
+			bool favorite = _config.get_value(path, "favorite", false);
+			_projects.push_back(load_project_data(path, favorite));
+		}
 	}
 }
 
@@ -1117,13 +1164,72 @@ void ProjectList::_scan_folder_recursive(const String &p_path, List<String> *r_p
 	da->list_dir_end();
 }
 
+void ProjectList::_update_dir_list(const String &p_dir) {
+	ProjectManager::get_singleton()->update_dir_list(p_dir);
+}
+
 // Project list items.
 
 void ProjectList::add_project(const String &dir_path, bool favorite) {
-	if (!_config.has_section(dir_path)) {
-		_config.set_value(dir_path, "favorite", favorite);
+	if (multi_dir) {
+		const String base_dir = dir_path.get_base_dir();
+		if (_config.has_section(base_dir)) {
+			bool contains_project = false;
+			const PackedStringArray keys = _config.get_section_keys(base_dir);
+			int idx = 0;
+			for (const String &key : keys) {
+				if (key == active) {
+					continue;
+				}
+				idx += 1;
+				Vector<Variant> project = _config.get_value(base_dir, key, Variant());
+				if (project[0] == dir_path) {
+					contains_project = true;
+					break;
+				}
+			}
+			if (!contains_project) {
+				Vector<Variant> project = { dir_path, favorite };
+				_config.set_value(dir_path.get_base_dir(), vformat("project_%d", idx), project);
+			}
+		} else {
+			Vector<Variant> project = { dir_path, favorite };
+			_config.set_value(base_dir, active, false);
+			_config.set_value(base_dir, vformat("project_%d", 0), project);
+
+			_update_dir_list(base_dir);
+		}
+	} else {
+		if (!_config.has_section(dir_path)) {
+			_config.set_value(dir_path, "favorite", favorite);
+		}
 	}
+
 	queue_accessibility_update();
+}
+
+void ProjectList::import_project(const String &p_dir_path) {
+	PackedStringArray keys = _config.get_section_keys(_current_dir);
+	for (const String &key : keys) {
+		if (key == active) {
+			continue;
+		}
+		Vector<Variant> p = _config.get_value(_current_dir, key, Variant());
+		if (p[0] == p_dir_path) {
+			return;
+		}
+	}
+	Vector<Variant> p = { p_dir_path, false };
+	_config.set_value(_current_dir, vformat("project_%d", keys.size()), p);
+}
+
+void ProjectList::create_project_item(const String &p_dir_path, bool p_select) {
+	_projects.push_back(load_project_data(p_dir_path, false));
+
+	if (p_select) {
+		_selected_project_paths.clear();
+		_selected_project_paths.insert(p_dir_path);
+	}
 }
 
 void ProjectList::set_project_version(const String &p_project_path, int p_version) {
@@ -1141,9 +1247,27 @@ int ProjectList::refresh_project(const String &dir_path) {
 	// If it isn't in the list anymore, it is removed.
 	// If it is in the list but doesn't exist anymore, it is marked as missing.
 
-	bool should_be_in_list = _config.has_section(dir_path);
-	bool is_favorite = _config.get_value(dir_path, "favorite", false);
+	bool should_be_in_list = false;
+	bool is_favorite = false;
+	int index = -1;
+	if (multi_dir) {
+		PackedStringArray keys = _config.get_section_keys(_current_dir);
+		for (const String &key : keys) {
+			if (key == active) {
+				continue;
+			}
 
+			Vector<Variant> p = _config.get_value(_current_dir, key, Variant());
+			if (p[0] == dir_path) {
+				should_be_in_list = true;
+				is_favorite = p[1];
+				break;
+			}
+		}
+	} else {
+		should_be_in_list = _config.has_section(dir_path);
+		is_favorite = _config.get_value(dir_path, "favorite", false);
+	}
 	bool was_selected = _selected_project_paths.has(dir_path);
 
 	int temp_title_index = -1;
@@ -1159,7 +1283,6 @@ int ProjectList::refresh_project(const String &dir_path) {
 		}
 	}
 
-	int index = -1;
 	if (should_be_in_list) {
 		// Recreate it with updated info
 
@@ -1278,7 +1401,26 @@ void ProjectList::_remove_project(int p_index, bool p_update_config) {
 	_projects.remove_at(p_index);
 
 	if (p_update_config) {
-		_config.erase_section(item.path);
+		if (multi_dir) {
+			Vector<Vector<Variant>> ps;
+			PackedStringArray keys = _config.get_section_keys(_current_dir);
+			for (const String &key : keys) {
+				if (key == active) {
+					continue;
+				}
+
+				Vector<Variant> p = _config.get_value(_current_dir, key, Variant());
+				if (p[0] != item.path) {
+					ps.append(p);
+				}
+				_config.erase_section_key(_current_dir, key);
+			}
+			for (int i = 0; i < ps.size(); i++) {
+				_config.set_value(_current_dir, vformat("project_%d", i), ps[i]);
+			}
+		} else {
+			_config.erase_section(item.path);
+		}
 		// Not actually saving the file, in case you are doing more changes to settings
 	}
 
@@ -1354,7 +1496,23 @@ void ProjectList::_on_favorite_pressed(Node *p_hb) {
 
 	item.favorite = !item.favorite;
 
-	_config.set_value(item.path, "favorite", item.favorite);
+	if (multi_dir) {
+		PackedStringArray keys = _config.get_section_keys(item.path.get_base_dir());
+		for (const String &key : keys) {
+			if (key == active) {
+				continue;
+			}
+
+			Vector<Variant> p = _config.get_value(_current_dir, key, Variant());
+			if (p[0] == item.path) {
+				p.write[1] = item.favorite;
+				_config.set_value(item.path.get_base_dir(), key, p);
+				break;
+			}
+		}
+	} else {
+		_config.set_value(item.path, "favorite", item.favorite);
+	}
 	save_config();
 
 	_projects.write[index] = item;
@@ -1570,20 +1728,48 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 		return;
 	}
 
-	for (int i = 0; i < _projects.size(); ++i) {
-		Item &item = _projects.write[i];
-		if (_selected_project_paths.has(item.path) && item.control->is_visible()) {
-			_config.erase_section(item.path);
+	if (multi_dir) {
+		Vector<Vector<Variant>> ps;
+		PackedStringArray keys = _config.get_section_keys(_current_dir);
+		for (int i = 0; i < _projects.size(); i++) {
+			Item &item = _projects.write[i];
+			if (_selected_project_paths.has(item.path) && item.control->is_visible()) {
+				memdelete(item.control);
+				_projects.remove_at(i);
+				--i;
+			}
+		}
+		for (const String &key : keys) {
+			if (key == active) {
+				continue;
+			}
 
-			// Comment out for now until we have a better warning system to
-			// ensure users delete their project only.
-			//if (p_delete_project_contents) {
-			//	OS::get_singleton()->move_to_trash(item.path);
-			//}
+			Vector<Variant> p = _config.get_value(_current_dir, key, Variant());
+			if (!_selected_project_paths.has(p[0])) {
+				ps.append(p);
+			}
+			_config.erase_section_key(_current_dir, key);
+		}
+		for (int i = 0; i < ps.size(); i++) {
+			_config.set_value(_current_dir, vformat("project_%d", i), ps[i]);
+		}
 
-			memdelete(item.control);
-			_projects.remove_at(i);
-			--i;
+	} else {
+		for (int i = 0; i < _projects.size(); ++i) {
+			Item &item = _projects.write[i];
+			if (_selected_project_paths.has(item.path) && item.control->is_visible()) {
+				_config.erase_section(item.path);
+
+				// Comment out for now until we have a better warning system to
+				// ensure users delete their project only.
+				//if (p_delete_project_contents) {
+				//	OS::get_singleton()->move_to_trash(item.path);
+				//}
+
+				memdelete(item.control);
+				_projects.remove_at(i);
+				--i;
+			}
 		}
 	}
 
@@ -1735,6 +1921,12 @@ ProjectList::ProjectList() {
 	project_list_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(project_list_vbox);
 
-	_config_path = EditorPaths::get_singleton()->get_data_dir().path_join("projects.cfg");
+	multi_dir = EDITOR_GET("filesystem/directories/enable_multiple_project_directories");
+
+	if (multi_dir) {
+		_config_path = EditorPaths::get_singleton()->get_data_dir().path_join("multi_dir.cfg");
+	} else {
+		_config_path = EditorPaths::get_singleton()->get_data_dir().path_join("projects.cfg");
+	}
 	_migrate_config();
 }

@@ -43,6 +43,7 @@
 #include "editor/asset_library/asset_library_editor_plugin.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_about.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_title_bar.h"
@@ -131,6 +132,7 @@ void ProjectManager::_notification(int p_what) {
 
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			_dim_window();
+			update_active_dir();
 		} break;
 
 		case NOTIFICATION_WM_ABOUT: {
@@ -250,6 +252,14 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 
 		_set_main_view_icon(MAIN_VIEW_PROJECTS, get_editor_theme_icon("ProjectList"));
 		_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon("AssetStore"));
+
+		// Directory
+		{
+			if (multi_dir) {
+				manage_dir_btn->set_button_icon(get_editor_theme_icon("Folder"));
+				add_dir_btn->set_button_icon(get_editor_theme_icon("Add"));
+			}
+		}
 
 		// Project list.
 		{
@@ -453,8 +463,9 @@ void ProjectManager::_project_list_menu_option(int p_option) {
 	}
 }
 
-void ProjectManager::_show_error(const String &p_message, const Size2 &p_min_size) {
+void ProjectManager::_show_error(const String &p_message, const Size2 &p_min_size, bool p_autowrap) {
 	error_dialog->set_text(p_message);
+	error_dialog->set_autowrap(p_autowrap);
 	error_dialog->popup_centered(p_min_size);
 }
 
@@ -487,6 +498,7 @@ void ProjectManager::_restart_confirmed() {
 	ERR_FAIL_COND(err);
 
 	_dim_window();
+	update_active_dir();
 	get_tree()->quit();
 }
 
@@ -513,7 +525,15 @@ void ProjectManager::_update_list_placeholder() {
 }
 
 void ProjectManager::_scan_projects() {
-	scan_dir->popup_file_dialog();
+	if (multi_dir) {
+		if (dir_option_btn->get_item_text(0) == "Empty") {
+			scan_dir->popup_file_dialog();
+		} else {
+			project_list->find_projects(current_dir);
+		}
+	} else {
+		scan_dir->popup_file_dialog();
+	}
 }
 
 void ProjectManager::_run_project() {
@@ -617,6 +637,7 @@ void ProjectManager::_open_selected_projects() {
 	project_list->project_opening_initiated = true;
 
 	_dim_window();
+	update_active_dir();
 	get_tree()->quit();
 }
 
@@ -959,7 +980,27 @@ void ProjectManager::_on_project_created(const String &dir, bool edit) {
 	project_list->save_config();
 	search_box->clear();
 
-	int i = project_list->refresh_project(dir);
+	if (dir.get_base_dir() != current_dir && edit) {
+		project_list->create_project_item(dir, true);
+	} else if (dir.get_base_dir() == current_dir) {
+		int i = project_list->refresh_project(dir);
+		project_list->ensure_project_visible(i);
+		_update_list_placeholder();
+	}
+
+	if (edit) {
+		_open_selected_projects_check_warnings();
+	}
+
+	project_list->update_dock_menu();
+}
+
+void ProjectManager::_on_project_imported(const String &p_dir, bool edit) {
+	project_list->import_project(p_dir);
+	project_list->save_config();
+	search_box->clear();
+
+	int i = project_list->refresh_project(p_dir);
 	project_list->ensure_project_visible(i);
 	_update_list_placeholder();
 
@@ -1016,6 +1057,308 @@ void ProjectManager::_on_search_term_submitted(const String &p_text) {
 
 LineEdit *ProjectManager::get_search_box() {
 	return search_box;
+}
+
+// Project directory management.
+
+void ProjectManager::_manage_project_dirs() {
+	for (int i = 0; i < project_directories->get_child_count() - 1; i++) {
+		project_directories->get_child(i)->queue_free();
+	}
+
+	for (KeyValue<String, bool> &dir : dir_set) {
+		const String folder = dir.key.get_slicec('/', dir.key.get_slice_count("/") - 1);
+
+		Button *p_dir = memnew(Button);
+		project_directories->add_child(p_dir);
+		project_directories->move_child(p_dir, -2);
+
+		p_dir->set_text(folder.capitalize());
+		p_dir->set_tooltip_text(dir.key);
+		p_dir->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+		p_dir->set_button_icon(get_editor_theme_icon("Remove"));
+		p_dir->set_meta("active", dir.value);
+		p_dir->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_remove_project_dir).bind(p_dir));
+
+		if (dir.value) {
+			p_dir->set_theme_type_variation(SNAME("ProjectDirectoryActiveButton"));
+		}
+	}
+	temp_dir_set = dir_set;
+	dir_manage_dialog->popup_centered(Vector2(300, 200) * EDSCALE);
+}
+
+void ProjectManager::_load_project_dirs() {
+	ConfigFile config;
+	config.load(dir_config_path);
+
+	Error err = config.load(dir_config_path);
+	if (err == ERR_FILE_NOT_FOUND) {
+		config.save(dir_config_path);
+
+		current_dir = EDITOR_GET("filesystem/directories/default_project_path");
+		dir_option_btn->add_item("Empty", 0);
+
+		dir_fdialog->set_current_path(current_dir.get_base_dir());
+	} else if (err != OK) {
+		_show_error(vformat(TTR("Couldn't load multi_dir.cfg at %s.\nError: %d"), dir_config_path.get_base_dir(), err));
+
+		current_dir = EDITOR_GET("filesystem/directories/default_project_path");
+		dir_option_btn->add_item("Empty", 0);
+
+		dir_fdialog->set_current_path(current_dir.get_base_dir());
+	} else if (err == OK) {
+		PackedStringArray dirs = config.get_sections();
+		if (dirs.is_empty()) {
+			current_dir = EDITOR_GET("filesystem/directories/default_project_path");
+			dir_option_btn->add_item("Empty", 0);
+
+			dir_fdialog->set_current_path(current_dir.get_base_dir());
+			return;
+		}
+
+		for (const String &dir : dirs) {
+			bool active = config.get_value(dir, "active", bool());
+			dir_set[dir] = active;
+		}
+
+		_update_dir_list();
+	}
+}
+
+void ProjectManager::update_dir_list(const String &p_dir) {
+	dir_set[p_dir] = false;
+	_update_dir_list();
+}
+
+void ProjectManager::_update_dir_list() {
+	dir_option_btn->clear();
+
+	if (dir_set.is_empty()) {
+		current_dir = EDITOR_GET("filesystem/directories/default_project_path");
+		dir_option_btn->add_item("Empty", 0);
+
+		dir_fdialog->set_current_path(current_dir.get_base_dir());
+		return;
+	}
+
+	int idx = -1;
+	bool no_dir_active = true;
+	for (KeyValue<String, bool> &dir : dir_set) {
+		idx += 1;
+		PackedStringArray item = dir.key.split("/");
+		dir_option_btn->add_item(item[item.size() - 1].capitalize(), idx);
+		dir_option_btn->set_item_metadata(idx, dir.key);
+		bool active = dir.value;
+
+		if (active) {
+			no_dir_active = false;
+			current_dir = dir.key;
+			dir_option_btn->select(idx);
+		}
+	}
+	if (no_dir_active) {
+		dir_option_btn->select(0);
+		const String dir = dir_option_btn->get_item_metadata(0);
+		current_dir = dir;
+		dir_set[dir] = true;
+
+		_update_new_active_dir_projects(current_dir);
+	}
+}
+
+void ProjectManager::_remove_project_dir(Button *p_dir) {
+	if (p_dir->get_meta("active")) {
+		confirm_dialog->set_text(vformat(TTR("Directory \"%s\" is the selected directory,\nare you sure you want to remove it from the list?"), p_dir->get_text()));
+		confirm_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ProjectManager::_remove_active_dir).bind(p_dir), CONNECT_ONE_SHOT);
+		confirm_dialog->popup_centered(Size2(400 * EDSCALE, 0));
+		return;
+	}
+	const String dir = p_dir->get_tooltip_text();
+	temp_dir_set.erase(dir);
+
+	if (dir_to_make_active == p_dir->get_tooltip_text()) {
+		for (KeyValue<String, bool> &t : temp_dir_set) {
+			dir_to_make_active = t.key;
+			break;
+		}
+	}
+	p_dir->queue_free();
+}
+
+void ProjectManager::_remove_active_dir(Button *p_dir) {
+	const String d_dir = p_dir->get_tooltip_text();
+	temp_dir_set.erase(d_dir);
+	for (KeyValue<String, bool> &t : temp_dir_set) {
+		dir_to_make_active = t.key;
+		break;
+	}
+	temp_dir_set.erase(d_dir);
+	p_dir->queue_free();
+}
+
+void ProjectManager::_add_project_dir(const String &p_dir) {
+	const String folder = p_dir.get_slicec('/', p_dir.get_slice_count("/") - 1);
+
+	Button *dir_btn = memnew(Button);
+	project_directories->add_child(dir_btn);
+	project_directories->move_child(dir_btn, -2);
+
+	dir_btn->set_text(folder.capitalize());
+	dir_btn->set_tooltip_text(p_dir);
+	dir_btn->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	dir_btn->set_button_icon(get_editor_theme_icon("Remove"));
+	dir_btn->set_meta("active", false);
+	dir_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_remove_project_dir).bind(dir_btn));
+
+	temp_dir_set[p_dir] = false;
+}
+
+void ProjectManager::_apply_project_dirs() {
+	ConfigFile config;
+	config.load(dir_config_path);
+
+	PackedStringArray new_dirs;
+	PackedStringArray create_dirs;
+	if (temp_dir_set.is_empty()) {
+		config.clear();
+		dir_set.clear();
+		current_dir.clear();
+		project_list->update_directory_projects(current_dir);
+		_update_list_placeholder();
+	} else {
+		for (KeyValue<String, bool> &p : dir_set) {
+			if (!temp_dir_set.has(p.key)) {
+				config.erase_section(p.key);
+			}
+		}
+
+		HashMap<String, bool> dir_cache;
+		dir_cache = dir_set;
+		dir_set.clear();
+		for (KeyValue<String, bool> &p : temp_dir_set) {
+			const String dir = p.key;
+			bool active = p.value;
+			Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			if (dir_cache.has(dir)) {
+				dir_set[dir] = active;
+				continue;
+			}
+			if (d->exists(dir)) {
+				new_dirs.append(dir);
+				config.set_value(dir, "active", active);
+				dir_set[dir] = active;
+			} else {
+				create_dirs.append(dir);
+				config.set_value(dir, "active", dir);
+			}
+		}
+
+		bool new_active_dir = false;
+		if (!dir_to_make_active.is_empty()) {
+			PackedStringArray sections = config.get_sections();
+			for (const String &sect : sections) {
+				if (sect == dir_to_make_active) {
+					config.set_value(sect, "active", true);
+					dir_set[sect] = true;
+					new_active_dir = true;
+
+					break;
+				}
+			}
+		}
+		if (new_active_dir) {
+			_update_new_active_dir_projects(dir_to_make_active);
+			dir_to_make_active.clear();
+		}
+
+		if (!new_dirs.is_empty()) {
+			project_list->find_projects_multiple(new_dirs);
+		}
+		if (!create_dirs.is_empty()) {
+			_create_project_dirs(new_dirs);
+		}
+	}
+	config.save(dir_config_path);
+
+	_update_dir_list();
+	project_list->reload_config();
+}
+
+void ProjectManager::_create_project_dirs(const PackedStringArray &p_dirs) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	PackedStringArray err_string;
+	PackedStringArray s_dirs;
+	for (const String &dir : p_dirs) {
+		if (!d->dir_exists(dir) && d->make_dir(dir) != OK) {
+			err_string.append(dir);
+			continue;
+		}
+		s_dirs.append(dir);
+	}
+
+	ConfigFile config;
+	config.load(dir_config_path);
+	for (const String &s_dir : s_dirs) {
+		config.set_value(s_dir, "active", false);
+		dir_set[s_dir] = false;
+	}
+	_update_dir_list();
+
+	if (err_string.size() > 0) {
+		String error_msg = TTR("Couldn't create directory at:");
+		for (const String &err : err_string) {
+			error_msg += vformat("\n%s", err);
+		}
+		error_msg += vformat("\nCheck permissions");
+		if (err_string.size() > 1) {
+			_show_error(TTRC(error_msg), Vector2(600 * EDSCALE, 0), true);
+		} else {
+			_show_error(TTRC(error_msg), Vector2(400 * EDSCALE, 0), true);
+		}
+		error_dialog->connect(SceneStringName(visibility_changed), callable_mp(this, &ProjectManager::_manage_project_dirs), CONNECT_ONE_SHOT);
+	}
+}
+
+void ProjectManager::_dir_option_selected(const int p_id) {
+	current_dir = dir_option_btn->get_item_metadata(p_id);
+	for (KeyValue<String, bool> &dir : dir_set) {
+		dir.value = false;
+	}
+	dir_set[current_dir] = true;
+
+	project_dialog->set_current_directory(current_dir);
+	project_list->update_directory_projects(current_dir);
+}
+
+void ProjectManager::_dir_path_selected(const String &p_dir) {
+	dir_manage_dialog->popup_centered(Size2(300, 200) * EDSCALE);
+	_add_project_dir(p_dir);
+}
+
+void ProjectManager::_show_dir_file_dialog() {
+	dir_fdialog->set_current_dir(current_dir.get_base_dir());
+	dir_fdialog->popup_file_dialog();
+}
+
+void ProjectManager::_update_new_active_dir_projects(const String &p_dir) const {
+	project_list->update_directory_projects(p_dir);
+}
+
+void ProjectManager::update_active_dir() {
+	ConfigFile config;
+	config.load(dir_config_path);
+	PackedStringArray sects = config.get_sections();
+	for (const String &sect : sects) {
+		config.set_value(sect, "active", false);
+	}
+	for (KeyValue<String, bool> &dir : dir_set) {
+		if (dir.value) {
+			config.set_value(dir.key, "active", true);
+			break;
+		}
+	}
+	config.save(dir_config_path);
 }
 
 // Project tag management.
@@ -1242,6 +1585,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 #ifndef MACOS_ENABLED
 		if (k->get_keycode_with_modifiers() == (KeyModifierMask::META | Key::Q)) {
 			_dim_window();
+			update_active_dir();
 			get_tree()->quit();
 		}
 #endif
@@ -1398,6 +1742,11 @@ ProjectManager::ProjectManager() {
 
 		FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 		FileDialog::set_default_display_mode((FileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
+
+		multi_dir = EDITOR_GET("filesystem/directories/enable_multiple_project_directories");
+		if (multi_dir) {
+			dir_config_path = EditorPaths::get_singleton()->get_data_dir().path_join("multi_dir.cfg");
+		}
 
 		int swap_cancel_ok = EDITOR_GET("interface/editor/appearance/accept_dialog_cancel_ok_buttons");
 		if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
@@ -1600,6 +1949,56 @@ ProjectManager::ProjectManager() {
 			filter_option->add_item(TTRC("Tags"));
 		}
 
+		/* Project Directory */
+		{
+			if (multi_dir) {
+				HBoxContainer *project_dir_hb = memnew(HBoxContainer);
+				local_projects_vb->add_child(project_dir_hb);
+
+				Label *label = memnew(Label(TTR("Current Directory:")));
+				project_dir_hb->add_child(label);
+
+				dir_option_btn = memnew(OptionButton);
+				project_dir_hb->add_child(dir_option_btn);
+				dir_option_btn->set_fit_to_longest_item(false);
+				dir_option_btn->connect(SceneStringName(item_selected), callable_mp(this, &ProjectManager::_dir_option_selected));
+
+				// Directory Manage Dialog
+
+				dir_manage_dialog = memnew(ConfirmationDialog);
+				add_child(dir_manage_dialog);
+				dir_manage_dialog->set_title("Manage Project Directories");
+				dir_manage_dialog->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_apply_project_dirs));
+
+				project_directories = memnew(HFlowContainer);
+				dir_manage_dialog->add_child(project_directories);
+
+				add_dir_btn = memnew(Button);
+				project_directories->add_child(add_dir_btn);
+				add_dir_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_dir_file_dialog));
+
+				// Confirm Dialog
+
+				confirm_dialog = memnew(ConfirmationDialog);
+				dir_manage_dialog->add_child(confirm_dialog);
+				confirm_dialog->set_title(TTRC("Remove Directory"));
+				confirm_dialog->set_ok_button_text("Yes");
+				confirm_dialog->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+
+				// File Dialog
+
+				dir_fdialog = memnew(EditorFileDialog);
+				dir_fdialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+				dir_fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
+				dir_fdialog->set_title(TTRC("Select a Folder to Add"));
+				add_child(dir_fdialog);
+				dir_fdialog->connect("dir_selected", callable_mp(this, &ProjectManager::_dir_path_selected));
+				dir_fdialog->connect("about_to_popup", callable_mp((Window *)dir_manage_dialog, &Window::hide));
+
+				_load_project_dirs();
+			}
+		}
+
 		// Project list and its sidebar.
 		{
 			HBoxContainer *project_list_hbox = memnew(HBoxContainer);
@@ -1675,16 +2074,16 @@ ProjectManager::ProjectManager() {
 
 			project_list_sidebar->add_child(memnew(HSeparator));
 
-			ScrollContainer *sidebar_scroll_containter = memnew(ScrollContainer);
-			sidebar_scroll_containter->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-			sidebar_scroll_containter->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			project_list_sidebar->add_child(sidebar_scroll_containter);
-			VBoxContainer *sidebar_buttons_containter = memnew(VBoxContainer);
-			sidebar_scroll_containter->add_child(sidebar_buttons_containter);
+			ScrollContainer *sidebar_scroll_container = memnew(ScrollContainer);
+			sidebar_scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+			sidebar_scroll_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+			project_list_sidebar->add_child(sidebar_scroll_container);
+			VBoxContainer *sidebar_buttons_container = memnew(VBoxContainer);
+			sidebar_scroll_container->add_child(sidebar_buttons_container);
 
 			open_btn_container = memnew(HBoxContainer);
 			open_btn_container->set_anchors_preset(Control::PRESET_FULL_RECT);
-			sidebar_buttons_containter->add_child(open_btn_container);
+			sidebar_buttons_container->add_child(open_btn_container);
 
 			open_btn = memnew(Button);
 			open_btn->set_text(TTRC("Edit"));
@@ -1713,35 +2112,45 @@ ProjectManager::ProjectManager() {
 			run_btn->set_text(TTRC("Run"));
 			run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTRC("Run Project"), KeyModifierMask::CMD_OR_CTRL | Key::R));
 			run_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_run_project));
-			sidebar_buttons_containter->add_child(run_btn);
+			sidebar_buttons_container->add_child(run_btn);
 
 			rename_btn = memnew(Button);
 			rename_btn->set_text(TTRC("Rename"));
 			// The F2 shortcut isn't overridden with Enter on macOS as Enter is already used to edit a project.
 			rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTRC("Rename Project"), Key::F2));
 			rename_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_rename_project));
-			sidebar_buttons_containter->add_child(rename_btn);
+			sidebar_buttons_container->add_child(rename_btn);
 
 			duplicate_btn = memnew(Button);
 			duplicate_btn->set_text(TTRC("Duplicate"));
 			duplicate_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_duplicate_project));
-			sidebar_buttons_containter->add_child(duplicate_btn);
+			sidebar_buttons_container->add_child(duplicate_btn);
 
 			manage_tags_btn = memnew(Button);
 			manage_tags_btn->set_text(TTRC("Manage Tags"));
 			manage_tags_btn->set_shortcut(ED_SHORTCUT("project_manager/project_tags", TTRC("Manage Tags"), KeyModifierMask::CMD_OR_CTRL | Key::T));
-			sidebar_buttons_containter->add_child(manage_tags_btn);
+			sidebar_buttons_container->add_child(manage_tags_btn);
 
 			erase_btn = memnew(Button);
 			erase_btn->set_text(TTRC("Remove"));
 			erase_btn->set_shortcut(ED_SHORTCUT("project_manager/remove_project", TTRC("Remove Project"), Key::KEY_DELETE));
 			erase_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_project));
-			sidebar_buttons_containter->add_child(erase_btn);
+			sidebar_buttons_container->add_child(erase_btn);
 
 			erase_missing_btn = memnew(Button);
 			erase_missing_btn->set_text(TTRC("Remove Missing"));
 			erase_missing_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_missing_projects));
-			sidebar_buttons_containter->add_child(erase_missing_btn);
+			sidebar_buttons_container->add_child(erase_missing_btn);
+
+			if (multi_dir) {
+				sidebar_buttons_container->add_child(memnew(HSeparator));
+
+				manage_dir_btn = memnew(Button);
+				sidebar_buttons_container->add_child(manage_dir_btn);
+				manage_dir_btn->set_text("Manage Directories");
+				manage_dir_btn->set_shortcut(ED_SHORTCUT("project_manager/project_directory", TTRC("Manage Directory"), KeyModifierMask::CMD_OR_CTRL | Key::D));
+				manage_dir_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_manage_project_dirs));
+			}
 
 			donate_btn = memnew(Button);
 			donate_btn->set_text(TTRC("Donate"));
@@ -1879,11 +2288,16 @@ ProjectManager::ProjectManager() {
 		project_dialog = memnew(ProjectDialog);
 		project_dialog->connect("projects_updated", callable_mp(this, &ProjectManager::_on_projects_updated));
 		project_dialog->connect("project_created", callable_mp(this, &ProjectManager::_on_project_created));
+		if (multi_dir) {
+			project_dialog->connect("project_imported", callable_mp(this, &ProjectManager::_on_project_imported));
+		}
 		project_dialog->connect("project_duplicated", callable_mp(this, &ProjectManager::_on_project_duplicated));
+		project_dialog->set_current_directory(current_dir);
 		add_child(project_dialog);
 
 		error_dialog = memnew(AcceptDialog);
 		error_dialog->set_title(TTRC("Error"));
+		error_dialog->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		add_child(error_dialog);
 
 		about_dialog = memnew(EditorAbout);
@@ -1967,7 +2381,11 @@ ProjectManager::ProjectManager() {
 
 	// Initialize project list.
 	{
-		project_list->load_project_list();
+		if (multi_dir) {
+			project_list->update_directory_projects(current_dir);
+		} else {
+			project_list->load_project_list();
+		}
 
 		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::AccessType::ACCESS_FILESYSTEM);
 
