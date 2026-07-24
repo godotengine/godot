@@ -163,6 +163,13 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 	for (int i = 0; i < instance_count; i++) {
 		List<String> instance_args(args);
 		RunInstancesDialog::get_singleton()->get_argument_list_for_instance(i, instance_args);
+
+		instance_args.push_back("--session-number");
+		instance_args.push_back(itos(i + 1));
+
+		instance_args.push_back("--session-count");
+		instance_args.push_back(itos(instance_count));
+
 		RunInstancesDialog::get_singleton()->apply_custom_features(i);
 		if (instance_starting_callback) {
 			instance_starting_callback(i, instance_args);

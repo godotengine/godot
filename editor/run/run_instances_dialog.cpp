@@ -375,6 +375,11 @@ RunInstancesDialog::RunInstancesDialog() {
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_vb->add_child(mc);
 
+	Label *session_info_label = memnew(Label);
+	session_info_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	session_info_label->set_text(TTR("The `--session-number` <id> and `--session-count` <id> arguments are automatically passed, and can be read from scripts to customize the behavior of each instance."));
+	main_vb->add_child(session_info_label);
+
 	instance_tree = memnew(Tree);
 	instance_tree->set_h_scroll_enabled(false);
 	instance_tree->set_theme_type_variation("TreeTable");
