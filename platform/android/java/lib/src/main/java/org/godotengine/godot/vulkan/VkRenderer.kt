@@ -93,6 +93,7 @@ internal class VkRenderer {
 	 * Called when the rendering thread is resumed.
 	 */
 	fun onVkResume() {
+		Log.v(TAG, "Renderer resumed")
 		GodotLib.onRendererResumed()
 	}
 
@@ -100,6 +101,7 @@ internal class VkRenderer {
 	 * Called when the rendering thread is paused.
 	 */
 	fun onVkPause() {
+		Log.v(TAG, "Renderer paused")
 		GodotLib.onRendererPaused()
 	}
 
@@ -107,7 +109,7 @@ internal class VkRenderer {
 	 * Invoked when the render thread is in the process of shutting down.
 	 */
 	fun onRenderThreadExiting() {
-		Log.d(TAG, "Destroying Godot Engine")
+		Log.v(TAG, "Destroying Godot Engine")
 		GodotLib.ondestroy()
 	}
 }
