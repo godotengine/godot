@@ -204,4 +204,40 @@ TEST_CASE("[SceneTree][Timer] Check Timer timeout signal") {
 	memdelete(test_timer);
 }
 
+TEST_CASE("[SceneTree][Timer] Check Timer Autostart behavior") {
+	Timer *test_timer = memnew(Timer);
+
+	SUBCASE("Timer starts automatically when added to scene if autostart is enabled") {
+		test_timer->set_autostart(true);
+		SceneTree::get_singleton()->get_root()->add_child(test_timer);
+
+		CHECK_FALSE(test_timer->is_stopped());
+		CHECK(test_timer->get_time_left() > 0.0);
+	}
+
+	memdelete(test_timer);
+}
+
+TEST_CASE("[SceneTree][Timer] Check Paused Timer behavior") {
+	Timer *test_timer = memnew(Timer);
+	SceneTree::get_singleton()->get_root()->add_child(test_timer);
+
+	SUBCASE("Paused Timer doesn't process time and time left remains unchanged") {
+		test_timer->set_wait_time(2.0);
+		test_timer->start();
+		test_timer->set_paused(true);
+
+		// Simulate passing time
+		SceneTree::get_singleton()->process(1.0);
+
+		CHECK(Math::is_equal_approx(test_timer->get_time_left(), 2.0));
+
+		test_timer->set_paused(false);
+		SceneTree::get_singleton()->process(1.0);
+		CHECK(Math::is_equal_approx(test_timer->get_time_left(), 1.0));
+	}
+
+	memdelete(test_timer);
+}
+
 } // namespace TestTimer
