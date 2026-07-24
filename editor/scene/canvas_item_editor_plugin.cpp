@@ -78,6 +78,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
+#include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_texture.h"
 #include "servers/rendering/rendering_server.h"
@@ -6353,6 +6354,19 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 			preview_node->add_child(sprite);
 			add_preview = true;
 		}
+
+		Ref<Script> script = res;
+		if (script.is_valid()) {
+			String class_name = script->get_global_name();
+			String base_type = script->get_instance_base_type();
+			Sprite2D *sprite = memnew(Sprite2D);
+			sprite->set_texture(EditorNode::get_singleton()->get_class_icon(
+					class_name.is_empty() ? base_type : class_name));
+			sprite->set_modulate(Color(1, 1, 1, 0.7f));
+			sprite->set_position(Vector2(0, -sprite->get_texture()->get_size().height) * EDSCALE);
+			preview_node->add_child(sprite);
+			add_preview = true;
+		}
 	}
 
 	if (add_preview) {
@@ -6508,6 +6522,69 @@ bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_
 	return true;
 }
 
+void CanvasItemEditorViewport::_create_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
+	Ref<Script> script = ResourceLoader::load(p_path);
+	if (script.is_null()) { // invalid script
+		return;
+	}
+
+	String class_name = script->get_global_name();
+	String base_type = script->get_instance_base_type();
+	Object *ob = ClassDB::instantiate(base_type);
+	Node *instantiated_node = Object::cast_to<Node>(ob);
+	if (!instantiated_node) { // Error on instantiation.
+		return;
+	}
+	if (class_name.is_empty()) {
+		const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
+		if (!node_name.is_empty()) {
+			instantiated_node->set_name(node_name);
+		}
+	} else {
+		instantiated_node->set_name(class_name);
+		PropertyUtils::assign_custom_type_script(ob, script);
+	}
+	instantiated_node->set_script(script);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	if (p_parent) {
+		undo_redo->add_do_method(p_parent, "add_child", instantiated_node, true);
+		undo_redo->add_do_method(instantiated_node, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+		undo_redo->add_do_reference(instantiated_node);
+		undo_redo->add_undo_method(p_parent, "remove_child", instantiated_node);
+	} else { // If no parent is selected, set as root node of the scene.
+		undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", instantiated_node);
+		undo_redo->add_do_method(instantiated_node, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+		undo_redo->add_do_reference(instantiated_node);
+		undo_redo->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
+	}
+
+	if (p_parent) {
+		String new_name = p_parent->validate_child_name(instantiated_node);
+		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+		undo_redo->add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), instantiated_node->get_class(), new_name);
+		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
+	}
+
+	// Compute the global position
+	Transform2D xform = canvas_item_editor->get_canvas_transform();
+	Point2 target_position = xform.affine_inverse().xform(p_point);
+
+	// There's nothing to be used as source position, so snapping will work as absolute if enabled.
+	target_position = canvas_item_editor->snap_point(target_position);
+
+	CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_parent);
+	Point2 local_target_pos = parent_ci ? parent_ci->get_global_transform().affine_inverse().xform(target_position) : target_position;
+
+	if (ClassDB::has_property(instantiated_node->get_class(), "position")) {
+		undo_redo->add_do_method(instantiated_node, "set_position", local_target_pos);
+	}
+
+	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+	undo_redo->add_do_method(editor_selection, "add_node", instantiated_node);
+}
+
 void CanvasItemEditorViewport::_perform_drop_data() {
 	ERR_FAIL_COND(selected_files.is_empty());
 
@@ -6573,6 +6650,11 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		if (mesh.is_valid()) {
 			_create_mesh_node(target_node, path, drop_pos);
 		}
+
+		Ref<Script> script = res;
+		if (script.is_valid()) {
+			_create_node(target_node, path, drop_pos);
+		}
 	}
 
 	undo_redo->commit_action();
@@ -6622,6 +6704,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 		TEXTURE = 1 << 1,
 		AUDIO = 1 << 2,
 		MESH = 1 << 3,
+		SCRIPT = 1 << 4,
 	};
 	int instantiate_type = 0;
 
@@ -6649,6 +6732,13 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 			instantiate_type |= AUDIO;
 		} else if (ClassDB::is_parent_class(res_type, "Mesh")) {
 			instantiate_type |= MESH;
+		} else if (ClassDB::is_parent_class(res_type, "Script")) {
+			Ref<Script> script = ResourceLoader::load(path);
+			ERR_CONTINUE(script.is_null());
+			String base_type = script->get_instance_base_type();
+			if (ClassDB::is_parent_class(base_type, "Node") && !ClassDB::is_parent_class(base_type, "Node3D")) {
+				instantiate_type |= SCRIPT;
+			}
 		}
 	}
 
