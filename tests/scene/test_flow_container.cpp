@@ -301,6 +301,81 @@ TEST_CASE("[SceneTree][FlowContainer] HFlowContainer") {
 		memdelete(child_control_1);
 	}
 
+	SUBCASE("Cross axis expand") {
+		Control *child_control_1 = memnew(Control);
+		Control *child_control_2 = memnew(Control);
+		Control *child_control_3 = memnew(Control);
+		child_control_1->set_custom_minimum_size(Size2(50, 30));
+		child_control_1->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		child_control_1->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+		child_control_2->set_custom_minimum_size(Size2(20, 0));
+		child_control_2->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		child_control_3->set_custom_minimum_size(Size2(20, 0));
+		child_control_3->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		hflow_container->set_size(Size2(100, 100));
+		hflow_container->add_child(child_control_1);
+		hflow_container->add_child(child_control_2);
+		hflow_container->add_child(child_control_3);
+
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				child_control_1->get_size().is_equal_approx(Point2(60, 30)),
+				"First child control does not expand to fill cross-axis.");
+		CHECK_MESSAGE(
+				child_control_2->get_size().is_equal_approx(Point2(20, 100)),
+				"Second child control expands to fill cross-axis.");
+
+		CHECK_MESSAGE(
+				child_control_3->get_size().is_equal_approx(Point2(20, 100)),
+				"Third child control expands to fill cross-axis.");
+
+		hflow_container->set_size(Size2(80, 100));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				child_control_1->get_size().is_equal_approx(Point2(60, 30)),
+				"With wrapping, first child control does not expand to fill cross-axis.");
+
+		CHECK_MESSAGE(
+				child_control_2->get_size().is_equal_approx(Point2(20, 50)),
+				"With wrapping, second child control expands to fill cross-axis.");
+
+		CHECK_MESSAGE(
+				child_control_3->get_size().is_equal_approx(Point2(20, 50)),
+				"With wrapping, third child control expands to fill cross-axis.");
+
+		CHECK_MESSAGE(
+				child_control_3->get_position().is_equal_approx(Point2(0, 50)),
+				"With wrapping, third child control is positioned on second line.");
+
+		child_control_2->set_stretch_ratio(3.0f);
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				child_control_2->get_size().is_equal_approx(Point2(20, 75)),
+				"Second child control expands respects stretch ratio.");
+
+		CHECK_MESSAGE(
+				child_control_3->get_size().is_equal_approx(Point2(20, 25)),
+				"Third child control expands respects stretch ratio.");
+
+		child_control_2->set_stretch_ratio(0.25f);
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				child_control_2->get_size().is_equal_approx(Point2(20, 30)),
+				"Second child control does not expand when minimum size is bigger than stretch size");
+
+		CHECK_MESSAGE(
+				child_control_3->get_size().is_equal_approx(Point2(20, 70)),
+				"Third child control expands to fill available stretch space.");
+
+		memdelete(child_control_3);
+		memdelete(child_control_2);
+		memdelete(child_control_1);
+	}
+
 	memdelete(hflow_container);
 }
 
@@ -564,6 +639,81 @@ TEST_CASE("[SceneTree][FlowContainer] VFlowContainer") {
 		CHECK_MESSAGE(
 				child_control_3->get_position().is_equal_approx(Point2(40, 0)),
 				"Third child control follows left-to-right order in vertical mode with RTL and reverse fill.");
+
+		memdelete(child_control_3);
+		memdelete(child_control_2);
+		memdelete(child_control_1);
+	}
+
+	SUBCASE("Cross axis expand") {
+		Control *child_control_1 = memnew(Control);
+		Control *child_control_2 = memnew(Control);
+		Control *child_control_3 = memnew(Control);
+		child_control_1->set_custom_minimum_size(Size2(30, 50));
+		child_control_1->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
+		child_control_1->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		child_control_2->set_custom_minimum_size(Size2(0, 20));
+		child_control_2->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		child_control_3->set_custom_minimum_size(Size2(0, 20));
+		child_control_3->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		vflow_container->set_size(Size2(100, 100));
+		vflow_container->add_child(child_control_1);
+		vflow_container->add_child(child_control_2);
+		vflow_container->add_child(child_control_3);
+
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				child_control_1->get_size().is_equal_approx(Point2(30, 60)),
+				"First child control does not expand to fill cross-axis.");
+		CHECK_MESSAGE(
+				child_control_2->get_size().is_equal_approx(Point2(100, 20)),
+				"Second child control expands to fill cross-axis.");
+
+		CHECK_MESSAGE(
+				child_control_3->get_size().is_equal_approx(Point2(100, 20)),
+				"Third child control expands to fill cross-axis.");
+
+		vflow_container->set_size(Size2(100, 80));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				child_control_1->get_size().is_equal_approx(Point2(30, 60)),
+				"With wrapping, first child control does not expand to fill cross-axis.");
+
+		CHECK_MESSAGE(
+				child_control_2->get_size().is_equal_approx(Point2(50, 20)),
+				"With wrapping, second child control expands to fill cross-axis.");
+
+		CHECK_MESSAGE(
+				child_control_3->get_size().is_equal_approx(Point2(50, 20)),
+				"With wrapping, third child control expands to fill cross-axis.");
+
+		CHECK_MESSAGE(
+				child_control_3->get_position().is_equal_approx(Point2(50, 0)),
+				"With wrapping, third child control is positioned on second line.");
+
+		child_control_2->set_stretch_ratio(3.0f);
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				child_control_2->get_size().is_equal_approx(Point2(75, 20)),
+				"Second child control expands respects stretch ratio.");
+
+		CHECK_MESSAGE(
+				child_control_3->get_size().is_equal_approx(Point2(25, 20)),
+				"Third child control expands respects stretch ratio.");
+
+		child_control_2->set_stretch_ratio(0.25f);
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				child_control_2->get_size().is_equal_approx(Point2(30, 20)),
+				"Second child control does not expand when minimum size is bigger than stretch size");
+
+		CHECK_MESSAGE(
+				child_control_3->get_size().is_equal_approx(Point2(70, 20)),
+				"Third child control expands to fill available stretch space.");
 
 		memdelete(child_control_3);
 		memdelete(child_control_2);
