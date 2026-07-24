@@ -2509,6 +2509,18 @@ void GDScriptLanguage::reload_all_scripts() {
 void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
 #ifdef DEBUG_ENABLED
 
+	HashSet<String> paths_to_reload;
+	for (int i = 0; i < p_scripts.size(); i++) {
+		Ref<GDScript> script = p_scripts[i];
+		if (script.is_null() || script->get_path().is_empty()) {
+			continue;
+		}
+
+		const String path = script->get_path();
+		paths_to_reload.insert(path);
+		GDScriptCache::get_script_dependents(path, &paths_to_reload);
+	}
+
 	List<Ref<GDScript>> scripts;
 	{
 		MutexLock lock(mutex);
@@ -2532,7 +2544,7 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 	scripts.sort_custom<GDScriptDepSort>(); //update in inheritance dependency order
 
 	for (Ref<GDScript> &scr : scripts) {
-		bool reload = p_scripts.has(scr) || to_reload.has(scr->get_base());
+		bool reload = p_scripts.has(scr) || paths_to_reload.has(scr->get_path()) || to_reload.has(scr->get_base());
 
 		if (!reload) {
 			continue;
