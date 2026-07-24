@@ -60,6 +60,14 @@ void BoneAttachment3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "external_skeleton" && !use_external_skeleton) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
+
+	// Don't save overridden `transform` to reduce VCS diffs.
+	// BoneAttachment3D's transform is set dynamically,
+	// so we don't need to store its actual `transform` property
+	// to have it function the same way between editor and runtime.
+	if (p_property.name == "transform" && !override_pose && bone_idx >= 0 && const_cast<BoneAttachment3D *>(this)->get_skeleton()) {
+		p_property.usage &= ~PROPERTY_USAGE_STORAGE;
+	}
 }
 
 PackedStringArray BoneAttachment3D::get_configuration_warnings() const {
