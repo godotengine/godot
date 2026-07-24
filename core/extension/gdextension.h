@@ -97,6 +97,7 @@ class GDExtension : public Resource {
 	static void _get_library_path(GDExtensionClassLibraryPtr p_library, GDExtensionStringPtr r_path);
 	static void _register_get_classes_used_callback(GDExtensionClassLibraryPtr p_library, GDExtensionEditorGetClassesUsedCallback p_callback);
 	static void _register_main_loop_callbacks(GDExtensionClassLibraryPtr p_library, const GDExtensionMainLoopCallbacks *p_callbacks);
+	static void _register_source_code_info(GDExtensionClassLibraryPtr p_library, const GDExtensionEditorSourceCodeInfo *p_info);
 
 	GDExtensionInitialization initialization;
 	int32_t level_initialized = -1;
@@ -116,6 +117,10 @@ class GDExtension : public Resource {
 	void prepare_reload();
 	void finish_reload();
 	void clear_instance_bindings();
+
+	String extension_binding_name;
+	String source_code_base_path;
+	GDExtensionEditorGetClassSourcePathCallback get_class_source_path_callback = nullptr;
 #endif
 
 	GDExtensionMainLoopStartupCallback startup_callback = nullptr;
@@ -139,6 +144,10 @@ public:
 	Error open_library(const String &p_path, const Ref<GDExtensionLoader> &p_loader);
 	void close_library();
 	bool is_library_open() const;
+
+	String get_extension_binding_name() const;
+	String get_source_base_path() const;
+	String get_class_source_path(const StringName &p_class_name) const;
 
 	enum InitializationLevel {
 		INITIALIZATION_LEVEL_CORE = GDEXTENSION_INITIALIZATION_CORE,
