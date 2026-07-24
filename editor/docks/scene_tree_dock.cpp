@@ -3448,6 +3448,7 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 
 void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
+	scene_tree->set_selected(nullptr, false);
 	_update_create_root_dialog_visibility();
 }
 
