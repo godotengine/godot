@@ -45,14 +45,27 @@ Area3D::SpaceOverride Area3D::get_gravity_space_override_mode() const {
 	return gravity_space_override;
 }
 
+void Area3D::set_gravity_type(PS3DE::AreaGravityType p_type) {
+	if (gravity_type == p_type) {
+		return;
+	}
+	gravity_type = p_type;
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_TYPE, p_type);
+}
+
+PS3DE::AreaGravityType Area3D::get_gravity_type() const {
+	return gravity_type;
+}
+
+#ifndef DISABLE_DEPRECATED
 void Area3D::set_gravity_is_point(bool p_enabled) {
-	gravity_is_point = p_enabled;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_IS_POINT, p_enabled);
+	set_gravity_type(p_enabled ? PS3DE::AREA_GRAVITY_TYPE_POINT : PS3DE::AREA_GRAVITY_TYPE_DIRECTIONAL);
 }
 
 bool Area3D::is_gravity_a_point() const {
-	return gravity_is_point;
+	return gravity_type != PS3DE::AREA_GRAVITY_TYPE_DIRECTIONAL;
 }
+#endif // DISABLE_DEPRECATED
 
 void Area3D::set_gravity_point_unit_distance(real_t p_scale) {
 	gravity_point_unit_distance = p_scale;
@@ -667,12 +680,17 @@ void Area3D::_validate_property(PropertyInfo &p_property) const {
 		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		} else {
-			if (gravity_is_point) {
-				if (p_property.name == "gravity_direction") {
+			if (gravity_type == PS3DE::AREA_GRAVITY_TYPE_DIRECTIONAL) {
+				if (p_property.name == "gravity_point_unit_distance") {
 					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 				}
 			} else {
-				if (p_property.name.begins_with("gravity_point_")) {
+				if (p_property.name == "gravity_direction") {
+					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+				}
+			}
+			if (gravity_type != PS3DE::AREA_GRAVITY_TYPE_POINT) {
+				if (p_property.name == "gravity_point_center") {
 					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 				}
 			}
@@ -692,8 +710,13 @@ void Area3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_gravity_space_override_mode", "space_override_mode"), &Area3D::set_gravity_space_override_mode);
 	ClassDB::bind_method(D_METHOD("get_gravity_space_override_mode"), &Area3D::get_gravity_space_override_mode);
 
+	ClassDB::bind_method(D_METHOD("set_gravity_type", "enable"), &Area3D::set_gravity_type);
+	ClassDB::bind_method(D_METHOD("get_gravity_type"), &Area3D::get_gravity_type);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_gravity_is_point", "enable"), &Area3D::set_gravity_is_point);
 	ClassDB::bind_method(D_METHOD("is_gravity_a_point"), &Area3D::is_gravity_a_point);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("set_gravity_point_unit_distance", "distance_scale"), &Area3D::set_gravity_point_unit_distance);
 	ClassDB::bind_method(D_METHOD("get_gravity_point_unit_distance"), &Area3D::get_gravity_point_unit_distance);
@@ -780,7 +803,10 @@ void Area3D::_bind_methods() {
 
 	ADD_GROUP("Gravity", "gravity_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gravity_space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_space_override_mode", "get_gravity_space_override_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gravity_point", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_is_point", "is_gravity_a_point");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gravity_type", PROPERTY_HINT_ENUM, "Directional,Point", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_gravity_type", "get_gravity_type");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gravity_point", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_gravity_is_point", "is_gravity_a_point");
+#endif // DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_point_unit_distance", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,exp,suffix:m"), "set_gravity_point_unit_distance", "get_gravity_point_unit_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity_point_center", PROPERTY_HINT_NONE, "suffix:m"), "set_gravity_point_center", "get_gravity_point_center");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity_direction"), "set_gravity_direction", "get_gravity_direction");
