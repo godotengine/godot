@@ -276,6 +276,22 @@ void ScriptTextEditor::_load_theme_settings() {
 		folded_code_region_color = updated_folded_code_region_color;
 	}
 
+	Color updated_warning_underline_color = EDITOR_GET("text_editor/theme/highlighting/warning_underline_color");
+	Color updated_error_underline_color = EDITOR_GET("text_editor/theme/highlighting/error_underline_color");
+
+	bool warning_underline_color_updated = updated_warning_underline_color != warning_underline_color;
+	bool error_underline_color_updated = updated_error_underline_color != error_underline_color;
+
+	if (warning_underline_color_updated) {
+		text_edit->update_underline_color(warning_underline_color, updated_warning_underline_color);
+		warning_underline_color = updated_warning_underline_color;
+	}
+
+	if (error_underline_color_updated) {
+		text_edit->update_underline_color(error_underline_color, updated_error_underline_color);
+		error_underline_color = updated_error_underline_color;
+	}
+
 	Ref<StyleBoxFlat> drag_info_sb = drag_info_label->get_theme_stylebox(CoreStringName(normal));
 	drag_info_sb->set_bg_color(EDITOR_GET("text_editor/theme/highlighting/completion_background_color"));
 	Color info_color = EDITOR_GET("text_editor/theme/highlighting/text_color");
@@ -669,32 +685,51 @@ void ScriptTextEditor::_update_background_color() {
 		te->set_line_background_color(i, is_folded_code_region ? folded_code_region_color : Color(0, 0, 0, 0));
 	}
 
+	te->clear_underlines();
+
 	// Set the warning background.
-	if (warning_line_color.a != 0.0) {
+	if (warning_line_color.a != 0.0 || warning_underline_color.a != 0.0) {
 		for (const ScriptLanguage::Warning &warning : warnings) {
 			int warning_start_line = CLAMP(warning.start_line - 1, 0, te->get_line_count() - 1);
+			int warning_start_column = warning.start_column - 1;
 			int warning_end_line = CLAMP(warning.end_line - 1, 0, te->get_line_count() - 1);
+			int warning_end_column = warning.end_column - 1;
 			int folded_line_header = te->get_folded_line_header(warning_start_line);
 
-			// If the warning highlight is too long, only highlight the start line.
-			const int warning_max_lines = 20;
+			if (warning_underline_color.a != 0.0) {
+				te->add_underline(warning_underline_color, warning_start_line, warning_start_column, warning_end_line, warning_end_column);
+			}
 
-			te->set_line_background_color(folded_line_header, warning_line_color);
-			if (warning_end_line - warning_start_line < warning_max_lines) {
-				for (int i = warning_start_line + 1; i <= warning_end_line; i++) {
-					te->set_line_background_color(i, warning_line_color);
+			if (warning_line_color.a != 0.0) {
+				// If the warning highlight is too long, only highlight the start line.
+				const int warning_max_lines = 20;
+
+				te->set_line_background_color(folded_line_header, warning_line_color);
+				if (warning_end_line - warning_start_line < warning_max_lines) {
+					for (int i = warning_start_line + 1; i <= warning_end_line; i++) {
+						te->set_line_background_color(i, warning_line_color);
+					}
 				}
 			}
 		}
 	}
 
 	// Set the error background.
-	if (marked_line_color.a != 0.0) {
+	if (marked_line_color.a != 0.0 || error_underline_color.a != 0.0) {
 		for (const ScriptLanguage::ScriptError &error : errors) {
-			int error_line = CLAMP(error.line - 1, 0, te->get_line_count() - 1);
-			int folded_line_header = te->get_folded_line_header(error_line);
+			int error_start_line = CLAMP(error.start_line - 1, 0, te->get_line_count() - 1);
+			int error_start_column = error.start_column - 1;
+			int error_end_line = CLAMP(error.end_line - 1, 0, te->get_line_count() - 1);
+			int error_end_column = error.end_column - 1;
+			int folded_line_header = te->get_folded_line_header(error_start_line);
 
-			te->set_line_background_color(folded_line_header, marked_line_color);
+			if (error_underline_color.a != 0.0) {
+				te->add_underline(error_underline_color, error_start_line, error_start_column, error_end_line, error_end_column);
+			}
+
+			if (marked_line_color.a != 0.0) {
+				te->set_line_background_color(folded_line_header, marked_line_color);
+			}
 		}
 	}
 }
@@ -799,10 +834,10 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 
 struct ScriptErrorLineComparator {
 	bool operator()(const ScriptLanguage::ScriptError &p_a, const ScriptLanguage::ScriptError &p_b) const {
-		if (p_a.line != p_b.line) {
-			return p_a.line < p_b.line;
+		if (p_a.start_line != p_b.start_line) {
+			return p_a.start_line < p_b.start_line;
 		}
-		return p_a.column < p_b.column;
+		return p_a.start_column < p_b.start_column;
 	}
 };
 
@@ -832,7 +867,7 @@ void ScriptTextEditor::_validate_script() {
 		}
 
 		if (errors.size() > 0) {
-			code_editor->set_error_pos(errors.front()->get().line - 1, errors.front()->get().column - 1);
+			code_editor->set_error_pos(errors.front()->get().start_line - 1, errors.front()->get().start_column - 1);
 			const String message = errors.front()->get().message.replace("[", "[lb]");
 			const Point2i display_pos = code_editor->get_pos_for_display(code_editor->get_error_pos());
 			const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), display_pos.x, display_pos.y, display_pos.x, display_pos.y) + " " + message;
@@ -937,9 +972,9 @@ void ScriptTextEditor::_update_errors() {
 	errors_panel->push_table(2);
 	for (const ScriptLanguage::ScriptError &err : errors) {
 		errors_panel->push_cell();
-		errors_panel->push_meta(err.line - 1);
+		errors_panel->push_meta(err.start_line - 1);
 		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-		errors_panel->add_text(vformat(TTR("Line %d:"), err.line));
+		errors_panel->add_text(vformat(TTR("Line %d:"), err.start_line));
 		errors_panel->pop(); // Color.
 		errors_panel->pop(); // Meta goto.
 		errors_panel->pop(); // Cell.
@@ -968,13 +1003,13 @@ void ScriptTextEditor::_update_errors() {
 		for (const ScriptLanguage::ScriptError &err : KV.value) {
 			Dictionary click_meta;
 			click_meta["path"] = KV.key;
-			click_meta["line"] = err.line - 1;
-			click_meta["column"] = err.column - 1;
+			click_meta["line"] = err.start_line - 1;
+			click_meta["column"] = err.start_column - 1;
 
 			errors_panel->push_cell();
 			errors_panel->push_meta(click_meta);
 			errors_panel->push_color(errors_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			errors_panel->add_text(vformat(TTR("Line %d:"), err.line));
+			errors_panel->add_text(vformat(TTR("Line %d:"), err.start_line));
 			errors_panel->pop(); // Color.
 			errors_panel->pop(); // Meta goto.
 			errors_panel->pop(); // Cell.

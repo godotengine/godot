@@ -540,6 +540,8 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/folded_code_region_color"] = Color(0.68, 0.46, 0.77, 0.2);
 			colors["text_editor/theme/highlighting/search_result_color"] = alpha1;
 			colors["text_editor/theme/highlighting/search_result_border_color"] = p_config.dark_icon_and_font ? Color(0.41, 0.61, 0.91, 0.38) : Color(0, 0.4, 1, 0.38);
+			colors["text_editor/theme/highlighting/warning_underline_color"] = Color(0.89, 0.7, 0.2);
+			colors["text_editor/theme/highlighting/error_underline_color"] = Color(1.0, 0.0, 0.0);
 
 			if (p_config.dark_icon_and_font) {
 				colors["text_editor/theme/highlighting/gdscript/function_definition_color"] = Color(0.4, 0.9, 1.0);
