@@ -1827,8 +1827,12 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		String what = prop_name.get_slicec('/', 3);
 
 		if (what == "node") {
-			add_node(type, p_value, Vector2(), id);
-			return true;
+			Graph *g = &graph[type];
+			// Avoid errors when updating if the nodes have already been added.
+			if (!g->nodes.has(id)) {
+				add_node(type, p_value, Vector2(), id);
+				return true;
+			}
 		} else if (what == "position") {
 			set_node_position(type, id, p_value);
 			return true;
