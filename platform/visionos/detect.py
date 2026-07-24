@@ -14,7 +14,7 @@ def get_name():
 
 
 def can_build():
-    if sys.platform == "darwin" or ("OSXCROSS_VISIONOS" in os.environ):
+    if sys.platform == "darwin" or "APPLE_LLVM_CROSS" in os.environ:
         return True
 
     return False
@@ -77,10 +77,6 @@ def configure(env: "SConsEnvironment"):
             env.Append(LINKFLAGS=["-flto"])
 
     ## Compiler configuration
-
-    # Save this in environment for use by other modules
-    if "OSXCROSS_VISIONOS" in os.environ:
-        env["osxcross"] = True
 
     env["ENV"]["PATH"] = env["APPLE_TOOLCHAIN_PATH"] + "/Developer/usr/bin/:" + env["ENV"]["PATH"]
 
