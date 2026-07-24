@@ -2177,7 +2177,7 @@ void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, double p_delta
 			continue;
 		}
 
-		ifx->elapsed_time += p_delta_time;
+		ifx->elapsed_time += p_delta_time * effect_speed_scale;
 
 		ItemShake *shake = nullptr;
 
@@ -5394,6 +5394,14 @@ bool RichTextLabel::is_hint_underlined() const {
 	return underline_hint;
 }
 
+void RichTextLabel::set_effect_speed_scale(float p_effect_speed_scale) {
+	effect_speed_scale = MAX(p_effect_speed_scale, 0.0);
+}
+
+float RichTextLabel::get_effect_speed_scale() const {
+	return effect_speed_scale;
+}
+
 void RichTextLabel::set_offset(int p_pixel) {
 	vscroll->set_value(p_pixel);
 	queue_accessibility_update();
@@ -7894,6 +7902,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autowrap_trim_flags", "autowrap_trim_flags"), &RichTextLabel::set_autowrap_trim_flags);
 	ClassDB::bind_method(D_METHOD("get_autowrap_trim_flags"), &RichTextLabel::get_autowrap_trim_flags);
 
+	ClassDB::bind_method(D_METHOD("set_effect_speed_scale", "effect_speed_scale"), &RichTextLabel::set_effect_speed_scale);
+	ClassDB::bind_method(D_METHOD("get_effect_speed_scale"), &RichTextLabel::get_effect_speed_scale);
+
 	ClassDB::bind_method(D_METHOD("set_meta_underline", "enable"), &RichTextLabel::set_meta_underline);
 	ClassDB::bind_method(D_METHOD("is_meta_underlined"), &RichTextLabel::is_meta_underlined);
 
@@ -8026,6 +8037,7 @@ void RichTextLabel::_bind_methods() {
 
 	ADD_GROUP("Markup", "");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("RichTextEffect"), (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)), "set_effects", "get_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "effect_speed_scale", PROPERTY_HINT_RANGE, "0,4,0.001,or_greater"), "set_effect_speed_scale", "get_effect_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_underlined"), "set_meta_underline", "is_meta_underlined");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hint_underlined"), "set_hint_underline", "is_hint_underlined");
 

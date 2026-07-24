@@ -737,6 +737,10 @@
 		<member name="drag_and_drop_selection_enabled" type="bool" setter="set_drag_and_drop_selection_enabled" getter="is_drag_and_drop_selection_enabled" default="true">
 			If [code]true[/code], allow drag and drop of selected text.
 		</member>
+		<member name="effect_speed_scale" type="float" setter="set_effect_speed_scale" getter="get_effect_speed_scale" default="1.0">
+			The speed scaling ratio for text effects. For example, if this value is [code]1[/code], then the text effect plays at normal speed. If it's [code]0.5[/code], then it plays at half speed. If it's [code]2[/code], then it plays at double speed.
+			If set to a negative value, the text effect will be paused.
+		</member>
 		<member name="fit_content" type="bool" setter="set_fit_content" getter="is_fit_content_enabled" default="false">
 			If [code]true[/code], the label's minimum size will be automatically updated to fit its content, matching the behavior of [Label].
 			[b]Note:[/b] RichTextLabels with autowrapping and [member fit_content] enabled must have a custom maximum width configured to work correctly, either through the RichTextLabel's own [member Control.custom_maximum_size] or as a result of a propagated maximum size from a parent Control with [member Control.propagate_maximum_size] enabled.
