@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BBCodeToken" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		BBCode tokens of a [BBCodeParser].
+	</brief_description>
+	<description>
+		BBCode tokens generated from calls to [method BBCodeParser.get_items].
+		[b]Note:[/b] When the parser is cleared or freed, all of its tokens are also freed. Do not hold on to references of tokens for longer than necessary.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_normalized_bbcode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a normalized BBCode string of this token. This will reconstruct the token as a string from the ground up.
+			</description>
+		</method>
+		<method name="get_parameters" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				For opening tags, this returns the names and values of all parameters. Dictionary keys and values are strings, except for parameters without an explicit value, as they have [code]null[/code] as their value instead.
+			</description>
+		</method>
+		<method name="get_parsed_bbcode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the BBCode string as it was parsed via [method BBCodeParser.push_bbcode]. If another method was used to generate this token, the value of this will be computed via [method get_normalized_bbcode].
+			</description>
+		</method>
+		<method name="get_position_end" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns this token's last character position in the full BBCode string. If the token was generated without parsing a BBCode string, the token's size is computed via [method get_normalized_bbcode].
+			</description>
+		</method>
+		<method name="get_position_start" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns this token's first character position in the full BBCode string.
+			</description>
+		</method>
+		<method name="get_token_type" qualifiers="const">
+			<return type="int" enum="BBCodeToken.TokenType" />
+			<description>
+				Returns the type of BBCode token.
+			</description>
+		</method>
+		<method name="get_value" qualifiers="const">
+			<return type="String" />
+			<description>
+				For text tokens, this returns the text itself. For tags, it returns the name of the tag.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="TOKEN_TYPE_TEXT" value="0" enum="TokenType">
+			Literal text. [method get_value] contains the text.
+		</constant>
+		<constant name="TOKEN_TYPE_OPEN_TAG" value="1" enum="TokenType">
+			Opening tag. [method get_value] contains the tag name and [method get_parameters] is filled.
+		</constant>
+		<constant name="TOKEN_TYPE_CLOSE_TAG" value="2" enum="TokenType">
+			Closing tag. [method get_value] contains the tag name.
+		</constant>
+	</constants>
+</class>
