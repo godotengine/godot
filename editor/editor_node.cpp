@@ -2298,6 +2298,11 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 }
 
 void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
+	// Scene files are typically less than 1 MB, but text-based scenes with large amounts of embedded binary data
+	// can be much larger (sometimes 100 MB or more). Consider a buffer of 1 GiB to be safe, since there are
+	// also temporary files and thumbnails that come into play.
+	DirAccess::check_disk_space(p_file, 1.0, TTR("Saving scenes will fail if the disk runs out of space."));
+
 	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 4));
 
 	if (editor_data.get_edited_scene_root() != nullptr) {
