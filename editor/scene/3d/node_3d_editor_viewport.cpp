@@ -6911,8 +6911,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	preview_camera = memnew(CheckBox);
 	preview_camera->set_text(TTRC("Preview"));
 	preview_camera->set_tooltip_text(TTRC("Preview through the selected camera.\nHold Shift while clicking to also enable Pilot mode."));
-	// Using Control even on macOS to avoid conflict with Quick Open shortcut.
-	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTRC("Toggle Camera Preview"), KeyModifierMask::CTRL | Key::P));
+	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTRC("Toggle Camera Preview"), KeyModifierMask::SHIFT | Key::P));
 	vbox->add_child(preview_camera);
 	preview_camera->set_h_size_flags(0);
 	preview_camera->set_theme_type_variation("CheckBoxNoIconTint");
@@ -6922,7 +6921,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	pilot_camera = memnew(CheckBox);
 	pilot_camera->set_text(TTRC("Pilot"));
 	pilot_camera->set_tooltip_text(TTRC("Enable pilot mode for the preview camera.\nAllows WASD movement and mouse look when in preview mode."));
-	pilot_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_pilot_preview", TTRC("Toggle Pilot Mode in Preview")));
+	pilot_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_pilot_preview", TTRC("Toggle Pilot Mode in Preview"), KeyModifierMask::SHIFT | Key::R));
 	vbox->add_child(pilot_camera);
 	pilot_camera->set_h_size_flags(0);
 	pilot_camera->set_theme_type_variation("CheckBoxNoIconTint");
