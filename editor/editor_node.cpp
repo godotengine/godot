@@ -4916,7 +4916,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 			open_imported->popup_centered();
 			new_inherited_button->grab_focus();
 			open_import_request = lpath;
-			return OK;
+			return ERR_CANT_OPEN;
 		}
 	}
 
@@ -5027,7 +5027,9 @@ Error EditorNode::open_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	}
 
 	Error err = load_scene(p_scene, p_ignore_broken_deps, p_set_inherited, p_force_open_imported);
-	if (err != OK) {
+	if (err == ERR_CANT_OPEN) {
+		return OK; // The scene was automatically imported, show confirmation popup.
+	} else if (err != OK) {
 		return err;
 	}
 
