@@ -50,8 +50,11 @@
 		<member name="case_sensitive" type="bool" setter="set_case_sensitive" getter="get_case_sensitive" default="false">
 			Whether the query character casing should be matched exactly or not.
 		</member>
-		<member name="filter_cutoff" type="float" setter="set_filter_cutoff" getter="get_filter_cutoff" default="30.0">
-			Minimum score for filtering results returned by [method search_all].
+		<member name="filter_cutoff_max" type="float" setter="set_filter_cutoff_max" getter="get_filter_cutoff_max" default="30.0">
+			Maximum cutoff score to use when filtering results. Increasing this value will reduce the number of low-score results.
+		</member>
+		<member name="filter_cutoff_min" type="float" setter="set_filter_cutoff_min" getter="get_filter_cutoff_min" default="-3.0">
+			Minimum cutoff score to use when filtering results. Decreasing this value will increase the number of low-score results.
 		</member>
 		<member name="filter_factor" type="float" setter="set_filter_factor" getter="get_filter_factor" default="0.1">
 			Biases the filtering cutoff score between the average score and max score. Value should be between [code]0[/code] and [code]1[/code].

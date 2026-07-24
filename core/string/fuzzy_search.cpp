@@ -298,7 +298,7 @@ void FuzzySearch::_sort_and_filter(Vector<Ref<FuzzySearchMatch>> &p_results) con
 		}
 
 		avg_score /= p_results.size();
-		float cull_score = MIN(filter_cutoff, Math::lerp(avg_score, max_score, filter_factor));
+		float cull_score = CLAMP(Math::lerp(avg_score, max_score, filter_factor), filter_cutoff_min, filter_cutoff_max);
 		remove_low_scores(p_results, cull_score);
 	}
 
@@ -444,8 +444,11 @@ void FuzzySearch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_filter_factor", "filter_factor"), &FuzzySearch::set_filter_factor);
 	ClassDB::bind_method(D_METHOD("get_filter_factor"), &FuzzySearch::get_filter_factor);
 
-	ClassDB::bind_method(D_METHOD("set_filter_cutoff", "filter_cutoff"), &FuzzySearch::set_filter_cutoff);
-	ClassDB::bind_method(D_METHOD("get_filter_cutoff"), &FuzzySearch::get_filter_cutoff);
+	ClassDB::bind_method(D_METHOD("set_filter_cutoff_max", "filter_cutoff_max"), &FuzzySearch::set_filter_cutoff_max);
+	ClassDB::bind_method(D_METHOD("get_filter_cutoff_max"), &FuzzySearch::get_filter_cutoff_max);
+
+	ClassDB::bind_method(D_METHOD("set_filter_cutoff_min", "filter_cutoff_min"), &FuzzySearch::set_filter_cutoff_min);
+	ClassDB::bind_method(D_METHOD("get_filter_cutoff_min"), &FuzzySearch::get_filter_cutoff_min);
 
 	ClassDB::bind_method(D_METHOD("search", "query", "target"), &FuzzySearch::search);
 	ClassDB::bind_method(D_METHOD("search_all", "query", "targets"), &FuzzySearch::_search_all_bind);
@@ -457,5 +460,6 @@ void FuzzySearch::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "case_sensitive"), "set_case_sensitive", "get_case_sensitive");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_low_scores"), "set_filter_low_scores", "get_filter_low_scores");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "filter_factor"), "set_filter_factor", "get_filter_factor");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "filter_cutoff"), "set_filter_cutoff", "get_filter_cutoff");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "filter_cutoff_max"), "set_filter_cutoff_max", "get_filter_cutoff_max");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "filter_cutoff_min"), "set_filter_cutoff_min", "get_filter_cutoff_min");
 }
