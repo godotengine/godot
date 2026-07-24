@@ -40,7 +40,8 @@ enum ErrorType {
 	NOT_RUNNING,
 	TIMEOUT,
 	UNKNOWN_PLATFORM,
-	MISSING_DEVICE
+	MISSING_DEVICE,
+	MALFORMED_REQUEST,
 };
 
 struct Checksum {
@@ -231,15 +232,15 @@ struct StackFrame {
 		return hash_murmur3_one_32(p_frame.id);
 	}
 
-	_FORCE_INLINE_ Dictionary to_json() const {
+	_FORCE_INLINE_ Dictionary to_json(bool p_lines_at_one, bool p_columns_at_one) const {
 		Dictionary dict;
 		dict["id"] = id;
 		dict["name"] = name;
 		if (source) {
 			dict["source"] = source->to_json();
 		}
-		dict["line"] = line;
-		dict["column"] = column;
+		dict["line"] = p_lines_at_one ? line : line - 1;
+		dict["column"] = p_columns_at_one ? column : column - 1;
 
 		return dict;
 	}
