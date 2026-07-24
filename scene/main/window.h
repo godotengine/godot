@@ -181,6 +181,8 @@ private:
 
 	Rect2i nonclient_area;
 
+	bool is_first_size_update = true;
+
 	Size2i _clamp_limit_size(const Size2i &p_limit_size);
 	Size2i _clamp_window_size(const Size2i &p_size);
 	void _validate_limit_size();
