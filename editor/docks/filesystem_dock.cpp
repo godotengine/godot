@@ -1638,7 +1638,11 @@ void FileSystemDock::_try_duplicate_item(const FileOrFolder &p_item, const Strin
 		Error err = EditorFileSystem::get_singleton()->copy_file(old_path, new_path);
 		if (err != OK) {
 			EditorNode::get_singleton()->add_io_error(TTR("Error duplicating:") + "\n" + old_path + U" → " + new_path + ": " + TTR(error_names[err]) + "\n");
+		} else {
+			// Open duplicated file.
+			EditorNode::get_singleton()->load_scene_or_resource(p_new_path);
 		}
+
 	} else {
 		Error err = EditorFileSystem::get_singleton()->copy_directory(old_path, new_path);
 		if (err != OK) {
