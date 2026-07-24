@@ -1985,6 +1985,15 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			}
 #endif // DEBUG_ENABLED
 		}
+
+#ifdef DEBUG_ENABLED
+		if (!p_is_lambda && p_function->is_static && !String(function_name).begins_with("@")) {
+			MethodBind *script_method = ClassDB::get_method(GDScript::get_class_static(), function_name);
+			if (script_method != nullptr && !script_method->is_static()) {
+				parser->push_warning(p_function, GDScriptWarning::STATIC_METHOD_SHADOWS_SCRIPT_METHOD, function_name, script_method->get_instance_class());
+			}
+		}
+#endif // DEBUG_ENABLED
 #endif // TOOLS_ENABLED
 	}
 
