@@ -1679,11 +1679,12 @@ ProjectManager::ProjectManager() {
 			sidebar_scroll_containter->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 			sidebar_scroll_containter->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 			project_list_sidebar->add_child(sidebar_scroll_containter);
+
 			VBoxContainer *sidebar_buttons_containter = memnew(VBoxContainer);
+			sidebar_buttons_containter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			sidebar_scroll_containter->add_child(sidebar_buttons_containter);
 
 			open_btn_container = memnew(HBoxContainer);
-			open_btn_container->set_anchors_preset(Control::PRESET_FULL_RECT);
 			sidebar_buttons_containter->add_child(open_btn_container);
 
 			open_btn = memnew(Button);
@@ -1706,8 +1707,6 @@ ProjectManager::ProjectManager() {
 			open_options_popup->add_item(TTRC("Edit in recovery mode"));
 			open_options_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectManager::_on_open_options_selected));
 			open_options_btn->add_child(open_options_popup);
-
-			open_btn_container->set_custom_minimum_size(Size2(120, open_btn->get_combined_minimum_size().y));
 
 			run_btn = memnew(Button);
 			run_btn->set_text(TTRC("Run"));
