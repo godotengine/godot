@@ -790,6 +790,9 @@ class BindingsGenerator {
 		return p_type->name;
 	}
 
+	void bbcode_type_to_text(const String &p_type, StringBuilder &p_output);
+	void bbcode_type_to_xml(const String &p_type, StringBuilder &p_xml_output, const TypeInterface *p_itype);
+
 	String bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype);
 	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal = false);
 
