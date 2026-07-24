@@ -3529,9 +3529,15 @@ EditorHelp::EditorHelp() {
 
 #define HANDLE_DOC(m_string) ((is_native ? DTR(m_string) : (m_string)).strip_edges())
 
-EditorHelpBit::HelpData EditorHelpBit::_get_class_help_data(const StringName &p_class_name) {
-	if (doc_class_cache.has(p_class_name)) {
-		return doc_class_cache[p_class_name];
+EditorHelpBit::HelpData EditorHelpBit::_get_class_help_data(const StringName &p_class_name, bool p_use_brief_description) {
+	if (p_use_brief_description) {
+		if (doc_class_brief_cache.has(p_class_name)) {
+			return doc_class_brief_cache[p_class_name];
+		}
+	} else {
+		if (doc_class_cache.has(p_class_name)) {
+			return doc_class_cache[p_class_name];
+		}
 	}
 
 	HelpData result;
@@ -3547,7 +3553,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_class_help_data(const StringName &p_
 		if (!brief_description.is_empty()) {
 			result.description += "[b]" + brief_description + "[/b]";
 		}
-		if (!long_description.is_empty()) {
+		if (!long_description.is_empty() && !p_use_brief_description) {
 			if (!result.description.is_empty()) {
 				result.description += '\n';
 			}
@@ -3569,7 +3575,11 @@ EditorHelpBit::HelpData EditorHelpBit::_get_class_help_data(const StringName &p_
 		}
 
 		if (is_native) {
-			doc_class_cache[p_class_name] = result;
+			if (p_use_brief_description) {
+				doc_class_brief_cache[p_class_name] = result;
+			} else {
+				doc_class_cache[p_class_name] = result;
+			}
 		}
 	}
 
@@ -4453,7 +4463,7 @@ String EditorHelpBit::get_as_plain_text(const String &p_symbol, const String &p_
 	HelpData new_help_data = HelpData();
 
 	if (item_type == "class") {
-		new_help_data = _get_class_help_data(class_name);
+		new_help_data = _get_class_help_data(class_name, false);
 	} else if (item_type == "enum") {
 		new_help_data = _get_enum_help_data(class_name, item_name);
 	} else if (item_type == "constant") {
@@ -4694,7 +4704,7 @@ void EditorHelpBit::parse_symbol(const String &p_symbol, const String &p_prologu
 		symbol_type = TTR("Class");
 		symbol_name = class_name;
 		symbol_hint = SYMBOL_HINT_INHERITANCE;
-		help_data = _get_class_help_data(class_name);
+		help_data = _get_class_help_data(class_name, use_brief_description);
 	} else if (item_type == "enum") {
 		symbol_doc_link = vformat("$%s.%s", class_name, item_name);
 		symbol_type = TTR("Enumeration");
@@ -4883,7 +4893,7 @@ void EditorHelpBit::update_content_height() {
 	content->set_custom_minimum_size(Size2(content->get_custom_minimum_size().x, CLAMP(content_height, content_min_height, content_max_height)));
 }
 
-EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_allow_selection, bool p_in_tooltip) {
+EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_allow_selection, bool p_in_tooltip, bool p_use_brief_description) {
 	add_theme_constant_override("separation", 0);
 
 	title = memnew(RichTextLabel);
@@ -4912,6 +4922,7 @@ EditorHelpBit::EditorHelpBit(const String &p_symbol, const String &p_prologue, b
 	add_child(content);
 
 	use_class_prefix = p_use_class_prefix;
+	use_brief_description = p_use_brief_description;
 
 	if (!p_symbol.is_empty()) {
 		parse_symbol(p_symbol, p_prologue);
@@ -5009,7 +5020,7 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 	}
 }
 
-Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_shortcut) {
+Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_shortcut, bool p_use_brief_description) {
 	ERR_FAIL_NULL_V(p_target, _make_invisible_control());
 
 	// Show the custom tooltip only if it is not already visible.
@@ -5019,7 +5030,7 @@ Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_s
 		return _make_invisible_control();
 	}
 
-	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_symbol, p_prologue, p_use_class_prefix, false, true));
+	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_symbol, p_prologue, p_use_class_prefix, false, true, p_use_brief_description));
 
 	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target, p_shortcut));
 	help_bit->connect("request_hide", callable_mp(static_cast<Node *>(tooltip), &Node::queue_free));

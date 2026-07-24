@@ -310,6 +310,7 @@ class EditorHelpBit : public VBoxContainer {
 	};
 
 	inline static HashMap<StringName, HelpData> doc_class_cache;
+	inline static HashMap<StringName, HelpData> doc_class_brief_cache;
 	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_enum_cache;
 	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_constant_cache;
 	inline static HashMap<StringName, HashMap<StringName, HelpData>> doc_property_cache;
@@ -322,6 +323,7 @@ class EditorHelpBit : public VBoxContainer {
 	RichTextLabel *content = nullptr;
 
 	bool use_class_prefix = false;
+	bool use_brief_description = false;
 
 	String symbol_doc_link;
 	String symbol_class_name;
@@ -334,7 +336,7 @@ class EditorHelpBit : public VBoxContainer {
 	float content_min_height = 0.0;
 	float content_max_height = 0.0;
 
-	static HelpData _get_class_help_data(const StringName &p_class_name);
+	static HelpData _get_class_help_data(const StringName &p_class_name, bool p_use_brief_description);
 	static HelpData _get_enum_help_data(const StringName &p_class_name, const StringName &p_enum_name);
 	static HelpData _get_constant_help_data(const StringName &p_class_name, const StringName &p_constant_name);
 	static HelpData _get_property_help_data(const StringName &p_class_name, const StringName &p_property_name);
@@ -362,7 +364,7 @@ public:
 	void set_content_height_limits(float p_min, float p_max);
 	void update_content_height();
 
-	EditorHelpBit(const String &p_symbol = String(), const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_allow_selection = true, bool p_in_tooltip = false);
+	EditorHelpBit(const String &p_symbol = String(), const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_allow_selection = true, bool p_in_tooltip = false, bool p_use_brief_description = false);
 };
 
 // Standard tooltips do not allow you to hover over them.
@@ -388,7 +390,7 @@ protected:
 
 public:
 	// The returned control is an orphan node, which is to make the standard tooltip invisible.
-	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_shortcut = false);
+	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_shortcut = false, bool p_use_brief_description = false);
 
 	void popup_under_position(const Point2 &p_point);
 

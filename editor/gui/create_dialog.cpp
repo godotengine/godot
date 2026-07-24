@@ -47,6 +47,13 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tree.h"
 
+class CreateDialogTree : public Tree {
+public:
+	virtual Control *make_custom_tooltip(const String &p_text) const override {
+		return EditorHelpBitTooltip::make_tooltip(const_cast<CreateDialogTree *>(this), "class|" + p_text + "|", String(), false, false, true);
+	}
+};
+
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
 	_fill_type_list();
 
@@ -482,8 +489,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		r_item->set_collapsed(should_collapse);
 	}
 
-	const String &description = DTR(class_doc ? class_doc->value.brief_description : "");
-	r_item->set_tooltip_text(0, description);
+	r_item->set_tooltip_text(0, p_type);
 
 	if (p_type_category == TypeCategory::OTHER_TYPE && !script_type) {
 		Ref<Texture2D> icon = EditorNode::get_editor_data().get_custom_types()[custom_type_parents[p_type]][custom_type_indices[p_type]].icon;
@@ -1075,7 +1081,7 @@ CreateDialog::CreateDialog() {
 	filter_popup->set_hide_on_checkable_item_selection(false);
 	filter_popup->connect(SceneStringName(id_pressed), callable_mp(this, &CreateDialog::_type_filter_toggled).bind(true));
 
-	search_options = memnew(Tree);
+	search_options = memnew(CreateDialogTree);
 	search_box->set_forward_control(search_options);
 	search_options->set_accessibility_name(TTRC("Matches:"));
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
