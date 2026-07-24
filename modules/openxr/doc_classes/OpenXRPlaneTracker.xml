@@ -15,10 +15,16 @@
 				Clears the mesh data for this tracker. You should only call this if you are handling your own discovery logic.
 			</description>
 		</method>
+		<method name="get_indices" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Gets the index data for the mesh.
+			</description>
+		</method>
 		<method name="get_mesh">
 			<return type="Mesh" />
 			<description>
-				Gets a mesh created from either the mesh data or from our bounding size for this plane.
+				Gets a mesh created from either the mesh data or from our bounding size for this plane. This mesh is cached and will return the same resource when called while vertex and index data remains unchanged.
 			</description>
 		</method>
 		<method name="get_mesh_offset" qualifiers="const">
@@ -32,6 +38,12 @@
 			<param index="0" name="thickness" type="float" default="0.01" />
 			<description>
 				Gets a collision shape built either from the mesh data or from our bounding size for this plane.
+			</description>
+		</method>
+		<method name="get_vertices" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<description>
+				Gets the vertex data for the mesh.
 			</description>
 		</method>
 		<method name="set_mesh_data">

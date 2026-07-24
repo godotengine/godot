@@ -2813,6 +2813,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
 
 	// OpenXR project extensions settings.
+#ifndef DISABLE_DEPRECATED
+#define MOVE_PROJECT_SETTING(m_old_setting, m_new_setting) \
+	if (!ProjectSettings::get_singleton()->has_setting(m_new_setting) && ProjectSettings::get_singleton()->has_setting(m_old_setting)) { \
+		Variant value = GLOBAL_GET(m_old_setting); \
+		ProjectSettings::get_singleton()->set_setting(m_new_setting, value); \
+		ProjectSettings::get_singleton()->clear(m_old_setting); \
+	}
+
+	MOVE_PROJECT_SETTING("xr/openxr/extensions/spatial_entity/enable_marker_tracking", "xr/openxr/extensions/spatial_entity/marker_tracking/enable");
+	MOVE_PROJECT_SETTING("xr/openxr/extensions/spatial_entity/aruco_dict", "xr/openxr/extensions/spatial_entity/marker_tracking/aruco_dict");
+	MOVE_PROJECT_SETTING("xr/openxr/extensions/spatial_entity/april_tag_dict", "xr/openxr/extensions/spatial_entity/marker_tracking/april_tag_dict");
+
+	if (!ProjectSettings::get_singleton()->has_setting("xr/openxr/extensions/spatial_entity/marker_tracking/enable_builtin_for_types") && ProjectSettings::get_singleton()->has_setting("xr/openxr/extensions/spatial_entity/enable_builtin_marker_tracking")) {
+		bool value = GLOBAL_GET("xr/openxr/extensions/spatial_entity/enable_builtin_marker_tracking");
+		ProjectSettings::get_singleton()->set_setting("xr/openxr/extensions/spatial_entity/marker_tracking/enable_builtin_for_types", value ? 15 : 0);
+		ProjectSettings::get_singleton()->clear("xr/openxr/extensions/spatial_entity/enable_builtin_marker_tracking");
+	}
+#undef MOVE_PROJECT_SETTING
+#endif // DISABLE_DEPRECATED
+
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/debug_utils", PROPERTY_HINT_ENUM, "Disabled,Error,Warning,Info,Verbose"), "0");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/debug_message_types", PROPERTY_HINT_FLAGS, "General,Validation,Performance,Conformance"), "15");
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/frame_synthesis", false);
@@ -2827,10 +2847,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_plane_tracking", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_builtin_plane_detection", false);
-	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_marker_tracking", false);
-	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_builtin_marker_tracking", false);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/aruco_dict", PROPERTY_HINT_ENUM, "4x4 50 IDs,4x4 100 IDs,4x4 250 IDs,4x4 1000 IDs,5x5 50 IDs,5x5 100 IDs,5x5 250 IDs,5x5 1000 IDs,6x6 50 IDs,6x6 100 IDs,6x6 250 IDs,6x6 1000 IDs,7x7 50 IDs,7x7 100 IDs,7x7 250 IDs,7x7 1000 IDs"), "15");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/april_tag_dict", PROPERTY_HINT_ENUM, "4x4H5,5x5H9,6x6H10,6x6H11"), "3");
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/marker_tracking/enable", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/marker_tracking/enable_builtin_for_types", PROPERTY_HINT_FLAGS, "QR codes,Micro QR codes,ArUco markers,April tags"), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/marker_tracking/aruco_dict", PROPERTY_HINT_ENUM, "4x4 50 IDs,4x4 100 IDs,4x4 250 IDs,4x4 1000 IDs,5x5 50 IDs,5x5 100 IDs,5x5 250 IDs,5x5 1000 IDs,6x6 50 IDs,6x6 100 IDs,6x6 250 IDs,6x6 1000 IDs,7x7 50 IDs,7x7 100 IDs,7x7 250 IDs,7x7 1000 IDs"), "15");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_entity/marker_tracking/april_tag_dict", PROPERTY_HINT_ENUM, "4x4H5,5x5H9,6x6H10,6x6H11"), "3");
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/render_model", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/user_presence", false);
