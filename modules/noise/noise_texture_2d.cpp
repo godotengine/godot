@@ -397,5 +397,5 @@ RID NoiseTexture2D::get_rid() const {
 }
 
 Ref<Image> NoiseTexture2D::get_image() const {
-	return image;
+	return RenderingServer::get_singleton()->texture_2d_get(get_rid());
 }
