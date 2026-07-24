@@ -2516,6 +2516,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				rendering_method = "dummy";
 			} else if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
 				rendering_method = "gl_compatibility";
+			} else if (GLOBAL_GET("rendering/renderer/rendering_method") != "gl_compatibility") {
+				rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
 			} else {
 				rendering_method = "forward_plus";
 			}
