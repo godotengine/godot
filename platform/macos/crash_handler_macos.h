@@ -30,8 +30,21 @@
 
 #pragma once
 
+#if defined(DEBUG_ENABLED)
+#define CRASH_HANDLER_ENABLED 1
+#endif
+
+typedef typeof(void(int)) *sighandler_t;
+
 class CrashHandler {
 	bool disabled;
+
+#ifdef CRASH_HANDLER_ENABLED
+	sighandler_t old_sig_segf = nullptr;
+	sighandler_t old_sig_fpe = nullptr;
+	sighandler_t old_sig_ill = nullptr;
+	sighandler_t old_sig_trap = nullptr;
+#endif
 
 public:
 	void initialize();
