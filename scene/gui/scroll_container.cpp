@@ -194,7 +194,7 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 	if (mb.is_valid()) {
 		if (mb->is_pressed()) {
 			bool scroll_value_modified = false;
-			bool swap_axes = scroll_horizontal_by_default != mb->is_shift_pressed();
+			bool swap_axes = (!DisplayServer::get_singleton()->shift_swaps_scroll_axis() && mb->is_shift_pressed()) == scroll_horizontal_by_default;
 
 			bool v_scroll_hidden = !v_scroll->is_visible() && vertical_scroll_mode != SCROLL_MODE_SHOW_NEVER;
 			if (mb->get_button_index() == MouseButton::WHEEL_UP) {

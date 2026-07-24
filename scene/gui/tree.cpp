@@ -4404,25 +4404,29 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 			} break;
 			case MouseButton::WHEEL_UP: {
-				if (_scroll(mb->is_shift_pressed(), -mb->get_factor() / 8)) {
+				bool swap_axis = !DisplayServer::get_singleton()->shift_swaps_scroll_axis() && mb->is_shift_pressed();
+				if (_scroll(swap_axis, -mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_DOWN: {
-				if (_scroll(mb->is_shift_pressed(), mb->get_factor() / 8)) {
+				bool swap_axis = !DisplayServer::get_singleton()->shift_swaps_scroll_axis() && mb->is_shift_pressed();
+				if (_scroll(swap_axis, mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_LEFT: {
-				if (_scroll(!mb->is_shift_pressed(), -mb->get_factor() / 8)) {
+				bool swap_axis = !DisplayServer::get_singleton()->shift_swaps_scroll_axis() && mb->is_shift_pressed();
+				if (_scroll(!swap_axis, -mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_RIGHT: {
-				if (_scroll(!mb->is_shift_pressed(), mb->get_factor() / 8)) {
+				bool swap_axis = !DisplayServer::get_singleton()->shift_swaps_scroll_axis() && mb->is_shift_pressed();
+				if (_scroll(!swap_axis, mb->get_factor() / 8)) {
 					accept_event();
 				}
 
