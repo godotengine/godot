@@ -33,7 +33,6 @@
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
 #include "gdscript_language_protocol.h"
-#include "gdscript_workspace.h"
 
 LSP::Position GodotPosition::to_lsp() const {
 	LSP::Position res;
@@ -137,7 +136,7 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 
 				if (exists) {
 					LSP::DocumentLink link;
-					link.target = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(scr_path);
+					link.target = GDScriptLanguageProtocol::get_singleton()->get_file_uri(scr_path);
 					link.range = GodotRange(GodotPosition(token.start_line, token.start_column), GodotPosition(token.end_line, token.end_column)).to_lsp();
 					document_links.push_back(link);
 				}
@@ -716,7 +715,7 @@ String ExtendGDScriptParser::get_symbol_name_under_position(const LSP::Position 
 }
 
 String ExtendGDScriptParser::get_uri() const {
-	return GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(path);
+	return GDScriptLanguageProtocol::get_singleton()->get_file_uri(path);
 }
 
 const LSP::DocumentSymbol *ExtendGDScriptParser::search_symbol_defined_at_line(int p_line, const LSP::DocumentSymbol &p_parent, const String &p_symbol_name) const {

@@ -57,9 +57,6 @@ protected:
 	bool initialized = false;
 	HashMap<StringName, LSP::DocumentSymbol> native_symbols;
 
-	// Absolute paths that are known to point to res://
-	HashSet<String> absolute_res_paths;
-
 	const LSP::DocumentSymbol *get_native_symbol(const String &p_class, const String &p_member = "") const;
 	const LSP::DocumentSymbol *get_script_symbol(const String &p_path) const;
 	const LSP::DocumentSymbol *get_parameter_symbol(const LSP::DocumentSymbol *p_parent, const String &symbol_identifier);
@@ -77,8 +74,10 @@ public:
 public:
 	Error initialize();
 
-	String get_file_path(const String &p_uri);
-	String get_file_uri(const String &p_path) const;
+#ifndef DISABLE_DEPRECATED
+	String get_file_path [[deprecated]] (const String &p_uri);
+	String get_file_uri [[deprecated]] (const String &p_path) const;
+#endif // !DISABLE_DEPRECATED
 
 	void publish_diagnostics(const String &p_path);
 	void completion(const LSP::CompletionParams &p_params, List<ScriptLanguage::CodeCompletionOption> *r_options);

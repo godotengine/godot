@@ -33,6 +33,7 @@
 #include "godot_lsp.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -40,6 +41,7 @@
 #include "editor/doc/editor_help.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 
 #define LSP_CLIENT_V(m_ret_val) \
@@ -219,13 +221,19 @@ Variant GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 		// since it might lead to unexpected behavior, like wrong warnings about duplicate class names.
 
 		String root;
+		String cannonical_root; // Absolute path to workspace as known by the client.
+
 		Variant root_uri_var = p_params["rootUri"];
 		Variant root_var = p_params.get("rootPath", Variant());
 		if (root_uri_var.is_string()) {
-			root = get_workspace()->get_file_path(root_uri_var);
+			cannonical_root = decode_file_uri(root_uri_var);
+			root = get_file_path(root_uri_var);
 		} else if (root_var.is_string()) {
+			cannonical_root = root_var;
 			root = root_var;
 		}
+
+		client->cannonical_root = cannonical_root;
 
 		if (ProjectSettings::get_singleton()->localize_path(root) != "res://") {
 			// Show a general warning, which works for all clients.
@@ -386,6 +394,105 @@ bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
 	return bool(_EDITOR_GET("network/language_server/show_native_symbols_in_editor"));
 }
 
+String GDScriptLanguageProtocol::decode_file_uri(const String &p_uri) const {
+	int port;
+	String scheme;
+	String host;
+	String encoded_path;
+	String fragment;
+
+	// Don't use the returned error, the result isn't OK for URIs that are not valid web URLs.
+	p_uri.parse_url(scheme, host, port, encoded_path, fragment);
+
+	// TODO: Make the parsing RFC-3986 compliant.
+	ERR_FAIL_COND_V_MSG(scheme != "file" && scheme != "file:" && scheme != "file://", String(), "LSP: The language server only supports the file protocol: " + p_uri);
+
+	// Treat host like authority for now and ignore the port. It's an edge case for invalid file URI's anyway.
+	ERR_FAIL_COND_V_MSG(host != "" && host != "localhost", String(), "LSP: The language server does not support nonlocal files: " + p_uri);
+
+	// If query or fragment are present, the URI is not a valid file URI as per RFC-8089.
+	// We currently don't handle the query and it will be part of the path. However,
+	// this should not be a problem for a correct file URI.
+	ERR_FAIL_COND_V_MSG(fragment != "", String(), "LSP: Received malformed file URI: " + p_uri);
+
+	return encoded_path.uri_file_decode().simplify_path();
+}
+
+String GDScriptLanguageProtocol::get_file_path(const String &p_uri) {
+	String canonical_res = ProjectSettings::get_singleton()->get_resource_path();
+	String simple_path = decode_file_uri(p_uri);
+
+	// First try known paths that point to res://, to reduce file system interaction.
+	bool res_adjusted = false;
+	for (const String &res_path : absolute_res_paths) {
+		if (simple_path.begins_with(res_path)) {
+			res_adjusted = true;
+			simple_path = "res://" + simple_path.substr(res_path.size());
+			break;
+		}
+	}
+
+	// Traverse the path and compare each directory with res://
+	if (!res_adjusted) {
+		Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+		int offset = 0;
+		while (offset <= simple_path.length()) {
+			offset = simple_path.find_char('/', offset);
+			if (offset == -1) {
+				offset = simple_path.length();
+			}
+
+			String part = simple_path.substr(0, offset);
+
+			if (!part.is_empty()) {
+				bool is_equal = dir->is_equivalent(canonical_res, part);
+
+				if (is_equal) {
+					absolute_res_paths.insert(part);
+					res_adjusted = true;
+					simple_path = "res://" + simple_path.substr(offset + 1);
+					break;
+				}
+			}
+
+			offset += 1;
+		}
+
+		// Could not resolve the path to the project.
+		if (!res_adjusted) {
+			return simple_path;
+		}
+	}
+
+	// Resolve the file inside of the project using EditorFileSystem.
+	EditorFileSystemDirectory *editor_dir;
+	int file_idx;
+	editor_dir = EditorFileSystem::get_singleton()->find_file(simple_path, &file_idx);
+	if (editor_dir) {
+		return editor_dir->get_file_path(file_idx);
+	}
+
+	return simple_path;
+}
+
+String GDScriptLanguageProtocol::get_file_uri(const String &p_path) const {
+	LSP_CLIENT_V(String());
+
+	// Just in case a uid:// or something odd makes its way here.
+	const String res_path = ProjectSettings::get_singleton()->localize_path(ProjectSettings::get_singleton()->globalize_path(p_path));
+
+	const String client_path = client->cannonical_root.path_join(res_path.lstrip("res://"));
+
+	LocalVector<String> encoded_parts;
+	for (const String &part : client_path.lstrip("/").split("/")) {
+		encoded_parts.push_back(part.uri_encode());
+	}
+
+	// Always return file URI's with authority part (encoding drive letters with leading slash), to maintain compat with RFC-1738 which required it.
+	return "file:///" + String("/").join(Vector<String>(encoded_parts));
+}
+
 ExtendGDScriptParser *GDScriptLanguageProtocol::LSPeer::parse_script(const String &p_path) {
 	remove_cached_parser(p_path);
 
@@ -465,7 +572,7 @@ void GDScriptLanguageProtocol::lsp_did_open(const Dictionary &p_params) {
 		document.text = "";
 	}
 
-	String path = get_workspace()->get_file_path(document.uri);
+	String path = get_file_path(document.uri);
 
 	/// An open notification must not be sent more than once without a corresponding close notification send before.
 	ERR_FAIL_COND_MSG(client->managed_files.has(path), "LSP: Client is opening already opened file.");
@@ -482,7 +589,7 @@ void GDScriptLanguageProtocol::lsp_did_change(const Dictionary &p_params) {
 	LSP::TextDocumentIdentifier identifier;
 	identifier.load(p_params["textDocument"]);
 
-	String path = get_workspace()->get_file_path(identifier.uri);
+	String path = get_file_path(identifier.uri);
 	LSP::TextDocumentItem *document = client->managed_files.getptr(path);
 
 	/// Before a client can change a text document it must claim ownership of its content using the textDocument/didOpen notification.
@@ -512,7 +619,7 @@ void GDScriptLanguageProtocol::lsp_did_close(const Dictionary &p_params) {
 	LSP::TextDocumentIdentifier identifier;
 	identifier.load(p_params["textDocument"]);
 
-	String path = get_workspace()->get_file_path(identifier.uri);
+	String path = get_file_path(identifier.uri);
 	bool was_opened = client->managed_files.erase(path);
 
 	client->remove_cached_parser(path);
@@ -610,7 +717,7 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 void GDScriptLanguageProtocol::resolve_related_symbols(const LSP::TextDocumentPositionParams &p_doc_pos, List<const LSP::DocumentSymbol *> &r_list) {
 	LSP_CLIENT;
 
-	String path = workspace->get_file_path(p_doc_pos.textDocument.uri);
+	String path = get_file_path(p_doc_pos.textDocument.uri);
 
 	const ExtendGDScriptParser *parser = get_parse_result(path);
 	if (!parser) {

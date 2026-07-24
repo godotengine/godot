@@ -30,14 +30,14 @@
 				Returns the interface of the script in a machine-readable format.
 			</description>
 		</method>
-		<method name="get_file_path">
+		<method name="get_file_path" deprecated="">
 			<return type="String" />
 			<param index="0" name="uri" type="String" />
 			<description>
 				Converts a URI to a file path.
 			</description>
 		</method>
-		<method name="get_file_uri" qualifiers="const">
+		<method name="get_file_uri" qualifiers="const" deprecated="">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
 			<description>
