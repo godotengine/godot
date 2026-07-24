@@ -11,7 +11,7 @@
 	</tutorials>
 	<members>
 		<member name="use_top_left" type="bool" setter="set_use_top_left" getter="is_using_top_left" default="false">
-			If [code]true[/code], centers children relative to the [CenterContainer]'s top left corner.
+			If [code]true[/code], centers children relative to the [CenterContainer]'s top left corner. Enabling this property will disable this [CenterContainer]'s minimum size (instead of covering its visible [Control] children).
 		</member>
 	</members>
 </class>
