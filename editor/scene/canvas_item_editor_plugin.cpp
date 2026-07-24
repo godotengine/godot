@@ -53,6 +53,7 @@
 #include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/gui/control_editor_plugin.h"
+#include "editor/scene/viewport_bookmarks.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -547,6 +548,21 @@ void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (k->is_pressed() && !k->is_echo()) {
+			if (ED_IS_SHORTCUT("viewport_bookmarks/add", p_ev)) {
+				bookmark_manager->popup_add();
+				accept_event();
+				return;
+			}
+			if (ED_IS_SHORTCUT("viewport_bookmarks/next", p_ev)) {
+				bookmark_manager->activate_next();
+				accept_event();
+				return;
+			}
+			if (ED_IS_SHORTCUT("viewport_bookmarks/previous", p_ev)) {
+				bookmark_manager->activate_previous();
+				accept_event();
+				return;
+			}
 			if (reset_transform_position_shortcut.is_valid() && reset_transform_position_shortcut->matches_event(p_ev)) {
 				_reset_transform(TransformType::POSITION);
 			}
@@ -4908,6 +4924,52 @@ void CanvasItemEditor::_prepare_view_menu() {
 	popup->set_item_disabled(popup->get_item_index(CLEAR_GUIDES), !has_guides);
 }
 
+void CanvasItemEditor::_prepare_bookmarks_menu() {
+	bookmarks_menu->clear();
+	Node *root = EditorNode::get_singleton()->get_edited_scene();
+	bookmarks_menu->add_item(TTR("Add Current View..."), 0);
+	bookmarks_menu->set_item_disabled(-1, !root);
+
+	Array bookmarks = ViewportBookmarks::get_bookmarks(root, ViewportBookmarks::TYPE_2D);
+	if (!bookmarks.is_empty()) {
+		bookmarks_menu->add_separator();
+		const int visible_bookmark_count = MIN(bookmarks.size(), 10);
+		for (int i = 0; i < visible_bookmark_count; i++) {
+			bookmarks_menu->add_item(Dictionary(bookmarks[i]).get("name", ""), i + 100);
+		}
+		if (bookmarks.size() > visible_bookmark_count) {
+			bookmarks_menu->add_item(vformat(TTR("More Bookmarks (%d)..."), bookmarks.size() - visible_bookmark_count), 1);
+		}
+	}
+	bookmarks_menu->add_separator();
+	bookmarks_menu->add_item(TTR("Manage Bookmarks..."), 1);
+	bookmarks_menu->set_item_disabled(-1, !root || bookmarks.is_empty());
+}
+
+void CanvasItemEditor::_bookmark_menu_pressed(int p_id) {
+	if (p_id == 0) {
+		bookmark_manager->popup_add();
+	} else if (p_id == 1) {
+		bookmark_manager->popup_manage();
+	} else if (p_id >= 100) {
+		bookmark_manager->activate(p_id - 100);
+	}
+}
+
+Dictionary CanvasItemEditor::_capture_bookmark() const {
+	Dictionary bookmark;
+	bookmark["offset"] = view_offset;
+	bookmark["zoom"] = zoom / MAX(1, EDSCALE);
+	return bookmark;
+}
+
+void CanvasItemEditor::_activate_bookmark(const Dictionary &p_bookmark) {
+	Dictionary state;
+	state["ofs"] = p_bookmark["offset"];
+	state["zoom"] = p_bookmark["zoom"];
+	set_state(state);
+}
+
 void CanvasItemEditor::_popup_callback(int p_op) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	last_option = MenuOption(p_op);
@@ -5759,6 +5821,9 @@ CanvasItemEditor::CanvasItemEditor() {
 	controls_vb->set_begin(Point2(5, 5));
 
 	ED_SHORTCUT("canvas_item_editor/cancel_transform", TTRC("Cancel Transformation"), Key::ESCAPE);
+	ED_SHORTCUT("viewport_bookmarks/add", TTRC("Add Viewport Bookmark"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::B);
+	ED_SHORTCUT("viewport_bookmarks/next", TTRC("Next Viewport Bookmark"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETRIGHT);
+	ED_SHORTCUT("viewport_bookmarks/previous", TTRC("Previous Viewport Bookmark"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETLEFT);
 
 	// To ensure that scripts can parse the list of shortcuts correctly, we have to define
 	// those shortcuts one by one. Define shortcut before using it (by EditorZoomWidget).
@@ -6063,6 +6128,13 @@ CanvasItemEditor::CanvasItemEditor() {
 	grid_menu->add_separator();
 	grid_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/toggle_grid", TTRC("Toggle Grid"), KeyModifierMask::CMD_OR_CTRL | Key::APOSTROPHE));
 	p->add_submenu_node_item(TTRC("Grid"), grid_menu);
+
+	bookmarks_menu = memnew(PopupMenu);
+	bookmarks_menu->connect("about_to_popup", callable_mp(this, &CanvasItemEditor::_prepare_bookmarks_menu));
+	bookmarks_menu->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_bookmark_menu_pressed));
+	p->add_submenu_node_item(TTRC("Bookmarks"), bookmarks_menu);
+	bookmark_manager = memnew(ViewportBookmarkManager(ViewportBookmarks::TYPE_2D, callable_mp(this, &CanvasItemEditor::_capture_bookmark), callable_mp(this, &CanvasItemEditor::_activate_bookmark)));
+	add_child(bookmark_manager);
 
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTRC("Show Helpers"), KeyModifierMask::SHIFT | Key::H), SHOW_HELPERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_rulers", TTRC("Show Rulers")), SHOW_RULERS);

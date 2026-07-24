@@ -54,6 +54,7 @@
 #include "editor/scene/3d/node_3d_editor_constants.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/viewport_bookmarks.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/translations/editor_translation_preview_button.h"
 #include "scene/3d/audio_stream_player_3d.h"
@@ -1388,6 +1389,66 @@ void Node3DEditorViewport::_view_state_changed() {
 		_menu_option(VIEW_PERSPECTIVE);
 	}
 	_update_name();
+}
+
+void Node3DEditorViewport::_prepare_bookmarks_menu() {
+	bookmarks_menu->clear();
+	Node *root = EditorNode::get_singleton()->get_edited_scene();
+	const bool camera_owned = previewing_camera || pilot_preview_enabled;
+	bookmarks_menu->add_item(TTR("Add Current View..."), 0);
+	bookmarks_menu->set_item_disabled(-1, !root || camera_owned);
+
+	Array bookmarks = ViewportBookmarks::get_bookmarks(root, ViewportBookmarks::TYPE_3D);
+	if (!bookmarks.is_empty()) {
+		bookmarks_menu->add_separator();
+		const int visible_bookmark_count = MIN(bookmarks.size(), 10);
+		for (int i = 0; i < visible_bookmark_count; i++) {
+			bookmarks_menu->add_item(Dictionary(bookmarks[i]).get("name", ""), i + 100);
+			bookmarks_menu->set_item_disabled(-1, camera_owned);
+			if (camera_owned) {
+				bookmarks_menu->set_item_tooltip(-1, TTR("Viewport bookmarks are unavailable while previewing or piloting a camera."));
+			}
+		}
+		if (bookmarks.size() > visible_bookmark_count) {
+			bookmarks_menu->add_item(vformat(TTR("More Bookmarks (%d)..."), bookmarks.size() - visible_bookmark_count), 1);
+			bookmarks_menu->set_item_disabled(-1, camera_owned);
+		}
+	}
+	bookmarks_menu->add_separator();
+	bookmarks_menu->add_item(TTR("Manage Bookmarks..."), 1);
+	bookmarks_menu->set_item_disabled(-1, !root || bookmarks.is_empty() || camera_owned);
+}
+
+void Node3DEditorViewport::_bookmark_menu_pressed(int p_id) {
+	if (p_id == 0) {
+		bookmark_manager->popup_add();
+	} else if (p_id == 1) {
+		bookmark_manager->popup_manage();
+	} else if (p_id >= 100 && !previewing_camera && !pilot_preview_enabled) {
+		bookmark_manager->activate(p_id - 100);
+	}
+}
+
+Dictionary Node3DEditorViewport::_capture_bookmark() const {
+	Dictionary bookmark;
+	bookmark["position"] = Vector3(view_3d_controller->cursor.pos_x, view_3d_controller->cursor.pos_y, view_3d_controller->cursor.pos_z);
+	bookmark["x_rotation"] = view_3d_controller->cursor.x_rot;
+	bookmark["y_rotation"] = view_3d_controller->cursor.y_rot;
+	bookmark["distance"] = view_3d_controller->cursor.distance;
+	bookmark["orthogonal"] = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
+	bookmark["view_type"] = view_3d_controller->get_view_type();
+	return bookmark;
+}
+
+void Node3DEditorViewport::_activate_bookmark(const Dictionary &p_bookmark) {
+	if (previewing_camera || pilot_preview_enabled) {
+		return;
+	}
+	set_state(p_bookmark);
+	_disable_follow_mode();
+	view_3d_controller->update_camera(0);
+	update_transform_gizmo_view();
+	surface->queue_redraw();
 }
 
 void Node3DEditorViewport::_update_name() {
@@ -2882,6 +2943,15 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			view_3d_controller->cursor.y_rot += Math::PI;
 			view_3d_controller->cursor.unsnapped_y_rot = view_3d_controller->cursor.y_rot;
 			view_3d_controller->set_view_type(View3DController::VIEW_TYPE_USER);
+		}
+		if (ED_IS_SHORTCUT("viewport_bookmarks/add", event_mod)) {
+			bookmark_manager->popup_add();
+		}
+		if (ED_IS_SHORTCUT("viewport_bookmarks/next", event_mod)) {
+			bookmark_manager->activate_next();
+		}
+		if (ED_IS_SHORTCUT("viewport_bookmarks/previous", event_mod)) {
+			bookmark_manager->activate_previous();
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/focus_origin", event_mod)) {
 			_menu_option(VIEW_CENTER_TO_ORIGIN);
@@ -6872,6 +6942,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_cinematic_preview", TTRC("Cinematic Preview")), VIEW_CINEMATIC_PREVIEW);
 
 	view_display_menu->get_popup()->add_separator();
+	bookmarks_menu = memnew(PopupMenu);
+	bookmarks_menu->connect("about_to_popup", callable_mp(this, &Node3DEditorViewport::_prepare_bookmarks_menu));
+	bookmarks_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_bookmark_menu_pressed));
+	view_display_menu->get_popup()->add_submenu_node_item(TTRC("Bookmarks"), bookmarks_menu);
+	bookmark_manager = memnew(ViewportBookmarkManager(ViewportBookmarks::TYPE_3D, callable_mp(this, &Node3DEditorViewport::_capture_bookmark), callable_mp(this, &Node3DEditorViewport::_activate_bookmark)));
+	add_child(bookmark_manager);
+
+	view_display_menu->get_popup()->add_separator();
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_display_menu->get_popup()->set_item_tooltip(-1, TTR("Press Focus Selection twice to start following the selection as it moves. Press it yet another time to stop following the selection."));
@@ -6884,6 +6962,9 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_load_viewport_inputs();
 	InputMap::get_singleton()->connect("project_settings_loaded", callable_mp(this, &Node3DEditorViewport::_load_viewport_inputs));
 
+	ED_SHORTCUT("viewport_bookmarks/add", TTRC("Add Viewport Bookmark"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::B);
+	ED_SHORTCUT("viewport_bookmarks/next", TTRC("Next Viewport Bookmark"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETRIGHT);
+	ED_SHORTCUT("viewport_bookmarks/previous", TTRC("Previous Viewport Bookmark"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETLEFT);
 	ED_SHORTCUT("spatial_editor/lock_transform_x", TTRC("Lock Transformation to X axis"), Key::X);
 	ED_SHORTCUT("spatial_editor/lock_transform_y", TTRC("Lock Transformation to Y axis"), Key::Y);
 	ED_SHORTCUT("spatial_editor/lock_transform_z", TTRC("Lock Transformation to Z axis"), Key::Z);

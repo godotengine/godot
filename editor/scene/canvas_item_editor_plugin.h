@@ -50,6 +50,7 @@ class RichTextLabel;
 class StyleBoxTexture;
 class Timer;
 class ViewPanner;
+class ViewportBookmarkManager;
 class VScrollBar;
 class VSeparator;
 class VSplitContainer;
@@ -363,6 +364,8 @@ private:
 	Button *ungroup_button = nullptr;
 
 	MenuButton *view_menu = nullptr;
+	PopupMenu *bookmarks_menu = nullptr;
+	ViewportBookmarkManager *bookmark_manager = nullptr;
 	PopupMenu *grid_menu = nullptr;
 	PopupMenu *theme_menu = nullptr;
 	PopupMenu *gizmos_menu = nullptr;
@@ -434,6 +437,10 @@ private:
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 
 	void _prepare_view_menu();
+	void _prepare_bookmarks_menu();
+	void _bookmark_menu_pressed(int p_id);
+	Dictionary _capture_bookmark() const;
+	void _activate_bookmark(const Dictionary &p_bookmark);
 	void _popup_callback(int p_op);
 	bool updating_scroll = false;
 	void _update_scroll(real_t);
