@@ -586,6 +586,9 @@
 		<theme_item name="caret_width" data_type="constant" type="int" default="1">
 			The caret's width in pixels. Greater values can be used to improve accessibility by ensuring the caret is easily visible, or to ensure consistency with a large font size.
 		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the [LineEdit]'s icon. This limit is applied on top of the default size of the icon, or its expanded size if [member icon_expand_mode] is scaling the icon. The height is adjusted according to the icon's ratio.
+		</theme_item>
 		<theme_item name="minimum_character_width" data_type="constant" type="int" default="4">
 			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'W' characters (i.e. this number of 'W' characters can be displayed without scrolling).
 		</theme_item>
