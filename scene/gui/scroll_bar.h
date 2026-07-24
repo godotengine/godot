@@ -35,34 +35,10 @@
 class ScrollBar : public Range {
 	GDCLASS(ScrollBar, Range);
 
-	enum HighlightStatus {
-		HIGHLIGHT_NONE,
-		HIGHLIGHT_DECR,
-		HIGHLIGHT_RANGE,
-		HIGHLIGHT_INCR,
-	};
-
 	static bool focus_by_default;
 
 	Orientation orientation;
 	Size2 size;
-	float custom_step = -1.0;
-
-	HighlightStatus highlight = HIGHLIGHT_NONE;
-
-	bool incr_active = false;
-	bool decr_active = false;
-
-	struct Drag {
-		bool active = false;
-		float pos_at_click = 0.0;
-		float value_at_click = 0.0;
-	} drag;
-
-	double get_grabber_size() const;
-	double get_grabber_min_size() const;
-	double get_area_size() const;
-	double get_grabber_offset() const;
 
 	static void set_can_focus_by_default(bool p_can_focus);
 
@@ -77,6 +53,29 @@ class ScrollBar : public Range {
 	float time_since_motion = 0.0;
 	bool drag_node_touching = false;
 	bool drag_node_touching_deaccel = false;
+	bool click_handled = false;
+
+protected:
+	struct Drag {
+		bool active = false;
+		float pos_at_click = 0.0;
+		float value_at_click = 0.0;
+	} drag;
+
+	enum HighlightStatus {
+		HIGHLIGHT_NONE,
+		HIGHLIGHT_DECR,
+		HIGHLIGHT_RANGE,
+		HIGHLIGHT_INCR,
+		BASE_ENUM_COUNT,
+	};
+
+	int highlight = HIGHLIGHT_NONE;
+
+	bool incr_active = false;
+	bool decr_active = false;
+
+	float custom_step = -1.0;
 
 	bool scrolling = false;
 	double target_scroll = 0.0;
@@ -84,8 +83,6 @@ class ScrollBar : public Range {
 
 	void _drag_node_exit();
 	void _drag_node_input(const Ref<InputEvent> &p_input);
-
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
 	struct ThemeCache {
@@ -109,6 +106,12 @@ protected:
 		int padding_bottom = 0;
 	} theme_cache;
 
+	double get_grabber_size() const;
+	double get_grabber_min_size() const;
+	double get_area_size() const;
+	double get_grabber_offset() const;
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
