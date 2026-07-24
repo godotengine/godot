@@ -3412,7 +3412,8 @@
 			[b]Note:[/b] Changing this property requires a restart to take effect.
 		</member>
 		<member name="rendering/scaling_3d/fsr_sharpness" type="float" setter="" getter="" default="0.2">
-			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
+			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from [code]0.0[/code] (sharpest) to [code]2.0[/code] (no sharpening). Values above [code]2.0[/code] don't make a visible difference.
+			[b]Note:[/b] For consistency with established games, projects' settings menus should expose this value in inverted fashion, typically with a [code]0[/code] to [code]10[/code] scale where [code]0[/code] is the least sharp and [code]10[/code] is the sharpest. This can be achieved using [code]remap(fsr_sharpness, 2.0, 0.0, 0.0, 10.0)[/code] where [code]fsr_sharpness[/code] is this setting's value. Use [code]remap(fsr_sharpness, 0.0, 10.0, 2.0, 0.0)[/code] to convert back to this setting's value.
 		</member>
 		<member name="rendering/scaling_3d/mode" type="int" setter="" getter="" default="0">
 			Sets the scaling 3D mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially-aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. On particularly low-end GPUs, the added cost of FSR may not be worth it (compared to using bilinear scaling with a slightly higher resolution scale to match performance).
