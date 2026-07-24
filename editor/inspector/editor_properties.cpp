@@ -878,17 +878,20 @@ void EditorPropertyClassName::_set_read_only(bool p_read_only) {
 	property->set_disabled(p_read_only);
 }
 
-void EditorPropertyClassName::setup(const String &p_base_type, const String &p_selected_type) {
+void EditorPropertyClassName::setup(const String &p_base_type) {
 	base_type = p_base_type;
-	dialog->set_base_type(base_type);
-	selected_type = p_selected_type;
-	property->set_text(selected_type);
+	dialog->set_base_type(base_type.is_empty() ? "Object" : base_type);
 }
 
 void EditorPropertyClassName::update_property() {
-	String s = get_edited_property_value();
-	property->set_text(s);
-	selected_type = s;
+	selected_type = get_edited_property_value();
+	if (selected_type.is_empty()) {
+		property->set_text(TTR("<None>"));
+		property->set_tooltip_text(String());
+	} else {
+		property->set_text(selected_type);
+		property->set_tooltip_text(selected_type);
+	}
 }
 
 void EditorPropertyClassName::_property_selected() {
@@ -903,12 +906,13 @@ void EditorPropertyClassName::_dialog_created() {
 
 EditorPropertyClassName::EditorPropertyClassName() {
 	property = memnew(Button);
-	property->set_clip_text(true);
 	property->set_theme_type_variation(SNAME("EditorInspectorButton"));
+	property->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	property->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	add_child(property);
 	add_focusable(property);
-	property->set_text(selected_type);
 	property->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyClassName::_property_selected));
+
 	dialog = memnew(CreateDialog);
 	dialog->set_base_type(base_type);
 	dialog->connect("create", callable_mp(this, &EditorPropertyClassName::_dialog_created));
@@ -4081,7 +4085,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
-				editor->setup(p_hint_text, p_hint_text);
+				editor->setup(p_hint_text);
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_LOCALE_ID) {
 				EditorPropertyLocale *editor = memnew(EditorPropertyLocale);
