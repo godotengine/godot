@@ -214,6 +214,24 @@ Files extracted from upstream source:
 `dr_bridge.h` is a Godot file and should be preserved on updates.
 
 
+## efsw
+
+- Upstream: https://github.com/SpartanJ/efsw
+- Version: master (22f17a0bcdf3a4edf61f8b14328391463389e548, 2026)
+- License: MIT
+
+Files extracted from upstream source:
+
+- The `include` folder
+- The `src` folder (except `src/test` folder)
+- `LICENSE.txt`
+
+Patches:
+
+- `0001-check-if-is-dir.patch` ([GH-118641](https://github.com/godotengine/godot/pull/118641))
+- `0002-allow-cross-directory-moves.patch` ([GH-118641](https://github.com/godotengine/godot/pull/118641))
+
+
 ## embree
 
 - Upstream: https://github.com/embree/embree
