@@ -4059,7 +4059,6 @@ void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
-	img->convert(Image::FORMAT_RGBA8);
 #ifdef RD_ENABLED
 	RenderingDevice *rendering_device = RD::get_singleton();
 	if (rendering_device && RenderingServer::get_singleton()->viewport_is_using_hdr_2d(viewport->get_viewport_rid())) {
@@ -4070,7 +4069,7 @@ void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h
 	Ref<Image> overlay = Image::load_from_file(p_emb_path);
 	DirAccess::remove_absolute(p_emb_path);
 	ERR_FAIL_COND_MSG(overlay.is_null(), "Cannot get an image from a embedded process.");
-	overlay->convert(Image::FORMAT_RGBA8);
+	overlay->convert(img->get_format());
 	overlay->resize(p_rect.size.x, p_rect.size.y);
 	img->blend_rect(overlay, Rect2i(0, 0, p_w, p_h), p_rect.position);
 	Error error = img->save_png(p_path);
@@ -4090,7 +4089,6 @@ void EditorNode::_save_screenshot(const String &p_path) {
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
-	img->convert(Image::FORMAT_RGBA8);
 #ifdef RD_ENABLED
 	RenderingDevice *rendering_device = RD::get_singleton();
 	if (rendering_device && RenderingServer::get_singleton()->viewport_is_using_hdr_2d(viewport->get_viewport_rid())) {
