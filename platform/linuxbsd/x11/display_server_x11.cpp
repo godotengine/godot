@@ -4840,6 +4840,12 @@ bool DisplayServerX11::mouse_process_popups() {
 				if (((mask & Button1Mask) || (mask & Button2Mask) || (mask & Button3Mask) || (mask & Button4Mask) || (mask & Button5Mask))) {
 					List<DisplayServerEnums::WindowID>::Element *C = nullptr;
 					List<DisplayServerEnums::WindowID>::Element *E = popup_list.back();
+
+					// Prevent premature closing of popup menu.
+					if (last_mouse_monitor_mask == 0) {
+						last_mouse_monitor_mask = mask;
+					}
+
 					// Find top popup to close.
 					while (E) {
 						// Popup window area.
