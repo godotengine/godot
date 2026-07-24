@@ -114,6 +114,8 @@ private:
 	int offset = 0;
 	int max_drawn_tab = 0;
 	int highlight_arrow = -1;
+	bool hide_titles = false;
+	bool hide_icons = false;
 	bool buttons_visible = false;
 	bool missing_right = false;
 	Vector<Tab> tabs;
@@ -286,6 +288,12 @@ public:
 	bool get_clip_tabs() const;
 
 	void set_tab_style_v_flip(bool p_tab_style_v_flip);
+
+	void set_hide_titles(bool p_hide_titles);
+	bool is_hiding_titles() const;
+
+	void set_hide_icons(bool p_hide_icons);
+	bool is_hiding_icons() const;
 
 	void move_tab(int p_from, int p_to);
 
