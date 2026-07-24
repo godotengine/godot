@@ -51,6 +51,15 @@ public:
 		TEXTURE_TYPE_GENERIC = 0,
 		TEXTURE_TYPE_NORMAL = 1,
 	};
+	enum BinaryFormatMode {
+		BINARY_FORMAT_MODE_AUTO,
+		BINARY_FORMAT_MODE_32_BIT, // GLB version 2
+		BINARY_FORMAT_MODE_64_BIT, // GLB version 3
+	};
+	enum EncodingFormat : uint32_t {
+		ENCODING_FORMAT_PLAIN = 0u,
+		ENCODING_FORMAT_ZSTD = 0x6474735Au, // ASCII string "Zstd" in little-endian. Note that this does not need to match the magic number in Zstd itself (0xFD2FB528).
+	};
 	enum RootNodeMode {
 		ROOT_NODE_MODE_SINGLE_ROOT,
 		ROOT_NODE_MODE_KEEP_ROOT,
@@ -79,6 +88,8 @@ private:
 	String _fallback_image_format = "None";
 	float _fallback_image_quality = 0.25f;
 	Ref<GLTFDocumentExtension> _image_save_extension;
+	BinaryFormatMode _binary_format_mode = BinaryFormatMode::BINARY_FORMAT_MODE_AUTO;
+	EncodingFormat _encoding_format = EncodingFormat::ENCODING_FORMAT_PLAIN;
 	RootNodeMode _root_node_mode = RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT;
 	TextureMapMode _texture_map_mode = TextureMapMode::TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL;
 	VisibilityMode _visibility_mode = VisibilityMode::VISIBILITY_MODE_INCLUDE_REQUIRED;
@@ -113,6 +124,10 @@ public:
 	void set_fallback_image_quality(float p_fallback_image_quality);
 	float get_fallback_image_quality() const;
 	void set_root_node_mode(RootNodeMode p_root_node_mode);
+	BinaryFormatMode get_binary_format_mode() const { return _binary_format_mode; }
+	void set_binary_format_mode(BinaryFormatMode p_binary_format_mode);
+	EncodingFormat get_encoding_format() const { return _encoding_format; }
+	void set_encoding_format(EncodingFormat p_encoding_format);
 	RootNodeMode get_root_node_mode() const;
 	void set_texture_map_mode(TextureMapMode p_texture_map_mode);
 	TextureMapMode get_texture_map_mode() const { return _texture_map_mode; }
@@ -139,10 +154,11 @@ private:
 			StandardMaterial3D::TextureFilter p_filter_mode, bool p_repeats);
 	Ref<GLTFTextureSampler> _get_sampler_for_texture(Ref<GLTFState> p_state,
 			const GLTFTextureIndex p_texture);
-	Error _parse_json(const String &p_path, Ref<GLTFState> p_state);
-	Error _parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state);
+	PackedByteArray _import_decode_chunk_data(const PackedByteArray &p_raw_encoded_data, const EncodingFormat p_encoding_format) const;
+	Error _import_parse_glb_chunk(Ref<FileAccess> p_file, Ref<GLTFState> p_state);
+	Error _import_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state);
+	Error _import_parse_buffers(Ref<GLTFState> p_state, PackedInt64Array *r_chunk_indices, PackedInt64Array *r_decoded_byte_lengths);
 	void _compute_node_heights(Ref<GLTFState> p_state);
-	Error _parse_buffers(Ref<GLTFState> p_state, const String &p_base_path);
 	Error _parse_buffer_views(Ref<GLTFState> p_state);
 	Error _parse_accessors(Ref<GLTFState> p_state);
 	template <typename T>
@@ -164,7 +180,7 @@ private:
 	Error _serialize_lights(Ref<GLTFState> p_state);
 	Ref<Image> _parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index, String &r_file_extension);
 	void _parse_image_save_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_resource_uri, const String &p_file_extension, int p_index, Ref<Image> p_image);
-	Error _parse_images(Ref<GLTFState> p_state, const String &p_base_path);
+	Error _parse_images(Ref<GLTFState> p_state);
 	Error _parse_textures(Ref<GLTFState> p_state);
 	Error _parse_texture_samplers(Ref<GLTFState> p_state);
 	Error _parse_materials(Ref<GLTFState> p_state);
@@ -206,13 +222,13 @@ private:
 	Error _serialize_nodes(Ref<GLTFState> p_state);
 	Error _serialize_scenes(Ref<GLTFState> p_state);
 	String interpolation_to_string(const GLTFAnimation::Interpolation p_interp);
-	Error _encode_buffer_bins(Ref<GLTFState> p_state, const String &p_path);
-	Error _encode_buffer_glb(Ref<GLTFState> p_state, const String &p_path);
+	PackedByteArray _export_encode_chunk_data(const PackedByteArray &p_buffer_data, uint64_t p_chunk_alignment_bitmask, bool is_text_chunk) const;
+	Error _export_encode_buffers(Ref<GLTFState> p_state, bool p_separate_buffers_into_files);
 	PackedByteArray _serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err);
 	Dictionary _serialize_texture_transform_uv1(const Ref<BaseMaterial3D> &p_material);
 	Dictionary _serialize_texture_transform_uv2(const Ref<BaseMaterial3D> &p_material);
 	Error _serialize_asset_header(Ref<GLTFState> p_state);
-	Error _serialize_file(Ref<GLTFState> p_state, const String p_path);
+	Error _serialize_file(Ref<GLTFState> p_state);
 	Error _serialize_gltf_extensions(Ref<GLTFState> p_state) const;
 
 public:
@@ -240,8 +256,10 @@ public:
 	virtual PackedByteArray generate_buffer(Ref<GLTFState> p_state);
 	virtual Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path);
 
-public:
-	Error _parse_gltf_state(Ref<GLTFState> p_state, const String &p_search_path);
+private:
+	static bool _is_encoding_format_supported(const EncodingFormat p_encoding_format);
+	static String _uint32_to_ascii_string(uint32_t p_value);
+	Error _parse_gltf_state(Ref<GLTFState> p_state);
 	Error _parse_asset_header(Ref<GLTFState> p_state);
 	Error _parse_gltf_extensions(Ref<GLTFState> p_state);
 	void _process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root);
@@ -302,9 +320,11 @@ public:
 	void _convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const String &p_animation_track_name);
 
 	Error _serialize(Ref<GLTFState> p_state);
-	Error _parse(Ref<GLTFState> p_state, const String &p_path, Ref<FileAccess> p_file);
+	Error _parse(Ref<GLTFState> p_state, Ref<FileAccess> p_file);
 };
 
+VARIANT_ENUM_CAST(GLTFDocument::BinaryFormatMode);
+VARIANT_ENUM_CAST(GLTFDocument::EncodingFormat);
 VARIANT_ENUM_CAST(GLTFDocument::RootNodeMode);
 VARIANT_ENUM_CAST(GLTFDocument::TextureMapMode);
 VARIANT_ENUM_CAST(GLTFDocument::VisibilityMode);

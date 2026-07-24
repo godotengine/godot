@@ -48,8 +48,10 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_minor_version", "minor_version"), &GLTFState::set_minor_version);
 	ClassDB::bind_method(D_METHOD("get_copyright"), &GLTFState::get_copyright);
 	ClassDB::bind_method(D_METHOD("set_copyright", "copyright"), &GLTFState::set_copyright);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_glb_data"), &GLTFState::get_glb_data);
 	ClassDB::bind_method(D_METHOD("set_glb_data", "glb_data"), &GLTFState::set_glb_data);
+#endif // DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_use_named_skin_binds"), &GLTFState::get_use_named_skin_binds);
 	ClassDB::bind_method(D_METHOD("set_use_named_skin_binds", "use_named_skin_binds"), &GLTFState::set_use_named_skin_binds);
 	ClassDB::bind_method(D_METHOD("get_nodes"), &GLTFState::get_nodes_bind);
@@ -111,7 +113,9 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "major_version"), "set_major_version", "get_major_version"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "minor_version"), "set_minor_version", "get_minor_version"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "copyright"), "set_copyright", "get_copyright"); // String
+#ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "glb_data"), "set_glb_data", "get_glb_data"); // Vector<uint8_t>
+#endif // DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_named_skin_binds"), "set_use_named_skin_binds", "get_use_named_skin_binds"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "nodes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_nodes", "get_nodes"); // Vector<Ref<GLTFNode>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "buffers"), "set_buffers", "get_buffers"); // Vector<Vector<uint8_t>
@@ -198,6 +202,7 @@ void GLTFState::set_copyright(const String &p_copyright) {
 	copyright = p_copyright;
 }
 
+#ifndef DISABLE_DEPRECATED
 Vector<uint8_t> GLTFState::get_glb_data() const {
 	return Vector<uint8_t>(glb_data);
 }
@@ -205,6 +210,7 @@ Vector<uint8_t> GLTFState::get_glb_data() const {
 void GLTFState::set_glb_data(const Vector<uint8_t> &p_glb_data) {
 	glb_data = Vector<uint8_t>(p_glb_data);
 }
+#endif // DISABLE_DEPRECATED
 
 bool GLTFState::get_use_named_skin_binds() const {
 	return use_named_skin_binds;
@@ -443,6 +449,10 @@ void GLTFState::set_filename(const String &p_filename) {
 	if (extract_prefix.is_empty()) {
 		extract_prefix = p_filename.get_basename();
 	}
+}
+
+bool GLTFState::is_text_file() const {
+	return filename.to_lower().ends_with(".gltf");
 }
 
 Variant GLTFState::get_additional_data(const StringName &p_extension_name) const {

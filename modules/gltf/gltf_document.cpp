@@ -61,6 +61,8 @@
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/resources/surface_tool.h"
 
+#include <zstd.h>
+
 #ifdef TOOLS_ENABLED
 #include "editor/file_system/editor_file_system.h"
 #endif
@@ -242,70 +244,176 @@ Error GLTFDocument::_serialize_scenes(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> p_state) {
-	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (file.is_null()) {
-		return err;
+PackedByteArray GLTFDocument::_import_decode_chunk_data(const PackedByteArray &p_raw_encoded_data, const EncodingFormat p_encoding_format) const {
+	const int64_t chunk_raw_size = p_raw_encoded_data.size();
+	switch (p_encoding_format) {
+		case ENCODING_FORMAT_PLAIN:
+			return p_raw_encoded_data;
+		case ENCODING_FORMAT_ZSTD: {
+			PackedByteArray decompressed;
+			if (chunk_raw_size > 0) {
+				const uint64_t decompressed_size = (uint64_t)ZSTD_getFrameContentSize(p_raw_encoded_data.ptr(), chunk_raw_size);
+				ERR_FAIL_COND_V(decompressed_size == ZSTD_CONTENTSIZE_ERROR || decompressed_size == ZSTD_CONTENTSIZE_UNKNOWN, PackedByteArray());
+				ERR_FAIL_COND_V(decompressed_size > INT64_MAX, PackedByteArray());
+				decompressed.resize((int64_t)decompressed_size);
+				constexpr Compression::Mode mode = Compression::Mode::MODE_ZSTD;
+				const int64_t result = Compression::decompress(decompressed.ptrw(), (int64_t)decompressed_size, p_raw_encoded_data.ptr(), chunk_raw_size, mode);
+				ERR_FAIL_COND_V(result < 0 || result != (int64_t)decompressed_size, PackedByteArray());
+			}
+			return decompressed;
+		}
 	}
-
-	Vector<uint8_t> array;
-	array.resize(file->get_length());
-	file->get_buffer(array.ptrw(), array.size());
-	String text = String::utf8((const char *)array.ptr(), array.size());
-
-	JSON json;
-	err = json.parse(text);
-	if (err != OK) {
-		_err_print_error("", p_path.utf8().get_data(), json.get_error_line(), json.get_error_message().utf8().get_data(), false, ERR_HANDLER_SCRIPT);
-		return err;
-	}
-	p_state->json = json.get_data();
-
-	return OK;
+	const String friendly = _uint32_to_ascii_string(p_encoding_format);
+	const String number = String::num_uint64(p_encoding_format, 16, true);
+	ERR_FAIL_V_MSG(PackedByteArray(), "glTF import: Support for reading \"" + friendly + "\" (0x" + number + ") encoded data is not implemented.");
 }
 
-Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
+Error GLTFDocument::_import_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
 	ERR_FAIL_COND_V(p_file.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_file->get_position() != 0, ERR_FILE_CANT_READ);
-	uint32_t magic = p_file->get_32();
-	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); //glTF
-	p_file->get_32(); // version
-	p_file->get_32(); // length
-	uint32_t chunk_length = p_file->get_32();
-	uint32_t chunk_type = p_file->get_32();
-
-	ERR_FAIL_COND_V(chunk_type != 0x4E4F534A, ERR_PARSE_ERROR); //JSON
-	Vector<uint8_t> json_data;
-	json_data.resize(chunk_length);
-	uint32_t len = p_file->get_buffer(json_data.ptrw(), chunk_length);
-	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
-
-	String text = String::utf8((const char *)json_data.ptr(), json_data.size());
-
-	JSON json;
-	Error err = json.parse(text);
-	ERR_FAIL_COND_V_MSG(err != OK, err, "glTF Binary: Error parsing .glb file's JSON data: " + json.get_error_message() + " at line: " + itos(json.get_error_line()));
-
-	p_state->json = json.get_data();
-
-	//data?
-
-	chunk_length = p_file->get_32();
-	chunk_type = p_file->get_32();
-
-	if (p_file->eof_reached()) {
-		return OK; //all good
+	const uint64_t file_total_length = p_file->get_length();
+	ERR_FAIL_COND_V_MSG(file_total_length < (uint64_t)32, ERR_INVALID_DATA, "glTF import: File is too small to be a valid glTF file.");
+	const uint32_t magic = p_file->get_32();
+	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); // ASCII string "glTF" as little-endian.
+	const uint32_t version = p_file->get_32(); // Binary file format version
+	uint64_t chunk_alignment_bitmask;
+	uint64_t max_file_size;
+	if (version == 2) {
+		// Binary format version 2 uses 32-bit file size.
+		const uint64_t declared_file_size = p_file->get_32();
+		ERR_FAIL_COND_V_MSG(declared_file_size > file_total_length, ERR_INVALID_DATA, "glTF import: Declared file size exceeds available file size. File is corrupted.");
+		chunk_alignment_bitmask = 3;
+		max_file_size = (uint64_t)(UINT32_MAX - 3); // 2^32 - 4 (glb version 2 alignment requires the ends of chunks be 4-byte aligned)
+		_binary_format_mode = BinaryFormatMode::BINARY_FORMAT_MODE_32_BIT;
+	} else if (version == 3) {
+		// Binary format version 3 uses 64-bit file size.
+		const uint64_t declared_file_size = p_file->get_64();
+		ERR_FAIL_COND_V_MSG(declared_file_size > file_total_length, ERR_INVALID_DATA, "glTF import: Declared file size exceeds available file size. File is corrupted.");
+		chunk_alignment_bitmask = 7;
+		max_file_size = (uint64_t)INT64_MAX; // 2^63 - 1 (one bit always zero)
+		_binary_format_mode = BinaryFormatMode::BINARY_FORMAT_MODE_64_BIT;
+	} else {
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unsupported .glb binary format version: " + itos(version));
 	}
-
-	ERR_FAIL_COND_V(chunk_type != 0x004E4942, ERR_PARSE_ERROR); //BIN
-
-	p_state->glb_data.resize(chunk_length);
-	len = p_file->get_buffer(p_state->glb_data.ptrw(), chunk_length);
-	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
-
+	ERR_FAIL_COND_V_MSG(file_total_length > max_file_size, ERR_INVALID_DATA, "glTF import: File size exceeds maximum possible glTF file size. File is corrupted.");
+	// Read the chunk headers to find where each chunk starts.
+	// The first chunk is guaranteed to occur right after the file header.
+	PackedInt64Array chunk_encodings;
+	PackedInt64Array chunk_data_lengths;
+	PackedInt64Array chunk_data_starts;
+	int64_t gltf_json_chunk_index = -1;
+	uint64_t chunk_starts_read_offset = p_file->get_position();
+	while (chunk_starts_read_offset + 15 < file_total_length) { // Only read when there is enough data for another chunk.
+		p_file->seek(chunk_starts_read_offset);
+		uint32_t chunk_type;
+		uint32_t chunk_encoding;
+		uint64_t chunk_data_length;
+		if (version == 2) {
+			// Binary format version 2 uses 32-bit chunk sizes, and the chunk length comes first.
+			chunk_data_length = p_file->get_32();
+			chunk_type = p_file->get_32();
+			chunk_encoding = ENCODING_FORMAT_PLAIN;
+		} else if (version == 3) {
+			// Binary format version 3 uses 64-bit chunk sizes, and an additional field for chunk encoding.
+			chunk_type = p_file->get_32();
+			chunk_encoding = p_file->get_32();
+			chunk_data_length = p_file->get_64();
+		} else {
+			ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unsupported .glb binary format version: " + itos(version));
+		}
+		// The first JSON chunk in the .glb file is the glTF data.
+		if (gltf_json_chunk_index == -1 && chunk_type == (uint32_t)0x4E4F534A) { // ASCII string "JSON" in little-endian.
+			gltf_json_chunk_index = chunk_data_starts.size();
+		}
+		chunk_starts_read_offset += version == 2 ? (uint64_t)8 : (uint64_t)16; // Move forward by the chunk header size.
+		ERR_FAIL_COND_V_MSG(chunk_data_length > file_total_length - chunk_starts_read_offset, ERR_INVALID_DATA, "glTF import: Declared chunk length would exceed the file size. File is corrupted.");
+		const uint64_t padded_chunk_length = (chunk_data_length + chunk_alignment_bitmask) & ~chunk_alignment_bitmask;
+		chunk_encodings.append((int64_t)chunk_encoding);
+		chunk_data_lengths.append((int64_t)chunk_data_length);
+		chunk_data_starts.append((int64_t)chunk_starts_read_offset);
+		chunk_starts_read_offset += padded_chunk_length;
+	}
+	ERR_FAIL_COND_V(gltf_json_chunk_index == -1, ERR_PARSE_ERROR); // Missing glTF data JSON chunk.
+	// Read the glTF JSON data from the identified chunk.
+	Dictionary gltf_json;
+	PackedInt64Array buffer_chunk_indices;
+	PackedInt64Array buffer_chunk_declared_decoded_byte_lengths;
+	{
+		p_file->seek(chunk_data_starts[gltf_json_chunk_index]);
+		const PackedByteArray json_chunk_encoded = p_file->get_buffer(chunk_data_lengths[gltf_json_chunk_index]);
+		const EncodingFormat json_chunk_encoding_format = (EncodingFormat)(uint32_t)chunk_encodings[gltf_json_chunk_index];
+		if (!_is_encoding_format_supported((EncodingFormat)json_chunk_encoding_format)) {
+			return ERR_UNAVAILABLE;
+		}
+		const PackedByteArray json_chunk = _import_decode_chunk_data(json_chunk_encoded, json_chunk_encoding_format);
+		const String json_string = String::utf8(reinterpret_cast<const char *>(json_chunk.ptr()), json_chunk.size());
+		// Parse the glTF JSON data as a Godot Dictionary via the JSON class.
+		JSON json;
+		Error err = json.parse(json_string);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "glTF Binary: Error parsing .glb file's JSON data: " + json.get_error_message() + " at line: " + itos(json.get_error_line()));
+		gltf_json = json.get_data();
+		ERR_FAIL_COND_V_MSG(gltf_json.is_empty(), ERR_INVALID_DATA, "glTF import: Failed to parse JSON chunk in glTF file. File is corrupted.");
+		p_state->set_json(gltf_json);
+		// Parse the JSON structure of only the buffers, so we can know which chunks to read and decode.
+		err = _import_parse_buffers(p_state, &buffer_chunk_indices, &buffer_chunk_declared_decoded_byte_lengths);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "glTF import: Failed to parse glTF buffers when reading from binary glTF file.");
+	}
+	// Read and decode any chunk data needed by a buffer.
+	Vector<PackedByteArray> buffers = p_state->get_buffers();
+	for (int64_t buffer_index = 0; buffer_index < buffer_chunk_indices.size(); buffer_index++) {
+		const int64_t chunk_index = buffer_chunk_indices[buffer_index];
+		if (chunk_index == -1) {
+			continue;
+		}
+		ERR_FAIL_INDEX_V_MSG(chunk_index, chunk_data_starts.size(), ERR_INVALID_DATA, "glTF import: Buffer chunk index " + itos(chunk_index) + " is out of range for binary file with " + itos(chunk_data_starts.size()) + " chunks. File is corrupted.");
+		p_file->seek(chunk_data_starts[chunk_index]);
+		const PackedByteArray chunk_data_encoded = p_file->get_buffer(chunk_data_lengths[chunk_index]);
+		const EncodingFormat chunk_encoding_format = (EncodingFormat)(uint32_t)chunk_encodings[chunk_index];
+		if (!_is_encoding_format_supported((EncodingFormat)chunk_encoding_format)) {
+			return ERR_UNAVAILABLE;
+		}
+		// Decode the chunk data (this will be a no-op if the encoding is ENCODING_FORMAT_PLAIN).
+		PackedByteArray chunk_data_decoded = _import_decode_chunk_data(chunk_data_encoded, chunk_encoding_format);
+		// The data has been read in now, so check that the size is at least the declared size, and truncate if larger.
+		const int64_t declared_decoded_byte_length = buffer_chunk_declared_decoded_byte_lengths[buffer_index];
+		if (chunk_data_decoded.size() < declared_decoded_byte_length) {
+			ERR_FAIL_COND_V_MSG(chunk_data_decoded.is_empty(), ERR_INVALID_DATA, "glTF import: Failed to read buffer data. Aborting file import.");
+			ERR_FAIL_V_MSG(ERR_INVALID_DATA, "glTF import: Buffer size is not at least the declared size. Aborting file import.");
+		}
+		chunk_data_decoded.resize(declared_decoded_byte_length);
+		buffers.set(buffer_index, chunk_data_decoded);
+#ifndef DISABLE_DEPRECATED
+		if (buffer_index == 0) {
+			p_state->glb_data = chunk_data_decoded;
+		}
+#endif // DISABLE_DEPRECATED
+	}
+	p_state->set_buffers(buffers);
 	return OK;
+}
+
+bool GLTFDocument::_is_encoding_format_supported(const EncodingFormat p_encoding_format) {
+	if (p_encoding_format == ENCODING_FORMAT_PLAIN || p_encoding_format == ENCODING_FORMAT_ZSTD) {
+		return true;
+	}
+	const String friendly = _uint32_to_ascii_string(p_encoding_format);
+	const String number_hex = String::num_uint64(p_encoding_format, 16, true);
+	ERR_FAIL_V_MSG(false, "glTF: Support for \"" + friendly + "\" (0x" + number_hex + ") encoded data is not implemented.");
+}
+
+String GLTFDocument::_uint32_to_ascii_string(uint32_t p_value) {
+	String str = "";
+	for (int i = 0; i < 4; i++) {
+		const uint8_t low_byte = (uint8_t)p_value;
+		if (low_byte > 0x1F && low_byte < 0x7F) {
+			str += (char32_t)low_byte;
+		} else {
+			str += (char32_t)'?';
+		}
+		p_value >>= 8;
+	}
+	return str;
 }
 
 static Array _vec3_to_arr(const Vector3 &p_vec3) {
@@ -701,101 +809,94 @@ static inline bool _all_buffers_empty(const Vector<Vector<uint8_t>> &p_buffers, 
 	return true;
 }
 
-Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> p_state, const String &p_path) {
-	print_verbose("glTF: Total buffers: " + itos(p_state->buffers.size()));
-
-	if (p_state->buffers.is_empty() || _all_buffers_empty(p_state->buffers)) {
+Error GLTFDocument::_export_encode_buffers(Ref<GLTFState> p_state, bool p_separate_buffers_into_files) {
+	const int64_t buffer_count = p_state->buffers.size();
+	print_verbose("glTF: Total buffers: " + itos(buffer_count));
+	if (buffer_count == 0 || _all_buffers_empty(p_state->buffers)) {
 		ERR_FAIL_COND_V_MSG(!p_state->buffer_views.is_empty(), ERR_INVALID_DATA, "glTF: Buffer views are present, but buffers are empty.");
 		return OK;
 	}
-	Array buffers;
-	Dictionary first_buffer;
-
-	first_buffer["byteLength"] = p_state->buffers[0].size();
-	buffers.push_back(first_buffer);
-
-	for (GLTFBufferIndex i = 1; i < p_state->buffers.size(); i++) {
-		const Vector<uint8_t> &buffer_data = p_state->buffers[i];
-		Dictionary gltf_buffer;
-		if (buffer_data.is_empty()) {
-			if (i < p_state->buffers.size() - 1 && !_all_buffers_empty(p_state->buffers, i + 1)) {
+	Array buffer_dicts;
+	buffer_dicts.resize(buffer_count);
+	// Separate buffers into files if the caller requested it and the base path is available.
+	const bool should_separate_into_files = p_separate_buffers_into_files && !p_state->base_path.is_empty();
+	// Check if the buffer at index 0 should be used as a GLB buffer.
+	GLTFBufferIndex loop_start_index;
+	if (should_separate_into_files || p_state->is_text_file()) {
+		loop_start_index = 0; // Encode all buffers with URIs, don't use a GLB buffer.
+	} else {
+		loop_start_index = 1; // Encode buffers starting at index 1 with URIs, use buffer 0 as a GLB buffer.
+		const PackedByteArray buffer_data = p_state->buffers[0];
+		const int64_t buffer_byte_length = buffer_data.size();
+		if (buffer_byte_length == 0) {
+			// If this buffer is empty and the others were too, this would've returned at the top of the function.
+			ERR_PRINT("glTF export: Buffer 0 is empty, but there are non-empty subsequent buffers. Writing it anyway to preserve buffer indices.");
+		}
+		Dictionary first_gltf_buffer_dict;
+		first_gltf_buffer_dict["byteLength"] = buffer_byte_length;
+		buffer_dicts[0] = first_gltf_buffer_dict;
+	}
+	// Encode the rest of the buffers.
+	for (GLTFBufferIndex buffer_index = loop_start_index; buffer_index < buffer_count; buffer_index++) {
+		const PackedByteArray &buffer_data = p_state->buffers[buffer_index];
+		const int64_t buffer_byte_length = buffer_data.size();
+		Dictionary gltf_buffer_dict;
+		gltf_buffer_dict["byteLength"] = buffer_byte_length;
+		if (buffer_byte_length == 0) {
+			if (buffer_index < buffer_count - 1 && !_all_buffers_empty(p_state->buffers, buffer_index + 1)) {
 				// Have to push back an empty buffer to avoid changing the buffer index, even though this is against spec.
-				WARN_PRINT("glTF: Buffer " + itos(i) + " is empty, but there are non-empty subsequent buffers.");
-				gltf_buffer["byteLength"] = 0;
-				buffers.push_back(gltf_buffer);
+				WARN_PRINT("glTF: Buffer " + itos(buffer_index) + " is empty, but there are non-empty subsequent buffers.");
+				buffer_dicts[buffer_index] = gltf_buffer_dict;
 			}
 			continue;
 		}
-		String filename = p_path.get_basename().get_file() + itos(i) + ".bin";
-		String path = p_path.get_base_dir() + "/" + filename;
-		Error err;
-		Ref<FileAccess> file = FileAccess::open(path, FileAccess::WRITE, &err);
-		if (file.is_null()) {
-			return err;
-		}
-		file->create(FileAccess::ACCESS_RESOURCES);
-		file->store_buffer(buffer_data.ptr(), buffer_data.size());
-		gltf_buffer["uri"] = filename;
-		gltf_buffer["byteLength"] = buffer_data.size();
-		buffers.push_back(gltf_buffer);
-	}
-	p_state->json["buffers"] = buffers;
-
-	return OK;
-}
-
-Error GLTFDocument::_encode_buffer_bins(Ref<GLTFState> p_state, const String &p_path) {
-	print_verbose("glTF: Total buffers: " + itos(p_state->buffers.size()));
-
-	if (p_state->buffers.is_empty() || _all_buffers_empty(p_state->buffers)) {
-		ERR_FAIL_COND_V_MSG(!p_state->buffer_views.is_empty(), ERR_INVALID_DATA, "glTF: Buffer views are present, but buffers are empty.");
-		return OK;
-	}
-	Array buffers;
-
-	for (GLTFBufferIndex i = 0; i < p_state->buffers.size(); i++) {
-		const Vector<uint8_t> &buffer_data = p_state->buffers[i];
-		Dictionary gltf_buffer;
-		if (buffer_data.is_empty()) {
-			if (i < p_state->buffers.size() - 1 && !_all_buffers_empty(p_state->buffers, i + 1)) {
-				// Have to push back an empty buffer to avoid changing the buffer index, even though this is against spec.
-				WARN_PRINT("glTF: Buffer " + itos(i) + " is empty, but there are non-empty subsequent buffers.");
-				gltf_buffer["byteLength"] = 0;
-				buffers.push_back(gltf_buffer);
+		if (should_separate_into_files) {
+			// Encode the buffer as a separate file.
+			const String bin_filename = p_state->filename.get_basename() + itos(buffer_index) + ".bin";
+			const String bin_path = p_state->base_path.path_join(bin_filename);
+			Error err;
+			Ref<FileAccess> file = FileAccess::open(bin_path, FileAccess::WRITE, &err);
+			if (file.is_null()) {
+				return err;
 			}
-			continue;
+			file->store_buffer(buffer_data.ptr(), buffer_byte_length);
+			gltf_buffer_dict["uri"] = bin_filename;
+		} else {
+			// Encode the buffer as a base64 data URI.
+			const String base64_data = CryptoCore::b64_encode_str(buffer_data.ptr(), buffer_byte_length);
+			gltf_buffer_dict["uri"] = "data:application/octet-stream;base64," + base64_data;
 		}
-		String filename = p_path.get_basename().get_file() + itos(i) + ".bin";
-		String path = p_path.get_base_dir() + "/" + filename;
-		Error err;
-		Ref<FileAccess> file = FileAccess::open(path, FileAccess::WRITE, &err);
-		if (file.is_null()) {
-			return err;
-		}
-		file->store_buffer(buffer_data.ptr(), buffer_data.size());
-		gltf_buffer["uri"] = filename;
-		gltf_buffer["byteLength"] = buffer_data.size();
-		buffers.push_back(gltf_buffer);
+		buffer_dicts[buffer_index] = gltf_buffer_dict;
 	}
-	if (!buffers.is_empty()) {
-		p_state->json["buffers"] = buffers;
-	}
-
+	p_state->json["buffers"] = buffer_dicts;
 	return OK;
 }
 
-Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_path) {
+Error GLTFDocument::_import_parse_buffers(Ref<GLTFState> p_state, PackedInt64Array *r_chunk_indices, PackedInt64Array *r_decoded_byte_lengths) {
 	if (!p_state->json.has("buffers")) {
 		return OK;
 	}
 
-	const Array &buffers = p_state->json["buffers"];
-	for (GLTFBufferIndex i = 0; i < buffers.size(); i++) {
-		const Dictionary &buffer = buffers[i];
+	const Array &json_buffers = p_state->json["buffers"];
+	const int64_t buffer_count = json_buffers.size();
+	if (r_chunk_indices != nullptr) {
+		r_chunk_indices->resize_uninitialized(buffer_count);
+		r_decoded_byte_lengths->resize_uninitialized(buffer_count);
+		for (int64_t i = 0; i < buffer_count; i++) {
+			r_chunk_indices->set(i, -1);
+			r_decoded_byte_lengths->set(i, -1);
+		}
+	}
+	for (GLTFBufferIndex i = 0; i < json_buffers.size(); i++) {
+		const Dictionary &json_buffer = json_buffers[i];
+		ERR_FAIL_COND_V(!json_buffer.has("byteLength"), ERR_PARSE_ERROR);
+		const int64_t declared_decoded_byte_length = json_buffer["byteLength"];
+		if (r_decoded_byte_lengths != nullptr) {
+			r_decoded_byte_lengths->set(i, declared_decoded_byte_length);
+		}
 		Vector<uint8_t> buffer_data;
-		if (buffer.has("uri")) {
-			String uri = buffer["uri"];
-
+		if (json_buffer.has("uri")) {
+			String uri = json_buffer["uri"];
 			if (uri.begins_with("data:")) { // Embedded data using base64.
 				// Validate data MIME types and throw an error if it's one we don't know/support.
 				if (!uri.begins_with("data:application/octet-stream;base64") &&
@@ -804,19 +905,20 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 				}
 				buffer_data = _parse_base64_uri(uri);
 			} else { // Relative path to an external image file.
-				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_state->base_path.is_empty(), ERR_INVALID_PARAMETER);
 				uri = uri.uri_file_decode();
-				uri = p_base_path.path_join(uri).replace_char('\\', '/'); // Fix for Windows.
+				uri = p_state->base_path.path_join(uri).replace_char('\\', '/'); // Fix for Windows.
 				ERR_FAIL_COND_V_MSG(!FileAccess::exists(uri), ERR_FILE_NOT_FOUND, "glTF: Binary file not found: " + uri);
 				buffer_data = FileAccess::get_file_as_bytes(uri);
 				ERR_FAIL_COND_V_MSG(buffer_data.is_empty(), ERR_PARSE_ERROR, "glTF: Couldn't load binary file as an array: " + uri);
 			}
-
-			ERR_FAIL_COND_V(!buffer.has("byteLength"), ERR_PARSE_ERROR);
-			int64_t byteLength = buffer["byteLength"];
-			ERR_FAIL_COND_V(byteLength < buffer_data.size(), ERR_PARSE_ERROR);
-		} else if (i == 0 && p_state->glb_data.size()) {
-			buffer_data = p_state->glb_data;
+			ERR_FAIL_COND_V(declared_decoded_byte_length < buffer_data.size(), ERR_PARSE_ERROR);
+		} else if (json_buffer.has("chunk")) {
+			const int64_t chunk_index = json_buffer["chunk"];
+			r_chunk_indices->set(i, chunk_index);
+		} else if (i == 0) {
+			// glTF 2.0 fallback behavior: buffer 0 uses GLB chunk 1 if no explicit "uri" or "chunk" is specified.
+			r_chunk_indices->set(i, 1);
 		} else {
 			ERR_PRINT("glTF: Buffer " + itos(i) + " has no data and cannot be loaded.");
 		}
@@ -2110,7 +2212,7 @@ Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_i
 		ERR_FAIL_COND_V_MSG(p_image->is_compressed(), image_dict, "glTF: Image was compressed, but could not be decompressed.");
 	}
 
-	if (p_state->filename.to_lower().ends_with("gltf")) {
+	if (p_state->is_text_file()) {
 		String relative_texture_dir = "textures";
 		String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
 		Ref<DirAccess> da = DirAccess::open(p_state->base_path);
@@ -2135,6 +2237,8 @@ Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_i
 		}
 		image_dict["uri"] = relative_texture_dir.path_join(image_file_name).uri_encode();
 	} else {
+		// Else, such as if this is a `.glb`, a byte array in memory, or an
+		// embedded `.gltf`, we need to serialize the image into a buffer view.
 		GLTFBufferViewIndex bvi;
 
 		Ref<GLTFBufferView> bv;
@@ -2325,7 +2429,7 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 	p_state->source_images.push_back(p_image);
 }
 
-Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_path) {
+Error GLTFDocument::_parse_images(Ref<GLTFState> p_state) {
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	if (!p_state->json.has("images")) {
 		return OK;
@@ -2385,9 +2489,9 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 					mime_type = uri.substr(5, uri.find(";base64") - 5);
 				}
 			} else { // Relative path to an external image file.
-				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
+				ERR_FAIL_COND_V(p_state->base_path.is_empty(), ERR_INVALID_PARAMETER);
 				uri = uri.uri_file_decode();
-				uri = p_base_path.path_join(uri).replace_char('\\', '/'); // Fix for Windows.
+				uri = p_state->base_path.path_join(uri).replace_char('\\', '/'); // Fix for Windows.
 				resource_uri = uri.simplify_path();
 				// ResourceLoader will rely on the file extension to use the relevant loader.
 				// The spec says that if mimeType is defined, it should take precedence (e.g.
@@ -6703,17 +6807,20 @@ void GLTFDocument::_convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p
 	}
 }
 
-Error GLTFDocument::_parse(Ref<GLTFState> p_state, const String &p_path, Ref<FileAccess> p_file) {
+Error GLTFDocument::_parse(Ref<GLTFState> p_state, Ref<FileAccess> p_file) {
 	Error err;
 	if (p_file.is_null()) {
 		return FAILED;
 	}
+	// The minimum possible valid glTF JSON is 27 characters: `{"asset":{"version":"2.0"}}`.
+	// The minimum possible valid binary glTF (GLB) is bigger than that: 20 or 32 bytes of headers, plus some data in the JSON chunk.
+	ERR_FAIL_COND_V_MSG(p_file->get_length() < 27, ERR_FILE_CORRUPT, "glTF: File is too small to be a valid glTF file: " + p_file->get_path());
 	p_file->seek(0);
-	uint32_t magic = p_file->get_32();
-	if (magic == 0x46546C67) {
+	const uint32_t magic = p_file->get_32();
+	if (magic == 0x46546C67) { // ASCII string "glTF" in little-endian.
 		// Binary file.
 		p_file->seek(0);
-		err = _parse_glb(p_file, p_state);
+		err = _import_parse_glb(p_file, p_state);
 		if (err != OK) {
 			return err;
 		}
@@ -6725,6 +6832,11 @@ Error GLTFDocument::_parse(Ref<GLTFState> p_state, const String &p_path, Ref<Fil
 		err = json.parse(text);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "glTF: Error parsing .gltf JSON data: " + json.get_error_message() + " at line: " + itos(json.get_error_line()));
 		p_state->json = json.get_data();
+		// Parsing buffers needs to be done at the same time as glb chunk parsing right after the JSON chunk is parsed,
+		// so in the non-glb text case, it also needs to happen right after JSON parsing for consistency.
+		// We pass nullptr here because we don't need that glb-specific chunk data for text glTF files.
+		err = _import_parse_buffers(p_state, nullptr, nullptr);
+		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 	}
 
 	err = _parse_asset_header(p_state);
@@ -6743,7 +6855,7 @@ Error GLTFDocument::_parse(Ref<GLTFState> p_state, const String &p_path, Ref<Fil
 		}
 	}
 
-	err = _parse_gltf_state(p_state, p_path);
+	err = _parse_gltf_state(p_state);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	return OK;
@@ -6806,85 +6918,168 @@ Error GLTFDocument::_serialize_asset_header(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state, const String p_path) {
-	Error err = FAILED;
-	if (p_path.to_lower().ends_with("glb")) {
-		err = _encode_buffer_glb(p_state, p_path);
-		ERR_FAIL_COND_V(err != OK, err);
-		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V(file.is_null(), FAILED);
-
-		constexpr uint64_t header_size = 12;
-		constexpr uint64_t chunk_header_size = 8;
+Error GLTFDocument::_serialize_file(Ref<GLTFState> p_state) {
+	const String gltf_path = p_state->base_path.path_join(p_state->filename);
+	if (!_is_encoding_format_supported(_encoding_format)) {
+		return ERR_UNAVAILABLE;
+	}
+	Error err = _export_encode_buffers(p_state, p_state->is_text_file());
+	ERR_FAIL_COND_V_MSG(err != OK, err, "glTF: Failed to encode buffers for file: " + gltf_path);
+	Ref<FileAccess> file = FileAccess::open(gltf_path, FileAccess::WRITE, &err);
+	ERR_FAIL_COND_V(file.is_null(), FAILED);
+	if (p_state->is_text_file()) {
+		String json = JSON::stringify(p_state->json, "", true, true);
+		file->store_string(json);
+	} else {
+		// Serialize binary glTF (GLB) file.
+		uint64_t file_header_size = 12;
+		uint64_t chunk_header_size = 8;
+		uint64_t chunk_alignment_bitmask = 3;
+		uint64_t max_file_length = (uint64_t)(UINT32_MAX - 3);
+		if (_binary_format_mode == BINARY_FORMAT_MODE_64_BIT) {
+			file_header_size = 16;
+			chunk_header_size = 16;
+			chunk_alignment_bitmask = 7;
+			max_file_length = (uint64_t)INT64_MAX; // Not UINT64_MAX.
+		}
+		const EncodingFormat chunk_encoding = chunk_header_size == 8 ? ENCODING_FORMAT_PLAIN : get_encoding_format();
 		constexpr uint32_t magic = 0x46546C67; // The byte sequence "glTF" as little-endian.
 		constexpr uint32_t text_chunk_type = 0x4E4F534A; // The byte sequence "JSON" as little-endian.
 		constexpr uint32_t binary_chunk_type = 0x004E4942; // The byte sequence "BIN\0" as little-endian.
-
 		String json_string = JSON::stringify(p_state->json, "", true, true);
-		CharString cs = json_string.utf8();
-		uint64_t text_data_length = cs.length();
-		uint64_t text_chunk_length = ((text_data_length + 3) & (~3));
-		uint64_t total_file_length = header_size + chunk_header_size + text_chunk_length;
+		PackedByteArray json_bytes = json_string.to_utf8_buffer();
+		// The _export_encode_chunk_data function will pad the chunk data to the required alignment.
+		PackedByteArray json_encoded = _export_encode_chunk_data(json_bytes, chunk_alignment_bitmask, true);
+		if (json_encoded.is_empty()) {
+			ERR_FAIL_V_MSG(FAILED, "glTF export: Failed to encode JSON chunk data. Aborting.");
+		}
+		PackedByteArray binary_encoded;
+		uint64_t text_data_length = json_encoded.size();
+		uint64_t text_data_length_aligned = (text_data_length + chunk_alignment_bitmask) & (~chunk_alignment_bitmask);
+		uint64_t total_file_length = file_header_size + chunk_header_size + text_data_length;
 		uint64_t binary_data_length = 0;
-		uint64_t binary_chunk_length = 0;
-		if (p_state->buffers.size() > 0) {
-			binary_data_length = p_state->buffers[0].size();
-			binary_chunk_length = ((binary_data_length + 3) & (~3));
-			const uint64_t file_length_with_buffer = total_file_length + chunk_header_size + binary_chunk_length;
-			// Check if the file length with the buffer is greater than glTF's maximum of 4 GiB.
-			// If it is, we can't write the buffer into the file, but can write it separately.
-			if (unlikely(file_length_with_buffer > (uint64_t)UINT32_MAX)) {
-				err = _encode_buffer_bins(p_state, p_path);
+		if (p_state->buffers.size() > 0 && p_state->buffers[0].size() > 0) {
+			binary_encoded = _export_encode_chunk_data(p_state->buffers[0], chunk_alignment_bitmask, false);
+			if (binary_encoded.is_empty()) {
+				ERR_FAIL_V_MSG(FAILED, "glTF export: Failed to encode binary blob chunk data. Aborting.");
+			}
+			binary_data_length = binary_encoded.size();
+			// Recalculate the total file length with the headers, the aligned JSON chunk length, and the binary data length.
+			total_file_length = file_header_size + chunk_header_size + text_data_length_aligned + chunk_header_size + binary_data_length;
+		}
+		// Check if the file length with the buffer is greater than glTF's maximum of 4 GiB.
+		if (unlikely(total_file_length > max_file_length)) {
+			if (_binary_format_mode == BINARY_FORMAT_MODE_AUTO) {
+				// If the binary format mode is auto, try using the 64-bit format to support larger files.
+				file_header_size = 16;
+				chunk_header_size = 16;
+				chunk_alignment_bitmask = 7;
+				max_file_length = (uint64_t)INT64_MAX; // Not UINT64_MAX.
+				json_encoded = _export_encode_chunk_data(json_bytes, chunk_alignment_bitmask, true);
+				text_data_length = json_encoded.size();
+				text_data_length_aligned = (text_data_length + chunk_alignment_bitmask) & (~chunk_alignment_bitmask);
+				binary_encoded = _export_encode_chunk_data(p_state->buffers[0], chunk_alignment_bitmask, false);
+				if (binary_encoded.is_empty()) {
+					ERR_FAIL_V_MSG(FAILED, "glTF export: Failed to encode binary blob chunk data. Aborting.");
+				}
+				binary_data_length = binary_encoded.size();
+				if (binary_data_length > 0) {
+					total_file_length = file_header_size + chunk_header_size + text_data_length_aligned + chunk_header_size + binary_data_length;
+				} else {
+					total_file_length = file_header_size + chunk_header_size + text_data_length;
+				}
+			}
+			if (unlikely(total_file_length > max_file_length)) {
+				// Still too big? We can't write the buffer into the file, but can write it separately.
+				err = _export_encode_buffers(p_state, true);
 				ERR_FAIL_COND_V(err != OK, err);
 				// Since the buffer bins were re-encoded, we need to re-convert the JSON to string.
 				json_string = JSON::stringify(p_state->json, "", true, true);
-				cs = json_string.utf8();
-				text_data_length = cs.length();
-				text_chunk_length = ((text_data_length + 3) & (~3));
-				total_file_length = header_size + chunk_header_size + text_chunk_length;
+				json_bytes = json_string.to_utf8_buffer();
+				json_encoded = _export_encode_chunk_data(json_bytes, chunk_alignment_bitmask, true);
+				text_data_length = json_encoded.size();
+				text_data_length_aligned = (text_data_length + chunk_alignment_bitmask) & (~chunk_alignment_bitmask);
 				binary_data_length = 0;
-				binary_chunk_length = 0;
-			} else {
-				total_file_length = file_length_with_buffer;
+				total_file_length = file_header_size + chunk_header_size + text_data_length;
 			}
 		}
-		ERR_FAIL_COND_V_MSG(total_file_length > (uint64_t)UINT32_MAX, ERR_CANT_CREATE,
-				"glTF: File size exceeds glTF Binary's maximum of 4 GiB. Cannot serialize as a GLB file.");
+		ERR_FAIL_COND_V_MSG(total_file_length > max_file_length, ERR_CANT_CREATE,
+				"glTF: File size exceeds glTF Binary's maximum file size. Cannot serialize as a GLB file.");
 
 		file->store_32(magic);
-		file->store_32(p_state->major_version); // version
-		file->store_32(total_file_length);
+		if (file_header_size == 12) {
+			file->store_32(2); // Binary format version.
+			file->store_32(total_file_length);
+		} else { // 16
+			file->store_32(3); // Binary format version.
+			file->store_64(total_file_length);
+		}
 
 		// Write the JSON text chunk.
-		file->store_32(text_chunk_length);
-		file->store_32(text_chunk_type);
-		file->store_buffer((uint8_t *)&cs[0], text_data_length);
-		for (uint64_t pad_i = text_data_length; pad_i < text_chunk_length; pad_i++) {
-			file->store_8(' ');
+		if (chunk_header_size == 8) {
+			file->store_32((uint32_t)text_data_length);
+			file->store_32(text_chunk_type);
+		} else { // 16
+			file->store_32(text_chunk_type);
+			file->store_32(chunk_encoding);
+			file->store_64(text_data_length);
 		}
+		file->store_buffer(json_encoded.ptr(), json_encoded.size());
 
 		// Write a single binary chunk.
-		if (binary_chunk_length) {
-			file->store_32((uint32_t)binary_chunk_length);
-			file->store_32(binary_chunk_type);
-			file->store_buffer(p_state->buffers[0].ptr(), binary_data_length);
-			for (uint32_t pad_i = binary_data_length; pad_i < binary_chunk_length; pad_i++) {
+		if (binary_data_length) {
+			// Pad the JSON chunk to the required alignment. Plainly encoded JSON chunk data is already padded with
+			// spaces, so this only handles the case of padding non-plainly encoded JSON chunk data with null bytes.
+			for (uint64_t pad_i = text_data_length; pad_i < text_data_length_aligned; pad_i++) {
 				file->store_8(0);
 			}
+			if (chunk_header_size == 8) {
+				file->store_32((uint32_t)binary_data_length);
+				file->store_32(binary_chunk_type);
+			} else { // 16
+				file->store_32(binary_chunk_type);
+				file->store_32(chunk_encoding);
+				file->store_64(binary_data_length);
+			}
+			file->store_buffer(binary_encoded.ptr(), binary_encoded.size());
 		}
-	} else {
-		err = _encode_buffer_bins(p_state, p_path);
-		ERR_FAIL_COND_V(err != OK, err);
-		Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V(file.is_null(), FAILED);
-
-		String json = JSON::stringify(p_state->json, "", true, true);
-		file->store_string(json);
 	}
 	return err;
 }
 
+PackedByteArray GLTFDocument::_export_encode_chunk_data(const PackedByteArray &p_chunk_data, uint64_t p_chunk_alignment_bitmask, bool is_text_chunk) const {
+	const int64_t input_chunk_size = p_chunk_data.size();
+	PackedByteArray encoded;
+	if (!_is_encoding_format_supported(_encoding_format)) {
+		return encoded;
+	}
+	switch (_encoding_format) {
+		case GLTFDocument::ENCODING_FORMAT_PLAIN: {
+			encoded = p_chunk_data;
+			// Pad plain chunk data to the required alignment with spaces for text chunks and null bytes for binary chunks.
+			const int64_t padded_text_chunk_size = (input_chunk_size + p_chunk_alignment_bitmask) & (~p_chunk_alignment_bitmask);
+			for (int64_t pad_i = input_chunk_size; pad_i < padded_text_chunk_size; pad_i++) {
+				encoded.push_back(is_text_chunk ? ' ' : 0);
+			}
+		} break;
+		case GLTFDocument::ENCODING_FORMAT_ZSTD: {
+			if (input_chunk_size > 0) {
+				constexpr Compression::Mode mode = Compression::Mode::MODE_ZSTD;
+				encoded.resize(Compression::get_max_compressed_buffer_size(input_chunk_size, mode));
+				int result = Compression::compress(encoded.ptrw(), p_chunk_data.ptr(), input_chunk_size, mode);
+				ERR_FAIL_COND_V(result < 0, PackedByteArray());
+				encoded.resize(result);
+			}
+		} break;
+	}
+	return encoded;
+}
+
 void GLTFDocument::_bind_methods() {
+	BIND_ENUM_CONSTANT(BINARY_FORMAT_MODE_AUTO);
+	BIND_ENUM_CONSTANT(BINARY_FORMAT_MODE_32_BIT);
+	BIND_ENUM_CONSTANT(BINARY_FORMAT_MODE_64_BIT);
+
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_SINGLE_ROOT);
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_KEEP_ROOT);
 	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_MULTI_ROOT);
@@ -6909,6 +7104,8 @@ void GLTFDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback_image_format"), &GLTFDocument::get_fallback_image_format);
 	ClassDB::bind_method(D_METHOD("set_fallback_image_quality", "fallback_image_quality"), &GLTFDocument::set_fallback_image_quality);
 	ClassDB::bind_method(D_METHOD("get_fallback_image_quality"), &GLTFDocument::get_fallback_image_quality);
+	ClassDB::bind_method(D_METHOD("set_binary_format_mode", "binary_format_mode"), &GLTFDocument::set_binary_format_mode);
+	ClassDB::bind_method(D_METHOD("get_binary_format_mode"), &GLTFDocument::get_binary_format_mode);
 	ClassDB::bind_method(D_METHOD("set_root_node_mode", "root_node_mode"), &GLTFDocument::set_root_node_mode);
 	ClassDB::bind_method(D_METHOD("get_root_node_mode"), &GLTFDocument::get_root_node_mode);
 	ClassDB::bind_method(D_METHOD("set_texture_map_mode", "texture_map_mode"), &GLTFDocument::set_texture_map_mode);
@@ -6932,6 +7129,7 @@ void GLTFDocument::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "fallback_image_format"), "set_fallback_image_format", "get_fallback_image_format");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fallback_image_quality"), "set_fallback_image_quality", "get_fallback_image_quality");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "binary_format_mode"), "set_binary_format_mode", "get_binary_format_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_map_mode"), "set_texture_map_mode", "get_texture_map_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode"), "set_visibility_mode", "get_visibility_mode");
@@ -7023,49 +7221,119 @@ HashSet<String> GLTFDocument::get_supported_gltf_extensions_hashset() {
 }
 
 PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err) {
-	Error err = _encode_buffer_glb(p_state, "");
+	if (!_is_encoding_format_supported(_encoding_format)) {
+		if (r_err != nullptr) {
+			*r_err = ERR_UNAVAILABLE;
+		}
+		ERR_FAIL_V(PackedByteArray());
+	}
+	Error err = _export_encode_buffers(p_state, false);
 	if (r_err) {
 		*r_err = err;
 	}
 	ERR_FAIL_COND_V(err != OK, PackedByteArray());
 	String json_string = JSON::stringify(p_state->json, "", true, true);
 
-	constexpr uint64_t header_size = 12;
-	constexpr uint64_t chunk_header_size = 8;
+	uint64_t file_header_size = 12;
+	uint64_t chunk_header_size = 8;
+	uint64_t chunk_alignment_bitmask = 3;
+	uint64_t max_file_length = (uint64_t)(UINT32_MAX - 3);
+	if (_binary_format_mode == BINARY_FORMAT_MODE_64_BIT) {
+		file_header_size = 16;
+		chunk_header_size = 16;
+		chunk_alignment_bitmask = 7;
+		max_file_length = (uint64_t)INT64_MAX; // Not UINT64_MAX.
+	}
+	const EncodingFormat chunk_encoding = chunk_header_size == 8 ? ENCODING_FORMAT_PLAIN : get_encoding_format();
 	constexpr uint32_t magic = 0x46546C67; // The byte sequence "glTF" as little-endian.
 	constexpr uint32_t text_chunk_type = 0x4E4F534A; // The byte sequence "JSON" as little-endian.
 	constexpr uint32_t binary_chunk_type = 0x004E4942; // The byte sequence "BIN\0" as little-endian.
-	const CharString cs = json_string.utf8();
-	const uint64_t text_data_length = cs.length();
-	const uint64_t text_chunk_length = ((text_data_length + 3) & (~3));
 
-	uint64_t total_file_length = header_size + chunk_header_size + text_chunk_length;
-	ERR_FAIL_COND_V(total_file_length > (uint64_t)UINT32_MAX, PackedByteArray());
-	uint64_t binary_data_length = 0;
-	if (p_state->buffers.size() > 0) {
-		binary_data_length = p_state->buffers[0].size();
-		const uint64_t file_length_with_buffer = total_file_length + chunk_header_size + binary_data_length;
-		total_file_length = file_length_with_buffer;
+	const PackedByteArray json_bytes = json_string.to_utf8_buffer();
+	// The _export_encode_chunk_data function will pad the chunk data to the required alignment.
+	PackedByteArray text_encoded = _export_encode_chunk_data(json_bytes, chunk_alignment_bitmask, true);
+	if (text_encoded.is_empty()) {
+		ERR_FAIL_V_MSG(PackedByteArray(), "glTF export: Failed to encode JSON chunk data. Aborting.");
 	}
-	ERR_FAIL_COND_V_MSG(total_file_length > (uint64_t)UINT32_MAX, PackedByteArray(),
-			"glTF: File size exceeds glTF Binary's maximum of 4 GiB. Cannot serialize as a single GLB in-memory buffer.");
-	const uint32_t binary_chunk_length = binary_data_length;
+
+	uint64_t text_data_length = text_encoded.size();
+	uint64_t text_data_length_aligned = (text_data_length + chunk_alignment_bitmask) & (~chunk_alignment_bitmask);
+
+	uint64_t total_file_length = file_header_size + chunk_header_size + text_data_length;
+	uint64_t binary_data_length = 0;
+	PackedByteArray binary_encoded;
+	if (p_state->buffers.size() > 0 && p_state->buffers[0].size() > 0) {
+		binary_encoded = _export_encode_chunk_data(p_state->buffers[0], chunk_alignment_bitmask, false);
+		if (binary_encoded.is_empty()) {
+			ERR_FAIL_V_MSG(PackedByteArray(), "glTF export: Failed to encode binary chunk data. Aborting.");
+		}
+		binary_data_length = binary_encoded.size();
+		if (binary_data_length > 0) {
+			// Recalculate the total file length with the headers, the aligned JSON chunk length, and the binary data length.
+			total_file_length = file_header_size + chunk_header_size + text_data_length_aligned + chunk_header_size + binary_data_length;
+		}
+	}
+	if (unlikely(total_file_length > max_file_length)) {
+		if (_binary_format_mode == BINARY_FORMAT_MODE_AUTO) {
+			// If the binary format mode is auto, try using the 64-bit format to support larger files.
+			file_header_size = 16;
+			chunk_header_size = 16;
+			chunk_alignment_bitmask = 7;
+			max_file_length = (uint64_t)INT64_MAX; // Not UINT64_MAX.
+			text_encoded = _export_encode_chunk_data(json_bytes, chunk_alignment_bitmask, true);
+			text_data_length = text_encoded.size();
+			text_data_length_aligned = (text_data_length + chunk_alignment_bitmask) & (~chunk_alignment_bitmask);
+			if (p_state->buffers.size() > 0 && p_state->buffers[0].size() > 0) {
+				binary_encoded = _export_encode_chunk_data(p_state->buffers[0], chunk_alignment_bitmask, false);
+			}
+			binary_data_length = binary_encoded.size();
+			if (binary_data_length > 0) {
+				total_file_length = file_header_size + chunk_header_size + text_data_length_aligned + chunk_header_size + binary_data_length;
+			} else {
+				total_file_length = file_header_size + chunk_header_size + text_data_length;
+			}
+		}
+	}
+	ERR_FAIL_COND_V_MSG(total_file_length > max_file_length, PackedByteArray(),
+			"glTF: File size exceeds glTF Binary's maximum file length. Cannot serialize as a single GLB in-memory buffer.");
 
 	Ref<StreamPeerBuffer> buffer;
 	buffer.instantiate();
+	// Write the file header.
 	buffer->put_32(magic);
-	buffer->put_32(p_state->major_version); // version
-	buffer->put_32((uint32_t)total_file_length); // length
-	buffer->put_32((uint32_t)text_chunk_length);
-	buffer->put_32(text_chunk_type);
-	buffer->put_data((uint8_t *)&cs[0], text_data_length);
-	for (uint64_t pad_i = text_data_length; pad_i < text_chunk_length; pad_i++) {
-		buffer->put_8(' ');
+	if (file_header_size == 12) {
+		buffer->put_32(2); // Binary format version.
+		buffer->put_32((uint32_t)total_file_length);
+	} else { // 16
+		buffer->put_32(3); // Binary format version.
+		buffer->put_64(total_file_length);
 	}
-	if (binary_chunk_length) {
-		buffer->put_32(binary_chunk_length);
-		buffer->put_32(binary_chunk_type);
-		buffer->put_data(p_state->buffers[0].ptr(), binary_data_length);
+	// Write the JSON text chunk.
+	if (chunk_header_size == 8) {
+		buffer->put_32((uint32_t)text_data_length);
+		buffer->put_32(text_chunk_type);
+	} else { // 16
+		buffer->put_32(text_chunk_type);
+		buffer->put_32(chunk_encoding);
+		buffer->put_64(text_data_length);
+	}
+	buffer->put_data(text_encoded.ptr(), text_encoded.size());
+	// Write a single binary chunk if there is any buffer data.
+	if (binary_data_length > 0) {
+		// Pad the JSON chunk to the required alignment. Plainly encoded JSON chunk data is already padded with
+		// spaces, so this only handles the case of padding non-plainly encoded JSON chunk data with null bytes.
+		for (uint64_t pad_i = text_data_length; pad_i < text_data_length_aligned; pad_i++) {
+			buffer->put_8((uint8_t)0);
+		}
+		if (chunk_header_size == 8) {
+			buffer->put_32((uint32_t)binary_data_length);
+			buffer->put_32(binary_chunk_type);
+		} else { // 16
+			buffer->put_32(binary_chunk_type);
+			buffer->put_32(chunk_encoding);
+			buffer->put_64(binary_data_length);
+		}
+		buffer->put_data(binary_encoded.ptr(), binary_encoded.size());
 	}
 	return buffer->get_data_array();
 }
@@ -7138,12 +7406,8 @@ Error GLTFDocument::_parse_asset_header(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_search_path) {
+Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state) {
 	Error err;
-
-	/* PARSE BUFFERS */
-	err = _parse_buffers(p_state, p_search_path);
-	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* PARSE BUFFER VIEWS */
 	err = _parse_buffer_views(p_state);
@@ -7167,7 +7431,7 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 
 	if (!p_state->discard_meshes_and_materials) {
 		/* PARSE IMAGES */
-		err = _parse_images(p_state, p_search_path);
+		err = _parse_images(p_state);
 
 		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
@@ -7242,7 +7506,7 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 	if (err != OK) {
 		return err;
 	}
-	err = _serialize_file(p_state, p_path);
+	err = _serialize_file(p_state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -7358,7 +7622,7 @@ Error GLTFDocument::append_from_buffer(const PackedByteArray &p_bytes, const Str
 	file_access.instantiate();
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
 	p_state->set_base_path(p_base_path.get_base_dir());
-	err = _parse(p_state, p_state->base_path, file_access);
+	err = _parse(p_state, file_access);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
@@ -7386,7 +7650,7 @@ Error GLTFDocument::append_from_file(const String &p_path, Ref<GLTFState> p_stat
 		base_path = p_path.get_base_dir();
 	}
 	p_state->set_base_path(base_path);
-	err = _parse(p_state, base_path, file);
+	err = _parse(p_state, file);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
@@ -7415,6 +7679,14 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
 		}
 	}
 	return ret;
+}
+
+void GLTFDocument::set_binary_format_mode(BinaryFormatMode p_binary_format_mode) {
+	_binary_format_mode = p_binary_format_mode;
+}
+
+void GLTFDocument::set_encoding_format(EncodingFormat p_encoding_format) {
+	_encoding_format = p_encoding_format;
 }
 
 void GLTFDocument::set_root_node_mode(GLTFDocument::RootNodeMode p_root_node_mode) {
