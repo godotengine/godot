@@ -42,6 +42,8 @@ def version_hash_builder(target, source, env):
 
 const char *const GODOT_VERSION_HASH = "{git_hash}";
 const unsigned long long GODOT_VERSION_TIMESTAMP = {git_timestamp};
+const bool GODOT_VERSION_GIT_DIRTY = {git_dirty};
+const char *const GODOT_VERSION_GIT_BRANCH = "{git_current_branch}";
 """.format(**source[0].read())
         )
 

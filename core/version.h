@@ -85,6 +85,14 @@ extern const char *const GODOT_VERSION_HASH;
 // Set to 0 if unknown.
 extern const unsigned long long GODOT_VERSION_TIMESTAMP;
 
+// Determines if the build was based on modified git tracked files, generated at build time in `core/version_hash.gen.cpp`.
+// Set to `false` if unknown.
+extern const bool GODOT_VERSION_GIT_DIRTY;
+
+// Git branch name of the build, generated at build time in `core/version_hash.gen.cpp`.
+// Set to `""` if unknown.
+extern const char *const GODOT_VERSION_GIT_BRANCH;
+
 #ifndef DISABLE_DEPRECATED
 // Compatibility with pre-4.5 modules.
 #define VERSION_SHORT_NAME GODOT_VERSION_SHORT_NAME
