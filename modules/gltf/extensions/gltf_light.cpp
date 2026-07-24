@@ -151,10 +151,14 @@ Ref<GLTFLight> GLTFLight::from_node(const Light3D *p_light) {
 		l->range = light->get_param(SpotLight3D::PARAM_RANGE);
 		l->intensity = light->get_param(SpotLight3D::PARAM_ENERGY);
 		l->outer_cone_angle = Math::deg_to_rad(light->get_param(SpotLight3D::PARAM_SPOT_ANGLE));
+		l->inner_cone_angle = l->outer_cone_angle * 0.999999f; // Upper limit for inner cone angle.
 		// This equation is the inverse of the import equation (which has a desmos link).
-		float angle_ratio = 1 - (0.2 / (0.1 + light->get_param(SpotLight3D::PARAM_SPOT_ATTENUATION)));
-		angle_ratio = MAX(0, angle_ratio);
-		l->inner_cone_angle = l->outer_cone_angle * angle_ratio;
+		float angle_attenuation = light->get_param(SpotLight3D::PARAM_SPOT_ATTENUATION);
+		if (angle_attenuation != 0.0f) {
+			float angle_ratio = 1.0f - (0.2f / (0.1f + 1.0f / angle_attenuation));
+			angle_ratio = MAX(0.0f, angle_ratio);
+			l->inner_cone_angle = MIN(l->outer_cone_angle * angle_ratio, l->inner_cone_angle);
+		}
 	}
 	return l;
 }
@@ -175,11 +179,15 @@ Light3D *GLTFLight::to_node() const {
 		spot_light->set_param(SpotLight3D::PARAM_ENERGY, intensity);
 		spot_light->set_param(SpotLight3D::PARAM_RANGE, CLAMP(range, 0, 4096));
 		spot_light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad_to_deg(outer_cone_angle));
-		// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b
-		// The points in desmos are not exact, except for (1, infinity).
-		float angle_ratio = inner_cone_angle / outer_cone_angle;
-		float angle_attenuation = 0.2 / (1 - angle_ratio) - 0.1;
-		spot_light->set_param(SpotLight3D::PARAM_SPOT_ATTENUATION, angle_attenuation);
+		if (inner_cone_angle >= outer_cone_angle) {
+			spot_light->set_param(SpotLight3D::PARAM_SPOT_ATTENUATION, 0.0f);
+		} else {
+			float angle_ratio = inner_cone_angle / outer_cone_angle;
+			// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b
+			// The points in desmos are not exact, except for (1, infinity).
+			float angle_attenuation = 1.0f / (0.2f / (1.0f - angle_ratio) - 0.1f);
+			spot_light->set_param(SpotLight3D::PARAM_SPOT_ATTENUATION, angle_attenuation);
+		}
 		light = spot_light;
 	} else {
 		ERR_PRINT("Failed to create a Light3D node from GLTFLight, unknown light type '" + light_type + "'.");
@@ -215,8 +223,8 @@ Ref<GLTFLight> GLTFLight::from_dictionary(const Dictionary &p_dictionary) {
 		const Dictionary &spot = p_dictionary["spot"];
 		light->inner_cone_angle = spot["innerConeAngle"];
 		light->outer_cone_angle = spot["outerConeAngle"];
-		if (light->inner_cone_angle >= light->outer_cone_angle) {
-			ERR_PRINT("Error parsing glTF light: The inner angle must be smaller than the outer angle.");
+		if (light->inner_cone_angle > light->outer_cone_angle) {
+			ERR_PRINT("Error parsing glTF light: The inner angle must not be greater than the outer angle.");
 		}
 	} else if (type != "point" && type != "directional") {
 		ERR_PRINT("Error parsing glTF light: Light type '" + type + "' is unknown.");
