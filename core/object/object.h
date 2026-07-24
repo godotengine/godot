@@ -40,6 +40,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
+#include "core/templates/safe_pointer.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/variant.h"
 
@@ -881,21 +882,56 @@ class ObjectDB {
 // This needs to add up to 63, 1 bit is for reference.
 #define OBJECTDB_VALIDATOR_BITS 39
 #define OBJECTDB_VALIDATOR_MASK ((uint64_t(1) << OBJECTDB_VALIDATOR_BITS) - 1)
-#define OBJECTDB_SLOT_MAX_COUNT_BITS 24
-#define OBJECTDB_SLOT_MAX_COUNT_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_COUNT_BITS) - 1)
-#define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_VALIDATOR_BITS))
+#define OBJECTDB_SLOT_BITS 14
+#define OBJECTDB_SLOT_MASK ((uint64_t(1) << OBJECTDB_SLOT_BITS) - 1)
+#define OBJECTDB_BLOCK_BITS 10
+#define OBJECTDB_BLOCK_MASK ((uint64_t(1) << OBJECTDB_BLOCK_BITS) - 1)
+#define OBJECTDB_REFERENCE_BIT (uint64_t(1) << 63)
 
+#define OBJECTDB_SLOT_MAX_COUNT (uint64_t(1) << (OBJECTDB_BLOCK_BITS + OBJECTDB_SLOT_BITS))
+#define OBJECTDB_BLOCK_MAX_COUNT (uint64_t(1) << OBJECTDB_BLOCK_BITS)
+#define OBJECTDB_BLOCK_SIZE (uint64_t(1) << OBJECTDB_SLOT_BITS)
+
+	static_assert((OBJECTDB_BLOCK_BITS + OBJECTDB_SLOT_BITS + OBJECTDB_VALIDATOR_BITS) == 63,
+			"This needs to add up to 63, 1 bit is for reference.");
+
+	struct ObjectSlotData {
+		uint64_t validator = 0;
+		uint16_t block_idx = 0;
+		uint16_t slot_idx = 0;
+		bool is_ref_counted = false;
+
+		_ALWAYS_INLINE_ ObjectSlotData() {}
+		_ALWAYS_INLINE_ explicit ObjectSlotData(uint64_t p_id) {
+			block_idx = p_id & OBJECTDB_BLOCK_MASK;
+			slot_idx = (p_id >> OBJECTDB_BLOCK_BITS) & OBJECTDB_SLOT_MASK;
+			validator = (p_id >> (OBJECTDB_BLOCK_BITS + OBJECTDB_SLOT_BITS)) & OBJECTDB_VALIDATOR_MASK;
+			is_ref_counted = (p_id & OBJECTDB_REFERENCE_BIT) != 0;
+		}
+		_ALWAYS_INLINE_ explicit operator uint64_t() const {
+			return block_idx |
+					(slot_idx << OBJECTDB_BLOCK_BITS) |
+					(validator << (OBJECTDB_BLOCK_BITS + OBJECTDB_SLOT_BITS)) |
+					(is_ref_counted ? OBJECTDB_REFERENCE_BIT : 0);
+		}
+	};
 	struct ObjectSlot { // 128 bits per slot.
-		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
-		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
-		uint64_t is_ref_counted : 1;
-		Object *object = nullptr;
+		SafeNumeric<uint64_t> data;
+		SafePointer<Object> object;
+
+		_ALWAYS_INLINE_ ObjectSlotData get_data() const {
+			return ObjectSlotData{ data.get() };
+		}
+		_ALWAYS_INLINE_ void set_data(const ObjectSlotData &p_data) {
+			data.set(static_cast<uint64_t>(p_data));
+		}
 	};
 
 	static SpinLock spin_lock;
 	static uint32_t slot_count;
 	static uint32_t slot_max;
-	static ObjectSlot *object_slots;
+	static SafeNumeric<uint32_t> block_max;
+	static ObjectSlot **object_blocks;
 	static uint64_t validator_counter;
 
 	friend class Object;
@@ -911,27 +947,7 @@ class ObjectDB {
 public:
 	typedef void (*DebugFunc)(Object *p_obj, void *p_user_data);
 
-	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
-		uint64_t id = p_instance_id;
-		uint32_t slot = id & OBJECTDB_SLOT_MAX_COUNT_MASK;
-
-		ERR_FAIL_COND_V(slot >= slot_max, nullptr); // This should never happen unless RID is corrupted.
-
-		spin_lock.lock();
-
-		uint64_t validator = (id >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
-
-		if (unlikely(object_slots[slot].validator != validator)) {
-			spin_lock.unlock();
-			return nullptr;
-		}
-
-		Object *object = object_slots[slot].object;
-
-		spin_lock.unlock();
-
-		return object;
-	}
+	static Object *get_instance(ObjectID p_instance_id);
 
 	template <typename T>
 	_ALWAYS_INLINE_ static T *get_instance(ObjectID p_instance_id) {
