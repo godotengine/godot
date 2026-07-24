@@ -168,7 +168,7 @@ String ResourceImporterTexture::get_visible_name() const {
 }
 
 void ResourceImporterTexture::get_recognized_extensions(List<String> *p_extensions) const {
-	ImageLoader::get_recognized_extensions(p_extensions);
+	ImageLoader::get_editor_importer_recognized_extensions(p_extensions);
 }
 
 String ResourceImporterTexture::get_save_extension() const {
