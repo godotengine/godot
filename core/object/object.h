@@ -411,6 +411,9 @@ private:
 	friend bool predelete_handler(Object *);
 	friend void postinitialize_handler(Object *);
 
+	// Used for thread-safe behavior, such as instance bindings and signals.
+	mutable Mutex _control_mutex;
+
 	ObjectGDExtension *_extension = nullptr;
 	GDExtensionClassInstancePtr _extension_instance = nullptr;
 
@@ -425,7 +428,6 @@ private:
 		HashMap<Callable, Slot> slot_map;
 		bool removable = false;
 	};
-	mutable Mutex *signal_mutex = nullptr;
 	HashMap<StringName, SignalData> signal_map;
 	List<Connection> connections;
 #ifdef DEBUG_ENABLED
@@ -493,7 +495,6 @@ private:
 
 	friend class RefCounted;
 
-	BinaryMutex _instance_binding_mutex;
 	struct InstanceBinding {
 		void *binding = nullptr;
 		void *token = nullptr;
@@ -508,20 +509,7 @@ private:
 protected:
 	StringName _translation_domain;
 
-	_FORCE_INLINE_ bool _instance_binding_reference(bool p_reference) {
-		bool can_die = true;
-		if (_instance_bindings) {
-			MutexLock instance_binding_lock(_instance_binding_mutex);
-			for (uint32_t i = 0; i < _instance_binding_count; i++) {
-				if (_instance_bindings[i].reference_callback) {
-					if (!_instance_bindings[i].reference_callback(_instance_bindings[i].token, _instance_bindings[i].binding, p_reference)) {
-						can_die = false;
-					}
-				}
-			}
-		}
-		return can_die;
-	}
+	bool _instance_binding_reference(bool p_reference);
 
 	// Used in gdvirtual.gen.h
 	void _gdvirtual_init_method_ptr(uint32_t p_compat_hash, void *&r_fn_ptr, const StringName &p_fn_name, bool p_compat) const;
@@ -604,8 +592,6 @@ protected:
 	void _define_ancestry(AncestralClass p_class) { _ancestry |= (uint32_t)p_class; }
 	// Prefer using derives_from.
 	bool _has_ancestry(AncestralClass p_class) const { return _ancestry & (uint32_t)p_class; }
-
-	virtual bool _uses_signal_mutex() const;
 
 	// Internal helper to get the current locale, taking into account the translation domain.
 	String _get_locale() const;
