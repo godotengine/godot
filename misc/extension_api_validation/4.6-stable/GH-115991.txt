@@ -1,0 +1,7 @@
+GH-115991
+---------
+Validate extension JSON: API was removed: classes/MultiplayerPeerExtension/methods/_get_max_packet_size
+Validate extension JSON: API was removed: classes/WebRTCDataChannelExtension/methods/_get_max_packet_size
+Validate extension JSON: API was removed: classes/PacketPeerExtension/methods/_get_max_packet_size
+
+Methods were unused and not intended to be called directly.
