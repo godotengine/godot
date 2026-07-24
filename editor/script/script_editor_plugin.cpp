@@ -3145,11 +3145,11 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		}
 		accept_event();
 	}
-	if (ED_IS_SHORTCUT("script_editor/window_move_up", p_event)) {
+	if (ED_IS_SHORTCUT("script_editor/move_document_up", p_event)) {
 		_menu_option(FILE_MENU_MOVE_UP);
 		accept_event();
 	}
-	if (ED_IS_SHORTCUT("script_editor/window_move_down", p_event)) {
+	if (ED_IS_SHORTCUT("script_editor/move_document_down", p_event)) {
 		_menu_option(FILE_MENU_MOVE_DOWN);
 		accept_event();
 	}
@@ -3248,8 +3248,8 @@ void ScriptEditor::_setup_popup_menu(PopupMenu *p_menu, bool p_is_context_menu) 
 	}
 
 	if (p_is_context_menu) {
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), FILE_MENU_MOVE_UP);
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_down"), FILE_MENU_MOVE_DOWN);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/move_document_up"), FILE_MENU_MOVE_UP);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/move_document_down"), FILE_MENU_MOVE_DOWN);
 		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), FILE_MENU_SORT);
 	}
 
@@ -4095,8 +4095,8 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	find_replace_bar->hide();
 
 	ED_SHORTCUT("script_editor/window_sort", TTRC("Sort"));
-	ED_SHORTCUT("script_editor/window_move_up", TTRC("Move Up"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::UP);
-	ED_SHORTCUT("script_editor/window_move_down", TTRC("Move Down"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::DOWN);
+	ED_SHORTCUT("script_editor/move_document_up", TTRC("Move Document Up"));
+	ED_SHORTCUT("script_editor/move_document_down", TTRC("Move Document Down"));
 	// FIXME: These should be `Key::GREATER` and `Key::LESS` but those don't work.
 	ED_SHORTCUT("script_editor/next_script", TTRC("Next Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::PERIOD);
 	ED_SHORTCUT("script_editor/prev_script", TTRC("Previous Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::COMMA);
