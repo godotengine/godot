@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import os
+import shutil
+
+from methods import print_warning
+
+Import("env")
+
+
+def generate_bundle(target, source, env):
+    dst_lib_path = (
+        Dir(f"#misc/dist/openharmony_template/entry/src/main/cpp/libs/{lib_arch_dir}/").abspath + "/libgodot.so"
+    )
+    os.makedirs(os.path.dirname(dst_lib_path), exist_ok=True)
+    shutil.copy(lib[0].abspath, dst_lib_path)
+    dst_header_path = (
+        Dir("#misc/dist/openharmony_template/entry/src/main/cpp/include/").abspath + "/bridge_openharmony.h"
+    )
+    os.makedirs(os.path.dirname(dst_header_path), exist_ok=True)
+    shutil.copy(File("#platform/openharmony/bridge_openharmony.h").abspath, dst_header_path)
+
+    template_dir = Dir("#misc/dist/openharmony_template").abspath
+    shutil.make_archive(Dir(f"#bin/openharmony_{lib_type_dir}_{lib_arch_dir}").abspath, "zip", root_dir=template_dir)
+    os.remove(dst_lib_path)
+    os.remove(dst_header_path)
+
+
+openharmony_files = [Glob("*.cpp")]
+
+env_openharmony = env.Clone()
+
+openharmony_objects = []
+for x in openharmony_files:
+    openharmony_objects.append(env_openharmony.SharedObject(x))
+
+lib_arch_dir = ""
+if env["arch"] == "arm64":
+    lib_arch_dir = "arm64-v8a"
+elif env["arch"] == "x86_64":
+    lib_arch_dir = "x86_64"
+else:
+    print_warning("Architecture not suitable for embedding into APP; keeping .so at \\bin")
+
+if lib_arch_dir != "":
+    if env.dev_build:
+        lib_type_dir = "dev"
+    elif env.debug_features:
+        lib_type_dir = "debug"
+    else:  # Release
+        lib_type_dir = "release"
+
+    lib_arch = env["arch"]
+    lib_name = f"#bin/libgodot.openharmony.template_{lib_type_dir}.{lib_arch}.so"
+    lib = env_openharmony.add_shared_library(lib_name, [openharmony_objects])
+
+    if env["generate_bundle"]:
+        generate_bundle_command = env.Command("generate_bundle", [], generate_bundle)
+        command = env.AlwaysBuild(generate_bundle_command)
+        env.Depends(command, [lib])
