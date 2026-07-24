@@ -889,6 +889,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/code_complete_delay", 0.3, "0.01,5,0.01,or_greater")
 	_initial_set("text_editor/completion/put_callhint_tooltip_below_current_line", true);
 	_initial_set("text_editor/completion/complete_file_paths", true);
+	_initial_set("text_editor/completion/private_dragged_onready_variables", false);
 	_initial_set("text_editor/completion/add_type_hints", true, true);
 	_initial_set("text_editor/completion/add_string_name_literals", false, true);
 	_initial_set("text_editor/completion/add_node_path_literals", false, true);

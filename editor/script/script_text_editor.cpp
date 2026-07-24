@@ -2089,6 +2089,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		if (member_drop_modifier_pressed) {
 			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+			const bool set_private = EDITOR_GET("text_editor/completion/private_dragged_onready_variables");
 			add_new_line = !is_empty_line && drop_at_column != 0;
 
 			for (int i = 0; i < nodes.size(); i++) {
@@ -2108,6 +2109,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				}
 
 				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
+				if (set_private) {
+					variable_name = variable_name.insert(0, "_");
+				}
 				if (use_type) {
 					StringName custom_class_name;
 					Ref<Script> node_script = node->get_script();
