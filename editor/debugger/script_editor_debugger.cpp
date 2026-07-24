@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
 #include "core/variant/typed_dictionary.h"
@@ -1765,9 +1766,9 @@ void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool
 	}
 
 	if (!p_enabled) {
-		path_item->remove_child(breakpoint_item);
+		memdelete(breakpoint_item);
 		if (path_item->get_first_child() == nullptr) {
-			breakpoints_tree->get_root()->remove_child(path_item);
+			memdelete(path_item);
 		}
 	}
 }
