@@ -1370,6 +1370,9 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
 	ERR_FAIL_COND(rb.is_null());
 
+	// View count of our render target must match our camera data.
+	ERR_FAIL_COND(rb->get_view_count() != p_camera_data->view_count);
+
 	// setup scene data
 	RenderSceneDataRD scene_data;
 	{
@@ -1377,6 +1380,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		scene_data.cam_transform = p_camera_data->main_transform;
 		scene_data.cam_projection = p_camera_data->main_projection;
 		scene_data.cam_orthogonal = p_camera_data->is_orthogonal;
+		scene_data.cam_asymmetrical = p_camera_data->is_asymmetrical;
 		scene_data.camera_visible_layers = p_camera_data->visible_layers;
 		scene_data.taa_jitter = p_camera_data->taa_jitter;
 		scene_data.taa_frame_count = p_camera_data->taa_frame_count;

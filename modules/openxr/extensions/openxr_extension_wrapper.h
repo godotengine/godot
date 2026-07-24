@@ -96,6 +96,9 @@ public:
 	virtual void *set_view_configuration_and_get_next_pointer(uint32_t p_view, void *p_next_pointer); // Add additional data structures when calling xrEnumerateViewConfiguration
 	virtual void print_view_configuration_info(uint32_t p_view) const;
 
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far);
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name);
+
 	//TODO workaround as GDExtensionPtr<void> return type results in build error in godot-cpp
 	GDVIRTUAL1R(uint64_t, _set_system_properties_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL2R(uint64_t, _set_instance_create_info_and_get_next_pointer, uint64_t, GDExtensionPtr<void>);
@@ -114,6 +117,9 @@ public:
 	GDVIRTUAL1(_prepare_view_configuration, int);
 	GDVIRTUAL2R(uint64_t, _set_view_configuration_and_get_next_pointer, uint32_t, GDExtensionPtr<void>);
 	GDVIRTUAL1C(_print_view_configuration_info, int);
+
+	GDVIRTUAL4R(TypedArray<Projection>, _get_camera_projections, const StringName &, double, double, double);
+	GDVIRTUAL1R(TypedArray<Transform3D>, _get_camera_offsets, const StringName &);
 
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL0R_COMPAT(_get_requested_extensions_bind_compat_109302, Dictionary, _get_requested_extensions);
