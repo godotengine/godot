@@ -139,7 +139,7 @@ void ProjectExportDialog::_notification(int p_what) {
 			duplicate_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_button_icon(presets->get_editor_theme_icon(SNAME("Remove")));
 			patch_add_btn->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			connect(SceneStringName(confirmed), callable_mp(this, &ProjectExportDialog::_export_pck_zip));
+			connect(SceneStringName(toggled), callable_mp(this, &ProjectExportDialog::_export_selection_menu));
 			_update_export_all();
 		} break;
 	}
@@ -274,12 +274,17 @@ void ProjectExportDialog::_update_export_all() {
 		}
 	}
 
-	export_all_button->set_disabled(!can_export);
+	int export_index = export_selection_menu->get_item_index(EXPORT_ALL);
+	int export_debug_index = export_selection_menu->get_item_index(EXPORT_ALL_DEBUG);
+	export_selection_menu->set_item_disabled(export_index, !can_export);
+	export_selection_menu->set_item_disabled(export_debug_index, !can_export);
 
 	if (can_export) {
-		export_all_button->set_tooltip_text(TTRC("Export the project for all the presets defined."));
+		export_selection_menu->set_item_tooltip(export_index, TTRC("Export the project for all the presets defined."));
+		export_selection_menu->set_item_tooltip(export_debug_index, TTRC("Export the project for all the presets defined."));
 	} else {
-		export_all_button->set_tooltip_text(TTRC("All presets must have an export path defined for Export All to work."));
+		export_selection_menu->set_item_tooltip(export_index, TTRC("All presets must have an export path defined for Export All to work."));
+		export_selection_menu->set_item_tooltip(export_debug_index, TTRC("All presets must have an export path defined for Export All to work."));
 	}
 }
 
@@ -386,7 +391,10 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		}
 
 		export_warning->hide();
-		export_button->set_disabled(true);
+		int export_index = export_selection_menu->get_item_index(EXPORT_PROJECT);
+		int export_debug_index = export_selection_menu->get_item_index(EXPORT_PROJECT_DEBUG);
+		export_selection_menu->set_item_disabled(export_index, true);
+		export_selection_menu->set_item_disabled(export_debug_index, true);
 	} else {
 		if (error != String()) {
 			Vector<String> items = error.split("\n", false);
@@ -405,7 +413,10 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 		export_error->hide();
 		export_templates_error->hide();
-		export_button->set_disabled(false);
+		int export_index = export_selection_menu->get_item_index(EXPORT_PROJECT);
+		int export_debug_index = export_selection_menu->get_item_index(EXPORT_PROJECT_DEBUG);
+		export_selection_menu->set_item_disabled(export_index, false);
+		export_selection_menu->set_item_disabled(export_debug_index, false);
 	}
 
 	custom_features->set_text(current->get_custom_features());
@@ -840,7 +851,6 @@ void ProjectExportDialog::_delete_preset_confirm() {
 	_update_presets();
 
 	if (presets->get_item_count() == 0) {
-		export_button->set_disabled(true);
 		get_ok_button()->set_disabled(true);
 	}
 
@@ -1417,6 +1427,9 @@ void ProjectExportDialog::_export_pck_zip() {
 	String dir = current->get_export_path().get_base_dir();
 	export_pck_zip->set_current_dir(dir);
 
+	bool export_with_debug = EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true);
+	export_pck_zip->set_option_default(0, export_with_debug ? 1 : 0);
+
 	export_pck_zip->popup_file_dialog();
 }
 
@@ -1448,6 +1461,45 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 	} else {
 		ERR_FAIL_MSG("Path must end with .pck or .zip");
 	}
+}
+
+void ProjectExportDialog::_export_selection_menu(bool p_pressed) {
+	if (p_pressed) {
+		export_selection_menu->set_size(Size2(0, 0));
+		export_selection_menu->set_position(get_ok_button()->get_screen_position() + Point2i(0, get_ok_button()->get_size().height));
+		export_selection_menu->popup();
+	}
+}
+
+void ProjectExportDialog::_export_selection(int p_id) {
+	switch (p_id) {
+		case EXPORT_ALL: {
+			_export_all(false);
+		} break;
+		case EXPORT_ALL_DEBUG: {
+			_export_all(true);
+		} break;
+		case EXPORT_PROJECT: {
+			EditorSettings::get_singleton()->set_project_metadata("export_options", "export_debug", false);
+			_export_project();
+		} break;
+		case EXPORT_PROJECT_DEBUG: {
+			EditorSettings::get_singleton()->set_project_metadata("export_options", "export_debug", true);
+			_export_project();
+		} break;
+		case EXPORT_PCK_ZIP: {
+			EditorSettings::get_singleton()->set_project_metadata("export_options", "export_debug", false);
+			_export_pck_zip();
+		} break;
+		case EXPORT_PCK_ZIP_DEBUG: {
+			EditorSettings::get_singleton()->set_project_metadata("export_options", "export_debug", true);
+			_export_pck_zip();
+		} break;
+	}
+}
+
+void ProjectExportDialog::_export_selection__menu_closed() {
+	get_ok_button()->set_pressed_no_signal(false);
 }
 
 void ProjectExportDialog::_open_export_template_manager() {
@@ -1483,6 +1535,10 @@ void ProjectExportDialog::_export_project() {
 			export_project->set_current_file(default_filename);
 		}
 	}
+
+	bool export_with_debug = EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true);
+	export_project->set_option_default(0, export_with_debug ? 1 : 0);
+
 	export_project->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	export_project->popup_file_dialog();
 }
@@ -2016,15 +2072,41 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Export buttons, dialogs and errors.
 
 	set_cancel_button_text(TTRC("Close"));
-	set_ok_button_text(TTRC("Export PCK/ZIP..."));
-	get_ok_button()->set_tooltip_text(TTRC("Export the project resources as a PCK or ZIP package. This is not a playable build, only the project data without a Godot executable."));
+	set_ok_button_text(TTRC("Export"));
+	get_ok_button()->set_toggle_mode(true);
+	// Disable initially before we select a valid preset.
 	get_ok_button()->set_disabled(true);
 
-	export_button = add_button(TTRC("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
-	export_button->set_tooltip_text(TTRC("Export the project as a playable build (Godot executable and project data) for the selected preset."));
-	export_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_project));
-	// Disable initially before we select a valid preset.
-	export_button->set_disabled(true);
+	export_selection_menu = memnew(PopupMenu);
+	export_selection_menu->add_separator(TTRC("Release Build"));
+	export_selection_menu->add_item(TTRC("Export All"), EXPORT_ALL);
+	export_selection_menu->add_item(TTRC("Export Project..."), EXPORT_PROJECT);
+	export_selection_menu->add_item(TTRC("Export PCK/ZIP..."), EXPORT_PCK_ZIP);
+	export_selection_menu->add_separator(TTRC("Debug Build"));
+	export_selection_menu->add_item(TTRC("Export All"), EXPORT_ALL_DEBUG);
+	export_selection_menu->add_item(TTRC("Export Project..."), EXPORT_PROJECT_DEBUG);
+	export_selection_menu->add_item(TTRC("Export PCK/ZIP..."), EXPORT_PCK_ZIP_DEBUG);
+
+	int export_project_index = export_selection_menu->get_item_index(EXPORT_PROJECT);
+	int export_project_debug_index = export_selection_menu->get_item_index(EXPORT_PROJECT_DEBUG);
+	int export_pck_zip_index = export_selection_menu->get_item_index(EXPORT_PCK_ZIP);
+	int export_pck_zip_debug_index = export_selection_menu->get_item_index(EXPORT_PCK_ZIP_DEBUG);
+	export_selection_menu->set_item_disabled(export_selection_menu->get_item_index(EXPORT_ALL), true);
+	export_selection_menu->set_item_disabled(export_project_index, true);
+	export_selection_menu->set_item_disabled(export_selection_menu->get_item_index(EXPORT_ALL_DEBUG), true);
+	export_selection_menu->set_item_disabled(export_project_debug_index, true);
+
+	String export_project_tooltip = TTRC("Export the project as a playable build (Godot executable and project data) for the selected preset.");
+	export_selection_menu->set_item_tooltip(export_project_index, export_project_tooltip);
+	export_selection_menu->set_item_tooltip(export_project_debug_index, export_project_tooltip);
+
+	String export_pck_zip_tooltip = TTRC("Export the project resources as a PCK or ZIP package. This is not a playable build, only the project data without a Godot executable.");
+	export_selection_menu->set_item_tooltip(export_pck_zip_index, export_project_tooltip);
+	export_selection_menu->set_item_tooltip(export_pck_zip_debug_index, export_project_tooltip);
+
+	export_selection_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectExportDialog::_export_selection));
+	export_selection_menu->connect("popup_hide", callable_mp(this, &ProjectExportDialog::_export_selection__menu_closed));
+	add_child(export_selection_menu);
 
 	export_all_dialog = memnew(ConfirmationDialog);
 	export_all_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
@@ -2035,10 +2117,6 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_dialog->add_button(TTRC("Debug"), true, "debug");
 	export_all_dialog->add_button(TTRC("Release"), true, "release");
 	export_all_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_export_all_dialog_action));
-
-	export_all_button = add_button(TTRC("Export All..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
-	export_all_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_export_all_dialog));
-	export_all_button->set_disabled(true);
 
 	export_pck_zip = memnew(EditorFileDialog);
 	export_pck_zip->add_filter("*.zip", TTRC("ZIP File"));
