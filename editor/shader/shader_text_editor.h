@@ -158,6 +158,7 @@ class ShaderTextEditor : public CodeEditorBase {
 
 	List<ShaderWarning> warnings;
 
+	String previous_name;
 	bool block_shader_changed = false;
 	void _shader_changed();
 
