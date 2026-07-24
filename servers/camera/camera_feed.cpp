@@ -148,6 +148,8 @@ RID CameraFeed::get_texture(CameraServer::FeedImage p_which) {
 }
 
 uint64_t CameraFeed::get_texture_tex_id(CameraServer::FeedImage p_which) {
+	ERR_FAIL_COND_V_MSG(p_which < 0 || p_which >= CameraServer::FeedImage::FEED_IMAGES, 0, "Argument p_which must be a valid FeedImage type.");
+
 	return RenderingServer::get_singleton()->texture_get_native_handle(texture[p_which]);
 }
 
