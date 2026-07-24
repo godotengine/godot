@@ -49,6 +49,7 @@
 #endif
 #include "main/main.h"
 #include "servers/camera/camera_server.h"
+#include "servers/display/accessibility_server.h"
 
 #import <AVFoundation/AVFAudio.h>
 #import <AudioToolbox/AudioServices.h>
@@ -786,6 +787,10 @@ void OS_AppleEmbedded::on_focus_out() {
 			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		}
 
+		if (AccessibilityServer::get_singleton()) {
+			AccessibilityServer::get_singleton()->set_window_focused(DisplayServerEnums::MAIN_WINDOW_ID, false);
+		}
+
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 		}
@@ -802,6 +807,10 @@ void OS_AppleEmbedded::on_focus_in() {
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
 			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
+		}
+
+		if (AccessibilityServer::get_singleton()) {
+			AccessibilityServer::get_singleton()->set_window_focused(DisplayServerEnums::MAIN_WINDOW_ID, true);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {
