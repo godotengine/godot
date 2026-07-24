@@ -61,7 +61,9 @@ public:
 		DOCK_SLOT_BOTTOM,
 		DOCK_SLOT_BOTTOM_L,
 		DOCK_SLOT_BOTTOM_R,
-		DOCK_SLOT_MAX
+		DOCK_SLOT_MAX,
+
+		DOCK_SLOT_BASE_FLOATING = 1000,
 	};
 
 private:
@@ -88,7 +90,6 @@ private:
 	bool is_open = false;
 	bool enabled = true;
 	int previous_tab_index = -1;
-	WindowWrapper *dock_window = nullptr;
 	DockTabContainer *parent_dock_container = nullptr;
 	int dock_slot_index = DOCK_SLOT_NONE;
 

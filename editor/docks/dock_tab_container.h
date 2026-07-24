@@ -76,8 +76,6 @@ public:
 class DockTabContainer : public TabContainer {
 	GDCLASS(DockTabContainer, TabContainer);
 
-	EditorDockDragHint *drag_hint = nullptr;
-
 	HashMap<int, int> valid_drop_margins;
 
 	void _pre_popup(const Size2i &p_size);
@@ -85,6 +83,7 @@ class DockTabContainer : public TabContainer {
 
 protected:
 	DockContextPopup *dock_context_popup = nullptr;
+	EditorDockDragHint *drag_hint = nullptr;
 
 	void _notification(int p_what);
 
@@ -101,18 +100,23 @@ public:
 
 	static String get_config_key(int p_idx) { return "dock_" + itos(p_idx + 1); }
 
+	virtual void dock_added(EditorDock *p_dock) {}
+	virtual void dock_removed(EditorDock *p_dock) {}
 	virtual void dock_closed(EditorDock *p_dock) {}
-	virtual void dock_focused(EditorDock *p_dock, bool p_was_visible) {}
+	virtual void dock_focused(EditorDock *p_dock, bool p_was_visible);
 	virtual void update_visibility();
 	virtual TabStyle get_tab_style() const;
 	virtual bool can_switch_dock() const;
 	virtual Rect2 get_floating_dock_rect(EditorDock *p_dock) { return DockTabContainer::get_default_floating_dock_rect(p_dock); }
+	virtual Rect2 get_drag_hint_rect() const { return get_global_rect(); }
+
+	virtual bool can_dock_float(EditorDock *p_dock, String &r_float_info);
 
 	void add_margin_valid_drop(int p_margin, int p_target_dock_slot);
 	int get_margin_drop_slot(int p_margin) const;
 
 	// There is no equivalent load method, because loading needs to handle floating and closing.
-	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section);
+	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	virtual void load_selected_tab(int p_idx);
 
 	// This method should only be called by EditorDock.

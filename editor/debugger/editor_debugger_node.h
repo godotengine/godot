@@ -161,10 +161,10 @@ protected:
 	void _update_debug_options();
 
 protected:
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
-
-	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 public:
 	static EditorDebuggerNode *get_singleton() { return singleton; }
