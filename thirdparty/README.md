@@ -831,6 +831,8 @@ Collection of single-file libraries used in Godot components.
   * Version: git (1bf9bc04673df55dc554021b768006836f69d53a, 2026)
   * License: MIT
   * Modifications: Added implementation through `qoa.c`.
+  * Patches:
+    - `qoa-0001-div-safe-int.patch` (GH-109099)
 - `r128.{c,h}`
   * Upstream: https://github.com/fahickman/r128
   * Version: git (6fc177671c47640d5bb69af10cf4ee91050015a1, 2023)
