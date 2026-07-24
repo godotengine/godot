@@ -1902,7 +1902,9 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	}
 	// Lowest provided extension priority.
 	List<String>::Element *res_element = preferred.find("res");
-	if (res_element) {
+	// VoxelGIData should favor being saved to binary `.res` to reduce file size,
+	// so keep that extension as the preferred one.
+	if (res_element && !p_resource->is_class("VoxelGIData")) {
 		preferred.move_to_back(res_element);
 	}
 
@@ -1925,9 +1927,12 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 				const String ext = resource_path.get_extension().to_lower();
 				if (extensions.find(ext) == nullptr) {
 					file->set_current_path(resource_path.replacen("." + ext, "." + extensions.front()->get()));
+				} else {
+					file->set_current_path(resource_path);
 				}
 			}
 		} else {
+			file->set_current_dir(p_resource->get_path().get_base_dir());
 			file->set_current_file(new_resource_name_snake_case);
 		}
 	} else if (!preferred.is_empty()) {
