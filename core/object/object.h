@@ -33,10 +33,10 @@
 #include "core/extension/gdextension_interface.gen.h"
 #include "core/object/gdtype.h"
 #include "core/object/method_info.h"
+#include "core/object/object_gdextension.h"
 #include "core/object/object_id.h"
 #include "core/object/property_info.h"
 #include "core/os/mutex.h"
-#include "core/os/spin_lock.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
@@ -70,73 +70,6 @@
 // API used to extend in GDExtension and other C compatible compiled languages.
 class MethodBind;
 class GDExtension;
-
-struct ObjectGDExtension {
-	GDExtension *library = nullptr;
-	ObjectGDExtension *parent = nullptr;
-	List<ObjectGDExtension *> children;
-	StringName parent_class_name;
-	StringName class_name;
-	bool editor_class = false;
-	bool reloadable = false;
-	bool is_virtual = false;
-	bool is_abstract = false;
-	bool is_exposed = true;
-#ifdef TOOLS_ENABLED
-	bool is_runtime = false;
-	bool is_placeholder = false;
-#endif
-#ifndef DISABLE_DEPRECATED
-	bool legacy_unexposed_class = false;
-#endif // DISABLE_DEPRECATED
-	GDExtensionClassSet set;
-	GDExtensionClassGet get;
-	GDExtensionClassGetPropertyList get_property_list;
-	GDExtensionClassFreePropertyList2 free_property_list2;
-	GDExtensionClassPropertyCanRevert property_can_revert;
-	GDExtensionClassPropertyGetRevert property_get_revert;
-	GDExtensionClassValidateProperty validate_property;
-#ifndef DISABLE_DEPRECATED
-	GDExtensionClassNotification notification;
-	GDExtensionClassFreePropertyList free_property_list;
-#endif // DISABLE_DEPRECATED
-	GDExtensionClassNotification2 notification2;
-	GDExtensionClassToString to_string;
-	GDExtensionClassReference reference;
-	GDExtensionClassReference unreference;
-	GDExtensionClassGetRID get_rid;
-
-	void *class_userdata = nullptr;
-
-#ifndef DISABLE_DEPRECATED
-	GDExtensionClassCreateInstance create_instance;
-	GDExtensionClassCreateInstance2 create_instance2; // Without refcount.
-#endif // DISABLE_DEPRECATED
-	GDExtensionClassCreateInstance3 create_instance3;
-	GDExtensionClassFreeInstance free_instance;
-#ifndef DISABLE_DEPRECATED
-	GDExtensionClassGetVirtual get_virtual;
-	GDExtensionClassGetVirtualCallData get_virtual_call_data;
-#endif // DISABLE_DEPRECATED
-	GDExtensionClassGetVirtual2 get_virtual2;
-	GDExtensionClassGetVirtualCallData2 get_virtual_call_data2;
-	GDExtensionClassCallVirtualWithData call_virtual_with_data;
-	GDExtensionClassRecreateInstance recreate_instance;
-
-#ifdef TOOLS_ENABLED
-	void *tracking_userdata = nullptr;
-	void (*track_instance)(void *p_userdata, void *p_instance) = nullptr;
-	void (*untrack_instance)(void *p_userdata, void *p_instance) = nullptr;
-#endif
-
-	/// A type for this Object extension.
-	/// This is not exposed through the GDExtension API (yet) so it is inferred from above parameters.
-	GDType *gdtype;
-	void create_gdtype();
-	void destroy_gdtype();
-
-	~ObjectGDExtension();
-};
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
 #define GDVIRTUAL_CALL_PTR(m_obj, m_name, ...) m_obj->_gdvirtual_##m_name##_call(__VA_ARGS__)
@@ -876,74 +809,6 @@ bool Object::derives_from() const {
 		}
 	}
 }
-
-class ObjectDB {
-// This needs to add up to 63, 1 bit is for reference.
-#define OBJECTDB_VALIDATOR_BITS 39
-#define OBJECTDB_VALIDATOR_MASK ((uint64_t(1) << OBJECTDB_VALIDATOR_BITS) - 1)
-#define OBJECTDB_SLOT_MAX_COUNT_BITS 24
-#define OBJECTDB_SLOT_MAX_COUNT_MASK ((uint64_t(1) << OBJECTDB_SLOT_MAX_COUNT_BITS) - 1)
-#define OBJECTDB_REFERENCE_BIT (uint64_t(1) << (OBJECTDB_SLOT_MAX_COUNT_BITS + OBJECTDB_VALIDATOR_BITS))
-
-	struct ObjectSlot { // 128 bits per slot.
-		uint64_t validator : OBJECTDB_VALIDATOR_BITS;
-		uint64_t next_free : OBJECTDB_SLOT_MAX_COUNT_BITS;
-		uint64_t is_ref_counted : 1;
-		Object *object = nullptr;
-	};
-
-	static SpinLock spin_lock;
-	static uint32_t slot_count;
-	static uint32_t slot_max;
-	static ObjectSlot *object_slots;
-	static uint64_t validator_counter;
-
-	friend class Object;
-	friend void unregister_core_types();
-	static void cleanup();
-
-	static ObjectID add_instance(Object *p_object);
-	static void remove_instance(Object *p_object);
-
-	friend void register_core_types();
-	static void setup();
-
-public:
-	typedef void (*DebugFunc)(Object *p_obj, void *p_user_data);
-
-	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
-		uint64_t id = p_instance_id;
-		uint32_t slot = id & OBJECTDB_SLOT_MAX_COUNT_MASK;
-
-		ERR_FAIL_COND_V(slot >= slot_max, nullptr); // This should never happen unless RID is corrupted.
-
-		spin_lock.lock();
-
-		uint64_t validator = (id >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
-
-		if (unlikely(object_slots[slot].validator != validator)) {
-			spin_lock.unlock();
-			return nullptr;
-		}
-
-		Object *object = object_slots[slot].object;
-
-		spin_lock.unlock();
-
-		return object;
-	}
-
-	template <typename T>
-	_ALWAYS_INLINE_ static T *get_instance(ObjectID p_instance_id) {
-		return Object::cast_to<T>(get_instance(p_instance_id));
-	}
-
-	template <typename T>
-	_ALWAYS_INLINE_ static Ref<T> get_ref(ObjectID p_instance_id); // Defined in ref_counted.h
-
-	static void debug_objects(DebugFunc p_func, void *p_user_data);
-	static int get_object_count();
-};
 
 // Using `RequiredResult<T>` as the return type indicates that null will only be returned in the case of an error.
 // This allows GDExtension language bindings to use the appropriate error handling mechanism for that language

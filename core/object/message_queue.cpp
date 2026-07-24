@@ -31,6 +31,7 @@
 #include "message_queue.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/object_db.h"
 
 #include <cstdio>
 
