@@ -1061,3 +1061,30 @@ class AnimationMarkerKeyEditEditor : public EditorProperty {
 public:
 	AnimationMarkerKeyEditEditor(Ref<Animation> p_animation, const StringName &p_name, bool p_use_fps);
 };
+
+// AnimationMultiTrackKeyEditEditorPlugin
+
+class AnimationMultiTrackKeyEditEditor : public EditorProperty {
+	GDCLASS(AnimationMultiTrackKeyEditEditor, EditorProperty);
+
+	Ref<Animation> animation;
+	RBMap<int, List<float>> key_ofs_map;
+	RBMap<int, NodePath> base_map;
+	bool use_fps = false;
+
+	EditorSpinSlider *spinner = nullptr;
+
+	struct KeyDataCache {
+		float transition = 0.0;
+		Variant value;
+	};
+	RBMap<int, RBMap<real_t, KeyDataCache>> key_data_caches;
+	real_t original_spinner_value = 0.0;
+
+	void _time_edit_spun();
+	void _time_edit_entered();
+	void _time_edit_exited();
+
+public:
+	AnimationMultiTrackKeyEditEditor(Ref<Animation> p_animation, const RBMap<int, NodePath> &p_base_map, const RBMap<int, List<float>> &p_key_ofs_map, bool p_use_fps);
+};
