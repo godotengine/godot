@@ -60,6 +60,8 @@ static bool _project_contains_dotnet() {
 	String solution_directory = GLOBAL_GET("dotnet/project/solution_directory");
 	if (solution_directory.is_empty()) {
 		solution_directory = project_path;
+	} else if (solution_directory.begins_with("res://")) {
+		solution_directory = ProjectSettings::get_singleton()->globalize_path(solution_directory);
 	} else {
 		solution_directory = project_path.path_join(solution_directory);
 	}
