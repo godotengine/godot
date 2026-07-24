@@ -1414,6 +1414,10 @@ ProjectManager::ProjectManager() {
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
+	// Used by tag display and QuickSettingsDialog.
+	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+	add_child(epnp);
+
 	// Initialize UI.
 	{
 		int pm_root_dir = EDITOR_GET("interface/editor/localization/ui_layout_direction");

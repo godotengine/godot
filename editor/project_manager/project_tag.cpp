@@ -30,6 +30,7 @@
 
 #include "project_tag.h"
 
+#include "editor/inspector/editor_property_name_processor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
@@ -75,8 +76,9 @@ ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
 	button = memnew(Button);
 	add_child(button);
 	button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	button->set_text(p_text.capitalize());
-	button->set_tooltip_text(p_text.capitalize());
+	const String tag_text = EditorPropertyNameProcessor::get_singleton()->process_name(p_text, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
+	button->set_text(tag_text);
+	button->set_tooltip_text(tag_text);
 	button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	button->set_accessibility_name(vformat(TTR("Project Tag: %s"), p_text));
 	button->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
