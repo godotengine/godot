@@ -1,0 +1,7 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 4: Invalid index type "int" for a base of type "Rect2".
+>> ERROR at line 8: Invalid index type "int" for a base of type "Rect2i".
+>> ERROR at line 12: Invalid index type "int" for a base of type "Plane".
+>> ERROR at line 16: Invalid index type "int" for a base of type "AABB".
+>> ERROR at line 20: Invalid index type "int" for a base of type "Transform3D".
+>> ERROR at line 24: Only "String" or "StringName" can be used as index for type "Object", but received "int".
