@@ -237,13 +237,14 @@ class State:
                     return_type = TypeName("void")
 
                 params = self.parse_params(constructor, "constructor")
+                rest_param = self.parse_rest_param(constructor, "constructor")
 
                 desc_element = constructor.find("description")
                 method_desc = None
                 if desc_element is not None:
                     method_desc = desc_element.text
 
-                method_def = MethodDef(method_name, return_type, params, method_desc, qualifiers)
+                method_def = MethodDef(method_name, return_type, params, method_desc, qualifiers, rest_param)
                 method_def.definition_name = "constructor"
                 method_def.deprecated = constructor.get("deprecated")
                 method_def.experimental = constructor.get("experimental")
@@ -268,13 +269,14 @@ class State:
                     return_type = TypeName("void")
 
                 params = self.parse_params(method, "method")
+                rest_param = self.parse_rest_param(method, "method")
 
                 desc_element = method.find("description")
                 method_desc = None
                 if desc_element is not None:
                     method_desc = desc_element.text
 
-                method_def = MethodDef(method_name, return_type, params, method_desc, qualifiers)
+                method_def = MethodDef(method_name, return_type, params, method_desc, qualifiers, rest_param)
                 method_def.deprecated = method.get("deprecated")
                 method_def.experimental = method.get("experimental")
                 if method_name not in class_def.methods:
@@ -298,6 +300,7 @@ class State:
                     return_type = TypeName("void")
 
                 params = self.parse_params(operator, "operator")
+                rest_param = self.parse_rest_param(operator, "operator")
 
                 desc_element = operator.find("description")
                 method_desc = None
@@ -351,13 +354,14 @@ class State:
                 qualifiers = annotation.get("qualifiers")
 
                 params = self.parse_params(annotation, "annotation")
+                rest_param = self.parse_rest_param(annotation, "annotation")
 
                 desc_element = annotation.find("description")
                 annotation_desc = None
                 if desc_element is not None:
                     annotation_desc = desc_element.text
 
-                annotation_def = AnnotationDef(annotation_name, params, annotation_desc, qualifiers)
+                annotation_def = AnnotationDef(annotation_name, params, annotation_desc, qualifiers, rest_param)
                 if annotation_name not in class_def.annotations:
                     class_def.annotations[annotation_name] = []
 
@@ -375,13 +379,14 @@ class State:
                     continue
 
                 params = self.parse_params(signal, "signal")
+                rest_param = self.parse_rest_param(signal, "signal")
 
                 desc_element = signal.find("description")
                 signal_desc = None
                 if desc_element is not None:
                     signal_desc = desc_element.text
 
-                signal_def = SignalDef(signal_name, params, signal_desc)
+                signal_def = SignalDef(signal_name, params, signal_desc, rest_param)
                 signal_def.deprecated = signal.get("deprecated")
                 signal_def.experimental = signal.get("experimental")
                 class_def.signals[signal_name] = signal_def
@@ -445,6 +450,15 @@ class State:
         cast: list[ParameterDef] = params
 
         return cast
+
+    def parse_rest_param(self, root: ET.Element, context: str) -> ParameterDef | None:
+        rest_param_element = root.find("rest_param")
+        if rest_param_element is None:
+            return None
+
+        param_name = rest_param_element.get("name", "args")
+        type_name = TypeName.from_element(rest_param_element)
+        return ParameterDef(param_name, type_name, "[]")
 
     def sort_classes(self) -> None:
         self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0].lower()))
@@ -520,11 +534,14 @@ class ParameterDef(DefinitionBase):
 
 
 class SignalDef(DefinitionBase):
-    def __init__(self, name: str, parameters: list[ParameterDef], description: str | None) -> None:
+    def __init__(
+        self, name: str, parameters: list[ParameterDef], description: str | None, rest_param: ParameterDef | None = None
+    ) -> None:
         super().__init__("signal", name)
 
         self.parameters = parameters
         self.description = description
+        self.rest_param = rest_param
 
 
 class AnnotationDef(DefinitionBase):
@@ -534,12 +551,14 @@ class AnnotationDef(DefinitionBase):
         parameters: list[ParameterDef],
         description: str | None,
         qualifiers: str | None,
+        rest_param: ParameterDef | None = None,
     ) -> None:
         super().__init__("annotation", name)
 
         self.parameters = parameters
         self.description = description
         self.qualifiers = qualifiers
+        self.rest_param = rest_param
 
 
 class MethodDef(DefinitionBase):
@@ -550,6 +569,7 @@ class MethodDef(DefinitionBase):
         parameters: list[ParameterDef],
         description: str | None,
         qualifiers: str | None,
+        rest_param: ParameterDef | None = None,
     ) -> None:
         super().__init__("method", name)
 
@@ -557,6 +577,7 @@ class MethodDef(DefinitionBase):
         self.parameters = parameters
         self.description = description
         self.qualifiers = qualifiers
+        self.rest_param = rest_param
 
 
 class ConstantDef(DefinitionBase):
@@ -1626,7 +1647,14 @@ def make_method_signature(
         if arg.default_value is not None:
             out += f" = {arg.default_value}"
 
-    if qualifiers is not None and "vararg" in qualifiers:
+    if hasattr(definition, "rest_param") and definition.rest_param is not None:
+        rest_param = definition.rest_param
+        if len(definition.parameters) > 0:
+            out += f", ...{rest_param.name}\\: {rest_param.type_name.to_rst(state)}"
+        else:
+            out += f"\\ ...{rest_param.name}\\: {rest_param.type_name.to_rst(state)}"
+    elif qualifiers is not None and "vararg" in qualifiers:
+        # Fallback to plain vararg display
         if len(definition.parameters) > 0:
             out += ", ..."
         else:
