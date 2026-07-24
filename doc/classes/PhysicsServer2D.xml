@@ -1052,6 +1052,15 @@
 		<constant name="SHAPE_CUSTOM" value="8" enum="ShapeType">
 			This constant is used internally by the engine. Any attempt to create this kind of shape results in an error.
 		</constant>
+		<constant name="AREA_GRAVITY_TYPE_DIRECTIONAL" value="0" enum="AreaGravityType">
+			Gravity that attracts in the direction specified by [constant AREA_PARAM_GRAVITY_VECTOR]. The strength of gravity is the same at all positions in the area.
+		</constant>
+		<constant name="AREA_GRAVITY_TYPE_POINT" value="1" enum="AreaGravityType">
+			Gravity that attracts towards a point specified by [constant AREA_PARAM_GRAVITY_VECTOR]. The strength of gravity is based on the distance to the point and the [constant AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE] parameter.
+		</constant>
+		<constant name="AREA_GRAVITY_TYPE_TARGET" value="2" enum="AreaGravityType">
+			Gravity that attracts towards a target point defined by the output of the calculate gravity target callback method.
+		</constant>
 		<constant name="AREA_PARAM_GRAVITY_OVERRIDE_MODE" value="0" enum="AreaParameter">
 			Constant to set/get gravity override mode in an area. See [enum AreaSpaceOverrideMode] for possible values. The default value of this parameter is [constant AREA_SPACE_OVERRIDE_DISABLED].
 		</constant>
@@ -1061,7 +1070,10 @@
 		<constant name="AREA_PARAM_GRAVITY_VECTOR" value="2" enum="AreaParameter">
 			Constant to set/get gravity vector/center in an area. The default value of this parameter is [code]Vector2(0, -1)[/code].
 		</constant>
-		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="3" enum="AreaParameter">
+		<constant name="AREA_PARAM_GRAVITY_TYPE" value="3" enum="AreaParameter">
+			Constant to set/get the gravity type. See [enum AreaGravityType] for possible values.
+		</constant>
+		<constant name="AREA_PARAM_GRAVITY_IS_POINT" value="3" enum="AreaParameter" deprecated="Use [constant AREA_PARAM_GRAVITY_TYPE] instead.">
 			Constant to set/get whether the gravity vector of an area is a direction, or a center point. The default value of this parameter is [code]false[/code].
 		</constant>
 		<constant name="AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE" value="4" enum="AreaParameter">
