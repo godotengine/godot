@@ -1,5 +1,7 @@
 func test():
 	print(-9223372036854775808 == (1 << 63))
+	print(-0x8000000000000000 == (1 << 63))
+	print(-0X8000000000000000 == (1 << 63))
 	print(-2)
 	print(- 2)
 	print(---2)
@@ -15,3 +17,7 @@ func test():
 	print(-0xFF)
 	print(1--0xFF)
 	print(floor(PI-1))
+	print(-5**0 == -1)
+	print(-(5**0) == -1)
+	print((-5)**0 == 1)
+	print(5**0 == 1)
