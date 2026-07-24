@@ -1273,16 +1273,21 @@ Files extracted from upstream source:
 - `LICENSE`
 
 
-## zlib
+## zlib-ng
 
-- Upstream: https://github.com/madler/zlib
-- Version: 1.3.2 (da607da739fa6047df13e66a2af6b8bec7c2a498, 2026)
+- Upstream: https://github.com/zlib-ng/zlib-ng
+- Version: 2.3.3 (12731092979c6d07f42da27da673a9f6c7b13586, 2026)
 - License: zlib
 
 Files extracted from upstream source:
 
-- All `.c` and `.h` files, except `gz*.c` and `infback.c`
-- `LICENSE`
+- All *.c and *.h files generated through `./configure --static --zlib-compat` except `test.c` and `zconf.h`
+- `zconf.h.in` renamed to `zconf.h`
+- All `.c` and `.h` files, except `cpu_features.*`, `functable.c`, `gzread_mangle.h`, `gz*.c` and `infback.c`
+- `LICENSE.md`
+- All `.c` and `.h` files in `arch/generic/`
+- In `arch/arm/`, all `*neon.c` and `.h` files except `arm_features.h`
+- `x86_functions.h`, `x86_intrins.h`, `adler_32_ssse3_p.h` and all `*sse2.c`, `*ssse3.c`, `*sse41.c` and `*sse42.c` files in `arch/x86/`
 
 
 ## zstd
