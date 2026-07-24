@@ -42,7 +42,13 @@
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/2d/tile_map_layer.h"
+#include "scene/2d/node_2d.h"
+#include "scene/resources/packed_scene.h"
+
+#include "modules/modules_enabled.gen.h" // For TileMap.
+#ifdef MODULE_TILEMAP_ENABLED
+#include "modules/tilemap/tile_map_layer.h"
+#endif
 #include "scene/gui/box_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/tree.h"
@@ -60,6 +66,7 @@ void ScenePaint2DEditor::_can_handle(bool p_is_node_2d, bool p_edit) {
 
 void ScenePaint2DEditor::_edit(Object *p_object) {
 	if (is_tool_selected) {
+#ifdef MODULE_TILEMAP_ENABLED
 		TileMapLayer *edited_layer = Object::cast_to<TileMapLayer>(p_object);
 		if (edited_layer) {
 			Ref<TileSet> tile_set = edited_layer->get_tile_set();
@@ -68,6 +75,9 @@ void ScenePaint2DEditor::_edit(Object *p_object) {
 				grid_step = tile_set->get_tile_size();
 			}
 		} else {
+#else
+		{
+#endif
 			grid = CanvasItemEditor::get_singleton()->is_grid_visible();
 			grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
 			grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();

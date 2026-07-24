@@ -173,7 +173,10 @@ void CollisionShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_convex_from_siblings"), &CollisionShape3D::make_convex_from_siblings);
 	ClassDB::set_method_flags("CollisionShape3D", "make_convex_from_siblings", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape3D::get_class_static()), "set_shape", "get_shape");
+	// Specify all types for explicit ordering in the inspector,
+	// but list generic Shape3D last to allow extended types to show up at the end.
+	// Keep the order roughly in sync with CollisionShape2D's `shape` property.
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "BoxShape3D,SphereShape3D,CapsuleShape3D,CylinderShape3D,SeparationRayShape3D,HeightMapShape3D,WorldBoundaryShape3D,ConvexPolygonShape3D,ConcavePolygonShape3D,Shape3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape3D::set_debug_color);

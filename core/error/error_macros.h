@@ -30,6 +30,13 @@
 
 #pragma once
 
+/*
+ * This file contains macros for error handling.
+ *
+ * For an overview, see:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/common_engine_methods_and_macros.html#error-macros
+ */
+
 #include "core/typedefs.h"
 
 class String;

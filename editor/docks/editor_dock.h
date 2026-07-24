@@ -114,7 +114,7 @@ protected:
 public:
 	void open();
 	void make_visible();
-	void make_floating();
+	void make_floating(int p_screen = -1);
 	void close();
 
 	void set_title(const String &p_title);

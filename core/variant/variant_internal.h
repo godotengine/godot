@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/templates/simple_type.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant.h"
 #include "core/variant/variant_pools.h"
@@ -577,7 +576,7 @@ template <typename T, typename = void>
 struct VariantInternalAccessor;
 
 template <typename T>
-struct VariantInternalAccessor<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : VariantInternalAccessor<GetSimpleTypeT<T>> {};
+struct VariantInternalAccessor<T, std::enable_if_t<!std::is_same_v<T, std::decay_t<T>>>> : VariantInternalAccessor<std::decay_t<T>> {};
 
 template <typename T>
 struct _VariantInternalAccessorLocal {
@@ -971,7 +970,7 @@ struct VariantTypeChanger {
 template <typename T>
 struct VariantTypeAdjust {
 	_FORCE_INLINE_ static void adjust(Variant *r_ret) {
-		VariantTypeChanger<GetSimpleTypeT<T>>::change(r_ret);
+		VariantTypeChanger<std::decay_t<T>>::change(r_ret);
 	}
 };
 

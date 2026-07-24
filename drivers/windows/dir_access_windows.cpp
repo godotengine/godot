@@ -93,7 +93,14 @@ Error DirAccessWindows::list_dir_begin() {
 	_cishidden = false;
 
 	list_dir_end();
-	p->h = FindFirstFileExW((LPCWSTR)(String(current_dir + "\\*").utf16().get_data()), FindExInfoStandard, &p->fu, FindExSearchNameMatch, nullptr, 0);
+
+	String dir_glob = current_dir;
+	if (dir_glob.ends_with("\\")) {
+		dir_glob += "*";
+	} else {
+		dir_glob += "\\*";
+	}
+	p->h = FindFirstFileExW((LPCWSTR)(dir_glob.utf16().get_data()), FindExInfoStandard, &p->fu, FindExSearchNameMatch, nullptr, 0);
 
 	if (p->h == INVALID_HANDLE_VALUE) {
 		return ERR_CANT_OPEN;

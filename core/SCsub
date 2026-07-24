@@ -188,9 +188,15 @@ env.add_source_files(env.core_sources, gen_hash)
 
 # Generate AES256 script encryption key
 encryption_key = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")
+encryption_key_var = "SCRIPT_AES256_ENCRYPTION_KEY"
+if encryption_key is None:
+    # Fallback to the environment variable used by Godot on export.
+    # This allows setting only one environment variable for both compiling and exporting.
+    encryption_key = os.environ.get("GODOT_SCRIPT_ENCRYPTION_KEY")
+    encryption_key_var = "GODOT_SCRIPT_ENCRYPTION_KEY"
 if encryption_key:
     print(
-        "\n*** IMPORTANT: Compiling Godot with custom `SCRIPT_AES256_ENCRYPTION_KEY` set as environment variable."
+        f"\n*** IMPORTANT: Compiling Godot with custom `{encryption_key_var}` set as environment variable."
         "\n*** Make sure to use templates compiled with this key when exporting a project with encryption.\n"
     )
 gen_encrypt = env.CommandNoCache(

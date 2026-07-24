@@ -54,6 +54,8 @@ static void _editor_init() {
 	Ref<VisualShaderLanguagePlugin> visual_shader_lang;
 	visual_shader_lang.instantiate();
 	EditorShaderLanguagePlugin::register_shader_language(visual_shader_lang);
+
+	VisualShaderEditor::register_editor();
 }
 #endif // TOOLS_ENABLED
 

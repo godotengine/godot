@@ -39,8 +39,14 @@
 #include <initializer_list>
 #include <type_traits>
 
-// If tight, it grows strictly as much as needed.
-// Otherwise, it grows exponentially (the default and what you want in most cases).
+/**
+ * Array-like container with unique ownership.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ *
+ * @tparam tight Disable exponential growth (reallocate element-by-element instead).
+ */
 template <typename T, typename U = uint32_t, bool force_trivial = false, bool tight = false>
 class _WARN_UNUSED_ LocalVector {
 	static_assert(!force_trivial, "force_trivial is no longer supported. Use resize_uninitialized instead.");
@@ -99,7 +105,7 @@ public:
 	/// Removes the item copying the last value into the position of the one to
 	/// remove. It's generally faster than `remove_at`.
 	void remove_at_unordered(U p_index) {
-		ERR_FAIL_INDEX(p_index, count);
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
 		count--;
 		if (count > p_index) {
 			data[p_index] = std::move(data[count]);
@@ -314,13 +320,8 @@ public:
 	}
 
 	void ordered_insert(T p_val) {
-		U i;
-		for (i = 0; i < count; i++) {
-			if (p_val < data[i]) {
-				break;
-			}
-		}
-		insert(i, p_val);
+		U idx = span().bisect(p_val, false);
+		insert(idx, std::move(p_val));
 	}
 
 	Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
@@ -333,20 +334,26 @@ public:
 		return ret;
 	}
 
-	_FORCE_INLINE_ LocalVector() {}
-	_FORCE_INLINE_ LocalVector(std::initializer_list<T> p_init) {
+	LocalVector() = default;
+	LocalVector(std::initializer_list<T> p_init) {
 		reserve(p_init.size());
-		for (const T &element : p_init) {
-			push_back(element);
+		size_t i = 0;
+		for (const T &value : p_init) {
+			memnew_placement(&data[i], T(value));
+			i++;
 		}
+		count = p_init.size();
 	}
-	_FORCE_INLINE_ explicit LocalVector(const LocalVector &p_from) {
-		resize(p_from.size());
-		for (U i = 0; i < p_from.count; i++) {
-			data[i] = p_from.data[i];
+	explicit LocalVector(Span<T> p_span) {
+		reserve(p_span.size());
+		for (size_t i = 0; i < p_span.size(); i++) {
+			memnew_placement(&data[i], T(p_span.ptr()[i]));
 		}
+		count = p_span.size();
 	}
-	_FORCE_INLINE_ LocalVector(LocalVector &&p_from) {
+	explicit LocalVector(const LocalVector &p_vector) :
+			LocalVector(p_vector.span()) {}
+	LocalVector(LocalVector &&p_from) {
 		data = p_from.data;
 		count = p_from.count;
 		capacity = p_from.capacity;
@@ -356,19 +363,14 @@ public:
 		p_from.capacity = 0;
 	}
 
-	inline void operator=(const LocalVector &p_from) {
+	void operator=(Span<T> p_from) {
 		resize(p_from.size());
-		for (U i = 0; i < p_from.count; i++) {
-			data[i] = p_from.data[i];
-		}
-	}
-	inline void operator=(const Vector<T> &p_from) {
-		resize(p_from.size());
-		for (U i = 0; i < count; i++) {
+		for (size_t i = 0; i < p_from.size(); i++) {
 			data[i] = p_from[i];
 		}
 	}
-	inline void operator=(LocalVector &&p_from) {
+	void operator=(const LocalVector &p_vector) { operator=(p_vector.span()); }
+	void operator=(LocalVector &&p_from) {
 		if (unlikely(this == &p_from)) {
 			return;
 		}
@@ -382,14 +384,14 @@ public:
 		p_from.count = 0;
 		p_from.capacity = 0;
 	}
-	inline void operator=(Vector<T> &&p_from) {
+	void operator=(Vector<T> &&p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < count; i++) {
 			data[i] = std::move(p_from[i]);
 		}
 	}
 
-	_FORCE_INLINE_ ~LocalVector() {
+	~LocalVector() {
 		if (data) {
 			reset();
 		}

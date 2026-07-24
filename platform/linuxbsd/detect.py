@@ -162,6 +162,10 @@ def configure(env: "SConsEnvironment"):
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
 
+        if not env["use_llvm"] and env["arch"] == "x86_64":
+            env.Append(CCFLAGS=["-mcmodel=medium"])
+            env.Append(LINKFLAGS=["-mcmodel=medium"])
+
         if env["use_ubsan"]:
             env.Append(CPPDEFINES=["UBSAN_ENABLED"])
             env.Append(

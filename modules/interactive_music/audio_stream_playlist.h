@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
 
 class AudioStreamPlaybackPlaylist;
 

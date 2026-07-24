@@ -35,14 +35,14 @@
 #include "core/templates/hashfuncs.h"
 
 /**
- * Implementation of Set using a bidi indexed hash map.
- * Use RBSet instead of this only if the following conditions are met:
+ * Set container using robin hood hashing.
  *
- * - You need to keep an iterator or const pointer to Key and you intend to add/remove elements in the meantime.
- * - Iteration order does matter (via operator<)
+ * Elements are not pointer stable.
+ * The element order is arbitrary.
  *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  */
-
 template <typename TKey,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>

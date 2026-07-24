@@ -993,9 +993,10 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 				uint32_t fmtsize[RSE::ARRAY_CUSTOM_MAX] = { 4, 4, 4, 8, 4, 8, 12, 16 };
 				GLenum gl_type[RSE::ARRAY_CUSTOM_MAX] = { GL_UNSIGNED_BYTE, GL_BYTE, GL_HALF_FLOAT, GL_HALF_FLOAT, GL_FLOAT, GL_FLOAT, GL_FLOAT, GL_FLOAT };
 				GLboolean norm[RSE::ARRAY_CUSTOM_MAX] = { GL_TRUE, GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE };
+				size_t gl_size[RSE::ARRAY_CUSTOM_MAX] = { sizeof(GLubyte), sizeof(GLbyte), sizeof(GLhalf), sizeof(GLhalf), sizeof(GLfloat), sizeof(GLfloat), sizeof(GLfloat), sizeof(GLfloat) };
 				attribs[i].type = gl_type[fmt];
 				attributes_stride += fmtsize[fmt];
-				attribs[i].size = fmtsize[fmt] / sizeof(float);
+				attribs[i].size = fmtsize[fmt] / gl_size[fmt];
 				attribs[i].normalized = norm[fmt];
 			} break;
 			case RSE::ARRAY_BONES: {

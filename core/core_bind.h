@@ -173,12 +173,14 @@ protected:
 #endif
 
 public:
+#ifndef DISABLE_DEPRECATED
 	enum RenderingDriver {
 		RENDERING_DRIVER_VULKAN,
 		RENDERING_DRIVER_OPENGL3,
 		RENDERING_DRIVER_D3D12,
 		RENDERING_DRIVER_METAL,
 	};
+#endif // DISABLE_DEPRECATED
 
 	PackedByteArray get_entropy(int p_bytes);
 	String get_system_ca_certificates();
@@ -702,7 +704,9 @@ VARIANT_ENUM_CAST(CoreBind::ResourceLoader::CacheMode);
 
 VARIANT_BITFIELD_CAST(CoreBind::ResourceSaver::SaverFlags);
 
+#ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(CoreBind::OS::RenderingDriver);
+#endif
 VARIANT_ENUM_CAST(CoreBind::OS::SystemDir);
 VARIANT_ENUM_CAST(CoreBind::OS::StdHandleType);
 

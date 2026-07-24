@@ -879,10 +879,12 @@ void OS::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode_sleep_usec", 6900);
 
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_VULKAN);
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_OPENGL3);
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_D3D12);
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_METAL);
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DESKTOP);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DCIM);
@@ -2168,6 +2170,10 @@ void Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
+
+	// Those default values need to be specified for the docs generator,
+	// to avoid using values from a `--quiet` run.
+	ADD_PROPERTY_DEFAULT("print_to_stdout", true);
 }
 
 ////// EngineDebugger //////
