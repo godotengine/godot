@@ -34,13 +34,26 @@
 #include "core/templates/rb_set.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/tree.h"
 
 class FilterLineEdit;
+class MenuButton;
+class OptionButton;
+class Tree;
+class TreeItem;
 
 class EditorHelpSearch : public ConfirmationDialog {
 	GDCLASS(EditorHelpSearch, ConfirmationDialog);
+
+	enum CategoryFlags {
+		CAT_ENGINE_MAIN = 1 << 0,
+		CAT_ENGINE_EDITOR = 1 << 1,
+		CAT_EXTENSION_MAIN = 1 << 2,
+		CAT_EXTENSION_EDITOR = 1 << 3,
+		CAT_SCRIPT_GLOBAL = 1 << 4,
+		CAT_SCRIPT_UNNAMED = 1 << 5,
+		CAT_SCRIPT_BUILTIN = 1 << 6,
+		CAT_ALL = CAT_ENGINE_MAIN | CAT_ENGINE_EDITOR | CAT_EXTENSION_MAIN | CAT_EXTENSION_EDITOR | CAT_SCRIPT_GLOBAL | CAT_SCRIPT_UNNAMED | CAT_SCRIPT_BUILTIN,
+	};
 
 	enum SearchFlags {
 		SEARCH_CLASSES = 1 << 0,
@@ -60,11 +73,12 @@ class EditorHelpSearch : public ConfirmationDialog {
 	FilterLineEdit *search_box = nullptr;
 	Button *case_sensitive_button = nullptr;
 	Button *hierarchy_button = nullptr;
+	MenuButton *category_filter_button = nullptr;
 	OptionButton *filter_combo = nullptr;
 	Tree *results_tree = nullptr;
 	bool old_search = false;
 	String old_term;
-	int old_search_flags = 0;
+	int category_flags = CAT_ALL;
 
 	class Runner;
 	Ref<Runner> search;
@@ -82,6 +96,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 	void _update_results();
 
 	void _search_box_text_changed(const String &p_text);
+	void _category_filter_id_pressed(int p_id);
 	void _filter_combo_item_selected(int p_option);
 	void _confirmed();
 
@@ -131,6 +146,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 
 	struct ClassMatch {
 		const DocData::ClassDoc *doc = nullptr;
+		bool category = false;
 		bool name = false;
 		String keyword;
 		LocalVector<MemberMatch<DocData::MethodDoc>> constructors;
@@ -152,6 +168,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	TreeCache *tree_cache = nullptr;
 	String term;
 	Vector<String> terms;
+	int category_flags;
 	int search_flags;
 
 	Color disabled_color;
@@ -192,6 +209,7 @@ class EditorHelpSearch::Runner : public RefCounted {
 	void _match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, LocalVector<MemberMatch<DocData::MethodDoc>> *r_match_methods);
 	bool _all_terms_in_name(const String &p_name) const;
 	String _match_keywords_in_all_terms(const String &p_keywords) const;
+	bool _match_category(const DocData::ClassDoc *p_class_doc) const;
 	bool _match_string(const String &p_term, const String &p_string) const;
 	String _match_keywords(const String &p_term, const String &p_keywords) const;
 	void _match_item(TreeItem *p_item, const String &p_text, bool p_is_keywords = false);
@@ -212,5 +230,5 @@ class EditorHelpSearch::Runner : public RefCounted {
 public:
 	bool work(uint64_t slot = 100000);
 
-	Runner(Control *p_icon_service, Tree *p_results_tree, TreeCache *p_tree_cache, const String &p_term, int p_search_flags);
+	Runner(Control *p_icon_service, Tree *p_results_tree, TreeCache *p_tree_cache, const String &p_term, int p_category_flags, int p_search_flags);
 };
