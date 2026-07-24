@@ -35,11 +35,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/2d/audio_stream_player_2d.h"
 #include "scene/main/scene_tree.h"
-
-// Screen-space distance (in pixels) within which the radius handle can be grabbed.
-static constexpr real_t HANDLE_GRAB_DISTANCE = 8.0;
 
 void AudioStreamPlayer2DEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -95,7 +93,8 @@ bool AudioStreamPlayer2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
-			if (_get_handle_screen_position().distance_to(mb->get_position()) < HANDLE_GRAB_DISTANCE) {
+			const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+			if (_get_handle_screen_position().distance_to(mb->get_position()) < grab_threshold) {
 				dragging = true;
 				drag_from_max_distance = selected_player->get_max_distance();
 				return true;
