@@ -35,6 +35,8 @@
 #include "core/templates/a_hash_map.h"
 #include "core/templates/vector.h"
 
+class MethodBind;
+
 class GDType {
 public:
 	enum class InitState {
@@ -67,6 +69,12 @@ protected:
 	AHashMap<StringName, const MethodInfo *> signal_map;
 	AHashMap<StringName, const MethodInfo *> self_signal_map;
 
+	AHashMap<StringName, const MethodBind *> method_map;
+	AHashMap<StringName, const MethodBind *> self_method_map;
+	// This is deliberately not the same as self_method_map because
+	// bind_method supports binding non-owned methods.
+	LocalVector<MethodBind *> owned_method_map;
+
 public:
 	GDType(const GDType *p_super_type, StringName p_name);
 	~GDType();
@@ -89,4 +97,8 @@ public:
 
 	void add_signal(MethodInfo p_signal);
 	const AHashMap<StringName, const MethodInfo *> &get_signal_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_signal_map : signal_map; }
+
+	bool bind_method(MethodBind *p_method, bool p_take_ownership = true);
+	void set_method_flags(const StringName &p_method, int p_flags);
+	const AHashMap<StringName, const MethodBind *> &get_method_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_method_map : method_map; }
 };
