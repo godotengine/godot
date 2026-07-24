@@ -2205,11 +2205,18 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 		if (p_cam_orthogonal) {
 			Vector2 vp_he = p_cam_projection.get_viewport_half_extents();
+			real_t min_shadow_size = RSG::light_storage->light_directional_get_min_shadow_size(p_instance->base);
+			real_t size = MAX(vp_he.y * 2.0, min_shadow_size);
 
-			camera_matrix.set_orthogonal(vp_he.y * 2.0, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
+			camera_matrix.set_orthogonal(size, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
 		} else {
-			real_t fov = p_cam_projection.get_fov(); //this is actually yfov, because set aspect tries to keep it
-			camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
+			real_t fov = p_cam_projection.get_fovy(p_cam_projection.get_fov(), 1.0 / aspect);
+			real_t min_shadow_fov = RSG::light_storage->light_directional_get_min_shadow_fov(p_instance->base);
+			if (min_shadow_fov > 0.0) {
+				fov = MAX(fov, min_shadow_fov);
+			}
+
+			camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
 		}
 
 		//obtain the frustum endpoints
