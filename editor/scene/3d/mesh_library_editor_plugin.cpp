@@ -50,6 +50,7 @@
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
@@ -170,23 +171,27 @@ void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
 	inspector->edit(nullptr);
 
 	mesh_library = p_mesh_library;
-	if (mesh_library.is_valid()) {
-		// Avoid updating multiple times at once.
-		mesh_library->connect_changed(callable_mp(update_items_delay, &Timer::start).bind(UPDATE_ITEMS_DELAY_TIMEOUT));
-		_update_mesh_items();
-
-		bool read_only = EditorNode::get_singleton()->is_resource_read_only(mesh_library);
-		add_item->set_disabled(read_only);
-		if (read_only) {
-			remove_item->set_disabled(true);
-		}
-		import_scene->set_disabled(read_only);
-		inspector->set_read_only(read_only);
+	if (mesh_library.is_null()) {
+		import_scene->get_popup()->set_item_disabled(import_scene->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), true);
+		import_scene->get_popup()->set_item_disabled(import_scene->get_popup()->get_item_index(MENU_OPTION_UNSET_SCENE), true);
+		return;
 	}
+
+	// Avoid updating multiple times at once.
+	mesh_library->connect_changed(callable_mp(update_items_delay, &Timer::start).bind(UPDATE_ITEMS_DELAY_TIMEOUT));
+	_update_mesh_items();
+
+	bool read_only = EditorNode::get_singleton()->is_resource_read_only(mesh_library);
+	add_item->set_disabled(read_only);
+	if (read_only) {
+		remove_item->set_disabled(true);
+	}
+	import_scene->set_disabled(read_only);
+	inspector->set_read_only(read_only);
 }
 
-Error MeshLibraryEditor::update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge, bool p_apply_xforms) {
-	_import_scene(p_base_scene, ml, p_merge, p_apply_xforms);
+Error MeshLibraryEditor::update_library_file(Node *p_base_scene, Ref<MeshLibrary> ml, bool p_merge, bool p_apply_xforms, bool p_create_categories) {
+	_import_scene(p_base_scene, ml, p_merge, p_apply_xforms, p_create_categories);
 	return OK;
 }
 
@@ -198,6 +203,8 @@ void MeshLibraryEditor::_update_mesh_items(bool p_reselect, Ref<MeshLibrary> p_l
 	mesh_library->set_edited(true);
 	mesh_items->clear();
 	remove_item->set_disabled(true);
+	import_scene->get_popup()->set_item_disabled(import_scene->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), mesh_library->get_source_scene().is_null());
+	import_scene->get_popup()->set_item_disabled(import_scene->get_popup()->get_item_index(MENU_OPTION_UNSET_SCENE), mesh_library->get_source_scene().is_null());
 	update_items_delay->stop();
 
 	if (mesh_library->get_item_count() == 0) {
@@ -434,66 +441,62 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 		} break;
 
 		case MENU_OPTION_IMPORT_FROM_SCENE: {
-			apply_xforms = false;
-			import_update = false;
-			file->popup_file_dialog();
-		} break;
-
-		case MENU_OPTION_IMPORT_FROM_SCENE_APPLY_XFORMS: {
-			apply_xforms = true;
-			import_update = false;
 			file->popup_file_dialog();
 		} break;
 
 		case MENU_OPTION_UPDATE_FROM_SCENE: {
-			import_update = true;
-			cd_update->set_text(vformat(TTR("Update from existing scene?:\n%s"), String(mesh_library->get_meta("_editor_source_scene"))));
-			cd_update->popup_centered(Size2(500, 60));
+			cd_label->set_text(vformat(TTR("Update from existing scene:\n%s"), mesh_library->get_source_scene()->get_path()));
+			cd_update->popup_centered(Size2(500, 0));
+		} break;
+
+		case MENU_OPTION_UNSET_SCENE: {
+			cd_unset->set_text(vformat(TTR("Unset the following scene from this library:\n%s"), mesh_library->get_source_scene()->get_path()));
+			cd_unset->popup_centered(Size2(500, 0));
 		} break;
 	}
 }
 
-void MeshLibraryEditor::_menu_update_confirm(bool p_apply_xforms) {
-	cd_update->hide();
-	apply_xforms = p_apply_xforms;
-	String existing = mesh_library->get_meta("_editor_source_scene");
-	ERR_FAIL_COND(existing.is_empty());
-	_import_scene_cbk(existing);
+void MeshLibraryEditor::_menu_import_confirm(const String &p_path) {
+	const Dictionary &fd_options = file->get_selected_options();
+	bool apply_xforms = fd_options.get(TTRC("Apply MeshInstance Transforms"), false);
+	bool create_categories = fd_options.get(TTRC("Create Categories From Hierarchy"), false);
+	_import_scene_cbk(p_path, true, apply_xforms, create_categories);
 }
 
-void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms) {
+void MeshLibraryEditor::_menu_update_confirm() {
+	String existing = mesh_library->get_source_scene()->get_path();
+	ERR_FAIL_COND(existing.is_empty());
+	_import_scene_cbk(existing, true, apply_xforms_check->is_pressed(), create_categories_check->is_pressed());
+}
+
+void MeshLibraryEditor::_menu_unset_confirm() {
+	mesh_library->set_source_scene(nullptr);
+	import_scene->get_popup()->set_item_disabled(import_scene->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), true);
+	import_scene->get_popup()->set_item_disabled(import_scene->get_popup()->get_item_index(MENU_OPTION_UNSET_SCENE), true);
+}
+
+void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library, bool p_merge, bool p_apply_xforms, bool p_create_categories) {
 	if (!p_merge) {
 		p_library->clear();
 	}
 
 	HashMap<int, MeshInstance3D *> mesh_instances;
 	for (int i = 0; i < p_scene->get_child_count(); i++) {
-		_import_scene_parse_node(p_library, mesh_instances, p_scene->get_child(i), p_merge, p_apply_xforms);
+		_import_scene_parse_node(p_library, mesh_instances, p_scene->get_child(i), p_merge, p_apply_xforms, p_create_categories);
 	}
 
-	// Generate previews.
+	p_library->set_source_scene(nullptr);
 
-	Vector<Ref<Mesh>> meshes;
-	Vector<Transform3D> transforms;
-	Vector<int> ids = p_library->get_item_list();
-	for (const int &E : ids) {
-		if (mesh_instances.find(E)) {
-			meshes.push_back(p_library->get_item_mesh(E));
-			transforms.push_back(mesh_instances[E]->get_transform());
-		}
-	}
-
-	Vector<Ref<Texture2D>> textures = EditorInterface::get_singleton()->make_mesh_previews(meshes, &transforms, EDITOR_GET("editors/grid_map/preview_size"));
-	int idx = 0;
-	for (const int &E : ids) {
-		if (mesh_instances.find(E)) {
-			p_library->set_item_preview(E, textures[idx]);
-			idx++;
+	String scene_path = p_scene->get_scene_file_path();
+	if (!scene_path.is_empty()) {
+		Ref<PackedScene> ps = ResourceLoader::load(scene_path, "PackedScene");
+		if (ps.is_valid()) {
+			p_library->set_source_scene(ps);
 		}
 	}
 }
 
-void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
+void MeshLibraryEditor::_import_scene_cbk(const String &p_str, bool p_merge, bool p_apply_xforms, bool p_create_categories) {
 	Ref<PackedScene> ps = ResourceLoader::load(p_str, "PackedScene");
 	ERR_FAIL_COND(ps.is_null());
 
@@ -504,27 +507,23 @@ void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
 	Ref<MeshLibrary> old_lib;
 	old_lib = mesh_library->duplicate();
 
-	_import_scene(scene, mesh_library, import_update, apply_xforms);
-
+	_import_scene(scene, mesh_library, p_merge, p_apply_xforms, p_create_categories);
 	memdelete(scene);
-	mesh_library->set_meta("_editor_source_scene", p_str);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Import MeshLibrary from scene"));
 	undo_redo->add_do_method(*mesh_library, "copy_from_resource", *mesh_library->duplicate());
 	undo_redo->add_undo_method(*mesh_library, "copy_from_resource", old_lib);
 	undo_redo->commit_action(false);
-
-	import_scene->get_popup()->set_item_disabled(import_scene->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), false);
 }
 
-void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, HashMap<int, MeshInstance3D *> &p_mesh_instances, Node *p_node, bool p_merge, bool p_apply_xforms) {
+void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, HashMap<int, MeshInstance3D *> &p_mesh_instances, Node *p_node, bool p_merge, bool p_apply_xforms, bool p_create_categories) {
 	MeshInstance3D *mesh_instance_node = Object::cast_to<MeshInstance3D>(p_node);
 
 	if (!mesh_instance_node) {
 		// No MeshInstance so search deeper.
 		for (int i = 0; i < p_node->get_child_count(); i++) {
-			_import_scene_parse_node(p_library, p_mesh_instances, p_node->get_child(i), p_merge, p_apply_xforms);
+			_import_scene_parse_node(p_library, p_mesh_instances, p_node->get_child(i), p_merge, p_apply_xforms, p_create_categories);
 		}
 		return;
 	}
@@ -542,6 +541,19 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 	} else if (!p_merge) {
 		WARN_PRINT(vformat("MeshLibrary export found a MeshInstance3D with a duplicated name '%s' in the exported scene that overrides a previously parsed MeshInstance3D item with the same name.", mesh_instance_node->get_name()));
 	}
+
+	if (p_create_categories) {
+		String category;
+		Node *parent = p_node->get_parent();
+		while (parent) {
+			category = category.path_join(parent->get_name());
+			parent = parent->get_parent();
+		}
+		if (!category.is_empty()) {
+			p_library->set_item_category(item_id, category);
+		}
+	}
+
 	p_mesh_instances[item_id] = mesh_instance_node;
 
 	Ref<Mesh> item_mesh = source_mesh->duplicate();
@@ -707,10 +719,11 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	import_scene->set_theme_type_variation(SceneStringName(FlatButton));
 	toolbar->add_child(import_scene);
 
-	import_scene->get_popup()->add_item(TTRC("Import from Scene (Ignore Transforms)"), MENU_OPTION_IMPORT_FROM_SCENE);
-	import_scene->get_popup()->add_item(TTRC("Import from Scene (Apply Transforms)"), MENU_OPTION_IMPORT_FROM_SCENE_APPLY_XFORMS);
+	import_scene->get_popup()->add_item(TTRC("Import from Scene..."), MENU_OPTION_IMPORT_FROM_SCENE);
 	import_scene->get_popup()->add_separator();
-	import_scene->get_popup()->add_item(TTRC("Update from Scene"), MENU_OPTION_UPDATE_FROM_SCENE);
+	import_scene->get_popup()->add_item(TTRC("Update from Scene..."), MENU_OPTION_UPDATE_FROM_SCENE);
+	import_scene->get_popup()->set_item_disabled(-1, true);
+	import_scene->get_popup()->add_item(TTRC("Unset Scene..."), MENU_OPTION_UNSET_SCENE);
 	import_scene->get_popup()->set_item_disabled(-1, true);
 	import_scene->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MeshLibraryEditor::_menu_cbk));
 
@@ -775,22 +788,33 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	empty_lib->hide();
 
 	file = memnew(EditorFileDialog);
+	file->set_title(TTRC("Import Scene"));
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+	file->add_option(TTRC("Apply MeshInstance Transforms"), Vector<String>(), false);
+	file->add_option(TTRC("Create Categories From Hierarchy"), Vector<String>(), false);
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
-	file->clear_filters();
-	file->set_title(TTRC("Import Scene"));
 	for (const String &extension : extensions) {
 		file->add_filter("*." + extension, extension.to_upper());
 	}
 	add_child(file);
-	file->connect("file_selected", callable_mp(this, &MeshLibraryEditor::_import_scene_cbk));
+	file->connect("file_selected", callable_mp(this, &MeshLibraryEditor::_menu_import_confirm));
 
 	cd_update = memnew(ConfirmationDialog);
 	add_child(cd_update);
-	cd_update->set_ok_button_text(TTRC("Apply without Transforms"));
-	cd_update->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MeshLibraryEditor::_menu_update_confirm).bind(false));
-	cd_update->add_button(TTRC("Apply with Transforms"))->connect(SceneStringName(pressed), callable_mp(this, &MeshLibraryEditor::_menu_update_confirm).bind(true));
+	VBoxContainer *vbox = memnew(VBoxContainer);
+	cd_update->add_child(vbox);
+	cd_label = memnew(Label);
+	vbox->add_child(cd_label);
+	apply_xforms_check = memnew(CheckBox(TTRC("Apply Transforms")));
+	vbox->add_child(apply_xforms_check);
+	create_categories_check = memnew(CheckBox(TTRC("Create Categories")));
+	vbox->add_child(create_categories_check);
+	cd_update->connect(SceneStringName(confirmed), callable_mp(this, &MeshLibraryEditor::_menu_update_confirm));
+
+	cd_unset = memnew(ConfirmationDialog);
+	add_child(cd_unset);
+	cd_unset->connect(SceneStringName(confirmed), callable_mp(this, &MeshLibraryEditor::_menu_unset_confirm));
 }
 
 ////////////////
