@@ -242,6 +242,7 @@
 							result.push_back(dict)
 					return result
 				[/codeblock]
+				See also [method has_connection].
 			</description>
 		</method>
 		<method name="get_connections_intersecting_with_rect" qualifiers="const">
@@ -273,6 +274,23 @@
 			<description>
 				Gets the [HBoxContainer] that contains the zooming and grid snap controls in the top left of the graph. You can use this method to reposition the toolbar or to add your own custom controls to it.
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+			</description>
+		</method>
+		<method name="has_connection" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="node" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the [param node] [GraphNode] has at least one connection. Otherwise, returns [code]false[/code].
+				[b]Example:[/b] Safely disconnect all paths from a specific node:
+				[codeblock]
+				func disconnect_all_from_node(node):
+					if has_connection(node):
+						var connections = get_connection_list_from_node(node)
+						for c in connections:
+							disconnect_node(c["from_node"], c["from_port"], c["to_node"], c["to_port"])
+					else:
+						print("Node ", node, " has no connections to clear.")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_node_connected">
