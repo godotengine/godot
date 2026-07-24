@@ -46,6 +46,8 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
 
+#include "modules/gdscript/language_server/godot_lsp.h"
+
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_new_signal", "obj", "function", "args"), &GDScriptWorkspace::apply_new_signal);
 	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
@@ -346,7 +348,22 @@ Error GDScriptWorkspace::initialize() {
 				symbol.children.push_back(symbol_arg);
 			}
 			if (data.qualifiers.contains("vararg")) {
-				params += params.is_empty() ? "..." : ", ...";
+				if (!params.is_empty()) {
+					params += ", ";
+				}
+
+				if (!data.rest_argument.name.is_empty()) {
+					params += "..." + data.rest_argument.name;
+					if (!data.rest_argument.type.is_empty()) {
+						params += ": " + data.rest_argument.type;
+					}
+
+					LSP::DocumentSymbol rest_argument_symbol;
+					rest_argument_symbol.name = data.rest_argument.name;
+					rest_argument_symbol.kind = LSP::SymbolKind::Variable;
+					rest_argument_symbol.detail = data.rest_argument.type;
+					symbol.children.push_back(rest_argument_symbol);
+				}
 			}
 
 			String return_type = data.return_type;

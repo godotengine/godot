@@ -795,7 +795,14 @@ static String _make_arguments_hint(const MethodInfo &p_info, int p_arg_idx, bool
 		if (p_arg_idx >= p_info.arguments.size()) {
 			arghint += String::chr(0xFFFF);
 		}
-		arghint += "...args: Array"; // `MethodInfo` does not support the rest parameter name.
+
+		arghint += "...";
+		arghint += p_info.rest_argument.name.is_empty() ? "args" : p_info.rest_argument.name;
+
+		if (p_is_annotation) {
+			arghint += ": Array";
+		}
+
 		if (p_arg_idx >= p_info.arguments.size()) {
 			arghint += String::chr(0xFFFF);
 		}

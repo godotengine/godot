@@ -3973,6 +3973,10 @@ EditorHelpBit::HelpData EditorHelpBit::_get_annotation_help_data(const StringNam
 			}
 			current.qualifiers = annotation.qualifiers;
 
+			const DocData::ArgumentDoc &rest_argument = annotation.rest_argument;
+			const DocType rest_argument_doc_type = { rest_argument.type, rest_argument.enumeration, rest_argument.is_bitfield };
+			current.rest_argument = { rest_argument.name, rest_argument_doc_type, rest_argument.default_value };
+
 			if (annotation.name == p_annotation_name) {
 				result = current;
 
