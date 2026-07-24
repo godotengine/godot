@@ -2145,6 +2145,8 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	menu->connect("popup_hide", callable_mp(this, &AnimationNodeStateMachineEditor::_stop_connecting));
 
 	animations_menu = memnew(PopupMenu);
+	animations_menu->set_search_bar_enabled(true);
+	animations_menu->set_search_bar_min_item_count(10);
 	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	menu->add_child(animations_menu);
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_add_animation_type));
