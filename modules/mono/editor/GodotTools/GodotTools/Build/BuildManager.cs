@@ -383,6 +383,29 @@ namespace GodotTools.Build
             return BuildProjectBlocking("Debug");
         }
 
+        public static bool IsBuildInProgress()
+        {
+            return _buildInProgress != null;
+        }
+
+        public static bool CSProjectFilesChanged()
+        {
+            if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
+                return false; // No CS project available to check.
+
+            if (File.GetLastWriteTime(GodotSharpDirs.ProjectCsProjPath) > LastValidBuildDateTime)
+                return true; // Project file has been updated.
+
+            string projectPath = ProjectSettings.GlobalizePath("res://");
+            foreach (string filePath in Directory.EnumerateFiles(projectPath, "*.cs", SearchOption.AllDirectories))
+            {
+                if (File.GetLastWriteTime(filePath) > LastValidBuildDateTime)
+                    return true;
+            }
+
+            return false;
+        }
+
         public static void Initialize()
         {
         }
