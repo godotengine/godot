@@ -2502,11 +2502,11 @@ void GDScriptLanguage::reload_all_scripts() {
 #endif // TOOLS_ENABLED
 	}
 
-	reload_scripts(scripts, true);
+	reload_scripts(scripts);
 #endif // DEBUG_ENABLED
 }
 
-void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
+void GDScriptLanguage::reload_scripts(const Array &p_scripts) {
 #ifdef DEBUG_ENABLED
 
 	List<Ref<GDScript>> scripts;
@@ -2539,44 +2539,6 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 		}
 
 		to_reload.insert(scr, HashMap<ObjectID, List<Pair<StringName, Variant>>>());
-
-		if (!p_soft_reload) {
-			//save state and remove script from instances
-			HashMap<ObjectID, List<Pair<StringName, Variant>>> &map = to_reload[scr];
-
-			while (scr->instances.first()) {
-				GDScriptInstance *instance = scr->instances.first()->self();
-				//save instance info
-				List<Pair<StringName, Variant>> state;
-				instance->get_property_state(state);
-				map[instance->get_owner()->get_instance_id()] = state;
-				instance->get_owner()->set_script(Variant());
-			}
-
-			//same thing for placeholders
-#ifdef TOOLS_ENABLED
-
-			while (scr->placeholders.size()) {
-				Object *obj = (*scr->placeholders.begin())->get_owner();
-
-				//save instance info
-				if (obj->get_script_instance()) {
-					map.insert(obj->get_instance_id(), List<Pair<StringName, Variant>>());
-					List<Pair<StringName, Variant>> &state = map[obj->get_instance_id()];
-					obj->get_script_instance()->get_property_state(state);
-					obj->set_script(Variant());
-				} else {
-					// no instance found. Let's remove it so we don't loop forever
-					scr->placeholders.erase(*scr->placeholders.begin());
-				}
-			}
-
-#endif // TOOLS_ENABLED
-
-			for (const KeyValue<ObjectID, List<Pair<StringName, Variant>>> &F : scr->pending_reload_state) {
-				map[F.key] = F.value; //pending to reload, use this one instead
-			}
-		}
 	}
 
 	for (KeyValue<Ref<GDScript>, HashMap<ObjectID, List<Pair<StringName, Variant>>>> &E : to_reload) {
@@ -2595,7 +2557,7 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 		} else {
 			scr->load_source_code(scr->get_path());
 		}
-		scr->reload(p_soft_reload);
+		scr->reload(true);
 
 		//restore state if saved
 		for (KeyValue<ObjectID, List<Pair<StringName, Variant>>> &F : E.value) {
@@ -2606,10 +2568,6 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 				continue;
 			}
 
-			if (!p_soft_reload) {
-				//clear it just in case (may be a pending reload state)
-				obj->set_script(Variant());
-			}
 			obj->set_script(scr);
 
 			ScriptInstance *script_inst = obj->get_script_instance();
@@ -2642,9 +2600,9 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 #endif // DEBUG_ENABLED
 }
 
-void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
+void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script) {
 	Array scripts = { p_script };
-	reload_scripts(scripts, p_soft_reload);
+	reload_scripts(scripts);
 }
 
 void GDScriptLanguage::frame() {

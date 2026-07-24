@@ -200,10 +200,10 @@ void Script::_bind_methods() {
 void Script::reload_from_file() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() && is_tool()) {
-		get_language()->reload_tool_script(this, true);
+		get_language()->reload_tool_script(this);
 	} else {
 		Array scripts = { this };
-		get_language()->reload_scripts(scripts, true);
+		get_language()->reload_scripts(scripts);
 	}
 #else
 	Resource::reload_from_file();

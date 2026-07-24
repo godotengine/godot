@@ -98,7 +98,7 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 	Ref<GDScript> scr = ResourceLoader::load(path);
 	if (scr.is_valid() && (scr->load_source_code(path) == OK)) {
 		if (scr->is_tool()) {
-			scr->get_language()->reload_tool_script(scr, true);
+			scr->get_language()->reload_tool_script(scr);
 		} else {
 			scr->reload(true);
 		}
