@@ -1483,6 +1483,13 @@ void godotsharp_err_print_error(const godot_string *p_function, const godot_stri
 			p_editor_notify, p_type);
 }
 
+void godotsharp_internal_os_print_error(const godot_string *p_message, ErrorHandlerType p_type) {
+	OS::get_singleton()->print_error(
+			"", "", 0,
+			reinterpret_cast<const String *>(p_message)->utf8().get_data(),
+			"", false, (Logger::ErrorType)p_type);
+}
+
 void godotsharp_var_to_str(const godot_variant *p_var, godot_string *r_ret) {
 	const Variant &var = *reinterpret_cast<const Variant *>(p_var);
 	String &vars = *memnew_placement(r_ret, String);
@@ -1839,6 +1846,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_var_to_bytes,
 	(void *)godotsharp_var_to_str,
 	(void *)godotsharp_err_print_error,
+	(void *)godotsharp_internal_os_print_error,
 	(void *)godotsharp_object_to_string,
 	(void *)godotsharp_string_size,
 	(void *)godotsharp_packed_byte_array_size,
