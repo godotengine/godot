@@ -741,8 +741,7 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 		if (EditorHelpHighlighter::get_singleton()) {
 			// Update syntax colors.
-			EditorHelpHighlighter::free_singleton();
-			EditorHelpHighlighter::create_singleton();
+			EditorHelpHighlighter::get_singleton()->clear_cache();
 		}
 #endif
 	}
@@ -801,6 +800,7 @@ void EditorNode::_update_theme(bool p_skip_creation) {
 	editor_dock_manager->update_tab_styles();
 	editor_dock_manager->update_docks_menu();
 	editor_dock_manager->set_tab_icon_max_width(theme->get_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+
 #ifdef ANDROID_ENABLED
 	DisplayServer::get_singleton()->window_set_color(theme->get_color(SNAME("background"), EditorStringName(Editor)));
 #endif
@@ -913,6 +913,8 @@ void EditorNode::_notification(int p_what) {
 				// TRANSLATORS: The placeholder is the rendering method that has overridden the default one.
 				renderer->set_item_text(0, vformat(TTR("%s (Overridden)"), _to_rendering_method_display_name(current_renderer_os)));
 			}
+
+			EditorHelpBit::clear_cache();
 		} break;
 
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -1203,11 +1205,6 @@ void EditorNode::_notification(int p_what) {
 				DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/display/keep_screen_on"));
 			}
 
-#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme/highlighting")) {
-				EditorHelpHighlighter::get_singleton()->reset_cache();
-			}
-#endif
 #ifdef ANDROID_ENABLED
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/touch_actions_panel")) {
 				_touch_actions_panel_mode_changed();
