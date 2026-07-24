@@ -162,6 +162,7 @@ public:
 	Ref<Texture2D> get_effective_icon(const Callable &p_icon_fetch);
 
 	virtual void update_layout(DockLayout p_layout, int p_slot);
+	virtual void grab_dock_focus() {}
 	DockLayout get_current_layout() const { return current_layout; }
 	DockSlot get_current_slot() const { return (DockSlot)dock_slot_index; }
 

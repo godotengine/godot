@@ -1429,6 +1429,13 @@ void PopupMenu::_notification(int p_what) {
 			float display_width = control->get_size().width;
 			Point2 ofs = scroll_container->get_global_position();
 
+			int valid_item_count = 0;
+			for (int i = 0; i < items.size(); i++) {
+				if (items[i].visible && !items[i].separator) {
+					valid_item_count++;
+				}
+			}
+
 			int item_index = 0;
 			bool first_visible = true;
 			for (int i = 0; i < items.size(); i++) {
@@ -1466,12 +1473,12 @@ void PopupMenu::_notification(int p_what) {
 
 					AccessibilityServer::get_singleton()->update_add_action(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &PopupMenu::_accessibility_action_click).bind(i));
 					AccessibilityServer::get_singleton()->update_set_list_item_index(item.accessibility_item_element, item_index);
-					AccessibilityServer::get_singleton()->update_set_list_item_level(item.accessibility_item_element, 0);
+					AccessibilityServer::get_singleton()->update_set_list_item_count(item.accessibility_item_element, valid_item_count);
 					AccessibilityServer::get_singleton()->update_set_list_item_selected(item.accessibility_item_element, i == mouse_over);
 					AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, item.xl_text);
 					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED, item.disabled);
 					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !item.visible);
-					AccessibilityServer::get_singleton()->update_set_tooltip(item.accessibility_item_element, item.tooltip);
+					AccessibilityServer::get_singleton()->update_set_tooltip(item.accessibility_item_element, atr(item.tooltip));
 
 					AccessibilityServer::get_singleton()->update_set_bounds(item.accessibility_item_element, Rect2(item_ofs, Size2(display_width, h + theme_cache.v_separation)));
 

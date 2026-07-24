@@ -1356,12 +1356,12 @@ void ItemList::_notification(int p_what) {
 					AccessibilityServer::get_singleton()->update_add_action(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityAction::ACTION_BLUR, callable_mp(this, &ItemList::_accessibility_action_blur).bind(i));
 
 					AccessibilityServer::get_singleton()->update_set_list_item_index(item.accessibility_item_element, i);
-					AccessibilityServer::get_singleton()->update_set_list_item_level(item.accessibility_item_element, 0);
+					AccessibilityServer::get_singleton()->update_set_list_item_count(item.accessibility_item_element, items.size());
 					AccessibilityServer::get_singleton()->update_set_list_item_selected(item.accessibility_item_element, item.selected);
 					AccessibilityServer::get_singleton()->update_set_name(item.accessibility_item_element, item.xl_text);
 					AccessibilityServer::get_singleton()->update_set_flag(item.accessibility_item_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED, item.disabled);
 					if (item.tooltip_enabled) {
-						AccessibilityServer::get_singleton()->update_set_tooltip(item.accessibility_item_element, item.tooltip);
+						AccessibilityServer::get_singleton()->update_set_tooltip(item.accessibility_item_element, atr(item.tooltip));
 					}
 
 					Rect2 r = get_item_rect(i);

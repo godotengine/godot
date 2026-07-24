@@ -51,6 +51,7 @@ public:
 	virtual RID create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false) override { return RID(); }
 	virtual bool has_element(const RID &p_id) const override { return false; }
 	virtual void free_element(const RID &p_id) override {}
+	virtual void element_set_parent(const RID &p_id, const RID &p_parent_id) override {}
 
 	virtual void element_set_meta(const RID &p_id, const Variant &p_meta) override {}
 	virtual Variant element_get_meta(const RID &p_id) const override { return Variant(); }
@@ -76,6 +77,7 @@ public:
 	virtual void update_set_tooltip(const RID &p_id, const String &p_tooltip) override {}
 	virtual void update_set_bounds(const RID &p_id, const Rect2 &p_rect) override {}
 	virtual void update_set_transform(const RID &p_id, const Transform2D &p_transform) override {}
+	virtual void update_clear_children(const RID &p_id) override {}
 	virtual void update_add_child(const RID &p_id, const RID &p_child_id) override {}
 	virtual void update_add_related_controls(const RID &p_id, const RID &p_related_id) override {}
 	virtual void update_add_related_details(const RID &p_id, const RID &p_related_id) override {}
@@ -103,6 +105,10 @@ public:
 	virtual void update_set_list_item_level(const RID &p_id, int p_level) override {}
 	virtual void update_set_list_item_selected(const RID &p_id, bool p_selected) override {}
 	virtual void update_set_list_item_expanded(const RID &p_id, bool p_expanded) override {}
+	virtual void update_set_author_id(const RID &p_id, const String &p_author_id) override {}
+	virtual void update_set_expanded(const RID &p_id, int p_state) override {}
+	virtual void update_set_checked_state(const RID &p_id, int p_state) override {}
+	virtual void update_set_selected_state(const RID &p_id, int p_state) override {}
 	virtual void update_set_popup_type(const RID &p_id, AccessibilityServerEnums::AccessibilityPopupType p_popup) override {}
 	virtual void update_set_checked(const RID &p_id, bool p_checekd) override {}
 	virtual void update_set_num_value(const RID &p_id, double p_position) override {}

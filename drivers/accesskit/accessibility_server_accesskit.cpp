@@ -34,6 +34,12 @@
 
 #include "servers/text/text_server.h"
 
+#ifdef ANDROID_ENABLED
+#include "platform/android/thread_jandroid.h"
+#include "platform/android/os_android.h"
+#include "platform/android/java_godot_wrapper.h"
+#endif
+
 _FORCE_INLINE_ accesskit_role AccessibilityServerAccessKit::_accessibility_role(AccessibilityServerEnums::AccessibilityRole p_role) const {
 	if (role_map.has(p_role)) {
 		return role_map[p_role];
@@ -67,6 +73,9 @@ bool AccessibilityServerAccessKit::window_create(DisplayServerEnums::WindowID p_
 #ifdef LINUXBSD_ENABLED
 	wd.adapter = accesskit_unix_adapter_new(&_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id, &_accessibility_deactivation_callback, (void *)(size_t)p_window_id);
 #endif
+#ifdef ANDROID_ENABLED
+	wd.adapter = accesskit_android_adapter_new();
+#endif
 	print_verbose(vformat("Accessibility: window %d adapter created.", p_window_id));
 
 	if (wd.adapter == nullptr) {
@@ -94,6 +103,9 @@ void AccessibilityServerAccessKit::window_destroy(DisplayServerEnums::WindowID p
 #endif
 #ifdef LINUXBSD_ENABLED
 	accesskit_unix_adapter_free(wd->adapter);
+#endif
+#ifdef ANDROID_ENABLED
+	accesskit_android_adapter_free(wd->adapter);
 #endif
 	free_element(wd->root_id);
 
@@ -302,6 +314,7 @@ RID AccessibilityServerAccessKit::create_sub_element(const RID &p_parent_rid, Ac
 	ae->role = _accessibility_role(p_role);
 	ae->window_id = parent_ae->window_id;
 	ae->parent = p_parent_rid;
+	ae->is_sub_element = true;
 	ae->node = accesskit_node_new(ae->role);
 	RID rid = rid_owner.make_rid(ae);
 	if (p_insert_pos == -1) {
@@ -310,6 +323,10 @@ RID AccessibilityServerAccessKit::create_sub_element(const RID &p_parent_rid, Ac
 		parent_ae->children.insert(p_insert_pos, rid);
 	}
 	wd->update.insert(rid);
+
+	// Mark parent for update.
+	wd->update.insert(p_parent_rid);
+	_ensure_node(p_parent_rid, parent_ae);
 
 	return rid;
 }
@@ -325,6 +342,7 @@ RID AccessibilityServerAccessKit::create_sub_text_edit_elements(const RID &p_par
 	root_ae->role = ACCESSKIT_ROLE_GENERIC_CONTAINER;
 	root_ae->window_id = parent_ae->window_id;
 	root_ae->parent = p_parent_rid;
+	root_ae->is_sub_element = true;
 	root_ae->node = accesskit_node_new(root_ae->role);
 	RID root_rid = rid_owner.make_rid(root_ae);
 	if (p_insert_pos == -1) {
@@ -333,6 +351,10 @@ RID AccessibilityServerAccessKit::create_sub_text_edit_elements(const RID &p_par
 		parent_ae->children.insert(p_insert_pos, root_rid);
 	}
 	wd->update.insert(root_rid);
+
+	// Mark parent for update.
+	wd->update.insert(p_parent_rid);
+	_ensure_node(p_parent_rid, parent_ae);
 
 	float text_width = 0;
 	float text_height = p_min_height;
@@ -428,6 +450,7 @@ RID AccessibilityServerAccessKit::create_sub_text_edit_elements(const RID &p_par
 			ae->role = ACCESSKIT_ROLE_TEXT_RUN;
 			ae->window_id = parent_ae->window_id;
 			ae->parent = root_rid;
+			ae->is_sub_element = true;
 			ae->run = Vector3i(cur_range.x, cur_range.y, i);
 			ae->node = accesskit_node_new(ae->role);
 
@@ -520,6 +543,7 @@ RID AccessibilityServerAccessKit::create_sub_text_edit_elements(const RID &p_par
 		ae->role = ACCESSKIT_ROLE_TEXT_RUN;
 		ae->window_id = parent_ae->window_id;
 		ae->parent = root_rid;
+		ae->is_sub_element = true;
 		ae->run = Vector3i(full_range.y, full_range.y, run_count);
 		ae->node = accesskit_node_new(ae->role);
 
@@ -591,21 +615,70 @@ void AccessibilityServerAccessKit::_free_recursive(WindowData *p_wd, const RID &
 	if (ae->node) {
 		accesskit_node_free(ae->node);
 	}
+	ae->active_in_tree = false;
 	memdelete(ae);
 	rid_owner.free(p_id);
 }
 
 void AccessibilityServerAccessKit::free_element(const RID &p_id) {
-	ERR_FAIL_COND_MSG(in_accessibility_update, "Element can't be removed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
-
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	if (ae) {
 		WindowData *wd = windows.getptr(ae->window_id);
 		AccessibilityElement *parent_ae = rid_owner.get_or_null(ae->parent);
 		if (parent_ae) {
 			parent_ae->children.erase(p_id);
+			if (wd) {
+				wd->update.insert(ae->parent);
+				_ensure_node(ae->parent, parent_ae);
+			}
+		}
+		if (in_accessibility_update) {
+			elements_to_free_after_update.push_back(p_id);
+			return;
 		}
 		_free_recursive(wd, p_id);
+	}
+}
+
+void AccessibilityServerAccessKit::element_set_parent(const RID &p_id, const RID &p_parent_id) {
+	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
+	ERR_FAIL_NULL(ae);
+	if (ae->parent == p_parent_id) {
+		return;
+	}
+
+	// Remove from old parent.
+	AccessibilityElement *old_parent_ae = rid_owner.get_or_null(ae->parent);
+	if (old_parent_ae) {
+		old_parent_ae->children.erase(p_id);
+		WindowData *old_parent_wd = windows.getptr(old_parent_ae->window_id);
+		if (old_parent_wd) {
+			old_parent_wd->update.insert(ae->parent);
+			old_parent_wd->update.insert(p_id);
+			_ensure_node(ae->parent, old_parent_ae);
+		}
+	}
+
+	// Set new parent.
+	ae->parent = p_parent_id;
+
+	// Add to new parent.
+	AccessibilityElement *new_parent_ae = rid_owner.get_or_null(p_parent_id);
+	if (new_parent_ae) {
+		new_parent_ae->children.push_back(p_id);
+		WindowData *new_parent_wd = windows.getptr(new_parent_ae->window_id);
+		if (new_parent_wd) {
+			new_parent_wd->update.insert(p_parent_id);
+			new_parent_wd->update.insert(p_id);
+			_ensure_node(p_parent_id, new_parent_ae);
+		}
+	}
+
+	// Also update the child's own window data.
+	WindowData *child_wd = windows.getptr(ae->window_id);
+	if (child_wd) {
+		child_wd->update.insert(p_id);
+		_ensure_node(p_id, ae);
 	}
 }
 
@@ -652,22 +725,204 @@ accesskit_tree_update *AccessibilityServerAccessKit::_accessibility_build_tree_u
 	}
 	static_cast<AccessibilityServerAccessKit *>(get_singleton())->in_accessibility_update = false;
 
-	AccessibilityElement *focus_ae = static_cast<AccessibilityServerAccessKit *>(get_singleton())->rid_owner.get_or_null(static_cast<AccessibilityServerAccessKit *>(get_singleton())->focus);
-	uint32_t update_size = wd.update.size();
+	// Free any elements that were deferred during the update.
+	AccessibilityServerAccessKit *server = static_cast<AccessibilityServerAccessKit *>(get_singleton());
+	server->in_accessibility_update = false;
+	for (const RID &rid : server->elements_to_free_after_update) {
+		server->free_element(rid);
+	}
+	server->elements_to_free_after_update.clear();
 
+	AccessibilityServerAccessKit *self = static_cast<AccessibilityServerAccessKit *>(get_singleton());
+
+	// First pass: determine which RIDs will actually be pushed to the tree update.
+	// A node is "pushable" if it has a valid node pointer AND is connected to the root.
+	HashSet<RID> nodes_to_push;
+	for (const RID &rid : wd.update) {
+		AccessibilityElement *ae = self->rid_owner.get_or_null(rid);
+		if (ae && ae->node) {
+			bool connected = false;
+			RID curr = rid;
+			while (curr.is_valid()) {
+				if (curr == wd.root_id) {
+					connected = true;
+					break;
+				}
+				for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : self->windows) {
+					if (curr == E.value.root_id) {
+						connected = true;
+						break;
+					}
+				}
+				if (connected) {
+					break;
+				}
+				AccessibilityElement *curr_ae = self->rid_owner.get_or_null(curr);
+				if (!curr_ae) {
+					break;
+				}
+				RID parent_rid = curr_ae->parent;
+				if (parent_rid.is_valid()) {
+					AccessibilityElement *parent_ae = self->rid_owner.get_or_null(parent_rid);
+					if (!parent_ae) {
+						break;
+					}
+					if (!parent_ae->children.has(curr)) {
+						break; // Broken parent-child relationship.
+					}
+				}
+				curr = parent_rid;
+			}
+			if (connected) {
+				nodes_to_push.insert(rid);
+			} else {
+				ae->active_in_tree = false;
+			}
+		}
+	}
+
+	uint32_t update_size = nodes_to_push.size();
+
+	// Validate focus: ensure the focused node will exist in the tree after this update.
+	AccessibilityElement *focus_ae = self->rid_owner.get_or_null(self->focus);
 	accesskit_node_id ac_focus = (accesskit_node_id)wd.root_id.get_id();
 	if (focus_ae && focus_ae->window_id == window_id) {
-		ac_focus = (accesskit_node_id) static_cast<AccessibilityServerAccessKit *>(get_singleton())->focus.get_id();
+		// Focus is valid only if the node is already active or will be pushed.
+		bool focus_valid = focus_ae->active_in_tree || nodes_to_push.has(self->focus);
+		if (focus_valid) {
+			// Also verify the focused node is still connected to the root.
+			bool focus_connected = false;
+			RID f_curr = self->focus;
+			while (f_curr.is_valid()) {
+				if (f_curr == wd.root_id) {
+					focus_connected = true;
+					break;
+				}
+				for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : self->windows) {
+					if (f_curr == E.value.root_id) {
+						focus_connected = true;
+						break;
+					}
+				}
+				if (focus_connected) {
+					break;
+				}
+				AccessibilityElement *f_curr_ae = self->rid_owner.get_or_null(f_curr);
+				if (!f_curr_ae) {
+					break;
+				}
+				RID parent_rid = f_curr_ae->parent;
+				if (parent_rid.is_valid()) {
+					AccessibilityElement *parent_ae = self->rid_owner.get_or_null(parent_rid);
+					if (!parent_ae || !parent_ae->children.has(f_curr)) {
+						break; // Broken parent-child relationship.
+					}
+				}
+				f_curr = parent_rid;
+			}
+			if (focus_connected) {
+				ac_focus = (accesskit_node_id)self->focus.get_id();
+			}
+		}
 	}
+
 	accesskit_tree_update *tree_update = (update_size > 0) ? accesskit_tree_update_with_capacity_and_focus(update_size, ac_focus) : accesskit_tree_update_with_focus(ac_focus);
-	for (const RID &rid : wd.update) {
-		AccessibilityElement *ae = static_cast<AccessibilityServerAccessKit *>(get_singleton())->rid_owner.get_or_null(rid);
+
+	auto is_node_valid_in_tree = [&](const RID &p_rid) -> bool {
+		AccessibilityElement *target_ae = self->rid_owner.get_or_null(p_rid);
+		if (!target_ae) {
+			return false;
+		}
+		bool target_in_update = wd.update.has(p_rid);
+		bool target_being_pushed = nodes_to_push.has(p_rid);
+		bool target_previously_active = target_ae->active_in_tree;
+		if (target_in_update) {
+			return target_being_pushed;
+		} else {
+			return target_previously_active;
+		}
+	};
+
+	// Second pass: build and push nodes with validated child references and relations.
+	for (const RID &rid : nodes_to_push) {
+		AccessibilityElement *ae = self->rid_owner.get_or_null(rid);
 		if (ae && ae->node) {
 			for (const RID &child_rid : ae->children) {
-				accesskit_node_push_child(ae->node, (accesskit_node_id)child_rid.get_id());
+				AccessibilityElement *child_ae = self->rid_owner.get_or_null(child_rid);
+				if (child_ae) {
+					// A child can be referenced if:
+					// 1. It will be pushed in THIS update (confirmed connected), OR
+					// 2. It was previously active and is NOT being re-pushed
+					//    (meaning it still exists in AccessKit's internal tree state
+					//    from a prior update and hasn't been invalidated).
+					bool child_in_update = wd.update.has(child_rid);
+					bool child_being_pushed = nodes_to_push.has(child_rid);
+					bool child_previously_active = child_ae->active_in_tree;
+
+					// If the child is in wd.update but NOT in nodes_to_push,
+					// it failed the connectivity check and will NOT exist in
+					// AccessKit's tree -- do NOT reference it.
+					bool child_valid;
+					if (child_in_update) {
+						child_valid = child_being_pushed;
+					} else {
+						child_valid = child_previously_active;
+					}
+
+					if (child_valid && child_ae->parent == rid) {
+						accesskit_node_push_child(ae->node, (accesskit_node_id)child_rid.get_id());
+					}
+				}
 			}
+
+			// Push relations if target nodes will be valid in the final tree.
+			for (const AccessibilityElement::Relation &rel : ae->relations) {
+				if (is_node_valid_in_tree(rel.target)) {
+					accesskit_node_id rel_id = (accesskit_node_id)rel.target.get_id();
+					switch (rel.type) {
+						case AccessibilityElement::RELATION_CONTROLLED:
+							accesskit_node_push_controlled(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_DETAIL:
+							accesskit_node_push_detail(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_DESCRIBED_BY:
+							accesskit_node_push_described_by(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_FLOW_TO:
+							accesskit_node_push_flow_to(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_LABELLED_BY:
+							accesskit_node_push_labelled_by(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_RADIO_GROUP:
+							accesskit_node_push_to_radio_group(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_ACTIVE_DESCENDANT:
+							accesskit_node_set_active_descendant(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_NEXT_ON_LINE:
+							accesskit_node_set_next_on_line(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_PREVIOUS_ON_LINE:
+							accesskit_node_set_previous_on_line(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_MEMBER_OF:
+							accesskit_node_set_member_of(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_IN_PAGE_LINK_TARGET:
+							accesskit_node_set_in_page_link_target(ae->node, rel_id);
+							break;
+						case AccessibilityElement::RELATION_ERROR_MESSAGE:
+							accesskit_node_set_error_message(ae->node, rel_id);
+							break;
+					}
+				}
+			}
+
 			accesskit_tree_update_push_node(tree_update, (accesskit_node_id)rid.get_id(), ae->node);
 			ae->node = nullptr;
+			ae->active_in_tree = true;
 		}
 	}
 	wd.update.clear();
@@ -694,23 +949,163 @@ void AccessibilityServerAccessKit::update_if_active(const Callable &p_callable) 
 #ifdef LINUXBSD_ENABLED
 		accesskit_unix_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
 #endif
+#ifdef ANDROID_ENABLED
+		accesskit_android_queued_events *events = accesskit_android_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
+		if (events) {
+			JNIEnv *env = get_jni_env();
+			jobject host_view = nullptr;
+			OS_Android *os_android = static_cast<OS_Android *>(OS::get_singleton());
+			if (os_android && os_android->get_godot_java() && os_android->get_godot_java()->get_godot_view()) {
+				host_view = os_android->get_godot_java()->get_godot_view()->get_member_view();
+			}
+			accesskit_android_queued_events_raise(events, env, host_view);
+		}
+#endif
 	}
 	update_cb = Callable();
 }
 
 _FORCE_INLINE_ void AccessibilityServerAccessKit::_ensure_node(const RID &p_id, AccessibilityElement *p_ae) {
-	if (unlikely(!p_ae->node)) {
-		WindowData *wd = windows.getptr(p_ae->window_id);
-		ERR_FAIL_NULL(wd);
+	WindowData *wd = windows.getptr(p_ae->window_id);
+	ERR_FAIL_NULL(wd);
+	wd->update.insert(p_id);
 
-		wd->update.insert(p_id);
+	if (unlikely(!p_ae->node)) {
 		p_ae->node = accesskit_node_new(p_ae->role);
+		p_ae->relations.clear();
 
 		// Re-apply stored name if any, so nodes recreated by _ensure_node
 		// retain their label even if the caller doesn't re-set all properties.
 		String full_name = (p_ae->name + " " + p_ae->name_extra_info).strip_edges();
 		if (!full_name.is_empty()) {
 			accesskit_node_set_label(p_ae->node, full_name.utf8().ptr());
+		}
+
+		// Re-apply persistent state fields that were lost when AccessKit
+		// took ownership of the previous node (ae->node = nullptr after push).
+		if (p_ae->expanded_state == 1) {
+			accesskit_node_set_expanded(p_ae->node, false);
+		} else if (p_ae->expanded_state == 2) {
+			accesskit_node_set_expanded(p_ae->node, true);
+		}
+
+		if (p_ae->popup_type > 0) {
+			accesskit_node_set_has_popup(p_ae->node, (accesskit_has_popup)p_ae->popup_type);
+		}
+
+		if (p_ae->list_item_count > 0) {
+			accesskit_node_set_size_of_set(p_ae->node, p_ae->list_item_count);
+		}
+
+		if (p_ae->list_item_index >= 0) {
+			accesskit_node_set_position_in_set(p_ae->node, p_ae->list_item_index);
+		}
+
+		if (p_ae->level > 0) {
+			accesskit_node_set_level(p_ae->node, p_ae->level);
+		}
+
+		if (p_ae->checked_state == 1) {
+			accesskit_node_set_toggled(p_ae->node, ACCESSKIT_TOGGLED_FALSE);
+		} else if (p_ae->checked_state == 2) {
+			accesskit_node_set_toggled(p_ae->node, ACCESSKIT_TOGGLED_TRUE);
+		} else if (p_ae->checked_state == 3) {
+			accesskit_node_set_toggled(p_ae->node, ACCESSKIT_TOGGLED_MIXED);
+		}
+
+		if (p_ae->selected_state == 1) {
+			accesskit_node_set_selected(p_ae->node, false);
+		} else if (p_ae->selected_state == 2) {
+			accesskit_node_set_selected(p_ae->node, true);
+		}
+
+		if (p_ae->live_mode == 1) {
+			accesskit_node_set_live(p_ae->node, ACCESSKIT_LIVE_POLITE);
+		} else if (p_ae->live_mode == 2) {
+			accesskit_node_set_live(p_ae->node, ACCESSKIT_LIVE_ASSERTIVE);
+		}
+
+		if (!p_ae->state_description.is_empty()) {
+			accesskit_node_set_state_description(p_ae->node, p_ae->state_description.utf8().ptr());
+		}
+
+		// Expose the combined description (control description + tooltip, with deduplication).
+		// For Label role, UIA_Name comes from value; for others, from name.
+		String effective_name = p_ae->name;
+		if (p_ae->role == ACCESSKIT_ROLE_LABEL && p_ae->value.get_type() == Variant::STRING) {
+			effective_name = p_ae->value;
+		}
+		String effective_desc = p_ae->get_effective_description(effective_name);
+		if (!effective_desc.is_empty()) {
+			accesskit_node_set_description(p_ae->node, effective_desc.utf8().ptr());
+		}
+
+		if (!p_ae->tooltip.is_empty()) {
+			accesskit_node_set_tooltip(p_ae->node, p_ae->tooltip.utf8().ptr());
+		}
+
+		if (!p_ae->placeholder.is_empty()) {
+			accesskit_node_set_placeholder(p_ae->node, p_ae->placeholder.utf8().ptr());
+		}
+
+		if (!p_ae->author_id.is_empty()) {
+			accesskit_node_set_author_id(p_ae->node, p_ae->author_id.utf8().ptr());
+		}
+
+		// Re-apply flags from the bitfield.
+		if (p_ae->flags & (1ULL << (uint64_t)AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN)) {
+			accesskit_node_set_hidden(p_ae->node);
+		}
+		if (p_ae->flags & (1ULL << (uint64_t)AccessibilityServerEnums::AccessibilityFlags::FLAG_MULTISELECTABLE)) {
+			accesskit_node_set_multiselectable(p_ae->node);
+		}
+		if (p_ae->flags & (1ULL << (uint64_t)AccessibilityServerEnums::AccessibilityFlags::FLAG_REQUIRED)) {
+			accesskit_node_set_required(p_ae->node);
+		}
+		if (p_ae->flags & (1ULL << (uint64_t)AccessibilityServerEnums::AccessibilityFlags::FLAG_VISITED)) {
+			accesskit_node_set_visited(p_ae->node);
+		}
+		if (p_ae->flags & (1ULL << (uint64_t)AccessibilityServerEnums::AccessibilityFlags::FLAG_BUSY)) {
+			accesskit_node_set_busy(p_ae->node);
+		}
+		if (p_ae->flags & (1ULL << (uint64_t)AccessibilityServerEnums::AccessibilityFlags::FLAG_MODAL)) {
+			accesskit_node_set_modal(p_ae->node);
+		}
+		if (p_ae->flags & (1ULL << (uint64_t)AccessibilityServerEnums::AccessibilityFlags::FLAG_TOUCH_PASSTHROUGH)) {
+			accesskit_node_set_touch_transparent(p_ae->node);
+		}
+		if (p_ae->flags & (1ULL << (uint64_t)AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY)) {
+			accesskit_node_set_read_only(p_ae->node);
+		}
+		if (p_ae->flags & (1ULL << (uint64_t)AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED)) {
+			accesskit_node_set_disabled(p_ae->node);
+		}
+		if (p_ae->flags & (1ULL << (uint64_t)AccessibilityServerEnums::AccessibilityFlags::FLAG_CLIPS_CHILDREN)) {
+			accesskit_node_set_clips_children(p_ae->node);
+		}
+
+		if (p_ae->value.get_type() == Variant::STRING) {
+			String val_str = p_ae->value;
+			if (!val_str.is_empty()) {
+				Vector<uint8_t> ch_length;
+				accesskit_node_set_value(p_ae->node, val_str.utf8(&ch_length).ptr());
+				accesskit_node_set_character_lengths(p_ae->node, ch_length.size(), ch_length.ptr());
+			}
+		} else if (p_ae->value.get_type() == Variant::FLOAT) {
+			accesskit_node_set_numeric_value(p_ae->node, (double)p_ae->value);
+		} else if (p_ae->value.get_type() == Variant::INT) {
+			accesskit_node_set_numeric_value(p_ae->node, (int64_t)p_ae->value);
+		}
+	}
+
+	if (p_ae->parent.is_valid()) {
+		WindowData *wd = windows.getptr(p_ae->window_id);
+		if (wd && !wd->update.has(p_ae->parent)) {
+			wd->update.insert(p_ae->parent);
+			AccessibilityElement *parent_ae = rid_owner.get_or_null(p_ae->parent);
+			if (parent_ae) {
+				_ensure_node(p_ae->parent, parent_ae);
+			}
 		}
 	}
 }
@@ -770,6 +1165,20 @@ void AccessibilityServerAccessKit::update_set_name(const RID &p_id, const String
 	} else {
 		accesskit_node_clear_label(ae->node);
 	}
+
+	// Recalculate the effective description since the name changed (deduplication
+	// depends on the name). This is needed because _ensure_node may have re-applied
+	// the description with the old name before ae->name was updated.
+	String effective_name = ae->name;
+	if (ae->role == ACCESSKIT_ROLE_LABEL && ae->value.get_type() == Variant::STRING) {
+		effective_name = ae->value;
+	}
+	String effective_desc = ae->get_effective_description(effective_name);
+	if (!effective_desc.is_empty()) {
+		accesskit_node_set_description(ae->node, effective_desc.utf8().ptr());
+	} else {
+		accesskit_node_clear_description(ae->node);
+	}
 }
 
 void AccessibilityServerAccessKit::update_set_braille_label(const RID &p_id, const String &p_name) {
@@ -823,8 +1232,15 @@ void AccessibilityServerAccessKit::update_set_description(const RID &p_id, const
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	if (!p_description.is_empty()) {
-		accesskit_node_set_description(ae->node, p_description.utf8().ptr());
+	ae->description = p_description;
+	// Expose the combined description (control description + tooltip, with deduplication).
+	String effective_name = ae->name;
+	if (ae->role == ACCESSKIT_ROLE_LABEL && ae->value.get_type() == Variant::STRING) {
+		effective_name = ae->value;
+	}
+	String effective_desc = ae->get_effective_description(effective_name);
+	if (!effective_desc.is_empty()) {
+		accesskit_node_set_description(ae->node, effective_desc.utf8().ptr());
 	} else {
 		accesskit_node_clear_description(ae->node);
 	}
@@ -856,10 +1272,28 @@ void AccessibilityServerAccessKit::update_set_tooltip(const RID &p_id, const Str
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
+	ae->tooltip = p_tooltip;
+
 	if (!p_tooltip.is_empty()) {
+		// Expose tooltip via FullDescription (UIA_FullDescriptionPropertyId) and tooltip API.
 		accesskit_node_set_tooltip(ae->node, p_tooltip.utf8().ptr());
+		String effective_name = ae->name;
+		if (ae->role == ACCESSKIT_ROLE_LABEL && ae->value.get_type() == Variant::STRING) {
+			effective_name = ae->value;
+		}
+		String effective_desc = ae->get_effective_description(effective_name);
+		if (!effective_desc.is_empty()) {
+			accesskit_node_set_description(ae->node, effective_desc.utf8().ptr());
+		} else {
+			accesskit_node_clear_description(ae->node);
+		}
 	} else {
-		accesskit_node_clear_tooltip(ae->node);
+		// Tooltip cleared: expose only the control's own description.
+		if (!ae->description.is_empty()) {
+			accesskit_node_set_description(ae->node, ae->description.utf8().ptr());
+		} else {
+			accesskit_node_clear_description(ae->node);
+		}
 	}
 }
 
@@ -889,6 +1323,36 @@ void AccessibilityServerAccessKit::update_set_transform(const RID &p_id, const T
 	accesskit_node_set_transform(ae->node, transform);
 }
 
+void AccessibilityServerAccessKit::update_clear_children(const RID &p_id) {
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+
+	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
+	ERR_FAIL_NULL(ae);
+	_ensure_node(p_id, ae);
+
+	WindowData *wd = windows.getptr(ae->window_id);
+	if (wd) {
+		wd->update.insert(p_id);
+	}
+
+	LocalVector<RID> new_children;
+	for (const RID &child_rid : ae->children) {
+		AccessibilityElement *child_ae = rid_owner.get_or_null(child_rid);
+		if (child_ae) {
+			if (child_ae->is_sub_element) {
+				new_children.push_back(child_rid);
+			} else if (child_ae->parent == p_id) {
+				child_ae->parent = RID();
+				if (wd) {
+					wd->update.insert(child_rid);
+					_ensure_node(child_rid, child_ae);
+				}
+			}
+		}
+	}
+	ae->children = new_children;
+}
+
 void AccessibilityServerAccessKit::update_add_child(const RID &p_id, const RID &p_child_id) {
 	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
@@ -899,7 +1363,26 @@ void AccessibilityServerAccessKit::update_add_child(const RID &p_id, const RID &
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_push_child(ae->node, (accesskit_node_id)p_child_id.get_id());
+	if (other_ae->parent != p_id) {
+		AccessibilityElement *old_parent_ae = rid_owner.get_or_null(other_ae->parent);
+		if (old_parent_ae) {
+			old_parent_ae->children.erase(p_child_id);
+			WindowData *wd = windows.getptr(ae->window_id);
+			if (wd) {
+				wd->update.insert(other_ae->parent);
+				_ensure_node(other_ae->parent, old_parent_ae);
+			}
+		}
+		other_ae->parent = p_id;
+		ae->children.push_back(p_child_id);
+
+		WindowData *wd = windows.getptr(ae->window_id);
+		if (wd) {
+			wd->update.insert(p_id);
+			wd->update.insert(p_child_id);
+			_ensure_node(p_child_id, other_ae);
+		}
+	}
 }
 
 void AccessibilityServerAccessKit::update_add_related_controls(const RID &p_id, const RID &p_related_id) {
@@ -912,7 +1395,7 @@ void AccessibilityServerAccessKit::update_add_related_controls(const RID &p_id, 
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_push_controlled(ae->node, (accesskit_node_id)p_related_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_CONTROLLED, p_related_id });
 }
 
 void AccessibilityServerAccessKit::update_add_related_details(const RID &p_id, const RID &p_related_id) {
@@ -925,7 +1408,7 @@ void AccessibilityServerAccessKit::update_add_related_details(const RID &p_id, c
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_push_detail(ae->node, (accesskit_node_id)p_related_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_DETAIL, p_related_id });
 }
 
 void AccessibilityServerAccessKit::update_add_related_described_by(const RID &p_id, const RID &p_related_id) {
@@ -938,7 +1421,7 @@ void AccessibilityServerAccessKit::update_add_related_described_by(const RID &p_
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_push_described_by(ae->node, (accesskit_node_id)p_related_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_DESCRIBED_BY, p_related_id });
 }
 
 void AccessibilityServerAccessKit::update_add_related_flow_to(const RID &p_id, const RID &p_related_id) {
@@ -951,7 +1434,7 @@ void AccessibilityServerAccessKit::update_add_related_flow_to(const RID &p_id, c
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_push_flow_to(ae->node, (accesskit_node_id)p_related_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_FLOW_TO, p_related_id });
 }
 
 void AccessibilityServerAccessKit::update_add_related_labeled_by(const RID &p_id, const RID &p_related_id) {
@@ -964,98 +1447,98 @@ void AccessibilityServerAccessKit::update_add_related_labeled_by(const RID &p_id
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_push_labelled_by(ae->node, (accesskit_node_id)p_related_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_LABELLED_BY, p_related_id });
 }
 
 void AccessibilityServerAccessKit::update_add_related_radio_group(const RID &p_id, const RID &p_related_id) {
 	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
-	ERR_FAIL_NULL(ae);
+	if (!ae) { return; }
 	AccessibilityElement *other_ae = rid_owner.get_or_null(p_related_id);
-	ERR_FAIL_NULL(other_ae);
+	if (!other_ae) { return; }
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_push_to_radio_group(ae->node, (accesskit_node_id)p_related_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_RADIO_GROUP, p_related_id });
 }
 
 void AccessibilityServerAccessKit::update_set_active_descendant(const RID &p_id, const RID &p_other_id) {
 	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
-	ERR_FAIL_NULL(ae);
+	if (!ae) { return; }
 	AccessibilityElement *other_ae = rid_owner.get_or_null(p_other_id);
-	ERR_FAIL_NULL(other_ae);
+	if (!other_ae) { return; }
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_active_descendant(ae->node, (accesskit_node_id)p_other_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_ACTIVE_DESCENDANT, p_other_id });
 }
 
 void AccessibilityServerAccessKit::update_set_next_on_line(const RID &p_id, const RID &p_other_id) {
 	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
-	ERR_FAIL_NULL(ae);
+	if (!ae) { return; }
 	AccessibilityElement *other_ae = rid_owner.get_or_null(p_other_id);
-	ERR_FAIL_NULL(other_ae);
+	if (!other_ae) { return; }
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_next_on_line(ae->node, (accesskit_node_id)p_other_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_NEXT_ON_LINE, p_other_id });
 }
 
 void AccessibilityServerAccessKit::update_set_previous_on_line(const RID &p_id, const RID &p_other_id) {
 	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
-	ERR_FAIL_NULL(ae);
+	if (!ae) { return; }
 	AccessibilityElement *other_ae = rid_owner.get_or_null(p_other_id);
-	ERR_FAIL_NULL(other_ae);
+	if (!other_ae) { return; }
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_previous_on_line(ae->node, (accesskit_node_id)p_other_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_PREVIOUS_ON_LINE, p_other_id });
 }
 
 void AccessibilityServerAccessKit::update_set_member_of(const RID &p_id, const RID &p_group_id) {
 	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
-	ERR_FAIL_NULL(ae);
+	if (!ae) { return; }
 	AccessibilityElement *other_ae = rid_owner.get_or_null(p_group_id);
-	ERR_FAIL_NULL(other_ae);
+	if (!other_ae) { return; }
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_member_of(ae->node, (accesskit_node_id)p_group_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_MEMBER_OF, p_group_id });
 }
 
 void AccessibilityServerAccessKit::update_set_in_page_link_target(const RID &p_id, const RID &p_other_id) {
 	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
-	ERR_FAIL_NULL(ae);
+	if (!ae) { return; }
 	AccessibilityElement *other_ae = rid_owner.get_or_null(p_other_id);
-	ERR_FAIL_NULL(other_ae);
+	if (!other_ae) { return; }
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_in_page_link_target(ae->node, (accesskit_node_id)p_other_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_IN_PAGE_LINK_TARGET, p_other_id });
 }
 
 void AccessibilityServerAccessKit::update_set_error_message(const RID &p_id, const RID &p_other_id) {
 	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
-	ERR_FAIL_NULL(ae);
+	if (!ae) { return; }
 	AccessibilityElement *other_ae = rid_owner.get_or_null(p_other_id);
-	ERR_FAIL_NULL(other_ae);
+	if (!other_ae) { return; }
 	ERR_FAIL_COND(other_ae->window_id != ae->window_id);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_error_message(ae->node, (accesskit_node_id)p_other_id.get_id());
+	ae->relations.push_back({ AccessibilityElement::RELATION_ERROR_MESSAGE, p_other_id });
 }
 
 void AccessibilityServerAccessKit::update_set_live(const RID &p_id, AccessibilityServerEnums::AccessibilityLiveMode p_live) {
@@ -1063,6 +1546,7 @@ void AccessibilityServerAccessKit::update_set_live(const RID &p_id, Accessibilit
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
+	ae->live_mode = (int)p_live;
 	_ensure_node(p_id, ae);
 
 	switch (p_live) {
@@ -1178,6 +1662,7 @@ void AccessibilityServerAccessKit::update_set_list_item_count(const RID &p_id, i
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
+	ae->list_item_count = p_size;
 	accesskit_node_set_size_of_set(ae->node, p_size);
 }
 
@@ -1188,7 +1673,10 @@ void AccessibilityServerAccessKit::update_set_list_item_index(const RID &p_id, i
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_position_in_set(ae->node, p_index);
+	ae->list_item_index = p_index;
+	if (p_index >= 0) {
+		accesskit_node_set_position_in_set(ae->node, p_index);
+	}
 }
 
 void AccessibilityServerAccessKit::update_set_list_item_level(const RID &p_id, int p_level) {
@@ -1198,7 +1686,10 @@ void AccessibilityServerAccessKit::update_set_list_item_level(const RID &p_id, i
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
-	accesskit_node_set_level(ae->node, p_level);
+	ae->level = p_level;
+	if (p_level > 0) {
+		accesskit_node_set_level(ae->node, p_level);
+	}
 }
 
 void AccessibilityServerAccessKit::update_set_list_item_selected(const RID &p_id, bool p_selected) {
@@ -1208,6 +1699,7 @@ void AccessibilityServerAccessKit::update_set_list_item_selected(const RID &p_id
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
+	ae->selected_state = p_selected ? 2 : 1;
 	accesskit_node_set_selected(ae->node, p_selected);
 }
 
@@ -1218,7 +1710,76 @@ void AccessibilityServerAccessKit::update_set_list_item_expanded(const RID &p_id
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
+	ae->expanded_state = p_expanded ? 2 : 1;
 	accesskit_node_set_expanded(ae->node, p_expanded);
+}
+
+void AccessibilityServerAccessKit::update_set_author_id(const RID &p_id, const String &p_author_id) {
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+
+	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
+	ERR_FAIL_NULL(ae);
+	_ensure_node(p_id, ae);
+
+	ae->author_id = p_author_id;
+	if (p_author_id.is_empty()) {
+		accesskit_node_clear_author_id(ae->node);
+	} else {
+		accesskit_node_set_author_id(ae->node, p_author_id.utf8().ptr());
+	}
+}
+
+void AccessibilityServerAccessKit::update_set_expanded(const RID &p_id, int p_state) {
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+
+	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
+	ERR_FAIL_NULL(ae);
+	_ensure_node(p_id, ae);
+
+	ae->expanded_state = p_state;
+	if (p_state == 0) {
+		accesskit_node_clear_expanded(ae->node);
+	} else if (p_state == 1) {
+		accesskit_node_set_expanded(ae->node, false);
+	} else if (p_state == 2) {
+		accesskit_node_set_expanded(ae->node, true);
+	}
+}
+
+void AccessibilityServerAccessKit::update_set_checked_state(const RID &p_id, int p_state) {
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+
+	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
+	ERR_FAIL_NULL(ae);
+	_ensure_node(p_id, ae);
+
+	ae->checked_state = p_state;
+	if (p_state == 0) {
+		accesskit_node_clear_toggled(ae->node);
+	} else if (p_state == 1) {
+		accesskit_node_set_toggled(ae->node, ACCESSKIT_TOGGLED_FALSE);
+	} else if (p_state == 2) {
+		accesskit_node_set_toggled(ae->node, ACCESSKIT_TOGGLED_TRUE);
+	} else if (p_state == 3) {
+		accesskit_node_set_toggled(ae->node, ACCESSKIT_TOGGLED_MIXED);
+	}
+}
+
+void AccessibilityServerAccessKit::update_set_selected_state(const RID &p_id, int p_state) {
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility updates are only allowed inside the NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+
+	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
+	ERR_FAIL_NULL(ae);
+	_ensure_node(p_id, ae);
+
+	ae->selected_state = p_state;
+	if (p_state == 0) {
+		accesskit_node_clear_selected(ae->node);
+	} else if (p_state == 1) {
+		accesskit_node_set_selected(ae->node, false);
+	} else if (p_state == 2) {
+		accesskit_node_set_selected(ae->node, true);
+	}
 }
 
 void AccessibilityServerAccessKit::update_set_popup_type(const RID &p_id, AccessibilityServerEnums::AccessibilityPopupType p_popup) {
@@ -1230,15 +1791,19 @@ void AccessibilityServerAccessKit::update_set_popup_type(const RID &p_id, Access
 
 	switch (p_popup) {
 		case AccessibilityServerEnums::AccessibilityPopupType::POPUP_MENU: {
+			ae->popup_type = ACCESSKIT_HAS_POPUP_MENU;
 			accesskit_node_set_has_popup(ae->node, ACCESSKIT_HAS_POPUP_MENU);
 		} break;
 		case AccessibilityServerEnums::AccessibilityPopupType::POPUP_LIST: {
+			ae->popup_type = ACCESSKIT_HAS_POPUP_LISTBOX;
 			accesskit_node_set_has_popup(ae->node, ACCESSKIT_HAS_POPUP_LISTBOX);
 		} break;
 		case AccessibilityServerEnums::AccessibilityPopupType::POPUP_TREE: {
+			ae->popup_type = ACCESSKIT_HAS_POPUP_TREE;
 			accesskit_node_set_has_popup(ae->node, ACCESSKIT_HAS_POPUP_TREE);
 		} break;
 		case AccessibilityServerEnums::AccessibilityPopupType::POPUP_DIALOG: {
+			ae->popup_type = ACCESSKIT_HAS_POPUP_DIALOG;
 			accesskit_node_set_has_popup(ae->node, ACCESSKIT_HAS_POPUP_DIALOG);
 		} break;
 	}
@@ -1251,6 +1816,7 @@ void AccessibilityServerAccessKit::update_set_checked(const RID &p_id, bool p_ch
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
+	ae->checked_state = p_checekd ? 2 : 1;
 	if (p_checekd) {
 		accesskit_node_set_toggled(ae->node, ACCESSKIT_TOGGLED_TRUE);
 	} else {
@@ -1384,10 +1950,10 @@ void AccessibilityServerAccessKit::update_set_text_align(const RID &p_id, Horizo
 			accesskit_node_set_text_align(ae->node, ACCESSKIT_TEXT_ALIGN_LEFT);
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
-			accesskit_node_set_text_align(ae->node, ACCESSKIT_TEXT_ALIGN_RIGHT);
+			accesskit_node_set_text_align(ae->node, ACCESSKIT_TEXT_ALIGN_CENTER);
 		} break;
 		case HORIZONTAL_ALIGNMENT_RIGHT: {
-			accesskit_node_set_text_align(ae->node, ACCESSKIT_TEXT_ALIGN_CENTER);
+			accesskit_node_set_text_align(ae->node, ACCESSKIT_TEXT_ALIGN_RIGHT);
 		} break;
 		case HORIZONTAL_ALIGNMENT_FILL: {
 			accesskit_node_set_text_align(ae->node, ACCESSKIT_TEXT_ALIGN_JUSTIFY);
@@ -1549,6 +2115,7 @@ void AccessibilityServerAccessKit::update_set_placeholder(const RID &p_id, const
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
+	ae->placeholder = p_placeholder;
 	if (!p_placeholder.is_empty()) {
 		accesskit_node_set_placeholder(ae->node, p_placeholder.utf8().ptr());
 	} else {
@@ -1643,6 +2210,7 @@ void AccessibilityServerAccessKit::update_set_state_description(const RID &p_id,
 	ERR_FAIL_NULL(ae);
 	_ensure_node(p_id, ae);
 
+	ae->state_description = p_description;
 	if (!p_description.is_empty()) {
 		accesskit_node_set_state_description(ae->node, p_description.utf8().ptr());
 	} else {
@@ -1732,6 +2300,7 @@ AccessibilityServerAccessKit::AccessibilityServerAccessKit() {
 	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_CELL] = ACCESSKIT_ROLE_CELL;
 	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_ROW] = ACCESSKIT_ROLE_ROW;
 	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_ROW_GROUP] = ACCESSKIT_ROLE_ROW_GROUP;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_GROUP] = ACCESSKIT_ROLE_GROUP;
 	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_ROW_HEADER] = ACCESSKIT_ROLE_ROW_HEADER;
 	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_COLUMN_HEADER] = ACCESSKIT_ROLE_COLUMN_HEADER;
 	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_TREE] = ACCESSKIT_ROLE_TREE;
@@ -1755,6 +2324,137 @@ AccessibilityServerAccessKit::AccessibilityServerAccessKit() {
 	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_TOOLTIP] = ACCESSKIT_ROLE_TOOLTIP;
 	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_REGION] = ACCESSKIT_ROLE_REGION;
 	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_TEXT_RUN] = ACCESSKIT_ROLE_TEXT_RUN;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_COMBO_BOX] = ACCESSKIT_ROLE_COMBO_BOX;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_EDITABLE_COMBO_BOX] = ACCESSKIT_ROLE_EDITABLE_COMBO_BOX;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_MENU_LIST_OPTION] = ACCESSKIT_ROLE_MENU_LIST_OPTION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_MENU_LIST_POPUP] = ACCESSKIT_ROLE_MENU_LIST_POPUP;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_SEARCH_INPUT] = ACCESSKIT_ROLE_SEARCH_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DATE_INPUT] = ACCESSKIT_ROLE_DATE_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DATE_TIME_INPUT] = ACCESSKIT_ROLE_DATE_TIME_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_WEEK_INPUT] = ACCESSKIT_ROLE_WEEK_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_MONTH_INPUT] = ACCESSKIT_ROLE_MONTH_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_TIME_INPUT] = ACCESSKIT_ROLE_TIME_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_EMAIL_INPUT] = ACCESSKIT_ROLE_EMAIL_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_NUMBER_INPUT] = ACCESSKIT_ROLE_NUMBER_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_PASSWORD_INPUT] = ACCESSKIT_ROLE_PASSWORD_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_PHONE_NUMBER_INPUT] = ACCESSKIT_ROLE_PHONE_NUMBER_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_URL_INPUT] = ACCESSKIT_ROLE_URL_INPUT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_SWITCH] = ACCESSKIT_ROLE_SWITCH;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_PARAGRAPH] = ACCESSKIT_ROLE_PARAGRAPH;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_LABEL] = ACCESSKIT_ROLE_LABEL;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_ABBR] = ACCESSKIT_ROLE_ABBR;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_ALERT] = ACCESSKIT_ROLE_ALERT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_ALERT_DIALOG] = ACCESSKIT_ROLE_ALERT_DIALOG;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_APPLICATION] = ACCESSKIT_ROLE_APPLICATION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_ARTICLE] = ACCESSKIT_ROLE_ARTICLE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_BANNER] = ACCESSKIT_ROLE_BANNER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_BLOCKQUOTE] = ACCESSKIT_ROLE_BLOCKQUOTE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_CANVAS] = ACCESSKIT_ROLE_CANVAS;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_CAPTION] = ACCESSKIT_ROLE_CAPTION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_CARET] = ACCESSKIT_ROLE_CARET;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_CODE] = ACCESSKIT_ROLE_CODE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_COMPLEMENTARY] = ACCESSKIT_ROLE_COMPLEMENTARY;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_COMMENT] = ACCESSKIT_ROLE_COMMENT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_CONTENT_DELETION] = ACCESSKIT_ROLE_CONTENT_DELETION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_CONTENT_INSERTION] = ACCESSKIT_ROLE_CONTENT_INSERTION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_CONTENT_INFO] = ACCESSKIT_ROLE_CONTENT_INFO;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DEFINITION] = ACCESSKIT_ROLE_DEFINITION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DESCRIPTION_LIST] = ACCESSKIT_ROLE_DESCRIPTION_LIST;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DETAILS] = ACCESSKIT_ROLE_DETAILS;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DISCLOSURE_TRIANGLE] = ACCESSKIT_ROLE_DISCLOSURE_TRIANGLE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOCUMENT] = ACCESSKIT_ROLE_DOCUMENT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_EMBEDDED_OBJECT] = ACCESSKIT_ROLE_EMBEDDED_OBJECT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_EMPHASIS] = ACCESSKIT_ROLE_EMPHASIS;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_FEED] = ACCESSKIT_ROLE_FEED;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_FIGURE] = ACCESSKIT_ROLE_FIGURE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_FIGURE_CAPTION] = ACCESSKIT_ROLE_FIGURE_CAPTION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_FOOTER] = ACCESSKIT_ROLE_FOOTER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_FORM] = ACCESSKIT_ROLE_FORM;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_GRID] = ACCESSKIT_ROLE_GRID;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_GRID_CELL] = ACCESSKIT_ROLE_GRID_CELL;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_HEADER] = ACCESSKIT_ROLE_HEADER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_HEADING] = ACCESSKIT_ROLE_HEADING;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_IFRAME] = ACCESSKIT_ROLE_IFRAME;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_IFRAME_PRESENTATIONAL] = ACCESSKIT_ROLE_IFRAME_PRESENTATIONAL;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_IME_CANDIDATE] = ACCESSKIT_ROLE_IME_CANDIDATE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_KEYBOARD] = ACCESSKIT_ROLE_KEYBOARD;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_LEGEND] = ACCESSKIT_ROLE_LEGEND;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_LINE_BREAK] = ACCESSKIT_ROLE_LINE_BREAK;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_MARKER] = ACCESSKIT_ROLE_LIST_MARKER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_LOG] = ACCESSKIT_ROLE_LOG;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_MAIN] = ACCESSKIT_ROLE_MAIN;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_MARK] = ACCESSKIT_ROLE_MARK;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_MARQUEE] = ACCESSKIT_ROLE_MARQUEE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_MATH] = ACCESSKIT_ROLE_MATH;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_METER] = ACCESSKIT_ROLE_METER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_NAVIGATION] = ACCESSKIT_ROLE_NAVIGATION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_NOTE] = ACCESSKIT_ROLE_NOTE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_PLUGIN_OBJECT] = ACCESSKIT_ROLE_PLUGIN_OBJECT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_RADIO_GROUP] = ACCESSKIT_ROLE_RADIO_GROUP;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_ROOT_WEB_AREA] = ACCESSKIT_ROLE_ROOT_WEB_AREA;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_RUBY] = ACCESSKIT_ROLE_RUBY;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_RUBY_ANNOTATION] = ACCESSKIT_ROLE_RUBY_ANNOTATION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_SEARCH] = ACCESSKIT_ROLE_SEARCH;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_SECTION] = ACCESSKIT_ROLE_SECTION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_SECTION_HEADER] = ACCESSKIT_ROLE_SECTION_HEADER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_SECTION_FOOTER] = ACCESSKIT_ROLE_SECTION_FOOTER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_STATUS] = ACCESSKIT_ROLE_STATUS;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_STRONG] = ACCESSKIT_ROLE_STRONG;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_SUGGESTION] = ACCESSKIT_ROLE_SUGGESTION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_SVG_ROOT] = ACCESSKIT_ROLE_SVG_ROOT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_TERM] = ACCESSKIT_ROLE_TERM;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_TIMER] = ACCESSKIT_ROLE_TIMER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_TOOLBAR] = ACCESSKIT_ROLE_TOOLBAR;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_TREE_GRID] = ACCESSKIT_ROLE_TREE_GRID;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_WEB_VIEW] = ACCESSKIT_ROLE_WEB_VIEW;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_GRID] = ACCESSKIT_ROLE_LIST_GRID;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_TERMINAL] = ACCESSKIT_ROLE_TERMINAL;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_GRAPHICS_DOCUMENT] = ACCESSKIT_ROLE_GRAPHICS_DOCUMENT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_GRAPHICS_OBJECT] = ACCESSKIT_ROLE_GRAPHICS_OBJECT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_GRAPHICS_SYMBOL] = ACCESSKIT_ROLE_GRAPHICS_SYMBOL;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_PDF_ROOT] = ACCESSKIT_ROLE_PDF_ROOT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_PDF_ACTIONABLE_HIGHLIGHT] = ACCESSKIT_ROLE_PDF_ACTIONABLE_HIGHLIGHT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_ABSTRACT] = ACCESSKIT_ROLE_DOC_ABSTRACT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_ACKNOWLEDGEMENTS] = ACCESSKIT_ROLE_DOC_ACKNOWLEDGEMENTS;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_AFTERWORD] = ACCESSKIT_ROLE_DOC_AFTERWORD;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_APPENDIX] = ACCESSKIT_ROLE_DOC_APPENDIX;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_BACK_LINK] = ACCESSKIT_ROLE_DOC_BACK_LINK;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_BIBLIO_ENTRY] = ACCESSKIT_ROLE_DOC_BIBLIO_ENTRY;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_BIBLIOGRAPHY] = ACCESSKIT_ROLE_DOC_BIBLIOGRAPHY;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_BIBLIO_REF] = ACCESSKIT_ROLE_DOC_BIBLIO_REF;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_CHAPTER] = ACCESSKIT_ROLE_DOC_CHAPTER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_COLOPHON] = ACCESSKIT_ROLE_DOC_COLOPHON;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_CONCLUSION] = ACCESSKIT_ROLE_DOC_CONCLUSION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_COVER] = ACCESSKIT_ROLE_DOC_COVER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_CREDIT] = ACCESSKIT_ROLE_DOC_CREDIT;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_CREDITS] = ACCESSKIT_ROLE_DOC_CREDITS;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_DEDICATION] = ACCESSKIT_ROLE_DOC_DEDICATION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_ENDNOTE] = ACCESSKIT_ROLE_DOC_ENDNOTE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_ENDNOTES] = ACCESSKIT_ROLE_DOC_ENDNOTES;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_EPIGRAPH] = ACCESSKIT_ROLE_DOC_EPIGRAPH;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_EPILOGUE] = ACCESSKIT_ROLE_DOC_EPILOGUE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_ERRATA] = ACCESSKIT_ROLE_DOC_ERRATA;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_EXAMPLE] = ACCESSKIT_ROLE_DOC_EXAMPLE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_FOOTNOTE] = ACCESSKIT_ROLE_DOC_FOOTNOTE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_FOREWORD] = ACCESSKIT_ROLE_DOC_FOREWORD;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_GLOSSARY] = ACCESSKIT_ROLE_DOC_GLOSSARY;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_GLOSS_REF] = ACCESSKIT_ROLE_DOC_GLOSS_REF;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_INDEX] = ACCESSKIT_ROLE_DOC_INDEX;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_INTRODUCTION] = ACCESSKIT_ROLE_DOC_INTRODUCTION;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_NOTE_REF] = ACCESSKIT_ROLE_DOC_NOTE_REF;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_NOTICE] = ACCESSKIT_ROLE_DOC_NOTICE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_PAGE_BREAK] = ACCESSKIT_ROLE_DOC_PAGE_BREAK;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_PAGE_FOOTER] = ACCESSKIT_ROLE_DOC_PAGE_FOOTER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_PAGE_HEADER] = ACCESSKIT_ROLE_DOC_PAGE_HEADER;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_PAGE_LIST] = ACCESSKIT_ROLE_DOC_PAGE_LIST;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_PART] = ACCESSKIT_ROLE_DOC_PART;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_PREFACE] = ACCESSKIT_ROLE_DOC_PREFACE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_PROLOGUE] = ACCESSKIT_ROLE_DOC_PROLOGUE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_PULLQUOTE] = ACCESSKIT_ROLE_DOC_PULLQUOTE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_QNA] = ACCESSKIT_ROLE_DOC_QNA;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_SUBTITLE] = ACCESSKIT_ROLE_DOC_SUBTITLE;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_TIP] = ACCESSKIT_ROLE_DOC_TIP;
+	role_map[AccessibilityServerEnums::AccessibilityRole::ROLE_DOC_TOC] = ACCESSKIT_ROLE_DOC_TOC;
 
 	action_map[AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK] = ACCESSKIT_ACTION_CLICK;
 	action_map[AccessibilityServerEnums::AccessibilityAction::ACTION_FOCUS] = ACCESSKIT_ACTION_FOCUS;
@@ -1784,7 +2484,19 @@ AccessibilityServerAccessKit::AccessibilityServerAccessKit() {
 	action_map[AccessibilityServerEnums::AccessibilityAction::ACTION_CUSTOM] = ACCESSKIT_ACTION_CUSTOM_ACTION;
 }
 
-AccessibilityServerAccessKit::~AccessibilityServerAccessKit() {}
+AccessibilityServerAccessKit::~AccessibilityServerAccessKit() {
+	LocalVector<RID> owned = rid_owner.get_owned_list();
+	for (const RID &rid : owned) {
+		AccessibilityElement *ae = rid_owner.get_or_null(rid);
+		if (ae) {
+			if (ae->node) {
+				accesskit_node_free(ae->node);
+			}
+			memdelete(ae);
+		}
+		rid_owner.free(rid);
+	}
+}
 
 void AccessibilityServerAccessKit::register_create_func() {
 	register_create_function("accesskit", create_func);

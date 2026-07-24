@@ -4479,7 +4479,7 @@ void Control::_notification(int p_notification) {
 
 			AccessibilityServer::get_singleton()->update_set_transform(ae, get_transform());
 			AccessibilityServer::get_singleton()->update_set_bounds(ae, Rect2(Vector2(), data.size_cache));
-			AccessibilityServer::get_singleton()->update_set_tooltip(ae, data.tooltip);
+			AccessibilityServer::get_singleton()->update_set_tooltip(ae, atr(data.tooltip));
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_CLIPS_CHILDREN, data.clip_contents);
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_TOUCH_PASSTHROUGH, data.mouse_filter == MOUSE_FILTER_PASS);
 

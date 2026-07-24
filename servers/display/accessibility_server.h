@@ -75,6 +75,7 @@ public:
 	virtual RID create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false) = 0;
 	virtual bool has_element(const RID &p_id) const = 0;
 	virtual void free_element(const RID &p_id) = 0;
+	virtual void element_set_parent(const RID &p_id, const RID &p_parent_id) = 0;
 
 	virtual void element_set_meta(const RID &p_id, const Variant &p_meta) = 0;
 	virtual Variant element_get_meta(const RID &p_id) const = 0;
@@ -100,6 +101,7 @@ public:
 	virtual void update_set_tooltip(const RID &p_id, const String &p_tooltip) = 0;
 	virtual void update_set_bounds(const RID &p_id, const Rect2 &p_rect) = 0;
 	virtual void update_set_transform(const RID &p_id, const Transform2D &p_transform) = 0;
+	virtual void update_clear_children(const RID &p_id) = 0;
 	virtual void update_add_child(const RID &p_id, const RID &p_child_id) = 0;
 	virtual void update_add_related_controls(const RID &p_id, const RID &p_related_id) = 0;
 	virtual void update_add_related_details(const RID &p_id, const RID &p_related_id) = 0;
@@ -127,6 +129,10 @@ public:
 	virtual void update_set_list_item_level(const RID &p_id, int p_level) = 0;
 	virtual void update_set_list_item_selected(const RID &p_id, bool p_selected) = 0;
 	virtual void update_set_list_item_expanded(const RID &p_id, bool p_expanded) = 0;
+	virtual void update_set_author_id(const RID &p_id, const String &p_author_id) = 0;
+	virtual void update_set_expanded(const RID &p_id, int p_state) = 0;
+	virtual void update_set_checked_state(const RID &p_id, int p_state) = 0;
+	virtual void update_set_selected_state(const RID &p_id, int p_state) = 0;
 	virtual void update_set_popup_type(const RID &p_id, AccessibilityServerEnums::AccessibilityPopupType p_popup) = 0;
 	virtual void update_set_checked(const RID &p_id, bool p_checekd) = 0;
 	virtual void update_set_num_value(const RID &p_id, double p_position) = 0;

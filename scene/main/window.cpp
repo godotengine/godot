@@ -1617,17 +1617,25 @@ void Window::_notification(int p_what) {
 				} else {
 					AccessibilityServer::get_singleton()->update_set_bounds(ae, Rect2(Point2(), _get_size()));
 				}
+			}
 
-				if (accessibility_announcement_element.is_null()) {
-					accessibility_announcement_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_STATIC_TEXT);
-				}
+			if (accessibility_announcement_element.is_null()) {
+				accessibility_announcement_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_STATIC_TEXT);
+				AccessibilityServer::get_singleton()->update_set_live(accessibility_announcement_element, AccessibilityServerEnums::AccessibilityLiveMode::LIVE_ASSERTIVE);
+				AccessibilityServer::get_singleton()->update_set_bounds(accessibility_announcement_element, Rect2(0, 0, 1, 1));
+			}
 
-				if (announcement.is_empty()) {
-					AccessibilityServer::get_singleton()->update_set_live(accessibility_announcement_element, AccessibilityServerEnums::AccessibilityLiveMode::LIVE_OFF);
-				} else {
-					AccessibilityServer::get_singleton()->update_set_name(accessibility_announcement_element, announcement);
-					AccessibilityServer::get_singleton()->update_set_live(accessibility_announcement_element, AccessibilityServerEnums::AccessibilityLiveMode::LIVE_ASSERTIVE);
+			if (!announcement.is_empty()) {
+				static bool toggle_space = false;
+				String to_speak = announcement;
+				if (toggle_space) {
+					to_speak += String::utf8("\xe2\x80\x8b"); // UTF-8 Zero-Width Space
 				}
+				toggle_space = !toggle_space;
+
+				AccessibilityServer::get_singleton()->update_set_name(accessibility_announcement_element, to_speak);
+				AccessibilityServer::get_singleton()->update_set_value(accessibility_announcement_element, to_speak);
+				announcement = String();
 			}
 		} break;
 

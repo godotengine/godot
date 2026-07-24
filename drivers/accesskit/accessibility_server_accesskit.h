@@ -43,6 +43,25 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 	static AccessibilityServer *create_func(Error &r_error);
 
 	struct AccessibilityElement {
+		enum RelationType {
+			RELATION_CONTROLLED,
+			RELATION_DETAIL,
+			RELATION_DESCRIBED_BY,
+			RELATION_FLOW_TO,
+			RELATION_LABELLED_BY,
+			RELATION_RADIO_GROUP,
+			RELATION_ACTIVE_DESCENDANT,
+			RELATION_NEXT_ON_LINE,
+			RELATION_PREVIOUS_ON_LINE,
+			RELATION_MEMBER_OF,
+			RELATION_IN_PAGE_LINK_TARGET,
+			RELATION_ERROR_MESSAGE,
+		};
+		struct Relation {
+			RelationType type;
+			RID target;
+		};
+
 		HashMap<accesskit_action, Callable> actions;
 
 		DisplayServerEnums::WindowID window_id = DisplayServerEnums::INVALID_WINDOW_ID;
@@ -57,6 +76,52 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 
 		accesskit_role role = ACCESSKIT_ROLE_UNKNOWN;
 		accesskit_node *node = nullptr;
+		bool is_sub_element = false;
+		bool active_in_tree = false;
+
+		// Persistent state: re-applied by _ensure_node when a node is recreated
+		// after AccessKit takes ownership (ae->node = nullptr after push).
+		int expanded_state = 0; // 0=none, 1=false, 2=true
+		int popup_type = 0; // accesskit_has_popup value (0=clear)
+		int list_item_count = 0;
+		int list_item_index = -1;
+		int level = -1;
+		int checked_state = 0; // 0=none, 1=false, 2=true, 3=mixed
+		int selected_state = 0; // 0=none, 1=false, 2=true
+		int live_mode = 0; // 0=off, 1=polite, 2=assertive
+		String description;
+		String tooltip;
+		String placeholder;
+		String author_id;
+		String state_description;
+		RID tooltip_element; // Hidden tooltip element with ROLE_TOOLTIP.
+
+		// Computes the description to expose to UIA: combines the control's
+		// own description with the tooltip, skipping the tooltip if it duplicates
+		// the effective name (to prevent "name name" announcements).
+		String get_effective_description(const String &p_effective_name) const {
+			String result = description;
+			if (!tooltip.is_empty()) {
+				// Only include tooltip if it doesn't duplicate the name.
+				if (p_effective_name.strip_edges().is_empty() ||
+						tooltip.strip_edges().nocasecmp_to(p_effective_name.strip_edges()) != 0) {
+					if (result.is_empty()) {
+						result = tooltip;
+					} else if (!result.ends_with(tooltip)) {
+						result = result + "\n" + tooltip;
+					}
+				}
+			}
+			// Final check: if the result equals the name, return empty to avoid
+			// "name name" duplication (e.g. node named "X" with description "X").
+			if (!result.strip_edges().is_empty() && !p_effective_name.strip_edges().is_empty() &&
+					result.strip_edges().nocasecmp_to(p_effective_name.strip_edges()) == 0) {
+				return String();
+			}
+			return result;
+		}
+
+		LocalVector<Relation> relations;
 	};
 	mutable RID_PtrOwner<AccessibilityElement> rid_owner{ 65536, 1048576 };
 
@@ -70,6 +135,9 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 #endif
 #ifdef LINUXBSD_ENABLED
 		accesskit_unix_adapter *adapter = nullptr;
+#endif
+#ifdef ANDROID_ENABLED
+		struct accesskit_android_adapter *adapter = nullptr;
 #endif
 
 		RID root_id;
@@ -93,15 +161,17 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 	void _free_recursive(WindowData *p_wd, const RID &p_id);
 	_FORCE_INLINE_ void _ensure_node(const RID &p_id, AccessibilityElement *p_ae);
 
+
+	bool in_accessibility_update = false;
+	Callable update_cb;
+	Vector<RID> elements_to_free_after_update;
+
+public:
 	static void _accessibility_action_callback(struct accesskit_action_request *p_request, void *p_user_data);
 	static accesskit_tree_update *_accessibility_initial_tree_update_callback(void *p_user_data);
 	static void _accessibility_deactivation_callback(void *p_user_data);
 	static accesskit_tree_update *_accessibility_build_tree_update(void *p_user_data);
 
-	bool in_accessibility_update = false;
-	Callable update_cb;
-
-public:
 	bool is_supported() const override { return true; }
 
 	bool window_create(DisplayServerEnums::WindowID p_window_id, void *p_handle) override;
@@ -112,6 +182,7 @@ public:
 	virtual RID create_sub_text_edit_elements(const RID &p_parent_rid, const RID &p_shaped_text, float p_min_height, int p_insert_pos = -1, bool p_is_last_line = false) override;
 	bool has_element(const RID &p_id) const override;
 	void free_element(const RID &p_id) override;
+	void element_set_parent(const RID &p_id, const RID &p_parent_id) override;
 
 	void element_set_meta(const RID &p_id, const Variant &p_meta) override;
 	Variant element_get_meta(const RID &p_id) const override;
@@ -137,6 +208,7 @@ public:
 	void update_set_tooltip(const RID &p_id, const String &p_tooltip) override;
 	void update_set_bounds(const RID &p_id, const Rect2 &p_rect) override;
 	void update_set_transform(const RID &p_id, const Transform2D &p_transform) override;
+	void update_clear_children(const RID &p_id) override;
 	void update_add_child(const RID &p_id, const RID &p_child_id) override;
 	void update_add_related_controls(const RID &p_id, const RID &p_related_id) override;
 	void update_add_related_details(const RID &p_id, const RID &p_related_id) override;
@@ -164,6 +236,10 @@ public:
 	void update_set_list_item_level(const RID &p_id, int p_level) override;
 	void update_set_list_item_selected(const RID &p_id, bool p_selected) override;
 	void update_set_list_item_expanded(const RID &p_id, bool p_expanded) override;
+	void update_set_author_id(const RID &p_id, const String &p_author_id) override;
+	void update_set_expanded(const RID &p_id, int p_state) override;
+	void update_set_checked_state(const RID &p_id, int p_state) override;
+	void update_set_selected_state(const RID &p_id, int p_state) override;
 	void update_set_popup_type(const RID &p_id, AccessibilityServerEnums::AccessibilityPopupType p_popup) override;
 	void update_set_checked(const RID &p_id, bool p_checekd) override;
 	void update_set_num_value(const RID &p_id, double p_position) override;
@@ -190,8 +266,15 @@ public:
 	void update_set_color_value(const RID &p_id, const Color &p_color) override;
 	void update_set_background_color(const RID &p_id, const Color &p_color) override;
 	void update_set_foreground_color(const RID &p_id, const Color &p_color) override;
-
 	static void register_create_func();
+
+#ifdef ANDROID_ENABLED
+#include <jni.h>
+	struct accesskit_android_adapter *get_android_adapter(DisplayServerEnums::WindowID p_window_id) {
+		WindowData *wd = windows.getptr(p_window_id);
+		return wd ? wd->adapter : nullptr;
+	}
+#endif
 
 	AccessibilityServerAccessKit();
 	~AccessibilityServerAccessKit();
