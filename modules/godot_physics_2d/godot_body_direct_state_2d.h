@@ -62,10 +62,12 @@ public:
 
 	virtual void apply_central_impulse(const Vector2 &p_impulse) override;
 	virtual void apply_impulse(const Vector2 &p_impulse, const Vector2 &p_position = Vector2()) override;
+	virtual void apply_impulse_at_position(const Vector2 &p_impulse, const Vector2 &p_global_position = Vector2()) override;
 	virtual void apply_torque_impulse(real_t p_torque) override;
 
 	virtual void apply_central_force(const Vector2 &p_force) override;
 	virtual void apply_force(const Vector2 &p_force, const Vector2 &p_position = Vector2()) override;
+	virtual void apply_force_at_position(const Vector2 &p_force, const Vector2 &p_global_position = Vector2()) override;
 	virtual void apply_torque(real_t p_torque) override;
 
 	virtual void add_constant_central_force(const Vector2 &p_force) override;

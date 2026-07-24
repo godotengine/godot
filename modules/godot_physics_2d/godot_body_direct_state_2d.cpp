@@ -101,6 +101,11 @@ void GodotPhysicsDirectBodyState2D::apply_impulse(const Vector2 &p_impulse, cons
 	body->apply_impulse(p_impulse, p_position);
 }
 
+void GodotPhysicsDirectBodyState2D::apply_impulse_at_position(const Vector2 &p_impulse, const Vector2 &p_global_position) {
+	body->wakeup();
+	body->apply_impulse_at_position(p_impulse, p_global_position);
+}
+
 void GodotPhysicsDirectBodyState2D::apply_torque_impulse(real_t p_torque) {
 	body->wakeup();
 	body->apply_torque_impulse(p_torque);
@@ -114,6 +119,11 @@ void GodotPhysicsDirectBodyState2D::apply_central_force(const Vector2 &p_force) 
 void GodotPhysicsDirectBodyState2D::apply_force(const Vector2 &p_force, const Vector2 &p_position) {
 	body->wakeup();
 	body->apply_force(p_force, p_position);
+}
+
+void GodotPhysicsDirectBodyState2D::apply_force_at_position(const Vector2 &p_force, const Vector2 &p_global_position) {
+	body->wakeup();
+	body->apply_force_at_position(p_force, p_global_position);
 }
 
 void GodotPhysicsDirectBodyState2D::apply_torque(real_t p_torque) {
