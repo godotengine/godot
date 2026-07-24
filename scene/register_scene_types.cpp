@@ -142,6 +142,9 @@
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/mesh_texture.h"
 #include "scene/resources/multimesh.h"
+#include "scene/resources/resource_bundle.h"
+#include "scene/resources/resource_bundle_format.h"
+#include "scene/resources/resource_bundle_schema.h"
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 #include "scene/resources/navigation_mesh.h"
 #endif // !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
@@ -388,6 +391,9 @@ static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 static Ref<ResourceFormatSaverShaderInclude> resource_saver_shader_include;
 static Ref<ResourceFormatLoaderShaderInclude> resource_loader_shader_include;
 
+static Ref<ResourceBundleFormatSaver> resource_bundle_saver;
+static Ref<ResourceBundleFormatLoader> resource_bundle_loader;
+
 void register_scene_types() {
 	OS::get_singleton()->benchmark_begin_measure("Scene", "Register Types");
 
@@ -433,6 +439,12 @@ void register_scene_types() {
 		resource_loader_shader_include.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_shader_include, true);
 	}
+
+	resource_bundle_saver.instantiate();
+	ResourceSaver::add_resource_format_saver(resource_bundle_saver);
+
+	resource_bundle_loader.instantiate();
+	ResourceLoader::add_resource_format_loader(resource_bundle_loader);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -878,6 +890,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(MultiMesh);
 	GDREGISTER_CLASS(SurfaceTool);
 	GDREGISTER_CLASS(MeshDataTool);
+
+	GDREGISTER_VIRTUAL_CLASS(ResourceBundle);
+	GDREGISTER_VIRTUAL_CLASS(ResourceBundleSchema);
 
 #ifndef _3D_DISABLED
 	GDREGISTER_CLASS(AudioStreamPlayer3D);
@@ -1354,6 +1369,12 @@ void unregister_scene_types() {
 		ResourceLoader::remove_resource_format_loader(resource_loader_shader_include);
 		resource_loader_shader_include.unref();
 	}
+
+	ResourceSaver::remove_resource_format_saver(resource_bundle_saver);
+	resource_bundle_saver.unref();
+
+	ResourceLoader::remove_resource_format_loader(resource_bundle_loader);
+	resource_bundle_loader.unref();
 
 	// StandardMaterial3D is not initialized when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED

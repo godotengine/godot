@@ -53,6 +53,7 @@
 #include "editor/gui/create_dialog.h"
 #include "editor/gui/directory_create_dialog.h"
 #include "editor/gui/editor_dir_dialog.h"
+#include "editor/gui/editor_icon_manager.h"
 #include "editor/import/3d/scene_import_settings.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_resource_preview.h"
@@ -60,6 +61,7 @@
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/editor_scene_tabs.h"
+#include "editor/scene/resource_bundle_editor_plugin.h"
 #include "editor/scene/scene_create_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_feature_profile.h"
@@ -76,6 +78,7 @@
 #include "scene/gui/slider.h"
 #include "scene/main/timer.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/resource_bundle.h"
 #include "servers/display/display_server.h"
 
 Control *FileSystemTree::make_custom_tooltip(const String &p_text) const {
@@ -265,7 +268,15 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	subdirectory_item->set_text(0, dname);
 	subdirectory_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
-	subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
+
+	Ref<ResourceBundle> bundle = ResourceBundle::load(lpath);
+
+	if (bundle.is_valid() && bundle->is_owned(lpath)) {
+		subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("ResourceBundle")));
+	} else {
+		subdirectory_item->set_icon(0, get_editor_theme_icon(SNAME("Folder")));
+	}
+
 	if (da->is_link(lpath)) {
 		subdirectory_item->set_icon_overlay(0, get_editor_theme_icon(SNAME("LinkOverlay")));
 		subdirectory_item->set_tooltip_text(0, vformat(TTR("Link to: %s"), da->read_link(lpath)));
@@ -279,6 +290,11 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	}
 
 	subdirectory_item->set_collapsed(!p_uncollapsed_paths.has(lpath));
+
+	if (bundle.is_valid() && bundle->is_owned(lpath) && !bundle->is_open()) {
+		subdirectory_item->set_collapsed(true);
+		subdirectory_item->set_disable_folding(true);
+	}
 
 	// Create items for all subdirectories.
 	bool reversed = file_sort == FileSortOption::FILE_SORT_NAME_REVERSE;
@@ -1400,6 +1416,12 @@ void FileSystemDock::_tree_activate_file() {
 		bool is_folder = file_path.ends_with("/");
 
 		if ((!is_favorite && is_folder) || file_path == "Favorites") {
+			Ref<ResourceBundle> bundle = ResourceBundle::load(file_path);
+			if (bundle.is_valid() && bundle->is_owned(file_path) && !bundle->is_open()) {
+				// Don't expand bundle folders
+				return;
+			}
+
 			bool collapsed = selected->is_collapsed();
 			selected->set_collapsed(!collapsed);
 		} else {
@@ -2464,6 +2486,31 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_MAKE_BUNDLE: {
+			if (p_selected.size() == 1) {
+				if (ResourceBundleEditor::get_singleton()->make_bundle(p_selected[0])) {
+					TreeItem *item = folder_map[p_selected[0]];
+					if (item) {
+						item->set_icon(0, EditorIconManager::get_icon(SNAME("ResourceBundle")));
+						item->set_collapsed(true);
+						item->set_disable_folding(true);
+					}
+				}
+			}
+		} break;
+
+		case FILE_MENU_REMOVE_BUNDLE: {
+			if (p_selected.size() == 1) {
+				if (ResourceBundleEditor::get_singleton()->remove_bundle(p_selected[0])) {
+					TreeItem *item = folder_map[p_selected[0]];
+					if (item) {
+						item->set_icon(0, EditorIconManager::get_icon(SNAME("Folder")));
+						item->set_disable_folding(false);
+					}
+				}
+			}
+		} break;
+
 		case FILE_MENU_OPEN: {
 			// Open folders.
 			TreeItem *selected = tree->get_root();
@@ -3494,11 +3541,30 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	bool root_path_not_selected = !no_paths && p_paths[0] != "res://" && (p_paths.size() <= 1 || p_paths[1] != "res://");
 
 	if (all_folders && foldernames.size() > 0) {
-		p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
+		Ref<ResourceBundle> bundle;
+		bool is_root = foldernames[0] == "res://";
+		bool is_addons = foldernames[0].begins_with("res://addons/");
+		if (!is_root && !is_addons) {
+			if (foldernames.size() == 1) {
+				bundle = ResourceBundle::load(foldernames[0]);
+			}
 
-		if (foldernames.size() == 1) {
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
+			if (bundle.is_valid() && bundle->is_owned(foldernames[0])) {
+				p_popup->add_icon_item(EditorIconManager::get_icon("ResourceBundle"), TTRC("Remove Bundle"), FILE_MENU_REMOVE_BUNDLE);
+				p_popup->add_check_item(TTRC("Open Bundle"), FILE_MENU_OPEN_BUNDLE);
+				p_popup->set_item_checked(-1, bundle->is_open());
+			} else {
+				p_popup->add_icon_item(EditorIconManager::get_icon("ResourceBundle"), TTRC("Make Bundle"), FILE_MENU_MAKE_BUNDLE);
+			}
+		}
+
+		if (bundle.is_null() || bundle->is_open()) {
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
+
+			if (foldernames.size() == 1) {
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
+			}
 		}
 
 		p_popup->add_separator();

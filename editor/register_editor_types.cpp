@@ -117,6 +117,7 @@
 #include "editor/scene/gui/virtual_joystick_editor_plugin.h"
 #include "editor/scene/material_editor_plugin.h"
 #include "editor/scene/packed_scene_editor_plugin.h"
+#include "editor/scene/resource_bundle_editor_plugin.h"
 #include "editor/scene/resource_preloader_editor_plugin.h"
 #include "editor/scene/sprite_frames_editor_plugin.h"
 #include "editor/scene/texture/bit_map_editor_plugin.h"
@@ -241,6 +242,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<MarginContainerEditorPlugin>();
 	EditorPlugins::add_by_type<MaterialEditorPlugin>();
 	EditorPlugins::add_by_type<PackedSceneEditorPlugin>();
+	EditorPlugins::add_by_type<ResourceBundleEditorPlugin>();
 	EditorPlugins::add_by_type<ResourcePreloaderEditorPlugin>();
 	EditorPlugins::add_by_type<ShaderEditorPlugin>();
 	EditorPlugins::add_by_type<ShaderFileEditorPlugin>();
