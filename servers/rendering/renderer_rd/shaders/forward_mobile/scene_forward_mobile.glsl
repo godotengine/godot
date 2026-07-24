@@ -846,6 +846,23 @@ void main() {
 
 /* Varyings */
 
+#if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_UV_USED))
+// When texture streaming is enabled subgroupElect is needed to properly handle texture feedback.
+#extension GL_KHR_shader_subgroup_basic : enable
+
+#extension GL_KHR_shader_subgroup_arithmetic : enable
+
+#if !defined(ALPHA_SCISSOR_USED) && !defined(ALPHA_HASH_USED) && !defined(ALPHA_ANTIALIASING_EDGE_USED)
+// Since material feedback writes to a ssbo buffer, early fragment tests likely get disabled by the
+// driver so unless we want bad performance, we need to force enable it again when we can.
+// To Early-Z, or Not To Early-Z
+//  - https://therealmjp.github.io/posts/to-earlyz-or-not-to-earlyz/#uavsstorage-texturesstorage-buffers
+layout(early_fragment_tests) in;
+
+#endif
+
+#endif // TEXTURE_STREAMING
+
 // All interpolators are intentionally kept at full precision as storageInputOutput16 is not
 // checked for support. Devices with Adreno GPUs don't usually support this capability.
 
@@ -861,6 +878,10 @@ layout(location = 2) in vec4 color_interp;
 
 #ifdef UV_USED
 layout(location = 3) in vec2 uv_interp;
+#endif
+
+#if defined(TEXTURE_STREAMING)
+vec2 streaming_uv;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
@@ -1366,6 +1387,46 @@ void main() {
 	}
 #endif // MODE_RENDER_MATERIAL
 #endif // ALPHA_SCISSOR_USED
+
+#if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_UV_USED))
+	if (sc_material_feedback()) {
+		// Instance has materials which require feedback.
+#if !defined(STREAMING_UV_USED)
+		vec2 streaming_uv = uv_interp;
+#endif
+		vec2 uv_dx = dFdx(streaming_uv);
+		vec2 uv_dy = dFdy(streaming_uv);
+
+		if (!gl_HelperInvocation) {
+			// Calculate the mip level needed for the current fragment based on UV derivatives.
+			float px_sq = dot(uv_dx, uv_dx);
+			float py_sq = dot(uv_dy, uv_dy);
+			float min_sq = min(px_sq, py_sq);
+			float max_sq = max(px_sq, py_sq);
+
+			// Anisotropic filtering allows using the mip level of the minor axis (min_sq),
+			// but limited by the max anisotropy (usually 16x).
+			// If the anisotropy ratio exceeds 16, we are forced to use a lower res mip.
+			const float MAX_ANISOTROPY = 16.0;
+			float lod_sq = max(min_sq, max_sq / (MAX_ANISOTROPY * MAX_ANISOTROPY));
+
+			// Bitwise NOT inverts the ordering so that smaller lod_sq (higher quality)
+			// maps to larger uint values, allowing atomicMax with a 0-cleared buffer.
+			uint required_mip = ~floatBitsToUint(lod_sq);
+
+			// Reduce atomic contention using subgroup operations.
+			// Find maximum inverted mip level across all invocations in the subgroup, then only
+			// one invocation performs the atomic write.
+			// Right now this assumes all invocations will have the same instance index.
+			// If that is not true then probably need a subgroupAllEqual check first + fallback.
+			uint subgroup_max_mip = subgroupMax(required_mip);
+			if (subgroupElect()) {
+				const uint material_feedback_index = instances.data[draw_call.instance_index].material_feedback_index;
+				atomicMax(material_feedback.data[material_feedback_index], subgroup_max_mip);
+			}
+		}
+	}
+#endif //TEXTURE_STREAMING
 
 // alpha hash can be used in unison with alpha antialiasing
 #ifdef ALPHA_HASH_USED
