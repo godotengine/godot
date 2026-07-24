@@ -1209,29 +1209,15 @@ struct _VariantCall {
 		signal->emit(p_args, p_argcount);
 	}
 
-	// Storage for constants added via add_variant_constant(). Once GDType supports storing these directly, this can be removed and the variants constants can be stored in the GDType instead. Integer constants and enums are already handled that way.
-	static HashMap<StringName, Variant> *variant_constants;
-
 	static void add_constant(int p_type, const StringName &p_constant_name, int64_t p_constant_value) {
-#ifdef DEBUG_ENABLED
-		ERR_FAIL_COND(variant_constants[p_type].has(p_constant_name));
-#endif // DEBUG_ENABLED
 		const_cast<GDType &>(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type))).bind_integer_constant(StringName(), p_constant_name, p_constant_value);
 	}
 
 	static void add_variant_constant(int p_type, const StringName &p_constant_name, const Variant &p_constant_value) {
-#ifdef DEBUG_ENABLED
-		ERR_FAIL_COND(variant_constants[p_type].has(p_constant_name));
-		ERR_FAIL_COND(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type)).get_enum_map(true).has(p_constant_name));
-		ERR_FAIL_COND(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type)).get_integer_constant_map(true).has(p_constant_name));
-#endif // DEBUG_ENABLED
-		variant_constants[p_type][p_constant_name] = p_constant_value;
+		const_cast<GDType &>(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type))).bind_variant_constant(p_constant_name, p_constant_value);
 	}
 
 	static void add_enum_constant(int p_type, const StringName &p_enum_type_name, const StringName &p_enumeration_name, int p_enum_value) {
-#ifdef DEBUG_ENABLED
-		ERR_FAIL_COND(variant_constants[p_type].has(p_enumeration_name));
-#endif // DEBUG_ENABLED
 		const_cast<GDType &>(Variant::_get_gdtype_for_type(static_cast<Variant::Type>(p_type))).bind_integer_constant(p_enum_type_name, p_enumeration_name, p_enum_value);
 	}
 
@@ -1247,8 +1233,6 @@ struct _VariantCall {
 	}
 #endif
 };
-
-HashMap<StringName, Variant> *_VariantCall::variant_constants = nullptr;
 
 struct VariantBuiltInMethodInfo {
 	void (*call)(Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) = nullptr;
@@ -1661,7 +1645,7 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 		}
 	}
 
-	for (const KeyValue<StringName, Variant> &E : _VariantCall::variant_constants[p_type]) {
+	for (const KeyValue<StringName, Variant> &E : _get_gdtype_for_type(p_type).get_variant_constant_map(false)) {
 		p_constants->push_back(E.key);
 	}
 }
@@ -1679,7 +1663,7 @@ bool Variant::has_constant(Variant::Type p_type, const StringName &p_value) {
 	const bool is_non_enum_integer_constant =
 			_get_gdtype_for_type(p_type).get_integer_constant_map(false).has(p_value) &&
 			_get_gdtype_for_type(p_type).get_integer_constant_enum(p_value, false) == nullptr;
-	return is_non_enum_integer_constant || _VariantCall::variant_constants[p_type].has(p_value);
+	return is_non_enum_integer_constant || _get_gdtype_for_type(p_type).get_variant_constant_map(false).has(p_value);
 }
 
 Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_value, bool *r_valid) {
@@ -1697,12 +1681,12 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 		return *int_value;
 	}
 
-	HashMap<StringName, Variant>::Iterator F = _VariantCall::variant_constants[p_type].find(p_value);
-	if (F) {
+	const Variant *variant_value = _get_gdtype_for_type(p_type).get_variant_constant_map(false).getptr(p_value);
+	if (variant_value) {
 		if (r_valid) {
 			*r_valid = true;
 		}
-		return F->value;
+		return *variant_value;
 	}
 
 	return -1;
@@ -1954,7 +1938,6 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(m_arg_name), Vector<Variant>());
 
 static void _register_variant_builtin_methods_string() {
-	_VariantCall::variant_constants = memnew_arr_template<HashMap<StringName, Variant>>(Variant::VARIANT_MAX);
 	builtin_method_info = memnew_arr(BuiltinMethodMap, Variant::VARIANT_MAX);
 	builtin_method_names = memnew_arr(List<StringName>, Variant::VARIANT_MAX);
 #ifndef DISABLE_DEPRECATED
@@ -3171,5 +3154,4 @@ void Variant::_unregister_variant_methods() {
 #ifndef DISABLE_DEPRECATED
 	memdelete_arr(builtin_compat_method_info);
 #endif
-	memdelete_arr(_VariantCall::variant_constants);
 }
