@@ -864,6 +864,13 @@ void GDScriptByteCodeGenerator::write_set_named(const Address &p_target, const S
 	append(p_name);
 }
 
+void GDScriptByteCodeGenerator::write_set_named_safe(const Address &p_target, const StringName &p_name, const Address &p_source) {
+	append_opcode(GDScriptFunction::OPCODE_SET_NAMED_SAFE);
+	append(p_target);
+	append(p_source);
+	append(p_name);
+}
+
 void GDScriptByteCodeGenerator::write_get_named(const Address &p_target, const StringName &p_name, const Address &p_source) {
 	if (HAS_BUILTIN_TYPE(p_source) && Variant::get_member_validated_getter(p_source.type.builtin_type, p_name)) {
 		Variant::ValidatedGetter getter = Variant::get_member_validated_getter(p_source.type.builtin_type, p_name);
@@ -877,6 +884,13 @@ void GDScriptByteCodeGenerator::write_get_named(const Address &p_target, const S
 		return;
 	}
 	append_opcode(GDScriptFunction::OPCODE_GET_NAMED);
+	append(p_source);
+	append(p_target);
+	append(p_name);
+}
+
+void GDScriptByteCodeGenerator::write_get_named_safe(const Address &p_target, const StringName &p_name, const Address &p_source) {
+	append_opcode(GDScriptFunction::OPCODE_GET_NAMED_SAFE);
 	append(p_source);
 	append(p_target);
 	append(p_name);
@@ -1105,6 +1119,19 @@ void GDScriptByteCodeGenerator::write_call(const Address &p_target, const Addres
 		append(p_function_name);
 		ct.cleanup();
 	}
+}
+
+void GDScriptByteCodeGenerator::write_call_safe(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) {
+	append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_SAFE : GDScriptFunction::OPCODE_CALL_SAFE_RETURN, 2 + p_arguments.size());
+	for (int i = 0; i < p_arguments.size(); i++) {
+		append(p_arguments[i]);
+	}
+	append(p_base);
+	CallTarget ct = get_call_target(p_target);
+	append(ct.target);
+	append(p_arguments.size());
+	append(p_function_name);
+	ct.cleanup();
 }
 
 void GDScriptByteCodeGenerator::write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
