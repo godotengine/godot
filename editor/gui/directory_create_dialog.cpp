@@ -68,7 +68,7 @@ String DirectoryCreateDialog::_validate_path(const String &p_path) const {
 			}
 		}
 		if (part.contains_char('\\') || part.contains_char(':') || part.contains_char('*') ||
-				part.contains_char('|') || part.contains_char('>') || part.ends_with(".") || part.ends_with(" ")) {
+				part.contains_char('|') || part.contains_char('>') || part.contains_char('<') || part.contains_char('?') || part.contains_char('"') || part.ends_with(".") || part.ends_with(" ")) {
 			if (is_file) {
 				return TTR("File name contains invalid characters.");
 			} else {
