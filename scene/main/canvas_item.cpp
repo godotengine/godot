@@ -336,7 +336,7 @@ void CanvasItem::_update_oversampling(bool p_propagate) {
 	if (p_propagate) {
 		for (uint32_t n = 0; n < data.canvas_item_children.size(); n++) {
 			CanvasItem *ci = data.canvas_item_children[n];
-			if (!ci->top_level && ci->get_oversampling_with_scale() == OVERSAMPLING_WITH_SCALE_PARENT_NODE) {
+			if (!ci->top_level && ci->get_oversampling_with_scale() != OVERSAMPLING_WITH_SCALE_DISABLED) {
 				ci->_update_oversampling(p_propagate);
 			}
 		}
@@ -1162,7 +1162,7 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 	 * notification anyway).
 	 */
 
-	_update_oversampling(false);
+	p_node->_update_oversampling(true);
 
 	if (/*p_node->xform_change.in_list() &&*/ p_node->_is_global_invalid()) {
 		return; //nothing to do
