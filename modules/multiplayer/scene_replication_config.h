@@ -87,6 +87,8 @@ public:
 	bool has_property(const NodePath &p_path) const;
 
 	int property_get_index(const NodePath &p_path) const;
+	void swap_property_by_index(const int p_from_index, const int p_to_index);
+
 	bool property_get_spawn(const NodePath &p_path);
 	void property_set_spawn(const NodePath &p_path, bool p_enabled);
 
