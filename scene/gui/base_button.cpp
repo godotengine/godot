@@ -391,7 +391,11 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 		if (pressing) {
 			return DRAW_PRESSED;
 		} else {
-			return DRAW_NORMAL;
+			if (is_pressed() && status.hovering) {
+				return DRAW_HOVER_PRESSED;
+			} else {
+				return DRAW_NORMAL;
+			}
 		}
 	}
 }
