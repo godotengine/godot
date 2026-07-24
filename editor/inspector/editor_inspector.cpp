@@ -59,6 +59,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/property_utils.h"
@@ -2188,6 +2189,97 @@ Ref<Texture2D> EditorInspectorSection::_get_checkbox() {
 	return checkbox;
 }
 
+bool EditorInspectorSection::_should_auto_unfold(const String &p_class_name) const {
+	if (!EditorSettings::get_singleton()) {
+		return false;
+	}
+
+	PackedStringArray any_class_sections = EDITOR_DEF("_interface/inspector/auto_unfold_any_class", PackedStringArray());
+	if (any_class_sections.has(section)) {
+		return true;
+	}
+
+	Dictionary same_class_dict = EDITOR_DEF("_interface/inspector/auto_unfold_same_class", Dictionary());
+	if (same_class_dict.has(p_class_name)) {
+		PackedStringArray class_sections = same_class_dict[p_class_name];
+		if (class_sections.has(section)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void EditorInspectorSection::_toggle_auto_unfold(int p_id) const {
+	String class_name = object->get_class();
+
+	if (p_id == MENU_AUTO_UNFOLD_ANY_CLASS) {
+		PackedStringArray any_class_sections = EDITOR_GET("_interface/inspector/auto_unfold_any_class");
+		if (any_class_sections.has(section)) {
+			any_class_sections.remove_at(any_class_sections.find(section));
+		} else {
+			any_class_sections.push_back(section);
+			const_cast<EditorInspectorSection *>(this)->unfold();
+		}
+		EditorSettings::get_singleton()->set("_interface/inspector/auto_unfold_any_class", any_class_sections);
+	} else if (p_id == MENU_AUTO_UNFOLD_SAME_CLASS) {
+		Dictionary same_class_dict = Dictionary(EDITOR_GET("_interface/inspector/auto_unfold_same_class")).duplicate();
+		PackedStringArray class_sections;
+
+		if (same_class_dict.has(class_name)) {
+			class_sections = same_class_dict[class_name];
+		}
+
+		if (class_sections.has(section)) {
+			class_sections.remove_at(class_sections.find(section));
+		} else {
+			class_sections.push_back(section);
+			const_cast<EditorInspectorSection *>(this)->unfold();
+		}
+
+		if (class_sections.is_empty()) {
+			same_class_dict.erase(class_name);
+		} else {
+			same_class_dict[class_name] = class_sections;
+		}
+
+		EditorSettings::get_singleton()->set("_interface/inspector/auto_unfold_same_class", same_class_dict);
+	}
+}
+
+bool EditorInspectorSection::_is_unfolded_by_any_class() const {
+	if (!EditorSettings::get_singleton()) {
+		return false;
+	}
+	PackedStringArray any_class_sections = EDITOR_GET("_interface/inspector/auto_unfold_any_class");
+	return any_class_sections.has(section);
+}
+
+bool EditorInspectorSection::_is_unfolded_by_same_class() const {
+	if (!EditorSettings::get_singleton()) {
+		return false;
+	}
+	Dictionary same_class_dict = EDITOR_GET("_interface/inspector/auto_unfold_same_class");
+	String class_name = object->get_class();
+	if (same_class_dict.has(class_name)) {
+		PackedStringArray class_sections = same_class_dict[class_name];
+		return class_sections.has(section);
+	}
+	return false;
+}
+
+void EditorInspectorSection::_collapse_section_recursive(Node *p_node) const {
+	if (!p_node) {
+		return;
+	}
+
+	p_node->editor_set_section_unfold(section, false);
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_collapse_section_recursive(p_node->get_child(i));
+	}
+}
+
 int EditorInspectorSection::_get_header_height() {
 	int header_height = theme_cache.bold_font->get_height(theme_cache.bold_font_size);
 	Ref<Texture2D> arrow = _get_arrow();
@@ -2305,6 +2397,13 @@ void EditorInspectorSection::_notification(int p_what) {
 
 				// - Arrow.
 				Ref<Texture2D> arrow = _get_arrow();
+				if (Object::cast_to<Node>(object) && object->editor_is_section_unfolded(section)) {
+					if (_is_unfolded_by_any_class()) {
+						arrow = get_editor_theme_icon(SNAME("GuiTreeThreeArrowsDown"));
+					} else if (_is_unfolded_by_same_class()) {
+						arrow = get_editor_theme_icon(SNAME("GuiTreeTwoArrowsDown"));
+					}
+				}
 				if (arrow.is_valid()) {
 					Point2 arrow_position;
 					if (rtl) {
@@ -2588,6 +2687,10 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 	_test_unfold();
 
 	if (foldable) {
+		if (_should_auto_unfold(object->get_class())) {
+			object->editor_set_section_unfold(section, true);
+		}
+
 		if (object->editor_is_section_unfolded(section)) {
 			vbox->show();
 		} else {
@@ -2843,8 +2946,52 @@ void EditorInspectorSection::_update_popup() {
 
 		menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Section Values"), MENU_COPY_VALUE);
 		menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Section Values"), MENU_PASTE_VALUE);
+
+		menu->add_separator();
+		menu->add_check_item(TTRC("Auto Unfold for Nodes of the Same Class"), MENU_AUTO_UNFOLD_SAME_CLASS);
+		menu->add_check_item(TTRC("Auto Unfold for Nodes of Any Class"), MENU_AUTO_UNFOLD_ANY_CLASS);
+		menu->add_separator();
+		menu->add_item(TTRC("Collapse Section on All Nodes"), MENU_COLLAPSE_SECTION_ON_ALL_NODES);
 	}
+
 	menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION);
+	int any_class_idx = menu->get_item_index(MENU_AUTO_UNFOLD_ANY_CLASS);
+	if (any_class_idx != -1 && EditorSettings::get_singleton()) {
+		PackedStringArray any_class_sections = EDITOR_GET("_interface/inspector/auto_unfold_any_class");
+		bool any_class_active = any_class_sections.has(section);
+		menu->set_item_checked(any_class_idx, any_class_active);
+
+		Dictionary same_class_dict = EDITOR_GET("_interface/inspector/auto_unfold_same_class");
+		bool same_class_active = false;
+		String class_name = object->get_class();
+		if (same_class_dict.has(class_name)) {
+			PackedStringArray class_sections = same_class_dict[class_name];
+			same_class_active = class_sections.has(section);
+		}
+		int same_class_idx = menu->get_item_index(MENU_AUTO_UNFOLD_SAME_CLASS);
+		menu->set_item_checked(same_class_idx, same_class_active);
+
+		if (any_class_active) {
+			menu->set_item_disabled(same_class_idx, true);
+			menu->set_item_tooltip(same_class_idx, TTR("This option is currently overridden by 'Auto Unfold Nodes of Any Class'."));
+		} else {
+			menu->set_item_disabled(same_class_idx, false);
+			menu->set_item_tooltip(same_class_idx, String());
+		}
+
+		int collapse_idx = menu->get_item_index(MENU_COLLAPSE_SECTION_ON_ALL_NODES);
+		if (collapse_idx != -1) {
+			bool is_auto_active = (any_class_active || same_class_active);
+
+			if (is_auto_active) {
+				menu->set_item_disabled(collapse_idx, true);
+				menu->set_item_tooltip(collapse_idx, TTR("Cannot Collapse while an Auto Unfold option is active."));
+			} else {
+				menu->set_item_disabled(collapse_idx, false);
+				menu->set_item_tooltip(collapse_idx, String());
+			}
+		}
+	}
 }
 
 void EditorInspectorSection::menu_option(int p_option) const {
@@ -2876,6 +3023,21 @@ void EditorInspectorSection::menu_option(int p_option) const {
 				}
 			}
 			ur->commit_action();
+		} break;
+		case MENU_AUTO_UNFOLD_ANY_CLASS:
+		case MENU_AUTO_UNFOLD_SAME_CLASS:
+			_toggle_auto_unfold(p_option);
+			break;
+		case MENU_COLLAPSE_SECTION_ON_ALL_NODES: {
+			if (!Object::cast_to<Node>(object)) {
+				break;
+			}
+
+			Node *scene_root = EditorInterface::get_singleton()->get_edited_scene_root();
+			if (scene_root) {
+				_collapse_section_recursive(scene_root);
+				callable_mp(EditorInterface::get_singleton()->get_inspector(), &EditorInspector::update_tree).call_deferred();
+			}
 		} break;
 	}
 }
