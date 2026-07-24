@@ -23,10 +23,11 @@
 			<param index="0" name="capability_configurations" type="OpenXRSpatialCapabilityConfigurationBaseHeader[]" />
 			<param index="1" name="next" type="OpenXRStructureBase" default="null" />
 			<param index="2" name="user_callback" type="Callable" default="Callable()" />
+			<param index="3" name="failed_callback" type="Callable" default="Callable()" />
 			<description>
 				Creates a new spatial context that handles entities for the provided capability configurations. [param capability_configurations] is an array of [OpenXRSpatialCapabilityConfigurationBaseHeader] with the needed capability configuration data.
 				[param next] is an optional parameter that can contain additional information for creating our spatial context.
-				[b]Note:[/b] This is an asynchronous method and returns an [OpenXRFutureResult] object with which to track the status, discarding this object will not cancel the creation process. On success [param user_callback] will be called if specified. The result data for this function is the [RID] for our spatial context.
+				[b]Note:[/b] This is an asynchronous method and returns an [OpenXRFutureResult] object with which to track the status, discarding this object will not cancel the creation process. On success [param user_callback] will be called if specified. The result data for this function is the [RID] for our spatial context. On failure [param failed_callback] will be called if specified. The OpenXR result code will be supplied as an integer.
 			</description>
 		</method>
 		<method name="discover_spatial_entities">
@@ -242,7 +243,7 @@
 			Micro QR code based marker tracking capability.
 		</constant>
 		<constant name="CAPABILITY_MARKER_TRACKING_ARUCO_MARKER" value="1000743002" enum="Capability">
-			Aruco marker based marker tracking capability.
+			ArUco marker based marker tracking capability.
 		</constant>
 		<constant name="CAPABILITY_MARKER_TRACKING_APRIL_TAG" value="1000743003" enum="Capability">
 			April tag based marker tracking capability.
@@ -282,6 +283,24 @@
 		</constant>
 		<constant name="COMPONENT_TYPE_PERSISTENCE" value="1000763000" enum="ComponentType">
 			Component that provides the persisted UUID for a spatial entity. The corresponding list structure is [code]XrSpatialComponentPersistenceListEXT; the corresponding data structure is [code]XrSpatialPersistenceDataEXT[/code] (Added by the [code]XR_EXT_spatial_persistence[/code] extension).
+		</constant>
+		<constant name="TRACKING_UNSUPPORTED_CAPABILITY" value="-3" enum="TrackingState">
+			A capability supplied when creating the spatial context for tracking is unsupported.
+		</constant>
+		<constant name="TRACKING_NO_PERMISSION" value="-2" enum="TrackingState">
+			A permission required by the tracking logic is missing.
+		</constant>
+		<constant name="TRACKING_SETUP_FAILED" value="-1" enum="TrackingState">
+			Setup of the tracking logic failed, consult the logs for more details.
+		</constant>
+		<constant name="TRACKING_NOT_ACTIVE" value="0" enum="TrackingState">
+			Tracking is currently not active.
+		</constant>
+		<constant name="TRACKING_SETTING_UP" value="1" enum="TrackingState">
+			Tracking is being set up.
+		</constant>
+		<constant name="TRACKING_ENABLED" value="2" enum="TrackingState">
+			Tracking is enabled and running.
 		</constant>
 	</constants>
 </class>
