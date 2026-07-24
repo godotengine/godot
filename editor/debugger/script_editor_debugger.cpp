@@ -37,6 +37,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/string/string_buffer.h"
 #include "core/string/ustring.h"
 #include "core/variant/typed_dictionary.h"
 #include "core/version.h"
@@ -1801,10 +1802,19 @@ void ScriptEditorDebugger::_error_activated() {
 	}
 }
 
-void ScriptEditorDebugger::_error_selected() {
-	TreeItem *selected = error_tree->get_selected();
+void ScriptEditorDebugger::_error_selected(TreeItem *p_item, int p_column, bool p_selected) {
+	if (!p_selected) {
+		return;
+	}
+
+	TreeItem *selected = p_item;
 
 	if (!selected) {
+		return;
+	}
+
+	if (error_tree->get_next_selected(nullptr) != selected || error_tree->get_next_selected(selected)) {
+		// The user is selecting multiple lines, so don't emit error_selected.
 		return;
 	}
 
@@ -1950,30 +1960,50 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, M
 void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 	switch (p_option) {
 		case ACTION_COPY_ERROR: {
-			TreeItem *ti = error_tree->get_selected();
-			while (ti->get_parent() != error_tree->get_root()) {
-				ti = ti->get_parent();
+			StringBuffer buffer;
+			TreeItem *ti = error_tree->get_next_selected(nullptr);
+			while (ti) {
+				while (ti->get_parent() != error_tree->get_root()) {
+					ti = ti->get_parent();
+				}
+
+				if (ti->has_meta("_is_warning")) {
+					buffer.append("W ");
+				} else if (ti->has_meta("_is_error")) {
+					buffer.append("E ");
+				}
+
+				String filename = ti->get_text(0);
+				constexpr int NUM_SPACES_BETWEEN_FILENAME_AND_LINE = 3;
+				int rpad_len = filename.length() + NUM_SPACES_BETWEEN_FILENAME_AND_LINE;
+
+				buffer.append(filename);
+				for (int i = 0; i < NUM_SPACES_BETWEEN_FILENAME_AND_LINE; i++) {
+					buffer.append(' ');
+				}
+				buffer.append(ti->get_text(1));
+				buffer.append('\n');
+				TreeItem *ci = ti->get_first_child();
+				while (ci) {
+					buffer.append(' ');
+					buffer.append(ci->get_text(0));
+					for (int i = 0; i < rpad_len; i++) {
+						buffer.append(' ');
+					}
+					buffer.append(ci->get_text(1));
+					buffer.append('\n');
+					ci = ci->get_next();
+				}
+
+				// error_tree->get_next_selected(ti) would just keep looking under the same error, causing an infinite loop.
+				// So ti->get_next() is used to make sure the search restarts at the next error.
+				if (!ti->get_next()) {
+					break;
+				}
+				ti = error_tree->get_next_selected(ti->get_next());
 			}
 
-			String type;
-
-			if (ti->has_meta("_is_warning")) {
-				type = "W ";
-			} else if (ti->has_meta("_is_error")) {
-				type = "E ";
-			}
-
-			String text = ti->get_text(0) + "   ";
-			int rpad_len = text.length();
-
-			text = type + text + ti->get_text(1) + "\n";
-			TreeItem *ci = ti->get_first_child();
-			while (ci) {
-				text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
-				ci = ci->get_next();
-			}
-
-			DisplayServer::get_singleton()->clipboard_set(text);
+			DisplayServer::get_singleton()->clipboard_set(buffer.as_string());
 		} break;
 
 		case ACTION_OPEN_SOURCE: {
@@ -2327,13 +2357,15 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_column_expand(1, true);
 		error_tree->set_column_clip_content(1, true);
 
-		error_tree->set_select_mode(Tree::SELECT_ROW);
+		error_tree->set_select_mode(Tree::SELECT_MULTI);
 		error_tree->set_hide_root(true);
 		error_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		error_tree->set_allow_rmb_select(true);
 		error_tree->set_allow_reselect(true);
 		error_tree->set_theme_type_variation("TreeSecondary");
-		error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
+		// Previous selections are only discarded after multi_selected is emitted. This would prevent _error_selected()
+		// from discerning single-selects and multi-selects, so CONNECT_DEFERRED is necessary here.
+		error_tree->connect("multi_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected), CONNECT_DEFERRED);
 		error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 		error_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
 		errors_tab->add_child(error_tree);
