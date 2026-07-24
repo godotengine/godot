@@ -4691,8 +4691,10 @@ bool DisplayServerX11::_wait_for_events(int timeout_seconds, int timeout_microse
 
 void DisplayServerX11::_poll_events() {
 	while (!events_thread_done.is_set()) {
-		// Wait with a shorter timeout from the events thread to avoid delayed inputs.
-		_wait_for_events(0, 1000);
+		if (!exiting) {
+			// Wait with a shorter timeout from the events thread to avoid delayed inputs.
+			_wait_for_events(0, 1000);
+		}
 
 		// Process events from the queue.
 		{
@@ -7468,6 +7470,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, DisplayServ
 }
 
 DisplayServerX11::~DisplayServerX11() {
+	exiting = true;
+
 	// Send owned clipboard data to clipboard manager before exit.
 	Window x11_main_window = windows[DisplayServerEnums::MAIN_WINDOW_ID].x11_window;
 	_clipboard_transfer_ownership(XA_PRIMARY, x11_main_window);
