@@ -211,6 +211,9 @@ void GodotArea2D::call_queries() {
 				resptr[i] = &res[i];
 			}
 
+			// sort to get a good execution order for callbacks, goal is to process entered before exited
+			monitored_bodies.sort_custom<BodyStateReverseSort>();
+
 			for (HashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_bodies.begin(); E;) {
 				if (E->value.state == 0) { // Nothing happened
 					HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
@@ -252,6 +255,9 @@ void GodotArea2D::call_queries() {
 			for (int i = 0; i < 5; i++) {
 				resptr[i] = &res[i];
 			}
+
+			// sort to get a good execution order for callbacks, goal is to process entered before exited
+			monitored_areas.sort_custom<BodyStateReverseSort>();
 
 			for (HashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_areas.begin(); E;) {
 				if (E->value.state == 0) { // Nothing happened

@@ -89,6 +89,12 @@ class GodotArea2D : public GodotCollisionObject2D {
 		_FORCE_INLINE_ void dec() { state--; }
 	};
 
+	struct BodyStateReverseSort {
+		bool operator()(const KeyValue<BodyKey, BodyState> &p_a, const KeyValue<BodyKey, BodyState> &p_b) {
+			return p_a.value.state > p_b.value.state;
+		}
+	};
+
 	HashMap<BodyKey, BodyState, BodyKey> monitored_bodies;
 	HashMap<BodyKey, BodyState, BodyKey> monitored_areas;
 
