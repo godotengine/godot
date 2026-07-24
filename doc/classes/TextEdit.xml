@@ -1424,6 +1424,9 @@
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
 		</member>
+		<member name="undo_enabled" type="bool" setter="set_undo_enabled" getter="is_undo_enabled" default="true" keywords="undo, redo, history, disabled, enabled">
+			If set to [code]false[/code], the undo history is cleared. Text changes are applied normally, but no undo history is recorded. [method undo] and [method redo] have no effect while [method has_undo] and [method has_redo] return [code]false[/code] until this property is enabled again.
+		</member>
 		<member name="use_custom_word_separators" type="bool" setter="set_use_custom_word_separators" getter="is_custom_word_separators_enabled" default="false">
 			If [code]false[/code], using [kbd]Ctrl + Left[/kbd] or [kbd]Ctrl + Right[/kbd] ([kbd]Cmd + Left[/kbd] or [kbd]Cmd + Right[/kbd] on macOS) bindings will use the behavior of [member use_default_word_separators]. If [code]true[/code], it will also stop the caret if a character within [member custom_word_separators] is detected. Useful for subword moving. This behavior also will be applied to the behavior of text selection.
 		</member>
