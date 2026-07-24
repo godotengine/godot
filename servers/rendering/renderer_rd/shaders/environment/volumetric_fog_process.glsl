@@ -349,6 +349,13 @@ void main() {
 
 			fog_unit_pos = posf * fog_cell_size + fog_cell_size * halton_map[params.temporal_frame]; //center of voxels, offset by halton table
 
+			// Clamp to prevent jitter pushing froxels into degenerate positions.
+			// Min z prevents view_pos from collapsing to camera origin (broke with frustum_size_begin=(0,0) fix).
+			// Min xy prevents potential underflow in uvec2 cast of screen_pos.
+			// Max keeps within the froxel buffer.
+
+			fog_unit_pos = clamp(fog_unit_pos, fog_cell_size * 0.5, vec3(1.0) - fog_cell_size * 0.5);
+
 			screen_pos = uvec2(fog_unit_pos.xy * params.screen_size);
 			cluster_pos = screen_pos >> params.cluster_shift;
 			cluster_offset = (params.cluster_width * cluster_pos.y + cluster_pos.x) * (params.max_cluster_element_count_div_32 + 32);
