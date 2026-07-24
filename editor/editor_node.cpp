@@ -6881,9 +6881,7 @@ void EditorNode::_cancel_confirmation() {
 }
 
 void EditorNode::_prepare_save_confirmation_popup() {
-	if (save_confirmation->get_window() != get_last_exclusive_window()) {
-		save_confirmation->reparent(get_last_exclusive_window());
-	}
+	save_confirmation->reparent(get_last_exclusive_window(true));
 }
 
 void EditorNode::_toggle_distraction_free_mode() {
