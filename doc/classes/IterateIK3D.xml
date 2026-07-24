@@ -45,7 +45,7 @@
 				Rotation is done in the local space which is constructed by the bone direction (in general parent to child) as the +Y axis and [method get_joint_limitation_right_axis_vector] as the +X axis.
 				If the +X and +Y axes are not orthogonal, the +X axis is implicitly modified to make it orthogonal.
 				Also, if the length of [method get_joint_limitation_right_axis_vector] is zero, the space is created by rotating the reference pose using the shortest arc that rotates the +Y axis of the reference pose to match the bone direction.
-				In here, the reference pose is the bone pose immediately before processing IK.
+				In here, the reference pose is the bone rest or bone pose immediately before processing IK depend on the [method is_joint_using_rest_for_limitation].
 			</description>
 		</method>
 		<method name="get_joint_rotation_axis" qualifiers="const">
@@ -70,6 +70,14 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the target node that the end bone is trying to reach.
+			</description>
+		</method>
+		<method name="is_joint_using_rest_for_limitation" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<description>
+				Returns whether the limitation at [param joint] in the bone chain's joint list is applied based on the [method Skeleton3D.get_bone_rest].
 			</description>
 		</method>
 		<method name="set_joint_limitation">
@@ -122,6 +130,7 @@
 				The axes are based on the reference pose's space, if [param axis] is [constant SkeletonModifier3D.ROTATION_AXIS_CUSTOM], you can specify any axis.
 				In here, the reference pose is the bone pose immediately before processing IK.
 				[b]Note:[/b] The rotation axis and the forward vector shouldn't be colinear to avoid unintended rotation since [ChainIK3D] does not factor in twisting forces.
+				[b]Note:[/b] Since [IterateIK3D] never modifies the twist, the twist is not fixed by [method set_joint_rotation_axis] even if [method is_joint_using_rest_for_limitation] is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_joint_rotation_axis_vector">
@@ -133,6 +142,17 @@
 				Sets the rotation axis vector for the specified joint in the bone chain.
 				This vector is normalized by an internal process and represents the axis around which the bone chain can rotate.
 				If the vector length is [code]0[/code], it is considered synonymous with [constant SkeletonModifier3D.ROTATION_AXIS_ALL].
+			</description>
+		</method>
+		<method name="set_joint_use_rest_for_limitation">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="joint" type="int" />
+			<param index="2" name="enabled" type="bool" />
+			<description>
+				Sets whether the limitation and the rotation axis at [param joint] in the bone chain's joint list are applied based on the [method Skeleton3D.get_bone_rest]. See also [method set_joint_rotation_axis].
+				[b]Note:[/b] The limitation is applied to the rotation computed by this modifier. If the reference pose is rotated around the same axis, the limitation behaves as if it also limits the rotation of the reference pose. A rotation that this modifier does not change, such as the twist, is not limited.
+				[b]Note:[/b] The rendered gizmo's limitation shape will only respect the reference pose when this option is [code]false[/code] and the modifier is active.
 			</description>
 		</method>
 		<method name="set_target_node">
