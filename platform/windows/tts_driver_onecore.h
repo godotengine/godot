@@ -31,57 +31,45 @@
 #pragma once
 
 #include "tts_driver.h"
-
-GODOT_GCC_WARNING_PUSH
-GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
-GODOT_GCC_WARNING_IGNORE("-Wctor-dtor-privacy")
-GODOT_GCC_WARNING_IGNORE("-Wshadow")
-GODOT_GCC_WARNING_IGNORE("-Wstrict-aliasing")
-GODOT_CLANG_WARNING_PUSH
-GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
-
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.Foundation.Metadata.h>
-#include <winrt/Windows.Media.Core.h>
-#include <winrt/Windows.Media.Playback.h>
-#include <winrt/Windows.Media.SpeechSynthesis.h>
-#include <winrt/Windows.Storage.Streams.h>
-
-GODOT_GCC_WARNING_POP
-GODOT_CLANG_WARNING_POP
-
-using namespace winrt::Windows::Foundation;
-using namespace winrt::Windows::Foundation::Collections;
-using namespace winrt::Windows::Foundation::Metadata;
-using namespace winrt::Windows::Media::Core;
-using namespace winrt::Windows::Media::Playback;
-using namespace winrt::Windows::Media::SpeechSynthesis;
-using namespace winrt::Windows::Storage::Streams;
+#include "winrt_utils.h"
 
 struct TTSUtterance;
 
+class GodotMediaEndedEventHandler;
+class GodotMediaFailedEventHandler;
+class GodotMediaMarkerReachedEventHandler;
+class GodotMediaCueEventHandler;
+
 class TTSDriverOneCore : public TTSDriver {
+	friend class GodotMediaEndedEventHandler;
+	friend class GodotMediaFailedEventHandler;
+	friend class GodotMediaMarkerReachedEventHandler;
+	friend class GodotMediaCueEventHandler;
+
 	List<TTSUtterance> queue;
 
 	bool playing = false;
 	bool paused = false;
 	bool update_requested = false;
 
-	int64_t id = -1;
-	Char16String string;
-	std::shared_ptr<MediaPlayer> media;
+	ComPtr<ROMediaPlayer> media;
 	struct TrackData {
-		TimedMetadataTrack track;
-		winrt::event_token token{};
+		ROEventToken token_c;
+		ComPtr<ROTypedEventHandler_TimedMetadataTrack_MediaCueEventArgs> handler_c;
+		ComPtr<ROTimedMetadataTrack> track;
 	};
 	Vector<TrackData> tracks;
-	winrt::event_token token_s{};
-	winrt::event_token token_f{};
-	winrt::event_token token_e{};
+	ComPtr<ROTypedEventHandler_MediaPlayer_PlaybackMediaMarkerReachedEventArgs> handler_s;
+	ComPtr<ROTypedEventHandler_MediaPlayer_MediaPlayerFailedEventArgs> handler_f;
+	ComPtr<ROTypedEventHandler_MediaPlayer_IInspectable> handler_e;
+	ROEventToken token_s;
+	ROEventToken token_f;
+	ROEventToken token_e;
 	int64_t offset = 0;
+	int64_t id = -1;
+	Char16String string;
 
 	void _dispose_current(bool p_silent = false, bool p_canceled = false);
-
 	void _speech_cancel(int p_msg_id);
 	void _speech_end(int p_msg_id);
 	void _speech_index_mark(int p_msg_id, int p_index_mark);

@@ -7799,14 +7799,16 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Dis
 
 	rendering_driver = p_rendering_driver;
 
-	// Init TTS
+	native_menu = memnew(NativeMenuWindows);
+
+	// Init WinRT API and create dispatch queue.
+	has_winrt_queue = WinRTUtils::create_queue();
+
+	// Init TTS (note: should be called after WinRT init).
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
 		initialize_tts();
 	}
-	native_menu = memnew(NativeMenuWindows);
-
-	has_winrt_queue = WinRTUtils::create_queue();
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
