@@ -54,11 +54,10 @@ JpgLoader::~JpgLoader()
     tjFree(surface.buf8);
 }
 
-
-bool JpgLoader::open(const char* path)
+bool JpgLoader::open(const char* path, TVG_UNUSED const LoaderOps* ops)
 {
 #ifdef THORVG_FILE_IO_SUPPORT
-    if (!(data = (unsigned char*) LoadModule::open(path, size))) return false;
+    if (!(data = (unsigned char*)Loader::open(path, size))) return false;
 
     int width, height, subSample, colorSpace;
     if (tjDecompressHeader3(jpegDecompressor, data, size, &width, &height, &subSample, &colorSpace) < 0) return false;
@@ -71,8 +70,7 @@ bool JpgLoader::open(const char* path)
 #endif
 }
 
-
-bool JpgLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rpath, bool copy)
+bool JpgLoader::open(const char* data, uint32_t size, TVG_UNUSED const LoaderOps* ops, bool copy)
 {
     int width, height, subSample, colorSpace;
     if (tjDecompressHeader3(jpegDecompressor, (unsigned char *) data, size, &width, &height, &subSample, &colorSpace) < 0) return false;
@@ -97,7 +95,7 @@ bool JpgLoader::open(const char* data, uint32_t size, TVG_UNUSED const char* rpa
 
 bool JpgLoader::read()
 {
-    if (!LoadModule::read()) return true;
+    if (!Loader::read()) return true;
 
     if (w == 0 || h == 0) return false;
 

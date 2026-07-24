@@ -80,7 +80,6 @@ struct SwTask : Task
         return false;
     }
 
-    virtual void dispose() = 0;
     virtual bool clip(SwRle* target) = 0;
     virtual ~SwTask() {}
 };
@@ -91,6 +90,11 @@ struct SwShapeTask : SwTask
     SwShape shape;
     const RenderShape* rshape = nullptr;
     bool clipper = false;
+
+    ~SwShapeTask()
+    {
+        shapeFree(shape);
+    }
 
     /* We assume that if the stroke width is greater than 2,
        the shape's outline beneath the stroke could be adequately covered by the stroke drawing.
@@ -179,11 +183,6 @@ struct SwShapeTask : SwTask
         shapeDelOutline(shape, mpool, tid);
         invisible();
     }
-
-    void dispose() override
-    {
-       shapeFree(shape);
-    }
 };
 
 
@@ -191,6 +190,11 @@ struct SwImageTask : SwTask
 {
     SwImage image;
     RenderSurface* source;                //Image source
+
+    ~SwImageTask()
+    {
+        imageFree(image);
+    }
 
     bool clip(SwRle* target) override
     {
@@ -241,11 +245,6 @@ struct SwImageTask : SwTask
         imageDelOutline(image, mpool, tid);
         if (!nodirty) dirtyRegion->add(prvBox, curBox);
     }
-
-    void dispose() override
-    {
-       imageFree(image);
-    }
 };
 
 
@@ -279,11 +278,9 @@ bool SwRenderer::sync()
 {
     //clear if the rendering was not triggered.
     ARRAY_FOREACH(p, tasks) {
+        (*p)->done();
         if ((*p)->disposed) delete(*p);
-        else {
-            (*p)->done();
-            (*p)->pushed = false;
-        }
+        else (*p)->pushed = false;
     }
     tasks.clear();
 
@@ -831,9 +828,6 @@ ColorSpace SwRenderer::colorSpace()
 void SwRenderer::dispose(RenderData data)
 {
     auto task = static_cast<SwTask*>(data);
-    task->done();
-    task->dispose();
-
     if (task->pushed) task->disposed = true;
     else delete(task);
 }
@@ -873,8 +867,7 @@ SwTask* SwRenderer::prepareCommon(SwTask* task, const Matrix& transform, const A
     return task;
 }
 
-
-RenderData SwRenderer::prepare(RenderSurface* surface, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags)
+RenderData SwRenderer::prepare(RenderSurface* surface, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags)
 {
     auto task = static_cast<SwImageTask*>(data);
     if (task) task->done();
@@ -887,7 +880,7 @@ RenderData SwRenderer::prepare(RenderSurface* surface, RenderData data, const Ma
     return prepareCommon(task, transform, clips, opacity, flags, (opacity == 0));
 }
 
-RenderData SwRenderer::prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper)
+RenderData SwRenderer::prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper)
 {
     auto task = static_cast<SwShapeTask*>(data);
     if (task) task->done();
