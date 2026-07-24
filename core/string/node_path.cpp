@@ -282,6 +282,10 @@ NodePath NodePath::slice(int p_begin, int p_end) const {
 	return NodePath(names, sub_names, absolute);
 }
 
+NodePath NodePath::with_subnames(const Vector<StringName> &p_subname) const {
+	return NodePath(get_names(), { p_subname }, is_absolute());
+}
+
 NodePath NodePath::rel_path_to(const NodePath &p_np) const {
 	ERR_FAIL_COND_V(!is_absolute(), NodePath());
 	ERR_FAIL_COND_V(!p_np.is_absolute(), NodePath());
