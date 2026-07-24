@@ -153,6 +153,39 @@ static RD::HitShaderBindingTableRange _encode_hit_sbt_range(uint32_t p_offset, u
 
 #define SECONDARY_COMMAND_BUFFERS_PER_FRAME 0
 
+enum class RenderGraphFlags {
+	None = 0,
+	DisableReordering = 1 << 0,
+	FullBarriers = 1 << 1,
+};
+
+static RenderGraphFlags g_render_flags = RenderGraphFlags::None;
+
+static void configure_render_graph_flags() {
+	bool disable_reordering = OS::get_singleton()->get_environment("GODOT_RG_DISABLE_REORDERING") == "1";
+	bool enable_full_barriers = OS::get_singleton()->get_environment("GODOT_RG_ENABLE_FULL_BARRIERS") == "1";
+
+	g_render_flags = RenderGraphFlags::None;
+
+	if (disable_reordering) {
+		print_line("RG: Disable reordering");
+		g_render_flags = RenderGraphFlags(uint32_t(g_render_flags) | uint32_t(RenderGraphFlags::DisableReordering));
+	}
+
+	if (enable_full_barriers) {
+		print_line("RG: Enable full barriers");
+		g_render_flags = RenderGraphFlags(uint32_t(g_render_flags) | uint32_t(RenderGraphFlags::FullBarriers));
+	}
+}
+
+static bool render_graph_reordering_enabled() {
+	return (uint32_t(g_render_flags) & uint32_t(RenderGraphFlags::DisableReordering)) == 0;
+}
+
+static bool render_graph_full_barriers_enabled() {
+	return (uint32_t(g_render_flags) & uint32_t(RenderGraphFlags::FullBarriers)) != 0;
+}
+
 RenderingDevice *RenderingDevice::singleton = nullptr;
 
 RenderingDevice *RenderingDevice::get_singleton() {
@@ -884,6 +917,9 @@ Error RenderingDevice::_insert_staging_block(StagingBuffers &p_staging_buffers) 
 
 	block.driver_id = driver->buffer_create(p_staging_buffers.block_size, p_staging_buffers.usage_bits, RDD::MEMORY_ALLOCATION_TYPE_CPU, frames_drawn);
 	ERR_FAIL_COND_V(!block.driver_id, ERR_CANT_CREATE);
+#if DEV_ENABLED
+	driver->set_object_name(RDD::OBJECT_TYPE_BUFFER, block.driver_id, "Staging");
+#endif
 
 	block.frame_used = 0;
 	block.fill_amount = 0;
@@ -2146,7 +2182,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 			write_ptr = driver->buffer_map(transfer_worker->staging_buffer);
 			ERR_FAIL_NULL_V(write_ptr, ERR_CANT_CREATE);
 
-			if (driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+			if (driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS) && driver->api_trait_get(RDD::API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS)) {
 				// Transition the texture to the optimal layout.
 				RDD::TextureBarrier tb;
 				tb.texture = texture->driver_id;
@@ -2213,7 +2249,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 			driver->buffer_unmap(transfer_worker->staging_buffer);
 
 			// If the texture does not have a tracker, it means it must be transitioned to the sampling state.
-			if (texture->draw_tracker == nullptr && driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS)) {
+			if (texture->draw_tracker == nullptr && driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS) && driver->api_trait_get(RDD::API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS)) {
 				RDD::TextureBarrier tb;
 				tb.texture = texture->driver_id;
 				tb.src_access = RDD::BARRIER_ACCESS_COPY_WRITE_BIT;
@@ -8119,7 +8155,7 @@ void RenderingDevice::_end_frame() {
 	_submit_transfer_barriers(command_buffer);
 
 	GodotProfileZoneGrouped(_profile_zone, "draw_graph.end");
-	draw_graph.end(RENDER_GRAPH_REORDER == 1, RENDER_GRAPH_FULL_BARRIERS == 1, command_buffer, frames[frame].command_buffer_pool);
+	draw_graph.end(command_buffer, frames[frame].command_buffer_pool);
 	GodotProfileZoneGrouped(_profile_zone, "driver->command_buffer_end");
 	driver->command_buffer_end(command_buffer);
 	GodotProfileZoneGrouped(_profile_zone, "driver->end_segment");
@@ -8525,7 +8561,7 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	driver->command_buffer_begin(frames[0].command_buffer);
 
 	// Create draw graph and start it initialized as well.
-	draw_graph.initialize(driver, &_render_pass_create_from_graph, frames.size(), main_queue_family, SECONDARY_COMMAND_BUFFERS_PER_FRAME);
+	draw_graph.initialize(driver, &_render_pass_create_from_graph, frames.size(), main_queue_family, SECONDARY_COMMAND_BUFFERS_PER_FRAME, render_graph_reordering_enabled(), render_graph_full_barriers_enabled(), context->is_debug_utils_enabled());
 	draw_graph.begin();
 
 	for (uint32_t i = 0; i < frames.size(); i++) {
@@ -9873,6 +9909,7 @@ RenderingDevice::~RenderingDevice() {
 }
 
 RenderingDevice::RenderingDevice() {
+	configure_render_graph_flags();
 	if (singleton == nullptr) {
 		singleton = this;
 	}

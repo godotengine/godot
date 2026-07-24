@@ -265,7 +265,7 @@ fragment void fullscreenNoopFrag(float4 gl_FragCoord [[position]]) {
 		*p_error = err;
 	}
 
-	if (mtlLib.get() == nullptr) {
+	if (!mtlLib) {
 		return {};
 	}
 
@@ -415,14 +415,30 @@ bool MDAttachment::shouldClear(const MDSubpass &p_subpass, bool p_is_stencil) co
 	return (p_is_stencil ? stencilLoadAction : loadAction) == MTL::LoadActionClear;
 }
 
-MDRenderPass::MDRenderPass(Vector<MDAttachment> &p_attachments, Vector<MDSubpass> &p_subpasses) :
-		attachments(p_attachments), subpasses(p_subpasses) {
+MDRenderPass::MDRenderPass(LocalVector<MDAttachment> &&p_attachments, LocalVector<MDSubpass> &&p_subpasses) :
+		attachments(std::move(p_attachments)), subpasses(std::move(p_subpasses)) {
 	for (MDAttachment &att : attachments) {
 		att.linkToSubpass(*this);
 	}
 }
 
 #pragma mark - Command Buffer Base
+
+MDCommandBufferBase::~MDCommandBufferBase() {
+	release_resources();
+}
+
+void MDCommandBufferBase::begin() {
+	_begin();
+}
+
+void MDCommandBufferBase::commit() {
+	_commit();
+}
+
+void MDCommandBufferBase::end() {
+	_end();
+}
 
 void MDCommandBufferBase::retain_resource(CFTypeRef p_resource) {
 	CFRetain(p_resource);
@@ -618,13 +634,19 @@ void MDCommandBufferBase::encode_push_constant_data(RDD::ShaderID p_shader, Vect
 			}
 			push_constant_binding = shader->push_constants.binding;
 			const void *ptr = p_data.ptr();
-			push_constant_data_len = p_data.size() * sizeof(uint32_t);
+			uint32_t data_len = p_data.size() * sizeof(uint32_t);
+			// Round buffer length up to 16 bytes. SPIRV-Cross's MSL backend pads the
+			// generated push struct to its strictest member alignment (typically vec4 → 16),
+			// so Metal validates the bound buffer length against sizeof(struct), not the
+			// caller's unpadded data size. The trailing bytes are never read by the shader.
+			push_constant_data_len = (data_len + 15u) & ~15u;
 			DEV_ASSERT(push_constant_data_len <= sizeof(push_constant_data));
-			memcpy(push_constant_data, ptr, push_constant_data_len);
+			memcpy(push_constant_data, ptr, data_len);
 			if (push_constant_data_len > 0) {
 				mark_push_constants_dirty();
 			}
 		} break;
+		case MDCommandBufferStateType::InlineRender:
 		case MDCommandBufferStateType::Blit:
 		case MDCommandBufferStateType::None:
 			return;

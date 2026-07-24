@@ -162,3 +162,8 @@ constexpr uint32_t MSL_VERSION_40 = make_msl_version(4, 0);
  * |   4.0   |  26.0   |  26.0   |
  * |---------|---------|---------|
  */
+
+#define MTL_IGNORE_AVAILABILITY_BEGIN \
+	GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability-new")
+#define MTL_IGNORE_AVAILABILITY_END \
+	GODOT_CLANG_WARNING_POP

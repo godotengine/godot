@@ -894,7 +894,7 @@ void RenderingDeviceDriverMetal::_swap_chain_release_buffers(SwapChain *p_swap_c
 
 RDD::SwapChainID RenderingDeviceDriverMetal::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
 	const RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(p_surface);
-	if (use_barriers) {
+	if (sync_mode != HazardTracking) {
 		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 		add_residency_set_to_main_queue(surface->get_residency_set());
 		GODOT_CLANG_WARNING_POP
@@ -995,7 +995,7 @@ void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain
 
 void RenderingDeviceDriverMetal::swap_chain_free(SwapChainID p_swap_chain) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-	if (use_barriers) {
+	if (sync_mode != HazardTracking) {
 		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 		RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
 		remove_residency_set_to_main_queue(surface->get_residency_set());
@@ -1031,7 +1031,7 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 		textures.write[i] = tex;
 	}
 
-	MDFrameBuffer *fb = memnew(MDFrameBuffer(textures, Size2i(p_width, p_height)));
+	MDFrameBufferTexture *fb = memnew(MDFrameBufferTexture(textures, Size2i(p_width, p_height)));
 	return FramebufferID(fb);
 }
 
@@ -1321,7 +1321,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 			}
 		};
 #define ADD_USAGE(res, stage, usage) \
-	if (!use_barriers) { \
+	if (sync_mode == HazardTracking) { \
 		add_usage(res, stage, usage); \
 	}
 
@@ -1418,7 +1418,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 
 #undef ADD_USAGE
 
-		if (!use_barriers) {
+		if (sync_mode == HazardTracking) {
 			for (const KeyValue<MTL::Resource *, StageResourceUsage> &keyval : bound_resources) {
 				ResourceVector *resources = set->usage_to_resources.getptr(keyval.value);
 				if (resources == nullptr) {
@@ -1615,10 +1615,10 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 
 	size_t subpass_count = p_subpasses.size();
 
-	Vector<MDSubpass> subpasses;
+	LocalVector<MDSubpass> subpasses;
 	subpasses.resize(subpass_count);
 	for (uint32_t i = 0; i < subpass_count; i++) {
-		MDSubpass &subpass = subpasses.write[i];
+		MDSubpass &subpass = subpasses[i];
 		subpass.subpass_index = i;
 		subpass.view_count = p_view_count;
 		subpass.input_references = p_subpasses[i].input_references;
@@ -1639,12 +1639,12 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		MTL::StoreActionDontCare, // ATTACHMENT_STORE_OP_DONT_CARE
 	};
 
-	Vector<MDAttachment> attachments;
+	LocalVector<MDAttachment> attachments;
 	attachments.resize(p_attachments.size());
 
 	for (uint32_t i = 0; i < p_attachments.size(); i++) {
 		const Attachment &a = p_attachments[i];
-		MDAttachment &mda = attachments.write[i];
+		MDAttachment &mda = attachments[i];
 		MTL::PixelFormat format = pf.getMTLPixelFormat(a.format);
 		mda.format = format;
 		if (a.samples > TEXTURE_SAMPLES_1) {
@@ -1666,7 +1666,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 			mda.type |= MDAttachmentType::Color;
 		}
 	}
-	MDRenderPass *obj = memnew(MDRenderPass(attachments, subpasses));
+	MDRenderPass *obj = memnew(MDRenderPass(std::move(attachments), std::move(subpasses)));
 	return RenderPassID(obj);
 }
 
@@ -2204,6 +2204,16 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 
 // ----- COMMANDS -----
 
+void RenderingDeviceDriverMetal::command_begin_compute_pass(CommandBufferID p_cmd_buffer) {
+	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
+	cb->compute_begin_pass();
+}
+
+void RenderingDeviceDriverMetal::command_end_compute_pass(CommandBufferID p_cmd_buffer) {
+	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
+	cb->compute_end_pass();
+}
+
 void RenderingDeviceDriverMetal::command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
 	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
 	cb->bind_pipeline(p_pipeline);
@@ -2382,6 +2392,11 @@ void RenderingDeviceDriverMetal::command_end_label(CommandBufferID p_cmd_buffer)
 	cb->end_label();
 }
 
+void RenderingDeviceDriverMetal::command_group_end(CommandBufferID p_cmd_buffer) {
+	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
+	cb->end();
+}
+
 #pragma mark - Debug
 
 void RenderingDeviceDriverMetal::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
@@ -2500,7 +2515,6 @@ void RenderingDeviceDriverMetal::_copy_queue_copy_to_buffer(Span<uint8_t> p_src_
 
 	memcpy(_copy_queue_buffer_ptr(), p_src_data.ptr(), p_src_data.size());
 
-	copy_queue_rs.get()->addAllocation(p_dst_buffer);
 	blit_encoder->copyFromBuffer(copy_queue_buffer.get(), copy_queue_buffer_offset, p_dst_buffer, p_dst_offset, p_src_data.size());
 
 	_copy_queue_buffer_consume(p_src_data.size());
@@ -2511,16 +2525,12 @@ void RenderingDeviceDriverMetal::_copy_queue_flush() {
 		return;
 	}
 
-	copy_queue_rs.get()->addAllocation(copy_queue_buffer.get());
-	copy_queue_rs.get()->commit();
-
 	copy_queue_blit_encoder.get()->endEncoding();
 	copy_queue_blit_encoder.reset();
 	copy_queue_command_buffer.get()->commit();
 	copy_queue_command_buffer.get()->waitUntilCompleted();
 	copy_queue_command_buffer.reset();
 	copy_queue_buffer_offset = 0;
-	copy_queue_rs.get()->removeAllAllocations();
 }
 
 Error RenderingDeviceDriverMetal::_copy_queue_initialize() {
@@ -2533,18 +2543,6 @@ Error RenderingDeviceDriverMetal::_copy_queue_initialize() {
 	// Reserve 64 KiB for copy commands. If the buffer fills, it will be flushed automatically.
 	copy_queue_buffer = NS::TransferPtr(device->newBuffer(64 * 1024, MTL::ResourceStorageModeShared | MTL::ResourceHazardTrackingModeUntracked));
 	copy_queue_buffer.get()->setLabel(MTLSTR("Copy Command Scratch Buffer"));
-
-	if (__builtin_available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 1.0, *)) {
-		if (device_properties->features.supports_residency_sets) {
-			MTL::ResidencySetDescriptor *rs_desc = MTL::ResidencySetDescriptor::alloc()->init();
-			rs_desc->setInitialCapacity(2);
-			rs_desc->setLabel(MTLSTR("Copy Queue Residency Set"));
-			NS::Error *error = nullptr;
-			copy_queue_rs = NS::TransferPtr(device->newResidencySet(rs_desc, &error));
-			rs_desc->release();
-			copy_queue.get()->addResidencySet(copy_queue_rs.get());
-		}
-	}
 
 	return OK;
 }
@@ -2679,8 +2677,12 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 uint64_t RenderingDeviceDriverMetal::api_trait_get(ApiTrait p_trait) {
 	switch (p_trait) {
 		case API_TRAIT_HONORS_PIPELINE_BARRIERS:
-			return use_barriers;
-		case API_TRAIT_CLEARS_WITH_COPY_ENGINE:
+			return sync_mode == Barriers;
+		case API_TRAIT_BUFFER_CLEARS_WITH_COPY_ENGINE:
+			return true;
+		case API_TRAIT_TEXTURE_CLEARS_WITH_COPY_ENGINE:
+			return false;
+		case API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS:
 			return false;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
@@ -2760,6 +2762,11 @@ RenderingDeviceDriverMetal::RenderingDeviceDriverMetal(RenderingContextDriverMet
 		archive_fail_on_miss = true;
 	}
 
+	// Unrecognized values intentionally fall back to native hazard tracking.
+	if (String res = OS::get_singleton()->get_environment("GODOT_MTL_SYNC_MODE"); res == U"barriers") {
+		sync_mode = Barriers;
+	}
+
 #if TARGET_OS_OSX
 	if (String res = OS::get_singleton()->get_environment("GODOT_MTL_SHADER_LOAD_STRATEGY"); res == U"lazy") {
 		_shader_load_strategy = ShaderLoadStrategy::LAZY;
@@ -2793,13 +2800,13 @@ Error RenderingDeviceDriverMetal::_create_device() {
 }
 
 void RenderingDeviceDriverMetal::_track_resource(MTL::Resource *p_resource) {
-	if (use_barriers) {
+	if (sync_mode != HazardTracking) {
 		_residency_add.push_back(p_resource);
 	}
 }
 
 void RenderingDeviceDriverMetal::_untrack_resource(MTL::Resource *p_resource) {
-	if (use_barriers) {
+	if (sync_mode != HazardTracking) {
 		_residency_del.push_back(p_resource);
 	}
 }

@@ -39,8 +39,12 @@
 #define PRINT_DRAW_LIST_STATS 0
 
 RenderingDeviceGraph::RenderingDeviceGraph() {
+	_reorder_commands = false;
+	_full_barriers = false;
+	_debug_utils_enabled = false;
 	driver_honors_barriers = false;
-	driver_clears_with_copy_engine = false;
+	driver_buffer_clears_with_copy_engine = false;
+	driver_texture_clears_with_copy_engine = false;
 }
 
 RenderingDeviceGraph::~RenderingDeviceGraph() {
@@ -620,8 +624,8 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 
 		if (different_usage) {
 			// Even if the usage of the resource isn't a write usage explicitly, a different usage implies a transition and it should therefore be considered a write.
-			// In the case of buffers however, this is not exactly necessary if the driver does not consider different buffer usages as different states.
-			write_usage = write_usage || bool(resource_tracker->texture_driver_id) || driver_buffers_require_transitions;
+			// However, this is not necessary if the driver does not consider different usages as different states (e.g. no image layouts).
+			write_usage = write_usage || (driver_textures_require_layout_transitions && bool(resource_tracker->texture_driver_id)) || driver_buffers_require_transitions;
 			resource_tracker->usage = new_resource_usage;
 		}
 
@@ -1090,6 +1094,7 @@ void RenderingDeviceGraph::_wait_for_secondary_command_buffer_tasks() {
 }
 
 void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool, int32_t &r_current_label_index, int32_t &r_current_label_level) {
+	driver->command_group_begin(r_command_buffer);
 	for (uint32_t i = 0; i < p_sorted_commands_count; i++) {
 		const uint32_t command_index = p_sorted_commands[i].index;
 		const uint32_t command_data_offset = command_data_offsets[command_index];
@@ -1154,7 +1159,9 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 				}
 
 				const RecordedComputeListCommand *compute_list_command = reinterpret_cast<const RecordedComputeListCommand *>(command);
+				driver->command_begin_compute_pass(r_command_buffer);
 				_run_compute_list_command(r_command_buffer, compute_list_command->instruction_data(), compute_list_command->instruction_data_size);
+				driver->command_end_compute_pass(r_command_buffer);
 			} break;
 			case RecordedCommand::TYPE_DRAW_LIST: {
 				if (driver_workarounds.avoid_compute_after_draw) {
@@ -1239,10 +1246,11 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 			}
 		}
 	}
+	driver->command_group_end(r_command_buffer);
 }
 
 void RenderingDeviceGraph::_run_label_command_change(RDD::CommandBufferID p_command_buffer, int32_t p_new_label_index, int32_t p_new_level, bool p_ignore_previous_value, bool p_use_label_for_empty, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count, int32_t &r_current_label_index, int32_t &r_current_label_level) {
-	if (command_label_count == 0) {
+	if (!_debug_utils_enabled || command_label_count == 0) {
 		// Ignore any label operations if no labels were pushed.
 		return;
 	}
@@ -1368,7 +1376,7 @@ void RenderingDeviceGraph::_boost_priority_for_render_commands(RecordedCommandSo
 	}
 }
 
-void RenderingDeviceGraph::_group_barriers_for_render_commands(RDD::CommandBufferID p_command_buffer, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count, bool p_full_memory_barrier) {
+void RenderingDeviceGraph::_group_barriers_for_render_commands(RDD::CommandBufferID p_command_buffer, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count) {
 	if (!driver_honors_barriers) {
 		return;
 	}
@@ -1426,7 +1434,7 @@ void RenderingDeviceGraph::_group_barriers_for_render_commands(RDD::CommandBuffe
 		}
 	}
 
-	if (p_full_memory_barrier) {
+	if (_full_barriers) {
 		barrier_group.src_stages = RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT;
 		barrier_group.dst_stages = RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT;
 		barrier_group.memory_barrier.src_access = RDD::BARRIER_ACCESS_MEMORY_READ_BIT | RDD::BARRIER_ACCESS_MEMORY_WRITE_BIT;
@@ -1728,7 +1736,7 @@ void RenderingDeviceGraph::_print_compute_list(const uint8_t *p_instruction_data
 	}
 }
 
-void RenderingDeviceGraph::initialize(RDD *p_driver, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame) {
+void RenderingDeviceGraph::initialize(RDD *p_driver, RenderPassCreationFunction p_render_pass_creation_function, uint32_t p_frame_count, RDD::CommandQueueFamilyID p_secondary_command_queue_family, uint32_t p_secondary_command_buffers_per_frame, bool p_reorder_commands, bool p_full_barriers, bool p_debug_utils_enabled) {
 	DEV_ASSERT(p_driver != nullptr);
 	DEV_ASSERT(p_render_pass_creation_function != nullptr);
 	DEV_ASSERT(p_frame_count > 0);
@@ -1749,9 +1757,14 @@ void RenderingDeviceGraph::initialize(RDD *p_driver, RenderPassCreationFunction 
 		}
 	}
 
+	_reorder_commands = p_reorder_commands;
+	_full_barriers = p_full_barriers;
+	_debug_utils_enabled = p_debug_utils_enabled;
 	driver_honors_barriers = driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS);
-	driver_clears_with_copy_engine = driver->api_trait_get(RDD::API_TRAIT_CLEARS_WITH_COPY_ENGINE);
+	driver_buffer_clears_with_copy_engine = driver->api_trait_get(RDD::API_TRAIT_BUFFER_CLEARS_WITH_COPY_ENGINE);
+	driver_texture_clears_with_copy_engine = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_CLEARS_WITH_COPY_ENGINE);
 	driver_buffers_require_transitions = driver->api_trait_get(RDD::API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS);
+	driver_textures_require_layout_transitions = driver->api_trait_get(RDD::API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS);
 }
 
 void RenderingDeviceGraph::finalize() {
@@ -1867,7 +1880,7 @@ void RenderingDeviceGraph::add_buffer_clear(RDD::BufferID p_dst, ResourceTracker
 	command->size = p_size;
 
 	ResourceUsage usage;
-	if (driver_clears_with_copy_engine) {
+	if (driver_buffer_clears_with_copy_engine) {
 		command->self_stages = RDD::PIPELINE_STAGE_COPY_BIT;
 		usage = RESOURCE_USAGE_COPY_TO;
 	} else {
@@ -2412,7 +2425,7 @@ void RenderingDeviceGraph::add_texture_clear_color(RDD::TextureID p_dst, Resourc
 	command->range = p_range;
 
 	ResourceUsage usage;
-	if (driver_clears_with_copy_engine) {
+	if (driver_texture_clears_with_copy_engine) {
 		command->self_stages = RDD::PIPELINE_STAGE_COPY_BIT;
 		usage = RESOURCE_USAGE_COPY_TO;
 	} else {
@@ -2442,7 +2455,7 @@ void RenderingDeviceGraph::add_texture_clear_depth_stencil(RDD::TextureID p_dst,
 	command->range = p_range;
 
 	ResourceUsage usage;
-	if (driver_clears_with_copy_engine) {
+	if (driver_texture_clears_with_copy_engine) {
 		command->self_stages = RDD::PIPELINE_STAGE_COPY_BIT;
 		usage = RESOURCE_USAGE_COPY_TO;
 	} else {
@@ -2596,14 +2609,14 @@ void RenderingDeviceGraph::end_label() {
 	command_label_index = -1;
 }
 
-void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool) {
+void RenderingDeviceGraph::end(RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool) {
 	if (command_count == 0) {
 		// No commands have been logged, do nothing.
 		return;
 	}
 
 	thread_local LocalVector<RecordedCommandSort> commands_sorted;
-	if (p_reorder_commands) {
+	if (_reorder_commands) {
 		thread_local LocalVector<int64_t> command_stack;
 		thread_local LocalVector<int32_t> sorted_command_indices;
 		thread_local LocalVector<uint32_t> command_degrees;
@@ -2728,7 +2741,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 		draw_list_total_size = 0;
 #endif
 
-		if (p_reorder_commands) {
+		if (_reorder_commands) {
 #if PRINT_RENDER_GRAPH
 			print_line("BEFORE SORT");
 			_print_render_commands(commands_sorted.ptr(), command_count);
@@ -2753,7 +2766,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 					RecordedCommandSort *level_command_ptr = &commands_sorted[current_level_start];
 					uint32_t level_command_count = i - current_level_start;
 					_boost_priority_for_render_commands(level_command_ptr, level_command_count, boosted_priority);
-					_group_barriers_for_render_commands(r_command_buffer, level_command_ptr, level_command_count, p_full_barriers);
+					_group_barriers_for_render_commands(r_command_buffer, level_command_ptr, level_command_count);
 					_run_render_commands(current_level, level_command_ptr, level_command_count, r_command_buffer, r_command_buffer_pool, current_label_index, current_label_level);
 					current_level = commands_sorted[i].level;
 					current_level_start = i;
@@ -2763,7 +2776,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 			RecordedCommandSort *level_command_ptr = &commands_sorted[current_level_start];
 			uint32_t level_command_count = command_count - current_level_start;
 			_boost_priority_for_render_commands(level_command_ptr, level_command_count, boosted_priority);
-			_group_barriers_for_render_commands(r_command_buffer, level_command_ptr, level_command_count, p_full_barriers);
+			_group_barriers_for_render_commands(r_command_buffer, level_command_ptr, level_command_count);
 			_run_render_commands(current_level, level_command_ptr, level_command_count, r_command_buffer, r_command_buffer_pool, current_label_index, current_label_level);
 
 #if PRINT_RENDER_GRAPH
@@ -2771,7 +2784,7 @@ void RenderingDeviceGraph::end(bool p_reorder_commands, bool p_full_barriers, RD
 #endif
 		} else {
 			for (uint32_t i = 0; i < command_count; i++) {
-				_group_barriers_for_render_commands(r_command_buffer, &commands_sorted[i], 1, p_full_barriers);
+				_group_barriers_for_render_commands(r_command_buffer, &commands_sorted[i], 1);
 				_run_render_commands(i, &commands_sorted[i], 1, r_command_buffer, r_command_buffer_pool, current_label_index, current_label_level);
 			}
 		}
