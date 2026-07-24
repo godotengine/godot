@@ -4726,8 +4726,8 @@ void TextureStorage::render_target_do_msaa_resolve(RID p_render_target) {
 	if (!rt->msaa_needs_resolve) {
 		return;
 	}
-	RD::get_singleton()->draw_list_begin(rt->get_framebuffer());
-	RD::get_singleton()->draw_list_end();
+
+	RD::get_singleton()->texture_resolve_multisample(rt->color_multisample, rt->color);
 	rt->msaa_needs_resolve = false;
 }
 
@@ -5355,9 +5355,17 @@ RD::DataFormat TextureStorage::render_target_get_color_format(bool p_use_hdr, bo
 
 uint32_t TextureStorage::render_target_get_color_usage_bits(bool p_msaa) {
 	if (p_msaa) {
-		return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		// NOTE: `RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT` to support texture_resolve_multisample.
+		return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT |
+				RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+
 	} else {
 		// FIXME: Storage bit should only be requested when FSR is required.
-		return RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		// NOTE: `RD::TEXTURE_USAGE_CAN_COPY_TO_BIT` to support texture_resolve_multisample.
+		return RD::TEXTURE_USAGE_SAMPLING_BIT |
+				RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT |
+				RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT |
+				RD::TEXTURE_USAGE_CAN_COPY_TO_BIT |
+				RD::TEXTURE_USAGE_STORAGE_BIT;
 	}
 }
