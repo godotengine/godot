@@ -11,7 +11,7 @@ partial class ExportedProperties
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     internal new static global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant> GetGodotPropertyDefaultValues()
     {
-        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(71);
+        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(72);
         string __NotGenerateComplexLamdaProperty_default_value = default;
         values.Add(PropertyName.@NotGenerateComplexLamdaProperty, global::Godot.Variant.From<string>(__NotGenerateComplexLamdaProperty_default_value));
         string __NotGenerateLamdaNoFieldProperty_default_value = default;
@@ -20,6 +20,8 @@ partial class ExportedProperties
         values.Add(PropertyName.@NotGenerateComplexReturnProperty, global::Godot.Variant.From<string>(__NotGenerateComplexReturnProperty_default_value));
         string __NotGenerateReturnsProperty_default_value = default;
         values.Add(PropertyName.@NotGenerateReturnsProperty, global::Godot.Variant.From<string>(__NotGenerateReturnsProperty_default_value));
+        string __ExportNameProperty_default_value = "ExportNameProperty";
+        values.Add(PropertyName.@ExportNameProperty, global::Godot.Variant.From<string>(__ExportNameProperty_default_value));
         string __FullPropertyString_default_value = "FullPropertyString";
         values.Add(PropertyName.@FullPropertyString, global::Godot.Variant.From<string>(__FullPropertyString_default_value));
         string __FullPropertyString_Complex_default_value = new string("FullPropertyString_Complex")   + global::System.Convert.ToInt32("1");

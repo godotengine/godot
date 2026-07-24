@@ -25,6 +25,10 @@ partial class ExportedProperties
         /// </summary>
         public new static readonly global::Godot.StringName @NotGenerateReturnsProperty = "NotGenerateReturnsProperty";
         /// <summary>
+        /// Cached name for the 'ExportNameProperty' property.
+        /// </summary>
+        public new static readonly global::Godot.StringName @ExportNameProperty = "ExportNameProperty";
+        /// <summary>
         /// Cached name for the 'FullPropertyString' property.
         /// </summary>
         public new static readonly global::Godot.StringName @FullPropertyString = "FullPropertyString";
@@ -343,6 +347,10 @@ partial class ExportedProperties
         }
         if (name == PropertyName.@NotGenerateReturnsProperty) {
             this.@NotGenerateReturnsProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            return true;
+        }
+        if (name == PropertyName.@ExportNameProperty) {
+            this.@ExportNameProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
             return true;
         }
         if (name == PropertyName.@FullPropertyString) {
@@ -667,6 +675,10 @@ partial class ExportedProperties
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@NotGenerateReturnsProperty);
             return true;
         }
+        if (name == PropertyName.@ExportNameProperty) {
+            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ExportNameProperty);
+            return true;
+        }
         if (name == PropertyName.@FullPropertyString) {
             value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@FullPropertyString);
             return true;
@@ -984,6 +996,7 @@ partial class ExportedProperties
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@NotGenerateComplexReturnProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)2, name: PropertyName.@_notGeneratePropertyInt, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@NotGenerateReturnsProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
+        properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@ExportNameProperty, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true, displayName: "Custom Display Label"));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@_fullPropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@FullPropertyString, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
         properties.Add(new(type: (global::Godot.Variant.Type)4, name: PropertyName.@_fullPropertyStringComplex, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4096, exported: false));

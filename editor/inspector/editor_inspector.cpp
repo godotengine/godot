@@ -35,6 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -4577,7 +4578,16 @@ void EditorInspector::update_tree() {
 		if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
 			name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
 		}
-		const String property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style, p.name, doc_name) + feature_tag;
+		String display_name;
+		Ref<Script> script = object->get_script();
+		if (script.is_valid()) {
+			display_name = script->get_property_display_name(p.name);
+		}
+		String property_label_string = display_name;
+		if (property_label_string.is_empty()) {
+			property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style, p.name, doc_name);
+		}
+		property_label_string += feature_tag;
 
 		// Remove the property from the path.
 		int idx = path.rfind_char('/');

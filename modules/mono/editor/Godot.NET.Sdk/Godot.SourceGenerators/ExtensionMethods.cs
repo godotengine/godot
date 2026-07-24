@@ -278,6 +278,9 @@ namespace Godot.SourceGenerators
         public static bool IsGodotExportAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ExportAttr;
 
+        public static bool IsGodotExportNameAttribute(this INamedTypeSymbol symbol)
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ExportNameAttr;
+
         public static bool IsGodotSignalAttribute(this INamedTypeSymbol symbol)
             => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SignalAttr;
 
