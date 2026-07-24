@@ -106,6 +106,40 @@ struct ObjectSignalLock {
 	}
 };
 
+uint32_t Object::SignalCallableHasher::hash(const Callable &p_callable) {
+	uint32_t hash = p_callable.hash();
+	if (p_callable.get_bound_arguments_count() > 0) {
+		Vector<Variant> bound_args;
+		p_callable.get_bound_arguments_ref(bound_args);
+		for (const Variant &arg : bound_args) {
+			hash = hash_murmur3_one_32(arg.hash(), hash);
+		}
+		hash = hash_fmix32(hash);
+	}
+	if (p_callable.get_unbound_arguments_count() > 0) {
+		hash = hash_murmur3_one_32(p_callable.get_unbound_arguments_count(), hash);
+		hash = hash_fmix32(hash);
+	}
+	return hash;
+}
+
+bool Object::SignalCallableComparator::compare(const Callable &p_lhs, const Callable &p_rhs) {
+	if (p_lhs != p_rhs) {
+		return false;
+	}
+
+	if (p_lhs.get_unbound_arguments_count() != p_rhs.get_unbound_arguments_count()) {
+		return false;
+	}
+
+	Vector<Variant> lhs_bound_args;
+	Vector<Variant> rhs_bound_args;
+	p_lhs.get_bound_arguments_ref(lhs_bound_args);
+	p_rhs.get_bound_arguments_ref(rhs_bound_args);
+
+	return lhs_bound_args == rhs_bound_args;
+}
+
 Object::Connection::operator Variant() const {
 	Dictionary d;
 	d["signal"] = signal;
@@ -1122,7 +1156,7 @@ bool Object::_has_user_signal(const StringName &p_name) const {
 }
 
 void Object::_remove_user_signal(const StringName &p_name) {
-	HashMap<Callable, Object::SignalData::Slot> slots_to_disconnect;
+	HashMap<Callable, Object::SignalData::Slot, Object::SignalCallableHasher, Object::SignalCallableComparator> slots_to_disconnect;
 
 	{
 		ObjectSignalLock signal_lock(this);
@@ -1549,10 +1583,11 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		s = &signal_map[p_signal];
 	}
 
-	//compare with the base callable, so binds can be ignored
-	if (s->slot_map.has(*p_callable.get_base_comparator())) {
+	// Unless CONNECT_UNIQUE, compare with the base callable, so binds can be ignored.
+	const Callable *comparator = (p_flags & CONNECT_UNIQUE) ? &p_callable : p_callable.get_base_comparator();
+	if (s->slot_map.has(*comparator)) {
 		if (p_flags & CONNECT_REFERENCE_COUNTED) {
-			s->slot_map[*p_callable.get_base_comparator()].reference_count++;
+			s->slot_map[*comparator].reference_count++;
 			return OK;
 		} else {
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Signal '%s' is already connected to given callable '%s' in that object.", p_signal, p_callable));
@@ -1573,8 +1608,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 		slot.reference_count = 1;
 	}
 
-	//use callable version as key, so binds can be ignored
-	s->slot_map[*p_callable.get_base_comparator()] = slot;
+	s->slot_map[*comparator] = slot;
 
 	return OK;
 }
@@ -1595,6 +1629,10 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 		}
 
 		ERR_FAIL_V_MSG(false, vformat("Nonexistent signal: '%s'.", p_signal));
+	}
+
+	if (s->slot_map.has(p_callable)) {
+		return true;
 	}
 
 	return s->slot_map.has(*p_callable.get_base_comparator());
@@ -1637,9 +1675,15 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	}
 	ERR_FAIL_NULL_V_MSG(s, false, vformat("Disconnecting nonexistent signal '%s' in '%s'.", p_signal, to_string()));
 
-	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
+	const Callable *comparator;
+	if (p_callable != *p_callable.get_base_comparator() && s->slot_map.has(p_callable)) {
+		comparator = &p_callable;
+	} else {
+		comparator = p_callable.get_base_comparator();
+		ERR_FAIL_COND_V_MSG(!s->slot_map.has(*comparator), false, vformat("Attempt to disconnect a nonexistent connection from '%s'. Signal: '%s', callable: '%s'.", to_string(), p_signal, p_callable));
+	}
 
-	SignalData::Slot *slot = &s->slot_map[*p_callable.get_base_comparator()];
+	SignalData::Slot *slot = &s->slot_map[*comparator];
 
 	if (!p_force) {
 		slot->reference_count--; // by default is zero, if it was not referenced it will go below it
@@ -1652,7 +1696,7 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 		target_object->connections.erase(slot->cE);
 	}
 
-	s->slot_map.erase(*p_callable.get_base_comparator());
+	s->slot_map.erase(*comparator);
 
 	if (s->slot_map.is_empty() && get_gdtype().get_signal_map(false).has(p_signal)) {
 		//not user signal, delete
@@ -1990,6 +2034,7 @@ void Object::_bind_methods() {
 	BIND_BITFIELD_FLAG(CONNECT_ONE_SHOT);
 	BIND_BITFIELD_FLAG(CONNECT_REFERENCE_COUNTED);
 	BIND_BITFIELD_FLAG(CONNECT_APPEND_SOURCE_OBJECT);
+	BIND_BITFIELD_FLAG(CONNECT_UNIQUE);
 }
 
 void Object::call_deferredp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
