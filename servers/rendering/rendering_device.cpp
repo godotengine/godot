@@ -259,7 +259,7 @@ Error RenderingDevice::_acceleration_structure_scratch_buffer_create(Acceleratio
 			to_dispose.driver_id = p_acceleration_structure->scratch_buffer;
 			DEV_ASSERT(scratch_buffer_size <= UINT32_MAX);
 			to_dispose.size = scratch_buffer_size;
-			frames[frame].buffers_to_dispose_of.push_back(to_dispose);
+			frames[frame].resources_to_dispose_of.buffers.push_back(to_dispose);
 			p_acceleration_structure->scratch_buffer = RDD::BufferID();
 		}
 	}
@@ -592,7 +592,7 @@ Error RenderingDevice::_hit_sbt_buffer_update(HitShaderBindingTable *p_hit_sbt, 
 		ERR_FAIL_COND_V(!buffer, ERR_CANT_CREATE);
 
 		RDG::resource_tracker_free(p_hit_sbt->draw_tracker);
-		frames[frame].buffers_to_dispose_of.push_back(*p_hit_sbt);
+		frames[frame].resources_to_dispose_of.buffers.push_back(*p_hit_sbt);
 
 		p_hit_sbt->driver_id = buffer;
 		p_hit_sbt->size = buffer_size;
@@ -7647,27 +7647,26 @@ void RenderingDevice::_free_internal(RID p_id) {
 			}
 		}
 
-		frames[frame].textures_to_dispose_of.push_back(*texture);
+		frames[frame].resources_to_dispose_of.textures.push_back(*texture);
 		texture_owner.free(p_id);
 	} else if (framebuffer_owner.owns(p_id)) {
 		Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_id);
-		frames[frame].framebuffers_to_dispose_of.push_back(*framebuffer);
-
 		if (framebuffer->invalidated_callback != nullptr) {
 			framebuffer->invalidated_callback(framebuffer->invalidated_callback_userdata);
 		}
 
+		frames[frame].resources_to_dispose_of.framebuffers.push_back(*framebuffer);
 		framebuffer_owner.free(p_id);
 	} else if (sampler_owner.owns(p_id)) {
 		RDD::SamplerID sampler_driver_id = *sampler_owner.get_or_null(p_id);
-		frames[frame].samplers_to_dispose_of.push_back(sampler_driver_id);
+		frames[frame].resources_to_dispose_of.samplers.push_back(sampler_driver_id);
 		sampler_owner.free(p_id);
 	} else if (vertex_buffer_owner.owns(p_id)) {
 		Buffer *vertex_buffer = vertex_buffer_owner.get_or_null(p_id);
 		_check_transfer_worker_buffer(vertex_buffer);
 
 		RDG::resource_tracker_free(vertex_buffer->draw_tracker);
-		frames[frame].buffers_to_dispose_of.push_back(*vertex_buffer);
+		frames[frame].resources_to_dispose_of.buffers.push_back(*vertex_buffer);
 		vertex_buffer_owner.free(p_id);
 	} else if (vertex_array_owner.owns(p_id)) {
 		vertex_array_owner.free(p_id);
@@ -7676,14 +7675,14 @@ void RenderingDevice::_free_internal(RID p_id) {
 		_check_transfer_worker_buffer(index_buffer);
 
 		RDG::resource_tracker_free(index_buffer->draw_tracker);
-		frames[frame].buffers_to_dispose_of.push_back(*index_buffer);
+		frames[frame].resources_to_dispose_of.buffers.push_back(*index_buffer);
 		index_buffer_owner.free(p_id);
 	} else if (index_array_owner.owns(p_id)) {
 		index_array_owner.free(p_id);
 	} else if (shader_owner.owns(p_id)) {
 		Shader *shader = shader_owner.get_or_null(p_id);
 		if (shader->driver_id) { // Not placeholder?
-			frames[frame].shaders_to_dispose_of.push_back(*shader);
+			frames[frame].resources_to_dispose_of.shaders.push_back(*shader);
 		}
 		shader_owner.free(p_id);
 	} else if (uniform_buffer_owner.owns(p_id)) {
@@ -7691,37 +7690,37 @@ void RenderingDevice::_free_internal(RID p_id) {
 		_check_transfer_worker_buffer(uniform_buffer);
 
 		RDG::resource_tracker_free(uniform_buffer->draw_tracker);
-		frames[frame].buffers_to_dispose_of.push_back(*uniform_buffer);
+		frames[frame].resources_to_dispose_of.buffers.push_back(*uniform_buffer);
 		uniform_buffer_owner.free(p_id);
 	} else if (texture_buffer_owner.owns(p_id)) {
 		Buffer *texture_buffer = texture_buffer_owner.get_or_null(p_id);
 		_check_transfer_worker_buffer(texture_buffer);
 
 		RDG::resource_tracker_free(texture_buffer->draw_tracker);
-		frames[frame].buffers_to_dispose_of.push_back(*texture_buffer);
+		frames[frame].resources_to_dispose_of.buffers.push_back(*texture_buffer);
 		texture_buffer_owner.free(p_id);
 	} else if (storage_buffer_owner.owns(p_id)) {
 		Buffer *storage_buffer = storage_buffer_owner.get_or_null(p_id);
 		_check_transfer_worker_buffer(storage_buffer);
 
 		RDG::resource_tracker_free(storage_buffer->draw_tracker);
-		frames[frame].buffers_to_dispose_of.push_back(*storage_buffer);
+		frames[frame].resources_to_dispose_of.buffers.push_back(*storage_buffer);
 		storage_buffer_owner.free(p_id);
 	} else if (uniform_set_owner.owns(p_id)) {
 		UniformSet *uniform_set = uniform_set_owner.get_or_null(p_id);
-		frames[frame].uniform_sets_to_dispose_of.push_back(*uniform_set);
-		uniform_set_owner.free(p_id);
-
 		if (uniform_set->invalidated_callback != nullptr) {
 			uniform_set->invalidated_callback(uniform_set->invalidated_callback_userdata);
 		}
+
+		frames[frame].resources_to_dispose_of.uniform_sets.push_back(*uniform_set);
+		uniform_set_owner.free(p_id);
 	} else if (render_pipeline_owner.owns(p_id)) {
 		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(p_id);
-		frames[frame].render_pipelines_to_dispose_of.push_back(*pipeline);
+		frames[frame].resources_to_dispose_of.render_pipelines.push_back(*pipeline);
 		render_pipeline_owner.free(p_id);
 	} else if (compute_pipeline_owner.owns(p_id)) {
 		ComputePipeline *pipeline = compute_pipeline_owner.get_or_null(p_id);
-		frames[frame].compute_pipelines_to_dispose_of.push_back(*pipeline);
+		frames[frame].resources_to_dispose_of.compute_pipelines.push_back(*pipeline);
 		compute_pipeline_owner.free(p_id);
 	} else if (acceleration_structure_owner.owns(p_id)) {
 		AccelerationStructure *acceleration_structure = acceleration_structure_owner.get_or_null(p_id);
@@ -7731,16 +7730,16 @@ void RenderingDevice::_free_internal(RID p_id) {
 			_tlas_remove_blas_dependencies(acceleration_structure, p_id);
 		}
 		RDG::resource_tracker_free(acceleration_structure->draw_tracker);
-		frames[frame].acceleration_structures_to_dispose_of.push_back(*acceleration_structure);
+		frames[frame].resources_to_dispose_of.acceleration_structures.push_back(*acceleration_structure);
 		acceleration_structure_owner.free(p_id);
 	} else if (raytracing_pipeline_owner.owns(p_id)) {
 		RaytracingPipeline *pipeline = raytracing_pipeline_owner.get_or_null(p_id);
-		frames[frame].raytracing_pipelines_to_dispose_of.push_back(*pipeline);
+		frames[frame].resources_to_dispose_of.raytracing_pipelines.push_back(*pipeline);
 		raytracing_pipeline_owner.free(p_id);
 	} else if (hit_sbt_owner.owns(p_id)) {
 		HitShaderBindingTable *hit_sbt = hit_sbt_owner.get_or_null(p_id);
 		RDG::resource_tracker_free(hit_sbt->draw_tracker);
-		frames[frame].buffers_to_dispose_of.push_back(*hit_sbt);
+		frames[frame].resources_to_dispose_of.buffers.push_back(*hit_sbt);
 		hit_sbt_owner.free(p_id);
 	} else {
 #ifdef DEV_ENABLED
@@ -7905,39 +7904,39 @@ void RenderingDevice::sync() {
 	local_device_processing = false;
 }
 
-void RenderingDevice::_free_pending_resources(int p_frame) {
+void RenderingDevice::_free_pending_resources(ResourcesToDisposeOf &p_resources_to_dispose_of) {
 	// Free in dependency usage order, so nothing weird happens.
 	// Pipelines.
-	while (frames[p_frame].render_pipelines_to_dispose_of.front()) {
-		RenderPipeline *pipeline = &frames[p_frame].render_pipelines_to_dispose_of.front()->get();
+	while (p_resources_to_dispose_of.render_pipelines.front()) {
+		RenderPipeline *pipeline = &p_resources_to_dispose_of.render_pipelines.front()->get();
 
 		driver->pipeline_free(pipeline->driver_id);
 
-		frames[p_frame].render_pipelines_to_dispose_of.pop_front();
+		p_resources_to_dispose_of.render_pipelines.pop_front();
 	}
 
-	while (frames[p_frame].compute_pipelines_to_dispose_of.front()) {
-		ComputePipeline *pipeline = &frames[p_frame].compute_pipelines_to_dispose_of.front()->get();
+	while (p_resources_to_dispose_of.compute_pipelines.front()) {
+		ComputePipeline *pipeline = &p_resources_to_dispose_of.compute_pipelines.front()->get();
 
 		driver->pipeline_free(pipeline->driver_id);
 
-		frames[p_frame].compute_pipelines_to_dispose_of.pop_front();
+		p_resources_to_dispose_of.compute_pipelines.pop_front();
 	}
 
-	while (frames[p_frame].raytracing_pipelines_to_dispose_of.front()) {
-		RaytracingPipeline *pipeline = &frames[p_frame].raytracing_pipelines_to_dispose_of.front()->get();
+	while (p_resources_to_dispose_of.raytracing_pipelines.front()) {
+		RaytracingPipeline *pipeline = &p_resources_to_dispose_of.raytracing_pipelines.front()->get();
 
 		driver->buffer_free(pipeline->sbt_buffer.driver_id);
 		buffer_memory.sub(pipeline->sbt_buffer.size);
 
 		driver->raytracing_pipeline_free(pipeline->driver_id);
 
-		frames[p_frame].raytracing_pipelines_to_dispose_of.pop_front();
+		p_resources_to_dispose_of.raytracing_pipelines.pop_front();
 	}
 
 	// Acceleration structures.
-	while (frames[p_frame].acceleration_structures_to_dispose_of.front()) {
-		AccelerationStructure &acceleration_structure = frames[p_frame].acceleration_structures_to_dispose_of.front()->get();
+	while (p_resources_to_dispose_of.acceleration_structures.front()) {
+		AccelerationStructure &acceleration_structure = p_resources_to_dispose_of.acceleration_structures.front()->get();
 
 		driver->acceleration_structure_free(acceleration_structure.driver_id);
 
@@ -7956,46 +7955,46 @@ void RenderingDevice::_free_pending_resources(int p_frame) {
 			buffer_memory.sub(instance_buffer_size * acceleration_structure.instance_buffers.size());
 		}
 
-		frames[p_frame].acceleration_structures_to_dispose_of.pop_front();
+		p_resources_to_dispose_of.acceleration_structures.pop_front();
 	}
 
 	// Uniform sets.
-	while (frames[p_frame].uniform_sets_to_dispose_of.front()) {
-		UniformSet *uniform_set = &frames[p_frame].uniform_sets_to_dispose_of.front()->get();
+	while (p_resources_to_dispose_of.uniform_sets.front()) {
+		UniformSet *uniform_set = &p_resources_to_dispose_of.uniform_sets.front()->get();
 
 		driver->uniform_set_free(uniform_set->driver_id);
 
-		frames[p_frame].uniform_sets_to_dispose_of.pop_front();
+		p_resources_to_dispose_of.uniform_sets.pop_front();
 	}
 
 	// Shaders.
-	while (frames[p_frame].shaders_to_dispose_of.front()) {
-		Shader *shader = &frames[p_frame].shaders_to_dispose_of.front()->get();
+	while (p_resources_to_dispose_of.shaders.front()) {
+		Shader *shader = &p_resources_to_dispose_of.shaders.front()->get();
 
 		driver->shader_free(shader->driver_id);
 
-		frames[p_frame].shaders_to_dispose_of.pop_front();
+		p_resources_to_dispose_of.shaders.pop_front();
 	}
 
 	// Samplers.
-	while (frames[p_frame].samplers_to_dispose_of.front()) {
-		RDD::SamplerID sampler = frames[p_frame].samplers_to_dispose_of.front()->get();
+	while (p_resources_to_dispose_of.samplers.front()) {
+		RDD::SamplerID sampler = p_resources_to_dispose_of.samplers.front()->get();
 
 		driver->sampler_free(sampler);
 
-		frames[p_frame].samplers_to_dispose_of.pop_front();
+		p_resources_to_dispose_of.samplers.pop_front();
 	}
 
 	// Framebuffers.
-	while (frames[p_frame].framebuffers_to_dispose_of.front()) {
-		Framebuffer *framebuffer = &frames[p_frame].framebuffers_to_dispose_of.front()->get();
+	while (p_resources_to_dispose_of.framebuffers.front()) {
+		Framebuffer *framebuffer = &p_resources_to_dispose_of.framebuffers.front()->get();
 		draw_graph.framebuffer_cache_free(driver, framebuffer->framebuffer_cache);
-		frames[p_frame].framebuffers_to_dispose_of.pop_front();
+		p_resources_to_dispose_of.framebuffers.pop_front();
 	}
 
 	// Textures.
-	while (frames[p_frame].textures_to_dispose_of.front()) {
-		Texture *texture = &frames[p_frame].textures_to_dispose_of.front()->get();
+	while (p_resources_to_dispose_of.textures.front()) {
+		Texture *texture = &p_resources_to_dispose_of.textures.front()->get();
 		if (texture->bound) {
 			WARN_PRINT("Deleted a texture while it was bound.");
 		}
@@ -8005,16 +8004,44 @@ void RenderingDevice::_free_pending_resources(int p_frame) {
 		texture_memory.sub(driver->texture_get_allocation_size(texture->driver_id));
 		driver->texture_free(texture->driver_id);
 
-		frames[p_frame].textures_to_dispose_of.pop_front();
+		p_resources_to_dispose_of.textures.pop_front();
 	}
 
 	// Buffers.
-	while (frames[p_frame].buffers_to_dispose_of.front()) {
-		Buffer &buffer = frames[p_frame].buffers_to_dispose_of.front()->get();
+	while (p_resources_to_dispose_of.buffers.front()) {
+		Buffer &buffer = p_resources_to_dispose_of.buffers.front()->get();
 		driver->buffer_free(buffer.driver_id);
 		buffer_memory.sub(buffer.size);
 
-		frames[p_frame].buffers_to_dispose_of.pop_front();
+		p_resources_to_dispose_of.buffers.pop_front();
+	}
+}
+
+void RenderingDevice::_free_pending_resources(int p_frame, bool p_async) {
+	Frame &f = frames[p_frame];
+
+	for (uint32_t i = 0; i < f.resource_dispose_tasks.size();) {
+		WorkerThreadPool::TaskID task_id = f.resource_dispose_tasks[i];
+
+		if (!p_async || WorkerThreadPool::get_singleton()->is_task_completed(task_id)) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
+			f.resource_dispose_tasks.remove_at_unordered(i);
+		} else {
+			++i;
+		}
+	}
+
+	if (p_async) {
+		if (!f.resources_to_dispose_of.is_empty()) {
+			WorkerThreadPool::TaskID task_id = WorkerThreadPool::get_singleton()->add_template_task(
+					this,
+					(void (RenderingDevice::*)(ResourcesToDisposeOf &))&RenderingDevice::_free_pending_resources,
+					std::move(f.resources_to_dispose_of));
+
+			f.resource_dispose_tasks.push_back(task_id);
+		}
+	} else {
+		_free_pending_resources(f.resources_to_dispose_of);
 	}
 
 	if (frames_pending_resources_for_processing > 0u) {
@@ -8073,7 +8100,7 @@ void RenderingDevice::_begin_frame(bool p_presented) {
 
 	// Erase pending resources.
 	GodotProfileZoneGrouped(_profile_zone, "_free_pending_resources");
-	_free_pending_resources(frame);
+	_free_pending_resources(frame, /* p_async = */ p_presented);
 
 	// Advance staging buffers if used.
 	if (upload_staging_buffers.used) {
@@ -8930,7 +8957,7 @@ void RenderingDevice::finalize() {
 	// Free everything pending.
 	for (uint32_t i = 0; i < frames.size(); i++) {
 		int f = (frame + i) % frames.size();
-		_free_pending_resources(f);
+		_free_pending_resources(f, /* p_async = */ false);
 		driver->command_pool_free(frames[i].command_pool);
 		driver->timestamp_query_pool_free(frames[i].timestamp_pool);
 		driver->semaphore_free(frames[i].semaphore);
