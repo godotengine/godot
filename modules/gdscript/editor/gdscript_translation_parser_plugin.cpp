@@ -341,8 +341,19 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 	id_ctx_plural.resize(3);
 	bool extract_id_ctx_plural = true;
 
-	if (function_name == tr_func || function_name == atr_func) {
-		// Extract from `tr(id, ctx)` or `atr(id, ctx)`.
+	bool is_translation_class_call = false;
+	if (p_call->callee->type == GDScriptParser::Node::SUBSCRIPT) {
+		const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(p_call->callee);
+		if (sub->is_attribute && sub->base && sub->base->type == GDScriptParser::Node::IDENTIFIER) {
+			const GDScriptParser::IdentifierNode *base_id = static_cast<const GDScriptParser::IdentifierNode *>(sub->base);
+			if (base_id->name == SNAME("TranslationServer") || base_id->name == SNAME("TranslationDomain")) {
+				is_translation_class_call = true;
+			}
+		}
+	}
+
+	if (function_name == tr_func || function_name == atr_func || (is_translation_class_call && function_name == translate_func)) {
+		// Extract from `tr(id, ctx)`, `atr(id, ctx)` or `translate(id, ctx)` from translation class.
 		for (int i = 0; i < p_call->arguments.size(); i++) {
 			if (_is_constant_string(p_call->arguments[i])) {
 				id_ctx_plural.write[i] = p_call->arguments[i]->reduced_value;
@@ -354,8 +365,8 @@ void GDScriptEditorTranslationParserPlugin::_assess_call(const GDScriptParser::C
 		if (extract_id_ctx_plural) {
 			_add_id_ctx_plural(id_ctx_plural, p_call->start_line);
 		}
-	} else if (function_name == trn_func || function_name == atrn_func) {
-		// Extract from `tr_n(id, plural, n, ctx)` or `atr_n(id, plural, n, ctx)`.
+	} else if (function_name == trn_func || function_name == atrn_func || (is_translation_class_call && function_name == translate_plural_func)) {
+		// Extract from `tr_n(id, plural, n, ctx)`, `atr_n(id, plural, n, ctx)` or `translate_plural(id, plural, n, ctx) from translation class`.
 		Vector<int> indices;
 		indices.push_back(0);
 		indices.push_back(3);
