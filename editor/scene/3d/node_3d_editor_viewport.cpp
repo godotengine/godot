@@ -7204,6 +7204,26 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 			first_split->set_touch_dragger_enabled(touch_optimizations);
 			second_split->set_touch_dragger_enabled(touch_optimizations);
 		} break;
+		case NOTIFICATION_PROCESS: {
+			set_process(false);
+
+			Node3DEditorViewport *viewports[4];
+			for (int i = 0; i < 4; i++) {
+				viewports[i] = Node3DEditor::get_singleton()->get_editor_viewport(i);
+				ERR_FAIL_NULL(viewports[i]);
+			}
+
+			if (!get_viewport()->gui_get_focus_owner() || !get_viewport()->gui_get_focus_owner()->is_text_field()) {
+				Vector2 mouse_pos = get_global_mouse_position();
+				for (int i = 0; i < 4; i++) {
+					if (viewports[i]->is_visible() && viewports[i]->get_global_rect().has_point(mouse_pos)) {
+						viewports[i]->get_surface()->grab_focus();
+						return;
+					}
+				}
+				viewports[0]->get_surface()->grab_focus();
+			}
+		} break;
 	}
 }
 
@@ -7273,6 +7293,8 @@ void Node3DEditorViewportContainer::set_view(View p_view) {
 			_update_split_drag_margin();
 		} break;
 	}
+
+	set_process(true);
 }
 
 Node3DEditorViewportContainer::View Node3DEditorViewportContainer::get_view() {
