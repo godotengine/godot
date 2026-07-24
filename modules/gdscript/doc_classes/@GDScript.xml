@@ -605,7 +605,6 @@
 			<description>
 				Define a new group for the following exported properties. This helps to organize properties in the Inspector dock. Groups can be added with an optional [param prefix], which would make group to only consider properties that have this prefix. The grouping will break on the first property that doesn't have a prefix. The prefix is also removed from the property's name in the Inspector dock.
 				If no [param prefix] is provided, then every following property will be added to the group. The group ends when then next group or category is defined. You can also force end a group by using this annotation with empty strings for parameters, [code]@export_group("", "")[/code].
-				Groups cannot be nested, use [annotation @export_subgroup] to add subgroups within groups.
 				See also [constant PROPERTY_USAGE_GROUP].
 				[codeblock]
 				@export_group("Racer Properties")
@@ -619,6 +618,20 @@
 				@export_group("", "")
 				@export var ungrouped_number = 3
 				[/codeblock]
+				[b]Note:[/b] Groups cannot be nested, but you can use the slash separator ([code]/[/code]) to achieve the desired effect:
+				[codeblock]
+				@export_group("Car Properties")
+				@export_group("Car Properties/Wheels", "wheel_")
+				@export_group("Car Properties/Wheels/Front", "front_wheel_")
+				@export var front_wheel_strength = 10
+				@export var front_wheel_mobility = 5
+				@export_group("Car Properties/Wheels/Rear", "rear_wheel_")
+				@export var rear_wheel_strength = 8
+				@export var rear_wheel_mobility = 3
+				@export_group("Car Properties/Wheels", "wheel_")
+				@export var wheel_material: PhysicsMaterial
+				[/codeblock]
+				Alternatively, you can use [annotation @export_subgroup] to add subgroups within groups.
 			</description>
 		</annotation>
 		<annotation name="@export_multiline" qualifiers="vararg">
