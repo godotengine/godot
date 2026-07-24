@@ -1724,7 +1724,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing number of iterations, aborting.\n");
 				goto error;
 			}
-		} else if (arg.ends_with("project.godot")) {
+		} else if (!arg.begins_with("--") && arg.ends_with("project.godot")) {
 #if defined(OVERRIDE_PATH_ENABLED)
 			String path;
 			String file = arg;
