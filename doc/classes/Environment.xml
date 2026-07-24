@@ -251,6 +251,7 @@
 		</member>
 		<member name="sky_custom_fov" type="float" setter="set_sky_custom_fov" getter="get_sky_custom_fov" default="0.0">
 			If set to a value greater than [code]0.0[/code], overrides the field of view to use for sky rendering. If set to [code]0.0[/code], the same FOV as the current [Camera3D] is used for sky rendering.
+			[b]Note:[/b] When using an orthogonal camera, a custom FOV of [code]0.1[/code] degrees is used by default to avoid distortion. Depending on the sky contents, this can lead to rapid background color changes when the orthogonal camera rotates. Setting a higher custom FOV can help mitigate this issue.
 		</member>
 		<member name="sky_rotation" type="Vector3" setter="set_sky_rotation" getter="get_sky_rotation" default="Vector3(0, 0, 0)">
 			The rotation to use for sky rendering.
