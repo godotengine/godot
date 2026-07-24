@@ -383,6 +383,7 @@ public:
 
 	Error load(const String &p_path);
 	static Ref<Image> load_from_file(const String &p_path);
+	static Ref<Image> load_from_buffer(const String &p_extension, const Vector<uint8_t> &p_array);
 	Error save_png(const String &p_path) const;
 	Error save_jpg(const String &p_path, float p_quality = 0.75) const;
 	Error save_dds(const String &p_path) const;
