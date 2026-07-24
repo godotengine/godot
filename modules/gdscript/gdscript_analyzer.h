@@ -177,5 +177,19 @@ public:
 	static GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type);
 	static bool class_exists(const StringName &p_class);
 
+	// Methods for checking deprecation status of various GDScript symbols.
+	// Because deprecation information comes from the documentation, which is
+	// only accessible through editor classes, we have to lock it behind TOOLS_ENABLED.
+#ifdef TOOLS_ENABLED
+	static bool get_type_is_deprecated(const GDScriptParser::DataType &p_type, String *r_message = nullptr, String *r_value_type = nullptr, String *r_value_name = nullptr);
+	static bool get_enum_value_is_deprecated(const GDScriptParser::DataType &p_base_type, const StringName &p_value_name, String *r_message = nullptr);
+	static bool get_native_property_is_deprecated(const StringName &p_native_class, const StringName &p_property_name, String *r_message = nullptr);
+	static bool get_native_function_is_deprecated(const StringName &p_native_class, const StringName &p_function_name, String *r_message = nullptr);
+	static bool get_native_signal_is_deprecated(const StringName &p_native_class, const StringName &p_signal_name, String *r_message = nullptr);
+	static bool get_native_enum_is_deprecated(const StringName &p_native_class, const StringName &p_enum_name, String *r_message = nullptr);
+	static bool get_native_constant_is_deprecated(const StringName &p_native_class, const StringName &p_constant_name, String *r_message = nullptr);
+	static bool get_class_is_deprecated(const StringName &p_class_name, String *r_message = nullptr);
+#endif // TOOLS_ENABLED
+
 	GDScriptAnalyzer(GDScriptParser *p_parser);
 };
