@@ -49,6 +49,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 #include "scene/main/scene_tree.h"
+#include "scene/property_utils.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -889,31 +890,7 @@ void EditorPropertyArray::_add_element() {
 
 void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint_string) {
 	array_type = p_array_type;
-
-	// The format of p_hint_string is:
-	// subType/subTypeHint:nextSubtype ... etc.
-	if (!p_hint_string.is_empty()) {
-		int hint_subtype_separator = p_hint_string.find_char(':');
-		if (hint_subtype_separator >= 0) {
-			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
-			int slash_pos = subtype_string.find_char('/');
-			if (slash_pos >= 0) {
-				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1).to_int());
-				subtype_string = subtype_string.substr(0, slash_pos);
-			}
-
-			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1);
-			subtype = Variant::Type(subtype_string.to_int());
-		} else {
-			subtype = Variant::get_type_by_name(p_hint_string);
-
-			if (subtype == Variant::VARIANT_MAX) {
-				subtype = Variant::OBJECT;
-				subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
-				subtype_hint_string = p_hint_string;
-			}
-		}
-	}
+	PropertyUtils::parse_array_hint_string(p_hint_string, subtype, subtype_hint, &subtype_hint_string);
 }
 
 void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_event) {
@@ -1194,62 +1171,15 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 }
 
 void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_string) {
-	PackedStringArray types = p_hint_string.split(";", true, 1);
-	if (types.size() > 0 && !types[0].is_empty()) {
-		String key = types[0];
-		int hint_key_subtype_separator = key.find_char(':');
-		if (hint_key_subtype_separator >= 0) {
-			String key_subtype_string = key.substr(0, hint_key_subtype_separator);
-			int slash_pos = key_subtype_string.find_char('/');
-			if (slash_pos >= 0) {
-				key_subtype_hint = PropertyHint(key_subtype_string.substr(slash_pos + 1).to_int());
-				key_subtype_string = key_subtype_string.substr(0, slash_pos);
-			}
+	PropertyUtils::parse_dictionary_hint_string(p_hint_string, key_subtype, key_subtype_hint, value_subtype, value_subtype_hint, &key_subtype_hint_string, &value_subtype_hint_string);
 
-			key_subtype_hint_string = key.substr(hint_key_subtype_separator + 1);
-			key_subtype = Variant::Type(key_subtype_string.to_int());
-		} else {
-			key_subtype = Variant::get_type_by_name(key);
+	Variant new_key = object->get_new_item_key();
+	VariantInternal::initialize(&new_key, key_subtype);
+	object->set_new_item_key(new_key);
 
-			if (key_subtype == Variant::VARIANT_MAX) {
-				key_subtype = Variant::OBJECT;
-				key_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
-				key_subtype_hint_string = key;
-			}
-		}
-
-		Variant new_key = object->get_new_item_key();
-		VariantInternal::initialize(&new_key, key_subtype);
-		object->set_new_item_key(new_key);
-	}
-
-	if (types.size() > 1 && !types[1].is_empty()) {
-		String value = types[1];
-		int hint_value_subtype_separator = value.find_char(':');
-		if (hint_value_subtype_separator >= 0) {
-			String value_subtype_string = value.substr(0, hint_value_subtype_separator);
-			int slash_pos = value_subtype_string.find_char('/');
-			if (slash_pos >= 0) {
-				value_subtype_hint = PropertyHint(value_subtype_string.substr(slash_pos + 1).to_int());
-				value_subtype_string = value_subtype_string.substr(0, slash_pos);
-			}
-
-			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1);
-			value_subtype = Variant::Type(value_subtype_string.to_int());
-		} else {
-			value_subtype = Variant::get_type_by_name(value);
-
-			if (value_subtype == Variant::VARIANT_MAX) {
-				value_subtype = Variant::OBJECT;
-				value_subtype_hint = PROPERTY_HINT_RESOURCE_TYPE;
-				value_subtype_hint_string = value;
-			}
-		}
-
-		Variant new_value = object->get_new_item_value();
-		VariantInternal::initialize(&new_value, value_subtype);
-		object->set_new_item_value(new_value);
-	}
+	Variant new_value = object->get_new_item_value();
+	VariantInternal::initialize(&new_value, value_subtype);
+	object->set_new_item_value(new_value);
 }
 
 void EditorPropertyDictionary::set_preview_value(bool p_preview_value) {
