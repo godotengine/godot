@@ -49,7 +49,8 @@ protected:
 private:
 	String shape_type;
 	Vector3 size = Vector3(1.0, 1.0, 1.0);
-	real_t radius = 0.5;
+	real_t radius_top = 0.5;
+	real_t radius_bottom = 0.5;
 	real_t height = 2.0;
 	bool is_trigger = false;
 	GLTFMeshIndex mesh_index = -1;
@@ -66,6 +67,12 @@ public:
 
 	real_t get_radius() const;
 	void set_radius(real_t p_radius);
+
+	real_t get_radius_top() const;
+	void set_radius_top(real_t p_radius_top);
+
+	real_t get_radius_bottom() const;
+	void set_radius_bottom(real_t p_radius_bottom);
 
 	real_t get_height() const;
 	void set_height(real_t p_height);
