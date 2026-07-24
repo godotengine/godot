@@ -4772,7 +4772,6 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	}
 
 	bool use_default_variable_type_check = true;
-
 	if (p_annotation->name == SNAME("@export_range")) {
 		if (export_type.builtin_type == Variant::INT) {
 			variable->export_info.type = Variant::INT;
@@ -4867,11 +4866,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		}
 
 		if (is_dict) {
-			String key_prefix = itos(variable->export_info.type);
-			if (variable->export_info.hint) {
-				key_prefix += "/" + itos(variable->export_info.hint);
-			}
-			key_prefix += ":" + variable->export_info.hint_string;
+			String key_prefix = variable->export_info.serialize_hint_type();
 
 			// Now parse value.
 			export_type = export_type.get_container_element_type(0);
@@ -4937,11 +4932,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 				return false;
 			}
 
-			String value_prefix = itos(variable->export_info.type);
-			if (variable->export_info.hint) {
-				value_prefix += "/" + itos(variable->export_info.hint);
-			}
-			value_prefix += ":" + variable->export_info.hint_string;
+			String value_prefix = variable->export_info.serialize_hint_type();
 
 			variable->export_info.type = Variant::DICTIONARY;
 			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
@@ -4980,13 +4971,9 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	}
 
 	if (is_array) {
-		String hint_prefix = itos(variable->export_info.type);
-		if (variable->export_info.hint) {
-			hint_prefix += "/" + itos(variable->export_info.hint);
-		}
+		variable->export_info.hint_string = variable->export_info.serialize_hint_type();
 		variable->export_info.type = original_export_type_builtin;
 		variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
-		variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
 		variable->export_info.usage = PROPERTY_USAGE_DEFAULT;
 		variable->export_info.class_name = StringName();
 	}
