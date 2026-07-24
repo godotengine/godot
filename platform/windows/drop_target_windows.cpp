@@ -47,7 +47,7 @@ static String create_temp_dir() {
 		return "";
 	}
 
-	String tmp_dir = String::utf16((const char16_t *)buf.ptr());
+	String tmp_dir = String::utf16((const char16_t *)buf.ptr()).simplify_path();
 	RandomPCG gen(Time::get_singleton()->get_ticks_usec());
 
 	const int attempts = 4;
@@ -165,7 +165,7 @@ HRESULT DropTargetWindows::handle_hdrop_format(Vector<String> *p_files, IDataObj
 			goto cleanup;
 		}
 		String file = String::utf16((const char16_t *)buf.ptr());
-		p_files->push_back(file);
+		p_files->push_back(file.simplify_path());
 	}
 
 cleanup:
