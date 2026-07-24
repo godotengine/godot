@@ -52,6 +52,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
+#include "scene/resources/3d/sky_material.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "servers/audio/audio_server.h"
@@ -868,6 +869,8 @@ void EditorResourcePicker::_ensure_allowed_types() const {
 		const String base = allowed_types[i].strip_edges();
 		if (base == "BaseMaterial3D") {
 			allowed_types_with_convert.insert("Texture2D");
+		} else if (base == "PanoramaSkyMaterial") {
+			allowed_types_with_convert.insert("Texture2D");
 		} else if (ClassDB::is_parent_class("ShaderMaterial", base)) {
 			allowed_types_with_convert.insert("Shader");
 		} else if (ClassDB::is_parent_class("ImageTexture", base)) {
@@ -1005,6 +1008,17 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 						mat.instantiate();
 					}
 					mat->set_texture(StandardMaterial3D::TextureParam::TEXTURE_ALBEDO, dropped_resource);
+					dropped_resource = mat;
+					break;
+				}
+
+				if (at == "PanoramaSkyMaterial" && Ref<Texture2D>(dropped_resource).is_valid()) {
+					// Use existing resource if possible and only replace its data.
+					Ref<PanoramaSkyMaterial> mat = edited_resource;
+					if (mat.is_null()) {
+						mat.instantiate();
+					}
+					mat->set_panorama(dropped_resource);
 					dropped_resource = mat;
 					break;
 				}
