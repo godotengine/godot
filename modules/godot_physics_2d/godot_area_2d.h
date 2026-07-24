@@ -115,6 +115,10 @@ public:
 	void set_param(PS2DE::AreaParameter p_param, const Variant &p_value);
 	Variant get_param(PS2DE::AreaParameter p_param) const;
 
+	_FORCE_INLINE_ bool has_space_override() const {
+		return gravity_override_mode != PS2DE::AREA_SPACE_OVERRIDE_DISABLED || linear_damping_override_mode != PS2DE::AREA_SPACE_OVERRIDE_DISABLED || angular_damping_override_mode != PS2DE::AREA_SPACE_OVERRIDE_DISABLED;
+	}
+
 	_FORCE_INLINE_ void set_gravity(real_t p_gravity) { gravity = p_gravity; }
 	_FORCE_INLINE_ real_t get_gravity() const { return gravity; }
 
@@ -143,6 +147,12 @@ public:
 
 	void set_monitorable(bool p_monitorable);
 	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }
+
+	void refresh_pair(GodotCollisionObject2D *p_source) override {
+		if (this != p_source) {
+			_shapes_changed();
+		}
+	}
 
 	void set_transform(const Transform2D &p_transform);
 

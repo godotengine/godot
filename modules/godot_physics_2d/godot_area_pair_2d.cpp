@@ -33,58 +33,44 @@
 #include "godot_collision_solver_2d.h"
 
 bool GodotAreaPair2D::setup(real_t p_step) {
-	bool result = false;
-	if (area->collides_with(body) && GodotCollisionSolver2D::solve(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), Vector2(), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), Vector2(), nullptr, this)) {
-		result = true;
-	}
-
-	process_collision = false;
-	has_space_override = false;
-	if (result != colliding) {
-		if ((int)area->get_param(PS2DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PS2DE::AREA_SPACE_OVERRIDE_DISABLED) {
-			has_space_override = true;
-		} else if ((int)area->get_param(PS2DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE) != PS2DE::AREA_SPACE_OVERRIDE_DISABLED) {
-			has_space_override = true;
-		} else if ((int)area->get_param(PS2DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE) != PS2DE::AREA_SPACE_OVERRIDE_DISABLED) {
-			has_space_override = true;
-		}
-		process_collision = has_space_override;
-
-		if (area->has_monitor_callback()) {
-			process_collision = true;
-		}
-
-		colliding = result;
-	}
-
-	return process_collision;
-}
-
-bool GodotAreaPair2D::pre_solve(real_t p_step) {
-	if (!process_collision) {
+	bool latest_has_space_override = area->has_space_override();
+	bool latest_monitoring = area->has_monitor_callback();
+	if (!latest_has_space_override && !has_space_override && !latest_monitoring) {
 		return false;
 	}
 
-	if (colliding) {
-		if (has_space_override) {
-			body_has_attached_area = true;
+	bool latest_colliding = area->collides_with(body);
+	if (latest_colliding && !GodotCollisionSolver2D::solve(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), Vector2(), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), Vector2(), nullptr, this)) {
+		latest_colliding = false;
+	}
+
+	process_collision = (colliding && has_space_override) != (latest_colliding && latest_has_space_override);
+	process_monitored_collision = latest_monitoring && ((monitoring && (latest_colliding != colliding)) || (latest_colliding && !monitoring));
+
+	has_space_override = latest_has_space_override;
+	monitoring = latest_monitoring;
+	colliding = latest_colliding;
+
+	return process_collision || process_monitored_collision;
+}
+
+bool GodotAreaPair2D::pre_solve(real_t p_step) {
+	if (process_collision) {
+		// TODO: Confirm this `body` access is the reason pre-solve is not threaded, then fix, or enable threading again.
+		if (colliding && has_space_override) {
 			body->add_area(area);
-		}
-
-		if (area->has_monitor_callback()) {
-			area->add_body_to_query(body, body_shape, area_shape);
-		}
-	} else {
-		if (has_space_override) {
-			body_has_attached_area = false;
+		} else {
 			body->remove_area(area);
-		}
-
-		if (area->has_monitor_callback()) {
-			area->remove_body_from_query(body, body_shape, area_shape);
 		}
 	}
 
+	if (process_monitored_collision) {
+		if (colliding) {
+			area->add_body_to_query(body, body_shape, area_shape);
+		} else {
+			area->remove_body_from_query(body, body_shape, area_shape);
+		}
+	}
 	return false; // Never do any post solving.
 }
 
@@ -97,6 +83,8 @@ GodotAreaPair2D::GodotAreaPair2D(GodotBody2D *p_body, int p_body_shape, GodotAre
 	area = p_area;
 	body_shape = p_body_shape;
 	area_shape = p_area_shape;
+	monitoring = area->has_monitor_callback();
+	has_space_override = area->has_space_override();
 	body->add_constraint(this, 0);
 	area->add_constraint(this);
 	if (p_body->get_mode() == PS2DE::BODY_MODE_KINEMATIC) { //need to be active to process pair
@@ -106,8 +94,7 @@ GodotAreaPair2D::GodotAreaPair2D(GodotBody2D *p_body, int p_body_shape, GodotAre
 
 GodotAreaPair2D::~GodotAreaPair2D() {
 	if (colliding) {
-		if (body_has_attached_area) {
-			body_has_attached_area = false;
+		if (has_space_override) {
 			body->remove_area(area);
 		}
 		if (area->has_monitor_callback()) {
@@ -121,34 +108,36 @@ GodotAreaPair2D::~GodotAreaPair2D() {
 //////////////////////////////////
 
 bool GodotArea2Pair2D::setup(real_t p_step) {
-	bool result_a = area_a->collides_with(area_b);
-	bool result_b = area_b->collides_with(area_a);
+	bool result_a = area_a->collides_with(area_b) && area_b->is_monitorable();
+	bool result_b = area_b->collides_with(area_a) && area_a->is_monitorable();
+
 	if ((result_a || result_b) && !GodotCollisionSolver2D::solve(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), Vector2(), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), Vector2(), nullptr, this)) {
 		result_a = false;
 		result_b = false;
 	}
 
-	bool process_collision = false;
-
 	process_collision_a = false;
 	if (result_a != colliding_a) {
-		if (area_a->has_area_monitor_callback() && area_b_monitorable) {
-			process_collision_a = true;
-			process_collision = true;
-		}
+		process_collision_a = area_a_monitoring;
 		colliding_a = result_a;
 	}
 
 	process_collision_b = false;
 	if (result_b != colliding_b) {
-		if (area_b->has_area_monitor_callback() && area_a_monitorable) {
-			process_collision_b = true;
-			process_collision = true;
-		}
+		process_collision_b = area_b_monitoring;
 		colliding_b = result_b;
 	}
 
-	return process_collision;
+	if (area_a->has_area_monitor_callback() != area_a_monitoring) {
+		area_a_monitoring = area_a->has_area_monitor_callback();
+		process_collision_a = area_a_monitoring && colliding_a;
+	}
+	if (area_b->has_area_monitor_callback() != area_b_monitoring) {
+		area_b_monitoring = area_b->has_area_monitor_callback();
+		process_collision_b = area_b_monitoring && colliding_b;
+	}
+
+	return process_collision_a || process_collision_b;
 }
 
 bool GodotArea2Pair2D::pre_solve(real_t p_step) {
@@ -182,6 +171,8 @@ GodotArea2Pair2D::GodotArea2Pair2D(GodotArea2D *p_area_a, int p_shape_a, GodotAr
 	shape_b = p_shape_b;
 	area_a_monitorable = area_a->is_monitorable();
 	area_b_monitorable = area_b->is_monitorable();
+	area_a_monitoring = area_a->has_area_monitor_callback();
+	area_b_monitoring = area_b->has_area_monitor_callback();
 	area_a->add_constraint(this);
 	area_b->add_constraint(this);
 }
