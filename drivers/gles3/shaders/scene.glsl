@@ -2776,6 +2776,10 @@ void main() {
 #else
 
 	diffuse_light *= albedo;
+
+	diffuse_light *= ao;
+	specular_light *= ao;
+
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
 
@@ -3052,6 +3056,8 @@ void main() {
 #endif // ADDITIVE_SPOT
 
 	diffuse_light *= albedo;
+	diffuse_light *= ao;
+	specular_light *= ao;
 	diffuse_light *= 1.0 - metallic;
 	vec3 additive_light_color = diffuse_light + specular_light;
 
