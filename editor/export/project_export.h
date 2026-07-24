@@ -108,9 +108,9 @@ class ProjectExportDialog : public ConfirmationDialog {
 	Label *include_label = nullptr;
 	MarginContainer *include_margin = nullptr;
 
+	CheckBox *debug_checkbox = nullptr;
 	Button *export_button = nullptr;
 	Button *export_all_button = nullptr;
-	AcceptDialog *export_all_dialog = nullptr;
 
 	RBSet<String> feature_set;
 
@@ -206,9 +206,8 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	void _export_project();
 	void _export_project_to_path(const String &p_path);
-	void _export_all_dialog();
-	void _export_all_dialog_action(const String &p_str);
-	void _export_all(bool p_debug);
+	void _export_all();
+	void _set_export_with_debug(bool p_debug);
 
 	void _update_feature_list();
 	void _custom_features_changed(const String &p_text);
