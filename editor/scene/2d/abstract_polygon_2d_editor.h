@@ -141,6 +141,11 @@ protected:
 	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon);
 	virtual void _commit_action();
 
+	struct PolygonCentroid {
+		Vector2 centroid;
+		real_t signed_area2x = 0.0;
+	};
+	static PolygonCentroid _calculate_polygon_centroid(const Vector<Vector2> &p_points);
 	virtual Vector2 _get_geometric_center() const;
 
 	virtual bool _has_resource() const;
