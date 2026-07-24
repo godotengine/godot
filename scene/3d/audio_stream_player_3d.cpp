@@ -521,11 +521,14 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 		if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 			Vector3 listener_velocity;
+			float doppler_scale_final = doppler_scale;
 
 			if (listener) {
 				listener_velocity = listener->get_doppler_tracked_velocity();
+				doppler_scale_final *= listener->get_doppler_scale();
 			} else {
 				listener_velocity = camera->get_doppler_tracked_velocity();
+				doppler_scale_final *= camera->get_doppler_scale();
 			}
 
 			const Vector3 local_velocity = listener_node->get_global_transform().orthonormalized().basis.xform_inv(linear_velocity - listener_velocity);
@@ -535,9 +538,12 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				static constexpr float speed_of_sound = 343.0F;
 
 				float doppler_pitch_scale = internal->pitch_scale * speed_of_sound / (speed_of_sound + velocity * approaching);
+				doppler_pitch_scale = Math::pow(doppler_pitch_scale, doppler_scale_final);
 
 				// limit the pitch scale, so we do not get execeedingly extreme pitch effects in edge cases
 				doppler_pitch_scale = CLAMP(doppler_pitch_scale, (1.0F / 8.0F), 8.0F);
+
+				doppler_pitch_scale *= internal->pitch_scale;
 
 				// just use the maximum volume of the current volume vector as weight
 				// so the pitch effect fades out with lower volumes
@@ -806,6 +812,14 @@ AudioStreamPlayer3D::DopplerTracking AudioStreamPlayer3D::get_doppler_tracking()
 	return doppler_tracking;
 }
 
+void AudioStreamPlayer3D::set_doppler_scale(float p_scale) {
+	doppler_scale = p_scale;
+}
+
+float AudioStreamPlayer3D::get_doppler_scale() const {
+	return doppler_scale;
+}
+
 void AudioStreamPlayer3D::set_stream_paused(bool p_pause) {
 	internal->set_stream_paused(p_pause);
 }
@@ -920,6 +934,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &AudioStreamPlayer3D::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &AudioStreamPlayer3D::get_doppler_tracking);
 
+	ClassDB::bind_method(D_METHOD("set_doppler_scale", "mode"), &AudioStreamPlayer3D::set_doppler_scale);
+	ClassDB::bind_method(D_METHOD("get_doppler_scale"), &AudioStreamPlayer3D::get_doppler_scale);
+
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer3D::set_stream_paused);
 	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer3D::get_stream_paused);
 
@@ -960,6 +977,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attenuation_filter_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), "set_attenuation_filter_db", "get_attenuation_filter_db");
 	ADD_GROUP("Doppler", "doppler_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "doppler_scale", PROPERTY_HINT_RANGE, "-4.0,4.0,or_less,or_greater"), "set_doppler_scale", "get_doppler_scale");
 
 	BIND_ENUM_CONSTANT(ATTENUATION_INVERSE_DISTANCE);
 	BIND_ENUM_CONSTANT(ATTENUATION_INVERSE_SQUARE_DISTANCE);
