@@ -303,5 +303,32 @@
 		<theme_item name="arrow" data_type="icon" type="Texture2D">
 			The arrow icon to be drawn on the right end of the button.
 		</theme_item>
+		<theme_item name="arrow_disabled" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button when it is disabled. If this property isn't set the [theme_item arrow] will be used instead.
+		</theme_item>
+		<theme_item name="arrow_disabled_focus" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button when it is disabled and being focused. If this property isn't set the [theme_item arrow_focus] will be used instead.
+		</theme_item>
+		<theme_item name="arrow_focus" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button when it is being focused.
+		</theme_item>
+		<theme_item name="arrow_hover" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button when it is being hovered. If this property isn't set the [theme_item arrow] will be used instead.
+		</theme_item>
+		<theme_item name="arrow_hover_focus" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button when it is being hovered whilst focused. If this property isn't set the [theme_item arrow_focus] will be used instead.
+		</theme_item>
+		<theme_item name="arrow_hover_pressed" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button when it is being hovered whilst pressed. If this property isn't set the [theme_item arrow] will be used instead.
+		</theme_item>
+		<theme_item name="arrow_hover_pressed_focus" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button when it is being hovered whilst pressed and focused. If this property isn't set the [theme_item arrow_focus] will be used instead.
+		</theme_item>
+		<theme_item name="arrow_pressed" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button when it is being pressed. If this property isn't set the [theme_item arrow] will be used instead.
+		</theme_item>
+		<theme_item name="arrow_pressed_focus" data_type="icon" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button when it is being pressed and focused. If this property isn't set the [theme_item arrow_focus] will be used instead.
+		</theme_item>
 	</theme_items>
 </class>
