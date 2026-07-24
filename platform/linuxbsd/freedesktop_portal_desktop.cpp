@@ -32,6 +32,7 @@
 
 #ifdef DBUS_ENABLED
 
+#include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/error/error_macros.h"
 #include "core/object/callable_mp.h"
@@ -39,6 +40,7 @@
 #include "core/string/ustring.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
+#include "scene/resources/texture.h"
 #include "servers/display/display_server.h"
 
 #ifdef SOWRAP_ENABLED
@@ -58,6 +60,8 @@
 #define BUS_INTERFACE_SCREENSHOT "org.freedesktop.portal.Screenshot"
 #define BUS_INTERFACE_INHIBIT "org.freedesktop.portal.Inhibit"
 #define BUS_INTERFACE_REQUEST "org.freedesktop.portal.Request"
+#define BUS_INTERFACE_NOTIFICATION "org.freedesktop.portal.Notification"
+#define BUS_INTERFACE_REGISTRY "org.freedesktop.host.portal.Registry"
 
 #define INHIBIT_FLAG_IDLE 8
 
@@ -680,6 +684,175 @@ bool FreeDesktopPortalDesktop::send_request(DBusMessage *p_message, const String
 	return true;
 }
 
+void FreeDesktopPortalDesktop::_register_app_id() {
+	if (unsupported) {
+		return;
+	}
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		app_id = "org.godotengine.Godot";
+	} else {
+		String name = GLOBAL_GET("application/config/name");
+		app_id = name.to_pascal_case();
+		for (int i = 0; i < app_id.length(); i++) {
+			if (!is_ascii_alphanumeric_char(app_id[i]) && app_id[i] != '_' && app_id[i] != '.') {
+				app_id[i] = '_';
+			}
+		}
+	}
+	print_verbose(vformat("Registering application ID: %s", app_id));
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_REGISTRY, "Register");
+	{
+		DBusMessageIter iter;
+		dbus_message_iter_init_append(message, &iter);
+
+		append_dbus_string(&iter, app_id);
+
+		DBusMessageIter arr_iter;
+		dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &arr_iter);
+
+		//No options set.
+
+		dbus_message_iter_close_container(&iter, &arr_iter);
+	}
+
+	DBusError error;
+	dbus_error_init(&error);
+
+	DBusMessage *reply = dbus_connection_send_with_reply_and_block(monitor_connection, message, DBUS_TIMEOUT_USE_DEFAULT, &error);
+	dbus_message_unref(message);
+	if (dbus_error_is_set(&error)) {
+		WARN_PRINT(vformat("Failed to register application ID: %s.", String::utf8(error.message)));
+		dbus_error_free(&error);
+	} else if (reply) {
+		dbus_message_unref(reply);
+	}
+}
+
+bool FreeDesktopPortalDesktop::send_toast_notification(DisplayServerEnums::NotificationID p_id, const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) {
+	if (unsupported) {
+		return false;
+	}
+
+	NotificationData nd;
+	nd.callback = p_callback;
+	nd.id = p_id;
+	nd.id_s = vformat("godot_notification_%s_%x_%x", app_id, OS::get_singleton()->get_process_id(), p_id);
+
+	String token;
+	Error err = make_request_token(token);
+	if (err != OK) {
+		return false;
+	}
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_NOTIFICATION, "AddNotification");
+	{
+		DBusMessageIter iter;
+		dbus_message_iter_init_append(message, &iter);
+		append_dbus_string(&iter, nd.id_s);
+
+		DBusMessageIter arr_iter;
+		dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &arr_iter);
+
+		append_dbus_dict_string(&arr_iter, "title", p_title);
+		append_dbus_dict_string(&arr_iter, "body", p_text);
+		append_dbus_dict_string(&arr_iter, "default-action", "gd_activate");
+		if (p_image.is_valid()) {
+			Ref<Image> img = p_image->get_image();
+			if (img.is_valid()) {
+				img = img->duplicate();
+				img->convert(Image::FORMAT_RGBA8);
+				if (img->get_width() != img->get_height() || img->get_width() > 512) {
+					int max_d = MIN(512, MAX(img->get_width(), img->get_height()));
+					img->resize(max_d, max_d, Image::INTERPOLATE_LANCZOS);
+				}
+				DBusMessageIter dict_iter;
+				DBusMessageIter var_iter;
+				DBusMessageIter struct_iter;
+				DBusMessageIter var_data_iter;
+				DBusMessageIter arr_data_iter;
+				dbus_message_iter_open_container(&arr_iter, DBUS_TYPE_DICT_ENTRY, nullptr, &dict_iter);
+				append_dbus_string(&dict_iter, "icon");
+
+				dbus_message_iter_open_container(&dict_iter, DBUS_TYPE_VARIANT, "(sv)", &var_iter);
+				dbus_message_iter_open_container(&var_iter, DBUS_TYPE_STRUCT, nullptr, &struct_iter);
+				append_dbus_string(&struct_iter, "bytes");
+
+				dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_VARIANT, "ay", &var_data_iter);
+				dbus_message_iter_open_container(&var_data_iter, DBUS_TYPE_ARRAY, "y", &arr_data_iter);
+				Vector<uint8_t> data = img->save_png_to_buffer();
+				for (int i = 0; i < data.size(); i++) {
+					dbus_message_iter_append_basic(&arr_data_iter, DBUS_TYPE_BYTE, &data[i]);
+				}
+				dbus_message_iter_close_container(&var_data_iter, &arr_data_iter);
+				dbus_message_iter_close_container(&struct_iter, &var_data_iter);
+
+				dbus_message_iter_close_container(&var_iter, &struct_iter);
+				dbus_message_iter_close_container(&dict_iter, &var_iter);
+
+				dbus_message_iter_close_container(&arr_iter, &dict_iter);
+			}
+		}
+
+		dbus_message_iter_close_container(&iter, &arr_iter);
+	}
+
+	DBusError error;
+	dbus_error_init(&error);
+
+	DBusMessage *reply = dbus_connection_send_with_reply_and_block(monitor_connection, message, DBUS_TIMEOUT_USE_DEFAULT, &error);
+	dbus_message_unref(message);
+	if (dbus_error_is_set(&error)) {
+		ERR_PRINT(vformat("Failed to send notification: %s.", String::utf8(error.message)));
+		dbus_error_free(&error);
+	} else if (reply) {
+		dbus_message_unref(reply);
+	}
+
+	MutexLock lock(notification_mutex);
+	notifications.push_back(nd);
+
+	return true;
+}
+
+void FreeDesktopPortalDesktop::hide_toast_notification(DisplayServerEnums::NotificationID p_id) {
+	if (unsupported) {
+		return;
+	}
+
+	String id_s = vformat("godot_notification_%s_%x_%x", app_id, OS::get_singleton()->get_process_id(), p_id);
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_NOTIFICATION, "RemoveNotification");
+	{
+		DBusMessageIter iter;
+		dbus_message_iter_init_append(message, &iter);
+
+		append_dbus_string(&iter, id_s);
+	}
+
+	DBusError error;
+	dbus_error_init(&error);
+
+	DBusMessage *reply = dbus_connection_send_with_reply_and_block(monitor_connection, message, DBUS_TIMEOUT_USE_DEFAULT, &error);
+	dbus_message_unref(message);
+	if (dbus_error_is_set(&error)) {
+		ERR_PRINT(vformat("Failed to hide notification: %s.", String::utf8(error.message)));
+		dbus_error_free(&error);
+	} else if (reply) {
+		dbus_message_unref(reply);
+	}
+
+	MutexLock lock(notification_mutex);
+	for (int i = 0; i < notifications.size(); i++) {
+		FreeDesktopPortalDesktop::NotificationData &nd = notifications.write[i];
+		if (nd.id_s == id_s) {
+			notifications.remove_at(i);
+			break;
+		}
+	}
+}
+
 Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServerEnums::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServerEnums::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
 	if (unsupported) {
 		return FAILED;
@@ -883,6 +1056,22 @@ void FreeDesktopPortalDesktop::process_callbacks() {
 		}
 	}
 	{
+		MutexLock lock(notification_mutex);
+		while (!pending_notification_cbs.is_empty()) {
+			NotificationCallback cb = pending_notification_cbs.front()->get();
+			pending_notification_cbs.pop_front();
+
+			Variant ret;
+			Callable::CallError ce;
+			const Variant *args[2] = { &cb.id, &cb.status };
+
+			cb.callback.callp(args, 2, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Failed to execute notification callback: %s.", Variant::get_callable_error_text(cb.callback, args, 2, ce)));
+			}
+		}
+	}
+	{
 		MutexLock lock(color_picker_mutex);
 		while (!pending_color_cbs.is_empty()) {
 			ColorPickerCallback cb = pending_color_cbs.front()->get();
@@ -921,6 +1110,43 @@ void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 
 						if (name_space == "org.freedesktop.appearance" && (key == "color-scheme" || key == "accent-color")) {
 							callable_mp(portal, &FreeDesktopPortalDesktop::_system_theme_changed_callback).call_deferred();
+						}
+					}
+				} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Notification", "ActionInvoked")) {
+					{
+						String id_s;
+						String act_s;
+
+						DBusMessageIter iter;
+						if (dbus_message_iter_init(msg, &iter)) {
+							// Parse.
+							const char *id = nullptr;
+							dbus_message_iter_get_basic(&iter, &id);
+							id_s = String::utf8(id);
+							dbus_message_iter_next(&iter);
+							const char *act = nullptr;
+							dbus_message_iter_get_basic(&iter, &act);
+							act_s = String::utf8(act);
+						}
+
+						MutexLock lock(portal->notification_mutex);
+						for (int i = 0; i < portal->notifications.size(); i++) {
+							FreeDesktopPortalDesktop::NotificationData &nd = portal->notifications.write[i];
+							if (nd.id_s == id_s) {
+								if (nd.callback.is_valid()) {
+									NotificationCallback cb;
+									cb.id = nd.id;
+									if (act_s == "gd_activate") {
+										cb.status = DisplayServerEnums::NOTIFICATION_ACTIVATED;
+									} else {
+										cb.status = DisplayServerEnums::NOTIFICATION_DISMISSED;
+									}
+									cb.callback = nd.callback;
+									portal->pending_notification_cbs.push_back(cb);
+								}
+								portal->notifications.remove_at(i);
+								break;
+							}
 						}
 					}
 				} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Request", "Response")) {
@@ -1035,8 +1261,17 @@ FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
 	if (dbus_error_is_set(&err)) {
 		dbus_error_free(&err);
 	} else {
+		_register_app_id();
+
 		theme_path = "type='signal',sender='org.freedesktop.portal.Desktop',interface='org.freedesktop.portal.Settings',member='SettingChanged'";
 		dbus_bus_add_match(monitor_connection, theme_path.utf8().get_data(), &err);
+		if (dbus_error_is_set(&err)) {
+			dbus_error_free(&err);
+			dbus_connection_unref(monitor_connection);
+			monitor_connection = nullptr;
+		}
+		noti_path = "type='signal',sender='org.freedesktop.portal.Desktop',interface='org.freedesktop.portal.Notification',member='ActionInvoked'";
+		dbus_bus_add_match(monitor_connection, noti_path.utf8().get_data(), &err);
 		if (dbus_error_is_set(&err)) {
 			dbus_error_free(&err);
 			dbus_connection_unref(monitor_connection);
@@ -1066,6 +1301,10 @@ FreeDesktopPortalDesktop::~FreeDesktopPortalDesktop() {
 		}
 		dbus_error_init(&err);
 		dbus_bus_remove_match(monitor_connection, theme_path.utf8().get_data(), &err);
+		dbus_error_free(&err);
+
+		dbus_error_init(&err);
+		dbus_bus_remove_match(monitor_connection, noti_path.utf8().get_data(), &err);
 		dbus_error_free(&err);
 		dbus_connection_unref(monitor_connection);
 	}

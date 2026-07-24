@@ -496,6 +496,11 @@ public:
 	virtual Error remove_embedded_process(ProcessID p_pid);
 	virtual ProcessID get_focused_process_id();
 
+	/* NOTIFICATIONS */
+
+	virtual DisplayServerEnums::NotificationID send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback);
+	virtual void hide_toast_notification(DisplayServerEnums::NotificationID p_id);
+
 	/* DIALOGS */
 
 	virtual bool get_swap_cancel_ok();
@@ -654,6 +659,7 @@ VARIANT_ENUM_CAST_EXT(DisplayServerEnums::WindowResizeEdge, DisplayServer::Windo
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::VSyncMode, DisplayServer::VSyncMode)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::ProgressState, DisplayServer::ProgressState)
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::FileDialogMode, DisplayServer::FileDialogMode)
+VARIANT_ENUM_CAST_EXT(DisplayServerEnums::NotificationStatus, DisplayServer::NotificationStatus)
 
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST_EXT(DisplayServerEnums::AccessibilityRole, DisplayServer::AccessibilityRole)
