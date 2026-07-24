@@ -1369,35 +1369,40 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			const List<Node *> selection = editor_selection->get_top_selected_node_list();
-			const List<Node *>::Element *e = selection.front();
-			if (e) {
-				Node *node = e->get();
-				if (node) {
-					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
-					bool placeholder = node->get_scene_instance_load_placeholder();
+			if (selection.is_empty()) {
+				break;
+			}
 
-					// Fire confirmation dialog when children are editable.
-					if (editable && !placeholder) {
-						placeholder_editable_instance_remove_dialog->set_text(TTRC("Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
-						placeholder_editable_instance_remove_dialog->popup_centered();
-						break;
-					}
+			Node *node = selection.front()->get();
+			PlaceholderNode *placeholder_node = Object::cast_to<PlaceholderNode>(node);
 
-					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			if (placeholder_node) {
+				undo_redo->create_action_for_history(TTR("Unstash PlaceholderNode"), editor_data->get_current_edited_scene_history_id());
+				undo_redo->add_do_method(placeholder_node->get_stashed_node(), "unstash");
+				undo_redo->add_undo_method(placeholder_node->get_stashed_node(), "stash");
+			} else {
+				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
+				bool placeholder = node->get_scene_instance_load_placeholder();
 
-					placeholder = !placeholder;
+				// Fire confirmation dialog when children are editable.
+				if (editable && !placeholder) {
+					placeholder_editable_instance_remove_dialog->set_text(TTRC("Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
+					placeholder_editable_instance_remove_dialog->popup_centered();
+					break;
+				}
 
-					undo_redo->create_action(TTR("Toggle Load as Placeholder"));
-					undo_redo->add_undo_method(node, "set_scene_instance_load_placeholder", !placeholder);
-					undo_redo->add_do_method(node, "set_scene_instance_load_placeholder", placeholder);
+				placeholder = !placeholder;
 
-					if (placeholder) {
-						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
-					}
+				undo_redo->create_action_for_history(TTR("Stash Node"), editor_data->get_current_edited_scene_history_id());
+				undo_redo->add_do_method(node, "stash");
+				undo_redo->add_undo_method(node, "unstash");
 
-					undo_redo->commit_action();
+				if (placeholder) {
+					EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
 				}
 			}
+			undo_redo->commit_action();
 		} break;
 		case TOOL_SCENE_MAKE_LOCAL: {
 			if (!profile_allow_editing) {
@@ -4060,11 +4065,12 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
 		}
 
-		// Group "make_local" etc. with "save_branch_as_scene", if it is available.
-		bool is_external = selection.front()->get()->is_instance();
+		Node *selected_node = selection.front()->get();
+
+		bool is_external = selected_node->is_instance();
 		if (is_external) {
-			bool is_inherited = selection.front()->get()->get_scene_inherited_state().is_valid();
-			bool is_top_level = selection.front()->get()->get_owner() == nullptr;
+			bool is_inherited = selected_node->get_scene_inherited_state().is_valid();
+			bool is_top_level = selected_node->get_owner() == nullptr;
 			if (is_inherited && is_top_level) {
 				if (profile_allow_editing) {
 					BEGIN_SECTION()
@@ -4072,23 +4078,23 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				}
 				is_tool_scene_open_inherited_available = true;
 			} else if (!is_top_level) {
-				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection.front()->get());
-				bool placeholder = selection.front()->get()->get_scene_instance_load_placeholder();
 				if (profile_allow_editing) {
 					BEGIN_SECTION()
 					menu->add_item(TTRC("Make Local"), TOOL_SCENE_MAKE_LOCAL);
 
 					menu->add_check_item(TTRC("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
 					menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/toggle_editable_children"));
-
-					menu->add_check_item(TTRC("Load as Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
-
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load as Placeholder")), placeholder);
+					menu->set_item_checked(-1, EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selected_node));
 				}
 				is_tool_scene_open_available = true;
 			}
 		}
+
+		if (profile_allow_editing) {
+			menu->add_check_item(TTRC("Stash Node"), TOOL_SCENE_USE_PLACEHOLDER);
+			menu->set_item_checked(-1, Object::cast_to<PlaceholderNode>(selected_node));
+		}
+
 		END_SECTION()
 	}
 

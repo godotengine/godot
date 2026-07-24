@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InstancePlaceholder" inherits="Node" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="InstancePlaceholder" inherits="PlaceholderNode" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Placeholder for the root [Node] of a [PackedScene].
 	</brief_description>
 	<description>
-		Turning on the option [b]Load As Placeholder[/b] for an instantiated scene in the editor causes it to be replaced by an [InstancePlaceholder] when running the game, this will not replace the node in the editor. This makes it possible to delay actually loading the scene until calling [method create_instance]. This is useful to avoid loading large scenes all at once by loading parts of it selectively.
+		InstancePlaceholder is a special case of [PlaceholderNode]. Turning on the option [b]Load As Placeholder[/b] for an instantiated scene in the editor causes it to be replaced by an [InstancePlaceholder] when running the game, this will not replace the node in the editor. This makes it possible to delay actually loading the scene. This is useful to avoid loading large scenes all at once by loading parts of it selectively. The scene is instantiated when calling [method prepare_instance], or when the stashed node is requested (either via [method PlaceholderNode.get_stashed_node] or [method PlaceholderNode.unstash_node]).
 		[b]Note:[/b] Like [Node], [InstancePlaceholder] does not have a transform. This causes any child nodes to be positioned relatively to the [Viewport] origin, rather than their parent as displayed in the editor. Replacing the placeholder with a scene with a transform will transform children relatively to their parent again.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="create_instance">
+		<method name="create_instance" deprecated="Use [method PlaceholderNode.unstash_node] instead.">
 			<return type="Node" />
 			<param index="0" name="replace" type="bool" default="false" />
 			<param index="1" name="custom_scene" type="PackedScene" default="null" />
@@ -31,6 +31,12 @@
 			<description>
 				Returns the list of properties that will be applied to the node when [method create_instance] is called.
 				If [param with_order] is [code]true[/code], a key named [code].order[/code] (note the leading period) is added to the dictionary. This [code].order[/code] key is an [Array] of [String] property names specifying the order in which properties will be applied (with index 0 being the first).
+			</description>
+		</method>
+		<method name="prepare_instance">
+			<return type="void" />
+			<description>
+				Instantiates the scene into memory. The instance is not added to tree until [method PlaceholderNode.unstash_node] is called.
 			</description>
 		</method>
 	</methods>

@@ -1714,7 +1714,8 @@ void Node::add_child(RequiredParam<Node> rp_child, bool p_force_readable_name, I
 	ERR_THREAD_GUARD
 	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
-	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
+	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); // Fail if node has a parent.
+	ERR_FAIL_COND_MSG(p_child->data.stash_owner, vformat("Can't add child '%s' to '%s', the node is stashed.", p_child->get_name(), get_name())); // Fail if node was stashed.
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(p_child->is_ancestor_of(this), vformat("Can't add child '%s' to '%s' as it would result in a cyclic dependency since '%s' is already a parent of '%s'.", p_child->get_name(), get_name(), p_child->get_name(), get_name()));
 #endif
@@ -1799,6 +1800,46 @@ void Node::remove_child(RequiredParam<Node> rp_child) {
 	if (data.tree) {
 		p_child->_propagate_after_exit_tree();
 	}
+}
+
+void Node::stash() {
+	ERR_FAIL_NULL_MSG(data.parent, "Can't stash: Node has no parent.");
+	ERR_FAIL_COND_MSG(is_internal(), "Can't stash: Node is internal.");
+
+	PlaceholderNode *placeholder = PlaceholderNode::create_for_node(this);
+
+	int index = data.index;
+	Node *parent = data.parent;
+	Node *owner = get_owner();
+
+	parent->remove_child(this);
+	parent->add_child(placeholder);
+	parent->move_child(placeholder, index);
+
+	placeholder->set_owner(owner);
+}
+
+void Node::unstash() {
+	ERR_FAIL_NULL_MSG(data.stash_owner, "Node is not stashed.");
+
+	PlaceholderNode *stasher = data.stash_owner;
+	data.stash_owner = nullptr;
+	int index = stasher->data.index;
+	Node *parent = stasher->data.parent;
+	Node *owner = stasher->get_owner();
+
+	parent->remove_child(stasher);
+	parent->add_child(this);
+	parent->move_child(this, index);
+	set_owner(owner);
+
+	stasher->stashed_node = nullptr;
+	stasher->queue_free();
+}
+
+PlaceholderNode *Node::get_stash_owner() const {
+	ERR_FAIL_NULL_V_MSG(data.stash_owner, nullptr, "Node is not stashed.");
+	return data.stash_owner;
 }
 
 void Node::_update_children_cache_impl() const {
@@ -3808,6 +3849,11 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
+	ClassDB::bind_method(D_METHOD("stash"), &Node::stash);
+	ClassDB::bind_method(D_METHOD("unstash"), &Node::unstash);
+	ClassDB::bind_method(D_METHOD("is_stashed"), &Node::is_stashed);
+	ClassDB::bind_method(D_METHOD("get_stash_owner"), &Node::get_stash_owner);
+
 	ClassDB::bind_method(D_METHOD("is_inside_tree"), &Node::is_inside_tree);
 	ClassDB::bind_method(D_METHOD("is_part_of_edited_scene"), &Node::is_part_of_edited_scene);
 	ClassDB::bind_method(D_METHOD("is_ancestor_of", "node"), &Node::is_ancestor_of);
@@ -4167,6 +4213,11 @@ Node::~Node() {
 	data.children.clear();
 	data.children_cache.clear();
 
+	if (data.stash_owner) {
+		data.stash_owner->stashed_node = nullptr;
+		memdelete(data.stash_owner);
+	}
+
 	ERR_FAIL_COND(data.parent);
 	ERR_FAIL_COND(data.children_cache.size());
 
@@ -4298,3 +4349,29 @@ bool Node::has_connections(const StringName &p_signal) const {
 }
 
 #endif
+
+void PlaceholderNode::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_stashed_node"), &PlaceholderNode::get_stashed_node);
+	ClassDB::bind_method(D_METHOD("unstash_node"), &PlaceholderNode::unstash_node);
+}
+
+PlaceholderNode *PlaceholderNode::create_for_node(Node *p_node) {
+	PlaceholderNode *placeholder = memnew(PlaceholderNode);
+	placeholder->stashed_node = p_node;
+	placeholder->set_name(p_node->get_name());
+	p_node->set_stash_owner(placeholder);
+	return placeholder;
+}
+
+void PlaceholderNode::unstash_node() {
+	Node *node_to_unstash = get_stashed_node();
+	ERR_FAIL_NULL(node_to_unstash);
+	node_to_unstash->unstash();
+}
+
+PlaceholderNode::~PlaceholderNode() {
+	if (stashed_node) {
+		stashed_node->set_stash_owner(nullptr);
+	}
+	memdelete(stashed_node);
+}

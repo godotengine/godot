@@ -63,6 +63,33 @@ void InstancePlaceholder::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+Node *InstancePlaceholder::get_stashed_node() {
+	if (!stashed_node) {
+		prepare_instance();
+	}
+	return stashed_node;
+}
+
+void InstancePlaceholder::prepare_instance() {
+	const Ref<PackedScene> ps = ResourceLoader::load(path, "PackedScene");
+	if (ps.is_null()) {
+		ERR_FAIL_MSG("InstancePlaceholder couldn't load scene.");
+	}
+
+	Node *instance = ps->instantiate();
+	if (!instance) {
+		ERR_FAIL_MSG("Failed to instantiate placeholder scene.");
+	}
+	instance->set_name(get_name());
+	instance->set_multiplayer_authority(get_multiplayer_authority());
+	instance->set_stash_owner(this);
+	stashed_node = instance;
+
+	for (const PropSet &E : stored_values) {
+		set_value_on_instance(this, instance, E);
+	}
+}
+
 void InstancePlaceholder::set_instance_path(const String &p_name) {
 	path = p_name;
 }
@@ -71,6 +98,7 @@ String InstancePlaceholder::get_instance_path() const {
 	return path;
 }
 
+#ifndef DISABLE_DEPRECATED
 Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene> &p_custom_scene) {
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
@@ -111,6 +139,7 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 
 	return instance;
 }
+#endif
 
 // This method will attempt to set the correct values on the placeholder instance
 // for regular types this is trivial and unnecessary.
@@ -250,9 +279,9 @@ Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 
 void InstancePlaceholder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stored_values", "with_order"), &InstancePlaceholder::get_stored_values, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("create_instance", "replace", "custom_scene"), &InstancePlaceholder::create_instance, DEFVAL(false), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_instance_path"), &InstancePlaceholder::get_instance_path);
-}
-
-InstancePlaceholder::InstancePlaceholder() {
+	ClassDB::bind_method(D_METHOD("prepare_instance"), &InstancePlaceholder::prepare_instance);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("create_instance", "replace", "custom_scene"), &InstancePlaceholder::create_instance, DEFVAL(false), DEFVAL(Variant()));
+#endif
 }

@@ -40,6 +40,7 @@
 
 class MultiplayerAPI;
 class NodePath;
+class PlaceholderNode;
 class Resource;
 class SceneState;
 class SceneTree;
@@ -202,6 +203,7 @@ private:
 		Ref<SceneState> inherited_state;
 
 		Node *parent = nullptr;
+		PlaceholderNode *stash_owner = nullptr;
 		Node *owner = nullptr;
 		HashMap<StringName, Node *> children;
 		mutable bool children_cache_dirty = false;
@@ -525,6 +527,13 @@ public:
 	void add_child(RequiredParam<Node> rp_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
 	void add_sibling(RequiredParam<Node> rp_sibling, bool p_force_readable_name = false);
 	void remove_child(RequiredParam<Node> rp_child);
+
+	void stash();
+	void unstash();
+	bool is_stashed() const { return data.stash_owner; }
+	PlaceholderNode *get_stash_owner() const;
+
+	void set_stash_owner(PlaceholderNode *p_owner) { data.stash_owner = p_owner; }
 
 	/// Optimal way to iterate the children of this node.
 	/// The caller is responsible to ensure:
@@ -901,6 +910,25 @@ public:
 #endif
 	Node();
 	~Node();
+};
+
+class PlaceholderNode : public Node {
+	GDCLASS(PlaceholderNode, Node);
+
+	friend class Node;
+
+protected:
+	Node *stashed_node = nullptr;
+
+	static void _bind_methods();
+
+public:
+	static PlaceholderNode *create_for_node(Node *p_node);
+
+	virtual Node *get_stashed_node() { return stashed_node; }
+	void unstash_node();
+
+	~PlaceholderNode();
 };
 
 VARIANT_ENUM_CAST(Node::DuplicateFlags);
