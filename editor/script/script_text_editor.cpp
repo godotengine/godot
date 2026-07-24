@@ -1934,7 +1934,21 @@ static String _get_dropped_resource_as_member(const Ref<Resource> &p_resource, b
 	} else {
 		variable_name = variable_name.to_snake_case().to_upper().validate_unicode_identifier();
 	}
-	return vformat("const %s = preload(%s)", variable_name, _quote_drop_data(path));
+
+	const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+
+	if (use_type) {
+		StringName custom_class_name;
+		Ref<Script> resource_script = p_resource->get_script();
+		while (resource_script.is_valid() && custom_class_name.is_empty()) {
+			custom_class_name = resource_script->get_global_name();
+			resource_script = resource_script->get_base_script();
+		}
+		const StringName class_name = custom_class_name.is_empty() ? p_resource->get_class_name() : custom_class_name;
+		return vformat("const %s: %s = preload(%s)", variable_name, class_name, _quote_drop_data(path));
+	} else {
+		return vformat("const %s = preload(%s)", variable_name, _quote_drop_data(path));
+	}
 }
 
 String ScriptTextEditor::_get_dropped_resource_as_exported_member(const Ref<Resource> &p_resource, const Vector<ObjectID> &p_script_instance_obj_ids) {
