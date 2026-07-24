@@ -608,7 +608,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 	DisplayServerWindows *ds = static_cast<DisplayServerWindows *>(get_singleton());
 	FileDialogData *fd = (FileDialogData *)p_ud;
 
-	if (fd->mode < 0 && fd->mode >= DisplayServerEnums::FILE_DIALOG_MODE_SAVE_MAX) {
+	if (fd->mode < 0 || fd->mode >= DisplayServerEnums::FILE_DIALOG_MODE_SAVE_MAX) {
 		fd->finished.set();
 		return;
 	}
