@@ -49,7 +49,7 @@ public:
 	virtual bool is_open() const override; ///< true when file is open
 
 	virtual void seek(uint64_t p_position) override; ///< seek to a given position
-	virtual void seek_end(int64_t p_position) override; ///< seek from the end of file
+	virtual void seek_end(int64_t p_position = 0) override; ///< seek from the end of file
 	virtual uint64_t get_position() const override; ///< get position in the file
 	virtual uint64_t get_length() const override; ///< get size of the file
 
