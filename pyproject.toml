@@ -1,16 +1,12 @@
-[tool.mypy]
-disallow_any_generics = true
-explicit_package_bases = true
-ignore_missing_imports = true
-namespace_packages = true
-no_implicit_optional = true
-pretty = true
-show_column_numbers = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-exclude = ["thirdparty/"]
-python_version = "3.9"
+[tool.ty.environment]
+python-platform = "all"
+python-version = "3.9"
+
+[[tool.ty.overrides]]
+include = ["**/SConstruct", "**/SCsub"]
+
+[tool.ty.overrides.rules]
+unresolved-attribute = "ignore" # Bad practice; gradually move away from.
 
 [tool.ruff]
 extend-exclude = ["thirdparty"]

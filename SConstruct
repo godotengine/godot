@@ -12,6 +12,7 @@ import sys
 from collections import OrderedDict
 from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
+from typing import cast
 
 from SCons import __version__ as scons_raw_version
 from SCons.Builder import ListEmitter
@@ -24,6 +25,10 @@ from SCons.Builder import ListEmitter
 
 def _helper_module(name, path):
     spec = spec_from_file_location(name, path)
+    if not spec:
+        raise FileNotFoundError(f"Could not find module {name} at {path}")
+    if not spec.loader:
+        raise FileNotFoundError(f"Could not find loader for module {name} at {path}")
     module = module_from_spec(spec)
     spec.loader.exec_module(module)
     sys.modules[name] = module
@@ -80,7 +85,7 @@ for x in sorted(glob.glob("platform/*")):
     tmppath = "./" + x
 
     sys.path.insert(0, tmppath)
-    import detect
+    import detect  # ty:ignore[unresolved-import]
 
     # Get doc classes paths (if present)
     try:
@@ -112,7 +117,7 @@ for x in sorted(glob.glob("platform/*")):
 # want to have to pull in manually. However we enforce no "tools", which we register
 # further down after parsing our platform-specific configuration.
 # Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
-env = Environment(tools=[])
+env = cast("SConsEnvironment", Environment(tools=[]))
 env.PrependENVPath("PATH", os.getenv("PATH"))
 env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
 if "TERM" in os.environ:  # Used for colored output.
@@ -311,7 +316,7 @@ opts.Add(
         "library_type",
         "Build library type",
         "executable",
-        ("executable", "static_library", "shared_library"),
+        ["executable", "static_library", "shared_library"],
     )
 )
 
@@ -471,7 +476,7 @@ for path in module_search_paths:
 # Add module options.
 for name, path in modules_detected.items():
     sys.path.insert(0, path)
-    import config
+    import config  # ty:ignore[unresolved-import]
 
     if env["modules_enabled_by_default"]:
         enabled = True
@@ -505,7 +510,7 @@ Help(opts.GenerateHelpText(env))
 # ahead of time with native validator/converter functions.
 tmppath = "./platform/" + env["platform"]
 sys.path.insert(0, tmppath)
-import detect
+import detect  # ty:ignore[unresolved-import]
 
 custom_tools = ["default"]
 try:  # Platform custom tools are optional
@@ -1115,7 +1120,7 @@ for name, path in modules_detected.items():
         continue
     sys.path.insert(0, path)
     env.current_module = name
-    import config
+    import config  # ty:ignore[unresolved-import]
 
     if config.can_build(env, env["platform"]):
         # Disable it if a required dependency is missing.

@@ -97,18 +97,18 @@ def detect_build_env_arch():
     }
     if os.getenv("VCTOOLSINSTALLDIR"):
         if os.getenv("Platform"):
-            msvc_arch = os.getenv("Platform").lower()
+            msvc_arch = os.getenv("Platform", "").lower()
             if msvc_arch in msvc_target_aliases.keys():
                 return msvc_target_aliases[msvc_arch]
 
         if os.getenv("VSCMD_ARG_TGT_ARCH"):
-            msvc_arch = os.getenv("VSCMD_ARG_TGT_ARCH").lower()
+            msvc_arch = os.getenv("VSCMD_ARG_TGT_ARCH", "").lower()
             if msvc_arch in msvc_target_aliases.keys():
                 return msvc_target_aliases[msvc_arch]
 
-        host_path_index = os.getenv("PATH").upper().find(os.getenv("VCTOOLSINSTALLDIR").upper() + "BIN\\HOST")
+        host_path_index = os.getenv("PATH", "").upper().find(os.getenv("VCTOOLSINSTALLDIR", "").upper() + "BIN\\HOST")
         if host_path_index > -1:
-            first_path_arch = os.getenv("PATH")[host_path_index:].split(";")[0].rsplit("\\", 1)[-1].lower()
+            first_path_arch = os.getenv("PATH", "")[host_path_index:].split(";")[0].rsplit("\\", 1)[-1].lower()
             if first_path_arch in msvc_target_aliases.keys():
                 return msvc_target_aliases[first_path_arch]
 
@@ -121,7 +121,7 @@ def detect_build_env_arch():
         "clangarm64": "arm64",
     }
     if os.getenv("MSYSTEM"):
-        msys_arch = os.getenv("MSYSTEM").lower()
+        msys_arch = os.getenv("MSYSTEM", "").lower()
         if msys_arch in msys_target_aliases.keys():
             return msys_target_aliases[msys_arch]
 
@@ -323,7 +323,7 @@ def configure_msvc(env: "SConsEnvironment"):
         env["AR"] = "llvm-lib"
 
         env.AppendUnique(CPPDEFINES=["R128_STDC_ONLY"])
-        env.extra_suffix = ".llvm" + env.extra_suffix
+        env.extra_suffix = ".llvm" + env.extra_suffix  # ty:ignore[unresolved-attribute]
 
         # Ensure intellisense tools like `compile_commands.json` play nice with MSVC syntax.
         env["CPPDEFPREFIX"] = "-D"
@@ -748,7 +748,7 @@ def configure_mingw(env: "SConsEnvironment"):
         env["RANLIB"] = get_detected(env, "ranlib")
         env["AS"] = get_detected(env, "clang")
         env.Append(ASFLAGS=["-c"])
-        env.extra_suffix = ".llvm" + env.extra_suffix
+        env.extra_suffix = ".llvm" + env.extra_suffix  # ty:ignore[unresolved-attribute]
     else:
         env["CC"] = get_detected(env, "gcc")
         env["CXX"] = get_detected(env, "g++")
@@ -1044,7 +1044,7 @@ def configure(env: "SConsEnvironment"):
     if env["prefer_high_performance_gpu"]:
         env.Append(CPPDEFINES=["ENABLE_PREFER_HIGH_PERFORMANCE_GPU"])
 
-    env.msvc = "mingw" not in env["TOOLS"]
+    env.msvc = "mingw" not in env["TOOLS"]  # ty:ignore[unresolved-attribute]
     if env.msvc:
         configure_msvc(env)
     else:

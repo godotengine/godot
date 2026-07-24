@@ -9,7 +9,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
-from typing import Any, TextIO
+from typing import TextIO
 
 sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
@@ -426,11 +426,10 @@ class State:
 
     def parse_params(self, root: ET.Element, context: str) -> list[ParameterDef]:
         param_elements = root.findall("param")
-        params: Any = [None] * len(param_elements)
+        params: list[ParameterDef] = []
 
         for param_index, param_element in enumerate(param_elements):
             param_name = param_element.attrib["name"]
-            index = int(param_element.attrib["index"])
             type_name = TypeName.from_element(param_element)
             default = param_element.get("default")
 
@@ -440,11 +439,9 @@ class State:
                     self,
                 )
 
-            params[index] = ParameterDef(param_name, type_name, default)
+            params.append(ParameterDef(param_name, type_name, default))
 
-        cast: list[ParameterDef] = params
-
-        return cast
+        return params
 
     def sort_classes(self) -> None:
         self.classes = OrderedDict(sorted(self.classes.items(), key=lambda t: t[0].lower()))
@@ -1249,8 +1246,8 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
             index = 0
 
-            for method_list in class_def.annotations.values():  # type: ignore
-                for i, m in enumerate(method_list):
+            for annotation_list in class_def.annotations.values():
+                for i, a in enumerate(annotation_list):
                     if index != 0:
                         f.write(make_separator())
 
@@ -1258,19 +1255,19 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
 
                     self_link = ""
                     if i == 0:
-                        annotation_anchor = f"class_{sanitize_class_name(class_name)}_annotation_{m.name}"
+                        annotation_anchor = f"class_{sanitize_class_name(class_name)}_annotation_{a.name}"
                         f.write(f".. _{annotation_anchor}:\n\n")
                         self_link = f" :ref:`🔗<{annotation_anchor}>`"
 
                     f.write(".. rst-class:: classref-annotation\n\n")
 
-                    _, signature = make_method_signature(class_def, m, "", state)
+                    _, signature = make_method_signature(class_def, a, "", state)
                     f.write(f"{signature}{self_link}\n\n")
 
                     # Add annotation description, or a call to action if it's missing.
 
-                    if m.description is not None and m.description.strip() != "":
-                        f.write(f"{format_text_block(m.description.strip(), m, state)}\n\n")
+                    if a.description is not None and a.description.strip() != "":
+                        f.write(f"{format_text_block(a.description.strip(), a, state)}\n\n")
                     else:
                         f.write(".. container:: contribute\n\n\t")
                         f.write(
@@ -2134,10 +2131,8 @@ def format_text_block(
                                     )
                                     break
 
-                    valid_param_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
-                    if valid_param_context:
-                        context_params: list[ParameterDef] = context.parameters  # type: ignore
-                        for param_def in context_params:
+                    if isinstance(context, (MethodDef, SignalDef, AnnotationDef)):
+                        for param_def in context.parameters:
                             if param_def.name == inside_code_text:
                                 print_warning(
                                     f'{state.current_class}.xml: Found a code string "{inside_code_text}" that matches one of the parameters in {context_name}. {code_warning_if_intended_string}',
@@ -2289,16 +2284,14 @@ def format_text_block(
                         escape_post = True
 
                     elif tag_state.name == "param":
-                        valid_param_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
-                        if not valid_param_context:
+                        if not isinstance(context, (MethodDef, SignalDef, AnnotationDef)):
                             print_error(
                                 f'{state.current_class}.xml: Argument reference "{link_target}" used outside of method, signal, or annotation context in {context_name}.',
                                 state,
                             )
                         else:
-                            context_params: list[ParameterDef] = context.parameters  # type: ignore
                             found = False
-                            for param_def in context_params:
+                            for param_def in context.parameters:
                                 if param_def.name == link_target:
                                     found = True
                                     break

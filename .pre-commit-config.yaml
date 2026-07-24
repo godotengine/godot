@@ -57,13 +57,6 @@ repos:
         files: (\.py|SConstruct|SCsub)$
         types_or: [text]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.1
-    hooks:
-      - id: mypy
-        files: \.py$
-        types_or: [text]
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.2
     hooks:
@@ -79,6 +72,13 @@ repos:
 
   - repo: local
     hooks:
+      - id: ty
+        name: ty-check
+        entry: ty check --color always --fix
+        language: python
+        types: [python]
+        additional_dependencies: [ty==0.0.57, scons>=4.4]
+
       - id: make-rst
         name: make-rst
         language: python

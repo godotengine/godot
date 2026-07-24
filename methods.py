@@ -385,16 +385,16 @@ def use_windows_spawn_fix(self, platform=None):
     def mySubProcess(cmdline, env):
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        popen_args = {
-            "stdin": subprocess.PIPE,
-            "stdout": subprocess.PIPE,
-            "stderr": subprocess.PIPE,
-            "startupinfo": startupinfo,
-            "shell": False,
-            "env": env,
-        }
-        popen_args["text"] = True
-        proc = subprocess.Popen(cmdline, **popen_args)
+        proc = subprocess.Popen(
+            cmdline,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            startupinfo=startupinfo,
+            shell=False,
+            env=env,
+            text=True,
+        )
         _, err = proc.communicate()
         rv = proc.wait()
         if rv:
@@ -563,12 +563,12 @@ def generate_cpp_hint_file(filename):
 
 
 def glob_recursive(pattern, node="."):
-    from SCons import Node
-    from SCons.Script import Glob
+    from SCons.Node.FS import Dir
+    from SCons.Script import Glob  # ty:ignore[unresolved-import]
 
     results = []
     for f in Glob(str(node) + "/*", source=True):
-        if type(f) is Node.FS.Dir:
+        if type(f) is Dir:
             results += glob_recursive(pattern, f)
     results += Glob(str(node) + "/" + pattern, source=True)
     return results
@@ -1003,12 +1003,12 @@ def dump(env):
 def generate_vs_project(env, original_args, project_name="godot"):
     # Augmented glob_recursive that also fills the dirs argument with traversed directories that have content.
     def glob_recursive_2(pattern, dirs, node="."):
-        from SCons import Node
-        from SCons.Script import Glob
+        from SCons.Node.FS import Dir
+        from SCons.Script import Glob  # ty:ignore[unresolved-import]
 
         results = []
         for f in Glob(str(node) + "/*", source=True):
-            if type(f) is Node.FS.Dir:
+            if type(f) is Dir:
                 results += glob_recursive_2(pattern, dirs, f)
         r = Glob(str(node) + "/" + pattern, source=True)
         if len(r) > 0 and str(node) not in dirs:
@@ -1111,7 +1111,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             continue
         tmppath = "./" + x
         sys.path.insert(0, tmppath)
-        import msvs
+        import msvs  # ty:ignore[unresolved-import]
 
         vs_plats = []
         vs_confs = []
@@ -1277,8 +1277,8 @@ def generate_vs_project(env, original_args, project_name="godot"):
     if vs_configuration:
         vsconf = ""
         for a in vs_configuration["arches"]:
-            if arch == a["architecture"]:
-                vsconf = f"{target}|{a['platform']}"
+            if arch == a["architecture"]:  # ty:ignore[invalid-argument-type]
+                vsconf = f"{target}|{a['platform']}"  # ty:ignore[invalid-argument-type]
                 break
 
         condition = "'$(GodotConfiguration)|$(GodotPlatform)'=='" + vsconf + "'"
@@ -1372,18 +1372,16 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
     proj_uuid = str(uuid.uuid4())
     sln_uuid = str(uuid.uuid4())
+    RE_UUID = re.compile(
+        r"\"{(\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-\b[0-9a-fA-F]{12}\b)}\"$"
+    )
 
     if os.path.exists(f"{project_name}.sln"):
         for line in open(f"{project_name}.sln", "r", encoding="utf-8").read().splitlines():
-            if line.startswith('Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}")'):
-                proj_uuid = re.search(
-                    r"\"{(\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-\b[0-9a-fA-F]{12}\b)}\"$",
-                    line,
-                ).group(1)
-            elif line.strip().startswith("SolutionGuid ="):
-                sln_uuid = re.search(
-                    r"{(\b[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-\b[0-9a-fA-F]{12}\b)}", line
-                ).group(1)
+            if line.startswith('Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}")') and (match := RE_UUID.search(line)):
+                proj_uuid = match.group(1)
+            elif line.strip().startswith("SolutionGuid =") and (match := RE_UUID.search(line)):
+                sln_uuid = match.group(1)
                 break
 
     configurations = []
