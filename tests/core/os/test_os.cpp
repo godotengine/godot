@@ -199,5 +199,35 @@ TEST_CASE("[OS] Execute") {
 			"Running the command `sh -c \"ls > /dev/null\"` returns a zero (successful) exit code.");
 #endif
 }
-
+#ifdef UNIX_ENABLED
+TEST_CASE("[OS] Execute With Output Pipe") {
+	List<String> arguments;
+	arguments.push_back("-c");
+	arguments.push_back("printf \"Hello World\"");
+	String result;
+	int exit_code;
+	const Error err = OS::get_singleton()->execute("sh", arguments, &result, &exit_code);
+	REQUIRE_MESSAGE(
+			err == OK,
+			"Running the command `sh -c \"printf \\\"Hello World\\\"\"` returns the expected Godot error code (OK).");
+	CHECK_MESSAGE(
+			exit_code == 0,
+			"Running the command `sh -c \"printf \\\"Hello World\\\"\"` returns a zero (successful) exit code.");
+	CHECK_MESSAGE(
+			result == "Hello World",
+			"Running the command `sh -c \"printf \\\"Hello World\\\"\"` outputs \"Hello World\"");
+}
+TEST_CASE("[OS] Execute file not found") {
+	List<String> arguments;
+	String result;
+	int exit_code;
+	const Error err = OS::get_singleton()->execute("erwqerhjqw34324", arguments, &result, &exit_code);
+	CHECK_MESSAGE(
+			err == OK,
+			"File not found still returns ok because the subprocess was still started");
+	CHECK_MESSAGE(
+			exit_code != 0,
+			"The exit code is zero the command did not fail");
+}
+#endif
 } // namespace TestOS

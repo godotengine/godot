@@ -70,8 +70,8 @@
 #if defined(__NetBSD__)
 #include <uvm/uvm_extern.h>
 #endif
-
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <poll.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
@@ -884,47 +884,98 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
 #else
+	// exit codes are from <sysexit.h>
+	// not officially posix but available on macos,linux and *BSD
+	enum FailType {
+		StdIn,
+		StdOut,
+		StdErr,
+		ErrPipe,
+		ErrOpen,
+		Exec
+	};
+	struct ChildFailStruct {
+		FailType failtype;
+		int failerrno;
+	};
+	int err_pipe[2];
+	int stdout_pipe_fd[2];
 	if (r_pipe) {
-		String command = "\"" + p_path + "\"";
-		for (const String &arg : p_arguments) {
-			command += String(" \"") + arg + "\"";
+		ERR_FAIL_COND_V(::pipe(stdout_pipe_fd) < 0, ERR_CANT_OPEN);
+	}
+	if (::pipe(err_pipe) < 0) {
+		if (r_pipe) {
+			::close(stdout_pipe_fd[0]);
+			::close(stdout_pipe_fd[1]);
 		}
-		if (read_stderr) {
-			command += " 2>&1"; // Include stderr
-		} else {
-			command += " 2>/dev/null"; // Silence stderr
-		}
-
-		FILE *f = popen(command.utf8().get_data(), "r");
-		ERR_FAIL_NULL_V_MSG(f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command + ".");
-		char buf[65535];
-		while (fgets(buf, 65535, f)) {
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
-			}
-			String pipe_out;
-			if (pipe_out.append_utf8(buf) == OK) {
-				(*r_pipe) += pipe_out;
-			} else {
-				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
-			}
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
-			}
-		}
-		int rv = pclose(f);
-
-		if (r_exitcode) {
-			*r_exitcode = WEXITSTATUS(rv);
-		}
-		return OK;
+		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
 	pid_t pid = fork();
-	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
-
+	if (pid < 0) {
+		::close(err_pipe[0]);
+		::close(err_pipe[1]);
+		if (r_pipe) {
+			::close(stdout_pipe_fd[0]);
+			::close(stdout_pipe_fd[1]);
+		}
+		ERR_FAIL_V(ERR_CANT_FORK);
+	}
 	if (pid == 0) {
+		int discard;
 		// The child process
+		if (::dup2(err_pipe[1], 3) < 0) {
+			ChildFailStruct result = { ErrPipe, errno };
+			discard = write(err_pipe[1], &result, sizeof(ChildFailStruct));
+			::_exit(74);
+		}
+		::close(err_pipe[1]);
+		::fcntl(3, F_SETFD, ::fcntl(3, F_GETFD) | O_CLOEXEC);
+		// Disconnect stdin so we to prevent reading from the console.
+		// This also may be in use but as far as i am concerned you should not rely no it.
+		int nullfd = open("/dev/null", O_RDWR);
+		if (nullfd < 0) {
+			ChildFailStruct result = { ErrOpen, errno };
+			discard = write(3, &result, sizeof(ChildFailStruct));
+			::_exit(74);
+		} else {
+			if (::dup2(nullfd, STDIN_FILENO) < 0) {
+				ChildFailStruct result = { StdIn, errno };
+				discard = write(3, &result, sizeof(ChildFailStruct));
+				::_exit(74);
+			}
+		}
+		if (r_pipe) {
+			::close(stdout_pipe_fd[0]);
+			if (::dup2(stdout_pipe_fd[1], STDOUT_FILENO) < 0) {
+				ChildFailStruct result = { StdOut, errno };
+				discard = write(3, &result, sizeof(ChildFailStruct));
+				::_exit(74);
+			}
+			if (read_stderr) {
+				if (::dup2(stdout_pipe_fd[1], STDERR_FILENO) < 0) {
+					ChildFailStruct result = { StdErr, errno };
+					discard = write(3, &result, sizeof(ChildFailStruct));
+					::_exit(74);
+				}
+			}
+			::close(stdout_pipe_fd[1]);
+		} else {
+			// This discards all output.
+			// Not sure if we should do this maybe just leave it normal?
+			// This is a user faceing change.
+			if (::dup2(nullfd, STDOUT_FILENO) < 0) {
+				ChildFailStruct result = { StdOut, errno };
+				discard = write(3, &result, sizeof(ChildFailStruct));
+				::_exit(74);
+			}
+			if (::dup2(nullfd, STDERR_FILENO) < 0) {
+				ChildFailStruct result = { StdErr, errno };
+				discard = write(3, &result, sizeof(ChildFailStruct));
+				::_exit(74);
+			}
+		}
+		::close(nullfd);
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
 		for (const String &arg : p_arguments) {
@@ -936,15 +987,85 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 			args.push_back((char *)cs[i].get_data());
 		}
 		args.push_back(0);
-
-		execvp(p_path.utf8().get_data(), &args[0]);
-		// The execvp() function only returns if an error occurs.
-		fprintf(stderr, "Could not create child process: %s\n", p_path.utf8().get_data());
-		raise(SIGKILL);
+		// this is optional can be remove.
+		// just cleans fds for the child.
+#if defined(__APPLE__)
+		for (int i = 4; i < getdtablesize(); i++) {
+			::close(i);
+		}
+#elif defined(__ANDROID__)
+		int maxfd = ::sysconf(_SC_OPEN_MAX);
+		if (maxfd > 0) {
+			if (maxfd > 1024) {
+				maxfd = 1024;
+			}
+			for (int f = 4; f < maxfd; f++) {
+				::close(f);
+			}
+		}
+#else
+		::closefrom(4);
+#endif
+		::execvp(p_path.utf8().get_data(), &args[0]);
+		ChildFailStruct result = { Exec, errno };
+		discard = write(3, &result, sizeof(ChildFailStruct));
+		(void)discard;
+		::_exit(127);
 	}
-
+	::close(err_pipe[1]);
+	if (r_pipe) {
+		::close(stdout_pipe_fd[1]);
+		FILE *f = ::fdopen(stdout_pipe_fd[0], "r");
+		if (f == nullptr) {
+			String command = p_path;
+			for (const String &arg : p_arguments) {
+				command += " ";
+				command += arg;
+			}
+			::close(stdout_pipe_fd[0]);
+			ERR_PRINT("Failed to open stdout pipe for reading when running " + command);
+		} else {
+			char buf[65535];
+			while (::fgets(buf, 65535, f)) {
+				if (p_pipe_mutex) {
+					p_pipe_mutex->lock();
+				}
+				String pipe_out;
+				if (pipe_out.append_utf8(buf) == OK) {
+					(*r_pipe) += pipe_out;
+				} else {
+					(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
+				}
+				if (p_pipe_mutex) {
+					p_pipe_mutex->unlock();
+				}
+			}
+		}
+		::fclose(f);
+	}
 	int status = 0;
 	const int result = _wait_for_pid_completion(pid, &status, 0);
+	ChildFailStruct childeresult;
+	ssize_t readsize = read(err_pipe[0], &childeresult, sizeof(childeresult));
+	::close(err_pipe[0]);
+	if (readsize > 0) {
+		String command = p_path;
+		for (const String &arg : p_arguments) {
+			command += " ";
+			command += arg;
+		}
+		if (!(readsize >= (ssize_t)sizeof(childeresult))) {
+			ERR_PRINT("Failed to get error code from pipe when running command: " + command);
+		} else {
+			// Would love to return a good error but that would break user code as this function is wrapped by.
+			// if(result != OK) {
+			// 		return -1;
+			// }
+			if (childeresult.failtype != Exec) {
+				ERR_PRINT("IO error starting process with command: " + command);
+			}
+		}
+	}
 	if (r_exitcode) {
 		*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 	}
