@@ -109,6 +109,10 @@ GodotAreaPair2D::~GodotAreaPair2D() {
 		if (body_has_attached_area) {
 			body_has_attached_area = false;
 			body->remove_area(area);
+
+			// TODO: This may not work perfectly until 'Fix Area Monitoring Bugs #121747' or similar is merged.
+			// In the interim, this shouldn't hurt anything
+			body->set_active(true, true);
 		}
 		if (area->has_monitor_callback()) {
 			area->remove_body_from_query(body, body_shape, area_shape);
