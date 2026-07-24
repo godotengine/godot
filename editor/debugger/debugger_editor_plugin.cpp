@@ -73,7 +73,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 			TTRC("When this option is enabled, collision shapes and raycast nodes (for 2D and 3D) will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_audio_visualization", TTRC("Visible Audio Visualization")), RUN_DEBUG_AUDIO_VISUALIZATION);
 	debug_menu->set_item_tooltip(-1,
-			TTRC("When this option is enabled, audio visualization (for 2D only 3D NOT YET) will be visible in the running project."));
+			TTRC("When this option is enabled, audio visualization (for 2D only) will be visible in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_paths", TTRC("Visible Paths")), RUN_DEBUG_PATHS);
 	debug_menu->set_item_tooltip(-1,
 			TTRC("When this option is enabled, curve resources used by path nodes will be visible in the running project."));

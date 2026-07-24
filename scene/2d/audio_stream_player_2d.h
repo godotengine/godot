@@ -66,15 +66,6 @@ private:
 	StringName _get_actual_bus();
 	void _update_panning();
 
-#ifdef DEBUG_ENABLED
-private:
-	RID debug_canvas_item;
-	void _update_debug_visualization();
-	bool visualization_enabled = false;
-	bool visualization_attenuation_enabled = false;
-	Color visualization_color = Color(0.0, 0.5, 0.9, .42);
-#endif // DEBUG_ENABLED
-
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
 
 	uint32_t area_mask = 0;
@@ -84,6 +75,15 @@ private:
 
 	float panning_strength = 1.0f;
 	float cached_global_panning_strength = 0.5f;
+
+#ifdef DEBUG_ENABLED
+private:
+	RID debug_canvas_item;
+	void _update_debug_visualization();
+
+public:
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+#endif // DEBUG_ENABLED
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -135,15 +135,6 @@ public:
 
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
-
-	void set_visualization(bool p_visualization);
-	bool get_visualization() const;
-
-	void set_visualization_color(const Color &p_color);
-	Color get_visualization_color() const;
-
-	void set_visualization_attenuation(bool p_visualization_attenuation);
-	bool get_visualization_attenuation() const;
 
 	void set_max_polyphony(int p_max_polyphony);
 	int get_max_polyphony() const;

@@ -72,6 +72,9 @@
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/audio_server.h"
+#ifdef DEBUG_ENABLED
+#include "servers/audio/audio_server_debug.h"
+#endif // DEBUG_ENABLED
 #include "servers/camera/camera_server.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
@@ -4344,12 +4347,9 @@ int Main::start() {
 			sml->set_debug_paths_hint(true);
 		}
 		if (debug_audio_visualization) {
-#ifndef AUDIO_VISUALIZATION_2D_DISABLED
-			AudioServer::get_singleton()->set_debug_audio_visualization_enabled(true);
-#endif // AUDIO_VISUALIZATION_2D_DISABLED
-#ifndef AUDIO_VISUALIZATION_3D_DISABLED
-			AudioServer::get_singleton()->set_debug_audio_visualization_enabled(true);
-#endif // AUDIO_VISUALIZATION_3D_DISABLED
+#ifdef DEBUG_ENABLED
+			AudioServerDebug::get_singleton()->set_debug_audio_2d_visualization_enabled(true);
+#endif // DEBUG_ENABLED
 		}
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
