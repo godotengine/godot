@@ -201,6 +201,7 @@
 #include "scene/2d/sprite_2d.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
 #include "scene/resources/2d/polygon_path_finder.h"
+#include "scene/resources/2d/primitive_meshes_2d.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_2d_ccdik.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_2d_fabrik.h"
@@ -878,6 +879,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(MultiMesh);
 	GDREGISTER_CLASS(SurfaceTool);
 	GDREGISTER_CLASS(MeshDataTool);
+
+	GDREGISTER_VIRTUAL_CLASS(PrimitiveMesh2D);
+	GDREGISTER_CLASS(RectangleMesh2D);
+	GDREGISTER_CLASS(CircleMesh2D);
+	GDREGISTER_CLASS(CapsuleMesh2D);
 
 #ifndef _3D_DISABLED
 	GDREGISTER_CLASS(AudioStreamPlayer3D);
