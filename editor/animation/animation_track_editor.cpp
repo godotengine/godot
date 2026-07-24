@@ -2231,7 +2231,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					}
 
 					bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
-					if (animation->track_get_type(track) == Animation::TYPE_VALUE && use_monospace_font) {
+					if (use_monospace_font && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BEZIER)) {
 						font_to_use = source_font;
 						font_size_to_use = source_font_size;
 					}
