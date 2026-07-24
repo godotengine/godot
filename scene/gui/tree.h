@@ -634,6 +634,8 @@ private:
 		Ref<StyleBox> hovered_dimmed;
 		Ref<StyleBox> hovered_selected;
 		Ref<StyleBox> hovered_selected_focus;
+		Ref<StyleBox> pressed_selected;
+		Ref<StyleBox> pressed_selected_focus;
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;
 		Ref<StyleBox> cursor;
@@ -666,6 +668,7 @@ private:
 		Color font_hovered_color;
 		Color font_hovered_dimmed_color;
 		Color font_hovered_selected_color;
+		Color font_pressed_selected_color;
 		Color font_selected_color;
 		Color font_disabled_color;
 		Color guide_color;
@@ -732,7 +735,9 @@ private:
 		Point2 click_pos;
 
 		TreeItem *hover_item = nullptr;
+		TreeItem *pressed_item = nullptr;
 		int hover_column = -1;
+		int pressed_column = -1;
 		int hover_button_index_in_column = -1;
 
 		bool rtl = false;

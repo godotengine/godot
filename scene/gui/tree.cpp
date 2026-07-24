@@ -137,6 +137,11 @@ void TreeItem::_change_tree(Tree *p_tree) {
 			tree->cache.hover_item = nullptr;
 		}
 
+		if (tree->cache.pressed_item == this) {
+			tree->cache.pressed_item = nullptr;
+			tree->cache.pressed_column = -1;
+		}
+
 		if (tree->selected_item == this) {
 			for (int i = 0; i < tree->selected_item->cells.size(); i++) {
 				tree->selected_item->cells.write[i].selected = false;
@@ -2366,6 +2371,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		int skip2 = 0;
 
 		bool is_row_hovered = (!cache.hover_header_row && cache.hover_item == p_item);
+		bool is_row_pressed = is_row_hovered && cache.pressed_item == p_item && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT);
 		bool should_draw_row_rect = select_mode == SELECT_ROW;
 
 		for (int i = 0; i < columns.size(); i++) {
@@ -2377,6 +2383,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			bool is_col_hovered = cache.hover_column == i;
 			bool is_cell_hovered = is_row_hovered && is_col_hovered;
 			bool is_cell_button_hovered = is_cell_hovered && cache.hover_button_index_in_column != -1;
+			bool is_cell_pressed = is_row_pressed && cache.pressed_column == i;
 			int item_width = get_column_width(i);
 
 			if (i == 0) {
@@ -2458,7 +2465,13 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					row_rect = convert_rtl_rect(row_rect);
 
 					if (p_item->cells[0].selected) {
-						if (is_row_hovered) {
+						if (is_row_pressed) {
+							if (has_focus(true)) {
+								theme_cache.pressed_selected_focus->draw(sb_ci, row_rect);
+							} else {
+								theme_cache.pressed_selected->draw(sb_ci, row_rect);
+							}
+						} else if (is_row_hovered) {
 							if (has_focus(true)) {
 								theme_cache.hovered_selected_focus->draw(sb_ci, row_rect);
 							} else {
@@ -2502,7 +2515,13 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					p_item->focus_rect = Rect2(r.position, r.size);
 					r = convert_rtl_rect(r);
 					if (p_item->cells[i].selected) {
-						if (is_cell_hovered) {
+						if (is_cell_pressed) {
+							if (has_focus(true)) {
+								theme_cache.pressed_selected_focus->draw(sb_ci, r);
+							} else {
+								theme_cache.pressed_selected->draw(sb_ci, r);
+							}
+						} else if (is_cell_hovered) {
 							if (has_focus(true)) {
 								theme_cache.hovered_selected_focus->draw(sb_ci, r);
 							} else {
@@ -2559,7 +2578,23 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			} else {
 				bool draw_as_hover = !drop_mode_flags && (select_mode == SELECT_ROW ? is_row_hovered : is_cell_hovered);
 				bool draw_as_hover_dim = draw_as_hover && is_cell_button_hovered;
-				cell_color = p_item->cells[i].selected && draw_as_hover ? theme_cache.font_hovered_selected_color : (p_item->cells[i].selected ? theme_cache.font_selected_color : (draw_as_hover_dim ? theme_cache.font_hovered_dimmed_color : (draw_as_hover ? theme_cache.font_hovered_color : theme_cache.font_color)));
+				bool draw_as_pressed = !drop_mode_flags && (select_mode == SELECT_ROW ? is_row_pressed : is_cell_pressed);
+
+				if (p_item->cells[i].selected) {
+					if (draw_as_pressed) {
+						cell_color = theme_cache.font_pressed_selected_color;
+					} else if (draw_as_hover) {
+						cell_color = theme_cache.font_hovered_selected_color;
+					} else {
+						cell_color = theme_cache.font_selected_color;
+					}
+				} else if (draw_as_hover_dim) {
+					cell_color = theme_cache.font_hovered_dimmed_color;
+				} else if (draw_as_hover) {
+					cell_color = theme_cache.font_hovered_color;
+				} else {
+					cell_color = theme_cache.font_color;
+				}
 			}
 
 			Color font_outline_color = theme_cache.font_outline_color;
@@ -4238,6 +4273,9 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (mb->get_button_index() == MouseButton::LEFT) {
+				cache.pressed_item = nullptr;
+				cache.pressed_column = -1;
+
 				if (single_select_defer) {
 					select_single_item(single_select_defer, root, single_select_defer_column);
 					single_select_defer = nullptr;
@@ -4357,6 +4395,12 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				blocked++;
 				propagate_mouse_event(pos + theme_cache.offset, 0, 0, x_limit + theme_cache.offset.width, mb->is_double_click(), root, mb->get_button_index(), mb);
 				blocked--;
+
+				if (mb->get_button_index() == MouseButton::LEFT) {
+					cache.pressed_item = get_item_at_position(mb->get_position());
+					cache.pressed_column = get_column_at_position(mb->get_position());
+					queue_redraw();
+				}
 
 				if (pressing_for_editor) {
 					pressing_pos = mb->get_position();
@@ -7560,6 +7604,8 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, hovered_dimmed);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, hovered_selected);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, hovered_selected_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, pressed_selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, pressed_selected_focus);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, selected);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, selected_focus);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, cursor);
@@ -7590,6 +7636,7 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_hovered_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_hovered_dimmed_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_hovered_selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_pressed_selected_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_selected_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_disabled_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, drop_on_item_color);

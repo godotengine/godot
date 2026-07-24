@@ -615,6 +615,7 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 			p_theme->set_color("font_hovered_color", "Tree", p_config.mono_color_font);
 			p_theme->set_color("font_hovered_dimmed_color", "Tree", p_config.font_color);
 			p_theme->set_color("font_hovered_selected_color", "Tree", p_config.mono_color_font);
+			p_theme->set_color("font_pressed_selected_color", "Tree", p_config.mono_color_font);
 			p_theme->set_color("font_selected_color", "Tree", p_config.mono_color_font);
 			p_theme->set_color("font_disabled_color", "Tree", p_config.font_disabled_color);
 			p_theme->set_color("font_outline_color", "Tree", p_config.font_outline_color);
@@ -694,6 +695,13 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 
 			p_theme->set_stylebox("hovered_selected", "Tree", style_tree_hover_selected);
 			p_theme->set_stylebox("hovered_selected_focus", "Tree", style_tree_hover_selected);
+
+			Ref<StyleBoxFlat> style_tree_pressed_selected = style_tree_selected->duplicate();
+			style_tree_pressed_selected->set_bg_color(p_config.highlight_color * Color(1, 1, 1, 1.4));
+			style_tree_pressed_selected->set_border_width_all(0);
+
+			p_theme->set_stylebox("pressed_selected", "Tree", style_tree_pressed_selected);
+			p_theme->set_stylebox("pressed_selected_focus", "Tree", style_tree_pressed_selected);
 
 			p_theme->set_stylebox("selected_focus", "Tree", style_tree_focus);
 			p_theme->set_stylebox("selected", "Tree", style_tree_selected);
