@@ -1311,11 +1311,11 @@ void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
 }
 
 void TextureStorage::texture_drawable_initialize(RID p_texture, int p_width, int p_height, RSE::TextureDrawableFormat p_format, const Color &p_color, bool p_with_mipmaps) {
-	// Near identical to  Texture_2D_initialize, Generates an empty white image based on parameters
+	// Near identical to Texture_2D_initialize, Generates an empty white image based on parameters
 
 	// GUARDRAIL: Bad Widths/Heights
 	ERR_FAIL_COND_MSG(p_width <= 0 || p_height <= 0, "Drawable Texture Width or Height cannot be less than 1.");
-	ERR_FAIL_COND_MSG(p_width >= 16384 || p_height >= 16384, "Drawable Texture Width or Height cannot be greater than 16383.");
+	ERR_FAIL_COND_MSG(p_width > 16384 || p_height > 16384, "Drawable Texture Width or Height cannot be greater than 16384.");
 
 	Image::Format format;
 	switch (p_format) {
