@@ -327,6 +327,7 @@ private:
 	bool dragging = false;
 	bool dragging_value_to_set = false;
 	bool read_only = false;
+	bool renamable = true;
 	int renamed_layer_index = -1;
 	PopupMenu *layer_rename = nullptr;
 	ConfirmationDialog *rename_dialog = nullptr;
@@ -351,6 +352,7 @@ public:
 	Vector<String> tooltips;
 
 	void set_read_only(bool p_read_only);
+	void set_renamable(bool p_renamable);
 	virtual Size2 get_minimum_size() const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 	void gui_input(const Ref<InputEvent> &p_ev) override;
@@ -377,12 +379,14 @@ private:
 	void _grid_changed(uint32_t p_grid);
 	String basename;
 	LayerType layer_type;
+	bool uses_project_settings = true;
 	PopupMenu *layers = nullptr;
 	TextureButton *button = nullptr;
 
 	void _button_pressed();
 	void _menu_pressed(int p_menu);
 	void _refresh_names();
+	void _setup_grid(const Vector<String> &p_names, const Vector<String> &p_tooltips, int p_layer_group_size, int p_layer_count);
 
 protected:
 	void _notification(int p_what);
@@ -390,6 +394,8 @@ protected:
 
 public:
 	void setup(LayerType p_layer_type);
+	void setup(const Vector<String> &p_flag_names);
+	void setup(int p_count);
 	void set_layer_name(int p_index, const String &p_name);
 	String get_layer_name(int p_index) const;
 	virtual void update_property() override;
