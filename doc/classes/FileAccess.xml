@@ -352,6 +352,18 @@
 				Returns [code]true[/code] if the file is currently opened.
 			</description>
 		</method>
+		<method name="is_read_end_open" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the reading end of the pipe is currently opened. Same as [method is_open] if the file is not a pipe.
+			</description>
+		</method>
+		<method name="is_write_end_open" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the writing end of the pipe is currently opened. Same as [method is_open] if the file is not a pipe.
+			</description>
+		</method>
 		<method name="open" qualifiers="static">
 			<return type="FileAccess" />
 			<param index="0" name="path" type="String" />
