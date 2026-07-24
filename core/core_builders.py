@@ -1,24 +1,37 @@
 """Functions used to generate source files during build time"""
 
-from collections import OrderedDict
-from io import TextIOWrapper
+import argparse
+import sys
 
-import methods
+try:
+    sys.path.insert(0, "./")
+    import methods
+except ImportError:
+    raise SystemExit(f'Generator script "{__file__}" must be run from repository root!')
 
 
-# Generate disabled classes
-def disabled_class_builder(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
-        for c in source[0].read():
+def disabled_classes(target: str, classes: list[str]) -> None:
+    with methods.generated_wrapper(target) as file:
+        for c in classes:
             if cs := c.strip():
                 file.write(f"class {cs}; template <> struct is_class_enabled<{cs}> : std::false_type {{}};\n")
 
 
-# Generate version info
-def version_info_builder(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
-        file.write(
-            """\
+def version_info(
+    target: str,
+    short_name: str,
+    name: str,
+    major: int,
+    minor: int,
+    patch: int,
+    status: str,
+    build: str,
+    module_config: str,
+    website: str,
+    docs_branch: str,
+) -> None:
+    with methods.generated_wrapper(target) as file:
+        file.write(f"""\
 #define GODOT_VERSION_SHORT_NAME "{short_name}"
 #define GODOT_VERSION_NAME "{name}"
 #define GODOT_VERSION_MAJOR {major}
@@ -30,56 +43,42 @@ def version_info_builder(target, source, env):
 #define GODOT_VERSION_WEBSITE "{website}"
 #define GODOT_VERSION_DOCS_BRANCH "{docs_branch}"
 #define GODOT_VERSION_DOCS_URL "https://docs.godotengine.org/en/" GODOT_VERSION_DOCS_BRANCH
-""".format(**source[0].read())
-        )
+""")
 
 
-def version_hash_builder(target, source, env):
-    with methods.generated_wrapper(str(target[0])) as file:
-        file.write(
-            """\
+def git_info(target: str, hash: str, timestamp: int) -> None:
+    with methods.generated_wrapper(target) as file:
+        file.write(f"""\
 #include "core/version.h"
 
-const char *const GODOT_VERSION_HASH = "{git_hash}";
-const unsigned long long GODOT_VERSION_TIMESTAMP = {git_timestamp};
-""".format(**source[0].read())
-        )
+const char *const GODOT_VERSION_HASH = "{hash}";
+const unsigned long long GODOT_VERSION_TIMESTAMP = {timestamp};
+""")
 
 
-def encryption_key_builder(target, source, env):
-    src = source[0].read() or "0" * 64
-    try:
-        buffer = bytes.fromhex(src)
-        if len(buffer) != 32:
-            raise ValueError
-    except ValueError:
-        methods.print_error(
-            f'Invalid AES256 encryption key, not 64 hexadecimal characters: "{src}".\n'
-            "Unset `SCRIPT_AES256_ENCRYPTION_KEY` in your environment "
-            "or make sure that it contains exactly 64 hexadecimal characters."
-        )
-        raise
-
-    with methods.generated_wrapper(str(target[0])) as file:
-        file.write(
-            f"""\
-#include <cstdint>
+def encryption_key(target: str, key: bytes) -> None:
+    with methods.generated_wrapper(target) as file:
+        file.write(f"""\
+#include "core/config/project_settings.h"
 
 uint8_t script_encryption_key[32] = {{
-{methods.format_buffer(buffer, 1)}
-}};"""
-        )
+{methods.format_buffer(key, 1)}
+}};
+""")
 
 
-def make_certs_header(target, source, env):
-    buffer = methods.get_buffer(str(source[0]))
-    decomp_size = len(buffer)
-    buffer = methods.compress_buffer(buffer)
+def certs(target: str, certs: str, builtin: bool, system_certs: str) -> None:
+    import zlib
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         # System certs path. Editor will use them if defined. (for package maintainers)
-        file.write('#define _SYSTEM_CERTS_PATH "{}"\n'.format(source[2].read() or ""))
-        if source[1].read():
+        file.write(f'#define _SYSTEM_CERTS_PATH "{system_certs}"\n')
+
+        if builtin:
+            buffer = methods.get_buffer(certs)
+            decomp_size = len(buffer)
+            buffer = zlib.compress(buffer, zlib.Z_BEST_COMPRESSION)
+
             # Defined here and not in env so changing it does not trigger a full rebuild.
             file.write(f"""\
 #define BUILTIN_CERTS_ENABLED
@@ -92,24 +91,25 @@ inline constexpr unsigned char _certs_compressed[] = {{
 """)
 
 
-def make_authors_header(target, source, env):
+def authors(target: str, authors: str) -> None:
     SECTIONS = {
         "Project Founders": "AUTHORS_FOUNDERS",
         "Lead Developer": "AUTHORS_LEAD_DEVELOPERS",
         "Project Manager": "AUTHORS_PROJECT_MANAGERS",
         "Developers": "AUTHORS_DEVELOPERS",
     }
-    buffer = methods.get_buffer(str(source[0]))
+    with open(authors, "rb") as authors_file:
+        buffer = authors_file.read()
     reading = False
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
 
-        def close_section():
+        def close_section() -> None:
             file.write("\tnullptr,\n};\n\n")
 
         for line in buffer.decode().splitlines():
             if line.startswith("    ") and reading:
-                file.write(f'\t"{methods.to_escaped_cstring(line).strip()}",\n')
+                file.write(f"\t{methods.to_raw_cstring(line.strip())},\n")
             elif line.startswith("## "):
                 if reading:
                     close_section()
@@ -123,7 +123,7 @@ def make_authors_header(target, source, env):
             close_section()
 
 
-def make_donors_header(target, source, env):
+def donors(target: str, donors: str) -> None:
     SECTIONS = {
         "Patrons": "DONORS_PATRONS",
         "Platinum sponsors": "DONORS_SPONSORS_PLATINUM",
@@ -134,10 +134,10 @@ def make_donors_header(target, source, env):
         "Platinum members": "DONORS_MEMBERS_PLATINUM",
         "Gold members": "DONORS_MEMBERS_GOLD",
     }
-    buffer = methods.get_buffer(str(source[0]))
+    buffer = methods.get_buffer(donors)
     reading = False
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file, open(donors):
 
         def close_section():
             file.write("\tnullptr,\n};\n\n")
@@ -158,17 +158,16 @@ def make_donors_header(target, source, env):
             close_section()
 
 
-def make_license_header(target, source, env):
-    src_copyright = str(source[0])
-    src_license = str(source[1])
+def license(target: str, license: str, copyright: str) -> None:
+    from typing import TextIO
 
     class LicenseReader:
-        def __init__(self, license_file: TextIOWrapper):
+        def __init__(self, license_file: TextIO) -> None:
             self._license_file = license_file
             self.line_num = 0
             self.current = self.next_line()
 
-        def next_line(self):
+        def next_line(self) -> str:
             line = self._license_file.readline()
             self.line_num += 1
             while line.startswith("#"):
@@ -177,7 +176,7 @@ def make_license_header(target, source, env):
             self.current = line
             return line
 
-        def next_tag(self):
+        def next_tag(self) -> tuple[str, list[str]]:
             if ":" not in self.current:
                 return ("", [])
             tag, line = self.current.split(":", 1)
@@ -186,10 +185,10 @@ def make_license_header(target, source, env):
                 lines.append(self.current.strip())
             return (tag, lines)
 
-    projects = OrderedDict()
+    projects = {}  # type: ignore[var-annotated]
     license_list = []
 
-    with open(src_copyright, "r", encoding="utf-8") as copyright_file:
+    with open(copyright, "r", encoding="utf-8") as copyright_file:
         reader = LicenseReader(copyright_file)
         part = {}
         while reader.current:
@@ -208,7 +207,7 @@ def make_license_header(target, source, env):
                 part = {}
                 reader.next_line()
 
-    data_list = []
+    data_list = []  # type: ignore[var-annotated]
     for project in iter(projects.values()):
         for part in project:
             part["file_index"] = len(data_list)
@@ -216,10 +215,10 @@ def make_license_header(target, source, env):
             part["copyright_index"] = len(data_list)
             data_list += part["Copyright"]
 
-    with open(src_license, "r", encoding="utf-8") as file:
-        license_text = file.read()
+    with open(license, "r", encoding="utf-8") as file_license:
+        license_text = file_license.read()
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         file.write(f"""\
 inline constexpr const char *GODOT_LICENSE_TEXT = {{
 {methods.to_raw_cstring(license_text)}
@@ -275,17 +274,114 @@ struct ComponentCopyright {{
         file.write(f"inline constexpr int LICENSE_COUNT = {len(license_list)};\n")
 
         file.write("inline constexpr const char *LICENSE_NAMES[] = {\n")
-        for license in license_list:
-            file.write(f'\t"{methods.to_escaped_cstring(license[0])}",\n')
+        for item in license_list:
+            file.write(f'\t"{methods.to_escaped_cstring(item[0])}",\n')
         file.write("};\n\n")
 
         file.write("inline constexpr const char *LICENSE_BODIES[] = {\n\n")
-        for license in license_list:
+        for item in license_list:
             to_raw = []
-            for line in license[1:]:
+            for line in item[1:]:
                 if line == ".":
                     to_raw += [""]
                 else:
                     to_raw += [line]
             file.write(f"{methods.to_raw_cstring(to_raw)},\n\n")
         file.write("};\n\n")
+
+
+# Command-Line Arguments
+
+
+def aes256_type(input: str) -> bytes:
+    try:
+        buffer = bytes.fromhex(input)
+        if len(buffer) != 32:
+            raise ValueError
+        return buffer
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Invalid AES256: {input}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    disabled_classes_parser = subparsers.add_parser("disabled_classes")
+    disabled_classes_parser.add_argument("target")
+    disabled_classes_parser.add_argument("classes", nargs="*")
+
+    version_info_parser = subparsers.add_parser("version_info")
+    version_info_parser.add_argument("target")
+    version_info_parser.add_argument("--short_name", default="")
+    version_info_parser.add_argument("--name", default="")
+    version_info_parser.add_argument("--major", type=int, default=0)
+    version_info_parser.add_argument("--minor", type=int, default=0)
+    version_info_parser.add_argument("--patch", type=int, default=0)
+    version_info_parser.add_argument("--status", default="")
+    version_info_parser.add_argument("--build", default="")
+    version_info_parser.add_argument("--module_config", default="")
+    version_info_parser.add_argument("--website", default="")
+    version_info_parser.add_argument("--docs_branch", default="")
+
+    git_info_parser = subparsers.add_parser("git_info")
+    git_info_parser.add_argument("target")
+    git_info_parser.add_argument("--hash", default="")
+    git_info_parser.add_argument("--timestamp", type=int, default=0)
+
+    encryption_key_parser = subparsers.add_parser("encryption_key")
+    encryption_key_parser.add_argument("target")
+    encryption_key_parser.add_argument("--key", type=aes256_type, default="0" * 64)
+
+    certs_parser = subparsers.add_parser("certs")
+    certs_parser.add_argument("target")
+    certs_parser.add_argument("certs")
+    certs_parser.add_argument("builtin", type=bool)
+    certs_parser.add_argument("--system", default="")
+
+    authors_parser = subparsers.add_parser("authors")
+    authors_parser.add_argument("target")
+    authors_parser.add_argument("authors")
+
+    donors_parser = subparsers.add_parser("donors")
+    donors_parser.add_argument("target")
+    donors_parser.add_argument("donors")
+
+    license_parser = subparsers.add_parser("license")
+    license_parser.add_argument("target")
+    license_parser.add_argument("license")
+    license_parser.add_argument("copyright")
+
+    args = parser.parse_args()
+    if args.command == "disabled_classes":
+        disabled_classes(args.target, args.classes)
+    elif args.command == "version_info":
+        version_info(
+            args.target,
+            args.short_name,
+            args.name,
+            args.major,
+            args.minor,
+            args.patch,
+            args.status,
+            args.build,
+            args.module_config,
+            args.website,
+            args.docs_branch,
+        )
+    elif args.command == "git_info":
+        git_info(args.target, args.hash, args.timestamp)
+    elif args.command == "encryption_key":
+        encryption_key(args.target, args.key)
+    elif args.command == "certs":
+        certs(args.target, args.certs, args.builtin, args.system)
+    elif args.command == "authors":
+        authors(args.target, args.authors)
+    elif args.command == "donors":
+        donors(args.target, args.donors)
+    elif args.command == "license":
+        license(args.target, args.license, args.copyright)
+
+
+if __name__ == "__main__":
+    main()
