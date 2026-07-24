@@ -388,6 +388,16 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 
 		if (name.begins_with("<")) {
 			stack.pop_back();
+
+			// Update the time of parent categories after the end of this category.
+			for (TreeItem *E : stack) {
+				float total_cpu = E->get_metadata(1);
+				float total_gpu = E->get_metadata(2);
+				total_cpu += cpu_time;
+				total_gpu += gpu_time;
+				E->set_metadata(1, total_cpu);
+				E->set_metadata(2, total_gpu);
+			}
 			continue;
 		}
 		TreeItem *category = variables->create_item(parent);
