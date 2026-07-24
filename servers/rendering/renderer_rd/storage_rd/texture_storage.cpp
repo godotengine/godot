@@ -3405,6 +3405,89 @@ void TextureStorage::area_light_atlas_remove_texture(RID p_texture) {
 	}
 }
 
+// Best-fit packs the sorted atlas `p_items`, doubling `r_base_size` until the layout has a good
+// aspect ratio. If the content would exceed the device's maximum 2D texture size, every item is
+// halved and re-packed at a lower resolution; the atlas blit scales each source into its `uv_rect`,
+// so downscaled entries still render. Returns the packed height in cells, updates `r_base_size`, and
+// sets `r_downscaled` when items had to be shrunk.
+template <typename T>
+static int _pack_atlas_items(T *p_items, int p_count, int p_border, uint32_t &r_base_size, uint32_t p_min_base_size, int p_min_height, bool p_ceil, bool &r_downscaled) {
+	const uint32_t max_texture_size = (uint32_t)RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURE_SIZE_2D);
+	const uint32_t max_atlas_cells = MAX((uint32_t)8, max_texture_size / (uint32_t)p_border);
+
+	while (true) {
+		while (r_base_size > max_atlas_cells) {
+			// Content does not fit the device; halve every item and re-pack at a lower resolution.
+			r_downscaled = true;
+			r_base_size = p_min_base_size;
+			for (int i = 0; i < p_count; i++) {
+				T &si = p_items[i];
+				si.pixel_size = Size2i(MAX(1, si.pixel_size.width / 2), MAX(1, si.pixel_size.height / 2));
+				si.size.width = (p_ceil ? (int)Math::ceil(float(si.pixel_size.width) / p_border) : si.pixel_size.width / p_border) + 1;
+				si.size.height = (p_ceil ? (int)Math::ceil(float(si.pixel_size.height) / p_border) : si.pixel_size.height / p_border) + 1;
+				if (r_base_size < (uint32_t)si.size.width) {
+					r_base_size = Math::nearest_power_of_2_templated(si.size.width);
+				}
+			}
+		}
+
+		Vector<int> v_offsetsv;
+		v_offsetsv.resize(r_base_size);
+
+		int *v_offsets = v_offsetsv.ptrw();
+		memset(v_offsets, 0, sizeof(int) * r_base_size);
+
+		int max_height = p_min_height;
+
+		for (int i = 0; i < p_count; i++) {
+			// Best fit.
+			T &si = p_items[i];
+			int best_idx = -1;
+			int best_height = 0x7FFFFFFF;
+			for (uint32_t j = 0; j <= r_base_size - si.size.width; j++) {
+				int height = 0;
+				for (int k = 0; k < si.size.width; k++) {
+					int h = v_offsets[k + j];
+					if (h > height) {
+						height = h;
+						if (height > best_height) {
+							break; // Already worse than the best fit so far.
+						}
+					}
+				}
+
+				if (height < best_height) {
+					best_height = height;
+					best_idx = j;
+				}
+			}
+
+			for (int k = 0; k < si.size.width; k++) {
+				v_offsets[k + best_idx] = best_height + si.size.height;
+			}
+
+			si.pos.x = best_idx;
+			si.pos.y = best_height;
+
+			if (si.pos.y + si.size.height > max_height) {
+				max_height = si.pos.y + si.size.height;
+			}
+		}
+
+		if ((uint32_t)max_height <= r_base_size * 2 || r_base_size >= max_atlas_cells) {
+			if ((uint32_t)Math::nearest_power_of_2_templated(max_height * p_border) > max_texture_size) {
+				// Too tall for the device even at the maximum width; halve and re-pack.
+				r_base_size = max_atlas_cells * 2;
+				continue;
+			}
+			// Good aspect ratio, or capped at the device limit.
+			return max_height;
+		}
+
+		r_base_size *= 2;
+	}
+}
+
 void TextureStorage::update_area_light_atlas() {
 	CopyEffects *copy_effects = CopyEffects::get_singleton();
 	ERR_FAIL_NULL(copy_effects);
@@ -3462,59 +3545,10 @@ void TextureStorage::update_area_light_atlas() {
 		int item_count = itemsv.size();
 		AreaLightAtlas::SortItem *items = itemsv.ptrw();
 
-		int atlas_height = 0;
-
-		while (true) {
-			Vector<int> v_offsetsv;
-			v_offsetsv.resize(base_size);
-
-			int *v_offsets = v_offsetsv.ptrw();
-			memset(v_offsets, 0, sizeof(int) * base_size);
-
-			int max_height = 0;
-
-			for (int i = 0; i < item_count; i++) {
-				//best fit
-				AreaLightAtlas::SortItem &si = items[i];
-				int best_idx = -1;
-				int best_height = 0x7FFFFFFF;
-				for (uint32_t j = 0; j <= base_size - si.size.width; j++) {
-					int height = 0;
-					for (int k = 0; k < si.size.width; k++) {
-						int h = v_offsets[k + j];
-						if (h > height) {
-							height = h;
-							if (height > best_height) {
-								break; //already bad
-							}
-						}
-					}
-
-					if (height < best_height) {
-						best_height = height;
-						best_idx = j;
-					}
-				}
-
-				//update
-				for (int k = 0; k < si.size.width; k++) {
-					v_offsets[k + best_idx] = best_height + si.size.height;
-				}
-
-				si.pos.x = best_idx;
-				si.pos.y = best_height;
-
-				if (si.pos.y + si.size.height > max_height) {
-					max_height = si.pos.y + si.size.height;
-				}
-			}
-
-			if ((uint32_t)max_height <= base_size * 2) {
-				atlas_height = max_height;
-				break; //good ratio, break;
-			}
-
-			base_size *= 2;
+		bool downscaled = false;
+		int atlas_height = _pack_atlas_items(items, item_count, border, base_size, /* min_base_size */ 1, /* min_height */ 0, /* ceil_size */ true, downscaled);
+		if (downscaled) {
+			WARN_PRINT_ONCE("Area light atlas exceeds this device's maximum 2D texture size; textures are downscaled to fit.");
 		}
 
 		area_light_atlas.size.width = base_size * border;
@@ -3862,60 +3896,11 @@ void TextureStorage::update_decal_atlas() {
 		int item_count = itemsv.size();
 		DecalAtlas::SortItem *items = itemsv.ptrw();
 
-		int atlas_height = 0;
-
-		while (true) {
-			Vector<int> v_offsetsv;
-			v_offsetsv.resize(base_size);
-
-			int *v_offsets = v_offsetsv.ptrw();
-			memset(v_offsets, 0, sizeof(int) * base_size);
-
-			// Take border into account for minimum height.
-			int max_height = 2;
-
-			for (int i = 0; i < item_count; i++) {
-				//best fit
-				DecalAtlas::SortItem &si = items[i];
-				int best_idx = -1; // ideal x position
-				int best_height = 0x7FFFFFFF; // ideal y position
-				for (uint32_t j = 0; j <= base_size - si.size.width; j++) {
-					int height = 0;
-					for (int k = 0; k < si.size.width; k++) {
-						int h = v_offsets[k + j];
-						if (h > height) {
-							height = h;
-							if (height > best_height) {
-								break; //already bad
-							}
-						}
-					}
-
-					if (height < best_height) {
-						best_height = height;
-						best_idx = j;
-					}
-				}
-
-				//update
-				for (int k = 0; k < si.size.width; k++) {
-					v_offsets[k + best_idx] = best_height + si.size.height;
-				}
-
-				si.pos.x = best_idx;
-				si.pos.y = best_height;
-
-				if (si.pos.y + si.size.height > max_height) {
-					max_height = si.pos.y + si.size.height;
-				}
-			}
-
-			if ((uint32_t)max_height <= base_size * 2) {
-				atlas_height = max_height;
-				break; //good ratio, break;
-			}
-
-			base_size *= 2;
+		// `min_height` is 2 so the border is accounted for in the minimum atlas height.
+		bool downscaled = false;
+		int atlas_height = _pack_atlas_items(items, item_count, border, base_size, /* min_base_size */ 8, /* min_height */ 2, /* ceil_size */ false, downscaled);
+		if (downscaled) {
+			WARN_PRINT_ONCE("Decal atlas exceeds this device's maximum 2D texture size; textures are downscaled to fit.");
 		}
 
 		decal_atlas.size.width = base_size * border;
