@@ -1184,12 +1184,10 @@ Error RenderingDevice::driver_callback_add(RDD::DriverCallback p_callback, void 
 	ERR_FAIL_COND_V_MSG(raytracing_list.active, ERR_INVALID_PARAMETER,
 			"Driver callback is forbidden during creation of a raytracing list.");
 
-	thread_local LocalVector<RDG::ResourceTracker *> trackers;
-	thread_local LocalVector<RDG::ResourceUsage> usages;
+	thread_local LocalVector<RDG::TrackedResource> tracked_resources;
 
 	uint32_t resource_count = p_resources.size();
-	trackers.resize(resource_count);
-	usages.resize(resource_count);
+	tracked_resources.resize(resource_count);
 
 	if (resource_count > 0) {
 		for (uint32_t i = 0; i < p_resources.size(); i++) {
@@ -1203,8 +1201,7 @@ Error RenderingDevice::driver_callback_add(RDD::DriverCallback p_callback, void 
 					if (_buffer_make_mutable(buffer, cr.rid)) {
 						draw_graph.add_synchronization();
 					}
-					trackers[i] = buffer->draw_tracker;
-					usages[i] = (RDG::ResourceUsage)cr.usage;
+					tracked_resources[i] = { buffer->draw_tracker, (RDG::ResourceUsage)cr.usage };
 				} break;
 				case CALLBACK_RESOURCE_TYPE_TEXTURE: {
 					Texture *texture = texture_owner.get_or_null(cr.rid);
@@ -1214,8 +1211,7 @@ Error RenderingDevice::driver_callback_add(RDD::DriverCallback p_callback, void 
 					if (_texture_make_mutable(texture, cr.rid)) {
 						draw_graph.add_synchronization();
 					}
-					trackers[i] = texture->draw_tracker;
-					usages[i] = (RDG::ResourceUsage)cr.usage;
+					tracked_resources[i] = { texture->draw_tracker, (RDG::ResourceUsage)cr.usage };
 				} break;
 				default: {
 					CRASH_NOW_MSG("Invalid callback resource type.");
@@ -1224,7 +1220,7 @@ Error RenderingDevice::driver_callback_add(RDD::DriverCallback p_callback, void 
 		}
 	}
 
-	draw_graph.add_driver_callback(p_callback, p_userdata, trackers, usages);
+	draw_graph.add_driver_callback(p_callback, p_userdata, tracked_resources);
 
 	return OK;
 }
@@ -4376,8 +4372,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 
 	// Used for verification to make sure a uniform set does not use a framebuffer bound texture.
 	LocalVector<UniformSet::AttachableTexture> attachable_textures;
-	Vector<RDG::ResourceTracker *> draw_trackers;
-	Vector<RDG::ResourceUsage> draw_trackers_usage;
+	Vector<RDG::TrackedResource> draw_tracked_resources;
 	HashMap<RID, RDG::ResourceUsage> untracked_usage;
 	Vector<UniformSet::SharedTexture> shared_textures_to_update;
 	LocalVector<RID> pending_clear_textures;
@@ -4467,8 +4462,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					}
 
 					if (tracker != nullptr) {
-						draw_trackers.push_back(tracker);
-						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_TEXTURE_SAMPLE);
+						draw_tracked_resources.push_back({ tracker, RDG::RESOURCE_USAGE_TEXTURE_SAMPLE });
 					} else {
 						untracked_usage[texture_id] = RDG::RESOURCE_USAGE_TEXTURE_SAMPLE;
 					}
@@ -4520,8 +4514,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					}
 
 					if (tracker != nullptr) {
-						draw_trackers.push_back(tracker);
-						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_TEXTURE_SAMPLE);
+						draw_tracked_resources.push_back({ tracker, RDG::RESOURCE_USAGE_TEXTURE_SAMPLE });
 					} else {
 						untracked_usage[texture_id] = RDG::RESOURCE_USAGE_TEXTURE_SAMPLE;
 					}
@@ -4572,12 +4565,10 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					}
 
 					if (texture->draw_tracker != nullptr) {
-						draw_trackers.push_back(texture->draw_tracker);
-
 						if (set_uniform.writable) {
-							draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE);
+							draw_tracked_resources.push_back({ texture->draw_tracker, RDG::RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE });
 						} else {
-							draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_STORAGE_IMAGE_READ);
+							draw_tracked_resources.push_back({ texture->draw_tracker, RDG::RESOURCE_USAGE_STORAGE_IMAGE_READ });
 						}
 					}
 
@@ -4607,12 +4598,10 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					}
 
 					if (buffer->draw_tracker != nullptr) {
-						draw_trackers.push_back(buffer->draw_tracker);
-
 						if (set_uniform.writable) {
-							draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_TEXTURE_BUFFER_READ_WRITE);
+							draw_tracked_resources.push_back({ buffer->draw_tracker, RDG::RESOURCE_USAGE_TEXTURE_BUFFER_READ_WRITE });
 						} else {
-							draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_TEXTURE_BUFFER_READ);
+							draw_tracked_resources.push_back({ buffer->draw_tracker, RDG::RESOURCE_USAGE_TEXTURE_BUFFER_READ });
 						}
 					} else {
 						untracked_usage[buffer_id] = RDG::RESOURCE_USAGE_TEXTURE_BUFFER_READ;
@@ -4640,8 +4629,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					ERR_FAIL_NULL_V_MSG(buffer, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid texture buffer.");
 
 					if (buffer->draw_tracker != nullptr) {
-						draw_trackers.push_back(buffer->draw_tracker);
-						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_TEXTURE_BUFFER_READ);
+						draw_tracked_resources.push_back({ buffer->draw_tracker, RDG::RESOURCE_USAGE_TEXTURE_BUFFER_READ });
 					} else {
 						untracked_usage[buffer_id] = RDG::RESOURCE_USAGE_TEXTURE_BUFFER_READ;
 					}
@@ -4667,8 +4655,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 						"Uniform buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + ") is smaller than size of shader uniform: (" + itos(set_uniform.length) + ").");
 
 				if (buffer->draw_tracker != nullptr) {
-					draw_trackers.push_back(buffer->draw_tracker);
-					draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_UNIFORM_BUFFER_READ);
+					draw_tracked_resources.push_back({ buffer->draw_tracker, RDG::RESOURCE_USAGE_UNIFORM_BUFFER_READ });
 				} else {
 					untracked_usage[buffer_id] = RDG::RESOURCE_USAGE_UNIFORM_BUFFER_READ;
 				}
@@ -4707,12 +4694,10 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 				}
 
 				if (buffer->draw_tracker != nullptr) {
-					draw_trackers.push_back(buffer->draw_tracker);
-
 					if (set_uniform.writable) {
-						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE);
+						draw_tracked_resources.push_back({ buffer->draw_tracker, RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE });
 					} else {
-						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ);
+						draw_tracked_resources.push_back({ buffer->draw_tracker, RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ });
 					}
 				} else {
 					untracked_usage[buffer_id] = RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ;
@@ -4757,9 +4742,8 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 				ERR_FAIL_NULL_V_MSG(accel, RID(), "Acceleration Structure supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 
 				if (accel->draw_tracker != nullptr) {
-					draw_trackers.push_back(accel->draw_tracker);
 					// Acceleration structure is never going to be writable from raytracing shaders
-					draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ);
+					draw_tracked_resources.push_back({ accel->draw_tracker, RDG::RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ });
 				}
 
 				driver_uniform.ids.push_back(accel->driver_id);
@@ -4777,8 +4761,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 	uniform_set.driver_id = driver_uniform_set;
 	uniform_set.format = shader->set_formats[p_shader_set];
 	uniform_set.attachable_textures = attachable_textures;
-	uniform_set.draw_trackers = draw_trackers;
-	uniform_set.draw_trackers_usage = draw_trackers_usage;
+	uniform_set.draw_tracked_resources = draw_tracked_resources;
 	uniform_set.untracked_usage = untracked_usage;
 	uniform_set.shared_textures_to_update = shared_textures_to_update;
 	uniform_set.pending_clear_textures = pending_clear_textures;
@@ -5584,13 +5567,11 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 
 	thread_local LocalVector<RDG::AttachmentOperation> operations;
 	thread_local LocalVector<RDD::RenderPassClearValue> clear_values;
-	thread_local LocalVector<RDG::ResourceTracker *> resource_trackers;
-	thread_local LocalVector<RDG::ResourceUsage> resource_usages;
+	thread_local LocalVector<RDG::TrackedResource> tracked_resources;
 	BitField<RDD::PipelineStageBits> stages = {};
 	operations.resize(framebuffer->texture_ids.size());
 	clear_values.resize(framebuffer->texture_ids.size());
-	resource_trackers.clear();
-	resource_usages.clear();
+	tracked_resources.clear();
 	stages.clear();
 
 	uint32_t color_index = 0;
@@ -5612,8 +5593,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 		RDG::AttachmentOperation operation = RDG::ATTACHMENT_OPERATION_DEFAULT;
 		RDD::RenderPassClearValue clear_value;
 		if (framebuffer_key->vrs_attachment == i && (texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
-			resource_trackers.push_back(texture->draw_tracker);
-			resource_usages.push_back(_vrs_usage_from_method(framebuffer_key->vrs_method));
+			tracked_resources.push_back({ texture->draw_tracker, _vrs_usage_from_method(framebuffer_key->vrs_method) });
 			stages.set_flag(_vrs_stages_from_method(framebuffer_key->vrs_method));
 		} else if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 			if (p_draw_flags.has_flag(DrawFlags(DRAW_CLEAR_COLOR_0 << color_index))) {
@@ -5624,8 +5604,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 				operation = RDG::ATTACHMENT_OPERATION_IGNORE;
 			}
 
-			resource_trackers.push_back(texture->draw_tracker);
-			resource_usages.push_back(RDG::RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE);
+			tracked_resources.push_back({ texture->draw_tracker, RDG::RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE });
 			stages.set_flag(RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 			color_index++;
 		} else if (texture->usage_flags & (TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT)) {
@@ -5637,8 +5616,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 				operation = RDG::ATTACHMENT_OPERATION_IGNORE;
 			}
 
-			resource_trackers.push_back(texture->draw_tracker);
-			resource_usages.push_back(RDG::RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE);
+			tracked_resources.push_back({ texture->draw_tracker, RDG::RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE });
 			stages.set_flag(RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
 			stages.set_flag(RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
 		}
@@ -5648,7 +5626,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 	}
 
 	draw_graph.add_draw_list_begin(framebuffer->framebuffer_cache, Rect2i(viewport_offset, viewport_size), operations, clear_values, stages, p_breadcrumb);
-	draw_graph.add_draw_list_usages(resource_trackers, resource_usages);
+	draw_graph.add_draw_list_usages(tracked_resources);
 
 	// Mark textures as bound.
 	draw_list_bound_textures.clear();
@@ -6097,7 +6075,7 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 				_uniform_set_update_shared(uniform_set);
 				_uniform_set_update_clears(uniform_set);
 
-				draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+				draw_graph.add_draw_list_usages(uniform_set->draw_tracked_resources);
 				draw_list.state.sets[i].bound = true;
 
 				last_set_index = i;
@@ -6237,7 +6215,7 @@ void RenderingDevice::draw_list_draw_indirect(DrawListID p_list, bool p_use_indi
 			_uniform_set_update_shared(uniform_set);
 			_uniform_set_update_clears(uniform_set);
 
-			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+			draw_graph.add_draw_list_usages(uniform_set->draw_tracked_resources);
 
 			draw_list.state.sets[i].bound = true;
 		}
@@ -6599,7 +6577,7 @@ void RenderingDevice::raytracing_list_trace_rays(RaytracingListID p_list, uint32
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(raytracing_list.state.sets[i].uniform_set);
 			_uniform_set_update_shared(uniform_set);
 
-			draw_graph.add_raytracing_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+			draw_graph.add_raytracing_list_usages(uniform_set->draw_tracked_resources);
 
 			raytracing_list.state.sets[i].bound = true;
 		}
@@ -6913,7 +6891,7 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 			_uniform_set_update_shared(uniform_set);
 			_uniform_set_update_clears(uniform_set);
 
-			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+			draw_graph.add_compute_list_usages(uniform_set->draw_tracked_resources);
 			compute_list.state.sets[i].bound = true;
 		}
 	}
@@ -7050,7 +7028,7 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 			_uniform_set_update_shared(uniform_set);
 			_uniform_set_update_clears(uniform_set);
 
-			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
+			draw_graph.add_compute_list_usages(uniform_set->draw_tracked_resources);
 			compute_list.state.sets[i].bound = true;
 		}
 	}
@@ -7543,8 +7521,7 @@ bool RenderingDevice::_uniform_set_make_mutable(UniformSet *p_uniform_set, RID p
 		return false;
 	} else {
 		// Uniform set has seen the resource but hasn't added its tracker yet.
-		p_uniform_set->draw_trackers.push_back(p_resource_tracker);
-		p_uniform_set->draw_trackers_usage.push_back(E->value);
+		p_uniform_set->draw_tracked_resources.push_back({ p_resource_tracker, E->value });
 		p_uniform_set->untracked_usage.remove(E);
 		return true;
 	}

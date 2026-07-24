@@ -363,7 +363,7 @@ RenderingDeviceGraph::RaytracingListInstruction *RenderingDeviceGraph::_allocate
 	return reinterpret_cast<RaytracingListInstruction *>(&raytracing_instruction_list.data[raytracing_list_data_offset]);
 }
 
-void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_trackers, ResourceUsage *p_resource_usages, uint32_t p_resource_count, int32_t p_command_index, RecordedCommand *r_command) {
+void RenderingDeviceGraph::_add_command_to_graph(const TrackedResource *p_resources, uint32_t p_resource_count, int32_t p_command_index, RecordedCommand *r_command) {
 	// Assign the next stages derived from the stages the command requires first.
 	r_command->next_stages = r_command->self_stages;
 
@@ -401,7 +401,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 	}
 
 	for (uint32_t i = 0; i < p_resource_count; i++) {
-		ResourceTracker *resource_tracker = p_resource_trackers[i];
+		ResourceTracker *resource_tracker = p_resources[i].tracker;
 		DEV_ASSERT(resource_tracker != nullptr);
 
 		resource_tracker->reset_if_outdated(tracking_frame);
@@ -411,13 +411,13 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 	}
 
 	for (uint32_t i = 0; i < p_resource_count; i++) {
-		ResourceTracker *resource_tracker = p_resource_trackers[i];
+		ResourceTracker *resource_tracker = p_resources[i].tracker;
 
 		const RDD::TextureSubresourceRange &subresources = resource_tracker->texture_subresources;
 		const Rect2i resource_tracker_rect(subresources.base_mipmap, subresources.base_layer, subresources.mipmap_count, subresources.layer_count);
 		Rect2i search_tracker_rect = resource_tracker_rect;
 
-		ResourceUsage new_resource_usage = p_resource_usages[i];
+		ResourceUsage new_resource_usage = p_resources[i].usage;
 		bool write_usage = _is_write_usage(new_resource_usage);
 		BitField<RDD::BarrierAccessBits> new_usage_access = _usage_to_access_bits(new_resource_usage);
 		bool is_resource_a_slice = resource_tracker->parent != nullptr;
@@ -429,7 +429,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 			if (resource_tracker->parent->command_index == p_command_index) {
 				DEV_ASSERT(resource_tracker->parent->usage_index != UINT32_MAX);
 
-				ERR_FAIL_COND_MSG(p_resource_usages[resource_tracker->parent->usage_index] != new_resource_usage, "Using a full texture and its slices at the same time with different usages is not allowed.");
+				ERR_FAIL_COND_MSG(p_resources[resource_tracker->parent->usage_index].usage != new_resource_usage, "Using a full texture and its slices at the same time with different usages is not allowed.");
 
 				continue;
 			}
@@ -1807,23 +1807,19 @@ void RenderingDeviceGraph::add_blas_build(RDD::AccelerationStructureID p_acceler
 	command->acceleration_structure = p_acceleration_structure;
 	command->scratch_buffer = p_scratch_buffer;
 
-	thread_local LocalVector<ResourceTracker *> trackers;
-	thread_local LocalVector<ResourceUsage> usages;
+	thread_local LocalVector<TrackedResource> resources;
 
 	// Sources and destination.
 	uint32_t resource_count = p_src_trackers.size() + 1;
-	trackers.resize(resource_count);
-	usages.resize(resource_count);
+	resources.resize(resource_count);
 
 	for (uint32_t i = 0; i < p_src_trackers.size(); ++i) {
-		trackers[i] = p_src_trackers[i];
-		usages[i] = RESOURCE_USAGE_STORAGE_BUFFER_READ;
+		resources[i] = { p_src_trackers[i], RESOURCE_USAGE_STORAGE_BUFFER_READ };
 	}
 
-	trackers[resource_count - 1] = p_dst_tracker;
-	usages[resource_count - 1] = RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE;
+	resources[resource_count - 1] = { p_dst_tracker, RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE };
 
-	_add_command_to_graph(trackers.ptr(), usages.ptr(), usages.size(), command_index, command);
+	_add_command_to_graph(resources.ptr(), resources.size(), command_index, command);
 }
 
 void RenderingDeviceGraph::add_tlas_build(RDD::AccelerationStructureID p_acceleration_structure, RDD::BufferID p_scratch_buffer, RDD::BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count, ResourceTracker *p_dst_tracker, VectorView<ResourceTracker *> p_src_trackers) {
@@ -1837,23 +1833,19 @@ void RenderingDeviceGraph::add_tlas_build(RDD::AccelerationStructureID p_acceler
 	command->instance_offset = p_instance_offset;
 	command->instance_count = p_instance_count;
 
-	thread_local LocalVector<ResourceTracker *> trackers;
-	thread_local LocalVector<ResourceUsage> usages;
+	thread_local LocalVector<TrackedResource> resources;
 
 	// Sources and destination.
 	uint32_t resource_count = p_src_trackers.size() + 1;
-	trackers.resize(resource_count);
-	usages.resize(resource_count);
+	resources.resize(resource_count);
 
 	for (uint32_t i = 0; i < p_src_trackers.size(); ++i) {
-		trackers[i] = p_src_trackers[i];
-		usages[i] = RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ;
+		resources[i] = { p_src_trackers[i], RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ };
 	}
 
-	trackers[resource_count - 1] = p_dst_tracker;
-	usages[resource_count - 1] = RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE;
+	resources[resource_count - 1] = { p_dst_tracker, RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE };
 
-	_add_command_to_graph(trackers.ptr(), usages.ptr(), usages.size(), command_index, command);
+	_add_command_to_graph(resources.ptr(), resources.size(), command_index, command);
 }
 
 void RenderingDeviceGraph::add_buffer_clear(RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, uint32_t p_offset, uint32_t p_size) {
@@ -1876,7 +1868,8 @@ void RenderingDeviceGraph::add_buffer_clear(RDD::BufferID p_dst, ResourceTracker
 		usage = RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE;
 	}
 
-	_add_command_to_graph(&p_dst_tracker, &usage, 1, command_index, command);
+	TrackedResource resource = { p_dst_tracker, usage };
+	_add_command_to_graph(&resource, 1, command_index, command);
 }
 
 void RenderingDeviceGraph::add_buffer_copy(RDD::BufferID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, RDD::BufferCopyRegion p_region) {
@@ -1891,9 +1884,11 @@ void RenderingDeviceGraph::add_buffer_copy(RDD::BufferID p_src, ResourceTracker 
 	command->destination = p_dst;
 	command->region = p_region;
 
-	ResourceTracker *trackers[2] = { p_dst_tracker, p_src_tracker };
-	ResourceUsage usages[2] = { RESOURCE_USAGE_COPY_TO, RESOURCE_USAGE_COPY_FROM };
-	_add_command_to_graph(trackers, usages, p_src_tracker != nullptr ? 2 : 1, command_index, command);
+	TrackedResource resources[2] = {
+		{ p_dst_tracker, RESOURCE_USAGE_COPY_TO },
+		{ p_src_tracker, RESOURCE_USAGE_COPY_FROM },
+	};
+	_add_command_to_graph(resources, p_src_tracker != nullptr ? 2 : 1, command_index, command);
 }
 
 void RenderingDeviceGraph::add_buffer_get_data(RDD::BufferID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, RDD::BufferCopyRegion p_region) {
@@ -1907,10 +1902,10 @@ void RenderingDeviceGraph::add_buffer_get_data(RDD::BufferID p_src, ResourceTrac
 	command->region = p_region;
 
 	if (p_src_tracker != nullptr) {
-		ResourceUsage usage = RESOURCE_USAGE_COPY_FROM;
-		_add_command_to_graph(&p_src_tracker, &usage, 1, command_index, command);
+		TrackedResource resource = { p_src_tracker, RESOURCE_USAGE_COPY_FROM };
+		_add_command_to_graph(&resource, 1, command_index, command);
 	} else {
-		_add_command_to_graph(nullptr, nullptr, 0, command_index, command);
+		_add_command_to_graph(nullptr, 0, command_index, command);
 	}
 }
 
@@ -1931,19 +1926,17 @@ void RenderingDeviceGraph::add_buffer_update(RDD::BufferID p_dst, ResourceTracke
 		buffer_copies[i] = p_buffer_copies[i];
 	}
 
-	ResourceUsage buffer_usage = RESOURCE_USAGE_COPY_TO;
-	_add_command_to_graph(&p_dst_tracker, &buffer_usage, 1, command_index, command);
+	TrackedResource resource = { p_dst_tracker, RESOURCE_USAGE_COPY_TO };
+	_add_command_to_graph(&resource, 1, command_index, command);
 }
 
-void RenderingDeviceGraph::add_driver_callback(RDD::DriverCallback p_callback, void *p_userdata, VectorView<ResourceTracker *> p_trackers, VectorView<RenderingDeviceGraph::ResourceUsage> p_usages) {
-	DEV_ASSERT(p_trackers.size() == p_usages.size());
-
+void RenderingDeviceGraph::add_driver_callback(RDD::DriverCallback p_callback, void *p_userdata, VectorView<TrackedResource> p_resources) {
 	int32_t command_index;
 	RecordedDriverCallbackCommand *command = static_cast<RecordedDriverCallbackCommand *>(_allocate_command(sizeof(RecordedDriverCallbackCommand), command_index));
 	command->type = RecordedCommand::TYPE_DRIVER_CALLBACK;
 	command->callback = p_callback;
 	command->userdata = p_userdata;
-	_add_command_to_graph((ResourceTracker **)p_trackers.ptr(), (ResourceUsage *)p_usages.ptr(), p_trackers.size(), command_index, command);
+	_add_command_to_graph(p_resources.ptr(), p_resources.size(), command_index, command);
 }
 
 void RenderingDeviceGraph::add_raytracing_list_begin() {
@@ -2000,8 +1993,7 @@ void RenderingDeviceGraph::add_raytracing_list_usage(ResourceTracker *p_tracker,
 	p_tracker->reset_if_outdated(tracking_frame);
 
 	if (p_tracker->raytracing_list_index != raytracing_instruction_list.index) {
-		raytracing_instruction_list.command_trackers.push_back(p_tracker);
-		raytracing_instruction_list.command_tracker_usages.push_back(p_usage);
+		raytracing_instruction_list.command_resources.push_back({ p_tracker, p_usage });
 		p_tracker->raytracing_list_index = raytracing_instruction_list.index;
 		p_tracker->raytracing_list_usage = p_usage;
 	}
@@ -2012,11 +2004,9 @@ void RenderingDeviceGraph::add_raytracing_list_usage(ResourceTracker *p_tracker,
 #endif
 }
 
-void RenderingDeviceGraph::add_raytracing_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages) {
-	DEV_ASSERT(p_trackers.size() == p_usages.size());
-
-	for (uint32_t i = 0; i < p_trackers.size(); i++) {
-		add_raytracing_list_usage(p_trackers[i], p_usages[i]);
+void RenderingDeviceGraph::add_raytracing_list_usages(VectorView<TrackedResource> p_resources) {
+	for (uint32_t i = 0; i < p_resources.size(); i++) {
+		add_raytracing_list_usage(p_resources[i].tracker, p_resources[i].usage);
 	}
 }
 
@@ -2029,7 +2019,7 @@ void RenderingDeviceGraph::add_raytracing_list_end() {
 	command->self_stages = raytracing_instruction_list.stages;
 	command->instruction_data_size = instruction_data_size;
 	memcpy(command->instruction_data(), raytracing_instruction_list.data.ptr(), instruction_data_size);
-	_add_command_to_graph(raytracing_instruction_list.command_trackers.ptr(), raytracing_instruction_list.command_tracker_usages.ptr(), raytracing_instruction_list.command_trackers.size(), command_index, command);
+	_add_command_to_graph(raytracing_instruction_list.command_resources.ptr(), raytracing_instruction_list.command_resources.size(), command_index, command);
 }
 
 void RenderingDeviceGraph::add_compute_list_begin(RDD::BreadcrumbMarker p_phase, uint32_t p_breadcrumb_data) {
@@ -2107,8 +2097,7 @@ void RenderingDeviceGraph::add_compute_list_usage(ResourceTracker *p_tracker, Re
 	p_tracker->reset_if_outdated(tracking_frame);
 
 	if (p_tracker->compute_list_index != compute_instruction_list.index) {
-		compute_instruction_list.command_trackers.push_back(p_tracker);
-		compute_instruction_list.command_tracker_usages.push_back(p_usage);
+		compute_instruction_list.command_resources.push_back({ p_tracker, p_usage });
 		p_tracker->compute_list_index = compute_instruction_list.index;
 		p_tracker->compute_list_usage = p_usage;
 	}
@@ -2119,11 +2108,9 @@ void RenderingDeviceGraph::add_compute_list_usage(ResourceTracker *p_tracker, Re
 #endif
 }
 
-void RenderingDeviceGraph::add_compute_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages) {
-	DEV_ASSERT(p_trackers.size() == p_usages.size());
-
-	for (uint32_t i = 0; i < p_trackers.size(); i++) {
-		add_compute_list_usage(p_trackers[i], p_usages[i]);
+void RenderingDeviceGraph::add_compute_list_usages(VectorView<TrackedResource> p_resources) {
+	for (uint32_t i = 0; i < p_resources.size(); i++) {
+		add_compute_list_usage(p_resources[i].tracker, p_resources[i].usage);
 	}
 }
 
@@ -2136,7 +2123,7 @@ void RenderingDeviceGraph::add_compute_list_end() {
 	command->self_stages = compute_instruction_list.stages;
 	command->instruction_data_size = instruction_data_size;
 	memcpy(command->instruction_data(), compute_instruction_list.data.ptr(), instruction_data_size);
-	_add_command_to_graph(compute_instruction_list.command_trackers.ptr(), compute_instruction_list.command_tracker_usages.ptr(), compute_instruction_list.command_trackers.size(), command_index, command);
+	_add_command_to_graph(compute_instruction_list.command_resources.ptr(), compute_instruction_list.command_resources.size(), command_index, command);
 }
 
 void RenderingDeviceGraph::add_draw_list_begin(FramebufferCache *p_framebuffer_cache, Rect2i p_region, VectorView<AttachmentOperation> p_attachment_operations, VectorView<RDD::RenderPassClearValue> p_attachment_clear_values, BitField<RDD::PipelineStageBits> p_stages, uint32_t p_breadcrumb, bool p_split_cmd_buffer) {
@@ -2317,8 +2304,7 @@ void RenderingDeviceGraph::add_draw_list_usage(ResourceTracker *p_tracker, Resou
 	p_tracker->reset_if_outdated(tracking_frame);
 
 	if (p_tracker->draw_list_index != draw_instruction_list.index) {
-		draw_instruction_list.command_trackers.push_back(p_tracker);
-		draw_instruction_list.command_tracker_usages.push_back(p_usage);
+		draw_instruction_list.command_resources.push_back({ p_tracker, p_usage });
 		p_tracker->draw_list_index = draw_instruction_list.index;
 		p_tracker->draw_list_usage = p_usage;
 	}
@@ -2329,11 +2315,9 @@ void RenderingDeviceGraph::add_draw_list_usage(ResourceTracker *p_tracker, Resou
 #endif
 }
 
-void RenderingDeviceGraph::add_draw_list_usages(VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages) {
-	DEV_ASSERT(p_trackers.size() == p_usages.size());
-
-	for (uint32_t i = 0; i < p_trackers.size(); i++) {
-		add_draw_list_usage(p_trackers[i], p_usages[i]);
+void RenderingDeviceGraph::add_draw_list_usages(VectorView<TrackedResource> p_resources) {
+	for (uint32_t i = 0; i < p_resources.size(); i++) {
+		add_draw_list_usage(p_resources[i].tracker, p_resources[i].usage);
 	}
 }
 
@@ -2398,7 +2382,7 @@ void RenderingDeviceGraph::add_draw_list_end() {
 	}
 
 	memcpy(command->instruction_data(), draw_instruction_list.data.ptr(), instruction_data_size);
-	_add_command_to_graph(draw_instruction_list.command_trackers.ptr(), draw_instruction_list.command_tracker_usages.ptr(), draw_instruction_list.command_trackers.size(), command_index, command);
+	_add_command_to_graph(draw_instruction_list.command_resources.ptr(), draw_instruction_list.command_resources.size(), command_index, command);
 }
 
 void RenderingDeviceGraph::add_texture_clear_color(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, const Color &p_color, const RDD::TextureSubresourceRange &p_range) {
@@ -2427,7 +2411,8 @@ void RenderingDeviceGraph::add_texture_clear_color(RDD::TextureID p_dst, Resourc
 		}
 	}
 
-	_add_command_to_graph(&p_dst_tracker, &usage, 1, command_index, command);
+	TrackedResource resource = { p_dst_tracker, usage };
+	_add_command_to_graph(&resource, 1, command_index, command);
 }
 
 void RenderingDeviceGraph::add_texture_clear_depth_stencil(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, float p_depth, uint8_t p_stencil, const RDD::TextureSubresourceRange &p_range) {
@@ -2452,7 +2437,8 @@ void RenderingDeviceGraph::add_texture_clear_depth_stencil(RDD::TextureID p_dst,
 		usage = RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE;
 	}
 
-	_add_command_to_graph(&p_dst_tracker, &usage, 1, command_index, command);
+	TrackedResource resource = { p_dst_tracker, usage };
+	_add_command_to_graph(&resource, 1, command_index, command);
 }
 
 void RenderingDeviceGraph::add_texture_copy(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, VectorView<RDD::TextureCopyRegion> p_texture_copy_regions) {
@@ -2473,9 +2459,11 @@ void RenderingDeviceGraph::add_texture_copy(RDD::TextureID p_src, ResourceTracke
 		texture_copy_regions[i] = p_texture_copy_regions[i];
 	}
 
-	ResourceTracker *trackers[2] = { p_dst_tracker, p_src_tracker };
-	ResourceUsage usages[2] = { RESOURCE_USAGE_COPY_TO, RESOURCE_USAGE_COPY_FROM };
-	_add_command_to_graph(trackers, usages, 2, command_index, command);
+	TrackedResource resources[2] = {
+		{ p_dst_tracker, RESOURCE_USAGE_COPY_TO },
+		{ p_src_tracker, RESOURCE_USAGE_COPY_FROM },
+	};
+	_add_command_to_graph(resources, 2, command_index, command);
 }
 
 void RenderingDeviceGraph::add_texture_get_data(RDD::TextureID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, VectorView<RDD::BufferTextureCopyRegion> p_buffer_texture_copy_regions, ResourceTracker *p_dst_tracker) {
@@ -2497,12 +2485,14 @@ void RenderingDeviceGraph::add_texture_get_data(RDD::TextureID p_src, ResourceTr
 
 	if (p_dst_tracker != nullptr) {
 		// Add the optional destination tracker if it was provided.
-		ResourceTracker *trackers[2] = { p_dst_tracker, p_src_tracker };
-		ResourceUsage usages[2] = { RESOURCE_USAGE_COPY_TO, RESOURCE_USAGE_COPY_FROM };
-		_add_command_to_graph(trackers, usages, 2, command_index, command);
+		TrackedResource resources[2] = {
+			{ p_dst_tracker, RESOURCE_USAGE_COPY_TO },
+			{ p_src_tracker, RESOURCE_USAGE_COPY_FROM },
+		};
+		_add_command_to_graph(resources, 2, command_index, command);
 	} else {
-		ResourceUsage usage = RESOURCE_USAGE_COPY_FROM;
-		_add_command_to_graph(&p_src_tracker, &usage, 1, command_index, command);
+		TrackedResource resource = { p_src_tracker, RESOURCE_USAGE_COPY_FROM };
+		_add_command_to_graph(&resource, 1, command_index, command);
 	}
 }
 
@@ -2521,9 +2511,11 @@ void RenderingDeviceGraph::add_texture_resolve(RDD::TextureID p_src, ResourceTra
 	command->dst_layer = p_dst_layer;
 	command->dst_mipmap = p_dst_mipmap;
 
-	ResourceTracker *trackers[2] = { p_dst_tracker, p_src_tracker };
-	ResourceUsage usages[2] = { RESOURCE_USAGE_RESOLVE_TO, RESOURCE_USAGE_RESOLVE_FROM };
-	_add_command_to_graph(trackers, usages, 2, command_index, command);
+	TrackedResource resources[2] = {
+		{ p_dst_tracker, RESOURCE_USAGE_RESOLVE_TO },
+		{ p_src_tracker, RESOURCE_USAGE_RESOLVE_FROM },
+	};
+	_add_command_to_graph(resources, 2, command_index, command);
 }
 
 void RenderingDeviceGraph::add_texture_update(RDD::TextureID p_dst, ResourceTracker *p_dst_tracker, VectorView<RecordedBufferToTextureCopy> p_buffer_copies, VectorView<ResourceTracker *> p_buffer_trackers) {
@@ -2544,22 +2536,18 @@ void RenderingDeviceGraph::add_texture_update(RDD::TextureID p_dst, ResourceTrac
 
 	if (p_buffer_trackers.size() > 0) {
 		// Add the optional buffer trackers if they were provided.
-		thread_local LocalVector<ResourceTracker *> trackers;
-		thread_local LocalVector<ResourceUsage> usages;
-		trackers.clear();
-		usages.clear();
+		thread_local LocalVector<TrackedResource> resources;
+		resources.clear();
 		for (uint32_t i = 0; i < p_buffer_trackers.size(); i++) {
-			trackers.push_back(p_buffer_trackers[i]);
-			usages.push_back(RESOURCE_USAGE_COPY_FROM);
+			resources.push_back({ p_buffer_trackers[i], RESOURCE_USAGE_COPY_FROM });
 		}
 
-		trackers.push_back(p_dst_tracker);
-		usages.push_back(RESOURCE_USAGE_COPY_TO);
+		resources.push_back({ p_dst_tracker, RESOURCE_USAGE_COPY_TO });
 
-		_add_command_to_graph(trackers.ptr(), usages.ptr(), trackers.size(), command_index, command);
+		_add_command_to_graph(resources.ptr(), resources.size(), command_index, command);
 	} else {
-		ResourceUsage usage = RESOURCE_USAGE_COPY_TO;
-		_add_command_to_graph(&p_dst_tracker, &usage, 1, command_index, command);
+		TrackedResource resource = { p_dst_tracker, RESOURCE_USAGE_COPY_TO };
+		_add_command_to_graph(&resource, 1, command_index, command);
 	}
 }
 
@@ -2570,7 +2558,7 @@ void RenderingDeviceGraph::add_capture_timestamp(RDD::QueryPoolID p_query_pool, 
 	command->self_stages = 0;
 	command->pool = p_query_pool;
 	command->index = p_index;
-	_add_command_to_graph(nullptr, nullptr, 0, command_index, command);
+	_add_command_to_graph(nullptr, 0, command_index, command);
 }
 
 void RenderingDeviceGraph::add_synchronization() {
