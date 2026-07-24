@@ -67,7 +67,6 @@
 // For syntax highlighting.
 #ifdef MODULE_GDSCRIPT_ENABLED
 #include "modules/gdscript/editor/gdscript_highlighter.h"
-#include "modules/gdscript/gdscript.h"
 #endif
 
 // For syntax highlighting.
@@ -5142,9 +5141,6 @@ EditorHelpHighlighter::HighlightData EditorHelpHighlighter::_get_highlight_data(
 	}
 
 	text_edits[p_language]->set_text(p_source);
-	if (scripts[p_language].is_valid()) { // See GH-89610.
-		scripts[p_language]->set_source_code(p_source);
-	}
 	highlighters[p_language]->_update_cache();
 
 	HighlightData result;
@@ -5221,16 +5217,11 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 	TextEdit *gdscript_text_edit = memnew(TextEdit);
 	gdscript_text_edit->add_theme_color_override(SceneStringName(font_color), text_color);
 
-	Ref<GDScript> gdscript;
-	gdscript.instantiate();
-
 	Ref<GDScriptSyntaxHighlighter> gdscript_highlighter;
 	gdscript_highlighter.instantiate();
 	gdscript_highlighter->set_text_edit(gdscript_text_edit);
-	gdscript_highlighter->_set_edited_resource(gdscript);
 
 	text_edits[LANGUAGE_GDSCRIPT] = gdscript_text_edit;
-	scripts[LANGUAGE_GDSCRIPT] = gdscript;
 	highlighters[LANGUAGE_GDSCRIPT] = gdscript_highlighter;
 #endif
 
@@ -5238,18 +5229,12 @@ EditorHelpHighlighter::EditorHelpHighlighter() {
 	TextEdit *csharp_text_edit = memnew(TextEdit);
 	csharp_text_edit->add_theme_color_override(SceneStringName(font_color), text_color);
 
-	// See GH-89610.
-	//Ref<CSharpScript> csharp;
-	//csharp.instantiate();
-
 	Ref<EditorStandardSyntaxHighlighter> csharp_highlighter;
 	csharp_highlighter.instantiate();
 	csharp_highlighter->set_text_edit(csharp_text_edit);
-	//csharp_highlighter->_set_edited_resource(csharp);
 	csharp_highlighter->_set_script_language(CSharpLanguage::get_singleton());
 
 	text_edits[LANGUAGE_CSHARP] = csharp_text_edit;
-	//scripts[LANGUAGE_CSHARP] = csharp;
 	highlighters[LANGUAGE_CSHARP] = csharp_highlighter;
 #endif
 }

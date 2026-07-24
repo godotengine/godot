@@ -415,7 +415,6 @@ private:
 	HashMap<String, HighlightData> highlight_data_caches[LANGUAGE_MAX];
 
 	TextEdit *text_edits[LANGUAGE_MAX];
-	Ref<Script> scripts[LANGUAGE_MAX];
 	Ref<EditorSyntaxHighlighter> highlighters[LANGUAGE_MAX];
 
 	HighlightData _get_highlight_data(Language p_language, const String &p_source, bool p_use_cache);
