@@ -380,7 +380,7 @@ void GroupsEditor::_item_edited() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (ti->is_checked(0)) {
-		undo_redo->create_action(TTR("Add to Group"));
+		undo_redo->create_action(TTR("Add to Group"), UndoRedo::MERGE_DISABLE, scene_root_node);
 
 		Array nodes;
 		_get_group_mask(name, nodes, true);
@@ -397,7 +397,7 @@ void GroupsEditor::_item_edited() {
 		undo_redo->commit_action();
 
 	} else {
-		undo_redo->create_action(TTR("Remove from Group"));
+		undo_redo->create_action(TTR("Remove from Group"), UndoRedo::MERGE_DISABLE, scene_root_node);
 
 		Array nodes;
 		_get_group_mask(name, nodes, false);
@@ -534,15 +534,18 @@ void GroupsEditor::_confirm_add() {
 
 	String description = add_group_description->get_text();
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Add to Group"));
+	bool is_local = !global_group_button->is_pressed();
 
 	Array nodes;
 	_get_group_mask(name, nodes, true);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	const bool affects_scene = is_local || !nodes.is_empty();
+	undo_redo->create_action(TTR("Add to Group"), UndoRedo::MERGE_DISABLE, affects_scene ? scene_root_node : nullptr);
+
 	undo_redo->add_do_method(this, "_add_to_group", name, true, nodes);
 	undo_redo->add_undo_method(this, "_remove_from_group", name, nodes);
 
-	bool is_local = !global_group_button->is_pressed();
 	if (is_local) {
 		undo_redo->add_do_method(this, "_add_scene_group", name);
 		undo_redo->add_undo_method(this, "_remove_scene_group", name);
@@ -584,9 +587,10 @@ void GroupsEditor::_confirm_rename() {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Rename Group"));
+	bool is_local = !global_groups.has(old_name);
+	undo_redo->create_action(TTR("Rename Group"), UndoRedo::MERGE_DISABLE, is_local ? scene_root_node : nullptr);
 
-	if (!global_groups.has(old_name)) {
+	if (is_local) {
 		undo_redo->add_do_method(this, "_rename_scene_group", old_name, new_name);
 		undo_redo->add_undo_method(this, "_rename_scene_group", new_name, old_name);
 	} else {
@@ -631,7 +635,7 @@ void GroupsEditor::_confirm_delete() {
 	bool is_local = ti->get_meta("__local");
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Remove Group"));
+	undo_redo->create_action(TTR("Remove Group"), UndoRedo::MERGE_DISABLE, is_local ? scene_root_node : nullptr);
 
 	if (is_local) {
 		undo_redo->add_do_method(this, "_remove_scene_group", name);
