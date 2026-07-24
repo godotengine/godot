@@ -52,6 +52,8 @@ GodotJavaViewWrapper::GodotJavaViewWrapper(jobject godot_view) {
 	}
 
 	_can_capture_pointer = env->GetMethodID(_cls, "canCapturePointer", "()Z");
+
+	_request_max_hdr_headroom = env->GetMethodID(_cls, "requestMaxHdrHeadroom", "(F)V");
 }
 
 bool GodotJavaViewWrapper::can_update_pointer_icon() const {
@@ -106,6 +108,15 @@ void GodotJavaViewWrapper::set_pointer_icon(int pointer_type) {
 		ERR_FAIL_NULL(env);
 
 		env->CallVoidMethod(_godot_view, _set_pointer_icon, pointer_type);
+	}
+}
+
+void GodotJavaViewWrapper::request_max_hdr_headroom(float p_desired_headroom) {
+	if (_request_max_hdr_headroom != nullptr) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		env->CallVoidMethod(_godot_view, _request_max_hdr_headroom, p_desired_headroom);
 	}
 }
 

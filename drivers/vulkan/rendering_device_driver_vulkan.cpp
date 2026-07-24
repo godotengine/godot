@@ -3565,7 +3565,13 @@ bool RenderingDeviceDriverVulkan::_determine_swap_chain_format(RenderingContextD
 			// SRGB_NONLINEAR_KHR is required for some NVIDIA drivers that support HDR output but do not support PASS_THROUGH_EXT.
 			preferred_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR, COLOR_SPACE_REC709_LINEAR });
 		} else if (colorspace_supported) {
+#ifdef ANDROID_ENABLED
+			// Android's Vulkan HDR output uses 10-bit packed formats with the HDR10 ST.2084 PQ color space.
+			preferred_formats.push_back({ VK_FORMAT_A2R10G10B10_UNORM_PACK32, VK_COLOR_SPACE_HDR10_ST2084_EXT, COLOR_SPACE_REC2020_NONLINEAR_ST2084 });
+			preferred_formats.push_back({ VK_FORMAT_A2B10G10R10_UNORM_PACK32, VK_COLOR_SPACE_HDR10_ST2084_EXT, COLOR_SPACE_REC2020_NONLINEAR_ST2084 });
+#else
 			preferred_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT, COLOR_SPACE_REC709_LINEAR });
+#endif
 		}
 	}
 
@@ -4074,6 +4080,10 @@ RDD::DataFormat RenderingDeviceDriverVulkan::swap_chain_get_format(SwapChainID p
 			return DATA_FORMAT_R8G8B8A8_UNORM;
 		case VK_FORMAT_R16G16B16A16_SFLOAT:
 			return DATA_FORMAT_R16G16B16A16_SFLOAT;
+		case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+			return DATA_FORMAT_A2R10G10B10_UNORM_PACK32;
+		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+			return DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
 		default:
 			DEV_ASSERT(false && "Unknown swap chain format.");
 			return DATA_FORMAT_MAX;
@@ -4130,7 +4140,12 @@ bool RenderingDeviceDriverVulkan::swap_chain_get_hdr_output_supported(SwapChainI
 		// SRGB_NONLINEAR_KHR is required for some NVIDIA drivers that support HDR output but do not support PASS_THROUGH_EXT.
 		hdr_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR, COLOR_SPACE_REC709_LINEAR });
 	} else if (colorspace_supported) {
+#ifdef ANDROID_ENABLED
+		hdr_formats.push_back({ VK_FORMAT_A2R10G10B10_UNORM_PACK32, VK_COLOR_SPACE_HDR10_ST2084_EXT, COLOR_SPACE_REC2020_NONLINEAR_ST2084 });
+		hdr_formats.push_back({ VK_FORMAT_A2B10G10R10_UNORM_PACK32, VK_COLOR_SPACE_HDR10_ST2084_EXT, COLOR_SPACE_REC2020_NONLINEAR_ST2084 });
+#else
 		hdr_formats.push_back({ VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT, COLOR_SPACE_REC709_LINEAR });
+#endif
 	} else {
 		return false;
 	}

@@ -44,6 +44,7 @@ import android.os.*
 import android.util.Log
 import android.util.TypedValue
 import android.view.*
+import android.view.Display
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
@@ -79,6 +80,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
 
 /**
  * Core component used to interface with the native layer of the engine.
@@ -145,6 +147,14 @@ class Godot private constructor(val context: Context) {
 	private val mGyroscope: Sensor? by lazy { mSensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
 
 	val isXrRuntime: Boolean by lazy { hasFeature("xr_runtime") }
+
+	private val hdrSdrRatioListener: Consumer<Display> by lazy {
+		Consumer<Display> { changedDisplay ->
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+				GodotLib.onHdrSdrRatioChanged(changedDisplay.hdrSdrRatio)
+			}
+		}
+	}
 
 	val tts = GodotTTS(context)
 	val directoryAccessHandler = DirectoryAccessHandler(context)
@@ -671,6 +681,7 @@ class Godot private constructor(val context: Context) {
 
 		renderView?.onActivityResumed()
 		registerSensorsIfNeeded()
+		registerHdrSdrRatioListenerIfNeeded()
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainResume()
 		}
@@ -702,6 +713,29 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
+	private fun registerHdrSdrRatioListenerIfNeeded() {
+		if (!resumed || runStatus != RunStatus.STARTED) {
+			return
+		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			val display = getActivity()?.display ?: context.display
+			if (display.isHdrSdrRatioAvailable) {
+				display.registerHdrSdrRatioChangedListener(
+					{ runnable -> runOnHostThread(runnable) },
+					hdrSdrRatioListener
+				)
+			}
+		}
+	}
+
+	private fun unregisterHdrSdrRatioListenerIfNeeded() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			val display = getActivity()?.display ?: context.display
+			display.unregisterHdrSdrRatioChangedListener(hdrSdrRatioListener)
+		}
+	}
+
 	fun onPause(host: GodotHost) {
 		Log.v(TAG, "OnPause: $host")
 		resumed = false
@@ -714,6 +748,7 @@ class Godot private constructor(val context: Context) {
 		}
 		renderView?.onActivityPaused()
 		mSensorManager?.unregisterListener(godotInputHandler)
+		unregisterHdrSdrRatioListenerIfNeeded()
 	}
 
 	fun onStop(host: GodotHost) {
@@ -849,6 +884,7 @@ class Godot private constructor(val context: Context) {
 
 		runOnHostThread {
 			registerSensorsIfNeeded()
+			registerHdrSdrRatioListenerIfNeeded()
 		}
 
 		for (plugin in pluginRegistry.allPlugins) {
