@@ -133,6 +133,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"TYPE_SAMPLEREXT",
 	"INTERPOLATION_FLAT",
 	"INTERPOLATION_SMOOTH",
+	"INTERPOLATION_NOPERSPECTIVE",
 	"CONST",
 	"STRUCT",
 	"PRECISION_LOW",
@@ -329,6 +330,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 
 	{ TK_INTERPOLATION_FLAT, "flat", CF_INTERPOLATION_QUALIFIER, {}, {} },
 	{ TK_INTERPOLATION_SMOOTH, "smooth", CF_INTERPOLATION_QUALIFIER, {}, {} },
+	{ TK_INTERPOLATION_NOPERSPECTIVE, "noperspective", CF_INTERPOLATION_QUALIFIER, {}, {} },
 
 	// precision modifiers
 
@@ -1054,12 +1056,15 @@ ShaderLanguage::DataType ShaderLanguage::get_token_datatype(TokenType p_type) {
 bool ShaderLanguage::is_token_interpolation(TokenType p_type) {
 	return (
 			p_type == TK_INTERPOLATION_FLAT ||
+			p_type == TK_INTERPOLATION_NOPERSPECTIVE ||
 			p_type == TK_INTERPOLATION_SMOOTH);
 }
 
 ShaderLanguage::DataInterpolation ShaderLanguage::get_token_interpolation(TokenType p_type) {
 	if (p_type == TK_INTERPOLATION_FLAT) {
 		return INTERPOLATION_FLAT;
+	} else if (p_type == TK_INTERPOLATION_NOPERSPECTIVE) {
+		return INTERPOLATION_NOPERSPECTIVE;
 	} else {
 		return INTERPOLATION_SMOOTH;
 	}
@@ -1109,6 +1114,8 @@ String ShaderLanguage::get_interpolation_name(DataInterpolation p_interpolation)
 			return "flat";
 		case INTERPOLATION_SMOOTH:
 			return "smooth";
+		case INTERPOLATION_NOPERSPECTIVE:
+			return "noperspective";
 		default:
 			break;
 	}
