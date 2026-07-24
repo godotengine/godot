@@ -181,6 +181,7 @@ private:
 		bool sensors_enabled : 1;
 		bool calibrating : 1;
 		bool calibrated : 1;
+		bool auto_calibration_enabled : 1;
 		float sensor_data_rate = 0.0f;
 		uint64_t last_timestamp = 0;
 		GamepadMotion *gamepad_motion = nullptr;
@@ -189,6 +190,7 @@ private:
 			sensors_enabled = false;
 			calibrating = false;
 			calibrated = false;
+			auto_calibration_enabled = true;
 		}
 	};
 
@@ -441,6 +443,9 @@ public:
 
 	bool is_joy_motion_sensors_calibrating(int p_device) const;
 	bool is_joy_motion_sensors_calibrated(int p_device) const;
+
+	void set_joy_motion_sensors_auto_calibration_enabled(int p_device, bool p_enable);
+	bool is_joy_motion_sensors_auto_calibration_enabled(int p_device) const;
 
 	void set_joy_motion_sensors_rate(int p_device, float p_rate);
 
