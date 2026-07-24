@@ -827,6 +827,22 @@ public:
 	[[nodiscard]] _ALWAYS_INLINE_ bool operator>(const Variant &p_variant) const { return p_variant < *this; }
 	[[nodiscard]] _ALWAYS_INLINE_ bool operator>=(const Variant &p_variant) const { return !(*this < p_variant); }
 
+	// HACK: Simplest way to ensure a nearly-complete set of comparison operations across all
+	//       supported types. Only excludes unscoped enumerations, as they clash with builtin
+	//       operators in such a way that can't easily be worked around.
+	template <typename T, std::enable_if_t<std::is_convertible_v<T, Variant> && (!std::is_enum_v<T> || !std::is_convertible_v<T, int>), int> = 0>
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator==(const T &p_value) const { return *this == Variant(p_value); }
+	template <typename T, std::enable_if_t<std::is_convertible_v<T, Variant> && (!std::is_enum_v<T> || !std::is_convertible_v<T, int>), int> = 0>
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator!=(const T &p_value) const { return *this != Variant(p_value); }
+	template <typename T, std::enable_if_t<std::is_convertible_v<T, Variant> && (!std::is_enum_v<T> || !std::is_convertible_v<T, int>), int> = 0>
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator<(const T &p_value) const { return *this < Variant(p_value); }
+	template <typename T, std::enable_if_t<std::is_convertible_v<T, Variant> && (!std::is_enum_v<T> || !std::is_convertible_v<T, int>), int> = 0>
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator<=(const T &p_value) const { return *this <= Variant(p_value); }
+	template <typename T, std::enable_if_t<std::is_convertible_v<T, Variant> && (!std::is_enum_v<T> || !std::is_convertible_v<T, int>), int> = 0>
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator>(const T &p_value) const { return *this > Variant(p_value); }
+	template <typename T, std::enable_if_t<std::is_convertible_v<T, Variant> && (!std::is_enum_v<T> || !std::is_convertible_v<T, int>), int> = 0>
+	[[nodiscard]] _ALWAYS_INLINE_ bool operator>=(const T &p_value) const { return *this >= Variant(p_value); }
+
 	uint32_t hash() const;
 	uint32_t recursive_hash(int p_recursion_count) const;
 
