@@ -91,6 +91,7 @@ Patches:
 - `0004-clang-warning-exclude.patch` ([GH-111346](https://github.com/godotengine/godot/pull/111346))
 - `0005-unused-typedef.patch` ([GH-111445](https://github.com/godotengine/godot/pull/111445))
 - `0006-explicit-includes.patch` ([GH-111557](https://github.com/godotengine/godot/pull/111557))
+- `0007-enum-to-int32.patch` ([GH-118260](https://github.com/godotengine/godot/pull/118260))
 
 
 ## brotli
@@ -833,7 +834,7 @@ Collection of single-file libraries used in Godot components.
   * Modifications: Added implementation through `qoa.c`.
 - `r128.{c,h}`
   * Upstream: https://github.com/fahickman/r128
-  * Version: git (6fc177671c47640d5bb69af10cf4ee91050015a1, 2023)
+  * Version: 1.6.1 (2024)
   * License: Public Domain or Unlicense
 - `smaz.{c,h}`
   * Upstream: https://github.com/antirez/smaz
