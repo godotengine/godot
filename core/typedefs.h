@@ -145,6 +145,17 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #define _LIFETIME_BOUND_
 #endif
 
+// Some of our macros require a trailing semicolon; appending this to the end of a macro
+// enforces that behavior without increasing build size or compilation time whatsoever.
+#define GD_FORCE_SEMICOLON static_assert(true)
+
+// Ensure that macro replacement does not trigger unexpected issues when expanded by
+// constraining them to "if" wrappers. e.g. `if (cond) SOME_MACRO();` without braces.
+/* clang-format off */
+#define GD_NOEXPAND_WRAPPER_BEGIN if constexpr (true) {
+#define GD_NOEXPAND_WRAPPER_END } else GD_FORCE_SEMICOLON
+/* clang-format on */
+
 // Make room for our constexpr's below by overriding potential system-specific macros.
 #undef SIGN
 #undef MIN

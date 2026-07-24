@@ -1722,7 +1722,7 @@ void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 	}
 
 	Joypad &joy = joy_names[p_device];
-	ERR_FAIL_INDEX((int)p_button, (int)JoyButton::MAX);
+	ERR_FAIL_INDEX(p_button, JoyButton::MAX);
 
 	if (joy.last_buttons[(size_t)p_button] == p_pressed) {
 		return;
@@ -1753,7 +1753,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 		return;
 	}
 
-	ERR_FAIL_INDEX((int)p_axis, (int)JoyAxis::MAX);
+	ERR_FAIL_INDEX(p_axis, JoyAxis::MAX);
 
 	Joypad &joy = joy_names[p_device];
 

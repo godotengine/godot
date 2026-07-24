@@ -981,9 +981,6 @@ else:  # GCC, Clang
             # Regression in GCC 9/10, spams so much in our variadic templates
             # that we need to outright disable it.
             common_warnings += ["-Wno-type-limits"]
-        if cc_version_major == 12:
-            # Regression in GCC 12, false positives in our error macros, see GH-58747.
-            common_warnings += ["-Wno-return-type"]
         if cc_version_major >= 11:
             common_warnings += ["-Wenum-conversion"]
         if cc_version_major >= 16:
