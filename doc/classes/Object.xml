@@ -78,6 +78,30 @@
 				[b]Warning:[/b] This method must be [url=$DOCS_URL/tutorials/performance/thread_safe_apis.html]thread-safe[/url] if overridden. Otherwise, the engine may crash when trying to save a resource containing the object.
 			</description>
 		</method>
+		<method name="_get_property_description" qualifiers="virtual">
+			<return type="String" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Override this method to provide a custom description for the given [param property]. The description is displayed as a tooltip in the Inspector dock when hovering over the property. The description supports [url=$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html]BBCode[/url] formatting.
+				This is particularly useful for dynamically exported properties (via [method _get_property_list]) which cannot be documented using the standard documentation system. It also works for property groups and subgroups, in which case [param property] receives the group/subgroup name (e.g. [code]"My Group"[/code]).
+				[codeblocks]
+				[gdscript]
+				func _get_property_description(property):
+					if property == "my_dynamic_property":
+						return "A dynamically exported property with a custom tooltip."
+					return ""
+				[/gdscript]
+				[csharp]
+				public override string _GetPropertyDescription(StringName property)
+				{
+					if (property == "my_dynamic_property")
+						return "A dynamically exported property with a custom tooltip.";
+					return "";
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="_get_property_list" qualifiers="virtual">
 			<return type="Dictionary[]" />
 			<description>
