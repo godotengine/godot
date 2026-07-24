@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  lipo.h                                                                */
+/*  file_access_packed_byte_array.cpp                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,51 +28,74 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "file_access_packed_byte_array.h"
 
-// Universal / Universal 2 fat binary file creator and extractor.
+Error FileAccessPackedBayteArray::open_custom(const PackedByteArray &p_data) {
+	data = p_data;
+	pos = 0;
+	return OK;
+}
 
-#include "core/io/file_access.h"
-#include "core/object/ref_counted.h"
+void FileAccessPackedBayteArray::seek(uint64_t p_position) {
+	ERR_FAIL_COND(p_position > (uint64_t)data.size());
+	pos = p_position;
+}
 
-class LipO : public RefCounted {
-	GDSOFTCLASS(LipO, RefCounted);
+void FileAccessPackedBayteArray::seek_end(int64_t p_position) {
+	ERR_FAIL_COND((int64_t)data.size() + p_position < 0);
+	seek(data.size() + p_position);
+}
 
-	struct FatArch {
-		uint32_t cputype;
-		uint32_t cpusubtype;
-		uint64_t offset;
-		uint64_t size;
-		uint32_t align;
-	};
+uint64_t FileAccessPackedBayteArray::get_position() const {
+	return pos;
+}
 
-	Ref<FileAccess> fa;
-	Vector<FatArch> archs;
+uint64_t FileAccessPackedBayteArray::get_length() const {
+	return data.size();
+}
 
-	static inline size_t PAD(size_t s, size_t a) {
-		return (a - s % a);
+bool FileAccessPackedBayteArray::eof_reached() const {
+	return pos >= (uint64_t)data.size();
+}
+
+uint64_t FileAccessPackedBayteArray::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+	ERR_FAIL_NULL_V(p_dst, -1);
+
+	uint64_t left = data.size() - pos;
+	uint64_t read = MIN(p_length, left);
+
+	if (read < p_length) {
+		WARN_PRINT("Reading less data than requested");
 	}
 
-	static bool _create_file(const String &p_output_path, const Vector<Ref<FileAccess>> &p_files, const Vector<Vector2i> &p_cputypes);
+	memcpy(p_dst, &data[pos], read);
+	pos += read;
 
-public:
-	static bool is_lipo(const String &p_path);
-	static bool is_lipo(const PackedByteArray &p_buffer);
-	static bool is_lipo(const Ref<FileAccess> &p_fa);
+	return read;
+}
 
-	static bool create_file(const String &p_output_path, const Vector<String> &p_files, const Vector<Vector2i> &p_cputypes = Vector<Vector2i>());
-	static bool create_file(const String &p_output_path, const Vector<PackedByteArray> &p_file_buffers, const Vector<Vector2i> &p_cputypes = Vector<Vector2i>());
+Error FileAccessPackedBayteArray::get_error() const {
+	return pos >= (uint64_t)data.size() ? ERR_FILE_EOF : OK;
+}
 
-	bool open_file(const String &p_path);
-	bool open_buffer(const PackedByteArray &p_buffer);
-	bool open_file(const Ref<FileAccess> &p_fa);
+Error FileAccessPackedBayteArray::resize(int64_t p_length) {
+	return data.resize(p_length);
+}
 
-	int get_arch_count() const;
-	uint32_t get_arch_cputype(int p_index) const;
-	uint32_t get_arch_cpusubtype(int p_index) const;
-	bool extract_arch(int p_index, const String &p_path);
+bool FileAccessPackedBayteArray::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	if (!p_length) {
+		return true;
+	}
 
-	void close();
+	ERR_FAIL_NULL_V(p_src, false);
 
-	~LipO();
-};
+	uint64_t left = data.size() - pos;
+	uint64_t write = MIN(p_length, left);
+
+	memcpy(data.ptrw() + pos, p_src, write);
+	pos += write;
+
+	ERR_FAIL_COND_V_MSG(write < p_length, false, "Writing less data than requested.");
+
+	return true;
+}

@@ -31,6 +31,7 @@
 #include "macho.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/file_access_packed_byte_array.h"
 
 uint32_t MachO::seg_align(uint64_t p_vmaddr, uint32_t p_min, uint32_t p_max) {
 	uint32_t salign = p_max;
@@ -103,33 +104,117 @@ bool MachO::alloc_signature(uint64_t p_size) {
 bool MachO::is_macho(const String &p_path) {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("MachO: Can't open file: \"%s\".", p_path));
-	uint32_t magic = fb->get_32();
+	return is_macho(fb);
+}
+
+bool MachO::is_macho(const PackedByteArray &p_buffer) {
+	Ref<FileAccessPackedBayteArray> fb;
+	fb.instantiate();
+	fb->open_custom(p_buffer);
+	return is_macho(fb);
+}
+
+bool MachO::is_macho(const Ref<FileAccess> &p_fb) {
+	ERR_FAIL_COND_V(p_fb.is_null(), false);
+	uint32_t magic = p_fb->get_32();
 	return (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf);
 }
 
 uint32_t MachO::get_filetype(const String &p_path) {
-	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("MachO: Can't open file: \"%s\".", p_path));
-	uint32_t magic = fa->get_32();
+	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fb.is_null(), 0, vformat("MachO: Can't open file: \"%s\".", p_path));
+	return get_filetype(fb);
+}
+
+uint32_t MachO::get_filetype(const PackedByteArray &p_buffer) {
+	Ref<FileAccessPackedBayteArray> fb;
+	fb.instantiate();
+	fb->open_custom(p_buffer);
+	return get_filetype(fb);
+}
+
+uint32_t MachO::get_filetype(const Ref<FileAccess> &p_fb) {
+	ERR_FAIL_COND_V(p_fb.is_null(), 0);
+	uint32_t magic = p_fb->get_32();
 	MachHeader mach_header;
 
 	// Read MachO header.
-	if (magic == 0xcefaedfe || magic == 0xfeedface) {
-		// Thin 32-bit binary.
-		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
-	} else if (magic == 0xcffaedfe || magic == 0xfeedfacf) {
-		// Thin 64-bit binary.
-		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
-		fa->get_32(); // Skip extra reserved field.
+	if (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf) {
+		p_fb->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
 	} else {
-		ERR_FAIL_V_MSG(0, vformat("MachO: File is not a valid MachO binary: \"%s\".", p_path));
+		ERR_FAIL_V_MSG(0, vformat("MachO: File is not a valid MachO binary: \"%s\".", p_fb->get_path()));
 	}
 	return mach_header.filetype;
 }
 
+uint32_t MachO::get_cputype(const String &p_path) {
+	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fb.is_null(), 0, vformat("MachO: Can't open file: \"%s\".", p_path));
+	return get_cputype(fb);
+}
+
+uint32_t MachO::get_cputype(const PackedByteArray &p_buffer) {
+	Ref<FileAccessPackedBayteArray> fb;
+	fb.instantiate();
+	fb->open_custom(p_buffer);
+	return get_cputype(fb);
+}
+
+uint32_t MachO::get_cputype(const Ref<FileAccess> &p_fb) {
+	ERR_FAIL_COND_V(p_fb.is_null(), 0);
+	uint32_t magic = p_fb->get_32();
+	MachHeader mach_header;
+
+	// Read MachO header.
+	if (magic == 0xcefaedfe || magic == 0xfeedface || magic == 0xcffaedfe || magic == 0xfeedfacf) {
+		p_fb->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
+	} else {
+		ERR_FAIL_V_MSG(0, vformat("MachO: File is not a valid MachO binary: \"%s\".", p_fb->get_path()));
+	}
+	return mach_header.cputype;
+}
+
+String MachO::arch_name(uint32_t p_arch) {
+	if (p_arch == (CPU_TYPE_64BIT | CPU_TYPE_X86)) {
+		return "x86_64";
+	} else if (p_arch == (CPU_TYPE_64BIT | CPU_TYPE_ARM)) {
+		return "arm64";
+	} else if (p_arch == (CPU_TYPE_64BIT | CPU_TYPE_PPC)) {
+		return "ppc64";
+	} else if (p_arch == (CPU_TYPE_64BIT | CPU_TYPE_RISCV)) {
+		return "rv64";
+	} else if (p_arch == CPU_TYPE_X86) {
+		return "x86_32";
+	} else if (p_arch == CPU_TYPE_ARM) {
+		return "arm32";
+	} else if (p_arch == CPU_TYPE_PPC) {
+		return "ppc32";
+	} else if (p_arch == CPU_TYPE_RISCV) {
+		return "rv32";
+	} else {
+		return "unknown";
+	}
+}
+
 bool MachO::open_file(const String &p_path) {
-	fa = FileAccess::open(p_path, FileAccess::READ_WRITE);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("MachO: Can't open file: \"%s\".", p_path));
+	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("MachO: Can't open file: \"%s\".", p_path));
+
+	return open_file(fb);
+}
+
+bool MachO::open_buffer(const PackedByteArray &p_buffer) {
+	Ref<FileAccessPackedBayteArray> fb;
+	fb.instantiate();
+	fb->open_custom(p_buffer);
+
+	return open_file(fb);
+}
+
+bool MachO::open_file(const Ref<FileAccess> &p_fb) {
+	ERR_FAIL_COND_V(p_fb.is_null(), false);
+	fa = p_fb;
+
 	uint32_t magic = fa->get_32();
 	MachHeader mach_header;
 
@@ -143,7 +228,7 @@ bool MachO::open_file(const String &p_path) {
 		fa->get_buffer((uint8_t *)&mach_header, sizeof(MachHeader));
 		fa->get_32(); // Skip extra reserved field.
 	} else {
-		ERR_FAIL_V_MSG(false, vformat("MachO: File is not a valid MachO binary: \"%s\".", p_path));
+		ERR_FAIL_V_MSG(false, vformat("MachO: File is not a valid MachO binary: \"%s\".", fa->get_path()));
 	}
 
 	if (swap) {
@@ -243,7 +328,7 @@ bool MachO::open_file(const String &p_path) {
 	}
 
 	if (exe_limit == 0 || lc_limit == 0) {
-		ERR_FAIL_V_MSG(false, vformat("MachO: No load commands or executable code found: \"%s\".", p_path));
+		ERR_FAIL_V_MSG(false, vformat("MachO: No load commands or executable code found: \"%s\".", fa->get_path()));
 	}
 
 	return true;
