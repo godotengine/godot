@@ -533,6 +533,8 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 				bool found = false;
 				List<GDScriptParser::ClassNode *> script_classes;
 				get_class_node_current_scope_classes(p_class, &script_classes, id);
+				// Classes can't inherit from their own members or themselves.
+				script_classes.erase(p_class);
 				for (GDScriptParser::ClassNode *look_class : script_classes) {
 					if (look_class->identifier && look_class->identifier->name == name) {
 						if (!look_class->self_type.is_set()) {
@@ -564,6 +566,15 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 								return ERR_PARSE_ERROR;
 						}
 
+						if (member_datatype.class_type == p_class) {
+							if (p_class->extends.size() == 1) {
+								push_error("Cyclic inheritance.", id);
+							} else {
+								push_error("Classes can not inherit from their own members.", id);
+							}
+							return ERR_PARSE_ERROR;
+						}
+
 						base = member_datatype;
 						found = true;
 						break;
@@ -593,6 +604,13 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 				return ERR_PARSE_ERROR;
 			} else if (id_type.kind != GDScriptParser::DataType::SCRIPT && id_type.kind != GDScriptParser::DataType::CLASS) {
 				push_error(vformat(R"(Identifier "%s" is not a preloaded script or class.)", id->name), id);
+				return ERR_PARSE_ERROR;
+			} else if (id_type.class_type == p_class) {
+				if (index == p_class->extends.size() - 1) {
+					push_error("Cyclic inheritance.", id);
+				} else {
+					push_error("Classes can not inherit from their own members.", id);
+				}
 				return ERR_PARSE_ERROR;
 			}
 
