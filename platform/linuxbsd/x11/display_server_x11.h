@@ -155,6 +155,7 @@ class DisplayServerX11 : public DisplayServer {
 		Ref<Image> icon;
 		bool icon_set = false;
 
+		bool visible = true;
 		Size2i min_size;
 		Size2i max_size;
 		Point2i position;
@@ -466,6 +467,7 @@ public:
 	virtual void show_window(DisplayServerEnums::WindowID p_id) override;
 	virtual void delete_sub_window(DisplayServerEnums::WindowID p_id) override;
 
+	virtual void window_set_visible(bool p_visible, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual DisplayServerEnums::WindowID window_get_active_popup() const override;
 	virtual void window_set_popup_safe_rect(DisplayServerEnums::WindowID p_window, const Rect2i &p_rect) override;
 	virtual Rect2i window_get_popup_safe_rect(DisplayServerEnums::WindowID p_window) const override;

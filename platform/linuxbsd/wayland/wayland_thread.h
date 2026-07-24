@@ -295,6 +295,7 @@ public:
 		Rect2i rect;
 		DisplayServerEnums::WindowMode mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
 
+		bool visible = true;
 		bool ready = false; // Is configured or otherwise ready to be mapped.
 
 		// Toplevel states.
@@ -1287,6 +1288,8 @@ public:
 	void window_create(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size, DisplayServerEnums::WindowID p_parent_id = DisplayServerEnums::INVALID_WINDOW_ID);
 	void window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect);
 	void window_destroy(DisplayServerEnums::WindowID p_window_Id);
+
+	void window_set_visible(DisplayServerEnums::WindowID p_window_id, bool p_visible);
 
 	// Checks if a window exists for this ID (NOT if its data is valid). Useful to
 	// detect deleted windows.

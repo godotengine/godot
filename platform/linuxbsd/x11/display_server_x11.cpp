@@ -2135,6 +2135,32 @@ void DisplayServerX11::delete_sub_window(DisplayServerEnums::WindowID p_id) {
 	}
 }
 
+void DisplayServerX11::window_set_visible(bool p_visible, DisplayServerEnums::WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.visible == p_visible) {
+		return;
+	}
+
+	if (wd.embed_parent) {
+		print_line("Embedded window can't be hidden.");
+		return;
+	}
+
+	wd.visible = p_visible;
+
+	if (p_visible) {
+		XMapWindow(x11_display, wd.x11_window);
+	} else {
+		XUnmapWindow(x11_display, wd.x11_window);
+	}
+
+	XFlush(x11_display);
+}
+
 int64_t DisplayServerX11::window_get_native_handle(DisplayServerEnums::HandleType p_handle_type, DisplayServerEnums::WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), 0);
 	switch (p_handle_type) {
@@ -3488,8 +3514,9 @@ bool DisplayServerX11::window_is_focused(DisplayServerEnums::WindowID p_window) 
 }
 
 bool DisplayServerX11::window_can_draw(DisplayServerEnums::WindowID p_window) const {
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	//this seems to be all that is provided by X11
-	return window_get_mode(p_window) != DisplayServerEnums::WINDOW_MODE_MINIMIZED;
+	return windows[p_window].visible && window_get_mode(p_window) != DisplayServerEnums::WINDOW_MODE_MINIMIZED;
 }
 
 bool DisplayServerX11::can_any_window_draw() const {

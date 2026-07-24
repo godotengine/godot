@@ -2030,6 +2030,40 @@ void DisplayServerWindows::delete_sub_window(DisplayServerEnums::WindowID p_wind
 	}
 }
 
+void DisplayServerWindows::window_set_visible(bool p_visible, DisplayServerEnums::WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (p_visible) {
+		if (wd.maximized) {
+			ShowWindow(wd.hWnd, SW_SHOWMAXIMIZED);
+			SetForegroundWindow(wd.hWnd); // Slightly higher priority.
+			SetFocus(wd.hWnd); // Set keyboard focus.
+		} else if (wd.minimized) {
+			ShowWindow(wd.hWnd, SW_SHOWMINIMIZED);
+		} else if (wd.no_focus) {
+			// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
+			ShowWindow(wd.hWnd, SW_SHOWNA);
+		} else if (wd.is_popup) {
+			ShowWindow(wd.hWnd, SW_SHOWNA);
+			SetFocus(wd.hWnd); // Set keyboard focus.
+		} else {
+			ShowWindow(wd.hWnd, SW_SHOW);
+			SetForegroundWindow(wd.hWnd); // Slightly higher priority.
+			SetFocus(wd.hWnd); // Set keyboard focus.
+		}
+	} else {
+		if (wd.parent_hwnd) {
+			print_line("Embedded window can't be hidden.");
+			return;
+		}
+
+		ShowWindow(wd.hWnd, SW_HIDE);
+	}
+}
+
 void DisplayServerWindows::gl_window_make_current(DisplayServerEnums::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
 #if defined(ANGLE_ENABLED)
@@ -3125,7 +3159,7 @@ bool DisplayServerWindows::window_can_draw(DisplayServerEnums::WindowID p_window
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
-	return !wd.minimized;
+	return !wd.minimized && IsWindowVisible(wd.hWnd);
 }
 
 bool DisplayServerWindows::can_any_window_draw() const {
