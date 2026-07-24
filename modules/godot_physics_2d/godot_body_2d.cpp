@@ -143,6 +143,9 @@ void GodotBody2D::set_active(bool p_active) {
 			active = false;
 		} else if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
+
+			// Give the body at least one physics frame to start moving, before allowing it to sleep again.
+			still_time = get_space()->get_body_time_to_sleep() - 0.0001;
 		}
 	} else if (get_space()) {
 		get_space()->body_remove_from_active_list(&active_list);
@@ -711,9 +714,9 @@ bool GodotBody2D::sleep_test(real_t p_step) {
 	ERR_FAIL_NULL_V(get_space(), true);
 
 	if (Math::abs(angular_velocity) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
+		bool result = still_time > get_space()->get_body_time_to_sleep();
 		still_time += p_step;
-
-		return still_time > get_space()->get_body_time_to_sleep();
+		return result;
 	} else {
 		still_time = 0; //maybe this should be set to 0 on set_active?
 		return false;
