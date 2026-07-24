@@ -492,6 +492,16 @@ TEST_CASE_TEMPLATE("[Math] smoothstep", T, float, double) {
 	CHECK(Math::smoothstep((T)0.0, (T)2.0, (T)2.0) == doctest::Approx((T)1.0));
 }
 
+TEST_CASE_TEMPLATE("[Math] elastic_out", T, float, double) {
+	CHECK(Math::elastic_out((T)0.0) == doctest::Approx((T)0.0));
+	CHECK(Math::elastic_out((T)-0.5) == doctest::Approx((T)0.0));
+	CHECK(Math::elastic_out((T)1.0) == doctest::Approx((T)1.0));
+	CHECK(Math::elastic_out((T)1.5) == doctest::Approx((T)1.0));
+	// Mid-curve overshoots above 1.0 before settling.
+	CHECK(Math::elastic_out((T)0.5) > (T)1.0);
+	CHECK(Math::elastic_out((T)0.25) != Math::elastic_out((T)0.75));
+}
+
 TEST_CASE("[Math] ease") {
 	CHECK(Math::ease(0.1, 1.0) == doctest::Approx(0.1));
 	CHECK(Math::ease(0.1, 2.0) == doctest::Approx(0.01));

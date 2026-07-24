@@ -94,6 +94,7 @@ struct VariantUtilityFunctions {
 	static double inverse_lerp(double p_from, double p_to, double p_weight);
 	static double remap(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop);
 	static double smoothstep(double p_from, double p_to, double p_val);
+	static double elastic_out(double p_x);
 	static double move_toward(double p_from, double p_to, double p_delta);
 	static double rotate_toward(double p_from, double p_to, double p_delta);
 	static double deg_to_rad(double p_angle_deg);

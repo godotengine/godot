@@ -585,6 +585,31 @@ constexpr float smoothstep(float p_from, float p_to, float p_s) {
 	return s * s * (3.0f - 2.0f * s);
 }
 
+// Elastic ease-out over [0, 1]: overshoots then settles at 1.
+// Same curve family as Tween.TRANS_ELASTIC / EASE_OUT, exposed as a standalone math utility.
+_ALWAYS_INLINE_ double elastic_out(double p_x) {
+	if (p_x <= 0.0) {
+		return 0.0;
+	}
+	if (p_x >= 1.0) {
+		return 1.0;
+	}
+	const double p = 0.3;
+	const double s = p / 4.0;
+	return pow(2.0, -10.0 * p_x) * sin((p_x - s) * (Math::TAU) / p) + 1.0;
+}
+_ALWAYS_INLINE_ float elastic_out(float p_x) {
+	if (p_x <= 0.0f) {
+		return 0.0f;
+	}
+	if (p_x >= 1.0f) {
+		return 1.0f;
+	}
+	const float p = 0.3f;
+	const float s = p / 4.0f;
+	return pow(2.0f, -10.0f * p_x) * sin((p_x - s) * (float)Math::TAU / p) + 1.0f;
+}
+
 constexpr double move_toward(double p_from, double p_to, double p_delta) {
 	return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
 }

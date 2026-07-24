@@ -1269,6 +1269,20 @@
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/smoothstep_range.webp]Smoothstep() return values with positive, zero, and negative ranges[/url]
 			</description>
 		</method>
+		<method name="elastic_out" keywords="ease,interpolate">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns an elastic ease-out value for [param x] in the range [code][0, 1][/code]. Values outside that range are clamped: [code]x &lt;= 0[/code] returns [code]0[/code], and [code]x &gt;= 1[/code] returns [code]1[/code].
+				The curve overshoots past [code]1[/code] and settles, matching the feel of [code]Tween.TRANS_ELASTIC[/code] with [code]Tween.EASE_OUT[/code]. Combine with [method lerpf] for custom motion without creating a [Tween].
+				[codeblock]
+				elastic_out(0.0) # Returns 0.0
+				elastic_out(1.0) # Returns 1.0
+				var y = lerpf(0.0, 100.0, elastic_out(t))
+				[/codeblock]
+				See also [method ease] and [method smoothstep].
+			</description>
+		</method>
 		<method name="snapped">
 			<return type="Variant" />
 			<param index="0" name="x" type="Variant" />

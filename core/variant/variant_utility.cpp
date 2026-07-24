@@ -557,6 +557,10 @@ double VariantUtilityFunctions::smoothstep(double p_from, double p_to, double p_
 	return Math::smoothstep(p_from, p_to, p_step);
 }
 
+double VariantUtilityFunctions::elastic_out(double p_x) {
+	return Math::elastic_out(p_x);
+}
+
 double VariantUtilityFunctions::move_toward(double p_from, double p_to, double p_delta) {
 	return Math::move_toward(p_from, p_to, p_delta);
 }
@@ -1704,6 +1708,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(remap, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(smoothstep, sarray("from", "to", "x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(elastic_out, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(move_toward, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(rotate_toward, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);
 
