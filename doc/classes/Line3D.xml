@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Line3D" inherits="GeometryInstance3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node to draw 3D lines in space.
+		[b]Note:[/b] This class currently has no functionality and only serves as a base class for [Trail3D].
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<constants>
+		<constant name="MESH_ALIGNMENT_LOCAL" value="0" enum="MeshAlignment">
+			Align the line normal to the local Y axis of the line node.
+		</constant>
+		<constant name="MESH_ALIGNMENT_BILLBOARD" value="1" enum="MeshAlignment">
+			Align the line to the camera, causing each section to billboard.
+		</constant>
+		<constant name="MESH_ALIGNMENT_MAX" value="2" enum="MeshAlignment">
+			Represents the size of the [enum MeshAlignment] enum.
+		</constant>
+		<constant name="TILING_MODE_UNIT" value="0" enum="TilingMode">
+			Assign UVs from [code]0[/code] to [code]1[/code] across the length of the line.
+		</constant>
+		<constant name="TILING_MODE_LENGTH" value="1" enum="TilingMode">
+			Assign UVs from [code]0[/code] to current length, across the length of the line.
+		</constant>
+		<constant name="TILING_MAX" value="2" enum="TilingMode">
+			Represents the size of the [enum TilingMode] enum.
+		</constant>
+		<constant name="MATERIAL_MODE_MIX" value="0" enum="MaterialMode">
+			Assign a built-in mix material to the line.
+		</constant>
+		<constant name="MATERIAL_MODE_ADD" value="1" enum="MaterialMode">
+			Assign a built-in additive material to the line.
+		</constant>
+		<constant name="MATERIAL_MODE_CUSTOM" value="2" enum="MaterialMode">
+			Assign a custom material to the line.
+		</constant>
+		<constant name="MATERIAL_MODE_MAX" value="3" enum="MaterialMode">
+			Represents the size of the [enum MaterialMode] enum.
+		</constant>
+	</constants>
+</class>
