@@ -909,6 +909,9 @@ public:
 	static PropertyClipboard::Type get_property_clipboard_type() { return property_clipboard.type; }
 	static Variant get_property_clipboard_value() { return property_clipboard.value; }
 
+	static void set_property_clipboard_property_value(const Variant &p_value);
+	static Variant get_property_clipboard_property_value();
+
 	static EditorInspector *create_default_inspector(LineEdit *p_filter_line_edit = nullptr);
 
 	bool is_main_editor_inspector() const;

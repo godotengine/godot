@@ -36,6 +36,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/variant/variant.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/doc_tools.h"
@@ -6229,6 +6230,19 @@ void EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard:
 	property_clipboard.value = p_value;
 }
 
+void EditorInspector::set_property_clipboard_property_value(const Variant &p_value) {
+	property_clipboard.type = EditorInspector::PropertyClipboard::Type::PROPERTY;
+	property_clipboard.value = p_value;
+}
+
+Variant EditorInspector::get_property_clipboard_property_value() {
+	if (get_property_clipboard_type() == EditorInspector::PropertyClipboard::Type::PROPERTY) {
+		return get_property_clipboard_value();
+	} else {
+		return Variant();
+	}
+}
+
 void EditorInspector::_show_add_meta_dialog() {
 	if (!add_meta_dialog) {
 		add_meta_dialog = memnew(AddMetadataDialog());
@@ -6288,6 +6302,9 @@ void EditorInspector::_bind_methods() {
 
 	ClassDB::bind_static_method("EditorInspector", D_METHOD("instantiate_property_editor", "object", "type", "path", "hint", "hint_text", "usage", "wide"), &EditorInspector::instantiate_property_editor, DEFVAL(false));
 	ClassDB::bind_static_method("EditorInspector", D_METHOD("create_default_inspector", "filter_line_edit"), &EditorInspector::create_default_inspector, DEFVAL(Variant()));
+
+	ClassDB::bind_static_method("EditorInspector", D_METHOD("set_property_clipboard", "value"), &EditorInspector::set_property_clipboard_property_value);
+	ClassDB::bind_static_method("EditorInspector", "get_property_clipboard", &EditorInspector::get_property_clipboard_property_value);
 
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "advance")));

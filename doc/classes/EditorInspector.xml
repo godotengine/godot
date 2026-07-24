@@ -53,6 +53,12 @@
 				Returns the object currently selected in this inspector.
 			</description>
 		</method>
+		<method name="get_property_clipboard" qualifiers="static">
+			<return type="Variant" />
+			<description>
+				Get the value currently in the property clipboard.
+			</description>
+		</method>
 		<method name="get_selected_path" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -70,6 +76,13 @@
 			<param index="6" name="wide" type="bool" default="false" />
 			<description>
 				Creates a property editor that can be used by plugin UI to edit the specified property of an [param object].
+			</description>
+		</method>
+		<method name="set_property_clipboard" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Set the property clipboard's content to the given value.
 			</description>
 		</method>
 	</methods>
