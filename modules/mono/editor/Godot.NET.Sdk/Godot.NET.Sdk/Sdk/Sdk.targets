@@ -48,6 +48,17 @@
     <Error Text="The project or one of its dependencies references GodotSharp packages which is incompatible with the active Godot C# bindings. The active C# bindings is Godot .NET." Condition="$([System.String]::Copy('%(Reference.Identity)').Contains('GodotSharp.dll'))" />
   </Target>
 
+  <!--
+  Propagate GodotProjectDir to all ProjectReference items so that source generators
+  in referenced assemblies compute res:// paths relative to the main Godot project root,
+  not relative to the referenced project's own directory.
+  -->
+  <Target Name="GodotPropagateProjectDirToReferences" BeforeTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <ProjectReference Update="@(ProjectReference)" AdditionalProperties="GodotProjectDir=$(GodotProjectDir)" />
+    </ItemGroup>
+  </Target>
+
   <!-- iOS-specific build targets -->
   <Import Project="$(MSBuildThisFileDirectory)\iOS.targets" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
 

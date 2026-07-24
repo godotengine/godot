@@ -1674,6 +1674,12 @@ bool EditorFileSystem::_remove_invalid_global_class_names(const HashSet<String> 
 	ScriptServer::get_global_class_list(global_classes);
 	for (const StringName &class_name : global_classes) {
 		if (!p_existing_class_names.has(class_name)) {
+			// Non-filesystem-backed global classes (e.g. C# assembly-backed scripts using the csharp:// scheme)
+			// are not discovered by the res:// walk, so skip them here instead of purging.
+			const String path = ScriptServer::get_global_class_path(class_name);
+			if (path.begins_with("csharp://")) {
+				continue;
+			}
 			ScriptServer::remove_global_class(class_name);
 			must_save = true;
 		}
