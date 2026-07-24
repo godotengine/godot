@@ -88,17 +88,11 @@ Error PacketPeerUDP::_set_dest_address(const String &p_address, int p_port) {
 }
 
 int PacketPeerUDP::get_available_packet_count() const {
-	// TODO we should deprecate this, and expose poll instead!
-	Error err = const_cast<PacketPeerUDP *>(this)->_poll();
-	if (err != OK) {
-		return -1;
-	}
-
 	return queue_count;
 }
 
 Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-	Error err = _poll();
+	Error err = poll();
 	if (err != OK) {
 		return err;
 	}
@@ -281,7 +275,7 @@ Error PacketPeerUDP::wait() {
 	return _sock->poll(NetSocket::POLL_TYPE_IN, -1);
 }
 
-Error PacketPeerUDP::_poll() {
+Error PacketPeerUDP::poll() {
 	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 
 	if (!_sock->is_open()) {
@@ -373,6 +367,7 @@ void PacketPeerUDP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_broadcast_enabled", "enabled"), &PacketPeerUDP::set_broadcast_enabled);
 	ClassDB::bind_method(D_METHOD("join_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::join_multicast_group);
 	ClassDB::bind_method(D_METHOD("leave_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::leave_multicast_group);
+	ClassDB::bind_method(D_METHOD("poll"), &PacketPeerUDP::poll);
 }
 
 PacketPeerUDP::PacketPeerUDP() :
