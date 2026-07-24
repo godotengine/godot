@@ -24,6 +24,11 @@
 				Sets this node's properties to match a given [GPUParticles3D] node with an assigned [ParticleProcessMaterial].
 			</description>
 		</method>
+		<method name="get_multimesh_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="get_param_curve" qualifiers="const">
 			<return type="Curve" />
 			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
