@@ -123,7 +123,6 @@ private:
 	// Decrements the reference count. Deallocates the backing buffer if needed.
 	// After this function, _ptr is guaranteed to be NULL.
 	void _unref();
-	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
 
 	/// Allocates a backing array of the given capacity. The reference count is initialized to 1, size to 0.
@@ -138,13 +137,16 @@ private:
 	/// - Ensure p_capacity > 0
 	Error _realloc_exact(USize p_capacity);
 
-	/// Create a new buffer and copies over elements from the old buffer.
-	/// Elements are inserted first from the start, then a gap is left uninitialized, and then elements are inserted from the back.
-	/// It is the responsibility of the caller to:
-	/// - Construct elements in the gap.
-	/// - Ensure size() >= p_size_from_start and size() >= p_size_from_back.
-	/// - Ensure p_capacity is enough to hold all elements.
-	[[nodiscard]] Error _copy_to_new_buffer_exact(USize p_capacity, USize p_size_from_start, USize p_gap, USize p_size_from_back);
+	/// Adds a gap of new elements into the buffer at the specified position.
+	/// After the call, this CowData is the only owner of the buffer so the new elements are ready to initialize.
+	/// Does not modify the size.
+	[[nodiscard]] Error _insert_uninitialized(USize p_index, USize p_count, USize p_capacity);
+	[[nodiscard]] Error _insert_uninitialized(USize p_index, USize p_count) {
+		return _insert_uninitialized(p_index, p_count, next_capacity(capacity(), size() + p_count));
+	}
+	/// Removes elements from the buffer at the specified position, moving elements behind to accommodate.
+	/// After the call, this CowData is the only owner of the buffer.
+	[[nodiscard]] Error _remove(USize p_index, USize p_count);
 
 	/// Ensure we are the only owners of the backing buffer.
 	[[nodiscard]] Error _copy_on_write();
@@ -211,7 +213,10 @@ public:
 	_FORCE_INLINE_ void remove_at(Size p_index);
 
 	Error insert(Size p_pos, T &&p_val);
+	/// The caller is required to ensure p_val is not in the buffer (see GH-31736).
 	Error push_back(T &&p_val);
+	Error append(const CowData<T> &p_data);
+	Error append(Span<T> p_span);
 
 	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return Span<T>(ptr(), size()); }
 	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return operator Span<T>(); }
@@ -272,36 +277,8 @@ void CowData<T>::_unref() {
 
 template <typename T>
 void CowData<T>::remove_at(Size p_index) {
-	const Size prev_size = size();
-	ERR_FAIL_INDEX(p_index, prev_size);
-
-	if (prev_size == 1) {
-		// Removing the only element.
-		_unref();
-		return;
-	}
-
-	const USize new_size = prev_size - 1;
-
-	if (_get_refcount()->get() == 1) {
-		// We're the only owner; remove in-place.
-
-		// Destruct the element, then relocate the rest one down.
-		_ptr[p_index].~T();
-		memmove((void *)(_ptr + p_index), (void *)(_ptr + p_index + 1), (new_size - p_index) * sizeof(T));
-
-		// Shrink to fit if necessary.
-		const USize new_capacity = smaller_capacity(capacity(), new_size);
-		if (new_capacity < capacity()) {
-			Error err = _realloc_exact(new_capacity);
-			CRASH_COND(err);
-		}
-		*_get_size() = new_size;
-	} else {
-		// Remove by forking.
-		Error err = _copy_to_new_buffer_exact(smaller_capacity(capacity(), new_size), p_index, 0, new_size - p_index);
-		CRASH_COND(err);
-	}
+	ERR_FAIL_INDEX(p_index, size());
+	CRASH_COND(_remove(p_index, 1));
 }
 
 template <typename T>
@@ -309,68 +286,153 @@ Error CowData<T>::insert(Size p_pos, T &&p_val) {
 	const Size new_size = size() + 1;
 	ERR_FAIL_INDEX_V(p_pos, new_size, ERR_INVALID_PARAMETER);
 
-	if (!_ptr) {
-		_alloc_exact(next_capacity(0, 1));
-		*_get_size() = 1;
-	} else if (_get_refcount()->get() == 1) {
-		if ((USize)new_size > capacity()) {
-			// Need to grow.
-			const Error error = _realloc_exact(grow_capacity(capacity()));
-			if (error) {
-				return error;
-			}
-		}
-
-		// Relocate elements one position up.
-		memmove((void *)(_ptr + p_pos + 1), (void *)(_ptr + p_pos), (size() - p_pos) * sizeof(T));
-		*_get_size() = new_size;
-	} else {
-		// Insert new element by forking.
-		// Use the max of capacity and new_size, to ensure we don't accidentally shrink after reserve.
-		const USize new_capacity = next_capacity(capacity(), new_size);
-		const Error error = _copy_to_new_buffer_exact(new_capacity, p_pos, 1, size() - p_pos);
-		if (error) {
-			return error;
-		}
+	Error error = _insert_uninitialized(p_pos, 1);
+	if (error) {
+		return error;
 	}
 
 	// Create the new element at the given index.
 	memnew_placement(_ptr + p_pos, T(std::move(p_val)));
+	*_get_size() = new_size;
 
 	return OK;
 }
 
 template <typename T>
 Error CowData<T>::push_back(T &&p_val) {
-	const Size new_size = size() + 1;
+	Error error = _insert_uninitialized(size(), 1);
+	if (error) {
+		return error;
+	}
+
+	memnew_placement(_ptr + size(), T(std::move(p_val)));
+	*_get_size() = size() + 1;
+
+	return OK;
+}
+
+template <typename T>
+Error CowData<T>::append(const CowData<T> &p_data) {
+	if (!_ptr) {
+		// Grow by making a CoW copy.
+		*this = p_data;
+		return OK;
+	}
+	return append(p_data.span());
+}
+
+template <typename T>
+Error CowData<T>::append(Span<T> p_span) {
+	if (p_span.is_empty()) {
+		return OK;
+	}
+	// If the span points inside our buffer, we need to resolve the index now.
+	// Otherwise it might be invalidated on growth.
+	const bool span_in_self = _ptr && p_span.ptr() >= _ptr && p_span.ptr() < _ptr + size();
+	const Size idx_in_self = span_in_self ? (p_span.ptr() - _ptr) : -1;
+
+	const Error error = _insert_uninitialized(size(), p_span.size());
+	if (error) {
+		return error;
+	}
+	const T *span_ptr = span_in_self ? (_ptr + idx_in_self) : p_span.ptr();
+	copy_arr_placement(_ptr + size(), span_ptr, p_span.size());
+	*_get_size() = size() + p_span.size();
+	return OK;
+}
+
+template <typename T>
+Error CowData<T>::_insert_uninitialized(USize p_index, USize p_count, USize p_capacity) {
+	DEV_ASSERT(p_capacity >= (USize)size() + p_count);
 
 	if (!_ptr) {
-		// Grow by allocating.
-		_alloc_exact(next_capacity(0, 1));
-		*_get_size() = 1;
+		return _alloc_exact(p_capacity);
 	} else if (_get_refcount()->get() == 1) {
-		// Grow in-place.
-		if ((USize)new_size > capacity()) {
+		if (capacity() < p_capacity) {
 			// Need to grow.
-			const Error error = _realloc_exact(grow_capacity(capacity()));
+			const Error error = _realloc_exact(p_capacity);
 			if (error) {
 				return error;
 			}
 		}
 
-		*_get_size() = new_size;
+		// Relocate elements up.
+		if (p_index != (USize)size()) {
+			memmove((void *)(_ptr + p_index + p_count), (void *)(_ptr + p_index), (size() - p_index) * sizeof(T));
+		}
 	} else {
-		// Grow by forking.
-		// Use the max of capacity and new_size, to ensure we don't accidentally shrink after reserve.
-		const USize new_capacity = next_capacity(capacity(), new_size);
-		const Error error = _copy_to_new_buffer_exact(new_capacity, size(), 1, 0);
+		// Insert new element by forking.
+		// Initialize the data elsewhere first and only swap when it's ready.
+		CowData new_data;
+
+		const Error error = new_data._alloc_exact(p_capacity);
 		if (error) {
 			return error;
 		}
+
+		// Copy over elements.
+		copy_arr_placement(new_data._ptr, _ptr, p_index);
+		copy_arr_placement(
+				new_data._ptr + p_index + p_count,
+				_ptr + p_index,
+				size() - p_index);
+
+		*new_data._get_size() = size();
+		SWAP(_ptr, new_data._ptr);
 	}
 
-	// Create the new element at the given index.
-	memnew_placement(_ptr + new_size - 1, T(std::move(p_val)));
+	return OK;
+}
+
+template <typename T>
+Error CowData<T>::_remove(USize p_index, USize p_count) {
+	DEV_ASSERT(_ptr);
+	DEV_ASSERT(p_index + p_count <= (USize)size());
+
+	const Size prev_size = size();
+	if ((USize)prev_size == p_count) {
+		// Removing all elements.
+		_unref();
+		return OK;
+	}
+
+	const USize new_size = prev_size - p_count;
+
+	if (_get_refcount()->get() == 1) {
+		// We're the only owner; remove in-place.
+
+		// Destruct the elements, then relocate the rest down.
+		destruct_arr_placement(_ptr + p_index, p_count);
+		if (p_index != prev_size - p_count) {
+			memmove((void *)(_ptr + p_index), (void *)(_ptr + p_index + p_count), (new_size - p_index) * sizeof(T));
+		}
+
+		// Shrink to fit if necessary.
+		const USize new_capacity = smaller_capacity(capacity(), new_size);
+		if (new_capacity < capacity()) {
+			Error err = _realloc_exact(new_capacity);
+			CRASH_COND(err);
+		}
+	} else {
+		// Remove by forking.
+		CowData new_data;
+
+		const Error error = new_data._alloc_exact(smaller_capacity(capacity(), new_size));
+		if (error) {
+			return error;
+		}
+
+		// Copy over elements.
+		copy_arr_placement(new_data._ptr, _ptr, p_index);
+		copy_arr_placement(
+				new_data._ptr + p_index,
+				_ptr + p_index + p_count,
+				size() - p_index - p_count);
+
+		SWAP(_ptr, new_data._ptr);
+	}
+
+	*_get_size() = new_size;
 
 	return OK;
 }
@@ -378,8 +440,7 @@ Error CowData<T>::push_back(T &&p_val) {
 template <typename T>
 template <bool p_exact>
 Error CowData<T>::reserve(USize p_min_capacity) {
-	USize new_capacity = p_exact ? p_min_capacity : next_capacity(capacity(), p_min_capacity);
-	if (new_capacity <= capacity()) {
+	if (p_min_capacity <= capacity()) {
 		if (p_min_capacity < (USize)size()) {
 			WARN_VERBOSE("reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 		}
@@ -387,16 +448,8 @@ Error CowData<T>::reserve(USize p_min_capacity) {
 		return OK;
 	}
 
-	if (!_ptr) {
-		// Initial allocation.
-		return _alloc_exact(new_capacity);
-	} else if (_get_refcount()->get() == 1) {
-		// Grow in-place.
-		return _realloc_exact(new_capacity);
-	} else {
-		// Grow by forking.
-		return _copy_to_new_buffer_exact(new_capacity, size(), 0, 0);
-	}
+	USize new_capacity = p_exact ? p_min_capacity : next_capacity(capacity(), p_min_capacity);
+	return _insert_uninitialized(size(), 0, new_capacity);
 }
 
 template <typename T>
@@ -413,26 +466,9 @@ Error CowData<T>::resize(Size p_size) {
 	if (p_size > prev_size) {
 		// Caller wants to grow.
 
-		if (!_ptr) {
-			// Grow by allocating.
-			const Error error = _alloc_exact(next_capacity(0, p_size));
-			if (error) {
-				return error;
-			}
-		} else if (_get_refcount()->get() == 1) {
-			// Grow in-place.
-			if ((USize)p_size > capacity()) {
-				const Error error = _realloc_exact(next_capacity(capacity(), p_size));
-				if (error) {
-					return error;
-				}
-			}
-		} else {
-			// Grow by forking.
-			const Error error = _copy_to_new_buffer_exact(next_capacity(capacity(), p_size), prev_size, 0, 0);
-			if (error) {
-				return error;
-			}
+		const Error error = _insert_uninitialized(prev_size, p_size - prev_size);
+		if (error) {
+			return error;
 		}
 
 		// Construct new elements.
@@ -444,28 +480,7 @@ Error CowData<T>::resize(Size p_size) {
 		return OK;
 	} else {
 		// Caller wants to shrink.
-
-		if (p_size == 0) {
-			_unref();
-			return OK;
-		} else if (_get_refcount()->get() == 1) {
-			// Shrink in-place.
-			destruct_arr_placement(_ptr + p_size, prev_size - p_size);
-
-			// Shrink buffer if necessary.
-			const USize new_capacity = smaller_capacity(capacity(), p_size);
-			if (new_capacity < capacity()) {
-				Error err = _realloc_exact(new_capacity);
-				CRASH_COND(err);
-			}
-
-			*_get_size() = p_size;
-			return OK;
-		} else {
-			// Shrink by forking.
-			const USize new_capacity = smaller_capacity(capacity(), p_size);
-			return _copy_to_new_buffer_exact(new_capacity, p_size, 0, 0);
-		}
+		return _remove(p_size, prev_size - p_size);
 	}
 }
 
@@ -507,37 +522,6 @@ Error CowData<T>::_realloc_exact(USize p_capacity) {
 }
 
 template <typename T>
-Error CowData<T>::_copy_to_new_buffer_exact(USize p_capacity, USize p_size_from_start, USize p_gap, USize p_size_from_back) {
-	DEV_ASSERT(p_capacity >= p_size_from_start + p_size_from_back + p_gap);
-	DEV_ASSERT((USize)size() >= p_size_from_start && (USize)size() >= p_size_from_back);
-
-	// Create a temporary CowData to hold ownership over our _ptr.
-	// It will be used to copy elements from the old buffer over to our new buffer.
-	// At the end of the block, it will be automatically destructed by going out of scope.
-	const CowData prev_data;
-	prev_data._ptr = _ptr;
-	_ptr = nullptr;
-
-	const Error error = _alloc_exact(p_capacity);
-	if (error) {
-		// On failure to allocate, recover the old data and return the error.
-		_ptr = prev_data._ptr;
-		prev_data._ptr = nullptr;
-		return error;
-	}
-
-	// Copy over elements.
-	copy_arr_placement(_ptr, prev_data._ptr, p_size_from_start);
-	copy_arr_placement(
-			_ptr + p_size_from_start + p_gap,
-			prev_data._ptr + prev_data.size() - p_size_from_back,
-			p_size_from_back);
-	*_get_size() = p_size_from_start + p_gap + p_size_from_back;
-
-	return OK;
-}
-
-template <typename T>
 Error CowData<T>::_copy_on_write() {
 	if (!_ptr || _get_refcount()->get() == 1) {
 		// Nothing to do.
@@ -545,12 +529,7 @@ Error CowData<T>::_copy_on_write() {
 	}
 
 	// Fork to become the only reference.
-	return _copy_to_new_buffer_exact(capacity(), size(), 0, 0);
-}
-
-template <typename T>
-void CowData<T>::_ref(const CowData *p_from) {
-	_ref(*p_from);
+	return _insert_uninitialized(size(), 0, capacity());
 }
 
 template <typename T>
@@ -559,19 +538,24 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; // self assign, do nothing.
 	}
 
-	_unref(); // Resets _ptr to nullptr.
+	// Keep _ptr valid at all times. old_data will unref as it goes out of scope.
+	// This isn't strictly necessary but makes us a bit more resilient to multithread misuse.
+	CowData old_data;
+	old_data._ptr = _ptr;
 
-	if (!p_from._ptr) {
-		return; //nothing to do
-	}
-
-	if (p_from._get_refcount()->conditional_increment() > 0) { // could reference
+	if (p_from._ptr && p_from._get_refcount()->conditional_increment() > 0) {
 		_ptr = p_from._ptr;
+	} else {
+		// New data is null or we cannot copy.
+		_ptr = nullptr;
 	}
 }
 
 template <typename T>
 CowData<T>::CowData(std::initializer_list<T> p_init) {
+	if (!p_init.size()) {
+		return;
+	}
 	CRASH_COND(_alloc_exact(p_init.size()));
 
 	copy_arr_placement(_ptr, p_init.begin(), p_init.size());
@@ -580,6 +564,9 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 
 template <typename T>
 CowData<T>::CowData(Span<T> p_span) {
+	if (p_span.is_empty()) {
+		return;
+	}
 	CRASH_COND(_alloc_exact(p_span.size()));
 
 	copy_arr_placement(_ptr, p_span.begin(), p_span.size());

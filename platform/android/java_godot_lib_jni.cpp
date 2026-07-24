@@ -249,8 +249,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 				ANativeWindow *native_window = ANativeWindow_fromSurface(env, p_surface);
 				os_android->set_native_window(native_window);
 			}
-			DisplayServerAndroid::get_singleton()->reset_window();
-			DisplayServerAndroid::get_singleton()->notify_surface_changed(p_width, p_height);
+
+			DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+			ERR_FAIL_NULL(dsa);
+			dsa->reset_window();
+			dsa->notify_surface_changed(p_width, p_height);
 		}
 	}
 }
@@ -291,8 +294,14 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 
 	if (step.get() == STEP_SETUP) {
 		// Since Godot is initialized on the UI thread, main_thread_id was set to that thread's id,
-		// but for Godot purposes, the main thread is the one running the game loop
-		Main::setup2(false); // The logo is shown in the next frame otherwise we run into rendering issues
+		// but for Godot purposes, the main thread is the one running the game loop.
+		// The logo is shown in the next frame otherwise we run into rendering issues.
+		if (Main::setup2(false) != OK) {
+			ERR_PRINT("Unable to complete engine setup!");
+			OS::get_singleton()->alert("Unable to complete engine setup!");
+			_terminate(env, false);
+			return false;
+		}
 		input_handler = new AndroidInputHandler();
 		step.increment();
 		return true;
@@ -319,7 +328,10 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 
 	if (step.get() == STEP_STARTED) {
 		if (Main::start() != EXIT_SUCCESS) {
-			return true; // should exit instead and print the error
+			ERR_PRINT("Unable to start engine!");
+			OS::get_singleton()->alert("Unable to start engine!");
+			_terminate(env, false);
+			return false;
 		}
 
 		godot_java->on_godot_setup_completed(env);
@@ -328,10 +340,13 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 		step.increment();
 	}
 
-	DisplayServerAndroid::get_singleton()->process_accelerometer(accelerometer);
-	DisplayServerAndroid::get_singleton()->process_gravity(gravity);
-	DisplayServerAndroid::get_singleton()->process_magnetometer(magnetometer);
-	DisplayServerAndroid::get_singleton()->process_gyroscope(gyroscope);
+	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+	if (dsa) {
+		dsa->process_accelerometer(accelerometer);
+		dsa->process_gravity(gravity);
+		dsa->process_magnetometer(magnetometer);
+		dsa->process_gyroscope(gyroscope);
+	}
 
 	bool should_swap_buffers = false;
 	if (os_android->main_loop_iterate(&should_swap_buffers)) {

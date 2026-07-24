@@ -3163,9 +3163,8 @@ RDD::CommandQueueID RenderingDeviceDriverVulkan::command_queue_create(CommandQue
 
 #if defined(SWAPPY_FRAME_PACING_ENABLED)
 	if (swappy_frame_pacer_enable) {
-		VkQueue selected_queue;
-		vkGetDeviceQueue(vk_device, family_index, picked_queue_index, &selected_queue);
-		SwappyVk_setQueueFamilyIndex(vk_device, selected_queue, family_index);
+		// Reuse the stored VkQueue handle; the Android Emulator's gfxstream driver returns a different one from each vkGetDeviceQueue() call.
+		SwappyVk_setQueueFamilyIndex(vk_device, queue_family[picked_queue_index].queue, family_index);
 	}
 #endif
 

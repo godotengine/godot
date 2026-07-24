@@ -43,6 +43,14 @@ struct ContainerTypeValidate;
 struct DictionaryPrivate;
 struct StringLikeVariantComparator;
 
+/**
+ * Key-value Variant container (aka hash table or dictionary) using robin-hood hashing.
+ *
+ * Uses `HashMap` internally, thus remembers insertion order and is pointer-stable.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
 class _WARN_UNUSED_ Dictionary {
 	mutable DictionaryPrivate *_p;
 

@@ -54,6 +54,7 @@
 #include "scene/property_utils.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
+#include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server.h"
 
 static bool _has_sub_resources(const Ref<Resource> &p_res) {
@@ -1168,6 +1169,15 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 	}
 
 	return types;
+}
+
+void EditorResourcePicker::make_passthrough(bool p_passthrough) {
+	assign_button->set_mouse_filter(p_passthrough ? Control::MOUSE_FILTER_PASS : Control::MOUSE_FILTER_STOP);
+	if (p_passthrough) {
+		assign_button->disconnect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
+	} else {
+		assign_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
+	}
 }
 
 bool EditorResourcePicker::is_resource_allowed(const Ref<Resource> &p_resource) {

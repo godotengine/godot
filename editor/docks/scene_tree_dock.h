@@ -102,8 +102,6 @@ class SceneTreeDock : public EditorDock {
 
 	Vector<ObjectID> subresources;
 
-	bool reset_create_dialog = false;
-
 	int current_option = 0;
 
 	MarginContainer *main_mc = nullptr;
@@ -356,9 +354,6 @@ public:
 
 	void attach_shader_to_selected(int p_preferred_mode = -1);
 	void open_shader_dialog(const Ref<ShaderMaterial> &p_for_material, int p_preferred_mode = -1);
-
-	void open_add_child_dialog();
-	void open_instance_child_dialog();
 
 	List<Node *> paste_nodes(bool p_paste_as_sibling = false);
 	void paste_node_as_replacement();

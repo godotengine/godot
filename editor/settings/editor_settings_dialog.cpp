@@ -1123,6 +1123,8 @@ EditorSettingsDialog::~EditorSettingsDialog() {
 }
 
 void EditorSettingsPropertyWrapper::_setup_override_info() {
+	bottom_editor_seperation = true;
+
 	override_container = memnew(HBoxContainer);
 
 	override_icon = memnew(TextureRect);

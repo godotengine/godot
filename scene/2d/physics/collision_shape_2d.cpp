@@ -308,7 +308,10 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_direction", "direction"), &CollisionShape2D::set_one_way_collision_direction);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_direction"), &CollisionShape2D::get_one_way_collision_direction);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape2D::get_class_static()), "set_shape", "get_shape");
+	// Specify all types for explicit ordering in the inspector,
+	// but list generic Shape2D last to allow extended types to show up at the end.
+	// Keep the order roughly in sync with CollisionShape3D's `shape` property.
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "RectangleShape2D,CircleShape2D,CapsuleShape2D,SegmentShape2D,SeparationRayShape2D,WorldBoundaryShape2D,ConvexPolygonShape2D,ConcavePolygonShape2D,Shape2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_GROUP("One Way Collision", "one_way_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision", PROPERTY_HINT_GROUP_ENABLE), "set_one_way_collision", "is_one_way_collision_enabled");
