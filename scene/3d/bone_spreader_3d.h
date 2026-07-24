@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  skeleton_3d.compat.inc                                                */
+/*  bone_spreader_3d.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,28 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISABLE_DEPRECATED
+#pragma once
 
-#include "skeleton_3d.h"
+#include "scene/3d/skeleton_modifier_3d.h"
 
-#include "core/object/class_db.h"
+class BoneSpreader3D : public SkeletonModifier3D {
+	GDCLASS(BoneSpreader3D, SkeletonModifier3D);
 
-void Skeleton3D::_add_bone_bind_compat_88791(const String &p_name) {
-	add_bone(p_name);
-}
+public:
+	struct BoneSpreader3DSetting {
+		StringName bone_name;
+		int bone = -1;
+		bool use_bone_skin_scale = true;
+		Vector3 scale = Vector3(1, 1, 1);
+	};
 
-void Skeleton3D::_reset_bone_pose_compat_120609(int p_bone) {
-	reset_bone_pose(p_bone, false);
-}
+protected:
+	LocalVector<BoneSpreader3DSetting> settings;
 
-void Skeleton3D::_reset_bone_poses_compat_120609() {
-	reset_bone_poses(false);
-}
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_dynamic_prop(PropertyInfo &p_property) const;
 
-void Skeleton3D::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("add_bone", "name"), &Skeleton3D::_add_bone_bind_compat_88791);
-	ClassDB::bind_compatibility_method(D_METHOD("reset_bone_pose", "bone_idx"), &Skeleton3D::_reset_bone_pose_compat_120609);
-	ClassDB::bind_compatibility_method(D_METHOD("reset_bone_poses"), &Skeleton3D::_reset_bone_poses_compat_120609);
-}
+	static void _bind_methods();
 
-#endif // DISABLE_DEPRECATED
+	virtual void _process_modification(double p_delta) override;
+
+public:
+	int get_setting_size();
+	void set_setting_size(int p_size);
+	void clear_settings();
+
+	void set_bone_name(int p_index, const StringName &p_bone_name);
+	StringName get_bone_name(int p_index) const;
+	void set_bone(int p_index, int p_bone);
+	int get_bone(int p_index) const;
+	void set_use_bone_skin_scale(int p_index, bool p_enabled);
+	bool is_using_bone_skin_scale(int p_index) const;
+	void set_bone_scale(int p_index, const Vector3 &p_scale);
+	Vector3 get_bone_scale(int p_index) const;
+};
