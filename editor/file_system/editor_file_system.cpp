@@ -935,10 +935,11 @@ bool EditorFileSystem::_update_scan_actions() {
 
 						ia.new_file->uid = existing_id;
 					}
-				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
+				} else if (_should_create_uid_file(new_file_path)) {
 					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
 					if (f.is_valid()) {
 						ia.new_file->uid = ResourceUID::get_singleton()->create_id_for_path(new_file_path);
+						ResourceUID::get_singleton()->add_id(ia.new_file->uid, new_file_path);
 						f->store_line(ResourceUID::get_singleton()->id_to_text(ia.new_file->uid));
 					}
 				}
@@ -1373,7 +1374,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				}
 			}
 
-			if (ResourceLoader::should_create_uid_file(path)) {
+			if (_should_create_uid_file(path)) {
 				// Create a UID file and new UID, if it's invalid.
 				Ref<FileAccess> f = FileAccess::open(path + ".uid", FileAccess::WRITE);
 				if (f.is_valid()) {
@@ -2488,7 +2489,7 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 
 				ResourceUID::get_singleton()->update_cache();
 			} else {
-				if (ResourceLoader::should_create_uid_file(file)) {
+				if (_should_create_uid_file(file)) {
 					Ref<FileAccess> f = FileAccess::open(file + ".uid", FileAccess::WRITE);
 					if (f.is_valid()) {
 						const ResourceUID::ID id = ResourceUID::get_singleton()->create_id_for_path(file);
@@ -3143,7 +3144,7 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 
 		// Make sure it's immediately added to the map so we can remap dependencies if we want to after this.
 		ResourceUID::get_singleton()->add_id(res_uid, p_to);
-	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID) {
+	} else if (ResourceLoader::get_resource_uid(p_from) == ResourceUID::INVALID_ID || textfile_extensions.has(p_from.get_extension().to_lower())) {
 		// Files which do not use an uid can just be copied.
 		Error err = da->copy(p_from, p_to);
 		if (err != OK) {
@@ -3774,6 +3775,16 @@ bool EditorFileSystem::_can_import_file(const String &p_file) {
 	}
 
 	return false;
+}
+
+bool EditorFileSystem::_should_create_uid_file(const String &p_path) {
+	if (FileAccess::exists(p_path + ".uid")) {
+		return false;
+	}
+	if (textfile_extensions.has(p_path.get_extension().to_lower())) {
+		return true;
+	}
+	return ResourceLoader::should_create_uid_file(p_path);
 }
 
 void EditorFileSystem::add_import_format_support_query(Ref<EditorFileSystemImportFormatSupportQuery> p_query) {
