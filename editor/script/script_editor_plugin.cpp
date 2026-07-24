@@ -3451,6 +3451,11 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 			}
 		}
 
+		Control *active_tab_control = tab_container->get_current_tab_control();
+		if (active_tab_control) {
+			tab_container->move_child(active_tab_control, tab_container->get_tab_count() - 1);
+		}
+
 		if (!script_info.is_empty()) {
 			if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(tab_container->get_tab_control(tab_container->get_tab_count() - 1))) {
 				teb->set_edit_state(script_info["state"]);

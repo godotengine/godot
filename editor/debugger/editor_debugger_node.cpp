@@ -31,6 +31,7 @@
 #include "editor_debugger_node.h"
 
 #include "core/config/engine.h"
+#include "core/debugger/debugger_marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -558,6 +559,12 @@ void EditorDebuggerNode::_debug_data(const String &p_msg, const Array &p_data, i
 		remote_scene_tree_wait = false;
 	} else if (p_msg == "scene:inspect_objects") {
 		inspect_edited_object_wait = false;
+	} else if (p_msg == "error") {
+		DebuggerMarshalls::OutputError oe;
+		ERR_FAIL_COND_MSG(!oe.deserialize(p_data), "Failed to deserialize error message.");
+		if (oe.error_type == ERR_HANDLER_SHADER) {
+			EditorNode::get_singleton()->edit_file(oe.source_file, oe.source_line);
+		}
 	}
 }
 

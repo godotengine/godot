@@ -145,6 +145,7 @@
 #include "editor/settings/editor_settings_dialog.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/shader/editor_native_shader_source_visualizer.h"
+#include "editor/shader/shader_editor_plugin.h"
 #include "editor/shader/shader_text_editor.h"
 #include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_scale.h"
@@ -1776,6 +1777,26 @@ void EditorNode::edit_node(Node *p_node) {
 
 void EditorNode::edit_resource(const Ref<Resource> &p_resource) {
 	InspectorDock::get_singleton()->edit_resource(p_resource);
+}
+
+void EditorNode::edit_file(const String p_file, int p_line) {
+	ERR_FAIL_COND_MSG(!ResourceLoader::exists(p_file), "Error: cannot open non-existent file in editor.");
+	const Ref<Resource> res = ResourceLoader::load(p_file);
+	EditorNode::get_singleton()->push_item(res.ptr());
+	// If no line is specified, only open the file.
+	if (p_line == -1) {
+		return;
+	}
+
+	ScriptEditorPlugin *script_editor_plugin = ScriptEditorPlugin::get_singleton();
+	ShaderEditorPlugin *shader_editor_plugin = ShaderEditorPlugin::get_singleton();
+	ScriptEditor *script_editor = nullptr;
+	if (script_editor_plugin && script_editor_plugin->handles(res.ptr())) {
+		script_editor = ScriptEditor::get_singleton();
+	} else if (shader_editor_plugin && shader_editor_plugin->handles(res.ptr())) {
+		script_editor = ScriptEditor::get_bottom_script_editor();
+	}
+	script_editor->edit(res, p_line - 1, 0);
 }
 
 void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path) {
