@@ -2042,75 +2042,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(panel), "EditorAbout", p_config.window_complex_style);
 		p_theme->set_stylebox(SceneStringName(panel), "ThemeItemEditorDialog", p_config.window_complex_style);
 
-		// MarginContainers with negative margins, to negate borders. Used with scroll hints.
-		{
-			int panel_margin = p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
-			int margin = -panel_margin;
-
-			p_theme->set_type_variation("NoBorderHorizontal", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderHorizontal", margin);
-			p_theme->set_constant("margin_right", "NoBorderHorizontal", margin);
-
-			p_theme->set_type_variation("NoBorderHorizontalBottom", "NoBorderHorizontal");
-			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottom", margin);
-
-			// Used in the asset library. Specifically, the ("bg", "AssetLib") stylebox.
-
-			margin = -p_config.base_margin * EDSCALE;
-
-			p_theme->set_type_variation("NoBorderAssetLib", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAssetLib", margin);
-			p_theme->set_constant("margin_right", "NoBorderAssetLib", margin);
-			p_theme->set_constant("margin_bottom", "NoBorderAssetLib", margin);
-
-			p_theme->set_type_variation("NoBorderAssetLibHorizontal", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAssetLibHorizontal", margin);
-			p_theme->set_constant("margin_right", "NoBorderAssetLibHorizontal", margin);
-
-			margin -= panel_margin;
-
-			// Same as above, but with the margins adapted for the project manager.
-
-			p_theme->set_type_variation("NoBorderAssetLibProjectManager", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManager", margin);
-			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManager", margin);
-			p_theme->set_constant("margin_bottom", "NoBorderAssetLibProjectManager", margin);
-
-			p_theme->set_type_variation("NoBorderAssetLibProjectManagerHorizontal", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManagerHorizontal", margin);
-			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManagerHorizontal", margin);
-
-			int bottom_panel_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
-
-			p_theme->set_type_variation("NoBorderPanel", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderPanel", -bottom_panel_margin);
-			p_theme->set_constant("margin_right", "NoBorderPanel", -bottom_panel_margin);
-
-			p_theme->set_type_variation("NoBorderBottomPanel", "NoBorderPanel");
-			p_theme->set_constant("margin_bottom", "NoBorderBottomPanel", -bottom_panel_margin);
-
-			margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("AcceptDialog"))->get_content_margin(SIDE_LEFT);
-
-			p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
-			p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
-
-			margin = 2 * -bottom_panel_margin;
-
-			// Same as above, including the bottom.
-			p_theme->set_type_variation("NoBorderBottomWideWindow", "NoBorderHorizontalWindow");
-			p_theme->set_constant("margin_bottom", "NoBorderBottomWideWindow", margin);
-
-			// Used in the animation track editor.
-			p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAnimation", margin);
-			p_theme->set_constant("margin_right", "NoBorderAnimation", margin);
-
-			// Used in the OpenXR action map editor.
-			p_theme->set_type_variation("NoBorderOpenXR", "NoBorderAnimation");
-			p_theme->set_constant("margin_bottom", "NoBorderOpenXR", -panel_margin);
-		}
-
 		// Buttons in material previews.
 		{
 			const Color dim_light_color = p_config.icon_normal_color.darkened(0.24);
@@ -2616,6 +2547,11 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		int margin = p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
 
+		p_theme->set_type_variation("AnimationTrackPanel", "PanelContainer");
+		Ref<StyleBox> panel_sb = p_theme->get_stylebox(SceneStringName(panel), SNAME("Tree"))->duplicate();
+		panel_sb->set_content_margin(SIDE_TOP, p_config.base_margin * EDSCALE);
+		p_theme->set_stylebox(SceneStringName(panel), "AnimationTrackPanel", panel_sb);
+
 		p_theme->set_type_variation("AnimationTrackMargins", "MarginContainer");
 		p_theme->set_constant("margin_left", "AnimationTrackMargins", margin);
 		p_theme->set_constant("margin_right", "AnimationTrackMargins", margin);
@@ -2936,4 +2872,74 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 	Ref<StyleBoxFlat> tile_expand_style = p_config.base_style->duplicate();
 	tile_expand_style->set_corner_radius_all(0);
 	p_theme->set_stylebox("expand_panel", "TileSetEditor", tile_expand_style);
+
+	// MarginContainers with negative margins, to negate borders. Used with scroll hints.
+	{
+		int panel_margin = p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
+		int margin = -panel_margin;
+
+		p_theme->set_type_variation("NoBorderHorizontal", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderHorizontal", margin);
+		p_theme->set_constant("margin_right", "NoBorderHorizontal", margin);
+
+		p_theme->set_type_variation("NoBorderHorizontalBottom", "NoBorderHorizontal");
+		p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottom", margin);
+
+		// Used in the asset library. Specifically, the ("bg", "AssetLib") stylebox.
+
+		margin = -p_config.base_margin * EDSCALE;
+
+		p_theme->set_type_variation("NoBorderAssetLib", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderAssetLib", margin);
+		p_theme->set_constant("margin_right", "NoBorderAssetLib", margin);
+		p_theme->set_constant("margin_bottom", "NoBorderAssetLib", margin);
+
+		p_theme->set_type_variation("NoBorderAssetLibHorizontal", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderAssetLibHorizontal", margin);
+		p_theme->set_constant("margin_right", "NoBorderAssetLibHorizontal", margin);
+
+		margin -= panel_margin;
+
+		// Same as above, but with the margins adapted for the project manager.
+
+		p_theme->set_type_variation("NoBorderAssetLibProjectManager", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManager", margin);
+		p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManager", margin);
+		p_theme->set_constant("margin_bottom", "NoBorderAssetLibProjectManager", margin);
+
+		p_theme->set_type_variation("NoBorderAssetLibProjectManagerHorizontal", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManagerHorizontal", margin);
+		p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManagerHorizontal", margin);
+
+		int bottom_panel_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
+
+		p_theme->set_type_variation("NoBorderPanel", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderPanel", -bottom_panel_margin);
+		p_theme->set_constant("margin_right", "NoBorderPanel", -bottom_panel_margin);
+
+		p_theme->set_type_variation("NoBorderBottomPanel", "NoBorderPanel");
+		p_theme->set_constant("margin_bottom", "NoBorderBottomPanel", -bottom_panel_margin);
+
+		margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("AcceptDialog"))->get_content_margin(SIDE_LEFT);
+
+		p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
+		p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
+
+		margin = 2 * -bottom_panel_margin;
+
+		// Same as above, including the bottom.
+		p_theme->set_type_variation("NoBorderBottomWideWindow", "NoBorderHorizontalWindow");
+		p_theme->set_constant("margin_bottom", "NoBorderBottomWideWindow", margin);
+
+		// Used in the animation track editor.
+		p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderAnimation", margin);
+		p_theme->set_constant("margin_right", "NoBorderAnimation", margin);
+		p_theme->set_constant("margin_bottom", "NoBorderAnimation", -p_theme->get_stylebox(SceneStringName(panel), SNAME("AnimationTrackPanel"))->get_content_margin(SIDE_BOTTOM));
+
+		// Used in the OpenXR action map editor.
+		p_theme->set_type_variation("NoBorderOpenXR", "NoBorderAnimation");
+		p_theme->set_constant("margin_bottom", "NoBorderOpenXR", -panel_margin);
+	}
 }

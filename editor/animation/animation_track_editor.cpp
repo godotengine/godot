@@ -5602,10 +5602,6 @@ void AnimationTrackEditor::_notification(int p_what) {
 			dummy_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			inactive_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 
-			Ref<StyleBox> panel_style = get_theme_stylebox(SceneStringName(panel), SNAME("Tree"))->duplicate();
-			panel_style->set_content_margin(SIDE_TOP, get_theme_constant("base_margin", EditorStringName(Editor)) * EDSCALE);
-			main_panel->add_theme_style_override(SceneStringName(panel), panel_style);
-
 			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_ADD_RESET_KEY), get_editor_theme_icon(SNAME("MoveUp")));
 			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_editor_theme_icon(SNAME("Reload")));
 			auto_fit->set_button_icon(get_editor_theme_icon(SNAME("AnimationAutoFit")));
@@ -8117,9 +8113,11 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(mc);
 
-	main_panel = memnew(PanelContainer);
+	PanelContainer *main_panel = memnew(PanelContainer);
 	main_panel->set_focus_mode(FOCUS_ALL); // Allow panel to have focus so that shortcuts work as expected.
+	main_panel->set_theme_type_variation("AnimationTrackPanel");
 	mc->add_child(main_panel);
+
 	HBoxContainer *timeline_scroll = memnew(HBoxContainer);
 	main_panel->add_child(timeline_scroll);
 	timeline_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
