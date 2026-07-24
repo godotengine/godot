@@ -469,6 +469,7 @@ public:
 	TypedArray<String> get_string_delimiters() const;
 
 	int is_in_string(int p_line, int p_column = -1) const;
+	int is_in_parentheses(int p_line, int p_column) const;
 
 	void add_comment_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only = false);
 	void remove_comment_delimiter(const String &p_start_key);
@@ -510,6 +511,7 @@ public:
 	int get_code_completion_selected_index() const;
 	void set_code_completion_selected_index(int p_index);
 
+	bool is_code_completion_active() const;
 	void confirm_code_completion(bool p_replace = false);
 	void cancel_code_completion();
 

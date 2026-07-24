@@ -2261,6 +2261,19 @@ int CodeEdit::is_in_string(int p_line, int p_column) const {
 	return _is_in_delimiter(p_line, p_column, TYPE_STRING);
 }
 
+int CodeEdit::is_in_parentheses(int p_line, int p_column) const {
+	const String &line = get_line(p_line);
+	int parentheses_level = 0;
+	for (int i = 0; i < line.length() && i < p_column; i++) {
+		if (line[i] == '(') {
+			parentheses_level++;
+		} else if (line[i] == ')') {
+			parentheses_level--;
+		}
+	}
+	return parentheses_level;
+}
+
 // Comments
 void CodeEdit::add_comment_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only) {
 	_add_delimiter(p_start_key, p_end_key, p_line_only, TYPE_COMMENT);
@@ -2585,6 +2598,10 @@ void CodeEdit::set_code_completion_selected_index(int p_index) {
 	code_completion_pan_offset = 0.0f;
 	queue_accessibility_update();
 	queue_redraw();
+}
+
+bool CodeEdit::is_code_completion_active() const {
+	return code_completion_active;
 }
 
 void CodeEdit::confirm_code_completion(bool p_replace) {
