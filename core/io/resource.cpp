@@ -767,6 +767,8 @@ void Resource::_bind_methods() {
 	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
 	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
 
+	BIND_CONSTANT(NOTIFICATION_RESOURCE_DESERIALIZED);
+
 	ADD_SIGNAL(MethodInfo("changed"));
 	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));
 
