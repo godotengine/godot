@@ -732,10 +732,7 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServerEnums::WindowID p_
 	fd.opt_in_cb = p_options_in_cb;
 
 	String token;
-	Error err = make_request_token(token);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(make_request_token(token));
 
 	// Generate FileChooser message.
 	const char *method = nullptr;

@@ -117,10 +117,7 @@ static Error _erase_recursive(DirAccess *p_dir) {
 	}
 
 	for (const String &E : files) {
-		Error err = p_dir->remove(p_dir->get_current_dir().path_join(E));
-		if (err) {
-			return err;
-		}
+		GUARD_OK(p_dir->remove(p_dir->get_current_dir().path_join(E)));
 	}
 
 	return OK;

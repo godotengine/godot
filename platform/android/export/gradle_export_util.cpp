@@ -144,10 +144,7 @@ Error create_directory(const String &p_dir) {
 // Note: this will overwrite the file at p_path if it already exists.
 Error store_file_at_path(const String &p_path, const Vector<uint8_t> &p_data) {
 	String dir = p_path.get_base_dir();
-	Error err = create_directory(dir);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(create_directory(dir));
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 	fa->store_buffer(p_data.ptr(), p_data.size());
@@ -183,10 +180,7 @@ Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_p
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd));
 
 	String dst_path;
 	if (export_data->pd.salt.length() == 32) {
@@ -195,7 +189,7 @@ Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_p
 		dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
 	}
 	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
-	err = store_file_at_path(dst_path, enc_data);
+	Error err = store_file_at_path(dst_path, enc_data);
 
 	export_data->pd.file_ofs.push_back(sd);
 	return err;

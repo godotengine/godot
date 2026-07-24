@@ -538,10 +538,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 				for (GDScriptParser::ClassNode *look_class : script_classes) {
 					if (look_class->identifier && look_class->identifier->name == name) {
 						if (!look_class->self_type.is_set()) {
-							Error err = resolve_class_inheritance(look_class, id);
-							if (err) {
-								return err;
-							}
+							GUARD_OK(resolve_class_inheritance(look_class, id));
 						}
 						base = look_class->self_type;
 						found = true;
@@ -652,11 +649,9 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 }
 
 Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive) {
-	Error err = resolve_class_inheritance(p_class);
-	if (err) {
-		return err;
-	}
+	GUARD_OK(resolve_class_inheritance(p_class));
 
+	Error err = OK;
 	if (p_recursive) {
 		for (int i = 0; i < p_class->members.size(); i++) {
 			if (p_class->members[i].type == GDScriptParser::ClassNode::Member::CLASS) {
@@ -6741,16 +6736,10 @@ Error GDScriptAnalyzer::resolve_dependencies() {
 Error GDScriptAnalyzer::analyze() {
 	parser->errors.clear();
 
-	Error err = resolve_inheritance();
-	if (err) {
-		return err;
-	}
+	GUARD_OK(resolve_inheritance());
 
 	resolve_interface();
-	err = resolve_body();
-	if (err) {
-		return err;
-	}
+	GUARD_OK(resolve_body());
 
 	return resolve_dependencies();
 }

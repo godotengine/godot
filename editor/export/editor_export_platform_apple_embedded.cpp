@@ -990,10 +990,7 @@ Error EditorExportPlatformAppleEmbedded::_convert_to_framework(const String &p_s
 	}
 
 	if (!filesystem_da->dir_exists(p_destination)) {
-		Error make_dir_err = filesystem_da->make_dir_recursive(p_destination);
-		if (make_dir_err) {
-			return make_dir_err;
-		}
+		GUARD_OK(filesystem_da->make_dir_recursive(p_destination));
 	}
 
 	String asset = p_source.ends_with("/") ? p_source.left(-1) : p_source;
@@ -1256,10 +1253,7 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 		destination = destination_dir;
 
 		// Convert to framework and copy.
-		Error err = _convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier"));
-		if (err) {
-			return err;
-		}
+		GUARD_OK(_convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier")));
 	} else if (p_is_framework && asset.ends_with(".xcframework")) {
 		// For Apple Embedded platforms we need to turn .dylib inside .xcframework
 		// into .framework to be able to send application to AppStore
@@ -1285,22 +1279,13 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 
 		if (dylibs > 0) {
 			// Convert to framework and copy.
-			Error err = _convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier"));
-			if (err) {
-				return err;
-			}
+			GUARD_OK(_convert_to_framework(p_asset, destination, p_preset->get("application/bundle_identifier")));
 		} else {
 			// Copy as is.
 			if (!filesystem_da->dir_exists(destination_dir)) {
-				Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
-				if (make_dir_err) {
-					return make_dir_err;
-				}
+				GUARD_OK(filesystem_da->make_dir_recursive(destination_dir));
 			}
-			Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
-			if (err) {
-				return err;
-			}
+			GUARD_OK(dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination));
 		}
 	} else if (p_is_framework && asset.ends_with(".framework")) {
 		// Framework.
@@ -1320,15 +1305,9 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 
 		// Copy as is.
 		if (!filesystem_da->dir_exists(destination_dir)) {
-			Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
-			if (make_dir_err) {
-				return make_dir_err;
-			}
+			GUARD_OK(filesystem_da->make_dir_recursive(destination_dir));
 		}
-		Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
-		if (err) {
-			return err;
-		}
+		GUARD_OK(dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination));
 	} else {
 		// Unknown resource.
 		asset_path = base_dir;
@@ -1347,15 +1326,9 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 
 		// Copy as is.
 		if (!filesystem_da->dir_exists(destination_dir)) {
-			Error make_dir_err = filesystem_da->make_dir_recursive(destination_dir);
-			if (make_dir_err) {
-				return make_dir_err;
-			}
+			GUARD_OK(filesystem_da->make_dir_recursive(destination_dir));
 		}
-		Error err = dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination);
-		if (err) {
-			return err;
-		}
+		GUARD_OK(dir_exists ? da->copy_dir(p_asset, destination) : da->copy(p_asset, destination));
 	}
 
 	if (asset_path.ends_with("/")) {

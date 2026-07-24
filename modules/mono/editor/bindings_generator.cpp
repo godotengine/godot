@@ -1769,10 +1769,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		StringBuilder constants_source;
 		_generate_global_constants(constants_source);
 		String output_file = Path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
-		Error save_err = _save_file(output_file, constants_source);
-		if (save_err != OK) {
-			return save_err;
-		}
+		GUARD_OK(_save_file(output_file, constants_source));
 
 		compile_items.push_back(output_file);
 	}
@@ -1782,10 +1779,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		StringBuilder extensions_source;
 		_generate_array_extensions(extensions_source);
 		String output_file = Path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_extensions.cs");
-		Error save_err = _save_file(output_file, extensions_source);
-		if (save_err != OK) {
-			return save_err;
-		}
+		GUARD_OK(_save_file(output_file, extensions_source));
 
 		compile_items.push_back(output_file);
 	}
@@ -1865,11 +1859,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
 
 		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR ".cs");
-		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
-
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(_save_file(constructors_file, cs_built_in_ctors_content));
 
 		compile_items.push_back(constructors_file);
 	}
@@ -1899,20 +1889,14 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		if (icall.editor_only) {
 			continue;
 		}
-		Error err = _generate_cs_native_calls(icall, cs_icalls_content);
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(_generate_cs_native_calls(icall, cs_icalls_content));
 	}
 
 	cs_icalls_content.append(CLOSE_BLOCK);
 
 	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
 
-	Error err = _save_file(internal_methods_file, cs_icalls_content);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_save_file(internal_methods_file, cs_icalls_content));
 
 	compile_items.push_back(internal_methods_file);
 
@@ -1932,10 +1916,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 
 	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
 
-	err = _save_file(includes_props_file, includes_props_content);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_save_file(includes_props_file, includes_props_content));
 
 	return OK;
 }
@@ -2023,11 +2004,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
 
 		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR_EDITOR ".cs");
-		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
-
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(_save_file(constructors_file, cs_built_in_ctors_content));
 
 		compile_items.push_back(constructors_file);
 	}
@@ -2059,20 +2036,14 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		if (!icall.editor_only) {
 			continue;
 		}
-		Error err = _generate_cs_native_calls(icall, cs_icalls_content);
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(_generate_cs_native_calls(icall, cs_icalls_content));
 	}
 
 	cs_icalls_content.append(CLOSE_BLOCK);
 
 	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
 
-	Error err = _save_file(internal_methods_file, cs_icalls_content);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_save_file(internal_methods_file, cs_icalls_content));
 
 	compile_items.push_back(internal_methods_file);
 
@@ -2092,10 +2063,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
 
-	err = _save_file(includes_props_file, includes_props_content);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_save_file(includes_props_file, includes_props_content));
 
 	return OK;
 }

@@ -427,17 +427,11 @@ Error JSON::_parse_value(Variant &r_value, Token &r_token, const char32_t *p_str
 
 	if (r_token.type == TK_CURLY_BRACKET_OPEN) {
 		Dictionary d;
-		Error err = _parse_object(d, p_str, r_index, p_len, r_line, p_depth + 1, r_err_str);
-		if (err) {
-			return err;
-		}
+		GUARD_OK(_parse_object(d, p_str, r_index, p_len, r_line, p_depth + 1, r_err_str));
 		r_value = d;
 	} else if (r_token.type == TK_BRACKET_OPEN) {
 		Array a;
-		Error err = _parse_array(a, p_str, r_index, p_len, r_line, p_depth + 1, r_err_str);
-		if (err) {
-			return err;
-		}
+		GUARD_OK(_parse_array(a, p_str, r_index, p_len, r_line, p_depth + 1, r_err_str));
 		r_value = a;
 	} else if (r_token.type == TK_IDENTIFIER) {
 		String id = r_token.value;
@@ -468,10 +462,7 @@ Error JSON::_parse_array(Array &r_array, const char32_t *p_str, int &r_index, in
 	bool need_comma = false;
 
 	while (r_index < p_len) {
-		Error err = _get_token(p_str, r_index, p_len, token, r_line, r_err_str);
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(_get_token(p_str, r_index, p_len, token, r_line, r_err_str));
 
 		if (token.type == TK_BRACKET_CLOSE) {
 			return OK;
@@ -488,10 +479,7 @@ Error JSON::_parse_array(Array &r_array, const char32_t *p_str, int &r_index, in
 		}
 
 		Variant v;
-		err = _parse_value(v, token, p_str, r_index, p_len, r_line, p_depth, r_err_str);
-		if (err) {
-			return err;
-		}
+		GUARD_OK(_parse_value(v, token, p_str, r_index, p_len, r_line, p_depth, r_err_str));
 
 		r_array.push_back(v);
 		need_comma = true;
@@ -509,10 +497,7 @@ Error JSON::_parse_object(Dictionary &r_object, const char32_t *p_str, int &r_in
 
 	while (r_index < p_len) {
 		if (at_key) {
-			Error err = _get_token(p_str, r_index, p_len, token, r_line, r_err_str);
-			if (err != OK) {
-				return err;
-			}
+			GUARD_OK(_get_token(p_str, r_index, p_len, token, r_line, r_err_str));
 
 			if (token.type == TK_CURLY_BRACKET_CLOSE) {
 				return OK;
@@ -534,26 +519,17 @@ Error JSON::_parse_object(Dictionary &r_object, const char32_t *p_str, int &r_in
 			}
 
 			key = token.value;
-			err = _get_token(p_str, r_index, p_len, token, r_line, r_err_str);
-			if (err != OK) {
-				return err;
-			}
+			GUARD_OK(_get_token(p_str, r_index, p_len, token, r_line, r_err_str));
 			if (token.type != TK_COLON) {
 				r_err_str = "Expected ':'";
 				return ERR_PARSE_ERROR;
 			}
 			at_key = false;
 		} else {
-			Error err = _get_token(p_str, r_index, p_len, token, r_line, r_err_str);
-			if (err != OK) {
-				return err;
-			}
+			GUARD_OK(_get_token(p_str, r_index, p_len, token, r_line, r_err_str));
 
 			Variant v;
-			err = _parse_value(v, token, p_str, r_index, p_len, r_line, p_depth, r_err_str);
-			if (err) {
-				return err;
-			}
+			GUARD_OK(_parse_value(v, token, p_str, r_index, p_len, r_line, p_depth, r_err_str));
 			r_object[key] = v;
 			need_comma = true;
 			at_key = true;
@@ -576,12 +552,9 @@ Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_st
 	Token token;
 	r_err_line = 0;
 
-	Error err = _get_token(str, idx, len, token, r_err_line, r_err_str);
-	if (err) {
-		return err;
-	}
+	GUARD_OK(_get_token(str, idx, len, token, r_err_line, r_err_str));
 
-	err = _parse_value(r_ret, token, str, idx, len, r_err_line, 0, r_err_str);
+	Error err = _parse_value(r_ret, token, str, idx, len, r_err_line, 0, r_err_str);
 
 	// Check if EOF is reached
 	// or it's a type of the next token.

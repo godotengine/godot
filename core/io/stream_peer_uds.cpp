@@ -53,10 +53,7 @@ Error StreamPeerUDS::bind(const String &p_path) {
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 
 	IP::Type ip_type = IP::TYPE_NONE;
-	Error err = _sock->open(NetSocket::Family::UNIX, NetSocket::TYPE_NONE, ip_type);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(_sock->open(NetSocket::Family::UNIX, NetSocket::TYPE_NONE, ip_type));
 	_sock->set_blocking_enabled(false);
 	NetSocket::Address addr(p_path);
 	return _sock->bind(addr);
@@ -69,10 +66,7 @@ Error StreamPeerUDS::connect_to_host(const String &p_path) {
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = IP::TYPE_NONE;
-		Error err = _sock->open(NetSocket::Family::UNIX, NetSocket::TYPE_NONE, ip_type);
-		if (err != OK) {
-			return err;
-		}
+		GUARD_OK(_sock->open(NetSocket::Family::UNIX, NetSocket::TYPE_NONE, ip_type));
 		_sock->set_blocking_enabled(false);
 	}
 

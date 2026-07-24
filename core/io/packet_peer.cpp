@@ -50,10 +50,7 @@ int PacketPeer::get_encode_buffer_max_size() const {
 Error PacketPeer::get_packet_buffer(Vector<uint8_t> &r_buffer) {
 	const uint8_t *buffer;
 	int buffer_size;
-	Error err = get_packet(&buffer, buffer_size);
-	if (err) {
-		return err;
-	}
+	GUARD_OK(get_packet(&buffer, buffer_size));
 
 	r_buffer.resize(buffer_size);
 	if (buffer_size == 0) {
@@ -81,10 +78,7 @@ Error PacketPeer::put_packet_buffer(const Vector<uint8_t> &p_buffer) {
 Error PacketPeer::get_var(Variant &r_variant, bool p_allow_objects) {
 	const uint8_t *buffer;
 	int buffer_size;
-	Error err = get_packet(&buffer, buffer_size);
-	if (err) {
-		return err;
-	}
+	GUARD_OK(get_packet(&buffer, buffer_size));
 
 	return decode_variant(r_variant, buffer, buffer_size, nullptr, p_allow_objects);
 }
@@ -198,10 +192,7 @@ Error PacketPeerStream::_poll_buffer() const {
 
 	int read = 0;
 	ERR_FAIL_COND_V(input_buffer.size() < ring_buffer.space_left(), ERR_UNAVAILABLE);
-	Error err = peer->get_partial_data(input_buffer.ptrw(), ring_buffer.space_left(), read);
-	if (err) {
-		return err;
-	}
+	GUARD_OK(peer->get_partial_data(input_buffer.ptrw(), ring_buffer.space_left(), read));
 	if (read == 0) {
 		return OK;
 	}

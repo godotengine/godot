@@ -2781,10 +2781,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 			}
 
 			if (main_script->has_class(base.ptr())) {
-				Error err = _prepare_compilation(base.ptr(), p_class->base_type.class_type, p_keep_state);
-				if (err) {
-					return err;
-				}
+				GUARD_OK(_prepare_compilation(base.ptr(), p_class->base_type.class_type, p_keep_state));
 			} else if (!base->is_script_valid()) {
 				String base_qualified_name = base->fully_qualified_name;
 				String base_path = base->path;
@@ -2991,10 +2988,7 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 		// Subclass might still be parsing, just skip it
 		if (!parsing_classes.has(subclass_ptr)) {
-			Error err = _prepare_compilation(subclass_ptr, inner_class, p_keep_state);
-			if (err) {
-				return err;
-			}
+			GUARD_OK(_prepare_compilation(subclass_ptr, inner_class, p_keep_state));
 		}
 
 		p_script->constants.insert(name, subclass); //once parsed, goes to the list of constants
@@ -3018,16 +3012,10 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 			const GDScriptParser::VariableNode *variable = member.variable;
 			if (variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
 				if (variable->setter != nullptr) {
-					Error err = _parse_setter_getter(p_script, p_class, variable, true);
-					if (err) {
-						return err;
-					}
+					GUARD_OK(_parse_setter_getter(p_script, p_class, variable, true));
 				}
 				if (variable->getter != nullptr) {
-					Error err = _parse_setter_getter(p_script, p_class, variable, false);
-					if (err) {
-						return err;
-					}
+					GUARD_OK(_parse_setter_getter(p_script, p_class, variable, false));
 				}
 			}
 		}
@@ -3081,10 +3069,7 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 		StringName name = inner_class->identifier->name;
 		GDScript *subclass = p_script->subclasses[name].ptr();
 
-		Error err = _compile_class(subclass, inner_class, p_keep_state);
-		if (err) {
-			return err;
-		}
+		GUARD_OK(_compile_class(subclass, inner_class, p_keep_state));
 
 		has_static_data = has_static_data || inner_class->has_static_data;
 	}
@@ -3292,16 +3277,9 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	make_scripts(p_script, root, p_keep_state);
 
 	main_script->_owner = nullptr;
-	Error err = _prepare_compilation(main_script, parser->get_tree(), p_keep_state);
+	GUARD_OK(_prepare_compilation(main_script, parser->get_tree(), p_keep_state));
 
-	if (err) {
-		return err;
-	}
-
-	err = _compile_class(main_script, root, p_keep_state);
-	if (err) {
-		return err;
-	}
+	GUARD_OK(_compile_class(main_script, root, p_keep_state));
 
 	ScriptLambdaInfo new_lambda_info = _get_script_lambda_replacement_info(p_script);
 
@@ -3313,7 +3291,7 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 		GDScriptCache::add_static_script(p_script);
 	}
 
-	err = GDScriptCache::finish_compiling(main_script->path);
+	Error err = GDScriptCache::finish_compiling(main_script->path);
 	if (err) {
 		_set_error(R"(Failed to compile depended scripts.)", nullptr);
 	}

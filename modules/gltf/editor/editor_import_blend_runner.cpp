@@ -351,10 +351,7 @@ bool EditorImportBlendRunner::_extract_error_message_xml(const Vector<uint8_t> &
 Error EditorImportBlendRunner::do_import_direct(const Dictionary &p_options) {
 	// Export glTF directly.
 	String python = vformat(PYTHON_SCRIPT_DIRECT, dict_to_python(p_options));
-	Error err = start_blender(python, true);
-	if (err != OK) {
-		return err;
-	}
+	GUARD_OK(start_blender(python, true));
 
 	return OK;
 }

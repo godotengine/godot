@@ -286,10 +286,7 @@ Error CowData<T>::insert(Size p_pos, T &&p_val) {
 	const Size new_size = size() + 1;
 	ERR_FAIL_INDEX_V(p_pos, new_size, ERR_INVALID_PARAMETER);
 
-	Error error = _insert_uninitialized(p_pos, 1);
-	if (error) {
-		return error;
-	}
+	GUARD_OK(_insert_uninitialized(p_pos, 1));
 
 	// Create the new element at the given index.
 	memnew_placement(_ptr + p_pos, T(std::move(p_val)));
@@ -300,10 +297,7 @@ Error CowData<T>::insert(Size p_pos, T &&p_val) {
 
 template <typename T>
 Error CowData<T>::push_back(T &&p_val) {
-	Error error = _insert_uninitialized(size(), 1);
-	if (error) {
-		return error;
-	}
+	GUARD_OK(_insert_uninitialized(size(), 1));
 
 	memnew_placement(_ptr + size(), T(std::move(p_val)));
 	*_get_size() = size() + 1;
@@ -331,10 +325,7 @@ Error CowData<T>::append(Span<T> p_span) {
 	const bool span_in_self = _ptr && p_span.ptr() >= _ptr && p_span.ptr() < _ptr + size();
 	const Size idx_in_self = span_in_self ? (p_span.ptr() - _ptr) : -1;
 
-	const Error error = _insert_uninitialized(size(), p_span.size());
-	if (error) {
-		return error;
-	}
+	GUARD_OK(_insert_uninitialized(size(), p_span.size()));
 	const T *span_ptr = span_in_self ? (_ptr + idx_in_self) : p_span.ptr();
 	copy_arr_placement(_ptr + size(), span_ptr, p_span.size());
 	*_get_size() = size() + p_span.size();
@@ -350,10 +341,7 @@ Error CowData<T>::_insert_uninitialized(USize p_index, USize p_count, USize p_ca
 	} else if (_get_refcount()->get() == 1) {
 		if (capacity() < p_capacity) {
 			// Need to grow.
-			const Error error = _realloc_exact(p_capacity);
-			if (error) {
-				return error;
-			}
+			GUARD_OK(_realloc_exact(p_capacity));
 		}
 
 		// Relocate elements up.
@@ -365,10 +353,7 @@ Error CowData<T>::_insert_uninitialized(USize p_index, USize p_count, USize p_ca
 		// Initialize the data elsewhere first and only swap when it's ready.
 		CowData new_data;
 
-		const Error error = new_data._alloc_exact(p_capacity);
-		if (error) {
-			return error;
-		}
+		GUARD_OK(new_data._alloc_exact(p_capacity));
 
 		// Copy over elements.
 		copy_arr_placement(new_data._ptr, _ptr, p_index);
@@ -417,10 +402,7 @@ Error CowData<T>::_remove(USize p_index, USize p_count) {
 		// Remove by forking.
 		CowData new_data;
 
-		const Error error = new_data._alloc_exact(smaller_capacity(capacity(), new_size));
-		if (error) {
-			return error;
-		}
+		GUARD_OK(new_data._alloc_exact(smaller_capacity(capacity(), new_size)));
 
 		// Copy over elements.
 		copy_arr_placement(new_data._ptr, _ptr, p_index);
@@ -466,10 +448,7 @@ Error CowData<T>::resize(Size p_size) {
 	if (p_size > prev_size) {
 		// Caller wants to grow.
 
-		const Error error = _insert_uninitialized(prev_size, p_size - prev_size);
-		if (error) {
-			return error;
-		}
+		GUARD_OK(_insert_uninitialized(prev_size, p_size - prev_size));
 
 		// Construct new elements.
 		if constexpr (p_initialize) {
