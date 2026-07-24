@@ -93,6 +93,8 @@ void EditorSettingsDialog::_settings_property_edited() {
 	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
 		update_3d_navigation_preset();
 		_update_shortcuts();
+		_update_dynamic_property_hints();
+		callable_mp(EditorSettings::get_singleton(), &EditorSettings::notify_changes).call_deferred();
 	}
 }
 
