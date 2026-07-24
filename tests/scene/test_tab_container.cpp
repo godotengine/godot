@@ -876,7 +876,7 @@ TEST_CASE("[SceneTree][TabContainer] Mouse interaction") {
 		CHECK_FALSE(tab_container->get_viewport()->gui_is_dragging());
 		CHECK(tab_container->get_tab_count() == 2);
 		CHECK(target_tab_container->get_tab_count() == 2);
-		CHECK(tab_container->get_child_count(false) == 2);
+		CHECK(tab_container->get_child_count(false) == 6);
 		CHECK(target_tab_container->get_child_count(false) == 2);
 		CHECK(tab_container->get_tab_idx_from_control(tab1) == 0);
 		CHECK(tab_container->get_tab_idx_from_control(tab2) == 1);

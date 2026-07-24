@@ -2077,8 +2077,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 								Control *drag_preview = _gui_get_drag_preview();
 								if (drag_preview) {
 									ERR_PRINT("Don't set a drag preview and return null data. Preview was deleted and drag request ignored.");
-									memdelete(drag_preview);
 									gui.drag_preview_id = ObjectID();
+									drag_preview->set_visible(false);
+									drag_preview->queue_free();
 								}
 								section_root->gui.global_dragging = false;
 							}
@@ -2453,12 +2454,6 @@ void Viewport::gui_perform_drop_at(const Point2 &p_pos, Control *p_control) {
 		gui.drag_successful = false;
 	}
 
-	Control *drag_preview = _gui_get_drag_preview();
-	if (drag_preview) {
-		memdelete(drag_preview);
-		gui.drag_preview_id = ObjectID();
-	}
-
 	Viewport *section_root = get_section_root_viewport();
 	section_root->gui.drag_data = Variant();
 	gui.dragging = false;
@@ -2466,6 +2461,15 @@ void Viewport::gui_perform_drop_at(const Point2 &p_pos, Control *p_control) {
 	section_root->gui.global_dragging = false;
 	gui.drag_mouse_over = nullptr;
 	Viewport::_propagate_drag_notification(section_root, NOTIFICATION_DRAG_END);
+
+	Control *drag_preview = _gui_get_drag_preview();
+	if (drag_preview) {
+		gui.drag_preview_id = ObjectID();
+		drag_preview->set_visible(false);
+		drag_preview->queue_free();
+		gui.drag_preview_id = ObjectID();
+	}
+
 	// Display the new cursor shape instantly.
 	update_mouse_cursor_state();
 }
@@ -2524,7 +2528,11 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
 	Control *drag_preview = _gui_get_drag_preview();
-	memdelete(drag_preview);
+	if (drag_preview) {
+		gui.drag_preview_id = ObjectID();
+		drag_preview->set_visible(false);
+		drag_preview->queue_free();
+	}
 	p_control->set_as_top_level(true);
 	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); // Add as child of viewport.
