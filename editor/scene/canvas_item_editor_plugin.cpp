@@ -79,6 +79,7 @@
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_texture.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -1615,6 +1616,33 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
+void CanvasItemEditor::_popup_control_text_editor(CanvasItem *p_canvas_item) {
+	// Set the source so that the node's text can be updated with the TextEdit's "text_changed" signal.
+	control_text_source = p_canvas_item;
+	control_text_editing_bbcode = false;
+	control_text_editor->show();
+
+	bool valid = false;
+	String text = p_canvas_item->get("text", &valid);
+	if (!valid) {
+		// Try the `title` property as a fallback (for FoldableContainer, GraphNode, GraphFrame, etc.).
+		text = p_canvas_item->get("title");
+	}
+
+	control_text_editor->set_text(text);
+
+	// Move the TextEdit to be placed above the selected CanvasItem node.
+	const Transform2D parent_xform = p_canvas_item->get_global_transform_with_canvas() * p_canvas_item->get_transform().affine_inverse();
+	const Transform2D unscaled_transform = (transform * parent_xform * p_canvas_item->_edit_get_transform()).orthonormalized();
+	const Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+	control_text_editor->set_position(simple_xform.get_origin());
+
+	// Move the cursor to the end of the TextEdit and focus it automatically for quick editing.
+	control_text_editor->set_caret_line(control_text_editor->get_line_count());
+	control_text_editor->set_caret_column(1000);
+	control_text_editor->call_deferred("grab_focus");
+}
+
 bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
@@ -1713,6 +1741,31 @@ bool CanvasItemEditor::_gui_input_open_scene_on_double_click(const Ref<InputEven
 			}
 		}
 	}
+	return false;
+}
+
+bool CanvasItemEditor::_gui_input_edit_control_text_on_double_click(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseButton> b = p_event;
+
+	// Show a modal dialog to edit a CanvasItem's `text` or `title` property when double-clicking.
+	if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && b->is_double_click() && tool == TOOL_SELECT) {
+		List<CanvasItem *> selection = _get_edited_canvas_items();
+		if (selection.size() == 1) {
+			// Check if the CanvasItem has a `text` or `title` property.
+			// This is the case for most built-in Controls such as Label, BaseButton, RichTextLabel, etc.
+			// This will also work with user-defined nodes that have a property named `text` or `title`.
+			bool valid = false;
+			selection.get(0)->get("text", &valid);
+			if (!valid) {
+				selection.get(0)->get("title", &valid);
+			}
+			if (valid) {
+				_popup_control_text_editor(selection.get(0));
+				return true;
+			}
+		}
+	}
+
 	return false;
 }
 
@@ -2817,6 +2870,8 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			// print_line("Plugin");
 		} else if (_gui_input_open_scene_on_double_click(p_event)) {
 			// print_line("Open scene on double click");
+		} else if (_gui_input_edit_control_text_on_double_click(p_event)) {
+			//printf("Edit Control text on double click\n");
 		} else if (_gui_input_scale(p_event)) {
 			// print_line("Set scale");
 		} else if (_gui_input_pivot(p_event)) {
@@ -3032,6 +3087,31 @@ void CanvasItemEditor::_commit_drag() {
 	_reset_drag();
 	viewport->queue_redraw();
 	_update_cursor();
+}
+
+void CanvasItemEditor::_control_text_editor_text_changed() {
+	ERR_FAIL_NULL(control_text_source);
+	bool valid = false;
+	control_text_source->set("text", control_text_editor->get_text(), &valid);
+	if (!valid) {
+		// Try the `title` property as a fallback (for FoldableContainer, GraphNode, GraphFrame, etc.).
+		control_text_source->set("title", control_text_editor->get_text());
+	}
+}
+
+void CanvasItemEditor::_control_text_editor_gui_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventKey> k = p_event;
+	if (k.is_valid()) {
+		// Confirm when pressing Escape.
+		if (k->is_pressed() && k->get_keycode() == Key::ESCAPE) {
+			control_text_editor->hide();
+		}
+		// Confirm when pressing Ctrl + Enter (Cmd + Enter on macOS).
+		// FIXME: A line break is still written in the TextEdit when pressing Enter, even when `accept_event()` is called here.
+		if (k->is_pressed() && k->is_command_or_control_pressed() && (k->get_keycode() == Key::ENTER || k->get_keycode() == Key::KP_ENTER)) {
+			control_text_editor->hide();
+		}
+	}
 }
 
 void CanvasItemEditor::_update_cursor() {
@@ -4454,6 +4534,16 @@ void CanvasItemEditor::_update_editor_settings() {
 
 	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 
+	Ref<StyleBoxFlat> bg_translucent = EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("normal", "TextEdit")->duplicate();
+	bg_translucent->set_bg_color(Color(0, 0, 0, 0.5));
+	control_text_editor->add_theme_style_override("normal", bg_translucent);
+	Ref<StyleBoxFlat> bg_translucent_focus = EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("focus", "TextEdit")->duplicate();
+	// The background is already drawn by the "normal" stylebox which is drawn below the "focus" stylebox.
+	bg_translucent_focus->set_draw_center(false);
+	control_text_editor->add_theme_style_override("focus", bg_translucent_focus);
+	// Use a bold font for better readability on the translucent background.
+	control_text_editor->add_theme_font_override("font", get_theme_font("bold", "EditorFonts"));
+
 	simple_panning = EDITOR_GET("editors/panning/simple_panning");
 	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), simple_panning);
 	panner->set_scroll_speed(EDITOR_GET("editors/panning/2d_editor_pan_speed"));
@@ -5826,6 +5916,14 @@ CanvasItemEditor::CanvasItemEditor() {
 	viewport->connect(SceneStringName(draw), callable_mp(this, &CanvasItemEditor::_draw_viewport));
 	viewport->connect(SceneStringName(gui_input), callable_mp(this, &CanvasItemEditor::_gui_input_viewport));
 	viewport->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
+
+	control_text_editor = memnew(TextEdit);
+	control_text_editor->set_custom_minimum_size(Size2(300, 150) * EDSCALE);
+	control_text_editor->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	control_text_editor->hide();
+	viewport->add_child(control_text_editor);
+	control_text_editor->connect("text_changed", callable_mp(this, &CanvasItemEditor::_control_text_editor_text_changed));
+	control_text_editor->connect("gui_input", callable_mp(this, &CanvasItemEditor::_control_text_editor_gui_input));
 
 	h_scroll = memnew(HScrollBar);
 	viewport->add_child(h_scroll);
