@@ -137,6 +137,15 @@ android {
             signingConfig signingConfigs.debug
         }
 
+        benchmark {
+            initWith release
+            applicationIdSuffix ".benchmark"
+            manifestPlaceholders += [editorBuildSuffix: " (benchmark)"]
+            signingConfig signingConfigs.debug
+            matchingFallbacks = ['release']
+            debuggable false
+        }
+
         release {
             if (hasReleaseSigningConfigs()) {
                 signingConfig signingConfigs.release
@@ -205,6 +214,7 @@ dependencies {
     implementation "org.bouncycastle:bcprov-jdk15to18:1.78"
 
     implementation "org.khronos.openxr:openxr_loader_for_android:$versions.openxrLoaderVersion"
+    implementation "androidx.profileinstaller:profileinstaller:1.4.1"
 
     // Android XR dependencies
     androidImplementation "org.godotengine:godot-openxr-vendors-androidxr:$versions.openxrVendorsVersion"

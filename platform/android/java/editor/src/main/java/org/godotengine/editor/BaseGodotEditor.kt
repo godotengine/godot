@@ -98,6 +98,9 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val EXTRA_IS_GAME_EMBEDDED = "is_game_embedded"
 		internal const val EXTRA_IS_GAME_RUNNING = "is_game_running"
 
+		// Benchmarking extras.
+		private const val EXTRA_LOAD_EMPTY_BENCHMARK_PROJECT = "load_empty_benchmark_project"
+
 		// Command line arguments.
 		private const val FULLSCREEN_ARG = "--fullscreen"
 		private const val FULLSCREEN_ARG_SHORT = "-f"
@@ -169,6 +172,10 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		fun isRunningInInstrumentation(): Boolean {
 			if (BuildConfig.BUILD_TYPE == "release") {
 				return false
+			}
+
+			if (BuildConfig.BUILD_TYPE == "benchmark") {
+				return true
 			}
 
 			return try {
@@ -247,6 +254,10 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	@CallSuper
 	protected open fun getXRRuntimePermissions(): MutableSet<String> {
 		return mutableSetOf()
+	}
+
+	override fun shouldSanitizeLaunchIntent(): Boolean {
+		return BuildConfig.BUILD_TYPE != "benchmark"
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -426,6 +437,46 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 					}
 				}
 			}
+
+			else -> {
+				if (BuildConfig.BUILD_TYPE == "benchmark") {
+					val shouldLoadEmptyBenchmarkProject = intent.getBooleanExtra(EXTRA_LOAD_EMPTY_BENCHMARK_PROJECT, false)
+					if (shouldLoadEmptyBenchmarkProject) {
+						val projectParentDir = getExternalFilesDir(null)
+						if (projectParentDir != null) {
+							val benchmarkDir = File(projectParentDir, "godot_benchmark")
+							try {
+								Log.v(TAG, "Benchmark directory is $benchmarkDir")
+								if (!benchmarkDir.exists()) {
+									if (benchmarkDir.mkdirs()) {
+										Log.v(TAG, "Created benchmark directory: $benchmarkDir")
+									} else {
+										Log.e(TAG, "Unable to create editor benchmark directory")
+									}
+								}
+
+								val projectMetadata = File(benchmarkDir, "project.godot")
+								if (projectMetadata.createNewFile()) {
+									Log.v(TAG, "Created project metadata file: $projectMetadata")
+								}
+
+								// Load the empty project.
+								updatedCommandLineParams.addAll(
+									arrayOf(
+										EDITOR_ARG,
+										PATH_ARG,
+										benchmarkDir.canonicalPath
+									)
+								)
+							} catch(e: Exception) {
+								Log.e(TAG, "Unable to set up benchmark directory", e)
+							}
+						} else {
+							Log.e(TAG, "Unable to access empty benchmark project directory.")
+						}
+					}
+				}
+			}
 		}
 
 		super.handleStartIntent(intent, newLaunch)
@@ -521,7 +572,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		if (updatedCommandLineParams.isNotEmpty()) {
 			params.addAll(updatedCommandLineParams)
 		}
-		if (BuildConfig.BUILD_TYPE == "debug" && !params.contains("--benchmark")) {
+		if ((BuildConfig.BUILD_TYPE == "debug" || BuildConfig.BUILD_TYPE == "benchmark") && !params.contains("--benchmark")) {
 			params.add("--benchmark")
 		}
 		return params
