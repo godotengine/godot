@@ -118,6 +118,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void BaseButton::_accessibility_action_click(const Variant &p_data) {
+	emit_signal(SNAME("button_down"));
 	if (toggle_mode) {
 		status.pressed = !status.pressed;
 
@@ -133,6 +134,7 @@ void BaseButton::_accessibility_action_click(const Variant &p_data) {
 	} else {
 		_pressed();
 	}
+	emit_signal(SNAME("button_up"));
 	queue_accessibility_update();
 	queue_redraw();
 }
