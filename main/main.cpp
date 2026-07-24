@@ -46,6 +46,7 @@
 #include "core/io/file_access_zip.h"
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
+#include "core/io/logger.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
@@ -155,6 +156,7 @@
 #include "modules/gdscript/gdscript.h"
 #if defined(TOOLS_ENABLED) && !defined(GDSCRIPT_NO_LSP)
 #include "modules/gdscript/language_server/gdscript_language_server.h"
+#include "modules/gdscript/language_server/lsp_logger.h"
 #endif // TOOLS_ENABLED && !GDSCRIPT_NO_LSP
 #endif // MODULE_GDSCRIPT_ENABLED
 
@@ -506,6 +508,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--dap-port <port>", "Use the specified port for the GDScript Debug Adapter Protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #if defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
 	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript Language Server Protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--lsp", "(experimental) Start the GDScript Language Server in headless mode (stdio). Useful for integration with external editors.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif // MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
 #endif
 	print_help_option("--quit", "Quit after the first iteration.\n");
@@ -1960,6 +1963,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing <port> argument for --lsp-port <port>.\n");
 				goto error;
 			}
+		} else if (arg == "--lsp") {
+			editor = true;
+			GDScriptLanguageServer::use_stdio = true;
+
+			// This logger is used to prevent any kind of log go into stdout, which is used as transport by LSP protocol.
+			// It could cause LSP clients to fail parsing our LSP server messages.
+			Vector<Logger *> loggers;
+			loggers.push_back(memnew(LspLogger));
+			OS::get_singleton()->_set_logger(memnew(CompositeLogger(loggers)));
+
+			// `--lsp` implies `--headless` to avoid spawning an unnecessary window.
+			audio_driver = NULL_AUDIO_DRIVER;
+			display_driver = NULL_DISPLAY_DRIVER;
 #endif // TOOLS_ENABLED && MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
 #if defined(TOOLS_ENABLED)
 		} else if (arg == "--dap-port") {
