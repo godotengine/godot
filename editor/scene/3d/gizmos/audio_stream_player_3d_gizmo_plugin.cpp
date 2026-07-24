@@ -47,7 +47,9 @@ AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
 	// Enable vertex colors so the range circles can reflect the attenuation model
 	// and whether Max Distance is capping the range (see redraw()).
 	create_material("stream_player_3d_material_lines", Color(1, 1, 1), false, false, true);
+	create_material("stream_player_3d_material_billboard", Color(1, 1, 1), true, false, true);
 	create_handle_material("handles");
+	create_handle_material("handles_billboard", true);
 }
 
 bool AudioStreamPlayer3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -165,9 +167,10 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		const AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_node_3d());
 
 		if (player->get_attenuation_model() != AudioStreamPlayer3D::ATTENUATION_DISABLED || player->get_max_distance() > CMP_EPSILON) {
-			// Draw the attenuation range as three axis-aligned circles, giving a sphere-like
-			// representation (matching OmniLight3D).
+			// Draw the attenuation range as three axis-aligned circles plus a billboard circle,
+			// giving a sphere-like representation (matching OmniLight3D).
 			const Ref<Material> lines_material = get_material("stream_player_3d_material_lines", p_gizmo);
+			const Ref<Material> lines_billboard_material = get_material("stream_player_3d_material_billboard", p_gizmo);
 
 			// Soft distance cap varies depending on attenuation model, as some will fade out more aggressively than others.
 			// Multipliers were empirically determined through testing.
@@ -199,6 +202,7 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			}
 
 			Vector<Vector3> points;
+			Vector<Vector3> points_billboard;
 			for (int i = 0; i < 120; i++) {
 				const float ra = Math::deg_to_rad((float)(i * 3));
 				const float rb = Math::deg_to_rad((float)((i + 1) * 3));
@@ -212,6 +216,10 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				points.push_back(Vector3(0, b.x, b.y));
 				points.push_back(Vector3(a.x, a.y, 0));
 				points.push_back(Vector3(b.x, b.y, 0));
+
+				// Billboard circle.
+				points_billboard.push_back(Vector3(a.x, a.y, 0));
+				points_billboard.push_back(Vector3(b.x, b.y, 0));
 			}
 
 			Color color;
@@ -243,12 +251,19 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			}
 
 			p_gizmo->add_lines(points, lines_material, false, color);
+			p_gizmo->add_lines(points_billboard, lines_billboard_material, true, color);
 
 			if (player->get_max_distance() > CMP_EPSILON) {
-				// Handle to edit Max Distance directly in the viewport, placed on the range circle.
+				// Handle to edit Max Distance directly in the viewport, placed on the billboard circle.
 				Vector<Vector3> distance_handles;
 				distance_handles.push_back(Vector3(player->get_max_distance(), 0, 0));
-				p_gizmo->add_handles(distance_handles, get_material("handles"), { 0 });
+				// A gizmo uses one billboard flag for all handles, so only billboard the Max Distance
+				// handle when the fixed emission-angle handle isn't also present (keeps picking consistent).
+				if (player->is_emission_angle_enabled()) {
+					p_gizmo->add_handles(distance_handles, get_material("handles"), { 0 });
+				} else {
+					p_gizmo->add_handles(distance_handles, get_material("handles_billboard"), { 0 }, true);
+				}
 			}
 		}
 
