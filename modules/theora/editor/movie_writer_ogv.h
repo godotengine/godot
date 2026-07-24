@@ -47,6 +47,8 @@ class MovieWriterOGV : public MovieWriter {
 	uint32_t fps = 0;
 	uint32_t audio_ch = 0;
 	uint32_t audio_frames = 0;
+	int pic_w = 0;
+	int pic_h = 0;
 
 	Ref<FileAccess> f;
 
