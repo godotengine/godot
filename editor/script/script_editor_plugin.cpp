@@ -362,17 +362,72 @@ void DocumentList::_show_context_menu() {
 	}
 
 	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(script_editor->tab_container->get_tab_control(selected));
-	script_editor->_setup_popup_menu(context_menu, true);
-	script_editor->_prepare_popup_menu(context_menu, true);
+	const Ref<Resource> res = seb ? seb->get_edited_resource() : Ref<Resource>();
+	const Ref<Script> script = res;
+	{
+		if (seb) {
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), ScriptEditor::FILE_MENU_SAVE);
+			context_menu->add_separator();
+		}
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), ScriptEditor::FILE_MENU_CLOSE);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), ScriptEditor::FILE_MENU_CLOSE_OTHER_TABS);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_tabs_below"), ScriptEditor::FILE_MENU_CLOSE_TABS_BELOW);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), ScriptEditor::FILE_MENU_CLOSE_ALL);
+		if (script_editor == ScriptEditor::get_singleton()) {
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_docs"), ScriptEditor::FILE_MENU_CLOSE_DOCS);
+		}
+		context_menu->add_separator();
+
+		if (script_editor == ScriptEditor::get_singleton() && script.is_valid() && script->is_tool()) {
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), ScriptEditor::FILE_MENU_SOFT_RELOAD_TOOL);
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), ScriptEditor::FILE_MENU_RUN);
+			context_menu->add_separator();
+		}
+
+		if (seb) {
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), ScriptEditor::FILE_MENU_COPY_PATH);
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_uid"), ScriptEditor::FILE_MENU_COPY_UID);
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), ScriptEditor::FILE_MENU_SHOW_IN_FILE_SYSTEM);
+			if (script_editor == ScriptEditor::get_bottom_script_editor()) {
+				context_menu->add_shortcut(ED_SHORTCUT("script_editor/open_in_inspector", TTRC("Open File in Inspector")), ScriptEditor::FILE_MENU_INSPECT);
+				context_menu->add_shortcut(ED_SHORTCUT("script_editor/inspect_native_code", TTRC("Inspect Native Shader Code...")), ScriptEditor::FILE_MENU_INSPECT_NATIVE_SHADER_CODE);
+			}
+			context_menu->add_separator();
+		}
+
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), ScriptEditor::FILE_MENU_MOVE_UP);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_down"), ScriptEditor::FILE_MENU_MOVE_DOWN);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), ScriptEditor::FILE_MENU_SORT);
+	}
+
+	{
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_SAVE), !seb);
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_CLOSE), script_editor->tab_container->get_tab_count() < 1);
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_CLOSE_OTHER_TABS), script_editor->tab_container->get_tab_count() <= 1);
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_CLOSE_TABS_BELOW), script_editor->tab_container->get_current_tab() >= script_editor->tab_container->get_tab_count() - 1);
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_CLOSE_ALL), script_editor->tab_container->get_tab_count() < 1);
+		if (script_editor == ScriptEditor::get_singleton()) {
+			context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_CLOSE_DOCS), !script_editor->_has_docs_tab());
+			context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_SOFT_RELOAD_TOOL), script.is_null() || !script->is_tool());
+			context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_RUN), script.is_null());
+		}
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_COPY_PATH), res.is_null() || res->get_path().is_empty());
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_COPY_UID), res.is_null() || ResourceLoader::get_resource_uid(res->get_path()) == ResourceUID::INVALID_ID);
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_SHOW_IN_FILE_SYSTEM), res.is_null() || res->get_path().is_empty());
+		if (script_editor == ScriptEditor::get_bottom_script_editor()) {
+			context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_INSPECT), !seb);
+			context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_INSPECT_NATIVE_SHADER_CODE), !seb);
+		}
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_MOVE_UP), script_editor->tab_container->get_current_tab() <= 0);
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_MOVE_DOWN), script_editor->tab_container->get_current_tab() >= script_editor->tab_container->get_tab_count() - 1);
+		context_menu->set_item_disabled(context_menu->get_item_index(ScriptEditor::FILE_MENU_SORT), script_editor->tab_container->get_tab_count() <= 1);
+	}
 
 	// Context menu plugin.
 	PackedStringArray selected_paths;
-	if (seb) {
-		Ref<Resource> res = seb->get_edited_resource();
-		if (res.is_valid()) {
-			String path = res->get_path();
-			selected_paths.push_back(path);
-		}
+	if (seb && res.is_valid()) {
+		String path = res->get_path();
+		selected_paths.push_back(path);
 	}
 	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR, selected_paths);
 
@@ -3174,132 +3229,22 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void ScriptEditor::_setup_popup_menu(PopupMenu *p_menu, bool p_is_context_menu) {
+void ScriptEditor::_prepare_file_menu() {
+	PopupMenu *p_menu = file_menu->get_popup();
+	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_REOPEN_CLOSED), previous_scripts.is_empty());
+
 	ScriptEditorBase *seb = _get_current_editor();
 	const Ref<Resource> res = seb ? seb->get_edited_resource() : Ref<Resource>();
-	if (!p_is_context_menu) {
-		if (this == script_editor) {
-			p_menu->add_shortcut(ED_SHORTCUT("script_editor/new_script", TTRC("New Script..."), KeyModifierMask::CMD_OR_CTRL | Key::N), FILE_MENU_NEW_SCRIPT);
-			p_menu->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTRC("New Text File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_MENU_NEW_TEXTFILE);
-			p_menu->add_shortcut(ED_SHORTCUT("script_editor/open", TTRC("Open...")), FILE_MENU_OPEN);
-		} else {
-			p_menu->add_shortcut(ED_SHORTCUT("script_editor/new_shader", TTRC("New Shader..."), KeyModifierMask::CMD_OR_CTRL | Key::N), FILE_MENU_NEW_SHADER);
-			p_menu->add_shortcut(ED_SHORTCUT("script_editor/new_include", TTRC("New Shader Include..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_MENU_NEW_INCLUDE);
-			p_menu->add_shortcut(ED_SHORTCUT("script_editor/open_shader", TTRC("Load Shader File..."), KeyModifierMask::CMD_OR_CTRL | Key::O), FILE_MENU_OPEN_SHADER);
-			p_menu->add_shortcut(ED_SHORTCUT("script_editor/open_include", TTRC("Load Shader Include File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O), FILE_MENU_OPEN_INCLUDE);
-		}
-
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reopen_closed_script"), FILE_MENU_REOPEN_CLOSED);
-
-		p_menu->add_submenu_node_item(TTRC("Open Recent"), recent_scripts, FILE_MENU_OPEN_RECENT);
-		p_menu->add_separator();
-	}
-
-	if (!p_is_context_menu || res.is_valid()) {
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), FILE_MENU_SAVE);
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_MENU_SAVE_AS);
-	}
-	if (!p_is_context_menu) {
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/save_all"), FILE_MENU_SAVE_ALL);
-	}
-	if (!p_is_context_menu || res.is_valid()) {
-		p_menu->add_separator();
-	}
-
-	p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_MENU_CLOSE);
-	p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_other_tabs"), FILE_MENU_CLOSE_OTHER_TABS);
-	p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_tabs_below"), FILE_MENU_CLOSE_TABS_BELOW);
-	p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), FILE_MENU_CLOSE_ALL);
-	if (this == script_editor) {
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/close_docs"), FILE_MENU_CLOSE_DOCS);
-	}
-	p_menu->add_separator();
-
-	Ref<Script> script = res;
-	if (this == script_editor && (!p_is_context_menu || (script.is_valid() && script->is_tool()))) {
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_MENU_SOFT_RELOAD_TOOL);
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), FILE_MENU_RUN);
-		p_menu->add_separator();
-	}
-
-	p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_path"), FILE_MENU_COPY_PATH);
-	p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/copy_uid"), FILE_MENU_COPY_UID);
-	p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/show_in_file_system"), FILE_MENU_SHOW_IN_FILE_SYSTEM);
-	if (this == bottom_script_editor) {
-		p_menu->add_shortcut(ED_SHORTCUT("script_editor/open_in_inspector", TTRC("Open File in Inspector")), FILE_MENU_INSPECT);
-		p_menu->add_shortcut(ED_SHORTCUT("script_editor/inspect_native_code", TTRC("Inspect Native Shader Code...")), FILE_MENU_INSPECT_NATIVE_SHADER_CODE);
-	}
-	p_menu->add_separator();
-
-	if (!p_is_context_menu) {
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/history_previous"), FILE_MENU_HISTORY_PREV);
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/history_next"), FILE_MENU_HISTORY_NEXT);
-		p_menu->add_separator();
-
-		p_menu->add_submenu_node_item(TTRC("Theme"), theme_submenu, FILE_MENU_THEME_SUBMENU);
-		p_menu->add_separator();
-	}
-
-	if (p_is_context_menu) {
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), FILE_MENU_MOVE_UP);
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_down"), FILE_MENU_MOVE_DOWN);
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), FILE_MENU_SORT);
-	}
-
-	p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"), FILE_MENU_TOGGLE_FILES_PANEL);
-}
-
-void ScriptEditor::_prepare_popup_menu(PopupMenu *p_menu, bool p_is_context_menu) {
-	ScriptEditorBase *seb = _get_current_editor();
-	const Ref<Resource> res = seb ? seb->get_edited_resource() : Ref<Resource>();
-	if (!p_is_context_menu) {
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_REOPEN_CLOSED), previous_scripts.is_empty());
-	}
-
-	if (!p_is_context_menu || res.is_valid()) {
+	if (res.is_valid()) {
 		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_SAVE), res.is_null());
 		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_SAVE_AS), res.is_null());
 	}
-	if (!p_is_context_menu) {
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_SAVE_ALL), !_has_script_tab());
-	}
-
+	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_SAVE_ALL), !_has_script_tab());
 	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_CLOSE), tab_container->get_tab_count() < 1);
-	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_CLOSE_OTHER_TABS), tab_container->get_tab_count() <= 1);
-	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_CLOSE_TABS_BELOW), tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
 	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_CLOSE_ALL), tab_container->get_tab_count() < 1);
-	if (this == script_editor) {
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_CLOSE_DOCS), !_has_docs_tab());
-	}
-
-	Ref<Script> script = res;
-	if (this == script_editor && (!p_is_context_menu || (script.is_valid() && script->is_tool()))) {
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_SOFT_RELOAD_TOOL), script.is_null() || !script->is_tool());
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_RUN), script.is_null());
-	}
-
-	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_COPY_PATH), res.is_null() || res->get_path().is_empty());
-	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_COPY_UID), res.is_null() || ResourceLoader::get_resource_uid(res->get_path()) == ResourceUID::INVALID_ID);
-	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_SHOW_IN_FILE_SYSTEM), res.is_null() || res->get_path().is_empty());
-	if (this == bottom_script_editor) {
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_INSPECT), !seb);
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_INSPECT_NATIVE_SHADER_CODE), !seb);
-	}
-
-	if (!p_is_context_menu) {
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_HISTORY_PREV), history_pos <= 0);
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_HISTORY_NEXT), history_pos >= history.size() - 1);
-	}
-
-	if (p_is_context_menu) {
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_MOVE_UP), tab_container->get_current_tab() <= 0);
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_MOVE_DOWN), tab_container->get_current_tab() >= tab_container->get_tab_count() - 1);
-		p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_SORT), tab_container->get_tab_count() <= 1);
-	}
-}
-
-void ScriptEditor::_prepare_file_menu() {
-	_prepare_popup_menu(file_menu->get_popup(), false);
+	const Ref<Script> script = res;
+	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_SOFT_RELOAD_TOOL), script.is_null() || !script->is_tool());
+	p_menu->set_item_disabled(p_menu->get_item_index(FILE_MENU_RUN), script.is_null());
 }
 
 void ScriptEditor::_file_menu_closed() {
@@ -4160,7 +4105,6 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	file_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ScriptEditor::_prepare_file_menu));
 	file_menu->get_popup()->connect("popup_hide", callable_mp(this, &ScriptEditor::_file_menu_closed));
 	menu_hb->add_child(file_menu);
-
 	recent_scripts = memnew(PopupMenu);
 	recent_scripts->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	recent_scripts->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_open_recent_script));
@@ -4173,6 +4117,33 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	theme_submenu->add_separator();
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTRC("Save Theme As...")), THEME_SAVE_AS);
 
+	if (this == script_editor) {
+		file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_script", TTRC("New Script..."), KeyModifierMask::CMD_OR_CTRL | Key::N), FILE_MENU_NEW_SCRIPT);
+		file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTRC("New Text File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_MENU_NEW_TEXTFILE);
+		file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTRC("Open...")), FILE_MENU_OPEN);
+	} else {
+		file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_shader", TTRC("New Shader..."), KeyModifierMask::CMD_OR_CTRL | Key::N), FILE_MENU_NEW_SHADER);
+		file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_include", TTRC("New Shader Include..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_MENU_NEW_INCLUDE);
+		file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open_shader", TTRC("Load Shader File..."), KeyModifierMask::CMD_OR_CTRL | Key::O), FILE_MENU_OPEN_SHADER);
+		file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open_include", TTRC("Load Shader Include File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O), FILE_MENU_OPEN_INCLUDE);
+	}
+	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/reopen_closed_script"), FILE_MENU_REOPEN_CLOSED);
+	file_menu->get_popup()->add_submenu_node_item(TTRC("Open Recent"), recent_scripts, FILE_MENU_OPEN_RECENT);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/save"), FILE_MENU_SAVE);
+	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/save_as"), FILE_MENU_SAVE_AS);
+	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/save_all"), FILE_MENU_SAVE_ALL);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/close_file"), FILE_MENU_CLOSE);
+	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/close_all"), FILE_MENU_CLOSE_ALL);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/reload_script_soft"), FILE_MENU_SOFT_RELOAD_TOOL);
+	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/run_file"), FILE_MENU_RUN);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_submenu_node_item(TTRC("Theme"), theme_submenu, FILE_MENU_THEME_SUBMENU);
+	file_menu->get_popup()->add_separator();
+	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"), FILE_MENU_TOGGLE_FILES_PANEL);
+
 	script_search_menu = memnew(MenuButton);
 	script_search_menu->set_flat(false);
 	script_search_menu->set_theme_type_variation("FlatMenuButton");
@@ -4181,8 +4152,6 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	script_search_menu->set_shortcut_context(this);
 	script_search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_menu_option));
 	menu_hb->add_child(script_search_menu);
-
-	_setup_popup_menu(file_menu->get_popup(), false);
 
 	if (this == script_editor) {
 		MenuButton *debug_menu_btn = memnew(MenuButton);
@@ -4243,6 +4212,7 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	script_back->set_theme_type_variation(SceneStringName(FlatButton));
 	script_back->set_tooltip_text(TTRC("Go to previous edited document."));
 	script_back->set_shortcut(ED_GET_SHORTCUT("script_editor/history_previous"));
+	script_back->set_shortcut_context(this);
 	script_back->set_disabled(true);
 	menu_hb->add_child(script_back);
 	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
@@ -4251,6 +4221,7 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	script_forward->set_theme_type_variation(SceneStringName(FlatButton));
 	script_forward->set_tooltip_text(TTRC("Go to next edited document."));
 	script_forward->set_shortcut(ED_GET_SHORTCUT("script_editor/history_next"));
+	script_forward->set_shortcut_context(this);
 	script_forward->set_disabled(true);
 	menu_hb->add_child(script_forward);
 	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
