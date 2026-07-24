@@ -2668,7 +2668,17 @@ void fragment_shader(in SceneData scene_data) {
 #else
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
 #endif
-					true, shadow, f0, roughness, metallic, directional_lights.data[i].specular, albedo, alpha, screen_uv, energy_compensation,
+					true,
+#ifdef LIGHT_FALLOFF_USED
+					1.0,
+#endif
+#ifdef LIGHT_SHADOW_USED
+					shadow,
+#endif
+#if (!defined(LIGHT_CODE_USED) || defined(ATTENUATION_USED)) && !(defined(LIGHT_FALLOFF_USED) && defined(LIGHT_SHADOW_USED))
+					shadow,
+#endif
+					f0, roughness, metallic, directional_lights.data[i].specular, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
