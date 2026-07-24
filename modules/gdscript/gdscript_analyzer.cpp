@@ -2071,24 +2071,6 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	static_context = previous_static_context;
 }
 
-void GDScriptAnalyzer::decide_pattern_type(GDScriptParser::PatternNode &p_pattern, GDScriptParser::PatternNode *p_statement) {
-	if (p_statement == nullptr) {
-		return;
-	}
-
-	// Use return or nested suite type as this suite type.
-	// TODO: Only downgrades. As long as all of the downgraded vars are unused irrelevant.
-	if (p_pattern.type_constraint.is_set() && (p_pattern.type_constraint != p_statement->type_constraint)) {
-		// Mixed types.
-		// TODO: This could use the common supertype instead.
-		p_pattern.type_constraint.kind = GDScriptParser::DataType::VARIANT;
-		p_pattern.type_constraint.type_source = GDScriptParser::DataType::UNDETECTED;
-	} else {
-		p_pattern.type_constraint = p_statement->type_constraint;
-		p_pattern.type_constraint.type_source = GDScriptParser::DataType::INFERRED;
-	}
-}
-
 void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite, bool p_is_root) {
 	for (int i = 0; i < p_suite->statements.size(); i++) {
 		GDScriptParser::Node *stmt = p_suite->statements[i];
@@ -2531,20 +2513,16 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 		return;
 	}
 
-	GDScriptParser::DataType result;
-
 	switch (p_match_pattern->pattern_type) {
 		case GDScriptParser::PatternNode::PT_LITERAL:
 			if (p_match_pattern->literal) {
 				reduce_literal(p_match_pattern->literal);
-				result = p_match_pattern->literal->type_constraint;
 			}
 			break;
 		case GDScriptParser::PatternNode::PT_EXPRESSION:
 			if (p_match_pattern->expression) {
 				GDScriptParser::ExpressionNode *expr = p_match_pattern->expression;
 				reduce_expression(expr);
-				result = expr->type_constraint;
 				if (!expr->is_constant) {
 					while (expr && expr->type == GDScriptParser::Node::SUBSCRIPT) {
 						GDScriptParser::SubscriptNode *sub = static_cast<GDScriptParser::SubscriptNode *>(expr);
@@ -2560,7 +2538,8 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				}
 			}
 			break;
-		case GDScriptParser::PatternNode::PT_BIND:
+		case GDScriptParser::PatternNode::PT_BIND: {
+			GDScriptParser::DataType result;
 			if (p_match_test != nullptr) {
 				result = p_match_test->type_constraint;
 			} else {
@@ -2570,13 +2549,11 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 #ifdef DEBUG_ENABLED
 			is_shadowing(p_match_pattern->bind, "pattern bind", true);
 #endif // DEBUG_ENABLED
-			break;
+		} break;
 		case GDScriptParser::PatternNode::PT_ARRAY:
 			for (int i = 0; i < p_match_pattern->array.size(); i++) {
 				resolve_match_pattern(p_match_pattern->array[i], nullptr);
-				decide_pattern_type(*p_match_pattern, p_match_pattern->array[i]);
 			}
-			result = p_match_pattern->type_constraint;
 			break;
 		case GDScriptParser::PatternNode::PT_DICTIONARY:
 			for (int i = 0; i < p_match_pattern->dictionary.size(); i++) {
@@ -2589,18 +2566,13 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 
 				if (p_match_pattern->dictionary[i].value_pattern) {
 					resolve_match_pattern(p_match_pattern->dictionary[i].value_pattern, nullptr);
-					decide_pattern_type(*p_match_pattern, p_match_pattern->dictionary[i].value_pattern);
 				}
 			}
-			result = p_match_pattern->type_constraint;
 			break;
 		case GDScriptParser::PatternNode::PT_WILDCARD:
 		case GDScriptParser::PatternNode::PT_REST:
-			result.kind = GDScriptParser::DataType::VARIANT;
 			break;
 	}
-
-	p_match_pattern->type_constraint = result;
 }
 
 void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
