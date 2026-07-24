@@ -39,6 +39,7 @@
 #include "core/config/engine.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/file_access_memory.h"
 #include "core/os/main_loop.h"
 #include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
@@ -284,6 +285,7 @@ void OS_Windows::initialize() {
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
 	FileAccess::make_default<FileAccessWindowsPipe>(FileAccess::ACCESS_PIPE);
+	FileAccess::make_default<FileAccessMemory>(FileAccess::ACCESS_MEMORY);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
