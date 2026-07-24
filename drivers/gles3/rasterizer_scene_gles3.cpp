@@ -1602,6 +1602,7 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 	} else if (is_environment(p_render_data->environment)) {
 		RSE::EnvironmentBG env_bg = environment_get_background(p_render_data->environment);
 		RSE::EnvironmentAmbientSource ambient_src = environment_get_ambient_source(p_render_data->environment);
+		const bool use_legacy_adreno_sky_workaround = GLES3::Config::get_singleton()->use_legacy_adreno_sky_workaround;
 
 		float bg_energy_multiplier = environment_get_bg_energy_multiplier(p_render_data->environment);
 
@@ -1640,6 +1641,20 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 			scene_state.data.use_reflection_cubemap = true;
 		} else {
 			scene_state.data.use_reflection_cubemap = false;
+		}
+
+		if (use_legacy_adreno_sky_workaround && scene_state.data.use_ambient_cubemap) {
+			scene_state.data.use_ambient_light = true;
+
+			if (Math::is_zero_approx(scene_state.data.ambient_light_color_energy[0]) &&
+					Math::is_zero_approx(scene_state.data.ambient_light_color_energy[1]) &&
+					Math::is_zero_approx(scene_state.data.ambient_light_color_energy[2])) {
+				// Keep a small amount of ambient light when sky radiance is not used.
+				const float fallback_ambient = 0.2f * bg_energy_multiplier;
+				scene_state.data.ambient_light_color_energy[0] = fallback_ambient;
+				scene_state.data.ambient_light_color_energy[1] = fallback_ambient;
+				scene_state.data.ambient_light_color_energy[2] = fallback_ambient;
+			}
 		}
 
 		scene_state.data.fog_enabled = environment_get_fog_enabled(p_render_data->environment);
@@ -2813,6 +2828,26 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.enable_gl_depth_draw(true);
 	}
 
+	const bool draw_sky_before_opaque = GLES3::Config::get_singleton()->use_legacy_adreno_sky_workaround && (draw_sky || draw_sky_fog_only);
+	if (draw_sky_before_opaque) {
+		RENDER_TIMESTAMP("Render Sky Before Opaque");
+
+		// Avoid drawing the sky over opaque objects on legacy Adreno drivers.
+		scene_state.enable_gl_depth_test(false);
+		scene_state.enable_gl_depth_draw(false);
+		scene_state.enable_gl_blend(false);
+		scene_state.set_gl_cull_mode(RSE::CULL_MODE_BACK);
+
+		Transform3D transform = render_data.cam_transform;
+		Projection projection = render_data.cam_projection;
+
+		_draw_sky(render_data.environment, projection, transform, sky_energy_multiplier, render_data.luminance_multiplier, p_camera_data->view_count > 1, flip_y, apply_environment_effects_in_post);
+
+		scene_state.enable_gl_depth_test(true);
+		scene_state.enable_gl_depth_draw(true);
+		scene_state.set_gl_depth_func(GL_GEQUAL);
+	}
+
 	RENDER_TIMESTAMP("Render Opaque Pass");
 	uint64_t spec_constant_base_flags = 0;
 
@@ -2869,7 +2904,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.enable_gl_depth_draw(false);
 	scene_state.enable_gl_stencil_test(false);
 
-	if (draw_sky || draw_sky_fog_only) {
+	if ((draw_sky || draw_sky_fog_only) && !draw_sky_before_opaque) {
 		RENDER_TIMESTAMP("Render Sky");
 
 		scene_state.enable_gl_depth_test(true);
@@ -3197,7 +3232,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		GLuint texture_to_bind = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_CUBEMAP_BLACK))->tex_id;
 		if (p_render_data->environment.is_valid()) {
 			Sky *sky = sky_owner.get_or_null(environment_get_sky(p_render_data->environment));
-			if (sky && sky->radiance != 0) {
+			if (sky && sky->radiance != 0 && !config->use_legacy_adreno_sky_workaround) {
 				texture_to_bind = sky->radiance;
 				base_spec_constants |= SceneShaderGLES3::USE_RADIANCE_MAP;
 			}
