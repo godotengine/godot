@@ -5506,7 +5506,7 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 	}
 	LineDrawingCache cache_entry = line_drawing_cache[p_line];
 
-	int wrap_index = get_line_wrap_index_at_column(p_line, p_column);
+	int wrap_index = get_line_wrap_index_at_column(p_line, p_column - 1);
 	if (wrap_index >= cache_entry.first_visible_chars.size()) {
 		// Line seems to be wrapped beyond the viewable area.
 		return Rect2i(-1, -1, 0, 0);
