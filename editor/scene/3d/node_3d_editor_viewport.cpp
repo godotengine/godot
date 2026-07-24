@@ -208,7 +208,7 @@ void ViewportNavigationControl::_update_navigation() {
 
 			Vector3 forward;
 			if (viewport->view_3d_controller->get_freelook_scheme() == View3DController::FreelookScheme::FREELOOK_FULLY_AXIS_LOCKED) {
-				// Forward/backward keys will always go straight forward/backward, never moving on the Y axis.
+				// Forward/backward keys will always go horizontally forward/backward, never moving on the Y axis.
 				forward = Vector3(0, 0, delta_normalized.y).rotated(Vector3(0, 1, 0), viewport->camera->get_rotation().y);
 			} else {
 				// Forward/backward keys will be relative to the camera pitch.
@@ -2989,7 +2989,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 		// Freelook doesn't work in orthogonal mode or when previewing without pilot mode.
 		if (!view_3d_controller->is_orthogonal() && !(previewing && !pilot_preview_enabled) && ED_IS_SHORTCUT("spatial_editor/freelook_toggle", event_mod)) {
-			view_3d_controller->set_freelook_enabled(!view_3d_controller->is_freelook_enabled());
+			// Only allow Shift+F to toggle freelook off if right mouse button is not pressed.
+			// This lets users press Shift and F independently during right-mouse-activated freelook.
+			if (!view_3d_controller->is_freelook_enabled() || !Input::get_singleton()->is_mouse_button_pressed(MouseButton::RIGHT)) {
+				view_3d_controller->set_freelook_enabled(!view_3d_controller->is_freelook_enabled());
+			}
 		} else if (k->get_keycode() == Key::ESCAPE) {
 			view_3d_controller->set_freelook_enabled(false);
 		}
@@ -3962,6 +3966,10 @@ void Node3DEditorViewport::_update_view_3d_controller(bool p_update_all) {
 	view_3d_controller->set_shortcut(View3DController::SHORTCUT_FREELOOK_RIGHT, ED_GET_SHORTCUT("spatial_editor/freelook_right"));
 	view_3d_controller->set_shortcut(View3DController::SHORTCUT_FREELOOK_UP, ED_GET_SHORTCUT("spatial_editor/freelook_up"));
 	view_3d_controller->set_shortcut(View3DController::SHORTCUT_FREELOOK_DOWN, ED_GET_SHORTCUT("spatial_editor/freelook_down"));
+	view_3d_controller->set_shortcut(View3DController::SHORTCUT_FREELOOK_GLOBAL_UP, ED_GET_SHORTCUT("spatial_editor/freelook_global_up"));
+	view_3d_controller->set_shortcut(View3DController::SHORTCUT_FREELOOK_GLOBAL_DOWN, ED_GET_SHORTCUT("spatial_editor/freelook_global_down"));
+	view_3d_controller->set_shortcut(View3DController::SHORTCUT_FREELOOK_LOCAL_UP, ED_GET_SHORTCUT("spatial_editor/freelook_local_up"));
+	view_3d_controller->set_shortcut(View3DController::SHORTCUT_FREELOOK_LOCAL_DOWN, ED_GET_SHORTCUT("spatial_editor/freelook_local_down"));
 	view_3d_controller->set_shortcut(View3DController::SHORTCUT_FREELOOK_SPEED_MOD, ED_GET_SHORTCUT("spatial_editor/freelook_speed_modifier"));
 	view_3d_controller->set_shortcut(View3DController::SHORTCUT_FREELOOK_SLOW_MOD, ED_GET_SHORTCUT("spatial_editor/freelook_slow_modifier"));
 
@@ -6704,8 +6712,13 @@ void Node3DEditorViewport::_load_viewport_inputs() {
 	register_shortcut_action("spatial_editor/freelook_backwards", TTRC("Freelook Backwards"), Key::S, true);
 	register_shortcut_action("spatial_editor/freelook_up", TTRC("Freelook Up"), Key::E, true);
 	register_shortcut_action("spatial_editor/freelook_down", TTRC("Freelook Down"), Key::Q, true);
+	register_shortcut_action("spatial_editor/freelook_global_up", TTRC("Freelook Global Up"), Key::SPACE, true);
+	register_shortcut_action("spatial_editor/freelook_global_down", TTRC("Freelook Global Down"), Key::CTRL, true); // Ctrl even on macOS.
+	register_shortcut_action("spatial_editor/freelook_local_up", TTRC("Freelook Local Up"), Key::R, true);
+	register_shortcut_action("spatial_editor/freelook_local_down", TTRC("Freelook Local Down"), Key::F, true);
 	register_shortcut_action("spatial_editor/freelook_speed_modifier", TTRC("Freelook Speed Modifier"), Key::SHIFT);
 	register_shortcut_action("spatial_editor/freelook_slow_modifier", TTRC("Freelook Slow Modifier"), Key::ALT);
+	register_shortcut_action("spatial_editor/freelook_toggle", TTRC("Toggle Freelook"), KeyModifierMask::SHIFT | Key::F);
 }
 
 Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p_index) {
