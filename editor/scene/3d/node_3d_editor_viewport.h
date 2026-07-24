@@ -249,6 +249,7 @@ private:
 	void _menu_option(int p_option);
 	Node3D *preview_node = nullptr;
 	bool update_preview_node = false;
+	bool preview_use_origin_anchor = false;
 	Point2 preview_node_viewport_pos;
 	Vector3 preview_node_pos;
 	AABB *preview_bounds = nullptr;
