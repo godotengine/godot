@@ -34,8 +34,15 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/audio_stream_player_3d.h"
+
+// IDs for the gizmo's draggable handles.
+enum HandleID {
+	HANDLE_MAX_DISTANCE = 0,
+	HANDLE_EMISSION_ANGLE = 1,
+};
 
 AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/stream_player_3d");
@@ -43,10 +50,12 @@ AudioStreamPlayer3DGizmoPlugin::AudioStreamPlayer3DGizmoPlugin() {
 	create_icon_material("stream_player_3d_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Gizmo3DSamplePlayer"), EditorStringName(EditorIcons)));
 	create_material("stream_player_3d_material_primary", gizmo_color);
 	create_material("stream_player_3d_material_secondary", gizmo_color * Color(1, 1, 1, 0.35));
-	// Enable vertex colors for the billboard material as the gizmo color depends on the
-	// AudioStreamPlayer3D attenuation type and source (Unit Size or Max Distance).
+	// Enable vertex colors so the range circles can reflect the attenuation model
+	// and whether Max Distance is capping the range (see redraw()).
+	create_material("stream_player_3d_material_lines", Color(1, 1, 1), false, false, true);
 	create_material("stream_player_3d_material_billboard", Color(1, 1, 1), true, false, true);
 	create_handle_material("handles");
+	create_handle_material("handles_billboard", true);
 }
 
 bool AudioStreamPlayer3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -62,11 +71,17 @@ int AudioStreamPlayer3DGizmoPlugin::get_priority() const {
 }
 
 String AudioStreamPlayer3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
+	if (p_id == HANDLE_MAX_DISTANCE) {
+		return "Max Distance";
+	}
 	return "Emission Radius";
 }
 
 Variant AudioStreamPlayer3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_node_3d());
+	if (p_id == HANDLE_MAX_DISTANCE) {
+		return player->get_max_distance();
+	}
 	return player->get_emission_angle();
 }
 
@@ -74,10 +89,26 @@ void AudioStreamPlayer3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo
 	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_node_3d());
 
 	Transform3D gt = player->get_global_transform();
-	Transform3D gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	if (p_id == HANDLE_MAX_DISTANCE) {
+		// Max Distance: use the distance from the node to the cursor on a camera-facing plane.
+		Plane cp = Plane(p_camera->get_transform().basis.get_column(2), gt.origin);
+		Vector3 inters;
+		if (cp.intersects_ray(ray_from, ray_dir, &inters)) {
+			float r = inters.distance_to(gt.origin);
+			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+				r = Math::snapped(r, Node3DEditor::get_singleton()->get_translate_snap());
+			}
+			player->set_max_distance(r);
+		}
+		return;
+	}
+
+	// Emission Radius (angle).
+	Transform3D gi = gt.affine_inverse();
 	Vector3 ray_to = ray_from + ray_dir * 4096;
 
 	ray_from = gi.xform(ray_from);
@@ -110,6 +141,19 @@ void AudioStreamPlayer3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo
 void AudioStreamPlayer3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
 	AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_node_3d());
 
+	if (p_id == HANDLE_MAX_DISTANCE) {
+		if (p_cancel) {
+			player->set_max_distance(p_restore);
+		} else {
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+			ur->create_action(TTR("Change AudioStreamPlayer3D Max Distance"));
+			ur->add_do_method(player, "set_max_distance", player->get_max_distance());
+			ur->add_undo_method(player, "set_max_distance", p_restore);
+			ur->commit_action();
+		}
+		return;
+	}
+
 	if (p_cancel) {
 		player->set_emission_angle(p_restore);
 
@@ -129,9 +173,9 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		const AudioStreamPlayer3D *player = Object::cast_to<AudioStreamPlayer3D>(p_gizmo->get_node_3d());
 
 		if (player->get_attenuation_model() != AudioStreamPlayer3D::ATTENUATION_DISABLED || player->get_max_distance() > CMP_EPSILON) {
-			// Draw a circle to represent sound volume attenuation.
-			// Use only a billboard circle to represent radius.
-			// This helps distinguish AudioStreamPlayer3D gizmos from OmniLight3D gizmos.
+			// Draw the attenuation range as three axis-aligned circles plus a billboard circle,
+			// giving a sphere-like representation (matching OmniLight3D).
+			const Ref<Material> lines_material = get_material("stream_player_3d_material_lines", p_gizmo);
 			const Ref<Material> lines_billboard_material = get_material("stream_player_3d_material_billboard", p_gizmo);
 
 			// Soft distance cap varies depending on attenuation model, as some will fade out more aggressively than others.
@@ -154,54 +198,35 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					break;
 			}
 
-			// Draw the distance at which the sound can be reasonably heard.
-			// This can be either a hard distance cap with the Max Distance property (if set above 0.0),
-			// or a soft distance cap with the Unit Size property (sound never reaches true zero).
-			// When Max Distance is 0.0, `r` represents the distance above which the
-			// sound can't be heard in *most* (but not all) scenarios.
-			float radius = player->get_unit_size() * soft_multiplier;
+			// With a hard cap, draw the circle at Max Distance so it lines up with the draggable handle;
+			// otherwise fall back to the Unit Size-derived soft radius (where the sound fades to near silence).
+			float radius;
 			if (player->get_max_distance() > CMP_EPSILON) {
-				radius = MIN(radius, player->get_max_distance());
+				radius = player->get_max_distance();
+			} else {
+				radius = player->get_unit_size() * soft_multiplier;
 			}
 
-#define PUSH_QUARTER_XY(m_from_x, m_from_y, m_to_x, m_to_y, m_y) \
-	points_ptrw[index++] = Vector3(m_from_x, -m_from_y - m_y, 0); \
-	points_ptrw[index++] = Vector3(m_to_x, -m_to_y - m_y, 0); \
-	points_ptrw[index++] = Vector3(m_from_x, m_from_y + m_y, 0); \
-	points_ptrw[index++] = Vector3(m_to_x, m_to_y + m_y, 0); \
-	points_ptrw[index++] = Vector3(-m_from_x, -m_from_y - m_y, 0); \
-	points_ptrw[index++] = Vector3(-m_to_x, -m_to_y - m_y, 0); \
-	points_ptrw[index++] = Vector3(-m_from_x, m_from_y + m_y, 0); \
-	points_ptrw[index++] = Vector3(-m_to_x, m_to_y + m_y, 0);
-
-			// Number of points in an octant. So there will be 8 * points_in_octant points in total.
-			// This corresponds to the smoothness of the circle.
-			const uint32_t points_in_octant = 15;
-			const real_t octant_angle = Math::PI / 4;
-			const real_t inc = (Math::PI / (4 * points_in_octant));
-			const real_t radius_squared = radius * radius;
-			real_t r = 0;
-
+			Vector<Vector3> points;
 			Vector<Vector3> points_billboard;
-			points_billboard.resize(8 * points_in_octant * 2);
-			Vector3 *points_ptrw = points_billboard.ptrw();
+			for (int i = 0; i < 120; i++) {
+				const float ra = Math::deg_to_rad((float)(i * 3));
+				const float rb = Math::deg_to_rad((float)((i + 1) * 3));
+				const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
+				const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 
-			uint32_t index = 0;
-			float previous_x = radius;
-			float previous_y = 0.f;
+				// One segment on each of the three axis-aligned circles.
+				points.push_back(Vector3(a.x, 0, a.y));
+				points.push_back(Vector3(b.x, 0, b.y));
+				points.push_back(Vector3(0, a.x, a.y));
+				points.push_back(Vector3(0, b.x, b.y));
+				points.push_back(Vector3(a.x, a.y, 0));
+				points.push_back(Vector3(b.x, b.y, 0));
 
-			for (uint32_t i = 0; i < points_in_octant; i++) {
-				r += inc;
-				real_t x = Math::cos((i == points_in_octant - 1) ? octant_angle : r) * radius;
-				real_t y = Math::sqrt(radius_squared - (x * x));
-
-				PUSH_QUARTER_XY(previous_x, previous_y, x, y, 0);
-				PUSH_QUARTER_XY(previous_y, previous_x, y, x, 0);
-				previous_x = x;
-				previous_y = y;
+				// Billboard circle.
+				points_billboard.push_back(Vector3(a.x, a.y, 0));
+				points_billboard.push_back(Vector3(b.x, b.y, 0));
 			}
-
-#undef PUSH_QUARTER_XY
 
 			Color color;
 			switch (player->get_attenuation_model()) {
@@ -231,7 +256,21 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				color.set_h(color.get_h() + 0.5);
 			}
 
+			p_gizmo->add_lines(points, lines_material, false, color);
 			p_gizmo->add_lines(points_billboard, lines_billboard_material, true, color);
+
+			if (player->get_max_distance() > CMP_EPSILON) {
+				// Handle to edit Max Distance directly in the viewport, placed on the billboard circle.
+				Vector<Vector3> distance_handles;
+				distance_handles.push_back(Vector3(player->get_max_distance(), 0, 0));
+				// A gizmo uses one billboard flag for all handles, so only billboard the Max Distance
+				// handle when the fixed emission-angle handle isn't also present (keeps picking consistent).
+				if (player->is_emission_angle_enabled()) {
+					p_gizmo->add_handles(distance_handles, get_material("handles"), { HANDLE_MAX_DISTANCE });
+				} else {
+					p_gizmo->add_handles(distance_handles, get_material("handles_billboard"), { HANDLE_MAX_DISTANCE }, true);
+				}
+			}
 		}
 
 		if (player->is_emission_angle_enabled()) {
@@ -306,7 +345,7 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 			Vector<Vector3> handles;
 			handles.push_back(Vector3(Math::sin(ha), 0, -Math::cos(ha)));
-			p_gizmo->add_handles(handles, get_material("handles"));
+			p_gizmo->add_handles(handles, get_material("handles"), { HANDLE_EMISSION_ANGLE });
 		}
 	}
 
