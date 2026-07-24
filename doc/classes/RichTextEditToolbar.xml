@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RichTextEditToolbar" inherits="HBoxContainer" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Toolbar with common formatting controls for [RichTextEdit].
+	</brief_description>
+	<description>
+		[RichTextEditToolbar] provides common formatting controls for a [RichTextEdit]. It includes controls for bold, italic, underline, strikethrough, font size, foreground color, background color, outline color and width, quote blocks, alignment, indentation, URL links, and lists.
+		Assign [member rich_text_edit_path] to the [RichTextEdit] to format. If the path is empty, the toolbar looks for a sibling [RichTextEdit] when it enters the scene tree.
+		The font size control follows the target editor's caret position. The color picker preview changes while it is open and commits the final color as a single undoable formatting action when the popup closes.
+		[codeblock]
+		# Scene tree:
+		# VBoxContainer
+		#   RichTextEditToolbar
+		#   RichTextEdit
+		#
+		# If both nodes are siblings, RichTextEditToolbar can find RichTextEdit automatically.
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_rich_text_edit" qualifiers="const">
+			<return type="RichTextEdit" />
+			<description>
+				Returns the [RichTextEdit] currently controlled by this toolbar, or [code]null[/code] if no target is available.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" overrides="Control" default="Vector2(0, 44)" />
+		<member name="rich_text_edit_path" type="NodePath" setter="set_rich_text_edit_path" getter="get_rich_text_edit_path" default="NodePath(&quot;&quot;)">
+			Path to the [RichTextEdit] controlled by this toolbar. Leave this empty to use the first sibling [RichTextEdit] found in the scene tree.
+		</member>
+	</members>
+	<theme_items>
+		<theme_item name="dropdown_font_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+		</theme_item>
+		<theme_item name="align" data_type="icon" type="Texture2D">
+			Icon for the alignment dropdown button.
+		</theme_item>
+		<theme_item name="align_center" data_type="icon" type="Texture2D">
+			Icon for the center alignment dropdown item.
+		</theme_item>
+		<theme_item name="align_left" data_type="icon" type="Texture2D">
+			Icon for the left alignment dropdown item.
+		</theme_item>
+		<theme_item name="align_right" data_type="icon" type="Texture2D">
+			Icon for the right alignment dropdown item.
+		</theme_item>
+		<theme_item name="bold" data_type="icon" type="Texture2D">
+			Icon for the bold formatting button.
+		</theme_item>
+		<theme_item name="indent_decrease" data_type="icon" type="Texture2D">
+			Icon for the decrease indent button.
+		</theme_item>
+		<theme_item name="indent_increase" data_type="icon" type="Texture2D">
+			Icon for the increase indent button.
+		</theme_item>
+		<theme_item name="italic" data_type="icon" type="Texture2D">
+			Icon for the italic formatting button.
+		</theme_item>
+		<theme_item name="link" data_type="icon" type="Texture2D">
+			Icon for the URL link button.
+		</theme_item>
+		<theme_item name="ordered_list" data_type="icon" type="Texture2D">
+			Icon for the ordered list button.
+		</theme_item>
+		<theme_item name="quote" data_type="icon" type="Texture2D">
+			Icon for the quote button.
+		</theme_item>
+		<theme_item name="strikethrough" data_type="icon" type="Texture2D">
+			Icon for the strikethrough formatting button.
+		</theme_item>
+		<theme_item name="underline" data_type="icon" type="Texture2D">
+			Icon for the underline formatting button.
+		</theme_item>
+		<theme_item name="unordered_list" data_type="icon" type="Texture2D">
+			Icon for the unordered list button.
+		</theme_item>
+		<theme_item name="button_hover" data_type="style" type="StyleBox">
+			StyleBox for toolbar buttons while hovered.
+		</theme_item>
+		<theme_item name="button_normal" data_type="style" type="StyleBox">
+			StyleBox for toolbar buttons in their normal state.
+		</theme_item>
+		<theme_item name="button_pressed" data_type="style" type="StyleBox">
+			StyleBox for toolbar buttons while pressed.
+		</theme_item>
+		<theme_item name="color_button_hover" data_type="style" type="StyleBox">
+			StyleBox for color picker buttons while hovered.
+		</theme_item>
+		<theme_item name="color_button_normal" data_type="style" type="StyleBox">
+			StyleBox for color picker buttons in their normal state.
+		</theme_item>
+		<theme_item name="color_button_pressed" data_type="style" type="StyleBox">
+			StyleBox for color picker buttons while pressed.
+		</theme_item>
+		<theme_item name="dropdown_panel" data_type="style" type="StyleBox">
+			StyleBox for toolbar dropdown panels.
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			StyleBox for the toolbar background.
+		</theme_item>
+	</theme_items>
+</class>
