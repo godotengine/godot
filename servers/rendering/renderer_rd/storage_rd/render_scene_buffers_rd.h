@@ -127,9 +127,10 @@ private:
 		uint32_t mipmap;
 		uint32_t mipmaps;
 		RD::TextureView texture_view;
+		RD::TextureSliceType slice_type;
 
 		bool operator==(const NTSliceKey &p_val) const {
-			return (layer == p_val.layer) && (layers == p_val.layers) && (mipmap == p_val.mipmap) && (mipmaps == p_val.mipmaps) && (texture_view == p_val.texture_view);
+			return (layer == p_val.layer) && (layers == p_val.layers) && (mipmap == p_val.mipmap) && (mipmaps == p_val.mipmaps) && (texture_view == p_val.texture_view) && (slice_type == p_val.slice_type);
 		}
 
 		static uint32_t hash(const NTSliceKey &p_val) {
@@ -142,16 +143,18 @@ private:
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_g, h);
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_b, h);
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_a, h);
+			h = hash_murmur3_one_32(p_val.slice_type, h);
 			return hash_fmix32(h);
 		}
 
 		NTSliceKey() {}
-		NTSliceKey(uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps, RD::TextureView p_texture_view) {
+		NTSliceKey(uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps, RD::TextureView p_texture_view, RD::TextureSliceType p_slice_type) {
 			layer = p_layer;
 			layers = p_layers;
 			mipmap = p_mipmap;
 			mipmaps = p_mipmaps;
 			texture_view = p_texture_view;
+			slice_type = p_slice_type;
 		}
 	};
 

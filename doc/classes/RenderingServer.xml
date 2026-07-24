@@ -2129,6 +2129,14 @@
 				Sets the extents (width and height) in meters for this area light. Equivalent to [member AreaLight3D.area_size].
 			</description>
 		</method>
+		<method name="light_directional_set_allow_contact_shadows">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], allows screen-space contact shadows for this light. Only used when [member Environment.sscs_enabled] is enabled. Equivalent to [member DirectionalLight3D.directional_shadow_allow_contact_shadows].
+			</description>
+		</method>
 		<method name="light_directional_set_blend_splits">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />

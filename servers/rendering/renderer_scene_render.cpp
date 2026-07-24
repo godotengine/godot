@@ -591,6 +591,44 @@ float RendererSceneRender::environment_get_ssr_depth_tolerance(RID p_env) const 
 	return environment_storage.environment_get_ssr_depth_tolerance(p_env);
 }
 
+// SSCS
+
+void RendererSceneRender::environment_set_sscs(RID p_env, bool p_enable, RSE::EnvironmentSSCSSampleCount p_quality, float p_bilinear_threshold, float p_shadow_contrast, float p_surface_thickness, bool p_ignore_edge_pixels, float p_depth_begin, float p_depth_end) {
+	environment_storage.environment_set_sscs(p_env, p_enable, p_quality, p_bilinear_threshold, p_shadow_contrast, p_surface_thickness, p_ignore_edge_pixels, p_depth_begin, p_depth_end);
+}
+
+bool RendererSceneRender::environment_get_sscs_enabled(RID p_env) const {
+	return environment_storage.environment_get_sscs_enabled(p_env);
+}
+
+RSE::EnvironmentSSCSSampleCount RendererSceneRender::environment_get_sscs_sample_count(RID p_env) const {
+	return environment_storage.environment_get_sscs_sample_count(p_env);
+}
+
+float RendererSceneRender::environment_get_sscs_bilinear_threshold(RID p_env) const {
+	return environment_storage.environment_get_sscs_bilinear_threshold(p_env);
+}
+
+float RendererSceneRender::environment_get_sscs_shadow_contrast(RID p_env) const {
+	return environment_storage.environment_get_sscs_shadow_contrast(p_env);
+}
+
+float RendererSceneRender::environment_get_sscs_surface_thickness(RID p_env) const {
+	return environment_storage.environment_get_sscs_surface_thickness(p_env);
+}
+
+bool RendererSceneRender::environment_get_sscs_ignore_edge_pixels(RID p_env) const {
+	return environment_storage.environment_get_sscs_ignore_edge_pixels(p_env);
+}
+
+float RendererSceneRender::environment_get_sscs_depth_begin(RID p_env) const {
+	return environment_storage.environment_get_sscs_depth_begin(p_env);
+}
+
+float RendererSceneRender::environment_get_sscs_depth_end(RID p_env) const {
+	return environment_storage.environment_get_sscs_depth_end(p_env);
+}
+
 // SSAO
 
 void RendererSceneRender::environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_power, float p_detail, float p_horizon, float p_sharpness, float p_light_affect, float p_ao_channel_affect) {

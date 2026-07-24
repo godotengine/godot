@@ -342,6 +342,32 @@ SSEffects::SSEffects() {
 		}
 	}
 
+	// Screen Space Shadows
+	{
+		RD::SamplerState sampler_state;
+		sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+		sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+		sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER;
+		sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_BORDER;
+		sampler_state.border_color = RD::SAMPLER_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK; // = 0.0
+		RID border_sampler = RD::get_singleton()->sampler_create(sampler_state);
+
+		{
+			Vector<String> sscs_modes;
+			sscs_modes.push_back("\n#define READ_COUNT 2\n");
+			sscs_modes.push_back("\n#define READ_COUNT 3\n");
+			sscs_modes.push_back("\n#define READ_COUNT 4\n");
+			sscs.sscs_shader.initialize(sscs_modes);
+			sscs.sscs_shader_version = sscs.sscs_shader.version_create();
+
+			for (uint32_t i = 0; i < SCREEN_SPACE_CONTACT_SHADOWS_MAX; i++) {
+				sscs.sscs_pipelines[i].create_compute_pipeline(sscs.sscs_shader.version_get_shader(sscs.sscs_shader_version, i));
+			}
+
+			sscs.border_sampler = border_sampler;
+		}
+	}
+
 	// Subsurface scattering
 	sss_quality = RSE::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
 	sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
@@ -442,6 +468,15 @@ SSEffects::~SSEffects() {
 		if (ssr.ubo.is_valid()) {
 			RD::get_singleton()->free_rid(ssr.ubo);
 		}
+	}
+
+	{
+		for (int i = 0; i < SCREEN_SPACE_CONTACT_SHADOWS_MAX; i++) {
+			sscs.sscs_pipelines[i].free();
+		}
+		sscs.sscs_shader.version_free(sscs.sscs_shader_version);
+
+		RD::get_singleton()->free_rid(sscs.border_sampler);
 	}
 
 	{
@@ -1725,6 +1760,133 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 
 		RD::get_singleton()->draw_command_end_label();
 	}
+}
+
+/* Screen Space Shadows */
+
+void SSEffects::sscs_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, const RD::DataFormat p_color_format, uint32_t p_contact_shadow_count) {
+	if (p_sscs_buffers.light_count != p_contact_shadow_count) {
+		p_render_buffers->clear_context(RB_SCOPE_SSCS);
+	}
+
+	p_sscs_buffers.size = p_render_buffers->get_internal_size();
+	p_sscs_buffers.light_count = p_contact_shadow_count;
+
+	uint32_t view_count = p_render_buffers->get_view_count();
+
+	if (p_contact_shadow_count > 0) {
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_R8_UNORM;
+		tf.width = p_sscs_buffers.size.width;
+		tf.height = p_sscs_buffers.size.height;
+		tf.array_layers = p_contact_shadow_count * view_count;
+		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+
+		p_render_buffers->create_texture_from_format(RB_SCOPE_SSCS, RB_SSCS, tf);
+
+		{
+			RID sscs_texture = p_render_buffers->get_texture(RB_SCOPE_SSCS, RB_SSCS);
+			RD::get_singleton()->texture_clear(sscs_texture, Color(1, 0, 0, 0.0), 0, 1, 0, view_count * p_sscs_buffers.light_count);
+		}
+	}
+}
+
+void SSEffects::screen_space_contact_shadows(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, const SSCSSettings &p_settings, const Projection *p_projections, Vector3 p_light_direction, uint32_t p_light_index, RendererRD::CopyEffects &p_copy_effects) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	RD::get_singleton()->draw_command_begin_label("SSCS Main");
+
+	uint32_t view_count = p_render_buffers->get_view_count();
+	RID sscs_shader = sscs.sscs_shader.version_get_shader(sscs.sscs_shader_version, 0);
+
+	Projection correction;
+	correction.set_depth_correction(true);
+
+	for (uint32_t v = 0; v < view_count; v++) {
+		// Calculate light coordinate in screen space
+		Projection projection = correction * p_projections[v];
+		Vector4 projected_light = projection.xform(Vector4(p_light_direction.x, p_light_direction.y, p_light_direction.z, 0));
+
+		const int wave_size = 64;
+		Vector4 light;
+		Vector2i bound_start;
+		Vector2i bound_end;
+		if (Math::abs(projected_light.w) > 1e-6) {
+			// Need precise XY pixel coordinates of the light
+			light = Vector4(
+					(projected_light.x / projected_light.w * 0.5f + 0.5f) * p_sscs_buffers.size.width,
+					(projected_light.y / projected_light.w * 0.5f + 0.5f) * p_sscs_buffers.size.height,
+					projected_light.z / projected_light.w,
+					projected_light.w > 0 ? 1 : -1);
+			bound_start = Vector2i(
+					Math::floor(-light.x / wave_size) - 1,
+					Math::floor(-light.y / wave_size) - 1);
+			bound_end = Vector2i(
+					Math::ceil((p_sscs_buffers.size.width - light.x) / wave_size) + 2,
+					Math::ceil((p_sscs_buffers.size.height - light.y) / wave_size) + 2);
+		} else {
+			// Light rays are (or nearly) parallel lines in screen space. This is a special case and requires special handling in the SSCS shader as well.
+			light = Vector4(
+					projected_light.x * p_sscs_buffers.size.width * 0.5,
+					projected_light.y * p_sscs_buffers.size.height * 0.5,
+					projected_light.z,
+					0);
+			light = light / MAX(Math::abs(light.x), Math::abs(light.y));
+
+			bound_start = Vector2i(
+					light.x > 0 && light.x < Math::abs(light.y) ? -1 : 0,
+					light.y > 0 && light.y < Math::abs(light.x) ? -1 : 0);
+			bound_end = Vector2i(
+					Math::ceil(p_sscs_buffers.size.width / float(wave_size)) + (light.x < 0 ? 1 : 0),
+					Math::ceil(p_sscs_buffers.size.height / float(wave_size)) + (light.y < 0 ? 1 : 0));
+		}
+
+		Size2i bound_size = bound_end - bound_start;
+
+		// Convert linear depth bounds to reverse-Z
+		float z_near = p_projections[v].get_z_near();
+		float z_far = p_projections[v].get_z_far();
+		float depth_begin = projection.xform(Vector3(0, 0, -z_near - p_settings.depth_begin * (z_far - z_near))).z;
+		float depth_end = projection.xform(Vector3(0, 0, -z_near - p_settings.depth_end * (z_far - z_near))).z;
+
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, sscs.sscs_pipelines[p_settings.quality].get_rid());
+
+		ScreenSpaceContactShadowsPushConstant push_constant;
+		push_constant.screen_size[0] = p_sscs_buffers.size.width;
+		push_constant.screen_size[1] = p_sscs_buffers.size.height;
+		push_constant.bilinear_threshold = p_settings.bilinear_threshold;
+		push_constant.shadow_contrast = p_settings.shadow_contrast;
+		push_constant.surface_thickness = p_settings.surface_thickness;
+		push_constant.ignore_edge_pixels = p_settings.ignore_edge_pixels ? 1 : 0;
+		push_constant.depth_begin = depth_begin;
+		push_constant.depth_end = depth_end;
+		push_constant.light_coordinates[0] = light.x;
+		push_constant.light_coordinates[1] = light.y;
+		push_constant.light_coordinates[2] = light.z;
+		push_constant.light_coordinates[3] = light.w;
+		push_constant.light_offset[0] = bound_start.x * wave_size;
+		push_constant.light_offset[1] = bound_start.y * wave_size;
+
+		RID depth_buffer = p_render_buffers->get_depth_texture(v);
+		uint32_t layer = p_light_index * view_count + v;
+		RID sscs_texture = p_render_buffers->get_texture_slice(RB_SCOPE_SSCS, RB_SSCS, layer, 0);
+
+		RD::Uniform u_depth_buffer(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>{ sscs.border_sampler, depth_buffer });
+		RD::Uniform u_sscs(RD::UNIFORM_TYPE_IMAGE, 1, sscs_texture);
+
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(sscs_shader, 0, u_depth_buffer, u_sscs), 0);
+
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(push_constant));
+		RD::get_singleton()->compute_list_dispatch(compute_list, wave_size, bound_size.x, bound_size.y);
+		RD::get_singleton()->compute_list_end();
+	}
+
+	RD::get_singleton()->draw_command_end_label();
 }
 
 /* Subsurface scattering */
