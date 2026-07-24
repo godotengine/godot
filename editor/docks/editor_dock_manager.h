@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/split_container.h"
@@ -38,6 +39,7 @@ class Button;
 class ConfigFile;
 class Control;
 class EditorDock;
+class HBoxContainer;
 class PopupMenu;
 class TabBar;
 class TabContainer;
@@ -89,15 +91,16 @@ private:
 
 	static inline EditorDockManager *singleton = nullptr;
 
-	// To access splits easily by index.
-	Vector<DockSplitContainer *> vsplits;
-	DockSplitContainer *main_vsplit = nullptr;
-	DockSplitContainer *main_hsplit = nullptr;
-	DockSplitContainer *bottom_hsplit = nullptr;
+	LocalVector<DockSplitContainer *> default_dock_spaces;
+	LocalVector<DockSplitContainer *> default_dock_splits;
+	LocalVector<DockSplitContainer *> extended_dock_splits;
 
 	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
+	HashMap<int, DockTabContainer *> extended_slots;
+
 	Vector<WindowWrapper *> dock_windows;
 	LocalVector<EditorDock *> all_docks;
+	HashMap<EditorDock::DockSlot, LocalVector<EditorDock *>> extended_docks;
 	HashSet<EditorDock *> dirty_docks;
 
 	EditorDock *dock_tab_dragged = nullptr;
@@ -120,13 +123,23 @@ private:
 	void _open_dock_in_window(EditorDock *p_dock, bool p_show_window = true, bool p_reset_size = false);
 	void _restore_dock_to_saved_window(EditorDock *p_dock, const Dictionary &p_window_dump);
 
+	void _load_docks_in_slot(DockTabContainer *p_slot, const Ref<ConfigFile> &p_layout, const String &p_section, const HashMap<String, EditorDock *> &p_dock_map, const Array &p_closed_docks, const Dictionary &p_floating_docks_dump);
+	bool _slot_has_docks(DockTabContainer *p_slot) const;
+
+	void _move_dock_to_extended_slot(EditorDock *p_dock, DockTabContainer *p_base_slot, int p_idx);
+	DockTabContainer *_create_extended_dock_slot(DockTabContainer *p_base_slot, int p_idx, int p_new_slot_id);
+	void _save_extended_spaces(const Ref<ConfigFile> &p_layout, const String &p_section, Node *p_parent, int p_base, bool p_reversed = false) const;
+	void _load_extended_spaces(const Ref<ConfigFile> &p_layout, const String &p_section, int p_base, int p_main_idx, int p_secondary_idx);
+	void _save_extended_slots(const Ref<ConfigFile> &p_layout, const String &p_section, Node *p_parent, int p_base) const;
+	void _load_extended_slots(const Ref<ConfigFile> &p_layout, const String &p_section, int p_base, int p_idx);
+
 	void _make_dock_visible(EditorDock *p_dock, bool p_grab_focus);
 	void _move_dock(EditorDock *p_dock, Control *p_target, int p_tab_index = -1, bool p_set_current = true);
 
 	void _queue_update_tab_style(EditorDock *p_dock);
 	void _update_dirty_dock_tabs();
 
-	void _register_split(DockSplitContainer **p_var, DockSplitContainer *p_split);
+	void _add_extended_dock_split(DockSplitContainer *p_split);
 
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
@@ -137,13 +150,11 @@ public:
 	void update_tab_styles();
 	void set_tab_icon_max_width(int p_max_width);
 
-	void add_vsplit(DockSplitContainer *p_split);
-	void set_main_vsplit(DockSplitContainer *p_split) { _register_split(&main_vsplit, p_split); }
-	void set_main_hsplit(DockSplitContainer *p_split) { _register_split(&main_hsplit, p_split); }
-	void set_bottom_hsplit(DockSplitContainer *p_split) { _register_split(&bottom_hsplit, p_split); }
 	void register_dock_slot(DockTabContainer *p_tab_container);
-	int get_vsplit_count() const;
+	// int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
+	void add_default_dock_space(DockSplitContainer *p_slot);
+	void add_default_dock_split(DockSplitContainer *p_split);
 
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	void load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load = false);

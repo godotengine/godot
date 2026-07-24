@@ -302,12 +302,24 @@ private:
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
 	// Split containers.
+	friend class EditorDockManager; // TODO remove
+
+	DockSplitContainer *main_vsplit = nullptr;
+	DockSplitContainer *main_hsplit = nullptr;
+
+	DockSplitContainer *left_vsplit = nullptr;
+	DockSplitContainer *left_hsplit = nullptr;
 	DockSplitContainer *left_l_vsplit = nullptr;
 	DockSplitContainer *left_r_vsplit = nullptr;
-	DockSplitContainer *main_hsplit = nullptr;
+
+	DockSplitContainer *center_vsplit = nullptr;
+
+	DockSplitContainer *right_vsplit = nullptr;
+	DockSplitContainer *right_hsplit = nullptr;
 	DockSplitContainer *right_l_vsplit = nullptr;
 	DockSplitContainer *right_r_vsplit = nullptr;
-	DockSplitContainer *center_split = nullptr;
+
+	DockSplitContainer *bottom_hsplit = nullptr;
 
 	// Main tabs.
 	EditorSceneTabs *scene_tabs = nullptr;
@@ -754,7 +766,7 @@ public:
 
 	static EditorTitleBar *get_title_bar() { return singleton->title_bar; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
-	static DockSplitContainer *get_center_split() { return singleton->center_split; }
+	static DockSplitContainer *get_center_split() { return singleton->center_vsplit; }
 	static EditorBottomPanel *get_bottom_panel() { return singleton->bottom_panel; }
 	static EditorMainScreen *get_editor_main_screen() { return singleton->editor_main_screen; }
 
