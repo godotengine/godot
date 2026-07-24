@@ -300,6 +300,7 @@ def configure(env: "SConsEnvironment"):
         env.extra_suffix = ".dlink" + env.extra_suffix
 
     env.Append(LINKFLAGS=["-sWASM_BIGINT"])
+    env.Append(LINKFLAGS=["--bind"])
     env.Append(CCFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])
     env.Append(LINKFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])
 
@@ -327,6 +328,8 @@ def configure(env: "SConsEnvironment"):
     # us since we don't know requirements at compile-time.
     env.Append(LINKFLAGS=["-sALLOW_MEMORY_GROWTH=1"])
 
+    env.Append(LINKFLAGS=["-sEXPORT_ALL=1", "-sASSERTIONS=1"])
+
     # Do not call main immediately when the support code is ready.
     env.Append(LINKFLAGS=["-sINVOKE_RUN=0"])
 
@@ -348,3 +351,30 @@ def configure(env: "SConsEnvironment"):
 
     # Disable GDScript LSP (as the Web platform is not compatible with TCP).
     env.Append(CPPDEFINES=["GDSCRIPT_NO_LSP"])
+
+    # cross_runtime KEEPALIVE exports
+    import json
+    import subprocess
+
+    repo_root = Path(__file__).resolve().parents[2]  
+    subprocess.run([sys.executable, repo_root / "modules" / "cross_runtime" / "generate_export_symbols.py"], check=True)
+    exports_json = repo_root / "modules" / "cross_runtime" / "Exported_Symbols" / "exports.json"
+    if exports_json.is_file():
+        extra = json.loads(exports_json.read_text(encoding="utf-8"))
+        # Merge with Godot's own EXPORTED_FUNCTIONS, deduplicate
+        all_exports = env["EXPORTED_FUNCTIONS"] + extra
+        seen = set()
+        deduped = []
+        for s in all_exports:
+            if s not in seen:
+                seen.add(s)
+                deduped.append(s)
+        syms_file = repo_root / "modules" / "cross_runtime" / "Exported_Symbols" / "exports.syms"
+        syms_file.write_text("\n".join(deduped), encoding="utf-8")
+        # Clear the list so SCons doesn't ALSO pass them inline (would still overflow)
+        env["EXPORTED_FUNCTIONS"] = []
+        # @path syntax tells emcc to read the list from the file
+        env.Append(LINKFLAGS=[f"-sEXPORTED_FUNCTIONS=@{syms_file}"])
+        print(f"[web] Exporting {len(deduped)} symbols via response file {syms_file}")
+    else:
+        print(f"[web] WARNING: cross_runtime exports.json not found at {exports_json}")

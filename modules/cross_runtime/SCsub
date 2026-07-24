@@ -1,0 +1,23 @@
+import subprocess
+import sys
+
+# ruff: noqa: F821
+Import("env")
+env.Append(CPPPATH=["#"])
+base_sources = ["register_types.cpp"]
+cpp_sources = Glob("Godot-Wasm-Exports/*.cpp")
+if env["platform"] == "web":
+    subprocess.run([sys.executable, File("#modules/cross_runtime/build_all.py").abspath], check=True)
+    cpp_sources = Glob("Godot-Wasm-Exports/*.cpp")
+    base_sources.extend(
+        [
+            "Signals/EventSignal.cpp",
+            "FrameCallback/DotnetBridge.cpp",
+            "Godot-Wasm-Exports/VariantHelpers/variant_accessors.cpp",
+            "Godot-Wasm-Exports/VariantHelpers/variant_constructor.cpp",
+            "Godot-Wasm-Exports/header/caching_ptrs.cpp",
+            "Godot-Wasm-Exports/BootStrapped/BootStrapped.cpp",
+        ]
+        + cpp_sources
+    )
+env.add_source_files(env.modules_sources, base_sources)
