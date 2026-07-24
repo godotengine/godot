@@ -4753,6 +4753,11 @@ int Main::start() {
 
 	GDExtensionManager::get_singleton()->startup();
 
+	if (EngineDebugger::is_active()) {
+		// Scene tree is fully set up. Debugger can process messages now.
+		EngineDebugger::get_singleton()->mark_ready_to_poll();
+	}
+
 #ifdef MACOS_ENABLED
 	// TODO: Used to fix full-screen splash drawing on macOS, processing events before main loop is fully initialized cause issues on Wayland, and has no effect on other platforms.
 	if (minimum_time_msec) {
