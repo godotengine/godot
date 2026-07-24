@@ -346,7 +346,7 @@ private:
 	StringName name;
 	StringName source;
 	bool _static = false;
-	Vector<GDScriptDataType> argument_types;
+	LocalVector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;
 	MethodInfo method_info;
 	Variant rpc_config;
@@ -363,24 +363,24 @@ private:
 	TightLocalVector<Pair<int, Variant::Type>> temporary_slots;
 	List<StackDebug> stack_debug;
 
-	Vector<int> code;
-	Vector<int> default_arguments;
-	Vector<Variant> constants;
+	LocalVector<int> code;
+	LocalVector<int> default_arguments;
+	LocalVector<Variant> constants;
 	HashMap<StringName, Variant> constant_map;
-	Vector<StringName> global_names;
-	Vector<Variant::ValidatedOperatorEvaluator> operator_funcs;
-	Vector<Variant::ValidatedSetter> setters;
-	Vector<Variant::ValidatedGetter> getters;
-	Vector<Variant::ValidatedKeyedSetter> keyed_setters;
-	Vector<Variant::ValidatedKeyedGetter> keyed_getters;
-	Vector<Variant::ValidatedIndexedSetter> indexed_setters;
-	Vector<Variant::ValidatedIndexedGetter> indexed_getters;
-	Vector<Variant::ValidatedBuiltInMethod> builtin_methods;
-	Vector<Variant::ValidatedConstructor> constructors;
-	Vector<Variant::ValidatedUtilityFunction> utilities;
-	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
-	Vector<MethodBind *> methods;
-	Vector<GDScriptFunction *> lambdas;
+	LocalVector<StringName> global_names;
+	LocalVector<Variant::ValidatedOperatorEvaluator> operator_funcs;
+	LocalVector<Variant::ValidatedSetter> setters;
+	LocalVector<Variant::ValidatedGetter> getters;
+	LocalVector<Variant::ValidatedKeyedSetter> keyed_setters;
+	LocalVector<Variant::ValidatedKeyedGetter> keyed_getters;
+	LocalVector<Variant::ValidatedIndexedSetter> indexed_setters;
+	LocalVector<Variant::ValidatedIndexedGetter> indexed_getters;
+	LocalVector<Variant::ValidatedBuiltInMethod> builtin_methods;
+	LocalVector<Variant::ValidatedConstructor> constructors;
+	LocalVector<Variant::ValidatedUtilityFunction> utilities;
+	LocalVector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
+	LocalVector<MethodBind *> methods;
+	LocalVector<GDScriptFunction *> lambdas;
 
 	int _code_size = 0;
 	int _default_arg_count = 0;
@@ -467,7 +467,7 @@ public:
 		StringName function_name;
 		String script_path;
 #endif
-		Vector<uint8_t> stack;
+		TightLocalVector<uint8_t> stack;
 		int stack_size = 0;
 		int ip = 0;
 		int line = 0;
@@ -485,8 +485,8 @@ public:
 	_FORCE_INLINE_ Variant get_rpc_config() const { return rpc_config; }
 	_FORCE_INLINE_ int get_max_stack_size() const { return _stack_size; }
 
-	Variant get_constant(int p_idx) const;
-	StringName get_global_name(int p_idx) const;
+	Variant get_constant(uint32_t p_idx) const;
+	StringName get_global_name(uint32_t p_idx) const;
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
