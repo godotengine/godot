@@ -225,7 +225,7 @@ public:
 	void add_type(const StringName &p_theme_type);
 	void remove_type(const StringName &p_theme_type);
 	void rename_type(const StringName &p_old_theme_type, const StringName &p_theme_type);
-	void get_type_list(List<StringName> *p_list) const;
+	void get_type_list(LocalVector<StringName> &p_list) const;
 	void get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variant, Vector<StringName> &r_result);
 
 	void merge_with(const Ref<Theme> &p_other);
