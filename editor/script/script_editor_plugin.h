@@ -399,8 +399,6 @@ class ScriptEditor : public PanelContainer {
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	void _setup_popup_menu(PopupMenu *p_menu, bool p_is_context_menu = true);
-	void _prepare_popup_menu(PopupMenu *p_menu, bool p_is_context_menu = true);
 	void _prepare_file_menu();
 	void _file_menu_closed();
 
