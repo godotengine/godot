@@ -2685,6 +2685,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/wayland/frame_callback_timeout_ms", PROPERTY_HINT_RANGE, "0,1000,1"), 100);
 
 	load_shell_env = GLOBAL_DEF("application/run/load_shell_environment", false);
 

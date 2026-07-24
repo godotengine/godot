@@ -3769,6 +3769,14 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 		present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
 	}
 
+	// Optional workaround for FIFO present stalls on some drivers (e.g. NVIDIA on Wayland).
+	if (present_mode == VK_PRESENT_MODE_FIFO_KHR && present_modes.has(VK_PRESENT_MODE_MAILBOX_KHR) &&
+			GLOBAL_GET("rendering/rendering_device/vulkan/prefer_mailbox_present_mode")) {
+		present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+		present_mode_name = "Mailbox (FIFO workaround)";
+		print_verbose("Vulkan: Using Mailbox present mode instead of FIFO.");
+	}
+
 	// Clamp the desired image count to the surface's capabilities.
 	uint32_t desired_swapchain_images = MAX(p_desired_framebuffer_count, surface_capabilities.minImageCount);
 	if (surface_capabilities.maxImageCount > 0) {
@@ -4023,7 +4031,14 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 	swap_chain->command_queues_acquired.push_back(command_queue);
 	swap_chain->command_queues_acquired_semaphores.push_back(semaphore_index);
 
-	err = device_functions.AcquireNextImageKHR(vk_device, swap_chain->vk_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &swap_chain->image_index);
+	// Bounded timeout so a stalled driver can't block the main loop forever.
+	uint64_t acquire_timeout_ns = UINT64_MAX;
+	const int acquire_timeout_ms = GLOBAL_GET("rendering/rendering_device/vulkan/swapchain_acquire_timeout_ms");
+	if (acquire_timeout_ms > 0) {
+		acquire_timeout_ns = uint64_t(acquire_timeout_ms) * 1000000ULL;
+	}
+
+	err = device_functions.AcquireNextImageKHR(vk_device, swap_chain->vk_swapchain, acquire_timeout_ns, semaphore, VK_NULL_HANDLE, &swap_chain->image_index);
 	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 		// Out of date leaves the semaphore in a signaled state that will never finish, so it's necessary to recreate it.
 		bool semaphore_recreated = _recreate_image_semaphore(command_queue, semaphore_index, true);
@@ -4031,6 +4046,11 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 
 		// Swap chain is out of date and must be recreated.
 		r_resize_required = true;
+		return FramebufferID();
+	} else if (err == VK_TIMEOUT || err == VK_NOT_READY) {
+		// The semaphore wasn't signaled but was already enqueued above, so recreate it and skip the frame.
+		bool semaphore_recreated = _recreate_image_semaphore(command_queue, semaphore_index, true);
+		ERR_FAIL_COND_V(!semaphore_recreated, FramebufferID());
 		return FramebufferID();
 	} else if (err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR) {
 		// Swap chain failed to present but the reason is unknown.

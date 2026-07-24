@@ -1115,6 +1115,10 @@
 			[b]Note:[/b] The [b]Adaptive[/b] and [b]Mailbox[/b] V-Sync modes are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 			[b]Note:[/b] This property is only read when the project starts. To change the V-Sync mode at runtime, call [method DisplayServer.window_set_vsync_mode] instead.
 		</member>
+		<member name="display/window/wayland/frame_callback_timeout_ms" type="int" setter="" getter="" default="100">
+			Time to wait for the compositor before processing input again, in milliseconds. Lower values keep the window responsive when the compositor or video driver stalls. If [code]0[/code], waits up to a second.
+			[b]Note:[/b] Only effective on Linux (Wayland).
+		</member>
 		<member name="dotnet/project/assembly_name" type="String" setter="" getter="" default="&quot;&quot;">
 			Name of the .NET assembly. This name is used as the name of the [code].csproj[/code] and [code].sln[/code] files. By default, it's set to the name of the project ([member application/config/name]) allowing to change it in the future without affecting the .NET assembly.
 		</member>
@@ -3410,6 +3414,12 @@
 			The number of descriptors per pool. Godot's Vulkan backend uses linear pools for descriptors that will be created and destroyed within a single frame. Instead of destroying every single descriptor every frame, they all can be destroyed at once by resetting the pool they belong to.
 			A larger number is more efficient up to a limit, after that it will only waste RAM (maximum efficiency is achieved when there is no more than 1 pool per frame). A small number could end up with one pool per descriptor, which negatively impacts performance.
 			[b]Note:[/b] Changing this property requires a restart to take effect.
+		</member>
+		<member name="rendering/rendering_device/vulkan/prefer_mailbox_present_mode" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], uses Mailbox presentation instead of FIFO when V-Sync is enabled. This can prevent freezes with some video drivers (notably NVIDIA on Wayland), at the cost of slightly higher GPU usage.
+		</member>
+		<member name="rendering/rendering_device/vulkan/swapchain_acquire_timeout_ms" type="int" setter="" getter="" default="1000">
+			Time to wait for the video driver to provide the next frame, in milliseconds. If the driver stalls for longer, the frame is skipped and the application keeps running instead of freezing. If [code]0[/code], waits indefinitely.
 		</member>
 		<member name="rendering/scaling_3d/fsr_sharpness" type="float" setter="" getter="" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
