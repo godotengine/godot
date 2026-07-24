@@ -124,6 +124,12 @@
 				Indicates that the grid parameters were changed and [method update] needs to be called.
 			</description>
 		</method>
+		<method name="is_hpa_dirty" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Indicates that the grid or its solid cells were changed and the hierarchical abstract graph needs to be rebuilt with [method update_hpa]. When [member hpa_enabled] is [code]true[/code], the rebuild is performed automatically the next time a path is requested.
+			</description>
+		</method>
 		<method name="is_in_bounds" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="x" type="int" />
@@ -171,6 +177,12 @@
 				[b]Note:[/b] All point data (solidity and weight scale) will be cleared.
 			</description>
 		</method>
+		<method name="update_hpa">
+			<return type="void" />
+			<description>
+				Rebuilds the hierarchical pathfinding abstract graph (clusters, entrances, nodes and edges) used when [member hpa_enabled] is [code]true[/code]. This is normally called automatically the first time a path is requested after the grid or its solid cells change, but it can be called manually to pay the build cost up front. Has no effect while [member hpa_enabled] is [code]false[/code]. Requires the grid to be up to date (see [method update]).
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="cell_shape" type="int" setter="set_cell_shape" getter="get_cell_shape" enum="AStarGrid2D.CellShape" default="0">
@@ -187,6 +199,12 @@
 		</member>
 		<member name="diagonal_mode" type="int" setter="set_diagonal_mode" getter="get_diagonal_mode" enum="AStarGrid2D.DiagonalMode" default="0">
 			A specific [enum DiagonalMode] mode which will force the path to avoid or accept the specified diagonals.
+		</member>
+		<member name="hpa_cluster_size" type="int" setter="set_hpa_cluster_size" getter="get_hpa_cluster_size" default="5">
+			The side length, in cells, of the square clusters the grid is divided into when [member hpa_enabled] is [code]true[/code]. Larger clusters produce a smaller abstract graph (faster searches, less memory) at the cost of more expensive intra-cluster refinement; smaller clusters do the opposite. Changing this value rebuilds the abstract graph before the next path is requested.
+		</member>
+		<member name="hpa_enabled" type="bool" setter="set_hpa_enabled" getter="is_hpa_enabled" default="false">
+			If [code]true[/code], [method get_id_path] and [method get_point_path] use Hierarchical Pathfinding A* (HPA*). The grid is divided into clusters (see [member hpa_cluster_size]) connected through an abstract graph, which is searched first and then refined into a concrete path. This can be substantially faster than a full A* search on large, sparse grids, at the cost of paths that may be slightly longer than optimal. Disabling it frees the memory used by the abstract graph.
 		</member>
 		<member name="jumping_enabled" type="bool" setter="set_jumping_enabled" getter="is_jumping_enabled" default="false">
 			Enables or disables jumping to skip up the intermediate points and speeds up the searching algorithm.
