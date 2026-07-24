@@ -4092,6 +4092,93 @@ String EditorInspector::get_selected_path() const {
 	return property_selected;
 }
 
+void EditorInspector::_populate_property_map(EditorProperty *p_ep, const PropertyInfo &p_property_info, const EditorInspectorPlugin::AddedEditor &p_editor, const Vector<String> &p_properties, const String &p_property_label_string) {
+	if (p_properties.size()) {
+		if (p_properties.size() == 1) {
+			// Since it's one, associate:
+			p_ep->property = p_properties[0];
+			p_ep->property_path = property_prefix + p_properties[0];
+			p_ep->property_usage = p_property_info.usage;
+			// And set label?
+		}
+		if (!p_editor.label.is_empty()) {
+			p_ep->set_label(p_editor.label);
+		} else {
+			// Use the existing one.
+			p_ep->set_label(p_property_label_string);
+		}
+
+		for (int j = 0; j < p_properties.size(); j++) {
+			String prop = p_properties[j];
+
+			if (!editor_property_map.has(prop)) {
+				editor_property_map[prop] = List<EditorProperty *>();
+			}
+			editor_property_map[prop].push_back(p_ep);
+		}
+	}
+}
+
+void EditorInspector::_apply_property_editor_flags(EditorProperty *p_ep, bool p_sub_inspector_use_filter, bool p_disable_favorite, bool p_property_read_only, bool p_all_read_only, bool p_checkable, bool p_checked, bool p_draw_warning) {
+	if (p_sub_inspector_use_filter) {
+		EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(p_ep);
+		if (epr) {
+			epr->set_use_filter(true);
+		}
+	}
+
+	p_ep->set_deletable(deletable_properties);
+	p_ep->set_draw_warning(p_draw_warning);
+	p_ep->set_use_folding(use_folding);
+	p_ep->set_favoritable(can_favorite && !p_disable_favorite && !p_ep->is_deletable());
+	p_ep->set_checkable(p_checkable);
+	p_ep->set_checked(p_checked);
+	p_ep->set_keying(keying);
+	p_ep->set_read_only(p_property_read_only || p_all_read_only);
+}
+
+void EditorInspector::_connect_property_editor_signals(EditorProperty *p_ep, bool p_update_all) {
+	p_ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(p_update_all));
+	p_ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+	p_ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
+	p_ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
+	p_ep->connect("property_favorited", callable_mp(this, &EditorInspector::_set_property_favorited), CONNECT_DEFERRED);
+	p_ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
+	p_ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
+	p_ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
+	p_ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
+	p_ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
+	p_ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
+}
+
+void EditorInspector::_apply_property_editor_doc(EditorProperty *p_ep, const PropertyInfo &p_property_info, const String &p_doc_tooltip_text, const String &p_doc_path) {
+	p_ep->set_tooltip_text(p_doc_tooltip_text);
+	p_ep->has_doc_tooltip = use_doc_hints;
+	p_ep->set_doc_path(p_doc_path);
+	p_ep->set_internal(p_property_info.usage & PROPERTY_USAGE_INTERNAL);
+}
+
+void EditorInspector::_search_and_connect_sections(EditorProperty *p_ep, Node *p_section_search) {
+	while (p_section_search) {
+		EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(p_section_search);
+		if (section) {
+			p_ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+		}
+		p_section_search = p_section_search->get_parent();
+		if (Object::cast_to<EditorInspector>(p_section_search)) {
+			// Skip sub-resource inspectors.
+			break;
+		}
+	}
+}
+
+void EditorInspector::_update_property_editor(EditorProperty *p_ep) {
+	p_ep->update_property();
+	p_ep->_update_flags();
+	p_ep->update_editor_property_status();
+	p_ep->update_cache();
+}
+
 void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> p_plugin) {
 	for (const EditorInspectorPlugin::AddedEditor &F : p_plugin->added_editors) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
@@ -4105,17 +4192,8 @@ void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, Editor
 
 		if (ep) {
 			ep->object = object;
-			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(false));
-			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-			ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
-			ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
-			ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
-			ep->connect("property_favorited", callable_mp(this, &EditorInspector::_set_property_favorited), CONNECT_DEFERRED);
-			ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
-			ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
-			ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-			ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
-			ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
+
+			_connect_property_editor_signals(ep, true);
 
 			if (F.properties.size()) {
 				if (F.properties.size() == 1) {
@@ -4139,18 +4217,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, Editor
 				}
 			}
 
-			Node *section_search = p_section;
-			while (section_search) {
-				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
-				if (section) {
-					ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
-				}
-				section_search = section_search->get_parent();
-				if (Object::cast_to<EditorInspector>(section_search)) {
-					// Skip sub-resource inspectors.
-					break;
-				}
-			}
+			_search_and_connect_sections(ep, p_section);
 
 			ep->set_read_only(read_only);
 			ep->update_property();
@@ -4954,37 +5021,7 @@ void EditorInspector::update_tree() {
 				// Set all this before the control gets the ENTER_TREE notification.
 				ep->object = object;
 
-				if (properties.size()) {
-					if (properties.size() == 1) {
-						// Since it's one, associate:
-						ep->property = properties[0];
-						ep->property_path = property_prefix + properties[0];
-						ep->property_usage = p.usage;
-						// And set label?
-					}
-					if (!editors[i].label.is_empty()) {
-						ep->set_label(editors[i].label);
-					} else {
-						// Use the existing one.
-						ep->set_label(property_label_string);
-					}
-
-					for (int j = 0; j < properties.size(); j++) {
-						String prop = properties[j];
-
-						if (!editor_property_map.has(prop)) {
-							editor_property_map[prop] = List<EditorProperty *>();
-						}
-						editor_property_map[prop].push_back(ep);
-					}
-				}
-
-				if (sub_inspector_use_filter) {
-					EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(ep);
-					if (epr) {
-						epr->set_use_filter(true);
-					}
-				}
+				_populate_property_map(ep, p, editors[i], properties, property_label_string);
 
 				if (p.name.begins_with("metadata/")) {
 					if (property_read_only || all_read_only) {
@@ -5000,13 +5037,7 @@ void EditorInspector::update_tree() {
 					ep->set_deletable(deletable_properties);
 				}
 
-				ep->set_draw_warning(draw_warning);
-				ep->set_use_folding(use_folding);
-				ep->set_favoritable(can_favorite && !disable_favorite && !ep->is_deletable());
-				ep->set_checkable(checkable);
-				ep->set_checked(checked);
-				ep->set_keying(keying);
-				ep->set_read_only(property_read_only || all_read_only);
+				_apply_property_editor_flags(ep, sub_inspector_use_filter, disable_favorite, property_read_only, all_read_only, checkable, checked, draw_warning);
 			}
 
 			if (ep && ep->is_favoritable() && current_favorites.has(p.name)) {
@@ -5019,51 +5050,43 @@ void EditorInspector::update_tree() {
 				if (subgroup_togglable_property) {
 					togglable_editor_inspector_sections[group + "/" + subgroup] = subgroup_togglable_property;
 				}
+
+				// A copy of the property editor created for the original position. Synced with the main entry.
+				EditorProperty *ep_copy = instantiate_property_editor(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
+				if (ep_copy) {
+					ep_copy->object = object;
+
+					_populate_property_map(ep_copy, p, editors[i], properties, property_label_string);
+					_apply_property_editor_flags(ep_copy, sub_inspector_use_filter, disable_favorite, property_read_only, all_read_only, checkable, checked, draw_warning);
+					ep_copy->favorited = true;
+
+					current_vbox->add_child(ep_copy);
+
+					bool update_all = (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
+					_connect_property_editor_signals(ep_copy, update_all);
+					_apply_property_editor_doc(ep_copy, p, doc_tooltip_text, doc_path);
+					_search_and_connect_sections(ep_copy, current_vbox->get_parent());
+
+					_update_property_editor(ep_copy);
+				}
 			} else {
 				current_vbox->add_child(editors[i].property_editor);
 
 				if (ep) {
-					Node *section_search = current_vbox->get_parent();
-					while (section_search) {
-						EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
-						if (section) {
-							ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
-						}
-						section_search = section_search->get_parent();
-						if (Object::cast_to<EditorInspector>(section_search)) {
-							// Skip sub-resource inspectors.
-							break;
-						}
-					}
+					_search_and_connect_sections(ep, current_vbox->get_parent());
 				}
 			}
 
 			if (ep) {
 				// Eventually, set other properties/signals after the property editor got added to the tree.
 				bool update_all = (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
-				ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(update_all));
-				ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-				ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
-				ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
-				ep->connect("property_favorited", callable_mp(this, &EditorInspector::_set_property_favorited), CONNECT_DEFERRED);
-				ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
-				ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
-				ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
-				ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-				ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
-				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
+				_connect_property_editor_signals(ep, update_all);
 
-				ep->set_tooltip_text(doc_tooltip_text);
-				ep->has_doc_tooltip = use_doc_hints;
-				ep->set_doc_path(doc_path);
-				ep->set_internal(p.usage & PROPERTY_USAGE_INTERNAL);
+				_apply_property_editor_doc(ep, p, doc_tooltip_text, doc_path);
 
 				// If this property is favorited, it won't be in the tree yet. So don't do this setup right now.
 				if (ep->is_inside_tree()) {
-					ep->update_property();
-					ep->_update_flags();
-					ep->update_editor_property_status();
-					ep->update_cache();
+					_update_property_editor(ep);
 
 					if (current_selected && ep->property == current_selected) {
 						ep->select(current_focusable);
@@ -5160,24 +5183,10 @@ void EditorInspector::update_tree() {
 				for (EditorProperty *ep : KV2.value) {
 					vbox->add_child(ep);
 
-					Node *section_search = vbox->get_parent();
-					while (section_search) {
-						EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
-						if (section) {
-							ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
-						}
-						section_search = section_search->get_parent();
-						if (Object::cast_to<EditorInspector>(section_search)) {
-							// Skip sub-resource inspectors.
-							break;
-						}
-					}
+					_search_and_connect_sections(ep, vbox->get_parent());
 
 					// Now that it's inside the tree, do the setup.
-					ep->update_property();
-					ep->_update_flags();
-					ep->update_editor_property_status();
-					ep->update_cache();
+					_update_property_editor(ep);
 
 					if (current_selected && ep->property == current_selected) {
 						ep->select(current_focusable);
