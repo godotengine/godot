@@ -698,7 +698,11 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (symbol_tooltip_on_hover_enabled) {
 			symbol_tooltip_pos = get_line_column_at_pos(mpos, false, false);
 			symbol_tooltip_word = get_lookup_word(symbol_tooltip_pos.y, symbol_tooltip_pos.x);
-			symbol_tooltip_timer->start();
+			if (symbol_tooltip_word != last_symbol_tooltip_word || (symbol_tooltip_word == last_symbol_tooltip_word && !symbol_tooltip_dismissed)) {
+				symbol_tooltip_dismissed = false;
+				last_symbol_tooltip_word = symbol_tooltip_word;
+				symbol_tooltip_timer->start();
+			}
 		}
 
 		bool scroll_hovered = code_completion_scroll_rect.has_point(mpos);
@@ -760,6 +764,10 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
+	if (k->is_pressed()) {
+		symbol_tooltip_dismissed = true;
+	}
+
 	// Allow unicode handling if:
 	// No modifiers are pressed (except Shift and CapsLock)
 	bool allow_unicode_handling = !(k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
@@ -772,6 +780,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	if (code_completion_active) {
+		symbol_tooltip_dismissed = true;
 		if (k->is_action("ui_up", true)) {
 			if (code_completion_current_selected > 0) {
 				code_completion_current_selected--;
@@ -2816,7 +2825,8 @@ bool CodeEdit::is_symbol_tooltip_on_hover_enabled() const {
 void CodeEdit::_on_symbol_tooltip_timer_timeout() {
 	const int line = symbol_tooltip_pos.y;
 	const int column = symbol_tooltip_pos.x;
-	if (line >= 0 && column >= 0 && !symbol_tooltip_word.is_empty() && !Input::get_singleton()->is_anything_pressed()) {
+	bool is_mouse_over_code_completion_popup = code_completion_active && code_completion_rect.has_point(get_local_mouse_position());
+	if (line >= 0 && column >= 0 && !symbol_tooltip_word.is_empty() && !Input::get_singleton()->is_anything_pressed() && !symbol_tooltip_dismissed && !is_mouse_over_code_completion_popup) {
 		emit_signal(SNAME("symbol_hovered"), symbol_tooltip_word, line, column);
 	}
 }

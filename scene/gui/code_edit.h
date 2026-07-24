@@ -250,8 +250,10 @@ private:
 
 	/* Symbol tooltip */
 	bool symbol_tooltip_on_hover_enabled = false;
+	bool symbol_tooltip_dismissed = false;
 	Point2i symbol_tooltip_pos; // Column and line.
 	String symbol_tooltip_word;
+	String last_symbol_tooltip_word;
 	Timer *symbol_tooltip_timer = nullptr;
 	void _on_symbol_tooltip_timer_timeout();
 
