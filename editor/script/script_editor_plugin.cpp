@@ -1150,16 +1150,18 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 	// Roll back to previous tab instead of just previous history state
 	_roll_back_to_pre_tab();
 
-	// Remove all history states related to the closed tab.
+	// Update all history states related to the closed tab.
 	for (int i = 0; i < history.size(); i++) {
 		if (history[i].control == tselected) {
-			history.remove_at(i);
-			i--;
-			history_pos--;
+			if (ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tselected)) {
+				history.write[i].source = seb->edited_file_data.path;
+			}
+			if (EditorHelp *eh = Object::cast_to<EditorHelp>(tselected)) {
+				history.write[i].source = eh->get_class();
+			}
+			history.write[i].control = nullptr;
 		}
 	}
-
-	_compress_history_patterns(false);
 
 	int idx = tab_container->get_current_tab();
 	if (TextEditorBase *current = Object::cast_to<TextEditorBase>(tselected)) {
@@ -1172,7 +1174,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save) {
 			idx = tab_container->get_tab_count() - 1;
 		}
 		if (idx >= 0) {
-			if (history_pos >= 0) {
+			if (history_pos >= 0 && history[history_pos].control != nullptr) {
 				idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
 			}
 			_go_to_tab(idx, true);
@@ -3689,11 +3691,59 @@ void ScriptEditor::_update_selected_editor_menu() {
 }
 
 void ScriptEditor::_update_history_pos(int p_new_pos) {
-	Node *n = tab_container->get_current_tab_control();
+	Control *n = tab_container->get_current_tab_control();
+	bool new_pos_is_larger = p_new_pos > history_pos;
 	history_pos = p_new_pos;
-	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(history[history_pos].control));
 
 	n = history[history_pos].control;
+	if (n == nullptr) {
+		bool adjusted_history_pos = false;
+		// Remove all tabs with a deleted source from the history.
+		for (int i = history.size() - 1; i >= 0; i--) {
+			String source = history[i].source;
+			if (history[i].control || EditorHelp::has_doc(source) || ResourceLoader::exists(source)) {
+				continue;
+			}
+			history.remove_at(i);
+			if (i == history_pos) {
+				adjusted_history_pos = true;
+			}
+			if (i <= history_pos) {
+				history_pos--;
+			}
+		}
+		_compress_history_patterns(false);
+
+		// In case the history_pos was increased and the entry at the new history_pos was deleted
+		// we need to increase the history_pos to be on the next valid entry.
+		if (new_pos_is_larger && adjusted_history_pos && history_pos < history.size() - 1) {
+			history_pos = history_pos + 1;
+		}
+		if (history_pos < 0) {
+			_update_script_names();
+			_update_history_arrows();
+			_update_selected_editor_menu();
+			return;
+		}
+		n = history[history_pos].control;
+	}
+
+	// Handle closed tabs with existing source.
+	if (n == nullptr) {
+		String source = history[history_pos].source;
+		if (EditorHelp::has_doc(source)) {
+			_help_class_open(source);
+		} else {
+			edit(ResourceLoader::load(source));
+		}
+		n = tab_container->get_current_tab_control();
+		for (ScriptHistory &sh : history) {
+			if (sh.source == source) {
+				sh.control = n;
+			}
+		}
+	}
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(n));
 
 	if (ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(n)) {
 		if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(n)) {
@@ -3753,7 +3803,6 @@ void ScriptEditor::_roll_back_to_pre_tab() {
 		history.clear();
 	} else {
 		_update_history_pos(pos);
-		history.resize(history_pos + 1);
 	}
 }
 
