@@ -1133,6 +1133,8 @@ void PopupMenu::_items_focus_entered() {
 void PopupMenu::_search_bar_text_changed(const String &p_new_text) {
 	_filter_items(p_new_text);
 
+	prev_mouse_over = mouse_over;
+	mouse_over = -1;
 	queue_accessibility_update();
 	control->queue_redraw();
 	child_controls_changed();
