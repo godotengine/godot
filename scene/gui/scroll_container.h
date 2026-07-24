@@ -85,6 +85,7 @@ private:
 
 	int deadzone = 0;
 	bool follow_focus = false;
+	bool allow_focus_shadow = false;
 	int scroll_border = 20;
 	int scroll_speed = 12;
 	bool scroll_horizontal_by_default = false;
@@ -177,6 +178,9 @@ public:
 
 	void set_tile_scroll_hint(bool p_enable);
 	bool is_scroll_hint_tiled();
+
+	void set_allow_focus_shadow(bool p_allow);
+	bool is_allowing_focus_shadow() const;
 
 	bool is_following_focus() const;
 	void set_follow_focus(bool p_follow);
