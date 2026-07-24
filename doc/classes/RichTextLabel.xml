@@ -461,6 +461,9 @@
 			<param index="4" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="outline_size" type="int" default="0" />
 			<param index="6" name="outline_color" type="Color" default="Color(0, 0, 0, 0)" />
+			<param index="7" name="shadow_size" type="int" default="0" />
+			<param index="8" name="shadow_color" type="Color" default="Color(0, 0, 0, 0)" />
+			<param index="9" name="shadow_offset" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Adds a [code skip-lint][dropcap][/code] tag to the tag stack. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
 			</description>
@@ -573,6 +576,27 @@
 			<param index="5" name="tab_stops" type="PackedFloat32Array" default="PackedFloat32Array()" />
 			<description>
 				Adds a [code skip-lint][p][/code] tag to the tag stack.
+			</description>
+		</method>
+		<method name="push_shadow_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Adds a [code skip-lint][shadow_color][/code] tag to the tag stack. Adds text shadow for its duration.
+			</description>
+		</method>
+		<method name="push_shadow_offset">
+			<return type="void" />
+			<param index="0" name="offset" type="Vector2" />
+			<description>
+				Adds a [code skip-lint][shadow_offset][/code] tag to the tag stack. Sets text shadow offset for its duration.
+			</description>
+		</method>
+		<method name="push_shadow_size">
+			<return type="void" />
+			<param index="0" name="shadow_size" type="int" />
+			<description>
+				Adds a [code skip-lint][shadow_size][/code] tag to the tag stack. Set text shadow outline size for its duration.
 			</description>
 		</method>
 		<method name="push_strikethrough">
