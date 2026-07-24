@@ -125,6 +125,14 @@ bool AudioStreamPlaylist::has_loop() const {
 	return loop;
 }
 
+void AudioStreamPlaylist::set_loop_stream(bool p_loop) {
+	loop_stream = p_loop;
+}
+
+bool AudioStreamPlaylist::has_loop_stream() const {
+	return loop_stream;
+}
+
 void AudioStreamPlaylist::_validate_property(PropertyInfo &r_property) const {
 	if (r_property.name != "stream_count" && r_property.name.begins_with("stream_")) {
 		int stream = r_property.name.get_slicec('/', 0).get_slicec('_', 1).to_int();
@@ -151,9 +159,12 @@ void AudioStreamPlaylist::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &AudioStreamPlaylist::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &AudioStreamPlaylist::has_loop);
+	ClassDB::bind_method(D_METHOD("set_loop_stream", "loop"), &AudioStreamPlaylist::set_loop_stream);
+	ClassDB::bind_method(D_METHOD("has_loop_stream"), &AudioStreamPlaylist::has_loop_stream);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shuffle"), "set_shuffle", "get_shuffle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop_stream"), "set_loop_stream", "has_loop_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fade_time", PROPERTY_HINT_RANGE, "0,1,0.01,suffix:s"), "set_fade_time", "get_fade_time");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "0," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Streams,stream_,unfoldable,page_size=999,add_button_text=" + String(TTRC("Add Stream"))), "set_stream_count", "get_stream_count");
@@ -273,15 +284,26 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 		}
 
 		offset += time_dec * to_mix;
+		stream_offset += time_dec * to_mix;
 
 		for (int i = 0; i < to_mix; i++) {
 			*p_buffer = mix_buffer[i];
 			stream_todo -= time_dec;
-			if (stream_todo < 0) {
+			if (stream_todo < 0 || next_stream_index != -1) {
 				//find next stream.
 				int prev = play_order[play_index];
 
 				for (int j = 0; j < playlist->stream_count; j++) {
+					if (next_stream_index != -1) {
+						// Manually changed streams, exit
+						play_index = next_stream_index;
+						next_stream_index = -1;
+						break;
+					}
+					if (playlist->has_loop_stream()) {
+						// Don't advance if looping this stream, exit
+						break;
+					}
 					play_index++;
 					if (play_index >= playlist->stream_count) {
 						// No loop, exit.
@@ -298,6 +320,7 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 						play_index = 0;
 						loop_count++;
 						offset = time_dec * (to_mix - i);
+						stream_offset = time_dec * (to_mix - 1);
 					}
 					if (playback[play_order[play_index]].is_valid()) {
 						break;
@@ -347,6 +370,19 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 				} else {
 					stream_todo = playlist->audio_streams[idx]->get_length();
 				}
+				stream_offset = 0.0;
+
+				// Emit a signal for the stream changing or looping
+				StringName signal_name = SNAME("stream_changed");
+				if (idx == prev) {
+					signal_name = SNAME("stream_looped");
+				}
+				// The playback may be in the main thread or another
+				if (Thread::is_main_thread()) {
+					emit_signal(signal_name);
+				} else {
+					call_deferred("emit_signal", signal_name);
+				}
 			}
 
 			if (fade_index != -1) {
@@ -383,8 +419,47 @@ double AudioStreamPlaybackPlaylist::get_playback_position() const {
 	return offset;
 }
 
+double AudioStreamPlaybackPlaylist::get_stream_playback_position() const {
+	return stream_offset;
+}
+
 bool AudioStreamPlaybackPlaylist::is_playing() const {
 	return active;
+}
+
+void AudioStreamPlaybackPlaylist::change_stream(int p_stream_index) {
+	ERR_FAIL_INDEX(p_stream_index, playlist->stream_count);
+	next_stream_index = p_stream_index;
+}
+
+void AudioStreamPlaybackPlaylist::next_stream() {
+	next_stream_index = play_index + 1;
+
+	if (next_stream_index >= playlist->stream_count) {
+		if (!playlist->loop) {
+			// If playlist doesn't loop, don't change streams
+			next_stream_index = -1;
+		} else {
+			next_stream_index = 0;
+		}
+	}
+}
+
+void AudioStreamPlaybackPlaylist::previous_stream() {
+	next_stream_index = play_index - 1;
+
+	if (next_stream_index < 0) {
+		if (!playlist->loop) {
+			// If playlist doesn't loop, don't change streams
+			next_stream_index = -1;
+		} else {
+			next_stream_index = playlist->stream_count - 1;
+		}
+	}
+}
+
+int AudioStreamPlaybackPlaylist::get_current_stream_index() const {
+	return play_order[play_index];
 }
 
 void AudioStreamPlaybackPlaylist::_update_playback_instances() {
@@ -397,4 +472,15 @@ void AudioStreamPlaybackPlaylist::_update_playback_instances() {
 			playback[i].unref();
 		}
 	}
+}
+
+void AudioStreamPlaybackPlaylist::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("change_stream", "stream_index"), &AudioStreamPlaybackPlaylist::change_stream);
+	ClassDB::bind_method(D_METHOD("next_stream"), &AudioStreamPlaybackPlaylist::next_stream);
+	ClassDB::bind_method(D_METHOD("previous_stream"), &AudioStreamPlaybackPlaylist::previous_stream);
+	ClassDB::bind_method(D_METHOD("get_current_stream_index"), &AudioStreamPlaybackPlaylist::get_current_stream_index);
+	ClassDB::bind_method(D_METHOD("get_stream_playback_position"), &AudioStreamPlaybackPlaylist::get_stream_playback_position);
+
+	ADD_SIGNAL(MethodInfo("stream_changed"));
+	ADD_SIGNAL(MethodInfo("stream_looped"));
 }
