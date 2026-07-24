@@ -30,6 +30,9 @@
 
 #include "method_info.h"
 
+#include "core/object/property_info.h"
+#include "core/string/string_name.h"
+#include "core/templates/hashfuncs.h"
 #include "core/variant/array.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/typed_array.h" // IWYU pragma: keep. `convert_property_list` return type.
@@ -47,6 +50,11 @@ MethodInfo::operator Dictionary() const {
 	d["id"] = id;
 	Dictionary r = return_val;
 	d["return"] = r;
+
+	if (!rest_argument.name.is_empty()) {
+		d["rest_argument"] = (Dictionary)rest_argument;
+	}
+
 	return d;
 }
 
@@ -81,6 +89,10 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 		mi.flags = p_dict["flags"];
 	}
 
+	if (p_dict.has("rest_argument")) {
+		mi.rest_argument = PropertyInfo::from_dict(p_dict["rest_argument"]);
+	}
+
 	return mi;
 }
 
@@ -111,6 +123,10 @@ uint32_t MethodInfo::get_compatibility_hash() const {
 
 	hash = hash_murmur3_one_32(flags & METHOD_FLAG_CONST ? 1 : 0, hash);
 	hash = hash_murmur3_one_32(flags & METHOD_FLAG_VARARG ? 1 : 0, hash);
+
+	if (flags & METHOD_FLAG_VARARG && rest_argument.name != StringName()) {
+		hash = hash_murmur3_one_32(rest_argument.name.hash(), hash);
+	}
 
 	return hash_fmix32(hash);
 }

@@ -1115,6 +1115,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 						md.qualifiers += " ";
 					}
 					md.qualifiers += "vararg";
+
+					if (!mi.rest_argument.name.is_empty()) {
+						DocData::argument_doc_from_arginfo(md.rest_argument, mi.rest_argument);
+					}
 				}
 
 				DocData::return_doc_from_retinfo(md, mi.return_val);
@@ -1160,6 +1164,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 						atd.qualifiers += " ";
 					}
 					atd.qualifiers += "vararg";
+
+					if (!ai.rest_argument.name.is_empty()) {
+						DocData::argument_doc_from_arginfo(atd.rest_argument, ai.rest_argument);
+					}
 				}
 
 				DocData::return_doc_from_retinfo(atd, ai.return_val);
@@ -1260,6 +1268,20 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 							if (parser->get_node_type() == XMLParser::NODE_TEXT) {
 								method.description = parser->get_node_data();
 							}
+						} else if (name == "rest_param") {
+							DocData::ArgumentDoc argument;
+							ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
+							argument.name = parser->get_named_attribute_value("name");
+							ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
+							argument.type = parser->get_named_attribute_value("type");
+							if (parser->has_attribute("enum")) {
+								argument.enumeration = parser->get_named_attribute_value("enum");
+								if (parser->has_attribute("is_bitfield")) {
+									argument.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+								}
+							}
+
+							method.rest_argument = argument;
 						}
 
 					} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == element) {
@@ -1671,6 +1693,23 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 				} else {
 					_write_string(f, 3, "<param index=\"" + itos(j) + "\" name=\"" + a.name.xml_escape(true) + "\" type=\"" + a.type.xml_escape(true) + "\"" + enum_text + " />");
 				}
+			}
+
+			if (!m.rest_argument.name.is_empty()) {
+				String enum_text;
+				if (!m.rest_argument.enumeration.is_empty()) {
+					enum_text = " enum=\"" + m.rest_argument.enumeration.xml_escape(true) + "\"";
+					if (m.rest_argument.is_bitfield) {
+						enum_text += " is_bitfield=\"true\"";
+					}
+				}
+
+				String rest_type;
+				if (!m.rest_argument.type.is_empty()) {
+					rest_type = " type=\"" + m.rest_argument.type.xml_escape(true) + "\"";
+				}
+
+				_write_string(f, 3, "<rest_param name=\"" + m.rest_argument.name.xml_escape(true) + "\"" + rest_type + enum_text + " />");
 			}
 
 			_write_string(f, 3, "<description>");

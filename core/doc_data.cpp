@@ -149,6 +149,10 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 			p_method.qualifiers += " ";
 		}
 		p_method.qualifiers += "vararg";
+
+		if (!p_methodinfo.rest_argument.name.is_empty()) {
+			argument_doc_from_arginfo(p_method.rest_argument, p_methodinfo.rest_argument);
+		}
 	}
 
 	if (p_methodinfo.flags & METHOD_FLAG_STATIC) {

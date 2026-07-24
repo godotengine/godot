@@ -106,7 +106,6 @@ public:
 		bool is_experimental = false;
 		String experimental_message;
 		Vector<ArgumentDoc> arguments;
-		// NOTE: Only for GDScript for now. The rest argument is not saved to the XML file.
 		ArgumentDoc rest_argument;
 		Vector<int> errors_returned;
 		String keywords;

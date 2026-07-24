@@ -405,7 +405,8 @@
 		</annotation>
 		<annotation name="@export_enum" qualifiers="vararg">
 			<return type="void" />
-			<param index="0" name="names" type="String" />
+			<param index="0" name="first_name" type="String" />
+			<rest_param name="rest_names" type="Array" />
 			<description>
 				Export an [int], [String], [Array][lb][int][rb], [Array][lb][String][rb], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], or [PackedStringArray] property as an enumerated list of options (or an array of options). If the property is an [int], then the index of the value is stored, in the same order the values are provided. You can add explicit values using a colon. If the property is a [String], then the value is stored.
 				See also [constant PROPERTY_HINT_ENUM].
