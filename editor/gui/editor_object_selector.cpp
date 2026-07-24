@@ -195,7 +195,7 @@ void EditorObjectSelector::_notification(int p_what) {
 			int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 			current_object_icon->set_custom_minimum_size(Size2(icon_size, icon_size));
-			current_object_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
+			current_object_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 			sub_objects_icon->set_texture(get_theme_icon(SNAME("arrow"), SNAME("OptionButton")));
 			sub_objects_menu->add_theme_constant_override("icon_max_width", icon_size);
 		} break;
