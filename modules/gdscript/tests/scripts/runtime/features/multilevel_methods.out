@@ -1,0 +1,19 @@
+GDTEST_OK
+A
+C
+B
+var exported_property: Array
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE|ARRAY class_name=&""
+var surname: String
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+var password: int
+  hint=NONE hint_string="" usage=DEFAULT|SCRIPT_VARIABLE class_name=&""
+surname: B-man
+password: 2137
+Setting password to: 420
+can revert fake: true
+can revert fake2: false
+get revert C: fake
+get revert fake: fake
+get revert C: fake2
+get revert fake2: <null>
