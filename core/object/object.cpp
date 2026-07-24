@@ -41,6 +41,7 @@
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/variant_internal.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -615,16 +616,19 @@ Variant Object::_call_bind(const Variant **p_args, int p_argcount, Callable::Cal
 		return Variant();
 	}
 
-	if (!p_args[0]->is_string()) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
-		return Variant();
+	if (p_args[0]->get_type() == Variant::STRING_NAME) {
+		const StringName &method = *VariantInternal::get_string_name(p_args[0]);
+		return callp(method, &p_args[1], p_argcount - 1, r_error);
+	}
+	if (p_args[0]->get_type() == Variant::STRING) {
+		StringName method = *VariantInternal::get_string(p_args[0]);
+		return callp(method, &p_args[1], p_argcount - 1, r_error);
 	}
 
-	StringName method = *p_args[0];
-
-	return callp(method, &p_args[1], p_argcount - 1, r_error);
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+	r_error.argument = 0;
+	r_error.expected = Variant::STRING_NAME;
+	return Variant();
 }
 
 Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -634,19 +638,22 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Call
 		return Variant();
 	}
 
-	if (!p_args[0]->is_string()) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.argument = 0;
-		r_error.expected = Variant::STRING_NAME;
+	if (p_args[0]->get_type() == Variant::STRING_NAME) {
+		r_error.error = Callable::CallError::CALL_OK;
+		const StringName &method = *VariantInternal::get_string_name(p_args[0]);
+		MessageQueue::get_singleton()->push_callp(get_instance_id(), method, &p_args[1], p_argcount - 1, true);
+		return Variant();
+	}
+	if (p_args[0]->get_type() == Variant::STRING) {
+		r_error.error = Callable::CallError::CALL_OK;
+		StringName method = *VariantInternal::get_string(p_args[0]);
+		MessageQueue::get_singleton()->push_callp(get_instance_id(), method, &p_args[1], p_argcount - 1, true);
 		return Variant();
 	}
 
-	r_error.error = Callable::CallError::CALL_OK;
-
-	StringName method = *p_args[0];
-
-	MessageQueue::get_singleton()->push_callp(get_instance_id(), method, &p_args[1], p_argcount - 1, true);
-
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+	r_error.argument = 0;
+	r_error.expected = Variant::STRING_NAME;
 	return Variant();
 }
 
