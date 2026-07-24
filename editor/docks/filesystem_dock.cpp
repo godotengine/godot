@@ -2554,6 +2554,14 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_DEEP_OWNERS: {
+			// Checkout the file owners.
+			if (!p_selected.is_empty()) {
+				const String &fpath = p_selected[0];
+				owners_editor->show(fpath, true);
+			}
+		} break;
+
 		case FILE_MENU_MOVE: {
 			// Move or copy the files to a given location.
 			to_move.clear();
@@ -3473,6 +3481,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		if (filenames.size() == 1) {
 			p_popup->add_item(TTRC("Edit Dependencies..."), FILE_MENU_DEPENDENCIES);
 			p_popup->add_item(TTRC("View Owners..."), FILE_MENU_OWNERS);
+			p_popup->add_item(TTRC("View Deep Owners..."), FILE_MENU_DEEP_OWNERS);
 			p_popup->add_separator();
 		}
 	}
