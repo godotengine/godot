@@ -23,11 +23,11 @@ def clear_out_stale_files(output_folder, extension, fresh_files):
         # no files to clearout. (this is not an error)
         return
 
-    for file in glob.glob(output_folder + "/*." + extension):
-        file = Path(file)
-        if file not in fresh_files:
-            # print("removed stale file: " + str(file))
-            os.remove(file)
+    for file_str in glob.glob(output_folder + "/*." + extension):
+        file_path = Path(file_str)
+        if file_path not in fresh_files:
+            # print("removed stale file: " + str(file_path))
+            os.remove(file_path)
 
 
 def folder_not_found(folder):
@@ -42,6 +42,8 @@ def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exc
         print_error(f'SCU: "{abs_folder}" not found.')
         return include_list, found_exceptions
 
+    # save current directory to restore later
+    old_cwd = os.getcwd()
     os.chdir(abs_folder)
 
     sub_folder_slashed = ""
@@ -61,6 +63,7 @@ def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exc
         else:
             found_exceptions.append(li)
 
+    os.chdir(old_cwd)
     return include_list, found_exceptions
 
 
@@ -269,7 +272,6 @@ def generate_scu_files(max_includes_per_scu):
     # check we are running from the correct folder
     if folder_not_found("core") or folder_not_found("platform") or folder_not_found("scene"):
         raise RuntimeError("scu_builders.py must be run from the godot folder.")
-        return
 
     process_folder(["core"])
     process_folder(["core/config"])
