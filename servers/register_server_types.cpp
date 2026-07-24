@@ -304,8 +304,14 @@ void register_server_types() {
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer2DExtensionMotionResult, "Vector2 travel;Vector2 remainder;Vector2 collision_point;Vector2 collision_normal;Vector2 collider_velocity;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;int collision_local_shape;ObjectID collider_id;RID collider;int collider_shape");
 
 	GDREGISTER_CLASS(PhysicsRayQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsRayIntersectionResult2D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsPointIntersectionResult2D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters2D);
+	GDREGISTER_CLASS(PhysicsShapeIntersectionResult2D);
+	GDREGISTER_CLASS(PhysicsCastMotionResult2D);
+	GDREGISTER_CLASS(PhysicsShapeCollisionResult2D);
+	GDREGISTER_CLASS(PhysicsRestInfoResult2D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters2D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult2D);
 
@@ -347,8 +353,14 @@ void register_server_types() {
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionResult, "Vector3 travel;Vector3 remainder;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count");
 
 	GDREGISTER_CLASS(PhysicsRayQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsRayIntersectionResult3D);
 	GDREGISTER_CLASS(PhysicsPointQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsPointIntersectionResult3D);
 	GDREGISTER_CLASS(PhysicsShapeQueryParameters3D);
+	GDREGISTER_CLASS(PhysicsShapeIntersectionResult3D);
+	GDREGISTER_CLASS(PhysicsCastMotionResult3D);
+	GDREGISTER_CLASS(PhysicsShapeCollisionResult3D);
+	GDREGISTER_CLASS(PhysicsRestInfoResult3D);
 	GDREGISTER_CLASS(PhysicsTestMotionParameters3D);
 	GDREGISTER_CLASS(PhysicsTestMotionResult3D);
 

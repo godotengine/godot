@@ -32,8 +32,14 @@
 
 #include "core/variant/type_info.h"
 #include "servers/physics_3d/physics_server_3d_types.h"
+#include "servers/physics_3d/queries/physics_cast_motion_result_3d.h"
+#include "servers/physics_3d/queries/physics_point_intersection_result_3d.h"
 #include "servers/physics_3d/queries/physics_point_query_parameters_3d.h"
+#include "servers/physics_3d/queries/physics_ray_intersection_result_3d.h"
 #include "servers/physics_3d/queries/physics_ray_query_parameters_3d.h"
+#include "servers/physics_3d/queries/physics_rest_info_result_3d.h"
+#include "servers/physics_3d/queries/physics_shape_collision_result_3d.h"
+#include "servers/physics_3d/queries/physics_shape_intersection_result_3d.h"
 #include "servers/physics_3d/queries/physics_shape_query_parameters_3d.h"
 
 class PhysicsDirectSpaceState3D : public Object {
@@ -47,14 +53,19 @@ private:
 	TypedArray<Vector3> _collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query);
 
+	bool _intersect_ray_typed(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query, RequiredParam<PhysicsRayIntersectionResult3D> rp_result);
+	bool _intersect_point_typed(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, RequiredParam<PhysicsPointIntersectionResult3D> rp_result);
+	bool _intersect_shape_typed(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeIntersectionResult3D> rp_result);
+	bool _cast_motion_typed(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsCastMotionResult3D> rp_result);
+	bool _collide_shape_typed(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsShapeCollisionResult3D> rp_result);
+	bool _get_rest_info_typed(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, RequiredParam<PhysicsRestInfoResult3D> rp_result);
+
 protected:
 	static void _bind_methods();
 
 public:
 	virtual bool intersect_ray(const PS3DT::RayParameters &p_parameters, PS3DT::RayResult &r_result) = 0;
-
 	virtual int intersect_point(const PS3DT::PointParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) = 0;
-
 	virtual int intersect_shape(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) = 0;
 	virtual bool cast_motion(const PS3DT::ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, PS3DT::ShapeRestInfo *r_info = nullptr) = 0;
 	virtual bool collide_shape(const PS3DT::ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) = 0;
