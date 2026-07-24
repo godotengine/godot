@@ -907,6 +907,7 @@ void Path3DEditorPlugin::_clear_curve_points() {
 		return;
 	}
 	Ref<Curve3D> curve = path->get_curve();
+	Node3DEditor::get_singleton()->clear_subgizmo_selection(path);
 	curve->set_closed(false);
 	curve->clear_points();
 }
