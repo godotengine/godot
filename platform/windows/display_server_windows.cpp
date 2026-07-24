@@ -2874,10 +2874,16 @@ void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 	switch (p_flag) {
 		case DisplayServerEnums::WINDOW_FLAG_MINIMIZE_DISABLED: {
 			wd.no_min_btn = p_enabled;
+			if (wd.fullscreen) {
+				return;
+			}
 			_update_window_style(p_window);
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_MAXIMIZE_DISABLED: {
 			wd.no_max_btn = p_enabled;
+			if (wd.fullscreen) {
+				return;
+			}
 			_update_window_style(p_window);
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_RESIZE_DISABLED: {
@@ -2886,6 +2892,9 @@ void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 				return;
 			}
 			wd.resizable = !p_enabled;
+			if (wd.fullscreen) {
+				return;
+			}
 			_update_window_style(p_window);
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_BORDERLESS: {
@@ -2904,12 +2913,18 @@ void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 				return;
 			}
 			wd.always_on_top = p_enabled;
+			if (wd.fullscreen) {
+				return;
+			}
 			_update_window_style(p_window);
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_SHARP_CORNERS: {
 			wd.sharp_corners = p_enabled;
 			DWORD value = wd.sharp_corners ? DWMWCP_DONOTROUND : DWMWCP_DEFAULT;
 			::DwmSetWindowAttribute(wd.hWnd, DWMWA_WINDOW_CORNER_PREFERENCE, &value, sizeof(value));
+			if (wd.fullscreen) {
+				return;
+			}
 			_update_window_style(p_window);
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_TRANSPARENT: {
@@ -2941,6 +2956,9 @@ void DisplayServerWindows::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
+			if (wd.fullscreen) {
+				return;
+			}
 			_update_window_style(p_window);
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_MOUSE_PASSTHROUGH: {
