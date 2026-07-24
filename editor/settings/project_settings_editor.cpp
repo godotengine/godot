@@ -852,9 +852,10 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	addons_container->set_name(TTRC("Addons"));
 	tab_container->add_child(addons_container);
 
-	plugin_settings = memnew(EditorPluginSettings);
+	plugin_settings = memnew(EditorPluginSettings(false));
 	plugin_settings->set_name(TTRC("Plugins"));
 	addons_container->add_child(plugin_settings);
+	ProjectSettings::get_singleton()->add_hidden_prefix("editor_plugins/");
 
 	gdextension_settings = memnew(ProjectSettingsGDExtension);
 	gdextension_settings->set_name(TTRC("GDExtension"));

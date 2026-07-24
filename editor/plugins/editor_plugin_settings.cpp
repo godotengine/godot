@@ -31,7 +31,6 @@
 #include "editor_plugin_settings.h"
 
 #include "core/config/engine.h"
-#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -73,7 +72,13 @@ void EditorPluginSettings::update_plugins() {
 	updating = true;
 	TreeItem *root = plugin_list->create_item();
 
-	Vector<String> plugins = _get_plugins("res://addons");
+	Vector<String> plugins;
+	if (is_editor_plugins) {
+		plugins = _get_plugins("editor://addons");
+	} else {
+		plugins = _get_plugins("res://addons");
+	}
+
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
@@ -101,6 +106,7 @@ void EditorPluginSettings::update_plugins() {
 				String version = cfg->get_value("plugin", "version");
 				String description = cfg->get_value("plugin", "description");
 				String scr = cfg->get_value("plugin", "script");
+				int scope = cfg->get_value("plugin", "scope", EditorPlugin::SCOPE_PROJECT);
 
 				bool is_enabled = EditorNode::get_singleton()->is_addon_plugin_enabled(path);
 				Color disabled_color = get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor));
@@ -134,6 +140,23 @@ void EditorPluginSettings::update_plugins() {
 				item->set_checked(COLUMN_STATUS, is_enabled);
 				item->set_editable(COLUMN_STATUS, true);
 				item->add_button(COLUMN_EDIT, get_editor_theme_icon(SNAME("Edit")), BUTTON_PLUGIN_EDIT, false, TTRC("Edit Plugin"));
+
+				if ((scope == EditorPlugin::SCOPE_PROJECT && is_editor_plugins) || (scope == EditorPlugin::SCOPE_EDITOR && !is_editor_plugins)) {
+					String warning_text;
+
+					if (is_editor_plugins) {
+						warning_text = TTRC("This plugin is incompatible with editor-wide plugins.");
+					} else {
+						warning_text = TTRC("This plugin is incompatible with project-wide plugins.");
+					}
+					item->add_button(COLUMN_STATUS, get_editor_theme_icon(SNAME("StatusError")), -1, false, warning_text);
+
+					if (is_enabled) {
+						item->set_checked(COLUMN_STATUS, false);
+						_update_plugin_enabled(item);
+					}
+					item->set_editable(COLUMN_STATUS, false);
+				}
 			}
 		}
 	}
@@ -148,6 +171,12 @@ void EditorPluginSettings::_plugin_activity_changed() {
 
 	TreeItem *ti = plugin_list->get_edited();
 	ERR_FAIL_NULL(ti);
+	_update_plugin_enabled(ti);
+}
+
+void EditorPluginSettings::_update_plugin_enabled(Object *p_item) {
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+
 	bool checked = ti->is_checked(COLUMN_STATUS);
 	String name = ti->get_metadata(COLUMN_NAME);
 
@@ -190,7 +219,8 @@ void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, in
 }
 
 Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	Ref<DirAccess> da = DirAccess::create_for_path(p_dir);
+	ERR_FAIL_COND_V_MSG(da.is_null(), Vector<String>(), "Could not create DirAccess for path: " + p_dir);
 	Error err = da->change_dir(p_dir);
 	if (err != OK) {
 		return Vector<String>();
@@ -216,10 +246,10 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 	return plugins;
 }
 
-EditorPluginSettings::EditorPluginSettings() {
-	ProjectSettings::get_singleton()->add_hidden_prefix("editor_plugins/");
+EditorPluginSettings::EditorPluginSettings(bool p_is_editor_plugins) {
+	is_editor_plugins = p_is_editor_plugins;
 
-	plugin_config_dialog = memnew(PluginConfigDialog);
+	plugin_config_dialog = memnew(PluginConfigDialog(is_editor_plugins));
 	plugin_config_dialog->config("");
 	add_child(plugin_config_dialog);
 
@@ -241,9 +271,13 @@ EditorPluginSettings::EditorPluginSettings() {
 	}
 
 	HBoxContainer *title_hb = memnew(HBoxContainer);
-	Label *label = memnew(Label(TTRC("Installed Plugins:")));
-	label->set_theme_type_variation("HeaderSmall");
-	title_hb->add_child(label);
+	if (is_editor_plugins) {
+		installed_plugins_label = memnew(Label(TTRC("Installed Editor-wide Plugins:")));
+	} else {
+		installed_plugins_label = memnew(Label(TTRC("Installed Project-wide Plugins:")));
+	}
+	installed_plugins_label->set_theme_type_variation("HeaderSmall");
+	title_hb->add_child(installed_plugins_label);
 	title_hb->add_spacer();
 	Button *create_plugin_button = memnew(Button(TTRC("Create New Plugin")));
 	create_plugin_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPluginSettings::_create_clicked));

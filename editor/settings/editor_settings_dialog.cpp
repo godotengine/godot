@@ -43,6 +43,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/inspector/editor_sectioned_inspector.h"
+#include "editor/plugins/editor_plugin_settings.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_event_search_bar.h"
 #include "editor/settings/editor_settings.h"
@@ -246,6 +247,10 @@ void EditorSettingsDialog::popup_edit_settings() {
 
 void EditorSettingsDialog::set_advanced_mode_enabled(bool p_enabled) {
 	advanced_switch->set_pressed(p_enabled);
+}
+
+void EditorSettingsDialog::update_plugins() {
+	tab_plugins->update_plugins();
 }
 
 void EditorSettingsDialog::set_current_section(const String &p_section) {
@@ -1095,6 +1100,12 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	mc->add_child(shortcuts);
 
 	SET_DRAG_FORWARDING_GCD(shortcuts, EditorSettingsDialog);
+
+	// Plugins Tab
+
+	tab_plugins = memnew(EditorPluginSettings(true));
+	tabs->add_child(tab_plugins);
+	tab_plugins->set_name(TTRC("Plugins"));
 
 	// Adding event dialog
 	shortcut_editor = memnew(InputEventConfigurationDialog);

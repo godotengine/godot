@@ -70,6 +70,17 @@ String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
+#ifdef TOOLS_ENABLED
+String ProjectSettings::get_editor_resource_path() {
+	ERR_FAIL_COND_V_MSG(editor_resource_path.is_empty(), get_resource_path(), "Editor resource path is only available in the editor. Returning project resource path instead.");
+	return editor_resource_path;
+}
+
+void ProjectSettings::set_editor_resource_path(const String &p_path) {
+	editor_resource_path = p_path;
+}
+#endif // TOOLS_ENABLED
+
 // This returns paths like "res://.godot/imported".
 String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().path_join("imported");
@@ -157,7 +168,13 @@ const PackedStringArray ProjectSettings::_trim_to_supported_features(const Packe
 String ProjectSettings::localize_path(const String &p_path) const {
 	String path = p_path.simplify_path();
 
-	if (resource_path.is_empty() || (path.is_absolute_path() && !path.begins_with(resource_path))) {
+	String base_path = "res://";
+#ifdef TOOLS_ENABLED
+	if (!editor_resource_path.is_empty() && path.is_absolute_path() && path.begins_with(editor_resource_path)) {
+		base_path = "editor://";
+	}
+#endif
+	if (resource_path.is_empty() || (base_path == "res://" && path.is_absolute_path() && !path.begins_with(resource_path))) {
 		return path;
 	}
 
@@ -189,7 +206,15 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		// different folder (e.g. "/my/project" as resource_path would be contained in
 		// "/my/project_data", even though the latter is not part of res://.
 		// `path_join("")` is an easy way to ensure we have a trailing '/'.
-		const String res_path = resource_path.path_join("");
+		String res_path;
+		if (base_path == "res://") {
+			res_path = resource_path.path_join("");
+#ifdef TOOLS_ENABLED
+		} else if (base_path == "editor://") {
+			res_path = editor_resource_path.path_join("");
+#endif
+		}
+		ERR_FAIL_COND_V(res_path.is_empty(), path);
 
 		// DirAccess::get_current_dir() is not guaranteed to return a path that with a trailing '/',
 		// so we must make sure we have it as well in order to compare with 'res_path'.
@@ -199,11 +224,11 @@ String ProjectSettings::localize_path(const String &p_path) const {
 			return path;
 		}
 
-		return cwd.replace_first(res_path, "res://");
+		return cwd.replace_first(res_path, base_path);
 	} else {
 		int sep = path.rfind_char('/');
 		if (sep == -1) {
-			return "res://" + path;
+			return base_path + path;
 		}
 
 		String parent = path.substr(0, sep);
@@ -281,6 +306,13 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 			return p_path.replace("user:/", data_dir);
 		}
 		return p_path.replace("user://", "");
+#ifdef TOOLS_ENABLED
+	} else if (p_path.begins_with("editor://")) {
+		if (!editor_resource_path.is_empty()) {
+			return p_path.replace("editor:/", editor_resource_path);
+		}
+		return p_path.replace("editor://", "");
+#endif
 	}
 
 	return p_path;

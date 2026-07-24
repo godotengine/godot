@@ -55,12 +55,15 @@ class PluginConfigDialog : public ConfirmationDialog {
 	LineEdit *version_edit = nullptr;
 	OptionButton *script_option_edit = nullptr;
 	LineEdit *script_edit = nullptr;
+	OptionButton *scope_edit = nullptr;
 
 	LocalVector<Control *> plugin_edit_hidden_controls;
 
 	EditorValidationPanel *validation_panel = nullptr;
 
 	bool _edit_mode = false;
+
+	bool is_editor_plugins;
 
 	void _clear_fields();
 	void _on_confirmed();
@@ -78,5 +81,5 @@ protected:
 public:
 	void config(const String &p_config_path);
 
-	PluginConfigDialog();
+	PluginConfigDialog(bool p_is_editor_plugins);
 };

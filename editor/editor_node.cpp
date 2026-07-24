@@ -1271,6 +1271,9 @@ void EditorNode::init_plugins() {
 	if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
 		addons = GLOBAL_GET("editor_plugins/enabled");
 	}
+	if (EditorSettings::get_singleton()->has_setting("_editor_plugins_enabled")) {
+		addons.append_array(EDITOR_GET("_editor_plugins_enabled"));
+	}
 
 	for (const String &addon : addons) {
 		set_addon_plugin_enabled(addon, true);
@@ -1297,14 +1300,24 @@ void EditorNode::_on_plugin_ready(Object *p_script, const String &p_activate_nam
 
 void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 	ProjectSettings *ps = ProjectSettings::get_singleton();
-	PackedStringArray enabled_plugins = ps->get("editor_plugins/enabled");
-	for (int i = 0; i < enabled_plugins.size(); ++i) {
-		if (enabled_plugins.get(i) == p_name) {
-			enabled_plugins.remove_at(i);
-			break;
+	PackedStringArray enabled_project_plugins = ps->get("editor_plugins/enabled");
+	for (int i = 0; i < enabled_project_plugins.size(); ++i) {
+		if (enabled_project_plugins.get(i) == p_name) {
+			enabled_project_plugins.remove_at(i);
+			ps->set("editor_plugins/enabled", enabled_project_plugins);
+			return;
 		}
 	}
-	ps->set("editor_plugins/enabled", enabled_plugins);
+
+	EditorSettings *es = EditorSettings::get_singleton();
+	PackedStringArray enabled_editor_plugins = es->get("_editor_plugins_enabled");
+	for (int i = 0; i < enabled_editor_plugins.size(); ++i) {
+		if (enabled_editor_plugins.get(i) == p_name) {
+			enabled_editor_plugins.remove_at(i);
+			es->set("_editor_plugins_enabled", enabled_editor_plugins);
+			return;
+		}
+	}
 }
 
 void EditorNode::_plugin_over_edit(EditorPlugin *p_plugin, Object *p_object, bool p_set_current) {
@@ -1603,11 +1616,11 @@ void EditorNode::_scan_external_changes() {
 
 	// Check if any edited scene has changed.
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 		const String scene_path = editor_data.get_scene_path(i);
 
-		if (scene_path == "" || !da->file_exists(scene_path)) {
+		if (scene_path == "" || !da->file_exists(ProjectSettings::get_singleton()->globalize_path(scene_path))) {
 			continue;
 		}
 
@@ -1913,6 +1926,11 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	}
 
 	if (!p_at_path.is_empty()) {
+		if (p_at_path.begins_with("editor://")) {
+			file->set_access(EditorFileDialog::ACCESS_EDITOR_RESOURCES);
+		} else {
+			file->set_access(EditorFileDialog::ACCESS_RESOURCES);
+		}
 		file->set_current_dir(p_at_path);
 		if (is_resource) {
 			file->set_current_file(resource_path.get_file());
@@ -2422,7 +2440,7 @@ int EditorNode::_save_external_resources(bool p_also_save_external_data) {
 		}
 
 		String path = res->get_path();
-		if (path.begins_with("res://")) {
+		if (path.begins_with("res://") || path.begins_with("editor://")) {
 			int subres_pos = path.find("::");
 			if (subres_pos == -1) {
 				// Actual resource.
@@ -4465,17 +4483,28 @@ void EditorNode::_update_addon_config() {
 		return;
 	}
 
-	Vector<String> enabled_addons;
+	Vector<String> enabled_project_addons;
+	Vector<String> enabled_editor_addons;
 
 	for (const KeyValue<String, EditorPlugin *> &E : addon_name_to_plugin) {
-		enabled_addons.push_back(E.key);
+		if (E.key.begins_with("res://")) {
+			enabled_project_addons.push_back(E.key);
+		} else if (E.key.begins_with("editor://")) {
+			enabled_editor_addons.push_back(E.key);
+		}
 	}
 
-	if (enabled_addons.is_empty()) {
+	if (enabled_project_addons.is_empty()) {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", Variant());
 	} else {
-		enabled_addons.sort();
-		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_addons);
+		enabled_project_addons.sort();
+		ProjectSettings::get_singleton()->set("editor_plugins/enabled", enabled_project_addons);
+	}
+	if (enabled_editor_addons.is_empty()) {
+		EditorSettings::get_singleton()->set("_editor_plugins_enabled", Variant());
+	} else {
+		enabled_editor_addons.sort();
+		EditorSettings::get_singleton()->set("_editor_plugins_enabled", enabled_editor_addons);
 	}
 
 	project_settings_editor->queue_save();
@@ -4484,7 +4513,7 @@ void EditorNode::_update_addon_config() {
 void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed) {
 	String addon_path = p_addon;
 
-	if (!addon_path.begins_with("res://")) {
+	if (!addon_path.begins_with("res://") && !addon_path.begins_with("editor://")) {
 		addon_path = "res://addons/" + addon_path + "/plugin.cfg";
 	}
 
@@ -4579,7 +4608,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 }
 
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
-	if (p_addon.begins_with("res://")) {
+	if (p_addon.begins_with("res://") || p_addon.begins_with("editor://")) {
 		return addon_name_to_plugin.has(p_addon);
 	}
 
@@ -4920,8 +4949,8 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		}
 	}
 
-	if (!lpath.begins_with("res://")) {
-		show_warning(TTR("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path."));
+	if (!lpath.begins_with("res://") && !lpath.begins_with("editor://")) {
+		show_warning(TTR("Error loading scene, it must be inside the project or editor path. Use 'Import' to open the scene, then save it inside the project path."));
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -5533,7 +5562,7 @@ void EditorNode::_update_recent_scenes() {
 		String path;
 		for (int i = 0; i < rc.size(); i++) {
 			path = rc[i];
-			recent_scenes->add_item(path.replace("res://", ""), i);
+			recent_scenes->add_item(path.replace("res://", "").replace("editor://", ""), i);
 		}
 
 		recent_scenes->add_separator();

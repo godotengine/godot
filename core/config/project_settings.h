@@ -117,6 +117,9 @@ protected:
 	bool is_global_class_list_loaded = false;
 
 	String project_data_dir_name;
+#ifdef TOOLS_ENABLED
+	String editor_resource_path;
+#endif
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -189,6 +192,10 @@ public:
 	String get_project_data_dir_name() const;
 	String get_project_data_path() const;
 	String get_resource_path() const;
+#ifdef TOOLS_ENABLED
+	String get_editor_resource_path();
+	void set_editor_resource_path(const String &p_path);
+#endif
 	String get_imported_files_path() const;
 
 	static ProjectSettings *get_singleton();
