@@ -35,6 +35,7 @@
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;
+class EditorQuickOpenDialog;
 class FileSystemDock;
 
 class LocalizationEditor : public VBoxContainer {
@@ -54,6 +55,7 @@ class LocalizationEditor : public VBoxContainer {
 	Tree *template_source_list = nullptr;
 	CheckBox *template_add_builtin = nullptr;
 	EditorFileDialog *template_source_open_dialog = nullptr;
+	EditorQuickOpenDialog *template_source_quick_open_dialog = nullptr;
 	EditorFileDialog *template_generate_dialog = nullptr;
 	Button *template_generate_button = nullptr;
 
@@ -80,9 +82,11 @@ class LocalizationEditor : public VBoxContainer {
 	void _translation_res_option_selected(const String &p_locale);
 
 	void _template_source_add(const PackedStringArray &p_paths);
+	void _template_source_add_one(const String &p_path);
 	void _template_source_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
 	void _template_source_file_open();
 	void _template_generate_open();
+	void _template_generate_quick_open();
 	void _template_generate_command();
 	void _template_add_builtin_toggled();
 	void _template_generate(const String &p_file);
