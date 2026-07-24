@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  physics_server_3d_manager.h                                           */
+/*  tapered_capsule_shape_3d.h                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,62 +30,38 @@
 
 #pragma once
 
-#include "core/object/object.h"
+#include "scene/resources/3d/shape_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
-class PhysicsServer3D;
+class ArrayMesh;
 
-class PhysicsServer3DManager : public Object {
-	GDCLASS(PhysicsServer3DManager, Object);
-
-	static PhysicsServer3DManager *singleton;
-
-	struct ClassInfo {
-		String name;
-		Callable create_callback;
-
-		ClassInfo() {}
-
-		ClassInfo(String p_name, Callable p_create_callback) :
-				name(p_name),
-				create_callback(p_create_callback) {}
-
-		ClassInfo(const ClassInfo &p_ci) :
-				name(p_ci.name),
-				create_callback(p_ci.create_callback) {}
-
-		void operator=(const ClassInfo &p_ci) {
-			name = p_ci.name;
-			create_callback = p_ci.create_callback;
-		}
-	};
-
-	Vector<ClassInfo> physics_servers;
-	int default_server_id = -1;
-	int default_server_priority = -1;
-
-	void on_servers_changed();
+class TaperedCapsuleShape3D : public Shape3D {
+	GDCLASS(TaperedCapsuleShape3D, Shape3D);
+	real_t top_radius = 0.5;
+	real_t bottom_radius = 0.5;
+	real_t mid_height = 1.0; // Height of the cylindrical part
 
 protected:
 	static void _bind_methods();
 
+	virtual void _update_shape() override;
+
 public:
-	static const String setting_property_name;
+	void set_top_radius(real_t p_top_radius);
+	real_t get_top_radius() const;
 
-	static PhysicsServer3DManager *get_singleton();
+	void set_bottom_radius(real_t p_bottom_radius);
+	real_t get_bottom_radius() const;
 
-	void register_server(const String &p_name, const Callable &p_create_callback);
-	void set_default_server(const String &p_name, int p_priority = 0);
-	int find_server_id(const String &p_name);
-	int get_servers_count();
-	String get_server_name(int p_id);
-	PhysicsServer3D *new_default_server();
-	PhysicsServer3D *new_server(const String &p_name);
+	void set_mid_height(real_t p_mid_height);
+	real_t get_mid_height() const;
 
-	int get_default_server_index() const { return default_server_id; }
+	void set_height(real_t p_height);
+	real_t get_height() const;
 
-	static void initialize_server();
-	static void finalize_server();
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
+	virtual real_t get_enclosing_radius() const override;
 
-	static void initialize_server_manager();
-	static void finalize_server_manager();
+	TaperedCapsuleShape3D();
 };

@@ -69,6 +69,8 @@ public:
 	virtual RID box_shape_create() = 0;
 	virtual RID capsule_shape_create() = 0;
 	virtual RID cylinder_shape_create() = 0;
+	virtual RID tapered_capsule_shape_create() = 0;
+	virtual RID tapered_cylinder_shape_create() = 0;
 	virtual RID convex_polygon_shape_create() = 0;
 	virtual RID concave_polygon_shape_create() = 0;
 	virtual RID heightmap_shape_create() = 0;

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TaperedCylinderShape3D" inherits="Shape3D" api_type="core" keywords="cone" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 3D tapered cylinder shape used for physics collision.
+	</brief_description>
+	<description>
+		A 3D tapered cylinder shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D]. A tapered cylinder consists of a cylinder where the ends can have different radii, creating a tapered or cone-like collision shape.
+		This shape is particularly useful for projectiles, organic forms, or any collision object that needs smooth transitions between different sizes. The tapered design allows for more realistic physics interactions compared to basic geometric shapes.
+		[b]Performance:[/b] [TaperedCylinderShape3D] provides good collision detection performance, similar to [CylinderShape3D]. It is more complex than basic shapes like [SphereShape3D] and [BoxShape3D], but offers more flexibility for specific use cases.
+	</description>
+	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/2747</link>
+	</tutorials>
+	<members>
+		<member name="bottom_radius" type="float" setter="set_bottom_radius" getter="get_bottom_radius" default="0.5">
+			The radius of the bottom end of the tapered cylinder. This determines the size of the lower end of the collision shape. When [member bottom_radius] differs from [member top_radius], the cylindrical section becomes tapered, creating a cone-like transition between the ends for more complex collision detection.
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
+			The height of the cylinder.
+		</member>
+		<member name="top_radius" type="float" setter="set_top_radius" getter="get_top_radius" default="0.5">
+			The radius of the top end of the tapered cylinder. This determines the size of the upper end of the collision shape.
+		</member>
+	</members>
+</class>

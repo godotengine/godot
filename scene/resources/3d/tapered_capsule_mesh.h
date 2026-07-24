@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  physics_server_3d_manager.h                                           */
+/*  tapered_capsule_mesh.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,62 +30,52 @@
 
 #pragma once
 
-#include "core/object/object.h"
+#include "scene/resources/3d/primitive_meshes.h"
 
-class PhysicsServer3D;
+class TaperedCapsuleMesh : public PrimitiveMesh {
+	GDCLASS(TaperedCapsuleMesh, PrimitiveMesh);
 
-class PhysicsServer3DManager : public Object {
-	GDCLASS(PhysicsServer3DManager, Object);
-
-	static PhysicsServer3DManager *singleton;
-
-	struct ClassInfo {
-		String name;
-		Callable create_callback;
-
-		ClassInfo() {}
-
-		ClassInfo(String p_name, Callable p_create_callback) :
-				name(p_name),
-				create_callback(p_create_callback) {}
-
-		ClassInfo(const ClassInfo &p_ci) :
-				name(p_ci.name),
-				create_callback(p_ci.create_callback) {}
-
-		void operator=(const ClassInfo &p_ci) {
-			name = p_ci.name;
-			create_callback = p_ci.create_callback;
-		}
-	};
-
-	Vector<ClassInfo> physics_servers;
-	int default_server_id = -1;
-	int default_server_priority = -1;
-
-	void on_servers_changed();
+private:
+	real_t top_radius = 0.5;
+	real_t bottom_radius = 0.5;
+	real_t mid_height = 1.0;
+	// number of points in the X-Z plane
+	int radial_segments = 64;
+	// number of rings in the Y axis
+	int rings = 16;
 
 protected:
 	static void _bind_methods();
+	virtual void _create_mesh_array(Array &p_arr) const override;
+
+	virtual void _update_lightmap_size() override;
 
 public:
-	static const String setting_property_name;
+	static bool is_sphere(real_t p_radius_top, real_t p_radius_bottom, real_t p_mid_height);
 
-	static PhysicsServer3DManager *get_singleton();
+	// Return the angle of the tangent to the two circles. 0 when both circles have the same radius, positive when the bottom is bigger than the top, -pi/2 to pi/2
+	static real_t get_tangent_angle(real_t p_radius_top, real_t p_radius_bottom, real_t p_mid_height);
 
-	void register_server(const String &p_name, const Callable &p_create_callback);
-	void set_default_server(const String &p_name, int p_priority = 0);
-	int find_server_id(const String &p_name);
-	int get_servers_count();
-	String get_server_name(int p_id);
-	PhysicsServer3D *new_default_server();
-	PhysicsServer3D *new_server(const String &p_name);
+	static void create_mesh_array(Array &p_arr, real_t p_radius_top, real_t p_radius_bottom, real_t p_mid_height, int p_radial_segments = 64, int p_rings = 16, bool p_add_uv2 = false, const real_t p_uv2_padding = 1.0);
 
-	int get_default_server_index() const { return default_server_id; }
+	void set_top_radius(const real_t p_top_radius);
+	real_t get_top_radius() const;
 
-	static void initialize_server();
-	static void finalize_server();
+	void set_bottom_radius(const real_t p_bottom_radius);
+	real_t get_bottom_radius() const;
 
-	static void initialize_server_manager();
-	static void finalize_server_manager();
+	void set_radius(const real_t p_radius);
+	real_t get_radius() const;
+
+	void set_mid_height(const real_t p_mid_height);
+	real_t get_mid_height() const;
+
+	void set_height(const real_t p_height);
+	real_t get_height() const;
+
+	void set_radial_segments(const int p_segments);
+	int get_radial_segments() const;
+
+	void set_rings(const int p_rings);
+	int get_rings() const;
 };

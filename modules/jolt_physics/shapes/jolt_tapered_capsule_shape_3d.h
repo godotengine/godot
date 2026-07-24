@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  physics_server_3d_manager.h                                           */
+/*  jolt_tapered_capsule_shape_3d.h                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,62 +30,26 @@
 
 #pragma once
 
-#include "core/object/object.h"
+#include "jolt_shape_3d.h"
 
-class PhysicsServer3D;
+class JoltTaperedCapsuleShape3D final : public JoltShape3D {
+	float radius_top = 0.0f;
+	float radius_bottom = 0.0f;
+	float mid_height = 0.0f;
 
-class PhysicsServer3DManager : public Object {
-	GDCLASS(PhysicsServer3DManager, Object);
-
-	static PhysicsServer3DManager *singleton;
-
-	struct ClassInfo {
-		String name;
-		Callable create_callback;
-
-		ClassInfo() {}
-
-		ClassInfo(String p_name, Callable p_create_callback) :
-				name(p_name),
-				create_callback(p_create_callback) {}
-
-		ClassInfo(const ClassInfo &p_ci) :
-				name(p_ci.name),
-				create_callback(p_ci.create_callback) {}
-
-		void operator=(const ClassInfo &p_ci) {
-			name = p_ci.name;
-			create_callback = p_ci.create_callback;
-		}
-	};
-
-	Vector<ClassInfo> physics_servers;
-	int default_server_id = -1;
-	int default_server_priority = -1;
-
-	void on_servers_changed();
-
-protected:
-	static void _bind_methods();
+	virtual JPH::ShapeRefC _build() const override;
 
 public:
-	static const String setting_property_name;
+	virtual ShapeType get_type() const override { return ShapeType::SHAPE_TAPERED_CAPSULE; }
+	virtual bool is_convex() const override { return true; }
 
-	static PhysicsServer3DManager *get_singleton();
+	virtual Variant get_data() const override;
+	virtual void set_data(const Variant &p_data) override;
 
-	void register_server(const String &p_name, const Callable &p_create_callback);
-	void set_default_server(const String &p_name, int p_priority = 0);
-	int find_server_id(const String &p_name);
-	int get_servers_count();
-	String get_server_name(int p_id);
-	PhysicsServer3D *new_default_server();
-	PhysicsServer3D *new_server(const String &p_name);
+	virtual float get_margin() const override { return 0.0f; }
+	virtual void set_margin(float p_margin) override {}
 
-	int get_default_server_index() const { return default_server_id; }
+	virtual AABB get_aabb() const override;
 
-	static void initialize_server();
-	static void finalize_server();
-
-	static void initialize_server_manager();
-	static void finalize_server_manager();
+	String to_string() const;
 };
