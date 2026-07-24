@@ -2891,17 +2891,26 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		GLuint backbuffer_depth = rb->get_backbuffer_depth();
 
 		if (backbuffer_fbo != 0) {
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
-			glReadBuffer(GL_COLOR_ATTACHMENT0);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, backbuffer_fbo);
 			if (scene_state.used_screen_texture) {
+				glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+				glReadBuffer(GL_COLOR_ATTACHMENT0);
+				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, backbuffer_fbo);
+
 				glBlitFramebuffer(0, 0, size.x, size.y,
 						0, 0, size.x, size.y,
 						GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+				int mipmaps = Image::get_image_required_mipmaps(size.x, size.y, Image::FORMAT_RGBA8);
+				GLES3::CopyEffects::get_singleton()->gaussian_blur(backbuffer, mipmaps, Rect2i(0, 0, size.x, size.y), size);
+
 				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
 				glBindTexture(GL_TEXTURE_2D, backbuffer);
 			}
 			if (scene_state.used_depth_texture) {
+				glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+				glReadBuffer(GL_COLOR_ATTACHMENT0);
+				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, backbuffer_fbo);
+
 				glBlitFramebuffer(0, 0, size.x, size.y,
 						0, 0, size.x, size.y,
 						GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
