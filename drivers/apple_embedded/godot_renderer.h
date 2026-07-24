@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_apple_embedded.h                                           */
+/*  godot_renderer.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,43 +30,20 @@
 
 #pragma once
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
-class String;
+inline void safeDispatchSyncToMain(void (^block)(void)) {
+	if ([NSThread isMainThread]) {
+		block();
+	} else {
+		dispatch_sync(dispatch_get_main_queue(), block);
+	}
+}
 
-@class GDTView;
-@class GDTViewRenderer;
-@protocol GDTDisplayLayer;
+@interface GDTRenderer : NSObject
 
-@protocol GDTViewDelegate
+@property(assign, readonly, nonatomic) BOOL hasFinishedSetup;
 
-- (BOOL)godotViewFinishedSetup:(GDTView *)view;
-
-@end
-
-@interface GDTView : UIView
-
-@property(weak, nonatomic) GDTViewRenderer *renderer;
-@property(weak, nonatomic) id<GDTViewDelegate> delegate;
-
-@property(assign, readonly, nonatomic) BOOL isActive;
-
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
-
-@property(assign, nonatomic) float preferredFrameRate;
-
-// Can be extended by subclasses
-- (void)godot_commonInit;
-
-// Implemented in subclasses
-- (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-
-- (void)startRendering;
-- (void)stopRendering;
+- (BOOL)setUp;
 
 @end
-
-// Implemented in subclasses
-extern GDTView *GDTViewCreate();

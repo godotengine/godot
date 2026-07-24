@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_apple_embedded.h                                           */
+/*  godot_swiftui_view_controller.swift                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,45 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+import SwiftUI
+import UIKit
 
-#import <UIKit/UIKit.h>
+struct GodotSwiftUIViewController: UIViewControllerRepresentable {
 
-class String;
+	func makeUIViewController(context: Context) -> GDTViewController {
+		let viewController = GDTViewController()
+		GDTAppDelegateService.viewController = viewController
+		return viewController
+	}
 
-@class GDTView;
-@class GDTViewRenderer;
-@protocol GDTDisplayLayer;
+	func updateUIViewController(_ uiViewController: GDTViewController, context: Context) {
+		// NOOP
+	}
 
-@protocol GDTViewDelegate
+}
 
-- (BOOL)godotViewFinishedSetup:(GDTView *)view;
-
-@end
-
-@interface GDTView : UIView
-
-@property(weak, nonatomic) GDTViewRenderer *renderer;
-@property(weak, nonatomic) id<GDTViewDelegate> delegate;
-
-@property(assign, readonly, nonatomic) BOOL isActive;
-
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
-
-@property(assign, nonatomic) float preferredFrameRate;
-
-// Can be extended by subclasses
-- (void)godot_commonInit;
-
-// Implemented in subclasses
-- (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-
-- (void)startRendering;
-- (void)stopRendering;
-
-@end
-
-// Implemented in subclasses
-extern GDTView *GDTViewCreate();
+struct GodotWindowScene: Scene {
+	var body: some Scene {
+		WindowGroup {
+			GodotSwiftUIViewController()
+				.ignoresSafeArea()
+		}
+	}
+}

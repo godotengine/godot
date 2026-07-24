@@ -31,7 +31,7 @@
 #import "apple_embedded.h"
 
 #include "core/object/class_db.h"
-#import "drivers/apple_embedded/app_delegate_service.h"
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_controller.h"
 
 #import <CoreHaptics/CoreHaptics.h>

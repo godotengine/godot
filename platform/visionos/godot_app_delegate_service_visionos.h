@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_apple_embedded.h                                           */
+/*  godot_app_delegate_visionos.h                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,43 +30,21 @@
 
 #pragma once
 
-#import <UIKit/UIKit.h>
+#import "render_mode_visionos.h"
 
-class String;
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
 
-@class GDTView;
-@class GDTViewRenderer;
-@protocol GDTDisplayLayer;
+#import <CompositorServices/CompositorServices.h>
 
-@protocol GDTViewDelegate
+typedef NS_ENUM(NSInteger, GDTRenderMode) {
+	GDTRenderModeWindowed = RenderModeVisionOS::WINDOWED,
+	GDTRenderModeCompositorServices = RenderModeVisionOS::COMPOSITOR_SERVICES
+};
 
-- (BOOL)godotViewFinishedSetup:(GDTView *)view;
+@interface GDTAppDelegateServiceVisionOS : GDTAppDelegateService
 
-@end
-
-@interface GDTView : UIView
-
-@property(weak, nonatomic) GDTViewRenderer *renderer;
-@property(weak, nonatomic) id<GDTViewDelegate> delegate;
-
-@property(assign, readonly, nonatomic) BOOL isActive;
-
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
-
-@property(assign, nonatomic) float preferredFrameRate;
-
-// Can be extended by subclasses
-- (void)godot_commonInit;
-
-// Implemented in subclasses
-- (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-
-- (void)startRendering;
-- (void)stopRendering;
+@property(assign, class, nonatomic) GDTRenderMode renderMode;
+@property(weak, class, nonatomic, nullable) cp_layer_renderer_t layerRenderer;
+@property(strong, class, nonatomic, nullable) cp_layer_renderer_capabilities_t layerRendererCapabilities;
 
 @end
-
-// Implemented in subclasses
-extern GDTView *GDTViewCreate();
