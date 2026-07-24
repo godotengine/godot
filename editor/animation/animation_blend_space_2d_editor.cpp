@@ -763,10 +763,12 @@ void AnimationNodeBlendSpace2DEditor::_update_space() {
 	auto_triangles->set_pressed(blend_space->get_auto_triangles());
 
 	sync->select(blend_space->get_sync_mode());
+	sync->set_fit_to_longest_item(false);
 	cyclic_length_value->set_value(blend_space->get_cyclic_length());
 	cyclic_length_value->set_visible(blend_space->get_sync_mode() == AnimationNodeBlendSpace2D::SYNC_MODE_CYCLIC_CONSTANT);
 
 	interpolation->select(blend_space->get_blend_mode());
+	interpolation->set_fit_to_longest_item(false);
 
 	max_x_value->set_value(blend_space->get_max_space().x);
 	max_y_value->set_value(blend_space->get_max_space().y);
@@ -1266,6 +1268,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	snap_x->set_step(0.01);
 	snap_x->set_max(1000);
 	snap_x->set_accessibility_name(TTRC("Grid X Step"));
+	snap_x->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
+	snap_x->get_line_edit()->set_expand_to_text_length_enabled(true);
 
 	snap_y = memnew(SpinBox);
 	top_hb->add_child(snap_y);
@@ -1274,6 +1278,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	snap_y->set_step(0.01);
 	snap_y->set_max(1000);
 	snap_y->set_accessibility_name(TTRC("Grid Y Step"));
+	snap_y->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
+	snap_y->get_line_edit()->set_expand_to_text_length_enabled(true);
 
 	top_hb->add_child(memnew(VSeparator));
 
@@ -1311,7 +1317,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
-	open_editor->set_text(TTR("Open Editor"));
+	open_editor->set_text(TTR("Edit"));
 	open_editor->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_open_editor), CONNECT_DEFERRED);
 	open_editor_sep = memnew(VSeparator);
 	edit_hb->add_child(open_editor_sep);
@@ -1324,6 +1330,8 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	index_edit->set_allow_greater(false);
 	index_edit->set_allow_lesser(false);
 	index_edit->set_accessibility_name(TTRC("Blend Point Index"));
+	index_edit->get_line_edit()->add_theme_constant_override("minimum_character_width", 1);
+	index_edit->get_line_edit()->set_expand_to_text_length_enabled(true);
 	index_edit->set_tooltip_text(TTR("Index of the blend point.\nValues outside of the valid range will be clamped to the nearest index."));
 	index_edit->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_index));
 	index_edit->get_line_edit()->connect(SceneStringName(focus_entered), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_index_edit_focus_entered));
@@ -1337,14 +1345,18 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	edit_x->set_min(-ABS_MAX);
 	edit_x->set_max(ABS_MAX);
 	edit_x->set_step(STEP_UNIT);
-	edit_x->set_accessibility_name(TTRC("Blend X Value"));
+	edit_x->set_accessibility_name(TTRC("Blend Point X Position"));
+	edit_x->get_line_edit()->add_theme_constant_override("minimum_character_width", 3);
+	edit_x->get_line_edit()->set_expand_to_text_length_enabled(true);
 	edit_x->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
 	edit_y = memnew(SpinBox);
 	edit_hb->add_child(edit_y);
 	edit_y->set_min(-ABS_MAX);
 	edit_y->set_max(ABS_MAX);
 	edit_y->set_step(STEP_UNIT);
-	edit_y->set_accessibility_name(TTRC("Blend Y Value"));
+	edit_y->set_accessibility_name(TTRC("Blend Point Y Position"));
+	edit_y->get_line_edit()->add_theme_constant_override("minimum_character_width", 3);
+	edit_y->get_line_edit()->set_expand_to_text_length_enabled(true);
 	edit_y->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
 
 	edit_hb->hide();
