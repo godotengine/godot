@@ -497,7 +497,7 @@ void ProjectListItemControl::resize_project_title() {
 void ProjectListItemControl::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("favorite_pressed"));
 	ADD_SIGNAL(MethodInfo("explore_pressed"));
-	ADD_SIGNAL(MethodInfo("request_menu"));
+	ADD_SIGNAL(MethodInfo("request_menu", PropertyInfo(Variant::VECTOR2, "position")));
 }
 
 ProjectListItemControl::ProjectListItemControl() {

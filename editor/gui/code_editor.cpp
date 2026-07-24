@@ -1940,12 +1940,12 @@ void CodeTextEditor::_emit_request_save_new_history() {
 void CodeTextEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
-	ADD_SIGNAL(MethodInfo("show_errors_panel"));
-	ADD_SIGNAL(MethodInfo("show_warnings_panel"));
+	ADD_SIGNAL(MethodInfo("show_errors_panel", PropertyInfo(Variant::BOOL, "show")));
+	ADD_SIGNAL(MethodInfo("show_warnings_panel", PropertyInfo(Variant::BOOL, "show")));
 	ADD_SIGNAL(MethodInfo("show_goto_popup"));
 	ADD_SIGNAL(MethodInfo("navigation_preview_ended"));
 	ADD_SIGNAL(MethodInfo("zoomed", PropertyInfo(Variant::FLOAT, "zoom_factor")));
-	ADD_SIGNAL(MethodInfo("_request_save_new_history", PropertyInfo(Variant::DICTIONARY, "state")));
+	ADD_SIGNAL(MethodInfo("_request_save_new_history"));
 }
 
 void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud) {

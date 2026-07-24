@@ -426,7 +426,7 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 		} else if (ED_IS_SHORTCUT("editor/editor_game", p_event)) {
 			editor_main_screen->select(EditorMainScreen::EDITOR_GAME);
 		} else if (ED_IS_SHORTCUT("editor/editor_help", p_event)) {
-			emit_signal(SNAME("request_help_search"), "");
+			emit_signal(SNAME("request_help_search"));
 		} else if (ED_IS_SHORTCUT("editor/editor_asset_store", p_event) && AssetLibraryEditorPlugin::is_available()) {
 			editor_main_screen->select(EditorMainScreen::EDITOR_ASSETLIB);
 		} else if (ED_IS_SHORTCUT("editor/editor_next", p_event)) {
@@ -3961,7 +3961,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		} break;
 		case HELP_SEARCH: {
-			emit_signal(SNAME("request_help_search"), "");
+			emit_signal(SNAME("request_help_search"));
 		} break;
 		case EDITOR_COMMAND_PALETTE: {
 			command_palette->open_popup();

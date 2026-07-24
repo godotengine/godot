@@ -1398,9 +1398,8 @@ void ScriptEditorDebugger::_profiler_seeked() {
 }
 
 void ScriptEditorDebugger::_stack_dump_frame_selected() {
-	emit_signal(SNAME("stack_frame_selected"));
-
 	int frame = get_stack_script_frame();
+	emit_signal(SNAME("stack_frame_selected"), frame);
 
 	if (!request_stack_dump(frame)) {
 		inspector->edit(nullptr);
@@ -2057,7 +2056,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("stopped"));
 	ADD_SIGNAL(MethodInfo("stop_requested"));
 	ADD_SIGNAL(MethodInfo("stack_frame_selected", PropertyInfo(Variant::INT, "frame")));
-	ADD_SIGNAL(MethodInfo("error_selected", PropertyInfo(Variant::INT, "error")));
+	ADD_SIGNAL(MethodInfo("error_selected", PropertyInfo(Variant::STRING, "error"), PropertyInfo(Variant::INT, "error")));
 	ADD_SIGNAL(MethodInfo("breakpoint_selected", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));

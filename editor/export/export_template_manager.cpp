@@ -2146,8 +2146,8 @@ void TemplateDownloader::_notification(int p_what) {
 }
 
 void TemplateDownloader::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("download_completed"));
-	ADD_SIGNAL(MethodInfo("download_failed"));
+	ADD_SIGNAL(MethodInfo("download_completed", PropertyInfo(Variant::STRING, "completed_file")));
+	ADD_SIGNAL(MethodInfo("download_failed", PropertyInfo(Variant::STRING, "failed_file"), PropertyInfo(Variant::STRING, "reason")));
 }
 
 Error TemplateDownloader::download_template(const String &p_file_name, const String &p_source) {

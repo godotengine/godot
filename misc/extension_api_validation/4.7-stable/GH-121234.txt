@@ -1,0 +1,12 @@
+GH-121234
+--------------
+
+Validate extension JSON: Error: Field 'classes/AudioEffectPitchShift/properties/oversampling': type changed value in new API, from "float" to "int".
+Validate extension JSON: Error: Field 'classes/EditorProperty/signals/property_keyed/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/OpenXRMarkerTracker/properties/bounds_size': type changed value in new API, from "int" to "Vector2".
+Validate extension JSON: Error: Field 'classes/OpenXRPlaneTracker/properties/bounds_size': type changed value in new API, from "int" to "Vector2".
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/GraphFrame/signals/autoshrink_changed': arguments
+
+Some signal properties and some function parameters were called with different types
+than what they were declared with. I always tried to keep the version that contained
+more information.

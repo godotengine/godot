@@ -2251,7 +2251,7 @@ void SceneTreeEditor::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("node_selected"));
 	ADD_SIGNAL(MethodInfo("node_renamed"));
-	ADD_SIGNAL(MethodInfo("node_prerename"));
+	ADD_SIGNAL(MethodInfo("node_prerename", PropertyInfo(Variant::OBJECT, "node"), PropertyInfo(Variant::STRING, "new_name")));
 	ADD_SIGNAL(MethodInfo("node_changed"));
 	ADD_SIGNAL(MethodInfo("nodes_dragged"));
 	ADD_SIGNAL(MethodInfo("nodes_rearranged", PropertyInfo(Variant::ARRAY, "paths"), PropertyInfo(Variant::NODE_PATH, "to_path"), PropertyInfo(Variant::INT, "type")));
@@ -2259,8 +2259,8 @@ void SceneTreeEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("script_dropped", PropertyInfo(Variant::STRING, "file"), PropertyInfo(Variant::NODE_PATH, "to_path")));
 	ADD_SIGNAL(MethodInfo("rmb_pressed", PropertyInfo(Variant::VECTOR2, "position")));
 
-	ADD_SIGNAL(MethodInfo("open"));
-	ADD_SIGNAL(MethodInfo("open_script"));
+	ADD_SIGNAL(MethodInfo("open", PropertyInfo(Variant::STRING, "path")));
+	ADD_SIGNAL(MethodInfo("open_script", PropertyInfo("script")));
 }
 
 SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_open_instance) :

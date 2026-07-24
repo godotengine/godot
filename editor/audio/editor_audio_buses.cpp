@@ -902,11 +902,11 @@ void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("update_bus", &EditorAudioBus::update_bus);
 	ClassDB::bind_method("update_send", &EditorAudioBus::update_send);
 
-	ADD_SIGNAL(MethodInfo("duplicate_request"));
+	ADD_SIGNAL(MethodInfo("duplicate_request", PropertyInfo(Variant::INT, "node_index")));
 	ADD_SIGNAL(MethodInfo("delete_request"));
 	ADD_SIGNAL(MethodInfo("vol_reset_request"));
 	ADD_SIGNAL(MethodInfo("drop_end_request"));
-	ADD_SIGNAL(MethodInfo("dropped"));
+	ADD_SIGNAL(MethodInfo("dropped", PropertyInfo("data_index"), PropertyInfo(Variant::INT, "node_index")));
 }
 
 EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
@@ -1232,7 +1232,7 @@ void EditorAudioBusDrop::drop_data(const Point2 &p_point, const Variant &p_data)
 }
 
 void EditorAudioBusDrop::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("dropped"));
+	ADD_SIGNAL(MethodInfo("dropped", PropertyInfo("data_index"), PropertyInfo(Variant::INT, "node_index")));
 }
 
 void EditorAudioBuses::_update_file_label() {

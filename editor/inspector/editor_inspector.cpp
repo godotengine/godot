@@ -1670,7 +1670,7 @@ void EditorProperty::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("property_changed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::STRING_NAME, "field"), PropertyInfo(Variant::BOOL, "changing")));
 	ADD_SIGNAL(MethodInfo("multiple_properties_changed", PropertyInfo(Variant::PACKED_STRING_ARRAY, "properties"), PropertyInfo(Variant::ARRAY, "value")));
-	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING_NAME, "property")));
+	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "use_keying_next")));
 	ADD_SIGNAL(MethodInfo("property_deleted", PropertyInfo(Variant::STRING_NAME, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed_with_value", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("property_checked", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "checked")));
@@ -3666,7 +3666,7 @@ void EditorInspectorArray::_notification(int p_what) {
 }
 
 void EditorInspectorArray::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("page_change_request"));
+	ADD_SIGNAL(MethodInfo("page_change_request", PropertyInfo(Variant::INT, "page")));
 }
 
 void EditorInspectorArray::setup_with_move_element_function(Object *p_object, const String &p_category, const String &p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_is_const, bool p_numbered, int p_page_length, const String &p_add_item_text) {
