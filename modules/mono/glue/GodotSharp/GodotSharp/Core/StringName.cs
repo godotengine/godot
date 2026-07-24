@@ -46,13 +46,18 @@ namespace Godot
 
         private StringName(godot_string_name nativeValueToOwn)
         {
-            NativeValue = (godot_string_name.movable)nativeValueToOwn;
-            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+            TakeOwnershipOfDisposableValue(nativeValueToOwn);
         }
 
         // Explicit name to make it very clear
         internal static StringName CreateTakingOwnershipOfDisposableValue(godot_string_name nativeValueToOwn)
             => new StringName(nativeValueToOwn);
+
+        internal void TakeOwnershipOfDisposableValue(godot_string_name nativeValueToOwn)
+        {
+            NativeValue = (godot_string_name.movable)nativeValueToOwn;
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+        }
 
         /// <summary>
         /// Constructs an empty <see cref="StringName"/>.
