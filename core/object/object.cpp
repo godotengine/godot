@@ -1281,6 +1281,18 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			}
 		}
 
+		Object *target = callable.get_object();
+
+#ifdef TOOLS_ENABLED
+		if (target && flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint()) {
+			Ref<Script> other_scr = target->get_script();
+			if (other_scr.is_valid() && !other_scr->is_tool()) {
+				// Trying to call not-tool method in editor, just ignore it.
+				continue;
+			}
+		}
+#endif
+
 		if (flags & CONNECT_DEFERRED) {
 			MessageQueue::get_singleton()->push_callablep(callable, args, argc, true);
 		} else {
@@ -1291,16 +1303,6 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			_emitting = false;
 
 			if (ce.error != Callable::CallError::CALL_OK) {
-				Object *target = callable.get_object();
-#ifdef DEBUG_ENABLED
-				if (target && flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint()) {
-					Ref<Script> other_scr = target->get_script();
-					if (other_scr.is_valid() && !other_scr->is_tool()) {
-						// Trying to call not-tool method in editor, just ignore it.
-						continue;
-					}
-				}
-#endif
 				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && target && !ClassDB::class_exists(target->get_class_name())) {
 					// Most likely object is not initialized yet, do not throw error.
 				} else {
