@@ -231,6 +231,7 @@
 			<description>
 				Returns the current locale's translation for the given message and context.
 				[b]Note:[/b] This method always uses the main translation domain.
+				[b]Note:[/b] This method cannot be used in the editor via a `@tool` script. If you need to translate strings in an editor tool, you can manually look up the [Translation] using [method TranslationServer.get_message_list] and retrieve the translated string with [method Translation.get_message].
 			</description>
 		</method>
 		<method name="translate_plural" qualifiers="const">
