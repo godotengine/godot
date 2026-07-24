@@ -145,9 +145,12 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 
 	active_menu = p_index;
 
-	pm->set_size(Size2(item_rect.size.x, 0));
+	pm->set_size(Size2(screen_size.x, 0));
+	screen_pos.y += screen_size.y + theme_cache.popup_offset_y;
 	if (is_layout_rtl()) {
-		rect.position.x += rect.size.width - pm->get_size().width;
+		screen_pos.x += screen_size.x - pm->get_size().width - theme_cache.popup_offset_x;
+	} else {
+		screen_pos.x += theme_cache.popup_offset_x;
 	}
 	pm->set_position(rect.position);
 	pm->popup();
@@ -791,6 +794,8 @@ void MenuBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_focus_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, popup_offset_x);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, popup_offset_y);
 
 	ADD_CLASS_DEPENDENCY("PopupMenu");
 }
