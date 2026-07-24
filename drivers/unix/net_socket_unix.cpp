@@ -348,6 +348,25 @@ Error NetSocketUnix::open(NetSocket::Family p_family, NetSocket::Type p_sock_typ
 	}
 }
 
+void NetSocketUnix::shutdown(ShutdownType p_flag) {
+	if (_sock == -1) {
+		return;
+	}
+	switch (p_flag) {
+		case ShutdownType::SHUTDOWN_TYPE_READ:
+			::shutdown(_sock, SHUT_RD);
+			return;
+		case ShutdownType::SHUTDOWN_TYPE_WRITE:
+			::shutdown(_sock, SHUT_WR);
+			return;
+		case ShutdownType::SHUTDOWN_TYPE_READ_WRITE:
+			::shutdown(_sock, SHUT_RDWR);
+			return;
+		default:
+			ERR_FAIL_MSG("Invalid shutdown flag");
+	}
+}
+
 void NetSocketUnix::close() {
 	if (_sock != -1) {
 		::close(_sock);

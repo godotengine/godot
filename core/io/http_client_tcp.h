@@ -96,6 +96,7 @@ public:
 	PackedByteArray read_response_body_chunk() override;
 	void set_blocking_mode(bool p_enable) override;
 	bool is_blocking_mode_enabled() const override;
+	void shutdown() override;
 	void set_read_chunk_size(int p_size) override;
 	int get_read_chunk_size() const override;
 	Error poll() override;
