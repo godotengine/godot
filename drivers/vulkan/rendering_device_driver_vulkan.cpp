@@ -617,6 +617,17 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 
 	_register_requested_device_extension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
 
+	// Register additional device extensions from project settings.
+	{
+		PackedStringArray additional_extensions = GLOBAL_GET("rendering/rendering_device/vulkan/additional_device_extensions");
+		for (const String &additional_extension : additional_extensions) {
+			CharString extension_name = additional_extension.utf8();
+			if (!requested_device_extensions.has(extension_name)) {
+				_register_requested_device_extension(extension_name, false);
+			}
+		}
+	}
+
 	uint32_t device_extension_count = 0;
 	VkResult err = vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &device_extension_count, nullptr);
 	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, ERR_CANT_CREATE, vformat("Couldn't get Vulkan device extension count (VkResult error %d).", err));
@@ -7456,6 +7467,14 @@ const RDD::Capabilities &RenderingDeviceDriverVulkan::get_capabilities() const {
 
 const RenderingShaderContainerFormat &RenderingDeviceDriverVulkan::get_shader_container_format() const {
 	return shader_container_format;
+}
+
+PackedStringArray RenderingDeviceDriverVulkan::get_enabled_device_extensions() const {
+	PackedStringArray extensions;
+	for (const CharString &extension_name : enabled_device_extension_names) {
+		extensions.push_back(String::utf8(extension_name));
+	}
+	return extensions;
 }
 
 bool RenderingDeviceDriverVulkan::is_composite_alpha_supported(CommandQueueID p_queue) const {
