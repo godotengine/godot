@@ -484,7 +484,6 @@ def configure_msvc(env: "SConsEnvironment"):
                 env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/msvc/static"])
             LIBS += [
                 "accesskit",
-                "uiautomationcore",
                 "runtimeobject",
                 "propsys",
                 "oleaut32",
@@ -911,7 +910,6 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(
                 LIBS=[
                     "accesskit",
-                    "uiautomationcore." + env["arch"],
                     "runtimeobject",
                     "propsys",
                     "oleaut32",
@@ -1000,37 +998,6 @@ def configure_mingw(env: "SConsEnvironment"):
                 env["angle"] = False
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
-
-    # dlltool
-    env["DEF"] = get_detected(env, "dlltool")
-    env["DEFCOM"] = "$DEF $DEFFLAGS -d $SOURCE -l $TARGET"
-    env["DEFCOMSTR"] = "$CXXCOMSTR"
-    env["DEFPREFIX"] = "$LIBPREFIX"
-    env["DEFSUFFIX"] = ".${__env__['arch']}$LIBSUFFIX"
-    env["DEFSRCSUFFIX"] = ".${__env__['arch']}.def"
-    DEF_ALIASES = {
-        "x86_32": "i386",
-        "x86_64": "i386:x86-64",
-        "arm32": "arm",
-        "arm64": "arm64",
-    }
-    env.Append(DEFFLAGS=["-m", DEF_ALIASES[env["arch"]]])
-    if env["arch"] == "x86_32":
-        env.Append(DEFFLAGS=["-k"])
-    else:
-        env.Append(DEFFLAGS=["--no-leading-underscore"])
-
-    env.Append(
-        BUILDERS={
-            "DEFLIB": env.Builder(
-                action=env.Run("$DEFCOM", "$DEFCOMSTR"),
-                prefix="$DEFPREFIX",
-                suffix="$DEFSUFFIX",
-                src_suffix="$DEFSRCSUFFIX",
-                emitter=methods.redirect_emitter,
-            )
-        }
-    )
 
 
 def configure(env: "SConsEnvironment"):

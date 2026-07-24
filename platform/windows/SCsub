@@ -108,9 +108,6 @@ env_winrt.add_source_files(sources, tts_sources)
 
 sources += res_obj
 
-if env["accesskit"] and not env.msvc:
-    sources += env.DEFLIB("uiautomationcore")
-
 if env["library_type"] == "static_library":
     prog = env.add_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
 elif env["library_type"] == "shared_library":
