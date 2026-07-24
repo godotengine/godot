@@ -59,6 +59,9 @@ public:
 
 		Color base_color;
 		Color accent_color;
+		Color success_color;
+		Color warning_color;
+		Color error_color;
 		float contrast = 1.0;
 		float icon_saturation = 1.0;
 
@@ -111,9 +114,6 @@ public:
 		Color contrast_color_2;
 		Color highlight_color;
 		Color highlight_disabled_color;
-		Color success_color;
-		Color warning_color;
-		Color error_color;
 		Color extra_border_color_1;
 		Color extra_border_color_2;
 
