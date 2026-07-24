@@ -427,11 +427,10 @@ using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbac
 #else
 using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
 #endif
+using godotsharp_marshaling_init_fn = void (*)(size_t, size_t, size_t, size_t);
 
 #ifdef TOOLS_ENABLED
-godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
-	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
-
+bool initialize_hostfxr_and_godot_plugins(godot_plugins_initialize_fn *&r_initialize_fn, godotsharp_marshaling_init_fn *&r_marshaling_init_fn) {
 	HostFxrCharString godot_plugins_path = str_to_hostfxr(
 			GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.dll"));
 
@@ -444,10 +443,8 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	if (load_assembly_and_get_function_pointer == nullptr) {
 		// Show a message box to the user to make the problem explicit (and explain a potential crash).
 		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, no compatible version was found.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart Godot."), TTR("Failed to load .NET runtime"));
-		ERR_FAIL_V_MSG(nullptr, ".NET: Failed to load compatible .NET runtime");
+		ERR_FAIL_V_MSG(false, ".NET: Failed to load compatible .NET runtime");
 	}
-
-	r_runtime_initialized = true;
 
 	print_verbose(".NET: hostfxr initialized");
 
@@ -456,15 +453,21 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 			HOSTFXR_STR("InitializeFromEngine"),
 			UNMANAGEDCALLERSONLY_METHOD,
 			nullptr,
-			(void **)&godot_plugins_initialize);
-	ERR_FAIL_COND_V_MSG(rc != 0, nullptr, ".NET: Failed to get GodotPlugins initialization function pointer");
+			(void **)r_initialize_fn);
+	ERR_FAIL_COND_V_MSG(rc != 0, false, ".NET: Failed to get GodotPlugins initialization function pointer");
 
-	return godot_plugins_initialize;
+	rc = load_assembly_and_get_function_pointer(get_data(godot_plugins_path),
+			HOSTFXR_STR("GodotPlugins.Main, GodotPlugins"),
+			HOSTFXR_STR("InitializeMarshalingData"),
+			UNMANAGEDCALLERSONLY_METHOD,
+			nullptr,
+			(void **)r_marshaling_init_fn);
+	ERR_FAIL_COND_V_MSG(rc != 0, false, ".NET: Failed to get GodotPlugins marshaling function pointer");
+
+	return true;
 }
 #else
-godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
-	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
-
+bool initialize_hostfxr_and_godot_plugins(godot_plugins_initialize_fn *&r_initialize_fn, godotsharp_marshaling_init_fn *&r_marshaling_init_fn) {
 	String assembly_name = Path::get_csharp_project_name();
 
 	HostFxrCharString assembly_path = str_to_hostfxr(GodotSharpDirs::get_api_assemblies_dir()
@@ -472,9 +475,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 
 	load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer =
 			initialize_hostfxr_self_contained(get_data(assembly_path));
-	ERR_FAIL_NULL_V(load_assembly_and_get_function_pointer, nullptr);
-
-	r_runtime_initialized = true;
+	ERR_FAIL_NULL_V(load_assembly_and_get_function_pointer, false);
 
 	print_verbose(".NET: hostfxr initialized");
 
@@ -483,13 +484,21 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 			HOSTFXR_STR("InitializeFromGameProject"),
 			UNMANAGEDCALLERSONLY_METHOD,
 			nullptr,
-			(void **)&godot_plugins_initialize);
-	ERR_FAIL_COND_V_MSG(rc != 0, nullptr, ".NET: Failed to get GodotPlugins initialization function pointer");
+			(void **)r_initialize_fn);
+	ERR_FAIL_COND_V_MSG(rc != 0, false, ".NET: Failed to get GodotPlugins initialization function pointer");
 
-	return godot_plugins_initialize;
+	rc = load_assembly_and_get_function_pointer(get_data(assembly_path),
+			get_data(str_to_hostfxr("GodotPlugins.Game.Main, " + assembly_name)),
+			HOSTFXR_STR("InitializeMarshalingData"),
+			UNMANAGEDCALLERSONLY_METHOD,
+			nullptr,
+			(void **)r_marshaling_init_fn);
+	ERR_FAIL_COND_V_MSG(rc != 0, false, ".NET: Failed to get GodotPlugins marshaling function pointer");
+
+	return true;
 }
 
-godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle) {
+bool try_load_native_aot_library(godot_plugins_initialize_fn *&r_initialize_fn, godotsharp_marshaling_init_fn *&r_marshaling_init_fn) {
 	String assembly_name = Path::get_csharp_project_name();
 
 #if defined(WINDOWS_ENABLED)
@@ -504,19 +513,17 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 #error "Platform not supported (yet?)"
 #endif
 
-	Error err = OS::get_singleton()->open_dynamic_library(native_aot_so_path, r_aot_dll_handle);
+	void *lib = nullptr;
+	Error err = OS::get_singleton()->open_dynamic_library(native_aot_so_path, lib);
+	ERR_FAIL_COND_V(err != OK, false);
 
-	if (err != OK) {
-		return nullptr;
-	}
+	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "godotsharp_game_main_init", (void *&)r_initialize_fn);
+	ERR_FAIL_COND_V(err != OK, false);
 
-	void *lib = r_aot_dll_handle;
+	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "godotsharp_marshaling_init", (void *&)r_marshaling_init_fn);
+	ERR_FAIL_COND_V(err != OK, false);
 
-	void *symbol = nullptr;
-
-	err = OS::get_singleton()->get_dynamic_library_symbol_handle(lib, "godotsharp_game_main_init", symbol);
-	ERR_FAIL_COND_V(err != OK, nullptr);
-	return (godot_plugins_initialize_fn)symbol;
+	return true;
 }
 #endif
 
@@ -575,9 +582,7 @@ MonoAssembly *load_assembly_from_pck(MonoAssemblyName *p_assembly_name, char **p
 }
 #endif
 
-godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime_initialized) {
-	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
-
+bool initialize_coreclr_and_godot_plugins(godot_plugins_initialize_fn *&r_initialize_fn, godotsharp_marshaling_init_fn *&r_marshaling_init_fn) {
 	String assembly_name = Path::get_csharp_project_name();
 
 #ifdef ANDROID_ENABLED
@@ -591,20 +596,25 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
 	void *coreclr_handle = nullptr;
 	unsigned int domain_id = 0;
 	int rc = coreclr_initialize(nullptr, nullptr, 0, nullptr, nullptr, &coreclr_handle, &domain_id);
-	ERR_FAIL_COND_V_MSG(rc != 0, nullptr, ".NET: Failed to initialize CoreCLR.");
-
-	r_runtime_initialized = true;
+	ERR_FAIL_COND_V_MSG(rc != 0, false, ".NET: Failed to initialize CoreCLR.");
 
 	print_verbose(".NET: CoreCLR initialized");
 
-	coreclr_create_delegate(coreclr_handle, domain_id,
+	rc = coreclr_create_delegate(coreclr_handle, domain_id,
 			assembly_name.utf8().get_data(),
 			"GodotPlugins.Game.Main",
 			"InitializeFromGameProject",
-			(void **)&godot_plugins_initialize);
-	ERR_FAIL_NULL_V_MSG(godot_plugins_initialize, nullptr, ".NET: Failed to get GodotPlugins initialization function pointer");
+			(void **)r_initialize_fn);
+	ERR_FAIL_COND_V_MSG(rc != 0, false, ".NET: Failed to get GodotPlugins initialization function pointer");
 
-	return godot_plugins_initialize;
+	rc = coreclr_create_delegate(coreclr_handle, domain_id,
+			assembly_name.utf8().get_data(),
+			"GodotPlugins.Game.Main",
+			"InitializeMarshalingData",
+			(void **)r_marshaling_init_fn);
+	ERR_FAIL_COND_V_MSG(rc != 0, false, ".NET: Failed to get GodotPlugins marshaling function pointer");
+
+	return true;
 }
 #endif
 
@@ -641,8 +651,6 @@ void GDMono::initialize() {
 
 	_init_godot_api_hashes();
 
-	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
-
 #if !defined(APPLE_EMBEDDED_ENABLED)
 	// Check that the .NET assemblies directory exists before trying to use it.
 	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
@@ -651,23 +659,19 @@ void GDMono::initialize() {
 	}
 #endif
 
+	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
+	godotsharp_marshaling_init_fn godotsharp_marshaling_init = nullptr;
+	godot_plugins_initialize_fn *godot_plugins_initialize_ptr = &godot_plugins_initialize;
+	godotsharp_marshaling_init_fn *godotsharp_marshaling_init_ptr = &godotsharp_marshaling_init;
+
 	if (load_hostfxr(hostfxr_dll_handle)) {
-		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
-		ERR_FAIL_NULL(godot_plugins_initialize);
+		runtime_initialized = initialize_hostfxr_and_godot_plugins(godot_plugins_initialize_ptr, godotsharp_marshaling_init_ptr);
 	} else {
 #if !defined(TOOLS_ENABLED)
 		if (load_coreclr(coreclr_dll_handle)) {
-			godot_plugins_initialize = initialize_coreclr_and_godot_plugins(runtime_initialized);
+			runtime_initialized = initialize_coreclr_and_godot_plugins(godot_plugins_initialize_ptr, godotsharp_marshaling_init_ptr);
 		} else {
-			void *dll_handle = nullptr;
-			godot_plugins_initialize = try_load_native_aot_library(dll_handle);
-			if (godot_plugins_initialize != nullptr) {
-				runtime_initialized = true;
-			}
-		}
-
-		if (godot_plugins_initialize == nullptr) {
-			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
+			runtime_initialized = try_load_native_aot_library(godot_plugins_initialize_ptr, godotsharp_marshaling_init_ptr);
 		}
 #else
 
@@ -676,6 +680,17 @@ void GDMono::initialize() {
 		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 #endif
 	}
+
+	ERR_FAIL_COND_MSG(!runtime_initialized, ".NET: Failed to load runtime");
+
+	// Types that rely on CowData<> (string/array/etc) also rely on native memory alignment macros for field offset
+	// calculations. For example, some platforms define max_align_t in such a way that alignof(max_align_t) and sizeof
+	// (max_align_t) returns 32, not 16.
+	// C# does not have access to this native alignment information, so we need to tell it what the offsets are in
+	// order for the C# bindings to handle these types correctly.
+	// This information needs to be in place before there is any opportunity for C# to run code that handles these
+	// types, so this is done here before any other initialization takes place.
+	godotsharp_marshaling_init(CowData<char>::REF_COUNT_OFFSET, CowData<char>::CAPACITY_OFFSET, CowData<char>::SIZE_OFFSET, CowData<char>::DATA_OFFSET);
 
 	int32_t interop_funcs_size = 0;
 	const void **interop_funcs = godotsharp::get_runtime_interop_funcs(interop_funcs_size);
