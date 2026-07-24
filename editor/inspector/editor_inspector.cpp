@@ -356,6 +356,9 @@ void EditorProperty::_notification(int p_what) {
 			right_child_rect = Rect2();
 			bottom_child_rect = Rect2();
 
+			Size2 left_container_ms = left_container->get_combined_minimum_size();
+			Size2 right_container_ms = right_container->get_combined_minimum_size();
+
 			{
 				int child_room = size.width * (1.0 - split_ratio) - name_fixed_size;
 				int separation = theme_cache.horizontal_separation;
@@ -374,12 +377,16 @@ void EditorProperty::_notification(int p_what) {
 						continue;
 					}
 
-					Size2 minsize = c->get_combined_minimum_size();
+					Size2 minsize;
 					if (c != left_container && c != right_container) {
+						minsize = c->get_combined_minimum_size();
 						minw = MAX(minw, minsize.width);
 						child_room = MAX(child_room, minw);
 						no_children = false;
+					} else {
+						minsize = c == left_container ? left_container_ms : right_container_ms;
 					}
+
 					height = MAX(height, minsize.height);
 				}
 
@@ -398,11 +405,9 @@ void EditorProperty::_notification(int p_what) {
 					}
 				}
 
-				if (rect.size.x > 1) {
-					rect.size.x -= right_container->get_combined_minimum_size().x;
-					if (is_layout_rtl()) {
-						rect.position.x += right_container->get_combined_minimum_size().x;
-					}
+				rect.size.width -= right_container_ms.width;
+				if (is_layout_rtl()) {
+					rect.position.x += right_container_ms.width;
 				}
 
 				if (bottom_editor) {
@@ -463,6 +468,17 @@ void EditorProperty::_notification(int p_what) {
 						rect.position.x += diff;
 					}
 				}
+
+				// Respect the left container's minimum width.
+				if (is_layout_rtl()) {
+					if (rect.size.width < left_container_ms.width) {
+						rect.size.width -= left_container_ms.width - rect.size.width;
+					}
+				} else if (rect.position.x < left_container_ms.width) {
+					diff = left_container_ms.width - rect.position.x;
+					rect.position.x += diff;
+					rect.size.width -= diff;
+				}
 			}
 
 			// Set the children's positions.
@@ -490,7 +506,7 @@ void EditorProperty::_notification(int p_what) {
 				bottom_child_rect = bottom_rect;
 			}
 
-			Size2 rs = right_container->get_combined_minimum_size();
+			Size2 rs = right_container_ms;
 			rs.y = MAX(rs.y, rect.size.y);
 			if (is_layout_rtl()) {
 				fit_child_in_rect(right_container, Rect2(0, 0, rs.width, rs.y));
@@ -498,7 +514,7 @@ void EditorProperty::_notification(int p_what) {
 				fit_child_in_rect(right_container, Rect2(size.width - rs.width, 0, rs.width, rs.y));
 			}
 
-			Size2 ls = left_container->get_combined_minimum_size();
+			Size2 ls = left_container_ms;
 			real_t right_size = rect.size.x + rs.x;
 			ls.y = MAX(ls.y, rect.size.y);
 			if (is_layout_rtl()) {
