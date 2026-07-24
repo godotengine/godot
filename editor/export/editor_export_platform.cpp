@@ -1448,8 +1448,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	// Check if custom processing is needed
-	uint32_t custom_resources_hash = HASH_MURMUR3_SEED;
-	uint32_t custom_scene_hash = HASH_MURMUR3_SEED;
+	uint32_t custom_export_hash = HASH_MURMUR3_SEED;
 
 	LocalVector<Ref<EditorExportPlugin>> customize_resources_plugins;
 	LocalVector<Ref<EditorExportPlugin>> customize_scenes_plugins;
@@ -1458,16 +1457,16 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		if (export_plugins.write[i]->_begin_customize_resources(Ref<EditorExportPlatform>(this), features_psa)) {
 			customize_resources_plugins.push_back(export_plugins[i]);
 
-			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->get_name().hash64(), custom_resources_hash);
+			custom_export_hash = hash_murmur3_one_64(export_plugins[i]->get_name().hash64(), custom_export_hash);
 			uint64_t hash = export_plugins[i]->_get_customization_configuration_hash();
-			custom_resources_hash = hash_murmur3_one_64(hash, custom_resources_hash);
+			custom_export_hash = hash_murmur3_one_64(hash, custom_export_hash);
 		}
 		if (export_plugins.write[i]->_begin_customize_scenes(Ref<EditorExportPlatform>(this), features_psa)) {
 			customize_scenes_plugins.push_back(export_plugins[i]);
 
-			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->get_name().hash64(), custom_resources_hash);
+			custom_export_hash = hash_murmur3_one_64(export_plugins[i]->get_name().hash64(), custom_export_hash);
 			uint64_t hash = export_plugins[i]->_get_customization_configuration_hash();
-			custom_scene_hash = hash_murmur3_one_64(hash, custom_scene_hash);
+			custom_export_hash = hash_murmur3_one_64(hash, custom_export_hash);
 		}
 	}
 
@@ -1478,7 +1477,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	HashMap<String, FileExportCache> export_cache;
-	String export_base_path = ProjectSettings::get_singleton()->get_project_data_path().path_join("exported/") + itos(custom_resources_hash);
+	String export_base_path = ProjectSettings::get_singleton()->get_project_data_path().path_join("exported/") + itos(custom_export_hash);
 
 	bool convert_text_to_binary = get_project_setting(p_preset, "editor/export/convert_text_resources_to_binary");
 
@@ -1504,7 +1503,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			// create the path
 			Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 			d->change_dir(ProjectSettings::get_singleton()->get_project_data_path());
-			d->make_dir_recursive("exported/" + itos(custom_resources_hash));
+			d->make_dir_recursive("exported/" + itos(custom_export_hash));
 		}
 	}
 
