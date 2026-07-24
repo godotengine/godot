@@ -3148,7 +3148,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 
 		gui.currently_dragged_subwindow = click_on_window;
 
-		if (!click_on_window && gui.subwindow_focused) {
+		if (!click_on_window && gui.subwindow_focused && !gui.subwindow_focused->is_exclusive()) {
 			// No window found and clicked, remove focus.
 			_sub_window_grab_focus(nullptr);
 		}
