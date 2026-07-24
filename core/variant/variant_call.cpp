@@ -1758,7 +1758,10 @@ bool Variant::has_enum(Variant::Type p_type, const StringName &p_enum_name) {
 StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringName &p_enumeration) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, StringName());
 	const GDType::EnumInfo *enum_info = _get_gdtype_for_type(p_type).get_integer_constant_enum(p_enumeration, false);
-	return enum_info ? enum_info->name : StringName();
+	if (enum_info == nullptr) {
+		return StringName();
+	}
+	return enum_info->name;
 }
 
 #ifdef DEBUG_ENABLED
