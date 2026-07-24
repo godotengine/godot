@@ -269,7 +269,13 @@ private:
 	void _property_changed(Object *p_base, const StringName &p_property, const Variant &p_value);
 
 	void _error_activated();
-	void _error_selected();
+	void _error_multi_selected(Object *p_item, int p_column, bool p_selected);
+	void _error_tree_gui_input(const Ref<InputEvent> &p_event);
+	TreeItem *_get_top_level_error(TreeItem *p_item) const;
+	Vector<TreeItem *> _get_selected_errors() const;
+	String _format_error_for_clipboard(TreeItem *p_error) const;
+	void _copy_selected_errors();
+	void _select_all_errors();
 
 	void _expand_errors_list();
 	void _collapse_errors_list();

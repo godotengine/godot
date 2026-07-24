@@ -1790,30 +1790,115 @@ bool ScriptEditorDebugger::is_ignore_error_breaks() const {
 
 void ScriptEditorDebugger::_error_activated() {
 	TreeItem *selected = error_tree->get_selected();
-
-	if (!selected) {
-		return;
-	}
-
-	TreeItem *ci = selected->get_first_child();
-	if (ci) {
-		selected->set_collapsed(!selected->is_collapsed());
-	}
-}
-
-void ScriptEditorDebugger::_error_selected() {
-	TreeItem *selected = error_tree->get_selected();
-
 	if (!selected) {
 		return;
 	}
 
 	Array meta = selected->get_metadata(0);
-	if (meta.is_empty()) {
+	if (!meta.is_empty()) {
+		emit_signal(SNAME("error_selected"), String(meta[0]), int(meta[1]));
 		return;
 	}
 
-	emit_signal(SNAME("error_selected"), String(meta[0]), int(meta[1]));
+	if (selected->get_first_child()) {
+		selected->set_collapsed(!selected->is_collapsed());
+	}
+}
+
+void ScriptEditorDebugger::_error_multi_selected(Object *p_item, int p_column, bool p_selected) {
+	TreeItem *item = Object::cast_to<TreeItem>(p_item);
+	ERR_FAIL_NULL(item);
+
+	const int other_column = p_column == 0 ? 1 : 0;
+	if (p_selected) {
+		item->select(other_column, false);
+	} else {
+		item->deselect(other_column);
+	}
+}
+
+TreeItem *ScriptEditorDebugger::_get_top_level_error(TreeItem *p_item) const {
+	TreeItem *root = error_tree->get_root();
+	if (!p_item || !root || p_item == root) {
+		return nullptr;
+	}
+
+	while (p_item->get_parent() != root) {
+		p_item = p_item->get_parent();
+		if (!p_item) {
+			return nullptr;
+		}
+	}
+	return p_item;
+}
+
+Vector<TreeItem *> ScriptEditorDebugger::_get_selected_errors() const {
+	Vector<TreeItem *> errors;
+	for (TreeItem *selected = error_tree->get_next_selected(nullptr); selected; selected = error_tree->get_next_selected(selected)) {
+		TreeItem *error = _get_top_level_error(selected);
+		if (error && errors.find(error) == -1) {
+			errors.push_back(error);
+		}
+	}
+	return errors;
+}
+
+String ScriptEditorDebugger::_format_error_for_clipboard(TreeItem *p_error) const {
+	ERR_FAIL_NULL_V(p_error, String());
+
+	String type;
+	if (p_error->has_meta("_is_warning")) {
+		type = "W ";
+	} else if (p_error->has_meta("_is_error")) {
+		type = "E ";
+	}
+
+	String text = p_error->get_text(0) + "   ";
+	const int rpad_len = text.length();
+	text = type + text + p_error->get_text(1) + "\n";
+
+	for (TreeItem *child = p_error->get_first_child(); child; child = child->get_next()) {
+		text += "  " + child->get_text(0).rpad(rpad_len) + child->get_text(1) + "\n";
+	}
+	return text;
+}
+
+void ScriptEditorDebugger::_copy_selected_errors() {
+	String text;
+	for (TreeItem *error : _get_selected_errors()) {
+		text += _format_error_for_clipboard(error);
+	}
+	if (!text.is_empty()) {
+		DisplayServer::get_singleton()->clipboard_set(text);
+	}
+}
+
+void ScriptEditorDebugger::_select_all_errors() {
+	TreeItem *root = error_tree->get_root();
+	if (!root) {
+		return;
+	}
+
+	error_tree->deselect_all();
+	for (TreeItem *error = root->get_first_child(); error; error = error->get_next()) {
+		error->select(0);
+		error->select(1, false);
+	}
+}
+
+void ScriptEditorDebugger::_error_tree_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventKey> key = p_event;
+	if (key.is_null() || !key->is_pressed() || key->is_echo()) {
+		return;
+	}
+
+	if (p_event->is_action("ui_copy", true)) {
+		_copy_selected_errors();
+		error_tree->accept_event();
+	} else if (p_event->is_action("ui_text_select_all", true)) {
+		_select_all_errors();
+		error_tree->accept_event();
+	}
 }
 
 void ScriptEditorDebugger::_expand_errors_list() {
@@ -1927,7 +2012,6 @@ void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos, 
 	breakpoints_menu->popup();
 }
 
-// Right click on specific file(s) or folder(s).
 void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
 	if (p_button != MouseButton::RIGHT) {
 		return;
@@ -1936,9 +2020,12 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, M
 	item_menu->clear();
 	item_menu->reset_size();
 
-	if (error_tree->is_anything_selected()) {
-		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), TTRC("Copy Error"), ACTION_COPY_ERROR);
-		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ExternalLink")), TTRC("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
+	Vector<TreeItem *> selected_errors = _get_selected_errors();
+	if (!selected_errors.is_empty()) {
+		item_menu->add_icon_item(get_editor_theme_icon(SNAME("ActionCopy")), selected_errors.size() == 1 ? TTRC("Copy Error") : TTRC("Copy Errors"), ACTION_COPY_ERROR);
+		if (selected_errors.size() == 1) {
+			item_menu->add_icon_item(get_editor_theme_icon(SNAME("ExternalLink")), TTRC("Open C++ Source on GitHub"), ACTION_OPEN_SOURCE);
+		}
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -1950,30 +2037,7 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos, M
 void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 	switch (p_option) {
 		case ACTION_COPY_ERROR: {
-			TreeItem *ti = error_tree->get_selected();
-			while (ti->get_parent() != error_tree->get_root()) {
-				ti = ti->get_parent();
-			}
-
-			String type;
-
-			if (ti->has_meta("_is_warning")) {
-				type = "W ";
-			} else if (ti->has_meta("_is_error")) {
-				type = "E ";
-			}
-
-			String text = ti->get_text(0) + "   ";
-			int rpad_len = text.length();
-
-			text = type + text + ti->get_text(1) + "\n";
-			TreeItem *ci = ti->get_first_child();
-			while (ci) {
-				text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
-				ci = ci->get_next();
-			}
-
-			DisplayServer::get_singleton()->clipboard_set(text);
+			_copy_selected_errors();
 		} break;
 
 		case ACTION_OPEN_SOURCE: {
@@ -2327,15 +2391,16 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_column_expand(1, true);
 		error_tree->set_column_clip_content(1, true);
 
-		error_tree->set_select_mode(Tree::SELECT_ROW);
+		error_tree->set_select_mode(Tree::SELECT_MULTI);
 		error_tree->set_hide_root(true);
 		error_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		error_tree->set_allow_rmb_select(true);
 		error_tree->set_allow_reselect(true);
 		error_tree->set_theme_type_variation("TreeSecondary");
-		error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
 		error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
+		error_tree->connect("multi_selected", callable_mp(this, &ScriptEditorDebugger::_error_multi_selected));
 		error_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
+		error_tree->connect(SceneStringName(gui_input), callable_mp(this, &ScriptEditorDebugger::_error_tree_gui_input));
 		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);
