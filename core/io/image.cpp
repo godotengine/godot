@@ -4830,7 +4830,7 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	image_metric_mean = CLAMP(sum / total_values, 0.0f, 255.0f);
 	image_metric_mean_squared = CLAMP(sum2 / total_values, 0.0f, 255.0f * 255.0f);
 
-	image_metric_root_mean_squared = std::sqrt(image_metric_mean_squared);
+	image_metric_root_mean_squared = Math::sqrt(image_metric_mean_squared);
 
 	if (!image_metric_root_mean_squared) {
 		image_metric_peak_snr = 1e+10f;

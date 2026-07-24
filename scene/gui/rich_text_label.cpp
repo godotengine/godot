@@ -2774,9 +2774,9 @@ void RichTextLabel::_notification(int p_what) {
 					bool right_to_left = is_layout_rtl();
 					double r = loaded.load();
 					int mp = theme_cache.progress_fg_style->get_minimum_size().width;
-					int p = std::round(r * (p_size.width - mp));
+					int p = Math::round(r * (p_size.width - mp));
 					if (right_to_left) {
-						int p_remaining = std::round((1.0 - r) * (p_size.width - mp));
+						int p_remaining = Math::round((1.0 - r) * (p_size.width - mp));
 						draw_style_box(theme_cache.progress_fg_style, Rect2(p_pos + Point2(p_remaining, 0), Size2(p + theme_cache.progress_fg_style->get_minimum_size().width, p_size.height)));
 					} else {
 						draw_style_box(theme_cache.progress_fg_style, Rect2(p_pos, Size2(p + theme_cache.progress_fg_style->get_minimum_size().width, p_size.height)));

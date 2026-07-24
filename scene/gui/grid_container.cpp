@@ -125,7 +125,7 @@ void GridContainer::_resort() {
 	}
 
 	int max_col = MIN(valid_controls_index, columns);
-	int max_row = std::ceil((float)valid_controls_index / (float)columns);
+	int max_row = Math::ceil((float)valid_controls_index / (float)columns);
 
 	// Consider all empty columns expanded.
 	for (int i = valid_controls_index; i < columns; i++) {

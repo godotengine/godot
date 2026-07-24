@@ -1422,7 +1422,7 @@ String String::num(double p_num, int p_decimals) {
 		if (abs_num > 10) {
 			// We want to align the digits to the above reasonable default, so we only
 			// need to subtract log10 for numbers with a positive power of ten.
-			p_decimals -= (int)std::floor(std::log10(abs_num));
+			p_decimals -= (int)Math::floor(std::log10(abs_num));
 		}
 	}
 	if (p_decimals > MAX_DECIMALS) {
@@ -1588,7 +1588,7 @@ String String::num_real(double p_num, bool p_trailing) {
 	// to subtract log10 for numbers with a positive power of ten magnitude.
 	const double abs_num = Math::abs(p_num);
 	if (abs_num > 10) {
-		decimals -= (int)std::floor(std::log10(abs_num));
+		decimals -= (int)Math::floor(std::log10(abs_num));
 	}
 
 	return num(p_num, decimals);
@@ -1611,7 +1611,7 @@ String String::num_real(float p_num, bool p_trailing) {
 	// to subtract log10 for numbers with a positive power of ten magnitude.
 	const float abs_num = Math::abs(p_num);
 	if (abs_num > 10) {
-		decimals -= (int)std::floor(std::log10(abs_num));
+		decimals -= (int)Math::floor(std::log10(abs_num));
 	}
 	return num(p_num, decimals);
 }

@@ -182,7 +182,7 @@ void SkeletonModification2DTwoBoneIK::_execute(float p_delta) {
 			angle_1 = -angle_1;
 		}
 
-		if (std::isnan(angle_0) || std::isnan(angle_1)) {
+		if (Math::is_nan(angle_0) || Math::is_nan(angle_1)) {
 			// We cannot solve for this angle! Do nothing to avoid setting the rotation (and scale) to NaN.
 		} else {
 			if (same_scale_sign) {
@@ -242,10 +242,10 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 
 	if (flip_bend_direction) {
 		float angle = -(Math::PI * 0.5) + operation_bone_one->get_bone_angle();
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), std::sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), Math::sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	} else {
 		float angle = (Math::PI * 0.5) + operation_bone_one->get_bone_angle();
-		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), std::sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
+		stack->skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), Math::sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	}
 
 #ifdef TOOLS_ENABLED
