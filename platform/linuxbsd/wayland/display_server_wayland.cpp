@@ -1928,8 +1928,6 @@ void DisplayServerWayland::try_suspend() {
 	// window's suspend status. When a window is suspended, we can avoid drawing
 	// altogether, either because the compositor told us that we don't need to or
 	// because the pace of the frame events became unreliable.
-	// A bounded wait keeps input and UI processing going when the compositor or GPU
-	// driver stalls and stops delivering frame callbacks. 0 keeps the legacy ceiling.
 	int frame_callback_timeout_ms = GLOBAL_GET("display/window/wayland/frame_callback_timeout_ms");
 	if (frame_callback_timeout_ms <= 0) {
 		frame_callback_timeout_ms = WAYLAND_MAX_FRAME_TIME_US / 1000;

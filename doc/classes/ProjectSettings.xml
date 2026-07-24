@@ -1116,8 +1116,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the V-Sync mode at runtime, call [method DisplayServer.window_set_vsync_mode] instead.
 		</member>
 		<member name="display/window/wayland/frame_callback_timeout_ms" type="int" setter="" getter="" default="100">
-			Maximum time (in milliseconds) the main loop will block waiting for a Wayland frame callback before letting input and UI processing continue. Compositors normally deliver frame callbacks within a few milliseconds, but a stalled compositor or GPU driver can withhold them (observed with NVIDIA proprietary drivers when the window has embedded subsurfaces), which previously made the window appear frozen for up to a second at a time.
-			If set to [code]0[/code], the previous [code]1000[/code] ms ceiling is used instead.
+			Time to wait for the compositor before processing input again, in milliseconds. Lower values keep the window responsive when the compositor or video driver stalls. If [code]0[/code], waits up to a second.
 			[b]Note:[/b] Only effective on Linux (Wayland).
 		</member>
 		<member name="dotnet/project/assembly_name" type="String" setter="" getter="" default="&quot;&quot;">
@@ -3417,13 +3416,10 @@
 			[b]Note:[/b] Changing this property requires a restart to take effect.
 		</member>
 		<member name="rendering/rendering_device/vulkan/prefer_mailbox_present_mode" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], the swapchain transparently uses MAILBOX present mode instead of FIFO when V-Sync is enabled and MAILBOX is available. This is an opt-in workaround for presentation stalls seen with FIFO present mode on some driver and compositor combinations, notably NVIDIA proprietary drivers on Wayland: MAILBOX keeps the same V-Sync cadence but does not block the presentation queue on a missing frame callback, at the cost of slightly higher GPU usage.
-			The substitution only applies when the requested present mode is FIFO; explicitly chosen Mailbox, Adaptive, or Disabled V-Sync modes are unaffected.
-			[b]Note:[/b] Changes to this setting are applied when the swapchain is (re)created.
+			If [code]true[/code], uses Mailbox presentation instead of FIFO when V-Sync is enabled. This can prevent freezes with some video drivers (notably NVIDIA on Wayland), at the cost of slightly higher GPU usage.
 		</member>
 		<member name="rendering/rendering_device/vulkan/swapchain_acquire_timeout_ms" type="int" setter="" getter="" default="1000">
-			Maximum time (in milliseconds) to wait for [code]vkAcquireNextImageKHR[/code] before skipping the frame. A bounded wait prevents an unresponsive compositor or driver (notably NVIDIA proprietary drivers on Wayland) from blocking the main loop indefinitely; when the timeout is hit, the frame is skipped and processing continues, keeping input and UI responsive.
-			If set to [code]0[/code], the wait is unbounded (legacy behavior).
+			Time to wait for the video driver to provide the next frame, in milliseconds. If the driver stalls for longer, the frame is skipped and the application keeps running instead of freezing. If [code]0[/code], waits indefinitely.
 		</member>
 		<member name="rendering/scaling_3d/fsr_sharpness" type="float" setter="" getter="" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
