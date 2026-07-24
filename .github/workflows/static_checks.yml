@@ -45,3 +45,24 @@ jobs:
           CHANGED_FILES: '"${{ steps.changed-files.outputs.everything_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
         with:
           extra-args: --files ${{ env.CHANGED_FILES }}
+
+      - name: Validate documentation-only changes - download artifact
+        id: download-artifact
+        if: steps.changed-files.outputs.documentation_any_changed == 'true' && steps.changed-files.outputs.sources_any_changed == 'false' && github.event_name == 'pull_request'
+        uses: dawidd6/action-download-artifact@v21
+        with:
+          name: linux-editor-mono
+          path: ./bin/
+          branch: ${{ github.event.repository.default_branch }}
+          workflow_search: true
+
+      - name: Validate documentation-only changes - test artifact
+        if: steps.download-artifact.outputs.found_artifact
+        run: |
+          # Execution perms weren't preserved; manually apply them.
+          chmod +x bin/godot.*
+          # Lifted from `linux_builds.sh`.
+          echo "Running --doctool to see if this changes the public API without updating the documentation."
+          echo -e "If a diff is shown, it means that your code/doc changes are incomplete and you should update the class reference with --doctool.\n\n"
+          ./bin/godot.linuxbsd.editor.x86_64.mono --doctool --headless 2>&1 > /dev/null || true
+          git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'

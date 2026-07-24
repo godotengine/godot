@@ -29,3 +29,10 @@ clangd:
   - "!modules/openxr/extensions/platform/openxr_{android,metal}_extension.{h,cpp}"
   - "!platform/{android,ios,macos,visionos,web,windows}/**"
   - "platform/{android,ios,macos,visionos,web,windows}/{api,export}/*.{h,hpp,hxx,hh,c,cpp,cxx,cc}"
+
+# Determines if documentation changed in any capacity. Can't simply lump in with `!sources`, as
+#  a post-build validation step is required.
+documentation:
+  - doc/class.xsd
+  - doc/classes/*.xml
+  - modules/*/doc_classes/*.xml
