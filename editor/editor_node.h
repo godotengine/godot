@@ -285,6 +285,7 @@ private:
 	bool _initializing_plugins = false;
 	HashMap<String, EditorPlugin *> addon_name_to_plugin;
 	LocalVector<String> pending_addons;
+	LocalVector<String> selected_addons;
 	HashMap<ObjectID, HashSet<EditorPlugin *>> active_plugins;
 	bool is_main_screen_editing = false;
 
@@ -819,6 +820,12 @@ public:
 
 	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
+
+	void set_addon_plugin_selected(const String &p_addon, bool p_selected);
+	bool is_addon_plugin_selected(const String &p_addon) const;
+	bool has_addon_plugin_selection() const;
+
+	void reload_addon_plugins();
 
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource> &p_resource);

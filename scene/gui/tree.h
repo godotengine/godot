@@ -99,6 +99,7 @@ private:
 		Color bg_color;
 		bool custom_button = false;
 		bool expand_right = false;
+		bool downarrow = true;
 		Color icon_color = Color(1, 1, 1);
 		Ref<StyleBox> custom_stylebox;
 
@@ -405,6 +406,9 @@ public:
 
 	void set_custom_as_button(int p_column, bool p_button);
 	bool is_custom_set_as_button(int p_column) const;
+
+	void set_downarrow(int p_column, bool p_enabled);
+	bool has_downarrow(int p_column) const;
 
 	void set_tooltip_text(int p_column, const String &p_tooltip);
 	String get_tooltip_text(int p_column) const;

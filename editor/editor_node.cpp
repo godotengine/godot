@@ -457,6 +457,8 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 			}
 
 			undo_redo->commit_action();
+		} else if (ED_IS_SHORTCUT("editor/reload_plugins", p_event)) {
+			reload_addon_plugins();
 		} else {
 			is_handled = false;
 		}
@@ -4586,6 +4588,48 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	return addon_name_to_plugin.has("res://addons/" + p_addon + "/plugin.cfg");
 }
 
+void EditorNode::set_addon_plugin_selected(const String &p_addon, bool p_selected) {
+	if (p_selected) {
+		selected_addons.push_back(p_addon);
+	} else {
+		selected_addons.erase(p_addon);
+	}
+}
+
+bool EditorNode::is_addon_plugin_selected(const String &p_addon) const {
+	return selected_addons.has(p_addon);
+}
+
+bool EditorNode::has_addon_plugin_selection() const {
+	return !selected_addons.is_empty();
+}
+
+void EditorNode::reload_addon_plugins() {
+	if (!has_addon_plugin_selection()) {
+		return;
+	}
+
+	for (const String &addon : selected_addons) {
+		String addon_path = addon;
+		if (!addon_path.begins_with("res://")) {
+			addon_path = "res://addons/" + addon + "/plugin.cfg";
+		}
+		if (is_addon_plugin_enabled(addon_path)) {
+			EditorPlugin *plugin = addon_name_to_plugin.get(addon_path);
+			if (plugin) {
+				plugin->disable_plugin();
+			}
+			set_addon_plugin_enabled(addon_path, false);
+		}
+		set_addon_plugin_enabled(addon_path, true);
+		if (addon_name_to_plugin.has(addon_path)) {
+			addon_name_to_plugin[addon_path]->enable_plugin();
+		}
+	}
+	EditorToaster::get_singleton()->popup_str(TTR("Plugins reloaded."));
+	emit_signal(SNAME("addon_plugins_reloaded"));
+}
+
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	// When scene gets closed no node is edited anymore, so make sure the editors are notified before nodes are freed.
 	hide_unused_editors(SceneTreeDock::get_singleton());
@@ -7942,6 +7986,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("preview_locale_changed"));
 	ADD_SIGNAL(MethodInfo("resource_counter_changed"));
 	ADD_SIGNAL(MethodInfo("distraction_free_mode_changed", PropertyInfo(Variant::BOOL, "enabled")));
+	ADD_SIGNAL(MethodInfo("addon_plugins_reloaded"));
 }
 
 static Node *_resource_get_edited_scene() {
