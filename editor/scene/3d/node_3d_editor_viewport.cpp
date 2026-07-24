@@ -1559,6 +1559,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 			} else {
 				//handle plane translate
 				_edit.mode = TRANSFORM_TRANSLATE;
+				_save_drag_start_positions();
 				_compute_edit(p_screenpos);
 				_edit.plane = TransformPlane(TRANSFORM_X_AXIS + col_axis + (is_plane_translate ? 3 : 0));
 			}
@@ -3091,6 +3092,22 @@ void Node3DEditorViewport::_freelook_speed_scaled() {
 	surface->queue_redraw();
 }
 
+void Node3DEditorViewport::_save_drag_start_positions() {
+	_drag_start_positions.clear();
+
+	if (!bool(EDITOR_GET("editors/3d/manipulator_show_translation_preview"))) {
+		return;
+	}
+
+	TypedArray<Node> selected_nodes = editor_selection->get_selected_nodes();
+	for (int i = 0; i < selected_nodes.size(); i++) {
+		Node3D *node = Object::cast_to<Node3D>(selected_nodes[i]);
+		if (node) {
+			_drag_start_positions[node->get_instance_id()] = node->get_global_position();
+		}
+	}
+}
+
 bool Node3DEditorViewport::_is_nav_modifier_pressed(const String &p_name) {
 	return _is_shortcut_empty(p_name) || Input::get_singleton()->is_action_pressed(p_name);
 }
@@ -4092,6 +4109,61 @@ void Node3DEditorViewport::_draw() {
 			float alpha = occluded ? occluded_alpha : 1.0f;
 			surface->draw_circle(screen_pos, circle_radius + outline_width, Color(0, 0, 0, 0.6 * alpha), true, -1.0, true);
 			surface->draw_circle(screen_pos, circle_radius, Color(0, 1, 0, alpha), true, -1.0, true);
+		}
+	}
+
+	if (_edit.mode == TRANSFORM_TRANSLATE && !_drag_start_positions.is_empty()) {
+		Color line_color = Color(1.0, 1.0, 1.0, 0.8);
+
+		for (const KeyValue<ObjectID, Vector3> &E : _drag_start_positions) {
+			Object *obj = ObjectDB::get_instance(E.key);
+			Node3D *node = Object::cast_to<Node3D>(obj);
+
+			if (!node) {
+				continue;
+			}
+
+			Vector3 start_pos = E.value;
+			Vector3 current_pos = node->get_global_position();
+
+			if (start_pos.is_equal_approx(current_pos) ||
+					camera->is_position_behind(start_pos) ||
+					camera->is_position_behind(current_pos)) {
+				continue;
+			}
+
+			Color current_line_color = line_color;
+			Vector3 delta = (current_pos - start_pos).abs();
+
+			bool locked_x = (delta.y <= CMP_EPSILON && delta.z <= CMP_EPSILON);
+			bool locked_y = (delta.x <= CMP_EPSILON && delta.z <= CMP_EPSILON);
+			bool locked_z = (delta.x <= CMP_EPSILON && delta.y <= CMP_EPSILON);
+
+			if (locked_x) {
+				current_line_color = get_theme_color(SNAME("axis_x_color"), SNAME("Editor"));
+			} else if (locked_y) {
+				current_line_color = get_theme_color(SNAME("axis_y_color"), SNAME("Editor"));
+			} else if (locked_z) {
+				current_line_color = get_theme_color(SNAME("axis_z_color"), SNAME("Editor"));
+			}
+
+			Vector2 screen_pos_start = camera->unproject_position(start_pos);
+			Vector2 screen_pos_current = camera->unproject_position(current_pos);
+
+			RenderingServer::get_singleton()->canvas_item_add_line(
+					ci,
+					screen_pos_start,
+					screen_pos_current,
+					current_line_color,
+					4.0 * EDSCALE,
+					true);
+
+			RenderingServer::get_singleton()->canvas_item_add_circle(
+					ci,
+					screen_pos_start,
+					5 * EDSCALE,
+					current_line_color,
+					true);
 		}
 	}
 
@@ -6141,6 +6213,10 @@ void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 		_edit.children_original_globals.clear();
 
 		_edit.mode = p_mode;
+		if (p_mode == TRANSFORM_TRANSLATE) {
+			_save_drag_start_positions();
+		}
+
 		_compute_edit(_edit.mouse_pos);
 		_edit.instant = instant;
 		_edit.initial_click_vector = Vector3();
@@ -6637,6 +6713,7 @@ void Node3DEditorViewport::finish_transform() {
 	_edit.rotation_angle = 0.0;
 	_edit.gizmo_initiated = false;
 	_edit.children_original_globals.clear();
+	_drag_start_positions.clear();
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	spatial_editor->update_transform_gizmo();
 	surface->queue_redraw();
