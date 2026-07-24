@@ -8,6 +8,7 @@
 		Unlike [GPUParticlesAttractorBox3D], [GPUParticlesAttractorVectorField3D] uses a [member texture] to affect attraction strength within the box. This can be used to create complex attraction scenarios where particles travel in different directions depending on their location. This can be useful for weather effects such as sandstorms.
 		Particle attractors work in real-time and can be moved, rotated and scaled during gameplay. Unlike collision shapes, non-uniform scaling of attractors is also supported.
 		[b]Note:[/b] Particle attractors only affect [GPUParticles3D], not [CPUParticles3D].
+		[b]Note:[/b] For technical reasons, a [GPUParticles3D] node may only interact with up to 7 [GPUParticlesAttractorVectorField3D] nodes at a time. If more than 7 [GPUParticlesAttractorVectorField3D] nodes are present in the [GPUParticles3D]'s visibility AABB, some of them will be ignored by particles.
 	</description>
 	<tutorials>
 	</tutorials>
