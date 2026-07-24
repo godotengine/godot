@@ -4338,9 +4338,6 @@ int Main::start() {
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
 		}
-		if (debug_audio_visualization) {
-			sml->set_debug_audio_visualization_hint(true);
-		}
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);
 		}
