@@ -230,7 +230,7 @@ Size2 EditorProperty::get_minimum_size() const {
 		return Vector2();
 	}
 
-	Size2 ms = Size2(0, theme_cache.inspector_property_height);
+	Size2 ms(0, theme_cache.inspector_property_height);
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
 		if (!c) {
@@ -251,29 +251,32 @@ Size2 EditorProperty::get_minimum_size() const {
 	}
 
 	if (!label.is_empty()) {
-		ms.width += theme_cache.font_offset + theme_cache.horizontal_separation;
+		// Add an extra 1, since text clipping if off if the width is 0 or less.
+		ms.width += theme_cache.font_offset + theme_cache.horizontal_separation + 1;
 	}
 
-	// Always take the revert and pin values into account, since their state can be changed at whim
-	// and we don't want to update the min width every time this happens.
-	{
-		if (!is_read_only()) {
-			ms.width += theme_cache.revert_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
-		}
+	int padding_sep = theme_cache.padding + theme_cache.horizontal_separation;
 
-		ms.width += theme_cache.pin_icon->get_width() + theme_cache.horizontal_separation;
+	// Always take the revert button into account, since values are changed constantly
+	// and we don't want to update the min width every time this happens.
+	if (!is_read_only()) {
+		ms.width += theme_cache.revert_icon->get_width() + padding_sep;
+	}
+
+	if (pinned) {
+		ms.width += theme_cache.pin_icon->get_width() + padding_sep;
 	}
 
 	if (keying) {
-		ms.width += theme_cache.key_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
+		ms.width += theme_cache.key_icon->get_width() + padding_sep;
 	}
 
 	if (deletable) {
-		ms.width += theme_cache.delete_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
+		ms.width += theme_cache.delete_icon->get_width() + padding_sep;
 	}
 
 	if (checkable) {
-		ms.width += theme_cache.checked_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
+		ms.width += theme_cache.checked_icon->get_width() + padding_sep;
 	}
 
 	Size2 ls = left_container->get_combined_minimum_size();
