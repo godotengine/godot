@@ -14,8 +14,7 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
-}
-global_shader_uniforms;
+} global_shader_uniforms;
 
 /* Set 1: FRAME AND PARTICLE DATA */
 
@@ -86,8 +85,7 @@ struct FrameParams {
 
 layout(set = 1, binding = 0, std430) restrict buffer FrameHistory {
 	FrameParams data[];
-}
-frame_history;
+} frame_history;
 
 #define PARTICLE_FLAG_ACTIVE uint(1)
 #define PARTICLE_FLAG_STARTED uint(2)
@@ -123,8 +121,7 @@ struct ParticleData {
 
 layout(set = 1, binding = 1, std430) restrict buffer Particles {
 	ParticleData data[];
-}
-particles;
+} particles;
 
 #define EMISSION_FLAG_HAS_POSITION 1
 #define EMISSION_FLAG_HAS_ROTATION_SCALE 2
@@ -146,8 +143,7 @@ layout(set = 1, binding = 2, std430) restrict buffer SourceEmission {
 	uint pad1;
 	uint pad2;
 	ParticleEmission data[];
-}
-src_particles;
+} src_particles;
 
 layout(set = 1, binding = 3, std430) restrict buffer DestEmission {
 	int particle_count;
@@ -155,8 +151,7 @@ layout(set = 1, binding = 3, std430) restrict buffer DestEmission {
 	uint pad1;
 	uint pad2;
 	ParticleEmission data[];
-}
-dst_particles;
+} dst_particles;
 
 /* SET 2: COLLIDER/ATTRACTOR TEXTURES */
 
@@ -168,11 +163,9 @@ layout(set = 2, binding = 1) uniform texture2D height_field_texture;
 /* SET 3: MATERIAL */
 
 #ifdef MATERIAL_UNIFORMS_USED
-/* clang-format off */
 layout(set = 3, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
-/* clang-format on */
 #endif
 
 layout(push_constant, std430) uniform Params {
@@ -184,8 +177,7 @@ layout(push_constant, std430) uniform Params {
 	bool sub_emitter_mode;
 	bool can_emit;
 	bool trail_pass;
-}
-params;
+} params;
 
 uint hash(uint x) {
 	x = ((x >> uint(16)) ^ x) * uint(0x45d9f3b);

@@ -26,8 +26,7 @@ layout(push_constant, std140) uniform Pos {
 	float output_max_value;
 	uint pad1;
 	uint pad2;
-}
-data;
+} data;
 
 layout(location = 0) out vec2 uv;
 
@@ -72,8 +71,7 @@ layout(push_constant, std140) uniform Pos {
 	float output_max_value;
 	uint pad1;
 	uint pad2;
-}
-data;
+} data;
 
 layout(location = 0) in vec2 uv;
 

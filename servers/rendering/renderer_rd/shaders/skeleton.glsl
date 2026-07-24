@@ -60,8 +60,7 @@ layout(push_constant, std430) uniform Params {
 
 	vec2 inverse_transform_y;
 	vec2 inverse_transform_offset;
-}
-params;
+} params;
 
 vec2 uint_to_vec2(uint base) {
 	uvec2 decode = (uvec2(base) >> uvec2(0, 16)) & uvec2(0xFFFF, 0xFFFF);

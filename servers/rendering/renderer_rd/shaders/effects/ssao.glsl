@@ -73,16 +73,14 @@ layout(set = 0, binding = 0) uniform sampler2DArray source_depth_mipmaps;
 layout(rgba8, set = 0, binding = 1) uniform restrict readonly image2D source_normal;
 layout(set = 0, binding = 2) uniform Constants { //get into a lower set
 	vec4 rotation_matrices[20];
-}
-constants;
+} constants;
 
 #ifdef ADAPTIVE
 layout(rg8, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssao;
 layout(set = 1, binding = 1) uniform sampler2D source_importance;
 layout(set = 1, binding = 2, std430) buffer Counter {
 	uint sum;
-}
-counter;
+} counter;
 #endif
 
 layout(rg8, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
@@ -120,8 +118,7 @@ layout(push_constant, std430) uniform Params {
 
 	ivec2 pass_coord_offset;
 	vec2 pass_uv_offset;
-}
-params;
+} params;
 
 // packing/unpacking for edges; 2 bits per edge mean 4 gradient values (0, 0.33, 0.66, 1) for smoother transitions!
 float pack_edges(vec4 p_edgesLRTB) {

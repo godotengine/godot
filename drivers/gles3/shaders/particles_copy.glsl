@@ -13,6 +13,7 @@ MODE_3D = false
 
 // ParticleData
 layout(location = 0) in highp vec4 color;
+/* clang-format on */
 layout(location = 1) in highp vec4 velocity_flags;
 layout(location = 2) in highp vec4 custom;
 layout(location = 3) in highp vec4 xform_1;
@@ -21,7 +22,6 @@ layout(location = 4) in highp vec4 xform_2;
 layout(location = 5) in highp vec4 xform_3;
 #endif
 
-/* clang-format on */
 out highp vec4 out_xform_1; //tfb:
 out highp vec4 out_xform_2; //tfb:
 #ifdef MODE_3D
@@ -184,9 +184,7 @@ void main() {
 #endif
 }
 
-/* clang-format off */
 #[fragment]
 
 void main() {
 }
-/* clang-format on */

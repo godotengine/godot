@@ -23,8 +23,9 @@ CONVERT_LINEAR_TO_SRGB = false
 
 layout(location = 0) in vec2 vertex_attrib;
 
-out vec2 uv_interp;
 /* clang-format on */
+
+out vec2 uv_interp;
 
 #if defined(USE_COPY_SECTION) || defined(MODE_GAUSSIAN_BLUR)
 // Defined in 0-1 coords.
@@ -46,11 +47,9 @@ void main() {
 #endif
 }
 
-/* clang-format off */
 #[fragment]
 
 in vec2 uv_interp;
-/* clang-format on */
 #if defined(USE_TEXTURE_3D) || defined(USE_TEXTURE_2D_ARRAY)
 uniform float layer;
 uniform float lod;

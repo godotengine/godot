@@ -13,8 +13,7 @@ layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
 	float curve;
 	uint pad;
-}
-params;
+} params;
 
 #define HALF_PI 1.5707963267948966
 

@@ -32,8 +32,7 @@ layout(push_constant, std430) uniform Params {
 	bool orthogonal;
 	float radius_sq;
 	uvec2 pad;
-}
-params;
+} params;
 
 layout(set = 0, binding = 0) uniform sampler2D source_depth;
 

@@ -15,9 +15,9 @@ USE_HALF_RES_PASS = false
 #[vertex]
 
 layout(location = 0) in vec2 vertex_attrib;
+/* clang-format on */
 
 out vec2 uv_interp;
-/* clang-format on */
 
 void main() {
 #ifdef USE_INVERTED_Y
@@ -29,7 +29,6 @@ void main() {
 	gl_Position = vec4(uv_interp, -1.0, 1.0);
 }
 
-/* clang-format off */
 #[fragment]
 
 #define M_PI 3.14159265359
@@ -37,8 +36,6 @@ void main() {
 #include "tonemap_inc.glsl"
 
 in vec2 uv_interp;
-
-/* clang-format on */
 
 uniform samplerCube radiance; //texunit:-2
 #ifdef USE_CUBEMAP_PASS
@@ -67,8 +64,7 @@ struct DirectionalLightData {
 
 layout(std140) uniform DirectionalLights { //ubo:4
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-}
-directional_lights;
+} directional_lights;
 
 #define DIRECTIONAL_LIGHT_ENABLED uint(1 << 0)
 
@@ -88,16 +84,11 @@ uniform float fog_density;
 uniform float fog_sky_affect;
 uniform uint directional_light_count;
 
-/* clang-format off */
-
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{ //ubo:3
-
+layout(std140) uniform MaterialUniforms { //ubo:3
 #MATERIAL_UNIFORMS
-
 };
 #endif
-/* clang-format on */
 #GLOBALS
 
 #ifdef USE_CUBEMAP_PASS
@@ -123,8 +114,7 @@ layout(std140) uniform MultiviewData { // ubo:12
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
-}
-multiview_data;
+} multiview_data;
 #endif
 
 layout(location = 0) out vec4 frag_color;

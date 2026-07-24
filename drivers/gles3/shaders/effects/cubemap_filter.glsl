@@ -18,15 +18,11 @@ void main() {
 	gl_Position = vec4(uv_interp, 0.0, 1.0);
 }
 
-/* clang-format off */
 #[fragment]
-
 
 #define M_PI 3.14159265359
 
 uniform samplerCube source_cube; //texunit:0
-
-/* clang-format on */
 
 uniform int face_id;
 

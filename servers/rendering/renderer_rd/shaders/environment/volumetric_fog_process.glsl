@@ -14,11 +14,10 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #endif
 
+#include "../area_lights_inc.glsl"
 #include "../cluster_data_inc.glsl"
 #include "../light_data_inc.glsl"
 #include "../oct_inc.glsl"
-
-#include "../area_lights_inc.glsl"
 
 #define M_TAU 6.28318530718
 #define M_PI 3.14159265359
@@ -30,23 +29,19 @@ layout(set = 0, binding = 2) uniform texture2D directional_shadow_atlas;
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
-}
-omni_lights;
+} omni_lights;
 
 layout(set = 0, binding = 4, std430) restrict readonly buffer SpotLights {
 	LightData data[];
-}
-spot_lights;
+} spot_lights;
 
 layout(set = 0, binding = 5, std430) restrict readonly buffer AreaLights {
 	LightData data[];
-}
-area_lights;
+} area_lights;
 
 layout(set = 0, binding = 6, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
-}
-directional_lights;
+} directional_lights;
 
 layout(set = 0, binding = 7, std430) buffer restrict readonly ClusterBuffer {
 	uint data[];
@@ -95,8 +90,7 @@ struct VoxelGIData {
 
 layout(set = 0, binding = 12, std140) uniform VoxelGIs {
 	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
-}
-voxel_gi_instances;
+} voxel_gi_instances;
 
 layout(set = 0, binding = 13) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
@@ -141,8 +135,7 @@ layout(set = 1, binding = 0, std140) uniform SDFGI {
 	uint pad5;
 
 	SDFVoxelGICascadeData cascades[SDFGI_MAX_CASCADES];
-}
-sdfgi;
+} sdfgi;
 
 layout(set = 1, binding = 1) uniform texture2DArray sdfgi_ambient_texture;
 
@@ -192,8 +185,7 @@ layout(set = 0, binding = 15, std140) uniform Params {
 	mat4 to_prev_view;
 
 	mat3 radiance_inverse_xform;
-}
-params;
+} params;
 #ifndef MODE_COPY
 layout(set = 0, binding = 16) uniform texture3D prev_density_texture;
 

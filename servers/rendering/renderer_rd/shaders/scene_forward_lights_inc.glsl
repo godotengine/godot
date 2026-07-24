@@ -280,7 +280,6 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 			half D = D_GGX(cNdotH, alpha_ggx, N, H);
 			half G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif // LIGHT_ANISOTROPY_USED
-	   // F
 #if !defined(LIGHT_CLEARCOAT_USED)
 			half cLdotH5 = SchlickFresnel(cLdotH);
 #endif
