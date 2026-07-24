@@ -36,6 +36,7 @@
 class CheckBox;
 class CheckButton;
 class EditorSelection;
+class EditorUndoRedoManager;
 class FilterLineEdit;
 class Label;
 class TextureRect;
@@ -57,6 +58,7 @@ class SceneTreeEditor : public Control {
 		BUTTON_GROUPS = 7,
 		BUTTON_PIN = 8,
 		BUTTON_UNIQUE = 9,
+		BUTTON_LOCK_MULTIPLE = 10,
 	};
 
 	struct CachedNode {
@@ -234,6 +236,9 @@ class SceneTreeEditor : public Control {
 
 	void _update_ask_before_revoking_unique_name();
 	void _revoke_unique_name();
+
+	void _lock_multiple_undo(Node *p_node, EditorUndoRedoManager *undo_redo, bool p_lock);
+	void _check_convert_parent_to_single_lock(Node *p_node, EditorUndoRedoManager *undo_redo, Node *p_exclude_child = nullptr);
 
 public:
 	// Public for use as signal callback.

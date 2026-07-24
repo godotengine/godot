@@ -1018,6 +1018,54 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 			undo_redo->add_undo_method(this, "update_transform_gizmo");
 			undo_redo->commit_action();
 		} break;
+		case MENU_LOCK_MULTIPLE_SELECTED: {
+			undo_redo->create_action(TTR("Lock Multiple Selected"));
+
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+
+			for (Node *E : selection) {
+				Node3D *spatial = Object::cast_to<Node3D>(E);
+				if (!spatial || !spatial->is_inside_tree()) {
+					continue;
+				}
+
+				undo_redo->add_do_method(spatial, "set_meta", "_edit_lock_multiple_", true);
+				undo_redo->add_undo_method(spatial, "remove_meta", "_edit_lock_multiple_");
+				_lock_node3d_and_children(spatial, undo_redo, true);
+				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
+			}
+
+			undo_redo->add_do_method(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->add_do_method(this, "update_transform_gizmo");
+			undo_redo->add_undo_method(this, "update_transform_gizmo");
+			undo_redo->commit_action();
+		} break;
+		case MENU_UNLOCK_MULTIPLE_SELECTED: {
+			undo_redo->create_action(TTR("Unlock Multiple Selected"));
+
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+
+			for (Node *E : selection) {
+				Node3D *spatial = Object::cast_to<Node3D>(E);
+				if (!spatial || !spatial->is_inside_tree()) {
+					continue;
+				}
+
+				undo_redo->add_do_method(spatial, "remove_meta", "_edit_lock_multiple_");
+				undo_redo->add_undo_method(spatial, "set_meta", "_edit_lock_multiple_", true);
+				_lock_node3d_and_children(spatial, undo_redo, false);
+				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
+			}
+
+			undo_redo->add_do_method(this, "_refresh_menu_icons");
+			undo_redo->add_undo_method(this, "_refresh_menu_icons");
+			undo_redo->add_do_method(this, "update_transform_gizmo");
+			undo_redo->add_undo_method(this, "update_transform_gizmo");
+			undo_redo->commit_action();
+		} break;
 		case MENU_GROUP_SELECTED: {
 			undo_redo->create_action(TTR("Group Selected"));
 
@@ -2081,8 +2129,29 @@ void Node3DEditor::refresh_dirty_gizmos() {
 	gizmos_dirty = false;
 }
 
+void Node3DEditor::_lock_node3d_and_children(Node *p_node, EditorUndoRedoManager *undo_redo, bool p_lock) {
+	if (p_lock) {
+		undo_redo->add_do_method(p_node, "set_meta", "_edit_lock_", true);
+		undo_redo->add_undo_method(p_node, "remove_meta", "_edit_lock_");
+	} else {
+		undo_redo->add_do_method(p_node, "remove_meta", "_edit_lock_");
+		undo_redo->add_undo_method(p_node, "set_meta", "_edit_lock_", true);
+	}
+	for (int i = 0; i < p_node->get_child_count(false); i++) {
+		Node *child = p_node->get_child(i, false);
+		if (p_lock) {
+			undo_redo->add_do_method(child, "set_meta", "_edit_lock_", true);
+			undo_redo->add_undo_method(child, "remove_meta", "_edit_lock_");
+		} else {
+			undo_redo->add_do_method(child, "remove_meta", "_edit_lock_");
+			undo_redo->add_undo_method(child, "set_meta", "_edit_lock_", true);
+		}
+	}
+}
+
 void Node3DEditor::_refresh_menu_icons() {
 	bool all_locked = true;
+	bool all_locked_multiple = true;
 	bool all_grouped = true;
 	bool has_node3d_item = false;
 
@@ -2090,6 +2159,7 @@ void Node3DEditor::_refresh_menu_icons() {
 
 	if (selection.is_empty()) {
 		all_locked = false;
+		all_locked_multiple = false;
 		all_grouped = false;
 	} else {
 		for (Node *E : selection) {
@@ -2098,24 +2168,33 @@ void Node3DEditor::_refresh_menu_icons() {
 				if (all_locked && !node->has_meta("_edit_lock_")) {
 					all_locked = false;
 				}
+				if (all_locked_multiple && !node->has_meta("_edit_lock_multiple_")) {
+					all_locked_multiple = false;
+				}
 				if (all_grouped && !node->has_meta("_edit_group_")) {
 					all_grouped = false;
 				}
 				has_node3d_item = true;
 			}
-			if (!all_locked && !all_grouped) {
+			if (!all_locked && !all_locked_multiple && !all_grouped) {
 				break;
 			}
 		}
 	}
 
 	all_locked = all_locked && has_node3d_item;
+	all_locked_multiple = all_locked_multiple && has_node3d_item;
 	all_grouped = all_grouped && has_node3d_item;
 
 	tool_button[TOOL_LOCK_SELECTED]->set_visible(!all_locked);
 	tool_button[TOOL_LOCK_SELECTED]->set_disabled(!has_node3d_item);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_visible(all_locked);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_disabled(!has_node3d_item);
+
+	tool_button[TOOL_LOCK_MULTIPLE_SELECTED]->set_visible(!all_locked_multiple);
+	tool_button[TOOL_LOCK_MULTIPLE_SELECTED]->set_disabled(!has_node3d_item);
+	tool_button[TOOL_UNLOCK_MULTIPLE_SELECTED]->set_visible(all_locked_multiple);
+	tool_button[TOOL_UNLOCK_MULTIPLE_SELECTED]->set_disabled(!has_node3d_item);
 
 	tool_button[TOOL_GROUP_SELECTED]->set_visible(!all_grouped);
 	tool_button[TOOL_GROUP_SELECTED]->set_disabled(!has_node3d_item);
@@ -2384,6 +2463,8 @@ void Node3DEditor::_update_theme() {
 	tool_button[TOOL_MODE_LIST_SELECT]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
 	tool_button[TOOL_LOCK_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Lock")));
 	tool_button[TOOL_UNLOCK_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Unlock")));
+	tool_button[TOOL_LOCK_MULTIPLE_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("LockMultiple")));
+	tool_button[TOOL_UNLOCK_MULTIPLE_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("UnLockMultiple")));
 	tool_button[TOOL_GROUP_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Group")));
 	tool_button[TOOL_UNGROUP_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Ungroup")));
 	tool_button[TOOL_RULER]->set_button_icon(get_editor_theme_icon(SNAME("Ruler")));
@@ -3322,6 +3403,22 @@ Node3DEditor::Node3DEditor() {
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_UNLOCK_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/unlock_selected_nodes"));
 	tool_button[TOOL_UNLOCK_SELECTED]->set_accessibility_name(TTRC("Unlock"));
+
+	tool_button[TOOL_LOCK_MULTIPLE_SELECTED] = memnew(Button);
+	main_menu_hbox->add_child(tool_button[TOOL_LOCK_MULTIPLE_SELECTED]);
+	tool_button[TOOL_LOCK_MULTIPLE_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_button[TOOL_LOCK_MULTIPLE_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_LOCK_MULTIPLE_SELECTED));
+	tool_button[TOOL_LOCK_MULTIPLE_SELECTED]->set_tooltip_text(TTRC("Lock selected node and its children, preventing selection and movement."));
+	tool_button[TOOL_LOCK_MULTIPLE_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/lock_multiple_selected_nodes"));
+	tool_button[TOOL_LOCK_MULTIPLE_SELECTED]->set_accessibility_name(TTRC("Lock Multiple"));
+
+	tool_button[TOOL_UNLOCK_MULTIPLE_SELECTED] = memnew(Button);
+	main_menu_hbox->add_child(tool_button[TOOL_UNLOCK_MULTIPLE_SELECTED]);
+	tool_button[TOOL_UNLOCK_MULTIPLE_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_button[TOOL_UNLOCK_MULTIPLE_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNLOCK_MULTIPLE_SELECTED));
+	tool_button[TOOL_UNLOCK_MULTIPLE_SELECTED]->set_tooltip_text(TTRC("Unlock selected node and its children, allowing selection and movement."));
+	tool_button[TOOL_UNLOCK_MULTIPLE_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/unlock_multiple_selected_nodes"));
+	tool_button[TOOL_UNLOCK_MULTIPLE_SELECTED]->set_accessibility_name(TTRC("Unlock Multiple"));
 
 	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);

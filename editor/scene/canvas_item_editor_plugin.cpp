@@ -3066,11 +3066,13 @@ void CanvasItemEditor::_update_cursor() {
 
 void CanvasItemEditor::_update_lock_and_group_button() {
 	bool all_locked = true;
+	bool all_locked_multiple = true;
 	bool all_group = true;
 	bool has_canvas_item = false;
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 	if (selection.is_empty()) {
 		all_locked = false;
+		all_locked_multiple = false;
 		all_group = false;
 	} else {
 		for (Node *E : selection) {
@@ -3079,24 +3081,32 @@ void CanvasItemEditor::_update_lock_and_group_button() {
 				if (all_locked && !item->has_meta("_edit_lock_")) {
 					all_locked = false;
 				}
+				if (all_locked_multiple && !item->has_meta("_edit_lock_multiple_")) {
+					all_locked_multiple = false;
+				}
 				if (all_group && !item->has_meta("_edit_group_")) {
 					all_group = false;
 				}
 				has_canvas_item = true;
 			}
-			if (!all_locked && !all_group) {
+			if (!all_locked && !all_locked_multiple && !all_group) {
 				break;
 			}
 		}
 	}
 
 	all_locked = all_locked && has_canvas_item;
+	all_locked_multiple = all_locked_multiple && has_canvas_item;
 	all_group = all_group && has_canvas_item;
 
 	lock_button->set_visible(!all_locked);
 	lock_button->set_disabled(!has_canvas_item);
 	unlock_button->set_visible(all_locked);
 	unlock_button->set_disabled(!has_canvas_item);
+	lock_multiple_button->set_visible(!all_locked_multiple);
+	lock_multiple_button->set_disabled(!has_canvas_item);
+	unlock_multiple_button->set_visible(all_locked_multiple);
+	unlock_multiple_button->set_disabled(!has_canvas_item);
 	group_button->set_visible(!all_group);
 	group_button->set_disabled(!has_canvas_item);
 	ungroup_button->set_visible(all_group);
@@ -4434,6 +4444,8 @@ void CanvasItemEditor::_update_editor_settings() {
 	anchor_handle = get_editor_theme_icon(SNAME("EditorControlAnchor"));
 	lock_button->set_button_icon(get_editor_theme_icon(SNAME("Lock")));
 	unlock_button->set_button_icon(get_editor_theme_icon(SNAME("Unlock")));
+	lock_multiple_button->set_button_icon(get_editor_theme_icon(SNAME("LockMultiple")));
+	unlock_multiple_button->set_button_icon(get_editor_theme_icon(SNAME("UnLockMultiple")));
 	group_button->set_button_icon(get_editor_theme_icon(SNAME("Group")));
 	ungroup_button->set_button_icon(get_editor_theme_icon(SNAME("Ungroup")));
 	key_loc_button->set_button_icon(get_editor_theme_icon(SNAME("KeyPosition")));
@@ -4649,6 +4661,26 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 	Array selection = editor_selection->get_selected_nodes();
 	if (selection.size() != 1 || Object::cast_to<Node>(selection[0]) != p_canvas_item) {
 		_reset_drag();
+	}
+}
+
+void CanvasItemEditor::_lock_canvas_item_and_children(Node *p_node, EditorUndoRedoManager *undo_redo, bool p_lock) {
+	if (p_lock) {
+		undo_redo->add_do_method(p_node, "set_meta", "_edit_lock_", true);
+		undo_redo->add_undo_method(p_node, "remove_meta", "_edit_lock_");
+	} else {
+		undo_redo->add_do_method(p_node, "remove_meta", "_edit_lock_");
+		undo_redo->add_undo_method(p_node, "set_meta", "_edit_lock_", true);
+	}
+	for (int i = 0; i < p_node->get_child_count(false); i++) {
+		Node *child = p_node->get_child(i, false);
+		if (p_lock) {
+			undo_redo->add_do_method(child, "set_meta", "_edit_lock_", true);
+			undo_redo->add_undo_method(child, "remove_meta", "_edit_lock_");
+		} else {
+			undo_redo->add_do_method(child, "remove_meta", "_edit_lock_");
+			undo_redo->add_undo_method(child, "set_meta", "_edit_lock_", true);
+		}
 	}
 }
 
@@ -5067,6 +5099,46 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 				undo_redo->add_do_method(ci, "remove_meta", "_edit_lock_");
 				undo_redo->add_undo_method(ci, "set_meta", "_edit_lock_", true);
+				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
+			}
+			undo_redo->add_do_method(viewport, "queue_redraw");
+			undo_redo->add_undo_method(viewport, "queue_redraw");
+			undo_redo->commit_action();
+		} break;
+		case LOCK_MULTIPLE_SELECTED: {
+			undo_redo->create_action(TTR("Lock Multiple Selected"));
+
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			for (Node *E : selection) {
+				CanvasItem *ci = Object::cast_to<CanvasItem>(E);
+				if (!ci || !ci->is_inside_tree()) {
+					continue;
+				}
+
+				undo_redo->add_do_method(ci, "set_meta", "_edit_lock_multiple_", true);
+				undo_redo->add_undo_method(ci, "remove_meta", "_edit_lock_multiple_");
+				_lock_canvas_item_and_children(ci, undo_redo, true);
+				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
+			}
+			undo_redo->add_do_method(viewport, "queue_redraw");
+			undo_redo->add_undo_method(viewport, "queue_redraw");
+			undo_redo->commit_action();
+		} break;
+		case UNLOCK_MULTIPLE_SELECTED: {
+			undo_redo->create_action(TTR("Unlock Multiple Selected"));
+
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			for (Node *E : selection) {
+				CanvasItem *ci = Object::cast_to<CanvasItem>(E);
+				if (!ci || !ci->is_inside_tree()) {
+					continue;
+				}
+
+				undo_redo->add_do_method(ci, "remove_meta", "_edit_lock_multiple_");
+				undo_redo->add_undo_method(ci, "set_meta", "_edit_lock_multiple_", true);
+				_lock_canvas_item_and_children(ci, undo_redo, false);
 				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
 				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
 			}
@@ -6002,6 +6074,22 @@ CanvasItemEditor::CanvasItemEditor() {
 	unlock_button->set_tooltip_text(TTRC("Unlock selected node, allowing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	unlock_button->set_shortcut(ED_GET_SHORTCUT("editor/unlock_selected_nodes"));
+
+	lock_multiple_button = memnew(Button);
+	lock_multiple_button->set_accessibility_name(TTRC("Lock Multiple"));
+	lock_multiple_button->set_theme_type_variation(SceneStringName(FlatButton));
+	main_menu_hbox->add_child(lock_multiple_button);
+	lock_multiple_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(LOCK_MULTIPLE_SELECTED));
+	lock_multiple_button->set_tooltip_text(TTRC("Lock selected node and its children, preventing selection and movement."));
+	lock_multiple_button->set_shortcut(ED_GET_SHORTCUT("editor/lock_multiple_selected_nodes"));
+
+	unlock_multiple_button = memnew(Button);
+	unlock_multiple_button->set_accessibility_name(TTRC("Unlock Multiple"));
+	unlock_multiple_button->set_theme_type_variation(SceneStringName(FlatButton));
+	main_menu_hbox->add_child(unlock_multiple_button);
+	unlock_multiple_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(UNLOCK_MULTIPLE_SELECTED));
+	unlock_multiple_button->set_tooltip_text(TTRC("Unlock selected node and its children, allowing selection and movement."));
+	unlock_multiple_button->set_shortcut(ED_GET_SHORTCUT("editor/unlock_multiple_selected_nodes"));
 
 	group_button = memnew(Button);
 	group_button->set_accessibility_name(TTRC("Group"));
