@@ -195,6 +195,10 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_MOVE_UP);
 	} else if (ED_IS_SHORTCUT("scene_tree/move_down", p_event)) {
 		_tool_selected(TOOL_MOVE_DOWN);
+	} else if (ED_IS_SHORTCUT("scene_tree/move_left", p_event)) {
+		_tool_selected(TOOL_MOVE_LEFT);
+	} else if (ED_IS_SHORTCUT("scene_tree/move_right", p_event)) {
+		_tool_selected(TOOL_MOVE_RIGHT);
 	} else if (ED_IS_SHORTCUT("scene_tree/paste_node", p_event)) {
 		_tool_selected(TOOL_PASTE);
 	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_sibling", p_event)) {
@@ -924,6 +928,98 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			NodePath np = selection.front()->get()->get_path();
 			TreeItem *item = scene_tree->get_scene_tree()->get_item_with_metadata(np);
 			callable_mp(scene_tree->get_scene_tree(), &Tree::scroll_to_item).call_deferred(item, false);
+		} break;
+		case TOOL_MOVE_LEFT:
+		case TOOL_MOVE_RIGHT: {
+			if (!profile_allow_editing) {
+				break;
+			}
+
+			if (!scene_tree->get_selected()) {
+				break;
+			}
+
+			if (scene_tree->get_selected() == edited_scene) {
+				current_option = -1;
+				accept->set_text(TTR("This operation can't be done on the tree root."));
+				accept->popup_centered();
+				break;
+			}
+
+			List<Node *> selection = editor_selection->get_full_selected_node_list();
+			if (!_validate_no_foreign_selected(selection)) {
+				break;
+			}
+
+			bool MOVING_RIGHT = (p_tool == TOOL_MOVE_RIGHT);
+			bool MOVING_LEFT = !MOVING_RIGHT;
+
+			selection.sort_custom<Node::Comparator>(); // sort by index
+			if (MOVING_RIGHT) {
+				selection.reverse();
+			}
+
+			bool is_nowhere_to_move = false;
+			for (Node *E : selection) {
+				// `move_child` + `get_index` doesn't really work for internal nodes.
+				ERR_FAIL_COND_MSG(E->is_internal(), "Trying to move internal node, this is not supported.");
+
+				if (MOVING_RIGHT && (E->get_index() == 0)) {
+					is_nowhere_to_move = true;
+					break;
+				}
+			}
+			if (is_nowhere_to_move) {
+				break;
+			}
+
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			if (selection.size() == 1) {
+				undo_redo->create_action(TTR("Change Parent of Node"));
+			}
+			if (selection.size() > 1) {
+				undo_redo->create_action(TTR("Change Parent of Nodes"));
+			}
+
+			Node *new_parent;
+			if (MOVING_LEFT) {
+				new_parent = selection.front()->get()->get_parent()->get_parent();
+			} else {
+				int new_parent_index = selection.front()->get()->get_index() - 1;
+				new_parent = selection.front()->get()->get_parent()->get_child(new_parent_index, false);
+			}
+			if (!new_parent) {
+				break;
+			}
+
+			undo_redo->add_do_method(editor_selection, "clear");
+			undo_redo->add_undo_method(editor_selection, "clear");
+			List<Node *> full_selection = editor_selection->get_full_selected_node_list();
+			for (Node *E : full_selection) {
+				undo_redo->add_do_method(editor_selection, "add_node", E);
+				undo_redo->add_undo_method(editor_selection, "add_node", E);
+			}
+
+			int new_index_for_moving_left = selection.front()->get()->get_parent()->get_index() + 1;
+			for (List<Node *>::Element *top_E = selection.front(); top_E; top_E = top_E->next()) {
+				Node *cur_node = top_E->get();
+				Node *original_parent = cur_node->get_parent();
+				int old_index = cur_node->get_index(false);
+
+				ERR_FAIL_NULL(cur_node->get_parent());
+
+				undo_redo->add_do_method(cur_node, "reparent", new_parent);
+				if (MOVING_LEFT) {
+					undo_redo->add_do_method(new_parent, "move_child", cur_node, new_index_for_moving_left);
+					new_index_for_moving_left += 1;
+				}
+
+				undo_redo->add_do_method(editor_selection, "add_node", cur_node);
+				undo_redo->add_undo_method(cur_node, "reparent", original_parent);
+				undo_redo->add_undo_method(original_parent, "move_child", cur_node, old_index);
+			}
+
+			undo_redo->commit_action();
 		} break;
 		case TOOL_DUPLICATE: {
 			if (!profile_allow_editing) {
@@ -4043,6 +4139,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			BEGIN_SECTION()
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveUp")), ED_GET_SHORTCUT("scene_tree/move_up"), TOOL_MOVE_UP);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveDown")), ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveLeft")), ED_GET_SHORTCUT("scene_tree/move_left"), TOOL_MOVE_LEFT);
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveRight")), ED_GET_SHORTCUT("scene_tree/move_right"), TOOL_MOVE_RIGHT);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reparent")), ED_GET_SHORTCUT("scene_tree/reparent"), TOOL_REPARENT);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ReparentToNewNode")), ED_GET_SHORTCUT("scene_tree/reparent_to_new_node"), TOOL_REPARENT_TO_NEW_NODE);
 			if (selection.size() == 1) {
@@ -4998,6 +5096,8 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/attach_script", TTRC("Attach Script..."));
 	ED_SHORTCUT("scene_tree/extend_script", TTRC("Extend Script..."));
 	ED_SHORTCUT("scene_tree/detach_script", TTRC("Detach Script"));
+	ED_SHORTCUT("scene_tree/move_left", TTRC("Move Left"), KeyModifierMask::CMD_OR_CTRL | Key::J);
+	ED_SHORTCUT("scene_tree/move_right", TTRC("Move Right"), KeyModifierMask::CMD_OR_CTRL | Key::K);
 	ED_SHORTCUT("scene_tree/move_up", TTRC("Move Up"), KeyModifierMask::CMD_OR_CTRL | Key::UP);
 	ED_SHORTCUT("scene_tree/move_down", TTRC("Move Down"), KeyModifierMask::CMD_OR_CTRL | Key::DOWN);
 	ED_SHORTCUT("scene_tree/duplicate", TTRC("Duplicate"), KeyModifierMask::CMD_OR_CTRL | Key::D);
