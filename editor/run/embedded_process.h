@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/config/engine.h"
 #include "core/os/process_id.h"
 #include "scene/gui/control.h"
 
@@ -77,6 +78,8 @@ public:
 	Rect2i get_screen_embedded_window_rect() const;
 	int get_margin_size(Side p_side) const;
 	Size2 get_margins_size() const;
+
+	Engine::SafeAreaInsets get_adjusted_safe_area_insets(Engine::SafeAreaInsets p_insets) const;
 
 	EmbeddedProcessBase();
 	virtual ~EmbeddedProcessBase();

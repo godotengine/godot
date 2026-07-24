@@ -47,6 +47,7 @@
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
+#include "core/variant/typed_dictionary.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_paths.h"
@@ -1147,6 +1148,57 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Platform
 	_initial_set("run/platforms/linuxbsd/prefer_wayland", false, true);
 	set_restart_if_changed("run/platforms/linuxbsd/prefer_wayland", true);
+
+	// Resolution presets
+	TypedDictionary<String, Size2i> default_resolutions;
+	default_resolutions[String("iPhone 16")] = Size2i(1179, 2556);
+	default_resolutions[String("iPhone 16 Plus")] = Size2i(1290, 2796);
+	default_resolutions[String("iPhone 16 Pro")] = Size2i(1206, 2622);
+	default_resolutions[String("iPhone 16 Pro Max")] = Size2i(1320, 2868);
+	default_resolutions[String("iPhone 17")] = Size2i(1206, 2622);
+	default_resolutions[String("iPhone 17 Pro")] = Size2i(1206, 2622);
+	default_resolutions[String("iPhone 17 Pro Max")] = Size2i(1320, 2868);
+	default_resolutions[String("iPhone Air")] = Size2i(1260, 2736);
+	default_resolutions[String("iPad Air 11")] = Size2i(1640, 2360);
+	default_resolutions[String("iPad Air 13")] = Size2i(2048, 2732);
+	default_resolutions[String("iPad Pro 11")] = Size2i(1668, 2420);
+	default_resolutions[String("iPad Pro 13")] = Size2i(2064, 2752);
+	default_resolutions[String("Samsung Galaxy S26")] = Size2i(1080, 2340);
+	default_resolutions[String("Samsung Galaxy S26+")] = Size2i(1440, 3120);
+	default_resolutions[String("Samsung Galaxy S26 Ultra")] = Size2i(1440, 3120);
+	default_resolutions[String("Google Pixel 9")] = Size2i(1080, 2424);
+	default_resolutions[String("Google Pixel 9 Pro")] = Size2i(1280, 2856);
+	default_resolutions[String("Google Pixel 9 Pro XL")] = Size2i(1344, 2992);
+	default_resolutions[String("OnePlus 13")] = Size2i(1440, 3168);
+	EDITOR_SETTING(Variant::DICTIONARY, PROPERTY_HINT_DICTIONARY_TYPE, "run/resolution_presets/resolutions", default_resolutions, "String;Vector2i");
+
+	// Safe area
+	TypedDictionary<String, PackedInt32Array> default_safe_areas;
+	default_safe_areas[String("iPhone 16.portrait")] = PackedInt32Array({ 0, 177, 0, 102 });
+	default_safe_areas[String("iPhone 16.landscape")] = PackedInt32Array({ 177, 0, 177, 63 });
+	default_safe_areas[String("iPhone 16 Plus.portrait")] = PackedInt32Array({ 0, 177, 0, 102 });
+	default_safe_areas[String("iPhone 16 Plus.landscape")] = PackedInt32Array({ 177, 0, 177, 63 });
+	default_safe_areas[String("iPhone 16 Pro.portrait")] = PackedInt32Array({ 0, 186, 0, 102 });
+	default_safe_areas[String("iPhone 16 Pro.landscape")] = PackedInt32Array({ 186, 0, 186, 63 });
+	default_safe_areas[String("iPhone 16 Pro Max.portrait")] = PackedInt32Array({ 0, 186, 0, 102 });
+	default_safe_areas[String("iPhone 16 Pro Max.landscape")] = PackedInt32Array({ 186, 0, 186, 63 });
+	default_safe_areas[String("iPhone 17.portrait")] = PackedInt32Array({ 0, 186, 0, 102 });
+	default_safe_areas[String("iPhone 17.landscape")] = PackedInt32Array({ 186, 60, 186, 60 });
+	default_safe_areas[String("iPhone 17 Pro.portrait")] = PackedInt32Array({ 0, 186, 0, 102 });
+	default_safe_areas[String("iPhone 17 Pro.landscape")] = PackedInt32Array({ 186, 60, 186, 60 });
+	default_safe_areas[String("iPhone 17 Pro Max.portrait")] = PackedInt32Array({ 0, 186, 0, 102 });
+	default_safe_areas[String("iPhone 17 Pro Max.landscape")] = PackedInt32Array({ 186, 60, 186, 60 });
+	default_safe_areas[String("iPhone Air.portrait")] = PackedInt32Array({ 0, 204, 0, 102 });
+	default_safe_areas[String("iPhone Air.landscape")] = PackedInt32Array({ 204, 60, 204, 87 });
+	default_safe_areas[String("iPad Air 11.portrait")] = PackedInt32Array({ 0, 48, 0, 40 });
+	default_safe_areas[String("iPad Air 11.landscape")] = PackedInt32Array({ 0, 48, 0, 40 });
+	default_safe_areas[String("iPad Air 13.portrait")] = PackedInt32Array({ 0, 48, 0, 40 });
+	default_safe_areas[String("iPad Air 13.landscape")] = PackedInt32Array({ 0, 48, 0, 40 });
+	default_safe_areas[String("iPad Pro 11.portrait")] = PackedInt32Array({ 0, 48, 0, 40 });
+	default_safe_areas[String("iPad Pro 11.landscape")] = PackedInt32Array({ 0, 48, 0, 40 });
+	default_safe_areas[String("iPad Pro 13.portrait")] = PackedInt32Array({ 0, 48, 0, 40 });
+	default_safe_areas[String("iPad Pro 13.landscape")] = PackedInt32Array({ 0, 48, 0, 40 });
+	EDITOR_SETTING(Variant::DICTIONARY, PROPERTY_HINT_DICTIONARY_TYPE, "run/resolution_presets/safe_areas", default_safe_areas, "String;PackedInt32Array")
 
 	/* Network */
 
