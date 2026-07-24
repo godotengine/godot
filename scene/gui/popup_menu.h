@@ -251,6 +251,7 @@ class PopupMenu : public Popup {
 	void _update_search_bar_visibility();
 	void _items_focus_entered();
 	void _search_bar_text_changed(const String &p_new_text);
+	void _search_bar_text_submitted(const String &p_new_text);
 	void _search_bar_focus_entered();
 	void _filter_items(const String &p_query);
 
