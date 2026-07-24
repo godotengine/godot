@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_web.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_apple.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
-#if defined(WEB_ENABLED)
-#include "camera_web.h"
-#endif
+#include "servers/camera/camera_feed.h"
+#include "servers/camera/camera_server.h"
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
+#include "modules/camera/buffer_decoder.h"
 
-#if defined(LINUXBSD_ENABLED)
-	CameraServer::make_default<CameraLinux>();
-#endif
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraApple>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-#if defined(WEB_ENABLED)
-	CameraServer::make_default<CameraWeb>();
-#endif
-}
+// Shared camera data types, kept in a platform/web-level header so this
+// module does not need to include the full CameraDriverWeb driver header.
+#include "platform/web/camera_types_web.h"
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+class CameraDriverWeb;
+
+class CameraFeedWeb : public CameraFeed {
+	GDSOFTCLASS(CameraFeedWeb, CameraFeed);
+
+	String device_id;
+	BufferDecoder *buffer_decoder = nullptr;
+	int current_pixel_format = -1;
+	int current_frame_width = 0;
+	int current_frame_height = 0;
+	String detected_format_name;
+	bool synthesized_format = false;
+
+	static BufferDecoder *_create_buffer_decoder(CameraFeedWeb *p_feed, int p_pixel_format);
+	static String _get_format_name(int p_pixel_format);
+	Size2i _get_requested_size() const;
+	static void _on_get_pixel_data(void *p_context, const uint8_t *p_data, const int p_length, const int p_width, const int p_height, const int p_pixel_format, const int p_facing_mode, const char *p_error);
+	static void _on_denied_callback(void *p_context);
+	static void _on_formats_callback(void *p_context, const char *p_result);
+
+public:
+	virtual bool activate_feed() override;
+	virtual void deactivate_feed() override;
+	virtual bool set_format(int p_index, const Dictionary &p_parameters) override;
+	virtual Array get_formats() const override;
+	virtual FeedFormat get_format() const override;
+	String get_device_id() const { return device_id; }
+
+	CameraFeedWeb(const CameraInfo &info);
+	~CameraFeedWeb();
+};
+
+class CameraWeb : public CameraServer {
+	GDSOFTCLASS(CameraWeb, CameraServer);
+
+	CameraDriverWeb *driver = nullptr;
+	uint64_t request_id = 0;
+	void _cleanup();
+	void _update_feeds();
+	static void _on_get_cameras_callback(void *p_context, const Vector<CameraInfo> &p_camera_info);
+
+public:
+	virtual void set_monitoring_feeds(bool p_monitoring_feeds) override;
+
+	~CameraWeb();
+};
