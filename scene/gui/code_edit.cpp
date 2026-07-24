@@ -698,7 +698,11 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (symbol_tooltip_on_hover_enabled) {
 			symbol_tooltip_pos = get_line_column_at_pos(mpos, false, false);
 			symbol_tooltip_word = get_lookup_word(symbol_tooltip_pos.y, symbol_tooltip_pos.x);
-			symbol_tooltip_timer->start();
+			if (symbol_tooltip_word != last_symbol_tooltip_word) {
+				symbol_tooltip_cancelled = false;
+				last_symbol_tooltip_word = symbol_tooltip_word;
+				symbol_tooltip_timer->start();
+			}
 		}
 
 		bool scroll_hovered = code_completion_scroll_rect.has_point(mpos);
@@ -755,6 +759,11 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
+	if (!mac_keys && k->get_keycode() == Key::ESCAPE) {
+		symbol_tooltip_cancelled = true;
+		return;
+	}
+
 	/* If a modifier has been pressed, and nothing else, return. */
 	if (!k->is_pressed() || k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT || k->get_keycode() == Key::META || k->get_keycode() == Key::CAPSLOCK) {
 		return;
@@ -772,6 +781,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	if (code_completion_active) {
+		symbol_tooltip_cancelled = true;
 		if (k->is_action("ui_up", true)) {
 			if (code_completion_current_selected > 0) {
 				code_completion_current_selected--;
@@ -2816,11 +2826,21 @@ bool CodeEdit::is_symbol_tooltip_on_hover_enabled() const {
 void CodeEdit::_on_symbol_tooltip_timer_timeout() {
 	const int line = symbol_tooltip_pos.y;
 	const int column = symbol_tooltip_pos.x;
-	if (line >= 0 && column >= 0 && !symbol_tooltip_word.is_empty() && !Input::get_singleton()->is_anything_pressed()) {
+	if (line >= 0 && column >= 0 && !symbol_tooltip_word.is_empty() && !Input::get_singleton()->is_anything_pressed() && !symbol_tooltip_cancelled && !is_mouse_over_code_completion_popup()) {
 		emit_signal(SNAME("symbol_hovered"), symbol_tooltip_word, line, column);
+	} else if (Input::get_singleton()->is_any_key_pressed() && Input::get_singleton()->is_action_pressed(SNAME("ui_cancel"), true)) {
+		symbol_tooltip_cancelled = true;
 	}
 }
 
+bool CodeEdit::is_mouse_over_code_completion_popup() const {
+	if (!code_completion_active) {
+		return false;
+	}
+
+	Vector2 p_mouse_position = get_local_mouse_position();
+	return code_completion_rect.has_point(p_mouse_position);
+}
 /* Text manipulation */
 void CodeEdit::move_lines_up() {
 	begin_complex_operation();
