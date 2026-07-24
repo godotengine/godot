@@ -81,6 +81,7 @@
 #include <shlwapi.h>
 #include <shobjidl.h>
 #include <wbemcli.h>
+#include <windns.h> // For QWORD.
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
@@ -287,6 +288,37 @@ void DisplayServerWindows::_set_mouse_mode_impl(DisplayServerEnums::MouseMode p_
 			SetCapture(wd.hWnd);
 
 			_register_raw_input_devices(window_id);
+
+			const BitField<WinKeyModifierMask> &mods = _get_mods();
+
+			Ref<InputEventMouseMotion> mm;
+			mm.instantiate();
+
+			mm->set_window_id(window_id);
+			mm->set_pressure(windows[window_id].last_pressure);
+			mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+			mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+			mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+			mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
+			mm->set_button_mask(mouse_get_button_state());
+
+			mm->set_position(center);
+			mm->set_global_position(center);
+			mm->set_relative(Vector2(0, 0));
+			mm->set_relative_screen_position(Vector2(0, 0));
+			mm->set_velocity(Vector2(0, 0));
+			mm->set_screen_velocity(Vector2(0, 0));
+
+			mm->set_global_position(center);
+			mm->set_velocity(Vector2(0, 0));
+			mm->set_screen_velocity(Vector2(0, 0));
+
+			if (windows[window_id].window_focused || window_get_active_popup() == window_id) {
+				Input::get_singleton()->parse_input_event(mm);
+			}
+
+			old_x = center.x;
+			old_y = center.y;
 		}
 	} else {
 		// Mouse is free to move around (not captured or confined).
@@ -4221,6 +4253,174 @@ String DisplayServerWindows::keyboard_get_layout_name(int p_index) const {
 	return ret;
 }
 
+Vector2 DisplayServerWindows::_get_raw_mouse_motion(const RAWINPUT &p_raw, DisplayServerEnums::WindowID p_window_id) {
+	if (p_raw.data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
+		return Vector2(p_raw.data.mouse.lLastX, p_raw.data.mouse.lLastY);
+	} else if (p_raw.data.mouse.usFlags == MOUSE_MOVE_ABSOLUTE) {
+		int n_screen_width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+		int n_screen_height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+		int n_screen_left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+		int n_screen_top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+
+		Vector2 abs_pos = Vector2(
+				(double(p_raw.data.mouse.lLastX) - 65536.0 / (n_screen_width)) * n_screen_width / 65536.0 + n_screen_left,
+				(double(p_raw.data.mouse.lLastY) - 65536.0 / (n_screen_height)) * n_screen_height / 65536.0 + n_screen_top);
+
+		POINT coords; // Client coords.
+		coords.x = abs_pos.x;
+		coords.y = abs_pos.y;
+
+		ScreenToClient(windows[p_window_id].hWnd, &coords);
+
+		Vector2 relative(coords.x - old_x, coords.y - old_y);
+		old_x = coords.x;
+		old_y = coords.y;
+		return relative;
+	}
+	return Vector2();
+}
+
+void DisplayServerWindows::_process_raw_mouse_motion(const Vector2 &p_relative, bool p_left_button_down, DisplayServerEnums::WindowID p_window_id) {
+	if (p_relative == Vector2()) {
+		return;
+	}
+
+	Ref<InputEventMouseMotion> mm;
+	mm.instantiate();
+	const BitField<WinKeyModifierMask> &mods = _get_mods();
+
+	mm->set_window_id(p_window_id);
+	mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
+	mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
+	mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
+	mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
+
+	mm->set_pressure(p_left_button_down ? 1.0f : 0.0f);
+	mm->set_button_mask(mouse_get_button_state());
+
+	Point2i c(windows[p_window_id].width / 2, windows[p_window_id].height / 2);
+
+	// Centering just so it works as before.
+	POINT pos = { (int)c.x, (int)c.y };
+	ClientToScreen(windows[p_window_id].hWnd, &pos);
+	SetCursorPos(pos.x, pos.y);
+
+	mm->set_position(c);
+	mm->set_global_position(c);
+	mm->set_velocity(Vector2(0, 0));
+	mm->set_screen_velocity(Vector2(0, 0));
+	mm->set_relative(p_relative);
+	mm->set_relative_screen_position(p_relative);
+
+	if (windows[p_window_id].window_focused || windows[p_window_id].is_popup) {
+		Input::get_singleton()->parse_input_event(mm);
+	}
+}
+
+void DisplayServerWindows::_process_raw_input_event(const RAWINPUT &p_raw, DisplayServerEnums::WindowID p_window_id) {
+	if (p_raw.header.dwType == RIM_TYPEKEYBOARD) {
+		if (p_raw.data.keyboard.VKey == VK_SHIFT) {
+			// If multiple Shifts are held down at the same time,
+			// Windows natively only sends a KEYUP for the last one to be released.
+			// Handle all Shift "key up" events here for consistency.
+			if (p_raw.data.keyboard.Flags & RI_KEY_BREAK) {
+				ERR_FAIL_COND(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
+				const BitField<WinKeyModifierMask> &mods = _get_mods();
+
+				KeyEvent ke;
+				ke.shift = false;
+				ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
+				ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
+				ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
+				ke.meta = mods.has_flag(WinKeyModifierMask::META);
+				ke.uMsg = WM_KEYUP;
+				ke.window_id = p_window_id;
+
+				ke.wParam = VK_SHIFT;
+				// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
+				// Bit 30 -> key was previously down, bit 31 -> key is being released.
+				ke.lParam = p_raw.data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
+				key_event_buffer[key_event_pos++] = ke;
+			}
+		}
+	} else if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED && p_raw.header.dwType == RIM_TYPEMOUSE) {
+		_process_raw_mouse_motion(
+				_get_raw_mouse_motion(p_raw, p_window_id),
+				p_raw.data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN,
+				p_window_id);
+	}
+}
+
+void DisplayServerWindows::process_raw_input() {
+	if (!use_raw_input) {
+		return;
+	}
+
+	// Use the same window the mouse is captured for in _set_mouse_mode_impl(),
+	// which is not necessarily the main window.
+	DisplayServerEnums::WindowID window_id = _get_focused_window_or_popup();
+	if (!windows.has(window_id)) {
+		window_id = DisplayServerEnums::MAIN_WINDOW_ID;
+	}
+
+	// Normal 8 kHz frames stay precise; only a larger-sized tail that originates
+	// from a stall is coalesced.
+	constexpr UINT MAX_RAW_MOUSE_EVENTS_PER_FRAME = 512;
+	UINT raw_mouse_events = 0;
+	Vector2 coalesced_raw_mouse_motion;
+	bool coalesced_raw_mouse_left_button_down = false;
+	const bool coalesce_all_raw_mouse_motion = Input::get_singleton()->is_using_accumulated_input();
+	auto flush_coalesced_raw_mouse_motion = [&]() {
+		_process_raw_mouse_motion(coalesced_raw_mouse_motion, coalesced_raw_mouse_left_button_down, window_id);
+		coalesced_raw_mouse_motion = Vector2();
+		coalesced_raw_mouse_left_button_down = false;
+	};
+
+	// Read until the raw queue is empty. A small pass cap can never catch up
+	// after a long stall reaches Windows' 10,000-message queue limit, but a
+	// stall-sized captured mouse tail is coalesced below before it reaches the
+	// rest of the engine.
+	while (true) {
+		UINT n_buffer = 0;
+		// With a null buffer, this reports the byte size of the first pending
+		// message (the minimum required buffer), not a message count.
+		if (GetRawInputBuffer(nullptr, &n_buffer, sizeof(RAWINPUTHEADER)) != 0 || n_buffer == 0) {
+			flush_coalesced_raw_mouse_motion();
+			return;
+		}
+
+		UINT dw_size = n_buffer * sizeof(RAWINPUT);
+		LPBYTE lpb = new BYTE[dw_size];
+
+		// NOTE: Use dw_size, not n_buffer.
+		UINT n_read = GetRawInputBuffer((PRAWINPUT)lpb, &dw_size, sizeof(RAWINPUTHEADER));
+		if (n_read == (UINT)-1 || n_read == 0) {
+			delete[] lpb;
+			flush_coalesced_raw_mouse_motion();
+			return;
+		}
+
+		PRAWINPUT raw = (PRAWINPUT)lpb;
+		for (UINT i = 0; i < n_read; ++i) {
+			if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED &&
+					raw->header.dwType == RIM_TYPEMOUSE &&
+					(coalesce_all_raw_mouse_motion || raw_mouse_events >= MAX_RAW_MOUSE_EVENTS_PER_FRAME)) {
+				coalesced_raw_mouse_motion += _get_raw_mouse_motion(*raw, window_id);
+				coalesced_raw_mouse_left_button_down = coalesced_raw_mouse_left_button_down ||
+						(raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN);
+			} else {
+				_process_raw_input_event(*raw, window_id);
+			}
+			if (raw->header.dwType == RIM_TYPEMOUSE) {
+				raw_mouse_events++;
+			}
+			// Move to next RAWINPUT in buffer.
+			raw = NEXTRAWINPUTBLOCK(raw);
+		}
+		delete[] lpb;
+	}
+}
+
 void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
@@ -4233,8 +4433,51 @@ void DisplayServerWindows::process_events() {
 	}
 
 	_THREAD_SAFE_LOCK_
+
+	process_raw_input();
+
+	// The pump throttles only what the hardware can flood, and drains the rest.
+	// See <https://ph3at.github.io/posts/Windows-Input/> for more information.
+	//
+	// - WM_INPUT is never dispatched from here: pulling raw input through
+	//   PeekMessage() one message at a time is what collapses the pump at high
+	//   polling rates (2,000 Hz and above). It stays in the queue for the next
+	//   buffered read in process_raw_input().
+	// - WM_MOUSEMOVE and WM_NCMOUSEMOVE are synthesized on demand from the
+	//   hardware input stream, so while the mouse is moving, the queue never
+	//   reads empty and an unbounded pump spins until the mouse stops. They are
+	//   dispatched at most once per frame each. No motion is lost: they carry
+	//   the latest (coalesced) cursor position, and the relative motion derived
+	//   from successive positions preserves the total delta. Captured mouse
+	//   mode gets its sub-frame motion from raw input.
+	// - Everything else (keys, characters, mouse buttons, wheel, system
+	//   messages) is discrete and low-rate, and is drained fully. Capping these
+	//   would split the WM_CHAR posted by TranslateMessage() from its
+	//   WM_KEYDOWN across frames, which breaks the pairing logic in
+	//   _process_key_events() and makes keys fire twice.
 	MSG msg = {};
-	while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+	auto peek_discrete = [&] {
+		BOOL ret = PeekMessageW(&msg, nullptr, 0, WM_NCMOUSEMOVE - 1, PM_REMOVE);
+		if (!ret) {
+			ret = PeekMessageW(&msg, nullptr, WM_NCMOUSEMOVE + 1, WM_INPUT - 1, PM_REMOVE);
+		}
+		if (!ret) {
+			ret = PeekMessageW(&msg, nullptr, WM_INPUT + 1, WM_MOUSEMOVE - 1, PM_REMOVE);
+		}
+		if (!ret) {
+			ret = PeekMessageW(&msg, nullptr, WM_MOUSEMOVE + 1, std::numeric_limits<UINT>::max(), PM_REMOVE);
+		}
+		return ret;
+	};
+	while (peek_discrete()) {
+		TranslateMessage(&msg);
+		DispatchMessageW(&msg);
+	}
+	if (PeekMessageW(&msg, nullptr, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) {
+		TranslateMessage(&msg);
+		DispatchMessageW(&msg);
+	}
+	if (PeekMessageW(&msg, nullptr, WM_NCMOUSEMOVE, WM_NCMOUSEMOVE, PM_REMOVE)) {
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 	}
@@ -5629,103 +5872,20 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
+			// The bulk of raw input is drained in batch by process_raw_input()
+			// before the message pump runs. This only sees WM_INPUT messages the
+			// pump picks up afterwards (it peeks the full message range whenever
+			// the app is not focused, and raw input can also arrive while the pump
+			// itself is running). Without this fallback, DefWindowProc() would
+			// free their data unread.
 			UINT dwSize;
+			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER)) != 0 || dwSize == 0) {
+				break;
+			}
 
-			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER));
 			LPBYTE lpb = new BYTE[dwSize];
-			if (lpb == nullptr) {
-				return 0;
-			}
-
-			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
-				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
-			}
-
-			RAWINPUT *raw = (RAWINPUT *)lpb;
-
-			const BitField<WinKeyModifierMask> &mods = _get_mods();
-			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
-				if (raw->data.keyboard.VKey == VK_SHIFT) {
-					// If multiple Shifts are held down at the same time,
-					// Windows natively only sends a KEYUP for the last one to be released.
-					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
-						// Make sure to check the latest key state since
-						// we're in the middle of the message queue.
-						if (GetAsyncKeyState(VK_SHIFT) < 0) {
-							// A Shift is released, but another Shift is still held
-							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
-
-							KeyEvent ke;
-							ke.shift = false;
-							ke.altgr = mods.has_flag(WinKeyModifierMask::ALT_GR);
-							ke.alt = mods.has_flag(WinKeyModifierMask::ALT);
-							ke.control = mods.has_flag(WinKeyModifierMask::CTRL);
-							ke.meta = mods.has_flag(WinKeyModifierMask::META);
-							ke.uMsg = WM_KEYUP;
-							ke.window_id = window_id;
-
-							ke.wParam = VK_SHIFT;
-							// data.keyboard.MakeCode -> 0x2A - left shift, 0x36 - right shift.
-							// Bit 30 -> key was previously down, bit 31 -> key is being released.
-							ke.lParam = raw->data.keyboard.MakeCode << 16 | 1 << 30 | 1 << 31;
-							key_event_buffer[key_event_pos++] = ke;
-						}
-					}
-				}
-			} else if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED && raw->header.dwType == RIM_TYPEMOUSE) {
-				Ref<InputEventMouseMotion> mm;
-				mm.instantiate();
-
-				mm->set_window_id(window_id);
-				mm->set_ctrl_pressed(mods.has_flag(WinKeyModifierMask::CTRL));
-				mm->set_shift_pressed(mods.has_flag(WinKeyModifierMask::SHIFT));
-				mm->set_alt_pressed(mods.has_flag(WinKeyModifierMask::ALT));
-				mm->set_meta_pressed(mods.has_flag(WinKeyModifierMask::META));
-
-				mm->set_pressure((raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN) ? 1.0f : 0.0f);
-
-				mm->set_button_mask(mouse_get_button_state());
-
-				Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
-
-				// Centering just so it works as before.
-				POINT pos = { (int)c.x, (int)c.y };
-				ClientToScreen(windows[window_id].hWnd, &pos);
-				SetCursorPos(pos.x, pos.y);
-
-				mm->set_position(c);
-				mm->set_global_position(c);
-				mm->set_velocity(Vector2(0, 0));
-				mm->set_screen_velocity(Vector2(0, 0));
-
-				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
-					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
-
-				} else if (raw->data.mouse.usFlags == MOUSE_MOVE_ABSOLUTE) {
-					int nScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-					int nScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-					int nScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
-					int nScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
-
-					Vector2 abs_pos(
-							(double(raw->data.mouse.lLastX) - 65536.0 / (nScreenWidth)) * nScreenWidth / 65536.0 + nScreenLeft,
-							(double(raw->data.mouse.lLastY) - 65536.0 / (nScreenHeight)) * nScreenHeight / 65536.0 + nScreenTop);
-
-					POINT coords; // Client coords.
-					coords.x = abs_pos.x;
-					coords.y = abs_pos.y;
-
-					ScreenToClient(hWnd, &coords);
-
-					mm->set_relative(Vector2(coords.x - old_x, coords.y - old_y));
-					old_x = coords.x;
-					old_y = coords.y;
-				}
-				mm->set_relative_screen_position(mm->get_relative());
-
-				if ((windows[window_id].window_focused || windows[window_id].is_popup) && mm->get_relative() != Vector2()) {
-					Input::get_singleton()->parse_input_event(mm);
-				}
+			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) == dwSize) {
+				_process_raw_input_event(*(RAWINPUT *)lpb, window_id);
 			}
 			delete[] lpb;
 		} break;

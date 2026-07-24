@@ -32,6 +32,8 @@
 
 #ifdef VULKAN_ENABLED
 
+#include "core/variant/variant.h"
+
 #include <drivers/vulkan/godot_vulkan.h>
 
 const char *RenderingContextDriverVulkanAndroid::_get_platform_surface_extension() const {
@@ -47,7 +49,7 @@ RenderingContextDriver::SurfaceID RenderingContextDriverVulkanAndroid::surface_c
 
 	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
 	VkResult err = vkCreateAndroidSurfaceKHR(instance_get(), &create_info, get_allocation_callbacks(VK_OBJECT_TYPE_SURFACE_KHR), &vk_surface);
-	ERR_FAIL_COND_V(err != VK_SUCCESS, SurfaceID());
+	ERR_FAIL_COND_V_MSG(err != VK_SUCCESS, SurfaceID(), vformat("Couldn't create Android Surface (VkResult error %d).", err));
 
 	Surface *surface = memnew(Surface);
 	surface->vk_surface = vk_surface;
