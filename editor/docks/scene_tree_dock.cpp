@@ -1849,8 +1849,10 @@ void SceneTreeDock::_notification(int p_what) {
 			Node *node_edited = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
 			if (node_edited) {
 				editor_selection->clear();
-				editor_selection->add_node(node_edited);
-				scene_tree->set_selected(node_edited);
+				TreeItem *item = scene_tree->get_scene_tree()->get_item_with_metadata(node_edited->get_path());
+				if (item) {
+					scene_tree->get_scene_tree()->set_selected(item);
+				}
 			}
 		} break;
 	}
