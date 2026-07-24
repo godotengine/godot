@@ -44,10 +44,6 @@
 #include "scene/resources/surface_tool.h"
 #include "servers/rendering/rendering_server.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-#endif
-
 RID Occluder3D::get_rid() const {
 	return occluder;
 }
@@ -458,10 +454,7 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 	update_configuration_warnings();
 
 #ifdef TOOLS_ENABLED
-	// PolygonOccluder3D is edited via an editor plugin, this ensures the plugin is shown/hidden when necessary
-	if (Engine::get_singleton()->is_editor_hint()) {
-		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_current).call_deferred();
-	}
+	emit_signal("_editable_3d_polygon_changed");
 #endif
 }
 
@@ -725,11 +718,11 @@ PackedStringArray OccluderInstance3D::get_configuration_warnings() const {
 }
 
 bool OccluderInstance3D::_is_editable_3d_polygon() const {
-	return Ref<PolygonOccluder3D>(occluder).is_valid();
+	return true;
 }
 
 Ref<Resource> OccluderInstance3D::_get_editable_3d_polygon_resource() const {
-	return occluder;
+	return Ref<PolygonOccluder3D>(occluder);
 }
 
 void OccluderInstance3D::_bind_methods() {
@@ -745,6 +738,7 @@ void OccluderInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &OccluderInstance3D::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_get_editable_3d_polygon_resource"), &OccluderInstance3D::_get_editable_3d_polygon_resource);
+	ADD_SIGNAL(MethodInfo("_editable_3d_polygon_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, Occluder3D::get_class_static()), "set_occluder", "get_occluder");
 	ADD_GROUP("Bake", "bake_");
