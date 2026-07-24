@@ -307,6 +307,9 @@ void AudioStreamPlayer2D::_validate_property(PropertyInfo &p_property) const {
 void AudioStreamPlayer2D::set_max_distance(float p_pixels) {
 	ERR_FAIL_COND(p_pixels <= 0.0);
 	max_distance = p_pixels;
+	if (is_part_of_edited_scene()) {
+		queue_redraw();
+	}
 }
 
 float AudioStreamPlayer2D::get_max_distance() const {
