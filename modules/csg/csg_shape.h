@@ -154,13 +154,13 @@ public:
 
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
+#endif // PHYSICS_3D_DISABLED
 
 	void set_autosmooth(bool p_smooth);
 	bool is_autosmooth() const;
 
 	void set_smoothing_angle(const float p_angle);
 	float get_smoothing_angle() const;
-#endif // PHYSICS_3D_DISABLED
 
 #ifndef DISABLE_DEPRECATED
 	void set_snap(float p_snap);
