@@ -84,13 +84,31 @@ public:
 	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return Span(data, count); }
 	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return span(); }
 
-	// Must take a copy instead of a reference (see GH-31736).
-	_FORCE_INLINE_ void push_back(T p_elem) {
+	// Overload for lvalues (copies).
+	_FORCE_INLINE_ void push_back(const T &p_elem) {
 		if (unlikely(count == capacity)) {
+			// Must take a copy instead of a reference (see GH-31736).
+			T local_copy = p_elem;
 			reserve(count + 1);
+			memnew_placement(&data[count++], T(std::move(local_copy)));
+		} else {
+			memnew_placement(&data[count++], T(p_elem));
 		}
+	}
 
-		memnew_placement(&data[count++], T(std::move(p_elem)));
+	// Overload for rvalues (moves).
+	_FORCE_INLINE_ void push_back(T &&p_elem) {
+		if (unlikely(count == capacity)) {
+			// STL states that p_elem should never be a self-insertion:
+			// i.e. vec.push_back(std::move(vec[0]));
+			// However for safety, and compatibility we can choose to make a copy
+			// here too.
+			T local_copy = std::move(p_elem);
+			reserve(count + 1);
+			memnew_placement(&data[count++], T(std::move(local_copy)));
+		} else {
+			memnew_placement(&data[count++], T(std::move(p_elem)));
+		}
 	}
 
 	void remove_at(U p_index) {
