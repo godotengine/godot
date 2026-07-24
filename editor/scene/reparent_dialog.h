@@ -41,11 +41,13 @@ class ReparentDialog : public ConfirmationDialog {
 	SceneTreeEditor *tree = nullptr;
 	CheckBox *keep_transform = nullptr;
 
+	void _node_selected();
 	void _reparent();
-	void _cancel();
 
 protected:
-	void _notification(int p_what);
+	virtual void _pre_popup() override;
+	virtual void ok_pressed() override;
+
 	static void _bind_methods();
 
 public:
