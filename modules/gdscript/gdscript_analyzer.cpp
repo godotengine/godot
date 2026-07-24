@@ -1487,6 +1487,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 							return_datatype = getter_function->return_type->resolved_type;
 							return_datatype.is_meta_type = false;
 						}
+						return_datatype = return_datatype.as_hard_type();
 
 						if (getter_function->parameters.size() != 0 || return_datatype.has_no_type()) {
 							push_error(vformat(R"(Function "%s" cannot be used as getter because of its signature.)", getter_function->identifier->name), member.variable);
@@ -1530,8 +1531,8 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 				}
 
 				if (member.variable->type_constraint.is_variant() && has_valid_getter && has_valid_setter) {
-					if (!is_type_compatible(getter_function->return_type_constraint, setter_function->parameters[0]->type_constraint, true)) {
-						push_error(vformat(R"(Getter with type "%s" cannot be used along with setter of type "%s".)", getter_function->return_type_constraint.to_string(), setter_function->parameters[0]->type_constraint.to_string()), member.variable);
+					if (!is_type_compatible(getter_function->return_type_constraint.as_hard_type(), setter_function->parameters[0]->type_constraint, true)) {
+						push_error(vformat(R"(Getter with type "%s" cannot be used along with setter of type "%s".)", getter_function->return_type_constraint.to_string_strict(), setter_function->parameters[0]->type_constraint.to_string()), member.variable);
 					}
 				}
 			}

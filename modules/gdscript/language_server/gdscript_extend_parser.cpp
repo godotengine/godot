@@ -813,7 +813,7 @@ Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::Functio
 	ERR_FAIL_NULL_V(p_func, Dictionary());
 	Dictionary func;
 	func["name"] = p_func->identifier->name;
-	func["return_type"] = p_func->return_type_constraint.to_string();
+	func["return_type"] = p_func->return_type_constraint.to_string_strict();
 	func["rpc_config"] = p_func->rpc_config;
 	Array parameters;
 	for (int i = 0; i < p_func->parameters.size(); i++) {

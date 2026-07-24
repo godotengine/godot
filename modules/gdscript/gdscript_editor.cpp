@@ -815,7 +815,7 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 		if (p_function->return_type_constraint.builtin_type == Variant::NIL) {
 			arghint = "void " + p_function->identifier->name + "(";
 		} else {
-			arghint = p_function->return_type_constraint.to_string() + " " + p_function->identifier->name + "(";
+			arghint = p_function->return_type_constraint.to_string_strict() + " " + p_function->identifier->name + "(";
 		}
 	}
 
