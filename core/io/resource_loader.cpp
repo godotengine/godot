@@ -506,7 +506,8 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 		}
 
 		if (status != THREAD_LOAD_IN_PROGRESS) {
-			load_task.load_token->unreference();
+			LoadToken *token = load_task.load_token;
+
 			thread_load_mutex.lock();
 			if (thread_waiting_on_backup.is_empty()) {
 				thread_waiting_on.erase(thread_index);
@@ -514,6 +515,10 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 				thread_waiting_on[thread_index] = thread_waiting_on_backup;
 			}
 			thread_load_mutex.unlock();
+
+			if (token->unreference()) {
+				memdelete(token);
+			}
 			return;
 		}
 
@@ -671,8 +676,7 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 
 	thread_load_mutex.unlock();
 
-	// It's safe now to let the task go in case no one else was grabbing the token.
-	load_task.load_token->unreference();
+	LoadToken *token = load_task.load_token;
 
 	if (load_nesting == 0) {
 		if (own_mq_override) {
@@ -684,6 +688,9 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	curr_load_task = curr_load_task_backup;
 
 	print_verbose(vformat("Completed load for: '%s' remapped '%s' at thread %d", load_task.local_path, remapped_path, thread_index));
+	if (token->unreference()) {
+		memdelete(token);
+	}
 }
 
 String ResourceLoader::_validate_local_path(const String &p_path) {
@@ -1026,6 +1033,7 @@ void ResourceLoader::notify_dependency_error(const String &p_path, const String 
 }
 
 Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock) {
+	LoadToken *wtp_guard_token = nullptr;
 	if (r_error) {
 		*r_error = OK;
 	}
@@ -1058,12 +1066,17 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 
 			bool loader_is_wtp = load_task.task_id != 0;
 			if (loader_is_wtp) {
+				// Keep the task alive after _run_load_task() returns, because this function
+				// continues to access the task after _run_load_task() releases its token reference.
+				LoadToken *token = load_task.load_token;
+				wtp_guard_token = token;
+				wtp_guard_token->reference();
 				// Loading thread is in the worker pool.
 				p_thread_load_lock.temp_unlock();
 
 				// The wtp won't let us wait on tasks that are older than us. But ResourceLoader has its own
 				// deadlock detection and prevention in _run_load_task(), rely on that instead.
-				load_task.load_token->reference();
+				token->reference();
 				_run_load_task(&load_task);
 
 				p_thread_load_lock.temp_relock();
@@ -1149,7 +1162,11 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 			p_thread_load_lock.temp_relock();
 		}
 	}
-
+	// If the guard token is initialized then it is unreferenced here and if it is the last reference
+	// it can safely be deleted
+	if (wtp_guard_token && wtp_guard_token->unreference()) {
+		memdelete(wtp_guard_token);
+	}
 	return resource;
 }
 
@@ -1628,7 +1645,9 @@ void ResourceLoader::clear_thread_load_tasks() {
 		DEV_ASSERT(user_token->user_rc > 0 && !user_token->user_path.is_empty());
 		user_token->user_path.clear();
 		user_token->user_rc = 0;
-		user_token->unreference();
+		if (user_token->unreference()) {
+			memdelete(user_token);
+		}
 	}
 
 	thread_load_tasks.clear();
