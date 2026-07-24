@@ -91,6 +91,12 @@ public:
 		DISPLAY_SELF_TIME,
 	};
 
+	enum SortMode {
+		SORT_BY_DURATION,
+		SORT_BY_NAME_ASCENDING,
+		SORT_BY_NAME_DESCENDING,
+	};
+
 private:
 	struct ThemeCache {
 		Color seek_line_color;
@@ -115,6 +121,7 @@ private:
 
 	OptionButton *display_mode = nullptr;
 	OptionButton *display_time = nullptr;
+	OptionButton *display_sort = nullptr;
 
 	CheckButton *display_internal_profiles = nullptr;
 

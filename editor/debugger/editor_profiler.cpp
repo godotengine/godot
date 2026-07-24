@@ -368,8 +368,38 @@ void EditorProfiler::_update_frame() {
 	const Metric &m = _get_frame_metric(cursor_metric);
 
 	int dtime = display_time->get_selected();
+	int smode = display_sort->get_selected();
 
+	// Sort categories based on the selected sort mode.
+	struct CategoryOrder {
+		int index = 0;
+		String name;
+	};
+
+	Vector<CategoryOrder> category_order;
+	category_order.resize(m.categories.size());
 	for (int i = 0; i < m.categories.size(); i++) {
+		category_order.write[i] = { i, m.categories[i].name };
+	}
+
+	if (smode == SORT_BY_NAME_ASCENDING) {
+		struct CategoryNameComparator {
+			bool operator()(const CategoryOrder &a, const CategoryOrder &b) const {
+				return a.name < b.name;
+			}
+		};
+		category_order.sort_custom<CategoryNameComparator>();
+	} else if (smode == SORT_BY_NAME_DESCENDING) {
+		struct CategoryNameComparatorDesc {
+			bool operator()(const CategoryOrder &a, const CategoryOrder &b) const {
+				return a.name > b.name;
+			}
+		};
+		category_order.sort_custom<CategoryNameComparatorDesc>();
+	}
+
+	for (int ci = 0; ci < category_order.size(); ci++) {
+		const int i = category_order[ci].index;
 		TreeItem *category = variables->create_item(root);
 		category->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		category->set_editable(0, true);
@@ -387,7 +417,36 @@ void EditorProfiler::_update_frame() {
 			category->set_custom_color(0, _get_color_from_signature(m.categories[i].signature));
 		}
 
-		for (int j = 0; j < m.categories[i].items.size(); j++) {
+		// Sort items within each category based on the selected sort mode.
+		struct ItemOrder {
+			int index = 0;
+			String name;
+		};
+
+		Vector<ItemOrder> item_order;
+		item_order.resize(m.categories[i].items.size());
+		for (int k = 0; k < m.categories[i].items.size(); k++) {
+			item_order.write[k] = { k, m.categories[i].items[k].name };
+		}
+
+		if (smode == SORT_BY_NAME_ASCENDING) {
+			struct ItemNameComparator {
+				bool operator()(const ItemOrder &a, const ItemOrder &b) const {
+					return a.name < b.name;
+				}
+			};
+			item_order.sort_custom<ItemNameComparator>();
+		} else if (smode == SORT_BY_NAME_DESCENDING) {
+			struct ItemNameComparatorDesc {
+				bool operator()(const ItemOrder &a, const ItemOrder &b) const {
+					return a.name > b.name;
+				}
+			};
+			item_order.sort_custom<ItemNameComparatorDesc>();
+		}
+
+		for (int ji = 0; ji < item_order.size(); ji++) {
+			const int j = item_order[ji].index;
 			const Metric::Category::Item &it = m.categories[i].items[j];
 
 			if (it.internal == it.total && !display_internal_profiles->is_pressed() && m.categories[i].name == "Script Functions") {
@@ -747,6 +806,21 @@ EditorProfiler::EditorProfiler() {
 	display_time->set_tooltip_text(TTRC("Inclusive: Includes time from other functions called by this function.\nUse this to spot bottlenecks.\n\nSelf: Only count the time spent in the function itself, not in other functions called by that function.\nUse this to find individual functions to optimize."));
 	display_time->connect(SceneStringName(item_selected), callable_mp(this, &EditorProfiler::_combo_changed));
 	hb_time->add_child(display_time);
+
+	HBoxContainer *hb_sort = memnew(HBoxContainer);
+	hb_sort->add_theme_constant_override(SNAME("separation"), 2 * EDSCALE);
+	container->add_child(hb_sort);
+
+	hb_sort->add_child(memnew(Label(TTRC("Sort:"))));
+
+	display_sort = memnew(OptionButton);
+	display_sort->set_accessibility_name(TTRC("Sort:"));
+	display_sort->add_item(TTRC("Duration"));
+	display_sort->add_item(TTRC("Name (Ascending)"));
+	display_sort->add_item(TTRC("Name (Descending)"));
+	display_sort->set_tooltip_text(TTRC("Duration: Functions are sorted by time spent, highest first.\n\nName (Ascending): Functions are sorted alphabetically A→Z. Useful to track specific functions without them jumping around.\n\nName (Descending): Functions are sorted alphabetically Z→A."));
+	display_sort->connect(SceneStringName(item_selected), callable_mp(this, &EditorProfiler::_combo_changed));
+	hb_sort->add_child(display_sort);
 
 	display_internal_profiles = memnew(CheckButton(TTRC("Display internal functions")));
 	display_internal_profiles->set_visible(EDITOR_GET("debugger/profile_native_calls"));
