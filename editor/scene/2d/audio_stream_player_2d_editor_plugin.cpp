@@ -115,7 +115,7 @@ bool AudioStreamPlayer2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && dragging) {
 		const Transform2D canvas_xform = CanvasItemEditor::get_singleton()->get_canvas_transform();
-		const Vector2 mouse_pos = canvas_xform.affine_inverse().xform(mm->get_position());
+		const Vector2 mouse_pos = CanvasItemEditor::get_singleton()->snap_point(canvas_xform.affine_inverse().xform(mm->get_position()));
 		// Max Distance is a world-space radius, so it maps to the node-to-cursor distance (kept above the minimum).
 		const real_t new_distance = MAX((real_t)1.0, selected_player->get_global_position().distance_to(mouse_pos));
 		selected_player->set_max_distance(new_distance);
