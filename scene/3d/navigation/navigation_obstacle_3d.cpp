@@ -555,7 +555,7 @@ void NavigationObstacle3D::_update_fake_agent_radius_debug() {
 
 	bool is_debug_enabled = false;
 	if (Engine::get_singleton()->is_editor_hint()) {
-		is_debug_enabled = true;
+		is_debug_enabled = false;
 	} else if (ns3d->get_debug_enabled() &&
 			ns3d->get_debug_avoidance_enabled() &&
 			ns3d->get_debug_navigation_avoidance_enable_obstacles_radius()) {

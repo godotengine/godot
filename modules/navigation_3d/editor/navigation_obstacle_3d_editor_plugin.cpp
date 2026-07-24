@@ -42,6 +42,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/main/scene_tree.h"
+#include "scene/resources/3d/primitive_meshes.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -64,6 +65,25 @@ void NavigationObstacle3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (!obstacle) {
 		return;
+	}
+
+	float radius = obstacle->get_radius();
+	if (radius >= CMP_EPSILON) {
+		Array sphere_array;
+		sphere_array.resize(RSE::ARRAY_MAX);
+		SphereMesh::create_mesh_array(sphere_array, radius, radius * 2, 32);
+
+		Ref<ArrayMesh> sphere_mesh = memnew(ArrayMesh);
+		sphere_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, sphere_array);
+
+		Ref<StandardMaterial3D> radius_material = get_material("radius_material", p_gizmo);
+		Color mat_color = NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_obstacles_radius_color();
+		if (!p_gizmo->is_selected()) {
+			mat_color.a *= 0.3;
+		}
+		radius_material->set_albedo(mat_color);
+		p_gizmo->add_mesh(sphere_mesh, radius_material);
+		p_gizmo->add_collision_triangles(sphere_mesh->generate_triangle_mesh());
 	}
 
 	const Vector<Vector3> &vertices = obstacle->get_vertices();
@@ -107,11 +127,22 @@ void NavigationObstacle3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
-
 	if (obstacle->are_vertices_valid()) {
-		p_gizmo->add_lines(lines_mesh_vertices, ns3d->get_debug_navigation_avoidance_static_obstacle_pushout_edge_material());
+		Ref<StandardMaterial3D> cage_material = get_material("cage_material_out", p_gizmo);
+		Color mat_color = ns3d->get_debug_navigation_avoidance_static_obstacle_pushout_edge_color();
+		if (!p_gizmo->is_selected()) {
+			mat_color.a *= 0.3;
+		}
+		cage_material->set_albedo(mat_color);
+		p_gizmo->add_lines(lines_mesh_vertices, cage_material);
 	} else {
-		p_gizmo->add_lines(lines_mesh_vertices, ns3d->get_debug_navigation_avoidance_static_obstacle_pushin_edge_material());
+		Ref<StandardMaterial3D> cage_material = get_material("cage_material_in", p_gizmo);
+		Color mat_color = ns3d->get_debug_navigation_avoidance_static_obstacle_pushin_edge_color();
+		if (!p_gizmo->is_selected()) {
+			mat_color.a *= 0.3;
+		}
+		cage_material->set_albedo(mat_color);
+		p_gizmo->add_lines(lines_mesh_vertices, cage_material);
 	}
 	p_gizmo->add_collision_segments(lines_mesh_vertices);
 
@@ -240,6 +271,12 @@ void NavigationObstacle3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *
 
 NavigationObstacle3DGizmoPlugin::NavigationObstacle3DGizmoPlugin() {
 	current_state = VISIBLE;
+
+	NavigationServer3D *ns3d = NavigationServer3D::get_singleton();
+
+	create_material("cage_material_in", ns3d->get_debug_navigation_avoidance_static_obstacle_pushin_edge_color());
+	create_material("cage_material_out", ns3d->get_debug_navigation_avoidance_static_obstacle_pushout_edge_color());
+	create_material("radius_material", ns3d->get_debug_navigation_avoidance_obstacles_radius_color(), false, false, true);
 }
 
 void NavigationObstacle3DEditorPlugin::_notification(int p_what) {
