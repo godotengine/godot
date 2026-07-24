@@ -317,7 +317,8 @@ void InputEventConfigurationDialog::_update_input_list() {
 		kb_root->set_meta("__type", INPUT_KEY);
 
 		HashSet<int> keycodes_found;
-		for (int i = 0; i < keycode_get_count(); i++) {
+		int keycode_count = keycode_get_count();
+		for (int i = 0; i < keycode_count; i++) {
 			String name = keycode_get_name_by_index(i);
 			int keycode = keycode_get_value_by_index(i);
 
