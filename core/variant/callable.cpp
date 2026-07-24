@@ -83,6 +83,11 @@ Variant Callable::callv(const Array &p_arguments) const {
 	CallError ce;
 	Variant ret;
 	callp(argptrs, argcount, ret, ce);
+#ifdef DEBUG_ENABLED
+	if (ce.error != CallError::CALL_OK) {
+		ERR_FAIL_V_MSG(ret, vformat("Error calling method from 'callv': %s.", Variant::get_callable_error_text(*this, argptrs, argcount, ce)));
+	}
+#endif
 	return ret;
 }
 
