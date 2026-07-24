@@ -121,7 +121,7 @@ void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		// Draw a directional arrow at the decal's origin.
 		constexpr int arrow_points = 7;
-		const float arrow_length = size.y * 0.5;
+		constexpr float arrow_length = 0.5;
 
 		const Vector3 arrow[arrow_points] = {
 			Vector3(0, 0, -1),
