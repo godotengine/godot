@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "area_2d.h"
+#include "area_2d.compat.inc"
 
 #include "core/config/engine.h"
 #include "core/object/callable_mp.h"
@@ -36,12 +37,12 @@
 #include "servers/audio/audio_server.h"
 #include "servers/physics_2d/physics_server_2d.h"
 
-void Area2D::set_gravity_space_override_mode(SpaceOverride p_mode) {
+void Area2D::set_gravity_space_override_mode(PS2DE::AreaSpaceOverrideMode p_mode) {
 	gravity_space_override = p_mode;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PS2DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE, p_mode);
 }
 
-Area2D::SpaceOverride Area2D::get_gravity_space_override_mode() const {
+PS2DE::AreaSpaceOverrideMode Area2D::get_gravity_space_override_mode() const {
 	return gravity_space_override;
 }
 
@@ -90,21 +91,21 @@ real_t Area2D::get_gravity() const {
 	return gravity;
 }
 
-void Area2D::set_linear_damp_space_override_mode(SpaceOverride p_mode) {
+void Area2D::set_linear_damp_space_override_mode(PS2DE::AreaSpaceOverrideMode p_mode) {
 	linear_damp_space_override = p_mode;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PS2DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE, p_mode);
 }
 
-Area2D::SpaceOverride Area2D::get_linear_damp_space_override_mode() const {
+PS2DE::AreaSpaceOverrideMode Area2D::get_linear_damp_space_override_mode() const {
 	return linear_damp_space_override;
 }
 
-void Area2D::set_angular_damp_space_override_mode(SpaceOverride p_mode) {
+void Area2D::set_angular_damp_space_override_mode(PS2DE::AreaSpaceOverrideMode p_mode) {
 	angular_damp_space_override = p_mode;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PS2DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE, p_mode);
 }
 
-Area2D::SpaceOverride Area2D::get_angular_damp_space_override_mode() const {
+PS2DE::AreaSpaceOverrideMode Area2D::get_angular_damp_space_override_mode() const {
 	return angular_damp_space_override;
 }
 
@@ -560,7 +561,7 @@ void Area2D::_validate_property(PropertyInfo &p_property) const {
 
 		p_property.hint_string = options;
 	} else if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
-		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
+		if (gravity_space_override == PS2DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		} else {
 			if (gravity_is_point) {
@@ -574,11 +575,11 @@ void Area2D::_validate_property(PropertyInfo &p_property) const {
 			}
 		}
 	} else if (p_property.name.begins_with("linear_damp") && p_property.name != "linear_damp_space_override") {
-		if (linear_damp_space_override == SPACE_OVERRIDE_DISABLED) {
+		if (linear_damp_space_override == PS2DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	} else if (p_property.name.begins_with("angular_damp") && p_property.name != "angular_damp_space_override") {
-		if (angular_damp_space_override == SPACE_OVERRIDE_DISABLED) {
+		if (angular_damp_space_override == PS2DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
@@ -673,11 +674,13 @@ void Area2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
 
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE_REPLACE);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE_COMBINE);
+#endif // DISABLE_DEPRECATED
 }
 
 Area2D::Area2D() :
