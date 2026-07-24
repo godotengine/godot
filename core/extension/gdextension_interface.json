@@ -3975,6 +3975,101 @@
             "since": "4.1"
         },
         {
+            "name": "print_script_error",
+            "arguments": [
+                {
+                    "name": "p_description",
+                    "type": "const char*",
+                    "description": [
+                        "The code triggering the error."
+                    ]
+                },
+                {
+                    "name": "p_function",
+                    "type": "const char*",
+                    "description": [
+                        "The function name where the error occurred."
+                    ]
+                },
+                {
+                    "name": "p_file",
+                    "type": "const char*",
+                    "description": [
+                        "The file where the error occurred."
+                    ]
+                },
+                {
+                    "name": "p_line",
+                    "type": "int32_t",
+                    "description": [
+                        "The line where the error occurred."
+                    ]
+                },
+                {
+                    "name": "p_editor_notify",
+                    "type": "GDExtensionBool",
+                    "description": [
+                        "Whether or not to notify the editor."
+                    ]
+                }
+            ],
+            "description": [
+                "Logs a script error to Godot's built-in debugger and to the OS terminal."
+            ],
+            "since": "4.8"
+        },
+        {
+            "name": "print_script_error_with_message",
+            "arguments": [
+                {
+                    "name": "p_description",
+                    "type": "const char*",
+                    "description": [
+                        "The code triggering the error."
+                    ]
+                },
+                {
+                    "name": "p_message",
+                    "type": "const char*",
+                    "description": [
+                        "The message to show along with the error."
+                    ]
+                },
+                {
+                    "name": "p_function",
+                    "type": "const char*",
+                    "description": [
+                        "The function name where the error occurred."
+                    ]
+                },
+                {
+                    "name": "p_file",
+                    "type": "const char*",
+                    "description": [
+                        "The file where the error occurred."
+                    ]
+                },
+                {
+                    "name": "p_line",
+                    "type": "int32_t",
+                    "description": [
+                        "The line where the error occurred."
+                    ]
+                },
+                {
+                    "name": "p_editor_notify",
+                    "type": "GDExtensionBool",
+                    "description": [
+                        "Whether or not to notify the editor."
+                    ]
+                }
+            ],
+            "description": [
+                "Logs a script error with a message to Godot's built-in debugger and to the OS terminal."
+            ],
+            "since": "4.8"
+        },
+        {
             "name": "print_warning",
             "arguments": [
                 {
