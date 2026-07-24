@@ -1,0 +1,7 @@
+GH-120522
+--------------
+
+Validate extension JSON: Error: Field 'classes/TCPServer/methods/listen/arguments/0': meta changed value in new API, from "uint16" to "int64".
+Validate extension JSON: Error: Field 'classes/UDPServer/methods/listen/arguments/0': meta changed value in new API, from "uint16" to "int64".
+
+Changed the "port" parameter type in TCPServer.listen() and UDPServer.listen() from uint16_t to int64_t. Now it checks if it lies in the range 0-65535, and returns an error if not.
