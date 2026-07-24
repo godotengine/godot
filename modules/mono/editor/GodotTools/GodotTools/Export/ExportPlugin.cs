@@ -175,6 +175,7 @@ namespace GodotTools.Export
                 return;
 
             string osName = GetExportPlatform().GetOsName();
+            bool selfPublished = !(Path.GetExtension(path) == ".zip" || Path.GetExtension(path) == ".pck");
 
             if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
@@ -284,7 +285,7 @@ namespace GodotTools.Export
 
                     // Execute dotnet publish.
                     if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
-                            runtimeIdentifier, publishOutputDir, includeDebugSymbols))
+                            runtimeIdentifier, publishOutputDir, selfPublished, includeDebugSymbols))
                     {
                         throw new InvalidOperationException("Failed to build project. Check MSBuild panel for details.");
                     }
