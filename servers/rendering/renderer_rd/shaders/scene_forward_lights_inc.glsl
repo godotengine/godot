@@ -433,7 +433,7 @@ half sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex_
 	if (blocker_count > 0.0) {
 		//blockers found, do soft shadow
 		blocker_average /= blocker_count;
-		float penumbra = (-pssm_coord.z + blocker_average) / (1.0 - blocker_average);
+		float penumbra = (pssm_coord.z - blocker_average) / blocker_average;
 		tex_scale *= penumbra;
 
 		float s = 0.0;
@@ -572,7 +572,7 @@ void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			if (blocker_count > 0.0) {
 				//blockers found, do soft shadow
 				blocker_average /= blocker_count;
-				float penumbra = (-z_norm + blocker_average) / (1.0 - blocker_average);
+				float penumbra = (z_norm - blocker_average) / blocker_average;
 				tangent *= penumbra;
 				bitangent *= penumbra;
 
@@ -1075,7 +1075,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 			if (blocker_count > 0.0) {
 				//blockers found, do soft shadow
 				blocker_average /= blocker_count;
-				float penumbra = (-z_norm + blocker_average) / (1.0 - blocker_average);
+				float penumbra = (z_norm - blocker_average) / blocker_average;
 				tangent *= penumbra;
 				bitangent *= penumbra;
 
