@@ -883,6 +883,10 @@ public:
 	void set_use_own_world_3d(bool p_use_own_world_3d);
 	bool is_using_own_world_3d() const;
 
+#ifdef TOOLS_ENABLED
+	static void (*world_3d_changed_callback)();
+#endif
+
 #ifndef XR_DISABLED
 	void set_use_xr(bool p_use_xr);
 	bool is_using_xr() const;
