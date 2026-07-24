@@ -122,7 +122,7 @@ class ProjectManager : public Control {
 
 	AcceptDialog *error_dialog = nullptr;
 
-	void _show_error(const String &p_message, const Size2 &p_min_size = Size2());
+	void _show_error(const String &p_message, const Size2 &p_min_size = Size2(), bool p_autowrap = false);
 	void _dim_window();
 
 	// Quick settings.
