@@ -2391,6 +2391,10 @@ void DisplayServerWindows::window_set_exclusive(DisplayServerEnums::WindowID p_w
 			if (wd.exclusive) {
 				WindowData &wd_parent = windows[wd.transient_parent];
 				SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
+				// HACK: Windows becomes confused if we change GWLP_HWNDPARENT
+				// when the window is on a screen with different DPI scale.
+				// Calling SetParent somehow fixes it.
+				SetParent(wd.hWnd, nullptr);
 			} else {
 				SetWindowLongPtr(wd.hWnd, GWLP_HWNDPARENT, (LONG_PTR) nullptr);
 			}
@@ -2433,6 +2437,10 @@ void DisplayServerWindows::window_set_transient(DisplayServerEnums::WindowID p_w
 
 		if (wd_window.exclusive) {
 			SetWindowLongPtr(wd_window.hWnd, GWLP_HWNDPARENT, (LONG_PTR)wd_parent.hWnd);
+			// HACK: Windows becomes confused if we change GWLP_HWNDPARENT
+			// when the window is on a screen with different DPI scale.
+			// Calling SetParent somehow fixes it.
+			SetParent(wd_window.hWnd, nullptr);
 		}
 	}
 }
