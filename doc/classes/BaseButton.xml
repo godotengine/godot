@@ -133,5 +133,17 @@
 		<theme_item name="click_margin" data_type="constant" type="int" default="0">
 			Defines the margin around the button's area that still counts as a valid click. This is useful to make it easier to click small buttons.
 		</theme_item>
+		<theme_item name="focus_sound" data_type="sound" type="AudioStream">
+			Played when this [BaseButton] receives keyboard or gamepad-induced focus. Mouse or touch-induced focus does not play a focus sound.
+		</theme_item>
+		<theme_item name="hover_sound" data_type="sound" type="AudioStream">
+			Played when the button is hovered with the mouse.
+		</theme_item>
+		<theme_item name="pressed_disabled_sound" data_type="sound" type="AudioStream">
+			Played when the button is pressed with any input method, but has [member disabled] set to [code]true[/code].
+		</theme_item>
+		<theme_item name="pressed_sound" data_type="sound" type="AudioStream">
+			Played when the button is pressed with any input method.
+		</theme_item>
 	</theme_items>
 </class>
