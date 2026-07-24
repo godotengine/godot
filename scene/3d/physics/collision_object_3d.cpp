@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/mesh.h"
@@ -497,6 +498,7 @@ void CollisionObject3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_remove_shape", "owner_id", "shape_id"), &CollisionObject3D::shape_owner_remove_shape);
 	ClassDB::bind_method(D_METHOD("shape_owner_clear_shapes", "owner_id"), &CollisionObject3D::shape_owner_clear_shapes);
 	ClassDB::bind_method(D_METHOD("shape_find_owner", "shape_index"), &CollisionObject3D::shape_find_owner);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_aabb", "owner_id", "shape_id"), &CollisionObject3D::shape_owner_get_shape_aabb);
 
 	GDVIRTUAL_BIND(_input_event, "camera", "event", "event_position", "normal", "shape_idx");
 	GDVIRTUAL_BIND(_mouse_enter);
@@ -654,6 +656,13 @@ int CollisionObject3D::shape_owner_get_shape_index(uint32_t p_owner, int p_shape
 	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), -1);
 
 	return shapes[p_owner].shapes[p_shape].index;
+}
+
+AABB CollisionObject3D::shape_owner_get_shape_aabb(uint32_t p_owner, int p_shape) const {
+	ERR_FAIL_COND_V(!shapes.has(p_owner), AABB());
+	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), AABB());
+
+	return PhysicsServer3D::get_singleton()->body_get_aabb(rid, shapes[p_owner].shapes[p_shape].index);
 }
 
 void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) {
