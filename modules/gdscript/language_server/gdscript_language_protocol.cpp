@@ -30,6 +30,7 @@
 
 #include "gdscript_language_protocol.h"
 
+#include "../editor/gdscript_editor_language.h"
 #include "godot_lsp.h"
 
 #include "core/config/project_settings.h"
@@ -531,79 +532,106 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 	params.load(p_params);
 	Dictionary request_data = params.to_json();
 
-	List<ScriptLanguage::CodeCompletionOption> options;
-	get_workspace()->completion(params, &options);
+	String path = workspace->get_file_path(params.textDocument.uri);
 
-	if (!options.is_empty()) {
-		int i = 0;
-		arr.resize(options.size());
+	const ExtendGDScriptParser *parser = get_parse_result(path);
+	ERR_FAIL_NULL_V(parser, arr);
 
-		for (const ScriptLanguage::CodeCompletionOption &option : options) {
-			LSP::CompletionItem item;
-			item.label = option.display;
-			item.data = request_data;
-			item.insertText = option.insert_text;
+	// Find the node the script is attached to.
+	Node *owner = scene_cache.get(path);
+	if (owner != nullptr) {
+		LocalVector<Node *> stack;
+		stack.push_back(owner);
 
-			// LSP clients won't autoclose brackets.
-			if (client->behavior.use_snippets_for_brace_completion) {
-				// Use snippet insert mode to insert closing brace as well.
-				if (item.insertText.ends_with("(")) {
-					item.insertText += "$1)";
-					item.insertTextFormat = LSP::InsertTextFormat::Snippet;
-				}
-			} else {
-				// Trim braces.
-				item.insertText = item.insertText.trim_suffix("(");
+		while (!stack.is_empty()) {
+			Node *current = stack[stack.size() - 1];
+			stack.resize(stack.size() - 1);
+
+			Ref<GDScript> scr = current->get_script();
+			if (scr.is_valid() && GDScript::is_canonically_equal_paths(scr->get_path(), path)) {
+				owner = current;
+				break;
 			}
-
-			if (option.text_edit.is_set()) {
-				GodotRange range(GodotPosition(option.text_edit.start_line, option.text_edit.start_column), GodotPosition(option.text_edit.end_line, option.text_edit.end_column));
-				item.textEdit.newText = option.text_edit.new_text;
-				item.textEdit.range = range.to_lsp();
+			for (int i = 0; i < current->get_child_count(); ++i) {
+				stack.push_back(current->get_child(i));
 			}
-
-			switch (option.kind) {
-				case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
-					item.kind = LSP::CompletionItemKind::Enum;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_CLASS:
-					item.kind = LSP::CompletionItemKind::Class;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
-					item.kind = LSP::CompletionItemKind::Property;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
-					item.kind = LSP::CompletionItemKind::Method;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
-					item.kind = LSP::CompletionItemKind::Event;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
-					item.kind = LSP::CompletionItemKind::Constant;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
-					item.kind = LSP::CompletionItemKind::Variable;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
-					item.kind = LSP::CompletionItemKind::File;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
-					item.kind = LSP::CompletionItemKind::Snippet;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
-					item.kind = LSP::CompletionItemKind::Text;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD:
-					item.kind = LSP::CompletionItemKind::Keyword;
-					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_MAX: {
-				}
-			}
-
-			arr[i] = item.to_json();
-			i++;
 		}
 	}
+
+	// Retrieve options.
+	List<ScriptLanguage::CodeCompletionOption> options;
+	String call_hint;
+	bool forced = false;
+	String code = parser->get_text_for_completion(params.position);
+	GDScriptEditorLanguage::get_singleton()->complete_code(code, path, owner, &options, forced, call_hint);
+
+	// Transform options into LSP format.
+	arr.reserve(options.size());
+	for (const ScriptLanguage::CodeCompletionOption &option : options) {
+		LSP::CompletionItem item;
+		item.label = option.display;
+		item.data = request_data;
+		item.insertText = option.insert_text;
+
+		// LSP clients won't autoclose brackets.
+		if (client->behavior.use_snippets_for_brace_completion) {
+			// Use snippet insert mode to insert closing brace as well.
+			if (item.insertText.ends_with("(")) {
+				item.insertText += "$1)";
+				item.insertTextFormat = LSP::InsertTextFormat::Snippet;
+			}
+		} else {
+			// Trim braces.
+			item.insertText = item.insertText.trim_suffix("(");
+		}
+
+		if (option.text_edit.is_set()) {
+			GodotRange range(GodotPosition(option.text_edit.start_line, option.text_edit.start_column), GodotPosition(option.text_edit.end_line, option.text_edit.end_column));
+			item.textEdit.newText = option.text_edit.new_text;
+			item.textEdit.range = range.to_lsp();
+		}
+
+		switch (option.kind) {
+			case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
+				item.kind = LSP::CompletionItemKind::Enum;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_CLASS:
+				item.kind = LSP::CompletionItemKind::Class;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
+				item.kind = LSP::CompletionItemKind::Property;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
+				item.kind = LSP::CompletionItemKind::Method;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
+				item.kind = LSP::CompletionItemKind::Event;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
+				item.kind = LSP::CompletionItemKind::Constant;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
+				item.kind = LSP::CompletionItemKind::Variable;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
+				item.kind = LSP::CompletionItemKind::File;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
+				item.kind = LSP::CompletionItemKind::Snippet;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
+				item.kind = LSP::CompletionItemKind::Text;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD:
+				item.kind = LSP::CompletionItemKind::Keyword;
+				break;
+			case ScriptLanguage::CODE_COMPLETION_KIND_MAX: {
+			}
+		}
+
+		arr.append(item.to_json());
+	}
+
 	return arr;
 }
 
