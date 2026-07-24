@@ -41,6 +41,8 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 
 	float increment = Math::TAU * (base->rate / sampling_rate);
 
+	float mix = base->depth / max_depth;
+
 	for (int i = 0; i < p_frame_count; i++) {
 		phase += increment;
 
@@ -65,7 +67,7 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 												allpass[0][5].update(p_src_frames[i].left + h.left * base->feedback))))));
 		h.left = y;
 
-		p_dst_frames[i].left = p_src_frames[i].left + y * base->depth;
+		p_dst_frames[i].left = p_src_frames[i].left * (1.0 - mix) + y * mix;
 
 		y = allpass[1][0].update(
 				allpass[1][1].update(
@@ -75,7 +77,7 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 												allpass[1][5].update(p_src_frames[i].right + h.right * base->feedback))))));
 		h.right = y;
 
-		p_dst_frames[i].right = p_src_frames[i].right + y * base->depth;
+		p_dst_frames[i].right = p_src_frames[i].right * (1.0 - mix) + y * mix;
 	}
 }
 
@@ -85,6 +87,7 @@ Ref<AudioEffectInstance> AudioEffectPhaser::instantiate() {
 	ins->base = Ref<AudioEffectPhaser>(this);
 	ins->phase = 0;
 	ins->h = AudioFrame(0, 0);
+	ins->max_depth = 4.0;
 
 	return ins;
 }
