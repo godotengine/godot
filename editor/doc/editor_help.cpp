@@ -2170,15 +2170,11 @@ void EditorHelp::_update_doc() {
 
 			if (!prop.default_value.is_empty()) {
 				class_desc->push_color(theme_cache.symbol_color);
-				class_desc->add_text(" [" + TTR("default:") + " ");
+				class_desc->add_text(" = ");
 				class_desc->pop(); // color
 
 				class_desc->push_color(theme_cache.value_color);
 				class_desc->add_text(_fix_constant(prop.default_value));
-				class_desc->pop(); // color
-
-				class_desc->push_color(theme_cache.symbol_color);
-				class_desc->add_text("]");
 				class_desc->pop(); // color
 			}
 
