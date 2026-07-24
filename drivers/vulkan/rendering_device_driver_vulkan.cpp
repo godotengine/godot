@@ -3769,6 +3769,18 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 		present_mode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
 	}
 
+	// Opt-in workaround for FIFO present stalls seen on some driver/compositor
+	// combinations (e.g. NVIDIA proprietary under Wayland with embedded subsurfaces).
+	// MAILBOX uses the same vsync cadence but does not block the queue on a missing
+	// frame callback, at the cost of slightly higher GPU use. Only kicks in for the
+	// FIFO case so user-chosen Mailbox/Adaptive/Disabled paths are unchanged.
+	if (present_mode == VK_PRESENT_MODE_FIFO_KHR && present_modes.has(VK_PRESENT_MODE_MAILBOX_KHR) &&
+			GLOBAL_GET("rendering/rendering_device/vulkan/prefer_mailbox_present_mode")) {
+		present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+		present_mode_name = "Mailbox (FIFO stall workaround)";
+		print_verbose("Vulkan: Using MAILBOX present mode instead of FIFO (rendering/rendering_device/vulkan/prefer_mailbox_present_mode).");
+	}
+
 	// Clamp the desired image count to the surface's capabilities.
 	uint32_t desired_swapchain_images = MAX(p_desired_framebuffer_count, surface_capabilities.minImageCount);
 	if (surface_capabilities.maxImageCount > 0) {
@@ -4023,7 +4035,16 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 	swap_chain->command_queues_acquired.push_back(command_queue);
 	swap_chain->command_queues_acquired_semaphores.push_back(semaphore_index);
 
-	err = device_functions.AcquireNextImageKHR(vk_device, swap_chain->vk_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &swap_chain->image_index);
+	// A bounded timeout prevents an unresponsive compositor or driver (e.g. NVIDIA
+	// proprietary on Wayland with nested/embedded surfaces) from blocking the main
+	// loop forever. 0 preserves the legacy infinite-wait behavior.
+	uint64_t acquire_timeout_ns = UINT64_MAX;
+	const int acquire_timeout_ms = GLOBAL_GET("rendering/rendering_device/vulkan/swapchain_acquire_timeout_ms");
+	if (acquire_timeout_ms > 0) {
+		acquire_timeout_ns = uint64_t(acquire_timeout_ms) * 1000000ULL;
+	}
+
+	err = device_functions.AcquireNextImageKHR(vk_device, swap_chain->vk_swapchain, acquire_timeout_ns, semaphore, VK_NULL_HANDLE, &swap_chain->image_index);
 	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
 		// Out of date leaves the semaphore in a signaled state that will never finish, so it's necessary to recreate it.
 		bool semaphore_recreated = _recreate_image_semaphore(command_queue, semaphore_index, true);
@@ -4031,6 +4052,13 @@ RDD::FramebufferID RenderingDeviceDriverVulkan::swap_chain_acquire_framebuffer(C
 
 		// Swap chain is out of date and must be recreated.
 		r_resize_required = true;
+		return FramebufferID();
+	} else if (err == VK_TIMEOUT || err == VK_NOT_READY) {
+		// The compositor/driver did not deliver an image in time. The semaphore was not
+		// signaled, but bookkeeping above already enqueued it; reset it so the next
+		// acquire can use it again, then skip this frame so the main loop stays live.
+		bool semaphore_recreated = _recreate_image_semaphore(command_queue, semaphore_index, true);
+		ERR_FAIL_COND_V(!semaphore_recreated, FramebufferID());
 		return FramebufferID();
 	} else if (err != VK_SUCCESS && err != VK_SUBOPTIMAL_KHR) {
 		// Swap chain failed to present but the reason is unknown.
