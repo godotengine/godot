@@ -238,6 +238,8 @@ PackedSceneEditorTranslationParserPlugin::PackedSceneEditorTranslationParserPlug
 	// Scene Node's properties containing strings that will be fetched for translation.
 	lookup_properties.insert("text");
 	lookup_properties.insert("*_text");
+	lookup_properties.insert("prefix");
+	lookup_properties.insert("suffix");
 	lookup_properties.insert("popup/*/text");
 	lookup_properties.insert("title");
 	lookup_properties.insert("filters");
