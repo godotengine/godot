@@ -418,6 +418,13 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 	ERR_FAIL_COND_V_MSG(!valid, nullptr, "Script is invalid!");
 	ERR_FAIL_COND_V_MSG(_is_abstract, nullptr, "Can't instantiate an abstract class.");
 
+#ifdef DEBUG_ENABLED
+	if (!has_default_constructor()) {
+		GDScriptLanguage::get_singleton()->debug_default_constructor(vformat(R"*(Constructor for class "%s" has required parameters. Instances can only be created using "new()".)*", local_name), _super_constructor(this));
+		return nullptr;
+	}
+#endif
+
 	GDScript *top = this;
 	while (top->base.ptr()) {
 		top = top->base.ptr();
