@@ -446,6 +446,9 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 
 // X-Axis dependent. Stores the pointer (address) of the point
 static List<List<Vector2>::Element *> generate_mono_chains(List<Vector2> &pl) {
+	if (pl.size() < 2) {
+		return List<List<Vector2>::Element *>();
+	}
 	List<List<Vector2>::Element *> mono_chain_lst;
 
 	List<Vector2>::Element *iter_node = pl.front();
@@ -456,7 +459,7 @@ static List<List<Vector2>::Element *> generate_mono_chains(List<Vector2> &pl) {
 	while (iter_node->next()) {
 		iter_node = iter_node->next();
 		float ndx = iter_node->get()[0] - iter_node->prev()->get()[0];
-		if (dx * ndx < 0) { // If they are not the same direction
+		if (dx * ndx <= 0) { // If they are not the same direction
 			mono_chain_lst.push_back(iter_node->prev());
 			dx = ndx;
 		}
@@ -513,6 +516,10 @@ static PackedVector2Array generate_obb_from_polyline(const Vector<Vector2> &pl) 
 	}
 
 	PackedVector2Array polygon = Geometry2D::convex_hull(pl);
+	if (polygon.size() <= 3) { // There needs to be 3 distinct points. convex_hull returns the first point as the last.
+		return PackedVector2Array{ pl[0], pl[pl.size() - 1] };
+	}
+
 	polygon.remove_at(polygon.size() - 1);
 
 	int n = polygon.size();
@@ -597,7 +604,9 @@ static bool non_endpoint_segment_intersection(const Vector2 &l1_p1, const Vector
 }
 
 static bool does_obb_collide_with_line(const Vector<Vector2> &obb, const Vector<Vector2> &line) {
-	int obb_size = 4; // obb is a rectangle
+	DEV_ASSERT(obb.size() == 4 && line.size() >= 2);
+
+	int obb_size = obb.size();
 	Vector2 bb_p1, bb_p2;
 	for (int i = 0; i < obb_size; ++i) {
 		bb_p1 = obb[i];
@@ -663,7 +672,9 @@ static bool does_polyline_obbs_collide(
 		p1_obb = obb_cache[p1_key];
 	} else {
 		p1_obb = generate_obb_from_polyline(p1);
-		if (!p1_key.is_null()) {
+		if (p1_obb.size() <= 2) {
+			p1_len = 2;
+		} else if (!p1_key.is_null()) {
 			obb_cache[p1_key] = p1_obb;
 		}
 	}
@@ -677,17 +688,23 @@ static bool does_polyline_obbs_collide(
 		p2_obb = obb_cache[p2_key];
 	} else {
 		p2_obb = generate_obb_from_polyline(p2);
-		if (!p2_key.is_null()) {
+		if (p2_obb.size() <= 2) {
+			p2_len = 2;
+		} else if (!p2_key.is_null()) {
 			obb_cache[p2_key] = p2_obb;
 		}
 	}
 
+	// Edge Case: Line/Colinear vs Line/Colinear
+	if (p1_len == 2 && p2_len == 2) {
+		return non_endpoint_segment_intersection(p1_obb[0], p1_obb[1], p2_obb[0], p2_obb[1]);
+	}
 	// OBB vs Line
 	if (p1_len == 2) { // If p1 is a line then p2 is an obb
-		return does_obb_collide_with_line(p2_obb, p1);
+		return does_obb_collide_with_line(p2_obb, p1_obb);
 	}
 	if (p2_len == 2) { // If p2 is a line then p1 is an obb
-		return does_obb_collide_with_line(p1_obb, p2);
+		return does_obb_collide_with_line(p1_obb, p2_obb);
 	}
 
 	// OBB vs OBB
@@ -697,10 +714,10 @@ static bool does_polyline_obbs_collide(
 // Squared distance
 static float high_speed_perp_dist(const Vector2 &p, const Vector2 &e1, const Vector2 &e2) {
 	float res = -1.0;
-	if (e2.x - e1.x == 0) {
+	if (e2.x == e1.x) {
 		res = Math::pow(Math::abs(p.x - e2.x), 2);
 
-	} else if (e2.y - e1.y == 0) {
+	} else if (e2.y == e1.y) {
 		res = Math::pow(Math::abs(p.y - e2.y), 2);
 
 	} else {
@@ -714,7 +731,11 @@ static float high_speed_perp_dist(const Vector2 &p, const Vector2 &e1, const Vec
 
 // Returns the index of the point with the furthest perpendicular distance from the edge in the given range
 static int find_furthest_perp_point_from_edge(const PackedVector2Array &pl, const int start, const int end) {
-	int max_dist = -1;
+	if (start < 0 || end >= pl.size() || start >= end) {
+		return -1;
+	}
+
+	float max_dist = -1;
 	int idx = -1;
 
 	Vector2 st_pnt = pl[start];
@@ -726,6 +747,12 @@ static int find_furthest_perp_point_from_edge(const PackedVector2Array &pl, cons
 			idx = pnt_i;
 		}
 	}
+
+	// Don't allow colinear additions.
+	if (Math::is_zero_approx(max_dist)) {
+		idx = -1;
+	}
+
 	return idx;
 }
 
@@ -766,6 +793,11 @@ static Vector<ChainBoxData> generate_obbs_aabbs(List<List<Vector2>::Element *> &
 	PackedVector2Array obb;
 	List<List<Vector2>::Element *>::Element *iter_node = mono_chain_lst.front();
 	List<List<Vector2>::Element *>::Element *ch_end_node;
+
+	if (iter_node == nullptr) {
+		return obb_aabb_data;
+	}
+
 	while (iter_node->next()) {
 		ch_end_node = iter_node->next();
 
@@ -941,6 +973,10 @@ void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, Lis
 	// Get the index of the ends of both chains in the original list
 	int ch1_idx = list_index(result, ch1_end_node);
 	int ch2_idx = list_index(result, ch2_end_node);
+	if (ch1_idx == -1 || ch2_idx == -1) {
+		return; // The point mapping has been messed up???
+	}
+
 	PackedInt64Array edges = {
 		mapped_result[ch1_idx - 1], // First chain edges
 		mapped_result[ch1_idx],
@@ -978,16 +1014,8 @@ void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, Lis
 
 		if (pnt != -1) {
 			// Bin-search to find the idx to insert the point
-			int low = 0;
-			int high = mapped_result.size();
-			while (low < high) {
-				int mid = floor((low + high) / 2);
-				if (mapped_result[mid] < pnt) {
-					low = mid + 1;
-				} else {
-					high = mid;
-				}
-			}
+			int low = mapped_result.bsearch(pnt, true);
+
 			// Insert the point
 			mapped_result.insert(low, pnt);
 
@@ -1006,7 +1034,7 @@ void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, Lis
 			new_chain_end_nodes.push_back(chain_node_to_split); // low -> low + 1
 		} else {
 			// There are no points that can be added to fix the chain
-			new_chain_end_nodes.push_back(chain_node_to_split);
+			new_chain_end_nodes.push_back(nullptr);
 			new_chain_end_nodes.push_back(nullptr);
 		}
 	}
@@ -1018,6 +1046,10 @@ void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, Lis
 			for (const ChainBoxData *colliding_obb : obb_collisions_mapping[obb_collision[i / 2]]) {
 				List<List<Vector2>::Element *>::Element *col_chain_start = colliding_obb->chain_start_node;
 				List<List<Vector2>::Element *>::Element *col_chain_end = colliding_obb->chain_end_node;
+
+				// Erase the obb so it is recalculated with the new chain
+				// The new chain is always three points...maybe custom calc for speed? Nah, this isn't reached often enough to matter.
+				obb_cache.erase({ new_chain->prev()->get(), new_chain->get() });
 
 				recursive_obb_collision_check(
 						ch1_list, new_chain->prev(), new_chain,
@@ -1059,9 +1091,13 @@ void find_intersections(List<List<Vector2>::Element *> &mono_chain_lst, List<Vec
 		obb_collisions_mapping[box0].push_back(box1);
 		obb_collisions_mapping[box1].push_back(box0);
 
-		obb_cache[{ ch1_start_node->get()->get(), ch1_end_node->get()->get() }] = obb1;
-		obb_cache[{ ch2_start_node->get()->get(), ch2_end_node->get()->get() }] = obb2;
-
+		// Only push valid (4 point) obbs to the hashmap
+		if (obb1.size() == 4) {
+			obb_cache[{ ch1_start_node->get()->get(), ch1_end_node->get()->get() }] = obb1;
+		}
+		if (obb2.size() == 4) {
+			obb_cache[{ ch2_start_node->get()->get(), ch2_end_node->get()->get() }] = obb2;
+		}
 		recursive_obb_collision_check(ch1_start_node, ch1_start_node->get(), ch1_end_node->get(),
 				ch2_start_node, ch2_start_node->get(), ch2_end_node->get(),
 				obb_collision, obb_collisions_mapping, obb_cache,
@@ -1071,6 +1107,9 @@ void find_intersections(List<List<Vector2>::Element *> &mono_chain_lst, List<Vec
 
 static Vector<Vector2> monotonic_chain_rdp(Vector<Vector2> &pl, const float optimization) {
 	Vector<Vector2> orig_res = rdp(pl, optimization);
+	if (orig_res.size() <= 3) {
+		return orig_res; // 3 points can't intersect.
+	}
 
 	List<Vector2> result;
 	for (int i = 0; i < orig_res.size(); ++i) {
@@ -1084,7 +1123,7 @@ static Vector<Vector2> monotonic_chain_rdp(Vector<Vector2> &pl, const float opti
 	int res_idx = 0;
 	List<Vector2>::Element *res_idx_node = result.front();
 	for (int i = 0; i < pl.size(); ++i) {
-		if (pl[i] == res_idx_node->get()) {
+		if (res_idx_node && pl[i] == res_idx_node->get()) {
 			mapped_result.write[res_idx] = i;
 			++res_idx;
 			res_idx_node = res_idx_node->next();
