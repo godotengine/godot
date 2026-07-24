@@ -244,6 +244,13 @@ private:
 	void _msg_window_title(uint64_t p_thread_id, const Array &p_data);
 	void _msg_embed_suspend_toggle(uint64_t p_thread_id, const Array &p_data);
 	void _msg_embed_next_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_input_override(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_2d_selection_override(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_3d_selection_override(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_toggle_camera_override(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_increase_speed(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_decrease_speed(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_reset_speed(uint64_t p_thread_id, const Array &p_data);
 
 	void _parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data);
 	void _set_reason_text(const String &p_reason, MessageType p_type);
@@ -311,6 +318,13 @@ public:
 	enum EmbedShortcutAction {
 		EMBED_SUSPEND_TOGGLE,
 		EMBED_NEXT_FRAME,
+		EMBED_INPUT_OVERRIDE,
+		EMBED_2D_SELECTION_OVERRIDE,
+		EMBED_3D_SELECTION_OVERRIDE,
+		EMBED_TOGGLE_CAMERA_OVERRIDE,
+		EMBED_INCREASE_SPEED,
+		EMBED_DECREASE_SPEED,
+		EMBED_RESET_SPEED
 	};
 
 	void request_remote_objects(const TypedArray<uint64_t> &p_obj_ids, bool p_update_selection = true);
