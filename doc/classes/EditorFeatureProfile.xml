@@ -98,13 +98,13 @@
 	</methods>
 	<constants>
 		<constant name="FEATURE_3D" value="0" enum="Feature">
-			The 3D editor. If this feature is disabled, the 3D editor won't display but 3D nodes will still display in the Create New Node dialog.
+			The 3D editor main screen. If this feature is disabled, the 3D editor won't display but 3D nodes will still display in the Create New Node dialog.
 		</constant>
 		<constant name="FEATURE_SCRIPT" value="1" enum="Feature">
-			The Script tab, which contains the script editor and class reference browser. If this feature is disabled, the Script tab won't display.
+			The Script main screen, which contains the script editor and class reference browser. If this feature is disabled, the Script tab won't display.
 		</constant>
 		<constant name="FEATURE_ASSET_LIB" value="2" enum="Feature">
-			The Asset Store tab. If this feature is disabled, the Asset Store tab won't display.
+			The Asset Store main screen. If this feature is disabled, the Assets tab won't display.
 		</constant>
 		<constant name="FEATURE_SCENE_TREE" value="3" enum="Feature">
 			Scene tree editing. If this feature is disabled, the Scene tree dock will still be visible but will be read-only.

@@ -1754,14 +1754,18 @@ ProjectManager::ProjectManager() {
 	if (AssetLibraryEditorPlugin::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
 		asset_library->set_name("AssetLibraryTab");
-		_add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Store"), Ref<Texture2D>(), asset_library);
+		_add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Assets"), Ref<Texture2D>(), asset_library);
 		asset_library->connect("install_asset", callable_mp(this, &ProjectManager::_install_project));
 	} else {
 		VBoxContainer *asset_library_filler = memnew(VBoxContainer);
 		asset_library_filler->set_name("AssetLibraryTab");
-		Button *asset_library_toggle = _add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Store"), Ref<Texture2D>(), asset_library_filler);
+		Button *asset_library_toggle = _add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Assets"), Ref<Texture2D>(), asset_library_filler);
 		asset_library_toggle->set_disabled(true);
-		asset_library_toggle->set_tooltip_text(TTRC("Asset Store not available (due to using Web editor, or because SSL support disabled)."));
+#ifdef WEB_ENABLED
+		asset_library_toggle->set_tooltip_text(TTRC("The Asset Store is not available in the Web editor."));
+#else
+		asset_library_toggle->set_tooltip_text(TTRC("The Asset Store is not available due to TLS support being disabled at compile-time."));
+#endif // WEB_ENABLED
 	}
 
 	// Footer bar.

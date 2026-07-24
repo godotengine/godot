@@ -9468,7 +9468,11 @@ EditorNode::EditorNode() {
 	if (AssetLibraryEditorPlugin::is_available()) {
 		add_editor_plugin(memnew(AssetLibraryEditorPlugin));
 	} else {
-		print_verbose("Asset Store not available (due to using Web editor, or SSL support disabled).");
+#ifdef WEB_ENABLED
+		print_verbose("The Asset Store is not available in the Web editor.");
+#else
+		print_verbose("The Asset Store is not available due to TLS support being disabled at compile-time.");
+#endif // WEB_ENABLED
 	}
 
 	// More visually meaningful to have this later.
