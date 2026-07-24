@@ -16,6 +16,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_do_callable">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Register a method that will be called when the action is committed (i.e. the "do" action).
+				Unless [method add_do_method], this method does not support live editing, meaning the operation will not be replicated in the running project. It also does not support undo history deduction. The undo history is determined by the previous operations or [method create_action], otherwise defaults to global.
+			</description>
+		</method>
 		<method name="add_do_method" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="object" type="Object" />
@@ -40,6 +48,14 @@
 			<param index="0" name="object" type="Object" />
 			<description>
 				Register a reference for "do" that will be erased if the "do" history is lost. This is useful mostly for new nodes created for the "do" call. Do not use for resources.
+			</description>
+		</method>
+		<method name="add_undo_callable">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Register a property value change for "undo".
+				Unless [method add_undo_method], this method does not support live editing, meaning the operation will not be replicated in the running project. It also does not support undo history deduction. The undo history is determined by the previous operations or [method create_action], otherwise defaults to global.
 			</description>
 		</method>
 		<method name="add_undo_method" qualifiers="vararg">
