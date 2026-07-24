@@ -2298,6 +2298,11 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 }
 
 void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
+	if (save_scene_progress) {
+		// A save call is currently in progress
+		queued_save_scene_files.push_back(p_file);
+		return;
+	}
 	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 4));
 
 	if (editor_data.get_edited_scene_root() != nullptr) {
@@ -2385,6 +2390,11 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 void EditorNode::_close_save_scene_progress() {
 	memdelete(save_scene_progress);
 	save_scene_progress = nullptr;
+	if (!queued_save_scene_files.is_empty()) {
+		String filename = queued_save_scene_files.front()->get();
+		queued_save_scene_files.pop_front();
+		_save_scene_with_preview(filename);
+	}
 }
 
 bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_node) {
