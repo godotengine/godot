@@ -3184,6 +3184,10 @@ Vector2i DisplayServerWindows::ime_get_selection() const {
 	_THREAD_SAFE_METHOD_
 
 	DisplayServerEnums::WindowID window_id = _get_focused_window_or_popup();
+	// Find focusable parent.
+	while (windows.has(window_id) && windows[window_id].no_focus && windows[window_id].transient_parent != DisplayServerEnums::INVALID_WINDOW_ID) {
+		window_id = windows[window_id].transient_parent;
+	}
 	const WindowData &wd = windows[window_id];
 	if (!wd.ime_active) {
 		return Vector2i();
@@ -3216,6 +3220,10 @@ String DisplayServerWindows::ime_get_text() const {
 	_THREAD_SAFE_METHOD_
 
 	DisplayServerEnums::WindowID window_id = _get_focused_window_or_popup();
+	// Find focusable parent.
+	while (windows.has(window_id) && windows[window_id].no_focus && windows[window_id].transient_parent != DisplayServerEnums::INVALID_WINDOW_ID) {
+		window_id = windows[window_id].transient_parent;
+	}
 	const WindowData &wd = windows[window_id];
 	if (!wd.ime_active) {
 		return String();
@@ -3235,8 +3243,13 @@ String DisplayServerWindows::ime_get_text() const {
 void DisplayServerWindows::window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
+	DisplayServerEnums::WindowID window_id = p_window;
+	ERR_FAIL_COND(!windows.has(window_id));
+	// Find focusable parent.
+	while (windows.has(window_id) && windows[window_id].no_focus && windows[window_id].transient_parent != DisplayServerEnums::INVALID_WINDOW_ID) {
+		window_id = windows[window_id].transient_parent;
+	}
+	WindowData &wd = windows[window_id];
 
 	if (p_active) {
 		wd.ime_active = true;
@@ -3253,10 +3266,17 @@ void DisplayServerWindows::window_set_ime_active(const bool p_active, DisplaySer
 void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
+	DisplayServerEnums::WindowID window_id = p_window;
+	ERR_FAIL_COND(!windows.has(window_id));
+	Vector2 offset = windows[window_id].last_pos;
+	// Find focusable parent.
+	while (windows.has(window_id) && windows[window_id].no_focus && windows[window_id].transient_parent != DisplayServerEnums::INVALID_WINDOW_ID) {
+		window_id = windows[window_id].transient_parent;
+	}
+	offset = offset - windows[window_id].last_pos;
+	WindowData &wd = windows[window_id];
 
-	wd.im_position = p_pos;
+	wd.im_position = p_pos + offset;
 
 	HIMC himc = ImmGetContext(wd.hWnd);
 	if (himc == (HIMC) nullptr) {
