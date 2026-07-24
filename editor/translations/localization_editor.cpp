@@ -196,7 +196,21 @@ void LocalizationEditor::_translation_res_option_add(const PackedStringArray &p_
 	ERR_FAIL_COND(!remaps.has(key));
 	PackedStringArray r = remaps[key];
 	for (int i = 0; i < p_paths.size(); i++) {
-		r.push_back(p_paths[i] + ":" + "en");
+		String locale;
+		PackedStringArray path_split = p_paths[i].get_file().get_basename().rsplit("_", true, 2);
+		path_split.reverse();
+		if (TranslationServer::get_singleton()->get_all_countries().has(path_split[0])) {
+			if (path_split.size() > 1 && TranslationServer::get_singleton()->get_all_languages().has(path_split[1])) {
+				locale = path_split[1] + "_" + path_split[0];
+			} else {
+				locale = "en";
+			}
+		} else if (TranslationServer::get_singleton()->get_all_languages().has(path_split[0])) {
+			locale = path_split[0];
+		} else {
+			locale = "en"; // Fallback to English if the locale is not available.
+		}
+		r.push_back(p_paths[i] + ":" + locale);
 	}
 	remaps[key] = r;
 
