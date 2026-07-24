@@ -672,4 +672,41 @@ TEST_CASE_TEMPLATE("[Math] bezier_interpolate", T, float, double) {
 	static_assert(Math::is_equal_approx(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)1.0), (T)1.0));
 }
 
+TEST_CASE("[Math] fast_ftoi") {
+	CHECK(Math::fast_ftoi(0.0f) == 0);
+
+	CHECK(Math::fast_ftoi(-0.0f) == 0);
+
+	CHECK(Math::fast_ftoi(0.49f) == 0);
+	CHECK(Math::fast_ftoi(1.2f) == 1);
+	CHECK(Math::fast_ftoi(1.49f) == 1);
+	CHECK(Math::fast_ftoi(1.6f) == 2);
+	CHECK(Math::fast_ftoi(1.99f) == 2);
+
+	CHECK(Math::fast_ftoi(-0.49f) == 0);
+	CHECK(Math::fast_ftoi(-1.2f) == -1);
+	CHECK(Math::fast_ftoi(-1.49f) == -1);
+	CHECK(Math::fast_ftoi(-1.6f) == -2);
+	CHECK(Math::fast_ftoi(-1.99f) == -2);
+
+	// Halfway values round to even
+	CHECK(Math::fast_ftoi(0.5f) == 0);
+	CHECK(Math::fast_ftoi(1.5f) == 2);
+	CHECK(Math::fast_ftoi(2.5f) == 2);
+	CHECK(Math::fast_ftoi(3.5f) == 4);
+	CHECK(Math::fast_ftoi(4.5f) == 4);
+	CHECK(Math::fast_ftoi(5.5f) == 6);
+
+	CHECK(Math::fast_ftoi(-0.5f) == 0);
+	CHECK(Math::fast_ftoi(-1.5f) == -2);
+	CHECK(Math::fast_ftoi(-2.5f) == -2);
+	CHECK(Math::fast_ftoi(-3.5f) == -4);
+
+	CHECK(Math::fast_ftoi(16777216.0f) == 16777216);
+	CHECK(Math::fast_ftoi(-16777216.0f) == -16777216);
+
+	CHECK(Math::fast_ftoi(2147483520.0f) == 2147483520);
+	CHECK(Math::fast_ftoi(-2147483520.0f) == -2147483520);
+}
+
 } // namespace TestMathFuncs
