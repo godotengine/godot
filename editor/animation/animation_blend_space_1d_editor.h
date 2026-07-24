@@ -141,11 +141,20 @@ class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 
-	enum {
-		MENU_LOAD_FILE = 1000,
-		MENU_PASTE = 1001,
-		MENU_LOAD_FILE_CONFIRM = 1002
+	float _map_to_blend_space(float p_mouse);
+
+	struct CopyItem {
+		Ref<AnimationRootNode> node;
+		String name;
 	};
+
+	CopyItem copy_item;
+
+	Ref<AnimationRootNode> _dup_copy_point();
+	void _dup_paste_point(Ref<AnimationNode> node, float p_position, const String &p_name);
+	void _duplicate_point(float p_position);
+	void _copy_point(bool p_cut);
+	void _paste_point(float p_position);
 
 	StringName get_blend_position_path() const;
 	String _get_safe_name(const Ref<AnimationNodeBlendSpace1D> &p_blend_space, const String &p_name);
@@ -159,5 +168,6 @@ public:
 	void refresh_editor() { _update_space(); }
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	AnimationNodeBlendSpace1DEditor();
 };

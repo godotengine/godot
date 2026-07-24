@@ -41,10 +41,12 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
@@ -274,6 +276,30 @@ void AnimationTreeEditor::_update_error_message() {
 	error_button->set_text(itos(count));
 	error_button->show();
 	status_bar->show();
+}
+
+void AnimationTreeNodeEditorPlugin::_add_standard_context_menu_items(PopupMenu *p_menu, bool p_can_copy, bool p_can_paste) {
+	if (p_can_copy) {
+		p_menu->add_separator();
+		p_menu->add_item(TTR("Cut"), MENU_CUT);
+		p_menu->add_item(TTR("Copy"), MENU_COPY);
+		p_menu->add_item(TTR("Duplicate"), MENU_DUPLICATE);
+	}
+	if (p_can_paste) {
+		p_menu->add_separator();
+		p_menu->add_item(TTR("Paste"), MENU_PASTE);
+	}
+	if (p_can_copy) {
+		p_menu->add_separator();
+		p_menu->add_item(TTR("Delete"), MENU_DELETE);
+	}
+}
+
+AnimationTreeNodeEditorPlugin::AnimationTreeNodeEditorPlugin() {
+	set_process_shortcut_input(true);
+	set_shortcut_context(this);
+
+	set_focus_mode(FOCUS_ALL);
 }
 
 void AnimationTreeEditor::edit(AnimationTree *p_tree) {
@@ -575,6 +601,11 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	add_plugin(memnew(AnimationNodeBlendSpace1DEditor));
 	add_plugin(memnew(AnimationNodeBlendSpace2DEditor));
 	add_plugin(memnew(AnimationNodeStateMachineEditor));
+
+	ED_SHORTCUT("blend_tree_editor/cut", TTR("Cut"), KeyModifierMask::CMD_OR_CTRL | Key::X);
+	ED_SHORTCUT("blend_tree_editor/copy", TTR("Copy"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("blend_tree_editor/paste", TTR("Paste"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("blend_tree_editor/duplicate", TTR("Duplicate"), KeyModifierMask::CMD_OR_CTRL | Key::D);
 
 	error_scroll = memnew(ScrollContainer);
 	error_scroll->set_h_size_flags(SIZE_EXPAND_FILL);

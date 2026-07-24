@@ -62,6 +62,76 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_changed() {
 	blend_space_draw->queue_redraw();
 }
 
+Vector2 AnimationNodeBlendSpace2DEditor::_map_to_blend_space(const Vector2 &p_mouse) {
+	const float pm = POINT_MARGIN * EDSCALE;
+	const Vector2 margin_ofs(pm, pm); // Offset all drawing into the inner area.
+	const Size2 inner_size = blend_space_draw->get_size() - margin_ofs * 2; // Inner size, for coordinate math.
+
+	Vector2 mapped = ((p_mouse - margin_ofs) / inner_size);
+	mapped.y = 1.0 - mapped.y;
+	mapped *= (blend_space->get_max_space() - blend_space->get_min_space());
+	mapped += blend_space->get_min_space();
+
+	if (snap->is_pressed()) {
+		mapped = mapped.snapped(blend_space->get_snap());
+	}
+
+	return mapped;
+}
+
+Ref<AnimationRootNode> AnimationNodeBlendSpace2DEditor::_dup_copy_point() {
+	if (selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) {
+		return blend_space->get_blend_point_node(selected_point)->duplicate();
+	}
+	return nullptr;
+}
+
+void AnimationNodeBlendSpace2DEditor::_dup_paste_point(Ref<AnimationNode> node, const Vector2 &p_position, const String &p_name) {
+	String base_name = p_name.is_empty() ? node->get_class().replace_first("AnimationNode", "") : p_name;
+	String name = _get_safe_name(blend_space, base_name);
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(blend_space.ptr(), "add_blend_point", node->duplicate(), p_position, -1, name);
+	undo_redo->add_do_method(this, "_update_space");
+	undo_redo->add_undo_method(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
+	undo_redo->add_undo_method(this, "_update_space");
+}
+
+void AnimationNodeBlendSpace2DEditor::_duplicate_point(const Vector2 &p_position) {
+	Ref<AnimationRootNode> node = _dup_copy_point();
+	if (node.is_valid()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Duplicate BlendSpace2D Point"));
+		_dup_paste_point(node, p_position, blend_space->get_blend_point_name(selected_point));
+		undo_redo->commit_action();
+	}
+}
+
+void AnimationNodeBlendSpace2DEditor::_copy_point(bool p_cut) {
+	Ref<AnimationRootNode> node = _dup_copy_point();
+	if (node.is_valid()) {
+		copy_item.name = blend_space->get_blend_point_name(selected_point);
+		copy_item.node = node;
+	}
+	if (node.is_valid() && p_cut) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Cut BlendSpace2D Point"));
+		undo_redo->add_do_method(blend_space.ptr(), "remove_blend_point", selected_point);
+		undo_redo->add_do_method(this, "_update_space");
+		undo_redo->add_undo_method(blend_space.ptr(), "add_blend_point", node->duplicate(), blend_space->get_blend_point_position(selected_point), -1, copy_item.name);
+		undo_redo->add_undo_method(this, "_update_space");
+		undo_redo->commit_action();
+	}
+}
+
+void AnimationNodeBlendSpace2DEditor::_paste_point(const Vector2 &p_position) {
+	if (copy_item.node.is_valid()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Paste BlendSpace2D Point"));
+		_dup_paste_point(copy_item.node, p_position, copy_item.name);
+		undo_redo->commit_action();
+	}
+}
+
 void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 	if (blend_space.is_valid()) {
 		blend_space->disconnect("triangles_updated", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_blend_space_changed));
@@ -93,6 +163,33 @@ void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 	interpolation->set_disabled(read_only);
 }
 
+void AnimationNodeBlendSpace2DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	if (!is_visible_in_tree()) {
+		return;
+	}
+
+	if (!is_focus_owner_in_shortcut_context()) {
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && !k->is_echo()) {
+		if (ED_IS_SHORTCUT("blend_tree_editor/cut", p_event)) {
+			accept_event();
+			_copy_point(true);
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/copy", p_event)) {
+			accept_event();
+			_copy_point(false);
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/paste", p_event)) {
+			accept_event();
+			_paste_point(_map_to_blend_space(blend_space_draw->get_local_mouse_position()));
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/duplicate", p_event)) {
+			accept_event();
+			_duplicate_point(_map_to_blend_space(blend_space_draw->get_local_mouse_position()));
+		}
+	}
+}
+
 StringName AnimationNodeBlendSpace2DEditor::get_blend_position_path() const {
 	StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + "blend_position";
 	return path;
@@ -121,11 +218,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			}
 		}
 	}
-
-	const float pm = POINT_MARGIN * EDSCALE;
-
-	const Vector2 margin_ofs(pm, pm); // Offset all drawing into the inner area.
-	const Size2 inner_size = blend_space_draw->get_size() - margin_ofs * 2; // Inner size, for coordinate math.
 
 	Ref<InputEventMouseButton> mb = p_event;
 
@@ -162,11 +254,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				menu->set_item_metadata(idx, E);
 			}
 
-			Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
-			if (clipb.is_valid()) {
-				menu->add_separator();
-				menu->add_item(TTR("Paste"), MENU_PASTE);
-			}
+			_add_standard_context_menu_items(menu, selected_point >= 0, copy_item.node.is_valid());
+
 			menu->add_separator();
 			menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
@@ -174,14 +263,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			menu->reset_size();
 			menu->popup();
 
-			add_point_pos = ((mb->get_position() - margin_ofs) / inner_size);
-			add_point_pos.y = 1.0 - add_point_pos.y;
-			add_point_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
-			add_point_pos += blend_space->get_min_space();
-
-			if (snap->is_pressed()) {
-				add_point_pos = add_point_pos.snapped(blend_space->get_snap());
-			}
+			add_point_pos = _map_to_blend_space(mb->get_position());
 		}
 	}
 
@@ -319,13 +401,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && !dragging_selected_attempt && ((tool_select->is_pressed() && mb->is_shift_pressed()) || tool_blend->is_pressed()) && mb->get_button_index() == MouseButton::LEFT) {
-		Vector2 blend_pos = ((mb->get_position() - margin_ofs) / inner_size);
-		blend_pos.y = 1.0 - blend_pos.y;
-		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
-		blend_pos += blend_space->get_min_space();
-
+		Vector2 blend_pos = _map_to_blend_space(mb->get_position());
 		tree->set(get_blend_position_path(), blend_pos);
-
 		dragging_blend_position = true;
 		blend_space_draw->queue_redraw();
 	}
@@ -339,6 +416,10 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	if (mm.is_valid() && dragging_selected_attempt) {
 		dragging_selected = true;
 		if (!read_only) {
+			const float pm = POINT_MARGIN * EDSCALE;
+			const Vector2 margin_ofs(pm, pm); // Offset all drawing into the inner area.
+			const Size2 inner_size = blend_space_draw->get_size() - margin_ofs * 2; // Inner size, for coordinate math.
+
 			// drag_from and mm->get_position() are both in the same padded coordinate space, so their delta is unaffected by POINT_MARGIN.
 			drag_ofs = ((mm->get_position() - drag_from) / inner_size) * (blend_space->get_max_space() - blend_space->get_min_space()) * Vector2(1, -1);
 		}
@@ -356,13 +437,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mm.is_valid() && dragging_blend_position && !dragging_selected_attempt && ((tool_select->is_pressed() && mm->is_shift_pressed()) || tool_blend->is_pressed()) && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
-		Vector2 blend_pos = ((mm->get_position() - margin_ofs) / inner_size);
-		blend_pos.y = 1.0 - blend_pos.y;
-		blend_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
-		blend_pos += blend_space->get_min_space();
-
+		Vector2 blend_pos = _map_to_blend_space(mb->get_position());
 		tree->set(get_blend_position_path(), blend_pos);
-
 		blend_space_draw->queue_redraw();
 	}
 
@@ -426,8 +502,21 @@ void AnimationNodeBlendSpace2DEditor::_add_menu_type(int p_index) {
 	} else if (p_index == MENU_LOAD_FILE_CONFIRM) {
 		node = file_loaded;
 		file_loaded.unref();
+	} else if (p_index == MENU_CUT) {
+		_copy_point(true);
+		return;
+	} else if (p_index == MENU_COPY) {
+		_copy_point(false);
+		return;
 	} else if (p_index == MENU_PASTE) {
-		node = EditorSettings::get_singleton()->get_resource_clipboard();
+		_paste_point(add_point_pos);
+		return;
+	} else if (p_index == MENU_DUPLICATE) {
+		_duplicate_point(add_point_pos);
+		return;
+	} else if (p_index == MENU_DELETE) {
+		_erase_selected();
+		return;
 	} else {
 		String type = menu->get_item_metadata(p_index);
 
