@@ -78,7 +78,7 @@ cp -rv timer/{*.{c,h},unix,windows} $target/timer
 
 mkdir -p $target/hidapi
 cp -v hidapi/{*.{c,h},AUTHORS.txt,LICENSE.txt,LICENSE-bsd.txt,VERSION} $target/hidapi
-for dir in hidapi linux mac windows; do
+for dir in hidapi libusb linux mac windows; do
   mkdir $target/hidapi/$dir
   cp -v hidapi/$dir/*.{c,h} $target/hidapi/$dir
 done
