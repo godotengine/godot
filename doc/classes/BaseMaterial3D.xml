@@ -315,14 +315,21 @@
 		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The Occlusion/Roughness/Metallic texture to use. This is a more efficient replacement of [member ao_texture], [member roughness_texture] and [member metallic_texture] in [ORMMaterial3D]. Ambient occlusion is stored in the red channel. Roughness map is stored in the green channel. Metallic map is stored in the blue channel. The alpha channel is ignored.
 		</member>
-		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames">
-			The number of horizontal frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
+		<member name="particles_anim_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], enables [code]particles_anim_*[/code] properties. The [member ParticleProcessMaterial.anim_speed_min] or [member CPUParticles3D.anim_speed_min] should also be set to a value bigger than zero for the animation to play.
+			[b]Note:[/b] For compatibility reasons, this property is ignored and always enabled when [member billboard_mode] is set to [constant BILLBOARD_PARTICLES].
 		</member>
-		<member name="particles_anim_loop" type="bool" setter="set_particles_anim_loop" getter="get_particles_anim_loop">
-			If [code]true[/code], particle animations are looped. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
+		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames" default="1">
+			The number of horizontal frames in the particle sprite sheet.
+			Only enabled when [member particles_anim_enabled] is [code]true[/code] or [member billboard_mode] is set to [constant BILLBOARD_PARTICLES].
 		</member>
-		<member name="particles_anim_v_frames" type="int" setter="set_particles_anim_v_frames" getter="get_particles_anim_v_frames">
-			The number of vertical frames in the particle sprite sheet. Only enabled when using [constant BILLBOARD_PARTICLES]. See [member billboard_mode].
+		<member name="particles_anim_loop" type="bool" setter="set_particles_anim_loop" getter="get_particles_anim_loop" default="false">
+			If [code]true[/code], particle animations are looped.
+			Only enabled when [member particles_anim_enabled] is [code]true[/code] or [member billboard_mode] is set to [constant BILLBOARD_PARTICLES].
+		</member>
+		<member name="particles_anim_v_frames" type="int" setter="set_particles_anim_v_frames" getter="get_particles_anim_v_frames" default="1">
+			The number of vertical frames in the particle sprite sheet.
+			Only enabled when [member particles_anim_enabled] is [code]true[/code] or [member billboard_mode] is set to [constant BILLBOARD_PARTICLES].
 		</member>
 		<member name="point_size" type="float" setter="set_point_size" getter="get_point_size" default="1.0">
 			The point size in pixels. See [member use_point_size].
@@ -647,7 +654,10 @@
 		<constant name="FEATURE_BENT_NORMAL_MAPPING" value="12" enum="Feature">
 			Constant for setting [member bent_normal_enabled].
 		</constant>
-		<constant name="FEATURE_MAX" value="13" enum="Feature">
+		<constant name="FEATURE_PARTICLES_ANIMATION" value="13" enum="Feature">
+			Constant for setting [member particles_anim_enabled].
+		</constant>
+		<constant name="FEATURE_MAX" value="14" enum="Feature">
 			Represents the size of the [enum Feature] enum.
 		</constant>
 		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
@@ -813,6 +823,7 @@
 		<constant name="BILLBOARD_PARTICLES" value="3" enum="BillboardMode">
 			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes (flipbook animation). Enables [code]particles_anim_*[/code] properties.
 			The [member ParticleProcessMaterial.anim_speed_min] or [member CPUParticles3D.anim_speed_min] should also be set to a value bigger than zero for the animation to play.
+			For animations without bilboarding, see [member particles_anim_enabled].
 		</constant>
 		<constant name="TEXTURE_CHANNEL_RED" value="0" enum="TextureChannel">
 			Used to read from the red channel of a texture.
