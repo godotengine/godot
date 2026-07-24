@@ -576,12 +576,8 @@ void AnimationNodeBlendSpace1DEditor::_add_animation_type(int p_index) {
 }
 
 void AnimationNodeBlendSpace1DEditor::_tool_switch(int p_tool) {
-	if (p_tool == 0) {
-		tool_erase->show();
-		tool_erase_sep->show();
-	} else {
-		tool_erase->hide();
-		tool_erase_sep->hide();
+	if (p_tool != 0) {
+		_set_selected_point(-1);
 	}
 
 	_update_tool_erase();
@@ -985,14 +981,6 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_blend->set_tooltip_text(TTR("Set the blending position within the space."));
 	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(2));
 
-	tool_erase_sep = memnew(VSeparator);
-	top_hb->add_child(tool_erase_sep);
-	tool_erase = memnew(Button);
-	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
-	top_hb->add_child(tool_erase);
-	tool_erase->set_tooltip_text(TTR("Erase points."));
-	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_erase_selected));
-
 	top_hb->add_child(memnew(VSeparator));
 
 	snap = memnew(Button);
@@ -1073,6 +1061,14 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	edit_value->set_step(STEP_UNIT);
 	edit_value->set_accessibility_name(TTRC("Blend Value"));
 	edit_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_pos));
+
+	edit_hb->add_child(memnew(VSeparator));
+	tool_erase = memnew(Button);
+	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
+	top_hb->add_child(tool_erase);
+	tool_erase->set_tooltip_text(TTR("Erase points."));
+	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_erase_selected));
+	tool_erase->set_disabled(true);
 
 	edit_hb->hide();
 	open_editor->hide();
