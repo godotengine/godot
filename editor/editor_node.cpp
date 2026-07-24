@@ -216,9 +216,6 @@ EditorNode *EditorNode::singleton = nullptr;
 
 static const String EDITOR_NODE_CONFIG_SECTION = "EditorNode";
 
-static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("The Android build template is already installed in this project and it won't be overwritten.\nRemove the \"%s\" directory manually before attempting this operation again.");
-static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("This will set up your project for gradle Android builds by installing the source template to \"%s\".\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset.");
-
 constexpr int LARGE_RESOURCE_WARNING_SIZE_THRESHOLD = 512'000; // 500 KB
 
 bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refresh) {
@@ -3368,22 +3365,36 @@ void EditorNode::_android_build_source_selected(const String &p_file) {
 	export_template_manager->install_android_template_from_file(p_file, android_export_preset);
 }
 
-void EditorNode::_android_export_preset_selected(int p_index) {
-	if (p_index >= 0) {
-		android_export_preset = EditorExport::get_singleton()->get_export_preset(choose_android_export_profile->get_item_id(p_index));
-	} else {
-		android_export_preset.unref();
-	}
-	install_android_build_template_message->set_text(vformat(TTR(INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE), export_template_manager->get_android_build_directory(android_export_preset)));
-}
-
 void EditorNode::_android_install_build_template() {
 	gradle_build_manage_templates->hide();
 	file_android_build_source->popup_centered_ratio();
 }
 
-void EditorNode::_android_explore_build_templates() {
-	OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(export_template_manager->get_android_build_directory(android_export_preset).get_base_dir()), true);
+Error EditorNode::setup_android_build_template(const Ref<EditorExportPreset> &p_preset) {
+	android_export_preset = p_preset;
+	if (export_template_manager->is_android_template_installed(p_preset)) {
+		if (export_template_manager->is_android_build_version_valid(p_preset)) {
+			return OK;
+		}
+
+		// If we get here, then the installed android build directory is no longer valid (e.g: editor upgrade).
+		// Let's check whether we can automatically delete the build directory. If not, we throw an error and let the
+		// user handle the deletion.
+		bool can_delete_automatically = EDITOR_GET("export/android/build/automatically_delete_build_directory");
+		if (can_delete_automatically) {
+			if (export_template_manager->delete_android_build_directory(android_export_preset) == OK) {
+				return setup_android_build_template(android_export_preset);
+			}
+		}
+
+		return ERR_UNCONFIGURED;
+	} else if (!export_template_manager->can_install_android_template(p_preset)) {
+		gradle_build_manage_templates->popup_centered();
+	} else {
+		export_template_manager->install_android_template(p_preset);
+	}
+
+	return OK;
 }
 
 static String _get_unsaved_scene_dialog_text(String p_scene_filename, uint64_t p_opened_timestamp) {
@@ -3720,50 +3731,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			ScriptEditor::get_singleton()->open_find_in_files_dialog("");
 		} break;
 
-		case PROJECT_INSTALL_ANDROID_SOURCE: {
-			if (p_confirmed) {
-				if (export_template_manager->is_android_template_installed(android_export_preset)) {
-					remove_android_build_template->set_text(vformat(TTR(REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE), export_template_manager->get_android_build_directory(android_export_preset)));
-					remove_android_build_template->popup_centered();
-				} else if (!export_template_manager->can_install_android_template(android_export_preset)) {
-					gradle_build_manage_templates->popup_centered();
-				} else {
-					export_template_manager->install_android_template(android_export_preset);
-				}
-			} else {
-				bool has_custom_gradle_build = false;
-				choose_android_export_profile->clear();
-				for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-					Ref<EditorExportPreset> export_preset = EditorExport::get_singleton()->get_export_preset(i);
-					if (export_preset->get_platform()->get_class_name() == "EditorExportPlatformAndroid" && (bool)export_preset->get("gradle_build/use_gradle_build")) {
-						choose_android_export_profile->add_item(export_preset->get_name(), i);
-						String gradle_build_directory = export_preset->get("gradle_build/gradle_build_directory");
-						String android_source_template = export_preset->get("gradle_build/android_source_template");
-						if (!android_source_template.is_empty() || (gradle_build_directory != "" && gradle_build_directory != "res://android")) {
-							has_custom_gradle_build = true;
-						}
-					}
-				}
-				_android_export_preset_selected(choose_android_export_profile->get_item_count() >= 1 ? 0 : -1);
-
-				if (choose_android_export_profile->get_item_count() > 1 && has_custom_gradle_build) {
-					// If there's multiple options and at least one of them uses a custom gradle build then prompt the user to choose.
-					choose_android_export_profile->show();
-					install_android_build_template->popup_centered();
-				} else {
-					choose_android_export_profile->hide();
-
-					if (export_template_manager->is_android_template_installed(android_export_preset)) {
-						remove_android_build_template->set_text(vformat(TTR(REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE), export_template_manager->get_android_build_directory(android_export_preset)));
-						remove_android_build_template->popup_centered();
-					} else if (export_template_manager->can_install_android_template(android_export_preset)) {
-						install_android_build_template->popup_centered();
-					} else {
-						gradle_build_manage_templates->popup_centered();
-					}
-				}
-			}
-		} break;
 		case PROJECT_OPEN_USER_DATA_FOLDER: {
 			// Ensure_user_data_dir() to prevent the edge case: "Open User Data Folder" won't work after the project was renamed in ProjectSettingsEditor unless the project is saved.
 			OS::get_singleton()->ensure_user_data_dir();
@@ -8113,7 +8080,6 @@ void EditorNode::_build_project_menu(bool p_dark_mode) {
 	project_menu->add_separator();
 	project_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("ResourcePreloader"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/export"), PROJECT_EXPORT);
 	project_menu->add_item(TTRC("Pack Project as ZIP..."), PROJECT_PACK_AS_ZIP);
-	project_menu->add_item(TTRC("Install Android Build Template..."), PROJECT_INSTALL_ANDROID_SOURCE);
 #ifndef ANDROID_ENABLED
 	project_menu->add_item(TTRC("Open User Data Folder"), PROJECT_OPEN_USER_DATA_FOLDER);
 #endif
@@ -9348,32 +9314,6 @@ EditorNode::EditorNode() {
 	file_android_build_source->add_filter("*.zip");
 	file_android_build_source->connect("file_selected", callable_mp(this, &EditorNode::_android_build_source_selected));
 	gui_base->add_child(file_android_build_source);
-
-	{
-		VBoxContainer *vbox = memnew(VBoxContainer);
-		install_android_build_template_message = memnew(Label);
-		install_android_build_template_message->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-		install_android_build_template_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-		install_android_build_template_message->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
-		vbox->add_child(install_android_build_template_message);
-
-		choose_android_export_profile = memnew(OptionButton);
-		choose_android_export_profile->connect(SceneStringName(item_selected), callable_mp(this, &EditorNode::_android_export_preset_selected));
-		vbox->add_child(choose_android_export_profile);
-
-		install_android_build_template = memnew(ConfirmationDialog);
-		install_android_build_template->set_flag(Window::FLAG_RESIZE_DISABLED, true);
-		install_android_build_template->set_ok_button_text(TTR("Install"));
-		install_android_build_template->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
-		install_android_build_template->add_child(vbox);
-		install_android_build_template->set_min_size(Vector2(500.0 * EDSCALE, 0));
-		gui_base->add_child(install_android_build_template);
-	}
-
-	remove_android_build_template = memnew(ConfirmationDialog);
-	remove_android_build_template->set_ok_button_text(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN));
-	remove_android_build_template->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_android_explore_build_templates));
-	gui_base->add_child(remove_android_build_template);
 
 	file_templates = memnew(EditorFileDialog);
 	file_templates->set_title(TTR("Import Templates From ZIP File"));
