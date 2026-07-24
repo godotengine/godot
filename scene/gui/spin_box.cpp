@@ -203,8 +203,8 @@ void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_range_click_timeout() {
 	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
-		Rect2 up_button_rc = Rect2(sizing_cache.buttons_left, 0, sizing_cache.buttons_width, sizing_cache.button_up_height);
-		Rect2 down_button_rc = Rect2(sizing_cache.buttons_left, sizing_cache.second_button_top, sizing_cache.buttons_width, sizing_cache.button_down_height);
+		Rect2 up_button_rc = Rect2(sizing_cache.up_button_x, 0, sizing_cache.buttons_width, sizing_cache.button_up_height);
+		Rect2 down_button_rc = Rect2(sizing_cache.down_button_x, sizing_cache.second_button_top, sizing_cache.buttons_width, sizing_cache.button_down_height);
 
 		Vector2 mpos = get_local_mouse_position();
 
@@ -275,8 +275,8 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 	bool mouse_on_up_button = false;
 	bool mouse_on_down_button = false;
 	if (mb.is_valid() || mm.is_valid()) {
-		Rect2 up_button_rc = Rect2(sizing_cache.buttons_left, 0, sizing_cache.buttons_width, sizing_cache.button_up_height);
-		Rect2 down_button_rc = Rect2(sizing_cache.buttons_left, sizing_cache.second_button_top, sizing_cache.buttons_width, sizing_cache.button_down_height);
+		Rect2 up_button_rc = Rect2(sizing_cache.up_button_x, 0, sizing_cache.buttons_width, sizing_cache.button_up_height);
+		Rect2 down_button_rc = Rect2(sizing_cache.down_button_x, sizing_cache.second_button_top, sizing_cache.buttons_width, sizing_cache.button_down_height);
 
 		mpos = me->get_position();
 
@@ -355,7 +355,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		if (drag.enabled) {
-			drag.diff_y += mm->get_relative().y;
+			drag.diff_y += (stepper_mode == StepperMode::DISPLAY_VERTICALLY ? mm->get_relative().y : -mm->get_relative().x * (is_layout_rtl() ? -1 : 1));
 			double diff_y = -0.01 * Math::pow(Math::abs(drag.diff_y), 1.8) * SIGN(drag.diff_y);
 			set_value(CLAMP(drag.base_val + step * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
@@ -391,34 +391,77 @@ void SpinBox::_line_edit_editing_toggled(bool p_toggled_on) {
 }
 
 inline void SpinBox::_compute_sizes() {
-	int buttons_block_wanted_width = theme_cache.buttons_width + theme_cache.field_and_buttons_separation;
-	int buttons_block_icon_enforced_width = _get_widest_button_icon_width() + theme_cache.field_and_buttons_separation;
+	Size2i size = get_size();
+	bool rtl = is_layout_rtl();
 
 #ifndef DISABLE_DEPRECATED
 	const bool min_width_from_icons = theme_cache.set_min_buttons_width_from_icons || (theme_cache.buttons_width < 0);
 #else
 	const bool min_width_from_icons = theme_cache.buttons_width < 0;
 #endif
-	int w = min_width_from_icons != 0 ? MAX(buttons_block_icon_enforced_width, buttons_block_wanted_width) : buttons_block_wanted_width;
 
-	if (w != sizing_cache.buttons_block_width) {
-		line_edit->set_offset(SIDE_LEFT, 0);
-		line_edit->set_offset(SIDE_RIGHT, -w);
-		sizing_cache.buttons_block_width = w;
+	int btn_width = min_width_from_icons ? MAX(_get_widest_button_icon_width(), theme_cache.buttons_width) : theme_cache.buttons_width;
+	int block_width = btn_width + theme_cache.field_and_buttons_separation;
+	int left_ofs = 0;
+	int right_ofs = block_width;
+
+	sizing_cache.buttons_width = btn_width;
+	sizing_cache.field_and_buttons_separator_width = theme_cache.field_and_buttons_separation;
+	sizing_cache.up_button_x = rtl ? 0 : size.width - sizing_cache.buttons_width;
+
+	switch (stepper_mode) {
+		case StepperMode::DISPLAY_NONE: {
+			sizing_cache = {};
+			block_width = 0;
+			right_ofs = 0;
+		} break;
+
+		case StepperMode::DISPLAY_VERTICALLY: {
+			sizing_cache.buttons_vertical_separation = CLAMP(theme_cache.buttons_vertical_separation, 0, size.height);
+			sizing_cache.button_up_height = (size.height - sizing_cache.buttons_vertical_separation) / 2;
+			sizing_cache.button_down_height = size.height - sizing_cache.button_up_height - sizing_cache.buttons_vertical_separation;
+			sizing_cache.down_button_x = sizing_cache.up_button_x;
+			sizing_cache.second_button_top = size.height - sizing_cache.button_down_height;
+			sizing_cache.buttons_separator_x = sizing_cache.up_button_x;
+			sizing_cache.buttons_separator_top = sizing_cache.button_up_height;
+			sizing_cache.field_and_buttons_separator_left = rtl ? sizing_cache.buttons_width : size.width - block_width;
+		} break;
+
+		case StepperMode::DISPLAY_HORIZONTALLY: {
+			block_width += btn_width + theme_cache.buttons_vertical_separation;
+			sizing_cache.buttons_vertical_separation = theme_cache.buttons_vertical_separation;
+			sizing_cache.button_up_height = size.height;
+			sizing_cache.button_down_height = size.height;
+			sizing_cache.down_button_x = rtl ? sizing_cache.buttons_width + theme_cache.buttons_vertical_separation : sizing_cache.up_button_x - theme_cache.buttons_vertical_separation - sizing_cache.buttons_width;
+			sizing_cache.second_button_top = 0;
+			sizing_cache.buttons_separator_x = rtl ? sizing_cache.buttons_width : sizing_cache.down_button_x + sizing_cache.buttons_width;
+			sizing_cache.buttons_separator_top = 0;
+			sizing_cache.field_and_buttons_separator_left = rtl ? sizing_cache.down_button_x + sizing_cache.buttons_width : size.width - block_width;
+			right_ofs = block_width;
+
+		} break;
+
+		case StepperMode::DISPLAY_SPLIT_HORIZONTALLY: {
+			block_width += btn_width + sizing_cache.field_and_buttons_separator_width;
+			sizing_cache.buttons_vertical_separation = theme_cache.buttons_vertical_separation;
+			sizing_cache.button_up_height = size.height;
+			sizing_cache.button_down_height = size.height;
+			sizing_cache.down_button_x = rtl ? size.width - sizing_cache.buttons_width : 0;
+			sizing_cache.second_button_top = 0;
+			sizing_cache.buttons_separator_x = rtl ? size.width - sizing_cache.buttons_width : sizing_cache.buttons_width;
+			sizing_cache.buttons_separator_top = 0;
+			sizing_cache.field_and_buttons_separator_left = rtl ? sizing_cache.down_button_x + sizing_cache.buttons_width : size.width - sizing_cache.buttons_width - sizing_cache.field_and_buttons_separator_width;
+			left_ofs = btn_width + sizing_cache.field_and_buttons_separator_width;
+			right_ofs = left_ofs;
+		} break;
 	}
 
-	Size2i size = get_size();
+	line_edit->set_offset(SIDE_LEFT, left_ofs);
+	line_edit->set_offset(SIDE_RIGHT, -right_ofs);
 
-	sizing_cache.buttons_width = w - theme_cache.field_and_buttons_separation;
-	sizing_cache.buttons_vertical_separation = CLAMP(theme_cache.buttons_vertical_separation, 0, size.height);
-	sizing_cache.buttons_left = is_layout_rtl() ? 0 : size.width - sizing_cache.buttons_width;
-	sizing_cache.button_up_height = (size.height - sizing_cache.buttons_vertical_separation) / 2;
-	sizing_cache.button_down_height = size.height - sizing_cache.button_up_height - sizing_cache.buttons_vertical_separation;
-	sizing_cache.second_button_top = size.height - sizing_cache.button_down_height;
-
-	sizing_cache.buttons_separator_top = sizing_cache.button_up_height;
-	sizing_cache.field_and_buttons_separator_left = is_layout_rtl() ? sizing_cache.buttons_width : size.width - sizing_cache.buttons_block_width;
-	sizing_cache.field_and_buttons_separator_width = theme_cache.field_and_buttons_separation;
+	if (block_width != sizing_cache.buttons_block_width) {
+		sizing_cache.buttons_block_width = block_width;
+	}
 }
 
 inline int SpinBox::_get_widest_button_icon_width() {
@@ -443,6 +486,9 @@ void SpinBox::_notification(int p_what) {
 			_update_text(true);
 			_compute_sizes();
 
+			if (stepper_mode == StepperMode::DISPLAY_NONE) {
+				return;
+			}
 			Size2i size = get_size();
 
 			Ref<StyleBox> up_stylebox = theme_cache.up_base_stylebox;
@@ -483,18 +529,22 @@ void SpinBox::_notification(int p_what) {
 			}
 
 			// Compute center icon positions once we know which one is used.
-			int up_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - up_icon->get_width()) / 2;
+			int up_icon_left = sizing_cache.up_button_x + (sizing_cache.buttons_width - up_icon->get_width()) / 2;
 			int up_icon_top = (sizing_cache.button_up_height - up_icon->get_height()) / 2;
-			int down_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - down_icon->get_width()) / 2;
+			int down_icon_left = sizing_cache.down_button_x + (sizing_cache.buttons_width - down_icon->get_width()) / 2;
 			int down_icon_top = sizing_cache.second_button_top + (sizing_cache.button_down_height - down_icon->get_height()) / 2;
 
 			// Draw separators.
-			draw_style_box(theme_cache.up_down_buttons_separator, Rect2(sizing_cache.buttons_left, sizing_cache.buttons_separator_top, sizing_cache.buttons_width, sizing_cache.buttons_vertical_separation));
+			if (stepper_mode == StepperMode::DISPLAY_SPLIT_HORIZONTALLY) {
+				draw_style_box(theme_cache.field_and_buttons_separator, Rect2(sizing_cache.buttons_separator_x, 0, sizing_cache.field_and_buttons_separator_width, size.height));
+			} else {
+				draw_style_box(theme_cache.up_down_buttons_separator, Rect2(sizing_cache.buttons_separator_x, sizing_cache.buttons_separator_top, stepper_mode != StepperMode::DISPLAY_VERTICALLY ? sizing_cache.buttons_vertical_separation : sizing_cache.buttons_width, stepper_mode != StepperMode::DISPLAY_VERTICALLY ? size.height : sizing_cache.buttons_vertical_separation));
+			}
 			draw_style_box(theme_cache.field_and_buttons_separator, Rect2(sizing_cache.field_and_buttons_separator_left, 0, sizing_cache.field_and_buttons_separator_width, size.height));
 
 			// Draw buttons.
-			draw_style_box(up_stylebox, Rect2(sizing_cache.buttons_left, 0, sizing_cache.buttons_width, sizing_cache.button_up_height));
-			draw_style_box(down_stylebox, Rect2(sizing_cache.buttons_left, sizing_cache.second_button_top, sizing_cache.buttons_width, sizing_cache.button_down_height));
+			draw_style_box(up_stylebox, Rect2(sizing_cache.up_button_x, 0, sizing_cache.buttons_width, sizing_cache.button_up_height));
+			draw_style_box(down_stylebox, Rect2(sizing_cache.down_button_x, sizing_cache.second_button_top, sizing_cache.buttons_width, sizing_cache.button_down_height));
 
 #ifndef DISABLE_DEPRECATED
 			if (theme_cache.is_updown_assigned) {
@@ -662,6 +712,20 @@ void SpinBox::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+void SpinBox::set_stepper_mode(StepperMode p_mode) {
+	if (stepper_mode == p_mode) {
+		return;
+	}
+
+	stepper_mode = p_mode;
+	queue_redraw();
+	callable_mp((Control *)this, &Control::update_minimum_size).call_deferred();
+}
+
+SpinBox::StepperMode SpinBox::get_stepper_mode() const {
+	return stepper_mode;
+}
+
 void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &SpinBox::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &SpinBox::get_horizontal_alignment);
@@ -681,6 +745,8 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_select_all_on_focus"), &SpinBox::is_select_all_on_focus);
 	ClassDB::bind_method(D_METHOD("apply"), &SpinBox::apply);
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &SpinBox::get_line_edit);
+	ClassDB::bind_method(D_METHOD("set_stepper_mode", "enable"), &SpinBox::set_stepper_mode);
+	ClassDB::bind_method(D_METHOD("get_stepper_mode"), &SpinBox::get_stepper_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
@@ -690,6 +756,12 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_arrow_round"), "set_custom_arrow_round", "is_custom_arrow_rounding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stepper_mode", PROPERTY_HINT_ENUM, "None,Vertical,Horizontal,Split Horizontal"), "set_stepper_mode", "get_stepper_mode");
+
+	BIND_ENUM_CONSTANT(DISPLAY_NONE);
+	BIND_ENUM_CONSTANT(DISPLAY_VERTICALLY);
+	BIND_ENUM_CONSTANT(DISPLAY_HORIZONTALLY);
+	BIND_ENUM_CONSTANT(DISPLAY_SPLIT_HORIZONTALLY);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_vertical_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, field_and_buttons_separation);
