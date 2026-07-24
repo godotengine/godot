@@ -2973,7 +2973,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					begin_transform(TRANSFORM_SCALE, true);
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", event_mod) && editor_selection->get_top_selected_node_list().size() == 1 && !collision_reposition && _has_unlocked_selection()) {
+			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", event_mod) && editor_selection->get_top_selected_node_list().size() >= 1 && !collision_reposition && _has_unlocked_selection()) {
 				if (_edit.mode == TRANSFORM_NONE || _edit.instant) {
 					if (_edit.mode == TRANSFORM_NONE) {
 						_compute_edit(_edit.mouse_pos);
@@ -3780,17 +3780,19 @@ void Node3DEditorViewport::_notification(int p_what) {
 					const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 					if (selection.size() == 1) {
 						selected_node = Object::cast_to<Node3D>(selection.front()->get());
+					} else if (selection.size() > 1) {
+						_collision_reposition_multi(selection);
 					}
 				}
 
 				if (selected_node) {
+					selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
+
 					if (!ruler->is_inside_tree()) {
 						double snap = EDITOR_GET("interface/inspector/default_float_step");
 						int snap_step_decimals = Math::range_step_decimals(snap);
 						set_message(vformat(TTR("Translating: %s"), vformat("%.*v", snap_step_decimals, selected_node->get_global_position())));
 					}
-
-					selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
 
 					if (ruler->is_inside_tree() && !ruler_start_point->is_visible()) {
 						ruler_end_point->set_global_position(ruler_start_point->get_global_position());
@@ -5415,6 +5417,40 @@ void _insert_collision_object_rid_recursive(Node *p_node, HashSet<RID> &p_col_ob
 	}
 }
 
+void Node3DEditorViewport::_collision_reposition_multi(const List<Node *> &p_selection) {
+	Node3D *active_node = spatial_editor->get_active_node();
+	if (!active_node) {
+		return;
+	}
+
+	Vector3 collision_pos = spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, active_node));
+
+	Transform3D active_node_original_transform = active_node->get_global_transform();
+	HashMap<Node3D *, Transform3D> relative_transforms;
+
+	for (Node *E : p_selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
+		if (sp && sp != active_node) {
+			relative_transforms[sp] = active_node_original_transform.affine_inverse() * sp->get_global_transform();
+		}
+	}
+
+	active_node->set_global_position(collision_pos);
+
+	Transform3D active_node_new_transform = active_node->get_global_transform();
+	for (Node *E : p_selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E);
+		if (sp && sp != active_node && relative_transforms.has(sp)) {
+			Transform3D new_transform = active_node_new_transform * relative_transforms[sp];
+			sp->set_global_transform(new_transform);
+		}
+	}
+
+	double snap = EDITOR_GET("interface/inspector/default_float_step");
+	int snap_step_decimals = Math::range_step_decimals(snap);
+	set_message(vformat(TTR("Translating: %s"), vformat("%.*v", snap_step_decimals, active_node->get_global_position())));
+}
+
 Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D *p_node) const {
 	const float MAX_DISTANCE = 50.0;
 	const float FALLBACK_DISTANCE = 5.0;
@@ -5429,10 +5465,11 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	} else if (!preview_node->is_inside_tree() && !ruler->is_inside_tree()) {
 		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
-		Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
-
-		if (first_selected_node) {
-			_insert_collision_object_rid_recursive(first_selected_node, col_obj_rids_to_exclude);
+		for (Node *E : selection) {
+			Node3D *selected_node = Object::cast_to<Node3D>(E);
+			if (selected_node) {
+				_insert_collision_object_rid_recursive(selected_node, col_obj_rids_to_exclude);
+			}
 		}
 	}
 
@@ -5445,7 +5482,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	PS3DT::RayResult result;
 
 	if (ss->intersect_ray(ray_params, result) && (preview_node->get_child_count() > 0 || !preview_node->is_inside_tree())) {
-		// Calculate an offset for the `p_node` such that the its bounding box is on top of and touching the contact surface's plane.
+		// Calculate an offset for the `p_node` such that its bounding box is on top of and touching the contact surface's plane.
 
 		// Use the Gram-Schmidt process to get an orthonormal Basis aligned with the surface normal.
 		const Vector3 bb_basis_x = result.normal;
