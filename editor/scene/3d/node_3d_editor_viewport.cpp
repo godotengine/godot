@@ -6063,9 +6063,10 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 					"[b]Hold Shift:[/b] Add as children of selected node.",
 					files.size()) +
 			"\n" +
-			TTRN("[b]Hold Alt:[/b] Add as child of root node.",
-					"[b]Hold Alt:[/b] Add as children of root node.",
-					files.size());
+			vformat(TTRN("[b]Hold %s:[/b] Add as child of root node.",
+							"[b]Hold %s:[/b] Add as children of root node.",
+							files.size()),
+					keycode_get_string((Key)KeyModifierMask::ALT));
 
 	if (files.size() > 1) {
 		title = TTR("Dropping multiple files...");
