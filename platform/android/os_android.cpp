@@ -61,6 +61,7 @@
 #endif
 
 #include <dlfcn.h>
+#include <stdlib.h>
 #include <sys/system_properties.h>
 
 const char *OS_Android::ANDROID_EXEC_PATH = "apk";
@@ -989,6 +990,11 @@ Error OS_Android::kill(const ProcessID &p_pid) {
 
 String OS_Android::get_system_ca_certificates() {
 	return godot_java->get_ca_certificates();
+}
+
+Error OS_Android::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	arc4random_buf(r_buffer, p_bytes);
+	return OK;
 }
 
 Error OS_Android::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
