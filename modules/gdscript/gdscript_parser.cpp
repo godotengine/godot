@@ -2059,6 +2059,61 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 	return suite;
 }
 
+#ifdef DEBUG_ENABLED
+static bool _is_standalone_expression_effective(const GDScriptParser::ExpressionNode *p_expression) {
+	if (p_expression == nullptr) {
+		return false;
+	}
+	switch (p_expression->type) {
+		case GDScriptParser::Node::CALL:
+		case GDScriptParser::Node::AWAIT:
+			return true;
+		case GDScriptParser::Node::ARRAY: {
+			const GDScriptParser::ArrayNode *array = static_cast<const GDScriptParser::ArrayNode *>(p_expression);
+			for (int i = 0; i < array->elements.size(); i++) {
+				if (_is_standalone_expression_effective(array->elements[i])) {
+					return true;
+				}
+			}
+			return false;
+		}
+		case GDScriptParser::Node::BINARY_OPERATOR: {
+			const GDScriptParser::BinaryOpNode *binary_op = static_cast<const GDScriptParser::BinaryOpNode *>(p_expression);
+			return _is_standalone_expression_effective(binary_op->left_operand) || _is_standalone_expression_effective(binary_op->right_operand);
+		}
+		case GDScriptParser::Node::CAST:
+			return _is_standalone_expression_effective(static_cast<const GDScriptParser::CastNode *>(p_expression)->operand);
+		case GDScriptParser::Node::DICTIONARY: {
+			const GDScriptParser::DictionaryNode *dictionary = static_cast<const GDScriptParser::DictionaryNode *>(p_expression);
+			for (int i = 0; i < dictionary->elements.size(); i++) {
+				if (_is_standalone_expression_effective(dictionary->elements[i].key) || _is_standalone_expression_effective(dictionary->elements[i].value)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		case GDScriptParser::Node::SUBSCRIPT: {
+			const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(p_expression);
+			if (_is_standalone_expression_effective(subscript->base)) {
+				return true;
+			}
+			return !subscript->is_attribute && _is_standalone_expression_effective(subscript->index);
+		}
+		case GDScriptParser::Node::TERNARY_OPERATOR: {
+			const GDScriptParser::TernaryOpNode *ternary_op = static_cast<const GDScriptParser::TernaryOpNode *>(p_expression);
+			return _is_standalone_expression_effective(ternary_op->condition) || _is_standalone_expression_effective(ternary_op->true_expr) || _is_standalone_expression_effective(ternary_op->false_expr);
+		}
+		case GDScriptParser::Node::TYPE_TEST:
+			return _is_standalone_expression_effective(static_cast<const GDScriptParser::TypeTestNode *>(p_expression)->operand);
+		case GDScriptParser::Node::UNARY_OPERATOR:
+			return _is_standalone_expression_effective(static_cast<const GDScriptParser::UnaryOpNode *>(p_expression)->operand);
+		default:
+			// Note: A `LAMBDA` body is not evaluated by the expression that contains it.
+			return false;
+	}
+}
+#endif // DEBUG_ENABLED
+
 GDScriptParser::Node *GDScriptParser::parse_statement() {
 	Node *result = nullptr;
 #ifdef DEBUG_ENABLED
@@ -2214,7 +2269,11 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						push_warning(expression, GDScriptWarning::STANDALONE_TERNARY);
 						break;
 					default:
-						push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
+						// A sub-expression may still have an effect, e.g. a call in the
+						// short-circuit operand of `and`/`or`.
+						if (!_is_standalone_expression_effective(expression)) {
+							push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
+						}
 				}
 			}
 #endif
