@@ -122,8 +122,8 @@
 		<method name="get_texture" qualifiers="const">
 			<return type="ViewportTexture" />
 			<description>
-				Returns the viewport's [ViewportTexture]. This is a dynamic texture, which gets automatically updated to portray and match the content of the viewport. In essence, it returns a live video view, which can be drawn like any other [Texture2D].
-				[b]Note:[/b] Using a [ViewportTexture] on a node, such as a [Sprite3D] or [TextureRect], which is a child or descendant of the [Viewport] the texture represents is [b]not[/b] supported. Keep in mind this also applies to a [ViewportTexture] of the root [Viewport]. You can work around this limitation by converting the [ViewportTexture] into a static [ImageTexture], using [method ImageTexture.create_from_image].
+				Returns the viewport's [ViewportTexture]. This is a dynamic texture, which gets automatically updated to portray and match the content of the viewport. In essence, it returns a live video view that can be drawn like any other [Texture2D].
+				[b]Note:[/b] Displaying a [ViewportTexture] on a child or descendant node (such as a [Sprite3D] or [TextureRect]) of the [Viewport] the texture represents is [b]not[/b] supported. Keep in mind this also applies to a [ViewportTexture] of the root [Viewport]. You can work around this limitation by converting the [ViewportTexture] into a static [ImageTexture], using [method ImageTexture.create_from_image].
 				[b]Note:[/b] When trying to store the current texture (e.g. in a file), it might be completely black or outdated if used too early, especially when used in e.g. [method Node._ready]. To make sure the texture you get is correct, you can await [signal RenderingServer.frame_post_draw] signal.
 				[codeblocks]
 				[gdscript]
