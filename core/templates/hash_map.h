@@ -87,20 +87,6 @@ private:
 		return hash;
 	}
 
-	_FORCE_INLINE_ static constexpr void _increment_mod(uint32_t &r_idx, const uint32_t p_capacity) {
-		r_idx++;
-		// `if` is faster than both fastmod and mod.
-		if (unlikely(r_idx == p_capacity)) {
-			r_idx = 0;
-		}
-	}
-
-	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t p_idx, const uint32_t p_hash, const uint32_t p_capacity, const uint64_t p_capacity_inv) {
-		const uint32_t original_idx = fastmod(p_hash, p_capacity_inv, p_capacity);
-		// We can use an if (faster than fastmod) to wrap around.
-		return p_idx >= original_idx ? p_idx - original_idx : p_idx - original_idx + p_capacity;
-	}
-
 	bool _lookup_idx(const TKey &p_key, uint32_t &r_idx) const {
 		return _elements != nullptr && _size > 0 && _lookup_idx_unchecked(p_key, _hash(p_key), r_idx);
 	}
@@ -109,55 +95,30 @@ private:
 	bool _lookup_idx_unchecked(const TKey &p_key, uint32_t p_hash, uint32_t &r_idx) const {
 		const uint32_t capacity = hash_table_size_primes[_capacity_idx];
 		const uint64_t capacity_inv = hash_table_size_primes_inv[_capacity_idx];
-		const uint32_t starting_idx = fastmod(p_hash, capacity_inv, capacity);
+		const uint32_t start_idx = fastmod(p_hash, capacity_inv, capacity);
+		uint32_t idx = start_idx;
 
-		// Extract first iteration of loop to skip probe length check.
-		if (_hashes[starting_idx] == EMPTY_HASH) {
+		if (_hashes[idx] == EMPTY_HASH) {
 			return false;
 		}
-		if (_hashes[starting_idx] == p_hash && likely(Comparator::compare(_elements[starting_idx]->data.key, p_key))) {
-			r_idx = starting_idx;
+		if (_hashes[idx] == p_hash && Comparator::compare(_elements[idx]->data.key, p_key)) {
+			r_idx = idx;
 			return true;
 		}
-		// First loop: search until end then wrap around.
-		uint32_t idx;
-		for (idx = starting_idx + 1; idx < capacity; idx++) {
-			if (_hashes[idx] == EMPTY_HASH) {
-				return false;
-			}
-			if (_hashes[idx] != p_hash) {
-				const uint32_t original_idx = fastmod(_hashes[idx], capacity_inv, capacity);
-				// Stop search if we probed further than this element, which happens when
-				// we encountered the `original_idx` along the search.
-				// Since we didn't wrap, the interval is simply (starting_idx, idx]
-				if (original_idx > starting_idx && original_idx <= idx) {
-					return false;
-				}
-			} else if (likely(Comparator::compare(_elements[idx]->data.key, p_key))) {
-				r_idx = idx;
-				return true;
-			}
-		}
-		// Second loop: after wrap around, search from beginning.
-		idx = 0;
 		while (true) {
+			increment_mod(idx, capacity);
 			if (_hashes[idx] == EMPTY_HASH) {
 				return false;
 			}
 			if (_hashes[idx] != p_hash) {
-				const uint32_t original_idx = fastmod(_hashes[idx], capacity_inv, capacity);
-				// Stop search if we probed further than this element, which happens when
-				// we encountered the `original_idx` along the search.
-				// Since we wrapped around, the search path consists of two intervals
-				// (starting_idx, capacity) and [0, idx]
-				if (original_idx > starting_idx || original_idx <= idx) {
+				// Stop search if we probed further than this element.
+				if (probe_length_cmp(fastmod(_hashes[idx], capacity_inv, capacity), start_idx, idx)) {
 					return false;
 				}
-			} else if (likely(Comparator::compare(_elements[idx]->data.key, p_key))) {
+			} else if (Comparator::compare(_elements[idx]->data.key, p_key)) {
 				r_idx = idx;
 				return true;
 			}
-			idx++;
 		}
 	}
 
@@ -166,30 +127,33 @@ private:
 		const uint64_t capacity_inv = hash_table_size_primes_inv[_capacity_idx];
 		uint32_t hash = p_hash;
 		HashMapElement<TKey, TValue> *value = p_value;
-		uint32_t distance = 0;
-		uint32_t idx = fastmod(hash, capacity_inv, capacity);
 
+		uint32_t start_idx = fastmod(hash, capacity_inv, capacity);
+		uint32_t idx = start_idx;
+
+		if (_hashes[idx] == EMPTY_HASH) {
+			goto empty;
+		}
+
+		// Keep going until empty slot found.
 		while (true) {
+			increment_mod(idx, capacity);
 			if (_hashes[idx] == EMPTY_HASH) {
-				_elements[idx] = value;
-				_hashes[idx] = hash;
-
-				_size++;
-
-				return;
+				goto empty;
 			}
 
 			// Not an empty slot, let's check the probing length of the existing one.
-			uint32_t existing_probe_len = _get_probe_length(idx, _hashes[idx], capacity, capacity_inv);
-			if (existing_probe_len < distance) {
+			uint32_t new_start_idx = fastmod(_hashes[idx], capacity_inv, capacity);
+			if (probe_length_cmp(new_start_idx, start_idx, idx)) {
 				SWAP(hash, _hashes[idx]);
 				SWAP(value, _elements[idx]);
-				distance = existing_probe_len;
+				start_idx = new_start_idx;
 			}
-
-			_increment_mod(idx, capacity);
-			distance++;
 		}
+	empty:
+		_elements[idx] = value;
+		_hashes[idx] = hash;
+		_size++;
 	}
 
 	void _resize_and_rehash(uint32_t p_new_capacity_idx) {
@@ -356,12 +320,14 @@ public:
 
 		const uint32_t capacity = hash_table_size_primes[_capacity_idx];
 		const uint64_t capacity_inv = hash_table_size_primes_inv[_capacity_idx];
-		uint32_t next_idx = fastmod((idx + 1), capacity_inv, capacity);
-		while (_hashes[next_idx] != EMPTY_HASH && _get_probe_length(next_idx, _hashes[next_idx], capacity, capacity_inv) != 0) {
+
+		uint32_t next_idx = idx;
+		increment_mod(next_idx, capacity);
+		while (_hashes[next_idx] != EMPTY_HASH && next_idx != fastmod(_hashes[next_idx], capacity_inv, capacity)) {
 			SWAP(_hashes[next_idx], _hashes[idx]);
 			SWAP(_elements[next_idx], _elements[idx]);
 			idx = next_idx;
-			_increment_mod(next_idx, capacity);
+			increment_mod(next_idx, capacity);
 		}
 
 		_hashes[idx] = EMPTY_HASH;
@@ -404,12 +370,14 @@ public:
 		// Delete the old entries in _hashes and _elements.
 		const uint32_t capacity = hash_table_size_primes[_capacity_idx];
 		const uint64_t capacity_inv = hash_table_size_primes_inv[_capacity_idx];
-		uint32_t next_idx = fastmod((idx + 1), capacity_inv, capacity);
-		while (_hashes[next_idx] != EMPTY_HASH && _get_probe_length(next_idx, _hashes[next_idx], capacity, capacity_inv) != 0) {
+
+		uint32_t next_idx = idx;
+		increment_mod(next_idx, capacity);
+		while (_hashes[next_idx] != EMPTY_HASH && next_idx != fastmod(_hashes[next_idx], capacity_inv, capacity)) {
 			SWAP(_hashes[next_idx], _hashes[idx]);
 			SWAP(_elements[next_idx], _elements[idx]);
 			idx = next_idx;
-			_increment_mod(next_idx, capacity);
+			increment_mod(next_idx, capacity);
 		}
 
 		_hashes[idx] = EMPTY_HASH;
