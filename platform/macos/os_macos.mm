@@ -1018,6 +1018,11 @@ String OS_MacOS::get_system_ca_certificates() {
 	return certs;
 }
 
+Error OS_MacOS::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	int status = SecRandomCopyBytes(kSecRandomDefault, p_bytes, r_buffer);
+	return status == errSecSuccess ? OK : FAILED;
+}
+
 OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 	// macOS supports both formats on ARM. Prefer S3TC/BPTC
 	// for better compatibility with x86 platforms.

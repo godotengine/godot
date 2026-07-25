@@ -125,6 +125,7 @@ public:
 	virtual String get_godot_dir_name() const override;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
 	virtual Error shell_open(const String &p_uri) override;
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
