@@ -2243,11 +2243,14 @@ void DisplayServerWindows::window_set_window_buttons_offset(const Vector2i &p_of
 	if (!wd.extend_to_title) {
 		return;
 	}
-	if (wd.caption_buttons_offset == p_offset) {
+	UINT dpi = GetDpiForWindow(wd.hWnd);
+	float scale = (float)dpi / 96.0f;
+	Vector2i offset = p_offset / scale;
+	if (wd.caption_buttons_offset == offset) {
 		return;
 	}
 
-	wd.caption_buttons_offset = p_offset;
+	wd.caption_buttons_offset = offset;
 	_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_CAPTION_BUTTONS_CHANGE);
 }
 
