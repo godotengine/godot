@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[Translation] maps a collection of strings to their individual translations, and also provides convenience methods for pluralization.
-		A [Translation] consists of messages. A message is identified by its context and untranslated string. Unlike [url=https://www.gnu.org/software/gettext/]gettext[/url], using an empty context string in Godot means not using any context.
+		A [Translation] consists of messages. Each message is identified by its untranslated string and [url=https://docs.godotengine.org/en/stable/tutorials/i18n/internationalizing_games.html#translation-contexts]context[/url]. Unlike [url=https://www.gnu.org/software/gettext/]gettext[/url], using an empty context string in Godot means not using any context.
 	</description>
 	<tutorials>
 		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
