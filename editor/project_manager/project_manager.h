@@ -93,6 +93,10 @@ class ProjectManager : public Control {
 	Button *title_bar_logo = nullptr;
 	HBoxContainer *main_view_toggles = nullptr;
 	Button *quick_settings_button = nullptr;
+	VBoxContainer *project_list_sidebar = nullptr;
+
+	int compact_mode_threshold = 0;
+	void _update_compact_mode(bool p_reset_threshold = false);
 
 	enum MainViewTab {
 		MAIN_VIEW_PROJECTS,
