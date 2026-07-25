@@ -1320,11 +1320,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 }
 
 void ProjectManager::_titlebar_resized() {
-#ifdef WINDOWS_ENABLED
-	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(23, 22), DisplayServerEnums::MAIN_WINDOW_ID);
-#elif MACOS_ENABLED
 	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServerEnums::MAIN_WINDOW_ID);
-#endif
 	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServerEnums::MAIN_WINDOW_ID);
 	if (left_menu_spacer) {
 		int w = (root_container->is_layout_rtl()) ? margin.y : margin.x;
@@ -1335,7 +1331,7 @@ void ProjectManager::_titlebar_resized() {
 		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
 	}
 	if (title_bar) {
-		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
+		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y * 2));
 	}
 }
 
