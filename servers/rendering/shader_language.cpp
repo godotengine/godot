@@ -5077,7 +5077,15 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_INT: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::PACKED_INT32_ARRAY;
-				// TODO: Handle range and encoding for for unsigned values.
+
+				// Handle array hints & UINT bounds
+				if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
+					pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+					pi.hint_string = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_RANGE) + ":" + itos(p_uniform.hint_range[0]) + "," + itos(p_uniform.hint_range[1]) + "," + itos(p_uniform.hint_range[2]);
+				} else if (p_uniform.type == ShaderLanguage::TYPE_UINT) {
+					pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+					pi.hint_string = vformat("%d/%d:0,%s", Variant::INT, PROPERTY_HINT_RANGE, itos(UINT32_MAX));
+				}
 			} else if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_ENUM) {
 				pi.type = Variant::INT;
 				pi.hint = PROPERTY_HINT_ENUM;
@@ -9965,7 +9973,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								static Vector<int> supported_hints = {
 									TK_HINT_SOURCE_COLOR, TK_HINT_COLOR_CONVERSION_DISABLED, TK_REPEAT_DISABLE, TK_REPEAT_ENABLE,
 									TK_FILTER_LINEAR, TK_FILTER_LINEAR_MIPMAP, TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC,
-									TK_FILTER_NEAREST, TK_FILTER_NEAREST_MIPMAP, TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC
+									TK_FILTER_NEAREST, TK_FILTER_NEAREST_MIPMAP, TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC, TK_HINT_RANGE
 								};
 								if (!supported_hints.has(tk.type)) {
 									_set_error(RTR("This hint is not supported for uniform arrays."));
@@ -10040,8 +10048,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									new_hint = ShaderNode::Uniform::HINT_ANISOTROPY;
 								} break;
 								case TK_HINT_RANGE: {
-									if (type != TYPE_FLOAT && type != TYPE_INT) {
-										_set_error(vformat(RTR("Range hint is for '%s' and '%s' only."), "float", "int"));
+									if (uniform.type != TYPE_FLOAT && uniform.type != TYPE_INT && uniform.type != TYPE_UINT) {
+										_set_error(vformat(RTR("Range hint is for '%s', '%s' and '%s' only."), "float", "int", "uint"));
 										return ERR_PARSE_ERROR;
 									}
 
@@ -10077,7 +10085,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										}
 										tk = _get_token();
 									} else {
-										if (type == TYPE_INT) {
+										if (type == TYPE_INT || type == TYPE_UINT) {
 											uniform.hint_range[2] = 1;
 										} else {
 											uniform.hint_range[2] = 0.001;
