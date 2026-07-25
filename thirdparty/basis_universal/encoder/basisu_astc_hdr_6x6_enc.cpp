@@ -2376,7 +2376,7 @@ static void filter_block(uint32_t grid_x, uint32_t grid_y, const vec3F* pSrc_blo
 	// filter columns
 	if (grid_y == 6)
 	{
-		memcpy(pDst_block, temp_block, sizeof(vec3F) * 6 * 6);
+		memcpy((void *)pDst_block, temp_block, sizeof(vec3F) * 6 * 6);
 	}
 	else
 	{
