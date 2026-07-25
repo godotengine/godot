@@ -1757,6 +1757,9 @@
 		<member name="text_editor/theme/highlighting/engine_type_color" type="Color" setter="" getter="">
 			The script editor's engine type color ([Object], [Mesh], [Node], ...).
 		</member>
+		<member name="text_editor/theme/highlighting/error_underline_color" type="Color" setter="" getter="">
+			The script editor's color for the squiggly lines shown under code producing errors.
+		</member>
 		<member name="text_editor/theme/highlighting/executing_line_color" type="Color" setter="" getter="">
 			The script editor's color for the debugger's executing line icon (displayed in the gutter).
 		</member>
@@ -1838,6 +1841,9 @@
 		</member>
 		<member name="text_editor/theme/highlighting/warning_color" type="Color" setter="" getter="">
 			The script editor's background color for lines with warnings. This should be set to a translucent color so that it can display on top of other line color modifiers such as [member text_editor/theme/highlighting/current_line_color].
+		</member>
+		<member name="text_editor/theme/highlighting/warning_underline_color" type="Color" setter="" getter="">
+			The script editor's color for the squiggly lines shown under code producing warnings.
 		</member>
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].

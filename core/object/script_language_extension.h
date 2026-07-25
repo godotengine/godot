@@ -383,8 +383,10 @@ public:
 				if (err.has("path")) {
 					serr.path = err["path"];
 				}
-				serr.line = err["line"];
-				serr.column = err["column"];
+				serr.start_line = err["line"];
+				serr.start_column = err["column"];
+				serr.end_line = err["line"];
+				serr.end_column = err["column"];
 				serr.message = err["message"];
 
 				r_errors->push_back(serr);
