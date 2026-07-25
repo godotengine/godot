@@ -211,6 +211,7 @@ EditorDockDragHint::EditorDockDragHint() {
 }
 
 void DockTabContainer::_pre_popup(const Size2i &p_size) {
+	dock_context_popup->reparent(get_window());
 	dock_context_popup->set_dock(get_dock(get_current_tab()));
 }
 
@@ -221,6 +222,7 @@ void DockTabContainer::_tab_rmb_clicked(int p_tab_idx) {
 	}
 
 	// Right click context menu.
+	dock_context_popup->reparent(get_window());
 	dock_context_popup->set_dock(hovered_dock);
 	dock_context_popup->set_position(get_tab_bar()->get_screen_position() + get_tab_bar()->get_local_mouse_position());
 	dock_context_popup->popup();
@@ -231,6 +233,10 @@ void DockTabContainer::_notification(int p_what) {
 		connect("pre_popup_pressed", callable_mp(this, &DockTabContainer::_pre_popup).bind(Size2i()));
 		connect("child_order_changed", callable_mp(this, &DockTabContainer::update_visibility));
 	}
+}
+
+void DockTabContainer::dock_focused(EditorDock *p_dock, bool p_was_visible) {
+	get_tab_bar()->grab_focus();
 }
 
 void DockTabContainer::update_visibility() {
@@ -263,7 +269,16 @@ int DockTabContainer::get_margin_drop_slot(int p_margin) const {
 	return -1;
 }
 
-void DockTabContainer::save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) {
+bool DockTabContainer::can_dock_float(EditorDock *p_dock, String &r_float_info) {
+	if (p_dock->get_available_layouts() & EditorDock::DOCK_LAYOUT_FLOATING) {
+		r_float_info = TTRC("Detach this dock to a new window.");
+		return true;
+	}
+	r_float_info = TTRC("This dock does not support floating.");
+	return false;
+}
+
+void DockTabContainer::save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
 	PackedStringArray names;
 	names.reserve_exact(get_tab_count());
 	for (int i = 0; i < get_tab_count(); i++) {
@@ -321,7 +336,7 @@ void DockTabContainer::show_drag_hint() {
 	if (!is_visible_in_tree()) {
 		return;
 	}
-	drag_hint->set_rect(get_global_rect());
+	drag_hint->set_rect(get_drag_hint_rect());
 	drag_hint->show();
 }
 
@@ -334,7 +349,9 @@ Rect2 DockTabContainer::get_default_floating_dock_rect(EditorDock *p_dock) {
 }
 
 DockTabContainer::DockTabContainer(int p_slot) {
-	ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
+	if (p_slot < EditorDock::DOCK_SLOT_BASE_FLOATING) {
+		ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
+	}
 	dock_slot = p_slot;
 
 	set_drag_to_rearrange_enabled(true);
