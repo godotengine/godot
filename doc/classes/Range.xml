@@ -27,13 +27,13 @@
 			<return type="void" />
 			<param index="0" name="with" type="Node" />
 			<description>
-				Binds two [Range]s together along with any ranges previously grouped with either of them. When any of range's member variables change, it will share the new value with all other ranges in its group.
+				Groups two [Range]s together, along with any ranges previously grouped with either of them. When any of the ranges' properties change, it will share the new value with all other ranges in its group.
 			</description>
 		</method>
 		<method name="unshare">
 			<return type="void" />
 			<description>
-				Stops the [Range] from sharing its member variables with any other.
+				Stops the [Range] from sharing its properties with any range previously grouped with [method share].
 			</description>
 		</method>
 	</methods>

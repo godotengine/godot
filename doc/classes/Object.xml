@@ -239,7 +239,7 @@
 					for x in my_range:
 						print(x) # Prints 2, 3, 4.
 				[/codeblock]
-				[b]Note:[/b] Avoid storing iterator state in a member variable, use the [param iter] parameter instead. Otherwise, you won't be able to reuse the same iterator instance in nested loops.
+				[b]Note:[/b] Avoid storing iterator state in a member variable; use the [param iter] parameter instead. Otherwise, you won't be able to reuse the same iterator instance in nested loops.
 				See also [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_advanced.html#custom-iterators]online docs[/url].
 			</description>
 		</method>
@@ -686,7 +686,7 @@
 				- [code]hint[/code] is [i]how[/i] the property is meant to be edited (see [enum PropertyHint]);
 				- [code]hint_string[/code] depends on the hint (see [enum PropertyHint]);
 				- [code]usage[/code] is a combination of [enum PropertyUsageFlags].
-				[b]Note:[/b] In GDScript, all class members are treated as properties. In C# and GDExtension, it may be necessary to explicitly mark class members as Godot properties using decorators or attributes.
+				[b]Note:[/b] In GDScript, all member variables are treated as properties. In C# and GDExtension, it may be necessary to explicitly mark member variables as Godot properties using decorators or attributes.
 			</description>
 		</method>
 		<method name="get_script" qualifiers="const">
