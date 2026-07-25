@@ -37,3 +37,9 @@ struct PtrToArg;
 
 template <typename T>
 struct PtrToArg<T, std::enable_if_t<!std::is_same_v<T, std::decay_t<T>>>> : PtrToArg<std::decay_t<T>> {};
+
+template <typename T, typename = void>
+struct ConvertiblePtrToArg : std::false_type {};
+
+template <typename T>
+struct ConvertiblePtrToArg<T, std::void_t<decltype(PtrToArg<T>::encode(std::declval<T>(), std::declval<void *>()))>> : std::true_type {};
