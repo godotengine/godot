@@ -2248,7 +2248,7 @@ void DisplayServerWindows::window_set_window_buttons_offset(const Vector2i &p_of
 	}
 
 	wd.caption_buttons_offset = p_offset;
-	_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
+	_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_CAPTION_BUTTONS_CHANGE);
 }
 
 void DisplayServerWindows::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServerEnums::WindowID p_window) {

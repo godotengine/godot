@@ -1049,6 +1049,9 @@ void Window::_event_callback(DisplayServerEnums::WindowEvent p_event) {
 			_update_caption_overlay();
 			emit_signal(SNAME("titlebar_changed"));
 		} break;
+		case DisplayServerEnums::WINDOW_EVENT_CAPTION_BUTTONS_CHANGE: {
+			_update_caption_overlay();
+		} break;
 		case DisplayServerEnums::WINDOW_EVENT_FORCE_CLOSE: {
 			hide();
 		} break;
