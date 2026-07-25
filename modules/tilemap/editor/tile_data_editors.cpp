@@ -226,8 +226,9 @@ void GenericTilePolygonEditor::_base_control_draw() {
 		base_control->draw_polygon(polygon, v_color);
 
 		color.a = 0.7;
-		for (int j = 0; j < polygon.size(); j++) {
-			base_control->draw_line(polygon[j], polygon[(j + 1) % polygon.size()], color);
+		const int polygon_size = polygon.size();
+		for (int j = 0; j < polygon_size; j++) {
+			base_control->draw_line(polygon[j], polygon[(j + 1) % polygon_size], color);
 		}
 	}
 
@@ -439,9 +440,10 @@ void GenericTilePolygonEditor::_grab_polygon_segment_point(Vector2 p_pos, const 
 	float closest_distance = grab_threshold * 2.0;
 	for (unsigned int i = 0; i < polygons.size(); i++) {
 		const Vector<Vector2> &polygon = polygons[i];
-		for (int j = 0; j < polygon.size(); j++) {
+		const int polygon_size = polygon.size();
+		for (int j = 0; j < polygon_size; j++) {
 			const Vector2 segment_a = polygon[j];
-			const Vector2 segment_b = polygon[(j + 1) % polygon.size()];
+			const Vector2 segment_b = polygon[(j + 1) % polygon_size];
 			Vector2 closest_point = Geometry2D::get_closest_point_to_segment(point, segment_a, segment_b);
 			float distance = closest_point.distance_to(point);
 			if (distance < grab_threshold / editor_zoom_widget->get_zoom() && distance < closest_distance) {
@@ -465,7 +467,8 @@ void GenericTilePolygonEditor::_snap_to_tile_shape(Point2 &r_point, float &r_cur
 
 	// Snap to polygon vertices.
 	bool snapped = false;
-	for (int i = 0; i < polygon.size(); i++) {
+	const int polygon_size = polygon.size();
+	for (int i = 0; i < polygon_size; i++) {
 		float distance = r_point.distance_to(polygon[i]);
 		if (distance < p_snap_dist && distance < r_current_snapped_dist) {
 			snapped_point = polygon[i];
@@ -476,9 +479,9 @@ void GenericTilePolygonEditor::_snap_to_tile_shape(Point2 &r_point, float &r_cur
 
 	// Snap to edges if we did not snap to vertices.
 	if (!snapped) {
-		for (int i = 0; i < polygon.size(); i++) {
+		for (int i = 0; i < polygon_size; i++) {
 			const Vector2 segment_a = polygon[i];
-			const Vector2 segment_b = polygon[(i + 1) % polygon.size()];
+			const Vector2 segment_b = polygon[(i + 1) % polygon_size];
 			Point2 point = Geometry2D::get_closest_point_to_segment(r_point, segment_a, segment_b);
 			float distance = r_point.distance_to(point);
 			if (distance < p_snap_dist && distance < r_current_snapped_dist) {
