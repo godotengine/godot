@@ -422,13 +422,12 @@ static _FORCE_INLINE_ uint32_t fastmod(const uint32_t p_n, const uint64_t p_c, c
 #endif // _MSC_VER
 }
 
-// Returns true when the probe length from `a_idx` to `idx` is LESS THAN the probe length from `b_idx`
-// to `idx`.
-static _FORCE_INLINE_ bool probe_length_cmp(uint32_t a_idx, uint32_t b_idx, uint32_t idx) {
-	if (unlikely(idx < b_idx)) {
-		return likely(idx >= a_idx) || b_idx < a_idx;
+// Returns true when the probe length from `a` to `idx` is LESS THAN the probe length from `b` to `idx`.
+static _FORCE_INLINE_ bool probe_length_cmp(const uint32_t p_a, const uint32_t p_b, const uint32_t p_idx) {
+	if (unlikely(p_idx < p_b)) {
+		return likely(p_idx >= p_a) || p_b < p_a;
 	}
-	return b_idx < a_idx && likely(idx >= a_idx);
+	return p_b < p_a && likely(p_idx >= p_a);
 }
 
 static _FORCE_INLINE_ constexpr void increment_mod(uint32_t &r_idx, const uint32_t p_capacity) {
