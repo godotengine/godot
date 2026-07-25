@@ -35,6 +35,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/material.h"
 #include "servers/rendering/rendering_server.h"
@@ -534,6 +535,106 @@ PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
 
 	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
 		warnings.push_back(RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ renderer."));
+	}
+
+	List<Ref<Material>> materials_to_check;
+
+	if (material_override.is_valid()) {
+		materials_to_check.push_back(material_override);
+	}
+	if (material_overlay.is_valid()) {
+		materials_to_check.push_back(material_overlay);
+	}
+
+	// Also account for surface override materials if this node is a MeshInstance3D
+	const MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(this);
+	if (mesh_instance) {
+		int count = mesh_instance->get_surface_override_material_count();
+		for (int i = 0; i < count; i++) {
+			Ref<Material> mat = mesh_instance->get_surface_override_material(i);
+			if (mat.is_valid()) {
+				materials_to_check.push_back(mat);
+			}
+		}
+	}
+
+	struct UniformSlot {
+		String uniform_name;
+		Ref<Material> material;
+	};
+
+	HashMap<int, UniformSlot> occupied_slots;
+	String conflict_details;
+	bool has_conflict = false;
+
+	// Traverse through materials and their next_pass chains
+	for (const Ref<Material> &top_mat : materials_to_check) {
+		Ref<Material> curr = top_mat;
+
+		while (curr.is_valid()) {
+			Ref<ShaderMaterial> s_mat = curr;
+			if (s_mat.is_valid() && s_mat->get_shader().is_valid()) {
+				Ref<Shader> shader = s_mat->get_shader();
+				RID shader_rid = shader->get_rid();
+
+				if (shader_rid.is_valid()) {
+					List<PropertyInfo> param_list;
+					RenderingServer::get_singleton()->get_shader_parameter_list(shader_rid, &param_list);
+
+					for (const PropertyInfo &p : param_list) {
+						const String tag = "instance_index:";
+						int pos = p.hint_string.find(tag);
+
+						// Not an instance uniform
+						if (pos == -1) {
+							continue;
+						}
+
+						String idx_str = p.hint_string.substr(pos + tag.length());
+
+						// Strip any metadata after the index
+						int comma = idx_str.find(",");
+						if (comma != -1) {
+							idx_str = idx_str.left(comma);
+						}
+
+						idx_str = idx_str.strip_edges();
+
+						int idx = idx_str.to_int();
+
+						if (occupied_slots.has(idx)) {
+							const UniformSlot &prev = occupied_slots[idx];
+
+							// Same material encountered again (shared material/duplicate reference)
+							if (prev.material == curr) {
+								continue;
+							}
+
+							// Only warn if a different uniform occupies the same slot
+							if (prev.uniform_name != p.name) {
+								has_conflict = true;
+
+								String prev_material_name = prev.material.is_valid() && !prev.material->get_name().is_empty() ? prev.material->get_name() : "Material";
+
+								String curr_material_name = !curr->get_name().is_empty() ? curr->get_name() : "Material";
+
+								conflict_details += vformat("\n- Slot %d clash: '%s' (%s) and '%s' (%s)", idx, prev.uniform_name, prev_material_name, p.name, curr_material_name);
+							}
+						} else {
+							occupied_slots[idx] = { p.name, curr };
+						}
+					}
+				}
+			}
+
+			curr = curr->get_next_pass();
+		}
+	}
+
+	if (has_conflict) {
+		warnings.push_back(
+				RTR("Per-instance shader parameters conflict across materials/next_passes assigned to this node:") + conflict_details +
+				RTR("\n\nSet explicit indices in your shader code (e.g. 'instance uniform vec4 my_var : instance_index(1);') to resolve the clash."));
 	}
 
 	return warnings;

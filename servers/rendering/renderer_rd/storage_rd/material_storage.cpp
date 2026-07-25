@@ -595,7 +595,7 @@ void MaterialStorage::ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_
 	LocalVector<Pair<StringName, int>> filtered_uniforms;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL && E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue;
 		}
 		filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.prop_order));

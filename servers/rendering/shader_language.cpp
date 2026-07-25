@@ -5250,6 +5250,14 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_MAX:
 			break;
 	}
+
+	if (p_uniform.scope == ShaderNode::Uniform::SCOPE_INSTANCE) {
+		if (!pi.hint_string.is_empty()) {
+			pi.hint_string += ",";
+		}
+		pi.hint_string += "instance_index:" + itos(p_uniform.instance_index);
+	}
+
 	return pi;
 }
 
