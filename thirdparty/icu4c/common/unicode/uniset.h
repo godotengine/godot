@@ -282,7 +282,7 @@ class RuleCharacterIterator;
  * @author Alan Liu
  * @stable ICU 2.0
  */
-class U_COMMON_API UnicodeSet final : public UnicodeFilter {
+class U_COMMON_API UnicodeSet : public UnicodeFilter {
 private:
     /**
      * Enough for sets with few ranges.

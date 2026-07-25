@@ -446,6 +446,10 @@ Files generated from upstream source:
 4. Delete `data/out` folder and rebuild data: `cd data && rm -rf ./out && make`
 5. Copy `source/data/out/icudt{ICU_VERSION}l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt_godot.dat`
 
+Patches:
+
+- `0001-remove-final.patch` (GH-121604)
+
 
 ## jolt_physics
 
