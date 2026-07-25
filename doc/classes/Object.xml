@@ -1001,7 +1001,7 @@
 				If [method can_translate_messages] is [code]false[/code], or no translation is available, this method returns the [param message] without changes. See [method set_message_translation].
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url].
 				[b]Note:[/b] This method can't be used without an [Object] instance, as it requires the [method can_translate_messages] method. To translate strings in a static context, use [method TranslationServer.translate].
-				[b]Note:[/b] This method cannot be used in the editor via a `@tool` script. If you need to translate strings in an editor tool, you can manually look up the [Translation] using [method TranslationServer.get_message_list] and retrieve the translated string with [method Translation.get_message].
+				[b]Note:[/b] This method cannot be used in the editor via a `@tool` script. If you need to translate strings in an editor tool, you can manually look up the [Translation] using [method TranslationServer.find_translations] and retrieve the translated string with [method Translation.get_message].
 			</description>
 		</method>
 		<method name="tr_n" qualifiers="const">
