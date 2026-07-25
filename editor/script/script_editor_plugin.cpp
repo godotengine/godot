@@ -1582,16 +1582,6 @@ TypedArray<Script> ScriptEditor::_get_open_scripts() const {
 	return ret;
 }
 
-bool ScriptEditor::toggle_files_panel() {
-	list_split->set_visible(!list_split->is_visible());
-	EditorSettings::get_singleton()->set_project_metadata("files_panel", "show_files_panel", list_split->is_visible());
-	return list_split->is_visible();
-}
-
-bool ScriptEditor::is_files_panel_toggled() {
-	return list_split->is_visible();
-}
-
 List<String> ScriptEditor::_get_recognized_extensions() {
 	List<String> extensions;
 	for (const String &type : handled_resource_types) {
@@ -1749,14 +1739,6 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case FILE_MENU_SORT: {
 			sort_document_editors();
-		} break;
-		case FILE_MENU_TOGGLE_FILES_PANEL: {
-			toggle_files_panel();
-			if (seb) {
-				seb->update_toggle_files_button();
-			} else if (eh) {
-				eh->update_toggle_files_button();
-			}
 		} break;
 		case FILE_MENU_CLOSE: {
 			if (seb && seb->is_unsaved()) {
@@ -1986,6 +1968,8 @@ void ScriptEditor::_notification(int p_what) {
 			}
 
 			recent_scripts->reset_size();
+
+			toggle_files_button->set_button_icon(get_editor_theme_icon(SNAME("FileList")));
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -2084,6 +2068,12 @@ void ScriptEditor::_close_builtin_scripts_from_scene(const String &p_scene) {
 			}
 		}
 	}
+}
+
+void ScriptEditor::_toggle_files_pressed(bool p_pressed) {
+	ERR_FAIL_NULL(list_split);
+	list_split->set_visible(p_pressed);
+	EditorSettings::get_singleton()->set_project_metadata("files_panel", "show_files_panel", list_split->is_visible());
 }
 
 void ScriptEditor::edited_scene_changed() {
@@ -2402,7 +2392,6 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	seb->set_edited_resource(p_resource);
 
-	seb->set_toggle_list_control(get_left_list_split());
 	grab_focus_block = !p_grab_focus;
 	tab_container->add_child(seb);
 	grab_focus_block = false;
@@ -2426,7 +2415,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			editor_edit_menu->hide();
 			editor_menus.push_back(editor_edit_menu);
 			menu_hb->add_child(editor_edit_menu);
-			menu_hb->move_child(editor_edit_menu, 1);
+			menu_hb->move_child(editor_edit_menu, 3);
 			for (int i = 0; i < editor_edit_menu->get_child_count(); ++i) {
 				Control *c = Object::cast_to<Control>(editor_edit_menu->get_child(i));
 				if (c) {
@@ -3237,7 +3226,6 @@ void ScriptEditor::_setup_popup_menu(PopupMenu *p_menu, bool p_is_context_menu) 
 		p_menu->add_separator();
 
 		p_menu->add_submenu_node_item(TTRC("Theme"), theme_submenu, FILE_MENU_THEME_SUBMENU);
-		p_menu->add_separator();
 	}
 
 	if (p_is_context_menu) {
@@ -3245,8 +3233,6 @@ void ScriptEditor::_setup_popup_menu(PopupMenu *p_menu, bool p_is_context_menu) 
 		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_down"), FILE_MENU_MOVE_DOWN);
 		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), FILE_MENU_SORT);
 	}
-
-	p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"), FILE_MENU_TOGGLE_FILES_PANEL);
 }
 
 void ScriptEditor::_prepare_popup_menu(PopupMenu *p_menu, bool p_is_context_menu) {
@@ -4097,9 +4083,7 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	document_outline = memnew(DocumentOutline(this));
 	document_outline->set_custom_minimum_size(Size2(0, 90));
 	document_outline->set_v_size_flags(SIZE_EXPAND_FILL);
-
 	list_split->add_child(document_outline);
-	list_split->set_visible(EditorSettings::get_singleton()->get_project_metadata("files_panel", "show_files_panel", true));
 
 	VBoxContainer *code_editor_container = memnew(VBoxContainer);
 	script_split->add_child(code_editor_container);
@@ -4149,6 +4133,23 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 
 	set_process_input(true);
 	set_process_shortcut_input(true);
+
+	toggle_files_button = memnew(Button);
+	toggle_files_button->set_theme_type_variation(SceneStringName(FlatButton));
+	toggle_files_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	toggle_files_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	toggle_files_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditor::_toggle_files_pressed));
+	toggle_files_button->set_accessibility_name(TTRC("Toggle Document List"));
+	toggle_files_button->set_toggle_mode(true);
+	toggle_files_button->set_shortcut_context(this);
+	toggle_files_button->set_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"));
+	menu_hb->add_child(toggle_files_button);
+	bool initial_state = EditorSettings::get_singleton()->get_project_metadata("files_panel", "show_files_panel", true);
+	toggle_files_button->set_pressed_no_signal(initial_state);
+	_toggle_files_pressed(initial_state);
+
+	VSeparator *sep = memnew(VSeparator);
+	menu_hb->add_child(sep);
 
 	file_menu = memnew(MenuButton);
 	file_menu->set_flat(false);

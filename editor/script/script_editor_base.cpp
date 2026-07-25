@@ -726,7 +726,6 @@ TextEditorBase::TextEditorBase() {
 	code_editor = memnew(CodeTextEditor);
 	code_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	code_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	code_editor->show_toggle_files_button();
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
 	code_editor->get_text_editor()->connect(SceneStringName(gui_input), callable_mp(this, &TextEditorBase::_text_edit_gui_input));
 	code_editor->get_text_editor()->connect(SceneStringName(text_changed), callable_mp(this, &TextEditorBase::_saved_update));
