@@ -2272,7 +2272,13 @@ void GDScriptLanguage::finish() {
 			while (script->instances.first() != nullptr) {
 				// Turns instances into core objects that can outlive `GDScriptLanguage`.
 				const SelfList<GDScriptInstance> *elem = script->instances.first();
+
+				// In case the last reference to the owner comes from the script instance itself, we need to ensure that `set_script` can finish cleanly, before destructing the owner.
+				Variant owner = elem->self()->get_owner();
+				std::ignore = owner; // Suppress unused warnings, holding the reference is the point.
+
 				elem->self()->get_owner()->set_script(Variant());
+
 				ERR_BREAK_MSG(script->instances.first() == elem, "GDScript bug (please report): Detaching a script does not destruct instance.");
 			}
 		}
