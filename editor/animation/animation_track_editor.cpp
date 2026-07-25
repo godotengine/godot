@@ -1901,6 +1901,31 @@ void AnimationTimelineEdit::_play_position_draw() {
 	}
 }
 
+float AnimationTimelineEdit::_snap_time_to_key(float p_time) const {
+	if (animation.is_null()) {
+		return p_time;
+	}
+
+	const float snap_distance = 8.0f * EDSCALE / get_zoom_scale();
+	float closest_time = p_time;
+	float closest_distance = snap_distance;
+	for (int track = 0; track < animation->get_track_count(); track++) {
+		const int key = animation->track_find_key(track, p_time, Animation::FIND_MODE_NEAREST);
+		if (key < 0) {
+			continue;
+		}
+
+		const float key_time = animation->track_get_key_time(track, key);
+		const float distance = Math::abs(key_time - p_time);
+		if (distance <= closest_distance) {
+			closest_time = key_time;
+			closest_distance = distance;
+		}
+	}
+
+	return closest_time;
+}
+
 void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -1943,6 +1968,9 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			int x = mb->get_position().x - get_name_limit();
 
 			float ofs = x / get_zoom_scale() + get_value();
+			if (mb->is_shift_pressed()) {
+				ofs = _snap_time_to_key(ofs);
+			}
 			emit_signal(SNAME("timeline_changed"), ofs, mb->is_alt_pressed());
 			dragging_timeline = true;
 		}
@@ -1982,6 +2010,9 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		} else if (dragging_timeline) {
 			int x = mm->get_position().x - get_name_limit();
 			float ofs = x / get_zoom_scale() + get_value();
+			if (mm->is_shift_pressed()) {
+				ofs = _snap_time_to_key(ofs);
+			}
 			emit_signal(SNAME("timeline_changed"), ofs, mm->is_alt_pressed());
 		}
 	}
@@ -2056,6 +2087,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
+	play_position->set_tooltip_text(TTRC("Drag to scrub. Hold Shift to snap to nearby keys."));
 	add_child(play_position);
 	play_position->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	play_position->connect(SceneStringName(draw), callable_mp(this, &AnimationTimelineEdit::_play_position_draw));
@@ -3098,8 +3130,13 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		bool no_mod_key_pressed = !mb->is_alt_pressed() && !mb->is_shift_pressed() && !mb->is_command_or_control_pressed();
 		if (mb->is_double_click() && !moving_selection && no_mod_key_pressed) {
 			int x = pos.x - timeline->get_name_limit();
-			float ofs = x / timeline->get_zoom_scale() + timeline->get_value();
+			float ofs = MAX(0.0, x / timeline->get_zoom_scale() + timeline->get_value());
 			emit_signal(SNAME("timeline_changed"), ofs, false);
+			if (!read_only && pos.x >= timeline->get_name_limit() && pos.x <= get_size().width - timeline->get_buttons_width() && hovering_key_idx == -1) {
+				emit_signal(SNAME("insert_key"), ofs);
+				accept_event();
+				return;
+			}
 		}
 
 		if (!read_only) {
@@ -6203,6 +6240,14 @@ void AnimationTrackEditor::_move_selection_begin() {
 }
 
 void AnimationTrackEditor::_move_selection(float p_offset) {
+	if (!selection.is_empty()) {
+		float earliest_key_time = selection.front()->get().pos;
+		for (const KeyValue<SelectedKey, KeyInfo> &E : selection) {
+			earliest_key_time = MIN(earliest_key_time, E.value.pos);
+		}
+		p_offset = MAX(p_offset, -earliest_key_time);
+	}
+
 	moving_selection_offset = p_offset;
 	_redraw_tracks();
 }
@@ -8232,34 +8277,41 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	mc->add_child(track_vbox);
 	scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 
-	HFlowContainer *bottom_hf = memnew(HFlowContainer);
-	add_child(bottom_hf);
+	VBoxContainer *bottom_vb = memnew(VBoxContainer);
+	bottom_vb->add_theme_constant_override("separation", 0);
+	add_child(bottom_vb);
+
+	HBoxContainer *primary_toolbar = memnew(HBoxContainer);
+	bottom_vb->add_child(primary_toolbar);
+
+	HBoxContainer *timing_toolbar = memnew(HBoxContainer);
+	bottom_vb->add_child(timing_toolbar);
 
 	imported_anim_warning = memnew(Button);
 	imported_anim_warning->hide();
 	imported_anim_warning->set_text(TTRC("Imported Animation"));
 	imported_anim_warning->set_tooltip_text(TTRC("Warning: Editing imported animation"));
 	imported_anim_warning->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_show_imported_anim_warning));
-	bottom_hf->add_child(imported_anim_warning);
+	primary_toolbar->add_child(imported_anim_warning);
 
 	dummy_player_warning = memnew(Button);
 	dummy_player_warning->hide();
 	dummy_player_warning->set_text(TTRC("Dummy Player"));
 	dummy_player_warning->set_tooltip_text(TTRC("Warning: Editing dummy AnimationPlayer"));
 	dummy_player_warning->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_show_dummy_player_warning));
-	bottom_hf->add_child(dummy_player_warning);
+	primary_toolbar->add_child(dummy_player_warning);
 
 	inactive_player_warning = memnew(Button);
 	inactive_player_warning->hide();
 	inactive_player_warning->set_text(TTRC("Inactive Player"));
 	inactive_player_warning->set_tooltip_text(TTRC("Warning: AnimationPlayer is inactive"));
 	inactive_player_warning->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_show_inactive_player_warning));
-	bottom_hf->add_child(inactive_player_warning);
+	primary_toolbar->add_child(inactive_player_warning);
 
 	Control *spacer = memnew(Control);
 	spacer->set_mouse_filter(MOUSE_FILTER_PASS);
 	spacer->set_h_size_flags(SIZE_EXPAND_FILL);
-	bottom_hf->add_child(spacer);
+	primary_toolbar->add_child(spacer);
 
 	bezier_key_mode = memnew(OptionButton);
 	bezier_key_mode->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -8270,17 +8322,18 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bezier_key_mode->select(Animation::HANDLE_MODE_BALANCED);
 	bezier_key_mode->set_accessibility_name(TTRC("Bezier Default Mode"));
 
-	bottom_hf->add_child(bezier_key_mode);
-	bottom_hf->add_child(memnew(VSeparator));
+	primary_toolbar->add_child(bezier_key_mode);
+	primary_toolbar->add_child(memnew(VSeparator));
 
 	bezier_edit_icon = memnew(Button);
 	bezier_edit_icon->set_flat(true);
 	bezier_edit_icon->set_disabled(true);
 	bezier_edit_icon->set_toggle_mode(true);
 	bezier_edit_icon->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_toggle_bezier_edit));
+	bezier_edit_icon->set_shortcut(ED_SHORTCUT("animation_editor/toggle_curve_editor", TTRC("Toggle Curve Editor"), KeyModifierMask::SHIFT | Key::F3));
 	bezier_edit_icon->set_tooltip_text(TTRC("Toggle between the bezier curve editor and track editor."));
 
-	bottom_hf->add_child(bezier_edit_icon);
+	primary_toolbar->add_child(bezier_edit_icon);
 
 	function_name_toggler = memnew(Button);
 	function_name_toggler->set_flat(true);
@@ -8290,7 +8343,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	function_name_toggler->set_shortcut_in_tooltip(false);
 	function_name_toggler->set_tooltip_text(TTRC("Toggle function names in the track editor."));
 
-	bottom_hf->add_child(function_name_toggler);
+	primary_toolbar->add_child(function_name_toggler);
 
 	selected_filter = memnew(Button);
 	selected_filter->set_flat(true);
@@ -8298,7 +8351,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	selected_filter->set_toggle_mode(true);
 	selected_filter->set_tooltip_text(TTRC("Only show tracks from nodes selected in tree."));
 
-	bottom_hf->add_child(selected_filter);
+	primary_toolbar->add_child(selected_filter);
 
 	alphabetic_sorting = memnew(Button);
 	alphabetic_sorting->set_flat(true);
@@ -8306,7 +8359,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	alphabetic_sorting->set_toggle_mode(true);
 	alphabetic_sorting->set_tooltip_text(TTRC("Sort tracks/groups alphabetically.\nIf disabled, tracks are shown in the order they are added and can be reordered using drag-and-drop."));
 
-	bottom_hf->add_child(alphabetic_sorting);
+	primary_toolbar->add_child(alphabetic_sorting);
 
 	view_group = memnew(Button);
 	view_group->set_flat(true);
@@ -8314,17 +8367,17 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	view_group->set_toggle_mode(true);
 	view_group->set_tooltip_text(TTRC("Group tracks by node or display them as plain list."));
 
-	bottom_hf->add_child(view_group);
+	primary_toolbar->add_child(view_group);
 
 	insert_at_current_time = memnew(Button);
 	insert_at_current_time->set_flat(true);
-	bottom_hf->add_child(insert_at_current_time);
+	timing_toolbar->add_child(insert_at_current_time);
 	insert_at_current_time->set_disabled(true);
 	insert_at_current_time->set_toggle_mode(true);
 	insert_at_current_time->set_pressed(EDITOR_GET("editors/animation/insert_at_current_time"));
 	insert_at_current_time->set_tooltip_text(TTRC("Insert at current time."));
 
-	bottom_hf->add_child(memnew(VSeparator));
+	timing_toolbar->add_child(memnew(VSeparator));
 
 	snap_timeline = memnew(Button);
 	snap_timeline->set_flat(true);
@@ -8332,7 +8385,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_timeline->set_toggle_mode(true);
 	snap_timeline->set_tooltip_text(TTRC("Apply snapping to timeline cursor."));
 	snap_timeline->set_pressed(EditorSettings::get_singleton()->get_project_metadata("animation_track_editor", "snap_timeline", false));
-	bottom_hf->add_child(snap_timeline);
+	timing_toolbar->add_child(snap_timeline);
 	snap_timeline->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_store_snap_states).unbind(1));
 
 	snap_keys = memnew(Button);
@@ -8341,12 +8394,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_keys->set_toggle_mode(true);
 	snap_keys->set_tooltip_text(TTRC("Apply snapping to selected key(s)."));
 	snap_keys->set_pressed(EditorSettings::get_singleton()->get_project_metadata("animation_track_editor", "snap_keys", true));
-	bottom_hf->add_child(snap_keys);
+	timing_toolbar->add_child(snap_keys);
 	snap_keys->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_store_snap_states).unbind(1));
 
 	fps_compat = memnew(Button);
 	fps_compat->set_flat(true);
-	bottom_hf->add_child(fps_compat);
+	timing_toolbar->add_child(fps_compat);
 	fps_compat->set_disabled(true);
 	fps_compat->set_toggle_mode(true);
 	fps_compat->set_pressed(true);
@@ -8356,7 +8409,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	nearest_fps_label = memnew(Label);
 	nearest_fps_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	nearest_fps_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	bottom_hf->add_child(nearest_fps_label);
+	timing_toolbar->add_child(nearest_fps_label);
 
 	step = memnew(EditorSpinSlider);
 	step->set_min(0);
@@ -8366,7 +8419,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip_text(TTRC("Animation step value."));
 	step->set_accessibility_name(TTRC("Animation step value."));
-	bottom_hf->add_child(step);
+	timing_toolbar->add_child(step);
 	step->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_update_step));
 	step->set_read_only(true);
 
@@ -8375,12 +8428,13 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_mode->add_item(TTRC("FPS"));
 	snap_mode->set_accessibility_name(TTRC("Snap Mode"));
 	snap_mode->set_disabled(true);
-	bottom_hf->add_child(snap_mode);
+	timing_toolbar->add_child(snap_mode);
 	snap_mode->connect(SceneStringName(item_selected), callable_mp(this, &AnimationTrackEditor::_snap_mode_changed));
 
-	bottom_hf->add_child(memnew(VSeparator));
+	timing_toolbar->add_child(memnew(VSeparator));
 
 	HBoxContainer *zoom_hb = memnew(HBoxContainer);
+	zoom_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 	zoom_icon = memnew(TextureRect);
 	zoom_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	zoom_hb->add_child(zoom_icon);
@@ -8389,11 +8443,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	zoom->set_min(0.0);
 	zoom->set_max(2.0);
 	zoom->set_value(1.0);
-	zoom->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
+	zoom->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
+	zoom->set_h_size_flags(SIZE_EXPAND_FILL);
 	zoom->set_v_size_flags(SIZE_SHRINK_CENTER);
 	zoom->set_accessibility_name(TTRC("Zoom"));
 	zoom_hb->add_child(zoom);
-	bottom_hf->add_child(zoom_hb);
+	timing_toolbar->add_child(zoom_hb);
 	timeline->set_zoom(zoom);
 
 	ED_SHORTCUT("animation_editor/auto_fit", TTRC("Fit to panel"), KeyModifierMask::ALT | Key::F);
@@ -8403,7 +8458,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	auto_fit->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit));
 	auto_fit->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
 	auto_fit->set_accessibility_name(TTRC("Auto Fit"));
-	bottom_hf->add_child(auto_fit);
+	timing_toolbar->add_child(auto_fit);
 
 	auto_fit_bezier = memnew(Button);
 	auto_fit_bezier->set_flat(true);
@@ -8411,7 +8466,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	auto_fit_bezier->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit_bezier));
 	auto_fit_bezier->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
 	auto_fit_bezier->set_accessibility_name(TTRC("Auto Fit Bezier"));
-	bottom_hf->add_child(auto_fit_bezier);
+	timing_toolbar->add_child(auto_fit_bezier);
 
 	edit = memnew(MenuButton);
 	edit->set_shortcut_context(this);

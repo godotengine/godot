@@ -251,6 +251,7 @@ class AnimationTimelineEdit : public Range {
 	void _track_added(int p_track);
 
 	float _get_zoom_scale(double p_zoom_value) const;
+	float _snap_time_to_key(float p_time) const;
 	void _scroll_to_start();
 
 protected:

@@ -1734,11 +1734,11 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Insert new point.
-		if (mb->get_position().x >= limit && mb->get_position().x < get_size().width && mb->is_command_or_control_pressed()) {
+		if (mb->get_position().x >= limit && mb->get_position().x < get_size().width && (mb->is_command_or_control_pressed() || mb->is_double_click())) {
 			float h = (get_size().height / 2.0 - mb->get_position().y) * timeline_v_zoom + timeline_v_scroll;
 			Array new_point = animation->make_default_bezier_key(h);
 
-			real_t time = ((mb->get_position().x - limit) / timeline->get_zoom_scale()) + timeline->get_value();
+			real_t time = MAX(0.0, ((mb->get_position().x - limit) / timeline->get_zoom_scale()) + timeline->get_value());
 			while (animation->track_find_key(selected_track, time, Animation::FIND_MODE_APPROX) != -1) {
 				time += 0.0001;
 			}
@@ -2139,6 +2139,13 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			float time_offset = 0.0;
 			if (std::abs(moving_selection_offset.x) > CMP_EPSILON || (snapped_time > moving_selection_pivot && time_delta > CMP_EPSILON) || (snapped_time < moving_selection_pivot && time_delta < -CMP_EPSILON)) {
 				time_offset = snapped_time - moving_selection_pivot;
+			}
+			if (!selection.is_empty()) {
+				real_t earliest_key_time = animation->track_get_key_time(selection.front()->get().first, selection.front()->get().second);
+				for (const IntPair &key : selection) {
+					earliest_key_time = MIN(earliest_key_time, animation->track_get_key_time(key.first, key.second));
+				}
+				time_offset = MAX(time_offset, -earliest_key_time);
 			}
 
 			float moving_selection_begin_value;
