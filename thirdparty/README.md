@@ -77,6 +77,8 @@ Patches:
 - `0002-external-jpgd.patch` (GH-88508)
 - `0003-external-tinyexr.patch` (GH-97582)
 - `0004-remove-tinydds-qoi.patch` (GH-97582)
+- `0005-msvc-include-ctype.patch` (GH-106155)
+- `0006-clang-warning-exclude.patch` (GH-121604)
 
 
 ## brotli
@@ -443,6 +445,10 @@ Files generated from upstream source:
    `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`
 4. Delete `data/out` folder and rebuild data: `cd data && rm -rf ./out && make`
 5. Copy `source/data/out/icudt{ICU_VERSION}l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt_godot.dat`
+
+Patches:
+
+- `0001-remove-final.patch` (GH-121604)
 
 
 ## jolt_physics

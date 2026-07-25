@@ -1,6 +1,8 @@
 // basisu_containers_impl.h
 // Do not include directly
 
+#include <ctype.h>
+
 #ifdef _MSC_VER
 #pragma warning (disable:4127) // warning C4127: conditional expression is constant
 #endif

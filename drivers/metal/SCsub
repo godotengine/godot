@@ -37,7 +37,10 @@ env_metal.drivers_sources += thirdparty_obj
 # Enable C++20 for the Objective-C++ Metal code, which uses C++20 concepts.
 if "-std=gnu++17" in env_metal["CXXFLAGS"]:
     env_metal["CXXFLAGS"].remove("-std=gnu++17")
-env_metal.Append(CXXFLAGS=["-std=c++20"])
+env_metal.Append(CXXFLAGS=["-std=gnu++20"])
+# NOTE: These warnings really shouldn't be appearing to begin with, as we're using c++20, but CI
+#  still complains so let's suppress it explicitly.
+env_metal.Append(CXXFLAGS=["-Wno-c99-designator"])
 
 # Driver source files
 

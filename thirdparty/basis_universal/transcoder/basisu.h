@@ -122,20 +122,8 @@ namespace basisu
 	void enable_debug_printf(bool enabled);
 	void debug_printf(const char *pFmt, ...);
 
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
-#endif                  
-#endif
 		
-	template <typename T> inline void clear_obj(T& obj) { memset(&obj, 0, sizeof(obj)); }
-
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif                            
-#endif
+	template <typename T> inline void clear_obj(T& obj) { memset((void *)&obj, 0, sizeof(obj)); }
 
 	template <typename T0, typename T1> inline T0 lerp(T0 a, T0 b, T1 c) { return a + (b - a) * c; }
 
