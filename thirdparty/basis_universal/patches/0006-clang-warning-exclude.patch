@@ -1,0 +1,211 @@
+diff --git a/thirdparty/basis_universal/encoder/basisu_enc.cpp b/thirdparty/basis_universal/encoder/basisu_enc.cpp
+index fff98e8301..f7c918101e 100644
+--- a/thirdparty/basis_universal/encoder/basisu_enc.cpp
++++ b/thirdparty/basis_universal/encoder/basisu_enc.cpp
+@@ -567,7 +567,7 @@ namespace basisu
+ 			}
+ 
+ 			img.resize(width, height);
+-			memcpy(img.get_ptr(), pMem, width * height * sizeof(float) * 4);
++			memcpy((void *)img.get_ptr(), pMem, width * height * sizeof(float) * 4);
+ 
+ 			break;
+ 		}
+@@ -3286,7 +3286,7 @@ namespace basisu
+ 		}
+ 		else
+ 		{
+-			memcpy(img.get_ptr(), out_rgba, sizeof(float) * 4 * img.get_total_pixels());
++			memcpy((void *)img.get_ptr(), out_rgba, sizeof(float) * 4 * img.get_total_pixels());
+ 		}
+ 
+ 		free(out_rgba);
+@@ -3308,7 +3308,7 @@ namespace basisu
+ 		}
+ 
+ 		img.resize(width, height);
+-		memcpy(img.get_ptr(), out_rgba, width * height * sizeof(float) * 4);
++		memcpy((void *)img.get_ptr(), out_rgba, width * height * sizeof(float) * 4);
+ 		free(out_rgba);
+ 
+ 		return true;
+diff --git a/thirdparty/basis_universal/encoder/basisu_pvrtc1_4.h b/thirdparty/basis_universal/encoder/basisu_pvrtc1_4.h
+index a9fe6b27aa..4b8ffb0817 100644
+--- a/thirdparty/basis_universal/encoder/basisu_pvrtc1_4.h
++++ b/thirdparty/basis_universal/encoder/basisu_pvrtc1_4.h
+@@ -231,18 +231,7 @@ namespace basisu
+ 
+ 		inline void set_to_black()
+ 		{
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif                          
+-#endif
+-			memset(m_blocks.get_ptr(), 0, m_blocks.size_in_bytes());
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif                
+-#endif
++			memset((void *)m_blocks.get_ptr(), 0, m_blocks.size_in_bytes());
+ 		}
+ 
+ 		inline bool get_block_uses_transparent_modulation(uint32_t bx, uint32_t by) const
+diff --git a/thirdparty/basis_universal/transcoder/basisu.h b/thirdparty/basis_universal/transcoder/basisu.h
+index 939ee79e62..37f33fe305 100644
+--- a/thirdparty/basis_universal/transcoder/basisu.h
++++ b/thirdparty/basis_universal/transcoder/basisu.h
+@@ -122,20 +122,8 @@ namespace basisu
+ 	void enable_debug_printf(bool enabled);
+ 	void debug_printf(const char *pFmt, ...);
+ 
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif                  
+-#endif
+ 		
+-	template <typename T> inline void clear_obj(T& obj) { memset(&obj, 0, sizeof(obj)); }
+-
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif                            
+-#endif
++	template <typename T> inline void clear_obj(T& obj) { memset((void *)&obj, 0, sizeof(obj)); }
+ 
+ 	template <typename T0, typename T1> inline T0 lerp(T0 a, T0 b, T1 c) { return a + (b - a) * c; }
+ 
+diff --git a/thirdparty/basis_universal/transcoder/basisu_containers.h b/thirdparty/basis_universal/transcoder/basisu_containers.h
+index bfc51bb499..451aa5f3e8 100644
+--- a/thirdparty/basis_universal/transcoder/basisu_containers.h
++++ b/thirdparty/basis_universal/transcoder/basisu_containers.h
+@@ -287,19 +287,8 @@ namespace basisu
+ 
+          if (BASISU_IS_BITWISE_COPYABLE(T))
+          {
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif                  
+-#endif
+              if ((m_p) && (other.m_p))
+-                memcpy(m_p, other.m_p, m_size * sizeof(T));
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif                
+-#endif
++                memcpy((void *)m_p, other.m_p, m_size * sizeof(T));
+          }
+          else
+          {
+@@ -342,19 +331,8 @@ namespace basisu
+ 
+          if (BASISU_IS_BITWISE_COPYABLE(T))
+          {
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif         
+-#endif
+              if ((m_p) && (other.m_p))
+-                memcpy(m_p, other.m_p, other.m_size * sizeof(T));
+-#ifndef __EMSCRIPTEN__          
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif                            
+-#endif
++                memcpy((void *)m_p, other.m_p, other.m_size * sizeof(T));
+          }
+          else
+          {
+@@ -774,21 +752,7 @@ namespace basisu
+             }
+ 
+             // Copy "down" the objects to preserve, filling in the empty slots.
+-
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif
+-#endif
+-
+-            memmove(pDst, pSrc, num_to_move * sizeof(T));
+-
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif            
+-#endif
++            memmove((void *)pDst, pSrc, num_to_move * sizeof(T));
+          }
+          else
+          {
+@@ -1042,19 +1006,7 @@ namespace basisu
+       {
+          if ((sizeof(T) == 1) && (scalar_type<T>::cFlag))
+          {
+-#ifndef __EMSCRIPTEN__
+-#ifdef __GNUC__
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
+-#endif              
+-#endif
+-            memset(m_p, *reinterpret_cast<const uint8_t*>(&o), m_size);
+-
+-#ifndef __EMSCRIPTEN__            
+-#ifdef __GNUC__
+-#pragma GCC diagnostic pop
+-#endif                        
+-#endif
++            memset((void *)m_p, *reinterpret_cast<const uint8_t*>(&o), m_size);
+          }
+          else
+          {
+diff --git a/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp b/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp
+index 32018cd282..fe8340ac5d 100644
+--- a/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp
++++ b/thirdparty/basis_universal/transcoder/basisu_transcoder.cpp
+@@ -17097,7 +17097,7 @@ namespace basist
+ 		m_pData = static_cast<const uint8_t *>(pData);
+ 		m_data_size = data_size;
+ 
+-		memcpy(&m_header, pData, sizeof(m_header));
++		memcpy((void *)&m_header, pData, sizeof(m_header));
+ 
+ 		// We only support UASTC LDR, UASTC HDR and ETC1S.
+ 		// Note the DFD's contents are what we are guided by for decoding the KTX2 file, not this format field (currently).
+@@ -17195,7 +17195,7 @@ namespace basist
+ 			return false;
+ 		}
+ 
+-		memcpy(&m_levels[0], m_pData + sizeof(ktx2_header), level_index_size_in_bytes);
++		memcpy((void *)&m_levels[0], m_pData + sizeof(ktx2_header), level_index_size_in_bytes);
+ 		
+ 		// Sanity check the level offsets and byte sizes
+ 		for (uint32_t i = 0; i < m_levels.size(); i++)
+@@ -17732,7 +17732,7 @@ namespace basist
+ 
+ 		const uint8_t* pSrc = m_pData + m_header.m_sgd_byte_offset;
+ 
+-		memcpy(&m_etc1s_header, pSrc, sizeof(ktx2_etc1s_global_data_header));
++		memcpy((void *)&m_etc1s_header, pSrc, sizeof(ktx2_etc1s_global_data_header));
+ 		pSrc += sizeof(ktx2_etc1s_global_data_header);
+ 
+ 		if ((!m_etc1s_header.m_endpoints_byte_length) || (!m_etc1s_header.m_selectors_byte_length) || (!m_etc1s_header.m_tables_byte_length))
+@@ -17765,7 +17765,7 @@ namespace basist
+ 			return false;
+ 		}
+ 		
+-		memcpy(m_etc1s_image_descs.data(), pSrc, sizeof(ktx2_etc1s_image_desc) * image_count);
++		memcpy((void *)m_etc1s_image_descs.data(), pSrc, sizeof(ktx2_etc1s_image_desc) * image_count);
+ 		pSrc += sizeof(ktx2_etc1s_image_desc) * image_count;
+ 
+ 		// Sanity check the ETC1S image descs
