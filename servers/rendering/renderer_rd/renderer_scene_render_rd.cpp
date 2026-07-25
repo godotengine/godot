@@ -779,13 +779,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			// If we do a nearest or bilinear upscale, we just render into our render target and our shader will upscale automatically.
 			// Target size in this case is lying as we never get our real target size communicated.
 			// Bit nasty but...
-
-			if (dest_is_msaa_2d) {
-				dest_fb = FramebufferCacheRD::get_singleton()->get_cache(texture_storage->render_target_get_rd_texture_msaa(render_target));
-				texture_storage->render_target_set_msaa_needs_resolve(render_target, true); // Make sure this gets resolved.
-			} else {
-				dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
-			}
+			
+			dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
 
 			tonemap.dest_texture_size = texture_storage->render_target_get_size(render_target);
 			tonemap.bilinear_filtering = scale_mode != RSE::VIEWPORT_SCALING_3D_MODE_NEAREST;
@@ -847,12 +842,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				RID dest_texture = rb->create_texture(SNAME("SMAA"), SNAME("destination"), rb->get_base_data_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 				dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 			} else {
-				if (dest_is_msaa_2d) {
-					dest_fb = FramebufferCacheRD::get_singleton()->get_cache(texture_storage->render_target_get_rd_texture_msaa(render_target));
-					texture_storage->render_target_set_msaa_needs_resolve(render_target, true); // Make sure this gets resolved.
-				} else {
 					dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
-				}
 			}
 
 			smaa->process(rb, source_texture, dest_fb, rb->get_use_debanding() && !using_hdr);
@@ -890,10 +880,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		if (dest_is_msaa_2d) {
 			// We can't upscale directly into our MSAA buffer so we need to do a copy
 			RID source_texture = texture_storage->render_target_get_rd_texture(render_target);
-			RID dest_fb = FramebufferCacheRD::get_singleton()->get_cache(texture_storage->render_target_get_rd_texture_msaa(render_target));
+			RID dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
 			copy_effects->copy_to_fb_rect(source_texture, dest_fb, Rect2i(Point2i(), rb->get_target_size()));
-
-			texture_storage->render_target_set_msaa_needs_resolve(render_target, true); // Make sure this gets resolved.
 		}
 
 		RD::get_singleton()->draw_command_end_label();
