@@ -638,7 +638,7 @@ void Window::_update_caption_overlay() {
 	// Use window_get_safe_title_margins as the authoritative DPI-scaled size.
 	// x = left cluster width (RTL), y = right cluster width (LTR), z = height
 	Vector3i margins = DisplayServer::get_singleton()->window_get_safe_title_margins(window_id);
-	bool rtl = is_layout_rtl();
+	bool rtl = false;
 	int w = rtl ? margins.x : margins.y;
 	int h = margins.z;
 	caption_overlay->set_size(Size2(w, h));

@@ -2224,7 +2224,7 @@ Vector3i DisplayServerWindows::window_get_safe_title_margins(DisplayServerEnums:
 	int cw = bw * 3;
 	int ch = bh;
 
-	bool rtl = (GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL) != 0;
+	bool rtl = false;
 
 	// x = left margin, y = right margin, z = height (all in physical pixels).
 	if (rtl) {

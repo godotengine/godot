@@ -57,7 +57,7 @@ static CaptionButtonOverlay::ButtonZone _ltr_zone(int col, bool rtl) {
 }
 
 Rect2 CaptionButtonOverlay::_zone_rect(ButtonZone p_zone) const {
-	bool rtl = is_layout_rtl();
+	bool rtl = false;
 	int col = 0;
 	if (rtl) {
 		switch (p_zone) {
@@ -80,7 +80,7 @@ Rect2 CaptionButtonOverlay::_zone_rect(ButtonZone p_zone) const {
 }
 
 CaptionButtonOverlay::ButtonZone CaptionButtonOverlay::_zone_at(const Vector2 &p_pos) const {
-	bool rtl = is_layout_rtl();
+	bool rtl = false;
 	float bw = get_size().x / 3.0f;
 	float bh = get_size().y;
 	for (int col = 0; col < 3; col++) {
