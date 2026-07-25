@@ -159,6 +159,11 @@ OS_AppleEmbedded::OS_AppleEmbedded() {
 
 OS_AppleEmbedded::~OS_AppleEmbedded() {}
 
+Error OS_AppleEmbedded::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	int status = SecRandomCopyBytes(kSecRandomDefault, p_bytes, r_buffer);
+	return status == errSecSuccess ? OK : FAILED;
+}
+
 void OS_AppleEmbedded::alert(const String &p_alert, const String &p_title) {
 	const CharString utf8_alert = p_alert.utf8();
 	const CharString utf8_title = p_title.utf8();
