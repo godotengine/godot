@@ -1122,13 +1122,55 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type == TK_STRING) {
 					String path = token.value;
-					Ref<Resource> res = ResourceLoader::load(path);
+					String uid_string;
+
+					get_token(p_stream, token, line, r_err_str);
+
+					if (path.begins_with("uid://")) {
+						uid_string = path;
+						path = "";
+					}
+					if (token.type == TK_COMMA) {
+						get_token(p_stream, token, line, r_err_str);
+						if (token.type != TK_STRING) {
+							r_err_str = "Expected string in Resource reference";
+							return ERR_PARSE_ERROR;
+						}
+						String extra_path = token.value;
+						if (extra_path.begins_with("uid://")) {
+							if (!uid_string.is_empty()) {
+								r_err_str = "Two uid:// paths in one Resource reference";
+								return ERR_PARSE_ERROR;
+							}
+							uid_string = extra_path;
+						} else {
+							if (!path.is_empty()) {
+								r_err_str = "Two non-uid paths in one Resource reference";
+								return ERR_PARSE_ERROR;
+							}
+							path = extra_path;
+						}
+						get_token(p_stream, token, line, r_err_str);
+					}
+
+					Ref<Resource> res;
+					if (!uid_string.is_empty()) {
+						ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uid_string);
+						if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+							const String id_path = ResourceUID::get_singleton()->get_id_path(uid);
+							if (!id_path.is_empty()) {
+								res = ResourceLoader::load(id_path);
+							}
+						}
+					}
+					if (res.is_null() && !path.is_empty()) {
+						res = ResourceLoader::load(path);
+					}
 					if (res.is_null()) {
-						r_err_str = "Can't load resource at path: " + path;
+						r_err_str = "Can't load resource at path: " + path + " with uid: " + uid_string;
 						return ERR_PARSE_ERROR;
 					}
 
-					get_token(p_stream, token, line, r_err_str);
 					if (token.type != TK_PARENTHESIS_CLOSE) {
 						r_err_str = "Expected ')'";
 						return ERR_PARSE_ERROR;
@@ -2128,22 +2170,21 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 			Ref<Resource> res = p_variant;
 			if (res.is_valid()) {
-				//is resource
 				String res_text;
 
-				//try external function
+				// Try external function.
 				if (p_encode_res_func) {
 					res_text = p_encode_res_func(p_encode_res_ud, res);
 				}
 
-				//try path because it's a file
+				// Try path, because it's a file.
 				if (res_text.is_empty() && res->get_path().is_resource_file()) {
-					//external resource
+					// External resource.
 					String path = res->get_path();
 					res_text = "Resource(\"" + path + "\")";
 				}
 
-				//could come up with some sort of text
+				// Could come up with some sort of text.
 				if (!res_text.is_empty()) {
 					p_store_string_func(p_store_string_ud, res_text);
 					break;
