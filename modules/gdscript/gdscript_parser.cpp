@@ -378,7 +378,7 @@ void GDScriptParser::override_completion_context(const Node *p_for_node, Complet
 }
 
 void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node, int p_argument, bool p_force) {
-	if (!for_completion || (!p_force && completion_context.type != COMPLETION_NONE)) {
+	if (!for_completion || suppress_completion || (!p_force && completion_context.type != COMPLETION_NONE)) {
 		return;
 	}
 	if (previous.cursor_place != GDScriptTokenizerText::CURSOR_MIDDLE && previous.cursor_place != GDScriptTokenizerText::CURSOR_END && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
@@ -400,7 +400,7 @@ void GDScriptParser::make_completion_context(CompletionType p_type, Node *p_node
 }
 
 void GDScriptParser::make_completion_context(CompletionType p_type, Variant::Type p_builtin_type, bool p_force) {
-	if (!for_completion || (!p_force && completion_context.type != COMPLETION_NONE)) {
+	if (!for_completion || suppress_completion || (!p_force && completion_context.type != COMPLETION_NONE)) {
 		return;
 	}
 	if (previous.cursor_place != GDScriptTokenizerText::CURSOR_MIDDLE && previous.cursor_place != GDScriptTokenizerText::CURSOR_END && current.cursor_place == GDScriptTokenizerText::CURSOR_NONE) {
@@ -3285,12 +3285,15 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 	DictionaryNode *dictionary = alloc_node<DictionaryNode>();
 
 	bool decided_style = false;
+	const bool was_suppressing_completion = suppress_completion;
 	if (!check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
 		do {
 			if (check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
 				// Allow for trailing comma.
 				break;
 			}
+
+			suppress_completion = was_suppressing_completion;
 
 			// Key.
 			ExpressionNode *key = parse_expression(false, true); // Stop on "=" so we can check for Lua table style.
@@ -3312,6 +3315,16 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 						break;
 				}
 				decided_style = true;
+			}
+
+			if (key != nullptr && dictionary->style == DictionaryNode::LUA_TABLE && completion_context.node == key) {
+				// A Lua-style key is a plain identifier and not an expression, so it must not
+				// produce completion options. The style is only known once the key has been
+				// parsed, so the context the key created is discarded here. Completion stays
+				// suppressed for the rest of the entry because, when the "=" is missing, the
+				// error recovery below re-parses from the cursor and would recreate it.
+				override_completion_context(key, COMPLETION_NONE, nullptr);
+				suppress_completion = true;
 			}
 
 			switch (dictionary->style) {
@@ -3377,6 +3390,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 
 		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
 	}
+	suppress_completion = was_suppressing_completion;
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" after dictionary elements.)");
 	complete_extents(dictionary);

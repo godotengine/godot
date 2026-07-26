@@ -1374,6 +1374,9 @@ private:
 	bool _is_tool = false;
 	String script_path;
 	bool for_completion = false;
+	// Set while parsing a region that can never produce completion options,
+	// e.g. a Lua-style dictionary key, which is a plain identifier and not an expression.
+	bool suppress_completion = false;
 	bool parse_body = true;
 	bool panic_mode = false;
 	bool can_break = false;
