@@ -749,14 +749,14 @@ public:
 			StringName struct_name;
 			DataPrecision precision;
 			//for passing textures as arguments
-			bool tex_argument_check;
+			bool tex_argument_check = false;
 			TextureFilter tex_argument_filter;
 			TextureRepeat tex_argument_repeat;
-			bool tex_builtin_check;
+			bool tex_builtin_check = false;
 			StringName tex_builtin;
-			ShaderNode::Uniform::Hint tex_hint;
-			bool is_const;
-			int array_size;
+			ShaderNode::Uniform::Hint tex_hint = ShaderNode::Uniform::HINT_NONE;
+			bool is_const = false;
+			int array_size = 0;
 
 			HashMap<StringName, HashSet<int>> tex_argument_connect;
 		};
