@@ -6409,6 +6409,9 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 			}
 
 			Vector3 motion = intersection - click;
+			if (focused_node_id.is_valid() && get_selected_count() > 0 && times_focused_consecutively >= 2 && times_focused_consecutively % 2 == 0) {
+				motion /= 2;
+			}
 			if (_edit.plane != TRANSFORM_VIEW) {
 				if (!plane_mv) {
 					motion = motion_mask.dot(motion) * motion_mask;
