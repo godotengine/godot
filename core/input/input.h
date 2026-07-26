@@ -500,7 +500,7 @@ public:
 	void set_use_accumulated_input(bool p_enable);
 	bool is_using_accumulated_input();
 	void set_joypad_enabled(bool p_enable);
-	bool is_joypad_enabled();
+	bool is_joypad_enabled() const;
 
 	void release_pressed_events();
 

@@ -1691,27 +1691,22 @@ bool Input::is_using_accumulated_input() {
 
 void Input::set_joypad_enabled(bool p_enable) {
 	joypad_enabled = p_enable;
-	if (!joypad_enabled) {
+	if (_should_ignore_joypad_events()) {
 		release_pressed_events();
 	}
 }
 
-bool Input::is_joypad_enabled() {
+bool Input::is_joypad_enabled() const {
 	return joypad_enabled;
 }
 
 void Input::release_pressed_events() {
-	// Don't release the events if the application (or the window it's embedded in) is still focused.
-	if (application_focused || embedder_focused) {
-		return;
-	}
-
 	flush_buffered_events(); // this is needed to release actions strengths
 
 	keys_pressed.clear();
 	physical_keys_pressed.clear();
 	key_label_pressed.clear();
-	if (!joypad_enabled || ignore_joypad_on_unfocused_application) {
+	if (_should_ignore_joypad_events()) {
 		joy_buttons_pressed.clear();
 		_joy_axis.clear();
 
