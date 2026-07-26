@@ -2813,6 +2813,16 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		CHECK(code_edit->get_selection_origin_column() == 2);
 		CHECK(code_edit->get_caret_column() == 3);
 
+		// Converts leftover spaces to tabs
+		code_edit->set_text("line_1\n    line_2\n     line_3\n    line_4\n          line_5");
+		code_edit->convert_indent();
+		CHECK(code_edit->get_text() == "line_1\n\tline_2\n\t\tline_3\n\tline_4\n\t\t\tline_5");
+
+		// Doesn't go out of bounds on whitespace lines
+		code_edit->set_text("  ");
+		code_edit->convert_indent();
+		CHECK(code_edit->get_text() == "\t");
+
 		// Within provided range.
 		code_edit->set_text("    test\n        test\n");
 		code_edit->select(1, 8, 1, 9);

@@ -1304,7 +1304,7 @@ void CodeEdit::convert_indent(int p_from_line, int p_to_line) {
 			}
 			space_count++;
 
-			if (!indent_using_spaces && space_count != indent_size) {
+			if (!indent_using_spaces && space_count != indent_size && line[j + 1] == ' ') {
 				j++;
 				continue;
 			}
@@ -1316,11 +1316,14 @@ void CodeEdit::convert_indent(int p_from_line, int p_to_line) {
 				changed_indentation = true;
 			}
 
-			// Calculate new line.
-			line = line.left(j + ((size_diff < 0) ? size_diff : 0)) + indent_text + line.substr(j + 1);
+			int replace_count = space_count == indent_size
+					? ((size_diff < 0) ? size_diff : 0)
+					: 1 - space_count;
 
+			line = line.left(j + replace_count) + indent_text + line.substr(j + 1);
+
+			j += space_count == indent_size ? size_diff : space_count;
 			space_count = 0;
-			j += size_diff;
 		}
 
 		if (line_changed) {
