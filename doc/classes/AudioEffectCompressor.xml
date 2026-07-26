@@ -30,7 +30,7 @@
 			Amount of compression applied to the audio once it passes the volume threshold level. The higher the ratio, the stronger the compression applied to audio signals that pass the volume threshold level. Value can range from 1 to 48.
 		</member>
 		<member name="release_ms" type="float" setter="set_release_ms" getter="get_release_ms" default="250.0">
-			Compressor's delay time to stop decreasing the volume after the it falls below the volume threshold level, in milliseconds. Value can range from 20 to 2000.
+			Compressor's delay time to stop decreasing the volume after it falls below the volume threshold level, in milliseconds. Value can range from 20 to 2000.
 		</member>
 		<member name="sidechain" type="StringName" setter="set_sidechain" getter="get_sidechain" default="&amp;&quot;&quot;">
 			Audio bus to use for the volume threshold detection.

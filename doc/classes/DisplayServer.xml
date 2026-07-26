@@ -2606,7 +2606,7 @@
 			<param index="0" name="state" type="int" enum="DisplayServer.ProgressState" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the type and state of the progress bar on the taskbar/dock icon of the window specified by [param window_id]. See [enum ProgressState] for possible values and how each mode behaves.
+				Sets the type and state of the progress bar on the taskbar/dock icon of the window specified by [param window_id].
 				[b]Note:[/b] This method is implemented only on Windows and macOS.
 				[b]Note:[/b] On macOS, the progress bar is displayed only for the main window.
 			</description>
@@ -2797,7 +2797,7 @@
 			Display server supports native color picker. [b]Linux (X11/Wayland)[/b]
 		</constant>
 		<constant name="FEATURE_SELF_FITTING_WINDOWS" value="33" enum="Feature">
-			Display server automatically fits popups according to the screen boundaries. Window nodes should not attempt to do that themselves.
+			Display server automatically fits popups according to the screen boundaries. [Window] nodes should not attempt to do that themselves.
 		</constant>
 		<constant name="FEATURE_ACCESSIBILITY_SCREEN_READER" value="34" enum="Feature">
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
@@ -2950,8 +2950,8 @@
 			Region/landmark element. Screen readers can navigate between regions using landmark navigation.
 		</constant>
 		<constant name="ROLE_TEXT_RUN" value="47" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
-			Unifor text run.
-			Note: This role is used for internal text elements, and should not be assigned to nodes.
+			Uniform text run.
+			[b]Note:[/b] This role is used for internal text elements, and should not be assigned to nodes.
 		</constant>
 		<constant name="POPUP_MENU" value="0" enum="AccessibilityPopupType" deprecated="Use [AccessibilityServer] instead.">
 			Popup menu.

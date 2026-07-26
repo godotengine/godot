@@ -86,17 +86,19 @@
 		<method name="capitalize" qualifiers="const">
 			<return type="String" />
 			<description>
-				Changes the appearance of the string: replaces underscores ([code]_[/code]) with spaces, adds spaces before uppercase letters in the middle of a word, converts all letters to lowercase, then converts the first one and each one following a space to uppercase.
+				Returns a copy of the string with the following changes: replaces underscores ([code]_[/code]) and hyphens ([code]-[/code]) with spaces, adds spaces before uppercase letters in the middle of a word, converts all letters to lowercase, then converts the first one and each one following a space to uppercase.
 				[codeblocks]
 				[gdscript]
 				"move_local_x".capitalize()   # Returns "Move Local X"
 				"sceneFile_path".capitalize() # Returns "Scene File Path"
 				"2D, FPS, PNG".capitalize()   # Returns "2d, Fps, Png"
+				"example-name".capitalize()   # Returns "Example Name"
 				[/gdscript]
 				[csharp]
 				"move_local_x".Capitalize();   // Returns "Move Local X"
 				"sceneFile_path".Capitalize(); // Returns "Scene File Path"
 				"2D, FPS, PNG".Capitalize();   // Returns "2d, Fps, Png"
+				"example-name".Capitalize();   // Returns "Example Name"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -314,7 +316,7 @@
 			<param index="1" name="slice" type="int" />
 			<description>
 				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns the original string if [param delimiter] does not occur in the string. Returns an empty string if the [param slice] does not exist.
-				This is faster than [method split], if you only need one substring.
+				This is faster than [method split], if you only need one or two substrings.
 				[codeblock]
 				print("i/am/example/hi".get_slice("/", 2)) # Prints "example"
 				[/codeblock]
@@ -325,6 +327,11 @@
 			<param index="0" name="delimiter" type="String" />
 			<description>
 				Returns the total number of slices when the string is split with the given [param delimiter] (see [method split]).
+				[codeblock]
+				print("i/am/example/hi".get_slice_count("/")) # Prints 4
+				print("i am example hi".get_slice_count("/")) # Prints 1
+				[/codeblock]
+				Use [method get_slice] to extract a specific slice.
 			</description>
 		</method>
 		<method name="get_slicec" qualifiers="const">
@@ -333,7 +340,8 @@
 			<param index="1" name="slice" type="int" />
 			<description>
 				Splits the string using a Unicode character with code [param delimiter] and returns the substring at index [param slice]. Returns an empty string if the [param slice] does not exist.
-				This is faster than [method split], if you only need one substring.
+				This is faster than [method split], if you only need one or two substrings.
+				This is a Unicode version of [method get_slice].
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">

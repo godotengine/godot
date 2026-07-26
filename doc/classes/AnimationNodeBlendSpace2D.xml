@@ -152,7 +152,7 @@
 			If [code]true[/code], sync mode is enabled (equivalent to [constant SYNC_MODE_INDEPENDENT]). This property is kept for backward compatibility.
 		</member>
 		<member name="sync_mode" type="int" setter="set_sync_mode" getter="get_sync_mode" enum="AnimationNodeBlendSpace2D.SyncMode" default="0">
-			Controls how animations are synced when blended. See [enum SyncMode] for available options.
+			Controls how animations are synced when blended.
 		</member>
 		<member name="x_label" type="String" setter="set_x_label" getter="get_x_label" default="&quot;x&quot;">
 			Name of the blend space's X axis.

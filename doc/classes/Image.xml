@@ -445,7 +445,7 @@
 			<param index="1" name="height" type="int" />
 			<param index="2" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
 			<description>
-				Resizes the image to the given [param width] and [param height]. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
+				Resizes the image to the given [param width] and [param height]. New pixels are calculated using the [param interpolation] mode.
 				[b]Note:[/b] If the image's format is [constant FORMAT_RGBA4444], [constant FORMAT_RGB565], or [constant FORMAT_RGBE9995], it will be temporarily converted to either [constant FORMAT_RGBA8] or [constant FORMAT_RGBAH]. This can affect the quality of the resized image.
 			</description>
 		</method>
@@ -454,7 +454,7 @@
 			<param index="0" name="square" type="bool" default="false" />
 			<param index="1" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
 			<description>
-				Resizes the image to the nearest power of 2 for the width and height. If [param square] is [code]true[/code], sets width and height to be the same. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
+				Resizes the image to the nearest power of 2 for the width and height. If [param square] is [code]true[/code], sets width and height to be the same. New pixels are calculated using the [param interpolation] mode.
 			</description>
 		</method>
 		<method name="rgbe_to_srgb">

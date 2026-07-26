@@ -92,7 +92,7 @@
 		<method name="capitalize" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns a copy of the string with changed appearance. Replaces underscores ([code]_[/code]) and hyphens ([code]-[/code]) with spaces, adds spaces before uppercase letters in the middle of a word, converts all letters to lowercase, then converts the first one and each one following a space to uppercase.
+				Returns a copy of the string with the following changes: replaces underscores ([code]_[/code]) and hyphens ([code]-[/code]) with spaces, adds spaces before uppercase letters in the middle of a word, converts all letters to lowercase, then converts the first one and each one following a space to uppercase.
 				[codeblocks]
 				[gdscript]
 				"move_local_x".capitalize()   # Returns "Move Local X"
@@ -345,11 +345,11 @@
 			<param index="0" name="delimiter" type="String" />
 			<description>
 				Returns the total number of slices when the string is split with the given [param delimiter] (see [method split]).
-				Use [method get_slice] to extract a specific slice.
 				[codeblock]
-				print("i/am/example/string".get_slice_count("/")) # Prints '4'.
-				print("i am example string".get_slice_count("/")) # Prints '1'.
+				print("i/am/example/hi".get_slice_count("/")) # Prints 4
+				print("i am example hi".get_slice_count("/")) # Prints 1
 				[/codeblock]
+				Use [method get_slice] to extract a specific slice.
 			</description>
 		</method>
 		<method name="get_slicec" qualifiers="const">
