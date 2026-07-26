@@ -57,6 +57,9 @@
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_3d/navigation_server_3d_debug.h"
+#endif // DEBUG_ENABLED
 
 Callable GridMap::_navmesh_source_geometry_parsing_callback;
 RID GridMap::_navmesh_source_geometry_parser;
@@ -1223,7 +1226,7 @@ void GridMap::_notification(int p_what) {
 			_debug_update();
 
 #ifndef NAVIGATION_3D_DISABLED
-			if (bake_navigation && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+			if (bake_navigation && NavigationServer3DDebug::get_singleton()->get_debug_navigation_enabled()) {
 				_update_navigation_debug_edge_connections();
 			}
 #endif // NAVIGATION_3D_DISABLED
@@ -2124,7 +2127,7 @@ void GridMap::_update_octant_navigation_debug_edge_connections_mesh(const Octant
 	ERR_FAIL_COND(!octant_map.has(p_key));
 	Octant &g = *octant_map[p_key];
 
-	if (!NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+	if (!NavigationServer3DDebug::get_singleton()->get_debug_navigation_enabled()) {
 		if (g.navigation_debug_edge_connections_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(g.navigation_debug_edge_connections_instance, false);
 		}
@@ -2197,7 +2200,7 @@ void GridMap::_update_octant_navigation_debug_edge_connections_mesh(const Octant
 		return;
 	}
 
-	Ref<StandardMaterial3D> edge_connections_material = NavigationServer3D::get_singleton()->get_debug_navigation_edge_connections_material();
+	Ref<StandardMaterial3D> edge_connections_material = NavigationServer3DDebug::get_singleton()->get_debug_navigation_edge_connections_material();
 
 	Array mesh_array;
 	mesh_array.resize(Mesh::ARRAY_MAX);
@@ -2212,7 +2215,7 @@ void GridMap::_update_octant_navigation_debug_edge_connections_mesh(const Octant
 		RS::get_singleton()->instance_set_scenario(g.navigation_debug_edge_connections_instance, get_world_3d()->get_scenario());
 	}
 
-	bool enable_edge_connections = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_connections();
+	bool enable_edge_connections = NavigationServer3DDebug::get_singleton()->get_debug_navigation_enable_edge_connections();
 	if (!enable_edge_connections) {
 		RS::get_singleton()->instance_set_visible(g.navigation_debug_edge_connections_instance, false);
 	}

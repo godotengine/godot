@@ -90,6 +90,9 @@
 #ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/navigation_2d/navigation_server_2d_manager.h"
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_2d/navigation_server_2d_debug.h"
+#endif // DEBUG_ENABLED
 #endif // NAVIGATION_2D_DISABLED
 
 #ifndef PHYSICS_2D_DISABLED
@@ -101,6 +104,9 @@
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_3d/navigation_server_3d.h"
 #include "servers/navigation_3d/navigation_server_3d_manager.h"
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_3d/navigation_server_3d_debug.h"
+#endif // DEBUG_ENABLED
 #endif // NAVIGATION_3D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
@@ -4344,28 +4350,28 @@ int Main::start() {
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
 #ifndef NAVIGATION_2D_DISABLED
-			NavigationServer2D::get_singleton()->set_debug_navigation_enabled(true);
+			NavigationServer2DDebug::get_singleton()->set_debug_navigation_enabled(true);
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
-			NavigationServer3D::get_singleton()->set_debug_navigation_enabled(true);
+			NavigationServer3DDebug::get_singleton()->set_debug_navigation_enabled(true);
 #endif // NAVIGATION_3D_DISABLED
 		}
 		if (debug_avoidance) {
 #ifndef NAVIGATION_2D_DISABLED
-			NavigationServer2D::get_singleton()->set_debug_avoidance_enabled(true);
+			NavigationServer2DDebug::get_singleton()->set_debug_avoidance_enabled(true);
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
-			NavigationServer3D::get_singleton()->set_debug_avoidance_enabled(true);
+			NavigationServer3DDebug::get_singleton()->set_debug_avoidance_enabled(true);
 #endif // NAVIGATION_3D_DISABLED
 		}
 		if (debug_navigation || debug_avoidance) {
 #ifndef NAVIGATION_2D_DISABLED
 			NavigationServer2D::get_singleton()->set_active(true);
-			NavigationServer2D::get_singleton()->set_debug_enabled(true);
+			NavigationServer2DDebug::get_singleton()->set_debug_enabled(true);
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 			NavigationServer3D::get_singleton()->set_active(true);
-			NavigationServer3D::get_singleton()->set_debug_enabled(true);
+			NavigationServer3DDebug::get_singleton()->set_debug_enabled(true);
 #endif // NAVIGATION_3D_DISABLED
 		}
 		if (debug_canvas_item_redraw) {
