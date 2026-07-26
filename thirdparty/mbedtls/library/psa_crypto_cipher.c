@@ -13,6 +13,7 @@
 #include "psa_crypto_cipher.h"
 #include "psa_crypto_core.h"
 #include "psa_crypto_random_impl.h"
+#include "constant_time_internal.h"
 
 #include "mbedtls/cipher.h"
 #include "mbedtls/error.h"
@@ -551,7 +552,19 @@ psa_status_t mbedtls_psa_cipher_finish(
     uint8_t *output, size_t output_size, size_t *output_length)
 {
     psa_status_t status = PSA_ERROR_GENERIC_ERROR;
-    uint8_t temp_output_buffer[MBEDTLS_MAX_BLOCK_LENGTH];
+    size_t invalid_padding = 0;
+
+    /* We will copy output_size bytes from temp_output_buffer to the
+     * output buffer. We can't use *output_length to determine how
+     * much to copy because we must not leak that value through timing
+     * when doing decryption with unpadding. But the underlying function
+     * is not guaranteed to write beyond *output_length. To ensure we don't
+     * leak the former content of the stack to the caller, wipe that
+     * former content. */
+    uint8_t temp_output_buffer[MBEDTLS_MAX_BLOCK_LENGTH] = { 0 };
+    if (output_size > sizeof(temp_output_buffer)) {
+        output_size = sizeof(temp_output_buffer);
+    }
 
     if (operation->ctx.cipher.unprocessed_len != 0) {
         if (operation->alg == PSA_ALG_ECB_NO_PADDING ||
@@ -562,25 +575,34 @@ psa_status_t mbedtls_psa_cipher_finish(
     }
 
     status = mbedtls_to_psa_error(
-        mbedtls_cipher_finish(&operation->ctx.cipher,
-                              temp_output_buffer,
-                              output_length));
+        mbedtls_cipher_finish_padded(&operation->ctx.cipher,
+                                     temp_output_buffer,
+                                     output_length,
+                                     &invalid_padding));
     if (status != PSA_SUCCESS) {
         goto exit;
     }
 
-    if (*output_length == 0) {
+    if (output_size == 0) {
         ; /* Nothing to copy. Note that output may be NULL in this case. */
-    } else if (output_size >= *output_length) {
-        memcpy(output, temp_output_buffer, *output_length);
     } else {
-        status = PSA_ERROR_BUFFER_TOO_SMALL;
+        /* Do not use the value of *output_length to determine how much
+         * to copy. When decrypting a padded cipher, the output length is
+         * sensitive, and leaking it could allow a padding oracle attack. */
+        memcpy(output, temp_output_buffer, output_size);
     }
+
+    status = mbedtls_ct_error_if_else_0(invalid_padding,
+                                        PSA_ERROR_INVALID_PADDING);
+    mbedtls_ct_condition_t buffer_too_small =
+        mbedtls_ct_uint_lt(output_size, *output_length);
+    status = mbedtls_ct_error_if(buffer_too_small,
+                                 PSA_ERROR_BUFFER_TOO_SMALL,
+                                 status);
 
 exit:
     mbedtls_platform_zeroize(temp_output_buffer,
                              sizeof(temp_output_buffer));
-
     return status;
 }
 
@@ -701,17 +723,21 @@ psa_status_t mbedtls_psa_cipher_decrypt(
         &operation,
         mbedtls_buffer_offset(output, accumulated_length),
         output_size - accumulated_length, &olength);
-    if (status != PSA_SUCCESS) {
-        goto exit;
-    }
 
     *output_length = accumulated_length + olength;
 
 exit:
-    if (status == PSA_SUCCESS) {
-        status = mbedtls_psa_cipher_abort(&operation);
-    } else {
-        mbedtls_psa_cipher_abort(&operation);
+    /* C99 doesn't allow a declaration to follow a label */;
+    psa_status_t abort_status = mbedtls_psa_cipher_abort(&operation);
+    /* Normally abort shouldn't fail unless the operation is in a bad
+     * state, in which case we'd expect finish to fail with the same error.
+     * So it doesn't matter much which call's error code we pick when both
+     * fail. However, in unauthenticated decryption specifically, the
+     * distinction between PSA_SUCCESS and PSA_ERROR_INVALID_PADDING is
+     * security-sensitive (risk of a padding oracle attack), so here we
+     * must not have a code path that depends on the value of status. */
+    if (abort_status != PSA_SUCCESS) {
+        status = abort_status;
     }
 
     return status;

@@ -19,9 +19,7 @@
 
 #if defined(MBEDTLS_NET_C)
 
-#if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
-    !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
-    !defined(__HAIKU__) && !defined(__midipix__)
+#if !defined(MBEDTLS_PLATFORM_IS_UNIXLIKE) && !defined(_WIN32)
 #error "This module only works on Unix and Windows, see MBEDTLS_NET_C in mbedtls_config.h"
 #endif
 

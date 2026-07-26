@@ -729,6 +729,14 @@ union mbedtls_ssl_premaster_secret {
 /* Length in number of bytes of the TLS sequence number */
 #define MBEDTLS_SSL_SEQUENCE_NUMBER_LEN 8
 
+/* Helper to state that client_random and server_random need to be stored
+ * after the handshake is complete. This is required for context serialization
+ * and for the keying material exporter in TLS 1.2. */
+#if defined(MBEDTLS_SSL_CONTEXT_SERIALIZATION) || \
+    (defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT) && defined(MBEDTLS_SSL_PROTO_TLS1_2))
+#define MBEDTLS_SSL_KEEP_RANDBYTES
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -2247,12 +2255,16 @@ void mbedtls_ssl_conf_verify(mbedtls_ssl_config *conf,
 /**
  * \brief          Set the random number generator callback
  *
+ * \note           The callback with its parameter must remain valid as
+ *                 long as there is an SSL context that uses the
+ *                 SSL configuration.
+ *
  * \param conf     SSL configuration
  * \param f_rng    RNG function (mandatory)
  * \param p_rng    RNG parameter
  */
 void mbedtls_ssl_conf_rng(mbedtls_ssl_config *conf,
-                          int (*f_rng)(void *, unsigned char *, size_t),
+                          mbedtls_f_rng_t *f_rng,
                           void *p_rng);
 
 /**
@@ -2332,7 +2344,7 @@ void mbedtls_ssl_set_bio(mbedtls_ssl_context *ssl,
 
 /**
  * \brief             Configure the use of the Connection ID (CID)
- *                    extension in the next handshake.
+ *                    extension in subsequent handshakes.
  *
  *                    Reference: RFC 9146 (or draft-ietf-tls-dtls-connection-id-05
  *                    https://tools.ietf.org/html/draft-ietf-tls-dtls-connection-id-05
@@ -2353,7 +2365,7 @@ void mbedtls_ssl_set_bio(mbedtls_ssl_context *ssl,
  *                    headers of outgoing messages.
  *
  *                    This API enables or disables the use of the CID extension
- *                    in the next handshake and sets the value of the CID to
+ *                    in subsequent handshakes and sets the value of the CID to
  *                    be used for incoming messages.
  *
  * \param ssl         The SSL context to configure. This must be initialized.
@@ -2384,11 +2396,11 @@ void mbedtls_ssl_set_bio(mbedtls_ssl_context *ssl,
  *                    successful call to this function to run the handshake.
  *
  * \note              This call cannot guarantee that the use of the CID
- *                    will be successfully negotiated in the next handshake,
+ *                    will be successfully negotiated in subsequent handshakes,
  *                    because the peer might not support it. Specifically:
  *                    - On the Client, enabling the use of the CID through
- *                      this call implies that the `ClientHello` in the next
- *                      handshake will include the CID extension, thereby
+ *                      this call implies that the `ClientHello` in subsequent
+ *                      handshakes will include the CID extension, thereby
  *                      offering the use of the CID to the server. Only if
  *                      the `ServerHello` contains the CID extension, too,
  *                      the CID extension will actually be put to use.
@@ -2411,7 +2423,7 @@ void mbedtls_ssl_set_bio(mbedtls_ssl_context *ssl,
  *                    Mbed TLS.
  *
  * \return            \c 0 on success. In this case, the CID configuration
- *                    applies to the next handshake.
+ *                    applies to subsequent handshakes.
  * \return            A negative error code on failure.
  */
 int mbedtls_ssl_set_cid(mbedtls_ssl_context *ssl,
@@ -3345,6 +3357,27 @@ int mbedtls_ssl_set_session(mbedtls_ssl_context *ssl, const mbedtls_ssl_session 
  *                 On server, this can be used for alternative implementations
  *                 of session cache or session tickets.
  *
+ * \warning        The serialized data contains highly sensitive material,
+ *                 including a resumption key (TLS 1.3) or the master secret
+ *                 (TLS 1.2) from which the session's traffic keys are derived.
+ *
+ *                 The serialized data is not cryptographically protected.
+ *                 It is the responsibility of the user of the
+ *                 mbedtls_ssl_session_save() and
+ *                 mbedtls_ssl_session_load() APIs to ensure both its
+ *                 confidentiality and integrity while stored or transported.
+ *
+ *                 A breach of confidentiality could result in full compromise
+ *                 of the associated TLS session, including loss of
+ *                 confidentiality and integrity of past and future
+ *                 application data protected under that session.
+ *
+ *                 A breach of integrity may allow modification of the
+ *                 serialized data prior to restoration. As it represents
+ *                 trusted internal context, tampering could potentially result
+ *                 in arbitrary code execution or other severe compromise of
+ *                 the hosting process.
+ *
  * \warning        If a peer certificate chain is associated with the session,
  *                 the serialized state will only contain the peer's
  *                 end-entity certificate and the result of the chain
@@ -3382,6 +3415,19 @@ int mbedtls_ssl_session_load(mbedtls_ssl_session *session,
  *                 of session cache or session tickets.
  *
  * \see            mbedtls_ssl_session_load()
+ *
+ * \warning        The serialized data contains highly sensitive material,
+ *                 including a resumption key (TLS 1.3) or the master secret
+ *                 (TLS 1.2) from which the session's traffic keys are derived.
+ *
+ *                 The serialized data is not cryptographically protected.
+ *                 It is the responsibility of the user of the
+ *                 mbedtls_ssl_session_save() and
+ *                 mbedtls_ssl_session_load() APIs to ensure both its
+ *                 confidentiality and integrity while stored or transported.
+ *
+ *                 See the mbedtls_ssl_session_load() documentation for
+ *                 additional information.
  *
  * \param session  The session structure to be saved.
  * \param buf      The buffer to write the serialized data to. It must be a
@@ -3548,7 +3594,7 @@ int mbedtls_ssl_conf_cid(mbedtls_ssl_config *conf, size_t len,
  *
  * \note           The restrictions are enforced for all certificates in the
  *                 chain. However, signatures in the handshake are not covered
- *                 by this setting but by \b mbedtls_ssl_conf_sig_hashes().
+ *                 by this setting but by \c mbedtls_ssl_conf_sig_hashes().
  *
  * \param conf     SSL configuration
  * \param profile  Profile to use
@@ -4029,7 +4075,12 @@ void MBEDTLS_DEPRECATED mbedtls_ssl_conf_sig_hashes(mbedtls_ssl_config *conf,
 #endif /* !MBEDTLS_DEPRECATED_REMOVED && MBEDTLS_SSL_PROTO_TLS1_2 */
 
 /**
- * \brief          Configure allowed signature algorithms for use in TLS
+ * \brief          Configure allowed signature algorithms for use in TLS key
+ *                 exchange.
+ *
+ * \note           This only covers signature algorithms used in the key
+ *                 exchange. To also enforce restrictions in certificate verification
+ *                 refer to \c mbedtls_ssl_conf_cert_profile().
  *
  * \param conf     The SSL configuration to use.
  * \param sig_algs List of allowed IANA values for TLS 1.3 signature algorithms,
@@ -5072,13 +5123,6 @@ int mbedtls_ssl_get_session(const mbedtls_ssl_context *ssl,
  *                 supported with some limitations (those limitations do
  *                 not apply to DTLS, where defragmentation is fully
  *                 supported):
- *                 - On an Mbed TLS server that only accepts TLS 1.2,
- *                   the initial ClientHello message must not be fragmented.
- *                   A TLS 1.2 ClientHello may be fragmented if the server
- *                   also accepts TLS 1.3 connections (meaning
- *                   that #MBEDTLS_SSL_PROTO_TLS1_3 enabled, and the
- *                   accepted versions have not been restricted with
- *                   mbedtls_ssl_conf_max_tls_version() or the like).
  *                 - The first fragment of a handshake message must be
  *                   at least 4 bytes long.
  *                 - Non-handshake records must not be interleaved between
@@ -5565,6 +5609,19 @@ void mbedtls_ssl_free(mbedtls_ssl_context *ssl);
  *
  * \see            mbedtls_ssl_context_load()
  *
+ * \warning        The serialized data contains highly sensitive material,
+ *                 including the master secret from which the session's traffic
+ *                 keys are derived.
+ *
+ *                 The serialized data is not cryptographically protected.
+ *                 It is the responsibility of the user of the
+ *                 mbedtls_ssl_context_save() and
+ *                 mbedtls_ssl_context_load() APIs to ensure both its
+ *                 confidentiality and integrity while stored or transported.
+ *
+ *                 See the mbedtls_ssl_context_load() documentation for
+ *                 additional information.
+ *
  * \note           The serialized data only contains the data that is
  *                 necessary to resume the connection: negotiated protocol
  *                 options, session identifier, keys, etc.
@@ -5630,6 +5687,27 @@ int mbedtls_ssl_context_save(mbedtls_ssl_context *ssl,
  *                 serialized data that was loaded. Loading the same data in
  *                 more than one context would cause severe security failures
  *                 including but not limited to loss of confidentiality.
+ *
+ * \warning        The serialized data contains highly sensitive material,
+ *                 including the master secret from which the session's traffic
+ *                 keys are derived.
+ *
+ *                 The serialized data is not cryptographically protected.
+ *                 It is the responsibility of the user of the
+ *                 mbedtls_ssl_context_save() and
+ *                 mbedtls_ssl_context_load() APIs to ensure both its
+ *                 confidentiality and integrity while stored or transported.
+ *
+ *                 A breach of confidentiality could result in full compromise
+ *                 of the associated TLS session, including loss of
+ *                 confidentiality and integrity of past and future
+ *                 application data protected under that session.
+ *
+ *                 A breach of integrity may allow modification of the
+ *                 serialized data prior to restoration. As it represents
+ *                 trusted internal context, tampering could potentially result
+ *                 in arbitrary code execution or other severe compromise of
+ *                 the hosting process.
  *
  * \note           Before calling this function, the SSL context must be
  *                 prepared in one of the two following ways. The first way is
@@ -5767,6 +5845,41 @@ int  mbedtls_ssl_tls_prf(const mbedtls_tls_prf_types prf,
                          const unsigned char *random, size_t rlen,
                          unsigned char *dstbuf, size_t dlen);
 
+#if defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
+/* Maximum value for key_len in mbedtls_ssl_export_keying material. Depending on the TLS
+ * version and the negotiated ciphersuite, larger keys could in principle be exported,
+ * but for simplicity, we define one limit that works in all cases. TLS 1.3 with SHA256
+ * has the strictest limit: 255 blocks of SHA256 output, or 8160 bytes. */
+#define MBEDTLS_SSL_EXPORT_MAX_KEY_LEN 8160
+
+/**
+ * \brief             TLS-Exporter to derive shared symmetric keys between server and client.
+ *
+ * \param ssl         SSL context from which to export keys. Must have finished the handshake.
+ * \param out         Output buffer of length at least key_len bytes.
+ * \param key_len     Length of the key to generate in bytes, must be at most
+ *                    MBEDTLS_SSL_EXPORT_MAX_KEY_LEN (8160).
+ * \param label       Label for which to generate the key of length label_len.
+ * \param label_len   Length of label in bytes. Must be at most 249 in TLS 1.3.
+ * \param context     Context of the key. Can be NULL if context_len or use_context is 0.
+ * \param context_len Length of context. Must be < 2^16 in TLS 1.2.
+ * \param use_context Indicates if a context should be used in deriving the key.
+ *
+ * \note TLS 1.2 makes a distinction between a 0-length context and no context.
+ *       This is why the use_context argument exists. TLS 1.3 does not make
+ *       this distinction. If use_context is 0 and TLS 1.3 is used, context and
+ *       context_len are ignored and a 0-length context is used.
+ *
+ * \return            0 on success.
+ * \return            MBEDTLS_ERR_SSL_BAD_INPUT_DATA if the handshake is not yet completed.
+ * \return            An SSL-specific error on failure.
+ */
+int mbedtls_ssl_export_keying_material(mbedtls_ssl_context *ssl,
+                                       uint8_t *out, const size_t key_len,
+                                       const char *label, const size_t label_len,
+                                       const unsigned char *context, const size_t context_len,
+                                       const int use_context);
+#endif
 #ifdef __cplusplus
 }
 #endif

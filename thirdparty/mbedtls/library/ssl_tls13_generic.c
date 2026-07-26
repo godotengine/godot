@@ -59,20 +59,55 @@ int mbedtls_ssl_tls13_fetch_handshake_msg(mbedtls_ssl_context *ssl,
                                           unsigned char **buf,
                                           size_t *buf_len)
 {
-    int ret;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    int require_record_boundary;
 
-    if ((ret = mbedtls_ssl_read_record(ssl, 0)) != 0) {
-        MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_ssl_read_record", ret);
-        goto cleanup;
+    /* Require record-boundary alignment by default. The exceptions below are
+     * handshake messages that may legitimately be followed by additional
+     * handshake messages in the same record. Using the default behaviour for a
+     * message that should be exempt is an interoperability bug; exempting a
+     * message that should not be exempt may have security implications.
+     */
+    switch (hs_type) {
+        case MBEDTLS_SSL_HS_NEW_SESSION_TICKET:
+        case MBEDTLS_SSL_HS_ENCRYPTED_EXTENSIONS:
+        case MBEDTLS_SSL_HS_CERTIFICATE:
+        case MBEDTLS_SSL_HS_CERTIFICATE_REQUEST:
+        case MBEDTLS_SSL_HS_CERTIFICATE_VERIFY:
+        /*
+         * For TLS 1.3, ServerHello (including HelloRetryRequest) must end at a
+         * record boundary, but not for TLS 1.2. At this point the ServerHello
+         * has not yet been processed, so we do not know whether it negotiates
+         * TLS 1.3 or TLS 1.2. Defer the boundary check until the protocol
+         * version is known to be TLS 1.3.
+         */
+        case MBEDTLS_SSL_HS_SERVER_HELLO:
+            require_record_boundary = 0;
+            break;
+
+        default:
+            /* ClientHello, EndOfEarlyData, Finished, and KeyUpdate.
+             */
+            require_record_boundary = 1;
     }
 
+    ret = mbedtls_ssl_read_record(ssl, 0);
+    if (ret != 0) {
+        MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_ssl_read_record", ret);
+        goto error;
+    }
+
+    ret = MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE;
     if (ssl->in_msgtype != MBEDTLS_SSL_MSG_HANDSHAKE ||
         ssl->in_msg[0]  != hs_type) {
         MBEDTLS_SSL_DEBUG_MSG(1, ("Receive unexpected handshake message."));
-        MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_UNEXPECTED_MESSAGE,
-                                     MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE);
-        ret = MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE;
-        goto cleanup;
+        goto error;
+    }
+
+    if (require_record_boundary && (ssl->in_hslen != ssl->in_msglen)) {
+        MBEDTLS_SSL_DEBUG_MSG(1, ("Handshake message %s end not aligned with a record boundary",
+                                  mbedtls_ssl_get_hs_msg_name(hs_type)));
+        goto error;
     }
 
     /*
@@ -82,11 +117,15 @@ int mbedtls_ssl_tls13_fetch_handshake_msg(mbedtls_ssl_context *ssl,
      *    uint24 length;
      *    ...
      */
-    *buf = ssl->in_msg   + 4;
+    *buf = ssl->in_msg + 4;
     *buf_len = ssl->in_hslen - 4;
+    return 0;
 
-cleanup:
-
+error:
+    if (ret == MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE) {
+        MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_UNEXPECTED_MESSAGE,
+                                     MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE);
+    }
     return ret;
 }
 
