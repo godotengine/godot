@@ -35,6 +35,31 @@
 #include <limits.h>
 #include <stdint.h>
 
+#if !defined(PK_EXPORT_KEYS_ON_THE_STACK)
+#include "mbedtls/platform.h" // for calloc/free
+#endif
+
+#if defined(MBEDTLS_PSA_CRYPTO_CLIENT)
+#define MBEDTLS_PK_MAX_EC_PUBKEY_RAW_LEN \
+    PSA_KEY_EXPORT_ECC_PUBLIC_KEY_MAX_SIZE(PSA_VENDOR_ECC_MAX_CURVE_BITS)
+
+#define MBEDTLS_PK_MAX_RSA_PUBKEY_RAW_LEN \
+    PSA_KEY_EXPORT_RSA_PUBLIC_KEY_MAX_SIZE(PSA_VENDOR_RSA_MAX_KEY_BITS)
+
+#define MBEDTLS_PK_MAX_PUBKEY_RAW_LEN 0
+#if defined(MBEDTLS_PK_HAVE_ECC_KEYS) && \
+    MBEDTLS_PK_MAX_EC_PUBKEY_RAW_LEN > MBEDTLS_PK_MAX_PUBKEY_RAW_LEN
+#undef MBEDTLS_PK_MAX_PUBKEY_RAW_LEN
+#define MBEDTLS_PK_MAX_PUBKEY_RAW_LEN MBEDTLS_PK_MAX_EC_PUBKEY_RAW_LEN
+#endif
+#if (defined(MBEDTLS_RSA_C) || \
+    (defined(MBEDTLS_USE_PSA_CRYPTO) && defined(PSA_WANT_KEY_TYPE_RSA_PUBLIC_KEY))) && \
+    MBEDTLS_PK_MAX_RSA_PUBKEY_RAW_LEN > MBEDTLS_PK_MAX_PUBKEY_RAW_LEN
+#undef MBEDTLS_PK_MAX_PUBKEY_RAW_LEN
+#define MBEDTLS_PK_MAX_PUBKEY_RAW_LEN MBEDTLS_PK_MAX_RSA_PUBKEY_RAW_LEN
+#endif
+#endif /* MBEDTLS_PSA_CRYPTO_CLIENT */
+
 /*
  * Initialise a mbedtls_pk_context
  */
@@ -586,19 +611,44 @@ int mbedtls_pk_get_psa_attributes(const mbedtls_pk_context *pk,
 
 #if defined(MBEDTLS_PK_USE_PSA_EC_DATA) || defined(MBEDTLS_USE_PSA_CRYPTO)
 static psa_status_t export_import_into_psa(mbedtls_svc_key_id_t old_key_id,
+                                           psa_key_type_t old_type, size_t old_bits,
                                            const psa_key_attributes_t *attributes,
                                            mbedtls_svc_key_id_t *new_key_id)
 {
-    unsigned char key_buffer[PSA_EXPORT_KEY_PAIR_MAX_SIZE];
+#if !defined(PK_EXPORT_KEYS_ON_THE_STACK)
+    unsigned char *key_buffer = NULL;
+    size_t key_buffer_size = 0;
+#else
+    unsigned char key_buffer[PK_EXPORT_KEY_STACK_BUFFER_SIZE];
+    const size_t key_buffer_size = sizeof(key_buffer);
+#endif
     size_t key_length = 0;
+
+    /* We are exporting from a PK object, so we know key type is valid for PK */
+#if !defined(PK_EXPORT_KEYS_ON_THE_STACK)
+    key_buffer_size = PSA_EXPORT_KEY_OUTPUT_SIZE(old_type, old_bits);
+    key_buffer = mbedtls_calloc(1, key_buffer_size);
+    if (key_buffer == NULL) {
+        return MBEDTLS_ERR_PK_ALLOC_FAILED;
+    }
+#else
+    (void) old_type;
+    (void) old_bits;
+#endif
+
     psa_status_t status = psa_export_key(old_key_id,
-                                         key_buffer, sizeof(key_buffer),
+                                         key_buffer, key_buffer_size,
                                          &key_length);
     if (status != PSA_SUCCESS) {
-        return status;
+        goto cleanup;
     }
     status = psa_import_key(attributes, key_buffer, key_length, new_key_id);
     mbedtls_platform_zeroize(key_buffer, key_length);
+
+cleanup:
+#if !defined(PK_EXPORT_KEYS_ON_THE_STACK)
+    mbedtls_free(key_buffer);
+#endif
     return status;
 }
 
@@ -628,11 +678,13 @@ static int copy_into_psa(mbedtls_svc_key_id_t old_key_id,
             return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
         }
         psa_key_type_t old_type = psa_get_key_type(&old_attributes);
+        size_t old_bits = psa_get_key_bits(&old_attributes);
         psa_reset_key_attributes(&old_attributes);
         if (old_type != psa_get_key_type(attributes)) {
             return MBEDTLS_ERR_PK_TYPE_MISMATCH;
         }
-        status = export_import_into_psa(old_key_id, attributes, new_key_id);
+        status = export_import_into_psa(old_key_id, old_type, old_bits,
+                                        attributes, new_key_id);
     }
     return PSA_PK_TO_MBEDTLS_ERR(status);
 }
@@ -649,20 +701,25 @@ static int import_pair_into_psa(const mbedtls_pk_context *pk,
             if (psa_get_key_type(attributes) != PSA_KEY_TYPE_RSA_KEY_PAIR) {
                 return MBEDTLS_ERR_PK_TYPE_MISMATCH;
             }
-            unsigned char key_buffer[
-                PSA_KEY_EXPORT_RSA_KEY_PAIR_MAX_SIZE(PSA_VENDOR_RSA_MAX_KEY_BITS)];
-            unsigned char *const key_end = key_buffer + sizeof(key_buffer);
+            size_t key_bits = psa_get_key_bits(attributes);
+            size_t key_buffer_size = PSA_KEY_EXPORT_RSA_KEY_PAIR_MAX_SIZE(key_bits);
+            unsigned char *key_buffer = mbedtls_calloc(1, key_buffer_size);
+            if (key_buffer == NULL) {
+                return MBEDTLS_ERR_PK_ALLOC_FAILED;
+            }
+            unsigned char *const key_end = key_buffer + key_buffer_size;
             unsigned char *key_data = key_end;
             int ret = mbedtls_rsa_write_key(mbedtls_pk_rsa(*pk),
                                             key_buffer, &key_data);
             if (ret < 0) {
-                return ret;
+                goto cleanup_rsa;
             }
             size_t key_length = key_end - key_data;
             ret = PSA_PK_TO_MBEDTLS_ERR(psa_import_key(attributes,
                                                        key_data, key_length,
                                                        key_id));
-            mbedtls_platform_zeroize(key_data, key_length);
+cleanup_rsa:
+            mbedtls_zeroize_and_free(key_buffer, key_buffer_size);
             return ret;
         }
 #endif /* MBEDTLS_RSA_C */
@@ -741,7 +798,7 @@ static int import_public_into_psa(const mbedtls_pk_context *pk,
 #if defined(MBEDTLS_RSA_C) ||                                           \
     (defined(MBEDTLS_PK_HAVE_ECC_KEYS) && !defined(MBEDTLS_PK_USE_PSA_EC_DATA)) || \
     defined(MBEDTLS_USE_PSA_CRYPTO)
-    unsigned char key_buffer[PSA_EXPORT_PUBLIC_KEY_MAX_SIZE];
+    unsigned char key_buffer[MBEDTLS_PK_MAX_PUBKEY_RAW_LEN];
 #endif
     unsigned char *key_data = NULL;
     size_t key_length = 0;
@@ -857,6 +914,21 @@ int mbedtls_pk_import_into_psa(const mbedtls_pk_context *pk,
     }
 }
 
+static int is_valid_for_pk(psa_key_type_t key_type)
+{
+#if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
+    if (PSA_KEY_TYPE_IS_ECC(key_type)) {
+        return 1;
+    }
+#endif
+#if defined(MBEDTLS_RSA_C)
+    if (PSA_KEY_TYPE_IS_RSA(key_type)) {
+        return 1;
+    }
+#endif
+    return 0;
+}
+
 static int copy_from_psa(mbedtls_svc_key_id_t key_id,
                          mbedtls_pk_context *pk,
                          int public_only)
@@ -865,8 +937,13 @@ static int copy_from_psa(mbedtls_svc_key_id_t key_id,
     psa_key_attributes_t key_attr = PSA_KEY_ATTRIBUTES_INIT;
     psa_key_type_t key_type;
     size_t key_bits;
-    /* Use a buffer size large enough to contain either a key pair or public key. */
-    unsigned char exp_key[PSA_EXPORT_KEY_PAIR_OR_PUBLIC_MAX_SIZE];
+#if !defined(PK_EXPORT_KEYS_ON_THE_STACK)
+    unsigned char *exp_key = NULL;
+    size_t exp_key_size = 0;
+#else
+    unsigned char exp_key[PK_EXPORT_KEY_STACK_BUFFER_SIZE];
+    const size_t exp_key_size = sizeof(exp_key);
+#endif
     size_t exp_key_len;
     int ret = MBEDTLS_ERR_PK_BAD_INPUT_DATA;
 
@@ -879,10 +956,28 @@ static int copy_from_psa(mbedtls_svc_key_id_t key_id,
         return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
     }
 
+    key_type = psa_get_key_type(&key_attr);
+    if (!is_valid_for_pk(key_type)) {
+        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+    }
+
     if (public_only) {
-        status = psa_export_public_key(key_id, exp_key, sizeof(exp_key), &exp_key_len);
+        key_type = PSA_KEY_TYPE_PUBLIC_KEY_OF_KEY_PAIR(key_type);
+    }
+    key_bits = psa_get_key_bits(&key_attr);
+
+#if !defined(PK_EXPORT_KEYS_ON_THE_STACK)
+    exp_key_size = PSA_EXPORT_KEY_OUTPUT_SIZE(key_type, key_bits);
+    exp_key = mbedtls_calloc(1, exp_key_size);
+    if (exp_key == NULL) {
+        return MBEDTLS_ERR_PK_ALLOC_FAILED;
+    }
+#endif
+
+    if (public_only) {
+        status = psa_export_public_key(key_id, exp_key, exp_key_size, &exp_key_len);
     } else {
-        status = psa_export_key(key_id, exp_key, sizeof(exp_key), &exp_key_len);
+        status = psa_export_key(key_id, exp_key, exp_key_size, &exp_key_len);
     }
     if (status != PSA_SUCCESS) {
         ret = PSA_PK_TO_MBEDTLS_ERR(status);
@@ -964,12 +1059,16 @@ static int copy_from_psa(mbedtls_svc_key_id_t key_id,
 #endif /* MBEDTLS_PK_HAVE_ECC_KEYS */
     {
         (void) key_bits;
-        return MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+        ret = MBEDTLS_ERR_PK_BAD_INPUT_DATA;
+        goto exit;
     }
 
 exit:
+    mbedtls_platform_zeroize(exp_key, exp_key_size);
+#if !defined(PK_EXPORT_KEYS_ON_THE_STACK)
+    mbedtls_free(exp_key);
+#endif
     psa_reset_key_attributes(&key_attr);
-    mbedtls_platform_zeroize(exp_key, sizeof(exp_key));
 
     return ret;
 }
@@ -1146,7 +1245,7 @@ int mbedtls_pk_verify_ext(mbedtls_pk_type_t type, const void *options,
 
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
     if (pss_opts->mgf1_hash_id == md_alg) {
-        unsigned char buf[MBEDTLS_PK_RSA_PUB_DER_MAX_BYTES];
+        unsigned char buf[PSA_KEY_EXPORT_RSA_PUBLIC_KEY_MAX_SIZE(PSA_VENDOR_RSA_MAX_KEY_BITS)];
         unsigned char *p;
         int key_len;
         size_t signature_length;
