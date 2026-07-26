@@ -68,8 +68,6 @@ bool XMLParser::_set_text(const char *p_start, const char *p_end) {
 
 void XMLParser::_parse_closing_xml_element() {
 	node_type = NODE_ELEMENT_END;
-	node_empty = false;
-	attributes.clear();
 
 	next_char();
 	const char *pBeginClose = P;
@@ -198,8 +196,6 @@ void XMLParser::_parse_comment() {
 
 void XMLParser::_parse_opening_xml_element() {
 	node_type = NODE_ELEMENT;
-	node_empty = false;
-	attributes.clear();
 
 	// find name
 	const char *startName = P;
@@ -293,6 +289,9 @@ void XMLParser::_parse_opening_xml_element() {
 }
 
 void XMLParser::_parse_current_node() {
+	node_empty = false;
+	attributes.clear();
+
 	const char *start = P;
 	node_offset = P - data;
 
@@ -536,15 +535,18 @@ void XMLParser::skip_section() {
 
 void XMLParser::close() {
 	if (data_copy) {
-		memdelete_arr(data);
+		memdelete_arr(data_copy);
 		data_copy = nullptr;
 	}
 	data = nullptr;
 	length = 0;
 	P = nullptr;
+	current_line = 0;
+	node_name = "";
 	node_empty = false;
 	node_type = NODE_NONE;
 	node_offset = 0;
+	attributes.clear();
 }
 
 int XMLParser::get_current_line() const {
