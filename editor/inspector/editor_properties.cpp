@@ -156,6 +156,25 @@ void EditorPropertyVariant::update_property() {
 		// Doesn't affect foldable property types, since they don't start with a bottom editor.
 		set_bottom_editor(sub_property->get_bottom_editor() ? content : nullptr);
 
+		// Set Minimum width based on Chosen Type
+		uint32_t n_component = 0;
+		switch (current_type) {
+			case Variant::VECTOR4I:
+			case Variant::VECTOR4: {
+				n_component = 4;
+			} break;
+			case Variant::VECTOR3I:
+			case Variant::VECTOR3: {
+				n_component = 3;
+			} break;
+			default:
+				n_component = 0;
+		}
+
+		const real_t edit_size_x = edit_button->get_size().x;
+		const real_t min_width = EDSCALE * (n_component ? n_component + 1 : 0) * 2 * edit_size_x; // + 1 for edit_button
+		content->set_custom_minimum_size(Size2(min_width, 0));
+
 		sub_property->set_object_and_property(get_edited_object(), get_edited_property());
 		sub_property->set_name_split_ratio(0);
 		sub_property->set_selectable(false);
