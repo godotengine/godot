@@ -374,7 +374,7 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 	p_dock->hide();
 
 	DockTabContainer *dock_tab_container = Object::cast_to<DockTabContainer>(p_target);
-	if (p_target != closed_dock_parent && (dock_tab_container->layout != p_dock->current_layout || dock_tab_container->dock_slot != p_dock->dock_slot_index)) {
+	if (dock_tab_container && p_target != closed_dock_parent && (dock_tab_container->layout != p_dock->current_layout || dock_tab_container->dock_slot != p_dock->dock_slot_index)) {
 		p_dock->update_layout(dock_tab_container->layout, dock_tab_container->dock_slot);
 		p_dock->current_layout = dock_tab_container->layout;
 		p_dock->dock_slot_index = dock_tab_container->dock_slot;
