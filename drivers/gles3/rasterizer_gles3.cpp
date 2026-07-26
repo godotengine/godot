@@ -74,6 +74,11 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 #endif
 
 #ifdef GLAD_ENABLED
+// We offer the option to disable GPU threaded optimizations indirectly by forcing debug output.
+// We aren't actually interested in the strings in this case so we try and make the call as cheap as possible.
+static void GLAPIENTRY _gl_debug_print_dummy(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
+}
+
 // Restricting to GLAD as only used in initialize() with GLAD_GL_ARB_debug_output
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
@@ -158,6 +163,24 @@ Error RasterizerGLES3::is_viable() {
 void RasterizerGLES3::initialize() {
 	print_verbose("Using GLES3 video driver");
 
+	// Use dummy OpenGL logging to indirectly disable threaded optimization if desired.
+	bool threaded_optimization = true;
+
+	if (!OS::get_singleton()->is_stdout_verbose() && !Engine::get_singleton()->is_editor_hint() && OS::get_singleton()->get_name() == "Windows") {
+		threaded_optimization = OS::get_singleton()->_get_graphics_driver_threaded_optimizations() != OS::GRAPHICS_DRIVER_THREADED_OPTIMIZATIONS_DISABLED;
+
+		// Only disable for nvidia currently.
+		if (!threaded_optimization) {
+			String video_adapter = VisualServer::get_singleton()->get_video_adapter_name().to_lower();
+
+			if (video_adapter.find("nvidia") == -1) {
+				threaded_optimization = true;
+			} else {
+				print_line("Attempting to disable GPU Driver threaded optimization via OpenGL debugging : " + VisualServer::get_singleton()->get_video_adapter_name());
+			}
+		}
+	}
+
 #ifdef GLAD_ENABLED
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		if (GLAD_GL_ARB_debug_output) {
@@ -166,6 +189,14 @@ void RasterizerGLES3::initialize() {
 			glEnable(_EXT_DEBUG_OUTPUT);
 		} else {
 			print_line("OpenGL debugging not supported!");
+		}
+	} else if (!threaded_optimization) {
+		if (GLAD_GL_ARB_debug_output) {
+			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+			glDebugMessageCallbackARB(_gl_debug_print_dummy, nullptr);
+			glEnable(_EXT_DEBUG_OUTPUT);
+		} else {
+			print_line("Disabling GPU threaded optimization via OpenGL debugging not supported by this driver.");
 		}
 	}
 #endif // GLAD_ENABLED
