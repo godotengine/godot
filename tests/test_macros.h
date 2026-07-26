@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/core_globals.h" // IWYU pragma: keep. Used in macro.
+#include "core/templates/hash_map.h"
 #include "core/variant/variant.h"
 
 #if defined(_MSC_VER) && !defined(DOCTEST_THREAD_LOCAL)
