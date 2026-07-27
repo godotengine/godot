@@ -10049,7 +10049,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								} break;
 								case TK_HINT_RANGE: {
 									if (uniform.type != TYPE_FLOAT && uniform.type != TYPE_INT && uniform.type != TYPE_UINT) {
-										_set_error(vformat(RTR("Range hint is for '%s', '%s' and '%s' only."), "float", "int", "uint"));
+										_set_error(vformat(RTR("Range hint is for '%s', '%s', and '%s' only."), "float", "int", "uint"));
 										return ERR_PARSE_ERROR;
 									}
 
