@@ -191,7 +191,7 @@ void BoneConstraint3D::set_apply_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->apply_bone <= -1 || settings[p_index]->apply_bone >= sk->get_bone_count()) {
-			WARN_PRINT("Apply bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Apply bone index '" + itos(p_bone) + "' is out of range!");
 			settings[p_index]->apply_bone = -1;
 		} else {
 			settings[p_index]->apply_bone_name = sk->get_bone_name(settings[p_index]->apply_bone);
@@ -235,7 +235,7 @@ void BoneConstraint3D::set_reference_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (settings[p_index]->reference_bone <= -1 || settings[p_index]->reference_bone >= sk->get_bone_count()) {
-			WARN_PRINT("reference bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Reference bone index '" + itos(p_bone) + "' is out of range!");
 			settings[p_index]->reference_bone = -1;
 		} else {
 			settings[p_index]->reference_bone_name = sk->get_bone_name(settings[p_index]->reference_bone);
@@ -251,6 +251,9 @@ int BoneConstraint3D::get_reference_bone(int p_index) const {
 void BoneConstraint3D::set_reference_node(int p_index, const NodePath &p_node) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	settings[p_index]->reference_node = p_node;
+	if (should_check_node_path() && !p_node.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_node))) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + ": Reference node '" + String(p_node) + "' not found.");
+	}
 }
 
 NodePath BoneConstraint3D::get_reference_node(int p_index) const {

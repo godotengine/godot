@@ -203,6 +203,9 @@ bool IterateIK3D::is_deterministic() const {
 void IterateIK3D::set_target_node(int p_index, const NodePath &p_node_path) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	iterate_settings[p_index]->target_node = p_node_path;
+	if (should_check_node_path() && !p_node_path.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_node_path))) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + ": Target node '" + String(p_node_path) + "' not found.");
+	}
 	update_configuration_warnings();
 }
 

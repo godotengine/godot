@@ -48,7 +48,8 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 	const TJCS colorspace = (TJCS)tj3Get(tj_instance, TJPARAM_COLORSPACE);
 
 	if (tj3Get(tj_instance, TJPARAM_PRECISION) > 8) {
-		// Proceed anyway and convert to rgb8?
+		// TODO: Proceed anyway and convert to rgb8?
+		ERR_PRINT("JPEGTurbo: JPEG files with precision > 8 are not currently supported.");
 		tj3Destroy(tj_instance);
 		return ERR_UNAVAILABLE;
 	}
@@ -58,8 +59,12 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 	if (colorspace == TJCS_GRAY) {
 		tj_pixel_format = TJPF_GRAY;
 		gd_pixel_format = Image::FORMAT_L8;
+	} else if (colorspace == TJCS_CMYK || colorspace == TJCS_YCCK) {
+		ERR_PRINT("JPEGTurbo: JPEG files with CMYK or YCCK colorspaces are not currently supported.");
+		tj3Destroy(tj_instance);
+		return ERR_UNAVAILABLE;
 	} else {
-		// Force everything else (RGB, CMYK etc) into RGB8.
+		// Other color spaces should be RGB.
 		tj_pixel_format = TJPF_RGB;
 		gd_pixel_format = Image::FORMAT_RGB8;
 	}
@@ -68,8 +73,12 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 	data.resize(width * height * tjPixelSize[tj_pixel_format]);
 
 	if (tj3Decompress8(tj_instance, p_buffer, p_buffer_len, data.ptrw(), 0, tj_pixel_format) < 0) {
-		tj3Destroy(tj_instance);
-		return ERR_FILE_CORRUPT;
+		if (tj3GetErrorCode(tj_instance) == TJERR_FATAL) {
+			tj3Destroy(tj_instance);
+			return ERR_FILE_CORRUPT;
+		} else {
+			WARN_PRINT(String::utf8(tj3GetErrorStr(tj_instance)));
+		}
 	}
 
 	tj3Destroy(tj_instance);

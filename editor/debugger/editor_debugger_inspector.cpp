@@ -254,8 +254,27 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 				usage[pinfo.name] = usage_dt;
 			}
 
-			// Make sure only properties with the same exact PropertyInfo data will appear.
-			if (usage[pinfo.name].prop.first == pinfo) {
+			// Make sure only properties with matching PropertyInfo data will appear.
+			if (usage[pinfo.name].prop.first.name == pinfo.name &&
+					usage[pinfo.name].prop.first.type == pinfo.type &&
+					usage[pinfo.name].prop.first.class_name == pinfo.class_name &&
+					usage[pinfo.name].prop.first.hint == pinfo.hint &&
+					usage[pinfo.name].prop.first.hint_string == pinfo.hint_string) {
+				if (usage[pinfo.name].prop.first.usage != pinfo.usage) {
+					// Checkable properties (mostly theme items) need special treatment.
+					if (usage[pinfo.name].prop.first.usage & PROPERTY_USAGE_CHECKABLE && pinfo.usage & PROPERTY_USAGE_CHECKABLE) {
+						if (usage[pinfo.name].prop.first.usage & PROPERTY_USAGE_CHECKED) {
+							pinfo.usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+						} else {
+							pinfo.usage &= ~(PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED);
+						}
+
+						if (usage[pinfo.name].prop.first.usage != pinfo.usage) {
+							continue;
+						}
+					}
+				}
+
 				usage[pinfo.name].qty++;
 				usage[pinfo.name].values[obj.id] = prop.second;
 			}

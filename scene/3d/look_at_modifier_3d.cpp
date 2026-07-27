@@ -106,7 +106,7 @@ void LookAtModifier3D::set_bone(int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (bone <= -1 || bone >= sk->get_bone_count()) {
-			WARN_PRINT("Bone index out of range!");
+			WARN_PRINT_ED("Bone index '" + itos(p_bone) + "' is out of range!");
 			bone = -1;
 		} else {
 			bone_name = sk->get_bone_name(bone);
@@ -157,6 +157,9 @@ void LookAtModifier3D::set_target_node(const NodePath &p_target_node) {
 	if (target_node != p_target_node) {
 		init_transition();
 	}
+	if (should_check_node_path() && !p_target_node.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_target_node))) {
+		WARN_PRINT_ED("Target node '" + String(p_target_node) + "' not found.");
+	}
 	target_node = p_target_node;
 }
 
@@ -192,7 +195,7 @@ void LookAtModifier3D::set_origin_bone(int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (origin_bone <= -1 || origin_bone >= sk->get_bone_count()) {
-			WARN_PRINT("Bone index out of range!");
+			WARN_PRINT_ED("Origin bone index '" + itos(p_bone) + "' is out of range!");
 			origin_bone = -1;
 		} else {
 			origin_bone_name = sk->get_bone_name(origin_bone);
@@ -205,6 +208,9 @@ int LookAtModifier3D::get_origin_bone() const {
 }
 
 void LookAtModifier3D::set_origin_external_node(const NodePath &p_external_node) {
+	if (should_check_node_path() && !p_external_node.is_empty() && !Object::cast_to<Node3D>(get_node_or_null(p_external_node))) {
+		WARN_PRINT_ED("Origin node '" + String(p_external_node) + "' not found.");
+	}
 	origin_external_node = p_external_node;
 }
 

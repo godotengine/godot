@@ -372,14 +372,17 @@ bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 	if (!main_loop) {
 		return false;
 	}
-	DisplayServerAndroid::get_singleton()->reset_swap_buffers_flag();
-	DisplayServerAndroid::get_singleton()->process_events();
+	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+	ERR_FAIL_NULL_V(dsa, true);
+	dsa->reset_swap_buffers_flag();
+	dsa->process_events();
+
 	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
 	bool exit = Main::iteration();
 
 	if (r_should_swap_buffers) {
 		*r_should_swap_buffers = !is_in_low_processor_usage_mode() ||
-				DisplayServerAndroid::get_singleton()->should_swap_buffers() ||
+				dsa->should_swap_buffers() ||
 				RenderingServer::get_singleton()->has_changed() ||
 				current_frames_drawn != Engine::get_singleton()->get_frames_drawn();
 	}
@@ -415,7 +418,10 @@ void OS_Android::_on_main_screen_changed(const String &p_screen_name) {
 #endif
 
 void OS_Android::main_loop_focusout() {
-	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+	if (dsa) {
+		dsa->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+	}
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 	}
@@ -423,7 +429,10 @@ void OS_Android::main_loop_focusout() {
 }
 
 void OS_Android::main_loop_focusin() {
-	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+	DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton();
+	if (dsa) {
+		dsa->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+	}
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 	}

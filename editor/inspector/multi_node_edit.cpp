@@ -186,8 +186,27 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				data_list.push_back(usage_data);
 			}
 
-			// Make sure only properties with the same exact PropertyInfo data will appear.
-			if (usage_data->info == F) {
+			// Make sure only properties with matching PropertyInfo data will appear.
+			if (usage_data->info.name == F.name &&
+					usage_data->info.type == F.type &&
+					usage_data->info.class_name == F.class_name &&
+					usage_data->info.hint == F.hint &&
+					usage_data->info.hint_string == F.hint_string) {
+				if (usage_data->info.usage != F.usage) {
+					// Checkable properties (mostly theme items) need special treatment.
+					if (usage_data->info.usage & PROPERTY_USAGE_CHECKABLE && F.usage & PROPERTY_USAGE_CHECKABLE) {
+						if (usage_data->info.usage & PROPERTY_USAGE_CHECKED) {
+							F.usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+						} else {
+							F.usage &= ~(PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED);
+						}
+
+						if (usage_data->info.usage != F.usage) {
+							continue;
+						}
+					}
+				}
+
 				usage_data->uses++;
 			}
 		}
