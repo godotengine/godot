@@ -2053,7 +2053,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 	data.errors = &errors;
 	data.material_mutex = &material_mutex;
 
-	if (mesh_count > 1 && WorkerThreadPool::get_singleton()->get_caller_task_id() == WorkerThreadPool::INVALID_TASK_ID) {
+	if (mesh_count > 1 && WorkerThreadPool::get_singleton()->get_thread_index() == -1) {
 		// Not on a worker thread: parse meshes in parallel. A worker thread blocking on
 		// wait_for_group_task_completion() can starve the pool, so import threads parse inline.
 		WorkerThreadPool::GroupID group = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GLTFDocument::_process_single_mesh, &data, mesh_count, -1, false, SNAME("GLTFMeshParsing"));

@@ -2933,7 +2933,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 	Mutex save_mutex;
 	MeshProcessBatchData batch_data = { mesh_tasks.ptrw(), &p_src_lightmap_cache, &r_lightmap_caches, &lightmap_mutex, &save_mutex };
 
-	if (mesh_tasks.size() > 1 && WorkerThreadPool::get_singleton()->get_caller_task_id() == WorkerThreadPool::INVALID_TASK_ID) {
+	if (mesh_tasks.size() > 1 && WorkerThreadPool::get_singleton()->get_thread_index() == -1) {
 		// Not on a worker thread: process meshes in parallel. A worker thread blocking on
 		// wait_for_group_task_completion() can starve the pool, so import threads process inline.
 		WorkerThreadPool::GroupID group = WorkerThreadPool::get_singleton()->add_native_group_task(_process_mesh_worker, &batch_data, mesh_tasks.size(), -1, false, SNAME("SceneMeshProcessing"));
