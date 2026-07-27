@@ -1203,7 +1203,7 @@ RID OpenXRSpatialEntityExtension::_make_entity(RID p_spatial_context, uint64_t p
 
 XrSpatialEntityIdEXT OpenXRSpatialEntityExtension::get_spatial_entity_id(RID p_entity) const {
 	SpatialEntityData *entity_data = spatial_entity_owner.get_or_null(p_entity);
-	ERR_FAIL_NULL_V(entity_data, XR_NULL_ENTITY);
+	ERR_FAIL_NULL_V(entity_data, XR_NULL_SPATIAL_ENTITY_ID_EXT);
 
 	return entity_data->entity_id;
 }

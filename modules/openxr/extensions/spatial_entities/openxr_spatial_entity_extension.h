@@ -181,7 +181,7 @@ private:
 	// Entities
 	struct SpatialEntityData {
 		RID spatial_context;
-		XrSpatialEntityIdEXT entity_id = XR_NULL_ENTITY;
+		XrSpatialEntityIdEXT entity_id = XR_NULL_SPATIAL_ENTITY_ID_EXT;
 		XrSpatialEntityEXT entity = XR_NULL_HANDLE;
 	};
 	mutable RID_Owner<SpatialEntityData> spatial_entity_owner;

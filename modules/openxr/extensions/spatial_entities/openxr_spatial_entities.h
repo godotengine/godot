@@ -37,8 +37,6 @@
 
 #include <openxr/openxr.h>
 
-#define XR_NULL_ENTITY 0x7FFFFFFF
-
 // Wrapper class for XrSpatialCapabilityConfigurationBaseHeaderEXT
 class OpenXRSpatialCapabilityConfigurationBaseHeader : public RefCounted {
 	GDCLASS(OpenXRSpatialCapabilityConfigurationBaseHeader, RefCounted);
