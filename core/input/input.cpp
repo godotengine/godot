@@ -203,8 +203,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 	ClassDB::bind_method(D_METHOD("set_use_accumulated_input", "enable"), &Input::set_use_accumulated_input);
 	ClassDB::bind_method(D_METHOD("is_using_accumulated_input"), &Input::is_using_accumulated_input);
-	ClassDB::bind_method(D_METHOD("set_joypad_enabled", "enable"), &Input::set_joypad_enabled);
-	ClassDB::bind_method(D_METHOD("is_joypad_enabled"), &Input::is_joypad_enabled);
+	ClassDB::bind_method(D_METHOD("set_joypads_enabled", "enable"), &Input::set_joypads_enabled);
+	ClassDB::bind_method(D_METHOD("set_joypad_device_enabled", "device", "enable"), &Input::set_joypad_device_enabled);
+	ClassDB::bind_method(D_METHOD("are_joypads_enabled"), &Input::are_joypads_enabled);
+	ClassDB::bind_method(D_METHOD("is_joypad_enabled", "device"), &Input::is_joypad_enabled);
 	ClassDB::bind_method(D_METHOD("flush_buffered_events"), &Input::flush_buffered_events);
 	ClassDB::bind_method(D_METHOD("set_emulate_mouse_from_touch", "enable"), &Input::set_emulate_mouse_from_touch);
 	ClassDB::bind_method(D_METHOD("is_emulating_mouse_from_touch"), &Input::is_emulating_mouse_from_touch);
@@ -213,7 +215,7 @@ void Input::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "joypad_enabled"), "set_joypad_enabled", "is_joypad_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "joypads_enabled"), "set_joypads_enabled", "are_joypads_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_mouse_from_touch"), "set_emulate_mouse_from_touch", "is_emulating_mouse_from_touch");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_touch_from_mouse"), "set_emulate_touch_from_mouse", "is_emulating_touch_from_mouse");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_joypad_on_unfocused_application"), "set_ignore_joypad_on_unfocused_application", "is_ignoring_joypad_on_unfocused_application");
@@ -386,8 +388,8 @@ bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
 }
 
-bool Input::_should_ignore_joypad_events() const {
-	return !joypad_enabled || (ignore_joypad_on_unfocused_application && !application_focused && !embedder_focused);
+bool Input::_should_ignore_joypad_events(int p_device) const {
+	return !joypads_enabled || is_joypad_enabled(p_device) || (ignore_joypad_on_unfocused_application && !application_focused && !embedder_focused);
 }
 
 static JoyAxis _combine_device(JoyAxis p_value, int p_device) {
@@ -401,7 +403,7 @@ static JoyButton _combine_device(JoyButton p_value, int p_device) {
 bool Input::is_joy_button_pressed(int p_device, JoyButton p_button) const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input || !joypad_enabled) {
+	if (disable_input || !joypads_enabled) {
 		return false;
 	}
 
@@ -608,7 +610,7 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 	_THREAD_SAFE_METHOD_
 
-	if (disable_input || !joypad_enabled) {
+	if (disable_input || !joypads_enabled) {
 		return 0;
 	}
 
@@ -622,14 +624,14 @@ float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {
 
 String Input::get_joy_name(int p_idx) {
 	_THREAD_SAFE_METHOD_
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return "";
 	}
 	return joy_names[p_idx].name;
 }
 
 Vector2 Input::get_joy_vibration_strength(int p_device) {
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return Vector2();
 	}
 	if (joy_vibration.has(p_device)) {
@@ -648,7 +650,7 @@ uint64_t Input::get_joy_vibration_timestamp(int p_device) {
 }
 
 float Input::get_joy_vibration_duration(int p_device) {
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return 0.0f;
 	}
 	if (joy_vibration.has(p_device)) {
@@ -660,7 +662,7 @@ float Input::get_joy_vibration_duration(int p_device) {
 
 float Input::get_joy_vibration_remaining_duration(int p_device) {
 	_THREAD_SAFE_METHOD_
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return 0.0f;
 	}
 	const Joypad *joypad = joy_names.getptr(p_device);
@@ -1144,7 +1146,7 @@ void Input::set_joy_features(int p_device, JoypadFeatures *p_features) {
 void Input::set_joy_light(int p_device, const Color &p_color) {
 	_THREAD_SAFE_METHOD_
 
-	if (_should_ignore_joypad_events()) {
+	if (_should_ignore_joypad_events(p_device)) {
 		return;
 	}
 
@@ -1164,7 +1166,7 @@ bool Input::has_joy_light(int p_device) const {
 Vector3 Input::get_joy_accelerometer(int p_device) const {
 	_THREAD_SAFE_METHOD_
 
-	if (_should_ignore_joypad_events()) {
+	if (_should_ignore_joypad_events(p_device)) {
 		return Vector3();
 	}
 
@@ -1187,7 +1189,7 @@ Vector3 Input::get_joy_accelerometer(int p_device) const {
 Vector3 Input::get_joy_gravity(int p_device) const {
 	_THREAD_SAFE_METHOD_
 
-	if (_should_ignore_joypad_events()) {
+	if (_should_ignore_joypad_events(p_device)) {
 		return Vector3();
 	}
 
@@ -1206,7 +1208,7 @@ Vector3 Input::get_joy_gravity(int p_device) const {
 Vector3 Input::get_joy_gyroscope(int p_device) const {
 	_THREAD_SAFE_METHOD_
 
-	if (_should_ignore_joypad_events()) {
+	if (_should_ignore_joypad_events(p_device)) {
 		return Vector3();
 	}
 
@@ -1224,7 +1226,7 @@ Vector3 Input::get_joy_gyroscope(int p_device) const {
 
 void Input::set_joy_motion_sensors_enabled(int p_device, bool p_enable) {
 	_THREAD_SAFE_METHOD_
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return;
 	}
 	Joypad *joypad = joy_names.getptr(p_device);
@@ -1252,7 +1254,7 @@ bool Input::has_joy_motion_sensors(int p_device) const {
 
 float Input::get_joy_motion_sensors_rate(int p_device) const {
 	_THREAD_SAFE_METHOD_
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return 0.0f;
 	}
 	const MotionInfo *motion = joy_motion.getptr(p_device);
@@ -1310,7 +1312,7 @@ void Input::clear_joy_motion_sensors_calibration(int p_device) {
 
 Dictionary Input::get_joy_motion_sensors_calibration(int p_device) const {
 	_THREAD_SAFE_METHOD_
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return Dictionary();
 	}
 	const MotionInfo *motion = joy_motion.getptr(p_device);
@@ -1333,7 +1335,7 @@ Dictionary Input::get_joy_motion_sensors_calibration(int p_device) const {
 
 void Input::set_joy_motion_sensors_calibration(int p_device, const Dictionary &p_calibration_info) {
 	_THREAD_SAFE_METHOD_
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return;
 	}
 	MotionInfo *motion = joy_motion.getptr(p_device);
@@ -1381,7 +1383,7 @@ void Input::set_joy_motion_sensors_rate(int p_device, float p_rate) {
 void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration) {
 	_THREAD_SAFE_METHOD_
 
-	if (_should_ignore_joypad_events()) {
+	if (_should_ignore_joypad_events(p_device)) {
 		return;
 	}
 
@@ -1398,7 +1400,7 @@ void Input::start_joy_vibration(int p_device, float p_weak_magnitude, float p_st
 
 void Input::stop_joy_vibration(int p_device) {
 	_THREAD_SAFE_METHOD_
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return;
 	}
 	VibrationInfo vibration;
@@ -1689,18 +1691,40 @@ bool Input::is_using_accumulated_input() {
 	return use_accumulated_input;
 }
 
-void Input::set_joypad_enabled(bool p_enable) {
-	joypad_enabled = p_enable;
+void Input::set_joypads_enabled(bool p_enable) {
+	joypads_enabled = p_enable;
 	if (_should_ignore_joypad_events()) {
-		release_pressed_events();
+		release_pressed_events(true);
 	}
 }
 
-bool Input::is_joypad_enabled() const {
-	return joypad_enabled;
+void Input::set_joypad_device_enabled(int p_device, bool p_enable) {
+	if (p_enable) {
+		joypads_enabled_state.erase(p_device);
+	} else {
+		joypads_enabled_state.append(p_device);
+	}
+	if (_should_ignore_joypad_events()) {
+		release_pressed_events(true);
+	}
 }
 
-void Input::release_pressed_events() {
+bool Input::are_joypads_enabled() const {
+	return joypads_enabled;
+}
+
+bool Input::is_joypad_enabled(int p_device) const {
+	if (p_device < 0)
+		return true;
+	return joypads_enabled_state.has(p_device);
+}
+
+void Input::release_pressed_events(bool p_force_released) {
+	// Don't release the events if the application (or the window it's embedded in) is still focused.
+	if (!p_force_released && (application_focused || embedder_focused)) {
+		return;
+	}
+
 	flush_buffered_events(); // this is needed to release actions strengths
 
 	keys_pressed.clear();
@@ -1753,7 +1777,7 @@ void Input::set_event_dispatch_function(EventDispatchFunc p_function) {
 void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 	_THREAD_SAFE_METHOD_;
 
-	if (_should_ignore_joypad_events()) {
+	if (_should_ignore_joypad_events(p_device)) {
 		return;
 	}
 
@@ -1785,7 +1809,7 @@ void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	_THREAD_SAFE_METHOD_;
 
-	if (_should_ignore_joypad_events()) {
+	if (_should_ignore_joypad_events(p_device)) {
 		return;
 	}
 
@@ -1859,7 +1883,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 	_THREAD_SAFE_METHOD_;
 
-	if (_should_ignore_joypad_events()) {
+	if (_should_ignore_joypad_events(p_device)) {
 		return;
 	}
 
@@ -1906,7 +1930,7 @@ void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 void Input::joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, const Vector3 &p_gyroscope) {
 	_THREAD_SAFE_METHOD_
 
-	if (_should_ignore_joypad_events()) {
+	if (_should_ignore_joypad_events(p_device)) {
 		return;
 	}
 
@@ -1927,7 +1951,7 @@ void Input::joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, con
 void Input::joy_touchpad(int p_device, int p_touchpad, int p_finger, const Vector2 &p_position, float p_pressure, bool p_pressed) {
 	_THREAD_SAFE_METHOD_
 
-	if (_should_ignore_joypad_events()) {
+	if (_should_ignore_joypad_events(p_device)) {
 		return;
 	}
 
@@ -2395,7 +2419,7 @@ bool Input::is_joy_known(int p_device) {
 
 String Input::get_joy_guid(int p_device) const {
 	ERR_FAIL_COND_V(!joy_names.has(p_device), "");
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return "";
 	}
 	return joy_names[p_device].uid;
@@ -2403,7 +2427,7 @@ String Input::get_joy_guid(int p_device) const {
 
 Dictionary Input::get_joy_info(int p_device) const {
 	ERR_FAIL_COND_V(!joy_names.has(p_device), Dictionary());
-	if (!joypad_enabled) {
+	if (!joypads_enabled) {
 		return Dictionary();
 	}
 	return joy_names[p_device].info;
@@ -2497,7 +2521,7 @@ Input::Input() {
 	gravity_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gravity", false);
 	gyroscope_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_gyroscope", false);
 	magnetometer_enabled = GLOBAL_DEF_RST_BASIC("input_devices/sensors/enable_magnetometer", false);
-	joypad_enabled = GLOBAL_DEF_BASIC("input_devices/joypads/joypad_enabled", true);
+	joypads_enabled = GLOBAL_DEF_BASIC("input_devices/joypads/joypad_enabled", true);
 	ignore_joypad_on_unfocused_application = GLOBAL_DEF_RST_BASIC("input_devices/joypads/ignore_joypad_on_unfocused_application", false);
 }
 
