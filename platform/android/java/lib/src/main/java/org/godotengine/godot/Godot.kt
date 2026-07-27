@@ -206,6 +206,7 @@ class Godot private constructor(val context: Context) {
 	internal var darkMode = false
 	private var backgroundColor: Int = Color.BLACK
 	private var orientation = Configuration.ORIENTATION_UNDEFINED
+	private var isImeAnimating = false
 	var disableGodotSplash = false
 		private set
 
@@ -367,7 +368,12 @@ class Godot private constructor(val context: Context) {
 		val rootView = window.decorView
 		WindowCompat.setDecorFitsSystemWindows(window, !(isEdgeToEdge.get() || useImmersive.get()))
 		if (enabled) {
-			ViewCompat.setOnApplyWindowInsetsListener(rootView, null)
+			ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
+				v.post {
+					resetVirtualKeyboardHeight(insets)
+				}
+				WindowInsetsCompat.CONSUMED
+			}
 			rootView.setPadding(0, 0, 0, 0)
 			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 				window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
@@ -395,6 +401,8 @@ class Godot private constructor(val context: Context) {
 						val windowInsets = insets.getInsets(getInsetType())
 						v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
 					}
+
+					resetVirtualKeyboardHeight(insets)
 				}
 				WindowInsetsCompat.CONSUMED
 			}
@@ -406,6 +414,15 @@ class Godot private constructor(val context: Context) {
 			WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
 		} else {
 			WindowInsetsCompat.Type.systemBars()
+		}
+	}
+
+	private fun resetVirtualKeyboardHeight(insets: WindowInsetsCompat) {
+		val isImeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+		val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+
+		if (isImeVisible && !isImeAnimating) {
+			GodotLib.setVirtualKeyboardHeight(imeBottom)
 		}
 	}
 
@@ -574,6 +591,7 @@ class Godot private constructor(val context: Context) {
 				var endBottom = 0
 				override fun onPrepare(animation: WindowInsetsAnimationCompat) {
 					startBottom = ViewCompat.getRootWindowInsets(topView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+					isImeAnimating = true
 				}
 
 				override fun onStart(
@@ -581,6 +599,7 @@ class Godot private constructor(val context: Context) {
 					bounds: WindowInsetsAnimationCompat.BoundsCompat
 				): WindowInsetsAnimationCompat.BoundsCompat {
 					endBottom = ViewCompat.getRootWindowInsets(topView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+					isImeAnimating = true
 					return bounds
 				}
 
@@ -596,6 +615,7 @@ class Godot private constructor(val context: Context) {
 							break
 						}
 					}
+					isImeAnimating = imeAnimation != null
 
 					// Update keyboard height based on IME animation.
 					if (imeAnimation != null) {
@@ -609,6 +629,7 @@ class Godot private constructor(val context: Context) {
 				}
 
 				override fun onEnd(animation: WindowInsetsAnimationCompat) {
+					isImeAnimating = false
 					// Fixes an issue on Android 10 and older where immersive mode gets auto disabled after the keyboard is hidden on some devices.
 					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 						runOnHostThread {
