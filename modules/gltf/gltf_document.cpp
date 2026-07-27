@@ -46,8 +46,11 @@
 #include "core/io/json.h"
 #include "core/io/resource_loader.h"
 #include "core/io/stream_peer.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/object/object_id.h"
+#include "core/object/worker_thread_pool.h"
+#include "core/os/mutex.h"
 #include "core/version.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/camera_3d.h"
@@ -74,7 +77,6 @@
 #include "modules/gridmap/grid_map.h"
 #endif
 
-#include <cstdio>
 #include <cstdlib>
 
 static void _attach_extras_to_meta(const Dictionary &p_extras, Ref<Resource> p_node) {
@@ -1420,585 +1422,652 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 	return OK;
 }
 
+namespace {
+
+struct MeshParseData {
+	Ref<GLTFState> state;
+	const Array *meshes_json = nullptr;
+	const Vector<String> *precomputed_names = nullptr;
+	Vector<Error> *errors = nullptr;
+	Mutex *material_mutex = nullptr;
+};
+
+} //namespace
+
+Error GLTFDocument::_parse_single_mesh(const Ref<GLTFState> &p_state, const Array &p_meshes, GLTFMeshIndex i, const String &p_unique_name, Mutex *p_material_mutex) {
+	print_verbose("glTF: Parsing mesh: " + itos(i));
+	Dictionary mesh_dict = p_meshes[i];
+
+	Ref<GLTFMesh> mesh;
+	mesh.instantiate();
+	bool has_vertex_color = false;
+
+	ERR_FAIL_COND_V(!mesh_dict.has("primitives"), ERR_PARSE_ERROR);
+
+	Array primitives = mesh_dict["primitives"];
+	const Dictionary &extras = mesh_dict.has("extras") ? (Dictionary)mesh_dict["extras"] : Dictionary();
+	_attach_extras_to_meta(extras, mesh);
+	Ref<ImporterMesh> import_mesh;
+	import_mesh.instantiate();
+	String mesh_name = "mesh";
+	if (mesh_dict.has("name") && !String(mesh_dict["name"]).is_empty()) {
+		mesh_name = mesh_dict["name"];
+		mesh->set_original_name(mesh_name);
+	}
+	import_mesh->set_name(p_unique_name);
+	mesh->set_name(import_mesh->get_name());
+	TypedArray<Material> instance_materials;
+
+	for (int j = 0; j < primitives.size(); j++) {
+		uint64_t flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+		Dictionary mesh_prim = primitives[j];
+
+		// Read the material.
+		Ref<Material> mat;
+		String mat_name;
+		String mat_primary_texture_coord = "TEXCOORD_0";
+		String mat_secondary_texture_coord = "TEXCOORD_1";
+		if (!p_state->discard_meshes_and_materials) {
+			if (mesh_prim.has("material")) {
+				const int material = mesh_prim["material"];
+				ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
+				Ref<Material> mat3d = p_state->materials[material];
+				ERR_FAIL_COND_V(mat3d.is_null(), ERR_FILE_CORRUPT);
+				// Remap the glTF file's UV texture coordinates to Godot's UV and UV2 as best as possible.
+				if (mat3d->has_meta("_gltf_primary_texture_coord")) {
+					const int tex_coord = mat3d->get_meta("_gltf_primary_texture_coord");
+					mat_primary_texture_coord = "TEXCOORD_" + itos(tex_coord);
+					if (tex_coord != 0 && !mat3d->has_meta("_gltf_secondary_texture_coord")) {
+						mat_secondary_texture_coord = "TEXCOORD_0";
+					}
+				}
+				if (mat3d->has_meta("_gltf_secondary_texture_coord")) {
+					const int tex_coord = mat3d->get_meta("_gltf_secondary_texture_coord");
+					mat_secondary_texture_coord = "TEXCOORD_" + itos(tex_coord);
+				}
+				Ref<BaseMaterial3D> base_material = mat3d;
+				if (has_vertex_color && base_material.is_valid()) {
+					// Materials are shared between meshes; serialize mutation during parallel parsing.
+					MutexLock lock(*p_material_mutex);
+					base_material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+				}
+				mat = mat3d;
+
+			} else {
+				Ref<StandardMaterial3D> mat3d;
+				mat3d.instantiate();
+				if (has_vertex_color) {
+					mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+				}
+				mat = mat3d;
+			}
+			ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
+			instance_materials.append(mat);
+			mat_name = mat->get_name();
+		}
+
+		// Read the mesh primitive data into Godot ArrayMesh array data.
+		Array array;
+		array.resize(Mesh::ARRAY_MAX);
+
+		ERR_FAIL_COND_V(!mesh_prim.has("attributes"), ERR_PARSE_ERROR);
+
+		Dictionary a = mesh_prim["attributes"];
+
+		Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_TRIANGLES;
+		if (mesh_prim.has("mode")) {
+			const int mode = mesh_prim["mode"];
+			ERR_FAIL_INDEX_V(mode, 7, ERR_FILE_CORRUPT);
+			// Convert mesh.primitive.mode to Godot Mesh enum. See:
+			// https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
+			static const Mesh::PrimitiveType primitives2[7] = {
+				Mesh::PRIMITIVE_POINTS, // 0 POINTS
+				Mesh::PRIMITIVE_LINES, // 1 LINES
+				Mesh::PRIMITIVE_LINES, // 2 LINE_LOOP; loop not supported, should be converted
+				Mesh::PRIMITIVE_LINE_STRIP, // 3 LINE_STRIP
+				Mesh::PRIMITIVE_TRIANGLES, // 4 TRIANGLES
+				Mesh::PRIMITIVE_TRIANGLE_STRIP, // 5 TRIANGLE_STRIP
+				Mesh::PRIMITIVE_TRIANGLES, // 6 TRIANGLE_FAN fan not supported, should be converted
+				// TODO: Line loop and triangle fan are not supported and need to be converted to lines and triangles.
+			};
+
+			primitive = primitives2[mode];
+		}
+
+		int32_t orig_vertex_num = 0;
+		ERR_FAIL_COND_V(!a.has("POSITION"), ERR_PARSE_ERROR);
+		if (a.has("POSITION")) {
+			PackedVector3Array vertices = _decode_accessor_as_vec3(p_state, a["POSITION"]);
+			array[Mesh::ARRAY_VERTEX] = vertices;
+			orig_vertex_num = vertices.size();
+		}
+		int32_t vertex_num = orig_vertex_num;
+
+		Vector<int> indices;
+		Vector<int> indices_mapping;
+		Vector<int> indices_rev_mapping;
+		Vector<int> indices_vec4_mapping;
+		if (mesh_prim.has("indices")) {
+			indices = _decode_accessor_as_int32s(p_state, mesh_prim["indices"]);
+			const int index_count = indices.size();
+
+			if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
+				ERR_FAIL_COND_V_MSG(index_count % 3 != 0, ERR_PARSE_ERROR, "glTF import: Mesh " + itos(i) + " surface " + itos(j) + " in file " + p_state->filename + " is invalid. Indexed triangle meshes MUST have an index array with a size that is a multiple of 3, but got " + itos(index_count) + " indices.");
+				// Swap around indices, convert ccw to cw for front face.
+
+				int *w = indices.ptrw();
+				for (int k = 0; k < index_count; k += 3) {
+					SWAP(w[k + 1], w[k + 2]);
+				}
+			}
+
+			const int *indices_w = indices.ptrw();
+			Vector<bool> used_indices;
+			used_indices.resize_initialized(orig_vertex_num);
+			bool *used_w = used_indices.ptrw();
+			for (int idx_i = 0; idx_i < index_count; idx_i++) {
+				ERR_FAIL_INDEX_V(indices_w[idx_i], orig_vertex_num, ERR_INVALID_DATA);
+				used_w[indices_w[idx_i]] = true;
+			}
+			indices_rev_mapping.resize_initialized(orig_vertex_num);
+			int *rev_w = indices_rev_mapping.ptrw();
+			vertex_num = 0;
+			for (int vert_i = 0; vert_i < orig_vertex_num; vert_i++) {
+				if (used_w[vert_i]) {
+					rev_w[vert_i] = indices_mapping.size();
+					indices_mapping.push_back(vert_i);
+					indices_vec4_mapping.push_back(vert_i * 4 + 0);
+					indices_vec4_mapping.push_back(vert_i * 4 + 1);
+					indices_vec4_mapping.push_back(vert_i * 4 + 2);
+					indices_vec4_mapping.push_back(vert_i * 4 + 3);
+					vertex_num++;
+				}
+			}
+		}
+		ERR_FAIL_COND_V(vertex_num <= 0, ERR_INVALID_DECLARATION);
+
+		if (a.has("POSITION")) {
+			PackedVector3Array vertices = _decode_accessor_as_vec3(p_state, a["POSITION"], indices_mapping);
+			array[Mesh::ARRAY_VERTEX] = vertices;
+		}
+		if (a.has("NORMAL")) {
+			array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(p_state, a["NORMAL"], indices_mapping);
+		}
+		if (a.has("TANGENT")) {
+			array[Mesh::ARRAY_TANGENT] = _decode_accessor_as_float32s(p_state, a["TANGENT"], indices_vec4_mapping);
+		}
+		// Usually mat_primary_texture_coord is "TEXCOORD_0", but in some edge cases it might be different.
+		if (a.has(mat_primary_texture_coord)) {
+			array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(p_state, a[mat_primary_texture_coord], indices_mapping);
+		}
+		// Usually mat_secondary_texture_coord is "TEXCOORD_1", but in some edge cases it might be different.
+		if (a.has(mat_secondary_texture_coord)) {
+			array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a[mat_secondary_texture_coord], indices_mapping);
+		}
+		for (int custom_i = 0; custom_i < 4; custom_i++) {
+			Vector<float> cur_custom;
+			int num_channels = 0;
+
+			// Attempt to read from "_CUSTOM" attributes first.
+			String gltf_custom_key = vformat("_CUSTOM%d", custom_i);
+			if (a.has(gltf_custom_key)) {
+				num_channels = 4;
+				Vector<Vector4> custom_vector4 = _decode_accessor_as_vec4(p_state, a[gltf_custom_key], indices_mapping);
+				cur_custom.resize_initialized(vertex_num * 4);
+				for (int32_t uv_i = 0; uv_i < custom_vector4.size() && uv_i < vertex_num; uv_i++) {
+					cur_custom.write[uv_i * 4 + 0] = custom_vector4[uv_i].x;
+					cur_custom.write[uv_i * 4 + 1] = custom_vector4[uv_i].y;
+					cur_custom.write[uv_i * 4 + 2] = custom_vector4[uv_i].z;
+					cur_custom.write[uv_i * 4 + 3] = custom_vector4[uv_i].w;
+				}
+			} else {
+				// Attempt to read from UVs 3 to 10 as an alternative source for custom data.
+				// Note that Blender has a limit of 8 UV sets; therefore, CUSTOM3 cannot be read this way
+				// for models exported from Blender. Use a custom attribute named "_CUSTOM3" instead.
+				Vector<Vector2> texcoord_first;
+				Vector<Vector2> texcoord_second;
+				int texcoord_i = 2 + 2 * custom_i;
+				String gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
+				if (a.has(gltf_texcoord_key)) {
+					texcoord_first = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
+					num_channels = 2;
+				}
+				gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
+				if (a.has(gltf_texcoord_key)) {
+					texcoord_second = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
+					num_channels = 4;
+				}
+				if (!num_channels) {
+					break;
+				}
+				if (num_channels == 2 || num_channels == 4) {
+					cur_custom.resize_initialized(vertex_num * num_channels);
+					for (int32_t uv_i = 0; uv_i < texcoord_first.size() && uv_i < vertex_num; uv_i++) {
+						cur_custom.write[uv_i * num_channels + 0] = texcoord_first[uv_i].x;
+						cur_custom.write[uv_i * num_channels + 1] = texcoord_first[uv_i].y;
+					}
+					if (num_channels == 4) {
+						for (int32_t uv_i = 0; uv_i < texcoord_second.size() && uv_i < vertex_num; uv_i++) {
+							cur_custom.write[uv_i * num_channels + 2] = texcoord_second[uv_i].x;
+							cur_custom.write[uv_i * num_channels + 3] = texcoord_second[uv_i].y;
+						}
+					}
+				}
+			}
+			if (cur_custom.size() > 0) {
+				array[Mesh::ARRAY_CUSTOM0 + custom_i] = cur_custom;
+				int custom_shift = Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT + custom_i * Mesh::ARRAY_FORMAT_CUSTOM_BITS;
+				if (num_channels == 2) {
+					flags |= Mesh::ARRAY_CUSTOM_RG_FLOAT << custom_shift;
+				} else {
+					flags |= Mesh::ARRAY_CUSTOM_RGBA_FLOAT << custom_shift;
+				}
+			}
+		}
+		if (a.has("COLOR_0")) {
+			array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a["COLOR_0"], indices_mapping);
+			has_vertex_color = true;
+		}
+		if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
+			PackedInt32Array joints_0 = _decode_accessor_as_int32s(p_state, a["JOINTS_0"], indices_vec4_mapping);
+			ERR_FAIL_COND_V(joints_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
+			array[Mesh::ARRAY_BONES] = joints_0;
+		} else if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
+			PackedInt32Array joints_0 = _decode_accessor_as_int32s(p_state, a["JOINTS_0"], indices_vec4_mapping);
+			PackedInt32Array joints_1 = _decode_accessor_as_int32s(p_state, a["JOINTS_1"], indices_vec4_mapping);
+			ERR_FAIL_COND_V(joints_0.size() != joints_1.size(), ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(joints_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
+			int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
+			Vector<int> joints;
+			joints.resize(vertex_num * weight_8_count);
+			for (int32_t vertex_i = 0; vertex_i < vertex_num; vertex_i++) {
+				joints.write[vertex_i * weight_8_count + 0] = joints_0[vertex_i * JOINT_GROUP_SIZE + 0];
+				joints.write[vertex_i * weight_8_count + 1] = joints_0[vertex_i * JOINT_GROUP_SIZE + 1];
+				joints.write[vertex_i * weight_8_count + 2] = joints_0[vertex_i * JOINT_GROUP_SIZE + 2];
+				joints.write[vertex_i * weight_8_count + 3] = joints_0[vertex_i * JOINT_GROUP_SIZE + 3];
+				joints.write[vertex_i * weight_8_count + 4] = joints_1[vertex_i * JOINT_GROUP_SIZE + 0];
+				joints.write[vertex_i * weight_8_count + 5] = joints_1[vertex_i * JOINT_GROUP_SIZE + 1];
+				joints.write[vertex_i * weight_8_count + 6] = joints_1[vertex_i * JOINT_GROUP_SIZE + 2];
+				joints.write[vertex_i * weight_8_count + 7] = joints_1[vertex_i * JOINT_GROUP_SIZE + 3];
+			}
+			array[Mesh::ARRAY_BONES] = joints;
+		}
+		// glTF stores weights as a VEC4 array or multiple VEC4 arrays, but Godot's
+		// ArrayMesh uses a flat array of either 4 or 8 floats per vertex.
+		// Therefore, decode up to two glTF VEC4 arrays as float arrays.
+		if (a.has("WEIGHTS_0") && !a.has("WEIGHTS_1")) {
+			Vector<float> weights = _decode_accessor_as_float32s(p_state, a["WEIGHTS_0"], indices_vec4_mapping);
+			ERR_FAIL_COND_V(weights.size() != 4 * vertex_num, ERR_INVALID_DATA);
+			{ // glTF does not seem to normalize the weights for some reason.
+				int wc = weights.size();
+				float *w = weights.ptrw();
+
+				for (int k = 0; k < wc; k += 4) {
+					float total = 0.0;
+					total += w[k + 0];
+					total += w[k + 1];
+					total += w[k + 2];
+					total += w[k + 3];
+					if (total > 0.0) {
+						w[k + 0] /= total;
+						w[k + 1] /= total;
+						w[k + 2] /= total;
+						w[k + 3] /= total;
+					}
+				}
+			}
+			array[Mesh::ARRAY_WEIGHTS] = weights;
+		} else if (a.has("WEIGHTS_0") && a.has("WEIGHTS_1")) {
+			Vector<float> weights_0 = _decode_accessor_as_float32s(p_state, a["WEIGHTS_0"], indices_vec4_mapping);
+			Vector<float> weights_1 = _decode_accessor_as_float32s(p_state, a["WEIGHTS_1"], indices_vec4_mapping);
+			Vector<float> weights;
+			ERR_FAIL_COND_V(weights_0.size() != weights_1.size(), ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(weights_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
+			int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
+			weights.resize(vertex_num * weight_8_count);
+			for (int32_t vertex_i = 0; vertex_i < vertex_num; vertex_i++) {
+				weights.write[vertex_i * weight_8_count + 0] = weights_0[vertex_i * JOINT_GROUP_SIZE + 0];
+				weights.write[vertex_i * weight_8_count + 1] = weights_0[vertex_i * JOINT_GROUP_SIZE + 1];
+				weights.write[vertex_i * weight_8_count + 2] = weights_0[vertex_i * JOINT_GROUP_SIZE + 2];
+				weights.write[vertex_i * weight_8_count + 3] = weights_0[vertex_i * JOINT_GROUP_SIZE + 3];
+				weights.write[vertex_i * weight_8_count + 4] = weights_1[vertex_i * JOINT_GROUP_SIZE + 0];
+				weights.write[vertex_i * weight_8_count + 5] = weights_1[vertex_i * JOINT_GROUP_SIZE + 1];
+				weights.write[vertex_i * weight_8_count + 6] = weights_1[vertex_i * JOINT_GROUP_SIZE + 2];
+				weights.write[vertex_i * weight_8_count + 7] = weights_1[vertex_i * JOINT_GROUP_SIZE + 3];
+			}
+			{ // glTF does not seem to normalize the weights for some reason.
+				int wc = weights.size();
+				float *w = weights.ptrw();
+
+				for (int k = 0; k < wc; k += weight_8_count) {
+					float total = 0.0;
+					total += w[k + 0];
+					total += w[k + 1];
+					total += w[k + 2];
+					total += w[k + 3];
+					total += w[k + 4];
+					total += w[k + 5];
+					total += w[k + 6];
+					total += w[k + 7];
+					if (total > 0.0) {
+						w[k + 0] /= total;
+						w[k + 1] /= total;
+						w[k + 2] /= total;
+						w[k + 3] /= total;
+						w[k + 4] /= total;
+						w[k + 5] /= total;
+						w[k + 6] /= total;
+						w[k + 7] /= total;
+					}
+				}
+			}
+			array[Mesh::ARRAY_WEIGHTS] = weights;
+			flags |= Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+		}
+
+		if (!indices.is_empty()) {
+			int *w = indices.ptrw();
+			const int is = indices.size();
+			for (int ind_i = 0; ind_i < is; ind_i++) {
+				w[ind_i] = indices_rev_mapping[indices[ind_i]];
+			}
+			array[Mesh::ARRAY_INDEX] = indices;
+
+		} else if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
+			// Generate indices because they need to be swapped for CW/CCW.
+			const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
+			ERR_FAIL_COND_V(vertices.is_empty(), ERR_PARSE_ERROR);
+			const int vertex_count = vertices.size();
+			ERR_FAIL_COND_V_MSG(vertex_count % 3 != 0, ERR_PARSE_ERROR, "glTF import: Mesh " + itos(i) + " surface " + itos(j) + " in file " + p_state->filename + " is invalid. Non-indexed triangle meshes MUST have a vertex array with a size that is a multiple of 3, but got " + itos(vertex_count) + " vertices.");
+			indices.resize(vertex_count);
+			{
+				int *w = indices.ptrw();
+				for (int k = 0; k < vertex_count; k += 3) {
+					w[k] = k;
+					w[k + 1] = k + 2;
+					w[k + 2] = k + 1;
+				}
+			}
+			array[Mesh::ARRAY_INDEX] = indices;
+		}
+
+		bool generate_tangents = p_state->force_generate_tangents && (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("NORMAL"));
+
+		if (generate_tangents && !a.has("TEXCOORD_0")) {
+			// If we don't have UVs we provide a dummy tangent array.
+			Vector<float> tangents;
+			tangents.resize(vertex_num * 4);
+			float *tangentsw = tangents.ptrw();
+
+			Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
+			for (int k = 0; k < vertex_num; k++) {
+				Vector3 tan = Vector3(normals[k].z, -normals[k].x, normals[k].y).cross(normals[k].normalized()).normalized();
+				tangentsw[k * 4 + 0] = tan.x;
+				tangentsw[k * 4 + 1] = tan.y;
+				tangentsw[k * 4 + 2] = tan.z;
+				tangentsw[k * 4 + 3] = 1.0;
+			}
+			array[Mesh::ARRAY_TANGENT] = tangents;
+		}
+
+		// Disable compression if all z equals 0 (the mesh is 2D).
+		const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
+		bool is_mesh_2d = true;
+		for (int k = 0; k < vertices.size(); k++) {
+			if (!Math::is_zero_approx(vertices[k].z)) {
+				is_mesh_2d = false;
+				break;
+			}
+		}
+
+		if (p_state->force_disable_compression || is_mesh_2d || !a.has("POSITION") || !a.has("NORMAL") || mesh_prim.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
+			flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+		}
+
+		Ref<SurfaceTool> mesh_surface_tool;
+		mesh_surface_tool.instantiate();
+		mesh_surface_tool->create_from_triangle_arrays(array);
+		if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
+			mesh_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
+		}
+		mesh_surface_tool->index();
+		if (generate_tangents && a.has("TEXCOORD_0")) {
+			mesh_surface_tool->generate_tangents(/*split*/ !mesh_prim.has("targets"));
+		}
+		array = mesh_surface_tool->commit_to_arrays();
+
+		if ((flags & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && a.has("NORMAL") && (a.has("TANGENT") || generate_tangents)) {
+			// Compression is enabled, so let's validate that the normals and tangents are correct.
+			Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
+			Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
+			if (unlikely(tangents.size() < normals.size() * 4)) {
+				ERR_PRINT("glTF import: Mesh " + itos(i) + " has invalid tangents.");
+				flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+			} else {
+				for (int vert = 0; vert < normals.size(); vert++) {
+					Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
+					if (std::abs(tan.dot(normals[vert])) > 0.0001) {
+						// Tangent is not perpendicular to the normal, so we can't use compression.
+						flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
+					}
+				}
+			}
+		}
+
+		Array morphs;
+		// Blend shapes
+		if (mesh_prim.has("targets")) {
+			print_verbose("glTF: Mesh has targets");
+			const Array &targets = mesh_prim["targets"];
+
+			import_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
+
+			if (j == 0) {
+				const Array &target_names = extras.has("targetNames") ? (Array)extras["targetNames"] : Array();
+				for (int k = 0; k < targets.size(); k++) {
+					String bs_name;
+					if (k < target_names.size() && ((String)target_names[k]).size() != 0) {
+						bs_name = (String)target_names[k];
+					} else {
+						bs_name = String("morph_") + itos(k);
+					}
+					import_mesh->add_blend_shape(bs_name);
+				}
+			}
+
+			for (int k = 0; k < targets.size(); k++) {
+				const Dictionary &t = targets[k];
+
+				Array array_copy;
+				array_copy.resize(Mesh::ARRAY_MAX);
+
+				for (int l = 0; l < Mesh::ARRAY_MAX; l++) {
+					array_copy[l] = array[l];
+				}
+
+				if (t.has("POSITION")) {
+					Vector<Vector3> varr = _decode_accessor_as_vec3(p_state, t["POSITION"], indices_mapping);
+					const Vector<Vector3> src_varr = array[Mesh::ARRAY_VERTEX];
+					const int size = src_varr.size();
+					ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
+					{
+						const int max_idx = varr.size();
+						varr.resize(size);
+
+						Vector3 *w_varr = varr.ptrw();
+						const Vector3 *r_varr = varr.ptr();
+						const Vector3 *r_src_varr = src_varr.ptr();
+						for (int l = 0; l < size; l++) {
+							if (l < max_idx) {
+								w_varr[l] = r_varr[l] + r_src_varr[l];
+							} else {
+								w_varr[l] = r_src_varr[l];
+							}
+						}
+					}
+					array_copy[Mesh::ARRAY_VERTEX] = varr;
+				}
+				if (t.has("NORMAL")) {
+					Vector<Vector3> narr = _decode_accessor_as_vec3(p_state, t["NORMAL"], indices_mapping);
+					const Vector<Vector3> src_narr = array[Mesh::ARRAY_NORMAL];
+					int size = src_narr.size();
+					ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
+					{
+						int max_idx = narr.size();
+						narr.resize(size);
+
+						Vector3 *w_narr = narr.ptrw();
+						const Vector3 *r_narr = narr.ptr();
+						const Vector3 *r_src_narr = src_narr.ptr();
+						for (int l = 0; l < size; l++) {
+							if (l < max_idx) {
+								w_narr[l] = r_narr[l] + r_src_narr[l];
+							} else {
+								w_narr[l] = r_src_narr[l];
+							}
+						}
+					}
+					array_copy[Mesh::ARRAY_NORMAL] = narr;
+				}
+				if (t.has("TANGENT")) {
+					const Vector<Vector3> tangents_v3 = _decode_accessor_as_vec3(p_state, t["TANGENT"], indices_mapping);
+					const Vector<float> src_tangents = array[Mesh::ARRAY_TANGENT];
+					ERR_FAIL_COND_V(src_tangents.is_empty(), ERR_PARSE_ERROR);
+
+					Vector<float> tangents_v4;
+
+					{
+						int max_idx = tangents_v3.size();
+
+						int size4 = src_tangents.size();
+						tangents_v4.resize(size4);
+						float *w4 = tangents_v4.ptrw();
+
+						const Vector3 *r3 = tangents_v3.ptr();
+						const float *r4 = src_tangents.ptr();
+
+						for (int l = 0; l < size4 / 4; l++) {
+							if (l < max_idx) {
+								w4[l * 4 + 0] = r3[l].x + r4[l * 4 + 0];
+								w4[l * 4 + 1] = r3[l].y + r4[l * 4 + 1];
+								w4[l * 4 + 2] = r3[l].z + r4[l * 4 + 2];
+							} else {
+								w4[l * 4 + 0] = r4[l * 4 + 0];
+								w4[l * 4 + 1] = r4[l * 4 + 1];
+								w4[l * 4 + 2] = r4[l * 4 + 2];
+							}
+							w4[l * 4 + 3] = r4[l * 4 + 3]; //copy flip value
+						}
+					}
+
+					array_copy[Mesh::ARRAY_TANGENT] = tangents_v4;
+				}
+
+				Ref<SurfaceTool> blend_surface_tool;
+				blend_surface_tool.instantiate();
+				blend_surface_tool->create_from_triangle_arrays(array_copy);
+				if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
+					blend_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
+				}
+				blend_surface_tool->index();
+				if (generate_tangents) {
+					blend_surface_tool->generate_tangents(/*split*/ false);
+				}
+				array_copy = blend_surface_tool->commit_to_arrays();
+
+				// Enforce blend shape mask array format
+				for (int l = 0; l < Mesh::ARRAY_MAX; l++) {
+					if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1ULL << l))) {
+						array_copy[l] = Variant();
+					}
+				}
+
+				morphs.push_back(array_copy);
+			}
+		}
+		import_mesh->add_surface(primitive, array, morphs,
+				Dictionary(), mat, mat_name, flags);
+	}
+
+	Vector<float> blend_weights;
+	blend_weights.resize(import_mesh->get_blend_shape_count());
+	for (int32_t weight_i = 0; weight_i < blend_weights.size(); weight_i++) {
+		blend_weights.write[weight_i] = 0.0f;
+	}
+
+	if (mesh_dict.has("weights")) {
+		const Array &weights = mesh_dict["weights"];
+		for (int j = 0; j < weights.size(); j++) {
+			if (j >= blend_weights.size()) {
+				break;
+			}
+			blend_weights.write[j] = weights[j];
+		}
+	}
+	mesh->set_blend_weights(blend_weights);
+	mesh->set_instance_materials(instance_materials);
+	mesh->set_mesh(import_mesh);
+
+	p_state->meshes.write[i] = mesh;
+	return OK;
+}
+
+void GLTFDocument::_process_single_mesh(uint32_t p_index, void *p_userdata) {
+	MeshParseData *data = static_cast<MeshParseData *>(p_userdata);
+	data->errors->write[p_index] = _parse_single_mesh(data->state, *data->meshes_json, static_cast<GLTFMeshIndex>(p_index), (*data->precomputed_names)[p_index], data->material_mutex);
+}
+
 Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 	if (!p_state->json.has("meshes")) {
 		return OK;
 	}
 
 	Array meshes = p_state->json["meshes"];
-	for (GLTFMeshIndex i = 0; i < meshes.size(); i++) {
-		print_verbose("glTF: Parsing mesh: " + itos(i));
+	const int mesh_count = meshes.size();
+
+	// Pre-generate unique mesh names on this thread, as _gen_unique_name() mutates shared state.
+	Vector<String> precomputed_names;
+	precomputed_names.resize(mesh_count);
+	for (int i = 0; i < mesh_count; i++) {
 		Dictionary mesh_dict = meshes[i];
-
-		Ref<GLTFMesh> mesh;
-		mesh.instantiate();
-		bool has_vertex_color = false;
-
-		ERR_FAIL_COND_V(!mesh_dict.has("primitives"), ERR_PARSE_ERROR);
-
-		Array primitives = mesh_dict["primitives"];
-		const Dictionary &extras = mesh_dict.has("extras") ? (Dictionary)mesh_dict["extras"] : Dictionary();
-		_attach_extras_to_meta(extras, mesh);
-		Ref<ImporterMesh> import_mesh;
-		import_mesh.instantiate();
 		String mesh_name = "mesh";
 		if (mesh_dict.has("name") && !String(mesh_dict["name"]).is_empty()) {
 			mesh_name = mesh_dict["name"];
-			mesh->set_original_name(mesh_name);
 		}
-		import_mesh->set_name(_gen_unique_name(p_state, vformat("%s_%s", p_state->scene_name, mesh_name)));
-		mesh->set_name(import_mesh->get_name());
-		TypedArray<Material> instance_materials;
+		precomputed_names.write[i] = _gen_unique_name(p_state, vformat("%s_%s", p_state->scene_name, mesh_name));
+	}
 
-		for (int j = 0; j < primitives.size(); j++) {
-			uint64_t flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-			Dictionary mesh_prim = primitives[j];
+	// Pre-allocate output slots so workers can write their own mesh and error independently.
+	p_state->meshes.resize(mesh_count);
+	Vector<Error> errors;
+	errors.resize(mesh_count);
+	for (int i = 0; i < mesh_count; i++) {
+		errors.write[i] = OK;
+	}
 
-			// Read the material.
-			Ref<Material> mat;
-			String mat_name;
-			String mat_primary_texture_coord = "TEXCOORD_0";
-			String mat_secondary_texture_coord = "TEXCOORD_1";
-			if (!p_state->discard_meshes_and_materials) {
-				if (mesh_prim.has("material")) {
-					const int material = mesh_prim["material"];
-					ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
-					Ref<Material> mat3d = p_state->materials[material];
-					ERR_FAIL_COND_V(mat3d.is_null(), ERR_FILE_CORRUPT);
-					// Remap the glTF file's UV texture coordinates to Godot's UV and UV2 as best as possible.
-					if (mat3d->has_meta("_gltf_primary_texture_coord")) {
-						const int tex_coord = mat3d->get_meta("_gltf_primary_texture_coord");
-						mat_primary_texture_coord = "TEXCOORD_" + itos(tex_coord);
-						if (tex_coord != 0 && !mat3d->has_meta("_gltf_secondary_texture_coord")) {
-							mat_secondary_texture_coord = "TEXCOORD_0";
-						}
-					}
-					if (mat3d->has_meta("_gltf_secondary_texture_coord")) {
-						const int tex_coord = mat3d->get_meta("_gltf_secondary_texture_coord");
-						mat_secondary_texture_coord = "TEXCOORD_" + itos(tex_coord);
-					}
-					Ref<BaseMaterial3D> base_material = mat3d;
-					if (has_vertex_color && base_material.is_valid()) {
-						base_material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-					}
-					mat = mat3d;
+	Mutex material_mutex;
+	MeshParseData data;
+	data.state = p_state;
+	data.meshes_json = &meshes;
+	data.precomputed_names = &precomputed_names;
+	data.errors = &errors;
+	data.material_mutex = &material_mutex;
 
-				} else {
-					Ref<StandardMaterial3D> mat3d;
-					mat3d.instantiate();
-					if (has_vertex_color) {
-						mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-					}
-					mat = mat3d;
-				}
-				ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
-				instance_materials.append(mat);
-				mat_name = mat->get_name();
-			}
-
-			// Read the mesh primitive data into Godot ArrayMesh array data.
-			Array array;
-			array.resize(Mesh::ARRAY_MAX);
-
-			ERR_FAIL_COND_V(!mesh_prim.has("attributes"), ERR_PARSE_ERROR);
-
-			Dictionary a = mesh_prim["attributes"];
-
-			Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_TRIANGLES;
-			if (mesh_prim.has("mode")) {
-				const int mode = mesh_prim["mode"];
-				ERR_FAIL_INDEX_V(mode, 7, ERR_FILE_CORRUPT);
-				// Convert mesh.primitive.mode to Godot Mesh enum. See:
-				// https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#_mesh_primitive_mode
-				static const Mesh::PrimitiveType primitives2[7] = {
-					Mesh::PRIMITIVE_POINTS, // 0 POINTS
-					Mesh::PRIMITIVE_LINES, // 1 LINES
-					Mesh::PRIMITIVE_LINES, // 2 LINE_LOOP; loop not supported, should be converted
-					Mesh::PRIMITIVE_LINE_STRIP, // 3 LINE_STRIP
-					Mesh::PRIMITIVE_TRIANGLES, // 4 TRIANGLES
-					Mesh::PRIMITIVE_TRIANGLE_STRIP, // 5 TRIANGLE_STRIP
-					Mesh::PRIMITIVE_TRIANGLES, // 6 TRIANGLE_FAN fan not supported, should be converted
-					// TODO: Line loop and triangle fan are not supported and need to be converted to lines and triangles.
-				};
-
-				primitive = primitives2[mode];
-			}
-
-			int32_t orig_vertex_num = 0;
-			ERR_FAIL_COND_V(!a.has("POSITION"), ERR_PARSE_ERROR);
-			if (a.has("POSITION")) {
-				PackedVector3Array vertices = _decode_accessor_as_vec3(p_state, a["POSITION"]);
-				array[Mesh::ARRAY_VERTEX] = vertices;
-				orig_vertex_num = vertices.size();
-			}
-			int32_t vertex_num = orig_vertex_num;
-
-			Vector<int> indices;
-			Vector<int> indices_mapping;
-			Vector<int> indices_rev_mapping;
-			Vector<int> indices_vec4_mapping;
-			if (mesh_prim.has("indices")) {
-				indices = _decode_accessor_as_int32s(p_state, mesh_prim["indices"]);
-				const int index_count = indices.size();
-
-				if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
-					ERR_FAIL_COND_V_MSG(index_count % 3 != 0, ERR_PARSE_ERROR, "glTF import: Mesh " + itos(i) + " surface " + itos(j) + " in file " + p_state->filename + " is invalid. Indexed triangle meshes MUST have an index array with a size that is a multiple of 3, but got " + itos(index_count) + " indices.");
-					// Swap around indices, convert ccw to cw for front face.
-
-					int *w = indices.ptrw();
-					for (int k = 0; k < index_count; k += 3) {
-						SWAP(w[k + 1], w[k + 2]);
-					}
-				}
-
-				const int *indices_w = indices.ptrw();
-				Vector<bool> used_indices;
-				used_indices.resize_initialized(orig_vertex_num);
-				bool *used_w = used_indices.ptrw();
-				for (int idx_i = 0; idx_i < index_count; idx_i++) {
-					ERR_FAIL_INDEX_V(indices_w[idx_i], orig_vertex_num, ERR_INVALID_DATA);
-					used_w[indices_w[idx_i]] = true;
-				}
-				indices_rev_mapping.resize_initialized(orig_vertex_num);
-				int *rev_w = indices_rev_mapping.ptrw();
-				vertex_num = 0;
-				for (int vert_i = 0; vert_i < orig_vertex_num; vert_i++) {
-					if (used_w[vert_i]) {
-						rev_w[vert_i] = indices_mapping.size();
-						indices_mapping.push_back(vert_i);
-						indices_vec4_mapping.push_back(vert_i * 4 + 0);
-						indices_vec4_mapping.push_back(vert_i * 4 + 1);
-						indices_vec4_mapping.push_back(vert_i * 4 + 2);
-						indices_vec4_mapping.push_back(vert_i * 4 + 3);
-						vertex_num++;
-					}
-				}
-			}
-			ERR_FAIL_COND_V(vertex_num <= 0, ERR_INVALID_DECLARATION);
-
-			if (a.has("POSITION")) {
-				PackedVector3Array vertices = _decode_accessor_as_vec3(p_state, a["POSITION"], indices_mapping);
-				array[Mesh::ARRAY_VERTEX] = vertices;
-			}
-			if (a.has("NORMAL")) {
-				array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(p_state, a["NORMAL"], indices_mapping);
-			}
-			if (a.has("TANGENT")) {
-				array[Mesh::ARRAY_TANGENT] = _decode_accessor_as_float32s(p_state, a["TANGENT"], indices_vec4_mapping);
-			}
-			// Usually mat_primary_texture_coord is "TEXCOORD_0", but in some edge cases it might be different.
-			if (a.has(mat_primary_texture_coord)) {
-				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(p_state, a[mat_primary_texture_coord], indices_mapping);
-			}
-			// Usually mat_secondary_texture_coord is "TEXCOORD_1", but in some edge cases it might be different.
-			if (a.has(mat_secondary_texture_coord)) {
-				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a[mat_secondary_texture_coord], indices_mapping);
-			}
-			for (int custom_i = 0; custom_i < 4; custom_i++) {
-				Vector<float> cur_custom;
-				int num_channels = 0;
-
-				// Attempt to read from "_CUSTOM" attributes first.
-				String gltf_custom_key = vformat("_CUSTOM%d", custom_i);
-				if (a.has(gltf_custom_key)) {
-					num_channels = 4;
-					Vector<Vector4> custom_vector4 = _decode_accessor_as_vec4(p_state, a[gltf_custom_key], indices_mapping);
-					cur_custom.resize_initialized(vertex_num * 4);
-					for (int32_t uv_i = 0; uv_i < custom_vector4.size() && uv_i < vertex_num; uv_i++) {
-						cur_custom.write[uv_i * 4 + 0] = custom_vector4[uv_i].x;
-						cur_custom.write[uv_i * 4 + 1] = custom_vector4[uv_i].y;
-						cur_custom.write[uv_i * 4 + 2] = custom_vector4[uv_i].z;
-						cur_custom.write[uv_i * 4 + 3] = custom_vector4[uv_i].w;
-					}
-				} else {
-					// Attempt to read from UVs 3 to 10 as an alternative source for custom data.
-					// Note that Blender has a limit of 8 UV sets; therefore, CUSTOM3 cannot be read this way
-					// for models exported from Blender. Use a custom attribute named "_CUSTOM3" instead.
-					Vector<Vector2> texcoord_first;
-					Vector<Vector2> texcoord_second;
-					int texcoord_i = 2 + 2 * custom_i;
-					String gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
-					if (a.has(gltf_texcoord_key)) {
-						texcoord_first = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
-						num_channels = 2;
-					}
-					gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
-					if (a.has(gltf_texcoord_key)) {
-						texcoord_second = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
-						num_channels = 4;
-					}
-					if (!num_channels) {
-						break;
-					}
-					if (num_channels == 2 || num_channels == 4) {
-						cur_custom.resize_initialized(vertex_num * num_channels);
-						for (int32_t uv_i = 0; uv_i < texcoord_first.size() && uv_i < vertex_num; uv_i++) {
-							cur_custom.write[uv_i * num_channels + 0] = texcoord_first[uv_i].x;
-							cur_custom.write[uv_i * num_channels + 1] = texcoord_first[uv_i].y;
-						}
-						if (num_channels == 4) {
-							for (int32_t uv_i = 0; uv_i < texcoord_second.size() && uv_i < vertex_num; uv_i++) {
-								cur_custom.write[uv_i * num_channels + 2] = texcoord_second[uv_i].x;
-								cur_custom.write[uv_i * num_channels + 3] = texcoord_second[uv_i].y;
-							}
-						}
-					}
-				}
-				if (cur_custom.size() > 0) {
-					array[Mesh::ARRAY_CUSTOM0 + custom_i] = cur_custom;
-					int custom_shift = Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT + custom_i * Mesh::ARRAY_FORMAT_CUSTOM_BITS;
-					if (num_channels == 2) {
-						flags |= Mesh::ARRAY_CUSTOM_RG_FLOAT << custom_shift;
-					} else {
-						flags |= Mesh::ARRAY_CUSTOM_RGBA_FLOAT << custom_shift;
-					}
-				}
-			}
-			if (a.has("COLOR_0")) {
-				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a["COLOR_0"], indices_mapping);
-				has_vertex_color = true;
-			}
-			if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
-				PackedInt32Array joints_0 = _decode_accessor_as_int32s(p_state, a["JOINTS_0"], indices_vec4_mapping);
-				ERR_FAIL_COND_V(joints_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
-				array[Mesh::ARRAY_BONES] = joints_0;
-			} else if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
-				PackedInt32Array joints_0 = _decode_accessor_as_int32s(p_state, a["JOINTS_0"], indices_vec4_mapping);
-				PackedInt32Array joints_1 = _decode_accessor_as_int32s(p_state, a["JOINTS_1"], indices_vec4_mapping);
-				ERR_FAIL_COND_V(joints_0.size() != joints_1.size(), ERR_INVALID_DATA);
-				ERR_FAIL_COND_V(joints_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
-				int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
-				Vector<int> joints;
-				joints.resize(vertex_num * weight_8_count);
-				for (int32_t vertex_i = 0; vertex_i < vertex_num; vertex_i++) {
-					joints.write[vertex_i * weight_8_count + 0] = joints_0[vertex_i * JOINT_GROUP_SIZE + 0];
-					joints.write[vertex_i * weight_8_count + 1] = joints_0[vertex_i * JOINT_GROUP_SIZE + 1];
-					joints.write[vertex_i * weight_8_count + 2] = joints_0[vertex_i * JOINT_GROUP_SIZE + 2];
-					joints.write[vertex_i * weight_8_count + 3] = joints_0[vertex_i * JOINT_GROUP_SIZE + 3];
-					joints.write[vertex_i * weight_8_count + 4] = joints_1[vertex_i * JOINT_GROUP_SIZE + 0];
-					joints.write[vertex_i * weight_8_count + 5] = joints_1[vertex_i * JOINT_GROUP_SIZE + 1];
-					joints.write[vertex_i * weight_8_count + 6] = joints_1[vertex_i * JOINT_GROUP_SIZE + 2];
-					joints.write[vertex_i * weight_8_count + 7] = joints_1[vertex_i * JOINT_GROUP_SIZE + 3];
-				}
-				array[Mesh::ARRAY_BONES] = joints;
-			}
-			// glTF stores weights as a VEC4 array or multiple VEC4 arrays, but Godot's
-			// ArrayMesh uses a flat array of either 4 or 8 floats per vertex.
-			// Therefore, decode up to two glTF VEC4 arrays as float arrays.
-			if (a.has("WEIGHTS_0") && !a.has("WEIGHTS_1")) {
-				Vector<float> weights = _decode_accessor_as_float32s(p_state, a["WEIGHTS_0"], indices_vec4_mapping);
-				ERR_FAIL_COND_V(weights.size() != 4 * vertex_num, ERR_INVALID_DATA);
-				{ // glTF does not seem to normalize the weights for some reason.
-					int wc = weights.size();
-					float *w = weights.ptrw();
-
-					for (int k = 0; k < wc; k += 4) {
-						float total = 0.0;
-						total += w[k + 0];
-						total += w[k + 1];
-						total += w[k + 2];
-						total += w[k + 3];
-						if (total > 0.0) {
-							w[k + 0] /= total;
-							w[k + 1] /= total;
-							w[k + 2] /= total;
-							w[k + 3] /= total;
-						}
-					}
-				}
-				array[Mesh::ARRAY_WEIGHTS] = weights;
-			} else if (a.has("WEIGHTS_0") && a.has("WEIGHTS_1")) {
-				Vector<float> weights_0 = _decode_accessor_as_float32s(p_state, a["WEIGHTS_0"], indices_vec4_mapping);
-				Vector<float> weights_1 = _decode_accessor_as_float32s(p_state, a["WEIGHTS_1"], indices_vec4_mapping);
-				Vector<float> weights;
-				ERR_FAIL_COND_V(weights_0.size() != weights_1.size(), ERR_INVALID_DATA);
-				ERR_FAIL_COND_V(weights_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
-				int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
-				weights.resize(vertex_num * weight_8_count);
-				for (int32_t vertex_i = 0; vertex_i < vertex_num; vertex_i++) {
-					weights.write[vertex_i * weight_8_count + 0] = weights_0[vertex_i * JOINT_GROUP_SIZE + 0];
-					weights.write[vertex_i * weight_8_count + 1] = weights_0[vertex_i * JOINT_GROUP_SIZE + 1];
-					weights.write[vertex_i * weight_8_count + 2] = weights_0[vertex_i * JOINT_GROUP_SIZE + 2];
-					weights.write[vertex_i * weight_8_count + 3] = weights_0[vertex_i * JOINT_GROUP_SIZE + 3];
-					weights.write[vertex_i * weight_8_count + 4] = weights_1[vertex_i * JOINT_GROUP_SIZE + 0];
-					weights.write[vertex_i * weight_8_count + 5] = weights_1[vertex_i * JOINT_GROUP_SIZE + 1];
-					weights.write[vertex_i * weight_8_count + 6] = weights_1[vertex_i * JOINT_GROUP_SIZE + 2];
-					weights.write[vertex_i * weight_8_count + 7] = weights_1[vertex_i * JOINT_GROUP_SIZE + 3];
-				}
-				{ // glTF does not seem to normalize the weights for some reason.
-					int wc = weights.size();
-					float *w = weights.ptrw();
-
-					for (int k = 0; k < wc; k += weight_8_count) {
-						float total = 0.0;
-						total += w[k + 0];
-						total += w[k + 1];
-						total += w[k + 2];
-						total += w[k + 3];
-						total += w[k + 4];
-						total += w[k + 5];
-						total += w[k + 6];
-						total += w[k + 7];
-						if (total > 0.0) {
-							w[k + 0] /= total;
-							w[k + 1] /= total;
-							w[k + 2] /= total;
-							w[k + 3] /= total;
-							w[k + 4] /= total;
-							w[k + 5] /= total;
-							w[k + 6] /= total;
-							w[k + 7] /= total;
-						}
-					}
-				}
-				array[Mesh::ARRAY_WEIGHTS] = weights;
-				flags |= Mesh::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
-			}
-
-			if (!indices.is_empty()) {
-				int *w = indices.ptrw();
-				const int is = indices.size();
-				for (int ind_i = 0; ind_i < is; ind_i++) {
-					w[ind_i] = indices_rev_mapping[indices[ind_i]];
-				}
-				array[Mesh::ARRAY_INDEX] = indices;
-
-			} else if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
-				// Generate indices because they need to be swapped for CW/CCW.
-				const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
-				ERR_FAIL_COND_V(vertices.is_empty(), ERR_PARSE_ERROR);
-				const int vertex_count = vertices.size();
-				ERR_FAIL_COND_V_MSG(vertex_count % 3 != 0, ERR_PARSE_ERROR, "glTF import: Mesh " + itos(i) + " surface " + itos(j) + " in file " + p_state->filename + " is invalid. Non-indexed triangle meshes MUST have a vertex array with a size that is a multiple of 3, but got " + itos(vertex_count) + " vertices.");
-				indices.resize(vertex_count);
-				{
-					int *w = indices.ptrw();
-					for (int k = 0; k < vertex_count; k += 3) {
-						w[k] = k;
-						w[k + 1] = k + 2;
-						w[k + 2] = k + 1;
-					}
-				}
-				array[Mesh::ARRAY_INDEX] = indices;
-			}
-
-			bool generate_tangents = p_state->force_generate_tangents && (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("NORMAL"));
-
-			if (generate_tangents && !a.has("TEXCOORD_0")) {
-				// If we don't have UVs we provide a dummy tangent array.
-				Vector<float> tangents;
-				tangents.resize(vertex_num * 4);
-				float *tangentsw = tangents.ptrw();
-
-				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
-				for (int k = 0; k < vertex_num; k++) {
-					Vector3 tan = Vector3(normals[k].z, -normals[k].x, normals[k].y).cross(normals[k].normalized()).normalized();
-					tangentsw[k * 4 + 0] = tan.x;
-					tangentsw[k * 4 + 1] = tan.y;
-					tangentsw[k * 4 + 2] = tan.z;
-					tangentsw[k * 4 + 3] = 1.0;
-				}
-				array[Mesh::ARRAY_TANGENT] = tangents;
-			}
-
-			// Disable compression if all z equals 0 (the mesh is 2D).
-			const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
-			bool is_mesh_2d = true;
-			for (int k = 0; k < vertices.size(); k++) {
-				if (!Math::is_zero_approx(vertices[k].z)) {
-					is_mesh_2d = false;
-					break;
-				}
-			}
-
-			if (p_state->force_disable_compression || is_mesh_2d || !a.has("POSITION") || !a.has("NORMAL") || mesh_prim.has("targets") || (a.has("JOINTS_0") || a.has("JOINTS_1"))) {
-				flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-			}
-
-			Ref<SurfaceTool> mesh_surface_tool;
-			mesh_surface_tool.instantiate();
-			mesh_surface_tool->create_from_triangle_arrays(array);
-			if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
-				mesh_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
-			}
-			mesh_surface_tool->index();
-			if (generate_tangents && a.has("TEXCOORD_0")) {
-				mesh_surface_tool->generate_tangents(/*split*/ !mesh_prim.has("targets"));
-			}
-			array = mesh_surface_tool->commit_to_arrays();
-
-			if ((flags & RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && a.has("NORMAL") && (a.has("TANGENT") || generate_tangents)) {
-				// Compression is enabled, so let's validate that the normals and tangents are correct.
-				Vector<Vector3> normals = array[Mesh::ARRAY_NORMAL];
-				Vector<float> tangents = array[Mesh::ARRAY_TANGENT];
-				if (unlikely(tangents.size() < normals.size() * 4)) {
-					ERR_PRINT("glTF import: Mesh " + itos(i) + " has invalid tangents.");
-					flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-				} else {
-					for (int vert = 0; vert < normals.size(); vert++) {
-						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-						if (std::abs(tan.dot(normals[vert])) > 0.0001) {
-							// Tangent is not perpendicular to the normal, so we can't use compression.
-							flags &= ~RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
-						}
-					}
-				}
-			}
-
-			Array morphs;
-			// Blend shapes
-			if (mesh_prim.has("targets")) {
-				print_verbose("glTF: Mesh has targets");
-				const Array &targets = mesh_prim["targets"];
-
-				import_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
-
-				if (j == 0) {
-					const Array &target_names = extras.has("targetNames") ? (Array)extras["targetNames"] : Array();
-					for (int k = 0; k < targets.size(); k++) {
-						String bs_name;
-						if (k < target_names.size() && ((String)target_names[k]).size() != 0) {
-							bs_name = (String)target_names[k];
-						} else {
-							bs_name = String("morph_") + itos(k);
-						}
-						import_mesh->add_blend_shape(bs_name);
-					}
-				}
-
-				for (int k = 0; k < targets.size(); k++) {
-					const Dictionary &t = targets[k];
-
-					Array array_copy;
-					array_copy.resize(Mesh::ARRAY_MAX);
-
-					for (int l = 0; l < Mesh::ARRAY_MAX; l++) {
-						array_copy[l] = array[l];
-					}
-
-					if (t.has("POSITION")) {
-						Vector<Vector3> varr = _decode_accessor_as_vec3(p_state, t["POSITION"], indices_mapping);
-						const Vector<Vector3> src_varr = array[Mesh::ARRAY_VERTEX];
-						const int size = src_varr.size();
-						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
-						{
-							const int max_idx = varr.size();
-							varr.resize(size);
-
-							Vector3 *w_varr = varr.ptrw();
-							const Vector3 *r_varr = varr.ptr();
-							const Vector3 *r_src_varr = src_varr.ptr();
-							for (int l = 0; l < size; l++) {
-								if (l < max_idx) {
-									w_varr[l] = r_varr[l] + r_src_varr[l];
-								} else {
-									w_varr[l] = r_src_varr[l];
-								}
-							}
-						}
-						array_copy[Mesh::ARRAY_VERTEX] = varr;
-					}
-					if (t.has("NORMAL")) {
-						Vector<Vector3> narr = _decode_accessor_as_vec3(p_state, t["NORMAL"], indices_mapping);
-						const Vector<Vector3> src_narr = array[Mesh::ARRAY_NORMAL];
-						int size = src_narr.size();
-						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
-						{
-							int max_idx = narr.size();
-							narr.resize(size);
-
-							Vector3 *w_narr = narr.ptrw();
-							const Vector3 *r_narr = narr.ptr();
-							const Vector3 *r_src_narr = src_narr.ptr();
-							for (int l = 0; l < size; l++) {
-								if (l < max_idx) {
-									w_narr[l] = r_narr[l] + r_src_narr[l];
-								} else {
-									w_narr[l] = r_src_narr[l];
-								}
-							}
-						}
-						array_copy[Mesh::ARRAY_NORMAL] = narr;
-					}
-					if (t.has("TANGENT")) {
-						const Vector<Vector3> tangents_v3 = _decode_accessor_as_vec3(p_state, t["TANGENT"], indices_mapping);
-						const Vector<float> src_tangents = array[Mesh::ARRAY_TANGENT];
-						ERR_FAIL_COND_V(src_tangents.is_empty(), ERR_PARSE_ERROR);
-
-						Vector<float> tangents_v4;
-
-						{
-							int max_idx = tangents_v3.size();
-
-							int size4 = src_tangents.size();
-							tangents_v4.resize(size4);
-							float *w4 = tangents_v4.ptrw();
-
-							const Vector3 *r3 = tangents_v3.ptr();
-							const float *r4 = src_tangents.ptr();
-
-							for (int l = 0; l < size4 / 4; l++) {
-								if (l < max_idx) {
-									w4[l * 4 + 0] = r3[l].x + r4[l * 4 + 0];
-									w4[l * 4 + 1] = r3[l].y + r4[l * 4 + 1];
-									w4[l * 4 + 2] = r3[l].z + r4[l * 4 + 2];
-								} else {
-									w4[l * 4 + 0] = r4[l * 4 + 0];
-									w4[l * 4 + 1] = r4[l * 4 + 1];
-									w4[l * 4 + 2] = r4[l * 4 + 2];
-								}
-								w4[l * 4 + 3] = r4[l * 4 + 3]; //copy flip value
-							}
-						}
-
-						array_copy[Mesh::ARRAY_TANGENT] = tangents_v4;
-					}
-
-					Ref<SurfaceTool> blend_surface_tool;
-					blend_surface_tool.instantiate();
-					blend_surface_tool->create_from_triangle_arrays(array_copy);
-					if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
-						blend_surface_tool->set_skin_weight_count(SurfaceTool::SKIN_8_WEIGHTS);
-					}
-					blend_surface_tool->index();
-					if (generate_tangents) {
-						blend_surface_tool->generate_tangents(/*split*/ false);
-					}
-					array_copy = blend_surface_tool->commit_to_arrays();
-
-					// Enforce blend shape mask array format
-					for (int l = 0; l < Mesh::ARRAY_MAX; l++) {
-						if (!(Mesh::ARRAY_FORMAT_BLEND_SHAPE_MASK & (1ULL << l))) {
-							array_copy[l] = Variant();
-						}
-					}
-
-					morphs.push_back(array_copy);
-				}
-			}
-			import_mesh->add_surface(primitive, array, morphs,
-					Dictionary(), mat, mat_name, flags);
+	if (mesh_count > 1 && WorkerThreadPool::get_singleton()->get_caller_task_id() == WorkerThreadPool::INVALID_TASK_ID) {
+		// Not on a worker thread: parse meshes in parallel. A worker thread blocking on
+		// wait_for_group_task_completion() can starve the pool, so import threads parse inline.
+		WorkerThreadPool::GroupID group = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GLTFDocument::_process_single_mesh, &data, mesh_count, -1, false, SNAME("GLTFMeshParsing"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group);
+	} else {
+		for (uint32_t i = 0; i < (uint32_t)mesh_count; i++) {
+			_process_single_mesh(i, &data);
 		}
+	}
 
-		Vector<float> blend_weights;
-		blend_weights.resize(import_mesh->get_blend_shape_count());
-		for (int32_t weight_i = 0; weight_i < blend_weights.size(); weight_i++) {
-			blend_weights.write[weight_i] = 0.0f;
+	for (int i = 0; i < mesh_count; i++) {
+		if (errors[i] != OK) {
+			return errors[i];
 		}
-
-		if (mesh_dict.has("weights")) {
-			const Array &weights = mesh_dict["weights"];
-			for (int j = 0; j < weights.size(); j++) {
-				if (j >= blend_weights.size()) {
-					break;
-				}
-				blend_weights.write[j] = weights[j];
-			}
-		}
-		mesh->set_blend_weights(blend_weights);
-		mesh->set_instance_materials(instance_materials);
-		mesh->set_mesh(import_mesh);
-
-		p_state->meshes.push_back(mesh);
 	}
 
 	print_verbose("glTF: Total meshes: " + itos(p_state->meshes.size()));
@@ -2291,13 +2360,20 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<
 				custom_options[SNAME("mipmaps/generate")] = true;
 				// Will only use project settings defaults if custom_importer is empty.
 
-				EditorFileSystem::get_singleton()->update_file(file_path);
+				if (Thread::is_main_thread()) {
+					EditorFileSystem::get_singleton()->update_file(file_path);
+				} else {
+					// The file system tree is main-thread only; register the new file once the import batch finishes.
+					callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::update_file).call_deferred(file_path);
+				}
 				EditorFileSystem::get_singleton()->reimport_append(file_path, custom_options, String(), generator_parameters);
 			}
 			Ref<Texture2D> saved_image = ResourceLoader::load(file_path, "Texture2D");
 			if (saved_image.is_valid()) {
 				p_state->images.push_back(saved_image);
-				p_state->source_images.push_back(saved_image->get_image());
+				// CompressedTexture2D::get_image() reads back from the rendering server, which is
+				// only safe on the main thread; on import threads keep the decoded source image.
+				p_state->source_images.push_back(Thread::is_main_thread() ? saved_image->get_image() : p_image);
 				return;
 			} else {
 				WARN_PRINT(vformat("glTF: Image index '%d' with the name '%s' resolved to %s couldn't be imported. It will be loaded directly instead, uncompressed.", p_index, p_image->get_name(), file_path));
@@ -7172,17 +7248,17 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 		/* PARSE TEXTURE SAMPLERS */
-		err = _parse_texture_samplers(p_state);
+	err = _parse_texture_samplers(p_state);
 
 		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 		/* PARSE TEXTURES */
-		err = _parse_textures(p_state);
+	err = _parse_textures(p_state);
 
 		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 		/* PARSE TEXTURES */
-		err = _parse_materials(p_state);
+	err = _parse_materials(p_state);
 
 		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 	}

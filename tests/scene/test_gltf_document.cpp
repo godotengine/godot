@@ -214,6 +214,20 @@ TEST_CASE("[SceneTree][GLTFDocument] Load cube.gltf") {
 	CHECK(node->get_child(0)->is_class("MeshInstance3D"));
 	CHECK(node->get_child(0)->get_name() == "Cube");
 
+	// Verify mesh surface data is correctly parsed by the parallel mesh parser.
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(node->get_child(0));
+	REQUIRE(mi != nullptr);
+	Ref<ArrayMesh> arr_mesh = mi->get_mesh();
+	REQUIRE(arr_mesh.is_valid());
+	CHECK(arr_mesh->get_surface_count() == 2);
+	// Validate vertex count for both surfaces.
+	for (int surface = 0; surface < arr_mesh->get_surface_count(); surface++) {
+		Array surface_arrays = arr_mesh->surface_get_arrays(surface);
+		CHECK(surface_arrays[Mesh::ARRAY_VERTEX].get_type() == Variant::PACKED_VECTOR3_ARRAY);
+		PackedVector3Array vertices = surface_arrays[Mesh::ARRAY_VERTEX];
+		CHECK(vertices.size() > 0);
+	}
+
 	CHECK(node->get_child(1)->is_class("AnimationPlayer"));
 	CHECK(node->get_child(1)->get_name() == "AnimationPlayer");
 
@@ -242,6 +256,16 @@ TEST_CASE("[SceneTree][GLTFDocument] Load suzanne.glb") {
 	CHECK(node->get_child(0)->is_class("MeshInstance3D"));
 	CHECK(node->get_child(0)->get_name() == "Suzanne");
 
+	// Verify mesh surface data is correctly parsed by the parallel mesh parser.
+	MeshInstance3D *mi2 = Object::cast_to<MeshInstance3D>(node->get_child(0));
+	REQUIRE(mi2 != nullptr);
+	Ref<ArrayMesh> arr_mesh2 = mi2->get_mesh();
+	REQUIRE(arr_mesh2.is_valid());
+	CHECK(arr_mesh2->get_surface_count() == 1);
+	Array surface_arrays2 = arr_mesh2->surface_get_arrays(0);
+	PackedVector3Array vertices2 = surface_arrays2[Mesh::ARRAY_VERTEX];
+	CHECK(vertices2.size() > 0);
+
 	CHECK(node->get_child(1)->is_class("Camera3D"));
 	CHECK(node->get_child(1)->get_name() == "Camera");
 
@@ -249,6 +273,20 @@ TEST_CASE("[SceneTree][GLTFDocument] Load suzanne.glb") {
 
 	// Clean up the node.
 	memdelete(node);
+}
+
+TEST_CASE("[GLTFDocument] Invalid mesh data reports an error") {
+	Ref<GLTFDocument> gltf_document;
+	gltf_document.instantiate();
+	Ref<GLTFState> gltf_state;
+	gltf_state.instantiate();
+
+	// A mesh without the required "primitives" property must fail parsing instead of
+	// silently producing a null mesh (regression test for parallel mesh parsing).
+	String json = R"({"asset":{"version":"2.0"},"meshes":[{"name":"BadMesh"}]})";
+	PackedByteArray bytes = json.to_utf8_buffer();
+	Error err = gltf_document->append_from_buffer(bytes, "", gltf_state);
+	CHECK(err == ERR_PARSE_ERROR);
 }
 
 } // namespace TestGLTFDocument

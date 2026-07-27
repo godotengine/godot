@@ -35,6 +35,7 @@
 #include "gltf_defines.h"
 #include "gltf_state.h"
 
+#include "core/os/mutex.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 
@@ -157,6 +158,8 @@ private:
 	Vector<Quaternion> _decode_accessor_as_quaternion(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index);
 	Array _decode_accessor_as_variants(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, Variant::Type p_variant_type);
 	Error _parse_meshes(Ref<GLTFState> p_state);
+	Error _parse_single_mesh(const Ref<GLTFState> &p_state, const Array &p_meshes, GLTFMeshIndex i, const String &p_unique_name, Mutex *p_material_mutex);
+	void _process_single_mesh(uint32_t p_index, void *p_data);
 	Error _serialize_textures(Ref<GLTFState> p_state);
 	Error _serialize_texture_samplers(Ref<GLTFState> p_state);
 	Error _serialize_images(Ref<GLTFState> p_state);
