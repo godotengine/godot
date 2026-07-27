@@ -2688,6 +2688,9 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 
 	_plugins_get_import_options(p_path, r_options);
 
+	// Scene format importers are shared instances holding scratch state
+	// (current_option_list), so serialize access during threaded imports.
+	MutexLock lock(post_import_mutex);
 	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
 		importer_elem->get_import_options(p_path, r_options);
 	}
