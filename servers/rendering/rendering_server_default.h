@@ -38,6 +38,8 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_viewport.h"
 #include "servers/rendering/rendering_method.h"
+
+#include <atomic>
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_globals.h"
@@ -59,7 +61,7 @@ class RenderingServerDefault : public RenderingServer {
 
 	};
 
-	static int changes;
+	static std::atomic<int> changes;
 	RID test_cube;
 
 	List<Callable> frame_drawn_callbacks;

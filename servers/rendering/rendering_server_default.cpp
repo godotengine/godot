@@ -45,7 +45,7 @@
 
 // careful, these may run in different threads than the rendering server
 
-int RenderingServerDefault::changes = 0;
+std::atomic<int> RenderingServerDefault::changes = 0;
 
 /* FREE */
 
