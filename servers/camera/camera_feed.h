@@ -32,7 +32,7 @@
 
 #include "core/io/image.h"
 #include "core/math/transform_2d.h"
-#include "servers/camera_server.h"
+#include "servers/camera/camera_server.h"
 
 /**
 	The camera server is a singleton object that gives access to the various
@@ -59,6 +59,8 @@ public:
 
 private:
 	int id; // unique id for this, for internal use in case feeds are removed
+	const StringName format_changed_signal_name = "format_changed";
+	const StringName frame_changed_signal_name = "frame_changed";
 
 protected:
 	struct FeedFormat {
@@ -122,6 +124,8 @@ public:
 	virtual bool activate_feed();
 	virtual void deactivate_feed();
 
+	GDVIRTUAL2R(bool, _set_format, int, const Dictionary &);
+	GDVIRTUAL0RC(Array, _get_formats);
 	GDVIRTUAL0R(bool, _activate_feed)
 	GDVIRTUAL0(_deactivate_feed)
 };

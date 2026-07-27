@@ -4,7 +4,6 @@ import argparse
 import os
 import re
 import sys
-from subprocess import call
 
 
 def main():
@@ -25,19 +24,13 @@ def main():
         help="The path to the unit test file relative to the tests folder (e.g. core). This should correspond to the relative path of the class or component being tested. (default: .)",
         default=".",
     )
-    parser.add_argument(
-        "-i",
-        "--invasive",
-        action="store_true",
-        help="if set, the script will automatically insert the include directive in test_main.cpp. Use with caution!",
-    )
     args = parser.parse_args()
 
     snake_case_regex = re.compile(r"(?<!^)(?=[A-Z, 0-9])")
     # Replace 2D, 3D, and 4D with 2d, 3d, and 4d, respectively. This avoids undesired splits like node_3_d.
     prefiltered_name = re.sub(r"([234])D", lambda match: match.group(1).lower() + "d", args.name)
     name_snake_case = snake_case_regex.sub("_", prefiltered_name).lower()
-    file_path = os.path.normpath(os.path.join(args.path, f"test_{name_snake_case}.h"))
+    file_path = os.path.normpath(os.path.join(args.path, f"test_{name_snake_case}.cpp"))
 
     # Ensure the directory exists.
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -49,7 +42,7 @@ def main():
     with open(file_path, "w", encoding="utf-8", newline="\n") as file:
         file.write(
             """/**************************************************************************/
-/*  test_{name_snake_case}.h {padding} */
+/*  test_{name_snake_case}.cpp {padding} */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -78,14 +71,14 @@ def main():
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
-
 #include "tests/test_macros.h"
+
+TEST_FORCE_LINK(test_{name_snake_case})
 
 namespace Test{name_pascal_case} {{
 
 TEST_CASE("[{name_pascal_case}] Example test case") {{
-    // TODO: Remove this comment and write your test code here.
+	// TODO: Remove this comment and write your test code here.
 }}
 
 }} // namespace Test{name_pascal_case}
@@ -95,41 +88,16 @@ TEST_CASE("[{name_pascal_case}] Example test case") {{
                 # This is done in case the user passes a camelCase string instead of PascalCase.
                 name_pascal_case=args.name[0].upper() + args.name[1:],
                 # The padding length depends on the test name length.
-                padding=" " * (61 - len(name_snake_case)),
+                padding=" " * (59 - len(name_snake_case)),
             )
         )
 
     # Print an absolute path so it can be Ctrl + clicked in some IDEs and terminal emulators.
-    print("Test header file created:")
+    print("Test file created:")
     print(os.path.abspath(file_path))
-
-    if args.invasive:
-        print("Trying to insert include directive in test_main.cpp...")
-        with open("test_main.cpp", "r", encoding="utf-8") as file:
-            contents = file.read()
-        match = re.search(r'#include "tests.*\n', contents)
-
-        if match:
-            new_string = contents[: match.start()] + f'#include "tests/{file_path}"\n' + contents[match.start() :]
-
-            with open("test_main.cpp", "w", encoding="utf-8", newline="\n") as file:
-                file.write(new_string)
-                print("Done.")
-            # Use clang format to sort include directives afster insertion.
-            clang_format_args = ["clang-format", "test_main.cpp", "-i"]
-            retcode = call(clang_format_args)
-            if retcode != 0:
-                print(
-                    "Include directives in test_main.cpp could not be sorted automatically using clang-format. Please sort them manually."
-                )
-        else:
-            print("Could not find a valid position in test_main.cpp to insert the include directive.")
-
-    else:
-        print("\nRemember to #include the new test header in this file (following alphabetical order):")
-        print(os.path.abspath("test_main.cpp"))
-        print("Insert the following line in the appropriate place:")
-        print(f'#include "tests/{file_path}"')
+    print(
+        "Don't forget to add special tags to the test case if needed, see https://docs.godotengine.org/en/latest/contributing/development/core_and_modules/unit_testing.html#special-tags-in-test-case-names for more information."
+    )
 
 
 if __name__ == "__main__":

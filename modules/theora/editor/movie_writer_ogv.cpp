@@ -30,8 +30,12 @@
 
 #include "movie_writer_ogv.h"
 
-#include "core/config/project_settings.h"
 #include "rgb2yuv.h"
+
+#include "core/config/project_settings.h"
+#include "core/io/file_access.h"
+
+#include <cstdlib>
 
 void MovieWriterOGV::push_audio(const int32_t *p_audio_data) {
 	// Read and process more audio.
@@ -95,12 +99,12 @@ uint32_t MovieWriterOGV::get_audio_mix_rate() const {
 	return mix_rate;
 }
 
-AudioServer::SpeakerMode MovieWriterOGV::get_audio_speaker_mode() const {
+AuSE::SpeakerMode MovieWriterOGV::get_audio_speaker_mode() const {
 	return speaker_mode;
 }
 
 bool MovieWriterOGV::handles_file(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "ogv";
+	return p_path.has_extension("ogv");
 }
 
 void MovieWriterOGV::get_supported_extensions(List<String> *r_extensions) const {
@@ -122,16 +126,16 @@ Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, co
 
 	audio_ch = 2;
 	switch (speaker_mode) {
-		case AudioServer::SPEAKER_MODE_STEREO:
+		case AuSE::SPEAKER_MODE_STEREO:
 			audio_ch = 2;
 			break;
-		case AudioServer::SPEAKER_SURROUND_31:
+		case AuSE::SPEAKER_SURROUND_31:
 			audio_ch = 4;
 			break;
-		case AudioServer::SPEAKER_SURROUND_51:
+		case AuSE::SPEAKER_SURROUND_51:
 			audio_ch = 6;
 			break;
-		case AudioServer::SPEAKER_SURROUND_71:
+		case AuSE::SPEAKER_SURROUND_71:
 			audio_ch = 8;
 			break;
 	}
@@ -423,7 +427,7 @@ void MovieWriterOGV::write_end() {
 
 MovieWriterOGV::MovieWriterOGV() {
 	mix_rate = GLOBAL_GET("editor/movie_writer/mix_rate");
-	speaker_mode = AudioServer::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
+	speaker_mode = AuSE::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
 	video_quality = GLOBAL_GET("editor/movie_writer/video_quality");
 	audio_quality = GLOBAL_GET("editor/movie_writer/ogv/audio_quality");
 	speed = GLOBAL_GET("editor/movie_writer/ogv/encoding_speed");

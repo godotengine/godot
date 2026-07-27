@@ -146,6 +146,8 @@ public:
 
 		String to_string() const;
 		_FORCE_INLINE_ String to_string_strict() const { return is_hard_type() ? to_string() : "Variant"; }
+
+		String to_property_info_hint_string() const;
 		PropertyInfo to_property_info(const String &p_name) const;
 
 		_FORCE_INLINE_ static DataType get_variant_type() { // Default DataType for container elements.
@@ -269,7 +271,10 @@ public:
 		// };
 		// Type type = NO_ERROR;
 		String message;
-		int line = 0, column = 0;
+		int start_line;
+		int start_column;
+		int end_line;
+		int end_column;
 	};
 
 #ifdef TOOLS_ENABLED
@@ -337,15 +342,13 @@ public:
 		};
 
 		Type type = NONE;
-		int start_line = 0, end_line = 0;
-		int start_column = 0, end_column = 0;
+		// Negative values indicate a node which was used for sentence level recovery.
+		int start_line = -1;
+		int start_column = -1;
+		int end_line = -1;
+		int end_column = -1;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
-
-		DataType datatype;
-
-		virtual DataType get_datatype() const { return datatype; }
-		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
 
 		virtual bool is_expression() const { return false; }
 
@@ -357,6 +360,8 @@ public:
 		bool reduced = false;
 		bool is_constant = false;
 		Variant reduced_value;
+
+		DataType type_constraint;
 
 		virtual bool is_expression() const override { return true; }
 		virtual ~ExpressionNode() {}
@@ -408,6 +413,8 @@ public:
 		bool infer_datatype = false;
 		bool use_conversion_assign = false;
 		int usages = 0;
+
+		DataType type_constraint;
 
 		virtual ~AssignableNode() {}
 
@@ -527,6 +534,8 @@ public:
 	};
 
 	struct EnumNode : public Node {
+		DataType enum_type;
+
 		struct Value {
 			IdentifierNode *identifier = nullptr;
 			ExpressionNode *custom_value = nullptr;
@@ -658,19 +667,19 @@ public:
 			DataType get_datatype() const {
 				switch (type) {
 					case CLASS:
-						return m_class->get_datatype();
+						return m_class->self_type;
 					case CONSTANT:
-						return constant->get_datatype();
+						return constant->type_constraint;
 					case FUNCTION:
-						return function->get_datatype();
+						return function->return_type_constraint;
 					case VARIABLE:
-						return variable->get_datatype();
+						return variable->type_constraint;
 					case ENUM:
-						return m_enum->get_datatype();
+						return m_enum->enum_type;
 					case ENUM_VALUE:
-						return enum_value.identifier->get_datatype();
+						return enum_value.identifier->type_constraint;
 					case SIGNAL:
-						return signal->get_datatype();
+						return signal->signal_type;
 					case GROUP:
 						return DataType();
 					case UNDEFINED:
@@ -753,7 +762,16 @@ public:
 		String extends_path;
 		Vector<IdentifierNode *> extends; // List for indexing: extends A.B.C
 		DataType base_type;
+		// Metatype that represents this class.
+		DataType self_type;
 		String fqcn; // Fully-qualified class name. Identifies uniquely any class in the project.
+
+		// Range for a class's "extends <CLASS_NAME>" line.
+		// Used as range for some warnings/errors.
+		int extends_start_line = -1;
+		int extends_start_column = -1;
+		int extends_end_line = -1;
+		int extends_end_column = -1;
 #ifdef TOOLS_ENABLED
 		ClassDocData doc_data;
 
@@ -852,7 +870,10 @@ public:
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
 		ParameterNode *rest_parameter = nullptr;
+
 		TypeNode *return_type = nullptr;
+		DataType return_type_constraint;
+
 		SuiteNode *body = nullptr;
 		bool is_abstract = false;
 		bool is_static = false; // For lambdas it's determined in the analyzer.
@@ -861,6 +882,9 @@ public:
 		MethodInfo info;
 		LambdaNode *source_lambda = nullptr;
 		Vector<Variant> default_arg_values;
+
+		int header_end_line = 0;
+		int header_end_column = 0;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
 		int min_local_doc_line = 0;
@@ -904,6 +928,7 @@ public:
 			MEMBER_CLASS,
 			INHERITED_VARIABLE,
 			STATIC_VARIABLE,
+			NATIVE_CLASS,
 		};
 		Source source = UNDEFINED_SOURCE;
 
@@ -994,6 +1019,8 @@ public:
 	};
 
 	struct PatternNode : public Node {
+		DataType type_constraint;
+
 		enum Type {
 			PT_LITERAL,
 			PT_EXPRESSION,
@@ -1039,8 +1066,11 @@ public:
 	};
 
 	struct ReturnNode : public Node {
+		DataType return_type;
+
 		ExpressionNode *return_value = nullptr;
 		bool void_return = false;
+		bool use_conversion = false;
 
 		ReturnNode() {
 			type = RETURN;
@@ -1064,6 +1094,8 @@ public:
 		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
+		DataType signal_type;
+
 		int usages = 0;
 
 		SignalNode() {
@@ -1086,6 +1118,8 @@ public:
 	};
 
 	struct SuiteNode : public Node {
+		DataType suite_type;
+
 		SuiteNode *parent_block = nullptr;
 		Vector<Node *> statements;
 		struct Local {
@@ -1107,8 +1141,10 @@ public:
 			StringName name;
 			FunctionNode *source_function = nullptr;
 
-			int start_line = 0, end_line = 0;
-			int start_column = 0, end_column = 0;
+			int start_line = 0;
+			int start_column = 0;
+			int end_line = 0;
+			int end_column = 0;
 
 			DataType get_datatype() const;
 			String get_name() const;
@@ -1203,6 +1239,8 @@ public:
 		Vector<IdentifierNode *> type_chain;
 		Vector<TypeNode *> container_types;
 
+		DataType resolved_type;
+
 		TypeNode *get_container_type_or_null(int p_index) const {
 			return p_index >= 0 && p_index < container_types.size() ? container_types[p_index] : nullptr;
 		}
@@ -1289,7 +1327,7 @@ public:
 		COMPLETION_ATTRIBUTE_METHOD, // After id.| to look for methods.
 		COMPLETION_BUILT_IN_TYPE_CONSTANT_OR_STATIC_METHOD, // Constants inside a built-in type (e.g. Color.BLUE) or static methods (e.g. Color.html).
 		COMPLETION_CALL_ARGUMENTS, // Complete with nodes, input actions, enum values (or usual expressions).
-		// TODO: COMPLETION_DECLARATION, // Potential declaration (var, const, func).
+		COMPLETION_DECLARATION, // Potential declaration (var, const, class, etc.).
 		COMPLETION_GET_NODE, // Get node with $ notation.
 		COMPLETION_IDENTIFIER, // List available identifiers in scope.
 		COMPLETION_INHERIT_TYPE, // Type after extends. Exclude non-viable types (built-ins, enums, void). Includes subtypes using the argument index.
@@ -1300,6 +1338,7 @@ public:
 		COMPLETION_PROPERTY_METHOD, // Property setter or getter (list available methods).
 		COMPLETION_RESOURCE_PATH, // For load/preload.
 		COMPLETION_SUBSCRIPT, // Inside id[|].
+		COMPLETION_SUPER, // super(), used for lookup.
 		COMPLETION_SUPER_METHOD, // After super.
 		COMPLETION_TYPE_ATTRIBUTE, // Attribute in type name (Type.|).
 		COMPLETION_TYPE_NAME, // Name of type (after :).
@@ -1347,20 +1386,40 @@ private:
 	List<ParserError> errors;
 
 #ifdef DEBUG_ENABLED
+public:
+	struct WarningDirectoryRule {
+		enum Decision {
+			DECISION_EXCLUDE,
+			DECISION_INCLUDE,
+			DECISION_MAX,
+		};
+
+		String directory_path; // With a trailing slash.
+		Decision decision = DECISION_EXCLUDE;
+	};
+
+private:
 	struct PendingWarning {
-		const Node *source = nullptr;
+		int start_line = 0;
+		int start_column = 0;
+		int end_line = 0;
+		int end_column = 0;
 		GDScriptWarning::Code code = GDScriptWarning::WARNING_MAX;
 		bool treated_as_error = false;
 		Vector<String> symbols;
 	};
 
-	bool is_ignoring_warnings = false;
+	static bool is_project_ignoring_warnings;
+	static GDScriptWarning::WarnLevel warning_levels[GDScriptWarning::WARNING_MAX];
+	static LocalVector<WarningDirectoryRule> warning_directory_rules;
+
 	List<GDScriptWarning> warnings;
 	List<PendingWarning> pending_warnings;
+	bool is_script_ignoring_warnings = false;
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
-#endif
+#endif // DEBUG_ENABLED
 
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
@@ -1471,15 +1530,26 @@ private:
 	}
 
 	void clear();
+
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
+	void push_error(const String &p_message, int p_start_line, int p_start_column, int p_end_line, int p_end_column);
+	void push_error(const String &p_message, const GDScriptTokenizer::Token &p_origin);
+
 #ifdef DEBUG_ENABLED
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
 	template <typename... Symbols>
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
 		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
 	}
+	void push_warning(int p_start_line, int p_start_column, int p_end_line, int p_end_column, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
+	template <typename... Symbols>
+	void push_warning(int p_start_line, int p_start_column, int p_end_line, int p_end_column, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
+		push_warning(p_start_line, p_start_column, p_end_line, p_end_column, p_code, Vector<String>{ p_symbols... });
+	}
 	void apply_pending_warnings();
-#endif
+	void evaluate_warning_directory_rules_for_script_path();
+#endif // DEBUG_ENABLED
+
 	// Setting p_force to false will prevent the completion context from being update if a context was already set before.
 	// This should only be done when we push context before we consumed any tokens for the corresponding structure.
 	// See parse_precedence for an example.
@@ -1613,11 +1683,13 @@ public:
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
+
 #ifdef DEBUG_ENABLED
+	static void update_project_settings();
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
 	int get_last_line_number() const { return current.end_line; }
-#endif
+#endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 	static HashMap<String, String> theme_color_names;

@@ -30,22 +30,47 @@
 
 #pragma once
 
-#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/tree.h"
 
 class EditorFileDialog;
 class EditorFileSystemDirectory;
+class ItemList;
+class PopupMenu;
+class Tree;
+class TreeItem;
+class VBoxContainer;
+class LineEdit;
+class MenuButton;
+
+enum class DependencyEditorSortBy {
+	TYPE,
+	TYPE_REVERSE,
+	NAME,
+	NAME_REVERSE,
+	PATH,
+	PATH_REVERSE,
+	MAX,
+};
+
+enum class Column {
+	TYPE,
+	NAME,
+	PATH,
+	MAX,
+};
 
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);
 
 	Tree *tree = nullptr;
 	Button *fixdeps = nullptr;
+	Label *warning_label = nullptr;
+	LineEdit *filter = nullptr;
+	MenuButton *menu_sort = nullptr;
 
 	EditorFileDialog *search = nullptr;
 
+	DependencyEditorSortBy sort_by = DependencyEditorSortBy::PATH;
 	String replacing;
 	String editing;
 	List<String> missing;
@@ -54,10 +79,16 @@ class DependencyEditor : public AcceptDialog {
 
 	void _searched(const String &p_path);
 	void _load_pressed(Object *p_item, int p_cell, int p_button, MouseButton p_mouse_button);
+	List<String> _filter_deps(const List<String> &p_deps);
 	void _fix_all();
 	void _update_list();
 
+	void _update_menu_sort();
+	void _sort_option_selected(int p_id);
 	void _update_file();
+
+protected:
+	void _notification(int p_what);
 
 public:
 	void edit(const String &p_path);
@@ -67,6 +98,9 @@ public:
 class DependencyEditorOwners : public AcceptDialog {
 	GDCLASS(DependencyEditorOwners, AcceptDialog);
 
+	Label *owners_count = nullptr;
+	Label *empty = nullptr;
+	MarginContainer *owners_mc = nullptr;
 	ItemList *owners = nullptr;
 	PopupMenu *file_options = nullptr;
 	String editing;
@@ -135,17 +169,28 @@ public:
 class DependencyErrorDialog : public ConfirmationDialog {
 	GDCLASS(DependencyErrorDialog, ConfirmationDialog);
 
-private:
+	StringName icon_name_fail;
+	StringName icon_name_check;
+
 	String for_file;
-	Mode mode;
-	Button *fdep = nullptr;
-	Label *text = nullptr;
+
+	TreeItem *replacing_item = nullptr;
+	bool errors_fixed = false;
+
 	Tree *files = nullptr;
+
+	EditorFileDialog *replacement_file_dialog = nullptr;
+	DependencyEditor *deps_editor = nullptr;
+
 	void ok_pressed() override;
-	void custom_action(const String &) override;
+
+	void _on_files_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
+	void _on_replacement_file_selected(const String &p_path);
+	void _check_for_resolved();
 
 public:
-	void show(const String &p_for_file, const Vector<String> &report);
+	void show(const String &p_for_file, const HashMap<String, HashSet<String>> &p_report);
+
 	DependencyErrorDialog();
 };
 

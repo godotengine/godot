@@ -30,14 +30,15 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
-#include "core/object/script_backtrace.h"
+#include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
 #include <cstdarg>
 
+class FileAccess;
 class RegEx;
+class ScriptBacktrace;
 
 class Logger {
 protected:
@@ -81,7 +82,7 @@ public:
 		return "           ";
 	}
 
-	static void set_flush_stdout_on_print(bool value);
+	static void set_flush_stdout_on_print(bool p_value);
 
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0 = 0;
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {});

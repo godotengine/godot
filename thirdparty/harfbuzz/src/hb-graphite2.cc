@@ -113,15 +113,11 @@ retry:
 hb_graphite2_face_data_t *
 _hb_graphite2_shaper_face_data_create (hb_face_t *face)
 {
-  hb_blob_t *silf_blob = face->reference_table (HB_GRAPHITE2_TAG_SILF);
+  hb_unique_ptr_t<hb_blob_t> silf_blob (face->reference_table (HB_GRAPHITE2_TAG_SILF));
   /* Umm, we just reference the table to check whether it exists.
    * Maybe add better API for this? */
   if (!hb_blob_get_length (silf_blob))
-  {
-    hb_blob_destroy (silf_blob);
     return nullptr;
-  }
-  hb_blob_destroy (silf_blob);
 
   hb_graphite2_face_data_t *data = (hb_graphite2_face_data_t *) hb_calloc (1, sizeof (hb_graphite2_face_data_t));
   if (unlikely (!data))
@@ -266,7 +262,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   gr_segment *seg = nullptr;
   const gr_slot *is;
   unsigned int ci = 0, ic = 0;
-  unsigned int curradvx = 0, curradvy = 0;
+  int curradvx = 0, curradvy = 0;
 
   unsigned int scratch_size;
   hb_buffer_t::scratch_buffer_t *scratch = buffer->get_scratch_buffer (&scratch_size);

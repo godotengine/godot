@@ -83,6 +83,9 @@ public:
 	void						SetLeanSmoothingFactor(float inFactor)				{ mLeanSmoothingFactor = inFactor; }
 	float						GetLeanSmoothingFactor() const						{ return mLeanSmoothingFactor; }
 
+	// See: VehicleController
+	virtual Ref<VehicleControllerSettings> GetSettings() const override;
+
 protected:
 	// See: VehicleController
 	virtual void				PreCollide(float inDeltaTime, PhysicsSystem &inPhysicsSystem) override;

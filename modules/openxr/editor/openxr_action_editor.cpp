@@ -30,6 +30,8 @@
 
 #include "openxr_action_editor.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 
@@ -39,6 +41,7 @@ void OpenXRActionEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_set_action_type", "type"), &OpenXRActionEditor::_do_set_action_type);
 
 	ADD_SIGNAL(MethodInfo("remove", PropertyInfo(Variant::OBJECT, "action_editor")));
+	ADD_SIGNAL(MethodInfo("action_renamed", PropertyInfo(Variant::OBJECT, "action_editor")));
 }
 
 void OpenXRActionEditor::_theme_changed() {
@@ -53,7 +56,7 @@ void OpenXRActionEditor::_notification(int p_what) {
 	}
 }
 
-void OpenXRActionEditor::_on_action_name_changed(const String p_new_text) {
+void OpenXRActionEditor::_on_action_name_changed(const String &p_new_text) {
 	if (action->get_name() != p_new_text) {
 		undo_redo->create_action(TTR("Rename Action"));
 		undo_redo->add_do_method(this, "_do_set_name", p_new_text);
@@ -70,18 +73,20 @@ void OpenXRActionEditor::_on_action_name_changed(const String p_new_text) {
 			action->set_localized_name(p_new_text);
 			action_localized_name->set_text(p_new_text);
 		}
+
 		action->set_name(p_new_text);
 		action->set_edited(true);
+		action_name_dirty = true;
 	}
 }
 
-void OpenXRActionEditor::_do_set_name(const String p_new_text) {
+void OpenXRActionEditor::_do_set_name(const String &p_new_text) {
 	action->set_name(p_new_text);
 	action->set_edited(true);
 	action_name->set_text(p_new_text);
 }
 
-void OpenXRActionEditor::_on_action_localized_name_changed(const String p_new_text) {
+void OpenXRActionEditor::_on_action_localized_name_changed(const String &p_new_text) {
 	if (action->get_localized_name() != p_new_text) {
 		undo_redo->create_action(TTR("Rename Actions Localized name"));
 		undo_redo->add_do_method(this, "_do_set_localized_name", p_new_text);
@@ -93,7 +98,7 @@ void OpenXRActionEditor::_on_action_localized_name_changed(const String p_new_te
 	}
 }
 
-void OpenXRActionEditor::_do_set_localized_name(const String p_new_text) {
+void OpenXRActionEditor::_do_set_localized_name(const String &p_new_text) {
 	action->set_localized_name(p_new_text);
 	action->set_edited(true);
 	action_localized_name->set_text(p_new_text);
@@ -125,7 +130,14 @@ void OpenXRActionEditor::_on_remove_action() {
 	emit_signal("remove", this);
 }
 
-OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
+void OpenXRActionEditor::_on_focus_exit() {
+	if (action_name_dirty) {
+		emit_signal("action_renamed", this);
+		action_name_dirty = false;
+	}
+}
+
+OpenXRActionEditor::OpenXRActionEditor(const Ref<OpenXRAction> &p_action) {
 	undo_redo = EditorUndoRedoManager::get_singleton();
 	action = p_action;
 
@@ -136,6 +148,7 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 	action_name->set_tooltip_text(TTR("Internal name of the action. Some XR runtimes don't allow spaces or special characters."));
 	action_name->set_custom_minimum_size(Size2(150.0 * EDSCALE, 0.0));
 	action_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionEditor::_on_action_name_changed));
+	action_name->connect(SceneStringName(focus_exited), callable_mp(this, &OpenXRActionEditor::_on_focus_exit));
 	action_name->set_accessibility_name(TTRC("Action Name"));
 	add_child(action_name);
 

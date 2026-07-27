@@ -30,6 +30,12 @@
 
 #include "http_client_web.h"
 
+#include "core/object/class_db.h"
+
+#ifdef DEBUG_ENABLED
+#include "core/config/engine.h"
+#endif
+
 void HTTPClientWeb::_parse_headers(int p_len, const char **p_headers, void *p_ref) {
 	HTTPClientWeb *client = static_cast<HTTPClientWeb *>(p_ref);
 	for (int i = 0; i < p_len; i++) {

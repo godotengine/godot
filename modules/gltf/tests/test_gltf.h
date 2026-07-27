@@ -34,30 +34,26 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/os/os.h"
-#include "drivers/png/image_loader_png.h"
+#include "../editor/editor_scene_importer_gltf.h"
+#include "../gltf_document.h"
+#include "../gltf_state.h"
+
+#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/object/class_db.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
-#include "editor/inspector/editor_resource_preview.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/skeleton_3d.h"
-#include "scene/main/window.h"
-#include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/compressed_texture.h"
-#include "scene/resources/material.h"
+#include "scene/resources/compressed_texture_resource_format.h"
 #include "scene/resources/packed_scene.h"
-#include "tests/core/config/test_project_settings.h"
-
-#include "modules/gltf/editor/editor_scene_importer_gltf.h"
-#include "modules/gltf/gltf_document.h"
-#include "modules/gltf/gltf_state.h"
+#include "tests/test_utils.h"
 
 namespace TestGltf {
 
 static Node *gltf_import(const String &p_file) {
 	// Setting up importers.
 	Ref<ResourceImporterScene> import_scene;
-	import_scene.instantiate("PackedScene", true);
+	import_scene.instantiate("PackedScene");
 	ResourceFormatImporter::get_singleton()->add_importer(import_scene);
 	Ref<EditorSceneFormatImporterGLTF> import_gltf;
 	import_gltf.instantiate();
@@ -70,7 +66,7 @@ static Node *gltf_import(const String &p_file) {
 
 	// Once editor import convert pngs to ctex, we will need to load it as ctex resource.
 	Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_stream_texture;
-	if (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
+	if constexpr (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
 		resource_loader_stream_texture.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
 	}
@@ -108,7 +104,7 @@ static Node *gltf_import(const String &p_file) {
 
 	ResourceImporterScene::remove_scene_importer(import_gltf);
 	ResourceFormatImporter::get_singleton()->remove_importer(import_texture);
-	if (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
+	if constexpr (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
 		ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
 		resource_loader_stream_texture.unref();
 	}
@@ -134,20 +130,21 @@ static Node *gltf_export_then_import(Node *p_root, const String &p_test_name) {
 void init(const String &p_test, const String &p_copy_target = String()) {
 	Error err;
 
-	// Setup project settings since it's needed for the import process.
+	// Setup project settings with `res://` set to a temporary path.
 	String project_folder = TestUtils::get_temp_path(p_test.get_file().get_basename());
-	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->make_dir_recursive(project_folder.path_join(".godot").path_join("imported"));
-	// Initialize res:// to `project_folder`.
 	TestProjectSettingsInternalsAccessor::resource_path() = project_folder;
-	err = ProjectSettings::get_singleton()->setup(project_folder, String(), true);
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	err = ps->setup(project_folder, String(), true);
+
+	// Create the imported files folder as the editor import process expects it to exist.
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	da->make_dir_recursive(ps->globalize_path(ps->get_imported_files_path()));
 
 	if (p_copy_target.is_empty()) {
 		return;
 	}
 
 	// Copy all the necessary test data files to the res:// directory.
-	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	String test_data = String("modules/gltf/tests/data/").path_join(p_test);
 	da = DirAccess::open(test_data);
 	CHECK_MESSAGE(da.is_valid(), "Unable to open folder.");

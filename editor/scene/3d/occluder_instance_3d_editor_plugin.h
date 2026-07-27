@@ -31,10 +31,9 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/3d/occluder_instance_3d.h"
-#include "scene/resources/material.h"
 
 class EditorFileDialog;
+class OccluderInstance3D;
 
 class OccluderInstance3DEditorPlugin : public EditorPlugin {
 	GDCLASS(OccluderInstance3DEditorPlugin, EditorPlugin);
@@ -53,7 +52,6 @@ protected:
 
 public:
 	virtual String get_plugin_name() const override { return "OccluderInstance3D"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

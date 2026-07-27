@@ -41,6 +41,7 @@
 #include "core/templates/vset.h"
 
 class GodotConstraint3D;
+class PhysicsServer3DRenderingServerHandler;
 
 class GodotSoftBody3D : public GodotCollisionObject3D {
 	RID soft_mesh;
@@ -118,8 +119,8 @@ public:
 
 	const AABB &get_bounds() const { return bounds; }
 
-	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant);
-	Variant get_state(PhysicsServer3D::BodyState p_state) const;
+	void set_state(PS3DE::BodyState p_state, const Variant &p_variant);
+	Variant get_state(PS3DE::BodyState p_state) const;
 
 	_FORCE_INLINE_ void add_constraint(GodotConstraint3D *p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint(GodotConstraint3D *p_constraint) { constraints.erase(p_constraint); }
@@ -260,7 +261,7 @@ class GodotSoftBodyShape3D : public GodotShape3D {
 public:
 	GodotSoftBody3D *get_soft_body() const { return soft_body; }
 
-	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_SOFT_BODY; }
+	virtual PS3DE::ShapeType get_type() const override { return PS3DE::SHAPE_SOFT_BODY; }
 	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override { r_min = r_max = 0.0; }
 	virtual Vector3 get_support(const Vector3 &p_normal) const override { return Vector3(); }
 	virtual void get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const override { r_amount = 0; }

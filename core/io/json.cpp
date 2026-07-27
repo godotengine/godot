@@ -30,7 +30,8 @@
 
 #include "json.h"
 
-#include "core/config/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/variant/container_type_validate.h"
 
@@ -73,20 +74,39 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 			r_result += itos(p_var);
 			return;
 		case Variant::FLOAT: {
-			double num = p_var;
+			const double num = p_var;
 
+			// JSON does not support NaN or Infinity, so use extremely large numbers for infinity.
+			if (!Math::is_finite(num)) {
+				if (num == Math::INF) {
+					r_result += "1e99999";
+				} else if (num == -Math::INF) {
+					r_result += "-1e99999";
+				} else {
+					WARN_PRINT_ONCE("`NaN` (\"Not a Number\") found in argument passed to JSON.stringify(). `NaN` cannot be represented in JSON, so the value has been replaced with `null`. This warning will not be printed for any later NaN occurrences.");
+					r_result += "null";
+				}
+				return;
+			}
 			// Only for exactly 0. If we have approximately 0 let the user decide how much
 			// precision they want.
-			if (num == double(0)) {
+			if (num == double(0.0)) {
 				r_result += "0.0";
 				return;
 			}
 
-			double magnitude = std::log10(Math::abs(num));
-			int total_digits = p_full_precision ? 17 : 14;
-			int precision = MAX(1, total_digits - (int)Math::floor(magnitude));
-
-			r_result += String::num(num, precision);
+			if (p_full_precision) {
+				const String num_sci = String::num_scientific(num);
+				if (num_sci.contains_char('.') || num_sci.contains_char('e')) {
+					r_result += num_sci;
+				} else {
+					r_result += num_sci + ".0";
+				}
+			} else {
+				const double magnitude = std::log10(Math::abs(num));
+				const int precision = MAX(1, 14 - (int)Math::floor(magnitude));
+				r_result += String::num(num, precision);
+			}
 			return;
 		}
 		case Variant::PACKED_INT32_ARRAY:
@@ -120,7 +140,7 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 					r_result += end_statement;
 				}
 				_add_indent(r_result, p_indent, p_cur_indent + 1);
-				_stringify(r_result, var, p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				_stringify(r_result, var, p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
 			}
 			r_result += end_statement;
 			_add_indent(r_result, p_indent, p_cur_indent);
@@ -133,6 +153,11 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 			if (p_markers.has(d.id())) {
 				r_result += "\"{...}\"";
 				ERR_FAIL_MSG("Converting circular structure to JSON.");
+			}
+
+			if (d.is_empty()) {
+				r_result += "{}";
+				return;
 			}
 
 			r_result += '{';
@@ -154,9 +179,9 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 					r_result += end_statement;
 				}
 				_add_indent(r_result, p_indent, p_cur_indent + 1);
-				_stringify(r_result, String(key), p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				_stringify(r_result, String(key), p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
 				r_result += colon;
-				_stringify(r_result, d[key], p_indent, p_cur_indent + 1, p_sort_keys, p_markers);
+				_stringify(r_result, d[key], p_indent, p_cur_indent + 1, p_sort_keys, p_markers, p_full_precision);
 			}
 
 			r_result += end_statement;
@@ -173,12 +198,12 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 	}
 }
 
-Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str) {
+Error JSON::_get_token(const char32_t *p_str, int &r_index, int p_len, Token &r_token, int &r_line, String &r_err_str) {
 	while (p_len > 0) {
-		switch (p_str[index]) {
+		switch (p_str[r_index]) {
 			case '\n': {
-				line++;
-				index++;
+				r_line++;
+				r_index++;
 				break;
 			}
 			case 0: {
@@ -187,48 +212,48 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 			} break;
 			case '{': {
 				r_token.type = TK_CURLY_BRACKET_OPEN;
-				index++;
+				r_index++;
 				return OK;
 			}
 			case '}': {
 				r_token.type = TK_CURLY_BRACKET_CLOSE;
-				index++;
+				r_index++;
 				return OK;
 			}
 			case '[': {
 				r_token.type = TK_BRACKET_OPEN;
-				index++;
+				r_index++;
 				return OK;
 			}
 			case ']': {
 				r_token.type = TK_BRACKET_CLOSE;
-				index++;
+				r_index++;
 				return OK;
 			}
 			case ':': {
 				r_token.type = TK_COLON;
-				index++;
+				r_index++;
 				return OK;
 			}
 			case ',': {
 				r_token.type = TK_COMMA;
-				index++;
+				r_index++;
 				return OK;
 			}
 			case '"': {
-				index++;
+				r_index++;
 				String str;
 				while (true) {
-					if (p_str[index] == 0) {
+					if (p_str[r_index] == 0) {
 						r_err_str = "Unterminated string";
 						return ERR_PARSE_ERROR;
-					} else if (p_str[index] == '"') {
-						index++;
+					} else if (p_str[r_index] == '"') {
+						r_index++;
 						break;
-					} else if (p_str[index] == '\\') {
+					} else if (p_str[r_index] == '\\') {
 						//escaped characters...
-						index++;
-						char32_t next = p_str[index];
+						r_index++;
+						char32_t next = p_str[r_index];
 						if (next == 0) {
 							r_err_str = "Unterminated string";
 							return ERR_PARSE_ERROR;
@@ -254,7 +279,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 							case 'u': {
 								// hex number
 								for (int j = 0; j < 4; j++) {
-									char32_t c = p_str[index + j + 1];
+									char32_t c = p_str[r_index + j + 1];
 									if (c == 0) {
 										r_err_str = "Unterminated string";
 										return ERR_PARSE_ERROR;
@@ -280,17 +305,17 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 									res <<= 4;
 									res |= v;
 								}
-								index += 4; //will add at the end anyway
+								r_index += 4; //will add at the end anyway
 
 								if ((res & 0xfffffc00) == 0xd800) {
-									if (p_str[index + 1] != '\\' || p_str[index + 2] != 'u') {
+									if (p_str[r_index + 1] != '\\' || p_str[r_index + 2] != 'u') {
 										r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
 										return ERR_PARSE_ERROR;
 									}
-									index += 2;
+									r_index += 2;
 									char32_t trail = 0;
 									for (int j = 0; j < 4; j++) {
-										char32_t c = p_str[index + j + 1];
+										char32_t c = p_str[r_index + j + 1];
 										if (c == 0) {
 											r_err_str = "Unterminated string";
 											return ERR_PARSE_ERROR;
@@ -318,7 +343,7 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 									}
 									if ((trail & 0xfffffc00) == 0xdc00) {
 										res = (res << 10UL) + trail - ((0xd800 << 10UL) + 0xdc00 - 0x10000);
-										index += 4; //will add at the end anyway
+										r_index += 4; //will add at the end anyway
 									} else {
 										r_err_str = "Invalid UTF-16 sequence in string, unpaired lead surrogate";
 										return ERR_PARSE_ERROR;
@@ -343,12 +368,12 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 						str += res;
 
 					} else {
-						if (p_str[index] == '\n') {
-							line++;
+						if (p_str[r_index] == '\n') {
+							r_line++;
 						}
-						str += p_str[index];
+						str += p_str[r_index];
 					}
-					index++;
+					r_index++;
 				}
 
 				r_token.type = TK_STRING;
@@ -357,26 +382,26 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 
 			} break;
 			default: {
-				if (p_str[index] <= 32) {
-					index++;
+				if (p_str[r_index] <= 32) {
+					r_index++;
 					break;
 				}
 
-				if (p_str[index] == '-' || is_digit(p_str[index])) {
+				if (p_str[r_index] == '-' || is_digit(p_str[r_index])) {
 					//a number
 					const char32_t *rptr;
-					double number = String::to_float(&p_str[index], &rptr);
-					index += (rptr - &p_str[index]);
+					double number = String::to_float(&p_str[r_index], &rptr);
+					r_index += (rptr - &p_str[r_index]);
 					r_token.type = TK_NUMBER;
 					r_token.value = number;
 					return OK;
 
-				} else if (is_ascii_alphabet_char(p_str[index])) {
+				} else if (is_ascii_alphabet_char(p_str[r_index])) {
 					String id;
 
-					while (is_ascii_alphabet_char(p_str[index])) {
-						id += p_str[index];
-						index++;
+					while (is_ascii_alphabet_char(p_str[r_index])) {
+						id += p_str[r_index];
+						r_index++;
 					}
 
 					r_token.type = TK_IDENTIFIER;
@@ -394,56 +419,56 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
+Error JSON::_parse_value(Variant &r_value, Token &r_token, const char32_t *p_str, int &r_index, int p_len, int &r_line, int p_depth, String &r_err_str) {
 	if (p_depth > Variant::MAX_RECURSION_DEPTH) {
 		r_err_str = "JSON structure is too deep";
 		return ERR_OUT_OF_MEMORY;
 	}
 
-	if (token.type == TK_CURLY_BRACKET_OPEN) {
+	if (r_token.type == TK_CURLY_BRACKET_OPEN) {
 		Dictionary d;
-		Error err = _parse_object(d, p_str, index, p_len, line, p_depth + 1, r_err_str);
+		Error err = _parse_object(d, p_str, r_index, p_len, r_line, p_depth + 1, r_err_str);
 		if (err) {
 			return err;
 		}
-		value = d;
-	} else if (token.type == TK_BRACKET_OPEN) {
+		r_value = d;
+	} else if (r_token.type == TK_BRACKET_OPEN) {
 		Array a;
-		Error err = _parse_array(a, p_str, index, p_len, line, p_depth + 1, r_err_str);
+		Error err = _parse_array(a, p_str, r_index, p_len, r_line, p_depth + 1, r_err_str);
 		if (err) {
 			return err;
 		}
-		value = a;
-	} else if (token.type == TK_IDENTIFIER) {
-		String id = token.value;
+		r_value = a;
+	} else if (r_token.type == TK_IDENTIFIER) {
+		String id = r_token.value;
 		if (id == "true") {
-			value = true;
+			r_value = true;
 		} else if (id == "false") {
-			value = false;
+			r_value = false;
 		} else if (id == "null") {
-			value = Variant();
+			r_value = Variant();
 		} else {
 			r_err_str = vformat("Expected 'true', 'false', or 'null', got '%s'", id);
 			return ERR_PARSE_ERROR;
 		}
-	} else if (token.type == TK_NUMBER) {
-		value = token.value;
-	} else if (token.type == TK_STRING) {
-		value = token.value;
+	} else if (r_token.type == TK_NUMBER) {
+		r_value = r_token.value;
+	} else if (r_token.type == TK_STRING) {
+		r_value = r_token.value;
 	} else {
-		r_err_str = vformat("Expected value, got '%s'", String(tk_name[token.type]));
+		r_err_str = vformat("Expected value, got '%s'", String(tk_name[r_token.type]));
 		return ERR_PARSE_ERROR;
 	}
 
 	return OK;
 }
 
-Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
+Error JSON::_parse_array(Array &r_array, const char32_t *p_str, int &r_index, int p_len, int &r_line, int p_depth, String &r_err_str) {
 	Token token;
 	bool need_comma = false;
 
-	while (index < p_len) {
-		Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
+	while (r_index < p_len) {
+		Error err = _get_token(p_str, r_index, p_len, token, r_line, r_err_str);
 		if (err != OK) {
 			return err;
 		}
@@ -463,12 +488,12 @@ Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_
 		}
 
 		Variant v;
-		err = _parse_value(v, token, p_str, index, p_len, line, p_depth, r_err_str);
+		err = _parse_value(v, token, p_str, r_index, p_len, r_line, p_depth, r_err_str);
 		if (err) {
 			return err;
 		}
 
-		array.push_back(v);
+		r_array.push_back(v);
 		need_comma = true;
 	}
 
@@ -476,15 +501,15 @@ Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
+Error JSON::_parse_object(Dictionary &r_object, const char32_t *p_str, int &r_index, int p_len, int &r_line, int p_depth, String &r_err_str) {
 	bool at_key = true;
 	String key;
 	Token token;
 	bool need_comma = false;
 
-	while (index < p_len) {
+	while (r_index < p_len) {
 		if (at_key) {
-			Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
+			Error err = _get_token(p_str, r_index, p_len, token, r_line, r_err_str);
 			if (err != OK) {
 				return err;
 			}
@@ -509,7 +534,7 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 			}
 
 			key = token.value;
-			err = _get_token(p_str, index, p_len, token, line, r_err_str);
+			err = _get_token(p_str, r_index, p_len, token, r_line, r_err_str);
 			if (err != OK) {
 				return err;
 			}
@@ -519,17 +544,17 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 			}
 			at_key = false;
 		} else {
-			Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
+			Error err = _get_token(p_str, r_index, p_len, token, r_line, r_err_str);
 			if (err != OK) {
 				return err;
 			}
 
 			Variant v;
-			err = _parse_value(v, token, p_str, index, p_len, line, p_depth, r_err_str);
+			err = _parse_value(v, token, p_str, r_index, p_len, r_line, p_depth, r_err_str);
 			if (err) {
 				return err;
 			}
-			object[key] = v;
+			r_object[key] = v;
 			need_comma = true;
 			at_key = true;
 		}
@@ -550,7 +575,6 @@ Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_st
 	int len = p_json.length();
 	Token token;
 	r_err_line = 0;
-	String aux_key;
 
 	Error err = _get_token(str, idx, len, token, r_err_line, r_err_str);
 	if (err) {
@@ -648,10 +672,10 @@ static bool _encode_container_type(Dictionary &r_dict, const String &p_key, cons
 }
 
 Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_depth) {
-#define RETURN_ARGS                                           \
-	Dictionary ret;                                           \
+#define RETURN_ARGS \
+	Dictionary ret; \
 	ret[TYPE] = Variant::get_type_name(p_variant.get_type()); \
-	ret[ARGS] = args;                                         \
+	ret[ARGS] = args; \
 	return ret
 
 	switch (p_variant.get_type()) {
@@ -1048,7 +1072,15 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 			if (s.begins_with("i:")) {
 				return s.substr(2).to_int();
 			} else if (s.begins_with("f:")) {
-				return s.substr(2).to_float();
+				const String sub = s.substr(2);
+				if (sub == "inf") {
+					return Math::INF;
+				} else if (sub == "-inf") {
+					return -Math::INF;
+				} else if (sub == "nan") {
+					return Math::NaN;
+				}
+				return sub.to_float();
 			} else if (s.begins_with("s:")) {
 				return s.substr(2);
 			} else if (s.begins_with("sn:")) {
@@ -1065,18 +1097,18 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 
 			ERR_FAIL_COND_V(!dict.has(TYPE), Variant());
 
-#define LOAD_ARGS()                              \
+#define LOAD_ARGS() \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
 	const Array args = dict[ARGS]
 
-#define LOAD_ARGS_CHECK_SIZE(m_size)             \
+#define LOAD_ARGS_CHECK_SIZE(m_size) \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
-	const Array args = dict[ARGS];               \
+	const Array args = dict[ARGS]; \
 	ERR_FAIL_COND_V(args.size() != (m_size), Variant())
 
-#define LOAD_ARGS_CHECK_FACTOR(m_factor)         \
+#define LOAD_ARGS_CHECK_FACTOR(m_factor) \
 	ERR_FAIL_COND_V(!dict.has(ARGS), Variant()); \
-	const Array args = dict[ARGS];               \
+	const Array args = dict[ARGS]; \
 	ERR_FAIL_COND_V(args.size() % (m_factor) != 0, Variant())
 
 			switch (Variant::get_type_by_name(dict[TYPE])) {
@@ -1517,87 +1549,3 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 #undef VALUE_TYPE
 #undef ARGS
 #undef PROPS
-
-////////////
-
-Ref<Resource> ResourceFormatLoaderJSON::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	if (r_error) {
-		*r_error = ERR_FILE_CANT_OPEN;
-	}
-
-	if (!FileAccess::exists(p_path)) {
-		*r_error = ERR_FILE_NOT_FOUND;
-		return Ref<Resource>();
-	}
-
-	Ref<JSON> json;
-	json.instantiate();
-
-	Error err = json->parse(FileAccess::get_file_as_string(p_path), Engine::get_singleton()->is_editor_hint());
-	if (err != OK) {
-		String err_text = "Error parsing JSON file at '" + p_path + "', on line " + itos(json->get_error_line()) + ": " + json->get_error_message();
-
-		if (Engine::get_singleton()->is_editor_hint()) {
-			// If running on editor, still allow opening the JSON so the code editor can edit it.
-			WARN_PRINT(err_text);
-		} else {
-			if (r_error) {
-				*r_error = err;
-			}
-			ERR_PRINT(err_text);
-			return Ref<Resource>();
-		}
-	}
-
-	if (r_error) {
-		*r_error = OK;
-	}
-
-	return json;
-}
-
-void ResourceFormatLoaderJSON::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("json");
-}
-
-bool ResourceFormatLoaderJSON::handles_type(const String &p_type) const {
-	return (p_type == "JSON");
-}
-
-String ResourceFormatLoaderJSON::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "json") {
-		return "JSON";
-	}
-	return "";
-}
-
-Error ResourceFormatSaverJSON::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	Ref<JSON> json = p_resource;
-	ERR_FAIL_COND_V(json.is_null(), ERR_INVALID_PARAMETER);
-
-	String source = json->get_parsed_text().is_empty() ? JSON::stringify(json->get_data(), "\t", false, true) : json->get_parsed_text();
-
-	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
-
-	ERR_FAIL_COND_V_MSG(err, err, vformat("Cannot save json '%s'.", p_path));
-
-	file->store_string(source);
-	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
-		return ERR_CANT_CREATE;
-	}
-
-	return OK;
-}
-
-void ResourceFormatSaverJSON::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
-	Ref<JSON> json = p_resource;
-	if (json.is_valid()) {
-		p_extensions->push_back("json");
-	}
-}
-
-bool ResourceFormatSaverJSON::recognize(const Ref<Resource> &p_resource) const {
-	return p_resource->get_class_name() == "JSON"; //only json, not inherited
-}

@@ -176,7 +176,7 @@ struct Message {
 	int id = 0;
 	String format;
 	bool sendTelemetry = false; // Just in case :)
-	bool showUser = false;
+	bool showUser = true;
 	Dictionary variables;
 
 	_FORCE_INLINE_ Dictionary to_json() const {

@@ -89,6 +89,7 @@ private:
 
 	Ref<StyleBox> _get_title_style() const;
 	Ref<Texture2D> _get_title_icon() const;
+	Rect2 _get_title_rect() const;
 	int _get_h_separation() const { return MAX(theme_cache.h_separation, 0); }
 	real_t _get_title_controls_width() const;
 
@@ -101,6 +102,7 @@ private:
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
+	virtual bool has_point(const Point2 &p_point) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -136,6 +138,8 @@ public:
 	void remove_title_bar_control(Control *p_control);
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
+	virtual Size2 get_inner_combined_maximum_size() const override;
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override { return { SIZE_FILL, SIZE_SHRINK_BEGIN, SIZE_SHRINK_CENTER, SIZE_SHRINK_END }; }
 	virtual Vector<int> get_allowed_size_flags_vertical() const override { return { SIZE_FILL, SIZE_SHRINK_BEGIN, SIZE_SHRINK_CENTER, SIZE_SHRINK_END }; }

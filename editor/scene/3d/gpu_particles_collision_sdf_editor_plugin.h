@@ -31,11 +31,10 @@
 #pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/3d/gpu_particles_collision_3d.h"
-#include "scene/resources/material.h"
 
 struct EditorProgress;
 class EditorFileDialog;
+class GPUParticlesCollisionSDF3D;
 class HBoxContainer;
 
 class GPUParticlesCollisionSDF3DEditorPlugin : public EditorPlugin {
@@ -61,7 +60,6 @@ protected:
 
 public:
 	virtual String get_plugin_name() const override { return "GPUParticlesCollisionSDF3D"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

@@ -47,13 +47,13 @@ public:
 		HTC_MAX_CONTROLLERS
 	};
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	PackedStringArray get_suggested_tracker_names() override;
 
 	bool is_available(HTCControllers p_type);
 
-	virtual void on_register_metadata() override;
+	virtual void on_register_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata) override;
 
 private:
 	bool available[HTC_MAX_CONTROLLERS] = { false, false };

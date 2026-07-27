@@ -38,6 +38,8 @@
 #include "upnp_miniupnp.h"
 #endif
 
+#include "core/object/class_db.h"
+
 void initialize_upnp_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;

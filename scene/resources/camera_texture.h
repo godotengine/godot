@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/resources/texture.h"
+#include "servers/camera/camera_server.h"
 
 class CameraTexture : public Texture2D {
 	GDCLASS(CameraTexture, Texture2D);

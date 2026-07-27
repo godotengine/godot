@@ -37,8 +37,6 @@ class Sprite2D : public Node2D {
 	GDCLASS(Sprite2D, Node2D);
 
 	Ref<Texture2D> texture;
-	Color specular_color;
-	real_t shininess = 0.0;
 
 #ifdef TOOLS_ENABLED
 	bool dragging_to_resize_rect = false;

@@ -30,6 +30,7 @@
 
 #import "key_mapping_macos.h"
 
+#include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 
@@ -390,7 +391,7 @@ Key KeyMappingMacOS::remap_key(unsigned int p_key, unsigned int p_state, bool p_
 			LMGetKbdType(),
 			kUCKeyTranslateNoDeadKeysBit,
 			&keys_down,
-			std::size(chars),
+			std_size(chars),
 			&real_length,
 			chars);
 

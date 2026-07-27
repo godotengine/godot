@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPreset" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPreset" inherits="RefCounted" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Export preset configuration.
 	</brief_description>
@@ -129,7 +129,7 @@
 			</description>
 		</method>
 		<method name="get_script_export_mode" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="EditorExportPreset.ScriptExportMode" />
 			<description>
 				Returns the export mode used by GDScript files. [code]0[/code] for "Text", [code]1[/code] for "Binary tokens", and [code]2[/code] for "Compressed binary tokens (smaller files)".
 			</description>

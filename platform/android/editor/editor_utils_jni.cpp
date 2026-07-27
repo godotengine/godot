@@ -30,10 +30,17 @@
 
 #include "editor_utils_jni.h"
 
+#ifdef TOOLS_ENABLED
 #include "jni_utils.h"
 
-#ifdef TOOLS_ENABLED
+#include "core/os/os.h"
+#include "editor/debugger/editor_debugger_node.h"
+#include "editor/debugger/script_editor_debugger.h"
+#include "editor/editor_node.h"
+#include "editor/gui/editor_title_bar.h"
 #include "editor/run/editor_run_bar.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "main/main.h"
 #endif
 
@@ -53,6 +60,17 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runSc
 
 	EditorRunBar *editor_run_bar = EditorRunBar::get_singleton();
 	if (editor_run_bar != nullptr) {
+		editor_run_bar->stop_playing();
+		// Ensure that all ScriptEditorDebugger instances are explicitly stopped.
+		// If not, a closing instance from the previous run session will trigger `_stop_and_notify()`, in turn causing
+		// the closure of the ScriptEditorDebugger instances of the run session we're about to launch.
+		EditorDebuggerNode *dbg_node = EditorDebuggerNode::get_singleton();
+		if (dbg_node != nullptr) {
+			for (int i = 0; ScriptEditorDebugger *dbg = dbg_node->get_debugger(i); i++) {
+				dbg->stop();
+			}
+		}
+
 		if (scene.is_empty()) {
 			editor_run_bar->play_main_scene(false);
 		} else {
@@ -76,6 +94,28 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runSc
 
 		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_orientationChanged(JNIEnv *p_env, jclass, jboolean p_portrait) {
+#ifdef TOOLS_ENABLED
+	if (EditorNode::get_singleton() != nullptr) {
+		EditorTitleBar *title_bar = EditorNode::get_singleton()->get_title_bar();
+		if (title_bar != nullptr) {
+			// TODO: Enable for portrait once the title bar width is optimized.
+			title_bar->set_visible(!p_portrait);
+		}
+
+		if (ScriptEditor::get_singleton() != nullptr && EDITOR_GET("text_editor/appearance/minimap/show_minimap")) {
+			if (TextEditorBase *editor = Object::cast_to<TextEditorBase>(ScriptEditor::get_singleton()->get_current_editor())) {
+				if (CodeTextEditor *code_editor = editor->get_code_editor()) {
+					if (CodeEdit *text_editor = code_editor->get_text_editor()) {
+						text_editor->set_draw_minimap(!p_portrait);
+					}
+				}
+			}
+		}
 	}
 #endif
 }

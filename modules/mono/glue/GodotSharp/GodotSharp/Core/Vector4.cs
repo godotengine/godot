@@ -318,7 +318,7 @@ namespace Godot
         /// <returns>A <see langword="bool"/> indicating whether or not the vector is normalized.</returns>
         public readonly bool IsNormalized()
         {
-            return Mathf.Abs(LengthSquared() - 1.0f) < Mathf.Epsilon;
+            return Mathf.IsEqualApprox(LengthSquared(), 1, Mathf.Epsilon);
         }
 
         /// <summary>
@@ -654,6 +654,15 @@ namespace Godot
             left.W -= right.W;
             return left;
         }
+
+        /// <summary>
+        /// Returns the same value as if the <c>+</c> was not there.
+        /// Unary <c>+</c> does nothing, but sometimes it can make your
+        /// code more readable.
+        /// </summary>
+        /// <param name="vec">The vector to do nothing to.</param>
+        /// <returns>The original vector.</returns>
+        public static Vector4 operator +(Vector4 vec) => vec;
 
         /// <summary>
         /// Returns the negative value of the <see cref="Vector4"/>.

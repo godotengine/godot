@@ -150,7 +150,7 @@ struct hb_ot_shape_planner_t
   static constexpr bool apply_morx = false;
 #endif
   bool script_zero_marks : 1;
-  bool script_fallback_mark_positioning : 1;
+  bool script_fallback_position : 1;
   const struct hb_ot_shaper_t *shaper;
 
   HB_INTERNAL hb_ot_shape_planner_t (hb_face_t                     *face,

@@ -55,7 +55,7 @@ struct blend_arg_t : number_t
   void reset_blends ()
   {
     numValues = valueIndex = 0;
-    deltas.shrink (0);
+    deltas.clear ();
   }
 
   unsigned int numValues;
@@ -72,12 +72,12 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
   cff2_cs_interp_env_t (const hb_ubytes_t &str, ACC &acc, unsigned int fd,
 			const int *coords_=nullptr, unsigned int num_coords_=0)
     : SUPER (str, acc.globalSubrs, acc.privateDicts[fd].localSubrs),
-      cached_scalars_vector (&acc.cached_scalars_vector)
+      region_count (0), cached_scalars_vector (&acc.cached_scalars_vector)
   {
     coords = coords_;
     num_coords = num_coords_;
     varStore = acc.varStore;
-    do_blend = num_coords && coords && varStore->size;
+    do_blend = num_coords && varStore->size;
     set_ivs (acc.privateDicts[fd].ivs);
   }
 
@@ -281,17 +281,18 @@ struct cff2_cs_opset_t : cs_opset_t<ELEM, OPSET, cff2_cs_interp_env_t<ELEM>, PAR
     k = env.get_region_count ();
     n = env.argStack.pop_uint ();
     /* copy the blend values into blend array of the default values */
-    unsigned int start = env.argStack.get_count () - ((k+1) * n);
-    /* let an obvious error case fail, but note CFF2 spec doesn't forbid n==0 */
-    if (unlikely (start > env.argStack.get_count ()))
+    unsigned int count = env.argStack.get_count ();
+    unsigned int total;
+    if (unlikely (hb_unsigned_mul_overflows (k + 1, n, &total) || total > count))
     {
       env.set_error ();
       return;
     }
+    unsigned int start = count - total;
     for (unsigned int i = 0; i < n; i++)
     {
       const hb_array_t<const ELEM> blends = env.argStack.sub_array (start + n + (i * k), k);
-      process_arg_blend (env, env.argStack[start + i], blends, n, i);
+      process_arg_blend (env, env.argStack.arrayZ[start + i], blends, n, i);
     }
 
     /* pop off blend values leaving default values now adorned with blend values */

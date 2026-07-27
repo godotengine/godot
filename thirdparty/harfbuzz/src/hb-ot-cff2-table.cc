@@ -24,6 +24,10 @@
  * Adobe Author(s): Michiharu Ariza
  */
 
+#ifndef HB_OT_CFF2_TABLE_CC
+#define HB_OT_CFF2_TABLE_CC
+#ifdef HB_OT_CFF2_TABLE_CC /* Pacify -Wunused-macros. */
+
 #include "hb.hh"
 
 #ifndef HB_NO_OT_FONT_CFF
@@ -202,7 +206,11 @@ struct cff2_cs_opset_path_t : cff2_cs_opset_t<cff2_cs_opset_path_t, cff2_path_pa
 
 bool OT::cff2::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const
 {
-  return get_path_at (font, glyph, draw_session, hb_array (font->coords, font->num_coords));
+  return get_path_at (font,
+		      glyph,
+		      draw_session,
+		      hb_array (font->coords,
+				font->has_nonzero_coords ? font->num_coords : 0));
 }
 
 bool OT::cff2::accelerator_t::get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords) const
@@ -224,3 +232,6 @@ bool OT::cff2::accelerator_t::get_path_at (hb_font_t *font, hb_codepoint_t glyph
 }
 
 #endif
+
+#endif /* HB_OT_CFF2_TABLE_CC pacify */
+#endif /* HB_OT_CFF2_TABLE_CC guard */

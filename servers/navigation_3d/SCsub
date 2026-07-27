@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+if not env["disable_navigation_3d"]:
+    env.add_source_files(env.servers_sources, "*.cpp")
+else:
+    if env.debug_features:
+        env.add_source_files(env.servers_sources, "navigation_server_3d.cpp")

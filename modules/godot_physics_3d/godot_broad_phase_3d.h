@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/math/aabb.h"
-#include "core/math/math_funcs.h"
 
 class GodotCollisionObject3D;
 
@@ -39,7 +38,7 @@ class GodotBroadPhase3D {
 public:
 	typedef GodotBroadPhase3D *(*CreateFunction)();
 
-	static CreateFunction create_func;
+	static inline CreateFunction create_func = nullptr;
 
 	typedef uint32_t ID;
 
@@ -65,5 +64,5 @@ public:
 
 	virtual void update() = 0;
 
-	virtual ~GodotBroadPhase3D();
+	virtual ~GodotBroadPhase3D() {}
 };

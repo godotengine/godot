@@ -38,10 +38,9 @@
 #include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
-#include "scene/resources/shader_include.h"
 
 #ifdef DEBUG_ENABLED
-#include "shader_warnings.h"
+#include "servers/rendering/shader_warnings.h"
 #endif // DEBUG_ENABLED
 
 class ShaderLanguage {
@@ -184,6 +183,10 @@ public:
 		TK_HINT_SCREEN_TEXTURE,
 		TK_HINT_NORMAL_ROUGHNESS_TEXTURE,
 		TK_HINT_DEPTH_TEXTURE,
+		TK_HINT_BLIT_SOURCE0,
+		TK_HINT_BLIT_SOURCE1,
+		TK_HINT_BLIT_SOURCE2,
+		TK_HINT_BLIT_SOURCE3,
 		TK_FILTER_NEAREST,
 		TK_FILTER_LINEAR,
 		TK_FILTER_NEAREST_MIPMAP,
@@ -676,6 +679,10 @@ public:
 				HINT_DEFAULT_TRANSPARENT,
 				HINT_ANISOTROPY,
 				HINT_SCREEN_TEXTURE,
+				HINT_BLIT_SOURCE0,
+				HINT_BLIT_SOURCE1,
+				HINT_BLIT_SOURCE2,
+				HINT_BLIT_SOURCE3,
 				HINT_NORMAL_ROUGHNESS_TEXTURE,
 				HINT_DEPTH_TEXTURE,
 				HINT_MAX
@@ -704,7 +711,6 @@ public:
 			PackedStringArray hint_enum_names;
 			int instance_index = 0;
 			String group;
-			String subgroup;
 
 			_FORCE_INLINE_ bool is_texture() const {
 				// Order is assigned to -1 for texture uniforms.
@@ -844,7 +850,11 @@ public:
 	static bool is_token_operator_assign(TokenType p_type);
 	static bool is_token_hint(TokenType p_type);
 
-	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, Scalar *p_value = nullptr);
+	static bool convert_operator(const OperatorNode *p_operator, DataType p_to_type, Scalar *p_value = nullptr, bool p_in_constructor = false);
+	static bool convert_constant(const ConstantNode *p_constant, DataType p_to_type, Scalar *p_value = nullptr, bool p_in_constructor = false);
+	static bool convert_scalar(DataType p_from_type, DataType p_to_type, const Scalar *p_scalar = nullptr, Scalar *p_value = nullptr);
+	static bool convert_boolean_scalar(DataType p_from_type, DataType p_to_type, const Scalar *p_scalar = nullptr, Scalar *p_value = nullptr);
+
 	static DataType get_scalar_type(DataType p_type);
 	static int get_cardinality(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
@@ -1056,7 +1066,6 @@ private:
 	bool is_shader_inc = false;
 
 	String current_uniform_group_name;
-	String current_uniform_subgroup_name;
 
 	VaryingFunctionNames varying_function_names;
 	uint32_t base_varying_index = 0;
@@ -1132,7 +1141,7 @@ private:
 #endif // DEBUG_ENABLED
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const FunctionInfo &p_function_info, String *r_message = nullptr);
-	bool _validate_operator(const BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_op, DataType *r_ret_type = nullptr, int *r_ret_size = nullptr);
+	bool _validate_operator(const BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_op, DataType *r_ret_type = nullptr, int *r_ret_size = nullptr, StringName *r_ret_struct_name = nullptr);
 
 	Vector<Scalar> _get_node_values(const BlockNode *p_block, const FunctionInfo &p_function_info, Node *p_node);
 	bool _eval_operator(const BlockNode *p_block, const FunctionInfo &p_function_info, OperatorNode *p_op);
@@ -1195,6 +1204,7 @@ private:
 	static const BuiltinFuncDef builtin_func_defs[];
 	static const BuiltinFuncOutArgs builtin_func_out_args[];
 	static const BuiltinFuncConstArgs builtin_func_const_args[];
+	static const BuiltinEntry builtin_vectorized_constructors[];
 	static const BuiltinEntry frag_only_func_defs[];
 
 	static bool is_const_suffix_lut_initialized;
@@ -1249,6 +1259,7 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
+	static bool is_builtin_vec_constructor(const String &p_name);
 	static bool is_builtin_func_out_parameter(const String &p_name, int p_param);
 
 	struct ShaderCompileInfo {
@@ -1267,6 +1278,7 @@ public:
 
 	String get_error_text();
 	Vector<FilePosition> get_include_positions();
+	CompletionType get_completion_type() const { return completion_type; }
 	int get_error_line();
 
 	ShaderNode *get_shader();

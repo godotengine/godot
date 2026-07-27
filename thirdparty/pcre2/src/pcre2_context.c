@@ -39,10 +39,6 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "pcre2_internal.h"
 
 
@@ -506,10 +502,7 @@ return 0;
 }
 
 /* These functions became obsolete at release 10.30. The first is kept as a
-synonym for backwards compatibility. The second now does nothing. Exclude both
-from coverage reports. */
-
-/* LCOV_EXCL_START */
+synonym for backwards compatibility. The second now does nothing. */
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_recursion_limit(pcre2_match_context *mcontext, uint32_t limit)
@@ -529,8 +522,6 @@ pcre2_set_recursion_memory_management(pcre2_match_context *mcontext,
 return 0;
 }
 
-/* LCOV_EXCL_STOP */
-
 
 /* ------------ Convert context ------------ */
 
@@ -543,10 +534,20 @@ ccontext->glob_separator = separator;
 return 0;
 }
 
+static const char *globpunct =
+  STR_EXCLAMATION_MARK STR_QUOTATION_MARK STR_NUMBER_SIGN STR_DOLLAR_SIGN
+  STR_PERCENT_SIGN STR_AMPERSAND STR_APOSTROPHE STR_LEFT_PARENTHESIS
+  STR_RIGHT_PARENTHESIS STR_ASTERISK STR_PLUS STR_COMMA STR_MINUS STR_DOT
+  STR_SLASH STR_COLON STR_SEMICOLON STR_LESS_THAN_SIGN STR_EQUALS_SIGN
+  STR_GREATER_THAN_SIGN STR_QUESTION_MARK STR_COMMERCIAL_AT
+  STR_LEFT_SQUARE_BRACKET STR_BACKSLASH STR_RIGHT_SQUARE_BRACKET
+  STR_CIRCUMFLEX_ACCENT STR_UNDERSCORE STR_GRAVE_ACCENT STR_LEFT_CURLY_BRACKET
+  STR_VERTICAL_LINE STR_RIGHT_CURLY_BRACKET STR_TILDE;
+
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_glob_escape(pcre2_convert_context *ccontext, uint32_t escape)
 {
-if (escape > 255 || (escape != 0 && !ispunct(escape)))
+if (escape > 255 || (escape != 0 && strchr(globpunct, escape) == NULL))
   return PCRE2_ERROR_BADDATA;
 ccontext->glob_escape = escape;
 return 0;

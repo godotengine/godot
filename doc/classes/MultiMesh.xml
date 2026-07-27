@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiMesh" inherits="Resource" keywords="batch" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="MultiMesh" inherits="Resource" api_type="core" keywords="batch" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides high-performance drawing of a mesh multiple times using GPU instancing.
 	</brief_description>
@@ -57,6 +57,13 @@
 			<description>
 				When using [i]physics interpolation[/i], this function allows you to prevent interpolation on an instance in the current physics tick.
 				This allows you to move instances instantaneously, and should usually be used when initially placing an instance such as a bullet to prevent graphical glitches.
+			</description>
+		</method>
+		<method name="reset_instances_physics_interpolation">
+			<return type="void" />
+			<description>
+				When using [i]physics interpolation[/i], this function allows you to prevent interpolation for all instances in the current physics tick.
+				This allows you to move all instances instantaneously, and should usually be used when initially placing instances to prevent graphical glitches.
 			</description>
 		</method>
 		<method name="set_buffer_interpolated">

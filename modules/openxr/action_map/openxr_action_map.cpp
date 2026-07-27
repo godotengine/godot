@@ -30,10 +30,14 @@
 
 #include "openxr_action_map.h"
 
+#include "openxr_interaction_profile_metadata.h"
+
+#include "core/object/class_db.h"
+
 void OpenXRActionMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_action_sets", "action_sets"), &OpenXRActionMap::set_action_sets);
 	ClassDB::bind_method(D_METHOD("get_action_sets"), &OpenXRActionMap::get_action_sets);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "action_sets", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRActionSet", PROPERTY_USAGE_NO_EDITOR), "set_action_sets", "get_action_sets");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "action_sets", PROPERTY_HINT_RESOURCE_TYPE, OpenXRActionSet::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_action_sets", "get_action_sets");
 
 	ClassDB::bind_method(D_METHOD("get_action_set_count"), &OpenXRActionMap::get_action_set_count);
 	ClassDB::bind_method(D_METHOD("find_action_set", "name"), &OpenXRActionMap::find_action_set);
@@ -43,7 +47,7 @@ void OpenXRActionMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_interaction_profiles", "interaction_profiles"), &OpenXRActionMap::set_interaction_profiles);
 	ClassDB::bind_method(D_METHOD("get_interaction_profiles"), &OpenXRActionMap::get_interaction_profiles);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "interaction_profiles", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRInteractionProfile", PROPERTY_USAGE_NO_EDITOR), "set_interaction_profiles", "get_interaction_profiles");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "interaction_profiles", PROPERTY_HINT_RESOURCE_TYPE, OpenXRInteractionProfile::get_class_static(), PROPERTY_USAGE_NO_EDITOR), "set_interaction_profiles", "get_interaction_profiles");
 
 	ClassDB::bind_method(D_METHOD("get_interaction_profile_count"), &OpenXRActionMap::get_interaction_profile_count);
 	ClassDB::bind_method(D_METHOD("find_interaction_profile", "name"), &OpenXRActionMap::find_interaction_profile);
@@ -54,7 +58,7 @@ void OpenXRActionMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_default_action_sets"), &OpenXRActionMap::create_default_action_sets);
 }
 
-void OpenXRActionMap::set_action_sets(Array p_action_sets) {
+void OpenXRActionMap::set_action_sets(const Array &p_action_sets) {
 	action_sets.clear();
 
 	for (int i = 0; i < p_action_sets.size(); i++) {
@@ -73,7 +77,7 @@ int OpenXRActionMap::get_action_set_count() const {
 	return action_sets.size();
 }
 
-Ref<OpenXRActionSet> OpenXRActionMap::find_action_set(String p_name) const {
+Ref<OpenXRActionSet> OpenXRActionMap::find_action_set(const String &p_name) const {
 	for (int i = 0; i < action_sets.size(); i++) {
 		Ref<OpenXRActionSet> action_set = action_sets[i];
 		if (action_set->get_name() == p_name) {
@@ -90,7 +94,7 @@ Ref<OpenXRActionSet> OpenXRActionMap::get_action_set(int p_idx) const {
 	return action_sets[p_idx];
 }
 
-void OpenXRActionMap::add_action_set(Ref<OpenXRActionSet> p_action_set) {
+void OpenXRActionMap::add_action_set(const Ref<OpenXRActionSet> &p_action_set) {
 	ERR_FAIL_COND(p_action_set.is_null());
 
 	if (!action_sets.has(p_action_set)) {
@@ -99,7 +103,7 @@ void OpenXRActionMap::add_action_set(Ref<OpenXRActionSet> p_action_set) {
 	}
 }
 
-void OpenXRActionMap::remove_action_set(Ref<OpenXRActionSet> p_action_set) {
+void OpenXRActionMap::remove_action_set(const Ref<OpenXRActionSet> &p_action_set) {
 	int idx = action_sets.find(p_action_set);
 	if (idx != -1) {
 		action_sets.remove_at(idx);
@@ -120,7 +124,7 @@ void OpenXRActionMap::clear_interaction_profiles() {
 	emit_changed();
 }
 
-void OpenXRActionMap::set_interaction_profiles(Array p_interaction_profiles) {
+void OpenXRActionMap::set_interaction_profiles(const Array &p_interaction_profiles) {
 	clear_interaction_profiles();
 
 	for (const Variant &interaction_profile : p_interaction_profiles) {
@@ -137,7 +141,7 @@ int OpenXRActionMap::get_interaction_profile_count() const {
 	return interaction_profiles.size();
 }
 
-Ref<OpenXRInteractionProfile> OpenXRActionMap::find_interaction_profile(String p_path) const {
+Ref<OpenXRInteractionProfile> OpenXRActionMap::find_interaction_profile(const String &p_path) const {
 	for (Ref<OpenXRInteractionProfile> interaction_profile : interaction_profiles) {
 		if (interaction_profile->get_interaction_profile_path() == p_path) {
 			return interaction_profile;
@@ -153,7 +157,7 @@ Ref<OpenXRInteractionProfile> OpenXRActionMap::get_interaction_profile(int p_idx
 	return interaction_profiles[p_idx];
 }
 
-void OpenXRActionMap::add_interaction_profile(Ref<OpenXRInteractionProfile> p_interaction_profile) {
+void OpenXRActionMap::add_interaction_profile(const Ref<OpenXRInteractionProfile> &p_interaction_profile) {
 	ERR_FAIL_COND(p_interaction_profile.is_null());
 
 	if (!interaction_profiles.has(p_interaction_profile)) {
@@ -169,7 +173,7 @@ void OpenXRActionMap::add_interaction_profile(Ref<OpenXRInteractionProfile> p_in
 	}
 }
 
-void OpenXRActionMap::remove_interaction_profile(Ref<OpenXRInteractionProfile> p_interaction_profile) {
+void OpenXRActionMap::remove_interaction_profile(const Ref<OpenXRInteractionProfile> &p_interaction_profile) {
 	int idx = interaction_profiles.find(p_interaction_profile);
 	if (idx != -1) {
 		interaction_profiles.remove_at(idx);
@@ -257,58 +261,20 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/right_ankle");
 
 	// Create our interaction profiles.
-	Ref<OpenXRInteractionProfile> profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/khr/simple_controller");
+	Ref<OpenXRInteractionProfile> profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/khr/generic_controller");
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
-	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
-	profile->add_new_binding(select_button, "/user/hand/left/input/select/click,/user/hand/right/input/select/click");
-	// generic has no support for triggers, grip, A/B buttons, nor joystick/trackpad inputs.
-	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
-	add_interaction_profile(profile);
-
-	// Create our Vive controller profile.
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/htc/vive_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
-	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
-	profile->add_new_binding(select_button, "/user/hand/left/input/system/click,/user/hand/right/input/system/click");
-	// wmr controller has no a/b/x/y buttons.
-	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
-	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/click,/user/hand/right/input/trigger/click");
-	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click"); // OpenXR will convert bool to float.
-	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
-	// primary on our vive controller is our trackpad.
-	profile->add_new_binding(primary, "/user/hand/left/input/trackpad,/user/hand/right/input/trackpad");
-	profile->add_new_binding(primary_click, "/user/hand/left/input/trackpad/click,/user/hand/right/input/trackpad/click");
-	profile->add_new_binding(primary_touch, "/user/hand/left/input/trackpad/touch,/user/hand/right/input/trackpad/touch");
-	// vive controllers have no secondary input.
-	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
-	add_interaction_profile(profile);
-
-	// Create our WMR controller profile.
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/microsoft/motion_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
-	// wmr controllers have no select button we can use.
-	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
-	// wmr controller has no a/b/x/y buttons.
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
+	// Generic controller has no menu or select buttons we can use.
+	profile->add_new_binding(ax_button, "/user/hand/left/input/primary/click,/user/hand/right/input/primary/click");
+	profile->add_new_binding(by_button, "/user/hand/left/input/secondary/click,/user/hand/right/input/secondary/click");
 	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
 	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value"); // OpenXR will convert float to bool.
-	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click"); // OpenXR will convert bool to float.
-	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
-	// primary on our wmr controller is our thumbstick, no touch.
+	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/value,/user/hand/right/input/squeeze/value");
+	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/value,/user/hand/right/input/squeeze/value"); // OpenXR will convert float to bool.
 	profile->add_new_binding(primary, "/user/hand/left/input/thumbstick,/user/hand/right/input/thumbstick");
 	profile->add_new_binding(primary_click, "/user/hand/left/input/thumbstick/click,/user/hand/right/input/thumbstick/click");
-	// secondary on our wmr controller is our trackpad.
-	profile->add_new_binding(secondary, "/user/hand/left/input/trackpad,/user/hand/right/input/trackpad");
-	profile->add_new_binding(secondary_click, "/user/hand/left/input/trackpad/click,/user/hand/right/input/trackpad/click");
-	profile->add_new_binding(secondary_touch, "/user/hand/left/input/trackpad/touch,/user/hand/right/input/trackpad/touch");
 	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
 	add_interaction_profile(profile);
 
@@ -317,7 +283,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	// touch controllers have no select button we can use.
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/system/click"); // right hand system click may not be available.
 	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand.
@@ -342,7 +308,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
 	profile->add_new_binding(select_button, "/user/hand/left/input/system/click,/user/hand/right/input/system/click"); // system click may not be available.
 	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click");
 	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand.
@@ -362,208 +328,18 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
 	add_interaction_profile(profile);
 
-	// Create our Valve index controller profile.
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/valve/index_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
-	// index controllers have no select button we can use.
-	profile->add_new_binding(menu_button, "/user/hand/left/input/system/click,/user/hand/right/input/system/click");
-	profile->add_new_binding(ax_button, "/user/hand/left/input/a/click,/user/hand/right/input/a/click"); // a on both controllers.
-	profile->add_new_binding(ax_touch, "/user/hand/left/input/a/touch,/user/hand/right/input/a/touch");
-	profile->add_new_binding(by_button, "/user/hand/left/input/b/click,/user/hand/right/input/b/click"); // b on both controllers.
-	profile->add_new_binding(by_touch, "/user/hand/left/input/b/touch,/user/hand/right/input/b/touch");
-	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
-	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/click,/user/hand/right/input/trigger/click");
-	profile->add_new_binding(trigger_touch, "/user/hand/left/input/trigger/touch,/user/hand/right/input/trigger/touch");
-	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/value,/user/hand/right/input/squeeze/value");
-	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/value,/user/hand/right/input/squeeze/value"); // this should do a float to bool conversion.
-	profile->add_new_binding(grip_force, "/user/hand/left/input/squeeze/force,/user/hand/right/input/squeeze/force"); // grip force seems to be unique to the Valve Index.
-	// primary on our index controller is our thumbstick.
-	profile->add_new_binding(primary, "/user/hand/left/input/thumbstick,/user/hand/right/input/thumbstick");
-	profile->add_new_binding(primary_click, "/user/hand/left/input/thumbstick/click,/user/hand/right/input/thumbstick/click");
-	profile->add_new_binding(primary_touch, "/user/hand/left/input/thumbstick/touch,/user/hand/right/input/thumbstick/touch");
-	// secondary on our index controller is our trackpad.
-	profile->add_new_binding(secondary, "/user/hand/left/input/trackpad,/user/hand/right/input/trackpad");
-	profile->add_new_binding(secondary_click, "/user/hand/left/input/trackpad/force,/user/hand/right/input/trackpad/force"); // not sure if this will work but doesn't seem to support click...
-	profile->add_new_binding(secondary_touch, "/user/hand/left/input/trackpad/touch,/user/hand/right/input/trackpad/touch");
-	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
-	add_interaction_profile(profile);
-
-	// Create our HP MR controller profile.
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/hp/mixed_reality_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
-	// hpmr controllers have no select button we can use.
-	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
-	// hpmr controllers only register click, not touch, on our a/b/x/y buttons.
-	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand.
-	profile->add_new_binding(by_button, "/user/hand/left/input/y/click,/user/hand/right/input/b/click"); // y on left hand, b on right hand.
-	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
-	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
-	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/value,/user/hand/right/input/squeeze/value");
-	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/value,/user/hand/right/input/squeeze/value");
-	// primary on our hpmr controller is our thumbstick.
-	profile->add_new_binding(primary, "/user/hand/left/input/thumbstick,/user/hand/right/input/thumbstick");
-	profile->add_new_binding(primary_click, "/user/hand/left/input/thumbstick/click,/user/hand/right/input/thumbstick/click");
-	// No secondary on our hpmr controller.
-	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
-	add_interaction_profile(profile);
-
-	// Create our Samsung Odyssey controller profile,
-	// Note that this controller is only identified specifically on WMR, on SteamVR this is identified as a normal WMR controller.
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/samsung/odyssey_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
-	// Odyssey controllers have no select button we can use.
-	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click,/user/hand/right/input/menu/click");
-	// Odyssey controller has no a/b/x/y buttons.
-	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
-	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
-	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
-	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
-	// primary on our Odyssey controller is our thumbstick, no touch.
-	profile->add_new_binding(primary, "/user/hand/left/input/thumbstick,/user/hand/right/input/thumbstick");
-	profile->add_new_binding(primary_click, "/user/hand/left/input/thumbstick/click,/user/hand/right/input/thumbstick/click");
-	// secondary on our Odyssey controller is our trackpad.
-	profile->add_new_binding(secondary, "/user/hand/left/input/trackpad,/user/hand/right/input/trackpad");
-	profile->add_new_binding(secondary_click, "/user/hand/left/input/trackpad/click,/user/hand/right/input/trackpad/click");
-	profile->add_new_binding(secondary_touch, "/user/hand/left/input/trackpad/touch,/user/hand/right/input/trackpad/touch");
-	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
-	add_interaction_profile(profile);
-
-	// Create our Vive Cosmos controller.
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/htc/vive_cosmos_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
-	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click");
-	profile->add_new_binding(select_button, "/user/hand/right/input/system/click"); // we'll map system to select.
-	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand.
-	profile->add_new_binding(by_button, "/user/hand/left/input/y/click,/user/hand/right/input/b/click"); // y on left hand, b on right hand.
-	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
-	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/click,/user/hand/right/input/trigger/click");
-	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
-	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
-	// primary on our Cosmos controller is our thumbstick.
-	profile->add_new_binding(primary, "/user/hand/left/input/thumbstick,/user/hand/right/input/thumbstick");
-	profile->add_new_binding(primary_click, "/user/hand/left/input/thumbstick/click,/user/hand/right/input/thumbstick/click");
-	profile->add_new_binding(primary_touch, "/user/hand/left/input/thumbstick/touch,/user/hand/right/input/thumbstick/touch");
-	// No secondary on our cosmos controller.
-	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
-	add_interaction_profile(profile);
-
-	// Create our Vive Focus 3 controller.
-	// Note, Vive Focus 3 currently is not yet supported as a stand alone device
-	// however HTC currently has a beta OpenXR runtime in testing we may support in the near future.
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/htc/vive_focus3_controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
-	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click");
-	profile->add_new_binding(select_button, "/user/hand/right/input/system/click"); // we'll map system to select.
-	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand.
-	profile->add_new_binding(by_button, "/user/hand/left/input/y/click,/user/hand/right/input/b/click"); // y on left hand, b on right hand.
-	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
-	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/click,/user/hand/right/input/trigger/click");
-	profile->add_new_binding(trigger_touch, "/user/hand/left/input/trigger/touch,/user/hand/right/input/trigger/touch");
-	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
-	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/click,/user/hand/right/input/squeeze/click");
-	// primary on our Focus 3 controller is our thumbstick.
-	profile->add_new_binding(primary, "/user/hand/left/input/thumbstick,/user/hand/right/input/thumbstick");
-	profile->add_new_binding(primary_click, "/user/hand/left/input/thumbstick/click,/user/hand/right/input/thumbstick/click");
-	profile->add_new_binding(primary_touch, "/user/hand/left/input/thumbstick/touch,/user/hand/right/input/thumbstick/touch");
-	// We only have a thumb rest.
-	profile->add_new_binding(secondary_touch, "/user/hand/left/input/thumbrest/touch,/user/hand/right/input/thumbrest/touch");
-	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
-	add_interaction_profile(profile);
-
-	// Create our Huawei controller.
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/huawei/controller");
-	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
-	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
-	profile->add_new_binding(menu_button, "/user/hand/left/input/home/click,/user/hand/right/input/home/click");
-	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
-	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/click,/user/hand/right/input/trigger/click");
-	// primary on our Huawei controller is our trackpad.
-	profile->add_new_binding(primary, "/user/hand/left/input/trackpad,/user/hand/right/input/trackpad");
-	profile->add_new_binding(primary_click, "/user/hand/left/input/trackpad/click,/user/hand/right/input/trackpad/click");
-	profile->add_new_binding(primary_touch, "/user/hand/left/input/trackpad/touch,/user/hand/right/input/trackpad/touch");
-	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
-	add_interaction_profile(profile);
-
-	// Create our HTC Vive tracker profile.
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/htc/vive_tracker_htcx");
-	profile->add_new_binding(default_pose,
-			// "/user/vive_tracker_htcx/role/handheld_object/input/grip/pose," <-- getting errors on this one.
-			"/user/vive_tracker_htcx/role/left_foot/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/right_foot/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/left_shoulder/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/right_shoulder/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/left_elbow/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/right_elbow/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/left_knee/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/right_knee/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/waist/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/chest/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/camera/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/keyboard/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/left_wrist/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/right_wrist/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/left_ankle/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/right_ankle/input/grip/pose");
-	profile->add_new_binding(haptic,
-			// "/user/vive_tracker_htcx/role/handheld_object/output/haptic," <-- getting errors on this one.
-			"/user/vive_tracker_htcx/role/left_foot/output/haptic,"
-			"/user/vive_tracker_htcx/role/right_foot/output/haptic,"
-			"/user/vive_tracker_htcx/role/left_shoulder/output/haptic,"
-			"/user/vive_tracker_htcx/role/right_shoulder/output/haptic,"
-			"/user/vive_tracker_htcx/role/left_elbow/output/haptic,"
-			"/user/vive_tracker_htcx/role/right_elbow/output/haptic,"
-			"/user/vive_tracker_htcx/role/left_knee/output/haptic,"
-			"/user/vive_tracker_htcx/role/right_knee/output/haptic,"
-			"/user/vive_tracker_htcx/role/waist/output/haptic,"
-			"/user/vive_tracker_htcx/role/chest/output/haptic,"
-			"/user/vive_tracker_htcx/role/camera/output/haptic,"
-			"/user/vive_tracker_htcx/role/keyboard/output/haptic,"
-			"/user/vive_tracker_htcx/role/left_wrist/output/haptic,"
-			"/user/vive_tracker_htcx/role/right_wrist/output/haptic,"
-			"/user/vive_tracker_htcx/role/left_ankle/output/haptic,"
-			"/user/vive_tracker_htcx/role/right_ankle/output/haptic");
-	add_interaction_profile(profile);
-
-	// Create our eye gaze interaction profile.
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/ext/eye_gaze_interaction");
-	profile->add_new_binding(default_pose, "/user/eyes_ext/input/gaze_ext/pose");
-	add_interaction_profile(profile);
-
 	// Create our hand interaction profile.
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/ext/hand_interaction_ext");
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
-	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
-
-	// Use pinch as primary.
-	profile->add_new_binding(primary, "/user/hand/left/input/pinch_ext/value,/user/hand/right/input/pinch_ext/value");
-	profile->add_new_binding(primary_click, "/user/hand/left/input/pinch_ext/ready_ext,/user/hand/right/input/pinch_ext/ready_ext");
-
-	// Use activation as secondary.
-	profile->add_new_binding(secondary, "/user/hand/left/input/aim_activate_ext/value,/user/hand/right/input/aim_activate_ext/value");
-	profile->add_new_binding(secondary_click, "/user/hand/left/input/aim_activate_ext/ready_ext,/user/hand/right/input/aim_activate_ext/ready_ext");
-
-	// We link grasp to our grip.
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/grip_surface/pose,/user/hand/right/input/grip_surface/pose");
+	// Use pinch as trigger.
+	profile->add_new_binding(trigger, "/user/hand/left/input/pinch_ext/value,/user/hand/right/input/pinch_ext/value");
+	profile->add_new_binding(trigger_click, "/user/hand/left/input/pinch_ext/value,/user/hand/right/input/pinch_ext/value");
+	// Use grasp as grip.
 	profile->add_new_binding(grip, "/user/hand/left/input/grasp_ext/value,/user/hand/right/input/grasp_ext/value");
-	profile->add_new_binding(grip_click, "/user/hand/left/input/grasp_ext/ready_ext,/user/hand/right/input/grasp_ext/ready_ext");
+	profile->add_new_binding(grip_click, "/user/hand/left/input/grasp_ext/value,/user/hand/right/input/grasp_ext/value");
 	add_interaction_profile(profile);
 }
 
@@ -571,7 +347,7 @@ void OpenXRActionMap::create_editor_action_sets() {
 	// TODO implement
 }
 
-Ref<OpenXRAction> OpenXRActionMap::get_action(const String p_path) const {
+Ref<OpenXRAction> OpenXRActionMap::get_action(const String &p_path) const {
 	PackedStringArray paths = p_path.split("/", false);
 	ERR_FAIL_COND_V(paths.size() != 2, Ref<OpenXRAction>());
 
@@ -583,7 +359,7 @@ Ref<OpenXRAction> OpenXRActionMap::get_action(const String p_path) const {
 	return Ref<OpenXRAction>();
 }
 
-void OpenXRActionMap::remove_action(const String p_path, bool p_remove_interaction_profiles) {
+void OpenXRActionMap::remove_action(const String &p_path, bool p_remove_interaction_profiles) {
 	Ref<OpenXRAction> action = get_action(p_path);
 	if (action.is_valid()) {
 		for (Ref<OpenXRInteractionProfile> interaction_profile : interaction_profiles) {
@@ -603,7 +379,7 @@ void OpenXRActionMap::remove_action(const String p_path, bool p_remove_interacti
 	}
 }
 
-PackedStringArray OpenXRActionMap::get_top_level_paths(const Ref<OpenXRAction> p_action) {
+PackedStringArray OpenXRActionMap::get_top_level_paths(const Ref<OpenXRAction> &p_action) {
 	PackedStringArray arr;
 
 	for (Ref<OpenXRInteractionProfile> ip : interaction_profiles) {

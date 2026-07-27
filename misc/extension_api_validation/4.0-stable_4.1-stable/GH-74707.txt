@@ -1,0 +1,6 @@
+GH-74707
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DExtension/methods/_body_test_motion/arguments': size changed value in new API, from 7 to 8.
+Validate extension JSON: Error: Field 'classes/PhysicsServer3DExtension/methods/_body_test_motion/arguments/6': type changed value in new API, from "PhysicsServer3DExtensionMotionResult*" to "bool".
+
+Added new second-to-last parameter to virtual method.

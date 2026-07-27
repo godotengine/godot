@@ -1,0 +1,7 @@
+GH-117800
+--------------
+
+Validate extension JSON: Error: Field 'classes/Image/methods/save_exr/arguments': size changed value in new API, from 2 to 4.
+Validate extension JSON: Error: Field 'classes/Image/methods/save_exr_to_buffer/arguments': size changed value in new API, from 1 to 3.
+
+Added color_image and max_linear_value parameters to Image.save_exr functions for saving HDR screenshots. Use default values for existing behavior.

@@ -33,9 +33,9 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/plist.h"
+#include "editor/export/lipo.h"
+#include "editor/export/macho.h"
 #include "editor/file_system/editor_paths.h"
-#include "lipo.h"
-#include "macho.h"
 
 #include "modules/regex/regex.h"
 
@@ -199,11 +199,11 @@ bool CodeSignCodeResources::add_file2(const String &p_root, const String &p_path
 }
 
 bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &p_path, const String &p_exepath) {
-#define CLEANUP()                                       \
-	if (files_to_add.size() > 1) {                      \
+#define CLEANUP() \
+	if (files_to_add.size() > 1) { \
 		for (int j = 0; j < files_to_add.size(); j++) { \
-			da->remove(files_to_add[j]);                \
-		}                                               \
+			da->remove(files_to_add[j]); \
+		} \
 	}
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -1181,11 +1181,11 @@ PackedByteArray CodeSign::file_hash_sha256(const String &p_path) {
 }
 
 Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const String &p_info, const String &p_exe_path, const String &p_bundle_path, const String &p_ent_path, bool p_ios_bundle, String &r_error_msg) {
-#define CLEANUP()                                        \
-	if (files_to_sign.size() > 1) {                      \
+#define CLEANUP() \
+	if (files_to_sign.size() > 1) { \
 		for (int j = 0; j < files_to_sign.size(); j++) { \
-			da->remove(files_to_sign[j]);                \
-		}                                                \
+			da->remove(files_to_sign[j]); \
+		} \
 	}
 
 	print_verbose(vformat("CodeSign: Signing executable: %s, bundle: %s with entitlements %s", p_exe_path, p_bundle_path, p_ent_path));
@@ -1348,10 +1348,8 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 
 	// Generate common signature structures.
 	if (id.is_empty()) {
-		CryptoCore::RandomGenerator rng;
-		ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
 		uint8_t uuid[16];
-		Error err = rng.get_random_bytes(uuid, 16);
+		Error err = CryptoCore::generate_random(uuid, 16);
 		ERR_FAIL_COND_V_MSG(err, err, "Failed to generate UUID.");
 		id = (String("a-55554944") /*a-UUID*/ + String::hex_encode_buffer(uuid, 16));
 	}

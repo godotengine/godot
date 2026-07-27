@@ -44,7 +44,7 @@ void QueryTwoDTree(VecView<PolyVert> points, Rect r, F f) {
   int stackPointer = 0;
 
   while (1) {
-    if (currentView.size() <= 2) {
+    if (currentView.size() <= 8) {
       for (const auto& p : currentView)
         if (r.Contains(p.pos)) f(p);
       if (--stackPointer < 0) break;

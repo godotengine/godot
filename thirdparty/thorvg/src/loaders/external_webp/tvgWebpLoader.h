@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,8 @@ public:
     WebpLoader();
     ~WebpLoader();
 
-    bool open(const string& path) override;
-    bool open(const char* data, uint32_t size, bool copy) override;
+    bool open(const char* path) override;
+    bool open(const char* data, uint32_t size, const char* rpath, bool copy) override;
     bool read() override;
 
     RenderSurface* bitmap() override;
@@ -42,7 +42,7 @@ private:
     void run(unsigned tid) override;
 
     unsigned char* data = nullptr;
-    unsigned long size = 0;
+    uint32_t size = 0;
     bool freeData = false;
 };
 

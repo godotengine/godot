@@ -154,7 +154,7 @@ struct CompoundShape::CastShapeVisitor
 {
 	JPH_INLINE			CastShapeVisitor(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, const CompoundShape *inShape, Vec3Arg inScale, const ShapeFilter &inShapeFilter, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, CastShapeCollector &ioCollector) :
 		mBoxCenter(inShapeCast.mShapeWorldBounds.GetCenter()),
-		mBoxExtent(inShapeCast.mShapeWorldBounds.GetExtent()),
+		mBoxExtent(inShapeCast.mShapeWorldBounds.GetExtent() + Vec3::sReplicate(inShapeCastSettings.mExtraConvexRadius)),
 		mScale(inScale),
 		mShapeCast(inShapeCast),
 		mShapeCastSettings(inShapeCastSettings),
@@ -302,6 +302,7 @@ struct CompoundShape::CollideCompoundVsShapeVisitor
 
 		// Convert bounding box of 2 into space of 1
 		mBoundsOf2InSpaceOf1 = inShape2->GetLocalBounds().Scaled(inScale2).Transformed(transform2_to_1);
+		mBoundsOf2InSpaceOf1.ExpandBy(Vec3::sReplicate(inCollideShapeSettings.mMaxSeparationDistance));
 	}
 
 	/// Returns true when collision detection should abort because it's not possible to find a better hit

@@ -2,7 +2,7 @@
 #define VULKAN_GGP_H_ 1
 
 /*
-** Copyright 2015-2024 The Khronos Group Inc.
+** Copyright 2015-2025 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -34,11 +34,13 @@ typedef struct VkStreamDescriptorSurfaceCreateInfoGGP {
 typedef VkResult (VKAPI_PTR *PFN_vkCreateStreamDescriptorSurfaceGGP)(VkInstance instance, const VkStreamDescriptorSurfaceCreateInfoGGP* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface);
 
 #ifndef VK_NO_PROTOTYPES
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateStreamDescriptorSurfaceGGP(
     VkInstance                                  instance,
     const VkStreamDescriptorSurfaceCreateInfoGGP* pCreateInfo,
     const VkAllocationCallbacks*                pAllocator,
     VkSurfaceKHR*                               pSurface);
+#endif
 #endif
 
 

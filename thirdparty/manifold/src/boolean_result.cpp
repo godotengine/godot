@@ -663,6 +663,7 @@ void CreateProperties(Manifold::Impl& outR, const Manifold::Impl& inP,
 }
 
 void ReorderHalfedges(VecView<Halfedge>& halfedges) {
+  ZoneScoped;
   // halfedges in the same face are added in non-deterministic order, so we have
   // to reorder them for determinism
 
@@ -877,10 +878,6 @@ Manifold::Impl Boolean3::Result(OpType op) const {
 #endif
 
   // Level 6
-
-  if (ManifoldParams().intermediateChecks)
-    DEBUG_ASSERT(outR.IsManifold(), logicErr, "polygon mesh is not manifold!");
-
   outR.Face2Tri(faceEdge, halfedgeRef);
   halfedgeRef.clear();
   faceEdge.clear();

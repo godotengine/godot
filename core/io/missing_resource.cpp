@@ -30,6 +30,8 @@
 
 #include "missing_resource.h"
 
+#include "core/object/class_db.h"
+
 bool MissingResource::_set(const StringName &p_name, const Variant &p_value) {
 	if (is_recording_properties()) {
 		properties.insert(p_name, p_value);
@@ -88,7 +90,4 @@ void MissingResource::_bind_methods() {
 	// Expose, but not save.
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "original_class", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_original_class", "get_original_class");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "recording_properties", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_recording_properties", "is_recording_properties");
-}
-
-MissingResource::MissingResource() {
 }

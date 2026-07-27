@@ -30,8 +30,10 @@
 
 #include "xr_vrs.h"
 
+#include "core/object/class_db.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server.h"
 
 void XRVRS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vrs_min_radius"), &XRVRS::get_vrs_min_radius);
@@ -53,7 +55,7 @@ void XRVRS::_bind_methods() {
 XRVRS::~XRVRS() {
 	if (vrs_texture.is_valid()) {
 		ERR_FAIL_NULL(RS::get_singleton());
-		RS::get_singleton()->free(vrs_texture);
+		RS::get_singleton()->free_rid(vrs_texture);
 		vrs_texture = RID();
 	}
 }
@@ -101,7 +103,7 @@ void XRVRS::set_vrs_render_region(const Rect2i &p_vrs_render_region) {
 	vrs_dirty = true;
 }
 
-RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array &p_eye_foci) {
+RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const Vector<Vector2> &p_eye_foci) {
 	ERR_FAIL_COND_V(p_eye_foci.is_empty(), RID());
 
 	Size2i texel_size = RD::get_singleton()->vrs_get_texel_size();
@@ -126,7 +128,7 @@ RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array
 	if (target_size != vrs_sizei || eye_foci != p_eye_foci || vrs_dirty) {
 		// Out with the old.
 		if (vrs_texture.is_valid()) {
-			RS::get_singleton()->free(vrs_texture);
+			RS::get_singleton()->free_rid(vrs_texture);
 			vrs_texture = RID();
 		}
 
@@ -169,7 +171,7 @@ RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array
 		if (images.size() == 1) {
 			vrs_texture = RS::get_singleton()->texture_2d_create(images[0]);
 		} else {
-			vrs_texture = RS::get_singleton()->texture_2d_layered_create(images, RS::TEXTURE_LAYERED_2D_ARRAY);
+			vrs_texture = RS::get_singleton()->texture_2d_layered_create(images, RSE::TEXTURE_LAYERED_2D_ARRAY);
 		}
 
 		vrs_dirty = false;

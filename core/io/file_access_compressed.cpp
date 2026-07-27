@@ -30,6 +30,8 @@
 
 #include "file_access_compressed.h"
 
+#include "core/math/math_funcs_binary.h"
+
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, uint32_t p_block_size) {
 	magic = p_magic.ascii().get_data();
 	magic = (magic + "    ").substr(0, 4);
@@ -130,34 +132,37 @@ void FileAccessCompressed::_close() {
 			f->store_32(0); //compressed sizes, will update later
 		}
 
-		Vector<int> block_sizes;
+		uint32_t last_block_size = write_max % block_size;
+
+		// Temporary buffer for compressed data blocks.
+		LocalVector<uint8_t> temp_cblock;
+		temp_cblock.resize(Compression::get_max_compressed_buffer_size(bc == 1 ? last_block_size : block_size, cmode));
+		uint8_t *temp_cblock_ptr = temp_cblock.ptr();
+
+		// Compress and store the blocks.
+		LocalVector<uint32_t> block_sizes;
 		for (uint32_t i = 0; i < bc; i++) {
-			uint32_t bl = i == (bc - 1) ? write_max % block_size : block_size;
+			uint32_t bl = i == (bc - 1) ? last_block_size : block_size;
 			uint8_t *bp = &write_ptr[i * block_size];
 
-			Vector<uint8_t> cblock;
-			cblock.resize(Compression::get_max_compressed_buffer_size(bl, cmode));
-			const int64_t compressed_size = Compression::compress(cblock.ptrw(), bp, bl, cmode);
+			const int64_t compressed_size = Compression::compress(temp_cblock_ptr, bp, bl, cmode);
 			ERR_FAIL_COND_MSG(compressed_size < 0, "FileAccessCompressed: Error compressing data.");
 
-			f->store_buffer(cblock.ptr(), (uint64_t)compressed_size);
+			f->store_buffer(temp_cblock_ptr, (uint64_t)compressed_size);
 			block_sizes.push_back(compressed_size);
 		}
 
 		f->seek(16); //ok write block sizes
 		for (uint32_t i = 0; i < bc; i++) {
-			f->store_32(uint32_t(block_sizes[i]));
+			f->store_32(block_sizes[i]);
 		}
 		f->seek_end();
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //magic at the end too
-
-		buffer.clear();
-
 	} else {
 		comp_buffer.clear();
-		buffer.clear();
 		read_blocks.clear();
 	}
+	buffer.clear();
 	f.unref();
 }
 
@@ -317,7 +322,7 @@ bool FileAccessCompressed::store_buffer(const uint8_t *p_src, uint64_t p_length)
 		write_max = write_pos + (p_length);
 	}
 	if (write_max > write_buffer_size) {
-		write_buffer_size = next_power_of_2(write_max);
+		write_buffer_size = Math::next_power_of_2(write_max);
 		ERR_FAIL_COND_V(buffer.resize(write_buffer_size) != OK, false);
 		write_ptr = buffer.ptrw();
 	}

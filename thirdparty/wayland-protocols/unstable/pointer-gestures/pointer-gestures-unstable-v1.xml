@@ -8,7 +8,7 @@
 
       Three gestures are currently supported: swipe, pinch, and hold.
       Pinch and swipe gestures follow a three-stage cycle: begin, update,
-      end, hold gestures follow a two-stage cycle: begin and end. All
+      end. Hold gestures follow a two-stage cycle: begin and end. All
       gestures are identified by a unique id.
 
       Warning! The protocol described in this file is experimental and

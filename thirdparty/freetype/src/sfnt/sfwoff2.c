@@ -4,7 +4,7 @@
  *
  *   WOFF2 format management (base).
  *
- * Copyright (C) 2019-2024 by
+ * Copyright (C) 2019-2026 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -902,7 +902,7 @@
       substreams[i].offset = pos + offset;
       substreams[i].size   = substream_size;
 
-      FT_TRACE5(( "  Substream %d: offset = %lu; size = %lu;\n",
+      FT_TRACE5(( "  Substream %u: offset = %lu; size = %lu;\n",
                   i, substreams[i].offset, substreams[i].size ));
       offset += substream_size;
     }
@@ -1043,7 +1043,6 @@
         FT_ULong   total_n_points = 0;
         FT_UShort  n_points_contour;
         FT_UInt    j;
-        FT_ULong   flag_size;
         FT_ULong   triplet_size;
         FT_ULong   triplet_bytes_used;
         FT_Bool    have_overlap  = FALSE;
@@ -1088,8 +1087,8 @@
         }
         substreams[N_POINTS_STREAM].offset = FT_STREAM_POS();
 
-        flag_size = total_n_points;
-        if ( flag_size > substreams[FLAG_STREAM].size )
+        points_size += total_n_points;
+        if ( points_size > substreams[FLAG_STREAM].size )
           goto Fail;
 
         flags_buf   = stream->base + substreams[FLAG_STREAM].offset;
@@ -1106,8 +1105,7 @@
         triplet_bytes_used = 0;
 
         /* Create array to store point information. */
-        points_size = total_n_points;
-        if ( FT_QNEW_ARRAY( points, points_size ) )
+        if ( FT_QNEW_ARRAY( points, total_n_points ) )
           goto Fail;
 
         if ( triplet_decode( flags_buf,
@@ -1118,7 +1116,7 @@
                              &triplet_bytes_used ) )
           goto Fail;
 
-        substreams[FLAG_STREAM].offset  += flag_size;
+        substreams[FLAG_STREAM].offset  += total_n_points;
         substreams[GLYPH_STREAM].offset += triplet_bytes_used;
 
         if ( FT_STREAM_SEEK( substreams[GLYPH_STREAM].offset ) ||
@@ -1592,7 +1590,7 @@
       WOFF2_TableRec  table = *( indices[nn] );
 
 
-      FT_TRACE3(( "Seeking to %ld with table size %ld.\n",
+      FT_TRACE3(( "Seeking to %lu with table size %lu.\n",
                   table.src_offset, table.src_length ));
       FT_TRACE3(( "Table tag: %c%c%c%c.\n",
                   (FT_Char)( table.Tag >> 24 ),
@@ -1943,7 +1941,7 @@
       src_offset       += table->TransformLength;
       table->dst_offset = 0;
 
-      FT_TRACE2(( "  %c%c%c%c  %08d  %08d   %08ld    %08ld    %08ld\n",
+      FT_TRACE2(( "  %c%c%c%c  %08d  %08d   %08lu    %08lu    %08lu\n",
                   (FT_Char)( table->Tag >> 24 ),
                   (FT_Char)( table->Tag >> 16 ),
                   (FT_Char)( table->Tag >> 8  ),

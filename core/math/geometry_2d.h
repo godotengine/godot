@@ -41,10 +41,10 @@
 
 class Geometry2D {
 public:
-	static real_t get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2, Vector2 &c1, Vector2 &c2) {
-		Vector2 d1 = q1 - p1; // Direction vector of segment S1.
-		Vector2 d2 = q2 - p2; // Direction vector of segment S2.
-		Vector2 r = p1 - p2;
+	static real_t get_closest_points_between_segments(const Vector2 &p_p1, const Vector2 &p_q1, const Vector2 &p_p2, const Vector2 &p_q2, Vector2 &p_c1, Vector2 &p_c2) {
+		Vector2 d1 = p_q1 - p_p1; // Direction vector of segment S1.
+		Vector2 d2 = p_q2 - p_p2; // Direction vector of segment S2.
+		Vector2 r = p_p1 - p_p2;
 		real_t a = d1.dot(d1); // Squared length of segment S1, always nonnegative.
 		real_t e = d2.dot(d2); // Squared length of segment S2, always nonnegative.
 		real_t f = d2.dot(r);
@@ -52,9 +52,9 @@ public:
 		// Check if either or both segments degenerate into points.
 		if (a <= (real_t)CMP_EPSILON && e <= (real_t)CMP_EPSILON) {
 			// Both segments degenerate into points.
-			c1 = p1;
-			c2 = p2;
-			return Math::sqrt((c1 - c2).dot(c1 - c2));
+			p_c1 = p_p1;
+			p_c2 = p_p2;
+			return Math::sqrt((p_c1 - p_c2).dot(p_c1 - p_c2));
 		}
 		if (a <= (real_t)CMP_EPSILON) {
 			// First segment degenerates into a point.
@@ -94,9 +94,9 @@ public:
 				}
 			}
 		}
-		c1 = p1 + d1 * s;
-		c2 = p2 + d2 * t;
-		return Math::sqrt((c1 - c2).dot(c1 - c2));
+		p_c1 = p_p1 + d1 * s;
+		p_c2 = p_p2 + d2 * t;
+		return Math::sqrt((p_c1 - p_c2).dot(p_c1 - p_c2));
 	}
 
 #ifndef DISABLE_DEPRECATED
@@ -134,10 +134,10 @@ public:
 		return p_point.distance_to(get_closest_point_to_segment(p_point, p_segment_a, p_segment_b));
 	}
 
-	static bool is_point_in_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
-		Vector2 an = a - s;
-		Vector2 bn = b - s;
-		Vector2 cn = c - s;
+	static bool is_point_in_triangle(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_c) {
+		Vector2 an = p_a - p_point;
+		Vector2 bn = p_b - p_point;
+		Vector2 cn = p_c - p_point;
 
 		bool orientation = an.cross(bn) > 0;
 
@@ -427,34 +427,34 @@ public:
 		return false;
 	}
 
-	static real_t vec2_cross(const Point2 &O, const Point2 &A, const Point2 &B) {
-		return (real_t)(A.x - O.x) * (B.y - O.y) - (real_t)(A.y - O.y) * (B.x - O.x);
+	static real_t vec2_cross(const Point2 &p_o, const Point2 &p_a, const Point2 &p_b) {
+		return (real_t)(p_a.x - p_o.x) * (p_b.y - p_o.y) - (real_t)(p_a.y - p_o.y) * (p_b.x - p_o.x);
 	}
 
 	// Returns a list of points on the convex hull in counter-clockwise order.
 	// Note: the last point in the returned list is the same as the first one.
-	static Vector<Point2> convex_hull(Vector<Point2> P) {
-		int n = P.size(), k = 0;
+	static Vector<Point2> convex_hull(Vector<Point2> p_points) {
+		int n = p_points.size(), k = 0;
 		Vector<Point2> H;
 		H.resize(2 * n);
 
 		// Sort points lexicographically.
-		P.sort();
+		p_points.sort();
 
 		// Build lower hull.
 		for (int i = 0; i < n; ++i) {
-			while (k >= 2 && vec2_cross(H[k - 2], H[k - 1], P[i]) <= 0) {
+			while (k >= 2 && vec2_cross(H[k - 2], H[k - 1], p_points[i]) <= 0) {
 				k--;
 			}
-			H.write[k++] = P[i];
+			H.write[k++] = p_points[i];
 		}
 
 		// Build upper hull.
 		for (int i = n - 2, t = k + 1; i >= 0; i--) {
-			while (k >= t && vec2_cross(H[k - 2], H[k - 1], P[i]) <= 0) {
+			while (k >= t && vec2_cross(H[k - 2], H[k - 1], p_points[i]) <= 0) {
 				k--;
 			}
-			H.write[k++] = P[i];
+			H.write[k++] = p_points[i];
 		}
 
 		H.resize(k);
@@ -508,6 +508,6 @@ public:
 	static Vector<Vector3i> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
 
 private:
-	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
+	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool p_is_a_open = false);
 	static Vector<Vector<Point2>> _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };

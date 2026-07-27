@@ -30,6 +30,8 @@
 
 #include "editor_sectioned_inspector.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_property_name_processor.h"
@@ -152,7 +154,7 @@ void SectionedInspector::_section_selected() {
 	selected_category = sections->get_selected()->get_metadata(0);
 	filter->set_section(selected_category, sections->get_selected()->get_first_child() == nullptr);
 	inspector->set_property_prefix(selected_category + "/");
-	inspector->set_v_scroll(0);
+	inspector->set_scroll_offset(0);
 	emit_signal(SNAME("category_changed"), selected_category);
 }
 
@@ -378,6 +380,7 @@ SectionedInspector::SectionedInspector() :
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
+	inspector->set_theme_type_variation("TreeSecondary");
 
 	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }

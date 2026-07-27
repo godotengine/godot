@@ -43,19 +43,23 @@
 #endif
 
 #include "core/config/engine.h"
-#include "servers/navigation_server_3d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d_manager.h"
 
 #ifndef DISABLE_DEPRECATED
 NavigationMeshGenerator *_nav_mesh_generator = nullptr;
 #endif // DISABLE_DEPRECATED
 
-NavigationServer3D *new_navigation_server_3d() {
+static NavigationServer3D *_createGodotNavigation3DCallback() {
 	return memnew(GodotNavigationServer3D);
 }
 
 void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::set_default_server(new_navigation_server_3d);
+		NavigationServer3DManager::get_singleton()->register_server("GodotNavigation3D", callable_mp_static(_createGodotNavigation3DCallback));
+		NavigationServer3DManager::get_singleton()->set_default_server("GodotNavigation3D");
 
 #ifndef DISABLE_DEPRECATED
 		_nav_mesh_generator = memnew(NavigationMeshGenerator);
@@ -79,8 +83,6 @@ void uninitialize_navigation_3d_module(ModuleInitializationLevel p_level) {
 	}
 
 #ifndef DISABLE_DEPRECATED
-	if (_nav_mesh_generator) {
-		memdelete(_nav_mesh_generator);
-	}
+	memdelete(_nav_mesh_generator);
 #endif // DISABLE_DEPRECATED
 }

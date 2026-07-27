@@ -143,6 +143,9 @@ _hb_ft_font_destroy (void *data)
 /* hb_font changed, update FT_Face. */
 static void _hb_ft_hb_font_changed (hb_font_t *font, FT_Face ft_face)
 {
+  if (unlikely (font->destroy != (hb_destroy_func_t) _hb_ft_font_destroy))
+    return;
+
   hb_ft_font_t *ft_font = (hb_ft_font_t *) font->user_data;
 
   float x_mult = 1.f, y_mult = 1.f;
@@ -184,12 +187,14 @@ static void _hb_ft_hb_font_changed (hb_font_t *font, FT_Face ft_face)
     FT_Set_Transform (ft_face, &matrix, nullptr);
     ft_font->transform = true;
   }
+  else
+    FT_Set_Transform (ft_face, nullptr, nullptr);
 
 #if defined(HAVE_FT_GET_VAR_BLEND_COORDINATES) && !defined(HB_NO_VAR)
-  unsigned int num_coords;
-  const float *coords = hb_font_get_var_coords_design (font, &num_coords);
-  if (num_coords)
+  if (font->has_nonzero_coords)
   {
+    unsigned int num_coords;
+    const float *coords = hb_font_get_var_coords_design (font, &num_coords);
     FT_Fixed *ft_coords = (FT_Fixed *) hb_calloc (num_coords, sizeof (FT_Fixed));
     if (ft_coords)
     {
@@ -198,6 +203,12 @@ static void _hb_ft_hb_font_changed (hb_font_t *font, FT_Face ft_face)
       FT_Set_Var_Design_Coordinates (ft_face, num_coords, ft_coords);
       hb_free (ft_coords);
     }
+  }
+  else if (font->num_coords)
+  {
+    // Some old versions of FreeType crash if we
+    // call this function on non-variable fonts.
+    FT_Set_Var_Design_Coordinates (ft_face, 0, nullptr);
   }
 #endif
 }
@@ -755,6 +766,12 @@ hb_ft_get_glyph_name (hb_font_t *font HB_UNUSED,
   hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
 
+  if (!size)
+  {
+    char buf[128];
+    return !FT_Get_Glyph_Name (ft_face, glyph, buf, sizeof (buf)) && *buf;
+  }
+
   hb_bool_t ret = !FT_Get_Glyph_Name (ft_face, glyph, name, size);
   if (ret && (size && !*name))
     ret = false;
@@ -1093,6 +1110,10 @@ _hb_ft_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data
   FT_ULong  length = 0;
   FT_Error error;
 
+  /* In new FreeType, a tag value of 1 loads the SFNT table directory. Reject it. */
+  if (tag == 1)
+    return nullptr;
+
   /* Note: FreeType like HarfBuzz uses the NONE tag for fetching the entire blob */
 
   error = FT_Load_Sfnt_Table (ft_face, tag, 0, nullptr, &length);
@@ -1102,14 +1123,13 @@ _hb_ft_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data
   buffer = (FT_Byte *) hb_malloc (length);
   if (!buffer)
     return nullptr;
+  auto buffer_guard = hb_make_scope_guard ([&]() { hb_free (buffer); });
 
   error = FT_Load_Sfnt_Table (ft_face, tag, 0, buffer, &length);
   if (error)
-  {
-    hb_free (buffer);
     return nullptr;
-  }
 
+  buffer_guard.release ();
   return hb_blob_create ((const char *) buffer, length,
 			 HB_MEMORY_MODE_WRITABLE,
 			 buffer, hb_free);
@@ -1366,7 +1386,7 @@ hb_ft_font_changed (hb_font_t *font)
 
 	for (unsigned int i = 0; i < mm_var->num_axis; ++i)
 	 {
-	  coords[i] = ft_coords[i] >>= 2;
+	  coords[i] = (ft_coords[i] + 2) >> 2;
 	  nonzero = nonzero || coords[i];
 	 }
 
@@ -1678,6 +1698,13 @@ _release_blob (void *arg)
 void
 hb_ft_font_set_funcs (hb_font_t *font)
 {
+  int load_flags = FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING;
+  if (font->destroy == (hb_destroy_func_t) _hb_ft_font_destroy && font->user_data)
+  {
+    const hb_ft_font_t *existing_ft_font = (const hb_ft_font_t *) font->user_data;
+    load_flags = existing_ft_font->load_flags;
+  }
+
   // In case of failure...
   hb_font_set_funcs (font,
 		     hb_font_funcs_get_empty (),
@@ -1717,10 +1744,15 @@ hb_ft_font_set_funcs (hb_font_t *font)
   ft_face->generic.finalizer = _release_blob;
 
   // And the FT_Library to the blob
-  hb_blob_set_user_data (blob, &ft_library_key, ft_library, destroy_ft_library, true);
+  if (unlikely (!hb_blob_set_user_data (blob, &ft_library_key, ft_library, destroy_ft_library, true)))
+  {
+    DEBUG_MSG (FT, font, "hb_blob_set_user_data() failed");
+    FT_Done_Face (ft_face);
+    return;
+  }
 
   _hb_ft_font_set_funcs (font, ft_face, true);
-  hb_ft_font_set_load_flags (font, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
+  hb_ft_font_set_load_flags (font, load_flags);
 
   _hb_ft_hb_font_changed (font, ft_face);
 }

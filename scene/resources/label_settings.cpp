@@ -30,6 +30,9 @@
 
 #include "label_settings.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
 void LabelSettings::_font_changed() {
 	emit_changed();
 }
@@ -93,7 +96,7 @@ void LabelSettings::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "paragraph_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_paragraph_spacing", "get_paragraph_spacing");
 
 	ADD_GROUP("Font", "font_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static()), "set_font", "get_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,1024,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "font_color"), "set_font_color", "get_font_color");
 
@@ -116,7 +119,7 @@ void LabelSettings::_bind_methods() {
 	stacked_outline_base_property_helper.set_array_length_getter(&LabelSettings::get_stacked_outline_count);
 	stacked_outline_base_property_helper.register_property(PropertyInfo(Variant::INT, "size", PROPERTY_HINT_NONE, "0,127,1,or_greater,suffix:px"), stacked_outline_defaults.size, &LabelSettings::set_stacked_outline_size, &LabelSettings::get_stacked_outline_size);
 	stacked_outline_base_property_helper.register_property(PropertyInfo(Variant::COLOR, "color"), stacked_outline_defaults.color, &LabelSettings::set_stacked_outline_color, &LabelSettings::get_stacked_outline_color);
-	PropertyListHelper::register_base_helper(&stacked_outline_base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &stacked_outline_base_property_helper);
 
 	constexpr StackedShadowData stacked_shadow_defaults;
 
@@ -125,7 +128,7 @@ void LabelSettings::_bind_methods() {
 	stacked_shadow_base_property_helper.register_property(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), stacked_shadow_defaults.offset, &LabelSettings::set_stacked_shadow_offset, &LabelSettings::get_stacked_shadow_offset);
 	stacked_shadow_base_property_helper.register_property(PropertyInfo(Variant::COLOR, "color"), stacked_shadow_defaults.color, &LabelSettings::set_stacked_shadow_color, &LabelSettings::get_stacked_shadow_color);
 	stacked_shadow_base_property_helper.register_property(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_NONE, "0,127,1,or_greater,suffix:px"), stacked_shadow_defaults.outline_size, &LabelSettings::set_stacked_shadow_outline_size, &LabelSettings::get_stacked_shadow_outline_size);
-	PropertyListHelper::register_base_helper(&stacked_shadow_base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &stacked_shadow_base_property_helper);
 }
 
 void LabelSettings::set_line_spacing(real_t p_spacing) {

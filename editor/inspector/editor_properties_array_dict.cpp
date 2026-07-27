@@ -32,10 +32,14 @@
 
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
+#include "editor/gui/editor_icon_manager.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/inspector/editor_properties.h"
@@ -44,6 +48,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
+#include "scene/main/scene_tree.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
@@ -250,6 +255,22 @@ void EditorPropertyArray::initialize_array(Variant &p_array) {
 	}
 }
 
+void EditorPropertyArray::_update_slots_size() {
+	float name_size = 0;
+	for (Slot &slot : slots) {
+		if (name_size == 0) {
+			int max_index = (page_index + 1) * page_length - 1;
+			const String ms = String("M").repeat(itos(max_index).length());
+
+			Ref<Font> font = theme_cache.font;
+			int font_size = theme_cache.font_size;
+			int half_padding = theme_cache.padding / 2;
+			name_size = slots[0].reorder_button->get_minimum_size().x + theme_cache.horizontal_separation + half_padding + font->get_string_size(ms, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+		}
+		slot.prop->set_name_fixed_size(name_size);
+	}
+}
+
 void EditorPropertyArray::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
 	if (!p_property.begins_with("indices")) {
 		return;
@@ -301,39 +322,49 @@ void EditorPropertyArray::_object_id_selected(const StringName &p_property, Obje
 	emit_signal(SNAME("object_id_selected"), p_property, p_id);
 }
 
+void EditorPropertyArray::_resource_selected(const String &p_path, Ref<Resource> p_resource) {
+	emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
+}
+
 void EditorPropertyArray::_create_new_property_slot() {
 	int idx = slots.size();
 	HBoxContainer *hbox = memnew(HBoxContainer);
 
+	EditorProperty *prop = memnew(EditorPropertyNil);
+
 	Button *reorder_button = memnew(Button);
 	reorder_button->set_accessibility_name(TTRC("Reorder"));
-	reorder_button->set_button_icon(get_editor_theme_icon(SNAME("TripleBar")));
+	reorder_button->set_button_icon(EditorIconManager::get_icon(SNAME("TripleBar")));
 	reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 	reorder_button->set_disabled(is_read_only());
+	reorder_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 	reorder_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
 	reorder_button->connect(SNAME("button_up"), callable_mp(this, &EditorPropertyArray::_reorder_button_up));
 	reorder_button->connect(SNAME("button_down"), callable_mp(this, &EditorPropertyArray::_reorder_button_down).bind(idx));
 
-	hbox->add_child(reorder_button);
-	EditorProperty *prop = memnew(EditorPropertyNil);
 	hbox->add_child(prop);
+	prop->add_inline_control(reorder_button, INLINE_CONTROL_LEFT);
 
 	bool is_untyped_array = object->get_array().get_type() == Variant::ARRAY && subtype == Variant::NIL;
 
+	Button *edit_btn = nullptr;
+	Button *remove_btn = nullptr;
 	if (is_untyped_array) {
-		Button *edit_btn = memnew(Button);
+		edit_btn = memnew(Button);
 		edit_btn->set_accessibility_name(TTRC("Edit"));
-		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+		edit_btn->set_button_icon(EditorIconManager::get_icon(SNAME("Edit")));
 		edit_btn->set_disabled(is_read_only());
+		edit_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, idx));
-		hbox->add_child(edit_btn);
+		prop->add_inline_control(edit_btn, INLINE_CONTROL_RIGHT);
 	} else {
-		Button *remove_btn = memnew(Button);
+		remove_btn = memnew(Button);
 		remove_btn->set_accessibility_name(TTRC("Remove"));
-		remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+		remove_btn->set_button_icon(EditorIconManager::get_icon(SNAME("Remove")));
 		remove_btn->set_disabled(is_read_only());
+		remove_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(idx));
-		hbox->add_child(remove_btn);
+		prop->add_inline_control(remove_btn, INLINE_CONTROL_RIGHT);
 	}
 	property_vbox->add_child(hbox);
 
@@ -342,12 +373,18 @@ void EditorPropertyArray::_create_new_property_slot() {
 	slot.object = object;
 	slot.container = hbox;
 	slot.reorder_button = reorder_button;
+	slot.edit_button = edit_btn;
+	slot.remove_button = remove_btn;
 	slot.set_index(idx + page_index * page_length);
 	slots.push_back(slot);
 }
 
 void EditorPropertyArray::set_preview_value(bool p_preview_value) {
 	preview_value = p_preview_value;
+}
+
+void EditorPropertyArray::make_passthrough(bool p_passthrough) {
+	edit->set_mouse_filter(p_passthrough ? MOUSE_FILTER_PASS : MOUSE_FILTER_STOP);
 }
 
 void EditorPropertyArray::update_property() {
@@ -373,7 +410,7 @@ void EditorPropertyArray::update_property() {
 	if (!array.is_array()) {
 		if (preview_value) {
 			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-			edit->set_button_icon(get_editor_theme_icon(SNAME("Nil")));
+			edit->set_button_icon(EditorIconManager::get_icon(SNAME("Nil")));
 			edit->set_text(array_type_name);
 		} else {
 			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -410,7 +447,7 @@ void EditorPropertyArray::update_property() {
 
 		edit->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-		edit->set_button_icon(get_editor_theme_icon(array_type_name));
+		edit->set_button_icon(EditorIconManager::get_icon(array_type_name));
 		edit->set_text(vformat("%s%s", array_sub_type_name, ctr_str));
 		edit->set_tooltip_text(vformat(TTR("%s%s (size %d)"), array_type_name, array_sub_type_name, size));
 	} else {
@@ -433,6 +470,7 @@ void EditorPropertyArray::update_property() {
 			set_bottom_editor(container);
 
 			VBoxContainer *vbox = memnew(VBoxContainer);
+			vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			container->add_child(vbox);
 
 			HBoxContainer *hbox = memnew(HBoxContainer);
@@ -453,11 +491,11 @@ void EditorPropertyArray::update_property() {
 			hbox->add_child(size_slider);
 
 			property_vbox = memnew(VBoxContainer);
+			property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 			vbox->add_child(property_vbox);
 
-			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
-			button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Element"), SNAME("Add")));
 			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
 			button_add_item->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_add_item_draw));
 			SET_DRAG_FORWARDING_CD(button_add_item, EditorPropertyArray);
@@ -510,10 +548,29 @@ void EditorPropertyArray::update_property() {
 				}
 				new_prop->set_selectable(false);
 				new_prop->set_use_folding(is_using_folding());
+				new_prop->set_name_split_ratio(0.0);
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyArray::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
+				if (value_type == Variant::OBJECT) {
+					new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyArray::_resource_selected), CONNECT_DEFERRED);
+				}
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				new_prop->set_read_only(is_read_only());
+
+				if (slot.reorder_button) {
+					new_prop->add_inline_control(slot.reorder_button, INLINE_CONTROL_LEFT);
+					slot.reorder_button->get_parent()->move_child(slot.reorder_button, 0);
+				}
+				if (slot.edit_button) {
+					new_prop->add_inline_control(slot.edit_button, INLINE_CONTROL_RIGHT);
+				} else if (slot.remove_button) {
+					new_prop->add_inline_control(slot.remove_button, INLINE_CONTROL_RIGHT);
+				}
+
+				// Move the right container to be the last child, so that focusing on the next Control behaves in the expected order.
+				Control *right_cont = new_prop->get_inline_container(INLINE_CONTROL_RIGHT);
+				right_cont->get_parent()->move_child(right_cont, new_prop->get_child_count() - 1);
+
 				slot.prop->add_sibling(new_prop, false);
 				slot.prop->queue_free();
 				slot.prop = new_prop;
@@ -524,6 +581,9 @@ void EditorPropertyArray::update_property() {
 				changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 			}
 			slot.prop->update_property();
+		}
+		if (is_inside_tree()) {
+			_update_slots_size();
 		}
 
 		updating = false;
@@ -581,7 +641,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 		for (const String &file : files) {
 			int idx_in_dir;
-			EditorFileSystemDirectory const *dir = EditorFileSystem::get_singleton()->find_file(file, &idx_in_dir);
+			const EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(file, &idx_in_dir);
 			if (!dir) {
 				return false;
 			}
@@ -607,7 +667,6 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			return false;
 		}
 
-		String res_type = res->get_class();
 		StringName script_class;
 		if (res->get_script()) {
 			script_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
@@ -615,7 +674,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 		for (String at : allowed_type.split(",", false)) {
 			at = at.strip_edges();
-			if (ClassDB::is_parent_class(res_type, at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
+			if (res->is_class(at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
 				return true;
 			}
 		}
@@ -645,7 +704,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			ERR_FAIL_NULL_V_MSG(dropped_node, false, "Could not get the dropped node by its path.");
 
 			if (allowed_type != "NodePath") {
-				if (!ClassDB::is_parent_class(dropped_node->get_class_name(), allowed_type) &&
+				if (!dropped_node->is_class(allowed_type) &&
 						!EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, allowed_type)) {
 					// Fail if one of the nodes is not of allowed type.
 					return false;
@@ -657,7 +716,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 				if (!allowed_subtype_array.has(dropped_node->get_class_name())) {
 					// The dropped node type was not found in the allowed subtype array, we must check if it inherits one of them.
 					for (const String &ast : allowed_subtype_array) {
-						if (ClassDB::is_parent_class(dropped_node->get_class_name(), ast) ||
+						if (dropped_node->is_class(ast) ||
 								EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, ast)) {
 							is_drop_allowed = true;
 							break;
@@ -751,11 +810,8 @@ Node *EditorPropertyArray::get_base_node() {
 void EditorPropertyArray::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			if (button_add_item) {
-				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			}
+			_update_slots_size();
 		} break;
-
 		case NOTIFICATION_DRAG_BEGIN: {
 			if (is_visible_in_tree()) {
 				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
@@ -915,7 +971,7 @@ void EditorPropertyArray::_reorder_button_down(int p_slot_index) {
 	reorder_to_index = reorder_slot.index;
 	// Ideally it'd to be able to show the mouse but I had issues with
 	// Control's `mouse_exit()`/`mouse_entered()` signals not getting called.
-	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+	Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 }
 
 void EditorPropertyArray::_reorder_button_up() {
@@ -936,7 +992,7 @@ void EditorPropertyArray::_reorder_button_up() {
 		emit_changed(get_edited_property(), array);
 	}
 
-	Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 
 	ERR_FAIL_NULL(reorder_slot.reorder_button);
 	reorder_slot.reorder_button->warp_mouse(reorder_slot.reorder_button->get_size() / 2.0f);
@@ -958,6 +1014,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	edit->set_accessibility_name(TTRC("Edit"));
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_edit_pressed));
 	edit->set_toggle_mode(true);
 	SET_DRAG_FORWARDING_CD(edit, EditorPropertyArray);
@@ -1054,33 +1111,36 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	EditorProperty *prop_key = nullptr;
 	if (p_idx != EditorPropertyDictionaryObject::NEW_KEY_INDEX && p_idx != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
 		prop_key = memnew(EditorPropertyNil);
-		hbox->add_child(prop_key);
 	}
 
 	EditorProperty *prop = memnew(EditorPropertyNil);
 	prop->set_h_size_flags(SIZE_EXPAND_FILL);
-	if (p_idx != EditorPropertyDictionaryObject::NEW_KEY_INDEX && p_idx != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
-		prop->set_draw_label(false);
-	}
 	hbox->add_child(prop);
+	if (prop_key) {
+		prop->add_inline_control(prop_key, INLINE_CONTROL_LEFT);
+	}
 
 	bool use_key = p_idx == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
 	bool is_untyped_dict = (use_key ? key_subtype : value_subtype) == Variant::NIL;
 
+	Button *edit_btn = nullptr;
+	Button *remove_btn = nullptr;
 	if (is_untyped_dict) {
-		Button *edit_btn = memnew(Button);
+		edit_btn = memnew(Button);
 		edit_btn->set_accessibility_name(TTRC("Edit"));
-		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
+		edit_btn->set_button_icon(EditorIconManager::get_icon(SNAME("Edit")));
 		edit_btn->set_disabled(is_read_only());
+		edit_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, slots.size()));
-		hbox->add_child(edit_btn);
+		prop->add_inline_control(edit_btn, INLINE_CONTROL_RIGHT);
 	} else if (p_idx >= 0) {
-		Button *remove_btn = memnew(Button);
+		remove_btn = memnew(Button);
 		remove_btn->set_accessibility_name(TTRC("Remove"));
-		remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+		remove_btn->set_button_icon(EditorIconManager::get_icon(SNAME("Remove")));
 		remove_btn->set_disabled(is_read_only());
+		remove_btn->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_remove_pressed).bind(slots.size()));
-		hbox->add_child(remove_btn);
+		prop->add_inline_control(remove_btn, INLINE_CONTROL_RIGHT);
 	}
 
 	if (add_panel) {
@@ -1094,6 +1154,8 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	slot.prop_key = prop_key;
 	slot.object = object;
 	slot.container = hbox;
+	slot.edit_button = edit_btn;
+	slot.remove_button = remove_btn;
 	int index = p_idx + (p_idx >= 0 ? page_index * page_length : 0);
 	slot.set_index(index);
 	slots.push_back(slot);
@@ -1136,7 +1198,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 }
 
 void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_string) {
-	PackedStringArray types = p_hint_string.split(";");
+	PackedStringArray types = p_hint_string.split(";", true, 1);
 	if (types.size() > 0 && !types[0].is_empty()) {
 		String key = types[0];
 		int hint_key_subtype_separator = key.find_char(':');
@@ -1198,6 +1260,10 @@ void EditorPropertyDictionary::set_preview_value(bool p_preview_value) {
 	preview_value = p_preview_value;
 }
 
+void EditorPropertyDictionary::make_passthrough(bool p_passthrough) {
+	edit->set_mouse_filter(p_passthrough ? Control::MOUSE_FILTER_PASS : Control::MOUSE_FILTER_STOP);
+}
+
 void EditorPropertyDictionary::update_property() {
 	Variant updated_val = get_edited_property_value();
 
@@ -1226,7 +1292,7 @@ void EditorPropertyDictionary::update_property() {
 	if (updated_val.get_type() != Variant::DICTIONARY) {
 		if (preview_value) {
 			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-			edit->set_button_icon(get_editor_theme_icon(SNAME("Nil")));
+			edit->set_button_icon(EditorIconManager::get_icon(SNAME("Nil")));
 			edit->set_text(dict_type_name);
 		} else {
 			edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -1259,7 +1325,7 @@ void EditorPropertyDictionary::update_property() {
 
 		edit->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-		edit->set_button_icon(get_editor_theme_icon(dict_type_name));
+		edit->set_button_icon(EditorIconManager::get_icon(dict_type_name));
 		edit->set_text(vformat("%s%s", dict_sub_type_name, ctr_str));
 		edit->set_tooltip_text(vformat(TTR("%s%s (size %d)"), dict_type_name, dict_sub_type_name, dict.size()));
 	} else {
@@ -1282,9 +1348,11 @@ void EditorPropertyDictionary::update_property() {
 			set_bottom_editor(container);
 
 			VBoxContainer *vbox = memnew(VBoxContainer);
+			vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			container->add_child(vbox);
 
 			property_vbox = memnew(VBoxContainer);
+			property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 			vbox->add_child(property_vbox);
 
@@ -1300,13 +1368,13 @@ void EditorPropertyDictionary::update_property() {
 			property_vbox->add_child(add_panel);
 			add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
 			VBoxContainer *add_vbox = memnew(VBoxContainer);
+			add_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			add_panel->add_child(add_vbox);
 
 			_create_new_property_slot(EditorPropertyDictionaryObject::NEW_KEY_INDEX);
 			_create_new_property_slot(EditorPropertyDictionaryObject::NEW_VALUE_INDEX);
 
-			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Key/Value Pair"));
-			button_add_item->set_button_icon(get_theme_icon(SNAME("Add"), EditorStringName(EditorIcons)));
+			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Key/Value Pair"), SNAME("Add")));
 			button_add_item->set_disabled(is_read_only());
 			button_add_item->set_accessibility_name(TTRC("Add"));
 			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_add_key_value));
@@ -1353,10 +1421,12 @@ void EditorPropertyDictionary::update_property() {
 					}
 					new_prop->set_read_only(true);
 					new_prop->set_selectable(false);
+					new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
 					new_prop->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 					new_prop->set_draw_background(false);
 					new_prop->set_use_folding(is_using_folding());
 					new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
+					new_prop->make_passthrough(true);
 					new_prop->set_draw_label(false);
 					EditorPropertyArray *arr_prop = Object::cast_to<EditorPropertyArray>(new_prop);
 					if (arr_prop) {
@@ -1367,6 +1437,9 @@ void EditorPropertyDictionary::update_property() {
 						dict_prop->set_preview_value(true);
 					}
 					slot.set_key_prop(new_prop);
+					if (slot.prop) {
+						slot.prop->add_inline_control(new_prop, INLINE_CONTROL_LEFT);
+					}
 				}
 			}
 
@@ -1400,12 +1473,31 @@ void EditorPropertyDictionary::update_property() {
 				new_prop->set_use_folding(is_using_folding());
 				new_prop->connect(SNAME("property_changed"), callable_mp(this, &EditorPropertyDictionary::_property_changed));
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
+				if (value_type == Variant::OBJECT) {
+					new_prop->connect("resource_selected", callable_mp(this, &EditorPropertyDictionary::_resource_selected), CONNECT_DEFERRED);
+				}
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
-					new_prop->set_draw_label(false);
+					new_prop->set_label(" ");
+					new_prop->set_label_overlayed(true);
 				}
 				new_prop->set_read_only(is_read_only());
+				if (slot.remove_button) {
+					new_prop->add_inline_control(slot.remove_button, INLINE_CONTROL_RIGHT);
+				}
+				if (slot.edit_button) {
+					new_prop->add_inline_control(slot.edit_button, INLINE_CONTROL_RIGHT);
+				}
+				if (slot.prop_key) {
+					new_prop->add_inline_control(slot.prop_key, INLINE_CONTROL_LEFT);
+				}
+
+				// Move the right container to be the last child, so that focusing on the next Control behaves in the expected order.
+				Control *right_cont = new_prop->get_inline_container(INLINE_CONTROL_RIGHT);
+				right_cont->get_parent()->move_child(right_cont, new_prop->get_child_count() - 1);
+
 				slot.set_prop(new_prop);
+
 			} else if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
 				Variant key = dict.get_key_at_index(slot.index);
 				String cs = key.get_construct_string();
@@ -1414,7 +1506,7 @@ void EditorPropertyDictionary::update_property() {
 
 			// We need to grab the focus of the property that is being changed, even if the type didn't actually changed.
 			// Otherwise, focus will stay on the change type button, which is not very user friendly.
-			if (changing_type_index == slot.index) {
+			if (changing_type_index == slot.index && (!change_type || !change_type->is_visible())) {
 				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
 				changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE; // Reset to avoid grabbing focus again.
 			}
@@ -1450,11 +1542,14 @@ void EditorPropertyDictionary::_object_id_selected(const StringName &p_property,
 	emit_signal(SNAME("object_id_selected"), p_property, p_id);
 }
 
+void EditorPropertyDictionary::_resource_selected(const String &p_path, Ref<Resource> p_resource) {
+	emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
+}
+
 void EditorPropertyDictionary::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			if (button_add_item) {
-				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 				add_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DictionaryAddItem")));
 			}
 		} break;
@@ -1499,6 +1594,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 	edit->set_accessibility_name(TTRC("Edit"));
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);
@@ -1596,9 +1692,11 @@ void EditorPropertyLocalizableString::update_property() {
 			set_bottom_editor(container);
 
 			VBoxContainer *vbox = memnew(VBoxContainer);
+			vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			container->add_child(vbox);
 
 			property_vbox = memnew(VBoxContainer);
+			property_vbox->set_theme_type_variation(SNAME("EditorPropertyContainer"));
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 			vbox->add_child(property_vbox);
 
@@ -1627,11 +1725,9 @@ void EditorPropertyLocalizableString::update_property() {
 		for (int i = 0; i < amount; i++) {
 			String prop_name;
 			Variant key;
-			Variant value;
 
 			prop_name = "indices/" + itos(i + offset);
 			key = dict.get_key_at_index(i + offset);
-			value = dict.get_value_at_index(i + offset);
 
 			EditorProperty *prop = memnew(EditorPropertyText);
 
@@ -1653,7 +1749,7 @@ void EditorPropertyLocalizableString::update_property() {
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
 			Button *edit_btn = memnew(Button);
 			edit_btn->set_accessibility_name(TTRC("Remove Translation"));
-			edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+			edit_btn->set_button_icon(EditorIconManager::get_icon(SNAME("Remove")));
 			hbox->add_child(edit_btn);
 			edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
 
@@ -1661,9 +1757,8 @@ void EditorPropertyLocalizableString::update_property() {
 		}
 
 		if (page_index == max_page) {
-			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Translation"));
+			button_add_item = memnew(EditorInspectorActionButton(TTRC("Add Translation"), SNAME("Add")));
 			button_add_item->set_accessibility_name(TTRC("Add Translation"));
-			button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_add_locale_popup));
 			property_vbox->add_child(button_add_item);
 		}
@@ -1682,16 +1777,6 @@ void EditorPropertyLocalizableString::update_property() {
 
 void EditorPropertyLocalizableString::_object_id_selected(const StringName &p_property, ObjectID p_id) {
 	emit_signal(SNAME("object_id_selected"), p_property, p_id);
-}
-
-void EditorPropertyLocalizableString::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			if (button_add_item) {
-				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			}
-		} break;
-	}
 }
 
 void EditorPropertyLocalizableString::_edit_pressed() {
@@ -1721,6 +1806,7 @@ EditorPropertyLocalizableString::EditorPropertyLocalizableString() {
 	edit->set_accessibility_name(TTRC("Edit"));
 	edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit->set_clip_text(true);
+	edit->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	edit->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyLocalizableString::_edit_pressed));
 	edit->set_toggle_mode(true);
 	add_child(edit);

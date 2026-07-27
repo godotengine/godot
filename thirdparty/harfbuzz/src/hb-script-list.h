@@ -223,6 +223,10 @@ HB_END_DECLS
  * @HB_SCRIPT_SUNUWAR: `Sunu`, Since: 10.0.0
  * @HB_SCRIPT_TODHRI: `Todr`, Since: 10.0.0
  * @HB_SCRIPT_TULU_TIGALARI: `Tutg`, Since: 10.0.0
+ * @HB_SCRIPT_BERIA_ERFE: `Berf`, Since: 11.5.0
+ * @HB_SCRIPT_SIDETIC: `Sidt`, Since: 11.5.0
+ * @HB_SCRIPT_TAI_YO: `Tayo`, Since: 11.5.0
+ * @HB_SCRIPT_TOLONG_SIKI: `Tols`, Since: 11.5.0
  * @HB_SCRIPT_INVALID: No script set
  *
  * Data type for scripts. Each #hb_script_t's value is an #hb_tag_t corresponding
@@ -460,6 +464,14 @@ typedef enum
   HB_SCRIPT_SUNUWAR			= HB_TAG ('S','u','n','u'), /*16.0*/
   HB_SCRIPT_TODHRI			= HB_TAG ('T','o','d','r'), /*16.0*/
   HB_SCRIPT_TULU_TIGALARI		= HB_TAG ('T','u','t','g'), /*16.0*/
+
+  /*
+   * Since 11.5.0
+   */
+  HB_SCRIPT_BERIA_ERFE			= HB_TAG ('B','e','r','f'), /*17.0*/
+  HB_SCRIPT_SIDETIC			= HB_TAG ('S','i','d','t'), /*17.0*/
+  HB_SCRIPT_TAI_YO			= HB_TAG ('T','a','y','o'), /*17.0*/
+  HB_SCRIPT_TOLONG_SIKI			= HB_TAG ('T','o','l','s'), /*17.0*/
 
   /* No script set. */
   HB_SCRIPT_INVALID			= HB_TAG_NONE,

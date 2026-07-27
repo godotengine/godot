@@ -1,0 +1,12 @@
+GH-110767
+---------
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_assigned_animation/return_value': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_autoplay/return_value': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_current_animation/return_value': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_queue/return_value': type changed value in new API, from "PackedStringArray" to "typedarray::StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/set_assigned_animation/arguments/0': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/set_autoplay/arguments/0': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/set_current_animation/arguments/0': type changed value in new API, from "String" to "StringName".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/signals/current_animation_changed/arguments/0': type changed value in new API, from "String" to "StringName".
+
+Return types and parameters changed to StringName to improve performance. Compatibility methods registered; No compatibility system for signal arguments.

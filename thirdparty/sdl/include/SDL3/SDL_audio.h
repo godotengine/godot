@@ -942,7 +942,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * Binding a stream to a device will set its output format for playback
  * devices, and its input format for recording devices, so they match the
  * device's settings. The caller is welcome to change the other end of the
- * stream's format at any time with SDL_SetAudioStreamFormat().
+ * stream's format at any time with SDL_SetAudioStreamFormat(). If the other
+ * end of the stream's format has never been set (the audio stream was created
+ * with a NULL audio spec), this function will set it to match the device
+ * end's format.
  *
  * \param devid an audio device to bind a stream to.
  * \param streams an array of audio streams to bind.
@@ -1021,7 +1024,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
 /**
  * Query an audio stream for its currently-bound device.
  *
- * This reports the audio device that an audio stream is currently bound to.
+ * This reports the logical audio device that an audio stream is currently bound to.
  *
  * If not bound, or invalid, this returns zero, which is not a valid device
  * ID.

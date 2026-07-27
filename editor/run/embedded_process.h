@@ -30,9 +30,11 @@
 
 #pragma once
 
+#include "core/os/process_id.h"
 #include "scene/gui/control.h"
 
 class ScriptEditorDebugger;
+class Timer;
 
 class EmbeddedProcessBase : public Control {
 	GDCLASS(EmbeddedProcessBase, Control);
@@ -62,9 +64,10 @@ public:
 	virtual bool is_embedding_completed() const = 0;
 	virtual bool is_embedding_in_progress() const = 0;
 	virtual bool is_process_focused() const = 0;
-	virtual void embed_process(OS::ProcessID p_pid) = 0;
+	virtual void embed_process(ProcessID p_pid) = 0;
 	virtual int get_embedded_pid() const = 0;
 	virtual void reset() = 0;
+	virtual void reset_timers() = 0;
 	virtual void request_close() = 0;
 	virtual void queue_update_embedded_process() = 0;
 
@@ -84,8 +87,8 @@ class EmbeddedProcess : public EmbeddedProcessBase {
 
 	bool application_has_focus = true;
 	uint64_t last_application_focus_time = 0;
-	OS::ProcessID focused_process_id = 0;
-	OS::ProcessID current_process_id = 0;
+	ProcessID focused_process_id = 0;
+	ProcessID current_process_id = 0;
 	bool embedding_grab_focus = false;
 	bool embedding_completed = false;
 	uint64_t start_embedding_time = 0;
@@ -115,9 +118,10 @@ public:
 	bool is_embedding_in_progress() const override;
 	bool is_embedding_completed() const override;
 	bool is_process_focused() const override;
-	void embed_process(OS::ProcessID p_pid) override;
+	void embed_process(ProcessID p_pid) override;
 	int get_embedded_pid() const override;
 	void reset() override;
+	void reset_timers() override;
 	void request_close() override;
 	void queue_update_embedded_process() override;
 

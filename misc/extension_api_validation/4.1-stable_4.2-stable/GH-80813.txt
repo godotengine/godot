@@ -1,0 +1,60 @@
+GH-80813
+--------
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/_post_process_key_value
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/add_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/advance
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/clear_caches
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/find_animation
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/find_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/get_animation
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/get_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/get_animation_library_list
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/get_animation_list
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/get_audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/has_animation
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/has_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/is_active
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/is_reset_on_save_enabled
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/remove_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/rename_animation_library
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/set_active
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/set_audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationPlayer/methods/set_reset_on_save_enabled
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/method_call_mode
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/playback_active
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/playback_process_mode
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/reset_on_save
+Validate extension JSON: API was removed: classes/AnimationPlayer/properties/root_node
+Validate extension JSON: API was removed: classes/AnimationTree/methods/_post_process_key_value
+Validate extension JSON: API was removed: classes/AnimationTree/methods/advance
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_position
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_position_accumulator
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_rotation
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_rotation_accumulator
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_scale
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_scale_accumulator
+Validate extension JSON: API was removed: classes/AnimationTree/methods/get_root_motion_track
+Validate extension JSON: API was removed: classes/AnimationTree/methods/is_active
+Validate extension JSON: API was removed: classes/AnimationTree/methods/set_active
+Validate extension JSON: API was removed: classes/AnimationTree/methods/set_audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationTree/methods/set_root_motion_track
+Validate extension JSON: API was removed: classes/AnimationTree/properties/active
+Validate extension JSON: API was removed: classes/AnimationTree/properties/audio_max_polyphony
+Validate extension JSON: API was removed: classes/AnimationTree/properties/process_callback
+Validate extension JSON: API was removed: classes/AnimationTree/properties/root_motion_track
+Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_finished
+Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_libraries_updated
+Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_list_changed
+Validate extension JSON: API was removed: classes/AnimationPlayer/signals/animation_started
+Validate extension JSON: API was removed: classes/AnimationPlayer/signals/caches_cleared
+Validate extension JSON: API was removed: classes/AnimationTree/signals/animation_finished
+Validate extension JSON: API was removed: classes/AnimationTree/signals/animation_started
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/seek/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AnimationTree/methods/get_tree_root/return_value': type changed value in new API, from "AnimationNode" to "AnimationRootNode".
+Validate extension JSON: Error: Field 'classes/AnimationTree/methods/set_tree_root/arguments/0': type changed value in new API, from "AnimationNode" to "AnimationRootNode".
+
+These definitions have been moved to those base classes, so the APIs are actually available.
+Some properties were renamed for integration, but the old setter/getters are kept.
+Also changed some methods name/argument/signature. Compatibility methods registered.

@@ -50,11 +50,11 @@
 //   even with threads that are already running.
 
 // These are used in very specific areas of the engine where it's critical that these guarantees are held
-#define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type)                    \
-	static_assert(sizeof(SafeNumeric<m_type>) == sizeof(m_type));   \
+#define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type) \
+	static_assert(sizeof(SafeNumeric<m_type>) == sizeof(m_type)); \
 	static_assert(alignof(SafeNumeric<m_type>) == alignof(m_type)); \
 	static_assert(std::is_trivially_destructible_v<std::atomic<m_type>>);
-#define SAFE_FLAG_TYPE_PUN_GUARANTEES                \
+#define SAFE_FLAG_TYPE_PUN_GUARANTEES \
 	static_assert(sizeof(SafeFlag) == sizeof(bool)); \
 	static_assert(alignof(SafeFlag) == alignof(bool));
 
@@ -164,8 +164,16 @@ public:
 		flag.store(true, std::memory_order_release);
 	}
 
+	_ALWAYS_INLINE_ bool set_if_clear() {
+		return !flag.exchange(true, std::memory_order_acq_rel);
+	}
+
 	_ALWAYS_INLINE_ void clear() {
 		flag.store(false, std::memory_order_release);
+	}
+
+	_ALWAYS_INLINE_ bool clear_if_set() {
+		return flag.exchange(false, std::memory_order_acq_rel);
 	}
 
 	_ALWAYS_INLINE_ void set_to(bool p_value) {

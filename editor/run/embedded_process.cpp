@@ -31,10 +31,15 @@
 #include "embedded_process.h"
 
 #include "core/config/project_settings.h"
+#include "core/input/input.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_string_names.h"
+#include "scene/main/timer.h"
 #include "scene/main/window.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
 
 void EmbeddedProcessBase::_notification(int p_what) {
 	switch (p_what) {
@@ -76,7 +81,6 @@ void EmbeddedProcessBase::_project_settings_changed() {
 void EmbeddedProcessBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("embedding_completed"));
 	ADD_SIGNAL(MethodInfo("embedding_failed"));
-	ADD_SIGNAL(MethodInfo("embedded_process_updated"));
 	ADD_SIGNAL(MethodInfo("embedded_process_focused"));
 }
 
@@ -185,12 +189,12 @@ int EmbeddedProcess::get_embedded_pid() const {
 	return current_process_id;
 }
 
-void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
+void EmbeddedProcess::embed_process(ProcessID p_pid) {
 	if (!window) {
 		return;
 	}
 
-	ERR_FAIL_COND_MSG(!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_EMBEDDING), "Embedded process not supported by this display server.");
+	ERR_FAIL_COND_MSG(!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_EMBEDDING), "Embedded process not supported by this display server.");
 
 	if (current_process_id != 0) {
 		// Stop embedding the last process.
@@ -219,11 +223,15 @@ void EmbeddedProcess::reset() {
 	embedding_completed = false;
 	start_embedding_time = 0;
 	embedding_grab_focus = false;
-	timer_embedding->stop();
-	timer_update_embedded_process->stop();
+	reset_timers();
 	set_process(false);
 	set_notify_transform(false);
 	queue_redraw();
+}
+
+void EmbeddedProcess::reset_timers() {
+	timer_embedding->stop();
+	timer_update_embedded_process->stop();
 }
 
 void EmbeddedProcess::request_close() {
@@ -294,7 +302,6 @@ void EmbeddedProcess::_update_embedded_process() {
 	}
 
 	DisplayServer::get_singleton()->embed_process(window->get_window_id(), current_process_id, get_screen_embedded_window_rect(), is_visible_in_tree(), must_grab_focus);
-	emit_signal(SNAME("embedded_process_updated"));
 }
 
 void EmbeddedProcess::_timer_embedding_timeout() {
@@ -362,7 +369,7 @@ void EmbeddedProcess::_check_mouse_over() {
 	}
 
 	// Don't grab the focus if mouse over another window.
-	DisplayServer::WindowID window_id_over = DisplayServer::get_singleton()->get_window_at_screen_position(mouse_position);
+	DisplayServerEnums::WindowID window_id_over = DisplayServer::get_singleton()->get_window_at_screen_position(mouse_position);
 	if (window_id_over > 0 && window_id_over != window->get_window_id()) {
 		return;
 	}
@@ -370,8 +377,8 @@ void EmbeddedProcess::_check_mouse_over() {
 	// Check if there's an exclusive popup, an open menu, or a tooltip.
 	// We don't want to grab focus to prevent the game window from coming to the front of the modal window
 	// or the open menu from closing when the mouse cursor moves outside the menu and over the embedded game.
-	Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
-	for (const DisplayServer::WindowID &window_id : wl) {
+	Vector<DisplayServerEnums::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+	for (const DisplayServerEnums::WindowID &window_id : wl) {
 		Window *w = Window::get_from_id(window_id);
 		if (w && (w->is_exclusive() || w->get_flag(Window::FLAG_POPUP))) {
 			return;
@@ -386,7 +393,7 @@ void EmbeddedProcess::_check_mouse_over() {
 }
 
 void EmbeddedProcess::_check_focused_process_id() {
-	OS::ProcessID process_id = DisplayServer::get_singleton()->get_focused_process_id();
+	ProcessID process_id = DisplayServer::get_singleton()->get_focused_process_id();
 	if (process_id != focused_process_id) {
 		focused_process_id = process_id;
 		if (focused_process_id == current_process_id) {
@@ -421,8 +428,8 @@ void EmbeddedProcess::_check_focused_process_id() {
 }
 
 Window *EmbeddedProcess::_get_current_modal_window() {
-	Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
-	for (const DisplayServer::WindowID &window_id : wl) {
+	Vector<DisplayServerEnums::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+	for (const DisplayServerEnums::WindowID &window_id : wl) {
 		Window *w = Window::get_from_id(window_id);
 		if (!w) {
 			continue;
@@ -435,8 +442,7 @@ Window *EmbeddedProcess::_get_current_modal_window() {
 	return nullptr;
 }
 
-EmbeddedProcess::EmbeddedProcess() :
-		EmbeddedProcessBase() {
+EmbeddedProcess::EmbeddedProcess() {
 	timer_embedding = memnew(Timer);
 	timer_embedding->set_wait_time(0.1);
 	timer_embedding->set_one_shot(true);

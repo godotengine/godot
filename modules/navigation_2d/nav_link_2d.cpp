@@ -203,7 +203,7 @@ Ref<NavLinkIteration2D> NavLink2D::get_iteration() {
 
 NavLink2D::NavLink2D() :
 		sync_dirty_request_list_element(this) {
-	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_LINK;
+	type = NavigationEnums2D::PathSegmentType::PATH_SEGMENT_TYPE_LINK;
 	iteration.instantiate();
 }
 

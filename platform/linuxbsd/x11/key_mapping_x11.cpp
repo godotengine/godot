@@ -1114,6 +1114,28 @@ void KeyMappingX11::initialize() {
 	xkeysym_unicode_map[0x13BE] = 0x0178;
 	xkeysym_unicode_map[0x20AC] = 0x20AC;
 
+	// Support keypad keycodes such as `XK_KP_Equal`.
+	// Values can be found in `X11/keysymdef.h` on line 278.
+	xkeysym_unicode_map[0xFF80] = 0x0020;
+	xkeysym_unicode_map[0xFF89] = 0x0009;
+	xkeysym_unicode_map[0xFFBD] = 0x003D;
+	xkeysym_unicode_map[0xFFAA] = 0x002A;
+	xkeysym_unicode_map[0xFFAB] = 0x002B;
+	xkeysym_unicode_map[0xFFAC] = 0x002C;
+	xkeysym_unicode_map[0xFFAD] = 0x002D;
+	xkeysym_unicode_map[0xFFAE] = 0x002E;
+	xkeysym_unicode_map[0xFFAF] = 0x002F;
+	xkeysym_unicode_map[0xFFB0] = 0x0030;
+	xkeysym_unicode_map[0xFFB1] = 0x0031;
+	xkeysym_unicode_map[0xFFB2] = 0x0032;
+	xkeysym_unicode_map[0xFFB3] = 0x0033;
+	xkeysym_unicode_map[0xFFB4] = 0x0034;
+	xkeysym_unicode_map[0xFFB5] = 0x0035;
+	xkeysym_unicode_map[0xFFB6] = 0x0036;
+	xkeysym_unicode_map[0xFFB7] = 0x0037;
+	xkeysym_unicode_map[0xFFB8] = 0x0038;
+	xkeysym_unicode_map[0xFFB9] = 0x0039;
+
 	// Scancode to physical location map.
 	// Ctrl.
 	location_map[0x25] = KeyLocation::LEFT;

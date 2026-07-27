@@ -32,8 +32,8 @@
 
 #include "../scene_replication_config.h"
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/box_container.h"
 
 class ConfirmationDialog;
 class MultiplayerSynchronizer;
@@ -44,8 +44,8 @@ class TreeItem;
 class PropertySelector;
 class SceneTreeDialog;
 
-class ReplicationEditor : public VBoxContainer {
-	GDCLASS(ReplicationEditor, VBoxContainer);
+class ReplicationEditor : public EditorDock {
+	GDCLASS(ReplicationEditor, EditorDock);
 
 private:
 	MultiplayerSynchronizer *current = nullptr;
@@ -59,6 +59,8 @@ private:
 
 	Ref<SceneReplicationConfig> config;
 	NodePath deleting;
+
+	MarginContainer *tree_mc = nullptr;
 	Tree *tree = nullptr;
 
 	PropertySelector *prop_selector = nullptr;
@@ -91,9 +93,10 @@ private:
 	void _add_sync_property(String p_path);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
-	void _notification(int p_what);
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 public:
 	void edit(MultiplayerSynchronizer *p_object);

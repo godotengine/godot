@@ -62,7 +62,7 @@ bool DebuggerMarshalls::ScriptStackDump::deserialize(const Array &p_arr) {
 	return true;
 }
 
-Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
+Array DebuggerMarshalls::ScriptStackVariable::serialize(int p_max_size) {
 	Array arr = { name, type, value.get_type() };
 
 	Variant var = value;
@@ -76,21 +76,25 @@ Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
 		ERR_PRINT("Failed to encode variant.");
 	}
 
-	if (len > max_size) {
+	if (len > p_max_size) {
 		arr.push_back(Variant());
 	} else {
 		arr.push_back(var);
 	}
+
+	arr.push_back(type_hint);
+
 	return arr;
 }
 
 bool DebuggerMarshalls::ScriptStackVariable::deserialize(const Array &p_arr) {
-	CHECK_SIZE(p_arr, 4, "ScriptStackVariable");
+	CHECK_SIZE(p_arr, 5, "ScriptStackVariable");
 	name = p_arr[0];
 	type = p_arr[1];
 	var_type = p_arr[2];
 	value = p_arr[3];
-	CHECK_END(p_arr, 4, "ScriptStackVariable");
+	type_hint = p_arr[4];
+	CHECK_END(p_arr, 5, "ScriptStackVariable");
 	return true;
 }
 
@@ -176,4 +180,28 @@ Ref<Shortcut> DebuggerMarshalls::deserialize_key_shortcut(const Array &p_keys) {
 	shortcut.instantiate();
 	shortcut->set_events(key_events);
 	return shortcut;
+}
+
+String DebuggerMarshalls::parse_type_from_variant(const Variant &p_variant) {
+	String name;
+
+	if (p_variant.get_type() == Variant::OBJECT) {
+		const Object *obj = p_variant.get_validated_object();
+		if (obj) {
+			const ScriptInstance *script_instance = obj->get_script_instance();
+
+			if (script_instance) {
+				Ref<Script> script = script_instance->get_script();
+				if (script.is_valid()) {
+					name = script->get_global_name();
+				}
+			}
+
+			if (name.is_empty()) {
+				return obj->get_class();
+			}
+		}
+	}
+
+	return name;
 }

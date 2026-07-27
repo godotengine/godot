@@ -101,6 +101,9 @@ public:
 
 	/// How backfacing triangles should be treated
 	EBackFaceMode				mBackFaceMode				= EBackFaceMode::IgnoreBackFaces;
+
+	/// Max squared distance to consider a vertex to be the same as another vertex, used by the internal edge removal algorithm to determine if two edges are shared. (unit: meter^2)
+	float						mInternalEdgeRemovalVertexToleranceSq = cDefaultInternalEdgeRemovalVertexToleranceSq;
 };
 
 JPH_NAMESPACE_END

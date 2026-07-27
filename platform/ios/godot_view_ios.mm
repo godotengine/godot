@@ -32,6 +32,7 @@
 
 #import "display_layer_ios.h"
 
+#include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 
 @interface GDTViewIOS ()
@@ -61,10 +62,12 @@ GODOT_CLANG_WARNING_POP
 #else
 		layer = [GDTMetalLayer layer];
 #endif
+#if defined(GLES3_ENABLED)
 	} else if ([driverName isEqualToString:@"opengl3"]) {
 		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in iOS 12.0.
 		layer = [GDTOpenGLLayer layer];
 		GODOT_CLANG_WARNING_POP
+#endif
 	} else {
 		return nil;
 	}
@@ -83,5 +86,11 @@ GODOT_CLANG_WARNING_POP
 @end
 
 GDTView *GDTViewCreate() {
-	return [GDTViewIOS new];
+	GDTViewIOS *view = [GDTViewIOS new];
+	if (GLOBAL_GET("display/window/ios/allow_high_refresh_rate")) {
+		view.preferredFrameRate = 120;
+	} else {
+		view.preferredFrameRate = 60;
+	}
+	return view;
 }

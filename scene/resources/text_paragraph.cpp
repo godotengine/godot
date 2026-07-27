@@ -31,8 +31,11 @@
 #include "text_paragraph.h"
 #include "text_paragraph.compat.inc"
 
+#include "core/object/class_db.h"
+
 void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TextParagraph::clear);
+	ClassDB::bind_method(D_METHOD("duplicate"), &TextParagraph::duplicate);
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &TextParagraph::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextParagraph::get_direction);
@@ -72,6 +75,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_string", "text", "font", "font_size", "language", "meta"), &TextParagraph::add_string, DEFVAL(""), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length", "baseline"), &TextParagraph::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align", "baseline"), &TextParagraph::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("has_object", "key"), &TextParagraph::has_object);
 
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &TextParagraph::set_alignment);
 	ClassDB::bind_method(D_METHOD("get_alignment"), &TextParagraph::get_alignment);
@@ -218,40 +222,7 @@ void TextParagraph::_shape_lines() const {
 			}
 		}
 
-		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
-		if (overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-			switch (overrun_behavior) {
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-				} break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE: {
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-				} break;
-				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_ELLIPSIS:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-					break;
-				case TextServer::OVERRUN_TRIM_WORD:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-					break;
-				case TextServer::OVERRUN_TRIM_CHAR:
-					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-					break;
-				case TextServer::OVERRUN_NO_TRIMMING:
-					break;
-			}
-		}
+		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::get_overrun_flags_from_behavior(overrun_behavior);
 
 		bool autowrap_enabled = brk_flags.has_flag(TextServer::BREAK_WORD_BOUND) || brk_flags.has_flag(TextServer::BREAK_GRAPHEME_BOUND);
 
@@ -353,6 +324,33 @@ void TextParagraph::clear() {
 	lines_rid.clear();
 	TS->shaped_text_clear(rid);
 	TS->shaped_text_clear(dropcap_rid);
+}
+
+Ref<TextParagraph> TextParagraph::duplicate() const {
+	Ref<TextParagraph> copy;
+	copy.instantiate();
+	if (dropcap_rid.is_valid()) {
+		TS->free_rid(copy->dropcap_rid);
+		copy->dropcap_rid = TS->shaped_text_duplicate(dropcap_rid);
+	}
+	copy->dropcap_lines = dropcap_lines;
+	copy->dropcap_margins = dropcap_margins;
+	if (rid.is_valid()) {
+		TS->free_rid(copy->rid);
+		copy->rid = TS->shaped_text_duplicate(rid);
+	}
+	copy->lines_dirty = true;
+	copy->line_spacing = line_spacing;
+	copy->width = width;
+	copy->max_lines_visible = max_lines_visible;
+	copy->brk_flags = brk_flags;
+	copy->jst_flags = jst_flags;
+	copy->el_char = el_char;
+	copy->overrun_behavior = overrun_behavior;
+	copy->alignment = alignment;
+	copy->tab_stops = tab_stops;
+
+	return copy;
 }
 
 void TextParagraph::set_preserve_invalid(bool p_enabled) {
@@ -479,6 +477,12 @@ bool TextParagraph::resize_object(Variant p_key, const Size2 &p_size, InlineAlig
 	bool res = TS->shaped_text_resize_object(rid, p_key, p_size, p_inline_align, p_baseline);
 	lines_dirty = true;
 	return res;
+}
+
+bool TextParagraph::has_object(Variant p_key) const {
+	_THREAD_SAFE_METHOD_
+
+	return TS->shaped_text_has_object(rid, p_key);
 }
 
 void TextParagraph::set_alignment(HorizontalAlignment p_alignment) {
@@ -693,7 +697,7 @@ Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
 	}
 
 	for (int i = 0; i <= p_line; i++) {
-		float l_width = width;
+		float l_width = width > 0 ? width : get_size().x;
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = 0.f;
 			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]);
@@ -714,7 +718,7 @@ Rect2 TextParagraph::get_line_object_rect(int p_line, Variant p_key) const {
 			}
 		}
 		float length = TS->shaped_text_get_width(lines_rid[i]);
-		if (width > 0) {
+		if (l_width > 0) {
 			switch (alignment) {
 				case HORIZONTAL_ALIGNMENT_FILL:
 					if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
@@ -848,12 +852,13 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 
 	if (h_offset > 0) {
 		// Draw dropcap.
+		float l_width = width > 0 ? width : get_size().x;
 		Vector2 dc_off = ofs;
 		if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
 			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
-				dc_off.x += width - h_offset;
+				dc_off.x += l_width - h_offset;
 			} else {
-				dc_off.y += width - h_offset;
+				dc_off.y += l_width - h_offset;
 			}
 		}
 		TS->shaped_text_draw(dropcap_rid, p_canvas, dc_off + Vector2(0, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.size.y + dropcap_margins.position.y / 2), -1, -1, p_dc_color, p_oversampling);
@@ -862,7 +867,7 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 	int lines_visible = (max_lines_visible >= 0) ? MIN(max_lines_visible, (int)lines_rid.size()) : (int)lines_rid.size();
 
 	for (int i = 0; i < lines_visible; i++) {
-		float l_width = width;
+		float l_width = width > 0 ? width : get_size().x;
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
 			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]);
@@ -883,7 +888,7 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 			}
 		}
 		float line_width = TS->shaped_text_get_width(lines_rid[i]);
-		if (width > 0) {
+		if (l_width > 0) {
 			switch (alignment) {
 				case HORIZONTAL_ALIGNMENT_FILL:
 					if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
@@ -952,19 +957,20 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 
 	if (h_offset > 0) {
 		// Draw dropcap.
+		float l_width = width > 0 ? width : get_size().x;
 		Vector2 dc_off = ofs;
 		if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
 			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
-				dc_off.x += width - h_offset;
+				dc_off.x += l_width - h_offset;
 			} else {
-				dc_off.y += width - h_offset;
+				dc_off.y += l_width - h_offset;
 			}
 		}
 		TS->shaped_text_draw_outline(dropcap_rid, p_canvas, dc_off + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_dc_color, p_oversampling);
 	}
 
 	for (int i = 0; i < (int)lines_rid.size(); i++) {
-		float l_width = width;
+		float l_width = width > 0 ? width : get_size().x;
 		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
 			ofs.x = p_pos.x;
 			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]);
@@ -985,7 +991,7 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 			}
 		}
 		float length = TS->shaped_text_get_width(lines_rid[i]);
-		if (width > 0) {
+		if (l_width > 0) {
 			switch (alignment) {
 				case HORIZONTAL_ALIGNMENT_FILL:
 					if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
@@ -1086,11 +1092,12 @@ void TextParagraph::draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color
 
 	if (h_offset > 0) {
 		// Draw dropcap.
+		float l_width = width > 0 ? width : get_size().x;
 		if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
 			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
-				ofs.x += width - h_offset;
+				ofs.x += l_width - h_offset;
 			} else {
-				ofs.y += width - h_offset;
+				ofs.y += l_width - h_offset;
 			}
 		}
 		TS->shaped_text_draw(dropcap_rid, p_canvas, ofs + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_color, p_oversampling);
@@ -1110,11 +1117,12 @@ void TextParagraph::draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int
 
 	if (h_offset > 0) {
 		// Draw dropcap.
+		float l_width = width > 0 ? width : get_size().x;
 		if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
 			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
-				ofs.x += width - h_offset;
+				ofs.x += l_width - h_offset;
 			} else {
-				ofs.y += width - h_offset;
+				ofs.y += l_width - h_offset;
 			}
 		}
 		TS->shaped_text_draw_outline(dropcap_rid, p_canvas, ofs + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_color, p_oversampling);

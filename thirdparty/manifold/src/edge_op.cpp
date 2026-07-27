@@ -202,6 +202,7 @@ namespace manifold {
  */
 void Manifold::Impl::CleanupTopology() {
   if (!halfedge_.size()) return;
+  DEBUG_ASSERT(IsManifold(), logicErr, "polygon mesh is not manifold!");
 
   // In the case of a very bad triangulation, it is possible to create pinched
   // verts. They must be removed before edge collapse.

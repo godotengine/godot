@@ -31,13 +31,26 @@
 #pragma once
 
 #include "scene/gui/box_container.h"
+#include "scene/gui/margin_container.h"
 #include "scene/resources/theme.h"
 
 class Button;
 class ColorPickerButton;
 class ColorRect;
-class MarginContainer;
+class PackedScene;
 class ScrollContainer;
+
+class ScalableContainer : public MarginContainer {
+	GDCLASS(ScalableContainer, MarginContainer);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	virtual Size2 get_minimum_size() const override;
+
+	ScalableContainer();
+};
 
 class ThemeEditorPreview : public VBoxContainer {
 	GDCLASS(ThemeEditorPreview, VBoxContainer);
@@ -57,12 +70,6 @@ class ThemeEditorPreview : public VBoxContainer {
 		int font_size = 16;
 	} theme_cache;
 
-	double time_left = 0;
-
-	void _propagate_redraw(Control *p_at);
-	void _refresh_interval();
-	void _preview_visibility_changed();
-
 	void _picker_button_cbk();
 	Control *_find_hovered_control(Control *p_parent, Vector2 p_mouse_position);
 
@@ -70,9 +77,11 @@ class ThemeEditorPreview : public VBoxContainer {
 	void _gui_input_picker_overlay(const Ref<InputEvent> &p_event);
 	void _reset_picker_overlay();
 
+	void _update_preview_bg();
+
 protected:
 	HBoxContainer *preview_toolbar = nullptr;
-	MarginContainer *preview_content = nullptr;
+	ScalableContainer *preview_content = nullptr;
 	Button *picker_button = nullptr;
 
 	void add_preview_overlay(Control *p_overlay);

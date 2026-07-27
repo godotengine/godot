@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationMixer" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationMixer" inherits="Node" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for [AnimationPlayer] and [AnimationTree].
 	</brief_description>
@@ -350,6 +350,7 @@
 			<param index="0" name="anim_name" type="StringName" />
 			<description>
 				Notifies when an animation starts playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping.
 			</description>
 		</signal>
 		<signal name="caches_cleared">

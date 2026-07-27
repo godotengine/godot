@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Collision/CollisionGroup.h"
-#include "Jolt/Physics/Collision/GroupFilter.h"
+#include <Jolt/Physics/Collision/CollisionGroup.h>
+#include <Jolt/Physics/Collision/GroupFilter.h>
 
 class JoltObject3D;
 

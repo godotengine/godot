@@ -15,6 +15,8 @@
 #include <math.h>
 #include <stddef.h>
 
+#include "sharpyuv/sharpyuv.h"
+
 static int ToFixed16(float f) { return (int)floor(f * (1 << 16) + 0.5f); }
 
 void SharpYuvComputeConversionMatrix(const SharpYuvColorSpace* yuv_color_space,

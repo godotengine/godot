@@ -30,28 +30,35 @@
 
 #pragma once
 
-#include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/pair.h"
-#include "core/variant/array.h"
 #include "core/variant/variant_deep_duplicate.h"
 
+class Array;
+class StringName;
 class Variant;
-
 struct ContainerType;
+struct ContainerTypeValidate;
 struct DictionaryPrivate;
 struct StringLikeVariantComparator;
-struct VariantHasher;
 
-class Dictionary {
+/**
+ * Key-value Variant container (aka hash table or dictionary) using robin-hood hashing.
+ *
+ * Uses `HashMap` internally, thus remembers insertion order and is pointer-stable.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
+class _WARN_UNUSED_ Dictionary {
 	mutable DictionaryPrivate *_p;
 
 	void _ref(const Dictionary &p_from) const;
 	void _unref() const;
 
 public:
-	using ConstIterator = HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator;
+	using ConstIterator = HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator;
 
 	ConstIterator begin() const;
 	ConstIterator end() const;
@@ -73,6 +80,7 @@ public:
 
 	int size() const;
 	bool is_empty() const;
+	void reserve(int p_new_capacity);
 	void clear();
 	void sort();
 	void merge(const Dictionary &p_dictionary, bool p_overwrite = false);
@@ -86,10 +94,10 @@ public:
 
 	bool operator==(const Dictionary &p_dictionary) const;
 	bool operator!=(const Dictionary &p_dictionary) const;
-	bool recursive_equal(const Dictionary &p_dictionary, int recursion_count) const;
+	bool recursive_equal(const Dictionary &p_dictionary, int p_recursion_count) const;
 
 	uint32_t hash() const;
-	uint32_t recursive_hash(int recursion_count) const;
+	uint32_t recursive_hash(int p_recursion_count) const;
 	void operator=(const Dictionary &p_dictionary);
 
 	void assign(const Dictionary &p_dictionary);
@@ -100,7 +108,7 @@ public:
 
 	Dictionary duplicate(bool p_deep = false) const;
 	Dictionary duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
-	Dictionary recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
+	Dictionary recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const;
 
 	void set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type);
 	void set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script);
@@ -121,6 +129,8 @@ public:
 	StringName get_typed_value_class_name() const;
 	Variant get_typed_key_script() const;
 	Variant get_typed_value_script() const;
+	const ContainerTypeValidate &get_key_validator() const;
+	const ContainerTypeValidate &get_value_validator() const;
 
 	void make_read_only();
 	bool is_read_only() const;

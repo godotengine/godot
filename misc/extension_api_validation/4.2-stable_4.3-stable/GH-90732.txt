@@ -1,0 +1,6 @@
+GH-90732
+--------
+Validate extension JSON: Error: Field 'classes/TextServer/methods/shaped_text_get_word_breaks/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_get_word_breaks/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument. Compatibility method registered.

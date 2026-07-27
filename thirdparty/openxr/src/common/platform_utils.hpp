@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -361,7 +361,7 @@ static inline bool PlatformGetGlobalRuntimeFileName(uint16_t major_version, std:
     return false;
 }
 
-// Android system properties are sufficiently different from environment variables that we are not re-using
+// Android system properties are sufficiently different from environment variables that we are not reusing
 // PlatformUtilsGetEnv for this purpose
 static inline std::string PlatformUtilsGetAndroidSystemProperty(const char* name) {
     std::string result;

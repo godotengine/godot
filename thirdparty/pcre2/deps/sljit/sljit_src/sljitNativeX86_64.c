@@ -152,20 +152,20 @@ static sljit_u8* emit_x86_instruction(struct sljit_compiler *compiler, sljit_uw 
 	if (a == SLJIT_IMM) {
 		if (flags & EX86_BIN_INS) {
 			if (imma <= 127 && imma >= -128) {
-				inst_size += 1;
+				inst_size += sizeof(sljit_s8);
 				flags |= EX86_BYTE_ARG;
 			} else
-				inst_size += 4;
+				inst_size += sizeof(sljit_s32);
 		} else if (flags & EX86_SHIFT_INS) {
 			SLJIT_ASSERT(imma <= (compiler->mode32 ? 0x1f : 0x3f));
 			if (imma != 1) {
-				inst_size++;
+				inst_size += sizeof(sljit_s8);
 				flags |= EX86_BYTE_ARG;
 			}
 		} else if (flags & EX86_BYTE_ARG)
-			inst_size++;
+			inst_size += sizeof(sljit_s8);
 		else if (flags & EX86_HALF_ARG)
-			inst_size += sizeof(short);
+			inst_size += sizeof(sljit_s16);
 		else
 			inst_size += sizeof(sljit_s32);
 	} else {
@@ -362,7 +362,7 @@ static sljit_u8* detect_far_jump_type(struct sljit_jump *jump, sljit_u8 *code_pt
 {
 	sljit_uw type = jump->flags >> TYPE_SHIFT;
 
-	int short_addr = !(jump->flags & SLJIT_REWRITABLE_JUMP) && (jump->flags & JUMP_ADDR) && (jump->u.target <= 0xffffffff);
+	int short_addr = ((jump->flags & (SLJIT_REWRITABLE_JUMP | JUMP_ADDR)) == JUMP_ADDR) && (jump->u.target <= 0xffffffff);
 
 	/* The relative jump below specialized for this case. */
 	SLJIT_ASSERT(reg_map[TMP_REG2] >= 8 && TMP_REG2 != SLJIT_TMP_DEST_REG);
@@ -805,7 +805,7 @@ static sljit_s32 call_with_args(struct sljit_compiler *compiler, sljit_s32 arg_t
 	if (word_arg_count == 0)
 		return SLJIT_SUCCESS;
 
-	if (word_arg_count >= 3) {
+	if (word_arg_count >= 3 || src == SLJIT_R2) {
 		if (src == SLJIT_R2)
 			*src_ptr = TMP_REG1;
 		EMIT_MOV(compiler, TMP_REG1, 0, SLJIT_R2, 0);
@@ -1029,13 +1029,28 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_select(struct sljit_compiler *comp
 	sljit_s32 src1, sljit_sw src1w,
 	sljit_s32 src2_reg)
 {
+	sljit_u8* inst;
+
 	CHECK_ERROR();
 	CHECK(check_sljit_emit_select(compiler, type, dst_reg, src1, src1w, src2_reg));
 
 	ADJUST_LOCAL_OFFSET(src1, src1w);
 
 	compiler->mode32 = type & SLJIT_32;
-	type &= ~SLJIT_32;
+
+	if (type & SLJIT_COMPARE_SELECT) {
+		if (!FAST_IS_REG(src1)) {
+			EMIT_MOV(compiler, TMP_REG2, 0, src1, src1w);
+			src1 = TMP_REG2;
+			src1w = 0;
+		}
+
+		inst = emit_x86_instruction(compiler, 1, src1, 0, src2_reg, 0);
+		FAIL_IF(!inst);
+		*inst = CMP_r_rm;
+	}
+
+	type &= ~(SLJIT_32 | SLJIT_COMPARE_SELECT);
 
 	if (dst_reg != src2_reg) {
 		if (dst_reg == src1) {

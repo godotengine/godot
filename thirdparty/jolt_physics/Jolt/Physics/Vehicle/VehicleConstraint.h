@@ -74,9 +74,11 @@ public:
 
 	/// Defines the maximum pitch/roll angle (rad), can be used to avoid the car from getting upside down. The vehicle up direction will stay within a cone centered around the up axis with half top angle mMaxPitchRollAngle, set to pi to turn off.
 	void						SetMaxPitchRollAngle(float inMaxPitchRollAngle) { mCosMaxPitchRollAngle = Cos(inMaxPitchRollAngle); }
+	float						GetMaxPitchRollAngle() const				{ return ACos(mCosMaxPitchRollAngle); }
 
 	/// Set the interface that tests collision between wheel and ground
 	void						SetVehicleCollisionTester(const VehicleCollisionTester *inTester) { mVehicleCollisionTester = inTester; }
+	const VehicleCollisionTester *GetVehicleCollisionTester() const			{ return mVehicleCollisionTester; }
 
 	/// Callback function to combine the friction of a tire with the friction of the body it is colliding with.
 	/// On input ioLongitudinalFriction and ioLateralFriction contain the friction of the tire, on output they should contain the combined friction with inBody2.
@@ -181,7 +183,7 @@ public:
 	uint						GetNumStepsBetweenCollisionTestInactive() const { return mNumStepsBetweenCollisionTestInactive; }
 
 	// Generic interface of a constraint
-	virtual bool				IsActive() const override					{ return mIsActive && Constraint::IsActive(); }
+	virtual bool				IsActive() const override					{ return mIsActive && mBody->IsInBroadPhase() && Constraint::IsActive(); }
 	virtual void				NotifyShapeChanged(const BodyID &inBodyID, Vec3Arg inDeltaCOM) override { /* Do nothing */ }
 	virtual void				SetupVelocityConstraint(float inDeltaTime) override;
 	virtual void				ResetWarmStart() override;
@@ -237,8 +239,8 @@ private:
 	{
 		float body_friction = inBody2.GetFriction();
 
-		ioLongitudinalFriction = sqrt(ioLongitudinalFriction * body_friction);
-		ioLateralFriction = sqrt(ioLateralFriction * body_friction);
+		ioLongitudinalFriction = Sqrt(ioLongitudinalFriction * body_friction);
+		ioLateralFriction = Sqrt(ioLateralFriction * body_friction);
 	};
 
 	// Callbacks

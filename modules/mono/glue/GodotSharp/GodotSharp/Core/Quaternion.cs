@@ -338,7 +338,7 @@ namespace Godot
         /// <returns>A <see langword="bool"/> for whether the quaternion is normalized or not.</returns>
         public readonly bool IsNormalized()
         {
-            return Mathf.Abs(LengthSquared() - 1) <= Mathf.Epsilon;
+            return Mathf.IsEqualApprox(LengthSquared(), 1, Mathf.Epsilon);
         }
 
         public readonly Quaternion Log()
@@ -576,6 +576,10 @@ namespace Godot
             {
                 if (d >= 0.0f)
                 {
+                    X = 0.0f;
+                    Y = 0.0f;
+                    Z = 0.0f;
+                    W = 1.0f;
                     return; // Vectors are same.
                 }
                 Vector3 axis = n0.GetAnyPerpendicular();
@@ -704,6 +708,15 @@ namespace Godot
         {
             return new Quaternion(left.X - right.X, left.Y - right.Y, left.Z - right.Z, left.W - right.W);
         }
+
+        /// <summary>
+        /// Returns the same value as if the <c>+</c> was not there.
+        /// Unary <c>+</c> does nothing, but sometimes it can make your
+        /// code more readable.
+        /// </summary>
+        /// <param name="quat">The quaternion to do nothing to.</param>
+        /// <returns>The original quaternion.</returns>
+        public static Quaternion operator +(Quaternion quat) => quat;
 
         /// <summary>
         /// Returns the negative value of the <see cref="Quaternion"/>.

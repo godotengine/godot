@@ -30,34 +30,20 @@
 
 #pragma once
 
-#ifdef GDEXTENSION
-
-// Headers for building as GDExtension plug-in.
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/templates/vector.hpp>
-#include <godot_cpp/variant/string.hpp>
-
-using namespace godot;
-
-#elif defined(GODOT_MODULE)
-
-// Headers for building as built-in module.
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
-#endif
-
+#include <hb-icu.h>
+#include <hb.h>
 #include <unicode/uchar.h>
 #include <unicode/uloc.h>
 #include <unicode/uscript.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
 
-#include <hb-icu.h>
-#include <hb.h>
-
 class ScriptIterator {
 	static const int PAREN_STACK_DEPTH = 128;
+	static const int EMOJI_STACK_DEPTH = 32;
 
 public:
 	struct ScriptRange {
@@ -68,7 +54,8 @@ public:
 	Vector<ScriptRange> script_ranges;
 
 private:
-	static bool same_script(int32_t p_script_one, int32_t p_script_two);
+	inline static bool same_script(int32_t p_script_one, int32_t p_script_two);
+	inline static bool is_emoji(UChar32 p_c, UChar32 p_next);
 
 public:
 	ScriptIterator(const String &p_string, int p_start, int p_length);

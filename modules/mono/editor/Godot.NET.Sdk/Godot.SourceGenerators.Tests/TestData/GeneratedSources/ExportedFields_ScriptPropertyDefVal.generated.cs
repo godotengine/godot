@@ -11,7 +11,7 @@ partial class ExportedFields
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     internal new static global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant> GetGodotPropertyDefaultValues()
     {
-        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(60);
+        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(62);
         bool ___fieldBoolean_default_value = true;
         values.Add(PropertyName.@_fieldBoolean, global::Godot.Variant.From<bool>(___fieldBoolean_default_value));
         char ___fieldChar_default_value = 'f';
@@ -38,6 +38,8 @@ partial class ExportedFields
         values.Add(PropertyName.@_fieldDouble, global::Godot.Variant.From<double>(___fieldDouble_default_value));
         string ___fieldString_default_value = "foo";
         values.Add(PropertyName.@_fieldString, global::Godot.Variant.From<string>(___fieldString_default_value));
+        float ___fieldStaticImport_default_value = global::Godot.Mathf.RadToDeg(2  * global::Godot.Mathf.Pi);
+        values.Add(PropertyName.@_fieldStaticImport, global::Godot.Variant.From<float>(___fieldStaticImport_default_value));
         global::Godot.Vector2 ___fieldVector2_default_value = new(10f, 10f);
         values.Add(PropertyName.@_fieldVector2, global::Godot.Variant.From<global::Godot.Vector2>(___fieldVector2_default_value));
         global::Godot.Vector2I ___fieldVector2I_default_value = global::Godot.Vector2I.Up;
@@ -116,6 +118,8 @@ partial class ExportedFields
         values.Add(PropertyName.@_fieldGodotObjectOrDerived, global::Godot.Variant.From<global::Godot.GodotObject>(___fieldGodotObjectOrDerived_default_value));
         global::Godot.Texture ___fieldGodotResourceTexture_default_value = default;
         values.Add(PropertyName.@_fieldGodotResourceTexture, global::Godot.Variant.From<global::Godot.Texture>(___fieldGodotResourceTexture_default_value));
+        global::Godot.Texture ___fieldGodotResourceTextureWithInitializer_default_value = new()  { ResourceName  = ""   };
+        values.Add(PropertyName.@_fieldGodotResourceTextureWithInitializer, global::Godot.Variant.From<global::Godot.Texture>(___fieldGodotResourceTextureWithInitializer_default_value));
         global::Godot.StringName ___fieldStringName_default_value = new global::Godot.StringName("foo");
         values.Add(PropertyName.@_fieldStringName, global::Godot.Variant.From<global::Godot.StringName>(___fieldStringName_default_value));
         global::Godot.NodePath ___fieldNodePath_default_value = new global::Godot.NodePath("foo");

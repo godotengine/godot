@@ -1,0 +1,5 @@
+GH-88014
+--------
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/methods/get_title
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/methods/set_title
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/properties/title

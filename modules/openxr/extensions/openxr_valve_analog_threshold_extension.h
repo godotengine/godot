@@ -32,8 +32,6 @@
 
 #include "../action_map/openxr_binding_modifier.h"
 #include "../action_map/openxr_haptic_feedback.h"
-#include "../util.h"
-#include "core/io/resource.h"
 #include "openxr_extension_wrapper.h"
 
 class OpenXRValveAnalogThresholdExtension : public OpenXRExtensionWrapper {
@@ -48,7 +46,7 @@ public:
 	OpenXRValveAnalogThresholdExtension();
 	virtual ~OpenXRValveAnalogThresholdExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	bool is_available();
 

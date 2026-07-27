@@ -33,6 +33,8 @@
 #include "noise.h"
 
 #include "core/object/ref_counted.h"
+#include "core/object/worker_thread_pool.h"
+#include "scene/resources/gradient.h"
 #include "scene/resources/texture.h"
 
 class NoiseTexture2D : public Texture2D {
@@ -41,7 +43,7 @@ class NoiseTexture2D : public Texture2D {
 private:
 	Ref<Image> image;
 
-	Thread noise_thread;
+	WorkerThreadPool::TaskID current_task_id = WorkerThreadPool::INVALID_TASK_ID;
 
 	bool first_time = true;
 	bool update_queued = false;
@@ -64,7 +66,7 @@ private:
 	Ref<Noise> noise;
 
 	void _thread_done(const Ref<Image> &p_image);
-	static void _thread_function(void *p_ud);
+	void _thread_function();
 
 	void _queue_update();
 	Ref<Image> _generate_texture();

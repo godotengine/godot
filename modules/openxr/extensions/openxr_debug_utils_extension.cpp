@@ -31,6 +31,7 @@
 #include "openxr_debug_utils_extension.h"
 
 #include "../openxr_api.h"
+
 #include "core/config/project_settings.h"
 #include "core/string/print_string.h"
 
@@ -50,7 +51,7 @@ OpenXRDebugUtilsExtension::~OpenXRDebugUtilsExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRDebugUtilsExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRDebugUtilsExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_EXT_DEBUG_UTILS_EXTENSION_NAME] = &debug_utils_ext;

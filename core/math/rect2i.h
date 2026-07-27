@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/vector2i.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Rect2;
@@ -225,6 +226,14 @@ struct [[nodiscard]] Rect2i {
 
 	explicit operator String() const;
 	operator Rect2() const;
+
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_32(uint32_t(position.x));
+		h = hash_murmur3_one_32(uint32_t(position.y), h);
+		h = hash_murmur3_one_32(uint32_t(size.x), h);
+		h = hash_murmur3_one_32(uint32_t(size.y), h);
+		return hash_fmix32(h);
+	}
 
 	Rect2i() = default;
 	constexpr Rect2i(int p_x, int p_y, int p_width, int p_height) :

@@ -56,7 +56,7 @@
 
 // Initialization/Cleanup routines
 #include "timer/SDL_timer_c.h"
-#ifdef SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_PLATFORM_WINDOWS
 extern bool SDL_HelperWindowCreate(void);
 extern void SDL_HelperWindowDestroy(void);
 #endif
@@ -308,7 +308,7 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
     SDL_DBus_Init();
 #endif
 
-#ifdef SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_PLATFORM_WINDOWS
     if (flags & (SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK)) {
         if (!SDL_HelperWindowCreate()) {
             goto quit_and_error;
@@ -644,7 +644,7 @@ void SDL_Quit(void)
     SDL_bInMainQuit = true;
 
     // Quit all subsystems
-#ifdef SDL_VIDEO_DRIVER_WINDOWS
+#ifdef SDL_PLATFORM_WINDOWS
     SDL_HelperWindowDestroy();
 #endif
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);

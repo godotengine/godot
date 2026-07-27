@@ -39,6 +39,8 @@ class ResourceFormatImporter;
 typedef Ref<Resource> (*ResourceFormatImporterLoadOnStartup)(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode);
 
 class ResourceFormatImporter : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatImporter, ResourceFormatLoader);
+
 	struct PathAndType {
 		String path;
 		String type;
@@ -68,6 +70,7 @@ public:
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const override;
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
+	virtual String get_resource_script_class(const String &p_path) const override;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override;
 	virtual bool has_custom_uid_support() const override;
 	virtual Variant get_resource_metadata(const String &p_path) const;

@@ -92,7 +92,7 @@ public:
 	};
 };
 
-static_assert(std::is_trivial<BVec16>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<BVec16>() && std::is_trivially_copyable<BVec16>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

@@ -53,18 +53,10 @@ void TLSContextMbedTLS::print_mbedtls_error(int p_ret) {
 Error CookieContextMbedTLS::setup() {
 	ERR_FAIL_COND_V_MSG(inited, ERR_ALREADY_IN_USE, "This cookie context is already in use");
 
-	mbedtls_ctr_drbg_init(&ctr_drbg);
-	mbedtls_entropy_init(&entropy);
 	mbedtls_ssl_cookie_init(&cookie_ctx);
 	inited = true;
 
-	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
-	if (ret != 0) {
-		clear(); // Never leave unusable resources around.
-		ERR_FAIL_V_MSG(FAILED, "mbedtls_ctr_drbg_seed returned an error " + itos(ret));
-	}
-
-	ret = mbedtls_ssl_cookie_setup(&cookie_ctx, mbedtls_ctr_drbg_random, &ctr_drbg);
+	int ret = mbedtls_ssl_cookie_setup(GODOT_MBEDTLS_COMPAT_ARGS(&cookie_ctx));
 	if (ret != 0) {
 		clear();
 		ERR_FAIL_V_MSG(FAILED, "mbedtls_ssl_cookie_setup returned an error " + itos(ret));
@@ -76,9 +68,8 @@ void CookieContextMbedTLS::clear() {
 	if (!inited) {
 		return;
 	}
-	mbedtls_ctr_drbg_free(&ctr_drbg);
-	mbedtls_entropy_free(&entropy);
 	mbedtls_ssl_cookie_free(&cookie_ctx);
+	inited = false;
 }
 
 CookieContextMbedTLS::CookieContextMbedTLS() {
@@ -95,23 +86,16 @@ Error TLSContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 
 	mbedtls_ssl_init(&tls);
 	mbedtls_ssl_config_init(&conf);
-	mbedtls_ctr_drbg_init(&ctr_drbg);
-	mbedtls_entropy_init(&entropy);
+	mbedtls_pk_init(&pk);
 	inited = true;
 
-	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
-	if (ret != 0) {
-		clear(); // Never leave unusable resources around.
-		ERR_FAIL_V_MSG(FAILED, "mbedtls_ctr_drbg_seed returned an error " + itos(ret));
-	}
-
-	ret = mbedtls_ssl_config_defaults(&conf, p_endpoint, p_transport, MBEDTLS_SSL_PRESET_DEFAULT);
+	int ret = mbedtls_ssl_config_defaults(&conf, p_endpoint, p_transport, MBEDTLS_SSL_PRESET_DEFAULT);
 	if (ret != 0) {
 		clear();
 		ERR_FAIL_V_MSG(FAILED, "mbedtls_ssl_config_defaults returned an error" + itos(ret));
 	}
 	mbedtls_ssl_conf_authmode(&conf, p_authmode);
-	mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &ctr_drbg);
+	GODOT_MBEDTLS_COMPAT_SSL_CONF;
 	mbedtls_ssl_conf_dbg(&conf, my_debug, stdout);
 	return OK;
 }
@@ -120,7 +104,7 @@ Error TLSContextMbedTLS::init_server(int p_transport, Ref<TLSOptions> p_options,
 	ERR_FAIL_COND_V(p_options.is_null() || !p_options->is_server(), ERR_INVALID_PARAMETER);
 
 	// Check key and certificate(s)
-	pkey = p_options->get_private_key();
+	Ref<CryptoKeyMbedTLS> pkey = p_options->get_private_key();
 	certs = p_options->get_own_certificate();
 	ERR_FAIL_COND_V(pkey.is_null() || certs.is_null(), ERR_INVALID_PARAMETER);
 
@@ -128,18 +112,22 @@ Error TLSContextMbedTLS::init_server(int p_transport, Ref<TLSOptions> p_options,
 	ERR_FAIL_COND_V(err != OK, err);
 
 	// Locking key and certificate(s)
-	pkey->lock();
 	certs->lock();
 
 	// Adding key and certificate
-	int ret = mbedtls_ssl_conf_own_cert(&conf, &(certs->cert), &(pkey->pkey));
+	int ret = mbedtls_pk_copy_from_psa(pkey->get_key_id(), &pk);
+	if (ret != 0) {
+		clear();
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Failed to import key " + itos(ret));
+	}
+	ret = mbedtls_ssl_conf_own_cert(&conf, certs->get_context(), &pk);
 	if (ret != 0) {
 		clear();
 		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Invalid cert/key combination " + itos(ret));
 	}
 	// Adding CA chain if available.
-	if (certs->cert.next) {
-		mbedtls_ssl_conf_ca_chain(&conf, certs->cert.next, nullptr);
+	if (certs->get_context()->next) {
+		mbedtls_ssl_conf_ca_chain(&conf, certs->get_context()->next, nullptr);
 	}
 	// DTLS Cookies
 	if (p_transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM) {
@@ -151,7 +139,6 @@ Error TLSContextMbedTLS::init_server(int p_transport, Ref<TLSOptions> p_options,
 		mbedtls_ssl_conf_dtls_cookies(&conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check, &(cookies->cookie_ctx));
 	}
 
-#if MBEDTLS_VERSION_MAJOR >= 3
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
 		if (!EditorSettings::get_singleton()->get_setting("network/tls/enable_tls_v1.3").operator bool()) {
@@ -164,7 +151,6 @@ Error TLSContextMbedTLS::init_server(int p_transport, Ref<TLSOptions> p_options,
 			mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
 		}
 	}
-#endif
 
 	mbedtls_ssl_setup(&tls, &conf);
 	return OK;
@@ -193,23 +179,22 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 		mbedtls_ssl_set_hostname(&tls, cn.utf8().get_data());
 	}
 
-	X509CertificateMbedTLS *cas = nullptr;
+	Ref<X509CertificateMbedTLS> cas;
 
 	if (p_options->get_trusted_ca_chain().is_valid()) {
 		// Locking CA certificates
 		certs = p_options->get_trusted_ca_chain();
 		certs->lock();
-		cas = certs.ptr();
+		cas = certs;
 	} else {
 		// Fall back to default certificates (no need to lock those).
 		cas = CryptoMbedTLS::get_default_certificates();
-		if (cas == nullptr) {
+		if (cas.is_null()) {
 			clear();
 			ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
 		}
 	}
 
-#if MBEDTLS_VERSION_MAJOR >= 3
 #ifdef TOOLS_ENABLED
 	if (EditorSettings::get_singleton()) {
 		if (!EditorSettings::get_singleton()->get_setting("network/tls/enable_tls_v1.3").operator bool()) {
@@ -222,10 +207,9 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 			mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
 		}
 	}
-#endif
 
 	// Set valid CAs
-	mbedtls_ssl_conf_ca_chain(&conf, &(cas->cert), nullptr);
+	mbedtls_ssl_conf_ca_chain(&conf, cas->get_context(), nullptr);
 	mbedtls_ssl_setup(&tls, &conf);
 	return OK;
 }
@@ -236,18 +220,12 @@ void TLSContextMbedTLS::clear() {
 	}
 	mbedtls_ssl_free(&tls);
 	mbedtls_ssl_config_free(&conf);
-	mbedtls_ctr_drbg_free(&ctr_drbg);
-	mbedtls_entropy_free(&entropy);
-
-	// Unlock and key and certificates
+	mbedtls_pk_free(&pk);
+	// Unlock certificates
 	if (certs.is_valid()) {
 		certs->unlock();
 	}
 	certs = Ref<X509Certificate>();
-	if (pkey.is_valid()) {
-		pkey->unlock();
-	}
-	pkey = Ref<CryptoKeyMbedTLS>();
 	cookies = Ref<CookieContextMbedTLS>();
 	inited = false;
 }

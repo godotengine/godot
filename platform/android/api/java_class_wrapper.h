@@ -34,6 +34,8 @@
 #include "core/variant/typed_array.h"
 
 #ifdef ANDROID_ENABLED
+#include "core/templates/rb_map.h"
+
 #include <android/log.h>
 #include <jni.h>
 #endif
@@ -68,6 +70,7 @@ class JavaClass : public RefCounted {
 	RBMap<StringName, Variant> constant_map;
 
 	struct MethodInfo {
+		bool _public = false;
 		bool _static = false;
 		bool _constructor = false;
 		Vector<uint32_t> param_types;
@@ -188,6 +191,7 @@ class JavaClass : public RefCounted {
 	String java_constructor_name;
 	HashMap<StringName, List<MethodInfo>> methods;
 	jclass _class;
+	bool is_interface;
 #endif
 
 protected:
@@ -200,9 +204,10 @@ public:
 	String get_java_class_name() const;
 	TypedArray<Dictionary> get_java_method_list() const;
 	Ref<JavaClass> get_java_parent_class() const;
+	bool has_java_method(const StringName &p_method) const;
 
 #ifdef ANDROID_ENABLED
-	virtual String to_string() override;
+	virtual String _to_string() override;
 #endif
 
 	JavaClass();
@@ -226,9 +231,10 @@ public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	Ref<JavaClass> get_java_class() const;
+	bool has_java_method(const StringName &p_method) const;
 
 #ifdef ANDROID_ENABLED
-	virtual String to_string() override;
+	virtual String _to_string() override;
 
 	jobject get_instance() { return instance; }
 
@@ -244,11 +250,13 @@ class JavaClassWrapper : public Object {
 #ifdef ANDROID_ENABLED
 	RBMap<String, Ref<JavaClass>> class_cache;
 	friend class JavaClass;
-	jmethodID Class_getDeclaredConstructors;
+	jmethodID Class_getConstructors;
 	jmethodID Class_getDeclaredMethods;
 	jmethodID Class_getFields;
+	jmethodID Class_getInterfaces;
 	jmethodID Class_getName;
 	jmethodID Class_getSuperclass;
+	jmethodID Class_isInterface;
 	jmethodID Constructor_getParameterTypes;
 	jmethodID Constructor_getModifiers;
 	jmethodID Method_getParameterTypes;
@@ -267,12 +275,21 @@ class JavaClassWrapper : public Object {
 	jmethodID Float_floatValue;
 	jmethodID Double_doubleValue;
 
+	jclass proxy_class;
+	jmethodID Proxy_isProxyClass;
+
+	jclass android_runtime_class;
+	jmethodID ARP_create_proxy_from_godot_callable;
+	jmethodID ARP_create_proxy_from_godot_object_id;
+
+	bool _is_proxy_class(JNIEnv *env, jclass p_class);
 	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
+	bool _wrap_class_components(JNIEnv *p_env, const Ref<JavaClass> &p_java_class, jclass p_class, bool p_allow_non_public_methods_access);
 #endif
 
 	Ref<JavaObject> exception;
 
-	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_private_methods_access);
+	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_non_public_methods_access = false);
 
 	static JavaClassWrapper *singleton;
 
@@ -286,12 +303,15 @@ public:
 		return _wrap(p_class, false);
 	}
 
+	Ref<JavaObject> create_sam_callback(const String &p_sam_interface, const Callable &p_callable);
+	Ref<JavaObject> create_proxy(const Object *p_object, const PackedStringArray &p_interfaces);
+
 	Ref<JavaObject> get_exception() {
 		return exception;
 	}
 
 #ifdef ANDROID_ENABLED
-	Ref<JavaClass> wrap_jclass(jclass p_class, bool p_allow_private_methods_access = false);
+	Ref<JavaClass> wrap_jclass(jclass p_class, bool p_allow_non_public_methods_access = false);
 #endif
 	JavaClassWrapper();
 };

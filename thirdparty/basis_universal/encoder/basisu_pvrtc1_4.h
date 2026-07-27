@@ -231,18 +231,7 @@ namespace basisu
 
 		inline void set_to_black()
 		{
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wclass-memaccess"            
-#endif                          
-#endif
-			memset(m_blocks.get_ptr(), 0, m_blocks.size_in_bytes());
-#ifndef __EMSCRIPTEN__
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif                
-#endif
+			memset((void *)m_blocks.get_ptr(), 0, m_blocks.size_in_bytes());
 		}
 
 		inline bool get_block_uses_transparent_modulation(uint32_t bx, uint32_t by) const

@@ -24,7 +24,8 @@ class JPH_EXPORT PhysicsMaterial : public SerializableObject, public RefTarget<P
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, PhysicsMaterial)
 
 public:
-	/// Virtual destructor
+	/// Constructor
+											PhysicsMaterial() = default;
 	virtual									~PhysicsMaterial() override = default;
 
 	/// Default material that is used when a shape has no materials defined
@@ -43,6 +44,10 @@ public:
 	static PhysicsMaterialResult			sRestoreFromBinaryState(StreamIn &inStream);
 
 protected:
+	/// Don't allow copy constructing this base class, but allow derived classes to copy themselves
+											PhysicsMaterial(const PhysicsMaterial &) = default;
+	PhysicsMaterial &						operator = (const PhysicsMaterial &) = default;
+
 	/// This function should not be called directly, it is used by sRestoreFromBinaryState.
 	virtual void							RestoreBinaryState(StreamIn &inStream);
 };

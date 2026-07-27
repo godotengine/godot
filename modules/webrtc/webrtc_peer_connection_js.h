@@ -74,12 +74,12 @@ public:
 	virtual GatheringState get_gathering_state() const override;
 	virtual SignalingState get_signaling_state() const override;
 
-	virtual Error initialize(Dictionary configuration = Dictionary()) override;
-	virtual Ref<WebRTCDataChannel> create_data_channel(String p_channel_name, Dictionary p_channel_config = Dictionary()) override;
+	virtual Error initialize(const Dictionary &p_config = Dictionary()) override;
+	virtual Ref<WebRTCDataChannel> create_data_channel(const String &p_channel_name, const Dictionary &p_channel_config = Dictionary()) override;
 	virtual Error create_offer() override;
-	virtual Error set_remote_description(String type, String sdp) override;
-	virtual Error set_local_description(String type, String sdp) override;
-	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName) override;
+	virtual Error set_remote_description(const String &p_type, const String &p_sdp) override;
+	virtual Error set_local_description(const String &p_type, const String &p_sdp) override;
+	virtual Error add_ice_candidate(const String &p_sdp_mid_name, int p_sdp_mline_index_name, const String &p_sdp_name) override;
 	virtual Error poll() override;
 	virtual void close() override;
 

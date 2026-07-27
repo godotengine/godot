@@ -49,6 +49,8 @@
 // See: https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_hand_interaction
 // for more information.
 
+class OpenXRInteractionProfileMetadata;
+
 class OpenXRHandInteractionExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRHandInteractionExtension, OpenXRExtensionWrapper);
 
@@ -61,11 +63,11 @@ public:
 	OpenXRHandInteractionExtension();
 	virtual ~OpenXRHandInteractionExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	bool is_available();
 
-	virtual void on_register_metadata() override;
+	virtual void on_register_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata) override;
 
 private:
 	static OpenXRHandInteractionExtension *singleton;

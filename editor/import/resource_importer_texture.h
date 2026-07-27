@@ -33,7 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class CompressedTexture2D;
 
@@ -74,19 +74,19 @@ protected:
 	struct MakeInfo {
 		int flags = 0;
 		String normal_path_for_roughness;
-		RS::TextureDetectRoughnessChannel channel_for_roughness = RS::TEXTURE_DETECT_ROUGHNESS_R;
+		RSE::TextureDetectRoughnessChannel channel_for_roughness = RSE::TEXTURE_DETECT_ROUGHNESS_R;
 	};
 
 	HashMap<StringName, MakeInfo> make_flags;
 
-	static void _texture_reimport_roughness(const Ref<CompressedTexture2D> &p_tex, const String &p_normal_path, RenderingServer::TextureDetectRoughnessChannel p_channel);
+	static void _texture_reimport_roughness(const Ref<CompressedTexture2D> &p_tex, const String &p_normal_path, RSE::TextureDetectRoughnessChannel p_channel);
 	static void _texture_reimport_3d(const Ref<CompressedTexture2D> &p_tex);
 	static void _texture_reimport_normal(const Ref<CompressedTexture2D> &p_tex);
 
 	static ResourceImporterTexture *singleton;
 	static const char *compression_formats[];
 
-	void _save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel);
+	void _save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressProfile p_vram_compression_profile, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel);
 	void _save_editor_meta(const Dictionary &p_metadata, const String &p_to_path);
 	Dictionary _load_editor_meta(const String &p_to_path) const;
 
@@ -95,7 +95,7 @@ protected:
 	static inline void _invert_y_channel(Ref<Image> &r_image);
 
 public:
-	static void save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params);
+	static void save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, Image::CompressProfile p_compress_profile, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::BPTCFormat p_bptc_format);
 
 	static ResourceImporterTexture *get_singleton() { return singleton; }
 	virtual String get_importer_name() const override;

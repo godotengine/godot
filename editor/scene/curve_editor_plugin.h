@@ -111,7 +111,6 @@ private:
 	Transform2D _world_to_view;
 
 	Ref<Curve> curve;
-	PopupMenu *_presets_menu = nullptr;
 
 	int selected_index = -1;
 	int hovered_index = -1;

@@ -30,7 +30,7 @@
 
 #include "camera_feed_linux.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -150,9 +150,7 @@ bool CameraFeedLinux::_request_buffers() {
 		buffers[i].start = mmap(nullptr, buffer.length, PROT_READ | PROT_WRITE, MAP_SHARED, file_descriptor, buffer.m.offset);
 
 		if (buffers[i].start == MAP_FAILED) {
-			for (unsigned int b = 0; b < i; b++) {
-				_unmap_buffers(i);
-			}
+			_unmap_buffers(i);
 			delete[] buffers;
 			ERR_FAIL_V_MSG(false, "Mapping buffers failed.");
 		}
@@ -204,8 +202,6 @@ void CameraFeedLinux::_read_frame() {
 	if (ioctl(file_descriptor, VIDIOC_QBUF, &buffer) == -1) {
 		print_error(vformat("ioctl(VIDIOC_QBUF) error: %d.", errno));
 	}
-
-	emit_signal(SNAME("frame_changed"));
 }
 
 void CameraFeedLinux::_stop_capturing() {
@@ -352,8 +348,7 @@ bool CameraFeedLinux::set_format(int p_index, const Dictionary &p_parameters) {
 	return true;
 }
 
-CameraFeedLinux::CameraFeedLinux(const String &p_device_name) :
-		CameraFeed() {
+CameraFeedLinux::CameraFeedLinux(const String &p_device_name) {
 	device_name = p_device_name;
 	_query_device(device_name);
 }

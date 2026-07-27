@@ -3,4 +3,5 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-env.add_source_files(env.servers_sources, "*.cpp")
+if not env["disable_xr"]:
+    env.add_source_files(env.servers_sources, "*.cpp")

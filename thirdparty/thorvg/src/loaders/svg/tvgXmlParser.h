@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_SIMPLE_XML_PARSER_H_
-#define _TVG_SIMPLE_XML_PARSER_H_
+#ifndef _TVG_XML_PARSER_H_
+#define _TVG_XML_PARSER_H_
 
 #include "tvgSvgLoaderCommon.h"
 
@@ -29,7 +29,7 @@
 const char* const xmlEntity[] = {"&#10;", "&quot;", "&nbsp;", "&apos;", "&amp;", "&lt;", "&gt;", "&#035;", "&#039;"};
 const int xmlEntityLength[] = {5, 6, 6, 6, 5, 4, 4, 6, 6};
 
-enum class SimpleXMLType
+enum class XMLType
 {
     Open = 0,     //!< \<tag attribute="value"\>
     OpenEmpty,    //!< \<tag attribute="value" /\>
@@ -44,15 +44,15 @@ enum class SimpleXMLType
     DoctypeChild  //!< \<!doctype_child
 };
 
-typedef bool (*simpleXMLCb)(void* data, SimpleXMLType type, const char* content, unsigned int length);
-typedef bool (*simpleXMLAttributeCb)(void* data, const char* key, const char* value);
+typedef bool (*xmlCb)(void* data, XMLType type, const char* content, unsigned int length);
+typedef bool (*xmlAttributeCb)(void* data, const char* key, const char* value);
 
-bool simpleXmlParseAttributes(const char* buf, unsigned bufLength, simpleXMLAttributeCb func, const void* data);
-bool simpleXmlParse(const char* buf, unsigned bufLength, bool strip, simpleXMLCb func, const void* data);
-bool simpleXmlParseW3CAttribute(const char* buf, unsigned bufLength, simpleXMLAttributeCb func, const void* data);
-const char* simpleXmlParseCSSAttribute(const char* buf, unsigned bufLength, char** tag, char** name, const char** attrs, unsigned* attrsLength);
-const char* simpleXmlFindAttributesTag(const char* buf, unsigned bufLength);
+bool xmlParseAttributes(const char* buf, unsigned bufLength, xmlAttributeCb func, const void* data);
+bool xmlParse(const char* buf, unsigned bufLength, bool strip, xmlCb func, const void* data);
+bool xmlParseW3CAttribute(const char* buf, unsigned bufLength, xmlAttributeCb func, const void* data);
+const char* xmlParseCSSAttribute(const char* buf, unsigned bufLength, char** tag, char** name, const char** attrs, unsigned* attrsLength);
+const char* xmlFindAttributesTag(const char* buf, unsigned bufLength);
 bool isIgnoreUnsupportedLogElements(const char* tagName);
-const char* simpleXmlNodeTypeToString(SvgNodeType type);
+const char* xmlNodeTypeToString(SvgNodeType type);
 
-#endif //_TVG_SIMPLE_XML_PARSER_H_
+#endif //_TVG_XML_PARSER_H_

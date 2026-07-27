@@ -431,7 +431,8 @@ struct cff1_subset_plan
     unsigned code, last_code = CFF_UNDEF_CODE - 1;
     hb_vector_t<hb_codepoint_t> supp_codes;
 
-    if (unlikely (!subset_enc_code_ranges.resize (0)))
+    subset_enc_code_ranges.clear ();
+    if (unlikely (subset_enc_code_ranges.in_error ()))
     {
       plan->check_success (false);
       return;
@@ -496,7 +497,8 @@ struct cff1_subset_plan
     unsigned int  size0, size_ranges;
     unsigned last_sid = CFF_UNDEF_CODE - 1;
 
-    if (unlikely (!subset_charset_ranges.resize (0)))
+    subset_charset_ranges.clear ();
+    if (unlikely (subset_charset_ranges.in_error ()))
     {
       plan->check_success (false);
       return false;

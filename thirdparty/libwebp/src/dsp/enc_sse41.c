@@ -14,11 +14,15 @@
 #include "src/dsp/dsp.h"
 
 #if defined(WEBP_USE_SSE41)
+#include <emmintrin.h>
 #include <smmintrin.h>
+
 #include <stdlib.h>  // for abs()
 
 #include "src/dsp/common_sse2.h"
+#include "src/dsp/cpu.h"
 #include "src/enc/vp8i_enc.h"
+#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 // Compute susceptibility based on DCT-coeff histograms.
@@ -211,10 +215,10 @@ static WEBP_INLINE int DoQuantizeBlock_SSE41(int16_t in[16], int16_t out[16],
   // Load all inputs.
   __m128i in0 = _mm_loadu_si128((__m128i*)&in[0]);
   __m128i in8 = _mm_loadu_si128((__m128i*)&in[8]);
-  const __m128i iq0 = _mm_loadu_si128((const __m128i*)&mtx->iq_[0]);
-  const __m128i iq8 = _mm_loadu_si128((const __m128i*)&mtx->iq_[8]);
-  const __m128i q0 = _mm_loadu_si128((const __m128i*)&mtx->q_[0]);
-  const __m128i q8 = _mm_loadu_si128((const __m128i*)&mtx->q_[8]);
+  const __m128i iq0 = _mm_loadu_si128((const __m128i*)&mtx->iq[0]);
+  const __m128i iq8 = _mm_loadu_si128((const __m128i*)&mtx->iq[8]);
+  const __m128i q0 = _mm_loadu_si128((const __m128i*)&mtx->q[0]);
+  const __m128i q8 = _mm_loadu_si128((const __m128i*)&mtx->q[8]);
 
   // coeff = abs(in)
   __m128i coeff0 = _mm_abs_epi16(in0);
@@ -241,10 +245,10 @@ static WEBP_INLINE int DoQuantizeBlock_SSE41(int16_t in[16], int16_t out[16],
     __m128i out_08 = _mm_unpacklo_epi16(coeff_iQ8L, coeff_iQ8H);
     __m128i out_12 = _mm_unpackhi_epi16(coeff_iQ8L, coeff_iQ8H);
     // out = (coeff * iQ + B)
-    const __m128i bias_00 = _mm_loadu_si128((const __m128i*)&mtx->bias_[0]);
-    const __m128i bias_04 = _mm_loadu_si128((const __m128i*)&mtx->bias_[4]);
-    const __m128i bias_08 = _mm_loadu_si128((const __m128i*)&mtx->bias_[8]);
-    const __m128i bias_12 = _mm_loadu_si128((const __m128i*)&mtx->bias_[12]);
+    const __m128i bias_00 = _mm_loadu_si128((const __m128i*)&mtx->bias[0]);
+    const __m128i bias_04 = _mm_loadu_si128((const __m128i*)&mtx->bias[4]);
+    const __m128i bias_08 = _mm_loadu_si128((const __m128i*)&mtx->bias[8]);
+    const __m128i bias_12 = _mm_loadu_si128((const __m128i*)&mtx->bias[12]);
     out_00 = _mm_add_epi32(out_00, bias_00);
     out_04 = _mm_add_epi32(out_04, bias_04);
     out_08 = _mm_add_epi32(out_08, bias_08);
@@ -305,7 +309,7 @@ static WEBP_INLINE int DoQuantizeBlock_SSE41(int16_t in[16], int16_t out[16],
 
 static int QuantizeBlock_SSE41(int16_t in[16], int16_t out[16],
                                const VP8Matrix* WEBP_RESTRICT const mtx) {
-  return DoQuantizeBlock_SSE41(in, out, &mtx->sharpen_[0], mtx);
+  return DoQuantizeBlock_SSE41(in, out, &mtx->sharpen[0], mtx);
 }
 
 static int QuantizeBlockWHT_SSE41(int16_t in[16], int16_t out[16],
@@ -316,7 +320,7 @@ static int QuantizeBlockWHT_SSE41(int16_t in[16], int16_t out[16],
 static int Quantize2Blocks_SSE41(int16_t in[32], int16_t out[32],
                                  const VP8Matrix* WEBP_RESTRICT const mtx) {
   int nz;
-  const uint16_t* const sharpen = &mtx->sharpen_[0];
+  const uint16_t* const sharpen = &mtx->sharpen[0];
   nz  = DoQuantizeBlock_SSE41(in + 0 * 16, out + 0 * 16, sharpen, mtx) << 0;
   nz |= DoQuantizeBlock_SSE41(in + 1 * 16, out + 1 * 16, sharpen, mtx) << 1;
   return nz;

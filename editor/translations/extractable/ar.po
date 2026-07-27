@@ -19,9 +19,6 @@ msgstr ""
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
-msgid "All Recognized"
-msgstr "جميع الأنواع المعتمدة\"المعروفة\""
-
 msgid "New Code Region"
 msgstr "منطقة الكود الجديدة"
 
@@ -70,6 +67,9 @@ msgstr "حدد هذا المجلد"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "ليس لديك إذن للوصول إلى محتويات هذا المجلد."
+
+msgid "All Recognized"
+msgstr "جميع الأنواع المعتمدة\"المعروفة\""
 
 msgid "All Files"
 msgstr "كل الملفات"

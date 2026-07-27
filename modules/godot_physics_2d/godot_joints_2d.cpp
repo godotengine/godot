@@ -97,8 +97,8 @@ normal_relative_velocity(GodotBody2D *a, GodotBody2D *b, Vector2 rA, Vector2 rB,
 }
 
 bool GodotPinJoint2D::setup(real_t p_step) {
-	dynamic_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
-	dynamic_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+	dynamic_A = (A->get_mode() > PS2DE::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PS2DE::BODY_MODE_KINEMATIC);
 
 	if (!dynamic_A && !dynamic_B) {
 		return false;
@@ -256,58 +256,58 @@ void GodotPinJoint2D::solve(real_t p_step) {
 	P += impulse;
 }
 
-void GodotPinJoint2D::set_param(PhysicsServer2D::PinJointParam p_param, real_t p_value) {
+void GodotPinJoint2D::set_param(PS2DE::PinJointParam p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer2D::PIN_JOINT_SOFTNESS: {
+		case PS2DE::PIN_JOINT_SOFTNESS: {
 			softness = p_value;
 		} break;
-		case PhysicsServer2D::PIN_JOINT_LIMIT_UPPER: {
+		case PS2DE::PIN_JOINT_LIMIT_UPPER: {
 			angular_limit_upper = p_value;
 		} break;
-		case PhysicsServer2D::PIN_JOINT_LIMIT_LOWER: {
+		case PS2DE::PIN_JOINT_LIMIT_LOWER: {
 			angular_limit_lower = p_value;
 		} break;
-		case PhysicsServer2D::PIN_JOINT_MOTOR_TARGET_VELOCITY: {
+		case PS2DE::PIN_JOINT_MOTOR_TARGET_VELOCITY: {
 			motor_target_velocity = p_value;
 		} break;
 	}
 }
 
-real_t GodotPinJoint2D::get_param(PhysicsServer2D::PinJointParam p_param) const {
+real_t GodotPinJoint2D::get_param(PS2DE::PinJointParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer2D::PIN_JOINT_SOFTNESS: {
+		case PS2DE::PIN_JOINT_SOFTNESS: {
 			return softness;
 		}
-		case PhysicsServer2D::PIN_JOINT_LIMIT_UPPER: {
+		case PS2DE::PIN_JOINT_LIMIT_UPPER: {
 			return angular_limit_upper;
 		}
-		case PhysicsServer2D::PIN_JOINT_LIMIT_LOWER: {
+		case PS2DE::PIN_JOINT_LIMIT_LOWER: {
 			return angular_limit_lower;
 		}
-		case PhysicsServer2D::PIN_JOINT_MOTOR_TARGET_VELOCITY: {
+		case PS2DE::PIN_JOINT_MOTOR_TARGET_VELOCITY: {
 			return motor_target_velocity;
 		}
 	}
 	ERR_FAIL_V(0);
 }
 
-void GodotPinJoint2D::set_flag(PhysicsServer2D::PinJointFlag p_flag, bool p_enabled) {
+void GodotPinJoint2D::set_flag(PS2DE::PinJointFlag p_flag, bool p_enabled) {
 	switch (p_flag) {
-		case PhysicsServer2D::PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED: {
+		case PS2DE::PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED: {
 			angular_limit_enabled = p_enabled;
 		} break;
-		case PhysicsServer2D::PIN_JOINT_FLAG_MOTOR_ENABLED: {
+		case PS2DE::PIN_JOINT_FLAG_MOTOR_ENABLED: {
 			motor_enabled = p_enabled;
 		} break;
 	}
 }
 
-bool GodotPinJoint2D::get_flag(PhysicsServer2D::PinJointFlag p_flag) const {
+bool GodotPinJoint2D::get_flag(PS2DE::PinJointFlag p_flag) const {
 	switch (p_flag) {
-		case PhysicsServer2D::PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED: {
+		case PS2DE::PIN_JOINT_FLAG_ANGULAR_LIMIT_ENABLED: {
 			return angular_limit_enabled;
 		}
-		case PhysicsServer2D::PIN_JOINT_FLAG_MOTOR_ENABLED: {
+		case PS2DE::PIN_JOINT_FLAG_MOTOR_ENABLED: {
 			return motor_enabled;
 		}
 	}
@@ -383,8 +383,8 @@ mult_k(const Vector2 &vr, const Vector2 &k1, const Vector2 &k2) {
 }
 
 bool GodotGrooveJoint2D::setup(real_t p_step) {
-	dynamic_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
-	dynamic_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+	dynamic_A = (A->get_mode() > PS2DE::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PS2DE::BODY_MODE_KINEMATIC);
 
 	if (!dynamic_A && !dynamic_B) {
 		return false;
@@ -489,8 +489,8 @@ GodotGrooveJoint2D::GodotGrooveJoint2D(const Vector2 &p_a_groove1, const Vector2
 //////////////////////////////////////////////
 
 bool GodotDampedSpringJoint2D::setup(real_t p_step) {
-	dynamic_A = (A->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
-	dynamic_B = (B->get_mode() > PhysicsServer2D::BODY_MODE_KINEMATIC);
+	dynamic_A = (A->get_mode() > PS2DE::BODY_MODE_KINEMATIC);
+	dynamic_B = (B->get_mode() > PS2DE::BODY_MODE_KINEMATIC);
 
 	if (!dynamic_A && !dynamic_B) {
 		return false;
@@ -551,29 +551,29 @@ void GodotDampedSpringJoint2D::solve(real_t p_step) {
 	}
 }
 
-void GodotDampedSpringJoint2D::set_param(PhysicsServer2D::DampedSpringParam p_param, real_t p_value) {
+void GodotDampedSpringJoint2D::set_param(PS2DE::DampedSpringParam p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer2D::DAMPED_SPRING_REST_LENGTH: {
+		case PS2DE::DAMPED_SPRING_REST_LENGTH: {
 			rest_length = p_value;
 		} break;
-		case PhysicsServer2D::DAMPED_SPRING_DAMPING: {
+		case PS2DE::DAMPED_SPRING_DAMPING: {
 			damping = p_value;
 		} break;
-		case PhysicsServer2D::DAMPED_SPRING_STIFFNESS: {
+		case PS2DE::DAMPED_SPRING_STIFFNESS: {
 			stiffness = p_value;
 		} break;
 	}
 }
 
-real_t GodotDampedSpringJoint2D::get_param(PhysicsServer2D::DampedSpringParam p_param) const {
+real_t GodotDampedSpringJoint2D::get_param(PS2DE::DampedSpringParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer2D::DAMPED_SPRING_REST_LENGTH: {
+		case PS2DE::DAMPED_SPRING_REST_LENGTH: {
 			return rest_length;
 		} break;
-		case PhysicsServer2D::DAMPED_SPRING_DAMPING: {
+		case PS2DE::DAMPED_SPRING_DAMPING: {
 			return damping;
 		} break;
-		case PhysicsServer2D::DAMPED_SPRING_STIFFNESS: {
+		case PS2DE::DAMPED_SPRING_STIFFNESS: {
 			return stiffness;
 		} break;
 	}
