@@ -293,7 +293,11 @@ public:
 	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
-	virtual bool can_import_threaded() const override { return true; }
+	// Threaded scene import is disabled whenever user-provided post-import plugins are
+	// registered, as their code is not expected to be thread-safe.
+	virtual bool can_import_threaded() const override { return post_importer_plugins.is_empty(); }
+	// Files with a post-import script run user code during import; import them on the main thread.
+	virtual bool can_import_file_threaded(const String &p_path) const override;
 	virtual void import_threaded_begin() override;
 	virtual void import_threaded_end() override;
 

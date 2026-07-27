@@ -47,6 +47,19 @@ TEST_CASE("[Editor][ResourceImporterScene] Threaded import support") {
 
 	// Verify import order is set to SCENE (processed after textures and other fast assets).
 	CHECK(importer.get_import_order() == ResourceImporter::IMPORT_ORDER_SCENE);
+
+	// Files without a post-import script can be imported threaded.
+	CHECK(importer.can_import_file_threaded("res://some_file_without_import.glb"));
+
+	// Registering a post-import plugin disables threaded scene imports,
+	// as plugin code is not expected to be thread-safe.
+	Ref<EditorScenePostImportPlugin> plugin;
+	plugin.instantiate();
+	ResourceImporterScene::add_post_importer_plugin(plugin);
+	CHECK(!importer.can_import_threaded());
+	CHECK(!importer.can_import_file_threaded("res://some_file_without_import.glb"));
+	ResourceImporterScene::remove_post_importer_plugin(plugin);
+	CHECK(importer.can_import_threaded());
 }
 
 } // namespace TestResourceImporterScene

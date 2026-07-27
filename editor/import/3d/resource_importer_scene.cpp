@@ -31,6 +31,7 @@
 #include "resource_importer_scene.h"
 
 #include "core/error/error_macros.h"
+#include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -3659,6 +3660,21 @@ void ResourceImporterScene::_plugins_get_import_options(const String &p_path, Li
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		post_importer_plugins.write[i]->get_import_options(p_path, r_options);
 	}
+}
+
+bool ResourceImporterScene::can_import_file_threaded(const String &p_path) const {
+	if (!can_import_threaded()) {
+		return false;
+	}
+	// Files with a post-import script run user code during import; import them on the main thread.
+	if (FileAccess::exists(p_path + ".import")) {
+		Ref<ConfigFile> cf;
+		cf.instantiate();
+		if (cf->load(p_path + ".import") == OK && !String(cf->get_value("params/import_script/path", "")).is_empty()) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void ResourceImporterScene::import_threaded_begin() {

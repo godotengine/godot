@@ -273,7 +273,7 @@ Error ResourceFormatImporter::get_import_order_threads_and_importer(const String
 	if (importer.is_valid()) {
 		r_order = importer->get_import_order();
 		r_importer = importer->get_importer_name();
-		r_can_threads = importer->can_import_threaded();
+		r_can_threads = importer->can_import_file_threaded(p_path);
 		return OK;
 	} else {
 		return ERR_INVALID_PARAMETER;

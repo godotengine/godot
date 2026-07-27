@@ -156,6 +156,8 @@ public:
 
 	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
 	virtual bool can_import_threaded() const { return false; }
+	// Per-file variant of can_import_threaded(); defaults to the importer-wide setting.
+	virtual bool can_import_file_threaded(const String &p_path) const { return can_import_threaded(); }
 	virtual void import_threaded_begin() {}
 	virtual void import_threaded_end() {}
 
