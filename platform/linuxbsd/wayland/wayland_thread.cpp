@@ -6179,6 +6179,10 @@ bool WaylandThread::window_is_suspended(DisplayServerEnums::WindowID p_window_id
 }
 
 bool WaylandThread::is_fifo_available() const {
+	if (OS::get_singleton()->get_environment("GODOT_WAYLAND_DISABLE_NATIVE_FIFO") == "1") {
+		return false;
+	}
+
 	return registry.wp_fifo_manager_name != 0;
 }
 
