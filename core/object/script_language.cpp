@@ -623,19 +623,20 @@ void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const 
 void ScriptLanguage::frame() {
 }
 
-TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_characteristics(const String &p_base) {
-	// Return characteristics of the match found by order of importance.
+void ScriptLanguage::CodeCompletionOption::update_option_characteristics(const String &p_base) {
+	// Update characteristics of the match found by order of importance.
 	// Matches will be ranked by a lexicographical order on the vector returned by this function.
 	// The lower values indicate better matches and that they should go before in the order of appearance.
 	if (!matches_dirty) {
-		return charac;
+		return;
 	}
+
 	charac.clear();
 	// Ensure base is not empty and at the same time that matches is not empty too.
-	if (p_base.length() == 0) {
+	if (p_base.is_empty()) {
 		matches_dirty = false;
 		charac.push_back(location);
-		return charac;
+		return;
 	}
 	charac.push_back(matches.size());
 	charac.push_back((matches[0].first == 0) ? 0 : 1);
@@ -653,14 +654,13 @@ TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_characteristics
 	charac.push_back(location);
 	charac.push_back(matches[0].first);
 	matches_dirty = false;
-	return charac;
 }
 
 void ScriptLanguage::CodeCompletionOption::clear_characteristics() {
-	charac = TypedArray<int>();
+	charac.clear();
 }
 
-TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_cached_characteristics() const {
+FixedVector<int64_t, 5> ScriptLanguage::CodeCompletionOption::get_option_cached_characteristics() const {
 	// Only returns the cached value and warns if it was not updated since the last change of matches.
 	if (matches_dirty) {
 		WARN_PRINT("Characteristics are not up to date.");

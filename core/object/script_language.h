@@ -34,12 +34,11 @@
 #include "core/io/resource.h"
 #include "core/object/script_backtrace.h"
 #include "core/object/script_instance.h"
+#include "core/templates/fixed_vector.h"
 #include "core/templates/pair.h"
 #include "core/variant/typed_array.h"
 
 class ScriptLanguage;
-template <typename T>
-class TypedArray;
 
 #ifdef TOOLS_ENABLED
 class EditorLanguage;
@@ -365,12 +364,12 @@ public:
 			theme_color_name = p_theme_color_name;
 		}
 
-		TypedArray<int> get_option_characteristics(const String &p_base);
+		void update_option_characteristics(const String &p_base);
 		void clear_characteristics();
-		TypedArray<int> get_option_cached_characteristics() const;
+		FixedVector<int64_t, 5> get_option_cached_characteristics() const;
 
 	private:
-		TypedArray<int> charac;
+		FixedVector<int64_t, 5> charac;
 	};
 
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
