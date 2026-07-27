@@ -50,7 +50,7 @@ private:
 		RID lightmap;
 	};
 
-	mutable RID_Owner<LightmapInstance> lightmap_instance_owner;
+	mutable RID_Owner<LightmapInstance, true> lightmap_instance_owner;
 
 public:
 	static LightStorage *get_singleton();
