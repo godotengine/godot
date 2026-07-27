@@ -450,11 +450,8 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
 
 bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 #ifdef MODULE_MONO_ENABLED
-	if (_project_contains_dotnet()) {
-		// Don't check for additional errors, as this particular error cannot be resolved.
-		r_error += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
-		return false;
-	}
+	// Web export is still a work in progress, keep a message as a warning.
+	r_error += TTR("Exporting to Web when using C#/.NET is experimental.") + "\n";
 #endif
 
 	String err;
