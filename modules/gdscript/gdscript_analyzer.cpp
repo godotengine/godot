@@ -1825,9 +1825,6 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			inferred_type.kind = GDScriptParser::DataType::BUILTIN;
 			inferred_type.builtin_type = Variant::ARRAY;
 			p_function->rest_parameter->type_constraint = inferred_type;
-#ifdef DEBUG_ENABLED
-			parser->push_warning(p_function->rest_parameter, GDScriptWarning::UNTYPED_DECLARATION, "Parameter", p_function->rest_parameter->identifier->name);
-#endif
 		}
 #ifdef DEBUG_ENABLED
 		is_shadowing(p_function->rest_parameter->identifier, "function parameter", true);

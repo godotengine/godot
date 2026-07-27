@@ -542,6 +542,18 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		ERR_FAIL_V_MSG(result, "\nCould not load source code for: '" + source_file + "'");
 	}
 
+#ifdef DEBUG_ENABLED
+	// Allows us to enable the UNTYPED_DECLARATION and INFERRED_DECLARATION
+	// warnings for specific tests by including a comment.
+	const String sc = script->get_source_code();
+	const String untyped_declaration_path = GDScriptWarning::get_setting_path_from_code(GDScriptWarning::UNTYPED_DECLARATION);
+	const String inferred_declaration_path = GDScriptWarning::get_setting_path_from_code(GDScriptWarning::INFERRED_DECLARATION);
+
+	ProjectSettings::get_singleton()->set_setting(untyped_declaration_path, (int)(sc.contains("# enable UNTYPED_DECLARATION") ? GDScriptWarning::WARN : GDScriptWarning::IGNORE));
+	ProjectSettings::get_singleton()->set_setting(inferred_declaration_path, (int)(sc.contains("# enable INFERRED_DECLARATION") ? GDScriptWarning::WARN : GDScriptWarning::IGNORE));
+	GDScriptParser::update_project_settings();
+#endif // DEBUG_ENABLED
+
 	// Test parsing.
 	GDScriptParser parser;
 	if (tokenizer_mode == TOKENIZER_TEXT) {
