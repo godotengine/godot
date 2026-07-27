@@ -1654,6 +1654,8 @@ private:
 	ExpressionNode *parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type(bool p_allow_void = false);
+	// TODO: Remove in 5.x.
+	bool parse_standalone_string();
 
 #ifdef TOOLS_ENABLED
 	int max_script_doc_line = INT_MAX;
