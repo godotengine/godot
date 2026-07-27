@@ -251,8 +251,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 
 	if (status.press_attempt && status.pressing_inside) {
 		if (toggle_mode) {
-			bool is_pressed = p_event->is_pressed();
-			if ((is_pressed && action_mode == ACTION_MODE_BUTTON_PRESS) || (!is_pressed && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (p_event->is_released() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
@@ -268,7 +267,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				queue_accessibility_update();
 			}
 		} else {
-			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (p_event->is_released() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				_pressed();
 			}
 		}

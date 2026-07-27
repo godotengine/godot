@@ -607,6 +607,7 @@ void TileSetAtlasSourceEditor::_update_atlas_source_inspector() {
 
 void TileSetAtlasSourceEditor::_update_tile_inspector() {
 	// Update visibility.
+	tile_inspector->edit(nullptr);
 	if (tools_button_group->get_pressed_button() == tool_select_button) {
 		if (!selection.is_empty()) {
 			tile_proxy_object.instantiate(this);

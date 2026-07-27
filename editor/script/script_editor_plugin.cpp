@@ -3211,6 +3211,8 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	HashSet<String> loaded_scripts;
 	List<String> extensions = _get_recognized_extensions();
 
+	_set_script_zoom_factor(p_layout->get_value("ScriptEditor", "zoom_factor", 1.0f));
+
 	for (const Variant &v : scripts) {
 		String path = v;
 
@@ -3305,8 +3307,6 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 			EditorDebuggerNode::get_singleton()->set_breakpoint(E, (int)breakpoint + 1, true);
 		}
 	}
-
-	_set_script_zoom_factor(p_layout->get_value("ScriptEditor", "zoom_factor", 1.0f));
 
 	restoring_layout = false;
 

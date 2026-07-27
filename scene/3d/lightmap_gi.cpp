@@ -1288,10 +1288,11 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		GenProbesOctree octree;
 		octree.size = subdiv;
 
-		for (int i = 0; i < mesh_data.size(); i++) {
+		const int mesh_data_size = mesh_data.size();
+		for (int i = 0; i < mesh_data_size; i++) {
 			if (p_bake_step) {
-				float p = (float)(i) / mesh_data.size();
-				p_bake_step(0.3 + p * 0.1, vformat(RTR("Creating probes from mesh %d/%d"), i, mesh_data.size()), p_bake_userdata, false);
+				float p = (float)(i) / mesh_data_size;
+				p_bake_step(0.3 + p * 0.1, vformat(RTR("Creating probes from mesh %d/%d"), i, mesh_data_size), p_bake_userdata, false);
 			}
 
 			for (int j = 0; j < mesh_data[i].points.size(); j += 3) {
