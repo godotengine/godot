@@ -2088,6 +2088,7 @@ void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript 
 
 		StringName name = *reinterpret_cast<const StringName *>(&prop.name);
 		String hint_string = *reinterpret_cast<const String *>(&prop.hint_string);
+		String display_name = *reinterpret_cast<const String *>(&prop.display_name);
 
 		PropertyInfo pinfo(prop.type, name, prop.hint, hint_string, prop.usage);
 
@@ -2096,6 +2097,9 @@ void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript 
 		if (prop.exported) {
 #ifdef TOOLS_ENABLED
 			p_script->exported_members_cache.push_back(pinfo);
+			if (!display_name.is_empty()) {
+				p_script->exported_members_display_names_cache[name] = display_name;
+			}
 #endif
 
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
@@ -2147,6 +2151,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 
 #ifdef TOOLS_ENABLED
 		exported_members_cache.clear();
+		exported_members_display_names_cache.clear();
 		exported_members_defval_cache.clear();
 #endif
 
@@ -2749,6 +2754,25 @@ void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 	}
 #endif
 }
+
+#ifdef TOOLS_ENABLED
+String CSharpScript::get_property_display_name(const StringName &p_property) const {
+	const CSharpScript *top = this;
+	while (top != nullptr) {
+		const String *display_name = top->exported_members_display_names_cache.getptr(p_property);
+		if (display_name != nullptr) {
+			return *display_name;
+		}
+		if (top->member_info.has(p_property)) {
+			return String();
+		}
+
+		top = top->base_script.ptr();
+	}
+
+	return String();
+}
+#endif
 
 int CSharpScript::get_member_line(const StringName &p_member) const {
 	// TODO omnisharp

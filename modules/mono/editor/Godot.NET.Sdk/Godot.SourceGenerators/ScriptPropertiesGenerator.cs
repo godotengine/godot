@@ -391,7 +391,12 @@ namespace Godot.SourceGenerators
                 .Append((int)propertyInfo.Usage)
                 .Append(", exported: ")
                 .Append(propertyInfo.Exported ? "true" : "false")
-                .Append("));\n");
+                .Append(propertyInfo.DisplayName != null ? ", displayName: " : "");
+            if (propertyInfo.DisplayName != null)
+            {
+                source.Append(SymbolDisplay.FormatLiteral(propertyInfo.DisplayName, quote: true));
+            }
+            source.Append("));\n");
         }
 
         private static IEnumerable<PropertyInfo> DetermineGroupingPropertyInfo(ISymbol memberSymbol)
@@ -433,6 +438,13 @@ namespace Godot.SourceGenerators
 
             var exportToolButtonAttr = memberSymbol.GetAttributes()
                 .FirstOrDefault(a => a.AttributeClass?.IsGodotExportToolButtonAttribute() ?? false);
+
+            var exportNameAttr = memberSymbol.GetAttributes()
+                .FirstOrDefault(a => a.AttributeClass?.IsGodotExportNameAttribute() ?? false);
+
+            string? displayName = exportNameAttr?.ConstructorArguments.Length > 0 ?
+                exportNameAttr.ConstructorArguments[0].Value?.ToString() :
+                null;
 
             if (exportAttr != null && exportToolButtonAttr != null)
             {
@@ -584,7 +596,7 @@ namespace Godot.SourceGenerators
                 }
 
                 return new PropertyInfo(memberVariantType, memberName, PropertyHint.ToolButton,
-                    hintString: hintString, PropertyUsageFlags.Editor, exported: true);
+                    hintString: hintString, PropertyUsageFlags.Editor, exported: true, displayName: displayName);
             }
 
             if (exportAttr == null)
@@ -625,7 +637,7 @@ namespace Godot.SourceGenerators
                 propUsage |= PropertyUsageFlags.NilIsVariant;
 
             return new PropertyInfo(memberVariantType, memberName,
-                hint, hintString, propUsage, exported: true);
+                hint, hintString, propUsage, exported: true, displayName: displayName);
         }
 
         private static bool TryGetMemberExportHint(

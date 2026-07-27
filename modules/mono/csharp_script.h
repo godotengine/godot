@@ -190,6 +190,7 @@ private:
 
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
+	HashMap<StringName, String> exported_members_display_names_cache;
 	HashMap<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
 	HashSet<PlaceHolderScriptInstance *> placeholders;
 	bool source_changed_cache = false;
@@ -259,6 +260,9 @@ public:
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 	void get_script_property_list(List<PropertyInfo> *r_list) const override;
+#ifdef TOOLS_ENABLED
+	String get_property_display_name(const StringName &p_property) const override;
+#endif
 	void update_exports() override;
 
 	void get_members(HashSet<StringName> *p_members) override;

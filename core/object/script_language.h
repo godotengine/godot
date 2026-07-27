@@ -190,6 +190,11 @@ public:
 	virtual void update_exports() {} //editor tool
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const = 0;
+#ifdef TOOLS_ENABLED
+	virtual String get_property_display_name(const StringName &p_property) const {
+		return String();
+	}
+#endif
 
 	virtual int get_member_line(const StringName &p_member) const { return -1; }
 

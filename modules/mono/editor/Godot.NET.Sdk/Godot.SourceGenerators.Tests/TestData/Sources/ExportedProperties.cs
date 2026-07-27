@@ -54,6 +54,10 @@ public partial class ExportedProperties(string primaryCtorParameter) : GodotObje
         }
     }
 
+    [Export]
+    [ExportName("Custom Display Label")]
+    public String ExportNameProperty { get; set; } = "ExportNameProperty";
+
     // Full Property
     private String _fullPropertyString = "FullPropertyString";
     [Export]

@@ -982,6 +982,7 @@ namespace Godot.Bridge
             // Careful with padding...
             public godot_string_name Name; // Not owned
             public godot_string HintString;
+            public godot_string DisplayName;
             public int Type;
             public int Hint;
             public int Usage;
@@ -990,6 +991,7 @@ namespace Godot.Bridge
             public void Dispose()
             {
                 HintString.Dispose();
+                DisplayName.Dispose();
             }
         }
 #pragma warning restore IDE1006
@@ -1062,6 +1064,7 @@ namespace Godot.Bridge
                             Name = (godot_string_name)property.Name.NativeValue, // Not owned
                             Hint = (int)property.Hint,
                             HintString = Marshaling.ConvertStringToNative(property.HintString),
+                            DisplayName = Marshaling.ConvertStringToNative(property.DisplayName ?? ""),
                             Usage = (int)property.Usage,
                             Exported = property.Exported.ToGodotBool()
                         };

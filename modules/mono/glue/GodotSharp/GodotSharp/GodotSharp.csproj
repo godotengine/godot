@@ -65,6 +65,7 @@
     <Compile Include="Core\Attributes\ExportAttribute.cs" />
     <Compile Include="Core\Attributes\ExportCategoryAttribute.cs" />
     <Compile Include="Core\Attributes\ExportGroupAttribute.cs" />
+    <Compile Include="Core\Attributes\ExportNameAttribute.cs" />
     <Compile Include="Core\Attributes\ExportSubgroupAttribute.cs" />
     <Compile Include="Core\Attributes\GlobalClassAttribute.cs" />
     <Compile Include="Core\Attributes\GodotClassNameAttribute.cs" />
