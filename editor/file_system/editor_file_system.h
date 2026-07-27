@@ -354,7 +354,6 @@ class EditorFileSystem : public Node {
 	struct ImportThreadData {
 		const ImportFile *reimport_files;
 		int reimport_from;
-		Semaphore *imported_sem = nullptr;
 	};
 
 	void _reimport_thread(uint32_t p_index, ImportThreadData *p_import_data);

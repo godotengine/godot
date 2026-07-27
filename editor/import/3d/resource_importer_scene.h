@@ -32,6 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/resource_importer.h"
+#include "core/os/mutex.h"
 #include "core/variant/dictionary.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
@@ -157,6 +158,19 @@ class ResourceImporterScene : public ResourceImporter {
 
 	static Vector<Ref<EditorSceneFormatImporter>> scene_importers;
 	static Vector<Ref<EditorScenePostImportPlugin>> post_importer_plugins;
+	// Serializes post-import script/plugin execution and preview queueing during threaded imports,
+	// as user-provided scripts and plugins are not expected to be thread-safe.
+	static Mutex post_import_mutex;
+	// Scenes imported on worker threads that still need a preview generated on the main thread
+	// (source file, save path). Flushed by import_threaded_end().
+	Vector<Pair<String, String>> pending_scene_previews;
+
+	// Serialized entry points for calls into post-import plugins, locking post_import_mutex.
+	static void _plugins_internal_process(EditorScenePostImportPlugin::InternalImportCategory p_category, Node *p_base_scene, Node *p_node, const Ref<Resource> &p_resource, const Dictionary &p_options);
+	static void _plugins_pre_process(Node *p_scene, const HashMap<StringName, Variant> &p_options);
+	static void _plugins_post_process(Node *p_scene, const HashMap<StringName, Variant> &p_options);
+	static void _plugins_get_internal_import_options(EditorScenePostImportPlugin::InternalImportCategory p_category, List<ImportOption> *r_options);
+	static void _plugins_get_import_options(const String &p_path, List<ImportOption> *r_options);
 
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
@@ -279,6 +293,9 @@ public:
 	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const override;
 	// Import scenes *after* everything else (such as textures).
 	virtual int get_import_order() const override { return ResourceImporter::IMPORT_ORDER_SCENE; }
+	virtual bool can_import_threaded() const override { return true; }
+	virtual void import_threaded_begin() override;
+	virtual void import_threaded_end() override;
 
 	void _pre_fix_global(Node *p_scene, const HashMap<StringName, Variant> &p_options) const;
 	Node *_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames, const HashMap<StringName, Variant> &p_options);

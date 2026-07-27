@@ -52,6 +52,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 int EditorFileSystem::nb_files_total = 0;
@@ -993,7 +994,31 @@ bool EditorFileSystem::_update_scan_actions() {
 					for (const String &dep : dependencies) {
 						const String &dependency_path = dep.contains("::") ? dep.get_slice("::", 0) : dep;
 						if (_can_import_file(dep)) {
-							reimports.push_back(dependency_path);
+							// Only reimport dependency if it actually needs it.
+							bool dep_needs_reimport = true;
+							String dep_import_md5;
+							if (file_cache.has(dependency_path)) {
+								FileCache &fc = file_cache[dependency_path];
+								dep_import_md5 = fc.import_md5;
+								uint64_t dep_mt = FileAccess::get_modified_time(dependency_path);
+								if (fc.modification_time == dep_mt && fc.import_modification_time == FileAccess::get_modified_time(dependency_path + ".import")) {
+									// File modification times match cache, skip expensive reimport check,
+									// unless an imported destination file was deleted in the meantime.
+									dep_needs_reimport = false;
+									for (const String &dest_path : fc.import_dest_paths) {
+										if (!FileAccess::exists(dest_path)) {
+											dep_needs_reimport = true;
+											break;
+										}
+									}
+								}
+							}
+							if (dep_needs_reimport) {
+								dep_needs_reimport = _test_for_reimport(dependency_path, dep_import_md5);
+							}
+							if (dep_needs_reimport) {
+								reimports.push_back(dependency_path);
+							}
 						}
 					}
 				} else {
@@ -3241,8 +3266,6 @@ void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_im
 	int file_idx = p_import_data->reimport_from + int(p_index);
 	_reimport_file(p_import_data->reimport_files[file_idx].path);
 	ResourceLoader::set_is_import_thread(false);
-
-	p_import_data->imported_sem->post();
 }
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
@@ -3326,7 +3349,6 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 #endif
 
 	int from = 0;
-	Semaphore imported_sem;
 	for (int i = 0; i < reimport_files.size(); i++) {
 		if (groups_to_reimport.has(reimport_files[i].path)) {
 			from = i + 1;
@@ -3352,27 +3374,27 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					ImportThreadData tdata;
 					tdata.reimport_from = from;
 					tdata.reimport_files = reimport_files.ptr();
-					tdata.imported_sem = &imported_sem;
 
 					int item_count = i - from + 1;
 					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &tdata, item_count, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
 
 					int imported_count = 0;
 					while (true) {
-						while (true) {
-							ep->step(reimport_files[imported_count].path.get_file(), from + imported_count, false);
-							if (imported_sem.try_wait()) {
-								imported_count++;
-								break;
-							}
+						uint32_t processed = WorkerThreadPool::get_singleton()->get_group_processed_element_count(group_task);
+						for (; imported_count < (int)processed; imported_count++) {
+							ep->step(reimport_files[from + imported_count].path.get_file(), from + imported_count, false);
 						}
 						if (imported_count == item_count) {
 							break;
 						}
+						// Service synchronous rendering server calls made by import threads
+						// (e.g. scene packing querying instance properties), which would
+						// otherwise deadlock waiting for the main thread.
+						RenderingServer::get_singleton()->sync();
+						OS::get_singleton()->delay_usec(1000);
 					}
 
 					WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
-					DEV_ASSERT(!imported_sem.try_wait());
 
 					importer->import_threaded_end();
 				}
@@ -3435,13 +3457,21 @@ Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<Stri
 	Vector<String> reloads;
 	reloads.append(p_file);
 
-	// Emit the resource_reimporting signal for the single file before the actual importation.
-	emit_signal(SNAME("resources_reimporting"), reloads);
+	// Signals and file system tree updates are main-thread only; when appending from an import
+	// thread (e.g. glTF importing its extracted textures during a threaded scene import), skip
+	// both. The caller is responsible for registering the file on the main thread afterwards.
+	const bool main_thread = Thread::is_main_thread();
+	if (main_thread) {
+		// Emit the resource_reimporting signal for the single file before the actual importation.
+		emit_signal(SNAME("resources_reimporting"), reloads);
+	}
 
-	Error ret = _reimport_file(p_file, p_custom_options, p_custom_importer, &p_generator_parameters);
+	Error ret = _reimport_file(p_file, p_custom_options, p_custom_importer, &p_generator_parameters, main_thread);
 
-	// Emit the resource_reimported signal for the single file we just reimported.
-	emit_signal(SNAME("resources_reimported"), reloads);
+	if (main_thread) {
+		// Emit the resource_reimported signal for the single file we just reimported.
+		emit_signal(SNAME("resources_reimported"), reloads);
+	}
 	return ret;
 }
 

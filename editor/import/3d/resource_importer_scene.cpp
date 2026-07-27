@@ -34,8 +34,13 @@
 #include "core/io/dir_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "core/object/script_language.h"
+#include "core/object/worker_thread_pool.h"
+#include "core/os/mutex.h"
+#include "core/os/thread.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/import/3d/scene_import_settings.h"
@@ -60,6 +65,8 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/resource_format_text.h"
+
+#include <functional>
 
 void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const {
 	Vector<String> arr;
@@ -332,6 +339,8 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 		return false;
 	}
 
+	// Plugins are not expected to be thread-safe; serialize their execution during threaded imports.
+	MutexLock lock(post_import_mutex);
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		Variant ret = post_importer_plugins.write[i]->get_option_visibility(p_path, _scene_import_type, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
@@ -1505,6 +1514,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 	{
 		ObjectID node_id = p_node->get_instance_id();
+		MutexLock lock(post_import_mutex); // Plugins are not expected to be thread-safe.
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 			if (ObjectDB::get_instance(node_id) == nullptr) { //may have been erased, so do not continue
@@ -1515,6 +1525,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ObjectID node_id = p_node->get_instance_id();
+		MutexLock lock(post_import_mutex); // Plugins are not expected to be thread-safe.
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 			if (ObjectDB::get_instance(node_id) == nullptr) { //may have been erased, so do not continue
@@ -1593,6 +1604,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		}
 
 		ObjectID node_id = p_node->get_instance_id();
+		MutexLock lock(post_import_mutex); // Plugins are not expected to be thread-safe.
 		for (int i = 0; i < post_importer_plugins.size(); i++) {
 			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 			if (ObjectDB::get_instance(node_id) == nullptr) { //may have been erased, so do not continue
@@ -1651,9 +1663,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 							}
 						}
 					}
-					for (int j = 0; j < post_importer_plugins.size(); j++) {
-						post_importer_plugins.write[j]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL, p_root, p_node, mat, matdata);
-					}
+					_plugins_internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MATERIAL, p_root, p_node, mat, matdata);
 					if (extract_mat != 0) {
 						// If no file path was specified, generate one based on the material name and the selected format.
 						if (file_path.is_empty()) {
@@ -1921,9 +1931,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
-		for (int i = 0; i < post_importer_plugins.size(); i++) {
-			post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, p_root, p_node, Ref<Resource>(), node_settings);
-		}
+		_plugins_internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE, p_root, p_node, Ref<Resource>(), node_settings);
 
 		if (post_importer_plugins.size()) {
 			LocalVector<StringName> anims;
@@ -1943,9 +1951,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						}
 					}
 
-					for (int i = 0; i < post_importer_plugins.size(); i++) {
-						post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION, p_root, p_node, anim, anim_settings);
-					}
+					_plugins_internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_ANIMATION, p_root, p_node, anim, anim_settings);
 				}
 			}
 		}
@@ -2389,9 +2395,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		}
 	}
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
-		post_importer_plugins.write[i]->get_internal_import_options(EditorScenePostImportPlugin::InternalImportCategory(p_category), r_options);
-	}
+	_plugins_get_internal_import_options(EditorScenePostImportPlugin::InternalImportCategory(p_category), r_options);
 }
 
 bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategory p_category, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
@@ -2588,6 +2592,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 	}
 
 	// TODO: If there are more than 2 or equal get_internal_option_visibility method, visibility state is broken.
+	MutexLock lock(post_import_mutex); // Plugins are not expected to be thread-safe.
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		Variant ret = post_importer_plugins.write[i]->get_internal_option_visibility(EditorScenePostImportPlugin::InternalImportCategory(p_category), _scene_import_type, p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
@@ -2625,6 +2630,7 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 		}
 	}
 
+	MutexLock lock(post_import_mutex); // Plugins are not expected to be thread-safe.
 	for (int i = 0; i < post_importer_plugins.size(); i++) {
 		Variant ret = post_importer_plugins.write[i]->get_internal_option_update_view_required(EditorScenePostImportPlugin::InternalImportCategory(p_category), p_option, p_options);
 		if (ret.get_type() == Variant::BOOL) {
@@ -2680,9 +2686,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Dictionary()));
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
-		post_importer_plugins.write[i]->get_import_options(p_path, r_options);
-	}
+	_plugins_get_import_options(p_path, r_options);
 
 	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
 		importer_elem->get_import_options(p_path, r_options);
@@ -2739,202 +2743,270 @@ Array ResourceImporterScene::_get_skinned_pose_transforms(ImporterMeshInstance3D
 	return skin_pose_transform_array;
 }
 
+namespace {
+struct MeshProcessTask {
+	Ref<ImporterMesh> importer_mesh;
+	Transform3D world_xf;
+	Array skin_pose_transforms;
+	bool generate_lods;
+	float merge_angle;
+	bool create_shadow_meshes;
+	bool bake_lightmaps;
+	float lightmap_texel_size;
+	String save_to_file;
+};
+
+struct MeshProcessBatchData {
+	MeshProcessTask *tasks;
+	const Vector<uint8_t> *src_lightmap_cache;
+	Vector<Vector<uint8_t>> *lightmap_caches;
+	Mutex *lightmap_mutex;
+	Mutex *save_mutex;
+};
+
+void _process_mesh_worker(void *p_userdata, uint32_t p_index) {
+	MeshProcessBatchData *data = static_cast<MeshProcessBatchData *>(p_userdata);
+	MeshProcessTask &task = data->tasks[p_index];
+
+	if (task.bake_lightmaps) {
+		Vector<uint8_t> lightmap_cache;
+		task.importer_mesh->lightmap_unwrap_cached(task.world_xf, task.lightmap_texel_size, *data->src_lightmap_cache, lightmap_cache);
+
+		if (!lightmap_cache.is_empty()) {
+			MutexLock lock(*data->lightmap_mutex);
+			String new_md5 = String::md5(lightmap_cache.ptr()); // MD5 is stored at the beginning of the cache data
+			// Keep caches sorted by MD5, skipping duplicates; append when it sorts after all existing entries.
+			int insert_idx = data->lightmap_caches->size();
+			for (int i = 0; i < data->lightmap_caches->size(); i++) {
+				String md5 = String::md5((*data->lightmap_caches)[i].ptr());
+				if (new_md5 < md5) {
+					insert_idx = i;
+					break;
+				}
+				if (new_md5 == md5) {
+					insert_idx = -1;
+					break;
+				}
+			}
+			if (insert_idx >= 0) {
+				data->lightmap_caches->insert(insert_idx, lightmap_cache);
+			}
+		}
+	}
+
+	if (task.generate_lods) {
+		task.importer_mesh->generate_lods(task.merge_angle, task.skin_pose_transforms);
+	}
+
+	if (task.create_shadow_meshes) {
+		task.importer_mesh->create_shadow_mesh();
+	}
+
+	task.importer_mesh->optimize_indices();
+
+	if (!task.save_to_file.is_empty()) {
+		// Serialize resource saves: the resource cache, ResourceUID and file writes are not safe to race.
+		MutexLock lock(*data->save_mutex);
+		String save_res_path = ResourceUID::ensure_path(task.save_to_file);
+		Ref<Mesh> existing = ResourceCache::get_ref(save_res_path);
+		if (existing.is_valid()) {
+			existing->reset_state();
+		}
+		Ref<ArrayMesh> mesh = task.importer_mesh->get_mesh(existing);
+		Error err = ResourceSaver::save(mesh, save_res_path);
+		if (err != OK) {
+			WARN_PRINT(vformat("Failed to save mesh %s to '%s'.", mesh->get_name(), save_res_path));
+		}
+		if (err == OK && task.save_to_file.begins_with("uid://")) {
+			ResourceSaver::set_uid(save_res_path, ResourceUID::get_singleton()->text_to_id(task.save_to_file));
+		}
+		mesh->set_path(save_res_path, true);
+	}
+}
+} // anonymous namespace
+
 Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches) {
-	ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_node);
-	if (src_mesh_node) {
-		//is mesh
-		MeshInstance3D *mesh_node = memnew(MeshInstance3D);
-		mesh_node->set_name(src_mesh_node->get_name());
-		mesh_node->set_transform(src_mesh_node->get_transform());
-		mesh_node->set_skin(src_mesh_node->get_skin());
-		mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
-		mesh_node->merge_meta_from(src_mesh_node);
+	// Pass 1: Collect all ImporterMeshInstance3D nodes and unique meshes that need processing.
+	// Does NOT modify the tree, only reads mesh/node data.
+	Vector<MeshProcessTask> mesh_tasks;
+	HashMap<ImporterMesh *, int> mesh_task_index; // Deduplicate by ImporterMesh pointer.
 
-		Ref<ImporterMesh> importer_mesh = src_mesh_node->get_mesh();
-		if (importer_mesh.is_valid()) {
-			Ref<ArrayMesh> mesh;
-			if (!importer_mesh->has_mesh()) {
-				//do mesh processing
+	std::function<void(Node *)> collect_func = [&](Node *p_collect_node) {
+		ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_collect_node);
+		if (src_mesh_node) {
+			Ref<ImporterMesh> importer_mesh = src_mesh_node->get_mesh();
 
-				bool generate_lods = p_generate_lods;
-				float merge_angle = 20.0f;
-				bool create_shadow_meshes = p_create_shadow_meshes;
-				bool bake_lightmaps = p_light_bake_mode == LIGHT_BAKE_STATIC_LIGHTMAPS;
-				String save_to_file;
+			if (importer_mesh.is_valid() && !importer_mesh->has_mesh()) {
+				if (!mesh_task_index.has(importer_mesh.ptr())) {
+					MeshProcessTask task;
+					task.importer_mesh = importer_mesh;
+					task.generate_lods = p_generate_lods;
+					task.merge_angle = 20.0f;
+					task.create_shadow_meshes = p_create_shadow_meshes;
+					task.bake_lightmaps = (p_light_bake_mode == LIGHT_BAKE_STATIC_LIGHTMAPS);
+					task.lightmap_texel_size = p_lightmap_texel_size;
 
-				String mesh_id = importer_mesh->get_meta("import_id", importer_mesh->get_name());
-
-				if (!mesh_id.is_empty() && p_mesh_data.has(mesh_id)) {
-					Dictionary mesh_settings = p_mesh_data[mesh_id];
-					{
-						//fill node settings for this node with default values
-						List<ImportOption> iopts;
-						get_internal_import_options(INTERNAL_IMPORT_CATEGORY_MESH, &iopts);
-						for (const ImportOption &E : iopts) {
-							if (!mesh_settings.has(E.option.name)) {
-								mesh_settings[E.option.name] = E.default_value;
-							}
+					if (task.bake_lightmaps) {
+						Transform3D xf;
+						Node3D *n = src_mesh_node;
+						while (n) {
+							xf = n->get_transform() * xf;
+							n = n->get_parent_node_3d();
 						}
+						task.world_xf = xf;
 					}
 
-					if (mesh_settings.has("generate/shadow_meshes")) {
-						int shadow_meshes = mesh_settings["generate/shadow_meshes"];
-						if (shadow_meshes == MESH_OVERRIDE_ENABLE) {
-							create_shadow_meshes = true;
-						} else if (shadow_meshes == MESH_OVERRIDE_DISABLE) {
-							create_shadow_meshes = false;
-						}
-					}
+					String mesh_id = importer_mesh->get_meta("import_id", importer_mesh->get_name());
 
-					if (mesh_settings.has("generate/lightmap_uv")) {
-						int lightmap_uv = mesh_settings["generate/lightmap_uv"];
-						if (lightmap_uv == MESH_OVERRIDE_ENABLE) {
-							bake_lightmaps = true;
-						} else if (lightmap_uv == MESH_OVERRIDE_DISABLE) {
-							bake_lightmaps = false;
-						}
-					}
-
-					if (mesh_settings.has("generate/lods")) {
-						int lods = mesh_settings["generate/lods"];
-						if (lods == MESH_OVERRIDE_ENABLE) {
-							generate_lods = true;
-						} else if (lods == MESH_OVERRIDE_DISABLE) {
-							generate_lods = false;
-						}
-					}
-
-					if (mesh_settings.has("lods/normal_merge_angle")) {
-						merge_angle = mesh_settings["lods/normal_merge_angle"];
-					}
-
-					if (bool(mesh_settings.get("save_to_file/enabled", false))) {
-						save_to_file = mesh_settings.get("save_to_file/path", String());
-						if (!ResourceUID::ensure_path(save_to_file).is_resource_file()) {
-							save_to_file = "";
-						}
-					}
-
-					for (int i = 0; i < post_importer_plugins.size(); i++) {
-						post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH, nullptr, src_mesh_node, importer_mesh, mesh_settings);
-					}
-				}
-
-				if (bake_lightmaps) {
-					Transform3D xf;
-					Node3D *n = src_mesh_node;
-					while (n) {
-						xf = n->get_transform() * xf;
-						n = n->get_parent_node_3d();
-					}
-
-					Vector<uint8_t> lightmap_cache;
-					importer_mesh->lightmap_unwrap_cached(xf, p_lightmap_texel_size, p_src_lightmap_cache, lightmap_cache);
-
-					if (!lightmap_cache.is_empty()) {
-						if (r_lightmap_caches.is_empty()) {
-							r_lightmap_caches.push_back(lightmap_cache);
-						} else {
-							String new_md5 = String::md5(lightmap_cache.ptr()); // MD5 is stored at the beginning of the cache data
-
-							for (int i = 0; i < r_lightmap_caches.size(); i++) {
-								String md5 = String::md5(r_lightmap_caches[i].ptr());
-								if (new_md5 < md5) {
-									r_lightmap_caches.insert(i, lightmap_cache);
-									break;
-								}
-
-								if (new_md5 == md5) {
-									break;
+					if (!mesh_id.is_empty() && p_mesh_data.has(mesh_id)) {
+						Dictionary mesh_settings = p_mesh_data[mesh_id];
+						{
+							List<ImportOption> iopts;
+							get_internal_import_options(INTERNAL_IMPORT_CATEGORY_MESH, &iopts);
+							for (const ImportOption &E : iopts) {
+								if (!mesh_settings.has(E.option.name)) {
+									mesh_settings[E.option.name] = E.default_value;
 								}
 							}
 						}
+
+						if (mesh_settings.has("generate/shadow_meshes")) {
+							int shadow_meshes = mesh_settings["generate/shadow_meshes"];
+							if (shadow_meshes == MESH_OVERRIDE_ENABLE) {
+								task.create_shadow_meshes = true;
+							} else if (shadow_meshes == MESH_OVERRIDE_DISABLE) {
+								task.create_shadow_meshes = false;
+							}
+						}
+
+						if (mesh_settings.has("generate/lightmap_uv")) {
+							int lightmap_uv = mesh_settings["generate/lightmap_uv"];
+							if (lightmap_uv == MESH_OVERRIDE_ENABLE) {
+								task.bake_lightmaps = true;
+							} else if (lightmap_uv == MESH_OVERRIDE_DISABLE) {
+								task.bake_lightmaps = false;
+							}
+						}
+
+						if (mesh_settings.has("generate/lods")) {
+							int lods = mesh_settings["generate/lods"];
+							if (lods == MESH_OVERRIDE_ENABLE) {
+								task.generate_lods = true;
+							} else if (lods == MESH_OVERRIDE_DISABLE) {
+								task.generate_lods = false;
+							}
+						}
+
+						if (mesh_settings.has("lods/normal_merge_angle")) {
+							task.merge_angle = mesh_settings["lods/normal_merge_angle"];
+						}
+
+						if (bool(mesh_settings.get("save_to_file/enabled", false))) {
+							task.save_to_file = mesh_settings.get("save_to_file/path", String());
+							if (!ResourceUID::ensure_path(task.save_to_file).is_resource_file()) {
+								task.save_to_file = "";
+							}
+						}
+
+						_plugins_internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH, nullptr, src_mesh_node, importer_mesh, mesh_settings);
 					}
-				}
 
-				if (generate_lods) {
-					Array skin_pose_transform_array = _get_skinned_pose_transforms(src_mesh_node);
-					importer_mesh->generate_lods(merge_angle, skin_pose_transform_array);
-				}
-
-				if (create_shadow_meshes) {
-					importer_mesh->create_shadow_mesh();
-				}
-
-				importer_mesh->optimize_indices();
-
-				if (!save_to_file.is_empty()) {
-					String save_res_path = ResourceUID::ensure_path(save_to_file);
-					Ref<Mesh> existing = ResourceCache::get_ref(save_res_path);
-					if (existing.is_valid()) {
-						//if somehow an existing one is useful, create
-						existing->reset_state();
-					}
-					mesh = importer_mesh->get_mesh(existing);
-
-					Error err = ResourceSaver::save(mesh, save_res_path); //override
-					if (err != OK) {
-						WARN_PRINT(vformat("Failed to save mesh %s to '%s'.", mesh->get_name(), save_res_path));
-					}
-					if (err == OK && save_to_file.begins_with("uid://")) {
-						// slow
-						ResourceSaver::set_uid(save_res_path, ResourceUID::get_singleton()->text_to_id(save_to_file));
+					if (task.generate_lods) {
+						task.skin_pose_transforms = _get_skinned_pose_transforms(src_mesh_node);
 					}
 
-					mesh->set_path(save_res_path, true); //takeover existing, if needed
-
-				} else {
-					mesh = importer_mesh->get_mesh();
+					mesh_task_index[importer_mesh.ptr()] = mesh_tasks.size();
+					mesh_tasks.push_back(task);
 				}
-			} else {
-				mesh = importer_mesh->get_mesh();
-			}
-
-			if (mesh.is_valid()) {
-				_copy_meta(importer_mesh.ptr(), mesh.ptr());
-				mesh_node->set_mesh(mesh);
-				for (int i = 0; i < mesh->get_surface_count(); i++) {
-					mesh_node->set_surface_override_material(i, src_mesh_node->get_surface_material(i));
-				}
-				mesh->merge_meta_from(*importer_mesh);
 			}
 		}
 
-		switch (p_light_bake_mode) {
-			case LIGHT_BAKE_DISABLED: {
-				mesh_node->set_gi_mode(GeometryInstance3D::GI_MODE_DISABLED);
-			} break;
-			case LIGHT_BAKE_DYNAMIC: {
-				mesh_node->set_gi_mode(GeometryInstance3D::GI_MODE_DYNAMIC);
-			} break;
-			case LIGHT_BAKE_STATIC:
-			case LIGHT_BAKE_STATIC_LIGHTMAPS: {
-				mesh_node->set_gi_mode(GeometryInstance3D::GI_MODE_STATIC);
-			} break;
+		for (int i = 0; i < p_collect_node->get_child_count(); i++) {
+			collect_func(p_collect_node->get_child(i));
+		}
+	};
+
+	collect_func(p_node);
+
+	// Pass 2: Process unique meshes in parallel.
+	Mutex lightmap_mutex;
+	Mutex save_mutex;
+	MeshProcessBatchData batch_data = { mesh_tasks.ptrw(), &p_src_lightmap_cache, &r_lightmap_caches, &lightmap_mutex, &save_mutex };
+
+	if (mesh_tasks.size() > 1 && WorkerThreadPool::get_singleton()->get_caller_task_id() == WorkerThreadPool::INVALID_TASK_ID) {
+		// Not on a worker thread: process meshes in parallel. A worker thread blocking on
+		// wait_for_group_task_completion() can starve the pool, so import threads process inline.
+		WorkerThreadPool::GroupID group = WorkerThreadPool::get_singleton()->add_native_group_task(_process_mesh_worker, &batch_data, mesh_tasks.size(), -1, false, SNAME("SceneMeshProcessing"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group);
+	} else {
+		for (uint32_t i = 0; i < (uint32_t)mesh_tasks.size(); i++) {
+			_process_mesh_worker(&batch_data, i);
+		}
+	}
+
+	// Pass 3: Walk the tree and replace ImporterMeshInstance3D nodes with MeshInstance3D.
+	// All mesh processing is already done, so this just converts and replaces nodes.
+	std::function<Node *(Node *)> replace_func = [&](Node *p_replace_node) -> Node * {
+		ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_replace_node);
+		if (src_mesh_node) {
+			MeshInstance3D *mesh_node = memnew(MeshInstance3D);
+			mesh_node->set_name(src_mesh_node->get_name());
+			mesh_node->set_transform(src_mesh_node->get_transform());
+			mesh_node->set_skin(src_mesh_node->get_skin());
+			mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
+			mesh_node->merge_meta_from(src_mesh_node);
+
+			Ref<ImporterMesh> importer_mesh = src_mesh_node->get_mesh();
+			if (importer_mesh.is_valid()) {
+				Ref<ArrayMesh> mesh = importer_mesh->get_mesh();
+				if (mesh.is_valid()) {
+					_copy_meta(importer_mesh.ptr(), mesh.ptr());
+					mesh_node->set_mesh(mesh);
+					for (int i = 0; i < mesh->get_surface_count(); i++) {
+						mesh_node->set_surface_override_material(i, src_mesh_node->get_surface_material(i));
+					}
+					mesh->merge_meta_from(*importer_mesh);
+				}
+			}
+
+			switch (p_light_bake_mode) {
+				case LIGHT_BAKE_DISABLED: {
+					mesh_node->set_gi_mode(GeometryInstance3D::GI_MODE_DISABLED);
+				} break;
+				case LIGHT_BAKE_DYNAMIC: {
+					mesh_node->set_gi_mode(GeometryInstance3D::GI_MODE_DYNAMIC);
+				} break;
+				case LIGHT_BAKE_STATIC:
+				case LIGHT_BAKE_STATIC_LIGHTMAPS: {
+					mesh_node->set_gi_mode(GeometryInstance3D::GI_MODE_STATIC);
+				} break;
+			}
+
+			mesh_node->set_layer_mask(src_mesh_node->get_layer_mask());
+			mesh_node->set_cast_shadows_setting(src_mesh_node->get_cast_shadows_setting());
+			mesh_node->set_visible(src_mesh_node->is_visible());
+			mesh_node->set_visibility_range_begin(src_mesh_node->get_visibility_range_begin());
+			mesh_node->set_visibility_range_begin_margin(src_mesh_node->get_visibility_range_begin_margin());
+			mesh_node->set_visibility_range_end(src_mesh_node->get_visibility_range_end());
+			mesh_node->set_visibility_range_end_margin(src_mesh_node->get_visibility_range_end_margin());
+			mesh_node->set_visibility_range_fade_mode(src_mesh_node->get_visibility_range_fade_mode());
+
+			_copy_meta(p_replace_node, mesh_node);
+
+			p_replace_node->replace_by(mesh_node);
+			p_replace_node->set_owner(nullptr);
+			memdelete(p_replace_node);
+			p_replace_node = mesh_node;
 		}
 
-		mesh_node->set_layer_mask(src_mesh_node->get_layer_mask());
-		mesh_node->set_cast_shadows_setting(src_mesh_node->get_cast_shadows_setting());
-		mesh_node->set_visible(src_mesh_node->is_visible());
-		mesh_node->set_visibility_range_begin(src_mesh_node->get_visibility_range_begin());
-		mesh_node->set_visibility_range_begin_margin(src_mesh_node->get_visibility_range_begin_margin());
-		mesh_node->set_visibility_range_end(src_mesh_node->get_visibility_range_end());
-		mesh_node->set_visibility_range_end_margin(src_mesh_node->get_visibility_range_end_margin());
-		mesh_node->set_visibility_range_fade_mode(src_mesh_node->get_visibility_range_fade_mode());
+		for (int i = 0; i < p_replace_node->get_child_count(); i++) {
+			replace_func(p_replace_node->get_child(i));
+		}
 
-		_copy_meta(p_node, mesh_node);
+		return p_replace_node;
+	};
 
-		p_node->replace_by(mesh_node);
-		p_node->set_owner(nullptr);
-		memdelete(p_node);
-		p_node = mesh_node;
-	}
-
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		_generate_meshes(p_node->get_child(i), p_mesh_data, p_generate_lods, p_create_shadow_meshes, p_light_bake_mode, p_lightmap_texel_size, p_src_lightmap_cache, r_lightmap_caches);
-	}
-
-	return p_node;
+	return replace_func(p_node);
 }
 
 void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes) {
@@ -3112,7 +3184,8 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	String ext = p_source_file.get_extension().to_lower();
 
 	// TRANSLATORS: This is an editor progress label.
-	EditorProgress progress("pre-import", TTR("Pre-Import Scene"), 0);
+	// Include the file in the task name so concurrent threaded imports don't collide.
+	EditorProgress progress("pre-import " + p_source_file, TTR("Pre-Import Scene"), 0);
 	progress.step(TTR("Importing Scene..."), 0);
 
 	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
@@ -3215,13 +3288,27 @@ Error ResourceImporterScene::_check_resource_save_paths(ResourceUID::ID p_source
 	return OK;
 }
 
+// EditorNode::add_io_error() is main-thread only; when importing on a worker thread,
+// queue the error for display on the main thread and log it immediately.
+static void _report_scene_import_error(const String &p_error) {
+	if (Thread::is_main_thread()) {
+		EditorNode::add_io_error(p_error);
+	} else {
+		MessageQueue::get_main_singleton()->push_callable(callable_mp_static(&EditorNode::add_io_error).bind(p_error));
+		print_error(p_error);
+	}
+}
+
 Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	const String &src_path = p_source_file;
+
+	bool is_main_thread = Thread::is_main_thread();
 
 	Ref<EditorSceneFormatImporter> importer;
 	String ext = src_path.get_extension().to_lower();
 
-	EditorProgress progress("import", TTR("Import Scene"), 104);
+	// Include the file in the task name so concurrent threaded imports don't collide.
+	EditorProgress progress("import " + src_path, TTR("Import Scene"), 104);
 	progress.step(TTR("Importing Scene..."), 0);
 
 	for (Ref<EditorSceneFormatImporter> importer_elem : scene_importers) {
@@ -3322,9 +3409,7 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 
 	_pre_fix_node(scene, scene, collision_map, &occluder_arrays, node_renames, p_options);
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
-		post_importer_plugins.write[i]->pre_process(scene, p_options);
-	}
+	_plugins_pre_process(scene, p_options);
 
 	// data in _subresources may be modified by pre_process(), so wait until now to check.
 	Dictionary node_data;
@@ -3420,14 +3505,14 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		}
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (scr.is_null()) {
-			EditorNode::add_io_error(TTR("Couldn't load post-import script:") + " " + post_import_script_path);
+			_report_scene_import_error(TTR("Couldn't load post-import script:") + " " + post_import_script_path);
 		} else if (scr->get_instance_base_type() != "EditorScenePostImport") {
-			EditorNode::add_io_error(TTR("Script is not a subtype of EditorScenePostImport:") + " " + post_import_script_path);
+			_report_scene_import_error(TTR("Script is not a subtype of EditorScenePostImport:") + " " + post_import_script_path);
 		} else {
 			post_import_script.instantiate();
 			post_import_script->set_script(scr);
 			if (!post_import_script->get_script_instance()) {
-				EditorNode::add_io_error(TTR("Invalid/broken script for post-import (check console):") + " " + post_import_script_path);
+				_report_scene_import_error(TTR("Invalid/broken script for post-import (check console):") + " " + post_import_script_path);
 				post_import_script.unref();
 				return ERR_CANT_CREATE;
 			}
@@ -3448,19 +3533,18 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	}
 
 	if (post_import_script.is_valid()) {
+		// User-provided post-import scripts are not expected to be thread-safe; serialize their execution.
+		MutexLock lock(post_import_mutex);
 		post_import_script->init(p_source_file);
 		scene = post_import_script->post_import(scene);
 		if (!scene) {
-			EditorNode::add_io_error(
-					TTR("Error running post-import script:") + " " + post_import_script_path + "\n" +
+			_report_scene_import_error(TTR("Error running post-import script:") + " " + post_import_script_path + "\n" +
 					TTR("Did you return a Node-derived object in the `_post_import()` method?"));
 			return err;
 		}
 	}
 
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
-		post_importer_plugins.write[i]->post_process(scene, p_options);
-	}
+	_plugins_post_process(scene, p_options);
 
 	progress.step(TTR("Saving..."), 104);
 
@@ -3496,7 +3580,13 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		print_verbose("Saving scene to: " + p_save_path + ".scn");
 		err = ResourceSaver::save(packer, p_save_path + ".scn", flags); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
-		EditorInterface::get_singleton()->make_scene_preview(p_source_file, scene, 1024);
+		if (is_main_thread) {
+			EditorInterface::get_singleton()->make_scene_preview(p_source_file, scene, 1024);
+		} else {
+			// Previews require main-thread rendering; defer them to import_threaded_end().
+			MutexLock lock(post_import_mutex);
+			pending_scene_previews.push_back({ p_source_file, p_save_path });
+		}
 	} else if (_scene_import_type == "ArrayMesh") {
 		_save_scene_as_single_mesh(p_source_file, p_save_path, scene, p_options, flags);
 	} else if (_scene_import_type == "MeshLibrary") {
@@ -3515,6 +3605,84 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 
 Vector<Ref<EditorSceneFormatImporter>> ResourceImporterScene::scene_importers;
 Vector<Ref<EditorScenePostImportPlugin>> ResourceImporterScene::post_importer_plugins;
+Mutex ResourceImporterScene::post_import_mutex;
+
+void ResourceImporterScene::_plugins_internal_process(EditorScenePostImportPlugin::InternalImportCategory p_category, Node *p_base_scene, Node *p_node, const Ref<Resource> &p_resource, const Dictionary &p_options) {
+	// Plugins are not expected to be thread-safe; serialize their execution during threaded imports.
+	if (post_importer_plugins.is_empty()) {
+		return;
+	}
+	MutexLock lock(post_import_mutex);
+	for (int i = 0; i < post_importer_plugins.size(); i++) {
+		post_importer_plugins.write[i]->internal_process(p_category, p_base_scene, p_node, p_resource, p_options);
+	}
+}
+
+void ResourceImporterScene::_plugins_pre_process(Node *p_scene, const HashMap<StringName, Variant> &p_options) {
+	if (post_importer_plugins.is_empty()) {
+		return;
+	}
+	MutexLock lock(post_import_mutex);
+	for (int i = 0; i < post_importer_plugins.size(); i++) {
+		post_importer_plugins.write[i]->pre_process(p_scene, p_options);
+	}
+}
+
+void ResourceImporterScene::_plugins_post_process(Node *p_scene, const HashMap<StringName, Variant> &p_options) {
+	if (post_importer_plugins.is_empty()) {
+		return;
+	}
+	MutexLock lock(post_import_mutex);
+	for (int i = 0; i < post_importer_plugins.size(); i++) {
+		post_importer_plugins.write[i]->post_process(p_scene, p_options);
+	}
+}
+
+void ResourceImporterScene::_plugins_get_internal_import_options(EditorScenePostImportPlugin::InternalImportCategory p_category, List<ImportOption> *r_options) {
+	if (post_importer_plugins.is_empty()) {
+		return;
+	}
+	MutexLock lock(post_import_mutex);
+	for (int i = 0; i < post_importer_plugins.size(); i++) {
+		post_importer_plugins.write[i]->get_internal_import_options(p_category, r_options);
+	}
+}
+
+void ResourceImporterScene::_plugins_get_import_options(const String &p_path, List<ImportOption> *r_options) {
+	if (post_importer_plugins.is_empty()) {
+		return;
+	}
+	MutexLock lock(post_import_mutex);
+	for (int i = 0; i < post_importer_plugins.size(); i++) {
+		post_importer_plugins.write[i]->get_import_options(p_path, r_options);
+	}
+}
+
+void ResourceImporterScene::import_threaded_begin() {
+	MutexLock lock(post_import_mutex);
+	pending_scene_previews.clear();
+}
+
+void ResourceImporterScene::import_threaded_end() {
+	// Runs on the main thread after a batch of threaded imports: generate the scene
+	// previews that were deferred because they require main-thread rendering.
+	Vector<Pair<String, String>> previews;
+	{
+		MutexLock lock(post_import_mutex);
+		previews = pending_scene_previews;
+		pending_scene_previews.clear();
+	}
+	for (const Pair<String, String> &preview : previews) {
+		Ref<PackedScene> packed_scene = ResourceLoader::load(preview.second + ".scn", "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+		if (packed_scene.is_valid()) {
+			Node *scene = packed_scene->instantiate();
+			if (scene) {
+				EditorInterface::get_singleton()->make_scene_preview(preview.first, scene, 1024);
+				memdelete(scene);
+			}
+		}
+	}
+}
 
 bool ResourceImporterScene::has_advanced_options() const {
 	return true;
