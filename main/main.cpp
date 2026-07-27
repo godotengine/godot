@@ -373,16 +373,17 @@ void finalize_theme_db() {
 #define MAIN_PRINT(m_txt)
 #endif
 
-void Main::print_header(bool p_rich) {
+void Main::print_header() {
+	const bool color = OS::get_singleton()->is_stdout_color();
 	if (GODOT_VERSION_TIMESTAMP > 0) {
 		// Version timestamp available.
-		if (p_rich) {
+		if (color) {
 			Engine::get_singleton()->print_header_rich("\u001b[38;5;39m" + String(GODOT_VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " (" + Time::get_singleton()->get_datetime_string_from_unix_time(GODOT_VERSION_TIMESTAMP, true) + " UTC) - \u001b[4m" + String(GODOT_VERSION_WEBSITE));
 		} else {
 			Engine::get_singleton()->print_header(String(GODOT_VERSION_NAME) + " v" + get_full_version_string() + " (" + Time::get_singleton()->get_datetime_string_from_unix_time(GODOT_VERSION_TIMESTAMP, true) + " UTC) - " + String(GODOT_VERSION_WEBSITE));
 		}
 	} else {
-		if (p_rich) {
+		if (color) {
 			Engine::get_singleton()->print_header_rich("\u001b[38;5;39m" + String(GODOT_VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " - \u001b[4m" + String(GODOT_VERSION_WEBSITE));
 		} else {
 			Engine::get_singleton()->print_header(String(GODOT_VERSION_NAME) + " v" + get_full_version_string() + " - " + String(GODOT_VERSION_WEBSITE));
@@ -395,7 +396,10 @@ void Main::print_header(bool p_rich) {
  * automatically added at the end.
  */
 void Main::print_help_copyright(const char *p_notice) {
-	OS::get_singleton()->print("\u001b[90m%s\u001b[0m\n", p_notice);
+	const bool color = OS::get_singleton()->is_stdout_color();
+	const char *gray_color = color ? "\u001b[90m" : "";
+	const char *reset_color = color ? "\u001b[0m" : "";
+	OS::get_singleton()->print("%s%s%s\n", gray_color, p_notice, reset_color);
 }
 
 /**
@@ -403,7 +407,10 @@ void Main::print_help_copyright(const char *p_notice) {
  * automatically added at beginning and at the end.
  */
 void Main::print_help_title(const char *p_title) {
-	OS::get_singleton()->print("\n\u001b[1;93m%s:\u001b[0m\n", p_title);
+	const bool color = OS::get_singleton()->is_stdout_color();
+	const char *title_color = color ? "\u001b[1;93m" : "";
+	const char *reset_color = color ? "\u001b[0m" : "";
+	OS::get_singleton()->print("\n%s%s%s\n", title_color, p_title, reset_color);
 }
 
 /**
@@ -411,12 +418,14 @@ void Main::print_help_title(const char *p_title) {
  * This color replacement must be done *after* calling `rpad()` for the length padding to be done correctly.
  */
 String Main::format_help_option(const char *p_option) {
-	return (String(p_option)
-					.rpad(OPTION_COLUMN_LENGTH)
-					.replace("[", "\u001b[96m[")
-					.replace("]", "]\u001b[0m")
-					.replace("<", "\u001b[95m<")
-					.replace(">", ">\u001b[0m"));
+	String option = String(p_option).rpad(OPTION_COLUMN_LENGTH);
+	if (OS::get_singleton()->is_stdout_color()) {
+		option = option.replace("[", "\u001b[96m[")
+						 .replace("]", "]\u001b[0m")
+						 .replace("<", "\u001b[95m<")
+						 .replace(">", ">\u001b[0m");
+	}
+	return option;
 }
 
 /**
@@ -427,48 +436,61 @@ String Main::format_help_option(const char *p_option) {
  * support in editor.
  */
 void Main::print_help_option(const char *p_option, const char *p_description, CLIOptionAvailability p_availability) {
+	const bool color = OS::get_singleton()->is_stdout_color();
 	const bool option_empty = (p_option && !p_option[0]);
 	if (!option_empty) {
 		const char *availability_badge = "";
 		switch (p_availability) {
 			case CLI_OPTION_AVAILABILITY_EDITOR:
-				availability_badge = "\u001b[1;91mE";
+				availability_badge = color ? "\u001b[1;91mE" : "E";
 				break;
 			case CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG:
-				availability_badge = "\u001b[1;94mD";
+				availability_badge = color ? "\u001b[1;94mD" : "D";
 				break;
 			case CLI_OPTION_AVAILABILITY_TEMPLATE_UNSAFE:
-				availability_badge = "\u001b[1;93mX";
+				availability_badge = color ? "\u001b[1;93mX" : "X";
 				break;
 			case CLI_OPTION_AVAILABILITY_TEMPLATE_RELEASE:
-				availability_badge = "\u001b[1;92mR";
+				availability_badge = color ? "\u001b[1;92mR" : "R";
 				break;
 			case CLI_OPTION_AVAILABILITY_HIDDEN:
 				// Use for multiline option names (but not when the option name is empty).
 				availability_badge = " ";
 				break;
 		}
+		const char *option_color = color ? "\u001b[92m" : "";
+		const char *reset_color = color ? "\u001b[0m" : "";
 		OS::get_singleton()->print(
-				"  \u001b[92m%s  %s\u001b[0m  %s",
+				"  %s%s  %s%s  %s",
+				option_color,
 				format_help_option(p_option).utf8().ptr(),
 				availability_badge,
+				reset_color,
 				p_description);
 	} else {
 		// Make continuation lines for descriptions faint if the option name is empty.
+		const char *initial_color = color ? "\u001b[92m" : "";
+		const char *reset_color = color ? "\u001b[0m" : "";
+		const char *faint_color = color ? "\u001b[90m" : "";
 		OS::get_singleton()->print(
-				"  \u001b[92m%s   \u001b[0m  \u001b[90m%s",
+				"  %s%s   %s  %s%s",
+				initial_color,
 				format_help_option(p_option).utf8().ptr(),
+				reset_color,
+				faint_color,
 				p_description);
 	}
 }
 
 void Main::print_help(const char *p_binary) {
-	print_header(true);
+	const bool color = OS::get_singleton()->is_stdout_color();
+
+	print_header();
 	print_help_copyright("Free and open source software under the terms of the MIT license.");
 	print_help_copyright("(c) 2014-present Godot Engine contributors. (c) 2007-present Juan Linietsky, Ariel Manzur.");
 
 	print_help_title("Usage");
-	OS::get_singleton()->print("  %s \u001b[96m[options] [path to \"project.godot\" file]\u001b[0m\n", p_binary);
+	OS::get_singleton()->print("  %s %s[options] [path to \"project.godot\" file]%s\n", p_binary, color ? "\u001b[96m" : "", color ? "\u001b[0m" : "");
 
 #if defined(TOOLS_ENABLED)
 	print_help_title("Option legend (this build = editor)");
@@ -478,15 +500,15 @@ void Main::print_help(const char *p_binary) {
 	print_help_title("Option legend (this build = release export template)");
 #endif
 
-	OS::get_singleton()->print("  \u001b[1;92mR\u001b[0m  Available in editor builds, debug export templates and release export templates.\n");
+	OS::get_singleton()->print("  %sR%s  Available in editor builds, debug export templates and release export templates.\n", color ? "\u001b[1;92m" : "", color ? "\u001b[0m" : "");
 #ifdef DEBUG_ENABLED
-	OS::get_singleton()->print("  \u001b[1;94mD\u001b[0m  Available in editor builds and debug export templates only.\n");
+	OS::get_singleton()->print("  %sD%s  Available in editor builds and debug export templates only.\n", color ? "\u001b[1;94m" : "", color ? "\u001b[0m" : "");
 #endif
 #if defined(OVERRIDE_PATH_ENABLED)
-	OS::get_singleton()->print("  \u001b[1;93mX\u001b[0m  Only available in editor builds, and export templates compiled with `disable_path_overrides=false`.\n");
+	OS::get_singleton()->print("  %sX%s  Only available in editor builds, and export templates compiled with `disable_path_overrides=false`.\n", color ? "\u001b[1;93m" : "", color ? "\u001b[0m" : "");
 #endif
 #ifdef TOOLS_ENABLED
-	OS::get_singleton()->print("  \u001b[1;91mE\u001b[0m  Only available in editor builds.\n");
+	OS::get_singleton()->print("  %sE%s  Only available in editor builds.\n", color ? "\u001b[1;91m" : "", color ? "\u001b[0m" : "");
 #endif
 
 	print_help_title("General options");
@@ -494,6 +516,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--version", "Display the version string.\n");
 	print_help_option("-v, --verbose", "Use verbose stdout mode.\n");
 	print_help_option("--quiet", "Quiet mode, silences stdout messages. Errors are still displayed.\n");
+	print_help_option("--color, --no-color", "Overrides standard color detection to force on/off colored output.\n");
 	print_help_option("--no-header", "Do not print engine version and rendering driver/method header on startup.\n");
 
 	print_help_title("Run options");
@@ -1140,8 +1163,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "-h" || arg == "--help" || arg == "/?") { // display help
 
 			show_help = true;
-			exit_err = ERR_HELP; // Hack to force an early exit in `main()` with a success code.
-			goto error;
 
 		} else if (arg == "--version") {
 			print_line(get_full_version_string());
@@ -1154,6 +1175,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "-q" || arg == "--quiet") { // quieter output
 
 			quiet_stdout = true;
+
+		} else if (arg == "--color" || arg == "--no-color") {
+			OS::get_singleton()->_color_override = arg == "--color" ? 1 : -1;
 
 		} else if (arg == "--no-header") {
 			Engine::get_singleton()->_print_header = false;
@@ -2000,6 +2024,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 
 		I = N;
+	}
+
+	if (show_help) {
+		exit_err = ERR_HELP;
+		goto error; // Hack to force an early exit in `main()` with a success code.
 	}
 
 #ifdef TOOLS_ENABLED
@@ -2881,7 +2910,7 @@ error:
 	args.clear();
 	main_args.clear();
 
-	if (show_help) {
+	if (show_help && exit_err == ERR_HELP) {
 		print_help(execpath);
 	}
 
@@ -2950,7 +2979,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	set_current_thread_safe_for_nodes(true);
 
 	// Don't use rich formatting to prevent ANSI escape codes from being written to log files.
-	print_header(false);
+	print_header();
 
 #ifdef TOOLS_ENABLED
 	int accessibility_mode_editor = 0;
