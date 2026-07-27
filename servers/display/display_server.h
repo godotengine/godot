@@ -271,8 +271,8 @@ public:
     
     // Virtual Keyboard Toggle Methods
     virtual void set_virtual_keyboard_suppressed(bool p_suppressed) {}
-	virtual bool is_virtual_keyboard_suppressed() const { return false; }
-
+    virtual bool is_virtual_keyboard_suppressed() const { return false; }
+    
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), DisplayServerEnums::VirtualKeyboardType p_type = DisplayServerEnums::KEYBOARD_TYPE_DEFAULT, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void virtual_keyboard_hide();
 

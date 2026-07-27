@@ -75,7 +75,7 @@ class DisplayServerAndroid : public DisplayServer {
 
 	bool keep_screen_on;
 	bool swap_buffers_flag;
-  bool keyboard_suppressed = false;
+    bool keyboard_suppressed = false;
 
 	DisplayServerEnums::CursorShape cursor_shape = DisplayServerEnums::CursorShape::CURSOR_ARROW;
 

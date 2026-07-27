@@ -403,12 +403,11 @@ bool DisplayServerAndroid::is_touchscreen_available() const {
 }
 
 void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, DisplayServerEnums::VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
-	
-      if (keyboard_suppressed) {
-		return;
-      }
-      GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_NULL(godot_io_java);
+    if (keyboard_suppressed) {
+    return;
+    }
+    GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+    ERR_FAIL_NULL(godot_io_java);
 
 	if (godot_io_java->has_vk()) {
 		godot_io_java->show_vk(p_existing_text, (int)p_type, p_max_length, p_cursor_start, p_cursor_end);
@@ -1057,11 +1056,11 @@ void DisplayServerAndroid::pip_mode_set_auto_enter_on_background(bool p_auto_ent
 }
 
 void DisplayServerAndroid::set_virtual_keyboard_suppressed(bool p_suppressed) {
-	keyboard_suppressed = p_suppressed;
-	if (p_suppressed) {
-		  // Instantly banish the keyboard if it is currently open
-		  virtual_keyboard_hide(); 
-	}
+    keyboard_suppressed = p_suppressed;
+    if (p_suppressed) {
+    // Instantly banish the keyboard if it is currently open
+    virtual_keyboard_hide(); 
+    }
 }
 
 bool DisplayServerAndroid::is_virtual_keyboard_suppressed() const {

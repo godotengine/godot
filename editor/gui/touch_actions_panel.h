@@ -48,7 +48,7 @@ private:
 	Button *cut_button = nullptr;
 	Button *copy_button = nullptr;
 	Button *paste_button = nullptr;
-  Button *virtual_keyboard_disable_button = nullptr;
+    Button *virtual_keyboard_disable_button = nullptr;
 
 	TextureRect *drag_handle = nullptr;
 	Button *layout_toggle_button = nullptr;
