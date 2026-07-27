@@ -91,6 +91,7 @@ def get_flags():
         # run-time performance.
         # Note that this overrides the "auto" behavior for target/dev_build.
         "optimize": "size",
+        "supported": ["mono"],
     }
 
 
@@ -124,7 +125,7 @@ def configure(env: "SConsEnvironment"):
     env["EXPORTED_RUNTIME_METHODS"] = []
 
     # Validate arch.
-    supported_arches = ["wasm32", "wasm64"]
+    supported_arches = ["wasm32"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
     try:
