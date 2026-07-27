@@ -1343,9 +1343,12 @@ OS_LinuxBSD::~OS_LinuxBSD() {
 #ifdef FONTCONFIG_ENABLED
 	if (object_set) {
 		FcObjectSetDestroy(object_set);
+		object_set = nullptr;
 	}
 	if (config) {
+		FcConfigSetCurrent(nullptr);
 		FcConfigDestroy(config);
+		config = nullptr;
 	}
 #endif // FONTCONFIG_ENABLED
 }
