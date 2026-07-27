@@ -488,14 +488,16 @@ void View3DController::update_camera(const real_t p_delta) {
 			cursor_interp.eye_pos_z = Math::lerp(old_camera_cursor.eye_pos_z, cursor.eye_pos_z, CLAMP(factor, 0, 1));
 		}
 
-		cursor_interp.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_delta * (1 / orbit_inertia)));
-		cursor_interp.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_delta * (1 / orbit_inertia)));
+		if (orbit_inertia > 0) {
+			cursor_interp.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_delta * (1 / orbit_inertia)));
+			cursor_interp.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_delta * (1 / orbit_inertia)));
 
-		if (Math::abs(cursor_interp.x_rot - cursor.x_rot) < 0.1) {
-			cursor_interp.x_rot = cursor.x_rot;
-		}
-		if (Math::abs(cursor_interp.y_rot - cursor.y_rot) < 0.1) {
-			cursor_interp.y_rot = cursor.y_rot;
+			if (Math::abs(cursor_interp.x_rot - cursor.x_rot) < 0.1) {
+				cursor_interp.x_rot = cursor.x_rot;
+			}
+			if (Math::abs(cursor_interp.y_rot - cursor.y_rot) < 0.1) {
+				cursor_interp.y_rot = cursor.y_rot;
+			}
 		}
 
 		if (freelook) {
@@ -504,10 +506,15 @@ void View3DController::update_camera(const real_t p_delta) {
 			cursor_interp.pos_y = cursor_interp.eye_pos_y + forward.y * cursor_interp.distance;
 			cursor_interp.pos_z = cursor_interp.eye_pos_z + forward.z * cursor_interp.distance;
 		} else {
-			cursor_interp.pos_x = Math::lerp(old_camera_cursor.pos_x, cursor.pos_x, MIN(1.0, p_delta * (1 / translation_inertia)));
-			cursor_interp.pos_y = Math::lerp(old_camera_cursor.pos_y, cursor.pos_y, MIN(1.0, p_delta * (1 / translation_inertia)));
-			cursor_interp.pos_z = Math::lerp(old_camera_cursor.pos_z, cursor.pos_z, MIN(1.0, p_delta * (1 / translation_inertia)));
-			cursor_interp.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN((float)1.0, p_delta * (1 / zoom_inertia)));
+			if (translation_inertia > 0) {
+				cursor_interp.pos_x = Math::lerp(old_camera_cursor.pos_x, cursor.pos_x, MIN(1.0, p_delta * (1 / translation_inertia)));
+				cursor_interp.pos_y = Math::lerp(old_camera_cursor.pos_y, cursor.pos_y, MIN(1.0, p_delta * (1 / translation_inertia)));
+				cursor_interp.pos_z = Math::lerp(old_camera_cursor.pos_z, cursor.pos_z, MIN(1.0, p_delta * (1 / translation_inertia)));
+			}
+
+			if (zoom_inertia > 0) {
+				cursor_interp.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN((float)1.0, p_delta * (1 / zoom_inertia)));
+			}
 		}
 
 		// Apply camera transform.
