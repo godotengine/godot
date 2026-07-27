@@ -2525,6 +2525,36 @@ String OS_Windows::expand_path(const String &p_path) const {
 		}
 	}
 
+	int pos = 0;
+
+	while (true) {
+		int left = path.find_char('%', pos);
+		if (left == -1) {
+			break;
+		}
+
+		int right = path.find_char('%', left + 1);
+		if (right == -1) {
+			break;
+		}
+
+		String var = path.substr(left + 1, right - left - 1);
+
+		if (var.is_empty()) {
+			pos = right + 1;
+			continue;
+		}
+
+		String value = get_environment(var);
+
+		if (!value.is_empty()) {
+			path = path.substr(0, left) + value + path.substr(right + 1);
+			pos = left + value.length();
+		} else {
+			pos = right + 1;
+		}
+	}
+
 	return path;
 }
 
