@@ -75,6 +75,7 @@ class DisplayServerAndroid : public DisplayServer {
 
 	bool keep_screen_on;
 	bool swap_buffers_flag;
+    bool keyboard_suppressed = false;
 
 	DisplayServerEnums::CursorShape cursor_shape = DisplayServerEnums::CursorShape::CURSOR_ARROW;
 
@@ -159,6 +160,9 @@ public:
 	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual bool is_touchscreen_available() const override;
 
+	virtual void set_virtual_keyboard_suppressed(bool p_suppressed) override;
+	virtual bool is_virtual_keyboard_suppressed() const override;
+    
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), DisplayServerEnums::VirtualKeyboardType p_type = DisplayServerEnums::KEYBOARD_TYPE_DEFAULT, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1) override;
 	virtual void virtual_keyboard_hide() override;
 	virtual int virtual_keyboard_get_height() const override;

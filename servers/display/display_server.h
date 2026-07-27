@@ -268,6 +268,10 @@ public:
 
 	virtual Point2i ime_get_selection() const;
 	virtual String ime_get_text() const;
+    
+    // Virtual Keyboard Toggle Methods
+    virtual void set_virtual_keyboard_suppressed(bool p_suppressed) {}
+	virtual bool is_virtual_keyboard_suppressed() const { return false; }
 
 	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), DisplayServerEnums::VirtualKeyboardType p_type = DisplayServerEnums::KEYBOARD_TYPE_DEFAULT, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void virtual_keyboard_hide();
@@ -284,7 +288,7 @@ public:
 	virtual String keyboard_get_layout_name(int p_index) const;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const;
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const;
-
+    
 	/* TABLET */
 
 	virtual int tablet_get_driver_count() const { return 1; }

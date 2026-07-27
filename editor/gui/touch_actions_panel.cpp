@@ -71,6 +71,7 @@ void TouchActionsPanel::_notification(int p_what) {
 			cut_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCut")));
 			copy_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
 			paste_button->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
+            virtual_keyboard_disable_button->set_button_icon(get_editor_theme_icon(SNAME("KeyboardDisabled"))); 
 		} break;
 	}
 }
@@ -297,6 +298,21 @@ TouchActionsPanel::TouchActionsPanel() {
 	cut_button = _add_new_action_button("ui_cut", TTRC("Cut"));
 	copy_button = _add_new_action_button("ui_copy", TTRC("Copy"));
 	paste_button = _add_new_action_button("ui_paste", TTRC("Paste"));
+    
+    //Button added without a helper function
+    virtual_keyboard_disable_button = memnew(Button);
+	virtual_keyboard_disable_button->set_toggle_mode(true);
+	virtual_keyboard_disable_button->set_theme_type_variation("FlatMenuButton");
+	virtual_keyboard_disable_button->set_accessibility_name(TTRC("Suppress Virtual Keyboard"));
+	virtual_keyboard_disable_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	virtual_keyboard_disable_button->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	
+	// Connect to the DisplayServer
+	virtual_keyboard_disable_button->connect(SceneStringName(toggled), callable_mp(DisplayServer::get_singleton(), &DisplayServer::set_virtual_keyboard_suppressed));
+	
+	// Set default state
+	virtual_keyboard_disable_button->set_pressed(DisplayServer::get_singleton()->is_virtual_keyboard_suppressed());
+	box->add_child(virtual_keyboard_disable_button);
 
 	_add_new_modifier_button(MODIFIER_CTRL);
 	_add_new_modifier_button(MODIFIER_SHIFT);
