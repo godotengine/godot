@@ -225,8 +225,8 @@ void main() {
 	}
 
 #ifdef USE_TEXTURE_ARRAY
-#define IMAGE_STORE(x)                             \
-	imageStore(x, ivec2(id), color);               \
+#define IMAGE_STORE(x) \
+	imageStore(x, ivec2(id), color); \
 	imageStore(x, ivec2(id) + ivec2(1, 0), color); \
 	imageStore(x, ivec2(id) + ivec2(0, 1), color); \
 	imageStore(x, ivec2(id) + ivec2(1, 1), color)
