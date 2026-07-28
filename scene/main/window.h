@@ -127,7 +127,8 @@ private:
 	mutable Size2i max_size;
 	mutable Vector<Vector2> mpath;
 	mutable Mode mode = MODE_WINDOWED;
-	mutable Mode toggle_fullscreen_previous_mode = mode;
+	mutable Mode toggle_fullscreen_previous_windowed_mode = mode;
+	mutable Mode toggle_fullscreen_previous_fullscreen_mode = MODE_FULLSCREEN;
 	mutable bool flags[FLAG_MAX] = {};
 	bool visible = true;
 	bool focused = false;
