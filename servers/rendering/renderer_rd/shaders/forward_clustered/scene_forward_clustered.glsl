@@ -2423,7 +2423,7 @@ void fragment_shader(in SceneData scene_data) {
 							blend_count++;
 						}
 
-						if (blend_count < blend_max) {
+						if (blend_count < blend_max && depth_z < directional_lights.data[i].shadow_split_offsets.w) {
 							vec4 v = vec4(vertex, 1.0);
 
 							BIAS_FUNC(v, 3)
