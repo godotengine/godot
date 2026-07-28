@@ -171,7 +171,7 @@ Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const S
 	}
 
 	if (ScriptServer::is_reload_scripts_on_save_enabled()) {
-		GDScriptLanguage::get_singleton()->reload_tool_script(p_resource, true);
+		GDScriptLanguage::get_singleton()->reload_tool_script(p_resource);
 	}
 
 	return OK;
