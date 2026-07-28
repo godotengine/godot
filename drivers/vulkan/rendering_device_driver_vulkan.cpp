@@ -6926,7 +6926,7 @@ void RenderingDeviceDriverVulkan::command_insert_breadcrumb(CommandBufferID p_cm
 
 void RenderingDeviceDriverVulkan::on_device_lost() const {
 	if (device_functions.GetDeviceFaultInfoEXT == nullptr) {
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "VK_EXT_device_fault not available.");
+		_err_print_error(__FUNCTION__, __FILE__, __LINE__, "VK_EXT_device_fault not available.");
 		return;
 	}
 
@@ -6935,7 +6935,7 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 	VkResult vkres = device_functions.GetDeviceFaultInfoEXT(vk_device, &fault_counts, nullptr);
 
 	if (vkres != VK_SUCCESS) {
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault count, skipping VK_EXT_device_fault report...");
+		_err_print_error(__FUNCTION__, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault count, skipping VK_EXT_device_fault report...");
 		return;
 	}
 
@@ -6952,7 +6952,7 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 	fault_counts.vendorBinarySize = 0;
 	vkres = device_functions.GetDeviceFaultInfoEXT(vk_device, &fault_counts, &fault_info);
 	if (vkres != VK_SUCCESS) {
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault info, skipping VK_EXT_device_fault report...");
+		_err_print_error(__FUNCTION__, __FILE__, __LINE__, "vkGetDeviceFaultInfoEXT returned " + itos(vkres) + " when getting fault info, skipping VK_EXT_device_fault report...");
 	} else {
 		err_msg += "** Report from VK_EXT_device_fault **";
 		err_msg += "\nDescription: " + String(fault_info.description);
@@ -6989,7 +6989,7 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 		}
 	}
 
-	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, err_msg);
+	_err_print_error(__FUNCTION__, __FILE__, __LINE__, err_msg);
 
 	if (fault_info.pVendorInfos) {
 		memfree(fault_info.pVendorInfos);
@@ -6998,7 +6998,7 @@ void RenderingDeviceDriverVulkan::on_device_lost() const {
 		memfree(fault_info.pAddressInfos);
 	}
 
-	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, context_driver->get_driver_and_device_memory_report());
+	_err_print_error(__FUNCTION__, __FILE__, __LINE__, context_driver->get_driver_and_device_memory_report());
 }
 
 void RenderingDeviceDriverVulkan::print_lost_device_info() {
@@ -7008,7 +7008,7 @@ void RenderingDeviceDriverVulkan::print_lost_device_info() {
 		if (!Engine::get_singleton()->is_accurate_breadcrumbs_enabled()) {
 			error_msg += "\nSome of them might be inaccurate. Try running with --accurate-breadcrumbs for precise information.";
 		}
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, error_msg);
+		_err_print_error(__FUNCTION__, __FILE__, __LINE__, error_msg);
 	}
 
 	uint8_t *breadcrumb_ptr = nullptr;
@@ -7116,7 +7116,7 @@ void RenderingDeviceDriverVulkan::print_lost_device_info() {
 		vmaUnmapMemory(allocator, ((BufferInfo *)breadcrumb_buffer.id)->allocation.handle);
 		breadcrumb_ptr = nullptr;
 	} else {
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Couldn't map breadcrumb buffer. VkResult = " + itos(map_result));
+		_err_print_error(__FUNCTION__, __FILE__, __LINE__, "Couldn't map breadcrumb buffer. VkResult = " + itos(map_result));
 	}
 #endif
 	on_device_lost();

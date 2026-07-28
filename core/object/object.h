@@ -1159,7 +1159,7 @@ public:
 
 #define TMPL_EXTRACT_PARAM_OR_FAIL(m_name, m_param, m_retval, m_msg, m_editor) \
 	if (unlikely(m_param._is_null_dont_use())) { \
-		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Required object \"" _STR(m_param) "\" is null.", m_msg, m_editor); \
+		_err_print_error(__FUNCTION__, __FILE__, __LINE__, "Required object \"" _STR(m_param) "\" is null.", m_msg, m_editor); \
 		return m_retval; \
 	} \
 	typename std::decay_t<decltype(m_param)>::extracted_type m_name = m_param._internal_ptr_dont_use(); \
