@@ -67,16 +67,14 @@ layout(set = 0, binding = 0) uniform sampler2DArray source_depth_mipmaps;
 layout(rgba8, set = 0, binding = 1) uniform restrict readonly image2D source_normal;
 layout(set = 0, binding = 2) uniform Constants { //get into a lower set
 	vec4 rotation_matrices[20];
-}
-constants;
+} constants;
 
 #ifdef ADAPTIVE
 layout(rgba16f, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;
 layout(set = 1, binding = 1) uniform sampler2D source_importance;
 layout(set = 1, binding = 2, std430) buffer Counter {
 	uint sum;
-}
-counter;
+} counter;
 #endif
 
 layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
@@ -85,8 +83,7 @@ layout(r8, set = 2, binding = 1) uniform image2D edges_weights_image;
 layout(set = 3, binding = 0) uniform sampler2D last_frame;
 layout(set = 3, binding = 1) uniform ProjectionConstants {
 	mat4 reprojection;
-}
-projection_constants;
+} projection_constants;
 
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
@@ -120,8 +117,7 @@ layout(push_constant, std430) uniform Params {
 
 	ivec2 pass_coord_offset;
 	vec2 pass_uv_offset;
-}
-params;
+} params;
 
 float pack_edges(vec4 p_edgesLRTB) {
 	p_edgesLRTB = round(clamp(p_edgesLRTB, 0.0, 1.0) * 3.05);

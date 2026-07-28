@@ -17,8 +17,7 @@ layout(set = 0, binding = 4, std430) restrict readonly buffer DispatchData {
 	uint y;
 	uint z;
 	uint total_count;
-}
-dispatch_data;
+} dispatch_data;
 
 struct ProcessVoxel {
 	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
@@ -34,8 +33,7 @@ layout(set = 0, binding = 5, std430) restrict buffer ProcessVoxels {
 layout(set = 0, binding = 5, std430) restrict buffer readonly ProcessVoxels {
 #endif
 	ProcessVoxel data[];
-}
-process_voxels;
+} process_voxels;
 
 layout(r32ui, set = 0, binding = 6) uniform restrict uimage3D dst_light;
 layout(rgba8, set = 0, binding = 7) uniform restrict image3D dst_aniso0;
@@ -51,8 +49,7 @@ struct CascadeData {
 
 layout(set = 0, binding = 9, std140) uniform Cascades {
 	CascadeData data[MAX_CASCADES];
-}
-cascades;
+} cascades;
 
 #define LIGHT_TYPE_DIRECTIONAL 0
 #define LIGHT_TYPE_OMNI 1
@@ -104,8 +101,7 @@ layout(push_constant, std430) uniform Params {
 	float bounce_feedback;
 	float y_mult;
 	bool use_occlusion;
-}
-params;
+} params;
 
 vec2 octahedron_wrap(vec2 v) {
 	vec2 signVal;

@@ -14,8 +14,7 @@ layout(push_constant, std430) uniform Params {
 	highp mat4 reprojection_matrix;
 	vec2 resolution;
 	uint pad[2];
-}
-params;
+} params;
 
 void main() {
 	// Out of bounds check.

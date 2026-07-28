@@ -47,8 +47,7 @@ layout(OCTMAP_FORMAT, set = 2, binding = 5) uniform restrict writeonly image2D d
 layout(push_constant, std430) uniform Params {
 	vec2 border_size;
 	vec2 pad;
-}
-params;
+} params;
 
 #define BASE_RESOLUTION 320
 
@@ -225,8 +224,8 @@ void main() {
 	}
 
 #ifdef USE_TEXTURE_ARRAY
-#define IMAGE_STORE(x)                             \
-	imageStore(x, ivec2(id), color);               \
+#define IMAGE_STORE(x) \
+	imageStore(x, ivec2(id), color); \
 	imageStore(x, ivec2(id) + ivec2(1, 0), color); \
 	imageStore(x, ivec2(id) + ivec2(0, 1), color); \
 	imageStore(x, ivec2(id) + ivec2(1, 1), color)

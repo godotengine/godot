@@ -14,8 +14,7 @@ layout(push_constant, std430) uniform Params {
 	uint pad0;
 	uint pad1;
 	uint pad2;
-}
-params;
+} params;
 
 layout(set = 0, binding = 1, std140) uniform State {
 	mat4 projection;
@@ -29,8 +28,7 @@ layout(set = 0, binding = 1, std140) uniform State {
 	uint pad0;
 	uint pad1;
 	uint pad2;
-}
-state;
+} state;
 
 struct RenderElement {
 	uint type; //0-4
@@ -86,8 +84,7 @@ layout(set = 0, binding = 1, std140) uniform State {
 	uint pad0;
 	uint pad1;
 	uint pad2;
-}
-state;
+} state;
 
 //cluster data is layout linearly, each cell contains the follow information:
 // - list of bits for every element to mark as used, so (max_elem_count/32)*4 uints

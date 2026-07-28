@@ -39,8 +39,7 @@ layout(push_constant, std430) uniform Params {
 	uint size;
 	uint pad1;
 	uint pad2;
-}
-params;
+} params;
 
 // Use an approximation of the Jacobian.
 float calcWeight(float u, float v) {

@@ -16,6 +16,7 @@ USE_INSTANCING = false
 
 #ifdef USE_ATTRIBUTES
 layout(location = 0) in vec2 vertex_attrib;
+/* clang-format on */
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
@@ -102,18 +103,14 @@ flat out vec4 varying_E;
 flat out uvec2 varying_F;
 flat out uvec4 varying_G;
 
-// This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{ //ubo:4
-
+layout(std140) uniform MaterialUniforms { //ubo:4
 #MATERIAL_UNIFORMS
-
 };
 #endif
 
 uniform mediump uint batch_flags;
 
-/* clang-format on */
 #include "canvas_uniforms_inc.glsl"
 
 out vec2 uv_interp;
@@ -345,16 +342,11 @@ uniform highp uint specular_shininess_in;
 
 layout(location = 0) out vec4 frag_color;
 
-/* clang-format off */
-// This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{ //ubo:4
-
+layout(std140) uniform MaterialUniforms { //ubo:4
 #MATERIAL_UNIFORMS
-
 };
 #endif
-/* clang-format on */
 
 #GLOBALS
 
@@ -451,6 +443,7 @@ vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 lig
 #endif
 
 /* clang-format off */
+// Must be formatted like this to work around a driver bug on some mobile devices.
 #define SHADOW_TEST(m_uv) { highp float sd = SHADOW_DEPTH(m_uv); shadow += step(sd, shadow_uv.z / shadow_uv.w); }
 /* clang-format on */
 

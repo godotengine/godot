@@ -34,8 +34,7 @@ layout(push_constant, std430) uniform Params {
 	float min_luminance;
 	float exposure_adjust;
 	float pad[3];
-}
-params;
+} params;
 
 void main() {
 	uint t = gl_LocalInvocationID.y * BLOCK_SIZE + gl_LocalInvocationID.x;

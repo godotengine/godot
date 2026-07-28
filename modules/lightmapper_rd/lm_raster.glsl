@@ -23,8 +23,7 @@ layout(push_constant, std430) uniform Params {
 	float bias;
 	ivec3 grid_size;
 	uint pad2;
-}
-params;
+} params;
 
 void main() {
 	uint triangle_idx = params.base_triangle + gl_VertexIndex / 3;
@@ -78,8 +77,7 @@ layout(push_constant, std430) uniform Params {
 	float bias;
 	ivec3 grid_size;
 	uint pad2;
-}
-params;
+} params;
 
 layout(location = 0) in vec3 vertex_interp;
 layout(location = 1) in vec3 normal_interp;

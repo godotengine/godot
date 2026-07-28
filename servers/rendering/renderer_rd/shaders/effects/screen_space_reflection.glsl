@@ -17,8 +17,7 @@ layout(set = 0, binding = 5, std140) uniform SceneData {
 	mat4 inv_projection[2];
 	mat4 reprojection[2];
 	vec4 eye_offset[2];
-}
-scene_data;
+} scene_data;
 
 layout(push_constant, std430) uniform Params {
 	ivec2 screen_size;
@@ -32,8 +31,7 @@ layout(push_constant, std430) uniform Params {
 	int pad1;
 	int pad2;
 	int pad3;
-}
-params;
+} params;
 
 vec2 compute_cell_count(int level) {
 	int cell_count_x = max(1, params.screen_size.x >> level);
