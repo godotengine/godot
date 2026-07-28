@@ -237,6 +237,11 @@ EditorPlugin *EditorMainScreen::get_plugin_by_name(const String &p_plugin_name) 
 }
 
 bool EditorMainScreen::can_auto_switch_screens() const {
+	// No switching if editor setting is toggled off
+	if (!EditorSettings::get_singleton()->get_setting("interface/editor/behavior/enable_editor_mode_auto_switch")) {
+		return false;
+	}
+
 	if (selected_plugin == nullptr) {
 		return true;
 	}
