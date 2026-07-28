@@ -175,14 +175,16 @@ void EditorSettingsDialog::update_3d_navigation_preset() {
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/pan_mouse_button", (int)set_pan_mouse_button);
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/zoom_mouse_button", (int)set_zoom_mouse_button);
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/emulate_3_button_mouse", set_3_button_mouse);
-		_set_shortcut_input("spatial_editor/viewport_orbit_modifier_1", orbit_mod_key_1);
-		_set_shortcut_input("spatial_editor/viewport_orbit_modifier_2", orbit_mod_key_2);
-		_set_shortcut_input("spatial_editor/viewport_pan_modifier_1", pan_mod_key_1);
-		_set_shortcut_input("spatial_editor/viewport_pan_modifier_2", pan_mod_key_2);
-		_set_shortcut_input("spatial_editor/viewport_zoom_modifier_1", zoom_mod_key_1);
-		_set_shortcut_input("spatial_editor/viewport_zoom_modifier_2", zoom_mod_key_2);
-		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_1", orbit_snap_mod_key_1);
-		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_2", orbit_snap_mod_key_2);
+		if (!EditorSettingsDialog::get_singleton()->_is_in_project_manager()) {
+			_set_shortcut_input("spatial_editor/viewport_orbit_modifier_1", orbit_mod_key_1);
+			_set_shortcut_input("spatial_editor/viewport_orbit_modifier_2", orbit_mod_key_2);
+			_set_shortcut_input("spatial_editor/viewport_pan_modifier_1", pan_mod_key_1);
+			_set_shortcut_input("spatial_editor/viewport_pan_modifier_2", pan_mod_key_2);
+			_set_shortcut_input("spatial_editor/viewport_zoom_modifier_1", zoom_mod_key_1);
+			_set_shortcut_input("spatial_editor/viewport_zoom_modifier_2", zoom_mod_key_2);
+			_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_1", orbit_snap_mod_key_1);
+			_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_2", orbit_snap_mod_key_2);
+		}
 	}
 }
 
@@ -193,6 +195,7 @@ void EditorSettingsDialog::_set_shortcut_input(const String &p_name, Ref<InputEv
 	}
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_name);
+	ERR_FAIL_COND(sc.is_null());
 	sc->set_events(sc_events);
 }
 
