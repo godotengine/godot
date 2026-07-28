@@ -95,9 +95,15 @@ StringName AddMetadataDialog::get_meta_name() {
 }
 
 Variant AddMetadataDialog::get_meta_defval() {
+	Variant::Type type = add_meta_type->get_selected_type();
+	if (type == Variant::OBJECT) {
+		// Give it a placeholder resource, as meta with null values aren't saved.
+		return memnew(Resource);
+	}
+
 	Variant defval;
 	Callable::CallError ce;
-	Variant::construct(add_meta_type->get_selected_type(), defval, nullptr, 0, ce);
+	Variant::construct(type, defval, nullptr, 0, ce);
 	return defval;
 }
 
