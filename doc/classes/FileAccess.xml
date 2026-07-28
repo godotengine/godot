@@ -358,6 +358,9 @@
 			<param index="1" name="flags" type="int" enum="FileAccess.ModeFlags" />
 			<description>
 				Creates a new [FileAccess] object and opens the file for writing or reading, depending on the flags.
+				To create named pipe, use [code]pipe://{pipe_name}[/code] as path. The pipe name string can be up to 240 characters long.
+				To create virtual file in memory, use [code]mem://{name}[/code] as path.
+				Pipes and memory files are automatically deleted when last [FileAccess] reference is closed.
 				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
