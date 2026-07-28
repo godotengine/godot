@@ -7468,6 +7468,7 @@ void DisplayServerWindows::_destroy_window(DisplayServerEnums::WindowID p_window
 
 	if (has_winrt_queue) {
 		WinRTUtils::destroy_wd(wd.wrt_wd);
+		wd.wrt_wd = nullptr;
 	}
 	DestroyWindow(wd.hWnd);
 	windows.erase(p_window_id);
