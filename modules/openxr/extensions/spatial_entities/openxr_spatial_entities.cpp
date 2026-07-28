@@ -147,7 +147,7 @@ void OpenXRSpatialEntityTracker::set_entity(const RID &p_entity) {
 
 		XrSpatialEntityIdEXT entity_id = se_extension->get_spatial_entity_id(p_entity);
 
-		String tracker_name = String("openxr/spatial_entity/") + String::num_int64(entity_id);
+		String tracker_name = String("openxr/spatial_entity/") + String::num_uint64(entity_id);
 		set_tracker_name(tracker_name);
 	} else {
 		set_tracker_name("openxr/spatial_entity/null");
@@ -562,7 +562,7 @@ void *OpenXRSpatialQueryResultData::get_structure_data(void *p_next) {
 }
 
 XrSpatialEntityIdEXT OpenXRSpatialQueryResultData::get_entity_id(int64_t p_index) const {
-	ERR_FAIL_INDEX_V(p_index, entity_ids.size(), XR_NULL_ENTITY);
+	ERR_FAIL_INDEX_V(p_index, entity_ids.size(), XR_NULL_SPATIAL_ENTITY_ID_EXT);
 
 	return entity_ids[p_index];
 }
