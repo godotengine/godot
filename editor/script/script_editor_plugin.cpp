@@ -1970,7 +1970,7 @@ void ScriptEditor::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			tab_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ScriptEditor"), EditorStringName(EditorStyles)));
 
-			_calculate_script_name_button_size();
+			_calculate_script_name_button_max_size();
 
 			if (this == script_editor) {
 				help_search->set_button_icon(get_editor_theme_icon(SNAME("HelpSearch")));
@@ -3822,7 +3822,7 @@ void ScriptEditor::set_live_auto_reload_running_scripts(bool p_enabled) {
 	auto_reload_running_scripts = p_enabled;
 }
 
-void ScriptEditor::_calculate_script_name_button_size() {
+void ScriptEditor::_calculate_script_name_button_max_size() {
 	Ref<Font> font = script_name_button->get_theme_font(SceneStringName(font), SNAME("Button"));
 	HorizontalAlignment alignment = script_name_button->get_text_alignment();
 	int font_size = script_name_button->get_theme_font_size(SceneStringName(font_size), SNAME("Button"));
@@ -3831,25 +3831,8 @@ void ScriptEditor::_calculate_script_name_button_size() {
 	TextServer::Direction direction = TextServer::Direction(script_name_button->get_text_direction());
 	Vector2 text_size = font->get_string_size(text, alignment, -1, font_size, jst_flags, direction, TextServer::ORIENTATION_HORIZONTAL);
 
-	script_name_width = text_size.x + script_name_button->get_theme_stylebox(CoreStringName(normal))->get_content_margin(SIDE_LEFT) + script_name_button->get_theme_stylebox(CoreStringName(normal))->get_content_margin(SIDE_RIGHT);
-	_calculate_script_name_button_ratio();
-}
-
-void ScriptEditor::_calculate_script_name_button_ratio() {
-	const float total_width = script_name_button_hbox->get_size().width;
-	if (total_width <= 0) {
-		return;
-	}
-
-	// Make the ratios a fraction bigger, to avoid unnecessary trimming.
-	const float extra_ratio = 4 / total_width;
-
-	const float script_name_ratio = MIN(1, script_name_width / total_width + extra_ratio);
-	script_name_button->set_stretch_ratio(script_name_ratio);
-
-	float ratio_left = 1 - script_name_ratio;
-	script_name_button_left_spacer->set_stretch_ratio(ratio_left / 2);
-	script_name_button_right_spacer->set_stretch_ratio(ratio_left / 2);
+	real_t script_name_width = text_size.x + script_name_button->get_theme_stylebox(CoreStringName(normal))->get_content_margin(SIDE_LEFT) + script_name_button->get_theme_stylebox(CoreStringName(normal))->get_content_margin(SIDE_RIGHT);
+	script_name_button->set_custom_maximum_size(Size2(script_name_width, -1));
 }
 
 void ScriptEditor::_update_document_name_button() {
@@ -3857,7 +3840,7 @@ void ScriptEditor::_update_document_name_button() {
 		const String &name = tab_container->get_tab_title(tab_container->get_current_tab());
 		script_name_button->set_text(name);
 		script_name_button->show();
-		_calculate_script_name_button_size();
+		_calculate_script_name_button_max_size();
 	} else {
 		script_name_button->hide();
 		script_name_button->set_text(String());
@@ -4203,7 +4186,6 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	script_name_button_hbox = memnew(HBoxContainer);
 	script_name_button_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	script_name_button_hbox->add_theme_constant_override("separation", 0);
-	script_name_button_hbox->connect(SceneStringName(item_rect_changed), callable_mp(this, &ScriptEditor::_calculate_script_name_button_ratio));
 	menu_hb->add_child(script_name_button_hbox);
 
 	script_name_button_left_spacer = memnew(Control);
@@ -4214,6 +4196,7 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	script_name_button->set_flat(true);
 	script_name_button->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	script_name_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	script_name_button->set_stretch_ratio(100); // De facto infinite, prioritize the button to take all the available space over the spacers.
 	script_name_button->set_tooltip_text(TTRC("Navigate to document list."));
 	script_name_button->connect(SceneStringName(pressed), callable_mp(document_list, &DocumentList::ensure_current_is_visible));
 	script_name_button_hbox->add_child(script_name_button);

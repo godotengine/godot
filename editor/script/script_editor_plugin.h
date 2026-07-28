@@ -261,7 +261,6 @@ class ScriptEditor : public PanelContainer {
 	Control *script_name_button_left_spacer = nullptr;
 	Control *script_name_button_right_spacer = nullptr;
 	Button *script_name_button = nullptr;
-	int script_name_width = 0;
 
 	bool list_update_queued = false;
 	bool document_sort_group_help_pages = false;
@@ -404,8 +403,7 @@ class ScriptEditor : public PanelContainer {
 	void _prepare_file_menu();
 	void _file_menu_closed();
 
-	void _calculate_script_name_button_size();
-	void _calculate_script_name_button_ratio();
+	void _calculate_script_name_button_max_size();
 	void _update_document_name_button();
 
 	void _help_search(const String &p_text);
