@@ -30,7 +30,7 @@
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
 				Alpha-blends [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
-				Simultaneously reading and writing to the same image reference may lead to unexpected results.
+				[b]Note:[/b] Simultaneously reading and writing to the same image reference may lead to unexpected results.
 			</description>
 		</method>
 		<method name="blend_rect_mask">
