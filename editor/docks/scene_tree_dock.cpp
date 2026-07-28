@@ -227,6 +227,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_CUT);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node", p_event)) {
 		_tool_selected(TOOL_COPY);
+	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_unique", p_event)) {
+		_tool_selected(TOOL_PASTE_AS_UNIQUE);
 	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_replacement", p_event)) {
 		_tool_selected(TOOL_PASTE_AS_REPLACEMENT);
 	} else if (ED_IS_SHORTCUT("scene_tree/change_node_type", p_event)) {
@@ -762,6 +764,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_PASTE_AS_SIBLING: {
 			paste_nodes(true);
+		} break;
+		case TOOL_PASTE_AS_UNIQUE: {
+			paste_nodes_as_unique();
 		} break;
 		case TOOL_PASTE_AS_REPLACEMENT: {
 			if (!profile_allow_editing) {
@@ -3973,6 +3978,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				if (selection.front()->get() != edited_scene) {
 					menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_sibling"), TOOL_PASTE_AS_SIBLING);
 				}
+
+				menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_unique"), TOOL_PASTE_AS_UNIQUE);
 			}
 
 			if (selection.size() >= 1) {
@@ -4634,6 +4641,96 @@ void SceneTreeDock::paste_node_as_replacement() {
 	scene_tree->update_tree();
 }
 
+List<Node *> SceneTreeDock::paste_nodes_as_unique() {
+	List<Node *> pasted_nodes = paste_nodes(false);
+
+	if (pasted_nodes.is_empty()) {
+		return pasted_nodes;
+	}
+
+	HashMap<Ref<Resource>, Ref<Resource>> resource_remap;
+
+	for (Node *node : pasted_nodes) {
+		_make_node_resources_unique_recursive(node, resource_remap);
+	}
+
+	return pasted_nodes;
+}
+
+void SceneTreeDock::_make_node_resources_unique_recursive(Node *p_node, HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) {
+	ERR_FAIL_NULL(p_node);
+
+	List<PropertyInfo> props;
+	p_node->get_property_list(&props);
+
+	for (const PropertyInfo &E : props) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+
+		Variant v = p_node->get(E.name);
+		if (!v.is_ref_counted()) {
+			continue;
+		}
+
+		Ref<Resource> res = v;
+		if (res.is_null() || !res->is_built_in()) {
+			continue;
+		}
+
+		Ref<Resource> dup;
+		if (p_resource_remap.has(res)) {
+			dup = p_resource_remap[res];
+		} else {
+			dup = res->duplicate(true);
+			p_resource_remap[res] = dup;
+		}
+
+		p_node->set(E.name, dup);
+		_make_nested_resources_unique_recursive(dup, p_resource_remap);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_make_node_resources_unique_recursive(p_node->get_child(i), p_resource_remap);
+	}
+}
+
+void SceneTreeDock::_make_nested_resources_unique_recursive(const Ref<Resource> &p_resource, HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) {
+	if (p_resource.is_null()) {
+		return;
+	}
+
+	List<PropertyInfo> props;
+	p_resource->get_property_list(&props);
+
+	for (const PropertyInfo &E : props) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+
+		Variant v = p_resource->get(E.name);
+		if (!v.is_ref_counted()) {
+			continue;
+		}
+
+		Ref<Resource> res = v;
+		if (res.is_null() || !res->is_built_in()) {
+			continue;
+		}
+
+		Ref<Resource> dup;
+		if (p_resource_remap.has(res)) {
+			dup = p_resource_remap[res];
+		} else {
+			dup = res->duplicate(true);
+			p_resource_remap[res] = dup;
+		}
+
+		p_resource->set(E.name, dup);
+		_make_nested_resources_unique_recursive(dup, p_resource_remap);
+	}
+}
+
 List<Node *> SceneTreeDock::get_node_clipboard() const {
 	return List<Node *>(node_clipboard);
 }
@@ -4993,6 +5090,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/copy_node", TTRC("Copy"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("scene_tree/paste_node", TTRC("Paste (as Child)"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("scene_tree/paste_node_as_sibling", TTRC("Paste as Sibling"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::V);
+	ED_SHORTCUT("scene_tree/paste_node_as_unique", TTRC("Paste as Unique"), Key::NONE);
 	ED_SHORTCUT("scene_tree/paste_node_as_replacement", TTRC("Paste as Replacement"), KeyModifierMask::ALT | Key::V);
 	ED_SHORTCUT("scene_tree/change_node_type", TTRC("Change Type..."));
 	ED_SHORTCUT("scene_tree/attach_script", TTRC("Attach Script..."));
