@@ -4,3 +4,7 @@ GDTEST_ANALYZER_ERROR
 >> ERROR at line 9: Cannot assign a value of type Dictionary[float, float] to variable "dict_2" with specified type Dictionary[int, int].
 >> ERROR at line 10: Cannot have a key of type "int" in a dictionary of type "Dictionary[Object, Object]".
 >> ERROR at line 11: Invalid argument for "expect_typed()" function: argument 1 should be "Dictionary[int, int]" but is "Dictionary[float, float]".
+>> ERROR at line 26: Invalid index type "Bar" for a base of type "Dictionary[Foo, int]".
+>> ERROR at line 30: Invalid index type "Foo" for a base of type "Dictionary[Foo, int]".
+>> ERROR at line 33: Invalid index type "RefCounted" for a base of type "Dictionary[Node, int]".
+>> ERROR at line 34: Invalid index type "Foo" for a base of type "Dictionary[Node, int]".

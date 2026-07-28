@@ -5535,50 +5535,6 @@ GDScriptParser::DataType GDScriptParser::DataType::get_typed_container_type() co
 	return type;
 }
 
-bool GDScriptParser::DataType::can_reference(const GDScriptParser::DataType &p_other) const {
-	if (p_other.is_meta_type) {
-		return false;
-	} else if (builtin_type != p_other.builtin_type) {
-		return false;
-	} else if (builtin_type != Variant::OBJECT) {
-		return true;
-	}
-
-	if (native_type == StringName()) {
-		return true;
-	} else if (p_other.native_type == StringName()) {
-		return false;
-	} else if (native_type != p_other.native_type && !ClassDB::is_parent_class(p_other.native_type, native_type)) {
-		return false;
-	}
-
-	Ref<Script> script = script_type;
-	if (kind == GDScriptParser::DataType::CLASS && script.is_null()) {
-		Error err = OK;
-		Ref<GDScript> scr = GDScriptCache::get_shallow_script(script_path, err);
-		ERR_FAIL_COND_V_MSG(err, false, vformat(R"(Error while getting cache for script "%s".)", script_path));
-		script.reference_ptr(scr->find_class(class_type->fqcn));
-	}
-
-	Ref<Script> script_other = p_other.script_type;
-	if (p_other.kind == GDScriptParser::DataType::CLASS && script_other.is_null()) {
-		Error err = OK;
-		Ref<GDScript> scr = GDScriptCache::get_shallow_script(p_other.script_path, err);
-		ERR_FAIL_COND_V_MSG(err, false, vformat(R"(Error while getting cache for script "%s".)", p_other.script_path));
-		script_other.reference_ptr(scr->find_class(p_other.class_type->fqcn));
-	}
-
-	if (script.is_null()) {
-		return true;
-	} else if (script_other.is_null()) {
-		return false;
-	} else if (script != script_other && !script_other->inherits_script(script)) {
-		return false;
-	}
-
-	return true;
-}
-
 void GDScriptParser::complete_extents(Node *p_node) {
 	while (!nodes_in_progress.is_empty() && nodes_in_progress.back()->get() != p_node) {
 		ERR_PRINT("Parser bug: Mismatch in extents tracking stack.");

@@ -5095,7 +5095,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 											// Objects are parsed for validity in a similar manner to container types.
 											case Variant::OBJECT:
 												if (key_type.builtin_type == Variant::OBJECT) {
-													error = !key_type.can_reference(index_type);
+													error = !is_type_compatible(key_type, index_type);
 												} else {
 													error = key_type.builtin_type != Variant::NIL;
 												}
