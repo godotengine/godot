@@ -497,8 +497,6 @@ List<String> EditorExportPlatformWeb::get_binary_extensions(const Ref<EditorExpo
 }
 
 Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
-
 	const String custom_debug = p_preset->get("custom_template/debug");
 	const String custom_release = p_preset->get("custom_template/release");
 	const String custom_html = p_preset->get("html/custom_html_shell");
@@ -535,8 +533,9 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 		return error;
 	}
 
-	// TODO: Should we add a step between _export_begin and _export_end, something like _export_modify, and put _export_begin back to the beginning?
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+	// The .NET export plugin consumes the LibGodot payload extracted from the Web
+	// template, so export plugins must begin after template extraction.
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
 	// Check if any export plugin failed.
 	if (get_worst_message_type() == EXPORT_MESSAGE_ERROR) {

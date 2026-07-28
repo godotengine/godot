@@ -51,6 +51,6 @@
 
   <Target Name="GodotCheckLibGodotPath" BeforeTargets="Build">
     <Error Text="Cannot build with empty 'BaseLibGodotPath'." Condition=" $(_BaseLibGodotPath) == '' " />
-    <Error Text="Cannot find 'libgodot.a' in expected placee." Condition=" !Exists('$(_BaseLibGodotPath)\libgodot.a') " />
+    <Error Text="Cannot find 'libgodot.a' in expected place." Condition=" !Exists('$(_BaseLibGodotPath)\libgodot.a') " />
   </Target>
 </Project>
