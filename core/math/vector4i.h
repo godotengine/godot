@@ -211,27 +211,27 @@ constexpr Vector4i Vector4i::operator*(const Vector4i &p_v) const {
 }
 
 constexpr Vector4i &Vector4i::operator/=(const Vector4i &p_v) {
-	x /= p_v.x;
-	y /= p_v.y;
-	z /= p_v.z;
-	w /= p_v.w;
+	x = Math::division_no_overflow(x, p_v.x);
+	y = Math::division_no_overflow(y, p_v.y);
+	z = Math::division_no_overflow(z, p_v.z);
+	w = Math::division_no_overflow(w, p_v.w);
 	return *this;
 }
 
 constexpr Vector4i Vector4i::operator/(const Vector4i &p_v) const {
-	return Vector4i(x / p_v.x, y / p_v.y, z / p_v.z, w / p_v.w);
+	return Vector4i(Math::division_no_overflow(x, p_v.x), Math::division_no_overflow(y, p_v.y), Math::division_no_overflow(z, p_v.z), Math::division_no_overflow(w, p_v.w));
 }
 
 constexpr Vector4i &Vector4i::operator%=(const Vector4i &p_v) {
-	x %= p_v.x;
-	y %= p_v.y;
-	z %= p_v.z;
-	w %= p_v.w;
+	x = Math::modulo_no_overflow(x, p_v.x);
+	y = Math::modulo_no_overflow(y, p_v.y);
+	z = Math::modulo_no_overflow(z, p_v.z);
+	w = Math::modulo_no_overflow(w, p_v.w);
 	return *this;
 }
 
 constexpr Vector4i Vector4i::operator%(const Vector4i &p_v) const {
-	return Vector4i(x % p_v.x, y % p_v.y, z % p_v.z, w % p_v.w);
+	return Vector4i(Math::modulo_no_overflow(x, p_v.x), Math::modulo_no_overflow(y, p_v.y), Math::modulo_no_overflow(z, p_v.z), Math::modulo_no_overflow(w, p_v.w));
 }
 
 constexpr Vector4i &Vector4i::operator*=(int32_t p_scalar) {
@@ -265,27 +265,27 @@ constexpr Vector4i operator*(double p_scalar, const Vector4i &p_vector) {
 }
 
 constexpr Vector4i &Vector4i::operator/=(int32_t p_scalar) {
-	x /= p_scalar;
-	y /= p_scalar;
-	z /= p_scalar;
-	w /= p_scalar;
+	x = Math::division_no_overflow(x, p_scalar);
+	y = Math::division_no_overflow(y, p_scalar);
+	z = Math::division_no_overflow(z, p_scalar);
+	w = Math::division_no_overflow(w, p_scalar);
 	return *this;
 }
 
 constexpr Vector4i Vector4i::operator/(int32_t p_scalar) const {
-	return Vector4i(x / p_scalar, y / p_scalar, z / p_scalar, w / p_scalar);
+	return Vector4i(Math::division_no_overflow(x, p_scalar), Math::division_no_overflow(y, p_scalar), Math::division_no_overflow(z, p_scalar), Math::division_no_overflow(w, p_scalar));
 }
 
 constexpr Vector4i &Vector4i::operator%=(int32_t p_scalar) {
-	x %= p_scalar;
-	y %= p_scalar;
-	z %= p_scalar;
-	w %= p_scalar;
+	x = Math::modulo_no_overflow(x, p_scalar);
+	y = Math::modulo_no_overflow(y, p_scalar);
+	z = Math::modulo_no_overflow(z, p_scalar);
+	w = Math::modulo_no_overflow(w, p_scalar);
 	return *this;
 }
 
 constexpr Vector4i Vector4i::operator%(int32_t p_scalar) const {
-	return Vector4i(x % p_scalar, y % p_scalar, z % p_scalar, w % p_scalar);
+	return Vector4i(Math::modulo_no_overflow(x, p_scalar), Math::modulo_no_overflow(y, p_scalar), Math::modulo_no_overflow(z, p_scalar), Math::modulo_no_overflow(w, p_scalar));
 }
 
 constexpr Vector4i Vector4i::operator-() const {
