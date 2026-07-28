@@ -1563,7 +1563,7 @@ float D_GGX(float cos_theta_m, float alpha) {
 
 // From Earl Hammon, Jr. "PBR Diffuse Lighting for GGX+Smith Microsurfaces" https://www.gdcvault.com/play/1024478/PBR-Diffuse-Lighting-for-GGX
 float V_GGX(float NdotL, float NdotV, float alpha) {
-	return 0.5 / mix(2.0 * NdotL * NdotV, NdotL + NdotV, alpha);
+	return 0.5 / (mix(2.0 * NdotL * NdotV, NdotL + NdotV, alpha));
 }
 
 float D_GGX_anisotropic(float cos_theta_m, float alpha_x, float alpha_y, float cos_phi, float sin_phi) {
@@ -1631,7 +1631,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 
 #else
 	float NdotL = min(A + dot(N, L), 1.0);
-	float cNdotL = max(NdotL, 0.0); // clamped NdotL
+    // JAIDEN ENGINE MOD: FIXES BLACK PIXELS WHEN USING DIRECTIONAL LIGHT WITH NO SHADOWS
+	float cNdotL = max(NdotL, 0.0001); // clamped NdotL
 	float NdotV = dot(N, V);
 	float cNdotV = max(NdotV, 1e-4);
 
