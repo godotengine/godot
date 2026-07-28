@@ -31,8 +31,10 @@
 #include "subviewport_container.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 Size2 SubViewportContainer::get_minimum_size() const {
 	if (stretch) {
@@ -74,14 +76,50 @@ void SubViewportContainer::recalc_force_viewport_sizes() {
 		return;
 	}
 
-	// If stretch is enabled, make sure that all child SubViwewports have the correct size.
+	// Make sure that all child SubViewports have the correct size.
 	for (int i = 0; i < get_child_count(); i++) {
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c) {
 			continue;
 		}
 
-		c->set_size_force(get_size() / shrink);
+		Size2 render_size = get_size();
+
+		if (get_viewport() != nullptr) {
+			Transform2D parent_sxform = get_viewport()->get_final_transform();
+			Size2 parent_zoom = parent_sxform.get_scale();
+
+			// Calculate visual size from parent scaled canvas transform
+			int render_width = (int)(get_size().x * parent_zoom.x);
+			int render_height = (int)(get_size().y * parent_zoom.y);
+			double nominal_aspect = render_height / (double)render_width;
+
+			// Limit render size to 1.5x window size to avoid error
+			Size2i window_size = get_viewport()->get_window()->get_size();
+			int max_width = (int)(window_size.x * 1.5);
+			int max_height = (int)(window_size.y * 1.5);
+
+			if (render_width > max_width) {
+				render_width = max_width;
+				render_height = (int)(nominal_aspect * render_width);
+			} else {
+				if (render_height > max_height) {
+					render_height = max_height;
+					render_width = (int)(nominal_aspect * render_width);
+				}
+			}
+
+			render_size = Size2i(render_width, render_height);
+
+			// Ensure subviewports work in the overridden resolution
+			c->set_size_2d_override(get_size());
+
+			if (!c->is_size_2d_override_stretch_enabled()) {
+				c->set_size_2d_override_stretch(true);
+			}
+		}
+
+		c->set_size_force(render_size / shrink);
 	}
 }
 
@@ -107,7 +145,13 @@ void SubViewportContainer::_notification(int p_what) {
 			recalc_force_viewport_sizes();
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
+			// Capture parent viewport resizing as target resolution may change while canvas resolution is unchanged
+			if (!get_viewport()->is_connected("size_changed", callable_mp(this, &SubViewportContainer::recalc_force_viewport_sizes))) {
+				get_viewport()->connect("size_changed", callable_mp(this, &SubViewportContainer::recalc_force_viewport_sizes));
+			}
+			[[fallthrough]];
+		}
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			for (int i = 0; i < get_child_count(); i++) {
 				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
@@ -150,6 +194,10 @@ void SubViewportContainer::_notification(int p_what) {
 			// A different Control has focus and should receive Gui-Input before the InputEvent is sent to the SubViewport.
 			set_process_input(false);
 			set_process_unhandled_input(true);
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_viewport()->disconnect("size_changed", callable_mp(this, &SubViewportContainer::recalc_force_viewport_sizes));
 		} break;
 	}
 }
@@ -227,7 +275,7 @@ void SubViewportContainer::_send_event_to_viewports(const Ref<InputEvent> &p_eve
 			continue;
 		}
 
-		c->push_input(p_event);
+		c->push_input(p_event, true);
 	}
 }
 

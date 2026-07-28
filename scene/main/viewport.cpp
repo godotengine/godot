@@ -3430,7 +3430,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			if (notify_embedded_viewports) {
 				v->notification(NOTIFICATION_VP_MOUSE_ENTER);
 			}
-			v->_update_mouse_over(v->get_final_transform().affine_inverse().xform(pos));
+			v->_update_mouse_over(pos);
 		}
 
 		Viewport *section_root = get_section_root_viewport();
@@ -5756,7 +5756,7 @@ Transform2D SubViewport::get_screen_transform_internal(bool p_absolute_position)
 	} else {
 		WARN_PRINT_ONCE("SubViewport is not a child of a SubViewportContainer. get_screen_transform doesn't return the actual screen position.");
 	}
-	return container_transform * get_final_transform();
+	return container_transform;
 }
 
 Transform2D SubViewport::get_popup_base_transform() const {
@@ -5766,13 +5766,14 @@ Transform2D SubViewport::get_popup_base_transform() const {
 	}
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (!c) {
-		return get_final_transform();
+		WARN_PRINT_ONCE("SubViewport is not a child of a SubViewportContainer. get_popup_base_transform doesn't return the actual base transform.");
+		return Transform2D();
 	}
 	Transform2D container_transform;
 	if (c->is_stretch_enabled()) {
 		container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
 	}
-	return c->get_screen_transform() * container_transform * get_final_transform();
+	return c->get_screen_transform() * container_transform;
 }
 
 Viewport *SubViewport::get_section_root_viewport() const {
@@ -5850,9 +5851,9 @@ void SubViewport::_validate_property(PropertyInfo &p_property) const {
 #ifndef XR_DISABLED
 	if (is_using_xr() && (p_property.name == "size" || p_property.name == "size_2d_override" || p_property.name == "size_2d_override_stretch" || p_property.name == "view_count")) {
 		p_property.usage = PROPERTY_USAGE_NONE; // Managed by XR
-	} else if (p_property.name == "size") {
+	} else if (p_property.name == "size" || p_property.name == "size_2d_override" || p_property.name == "size_2d_override_stretch") {
 #else
-	if (p_property.name == "size") {
+	if (p_property.name == "size" || p_property.name == "size_2d_override" || p_property.name == "size_2d_override_stretch") {
 #endif
 		SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
 		if (parent_svc && parent_svc->is_stretch_enabled()) {
