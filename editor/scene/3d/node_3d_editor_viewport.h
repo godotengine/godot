@@ -470,6 +470,7 @@ private:
 
 	bool previewing_camera = false;
 	bool previewing_cinema = false;
+	int pre_preview_times_focused_consecutively = 0;
 	int times_focused_consecutively = 0;
 	bool pilot_preview_enabled = false;
 
