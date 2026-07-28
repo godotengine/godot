@@ -549,6 +549,9 @@ public:
 	Rect2 get_visible_rect() const;
 	RID get_viewport_rid() const;
 
+	Size2i get_size() const;
+	Size2i get_size_2d_override() const;
+
 	void set_world_2d(const Ref<World2D> &p_world_2d);
 	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
@@ -929,14 +932,12 @@ protected:
 
 public:
 	void set_size(const Size2i &p_size);
-	Size2i get_size() const;
 	void set_size_force(const Size2i &p_size);
 
 	void set_view_count(const int p_view_count);
 	int get_view_count() const;
 
 	void set_size_2d_override(const Size2i &p_size);
-	Size2i get_size_2d_override() const;
 
 	void set_size_2d_override_stretch(bool p_enable);
 	bool is_size_2d_override_stretch_enabled() const override;

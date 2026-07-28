@@ -1263,6 +1263,19 @@ Rect2 Viewport::get_visible_rect() const {
 	return r;
 }
 
+Size2i Viewport::get_size() const {
+	ERR_READ_THREAD_GUARD_V(Size2());
+	return _get_size();
+}
+
+Size2i Viewport::get_size_2d_override() const {
+	ERR_READ_THREAD_GUARD_V(Size2i());
+	// Rounding will cause offset issues with the
+	// exact positioning of subwindows, but changing the
+	// type of size_2d_override would break compatibility.
+	return Size2i((_get_size_2d_override() + Size2(0.5, 0.5)).floor());
+}
+
 void Viewport::canvas_parent_mark_dirty(Node *p_node) {
 	ERR_MAIN_THREAD_GUARD;
 	bool request_update = gui.canvas_parents_with_dirty_order.is_empty();
@@ -5170,6 +5183,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_final_transform"), &Viewport::get_final_transform);
 	ClassDB::bind_method(D_METHOD("get_screen_transform"), &Viewport::get_screen_transform);
 
+	ClassDB::bind_method(D_METHOD("get_size"), &Viewport::get_size);
+	ClassDB::bind_method(D_METHOD("get_size_2d_override"), &Viewport::get_size_2d_override);
+
 	ClassDB::bind_method(D_METHOD("get_visible_rect"), &Viewport::get_visible_rect);
 	ClassDB::bind_method(D_METHOD("set_transparent_background", "enable"), &Viewport::set_transparent_background);
 	ClassDB::bind_method(D_METHOD("has_transparent_background"), &Viewport::has_transparent_background);
@@ -5646,11 +5662,6 @@ void SubViewport::_internal_set_size(const Size2i &p_size, const int p_view_coun
 	}
 }
 
-Size2i SubViewport::get_size() const {
-	ERR_READ_THREAD_GUARD_V(Size2());
-	return _get_size();
-}
-
 void SubViewport::set_view_count(const int p_view_count) {
 	ERR_MAIN_THREAD_GUARD;
 
@@ -5667,14 +5678,6 @@ int SubViewport::get_view_count() const {
 void SubViewport::set_size_2d_override(const Size2i &p_size) {
 	ERR_MAIN_THREAD_GUARD;
 	_set_size(_get_size(), _get_view_count(), p_size, true);
-}
-
-Size2i SubViewport::get_size_2d_override() const {
-	ERR_READ_THREAD_GUARD_V(Size2i());
-	// Rounding will cause offset issues with the
-	// exact positioning of subwindows, but changing the
-	// type of size_2d_override would break compatibility.
-	return Size2i((_get_size_2d_override() + Size2(0.5, 0.5)).floor());
 }
 
 void SubViewport::set_size_2d_override_stretch(bool p_enable) {
@@ -5782,10 +5785,8 @@ void SubViewport::_notification(int p_what) {
 
 void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &SubViewport::set_size);
-	ClassDB::bind_method(D_METHOD("get_size"), &SubViewport::get_size);
 
 	ClassDB::bind_method(D_METHOD("set_size_2d_override", "size"), &SubViewport::set_size_2d_override);
-	ClassDB::bind_method(D_METHOD("get_size_2d_override"), &SubViewport::get_size_2d_override);
 
 	ClassDB::bind_method(D_METHOD("set_size_2d_override_stretch", "enable"), &SubViewport::set_size_2d_override_stretch);
 	ClassDB::bind_method(D_METHOD("is_size_2d_override_stretch_enabled"), &SubViewport::is_size_2d_override_stretch_enabled);
