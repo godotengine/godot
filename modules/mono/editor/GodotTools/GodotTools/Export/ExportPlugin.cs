@@ -256,7 +256,9 @@ namespace GodotTools.Export
 
             List<string> outputPaths = new();
 
-            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android) && (platform != OS.Platforms.MacOS || platform != OS.Platforms.Web);
+            bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android) &&
+                                     platform != OS.Platforms.MacOS &&
+                                     platform != OS.Platforms.Web;
 
             var exportedJars = new HashSet<string>();
 

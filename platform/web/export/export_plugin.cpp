@@ -48,7 +48,7 @@
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #include "modules/svg/image_loader_svg.h"
 
-Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
+Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa, TemplateExtractionMode p_mode) {
 	Ref<FileAccess> io_fa;
 	zlib_filefunc_def io = zipio_create_io(&io_fa);
 	unzFile pkg = unzOpen2(p_template.utf8().get_data(), &io);
@@ -71,9 +71,15 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = String::utf8(fname);
+		const bool is_libgodot = file.begins_with("libgodot/");
 
 		// Skip folders.
 		if (file.ends_with("/")) {
+			continue;
+		}
+
+		if ((p_mode == TEMPLATE_EXTRACT_LIBGODOT && !is_libgodot) ||
+				(p_mode == TEMPLATE_EXTRACT_REGULAR && is_libgodot)) {
 			continue;
 		}
 
@@ -90,7 +96,7 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		unzCloseCurrentFile(pkg);
 
 		//write
-		String dst = p_dir.path_join(file.contains("libgodot") ? file : file.replace("godot", p_name));
+		String dst = p_dir.path_join(is_libgodot ? file : file.replace("godot", p_name));
 		String dst_dir = dst.get_base_dir();
 		if (!DirAccess::exists(dst_dir)) {
 			DirAccess::make_dir_recursive_absolute(dst_dir);
@@ -526,15 +532,19 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	// Extract templates.
-	Error error = _extract_template(template_path, base_dir, base_name, pwa);
+	Error error = OK;
+
+#ifdef MODULE_MONO_ENABLED
+	// The .NET export plugin needs the static LibGodot payload before export
+	// begins, but the regular template files should retain their usual place in
+	// the export lifecycle.
+	error = _extract_template(template_path, base_dir, base_name, pwa, TEMPLATE_EXTRACT_LIBGODOT);
 	if (error) {
 		// Message is supplied by the subroutine method.
 		return error;
 	}
+#endif
 
-	// The .NET export plugin consumes the LibGodot payload extracted from the Web
-	// template, so export plugins must begin after template extraction.
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
 	// Check if any export plugin failed.
@@ -561,6 +571,18 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 				return error;
 			}
 		}
+	}
+
+	// Extract the regular template files after export plugins have prepared their
+	// build outputs. LibGodot was already extracted for the .NET export plugin.
+#ifdef MODULE_MONO_ENABLED
+	error = _extract_template(template_path, base_dir, base_name, pwa, TEMPLATE_EXTRACT_REGULAR);
+#else
+	error = _extract_template(template_path, base_dir, base_name, pwa);
+#endif
+	if (error) {
+		// Message is supplied by the subroutine method.
+		return error;
 	}
 
 	// Parse generated file sizes (pck and wasm, to help show a meaningful loading bar).
