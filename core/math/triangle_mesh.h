@@ -87,6 +87,7 @@ public:
 	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr, int32_t *r_face_index = nullptr) const;
 	bool inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale = Vector3(1, 1, 1)) const;
 	Vector<Face3> get_faces() const;
+	AABB get_aabb() const;
 
 	const Vector<Triangle> &get_triangles() const { return triangles; }
 	const Vector<Vector3> &get_vertices() const { return vertices; }
