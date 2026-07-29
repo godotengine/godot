@@ -89,6 +89,11 @@ OSIPhone *OSIPhone::get_singleton() {
 	return (OSIPhone *)OS::get_singleton();
 };
 
+Error OSIPhone::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	int status = SecRandomCopyBytes(kSecRandomDefault, p_bytes, r_buffer);
+	return status == errSecSuccess ? OK : FAILED;
+}
+
 bool OSIPhone::tts_is_speaking() const {
 	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	ERR_FAIL_COND_V(!tts, false);

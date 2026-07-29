@@ -1853,6 +1853,12 @@ void OS_Windows::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
+Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	NTSTATUS status = BCryptGenRandom(nullptr, r_buffer, p_bytes, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+	ERR_FAIL_COND_V(status, FAILED);
+	return OK;
+}
+
 void OS_Windows::alert(const String &p_alert, const String &p_title) {
 	if (is_no_window_mode_enabled()) {
 		print_line("ALERT: " + p_title + ": " + p_alert);

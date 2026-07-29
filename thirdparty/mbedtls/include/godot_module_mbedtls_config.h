@@ -56,6 +56,10 @@
 #define GODOT_MBEDTLS_THREADING_ALT
 #endif
 
+// Custom entropy source.
+#define MBEDTLS_NO_PLATFORM_ENTROPY
+#define MBEDTLS_ENTROPY_HARDWARE_ALT
+
 #if !(defined(__linux__) && defined(__aarch64__))
 // ARMv8 hardware AES operations. Detection only possible on linux.
 // May technically be supported on some ARM32 arches but doesn't seem

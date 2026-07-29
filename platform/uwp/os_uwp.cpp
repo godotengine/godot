@@ -372,6 +372,12 @@ void OS_UWP::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
+Error OS_UWP::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	NTSTATUS status = BCryptGenRandom(nullptr, r_buffer, p_bytes, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+	ERR_FAIL_COND_V(status, FAILED);
+	return OK;
+}
+
 void OS_UWP::alert(const String &p_alert, const String &p_title) {
 	Platform::String ^ alert = ref new Platform::String(p_alert.c_str());
 	Platform::String ^ title = ref new Platform::String(p_title.c_str());
