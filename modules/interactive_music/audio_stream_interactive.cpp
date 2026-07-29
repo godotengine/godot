@@ -52,6 +52,14 @@ void AudioStreamInteractive::set_clip_count(int p_count) {
 	AudioServer::get_singleton()->lock();
 
 	if (p_count < clip_count) {
+		for (int i = p_count; i < clip_count; i++) {
+			clips[i].stream.unref();
+			clips[i].name = "";
+			clips[i].auto_advance = AUTO_ADVANCE_DISABLED;
+			clips[i].auto_advance_next_clip = 0;
+		}
+	}
+	if (p_count < clip_count) {
 		// Removing should stop players.
 		version++;
 	}

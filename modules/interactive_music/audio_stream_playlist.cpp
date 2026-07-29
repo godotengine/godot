@@ -31,6 +31,7 @@
 #include "audio_stream_playlist.h"
 
 #include "core/math/math_funcs.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "servers/audio/audio_server.h"
 
@@ -47,12 +48,30 @@ void AudioStreamPlaylist::set_list_stream(int p_stream_index, Ref<AudioStream> p
 	ERR_FAIL_COND(p_stream == this);
 	ERR_FAIL_INDEX(p_stream_index, MAX_STREAMS);
 
+	Ref<AudioStream> old_stream = audio_streams[p_stream_index];
+	if (old_stream.is_valid()) {
+		old_stream->disconnect_changed(callable_mp((Resource *)this, &Resource::emit_changed));
+	}
+	if (p_stream.is_valid()) {
+		p_stream->connect_changed(callable_mp((Resource *)this, &Resource::emit_changed));
+	}
+
 	AudioServer::get_singleton()->lock();
 	audio_streams[p_stream_index] = p_stream;
 	for (AudioStreamPlaybackPlaylist *E : playbacks) {
 		E->_update_playback_instances();
 	}
 	AudioServer::get_singleton()->unlock();
+
+	if (!pending_emit_changed) {
+		pending_emit_changed = true;
+		callable_mp(this, &AudioStreamPlaylist::emit_pending_changed).call_deferred();
+	}
+}
+
+void AudioStreamPlaylist::emit_pending_changed() {
+	pending_emit_changed = false;
+	emit_changed();
 }
 
 Ref<AudioStream> AudioStreamPlaylist::get_list_stream(int p_stream_index) const {
@@ -92,9 +111,18 @@ double AudioStreamPlaylist::get_length() const {
 void AudioStreamPlaylist::set_stream_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0 || p_count > MAX_STREAMS);
 	AudioServer::get_singleton()->lock();
+	if (p_count < stream_count) {
+		for (int i = p_count; i < stream_count; i++) {
+			audio_streams[i].unref();
+		}
+	}
 	stream_count = p_count;
 	AudioServer::get_singleton()->unlock();
 	notify_property_list_changed();
+	if (!pending_emit_changed) {
+		pending_emit_changed = true;
+		callable_mp(this, &AudioStreamPlaylist::emit_pending_changed).call_deferred();
+	}
 }
 
 int AudioStreamPlaylist::get_stream_count() const {

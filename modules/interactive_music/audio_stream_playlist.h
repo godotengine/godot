@@ -53,6 +53,9 @@ private:
 	Ref<AudioStream> audio_streams[MAX_STREAMS];
 	HashSet<AudioStreamPlaybackPlaylist *> playbacks;
 
+	bool pending_emit_changed = false;
+	void emit_pending_changed();
+
 public:
 	virtual double get_bpm() const override;
 	void set_stream_count(int p_count);

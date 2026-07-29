@@ -35,9 +35,13 @@
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/resources/audio/audio_stream_randomizer.h"
 #include "scene/resources/audio/audio_stream_wav.h"
 #include "servers/rendering/rendering_server.h"
 
+#include "modules/interactive_music/audio_stream_playlist.h"
+#include "modules/interactive_music/audio_stream_synchronized.h"
+#include "modules/mp3/audio_stream_mp3.h"
 // AudioStreamEditor
 
 void AudioStreamEditor::_notification(int p_what) {
@@ -80,6 +84,9 @@ void AudioStreamEditor::_draw_preview() {
 	if (width <= 0) {
 		return; // No points to draw.
 	}
+	if (_stream_empty) {
+		return;
+	}
 
 	Rect2 rect = _preview->get_rect();
 
@@ -109,13 +116,6 @@ void AudioStreamEditor::_preview_changed(ObjectID p_which) {
 	if (stream.is_valid() && stream->get_instance_id() == p_which) {
 		_preview->queue_redraw();
 	}
-}
-
-void AudioStreamEditor::_stream_changed() {
-	if (!is_visible()) {
-		return;
-	}
-	queue_redraw();
 }
 
 void AudioStreamEditor::_play() {
@@ -155,6 +155,9 @@ void AudioStreamEditor::_draw_indicator() {
 	if (stream.is_null()) {
 		return;
 	}
+	if (_stream_empty) {
+		return;
+	}
 
 	Rect2 rect = _preview->get_rect();
 	float len = stream->get_length();
@@ -162,10 +165,7 @@ void AudioStreamEditor::_draw_indicator() {
 	const Color col = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("TimelineIndicator"));
 	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), col, Math::round(2 * EDSCALE));
-	_indicator->draw_texture(
-			icon,
-			Point2(ofs_x - icon->get_width() * 0.5, 0),
-			col);
+	_indicator->draw_texture(icon, Point2(ofs_x - icon->get_width() * 0.5, 0), col);
 
 	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
 }
@@ -207,12 +207,36 @@ void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
 	stream->connect_changed(callable_mp(this, &AudioStreamEditor::_stream_changed));
 
 	_player->set_stream(stream);
+
+	_stream_changed();
+}
+
+void AudioStreamEditor::_stream_changed() {
+	if (!is_visible()) {
+		return;
+	}
+
 	_current = 0;
+	_stream_empty = stream->get_length() <= 0;
 
-	String text = String::num(stream->get_length(), 2).pad_decimals(2) + "s";
-	_duration_label->set_text(text);
+	_play_button->set_disabled(_stream_empty);
+	_stop_button->set_disabled(_stream_empty);
 
-	queue_redraw();
+	if (_stream_empty) {
+		_duration_label->set_text(TTR("No Audio"));
+		if (_indicator->is_connected(SceneStringName(gui_input), callable_mp(this, &AudioStreamEditor::_on_input_indicator))) {
+			_indicator->disconnect(SceneStringName(gui_input), callable_mp(this, &AudioStreamEditor::_on_input_indicator));
+		}
+		_current_label->set_text("");
+	} else {
+		String text = String::num(stream->get_length(), 2).pad_decimals(2) + "s";
+		_duration_label->set_text(text);
+		if (!_indicator->is_connected(SceneStringName(gui_input), callable_mp(this, &AudioStreamEditor::_on_input_indicator))) {
+			_indicator->connect(SceneStringName(gui_input), callable_mp(this, &AudioStreamEditor::_on_input_indicator));
+		}
+	}
+	_preview->queue_redraw();
+	_indicator->queue_redraw();
 }
 
 AudioStreamEditor::AudioStreamEditor() {
@@ -234,7 +258,6 @@ AudioStreamEditor::AudioStreamEditor() {
 	_indicator = memnew(Control);
 	_indicator->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	_indicator->connect(SceneStringName(draw), callable_mp(this, &AudioStreamEditor::_draw_indicator));
-	_indicator->connect(SceneStringName(gui_input), callable_mp(this, &AudioStreamEditor::_on_input_indicator));
 	_preview->add_child(_indicator);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
@@ -269,7 +292,25 @@ AudioStreamEditor::AudioStreamEditor() {
 // EditorInspectorPluginAudioStream
 
 bool EditorInspectorPluginAudioStream::can_handle(Object *p_object) {
-	return Object::cast_to<AudioStreamWAV>(p_object) != nullptr;
+	if (Object::cast_to<AudioStreamWAV>(p_object)) {
+		return true;
+	}
+	if (Object::cast_to<AudioStreamMP3>(p_object)) {
+		return true;
+	}
+	if (Object::cast_to<AudioStreamSynchronized>(p_object)) {
+		return true;
+	}
+	if (Object::cast_to<AudioStreamPlaylist>(p_object)) {
+		return true;
+	}
+	if (Object::cast_to<AudioStreamRandomizer>(p_object)) {
+		return true;
+	}
+	if (p_object->is_class("AudioStreamOggVorbis")) {
+		return true;
+	}
+	return false;
 }
 
 void EditorInspectorPluginAudioStream::parse_begin(Object *p_object) {
