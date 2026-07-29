@@ -1682,6 +1682,11 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(panel), "ScrollContainer", p_config.base_empty_style);
 		p_theme->set_stylebox("focus", "ScrollContainer", p_config.focus_style);
 
+		p_theme->set_constant("scrollbar_margin_left", "ScrollContainer", 0);
+		p_theme->set_constant("scrollbar_margin_top", "ScrollContainer", 0);
+		p_theme->set_constant("scrollbar_margin_right", "ScrollContainer", 0);
+		p_theme->set_constant("scrollbar_margin_bottom", "ScrollContainer", 0);
+
 		// Scroll hints.
 		p_theme->set_color("scroll_hint_vertical_color", "ScrollContainer", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));
 		p_theme->set_color("scroll_hint_horizontal_color", "ScrollContainer", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));

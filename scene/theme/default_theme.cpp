@@ -668,6 +668,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("scroll_hint_horizontal", "ScrollContainer", icons["scroll_hint_horizontal"]);
 	theme->set_color("scroll_hint_vertical_color", "ScrollContainer", Color(0, 0, 0));
 	theme->set_color("scroll_hint_horizontal_color", "ScrollContainer", Color(0, 0, 0));
+	theme->set_constant("scrollbar_margin_left", "ScrollContainer", -1);
+	theme->set_constant("scrollbar_margin_top", "ScrollContainer", -1);
+	theme->set_constant("scrollbar_margin_right", "ScrollContainer", -1);
+	theme->set_constant("scrollbar_margin_bottom", "ScrollContainer", -1);
 
 	// Virtual Joystick
 

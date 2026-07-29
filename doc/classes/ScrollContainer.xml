@@ -146,6 +146,18 @@
 		<theme_item name="scrollbar_h_separation" data_type="constant" type="int" default="0">
 			The space between the ScrollContainer's vertical scroll bar and its content, in pixels. No space will be added when the content's minimum size is larger than the ScrollContainer's size.
 		</theme_item>
+		<theme_item name="scrollbar_margin_bottom" data_type="constant" type="int" default="-1">
+			The bottom margin of the horizontal scrollbar. When negative, uses [theme_item panel]'s bottom margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_left" data_type="constant" type="int" default="-1">
+			The left margin of the horizontal scrollbar. When negative, uses [theme_item panel]'s left margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_right" data_type="constant" type="int" default="-1">
+			The right margin of the horizontal scrollbar. When negative, uses [theme_item panel]'s right margin.
+		</theme_item>
+		<theme_item name="scrollbar_margin_top" data_type="constant" type="int" default="-1">
+			The top margin of the horizontal scrollbar. When negative, uses [theme_item panel]'s top margin.
+		</theme_item>
 		<theme_item name="scrollbar_v_separation" data_type="constant" type="int" default="0">
 			The space between the ScrollContainer's horizontal scroll bar and its content, in pixels. No space will be added when the content's minimum size is larger than the ScrollContainer's size.
 		</theme_item>
