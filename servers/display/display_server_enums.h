@@ -172,6 +172,15 @@ enum ScreenOrientation {
 	SCREEN_SENSOR,
 };
 
+// Values returned by the DisplayServer `orientation_changed` signal.
+// Unlike ScreenOrientation, which represents the desired screen orientation and can be used to get or set the screen orientation,
+// SensorOrientation represents the actual screen orientation detected. It can be used with ScreenOrientation::SCREEN_SENSOR.
+enum SensorOrientation {
+	SENSOR_ORIENTATION_UNDEFINED,
+	SENSOR_ORIENTATION_PORTRAIT,
+	SENSOR_ORIENTATION_LANDSCAPE,
+};
+
 /* WINDOW */
 
 typedef int WindowID;
