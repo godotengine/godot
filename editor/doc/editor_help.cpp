@@ -3752,7 +3752,7 @@ EditorHelpBit::HelpData EditorHelpBit::_get_property_help_data(const StringName 
 
 			if (property.name.contains("{index}")) {
 				RegEx reg_index = RegEx(property.name.replace("{index}", "\\d*"));
-				Ref<RegExMatch> match = reg_index.search(p_property_name);
+				RegExMatch match = reg_index.search(p_property_name);
 				if (match.is_valid()) {
 					result = current;
 

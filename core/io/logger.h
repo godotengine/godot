@@ -37,7 +37,6 @@
 #include <cstdarg>
 
 class FileAccess;
-class RegEx;
 class ScriptBacktrace;
 
 class Logger {
@@ -116,8 +115,6 @@ class RotatedFileLogger : public Logger {
 
 	void clear_old_backups();
 	void rotate_file();
-
-	Ref<RegEx> strip_ansi_regex;
 
 public:
 	explicit RotatedFileLogger(const String &p_base_path, int p_max_files = 10);

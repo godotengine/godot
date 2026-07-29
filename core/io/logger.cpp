@@ -168,11 +168,9 @@ RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files)
 		base_path(p_base_path.simplify_path()),
 		max_files(p_max_files > 0 ? p_max_files : 1) {
 	rotate_file();
-
-	strip_ansi_regex.instantiate();
-	strip_ansi_regex->detach_from_objectdb(); // Note: This RegEx instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
-	strip_ansi_regex->compile("\u001b\\[((?:\\d|;)*)([a-zA-Z])");
 }
+
+static const RegEx _strip_ansi_regex = RegEx("\u001b\\[((?:\\d|;)*)([a-zA-Z])");
 
 void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	if (!should_log(p_err)) {
@@ -195,7 +193,7 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		// Strip ANSI escape codes (such as those inserted by `print_rich()`)
 		// before writing to file, as text editors cannot display those
 		// correctly.
-		file->store_string(strip_ansi_regex->sub(String::utf8(buf), "", true));
+		file->store_string(_strip_ansi_regex.sub(String::utf8(buf), "", true));
 
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);

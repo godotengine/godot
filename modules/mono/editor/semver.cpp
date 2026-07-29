@@ -133,15 +133,15 @@ bool godotsharp::SemVerParser::parse(const String &p_ver_text, godotsharp::SemVe
 		ERR_FAIL_COND_V(!regex.is_valid(), false);
 	}
 
-	Ref<RegExMatch> match = regex.search(p_ver_text);
+	RegExMatch match = regex.search(p_ver_text);
 
 	if (match.is_valid()) {
 		r_semver = SemVer(
-				match->get_string("major").to_int(),
-				match->get_string("minor").to_int(),
-				match->get_string("patch").to_int(),
-				match->get_string("prerelease"),
-				match->get_string("buildmetadata"));
+				match.get_string("major").to_int(),
+				match.get_string("minor").to_int(),
+				match.get_string("patch").to_int(),
+				match.get_string("prerelease"),
+				match.get_string("buildmetadata"));
 		return true;
 	}
 

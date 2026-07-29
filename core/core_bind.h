@@ -38,6 +38,7 @@
 #include "core/object/script_backtrace.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
+#include "core/string/regex.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/typed_array.h"
 
@@ -502,6 +503,61 @@ public:
 
 	static void set_thread_safety_checks_enabled(bool p_enabled);
 	static bool is_main_thread();
+};
+
+class RegEx;
+
+class RegExMatch : public RefCounted {
+	GDCLASS(RegExMatch, RefCounted);
+
+	friend ::CoreBind::RegEx;
+	::RegExMatch _regex_match;
+
+protected:
+	static void _bind_methods();
+
+public:
+	String get_subject() const;
+	int get_group_count() const;
+	Dictionary get_names() const;
+
+	PackedStringArray get_strings() const;
+	String get_string(const Variant &p_name) const;
+	int get_start(const Variant &p_name) const;
+	int get_end(const Variant &p_name) const;
+};
+
+class RegEx : public RefCounted {
+	GDCLASS(RegEx, RefCounted);
+
+	::RegEx _regex;
+
+protected:
+	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	static Ref<RegEx> _create_from_string_bind_compat_95212(const String &p_pattern);
+	Error _compile_bind_compat_95212(const String &p_pattern);
+	static void _bind_compatibility_methods();
+#endif
+
+public:
+	static Ref<RegEx> create_from_string(const String &p_pattern, bool p_show_error = true);
+
+	void clear();
+	Error compile(const String &p_pattern, bool p_show_error = true);
+
+	Ref<RegExMatch> search(const String &p_subject, int p_offset = 0, int p_end = -1) const;
+	TypedArray<RegExMatch> search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;
+	String sub(const String &p_subject, const String &p_replacement, bool p_all = false, int p_offset = 0, int p_end = -1) const;
+
+	bool is_valid() const;
+	String get_pattern() const;
+	int get_group_count() const;
+	PackedStringArray get_names() const;
+
+	RegEx() = default;
+	RegEx(const String &p_pattern);
 };
 
 namespace Special {

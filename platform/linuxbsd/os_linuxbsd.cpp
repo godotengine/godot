@@ -383,7 +383,7 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 		String device_class = columns[1].trim_suffix(":");
 		const String &vendor_device_id_mapping = columns[2];
 
-		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {
+		if (!regex_id_format.search(vendor_device_id_mapping).is_valid()) {
 			continue;
 		}
 
