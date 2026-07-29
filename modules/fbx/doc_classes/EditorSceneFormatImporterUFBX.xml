@@ -8,4 +8,14 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
+		<member name="fbx/allow_geometry_helper_nodes" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="fbx/embedded_image_handling" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="fbx/importer" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="fbx/naming_version" type="int" setter="" getter="" default="2">
+		</member>
+	</members>
 </class>
