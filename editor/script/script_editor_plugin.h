@@ -424,7 +424,7 @@ class ScriptEditor : public PanelContainer {
 	void _update_history_pos(int p_new_pos);
 	void _update_modified_scripts_for_external_editor(Ref<Script> p_for_script = Ref<Script>());
 
-	void _script_changed();
+	void _validation_updated();
 	int file_dialog_option;
 	void _file_dialog_action(const String &p_file);
 
