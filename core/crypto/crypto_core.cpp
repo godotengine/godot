@@ -30,14 +30,27 @@
 
 #include "crypto_core.h"
 
+#include "core/os/os.h"
+
 #include <mbedtls/aes.h>
 #include <mbedtls/base64.h>
+#include <mbedtls/entropy.h>
 #include <mbedtls/md5.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
 #if MBEDTLS_VERSION_MAJOR >= 3
 #include <mbedtls/compat-2.x.h>
 #endif
+
+extern "C" {
+int mbedtls_hardware_poll(void *p_data, unsigned char *r_buffer, size_t p_len, size_t *r_len) {
+	*r_len = 0;
+	Error err = OS::get_singleton()->get_entropy(r_buffer, p_len);
+	ERR_FAIL_COND_V(err, MBEDTLS_ERR_ENTROPY_SOURCE_FAILED);
+	*r_len = p_len;
+	return 0;
+}
+}
 
 // MD5
 CryptoCore::MD5Context::MD5Context() {
