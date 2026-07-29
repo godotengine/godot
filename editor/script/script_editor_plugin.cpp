@@ -49,7 +49,6 @@
 #include "editor/doc/editor_help_search.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
-#include "editor/docks/signals_dock.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -2449,9 +2448,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	seb->edited_file_data.last_modified_time = FileAccess::get_modified_time(p_resource->get_path());
 
 	seb->connect("name_changed", callable_mp(this, &ScriptEditor::_update_filenames));
-	if (this == script_editor) {
-		seb->connect("edited_script_changed", callable_mp(this, &ScriptEditor::_script_changed));
-	}
+	seb->connect("_validation_updated", callable_mp(this, &ScriptEditor::_validation_updated));
 
 	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(seb)) {
 		// Syntax highlighting.
@@ -3890,9 +3887,7 @@ void ScriptEditor::register_create_script_editor_function(CreateScriptEditorFunc
 	script_editor_funcs[script_editor_func_count++] = p_func;
 }
 
-void ScriptEditor::_script_changed() {
-	SignalsDock::get_singleton()->update_lists();
-
+void ScriptEditor::_validation_updated() {
 	document_list->update_list();
 
 	document_outline->update_outline();

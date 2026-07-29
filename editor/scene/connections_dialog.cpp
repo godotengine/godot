@@ -1470,6 +1470,12 @@ void ConnectionsDock::_close() {
 	hide();
 }
 
+void ConnectionsDock::_changed_callback() {
+	if (selected_object != nullptr) {
+		update_tree();
+	}
+}
+
 void ConnectionsDock::_connect_pressed() {
 	TreeItem *item = tree->get_selected();
 	if (!item) {
@@ -1527,8 +1533,16 @@ void ConnectionsDock::set_object(Object *p_object) {
 		select_an_object->hide();
 		holder->show();
 	}
+	if (selected_object != nullptr && likely(Variant(selected_object).get_validated_object())) {
+		selected_object->disconnect(CoreStringName(property_list_changed), callable_mp(this, &ConnectionsDock::_changed_callback));
+	}
+
 	selected_object = p_object;
 	is_editing_resource = (Object::cast_to<Resource>(selected_object) != nullptr);
+
+	if (selected_object != nullptr) {
+		selected_object->connect(CoreStringName(property_list_changed), callable_mp(this, &ConnectionsDock::_changed_callback));
+	}
 	update_tree();
 }
 

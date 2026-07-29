@@ -49,7 +49,7 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("name_changed"));
 
 	// First use in TextEditorBase.
-	ADD_SIGNAL(MethodInfo("edited_script_changed"));
+	ADD_SIGNAL(MethodInfo("_validation_updated"));
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ClassDB::bind_method(D_METHOD("add_syntax_highlighter", "highlighter"), &ScriptEditorBase::add_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("get_base_editor"), &ScriptEditorBase::get_base_editor);
@@ -66,6 +66,7 @@ void ScriptEditorBase::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ADD_SIGNAL(MethodInfo("request_save_history"));
 	ADD_SIGNAL(MethodInfo("request_save_previous_state", PropertyInfo(Variant::DICTIONARY, "state")));
+	ADD_SIGNAL(MethodInfo("edited_script_changed"));
 #endif
 }
 
@@ -563,7 +564,7 @@ void TextEditorBase::_load_theme_settings() {
 }
 
 void TextEditorBase::_validate_script() {
-	emit_signal(SNAME("edited_script_changed"));
+	emit_signal(SNAME("_validation_updated"));
 }
 
 void TextEditorBase::_saved_update() {
