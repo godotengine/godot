@@ -1071,6 +1071,8 @@ void RenderingDeviceGraph::_add_draw_list_begin(FramebufferCache *p_framebuffer_
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	draw_instruction_list.breadcrumb = p_breadcrumb;
 #endif
+
+	workarounds_state.bound_any_draw_list_pipeline = false;
 }
 
 void RenderingDeviceGraph::_run_secondary_command_buffer_task(const SecondaryCommandBuffer *p_secondary) {
@@ -2164,6 +2166,8 @@ void RenderingDeviceGraph::add_draw_list_bind_pipeline(RDD::PipelineID p_pipelin
 	instruction->type = DrawListInstruction::TYPE_BIND_PIPELINE;
 	instruction->pipeline = p_pipeline;
 	draw_instruction_list.stages = draw_instruction_list.stages | p_pipeline_stage_bits;
+
+	workarounds_state.bound_any_draw_list_pipeline = true;
 }
 
 void RenderingDeviceGraph::add_draw_list_bind_uniform_set(RDD::ShaderID p_shader, RDD::UniformSetID p_uniform_set, uint32_t set_index) {
@@ -2361,6 +2365,11 @@ void RenderingDeviceGraph::add_draw_list_end() {
 	command->clear_values_count = draw_instruction_list.attachment_clear_values.size();
 	command->trackers_count = trackers_count;
 
+	RDD::AttachmentStoreOp attachment_store_op_dont_care = RDD::ATTACHMENT_STORE_OP_DONT_CARE;
+	if (driver_workarounds.avoid_store_op_dont_care_in_draw_list_with_no_bound_pipeline && !workarounds_state.bound_any_draw_list_pipeline) {
+		attachment_store_op_dont_care = RDD::ATTACHMENT_STORE_OP_STORE;
+	}
+
 	// Initialize the load and store operations to their default behaviors. The store behavior will be modified if a command depends on the result of this render pass.
 	uint32_t attachment_op_count = draw_instruction_list.attachment_operations.size();
 	ResourceTracker **trackers = command->trackers();
@@ -2383,7 +2392,7 @@ void RenderingDeviceGraph::add_draw_list_end() {
 				load_ops[i] = RDD::ATTACHMENT_LOAD_OP_LOAD;
 			}
 
-			store_ops[i] = resource_tracker->is_discardable ? RDD::ATTACHMENT_STORE_OP_DONT_CARE : RDD::ATTACHMENT_STORE_OP_STORE;
+			store_ops[i] = resource_tracker->is_discardable ? attachment_store_op_dont_care : RDD::ATTACHMENT_STORE_OP_STORE;
 		} else {
 			load_ops[i] = RDD::ATTACHMENT_LOAD_OP_DONT_CARE;
 			store_ops[i] = RDD::ATTACHMENT_STORE_OP_DONT_CARE;

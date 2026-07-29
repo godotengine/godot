@@ -1054,6 +1054,7 @@ public:
 		bool avoid_compute_after_draw = false;
 		bool dont_print_on_render_pipeline_creation_failure = false;
 		bool disable_ubershaders = false;
+		bool avoid_store_op_dont_care_in_draw_list_with_no_bound_pipeline = false;
 	};
 
 	////////////////////////////////////////////
