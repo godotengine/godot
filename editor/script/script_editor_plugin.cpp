@@ -2060,8 +2060,7 @@ void ScriptEditor::_notification(int p_what) {
 			}
 
 			virtual_keyboard_spacer->set_custom_minimum_size(Size2(0, spacer_height));
-			EditorSceneTabs::get_singleton()->set_visible(!kb_height);
-			menu_hb->set_visible(!kb_visible);
+			EditorSceneTabs::get_singleton()->set_visible(!kb_visible);
 		} break;
 #endif
 		case NOTIFICATION_APPLICATION_FOCUS_IN: {
@@ -4005,7 +4004,7 @@ void ScriptEditor::_update_code_editor_zoom_factor(CodeTextEditor *p_code_text_e
 }
 
 void ScriptEditor::_floating_state_changed(bool p_floating) {
-	make_floating->set_visible(!p_floating);
+	make_floating->set_visible(!p_floating && !make_floating->is_disabled());
 	is_floating = p_floating;
 }
 
