@@ -1578,6 +1578,7 @@ void FileDialog::_invalidate() {
 	}
 
 	update_file_list();
+	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 
 	if (ensure_visible_after_invalidating) {
 		file_list->ensure_current_is_visible();
