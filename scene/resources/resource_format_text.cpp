@@ -693,6 +693,9 @@ Error ResourceLoaderText::load() {
 
 					if (set_valid) {
 						res->set(assign, value);
+#ifdef TOOLS_ENABLED
+						res->set_edited(false);
+#endif
 					}
 				}
 				//it's assignment
@@ -834,6 +837,9 @@ Error ResourceLoaderText::load() {
 
 				if (set_valid) {
 					resource->set(assign, value);
+#ifdef TOOLS_ENABLED
+					resource->set_edited(false);
+#endif
 				}
 				//it's assignment
 			} else if (!next_tag.name.is_empty()) {

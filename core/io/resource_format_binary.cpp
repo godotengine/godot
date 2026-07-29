@@ -810,6 +810,9 @@ Error ResourceLoaderBinary::load() {
 
 			if (set_valid) {
 				res->set(name, value);
+#ifdef TOOLS_ENABLED
+				res->set_edited(false);
+#endif
 			}
 		}
 
