@@ -5497,12 +5497,8 @@ Variant GDScriptAnalyzer::make_subscript_reduced_value(GDScriptParser::Subscript
 
 Variant GDScriptAnalyzer::make_call_reduced_value(GDScriptParser::CallNode *p_call, bool &r_is_reduced) {
 	if (p_call->get_callee_type() == GDScriptParser::Node::IDENTIFIER) {
-		Variant::Type type = Variant::NIL;
-		if (p_call->function_name == SNAME("Array")) {
-			type = Variant::ARRAY;
-		} else if (p_call->function_name == SNAME("Dictionary")) {
-			type = Variant::DICTIONARY;
-		} else {
+		const Variant::Type type = GDScriptParser::get_builtin_type(p_call->function_name);
+		if (type == Variant::VARIANT_MAX) {
 			return Variant();
 		}
 
@@ -5748,6 +5744,17 @@ Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNo
 		Variant initializer_value = make_expression_reduced_value(p_variable->initializer, is_initializer_value_reduced);
 		if (is_initializer_value_reduced) {
 			result = initializer_value;
+
+			GDScriptParser::DataType datatype = p_variable->type_constraint;
+			if (datatype.is_hard_type() && datatype.kind == GDScriptParser::DataType::BUILTIN && datatype.builtin_type != Variant::OBJECT && datatype.builtin_type != result.get_type()) {
+				const Variant *argptr = &initializer_value;
+				Variant converted_value;
+				Callable::CallError ce;
+				Variant::construct(datatype.builtin_type, converted_value, &argptr, 1, ce);
+				if (!ce.error) {
+					result = converted_value;
+				}
+			}
 		}
 	} else {
 		GDScriptParser::DataType datatype = p_variable->type_constraint;
