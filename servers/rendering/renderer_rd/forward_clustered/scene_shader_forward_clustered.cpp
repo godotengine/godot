@@ -1001,7 +1001,7 @@ void fragment() {
 
 	{
 		default_vec4_xform_buffer = RD::get_singleton()->storage_buffer_create(256);
-		default_material_feedback_buffer = RD::get_singleton()->storage_buffer_create(256);
+		default_material_feedback_buffer = RD::get_singleton()->storage_buffer_create(256, Vector<uint8_t>(), 0, RD::BufferCreationBits::BUFFER_CREATION_RELAXED_WRITE_ORDERING_BIT);
 		Vector<RD::Uniform> uniforms;
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;

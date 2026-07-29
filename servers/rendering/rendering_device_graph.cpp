@@ -578,7 +578,9 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 		bool resource_has_parent = resource_tracker->parent != nullptr;
 		ResourceTracker *search_tracker = resource_has_parent ? resource_tracker->parent : resource_tracker;
 		bool different_usage = resource_tracker->usage != new_resource_usage;
-		bool write_usage_after_write = (write_usage && search_tracker->write_command_or_list_index >= 0);
+
+		bool relaxed_write = write_usage && !different_usage && search_tracker->relaxed_write_ordering && search_tracker->write_command_or_list_index >= 0;
+		bool write_usage_after_write = (write_usage && !relaxed_write && search_tracker->write_command_or_list_index >= 0);
 		if (different_usage || write_usage_after_write) {
 			// A barrier must be pushed if the usage is different of it's a write usage and there was already a command that wrote to this resource previously.
 			if (resource_tracker->texture_driver_id.id != 0) {
@@ -626,7 +628,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 		}
 
 		bool write_usage_has_partial_coverage = !different_usage && _check_command_partial_coverage(resource_tracker, p_command_index);
-		if (search_tracker->write_command_or_list_index >= 0) {
+		if (search_tracker->write_command_or_list_index >= 0 && !relaxed_write) {
 			if (search_tracker->write_command_list_enabled) {
 				// Make this command adjacent to any commands that wrote to this resource and intersect with the slice if it applies.
 				// For buffers or textures that never use slices, this list will only be one element long at most.
@@ -673,7 +675,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 		}
 
 		if (write_usage) {
-			bool use_write_list = resource_has_parent || write_usage_has_partial_coverage;
+			bool use_write_list = resource_has_parent || write_usage_has_partial_coverage || relaxed_write;
 			if (use_write_list) {
 				if (!search_tracker->write_command_list_enabled && search_tracker->write_command_or_list_index >= 0) {
 					// Write command list was not being used but there was a write command recorded. Add a new node with the entire parent resource's subresources and the recorded command index to the list.

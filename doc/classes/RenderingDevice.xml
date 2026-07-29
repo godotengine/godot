@@ -2375,6 +2375,9 @@
 			[/gdscript]
 			[/codeblocks]
 		</constant>
+		<constant name="BUFFER_CREATION_RELAXED_WRITE_ORDERING_BIT" value="16" enum="BufferCreationBits" is_bitfield="true" experimental="">
+			Set this flag to indicate that the shader writes performed on this buffer are order-independent and can be executed in any order without affecting the final result.
+		</constant>
 		<constant name="ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT" value="1" enum="AccelerationStructureFlagBits" is_bitfield="true" experimental="">
 			Allows the acceleration structure to be updated after it has been built.
 		</constant>

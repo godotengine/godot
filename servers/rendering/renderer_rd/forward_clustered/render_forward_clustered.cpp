@@ -3995,6 +3995,7 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 		u.append_id(p_geom_facing_texture);
 		uniforms.push_back(u);
 	}
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
 	{
 		RD::Uniform u;
 		u.binding = 37;
@@ -4003,6 +4004,7 @@ RID RenderForwardClustered::_setup_sdfgi_render_pass_uniform_set(RID p_albedo_te
 		u.append_id(instance_buffer);
 		uniforms.push_back(u);
 	}
+#endif // MODULE_TEXTURE_STREAMING_ENABLED
 
 	if (scene_shader.default_shader_sdfgi_rd.is_null()) {
 		// The variant for SDF from the default material should only be retrieved when SDFGI is required.

@@ -189,6 +189,7 @@ private:
 		RDG::ResourceTracker *draw_tracker = nullptr;
 		int32_t transfer_worker_index = -1;
 		uint64_t transfer_worker_operation = 0;
+		bool relaxed_write_ordering = false;
 	};
 
 	Buffer *_get_buffer_from_owner(RID p_buffer);
@@ -859,6 +860,7 @@ public:
 		BUFFER_CREATION_AS_STORAGE_BIT = (1 << 1),
 		BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT = (1 << 2),
 		BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT = (1 << 3),
+		BUFFER_CREATION_RELAXED_WRITE_ORDERING_BIT = (1 << 4),
 	};
 
 	enum StorageBufferUsage {

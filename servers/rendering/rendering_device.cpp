@@ -1467,6 +1467,7 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 	Buffer buffer;
 	buffer.size = p_size_bytes;
 	buffer.usage = (RDD::BUFFER_USAGE_TRANSFER_FROM_BIT | RDD::BUFFER_USAGE_TRANSFER_TO_BIT | RDD::BUFFER_USAGE_STORAGE_BIT);
+	buffer.relaxed_write_ordering = p_creation_bits.has_flag(BUFFER_CREATION_RELAXED_WRITE_ORDERING_BIT);
 	if (p_creation_bits.has_flag(BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT)) {
 		buffer.usage.set_flag(RDD::BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT);
 
@@ -1501,6 +1502,7 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 	// Storage buffers are assumed to be mutable.
 	buffer.draw_tracker = RDG::resource_tracker_create();
 	buffer.draw_tracker->buffer_driver_id = buffer.driver_id;
+	buffer.draw_tracker->relaxed_write_ordering = buffer.relaxed_write_ordering;
 
 	if (p_data.size()) {
 		_buffer_initialize(&buffer, p_data);
@@ -7534,6 +7536,7 @@ bool RenderingDevice::_buffer_make_mutable(Buffer *p_buffer, RID p_buffer_id) {
 		// Create a tracker for the buffer and make all its dependencies mutable.
 		p_buffer->draw_tracker = RDG::resource_tracker_create();
 		p_buffer->draw_tracker->buffer_driver_id = p_buffer->driver_id;
+		p_buffer->draw_tracker->relaxed_write_ordering = p_buffer->relaxed_write_ordering;
 		if (p_buffer_id.is_valid()) {
 			_dependencies_make_mutable(p_buffer_id, p_buffer->draw_tracker);
 		}
@@ -9742,6 +9745,7 @@ void RenderingDevice::_bind_methods() {
 	// Not exposed on purpose. This flag is too dangerous to be exposed to regular GD users.
 	//BIND_BITFIELD_FLAG(BUFFER_CREATION_DYNAMIC_PERSISTENT_BIT);
 	BIND_BITFIELD_FLAG(BUFFER_CREATION_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT);
+	BIND_BITFIELD_FLAG(BUFFER_CREATION_RELAXED_WRITE_ORDERING_BIT);
 
 	BIND_BITFIELD_FLAG(ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT);
 	BIND_BITFIELD_FLAG(ACCELERATION_STRUCTURE_ALLOW_COMPACTION_BIT);

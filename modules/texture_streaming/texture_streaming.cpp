@@ -82,7 +82,7 @@ void TextureStreaming::MaterialFeedbackBuffer::resize() {
 	}
 
 	buffer_size = Math::nearest_power_of_2_templated(MAX(4096u, material_info_count_bytes));
-	buffer = RD::get_singleton()->storage_buffer_create(buffer_size, Vector<uint8_t>(), 0, RD::BufferCreationBits::BUFFER_CREATION_AS_STORAGE_BIT);
+	buffer = RD::get_singleton()->storage_buffer_create(buffer_size, Vector<uint8_t>(), 0, RD::BufferCreationBits::BUFFER_CREATION_AS_STORAGE_BIT | RD::BufferCreationBits::BUFFER_CREATION_RELAXED_WRITE_ORDERING_BIT);
 
 	// Make the vector match the size of the buffer
 	rid_map.resize(buffer_size / 4);
