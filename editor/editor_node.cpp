@@ -51,6 +51,7 @@
 #include "core/version.h"
 #include "editor/animation/animation_player_editor_plugin.h"
 #include "editor/asset_library/asset_library_editor_plugin.h"
+#include "editor/audio/audio_stream_editor_plugin.h"
 #include "editor/audio/audio_stream_preview.h"
 #include "editor/audio/editor_audio_buses.h"
 #include "editor/debugger/debugger_editor_plugin.h"
@@ -8656,6 +8657,10 @@ EditorNode::EditorNode() {
 		Ref<EditorInspectorParticleProcessMaterialPlugin> ppm;
 		ppm.instantiate();
 		EditorInspector::add_inspector_plugin(ppm);
+
+		Ref<EditorInspectorPluginAudioStreamWAV> plugin;
+		plugin.instantiate();
+		EditorInspector::add_inspector_plugin(plugin);
 	}
 
 	editor_selection = memnew(EditorSelection);
