@@ -259,6 +259,7 @@ public:
 
 	struct WorkaroundsState {
 		bool draw_list_found = false;
+		bool bound_any_draw_list_pipeline = false;
 	};
 
 	enum AttachmentOperation {
