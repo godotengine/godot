@@ -41,6 +41,8 @@
 #define GL_TEXTURE_2D_MULTISAMPLE_ARRAY 0x9102
 #endif
 
+AHashMap<const RenderSceneBuffers *, LocalVector<RenderSceneBuffersGLES3::FBDEF>> RenderSceneBuffersGLES3::msaa3d_fbo_caches;
+
 RenderSceneBuffersGLES3::RenderSceneBuffersGLES3() {
 	for (int i = 0; i < 4; i++) {
 		glow.levels[i].color = 0;
@@ -89,7 +91,7 @@ GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_dept
 
 #if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 	// There shouldn't be more then 3 entries in this...
-	for (const FBDEF &cached_fbo : msaa3d.cached_fbos) {
+	for (const FBDEF &cached_fbo : get_cached_msaa3d_fbos(this)) {
 		if (cached_fbo.color == p_color && cached_fbo.depth == p_depth) {
 			return cached_fbo.fbo;
 		}
@@ -112,13 +114,29 @@ GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_dept
 		new_fbo.fbo = 0;
 	} else {
 		// cache it!
-		msaa3d.cached_fbos.push_back(new_fbo);
+		get_cached_msaa3d_fbos(this).push_back(new_fbo);
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 #endif
 
 	return new_fbo.fbo;
+}
+
+void RenderSceneBuffersGLES3::clear_cached_fbos_using_texture(GLuint p_texture) {
+	if (p_texture == 0) {
+		return;
+	}
+
+	for (KeyValue<const RenderSceneBuffers *, LocalVector<FBDEF>> &kv : msaa3d_fbo_caches) {
+		for (uint32_t i = kv.value.size(); i > 0; i--) {
+			const FBDEF &cached_fbo = kv.value[i - 1];
+			if (cached_fbo.color == p_texture || cached_fbo.depth == p_texture) {
+				glDeleteFramebuffers(1, &cached_fbo.fbo);
+				kv.value.remove_at_unordered(i - 1);
+			}
+		}
+	}
 }
 
 void RenderSceneBuffersGLES3::configure(const RenderSceneBuffersConfiguration *p_config) {
@@ -413,11 +431,12 @@ void RenderSceneBuffersGLES3::configure_for_probe(Size2i p_size) {
 }
 
 void RenderSceneBuffersGLES3::_clear_msaa3d_buffers() {
-	for (const FBDEF &cached_fbo : msaa3d.cached_fbos) {
+	LocalVector<FBDEF> &cached_fbos = get_cached_msaa3d_fbos(this);
+	for (const FBDEF &cached_fbo : cached_fbos) {
 		GLuint fbo = cached_fbo.fbo;
 		glDeleteFramebuffers(1, &fbo);
 	}
-	msaa3d.cached_fbos.clear();
+	msaa3d_fbo_caches.erase(this);
 
 	if (msaa3d.fbo) {
 		glDeleteFramebuffers(1, &msaa3d.fbo);
