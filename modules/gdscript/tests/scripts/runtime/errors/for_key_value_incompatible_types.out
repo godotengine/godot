@@ -1,0 +1,2 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR at runtime/errors/for_key_value_incompatible_types.gd:2 on test(): Trying to assign value of type 'int' to a variable of type 'Array'.
