@@ -67,6 +67,9 @@ jobs:
       - name: Download Swappy
         run: python ./misc/scripts/install_swappy_android.py
 
+      - name: Download Perfetto
+        run: python ./misc/scripts/install_perfetto.py
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
