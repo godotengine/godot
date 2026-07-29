@@ -1077,6 +1077,7 @@ CreateDialog::CreateDialog() {
 
 	search_options = memnew(Tree);
 	search_box->set_forward_control(search_options);
+	search_options->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	search_options->set_accessibility_name(TTRC("Matches:"));
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);
