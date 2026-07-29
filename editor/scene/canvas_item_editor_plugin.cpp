@@ -5753,9 +5753,11 @@ CanvasItemEditor::CanvasItemEditor() {
 	toolbar_margin->add_child(main_flow);
 
 	// Main toolbars.
-	HBoxContainer *main_menu_hbox = memnew(HBoxContainer);
-	main_menu_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	main_flow->add_child(main_menu_hbox);
+	// Split into separate `HBoxContainer` so they can wrap onto multiple lines as the window width decreases (the parent is a `FlowContainer`).
+	// These are not grouped by any particular criteria. Only some of the end children are grouped separately, based on their separators.
+	HBoxContainer *tool_button_hbox = memnew(HBoxContainer);
+	tool_button_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	main_flow->add_child(tool_button_hbox);
 
 	bottom_split = memnew(VSplitContainer);
 	add_child(bottom_split);
@@ -5870,7 +5872,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	select_button = memnew(Button);
 	select_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	select_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(select_button);
+	tool_button_hbox->add_child(select_button);
 	select_button->set_toggle_mode(true);
 	select_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_SELECT));
 	select_button->set_pressed(true);
@@ -5880,18 +5882,18 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	scene_paint_button = memnew(Button);
 	scene_paint_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(scene_paint_button);
+	tool_button_hbox->add_child(scene_paint_button);
 	scene_paint_button->set_toggle_mode(true);
 	scene_paint_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_SCENE_PAINT));
 	scene_paint_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scene_paint_mode", TTRC("Scene Paint Mode"), Key::B, true));
 	scene_paint_button->set_shortcut_context(this);
 	scene_paint_button->set_accessibility_name(TTRC("Scene Paint Mode"));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	tool_button_hbox->add_child(memnew(VSeparator));
 
 	move_button = memnew(Button);
 	move_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(move_button);
+	tool_button_hbox->add_child(move_button);
 	move_button->set_toggle_mode(true);
 	move_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_MOVE));
 	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTRC("Move Mode"), Key::W, true));
@@ -5900,7 +5902,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	rotate_button = memnew(Button);
 	rotate_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(rotate_button);
+	tool_button_hbox->add_child(rotate_button);
 	rotate_button->set_toggle_mode(true);
 	rotate_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_ROTATE));
 	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTRC("Rotate Mode"), Key::E, true));
@@ -5909,18 +5911,18 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	scale_button = memnew(Button);
 	scale_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(scale_button);
+	tool_button_hbox->add_child(scale_button);
 	scale_button->set_toggle_mode(true);
 	scale_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_SCALE));
 	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTRC("Scale Mode"), Key::R, true));
 	scale_button->set_shortcut_context(this);
 	scale_button->set_accessibility_name(TTRC("Scale Mode"));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	tool_button_hbox->add_child(memnew(VSeparator));
 
 	list_select_button = memnew(Button);
 	list_select_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(list_select_button);
+	tool_button_hbox->add_child(list_select_button);
 	list_select_button->set_toggle_mode(true);
 	list_select_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_LIST_SELECT));
 	list_select_button->set_accessibility_name(TTRC("List Selectable Nodes"));
@@ -5928,14 +5930,14 @@ CanvasItemEditor::CanvasItemEditor() {
 	pivot_button = memnew(Button);
 	pivot_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	pivot_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(pivot_button);
+	tool_button_hbox->add_child(pivot_button);
 	pivot_button->set_toggle_mode(true);
 	pivot_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_EDIT_PIVOT));
 	pivot_button->set_accessibility_name(TTRC("Change Pivot"));
 
 	pan_button = memnew(Button);
 	pan_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(pan_button);
+	tool_button_hbox->add_child(pan_button);
 	pan_button->set_toggle_mode(true);
 	pan_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_PAN));
 	pan_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/pan_mode", TTRC("Pan Mode"), Key::G));
@@ -5944,18 +5946,18 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	ruler_button = memnew(Button);
 	ruler_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(ruler_button);
+	tool_button_hbox->add_child(ruler_button);
 	ruler_button->set_toggle_mode(true);
 	ruler_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_RULER));
 	ruler_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/ruler_mode", TTRC("Ruler Mode"), Key::M));
 	ruler_button->set_shortcut_context(this);
 	ruler_button->set_accessibility_name(TTRC("Ruler Mode"));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	tool_button_hbox->add_child(memnew(VSeparator));
 
 	local_space_button = memnew(Button);
 	local_space_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(local_space_button);
+	tool_button_hbox->add_child(local_space_button);
 	local_space_button->set_toggle_mode(true);
 	local_space_button->set_pressed_no_signal(true);
 	local_space_button->connect(SceneStringName(toggled), callable_mp(this, &CanvasItemEditor::_button_toggle_local_space));
@@ -5965,7 +5967,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	smart_snap_button = memnew(Button);
 	smart_snap_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(smart_snap_button);
+	tool_button_hbox->add_child(smart_snap_button);
 	smart_snap_button->set_toggle_mode(true);
 	smart_snap_button->connect(SceneStringName(toggled), callable_mp(this, &CanvasItemEditor::_button_toggle_smart_snap));
 	smart_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_smart_snap", TTRC("Use Smart Snap"), KeyModifierMask::SHIFT | Key::S));
@@ -5973,7 +5975,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	grid_snap_button = memnew(Button);
 	grid_snap_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(grid_snap_button);
+	tool_button_hbox->add_child(grid_snap_button);
 	grid_snap_button->set_toggle_mode(true);
 	grid_snap_button->connect(SceneStringName(toggled), callable_mp(this, &CanvasItemEditor::_button_toggle_grid_snap));
 	grid_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_grid_snap", TTRC("Use Grid Snap"), KeyModifierMask::SHIFT | Key::G));
@@ -5983,7 +5985,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	snap_config_menu->set_flat(false);
 	snap_config_menu->set_theme_type_variation("FlatMenuButton");
 	snap_config_menu->set_shortcut_context(this);
-	main_menu_hbox->add_child(snap_config_menu);
+	tool_button_hbox->add_child(snap_config_menu);
 	snap_config_menu->set_h_size_flags(SIZE_SHRINK_END);
 	snap_config_menu->set_tooltip_text(TTRC("Snapping Options"));
 	snap_config_menu->set_switch_on_hover(true);
@@ -6010,12 +6012,16 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/configure_snap", TTRC("Configure Snap...")), SNAP_CONFIGURE);
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	tool_button_hbox->add_child(memnew(VSeparator));
+
+	HBoxContainer *selection_control_hbox = memnew(HBoxContainer);
+	selection_control_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	main_flow->add_child(selection_control_hbox);
 
 	lock_button = memnew(Button);
 	lock_button->set_theme_type_variation(SceneStringName(FlatButton));
 	lock_button->set_accessibility_name(TTRC("Lock"));
-	main_menu_hbox->add_child(lock_button);
+	selection_control_hbox->add_child(lock_button);
 
 	lock_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(LOCK_SELECTED));
 	lock_button->set_tooltip_text(TTRC("Lock selected node, preventing selection and movement."));
@@ -6025,7 +6031,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	unlock_button = memnew(Button);
 	unlock_button->set_accessibility_name(TTRC("Unlock"));
 	unlock_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(unlock_button);
+	selection_control_hbox->add_child(unlock_button);
 	unlock_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(UNLOCK_SELECTED));
 	unlock_button->set_tooltip_text(TTRC("Unlock selected node, allowing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
@@ -6034,7 +6040,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	group_button = memnew(Button);
 	group_button->set_accessibility_name(TTRC("Group"));
 	group_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(group_button);
+	selection_control_hbox->add_child(group_button);
 	group_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(GROUP_SELECTED));
 	group_button->set_tooltip_text(TTRC("Groups the selected node with its children. This causes the parent to be selected when any child node is clicked in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
@@ -6043,19 +6049,23 @@ CanvasItemEditor::CanvasItemEditor() {
 	ungroup_button = memnew(Button);
 	ungroup_button->set_accessibility_name(TTRC("Ungroup"));
 	ungroup_button->set_theme_type_variation(SceneStringName(FlatButton));
-	main_menu_hbox->add_child(ungroup_button);
+	selection_control_hbox->add_child(ungroup_button);
 	ungroup_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(UNGROUP_SELECTED));
 	ungroup_button->set_tooltip_text(TTRC("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	ungroup_button->set_shortcut(ED_GET_SHORTCUT("editor/ungroup_selected_nodes"));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	selection_control_hbox->add_child(memnew(VSeparator));
+
+	HBoxContainer *skeleton_menu_hbox = memnew(HBoxContainer);
+	skeleton_menu_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	main_flow->add_child(skeleton_menu_hbox);
 
 	skeleton_menu = memnew(MenuButton);
 	skeleton_menu->set_flat(false);
 	skeleton_menu->set_theme_type_variation("FlatMenuButton");
 	skeleton_menu->set_shortcut_context(this);
-	main_menu_hbox->add_child(skeleton_menu);
+	skeleton_menu_hbox->add_child(skeleton_menu);
 	skeleton_menu->set_tooltip_text(TTRC("Skeleton Options"));
 	skeleton_menu->set_switch_on_hover(true);
 
@@ -6066,7 +6076,11 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_make_bones", TTRC("Make Bone2D Node(s) from Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::B), SKELETON_MAKE_BONES);
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	skeleton_menu_hbox->add_child(memnew(VSeparator));
+
+	HBoxContainer *view_menu_hbox = memnew(HBoxContainer);
+	view_menu_hbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	main_flow->add_child(view_menu_hbox);
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_flat(false);
@@ -6075,7 +6089,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	view_menu->set_text(TTRC("View"));
 	view_menu->set_switch_on_hover(true);
 	view_menu->set_shortcut_context(this);
-	main_menu_hbox->add_child(view_menu);
+	view_menu_hbox->add_child(view_menu);
 
 	p = view_menu->get_popup();
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
@@ -6135,7 +6149,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	p->add_submenu_node_item(TTRC("Preview Translation"), memnew(EditorTranslationPreviewMenu));
 
-	main_menu_hbox->add_child(memnew(VSeparator));
+	view_menu_hbox->add_child(memnew(VSeparator));
 
 	// Contextual toolbars.
 	context_toolbar_panel = memnew(PanelContainer);

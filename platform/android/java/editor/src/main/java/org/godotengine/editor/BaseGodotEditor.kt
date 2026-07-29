@@ -947,19 +947,19 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		}
 
 		if (!isLargeScreen) {
-			toggleScriptEditorOrientation()
+			toggleEditorOrientation()
 		}
 	}
 
 	override fun onDistractionFreeModeChanged(enabled: Boolean) {
 		distractionFreeModeEnabled = enabled
 		if (!isLargeScreen) {
-			toggleScriptEditorOrientation()
+			toggleEditorOrientation()
 		}
 	}
 
-	private fun toggleScriptEditorOrientation() {
-		if (activeWorkspace == SCRIPT_WORKSPACE && distractionFreeModeEnabled) {
+	private fun toggleEditorOrientation() {
+		if (distractionFreeModeEnabled) {
 			changingOrientationAllowed = true
 			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
 		} else if (changingOrientationAllowed) {

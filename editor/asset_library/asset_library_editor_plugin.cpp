@@ -2271,6 +2271,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_message = memnew(Label);
 	library_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	library_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	library_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	library_message_box->add_child(library_message);
 
 	library_message_button = memnew(Button);
