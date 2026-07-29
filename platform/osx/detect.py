@@ -213,6 +213,8 @@ def configure(env):
             "CoreMedia",
             "-framework",
             "CoreVideo",
+            "-framework",
+            "Security",
         ]
     )
     env.Append(LIBS=["pthread"])

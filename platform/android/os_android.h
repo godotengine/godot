@@ -220,6 +220,8 @@ public:
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false);
 	virtual Error kill(const ProcessID &p_pid);
 
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes);
+
 	virtual void benchmark_begin_measure(const String &p_what);
 	virtual void benchmark_end_measure(const String &p_what);
 	virtual void benchmark_dump();

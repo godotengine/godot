@@ -436,6 +436,8 @@ protected:
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes);
+
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	String get_stdin_string();
 

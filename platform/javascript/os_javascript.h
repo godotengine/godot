@@ -151,6 +151,8 @@ public:
 	// Override return type to make writing static callbacks less tedious.
 	static OS_JavaScript *get_singleton();
 
+	Error get_entropy(uint8_t *r_buffer, int p_bytes);
+
 	virtual bool tts_is_speaking() const;
 	virtual bool tts_is_paused() const;
 	virtual Array tts_get_voices() const;

@@ -1573,6 +1573,11 @@ int OS_OSX::get_current_video_driver() const {
 	return video_driver_index;
 }
 
+Error OS_OSX::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	int status = SecRandomCopyBytes(kSecRandomDefault, p_bytes, r_buffer);
+	return status == errSecSuccess ? OK : FAILED;
+}
+
 bool OS_OSX::tts_is_speaking() const {
 	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	ERR_FAIL_COND_V(!tts, false);

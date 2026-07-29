@@ -89,6 +89,8 @@ protected:
 public:
 	virtual String get_name() const;
 
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes);
+
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);
 	virtual bool is_mouse_grab_enabled() const;

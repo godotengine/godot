@@ -65,6 +65,18 @@ void OS_JavaScript::request_quit_callback() {
 	}
 }
 
+Error OS_JavaScript::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	int left = p_bytes;
+	int ofs = 0;
+	do {
+		int chunk = MIN(left, 256);
+		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+		left -= chunk;
+		ofs += chunk;
+	} while (left > 0);
+	return OK;
+}
+
 bool OS_JavaScript::tts_is_speaking() const {
 	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_speaking();
