@@ -113,6 +113,7 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 			mRenderer.onVkResume();
 			GodotLib.focusin();
 		});
+		resumeRenderThread();
 	}
 
 	@Override

@@ -123,6 +123,7 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 			godotRenderer.onActivityResumed();
 			GodotLib.focusin();
 		});
+		resumeGLThread();
 	}
 
 	@Override
