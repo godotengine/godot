@@ -275,13 +275,11 @@ void RenderingServerDefault::_finish() {
 
 void RenderingServerDefault::init() {
 	if (create_thread) {
-		print_verbose("RenderingServerWrapMT: Starting render thread");
+		print_verbose("RenderingServerDefault: Starting dedicated render thread");
 		DisplayServer::get_singleton()->release_rendering_thread();
-		WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &RenderingServerDefault::_thread_loop), true, "Rendering Server pump task", true);
-		command_queue.set_pump_task_id(tid);
-		command_queue.push(this, &RenderingServerDefault::_assign_mt_ids, tid);
+		render_thread.start(_thread_loop_callback, this);
 		command_queue.push_and_sync(this, &RenderingServerDefault::_init);
-		DEV_ASSERT(server_task_id == tid);
+		DEV_ASSERT(server_thread == render_thread.get_id());
 	} else {
 		server_thread = Thread::MAIN_ID;
 		_init();
@@ -292,10 +290,7 @@ void RenderingServerDefault::finish() {
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerDefault::_finish);
 		command_queue.push(this, &RenderingServerDefault::_thread_exit);
-		if (server_task_id != WorkerThreadPool::INVALID_TASK_ID) {
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(server_task_id);
-			server_task_id = WorkerThreadPool::INVALID_TASK_ID;
-		}
+		render_thread.wait_to_finish();
 		server_thread = Thread::MAIN_ID;
 	} else {
 		_finish();
@@ -397,27 +392,27 @@ Size2i RenderingServerDefault::get_maximum_viewport_size() const {
 	}
 }
 
-void RenderingServerDefault::_assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id) {
+void RenderingServerDefault::_thread_exit() {
+	exit = true;
+}
+
+void RenderingServerDefault::_thread_loop_callback(void *p_userdata) {
+	static_cast<RenderingServerDefault *>(p_userdata)->_thread_loop();
+}
+
+void RenderingServerDefault::_thread_loop() {
 	server_thread = Thread::get_caller_id();
-	server_task_id = p_pump_task_id;
 
 	RenderingDevice *rd = RenderingDevice::get_singleton();
 	if (rd) {
 		// This is needed because the main RD is created on the main thread.
 		rd->make_current();
 	}
-}
 
-void RenderingServerDefault::_thread_exit() {
-	exit = true;
-}
-
-void RenderingServerDefault::_thread_loop() {
 	DisplayServer::get_singleton()->gl_window_make_current(DisplayServerEnums::MAIN_WINDOW_ID); // Move GL to this thread.
 
 	while (!exit) {
-		WorkerThreadPool::get_singleton()->yield();
-		command_queue.flush_all();
+		command_queue.wait_and_flush();
 	}
 
 	DisplayServer::get_singleton()->release_rendering_thread();
