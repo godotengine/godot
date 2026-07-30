@@ -93,7 +93,6 @@ class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
 			// Pause the renderer
 			mRenderer.onVkPause();
 		});
-		pauseRenderThread();
 	}
 
 	@Override
