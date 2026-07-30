@@ -44,8 +44,6 @@ public:
 		void *entropy = nullptr;
 		void *ctx = nullptr;
 
-		static int _entropy_poll(void *p_data, unsigned char *r_buffer, size_t p_len, size_t *r_len);
-
 	public:
 		RandomGenerator();
 		~RandomGenerator();

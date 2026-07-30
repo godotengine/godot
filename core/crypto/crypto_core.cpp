@@ -44,11 +44,20 @@
 #include <mbedtls/compat-2.x.h>
 #endif
 
+extern "C" {
+int mbedtls_hardware_poll(void *p_data, unsigned char *r_buffer, size_t p_len, size_t *r_len) {
+	*r_len = 0;
+	Error err = OS::get_singleton()->get_entropy(r_buffer, p_len);
+	ERR_FAIL_COND_V(err, MBEDTLS_ERR_ENTROPY_SOURCE_FAILED);
+	*r_len = p_len;
+	return 0;
+}
+}
+
 // RandomGenerator
 CryptoCore::RandomGenerator::RandomGenerator() {
 	entropy = memalloc(sizeof(mbedtls_entropy_context));
 	mbedtls_entropy_init((mbedtls_entropy_context *)entropy);
-	mbedtls_entropy_add_source((mbedtls_entropy_context *)entropy, &CryptoCore::RandomGenerator::_entropy_poll, nullptr, 256, MBEDTLS_ENTROPY_SOURCE_STRONG);
 	ctx = memalloc(sizeof(mbedtls_ctr_drbg_context));
 	mbedtls_ctr_drbg_init((mbedtls_ctr_drbg_context *)ctx);
 }
@@ -58,14 +67,6 @@ CryptoCore::RandomGenerator::~RandomGenerator() {
 	memfree(ctx);
 	mbedtls_entropy_free((mbedtls_entropy_context *)entropy);
 	memfree(entropy);
-}
-
-int CryptoCore::RandomGenerator::_entropy_poll(void *p_data, unsigned char *r_buffer, size_t p_len, size_t *r_len) {
-	*r_len = 0;
-	Error err = OS::get_singleton()->get_entropy(r_buffer, p_len);
-	ERR_FAIL_COND_V(err, MBEDTLS_ERR_ENTROPY_SOURCE_FAILED);
-	*r_len = p_len;
-	return 0;
 }
 
 Error CryptoCore::RandomGenerator::init() {
