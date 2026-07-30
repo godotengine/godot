@@ -4062,33 +4062,38 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		// Group "make_local" etc. with "save_branch_as_scene", if it is available.
 		bool is_external = selection.front()->get()->is_instance();
-		if (is_external) {
-			bool is_inherited = selection.front()->get()->get_scene_inherited_state().is_valid();
-			bool is_top_level = selection.front()->get()->get_owner() == nullptr;
-			if (is_inherited && is_top_level) {
-				if (profile_allow_editing) {
-					BEGIN_SECTION()
-					menu->add_item(TTRC("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
-				}
+		bool is_inherited = selection.front()->get()->get_scene_inherited_state().is_valid();
+		bool is_top_level = selection.front()->get()->get_owner() == nullptr;
+		if (is_inherited && is_top_level) {
+			// "clear_inheritance" should be available even when the scene is unsaved (is_external == false).
+			if (profile_allow_editing) {
+				BEGIN_SECTION()
+				menu->add_item(TTRC("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
+			}
+
+			if (is_external) {
 				is_tool_scene_open_inherited_available = true;
-			} else if (!is_top_level) {
-				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection.front()->get());
-				bool placeholder = selection.front()->get()->get_scene_instance_load_placeholder();
-				if (profile_allow_editing) {
-					BEGIN_SECTION()
-					menu->add_item(TTRC("Make Local"), TOOL_SCENE_MAKE_LOCAL);
-
-					menu->add_check_item(TTRC("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
-					menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/toggle_editable_children"));
-
-					menu->add_check_item(TTRC("Load as Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
-
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load as Placeholder")), placeholder);
-				}
-				is_tool_scene_open_available = true;
 			}
 		}
+
+		if (is_external && !is_top_level) {
+			bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection.front()->get());
+			bool placeholder = selection.front()->get()->get_scene_instance_load_placeholder();
+			if (profile_allow_editing) {
+				BEGIN_SECTION()
+				menu->add_item(TTRC("Make Local"), TOOL_SCENE_MAKE_LOCAL);
+
+				menu->add_check_item(TTRC("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
+				menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/toggle_editable_children"));
+
+				menu->add_check_item(TTRC("Load as Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
+
+				menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
+				menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load as Placeholder")), placeholder);
+			}
+			is_tool_scene_open_available = true;
+		}
+
 		END_SECTION()
 	}
 
