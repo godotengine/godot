@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PlaceholderNode" inherits="Node" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Placeholder for accessing a stashed node.
+	</brief_description>
+	<description>
+		PlaceholderNode is created when a node is stashed using [method Node.stash]. It has the same name and index in the scene tree as the node it replaced and can be used to restore that node. Restoring the stashed node frees the placeholder. Freeing the placeholder automatically frees the stashed node.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_stashed_node">
+			<return type="Node" />
+			<description>
+				Returns the node replaced by this placeholder.
+			</description>
+		</method>
+		<method name="unstash_node">
+			<return type="void" />
+			<description>
+				Restores the stashed node into the scene tree and frees this placeholder. Same as using [method Node.unstash].
+			</description>
+		</method>
+	</methods>
+</class>

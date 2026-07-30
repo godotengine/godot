@@ -34,8 +34,8 @@
 
 class PackedScene;
 
-class InstancePlaceholder : public Node {
-	GDCLASS(InstancePlaceholder, Node);
+class InstancePlaceholder : public PlaceholderNode {
+	GDCLASS(InstancePlaceholder, PlaceholderNode);
 
 	String path;
 	struct PropSet {
@@ -57,12 +57,15 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual Node *get_stashed_node() override;
+	void prepare_instance();
+
 	void set_instance_path(const String &p_name);
 	String get_instance_path() const;
 
 	Dictionary get_stored_values(bool p_with_order = false);
 
+#ifndef DISABLE_DEPRECATED
 	Node *create_instance(bool p_replace = false, const Ref<PackedScene> &p_custom_scene = Ref<PackedScene>());
-
-	InstancePlaceholder();
+#endif
 };

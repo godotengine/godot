@@ -438,6 +438,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(Node);
 	GDREGISTER_CLASS(MissingNode);
+	GDREGISTER_ABSTRACT_CLASS(PlaceholderNode);
 	GDREGISTER_ABSTRACT_CLASS(InstancePlaceholder);
 
 	GDREGISTER_ABSTRACT_CLASS(CanvasItem);

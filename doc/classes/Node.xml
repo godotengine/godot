@@ -553,6 +553,12 @@
 				Returns [code]true[/code] if this node is an instance load placeholder. See [InstancePlaceholder] and [method set_scene_instance_load_placeholder].
 			</description>
 		</method>
+		<method name="get_stash_owner" qualifiers="const">
+			<return type="PlaceholderNode" />
+			<description>
+				If this node is stashed, returns the placeholder that replaced this node.
+			</description>
+		</method>
 		<method name="get_tree" qualifiers="const">
 			<return type="SceneTree" />
 			<description>
@@ -735,6 +741,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the node is processing unhandled key input (see [method set_process_unhandled_key_input]).
+			</description>
+		</method>
+		<method name="is_stashed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this node is stashed (see [method stash]).
 			</description>
 		</method>
 		<method name="move_child">
@@ -1028,6 +1040,18 @@
 			<description>
 				Makes this node inherit the translation domain from its parent node. If this node has no parent, the main translation domain will be used.
 				This is the default behavior for all nodes. Calling [method Object.set_translation_domain] disables this behavior.
+			</description>
+		</method>
+		<method name="stash">
+			<return type="void" />
+			<description>
+				Removes this node from the scene tree and replaces it with a [PlaceholderNode]. This makes the current node effectively disabled for all interactions, like collision detection etc. The placeholder uses the same name and can be used to restore this node to the scene tree.
+			</description>
+		</method>
+		<method name="unstash">
+			<return type="void" />
+			<description>
+				Restores a node that was stashed with [method stash]. The placeholder node is freed.
 			</description>
 		</method>
 		<method name="update_configuration_warnings">
