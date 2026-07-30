@@ -821,30 +821,19 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 			src_no_loop = true;
 		}
 
-		if (transition.fade_mode == AudioStreamInteractive::FADE_DISABLED || transition.fade_mode == AudioStreamInteractive::FADE_OUT) {
-			// No fading, immediately start at full volume.
-			to_state.fade_volume = 0.0;
-			to_state.fade_speed = 1.0; //start at full volume, as filler is meant as a transition.
-		} else {
-			// Fade enable, prepare fade.
-			to_state.fade_volume = 0.0;
-			to_state.fade_speed = fade_speed;
-		}
-
 		to_state.fade_wait = src_fade_wait + filler_end;
 
 	} else {
 		to_state.fade_wait = src_fade_wait;
-
-		if (transition.fade_mode == AudioStreamInteractive::FADE_DISABLED || transition.fade_mode == AudioStreamInteractive::FADE_OUT) {
-			to_state.fade_volume = 1.0;
-			to_state.fade_speed = 0.0;
-		} else {
-			to_state.fade_volume = 0.0;
-			to_state.fade_speed = fade_speed;
-		}
-
 		to_state.auto_advance = auto_advance_to;
+	}
+
+	if (transition.fade_mode == AudioStreamInteractive::FADE_DISABLED || transition.fade_mode == AudioStreamInteractive::FADE_OUT) {
+		to_state.fade_volume = 1.0;
+		to_state.fade_speed = 0.0;
+	} else {
+		to_state.fade_volume = 0.0;
+		to_state.fade_speed = fade_speed;
 	}
 }
 
