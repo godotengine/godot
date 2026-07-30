@@ -147,6 +147,7 @@ bool EditorInspector::_resource_properties_matches(const Ref<Resource> &p_resour
 			continue;
 		}
 
+		Object *object = object_ref.get_validated_object();
 		if (p.name.begins_with("metadata/") && bool(object->call(SNAME("_hide_metadata_from_inspector")))) {
 			// Hide metadata from inspector if required.
 			continue;
@@ -4187,6 +4188,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, Editor
 		}
 
 		if (ep) {
+			Object *object = object_ref.get_validated_object();
 			ep->object = object;
 			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(false));
 			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
@@ -4256,6 +4258,7 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 		return false;
 	}
 
+	Object *object = object_ref.get_validated_object();
 	StringName class_name = object->get_class();
 
 	while (class_name != StringName()) {
@@ -4288,6 +4291,7 @@ void EditorInspector::_add_section_in_tree(EditorInspectorSection *p_section, VB
 }
 
 void EditorInspector::update_tree() {
+	Object *object = object_ref.get_validated_object();
 	if (!object) {
 		return;
 	}
@@ -5388,7 +5392,7 @@ void EditorInspector::_clear(bool p_hide_plugins) {
 }
 
 Object *EditorInspector::get_edited_object() {
-	return object;
+	return object_ref.get_validated_object();
 }
 
 Object *EditorInspector::get_next_edited_object() {
@@ -5396,13 +5400,15 @@ Object *EditorInspector::get_next_edited_object() {
 }
 
 void EditorInspector::edit(Object *p_object) {
-	if (object == p_object) {
+	if (object_ref == p_object) {
 		return;
 	}
 
+	Object *object = object_ref.get_validated_object();
+
 	next_object = p_object; // Some plugins need to know the next edited object when clearing the inspector.
-	if (object) {
-		if (likely(Variant(object).get_validated_object())) {
+	if (!object_ref.is_null()) {
+		if (likely(object)) {
 			object->disconnect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
 		}
 		_clear();
@@ -5410,6 +5416,7 @@ void EditorInspector::edit(Object *p_object) {
 	per_array_page.clear();
 
 	object = p_object;
+	object_ref = p_object;
 
 	if (object) {
 		update_scroll_request = 0; //reset
@@ -5636,7 +5643,7 @@ void EditorInspector::_page_change_request(int p_new_page, const StringName &p_a
 }
 
 void EditorInspector::_edit_request_change(Object *p_object, const String &p_property) {
-	if (object != p_object) { //may be undoing/redoing for a non edited object, so ignore
+	if (object_ref != p_object) { //may be undoing/redoing for a non edited object, so ignore
 		return;
 	}
 
@@ -5652,6 +5659,9 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 }
 
 void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field) {
+	Object *object = object_ref.get_validated_object();
+	ERR_FAIL_NULL(object);
+
 	if (autoclear && editor_property_map.has(p_name)) {
 		for (EditorProperty *E : editor_property_map[p_name]) {
 			if (E->is_checkable()) {
@@ -5832,6 +5842,7 @@ void EditorInspector::_multiple_properties_changed(const Vector<String> &p_paths
 }
 
 void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
+	Object *object = object_ref.get_validated_object();
 	if (!object) {
 		return;
 	}
@@ -5843,6 +5854,7 @@ void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
 }
 
 void EditorInspector::_property_deleted(const String &p_path) {
+	Object *object = object_ref.get_validated_object();
 	if (!object) {
 		return;
 	}
@@ -5863,6 +5875,7 @@ void EditorInspector::_property_deleted(const String &p_path) {
 }
 
 void EditorInspector::_property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance) {
+	Object *object = object_ref.get_validated_object();
 	if (!object) {
 		return;
 	}
@@ -5874,6 +5887,7 @@ void EditorInspector::_property_keyed_with_value(const String &p_path, const Var
 }
 
 void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
+	Object *object = object_ref.get_validated_object();
 	if (!object) {
 		return;
 	}
@@ -5915,6 +5929,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 }
 
 void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
+	Object *object = object_ref.get_validated_object();
 	if (!object) {
 		return;
 	}
@@ -5962,7 +5977,7 @@ void EditorInspector::_resource_selected(const String &p_path, Ref<Resource> p_r
 }
 
 void EditorInspector::_node_removed(Node *p_node) {
-	if (p_node == object) {
+	if (p_node == object_ref) {
 		edit(nullptr);
 	}
 }
@@ -5974,6 +5989,9 @@ void EditorInspector::_update_current_favorites() {
 	}
 
 	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_properties();
+
+	Object *object = object_ref.get_validated_object();
+	ERR_FAIL_NULL(object);
 
 	// Fetch script properties.
 	Ref<Script> scr = object->get_script();
@@ -6031,6 +6049,7 @@ void EditorInspector::_update_current_favorites() {
 }
 
 void EditorInspector::_set_property_favorited(const String &p_path, bool p_favorited) {
+	Object *object = object_ref.get_validated_object();
 	if (!object) {
 		return;
 	}
@@ -6119,6 +6138,9 @@ void EditorInspector::_clear_current_favorites() {
 	current_favorites.clear();
 
 	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_properties();
+
+	Object *object = object_ref.get_validated_object();
+	ERR_FAIL_NULL(object);
 
 	Ref<Script> scr = object->get_script();
 	if (scr.is_valid()) {
@@ -6258,7 +6280,8 @@ void EditorInspector::_notification(int p_what) {
 
 void EditorInspector::_changed_callback() {
 	//this is called when property change is notified via notify_property_list_changed()
-	if (object != nullptr) {
+	Object *object = object_ref.get_validated_object();
+	if (object) {
 		_update_current_favorites();
 		_edit_request_change(object, String());
 	}
@@ -6269,6 +6292,7 @@ void EditorInspector::_vscroll_changed(double p_offset) {
 		return;
 	}
 
+	Object *object = object_ref.get_validated_object();
 	if (object) {
 		scroll_cache[object->get_instance_id()] = p_offset;
 	}
@@ -6328,6 +6352,9 @@ void EditorInspector::_show_add_meta_dialog() {
 		add_child(add_meta_dialog);
 	}
 
+	Object *object = object_ref.get_validated_object();
+	ERR_FAIL_NULL(object);
+
 	StringName dialog_title;
 	Node *node = Object::cast_to<Node>(object);
 	// If object is derived from Node use node name, if derived from Resource use classname.
@@ -6339,6 +6366,9 @@ void EditorInspector::_show_add_meta_dialog() {
 }
 
 void EditorInspector::_add_meta_confirm() {
+	Object *object = object_ref.get_validated_object();
+	ERR_FAIL_NULL(object);
+
 	// Ensure metadata is unfolded when adding a new metadata.
 	object->editor_set_section_unfold("metadata", true);
 

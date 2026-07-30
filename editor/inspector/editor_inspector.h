@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/weak_ref.h"
 #include "editor/inspector/editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -801,7 +802,7 @@ private:
 	HashSet<StringName> pending;
 
 	void _clear(bool p_hide_plugins = true);
-	Object *object = nullptr;
+	WeakRef<Object> object_ref;
 	Object *next_object = nullptr;
 
 	//
