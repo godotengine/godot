@@ -4080,11 +4080,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 					menu->add_check_item(TTRC("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
 					menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/toggle_editable_children"));
+					menu->set_item_checked(-1, editable);
 
 					menu->add_check_item(TTRC("Load as Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
-
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load as Placeholder")), placeholder);
+					menu->set_item_checked(-1, placeholder);
 				}
 				is_tool_scene_open_available = true;
 			}
