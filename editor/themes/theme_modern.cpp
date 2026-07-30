@@ -1999,6 +1999,13 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_theme->set_stylebox(SceneStringName(hover), "EditorLogFilterButton", p_config.flat_button_hover);
 			p_theme->set_stylebox(SceneStringName(pressed), "EditorLogFilterButton", p_config.flat_button_pressed);
 			p_theme->set_stylebox("hover_pressed", "EditorLogFilterButton", p_config.flat_button_hover_pressed);
+
+			p_theme->set_type_variation("TouchActionsPanelButton", "FlatButtonNoIconTint");
+			Ref<StyleBoxFlat> tap_button_hover = p_config.flat_button_hover->duplicate();
+			Color hover_color = p_config.flat_button_hover_color;
+			hover_color.a = 0.25f;
+			tap_button_hover->set_bg_color(hover_color);
+			p_theme->set_stylebox(SceneStringName(hover), "TouchActionsPanelButton", tap_button_hover);
 		}
 
 		// Checkbox.
