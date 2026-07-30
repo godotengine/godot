@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Provides direct access to a physics space in the [PhysicsServer2D]. It's used mainly to do queries against objects and areas residing in a given space.
+		All coordinates and transforms used for queries are in global coordinate space. They should not be relative to the [CanvasItem] making the query. For example, use [method Node2D.to_global] to convert a local position to global coordinates.
 		[b]Note:[/b] This class is not meant to be instantiated directly. Use [member World2D.direct_space_state] to get the world's physics 2D space state.
 	</description>
 	<tutorials>

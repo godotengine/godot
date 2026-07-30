@@ -63,7 +63,7 @@
 			[/codeblocks]
 		</member>
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
-			The queried shape's transform matrix.
+			The queried shape's transform matrix, in global coordinates.
 		</member>
 	</members>
 </class>
