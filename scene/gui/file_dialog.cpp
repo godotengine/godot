@@ -457,6 +457,10 @@ void FileDialog::_push_history() {
 }
 
 void FileDialog::_action_pressed() {
+	if (_is_open_should_be_disabled()) {
+		return;
+	}
+
 	if (mode == FILE_MODE_OPEN_FILES) {
 		const Vector<String> files = get_selected_files();
 		if (!files.is_empty()) {
