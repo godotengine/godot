@@ -40,6 +40,10 @@
 
 #include <type_traits>
 
+#ifdef TOOLS_ENABLED
+#include <functional>
+#endif
+
 template <typename T, typename = void>
 struct is_class_enabled;
 
@@ -197,6 +201,10 @@ public:
 
 #ifdef TOOLS_ENABLED
 	static HashMap<StringName, ObjectGDExtension> placeholder_extensions;
+
+	// Contains static methods registered by each class to provide argument options for auto completion
+	using StaticArgOptionGetter = std::function<Vector<String>(const Object * /*p_instance*/, const StringName & /*p_function*/, int /*p_idx*/)>;
+	static HashMap<StringName, StaticArgOptionGetter> static_arg_options_getters;
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -523,7 +531,12 @@ public:
 	static void add_class_dependency(const StringName &p_class, const StringName &p_dependency);
 	static void get_class_dependencies(const StringName &p_class, List<StringName> *r_rependencies);
 
-	static void get_argument_options_getters(const StringName &p_class, List<MethodBind *> *r_methods);
+	static void register_argument_options_getters(const StringName &p_class, const StaticArgOptionGetter& p_arg_option_getter) {
+		Locker::Lock lock(Locker::STATE_WRITE);
+		static_arg_options_getters.insert(p_class, p_arg_option_getter);
+	}
+	// return static argument options getters for the class and its parent classes
+	static void get_argument_options_getters(const StringName &p_class, List<ClassDB::StaticArgOptionGetter> *r_arg_option_getters);
 #endif
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);

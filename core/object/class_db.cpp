@@ -69,6 +69,8 @@ HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
 
 #ifdef TOOLS_ENABLED
+HashMap<StringName, ClassDB::StaticArgOptionGetter> ClassDB::static_arg_options_getters;
+
 HashMap<StringName, ObjectGDExtension> ClassDB::placeholder_extensions;
 
 class PlaceholderExtensionInstance {
@@ -2139,26 +2141,21 @@ void ClassDB::get_class_dependencies(const StringName &p_class, List<StringName>
 	}
 }
 
-void ClassDB::get_argument_options_getters(const StringName &p_class, List<MethodBind *> *r_methods) {
+void ClassDB::get_argument_options_getters(const StringName &p_class, List<ClassDB::StaticArgOptionGetter> *r_arg_option_getters) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *ti = classes.getptr(p_class);
 	ERR_FAIL_NULL_MSG(ti, vformat("Cannot get class '%s'.", String(p_class)));
 
 	while (ti) {
-		MethodBind **method = ti->method_map.getptr(SNAME("get_argument_options"));
-		ti = ti->inherits_ptr; // do this now so we can do early continues
-		if (method && *method) {
-			// check get_argument_options method is static and takes parameters (const Object* instance, const StringName &p_function, int p_idx)
-			const String error_msg = vformat("method 'get_argument_options' of class '%s' can only be declared with signature (const Object* , StringName, int) -> PackedStringArray.", String(p_class));
-			MethodInfo mi = info_from_bind(*method);
-			ERR_CONTINUE_MSG(mi.return_val.type != Variant::PACKED_STRING_ARRAY, error_msg);
-			ERR_CONTINUE_MSG(mi.arguments.size() != 3, error_msg);
-			ERR_CONTINUE_MSG(mi.arguments[0].type != Variant::OBJECT, error_msg);
-			ERR_CONTINUE_MSG(mi.arguments[1].type != Variant::STRING_NAME, error_msg);
-			ERR_CONTINUE_MSG(mi.arguments[2].type != Variant::INT, error_msg);
-			r_methods->push_back(*method);
+		ClassDB::StaticArgOptionGetter *arg_option_getter_ptr = nullptr;
+		if (ti->gdtype) {
+			arg_option_getter_ptr = ClassDB::static_arg_options_getters.getptr(ti->gdtype->get_name());
 		}
+		if (arg_option_getter_ptr) {
+			r_arg_option_getters->push_back(*arg_option_getter_ptr);
+		}
+		ti = ti->inherits_ptr;
 	}
 }
 #endif // TOOLS_ENABLED
