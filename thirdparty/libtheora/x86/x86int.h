@@ -6,12 +6,12 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
+ * by the Xiph.Org Foundation and contributors                      *
+ * https://www.xiph.org/                                            *
  *                                                                  *
  ********************************************************************
 
   function:
-    last mod: $Id$
 
  ********************************************************************/
 
@@ -63,7 +63,7 @@
 #  define OC_MEM_OFFS(_offs,_name) \
   OC_M2STR(_offs-8+%H[_name])
 # endif
-/*If your gcc version does't support %H, then you get to suffer the warnings.
+/*If your gcc version doesn't support %H, then you get to suffer the warnings.
   Note that Apple's gas breaks on things like _offs+(%esp): it throws away the
    whole offset, instead of substituting in 0 for the missing operand to +.*/
 # if !defined(OC_MEM_OFFS)

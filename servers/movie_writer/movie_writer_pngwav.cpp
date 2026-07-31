@@ -29,13 +29,15 @@
 /**************************************************************************/
 
 #include "movie_writer_pngwav.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 
 uint32_t MovieWriterPNGWAV::get_audio_mix_rate() const {
 	return mix_rate;
 }
-AudioServer::SpeakerMode MovieWriterPNGWAV::get_audio_speaker_mode() const {
+AuSE::SpeakerMode MovieWriterPNGWAV::get_audio_speaker_mode() const {
 	return speaker_mode;
 }
 
@@ -44,7 +46,7 @@ void MovieWriterPNGWAV::get_supported_extensions(List<String> *r_extensions) con
 }
 
 bool MovieWriterPNGWAV::handles_file(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "png";
+	return p_path.has_extension("png");
 }
 
 String MovieWriterPNGWAV::zeros_str(uint32_t p_index) {
@@ -97,16 +99,16 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 
 	uint32_t channels = 2;
 	switch (speaker_mode) {
-		case AudioServer::SPEAKER_MODE_STEREO:
+		case AuSE::SPEAKER_MODE_STEREO:
 			channels = 2;
 			break;
-		case AudioServer::SPEAKER_SURROUND_31:
+		case AuSE::SPEAKER_SURROUND_31:
 			channels = 4;
 			break;
-		case AudioServer::SPEAKER_SURROUND_51:
+		case AuSE::SPEAKER_SURROUND_51:
 			channels = 6;
 			break;
-		case AudioServer::SPEAKER_SURROUND_71:
+		case AuSE::SPEAKER_SURROUND_71:
 			channels = 8;
 			break;
 	}
@@ -140,9 +142,9 @@ Error MovieWriterPNGWAV::write_begin(const Size2i &p_movie_size, uint32_t p_fps,
 }
 
 Error MovieWriterPNGWAV::write_frame(const Ref<Image> &p_image, const int32_t *p_audio_data) {
-	ERR_FAIL_COND_V(!f_wav.is_valid(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(f_wav.is_null(), ERR_UNCONFIGURED);
 
-	Vector<uint8_t> png_buffer = p_image->save_png_to_buffer();
+	Vector<uint8_t> png_buffer = p_image->_save_png_to_buffer(true);
 
 	Ref<FileAccess> fi = FileAccess::open(base_path + zeros_str(frame_count) + ".png", FileAccess::WRITE);
 	fi->store_buffer(png_buffer.ptr(), png_buffer.size());
@@ -166,5 +168,5 @@ void MovieWriterPNGWAV::write_end() {
 
 MovieWriterPNGWAV::MovieWriterPNGWAV() {
 	mix_rate = GLOBAL_GET("editor/movie_writer/mix_rate");
-	speaker_mode = AudioServer::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
+	speaker_mode = AuSE::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
 }

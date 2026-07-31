@@ -86,7 +86,7 @@ namespace GodotTools.BuildLogger
 
             WriteLine(line);
 
-            string errorLine = $@"error,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
+            string errorLine = $@"error,{e.File?.CsvEscape() ?? string.Empty},{e.LineNumber},{e.ColumnNumber}," +
                                $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
                                $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
             _issuesStreamWriter.WriteLine(errorLine);
@@ -101,7 +101,7 @@ namespace GodotTools.BuildLogger
 
             WriteLine(line);
 
-            string warningLine = $@"warning,{e.File.CsvEscape()},{e.LineNumber},{e.ColumnNumber}," +
+            string warningLine = $@"warning,{e.File?.CsvEscape() ?? string.Empty},{e.LineNumber},{e.ColumnNumber}," +
                                  $"{e.Code?.CsvEscape() ?? string.Empty},{e.Message.CsvEscape()}," +
                                  $"{e.ProjectFile?.CsvEscape() ?? string.Empty}";
             _issuesStreamWriter.WriteLine(warningLine);

@@ -2,20 +2,32 @@
 
 from collections import OrderedDict
 
+import methods
+
 
 def make_default_controller_mappings(target, source, env):
-    dst = str(target[0])
-    with open(dst, "w", encoding="utf-8", newline="\n") as g:
-        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-        g.write('#include "core/typedefs.h"\n')
-        g.write('#include "core/input/default_controller_mappings.h"\n')
+    with methods.generated_wrapper(str(target[0])) as file:
+        file.write("""\
+#include "core/input/default_controller_mappings.h"
+
+#include "core/typedefs.h"
+
+""")
+
+        PLATFORM_VARIABLES = {
+            "Linux": "LINUXBSD",
+            "Windows": "WINDOWS",
+            "Mac OS X": "MACOS",
+            "Android": "ANDROID",
+            "iOS": "APPLE_EMBEDDED",
+            "Web": "WEB",
+        }
 
         # ensure mappings have a consistent order
-        platform_mappings: dict = OrderedDict()
-        for src_path in source:
-            with open(str(src_path), "r", encoding="utf-8") as f:
-                # read mapping file and skip header
-                mapping_file_lines = f.readlines()[2:]
+        platform_mappings = OrderedDict()
+        for src_path in map(str, source):
+            with open(src_path, "r", encoding="utf-8") as f:
+                mapping_file_lines = f.readlines()
 
             current_platform = None
             for line in mapping_file_lines:
@@ -25,35 +37,29 @@ def make_default_controller_mappings(target, source, env):
                 if len(line) == 0:
                     continue
                 if line[0] == "#":
-                    current_platform = line[1:].strip()
+                    platform_or_header = line[1:].strip()
+                    if platform_or_header not in PLATFORM_VARIABLES:
+                        continue  # Header
+                    current_platform = platform_or_header
                     if current_platform not in platform_mappings:
                         platform_mappings[current_platform] = {}
                 elif current_platform:
                     line_parts = line.split(",")
                     guid = line_parts[0]
                     if guid in platform_mappings[current_platform]:
-                        g.write(
-                            "// WARNING - DATABASE {} OVERWROTE PRIOR MAPPING: {} {}\n".format(
+                        file.write(
+                            "// WARNING: DATABASE {} OVERWROTE PRIOR MAPPING: {} {}\n".format(
                                 src_path, current_platform, platform_mappings[current_platform][guid]
                             )
                         )
                     platform_mappings[current_platform][guid] = line
 
-        platform_variables = {
-            "Linux": "#ifdef LINUXBSD_ENABLED",
-            "Windows": "#ifdef WINDOWS_ENABLED",
-            "Mac OS X": "#ifdef MACOS_ENABLED",
-            "Android": "#ifdef ANDROID_ENABLED",
-            "iOS": "#ifdef IOS_ENABLED",
-            "Web": "#ifdef WEB_ENABLED",
-        }
-
-        g.write("const char* DefaultControllerMappings::mappings[] = {\n")
+        file.write("const char *DefaultControllerMappings::mappings[] = {\n")
         for platform, mappings in platform_mappings.items():
-            variable = platform_variables[platform]
-            g.write("{}\n".format(variable))
+            variable = PLATFORM_VARIABLES[platform]
+            file.write(f"#ifdef {variable}_ENABLED\n")
             for mapping in mappings.values():
-                g.write('\t"{}",\n'.format(mapping))
-            g.write("#endif\n")
+                file.write(f'\t"{mapping}",\n')
+            file.write(f"#endif // {variable}_ENABLED\n")
 
-        g.write("\tnullptr\n};\n")
+        file.write("\tnullptr\n};\n")

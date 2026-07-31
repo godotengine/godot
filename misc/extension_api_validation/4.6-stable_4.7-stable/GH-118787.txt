@@ -1,0 +1,5 @@
+GH-118787
+--------------
+Validate extension JSON: Error: Field 'classes/EditorExportPlatform/methods/export_project/arguments': size changed value in new API, from 4 to 5.
+
+Added "notify" parameter. Compatibility method registered.

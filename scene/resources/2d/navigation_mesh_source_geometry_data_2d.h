@@ -28,19 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
-#define NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
+#pragma once
 
+#include "core/io/resource.h"
 #include "core/os/rw_lock.h"
-#include "scene/2d/node_2d.h"
-#include "scene/resources/2d/navigation_polygon.h"
 
 class NavigationMeshSourceGeometryData2D : public Resource {
+	friend class NavMeshGenerator2D;
+
 	GDCLASS(NavigationMeshSourceGeometryData2D, Resource);
 	RWLock geometry_rwlock;
 
 	Vector<Vector<Vector2>> traversable_outlines;
 	Vector<Vector<Vector2>> obstruction_outlines;
+
+	Rect2 bounds;
+	bool bounds_dirty = true;
 
 public:
 	struct ProjectedObstruction;
@@ -103,8 +106,7 @@ public:
 	void set_data(const Vector<Vector<Vector2>> &p_traversable_outlines, const Vector<Vector<Vector2>> &p_obstruction_outlines, Vector<ProjectedObstruction> &p_projected_obstructions);
 	void get_data(Vector<Vector<Vector2>> &r_traversable_outlines, Vector<Vector<Vector2>> &r_obstruction_outlines, Vector<ProjectedObstruction> &r_projected_obstructions);
 
-	NavigationMeshSourceGeometryData2D() {}
+	Rect2 get_bounds();
+
 	~NavigationMeshSourceGeometryData2D() { clear(); }
 };
-
-#endif // NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H

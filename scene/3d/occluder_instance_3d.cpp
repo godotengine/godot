@@ -30,14 +30,19 @@
 
 #include "occluder_instance_3d.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/triangulate.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
@@ -129,9 +134,6 @@ void Occluder3D::_notification(int p_what) {
 	}
 }
 
-void Occluder3D::_bind_methods() {
-}
-
 Occluder3D::Occluder3D() {
 	occluder = RS::get_singleton()->occluder_create();
 }
@@ -139,7 +141,7 @@ Occluder3D::Occluder3D() {
 Occluder3D::~Occluder3D() {
 	if (occluder.is_valid()) {
 		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free(occluder);
+		RS::get_singleton()->free_rid(occluder);
 	}
 }
 
@@ -324,13 +326,13 @@ void SphereOccluder3D::_update_arrays(PackedVector3Array &r_vertices, PackedInt3
 	int point = 0;
 	for (int j = 0; j <= (RINGS + 1); j++) {
 		float v = j / float(RINGS + 1);
-		float w = Math::sin(Math_PI * v);
-		float y = Math::cos(Math_PI * v);
+		float w = Math::sin(Math::PI * v);
+		float y = Math::cos(Math::PI * v);
 		for (int i = 0; i <= RADIAL_SEGMENTS; i++) {
 			float u = i / float(RADIAL_SEGMENTS);
 
-			float x = Math::cos(u * Math_TAU);
-			float z = Math::sin(u * Math_TAU);
+			float x = Math::cos(u * Math::TAU);
+			float z = Math::sin(u * Math::TAU);
 			vertex_ptr[vertex_i++] = Vector3(x * w, y, z * w) * radius;
 
 			if (i > 0 && j > 0) {
@@ -456,8 +458,9 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 	update_configuration_warnings();
 
 #ifdef TOOLS_ENABLED
-	// PolygonOccluder3D is edited via an editor plugin, this ensures the plugin is shown/hidden when necessary
-	if (Engine::get_singleton()->is_editor_hint()) {
+	// PolygonOccluder3D is edited via an editor plugin, this ensures the plugin is shown/hidden when necessary.
+	// HACK: This should only be called when this node is the currently edited object (i.e. when edited through the inspector) to prevent side effects. We use `is_part_of_edited_scene()` as approximation.
+	if (is_part_of_edited_scene()) {
 		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_current).call_deferred();
 	}
 #endif
@@ -524,7 +527,7 @@ void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, Array p_s
 	PackedVector3Array vertices = p_surface_arrays[Mesh::ARRAY_VERTEX];
 	PackedInt32Array indices = p_surface_arrays[Mesh::ARRAY_INDEX];
 
-	if (vertices.size() == 0 || indices.size() == 0) {
+	if (vertices.is_empty() || indices.is_empty()) {
 		return;
 	}
 
@@ -694,9 +697,9 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, 
 }
 
 PackedStringArray OccluderInstance3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
-	if (!bool(GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling"))) {
+	if (!bool(GLOBAL_GET_CACHED(bool, "rendering/occlusion_culling/use_occlusion_culling"))) {
 		warnings.push_back(RTR("Occlusion culling is disabled in the Project Settings, which means occlusion culling won't be performed in the root viewport.\nTo resolve this, open the Project Settings and enable Rendering > Occlusion Culling > Use Occlusion Culling."));
 	}
 
@@ -744,7 +747,7 @@ void OccluderInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &OccluderInstance3D::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_get_editable_3d_polygon_resource"), &OccluderInstance3D::_get_editable_3d_polygon_resource);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "Occluder3D"), "set_occluder", "get_occluder");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, Occluder3D::get_class_static()), "set_occluder", "get_occluder");
 	ADD_GROUP("Bake", "bake_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_simplification_distance", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,suffix:m"), "set_bake_simplification_distance", "get_bake_simplification_distance");

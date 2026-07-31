@@ -30,6 +30,13 @@
 
 #include "character_body_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+
+#ifndef DISABLE_DEPRECATED
+#include "servers/physics_3d/physics_server_3d_extension.h"
+#endif
+
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
@@ -60,8 +67,13 @@ bool CharacterBody3D::move_and_slide() {
 
 			// We need to check the platform_rid object still exists before accessing.
 			// A valid RID is no guarantee that the object has not been deleted.
-			if (ObjectDB::get_instance(platform_object_id)) {
-				//this approach makes sure there is less delay between the actual body velocity and the one we saved
+
+			// We can only perform the ObjectDB lifetime check on Object derived objects.
+			// Note that physics also creates RIDs for non-Object derived objects, these cannot
+			// be lifetime checked through ObjectDB, and therefore there is a still a vulnerability
+			// to dangling RIDs (access after free) in this scenario.
+			if (platform_object_id.is_null() || ObjectDB::get_instance(platform_object_id)) {
+				// This approach makes sure there is less delay between the actual body velocity and the one we saved.
 				bs = PhysicsServer3D::get_singleton()->body_get_direct_state(platform_rid);
 			}
 
@@ -86,7 +98,7 @@ bool CharacterBody3D::move_and_slide() {
 	last_motion = Vector3();
 
 	if (!current_platform_velocity.is_zero_approx()) {
-		PhysicsServer3D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
+		PS3DT::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
 		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		parameters.exclude_bodies.insert(platform_rid);
@@ -94,7 +106,7 @@ bool CharacterBody3D::move_and_slide() {
 			parameters.exclude_objects.insert(platform_object_id);
 		}
 
-		PhysicsServer3D::MotionResult floor_result;
+		PS3DT::MotionResult floor_result;
 		if (move_and_collide(parameters, floor_result, false, false)) {
 			motion_results.push_back(floor_result);
 
@@ -151,11 +163,11 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	Vector3 total_travel;
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
-		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
+		PS3DT::MotionParameters parameters(get_global_transform(), motion, margin);
 		parameters.max_collisions = 6; // There can be 4 collisions between 2 walls + 2 more for the floor.
 		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
-		PhysicsServer3D::MotionResult result;
+		PS3DT::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, !sliding_enabled);
 
 		last_motion = result.travel;
@@ -171,7 +183,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			// If we hit a ceiling platform, we set the vertical velocity to at least the platform one.
 			if (collision_state.ceiling && platform_ceiling_velocity != Vector3() && platform_ceiling_velocity.dot(up_direction) < 0) {
 				// If ceiling sliding is on, only apply when the ceiling is flat or when the motion is upward.
-				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (ceiling_normal + up_direction).length() < 0.01) {
+				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (ceiling_normal + up_direction).length() < 0.01f) {
 					apply_ceiling_velocity = true;
 					Vector3 ceiling_vertical_velocity = up_direction * up_direction.dot(platform_ceiling_velocity);
 					Vector3 motion_vertical_velocity = up_direction * up_direction.dot(velocity);
@@ -181,7 +193,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				}
 			}
 
-			if (collision_state.floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length() < 0.01) {
+			if (collision_state.floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length() < 0.01f) {
 				Transform3D gt = get_global_transform();
 				if (result.travel.length() <= margin + CMP_EPSILON) {
 					gt.origin -= result.travel;
@@ -214,13 +226,13 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					// Avoid to move forward on a wall if floor_block_on_wall is true.
 					// Applies only when the motion angle is under 90 degrees,
 					// in order to avoid blocking lateral motion along a wall.
-					if (motion_angle < .5 * Math_PI) {
+					if (motion_angle < .5 * Math::PI) {
 						apply_default_sliding = false;
 						if (p_was_on_floor && !vel_dir_facing_up) {
 							// Cancel the motion.
 							Transform3D gt = get_global_transform();
 							real_t travel_total = result.travel.length();
-							real_t cancel_dist_max = MIN(0.1, margin * 20);
+							real_t cancel_dist_max = MIN(0.1f, margin * 20.0f);
 							if (travel_total <= margin + CMP_EPSILON) {
 								gt.origin -= result.travel;
 								result.travel = Vector3(); // Cancel for constant speed computation.
@@ -303,7 +315,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			if (apply_default_sliding) {
 				// Regular sliding, the last part of the test handle the case when you don't want to slide on the ceiling.
 				if ((sliding_enabled || !collision_state.floor) && (!collision_state.ceiling || slide_on_ceiling || !vel_dir_facing_up) && !apply_ceiling_velocity) {
-					const PhysicsServer3D::MotionCollision &collision = result.collisions[0];
+					const PS3DT::MotionCollision &collision = result.collisions[0];
 
 					Vector3 slide_motion = result.remainder.slide(collision.normal);
 					if (collision_state.floor && !collision_state.wall && !motion_slide_up.is_zero_approx()) {
@@ -398,10 +410,10 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 
 	bool first_slide = true;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
-		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
+		PS3DT::MotionParameters parameters(get_global_transform(), motion, margin);
 		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
-		PhysicsServer3D::MotionResult result;
+		PS3DT::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, false);
 
 		last_motion = result.travel;
@@ -452,26 +464,26 @@ void CharacterBody3D::apply_floor_snap() {
 	// Snap by at least collision margin to keep floor state consistent.
 	real_t length = MAX(floor_snap_length, margin);
 
-	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
+	PS3DT::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
 	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
-	PhysicsServer3D::MotionResult result;
+	PS3DT::MotionResult result;
 	if (move_and_collide(parameters, result, true, false)) {
 		CollisionState result_state;
 		// Apply direction for floor only.
 		_set_collision_direction(result, result_state, CollisionState(true, false, false));
 
 		if (result_state.floor) {
-			if (floor_stop_on_slope) {
-				// move and collide may stray the object a bit because of pre un-stucking,
-				// so only ensure that motion happens on floor direction in this case.
-				if (result.travel.length() > margin) {
-					result.travel = up_direction * up_direction.dot(result.travel);
-				} else {
-					result.travel = Vector3();
-				}
+			// Ensure that we only move the body along the up axis, because
+			// move_and_collide may stray the object a bit when getting it unstuck.
+			// Canceling this motion should not affect move_and_slide, as previous
+			// calls to move_and_collide already took care of freeing the body.
+			if (result.travel.length() > margin) {
+				result.travel = up_direction * up_direction.dot(result.travel);
+			} else {
+				result.travel = Vector3();
 			}
 
 			parameters.from.origin += result.travel;
@@ -496,12 +508,12 @@ bool CharacterBody3D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 	// Snap by at least collision margin to keep floor state consistent.
 	real_t length = MAX(floor_snap_length, margin);
 
-	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
+	PS3DT::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
 	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
-	PhysicsServer3D::MotionResult result;
+	PS3DT::MotionResult result;
 	if (move_and_collide(parameters, result, true, false)) {
 		CollisionState result_state;
 		// Don't apply direction for any type.
@@ -513,7 +525,7 @@ bool CharacterBody3D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 	return false;
 }
 
-void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResult &p_result, CollisionState &r_state, CollisionState p_apply_state) {
+void CharacterBody3D::_set_collision_direction(const PS3DT::MotionResult &p_result, CollisionState &r_state, CollisionState p_apply_state) {
 	r_state.state = 0;
 
 	real_t wall_depth = -1.0;
@@ -526,7 +538,7 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 	Vector3 tmp_wall_col; // Avoid duplicate on average calculation.
 
 	for (int i = p_result.collision_count - 1; i >= 0; i--) {
-		const PhysicsServer3D::MotionCollision &collision = p_result.collisions[i];
+		const PS3DT::MotionCollision &collision = p_result.collisions[i];
 
 		if (motion_mode == MOTION_MODE_GROUNDED) {
 			// Check if any collision is floor.
@@ -564,7 +576,7 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 			wall_normal = collision.normal;
 
 			// Don't apply wall velocity when the collider is a CharacterBody3D.
-			if (Object::cast_to<CharacterBody3D>(ObjectDB::get_instance(collision.collider_id)) == nullptr) {
+			if (ObjectDB::get_instance<CharacterBody3D>(collision.collider_id) == nullptr) {
 				_set_platform_data(collision);
 			}
 		}
@@ -601,12 +613,27 @@ void CharacterBody3D::_set_collision_direction(const PhysicsServer3D::MotionResu
 	}
 }
 
-void CharacterBody3D::_set_platform_data(const PhysicsServer3D::MotionCollision &p_collision) {
+void CharacterBody3D::_set_platform_data(const PS3DT::MotionCollision &p_collision) {
+	PhysicsDirectBodyState3D *bs = PhysicsServer3D::get_singleton()->body_get_direct_state(p_collision.collider);
+	if (bs == nullptr) {
+		return;
+	}
+
 	platform_rid = p_collision.collider;
 	platform_object_id = p_collision.collider_id;
 	platform_velocity = p_collision.collider_velocity;
 	platform_angular_velocity = p_collision.collider_angular_velocity;
-	platform_layer = PhysicsServer3D::get_singleton()->body_get_collision_layer(platform_rid);
+
+#ifndef DISABLE_DEPRECATED
+	// Try to accommodate for any physics extensions that have yet to implement `PhysicsDirectBodyState3D::get_collision_layer`.
+	PhysicsDirectBodyState3DExtension *bs_ext = Object::cast_to<PhysicsDirectBodyState3DExtension>(bs);
+	if (bs_ext != nullptr && !GDVIRTUAL_IS_OVERRIDDEN_PTR(bs_ext, _get_collision_layer)) {
+		platform_layer = PhysicsServer3D::get_singleton()->body_get_collision_layer(p_collision.collider);
+	} else
+#endif
+	{
+		platform_layer = bs->get_collision_layer();
+	}
 }
 
 void CharacterBody3D::set_safe_margin(real_t p_margin) {
@@ -690,8 +717,8 @@ int CharacterBody3D::get_slide_collision_count() const {
 	return motion_results.size();
 }
 
-PhysicsServer3D::MotionResult CharacterBody3D::get_slide_collision(int p_bounce) const {
-	ERR_FAIL_INDEX_V(p_bounce, motion_results.size(), PhysicsServer3D::MotionResult());
+PS3DT::MotionResult CharacterBody3D::get_slide_collision(int p_bounce) const {
+	ERR_FAIL_INDEX_V(p_bounce, motion_results.size(), PS3DT::MotionResult());
 	return motion_results[p_bounce];
 }
 
@@ -712,7 +739,7 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 }
 
 Ref<KinematicCollision3D> CharacterBody3D::_get_last_slide_collision() {
-	if (motion_results.size() == 0) {
+	if (motion_results.is_empty()) {
 		return Ref<KinematicCollision3D>();
 	}
 	return _get_slide_collision(motion_results.size() - 1);
@@ -926,6 +953,9 @@ void CharacterBody3D::_bind_methods() {
 }
 
 void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (motion_mode == MOTION_MODE_FLOATING) {
 		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -934,5 +964,5 @@ void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 CharacterBody3D::CharacterBody3D() :
-		PhysicsBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
+		PhysicsBody3D(PS3DE::BODY_MODE_KINEMATIC) {
 }

@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANDROID_INPUT_HANDLER_H
-#define ANDROID_INPUT_HANDLER_H
+#pragma once
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 
 // This class encapsulates all the handling of input events that come from the Android UI thread.
 // Remarks:
@@ -44,6 +43,7 @@ public:
 		Point2 pos;
 		float pressure = 0;
 		Vector2 tilt;
+		bool double_tap = false;
 	};
 
 	struct MouseEventInfo {
@@ -63,7 +63,7 @@ public:
 		int index = 0; // Can be either JoyAxis or JoyButton.
 		bool pressed = false;
 		float value = 0;
-		BitField<HatMask> hat;
+		BitField<HatMask> hat = HatMask::CENTER;
 	};
 
 private:
@@ -72,7 +72,7 @@ private:
 	bool control_mem = false;
 	bool meta_mem = false;
 
-	BitField<MouseButtonMask> buttons_state;
+	BitField<MouseButtonMask> buttons_state = MouseButtonMask::NONE;
 
 	Vector<TouchPos> touch;
 	MouseEventInfo mouse_event_info;
@@ -91,7 +91,7 @@ private:
 
 	void _cancel_mouse_event_info(bool p_source_mouse_relative = false);
 
-	void _parse_all_touch(bool p_pressed, bool p_canceled = false, bool p_double_tap = false);
+	void _parse_all_touch(bool p_pressed, bool p_canceled = false);
 
 	void _release_all_touch();
 
@@ -99,11 +99,9 @@ private:
 
 public:
 	void process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative, float p_pressure, Vector2 p_tilt);
-	void process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points, bool p_double_tap);
+	void process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points);
 	void process_magnify(Point2 p_pos, float p_factor);
 	void process_pan(Point2 p_pos, Vector2 p_delta);
 	void process_joy_event(JoypadEvent p_event);
 	void process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed, bool p_echo);
 };
-
-#endif // ANDROID_INPUT_HANDLER_H

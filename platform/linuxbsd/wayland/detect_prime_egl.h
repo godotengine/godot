@@ -28,19 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DETECT_PRIME_EGL_H
-#define DETECT_PRIME_EGL_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 #ifdef EGL_ENABLED
 
 #ifdef GLAD_ENABLED
-#include "thirdparty/glad/glad/egl.h"
-#include "thirdparty/glad/glad/gl.h"
+#include <platform_egl.h>
 #else
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include <GL/glcorearb.h>
 
 #define GLAD_EGL_VERSION_1_5 1
 
@@ -77,13 +74,11 @@ private:
 		{ nullptr, 0 }
 	};
 
+public:
 	static void create_context(EGLenum p_platform_enum);
 
-public:
 	static int detect_prime(EGLenum p_platform_enum);
 };
 
 #endif // GLES3_ENABLED
 #endif // EGL_ENABLED
-
-#endif // DETECT_PRIME_EGL_H

@@ -30,15 +30,11 @@
 
 #include "dtls_server.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/file_access.h"
+#include "core/object/class_db.h"
 
-DTLSServer *(*DTLSServer::_create)() = nullptr;
-bool DTLSServer::available = false;
-
-DTLSServer *DTLSServer::create() {
+DTLSServer *DTLSServer::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	return nullptr;
 }

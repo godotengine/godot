@@ -30,8 +30,7 @@
 
 #include "packet_peer_mbed_dtls.h"
 
-#include "core/io/file_access.h"
-#include "core/io/stream_peer_tls.h"
+#include "core/object/class_db.h"
 
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 	if (buf == nullptr || len == 0) {
@@ -114,7 +113,7 @@ Error PacketPeerMbedDTLS::_do_handshake() {
 }
 
 Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, const String &p_hostname, Ref<TLSOptions> p_options) {
-	ERR_FAIL_COND_V(!p_base.is_valid() || !p_base->is_socket_connected(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_base.is_null() || !p_base->is_socket_connected(), ERR_INVALID_PARAMETER);
 
 	Error err = tls_ctx->init_client(MBEDTLS_SSL_TRANSPORT_DATAGRAM, p_hostname, p_options.is_valid() ? p_options : TLSOptions::client());
 	ERR_FAIL_COND_V(err != OK, err);
@@ -135,7 +134,7 @@ Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, const Strin
 }
 
 Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<TLSOptions> p_options, Ref<CookieContextMbedTLS> p_cookies) {
-	ERR_FAIL_COND_V(!p_base.is_valid() || !p_base->is_socket_connected(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_base.is_null() || !p_base->is_socket_connected(), ERR_INVALID_PARAMETER);
 
 	Error err = tls_ctx->init_server(MBEDTLS_SSL_TRANSPORT_DATAGRAM, p_options, p_cookies);
 	ERR_FAIL_COND_V(err != OK, err);
@@ -216,7 +215,7 @@ void PacketPeerMbedDTLS::poll() {
 		return;
 	}
 
-	ERR_FAIL_COND(!base.is_valid());
+	ERR_FAIL_COND(base.is_null());
 
 	int ret = mbedtls_ssl_read(tls_ctx->get_context(), nullptr, 0);
 
@@ -235,7 +234,7 @@ void PacketPeerMbedDTLS::poll() {
 int PacketPeerMbedDTLS::get_available_packet_count() const {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, 0);
 
-	return mbedtls_ssl_get_bytes_avail(&(tls_ctx->tls)) > 0 ? 1 : 0;
+	return mbedtls_ssl_get_bytes_avail(tls_ctx->get_context()) > 0 ? 1 : 0;
 }
 
 int PacketPeerMbedDTLS::get_max_packet_size() const {
@@ -270,8 +269,8 @@ PacketPeerMbedDTLS::Status PacketPeerMbedDTLS::get_status() const {
 	return status;
 }
 
-PacketPeerDTLS *PacketPeerMbedDTLS::_create_func() {
-	return memnew(PacketPeerMbedDTLS);
+PacketPeerDTLS *PacketPeerMbedDTLS::_create_func(bool p_notify_postinitialize) {
+	return static_cast<PacketPeerDTLS *>(ClassDB::creator<PacketPeerMbedDTLS>(p_notify_postinitialize));
 }
 
 void PacketPeerMbedDTLS::initialize_dtls() {

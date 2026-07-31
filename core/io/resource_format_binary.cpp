@@ -33,11 +33,12 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access_compressed.h"
-#include "core/io/image.h"
-#include "core/io/marshalls.h"
 #include "core/io/missing_resource.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
+#include "scene/property_utils.h"
+#include "scene/resources/packed_scene.h"
 
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what) (void)(m_what)
@@ -109,23 +110,15 @@ void ResourceLoaderBinary::_advance_padding(uint32_t p_len) {
 	}
 }
 
-static Error read_reals(real_t *dst, Ref<FileAccess> &f, size_t count) {
-	if (f->real_is_double) {
+static Error read_reals(real_t *r_dst, Ref<FileAccess> &r_file, size_t p_count) {
+	if (r_file->real_is_double) {
 		if constexpr (sizeof(real_t) == 8) {
 			// Ideal case with double-precision
-			f->get_buffer((uint8_t *)dst, count * sizeof(double));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint64_t *dst = (uint64_t *)dst;
-				for (size_t i = 0; i < count; i++) {
-					dst[i] = BSWAP64(dst[i]);
-				}
-			}
-#endif
+			r_file->get_buffer((uint8_t *)r_dst, p_count * sizeof(double));
 		} else if constexpr (sizeof(real_t) == 4) {
 			// May be slower, but this is for compatibility. Eventually the data should be converted.
-			for (size_t i = 0; i < count; ++i) {
-				dst[i] = f->get_double();
+			for (size_t i = 0; i < p_count; ++i) {
+				r_dst[i] = r_file->get_double();
 			}
 		} else {
 			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "real_t size is neither 4 nor 8!");
@@ -133,18 +126,10 @@ static Error read_reals(real_t *dst, Ref<FileAccess> &f, size_t count) {
 	} else {
 		if constexpr (sizeof(real_t) == 4) {
 			// Ideal case with float-precision
-			f->get_buffer((uint8_t *)dst, count * sizeof(float));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint32_t *dst = (uint32_t *)dst;
-				for (size_t i = 0; i < count; i++) {
-					dst[i] = BSWAP32(dst[i]);
-				}
-			}
-#endif
+			r_file->get_buffer((uint8_t *)r_dst, p_count * sizeof(float));
 		} else if constexpr (sizeof(real_t) == 8) {
-			for (size_t i = 0; i < count; ++i) {
-				dst[i] = f->get_float();
+			for (size_t i = 0; i < p_count; ++i) {
+				r_dst[i] = r_file->get_float();
 			}
 		} else {
 			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "real_t size is neither 4 nor 8!");
@@ -164,9 +149,7 @@ StringName ResourceLoaderBinary::_get_string() {
 			return StringName();
 		}
 		f->get_buffer((uint8_t *)&str_buf[0], len);
-		String s;
-		s.parse_utf8(&str_buf[0]);
-		return s;
+		return String::utf8(&str_buf[0], len);
 	}
 
 	return string_map[id];
@@ -411,7 +394,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 
 					//always use internal cache for loading internal resources
 					if (!internal_index_cache.has(path)) {
-						WARN_PRINT(String("Couldn't load resource (no cache): " + path).utf8().get_data());
+						WARN_PRINT(vformat("Couldn't load resource (no cache): %s.", path));
 						r_v = Variant();
 					} else {
 						r_v = internal_index_cache[path];
@@ -435,7 +418,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 					Ref<Resource> res = ResourceLoader::load(path, exttype, cache_mode_for_external);
 
 					if (res.is_null()) {
-						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
+						WARN_PRINT(vformat("Couldn't load resource: %s.", path));
 					}
 					r_v = res;
 
@@ -458,7 +441,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 										ResourceLoader::notify_dependency_error(local_path, external_resources[erindex].path, external_resources[erindex].type);
 									} else {
 										error = ERR_FILE_MISSING_DEPENDENCIES;
-										ERR_FAIL_V_MSG(error, "Can't load dependency: " + external_resources[erindex].path + ".");
+										ERR_FAIL_V_MSG(error, vformat("Can't load dependency: '%s'.", external_resources[erindex].path));
 									}
 								}
 							} else {
@@ -527,15 +510,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			array.resize(len);
 			int32_t *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(int32_t));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint32_t *ptr = (uint32_t *)w.ptr();
-				for (int i = 0; i < len; i++) {
-					ptr[i] = BSWAP32(ptr[i]);
-				}
-			}
-
-#endif
 
 			r_v = array;
 		} break;
@@ -546,15 +520,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			array.resize(len);
 			int64_t *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(int64_t));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint64_t *ptr = (uint64_t *)w.ptr();
-				for (int i = 0; i < len; i++) {
-					ptr[i] = BSWAP64(ptr[i]);
-				}
-			}
-
-#endif
 
 			r_v = array;
 		} break;
@@ -565,15 +530,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			array.resize(len);
 			float *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(float));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint32_t *ptr = (uint32_t *)w.ptr();
-				for (int i = 0; i < len; i++) {
-					ptr[i] = BSWAP32(ptr[i]);
-				}
-			}
-
-#endif
 
 			r_v = array;
 		} break;
@@ -584,15 +540,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			array.resize(len);
 			double *w = array.ptrw();
 			f->get_buffer((uint8_t *)w, len * sizeof(double));
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint64_t *ptr = (uint64_t *)w.ptr();
-				for (int i = 0; i < len; i++) {
-					ptr[i] = BSWAP64(ptr[i]);
-				}
-			}
-
-#endif
 
 			r_v = array;
 		} break;
@@ -643,15 +590,6 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			// Colors always use `float` even with double-precision support enabled
 			static_assert(sizeof(Color) == 4 * sizeof(float));
 			f->get_buffer((uint8_t *)w, len * sizeof(float) * 4);
-#ifdef BIG_ENDIAN_ENABLED
-			{
-				uint32_t *ptr = (uint32_t *)w.ptr();
-				for (int i = 0; i < len * 4; i++) {
-					ptr[i] = BSWAP32(ptr[i]);
-				}
-			}
-
-#endif
 
 			r_v = array;
 		} break;
@@ -699,12 +637,12 @@ Error ResourceLoaderBinary::load() {
 
 		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
 		external_resources.write[i].load_token = ResourceLoader::_load_start(path, external_resources[i].type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, cache_mode_for_external);
-		if (!external_resources[i].load_token.is_valid()) {
+		if (external_resources[i].load_token.is_null()) {
 			if (!ResourceLoader::get_abort_on_missing_resources()) {
 				ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
 			} else {
 				error = ERR_FILE_MISSING_DEPENDENCIES;
-				ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
+				ERR_FAIL_V_MSG(error, vformat("Can't load dependency: '%s'.", path));
 			}
 		}
 	}
@@ -751,7 +689,7 @@ Error ResourceLoaderBinary::load() {
 		Ref<Resource> res;
 		Resource *r = nullptr;
 
-		MissingResource *missing_resource = nullptr;
+		Ref<MissingResource> missing_resource;
 
 		if (main) {
 			res = ResourceLoader::get_resource_ref_override(local_path);
@@ -777,10 +715,10 @@ Error ResourceLoaderBinary::load() {
 						missing_resource = memnew(MissingResource);
 						missing_resource->set_original_class(t);
 						missing_resource->set_recording_properties(true);
-						obj = missing_resource;
+						obj = missing_resource.ptr();
 					} else {
 						error = ERR_FILE_CORRUPT;
-						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
+						ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Resource of unrecognized type in file: '%s'.", local_path, t));
 					}
 				}
 
@@ -789,7 +727,7 @@ Error ResourceLoaderBinary::load() {
 					String obj_class = obj->get_class();
 					error = ERR_FILE_CORRUPT;
 					memdelete(obj); //bye
-					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
+					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, vformat("'%s': Resource type in resource field not a resource, type is: %s.", local_path, obj_class));
 				}
 
 				res = Ref<Resource>(r);
@@ -833,7 +771,7 @@ Error ResourceLoaderBinary::load() {
 			}
 
 			bool set_valid = true;
-			if (value.get_type() == Variant::OBJECT && missing_resource != nullptr) {
+			if (value.get_type() == Variant::OBJECT && missing_resource.is_null() && ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
 				// If the property being set is a missing resource (and the parent is not),
 				// then setting it will most likely not work.
 				// Instead, save it as metadata.
@@ -857,12 +795,25 @@ Error ResourceLoaderBinary::load() {
 				}
 			}
 
+			if (value.get_type() == Variant::DICTIONARY) {
+				Dictionary set_dict = value;
+				bool is_get_valid = false;
+				Variant get_value = res->get(name, &is_get_valid);
+				if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
+					Dictionary get_dict = get_value;
+					if (!set_dict.is_same_typed(get_dict)) {
+						value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
+								get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
+					}
+				}
+			}
+
 			if (set_valid) {
 				res->set(name, value);
 			}
 		}
 
-		if (missing_resource) {
+		if (missing_resource.is_valid()) {
 			missing_resource->set_recording_properties(false);
 		}
 
@@ -896,20 +847,18 @@ void ResourceLoaderBinary::set_translation_remapped(bool p_remapped) {
 	translation_remapped = p_remapped;
 }
 
-static void save_ustring(Ref<FileAccess> f, const String &p_string) {
+static void save_ustring(Ref<FileAccess> r_file, const String &p_string) {
 	CharString utf8 = p_string.utf8();
-	f->store_32(utf8.length() + 1);
-	f->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
+	r_file->store_32(uint32_t(utf8.length() + 1));
+	r_file->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
 }
 
-static String get_ustring(Ref<FileAccess> f) {
-	int len = f->get_32();
+static String get_ustring(Ref<FileAccess> r_file) {
+	int len = r_file->get_32();
 	Vector<char> str_buf;
 	str_buf.resize(len);
-	f->get_buffer((uint8_t *)&str_buf[0], len);
-	String s;
-	s.parse_utf8(&str_buf[0]);
-	return s;
+	r_file->get_buffer((uint8_t *)&str_buf[0], len);
+	return String::utf8(&str_buf[0], len);
 }
 
 String ResourceLoaderBinary::get_unicode_string() {
@@ -921,29 +870,26 @@ String ResourceLoaderBinary::get_unicode_string() {
 		return String();
 	}
 	f->get_buffer((uint8_t *)&str_buf[0], len);
-	String s;
-	s.parse_utf8(&str_buf[0]);
-	return s;
+	return String::utf8(&str_buf[0], len);
 }
 
-void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_f, HashSet<StringName> *p_classes) {
-	open(p_f, false, true);
+void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_file, HashSet<StringName> *p_classes) {
+	open(p_file, false, true);
 	if (error) {
 		return;
 	}
 
-	for (int i = 0; i < internal_resources.size(); i++) {
-		p_f->seek(internal_resources[i].offset);
+	for (const IntResource &res : internal_resources) {
+		p_file->seek(res.offset);
 		String t = get_unicode_string();
-		ERR_FAIL_COND(p_f->get_error() != OK);
-		if (t != String()) {
+		if (!p_file->get_error() && t != String() && ClassDB::class_exists(t)) {
 			p_classes->insert(t);
 		}
 	}
 }
 
-void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types) {
-	open(p_f, false, true);
+void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_file, List<String> *p_dependencies, bool p_add_types) {
+	open(p_file, false, true);
 	if (error) {
 		return;
 	}
@@ -973,10 +919,10 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 	}
 }
 
-void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p_keep_uuid_paths) {
+void ResourceLoaderBinary::open(Ref<FileAccess> p_file, bool p_no_resources, bool p_keep_uuid_paths) {
 	error = OK;
 
-	f = p_f;
+	f = p_file;
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
@@ -986,7 +932,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		error = fac->open_after_magic(f);
 		if (error != OK) {
 			f.unref();
-			ERR_FAIL_MSG("Failed to open binary resource file: " + local_path + ".");
+			ERR_FAIL_MSG(vformat("Failed to open binary resource file: '%s'.", local_path));
 		}
 		f = fac;
 
@@ -994,7 +940,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		// Not normal.
 		error = ERR_FILE_UNRECOGNIZED;
 		f.unref();
-		ERR_FAIL_MSG("Unrecognized binary resource file: " + local_path + ".");
+		ERR_FAIL_MSG(vformat("Unrecognized binary resource file: '%s'.", local_path));
 	}
 
 	bool big_endian = f->get_32();
@@ -1007,20 +953,16 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	ver_format = f->get_32();
 
 	print_bl("big endian: " + itos(big_endian));
-#ifdef BIG_ENDIAN_ENABLED
-	print_bl("endian swap: " + itos(!big_endian));
-#else
 	print_bl("endian swap: " + itos(big_endian));
-#endif
 	print_bl("real64: " + itos(use_real64));
 	print_bl("major: " + itos(ver_major));
 	print_bl("minor: " + itos(ver_minor));
 	print_bl("format: " + itos(ver_format));
 
-	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_format > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		f.unref();
 		ERR_FAIL_MSG(vformat("File '%s' can't be loaded, as it uses a format version (%d) or engine version (%d.%d) which are not supported by your engine version (%s).",
-				local_path, ver_format, ver_major, ver_minor, VERSION_BRANCH));
+				local_path, ver_format, ver_major, ver_minor, GODOT_VERSION_BRANCH));
 	}
 
 	type = get_unicode_string();
@@ -1038,7 +980,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	f->real_is_double = (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_REAL_T_IS_DOUBLE) != 0;
 
 	if (using_uids) {
-		uid = f->get_64();
+		uid = ResourceUID::ID(f->get_64());
 	} else {
 		f->get_64(); // skip over uid field
 		uid = ResourceUID::INVALID_ID;
@@ -1071,7 +1013,7 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		er.type = get_unicode_string();
 		er.path = get_unicode_string();
 		if (using_uids) {
-			er.uid = f->get_64();
+			er.uid = ResourceUID::ID(f->get_64());
 			if (!p_keep_uuid_paths && er.uid != ResourceUID::INVALID_ID) {
 				if (ResourceUID::get_singleton()->has_id(er.uid)) {
 					// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
@@ -1080,10 +1022,10 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 #ifdef TOOLS_ENABLED
 					// Silence a warning that can happen during the initial filesystem scan due to cache being regenerated.
 					if (ResourceLoader::get_resource_uid(res_path) != er.uid) {
-						WARN_PRINT(String(res_path + ": In external resource #" + itos(i) + ", invalid UID: " + ResourceUID::get_singleton()->id_to_text(er.uid) + " - using text path instead: " + er.path).utf8().get_data());
+						WARN_PRINT(vformat("'%s': In external resource #%d, invalid UID: '%s' - using text path instead: '%s'.", res_path, i, ResourceUID::get_singleton()->id_to_text(er.uid), er.path));
 					}
 #else
-					WARN_PRINT(String(res_path + ": In external resource #" + itos(i) + ", invalid UID: " + ResourceUID::get_singleton()->id_to_text(er.uid) + " - using text path instead: " + er.path).utf8().get_data());
+					WARN_PRINT(vformat("'%s': In external resource #%d, invalid UID: '%s' - using text path instead: '%s'.", res_path, i, ResourceUID::get_singleton()->id_to_text(er.uid), er.path));
 #endif
 				}
 			}
@@ -1107,14 +1049,14 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	if (f->eof_reached()) {
 		error = ERR_FILE_CORRUPT;
 		f.unref();
-		ERR_FAIL_MSG("Premature end of file (EOF): " + local_path + ".");
+		ERR_FAIL_MSG(vformat("Premature end of file (EOF): '%s'.", local_path));
 	}
 }
 
-String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
+String ResourceLoaderBinary::recognize(Ref<FileAccess> p_file) {
 	error = OK;
 
-	f = p_f;
+	f = p_file;
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
@@ -1144,7 +1086,7 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 	f->get_32(); // ver_minor
 	uint32_t ver_fmt = f->get_32();
 
-	if (ver_fmt > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_fmt > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		f.unref();
 		return "";
 	}
@@ -1152,10 +1094,10 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 	return get_unicode_string();
 }
 
-String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
+String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_file) {
 	error = OK;
 
-	f = p_f;
+	f = p_file;
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
@@ -1185,12 +1127,12 @@ String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
 	f->get_32(); // ver_minor
 	uint32_t ver_fmt = f->get_32();
 
-	if (ver_fmt > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_fmt > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		f.unref();
 		return "";
 	}
 
-	get_unicode_string(); // type
+	_ALLOW_DISCARD_ get_unicode_string(); // type
 
 	f->get_64(); // Metadata offset
 	uint32_t flags = f->get_32();
@@ -1211,7 +1153,7 @@ Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const Strin
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), vformat("Cannot open file '%s'.", p_path));
 
 	ResourceLoaderBinary loader;
 	switch (p_cache_mode) {
@@ -1255,6 +1197,11 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 		return;
 	}
 
+	// res files not supported for GDExtension.
+	if (p_type == "GDExtension") {
+		return;
+	}
+
 	List<String> extensions;
 	ClassDB::get_extensions_for_type(p_type, &extensions);
 
@@ -1283,7 +1230,7 @@ bool ResourceFormatLoaderBinary::handles_type(const String &p_type) const {
 
 void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_MSG(f.is_null(), vformat("Cannot open file '%s'.", p_path));
 
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -1293,7 +1240,7 @@ void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<Str
 
 Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, const HashMap<String, String> &p_map) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
 
 	Ref<FileAccess> fw;
 
@@ -1306,23 +1253,23 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
 		Error err = fac->open_after_magic(f);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot open file '%s'.", p_path));
 		f = fac;
 
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
 		facw->configure("RSCC");
 		err = facw->open_internal(p_path + ".depren", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, "Cannot create file '" + p_path + ".depren'.");
+		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.depren'.", p_path));
 
 		fw = facw;
 
 	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
 		// Not normal.
-		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unrecognized binary resource file '" + local_path + "'.");
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, vformat("Unrecognized binary resource file '%s'.", local_path));
 	} else {
 		fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + ".depren'.");
+		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, vformat("Cannot create file '%s.depren'.", p_path));
 
 		uint8_t magic[4] = { 'R', 'S', 'R', 'C' };
 		fw->store_buffer(magic, 4);
@@ -1332,13 +1279,10 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	bool use_real64 = f->get_32();
 
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
-#ifdef BIG_ENDIAN_ENABLED
-	fw->store_32(!big_endian);
-#else
+
 	fw->store_32(big_endian);
-#endif
-	fw->set_big_endian(big_endian != 0);
 	fw->store_32(use_real64); //use real64
+	fw->set_big_endian(big_endian != 0);
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -1354,12 +1298,12 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		// Use the old approach.
 
-		WARN_PRINT("This file is old, so it can't refactor dependencies, opening and resaving '" + p_path + "'.");
+		WARN_PRINT(vformat("This file is old, so it can't refactor dependencies, opening and resaving '%s'.", p_path));
 
 		Error err;
 		f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-		ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_OPEN, "Cannot open file '" + p_path + "'.");
+		ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
 
 		ResourceLoaderBinary loader;
 		loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -1371,15 +1315,15 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		ERR_FAIL_COND_V(err != ERR_FILE_EOF, ERR_FILE_CORRUPT);
 		Ref<Resource> res = loader.get_resource();
-		ERR_FAIL_COND_V(!res.is_valid(), ERR_FILE_CORRUPT);
+		ERR_FAIL_COND_V(res.is_null(), ERR_FILE_CORRUPT);
 
 		return ResourceFormatSaverBinary::singleton->save(res, p_path);
 	}
 
-	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_format > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED,
 				vformat("File '%s' can't be loaded, as it uses a format version (%d) or engine version (%d.%d) which are not supported by your engine version (%s).",
-						local_path, ver_format, ver_major, ver_minor, VERSION_BRANCH));
+						local_path, ver_format, ver_major, ver_minor, GODOT_VERSION_BRANCH));
 	}
 
 	// Since we're not actually converting the file contents, leave the version
@@ -1459,7 +1403,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		if (using_uids) {
 			ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(full_path);
-			fw->store_64(uid);
+			fw->store_64(uint64_t(uid));
 		}
 	}
 
@@ -1505,12 +1449,49 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 void ResourceFormatLoaderBinary::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_MSG(f.is_null(), vformat("Cannot open file '%s'.", p_path));
 
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
 	loader.get_classes_used(f, r_classes);
+
+	if (loader.type != "PackedScene") {
+		return;
+	}
+
+	// Fetch the nodes inside scene files.
+
+	// Reopening is necessary, or errors will occur.
+	f->reopen(p_path, FileAccess::READ);
+	loader.open(f);
+	ERR_FAIL_COND(loader.load() != OK);
+
+	Ref<SceneState> state = Ref<PackedScene>(loader.get_resource())->get_state();
+	for (int i = 0; i < state->get_node_count(); i++) {
+		const StringName node_name = state->get_node_type(i);
+		if (ClassDB::class_exists(node_name)) {
+			r_classes->insert(node_name);
+		}
+
+		// Fetch the values of properties in the node.
+		for (int j = 0; j < state->get_node_property_count(i); j++) {
+			const Variant var = state->get_node_property_value(i, j);
+			if (var.get_type() != Variant::OBJECT) {
+				continue;
+			}
+
+			const Object *obj = var.get_validated_object();
+			if (obj == nullptr) {
+				continue;
+			}
+
+			const StringName obj_name = obj->get_class_name();
+			if (ClassDB::class_exists(obj_name)) {
+				r_classes->insert(obj_name);
+			}
+		}
+	}
 }
 
 String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const {
@@ -1559,39 +1540,43 @@ ResourceUID::ID ResourceFormatLoaderBinary::get_resource_uid(const String &p_pat
 	return loader.uid;
 }
 
+bool ResourceFormatLoaderBinary::has_custom_uid_support() const {
+	return true;
+}
+
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 
-void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_bytes) {
+void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> r_file, int p_bytes) {
 	int extra = 4 - (p_bytes % 4);
 	if (extra < 4) {
 		for (int i = 0; i < extra; i++) {
-			f->store_8(0); //pad to 32
+			r_file->store_8(0); //pad to 32
 		}
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
+void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> r_file, const Variant &p_property, HashMap<Ref<Resource>, int> &r_resource_map, HashMap<Ref<Resource>, int> &r_external_resources, HashMap<StringName, int> &r_string_map, const PropertyInfo &p_hint) {
 	switch (p_property.get_type()) {
 		case Variant::NIL: {
-			f->store_32(VARIANT_NIL);
+			r_file->store_32(VARIANT_NIL);
 			// don't store anything
 		} break;
 		case Variant::BOOL: {
-			f->store_32(VARIANT_BOOL);
+			r_file->store_32(VARIANT_BOOL);
 			bool val = p_property;
-			f->store_32(val);
+			r_file->store_32(val);
 		} break;
 		case Variant::INT: {
 			int64_t val = p_property;
 			if (val > 0x7FFFFFFF || val < -(int64_t)0x80000000) {
-				f->store_32(VARIANT_INT64);
-				f->store_64(val);
+				r_file->store_32(VARIANT_INT64);
+				r_file->store_64(uint64_t(val));
 
 			} else {
-				f->store_32(VARIANT_INT);
-				f->store_32(int32_t(p_property));
+				r_file->store_32(VARIANT_INT);
+				r_file->store_32(uint32_t(p_property));
 			}
 
 		} break;
@@ -1599,396 +1584,393 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			double d = p_property;
 			float fl = d;
 			if (double(fl) != d) {
-				f->store_32(VARIANT_DOUBLE);
-				f->store_double(d);
+				r_file->store_32(VARIANT_DOUBLE);
+				r_file->store_double(d);
 			} else {
-				f->store_32(VARIANT_FLOAT);
-				f->store_real(fl);
+				r_file->store_32(VARIANT_FLOAT);
+				r_file->store_real(fl);
 			}
 
 		} break;
 		case Variant::STRING: {
-			f->store_32(VARIANT_STRING);
+			r_file->store_32(VARIANT_STRING);
 			String val = p_property;
-			save_unicode_string(f, val);
+			save_unicode_string(r_file, val);
 
 		} break;
 		case Variant::VECTOR2: {
-			f->store_32(VARIANT_VECTOR2);
+			r_file->store_32(VARIANT_VECTOR2);
 			Vector2 val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
+			r_file->store_real(val.x);
+			r_file->store_real(val.y);
 
 		} break;
 		case Variant::VECTOR2I: {
-			f->store_32(VARIANT_VECTOR2I);
+			r_file->store_32(VARIANT_VECTOR2I);
 			Vector2i val = p_property;
-			f->store_32(val.x);
-			f->store_32(val.y);
+			r_file->store_32(uint32_t(val.x));
+			r_file->store_32(uint32_t(val.y));
 
 		} break;
 		case Variant::RECT2: {
-			f->store_32(VARIANT_RECT2);
+			r_file->store_32(VARIANT_RECT2);
 			Rect2 val = p_property;
-			f->store_real(val.position.x);
-			f->store_real(val.position.y);
-			f->store_real(val.size.x);
-			f->store_real(val.size.y);
+			r_file->store_real(val.position.x);
+			r_file->store_real(val.position.y);
+			r_file->store_real(val.size.x);
+			r_file->store_real(val.size.y);
 
 		} break;
 		case Variant::RECT2I: {
-			f->store_32(VARIANT_RECT2I);
+			r_file->store_32(VARIANT_RECT2I);
 			Rect2i val = p_property;
-			f->store_32(val.position.x);
-			f->store_32(val.position.y);
-			f->store_32(val.size.x);
-			f->store_32(val.size.y);
+			r_file->store_32(uint32_t(val.position.x));
+			r_file->store_32(uint32_t(val.position.y));
+			r_file->store_32(uint32_t(val.size.x));
+			r_file->store_32(uint32_t(val.size.y));
 
 		} break;
 		case Variant::VECTOR3: {
-			f->store_32(VARIANT_VECTOR3);
+			r_file->store_32(VARIANT_VECTOR3);
 			Vector3 val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
-			f->store_real(val.z);
+			r_file->store_real(val.x);
+			r_file->store_real(val.y);
+			r_file->store_real(val.z);
 
 		} break;
 		case Variant::VECTOR3I: {
-			f->store_32(VARIANT_VECTOR3I);
+			r_file->store_32(VARIANT_VECTOR3I);
 			Vector3i val = p_property;
-			f->store_32(val.x);
-			f->store_32(val.y);
-			f->store_32(val.z);
+			r_file->store_32(uint32_t(val.x));
+			r_file->store_32(uint32_t(val.y));
+			r_file->store_32(uint32_t(val.z));
 
 		} break;
 		case Variant::VECTOR4: {
-			f->store_32(VARIANT_VECTOR4);
+			r_file->store_32(VARIANT_VECTOR4);
 			Vector4 val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
-			f->store_real(val.z);
-			f->store_real(val.w);
+			r_file->store_real(val.x);
+			r_file->store_real(val.y);
+			r_file->store_real(val.z);
+			r_file->store_real(val.w);
 
 		} break;
 		case Variant::VECTOR4I: {
-			f->store_32(VARIANT_VECTOR4I);
+			r_file->store_32(VARIANT_VECTOR4I);
 			Vector4i val = p_property;
-			f->store_32(val.x);
-			f->store_32(val.y);
-			f->store_32(val.z);
-			f->store_32(val.w);
+			r_file->store_32(uint32_t(val.x));
+			r_file->store_32(uint32_t(val.y));
+			r_file->store_32(uint32_t(val.z));
+			r_file->store_32(uint32_t(val.w));
 
 		} break;
 		case Variant::PLANE: {
-			f->store_32(VARIANT_PLANE);
+			r_file->store_32(VARIANT_PLANE);
 			Plane val = p_property;
-			f->store_real(val.normal.x);
-			f->store_real(val.normal.y);
-			f->store_real(val.normal.z);
-			f->store_real(val.d);
+			r_file->store_real(val.normal.x);
+			r_file->store_real(val.normal.y);
+			r_file->store_real(val.normal.z);
+			r_file->store_real(val.d);
 
 		} break;
 		case Variant::QUATERNION: {
-			f->store_32(VARIANT_QUATERNION);
+			r_file->store_32(VARIANT_QUATERNION);
 			Quaternion val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
-			f->store_real(val.z);
-			f->store_real(val.w);
+			r_file->store_real(val.x);
+			r_file->store_real(val.y);
+			r_file->store_real(val.z);
+			r_file->store_real(val.w);
 
 		} break;
 		case Variant::AABB: {
-			f->store_32(VARIANT_AABB);
+			r_file->store_32(VARIANT_AABB);
 			AABB val = p_property;
-			f->store_real(val.position.x);
-			f->store_real(val.position.y);
-			f->store_real(val.position.z);
-			f->store_real(val.size.x);
-			f->store_real(val.size.y);
-			f->store_real(val.size.z);
+			r_file->store_real(val.position.x);
+			r_file->store_real(val.position.y);
+			r_file->store_real(val.position.z);
+			r_file->store_real(val.size.x);
+			r_file->store_real(val.size.y);
+			r_file->store_real(val.size.z);
 
 		} break;
 		case Variant::TRANSFORM2D: {
-			f->store_32(VARIANT_TRANSFORM2D);
+			r_file->store_32(VARIANT_TRANSFORM2D);
 			Transform2D val = p_property;
-			f->store_real(val.columns[0].x);
-			f->store_real(val.columns[0].y);
-			f->store_real(val.columns[1].x);
-			f->store_real(val.columns[1].y);
-			f->store_real(val.columns[2].x);
-			f->store_real(val.columns[2].y);
+			r_file->store_real(val.columns[0].x);
+			r_file->store_real(val.columns[0].y);
+			r_file->store_real(val.columns[1].x);
+			r_file->store_real(val.columns[1].y);
+			r_file->store_real(val.columns[2].x);
+			r_file->store_real(val.columns[2].y);
 
 		} break;
 		case Variant::BASIS: {
-			f->store_32(VARIANT_BASIS);
+			r_file->store_32(VARIANT_BASIS);
 			Basis val = p_property;
-			f->store_real(val.rows[0].x);
-			f->store_real(val.rows[0].y);
-			f->store_real(val.rows[0].z);
-			f->store_real(val.rows[1].x);
-			f->store_real(val.rows[1].y);
-			f->store_real(val.rows[1].z);
-			f->store_real(val.rows[2].x);
-			f->store_real(val.rows[2].y);
-			f->store_real(val.rows[2].z);
+			r_file->store_real(val.rows[0].x);
+			r_file->store_real(val.rows[0].y);
+			r_file->store_real(val.rows[0].z);
+			r_file->store_real(val.rows[1].x);
+			r_file->store_real(val.rows[1].y);
+			r_file->store_real(val.rows[1].z);
+			r_file->store_real(val.rows[2].x);
+			r_file->store_real(val.rows[2].y);
+			r_file->store_real(val.rows[2].z);
 
 		} break;
 		case Variant::TRANSFORM3D: {
-			f->store_32(VARIANT_TRANSFORM3D);
+			r_file->store_32(VARIANT_TRANSFORM3D);
 			Transform3D val = p_property;
-			f->store_real(val.basis.rows[0].x);
-			f->store_real(val.basis.rows[0].y);
-			f->store_real(val.basis.rows[0].z);
-			f->store_real(val.basis.rows[1].x);
-			f->store_real(val.basis.rows[1].y);
-			f->store_real(val.basis.rows[1].z);
-			f->store_real(val.basis.rows[2].x);
-			f->store_real(val.basis.rows[2].y);
-			f->store_real(val.basis.rows[2].z);
-			f->store_real(val.origin.x);
-			f->store_real(val.origin.y);
-			f->store_real(val.origin.z);
+			r_file->store_real(val.basis.rows[0].x);
+			r_file->store_real(val.basis.rows[0].y);
+			r_file->store_real(val.basis.rows[0].z);
+			r_file->store_real(val.basis.rows[1].x);
+			r_file->store_real(val.basis.rows[1].y);
+			r_file->store_real(val.basis.rows[1].z);
+			r_file->store_real(val.basis.rows[2].x);
+			r_file->store_real(val.basis.rows[2].y);
+			r_file->store_real(val.basis.rows[2].z);
+			r_file->store_real(val.origin.x);
+			r_file->store_real(val.origin.y);
+			r_file->store_real(val.origin.z);
 
 		} break;
 		case Variant::PROJECTION: {
-			f->store_32(VARIANT_PROJECTION);
+			r_file->store_32(VARIANT_PROJECTION);
 			Projection val = p_property;
-			f->store_real(val.columns[0].x);
-			f->store_real(val.columns[0].y);
-			f->store_real(val.columns[0].z);
-			f->store_real(val.columns[0].w);
-			f->store_real(val.columns[1].x);
-			f->store_real(val.columns[1].y);
-			f->store_real(val.columns[1].z);
-			f->store_real(val.columns[1].w);
-			f->store_real(val.columns[2].x);
-			f->store_real(val.columns[2].y);
-			f->store_real(val.columns[2].z);
-			f->store_real(val.columns[2].w);
-			f->store_real(val.columns[3].x);
-			f->store_real(val.columns[3].y);
-			f->store_real(val.columns[3].z);
-			f->store_real(val.columns[3].w);
+			r_file->store_real(val.columns[0].x);
+			r_file->store_real(val.columns[0].y);
+			r_file->store_real(val.columns[0].z);
+			r_file->store_real(val.columns[0].w);
+			r_file->store_real(val.columns[1].x);
+			r_file->store_real(val.columns[1].y);
+			r_file->store_real(val.columns[1].z);
+			r_file->store_real(val.columns[1].w);
+			r_file->store_real(val.columns[2].x);
+			r_file->store_real(val.columns[2].y);
+			r_file->store_real(val.columns[2].z);
+			r_file->store_real(val.columns[2].w);
+			r_file->store_real(val.columns[3].x);
+			r_file->store_real(val.columns[3].y);
+			r_file->store_real(val.columns[3].z);
+			r_file->store_real(val.columns[3].w);
 
 		} break;
 		case Variant::COLOR: {
-			f->store_32(VARIANT_COLOR);
+			r_file->store_32(VARIANT_COLOR);
 			Color val = p_property;
 			// Color are always floats
-			f->store_float(val.r);
-			f->store_float(val.g);
-			f->store_float(val.b);
-			f->store_float(val.a);
+			r_file->store_float(val.r);
+			r_file->store_float(val.g);
+			r_file->store_float(val.b);
+			r_file->store_float(val.a);
 
 		} break;
 		case Variant::STRING_NAME: {
-			f->store_32(VARIANT_STRING_NAME);
+			r_file->store_32(VARIANT_STRING_NAME);
 			String val = p_property;
-			save_unicode_string(f, val);
+			save_unicode_string(r_file, val);
 
 		} break;
 
 		case Variant::NODE_PATH: {
-			f->store_32(VARIANT_NODE_PATH);
+			r_file->store_32(VARIANT_NODE_PATH);
 			NodePath np = p_property;
-			f->store_16(np.get_name_count());
+			r_file->store_16(np.get_name_count());
 			uint16_t snc = np.get_subname_count();
 			if (np.is_absolute()) {
 				snc |= 0x8000;
 			}
-			f->store_16(snc);
+			r_file->store_16(snc);
 			for (int i = 0; i < np.get_name_count(); i++) {
-				if (string_map.has(np.get_name(i))) {
-					f->store_32(string_map[np.get_name(i)]);
+				if (r_string_map.has(np.get_name(i))) {
+					r_file->store_32(uint32_t(r_string_map[np.get_name(i)]));
 				} else {
-					save_unicode_string(f, np.get_name(i), true);
+					save_unicode_string(r_file, np.get_name(i), true);
 				}
 			}
 			for (int i = 0; i < np.get_subname_count(); i++) {
-				if (string_map.has(np.get_subname(i))) {
-					f->store_32(string_map[np.get_subname(i)]);
+				if (r_string_map.has(np.get_subname(i))) {
+					r_file->store_32(uint32_t(r_string_map[np.get_subname(i)]));
 				} else {
-					save_unicode_string(f, np.get_subname(i), true);
+					save_unicode_string(r_file, np.get_subname(i), true);
 				}
 			}
 
 		} break;
 		case Variant::RID: {
-			f->store_32(VARIANT_RID);
+			r_file->store_32(VARIANT_RID);
 			WARN_PRINT("Can't save RIDs.");
 			RID val = p_property;
-			f->store_32(val.get_id());
+			r_file->store_32(uint32_t(val.get_id()));
 		} break;
 		case Variant::OBJECT: {
-			f->store_32(VARIANT_OBJECT);
+			r_file->store_32(VARIANT_OBJECT);
 			Ref<Resource> res = p_property;
 			if (res.is_null() || res->get_meta(SNAME("_skip_save_"), false)) {
-				f->store_32(OBJECT_EMPTY);
+				r_file->store_32(OBJECT_EMPTY);
 				return; // Don't save it.
 			}
 
 			if (!res->is_built_in()) {
-				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
-				f->store_32(external_resources[res]);
+				r_file->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
+				r_file->store_32(uint32_t(r_external_resources[res]));
 			} else {
-				if (!resource_map.has(res)) {
-					f->store_32(OBJECT_EMPTY);
+				if (!r_resource_map.has(res)) {
+					r_file->store_32(OBJECT_EMPTY);
 					ERR_FAIL_MSG("Resource was not pre cached for the resource section, most likely due to circular reference.");
 				}
 
-				f->store_32(OBJECT_INTERNAL_RESOURCE);
-				f->store_32(resource_map[res]);
+				r_file->store_32(OBJECT_INTERNAL_RESOURCE);
+				r_file->store_32(uint32_t(r_resource_map[res]));
 				//internal resource
 			}
 
 		} break;
 		case Variant::CALLABLE: {
-			f->store_32(VARIANT_CALLABLE);
+			r_file->store_32(VARIANT_CALLABLE);
 			WARN_PRINT("Can't save Callables.");
 		} break;
 		case Variant::SIGNAL: {
-			f->store_32(VARIANT_SIGNAL);
+			r_file->store_32(VARIANT_SIGNAL);
 			WARN_PRINT("Can't save Signals.");
 		} break;
 
 		case Variant::DICTIONARY: {
-			f->store_32(VARIANT_DICTIONARY);
+			r_file->store_32(VARIANT_DICTIONARY);
 			Dictionary d = p_property;
-			f->store_32(uint32_t(d.size()));
+			r_file->store_32(uint32_t(d.size()));
 
-			List<Variant> keys;
-			d.get_key_list(&keys);
-
-			for (const Variant &E : keys) {
-				write_variant(f, E, resource_map, external_resources, string_map);
-				write_variant(f, d[E], resource_map, external_resources, string_map);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				write_variant(r_file, kv.key, r_resource_map, r_external_resources, r_string_map);
+				write_variant(r_file, kv.value, r_resource_map, r_external_resources, r_string_map);
 			}
 
 		} break;
 		case Variant::ARRAY: {
-			f->store_32(VARIANT_ARRAY);
+			r_file->store_32(VARIANT_ARRAY);
 			Array a = p_property;
-			f->store_32(uint32_t(a.size()));
+			r_file->store_32(uint32_t(a.size()));
 			for (const Variant &var : a) {
-				write_variant(f, var, resource_map, external_resources, string_map);
+				write_variant(r_file, var, r_resource_map, r_external_resources, r_string_map);
 			}
 
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
-			f->store_32(VARIANT_PACKED_BYTE_ARRAY);
+			r_file->store_32(VARIANT_PACKED_BYTE_ARRAY);
 			Vector<uint8_t> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			r_file->store_32(uint32_t(len));
 			const uint8_t *r = arr.ptr();
-			f->store_buffer(r, len);
-			_pad_buffer(f, len);
+			r_file->store_buffer(r, len);
+			_pad_buffer(r_file, len);
 
 		} break;
 		case Variant::PACKED_INT32_ARRAY: {
-			f->store_32(VARIANT_PACKED_INT32_ARRAY);
+			r_file->store_32(VARIANT_PACKED_INT32_ARRAY);
 			Vector<int32_t> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			r_file->store_32(uint32_t(len));
 			const int32_t *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_32(r[i]);
+				r_file->store_32(uint32_t(r[i]));
 			}
 
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
-			f->store_32(VARIANT_PACKED_INT64_ARRAY);
+			r_file->store_32(VARIANT_PACKED_INT64_ARRAY);
 			Vector<int64_t> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			r_file->store_32(uint32_t(len));
 			const int64_t *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_64(r[i]);
+				r_file->store_64(uint64_t(r[i]));
 			}
 
 		} break;
 		case Variant::PACKED_FLOAT32_ARRAY: {
-			f->store_32(VARIANT_PACKED_FLOAT32_ARRAY);
+			r_file->store_32(VARIANT_PACKED_FLOAT32_ARRAY);
 			Vector<float> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			r_file->store_32(uint32_t(len));
 			const float *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_float(r[i]);
+				r_file->store_float(r[i]);
 			}
 
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
-			f->store_32(VARIANT_PACKED_FLOAT64_ARRAY);
+			r_file->store_32(VARIANT_PACKED_FLOAT64_ARRAY);
 			Vector<double> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			r_file->store_32(uint32_t(len));
 			const double *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_double(r[i]);
+				r_file->store_double(r[i]);
 			}
 
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
-			f->store_32(VARIANT_PACKED_STRING_ARRAY);
+			r_file->store_32(VARIANT_PACKED_STRING_ARRAY);
 			Vector<String> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			r_file->store_32(uint32_t(len));
 			const String *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				save_unicode_string(f, r[i]);
+				save_unicode_string(r_file, r[i]);
 			}
 		} break;
 
 		case Variant::PACKED_VECTOR2_ARRAY: {
-			f->store_32(VARIANT_PACKED_VECTOR2_ARRAY);
+			r_file->store_32(VARIANT_PACKED_VECTOR2_ARRAY);
 			Vector<Vector2> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			r_file->store_32(uint32_t(len));
 			const Vector2 *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].x);
-				f->store_real(r[i].y);
+				r_file->store_real(r[i].x);
+				r_file->store_real(r[i].y);
 			}
 		} break;
 
 		case Variant::PACKED_VECTOR3_ARRAY: {
-			f->store_32(VARIANT_PACKED_VECTOR3_ARRAY);
+			r_file->store_32(VARIANT_PACKED_VECTOR3_ARRAY);
 			Vector<Vector3> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			r_file->store_32(uint32_t(len));
 			const Vector3 *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].x);
-				f->store_real(r[i].y);
-				f->store_real(r[i].z);
+				r_file->store_real(r[i].x);
+				r_file->store_real(r[i].y);
+				r_file->store_real(r[i].z);
 			}
 		} break;
 
 		case Variant::PACKED_COLOR_ARRAY: {
-			f->store_32(VARIANT_PACKED_COLOR_ARRAY);
+			r_file->store_32(VARIANT_PACKED_COLOR_ARRAY);
 			Vector<Color> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			r_file->store_32(uint32_t(len));
 			const Color *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_float(r[i].r);
-				f->store_float(r[i].g);
-				f->store_float(r[i].b);
-				f->store_float(r[i].a);
+				r_file->store_float(r[i].r);
+				r_file->store_float(r[i].g);
+				r_file->store_float(r[i].b);
+				r_file->store_float(r[i].a);
 			}
 
 		} break;
 		case Variant::PACKED_VECTOR4_ARRAY: {
-			f->store_32(VARIANT_PACKED_VECTOR4_ARRAY);
+			r_file->store_32(VARIANT_PACKED_VECTOR4_ARRAY);
 			Vector<Vector4> arr = p_property;
 			int len = arr.size();
-			f->store_32(len);
+			r_file->store_32(uint32_t(len));
 			const Vector4 *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].x);
-				f->store_real(r[i].y);
-				f->store_real(r[i].z);
-				f->store_real(r[i].w);
+				r_file->store_real(r[i].x);
+				r_file->store_real(r[i].y);
+				r_file->store_real(r[i].z);
+				r_file->store_real(r[i].w);
 			}
 
 		} break;
@@ -2009,7 +1991,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 			if (!p_main && (!bundle_resources) && !res->is_built_in()) {
 				if (res->get_path() == path) {
-					ERR_PRINT("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+					ERR_PRINT(vformat("Circular reference to resource being saved found: '%s' will be null next time it's loaded.", local_path));
 					return;
 				}
 				int idx = external_resources.size();
@@ -2064,12 +2046,11 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 		case Variant::DICTIONARY: {
 			Dictionary d = p_variant;
-			List<Variant> keys;
-			d.get_key_list(&keys);
-			for (const Variant &E : keys) {
-				_find_resources(E);
-				Variant v = d[E];
-				_find_resources(v);
+			_find_resources(d.get_typed_key_script());
+			_find_resources(d.get_typed_value_script());
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				_find_resources(kv.key);
+				_find_resources(kv.value);
 			}
 		} break;
 		case Variant::NODE_PATH: {
@@ -2088,14 +2069,14 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::save_unicode_string(Ref<FileAccess> p_f, const String &p_string, bool p_bit_on_len) {
+void ResourceFormatSaverBinaryInstance::save_unicode_string(Ref<FileAccess> r_file, const String &p_string, bool p_bit_on_len) {
 	CharString utf8 = p_string.utf8();
 	if (p_bit_on_len) {
-		p_f->store_32((utf8.length() + 1) | 0x80000000);
+		r_file->store_32(uint32_t((utf8.length() + 1) | 0x80000000));
 	} else {
-		p_f->store_32(utf8.length() + 1);
+		r_file->store_32(uint32_t(utf8.length() + 1));
 	}
-	p_f->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
+	r_file->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
 }
 
 int ResourceFormatSaverBinaryInstance::get_string_index(const String &p_string) {
@@ -2119,6 +2100,8 @@ static String _resource_get_class(Ref<Resource> p_resource) {
 }
 
 Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags) {
+	Resource::seed_scene_unique_id(p_path.hash());
+
 	Error err;
 	Ref<FileAccess> f;
 	if (p_flags & ResourceSaver::FLAG_COMPRESS) {
@@ -2131,7 +2114,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	}
 
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot create file '%s'.", p_path));
 
 	relative_paths = p_flags & ResourceSaver::FLAG_RELATIVE_PATHS;
 	skip_editor = p_flags & ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
@@ -2156,14 +2139,14 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	if (big_endian) {
 		f->store_32(1);
-		f->set_big_endian(true);
 	} else {
 		f->store_32(0);
 	}
-
 	f->store_32(0); //64 bits file, false for now
-	f->store_32(VERSION_MAJOR);
-	f->store_32(VERSION_MINOR);
+	f->set_big_endian(big_endian);
+
+	f->store_32(GODOT_VERSION_MAJOR);
+	f->store_32(GODOT_VERSION_MINOR);
 	f->store_32(FORMAT_VERSION);
 
 	if (f->get_error() != OK && f->get_error() != ERR_FILE_EOF) {
@@ -2192,7 +2175,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		f->store_32(format_flags);
 	}
 	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, true);
-	f->store_64(uid);
+	f->store_64(uint64_t(uid));
 	if (!script_class.is_empty()) {
 		save_unicode_string(f, script_class);
 	}
@@ -2203,10 +2186,10 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	List<ResourceData> resources;
 
-	Dictionary missing_resource_properties = p_resource->get_meta(META_MISSING_RESOURCES, Dictionary());
-
 	{
 		for (const Ref<Resource> &E : saved_resources) {
+			Dictionary missing_resource_properties = E->get_meta(META_MISSING_RESOURCES, Dictionary());
+
 			ResourceData &rd = resources.push_back(ResourceData())->get();
 			rd.type = _resource_get_class(E);
 
@@ -2221,7 +2204,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 					continue;
 				}
 
-				if ((F.usage & PROPERTY_USAGE_STORAGE)) {
+				if ((F.usage & PROPERTY_USAGE_STORAGE) || missing_resource_properties.has(F.name)) {
 					Property p;
 					p.name_idx = get_string_index(F.name);
 
@@ -2236,7 +2219,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 						p.value = E->get(F.name);
 					}
 
-					if (p.pi.type == Variant::OBJECT && missing_resource_properties.has(F.name)) {
+					if (F.type == Variant::OBJECT && missing_resource_properties.has(F.name)) {
 						// Was this missing resource overridden? If so do not save the old value.
 						Ref<Resource> res = p.value;
 						if (res.is_null()) {
@@ -2244,7 +2227,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 						}
 					}
 
-					Variant default_value = ClassDB::class_get_default_property_value(E->get_class(), F.name);
+					bool is_script = F.name == CoreStringName(script);
+					Variant default_value = is_script ? Variant() : PropertyUtils::get_property_default_value(E.ptr(), F.name);
 
 					if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
 						continue;
@@ -2258,7 +2242,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		}
 	}
 
-	f->store_32(strings.size()); //string table size
+	f->store_32(uint32_t(strings.size())); //string table size
 	for (int i = 0; i < strings.size(); i++) {
 		save_unicode_string(f, strings[i]);
 	}
@@ -2278,10 +2262,10 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		res_path = relative_paths ? local_path.path_to_file(res_path) : res_path;
 		save_unicode_string(f, res_path);
 		ResourceUID::ID ruid = ResourceSaver::get_resource_id_for_path(save_order[i]->get_path(), false);
-		f->store_64(ruid);
+		f->store_64(uint64_t(ruid));
 	}
 	// save internal resource table
-	f->store_32(saved_resources.size()); //amount of internal resources
+	f->store_32(uint32_t(saved_resources.size())); //amount of internal resources
 	Vector<uint64_t> ofs_pos;
 	HashSet<String> used_unique_ids;
 
@@ -2336,10 +2320,10 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 	for (const ResourceData &rd : resources) {
 		ofs_table.push_back(f->get_position());
 		save_unicode_string(f, rd.type);
-		f->store_32(rd.properties.size());
+		f->store_32(uint32_t(rd.properties.size()));
 
 		for (const Property &p : rd.properties) {
-			f->store_32(p.name_idx);
+			f->store_32(uint32_t(p.name_idx));
 			write_variant(f, p.value, resource_map, external_resources, string_map, p.pi);
 		}
 	}
@@ -2362,7 +2346,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Cannot open file '%s'.", p_path));
 
 	Ref<FileAccess> fw;
 
@@ -2375,14 +2359,14 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 		Ref<FileAccessCompressed> fac;
 		fac.instantiate();
 		Error err = fac->open_after_magic(f);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot open file '%s'.", p_path));
 		f = fac;
 
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
 		facw->configure("RSCC");
 		err = facw->open_internal(p_path + ".uidren", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, "Cannot create file '" + p_path + ".uidren'.");
+		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, vformat("Cannot create file '%s.uidren'.", p_path));
 
 		fw = facw;
 
@@ -2391,7 +2375,7 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 		return ERR_FILE_UNRECOGNIZED;
 	} else {
 		fw = FileAccess::open(p_path + ".uidren", FileAccess::WRITE);
-		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + ".uidren'.");
+		ERR_FAIL_COND_V_MSG(fw.is_null(), ERR_CANT_CREATE, vformat("Cannot create file '%s.uidren'.", p_path));
 
 		uint8_t magich[4] = { 'R', 'S', 'R', 'C' };
 		fw->store_buffer(magich, 4);
@@ -2400,13 +2384,10 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 	big_endian = f->get_32();
 	bool use_real64 = f->get_32();
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
-#ifdef BIG_ENDIAN_ENABLED
-	fw->store_32(!big_endian);
-#else
+
 	fw->store_32(big_endian);
-#endif
-	fw->set_big_endian(big_endian != 0);
 	fw->store_32(use_real64); //use real64
+	fw->set_big_endian(big_endian != 0);
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -2422,14 +2403,14 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 
 		// Use the old approach.
 
-		WARN_PRINT("This file is old, so it does not support UIDs, opening and resaving '" + p_path + "'.");
+		WARN_PRINT(vformat("This file is old, so it does not support UIDs, opening and resaving '%s'.", p_path));
 		return ERR_UNAVAILABLE;
 	}
 
-	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_format > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED,
 				vformat("File '%s' can't be loaded, as it uses a format version (%d) or engine version (%d.%d) which are not supported by your engine version (%s).",
-						local_path, ver_format, ver_major, ver_minor, VERSION_BRANCH));
+						local_path, ver_format, ver_major, ver_minor, GODOT_VERSION_BRANCH));
 	}
 
 	// Since we're not actually converting the file contents, leave the version
@@ -2447,7 +2428,7 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 	f->get_64(); // Skip previous UID
 
 	fw->store_32(flags);
-	fw->store_64(p_uid);
+	fw->store_64(uint64_t(p_uid));
 
 	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
 		save_ustring(fw, get_ustring(f));
@@ -2499,8 +2480,6 @@ void ResourceFormatSaverBinary::get_recognized_extensions(const Ref<Resource> &p
 		p_extensions->push_back("res");
 	}
 }
-
-ResourceFormatSaverBinary *ResourceFormatSaverBinary::singleton = nullptr;
 
 ResourceFormatSaverBinary::ResourceFormatSaverBinary() {
 	singleton = this;

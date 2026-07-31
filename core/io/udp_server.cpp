@@ -30,6 +30,8 @@
 
 #include "udp_server.h"
 
+#include "core/object/class_db.h"
+
 void UDPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("poll"), &UDPServer::poll);
@@ -44,7 +46,7 @@ void UDPServer::_bind_methods() {
 }
 
 Error UDPServer::poll() {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	if (!_sock->is_open()) {
 		return ERR_UNCONFIGURED;
 	}
@@ -78,17 +80,27 @@ Error UDPServer::poll() {
 			Peer peer;
 			peer.ip = ip;
 			peer.port = port;
-			peer.peer = memnew(PacketPeerUDP);
+			Ref<PacketPeerUDP> peer_ref = memnew(PacketPeerUDP);
+			peer.peer = peer_ref.ptr();
 			peer.peer->connect_shared_socket(_sock, ip, port, this);
 			peer.peer->store_packet(ip, port, recv_buffer, read);
 			pending.push_back(peer);
+
+			// FIXME: peer.peer is intentionally leaked such that it can destruct
+			//        when the client no longer needs it.
+			//        The current system 'abuses' the refcount_init semantics, such
+			//        that the first take_connection call takes ownership. A refactor
+			//        with a better "transfer ownership" semantics is warranted to avoid
+			//        accidental leaks.
+			peer_ref->reference();
+			peer_ref->deinit_ref();
 		}
 	}
 	return OK;
 }
 
 Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
@@ -99,7 +111,7 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 	}
 
-	err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+	err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_UDP, ip_type);
 
 	if (err != OK) {
 		return ERR_CANT_CREATE;
@@ -107,7 +119,8 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_reuse_address_enabled(true);
-	err = _sock->bind(p_bind_address, p_port);
+	NetSocket::Address addr(p_bind_address, p_port);
+	err = _sock->bind(addr);
 
 	if (err != OK) {
 		stop();
@@ -117,19 +130,19 @@ Error UDPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 }
 
 int UDPServer::get_local_port() const {
-	uint16_t local_port;
-	_sock->get_socket_address(nullptr, &local_port);
-	return local_port;
+	NetSocket::Address addr;
+	_sock->get_socket_address(&addr);
+	return addr.port();
 }
 
 bool UDPServer::is_listening() const {
-	ERR_FAIL_COND_V(!_sock.is_valid(), false);
+	ERR_FAIL_COND_V(_sock.is_null(), false);
 
 	return _sock->is_open();
 }
 
 bool UDPServer::is_connection_available() const {
-	ERR_FAIL_COND_V(!_sock.is_valid(), false);
+	ERR_FAIL_COND_V(_sock.is_null(), false);
 
 	if (!_sock->is_open()) {
 		return false;
@@ -184,6 +197,7 @@ void UDPServer::stop() {
 	List<Peer>::Element *E = peers.front();
 	while (E) {
 		E->get().peer->disconnect_shared_socket();
+		// Don't delete peer; it's intentionally weakly owned.
 		E = E->next();
 	}
 	E = pending.front();

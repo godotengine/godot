@@ -3,7 +3,6 @@ class MyClass:
 
 enum MyEnum {A, B, C}
 
-const Utils = preload("../../utils.notest.gd")
 const Other = preload("./metatypes.notest.gd")
 
 var test_native := JSON

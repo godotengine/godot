@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef REFLECTION_PROBE_H
-#define REFLECTION_PROBE_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 
@@ -51,6 +50,7 @@ public:
 private:
 	RID probe;
 	float intensity = 1.0;
+	float blend_distance = 1.0;
 	float max_distance = 0.0;
 	Vector3 size = Vector3(20, 20, 20);
 	Vector3 origin_offset = Vector3(0, 0, 0);
@@ -77,6 +77,9 @@ protected:
 public:
 	void set_intensity(float p_intensity);
 	float get_intensity() const;
+
+	void set_blend_distance(float p_blend_distance);
+	float get_blend_distance() const;
 
 	void set_ambient_mode(AmbientMode p_mode);
 	AmbientMode get_ambient_mode() const;
@@ -128,5 +131,3 @@ public:
 
 VARIANT_ENUM_CAST(ReflectionProbe::AmbientMode);
 VARIANT_ENUM_CAST(ReflectionProbe::UpdateMode);
-
-#endif // REFLECTION_PROBE_H

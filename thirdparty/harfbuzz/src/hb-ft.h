@@ -84,6 +84,13 @@ hb_ft_face_create_cached (FT_Face ft_face);
 HB_EXTERN hb_face_t *
 hb_ft_face_create_referenced (FT_Face ft_face);
 
+HB_EXTERN hb_face_t *
+hb_ft_face_create_from_file_or_fail (const char   *file_name,
+				     unsigned int  index);
+
+HB_EXTERN hb_face_t *
+hb_ft_face_create_from_blob_or_fail (hb_blob_t    *blob,
+				     unsigned int  index);
 
 /*
  * hb-font from ft-face.
@@ -108,7 +115,7 @@ HB_EXTERN hb_font_t *
 hb_ft_font_create_referenced (FT_Face ft_face);
 
 HB_EXTERN FT_Face
-hb_ft_font_get_face (hb_font_t *font);
+hb_ft_font_get_ft_face (hb_font_t *font);
 
 HB_EXTERN FT_Face
 hb_ft_font_lock_face (hb_font_t *font);
@@ -139,6 +146,13 @@ hb_ft_hb_font_changed (hb_font_t *font);
 HB_EXTERN void
 hb_ft_font_set_funcs (hb_font_t *font);
 
+#ifndef HB_DISABLE_DEPRECATED
+
+HB_DEPRECATED_FOR (hb_ft_font_get_ft_face)
+HB_EXTERN FT_Face
+hb_ft_font_get_face (hb_font_t *font);
+
+#endif
 
 HB_END_DECLS
 

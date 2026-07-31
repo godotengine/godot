@@ -1,8 +1,8 @@
-MiniZip - Copyright (c) 1998-2010 - by Gilles Vollant - version 1.1 64 bits from Mathias Svensson
+MiniZip - Copyright (c) 1998-2026 - by Gilles Vollant - version 1.1 64 bits from Mathias Svensson
 
 Introduction
 ---------------------
-MiniZip 1.1 is built from MiniZip 1.0 by Gilles Vollant ( http://www.winimage.com/zLibDll/minizip.html )
+MiniZip 1.1 is built from MiniZip 1.0 by Gilles Vollant ( https://www.winimage.com/zLibDll/minizip.html )
 
 When adding ZIP64 support into minizip it would result into risk of breaking compatibility with minizip 1.0.
 All possible work was done for compatibility.
@@ -11,7 +11,7 @@ All possible work was done for compatibility.
 Background
 ---------------------
 When adding ZIP64 support Mathias Svensson found that Even Rouault have added ZIP64 
-support for unzip.c into minizip for a open source project called gdal ( http://www.gdal.org/ )
+support for unzip.c into minizip for a open source project called gdal ( https://www.gdal.org/ )
 
 That was used as a starting point. And after that ZIP64 support was added to zip.c
 some refactoring and code cleanup was also done.
@@ -36,14 +36,9 @@ Credits
  Mathias Svensson  - ZIP64 zip support
  Mathias Svensson  - BZip Compression method support in zip
 
- Resources
+ Resource
 
- ZipLayout   http://result42.com/projects/ZipFileLayout
-             Command line tool for Windows that shows the layout and information of the headers in a zip archive.
-             Used when debugging and validating the creation of zip files using MiniZip64
-
-
- ZIP App Note  http://www.pkware.com/documents/casestudies/APPNOTE.TXT
+ ZIP App Note  https://www.pkware.com/documents/casestudies/APPNOTE.TXT
                Zip File specification
 
 

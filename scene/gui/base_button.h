@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BASE_BUTTON_H
-#define BASE_BUTTON_H
+#pragma once
 
 #include "core/input/shortcut.h"
 #include "scene/gui/control.h"
 
 class ButtonGroup;
+class Timer;
 
 class BaseButton : public Control {
 	GDCLASS(BaseButton, Control);
@@ -46,6 +46,10 @@ public:
 	};
 
 private:
+	struct ThemeCache {
+		int click_margin = 0;
+	} theme_cache;
+
 	BitField<MouseButtonMask> button_mask = MouseButtonMask::LEFT;
 	bool toggle_mode = false;
 	bool shortcut_in_tooltip = true;
@@ -61,9 +65,9 @@ private:
 		bool hovering = false;
 		bool press_attempt = false;
 		bool pressing_inside = false;
-
+		bool pressed_down_with_focus = false;
 		bool disabled = false;
-
+		int touch_index = -1;
 	} status;
 
 	Ref<ButtonGroup> button_group;
@@ -87,6 +91,7 @@ protected:
 	void _notification(int p_what);
 
 	bool _was_pressed_by_mouse() const;
+	void _accessibility_action_click(const Variant &p_data);
 
 	GDVIRTUAL0(_pressed)
 	GDVIRTUAL1(_toggled, bool)
@@ -101,6 +106,8 @@ public:
 	};
 
 	DrawMode get_draw_mode() const;
+
+	virtual bool has_point(const Point2 &p_point) const override;
 
 	/* Signals */
 
@@ -134,7 +141,7 @@ public:
 	void set_shortcut(const Ref<Shortcut> &p_shortcut);
 	Ref<Shortcut> get_shortcut() const;
 
-	virtual String get_tooltip(const Point2 &p_pos) const override;
+	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
@@ -165,5 +172,3 @@ public:
 	bool is_allow_unpress();
 	ButtonGroup();
 };
-
-#endif // BASE_BUTTON_H

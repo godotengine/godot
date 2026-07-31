@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef XR_POSE_H
-#define XR_POSE_H
+#pragma once
 
 #include "core/object/ref_counted.h"
+#include "core/variant/type_info.h"
 
 class XRPose : public RefCounted {
 	GDCLASS(XRPose, RefCounted);
@@ -77,5 +77,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(XRPose::TrackingConfidence);
-
-#endif // XR_POSE_H

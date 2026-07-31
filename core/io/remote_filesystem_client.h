@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef REMOTE_FILESYSTEM_CLIENT_H
-#define REMOTE_FILESYSTEM_CLIENT_H
+#pragma once
 
-#include "core/io/ip_address.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/local_vector.h"
@@ -50,7 +48,7 @@ protected:
 	virtual bool _is_configured() { return !cache_path.is_empty(); }
 	// Can be re-implemented per platform. If so, feel free to ignore get_cache_path()
 	virtual Vector<FileCache> _load_cache_file();
-	virtual Error _store_file(const String &p_path, const LocalVector<uint8_t> &p_file, uint64_t &modified_time);
+	virtual Error _store_file(const String &p_path, const LocalVector<uint8_t> &p_file, uint64_t &r_modified_time);
 	virtual Error _remove_file(const String &p_path);
 	virtual Error _store_cache_file(const Vector<FileCache> &p_cache);
 	virtual Error _synchronize_with_server(const String &p_host, int p_port, const String &p_password, String &r_cache_path);
@@ -61,5 +59,3 @@ public:
 	Error synchronize_with_server(const String &p_host, int p_port, const String &p_password, String &r_cache_path);
 	virtual ~RemoteFilesystemClient() {}
 };
-
-#endif // REMOTE_FILESYSTEM_CLIENT_H

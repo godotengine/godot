@@ -194,6 +194,51 @@ namespace Godot
         }
 
         /// <summary>
+        /// The OKHSL hue of this color, on the range 0 to 1.
+        /// </summary>
+        public float OkHslH
+        {
+            readonly get
+            {
+                return NativeFuncs.godotsharp_color_get_ok_hsl_h(this);
+            }
+            set
+            {
+                this = FromOkHsl(value, OkHslS, OkHslL, A);
+            }
+        }
+
+        /// <summary>
+        /// The OKHSL saturation of this color, on the range 0 to 1.
+        /// </summary>
+        public float OkHslS
+        {
+            readonly get
+            {
+                return NativeFuncs.godotsharp_color_get_ok_hsl_s(this);
+            }
+            set
+            {
+                this = FromOkHsl(OkHslH, value, OkHslL, A);
+            }
+        }
+
+        /// <summary>
+        /// The OKHSL lightness of this color, on the range 0 to 1.
+        /// </summary>
+        public float OkHslL
+        {
+            readonly get
+            {
+                return NativeFuncs.godotsharp_color_get_ok_hsl_l(this);
+            }
+            set
+            {
+                this = FromOkHsl(OkHslH, OkHslS, value, A);
+            }
+        }
+
+        /// <summary>
         /// Returns the light intensity of the color, as a value between 0.0 and 1.0 (inclusive).
         /// This is useful when determining light or dark color. Colors with a luminance smaller
         /// than 0.5 can be generally considered dark.
@@ -1048,6 +1093,15 @@ namespace Godot
             left.A -= right.A;
             return left;
         }
+
+        /// <summary>
+        /// Returns the same value as if the <c>+</c> was not there.
+        /// Unary <c>+</c> does nothing, but sometimes it can make your
+        /// code more readable.
+        /// </summary>
+        /// <param name="color">The color to do nothing to.</param>
+        /// <returns>The original color.</returns>
+        public static Color operator +(Color color) => color;
 
         /// <summary>
         /// Inverts the given color. This is equivalent to

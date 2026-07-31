@@ -14,11 +14,17 @@
 #include "src/dsp/dsp.h"
 
 #if defined(WEBP_USE_SSE2)
-#include <assert.h>
 #include <emmintrin.h>
+
+#include <assert.h>
+#include <string.h>
+
+#include "src/dsp/cpu.h"
 #include "src/dsp/lossless.h"
-#include "src/dsp/common_sse2.h"
 #include "src/dsp/lossless_common.h"
+#include "src/utils/utils.h"
+#include "src/webp/format_constants.h"
+#include "src/webp/types.h"
 
 // For sign-extended multiplying constants, pre-shifted by 5:
 #define CST_5b(X)  (((int16_t)((uint16_t)(X) << 8)) >> 5)
@@ -49,11 +55,12 @@ static void SubtractGreenFromBlueAndRed_SSE2(uint32_t* argb_data,
 #define MK_CST_16(HI, LO) \
   _mm_set1_epi32((int)(((uint32_t)(HI) << 16) | ((LO) & 0xffff)))
 
-static void TransformColor_SSE2(const VP8LMultipliers* const m,
-                                uint32_t* argb_data, int num_pixels) {
-  const __m128i mults_rb = MK_CST_16(CST_5b(m->green_to_red_),
-                                     CST_5b(m->green_to_blue_));
-  const __m128i mults_b2 = MK_CST_16(CST_5b(m->red_to_blue_), 0);
+static void TransformColor_SSE2(const VP8LMultipliers* WEBP_RESTRICT const m,
+                                uint32_t* WEBP_RESTRICT argb_data,
+                                int num_pixels) {
+  const __m128i mults_rb = MK_CST_16(CST_5b(m->green_to_red),
+                                     CST_5b(m->green_to_blue));
+  const __m128i mults_b2 = MK_CST_16(CST_5b(m->red_to_blue), 0);
   const __m128i mask_ag = _mm_set1_epi32((int)0xff00ff00);  // alpha-green masks
   const __m128i mask_rb = _mm_set1_epi32(0x00ff00ff);       // red-blue masks
   int i;
@@ -79,10 +86,11 @@ static void TransformColor_SSE2(const VP8LMultipliers* const m,
 
 //------------------------------------------------------------------------------
 #define SPAN 8
-static void CollectColorBlueTransforms_SSE2(const uint32_t* argb, int stride,
+static void CollectColorBlueTransforms_SSE2(const uint32_t* WEBP_RESTRICT argb,
+                                            int stride,
                                             int tile_width, int tile_height,
                                             int green_to_blue, int red_to_blue,
-                                            int histo[]) {
+                                            uint32_t histo[]) {
   const __m128i mults_r = MK_CST_16(CST_5b(red_to_blue), 0);
   const __m128i mults_g = MK_CST_16(0, CST_5b(green_to_blue));
   const __m128i mask_g = _mm_set1_epi32(0x00ff00);  // green mask
@@ -126,9 +134,10 @@ static void CollectColorBlueTransforms_SSE2(const uint32_t* argb, int stride,
   }
 }
 
-static void CollectColorRedTransforms_SSE2(const uint32_t* argb, int stride,
+static void CollectColorRedTransforms_SSE2(const uint32_t* WEBP_RESTRICT argb,
+                                           int stride,
                                            int tile_width, int tile_height,
-                                           int green_to_red, int histo[]) {
+                                           int green_to_red, uint32_t histo[]) {
   const __m128i mults_g = MK_CST_16(0, CST_5b(green_to_red));
   const __m128i mask_g = _mm_set1_epi32(0x00ff00);  // green mask
   const __m128i mask = _mm_set1_epi32(0xff);
@@ -172,75 +181,113 @@ static void CollectColorRedTransforms_SSE2(const uint32_t* argb, int stride,
 
 // Note we are adding uint32_t's as *signed* int32's (using _mm_add_epi32). But
 // that's ok since the histogram values are less than 1<<28 (max picture size).
-#define LINE_SIZE 16    // 8 or 16
-static void AddVector_SSE2(const uint32_t* a, const uint32_t* b, uint32_t* out,
-                           int size) {
-  int i;
-  for (i = 0; i + LINE_SIZE <= size; i += LINE_SIZE) {
+static void AddVector_SSE2(const uint32_t* WEBP_RESTRICT a,
+                           const uint32_t* WEBP_RESTRICT b,
+                           uint32_t* WEBP_RESTRICT out, int size) {
+  int i = 0;
+  int aligned_size = size & ~15;
+  // Size is, at minimum, NUM_DISTANCE_CODES (40) and may be as large as
+  // NUM_LITERAL_CODES (256) + NUM_LENGTH_CODES (24) + (0 or a non-zero power of
+  // 2). See the usage in VP8LHistogramAdd().
+  assert(size >= 16);
+  assert(size % 2 == 0);
+
+  do {
     const __m128i a0 = _mm_loadu_si128((const __m128i*)&a[i +  0]);
     const __m128i a1 = _mm_loadu_si128((const __m128i*)&a[i +  4]);
-#if (LINE_SIZE == 16)
     const __m128i a2 = _mm_loadu_si128((const __m128i*)&a[i +  8]);
     const __m128i a3 = _mm_loadu_si128((const __m128i*)&a[i + 12]);
-#endif
     const __m128i b0 = _mm_loadu_si128((const __m128i*)&b[i +  0]);
     const __m128i b1 = _mm_loadu_si128((const __m128i*)&b[i +  4]);
-#if (LINE_SIZE == 16)
     const __m128i b2 = _mm_loadu_si128((const __m128i*)&b[i +  8]);
     const __m128i b3 = _mm_loadu_si128((const __m128i*)&b[i + 12]);
-#endif
     _mm_storeu_si128((__m128i*)&out[i +  0], _mm_add_epi32(a0, b0));
     _mm_storeu_si128((__m128i*)&out[i +  4], _mm_add_epi32(a1, b1));
-#if (LINE_SIZE == 16)
     _mm_storeu_si128((__m128i*)&out[i +  8], _mm_add_epi32(a2, b2));
     _mm_storeu_si128((__m128i*)&out[i + 12], _mm_add_epi32(a3, b3));
-#endif
+    i += 16;
+  } while (i != aligned_size);
+
+  if ((size & 8) != 0) {
+    const __m128i a0 = _mm_loadu_si128((const __m128i*)&a[i + 0]);
+    const __m128i a1 = _mm_loadu_si128((const __m128i*)&a[i + 4]);
+    const __m128i b0 = _mm_loadu_si128((const __m128i*)&b[i + 0]);
+    const __m128i b1 = _mm_loadu_si128((const __m128i*)&b[i + 4]);
+    _mm_storeu_si128((__m128i*)&out[i + 0], _mm_add_epi32(a0, b0));
+    _mm_storeu_si128((__m128i*)&out[i + 4], _mm_add_epi32(a1, b1));
+    i += 8;
   }
-  for (; i < size; ++i) {
-    out[i] = a[i] + b[i];
+
+  size &= 7;
+  if (size == 4) {
+    const __m128i a0 = _mm_loadu_si128((const __m128i*)&a[i]);
+    const __m128i b0 = _mm_loadu_si128((const __m128i*)&b[i]);
+    _mm_storeu_si128((__m128i*)&out[i], _mm_add_epi32(a0, b0));
+  } else if (size == 2) {
+    const __m128i a0 = _mm_loadl_epi64((const __m128i*)&a[i]);
+    const __m128i b0 = _mm_loadl_epi64((const __m128i*)&b[i]);
+    _mm_storel_epi64((__m128i*)&out[i], _mm_add_epi32(a0, b0));
   }
 }
 
-static void AddVectorEq_SSE2(const uint32_t* a, uint32_t* out, int size) {
-  int i;
-  for (i = 0; i + LINE_SIZE <= size; i += LINE_SIZE) {
+static void AddVectorEq_SSE2(const uint32_t* WEBP_RESTRICT a,
+                             uint32_t* WEBP_RESTRICT out, int size) {
+  int i = 0;
+  int aligned_size = size & ~15;
+  // Size is, at minimum, NUM_DISTANCE_CODES (40) and may be as large as
+  // NUM_LITERAL_CODES (256) + NUM_LENGTH_CODES (24) + (0 or a non-zero power of
+  // 2). See the usage in VP8LHistogramAdd().
+  assert(size >= 16);
+  assert(size % 2 == 0);
+
+  do {
     const __m128i a0 = _mm_loadu_si128((const __m128i*)&a[i +  0]);
     const __m128i a1 = _mm_loadu_si128((const __m128i*)&a[i +  4]);
-#if (LINE_SIZE == 16)
     const __m128i a2 = _mm_loadu_si128((const __m128i*)&a[i +  8]);
     const __m128i a3 = _mm_loadu_si128((const __m128i*)&a[i + 12]);
-#endif
     const __m128i b0 = _mm_loadu_si128((const __m128i*)&out[i +  0]);
     const __m128i b1 = _mm_loadu_si128((const __m128i*)&out[i +  4]);
-#if (LINE_SIZE == 16)
     const __m128i b2 = _mm_loadu_si128((const __m128i*)&out[i +  8]);
     const __m128i b3 = _mm_loadu_si128((const __m128i*)&out[i + 12]);
-#endif
     _mm_storeu_si128((__m128i*)&out[i +  0], _mm_add_epi32(a0, b0));
     _mm_storeu_si128((__m128i*)&out[i +  4], _mm_add_epi32(a1, b1));
-#if (LINE_SIZE == 16)
     _mm_storeu_si128((__m128i*)&out[i +  8], _mm_add_epi32(a2, b2));
     _mm_storeu_si128((__m128i*)&out[i + 12], _mm_add_epi32(a3, b3));
-#endif
+    i += 16;
+  } while (i != aligned_size);
+
+  if ((size & 8) != 0) {
+    const __m128i a0 = _mm_loadu_si128((const __m128i*)&a[i + 0]);
+    const __m128i a1 = _mm_loadu_si128((const __m128i*)&a[i + 4]);
+    const __m128i b0 = _mm_loadu_si128((const __m128i*)&out[i + 0]);
+    const __m128i b1 = _mm_loadu_si128((const __m128i*)&out[i + 4]);
+    _mm_storeu_si128((__m128i*)&out[i + 0], _mm_add_epi32(a0, b0));
+    _mm_storeu_si128((__m128i*)&out[i + 4], _mm_add_epi32(a1, b1));
+    i += 8;
   }
-  for (; i < size; ++i) {
-    out[i] += a[i];
+
+  size &= 7;
+  if (size == 4) {
+    const __m128i a0 = _mm_loadu_si128((const __m128i*)&a[i]);
+    const __m128i b0 = _mm_loadu_si128((const __m128i*)&out[i]);
+    _mm_storeu_si128((__m128i*)&out[i], _mm_add_epi32(a0, b0));
+  } else if (size == 2) {
+    const __m128i a0 = _mm_loadl_epi64((const __m128i*)&a[i]);
+    const __m128i b0 = _mm_loadl_epi64((const __m128i*)&out[i]);
+    _mm_storel_epi64((__m128i*)&out[i], _mm_add_epi32(a0, b0));
   }
 }
-#undef LINE_SIZE
 
 //------------------------------------------------------------------------------
 // Entropy
 
-// TODO(https://crbug.com/webp/499): this function produces different results
-// from the C code due to use of double/float resulting in output differences
-// when compared to -noasm.
-#if !(defined(WEBP_HAVE_SLOW_CLZ_CTZ) || defined(__i386__) || defined(_M_IX86))
+#if !defined(WEBP_HAVE_SLOW_CLZ_CTZ)
 
-static float CombinedShannonEntropy_SSE2(const int X[256], const int Y[256]) {
+static uint64_t CombinedShannonEntropy_SSE2(const uint32_t X[256],
+                                            const uint32_t Y[256]) {
   int i;
-  float retval = 0.f;
-  int sumX = 0, sumXY = 0;
+  uint64_t retval = 0;
+  uint32_t sumX = 0, sumXY = 0;
   const __m128i zero = _mm_setzero_si128();
 
   for (i = 0; i < 256; i += 16) {
@@ -260,19 +307,19 @@ static float CombinedShannonEntropy_SSE2(const int X[256], const int Y[256]) {
     int32_t my = _mm_movemask_epi8(_mm_cmpgt_epi8(y4, zero)) | mx;
     while (my) {
       const int32_t j = BitsCtz(my);
-      int xy;
+      uint32_t xy;
       if ((mx >> j) & 1) {
         const int x = X[i + j];
         sumXY += x;
-        retval -= VP8LFastSLog2(x);
+        retval += VP8LFastSLog2(x);
       }
       xy = X[i + j] + Y[i + j];
       sumX += xy;
-      retval -= VP8LFastSLog2(xy);
+      retval += VP8LFastSLog2(xy);
       my &= my - 1;
     }
   }
-  retval += VP8LFastSLog2(sumX) + VP8LFastSLog2(sumXY);
+  retval = VP8LFastSLog2(sumX) + VP8LFastSLog2(sumXY) - retval;
   return retval;
 }
 
@@ -335,8 +382,9 @@ static int VectorMismatch_SSE2(const uint32_t* const array1,
 }
 
 // Bundles multiple (1, 2, 4 or 8) pixels into a single pixel.
-static void BundleColorMap_SSE2(const uint8_t* const row, int width, int xbits,
-                                uint32_t* dst) {
+static void BundleColorMap_SSE2(const uint8_t* WEBP_RESTRICT const row,
+                                int width, int xbits,
+                                uint32_t* WEBP_RESTRICT dst) {
   int x;
   assert(xbits >= 0);
   assert(xbits <= 3);
@@ -425,7 +473,7 @@ static WEBP_INLINE void Average2_m128i(const __m128i* const a0,
 
 // Predictor0: ARGB_BLACK.
 static void PredictorSub0_SSE2(const uint32_t* in, const uint32_t* upper,
-                               int num_pixels, uint32_t* out) {
+                               int num_pixels, uint32_t* WEBP_RESTRICT out) {
   int i;
   const __m128i black = _mm_set1_epi32((int)ARGB_BLACK);
   for (i = 0; i + 4 <= num_pixels; i += 4) {
@@ -442,7 +490,8 @@ static void PredictorSub0_SSE2(const uint32_t* in, const uint32_t* upper,
 #define GENERATE_PREDICTOR_1(X, IN)                                         \
   static void PredictorSub##X##_SSE2(const uint32_t* const in,              \
                                      const uint32_t* const upper,           \
-                                     int num_pixels, uint32_t* const out) { \
+                                     int num_pixels,                        \
+                                     uint32_t* WEBP_RESTRICT const out) {   \
     int i;                                                                  \
     for (i = 0; i + 4 <= num_pixels; i += 4) {                              \
       const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);          \
@@ -464,7 +513,7 @@ GENERATE_PREDICTOR_1(4, upper[i - 1])    // Predictor4: TL
 
 // Predictor5: avg2(avg2(L, TR), T)
 static void PredictorSub5_SSE2(const uint32_t* in, const uint32_t* upper,
-                               int num_pixels, uint32_t* out) {
+                               int num_pixels, uint32_t* WEBP_RESTRICT out) {
   int i;
   for (i = 0; i + 4 <= num_pixels; i += 4) {
     const __m128i L = _mm_loadu_si128((const __m128i*)&in[i - 1]);
@@ -484,7 +533,8 @@ static void PredictorSub5_SSE2(const uint32_t* in, const uint32_t* upper,
 
 #define GENERATE_PREDICTOR_2(X, A, B)                                         \
 static void PredictorSub##X##_SSE2(const uint32_t* in, const uint32_t* upper, \
-                                   int num_pixels, uint32_t* out) {           \
+                                   int num_pixels,                            \
+                                   uint32_t* WEBP_RESTRICT out) {             \
   int i;                                                                      \
   for (i = 0; i + 4 <= num_pixels; i += 4) {                                  \
     const __m128i tA = _mm_loadu_si128((const __m128i*)&(A));                 \
@@ -508,7 +558,7 @@ GENERATE_PREDICTOR_2(9, upper[i], upper[i + 1])    // Predictor9: average(T, TR)
 
 // Predictor10: avg(avg(L,TL), avg(T, TR)).
 static void PredictorSub10_SSE2(const uint32_t* in, const uint32_t* upper,
-                                int num_pixels, uint32_t* out) {
+                                int num_pixels, uint32_t* WEBP_RESTRICT out) {
   int i;
   for (i = 0; i + 4 <= num_pixels; i += 4) {
     const __m128i L = _mm_loadu_si128((const __m128i*)&in[i - 1]);
@@ -543,7 +593,7 @@ static void GetSumAbsDiff32_SSE2(const __m128i* const A, const __m128i* const B,
 }
 
 static void PredictorSub11_SSE2(const uint32_t* in, const uint32_t* upper,
-                                int num_pixels, uint32_t* out) {
+                                int num_pixels, uint32_t* WEBP_RESTRICT out) {
   int i;
   for (i = 0; i + 4 <= num_pixels; i += 4) {
     const __m128i L = _mm_loadu_si128((const __m128i*)&in[i - 1]);
@@ -569,7 +619,7 @@ static void PredictorSub11_SSE2(const uint32_t* in, const uint32_t* upper,
 
 // Predictor12: ClampedSubSubtractFull.
 static void PredictorSub12_SSE2(const uint32_t* in, const uint32_t* upper,
-                                int num_pixels, uint32_t* out) {
+                                int num_pixels, uint32_t* WEBP_RESTRICT out) {
   int i;
   const __m128i zero = _mm_setzero_si128();
   for (i = 0; i + 4 <= num_pixels; i += 4) {
@@ -598,28 +648,46 @@ static void PredictorSub12_SSE2(const uint32_t* in, const uint32_t* upper,
 
 // Predictors13: ClampedAddSubtractHalf
 static void PredictorSub13_SSE2(const uint32_t* in, const uint32_t* upper,
-                                int num_pixels, uint32_t* out) {
+                                int num_pixels, uint32_t* WEBP_RESTRICT out) {
   int i;
   const __m128i zero = _mm_setzero_si128();
-  for (i = 0; i + 2 <= num_pixels; i += 2) {
-    // we can only process two pixels at a time
-    const __m128i L = _mm_loadl_epi64((const __m128i*)&in[i - 1]);
-    const __m128i src = _mm_loadl_epi64((const __m128i*)&in[i]);
-    const __m128i T = _mm_loadl_epi64((const __m128i*)&upper[i]);
-    const __m128i TL = _mm_loadl_epi64((const __m128i*)&upper[i - 1]);
-    const __m128i L_lo = _mm_unpacklo_epi8(L, zero);
-    const __m128i T_lo = _mm_unpacklo_epi8(T, zero);
-    const __m128i TL_lo = _mm_unpacklo_epi8(TL, zero);
-    const __m128i sum = _mm_add_epi16(T_lo, L_lo);
-    const __m128i avg = _mm_srli_epi16(sum, 1);
-    const __m128i A1 = _mm_sub_epi16(avg, TL_lo);
-    const __m128i bit_fix = _mm_cmpgt_epi16(TL_lo, avg);
-    const __m128i A2 = _mm_sub_epi16(A1, bit_fix);
-    const __m128i A3 = _mm_srai_epi16(A2, 1);
-    const __m128i A4 = _mm_add_epi16(avg, A3);
-    const __m128i pred = _mm_packus_epi16(A4, A4);
-    const __m128i res = _mm_sub_epi8(src, pred);
-    _mm_storel_epi64((__m128i*)&out[i], res);
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const __m128i L = _mm_loadu_si128((const __m128i*)&in[i - 1]);
+    const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);
+    const __m128i T = _mm_loadu_si128((const __m128i*)&upper[i]);
+    const __m128i TL = _mm_loadu_si128((const __m128i*)&upper[i - 1]);
+    __m128i A4_lo, A4_hi;
+    // lo.
+    {
+      const __m128i L_lo = _mm_unpacklo_epi8(L, zero);
+      const __m128i T_lo = _mm_unpacklo_epi8(T, zero);
+      const __m128i TL_lo = _mm_unpacklo_epi8(TL, zero);
+      const __m128i sum_lo = _mm_add_epi16(T_lo, L_lo);
+      const __m128i avg_lo = _mm_srli_epi16(sum_lo, 1);
+      const __m128i A1_lo = _mm_sub_epi16(avg_lo, TL_lo);
+      const __m128i bit_fix_lo = _mm_cmpgt_epi16(TL_lo, avg_lo);
+      const __m128i A2_lo = _mm_sub_epi16(A1_lo, bit_fix_lo);
+      const __m128i A3_lo = _mm_srai_epi16(A2_lo, 1);
+      A4_lo = _mm_add_epi16(avg_lo, A3_lo);
+    }
+    // hi.
+    {
+      const __m128i L_hi = _mm_unpackhi_epi8(L, zero);
+      const __m128i T_hi = _mm_unpackhi_epi8(T, zero);
+      const __m128i TL_hi = _mm_unpackhi_epi8(TL, zero);
+      const __m128i sum_hi = _mm_add_epi16(T_hi, L_hi);
+      const __m128i avg_hi = _mm_srli_epi16(sum_hi, 1);
+      const __m128i A1_hi = _mm_sub_epi16(avg_hi, TL_hi);
+      const __m128i bit_fix_hi = _mm_cmpgt_epi16(TL_hi, avg_hi);
+      const __m128i A2_hi = _mm_sub_epi16(A1_hi, bit_fix_hi);
+      const __m128i A3_hi = _mm_srai_epi16(A2_hi, 1);
+      A4_hi = _mm_add_epi16(avg_hi, A3_hi);
+    }
+    {
+      const __m128i pred = _mm_packus_epi16(A4_lo, A4_hi);
+      const __m128i res = _mm_sub_epi8(src, pred);
+      _mm_storeu_si128((__m128i*)&out[i], res);
+    }
   }
   if (i != num_pixels) {
     VP8LPredictorsSub_C[13](in + i, upper + i, num_pixels - i, out + i);
@@ -660,6 +728,15 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInitSSE2(void) {
   VP8LPredictorsSub[13] = PredictorSub13_SSE2;
   VP8LPredictorsSub[14] = PredictorSub0_SSE2;  // <- padding security sentinels
   VP8LPredictorsSub[15] = PredictorSub0_SSE2;
+
+  // SSE exports for AVX and above.
+  VP8LSubtractGreenFromBlueAndRed_SSE = SubtractGreenFromBlueAndRed_SSE2;
+  VP8LTransformColor_SSE = TransformColor_SSE2;
+  VP8LCollectColorBlueTransforms_SSE = CollectColorBlueTransforms_SSE2;
+  VP8LCollectColorRedTransforms_SSE = CollectColorRedTransforms_SSE2;
+  VP8LBundleColorMap_SSE = BundleColorMap_SSE2;
+
+  memcpy(VP8LPredictorsSub_SSE, VP8LPredictorsSub, sizeof(VP8LPredictorsSub));
 }
 
 #else  // !WEBP_USE_SSE2

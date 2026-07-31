@@ -1,0 +1,16 @@
+GH-80852
+--------
+Validate extension JSON: API was removed: classes/GDScriptEditorTranslationParserPlugin
+Validate extension JSON: API was removed: classes/GDScriptNativeClass
+Validate extension JSON: API was removed: classes/GodotPhysicsServer2D
+Validate extension JSON: API was removed: classes/GodotPhysicsServer3D
+Validate extension JSON: API was removed: classes/IPUnix
+Validate extension JSON: API was removed: classes/MovieWriterMJPEG
+Validate extension JSON: API was removed: classes/MovieWriterPNGWAV
+Validate extension JSON: API was removed: classes/ResourceFormatImporterSaver
+Validate extension JSON: API was removed: classes/FramebufferCacheRD
+Validate extension JSON: API was removed: classes/UniformSetCacheRD
+Validate extension JSON: API was removed: classes/GLTFDocumentExtensionPhysics
+Validate extension JSON: API was removed: classes/GLTFDocumentExtensionTextureWebP
+
+Excluded unexposed classes from extension_api.json.

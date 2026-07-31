@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EXTENSION_API_DUMP_H
-#define EXTENSION_API_DUMP_H
-
-#include "core/extension/gdextension.h"
+#pragma once
 
 #ifdef TOOLS_ENABLED
+
+#include "core/error/error_list.h"
+#include "core/string/ustring.h"
+#include "core/variant/dictionary.h"
 
 class GDExtensionAPIDump {
 public:
@@ -41,6 +42,5 @@ public:
 	static void generate_extension_json_file(const String &p_path, bool p_include_docs = false);
 	static Error validate_extension_json_file(const String &p_path);
 };
-#endif
 
-#endif // EXTENSION_API_DUMP_H
+#endif

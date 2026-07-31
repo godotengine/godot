@@ -28,32 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_COMPOSITION_LAYER_EQUIRECT_H
-#define OPENXR_COMPOSITION_LAYER_EQUIRECT_H
-
-#include <openxr/openxr.h>
+#pragma once
 
 #include "openxr_composition_layer.h"
+
+#include <openxr/openxr.h>
 
 class OpenXRCompositionLayerEquirect : public OpenXRCompositionLayer {
 	GDCLASS(OpenXRCompositionLayerEquirect, OpenXRCompositionLayer);
 
-	XrCompositionLayerEquirect2KHR composition_layer;
-
 	float radius = 1.0;
-	float central_horizontal_angle = Math_PI / 2.0;
-	float upper_vertical_angle = Math_PI / 4.0;
-	float lower_vertical_angle = Math_PI / 4.0;
+	float central_horizontal_angle = Math::PI / 2.0;
+	float upper_vertical_angle = Math::PI / 4.0;
+	float lower_vertical_angle = Math::PI / 4.0;
 	uint32_t fallback_segments = 10;
 
 protected:
 	static void _bind_methods();
 
-	void _notification(int p_what);
-
-	void update_transform();
-
 	virtual Ref<Mesh> _create_fallback_mesh() override;
+	virtual XrStructureType _get_openxr_type() const override {
+		return XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR;
+	}
 
 public:
 	void set_radius(float p_radius);
@@ -76,5 +72,3 @@ public:
 	OpenXRCompositionLayerEquirect();
 	~OpenXRCompositionLayerEquirect();
 };
-
-#endif // OPENXR_COMPOSITION_LAYER_EQUIRECT_H

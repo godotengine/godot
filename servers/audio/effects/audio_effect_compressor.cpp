@@ -29,23 +29,26 @@
 /**************************************************************************/
 
 #include "audio_effect_compressor.h"
-#include "servers/audio_server.h"
+
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	float threshold = Math::db_to_linear(base->threshold);
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
-	float ratatcoef = exp(-1 / (0.00001f * sample_rate));
-	float ratrelcoef = exp(-1 / (0.5f * sample_rate));
+	float ratatcoef = std::exp(-1 / (0.00001f * sample_rate));
+	float ratrelcoef = std::exp(-1 / (0.5f * sample_rate));
 	float attime = base->attack_us / 1000000.0;
 	float reltime = base->release_ms / 1000.0;
-	float atcoef = exp(-1 / (attime * sample_rate));
-	float relcoef = exp(-1 / (reltime * sample_rate));
+	float atcoef = std::exp(-1 / (attime * sample_rate));
+	float relcoef = std::exp(-1 / (reltime * sample_rate));
 
 	float makeup = Math::db_to_linear(base->gain);
 
 	float mix = base->mix;
-	float gr_meter_decay = exp(1 / (1 * sample_rate));
+	float gr_meter_decay = std::exp(1 / (1 * sample_rate));
 
 	const AudioFrame *src = p_src_frames;
 
@@ -185,6 +188,9 @@ StringName AudioEffectCompressor::get_sidechain() const {
 }
 
 void AudioEffectCompressor::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "sidechain") {
 		String buses = "";
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
@@ -218,9 +224,9 @@ void AudioEffectCompressor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sidechain", "sidechain"), &AudioEffectCompressor::set_sidechain);
 	ClassDB::bind_method(D_METHOD("get_sidechain"), &AudioEffectCompressor::get_sidechain);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "threshold", PROPERTY_HINT_RANGE, "-60,0,0.1"), "set_threshold", "get_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "threshold", PROPERTY_HINT_RANGE, "-60,0,0.1,suffix:dB"), "set_threshold", "get_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "1,48,0.1"), "set_ratio", "get_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gain", PROPERTY_HINT_RANGE, "-20,20,0.1"), "set_gain", "get_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gain", PROPERTY_HINT_RANGE, "-20,20,0.1,suffix:dB"), "set_gain", "get_gain");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attack_us", PROPERTY_HINT_RANGE, U"20,2000,1,suffix:\u00B5s"), "set_attack_us", "get_attack_us");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "release_ms", PROPERTY_HINT_RANGE, "20,2000,1,suffix:ms"), "set_release_ms", "get_release_ms");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mix", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_mix", "get_mix");

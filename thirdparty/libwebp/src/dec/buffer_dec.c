@@ -11,11 +11,16 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "src/dec/vp8i_dec.h"
 #include "src/dec/webpi_dec.h"
+#include "src/utils/rescaler_utils.h"
 #include "src/utils/utils.h"
+#include "src/webp/decode.h"
+#include "src/webp/types.h"
 
 //------------------------------------------------------------------------------
 // WebPDecBuffer
@@ -26,10 +31,9 @@ static const uint8_t kModeBpp[MODE_LAST] = {
   4, 4, 4, 2,    // pre-multiplied modes
   1, 1 };
 
-// Check that webp_csp_mode is within the bounds of WEBP_CSP_MODE.
 // Convert to an integer to handle both the unsigned/signed enum cases
 // without the need for casting to remove type limit warnings.
-static int IsValidColorspace(int webp_csp_mode) {
+int IsValidColorspace(int webp_csp_mode) {
   return (webp_csp_mode >= MODE_RGB && webp_csp_mode < MODE_LAST);
 }
 

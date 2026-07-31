@@ -28,10 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STATIC_BODY_2D_H
-#define STATIC_BODY_2D_H
+#pragma once
 
 #include "scene/2d/physics/physics_body_2d.h"
+
+class PhysicsMaterial;
+
+#ifndef NAVIGATION_2D_DISABLED
+class NavigationPolygon;
+class NavigationMeshSourceGeometryData2D;
+#endif
 
 class StaticBody2D : public PhysicsBody2D {
 	GDCLASS(StaticBody2D, PhysicsBody2D);
@@ -55,10 +61,18 @@ public:
 	Vector2 get_constant_linear_velocity() const;
 	real_t get_constant_angular_velocity() const;
 
-	StaticBody2D(PhysicsServer2D::BodyMode p_mode = PhysicsServer2D::BODY_MODE_STATIC);
+	StaticBody2D(PS2DE::BodyMode p_mode = PS2DE::BODY_MODE_STATIC);
+
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+#ifndef NAVIGATION_2D_DISABLED
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_2D_DISABLED
 
 private:
 	void _reload_physics_characteristics();
 };
-
-#endif // STATIC_BODY_2D_H

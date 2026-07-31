@@ -10,13 +10,13 @@ this platform such as the html shell (web page).
 
 ## Documentation
 
-- [Compiling for the Web](https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_web.html)
+- [Compiling for the Web](https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_web.html)
   - Instructions on building this platform port from source.
 - [Exporting for the Web](https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_web.html)
   - Instructions on using the compiled export templates to export a project.
 
 ## Artwork license
 
-[`logo.png`](logo.png) and [`run_icon.png`](run_icon.png) are licensed under
+[`logo.svg`](export/logo.svg) and [`run_icon.svg`](export/run_icon.svg) are licensed under
 [Creative Commons Attribution 3.0 Unported](https://www.w3.org/html/logo/faq.html#how-licenced)
 per the HTML5 logo usage guidelines.

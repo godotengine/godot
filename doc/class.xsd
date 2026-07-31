@@ -246,6 +246,8 @@
 											<xs:attribute type="xs:string" name="data_type" />
 											<xs:attribute type="xs:string" name="type" />
 											<xs:attribute type="xs:string" name="default" use="optional" />
+											<xs:attribute type="xs:string" name="deprecated" use="optional" />
+											<xs:attribute type="xs:string" name="experimental" use="optional" />
 											<xs:attribute type="xs:string" name="keywords" use="optional" />
 										</xs:extension>
 									</xs:simpleContent>
@@ -294,7 +296,8 @@
 				</xs:element>
 			</xs:sequence>
 			<xs:attribute type="xs:string" name="name" />
-			<xs:attribute type="xs:string" name="inherits" />
+			<xs:attribute type="xs:string" name="inherits" use="optional" />
+			<xs:attribute type="xs:string" name="api_type" use="optional" />
 			<!-- deprecated -->
 			<xs:attribute type="xs:float" name="version" use="optional" />
 			<xs:attribute type="xs:boolean" name="is_deprecated" use="optional" />

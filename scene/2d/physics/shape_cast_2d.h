@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHAPE_CAST_2D_H
-#define SHAPE_CAST_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/2d/shape_2d.h"
-#include "scene/resources/world_2d.h"
+#include "servers/physics_2d/physics_server_2d_types.h"
 
 class CollisionObject2D;
 
@@ -55,12 +54,11 @@ class ShapeCast2D : public Node2D {
 
 	// Result
 	int max_results = 32;
-	Vector<PhysicsDirectSpaceState2D::ShapeRestInfo> result;
+	Vector<PS2DT::ShapeRestInfo> result;
 	bool collided = false;
 	real_t collision_safe_fraction = 1.0;
 	real_t collision_unsafe_fraction = 1.0;
 
-	Array _get_collision_result() const;
 	void _shape_changed();
 
 protected:
@@ -102,6 +100,7 @@ public:
 	void force_shapecast_update();
 	bool is_colliding() const;
 
+	Array get_collision_result() const;
 	int get_collision_count() const;
 	Object *get_collider(int p_idx) const;
 	RID get_collider_rid(int p_idx) const;
@@ -113,14 +112,12 @@ public:
 	real_t get_closest_collision_unsafe_fraction() const;
 
 	void add_exception_rid(const RID &p_rid);
-	void add_exception(const CollisionObject2D *p_node);
+	void add_exception(RequiredParam<const CollisionObject2D> rp_node);
 	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(const CollisionObject2D *p_node);
+	void remove_exception(RequiredParam<const CollisionObject2D> rp_node);
 	void clear_exceptions();
 
 	PackedStringArray get_configuration_warnings() const override;
 
 	ShapeCast2D();
 };
-
-#endif // SHAPE_CAST_2D_H

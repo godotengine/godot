@@ -28,8 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BVH_ABB_H
-#define BVH_ABB_H
+#pragma once
+
+#include "core/math/aabb.h"
+
+#include <cfloat> // FLT_MAX
 
 // special optimized version of axis aligned bounding box
 template <typename BOUNDS = AABB, typename POINT = Vector3>
@@ -57,12 +60,12 @@ struct BVH_ABB {
 	POINT min;
 	POINT neg_max;
 
-	bool operator==(const BVH_ABB &o) const { return (min == o.min) && (neg_max == o.neg_max); }
-	bool operator!=(const BVH_ABB &o) const { return (*this == o) == false; }
+	bool operator==(const BVH_ABB &p_other) const { return (min == p_other.min) && (neg_max == p_other.neg_max); }
+	bool operator!=(const BVH_ABB &p_other) const { return (*this == p_other) == false; }
 
-	void set(const POINT &_min, const POINT &_max) {
-		min = _min;
-		neg_max = -_max;
+	void set(const POINT &p_min, const POINT &p_max) {
+		min = p_min;
+		neg_max = -p_max;
 	}
 
 	// to and from standard AABB
@@ -288,5 +291,3 @@ struct BVH_ABB {
 		return false;
 	}
 };
-
-#endif // BVH_ABB_H

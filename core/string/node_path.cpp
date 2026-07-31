@@ -30,28 +30,21 @@
 
 #include "node_path.h"
 
-#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 
 void NodePath::_update_hash_cache() const {
-	uint32_t h = data->absolute ? 1 : 0;
-	int pc = data->path.size();
-	const StringName *sn = data->path.ptr();
-	for (int i = 0; i < pc; i++) {
-		h = h ^ sn[i].hash();
-	}
-	int spc = data->subpath.size();
-	const StringName *ssn = data->subpath.ptr();
-	for (int i = 0; i < spc; i++) {
-		h = h ^ ssn[i].hash();
-	}
-
+	StringName path = get_concatenated_names();
+	StringName subpath = get_concatenated_subnames();
+	uint32_t hash = HashMapHasherDefault::hash(Pair<const StringName &, const StringName &>(path, subpath));
+	data->hash_cache = is_absolute() ? hash : ~hash;
 	data->hash_cache_valid = true;
-	data->hash_cache = h;
 }
 
 void NodePath::prepend_period() {
-	if (data->path.size() && data->path[0].operator String() != ".") {
+	if (data->path.size() && data->path[0].string() != ".") {
+		_copy_on_write();
 		data->path.insert(0, ".");
+		data->concatenated_path = StringName();
 		data->hash_cache_valid = false;
 	}
 }
@@ -116,6 +109,12 @@ bool NodePath::operator==(const NodePath &p_path) const {
 		return false;
 	}
 
+	if (data->hash_cache_valid && p_path.data->hash_cache_valid) {
+		if (data->hash_cache != p_path.data->hash_cache) {
+			return false;
+		}
+	}
+
 	if (data->absolute != p_path.data->absolute) {
 		return false;
 	}
@@ -169,6 +168,29 @@ void NodePath::operator=(const NodePath &p_path) {
 	}
 }
 
+void NodePath::_copy_on_write() {
+	if (!data) {
+		return; // No data; nothing to do.
+	}
+
+	if (data->refcount.get() == 1) {
+		return; // Already the only owner of data.
+	}
+
+	// Make a copy.
+	Data *new_data = memnew(Data);
+	new_data->refcount.init();
+	new_data->path = data->path;
+	new_data->subpath = data->subpath;
+	new_data->concatenated_path = data->concatenated_path;
+	new_data->concatenated_subpath = data->concatenated_subpath;
+	new_data->absolute = data->absolute;
+	new_data->hash_cache_valid = data->hash_cache_valid;
+	new_data->hash_cache = data->hash_cache;
+	unref();
+	data = new_data;
+}
+
 NodePath::operator String() const {
 	if (!data) {
 		return String();
@@ -179,15 +201,11 @@ NodePath::operator String() const {
 		ret = "/";
 	}
 
-	for (int i = 0; i < data->path.size(); i++) {
-		if (i > 0) {
-			ret += "/";
-		}
-		ret += data->path[i].operator String();
-	}
+	ret += get_concatenated_names();
 
-	for (int i = 0; i < data->subpath.size(); i++) {
-		ret += ":" + data->subpath[i].operator String();
+	String subpath = get_concatenated_subnames();
+	if (!subpath.is_empty()) {
+		ret += ":" + subpath;
 	}
 
 	return ret;
@@ -215,7 +233,10 @@ StringName NodePath::get_concatenated_names() const {
 		String concatenated;
 		const StringName *sn = data->path.ptr();
 		for (int i = 0; i < pc; i++) {
-			concatenated += i == 0 ? sn[i].operator String() : "/" + sn[i];
+			if (i > 0) {
+				concatenated += "/";
+			}
+			concatenated += sn[i].string();
 		}
 		data->concatenated_path = concatenated;
 	}
@@ -230,7 +251,10 @@ StringName NodePath::get_concatenated_subnames() const {
 		String concatenated;
 		const StringName *ssn = data->subpath.ptr();
 		for (int i = 0; i < spc; i++) {
-			concatenated += i == 0 ? ssn[i].operator String() : ":" + ssn[i];
+			if (i > 0) {
+				concatenated += ":";
+			}
+			concatenated += ssn[i].string();
 		}
 		data->concatenated_subpath = concatenated;
 	}
@@ -249,7 +273,7 @@ NodePath NodePath::slice(int p_begin, int p_end) const {
 	if (end < 0) {
 		end += total_count;
 	}
-	const int sub_begin = MAX(begin - name_count - 1, 0);
+	const int sub_begin = MAX(begin - name_count, 0);
 	const int sub_end = MAX(end - name_count, 0);
 
 	const Vector<StringName> names = get_names().slice(begin, end);
@@ -332,24 +356,26 @@ void NodePath::simplify() {
 	if (!data) {
 		return;
 	}
+	_copy_on_write();
 	for (int i = 0; i < data->path.size(); i++) {
 		if (data->path.size() == 1) {
 			break;
 		}
-		if (data->path[i].operator String() == ".") {
+		if (data->path[i].string() == ".") {
 			data->path.remove_at(i);
 			i--;
-		} else if (i > 0 && data->path[i].operator String() == ".." && data->path[i - 1].operator String() != "." && data->path[i - 1].operator String() != "..") {
+		} else if (i > 0 && data->path[i].string() == ".." && data->path[i - 1].string() != "." && data->path[i - 1].string() != "..") {
 			//remove both
 			data->path.remove_at(i - 1);
 			data->path.remove_at(i - 1);
 			i -= 2;
-			if (data->path.size() == 0) {
+			if (data->path.is_empty()) {
 				data->path.push_back(".");
 				break;
 			}
 		}
 	}
+	data->concatenated_path = StringName();
 	data->hash_cache_valid = false;
 }
 
@@ -360,7 +386,7 @@ NodePath NodePath::simplified() const {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
-	if (p_path.size() == 0 && !p_absolute) {
+	if (p_path.is_empty() && !p_absolute) {
 		return;
 	}
 
@@ -372,7 +398,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute) {
-	if (p_path.size() == 0 && p_subpath.size() == 0 && !p_absolute) {
+	if (p_path.is_empty() && p_subpath.is_empty() && !p_absolute) {
 		return;
 	}
 
@@ -401,7 +427,7 @@ NodePath::NodePath(const String &p_path) {
 	bool absolute = (path[0] == '/');
 	bool last_is_slash = true;
 	int slices = 0;
-	int subpath_pos = path.find(":");
+	int subpath_pos = path.find_char(':');
 
 	if (subpath_pos != -1) {
 		int from = subpath_pos + 1;
@@ -414,7 +440,7 @@ NodePath::NodePath(const String &p_path) {
 						continue; // Allow end-of-path :
 					}
 
-					ERR_FAIL_MSG("Invalid NodePath '" + p_path + "'.");
+					ERR_FAIL_MSG(vformat("Invalid NodePath '%s'.", p_path));
 				}
 				subpath.push_back(str);
 

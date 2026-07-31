@@ -42,8 +42,8 @@ struct VariantConstructData {
 static LocalVector<VariantConstructData> construct_data[Variant::VARIANT_MAX];
 
 template <typename T>
-static void add_constructor(const Vector<String> &arg_names) {
-	ERR_FAIL_COND_MSG(arg_names.size() != T::get_argument_count(), "Argument names size mismatch for " + Variant::get_type_name(T::get_base_type()) + ".");
+static void add_constructor(const Vector<String> &p_arg_names) {
+	ERR_FAIL_COND_MSG(p_arg_names.size() != T::get_argument_count(), vformat("Argument names size mismatch for '%s'.", Variant::get_type_name(T::get_base_type())));
 
 	VariantConstructData cd;
 	cd.construct = T::construct;
@@ -51,7 +51,7 @@ static void add_constructor(const Vector<String> &arg_names) {
 	cd.ptr_construct = T::ptr_construct;
 	cd.get_argument_type = T::get_argument_type;
 	cd.argument_count = T::get_argument_count();
-	cd.arg_names = arg_names;
+	cd.arg_names = p_arg_names;
 	construct_data[T::get_base_type()].push_back(cd);
 }
 
@@ -125,8 +125,8 @@ void Variant::_register_variant_constructors() {
 
 	add_constructor<VariantConstructNoArgs<Transform2D>>(sarray());
 	add_constructor<VariantConstructor<Transform2D, Transform2D>>(sarray("from"));
-	add_constructor<VariantConstructor<Transform2D, float, Vector2>>(sarray("rotation", "position"));
-	add_constructor<VariantConstructor<Transform2D, float, Size2, float, Vector2>>(sarray("rotation", "scale", "skew", "position"));
+	add_constructor<VariantConstructor<Transform2D, double, Vector2>>(sarray("rotation", "position"));
+	add_constructor<VariantConstructor<Transform2D, double, Size2, double, Vector2>>(sarray("rotation", "scale", "skew", "position"));
 	add_constructor<VariantConstructor<Transform2D, Vector2, Vector2, Vector2>>(sarray("x_axis", "y_axis", "origin"));
 
 	add_constructor<VariantConstructNoArgs<Plane>>(sarray());
@@ -198,6 +198,7 @@ void Variant::_register_variant_constructors() {
 
 	add_constructor<VariantConstructNoArgs<Dictionary>>(sarray());
 	add_constructor<VariantConstructor<Dictionary, Dictionary>>(sarray("from"));
+	add_constructor<VariantConstructorTypedDictionary>(sarray("base", "key_type", "key_class_name", "key_script", "value_type", "value_class_name", "value_script"));
 
 	add_constructor<VariantConstructNoArgs<Array>>(sarray());
 	add_constructor<VariantConstructor<Array, Array>>(sarray("from"));
@@ -260,7 +261,7 @@ void Variant::_unregister_variant_constructors() {
 	}
 }
 
-void Variant::construct(Variant::Type p_type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+void Variant::construct(Variant::Type p_type, Variant &p_base, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
 	uint32_t s = construct_data[p_type].size();
 	for (uint32_t i = 0; i < s; i++) {
@@ -280,7 +281,7 @@ void Variant::construct(Variant::Type p_type, Variant &base, const Variant **p_a
 			continue;
 		}
 
-		construct_data[p_type][i].construct(base, p_args, r_error);
+		construct_data[p_type][i].construct(p_base, p_args, r_error);
 		return;
 	}
 
@@ -320,36 +321,6 @@ String Variant::get_constructor_argument_name(Variant::Type p_type, int p_constr
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
 	ERR_FAIL_INDEX_V(p_constructor, (int)construct_data[p_type].size(), String());
 	return construct_data[p_type][p_constructor].arg_names[p_argument];
-}
-
-void VariantInternal::refcounted_object_assign(Variant *v, const RefCounted *rc) {
-	if (!rc || !const_cast<RefCounted *>(rc)->init_ref()) {
-		v->_get_obj().obj = nullptr;
-		v->_get_obj().id = ObjectID();
-		return;
-	}
-
-	v->_get_obj().obj = const_cast<RefCounted *>(rc);
-	v->_get_obj().id = rc->get_instance_id();
-}
-
-void VariantInternal::object_assign(Variant *v, const Object *o) {
-	if (o) {
-		if (o->is_ref_counted()) {
-			RefCounted *ref_counted = const_cast<RefCounted *>(static_cast<const RefCounted *>(o));
-			if (!ref_counted->init_ref()) {
-				v->_get_obj().obj = nullptr;
-				v->_get_obj().id = ObjectID();
-				return;
-			}
-		}
-
-		v->_get_obj().obj = const_cast<Object *>(o);
-		v->_get_obj().id = o->get_instance_id();
-	} else {
-		v->_get_obj().obj = nullptr;
-		v->_get_obj().id = ObjectID();
-	}
 }
 
 void Variant::get_constructor_list(Type p_type, List<MethodInfo> *r_list) {

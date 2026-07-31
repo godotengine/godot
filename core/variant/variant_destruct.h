@@ -28,25 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_DESTRUCT_H
-#define VARIANT_DESTRUCT_H
+#pragma once
 
+#include "core/variant/type_info.h"
 #include "core/variant/variant.h"
-
-#include "core/object/class_db.h"
 
 template <typename T>
 struct VariantDestruct {};
 
-#define MAKE_PTRDESTRUCT(m_type)                               \
-	template <>                                                \
-	struct VariantDestruct<m_type> {                           \
+#define MAKE_PTRDESTRUCT(m_type) \
+	template <> \
+	struct VariantDestruct<m_type> { \
 		_FORCE_INLINE_ static void ptr_destruct(void *p_ptr) { \
-			reinterpret_cast<m_type *>(p_ptr)->~m_type();      \
-		}                                                      \
-		_FORCE_INLINE_ static Variant::Type get_base_type() {  \
-			return GetTypeInfo<m_type>::VARIANT_TYPE;          \
-		}                                                      \
+			reinterpret_cast<m_type *>(p_ptr)->~m_type(); \
+		} \
+		_FORCE_INLINE_ static Variant::Type get_base_type() { \
+			return GetTypeInfo<m_type>::VARIANT_TYPE; \
+		} \
 	}
 
 MAKE_PTRDESTRUCT(String);
@@ -68,5 +66,3 @@ MAKE_PTRDESTRUCT(PackedColorArray);
 MAKE_PTRDESTRUCT(PackedVector4Array);
 
 #undef MAKE_PTRDESTRUCT
-
-#endif // VARIANT_DESTRUCT_H

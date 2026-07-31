@@ -18,6 +18,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.0-dev\n"
 
+msgid "Save"
+msgstr "Запазване"
+
+msgid "Clear"
+msgstr "Изчистване"
+
 msgid "Network"
 msgstr "Мрежа"
 
@@ -45,9 +51,6 @@ msgstr "Отваряне на папка"
 msgid "Open a File or Directory"
 msgstr "Отваряне на файл или папка"
 
-msgid "Save"
-msgstr "Запазване"
-
 msgid "Save a File"
 msgstr "Запазване на файл"
 
@@ -66,11 +69,11 @@ msgstr "Път:"
 msgid "Refresh files."
 msgstr "Опресняване на файловете."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Превключване на видимостта на скритите файлове."
-
 msgid "Directories & Files:"
 msgstr "Папки и файлове:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Превключване на видимостта на скритите файлове."
 
 msgid "File:"
 msgstr "Файл:"
@@ -104,9 +107,6 @@ msgstr "Поставяне"
 
 msgid "Select All"
 msgstr "Избиране на всичко"
-
-msgid "Clear"
-msgstr "Изчистване"
 
 msgid "Undo"
 msgstr "Отмяна"

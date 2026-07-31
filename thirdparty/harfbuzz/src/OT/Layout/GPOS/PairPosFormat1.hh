@@ -54,7 +54,7 @@ struct PairPosFormat1_3
   {
     auto &cov = this+coverage;
 
-    if (pairSet.len > glyphs->get_population () * hb_bit_storage ((unsigned) pairSet.len) / 4)
+    if (pairSet.len > glyphs->get_population () * hb_bit_storage ((unsigned) pairSet.len))
     {
       for (hb_codepoint_t g : glyphs->iter())
       {
@@ -103,14 +103,35 @@ struct PairPosFormat1_3
 
   const Coverage &get_coverage () const { return this+coverage; }
 
-  bool apply (hb_ot_apply_context_t *c) const
+  struct external_cache_t
+  {
+    hb_ot_layout_mapping_cache_t coverage;
+  };
+  void *external_cache_create () const
+  {
+    external_cache_t *cache = (external_cache_t *) hb_malloc (sizeof (external_cache_t));
+    if (likely (cache))
+    {
+      cache->coverage.clear ();
+    }
+    return cache;
+  }
+
+  bool apply (hb_ot_apply_context_t *c, void *external_cache) const
   {
     TRACE_APPLY (this);
-    hb_buffer_t *buffer = c->buffer;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
 
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    hb_buffer_t *buffer = c->buffer;
+
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    external_cache_t *cache = (external_cache_t *) external_cache;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
+#else
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
+#endif
+    if (index == NOT_COVERED) return_trace (false);
+
+    auto &skippy_iter = c->iter_input;
     skippy_iter.reset_fast (buffer->idx);
     unsigned unsafe_to;
     if (unlikely (!skippy_iter.next (&unsafe_to)))
@@ -156,7 +177,7 @@ struct PairPosFormat1_3
         strip = true;
       newFormats = compute_effective_value_formats (glyphset, strip, true);
     }
-    
+
     out->valueFormat[0] = newFormats.first;
     out->valueFormat[1] = newFormats.second;
 

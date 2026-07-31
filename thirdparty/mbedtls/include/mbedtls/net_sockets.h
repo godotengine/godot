@@ -53,7 +53,7 @@
 /** Failed to get an IP address for the given hostname. */
 #define MBEDTLS_ERR_NET_UNKNOWN_HOST                      -0x0052
 /** Buffer is too small to hold the data. */
-#define MBEDTLS_ERR_NET_BUFFER_TOO_SMALL                  -0x0043
+#define MBEDTLS_ERR_NET_BUFFER_TOO_SMALL                  PSA_ERROR_BUFFER_TOO_SMALL
 /** The context is invalid, eg because it was free()ed. */
 #define MBEDTLS_ERR_NET_INVALID_CONTEXT                   -0x0045
 /** Polling the net context failed. */
@@ -147,11 +147,11 @@ int mbedtls_net_bind(mbedtls_net_context *ctx, const char *bind_ip, const char *
  *                  can be NULL if client_ip is null
  *
  * \return          0 if successful, or
- *                  MBEDTLS_ERR_NET_SOCKET_FAILED,
- *                  MBEDTLS_ERR_NET_BIND_FAILED,
- *                  MBEDTLS_ERR_NET_ACCEPT_FAILED, or
- *                  MBEDTLS_ERR_NET_BUFFER_TOO_SMALL if buf_size is too small,
- *                  MBEDTLS_ERR_SSL_WANT_READ if bind_fd was set to
+ *                  #MBEDTLS_ERR_NET_SOCKET_FAILED,
+ *                  #MBEDTLS_ERR_NET_BIND_FAILED,
+ *                  #MBEDTLS_ERR_NET_ACCEPT_FAILED, or
+ *                  #PSA_ERROR_BUFFER_TOO_SMALL if buf_size is too small,
+ *                  #MBEDTLS_ERR_SSL_WANT_READ if bind_fd was set to
  *                  non-blocking and accept() would block.
  */
 int mbedtls_net_accept(mbedtls_net_context *bind_ctx,
@@ -229,7 +229,7 @@ int mbedtls_net_recv(void *ctx, unsigned char *buf, size_t len);
 
 /**
  * \brief          Write at most 'len' characters. If no error occurs,
- *                 the actual amount read is returned.
+ *                 the actual amount written is returned.
  *
  * \param ctx      Socket
  * \param buf      The buffer to read from

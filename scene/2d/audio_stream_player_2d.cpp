@@ -32,13 +32,20 @@
 #include "audio_stream_player_2d.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/2d/audio_listener_2d.h"
-#include "scene/2d/physics/area_2d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/audio/audio_stream.h"
 #include "scene/resources/world_2d.h"
-#include "servers/audio/audio_stream.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server.h"
+
+#ifndef PHYSICS_2D_DISABLED
+#include "scene/2d/physics/area_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
 void AudioStreamPlayer2D::_notification(int p_what) {
 	internal->notification(p_what);
@@ -76,6 +83,11 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 // Interacts with PhysicsServer2D, so can only be called during _physics_process.
 StringName AudioStreamPlayer2D::_get_actual_bus() {
+#ifndef PHYSICS_2D_DISABLED
+	if (area_mask == 0) {
+		return internal->bus;
+	}
+
 	Vector2 global_pos = get_global_position();
 
 	//check if any area is diverting sound into a bus
@@ -84,16 +96,15 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
 	ERR_FAIL_NULL_V(space_state, SceneStringName(Master));
-	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
+	PS2DT::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-	PhysicsDirectSpaceState2D::PointParameters point_params;
+	PS2DT::PointParameters point_params;
 	point_params.position = global_pos;
 	point_params.collision_mask = area_mask;
 	point_params.collide_with_bodies = false;
 	point_params.collide_with_areas = true;
 
 	int areas = space_state->intersect_point(point_params, sr, MAX_INTERSECT_AREAS);
-
 	for (int i = 0; i < areas; i++) {
 		Area2D *area2d = Object::cast_to<Area2D>(sr[i].collider);
 		if (!area2d) {
@@ -106,6 +117,8 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 		return area2d->get_audio_bus_name();
 	}
+#endif // PHYSICS_2D_DISABLED
+
 	return internal->bus;
 }
 
@@ -120,7 +133,7 @@ void AudioStreamPlayer2D::_update_panning() {
 
 	Vector2 global_pos = get_global_position();
 
-	HashSet<Viewport *> viewports = world_2d->get_viewports();
+	HashSet<Viewport *> viewports(world_2d->get_viewports());
 
 	volume_vector.resize(4);
 	volume_vector.write[0] = AudioFrame(0, 0);
@@ -210,6 +223,14 @@ float AudioStreamPlayer2D::get_volume_db() const {
 	return internal->volume_db;
 }
 
+void AudioStreamPlayer2D::set_volume_linear(float p_volume) {
+	set_volume_db(Math::linear_to_db(p_volume));
+}
+
+float AudioStreamPlayer2D::get_volume_linear() const {
+	return Math::db_to_linear(get_volume_db());
+}
+
 void AudioStreamPlayer2D::set_pitch_scale(float p_pitch_scale) {
 	internal->set_pitch_scale(p_pitch_scale);
 }
@@ -242,7 +263,7 @@ void AudioStreamPlayer2D::seek(float p_seconds) {
 
 void AudioStreamPlayer2D::stop() {
 	setplay.set(-1);
-	internal->stop();
+	internal->stop_basic();
 }
 
 bool AudioStreamPlayer2D::is_playing() const {
@@ -253,6 +274,9 @@ bool AudioStreamPlayer2D::is_playing() const {
 }
 
 float AudioStreamPlayer2D::get_playback_position() {
+	if (setplay.get() >= 0) {
+		return setplay.get(); // play() has been called this frame, but no playback exists just yet.
+	}
 	return internal->get_playback_position();
 }
 
@@ -274,10 +298,6 @@ bool AudioStreamPlayer2D::is_autoplay_enabled() const {
 
 void AudioStreamPlayer2D::_set_playing(bool p_enable) {
 	internal->set_playing(p_enable);
-}
-
-bool AudioStreamPlayer2D::_is_active() const {
-	return internal->is_active();
 }
 
 void AudioStreamPlayer2D::_validate_property(PropertyInfo &p_property) const {
@@ -342,11 +362,11 @@ float AudioStreamPlayer2D::get_panning_strength() const {
 	return panning_strength;
 }
 
-AudioServer::PlaybackType AudioStreamPlayer2D::get_playback_type() const {
+AuSE::PlaybackType AudioStreamPlayer2D::get_playback_type() const {
 	return internal->get_playback_type();
 }
 
-void AudioStreamPlayer2D::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+void AudioStreamPlayer2D::set_playback_type(AuSE::PlaybackType p_playback_type) {
 	internal->set_playback_type(p_playback_type);
 }
 
@@ -369,6 +389,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer2D::set_volume_db);
 	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer2D::get_volume_db);
 
+	ClassDB::bind_method(D_METHOD("set_volume_linear", "volume_linear"), &AudioStreamPlayer2D::set_volume_linear);
+	ClassDB::bind_method(D_METHOD("get_volume_linear"), &AudioStreamPlayer2D::get_volume_linear);
+
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer2D::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer2D::get_pitch_scale);
 
@@ -385,8 +408,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioStreamPlayer2D::set_autoplay);
 	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer2D::is_autoplay_enabled);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "enable"), &AudioStreamPlayer2D::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_active"), &AudioStreamPlayer2D::_is_active);
+	ClassDB::bind_method(D_METHOD("set_playing", "enable"), &AudioStreamPlayer2D::_set_playing);
 
 	ClassDB::bind_method(D_METHOD("set_max_distance", "pixels"), &AudioStreamPlayer2D::set_max_distance);
 	ClassDB::bind_method(D_METHOD("get_max_distance"), &AudioStreamPlayer2D::get_max_distance);
@@ -412,10 +434,11 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_playback_type", "playback_type"), &AudioStreamPlayer2D::set_playback_type);
 	ClassDB::bind_method(D_METHOD("get_playback_type"), &AudioStreamPlayer2D::get_playback_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), "set_stream", "get_stream");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,or_greater,suffix:dB"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_ONESHOT, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "1,4096,1,or_greater,exp,suffix:px"), "set_max_distance", "get_max_distance");
@@ -430,8 +453,8 @@ void AudioStreamPlayer2D::_bind_methods() {
 }
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {
-	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer2D::play), true));
-	cached_global_panning_strength = GLOBAL_GET("audio/general/2d_panning_strength");
+	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer2D::play), callable_mp(this, &AudioStreamPlayer2D::stop), true));
+	cached_global_panning_strength = GLOBAL_GET_CACHED(float, "audio/general/2d_panning_strength");
 	set_hide_clip_children(true);
 }
 

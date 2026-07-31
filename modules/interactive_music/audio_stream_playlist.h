@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYLIST_H
-#define AUDIO_STREAM_PLAYLIST_H
+#pragma once
 
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
 
 class AudioStreamPlaybackPlaylist;
 
@@ -68,8 +67,8 @@ public:
 	Ref<AudioStream> get_list_stream(int p_stream_index) const;
 
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
-	virtual String get_stream_name() const override;
 	virtual double get_length() const override;
+	virtual bool is_meta_stream() const override { return true; }
 
 protected:
 	static void _bind_methods();
@@ -121,5 +120,3 @@ public:
 
 	~AudioStreamPlaybackPlaylist();
 };
-
-#endif // AUDIO_STREAM_PLAYLIST_H

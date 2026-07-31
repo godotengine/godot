@@ -28,16 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANDROID_EXPORT_PLUGIN_H
-#define ANDROID_EXPORT_PLUGIN_H
+#pragma once
 
 #ifndef DISABLE_DEPRECATED
 #include "godot_plugin_config.h"
 #endif // DISABLE_DEPRECATED
 
+#include "gradle_export_util.h"
+
+#include "core/io/image.h"
 #include "core/io/zip_io.h"
-#include "core/os/os.h"
 #include "editor/export/editor_export_platform.h"
+
+class ImageTexture;
 
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.
@@ -56,6 +59,8 @@ struct LauncherIcon {
 	int dimensions = 0;
 };
 
+class AndroidEditorGradleRunner;
+
 class EditorExportPlatformAndroid : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformAndroid, EditorExportPlatform);
 
@@ -71,8 +76,15 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	};
 
 	struct APKExportData {
+		EditorExportPlatform::PackData pd;
 		zipFile apk;
 		EditorProgress *ep = nullptr;
+	};
+
+	struct FeatureInfo {
+		String name;
+		bool required;
+		String version;
 	};
 
 #ifndef DISABLE_DEPRECATED
@@ -84,28 +96,34 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	uint64_t last_gradle_build_time = 0;
 	String last_gradle_build_dir;
 
+#ifndef ANDROID_ENABLED
+	bool use_scrcpy = false;
 	Vector<Device> devices;
 	SafeFlag devices_changed;
 	Mutex device_lock;
-#ifndef ANDROID_ENABLED
+
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
 	SafeFlag has_runnable_preset;
 
 	static void _check_for_changes_poll_thread(void *ud);
+	void _start_check_for_changes_poll_thread();
+	void _stop_check_for_changes_poll_thread();
 	void _update_preset_status();
-#endif
+#else // ANDROID_ENABLED
+	AndroidEditorGradleRunner *android_editor_gradle_runner = nullptr;
+#endif // ANDROID_ENABLED
 
-	String get_project_name(const String &p_name) const;
+	String get_project_name(const Ref<EditorExportPreset> &p_preset, const String &p_name) const;
 
-	String get_package_name(const String &p_package) const;
+	String get_package_name(const Ref<EditorExportPreset> &p_preset, const String &p_package) const;
 
-	String get_valid_basename() const;
+	String get_valid_basename(const Ref<EditorExportPreset> &p_preset) const;
 
 	String get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const;
 
-	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
-	bool is_project_name_valid() const;
+	bool is_package_name_valid(const Ref<EditorExportPreset> &p_preset, const String &p_package, String *r_error = nullptr) const;
+	bool is_project_name_valid(const Ref<EditorExportPreset> &p_preset) const;
 
 	static bool _should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data);
 
@@ -139,21 +157,25 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Error store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED);
 
-	static Error save_apk_so(void *p_userdata, const SharedObject &p_so);
+	static Error save_apk_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
-	static Error save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
+	static Error save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
 
-	static Error ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
+	static Error ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
 
-	static Error copy_gradle_so(void *p_userdata, const SharedObject &p_so);
+	static Error copy_gradle_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
 	bool _has_read_write_storage_permission(const Vector<String> &p_permissions);
 
 	bool _has_manage_external_storage_permission(const Vector<String> &p_permissions);
 
-	void _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions);
+	void _get_manifest_info(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions, Vector<FeatureInfo> &r_features, Vector<MetadataInfo> &r_metadata);
 
 	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug);
+
+	bool _is_transparency_allowed(const Ref<EditorExportPreset> &p_preset) const;
+
+	void _fix_themes_xml(const Ref<EditorExportPreset> &p_preset);
 
 	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet);
 
@@ -163,28 +185,31 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &r_manifest);
 
-	void _load_image_data(const Ref<Image> &p_splash_image, Vector<uint8_t> &p_data);
-
 	void _process_launcher_icons(const String &p_file_name, const Ref<Image> &p_source_image, int dimension, Vector<uint8_t> &p_data);
 
-	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background);
+	void load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome, Ref<Image> &splash_icon, Ref<Image> &splash_branding_image);
 
 	void _copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
 			const Ref<Image> &p_main_image,
 			const Ref<Image> &p_foreground,
-			const Ref<Image> &p_background);
+			const Ref<Image> &p_background,
+			const Ref<Image> &p_monochrome,
+			const Ref<Image> &p_splash_icon,
+			const Ref<Image> &p_splash_branding_image);
 
 	static void _create_editor_debug_keystore_if_needed();
 
 	static Vector<ABI> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
 
-	static bool _uses_vulkan();
+	bool _uses_vulkan(const Ref<EditorExportPreset> &p_preset) const;
+
+	Error _generate_sparse_pck_metadata(const Ref<EditorExportPreset> &p_preset, PackData &p_pack_data, Vector<uint8_t> &r_data);
 
 protected:
 	void _notification(int p_what);
 
 public:
-	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
+	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed);
 
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
@@ -202,9 +227,14 @@ public:
 
 	virtual bool should_update_export_options() override;
 
+#ifndef ANDROID_ENABLED
 	virtual bool poll_export() override;
 
 	virtual int get_options_count() const override;
+
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
+
+	virtual bool is_option_runnable(int p_index) const override { return p_index != 0; }
 
 	virtual String get_options_tooltip() const override;
 
@@ -214,7 +244,8 @@ public:
 
 	virtual String get_device_architecture(int p_index) const override;
 
-	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override;
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
+#endif // ANDROID_ENABLED
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 
@@ -232,17 +263,15 @@ public:
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 
+	String _get_deprecated_plugins_names(const Ref<EditorExportPreset> &p_preset) const;
+
 	String _get_plugins_names(const Ref<EditorExportPreset> &p_preset) const;
 
 	String _resolve_export_plugin_android_library_path(const String &p_android_library_path) const;
 
 	bool _is_clean_build_required(const Ref<EditorExportPreset> &p_preset);
 
-	String get_apk_expansion_fullpath(const Ref<EditorExportPreset> &p_preset, const String &p_path);
-
-	Error save_apk_expansion_file(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
-
-	void get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, int p_flags, Vector<uint8_t> &r_command_line_flags);
+	void get_command_line_flags(const Ref<EditorExportPreset> &p_preset, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, Vector<uint8_t> &r_command_line_flags);
 
 	Error sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep);
 
@@ -253,17 +282,15 @@ public:
 	static String join_list(const List<String> &p_parts, const String &p_separator);
 	static String join_abis(const Vector<ABI> &p_parts, const String &p_separator, bool p_use_arch);
 
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0, bool p_notify = true) override;
 
-	Error export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, int p_flags);
+	Error export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, BitField<EditorExportPlatform::DebugFlags> p_flags);
 
 	virtual void get_platform_features(List<String> *r_features) const override;
 
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) override;
 
-	EditorExportPlatformAndroid();
+	virtual void initialize() override;
 
 	~EditorExportPlatformAndroid();
 };
-
-#endif // ANDROID_EXPORT_PLUGIN_H

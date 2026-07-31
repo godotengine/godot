@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLATFORM_GL_H
-#define PLATFORM_GL_H
+#pragma once
 
 #ifndef GLES_API_ENABLED
 #define GLES_API_ENABLED // Allow using GLES.
@@ -39,6 +38,4 @@
 #define glGetProcAddress(n) static_assert(false, "Usage of glGetProcessAddress() on the web is a bug.")
 #define eglGetProcAddress(n) static_assert(false, "Usage of eglGetProcessAddress() on the web is a bug.")
 
-#include "platform/web/godot_webgl2.h"
-
-#endif // PLATFORM_GL_H
+#include "platform/web/godot_webgl2.h" // IWYU pragma: export.

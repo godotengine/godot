@@ -27,13 +27,44 @@
 
 #include "hb.h"
 
+#include <dwrite_3.h>
+
 HB_BEGIN_DECLS
 
 HB_EXTERN hb_face_t *
-hb_directwrite_face_create (IDWriteFontFace *font_face);
+hb_directwrite_face_create (IDWriteFontFace *dw_face);
+
+HB_EXTERN hb_face_t *
+hb_directwrite_face_create_from_file_or_fail (const char   *file_name,
+					      unsigned int  index);
+
+HB_EXTERN hb_face_t *
+hb_directwrite_face_create_from_blob_or_fail (hb_blob_t    *blob,
+					      unsigned int  index);
 
 HB_EXTERN IDWriteFontFace *
+hb_directwrite_face_get_dw_font_face (hb_face_t *face);
+
+HB_EXTERN hb_font_t *
+hb_directwrite_font_create (IDWriteFontFace *dw_face);
+
+HB_EXTERN IDWriteFontFace *
+hb_directwrite_font_get_dw_font_face (hb_font_t *font);
+
+HB_EXTERN void
+hb_directwrite_font_set_funcs (hb_font_t *font);
+
+#ifndef HB_DISABLE_DEPRECATED
+
+HB_DEPRECATED_FOR (hb_directwrite_face_get_dw_font_face)
+HB_EXTERN IDWriteFontFace *
 hb_directwrite_face_get_font_face (hb_face_t *face);
+
+HB_DEPRECATED
+HB_EXTERN IDWriteFont *
+hb_directwrite_font_get_dw_font (hb_font_t *font);
+
+#endif
 
 HB_END_DECLS
 

@@ -30,15 +30,16 @@
 
 #include "editor_dir_dialog.h"
 
-#include "editor/directory_create_dialog.h"
-#include "editor/editor_file_system.h"
-#include "editor/filesystem_dock.h"
+#include "core/object/callable_mp.h"
+#include "editor/docks/filesystem_dock.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/gui/directory_create_dialog.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/tree.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
-void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dictionary &p_assigned_folder_colors, const HashMap<String, Color> &p_folder_colors, bool p_is_dark_theme, TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
+void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dictionary &p_assigned_folder_colors, const HashMap<String, Color> &p_folder_colors, bool p_is_dark_icon_and_font, TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
 	updating = true;
 
 	const String path = p_dir->get_path();
@@ -58,8 +59,8 @@ void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dic
 
 		if (p_assigned_folder_colors.has(path)) {
 			const Color &folder_color = p_folder_colors[p_assigned_folder_colors[path]];
-			p_item->set_icon_modulate(0, p_is_dark_theme ? folder_color : folder_color * FileSystemDock::ITEM_COLOR_SCALE);
-			p_item->set_custom_bg_color(0, Color(folder_color, p_is_dark_theme ? FileSystemDock::ITEM_ALPHA_MIN : FileSystemDock::ITEM_ALPHA_MAX));
+			p_item->set_icon_modulate(0, p_is_dark_icon_and_font ? folder_color : folder_color * FileSystemDock::ITEM_COLOR_SCALE);
+			p_item->set_custom_bg_color(0, Color(folder_color, p_is_dark_icon_and_font ? FileSystemDock::ITEM_ALPHA_MIN : FileSystemDock::ITEM_ALPHA_MAX));
 		} else {
 			TreeItem *parent_item = p_item->get_parent();
 			Color parent_bg_color = parent_item->get_custom_bg_color(0);
@@ -79,7 +80,7 @@ void EditorDirDialog::_update_dir(const Color &p_default_folder_color, const Dic
 	updating = false;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		TreeItem *ti = tree->create_item(p_item);
-		_update_dir(p_default_folder_color, p_assigned_folder_colors, p_folder_colors, p_is_dark_theme, ti, p_dir->get_subdir(i));
+		_update_dir(p_default_folder_color, p_assigned_folder_colors, p_folder_colors, p_is_dark_icon_and_font, ti, p_dir->get_subdir(i));
 	}
 }
 
@@ -97,6 +98,7 @@ void EditorDirDialog::config(const Vector<String> &p_paths) {
 		// TRANSLATORS: %d is the number of files that will be moved or duplicated.
 		set_title(vformat(TTRN("Move/Duplicate %d Item", "Move/Duplicate %d Items", p_paths.size()), p_paths.size()));
 	}
+	base_directory_path = p_paths[0].get_base_dir();
 }
 
 void EditorDirDialog::reload(const String &p_path) {
@@ -107,7 +109,7 @@ void EditorDirDialog::reload(const String &p_path) {
 
 	tree->clear();
 	TreeItem *root = tree->create_item();
-	_update_dir(tree->get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")), FileSystemDock::get_singleton()->get_assigned_folder_colors(), FileSystemDock::get_singleton()->get_folder_colors(), EditorThemeManager::is_dark_theme(), root, EditorFileSystem::get_singleton()->get_filesystem(), p_path);
+	_update_dir(tree->get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")), FileSystemDock::get_singleton()->get_assigned_folder_colors(), FileSystemDock::get_singleton()->get_folder_colors(), EditorThemeManager::is_dark_icon_and_font(), root, EditorFileSystem::get_singleton()->get_filesystem(), p_path);
 	_item_collapsed(root);
 	new_dir_path.clear();
 	must_reload = false;
@@ -127,8 +129,42 @@ void EditorDirDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (must_reload && is_visible()) {
-				reload();
+			if (is_visible()) {
+				if (must_reload) {
+					reload();
+				}
+
+				tree->deselect_all();
+
+				TreeItem *item = tree->get_root();
+				const PackedStringArray parts = base_directory_path.trim_prefix("res://").split("/", false);
+				if (parts.is_empty()) {
+					item->select(0);
+					tree->ensure_cursor_is_visible();
+					break;
+				}
+
+				int i = 0;
+				while (i < parts.size()) {
+					const String &folder = parts[i];
+					for (TreeItem *child = item->get_first_child(); child; child = child->get_next()) {
+						if (child->get_text(0) == folder) {
+							i++;
+							if (i == parts.size()) {
+								TreeItem *parent_item = child->get_parent();
+								while (parent_item) {
+									parent_item->set_collapsed(false);
+									parent_item = parent_item->get_parent();
+								}
+								child->select(0);
+								tree->ensure_cursor_is_visible();
+							} else {
+								item = child;
+							}
+							break;
+						}
+					}
+				}
 			}
 		} break;
 	}
@@ -175,11 +211,14 @@ void EditorDirDialog::ok_pressed() {
 void EditorDirDialog::_make_dir() {
 	TreeItem *ti = tree->get_selected();
 	ERR_FAIL_NULL(ti);
-	makedialog->config(ti->get_metadata(0));
+	const String &directory = ti->get_metadata(0);
+	makedialog->config(directory, callable_mp(this, &EditorDirDialog::_make_dir_confirm).bind(directory), DirectoryCreateDialog::MODE_DIRECTORY, TTR("Create Folder"), "new folder");
 	makedialog->popup_centered();
 }
 
-void EditorDirDialog::_make_dir_confirm(const String &p_path) {
+void EditorDirDialog::_make_dir_confirm(const String &p_path, const String &p_base_dir) {
+	FileSystemDock::get_singleton()->create_directory(p_path, p_base_dir);
+
 	// Multiple level of directories can be created at once.
 	String base_dir = p_path.get_base_dir();
 	while (true) {
@@ -191,7 +230,6 @@ void EditorDirDialog::_make_dir_confirm(const String &p_path) {
 	}
 
 	new_dir_path = p_path + "/";
-	EditorFileSystem::get_singleton()->scan_changes(); // We created a dir, so rescan changes.
 }
 
 void EditorDirDialog::_bind_methods() {
@@ -216,8 +254,9 @@ EditorDirDialog::EditorDirDialog() {
 	makedir->connect(SceneStringName(pressed), callable_mp(this, &EditorDirDialog::_make_dir));
 
 	tree = memnew(Tree);
-	vb->add_child(tree);
+	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(tree);
 	tree->connect("item_activated", callable_mp(this, &EditorDirDialog::_item_activated));
 	tree->connect("item_collapsed", callable_mp(this, &EditorDirDialog::_item_collapsed), CONNECT_DEFERRED);
 
@@ -228,5 +267,4 @@ EditorDirDialog::EditorDirDialog() {
 
 	makedialog = memnew(DirectoryCreateDialog);
 	add_child(makedialog);
-	makedialog->connect("dir_created", callable_mp(this, &EditorDirDialog::_make_dir_confirm));
 }

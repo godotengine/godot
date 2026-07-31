@@ -64,16 +64,13 @@
  *
  *   - Cast blob content to T*, call sanitize() method of it,
  *   - If sanitize succeeded, return blob.
- *   - Otherwise, if blob is not writable, try making it writable,
- *     or copy if cannot be made writable in-place,
- *   - Call sanitize() again.  Return blob if sanitize succeeded.
  *   - Return empty blob otherwise.
  *
  *
  * === The sanitize() contract ===
  *
- * The sanitize() method of each object type shall return true if it's safe to
- * call other methods of the object, and %false otherwise.
+ * The sanitize() method of each object type shall return `true` if it's safe to
+ * call other methods of the object, and `false` otherwise.
  *
  * Note that what sanitize() checks for might align with what the specification
  * describes as valid table data, but does not have to be.  In particular, we
@@ -98,6 +95,12 @@
  * structure is so complicated that by checking all offsets at sanitize() time,
  * we make the code much simpler in other methods, as offsets and referenced
  * objects do not need to be validated at each use site.
+ *
+ * Note:
+ * Sanitize was named so because it used to try to recover from errors by
+ * modifying the data to make it valid.  This is no longer the case, as it
+ * could make HarfBuzz hallucinate new rules if there was aliasing in the
+ * data.  However, the name stuck.  See: https://behdad.github.io/harfbust/
  */
 
 /* This limits sanitizing time on really broken fonts. */
@@ -120,12 +123,12 @@
 struct hb_sanitize_context_t :
        hb_dispatch_context_t<hb_sanitize_context_t, bool, HB_DEBUG_SANITIZE>
 {
-  hb_sanitize_context_t () :
-	start (nullptr), end (nullptr),
+  hb_sanitize_context_t (const char *start_ = nullptr, const char *end_ = nullptr) :
+	start (start_), end (end_),
 	length (0),
 	max_ops (0), max_subtables (0),
         recursion_depth (0),
-	writable (false), edit_count (0),
+	writable (false),
 	blob (nullptr),
 	num_glyphs (65536),
 	num_glyphs_set (false),
@@ -212,14 +215,22 @@ struct hb_sanitize_context_t :
 
   void reset_object ()
   {
-    this->start = this->blob->data;
-    this->end = this->start + this->blob->length;
+    if (this->blob)
+    {
+      this->start = this->blob->data;
+      this->end = this->start + this->blob->length;
+    }
     this->length = this->end - this->start;
     assert (this->start <= this->end); /* Must not overflow. */
   }
 
-  void start_processing ()
+  void start_processing (const char *start_ = nullptr, const char *end_ = nullptr)
   {
+    if (start_)
+    {
+      this->start = start_;
+      this->end = end_;
+    }
     reset_object ();
     unsigned m;
     if (unlikely (hb_unsigned_mul_overflows (this->end - this->start, HB_SANITIZE_MAX_OPS_FACTOR, &m)))
@@ -228,7 +239,6 @@ struct hb_sanitize_context_t :
       this->max_ops = hb_clamp (m,
 				(unsigned) HB_SANITIZE_MAX_OPS_MIN,
 				(unsigned) HB_SANITIZE_MAX_OPS_MAX);
-    this->edit_count = 0;
     this->debug_depth = 0;
     this->recursion_depth = 0;
 
@@ -241,17 +251,14 @@ struct hb_sanitize_context_t :
   void end_processing ()
   {
     DEBUG_MSG_LEVEL (SANITIZE, this->start, 0, -1,
-		     "end [%p..%p] %u edit requests",
-		     this->start, this->end, this->edit_count);
+		     "end [%p..%p]",
+		     this->start, this->end);
 
     hb_blob_destroy (this->blob);
     this->blob = nullptr;
     this->start = this->end = nullptr;
     this->length = 0;
   }
-
-  unsigned get_edit_count () { return edit_count; }
-
 
   bool check_ops(unsigned count)
   {
@@ -396,35 +403,6 @@ struct hb_sanitize_context_t :
       return likely (this->check_point ((const char *) obj + obj->min_size));
   }
 
-  bool may_edit (const void *base, unsigned int len)
-  {
-    if (this->edit_count >= HB_SANITIZE_MAX_EDITS)
-      return false;
-
-    const char *p = (const char *) base;
-    this->edit_count++;
-
-    DEBUG_MSG_LEVEL (SANITIZE, p, this->debug_depth+1, 0,
-       "may_edit(%u) [%p..%p] (%u bytes) in [%p..%p] -> %s",
-       this->edit_count,
-       p, p + len, len,
-       this->start, this->end,
-       this->writable ? "GRANTED" : "DENIED");
-
-    return this->writable;
-  }
-
-  template <typename Type, typename ValueType>
-  bool try_set (const Type *obj, const ValueType &v)
-  {
-    if (this->may_edit (obj, hb_static_size (Type)))
-    {
-      * const_cast<Type *> (obj) = v;
-      return true;
-    }
-    return false;
-  }
-
   template <typename Type>
   hb_blob_t *sanitize_blob (hb_blob_t *blob)
   {
@@ -432,7 +410,6 @@ struct hb_sanitize_context_t :
 
     init (blob);
 
-  retry:
     DEBUG_MSG_FUNC (SANITIZE, start, "start");
 
     start_processing ();
@@ -446,36 +423,6 @@ struct hb_sanitize_context_t :
     Type *t = reinterpret_cast<Type *> (const_cast<char *> (start));
 
     sane = t->sanitize (this);
-    if (sane)
-    {
-      if (edit_count)
-      {
-	DEBUG_MSG_FUNC (SANITIZE, start, "passed first round with %u edits; going for second round", edit_count);
-
-	/* sanitize again to ensure no toe-stepping */
-	edit_count = 0;
-	sane = t->sanitize (this);
-	if (edit_count) {
-	  DEBUG_MSG_FUNC (SANITIZE, start, "requested %u edits in second round; FAILING", edit_count);
-	  sane = false;
-	}
-      }
-    }
-    else
-    {
-      if (edit_count && !writable) {
-	start = hb_blob_get_data_writable (blob, nullptr);
-	end = start + blob->length;
-
-	if (start)
-	{
-	  writable = true;
-	  /* ok, we made it writable by relocating.  try again */
-	  DEBUG_MSG_FUNC (SANITIZE, start, "retry");
-	  goto retry;
-	}
-      }
-    }
 
     end_processing ();
 
@@ -506,7 +453,6 @@ struct hb_sanitize_context_t :
   private:
   int recursion_depth;
   bool writable;
-  unsigned int edit_count;
   hb_blob_t *blob;
   unsigned int num_glyphs;
   bool  num_glyphs_set;

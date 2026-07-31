@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_MODIFICATION_2D_LOOKAT_H
-#define SKELETON_MODIFICATION_2D_LOOKAT_H
+#pragma once
 
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
@@ -53,7 +52,7 @@ private:
 	float additional_rotation = 0;
 	bool enable_constraint = false;
 	float constraint_angle_min = 0;
-	float constraint_angle_max = (2.0 * Math_PI);
+	float constraint_angle_max = (2.0 * Math::PI);
 	bool constraint_angle_invert = false;
 	bool constraint_in_localspace = true;
 
@@ -96,5 +95,3 @@ public:
 	SkeletonModification2DLookAt();
 	~SkeletonModification2DLookAt();
 };
-
-#endif // SKELETON_MODIFICATION_2D_LOOKAT_H

@@ -31,35 +31,9 @@
 #include "config_file.h"
 
 #include "core/io/file_access_encrypted.h"
-#include "core/os/keyboard.h"
+#include "core/object/class_db.h"
 #include "core/string/string_builder.h"
 #include "core/variant/variant_parser.h"
-
-PackedStringArray ConfigFile::_get_sections() const {
-	List<String> s;
-	get_sections(&s);
-	PackedStringArray arr;
-	arr.resize(s.size());
-	int idx = 0;
-	for (const String &E : s) {
-		arr.set(idx++, E);
-	}
-
-	return arr;
-}
-
-PackedStringArray ConfigFile::_get_section_keys(const String &p_section) const {
-	List<String> s;
-	get_section_keys(p_section, &s);
-	PackedStringArray arr;
-	arr.resize(s.size());
-	int idx = 0;
-	for (const String &E : s) {
-		arr.set(idx++, E);
-	}
-
-	return arr;
-}
 
 void ConfigFile::set_value(const String &p_section, const String &p_key, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) { // Erase key.
@@ -102,18 +76,33 @@ bool ConfigFile::has_section_key(const String &p_section, const String &p_key) c
 	return values[p_section].has(p_key);
 }
 
-void ConfigFile::get_sections(List<String> *r_sections) const {
+Vector<String> ConfigFile::get_sections() const {
+	Vector<String> sections;
+	sections.resize(values.size());
+
+	int i = 0;
+	String *sections_write = sections.ptrw();
 	for (const KeyValue<String, HashMap<String, Variant>> &E : values) {
-		r_sections->push_back(E.key);
+		sections_write[i++] = E.key;
 	}
+
+	return sections;
 }
 
-void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys) const {
-	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot get keys from nonexistent section \"%s\".", p_section));
+Vector<String> ConfigFile::get_section_keys(const String &p_section) const {
+	Vector<String> keys;
+	ERR_FAIL_COND_V_MSG(!values.has(p_section), keys, vformat("Cannot get keys from nonexistent section \"%s\".", p_section));
 
-	for (const KeyValue<String, Variant> &E : values[p_section]) {
-		r_keys->push_back(E.key);
+	const HashMap<String, Variant> &keys_map = values[p_section];
+	keys.resize(keys_map.size());
+
+	int i = 0;
+	String *keys_write = keys.ptrw();
+	for (const KeyValue<String, Variant> &E : keys_map) {
+		keys_write[i++] = E.key;
 	}
+
+	return keys;
 }
 
 void ConfigFile::erase_section(const String &p_section) {
@@ -146,7 +135,7 @@ String ConfigFile::encode_to_text() const {
 
 		for (const KeyValue<String, Variant> &F : E.value) {
 			String vstr;
-			VariantWriter::write_to_string(F.value, vstr);
+			VariantWriter::write_to_string(F.value, vstr, true);
 			sb.append(F.key.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
@@ -199,22 +188,22 @@ Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass
 	return _internal_save(fae);
 }
 
-Error ConfigFile::_internal_save(Ref<FileAccess> file) {
+Error ConfigFile::_internal_save(Ref<FileAccess> p_file) {
 	bool first = true;
 	for (const KeyValue<String, HashMap<String, Variant>> &E : values) {
 		if (first) {
 			first = false;
 		} else {
-			file->store_string("\n");
+			p_file->store_string("\n");
 		}
 		if (!E.key.is_empty()) {
-			file->store_string("[" + E.key.replace("]", "\\]") + "]\n\n");
+			p_file->store_string("[" + E.key.replace("]", "\\]") + "]\n\n");
 		}
 
 		for (const KeyValue<String, Variant> &F : E.value) {
 			String vstr;
-			VariantWriter::write_to_string(F.value, vstr);
-			file->store_string(F.key.property_name_encode() + "=" + vstr + "\n");
+			VariantWriter::write_to_string(F.value, vstr, true);
+			p_file->store_string(F.key.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
 
@@ -267,9 +256,9 @@ Error ConfigFile::load_encrypted_pass(const String &p_path, const String &p_pass
 	return _internal_load(p_path, fae);
 }
 
-Error ConfigFile::_internal_load(const String &p_path, Ref<FileAccess> f) {
+Error ConfigFile::_internal_load(const String &p_path, Ref<FileAccess> p_file) {
 	VariantParser::StreamFile stream;
-	stream.f = f;
+	stream.f = p_file;
 
 	Error err = _parse(p_path, &stream);
 
@@ -326,8 +315,8 @@ void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_section", "section"), &ConfigFile::has_section);
 	ClassDB::bind_method(D_METHOD("has_section_key", "section", "key"), &ConfigFile::has_section_key);
 
-	ClassDB::bind_method(D_METHOD("get_sections"), &ConfigFile::_get_sections);
-	ClassDB::bind_method(D_METHOD("get_section_keys", "section"), &ConfigFile::_get_section_keys);
+	ClassDB::bind_method(D_METHOD("get_sections"), &ConfigFile::get_sections);
+	ClassDB::bind_method(D_METHOD("get_section_keys", "section"), &ConfigFile::get_section_keys);
 
 	ClassDB::bind_method(D_METHOD("erase_section", "section"), &ConfigFile::erase_section);
 	ClassDB::bind_method(D_METHOD("erase_section_key", "section", "key"), &ConfigFile::erase_section_key);

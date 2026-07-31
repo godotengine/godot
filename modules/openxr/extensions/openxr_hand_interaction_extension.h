@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_HAND_INTERACTION_EXTENSION_H
-#define OPENXR_HAND_INTERACTION_EXTENSION_H
+#pragma once
 
 #include "openxr_extension_wrapper.h"
 
@@ -50,23 +49,28 @@
 // See: https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#XR_EXT_hand_interaction
 // for more information.
 
+class OpenXRInteractionProfileMetadata;
+
 class OpenXRHandInteractionExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRHandInteractionExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRHandInteractionExtension *get_singleton();
 
 	OpenXRHandInteractionExtension();
 	virtual ~OpenXRHandInteractionExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	bool is_available();
 
-	virtual void on_register_metadata() override;
+	virtual void on_register_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata) override;
 
 private:
 	static OpenXRHandInteractionExtension *singleton;
 
 	bool available = false;
 };
-
-#endif // OPENXR_HAND_INTERACTION_EXTENSION_H

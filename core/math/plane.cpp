@@ -38,9 +38,15 @@ void Plane::set_normal(const Vector3 &p_normal) {
 }
 
 void Plane::normalize() {
+#ifdef MATH_CHECKS
+	if (!is_finite()) {
+		WARN_PRINT("Plane cannot be normalized, the distance and the normal should be finite.");
+	}
+#endif // MATH_CHECKS
+
 	real_t l = normal.length();
 	if (l == 0) {
-		*this = Plane(0, 0, 0, 0);
+		zero();
 		return;
 	}
 	normal /= l;
@@ -58,7 +64,7 @@ Vector3 Plane::get_any_perpendicular_normal() const {
 	static const Vector3 p2 = Vector3(0, 1, 0);
 	Vector3 p;
 
-	if (ABS(normal.dot(p1)) > 0.99f) { // if too similar to p1
+	if (Math::abs(normal.dot(p1)) > 0.99f) { // if too similar to p1
 		p = p2; // use p2
 	} else {
 		p = p1; // use p1
@@ -170,6 +176,10 @@ bool Plane::is_equal_approx_any_side(const Plane &p_plane) const {
 
 bool Plane::is_equal_approx(const Plane &p_plane) const {
 	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);
+}
+
+bool Plane::is_same(const Plane &p_plane) const {
+	return normal.is_same(p_plane.normal) && Math::is_same(d, p_plane.d);
 }
 
 bool Plane::is_finite() const {

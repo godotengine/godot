@@ -34,25 +34,43 @@
 #include "core/config/project_settings.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
+#include "core/object/object.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_device.h"
+
+void Engine::_update_time_scale() {
+	_time_scale = _user_time_scale * _game_time_scale;
+	user_ips = MAX(1, ips * _user_time_scale);
+	max_user_physics_steps_per_frame = MAX(max_physics_steps_per_frame, max_physics_steps_per_frame * _user_time_scale);
+}
 
 void Engine::set_physics_ticks_per_second(int p_ips) {
 	ERR_FAIL_COND_MSG(p_ips <= 0, "Engine iterations per second must be greater than 0.");
 	ips = p_ips;
+	_update_time_scale();
 }
 
 int Engine::get_physics_ticks_per_second() const {
 	return ips;
 }
 
+int Engine::get_user_physics_ticks_per_second() const {
+	return user_ips;
+}
+
 void Engine::set_max_physics_steps_per_frame(int p_max_physics_steps) {
 	ERR_FAIL_COND_MSG(p_max_physics_steps <= 0, "Maximum number of physics steps per frame must be greater than 0.");
 	max_physics_steps_per_frame = p_max_physics_steps;
+	_update_time_scale();
 }
 
 int Engine::get_max_physics_steps_per_frame() const {
 	return max_physics_steps_per_frame;
+}
+
+int Engine::get_user_max_physics_steps_per_frame() const {
+	return max_user_physics_steps_per_frame;
 }
 
 void Engine::set_physics_jitter_fix(double p_threshold) {
@@ -68,6 +86,11 @@ double Engine::get_physics_jitter_fix() const {
 
 void Engine::set_max_fps(int p_fps) {
 	_max_fps = p_fps > 0 ? p_fps : 0;
+
+	RenderingDevice *rd = RenderingDevice::get_singleton();
+	if (rd) {
+		rd->_set_max_fps(_max_fps);
+	}
 }
 
 int Engine::get_max_fps() const {
@@ -106,26 +129,40 @@ uint32_t Engine::get_frame_delay() const {
 }
 
 void Engine::set_time_scale(double p_scale) {
-	_time_scale = p_scale;
+	_game_time_scale = p_scale;
+	_update_time_scale();
 }
 
 double Engine::get_time_scale() const {
+	return freeze_time_scale ? 0.0 : _game_time_scale;
+}
+
+void Engine::set_user_time_scale(double p_scale) {
+	_user_time_scale = p_scale;
+	_update_time_scale();
+}
+
+double Engine::get_effective_time_scale() const {
+	return freeze_time_scale ? 0.0 : _time_scale;
+}
+
+double Engine::get_unfrozen_time_scale() const {
 	return _time_scale;
 }
 
 Dictionary Engine::get_version_info() const {
 	Dictionary dict;
-	dict["major"] = VERSION_MAJOR;
-	dict["minor"] = VERSION_MINOR;
-	dict["patch"] = VERSION_PATCH;
-	dict["hex"] = VERSION_HEX;
-	dict["status"] = VERSION_STATUS;
-	dict["build"] = VERSION_BUILD;
+	dict["major"] = GODOT_VERSION_MAJOR;
+	dict["minor"] = GODOT_VERSION_MINOR;
+	dict["patch"] = GODOT_VERSION_PATCH;
+	dict["hex"] = GODOT_VERSION_HEX;
+	dict["status"] = GODOT_VERSION_STATUS;
+	dict["build"] = GODOT_VERSION_BUILD;
 
-	String hash = String(VERSION_HASH);
+	String hash = String(GODOT_VERSION_HASH);
 	dict["hash"] = hash.is_empty() ? String("unknown") : hash;
 
-	dict["timestamp"] = VERSION_TIMESTAMP;
+	dict["timestamp"] = GODOT_VERSION_TIMESTAMP;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0) {
@@ -137,18 +174,18 @@ Dictionary Engine::get_version_info() const {
 	return dict;
 }
 
-static Array array_from_info(const char *const *info_list) {
+static Array array_from_info(const char *const *p_info_list) {
 	Array arr;
-	for (int i = 0; info_list[i] != nullptr; i++) {
-		arr.push_back(String::utf8(info_list[i]));
+	for (int i = 0; p_info_list[i] != nullptr; i++) {
+		arr.push_back(String::utf8(p_info_list[i]));
 	}
 	return arr;
 }
 
-static Array array_from_info_count(const char *const *info_list, int info_count) {
+static Array array_from_info_count(const char *const *p_info_list, int p_info_count) {
 	Array arr;
-	for (int i = 0; i < info_count; i++) {
-		arr.push_back(String::utf8(info_list[i]));
+	for (int i = 0; i < p_info_count; i++) {
+		arr.push_back(String::utf8(p_info_list[i]));
 	}
 	return arr;
 }
@@ -214,36 +251,22 @@ String Engine::get_license_text() const {
 String Engine::get_architecture_name() const {
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	return "x86_64";
-
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
 	return "x86_32";
-
 #elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 	return "arm64";
-
 #elif defined(__arm__) || defined(_M_ARM)
 	return "arm32";
-
 #elif defined(__riscv)
-#if __riscv_xlen == 8
 	return "rv64";
-#else
-	return "riscv";
-#endif
-
-#elif defined(__powerpc__)
-#if defined(__powerpc64__)
+#elif defined(__powerpc64__)
 	return "ppc64";
-#else
-	return "ppc";
-#endif
-
-#elif defined(__wasm__)
-#if defined(__wasm64__)
+#elif defined(__loongarch64)
+	return "loongarch64";
+#elif defined(__wasm64__)
 	return "wasm64";
 #elif defined(__wasm32__)
 	return "wasm32";
-#endif
 #endif
 }
 
@@ -261,6 +284,24 @@ bool Engine::is_validation_layers_enabled() const {
 
 bool Engine::is_generate_spirv_debug_info_enabled() const {
 	return generate_spirv_debug_info;
+}
+
+bool Engine::is_extra_gpu_memory_tracking_enabled() const {
+	return extra_gpu_memory_tracking;
+}
+
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+bool Engine::is_accurate_breadcrumbs_enabled() const {
+	return accurate_breadcrumbs;
+}
+#endif
+
+void Engine::set_print_to_stdout(bool p_enabled) {
+	CoreGlobals::print_line_enabled = p_enabled;
+}
+
+bool Engine::is_printing_to_stdout() const {
+	return CoreGlobals::print_line_enabled;
 }
 
 void Engine::set_print_error_messages(bool p_enabled) {
@@ -285,6 +326,11 @@ void Engine::print_header_rich(const String &p_string) const {
 
 void Engine::add_singleton(const Singleton &p_singleton) {
 	ERR_FAIL_COND_MSG(singleton_ptrs.has(p_singleton.name), vformat("Can't register singleton '%s' because it already exists.", p_singleton.name));
+#ifdef DEBUG_ENABLED
+	if (p_singleton.ptr && p_singleton.ptr->is_ref_counted()) {
+		WARN_PRINT(vformat("RefCounted singleton '%s' will be disallowed soon; raw pointer will dangle when last Ref is released. Use Object singleton.", p_singleton.name));
+	}
+#endif
 	singletons.push_back(p_singleton);
 	singleton_ptrs[p_singleton.name] = p_singleton.ptr;
 }
@@ -369,8 +415,6 @@ String Engine::get_shader_cache_path() const {
 	return shader_cache_path;
 }
 
-Engine *Engine::singleton = nullptr;
-
 Engine *Engine::get_singleton() {
 	return singleton;
 }
@@ -378,6 +422,18 @@ Engine *Engine::get_singleton() {
 bool Engine::notify_frame_server_synced() {
 	frame_server_synced = true;
 	return server_syncs > SERVER_SYNC_FRAME_COUNT_WARNING;
+}
+
+void Engine::set_freeze_time_scale(bool p_frozen) {
+	freeze_time_scale = p_frozen;
+}
+
+void Engine::set_embedded_in_editor(bool p_enabled) {
+	embedded_in_editor = p_enabled;
+}
+
+bool Engine::is_embedded_in_editor() const {
+	return embedded_in_editor;
 }
 
 Engine::Engine() {
@@ -394,10 +450,4 @@ Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr, const Stri
 		name(p_name),
 		ptr(p_ptr),
 		class_name(p_class_name) {
-#ifdef DEBUG_ENABLED
-	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
-	if (rc && !rc->is_referenced()) {
-		WARN_PRINT("You must use Ref<> to ensure the lifetime of a RefCounted object intended to be used as a singleton.");
-	}
-#endif
 }

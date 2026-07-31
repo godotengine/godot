@@ -30,17 +30,14 @@
 
 #include "editor_scene_importer_fbx2gltf.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "editor_scene_importer_ufbx.h"
-#include "modules/gltf/gltf_document.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_settings.h"
+#include "core/io/resource_importer.h"
+#include "core/os/os.h"
+#include "editor/settings/editor_settings.h"
 
-uint32_t EditorSceneFormatImporterFBX2GLTF::get_import_flags() const {
-	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
-}
+#include "modules/gltf/gltf_document.h"
 
 void EditorSceneFormatImporterFBX2GLTF::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("fbx");
@@ -104,6 +101,10 @@ Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint
 	gltf.instantiate();
 	Ref<GLTFState> state;
 	state.instantiate();
+	if (p_options.has("fbx/naming_version")) {
+		int naming_version = p_options["fbx/naming_version"];
+		gltf->set_naming_version(naming_version);
+	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
 	}
@@ -124,7 +125,7 @@ Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint
 #endif
 }
 
-Variant EditorSceneFormatImporterFBX2GLTF::get_option_visibility(const String &p_path, bool p_for_animation,
+Variant EditorSceneFormatImporterFBX2GLTF::get_option_visibility(const String &p_path, const String &p_scene_import_type,
 		const String &p_option, const HashMap<StringName, Variant> &p_options) {
 	// Remove all the FBX options except for 'fbx/importer' if the importer is fbx2gltf.
 	// These options are available only for ufbx.
@@ -139,6 +140,7 @@ Variant EditorSceneFormatImporterFBX2GLTF::get_option_visibility(const String &p
 
 void EditorSceneFormatImporterFBX2GLTF::get_import_options(const String &p_path,
 		List<ResourceImporter::ImportOption> *r_options) {
+	// This function must be empty to avoid both FBX2glTF and UFBX adding the same options to FBX files.
 }
 
 void EditorSceneFormatImporterFBX2GLTF::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
@@ -146,5 +148,3 @@ void EditorSceneFormatImporterFBX2GLTF::handle_compatibility_options(HashMap<Str
 		p_import_params["fbx/importer"] = EditorSceneFormatImporterUFBX::FBX_IMPORTER_UFBX;
 	}
 }
-
-#endif // TOOLS_ENABLED

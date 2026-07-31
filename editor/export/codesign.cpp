@@ -30,19 +30,15 @@
 
 #include "codesign.h"
 
-#include "lipo.h"
-#include "macho.h"
-
+#include "core/crypto/crypto_core.h"
+#include "core/io/dir_access.h"
 #include "core/io/plist.h"
-#include "core/os/os.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
-
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "core/string/regex.h"
+#include "editor/export/lipo.h"
+#include "editor/export/macho.h"
+#include "editor/file_system/editor_paths.h"
 
 #include <ctime>
-
-#ifdef MODULE_REGEX_ENABLED
 
 /*************************************************************************/
 /* CodeSignCodeResources                                                 */
@@ -202,11 +198,11 @@ bool CodeSignCodeResources::add_file2(const String &p_root, const String &p_path
 }
 
 bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &p_path, const String &p_exepath) {
-#define CLEANUP()                                       \
-	if (files_to_add.size() > 1) {                      \
+#define CLEANUP() \
+	if (files_to_add.size() > 1) { \
 		for (int j = 0; j < files_to_add.size(); j++) { \
-			da->remove(files_to_add[j]);                \
-		}                                               \
+			da->remove(files_to_add[j]); \
+		} \
 	}
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -214,7 +210,7 @@ bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &
 
 	Vector<String> files_to_add;
 	if (LipO::is_lipo(p_exepath)) {
-		String tmp_path_name = EditorPaths::get_singleton()->get_cache_dir().path_join("_lipo");
+		String tmp_path_name = EditorPaths::get_singleton()->get_temp_dir().path_join("_lipo");
 		Error err = da->make_dir_recursive(tmp_path_name);
 		ERR_FAIL_COND_V_MSG(err != OK, false, vformat("CodeSign/CodeResources: Failed to create \"%s\" subfolder.", tmp_path_name));
 		LipO lip;
@@ -472,13 +468,10 @@ _FORCE_INLINE_ void CodeSignRequirements::_parse_certificate_slot(uint32_t &r_po
 _FORCE_INLINE_ void CodeSignRequirements::_parse_key(uint32_t &r_pos, String &r_out, uint32_t p_rq_size) const {
 #define _R(x) BSWAP32(*(uint32_t *)(blob.ptr() + x))
 	ERR_FAIL_COND_MSG(r_pos >= p_rq_size, "CodeSign/Requirements: Out of bounds.");
-	uint32_t key_size = _R(r_pos);
+	const uint32_t key_size = _R(r_pos);
 	ERR_FAIL_COND_MSG(r_pos + key_size > p_rq_size, "CodeSign/Requirements: Out of bounds.");
-	CharString key;
-	key.resize(key_size);
-	memcpy(key.ptrw(), blob.ptr() + r_pos + 4, key_size);
 	r_pos += 4 + key_size + PAD(key_size, 4);
-	r_out += "[" + String::utf8(key, key_size) + "]";
+	r_out += "[" + String::utf8((const char *)blob.ptr() + r_pos + 4, key_size) + "]";
 #undef _R
 }
 
@@ -518,10 +511,7 @@ _FORCE_INLINE_ void CodeSignRequirements::_parse_hash_string(uint32_t &r_pos, St
 	ERR_FAIL_COND_MSG(r_pos >= p_rq_size, "CodeSign/Requirements: Out of bounds.");
 	uint32_t tag_size = _R(r_pos);
 	ERR_FAIL_COND_MSG(r_pos + tag_size > p_rq_size, "CodeSign/Requirements: Out of bounds.");
-	PackedByteArray data;
-	data.resize(tag_size);
-	memcpy(data.ptrw(), blob.ptr() + r_pos + 4, tag_size);
-	r_out += "H\"" + String::hex_encode_buffer(data.ptr(), data.size()) + "\"";
+	r_out += "H\"" + String::hex_encode_buffer(blob.ptr() + r_pos + 4, tag_size) + "\"";
 	r_pos += 4 + tag_size + PAD(tag_size, 4);
 #undef _R
 }
@@ -529,13 +519,10 @@ _FORCE_INLINE_ void CodeSignRequirements::_parse_hash_string(uint32_t &r_pos, St
 _FORCE_INLINE_ void CodeSignRequirements::_parse_value(uint32_t &r_pos, String &r_out, uint32_t p_rq_size) const {
 #define _R(x) BSWAP32(*(uint32_t *)(blob.ptr() + x))
 	ERR_FAIL_COND_MSG(r_pos >= p_rq_size, "CodeSign/Requirements: Out of bounds.");
-	uint32_t key_size = _R(r_pos);
+	const uint32_t key_size = _R(r_pos);
 	ERR_FAIL_COND_MSG(r_pos + key_size > p_rq_size, "CodeSign/Requirements: Out of bounds.");
-	CharString key;
-	key.resize(key_size);
-	memcpy(key.ptrw(), blob.ptr() + r_pos + 4, key_size);
 	r_pos += 4 + key_size + PAD(key_size, 4);
-	r_out += "\"" + String::utf8(key, key_size) + "\"";
+	r_out += "\"" + String::utf8((const char *)blob.ptr() + r_pos + 4, key_size) + "\"";
 #undef _R
 }
 
@@ -1193,11 +1180,11 @@ PackedByteArray CodeSign::file_hash_sha256(const String &p_path) {
 }
 
 Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const String &p_info, const String &p_exe_path, const String &p_bundle_path, const String &p_ent_path, bool p_ios_bundle, String &r_error_msg) {
-#define CLEANUP()                                        \
-	if (files_to_sign.size() > 1) {                      \
+#define CLEANUP() \
+	if (files_to_sign.size() > 1) { \
 		for (int j = 0; j < files_to_sign.size(); j++) { \
-			da->remove(files_to_sign[j]);                \
-		}                                                \
+			da->remove(files_to_sign[j]); \
+		} \
 	}
 
 	print_verbose(vformat("CodeSign: Signing executable: %s, bundle: %s with entitlements %s", p_exe_path, p_bundle_path, p_ent_path));
@@ -1248,7 +1235,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	Vector<String> files_to_sign;
 	if (LipO::is_lipo(main_exe)) {
 		print_verbose(vformat("CodeSign: Executable is fat, extracting..."));
-		String tmp_path_name = EditorPaths::get_singleton()->get_cache_dir().path_join("_lipo");
+		String tmp_path_name = EditorPaths::get_singleton()->get_temp_dir().path_join("_lipo");
 		Error err = da->make_dir_recursive(tmp_path_name);
 		if (err != OK) {
 			r_error_msg = vformat(TTR("Failed to create \"%s\" subfolder."), tmp_path_name);
@@ -1360,10 +1347,8 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 
 	// Generate common signature structures.
 	if (id.is_empty()) {
-		CryptoCore::RandomGenerator rng;
-		ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
 		uint8_t uuid[16];
-		Error err = rng.get_random_bytes(uuid, 16);
+		Error err = CryptoCore::generate_random(uuid, 16);
 		ERR_FAIL_COND_V_MSG(err, err, "Failed to generate UUID.");
 		id = (String("a-55554944") /*a-UUID*/ + String::hex_encode_buffer(uuid, 16));
 	}
@@ -1381,14 +1366,14 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 			r_error_msg = TTR("Invalid entitlements file.");
 			ERR_FAIL_V_MSG(FAILED, "CodeSign: Invalid entitlements file.");
 		}
-		cet = Ref<CodeSignEntitlementsText>(memnew(CodeSignEntitlementsText(entitlements)));
-		ceb = Ref<CodeSignEntitlementsBinary>(memnew(CodeSignEntitlementsBinary(entitlements)));
+		cet.instantiate(entitlements);
+		ceb.instantiate(entitlements);
 	}
 
 	print_verbose("CodeSign: Generating requirements...");
 	Ref<CodeSignRequirements> rq;
 	String team_id = "";
-	rq = Ref<CodeSignRequirements>(memnew(CodeSignRequirements()));
+	rq.instantiate();
 
 	// Sign executables.
 	for (int i = 0; i < files_to_sign.size(); i++) {
@@ -1487,7 +1472,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 
 		print_verbose("CodeSign: Generating signature...");
 		Ref<CodeSignSignature> cs;
-		cs = Ref<CodeSignSignature>(memnew(CodeSignSignature()));
+		cs.instantiate();
 
 		print_verbose("CodeSign: Writing signature superblob...");
 		// Write signature data to the executable.
@@ -1569,5 +1554,3 @@ Error CodeSign::codesign(bool p_use_hardened_runtime, bool p_force, const String
 		ERR_FAIL_V_MSG(FAILED, "CodeSign: Unknown object type.");
 	}
 }
-
-#endif // MODULE_REGEX_ENABLED

@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_MIXER_H
-#define ANIMATION_MIXER_H
+#pragma once
 
+#include "core/templates/a_hash_map.h"
 #include "scene/animation/tween.h"
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/animation_library.h"
-#include "scene/resources/audio_stream_polyphonic.h"
+#include "scene/resources/audio/audio_stream_polyphonic.h"
 
 class AnimatedValuesBackup;
 
@@ -48,6 +48,7 @@ class AnimationMixer : public Node {
 #endif // TOOLS_ENABLED
 
 	bool reset_on_save = true;
+	bool is_GDVIRTUAL_CALL_post_process_key_value = true;
 
 public:
 	enum AnimationCallbackModeProcess {
@@ -71,11 +72,10 @@ public:
 	struct AnimationLibraryData {
 		StringName name;
 		Ref<AnimationLibrary> library;
-		bool operator<(const AnimationLibraryData &p_data) const { return name.operator String() < p_data.name.operator String(); }
+		bool operator<(const AnimationLibraryData &p_data) const { return name.string() < p_data.name.string(); }
 	};
 
 	struct AnimationData {
-		String name;
 		Ref<Animation> animation;
 		StringName animation_library;
 		uint64_t last_update = 0;
@@ -84,31 +84,33 @@ public:
 	struct PlaybackInfo {
 		double time = 0.0;
 		double delta = 0.0;
+		double start = 0.0;
+		double end = 0.0;
 		bool seeked = false;
 		bool is_external_seeking = false;
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 		real_t weight = 0.0;
-		Vector<real_t> track_weights;
+		LocalVector<real_t> *track_weights = nullptr;
 	};
 
 	struct AnimationInstance {
-		AnimationData animation_data;
+		Ref<Animation> animation;
 		PlaybackInfo playback_info;
 	};
 
 protected:
 	/* ---- Data lists ---- */
 	LocalVector<AnimationLibraryData> animation_libraries;
-	HashMap<StringName, AnimationData> animation_set; // HashMap<Library name + Animation name, AnimationData>
+	AHashMap<StringName, AnimationData> animation_set; // HashMap<Library name + Animation name, AnimationData>
 
 	TypedArray<StringName> _get_animation_library_list() const;
+	// TODO: This needs to be a TypedArray<StringName> see this PR for rationale https://github.com/godotengine/godot/pull/110767/
 	Vector<String> _get_animation_list() const {
-		List<StringName> animations;
-		get_animation_list(&animations);
 		Vector<String> ret;
-		while (animations.size()) {
-			ret.push_back(animations.front()->get());
-			animations.pop_front();
+		LocalVector<StringName> animations = get_sorted_animation_list();
+		ret.resize(animations.size());
+		for (uint32_t i = 0; i < animations.size(); ++i) {
+			ret.write[i] = animations[i];
 		}
 		return ret;
 	}
@@ -138,15 +140,16 @@ protected:
 	/* ---- Caches for blending ---- */
 	bool cache_valid = false;
 	uint64_t setup_pass = 1;
-	uint64_t process_pass = 1;
 
 	struct TrackCache {
 		bool root_motion = false;
 		uint64_t setup_pass = 0;
 		Animation::TrackType type = Animation::TrackType::TYPE_ANIMATION;
 		NodePath path;
+		int blend_idx = -1;
 		ObjectID object_id;
 		real_t total_weight = 0.0;
+		uint64_t animation_instance_weight_applied_at = 0;
 
 		TrackCache() = default;
 		TrackCache(const TrackCache &p_other) :
@@ -154,7 +157,8 @@ protected:
 				setup_pass(p_other.setup_pass),
 				type(p_other.type),
 				object_id(p_other.object_id),
-				total_weight(p_other.total_weight) {}
+				total_weight(p_other.total_weight),
+				animation_instance_weight_applied_at(p_other.animation_instance_weight_applied_at) {}
 
 		virtual ~TrackCache() {}
 	};
@@ -194,7 +198,6 @@ protected:
 		TrackCacheTransform() {
 			type = Animation::TYPE_POSITION_3D;
 		}
-		~TrackCacheTransform() {}
 	};
 
 	struct RootMotionCache {
@@ -215,7 +218,6 @@ protected:
 				shape_index(p_other.shape_index) {}
 
 		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
-		~TrackCacheBlendShape() {}
 	};
 
 	struct TrackCacheValue : public TrackCache {
@@ -254,7 +256,6 @@ protected:
 
 	struct TrackCacheMethod : public TrackCache {
 		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
-		~TrackCacheMethod() {}
 	};
 
 	// Audio stream information for each audio stream placed on the track.
@@ -266,7 +267,7 @@ protected:
 
 	// Audio track information for mixng and ending.
 	struct PlayingAudioTrackInfo {
-		HashMap<int, PlayingAudioStreamInfo> stream_info;
+		AHashMap<int, PlayingAudioStreamInfo> stream_info;
 		double length = 0.0;
 		double time = 0.0;
 		real_t volume = 0.0;
@@ -279,7 +280,7 @@ protected:
 		Ref<AudioStreamPolyphonic> audio_stream;
 		Ref<AudioStreamPlaybackPolyphonic> audio_stream_playback;
 		HashMap<ObjectID, PlayingAudioTrackInfo> playing_streams; // Key is Animation resource ObjectID.
-		AudioServer::PlaybackType playback_type;
+		AuSE::PlaybackType playback_type;
 		StringName bus;
 
 		TrackCacheAudio(const TrackCacheAudio &p_other) :
@@ -292,7 +293,6 @@ protected:
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;
 		}
-		~TrackCacheAudio() {}
 	};
 
 	struct TrackCacheAnimation : public TrackCache {
@@ -301,32 +301,36 @@ protected:
 		TrackCacheAnimation() {
 			type = Animation::TYPE_ANIMATION;
 		}
-		~TrackCacheAnimation() {}
 	};
 
 	RootMotionCache root_motion_cache;
-	HashMap<Animation::TypeHash, TrackCache *> track_cache;
+	AHashMap<Animation::TrackCacheID, TrackCache *, HashHasher> track_cache;
+	AHashMap<Ref<Animation>, LocalVector<TrackCache *>> animation_track_num_to_track_cache;
 	HashSet<TrackCache *> playing_caches;
 	Vector<Node *> playing_audio_stream_players;
 
 	// Helpers.
-	void _clear_caches();
+	void _clear_caches(bool p_clear_track_cache = true);
 	void _clear_audio_streams();
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
 	bool _update_caches();
+	void _create_track_num_to_track_cache_for_animation(const Ref<Animation> &p_animation);
 
 	/* ---- Audio ---- */
-	AudioServer::PlaybackType playback_type;
+	AuSE::PlaybackType playback_type;
 
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;
-	HashMap<NodePath, int> track_map;
+	uint64_t animation_instance_weight_pass_counter = 0;
+	AHashMap<NodePath, int> track_map;
+	uint64_t track_map_version = 1;
 	int track_count = 0;
 	bool deterministic = false;
 
 	/* ---- Root motion accumulator for Skeleton3D ---- */
 	NodePath root_motion_track;
+	bool root_motion_local = false;
 	Vector3 root_motion_position = Vector3(0, 0, 0);
 	Quaternion root_motion_rotation = Quaternion(0, 0, 0, 1);
 	Vector3 root_motion_scale = Vector3(0, 0, 0);
@@ -336,6 +340,7 @@ protected:
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
+	virtual uint32_t _get_libraries_property_usage() const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &p_property) const;
@@ -356,14 +361,14 @@ protected:
 	virtual void _process_animation(double p_delta, bool p_update_only = false);
 
 	// For post process with retrieved key value during blending.
-	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
+	virtual Variant _post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant &p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	Variant post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, ObjectID p_object_id, int p_object_sub_idx = -1);
 	GDVIRTUAL5RC(Variant, _post_process_key_value, Ref<Animation>, int, Variant, ObjectID, int);
 
 	void _blend_init();
-	virtual bool _blend_pre_process(double p_delta, int p_track_count, const HashMap<NodePath, int> &p_track_map);
+	virtual bool _blend_pre_process(double p_delta, int p_track_count, const AHashMap<NodePath, int> &p_track_map);
 	virtual void _blend_capture(double p_delta);
-	void _blend_calc_total_weight(); // For undeterministic blending.
+	void _blend_calc_total_weight(); // For indeterministic blending.
 	void _blend_process(double p_delta, bool p_update_only = false);
 	void _blend_apply();
 	virtual void _blend_post_process();
@@ -383,7 +388,6 @@ protected:
 			step = 0.0;
 		}
 
-		CaptureCache() {}
 		~CaptureCache() {
 			clear();
 		}
@@ -397,18 +401,18 @@ protected:
 
 public:
 	/* ---- Data lists ---- */
-	Dictionary *get_animation_libraries();
-
-	void get_animation_library_list(List<StringName> *p_animations) const;
+	void get_animation_library_list(LocalVector<StringName> *p_animations) const;
 	Ref<AnimationLibrary> get_animation_library(const StringName &p_name) const;
 	bool has_animation_library(const StringName &p_name) const;
-	StringName find_animation_library(const Ref<Animation> &p_animation) const;
+	const StringName &find_animation_library(const Ref<Animation> &p_animation) const;
 	Error add_animation_library(const StringName &p_name, const Ref<AnimationLibrary> &p_animation_library);
 	void remove_animation_library(const StringName &p_name);
 	void rename_animation_library(const StringName &p_name, const StringName &p_new_name);
 
-	void get_animation_list(List<StringName> *p_animations) const;
-	Ref<Animation> get_animation(const StringName &p_name) const;
+	LocalVector<StringName> get_sorted_animation_list() const;
+	void get_animation_list(LocalVector<StringName> *p_animations) const;
+	const Ref<Animation> &get_animation(const StringName &p_name) const;
+	const Ref<Animation> &get_animation_or_null(const StringName &p_name) const;
 	bool has_animation(const StringName &p_name) const;
 	StringName find_animation(const Ref<Animation> &p_animation) const;
 
@@ -439,6 +443,9 @@ public:
 	void set_root_motion_track(const NodePath &p_track);
 	NodePath get_root_motion_track() const;
 
+	void set_root_motion_local(bool p_enabled);
+	bool is_root_motion_local() const;
+
 	Vector3 get_root_motion_position() const;
 	Quaternion get_root_motion_rotation() const;
 	Vector3 get_root_motion_scale() const;
@@ -448,7 +455,7 @@ public:
 	Vector3 get_root_motion_scale_accumulator() const;
 
 	/* ---- Blending processor ---- */
-	void make_animation_instance(const StringName &p_name, const PlaybackInfo p_playback_info);
+	void make_animation_instance(const StringName &p_name, const PlaybackInfo &p_playback_info);
 	void clear_animation_instances();
 	virtual void advance(double p_time);
 	virtual void clear_caches(); // Must be called by hand if an animation was modified after added.
@@ -482,11 +489,12 @@ public:
 class AnimatedValuesBackup : public RefCounted {
 	GDCLASS(AnimatedValuesBackup, RefCounted);
 
-	HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> data;
+	AHashMap<Animation::TrackCacheID, AnimationMixer::TrackCache *, HashHasher> data;
 
 public:
-	void set_data(const HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> p_data);
-	HashMap<Animation::TypeHash, AnimationMixer::TrackCache *> get_data() const;
+	void set_data(const AHashMap<Animation::TrackCacheID, AnimationMixer::TrackCache *, HashHasher> &p_data);
+	AHashMap<Animation::TrackCacheID, AnimationMixer::TrackCache *, HashHasher> get_data() const;
+
 	void clear_data();
 
 	AnimationMixer::TrackCache *get_cache_copy(AnimationMixer::TrackCache *p_cache) const;
@@ -497,5 +505,3 @@ public:
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeProcess);
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeMethod);
 VARIANT_ENUM_CAST(AnimationMixer::AnimationCallbackModeDiscrete);
-
-#endif // ANIMATION_MIXER_H

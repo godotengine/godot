@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef XR_INTERFACE_EXTENSION_H
-#define XR_INTERFACE_EXTENSION_H
+#pragma once
 
+#include "core/object/gdvirtual.gen.h"
 #include "servers/xr/xr_interface.h"
 
 class XRInterfaceExtension : public XRInterface {
@@ -39,7 +39,7 @@ class XRInterfaceExtension : public XRInterface {
 public:
 private:
 	bool can_add_blits = false;
-	Vector<BlitToScreen> blits;
+	Vector<RenderingServerTypes::BlitToScreen> blits;
 
 protected:
 	_THREAD_SAFE_CLASS_
@@ -104,6 +104,7 @@ public:
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
 	virtual RID get_vrs_texture() override;
+	virtual VRSTextureFormat get_vrs_texture_format() override;
 	virtual RID get_color_texture() override;
 	virtual RID get_depth_texture() override;
 	virtual RID get_velocity_texture() override;
@@ -114,6 +115,7 @@ public:
 	GDVIRTUAL2R(Transform3D, _get_transform_for_view, uint32_t, const Transform3D &);
 	GDVIRTUAL4R(PackedFloat64Array, _get_projection_for_view, uint32_t, double, double, double);
 	GDVIRTUAL0R(RID, _get_vrs_texture);
+	GDVIRTUAL0R(VRSTextureFormat, _get_vrs_texture_format);
 	GDVIRTUAL0R(RID, _get_color_texture);
 	GDVIRTUAL0R(RID, _get_depth_texture);
 	GDVIRTUAL0R(RID, _get_velocity_texture);
@@ -123,7 +125,7 @@ public:
 	virtual void process() override;
 	virtual void pre_render() override;
 	virtual bool pre_draw_viewport(RID p_render_target) override;
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual void end_frame() override;
 
 	GDVIRTUAL0(_process);
@@ -136,5 +138,3 @@ public:
 	RID get_render_target_texture(RID p_render_target);
 	// RID get_render_target_depth(RID p_render_target);
 };
-
-#endif // XR_INTERFACE_EXTENSION_H

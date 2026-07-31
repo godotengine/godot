@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,7 @@
 
 #include "config.h"
 #include <cmath>
-#include <cstring>
-#include <memory.h>
+#include "tvgCommon.h"
 #include "tvgMath.h"
 #include "tvgStr.h"
 
@@ -56,13 +55,13 @@ namespace tvg {
  * No hexadecimal form supported
  * no sequence supported after NAN
  */
-float strToFloat(const char *nPtr, char **endPtr)
+float toFloat(const char *str, char **end)
 {
-    if (endPtr) *endPtr = (char *) (nPtr);
-    if (!nPtr) return 0.0f;
+    if (end) *end = (char *) (str);
+    if (!str) return 0.0f;
 
-    auto a = nPtr;
-    auto iter = nPtr;
+    auto a = str;
+    auto iter = str;
     auto val = 0.0f;
     unsigned long long integerPart = 0;
     int minus = 1;
@@ -88,7 +87,7 @@ float strToFloat(const char *nPtr, char **endPtr)
                 iter += 5;
             else goto error;
         }
-        if (endPtr) *endPtr = (char *) (iter);
+        if (end) *end = (char *) (iter);
         return (minus == -1) ? -INFINITY : INFINITY;
     }
 
@@ -96,7 +95,7 @@ float strToFloat(const char *nPtr, char **endPtr)
         if ((tolower(*(iter + 1)) == 'a') && (tolower(*(iter + 2)) == 'n')) iter += 3;
         else goto error;
 
-        if (endPtr) *endPtr = (char *) (iter);
+        if (end) *end = (char *) (iter);
         return (minus == -1) ? -NAN : NAN;
     }
 
@@ -165,7 +164,7 @@ float strToFloat(const char *nPtr, char **endPtr)
                 exponentPart = exponentPart * 10U + static_cast<unsigned int>(*iter - '0');
             }
         } else if (!isdigit(*(a - 1))) {
-            a = nPtr;
+            a = str;
             goto success;
         } else if (*iter == 0) {
             goto success;
@@ -183,7 +182,7 @@ float strToFloat(const char *nPtr, char **endPtr)
         auto scale = 1.0f;
 
         while (exponentPart >= 8U) {
-            scale *= 1E8;
+            scale *= 1E8f;
             exponentPart -= 8U;
         }
         while (exponentPart > 0U) {
@@ -191,52 +190,96 @@ float strToFloat(const char *nPtr, char **endPtr)
             exponentPart--;
         }
         val = (minus_e == -1) ? (val / scale) : (val * scale);
-    } else if ((iter > nPtr) && !isdigit(*(iter - 1))) {
-        a = nPtr;
+    } else if ((iter > str) && !isdigit(*(iter - 1))) {
+        a = str;
         goto success;
     }
 
 success:
-    if (endPtr) *endPtr = (char *)(a);
+    if (end) *end = (char *)a;
     if (!std::isfinite(val)) return 0.0f;
 
     return minus * val;
 
 error:
-    if (endPtr) *endPtr = (char *)(nPtr);
+    if (end) *end = (char *)str;
     return 0.0f;
 }
 
-
-int str2int(const char* str, size_t n)
+// max: maximum number of characters to copy, size: length of the copied string
+char* duplicate(const char* str, size_t max, uint32_t* size)
 {
-    int ret = 0;
-    for(size_t i = 0; i < n; ++i) {
-        ret = ret * 10 + (str[i] - '0');
+    if (!str) {
+        if (size) *size = 0;
+        return nullptr;
     }
-    return ret;
-}
 
-char* strDuplicate(const char *str, size_t n)
-{
     auto len = strlen(str);
-    if (len < n) n = len;
+    if (len < max) max = len;
 
-    auto ret = (char *) malloc(n + 1);
-    if (!ret) return nullptr;
-    ret[n] = '\0';
+    auto ret = tvg::malloc<char>(max + 1);
+    ret[max] = '\0';
 
-    return (char *) memcpy(ret, str, n);
+    if (size) *size = max;
+
+    return (char*)memcpy(ret, str, max);
 }
 
-char* strDirname(const char* path)
+char* append(char* lhs, const char* rhs, size_t n)
 {
-    const char *ptr = strrchr(path, '/');
+    if (!rhs) return lhs;
+    if (!lhs) return duplicate(rhs, n);
+    lhs = tvg::realloc<char>(lhs, strlen(lhs) + n + 1);
+    return strncat(lhs, rhs, n);
+}
+
+
+char* dirname(const char* path)
+{
+    auto ptr = strrchr(path, '/');
 #ifdef _WIN32
-    if (ptr) ptr = strrchr(ptr + 1, '\\');
+    auto ptr2 = strrchr(ptr ? ptr : path, '\\');
+    if (ptr2) ptr = ptr2;
 #endif
-    int len = int(ptr + 1 - path);  // +1 to include '/'
-    return strDuplicate(path, len);
+    auto len = ptr ? size_t(ptr - path + 1) : SIZE_MAX;
+    return duplicate(path, len);
+}
+
+
+char* filename(const char* path)
+{
+    const char* ptr = strrchr(path, '/');
+#ifdef _WIN32
+    auto ptr2 = strrchr(ptr ? ptr : path, '\\');
+    if (ptr2) ptr = ptr2;
+#endif
+    if (ptr) ++ptr;
+    else ptr = path;
+    auto dot = fileext(ptr);
+    auto len = (dot > ptr) ? (size_t)(dot - ptr - 1) : strlen(ptr);
+    return duplicate(ptr, len);
+}
+
+
+const char* fileext(const char* path)
+{
+    auto ext = path;
+    while (ext) {
+        auto p = strchr(ext, '.');
+        if (!p) break;
+        ext = p + 1;
+    }
+    return ext;
+}
+
+
+char* concat(const char* a, const char* b)
+{
+    auto len = strlen(a) + strlen(b) + 1;
+    auto ret = tvg::malloc<char>(len * sizeof(char));
+    strcpy(ret, a);
+    strcat(ret, b);
+    return ret;
 }
 
 }

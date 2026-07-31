@@ -30,33 +30,34 @@
 
 #include "xml_parser.h"
 
-#include "core/string/print_string.h"
+#include "core/io/file_access.h"
+#include "core/object/class_db.h"
 
 //#define DEBUG_XML
 
-static inline bool _is_white_space(char c) {
-	return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
+static inline bool _is_white_space(char p_char) {
+	return (p_char == ' ' || p_char == '\t' || p_char == '\n' || p_char == '\r');
 }
 
 //! sets the state that text was found. Returns true if set should be set
-bool XMLParser::_set_text(const char *start, const char *end) {
+bool XMLParser::_set_text(const char *p_start, const char *p_end) {
 	// check if text is more than 2 characters, and if not, check if there is
 	// only white space, so that this text won't be reported
-	if (end - start < 3) {
-		const char *p = start;
-		for (; p != end; ++p) {
+	if (p_end - p_start < 3) {
+		const char *p = p_start;
+		for (; p != p_end; ++p) {
 			if (!_is_white_space(*p)) {
 				break;
 			}
 		}
 
-		if (p == end) {
+		if (p == p_end) {
 			return false;
 		}
 	}
 
 	// set current text to the parsed text, and replace xml special characters
-	String s = String::utf8(start, (int)(end - start));
+	String s = String::utf8(p_start, (int)(p_end - p_start));
 	node_name = s.xml_unescape();
 
 	// current XML node type is text
@@ -95,7 +96,8 @@ void XMLParser::_ignore_definition() {
 	while (*P && *P != '>') {
 		next_char();
 	}
-	node_name.parse_utf8(F, P - F);
+	node_name.clear();
+	node_name.append_utf8(F, P - F);
 
 	if (*P) {
 		next_char();
@@ -429,7 +431,7 @@ String XMLParser::get_named_attribute_value(const String &p_name) const {
 		}
 	}
 
-	ERR_FAIL_COND_V_MSG(idx < 0, "", "Attribute not found: " + p_name + ".");
+	ERR_FAIL_COND_V_MSG(idx < 0, "", vformat("Attribute not found: '%s'.", p_name));
 
 	return attributes[idx].value;
 }
@@ -493,7 +495,7 @@ Error XMLParser::open(const String &p_path) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot open file '%s'.", p_path));
 
 	length = file->get_length();
 	ERR_FAIL_COND_V(length < 1, ERR_FILE_CORRUPT);

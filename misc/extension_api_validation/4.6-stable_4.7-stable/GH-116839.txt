@@ -1,0 +1,6 @@
+GH-116839
+---------
+Validate extension JSON: Error: Field 'classes/Control/methods/get_accessibility_live/return_value': type changed value in new API, from "enum::DisplayServer.AccessibilityLiveMode" to "enum::AccessibilityServer.AccessibilityLiveMode".
+Validate extension JSON: Error: Field 'classes/Control/methods/set_accessibility_live/arguments/0': type changed value in new API, from "enum::DisplayServer.AccessibilityLiveMode" to "enum::AccessibilityServer.AccessibilityLiveMode".
+
+Enum moved to AccessibilityServer. Compatibility methods registered.

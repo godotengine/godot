@@ -5,23 +5,11 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-/* Enable definition of getaddrinfo() even when compiling with -std=c99. Must
- * be set before mbedtls_config.h, which pulls in glibc's features.h indirectly.
- * Harmless on other platforms. */
-#ifndef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE 200112L
-#endif
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 600 /* sockaddr_storage */
-#endif
-
-#include "common.h"
+#include "ssl_misc.h"
 
 #if defined(MBEDTLS_NET_C)
 
-#if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
-    !defined(__APPLE__) && !defined(_WIN32) && !defined(__QNXNTO__) && \
-    !defined(__HAIKU__) && !defined(__midipix__)
+#if !defined(MBEDTLS_PLATFORM_IS_UNIXLIKE) && !defined(_WIN32)
 #error "This module only works on Unix and Windows, see MBEDTLS_NET_C in mbedtls_config.h"
 #endif
 
@@ -190,7 +178,7 @@ int mbedtls_net_connect(mbedtls_net_context *ctx, const char *host,
             break;
         }
 
-        close(ctx->fd);
+        mbedtls_net_close(ctx);
         ret = MBEDTLS_ERR_NET_CONNECT_FAILED;
     }
 
@@ -237,13 +225,13 @@ int mbedtls_net_bind(mbedtls_net_context *ctx, const char *bind_ip, const char *
         n = 1;
         if (setsockopt(ctx->fd, SOL_SOCKET, SO_REUSEADDR,
                        (const char *) &n, sizeof(n)) != 0) {
-            close(ctx->fd);
+            mbedtls_net_close(ctx);
             ret = MBEDTLS_ERR_NET_SOCKET_FAILED;
             continue;
         }
 
         if (bind(ctx->fd, cur->ai_addr, MSVC_INT_CAST cur->ai_addrlen) != 0) {
-            close(ctx->fd);
+            mbedtls_net_close(ctx);
             ret = MBEDTLS_ERR_NET_BIND_FAILED;
             continue;
         }
@@ -251,7 +239,7 @@ int mbedtls_net_bind(mbedtls_net_context *ctx, const char *bind_ip, const char *
         /* Listen only makes sense for TCP */
         if (proto == MBEDTLS_NET_PROTO_TCP) {
             if (listen(ctx->fd, MBEDTLS_NET_LISTEN_BACKLOG) != 0) {
-                close(ctx->fd);
+                mbedtls_net_close(ctx);
                 ret = MBEDTLS_ERR_NET_LISTEN_FAILED;
                 continue;
             }
@@ -524,8 +512,8 @@ void mbedtls_net_usleep(unsigned long usec)
 #else
     struct timeval tv;
     tv.tv_sec  = usec / 1000000;
-#if defined(__unix__) || defined(__unix) || \
-    (defined(__APPLE__) && defined(__MACH__))
+#if (defined(__unix__) || defined(__unix) || \
+    (defined(__APPLE__) && defined(__MACH__))) && !defined(__DJGPP__)
     tv.tv_usec = (suseconds_t) usec % 1000000;
 #else
     tv.tv_usec = usec % 1000000;
@@ -683,7 +671,7 @@ void mbedtls_net_close(mbedtls_net_context *ctx)
  */
 void mbedtls_net_free(mbedtls_net_context *ctx)
 {
-    if (ctx->fd == -1) {
+    if (ctx == NULL || ctx->fd == -1) {
         return;
     }
 

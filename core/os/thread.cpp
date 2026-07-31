@@ -28,18 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "platform_config.h"
-#ifndef PLATFORM_THREAD_OVERRIDE // See details in thread.h
+#include "platform_config.h" // IWYU pragma: keep. Can override the implementation.
+
+#ifndef PLATFORM_THREAD_OVERRIDE // See details in thread.h.
 
 #include "thread.h"
 
 #ifdef THREADS_ENABLED
 #include "core/object/script_language.h"
-#include "core/templates/safe_refcount.h"
 
 SafeNumeric<uint64_t> Thread::id_counter(1); // The first value after .increment() is 2, hence by default the main thread ID should be 1.
+thread_local Thread::ID Thread::caller_id = Thread::id_counter.increment();
 
-thread_local Thread::ID Thread::caller_id = Thread::UNASSIGNED_ID;
 #endif
 
 Thread::PlatformFunctions Thread::platform_functions;
@@ -88,15 +88,26 @@ void Thread::wait_to_finish() {
 	id = UNASSIGNED_ID;
 }
 
+void Thread::make_main_thread() {
+	if (caller_id == MAIN_ID) {
+		return; // We're already the main thread
+	}
+	CRASH_COND_MSG(!is_main_thread_assigned.set_if_clear(), "A second thread attempted to become the main thread.");
+	caller_id = MAIN_ID;
+}
+
+void Thread::release_main_thread() {
+	CRASH_COND_MSG(caller_id != MAIN_ID, "Trying to release main thread from a thread that isn't main.");
+	CRASH_COND(!is_main_thread_assigned.clear_if_set());
+	caller_id = id_counter.increment();
+}
+
 Error Thread::set_name(const String &p_name) {
 	if (platform_functions.set_name) {
 		return platform_functions.set_name(p_name);
 	}
 
 	return ERR_UNAVAILABLE;
-}
-
-Thread::Thread() {
 }
 
 Thread::~Thread() {

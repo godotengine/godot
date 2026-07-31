@@ -28,19 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RAYCAST_OCCLUSION_CULL_H
-#define RAYCAST_OCCLUSION_CULL_H
+#pragma once
 
-#include "core/io/image.h"
-#include "core/math/projection.h"
-#include "core/object/object.h"
-#include "core/object/ref_counted.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 
 #include <embree4/rtcore.h>
+
+struct Projection;
 
 class RaycastOcclusionCull : public RendererSceneOcclusionCull {
 	typedef RTCRayHit16 CameraRayTile;
@@ -76,7 +73,7 @@ public:
 		virtual void clear() override;
 		virtual void resize(const Size2i &p_size) override;
 		void sort_rays(const Vector3 &p_camera_dir, bool p_orthogonal);
-		void update_camera_rays(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal);
+		void update_camera_rays(const Transform3D &p_cam_transform, const Vector3 &p_near_bottom_left, const Vector2 &p_near_extents, real_t p_z_far, bool p_cam_orthogonal);
 
 		~RaycastHZBuffer();
 	};
@@ -109,7 +106,7 @@ private:
 	struct OccluderInstance {
 		RID occluder;
 		LocalVector<uint32_t> indices;
-		LocalVector<Vector3> xformed_vertices;
+		LocalVector<float> xformed_vertices;
 		Transform3D xform;
 		bool enabled = true;
 		bool removed = false;
@@ -126,7 +123,7 @@ private:
 			uint32_t vertex_count;
 			Transform3D xform;
 			const Vector3 *read;
-			Vector3 *write = nullptr;
+			float *write = nullptr;
 		};
 
 		Thread *commit_thread = nullptr;
@@ -144,7 +141,7 @@ private:
 		void _update_dirty_instance_thread(int p_idx, RID *p_instances);
 		void _update_dirty_instance(int p_idx, RID *p_instances);
 		void _transform_vertices_thread(uint32_t p_thread, TransformThreadData *p_data);
-		void _transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform3D &p_xform, int p_from, int p_to);
+		void _transform_vertices_range(const Vector3 *p_read, float *p_write, const Transform3D &p_xform, int p_from, int p_to);
 		static void _commit_scene(void *p_ud);
 		void free();
 		void update();
@@ -162,11 +159,11 @@ private:
 	RID_PtrOwner<Occluder> occluder_owner;
 	HashMap<RID, Scenario> scenarios;
 	HashMap<RID, RaycastHZBuffer> buffers;
-	RS::ViewportOcclusionCullingBuildQuality build_quality;
+	RSE::ViewportOcclusionCullingBuildQuality build_quality;
 	bool _jitter_enabled = false;
 
 	void _init_embree();
-	Projection _jitter_projection(const Projection &p_cam_projection, const Size2i &p_viewport_size);
+	Vector2 _get_jitter(const Rect2 &p_viewport_rect, const Size2i &p_buffer_size);
 
 public:
 	virtual bool is_occluder(RID p_rid) override;
@@ -189,10 +186,8 @@ public:
 
 	virtual RID buffer_get_debug_texture(RID p_buffer) override;
 
-	virtual void set_build_quality(RS::ViewportOcclusionCullingBuildQuality p_quality) override;
+	virtual void set_build_quality(RSE::ViewportOcclusionCullingBuildQuality p_quality) override;
 
 	RaycastOcclusionCull();
 	~RaycastOcclusionCull();
 };
-
-#endif // RAYCAST_OCCLUSION_CULL_H

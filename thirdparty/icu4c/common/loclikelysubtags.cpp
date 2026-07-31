@@ -527,7 +527,7 @@ LSR LikelySubtags::makeMaximizedLsrFrom(const Locale &locale,
         return {};
     }
     const char *name = locale.getName();
-    if (uprv_isAtSign(name[0]) && name[1] == 'x' && name[2] == '=') {  // name.startsWith("@x=")
+    if (!returnInputIfUnmatch && uprv_isAtSign(name[0]) && name[1] == 'x' && name[2] == '=') {  // name.startsWith("@x=")
         // Private use language tag x-subtag-subtag... which CLDR changes to
         // und-x-subtag-subtag...
         return LSR(name, "", "", LSR::EXPLICIT_LSR);
@@ -564,47 +564,40 @@ LSR LikelySubtags::makeMaximizedLsr(const char *language, const char *script, co
     // Handle pseudolocales like en-XA, ar-XB, fr-PSCRACK.
     // They should match only themselves,
     // not other locales with what looks like the same language and script subtags.
-    char c1;
-    if (region[0] == 'X' && (c1 = region[1]) != 0 && region[2] == 0) {
-        switch (c1) {
-        case 'A':
-            if (returnInputIfUnmatch) {
-                return LSR(language, script, region, LSR::EXPLICIT_LSR);
+    if (!returnInputIfUnmatch) {
+        char c1;
+        if (region[0] == 'X' && (c1 = region[1]) != 0 && region[2] == 0) {
+            switch (c1) {
+            case 'A':
+                return LSR(PSEUDO_ACCENTS_PREFIX, language, script, region,
+                           LSR::EXPLICIT_LSR, errorCode);
+            case 'B':
+                return LSR(PSEUDO_BIDI_PREFIX, language, script, region,
+                           LSR::EXPLICIT_LSR, errorCode);
+            case 'C':
+                return LSR(PSEUDO_CRACKED_PREFIX, language, script, region,
+                           LSR::EXPLICIT_LSR, errorCode);
+            default:  // normal locale
+                break;
             }
-            return LSR(PSEUDO_ACCENTS_PREFIX, language, script, region,
-                       LSR::EXPLICIT_LSR, errorCode);
-        case 'B':
-            if (returnInputIfUnmatch) {
-                return LSR(language, script, region, LSR::EXPLICIT_LSR);
-            }
-            return LSR(PSEUDO_BIDI_PREFIX, language, script, region,
-                       LSR::EXPLICIT_LSR, errorCode);
-        case 'C':
-            if (returnInputIfUnmatch) {
-                return LSR(language, script, region, LSR::EXPLICIT_LSR);
-            }
-            return LSR(PSEUDO_CRACKED_PREFIX, language, script, region,
-                       LSR::EXPLICIT_LSR, errorCode);
-        default:  // normal locale
-            break;
         }
-    }
 
-    if (variant[0] == 'P' && variant[1] == 'S') {
-        int32_t lsrFlags = *region == 0 ?
-            LSR::EXPLICIT_LANGUAGE | LSR::EXPLICIT_SCRIPT : LSR::EXPLICIT_LSR;
-        if (uprv_strcmp(variant, "PSACCENT") == 0) {
-            return LSR(PSEUDO_ACCENTS_PREFIX, language, script,
-                       *region == 0 ? "XA" : region, lsrFlags, errorCode);
-        } else if (uprv_strcmp(variant, "PSBIDI") == 0) {
-            return LSR(PSEUDO_BIDI_PREFIX, language, script,
-                       *region == 0 ? "XB" : region, lsrFlags, errorCode);
-        } else if (uprv_strcmp(variant, "PSCRACK") == 0) {
-            return LSR(PSEUDO_CRACKED_PREFIX, language, script,
-                       *region == 0 ? "XC" : region, lsrFlags, errorCode);
+        if (variant[0] == 'P' && variant[1] == 'S') {
+            int32_t lsrFlags = *region == 0 ?
+                LSR::EXPLICIT_LANGUAGE | LSR::EXPLICIT_SCRIPT : LSR::EXPLICIT_LSR;
+            if (uprv_strcmp(variant, "PSACCENT") == 0) {
+                return LSR(PSEUDO_ACCENTS_PREFIX, language, script,
+                           *region == 0 ? "XA" : region, lsrFlags, errorCode);
+            } else if (uprv_strcmp(variant, "PSBIDI") == 0) {
+                return LSR(PSEUDO_BIDI_PREFIX, language, script,
+                           *region == 0 ? "XB" : region, lsrFlags, errorCode);
+            } else if (uprv_strcmp(variant, "PSCRACK") == 0) {
+                return LSR(PSEUDO_CRACKED_PREFIX, language, script,
+                           *region == 0 ? "XC" : region, lsrFlags, errorCode);
+            }
+            // else normal locale
         }
-        // else normal locale
-    }
+    } // end of if (!returnInputIfUnmatch)
 
     language = getCanonical(languageAliases, language);
     // (We have no script mappings.)
@@ -616,9 +609,9 @@ LSR LikelySubtags::maximize(const char *language, const char *script, const char
                              bool returnInputIfUnmatch,
                              UErrorCode &errorCode) const {
     if (U_FAILURE(errorCode)) { return {}; }
-    return maximize({language, (int32_t)uprv_strlen(language)},
-                    {script, (int32_t)uprv_strlen(script)},
-                    {region, (int32_t)uprv_strlen(region)},
+    return maximize({language, static_cast<int32_t>(uprv_strlen(language))},
+                    {script, static_cast<int32_t>(uprv_strlen(script))},
+                    {region, static_cast<int32_t>(uprv_strlen(region))},
                     returnInputIfUnmatch,
                     errorCode);
 }
@@ -722,13 +715,29 @@ LSR LikelySubtags::maximize(StringPiece language, StringPiece script, StringPiec
             } else {
                 iter.resetToState64(state);
                 value = trieNext(iter, "", 0);
-                U_ASSERT(value > 0);
+                U_ASSERT(value != 0);
+                // For the case of und_Latn
+                if (value < 0) {
+                    retainLanguage = !language.empty();
+                    retainScript = !script.empty();
+                    retainRegion = !region.empty();
+                    // Fallback to und_$region =>
+                    iter.resetToState64(trieUndState);  // "und" ("*")
+                    value = trieNext(iter, "", 0);
+                    U_ASSERT(value == 0);
+                    int64_t trieUndEmptyState = iter.getState64();
+                    value = trieNext(iter, region, 0);
+                    // Fallback to und =>
+                    if (value < 0) {
+                        iter.resetToState64(trieUndEmptyState);
+                        value = trieNext(iter, "", 0);
+                        U_ASSERT(value > 0);
+                    }
+                }
             }
         }
     }
     U_ASSERT(value < lsrsLength);
-    const LSR &matched = lsrs[value];
-
     if (returnInputIfUnmatch &&
         (!(matchLanguage || matchScript || (matchRegion && language.empty())))) {
       return LSR("", "", "", LSR::EXPLICIT_LSR, errorCode);  // no matching.
@@ -738,18 +747,23 @@ LSR LikelySubtags::maximize(StringPiece language, StringPiece script, StringPiec
     }
 
     if (!(retainLanguage || retainScript || retainRegion)) {
+        U_ASSERT(value >= 0);
         // Quickly return a copy of the lookup-result LSR
         // without new allocation of the subtags.
+        const LSR &matched = lsrs[value];
         return LSR(matched.language, matched.script, matched.region, matched.flags);
     }
     if (!retainLanguage) {
-        language = matched.language;
+        U_ASSERT(value >= 0);
+        language = lsrs[value].language;
     }
     if (!retainScript) {
-        script = matched.script;
+        U_ASSERT(value >= 0);
+        script = lsrs[value].script;
     }
     if (!retainRegion) {
-        region = matched.region;
+        U_ASSERT(value >= 0);
+        region = lsrs[value].region;
     }
     int32_t retainMask = (retainLanguage ? 4 : 0) + (retainScript ? 2 : 0) + (retainRegion ? 1 : 0);
     // retainOldMask flags = LSR explicit-subtag flags

@@ -352,23 +352,23 @@ struct AxisValue
 {
   float get_value (unsigned int axis_index) const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return u.format1.get_value ();
-    case 2: return u.format2.get_value ();
-    case 3: return u.format3.get_value ();
-    case 4: return u.format4.get_axis_record (axis_index).get_value ();
+    case 1: hb_barrier (); return u.format1.get_value ();
+    case 2: hb_barrier (); return u.format2.get_value ();
+    case 3: hb_barrier (); return u.format3.get_value ();
+    case 4: hb_barrier (); return u.format4.get_axis_record (axis_index).get_value ();
     default:return 0.f;
     }
   }
 
   unsigned int get_axis_index () const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return u.format1.get_axis_index ();
-    case 2: return u.format2.get_axis_index ();
-    case 3: return u.format3.get_axis_index ();
+    case 1: hb_barrier (); return u.format1.get_axis_index ();
+    case 2: hb_barrier (); return u.format2.get_axis_index ();
+    case 3: hb_barrier (); return u.format3.get_axis_index ();
     /* case 4: Makes more sense for variable fonts which are handled by fvar in hb-style */
     default:return -1;
     }
@@ -376,12 +376,12 @@ struct AxisValue
 
   hb_ot_name_id_t get_value_name_id () const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return u.format1.get_value_name_id ();
-    case 2: return u.format2.get_value_name_id ();
-    case 3: return u.format3.get_value_name_id ();
-    case 4: return u.format4.get_value_name_id ();
+    case 1: hb_barrier (); return u.format1.get_value_name_id ();
+    case 2: hb_barrier (); return u.format2.get_value_name_id ();
+    case 3: hb_barrier (); return u.format3.get_value_name_id ();
+    case 4: hb_barrier (); return u.format4.get_value_name_id ();
     default:return HB_OT_NAME_ID_INVALID;
     }
   }
@@ -389,13 +389,13 @@ struct AxisValue
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
-    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
-    TRACE_DISPATCH (this, u.format);
-    switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
-    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
-    case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
-    case 4: return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
+    if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format.v);
+    switch (u.format.v) {
+    case 1: hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: hb_barrier (); return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 3: hb_barrier (); return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
+    case 4: hb_barrier (); return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -403,12 +403,12 @@ struct AxisValue
   bool keep_axis_value (const hb_array_t<const StatAxisRecord> axis_records,
                         hb_hashmap_t<hb_tag_t, Triple> *user_axes_location) const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return u.format1.keep_axis_value (axis_records, user_axes_location);
-    case 2: return u.format2.keep_axis_value (axis_records, user_axes_location);
-    case 3: return u.format3.keep_axis_value (axis_records, user_axes_location);
-    case 4: return u.format4.keep_axis_value (axis_records, user_axes_location);
+    case 1: hb_barrier (); return u.format1.keep_axis_value (axis_records, user_axes_location);
+    case 2: hb_barrier (); return u.format2.keep_axis_value (axis_records, user_axes_location);
+    case 3: hb_barrier (); return u.format3.keep_axis_value (axis_records, user_axes_location);
+    case 4: hb_barrier (); return u.format4.keep_axis_value (axis_records, user_axes_location);
     default:return false;
     }
   }
@@ -420,12 +420,12 @@ struct AxisValue
       return_trace (false);
     hb_barrier ();
 
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return_trace (u.format1.sanitize (c));
-    case 2: return_trace (u.format2.sanitize (c));
-    case 3: return_trace (u.format3.sanitize (c));
-    case 4: return_trace (u.format4.sanitize (c));
+    case 1: hb_barrier (); return_trace (u.format1.sanitize (c));
+    case 2: hb_barrier (); return_trace (u.format2.sanitize (c));
+    case 3: hb_barrier (); return_trace (u.format3.sanitize (c));
+    case 4: hb_barrier (); return_trace (u.format4.sanitize (c));
     default:return_trace (true);
     }
   }
@@ -433,14 +433,14 @@ struct AxisValue
   protected:
   union
   {
-  HBUINT16		format;
+  struct { HBUINT16 v; }	format;
   AxisValueFormat1	format1;
   AxisValueFormat2	format2;
   AxisValueFormat3	format3;
   AxisValueFormat4	format4;
   } u;
   public:
-  DEFINE_SIZE_UNION (2, format);
+  DEFINE_SIZE_UNION (2, format.v);
 };
 
 struct AxisValueOffsetArray: UnsizedArrayOf<Offset16To<AxisValue>>

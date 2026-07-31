@@ -30,6 +30,10 @@
 
 #include "reflection_probe.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 void ReflectionProbe::set_intensity(float p_intensity) {
 	intensity = p_intensity;
 	RS::get_singleton()->reflection_probe_set_intensity(probe, p_intensity);
@@ -39,9 +43,19 @@ float ReflectionProbe::get_intensity() const {
 	return intensity;
 }
 
+void ReflectionProbe::set_blend_distance(float p_blend_distance) {
+	blend_distance = p_blend_distance;
+	RS::get_singleton()->reflection_probe_set_blend_distance(probe, p_blend_distance);
+	update_gizmos();
+}
+
+float ReflectionProbe::get_blend_distance() const {
+	return blend_distance;
+}
+
 void ReflectionProbe::set_ambient_mode(AmbientMode p_mode) {
 	ambient_mode = p_mode;
-	RS::get_singleton()->reflection_probe_set_ambient_mode(probe, RS::ReflectionProbeAmbientMode(p_mode));
+	RS::get_singleton()->reflection_probe_set_ambient_mode(probe, RSE::ReflectionProbeAmbientMode(p_mode));
 	notify_property_list_changed();
 }
 
@@ -95,7 +109,7 @@ void ReflectionProbe::set_size(const Vector3 &p_size) {
 			half_size = 0.01;
 		}
 
-		if (half_size - 0.01 < ABS(origin_offset[i])) {
+		if (half_size - 0.01 < Math::abs(origin_offset[i])) {
 			origin_offset[i] = SIGN(origin_offset[i]) * (half_size - 0.01);
 		}
 	}
@@ -115,7 +129,7 @@ void ReflectionProbe::set_origin_offset(const Vector3 &p_offset) {
 
 	for (int i = 0; i < 3; i++) {
 		float half_size = size[i] / 2;
-		if (half_size - 0.01 < ABS(origin_offset[i])) {
+		if (half_size - 0.01 < Math::abs(origin_offset[i])) {
 			origin_offset[i] = SIGN(origin_offset[i]) * (half_size - 0.01);
 		}
 	}
@@ -176,7 +190,7 @@ uint32_t ReflectionProbe::get_reflection_mask() const {
 
 void ReflectionProbe::set_update_mode(UpdateMode p_mode) {
 	update_mode = p_mode;
-	RS::get_singleton()->reflection_probe_set_update_mode(probe, RS::ReflectionProbeUpdateMode(p_mode));
+	RS::get_singleton()->reflection_probe_set_update_mode(probe, RSE::ReflectionProbeUpdateMode(p_mode));
 }
 
 ReflectionProbe::UpdateMode ReflectionProbe::get_update_mode() const {
@@ -185,12 +199,15 @@ ReflectionProbe::UpdateMode ReflectionProbe::get_update_mode() const {
 
 AABB ReflectionProbe::get_aabb() const {
 	AABB aabb;
-	aabb.position = -origin_offset;
-	aabb.size = origin_offset + size / 2;
+	aabb.position = -size / 2;
+	aabb.size = size;
 	return aabb;
 }
 
 void ReflectionProbe::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "ambient_color" || p_property.name == "ambient_color_energy") {
 		if (ambient_mode != AMBIENT_COLOR) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -201,6 +218,9 @@ void ReflectionProbe::_validate_property(PropertyInfo &p_property) const {
 void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_intensity", "intensity"), &ReflectionProbe::set_intensity);
 	ClassDB::bind_method(D_METHOD("get_intensity"), &ReflectionProbe::get_intensity);
+
+	ClassDB::bind_method(D_METHOD("set_blend_distance", "blend_distance"), &ReflectionProbe::set_blend_distance);
+	ClassDB::bind_method(D_METHOD("get_blend_distance"), &ReflectionProbe::get_blend_distance);
 
 	ClassDB::bind_method(D_METHOD("set_ambient_mode", "ambient"), &ReflectionProbe::set_ambient_mode);
 	ClassDB::bind_method(D_METHOD("get_ambient_mode"), &ReflectionProbe::get_ambient_mode);
@@ -243,6 +263,7 @@ void ReflectionProbe::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "update_mode", PROPERTY_HINT_ENUM, "Once (Fast),Always (Slow)"), "set_update_mode", "get_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "intensity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_intensity", "get_intensity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "blend_distance", PROPERTY_HINT_RANGE, "0,8,0.01,or_greater,suffix:m"), "set_blend_distance", "get_blend_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,16384,0.1,or_greater,exp,suffix:m"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "origin_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_origin_offset", "get_origin_offset");
@@ -292,5 +313,5 @@ ReflectionProbe::ReflectionProbe() {
 
 ReflectionProbe::~ReflectionProbe() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(probe);
+	RS::get_singleton()->free_rid(probe);
 }

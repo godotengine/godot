@@ -30,6 +30,9 @@
 
 #include "marker_2d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+
 void Marker2D::_draw_cross() {
 	const real_t extents = get_gizmo_extents();
 
@@ -61,7 +64,7 @@ void Marker2D::_draw_cross() {
 	draw_multiline_colors(points, colors);
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 Marker2D::_edit_get_rect() const {
 	real_t extents = get_gizmo_extents();
 	return Rect2(Point2(-extents, -extents), Size2(extents * 2, extents * 2));
@@ -70,7 +73,7 @@ Rect2 Marker2D::_edit_get_rect() const {
 bool Marker2D::_edit_use_rect() const {
 	return false;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void Marker2D::_notification(int p_what) {
 	switch (p_what) {

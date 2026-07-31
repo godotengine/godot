@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRAPH_NODE_H
-#define GRAPH_NODE_H
+#pragma once
 
 #include "scene/gui/graph_element.h"
 
@@ -45,11 +44,13 @@ class GraphNode : public GraphElement {
 		int type_left = 0;
 		Color color_left = Color(1, 1, 1, 1);
 		Ref<Texture2D> custom_port_icon_left;
+		Variant metadata_left;
 
 		bool enable_right = false;
 		int type_right = 0;
 		Color color_right = Color(1, 1, 1, 1);
 		Ref<Texture2D> custom_port_icon_right;
+		Variant metadata_right;
 
 		bool draw_stylebox = true;
 	};
@@ -63,9 +64,18 @@ class GraphNode : public GraphElement {
 
 	struct _MinSizeCache {
 		int min_size = 0;
+		int max_size = -1;
 		bool will_stretch = false;
 		int final_size = 0;
 	};
+
+	enum CustomAccessibilityAction {
+		ACTION_CONNECT_INPUT,
+		ACTION_CONNECT_OUTPUT,
+		ACTION_FOLLOW_INPUT,
+		ACTION_FOLLOW_OUTPUT,
+	};
+	void _accessibility_action_slot(const Variant &p_data);
 
 	HBoxContainer *titlebar_hbox = nullptr;
 	Label *title_label = nullptr;
@@ -78,12 +88,18 @@ class GraphNode : public GraphElement {
 	HashMap<int, Slot> slot_table;
 	Vector<int> slot_y_cache;
 
+	Control::FocusMode slots_focus_mode = Control::FOCUS_ACCESSIBILITY;
+	int slot_count = 0;
+	int selected_slot = -1;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel;
 		Ref<StyleBox> panel_selected;
+		Ref<StyleBox> panel_focus;
 		Ref<StyleBox> titlebar;
 		Ref<StyleBox> titlebar_selected;
 		Ref<StyleBox> slot;
+		Ref<StyleBox> slot_selected;
 
 		int separation = 0;
 		int port_h_offset = 0;
@@ -99,6 +115,8 @@ class GraphNode : public GraphElement {
 
 	void _port_pos_update();
 
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -112,7 +130,12 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual String _get_accessibility_name() const override;
+
 public:
+	virtual String get_accessibility_container_name(const Node *p_node) const override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
 	void set_title(const String &p_title);
 	String get_title() const;
 
@@ -134,6 +157,9 @@ public:
 	void set_slot_custom_icon_left(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
 	Ref<Texture2D> get_slot_custom_icon_left(int p_slot_index) const;
 
+	void set_slot_metadata_left(int p_slot_index, const Variant &p_value);
+	Variant get_slot_metadata_left(int p_slot_index) const;
+
 	bool is_slot_enabled_right(int p_slot_index) const;
 	void set_slot_enabled_right(int p_slot_index, bool p_enable);
 
@@ -145,6 +171,9 @@ public:
 
 	void set_slot_custom_icon_right(int p_slot_index, const Ref<Texture2D> &p_custom_icon);
 	Ref<Texture2D> get_slot_custom_icon_right(int p_slot_index) const;
+
+	void set_slot_metadata_right(int p_slot_index, const Variant &p_value);
+	Variant get_slot_metadata_right(int p_slot_index) const;
 
 	bool is_slot_draw_stylebox(int p_slot_index) const;
 	void set_slot_draw_stylebox(int p_slot_index, bool p_enable);
@@ -164,7 +193,11 @@ public:
 	Color get_output_port_color(int p_port_idx);
 	int get_output_port_slot(int p_port_idx);
 
+	void set_slots_focus_mode(Control::FocusMode p_focus_mode);
+	Control::FocusMode get_slots_focus_mode() const;
+
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
@@ -173,5 +206,3 @@ public:
 
 	GraphNode();
 };
-
-#endif // GRAPH_NODE_H

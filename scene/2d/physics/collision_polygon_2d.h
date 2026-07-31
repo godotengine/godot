@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLISION_POLYGON_2D_H
-#define COLLISION_POLYGON_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -53,6 +52,7 @@ protected:
 	bool disabled = false;
 	bool one_way_collision = false;
 	real_t one_way_collision_margin = 1.0;
+	Vector2 one_way_collision_direction = Vector2(0.0, 1.0);
 
 	Vector<Vector<Vector2>> _decompose_in_convex();
 
@@ -65,7 +65,7 @@ protected:
 	static void _bind_methods();
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
@@ -88,9 +88,10 @@ public:
 	void set_one_way_collision_margin(real_t p_margin);
 	real_t get_one_way_collision_margin() const;
 
+	void set_one_way_collision_direction(const Vector2 &p_direction);
+	Vector2 get_one_way_collision_direction() const;
+
 	CollisionPolygon2D();
 };
 
 VARIANT_ENUM_CAST(CollisionPolygon2D::BuildMode);
-
-#endif // COLLISION_POLYGON_2D_H

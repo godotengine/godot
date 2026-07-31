@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESSAGE_QUEUE_H
-#define MESSAGE_QUEUE_H
+#pragma once
 
 #include "core/object/object_id.h"
-#include "core/os/thread_safe.h"
+#include "core/os/mutex.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
 #include "core/variant/variant.h"
@@ -131,15 +130,6 @@ public:
 	}
 
 	Error push_callp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
-	template <typename... VarArgs>
-	Error push_call(Object *p_object, const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-		return push_callp(p_object, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
-	}
 
 	Error push_notification(Object *p_object, int p_notification);
 	Error push_set(Object *p_object, const StringName &p_prop, const Variant &p_value);
@@ -153,7 +143,7 @@ public:
 	bool is_flushing() const;
 	int get_max_buffer_usage() const;
 
-	CallQueue(Allocator *p_custom_allocator = 0, uint32_t p_max_pages = 8192, const String &p_error_text = String());
+	CallQueue(Allocator *p_custom_allocator = nullptr, uint32_t p_max_pages = 8192, const String &p_error_text = String());
 	virtual ~CallQueue();
 };
 
@@ -171,5 +161,3 @@ public:
 	MessageQueue();
 	~MessageQueue();
 };
-
-#endif // MESSAGE_QUEUE_H

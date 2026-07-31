@@ -30,6 +30,9 @@
 
 #include "audio_listener_2d.h"
 
+#include "core/object/class_db.h"
+#include "scene/main/viewport.h"
+
 bool AudioListener2D::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "current") {
 		if (p_value.operator bool()) {

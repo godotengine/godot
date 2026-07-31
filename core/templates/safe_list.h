@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SAFE_LIST_H
-#define SAFE_LIST_H
+#pragma once
 
 #include "core/os/memory.h"
 #include "core/typedefs.h"
 
 #include <atomic>
 #include <functional>
-#include <type_traits>
+#include <initializer_list>
 
 // Design goals for these classes:
 // - Accessing this list with an iterator will never result in a use-after free,
@@ -57,7 +56,7 @@ class SafeList {
 		// to the previous list item in time that was also logically deleted.
 		std::atomic<SafeListNode *> graveyard_next = nullptr;
 
-		std::function<void(T)> deletion_fn = [](T t) { return; };
+		std::function<void(T)> deletion_fn = [](T p_t) { return; };
 
 		T val;
 	};
@@ -148,7 +147,7 @@ public:
 
 	void erase(T p_value) {
 		Iterator tmp = find(p_value);
-		erase(tmp, [](T t) { return; });
+		erase(tmp, [](T p_t) { return; });
 	}
 
 	void erase(Iterator &p_iterator, std::function<void(T)> p_deletion_fn) {
@@ -226,6 +225,13 @@ public:
 		return true;
 	}
 
+	_FORCE_INLINE_ SafeList() {}
+	_FORCE_INLINE_ SafeList(std::initializer_list<T> p_init) {
+		for (const T &E : p_init) {
+			insert(E);
+		}
+	}
+
 	~SafeList() {
 #ifdef DEBUG_ENABLED
 		if (!maybe_cleanup()) {
@@ -236,5 +242,3 @@ public:
 #endif
 	}
 };
-
-#endif // SAFE_LIST_H

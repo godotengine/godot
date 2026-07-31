@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_RECT_H
-#define TEXTURE_RECT_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -89,11 +88,11 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
+	PackedStringArray get_configuration_warnings() const override;
+
 	TextureRect();
 	~TextureRect();
 };
 
 VARIANT_ENUM_CAST(TextureRect::ExpandMode);
 VARIANT_ENUM_CAST(TextureRect::StretchMode);
-
-#endif // TEXTURE_RECT_H

@@ -14,9 +14,6 @@
 
 #include "mbedtls/build_info.h"
 
-#include "mbedtls/bignum.h"
-#include "mbedtls/ecp.h"
-
 #include "mbedtls/ssl_ciphersuites.h"
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
@@ -24,15 +21,7 @@
 #include "mbedtls/x509_crl.h"
 #endif
 
-#if defined(MBEDTLS_DHM_C)
-#include "mbedtls/dhm.h"
-#endif
-
 #include "mbedtls/md.h"
-
-#if defined(MBEDTLS_KEY_EXCHANGE_SOME_ECDH_OR_ECDHE_ANY_ENABLED)
-#include "mbedtls/ecdh.h"
-#endif
 
 #if defined(MBEDTLS_HAVE_TIME)
 #include "mbedtls/platform_time.h"
@@ -48,7 +37,7 @@
 /** The requested feature is not available. */
 #define MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE               -0x7080
 /** Bad input parameters to function. */
-#define MBEDTLS_ERR_SSL_BAD_INPUT_DATA                    -0x7100
+#define MBEDTLS_ERR_SSL_BAD_INPUT_DATA                    PSA_ERROR_INVALID_ARGUMENT
 /** Verification of the message MAC failed. */
 #define MBEDTLS_ERR_SSL_INVALID_MAC                       -0x7180
 /** An invalid SSL record was received. */
@@ -109,7 +98,7 @@
 /** Cache entry not found */
 #define MBEDTLS_ERR_SSL_CACHE_ENTRY_NOT_FOUND             -0x7E80
 /** Memory allocation failed */
-#define MBEDTLS_ERR_SSL_ALLOC_FAILED                      -0x7F00
+#define MBEDTLS_ERR_SSL_ALLOC_FAILED                      PSA_ERROR_INSUFFICIENT_MEMORY
 /** Hardware acceleration function returned with error */
 #define MBEDTLS_ERR_SSL_HW_ACCEL_FAILED                   -0x7F80
 /** Hardware acceleration function skipped / left alone data */
@@ -133,7 +122,7 @@
 /** DTLS client must retry for hello verification */
 #define MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED             -0x6A80
 /** A buffer is too small to receive or write a message */
-#define MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL                  -0x6A00
+#define MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL                  PSA_ERROR_BUFFER_TOO_SMALL
 /* Error space gap */
 /** No data of requested type currently available on underlying transport. */
 #define MBEDTLS_ERR_SSL_WANT_READ                         -0x6900
@@ -169,6 +158,39 @@
 #define MBEDTLS_ERR_SSL_VERSION_MISMATCH                  -0x5F00
 /** Invalid value in SSL config */
 #define MBEDTLS_ERR_SSL_BAD_CONFIG                        -0x5E80
+/* Error space gap */
+/** Attempt to verify a certificate without an expected hostname.
+ * This is usually insecure.
+ *
+ * In TLS clients, when a client authenticates a server through its
+ * certificate, the client normally checks three things:
+ * - the certificate chain must be valid;
+ * - the chain must start from a trusted CA;
+ * - the certificate must cover the server name that is expected by the client.
+ *
+ * Omitting any of these checks is generally insecure, and can allow a
+ * malicious server to impersonate a legitimate server.
+ *
+ * The third check may be safely skipped in some unusual scenarios,
+ * such as networks where eavesdropping is a risk but not active attacks,
+ * or a private PKI where the client equally trusts all servers that are
+ * accredited by the root CA.
+ *
+ * You should call mbedtls_ssl_set_hostname() with the expected server name
+ * before starting a TLS handshake on a client (unless the client is
+ * set up to only use PSK-based authentication, which does not rely on the
+ * host name). If you have determined that server name verification is not
+ * required for security in your scenario, call mbedtls_ssl_set_hostname()
+ * with \p NULL as the server name.
+ *
+ * This error is raised if all of the following conditions are met:
+ *
+ * - A TLS client is configured with the authentication mode
+ *   #MBEDTLS_SSL_VERIFY_REQUIRED (default).
+ * - Certificate authentication is enabled.
+ * - The client does not call mbedtls_ssl_set_hostname().
+ */
+#define MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME  -0x5D80
 
 /*
  * Constants from RFC 8446 for TLS 1.3 PSK modes
@@ -200,10 +222,6 @@
 
 /* Elliptic Curve Groups (ECDHE) */
 #define MBEDTLS_SSL_IANA_TLS_GROUP_NONE               0
-#define MBEDTLS_SSL_IANA_TLS_GROUP_SECP192K1     0x0012
-#define MBEDTLS_SSL_IANA_TLS_GROUP_SECP192R1     0x0013
-#define MBEDTLS_SSL_IANA_TLS_GROUP_SECP224K1     0x0014
-#define MBEDTLS_SSL_IANA_TLS_GROUP_SECP224R1     0x0015
 #define MBEDTLS_SSL_IANA_TLS_GROUP_SECP256K1     0x0016
 #define MBEDTLS_SSL_IANA_TLS_GROUP_SECP256R1     0x0017
 #define MBEDTLS_SSL_IANA_TLS_GROUP_SECP384R1     0x0018
@@ -255,15 +273,6 @@
  * Various constants
  */
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-/* These are the high and low bytes of ProtocolVersion as defined by:
- * - RFC 5246: ProtocolVersion version = { 3, 3 };     // TLS v1.2
- * - RFC 8446: see section 4.2.1
- */
-#define MBEDTLS_SSL_MAJOR_VERSION_3             3
-#define MBEDTLS_SSL_MINOR_VERSION_3             3   /*!< TLS v1.2 */
-#define MBEDTLS_SSL_MINOR_VERSION_4             4   /*!< TLS v1.3 */
-#endif /* MBEDTLS_DEPRECATED_REMOVED */
 
 #define MBEDTLS_SSL_TRANSPORT_STREAM            0   /*!< TLS      */
 #define MBEDTLS_SSL_TRANSPORT_DATAGRAM          1   /*!< DTLS     */
@@ -442,14 +451,6 @@
 /** \} name SECTION: Module settings */
 
 /*
- * Default to standard CID mode
- */
-#if defined(MBEDTLS_SSL_DTLS_CONNECTION_ID) && \
-    !defined(MBEDTLS_SSL_DTLS_CONNECTION_ID_COMPAT)
-#define MBEDTLS_SSL_DTLS_CONNECTION_ID_COMPAT 0
-#endif
-
-/*
  * Length of the verify data for secure renegotiation
  */
 #define MBEDTLS_SSL_VERIFY_DATA_MAX_LEN 12
@@ -620,11 +621,7 @@
 #define MBEDTLS_TLS_EXT_SIG_ALG_CERT                50 /* RFC 8446 TLS 1.3 */
 #define MBEDTLS_TLS_EXT_KEY_SHARE                   51 /* RFC 8446 TLS 1.3 */
 
-#if MBEDTLS_SSL_DTLS_CONNECTION_ID_COMPAT == 0
 #define MBEDTLS_TLS_EXT_CID                         54 /* RFC 9146 DTLS 1.2 CID */
-#else
-#define MBEDTLS_TLS_EXT_CID                        254 /* Pre-RFC 9146 DTLS 1.2 CID */
-#endif
 
 #define MBEDTLS_TLS_EXT_ECJPAKE_KKPP               256 /* experimental */
 
@@ -643,8 +640,8 @@
  */
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3) && \
     defined(MBEDTLS_SSL_SESSION_TICKETS) && \
-    defined(MBEDTLS_SSL_HAVE_AES) && defined(MBEDTLS_SSL_HAVE_GCM) && \
-    defined(MBEDTLS_MD_CAN_SHA384)
+    defined(PSA_WANT_KEY_TYPE_AES) && defined(PSA_WANT_ALG_GCM) && \
+    defined(PSA_WANT_ALG_SHA_384)
 #define MBEDTLS_PSK_MAX_LEN 48 /* 384 bits */
 #else
 #define MBEDTLS_PSK_MAX_LEN 32 /* 256 bits */
@@ -654,27 +651,12 @@
 /* Dummy type used only for its size */
 union mbedtls_ssl_premaster_secret {
     unsigned char dummy; /* Make the union non-empty even with SSL disabled */
-#if defined(MBEDTLS_KEY_EXCHANGE_RSA_ENABLED)
-    unsigned char _pms_rsa[48];                         /* RFC 5246 8.1.1 */
-#endif
-#if defined(MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED)
-    unsigned char _pms_dhm[MBEDTLS_MPI_MAX_SIZE];      /* RFC 5246 8.1.2 */
-#endif
 #if defined(MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED)    || \
-    defined(MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED)  || \
-    defined(MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED)     || \
-    defined(MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA_ENABLED)
+    defined(MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED)
     unsigned char _pms_ecdh[MBEDTLS_ECP_MAX_BYTES];    /* RFC 4492 5.10 */
 #endif
 #if defined(MBEDTLS_KEY_EXCHANGE_PSK_ENABLED)
     unsigned char _pms_psk[4 + 2 * MBEDTLS_PSK_MAX_LEN];       /* RFC 4279 2 */
-#endif
-#if defined(MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED)
-    unsigned char _pms_dhe_psk[4 + MBEDTLS_MPI_MAX_SIZE
-                               + MBEDTLS_PSK_MAX_LEN];         /* RFC 4279 3 */
-#endif
-#if defined(MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED)
-    unsigned char _pms_rsa_psk[52 + MBEDTLS_PSK_MAX_LEN];      /* RFC 4279 4 */
 #endif
 #if defined(MBEDTLS_KEY_EXCHANGE_ECDHE_PSK_ENABLED)
     unsigned char _pms_ecdhe_psk[4 + MBEDTLS_ECP_MAX_BYTES
@@ -692,6 +674,14 @@ union mbedtls_ssl_premaster_secret {
 
 /* Length in number of bytes of the TLS sequence number */
 #define MBEDTLS_SSL_SEQUENCE_NUMBER_LEN 8
+
+/* Helper to state that client_random and server_random need to be stored
+ * after the handshake is complete. This is required for context serialization
+ * and for the keying material exporter in TLS 1.2. */
+#if defined(MBEDTLS_SSL_CONTEXT_SERIALIZATION) || \
+    (defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT) && defined(MBEDTLS_SSL_PROTO_TLS1_2))
+#define MBEDTLS_SSL_KEEP_RANDBYTES
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -867,7 +857,6 @@ typedef struct mbedtls_ssl_config  mbedtls_ssl_config;
 /* Defined in library/ssl_misc.h */
 typedef struct mbedtls_ssl_transform mbedtls_ssl_transform;
 typedef struct mbedtls_ssl_handshake_params mbedtls_ssl_handshake_params;
-typedef struct mbedtls_ssl_sig_hash_set_t mbedtls_ssl_sig_hash_set_t;
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
 typedef struct mbedtls_ssl_key_cert mbedtls_ssl_key_cert;
 #endif
@@ -963,20 +952,10 @@ typedef int mbedtls_ssl_cache_set_t(void *data,
  *                  to store an operation context for later retrieval
  *                  by the resume or cancel callback.
  *
- * \note            For RSA signatures, this function must produce output
- *                  that is consistent with PKCS#1 v1.5 in the same way as
- *                  mbedtls_rsa_pkcs1_sign(). Before the private key operation,
- *                  apply the padding steps described in RFC 8017, section 9.2
- *                  "EMSA-PKCS1-v1_5" as follows.
- *                  - If \p md_alg is #MBEDTLS_MD_NONE, apply the PKCS#1 v1.5
- *                    encoding, treating \p hash as the DigestInfo to be
- *                    padded. In other words, apply EMSA-PKCS1-v1_5 starting
- *                    from step 3, with `T = hash` and `tLen = hash_len`.
- *                  - If `md_alg != MBEDTLS_MD_NONE`, apply the PKCS#1 v1.5
- *                    encoding, treating \p hash as the hash to be encoded and
- *                    padded. In other words, apply EMSA-PKCS1-v1_5 starting
- *                    from step 2, with `digestAlgorithm` obtained by calling
- *                    mbedtls_oid_get_oid_by_md() on \p md_alg.
+ * \note            For an RSA key, this function must produce a PKCS#1v1.5
+ *                  signature in the standard format (like
+ *                  #PSA_ALG_RSA_PKCS1V15_SIGN). \c md_alg is guaranteed to be
+ *                  a hash that is supported by the library.
  *
  * \note            For ECDSA signatures, the output format is the DER encoding
  *                  `Ecdsa-Sig-Value` defined in
@@ -1016,71 +995,6 @@ typedef int mbedtls_ssl_async_sign_t(mbedtls_ssl_context *ssl,
                                      mbedtls_md_type_t md_alg,
                                      const unsigned char *hash,
                                      size_t hash_len);
-
-/**
- * \brief           Callback type: start external decryption operation.
- *
- *                  This callback is called during an SSL handshake to start
- *                  an RSA decryption operation using an
- *                  external processor. The parameter \p cert contains
- *                  the public key; it is up to the callback function to
- *                  determine how to access the associated private key.
- *
- *                  This function typically sends or enqueues a request, and
- *                  does not wait for the operation to complete. This allows
- *                  the handshake step to be non-blocking.
- *
- *                  The parameters \p ssl and \p cert are guaranteed to remain
- *                  valid throughout the handshake. On the other hand, this
- *                  function must save the contents of \p input if the value
- *                  is needed for later processing, because the \p input buffer
- *                  is no longer valid after this function returns.
- *
- *                  This function may call mbedtls_ssl_set_async_operation_data()
- *                  to store an operation context for later retrieval
- *                  by the resume or cancel callback.
- *
- * \warning         RSA decryption as used in TLS is subject to a potential
- *                  timing side channel attack first discovered by Bleichenbacher
- *                  in 1998. This attack can be remotely exploitable
- *                  in practice. To avoid this attack, you must ensure that
- *                  if the callback performs an RSA decryption, the time it
- *                  takes to execute and return the result does not depend
- *                  on whether the RSA decryption succeeded or reported
- *                  invalid padding.
- *
- * \param ssl             The SSL connection instance. It should not be
- *                        modified other than via
- *                        mbedtls_ssl_set_async_operation_data().
- * \param cert            Certificate containing the public key.
- *                        In simple cases, this is one of the pointers passed to
- *                        mbedtls_ssl_conf_own_cert() when configuring the SSL
- *                        connection. However, if other callbacks are used, this
- *                        property may not hold. For example, if an SNI callback
- *                        is registered with mbedtls_ssl_conf_sni(), then
- *                        this callback determines what certificate is used.
- * \param input           Buffer containing the input ciphertext. This buffer
- *                        is no longer valid when the function returns.
- * \param input_len       Size of the \p input buffer in bytes.
- *
- * \return          0 if the operation was started successfully and the SSL
- *                  stack should call the resume callback immediately.
- * \return          #MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS if the operation
- *                  was started successfully and the SSL stack should return
- *                  immediately without calling the resume callback yet.
- * \return          #MBEDTLS_ERR_SSL_HW_ACCEL_FALLTHROUGH if the external
- *                  processor does not support this key. The SSL stack will
- *                  use the private key object instead.
- * \return          Any other error indicates a fatal failure and is
- *                  propagated up the call chain. The callback should
- *                  use \c MBEDTLS_ERR_PK_xxx error codes, and <b>must not</b>
- *                  use \c MBEDTLS_ERR_SSL_xxx error codes except as
- *                  directed in the documentation of this callback.
- */
-typedef int mbedtls_ssl_async_decrypt_t(mbedtls_ssl_context *ssl,
-                                        mbedtls_x509_crt *cert,
-                                        const unsigned char *input,
-                                        size_t input_len);
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
 /**
@@ -1088,8 +1002,7 @@ typedef int mbedtls_ssl_async_decrypt_t(mbedtls_ssl_context *ssl,
  *
  *                  This callback is called during an SSL handshake to resume
  *                  an external operation started by the
- *                  ::mbedtls_ssl_async_sign_t or
- *                  ::mbedtls_ssl_async_decrypt_t callback.
+ *                  ::mbedtls_ssl_async_sign_t callback.
  *
  *                  This function typically checks the status of a pending
  *                  request or causes the request queue to make progress, and
@@ -1153,13 +1066,13 @@ typedef void mbedtls_ssl_async_cancel_t(mbedtls_ssl_context *ssl);
 #if defined(MBEDTLS_KEY_EXCHANGE_WITH_CERT_ENABLED) &&        \
     !defined(MBEDTLS_SSL_KEEP_PEER_CERTIFICATE)
 #define MBEDTLS_SSL_PEER_CERT_DIGEST_MAX_LEN  48
-#if defined(MBEDTLS_MD_CAN_SHA256)
+#if defined(PSA_WANT_ALG_SHA_256)
 #define MBEDTLS_SSL_PEER_CERT_DIGEST_DFL_TYPE MBEDTLS_MD_SHA256
 #define MBEDTLS_SSL_PEER_CERT_DIGEST_DFL_LEN  32
-#elif defined(MBEDTLS_MD_CAN_SHA384)
+#elif defined(PSA_WANT_ALG_SHA_384)
 #define MBEDTLS_SSL_PEER_CERT_DIGEST_DFL_TYPE MBEDTLS_MD_SHA384
 #define MBEDTLS_SSL_PEER_CERT_DIGEST_DFL_LEN  48
-#elif defined(MBEDTLS_MD_CAN_SHA1)
+#elif defined(PSA_WANT_ALG_SHA_1)
 #define MBEDTLS_SSL_PEER_CERT_DIGEST_DFL_TYPE MBEDTLS_MD_SHA1
 #define MBEDTLS_SSL_PEER_CERT_DIGEST_DFL_LEN  20
 #else
@@ -1305,8 +1218,8 @@ struct mbedtls_ssl_session {
 #endif /* MBEDTLS_SSL_SERVER_NAME_INDICATION && MBEDTLS_SSL_CLI_C */
 
 #if defined(MBEDTLS_SSL_EARLY_DATA) && defined(MBEDTLS_SSL_ALPN) && defined(MBEDTLS_SSL_SRV_C)
-    char *ticket_alpn;                      /*!< ALPN negotiated in the session
-                                                 during which the ticket was generated. */
+    char *MBEDTLS_PRIVATE(ticket_alpn);           /*!< ALPN negotiated in the session
+                                                       during which the ticket was generated. */
 #endif
 
 #if defined(MBEDTLS_HAVE_TIME) && defined(MBEDTLS_SSL_CLI_C)
@@ -1326,6 +1239,12 @@ struct mbedtls_ssl_session {
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
     mbedtls_ssl_tls13_application_secrets MBEDTLS_PRIVATE(app_secrets);
 #endif
+
+    /* Unused field reserved for future use */
+    union {
+        size_t number;
+        void *ptr;
+    } MBEDTLS_PRIVATE(unused);
 };
 
 /*
@@ -1404,6 +1323,15 @@ typedef union {
     uintptr_t n;                /* typically a handle to an associated object */
     void *p;                    /* typically a pointer to extra data */
 } mbedtls_ssl_user_data_t;
+
+/**
+ * Added at the end of "struct mbedtls_ssl_config" and "struct mbedtls_ssl_context"
+ * to reserve a field for future use.
+ */
+typedef union {
+    size_t number;
+    void *ptr;
+} mbedtls_ssl_unused_data_t;
 
 /**
  * SSL/TLS configuration to be shared between mbedtls_ssl_context structures.
@@ -1488,10 +1416,6 @@ struct mbedtls_ssl_config {
     void(*MBEDTLS_PRIVATE(f_dbg))(void *, int, const char *, int, const char *);
     void *MBEDTLS_PRIVATE(p_dbg);                    /*!< context for the debug function     */
 
-    /** Callback for getting (pseudo-)random numbers                        */
-    int(*MBEDTLS_PRIVATE(f_rng))(void *, unsigned char *, size_t);
-    void *MBEDTLS_PRIVATE(p_rng);                    /*!< context for the RNG function       */
-
     /** Callback to retrieve a session from the cache                       */
     mbedtls_ssl_cache_get_t *MBEDTLS_PRIVATE(f_get_cache);
     /** Callback to store a session into the cache                          */
@@ -1555,7 +1479,6 @@ struct mbedtls_ssl_config {
 #if defined(MBEDTLS_SSL_ASYNC_PRIVATE)
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
     mbedtls_ssl_async_sign_t *MBEDTLS_PRIVATE(f_async_sign_start); /*!< start asynchronous signature operation */
-    mbedtls_ssl_async_decrypt_t *MBEDTLS_PRIVATE(f_async_decrypt_start); /*!< start asynchronous decryption operation */
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
     mbedtls_ssl_async_resume_t *MBEDTLS_PRIVATE(f_async_resume); /*!< resume asynchronous operation */
     mbedtls_ssl_async_cancel_t *MBEDTLS_PRIVATE(f_async_cancel); /*!< cancel asynchronous operation */
@@ -1563,34 +1486,19 @@ struct mbedtls_ssl_config {
 #endif /* MBEDTLS_SSL_ASYNC_PRIVATE */
 
 #if defined(MBEDTLS_SSL_HANDSHAKE_WITH_CERT_ENABLED)
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-    const int *MBEDTLS_PRIVATE(sig_hashes);         /*!< allowed signature hashes           */
-#endif
     const uint16_t *MBEDTLS_PRIVATE(sig_algs);      /*!< allowed signature algorithms       */
 #endif /* MBEDTLS_SSL_HANDSHAKE_WITH_CERT_ENABLED */
 
-#if defined(MBEDTLS_ECP_C) && !defined(MBEDTLS_DEPRECATED_REMOVED)
-    const mbedtls_ecp_group_id *MBEDTLS_PRIVATE(curve_list); /*!< allowed curves             */
-#endif
-
     const uint16_t *MBEDTLS_PRIVATE(group_list);     /*!< allowed IANA NamedGroups */
-
-#if defined(MBEDTLS_DHM_C)
-    mbedtls_mpi MBEDTLS_PRIVATE(dhm_P);              /*!< prime modulus for DHM              */
-    mbedtls_mpi MBEDTLS_PRIVATE(dhm_G);              /*!< generator for DHM                  */
-#endif
 
 #if defined(MBEDTLS_SSL_HANDSHAKE_WITH_PSK_ENABLED)
 
-#if defined(MBEDTLS_USE_PSA_CRYPTO)
     mbedtls_svc_key_id_t MBEDTLS_PRIVATE(psk_opaque); /*!< PSA key slot holding opaque PSK. This field
                                                        *   should only be set via
                                                        *   mbedtls_ssl_conf_psk_opaque().
                                                        *   If either no PSK or a raw PSK have been
                                                        *   configured, this has value \c 0.
                                                        */
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
     unsigned char *MBEDTLS_PRIVATE(psk);      /*!< The raw pre-shared key. This field should
                                                *   only be set via mbedtls_ssl_conf_psk().
                                                *   If either no PSK or an opaque PSK
@@ -1627,7 +1535,7 @@ struct mbedtls_ssl_config {
 #endif /* MBEDTLS_SSL_EARLY_DATA */
 
 #if defined(MBEDTLS_SSL_ALPN)
-    const char **MBEDTLS_PRIVATE(alpn_list);         /*!< ordered list of protocols          */
+    const char *const *MBEDTLS_PRIVATE(alpn_list); /*!< ordered list of protocols */
 #endif
 
 #if defined(MBEDTLS_SSL_DTLS_SRTP)
@@ -1658,10 +1566,6 @@ struct mbedtls_ssl_config {
 
     unsigned int MBEDTLS_PRIVATE(badmac_limit);      /*!< limit of records with a bad MAC    */
 
-#if defined(MBEDTLS_DHM_C) && defined(MBEDTLS_SSL_CLI_C)
-    unsigned int MBEDTLS_PRIVATE(dhm_min_bitlen);    /*!< min. bit length of the DHM prime   */
-#endif
-
     /** User data pointer or handle.
      *
      * The library sets this to \p 0 when creating a context and does not
@@ -1676,8 +1580,21 @@ struct mbedtls_ssl_config {
 #if defined(MBEDTLS_KEY_EXCHANGE_CERT_REQ_ALLOWED_ENABLED)
     const mbedtls_x509_crt *MBEDTLS_PRIVATE(dn_hints);/*!< acceptable client cert issuers    */
 #endif
+
+    mbedtls_ssl_unused_data_t MBEDTLS_PRIVATE(unused);
 };
 
+/*
+ * Warning: whenever a change is applied to "mbedtls_ssl_context" please re-run
+ * the script "tests/scripts/generate_ssl_session_reset_check.py".
+ * Please note that this script has some limitation that should be considered
+ * when modifing "mbedtls_ssl_context":
+ * - Parsed structure must start with struct "mbedtls_ssl_context {"
+ *   (not "typedef struct {").
+ * - It must end with "}}" in column 0.
+ * - Must not contain "#else" or "#elif" conditionals.
+ * - Must not contain nested struct/union/enum definitions.
+ */
 struct mbedtls_ssl_context {
     const mbedtls_ssl_config *MBEDTLS_PRIVATE(conf); /*!< configuration information          */
 
@@ -1685,6 +1602,14 @@ struct mbedtls_ssl_context {
      * Miscellaneous
      */
     int MBEDTLS_PRIVATE(state);                  /*!< SSL handshake: current state     */
+
+    /** Mask of `MBEDTLS_SSL_CONTEXT_FLAG_XXX`.
+     * See `mbedtls_ssl_context_flags_t` in ssl_misc.h.
+     *
+     * This field is not saved by mbedtls_ssl_session_save().
+     */
+    uint32_t MBEDTLS_PRIVATE(flags);
+
 #if defined(MBEDTLS_SSL_RENEGOTIATION)
     int MBEDTLS_PRIVATE(renego_status);          /*!< Initial, in progress, pending?   */
     int MBEDTLS_PRIVATE(renego_records_seen);    /*!< Records since renego request, or with DTLS,
@@ -1811,10 +1736,19 @@ struct mbedtls_ssl_context {
 
     size_t MBEDTLS_PRIVATE(in_hslen);            /*!< current handshake message length,
                                                     including the handshake header   */
+    size_t MBEDTLS_PRIVATE(in_hsfraglen);        /*!< accumulated length of hs fragments
+                                                    (up to in_hslen) */
     int MBEDTLS_PRIVATE(nb_zero);                /*!< # of 0-length encrypted messages */
 
     int MBEDTLS_PRIVATE(keep_current_message);   /*!< drop or reuse current message
                                                     on next call to record layer? */
+
+    unsigned char MBEDTLS_PRIVATE(in_fatal_alert_recv);   /*!< Determines if a fatal alert has
+                                                             been received. Values:
+                                                             - \c 0 , no fatal alert received.
+                                                             - \c 1 , a fatal alert has been received */
+    unsigned char MBEDTLS_PRIVATE(in_fatal_alert_type); /*!< Type of fatal alert if in_alert_recv
+                                                           != 0 */
 
     /* The following three variables indicate if and, if yes,
      * what kind of alert is pending to be sent.
@@ -1942,6 +1876,8 @@ struct mbedtls_ssl_context {
      *          does not currently restore the user data.
      */
     mbedtls_ssl_user_data_t MBEDTLS_PRIVATE(user_data);
+
+    mbedtls_ssl_unused_data_t MBEDTLS_PRIVATE(unused);
 };
 
 /**
@@ -1987,14 +1923,24 @@ void mbedtls_ssl_init(mbedtls_ssl_context *ssl);
  *                 Calling mbedtls_ssl_setup again is not supported, even
  *                 if no session is active.
  *
- * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
- *                 subsystem must have been initialized by calling
- *                 psa_crypto_init() before calling this function.
+ * \note           The PSA crypto subsystem must have been initialized by
+ *                 calling psa_crypto_init() before calling this function.
+ *
+ * \note           After setting up a client context, if certificate-based
+ *                 authentication is enabled, you should call
+ *                 mbedtls_ssl_set_hostname() to specifiy the expected
+ *                 name of the server. Otherwise, if server authentication
+ *                 is required (which is the case by default) and the
+ *                 selected key exchange involves a certificate (i.e. is not
+ *                 based on a pre-shared key), the certificate authentication
+ *                 will fail. See
+ *                 #MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+ *                 for more information.
  *
  * \param ssl      SSL context
  * \param conf     SSL configuration to use
  *
- * \return         0 if successful, or MBEDTLS_ERR_SSL_ALLOC_FAILED if
+ * \return         0 if successful, or #PSA_ERROR_INSUFFICIENT_MEMORY if
  *                 memory allocation failed
  */
 int mbedtls_ssl_setup(mbedtls_ssl_context *ssl,
@@ -2006,7 +1952,7 @@ int mbedtls_ssl_setup(mbedtls_ssl_context *ssl,
  *                 pointers and data.
  *
  * \param ssl      SSL context
- * \return         0 if successful, or MBEDTLS_ERR_SSL_ALLOC_FAILED or
+ * \return         0 if successful, or #PSA_ERROR_INSUFFICIENT_MEMORY or
                    MBEDTLS_ERR_SSL_HW_ACCEL_FAILED
  */
 int mbedtls_ssl_session_reset(mbedtls_ssl_context *ssl);
@@ -2159,17 +2105,6 @@ void mbedtls_ssl_conf_verify(mbedtls_ssl_config *conf,
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
 /**
- * \brief          Set the random number generator callback
- *
- * \param conf     SSL configuration
- * \param f_rng    RNG function (mandatory)
- * \param p_rng    RNG parameter
- */
-void mbedtls_ssl_conf_rng(mbedtls_ssl_config *conf,
-                          int (*f_rng)(void *, unsigned char *, size_t),
-                          void *p_rng);
-
-/**
  * \brief          Set the debug callback
  *
  *                 The callback has the following argument:
@@ -2246,7 +2181,7 @@ void mbedtls_ssl_set_bio(mbedtls_ssl_context *ssl,
 
 /**
  * \brief             Configure the use of the Connection ID (CID)
- *                    extension in the next handshake.
+ *                    extension in subsequent handshakes.
  *
  *                    Reference: RFC 9146 (or draft-ietf-tls-dtls-connection-id-05
  *                    https://tools.ietf.org/html/draft-ietf-tls-dtls-connection-id-05
@@ -2267,7 +2202,7 @@ void mbedtls_ssl_set_bio(mbedtls_ssl_context *ssl,
  *                    headers of outgoing messages.
  *
  *                    This API enables or disables the use of the CID extension
- *                    in the next handshake and sets the value of the CID to
+ *                    in subsequent handshakes and sets the value of the CID to
  *                    be used for incoming messages.
  *
  * \param ssl         The SSL context to configure. This must be initialized.
@@ -2298,11 +2233,11 @@ void mbedtls_ssl_set_bio(mbedtls_ssl_context *ssl,
  *                    successful call to this function to run the handshake.
  *
  * \note              This call cannot guarantee that the use of the CID
- *                    will be successfully negotiated in the next handshake,
+ *                    will be successfully negotiated in subsequent handshakes,
  *                    because the peer might not support it. Specifically:
  *                    - On the Client, enabling the use of the CID through
- *                      this call implies that the `ClientHello` in the next
- *                      handshake will include the CID extension, thereby
+ *                      this call implies that the `ClientHello` in subsequent
+ *                      handshakes will include the CID extension, thereby
  *                      offering the use of the CID to the server. Only if
  *                      the `ServerHello` contains the CID extension, too,
  *                      the CID extension will actually be put to use.
@@ -2325,7 +2260,7 @@ void mbedtls_ssl_set_bio(mbedtls_ssl_context *ssl,
  *                    Mbed TLS.
  *
  * \return            \c 0 on success. In this case, the CID configuration
- *                    applies to the next handshake.
+ *                    applies to subsequent handshakes.
  * \return            A negative error code on failure.
  */
 int mbedtls_ssl_set_cid(mbedtls_ssl_context *ssl,
@@ -2364,7 +2299,7 @@ int mbedtls_ssl_set_cid(mbedtls_ssl_context *ssl,
  */
 int mbedtls_ssl_get_own_cid(mbedtls_ssl_context *ssl,
                             int *enabled,
-                            unsigned char own_cid[MBEDTLS_SSL_CID_OUT_LEN_MAX],
+                            unsigned char own_cid[MBEDTLS_SSL_CID_IN_LEN_MAX],
                             size_t *own_cid_len);
 
 /**
@@ -2672,14 +2607,14 @@ void mbedtls_ssl_conf_session_tickets_cb(mbedtls_ssl_config *conf,
  *                              milliseconds.
  *
  * \return         0 on success,
- *                 MBEDTLS_ERR_SSL_BAD_INPUT_DATA if an input is not valid.
+ *                 #PSA_ERROR_INVALID_ARGUMENT if an input is not valid.
  */
 static inline int mbedtls_ssl_session_get_ticket_creation_time(
     mbedtls_ssl_session *session, mbedtls_ms_time_t *ticket_creation_time)
 {
     if (session == NULL || ticket_creation_time == NULL ||
         session->MBEDTLS_PRIVATE(endpoint) != MBEDTLS_SSL_IS_SERVER) {
-        return MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
+        return PSA_ERROR_INVALID_ARGUMENT;
     }
 
     *ticket_creation_time = session->MBEDTLS_PRIVATE(ticket_creation_time);
@@ -2885,17 +2820,10 @@ static inline uintptr_t mbedtls_ssl_get_user_data_n(
  *                          external processor does not support any signature
  *                          operation; in this case the private key object
  *                          associated with the certificate will be used.
- * \param f_async_decrypt   Callback to start a decryption operation. See
- *                          the description of ::mbedtls_ssl_async_decrypt_t
- *                          for more information. This may be \c NULL if the
- *                          external processor does not support any decryption
- *                          operation; in this case the private key object
- *                          associated with the certificate will be used.
  * \param f_async_resume    Callback to resume an asynchronous operation. See
  *                          the description of ::mbedtls_ssl_async_resume_t
  *                          for more information. This may not be \c NULL unless
- *                          \p f_async_sign and \p f_async_decrypt are both
- *                          \c NULL.
+ *                          \p f_async_sign is \c NULL.
  * \param f_async_cancel    Callback to cancel an asynchronous operation. See
  *                          the description of ::mbedtls_ssl_async_cancel_t
  *                          for more information. This may be \c NULL if
@@ -2907,7 +2835,6 @@ static inline uintptr_t mbedtls_ssl_get_user_data_n(
  */
 void mbedtls_ssl_conf_async_private_cb(mbedtls_ssl_config *conf,
                                        mbedtls_ssl_async_sign_t *f_async_sign,
-                                       mbedtls_ssl_async_decrypt_t *f_async_decrypt,
                                        mbedtls_ssl_async_resume_t *f_async_resume,
                                        mbedtls_ssl_async_cancel_t *f_async_cancel,
                                        void *config_data);
@@ -3038,8 +2965,8 @@ void mbedtls_ssl_conf_dtls_cookies(mbedtls_ssl_config *conf,
  * \note           An internal copy is made, so the info buffer can be reused.
  *
  * \return         0 on success,
- *                 MBEDTLS_ERR_SSL_BAD_INPUT_DATA if used on client,
- *                 MBEDTLS_ERR_SSL_ALLOC_FAILED if out of memory.
+ *                 #PSA_ERROR_INVALID_ARGUMENT if used on client,
+ *                 #PSA_ERROR_INSUFFICIENT_MEMORY if out of memory.
  */
 int mbedtls_ssl_set_client_transport_id(mbedtls_ssl_context *ssl,
                                         const unsigned char *info,
@@ -3216,16 +3143,16 @@ void mbedtls_ssl_conf_session_cache(mbedtls_ssl_config *conf,
  *                 a full handshake.
  *
  * \note           This function can handle a variety of mechanisms for session
- *                 resumption: For TLS 1.2, both session ID-based resumption and
- *                 ticket-based resumption will be considered. For TLS 1.3,
- *                 once implemented, sessions equate to tickets, and loading
- *                 one or more sessions via this call will lead to their
- *                 corresponding tickets being advertised as resumption PSKs
- *                 by the client.
- *
- * \note           Calling this function multiple times will only be useful
- *                 once TLS 1.3 is supported. For TLS 1.2 connections, this
- *                 function should be called at most once.
+ *                 resumption: For TLS 1.2, both session ID-based resumption
+ *                 and ticket-based resumption will be considered. For TLS 1.3,
+ *                 sessions equate to tickets, and loading one session by
+ *                 calling this function will lead to its corresponding ticket
+ *                 being advertised as resumption PSK by the client. This
+ *                 depends on session tickets being enabled (see
+ *                 #MBEDTLS_SSL_SESSION_TICKETS configuration option) though.
+ *                 If session tickets are disabled, a call to this function
+ *                 with a TLS 1.3 session, will not have any effect on the next
+ *                 handshake for the SSL context \p ssl.
  *
  * \param ssl      The SSL context representing the connection which should
  *                 be attempted to be setup using session resumption. This
@@ -3240,9 +3167,10 @@ void mbedtls_ssl_conf_session_cache(mbedtls_ssl_config *conf,
  *
  * \return         \c 0 if successful.
  * \return         \c MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE if the session
- *                 could not be loaded because of an implementation limitation.
- *                 This error is non-fatal, and has no observable effect on
- *                 the SSL context or the session that was attempted to be loaded.
+ *                 could not be loaded because one session has already been
+ *                 loaded. This error is non-fatal, and has no observable
+ *                 effect on the SSL context or the session that was attempted
+ *                 to be loaded.
  * \return         Another negative error code on other kinds of failure.
  *
  * \sa             mbedtls_ssl_get_session()
@@ -3257,6 +3185,27 @@ int mbedtls_ssl_set_session(mbedtls_ssl_context *ssl, const mbedtls_ssl_session 
  *                 before resuming them with mbedtls_ssl_set_session().
  *                 On server, this can be used for alternative implementations
  *                 of session cache or session tickets.
+ *
+ * \warning        The serialized data contains highly sensitive material,
+ *                 including a resumption key (TLS 1.3) or the master secret
+ *                 (TLS 1.2) from which the session's traffic keys are derived.
+ *
+ *                 The serialized data is not cryptographically protected.
+ *                 It is the responsibility of the user of the
+ *                 mbedtls_ssl_session_save() and
+ *                 mbedtls_ssl_session_load() APIs to ensure both its
+ *                 confidentiality and integrity while stored or transported.
+ *
+ *                 A breach of confidentiality could result in full compromise
+ *                 of the associated TLS session, including loss of
+ *                 confidentiality and integrity of past and future
+ *                 application data protected under that session.
+ *
+ *                 A breach of integrity may allow modification of the
+ *                 serialized data prior to restoration. As it represents
+ *                 trusted internal context, tampering could potentially result
+ *                 in arbitrary code execution or other severe compromise of
+ *                 the hosting process.
  *
  * \warning        If a peer certificate chain is associated with the session,
  *                 the serialized state will only contain the peer's
@@ -3275,8 +3224,8 @@ int mbedtls_ssl_set_session(mbedtls_ssl_context *ssl, const mbedtls_ssl_session 
  * \param len      The size of the serialized data in bytes.
  *
  * \return         \c 0 if successful.
- * \return         #MBEDTLS_ERR_SSL_ALLOC_FAILED if memory allocation failed.
- * \return         #MBEDTLS_ERR_SSL_BAD_INPUT_DATA if input data is invalid.
+ * \return         #PSA_ERROR_INSUFFICIENT_MEMORY if memory allocation failed.
+ * \return         #PSA_ERROR_INVALID_ARGUMENT if input data is invalid.
  * \return         #MBEDTLS_ERR_SSL_VERSION_MISMATCH if the serialized data
  *                 was generated in a different version or configuration of
  *                 Mbed TLS.
@@ -3296,6 +3245,19 @@ int mbedtls_ssl_session_load(mbedtls_ssl_session *session,
  *
  * \see            mbedtls_ssl_session_load()
  *
+ * \warning        The serialized data contains highly sensitive material,
+ *                 including a resumption key (TLS 1.3) or the master secret
+ *                 (TLS 1.2) from which the session's traffic keys are derived.
+ *
+ *                 The serialized data is not cryptographically protected.
+ *                 It is the responsibility of the user of the
+ *                 mbedtls_ssl_session_save() and
+ *                 mbedtls_ssl_session_load() APIs to ensure both its
+ *                 confidentiality and integrity while stored or transported.
+ *
+ *                 See the mbedtls_ssl_session_load() documentation for
+ *                 additional information.
+ *
  * \param session  The session structure to be saved.
  * \param buf      The buffer to write the serialized data to. It must be a
  *                 writeable buffer of at least \p buf_len bytes, or may be \c
@@ -3309,8 +3271,16 @@ int mbedtls_ssl_session_load(mbedtls_ssl_session *session,
  *                 to determine the necessary size by calling this function
  *                 with \p buf set to \c NULL and \p buf_len to \c 0.
  *
+ * \note           For TLS 1.3 sessions, this feature is supported only if the
+ *                 MBEDTLS_SSL_SESSION_TICKETS configuration option is enabled,
+ *                 as in TLS 1.3 session resumption is possible only with
+ *                 tickets.
+ *
  * \return         \c 0 if successful.
- * \return         #MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL if \p buf is too small.
+ * \return         #PSA_ERROR_BUFFER_TOO_SMALL if \p buf is too small.
+ * \return         #MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE if the
+ *                 MBEDTLS_SSL_SESSION_TICKETS configuration option is disabled
+ *                 and the session is a TLS 1.3 session.
  */
 int mbedtls_ssl_session_save(const mbedtls_ssl_session *session,
                              unsigned char *buf,
@@ -3440,7 +3410,7 @@ void mbedtls_ssl_conf_tls13_key_exchange_modes(mbedtls_ssl_config *conf,
  *                      record headers.
  *
  * \return              \c 0 on success.
- * \return              #MBEDTLS_ERR_SSL_BAD_INPUT_DATA if \p len
+ * \return              #PSA_ERROR_INVALID_ARGUMENT if \p len
  *                      is too large.
  */
 int mbedtls_ssl_conf_cid(mbedtls_ssl_config *conf, size_t len,
@@ -3453,7 +3423,7 @@ int mbedtls_ssl_conf_cid(mbedtls_ssl_config *conf, size_t len,
  *
  * \note           The restrictions are enforced for all certificates in the
  *                 chain. However, signatures in the handshake are not covered
- *                 by this setting but by \b mbedtls_ssl_conf_sig_hashes().
+ *                 by this setting but by \c mbedtls_ssl_conf_sig_algs().
  *
  * \param conf     SSL configuration
  * \param profile  Profile to use
@@ -3587,7 +3557,7 @@ void mbedtls_ssl_conf_ca_cb(mbedtls_ssl_config *conf,
  * \param own_cert own public certificate chain
  * \param pk_key   own private key
  *
- * \return         0 on success or MBEDTLS_ERR_SSL_ALLOC_FAILED
+ * \return         0 on success or #PSA_ERROR_INSUFFICIENT_MEMORY
  */
 int mbedtls_ssl_conf_own_cert(mbedtls_ssl_config *conf,
                               mbedtls_x509_crt *own_cert,
@@ -3631,7 +3601,6 @@ int mbedtls_ssl_conf_psk(mbedtls_ssl_config *conf,
                          const unsigned char *psk, size_t psk_len,
                          const unsigned char *psk_identity, size_t psk_identity_len);
 
-#if defined(MBEDTLS_USE_PSA_CRYPTO)
 /**
  * \brief          Configure one or more opaque pre-shared keys (PSKs) and
  *                 their identities to be used in PSK-based ciphersuites.
@@ -3673,7 +3642,6 @@ int mbedtls_ssl_conf_psk_opaque(mbedtls_ssl_config *conf,
                                 mbedtls_svc_key_id_t psk,
                                 const unsigned char *psk_identity,
                                 size_t psk_identity_len);
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
 
 /**
  * \brief          Set the pre-shared Key (PSK) for the current handshake.
@@ -3694,7 +3662,6 @@ int mbedtls_ssl_conf_psk_opaque(mbedtls_ssl_config *conf,
 int mbedtls_ssl_set_hs_psk(mbedtls_ssl_context *ssl,
                            const unsigned char *psk, size_t psk_len);
 
-#if defined(MBEDTLS_USE_PSA_CRYPTO)
 /**
  * \brief          Set an opaque pre-shared Key (PSK) for the current handshake.
  *
@@ -3717,7 +3684,6 @@ int mbedtls_ssl_set_hs_psk(mbedtls_ssl_context *ssl,
  */
 int mbedtls_ssl_set_hs_psk_opaque(mbedtls_ssl_context *ssl,
                                   mbedtls_svc_key_id_t psk);
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
 
 #if defined(MBEDTLS_SSL_SRV_C)
 /**
@@ -3765,96 +3731,145 @@ void mbedtls_ssl_conf_psk_cb(mbedtls_ssl_config *conf,
 #endif /* MBEDTLS_SSL_SRV_C */
 #endif /* MBEDTLS_SSL_HANDSHAKE_WITH_PSK_ENABLED */
 
-#if defined(MBEDTLS_DHM_C) && defined(MBEDTLS_SSL_SRV_C)
 /**
- * \brief          Set the Diffie-Hellman public P and G values
- *                 from big-endian binary presentations.
- *                 (Default values: MBEDTLS_DHM_RFC3526_MODP_2048_[PG]_BIN)
+ * This structure defines each entry of the macro #MBEDTLS_SSL_IANA_TLS_GROUPS_INFO.
  *
- * \param conf     SSL configuration
- * \param dhm_P    Diffie-Hellman-Merkle modulus in big-endian binary form
- * \param P_len    Length of DHM modulus
- * \param dhm_G    Diffie-Hellman-Merkle generator in big-endian binary form
- * \param G_len    Length of DHM generator
- *
- * \return         0 if successful
+ * \note Future versions of the library might add new fields to this structure.
  */
-int mbedtls_ssl_conf_dh_param_bin(mbedtls_ssl_config *conf,
-                                  const unsigned char *dhm_P, size_t P_len,
-                                  const unsigned char *dhm_G,  size_t G_len);
+typedef struct {
+    /** TLS-ID */
+    uint16_t tls_id;
+
+    /** Group name */
+    const char *group_name;
+
+    /** 1 if the group is supported; 0 otherwise */
+    uint8_t is_supported;
+} mbedtls_ssl_iana_tls_group_info_t;
+
+/* Helpers to check which PSA_WANT_xxx symbols are defined for groups. */
+#if defined(PSA_WANT_ECC_MONTGOMERY_255)
+#define MBEDTLS_SSL_HAVE_GROUP_X25519 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_X25519 0
+#endif
+#if defined(PSA_WANT_ECC_SECP_R1_256)
+#define MBEDTLS_SSL_HAVE_GROUP_SECP256R1 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_SECP256R1 0
+#endif
+#if defined(PSA_WANT_ECC_SECP_K1_256)
+#define MBEDTLS_SSL_HAVE_GROUP_SECP256K1 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_SECP256K1 0
+#endif
+#if defined(PSA_WANT_ECC_SECP_R1_384)
+#define MBEDTLS_SSL_HAVE_GROUP_SECP384R1 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_SECP384R1 0
+#endif
+#if defined(PSA_WANT_ECC_MONTGOMERY_448)
+#define MBEDTLS_SSL_HAVE_GROUP_X448 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_X448 0
+#endif
+#if defined(PSA_WANT_ECC_SECP_R1_521)
+#define MBEDTLS_SSL_HAVE_GROUP_SECP521R1 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_SECP521R1 0
+#endif
+#if defined(PSA_WANT_ECC_BRAINPOOL_P_R1_256)
+#define MBEDTLS_SSL_HAVE_GROUP_BP256R1 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_BP256R1 0
+#endif
+#if defined(PSA_WANT_ECC_BRAINPOOL_P_R1_384)
+#define MBEDTLS_SSL_HAVE_GROUP_BP384R1 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_BP384R1 0
+#endif
+#if defined(PSA_WANT_ECC_BRAINPOOL_P_R1_512)
+#define MBEDTLS_SSL_HAVE_GROUP_BP512R1 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_BP512R1 0
+#endif
+#if defined(PSA_WANT_DH_RFC7919_2048)
+#define MBEDTLS_SSL_HAVE_GROUP_FFDHE2048 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_FFDHE2048 0
+#endif
+#if defined(PSA_WANT_DH_RFC7919_3072)
+#define MBEDTLS_SSL_HAVE_GROUP_FFDHE3072 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_FFDHE3072 0
+#endif
+#if defined(PSA_WANT_DH_RFC7919_4096)
+#define MBEDTLS_SSL_HAVE_GROUP_FFDHE4096 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_FFDHE4096 0
+#endif
+#if defined(PSA_WANT_DH_RFC7919_6144)
+#define MBEDTLS_SSL_HAVE_GROUP_FFDHE6144 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_FFDHE6144 0
+#endif
+#if defined(PSA_WANT_DH_RFC7919_8192)
+#define MBEDTLS_SSL_HAVE_GROUP_FFDHE8192 1
+#else
+#define MBEDTLS_SSL_HAVE_GROUP_FFDHE8192 0
+#endif
 
 /**
- * \brief          Set the Diffie-Hellman public P and G values,
- *                 read from existing context (server-side only)
+ * Initializer for a list of known TLS 1.2 named elliptic curves and
+ * TLS 1.3 groups, with their names.
  *
- * \param conf     SSL configuration
- * \param dhm_ctx  Diffie-Hellman-Merkle context
- *
- * \return         0 if successful
+ * Each entry is a structure of type #mbedtls_ssl_iana_tls_group_info_t.
+ * The last entry has `tls_id = 0` and `group_name = NULL`.
  */
-int mbedtls_ssl_conf_dh_param_ctx(mbedtls_ssl_config *conf, mbedtls_dhm_context *dhm_ctx);
-#endif /* MBEDTLS_DHM_C && defined(MBEDTLS_SSL_SRV_C) */
+#define MBEDTLS_SSL_IANA_TLS_GROUPS_INFO                                                           \
+    {                                                                                              \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_X25519, "x25519", MBEDTLS_SSL_HAVE_GROUP_X25519 },            \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_SECP256R1, "secp256r1", MBEDTLS_SSL_HAVE_GROUP_SECP256R1 },   \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_SECP256K1, "secp256k1", MBEDTLS_SSL_HAVE_GROUP_SECP256K1 },   \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_SECP384R1, "secp384r1", MBEDTLS_SSL_HAVE_GROUP_SECP384R1 },   \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_X448, "x448", MBEDTLS_SSL_HAVE_GROUP_X448 },                  \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_SECP521R1, "secp521r1", MBEDTLS_SSL_HAVE_GROUP_SECP521R1 },   \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_BP256R1, "brainpoolP256r1", MBEDTLS_SSL_HAVE_GROUP_BP256R1 }, \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_BP384R1, "brainpoolP384r1", MBEDTLS_SSL_HAVE_GROUP_BP384R1 }, \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_BP512R1, "brainpoolP512r1", MBEDTLS_SSL_HAVE_GROUP_BP512R1 }, \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_FFDHE2048, "ffdhe2048", MBEDTLS_SSL_HAVE_GROUP_FFDHE2048 },   \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_FFDHE3072, "ffdhe3072", MBEDTLS_SSL_HAVE_GROUP_FFDHE3072 },   \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_FFDHE4096, "ffdhe4096", MBEDTLS_SSL_HAVE_GROUP_FFDHE4096 },   \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_FFDHE6144, "ffdhe6144", MBEDTLS_SSL_HAVE_GROUP_FFDHE6144 },   \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_FFDHE8192, "ffdhe8192", MBEDTLS_SSL_HAVE_GROUP_FFDHE8192 },   \
+        { MBEDTLS_SSL_IANA_TLS_GROUP_NONE, NULL, 1 }                                               \
+    }
 
-#if defined(MBEDTLS_DHM_C) && defined(MBEDTLS_SSL_CLI_C)
+#if defined(MBEDTLS_DEBUG_C)
 /**
- * \brief          Set the minimum length for Diffie-Hellman parameters.
- *                 (Client-side only.)
- *                 (Default: 1024 bits.)
- *
- * \param conf     SSL configuration
- * \param bitlen   Minimum bit length of the DHM prime
+ * List of known "TLS ID" <-> "group name".
+ * #MBEDTLS_SSL_IANA_TLS_GROUPS_INFO is used to initialized the list.
  */
-void mbedtls_ssl_conf_dhm_min_bitlen(mbedtls_ssl_config *conf,
-                                     unsigned int bitlen);
-#endif /* MBEDTLS_DHM_C && MBEDTLS_SSL_CLI_C */
+extern mbedtls_ssl_iana_tls_group_info_t mbedtls_ssl_iana_tls_group_info[];
+#endif /* MBEDTLS_DEBUG_C */
 
-#if defined(MBEDTLS_ECP_C)
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
 /**
- * \brief          Set the allowed curves in order of preference.
+ * \brief       Return the list of supported groups (curves and finite fields).
  *
- *                 On server: this only affects selection of the ECDHE curve;
- *                 the curves used for ECDH and ECDSA are determined by the
- *                 list of available certificates instead.
+ * \note        The returned list is ordered in ascending order of resource
+ *              usage. This follows the same pattern of the default list being
+ *              used when mbedtls_ssl_conf_groups() is not called.
  *
- *                 On client: this affects the list of curves offered for any
- *                 use. The server can override our preference order.
+ * \note        The returned list represents supported groups in the current build
+ *              configuration, not the one set by mbedtls_ssl_conf_groups().
  *
- *                 Both sides: limits the set of curves accepted for use in
- *                 ECDHE and in the peer's end-entity certificate.
+ * \note        The returned list is static so the user doesn't need to worry
+ *              about it being freed.
  *
- * \deprecated     Superseded by mbedtls_ssl_conf_groups().
- *
- * \note           This has no influence on which curves are allowed inside the
- *                 certificate chains, see \c mbedtls_ssl_conf_cert_profile()
- *                 for that. For the end-entity certificate however, the key
- *                 will be accepted only if it is allowed both by this list
- *                 and by the cert profile.
- *
- * \note           This list should be ordered by decreasing preference
- *                 (preferred curve first).
- *
- * \note           The default list is the same set of curves that
- *                 #mbedtls_x509_crt_profile_default allows, plus
- *                 ECDHE-only curves selected according to the same criteria.
- *                 The order favors curves with the lowest resource usage.
- *
- * \note           New minor versions of Mbed TLS may extend this list,
- *                 for example if new curves are added to the library.
- *                 New minor versions of Mbed TLS will not remove items
- *                 from this list unless serious security concerns require it.
- *                 New minor versions of Mbed TLS may change the order in
- *                 keeping with the general principle of favoring the lowest
- *                 resource usage.
- *
- * \param conf     SSL configuration
- * \param curves   Ordered list of allowed curves,
- *                 terminated by MBEDTLS_ECP_DP_NONE.
+ * \return      The list made of IANA NamedGroups IDs (MBEDTLS_SSL_IANA_TLS_GROUP_xxx)
+ *              and is terminated by #MBEDTLS_SSL_IANA_TLS_GROUP_NONE.
  */
-void MBEDTLS_DEPRECATED mbedtls_ssl_conf_curves(mbedtls_ssl_config *conf,
-                                                const mbedtls_ecp_group_id *curves);
-#endif /* MBEDTLS_DEPRECATED_REMOVED */
-#endif /* MBEDTLS_ECP_C */
+const uint16_t *mbedtls_ssl_get_supported_group_list(void);
 
 /**
  * \brief          Set the allowed groups in order of preference.
@@ -3866,13 +3881,6 @@ void MBEDTLS_DEPRECATED mbedtls_ssl_conf_curves(mbedtls_ssl_config *conf,
  *
  *                 Both sides: limits the set of groups accepted for use in
  *                 key sharing.
- *
- * \note           This function replaces the deprecated mbedtls_ssl_conf_curves(),
- *                 which only allows ECP curves to be configured.
- *
- * \note           The most recent invocation of either mbedtls_ssl_conf_curves()
- *                 or mbedtls_ssl_conf_groups() nullifies all previous invocations
- *                 of both.
  *
  * \note           This list should be ordered by decreasing preference
  *                 (preferred group first).
@@ -3888,6 +3896,10 @@ void MBEDTLS_DEPRECATED mbedtls_ssl_conf_curves(mbedtls_ssl_config *conf,
  *                 keeping with the general principle of favoring the lowest
  *                 resource usage.
  *
+ * \note           The list is not copied internally, only the reference to it
+ *                 is saved in \p conf. Do not free \p groups memory for the time
+ *                 in which \p conf is being used.
+ *
  * \param conf     SSL configuration
  * \param groups   List of allowed groups ordered by preference, terminated by 0.
  *                 Must contain valid IANA NamedGroup IDs (provided via either an integer
@@ -3897,44 +3909,14 @@ void mbedtls_ssl_conf_groups(mbedtls_ssl_config *conf,
                              const uint16_t *groups);
 
 #if defined(MBEDTLS_SSL_HANDSHAKE_WITH_CERT_ENABLED)
-#if !defined(MBEDTLS_DEPRECATED_REMOVED) && defined(MBEDTLS_SSL_PROTO_TLS1_2)
-/**
- * \brief          Set the allowed hashes for signatures during the handshake.
- *
- * \note           This only affects which hashes are offered and can be used
- *                 for signatures during the handshake. Hashes for message
- *                 authentication and the TLS PRF are controlled by the
- *                 ciphersuite, see \c mbedtls_ssl_conf_ciphersuites(). Hashes
- *                 used for certificate signature are controlled by the
- *                 verification profile, see \c mbedtls_ssl_conf_cert_profile().
- *
- * \deprecated     Superseded by mbedtls_ssl_conf_sig_algs().
- *
- * \note           This list should be ordered by decreasing preference
- *                 (preferred hash first).
- *
- * \note           By default, all supported hashes whose length is at least
- *                 256 bits are allowed. This is the same set as the default
- *                 for certificate verification
- *                 (#mbedtls_x509_crt_profile_default).
- *                 The preference order is currently unspecified and may
- *                 change in future versions.
- *
- * \note           New minor versions of Mbed TLS may extend this list,
- *                 for example if new curves are added to the library.
- *                 New minor versions of Mbed TLS will not remove items
- *                 from this list unless serious security concerns require it.
- *
- * \param conf     SSL configuration
- * \param hashes   Ordered list of allowed signature hashes,
- *                 terminated by \c MBEDTLS_MD_NONE.
- */
-void MBEDTLS_DEPRECATED mbedtls_ssl_conf_sig_hashes(mbedtls_ssl_config *conf,
-                                                    const int *hashes);
-#endif /* !MBEDTLS_DEPRECATED_REMOVED && MBEDTLS_SSL_PROTO_TLS1_2 */
 
 /**
- * \brief          Configure allowed signature algorithms for use in TLS
+ * \brief          Configure allowed signature algorithms for use in TLS key
+ *                 exchange.
+ *
+ * \note           This only covers signature algorithms used in the key
+ *                 exchange. To also enforce restrictions in certificate verification
+ *                 refer to \c mbedtls_ssl_conf_cert_profile().
  *
  * \param conf     The SSL configuration to use.
  * \param sig_algs List of allowed IANA values for TLS 1.3 signature algorithms,
@@ -3952,16 +3934,29 @@ void mbedtls_ssl_conf_sig_algs(mbedtls_ssl_config *conf,
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
 /**
  * \brief          Set or reset the hostname to check against the received
- *                 server certificate. It sets the ServerName TLS extension,
- *                 too, if that extension is enabled. (client-side only)
+ *                 peer certificate. On a client, this also sets the
+ *                 ServerName TLS extension, if that extension is enabled.
+ *                 On a TLS 1.3 client, this also sets the server name in
+ *                 the session resumption ticket, if that feature is enabled.
  *
  * \param ssl      SSL context
- * \param hostname the server hostname, may be NULL to clear hostname
-
- * \note           Maximum hostname length MBEDTLS_SSL_MAX_HOST_NAME_LEN.
+ * \param hostname The server hostname. This may be \c NULL to clear
+ *                 the hostname.
  *
- * \return         0 if successful, MBEDTLS_ERR_SSL_ALLOC_FAILED on
- *                 allocation failure, MBEDTLS_ERR_SSL_BAD_INPUT_DATA on
+ * \note           Maximum hostname length #MBEDTLS_SSL_MAX_HOST_NAME_LEN.
+ *
+ * \note           If the hostname is \c NULL on a client, then the server
+ *                 is not authenticated: it only needs to have a valid
+ *                 certificate, not a certificate matching its name.
+ *                 Therefore you should always call this function on a client,
+ *                 unless the connection is set up to only allow
+ *                 pre-shared keys, or in scenarios where server
+ *                 impersonation is not a concern. See the documentation of
+ *                 #MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+ *                 for more details.
+ *
+ * \return         0 if successful, #PSA_ERROR_INSUFFICIENT_MEMORY on
+ *                 allocation failure, #PSA_ERROR_INVALID_ARGUMENT on
  *                 too long input hostname.
  *
  *                 Hostname set to the one provided on success (cleared
@@ -4021,7 +4016,7 @@ const unsigned char *mbedtls_ssl_get_hs_sni(mbedtls_ssl_context *ssl,
  * \param own_cert own public certificate chain
  * \param pk_key   own private key
  *
- * \return         0 on success or MBEDTLS_ERR_SSL_ALLOC_FAILED
+ * \return         0 on success or #PSA_ERROR_INSUFFICIENT_MEMORY
  */
 int mbedtls_ssl_set_hs_own_cert(mbedtls_ssl_context *ssl,
                                 mbedtls_x509_crt *own_cert,
@@ -4150,9 +4145,10 @@ int mbedtls_ssl_set_hs_ecjpake_password_opaque(mbedtls_ssl_context *ssl,
  *                 the lifetime of the table must be at least as long as the
  *                 lifetime of the SSL configuration structure.
  *
- * \return         0 on success, or MBEDTLS_ERR_SSL_BAD_INPUT_DATA.
+ * \return         0 on success, or #PSA_ERROR_INVALID_ARGUMENT.
  */
-int mbedtls_ssl_conf_alpn_protocols(mbedtls_ssl_config *conf, const char **protos);
+int mbedtls_ssl_conf_alpn_protocols(mbedtls_ssl_config *conf,
+                                    const char *const *protos);
 
 /**
  * \brief          Get the name of the negotiated Application Layer Protocol.
@@ -4216,7 +4212,7 @@ void mbedtls_ssl_conf_srtp_mki_value_supported(mbedtls_ssl_config *conf,
  *                          (excluding the terminating MBEDTLS_TLS_SRTP_UNSET).
  *
  * \return                  0 on success
- * \return                  #MBEDTLS_ERR_SSL_BAD_INPUT_DATA when the list of
+ * \return                  #PSA_ERROR_INVALID_ARGUMENT when the list of
  *                          protection profiles is incorrect.
  */
 int mbedtls_ssl_conf_dtls_srtp_protection_profiles
@@ -4236,7 +4232,7 @@ int mbedtls_ssl_conf_dtls_srtp_protection_profiles
  *                         is ignored.
  *
  * \return                 0 on success
- * \return                 #MBEDTLS_ERR_SSL_BAD_INPUT_DATA
+ * \return                 #PSA_ERROR_INVALID_ARGUMENT
  * \return                 #MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE
  */
 int mbedtls_ssl_dtls_srtp_set_mki_value(mbedtls_ssl_context *ssl,
@@ -4264,28 +4260,6 @@ void mbedtls_ssl_get_dtls_srtp_negotiation_result(const mbedtls_ssl_context *ssl
                                                   mbedtls_dtls_srtp_info *dtls_srtp_info);
 #endif /* MBEDTLS_SSL_DTLS_SRTP */
 
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-/**
- * \brief          Set the maximum supported version sent from the client side
- *                 and/or accepted at the server side.
- *
- *                 See also the documentation of mbedtls_ssl_conf_min_version().
- *
- * \note           This ignores ciphersuites from higher versions.
- *
- * \note           This function is deprecated and has been replaced by
- *                 \c mbedtls_ssl_conf_max_tls_version().
- *
- * \param conf     SSL configuration
- * \param major    Major version number (#MBEDTLS_SSL_MAJOR_VERSION_3)
- * \param minor    Minor version number
- *                 (#MBEDTLS_SSL_MINOR_VERSION_3 for (D)TLS 1.2,
- *                 #MBEDTLS_SSL_MINOR_VERSION_4 for TLS 1.3)
- */
-void MBEDTLS_DEPRECATED mbedtls_ssl_conf_max_version(mbedtls_ssl_config *conf, int major,
-                                                     int minor);
-#endif /* MBEDTLS_DEPRECATED_REMOVED */
-
 /**
  * \brief          Set the maximum supported version sent from the client side
  *                 and/or accepted at the server side.
@@ -4303,45 +4277,6 @@ static inline void mbedtls_ssl_conf_max_tls_version(mbedtls_ssl_config *conf,
 {
     conf->MBEDTLS_PRIVATE(max_tls_version) = tls_version;
 }
-
-#if !defined(MBEDTLS_DEPRECATED_REMOVED)
-/**
- * \brief          Set the minimum accepted SSL/TLS protocol version
- *
- * \note           By default, all supported versions are accepted.
- *                 Future versions of the library may disable older
- *                 protocol versions by default if they become deprecated.
- *
- * \note           The following versions are supported (if enabled at
- *                 compile time):
- *                 - (D)TLS 1.2: \p major = #MBEDTLS_SSL_MAJOR_VERSION_3,
- *                   \p minor = #MBEDTLS_SSL_MINOR_VERSION_3
- *                 - TLS 1.3: \p major = #MBEDTLS_SSL_MAJOR_VERSION_3,
- *                   \p minor = #MBEDTLS_SSL_MINOR_VERSION_4
- *
- *                 Note that the numbers in the constant names are the
- *                 TLS internal protocol numbers, and the minor versions
- *                 differ by one from the human-readable versions!
- *
- * \note           Input outside of the SSL_MAX_XXXXX_VERSION and
- *                 SSL_MIN_XXXXX_VERSION range is ignored.
- *
- * \note           After the handshake, you can call
- *                 mbedtls_ssl_get_version_number() to see what version was
- *                 negotiated.
- *
- * \note           This function is deprecated and has been replaced by
- *                 \c mbedtls_ssl_conf_min_tls_version().
- *
- * \param conf     SSL configuration
- * \param major    Major version number (#MBEDTLS_SSL_MAJOR_VERSION_3)
- * \param minor    Minor version number
- *                 (#MBEDTLS_SSL_MINOR_VERSION_3 for (D)TLS 1.2,
- *                 #MBEDTLS_SSL_MINOR_VERSION_4 for TLS 1.3)
- */
-void MBEDTLS_DEPRECATED mbedtls_ssl_conf_min_version(mbedtls_ssl_config *conf, int major,
-                                                     int minor);
-#endif /* MBEDTLS_DEPRECATED_REMOVED */
 
 /**
  * \brief          Set the minimum supported version sent from the client side
@@ -4425,6 +4360,10 @@ void mbedtls_ssl_conf_cert_req_ca_list(mbedtls_ssl_config *conf,
  *                 with \c mbedtls_ssl_read()), not handshake messages.
  *                 With DTLS, this affects both ApplicationData and handshake.
  *
+ * \note           Defragmentation of TLS handshake messages is supported
+ *                 with some limitations. See the documentation of
+ *                 mbedtls_ssl_handshake() for details.
+ *
  * \note           This sets the maximum length for a record's payload,
  *                 excluding record overhead that will be added to it, see
  *                 \c mbedtls_ssl_get_record_expansion().
@@ -4438,7 +4377,7 @@ void mbedtls_ssl_conf_cert_req_ca_list(mbedtls_ssl_config *conf,
  *                 MBEDTLS_SSL_MAX_FRAG_LEN_512,  MBEDTLS_SSL_MAX_FRAG_LEN_1024,
  *                 MBEDTLS_SSL_MAX_FRAG_LEN_2048, MBEDTLS_SSL_MAX_FRAG_LEN_4096)
  *
- * \return         0 if successful or MBEDTLS_ERR_SSL_BAD_INPUT_DATA
+ * \return         0 if successful or #PSA_ERROR_INVALID_ARGUMENT
  */
 int mbedtls_ssl_conf_max_frag_len(mbedtls_ssl_config *conf, unsigned char mfl_code);
 #endif /* MBEDTLS_SSL_MAX_FRAGMENT_LENGTH */
@@ -4837,23 +4776,16 @@ const mbedtls_x509_crt *mbedtls_ssl_get_peer_cert(const mbedtls_ssl_context *ssl
  * \note           This function can handle a variety of mechanisms for session
  *                 resumption: For TLS 1.2, both session ID-based resumption and
  *                 ticket-based resumption will be considered. For TLS 1.3,
- *                 once implemented, sessions equate to tickets, and calling
- *                 this function multiple times will export the available
- *                 tickets one a time until no further tickets are available,
- *                 in which case MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE will
- *                 be returned.
- *
- * \note           Calling this function multiple times will only be useful
- *                 once TLS 1.3 is supported. For TLS 1.2 connections, this
- *                 function should be called at most once.
+ *                 sessions equate to tickets, and if session tickets are
+ *                 enabled (see #MBEDTLS_SSL_SESSION_TICKETS configuration
+ *                 option), this function exports the last received ticket and
+ *                 the exported session may be used to resume the TLS 1.3
+ *                 session. If session tickets are disabled, exported sessions
+ *                 cannot be used to resume a TLS 1.3 session.
  *
  * \return         \c 0 if successful. In this case, \p session can be used for
  *                 session resumption by passing it to mbedtls_ssl_set_session(),
  *                 and serialized for storage via mbedtls_ssl_session_save().
- * \return         #MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE if no further session
- *                 is available for export.
- *                 This error is a non-fatal, and has no observable effect on
- *                 the SSL context or the destination session.
  * \return         Another negative error code on other kinds of failure.
  *
  * \sa             mbedtls_ssl_set_session()
@@ -4879,7 +4811,7 @@ int mbedtls_ssl_get_session(const mbedtls_ssl_context *ssl,
  *                 mbedtls_ssl_conf_async_private_cb()) - in this case you
  *                 must call this function again when the operation is ready.
  * \return         #MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS if a cryptographic
- *                 operation is in progress (see mbedtls_ecp_set_max_ops()) -
+ *                 operation is in progress (see psa_interruptible_set_max_ops()) -
  *                 in this case you must call this function again to complete
  *                 the handshake when you're done attending other tasks.
  * \return         #MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED if DTLS is in use
@@ -4921,10 +4853,19 @@ int mbedtls_ssl_get_session(const mbedtls_ssl_context *ssl,
  *                 currently being processed might or might not contain further
  *                 DTLS records.
  *
- * \note           If the context is configured to allow TLS 1.3, or if
- *                 #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
- *                 subsystem must have been initialized by calling
- *                 psa_crypto_init() before calling this function.
+ * \note           In TLS, reception of fragmented handshake messages is
+ *                 supported with some limitations (those limitations do
+ *                 not apply to DTLS, where defragmentation is fully
+ *                 supported):
+ *                 - The first fragment of a handshake message must be
+ *                   at least 4 bytes long.
+ *                 - Non-handshake records must not be interleaved between
+ *                   the fragments of a handshake message. (This is permitted
+ *                   in TLS 1.2 but not in TLS 1.3, but Mbed TLS rejects it
+ *                   even in TLS 1.2.)
+ *
+ * \note           The PSA crypto subsystem must have been initialized by
+ *                 calling psa_crypto_init() before calling this function.
  */
 int mbedtls_ssl_handshake(mbedtls_ssl_context *ssl);
 
@@ -5034,7 +4975,7 @@ int mbedtls_ssl_renegotiate(mbedtls_ssl_context *ssl);
  *                 mbedtls_ssl_conf_async_private_cb()) - in this case you
  *                 must call this function again when the operation is ready.
  * \return         #MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS if a cryptographic
- *                 operation is in progress (see mbedtls_ecp_set_max_ops()) -
+ *                 operation is in progress (see psa_interruptible_set_max_ops()) -
  *                 in this case you must call this function again to complete
  *                 the handshake when you're done attending other tasks.
  * \return         #MBEDTLS_ERR_SSL_CLIENT_RECONNECT if we're at the server
@@ -5119,7 +5060,7 @@ int mbedtls_ssl_read(mbedtls_ssl_context *ssl, unsigned char *buf, size_t len);
  *                 mbedtls_ssl_conf_async_private_cb()) - in this case you
  *                 must call this function again when the operation is ready.
  * \return         #MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS if a cryptographic
- *                 operation is in progress (see mbedtls_ecp_set_max_ops()) -
+ *                 operation is in progress (see psa_interruptible_set_max_ops()) -
  *                 in this case you must call this function again to complete
  *                 the handshake when you're done attending other tasks.
  * \return         #MBEDTLS_ERR_SSL_RECEIVED_EARLY_DATA if early data, as
@@ -5155,7 +5096,7 @@ int mbedtls_ssl_read(mbedtls_ssl_context *ssl, unsigned char *buf, size_t len);
  *                 fragment length (either the built-in limit or the one set
  *                 or negotiated with the peer), then:
  *                 - with TLS, less bytes than requested are written.
- *                 - with DTLS, MBEDTLS_ERR_SSL_BAD_INPUT_DATA is returned.
+ *                 - with DTLS, #PSA_ERROR_INVALID_ARGUMENT is returned.
  *                 \c mbedtls_ssl_get_max_out_record_payload() may be used to
  *                 query the active maximum fragment length.
  *
@@ -5183,6 +5124,22 @@ int mbedtls_ssl_write(mbedtls_ssl_context *ssl, const unsigned char *buf, size_t
 int mbedtls_ssl_send_alert_message(mbedtls_ssl_context *ssl,
                                    unsigned char level,
                                    unsigned char message);
+
+/**
+ * \brief           Get the last received fatal alert
+ *
+ * \param ssl       SSL context
+ *
+ * \return         The alert description type (MBEDTLS_SSL_ALERT_MSG_*) if a fatal
+ *                 alert has been received, MBEDTLS_ERR_SSL_BAD_INPUT_DATA otherwise.
+ *
+ * \note           This function can be used in case mbedtls_ssl_handshake(),
+ *                 mbedtls_ssl_handshake_step() or mbedtls_ssl_read() returned
+ *                 MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE to get the actual alert
+ *                 description type.
+ */
+int mbedtls_ssl_get_fatal_alert(const mbedtls_ssl_context *ssl);
+
 /**
  * \brief          Notify the peer that the connection is being closed
  *
@@ -5239,7 +5196,7 @@ int mbedtls_ssl_close_notify(mbedtls_ssl_context *ssl);
  * \param len      maximum number of bytes to read
  *
  * \return         The (positive) number of bytes read if successful.
- * \return         #MBEDTLS_ERR_SSL_BAD_INPUT_DATA if input data is invalid.
+ * \return         #PSA_ERROR_INVALID_ARGUMENT if input data is invalid.
  * \return         #MBEDTLS_ERR_SSL_CANNOT_READ_EARLY_DATA if it is not
  *                 possible to read early data for the SSL context \p ssl. Note
  *                 that this function is intended to be called for an SSL
@@ -5345,10 +5302,10 @@ int mbedtls_ssl_write_early_data(mbedtls_ssl_context *ssl,
  *
  * \param ssl      The SSL context to query
  *
- * \return         #MBEDTLS_ERR_SSL_BAD_INPUT_DATA if this function is called
+ * \return         #PSA_ERROR_INVALID_ARGUMENT if this function is called
  *                 from the server-side.
  *
- * \return         #MBEDTLS_ERR_SSL_BAD_INPUT_DATA if this function is called
+ * \return         #PSA_ERROR_INVALID_ARGUMENT if this function is called
  *                 prior to completion of the handshake.
  *
  * \return         #MBEDTLS_SSL_EARLY_DATA_STATUS_NOT_INDICATED if the client
@@ -5387,6 +5344,19 @@ void mbedtls_ssl_free(mbedtls_ssl_context *ssl);
  *
  * \see            mbedtls_ssl_context_load()
  *
+ * \warning        The serialized data contains highly sensitive material,
+ *                 including the master secret from which the session's traffic
+ *                 keys are derived.
+ *
+ *                 The serialized data is not cryptographically protected.
+ *                 It is the responsibility of the user of the
+ *                 mbedtls_ssl_context_save() and
+ *                 mbedtls_ssl_context_load() APIs to ensure both its
+ *                 confidentiality and integrity while stored or transported.
+ *
+ *                 See the mbedtls_ssl_context_load() documentation for
+ *                 additional information.
+ *
  * \note           The serialized data only contains the data that is
  *                 necessary to resume the connection: negotiated protocol
  *                 options, session identifier, keys, etc.
@@ -5397,7 +5367,7 @@ void mbedtls_ssl_free(mbedtls_ssl_context *ssl);
  *
  * \note           This feature is currently only available under certain
  *                 conditions, see the documentation of the return value
- *                 #MBEDTLS_ERR_SSL_BAD_INPUT_DATA for details.
+ *                 #PSA_ERROR_INVALID_ARGUMENT for details.
  *
  * \note           When this function succeeds, it calls
  *                 mbedtls_ssl_session_reset() on \p ssl which as a result is
@@ -5422,15 +5392,15 @@ void mbedtls_ssl_free(mbedtls_ssl_context *ssl);
  *                 to determine the necessary size by calling this function
  *                 with \p buf set to \c NULL and \p buf_len to \c 0. However,
  *                 the value of \p olen is only guaranteed to be correct when
- *                 the function returns #MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL or
+ *                 the function returns #PSA_ERROR_BUFFER_TOO_SMALL or
  *                 \c 0. If the return value is different, then the value of
  *                 \p olen is undefined.
  *
  * \return         \c 0 if successful.
- * \return         #MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL if \p buf is too small.
- * \return         #MBEDTLS_ERR_SSL_ALLOC_FAILED if memory allocation failed
+ * \return         #PSA_ERROR_BUFFER_TOO_SMALL if \p buf is too small.
+ * \return         #PSA_ERROR_INSUFFICIENT_MEMORY if memory allocation failed
  *                 while resetting the context.
- * \return         #MBEDTLS_ERR_SSL_BAD_INPUT_DATA if a handshake is in
+ * \return         #PSA_ERROR_INVALID_ARGUMENT if a handshake is in
  *                 progress, or there is pending data for reading or sending,
  *                 or the connection does not use DTLS 1.2 with an AEAD
  *                 ciphersuite, or renegotiation is enabled.
@@ -5452,6 +5422,27 @@ int mbedtls_ssl_context_save(mbedtls_ssl_context *ssl,
  *                 serialized data that was loaded. Loading the same data in
  *                 more than one context would cause severe security failures
  *                 including but not limited to loss of confidentiality.
+ *
+ * \warning        The serialized data contains highly sensitive material,
+ *                 including the master secret from which the session's traffic
+ *                 keys are derived.
+ *
+ *                 The serialized data is not cryptographically protected.
+ *                 It is the responsibility of the user of the
+ *                 mbedtls_ssl_context_save() and
+ *                 mbedtls_ssl_context_load() APIs to ensure both its
+ *                 confidentiality and integrity while stored or transported.
+ *
+ *                 A breach of confidentiality could result in full compromise
+ *                 of the associated TLS session, including loss of
+ *                 confidentiality and integrity of past and future
+ *                 application data protected under that session.
+ *
+ *                 A breach of integrity may allow modification of the
+ *                 serialized data prior to restoration. As it represents
+ *                 trusted internal context, tampering could potentially result
+ *                 in arbitrary code execution or other severe compromise of
+ *                 the hosting process.
  *
  * \note           Before calling this function, the SSL context must be
  *                 prepared in one of the two following ways. The first way is
@@ -5503,10 +5494,10 @@ int mbedtls_ssl_context_save(mbedtls_ssl_context *ssl,
  * \param len      The size of the serialized data in bytes.
  *
  * \return         \c 0 if successful.
- * \return         #MBEDTLS_ERR_SSL_ALLOC_FAILED if memory allocation failed.
+ * \return         #PSA_ERROR_INSUFFICIENT_MEMORY if memory allocation failed.
  * \return         #MBEDTLS_ERR_SSL_VERSION_MISMATCH if the serialized data
  *                 comes from a different Mbed TLS version or build.
- * \return         #MBEDTLS_ERR_SSL_BAD_INPUT_DATA if input data is invalid.
+ * \return         #PSA_ERROR_INVALID_ARGUMENT if input data is invalid.
  */
 int mbedtls_ssl_context_load(mbedtls_ssl_context *ssl,
                              const unsigned char *buf,
@@ -5589,6 +5580,41 @@ int  mbedtls_ssl_tls_prf(const mbedtls_tls_prf_types prf,
                          const unsigned char *random, size_t rlen,
                          unsigned char *dstbuf, size_t dlen);
 
+#if defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
+/* Maximum value for key_len in mbedtls_ssl_export_keying material. Depending on the TLS
+ * version and the negotiated ciphersuite, larger keys could in principle be exported,
+ * but for simplicity, we define one limit that works in all cases. TLS 1.3 with SHA256
+ * has the strictest limit: 255 blocks of SHA256 output, or 8160 bytes. */
+#define MBEDTLS_SSL_EXPORT_MAX_KEY_LEN 8160
+
+/**
+ * \brief             TLS-Exporter to derive shared symmetric keys between server and client.
+ *
+ * \param ssl         SSL context from which to export keys. Must have finished the handshake.
+ * \param out         Output buffer of length at least key_len bytes.
+ * \param key_len     Length of the key to generate in bytes, must be at most
+ *                    MBEDTLS_SSL_EXPORT_MAX_KEY_LEN (8160).
+ * \param label       Label for which to generate the key of length label_len.
+ * \param label_len   Length of label in bytes. Must be at most 249 in TLS 1.3.
+ * \param context     Context of the key. Can be NULL if context_len or use_context is 0.
+ * \param context_len Length of context. Must be < 2^16 in TLS 1.2.
+ * \param use_context Indicates if a context should be used in deriving the key.
+ *
+ * \note TLS 1.2 makes a distinction between a 0-length context and no context.
+ *       This is why the use_context argument exists. TLS 1.3 does not make
+ *       this distinction. If use_context is 0 and TLS 1.3 is used, context and
+ *       context_len are ignored and a 0-length context is used.
+ *
+ * \return            0 on success.
+ * \return            #PSA_ERROR_INVALID_ARGUMENT if the handshake is not yet completed.
+ * \return            An SSL-specific error on failure.
+ */
+int mbedtls_ssl_export_keying_material(mbedtls_ssl_context *ssl,
+                                       uint8_t *out, const size_t key_len,
+                                       const char *label, const size_t label_len,
+                                       const unsigned char *context, const size_t context_len,
+                                       const int use_context);
+#endif
 #ifdef __cplusplus
 }
 #endif

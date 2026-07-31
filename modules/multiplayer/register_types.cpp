@@ -37,6 +37,8 @@
 #include "scene_replication_interface.h"
 #include "scene_rpc_interface.h"
 
+#include "core/object/class_db.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/multiplayer_editor_plugin.h"
 #endif
@@ -48,8 +50,10 @@ void initialize_multiplayer_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(MultiplayerSynchronizer);
 		GDREGISTER_CLASS(OfflineMultiplayerPeer);
 		GDREGISTER_CLASS(SceneMultiplayer);
-		MultiplayerAPI::set_default_interface("SceneMultiplayer");
-		MultiplayerDebugger::initialize();
+		if constexpr (GD_IS_CLASS_ENABLED(MultiplayerAPI)) {
+			MultiplayerAPI::set_default_interface("SceneMultiplayer");
+			MultiplayerDebugger::initialize();
+		}
 	}
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
@@ -59,5 +63,7 @@ void initialize_multiplayer_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_multiplayer_module(ModuleInitializationLevel p_level) {
-	MultiplayerDebugger::deinitialize();
+	if constexpr (GD_IS_CLASS_ENABLED(MultiplayerAPI)) {
+		MultiplayerDebugger::deinitialize();
+	}
 }

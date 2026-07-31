@@ -61,7 +61,7 @@
 #define wl_display_cancel_read wl_display_cancel_read_dylibloader_orig_wayland_client
 #define wl_display_read_events wl_display_read_events_dylibloader_orig_wayland_client
 #define wl_log_set_handler_client wl_log_set_handler_client_dylibloader_orig_wayland_client
-#include "./thirdparty/linuxbsd_headers/wayland/wayland-client-core.h"
+#include "./thirdparty/linuxbsd_headers/wayland/wayland-client-core.h" // IWYU pragma: export.
 #undef wl_list_init
 #undef wl_list_insert
 #undef wl_list_remove

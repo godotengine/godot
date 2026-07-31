@@ -32,10 +32,11 @@
 
 #include "godot_audio.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/engine.h"
+#include "core/math/math_funcs_binary.h"
 #include "core/object/object.h"
-#include "scene/main/node.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
+#include "servers/audio/audio_server.h"
 
 #include <emscripten.h>
 
@@ -95,7 +96,7 @@ void AudioDriverWeb::_audio_driver_process(int p_from, int p_samples) {
 }
 
 void AudioDriverWeb::_audio_driver_capture(int p_from, int p_samples) {
-	if (get_input_buffer().size() == 0) {
+	if (get_input_buffer().is_empty()) {
 		return; // Input capture stopped.
 	}
 	const int max_samples = memarr_len(input_rb);
@@ -129,7 +130,7 @@ Error AudioDriverWeb::init() {
 	}
 	mix_rate = audio_context.mix_rate;
 	channel_count = audio_context.channel_count;
-	buffer_length = closest_power_of_2((latency * mix_rate / 1000));
+	buffer_length = Math::closest_power_of_2(uint32_t(latency * mix_rate / 1000));
 	Error err = create(buffer_length, channel_count);
 	if (err != OK) {
 		return err;
@@ -275,7 +276,7 @@ void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_pla
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
 	ERR_FAIL_COND_MSG(p_playback->stream.is_null(), "Parameter p_playback->stream is null.");
 
-	constexpr int real_max_channels = AudioServer::MAX_CHANNELS_PER_BUS * 2;
+	constexpr int real_max_channels = AuSC::MAX_CHANNELS_PER_BUS * 2;
 	PackedFloat32Array volume;
 	volume.resize(real_max_channels);
 	float *volume_ptrw = volume.ptrw();
@@ -294,6 +295,7 @@ void AudioDriverWeb::start_sample_playback(const Ref<AudioSamplePlayback> &p_pla
 			itos(p_playback->stream->get_instance_id()).utf8().get_data(),
 			AudioServer::get_singleton()->get_bus_index(p_playback->bus),
 			p_playback->offset,
+			p_playback->pitch_scale,
 			volume_ptrw);
 }
 
@@ -312,6 +314,11 @@ bool AudioDriverWeb::is_sample_playback_active(const Ref<AudioSamplePlayback> &p
 	return godot_audio_sample_is_active(itos(p_playback->get_instance_id()).utf8().get_data()) != 0;
 }
 
+double AudioDriverWeb::get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback) {
+	ERR_FAIL_COND_V_MSG(p_playback.is_null(), false, "Parameter p_playback is null.");
+	return godot_audio_get_sample_playback_position(itos(p_playback->get_instance_id()).utf8().get_data());
+}
+
 void AudioDriverWeb::update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
 	godot_audio_sample_update_pitch_scale(
@@ -322,19 +329,19 @@ void AudioDriverWeb::update_sample_playback_pitch_scale(const Ref<AudioSamplePla
 void AudioDriverWeb::set_sample_playback_bus_volumes_linear(const Ref<AudioSamplePlayback> &p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
 
-	constexpr int real_max_channels = AudioServer::MAX_CHANNELS_PER_BUS * 2;
+	constexpr int real_max_channels = AuSC::MAX_CHANNELS_PER_BUS * 2;
 
 	PackedInt32Array buses;
 	buses.resize(p_bus_volumes.size());
 	int32_t *buses_ptrw = buses.ptrw();
 	PackedFloat32Array values;
-	values.resize(p_bus_volumes.size() * AudioServer::MAX_CHANNELS_PER_BUS * 2);
+	values.resize(p_bus_volumes.size() * AuSC::MAX_CHANNELS_PER_BUS * 2);
 	float *values_ptrw = values.ptrw();
 	int idx = 0;
 	for (KeyValue<StringName, Vector<AudioFrame>> pair : p_bus_volumes) {
 		int bus_index = AudioServer::get_singleton()->get_bus_index(pair.key);
 		buses_ptrw[idx] = bus_index;
-		ERR_FAIL_COND(pair.value.size() != AudioServer::MAX_CHANNELS_PER_BUS);
+		ERR_FAIL_COND(pair.value.size() != AuSC::MAX_CHANNELS_PER_BUS);
 		for (int i = 0; i < real_max_channels; i += 2) {
 			const AudioFrame &frame = pair.value[i / 2];
 			values_ptrw[(idx * real_max_channels) + i] = frame.left;
@@ -473,6 +480,8 @@ void AudioDriverWorklet::_capture_callback(int p_pos, int p_samples) {
 	driver->_audio_driver_capture(p_pos, p_samples);
 }
 
+#endif // THREADS_ENABLED
+
 /// ScriptProcessorNode implementation
 AudioDriverScriptProcessor *AudioDriverScriptProcessor::singleton = nullptr;
 
@@ -491,5 +500,3 @@ Error AudioDriverScriptProcessor::create(int &p_buffer_samples, int p_channels) 
 void AudioDriverScriptProcessor::start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) {
 	godot_audio_script_start(p_in_buf, p_in_buf_size, p_out_buf, p_out_buf_size, &_process_callback);
 }
-
-#endif // THREADS_ENABLED

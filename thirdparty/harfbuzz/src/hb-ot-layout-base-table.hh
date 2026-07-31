@@ -165,24 +165,24 @@ struct BaseCoordFormat3
 
 struct BaseCoord
 {
-  bool has_data () const { return u.format; }
+  bool has_data () const { return u.format.v; }
 
   hb_position_t get_coord (hb_font_t            *font,
 			   const ItemVariationStore &var_store,
 			   hb_direction_t        direction) const
   {
-    switch (u.format) {
-    case 1: return u.format1.get_coord (font, direction);
-    case 2: return u.format2.get_coord (font, direction);
-    case 3: return u.format3.get_coord (font, var_store, direction);
+    switch (u.format.v) {
+    case 1: hb_barrier (); return u.format1.get_coord (font, direction);
+    case 2: hb_barrier (); return u.format2.get_coord (font, direction);
+    case 3: hb_barrier (); return u.format3.get_coord (font, var_store, direction);
     default:return 0;
     }
   }
 
   void collect_variation_indices (hb_set_t& varidx_set /* OUT */) const
   {
-    switch (u.format) {
-    case 3: u.format3.collect_variation_indices (varidx_set);
+    switch (u.format.v) {
+    case 3: hb_barrier (); u.format3.collect_variation_indices (varidx_set); return;
     default:return;
     }
   }
@@ -190,12 +190,12 @@ struct BaseCoord
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
-    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
-    TRACE_DISPATCH (this, u.format);
-    switch (u.format) {
-    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
-    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
-    case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
+    if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format.v);
+    switch (u.format.v) {
+    case 1: hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: hb_barrier (); return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 3: hb_barrier (); return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }
@@ -203,25 +203,25 @@ struct BaseCoord
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (unlikely (!u.format.sanitize (c))) return_trace (false);
+    if (unlikely (!u.format.v.sanitize (c))) return_trace (false);
     hb_barrier ();
-    switch (u.format) {
-    case 1: return_trace (u.format1.sanitize (c));
-    case 2: return_trace (u.format2.sanitize (c));
-    case 3: return_trace (u.format3.sanitize (c));
+    switch (u.format.v) {
+    case 1: hb_barrier (); return_trace (u.format1.sanitize (c));
+    case 2: hb_barrier (); return_trace (u.format2.sanitize (c));
+    case 3: hb_barrier (); return_trace (u.format3.sanitize (c));
     default:return_trace (false);
     }
   }
 
   protected:
   union {
-  HBUINT16		format;
+  struct { HBUINT16 v; }	format;
   BaseCoordFormat1	format1;
   BaseCoordFormat2	format2;
   BaseCoordFormat3	format3;
   } u;
   public:
-  DEFINE_SIZE_UNION (2, format);
+  DEFINE_SIZE_UNION (2, format.v);
 };
 
 struct FeatMinMaxRecord
@@ -460,7 +460,7 @@ struct BaseScript
   { return (this+baseValues).get_base_coord (baseline_tag_index); }
 
   bool has_values () const { return baseValues; }
-  bool has_min_max () const { return defaultMinMax; /* TODO What if only per-language is present? */ }
+  bool has_min_max () const { return defaultMinMax || baseLangSysRecords; }
 
   void collect_variation_indices (const hb_subset_plan_t* plan,
                                   hb_set_t& varidx_set /* OUT */) const

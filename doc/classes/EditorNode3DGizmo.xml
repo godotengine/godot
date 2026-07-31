@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorNode3DGizmo" inherits="Node3DGizmo" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorNode3DGizmo" inherits="Node3DGizmo" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Gizmo for editing [Node3D] objects.
 	</brief_description>
 	<description>
-		Gizmo that is used for providing custom visualization and editing (handles and subgizmos) for [Node3D] objects. Can be overridden to create custom gizmos, but for simple gizmos creating a [EditorNode3DGizmoPlugin] is usually recommended.
+		Gizmo that is used for providing custom visualization and editing (handles and subgizmos) for [Node3D] objects. Can be overridden to create custom gizmos, but for simple gizmos creating an [EditorNode3DGizmoPlugin] is usually recommended.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -191,6 +191,12 @@
 			<return type="PackedInt32Array" />
 			<description>
 				Returns a list of the currently selected subgizmos. Can be used to highlight selected elements during [method _redraw].
+			</description>
+		</method>
+		<method name="is_selected" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this gizmo is currently selected. Can be used to write custom visualization logic during [method _redraw].
 			</description>
 		</method>
 		<method name="is_subgizmo_selected" qualifiers="const">

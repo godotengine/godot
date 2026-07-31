@@ -30,6 +30,9 @@
 
 #include "uniform_set_cache_rd.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_device_binds.h"
+
 UniformSetCacheRD *UniformSetCacheRD::singleton = nullptr;
 
 void UniformSetCacheRD::_bind_methods() {
@@ -37,7 +40,8 @@ void UniformSetCacheRD::_bind_methods() {
 }
 
 RID UniformSetCacheRD::get_cache_array(RID p_shader, uint32_t p_set, const TypedArray<RDUniform> &p_uniforms) {
-	Vector<RD::Uniform> uniforms;
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
 
 	for (int i = 0; i < p_uniforms.size(); i++) {
 		Ref<RDUniform> uniform = p_uniforms[i];

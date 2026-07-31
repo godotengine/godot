@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_CONTEXT_DRIVER_VULKAN_WINDOWS_H
-#define RENDERING_CONTEXT_DRIVER_VULKAN_WINDOWS_H
+#pragma once
 
 #ifdef VULKAN_ENABLED
 
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 class RenderingContextDriverVulkanWindows : public RenderingContextDriverVulkan {
@@ -56,5 +54,3 @@ public:
 };
 
 #endif // VULKAN_ENABLED
-
-#endif // RENDERING_CONTEXT_DRIVER_VULKAN_WINDOWS_H

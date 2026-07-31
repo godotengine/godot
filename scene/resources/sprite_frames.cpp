@@ -30,6 +30,7 @@
 
 #include "sprite_frames.h"
 
+#include "core/object/class_db.h"
 #include "scene/scene_string_names.h"
 
 void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_texture, float p_duration, int p_at_pos) {
@@ -93,7 +94,7 @@ void SpriteFrames::clear(const StringName &p_anim) {
 
 void SpriteFrames::clear_all() {
 	animations.clear();
-	add_animation("default");
+	add_animation(SceneStringName(default_));
 }
 
 void SpriteFrames::add_animation(const StringName &p_anim) {
@@ -104,6 +105,12 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
 	return animations.has(p_anim);
+}
+
+void SpriteFrames::duplicate_animation(const StringName &p_from, const StringName &p_to) {
+	ERR_FAIL_COND_MSG(!animations.has(p_from), vformat("SpriteFrames doesn't have animation '%s'.", p_from));
+	ERR_FAIL_COND_MSG(animations.has(p_to), vformat("Animation '%s' already exists.", p_to));
+	animations[p_to] = animations[p_from];
 }
 
 void SpriteFrames::remove_animation(const StringName &p_anim) {
@@ -147,15 +154,25 @@ double SpriteFrames::get_animation_speed(const StringName &p_anim) const {
 	return E->value.speed;
 }
 
+#ifndef DISABLE_DEPRECATED
 void SpriteFrames::set_animation_loop(const StringName &p_anim, bool p_loop) {
-	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
-	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
-	E->value.loop = p_loop;
+	set_animation_loop_mode(p_anim, p_loop ? LOOP_LINEAR : LOOP_NONE);
 }
 
 bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
+	return get_animation_loop_mode(p_anim) == LOOP_LINEAR;
+}
+#endif
+
+void SpriteFrames::set_animation_loop_mode(const StringName &p_anim, LoopMode p_loop_mode) {
+	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
+	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
+	E->value.loop = p_loop_mode;
+}
+
+SpriteFrames::LoopMode SpriteFrames::get_animation_loop_mode(const StringName &p_anim) const {
 	HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
-	ERR_FAIL_COND_V_MSG(!E, false, "Animation '" + String(p_anim) + "' doesn't exist.");
+	ERR_FAIL_COND_V_MSG(!E, LoopMode::LOOP_NONE, "Animation '" + String(p_anim) + "' doesn't exist.");
 	return E->value.loop;
 }
 
@@ -198,8 +215,10 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 
 		Anim anim;
 		anim.speed = d["speed"];
-		anim.loop = d["loop"];
 		Array frames = d["frames"];
+		Variant loop = d["loop"];
+		anim.loop = static_cast<LoopMode>((int)loop);
+
 		for (int j = 0; j < frames.size(); j++) {
 #ifndef DISABLE_DEPRECATED
 			// For compatibility.
@@ -246,6 +265,7 @@ void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx,
 void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "anim"), &SpriteFrames::add_animation);
 	ClassDB::bind_method(D_METHOD("has_animation", "anim"), &SpriteFrames::has_animation);
+	ClassDB::bind_method(D_METHOD("duplicate_animation", "anim_from", "anim_to"), &SpriteFrames::duplicate_animation);
 	ClassDB::bind_method(D_METHOD("remove_animation", "anim"), &SpriteFrames::remove_animation);
 	ClassDB::bind_method(D_METHOD("rename_animation", "anim", "newname"), &SpriteFrames::rename_animation);
 
@@ -254,8 +274,13 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_speed", "anim", "fps"), &SpriteFrames::set_animation_speed);
 	ClassDB::bind_method(D_METHOD("get_animation_speed", "anim"), &SpriteFrames::get_animation_speed);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_animation_loop", "anim", "loop"), &SpriteFrames::set_animation_loop);
 	ClassDB::bind_method(D_METHOD("get_animation_loop", "anim"), &SpriteFrames::get_animation_loop);
+#endif
+
+	ClassDB::bind_method(D_METHOD("set_animation_loop_mode", "anim", "loop_mode"), &SpriteFrames::set_animation_loop_mode);
+	ClassDB::bind_method(D_METHOD("get_animation_loop_mode", "anim"), &SpriteFrames::get_animation_loop_mode);
 
 	ClassDB::bind_method(D_METHOD("add_frame", "anim", "texture", "duration", "at_position"), &SpriteFrames::add_frame, DEFVAL(1.0), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_frame", "anim", "idx", "texture", "duration"), &SpriteFrames::set_frame, DEFVAL(1.0));
@@ -274,6 +299,9 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations");
+	BIND_ENUM_CONSTANT(LoopMode::LOOP_NONE);
+	BIND_ENUM_CONSTANT(LoopMode::LOOP_LINEAR);
+	BIND_ENUM_CONSTANT(LoopMode::LOOP_PINGPONG);
 }
 
 SpriteFrames::SpriteFrames() {

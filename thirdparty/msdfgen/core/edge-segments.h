@@ -17,6 +17,10 @@ class EdgeSegment {
 public:
     EdgeColor color;
 
+    static EdgeSegment *create(Point2 p0, Point2 p1, EdgeColor edgeColor = WHITE);
+    static EdgeSegment *create(Point2 p0, Point2 p1, Point2 p2, EdgeColor edgeColor = WHITE);
+    static EdgeSegment *create(Point2 p0, Point2 p1, Point2 p2, Point2 p3, EdgeColor edgeColor = WHITE);
+
     EdgeSegment(EdgeColor edgeColor = WHITE) : color(edgeColor) { }
     virtual ~EdgeSegment() { }
     /// Creates a copy of the edge segment.
@@ -33,12 +37,12 @@ public:
     virtual Vector2 directionChange(double param) const = 0;
     /// Returns the minimum signed distance between origin and the edge.
     virtual SignedDistance signedDistance(Point2 origin, double &param) const = 0;
-    /// Converts a previously retrieved signed distance from origin to pseudo-distance.
-    virtual void distanceToPseudoDistance(SignedDistance &distance, Point2 origin, double param) const;
+    /// Converts a previously retrieved signed distance from origin to perpendicular distance.
+    virtual void distanceToPerpendicularDistance(SignedDistance &distance, Point2 origin, double param) const;
     /// Outputs a list of (at most three) intersections (their X coordinates) with an infinite horizontal scanline at y and returns how many there are.
     virtual int scanlineIntersections(double x[3], int dy[3], double y) const = 0;
     /// Adjusts the bounding box to fit the edge segment.
-    virtual void bound(double &l, double &b, double &r, double &t) const = 0;
+    virtual void bound(double &xMin, double &yMin, double &xMax, double &yMax) const = 0;
 
     /// Reverses the edge (swaps its start point and end point).
     virtual void reverse() = 0;
@@ -47,7 +51,7 @@ public:
     /// Moves the end point of the edge segment.
     virtual void moveEndPoint(Point2 to) = 0;
     /// Splits the edge segments into thirds which together represent the original edge.
-    virtual void splitInThirds(EdgeSegment *&part1, EdgeSegment *&part2, EdgeSegment *&part3) const = 0;
+    virtual void splitInThirds(EdgeSegment *&part0, EdgeSegment *&part1, EdgeSegment *&part2) const = 0;
 
 };
 
@@ -71,12 +75,12 @@ public:
     double length() const;
     SignedDistance signedDistance(Point2 origin, double &param) const;
     int scanlineIntersections(double x[3], int dy[3], double y) const;
-    void bound(double &l, double &b, double &r, double &t) const;
+    void bound(double &xMin, double &yMin, double &xMax, double &yMax) const;
 
     void reverse();
     void moveStartPoint(Point2 to);
     void moveEndPoint(Point2 to);
-    void splitInThirds(EdgeSegment *&part1, EdgeSegment *&part2, EdgeSegment *&part3) const;
+    void splitInThirds(EdgeSegment *&part0, EdgeSegment *&part1, EdgeSegment *&part2) const;
 
 };
 
@@ -100,12 +104,12 @@ public:
     double length() const;
     SignedDistance signedDistance(Point2 origin, double &param) const;
     int scanlineIntersections(double x[3], int dy[3], double y) const;
-    void bound(double &l, double &b, double &r, double &t) const;
+    void bound(double &xMin, double &yMin, double &xMax, double &yMax) const;
 
     void reverse();
     void moveStartPoint(Point2 to);
     void moveEndPoint(Point2 to);
-    void splitInThirds(EdgeSegment *&part1, EdgeSegment *&part2, EdgeSegment *&part3) const;
+    void splitInThirds(EdgeSegment *&part0, EdgeSegment *&part1, EdgeSegment *&part2) const;
 
     EdgeSegment *convertToCubic() const;
 
@@ -130,14 +134,12 @@ public:
     Vector2 directionChange(double param) const;
     SignedDistance signedDistance(Point2 origin, double &param) const;
     int scanlineIntersections(double x[3], int dy[3], double y) const;
-    void bound(double &l, double &b, double &r, double &t) const;
+    void bound(double &xMin, double &yMin, double &xMax, double &yMax) const;
 
     void reverse();
     void moveStartPoint(Point2 to);
     void moveEndPoint(Point2 to);
-    void splitInThirds(EdgeSegment *&part1, EdgeSegment *&part2, EdgeSegment *&part3) const;
-
-    void deconverge(int param, double amount);
+    void splitInThirds(EdgeSegment *&part0, EdgeSegment *&part1, EdgeSegment *&part2) const;
 
 };
 

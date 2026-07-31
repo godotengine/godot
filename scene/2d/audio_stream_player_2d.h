@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_2D_H
-#define AUDIO_STREAM_PLAYER_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_server_enums.h"
 
 struct AudioFrame;
 class AudioStream;
@@ -49,12 +48,6 @@ private:
 
 	};
 
-	struct Output {
-		AudioFrame vol;
-		int bus_index = 0;
-		Viewport *viewport = nullptr; //pointer only used for reference to previous mix
-	};
-
 	AudioStreamPlayerInternal *internal = nullptr;
 
 	SafeNumeric<float> setplay{ -1.0 };
@@ -65,7 +58,7 @@ private:
 	uint64_t last_mix_count = -1;
 	bool force_update_panning = false;
 
-	AudioServer::PlaybackType playback_type = AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT;
+	AuSE::PlaybackType playback_type = AuSE::PlaybackType::PLAYBACK_TYPE_DEFAULT;
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -75,7 +68,7 @@ private:
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
 
-	uint32_t area_mask = 1;
+	uint32_t area_mask = 0;
 
 	float max_distance = 2000.0;
 	float attenuation = 1.0;
@@ -103,6 +96,9 @@ public:
 
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
+
+	void set_volume_linear(float p_volume);
+	float get_volume_linear() const;
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
@@ -140,11 +136,9 @@ public:
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
-	AudioServer::PlaybackType get_playback_type() const;
-	void set_playback_type(AudioServer::PlaybackType p_playback_type);
+	AuSE::PlaybackType get_playback_type() const;
+	void set_playback_type(AuSE::PlaybackType p_playback_type);
 
 	AudioStreamPlayer2D();
 	~AudioStreamPlayer2D();
 };
-
-#endif // AUDIO_STREAM_PLAYER_2D_H

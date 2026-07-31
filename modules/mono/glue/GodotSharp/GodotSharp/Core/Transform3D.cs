@@ -468,8 +468,8 @@ namespace Godot
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    real_t e = transform.Basis[i][j] * min[j];
-                    real_t f = transform.Basis[i][j] * max[j];
+                    real_t e = transform.Basis[j][i] * min[j];
+                    real_t f = transform.Basis[j][i] * max[j];
                     if (e < f)
                     {
                         tmin[i] += e;

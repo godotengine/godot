@@ -30,6 +30,10 @@
 
 #include "editor_http_server.h"
 
+#include "core/io/file_access.h"
+#include "core/os/os.h"
+#include "editor/file_system/editor_paths.h"
+
 void EditorHTTPServer::_server_thread_poll(void *data) {
 	EditorHTTPServer *web_server = static_cast<EditorHTTPServer *>(data);
 	while (!web_server->server_quit.is_set()) {
@@ -86,7 +90,7 @@ void EditorHTTPServer::_send_response() {
 
 	const String req_file = path.get_file();
 	const String req_ext = path.get_extension();
-	const String cache_path = EditorPaths::get_singleton()->get_cache_dir().path_join("web");
+	const String cache_path = EditorPaths::get_singleton()->get_temp_dir().path_join("web");
 	const String filepath = cache_path.path_join(req_file);
 
 	if (!mimes.has(req_ext) || !FileAccess::exists(filepath)) {

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRAPH_FRAME_H
-#define GRAPH_FRAME_H
+#pragma once
 
 #include "scene/gui/graph_element.h"
 
@@ -37,12 +36,6 @@ class HBoxContainer;
 
 class GraphFrame : public GraphElement {
 	GDCLASS(GraphFrame, GraphElement);
-
-	struct _MinSizeCache {
-		int min_size = 0;
-		bool will_stretch = false;
-		int final_size = 0;
-	};
 
 	struct ThemeCache {
 		Ref<StyleBox> panel;
@@ -66,6 +59,8 @@ private:
 
 	bool tint_color_enabled = false;
 	Color tint_color = Color(0.3, 0.3, 0.3, 0.75);
+
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -102,8 +97,7 @@ public:
 
 	virtual bool has_point(const Point2 &p_point) const override;
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
 
 	GraphFrame();
 };
-
-#endif // GRAPH_FRAME_H

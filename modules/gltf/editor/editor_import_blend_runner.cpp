@@ -30,12 +30,13 @@
 
 #include "editor_import_blend_runner.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "core/io/http_client.h"
-#include "editor/editor_file_system.h"
+#include "core/io/xml_parser.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/settings/editor_settings.h"
 
 static constexpr char PYTHON_SCRIPT_RPC[] = R"(
 import bpy, sys, threading
@@ -94,11 +95,10 @@ bpy.ops.export_scene.gltf(**opts['gltf_options'])
 
 String dict_to_python(const Dictionary &p_dict) {
 	String entries;
-	Array dict_keys = p_dict.keys();
-	for (int i = 0; i < dict_keys.size(); i++) {
-		const String key = dict_keys[i];
+	for (const KeyValue<Variant, Variant> &kv : p_dict) {
+		const String &key = kv.key;
 		String value;
-		Variant raw_value = p_dict[key];
+		const Variant &raw_value = kv.value;
 
 		switch (raw_value.get_type()) {
 			case Variant::Type::BOOL: {
@@ -127,11 +127,10 @@ String dict_to_python(const Dictionary &p_dict) {
 
 String dict_to_xmlrpc(const Dictionary &p_dict) {
 	String members;
-	Array dict_keys = p_dict.keys();
-	for (int i = 0; i < dict_keys.size(); i++) {
-		const String key = dict_keys[i];
+	for (const KeyValue<Variant, Variant> &kv : p_dict) {
+		const String &key = kv.key;
 		String value;
-		Variant raw_value = p_dict[key];
+		const Variant &raw_value = kv.value;
 
 		switch (raw_value.get_type()) {
 			case Variant::Type::BOOL: {
@@ -163,20 +162,28 @@ Error EditorImportBlendRunner::start_blender(const String &p_python_script, bool
 
 	List<String> args;
 	args.push_back("--background");
+	args.push_back("--python-exit-code");
+	args.push_back("1");
 	args.push_back("--python-expr");
 	args.push_back(p_python_script);
 
 	Error err;
+	String str;
 	if (p_blocking) {
 		int exitcode = 0;
-		err = OS::get_singleton()->execute(blender_path, args, nullptr, &exitcode);
+		err = OS::get_singleton()->execute(blender_path, args, &str, &exitcode, true);
 		if (exitcode != 0) {
+			print_error(vformat("Blender import failed: %s.", str));
 			return FAILED;
 		}
 	} else {
 		err = OS::get_singleton()->create_process(blender_path, args, &blender_pid);
 	}
 	return err;
+}
+
+bool EditorImportBlendRunner::is_running() {
+	return blender_pid != 0 && OS::get_singleton()->is_process_running(blender_pid);
 }
 
 Error EditorImportBlendRunner::do_import(const Dictionary &p_options) {
@@ -210,6 +217,7 @@ HTTPClient::Status EditorImportBlendRunner::connect_blender_rpc(const Ref<HTTPCl
 	bool done = false;
 	while (!done) {
 		OS::get_singleton()->delay_usec(wait_usecs);
+		attempts++;
 		status = p_client->get_status();
 		switch (status) {
 			case HTTPClient::STATUS_RESOLVING:
@@ -392,5 +400,3 @@ EditorImportBlendRunner::EditorImportBlendRunner() {
 
 	EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(this, &EditorImportBlendRunner::_resources_reimported));
 }
-
-#endif // TOOLS_ENABLED

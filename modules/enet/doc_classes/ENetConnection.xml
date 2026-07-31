@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ENetConnection" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="ENetConnection" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		A wrapper class for an [url=http://enet.bespin.org/group__host.html]ENetHost[/url].
 	</brief_description>
@@ -129,7 +129,7 @@
 			<return type="float" />
 			<param index="0" name="statistic" type="int" enum="ENetConnection.HostStatistic" />
 			<description>
-				Returns and resets host statistics. See [enum HostStatistic] for more info.
+				Returns and resets host statistics.
 			</description>
 		</method>
 		<method name="refuse_new_connections">

@@ -37,14 +37,6 @@ real_t AABB::get_volume() const {
 	return size.x * size.y * size.z;
 }
 
-bool AABB::operator==(const AABB &p_rval) const {
-	return ((position == p_rval.position) && (size == p_rval.size));
-}
-
-bool AABB::operator!=(const AABB &p_rval) const {
-	return ((position != p_rval.position) || (size != p_rval.size));
-}
-
 void AABB::merge_with(const AABB &p_aabb) {
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
@@ -74,6 +66,10 @@ void AABB::merge_with(const AABB &p_aabb) {
 
 bool AABB::is_equal_approx(const AABB &p_aabb) const {
 	return position.is_equal_approx(p_aabb.position) && size.is_equal_approx(p_aabb.size);
+}
+
+bool AABB::is_same(const AABB &p_aabb) const {
+	return position.is_same(p_aabb.position) && size.is_same(p_aabb.size);
 }
 
 bool AABB::is_finite() const {
@@ -175,7 +171,7 @@ bool AABB::find_intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, bool
 
 		// Prevent float error by making sure the point is exactly
 		// on the AABB border on the relevant axis.
-		r_intersection_point->coord[axis] = (p_dir[axis] >= 0) ? position.coord[axis] : end.coord[axis];
+		(*r_intersection_point)[axis] = (p_dir[axis] >= 0) ? position[axis] : end[axis];
 	}
 	if (r_normal) {
 		*r_normal = Vector3();
@@ -445,5 +441,5 @@ Variant AABB::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) c
 }
 
 AABB::operator String() const {
-	return "[P: " + position.operator String() + ", S: " + size + "]";
+	return "[P: " + String(position) + ", S: " + String(size) + "]";
 }

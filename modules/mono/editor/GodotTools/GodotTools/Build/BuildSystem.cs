@@ -41,7 +41,7 @@ namespace GodotTools.Build
             startInfo.UseShellExecute = false;
             startInfo.CreateNoWindow = true;
             startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
-                = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
+                = ((string)EditorInterface.Singleton.GetEditorLanguage()).Replace('_', '-');
 
             if (OperatingSystem.IsWindows())
             {
@@ -111,7 +111,7 @@ namespace GodotTools.Build
             startInfo.RedirectStandardError = true;
             startInfo.UseShellExecute = false;
             startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
-                = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
+                = ((string)EditorInterface.Singleton.GetEditorLanguage()).Replace('_', '-');
 
             if (OperatingSystem.IsWindows())
             {
@@ -154,7 +154,17 @@ namespace GodotTools.Build
             arguments.Add(buildInfo.OnlyClean ? "clean" : "build");
 
             // C# Project
-            arguments.Add(buildInfo.Project);
+            string projectPath = buildInfo.Project;
+            if (OperatingSystem.IsWindows())
+            {
+                // On Windows, when using a network share path, the path may start with "//"
+                // which MSBuild will treat like a switch. Convert to "\\" to make it an absolute path.
+                if (projectPath.StartsWith("//"))
+                {
+                    projectPath = "\\\\" + projectPath.Substring(2);
+                }
+            }
+            arguments.Add(projectPath);
 
             // `dotnet clean` doesn't recognize these options
             if (!buildInfo.OnlyClean)
@@ -195,7 +205,17 @@ namespace GodotTools.Build
             arguments.Add("publish"); // `dotnet publish` command
 
             // C# Project
-            arguments.Add(buildInfo.Project);
+            string projectPath = buildInfo.Project;
+            if (OperatingSystem.IsWindows())
+            {
+                // On Windows, when using a network share path, the path may start with "//"
+                // which MSBuild will treat like a switch. Convert to "\\" to make it an absolute path.
+                if (projectPath.StartsWith("//"))
+                {
+                    projectPath = "\\\\" + projectPath.Substring(2);
+                }
+            }
+            arguments.Add(projectPath);
 
             // Restore
             // `dotnet publish` restores by default, unless requested not to

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "roughness_limiter.h"
+
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
@@ -60,7 +61,7 @@ void RoughnessLimiter::roughness_limit(RID p_source_normal, RID p_roughness, con
 	push_constant.screen_size[1] = p_size.y;
 	push_constant.curve = p_curve;
 
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	RID rl_shader = shader.version_get_shader(shader_version, 0);
 
 	RD::Uniform u_source_normal(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_normal }));

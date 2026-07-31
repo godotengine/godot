@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_TEST_RUNNER_H
-#define GDSCRIPT_TEST_RUNNER_H
-
-#include "../gdscript.h"
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
+#include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"
 
@@ -136,5 +134,3 @@ public:
 };
 
 } // namespace GDScriptTests
-
-#endif // GDSCRIPT_TEST_RUNNER_H

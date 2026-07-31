@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptCreateDialog" inherits="ConfirmationDialog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ScriptCreateDialog" inherits="ConfirmationDialog" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's popup dialog for creating new [Script] files.
 	</brief_description>
@@ -8,18 +8,18 @@
 		[codeblocks]
 		[gdscript]
 		func _ready():
-		    var dialog = ScriptCreateDialog.new();
-		    dialog.config("Node", "res://new_node.gd") # For in-engine types.
-		    dialog.config("\"res://base_node.gd\"", "res://derived_node.gd") # For script types.
-		    dialog.popup_centered()
+			var dialog = ScriptCreateDialog.new();
+			dialog.config("Node", "res://new_node.gd") # For in-engine types.
+			dialog.config("\"res://base_node.gd\"", "res://derived_node.gd") # For script types.
+			dialog.popup_centered()
 		[/gdscript]
 		[csharp]
 		public override void _Ready()
 		{
-		    var dialog = new ScriptCreateDialog();
-		    dialog.Config("Node", "res://NewNode.cs"); // For in-engine types.
-		    dialog.Config("\"res://BaseNode.cs\"", "res://DerivedNode.cs"); // For script types.
-		    dialog.PopupCentered();
+			var dialog = new ScriptCreateDialog();
+			dialog.Config("Node", "res://NewNode.cs"); // For in-engine types.
+			dialog.Config("\"res://BaseNode.cs\"", "res://DerivedNode.cs"); // For script types.
+			dialog.PopupCentered();
 		}
 		[/csharp]
 		[/codeblocks]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-static float TO_RADIAN(SwFixed angle)
+static float TO_RADIAN(int64_t angle)
 {
     return (float(angle) / 65536.0f) * (MATH_PI / 180.0f);
 }
@@ -38,28 +38,28 @@ static float TO_RADIAN(SwFixed angle)
 /* External Class Implementation                                        */
 /************************************************************************/
 
-SwFixed mathMean(SwFixed angle1, SwFixed angle2)
+int64_t mathMean(int64_t angle1, int64_t angle2)
 {
     return angle1 + mathDiff(angle1, angle2) / 2;
 }
 
 
-bool mathSmallCubic(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, SwFixed& angleOut)
+int mathCubicAngle(const SwPoint* base, int64_t& angleIn, int64_t& angleMid, int64_t& angleOut)
 {
     auto d1 = base[2] - base[3];
     auto d2 = base[1] - base[2];
     auto d3 = base[0] - base[1];
 
-    if (d1.small()) {
-        if (d2.small()) {
-            if (d3.small()) {
+    if (d1.tiny()) {
+        if (d2.tiny()) {
+            if (d3.tiny()) {
                 angleIn = angleMid = angleOut = 0;
-                return true;
+                return -1;  //ignoreable
             } else {
                 angleIn = angleMid = angleOut = mathAtan(d3);
             }
         } else {
-            if (d3.small()) {
+            if (d3.tiny()) {
                 angleIn = angleMid = angleOut = mathAtan(d2);
             } else {
                 angleIn = angleMid = mathAtan(d2);
@@ -67,8 +67,8 @@ bool mathSmallCubic(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, Sw
             }
         }
     } else {
-        if (d2.small()) {
-            if (d3.small()) {
+        if (d2.tiny()) {
+            if (d3.tiny()) {
                 angleIn = angleMid = angleOut = mathAtan(d1);
             } else {
                 angleIn = mathAtan(d1);
@@ -76,7 +76,7 @@ bool mathSmallCubic(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, Sw
                 angleMid = mathMean(angleIn, angleOut);
             }
         } else {
-            if (d3.small()) {
+            if (d3.tiny()) {
                 angleIn = mathAtan(d1);
                 angleMid = angleOut = mathAtan(d2);
             } else {
@@ -90,8 +90,8 @@ bool mathSmallCubic(const SwPoint* base, SwFixed& angleIn, SwFixed& angleMid, Sw
     auto theta1 = abs(mathDiff(angleIn, angleMid));
     auto theta2 = abs(mathDiff(angleMid, angleOut));
 
-    if ((theta1 < (SW_ANGLE_PI / 8)) && (theta2 < (SW_ANGLE_PI / 8))) return true;
-    return false;
+    if ((theta1 < (SW_ANGLE_PI / 8)) && (theta2 < (SW_ANGLE_PI / 8))) return 0; //small size
+    return 1;
 }
 
 
@@ -154,7 +154,7 @@ int64_t mathMulDiv(int64_t a, int64_t b, int64_t c)
 }
 
 
-void mathRotate(SwPoint& pt, SwFixed angle)
+void mathRotate(SwPoint& pt, int64_t angle)
 {
     if (angle == 0 || pt.zero()) return;
 
@@ -164,39 +164,39 @@ void mathRotate(SwPoint& pt, SwFixed angle)
     auto cosv = cosf(radian);
     auto sinv = sinf(radian);
 
-    pt.x = SwCoord(nearbyint((v.x * cosv - v.y * sinv) * 64.0f));
-    pt.y = SwCoord(nearbyint((v.x * sinv + v.y * cosv) * 64.0f));
+    pt.x = int32_t(nearbyint((v.x * cosv - v.y * sinv) * 64.0f));
+    pt.y = int32_t(nearbyint((v.x * sinv + v.y * cosv) * 64.0f));
 }
 
 
-SwFixed mathTan(SwFixed angle)
+int64_t mathTan(int64_t angle)
 {
     if (angle == 0) return 0;
-    return SwFixed(tanf(TO_RADIAN(angle)) * 65536.0f);
+    return int64_t(tanf(TO_RADIAN(angle)) * 65536.0f);
 }
 
 
-SwFixed mathAtan(const SwPoint& pt)
+int64_t mathAtan(const SwPoint& pt)
 {
     if (pt.zero()) return 0;
-    return SwFixed(mathAtan2(TO_FLOAT(pt.y), TO_FLOAT(pt.x)) * (180.0f / MATH_PI) * 65536.0f);
+    return int64_t(tvg::atan2(TO_FLOAT(pt.y), TO_FLOAT(pt.x)) * (180.0f / MATH_PI) * 65536.0f);
 }
 
 
-SwFixed mathSin(SwFixed angle)
+int64_t mathSin(int64_t angle)
 {
     if (angle == 0) return 0;
     return mathCos(SW_ANGLE_PI2 - angle);
 }
 
 
-SwFixed mathCos(SwFixed angle)
+int64_t mathCos(int64_t angle)
 {
-    return SwFixed(cosf(TO_RADIAN(angle)) * 65536.0f);
+    return int64_t(cosf(TO_RADIAN(angle)) * 65536.0f);
 }
 
 
-SwFixed mathLength(const SwPoint& pt)
+int64_t mathLength(const SwPoint& pt)
 {
     if (pt.zero()) return 0;
 
@@ -205,20 +205,20 @@ SwFixed mathLength(const SwPoint& pt)
     if (pt.y == 0) return abs(pt.x);
 
     auto v = pt.toPoint();
-    //return static_cast<SwFixed>(sqrtf(v.x * v.x + v.y * v.y) * 65536.0f);
+    //return static_cast<int64_t>(sqrtf(v.x * v.x + v.y * v.y) * 65536.0f);
 
     /* approximate sqrt(x*x + y*y) using alpha max plus beta min algorithm.
        With alpha = 1, beta = 3/8, giving results with the largest error less
        than 7% compared to the exact value. */
     if (v.x < 0) v.x = -v.x;
     if (v.y < 0) v.y = -v.y;
-    return static_cast<SwFixed>((v.x > v.y) ? (v.x + v.y * 0.375f) : (v.y + v.x * 0.375f));
+    return static_cast<int64_t>((v.x > v.y) ? (v.x + v.y * 0.375f) : (v.y + v.x * 0.375f));
 }
 
 
 void mathSplitCubic(SwPoint* base)
 {
-    SwCoord a, b, c, d;
+    int32_t a, b, c, d;
 
     base[6].x = base[3].x;
     c = base[1].x;
@@ -242,7 +242,14 @@ void mathSplitCubic(SwPoint* base)
 }
 
 
-SwFixed mathDiff(SwFixed angle1, SwFixed angle2)
+void mathSplitLine(SwPoint* base)
+{
+    base[2] = base[1];
+    base[1] = {(base[0].x >> 1) + (base[1].x >> 1), (base[0].y >> 1) + (base[1].y >> 1)};
+}
+
+
+int64_t mathDiff(int64_t angle1, int64_t angle2)
 {
     auto delta = angle2 - angle1;
 
@@ -254,41 +261,19 @@ SwFixed mathDiff(SwFixed angle1, SwFixed angle2)
 }
 
 
-SwPoint mathTransform(const Point* to, const Matrix* transform)
+SwPoint mathTransform(const Point* to, const Matrix& transform)
 {
-    if (!transform) return {TO_SWCOORD(to->x), TO_SWCOORD(to->y)};
-
-    auto tx = to->x * transform->e11 + to->y * transform->e12 + transform->e13;
-    auto ty = to->x * transform->e21 + to->y * transform->e22 + transform->e23;
+    auto tx = to->x * transform.e11 + to->y * transform.e12 + transform.e13;
+    auto ty = to->x * transform.e21 + to->y * transform.e22 + transform.e23;
 
     return {TO_SWCOORD(tx), TO_SWCOORD(ty)};
 }
 
 
-bool mathClipBBox(const SwBBox& clipper, SwBBox& clipee)
+bool mathUpdateOutlineBBox(const SwOutline* outline, const RenderRegion& clipBox, RenderRegion& renderBox, bool fastTrack)
 {
-    clipee.max.x = (clipee.max.x < clipper.max.x) ? clipee.max.x : clipper.max.x;
-    clipee.max.y = (clipee.max.y < clipper.max.y) ? clipee.max.y : clipper.max.y;
-    clipee.min.x = (clipee.min.x > clipper.min.x) ? clipee.min.x : clipper.min.x;
-    clipee.min.y = (clipee.min.y > clipper.min.y) ? clipee.min.y : clipper.min.y;
-
-    //Check valid region
-    if (clipee.max.x - clipee.min.x < 1 && clipee.max.y - clipee.min.y < 1) return false;
-
-    //Check boundary
-    if (clipee.min.x >= clipper.max.x || clipee.min.y >= clipper.max.y ||
-        clipee.max.x <= clipper.min.x || clipee.max.y <= clipper.min.y) return false;
-
-    return true;
-}
-
-
-bool mathUpdateOutlineBBox(const SwOutline* outline, const SwBBox& clipRegion, SwBBox& renderRegion, bool fastTrack)
-{
-    if (!outline) return false;
-
-    if (outline->pts.empty() || outline->cntrs.empty()) {
-        renderRegion.reset();
+    if (!outline || outline->pts.empty() || outline->cntrs.empty()) {
+        renderBox.reset();
         return false;
     }
 
@@ -305,19 +290,15 @@ bool mathUpdateOutlineBBox(const SwOutline* outline, const SwBBox& clipRegion, S
         if (yMin > pt->y) yMin = pt->y;
         if (yMax < pt->y) yMax = pt->y;
     }
-    //Since no antialiasing is applied in the Fast Track case,
-    //the rasterization region has to be rearranged.
-    //https://github.com/Samsung/thorvg/issues/916
+
     if (fastTrack) {
-        renderRegion.min.x = static_cast<SwCoord>(nearbyint(xMin / 64.0f));
-        renderRegion.max.x = static_cast<SwCoord>(nearbyint(xMax / 64.0f));
-        renderRegion.min.y = static_cast<SwCoord>(nearbyint(yMin / 64.0f));
-        renderRegion.max.y = static_cast<SwCoord>(nearbyint(yMax / 64.0f));
+        renderBox.min = {int32_t(round(xMin / 64.0f)), int32_t(round(yMin / 64.0f))};
+        renderBox.max = {int32_t(round(xMax / 64.0f)), int32_t(round(yMax / 64.0f))};
     } else {
-        renderRegion.min.x = xMin >> 6;
-        renderRegion.max.x = (xMax + 63) >> 6;
-        renderRegion.min.y = yMin >> 6;
-        renderRegion.max.y = (yMax + 63) >> 6;
+        renderBox.min = {xMin >> 6, yMin >> 6};
+        renderBox.max = {(xMax + 63) >> 6, (yMax + 63) >> 6};
     }
-    return mathClipBBox(clipRegion, renderRegion);
+
+    renderBox.intersect(clipBox);
+    return renderBox.valid();
 }

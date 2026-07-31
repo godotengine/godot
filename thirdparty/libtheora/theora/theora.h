@@ -6,17 +6,16 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ * by the Xiph.Org Foundation https://www.xiph.org/                 *
  *                                                                  *
  ********************************************************************
 
   function:
-  last mod: $Id: theora.h,v 1.17 2003/12/06 18:06:19 arc Exp $
 
  ********************************************************************/
 
-#ifndef _O_THEORA_H_
-#define _O_THEORA_H_
+#ifndef OGG_THEORA_HEADER
+#define OGG_THEORA_HEADER
 
 #ifdef __cplusplus
 extern "C"
@@ -41,16 +40,16 @@ extern "C"
  * declared in theoradec.h and theoraenc.h.
  *
  * libtheora is the reference implementation for
- * <a href="http://www.theora.org/">Theora</a>, a free video codec.
+ * <a href="https://www.theora.org/">Theora</a>, a free video codec.
  * Theora is derived from On2's VP3 codec with improved integration with
- * Ogg multimedia formats by <a href="http://www.xiph.org/">Xiph.Org</a>.
+ * Ogg multimedia formats by <a href="https://www.xiph.org/">Xiph.Org</a>.
  *
  * \section overview Overview
  *
  * This library will both decode and encode theora packets to/from raw YUV
  * frames.  In either case, the packets will most likely either come from or
  * need to be embedded in an Ogg stream.  Use
- * <a href="http://xiph.org/ogg/">libogg</a> or
+ * <a href="https://www.xiph.org/ogg/">libogg</a> or
  * <a href="http://www.annodex.net/software/liboggz/index.html">liboggz</a>
  * to extract/package these packets.
  *
@@ -260,7 +259,7 @@ typedef struct{
  * the 'comment' header packet.
  *
  * Meta data is stored as a series of (tag, value) pairs, in
- * length-encoded string vectors. The first occurence of the
+ * length-encoded string vectors. The first occurrence of the
  * '=' character delimits the tag and value. A particular tag
  * may occur more than once. The character set encoding for
  * the strings is always UTF-8, but the tag names are limited
@@ -330,7 +329,7 @@ typedef struct theora_comment{
  * Call this after a seek, to update the internal granulepos
  * in the decoder, to insure that subsequent frames are marked
  * properly. If you track timestamps yourself and do not use
- * the granule postion returned by the decoder, then you do
+ * the granule position returned by the decoder, then you do
  * not need to use this control.
  */
 #define TH_DECCTL_SET_GRANPOS (5)
@@ -755,7 +754,7 @@ extern char *theora_comment_query(theora_comment *tc, char *tag, int count);
  *  \param tag The tag to look up
  *  \returns The number on instances of a particular tag.
  *
- *  Call this first when querying for a specific tag and then interate
+ *  Call this first when querying for a specific tag and then iterate
  *  over the number of instances with separate calls to
  *  theora_comment_query() to retrieve all instances in order.
  **/
@@ -783,4 +782,4 @@ extern int theora_control(theora_state *th,int req,void *buf,size_t buf_sz);
 }
 #endif /* __cplusplus */
 
-#endif /* _O_THEORA_H_ */
+#endif /* OGG_THEORA_HEADER */

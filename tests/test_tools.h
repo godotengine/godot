@@ -28,8 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_TOOLS_H
-#define TEST_TOOLS_H
+#pragma once
+
+#include "core/error/error_macros.h"
 
 struct ErrorDetector {
 	ErrorDetector() {
@@ -55,5 +56,3 @@ struct ErrorDetector {
 	ErrorHandlerList eh;
 	bool has_error = false;
 };
-
-#endif // TEST_TOOLS_H

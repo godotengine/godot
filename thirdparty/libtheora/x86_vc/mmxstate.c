@@ -6,12 +6,12 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
+ * by the Xiph.Org Foundation and contributors                      *
+ * https://www.xiph.org/                                            *
  *                                                                  *
  ********************************************************************
 
   function:
-    last mod: $Id$
 
  ********************************************************************/
 
@@ -158,7 +158,7 @@ void oc_state_loop_filter_frag_rows_mmx(const oc_theora_state *_state,
           OC_LOOP_FILTER_H_MMX(ref+8,ystride,_bv);
         }
         if(fragi+nhfrags<fragi_bot&&!frags[fragi+nhfrags].coded){
-          OC_LOOP_FILTER_V_MMX(ref+(ystride<<3),ystride,_bv);
+          OC_LOOP_FILTER_V_MMX(ref+(ystride*8),ystride,_bv);
         }
 #undef PIX
 #undef YSTRIDE3

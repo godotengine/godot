@@ -158,13 +158,14 @@ hb_segment_properties_overlay (hb_segment_properties_t *p,
 bool
 hb_buffer_t::enlarge (unsigned int size)
 {
-  if (unlikely (!successful))
-    return false;
   if (unlikely (size > max_len))
   {
     successful = false;
     return false;
   }
+
+  if (unlikely (!successful))
+    return false;
 
   unsigned int new_allocated = allocated;
   hb_glyph_position_t *new_pos = nullptr;
@@ -226,6 +227,13 @@ hb_buffer_t::shift_forward (unsigned int count)
   assert (have_output);
   if (unlikely (!ensure (len + count))) return false;
 
+  max_ops -= len - idx;
+  if (unlikely (max_ops < 0))
+  {
+    successful = false;
+    return false;
+  }
+
   memmove (info + idx + count, info + idx, (len - idx) * sizeof (info[0]));
   if (idx + count > len)
   {
@@ -271,6 +279,7 @@ hb_buffer_t::similar (const hb_buffer_t &src)
   replacement = src.replacement;
   invisible = src.invisible;
   not_found = src.not_found;
+  not_found_variation_selector = src.not_found_variation_selector;
 }
 
 void
@@ -283,6 +292,7 @@ hb_buffer_t::reset ()
   replacement = HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT;
   invisible = 0;
   not_found = 0;
+  not_found_variation_selector = HB_CODEPOINT_INVALID;
 
   clear ();
 }
@@ -295,7 +305,6 @@ hb_buffer_t::clear ()
   props = default_props;
 
   successful = true;
-  shaping_failed = false;
   have_output = false;
   have_positions = false;
 
@@ -318,7 +327,6 @@ hb_buffer_t::enter ()
 {
   deallocate_var_all ();
   serial = 0;
-  shaping_failed = false;
   scratch_flags = HB_BUFFER_SCRATCH_FLAG_DEFAULT;
   unsigned mul;
   if (likely (!hb_unsigned_mul_overflows (len, HB_BUFFER_MAX_LEN_FACTOR, &mul)))
@@ -337,7 +345,6 @@ hb_buffer_t::leave ()
   max_ops = HB_BUFFER_MAX_OPS_DEFAULT;
   deallocate_var_all ();
   serial = 0;
-  // Intentionally not reseting shaping_failed, such that it can be inspected.
 }
 
 
@@ -365,6 +372,18 @@ hb_buffer_t::add_info (const hb_glyph_info_t &glyph_info)
   if (unlikely (!ensure (len + 1))) return;
 
   info[len] = glyph_info;
+
+  len++;
+}
+void
+hb_buffer_t::add_info_and_pos (const hb_glyph_info_t &glyph_info,
+			       const hb_glyph_position_t &glyph_pos)
+{
+  if (unlikely (!ensure (len + 1))) return;
+
+  info[len] = glyph_info;
+  assert (have_positions);
+  pos[len] = glyph_pos;
 
   len++;
 }
@@ -506,7 +525,19 @@ hb_buffer_t::set_masks (hb_mask_t    value,
   hb_mask_t not_mask = ~mask;
   value &= mask;
 
+  max_ops -= len;
+  if (unlikely (max_ops < 0))
+    successful = false;
+
   unsigned int count = len;
+
+  if (cluster_start == 0 && cluster_end == (unsigned int) -1)
+  {
+    for (unsigned int i = 0; i < count; i++)
+      info[i].mask = (info[i].mask & not_mask) | value;
+    return;
+  }
+
   for (unsigned int i = 0; i < count; i++)
     if (cluster_start <= info[i].cluster && info[i].cluster < cluster_end)
       info[i].mask = (info[i].mask & not_mask) | value;
@@ -516,11 +547,9 @@ void
 hb_buffer_t::merge_clusters_impl (unsigned int start,
 				  unsigned int end)
 {
-  if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
-  {
-    unsafe_to_break (start, end);
-    return;
-  }
+  max_ops -= end - start;
+  if (unlikely (max_ops < 0))
+    successful = false;
 
   unsigned int cluster = info[start].cluster;
 
@@ -546,14 +575,12 @@ hb_buffer_t::merge_clusters_impl (unsigned int start,
     set_cluster (info[i], cluster);
 }
 void
-hb_buffer_t::merge_out_clusters (unsigned int start,
-				 unsigned int end)
+hb_buffer_t::merge_out_clusters_impl (unsigned int start,
+				      unsigned int end)
 {
-  if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
-    return;
-
-  if (unlikely (end - start < 2))
-    return;
+  max_ops -= end - start;
+  if (unlikely (max_ops < 0))
+    successful = false;
 
   unsigned int cluster = out_info[start].cluster;
 
@@ -705,13 +732,13 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
   HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT,
   0, /* invisible */
   0, /* not_found */
+  HB_CODEPOINT_INVALID, /* not_found_variation_selector */
 
 
   HB_BUFFER_CONTENT_TYPE_INVALID,
   HB_SEGMENT_PROPERTIES_DEFAULT,
 
   false, /* successful */
-  true, /* shaping_failed */
   false, /* have_output */
   true  /* have_positions */
 
@@ -857,7 +884,7 @@ hb_buffer_destroy (hb_buffer_t *buffer)
  * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
- * Attaches a user-data key/data pair to the specified buffer. 
+ * Attaches a user-data key/data pair to the specified buffer.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -933,6 +960,9 @@ void
 hb_buffer_set_content_type (hb_buffer_t              *buffer,
 			    hb_buffer_content_type_t  content_type)
 {
+  if (unlikely (hb_object_is_immutable (buffer)))
+    return;
+
   buffer->content_type = content_type;
 }
 
@@ -1206,7 +1236,7 @@ hb_buffer_get_flags (const hb_buffer_t *buffer)
  * @cluster_level: The cluster level to set on the buffer
  *
  * Sets the cluster level of a buffer. The #hb_buffer_cluster_level_t
- * dictates one aspect of how HarfBuzz will treat non-base characters 
+ * dictates one aspect of how HarfBuzz will treat non-base characters
  * during shaping.
  *
  * Since: 0.9.42
@@ -1226,7 +1256,7 @@ hb_buffer_set_cluster_level (hb_buffer_t               *buffer,
  * @buffer: An #hb_buffer_t
  *
  * Fetches the cluster level of a buffer. The #hb_buffer_cluster_level_t
- * dictates one aspect of how HarfBuzz will treat non-base characters 
+ * dictates one aspect of how HarfBuzz will treat non-base characters
  * during shaping.
  *
  * Return value: The cluster level of @buffer
@@ -1358,6 +1388,46 @@ hb_codepoint_t
 hb_buffer_get_not_found_glyph (const hb_buffer_t *buffer)
 {
   return buffer->not_found;
+}
+
+/**
+ * hb_buffer_set_not_found_variation_selector_glyph:
+ * @buffer: An #hb_buffer_t
+ * @not_found_variation_selector: the not-found-variation-selector #hb_codepoint_t
+ *
+ * Sets the #hb_codepoint_t that replaces variation-selector characters not resolved
+ * in the font during shaping.
+ *
+ * The not-found-variation-selector glyph defaults to #HB_CODEPOINT_INVALID,
+ * in which case an unresolved variation-selector will be removed from the glyph
+ * string during shaping. This API allows for changing that and retaining a glyph,
+ * such that the situation can be detected by the client and handled accordingly
+ * (e.g. by using a different font).
+ *
+ * Since: 10.0.0
+ **/
+void
+hb_buffer_set_not_found_variation_selector_glyph (hb_buffer_t    *buffer,
+						  hb_codepoint_t  not_found_variation_selector)
+{
+  buffer->not_found_variation_selector = not_found_variation_selector;
+}
+
+/**
+ * hb_buffer_get_not_found_variation_selector_glyph:
+ * @buffer: An #hb_buffer_t
+ *
+ * See hb_buffer_set_not_found_variation_selector_glyph().
+ *
+ * Return value:
+ * The @buffer not-found-variation-selector #hb_codepoint_t
+ *
+ * Since: 10.0.0
+ **/
+hb_codepoint_t
+hb_buffer_get_not_found_variation_selector_glyph (const hb_buffer_t *buffer)
+{
+  return buffer->not_found_variation_selector;
 }
 
 /**
@@ -1743,6 +1813,9 @@ hb_buffer_add_utf (hb_buffer_t  *buffer,
   if (item_length == -1)
     item_length = text_length - item_offset;
 
+  item_offset = hb_min (item_offset, (unsigned) text_length);
+  item_length = hb_clamp (item_length, 0, text_length - (int) item_offset);
+
   if (unlikely (item_length < 0 ||
 		item_length > INT_MAX / 8 ||
 		!buffer->ensure (buffer->len + item_length * sizeof (T) / 4)))
@@ -1940,7 +2013,7 @@ hb_buffer_add_codepoints (hb_buffer_t          *buffer,
  * @buffer: An #hb_buffer_t
  * @source: source #hb_buffer_t
  * @start: start index into source buffer to copy.  Use 0 to copy from start of buffer.
- * @end: end index into source buffer to copy.  Use @HB_FEATURE_GLOBAL_END to copy to end of buffer.
+ * @end: end index into source buffer to copy.  Use @UINT_MAX (or ((unsigned int) -1)) to copy to end of buffer.
  *
  * Append (part of) contents of another buffer to this buffer.
  *
@@ -2211,6 +2284,22 @@ hb_buffer_diff (hb_buffer_t *buffer,
  * Debugging.
  */
 
+void
+hb_buffer_t::changed ()
+{
+#ifdef HB_NO_BUFFER_MESSAGE
+  return;
+#else
+  if (!message_depth)
+    return;
+
+  if (changed_func)
+    changed_func (this, changed_data);
+  else
+    update_digest ();
+#endif
+}
+
 #ifndef HB_NO_BUFFER_MESSAGE
 /**
  * hb_buffer_set_message_func:
@@ -2228,7 +2317,8 @@ hb_buffer_set_message_func (hb_buffer_t *buffer,
 			    hb_buffer_message_func_t func,
 			    void *user_data, hb_destroy_func_t destroy)
 {
-  if (unlikely (hb_object_is_immutable (buffer)))
+  if (unlikely (hb_object_is_immutable (buffer)) ||
+      unlikely (buffer->message_depth))
   {
     if (destroy)
       destroy (user_data);
@@ -2248,6 +2338,23 @@ hb_buffer_set_message_func (hb_buffer_t *buffer,
     buffer->message_destroy = nullptr;
   }
 }
+/**
+ * hb_buffer_changed:
+ * @buffer: An #hb_buffer_t
+ *
+ * Called by a message callback after modifying buffer glyph indices,
+ * to update internal caches.
+ *
+ * If not called from inside a message callback, does nothing.
+ *
+ * Since: 13.0.0
+ **/
+void
+hb_buffer_changed (hb_buffer_t *buffer)
+{
+  buffer->changed ();
+}
+
 bool
 hb_buffer_t::message_impl (hb_font_t *font, const char *fmt, va_list ap)
 {

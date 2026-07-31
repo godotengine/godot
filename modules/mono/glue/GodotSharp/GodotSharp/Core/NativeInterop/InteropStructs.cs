@@ -109,6 +109,7 @@ namespace Godot.NativeInterop
     public ref struct godot_csharp_type_info
     {
         private godot_string _className;
+        private godot_string_name _nativeBaseName;
         private godot_string _iconPath;
         private godot_bool _isTool;
         private godot_bool _isGlobalClass;
@@ -120,6 +121,12 @@ namespace Godot.NativeInterop
         {
             readonly get => _className;
             set => _className = value;
+        }
+
+        public godot_string_name NativeBaseName
+        {
+            readonly get => _nativeBaseName;
+            set => _nativeBaseName = value;
         }
 
         public godot_string IconPath
@@ -167,6 +174,7 @@ namespace Godot.NativeInterop
             => (godot_variant*)Unsafe.AsPointer(ref Unsafe.AsRef(in _typeField));
 
         // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
+        // The native enum actually has no fixed underlying type, so it is only at least 6 bits long.
         private int _typeField;
 
         // There's padding here
@@ -447,6 +455,12 @@ namespace Godot.NativeInterop
             get => _data._m_obj_data.obj;
         }
 
+        public readonly ulong ObjectId
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _data._m_obj_data.id;
+        }
+
         public void Dispose()
         {
             switch (Type)
@@ -474,8 +488,10 @@ namespace Godot.NativeInterop
             Type = Variant.Type.Nil;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Explicit)]
         internal struct movable
+#pragma warning restore CS8981
         {
             // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
             [FieldOffset(0)] private int _typeField;
@@ -522,7 +538,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != IntPtr.Zero ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_string_size(in this);
         }
     }
 
@@ -581,8 +597,10 @@ namespace Godot.NativeInterop
             return _data.GetHashCode();
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
         internal struct movable
+#pragma warning restore CS8981
         {
             private IntPtr _data;
 
@@ -627,8 +645,10 @@ namespace Godot.NativeInterop
             get => _data == IntPtr.Zero;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
         internal struct movable
+#pragma warning restore CS8981
         {
             private IntPtr _data;
 
@@ -744,12 +764,6 @@ namespace Godot.NativeInterop
 
             // There are more fields here, but we don't care as we never store this in C#
 
-            public readonly int Size
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => _arrayVector.Size;
-            }
-
             public readonly unsafe bool IsReadOnly
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -762,12 +776,6 @@ namespace Godot.NativeInterop
         {
             private IntPtr _writeProxy;
             public unsafe godot_variant* _ptr;
-
-            public readonly unsafe int Size
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
-            }
         }
 
         public readonly unsafe godot_variant* Elements
@@ -785,7 +793,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _p != null ? _p->Size : 0;
+            get => (int)NativeFuncs.godotsharp_array_size(in this);
         }
 
         public readonly unsafe bool IsReadOnly
@@ -802,8 +810,10 @@ namespace Godot.NativeInterop
             _p = null;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
         internal struct movable
+#pragma warning restore CS8981
         {
             private unsafe ArrayPrivate* _p;
 
@@ -869,8 +879,10 @@ namespace Godot.NativeInterop
             _p = null;
         }
 
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters
         [StructLayout(LayoutKind.Sequential)]
         internal struct movable
+#pragma warning restore CS8981
         {
             private unsafe DictionaryPrivate* _p;
 
@@ -912,7 +924,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_byte_array_size(in this);
         }
     }
 
@@ -943,7 +955,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_int32_array_size(in this);
         }
     }
 
@@ -974,7 +986,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_int64_array_size(in this);
         }
     }
 
@@ -1005,7 +1017,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_float32_array_size(in this);
         }
     }
 
@@ -1036,7 +1048,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_float64_array_size(in this);
         }
     }
 
@@ -1067,7 +1079,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_string_array_size(in this);
         }
     }
 
@@ -1098,7 +1110,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_vector2_array_size(in this);
         }
     }
 
@@ -1129,7 +1141,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_vector3_array_size(in this);
         }
     }
 
@@ -1161,7 +1173,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_vector4_array_size(in this);
         }
     }
 
@@ -1193,7 +1205,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != null ? (int)(*((ulong*)_ptr - 1)) : 0;
+            get => (int)NativeFuncs.godotsharp_packed_color_array_size(in this);
         }
     }
 

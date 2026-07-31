@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MAIN_LOOP_H
-#define MAIN_LOOP_H
+#pragma once
 
-#include "core/input/input_event.h"
-#include "core/object/gdvirtual.gen.inc"
-#include "core/object/ref_counted.h"
+#include "core/object/gdvirtual.gen.h"
+#include "core/object/object.h"
 
 class MainLoop : public Object {
 	GDCLASS(MainLoop, Object);
@@ -59,16 +57,16 @@ public:
 		NOTIFICATION_APPLICATION_FOCUS_IN = 2016,
 		NOTIFICATION_APPLICATION_FOCUS_OUT = 2017,
 		NOTIFICATION_TEXT_SERVER_CHANGED = 2018,
+		NOTIFICATION_APPLICATION_PIP_MODE_ENTERED = 2019,
+		NOTIFICATION_APPLICATION_PIP_MODE_EXITED = 2020,
 	};
 
 	virtual void initialize();
 	virtual void iteration_prepare() {}
 	virtual bool physics_process(double p_time);
+	virtual void iteration_end() {}
 	virtual bool process(double p_time);
 	virtual void finalize();
 
-	MainLoop() {}
 	virtual ~MainLoop() {}
 };
-
-#endif // MAIN_LOOP_H

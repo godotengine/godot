@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AREA_3D_H
-#define AREA_3D_H
+#pragma once
 
 #include "core/templates/vset.h"
 #include "scene/3d/physics/collision_object_3d.h"
@@ -205,8 +204,8 @@ public:
 	bool has_overlapping_bodies() const;
 	bool has_overlapping_areas() const;
 
-	bool overlaps_area(Node *p_area) const;
-	bool overlaps_body(Node *p_body) const;
+	bool overlaps_area(RequiredParam<Node> rp_area) const;
+	bool overlaps_body(RequiredParam<Node> rp_body) const;
 
 	void set_audio_bus_override(bool p_override);
 	bool is_overriding_audio_bus() const;
@@ -231,5 +230,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Area3D::SpaceOverride);
-
-#endif // AREA_3D_H

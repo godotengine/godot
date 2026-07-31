@@ -30,6 +30,12 @@
 
 #include "animated_texture.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
+#include "core/os/os.h"
+#include "servers/rendering/rendering_server.h"
+
 void AnimatedTexture::_update_proxy() {
 	RWLockRead r(rw_lock);
 
@@ -45,7 +51,7 @@ void AnimatedTexture::_update_proxy() {
 
 	time += delta;
 
-	float speed = speed_scale == 0 ? 0 : abs(1.0 / speed_scale);
+	float speed = speed_scale == 0 ? 0 : std::abs(1.0 / speed_scale);
 
 	int iter_max = frame_count;
 	while (iter_max && !pause) {
@@ -174,7 +180,7 @@ float AnimatedTexture::get_speed_scale() const {
 int AnimatedTexture::get_width() const {
 	RWLockRead r(rw_lock);
 
-	if (!frames[current_frame].texture.is_valid()) {
+	if (frames[current_frame].texture.is_null()) {
 		return 1;
 	}
 
@@ -184,7 +190,7 @@ int AnimatedTexture::get_width() const {
 int AnimatedTexture::get_height() const {
 	RWLockRead r(rw_lock);
 
-	if (!frames[current_frame].texture.is_valid()) {
+	if (frames[current_frame].texture.is_null()) {
 		return 1;
 	}
 
@@ -198,7 +204,7 @@ RID AnimatedTexture::get_rid() const {
 bool AnimatedTexture::has_alpha() const {
 	RWLockRead r(rw_lock);
 
-	if (!frames[current_frame].texture.is_valid()) {
+	if (frames[current_frame].texture.is_null()) {
 		return false;
 	}
 
@@ -208,7 +214,7 @@ bool AnimatedTexture::has_alpha() const {
 Ref<Image> AnimatedTexture::get_image() const {
 	RWLockRead r(rw_lock);
 
-	if (!frames[current_frame].texture.is_valid()) {
+	if (frames[current_frame].texture.is_null()) {
 		return Ref<Image>();
 	}
 
@@ -263,7 +269,7 @@ void AnimatedTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-60,60,0.1,or_less,or_greater"), "set_speed_scale", "get_speed_scale");
 
 	for (int i = 0; i < MAX_FRAMES; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_texture", "get_frame_texture", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_texture", "get_frame_texture", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "frame_" + itos(i) + "/duration", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater,suffix:s", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_duration", "get_frame_duration", i);
 	}
 
@@ -286,6 +292,6 @@ AnimatedTexture::AnimatedTexture() {
 
 AnimatedTexture::~AnimatedTexture() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(proxy);
-	RS::get_singleton()->free(proxy_ph);
+	RS::get_singleton()->free_rid(proxy);
+	RS::get_singleton()->free_rid(proxy_ph);
 }

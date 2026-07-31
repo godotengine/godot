@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPTION_BUTTON_H
-#define OPTION_BUTTON_H
+#pragma once
 
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
@@ -80,6 +79,7 @@ class OptionButton : public Button {
 protected:
 	Size2 get_minimum_size() const override;
 	virtual void _queue_update_size_cache() override;
+	virtual String _get_translated_text(const String &p_text) const override;
 
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -106,6 +106,7 @@ public:
 	void set_item_metadata(int p_idx, const Variant &p_metadata);
 	void set_item_disabled(int p_idx, bool p_disabled);
 	void set_item_tooltip(int p_idx, const String &p_tooltip);
+	void set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode);
 
 	String get_item_text(int p_idx) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
@@ -115,6 +116,19 @@ public:
 	bool is_item_disabled(int p_idx) const;
 	bool is_item_separator(int p_idx) const;
 	String get_item_tooltip(int p_idx) const;
+	AutoTranslateMode get_item_auto_translate_mode(int p_idx) const;
+
+	void set_search_bar_enabled(bool p_enabled);
+	bool is_search_bar_enabled() const;
+
+	void set_search_bar_min_item_count(int p_count);
+	int get_search_bar_min_item_count() const;
+
+	void set_search_bar_fuzzy_search_enabled(bool p_enabled);
+	bool is_search_bar_fuzzy_search_enabled() const;
+
+	void set_search_bar_fuzzy_search_max_misses(int p_max_misses);
+	int get_search_bar_fuzzy_search_max_misses() const;
 
 	bool has_selectable_items() const;
 	int get_selectable_item(bool p_from_last = false) const;
@@ -143,8 +157,10 @@ public:
 
 	void set_disable_shortcuts(bool p_disabled);
 
+#ifdef TOOLS_ENABLED
+	PackedStringArray get_configuration_warnings() const override;
+#endif
+
 	OptionButton(const String &p_text = String());
 	~OptionButton();
 };
-
-#endif // OPTION_BUTTON_H

@@ -30,16 +30,14 @@
 
 #include "crypto.h"
 
-#include "core/config/engine.h"
-#include "core/io/certs_compressed.gen.h"
-#include "core/io/compression.h"
+#include "core/object/class_db.h"
 
 /// Resources
 
-CryptoKey *(*CryptoKey::_create)() = nullptr;
-CryptoKey *CryptoKey::create() {
+CryptoKey *(*CryptoKey::_create)(bool p_notify_postinitialize) = nullptr;
+CryptoKey *CryptoKey::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	return nullptr;
 }
@@ -52,10 +50,10 @@ void CryptoKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_from_string", "string_key", "public_only"), &CryptoKey::load_from_string, DEFVAL(false));
 }
 
-X509Certificate *(*X509Certificate::_create)() = nullptr;
-X509Certificate *X509Certificate::create() {
+X509Certificate *(*X509Certificate::_create)(bool p_notify_postinitialize) = nullptr;
+X509Certificate *X509Certificate::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	return nullptr;
 }
@@ -116,10 +114,10 @@ void HMACContext::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("finish"), &HMACContext::finish);
 }
 
-HMACContext *(*HMACContext::_create)() = nullptr;
-HMACContext *HMACContext::create() {
+HMACContext *(*HMACContext::_create)(bool p_notify_postinitialize) = nullptr;
+HMACContext *HMACContext::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	ERR_FAIL_V_MSG(nullptr, "HMACContext is not available when the mbedtls module is disabled.");
 }
@@ -127,10 +125,10 @@ HMACContext *HMACContext::create() {
 /// Crypto
 
 void (*Crypto::_load_default_certificates)(const String &p_path) = nullptr;
-Crypto *(*Crypto::_create)() = nullptr;
-Crypto *Crypto::create() {
+Crypto *(*Crypto::_create)(bool p_notify_postinitialize) = nullptr;
+Crypto *Crypto::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	ERR_FAIL_V_MSG(nullptr, "Crypto is not available when the mbedtls module is disabled.");
 }
@@ -180,84 +178,4 @@ void Crypto::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("decrypt", "key", "ciphertext"), &Crypto::decrypt);
 	ClassDB::bind_method(D_METHOD("hmac_digest", "hash_type", "key", "msg"), &Crypto::hmac_digest);
 	ClassDB::bind_method(D_METHOD("constant_time_compare", "trusted", "received"), &Crypto::constant_time_compare);
-}
-
-/// Resource loader/saver
-
-Ref<Resource> ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
-	String el = p_path.get_extension().to_lower();
-	if (el == "crt") {
-		X509Certificate *cert = X509Certificate::create();
-		if (cert) {
-			cert->load(p_path);
-		}
-		return cert;
-	} else if (el == "key") {
-		CryptoKey *key = CryptoKey::create();
-		if (key) {
-			key->load(p_path, false);
-		}
-		return key;
-	} else if (el == "pub") {
-		CryptoKey *key = CryptoKey::create();
-		if (key) {
-			key->load(p_path, true);
-		}
-		return key;
-	}
-	return nullptr;
-}
-
-void ResourceFormatLoaderCrypto::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("crt");
-	p_extensions->push_back("key");
-	p_extensions->push_back("pub");
-}
-
-bool ResourceFormatLoaderCrypto::handles_type(const String &p_type) const {
-	return p_type == "X509Certificate" || p_type == "CryptoKey";
-}
-
-String ResourceFormatLoaderCrypto::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "crt") {
-		return "X509Certificate";
-	} else if (el == "key" || el == "pub") {
-		return "CryptoKey";
-	}
-	return "";
-}
-
-Error ResourceFormatSaverCrypto::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	Error err;
-	Ref<X509Certificate> cert = p_resource;
-	Ref<CryptoKey> key = p_resource;
-	if (cert.is_valid()) {
-		err = cert->save(p_path);
-	} else if (key.is_valid()) {
-		String el = p_path.get_extension().to_lower();
-		err = key->save(p_path, el == "pub");
-	} else {
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save Crypto resource to file '" + p_path + "'.");
-	return OK;
-}
-
-void ResourceFormatSaverCrypto::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
-	const X509Certificate *cert = Object::cast_to<X509Certificate>(*p_resource);
-	const CryptoKey *key = Object::cast_to<CryptoKey>(*p_resource);
-	if (cert) {
-		p_extensions->push_back("crt");
-	}
-	if (key) {
-		if (!key->is_public_only()) {
-			p_extensions->push_back("key");
-		}
-		p_extensions->push_back("pub");
-	}
-}
-
-bool ResourceFormatSaverCrypto::recognize(const Ref<Resource> &p_resource) const {
-	return Object::cast_to<X509Certificate>(*p_resource) || Object::cast_to<CryptoKey>(*p_resource);
 }

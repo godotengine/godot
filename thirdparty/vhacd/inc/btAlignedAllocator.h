@@ -22,9 +22,7 @@ subject to the following restrictions:
 
 #include "btScalar.h"
 
-// -- GODOT start --
 namespace VHACD {
-// -- GODOT end --
 
 //#define BT_DEBUG_MEMORY_ALLOCATIONS 1
 #ifdef BT_DEBUG_MEMORY_ALLOCATIONS
@@ -106,8 +104,6 @@ public:
     friend bool operator==(const self_type&, const self_type&) { return true; }
 };
 
-// -- GODOT start --
 }; // namespace VHACD
-// -- GODOT end --
 
 #endif //BT_ALIGNED_ALLOCATOR

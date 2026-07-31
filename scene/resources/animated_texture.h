@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATED_TEXTURE_H
-#define ANIMATED_TEXTURE_H
+#pragma once
 
+#include "core/os/rw_lock.h"
 #include "scene/resources/texture.h"
 
 class AnimatedTexture : public Texture2D {
@@ -106,5 +106,3 @@ public:
 	AnimatedTexture();
 	~AnimatedTexture();
 };
-
-#endif // ANIMATED_TEXTURE_H

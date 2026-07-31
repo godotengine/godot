@@ -1,5 +1,3 @@
-const Utils = preload("../../utils.notest.gd")
-
 @export_enum("Red", "Green", "Blue") var test_untyped
 @export_enum("Red:10", "Green:20", "Blue:30") var test_with_values
 
@@ -34,4 +32,4 @@ var temp_packed_string_array: PackedStringArray
 func test():
 	for property in get_property_list():
 		if str(property.name).begins_with("test_"):
-			Utils.print_property_extended_info(property, self)
+			print(Utils.get_property_extended_info(property, self))

@@ -33,9 +33,14 @@
 #include "midi_driver_alsamidi.h"
 
 #include "core/os/os.h"
-#include "core/string/print_string.h"
 
-#include <errno.h>
+#ifdef SOWRAP_ENABLED
+#include "drivers/alsa/asound-so_wrap.h"
+#else
+#include <alsa/asoundlib.h>
+#endif
+
+#include <cerrno>
 
 MIDIDriverALSAMidi::InputConnection::InputConnection(int p_device_index,
 		snd_rawmidi_t *p_rawmidi) :

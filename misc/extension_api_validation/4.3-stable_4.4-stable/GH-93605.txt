@@ -1,0 +1,5 @@
+GH-93605
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Semaphore/methods/post': arguments
+
+Optional arguments added. Compatibility methods registered.

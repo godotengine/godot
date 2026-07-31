@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BVH_TREE_H
-#define BVH_TREE_H
+#pragma once
 
 // BVH Tree
 // This is an implementation of a dynamic BVH with templated leaf size.
@@ -41,11 +40,9 @@
 
 #include "core/math/aabb.h"
 #include "core/math/bvh_abb.h"
-#include "core/math/geometry_3d.h"
 #include "core/math/vector3.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/pooled_list.h"
-#include <limits.h>
 
 #define BVHABB_CLASS BVH_ABB<BOUNDS, POINT>
 
@@ -109,9 +106,7 @@ struct BVHHandle {
 template <typename T>
 class BVH_IterativeInfo {
 public:
-	enum {
-		ALLOCA_STACK_SIZE = 128
-	};
+	constexpr static const size_t ALLOCA_STACK_SIZE = 128;
 
 	int32_t depth = 1;
 	int32_t threshold = ALLOCA_STACK_SIZE - 2;
@@ -174,8 +169,8 @@ template <typename T, int NUM_TREES, int MAX_CHILDREN, int MAX_ITEMS, typename U
 class BVH_Tree {
 	friend class BVH;
 
-#include "bvh_pair.inc"
-#include "bvh_structs.inc"
+#include "core/math/bvh_pair.inc"
+#include "core/math/bvh_structs.inc"
 
 public:
 	BVH_Tree() {
@@ -445,16 +440,14 @@ private:
 		return child_node_id;
 	}
 
-#include "bvh_cull.inc"
-#include "bvh_debug.inc"
-#include "bvh_integrity.inc"
-#include "bvh_logic.inc"
-#include "bvh_misc.inc"
-#include "bvh_public.inc"
-#include "bvh_refit.inc"
-#include "bvh_split.inc"
+#include "core/math/bvh_cull.inc"
+#include "core/math/bvh_debug.inc"
+#include "core/math/bvh_integrity.inc"
+#include "core/math/bvh_logic.inc"
+#include "core/math/bvh_misc.inc"
+#include "core/math/bvh_public.inc"
+#include "core/math/bvh_refit.inc"
+#include "core/math/bvh_split.inc"
 };
 
 #undef VERBOSE_PRINT
-
-#endif // BVH_TREE_H

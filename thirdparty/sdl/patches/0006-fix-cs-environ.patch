@@ -1,0 +1,65 @@
+diff --git a/thirdparty/sdl/stdlib/SDL_getenv.c b/thirdparty/sdl/stdlib/SDL_getenv.c
+index 54fb6a7b46..d805217b19 100644
+--- a/thirdparty/sdl/stdlib/SDL_getenv.c
++++ b/thirdparty/sdl/stdlib/SDL_getenv.c
+@@ -55,6 +55,9 @@ extern char **environ;
+ static char **environ;
+ #endif
+ 
++#if defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_FREEBSD)
++#include <stdlib.h>
++#endif
+ 
+ struct SDL_Environment
+ {
+@@ -154,6 +157,9 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
+ 
+ const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
+ {
++#if defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_FREEBSD)
++    return getenv(name);
++#else
+     const char *result = NULL;
+ 
+     if (!env) {
+@@ -173,6 +179,7 @@ const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
+     SDL_UnlockMutex(env->lock);
+ 
+     return result;
++#endif
+ }
+ 
+ typedef struct CountEnvStringsData
+@@ -251,6 +258,9 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
+ 
+ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const char *value, bool overwrite)
+ {
++#if defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_FREEBSD)
++    return setenv(name, value, overwrite);
++#else
+     bool result = false;
+ 
+     if (!env) {
+@@ -286,10 +296,14 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
+     SDL_UnlockMutex(env->lock);
+ 
+     return result;
++#endif
+ }
+ 
+ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
+ {
++#if defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_FREEBSD)
++    return unsetenv(name);
++#else
+     bool result = false;
+ 
+     if (!env) {
+@@ -310,6 +324,7 @@ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
+     SDL_UnlockMutex(env->lock);
+ 
+     return result;
++#endif
+ }
+ 
+ void SDL_DestroyEnvironment(SDL_Environment *env)

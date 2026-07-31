@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_SELECT_RUNTIME_H
-#define OPENXR_SELECT_RUNTIME_H
+#pragma once
 
 #include "scene/gui/option_button.h"
 
@@ -40,12 +39,13 @@ public:
 	OpenXRSelectRuntime();
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_notification);
 
 private:
 	void _update_items();
-	void _item_selected(int p_which);
-};
+	void _on_item_selected(int p_which);
 
-#endif // OPENXR_SELECT_RUNTIME_H
+	Dictionary _enumerate_runtimes();
+	String _try_and_get_runtime_name(const String &p_config_file);
+	void _add_runtime(Dictionary &r_runtimes, const String &p_config_file);
+};

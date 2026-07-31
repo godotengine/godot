@@ -1,11 +1,14 @@
 // © 2019 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 
+#include <optional>
+#include <string_view>
 #include <utility>
 
 #include "bytesinkutil.h"  // StringByteSink<CharString>
 #include "charstr.h"
 #include "cstring.h"
+#include "fixedstring.h"
 #include "ulocimp.h"
 #include "unicode/localebuilder.h"
 #include "unicode/locid.h"
@@ -129,14 +132,13 @@ LocaleBuilder& LocaleBuilder::setVariant(StringPiece variant)
         variant_ = nullptr;
         return *this;
     }
-    CharString* new_variant = new CharString(variant, status_);
-    if (U_FAILURE(status_)) { return *this; }
-    if (new_variant == nullptr) {
+    FixedString* new_variant = new FixedString(variant);
+    if (new_variant == nullptr || new_variant->isEmpty()) {
         status_ = U_MEMORY_ALLOCATION_ERROR;
         return *this;
     }
-    transform(new_variant->data(), new_variant->length());
-    if (!ultag_isVariantSubtags(new_variant->data(), new_variant->length())) {
+    transform(new_variant->getAlias(), variant.length());
+    if (!ultag_isVariantSubtags(new_variant->data(), variant.length())) {
         delete new_variant;
         status_ = U_ILLEGAL_ARGUMENT_ERROR;
         return *this;
@@ -162,12 +164,15 @@ _isKeywordValue(const char* key, const char* value, int32_t value_len)
     // otherwise: unicode extension value
     // We need to convert from legacy key/value to unicode
     // key/value
-    const char* unicode_locale_key = uloc_toUnicodeLocaleKey(key);
-    const char* unicode_locale_type = uloc_toUnicodeLocaleType(key, value);
+    std::optional<std::string_view> unicode_locale_key = ulocimp_toBcpKeyWithFallback(key);
+    std::optional<std::string_view> unicode_locale_type = ulocimp_toBcpTypeWithFallback(key, value);
 
-    return unicode_locale_key && unicode_locale_type &&
-           ultag_isUnicodeLocaleKey(unicode_locale_key, -1) &&
-           ultag_isUnicodeLocaleType(unicode_locale_type, -1);
+    return unicode_locale_key.has_value() &&
+           unicode_locale_type.has_value() &&
+           ultag_isUnicodeLocaleKey(unicode_locale_key->data(),
+                                    static_cast<int32_t>(unicode_locale_key->size())) &&
+           ultag_isUnicodeLocaleType(unicode_locale_type->data(),
+                                     static_cast<int32_t>(unicode_locale_type->size()));
 }
 
 void

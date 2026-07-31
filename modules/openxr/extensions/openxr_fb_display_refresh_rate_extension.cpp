@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_fb_display_refresh_rate_extension.h"
+
 #include "../openxr_interface.h"
 
 OpenXRDisplayRefreshRateExtension *OpenXRDisplayRefreshRateExtension::singleton = nullptr;
@@ -45,7 +46,7 @@ OpenXRDisplayRefreshRateExtension::~OpenXRDisplayRefreshRateExtension() {
 	display_refresh_rate_ext = false;
 }
 
-HashMap<String, bool *> OpenXRDisplayRefreshRateExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRDisplayRefreshRateExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME] = &display_refresh_rate_ext;

@@ -29,11 +29,15 @@
 /**************************************************************************/
 
 #include "audio_stream_import_settings.h"
-#include "editor/audio_stream_preview.h"
-#include "editor/editor_file_system.h"
+
+#include "core/object/callable_mp.h"
+#include "editor/audio/audio_stream_preview.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
+#include "servers/audio/audio_server.h"
+#include "servers/rendering/rendering_server.h"
 
 AudioStreamImportSettingsDialog *AudioStreamImportSettingsDialog::singleton = nullptr;
 
@@ -45,8 +49,8 @@ void AudioStreamImportSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
-			_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+			_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			_stop_button->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 
 			_preview->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 			color_rect->set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
@@ -61,9 +65,9 @@ void AudioStreamImportSettingsDialog::_notification(int p_what) {
 			_duration_label->add_theme_font_size_override(SceneStringName(font_size), get_theme_font_size(SNAME("status_source_size"), EditorStringName(EditorFonts)));
 			_duration_label->end_bulk_theme_override();
 
-			zoom_in->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
-			zoom_out->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
-			zoom_reset->set_icon(get_editor_theme_icon(SNAME("ZoomReset")));
+			zoom_in->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
+			zoom_out->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_reset->set_button_icon(get_editor_theme_icon(SNAME("ZoomReset")));
 
 			_indicator->queue_redraw();
 			_preview->queue_redraw();
@@ -180,36 +184,42 @@ void AudioStreamImportSettingsDialog::_preview_changed(ObjectID p_which) {
 }
 
 void AudioStreamImportSettingsDialog::_preview_zoom_in() {
-	if (!stream.is_valid()) {
+	if (stream.is_null()) {
 		return;
 	}
 	float page_size = zoom_bar->get_page();
 	zoom_bar->set_page(page_size * 0.5);
 	zoom_bar->set_value(zoom_bar->get_value() + page_size * 0.25);
+	zoom_bar->show();
 
 	_preview->queue_redraw();
 	_indicator->queue_redraw();
 }
 
 void AudioStreamImportSettingsDialog::_preview_zoom_out() {
-	if (!stream.is_valid()) {
+	if (stream.is_null()) {
 		return;
 	}
 	float page_size = zoom_bar->get_page();
 	zoom_bar->set_page(MIN(zoom_bar->get_max(), page_size * 2.0));
 	zoom_bar->set_value(zoom_bar->get_value() - page_size * 0.5);
+	if (zoom_bar->get_value() == 0) {
+		zoom_bar->hide();
+	}
 
 	_preview->queue_redraw();
 	_indicator->queue_redraw();
 }
 
 void AudioStreamImportSettingsDialog::_preview_zoom_reset() {
-	if (!stream.is_valid()) {
+	if (stream.is_null()) {
 		return;
 	}
 	zoom_bar->set_max(stream->get_length());
 	zoom_bar->set_page(zoom_bar->get_max());
 	zoom_bar->set_value(0);
+	zoom_bar->hide();
+
 	_preview->queue_redraw();
 	_indicator->queue_redraw();
 }
@@ -217,6 +227,28 @@ void AudioStreamImportSettingsDialog::_preview_zoom_reset() {
 void AudioStreamImportSettingsDialog::_preview_zoom_offset_changed(double) {
 	_preview->queue_redraw();
 	_indicator->queue_redraw();
+}
+
+void AudioStreamImportSettingsDialog::_reset_master() {
+	master_state.bypass = AudioServer::get_singleton()->is_bus_bypassing_effects(0);
+	master_state.mute = AudioServer::get_singleton()->is_bus_mute(0);
+	master_state.volume = AudioServer::get_singleton()->get_bus_volume_db(0);
+
+	AudioServer::get_singleton()->set_bus_bypass_effects(0, true); // We don't want effects interfering.
+	AudioServer::get_singleton()->set_bus_mute(0, false);
+	AudioServer::get_singleton()->set_bus_volume_db(0, 0);
+
+	// Prevent the modifications from being saved.
+	AudioServer::get_singleton()->set_edited(false);
+}
+
+void AudioStreamImportSettingsDialog::_load_master_state() {
+	AudioServer::get_singleton()->set_bus_bypass_effects(0, master_state.bypass);
+	AudioServer::get_singleton()->set_bus_mute(0, master_state.mute);
+	AudioServer::get_singleton()->set_bus_volume_db(0, master_state.volume);
+
+	// Prevent the modifications from being saved.
+	AudioServer::get_singleton()->set_edited(false);
 }
 
 void AudioStreamImportSettingsDialog::_audio_changed() {
@@ -230,28 +262,38 @@ void AudioStreamImportSettingsDialog::_audio_changed() {
 
 void AudioStreamImportSettingsDialog::_play() {
 	if (_player->is_playing()) {
+		_load_master_state();
+
 		// '_pausing' variable indicates that we want to pause the audio player, not stop it. See '_on_finished()'.
 		_pausing = true;
 		_player->stop();
-		_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+		_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	} else {
+		_reset_master();
+
 		_player->play(_current);
-		_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
+		_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 		set_process(true);
 	}
 }
 
 void AudioStreamImportSettingsDialog::_stop() {
+	if (_player->is_playing()) {
+		_load_master_state();
+	}
+
 	_player->stop();
-	_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	_current = 0;
 	_indicator->queue_redraw();
 	set_process(false);
 }
 
 void AudioStreamImportSettingsDialog::_on_finished() {
-	_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+	_load_master_state();
+
+	_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	if (!_pausing) {
 		_current = 0;
 		_indicator->queue_redraw();
@@ -262,7 +304,7 @@ void AudioStreamImportSettingsDialog::_on_finished() {
 }
 
 void AudioStreamImportSettingsDialog::_draw_indicator() {
-	if (!stream.is_valid()) {
+	if (stream.is_null()) {
 		return;
 	}
 
@@ -401,7 +443,7 @@ void AudioStreamImportSettingsDialog::_seek_to(real_t p_x) {
 }
 
 void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p_importer, const Ref<AudioStream> &p_stream) {
-	if (!stream.is_null()) {
+	if (stream.is_valid()) {
 		stream->disconnect_changed(callable_mp(this, &AudioStreamImportSettingsDialog::_audio_changed));
 	}
 
@@ -414,7 +456,7 @@ void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p
 	String text = String::num(stream->get_length(), 2).pad_decimals(2) + "s";
 	_duration_label->set_text(text);
 
-	if (!stream.is_null()) {
+	if (stream.is_valid()) {
 		stream->connect_changed(callable_mp(this, &AudioStreamImportSettingsDialog::_audio_changed));
 		_preview->queue_redraw();
 		_indicator->queue_redraw();
@@ -434,14 +476,14 @@ void AudioStreamImportSettingsDialog::edit(const String &p_path, const String &p
 			int beats = config_file->get_value("params", "beat_count", 0);
 			bpm_edit->set_value(bpm > 0 ? bpm : 120);
 			bpm_enabled->set_pressed(bpm > 0);
+			beats_edit->set_max(99999); // Temporarily disable `max` in case current `beat_count` > previously set `beat_max`. It will be set to the appropriate value in `_settings_changed()` right afterwards.
 			beats_edit->set_value(beats);
 			beats_enabled->set_pressed(beats > 0);
 			loop->set_pressed(config_file->get_value("params", "loop", false));
 			loop_offset->set_value(config_file->get_value("params", "loop_offset", 0));
 			bar_beats_edit->set_value(config_file->get_value("params", "bar_beats", 4));
 
-			List<String> keys;
-			config_file->get_section_keys("params", &keys);
+			Vector<String> keys = config_file->get_section_keys("params");
 			for (const String &K : keys) {
 				params[K] = config_file->get_value("params", K);
 			}
@@ -536,16 +578,19 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop_hb->add_theme_constant_override("separation", 4 * EDSCALE);
 	loop = memnew(CheckBox);
 	loop->set_text(TTR("Enable"));
-	loop->set_tooltip_text(TTR("Enable looping."));
-	loop->connect("toggled", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
+	loop->set_tooltip_text(TTR("Enables looping."));
+	loop->connect(SceneStringName(toggled), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop);
 	loop_hb->add_spacer();
 	loop_hb->add_child(memnew(Label(TTR("Offset:"))));
 	loop_offset = memnew(SpinBox);
+	loop_offset->set_accessibility_name(TTRC("Offset:"));
 	loop_offset->set_max(10000);
 	loop_offset->set_step(0.001);
-	loop_offset->set_suffix("sec");
-	loop_offset->set_tooltip_text(TTR("Loop offset (from beginning). Note that if BPM is set, this setting will be ignored."));
+	loop_offset->set_suffix("s");
+	loop_offset->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	loop_offset->set_stretch_ratio(0.33);
+	loop_offset->set_tooltip_text(TTR("The loop start position, in seconds.\nThis is the position the stream's playback will return to when the end of the loop is reached."));
 	loop_offset->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	loop_hb->add_child(loop_offset);
 	main_vbox->add_margin_child(TTR("Loop:"), loop_hb);
@@ -554,38 +599,39 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	interactive_hb->add_theme_constant_override("separation", 4 * EDSCALE);
 	bpm_enabled = memnew(CheckBox);
 	bpm_enabled->set_text((TTR("BPM:")));
-	bpm_enabled->connect("toggled", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
+	bpm_enabled->connect(SceneStringName(toggled), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(bpm_enabled);
 	bpm_edit = memnew(SpinBox);
 	bpm_edit->set_max(400);
 	bpm_edit->set_step(0.01);
-	bpm_edit->set_tooltip_text(TTR("Configure the Beats Per Measure (tempo) used for the interactive streams.\nThis is required in order to configure beat information."));
+	bpm_edit->set_accessibility_name(TTRC("BPM:"));
+	bpm_edit->set_tooltip_text(TTR("The stream's tempo, in beats per minute, used for tempo-synced looping and interactive streams.\nThis is required in order to configure beat and bar information."));
 	bpm_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(bpm_edit);
 	interactive_hb->add_spacer();
 	beats_enabled = memnew(CheckBox);
 	beats_enabled->set_text(TTR("Beat Count:"));
-	beats_enabled->connect("toggled", callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
+	beats_enabled->connect(SceneStringName(toggled), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(beats_enabled);
 	beats_edit = memnew(SpinBox);
-	beats_edit->set_tooltip_text(TTR("Configure the amount of Beats used for music-aware looping. If zero, it will be autodetected from the length.\nIt is recommended to set this value (either manually or by clicking on a beat number in the preview) to ensure looping works properly."));
+	beats_edit->set_tooltip_text(TTR("The stream's length, in number of beats, used for tempo-synced looping and interactive streams.\nIf 0, the stream's duration will be used instead.\nIt is recommended to set this value (either manually or by clicking on a beat number in the preview) to ensure tempo-synced looping works properly."));
 	beats_edit->set_max(99999);
+	beats_edit->set_accessibility_name(TTRC("Beat Count:"));
 	beats_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(beats_edit);
 	bar_beats_label = memnew(Label(TTR("Bar Beats:")));
 	interactive_hb->add_child(bar_beats_label);
 	bar_beats_edit = memnew(SpinBox);
-	bar_beats_edit->set_tooltip_text(TTR("Configure the Beats Per Bar. This used for music-aware transitions between AudioStreams."));
+	bar_beats_edit->set_tooltip_text(TTR("The number of beats in a single bar of the stream, used for beat-synced looping and interactive streams."));
 	bar_beats_edit->set_min(2);
 	bar_beats_edit->set_max(32);
+	bar_beats_edit->set_accessibility_name(TTRC("Bar Beats:"));
 	bar_beats_edit->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_settings_changed).unbind(1));
 	interactive_hb->add_child(bar_beats_edit);
-	interactive_hb->add_spacer();
-	main_vbox->add_margin_child(TTR("Music Playback:"), interactive_hb);
+	main_vbox->add_margin_child(TTR("Music Information:"), interactive_hb);
 
 	color_rect = memnew(ColorRect);
-	main_vbox->add_margin_child(TTR("Preview:"), color_rect);
-
+	main_vbox->add_margin_child(TTR("Preview:"), color_rect, true);
 	color_rect->set_custom_minimum_size(Size2(600, 200) * EDSCALE);
 	color_rect->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -604,25 +650,15 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	_preview->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbox->add_child(_preview);
 
-	HBoxContainer *zoom_hbox = memnew(HBoxContainer);
 	zoom_bar = memnew(HScrollBar);
-	zoom_in = memnew(Button);
-	zoom_in->set_flat(true);
-	zoom_reset = memnew(Button);
-	zoom_reset->set_flat(true);
-	zoom_out = memnew(Button);
-	zoom_out->set_flat(true);
-	zoom_hbox->add_child(zoom_bar);
+	zoom_bar->hide();
+	vbox->add_child(zoom_bar);
 	zoom_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	zoom_bar->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	zoom_hbox->add_child(zoom_out);
-	zoom_hbox->add_child(zoom_reset);
-	zoom_hbox->add_child(zoom_in);
-	zoom_in->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_in));
-	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_reset));
-	zoom_out->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_out));
 	zoom_bar->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_offset_changed));
-	vbox->add_child(zoom_hbox);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	hbox->add_theme_constant_override("separation", 0);
+	vbox->add_child(hbox);
 
 	_indicator = memnew(Control);
 	_indicator->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
@@ -631,20 +667,16 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	_indicator->connect(SceneStringName(mouse_exited), callable_mp(this, &AudioStreamImportSettingsDialog::_on_indicator_mouse_exited));
 	_preview->add_child(_indicator);
 
-	HBoxContainer *hbox = memnew(HBoxContainer);
-	hbox->add_theme_constant_override("separation", 0);
-	vbox->add_child(hbox);
-
 	_play_button = memnew(Button);
+	_play_button->set_accessibility_name(TTRC("Play"));
 	_play_button->set_flat(true);
 	hbox->add_child(_play_button);
-	_play_button->set_focus_mode(Control::FOCUS_NONE);
 	_play_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_play));
 
 	_stop_button = memnew(Button);
+	_stop_button->set_accessibility_name(TTRC("Stop"));
 	_stop_button->set_flat(true);
 	hbox->add_child(_stop_button);
-	_stop_button->set_focus_mode(Control::FOCUS_NONE);
 	_stop_button->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_stop));
 
 	_current_label = memnew(Label);
@@ -655,6 +687,22 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 
 	_duration_label = memnew(Label);
 	hbox->add_child(_duration_label);
+
+	zoom_in = memnew(Button);
+	zoom_in->set_accessibility_name(TTRC("Zoom In"));
+	zoom_in->set_flat(true);
+	zoom_reset = memnew(Button);
+	zoom_reset->set_accessibility_name(TTRC("Reset Zoom"));
+	zoom_reset->set_flat(true);
+	zoom_out = memnew(Button);
+	zoom_out->set_accessibility_name(TTRC("Zoom Out"));
+	zoom_out->set_flat(true);
+	hbox->add_child(zoom_out);
+	hbox->add_child(zoom_reset);
+	hbox->add_child(zoom_in);
+	zoom_in->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_in));
+	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_reset));
+	zoom_out->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamImportSettingsDialog::_preview_zoom_out));
 
 	singleton = this;
 }

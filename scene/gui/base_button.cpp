@@ -31,16 +31,21 @@
 #include "base_button.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/keyboard.h"
-#include "scene/main/window.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/gui/label.h"
+#include "scene/main/timer.h"
+#include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 void BaseButton::_unpress_group() {
-	if (!button_group.is_valid()) {
+	if (button_group.is_null()) {
 		return;
 	}
 
 	if (toggle_mode && !button_group->is_allow_unpress()) {
 		status.pressed = true;
+		queue_accessibility_update();
 	}
 
 	for (BaseButton *E : button_group->buttons) {
@@ -59,6 +64,37 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	if (p_event->get_device() == InputEvent::DEVICE_ID_EMULATION) {
+		return;
+	}
+
+	Ref<InputEventScreenTouch> touch = p_event;
+	if (touch.is_valid()) {
+		if (status.touch_index == -1) {
+			if (touch->is_pressed()) {
+				status.touch_index = touch->get_index();
+				status.press_attempt = true;
+				status.pressing_inside = has_point(touch->get_position());
+				on_action_event(p_event);
+			}
+		} else if (touch->get_index() == status.touch_index) {
+			if (!touch->is_pressed()) {
+				status.touch_index = -1;
+				on_action_event(p_event);
+			}
+		}
+	}
+
+	Ref<InputEventScreenDrag> drag = p_event;
+	if (drag.is_valid() && drag->get_index() == status.touch_index && status.press_attempt) {
+		bool last_press_inside = status.pressing_inside;
+		status.pressing_inside = has_point(drag->get_position());
+
+		if (last_press_inside != status.pressing_inside) {
+			queue_redraw();
+		}
+	}
+
 	Ref<InputEventMouseButton> mouse_button = p_event;
 	bool ui_accept = p_event->is_action("ui_accept", true) && !p_event->is_echo();
 
@@ -67,31 +103,80 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 		was_mouse_pressed = button_masked;
 		on_action_event(p_event);
 		was_mouse_pressed = false;
-
-		return;
-	}
-
-	Ref<InputEventMouseMotion> mouse_motion = p_event;
-	if (mouse_motion.is_valid()) {
-		if (status.press_attempt) {
-			bool last_press_inside = status.pressing_inside;
-			status.pressing_inside = has_point(mouse_motion->get_position());
-			if (last_press_inside != status.pressing_inside) {
-				queue_redraw();
+	} else {
+		Ref<InputEventMouseMotion> mouse_motion = p_event;
+		if (mouse_motion.is_valid()) {
+			if (status.press_attempt) {
+				bool last_press_inside = status.pressing_inside;
+				status.pressing_inside = has_point(mouse_motion->get_position());
+				if (last_press_inside != status.pressing_inside) {
+					queue_redraw();
+				}
 			}
 		}
 	}
 }
 
+void BaseButton::_accessibility_action_click(const Variant &p_data) {
+	if (toggle_mode) {
+		status.pressed = !status.pressed;
+
+		if (status.pressed) {
+			_unpress_group();
+			if (button_group.is_valid()) {
+				button_group->emit_signal(SceneStringName(pressed), this);
+			}
+		}
+
+		_toggled(status.pressed);
+		_pressed();
+	} else {
+		_pressed();
+	}
+	queue_accessibility_update();
+	queue_redraw();
+}
+
 void BaseButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_BUTTON);
+
+			AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_CLICK, callable_mp(this, &BaseButton::_accessibility_action_click));
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_DISABLED, status.disabled);
+			if (toggle_mode) {
+				AccessibilityServer::get_singleton()->update_set_checked(ae, status.pressed);
+			}
+			if (button_group.is_valid()) {
+				for (const BaseButton *btn : button_group->buttons) {
+					if (btn->is_part_of_edited_scene()) {
+						continue;
+					}
+					AccessibilityServer::get_singleton()->update_add_related_radio_group(ae, btn->get_accessibility_element());
+				}
+			}
+			if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->has_valid_event()) {
+				String text = atr(shortcut->get_name()) + " (" + shortcut->get_as_text() + ")";
+				String tooltip = get_tooltip_text();
+				if (!tooltip.is_empty() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
+					text += "\n" + atr(tooltip);
+				}
+				AccessibilityServer::get_singleton()->update_set_tooltip(ae, text);
+			}
+		} break;
+
 		case NOTIFICATION_MOUSE_ENTER: {
 			status.hovering = true;
+			queue_accessibility_update();
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			status.hovering = false;
+			queue_accessibility_update();
 			queue_redraw();
 		} break;
 
@@ -99,6 +184,7 @@ void BaseButton::_notification(int p_what) {
 		case NOTIFICATION_SCROLL_BEGIN: {
 			if (status.press_attempt) {
 				status.press_attempt = false;
+				status.touch_index = -1;
 				queue_redraw();
 			}
 		} break;
@@ -110,9 +196,15 @@ void BaseButton::_notification(int p_what) {
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (status.press_attempt) {
 				status.press_attempt = false;
+				status.touch_index = -1;
 				queue_redraw();
 			} else if (status.hovering) {
 				queue_redraw();
+			}
+
+			if (status.pressed_down_with_focus) {
+				status.pressed_down_with_focus = false;
+				emit_signal(SNAME("button_up"));
 			}
 		} break;
 
@@ -127,6 +219,7 @@ void BaseButton::_notification(int p_what) {
 			status.hovering = false;
 			status.press_attempt = false;
 			status.pressing_inside = false;
+			status.touch_index = -1;
 		} break;
 	}
 }
@@ -140,23 +233,32 @@ void BaseButton::_pressed() {
 void BaseButton::_toggled(bool p_pressed) {
 	GDVIRTUAL_CALL(_toggled, p_pressed);
 	toggled(p_pressed);
-	emit_signal(SNAME("toggled"), p_pressed);
+	emit_signal(SceneStringName(toggled), p_pressed);
 }
 
 void BaseButton::on_action_event(Ref<InputEvent> p_event) {
-	if (p_event->is_pressed()) {
+	Ref<InputEventMouseButton> mouse_button = p_event;
+	Ref<InputEventScreenTouch> screen_touch = p_event;
+	Ref<InputEventScreenDrag> screen_drag = p_event;
+
+	bool is_accept_event = mouse_button.is_null() && screen_touch.is_null() && screen_drag.is_null();
+	bool is_touch_press_inside = screen_touch.is_valid() && screen_touch->is_pressed() && status.pressing_inside;
+	if (p_event->is_pressed() && (is_accept_event || status.hovering || is_touch_press_inside)) {
 		status.press_attempt = true;
 		status.pressing_inside = true;
-		emit_signal(SNAME("button_down"));
+		if (!status.pressed_down_with_focus) {
+			status.pressed_down_with_focus = true;
+			emit_signal(SNAME("button_down"));
+		}
 	}
 
 	if (status.press_attempt && status.pressing_inside) {
 		if (toggle_mode) {
-			bool is_pressed = p_event->is_pressed();
-			if ((is_pressed && action_mode == ACTION_MODE_BUTTON_PRESS) || (!is_pressed && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (p_event->is_released() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
+					status.touch_index = -1; // Action completed, release matching touch so later taps aren't dropped if a modal consumes the release.
 				}
 				status.pressed = !status.pressed;
 				_unpress_group();
@@ -165,24 +267,22 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				}
 				_toggled(status.pressed);
 				_pressed();
+				queue_accessibility_update();
 			}
 		} else {
-			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (p_event->is_released() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				_pressed();
 			}
 		}
 	}
 
 	if (!p_event->is_pressed()) {
-		Ref<InputEventMouseButton> mouse_button = p_event;
-		if (mouse_button.is_valid()) {
-			if (!has_point(mouse_button->get_position())) {
-				status.hovering = false;
-			}
-		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
-		emit_signal(SNAME("button_up"));
+		if (status.pressed_down_with_focus) {
+			status.pressed_down_with_focus = false;
+			emit_signal(SNAME("button_up"));
+		}
 	}
 
 	queue_redraw();
@@ -206,8 +306,14 @@ void BaseButton::set_disabled(bool p_disabled) {
 		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
+		if (status.pressed_down_with_focus) {
+			status.pressed_down_with_focus = false;
+			emit_signal(SNAME("button_up"));
+		}
 	}
+	queue_accessibility_update();
 	queue_redraw();
+	update_minimum_size();
 }
 
 bool BaseButton::is_disabled() const {
@@ -239,7 +345,7 @@ void BaseButton::set_pressed_no_signal(bool p_pressed) {
 		return;
 	}
 	status.pressed = p_pressed;
-
+	queue_accessibility_update();
 	queue_redraw();
 }
 
@@ -290,11 +396,22 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	}
 }
 
+bool BaseButton::has_point(const Point2 &p_point) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	bool ret;
+	if (GDVIRTUAL_CALL(_has_point, p_point, ret)) {
+		return ret;
+	}
+	Rect2 rect = Rect2(Point2(), get_size()).grow(theme_cache.click_margin);
+	return rect.has_area() && rect.has_point(p_point);
+}
+
 void BaseButton::set_toggle_mode(bool p_on) {
 	// Make sure to set 'pressed' to false if we are not in toggle mode
 	if (!p_on) {
 		set_pressed(false);
 	}
+	queue_accessibility_update();
 
 	toggle_mode = p_on;
 	update_configuration_warnings();
@@ -305,7 +422,10 @@ bool BaseButton::is_toggle_mode() const {
 }
 
 void BaseButton::set_shortcut_in_tooltip(bool p_on) {
-	shortcut_in_tooltip = p_on;
+	if (shortcut_in_tooltip != p_on) {
+		shortcut_in_tooltip = p_on;
+		queue_accessibility_update();
+	}
 }
 
 bool BaseButton::is_shortcut_in_tooltip_enabled() const {
@@ -345,8 +465,11 @@ bool BaseButton::is_shortcut_feedback() const {
 }
 
 void BaseButton::set_shortcut(const Ref<Shortcut> &p_shortcut) {
-	shortcut = p_shortcut;
-	set_process_shortcut_input(shortcut.is_valid());
+	if (shortcut != p_shortcut) {
+		shortcut = p_shortcut;
+		set_process_shortcut_input(shortcut.is_valid());
+		queue_accessibility_update();
+	}
 }
 
 Ref<Shortcut> BaseButton::get_shortcut() const {
@@ -372,7 +495,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 
 			_toggled(status.pressed);
 			_pressed();
-
+			queue_accessibility_update();
 		} else {
 			_pressed();
 		}
@@ -383,8 +506,9 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 			if (shortcut_feedback_timer == nullptr) {
 				shortcut_feedback_timer = memnew(Timer);
 				shortcut_feedback_timer->set_one_shot(true);
-				add_child(shortcut_feedback_timer);
-				shortcut_feedback_timer->set_wait_time(GLOBAL_GET("gui/timers/button_shortcut_feedback_highlight_time"));
+				shortcut_feedback_timer->set_ignore_time_scale(true);
+				add_child(shortcut_feedback_timer, false, INTERNAL_MODE_BACK);
+				shortcut_feedback_timer->set_wait_time(GLOBAL_GET_CACHED(double, "gui/timers/button_shortcut_feedback_highlight_time"));
 				shortcut_feedback_timer->connect("timeout", callable_mp(this, &BaseButton::_shortcut_feedback_timeout));
 			}
 
@@ -394,16 +518,41 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-String BaseButton::get_tooltip(const Point2 &p_pos) const {
-	String tooltip = Control::get_tooltip(p_pos);
-	if (shortcut_in_tooltip && shortcut.is_valid() && shortcut->has_valid_event()) {
-		String text = shortcut->get_name() + " (" + shortcut->get_as_text() + ")";
-		if (!tooltip.is_empty() && shortcut->get_name().nocasecmp_to(tooltip) != 0) {
-			text += "\n" + atr(tooltip);
-		}
-		tooltip = text;
+Control *BaseButton::make_custom_tooltip(const String &p_text) const {
+	Control *control = Control::make_custom_tooltip(p_text);
+	if (control) {
+		return control;
 	}
-	return tooltip;
+
+	if (!shortcut_in_tooltip || shortcut.is_null()) {
+		return nullptr; // Use the default tooltip label.
+	}
+
+	bool shortcut_has_events = shortcut->has_valid_event();
+	if (!shortcut_has_events && shortcut->get_name().is_empty()) {
+		return nullptr;
+	}
+
+	String text = atr(shortcut->get_name());
+	if (shortcut_has_events) {
+		text += " (" + shortcut->get_as_text() + ")";
+	}
+
+	if (!p_text.is_empty() && shortcut->get_name().nocasecmp_to(p_text) != 0) {
+		text += "\n" + atr(p_text);
+	}
+
+	// Make a label similar to the default tooltip label.
+	// Auto translation is disabled because we already did that manually above.
+	//
+	// We can't customize the tooltip text by overriding `get_tooltip()`
+	// because otherwise user-defined `_make_custom_tooltip()` would receive
+	// the translated and annotated text.
+	Label *label = memnew(Label(text));
+	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	label->set_theme_type_variation(SNAME("TooltipLabel"));
+
+	return label;
 }
 
 void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
@@ -417,6 +566,7 @@ void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
 		button_group->buttons.insert(this);
 	}
 
+	queue_accessibility_update();
 	queue_redraw(); //checkbox changes to radio if set a buttongroup
 	update_configuration_warnings();
 }
@@ -480,12 +630,14 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, ButtonGroup::get_class_static()), "set_button_group", "get_button_group");
 
 	ADD_GROUP("Shortcut", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, BaseButton, click_margin);
 
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);
@@ -549,7 +701,7 @@ void ButtonGroup::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_unpress"), "set_allow_unpress", "is_allow_unpress");
 
-	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, "BaseButton")));
+	ADD_SIGNAL(MethodInfo("pressed", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, BaseButton::get_class_static())));
 }
 
 ButtonGroup::ButtonGroup() {

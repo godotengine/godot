@@ -29,7 +29,10 @@
 /**************************************************************************/
 
 #include "box_shape_3d.h"
-#include "servers/physics_server_3d.h"
+
+#include "core/object/class_db.h"
+#include "scene/resources/3d/primitive_meshes.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 Vector<Vector3> BoxShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> lines;
@@ -45,6 +48,24 @@ Vector<Vector3> BoxShape3D::get_debug_mesh_lines() const {
 	}
 
 	return lines;
+}
+
+Ref<ArrayMesh> BoxShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+	Array box_array;
+	box_array.resize(RSE::ARRAY_MAX);
+	BoxMesh::create_mesh_array(box_array, size);
+
+	Vector<Color> colors;
+	const PackedVector3Array &verts = box_array[RSE::ARRAY_VERTEX];
+	const int32_t verts_size = verts.size();
+	for (int i = 0; i < verts_size; i++) {
+		colors.append(p_modulate);
+	}
+
+	Ref<ArrayMesh> box_mesh = memnew(ArrayMesh);
+	box_array[RSE::ARRAY_COLOR] = colors;
+	box_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, box_array);
+	return box_mesh;
 }
 
 real_t BoxShape3D::get_enclosing_radius() const {
@@ -95,6 +116,6 @@ void BoxShape3D::_bind_methods() {
 }
 
 BoxShape3D::BoxShape3D() :
-		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_BOX)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PS3DE::SHAPE_BOX)) {
 	set_size(Vector3(1, 1, 1));
 }

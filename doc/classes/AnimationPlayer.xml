@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationPlayer" inherits="AnimationMixer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationPlayer" inherits="AnimationMixer" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node used for animation playback.
 	</brief_description>
@@ -64,7 +64,7 @@
 			</description>
 		</method>
 		<method name="get_queue">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
 				Returns a list of the animation keys that are currently queued to play.
 			</description>
@@ -73,6 +73,35 @@
 			<return type="NodePath" />
 			<description>
 				Returns the node which node path references will travel from.
+			</description>
+		</method>
+		<method name="get_section_end_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the end time of the section currently being played.
+			</description>
+		</method>
+		<method name="get_section_start_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the start time of the section currently being played.
+			</description>
+		</method>
+		<method name="has_section" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if an animation is currently playing with a section.
+			</description>
+		</method>
+		<method name="is_animation_active" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the an animation is currently active. An animation is active if it was played by calling [method play] and was not finished yet, or was stopped by calling [method stop].
+				This can be used to check whether an animation is currently paused or stopped.
+				[codeblock]
+				var is_paused = not is_playing() and is_animation_active()
+				var is_stopped = not is_playing() and not is_animation_active()
+				[/codeblock]
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -110,6 +139,54 @@
 				This method is a shorthand for [method play] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
 			</description>
 		</method>
+		<method name="play_section">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="1" name="start_time" type="float" default="-1" />
+			<param index="2" name="end_time" type="float" default="-1" />
+			<param index="3" name="custom_blend" type="float" default="-1" />
+			<param index="4" name="custom_speed" type="float" default="1.0" />
+			<param index="5" name="from_end" type="bool" default="false" />
+			<description>
+				Plays the animation with key [param name] and the section starting from [param start_time] and ending on [param end_time]. See also [method play].
+				Setting [param start_time] to a value outside the range of the animation means the start of the animation will be used instead, and setting [param end_time] to a value outside the range of the animation means the end of the animation will be used instead. [param start_time] cannot be equal to [param end_time].
+			</description>
+		</method>
+		<method name="play_section_backwards">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="1" name="start_time" type="float" default="-1" />
+			<param index="2" name="end_time" type="float" default="-1" />
+			<param index="3" name="custom_blend" type="float" default="-1" />
+			<description>
+				Plays the animation with key [param name] and the section starting from [param start_time] and ending on [param end_time] in reverse.
+				This method is a shorthand for [method play_section] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], see its description for more information.
+			</description>
+		</method>
+		<method name="play_section_with_markers">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="1" name="start_marker" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="2" name="end_marker" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="3" name="custom_blend" type="float" default="-1" />
+			<param index="4" name="custom_speed" type="float" default="1.0" />
+			<param index="5" name="from_end" type="bool" default="false" />
+			<description>
+				Plays the animation with key [param name] and the section starting from [param start_marker] and ending on [param end_marker].
+				If the start marker is empty, the section starts from the beginning of the animation. If the end marker is empty, the section ends on the end of the animation. See also [method play].
+			</description>
+		</method>
+		<method name="play_section_with_markers_backwards">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="1" name="start_marker" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="2" name="end_marker" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="3" name="custom_blend" type="float" default="-1" />
+			<description>
+				Plays the animation with key [param name] and the section starting from [param start_marker] and ending on [param end_marker] in reverse.
+				This method is a shorthand for [method play_section_with_markers] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], see its description for more information.
+			</description>
+		</method>
 		<method name="play_with_capture">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" default="&amp;&quot;&quot;" />
@@ -137,6 +214,12 @@
 			<description>
 				Queues an animation for playback once the current animation and all previously queued animations are done.
 				[b]Note:[/b] If a looped animation is currently playing, the queued animation will never play unless the looped animation is stopped somehow.
+			</description>
+		</method>
+		<method name="reset_section">
+			<return type="void" />
+			<description>
+				Resets the current section. Does nothing if a section has not been set.
 			</description>
 		</method>
 		<method name="seek">
@@ -180,6 +263,23 @@
 				Sets the node which node path references will travel from.
 			</description>
 		</method>
+		<method name="set_section">
+			<return type="void" />
+			<param index="0" name="start_time" type="float" default="-1" />
+			<param index="1" name="end_time" type="float" default="-1" />
+			<description>
+				Changes the start and end times of the section being played. The current playback position will be clamped within the new section. See also [method play_section].
+			</description>
+		</method>
+		<method name="set_section_with_markers">
+			<return type="void" />
+			<param index="0" name="start_marker" type="StringName" default="&amp;&quot;&quot;" />
+			<param index="1" name="end_marker" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Changes the start and end markers of the section being played. The current playback position will be clamped within the new section. See also [method play_section_with_markers].
+				If the argument is empty, the section uses the beginning or end of the animation. If both are empty, it means that the section is not set.
+			</description>
+		</method>
 		<method name="stop">
 			<return type="void" />
 			<param index="0" name="keep_state" type="bool" default="false" />
@@ -191,13 +291,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="assigned_animation" type="String" setter="set_assigned_animation" getter="get_assigned_animation">
+		<member name="assigned_animation" type="StringName" setter="set_assigned_animation" getter="get_assigned_animation">
 			If playing, the current animation's key, otherwise, the animation last played. When set, this changes the animation, but will not play it unless already playing. See also [member current_animation].
 		</member>
-		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay" default="&quot;&quot;">
+		<member name="autoplay" type="StringName" setter="set_autoplay" getter="get_autoplay" default="&amp;&quot;&quot;">
 			The key of the animation to play when the scene loads.
 		</member>
-		<member name="current_animation" type="String" setter="set_current_animation" getter="get_current_animation" default="&quot;&quot;">
+		<member name="clear_cache_on_stop" type="bool" setter="set_clear_cache_on_stop_enabled" getter="is_clear_cache_on_stop_enabled" default="true">
+			If [code]true[/code], the animation track cache is cleared when the animation is stopped or the playback queue becomes empty. If [code]false[/code], the track cache is preserved, which can improve performance when animations are frequently started and stopped.
+		</member>
+		<member name="current_animation" type="StringName" setter="set_current_animation" getter="get_current_animation" default="&amp;&quot;&quot;">
 			The key of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.
 			[b]Note:[/b] While this property appears in the Inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
 		</member>
@@ -243,7 +346,7 @@
 			</description>
 		</signal>
 		<signal name="current_animation_changed">
-			<param index="0" name="name" type="String" />
+			<param index="0" name="anim_name" type="StringName" />
 			<description>
 				Emitted when [member current_animation] changes.
 			</description>

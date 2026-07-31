@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamInteractive" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="AudioStreamInteractive" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Audio stream that can playback music interactively, combining clips and a transition table.
 	</brief_description>
 	<description>
-		This is an audio stream that can playback music interactively, combining clips and a transition table. Clips must be added first, and the transition rules via the [method add_transition]. Additionally, this stream export a property parameter to control the playback via [AudioStreamPlayer], [AudioStreamPlayer2D], or [AudioStreamPlayer3D].
+		This is an audio stream that can playback music interactively, combining clips and a transition table. Clips must be added first, and then the transition rules via the [method add_transition]. Additionally, this stream exports a property parameter to control the playback via [AudioStreamPlayer], [AudioStreamPlayer2D], or [AudioStreamPlayer3D].
 		The way this is used is by filling a number of clips, then configuring the transition table. From there, clips are selected for playback and the music will smoothly go from the current to the new one while using the corresponding transition rule defined in the transition table.
 	</description>
 	<tutorials>
+		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_transition">
@@ -119,7 +120,7 @@
 			<param index="0" name="from_clip" type="int" />
 			<param index="1" name="to_clip" type="int" />
 			<description>
-				Return true if a given transition exists (was added via [method add_transition]).
+				Returns [code]true[/code] if a given transition exists (was added via [method add_transition]).
 			</description>
 		</method>
 		<method name="is_transition_holding_previous" qualifiers="const">
@@ -197,6 +198,9 @@
 		</constant>
 		<constant name="TRANSITION_TO_TIME_START" value="1" enum="TransitionToTime">
 			Transition to the start of the destination clip.
+		</constant>
+		<constant name="TRANSITION_TO_TIME_PREVIOUS_POSITION" value="2" enum="TransitionToTime">
+			Transition to the last played position in the destination clip, if there was a previous transition from that clip. Otherwise, plays from the start of the destination clip.
 		</constant>
 		<constant name="FADE_DISABLED" value="0" enum="FadeMode">
 			Do not use fade for the transition. This is useful when transitioning from a clip-end to clip-beginning, and each clip has their begin/end.

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef UDP_SERVER_H
-#define UDP_SERVER_H
+#pragma once
 
 #include "core/io/net_socket.h"
 #include "core/io/packet_peer_udp.h"
@@ -43,7 +42,10 @@ protected:
 	};
 
 	struct Peer {
-		PacketPeerUDP *peer = nullptr;
+		// Weakly owned in peers, strongly owned in pending.
+		// Peers are weakly owned such that it can self-destruct (and thus unregister itself)
+		// when the user no longer needs it.
+		PacketPeerUDP *peer;
 		IPAddress ip;
 		uint16_t port = 0;
 
@@ -76,5 +78,3 @@ public:
 	UDPServer();
 	~UDPServer();
 };
-
-#endif // UDP_SERVER_H

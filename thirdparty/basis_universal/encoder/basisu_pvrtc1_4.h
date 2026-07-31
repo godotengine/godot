@@ -1,5 +1,5 @@
 // basisu_pvrtc1_4.cpp
-// Copyright (C) 2019-2021 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2024 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -231,7 +231,7 @@ namespace basisu
 
 		inline void set_to_black()
 		{
-			memset(m_blocks.get_ptr(), 0, m_blocks.size_in_bytes());
+			memset((void *)m_blocks.get_ptr(), 0, m_blocks.size_in_bytes());
 		}
 
 		inline bool get_block_uses_transparent_modulation(uint32_t bx, uint32_t by) const

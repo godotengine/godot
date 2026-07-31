@@ -28,15 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DEBUGGER_SERVER_H
-#define EDITOR_DEBUGGER_SERVER_H
+#pragma once
 
 #include "core/debugger/remote_debugger_peer.h"
 #include "core/object/ref_counted.h"
 
 class EditorDebuggerServer : public RefCounted {
+	GDSOFTCLASS(EditorDebuggerServer, RefCounted);
+
 public:
-	typedef EditorDebuggerServer *(*CreateServerFunc)(const String &p_uri);
+	typedef Ref<EditorDebuggerServer> (*CreateServerFunc)(const String &p_uri);
 
 private:
 	static HashMap<StringName, CreateServerFunc> protocols;
@@ -46,7 +47,7 @@ public:
 	static void deinitialize();
 
 	static void register_protocol_handler(const String &p_protocol, CreateServerFunc p_func);
-	static EditorDebuggerServer *create(const String &p_protocol);
+	static Ref<EditorDebuggerServer> create(const String &p_protocol);
 
 	virtual String get_uri() const = 0;
 	virtual void poll() = 0;
@@ -56,5 +57,3 @@ public:
 	virtual bool is_connection_available() const = 0;
 	virtual Ref<RemoteDebuggerPeer> take_connection() = 0;
 };
-
-#endif // EDITOR_DEBUGGER_SERVER_H

@@ -5,7 +5,7 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#include "common.h"
+#include "ssl_misc.h"
 
 #if defined(MBEDTLS_SSL_CLI_C)
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3) || defined(MBEDTLS_SSL_PROTO_TLS1_2)
@@ -17,7 +17,6 @@
 #include "mbedtls/platform.h"
 
 #include "ssl_client.h"
-#include "ssl_misc.h"
 #include "ssl_tls13_keys.h"
 #include "ssl_debug_helpers.h"
 
@@ -142,7 +141,7 @@ static int ssl_write_alpn_ext(mbedtls_ssl_context *ssl,
      *     ProtocolName protocol_name_list<2..2^16-1>
      * } ProtocolNameList;
      */
-    for (const char **cur = ssl->conf->alpn_list; *cur != NULL; cur++) {
+    for (const char *const *cur = ssl->conf->alpn_list; *cur != NULL; cur++) {
         /*
          * mbedtls_ssl_conf_set_alpn_protocols() checked that the length of
          * protocol names is less than 255.
@@ -209,6 +208,10 @@ static int ssl_write_alpn_ext(mbedtls_ssl_context *ssl,
  * generalization of the TLS 1.2 supported elliptic curves extension. They both
  * share the same extension identifier.
  *
+ * If the TLS 1.3 logic for selecting proposed groups changes, the TLS 1.3
+ * group filtering in the function `ssl_tls13_parse_hrr_key_share_ext()` must
+ * be updated accordingly.
+ *
  */
 #define SSL_WRITE_SUPPORTED_GROUPS_EXT_TLS1_2_FLAG 1
 #define SSL_WRITE_SUPPORTED_GROUPS_EXT_TLS1_3_FLAG 2
@@ -223,7 +226,7 @@ static int ssl_write_supported_groups_ext(mbedtls_ssl_context *ssl,
     unsigned char *p = buf;
     unsigned char *named_group_list; /* Start of named_group_list */
     size_t named_group_list_len;     /* Length of named_group_list */
-    const uint16_t *group_list = mbedtls_ssl_get_groups(ssl);
+    const uint16_t *group_list = ssl->conf->group_list;
 
     *out_len = 0;
 
@@ -252,8 +255,8 @@ static int ssl_write_supported_groups_ext(mbedtls_ssl_context *ssl,
         if (flags & SSL_WRITE_SUPPORTED_GROUPS_EXT_TLS1_3_FLAG) {
 #if defined(PSA_WANT_ALG_ECDH)
             if (mbedtls_ssl_tls13_named_group_is_ecdhe(*group_list) &&
-                (mbedtls_ssl_get_ecp_group_id_from_tls_id(*group_list) !=
-                 MBEDTLS_ECP_DP_NONE)) {
+                mbedtls_ssl_get_psa_curve_info_from_tls_id(
+                    *group_list, NULL, NULL) == PSA_SUCCESS) {
                 propose_group = 1;
             }
 #endif
@@ -726,9 +729,8 @@ static int ssl_generate_random(mbedtls_ssl_context *ssl)
 #endif /* MBEDTLS_HAVE_TIME */
     }
 
-    ret = ssl->conf->f_rng(ssl->conf->p_rng,
-                           randbytes + gmt_unix_time_len,
-                           MBEDTLS_CLIENT_HELLO_RANDOM_LEN - gmt_unix_time_len);
+    ret = psa_generate_random(randbytes + gmt_unix_time_len,
+                              MBEDTLS_CLIENT_HELLO_RANDOM_LEN - gmt_unix_time_len);
     return ret;
 }
 
@@ -868,9 +870,9 @@ static int ssl_prepare_client_hello(mbedtls_ssl_context *ssl)
     if (session_id_len != session_negotiate->id_len) {
         session_negotiate->id_len = session_id_len;
         if (session_id_len > 0) {
-            ret = ssl->conf->f_rng(ssl->conf->p_rng,
-                                   session_negotiate->id,
-                                   session_id_len);
+
+            ret = psa_generate_random(session_negotiate->id,
+                                      session_id_len);
             if (ret != 0) {
                 MBEDTLS_SSL_DEBUG_RET(1, "creating session id failed", ret);
                 return ret;
@@ -945,8 +947,8 @@ int mbedtls_ssl_write_client_hello(mbedtls_ssl_context *ssl)
          */
         mbedtls_ssl_handshake_set_state(ssl, MBEDTLS_SSL_SERVER_HELLO);
 
-        if ((ret = mbedtls_ssl_write_handshake_msg(ssl)) != 0) {
-            MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_ssl_write_handshake_msg", ret);
+        if ((ret = mbedtls_ssl_write_handshake_msg_ext(ssl, 1, 1)) != 0) {
+            MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_ssl_write_handshake_msg_ext", ret);
             return ret;
         }
 

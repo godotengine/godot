@@ -29,9 +29,10 @@
 /**************************************************************************/
 
 #include "luminance.h"
-#include "../framebuffer_cache_rd.h"
-#include "../uniform_set_cache_rd.h"
+
+#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 using namespace RendererRD;
 
@@ -102,9 +103,10 @@ void Luminance::LuminanceBuffers::configure(RenderSceneBuffersRD *p_render_buffe
 			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 		} else {
 			tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
-			if (final) {
-				tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT;
-			}
+		}
+
+		if (final) {
+			tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 		}
 
 		RID texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -112,6 +114,7 @@ void Luminance::LuminanceBuffers::configure(RenderSceneBuffersRD *p_render_buffe
 
 		if (final) {
 			current = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->texture_clear(current, Color(0.0, 0.0, 0.0), 0u, 1u, 0u, 1u);
 			break;
 		}
 	}
@@ -119,12 +122,12 @@ void Luminance::LuminanceBuffers::configure(RenderSceneBuffersRD *p_render_buffe
 
 void Luminance::LuminanceBuffers::free_data() {
 	for (int i = 0; i < reduce.size(); i++) {
-		RD::get_singleton()->free(reduce[i]);
+		RD::get_singleton()->free_rid(reduce[i]);
 	}
 	reduce.clear();
 
 	if (current.is_valid()) {
-		RD::get_singleton()->free(current);
+		RD::get_singleton()->free_rid(current);
 		current = RID();
 	}
 }
@@ -160,7 +163,7 @@ void Luminance::luminance_reduction(RID p_source_texture, const Size2i p_source_
 	ERR_FAIL_NULL(material_storage);
 
 	// setup our uniforms
-	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	if (prefer_raster_effects) {
 		LuminanceReduceRasterPushConstant push_constant;
@@ -184,7 +187,7 @@ void Luminance::luminance_reduction(RID p_source_texture, const Size2i p_source_
 
 			RD::Uniform u_source_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, i == 0 ? p_source_texture : p_luminance_buffers->reduce[i - 1] }));
 
-			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer);
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, luminance_reduce_raster.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(framebuffer)));
 			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_texture), 0);
 			if (final) {

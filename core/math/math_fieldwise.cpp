@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 
 #include "math_fieldwise.h"
 
-#define SETUP_TYPE(m_type)    \
+#define SETUP_TYPE(m_type) \
 	m_type source = p_source; \
 	m_type target = p_target;
 #define TRY_TRANSFER_FIELD(m_name, m_member) \
-	if (p_field == m_name) {                 \
-		target.m_member = source.m_member;   \
+	if (p_field == m_name) { \
+		target.m_member = source.m_member; \
 	}
 
 Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const String &p_field) {
@@ -242,4 +242,4 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 	/* clang-format on */
 }
 
-#endif // TOOLS_ENABLED
+#endif // DEBUG_ENABLED

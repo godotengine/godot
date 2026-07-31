@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BONE_MAP_H
-#define BONE_MAP_H
+#pragma once
 
-#include "skeleton_profile.h"
+#include "scene/resources/skeleton_profile.h"
 
 class BoneMap : public Resource {
 	GDCLASS(BoneMap, Resource);
@@ -64,5 +63,3 @@ public:
 	BoneMap();
 	~BoneMap();
 };
-
-#endif // BONE_MAP_H

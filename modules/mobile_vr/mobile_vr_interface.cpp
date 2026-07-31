@@ -31,17 +31,18 @@
 #include "mobile_vr_interface.h"
 
 #include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "servers/display_server.h"
-#include "servers/rendering/rendering_server_globals.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server_types.h"
 
 StringName MobileVRInterface::get_name() const {
 	return "Native mobile";
-};
+}
 
 uint32_t MobileVRInterface::get_capabilities() const {
 	return XRInterface::XR_STEREO;
-};
+}
 
 Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
 	// Our magnetometer doesn't give us nice clean data.
@@ -98,7 +99,7 @@ Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
 	};
 
 	return mag_scaled;
-};
+}
 
 Basis MobileVRInterface::combine_acc_mag(const Vector3 &p_grav, const Vector3 &p_magneto) {
 	// yup, stock standard cross product solution...
@@ -117,7 +118,7 @@ Basis MobileVRInterface::combine_acc_mag(const Vector3 &p_grav, const Vector3 &p
 	acc_mag_m3.rows[2] = magneto;
 
 	return acc_mag_m3;
-};
+}
 
 void MobileVRInterface::set_position_from_sensors() {
 	_THREAD_SAFE_METHOD_
@@ -135,7 +136,6 @@ void MobileVRInterface::set_position_from_sensors() {
 	// few things we need
 	Input *input = Input::get_singleton();
 	Vector3 down(0.0, -1.0, 0.0); // Down is Y negative
-	Vector3 north(0.0, 0.0, 1.0); // North is Z positive
 
 	// make copies of our inputs
 	bool has_grav = false;
@@ -147,27 +147,27 @@ void MobileVRInterface::set_position_from_sensors() {
 	if (sensor_first) {
 		sensor_first = false;
 	} else {
-		acc = scrub(acc, last_accerometer_data, 2, 0.2);
-		magneto = scrub(magneto, last_magnetometer_data, 3, 0.3);
+		acc = scrub(acc, last_accerometer_data, 2, 0.2f);
+		magneto = scrub(magneto, last_magnetometer_data, 3, 0.3f);
 	};
 
 	last_accerometer_data = acc;
 	last_magnetometer_data = magneto;
 
-	if (grav.length() < 0.1) {
+	if (grav.length() < 0.1f) {
 		// not ideal but use our accelerometer, this will contain shaky user behavior
 		// maybe look into some math but I'm guessing that if this isn't available, it's because we lack the gyro sensor to actually work out
 		// what a stable gravity vector is
 		grav = acc;
-		if (grav.length() > 0.1) {
+		if (grav.length() > 0.1f) {
 			has_grav = true;
 		};
 	} else {
 		has_grav = true;
 	};
 
-	bool has_magneto = magneto.length() > 0.1;
-	if (gyro.length() > 0.1) {
+	bool has_magneto = magneto.length() > 0.1f;
+	if (gyro.length() > 0.1f) {
 		/* this can return to 0.0 if the user doesn't move the phone, so once on, it's on */
 		has_gyro = true;
 	};
@@ -206,7 +206,7 @@ void MobileVRInterface::set_position_from_sensors() {
 			Vector3 axis = grav_adj.cross(down);
 			axis.normalize();
 
-			Basis drift_compensation(axis, acos(dot) * delta_time * 10);
+			Basis drift_compensation(axis, std::acos(dot) * delta_time * 10);
 			orientation = drift_compensation * orientation;
 		};
 	};
@@ -215,7 +215,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	head_transform.basis = orientation.orthonormalized();
 
 	last_ticks = ticks;
-};
+}
 
 void MobileVRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_eye_height", "eye_height"), &MobileVRInterface::set_eye_height);
@@ -280,51 +280,51 @@ Rect2 MobileVRInterface::get_offset_rect() const {
 
 void MobileVRInterface::set_iod(const double p_iod) {
 	intraocular_dist = p_iod;
-};
+}
 
 double MobileVRInterface::get_iod() const {
 	return intraocular_dist;
-};
+}
 
 void MobileVRInterface::set_display_width(const double p_display_width) {
 	display_width = p_display_width;
-};
+}
 
 double MobileVRInterface::get_display_width() const {
 	return display_width;
-};
+}
 
 void MobileVRInterface::set_display_to_lens(const double p_display_to_lens) {
 	display_to_lens = p_display_to_lens;
-};
+}
 
 double MobileVRInterface::get_display_to_lens() const {
 	return display_to_lens;
-};
+}
 
 void MobileVRInterface::set_oversample(const double p_oversample) {
 	oversample = p_oversample;
-};
+}
 
 double MobileVRInterface::get_oversample() const {
 	return oversample;
-};
+}
 
 void MobileVRInterface::set_k1(const double p_k1) {
 	k1 = p_k1;
-};
+}
 
 double MobileVRInterface::get_k1() const {
 	return k1;
-};
+}
 
 void MobileVRInterface::set_k2(const double p_k2) {
 	k2 = p_k2;
-};
+}
 
 double MobileVRInterface::get_k2() const {
 	return k2;
-};
+}
 
 float MobileVRInterface::get_vrs_min_radius() const {
 	return xr_vrs.get_vrs_min_radius();
@@ -345,7 +345,7 @@ void MobileVRInterface::set_vrs_strength(float p_vrs_strength) {
 uint32_t MobileVRInterface::get_view_count() {
 	// needs stereo...
 	return 2;
-};
+}
 
 XRInterface::TrackingStatus MobileVRInterface::get_tracking_status() const {
 	return tracking_state;
@@ -353,7 +353,7 @@ XRInterface::TrackingStatus MobileVRInterface::get_tracking_status() const {
 
 bool MobileVRInterface::is_initialized() const {
 	return (initialized);
-};
+}
 
 bool MobileVRInterface::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -387,7 +387,7 @@ bool MobileVRInterface::initialize() {
 	};
 
 	return true;
-};
+}
 
 void MobileVRInterface::uninitialize() {
 	if (initialized) {
@@ -408,7 +408,7 @@ void MobileVRInterface::uninitialize() {
 
 		initialized = false;
 	};
-};
+}
 
 Dictionary MobileVRInterface::get_system_info() {
 	Dictionary dict;
@@ -442,7 +442,7 @@ Size2 MobileVRInterface::get_render_target_size() {
 	target_size.y *= oversample;
 
 	return target_size;
-};
+}
 
 Transform3D MobileVRInterface::get_camera_transform() {
 	_THREAD_SAFE_METHOD_
@@ -463,7 +463,7 @@ Transform3D MobileVRInterface::get_camera_transform() {
 	}
 
 	return transform_for_eye;
-};
+}
 
 Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	_THREAD_SAFE_METHOD_
@@ -497,7 +497,7 @@ Transform3D MobileVRInterface::get_transform_for_view(uint32_t p_view, const Tra
 	};
 
 	return transform_for_eye;
-};
+}
 
 Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	_THREAD_SAFE_METHOD_
@@ -508,12 +508,12 @@ Projection MobileVRInterface::get_projection_for_view(uint32_t p_view, double p_
 	eye.set_for_hmd(p_view + 1, p_aspect, intraocular_dist, display_width, display_to_lens, oversample, p_z_near, p_z_far);
 
 	return eye;
-};
+}
 
-Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
+Vector<RenderingServerTypes::BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
 
-	Vector<BlitToScreen> blit_to_screen;
+	Vector<RenderingServerTypes::BlitToScreen> blit_to_screen;
 
 	// We must have a valid render target.
 	ERR_FAIL_COND_V(!p_render_target.is_valid(), blit_to_screen);
@@ -529,7 +529,7 @@ Vector<BlitToScreen> MobileVRInterface::post_draw_viewport(RID p_render_target, 
 	Rect2 modified_screen_rect = Rect2(p_screen_rect.position + offset_rect.position * p_screen_rect.size, p_screen_rect.size * offset_rect.size);
 
 	// and add our blits
-	BlitToScreen blit;
+	RenderingServerTypes::BlitToScreen blit;
 	blit.render_target = p_render_target;
 	blit.multi_view.use_layer = true;
 	blit.lens_distortion.apply = true;
@@ -571,7 +571,7 @@ void MobileVRInterface::process() {
 			head->set_pose("default", head_transform, Vector3(), Vector3(), tracking_confidence);
 		}
 	};
-};
+}
 
 RID MobileVRInterface::get_vrs_texture() {
 	PackedVector2Array eye_foci;
@@ -597,4 +597,4 @@ MobileVRInterface::~MobileVRInterface() {
 	if (is_initialized()) {
 		uninitialize();
 	};
-};
+}

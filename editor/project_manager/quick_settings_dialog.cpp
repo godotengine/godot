@@ -30,25 +30,29 @@
 
 #include "quick_settings_dialog.h"
 
-#include "core/config/project_settings.h"
-#include "core/string/translation.h"
-#include "editor/editor_settings.h"
+#include "core/object/callable_mp.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
+#include "editor/inspector/editor_properties.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/settings/editor_settings_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+#include "servers/display/display_server.h"
 
 void QuickSettingsDialog::_fetch_setting_values() {
 #ifndef ANDROID_ENABLED
 	editor_languages.clear();
 #endif
+	editor_styles.clear();
 	editor_themes.clear();
 	editor_scales.clear();
 	editor_network_modes.clear();
+	editor_check_for_updates.clear();
 	editor_directory_naming_conventions.clear();
 
 	{
@@ -56,16 +60,20 @@ void QuickSettingsDialog::_fetch_setting_values() {
 		EditorSettings::get_singleton()->get_property_list(&editor_settings_properties);
 
 		for (const PropertyInfo &pi : editor_settings_properties) {
-			if (pi.name == "interface/editor/editor_language") {
+			if (pi.name == "interface/editor/localization/editor_language") {
 #ifndef ANDROID_ENABLED
-				editor_languages = pi.hint_string.split(",");
+				editor_languages = pi.hint_string.split(";", false);
 #endif
-			} else if (pi.name == "interface/theme/preset") {
+			} else if (pi.name == "interface/theme/style") {
+				editor_styles = pi.hint_string.split(",");
+			} else if (pi.name == "interface/theme/color_preset") {
 				editor_themes = pi.hint_string.split(",");
-			} else if (pi.name == "interface/editor/display_scale") {
+			} else if (pi.name == "interface/editor/appearance/display_scale") {
 				editor_scales = pi.hint_string.split(",");
 			} else if (pi.name == "network/connection/network_mode") {
 				editor_network_modes = pi.hint_string.split(",");
+			} else if (pi.name == "network/connection/check_for_updates") {
+				editor_check_for_updates = pi.hint_string.split(",");
 			} else if (pi.name == "project_manager/directory_naming_convention") {
 				editor_directory_naming_conventions = pi.hint_string.split(",");
 			}
@@ -77,27 +85,40 @@ void QuickSettingsDialog::_update_current_values() {
 #ifndef ANDROID_ENABLED
 	// Language options.
 	{
-		const String current_lang = EDITOR_GET("interface/editor/editor_language");
+		const String current_lang = EDITOR_GET("interface/editor/localization/editor_language");
 
 		for (int i = 0; i < editor_languages.size(); i++) {
-			const String &lang_value = editor_languages[i];
+			const String &lang_value = editor_languages[i].get_slicec('/', 0);
 			if (current_lang == lang_value) {
-				language_option_button->set_text(current_lang);
+				language_option_button->set_text(editor_languages[i].get_slicec('/', 1));
 				language_option_button->select(i);
+				break;
 			}
 		}
 	}
 #endif
+	// Style options.
+	{
+		const String current_style = EDITOR_GET("interface/theme/style");
+
+		for (int i = 0; i < editor_styles.size(); i++) {
+			const String &style_value = editor_styles[i];
+			if (current_style == style_value) {
+				style_option_button->select(i);
+			}
+		}
+	}
 
 	// Theme options.
 	{
-		const String current_theme = EDITOR_GET("interface/theme/preset");
+		const String current_theme = EDITOR_GET("interface/theme/color_preset");
 
 		for (int i = 0; i < editor_themes.size(); i++) {
 			const String &theme_value = editor_themes[i];
 			if (current_theme == theme_value) {
 				theme_option_button->set_text(current_theme);
 				theme_option_button->select(i);
+				theme_option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 				custom_theme_label->set_visible(current_theme == "Custom");
 			}
@@ -106,7 +127,7 @@ void QuickSettingsDialog::_update_current_values() {
 
 	// Scale options.
 	{
-		const int current_scale = EDITOR_GET("interface/editor/display_scale");
+		const int current_scale = EDITOR_GET("interface/editor/appearance/display_scale");
 
 		for (int i = 0; i < editor_scales.size(); i++) {
 			const String &scale_value = editor_scales[i];
@@ -130,6 +151,22 @@ void QuickSettingsDialog::_update_current_values() {
 		}
 	}
 
+	// Check for updates options.
+	{
+		const int current_update_mode = EDITOR_GET("network/connection/check_for_updates");
+
+		for (int i = 0; i < editor_check_for_updates.size(); i++) {
+			const String &check_for_update_value = editor_check_for_updates[i];
+			if (current_update_mode == i) {
+				check_for_update_button->set_text(check_for_update_value);
+				check_for_update_button->select(i);
+
+				// Disables Check for Updates selection if Network mode is set to Offline.
+				check_for_update_button->set_disabled(!EDITOR_GET("network/connection/network_mode"));
+			}
+		}
+	}
+
 	// Project directory naming options.
 	{
 		const int current_directory_naming = EDITOR_GET("project_manager/directory_naming_convention");
@@ -144,39 +181,52 @@ void QuickSettingsDialog::_update_current_values() {
 	}
 }
 
-void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_control) {
+void QuickSettingsDialog::_add_setting_control(const String &p_text, const String &p_setting, Control *p_control) {
 	HBoxContainer *container = memnew(HBoxContainer);
 	settings_list->add_child(container);
 
-	Label *label = memnew(Label(p_text));
+	Label *label = memnew(SettingLabel(p_text, p_setting));
+	label->set_text(p_text);
 	label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	container->add_child(label);
 
 	p_control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	p_control->set_stretch_ratio(2.0);
 	container->add_child(p_control);
 }
 
 #ifndef ANDROID_ENABLED
 void QuickSettingsDialog::_language_selected(int p_id) {
 	const String selected_language = language_option_button->get_item_metadata(p_id);
-	_set_setting_value("interface/editor/editor_language", selected_language, true);
+	_set_setting_value("interface/editor/localization/editor_language", selected_language);
 }
 #endif
 
+void QuickSettingsDialog::_style_selected(int p_id) {
+	const String selected_style = style_option_button->get_item_text(p_id);
+	_set_setting_value("interface/theme/style", selected_style);
+}
+
 void QuickSettingsDialog::_theme_selected(int p_id) {
 	const String selected_theme = theme_option_button->get_item_text(p_id);
-	_set_setting_value("interface/theme/preset", selected_theme);
+	_set_setting_value("interface/theme/color_preset", selected_theme);
 
 	custom_theme_label->set_visible(selected_theme == "Custom");
 }
 
 void QuickSettingsDialog::_scale_selected(int p_id) {
-	_set_setting_value("interface/editor/display_scale", p_id, true);
+	_set_setting_value("interface/editor/appearance/display_scale", p_id, true);
 }
 
 void QuickSettingsDialog::_network_mode_selected(int p_id) {
 	_set_setting_value("network/connection/network_mode", p_id);
+
+	// Disables Check for Updates selection if Network mode is set to Offline.
+	check_for_update_button->set_disabled(!p_id);
+}
+
+void QuickSettingsDialog::_check_for_update_selected(int p_id) {
+	_set_setting_value("network/connection/check_for_updates", p_id);
 }
 
 void QuickSettingsDialog::_directory_naming_convention_selected(int p_id) {
@@ -192,10 +242,28 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 		restart_required_label->show();
 
 		if (!restart_required_button) {
-			restart_required_button = add_button(TTR("Restart Now"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
+			int ed_swap_cancel_ok = EDITOR_GET("interface/editor/appearance/accept_dialog_cancel_ok_buttons");
+			if (ed_swap_cancel_ok == 0) {
+				ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
+			}
+			restart_required_button = add_button(TTRC("Restart Now"), ed_swap_cancel_ok != 2);
 			restart_required_button->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_request_restart));
 		}
 	}
+}
+
+void QuickSettingsDialog::_show_full_settings() {
+	if (!editor_settings_dialog) {
+		Ref<EditorInspectorDefaultPlugin> eidp;
+		eidp.instantiate();
+		EditorInspector::add_inspector_plugin(eidp);
+
+		editor_settings_dialog = memnew(EditorSettingsDialog);
+		get_parent()->add_child(editor_settings_dialog);
+		editor_settings_dialog->connect("restart_requested", callable_mp(this, &QuickSettingsDialog::_request_restart));
+	}
+	hide();
+	editor_settings_dialog->popup_edit_settings();
 }
 
 void QuickSettingsDialog::_request_restart() {
@@ -211,7 +279,7 @@ void QuickSettingsDialog::update_size_limits(const Size2 &p_max_popup_size) {
 void QuickSettingsDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			settings_list_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("Background"), EditorStringName(EditorStyles)));
+			settings_list_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("quick_settings_panel"), SNAME("ProjectManager")));
 
 			restart_required_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			custom_theme_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_placeholder_color"), EditorStringName(Editor)));
@@ -230,8 +298,8 @@ void QuickSettingsDialog::_bind_methods() {
 }
 
 QuickSettingsDialog::QuickSettingsDialog() {
-	set_title(TTR("Quick Settings"));
-	set_ok_button_text(TTR("Close"));
+	set_title(TTRC("Quick Settings"));
+	set_ok_button_text(TTRC("Close"));
 
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	add_child(main_vbox);
@@ -251,19 +319,34 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		// Language options.
 		{
 			language_option_button = memnew(OptionButton);
+			language_option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			language_option_button->set_fit_to_longest_item(false);
+			language_option_button->set_search_bar_enabled(true);
 			language_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_language_selected));
 
 			for (int i = 0; i < editor_languages.size(); i++) {
-				const String &lang_value = editor_languages[i];
-				String lang_name = TranslationServer::get_singleton()->get_locale_name(lang_value);
-				language_option_button->add_item(vformat("[%s] %s", lang_value, lang_name), i);
-				language_option_button->set_item_metadata(i, lang_value);
+				const String &lang_code = editor_languages[i].get_slicec('/', 0);
+				const String &lang_name = editor_languages[i].get_slicec('/', 1);
+				language_option_button->add_item(lang_name, i);
+				language_option_button->set_item_metadata(i, lang_code);
 			}
 
-			_add_setting_control(TTR("Language"), language_option_button);
+			_add_setting_control(TTRC("Language"), "interface/editor/localization/editor_language", language_option_button);
 		}
 #endif
+		// Style options.
+		{
+			style_option_button = memnew(OptionButton);
+			style_option_button->set_fit_to_longest_item(false);
+			style_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_style_selected));
+
+			for (int i = 0; i < editor_styles.size(); i++) {
+				const String &style_value = editor_styles[i];
+				style_option_button->add_item(style_value, i);
+			}
+
+			_add_setting_control(TTRC("Style"), "interface/theme/style", style_option_button);
+		}
 
 		// Theme options.
 		{
@@ -276,9 +359,9 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				theme_option_button->add_item(theme_value, i);
 			}
 
-			_add_setting_control(TTR("Interface Theme"), theme_option_button);
+			_add_setting_control(TTRC("Color Preset"), "interface/theme/color_preset", theme_option_button);
 
-			custom_theme_label = memnew(Label(TTR("Custom preset can be further configured in the editor.")));
+			custom_theme_label = memnew(Label(TTRC("Custom preset can be further configured in the full settings.")));
 			custom_theme_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 			custom_theme_label->set_custom_minimum_size(Size2(220, 0) * EDSCALE);
 			custom_theme_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
@@ -299,7 +382,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				scale_option_button->add_item(scale_value, i);
 			}
 
-			_add_setting_control(TTR("Display Scale"), scale_option_button);
+			_add_setting_control(TTRC("Display Scale"), "interface/editor/appearance/display_scale", scale_option_button);
 		}
 
 		// Network mode options.
@@ -313,7 +396,21 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				network_mode_option_button->add_item(network_mode_value, i);
 			}
 
-			_add_setting_control(TTR("Network Mode"), network_mode_option_button);
+			_add_setting_control(TTRC("Network Mode"), "network/connection/network_mode", network_mode_option_button);
+		}
+
+		// Check for updates options.
+		{
+			check_for_update_button = memnew(OptionButton);
+			check_for_update_button->set_fit_to_longest_item(false);
+			check_for_update_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_check_for_update_selected));
+
+			for (int i = 0; i < editor_check_for_updates.size(); i++) {
+				const String &check_for_update_value = editor_check_for_updates[i];
+				check_for_update_button->add_item(check_for_update_value, i);
+			}
+
+			_add_setting_control(TTRC("Check for Updates"), "network/connection/check_for_updates", check_for_update_button);
 		}
 
 		// Project directory naming options.
@@ -327,19 +424,37 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				directory_naming_convention_button->add_item(directory_naming_convention, i);
 			}
 
-			_add_setting_control(TTR("Directory Naming Convention"), directory_naming_convention_button);
+			_add_setting_control(TTRC("Directory Naming Convention"), "project_manager/directory_naming_convention", directory_naming_convention_button);
 		}
 
 		_update_current_values();
 	}
 
+	// Full settings button.
+	{
+		Button *open_full_settings = memnew(Button);
+		open_full_settings->set_text(TTRC("Edit All Settings"));
+		open_full_settings->set_h_size_flags(Control::SIZE_SHRINK_END);
+		settings_list->add_child(open_full_settings);
+		open_full_settings->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_show_full_settings));
+	}
+
 	// Restart required panel.
 	{
-		restart_required_label = memnew(Label(TTR("Settings changed! The project manager must be restarted for changes to take effect.")));
+		restart_required_label = memnew(Label(TTRC("Settings changed! The project manager must be restarted for changes to take effect.")));
 		restart_required_label->set_custom_minimum_size(Size2(560, 0) * EDSCALE);
 		restart_required_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 		restart_required_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		restart_required_label->hide();
 		main_vbox->add_child(restart_required_label);
 	}
+}
+
+Control *SettingLabel::make_custom_tooltip(const String &p_text) const {
+	return EditorHelpBitTooltip::make_tooltip(const_cast<SettingLabel *>(this), vformat("property|EditorSettings|%s", setting_name), String());
+}
+
+SettingLabel::SettingLabel(const String &p_text, const String &p_setting) :
+		Label(p_text) {
+	setting_name = p_setting;
 }

@@ -22,11 +22,7 @@ Boolean macros such as HAVE_STDLIB_H and SUPPORT_PCRE2_8 should either be
 defined (conventionally to 1) for TRUE, and not defined at all for FALSE. All
 such macros are listed as a commented #undef in config.h.generic. Macros such
 as MATCH_LIMIT, whose actual value is relevant, have defaults defined, but are
-surrounded by #ifndef/#endif lines so that the value can be overridden by -D.
-
-PCRE2 uses memmove() if HAVE_MEMMOVE is defined; otherwise it uses bcopy() if
-HAVE_BCOPY is defined. If your system has neither bcopy() nor memmove(), make
-sure both macros are undefined; an emulation function will then be used. */
+surrounded by #ifndef/#endif lines so that the value can be overridden by -D. */
 
 /* By default, the \R escape sequence matches any Unicode line ending
    character or sequence of characters. If BSR_ANYCRLF is defined (to any
@@ -44,22 +40,33 @@ sure both macros are undefined; an emulation function will then be used. */
    assumes that all input strings are in EBCDIC. If you do not define this
    macro, PCRE2 will assume input strings are ASCII or UTF-8/16/32 Unicode. It
    is not possible to build a version of PCRE2 that supports both EBCDIC and
-   UTF-8/16/32. */
+   ASCII or UTF-8/16/32. */
 /* #undef EBCDIC */
+
+/* To force an EBCDIC environment, define this macro to make the core PCRE2
+   library functions use EBCDIC codepage 1047, regardless of whether the
+   compiler supports it using C character literals. */
+/* #undef EBCDIC_IGNORING_COMPILER */
 
 /* In an EBCDIC environment, define this macro to any value to arrange for the
    NL character to be 0x25 instead of the default 0x15. NL plays the role that
    LF does in an ASCII/Unicode environment. */
 /* #undef EBCDIC_NL25 */
 
+/* Define to 1 if you have the <assert.h> header file. */
+/* #undef HAVE_ASSERT_H */
+
 /* Define this if your compiler supports __attribute__((uninitialized)) */
 /* #undef HAVE_ATTRIBUTE_UNINITIALIZED */
 
-/* Define to 1 if you have the 'bcopy' function. */
-/* #undef HAVE_BCOPY */
+/* Define this if your compiler provides __assume() */
+/* #undef HAVE_BUILTIN_ASSUME */
 
 /* Define this if your compiler provides __builtin_mul_overflow() */
 /* #undef HAVE_BUILTIN_MUL_OVERFLOW */
+
+/* Define this if your compiler provides __builtin_unreachable() */
+/* #undef HAVE_BUILTIN_UNREACHABLE */
 
 /* Define to 1 if you have the <bzlib.h> header file. */
 /* #undef HAVE_BZLIB_H */
@@ -82,16 +89,13 @@ sure both macros are undefined; an emulation function will then be used. */
 /* Define to 1 if you have the <limits.h> header file. */
 /* #undef HAVE_LIMITS_H */
 
-/* Define to 1 if you have the 'memfd_create' function. */
+/* Define to 1 if you have the `memfd_create' function. */
 /* #undef HAVE_MEMFD_CREATE */
-
-/* Define to 1 if you have the 'memmove' function. */
-/* #undef HAVE_MEMMOVE */
 
 /* Define to 1 if you have the <minix/config.h> header file. */
 /* #undef HAVE_MINIX_CONFIG_H */
 
-/* Define to 1 if you have the 'mkostemp' function. */
+/* Define to 1 if you have the `mkostemp' function. */
 /* #undef HAVE_MKOSTEMP */
 
 /* Define if you have POSIX threads libraries and header files. */
@@ -112,7 +116,7 @@ sure both macros are undefined; an emulation function will then be used. */
 /* Define to 1 if you have the `realpath' function. */
 /* #undef HAVE_REALPATH */
 
-/* Define to 1 if you have the 'secure_getenv' function. */
+/* Define to 1 if you have the `secure_getenv' function. */
 /* #undef HAVE_SECURE_GETENV */
 
 /* Define to 1 if you have the <stdint.h> header file. */
@@ -123,9 +127,6 @@ sure both macros are undefined; an emulation function will then be used. */
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 /* #undef HAVE_STDLIB_H */
-
-/* Define to 1 if you have the 'strerror' function. */
-/* #undef HAVE_STRERROR */
 
 /* Define to 1 if you have the <strings.h> header file. */
 /* #undef HAVE_STRINGS_H */
@@ -145,7 +146,8 @@ sure both macros are undefined; an emulation function will then be used. */
 /* Define to 1 if you have the <unistd.h> header file. */
 /* #undef HAVE_UNISTD_H */
 
-/* Define to 1 if the compiler supports simple visibility declarations. */
+/* Define to 1 if the compiler supports GCC compatible visibility
+   declarations. */
 /* #undef HAVE_VISIBILITY */
 
 /* Define to 1 if you have the <wchar.h> header file. */
@@ -215,7 +217,7 @@ sure both macros are undefined; an emulation function will then be used. */
    Care must be taken if it is increased, because it guards against integer
    overflow caused by enormously large patterns. */
 #ifndef MAX_NAME_SIZE
-#define MAX_NAME_SIZE 32
+#define MAX_NAME_SIZE 128
 #endif
 
 /* The value of MAX_VARLOOKBEHIND specifies the default maximum length, in
@@ -245,7 +247,7 @@ sure both macros are undefined; an emulation function will then be used. */
 #define PACKAGE_NAME "PCRE2"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PCRE2 10.43"
+#define PACKAGE_STRING "PCRE2 10.47"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "pcre2"
@@ -254,7 +256,7 @@ sure both macros are undefined; an emulation function will then be used. */
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "10.43"
+#define PACKAGE_VERSION "10.47"
 
 /* The value of PARENS_NEST_LIMIT specifies the maximum depth of nested
    parentheses (of any kind) in a pattern. This limits the amount of system
@@ -281,10 +283,24 @@ sure both macros are undefined; an emulation function will then be used. */
 #define PCRE2GREP_MAX_BUFSIZE 1048576
 #endif
 
+/* See PCRE2_EXP_DEFN; but this is applied to functions in the libpcre2-posix
+   library. */
+/* #undef PCRE2POSIX_EXP_DEFN */
+
+/* Define to any value if linking libpcre2-posix dynamically. Ideally, if both
+   static and shared libraries are being built, then PCRE2POSIX_SHARED would
+   be defined only for the shared build. Indeed, this is a requirement on
+   Windows. However, when building with Autoconf and libtool, we compile the
+   sources once only to create both the static and shared library, so in this
+   case, PCRE2POSIX_SHARED should only be defined if the shared library is
+   being built, regardless of whether or not the static library is also being
+   built. */
+/* #undef PCRE2POSIX_SHARED */
+
 /* Define to any value to include debugging code. */
 /* #undef PCRE2_DEBUG */
 
-/* to make a symbol visible */
+/* Define to the annotation for making a symbol visible. */
 #define PCRE2_EXPORT
 
 /* If you are compiling for a system other than a Unix-like system or
@@ -299,7 +315,12 @@ sure both macros are undefined; an emulation function will then be used. */
    in the C sense, but which are internal to the library. */
 /* #undef PCRE2_EXP_DEFN */
 
-/* Define to any value if linking statically (TODO: make nice with Libtool) */
+/* Define to any value if linking statically. Ideally, if both static and
+   shared libraries are being built, then PCRE2_STATIC would be defined only
+   for the static build. Indeed, this is a requirement on Windows. With
+   Autoconf and libtool however, it is idiomatic to compile the sources once
+   to create both the static and shared library, so in this case, PCRE2_STATIC
+   should only be defined if no shared library is being built. */
 /* #undef PCRE2_STATIC */
 
 /* Define to necessary symbol if this constant uses a non-standard name on
@@ -311,7 +332,7 @@ sure both macros are undefined; an emulation function will then be used. */
    unless SUPPORT_JIT is also defined. */
 /* #undef SLJIT_PROT_EXECUTABLE_ALLOCATOR */
 
-/* Define to 1 if all of the C89 standard headers exist (not just the ones
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
 /* #undef STDC_HEADERS */
@@ -366,7 +387,7 @@ sure both macros are undefined; an emulation function will then be used. */
 /* Define to any value for valgrind support to find invalid memory reads. */
 /* #undef SUPPORT_VALGRIND */
 
-/* Enable extensions on AIX, Interix, z/OS.  */
+/* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE
 # define _ALL_SOURCE 1
 #endif
@@ -427,15 +448,11 @@ sure both macros are undefined; an emulation function will then be used. */
 #ifndef __STDC_WANT_IEC_60559_DFP_EXT__
 # define __STDC_WANT_IEC_60559_DFP_EXT__ 1
 #endif
-/* Enable extensions specified by C23 Annex F.  */
-#ifndef __STDC_WANT_IEC_60559_EXT__
-# define __STDC_WANT_IEC_60559_EXT__ 1
-#endif
 /* Enable extensions specified by ISO/IEC TS 18661-4:2015.  */
 #ifndef __STDC_WANT_IEC_60559_FUNCS_EXT__
 # define __STDC_WANT_IEC_60559_FUNCS_EXT__ 1
 #endif
-/* Enable extensions specified by C23 Annex H and ISO/IEC TS 18661-3:2015.  */
+/* Enable extensions specified by ISO/IEC TS 18661-3:2015.  */
 #ifndef __STDC_WANT_IEC_60559_TYPES_EXT__
 # define __STDC_WANT_IEC_60559_TYPES_EXT__ 1
 #endif
@@ -458,26 +475,20 @@ sure both macros are undefined; an emulation function will then be used. */
 #endif
 
 /* Version number of package */
-#define VERSION "10.43"
+#define VERSION "10.47"
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 /* #undef _FILE_OFFSET_BITS */
 
-/* Define to 1 on platforms where this makes off_t a 64-bit type. */
+/* Define for large files, on AIX-style hosts. */
 /* #undef _LARGE_FILES */
 
-/* Number of bits in time_t, on hosts where this is settable. */
-/* #undef _TIME_BITS */
-
-/* Define to 1 on platforms where this makes time_t a 64-bit type. */
-/* #undef __MINGW_USE_VC2005_COMPAT */
-
-/* Define to empty if 'const' does not conform to ANSI C. */
+/* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
 
 /* Define to the type of a signed integer type of width exactly 64 bits if
    such a type exists and the standard includes do not define it. */
 /* #undef int64_t */
 
-/* Define as 'unsigned int' if <stddef.h> doesn't define. */
+/* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */

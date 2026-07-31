@@ -30,7 +30,7 @@
 
 #include "xr_hand_tracker.h"
 
-#include "xr_body_tracker.h"
+#include "core/object/class_db.h"
 
 void XRHandTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_has_tracking_data", "has_data"), &XRHandTracker::set_has_tracking_data);
@@ -60,6 +60,7 @@ void XRHandTracker::_bind_methods() {
 	BIND_ENUM_CONSTANT(HAND_TRACKING_SOURCE_UNKNOWN);
 	BIND_ENUM_CONSTANT(HAND_TRACKING_SOURCE_UNOBSTRUCTED);
 	BIND_ENUM_CONSTANT(HAND_TRACKING_SOURCE_CONTROLLER);
+	BIND_ENUM_CONSTANT(HAND_TRACKING_SOURCE_NOT_TRACKED);
 	BIND_ENUM_CONSTANT(HAND_TRACKING_SOURCE_MAX);
 
 	BIND_ENUM_CONSTANT(HAND_JOINT_PALM);

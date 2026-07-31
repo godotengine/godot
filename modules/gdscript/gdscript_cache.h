@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_CACHE_H
-#define GDSCRIPT_CACHE_H
+#pragma once
 
 #include "gdscript.h"
 
 #include "core/object/ref_counted.h"
-#include "core/os/mutex.h"
+#include "core/os/safe_binary_mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 
@@ -42,6 +41,8 @@ class GDScriptAnalyzer;
 class GDScriptParser;
 
 class GDScriptParserRef : public RefCounted {
+	GDSOFTCLASS(GDScriptParserRef, RefCounted);
+
 public:
 	enum Status {
 		EMPTY,
@@ -77,6 +78,10 @@ public:
 	~GDScriptParserRef();
 };
 
+namespace GDScriptTests {
+class TestGDScriptCacheAccessor;
+}
+
 class GDScriptCache {
 	// String key is full path.
 	HashMap<String, GDScriptParserRef *> parser_map;
@@ -90,12 +95,18 @@ class GDScriptCache {
 	friend class GDScript;
 	friend class GDScriptParserRef;
 	friend class GDScriptInstance;
+	friend class GDScriptTests::TestGDScriptCacheAccessor;
 
 	static GDScriptCache *singleton;
 
 	bool cleared = false;
 
-	Mutex mutex;
+public:
+	static const int BINARY_MUTEX_TAG = 2;
+
+private:
+	static SafeBinaryMutex<BINARY_MUTEX_TAG> mutex;
+	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_gdscript_cache_mutex();
 
 public:
 	static void move_script(const String &p_from, const String &p_to);
@@ -106,6 +117,11 @@ public:
 	static String get_source_code(const String &p_path);
 	static Vector<uint8_t> get_binary_tokens(const String &p_path);
 	static Ref<GDScript> get_shallow_script(const String &p_path, Error &r_error, const String &p_owner = String());
+	/**
+	 * Returns a fully loaded GDScript using an already cached script if one exists.
+	 *
+	 * The returned instance is present in GDScriptCache and ResourceCache.
+	 */
 	static Ref<GDScript> get_full_script(const String &p_path, Error &r_error, const String &p_owner = String(), bool p_update_from_disk = false);
 	static Ref<GDScript> get_cached_script(const String &p_path);
 	static Error finish_compiling(const String &p_owner);
@@ -117,5 +133,3 @@ public:
 	GDScriptCache();
 	~GDScriptCache();
 };
-
-#endif // GDSCRIPT_CACHE_H

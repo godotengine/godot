@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHAPE_CAST_3D_H
-#define SHAPE_CAST_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/shape_3d.h"
+#include "scene/resources/material.h"
+#include "servers/physics_3d/physics_server_3d_types.h"
 
 class CollisionObject3D;
 
@@ -68,12 +69,10 @@ class ShapeCast3D : public Node3D {
 
 	// Result
 	int max_results = 32;
-	Vector<PhysicsDirectSpaceState3D::ShapeRestInfo> result;
+	Vector<PS3DT::ShapeRestInfo> result;
 	bool collided = false;
 	real_t collision_safe_fraction = 1.0;
 	real_t collision_unsafe_fraction = 1.0;
-
-	Array _get_collision_result() const;
 
 	RID debug_instance;
 	Ref<ArrayMesh> debug_mesh;
@@ -123,6 +122,7 @@ public:
 
 	Ref<StandardMaterial3D> get_debug_material();
 
+	Array get_collision_result() const;
 	int get_collision_count() const;
 	Object *get_collider(int p_idx) const;
 	RID get_collider_rid(int p_idx) const;
@@ -137,12 +137,10 @@ public:
 	bool is_colliding() const;
 
 	void add_exception_rid(const RID &p_rid);
-	void add_exception(const CollisionObject3D *p_node);
+	void add_exception(RequiredParam<const CollisionObject3D> rp_node);
 	void remove_exception_rid(const RID &p_rid);
-	void remove_exception(const CollisionObject3D *p_node);
+	void remove_exception(RequiredParam<const CollisionObject3D> rp_node);
 	void clear_exceptions();
 
 	virtual PackedStringArray get_configuration_warnings() const override;
 };
-
-#endif // SHAPE_CAST_3D_H

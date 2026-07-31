@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,60 +22,46 @@
 
 #include "tvgScene.h"
 
-/************************************************************************/
-/* External Class Implementation                                        */
-/************************************************************************/
 
-Scene::Scene() : pImpl(new Impl(this))
+Scene::Scene() = default;
+
+
+Scene* Scene::gen() noexcept
 {
-    Paint::pImpl->id = TVG_CLASS_ID_SCENE;
+    return new SceneImpl;
 }
 
 
-Scene::~Scene()
+Type Scene::type() const noexcept
 {
-    delete(pImpl);
+    return Type::Scene;
 }
 
 
-unique_ptr<Scene> Scene::gen() noexcept
+Result Scene::add(Paint* target, Paint* at) noexcept
 {
-    return unique_ptr<Scene>(new Scene);
+    return to<SceneImpl>(this)->insert(target, at);
 }
 
 
-uint32_t Scene::identifier() noexcept
+Result Scene::remove(Paint* paint) noexcept
 {
-    return TVG_CLASS_ID_SCENE;
+    if (paint) return to<SceneImpl>(this)->remove(paint);
+    else return to<SceneImpl>(this)->clearPaints();
 }
 
 
-Result Scene::push(unique_ptr<Paint> paint) noexcept
+const list<Paint*>& Scene::paints() const noexcept
 {
-    auto p = paint.release();
-    if (!p) return Result::MemoryCorruption;
-    PP(p)->ref();
-    pImpl->paints.push_back(p);
-
-    return Result::Success;
+    return to<SceneImpl>(this)->paints;
 }
 
 
-Result Scene::reserve(TVG_UNUSED uint32_t size) noexcept
+Result Scene::add(SceneEffect effect, ...) noexcept
 {
-    return Result::NonSupport;
-}
-
-
-Result Scene::clear(bool free) noexcept
-{
-    pImpl->clear(free);
-
-    return Result::Success;
-}
-
-
-list<Paint*>& Scene::paints() noexcept
-{
-    return pImpl->paints;
+    va_list args;
+    va_start(args, effect);
+    auto ret = to<SceneImpl>(this)->add(effect, args);
+    va_end(args);
+    return ret;
 }

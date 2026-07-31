@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FOG_MATERIAL_H
-#define FOG_MATERIAL_H
+#pragma once
 
 #include "scene/resources/material.h"
+#include "scene/resources/texture.h"
 
 class FogMaterial : public Material {
 	GDCLASS(FogMaterial, Material);
@@ -83,5 +83,3 @@ public:
 	FogMaterial();
 	virtual ~FogMaterial();
 };
-
-#endif // FOG_MATERIAL_H

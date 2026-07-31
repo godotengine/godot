@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_ANDROID_H
-#define OS_ANDROID_H
+#pragma once
 
 #include "audio_driver_opensl.h"
 
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
 
 class GodotJavaWrapper;
 class GodotIOJavaWrapper;
@@ -58,6 +56,7 @@ private:
 
 	mutable String data_dir_cache;
 	mutable String cache_dir_cache;
+	mutable String temp_dir_cache;
 	mutable String remote_fs_dir;
 
 	AudioDriverOpenSL audio_driver_android;
@@ -75,21 +74,26 @@ private:
 		String filename;
 	};
 
-	HashMap<String, String> font_aliases;
-	List<FontInfo> fonts;
-	HashSet<String> font_names;
-	bool font_config_loaded = false;
+	mutable HashMap<String, String> font_aliases;
+	mutable List<FontInfo> fonts;
+	mutable HashSet<String> font_names;
+	mutable bool font_config_loaded = false;
 
 	GodotJavaWrapper *godot_java = nullptr;
 	GodotIOJavaWrapper *godot_io_java = nullptr;
 
-	void _load_system_font_config();
+	void _load_system_font_config() const;
 	String get_system_property(const char *key) const;
 
 public:
 	static const char *ANDROID_EXEC_PATH;
 	static const int DEFAULT_WINDOW_WIDTH = 800;
 	static const int DEFAULT_WINDOW_HEIGHT = 600;
+
+#ifdef TOOLS_ENABLED
+	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
+	Error verify_apk(const String &p_apk_path);
+#endif
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
@@ -100,8 +104,6 @@ public:
 	virtual void delete_main_loop() override;
 
 	virtual void finalize() override;
-
-	typedef int64_t ProcessID;
 
 	static OS_Android *get_singleton();
 	GodotJavaWrapper *get_godot_java();
@@ -118,6 +120,8 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+	virtual String get_version_alias() const override;
+
 	virtual MainLoop *get_main_loop() const override;
 
 	void main_loop_begin();
@@ -140,12 +144,14 @@ public:
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
 	virtual Vector<String> get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale = String(), const String &p_script = String(), int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
 	virtual String get_executable_path() const override;
-	virtual String get_user_data_dir() const override;
+	virtual String get_user_data_dir(const String &p_user_dir) const override;
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;
+	virtual String get_temp_path() const override;
 	virtual String get_resource_dir() const override;
 	virtual String get_locale() const override;
 	virtual String get_model_name() const override;
+	virtual String get_processor_name() const override;
 
 	virtual String get_unique_id() const override;
 
@@ -162,6 +168,7 @@ public:
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 	virtual Error kill(const ProcessID &p_pid) override;
 	virtual String get_system_ca_certificates() override;
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) override;
 
@@ -180,6 +187,9 @@ private:
 	String get_dynamic_libraries_path() const;
 	// Copy a dynamic library to the given location to make it accessible for loading.
 	bool copy_dynamic_library(const String &p_library_path, const String &p_target_dir, String *r_copy_path = nullptr);
-};
 
-#endif // OS_ANDROID_H
+#ifdef TOOLS_ENABLED
+	static void _on_main_screen_changed(const String &p_screen_name);
+	static void _on_distraction_free_mode_changed(bool p_enable);
+#endif
+};

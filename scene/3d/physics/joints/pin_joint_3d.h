@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PIN_JOINT_3D_H
-#define PIN_JOINT_3D_H
+#pragma once
 
 #include "scene/3d/physics/joints/joint_3d.h"
 
@@ -38,9 +37,9 @@ class PinJoint3D : public Joint3D {
 
 public:
 	enum Param {
-		PARAM_BIAS = PhysicsServer3D::PIN_JOINT_BIAS,
-		PARAM_DAMPING = PhysicsServer3D::PIN_JOINT_DAMPING,
-		PARAM_IMPULSE_CLAMP = PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP
+		PARAM_BIAS = PS3DE::PIN_JOINT_BIAS,
+		PARAM_DAMPING = PS3DE::PIN_JOINT_DAMPING,
+		PARAM_IMPULSE_CLAMP = PS3DE::PIN_JOINT_IMPULSE_CLAMP
 	};
 
 protected:
@@ -56,5 +55,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(PinJoint3D::Param);
-
-#endif // PIN_JOINT_3D_H

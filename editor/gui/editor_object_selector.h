@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_OBJECT_SELECTOR_H
-#define EDITOR_OBJECT_SELECTOR_H
+#pragma once
 
-#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup_menu.h"
@@ -58,7 +56,6 @@ class EditorObjectSelector : public Button {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	virtual Size2 get_minimum_size() const override;
@@ -69,5 +66,3 @@ public:
 
 	EditorObjectSelector(EditorSelectionHistory *p_history);
 };
-
-#endif // EDITOR_OBJECT_SELECTOR_H

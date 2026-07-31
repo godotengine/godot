@@ -30,10 +30,10 @@
 
 #include "os_windows.h"
 
+#include "core/profiling/profiling.h"
 #include "main/main.h"
 
-#include <locale.h>
-#include <stdio.h>
+#include <clocale>
 
 // For export templates, add a section; the exporter will patch it to enclose
 // the data appended to the executable (bundled PCK).
@@ -57,90 +57,6 @@ static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
 #endif
 #endif
 
-PCHAR *
-CommandLineToArgvA(
-		PCHAR CmdLine,
-		int *_argc) {
-	PCHAR *argv;
-	PCHAR _argv;
-	ULONG len;
-	ULONG argc;
-	CHAR a;
-	ULONG i, j;
-
-	BOOLEAN in_QM;
-	BOOLEAN in_TEXT;
-	BOOLEAN in_SPACE;
-
-	len = strlen(CmdLine);
-	i = ((len + 2) / 2) * sizeof(PVOID) + sizeof(PVOID);
-
-	argv = (PCHAR *)GlobalAlloc(GMEM_FIXED,
-			i + (len + 2) * sizeof(CHAR));
-
-	_argv = (PCHAR)(((PUCHAR)argv) + i);
-
-	argc = 0;
-	argv[argc] = _argv;
-	in_QM = FALSE;
-	in_TEXT = FALSE;
-	in_SPACE = TRUE;
-	i = 0;
-	j = 0;
-
-	a = CmdLine[i];
-	while (a) {
-		if (in_QM) {
-			if (a == '\"') {
-				in_QM = FALSE;
-			} else {
-				_argv[j] = a;
-				j++;
-			}
-		} else {
-			switch (a) {
-				case '\"':
-					in_QM = TRUE;
-					in_TEXT = TRUE;
-					if (in_SPACE) {
-						argv[argc] = _argv + j;
-						argc++;
-					}
-					in_SPACE = FALSE;
-					break;
-				case ' ':
-				case '\t':
-				case '\n':
-				case '\r':
-					if (in_TEXT) {
-						_argv[j] = '\0';
-						j++;
-					}
-					in_TEXT = FALSE;
-					in_SPACE = TRUE;
-					break;
-				default:
-					in_TEXT = TRUE;
-					if (in_SPACE) {
-						argv[argc] = _argv + j;
-						argc++;
-					}
-					_argv[j] = a;
-					j++;
-					in_SPACE = FALSE;
-					break;
-			}
-		}
-		i++;
-		a = CmdLine[i];
-	}
-	_argv[j] = '\0';
-	argv[argc] = nullptr;
-
-	(*_argc) = argc;
-	return argv;
-}
-
 char *wc_to_utf8(const wchar_t *wc) {
 	int ulen = WideCharToMultiByte(CP_UTF8, 0, wc, -1, nullptr, 0, nullptr, nullptr);
 	char *ubuf = new char[ulen + 1];
@@ -150,6 +66,15 @@ char *wc_to_utf8(const wchar_t *wc) {
 }
 
 int widechar_main(int argc, wchar_t **argv) {
+	godot_init_profiler();
+
+	// Prevent Windows from replacing the window with a "ghost" when the main
+	// thread briefly stalls (e.g. during editor startup or focus transitions).
+	// The ghost window intercepts click-backs, so the editor never receives
+	// WM_ACTIVATEAPP and gets permanently stuck at the unfocused throttle.
+	// Must be called before any window is created.
+	DisableProcessWindowsGhosting();
+
 	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");
@@ -188,6 +113,7 @@ int widechar_main(int argc, wchar_t **argv) {
 	}
 	delete[] argv_utf8;
 
+	godot_cleanup_profiler();
 	return os.get_exit_code();
 }
 

@@ -28,10 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef POLYGON_2D_H
-#define POLYGON_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
+
+class NavigationPolygon;
+class NavigationMeshSourceGeometryData2D;
 
 class Polygon2D : public Node2D {
 	GDCLASS(Polygon2D, Node2D);
@@ -54,7 +56,6 @@ class Polygon2D : public Node2D {
 
 	Size2 tex_scale = Vector2(1, 1);
 	Vector2 tex_ofs;
-	bool tex_tile = true;
 	real_t tex_rot = 0.0;
 	bool invert = false;
 	real_t invert_border = 100.0;
@@ -73,11 +74,15 @@ class Polygon2D : public Node2D {
 	void _skeleton_bone_setup_changed();
 
 	RID mesh;
+	int last_len = 0;
+	int last_index_count = 0;
+	bool last_has_uv = false;
+	bool last_has_color = false;
+	bool last_has_bones = false;
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 #ifdef TOOLS_ENABLED
@@ -87,11 +92,14 @@ public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
 	virtual Point2 _edit_get_pivot() const override;
 	virtual bool _edit_use_pivot() const override;
+#endif // TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
-#endif
+#endif // DEBUG_ENABLED
 
 	void set_polygon(const Vector<Vector2> &p_polygon);
 	Vector<Vector2> get_polygon() const;
@@ -138,7 +146,7 @@ public:
 	void add_bone(const NodePath &p_path = NodePath(), const Vector<float> &p_weights = Vector<float>());
 	int get_bone_count() const;
 	NodePath get_bone_path(int p_index) const;
-	Vector<float> get_bone_weights(int p_index) const;
+	const Vector<float> &get_bone_weights(int p_index) const _LIFETIME_BOUND_;
 	void erase_bone(int p_idx);
 	void clear_bones();
 	void set_bone_weights(int p_index, const Vector<float> &p_weights);
@@ -147,8 +155,18 @@ public:
 	void set_skeleton(const NodePath &p_skeleton);
 	NodePath get_skeleton() const;
 
+#ifndef NAVIGATION_2D_DISABLED
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_2D_DISABLED
+
+public:
+#ifndef NAVIGATION_2D_DISABLED
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_2D_DISABLED
+
 	Polygon2D();
 	~Polygon2D();
 };
-
-#endif // POLYGON_2D_H

@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STATUS_INDICATOR_H
-#define STATUS_INDICATOR_H
+#pragma once
 
 #include "scene/main/node.h"
-#include "servers/display_server.h"
+#include "scene/resources/texture.h"
+#include "servers/display/display_server_enums.h"
 
 class StatusIndicator : public Node {
 	GDCLASS(StatusIndicator, Node);
@@ -40,7 +40,7 @@ class StatusIndicator : public Node {
 	Ref<Texture2D> icon;
 	String tooltip;
 	bool visible = true;
-	DisplayServer::IndicatorID iid = DisplayServer::INVALID_INDICATOR_ID;
+	DisplayServerEnums::IndicatorID iid = DisplayServerEnums::INVALID_INDICATOR_ID;
 	NodePath menu;
 
 protected:
@@ -64,5 +64,3 @@ public:
 
 	Rect2 get_rect() const;
 };
-
-#endif // STATUS_INDICATOR_H

@@ -31,10 +31,13 @@
 #include "shape_cast_2d.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/2d/physics/collision_object_2d.h"
-#include "scene/2d/physics/physics_body_2d.h"
-#include "scene/resources/2d/circle_shape_2d.h"
-#include "servers/physics_2d/godot_physics_server_2d.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/world_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void ShapeCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
@@ -296,7 +299,7 @@ void ShapeCast2D::_update_shapecast_state() {
 
 	Transform2D gt = get_global_transform();
 
-	PhysicsDirectSpaceState2D::ShapeParameters params;
+	PS2DT::ShapeParameters params;
 	params.shape_rid = shape_rid;
 	params.transform = gt;
 	params.motion = gt.basis_xform(target_position);
@@ -326,7 +329,7 @@ void ShapeCast2D::_update_shapecast_state() {
 
 	bool intersected = true;
 	while (intersected && result.size() < max_results) {
-		PhysicsDirectSpaceState2D::ShapeRestInfo info;
+		PS2DT::ShapeRestInfo info;
 		intersected = dss->rest_info(params, &info);
 		if (intersected) {
 			result.push_back(info);
@@ -348,8 +351,8 @@ void ShapeCast2D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void ShapeCast2D::add_exception(const CollisionObject2D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject2D.");
+void ShapeCast2D::add_exception(RequiredParam<const CollisionObject2D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject2D.");
 	add_exception_rid(p_node->get_rid());
 }
 
@@ -357,8 +360,8 @@ void ShapeCast2D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void ShapeCast2D::remove_exception(const CollisionObject2D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject2D.");
+void ShapeCast2D::remove_exception(RequiredParam<const CollisionObject2D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject2D.");
 	remove_exception_rid(p_node->get_rid());
 }
 
@@ -382,11 +385,11 @@ bool ShapeCast2D::is_collide_with_bodies_enabled() const {
 	return collide_with_bodies;
 }
 
-Array ShapeCast2D::_get_collision_result() const {
+Array ShapeCast2D::get_collision_result() const {
 	Array ret;
 
 	for (int i = 0; i < result.size(); ++i) {
-		const PhysicsDirectSpaceState2D::ShapeRestInfo &sri = result[i];
+		const PS2DT::ShapeRestInfo &sri = result[i];
 
 		Dictionary col;
 		col["point"] = sri.point;
@@ -464,19 +467,19 @@ void ShapeCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collide_with_bodies", "enable"), &ShapeCast2D::set_collide_with_bodies);
 	ClassDB::bind_method(D_METHOD("is_collide_with_bodies_enabled"), &ShapeCast2D::is_collide_with_bodies_enabled);
 
-	ClassDB::bind_method(D_METHOD("_get_collision_result"), &ShapeCast2D::_get_collision_result);
+	ClassDB::bind_method(D_METHOD("get_collision_result"), &ShapeCast2D::get_collision_result);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, Shape2D::get_class_static()), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "target_position", PROPERTY_HINT_NONE, "suffix:px"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,100,0.01,suffix:px"), "set_margin", "get_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_results"), "set_max_results", "get_max_results");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "collision_result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "_get_collision_result");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "collision_result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "", "get_collision_result");
 	ADD_GROUP("Collide With", "collide_with");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 }
 
 ShapeCast2D::ShapeCast2D() {

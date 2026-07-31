@@ -28,44 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_COMPOSITOR_H
-#define RENDERER_COMPOSITOR_H
+#pragma once
 
-#include "servers/rendering/environment/renderer_fog.h"
-#include "servers/rendering/environment/renderer_gi.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/rendering_method.h"
-#include "servers/rendering/storage/camera_attributes_storage.h"
-#include "servers/rendering/storage/light_storage.h"
-#include "servers/rendering/storage/material_storage.h"
-#include "servers/rendering/storage/mesh_storage.h"
-#include "servers/rendering/storage/particles_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
-#include "servers/rendering/storage/utilities.h"
-#include "servers/rendering_server.h"
+#include "servers/display/display_server_enums.h"
+#include "servers/rendering/rendering_server_enums.h"
+#include "servers/rendering/rendering_server_types.h"
 
+class RendererCanvasRender;
 class RendererSceneRender;
-struct BlitToScreen {
-	RID render_target;
-	Rect2 src_rect = Rect2(0.0, 0.0, 1.0, 1.0);
-	Rect2i dst_rect;
 
-	struct {
-		bool use_layer = false;
-		uint32_t layer = 0;
-	} multi_view;
+class RendererFog;
+class RendererGI;
+class RendererLightStorage;
+class RendererMaterialStorage;
+class RendererMeshStorage;
+class RendererParticlesStorage;
+class RendererTextureStorage;
+class RendererUtilities;
 
-	struct {
-		//lens distorted parameters for VR
-		bool apply = false;
-		Vector2 eye_center;
-		float k1 = 0.0;
-		float k2 = 0.0;
-
-		float upscale = 1.0;
-		float aspect_ratio = 1.0;
-	} lens_distortion;
-};
+class Image;
+struct Color;
 
 class RendererCompositor {
 private:
@@ -80,37 +62,38 @@ protected:
 public:
 	static RendererCompositor *create();
 
-	virtual RendererUtilities *get_utilities() = 0;
+	virtual RendererCanvasRender *get_canvas() = 0;
+	virtual RendererSceneRender *get_scene() = 0;
+
+	virtual RendererFog *get_fog() = 0;
+	virtual RendererGI *get_gi() = 0;
 	virtual RendererLightStorage *get_light_storage() = 0;
 	virtual RendererMaterialStorage *get_material_storage() = 0;
 	virtual RendererMeshStorage *get_mesh_storage() = 0;
 	virtual RendererParticlesStorage *get_particles_storage() = 0;
 	virtual RendererTextureStorage *get_texture_storage() = 0;
-	virtual RendererGI *get_gi() = 0;
-	virtual RendererFog *get_fog() = 0;
-	virtual RendererCanvasRender *get_canvas() = 0;
-	virtual RendererSceneRender *get_scene() = 0;
+	virtual RendererUtilities *get_utilities() = 0;
 
-	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
+	virtual void set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter = true) = 0;
 
 	virtual void initialize() = 0;
 	virtual void begin_frame(double frame_step) = 0;
 
-	virtual void blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) = 0;
+	virtual void blit_render_targets_to_screen(DisplayServerEnums::WindowID p_screen, const RenderingServerTypes::BlitToScreen *p_render_targets, int p_amount) = 0;
 
+	virtual bool is_opengl() = 0;
 	virtual void gl_end_frame(bool p_swap_buffers) = 0;
-	virtual void end_frame(bool p_swap_buffers) = 0;
+	virtual void end_frame(bool p_present) = 0;
 	virtual void finalize() = 0;
 	virtual uint64_t get_frame_number() const = 0;
 	virtual double get_frame_delta_time() const = 0;
 	virtual double get_total_time() const = 0;
+	virtual bool can_create_resources_async() const = 0;
 
-	static bool is_low_end() { return low_end; };
+	static bool is_low_end() { return low_end; }
 	virtual bool is_xr_enabled() const;
 
 	static RendererCompositor *get_singleton() { return singleton; }
 	RendererCompositor();
 	virtual ~RendererCompositor();
 };
-
-#endif // RENDERER_COMPOSITOR_H

@@ -66,7 +66,7 @@ struct SinglePosFormat2 : ValueBase
     TRACE_APPLY (this);
     hb_buffer_t *buffer = c->buffer;
     unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
+    if (index == NOT_COVERED) return_trace (false);
 
     if (unlikely (index >= valueCount)) return_trace (false);
 
@@ -104,7 +104,7 @@ struct SinglePosFormat2 : ValueBase
     if (unlikely (index >= valueCount)) return false;
 
     /* This is ugly... */
-    hb_buffer_t buffer;
+    hb_buffer_t buffer {};
     buffer.props.direction = direction;
     OT::hb_ot_apply_context_t c (1, font, &buffer, table_blob);
 

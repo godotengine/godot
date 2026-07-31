@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -23,7 +23,7 @@
 #include <vector>
 
 class ApiLayerInterface;
-struct XrGeneratedDispatchTable;
+struct XrGeneratedDispatchTableCore;
 class LoaderInstance;
 
 // Manage the single loader instance that is available.
@@ -53,11 +53,11 @@ class LoaderInstance {
 
     virtual ~LoaderInstance();
 
-    XrInstance GetInstanceHandle() { return _runtime_instance; }
-    const std::unique_ptr<XrGeneratedDispatchTable>& DispatchTable() { return _dispatch_table; }
+    XrInstance GetInstanceHandle() const { return _runtime_instance; }
+    const std::unique_ptr<XrGeneratedDispatchTableCore>& DispatchTable() const { return _dispatch_table; }
     std::vector<std::unique_ptr<ApiLayerInterface>>& LayerInterfaces() { return _api_layer_interfaces; }
-    bool ExtensionIsEnabled(const std::string& extension);
-    XrDebugUtilsMessengerEXT DefaultDebugUtilsMessenger() { return _messenger; }
+    bool ExtensionIsEnabled(const std::string& extension) const;
+    XrDebugUtilsMessengerEXT DefaultDebugUtilsMessenger() const { return _messenger; }
     void SetDefaultDebugUtilsMessenger(XrDebugUtilsMessengerEXT messenger) { _messenger = messenger; }
     XrResult GetInstanceProcAddr(const char* name, PFN_xrVoidFunction* function);
 
@@ -71,7 +71,7 @@ class LoaderInstance {
     std::vector<std::string> _enabled_extensions;
     std::vector<std::unique_ptr<ApiLayerInterface>> _api_layer_interfaces;
 
-    std::unique_ptr<XrGeneratedDispatchTable> _dispatch_table;
+    std::unique_ptr<XrGeneratedDispatchTableCore> _dispatch_table;
     // Internal debug messenger created during xrCreateInstance
     XrDebugUtilsMessengerEXT _messenger{XR_NULL_HANDLE};
 };

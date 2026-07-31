@@ -6,12 +6,11 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ * by the Xiph.Org Foundation https://www.xiph.org/                 *
  *                                                                  *
  ********************************************************************
 
   function:
-  last mod: $Id$
 
  ********************************************************************/
 #include <stdlib.h>
@@ -270,7 +269,7 @@ void oc_mcenc_search_frame(oc_enc_ctx *_enc,oc_mv _accum,int _mbi,int _frame,
  int _frame_full){
   /*Note: Traditionally this search is done using a rate-distortion objective
      function of the form D+lambda*R.
-    However, xiphmont tested this and found it produced a small degredation,
+    However, xiphmont tested this and found it produced a small degradation,
      while requiring extra computation.
     This is most likely due to Theora's peculiar MV encoding scheme: MVs are
      not coded relative to a predictor, and the only truly cheap way to use a
@@ -278,9 +277,9 @@ void oc_mcenc_search_frame(oc_enc_ctx *_enc,oc_mv _accum,int _mbi,int _frame,
     Therefore if we use the MV found here, it's only because both LAST and
      LAST2 performed poorly, and therefore the MB is not likely to be uniform
      or suffer from the aperture problem.
-    Furthermore we would like to re-use the MV found here for as many MBs as
+    Furthermore we would like to reuse the MV found here for as many MBs as
      possible, so picking a slightly sub-optimal vector to save a bit or two
-     may cause increased degredation in many blocks to come.
+     may cause increased degradation in many blocks to come.
     We could artificially reduce lambda to compensate, but it's faster to just
      disable it entirely, and use D (the distortion) as the sole criterion.*/
   oc_mcenc_ctx         mcenc;

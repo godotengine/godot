@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef REPLICATION_EDITOR_H
-#define REPLICATION_EDITOR_H
+#pragma once
 
 #include "../scene_replication_config.h"
 
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/box_container.h"
 
 class ConfirmationDialog;
 class MultiplayerSynchronizer;
@@ -45,8 +44,8 @@ class TreeItem;
 class PropertySelector;
 class SceneTreeDialog;
 
-class ReplicationEditor : public VBoxContainer {
-	GDCLASS(ReplicationEditor, VBoxContainer);
+class ReplicationEditor : public EditorDock {
+	GDCLASS(ReplicationEditor, EditorDock);
 
 private:
 	MultiplayerSynchronizer *current = nullptr;
@@ -60,6 +59,8 @@ private:
 
 	Ref<SceneReplicationConfig> config;
 	NodePath deleting;
+
+	MarginContainer *tree_mc = nullptr;
 	Tree *tree = nullptr;
 
 	PropertySelector *prop_selector = nullptr;
@@ -81,7 +82,6 @@ private:
 
 	void _pick_node_filter_text_changed(const String &p_newtext);
 	void _pick_node_select_recursive(TreeItem *p_item, const String &p_filter, Vector<Node *> &p_select_candidates);
-	void _pick_node_filter_input(const Ref<InputEvent> &p_ie);
 	void _pick_node_selected(NodePath p_path);
 
 	void _pick_new_property();
@@ -93,9 +93,10 @@ private:
 	void _add_sync_property(String p_path);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
-	void _notification(int p_what);
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 public:
 	void edit(MultiplayerSynchronizer *p_object);
@@ -103,7 +104,4 @@ public:
 
 	Button *get_pin() { return pin; }
 	ReplicationEditor();
-	~ReplicationEditor() {}
 };
-
-#endif // REPLICATION_EDITOR_H

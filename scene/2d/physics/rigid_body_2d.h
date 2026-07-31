@@ -28,10 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RIGID_BODY_2D_H
-#define RIGID_BODY_2D_H
+#pragma once
 
-#include "scene/2d/physics/static_body_2d.h"
+#include "core/templates/vset.h"
+#include "scene/2d/physics/physics_body_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_body_state_2d.h"
+
+class PhysicsMaterial;
 
 class RigidBody2D : public PhysicsBody2D {
 	GDCLASS(RigidBody2D, PhysicsBody2D);
@@ -141,7 +144,7 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 
-	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState2D *)
+	GDVIRTUAL1(_integrate_forces, RequiredParam<PhysicsDirectBodyState2D>)
 
 	void _apply_body_mode();
 
@@ -187,6 +190,16 @@ public:
 
 	void set_linear_velocity(const Vector2 &p_velocity);
 	Vector2 get_linear_velocity() const;
+
+	_FORCE_INLINE_ Vector2 get_velocity_at_local_position(const Vector2 &p_position) const {
+		const Vector2 com_to_pos = p_position + get_global_position() - to_global(center_of_mass);
+		return linear_velocity + Vector2(-angular_velocity * com_to_pos.y, angular_velocity * com_to_pos.x);
+	}
+
+	_FORCE_INLINE_ Vector2 get_velocity_at_position(const Vector2 &p_position) const {
+		const Vector2 com_to_pos = p_position - to_global(center_of_mass);
+		return linear_velocity + Vector2(-angular_velocity * com_to_pos.y, angular_velocity * com_to_pos.x);
+	}
 
 	void set_axis_velocity(const Vector2 &p_axis);
 
@@ -245,5 +258,3 @@ VARIANT_ENUM_CAST(RigidBody2D::FreezeMode);
 VARIANT_ENUM_CAST(RigidBody2D::CenterOfMassMode);
 VARIANT_ENUM_CAST(RigidBody2D::DampMode);
 VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
-
-#endif // RIGID_BODY_2D_H

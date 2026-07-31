@@ -284,8 +284,8 @@ struct OS2
         os2_prime->usWidthClass = width_class;
     }
 
-    os2_prime->usFirstCharIndex = hb_min (0xFFFFu, c->plan->unicodes.get_min ());
-    os2_prime->usLastCharIndex  = hb_min (0xFFFFu, c->plan->unicodes.get_max ());
+    os2_prime->usFirstCharIndex = hb_min (0xFFFFu, c->plan->os2_info.min_cmap_codepoint);
+    os2_prime->usLastCharIndex  = hb_min (0xFFFFu, c->plan->os2_info.max_cmap_codepoint);
 
     if (c->plan->flags & HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES)
       return_trace (true);
@@ -344,7 +344,7 @@ struct OS2
   font_page_t get_font_page () const
   { return (font_page_t) (version == 0 ? fsSelection & 0xFF00 : 0); }
 
-  unsigned get_size () const
+  size_t get_size () const
   {
     unsigned result = min_size;
     if (version >= 1) result += v1X.get_size ();

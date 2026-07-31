@@ -5,19 +5,17 @@
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 
-#include "common.h"
+#include "ssl_misc.h"
 
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
 
 #include <stdint.h>
 #include <string.h>
 
-#include "mbedtls/hkdf.h"
 #include "debug_internal.h"
 #include "mbedtls/error.h"
 #include "mbedtls/platform.h"
 
-#include "ssl_misc.h"
 #include "ssl_tls13_keys.h"
 #include "ssl_tls13_invasive.h"
 
@@ -58,15 +56,16 @@ struct mbedtls_ssl_tls13_labels_struct const mbedtls_ssl_tls13_labels =
  * };
  *
  * Parameters:
- * - desired_length: Length of expanded key material
- *                   Even though the standard allows expansion to up to
- *                   2**16 Bytes, TLS 1.3 never uses expansion to more than
- *                   255 Bytes, so we require `desired_length` to be at most
- *                   255. This allows us to save a few Bytes of code by
- *                   hardcoding the writing of the high bytes.
+ * - desired_length: Length of expanded key material.
+ *                   The length field can hold numbers up to 2**16, but HKDF
+ *                   can only generate outputs of up to 255 * HASH_LEN bytes.
+ *                   It is the caller's responsibility to ensure that this
+ *                   limit is not exceeded. In TLS 1.3, SHA256 is the hash
+ *                   function with the smallest block size, so a length
+ *                   <= 255 * 32 = 8160 is always safe.
  * - (label, label_len): label + label length, without "tls13 " prefix
  *                       The label length MUST be less than or equal to
- *                       MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_LABEL_LEN
+ *                       MBEDTLS_SSL_TLS1_3_HKDF_LABEL_MAX_LABEL_LEN.
  *                       It is the caller's responsibility to ensure this.
  *                       All (label, label length) pairs used in TLS 1.3
  *                       can be obtained via MBEDTLS_SSL_TLS1_3_LBL_WITH_LEN().
@@ -81,7 +80,8 @@ struct mbedtls_ssl_tls13_labels_struct const mbedtls_ssl_tls13_labels =
  *            the HkdfLabel structure on success.
  */
 
-static const char tls13_label_prefix[6] = "tls13 ";
+/* We need to tell the compiler that we meant to leave out the null character. */
+static const char tls13_label_prefix[6] MBEDTLS_ATTRIBUTE_UNTERMINATED_STRING = "tls13 ";
 
 #define SSL_TLS1_3_KEY_SCHEDULE_HKDF_LABEL_LEN(label_len, context_len) \
     (2                     /* expansion length           */ \
@@ -93,7 +93,7 @@ static const char tls13_label_prefix[6] = "tls13 ";
 #define SSL_TLS1_3_KEY_SCHEDULE_MAX_HKDF_LABEL_LEN                      \
     SSL_TLS1_3_KEY_SCHEDULE_HKDF_LABEL_LEN(                             \
         sizeof(tls13_label_prefix) +                       \
-        MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_LABEL_LEN,     \
+        MBEDTLS_SSL_TLS1_3_HKDF_LABEL_MAX_LABEL_LEN,       \
         MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_CONTEXT_LEN)
 
 static void ssl_tls13_hkdf_encode_label(
@@ -109,15 +109,13 @@ static void ssl_tls13_hkdf_encode_label(
 
     unsigned char *p = dst;
 
-    /* Add the size of the expanded key material.
-     * We're hardcoding the high byte to 0 here assuming that we never use
-     * TLS 1.3 HKDF key expansion to more than 255 Bytes. */
-#if MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_EXPANSION_LEN > 255
-#error "The implementation of ssl_tls13_hkdf_encode_label() is not fit for the \
-    value of MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_EXPANSION_LEN"
+    /* Add the size of the expanded key material. */
+#if MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_EXPANSION_LEN > UINT16_MAX
+#error "The desired key length must fit into an uint16 but \
+    MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_EXPANSION_LEN is greater than UINT16_MAX"
 #endif
 
-    *p++ = 0;
+    *p++ = MBEDTLS_BYTE_1(desired_length);
     *p++ = MBEDTLS_BYTE_0(desired_length);
 
     /* Add label incl. prefix */
@@ -151,7 +149,7 @@ int mbedtls_ssl_tls13_hkdf_expand_label(
     psa_key_derivation_operation_t operation =
         PSA_KEY_DERIVATION_OPERATION_INIT;
 
-    if (label_len > MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_LABEL_LEN) {
+    if (label_len > MBEDTLS_SSL_TLS1_3_HKDF_LABEL_MAX_LABEL_LEN) {
         /* Should never happen since this is an internal
          * function, and we know statically which labels
          * are allowed. */
@@ -927,23 +925,17 @@ int mbedtls_ssl_tls13_populate_transform(
     mbedtls_ssl_key_set const *traffic_keys,
     mbedtls_ssl_context *ssl /* DEBUG ONLY */)
 {
-#if !defined(MBEDTLS_USE_PSA_CRYPTO)
-    int ret;
-    mbedtls_cipher_info_t const *cipher_info;
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
     const mbedtls_ssl_ciphersuite_t *ciphersuite_info;
     unsigned char const *key_enc;
     unsigned char const *iv_enc;
     unsigned char const *key_dec;
     unsigned char const *iv_dec;
 
-#if defined(MBEDTLS_USE_PSA_CRYPTO)
     psa_key_type_t key_type;
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_algorithm_t alg;
     size_t key_bits;
     psa_status_t status = PSA_SUCCESS;
-#endif
 
 #if !defined(MBEDTLS_DEBUG_C)
     ssl = NULL; /* make sure we don't use it except for those cases */
@@ -957,29 +949,6 @@ int mbedtls_ssl_tls13_populate_transform(
         return MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
     }
 
-#if !defined(MBEDTLS_USE_PSA_CRYPTO)
-    cipher_info = mbedtls_cipher_info_from_type(ciphersuite_info->cipher);
-    if (cipher_info == NULL) {
-        MBEDTLS_SSL_DEBUG_MSG(1, ("cipher info for %u not found",
-                                  ciphersuite_info->cipher));
-        return MBEDTLS_ERR_SSL_BAD_INPUT_DATA;
-    }
-
-    /*
-     * Setup cipher contexts in target transform
-     */
-    if ((ret = mbedtls_cipher_setup(&transform->cipher_ctx_enc,
-                                    cipher_info)) != 0) {
-        MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_cipher_setup", ret);
-        return ret;
-    }
-
-    if ((ret = mbedtls_cipher_setup(&transform->cipher_ctx_dec,
-                                    cipher_info)) != 0) {
-        MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_cipher_setup", ret);
-        return ret;
-    }
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
 
 #if defined(MBEDTLS_SSL_SRV_C)
     if (endpoint == MBEDTLS_SSL_IS_SERVER) {
@@ -1005,21 +974,6 @@ int mbedtls_ssl_tls13_populate_transform(
     memcpy(transform->iv_enc, iv_enc, traffic_keys->iv_len);
     memcpy(transform->iv_dec, iv_dec, traffic_keys->iv_len);
 
-#if !defined(MBEDTLS_USE_PSA_CRYPTO)
-    if ((ret = mbedtls_cipher_setkey(&transform->cipher_ctx_enc,
-                                     key_enc, (int) mbedtls_cipher_info_get_key_bitlen(cipher_info),
-                                     MBEDTLS_ENCRYPT)) != 0) {
-        MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_cipher_setkey", ret);
-        return ret;
-    }
-
-    if ((ret = mbedtls_cipher_setkey(&transform->cipher_ctx_dec,
-                                     key_dec, (int) mbedtls_cipher_info_get_key_bitlen(cipher_info),
-                                     MBEDTLS_DECRYPT)) != 0) {
-        MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_cipher_setkey", ret);
-        return ret;
-    }
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
 
     /*
      * Setup other fields in SSL transform
@@ -1043,7 +997,6 @@ int mbedtls_ssl_tls13_populate_transform(
     transform->minlen =
         transform->taglen + MBEDTLS_SSL_CID_TLS1_3_PADDING_GRANULARITY;
 
-#if defined(MBEDTLS_USE_PSA_CRYPTO)
     /*
      * Setup psa keys and alg
      */
@@ -1084,7 +1037,6 @@ int mbedtls_ssl_tls13_populate_transform(
             return PSA_TO_MBEDTLS_ERR(status);
         }
     }
-#endif /* MBEDTLS_USE_PSA_CRYPTO */
 
     return 0;
 }
@@ -1300,8 +1252,7 @@ int mbedtls_ssl_tls13_key_schedule_stage_early(mbedtls_ssl_context *ssl)
 
     ret = mbedtls_ssl_tls13_evolve_secret(hash_alg, NULL, psk, psk_len,
                                           handshake->tls13_master_secrets.early);
-#if defined(MBEDTLS_USE_PSA_CRYPTO) && \
-    defined(MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_SOME_PSK_ENABLED)
+#if defined(MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_SOME_PSK_ENABLED)
     mbedtls_free((void *) psk);
 #endif
     if (ret != 0) {
@@ -1841,7 +1792,6 @@ int mbedtls_ssl_tls13_export_handshake_psk(mbedtls_ssl_context *ssl,
                                            unsigned char **psk,
                                            size_t *psk_len)
 {
-#if defined(MBEDTLS_USE_PSA_CRYPTO)
     psa_key_attributes_t key_attributes = PSA_KEY_ATTRIBUTES_INIT;
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
 
@@ -1871,15 +1821,40 @@ int mbedtls_ssl_tls13_export_handshake_psk(mbedtls_ssl_context *ssl,
         return PSA_TO_MBEDTLS_ERR(status);
     }
     return 0;
-#else
-    *psk = ssl->handshake->psk;
-    *psk_len = ssl->handshake->psk_len;
-    if (*psk == NULL) {
-        return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
-    }
-    return 0;
-#endif /* !MBEDTLS_USE_PSA_CRYPTO */
 }
 #endif /* MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_SOME_PSK_ENABLED */
+
+#if defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
+int mbedtls_ssl_tls13_exporter(const psa_algorithm_t hash_alg,
+                               const unsigned char *secret, const size_t secret_len,
+                               const unsigned char *label, const size_t label_len,
+                               const unsigned char *context_value, const size_t context_len,
+                               unsigned char *out, const size_t out_len)
+{
+    size_t hash_len = PSA_HASH_LENGTH(hash_alg);
+    unsigned char hkdf_secret[MBEDTLS_TLS1_3_MD_MAX_SIZE];
+    int ret = 0;
+
+    ret = mbedtls_ssl_tls13_derive_secret(hash_alg, secret, secret_len, label, label_len, NULL, 0,
+                                          MBEDTLS_SSL_TLS1_3_CONTEXT_UNHASHED, hkdf_secret,
+                                          hash_len);
+    if (ret != 0) {
+        goto exit;
+    }
+    ret = mbedtls_ssl_tls13_derive_secret(hash_alg,
+                                          hkdf_secret,
+                                          hash_len,
+                                          MBEDTLS_SSL_TLS1_3_LBL_WITH_LEN(exporter),
+                                          context_value,
+                                          context_len,
+                                          MBEDTLS_SSL_TLS1_3_CONTEXT_UNHASHED,
+                                          out,
+                                          out_len);
+
+exit:
+    mbedtls_platform_zeroize(hkdf_secret, sizeof(hkdf_secret));
+    return ret;
+}
+#endif /* defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT) */
 
 #endif /* MBEDTLS_SSL_PROTO_TLS1_3 */

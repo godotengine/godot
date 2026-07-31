@@ -144,22 +144,22 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 		return false;
 	}
 
-#define TEST_AXIS(m_ax)                                            \
-	/** TEST FACE AXIS */                                          \
-	{                                                              \
-		real_t aabb_min = p_aabb.position.m_ax;                    \
+#define TEST_AXIS(m_ax) \
+	/** TEST FACE AXIS */ \
+	{ \
+		real_t aabb_min = p_aabb.position.m_ax; \
 		real_t aabb_max = p_aabb.position.m_ax + p_aabb.size.m_ax; \
-		real_t tri_min = vertex[0].m_ax;                           \
-		real_t tri_max = vertex[0].m_ax;                           \
-		for (int i = 1; i < 3; i++) {                              \
-			if (vertex[i].m_ax > tri_max)                          \
-				tri_max = vertex[i].m_ax;                          \
-			if (vertex[i].m_ax < tri_min)                          \
-				tri_min = vertex[i].m_ax;                          \
-		}                                                          \
-                                                                   \
-		if (tri_max < aabb_min || aabb_max < tri_min)              \
-			return false;                                          \
+		real_t tri_min = vertex[0].m_ax; \
+		real_t tri_max = vertex[0].m_ax; \
+		for (int i = 1; i < 3; i++) { \
+			if (vertex[i].m_ax > tri_max) \
+				tri_max = vertex[i].m_ax; \
+			if (vertex[i].m_ax < tri_min) \
+				tri_min = vertex[i].m_ax; \
+		} \
+\
+		if (tri_max < aabb_min || aabb_max < tri_min) \
+			return false; \
 	}
 
 	TEST_AXIS(x);
@@ -201,7 +201,7 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 }
 
 Face3::operator String() const {
-	return String() + vertex[0] + ", " + vertex[1] + ", " + vertex[2];
+	return String() + String(vertex[0]) + ", " + String(vertex[1]) + ", " + String(vertex[2]);
 }
 
 void Face3::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
@@ -263,7 +263,7 @@ void Face3::get_support(const Vector3 &p_normal, const Transform3D &p_transform,
 
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[(i + 1) % 3]).normalized().dot(n);
-		dot = ABS(dot);
+		dot = Math::abs(dot);
 		if (dot < edge_support_threshold) {
 			*p_count = MIN(2, p_max);
 

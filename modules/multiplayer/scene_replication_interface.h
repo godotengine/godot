@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_REPLICATION_INTERFACE_H
-#define SCENE_REPLICATION_INTERFACE_H
+#pragma once
 
 #include "multiplayer_spawner.h"
 #include "multiplayer_synchronizer.h"
 
 #include "core/object/ref_counted.h"
+#include "core/templates/rb_set.h"
 
 class SceneMultiplayer;
 class SceneCacheInterface;
@@ -73,7 +73,7 @@ private:
 	HashMap<int, PeerInfo> peers_info;
 	uint32_t last_net_id = 0;
 	HashMap<ObjectID, TrackedNode> tracked_nodes;
-	HashSet<ObjectID> spawned_nodes;
+	RBSet<ObjectID> spawned_nodes;
 	HashSet<ObjectID> sync_nodes;
 
 	// Pending local spawn information (handles spawning nested nodes during ready).
@@ -114,7 +114,7 @@ private:
 
 	template <typename T>
 	static T *get_id_as(const ObjectID &p_id) {
-		return p_id.is_valid() ? Object::cast_to<T>(ObjectDB::get_instance(p_id)) : nullptr;
+		return p_id.is_valid() ? ObjectDB::get_instance<T>(p_id) : nullptr;
 	}
 
 #ifdef DEBUG_ENABLED
@@ -151,5 +151,3 @@ public:
 		multiplayer_cache = p_cache;
 	}
 };
-
-#endif // SCENE_REPLICATION_INTERFACE_H

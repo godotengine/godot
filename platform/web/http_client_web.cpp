@@ -30,6 +30,12 @@
 
 #include "http_client_web.h"
 
+#include "core/object/class_db.h"
+
+#ifdef DEBUG_ENABLED
+#include "core/config/engine.h"
+#endif
+
 void HTTPClientWeb::_parse_headers(int p_len, const char **p_headers, void *p_ref) {
 	HTTPClientWeb *client = static_cast<HTTPClientWeb *>(p_ref);
 	for (int i = 0; i < p_len; i++) {
@@ -49,11 +55,11 @@ Error HTTPClientWeb::connect_to_host(const String &p_host, int p_port, Ref<TLSOp
 
 	String host_lower = host.to_lower();
 	if (host_lower.begins_with("http://")) {
-		host = host.substr(7, host.length() - 7);
+		host = host.substr(7);
 		use_tls = false;
 	} else if (host_lower.begins_with("https://")) {
 		use_tls = true;
-		host = host.substr(8, host.length() - 8);
+		host = host.substr(8);
 	}
 
 	ERR_FAIL_COND_V(host.length() < HOST_MIN_LEN, ERR_INVALID_PARAMETER);
@@ -266,11 +272,11 @@ Error HTTPClientWeb::poll() {
 	return OK;
 }
 
-HTTPClient *HTTPClientWeb::_create_func() {
-	return memnew(HTTPClientWeb);
+HTTPClient *HTTPClientWeb::_create_func(bool p_notify_postinitialize) {
+	return static_cast<HTTPClient *>(ClassDB::creator<HTTPClientWeb>(p_notify_postinitialize));
 }
 
-HTTPClient *(*HTTPClient::_create)() = HTTPClientWeb::_create_func;
+HTTPClient *(*HTTPClient::_create)(bool p_notify_postinitialize) = HTTPClientWeb::_create_func;
 
 HTTPClientWeb::HTTPClientWeb() {
 }

@@ -28,20 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NOISE_TEXTURE_3D_H
-#define NOISE_TEXTURE_3D_H
+#pragma once
 
 #include "noise.h"
 
 #include "core/object/ref_counted.h"
+#include "core/object/worker_thread_pool.h"
+#include "scene/resources/gradient.h"
 #include "scene/resources/texture.h"
 
 class NoiseTexture3D : public Texture3D {
 	GDCLASS(NoiseTexture3D, Texture3D);
 
 private:
-	Thread noise_thread;
-
+	WorkerThreadPool::TaskID current_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	bool first_time = true;
 	bool update_queued = false;
 	bool regen_queued = false;
@@ -63,7 +63,7 @@ private:
 	Image::Format format = Image::FORMAT_L8;
 
 	void _thread_done(const TypedArray<Image> &p_data);
-	static void _thread_function(void *p_ud);
+	void _thread_function();
 
 	void _queue_update();
 	TypedArray<Image> _generate_texture();
@@ -103,6 +103,8 @@ public:
 	virtual int get_height() const override;
 	virtual int get_depth() const override;
 
+	virtual bool has_mipmaps() const override;
+
 	virtual RID get_rid() const override;
 
 	virtual Vector<Ref<Image>> get_data() const override;
@@ -111,5 +113,3 @@ public:
 	NoiseTexture3D();
 	virtual ~NoiseTexture3D();
 };
-
-#endif // NOISE_TEXTURE_3D_H

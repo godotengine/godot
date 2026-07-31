@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_MODIFICATION_2D_JIGGLE_H
-#define SKELETON_MODIFICATION_2D_JIGGLE_H
+#pragma once
 
 #include "scene/2d/skeleton_2d.h"
 #include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
@@ -89,6 +88,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	void reset();
 	void _execute(float p_delta) override;
 	void _setup_modification(SkeletonModificationStack2D *p_stack) override;
 
@@ -135,5 +135,3 @@ public:
 	SkeletonModification2DJiggle();
 	~SkeletonModification2DJiggle();
 };
-
-#endif // SKELETON_MODIFICATION_2D_JIGGLE_H

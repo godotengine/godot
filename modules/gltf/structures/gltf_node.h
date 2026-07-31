@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_NODE_H
-#define GLTF_NODE_H
+#pragma once
 
 #include "../gltf_defines.h"
 
@@ -51,6 +50,7 @@ private:
 	GLTFSkinIndex skin = -1;
 	GLTFSkeletonIndex skeleton = -1;
 	bool joint = false;
+	bool visible = true;
 	Vector<int> children;
 	GLTFLightIndex light = -1;
 	Dictionary additional_data;
@@ -60,7 +60,7 @@ protected:
 
 public:
 	String get_original_name();
-	void set_original_name(String p_name);
+	void set_original_name(const String &p_name);
 
 	GLTFNodeIndex get_parent();
 	void set_parent(GLTFNodeIndex p_parent);
@@ -69,10 +69,10 @@ public:
 	void set_height(int p_height);
 
 	Transform3D get_xform();
-	void set_xform(Transform3D p_xform);
+	void set_xform(const Transform3D &p_xform);
 
 	Transform3D get_rest_xform();
-	void set_rest_xform(Transform3D p_rest_xform);
+	void set_rest_xform(const Transform3D &p_rest_xform);
 
 	GLTFMeshIndex get_mesh();
 	void set_mesh(GLTFMeshIndex p_mesh);
@@ -87,22 +87,27 @@ public:
 	void set_skeleton(GLTFSkeletonIndex p_skeleton);
 
 	Vector3 get_position();
-	void set_position(Vector3 p_position);
+	void set_position(const Vector3 &p_position);
 
 	Quaternion get_rotation();
-	void set_rotation(Quaternion p_rotation);
+	void set_rotation(const Quaternion &p_rotation);
 
 	Vector3 get_scale();
-	void set_scale(Vector3 p_scale);
+	void set_scale(const Vector3 &p_scale);
 
 	Vector<int> get_children();
-	void set_children(Vector<int> p_children);
+	void set_children(const Vector<int> &p_children);
+	void append_child_index(int p_child_index);
 
 	GLTFLightIndex get_light();
 	void set_light(GLTFLightIndex p_light);
 
-	Variant get_additional_data(const StringName &p_extension_name);
-	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-};
+	bool get_visible();
+	void set_visible(bool p_visible);
 
-#endif // GLTF_NODE_H
+	Variant get_additional_data(const StringName &p_extension_name);
+	bool has_additional_data(const StringName &p_extension_name);
+	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+
+	NodePath get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons = true);
+};

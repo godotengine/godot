@@ -1,0 +1,5 @@
+GH-113459
+---------
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/accessibility_create_sub_text_edit_elements/arguments': size changed value in new API, from 4 to 5.
+
+Optional argument added. Compatibility method registered.

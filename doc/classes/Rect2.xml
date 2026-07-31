@@ -112,6 +112,13 @@
 				Returns the center point of the rectangle. This is the same as [code]position + (size / 2.0)[/code].
 			</description>
 		</method>
+		<method name="get_support" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="direction" type="Vector2" />
+			<description>
+				Returns the vertex's position of this rect that's the farthest in the given direction. This point is commonly known as the support point in collision detection algorithms.
+			</description>
+		</method>
 		<method name="grow" qualifiers="const">
 			<return type="Rect2" />
 			<param index="0" name="amount" type="float" />

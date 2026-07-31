@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GD_MONO_H
-#define GD_MONO_H
+#pragma once
 
-#include "../godotsharp_defs.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
 
-#include "core/io/config_file.h"
+#include <cstdint>
 
 #ifndef GD_CLR_STDCALL
 #ifdef WIN32
@@ -64,7 +64,7 @@ class GDMono {
 	bool finalizing_scripts_domain = false;
 
 	void *hostfxr_dll_handle = nullptr;
-	bool is_native_aot = false;
+	void *coreclr_dll_handle = nullptr;
 
 	String project_assembly_path;
 	uint64_t project_assembly_modified_time = 0;
@@ -77,9 +77,9 @@ class GDMono {
 	void _try_load_project_assembly();
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	uint64_t api_core_hash = 0;
-#endif
+#endif // DEBUG_ENABLED
 #ifdef TOOLS_ENABLED
 	uint64_t api_editor_hash = 0;
 #endif
@@ -93,22 +93,12 @@ protected:
 	static GDMono *singleton;
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
-	uint64_t get_api_core_hash() {
-		if (api_core_hash == 0) {
-			api_core_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
-		}
-		return api_core_hash;
-	}
+#ifdef DEBUG_ENABLED
+	uint64_t get_api_core_hash();
 #ifdef TOOLS_ENABLED
-	uint64_t get_api_editor_hash() {
-		if (api_editor_hash == 0) {
-			api_editor_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
-		}
-		return api_editor_hash;
-	}
+	uint64_t get_api_editor_hash();
 #endif // TOOLS_ENABLED
-#endif // DEBUG_METHODS_ENABLED
+#endif // DEBUG_ENABLED
 
 	_FORCE_INLINE_ static String get_expected_api_build_config() {
 #ifdef TOOLS_ENABLED
@@ -118,7 +108,7 @@ public:
 		return "Debug";
 #else
 		return "Release";
-#endif
+#endif // DEBUG_ENABLED
 #endif
 	}
 
@@ -162,7 +152,7 @@ public:
 	~GDMono();
 };
 
-namespace mono_bind {
+namespace MonoBind {
 
 class GodotSharp : public Object {
 	GDCLASS(GodotSharp, Object);
@@ -173,12 +163,10 @@ protected:
 public:
 	static GodotSharp *get_singleton() { return singleton; }
 
-	void reload_assemblies(bool p_soft_reload);
+	void reload_assemblies();
 
 	GodotSharp();
 	~GodotSharp();
 };
 
-} // namespace mono_bind
-
-#endif // GD_MONO_H
+} // namespace MonoBind

@@ -126,6 +126,7 @@ struct hb_bit_set_invertible_t
   { unlikely (inverted) ? (void) s.add_range (a, b) : s.del_range (a, b); }
 
   bool get (hb_codepoint_t g) const { return s.get (g) ^ inverted; }
+  bool may_have (hb_codepoint_t g) const { return get (g); }
 
   /* Has interface. */
   bool operator [] (hb_codepoint_t k) const { return get (k); }
@@ -138,6 +139,9 @@ struct hb_bit_set_invertible_t
   { add (v); return *this; }
   hb_bit_set_invertible_t& operator << (const hb_codepoint_pair_t& range)
   { add_range (range.first, range.second); return *this; }
+
+  bool may_intersect (const hb_bit_set_invertible_t &other) const
+  { return inverted || other.inverted || s.intersects (other.s); }
 
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
   {
@@ -169,7 +173,14 @@ struct hb_bit_set_invertible_t
   bool is_subset (const hb_bit_set_invertible_t &larger_set) const
   {
     if (unlikely (inverted != larger_set.inverted))
-      return hb_all (hb_iter (s) | hb_map (larger_set.s));
+    {
+      if (inverted)
+	return hb_all (iter (), larger_set.s);
+      else
+        // larger set is inverted so larger_set.s is the set of things that are not present
+        // in larger_set, therefore if s has any of those it can't be a subset.
+	return !s.intersects (larger_set.s);
+    }
     else
       return unlikely (inverted) ? larger_set.s.is_subset (s) : s.is_subset (larger_set.s);
   }
@@ -364,7 +375,7 @@ struct hb_bit_set_invertible_t
     unsigned __len__ () const { return l; }
     iter_t end () const { return iter_t (*s, false); }
     bool operator != (const iter_t& o) const
-    { return v != o.v || s != o.s; }
+    { return v != o.v; }
 
     protected:
     const hb_bit_set_invertible_t *s;

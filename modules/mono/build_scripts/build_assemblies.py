@@ -1,11 +1,12 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+
+from __future__ import annotations
 
 import os
 import os.path
 import shlex
 import subprocess
 from dataclasses import dataclass
-from typing import List, Optional
 
 
 def find_dotnet_cli():
@@ -99,12 +100,7 @@ def find_msbuild_tools_path_reg():
                 raise ValueError("Value of `installationPath` entry is empty")
 
             # Since VS2019, the directory is simply named "Current"
-            msbuild_dir = os.path.join(val, "MSBuild", "Current", "Bin")
-            if os.path.isdir(msbuild_dir):
-                return msbuild_dir
-
-            # Directory name "15.0" is used in VS 2017
-            return os.path.join(val, "MSBuild", "15.0", "Bin")
+            return os.path.join(val, "MSBuild", "Current", "Bin")
 
         raise ValueError("Cannot find `installationPath` entry")
     except ValueError as e:
@@ -151,7 +147,7 @@ def find_any_msbuild_tool(mono_prefix):
     return None
 
 
-def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: Optional[List[str]] = None):
+def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: list[str] | None = None):
     using_msbuild_mono = False
 
     # Preference order: dotnet CLI > Standalone MSBuild > Mono's MSBuild
@@ -182,19 +178,17 @@ def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: Opt
         # The (Csc/Vbc/Fsc)ToolExe environment variables are required when
         # building with Mono's MSBuild. They must point to the batch files
         # in Mono's bin directory to make sure they are executed with Mono.
-        msbuild_env.update(
-            {
-                "CscToolExe": os.path.join(tools.mono_bin_dir, "csc.bat"),
-                "VbcToolExe": os.path.join(tools.mono_bin_dir, "vbc.bat"),
-                "FscToolExe": os.path.join(tools.mono_bin_dir, "fsharpc.bat"),
-            }
-        )
+        msbuild_env.update({
+            "CscToolExe": os.path.join(tools.mono_bin_dir, "csc.bat"),
+            "VbcToolExe": os.path.join(tools.mono_bin_dir, "vbc.bat"),
+            "FscToolExe": os.path.join(tools.mono_bin_dir, "fsharpc.bat"),
+        })
 
     # We want to control cwd when running msbuild, because that's where the search for global.json begins.
     return subprocess.call(args, env=msbuild_env, cwd=chdir_to)
 
 
-def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision):
+def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision, no_deprecated, werror):
     target_filenames = [
         "GodotSharp.dll",
         "GodotSharp.pdb",
@@ -217,6 +211,10 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
             args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
         if precision == "double":
             args += ["/p:GodotFloat64=true"]
+        if no_deprecated:
+            args += ["/p:GodotNoDeprecated=true"]
+        if werror:
+            args += ["/p:TreatWarningsAsErrors=true"]
 
         sln = os.path.join(module_dir, "glue/GodotSharp/GodotSharp.sln")
         exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
@@ -227,7 +225,7 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
 
         core_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharp", "bin", build_config))
         editor_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharpEditor", "bin", build_config))
-        plugins_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotPlugins", "bin", build_config, "net6.0"))
+        plugins_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotPlugins", "bin", build_config, "net8.0"))
 
         if not os.path.isdir(editor_api_dir):
             assert not os.path.isfile(editor_api_dir)
@@ -270,9 +268,16 @@ def generate_sdk_package_versions():
     version_info = get_version_info("")
     sys.path.remove(root_path)
 
-    version_str = "{major}.{minor}.{patch}".format(**version_info)
     version_status = version_info["status"]
-    if version_status != "stable":  # Pre-release
+    godotsharp_version_str = "{major}.{minor}.{patch}".format(**version_info)
+    godot_dotnet_version_str = "{major}.{minor}.{patch}".format(**version_info)
+    if version_status == "stable":
+        # For stable versions, use the latest revision version available
+        # of the Godot .NET packages.
+        godot_dotnet_version_str = ".*"
+    else:
+        # Pre-releases and development builds.
+
         # If version was overridden to be e.g. "beta3", we insert a dot between
         # "beta" and "3" to follow SemVer 2.0.
         import re
@@ -280,8 +285,23 @@ def generate_sdk_package_versions():
         match = re.search(r"[\d]+$", version_status)
         if match:
             pos = match.start()
-            version_status = version_status[:pos] + "." + version_status[pos:]
-        version_str += "-" + version_status
+            godotsharp_version_status = version_status[:pos]
+            godot_dotnet_version_status = version_status[:pos]
+
+            # "dev" pre-releases always use the "alpha" label in the Godot .NET packages.
+            if godot_dotnet_version_status == "dev":
+                godot_dotnet_version_status = "alpha"
+
+            godotsharp_version_status += f".{version_status[pos:]}"
+            godot_dotnet_version_status += f".{version_status[pos:]}"
+        else:
+            # If the version status is not numbered, it must be a development build.
+            # Development builds always use the "dev" label in the Godot .NET packages.
+            godot_dotnet_version_status = "dev"
+            godotsharp_version_status = version_status
+
+        godotsharp_version_str += f"-{godotsharp_version_status}"
+        godot_dotnet_version_str += f"-{godot_dotnet_version_status}"
 
     import version
 
@@ -296,15 +316,16 @@ def generate_sdk_package_versions():
         + [f"GODOT{version.major}_{version.minor}_{v}_OR_GREATER" for v in range(0, version.patch + 1)]
     )
 
-    props = """<Project>
+    props = f"""<Project>
   <PropertyGroup>
-    <PackageVersion_GodotSharp>{0}</PackageVersion_GodotSharp>
-    <PackageVersion_Godot_NET_Sdk>{0}</PackageVersion_Godot_NET_Sdk>
-    <PackageVersion_Godot_SourceGenerators>{0}</PackageVersion_Godot_SourceGenerators>
-    <GodotVersionConstants>{1}</GodotVersionConstants>
+    <PackageVersion_GodotSharp>{godotsharp_version_str}</PackageVersion_GodotSharp>
+    <PackageVersion_Godot_NET_Sdk>{godotsharp_version_str}</PackageVersion_Godot_NET_Sdk>
+    <PackageVersion_Godot_SourceGenerators>{godotsharp_version_str}</PackageVersion_Godot_SourceGenerators>
+    <PackageVersion_GodotDotNet>{godot_dotnet_version_str}</PackageVersion_GodotDotNet>
+    <_GodotVersionConstants>{";".join(version_defines)}</_GodotVersionConstants>
   </PropertyGroup>
 </Project>
-""".format(version_str, ";".join(version_defines))
+"""
 
     # We write in ../SdkPackageVersions.props.
     with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8", newline="\n") as f:
@@ -336,12 +357,16 @@ def generate_sdk_package_versions():
         f.write(constants)
 
 
-def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision):
+def build_all(
+    msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision, no_deprecated, werror
+):
     # Generate SdkPackageVersions.props and VersionDocsUrl constant
     generate_sdk_package_versions()
 
     # Godot API
-    exit_code = build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision)
+    exit_code = build_godot_api(
+        msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision, no_deprecated, werror
+    )
     if exit_code != 0:
         return exit_code
 
@@ -364,6 +389,8 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
         args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
     if precision == "double":
         args += ["/p:GodotFloat64=true"]
+    if no_deprecated:
+        args += ["/p:GodotNoDeprecated=true"]
     sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.sln")
     exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
     if exit_code != 0:
@@ -390,6 +417,13 @@ def main():
     parser.add_argument(
         "--precision", type=str, default="single", choices=["single", "double"], help="Floating-point precision level"
     )
+    parser.add_argument(
+        "--no-deprecated",
+        action="store_true",
+        default=False,
+        help="Build GodotSharp without using deprecated features. This is required, if the engine was built with 'deprecated=no'.",
+    )
+    parser.add_argument("--werror", action="store_true", default=False, help="Treat compiler warnings as errors.")
 
     args = parser.parse_args()
 
@@ -414,6 +448,8 @@ def main():
         args.dev_debug,
         push_nupkgs_local,
         args.precision,
+        args.no_deprecated,
+        args.werror,
     )
     sys.exit(exit_code)
 

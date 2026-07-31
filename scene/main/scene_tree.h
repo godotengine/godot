@@ -28,26 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_TREE_H
-#define SCENE_TREE_H
+#pragma once
 
+#include "core/object/message_queue.h"
+#include "core/object/ref_counted.h"
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
-#include "scene/resources/mesh.h"
+#include "scene/main/scene_tree_fti.h"
 
-#undef Window
+#include <cstdlib>
 
-class PackedScene;
-class Node;
-class Window;
+class ArrayMesh;
+class InputEvent;
 class Material;
-class Mesh;
 class MultiplayerAPI;
-class SceneDebugger;
+class Node;
+class PackedScene;
 class Tween;
 class Viewport;
+class Window;
+
+#ifndef _3D_DISABLED
+class Node3D;
+#endif
 
 class SceneTreeTimer : public RefCounted {
 	GDCLASS(SceneTreeTimer, RefCounted);
@@ -71,11 +76,14 @@ public:
 	bool is_process_in_physics();
 
 	void set_ignore_time_scale(bool p_ignore);
-	bool is_ignore_time_scale();
+	bool is_ignoring_time_scale();
 
 	void release_connections();
+};
 
-	SceneTreeTimer();
+struct SceneTreeGroup {
+	Vector<Node *> nodes;
+	bool changed = false;
 };
 
 class SceneTree : public MainLoop {
@@ -115,10 +123,12 @@ private:
 
 	bool node_threading_disabled = false;
 
-	struct Group {
-		Vector<Node *> nodes;
-		bool changed = false;
-	};
+#ifndef _3D_DISABLED
+	struct ClientPhysicsInterpolation {
+		SelfList<Node3D>::List _node_3d_list;
+		void physics_process();
+	} _client_physics_interpolation;
+#endif
 
 	Window *root = nullptr;
 
@@ -133,11 +143,20 @@ private:
 	bool debug_navigation_hint = false;
 #endif
 	bool paused = false;
+	bool suspended = false;
 
-	HashMap<StringName, Group> group_map;
+	HashMap<StringName, SceneTreeGroup> group_map;
 	bool _quit = false;
 
-	bool _physics_interpolation_enabled = false;
+	// Static so we can get directly instead of via SceneTree pointer.
+	static bool _physics_interpolation_enabled;
+
+	// Note that physics interpolation is hard coded to OFF in the editor,
+	// therefore we have a second bool to enable e.g. configuration warnings
+	// to only take effect when the project is using physics interpolation.
+	static bool _physics_interpolation_enabled_in_project;
+
+	SceneTreeFTI scene_tree_fti;
 
 	StringName tree_changed_name = "tree_changed";
 	StringName node_added_name = "node_added";
@@ -168,17 +187,22 @@ private:
 
 	List<ObjectID> delete_queue;
 
+	uint64_t accessibility_upd_per_sec = 0;
+	bool accessibility_force_update = true;
+	HashSet<ObjectID> accessibility_change_queue;
+	uint64_t accessibility_last_update = 0;
+
 	HashMap<UGCall, Vector<Variant>, UGCall> unique_group_calls;
 	bool ugc_locked = false;
 	void _flush_ugc();
 
-	_FORCE_INLINE_ void _update_group_order(Group &g);
+	_FORCE_INLINE_ void _update_group_order(SceneTreeGroup &g);
 
 	TypedArray<Node> _get_nodes_in_group(const StringName &p_group);
 
 	Node *current_scene = nullptr;
-	Node *prev_scene = nullptr;
-	Node *pending_new_scene = nullptr;
+	ObjectID prev_scene_id;
+	ObjectID pending_new_scene_id;
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
@@ -210,9 +234,8 @@ private:
 	void process_timers(double p_delta, bool p_physics_frame);
 	void process_tweens(double p_delta, bool p_physics_frame);
 
-	Group *add_to_group(const StringName &p_group, Node *p_node);
+	SceneTreeGroup *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
-	void make_group_changed(const StringName &p_group);
 
 	void _process_group(ProcessGroup *p_group, bool p_physics);
 	void _process_groups_thread(uint32_t p_index, bool p_physics);
@@ -266,6 +289,7 @@ protected:
 
 public:
 	enum {
+		// Keep in sync with CanvasItem and Node3D.
 		NOTIFICATION_TRANSFORM_CHANGED = 2000
 	};
 
@@ -276,7 +300,7 @@ public:
 		GROUP_CALL_UNIQUE = 4,
 	};
 
-	_FORCE_INLINE_ Window *get_root() const { return root; }
+	RequiredResult<Window> get_root() const;
 
 	void call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount);
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
@@ -310,11 +334,19 @@ public:
 
 	void flush_transform_notifications();
 
+	bool is_accessibility_enabled() const;
+	bool is_accessibility_supported() const;
+	void _accessibility_force_update();
+	void _accessibility_notify_change(const Node *p_node, bool p_remove = false);
+	void _flush_accessibility_changes();
+	void _process_accessibility_changes(int p_window_id); // Effectively DisplayServerEnums::WindowID
+
 	virtual void initialize() override;
 
 	virtual void iteration_prepare() override;
 
 	virtual bool physics_process(double p_time) override;
+	virtual void iteration_end() override;
 	virtual bool process(double p_time) override;
 
 	virtual void finalize() override;
@@ -332,6 +364,8 @@ public:
 
 	void set_pause(bool p_enabled);
 	bool is_paused() const;
+	void set_suspend(bool p_enabled);
+	bool is_suspended() const;
 
 #ifdef DEBUG_ENABLED
 	void set_debug_collisions_hint(bool p_enabled);
@@ -375,9 +409,9 @@ public:
 
 	int get_node_count() const;
 
-	void queue_delete(Object *p_object);
+	void queue_delete(RequiredParam<Object> rp_object);
 
-	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
+	Vector<Node *> get_nodes_in_group(const StringName &p_group);
 	Node *get_first_node_in_group(const StringName &p_group);
 	bool has_group(const StringName &p_identifier) const;
 	int get_node_count_in_group(const StringName &p_group) const;
@@ -391,12 +425,14 @@ public:
 	void set_current_scene(Node *p_scene);
 	Node *get_current_scene() const;
 	Error change_scene_to_file(const String &p_path);
-	Error change_scene_to_packed(const Ref<PackedScene> &p_scene);
+	Error change_scene_to_packed(RequiredParam<PackedScene> rp_scene);
+	Error change_scene_to_node(RequiredParam<Node> rp_node);
 	Error reload_current_scene();
 	void unload_current_scene();
 
-	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
-	Ref<Tween> create_tween();
+	RequiredResult<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
+	RequiredResult<Tween> create_tween();
+	void remove_tween(const Ref<Tween> &p_tween);
 	TypedArray<Tween> get_processed_tweens();
 
 	//used by Main::start, don't use otherwise
@@ -410,7 +446,7 @@ public:
 
 	//network API
 
-	Ref<MultiplayerAPI> get_multiplayer(const NodePath &p_for_path = NodePath()) const;
+	RequiredResult<MultiplayerAPI> get_multiplayer(const NodePath &p_for_path = NodePath()) const;
 	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path = NodePath());
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;
@@ -421,12 +457,21 @@ public:
 	//default texture settings
 
 	void set_physics_interpolation_enabled(bool p_enabled);
-	bool is_physics_interpolation_enabled() const;
+	bool is_physics_interpolation_enabled() const { return _physics_interpolation_enabled; }
+
+	// Different name to disambiguate fast static versions from the user bound versions.
+	static bool is_fti_enabled() { return _physics_interpolation_enabled; }
+	static bool is_fti_enabled_in_project() { return _physics_interpolation_enabled_in_project; }
+
+#ifndef _3D_DISABLED
+	void client_physics_interpolation_add_node_3d(SelfList<Node3D> *p_elem);
+	void client_physics_interpolation_remove_node_3d(SelfList<Node3D> *p_elem);
+#endif
+
+	SceneTreeFTI &get_scene_tree_fti() { return scene_tree_fti; }
 
 	SceneTree();
 	~SceneTree();
 };
 
 VARIANT_ENUM_CAST(SceneTree::GroupCallFlags);
-
-#endif // SCENE_TREE_H

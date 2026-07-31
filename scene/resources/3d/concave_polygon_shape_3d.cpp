@@ -30,7 +30,9 @@
 
 #include "concave_polygon_shape_3d.h"
 
-#include "servers/physics_server_3d.h"
+#include "core/object/class_db.h"
+#include "scene/resources/mesh.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 	HashSet<DrawEdge, DrawEdge> edges;
@@ -57,6 +59,23 @@ Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 	}
 
 	return points;
+}
+
+Ref<ArrayMesh> ConcavePolygonShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+	Vector<Color> colors;
+
+	for (int i = 0; i < faces.size(); i++) {
+		colors.push_back(p_modulate);
+	}
+
+	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+	Array a;
+	a.resize(Mesh::ARRAY_MAX);
+	a[RSE::ARRAY_VERTEX] = faces;
+	a[RSE::ARRAY_COLOR] = colors;
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
+
+	return mesh;
 }
 
 real_t ConcavePolygonShape3D::get_enclosing_radius() const {
@@ -113,6 +132,6 @@ void ConcavePolygonShape3D::_bind_methods() {
 }
 
 ConcavePolygonShape3D::ConcavePolygonShape3D() :
-		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CONCAVE_POLYGON)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PS3DE::SHAPE_CONCAVE_POLYGON)) {
 	//set_planes(Vector3(1,1,1));
 }

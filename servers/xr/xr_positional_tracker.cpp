@@ -30,8 +30,8 @@
 
 #include "xr_positional_tracker.h"
 
-#include "core/input/input.h"
-#include "xr_controller_tracker.h"
+#include "core/object/class_db.h"
+#include "servers/xr/xr_controller_tracker.h"
 
 void XRPositionalTracker::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_HAND_UNKNOWN);
@@ -51,17 +51,17 @@ void XRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pose", "name"), &XRPositionalTracker::get_pose);
 	ClassDB::bind_method(D_METHOD("invalidate_pose", "name"), &XRPositionalTracker::invalidate_pose);
 	ClassDB::bind_method(D_METHOD("set_pose", "name", "transform", "linear_velocity", "angular_velocity", "tracking_confidence"), &XRPositionalTracker::set_pose);
-	ADD_SIGNAL(MethodInfo("pose_changed", PropertyInfo(Variant::OBJECT, "pose", PROPERTY_HINT_RESOURCE_TYPE, "XRPose")));
-	ADD_SIGNAL(MethodInfo("pose_lost_tracking", PropertyInfo(Variant::OBJECT, "pose", PROPERTY_HINT_RESOURCE_TYPE, "XRPose")));
+	ADD_SIGNAL(MethodInfo("pose_changed", PropertyInfo(Variant::OBJECT, "pose", PROPERTY_HINT_RESOURCE_TYPE, XRPose::get_class_static())));
+	ADD_SIGNAL(MethodInfo("pose_lost_tracking", PropertyInfo(Variant::OBJECT, "pose", PROPERTY_HINT_RESOURCE_TYPE, XRPose::get_class_static())));
 
 	ClassDB::bind_method(D_METHOD("get_input", "name"), &XRPositionalTracker::get_input);
 	ClassDB::bind_method(D_METHOD("set_input", "name", "value"), &XRPositionalTracker::set_input);
-	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
-	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "vector")));
+	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "action_name")));
+	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "action_name")));
+	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::FLOAT, "value")));
+	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::VECTOR2, "vector")));
 	ADD_SIGNAL(MethodInfo("profile_changed", PropertyInfo(Variant::STRING, "role")));
-};
+}
 
 void XRPositionalTracker::set_tracker_profile(const String &p_profile) {
 	if (profile != p_profile) {
@@ -77,12 +77,12 @@ String XRPositionalTracker::get_tracker_profile() const {
 
 XRPositionalTracker::TrackerHand XRPositionalTracker::get_tracker_hand() const {
 	return tracker_hand;
-};
+}
 
 void XRPositionalTracker::set_tracker_hand(const XRPositionalTracker::TrackerHand p_hand) {
 	ERR_FAIL_INDEX(p_hand, TRACKER_HAND_MAX);
 	tracker_hand = p_hand;
-};
+}
 
 bool XRPositionalTracker::has_pose(const StringName &p_action_name) const {
 	return poses.has(p_action_name);
@@ -116,10 +116,10 @@ void XRPositionalTracker::set_pose(const StringName &p_action_name, const Transf
 		new_pose = poses[p_action_name];
 	} else {
 		new_pose.instantiate();
+		new_pose->set_name(p_action_name);
 		poses[p_action_name] = new_pose;
 	}
 
-	new_pose->set_name(p_action_name);
 	new_pose->set_has_tracking_data(true);
 	new_pose->set_transform(p_transform);
 	new_pose->set_linear_velocity(p_linear_velocity);

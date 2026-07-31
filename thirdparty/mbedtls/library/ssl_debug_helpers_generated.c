@@ -11,7 +11,7 @@
  *
  */
 
-#include "common.h"
+#include "ssl_misc.h"
 
 #if defined(MBEDTLS_DEBUG_C)
 
@@ -22,14 +22,6 @@ const char *mbedtls_ssl_named_group_to_str( uint16_t in )
 {
     switch( in )
     {
-    case MBEDTLS_SSL_IANA_TLS_GROUP_SECP192K1:
-        return "secp192k1";
-    case MBEDTLS_SSL_IANA_TLS_GROUP_SECP192R1:
-        return "secp192r1";
-    case MBEDTLS_SSL_IANA_TLS_GROUP_SECP224K1:
-        return "secp224k1";
-    case MBEDTLS_SSL_IANA_TLS_GROUP_SECP224R1:
-        return "secp224r1";
     case MBEDTLS_SSL_IANA_TLS_GROUP_SECP256K1:
         return "secp256k1";
     case MBEDTLS_SSL_IANA_TLS_GROUP_SECP256R1:
@@ -60,7 +52,7 @@ const char *mbedtls_ssl_named_group_to_str( uint16_t in )
         return "ffdhe8192";
     };
 
-    return "UNKOWN";
+    return "UNKNOWN";
 }
 const char *mbedtls_ssl_sig_alg_to_str( uint16_t in )
 {

@@ -28,17 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VECTOR2_H
-#define VECTOR2_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
+#include "core/templates/hashfuncs.h"
 
 class String;
 struct Vector2i;
 
 struct [[nodiscard]] Vector2 {
-	static const int AXIS_COUNT = 2;
+	static const Vector2 LEFT;
+	static const Vector2 RIGHT;
+	static const Vector2 UP;
+	static const Vector2 DOWN;
+
+	static constexpr int AXIS_COUNT = 2;
 
 	enum Axis {
 		AXIS_X,
@@ -46,27 +51,29 @@ struct [[nodiscard]] Vector2 {
 	};
 
 	union {
-		struct {
-			union {
-				real_t x;
-				real_t width;
-			};
-			union {
-				real_t y;
-				real_t height;
-			};
-		};
-
-		real_t coord[2] = { 0 };
+		real_t x = 0.0f;
+		real_t width;
+	};
+	union {
+		real_t y = 0.0f;
+		real_t height;
 	};
 
-	_FORCE_INLINE_ real_t &operator[](int p_axis) {
+	constexpr real_t &operator[](int p_axis) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(Vector2, x) == 0 * sizeof(real_t));
+		static_assert(offsetof(Vector2, width) == 0 * sizeof(real_t));
+		static_assert(offsetof(Vector2, y) == 1 * sizeof(real_t));
+		static_assert(offsetof(Vector2, height) == 1 * sizeof(real_t));
+		static_assert(sizeof(Vector2) == 2 * sizeof(real_t));
+
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
-	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
+	constexpr const real_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
 
 	_FORCE_INLINE_ Vector2::Axis min_axis_index() const {
@@ -84,6 +91,8 @@ struct [[nodiscard]] Vector2 {
 	real_t length() const;
 	real_t length_squared() const;
 	Vector2 limit_length(real_t p_len = 1.0) const;
+
+	void zero() { x = y = 0; }
 
 	Vector2 min(const Vector2 &p_vector2) const {
 		return Vector2(MIN(x, p_vector2.x), MIN(y, p_vector2.y));
@@ -129,35 +138,36 @@ struct [[nodiscard]] Vector2 {
 	Vector2 reflect(const Vector2 &p_normal) const;
 
 	bool is_equal_approx(const Vector2 &p_v) const;
+	bool is_same(const Vector2 &p_v) const;
 	bool is_zero_approx() const;
 	bool is_finite() const;
 
-	Vector2 operator+(const Vector2 &p_v) const;
-	void operator+=(const Vector2 &p_v);
-	Vector2 operator-(const Vector2 &p_v) const;
-	void operator-=(const Vector2 &p_v);
-	Vector2 operator*(const Vector2 &p_v1) const;
+	constexpr Vector2 operator+(const Vector2 &p_v) const;
+	constexpr void operator+=(const Vector2 &p_v);
+	constexpr Vector2 operator-(const Vector2 &p_v) const;
+	constexpr void operator-=(const Vector2 &p_v);
+	constexpr Vector2 operator*(const Vector2 &p_v1) const;
 
-	Vector2 operator*(real_t p_rvalue) const;
-	void operator*=(real_t p_rvalue);
-	void operator*=(const Vector2 &p_rvalue) { *this = *this * p_rvalue; }
+	constexpr Vector2 operator*(real_t p_rvalue) const;
+	constexpr void operator*=(real_t p_rvalue);
+	constexpr void operator*=(const Vector2 &p_rvalue) { *this = *this * p_rvalue; }
 
-	Vector2 operator/(const Vector2 &p_v1) const;
+	constexpr Vector2 operator/(const Vector2 &p_v1) const;
 
-	Vector2 operator/(real_t p_rvalue) const;
+	constexpr Vector2 operator/(real_t p_rvalue) const;
 
-	void operator/=(real_t p_rvalue);
-	void operator/=(const Vector2 &p_rvalue) { *this = *this / p_rvalue; }
+	constexpr void operator/=(real_t p_rvalue);
+	constexpr void operator/=(const Vector2 &p_rvalue) { *this = *this / p_rvalue; }
 
-	Vector2 operator-() const;
+	constexpr Vector2 operator-() const;
 
-	bool operator==(const Vector2 &p_vec2) const;
-	bool operator!=(const Vector2 &p_vec2) const;
+	constexpr bool operator==(const Vector2 &p_vec2) const;
+	constexpr bool operator!=(const Vector2 &p_vec2) const;
 
-	bool operator<(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator>(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x); }
-	bool operator<=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
-	bool operator>=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
+	constexpr bool operator<(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y < p_vec2.y) : (x < p_vec2.x); }
+	constexpr bool operator>(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x); }
+	constexpr bool operator<=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
+	constexpr bool operator>=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
 
 	real_t angle() const;
 	static Vector2 from_angle(real_t p_angle);
@@ -181,73 +191,82 @@ struct [[nodiscard]] Vector2 {
 	Vector2 clampf(real_t p_min, real_t p_max) const;
 	real_t aspect() const { return width / height; }
 
-	operator String() const;
+	explicit operator String() const;
 	operator Vector2i() const;
 
-	_FORCE_INLINE_ Vector2() {}
-	_FORCE_INLINE_ Vector2(real_t p_x, real_t p_y) {
-		x = p_x;
-		y = p_y;
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(x);
+		h = hash_murmur3_one_real(y, h);
+		return hash_fmix32(h);
 	}
+
+	constexpr Vector2() = default;
+	constexpr Vector2(real_t p_x, real_t p_y) :
+			x(p_x), y(p_y) {}
 };
+
+inline constexpr Vector2 Vector2::LEFT = { -1, 0 };
+inline constexpr Vector2 Vector2::RIGHT = { 1, 0 };
+inline constexpr Vector2 Vector2::UP = { 0, -1 };
+inline constexpr Vector2 Vector2::DOWN = { 0, 1 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {
 	return p_vec - *this * (dot(p_vec) - p_d);
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator+(const Vector2 &p_v) const {
+constexpr Vector2 Vector2::operator+(const Vector2 &p_v) const {
 	return Vector2(x + p_v.x, y + p_v.y);
 }
 
-_FORCE_INLINE_ void Vector2::operator+=(const Vector2 &p_v) {
+constexpr void Vector2::operator+=(const Vector2 &p_v) {
 	x += p_v.x;
 	y += p_v.y;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator-(const Vector2 &p_v) const {
+constexpr Vector2 Vector2::operator-(const Vector2 &p_v) const {
 	return Vector2(x - p_v.x, y - p_v.y);
 }
 
-_FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
+constexpr void Vector2::operator-=(const Vector2 &p_v) {
 	x -= p_v.x;
 	y -= p_v.y;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator*(const Vector2 &p_v1) const {
+constexpr Vector2 Vector2::operator*(const Vector2 &p_v1) const {
 	return Vector2(x * p_v1.x, y * p_v1.y);
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator*(real_t p_rvalue) const {
+constexpr Vector2 Vector2::operator*(real_t p_rvalue) const {
 	return Vector2(x * p_rvalue, y * p_rvalue);
 }
 
-_FORCE_INLINE_ void Vector2::operator*=(real_t p_rvalue) {
+constexpr void Vector2::operator*=(real_t p_rvalue) {
 	x *= p_rvalue;
 	y *= p_rvalue;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator/(const Vector2 &p_v1) const {
+constexpr Vector2 Vector2::operator/(const Vector2 &p_v1) const {
 	return Vector2(x / p_v1.x, y / p_v1.y);
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator/(real_t p_rvalue) const {
+constexpr Vector2 Vector2::operator/(real_t p_rvalue) const {
 	return Vector2(x / p_rvalue, y / p_rvalue);
 }
 
-_FORCE_INLINE_ void Vector2::operator/=(real_t p_rvalue) {
+constexpr void Vector2::operator/=(real_t p_rvalue) {
 	x /= p_rvalue;
 	y /= p_rvalue;
 }
 
-_FORCE_INLINE_ Vector2 Vector2::operator-() const {
+constexpr Vector2 Vector2::operator-() const {
 	return Vector2(-x, -y);
 }
 
-_FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
+constexpr bool Vector2::operator==(const Vector2 &p_vec2) const {
 	return x == p_vec2.x && y == p_vec2.y;
 }
 
-_FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
+constexpr bool Vector2::operator!=(const Vector2 &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
 }
 
@@ -308,23 +327,24 @@ Vector2 Vector2::direction_to(const Vector2 &p_to) const {
 // Multiplication operators required to workaround issues with LLVM using implicit conversion
 // to Vector2i instead for integers where it should not.
 
-_FORCE_INLINE_ Vector2 operator*(float p_scalar, const Vector2 &p_vec) {
+constexpr Vector2 operator*(float p_scalar, const Vector2 &p_vec) {
 	return p_vec * p_scalar;
 }
 
-_FORCE_INLINE_ Vector2 operator*(double p_scalar, const Vector2 &p_vec) {
+constexpr Vector2 operator*(double p_scalar, const Vector2 &p_vec) {
 	return p_vec * p_scalar;
 }
 
-_FORCE_INLINE_ Vector2 operator*(int32_t p_scalar, const Vector2 &p_vec) {
+constexpr Vector2 operator*(int32_t p_scalar, const Vector2 &p_vec) {
 	return p_vec * p_scalar;
 }
 
-_FORCE_INLINE_ Vector2 operator*(int64_t p_scalar, const Vector2 &p_vec) {
+constexpr Vector2 operator*(int64_t p_scalar, const Vector2 &p_vec) {
 	return p_vec * p_scalar;
 }
 
 typedef Vector2 Size2;
 typedef Vector2 Point2;
 
-#endif // VECTOR2_H
+template <>
+struct is_zero_constructible<Vector2> : std::true_type {};

@@ -995,10 +995,13 @@ struct CD3DX12_GPU_DESCRIPTOR_HANDLE : public D3D12_GPU_DESCRIPTOR_HANDLE
 // To help enable root signature 1.1 features when they are available and not require maintaining
 // two code paths for building root signatures, this helper method reconstructs a 1.0 signature when
 // 1.1 is not supported.
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcovered-switch-default"
+#endif
+
 inline HRESULT D3DX12SerializeVersionedRootSignature(
-/* GODOT start */
     _In_ HMODULE pLibD3D12,
-/* GODOT end */
     _In_ const D3D12_VERSIONED_ROOT_SIGNATURE_DESC* pRootSignatureDesc,
     D3D_ROOT_SIGNATURE_VERSION MaxVersion,
     _Outptr_ ID3DBlob** ppBlob,
@@ -1009,22 +1012,18 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
         *ppErrorBlob = nullptr;
     }
 
-    /* GODOT start */
-	PFN_D3D12_SERIALIZE_ROOT_SIGNATURE d3d_D3D12SerializeRootSignature = (PFN_D3D12_SERIALIZE_ROOT_SIGNATURE)(void *)GetProcAddress(pLibD3D12, "D3D12SerializeRootSignature");
+    PFN_D3D12_SERIALIZE_ROOT_SIGNATURE d3d_D3D12SerializeRootSignature = (PFN_D3D12_SERIALIZE_ROOT_SIGNATURE)(void *)GetProcAddress(pLibD3D12, "D3D12SerializeRootSignature");
     if (d3d_D3D12SerializeRootSignature == nullptr) {
         return E_INVALIDARG;
     }
     PFN_D3D12_SERIALIZE_VERSIONED_ROOT_SIGNATURE d3d_D3D12SerializeVersionedRootSignature = (PFN_D3D12_SERIALIZE_VERSIONED_ROOT_SIGNATURE)(void *)GetProcAddress(pLibD3D12, "D3D12SerializeVersionedRootSignature");
-    /* GODOT end */
     switch (MaxVersion)
     {
         case D3D_ROOT_SIGNATURE_VERSION_1_0:
             switch (pRootSignatureDesc->Version)
             {
                 case D3D_ROOT_SIGNATURE_VERSION_1_0:
-/* GODOT start */
                     return d3d_D3D12SerializeRootSignature(&pRootSignatureDesc->Desc_1_0, D3D_ROOT_SIGNATURE_VERSION_1, ppBlob, ppErrorBlob);
-/* GODOT end */
 
                 case D3D_ROOT_SIGNATURE_VERSION_1_1:
 #if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
@@ -1066,32 +1065,38 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
                                 break;
 
                             case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
-                                const D3D12_ROOT_DESCRIPTOR_TABLE1& table_1_1 = desc_1_1.pParameters[n].DescriptorTable;
-
-                                const SIZE_T DescriptorRangesSize = sizeof(D3D12_DESCRIPTOR_RANGE) * table_1_1.NumDescriptorRanges;
-                                void* pDescriptorRanges = (DescriptorRangesSize > 0 && SUCCEEDED(hr)) ? HeapAlloc(GetProcessHeap(), 0, DescriptorRangesSize) : nullptr;
-                                if (DescriptorRangesSize > 0 && pDescriptorRanges == nullptr)
                                 {
-                                    hr = E_OUTOFMEMORY;
-                                }
-                                auto pDescriptorRanges_1_0 = static_cast<D3D12_DESCRIPTOR_RANGE*>(pDescriptorRanges);
+                                    const D3D12_ROOT_DESCRIPTOR_TABLE1& table_1_1 = desc_1_1.pParameters[n].DescriptorTable;
 
-                                if (SUCCEEDED(hr))
-                                {
-                                    for (UINT x = 0; x < table_1_1.NumDescriptorRanges; x++)
+                                    const SIZE_T DescriptorRangesSize = sizeof(D3D12_DESCRIPTOR_RANGE) * table_1_1.NumDescriptorRanges;
+                                    void* pDescriptorRanges = (DescriptorRangesSize > 0 && SUCCEEDED(hr)) ? HeapAlloc(GetProcessHeap(), 0, DescriptorRangesSize) : nullptr;
+                                    if (DescriptorRangesSize > 0 && pDescriptorRanges == nullptr)
                                     {
-                                        __analysis_assume(DescriptorRangesSize == sizeof(D3D12_DESCRIPTOR_RANGE) * table_1_1.NumDescriptorRanges);
-                                        pDescriptorRanges_1_0[x].BaseShaderRegister = table_1_1.pDescriptorRanges[x].BaseShaderRegister;
-                                        pDescriptorRanges_1_0[x].NumDescriptors = table_1_1.pDescriptorRanges[x].NumDescriptors;
-                                        pDescriptorRanges_1_0[x].OffsetInDescriptorsFromTableStart = table_1_1.pDescriptorRanges[x].OffsetInDescriptorsFromTableStart;
-                                        pDescriptorRanges_1_0[x].RangeType = table_1_1.pDescriptorRanges[x].RangeType;
-                                        pDescriptorRanges_1_0[x].RegisterSpace = table_1_1.pDescriptorRanges[x].RegisterSpace;
+                                        hr = E_OUTOFMEMORY;
                                     }
-                                }
+                                    auto pDescriptorRanges_1_0 = static_cast<D3D12_DESCRIPTOR_RANGE*>(pDescriptorRanges);
 
-                                D3D12_ROOT_DESCRIPTOR_TABLE& table_1_0 = pParameters_1_0[n].DescriptorTable;
-                                table_1_0.NumDescriptorRanges = table_1_1.NumDescriptorRanges;
-                                table_1_0.pDescriptorRanges = pDescriptorRanges_1_0;
+                                    if (SUCCEEDED(hr))
+                                    {
+                                        for (UINT x = 0; x < table_1_1.NumDescriptorRanges; x++)
+                                        {
+                                            __analysis_assume(DescriptorRangesSize == sizeof(D3D12_DESCRIPTOR_RANGE) * table_1_1.NumDescriptorRanges);
+                                            pDescriptorRanges_1_0[x].BaseShaderRegister = table_1_1.pDescriptorRanges[x].BaseShaderRegister;
+                                            pDescriptorRanges_1_0[x].NumDescriptors = table_1_1.pDescriptorRanges[x].NumDescriptors;
+                                            pDescriptorRanges_1_0[x].OffsetInDescriptorsFromTableStart = table_1_1.pDescriptorRanges[x].OffsetInDescriptorsFromTableStart;
+                                            pDescriptorRanges_1_0[x].RangeType = table_1_1.pDescriptorRanges[x].RangeType;
+                                            pDescriptorRanges_1_0[x].RegisterSpace = table_1_1.pDescriptorRanges[x].RegisterSpace;
+                                        }
+                                    }
+
+                                    D3D12_ROOT_DESCRIPTOR_TABLE& table_1_0 = pParameters_1_0[n].DescriptorTable;
+                                    table_1_0.NumDescriptorRanges = table_1_1.NumDescriptorRanges;
+                                    table_1_0.pDescriptorRanges = pDescriptorRanges_1_0;
+                                }
+                                break;
+
+                            default:
+                                break;
                             }
                         }
                     }
@@ -1126,9 +1131,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
                     if (SUCCEEDED(hr))
                     {
                         const CD3DX12_ROOT_SIGNATURE_DESC desc_1_0(desc_1_1.NumParameters, pParameters_1_0, desc_1_1.NumStaticSamplers, pStaticSamplers == nullptr ? desc_1_1.pStaticSamplers : pStaticSamplers, desc_1_1.Flags);
-/* GODOT start */
                         hr = d3d_D3D12SerializeRootSignature(&desc_1_0, D3D_ROOT_SIGNATURE_VERSION_1, ppBlob, ppErrorBlob);
-/* GODOT end */
                     }
 
                     if (pParameters)
@@ -1151,6 +1154,9 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
 
                     return hr;
                 }
+
+                default:
+                    break;
             }
             break;
 
@@ -1159,9 +1165,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
             {
             case D3D_ROOT_SIGNATURE_VERSION_1_0:
             case D3D_ROOT_SIGNATURE_VERSION_1_1:
-/* GODOT start */
                 return d3d_D3D12SerializeVersionedRootSignature(pRootSignatureDesc, ppBlob, ppErrorBlob);
-/* GODOT end */
 
 #if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
             case D3D_ROOT_SIGNATURE_VERSION_1_2:
@@ -1197,9 +1201,7 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
                 if (SUCCEEDED(hr))
                 {
                     const CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC desc(desc_1_1.NumParameters, desc_1_1.pParameters, desc_1_1.NumStaticSamplers, pStaticSamplers == nullptr ? desc_1_1.pStaticSamplers : pStaticSamplers, desc_1_1.Flags);
-/* GODOT start */
                     hr = d3d_D3D12SerializeVersionedRootSignature(&desc, ppBlob, ppErrorBlob);
-/* GODOT end */
                 }
 
                 if (pStaticSamplers)
@@ -1211,14 +1213,21 @@ inline HRESULT D3DX12SerializeVersionedRootSignature(
             }
 #endif
 
+            default:
+                break;
             }
+            break;
+
 #if defined(D3D12_SDK_VERSION) && (D3D12_SDK_VERSION >= 609)
         case D3D_ROOT_SIGNATURE_VERSION_1_2:
 #endif
-/* GODOT start */
+        default:
             return d3d_D3D12SerializeVersionedRootSignature(pRootSignatureDesc, ppBlob, ppErrorBlob);
-/* GODOT end */
     }
 
     return E_INVALIDARG;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif

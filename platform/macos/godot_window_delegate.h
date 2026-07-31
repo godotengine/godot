@@ -28,20 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_WINDOW_DELEGATE_H
-#define GODOT_WINDOW_DELEGATE_H
+#pragma once
 
-#include "servers/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
-@interface GodotWindowDelegate : NSObject <NSWindowDelegate> {
-	DisplayServer::WindowID window_id;
-}
+class DisplayServerMacOS;
 
-- (void)setWindowID:(DisplayServer::WindowID)wid;
+@interface GodotWindowDelegate : NSObject <NSWindowDelegate>
+
+- (void)setWindowID:(DisplayServerEnums::WindowID)wid;
+
+- (instancetype)initWithDisplayServer:(DisplayServerMacOS *)p_ds;
 
 @end
-
-#endif // GODOT_WINDOW_DELEGATE_H

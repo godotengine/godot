@@ -30,11 +30,23 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "object.h"
+
 #include "core/object/class_db.h"
 
-void Object::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("tr", "message", "context"), &Object::tr, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("tr_n", "message", "plural_message", "n", "context"), &Object::tr_n, DEFVAL(""));
+bool Object::_is_class_bind_compat_118582(const String &p_name) const {
+	for (const StringName &name : get_gdtype().get_name_hierarchy()) {
+		if (name == p_name) {
+			return true;
+		}
+	}
+	return false;
 }
 
-#endif
+void Object::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("is_class", "class"), &Object::_is_class_bind_compat_118582);
+}
+
+#else
+void Object::_bind_compatibility_methods() {}
+#endif // DISABLE_DEPRECATED

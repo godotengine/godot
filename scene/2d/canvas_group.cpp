@@ -30,11 +30,14 @@
 
 #include "canvas_group.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 void CanvasGroup::set_fit_margin(real_t p_fit_margin) {
 	ERR_FAIL_COND(p_fit_margin < 0.0);
 
 	fit_margin = p_fit_margin;
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
 
 	queue_redraw();
 }
@@ -47,7 +50,7 @@ void CanvasGroup::set_clear_margin(real_t p_clear_margin) {
 	ERR_FAIL_COND(p_clear_margin < 0.0);
 
 	clear_margin = p_clear_margin;
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
 
 	queue_redraw();
 }
@@ -58,10 +61,42 @@ real_t CanvasGroup::get_clear_margin() const {
 
 void CanvasGroup::set_use_mipmaps(bool p_use_mipmaps) {
 	use_mipmaps = p_use_mipmaps;
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
 }
 bool CanvasGroup::is_using_mipmaps() const {
 	return use_mipmaps;
+}
+
+PackedStringArray CanvasGroup::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+
+	if (is_inside_tree()) {
+		bool warned_about_ancestor_clipping = false;
+		bool warned_about_canvasgroup_ancestor = false;
+		Node *n = get_parent();
+		while (n) {
+			CanvasItem *as_canvas_item = Object::cast_to<CanvasItem>(n);
+			if (!warned_about_ancestor_clipping && as_canvas_item && as_canvas_item->get_clip_children_mode() != CLIP_CHILDREN_DISABLED) {
+				warnings.push_back(vformat(RTR("Ancestor \"%s\" clips its children, so this CanvasGroup will not function properly."), as_canvas_item->get_name()));
+				warned_about_ancestor_clipping = true;
+			}
+
+			CanvasGroup *as_canvas_group = Object::cast_to<CanvasGroup>(n);
+			if (!warned_about_canvasgroup_ancestor && as_canvas_group) {
+				warnings.push_back(vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this CanvasGroup will not function properly."), as_canvas_group->get_name()));
+				warned_about_canvasgroup_ancestor = true;
+			}
+
+			// Only break out early once both warnings have been triggered, so
+			// that the user is aware of both possible reasons for clipping not working.
+			if (warned_about_ancestor_clipping && warned_about_canvasgroup_ancestor) {
+				break;
+			}
+			n = n->get_parent();
+		}
+	}
+
+	return warnings;
 }
 
 void CanvasGroup::_bind_methods() {
@@ -84,5 +119,5 @@ CanvasGroup::CanvasGroup() {
 	set_fit_margin(10.0); //sets things
 }
 CanvasGroup::~CanvasGroup() {
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_DISABLED);
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CANVAS_GROUP_MODE_DISABLED);
 }

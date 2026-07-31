@@ -30,8 +30,12 @@
 
 #include "collision_shape_2d.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_object_2d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
 
@@ -47,11 +51,7 @@ void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 	collision_object->shape_owner_set_disabled(owner_id, disabled);
 	collision_object->shape_owner_set_one_way_collision(owner_id, one_way_collision);
 	collision_object->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
-}
-
-Color CollisionShape2D::_get_default_debug_color() const {
-	SceneTree *st = SceneTree::get_singleton();
-	return st ? st->get_debug_collisions_color() : Color();
+	collision_object->shape_owner_set_one_way_collision_direction(owner_id, one_way_collision_direction);
 }
 
 void CollisionShape2D::_notification(int p_what) {
@@ -94,7 +94,7 @@ void CollisionShape2D::_notification(int p_what) {
 				break;
 			}
 
-			if (!shape.is_valid()) {
+			if (shape.is_null()) {
 				break;
 			}
 
@@ -119,14 +119,15 @@ void CollisionShape2D::_notification(int p_what) {
 				if (disabled) {
 					draw_col = draw_col.darkened(0.25);
 				}
-				Vector2 line_to(0, 20);
+
+				Vector2 line_to = 20.0 * one_way_collision_direction;
 				draw_line(Vector2(), line_to, draw_col, 2);
 				real_t tsize = 8;
 
 				Vector<Vector2> pts{
-					line_to + Vector2(0, tsize),
-					line_to + Vector2(Math_SQRT12 * tsize, 0),
-					line_to + Vector2(-Math_SQRT12 * tsize, 0)
+					line_to + tsize * one_way_collision_direction,
+					line_to + Math::SQRT12 * tsize * one_way_collision_direction.orthogonal(),
+					line_to - Math::SQRT12 * tsize * one_way_collision_direction.orthogonal(),
 				};
 
 				Vector<Color> cols{ draw_col, draw_col, draw_col };
@@ -166,7 +167,7 @@ Ref<Shape2D> CollisionShape2D::get_shape() const {
 }
 
 bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	if (!shape.is_valid()) {
+	if (shape.is_null()) {
 		return false;
 	}
 
@@ -174,13 +175,13 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 }
 
 PackedStringArray CollisionShape2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	CollisionObject2D *col_object = Object::cast_to<CollisionObject2D>(get_parent());
 	if (col_object == nullptr) {
 		warnings.push_back(RTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node.\nPlease only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
-	if (!shape.is_valid()) {
+	if (shape.is_null()) {
 		warnings.push_back(RTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"));
 	}
 	if (one_way_collision && Object::cast_to<Area2D>(col_object)) {
@@ -190,7 +191,7 @@ PackedStringArray CollisionShape2D::get_configuration_warnings() const {
 	Ref<ConvexPolygonShape2D> convex = shape;
 	Ref<ConcavePolygonShape2D> concave = shape;
 	if (convex.is_valid() || concave.is_valid()) {
-		warnings.push_back(RTR("Polygon-based shapes are not meant be used nor edited directly through the CollisionShape2D node. Please use the CollisionPolygon2D node instead."));
+		warnings.push_back(RTR("The CollisionShape2D node has limited editing options for polygon-based shapes. Consider using a CollisionPolygon2D node instead."));
 	}
 
 	return warnings;
@@ -232,7 +233,32 @@ real_t CollisionShape2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
 
+void CollisionShape2D::set_one_way_collision_direction(const Vector2 &p_direction) {
+	if (p_direction == one_way_collision_direction) {
+		return;
+	}
+
+	one_way_collision_direction = p_direction.normalized();
+	if (collision_object) {
+		collision_object->shape_owner_set_one_way_collision_direction(owner_id, p_direction.normalized());
+	}
+	queue_redraw();
+}
+
+Vector2 CollisionShape2D::get_one_way_collision_direction() const {
+	return one_way_collision_direction;
+}
+
+Color CollisionShape2D::_get_default_debug_color() const {
+	const SceneTree *st = SceneTree::get_singleton();
+	return st ? st->get_debug_collisions_color() : Color(0.0, 0.0, 0.0, 0.0);
+}
+
 void CollisionShape2D::set_debug_color(const Color &p_color) {
+	if (debug_color == p_color) {
+		return;
+	}
+
 	debug_color = p_color;
 	queue_redraw();
 }
@@ -240,6 +266,8 @@ void CollisionShape2D::set_debug_color(const Color &p_color) {
 Color CollisionShape2D::get_debug_color() const {
 	return debug_color;
 }
+
+#ifdef DEBUG_ENABLED
 
 bool CollisionShape2D::_property_can_revert(const StringName &p_name) const {
 	if (p_name == "debug_color") {
@@ -266,6 +294,8 @@ void CollisionShape2D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+#endif // DEBUG_ENABLED
+
 void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape2D::set_shape);
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape2D::get_shape);
@@ -275,16 +305,25 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_direction", "direction"), &CollisionShape2D::set_one_way_collision_direction);
+	ClassDB::bind_method(D_METHOD("get_one_way_collision_direction"), &CollisionShape2D::get_one_way_collision_direction);
+
+	// Specify all types for explicit ordering in the inspector,
+	// but list generic Shape2D last to allow extended types to show up at the end.
+	// Keep the order roughly in sync with CollisionShape3D's `shape` property.
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "RectangleShape2D,CircleShape2D,CapsuleShape2D,SegmentShape2D,SeparationRayShape2D,WorldBoundaryShape2D,ConvexPolygonShape2D,ConcavePolygonShape2D,Shape2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_GROUP("One Way Collision", "one_way_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision", PROPERTY_HINT_GROUP_ENABLE), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "one_way_collision_direction", PROPERTY_HINT_NONE, "suffix:px"), "set_one_way_collision_direction", "get_one_way_collision_direction");
+
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape2D::get_debug_color);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color"), "set_debug_color", "get_debug_color");
 	// Default value depends on a project setting, override for doc generation purposes.
-	ADD_PROPERTY_DEFAULT("debug_color", Color());
+	ADD_PROPERTY_DEFAULT("debug_color", Color(0.0, 0.0, 0.0, 0.0));
 }
 
 CollisionShape2D::CollisionShape2D() {

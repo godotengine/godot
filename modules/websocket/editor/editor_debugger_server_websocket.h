@@ -28,10 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DEBUGGER_SERVER_WEBSOCKET_H
-#define EDITOR_DEBUGGER_SERVER_WEBSOCKET_H
-
-#ifdef TOOLS_ENABLED
+#pragma once
 
 #include "../websocket_peer.h"
 
@@ -48,9 +45,9 @@ private:
 	String endpoint;
 
 public:
-	static EditorDebuggerServer *create(const String &p_protocol);
+	static Ref<EditorDebuggerServer> create(const String &p_protocol);
 
-	void _peer_connected(int p_peer, String p_protocol);
+	void _peer_connected(int p_peer, const String &p_protocol);
 	void _peer_disconnected(int p_peer, bool p_was_clean);
 
 	virtual void poll() override;
@@ -64,7 +61,3 @@ public:
 	EditorDebuggerServerWebSocket();
 	~EditorDebuggerServerWebSocket();
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // EDITOR_DEBUGGER_SERVER_WEBSOCKET_H

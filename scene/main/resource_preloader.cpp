@@ -29,7 +29,10 @@
 /**************************************************************************/
 
 #include "resource_preloader.h"
+
+#include "core/object/class_db.h"
 #include "core/templates/rb_set.h"
+
 void ResourcePreloader::_set_resources(const Array &p_data) {
 	resources.clear();
 
@@ -41,7 +44,7 @@ void ResourcePreloader::_set_resources(const Array &p_data) {
 
 	for (int i = 0; i < resdata.size(); i++) {
 		Ref<Resource> resource = resdata[i];
-		ERR_CONTINUE(!resource.is_valid());
+		ERR_CONTINUE(resource.is_null());
 		resources[names[i]] = resource;
 
 		//add_resource(names[i],resource);
@@ -67,10 +70,7 @@ Array ResourcePreloader::_get_resources() const {
 		i++;
 	}
 
-	Array res;
-	res.push_back(names);
-	res.push_back(arr);
-	return res;
+	return Array{ names, arr };
 }
 
 void ResourcePreloader::add_resource(const StringName &p_name, const Ref<Resource> &p_resource) {
@@ -80,7 +80,7 @@ void ResourcePreloader::add_resource(const StringName &p_name, const Ref<Resourc
 		int idx = 2;
 
 		while (true) {
-			new_name = p_name.operator String() + " " + itos(idx);
+			new_name = p_name.string() + " " + itos(idx);
 			if (resources.has(new_name)) {
 				idx++;
 				continue;
@@ -92,12 +92,19 @@ void ResourcePreloader::add_resource(const StringName &p_name, const Ref<Resourc
 		add_resource(new_name, p_resource);
 	} else {
 		resources[p_name] = p_resource;
+#ifdef TOOLS_ENABLED
+		emit_signal("_resource_changed");
+#endif
 	}
 }
 
 void ResourcePreloader::remove_resource(const StringName &p_name) {
 	ERR_FAIL_COND(!resources.has(p_name));
-	resources.erase(p_name);
+	if (resources.erase(p_name)) {
+#ifdef TOOLS_ENABLED
+		emit_signal("_resource_changed");
+#endif
+	}
 }
 
 void ResourcePreloader::rename_resource(const StringName &p_from_name, const StringName &p_to_name) {
@@ -148,6 +155,10 @@ void ResourcePreloader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resource_list"), &ResourcePreloader::_get_resource_list);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "resources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_resources", "_get_resources");
+
+#ifdef TOOLS_ENABLED
+	ADD_SIGNAL(MethodInfo("_resource_changed"));
+#endif
 }
 
 ResourcePreloader::ResourcePreloader() {

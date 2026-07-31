@@ -28,48 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SURFACE_TOOL_H
-#define SURFACE_TOOL_H
+#pragma once
 
+#include "core/math/vector4.h"
 #include "core/templates/local_vector.h"
 #include "scene/resources/mesh.h"
-#include "thirdparty/misc/mikktspace.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);
 
-	static const uint32_t custom_mask[RS::ARRAY_CUSTOM_COUNT];
-	static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT];
+	static const uint32_t custom_mask[RSE::ARRAY_CUSTOM_COUNT];
+	static const uint32_t custom_shift[RSE::ARRAY_CUSTOM_COUNT];
 
 public:
 	struct Vertex {
-		Vector3 vertex;
+		// Trivial data for which the hash is computed using hash_buffer.
+		// ----------------------------------------------------------------
+		uint32_t smooth_group = 0; // Must be first.
+
 		Color color;
-		Vector3 normal; // normal, binormal, tangent
-		Vector3 binormal;
-		Vector3 tangent;
+		Vector3 normal;
+		Vector4 tangent; // xyz tangent, w orientation.
 		Vector2 uv;
 		Vector2 uv2;
+		Color custom[RSE::ARRAY_CUSTOM_COUNT];
+
+		Vector3 vertex; // Must be last.
+		// ----------------------------------------------------------------
+
 		Vector<int> bones;
 		Vector<float> weights;
-		Color custom[RS::ARRAY_CUSTOM_COUNT];
-		uint32_t smooth_group = 0;
 
 		bool operator==(const Vertex &p_vertex) const;
-
-		Vertex() {}
 	};
 
 	enum CustomFormat {
-		CUSTOM_RGBA8_UNORM = RS::ARRAY_CUSTOM_RGBA8_UNORM,
-		CUSTOM_RGBA8_SNORM = RS::ARRAY_CUSTOM_RGBA8_SNORM,
-		CUSTOM_RG_HALF = RS::ARRAY_CUSTOM_RG_HALF,
-		CUSTOM_RGBA_HALF = RS::ARRAY_CUSTOM_RGBA_HALF,
-		CUSTOM_R_FLOAT = RS::ARRAY_CUSTOM_R_FLOAT,
-		CUSTOM_RG_FLOAT = RS::ARRAY_CUSTOM_RG_FLOAT,
-		CUSTOM_RGB_FLOAT = RS::ARRAY_CUSTOM_RGB_FLOAT,
-		CUSTOM_RGBA_FLOAT = RS::ARRAY_CUSTOM_RGBA_FLOAT,
-		CUSTOM_MAX = RS::ARRAY_CUSTOM_MAX
+		CUSTOM_RGBA8_UNORM = RSE::ARRAY_CUSTOM_RGBA8_UNORM,
+		CUSTOM_RGBA8_SNORM = RSE::ARRAY_CUSTOM_RGBA8_SNORM,
+		CUSTOM_RG_HALF = RSE::ARRAY_CUSTOM_RG_HALF,
+		CUSTOM_RGBA_HALF = RSE::ARRAY_CUSTOM_RGBA_HALF,
+		CUSTOM_R_FLOAT = RSE::ARRAY_CUSTOM_R_FLOAT,
+		CUSTOM_RG_FLOAT = RSE::ARRAY_CUSTOM_RG_FLOAT,
+		CUSTOM_RGB_FLOAT = RSE::ARRAY_CUSTOM_RGB_FLOAT,
+		CUSTOM_RGBA_FLOAT = RSE::ARRAY_CUSTOM_RGBA_FLOAT,
+		CUSTOM_MAX = RSE::ARRAY_CUSTOM_MAX
 	};
 
 	enum SkinWeightCount {
@@ -80,24 +83,38 @@ public:
 	enum {
 		/* Do not move vertices that are located on the topological border (vertices on triangle edges that don't have a paired triangle). Useful for simplifying portions of the larger mesh. */
 		SIMPLIFY_LOCK_BORDER = 1 << 0, // From meshopt_SimplifyLockBorder
+		/* Improve simplification performance assuming input indices are a sparse subset of the mesh. Note that error becomes relative to subset extents. */
+		SIMPLIFY_SPARSE = 1 << 1, // From meshopt_SimplifySparse
+		/* Treat error limit and resulting error as absolute instead of relative to mesh extents. */
+		SIMPLIFY_ERROR_ABSOLUTE = 1 << 2, // From meshopt_SimplifyErrorAbsolute
+		/* Remove disconnected parts of the mesh during simplification incrementally, regardless of the topological restrictions inside components. */
+		SIMPLIFY_PRUNE = 1 << 3, // From meshopt_SimplifyPrune
+		/* Produce more regular triangle sizes and shapes during simplification, at some cost to geometric quality. */
+		SIMPLIFY_REGULARIZE = 1 << 4, // From meshopt_SimplifyRegularize
+		/* Allow collapses across attribute discontinuities, except for vertices that are tagged with 0x02 in vertex_lock. */
+		SIMPLIFY_PERMISSIVE = 1 << 5, // From meshopt_SimplifyPermissive
+		/* Produce tangents compatible with MikkTSpace (same weighting and fallbacks) at the cost of reduced quality. Not recommended unless normal maps are baked. */
+		TANGENT_COMPATIBLE = 1 << 0, // From meshopt_TangentCompatible
 	};
 
 	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
 	static OptimizeVertexCacheFunc optimize_vertex_cache_func;
+	typedef size_t (*OptimizeVertexFetchRemapFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
+	static OptimizeVertexFetchRemapFunc optimize_vertex_fetch_remap_func;
 	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, unsigned int options, float *r_error);
 	static SimplifyFunc simplify_func;
-	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, const float *attributes, size_t attribute_stride, const float *attribute_weights, size_t attribute_count, size_t target_index_count, float target_error, unsigned int options, float *result_error);
+	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, const float *attributes, size_t attribute_stride, const float *attribute_weights, size_t attribute_count, const unsigned char *vertex_lock, size_t target_index_count, float target_error, unsigned int options, float *result_error);
 	static SimplifyWithAttribFunc simplify_with_attrib_func;
 	typedef float (*SimplifyScaleFunc)(const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 	static SimplifyScaleFunc simplify_scale_func;
-	typedef size_t (*SimplifySloppyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *out_result_error);
-	static SimplifySloppyFunc simplify_sloppy_func;
 	typedef size_t (*GenerateRemapFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const void *vertices, size_t vertex_count, size_t vertex_size);
 	static GenerateRemapFunc generate_remap_func;
 	typedef void (*RemapVertexFunc)(void *destination, const void *vertices, size_t vertex_count, size_t vertex_size, const unsigned int *remap);
 	static RemapVertexFunc remap_vertex_func;
 	typedef void (*RemapIndexFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const unsigned int *remap);
 	static RemapIndexFunc remap_index_func;
+	typedef void (*GenerateTangentsFunc)(float *result, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, const float *vertex_normals, size_t vertex_normals_stride, const float *vertex_uvs, size_t vertex_uvs_stride, unsigned int options);
+	static GenerateTangentsFunc generate_tangents_func;
 	static void strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
 
 private:
@@ -113,7 +130,7 @@ private:
 		SmoothGroupVertex(const Vertex &p_vertex) {
 			vertex = p_vertex.vertex;
 			smooth_group = p_vertex.smooth_group;
-		};
+		}
 	};
 
 	struct SmoothGroupVertexHasher {
@@ -149,28 +166,21 @@ private:
 	Vector2 last_uv2;
 	Vector<int> last_bones;
 	Vector<float> last_weights;
-	Plane last_tangent;
+	Vector4 last_tangent;
 	uint32_t last_smooth_group = 0;
 
 	SkinWeightCount skin_weights = SKIN_4_WEIGHTS;
 
-	Color last_custom[RS::ARRAY_CUSTOM_COUNT];
+	Color last_custom[RSE::ARRAY_CUSTOM_COUNT];
 
-	CustomFormat last_custom_format[RS::ARRAY_CUSTOM_COUNT];
+	CustomFormat last_custom_format[RSE::ARRAY_CUSTOM_COUNT];
 
 	void _create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
 	void _create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat);
 
-	//mikktspace callbacks
-	static int mikktGetNumFaces(const SMikkTSpaceContext *pContext);
-	static int mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace);
-	static void mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert);
-	static void mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNormOut[], const int iFace, const int iVert);
-	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
-	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
-			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
-
 	void _add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const TypedArray<Plane> &p_tangents = TypedArray<Plane>());
+
+	void _generate_tangents_bind();
 
 protected:
 	static void _bind_methods();
@@ -205,7 +215,7 @@ public:
 	void index();
 	void deindex();
 	void generate_normals(bool p_flip = false);
-	void generate_tangents();
+	void generate_tangents(bool p_split = false);
 
 	void optimize_indices_for_cache();
 	AABB get_aabb() const;
@@ -216,7 +226,9 @@ public:
 
 	void clear();
 
-	LocalVector<Vertex> &get_vertex_array() { return vertex_array; }
+	LocalVector<Vertex> &get_vertex_array() {
+		return vertex_array;
+	}
 
 	void create_from_triangle_arrays(const Array &p_arrays);
 	void create_from_arrays(const Array &p_arrays, Mesh::PrimitiveType p_primitive_type = Mesh::PRIMITIVE_TRIANGLES);
@@ -232,5 +244,3 @@ public:
 
 VARIANT_ENUM_CAST(SurfaceTool::CustomFormat)
 VARIANT_ENUM_CAST(SurfaceTool::SkinWeightCount)
-
-#endif // SURFACE_TOOL_H

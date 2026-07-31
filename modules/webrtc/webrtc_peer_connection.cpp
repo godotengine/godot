@@ -36,6 +36,8 @@
 
 #include "webrtc_peer_connection_extension.h"
 
+#include "core/object/class_db.h"
+
 StringName WebRTCPeerConnection::default_extension;
 
 void WebRTCPeerConnection::set_default_extension(const StringName &p_extension) {
@@ -43,15 +45,20 @@ void WebRTCPeerConnection::set_default_extension(const StringName &p_extension) 
 	default_extension = StringName(p_extension, true);
 }
 
-WebRTCPeerConnection *WebRTCPeerConnection::create() {
+WebRTCPeerConnection *WebRTCPeerConnection::create(bool p_notify_postinitialize) {
 #ifdef WEB_ENABLED
-	return memnew(WebRTCPeerConnectionJS);
+	return static_cast<WebRTCPeerConnection *>(ClassDB::creator<WebRTCPeerConnectionJS>(p_notify_postinitialize));
 #else
 	if (default_extension == StringName()) {
 		WARN_PRINT_ONCE("No default WebRTC extension configured.");
-		return memnew(WebRTCPeerConnectionExtension);
+		return static_cast<WebRTCPeerConnection *>(ClassDB::creator<WebRTCPeerConnectionExtension>(p_notify_postinitialize));
 	}
-	Object *obj = ClassDB::instantiate(default_extension);
+	Object *obj = nullptr;
+	if (p_notify_postinitialize) {
+		obj = ClassDB::instantiate(default_extension);
+	} else {
+		obj = ClassDB::instantiate_without_postinitialization(default_extension);
+	}
 	return Object::cast_to<WebRTCPeerConnectionExtension>(obj);
 #endif
 }
@@ -74,7 +81,7 @@ void WebRTCPeerConnection::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("session_description_created", PropertyInfo(Variant::STRING, "type"), PropertyInfo(Variant::STRING, "sdp")));
 	ADD_SIGNAL(MethodInfo("ice_candidate_created", PropertyInfo(Variant::STRING, "media"), PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("data_channel_received", PropertyInfo(Variant::OBJECT, "channel", PROPERTY_HINT_RESOURCE_TYPE, "WebRTCDataChannel")));
+	ADD_SIGNAL(MethodInfo("data_channel_received", PropertyInfo(Variant::OBJECT, "channel", PROPERTY_HINT_RESOURCE_TYPE, WebRTCDataChannel::get_class_static())));
 
 	BIND_ENUM_CONSTANT(STATE_NEW);
 	BIND_ENUM_CONSTANT(STATE_CONNECTING);

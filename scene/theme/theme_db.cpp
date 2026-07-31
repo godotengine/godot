@@ -30,8 +30,12 @@
 
 #include "theme_db.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
@@ -39,7 +43,8 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "scene/theme/default_theme.h"
-#include "servers/text_server.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/text/text_server.h"
 
 // Default engine theme creation and configuration.
 
@@ -52,15 +57,12 @@ void ThemeDB::initialize_theme() {
 	String project_theme_path = GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), "");
 	String project_font_path = GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res,*.otf,*.ttf,*.woff,*.woff2,*.fnt,*.font,*.pfb,*.pfm", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), "");
 
-	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), 1);
-	TextServer::Hinting font_hinting = (TextServer::Hinting)(int)GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), TextServer::HINTING_LIGHT);
-	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED), TextServer::SUBPIXEL_POSITIONING_AUTO);
+	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)GLOBAL_GET("gui/theme/default_font_antialiasing");
+	TextServer::Hinting font_hinting = (TextServer::Hinting)(int)GLOBAL_GET("gui/theme/default_font_hinting");
+	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_GET("gui/theme/default_font_subpixel_positioning");
 
-	const bool font_msdf = GLOBAL_DEF_RST("gui/theme/default_font_multichannel_signed_distance_field", false);
-	const bool font_generate_mipmaps = GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
-
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "gui/theme/lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR"), 1);
-	ProjectSettings::get_singleton()->set_restart_if_changed("gui/theme/lcd_subpixel_layout", false);
+	const bool font_msdf = GLOBAL_GET("gui/theme/default_font_multichannel_signed_distance_field");
+	const bool font_generate_mipmaps = GLOBAL_GET("gui/theme/default_font_generate_mipmaps");
 
 	// Attempt to load custom project theme and font.
 
@@ -75,7 +77,7 @@ void ThemeDB::initialize_theme() {
 
 	Ref<Font> project_font;
 	if (!project_font_path.is_empty()) {
-		project_font = ResourceLoader::load(project_font_path);
+		project_font = ResourceLoader::load(project_font_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 		if (project_font.is_valid()) {
 			set_fallback_font(project_font);
 		} else {
@@ -198,21 +200,21 @@ Ref<StyleBox> ThemeDB::get_fallback_stylebox() {
 	return fallback_stylebox;
 }
 
-void ThemeDB::get_native_type_dependencies(const StringName &p_base_type, List<StringName> *p_list) {
-	ERR_FAIL_NULL(p_list);
+void ThemeDB::get_native_type_dependencies(const StringName &p_base_type, Vector<StringName> &r_result) {
+	if (p_base_type == StringName()) {
+		return;
+	}
 
 	// TODO: It may make sense to stop at Control/Window, because their parent classes cannot be used in
 	// a meaningful way.
-	StringName class_name = p_base_type;
-	while (class_name != StringName()) {
-		p_list->push_back(class_name);
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
+	if (!ClassDB::get_inheritance_chain_nocheck(p_base_type, r_result)) {
+		r_result.push_back(p_base_type);
 	}
 }
 
 // Global theme contexts.
 
-ThemeContext *ThemeDB::create_theme_context(Node *p_node, List<Ref<Theme>> &p_themes) {
+ThemeContext *ThemeDB::create_theme_context(Node *p_node, Vector<Ref<Theme>> &p_themes) {
 	ERR_FAIL_COND_V(!p_node->is_inside_tree(), nullptr);
 	ERR_FAIL_COND_V(theme_contexts.has(p_node), nullptr);
 	ERR_FAIL_COND_V(p_themes.is_empty(), nullptr);
@@ -270,7 +272,7 @@ void ThemeDB::_propagate_theme_context(Node *p_from_node, ThemeContext *p_contex
 void ThemeDB::_init_default_theme_context() {
 	default_theme_context = memnew(ThemeContext);
 
-	List<Ref<Theme>> themes;
+	Vector<Ref<Theme>> themes;
 
 	// Only add the project theme to the default context when running projects.
 
@@ -365,7 +367,7 @@ void ThemeDB::update_class_instance_items(Node *p_instance) {
 		HashMap<StringName, HashMap<StringName, ThemeItemBind>>::Iterator E = theme_item_binds.find(class_name);
 		if (E) {
 			for (const KeyValue<StringName, ThemeItemBind> &F : E->value) {
-				F.value.setter(p_instance);
+				F.value.setter(p_instance, F.value.item_name, F.value.type_name);
 			}
 		}
 
@@ -431,10 +433,10 @@ void ThemeDB::_bind_methods() {
 
 	ADD_GROUP("Fallback values", "fallback_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fallback_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_fallback_base_scale", "get_fallback_base_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_font", PROPERTY_HINT_RESOURCE_TYPE, "Font", PROPERTY_USAGE_NONE), "set_fallback_font", "get_fallback_font");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_font", PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static(), PROPERTY_USAGE_NONE), "set_fallback_font", "get_fallback_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fallback_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_fallback_font_size", "get_fallback_font_size");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NONE), "set_fallback_icon", "get_fallback_icon");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_stylebox", PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_NONE), "set_fallback_stylebox", "get_fallback_stylebox");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_NONE), "set_fallback_icon", "get_fallback_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_stylebox", PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), PROPERTY_USAGE_NONE), "set_fallback_stylebox", "get_fallback_stylebox");
 
 	ADD_SIGNAL(MethodInfo("fallback_changed"));
 }
@@ -475,7 +477,7 @@ void ThemeContext::_emit_changed() {
 	emit_signal(CoreStringName(changed));
 }
 
-void ThemeContext::set_themes(List<Ref<Theme>> &p_themes) {
+void ThemeContext::set_themes(Vector<Ref<Theme>> &p_themes) {
 	for (const Ref<Theme> &theme : themes) {
 		theme->disconnect_changed(callable_mp(this, &ThemeContext::_emit_changed));
 	}
@@ -494,17 +496,17 @@ void ThemeContext::set_themes(List<Ref<Theme>> &p_themes) {
 	_emit_changed();
 }
 
-List<Ref<Theme>> ThemeContext::get_themes() const {
+const Vector<Ref<Theme>> ThemeContext::get_themes() const {
 	return themes;
 }
 
 Ref<Theme> ThemeContext::get_fallback_theme() const {
 	// We expect all contexts to be valid and non-empty, but just in case...
-	if (themes.size() == 0) {
+	if (themes.is_empty()) {
 		return ThemeDB::get_singleton()->get_default_theme();
 	}
 
-	return themes.back()->get();
+	return themes[themes.size() - 1];
 }
 
 void ThemeContext::_bind_methods() {

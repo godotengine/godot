@@ -28,13 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_PATH_H
-#define NODE_PATH_H
+#pragma once
 
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 
-class NodePath {
+#include <climits>
+
+// Represents a path to a node or property in a hierarchy of nodes
+// Note that NodePath is (effectively) const: If you hold a NodePath,
+// you can expect it to remain unchanged, even if you make copies of
+// it. This is achieved through copy-on-write (CoW).
+class [[nodiscard]] _WARN_UNUSED_ NodePath {
 	struct Data {
 		SafeRefCount refcount;
 		Vector<StringName> path;
@@ -50,6 +55,10 @@ class NodePath {
 	void unref();
 
 	void _update_hash_cache() const;
+
+	// Copies the underlying data.
+	// Every non-const function must call this before starting to mutate data.
+	void _copy_on_write();
 
 public:
 	bool is_absolute() const;
@@ -79,7 +88,7 @@ public:
 		return data->hash_cache;
 	}
 
-	operator String() const;
+	explicit operator String() const;
 	bool is_empty() const;
 
 	bool operator==(const NodePath &p_path) const;
@@ -97,4 +106,6 @@ public:
 	~NodePath();
 };
 
-#endif // NODE_PATH_H
+// Zero-constructing NodePath initializes data to nullptr (and thus empty).
+template <>
+struct is_zero_constructible<NodePath> : std::true_type {};

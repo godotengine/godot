@@ -28,22 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_DEBUGGER_H
-#define SCENE_DEBUGGER_H
+#pragma once
 
-#include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
-#include "core/templates/pair.h"
-#include "core/variant/array.h"
 
-class Script;
+class Array;
+class InputEvent;
 class Node;
+class Shortcut;
 
 class SceneDebugger {
-public:
 private:
-	static SceneDebugger *singleton;
+	inline static SceneDebugger *singleton = nullptr;
 
 	SceneDebugger();
 
@@ -55,73 +52,84 @@ public:
 
 #ifdef DEBUG_ENABLED
 private:
+	static void _handle_input(const Ref<InputEvent> &p_event, const Ref<Shortcut> &p_shortcut);
+	static void _handle_embed_input(const Ref<InputEvent> &p_event, const Dictionary &p_settings);
+	static void _on_window_size_changed();
+	static void _on_output_max_linear_value_changed(float output_max_linear_value);
+
 	static void _save_node(ObjectID id, const String &p_path);
 	static void _set_node_owner_recursive(Node *p_node, Node *p_owner);
-	static void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value);
-	static void _send_object_id(ObjectID p_id, int p_max_size = 1 << 20);
+	static void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value, const String &p_field = "");
+	static void _send_object_ids(const Vector<ObjectID> &p_ids, bool p_update_selection);
+	static void _next_frame();
+
+	/// Message handler function for parse_message.
+	typedef Error (*ParseMessageFunc)(const Array &p_args);
+	static HashMap<String, ParseMessageFunc> message_handlers;
+	static void _init_message_handlers();
+
+	static Error _msg_setup_scene(const Array &p_args);
+	static Error _msg_setup_game_view(const Array &p_args);
+	static Error _msg_setup_embedded_shortcuts(const Array &p_args);
+	static Error _msg_request_scene_tree(const Array &p_args);
+	static Error _msg_save_node(const Array &p_args);
+	static Error _msg_inspect_objects(const Array &p_args);
+#ifndef DISABLE_DEPRECATED
+	static Error _msg_inspect_object(const Array &p_args);
+#endif // DISABLE_DEPRECATED
+	static Error _msg_clear_selection(const Array &p_args);
+	static Error _msg_suspend_changed(const Array &p_args);
+	static Error _msg_next_frame(const Array &p_args);
+	static Error _msg_speed_changed(const Array &p_args);
+	static Error _msg_debug_mute_audio(const Array &p_args);
+	static Error _msg_window_request_size(const Array &p_args);
+	static Error _msg_hdr_output_request_state(const Array &p_args);
+	static Error _msg_hdr_output_toggle_requested(const Array &p_args);
+	static Error _msg_override_cameras(const Array &p_args);
+	static Error _msg_set_object_property(const Array &p_args);
+	static Error _msg_set_object_property_field(const Array &p_args);
+	static Error _msg_reload_cached_files(const Array &p_args);
+	static Error _msg_live_set_root(const Array &p_args);
+	static Error _msg_live_node_path(const Array &p_args);
+	static Error _msg_live_res_path(const Array &p_args);
+	static Error _msg_live_node_prop_res(const Array &p_args);
+	static Error _msg_live_node_prop(const Array &p_args);
+	static Error _msg_live_res_prop_res(const Array &p_args);
+	static Error _msg_live_res_prop(const Array &p_args);
+	static Error _msg_live_node_call(const Array &p_args);
+	static Error _msg_live_res_call(const Array &p_args);
+	static Error _msg_live_create_node(const Array &p_args);
+	static Error _msg_live_instantiate_node(const Array &p_args);
+	static Error _msg_live_remove_node(const Array &p_args);
+	static Error _msg_live_remove_and_keep_node(const Array &p_args);
+	static Error _msg_live_restore_node(const Array &p_args);
+	static Error _msg_live_duplicate_node(const Array &p_args);
+	static Error _msg_live_reparent_node(const Array &p_args);
+	static Error _msg_runtime_node_select_setup(const Array &p_args);
+	static Error _msg_runtime_node_select_set_type(const Array &p_args);
+	static Error _msg_runtime_node_select_set_mode(const Array &p_args);
+	static Error _msg_runtime_node_select_set_visible(const Array &p_args);
+	static Error _msg_runtime_node_select_set_avoid_locked(const Array &p_args);
+	static Error _msg_runtime_node_select_set_prefer_group(const Array &p_args);
+	static Error _msg_rq_screenshot(const Array &p_args);
+	static Error _msg_report_window_focused(const Array &p_args);
+
+	static Error _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
+	static Error _msg_transform_camera_2d(const Array &p_args);
+#ifndef _3D_DISABLED
+	static Error _msg_runtime_node_select_reset_camera_3d(const Array &p_args);
+	static Error _msg_transform_camera_3d(const Array &p_args);
+#endif // _3D_DISABLED
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
 	static void add_to_cache(const String &p_filename, Node *p_node);
 	static void remove_from_cache(const String &p_filename, Node *p_node);
+	static void reload_cached_files(const PackedStringArray &p_files);
 #endif
 };
 
 #ifdef DEBUG_ENABLED
-class SceneDebuggerObject {
-private:
-	void _parse_script_properties(Script *p_script, ScriptInstance *p_instance);
-
-public:
-	typedef Pair<PropertyInfo, Variant> SceneDebuggerProperty;
-	ObjectID id;
-	String class_name;
-	List<SceneDebuggerProperty> properties;
-
-	SceneDebuggerObject(ObjectID p_id);
-	SceneDebuggerObject() {}
-
-	void serialize(Array &r_arr, int p_max_size = 1 << 20);
-	void deserialize(const Array &p_arr);
-};
-
-class SceneDebuggerTree {
-public:
-	struct RemoteNode {
-		int child_count = 0;
-		String name;
-		String type_name;
-		ObjectID id;
-		String scene_file_path;
-		uint8_t view_flags = 0;
-
-		enum ViewFlags {
-			VIEW_HAS_VISIBLE_METHOD = 1 << 1,
-			VIEW_VISIBLE = 1 << 2,
-			VIEW_VISIBLE_IN_TREE = 1 << 3,
-		};
-
-		RemoteNode(int p_child, const String &p_name, const String &p_type, ObjectID p_id, const String p_scene_file_path, int p_view_flags) {
-			child_count = p_child;
-			name = p_name;
-			type_name = p_type;
-			id = p_id;
-
-			scene_file_path = p_scene_file_path;
-			view_flags = p_view_flags;
-		}
-
-		RemoteNode() {}
-	};
-
-	List<RemoteNode> nodes;
-
-	void serialize(Array &r_arr);
-	void deserialize(const Array &p_arr);
-	SceneDebuggerTree(Node *p_root);
-	SceneDebuggerTree() {}
-};
-
 class LiveEditor {
 private:
 	friend class SceneDebugger;
@@ -158,13 +166,11 @@ private:
 	LiveEditor() {
 		singleton = this;
 		live_edit_root = NodePath("/root");
-	};
+	}
 
-	static LiveEditor *singleton;
+	inline static LiveEditor *singleton = nullptr;
 
 public:
 	static LiveEditor *get_singleton();
 };
-#endif
-
-#endif // SCENE_DEBUGGER_H
+#endif // DEBUG_ENABLED

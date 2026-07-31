@@ -253,11 +253,35 @@ const char *const RenderingDeviceCommons::FORMAT_NAMES[DATA_FORMAT_MAX] = {
 	"G16_B16_R16_3Plane_422_Unorm",
 	"G16_B16R16_2Plane_422_Unorm",
 	"G16_B16_R16_3Plane_444_Unorm",
+	"Astc_4X4_Sfloat_Block",
+	"Astc_5X4_Sfloat_Block",
+	"Astc_5X5_Sfloat_Block",
+	"Astc_6X5_Sfloat_Block",
+	"Astc_6X6_Sfloat_Block",
+	"Astc_8X5_Sfloat_Block",
+	"Astc_8X6_Sfloat_Block",
+	"Astc_8X8_Sfloat_Block",
+	"Astc_10X5_Sfloat_Block",
+	"Astc_10X6_Sfloat_Block",
+	"Astc_10X8_Sfloat_Block",
+	"Astc_10X10_Sfloat_Block",
+	"Astc_12X10_Sfloat_Block",
+	"Astc_12X12_Sfloat_Block",
 };
 
 /*****************/
 /**** TEXTURE ****/
 /*****************/
+
+const char *const RenderingDeviceCommons::TEXTURE_TYPE_NAMES[TEXTURE_TYPE_MAX] = {
+	"1D",
+	"2D",
+	"3D",
+	"Cube",
+	"1DArray",
+	"2DArray",
+	"CubeArray",
+};
 
 const uint32_t RenderingDeviceCommons::TEXTURE_SAMPLES_COUNT[TEXTURE_SAMPLES_MAX] = { 1, 2, 4, 8, 16, 32, 64 };
 
@@ -477,6 +501,20 @@ uint32_t RenderingDeviceCommons::get_image_format_pixel_size(DataFormat p_format
 		case DATA_FORMAT_ASTC_12x10_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_5x4_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_5x5_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_6x5_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_8x5_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_8x6_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_10x5_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_10x6_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_10x8_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_10x10_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_12x10_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK:
 			return 1;
 		case DATA_FORMAT_G8B8G8R8_422_UNORM:
 		case DATA_FORMAT_B8G8R8G8_422_UNORM:
@@ -554,42 +592,59 @@ void RenderingDeviceCommons::get_compressed_image_format_block_dimensions(DataFo
 		case DATA_FORMAT_EAC_R11G11_UNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11G11_SNORM_BLOCK:
 		case DATA_FORMAT_ASTC_4x4_UNORM_BLOCK: // Again, not sure about astc.
-		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK: {
+		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK: {
 			r_w = 4;
 			r_h = 4;
 		} break;
-		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK: // Unsupported
-		case DATA_FORMAT_ASTC_5x4_SRGB_BLOCK:
-		case DATA_FORMAT_ASTC_5x5_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_5x5_SRGB_BLOCK:
-		case DATA_FORMAT_ASTC_6x5_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_6x5_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_6x6_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_6x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK: {
+			r_w = 6;
+			r_h = 6;
+		} break;
+		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK: // Unsupported
+		case DATA_FORMAT_ASTC_5x4_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_5x4_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_5x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_5x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_5x5_SFLOAT_BLOCK:
+		case DATA_FORMAT_ASTC_6x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_6x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x5_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_8x5_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_8x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x5_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_8x6_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_8x6_SRGB_BLOCK: {
+		case DATA_FORMAT_ASTC_8x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x6_SFLOAT_BLOCK: {
 			r_w = 4;
 			r_h = 4;
 		} break;
 		case DATA_FORMAT_ASTC_8x8_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK: {
+		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK: {
 			r_w = 8;
 			r_h = 8;
 		} break;
 		case DATA_FORMAT_ASTC_10x5_UNORM_BLOCK: // Unsupported
 		case DATA_FORMAT_ASTC_10x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x5_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_10x6_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_10x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x6_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_10x8_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_10x8_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x8_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_10x10_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_10x10_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x10_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_12x10_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x10_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_12x10_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK:
 			r_w = 4;
 			r_h = 4;
 			return;
@@ -600,7 +655,7 @@ void RenderingDeviceCommons::get_compressed_image_format_block_dimensions(DataFo
 	}
 }
 
-uint32_t RenderingDeviceCommons::get_compressed_image_format_block_byte_size(DataFormat p_format) {
+uint32_t RenderingDeviceCommons::get_compressed_image_format_block_byte_size(DataFormat p_format) const {
 	switch (p_format) {
 		case DATA_FORMAT_BC1_RGB_UNORM_BLOCK:
 		case DATA_FORMAT_BC1_RGB_SRGB_BLOCK:
@@ -642,32 +697,46 @@ uint32_t RenderingDeviceCommons::get_compressed_image_format_block_byte_size(Dat
 			return 16;
 		case DATA_FORMAT_ASTC_4x4_UNORM_BLOCK: // Again, not sure about astc.
 		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_5x4_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_5x4_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_5x5_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_5x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_5x5_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_6x5_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_6x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x5_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_6x6_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_6x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_8x5_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_8x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x5_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_8x6_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_8x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x6_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_8x8_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_10x5_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_10x5_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x5_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_10x6_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_10x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x6_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_10x8_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_10x8_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x8_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_10x10_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_10x10_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_10x10_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_12x10_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x10_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_12x10_SFLOAT_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK:
 			return 16;
 		default: {
 		}
@@ -675,7 +744,7 @@ uint32_t RenderingDeviceCommons::get_compressed_image_format_block_byte_size(Dat
 	return 1;
 }
 
-uint32_t RenderingDeviceCommons::get_compressed_image_format_pixel_rshift(DataFormat p_format) {
+uint32_t RenderingDeviceCommons::get_compressed_image_format_pixels_shifted(DataFormat p_format, uint32_t p_pixels) {
 	switch (p_format) {
 		case DATA_FORMAT_BC1_RGB_UNORM_BLOCK: // These formats are half byte size, so rshift is 1.
 		case DATA_FORMAT_BC1_RGB_SRGB_BLOCK:
@@ -689,16 +758,18 @@ uint32_t RenderingDeviceCommons::get_compressed_image_format_pixel_rshift(DataFo
 		case DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
 		case DATA_FORMAT_EAC_R11_UNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11_SNORM_BLOCK:
-			return 1;
+			return (p_pixels >> 1);
+		case DATA_FORMAT_ASTC_6x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK:
+			return (p_pixels * 4) / 9;
 		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK:
-		case DATA_FORMAT_ASTC_8x8_UNORM_BLOCK: {
-			return 2;
-		}
-		default: {
-		}
+		case DATA_FORMAT_ASTC_8x8_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK:
+			return (p_pixels >> 2);
+		default:
+			return p_pixels;
 	}
-
-	return 0;
 }
 
 uint32_t RenderingDeviceCommons::get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw, uint32_t *r_blockh, uint32_t *r_depth) {
@@ -710,7 +781,6 @@ uint32_t RenderingDeviceCommons::get_image_format_required_size(DataFormat p_for
 	uint32_t size = 0;
 
 	uint32_t pixel_size = get_image_format_pixel_size(p_format);
-	uint32_t pixel_rshift = get_compressed_image_format_pixel_rshift(p_format);
 	uint32_t blockw = 0;
 	uint32_t blockh = 0;
 	get_compressed_image_format_block_dimensions(p_format, blockw, blockh);
@@ -722,7 +792,7 @@ uint32_t RenderingDeviceCommons::get_image_format_required_size(DataFormat p_for
 		uint32_t s = bw * bh;
 
 		s *= pixel_size;
-		s >>= pixel_rshift;
+		s = get_compressed_image_format_pixels_shifted(p_format, s);
 		size += s * d;
 		if (r_blockw) {
 			*r_blockw = bw;
@@ -762,6 +832,21 @@ uint32_t RenderingDeviceCommons::get_image_required_mipmaps(uint32_t p_width, ui
 	}
 
 	return mipmaps;
+}
+
+bool RenderingDeviceCommons::format_has_depth(DataFormat p_format) {
+	switch (p_format) {
+		case DATA_FORMAT_D16_UNORM:
+		case DATA_FORMAT_X8_D24_UNORM_PACK32:
+		case DATA_FORMAT_D32_SFLOAT:
+		case DATA_FORMAT_D16_UNORM_S8_UINT:
+		case DATA_FORMAT_D24_UNORM_S8_UINT:
+		case DATA_FORMAT_D32_SFLOAT_S8_UINT:
+			return true;
+		default: {
+		}
+	}
+	return false;
 }
 
 bool RenderingDeviceCommons::format_has_stencil(DataFormat p_format) {

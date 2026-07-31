@@ -1,0 +1,5 @@
+GH-109302
+---------
+Validate extension JSON: Error: Field 'classes/OpenXRExtensionWrapper/methods/_set_instance_create_info_and_get_next_pointer/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/OpenXRExtensionWrapper/methods/_set_instance_create_info_and_get_next_pointer/arguments/0': type changed value in new API, from "void*" to "int".
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/OpenXRExtensionWrapper/methods/_get_requested_extensions': arguments

@@ -30,9 +30,10 @@
 
 #include "editor_export.h"
 
-#include "core/config/project_settings.h"
 #include "core/io/config_file.h"
-#include "editor/editor_settings.h"
+#include "core/object/callable_mp.h"
+#include "editor/settings/editor_settings.h"
+#include "scene/main/timer.h"
 
 EditorExport *EditorExport::singleton = nullptr;
 
@@ -41,14 +42,17 @@ void EditorExport::_save() {
 	Ref<ConfigFile> credentials;
 	config.instantiate();
 	credentials.instantiate();
+
+	for (const KeyValue<Ref<EditorExportPlatform>, Ref<EditorExportPreset>> &E : runnable_presets) {
+		config->set_value(RUNNABLE_SECTION_NAME, E.key->get_name(), E.value->get_name());
+	}
+
 	for (int i = 0; i < export_presets.size(); i++) {
 		Ref<EditorExportPreset> preset = export_presets[i];
 		String section = "preset." + itos(i);
 
 		config->set_value(section, "name", preset->get_name());
 		config->set_value(section, "platform", preset->get_platform()->get_name());
-		config->set_value(section, "runnable", preset->is_runnable());
-		config->set_value(section, "advanced_options", preset->are_advanced_options_enabled());
 		config->set_value(section, "dedicated_server", preset->is_dedicated_server());
 		config->set_value(section, "custom_features", preset->get_custom_features());
 
@@ -83,8 +87,18 @@ void EditorExport::_save() {
 		config->set_value(section, "include_filter", preset->get_include_filter());
 		config->set_value(section, "exclude_filter", preset->get_exclude_filter());
 		config->set_value(section, "export_path", preset->get_export_path());
+
+		config->set_value(section, "patches", preset->get_patches());
+		config->set_value(section, "patch_delta_encoding", preset->is_patch_delta_encoding_enabled());
+		config->set_value(section, "patch_delta_compression_level_zstd", preset->get_patch_delta_zstd_level());
+		config->set_value(section, "patch_delta_min_reduction", preset->get_patch_delta_min_reduction());
+		config->set_value(section, "patch_delta_include_filters", preset->get_patch_delta_include_filter());
+		config->set_value(section, "patch_delta_exclude_filters", preset->get_patch_delta_exclude_filter());
+
 		config->set_value(section, "encryption_include_filters", preset->get_enc_in_filter());
 		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filter());
+		config->set_value(section, "seed", preset->get_seed());
+
 		config->set_value(section, "encrypt_pck", preset->get_enc_pck());
 		config->set_value(section, "encrypt_directory", preset->get_enc_directory());
 		config->set_value(section, "script_export_mode", preset->get_script_export_mode());
@@ -123,12 +137,46 @@ void EditorExport::_bind_methods() {
 }
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
+	p_platform->initialize();
 	export_platforms.push_back(p_platform);
+
 	should_update_presets = true;
+	should_reload_presets = true;
 }
 
-int EditorExport::get_export_platform_count() {
+void EditorExport::remove_export_platform(const Ref<EditorExportPlatform> &p_platform) {
+	export_platforms.erase(p_platform);
+	p_platform->cleanup();
+
+	should_update_presets = true;
+	should_reload_presets = true;
+}
+
+int EditorExport::get_export_platform_count() const {
 	return export_platforms.size();
+}
+
+int EditorExport::get_export_platform_index_by_name(const String &p_name) {
+	for (int j = 0; j < get_export_platform_count(); j++) {
+		Ref<EditorExportPlatform> plat = get_export_platform(j);
+		if (!plat.is_null() && plat->get_name().nocasecmp_to(p_name) == 0) {
+			return j;
+		}
+	}
+	return -1;
+}
+
+bool EditorExport::has_preset_with_name(const String &p_name, int p_exclude_index) const {
+	for (int i = 0; i < export_presets.size(); i++) {
+		if (i == p_exclude_index) {
+			continue;
+		}
+		if (export_presets[i]->get_name() == p_name) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 Ref<EditorExportPlatform> EditorExport::get_export_platform(int p_idx) {
@@ -177,6 +225,26 @@ Vector<Ref<EditorExportPlugin>> EditorExport::get_export_plugins() {
 	return export_plugins;
 }
 
+void EditorExport::set_runnable_preset(const Ref<EditorExportPreset> &p_preset) {
+	runnable_presets[p_preset->get_platform()] = p_preset;
+	emit_presets_runnable_changed();
+	save_presets();
+}
+
+void EditorExport::unset_runnable_preset(const Ref<EditorExportPreset> &p_preset) {
+	const Ref<EditorExportPreset> *current = runnable_presets.getptr(p_preset->get_platform());
+	if (current && *current == p_preset) {
+		runnable_presets.erase(p_preset->get_platform());
+		emit_presets_runnable_changed();
+		save_presets();
+	}
+}
+
+Ref<EditorExportPreset> EditorExport::get_runnable_preset_for_platform(const Ref<EditorExportPlatform> &p_for_platform) const {
+	const Ref<EditorExportPreset> *preset = runnable_presets.getptr(p_for_platform);
+	return preset ? *preset : Ref<EditorExportPreset>();
+}
+
 void EditorExport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -216,6 +284,13 @@ void EditorExport::load_config() {
 		return;
 	}
 
+	HashMap<String, String> runnable_loading;
+	if (config->has_section(RUNNABLE_SECTION_NAME)) {
+		for (const String &platform_name : config->get_section_keys(RUNNABLE_SECTION_NAME)) {
+			runnable_loading[platform_name] = config->get_value(RUNNABLE_SECTION_NAME, platform_name);
+		}
+	}
+
 	block_save = true;
 
 	int index = 0;
@@ -235,21 +310,32 @@ void EditorExport::load_config() {
 
 		Ref<EditorExportPreset> preset;
 
-		for (int i = 0; i < export_platforms.size(); i++) {
-			if (export_platforms[i]->get_name() == platform) {
-				preset = export_platforms.write[i]->create_preset();
+		for (Ref<EditorExportPlatform> &export_platform : export_platforms) {
+			if (export_platform->get_name() == platform) {
+				preset = export_platform->create_preset();
+
+				const String preset_name = config->get_value(section, "name");
+				preset->set_name(preset_name);
+
+				const String *runnable_preset = runnable_loading.getptr(export_platform->get_name());
+				if (runnable_preset && *runnable_preset == preset_name) {
+					runnable_presets[export_platform] = preset;
+				}
 				break;
 			}
 		}
 
-		if (!preset.is_valid()) {
+		if (preset.is_null()) {
 			index++;
-			ERR_CONTINUE(!preset.is_valid());
+			continue; // Unknown platform, skip without error (platform might be loaded later).
 		}
 
-		preset->set_name(config->get_value(section, "name"));
-		preset->set_advanced_options_enabled(config->get_value(section, "advanced_options", false));
-		preset->set_runnable(config->get_value(section, "runnable"));
+#ifndef DISABLE_DEPRECATED
+		bool legacy_runnable = config->get_value(section, "runnable", false);
+		if (legacy_runnable) {
+			preset->set_runnable(true);
+		}
+#endif
 		preset->set_dedicated_server(config->get_value(section, "dedicated_server", false));
 
 		if (config->has_section_key(section, "custom_features")) {
@@ -293,7 +379,27 @@ void EditorExport::load_config() {
 		preset->set_exclude_filter(config->get_value(section, "exclude_filter"));
 		preset->set_export_path(config->get_value(section, "export_path", ""));
 		preset->set_script_export_mode(config->get_value(section, "script_export_mode", EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED));
+		preset->set_patches(config->get_value(section, "patches", Vector<String>()));
 
+		if (config->has_section_key(section, "patch_delta_encoding")) {
+			preset->set_patch_delta_encoding_enabled(config->get_value(section, "patch_delta_encoding"));
+		}
+		if (config->has_section_key(section, "patch_delta_compression_level_zstd")) {
+			preset->set_patch_delta_zstd_level(config->get_value(section, "patch_delta_compression_level_zstd"));
+		}
+		if (config->has_section_key(section, "patch_delta_min_reduction")) {
+			preset->set_patch_delta_min_reduction(config->get_value(section, "patch_delta_min_reduction"));
+		}
+		if (config->has_section_key(section, "patch_delta_include_filters")) {
+			preset->set_patch_delta_include_filter(config->get_value(section, "patch_delta_include_filters"));
+		}
+		if (config->has_section_key(section, "patch_delta_exclude_filters")) {
+			preset->set_patch_delta_exclude_filter(config->get_value(section, "patch_delta_exclude_filters"));
+		}
+
+		if (config->has_section_key(section, "seed")) {
+			preset->set_seed(config->get_value(section, "seed"));
+		}
 		if (config->has_section_key(section, "encrypt_pck")) {
 			preset->set_enc_pck(config->get_value(section, "encrypt_pck"));
 		}
@@ -312,8 +418,7 @@ void EditorExport::load_config() {
 
 		String option_section = "preset." + itos(index) + ".options";
 
-		List<String> options;
-		config->get_section_keys(option_section, &options);
+		Vector<String> options = config->get_section_keys(option_section);
 
 		for (const String &E : options) {
 			Variant value = config->get_value(option_section, E);
@@ -321,8 +426,7 @@ void EditorExport::load_config() {
 		}
 
 		if (credentials->has_section(option_section)) {
-			options.clear();
-			credentials->get_section_keys(option_section, &options);
+			options = credentials->get_section_keys(option_section);
 
 			for (const String &E : options) {
 				// Drop values for secret properties that no longer exist, or during the next save they would end up in the regular config file.
@@ -342,6 +446,12 @@ void EditorExport::load_config() {
 
 void EditorExport::update_export_presets() {
 	HashMap<StringName, List<EditorExportPlatform::ExportOption>> platform_options;
+
+	if (should_reload_presets) {
+		should_reload_presets = false;
+		export_presets.clear();
+		load_config();
+	}
 
 	for (int i = 0; i < export_platforms.size(); i++) {
 		Ref<EditorExportPlatform> platform = export_platforms[i];
@@ -372,7 +482,7 @@ void EditorExport::update_export_presets() {
 			export_presets_updated = true;
 
 			bool update_value_overrides = false;
-			List<EditorExportPlatform::ExportOption> options = platform_options[preset->get_platform()->get_name()];
+			List<EditorExportPlatform::ExportOption> options(platform_options[preset->get_platform()->get_name()]);
 
 			// Clear the preset properties prior to reloading, keep the values to preserve options from plugins that may be currently disabled.
 			preset->properties.clear();
@@ -428,7 +538,4 @@ EditorExport::EditorExport() {
 
 	singleton = this;
 	set_process(true);
-}
-
-EditorExport::~EditorExport() {
 }

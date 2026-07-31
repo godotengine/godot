@@ -24,6 +24,10 @@
  * Adobe Author(s): Michiharu Ariza
  */
 
+#ifndef HB_OT_CFF1_TABLE_CC
+#define HB_OT_CFF1_TABLE_CC
+#ifdef HB_OT_CFF1_TABLE_CC /* Pacify -Wunused-macros. */
+
 #include "hb.hh"
 
 #ifndef HB_NO_CFF
@@ -553,15 +557,6 @@ bool _get_path (const OT::cff1::accelerator_t *cff, hb_font_t *font, hb_codepoin
   return true;
 }
 
-bool OT::cff1::accelerator_t::paint_glyph (hb_font_t *font, hb_codepoint_t glyph, hb_paint_funcs_t *funcs, void *data, hb_color_t foreground) const
-{
-  funcs->push_clip_glyph (data, glyph, font);
-  funcs->color (data, true, foreground);
-  funcs->pop_clip (data);
-
-  return true;
-}
-
 bool OT::cff1::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const
 {
 #ifdef HB_NO_OT_FONT_CFF
@@ -618,3 +613,6 @@ bool OT::cff1::accelerator_subset_t::get_seac_components (hb_codepoint_t glyph, 
 
 
 #endif
+
+#endif /* HB_OT_CFF1_TABLE_CC pacify */
+#endif /* HB_OT_CFF1_TABLE_CC guard */

@@ -32,6 +32,8 @@
 
 #include "scene/gui/graph_edit.h"
 
+#include <cfloat> // FLT_MIN, FLT_MAX
+
 void GraphEditArranger::arrange_nodes() {
 	ERR_FAIL_NULL(graph_edit);
 
@@ -65,7 +67,7 @@ void GraphEditArranger::arrange_nodes() {
 	float gap_v = 100.0f;
 	float gap_h = 100.0f;
 
-	List<Ref<GraphEdit::Connection>> connection_list = graph_edit->get_connection_list();
+	const Vector<Ref<GraphEdit::Connection>> connection_list = graph_edit->get_connections();
 
 	for (int i = graph_edit->get_child_count() - 1; i >= 0; i--) {
 		GraphNode *graph_element = Object::cast_to<GraphNode>(graph_edit->get_child(i));
@@ -79,6 +81,9 @@ void GraphEditArranger::arrange_nodes() {
 
 			for (const Ref<GraphEdit::Connection> &connection : connection_list) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[connection->from_node]);
+				if (!p_from) {
+					continue;
+				}
 				if (connection->to_node == graph_element->get_name() && (p_from->is_selected() || arrange_entire_graph) && connection->to_node != connection->from_node) {
 					if (!s.has(p_from->get_name())) {
 						s.insert(p_from->get_name());
@@ -179,7 +184,7 @@ void GraphEditArranger::arrange_nodes() {
 		Vector2 pos = (new_positions[E]);
 
 		if (graph_edit->is_snapping_enabled()) {
-			float snapping_distance = graph_edit->get_snapping_distance();
+			float snapping_distance = graph_edit->get_snapping_distance() * graph_edit->get_snapping_distance_scale();
 			pos = pos.snappedf(snapping_distance);
 		}
 		graph_node->set_position_offset(pos);
@@ -239,14 +244,17 @@ int GraphEditArranger::_set_operations(SET_OPERATIONS p_operation, HashSet<Strin
 HashMap<int, Vector<StringName>> GraphEditArranger::_layering(const HashSet<StringName> &r_selected_nodes, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours) {
 	HashMap<int, Vector<StringName>> l;
 
-	HashSet<StringName> p = r_selected_nodes, q = r_selected_nodes, u, z;
+	HashSet<StringName> p(r_selected_nodes);
+	HashSet<StringName> q(r_selected_nodes);
+	HashSet<StringName> u;
+	HashSet<StringName> z;
 	int current_layer = 0;
 	bool selected = false;
 
 	while (!_set_operations(GraphEditArranger::IS_EQUAL, q, u)) {
 		_set_operations(GraphEditArranger::DIFFERENCE, p, u);
 		for (const StringName &E : p) {
-			HashSet<StringName> n = r_upper_neighbours[E];
+			HashSet<StringName> n(r_upper_neighbours[E]);
 			if (_set_operations(GraphEditArranger::IS_SUBSET, n, z)) {
 				Vector<StringName> t;
 				t.push_back(E);
@@ -423,14 +431,14 @@ void GraphEditArranger::_calculate_inner_shifts(Dictionary &r_inner_shifts, cons
 
 float GraphEditArranger::_calculate_threshold(const StringName &p_v, const StringName &p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions) {
 #define MAX_ORDER 2147483647
-#define ORDER(node, layers)                            \
+#define ORDER(node, layers) \
 	for (unsigned int i = 0; i < layers.size(); i++) { \
-		int index = layers[i].find(node);              \
-		if (index > 0) {                               \
-			order = index;                             \
-			break;                                     \
-		}                                              \
-		order = MAX_ORDER;                             \
+		int index = layers[i].find(node); \
+		if (index > 0) { \
+			order = index; \
+			break; \
+		} \
+		order = MAX_ORDER; \
 	}
 
 	int order = MAX_ORDER;
@@ -438,7 +446,7 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 	if (p_v == p_w) {
 		int min_order = MAX_ORDER;
 		Ref<GraphEdit::Connection> incoming;
-		List<Ref<GraphEdit::Connection>> connection_list = graph_edit->get_connection_list();
+		const Vector<Ref<GraphEdit::Connection>> connection_list = graph_edit->get_connections();
 		for (const Ref<GraphEdit::Connection> &connection : connection_list) {
 			if (connection->to_node == p_w) {
 				ORDER(connection->from_node, r_layers);
@@ -455,7 +463,7 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 			Vector2 pos_from = gnode_from->get_output_port_position(incoming->from_port) * graph_edit->get_zoom();
 			Vector2 pos_to = gnode_to->get_input_port_position(incoming->to_port) * graph_edit->get_zoom();
 
-			// If connected block node is selected, calculate thershold or add current block to list.
+			// If connected block node is selected, calculate threshold or add current block to list.
 			if (gnode_from->is_selected()) {
 				Vector2 connected_block_pos = r_node_positions[r_root[incoming->from_node]];
 				if (connected_block_pos.y != FLT_MAX) {
@@ -469,7 +477,7 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 		// This time, pick an outgoing edge and repeat as above!
 		int min_order = MAX_ORDER;
 		Ref<GraphEdit::Connection> outgoing;
-		List<Ref<GraphEdit::Connection>> connection_list = graph_edit->get_connection_list();
+		const Vector<Ref<GraphEdit::Connection>> connection_list = graph_edit->get_connections();
 		for (const Ref<GraphEdit::Connection> &connection : connection_list) {
 			if (connection->from_node == p_w) {
 				ORDER(connection->to_node, r_layers);
@@ -486,7 +494,7 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 			Vector2 pos_from = gnode_from->get_output_port_position(outgoing->from_port) * graph_edit->get_zoom();
 			Vector2 pos_to = gnode_to->get_input_port_position(outgoing->to_port) * graph_edit->get_zoom();
 
-			// If connected block node is selected, calculate thershold or add current block to list.
+			// If connected block node is selected, calculate threshold or add current block to list.
 			if (gnode_to->is_selected()) {
 				Vector2 connected_block_pos = r_node_positions[r_root[outgoing->to_node]];
 				if (connected_block_pos.y != FLT_MAX) {
@@ -502,18 +510,17 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 }
 
 void GraphEditArranger::_place_block(const StringName &p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions) {
-#define PRED(node, layers)                             \
+#define PRED(node, layers) \
 	for (unsigned int i = 0; i < layers.size(); i++) { \
-		int index = layers[i].find(node);              \
-		if (index > 0) {                               \
-			predecessor = layers[i][index - 1];        \
-			break;                                     \
-		}                                              \
-		predecessor = StringName();                    \
+		int index = layers[i].find(node); \
+		if (index > 0) { \
+			predecessor = layers[i][index - 1]; \
+			break; \
+		} \
+		predecessor = StringName(); \
 	}
 
 	StringName predecessor;
-	StringName successor;
 	Vector2 pos = r_node_positions[p_v];
 
 	if (pos.y == FLT_MAX) {

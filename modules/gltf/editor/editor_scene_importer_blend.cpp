@@ -30,25 +30,22 @@
 
 #include "editor_scene_importer_blend.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "../gltf_defines.h"
 #include "../gltf_document.h"
 #include "editor_import_blend_runner.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
-
-#ifdef MINGW_ENABLED
-#define near
-#define far
-#endif
+#include "servers/display/display_server.h"
 
 #ifdef WINDOWS_ENABLED
 #include <shlwapi.h>
@@ -80,7 +77,7 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	}
 	pipe = pipe.substr(bl);
 	pipe = pipe.replace_first("Blender ", "");
-	int pp = pipe.find(".");
+	int pp = pipe.find_char('.');
 	if (pp == -1) {
 		if (r_err) {
 			*r_err = vformat(TTR("Couldn't extract version information from Blender executable at: %s."), p_path);
@@ -96,14 +93,10 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 		return false;
 	}
 
-	int pp2 = pipe.find(".", pp + 1);
+	int pp2 = pipe.find_char('.', pp + 1);
 	r_minor = pp2 > pp ? pipe.substr(pp + 1, pp2 - pp - 1).to_int() : 0;
 
 	return true;
-}
-
-uint32_t EditorSceneFormatImporterBlend::get_import_flags() const {
-	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
 }
 
 void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) const {
@@ -115,8 +108,15 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		List<String> *r_missing_deps, Error *r_err) {
 	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
 
-	if (blender_major_version == -1 || blender_minor_version == -1) {
-		_get_blender_version(blender_path, blender_major_version, blender_minor_version, nullptr);
+	ERR_FAIL_COND_V_MSG(blender_path.is_empty(), nullptr, "Blender path is empty, check your Editor Settings.");
+	ERR_FAIL_COND_V_MSG(!FileAccess::exists(blender_path), nullptr, vformat("Invalid Blender path: %s, check your Editor Settings.", blender_path));
+
+	if (blender_major_version == -1 || blender_minor_version == -1 || last_tested_blender_path != blender_path) {
+		String error;
+		if (!_get_blender_version(blender_path, blender_major_version, blender_minor_version, &error)) {
+			ERR_FAIL_V_MSG(nullptr, error);
+		}
+		last_tested_blender_path = blender_path;
 	}
 
 	// Get global paths for source and sink.
@@ -136,6 +136,10 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().path_join(
 			vformat("%s-%s.gltf", blend_basename, p_path.md5_text()));
 	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink);
+	// If true, unpack the original images to the Godot file system and use them. Allows changing image import settings like VRAM compression.
+	// If false, allow Blender to convert the original images, such as re-packing roughness and metallic into one roughness+metallic texture.
+	// In most cases this is desired, but if the .blend file's images are not in the correct format, this must be disabled for correct behavior.
+	const bool unpack_original_images = p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")];
 
 	// Handle configuration options.
 
@@ -143,9 +147,10 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	Dictionary parameters_map;
 
 	parameters_map["filepath"] = sink_global;
-	parameters_map["export_keep_originals"] = true;
+	parameters_map["export_keep_originals"] = unpack_original_images;
 	parameters_map["export_format"] = "GLTF_SEPARATE";
 	parameters_map["export_yup"] = true;
+	parameters_map["export_import_convert_lighting_mode"] = "COMPAT";
 
 	if (p_options.has(SNAME("blender/nodes/custom_properties")) && p_options[SNAME("blender/nodes/custom_properties")]) {
 		parameters_map["export_extras"] = true;
@@ -168,10 +173,17 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	}
 	if (p_options.has(SNAME("blender/materials/export_materials"))) {
 		int32_t exports = p_options["blender/materials/export_materials"];
-		if (exports == BLEND_MATERIAL_EXPORT_PLACEHOLDER) {
-			parameters_map["export_materials"] = "PLACEHOLDER";
-		} else if (exports == BLEND_MATERIAL_EXPORT_EXPORT) {
-			parameters_map["export_materials"] = "EXPORT";
+		switch (exports) {
+			case BLEND_MATERIAL_EXPORT_PLACEHOLDER: {
+				parameters_map["export_materials"] = "PLACEHOLDER";
+			} break;
+			case BLEND_MATERIAL_EXPORT_EXPORT: {
+				parameters_map["export_materials"] = "EXPORT";
+			} break;
+			case BLEND_MATERIAL_EXPORT_NAMED_PLACEHOLDER: {
+				parameters_map["export_materials"] = "EXPORT";
+				parameters_map["export_image_format"] = "NONE";
+			} break;
 		}
 	} else {
 		parameters_map["export_materials"] = "PLACEHOLDER";
@@ -186,19 +198,29 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_lights"] = false;
 	}
-	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
-		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-			parameters_map["export_vertex_color"] = "MATERIAL";
+	if (p_options.has(SNAME("blender/meshes/vertex_colors"))) {
+		int32_t color_option = p_options["blender/meshes/vertex_colors"];
+		if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 2)) {
+			switch (color_option) {
+				case BLEND_VERTEX_COLOR_MATERIAL: {
+					parameters_map["export_vertex_color"] = "MATERIAL";
+				} break;
+				case BLEND_VERTEX_COLOR_ACTIVE: {
+					parameters_map["export_vertex_color"] = "ACTIVE";
+				} break;
+				case BLEND_VERTEX_COLOR_NONE: {
+					parameters_map["export_vertex_color"] = "NONE";
+				} break;
+			}
 		} else {
-			parameters_map["export_vertex_color"] = "NONE";
-		}
-	} else {
-		if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-			parameters_map["export_colors"] = true;
-		} else {
-			parameters_map["export_colors"] = false;
+			if (color_option == BLEND_VERTEX_COLOR_NONE) {
+				parameters_map["export_colors"] = false;
+			} else {
+				parameters_map["export_colors"] = true;
+			}
 		}
 	}
+
 	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
 		if (visible == BLEND_VISIBLE_VISIBLE_ONLY) {
@@ -227,6 +249,26 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_map["export_normals"] = false;
 	}
+
+	if (blender_major_version > 4 || (blender_major_version == 4 && blender_minor_version >= 1)) {
+		if (p_options.has(SNAME("blender/meshes/export_geometry_nodes_instances")) && p_options[SNAME("blender/meshes/export_geometry_nodes_instances")]) {
+			parameters_map["export_gn_mesh"] = true;
+			if (blender_major_version == 4 && blender_minor_version == 1) {
+				// There is a bug in Blender 4.1 where it can't export lights and geometry nodes at the same time, one must be disabled.
+				parameters_map["export_lights"] = false;
+			}
+		} else {
+			parameters_map["export_gn_mesh"] = false;
+		}
+	}
+	if (blender_major_version >= 4) {
+		if (p_options.has(SNAME("blender/meshes/gpu_instances")) && p_options[SNAME("blender/meshes/gpu_instances")]) {
+			parameters_map["export_gpu_instances"] = true;
+		} else {
+			parameters_map["export_gpu_instances"] = false;
+		}
+	}
+
 	if (p_options.has(SNAME("blender/meshes/tangents")) && p_options[SNAME("blender/meshes/tangents")]) {
 		parameters_map["export_tangents"] = true;
 	} else {
@@ -266,12 +308,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 		parameters_map["export_apply"] = false;
 	}
 
-	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
-		request_options["unpack_all"] = true;
-	} else {
-		request_options["unpack_all"] = false;
-	}
-
+	request_options["unpack_all"] = unpack_original_images;
 	request_options["path"] = source_global;
 	request_options["gltf_options"] = parameters_map;
 
@@ -292,15 +329,21 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	Ref<GLTFState> state;
 	state.instantiate();
 
-	String base_dir;
-	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
-		base_dir = sink.get_base_dir();
+	if (p_options.has("gltf/naming_version")) {
+		int naming_version = p_options["gltf/naming_version"];
+		gltf->set_naming_version(naming_version);
+	}
+	if (p_options.has("gltf/texture_map_mode")) {
+		int texture_map_mode = p_options["gltf/texture_map_mode"];
+		gltf->set_texture_map_mode((GLTFDocument::TextureMapMode)texture_map_mode);
 	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
 	}
 	state->set_scene_name(blend_basename);
-	err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, base_dir);
+	state->set_extract_path(p_path.get_base_dir());
+	state->set_extract_prefix(blend_basename);
+	err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, sink.get_base_dir());
 	if (err != OK) {
 		if (r_err) {
 			*r_err = FAILED;
@@ -317,9 +360,9 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 #endif
 }
 
-Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
+Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
 		const HashMap<StringName, Variant> &p_options) {
-	if (p_path.get_extension().to_lower() != "blend") {
+	if (!p_path.has_extension("blend")) {
 		return true;
 	}
 
@@ -333,7 +376,7 @@ Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_pa
 
 void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
 	// Returns all the options when path is empty because that means it's for the Project Settings.
-	if (!p_path.is_empty() && p_path.get_extension().to_lower() != "blend") {
+	if (!p_path.is_empty() && !p_path.has_extension("blend")) {
 		return;
 	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
@@ -347,20 +390,39 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);
 	ADD_OPTION_ENUM("blender/nodes/modifiers", "No Modifiers,All Modifiers", BLEND_MODIFIERS_ALL);
-	ADD_OPTION_BOOL("blender/meshes/colors", false);
+	ADD_OPTION_ENUM("blender/meshes/vertex_colors", "Material,Active,None", BLEND_VERTEX_COLOR_ACTIVE);
 	ADD_OPTION_BOOL("blender/meshes/uvs", true);
 	ADD_OPTION_BOOL("blender/meshes/normals", true);
+	ADD_OPTION_BOOL("blender/meshes/export_geometry_nodes_instances", false);
+	ADD_OPTION_BOOL("blender/meshes/gpu_instances", false);
 	ADD_OPTION_BOOL("blender/meshes/tangents", true);
 	ADD_OPTION_ENUM("blender/meshes/skins", "None,4 Influences (Compatible),All Influences", BLEND_BONE_INFLUENCES_ALL);
 	ADD_OPTION_BOOL("blender/meshes/export_bones_deforming_mesh_only", false);
 	ADD_OPTION_BOOL("blender/materials/unpack_enabled", true);
-	ADD_OPTION_ENUM("blender/materials/export_materials", "Placeholder,Export", BLEND_MATERIAL_EXPORT_EXPORT);
+	ADD_OPTION_ENUM("blender/materials/export_materials", "Placeholder,Export,Named Placeholder", BLEND_MATERIAL_EXPORT_EXPORT);
 	ADD_OPTION_BOOL("blender/animation/limit_playback", true);
 	ADD_OPTION_BOOL("blender/animation/always_sample", true);
 	ADD_OPTION_BOOL("blender/animation/group_tracks", true);
+
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_map_mode", PROPERTY_HINT_ENUM, "Do Not Remap,Remap to StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFDocument::TEXTURE_MAP_MODE_REMAP_TO_STANDARD_MATERIAL));
 }
 
-///////////////////////////
+void EditorSceneFormatImporterBlend::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
+	if (p_import_params.has("blender/meshes/colors")) { // Legacy boolean option support.
+		if (bool(p_import_params["blender/meshes/colors"])) {
+			p_import_params["blender/meshes/vertex_colors"] = BLEND_VERTEX_COLOR_MATERIAL;
+		} else {
+			p_import_params["blender/meshes/vertex_colors"] = BLEND_VERTEX_COLOR_NONE;
+		}
+		p_import_params.erase("blender/meshes/colors");
+	}
+	if (!p_import_params.has("gltf/texture_map_mode")) {
+		// If an existing import file is missing the glTF
+		// texture map mode, we need to use "Do Not Remap".
+		p_import_params["gltf/texture_map_mode"] = (int64_t)GLTFDocument::TEXTURE_MAP_MODE_DO_NOT_REMAP;
+	}
+}
 
 static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 	int major, minor;
@@ -368,7 +430,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
-	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
+	bool blend_enabled = GLOBAL_GET_CACHED(bool, "filesystem/import/blender/enabled");
 
 	if (blend_enabled && !_test_blender_path(EDITOR_GET("filesystem/import/blender/blender_path").operator String())) {
 		// Intending to import Blender, but blend not configured.
@@ -483,10 +545,12 @@ void EditorFileSystemImportFormatSupportQueryBlend::_browse_install() {
 }
 
 void EditorFileSystemImportFormatSupportQueryBlend::_update_icons() {
-	blender_path_browse->set_icon(blender_path_browse->get_editor_theme_icon(SNAME("FolderBrowse")));
+	blender_path_browse->set_button_icon(blender_path_browse->get_editor_theme_icon(SNAME("FolderBrowse")));
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::query() {
+	ERR_FAIL_COND_V_MSG(DisplayServer::get_singleton()->get_name() == "headless", true, "Blender path is invalid or not set, check your Editor Settings. Cannot configure blender path in headless mode.");
+
 	if (!configure_blender_dialog) {
 		configure_blender_dialog = memnew(ConfirmationDialog);
 		configure_blender_dialog->set_title(TTR("Configure Blender Importer"));
@@ -504,6 +568,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		blender_path = memnew(LineEdit);
 		blender_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		blender_path->set_accessibility_name(TTRC("Path"));
 		hb->add_child(blender_path);
 
 		blender_path_browse = memnew(Button);
@@ -517,6 +582,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		vb->add_child(hb);
 
 		path_status = memnew(Label);
+		path_status->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		vb->add_child(path_status);
 
 		configure_blender_dialog->add_child(vb);
@@ -557,7 +623,6 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 	confirmed = false;
 
 	while (true) {
-		OS::get_singleton()->delay_usec(1);
 		DisplayServer::get_singleton()->process_events();
 		Main::iteration();
 		if (!configure_blender_dialog->is_visible() || confirmed) {
@@ -583,8 +648,3 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 	return false;
 }
-
-EditorFileSystemImportFormatSupportQueryBlend::EditorFileSystemImportFormatSupportQueryBlend() {
-}
-
-#endif // TOOLS_ENABLED

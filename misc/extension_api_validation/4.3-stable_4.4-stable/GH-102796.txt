@@ -1,0 +1,5 @@
+GH-102796
+---------
+Validate extension JSON: Error: Field 'classes/GraphEdit/signals/frame_rect_changed/arguments/1': type changed value in new API, from "Vector2" to "Rect2".
+
+Previous type was incorrect. No compatibility system for signal arguments.

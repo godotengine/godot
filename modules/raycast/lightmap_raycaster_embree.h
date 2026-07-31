@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHTMAP_RAYCASTER_EMBREE_H
-#define LIGHTMAP_RAYCASTER_EMBREE_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
 
@@ -70,7 +69,7 @@ public:
 	virtual void set_mesh_filter(const HashSet<int> &p_mesh_ids) override;
 	virtual void clear_mesh_filter() override;
 
-	static LightmapRaycaster *create_embree_raycaster();
+	static Ref<LightmapRaycaster> create_embree_raycaster();
 	static void make_default_raycaster();
 
 	LightmapRaycasterEmbree();
@@ -78,5 +77,3 @@ public:
 };
 
 #endif // TOOLS_ENABLED
-
-#endif // LIGHTMAP_RAYCASTER_EMBREE_H

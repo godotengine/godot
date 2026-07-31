@@ -141,12 +141,6 @@ override_features_khmer (hb_ot_shape_planner_t *plan)
    * typographical correctness.", hence in overrides... */
   map->enable_feature (HB_TAG('c','l','i','g'));
 
-  /* Uniscribe does not apply 'kern' in Khmer. */
-  if (hb_options ().uniscribe_bug_compatible)
-  {
-    map->disable_feature (HB_TAG('k','e','r','n'));
-  }
-
   map->disable_feature (HB_TAG('l','i','g','a'));
 }
 

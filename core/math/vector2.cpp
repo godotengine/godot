@@ -50,8 +50,18 @@ real_t Vector2::length_squared() const {
 }
 
 void Vector2::normalize() {
-	real_t l = x * x + y * y;
-	if (l != 0) {
+	if (!is_finite()) {
+#ifdef MATH_CHECKS
+		WARN_PRINT("Vector2 cannot be normalized, the elements must be finite. Making (0, 0) as a fallback.");
+#endif // MATH_CHECKS
+		zero();
+		return;
+	}
+
+	real_t l = length_squared();
+	if (l == 0) {
+		zero();
+	} else {
 		l = Math::sqrt(l);
 		x /= l;
 		y /= l;
@@ -194,6 +204,10 @@ bool Vector2::is_equal_approx(const Vector2 &p_v) const {
 	return Math::is_equal_approx(x, p_v.x) && Math::is_equal_approx(y, p_v.y);
 }
 
+bool Vector2::is_same(const Vector2 &p_v) const {
+	return Math::is_same(x, p_v.x) && Math::is_same(y, p_v.y);
+}
+
 bool Vector2::is_zero_approx() const {
 	return Math::is_zero_approx(x) && Math::is_zero_approx(y);
 }
@@ -203,7 +217,7 @@ bool Vector2::is_finite() const {
 }
 
 Vector2::operator String() const {
-	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ")";
+	return "(" + String::num_real(x, true) + ", " + String::num_real(y, true) + ")";
 }
 
 Vector2::operator Vector2i() const {
