@@ -39,6 +39,7 @@
 class Popup;
 class TileSet;
 class Tree;
+class TreeItem;
 class VSeparator;
 
 class TileSetAtlasSourceEditor : public HSplitContainer {
@@ -147,6 +148,8 @@ private:
 	HashMap<String, TileDataEditor *> tile_data_editors;
 	TileDataEditor *current_tile_data_editor = nullptr;
 	void _tile_data_editors_tree_selected();
+
+	TreeItem *_add_tile_data_editor(TreeItem *p_parent, const String &p_property, const String &p_previously_selected, const String &p_text = String());
 
 	// -- Inspector --
 	Ref<AtlasTileProxyObject> tile_proxy_object;

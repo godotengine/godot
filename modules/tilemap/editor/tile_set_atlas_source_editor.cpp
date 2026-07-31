@@ -666,15 +666,6 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	group->set_disable_folding(true); \
 	group->set_text(0, text);
 
-	TreeItem *item;
-#define ADD_TILE_DATA_EDITOR(parent, text, property) \
-	item = tile_data_editors_tree->create_item(parent); \
-	item->set_text(0, text); \
-	item->set_metadata(0, property); \
-	if (property == previously_selected) { \
-		item->select(0); \
-	}
-
 	// Theming.
 	tile_data_editors_tree->add_theme_constant_override("v_separation", 1);
 	tile_data_editors_tree->add_theme_constant_override("h_separation", 3);
@@ -683,9 +674,9 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 
 	// List of editors.
 	// --- Rendering ---
-	ADD_TILE_DATA_EDITOR_GROUP(TTR("Rendering"));
+	ADD_TILE_DATA_EDITOR_GROUP(TTRC("Rendering"));
 
-	ADD_TILE_DATA_EDITOR(group, TTR("Texture Origin"), "texture_origin");
+	_add_tile_data_editor(group, "texture_origin", previously_selected);
 	if (!tile_data_editors.has("texture_origin")) {
 		TileDataTextureOriginEditor *tile_data_texture_origin_editor = memnew(TileDataTextureOriginEditor);
 		tile_data_texture_origin_editor->hide();
@@ -695,7 +686,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["texture_origin"] = tile_data_texture_origin_editor;
 	}
 
-	ADD_TILE_DATA_EDITOR(group, TTR("Modulate"), "modulate");
+	_add_tile_data_editor(group, "modulate", previously_selected);
 	if (!tile_data_editors.has("modulate")) {
 		TileDataDefaultEditor *tile_data_modulate_editor = memnew(TileDataDefaultEditor());
 		tile_data_modulate_editor->hide();
@@ -705,7 +696,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["modulate"] = tile_data_modulate_editor;
 	}
 
-	ADD_TILE_DATA_EDITOR(group, TTR("Z Index"), "z_index");
+	_add_tile_data_editor(group, "z_index", previously_selected);
 	if (!tile_data_editors.has("z_index")) {
 		TileDataDefaultEditor *tile_data_z_index_editor = memnew(TileDataDefaultEditor());
 		tile_data_z_index_editor->hide();
@@ -715,7 +706,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["z_index"] = tile_data_z_index_editor;
 	}
 
-	ADD_TILE_DATA_EDITOR(group, TTR("Y Sort Origin"), "y_sort_origin");
+	_add_tile_data_editor(group, "y_sort_origin", previously_selected);
 	if (!tile_data_editors.has("y_sort_origin")) {
 		TileDataYSortEditor *tile_data_y_sort_editor = memnew(TileDataYSortEditor);
 		tile_data_y_sort_editor->hide();
@@ -726,7 +717,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
-		ADD_TILE_DATA_EDITOR(group, vformat(TTR("Occlusion Layer %d"), i), vformat("occlusion_layer_%d", i));
+		_add_tile_data_editor(group, vformat("occlusion_layer_%d", i), previously_selected, vformat(TTR("Occlusion Layer %d"), i));
 		if (!tile_data_editors.has(vformat("occlusion_layer_%d", i))) {
 			TileDataOcclusionShapeEditor *tile_data_occlusion_shape_editor = memnew(TileDataOcclusionShapeEditor());
 			tile_data_occlusion_shape_editor->hide();
@@ -742,7 +733,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	// --- Rendering ---
-	ADD_TILE_DATA_EDITOR(root, TTR("Terrains"), "terrain_set");
+	_add_tile_data_editor(group, "terrain_set", previously_selected, TTR("Terrains"));
 	if (!tile_data_editors.has("terrain_set")) {
 		TileDataTerrainsEditor *tile_data_terrains_editor = memnew(TileDataTerrainsEditor);
 		tile_data_terrains_editor->hide();
@@ -752,7 +743,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	// --- Miscellaneous ---
-	ADD_TILE_DATA_EDITOR(root, TTR("Probability"), "probability");
+	_add_tile_data_editor(group, "probability", previously_selected);
 	if (!tile_data_editors.has("probability")) {
 		TileDataDefaultEditor *tile_data_probability_editor = memnew(TileDataDefaultEditor());
 		tile_data_probability_editor->hide();
@@ -765,9 +756,9 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	Color disabled_color = get_theme_color("font_disabled_color", EditorStringName(Editor));
 
 	// --- Physics ---
-	ADD_TILE_DATA_EDITOR_GROUP(TTR("Physics"));
+	ADD_TILE_DATA_EDITOR_GROUP(TTRC("Physics"));
 	for (int i = 0; i < tile_set->get_physics_layers_count(); i++) {
-		ADD_TILE_DATA_EDITOR(group, vformat(TTR("Physics Layer %d"), i), vformat("physics_layer_%d", i));
+		_add_tile_data_editor(group, vformat("physics_layer_%d", i), previously_selected, vformat(TTR("Physics Layer %d"), i));
 		if (!tile_data_editors.has(vformat("physics_layer_%d", i))) {
 			TileDataCollisionEditor *tile_data_collision_editor = memnew(TileDataCollisionEditor());
 			tile_data_collision_editor->hide();
@@ -783,19 +774,19 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	if (tile_set->get_physics_layers_count() == 0) {
-		item = tile_data_editors_tree->create_item(group);
+		TreeItem *item = tile_data_editors_tree->create_item(group);
 		item->set_icon(0, get_editor_theme_icon("Info"));
 		item->set_icon_modulate(0, disabled_color);
-		item->set_text(0, TTR("No physics layers"));
-		item->set_tooltip_text(0, TTR("Create and customize physics layers in the inspector of the TileSet resource."));
+		item->set_text(0, TTRC("No physics layers"));
+		item->set_tooltip_text(0, TTRC("Create and customize physics layers in the inspector of the TileSet resource."));
 		item->set_selectable(0, false);
 		item->set_custom_color(0, disabled_color);
 	}
 
 	// --- Navigation ---
-	ADD_TILE_DATA_EDITOR_GROUP(TTR("Navigation"));
+	ADD_TILE_DATA_EDITOR_GROUP(TTRC("Navigation"));
 	for (int i = 0; i < tile_set->get_navigation_layers_count(); i++) {
-		ADD_TILE_DATA_EDITOR(group, vformat(TTR("Navigation Layer %d"), i), vformat("navigation_layer_%d", i));
+		_add_tile_data_editor(group, vformat("navigation_layer_%d", i), previously_selected, vformat(TTR("Navigation Layer %d"), i));
 		if (!tile_data_editors.has(vformat("navigation_layer_%d", i))) {
 			TileDataNavigationEditor *tile_data_navigation_editor = memnew(TileDataNavigationEditor());
 			tile_data_navigation_editor->hide();
@@ -811,27 +802,26 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	if (tile_set->get_navigation_layers_count() == 0) {
-		item = tile_data_editors_tree->create_item(group);
+		TreeItem *item = tile_data_editors_tree->create_item(group);
 		item->set_icon(0, get_editor_theme_icon("Info"));
 		item->set_icon_modulate(0, disabled_color);
-		item->set_text(0, TTR("No navigation layers"));
-		item->set_tooltip_text(0, TTR("Create and customize navigation layers in the inspector of the TileSet resource."));
+		item->set_text(0, TTRC("No navigation layers"));
+		item->set_tooltip_text(0, TTRC("Create and customize navigation layers in the inspector of the TileSet resource."));
 		item->set_selectable(0, false);
 		item->set_custom_color(0, disabled_color);
 	}
 
 	// --- Custom Data ---
-	ADD_TILE_DATA_EDITOR_GROUP(TTR("Custom Data"));
+	ADD_TILE_DATA_EDITOR_GROUP(TTRC("Custom Data"));
 	for (int i = 0; i < tile_set->get_custom_data_layers_count(); i++) {
 		String editor_name = vformat("custom_data_%d", i);
 		String prop_name = tile_set->get_custom_data_layer_name(i);
 		Variant::Type prop_type = tile_set->get_custom_data_layer_type(i);
 
 		if (prop_name.is_empty()) {
-			ADD_TILE_DATA_EDITOR(group, vformat(TTR("Custom Data %d"), i), editor_name);
+			_add_tile_data_editor(group, editor_name, previously_selected, vformat(TTR("Custom Data %d"), 0));
 		} else {
-			ADD_TILE_DATA_EDITOR(group, prop_name, editor_name);
-			item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+			_add_tile_data_editor(group, editor_name, previously_selected, prop_name);
 		}
 
 		// If the type of the edited property has been changed, delete the
@@ -855,11 +845,11 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	if (tile_set->get_custom_data_layers_count() == 0) {
-		item = tile_data_editors_tree->create_item(group);
+		TreeItem *item = tile_data_editors_tree->create_item(group);
 		item->set_icon(0, get_editor_theme_icon("Info"));
 		item->set_icon_modulate(0, disabled_color);
-		item->set_text(0, TTR("No custom data layers"));
-		item->set_tooltip_text(0, TTR("Create and customize custom data layers in the inspector of the TileSet resource."));
+		item->set_text(0, TTRC("No custom data layers"));
+		item->set_tooltip_text(0, TTRC("Create and customize custom data layers in the inspector of the TileSet resource."));
 		item->set_selectable(0, false);
 		item->set_custom_color(0, disabled_color);
 	}
@@ -989,6 +979,21 @@ void TileSetAtlasSourceEditor::_tile_data_editors_tree_selected() {
 	tile_atlas_control_unscaled->queue_redraw();
 	alternative_tiles_control->queue_redraw();
 	alternative_tiles_control_unscaled->queue_redraw();
+}
+
+TreeItem *TileSetAtlasSourceEditor::_add_tile_data_editor(TreeItem *p_parent, const String &p_property, const String &p_previously_selected, const String &p_text) {
+	TreeItem *item = p_parent->create_child();
+	item->set_auto_translate_mode(0, Node::AUTO_TRANSLATE_MODE_DISABLED);
+	if (p_text.is_empty()) {
+		item->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(p_property, EditorPropertyNameProcessor::STYLE_LOCALIZED));
+	} else {
+		item->set_text(0, p_text);
+	}
+	item->set_metadata(0, p_property);
+	if (p_property == p_previously_selected) {
+		item->select(0);
+	}
+	return item;
 }
 
 void TileSetAtlasSourceEditor::_update_atlas_view() {
