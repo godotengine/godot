@@ -462,46 +462,27 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 
 namespace style_box_flat_smooth {
 
-constexpr real_t MIN_EFFECTIVE_CORNER_SMOOTHING = 0.005;
-
 struct SmoothRectGeometry {
 	real_t left = 0.0;
 	real_t top = 0.0;
 	real_t right = 0.0;
 	real_t bottom = 0.0;
 	real_t corner_radius[4] = {};
-
-	bool is_valid() const {
-		return right - left > CMP_EPSILON && bottom - top > CMP_EPSILON;
-	}
 };
 
 struct SmoothRectCorner {
 	Vector2 origin;
 	real_t radius = 0.0;
-
 	Vector2 start_direction;
-	real_t start_influence = 0.0;
-	real_t start_angle = 0.0;
-
 	Vector2 end_direction;
-	real_t end_influence = 0.0;
-	real_t end_angle = 0.0;
 
 	Vector2 get_start() const {
-		return origin + start_direction * start_influence;
+		return origin + start_direction * radius;
 	}
 
 	Vector2 get_end() const {
-		return origin + end_direction * end_influence;
+		return origin + end_direction * radius;
 	}
-};
-
-struct SmoothCornerCubic {
-	Vector2 from;
-	Vector2 control_point_1;
-	Vector2 control_point_2;
-	Vector2 to;
 };
 
 struct SmoothContourSample {
@@ -523,186 +504,73 @@ inline SmoothRectGeometry make_smooth_rect_geometry(const Rect2 &p_rect, const r
 	return geometry;
 }
 
-inline void adapt_smooth_side_influence(int p_corner_a, int p_corner_b, real_t p_side_length, real_t r_influence[4]) {
-	const real_t side_length = MAX(p_side_length, (real_t)0.0);
-
-	const real_t influence_a = MAX(r_influence[p_corner_a], (real_t)0.0);
-	const real_t influence_b = MAX(r_influence[p_corner_b], (real_t)0.0);
-
-	const real_t influence_sum = influence_a + influence_b;
-
-	if (influence_sum <= CMP_EPSILON) {
-		r_influence[p_corner_a] = 0.0;
-		r_influence[p_corner_b] = 0.0;
-		return;
-	}
-
-	const real_t factor = MIN((real_t)1.0, side_length / influence_sum);
-
-	r_influence[p_corner_a] = influence_a * factor;
-	r_influence[p_corner_b] = influence_b * factor;
-}
-
-inline void resolve_smooth_corner_side(real_t p_corner_radius, real_t p_influence, real_t &r_influence, real_t &r_angle) {
-	if (p_corner_radius <= CMP_EPSILON || p_influence <= CMP_EPSILON) {
-		r_influence = 0.0;
-		r_angle = 0.0;
-		return;
-	}
-
-	const real_t effective_smoothing = CLAMP(p_influence / p_corner_radius - (real_t)1.0, (real_t)0.0, (real_t)1.0);
-
-	if (effective_smoothing < MIN_EFFECTIVE_CORNER_SMOOTHING) {
-		r_influence = p_corner_radius;
-		r_angle = 0.0;
-		return;
-	}
-
-	r_influence = p_influence;
-	r_angle = effective_smoothing * (real_t)Math::PI * (real_t)0.25;
-}
-
-inline SmoothRectCorner make_smooth_rect_corner(const Vector2 &p_origin, const Vector2 &p_start_direction, const Vector2 &p_end_direction, real_t p_corner_radius, real_t p_start_influence, real_t p_end_influence) {
+inline SmoothRectCorner make_smooth_rect_corner(const Vector2 &p_origin, const Vector2 &p_start_direction, const Vector2 &p_end_direction, real_t p_corner_radius) {
 	SmoothRectCorner corner;
-
 	corner.origin = p_origin;
 	corner.radius = p_corner_radius;
-
 	corner.start_direction = p_start_direction;
-	resolve_smooth_corner_side(p_corner_radius, p_start_influence, corner.start_influence, corner.start_angle);
-
 	corner.end_direction = p_end_direction;
-	resolve_smooth_corner_side(p_corner_radius, p_end_influence, corner.end_influence, corner.end_angle);
-
 	return corner;
 }
 
-inline void build_smooth_corner_cubics(const SmoothRectCorner &p_corner, SmoothCornerCubic r_cubics[3]) {
-	const real_t radius = p_corner.radius;
-	const real_t start_angle = p_corner.start_angle;
-	const real_t end_angle = p_corner.end_angle;
-	const real_t start_influence = p_corner.start_influence;
-	const real_t end_influence = p_corner.end_influence;
-	const real_t start_tangent_distance = radius - radius * Math::tan(start_angle * 0.5);
-	const real_t end_tangent_distance = radius - radius * Math::tan(end_angle * 0.5);
-	const real_t start_handle_length = (start_influence - start_tangent_distance) / 3.0;
-	const real_t end_handle_length = (end_influence - end_tangent_distance) / 3.0;
-	const Vector2 first_arc_point = p_corner.origin + p_corner.start_direction * (radius - radius * Math::sin(start_angle)) + p_corner.end_direction * (radius - radius * Math::cos(start_angle));
-	const Vector2 second_arc_point = p_corner.origin + p_corner.start_direction * (radius - radius * Math::cos(end_angle)) + p_corner.end_direction * (radius - radius * Math::sin(end_angle));
-	const real_t middle_arc_angle = MAX(Math::PI * 0.5 - start_angle - end_angle, (real_t)0.0);
-	const real_t middle_arc_handle_length = middle_arc_angle <= CMP_EPSILON ? (real_t)0.0 : (real_t)(4.0 / 3.0) * Math::tan(middle_arc_angle * (real_t)0.25) * radius;
-	r_cubics[0] = { p_corner.get_start(), p_corner.origin + p_corner.start_direction * (start_influence - 2.0 * start_handle_length), p_corner.origin + p_corner.start_direction * start_tangent_distance, first_arc_point };
-	r_cubics[1] = { first_arc_point, first_arc_point + p_corner.start_direction * (-middle_arc_handle_length * Math::cos(start_angle)) + p_corner.end_direction * (middle_arc_handle_length * Math::sin(start_angle)), second_arc_point + p_corner.start_direction * (middle_arc_handle_length * Math::sin(end_angle)) + p_corner.end_direction * (-middle_arc_handle_length * Math::cos(end_angle)), second_arc_point };
-	r_cubics[2] = { second_arc_point, p_corner.origin + p_corner.end_direction * end_tangent_distance, p_corner.origin + p_corner.end_direction * (end_tangent_distance + end_handle_length), p_corner.get_end() };
-}
-
-inline Vector2 compute_smooth_cubic_point(const SmoothCornerCubic &p_cubic, real_t p_t) {
-	const real_t u = 1.0 - p_t;
-	return u * u * u * p_cubic.from + 3.0 * u * u * p_t * p_cubic.control_point_1 + 3.0 * u * p_t * p_t * p_cubic.control_point_2 + p_t * p_t * p_t * p_cubic.to;
-}
-
-inline Vector2 compute_smooth_cubic_derivative(const SmoothCornerCubic &p_cubic, real_t p_t) {
-	const real_t u = 1.0 - p_t;
-	return 3.0 * u * u * (p_cubic.control_point_1 - p_cubic.from) + 6.0 * u * p_t * (p_cubic.control_point_2 - p_cubic.control_point_1) + 3.0 * p_t * p_t * (p_cubic.to - p_cubic.control_point_2);
-}
-
-inline void append_smooth_corner_samples(Vector<SmoothContourSample> &r_samples, const SmoothRectCorner &p_corner, int p_corner_detail) {
+inline SmoothContourSample sample_smooth_corner(const SmoothRectCorner &p_corner, real_t p_exponent, real_t p_angle) {
 	if (p_corner.radius <= CMP_EPSILON) {
-		r_samples.push_back({
-				p_corner.origin,
-				(-p_corner.start_direction + p_corner.end_direction).normalized(),
-		});
-		return;
+		return {
+			p_corner.origin,
+			(-p_corner.start_direction + p_corner.end_direction).normalized(),
+		};
 	}
-	SmoothCornerCubic cubics[3];
-	build_smooth_corner_cubics(p_corner, cubics);
-	if (p_corner_detail == 1) {
-		Vector2 start_derivative = compute_smooth_cubic_derivative(cubics[0], (real_t)0.0);
-		if (start_derivative.is_zero_approx()) {
-			start_derivative = compute_smooth_cubic_derivative(cubics[1], (real_t)0.0);
-		}
-		Vector2 end_derivative = compute_smooth_cubic_derivative(cubics[2], (real_t)1.0);
-		if (end_derivative.is_zero_approx()) {
-			end_derivative = compute_smooth_cubic_derivative(cubics[1], (real_t)1.0);
-		}
-		r_samples.push_back({
-				cubics[0].from,
-				start_derivative,
-		});
-		r_samples.push_back({
-				cubics[2].to,
-				end_derivative,
-		});
-		return;
+
+	if (p_angle <= 0.0) {
+		return {
+			p_corner.get_start(),
+			-p_corner.start_direction,
+		};
 	}
-	const int corner_segment_count = MAX(p_corner_detail, 3);
-	const int base_segment_count = corner_segment_count / 3;
-	const int remaining_segment_count = corner_segment_count % 3;
-	for (int cubic_index = 0; cubic_index < 3; cubic_index++) {
-		const SmoothCornerCubic &cubic = cubics[cubic_index];
-		const int cubic_segment_count = base_segment_count + (cubic_index < remaining_segment_count ? 1 : 0);
-		const int first_sample_index = cubic_index == 0 ? 0 : 1;
-		for (int sample_index = first_sample_index; sample_index <= cubic_segment_count; sample_index++) {
-			const real_t t = (real_t)sample_index / cubic_segment_count;
-			Vector2 point;
-			if (sample_index == 0) {
-				point = cubic.from;
-			} else if (sample_index == cubic_segment_count) {
-				point = cubic.to;
-			} else {
-				point = compute_smooth_cubic_point(cubic, t);
-			}
-			Vector2 derivative = compute_smooth_cubic_derivative(cubic, t);
-			if (derivative.is_zero_approx()) {
-				if (cubic_index == 0) {
-					derivative = compute_smooth_cubic_derivative(cubics[1], (real_t)0.0);
-				} else if (cubic_index == 2) {
-					derivative = compute_smooth_cubic_derivative(cubics[1], (real_t)1.0);
-				} else {
-					Vector2 previous_derivative = compute_smooth_cubic_derivative(cubics[0], (real_t)1.0);
-					Vector2 next_derivative = compute_smooth_cubic_derivative(cubics[2], (real_t)0.0);
-					if (!previous_derivative.is_zero_approx()) {
-						previous_derivative.normalize();
-					}
-					if (!next_derivative.is_zero_approx()) {
-						next_derivative.normalize();
-					}
-					derivative = previous_derivative + next_derivative;
-					if (!derivative.is_zero_approx()) {
-						derivative.normalize();
-					}
-				}
-			}
-			r_samples.push_back({ point, derivative });
+	if (p_angle >= Math::PI * 0.5) {
+		return {
+			p_corner.get_end(),
+			p_corner.end_direction,
+		};
+	}
+
+	const real_t sine = Math::sin(p_angle);
+	const real_t cosine = Math::cos(p_angle);
+	const real_t sine_power = Math::pow(sine, p_exponent);
+	const real_t cosine_power = Math::pow(cosine, p_exponent);
+	const Vector2 point =
+			p_corner.origin +
+			p_corner.start_direction * p_corner.radius * (1.0 - sine_power) +
+			p_corner.end_direction * p_corner.radius * (1.0 - cosine_power);
+	const Vector2 derivative =
+			p_corner.start_direction * (-p_corner.radius * p_exponent * Math::pow(sine, p_exponent - (real_t)1.0) * cosine) +
+			p_corner.end_direction * (p_corner.radius * p_exponent * Math::pow(cosine, p_exponent - (real_t)1.0) * sine);
+	return { point, derivative };
+}
+
+inline void append_smooth_corner_samples(Vector<SmoothContourSample> &r_samples, const SmoothRectCorner &p_corner, real_t p_corner_smoothing, int p_corner_detail) {
+	const real_t exponent = Math::pow((real_t)2.0, -p_corner_smoothing);
+	for (int sample_index = 0; sample_index <= p_corner_detail; sample_index++) {
+		const real_t tangent_angle = (real_t)sample_index / p_corner_detail * Math::PI * 0.5;
+		real_t curve_angle = tangent_angle;
+		if (sample_index > 0 && sample_index < p_corner_detail) {
+			curve_angle = Math::atan(Math::pow(Math::tan(tangent_angle), (real_t)1.0 / ((real_t)2.0 - exponent)));
 		}
+		r_samples.push_back(sample_smooth_corner(p_corner, exponent, curve_angle));
 	}
 }
 
 inline Vector<SmoothContourSample> build_smooth_contour_samples(const SmoothRectGeometry &p_geometry, real_t p_corner_smoothing, int p_corner_detail) {
 	Vector<SmoothContourSample> samples;
-	const real_t width = p_geometry.right - p_geometry.left;
-	const real_t height = p_geometry.bottom - p_geometry.top;
-	real_t horizontal_influence[4];
-	real_t vertical_influence[4];
-	for (int corner = 0; corner < 4; corner++) {
-		const real_t desired_influence = ((real_t)1.0 + p_corner_smoothing) * p_geometry.corner_radius[corner];
-		horizontal_influence[corner] = desired_influence;
-		vertical_influence[corner] = desired_influence;
-	}
-	adapt_smooth_side_influence(CORNER_TOP_LEFT, CORNER_TOP_RIGHT, width, horizontal_influence);
-	adapt_smooth_side_influence(CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, width, horizontal_influence);
-	adapt_smooth_side_influence(CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, height, vertical_influence);
-	adapt_smooth_side_influence(CORNER_TOP_RIGHT, CORNER_BOTTOM_RIGHT, height, vertical_influence);
-	const SmoothRectCorner top_left = make_smooth_rect_corner(Vector2(p_geometry.left, p_geometry.top), Vector2(0.0, 1.0), Vector2(1.0, 0.0), p_geometry.corner_radius[CORNER_TOP_LEFT], vertical_influence[CORNER_TOP_LEFT], horizontal_influence[CORNER_TOP_LEFT]);
-	const SmoothRectCorner top_right = make_smooth_rect_corner(Vector2(p_geometry.right, p_geometry.top), Vector2(-1.0, 0.0), Vector2(0.0, 1.0), p_geometry.corner_radius[CORNER_TOP_RIGHT], horizontal_influence[CORNER_TOP_RIGHT], vertical_influence[CORNER_TOP_RIGHT]);
-	const SmoothRectCorner bottom_right = make_smooth_rect_corner(Vector2(p_geometry.right, p_geometry.bottom), Vector2(0.0, -1.0), Vector2(-1.0, 0.0), p_geometry.corner_radius[CORNER_BOTTOM_RIGHT], vertical_influence[CORNER_BOTTOM_RIGHT], horizontal_influence[CORNER_BOTTOM_RIGHT]);
-	const SmoothRectCorner bottom_left = make_smooth_rect_corner(Vector2(p_geometry.left, p_geometry.bottom), Vector2(1.0, 0.0), Vector2(0.0, -1.0), p_geometry.corner_radius[CORNER_BOTTOM_LEFT], horizontal_influence[CORNER_BOTTOM_LEFT], vertical_influence[CORNER_BOTTOM_LEFT]);
-	const int reserved_corner_detail = MAX(p_corner_detail, 3);
-	samples.reserve((reserved_corner_detail + 1) * 4);
-	append_smooth_corner_samples(samples, top_right, p_corner_detail);
-	append_smooth_corner_samples(samples, bottom_right, p_corner_detail);
-	append_smooth_corner_samples(samples, bottom_left, p_corner_detail);
-	append_smooth_corner_samples(samples, top_left, p_corner_detail);
+	const SmoothRectCorner top_left = make_smooth_rect_corner(Vector2(p_geometry.left, p_geometry.top), Vector2(0.0, 1.0), Vector2(1.0, 0.0), p_geometry.corner_radius[CORNER_TOP_LEFT]);
+	const SmoothRectCorner top_right = make_smooth_rect_corner(Vector2(p_geometry.right, p_geometry.top), Vector2(-1.0, 0.0), Vector2(0.0, 1.0), p_geometry.corner_radius[CORNER_TOP_RIGHT]);
+	const SmoothRectCorner bottom_right = make_smooth_rect_corner(Vector2(p_geometry.right, p_geometry.bottom), Vector2(0.0, -1.0), Vector2(-1.0, 0.0), p_geometry.corner_radius[CORNER_BOTTOM_RIGHT]);
+	const SmoothRectCorner bottom_left = make_smooth_rect_corner(Vector2(p_geometry.left, p_geometry.bottom), Vector2(1.0, 0.0), Vector2(0.0, -1.0), p_geometry.corner_radius[CORNER_BOTTOM_LEFT]);
+	samples.reserve((p_corner_detail + 1) * 4);
+	append_smooth_corner_samples(samples, top_right, p_corner_smoothing, p_corner_detail);
+	append_smooth_corner_samples(samples, bottom_right, p_corner_smoothing, p_corner_detail);
+	append_smooth_corner_samples(samples, bottom_left, p_corner_smoothing, p_corner_detail);
+	append_smooth_corner_samples(samples, top_left, p_corner_smoothing, p_corner_detail);
 	return samples;
 }
 

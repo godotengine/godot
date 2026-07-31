@@ -141,8 +141,8 @@
 			The top-right corner's radius. If [code]0[/code], the corner is not rounded.
 		</member>
 		<member name="corner_smoothing" type="float" setter="set_corner_smoothing" getter="get_corner_smoothing" default="0.0">
-			Controls the smoothness of rounded corners. A value of [code]0.0[/code] uses circular arcs. Higher values extend the transition between the straight edges and rounded corners, producing progressively smoother corners.
-			This property has no effect on corners whose radius is [code]0[/code]. When using corner smoothing, consider increasing [member corner_detail], as a smooth corner has a more complex contour than a circular arc.
+			Controls the smoothness of rounded corners. A value of [code]0.0[/code] uses circular arcs. Higher values flatten the curvature near the straight edges and move more of the curvature towards the corner. A value of [code]1.0[/code] produces a squircle.
+			This property has no effect on corners whose radius is [code]0[/code]. When using corner smoothing, consider increasing [member corner_detail], as a superellipse has a more complex contour than a circular arc.
 		</member>
 		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
 			Toggles drawing of the inner part of the stylebox.
