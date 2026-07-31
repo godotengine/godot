@@ -578,6 +578,9 @@ void validate_and_instantiate_scene(Ref<PackedScene> loaded_scene) {
 	CHECK_MESSAGE(
 			inner_new_node->get_name() == "inner_named_node",
 			"The instantiated node has invalid name.");
+
+	memdelete(new_node);
+	memdelete(inner_new_node);
 }
 
 TEST_CASE("[Resource] Scene Saving and loading") {
@@ -611,6 +614,9 @@ TEST_CASE("[Resource] Scene Saving and loading") {
 
 	const Ref<PackedScene> &loaded_resource_text = ResourceLoader::load(save_path_text);
 	validate_and_instantiate_scene(loaded_resource_text);
+
+	memdelete(node);
+	memdelete(inner_node);
 }
 
 TEST_CASE("[Resource] Saving and loading") {
