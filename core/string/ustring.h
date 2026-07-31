@@ -562,8 +562,8 @@ public:
 
 	Char16String utf16() const;
 	Error append_utf16(const char16_t *p_utf16, int p_len = -1, bool p_default_little_endian = true);
-	Error append_utf16(const Span<char16_t> p_range, bool p_skip_cr = false) {
-		return append_utf16(p_range.ptr(), p_range.size(), p_skip_cr);
+	Error append_utf16(const Span<char16_t> p_range, bool p_default_little_endian = true) {
+		return append_utf16(p_range.ptr(), p_range.size(), p_default_little_endian);
 	}
 	static String utf16(const char16_t *p_utf16, int p_len = -1) {
 		String ret;
