@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "scene/3d/node_3d.h"
 #include "scene/resources/packed_scene.h"
 #include "tests/test_macros.h"
 
@@ -566,7 +565,7 @@ void validate_and_instantiate_scene(Ref<PackedScene> loaded_scene) {
 
 	validate_scene(loaded_scene);
 
-	Node3D *new_node = static_cast<Node3D *>(loaded_scene->instantiate());
+	Node *new_node = static_cast<Node *>(loaded_scene->instantiate());
 	CHECK_MESSAGE(
 			new_node->get_name() == "named_node",
 			"The instantiated node has invalid name.");
@@ -574,7 +573,7 @@ void validate_and_instantiate_scene(Ref<PackedScene> loaded_scene) {
 	const Ref<PackedScene> &inner_loaded_resource_binary = loaded_scene->get_meta("inner_scene");
 	validate_scene(inner_loaded_resource_binary);
 
-	Node3D *inner_new_node = static_cast<Node3D *>(inner_loaded_resource_binary->instantiate());
+	Node *inner_new_node = static_cast<Node *>(inner_loaded_resource_binary->instantiate());
 	CHECK_MESSAGE(
 			inner_new_node->get_name() == "inner_named_node",
 			"The instantiated node has invalid name.");
@@ -584,14 +583,14 @@ void validate_and_instantiate_scene(Ref<PackedScene> loaded_scene) {
 }
 
 TEST_CASE("[Resource] Scene Saving and loading") {
-	Node3D *inner_node = memnew(Node3D);
+	Node *inner_node = memnew(Node);
 	inner_node->set_name("inner_named_node");
 
 	Ref<PackedScene> inner_scene = memnew(PackedScene);
 	inner_scene->pack(inner_node);
 	prepare_scene(inner_scene);
 
-	Node3D *node = memnew(Node3D);
+	Node *node = memnew(Node);
 	node->set_name("named_node");
 
 	Ref<PackedScene> scene = memnew(PackedScene);
