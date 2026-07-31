@@ -144,6 +144,10 @@ void EditorValidationPanel::set_message(int p_id, const String &p_text, MessageT
 	}
 }
 
+int EditorValidationPanel::get_message_count() const {
+	return valid_messages.size();
+}
+
 bool EditorValidationPanel::is_valid() const {
 	return valid;
 }
