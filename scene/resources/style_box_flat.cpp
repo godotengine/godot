@@ -129,6 +129,18 @@ int StyleBoxFlat::get_corner_radius(const Corner p_corner) const {
 	return corner_radius[p_corner];
 }
 
+void StyleBoxFlat::set_corner_smoothing(real_t p_smoothing) {
+	corner_smoothing = CLAMP(
+			p_smoothing,
+			(real_t)0.0,
+			(real_t)1.0);
+	emit_changed();
+}
+
+real_t StyleBoxFlat::get_corner_smoothing() const {
+	return corner_smoothing;
+}
+
 void StyleBoxFlat::set_corner_detail(const int &p_corner_detail) {
 	corner_detail = CLAMP(p_corner_detail, 1, 20);
 	emit_changed();
@@ -227,6 +239,16 @@ void StyleBoxFlat::set_aa_size(const real_t p_aa_size) {
 real_t StyleBoxFlat::get_aa_size() const {
 	return aa_size;
 }
+
+inline void adapt_values(int p_index_a, int p_index_b, real_t *adapted_values, const real_t *p_values, const real_t p_width, const real_t p_max_a, const real_t p_max_b) {
+	real_t value_a = p_values[p_index_a];
+	real_t value_b = p_values[p_index_b];
+	real_t factor = (value_a + value_b == 0.0) ? 1.0 : MIN(1.0, p_width / (value_a + value_b));
+	adapted_values[p_index_a] = MIN(MIN(value_a * factor, p_max_a), adapted_values[p_index_a]);
+	adapted_values[p_index_b] = MIN(MIN(value_b * factor, p_max_b), adapted_values[p_index_b]);
+}
+
+namespace style_box_flat_legacy {
 
 inline void set_inner_corner_radius(const Rect2 style_rect, const Rect2 inner_rect, const real_t corner_radius[4], real_t *inner_corner_radius) {
 	real_t border_left = inner_rect.position.x - style_rect.position.x;
@@ -436,12 +458,353 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 	}
 }
 
-inline void adapt_values(int p_index_a, int p_index_b, real_t *adapted_values, const real_t *p_values, const real_t p_width, const real_t p_max_a, const real_t p_max_b) {
-	real_t value_a = p_values[p_index_a];
-	real_t value_b = p_values[p_index_b];
-	real_t factor = (value_a + value_b == 0.0) ? 1.0 : MIN(1.0, p_width / (value_a + value_b));
-	adapted_values[p_index_a] = MIN(MIN(value_a * factor, p_max_a), adapted_values[p_index_a]);
-	adapted_values[p_index_b] = MIN(MIN(value_b * factor, p_max_b), adapted_values[p_index_b]);
+} // namespace style_box_flat_legacy
+
+namespace style_box_flat_smooth {
+
+constexpr real_t MIN_EFFECTIVE_CORNER_SMOOTHING = 0.005;
+
+struct SmoothRectGeometry {
+	real_t left = 0.0;
+	real_t top = 0.0;
+	real_t right = 0.0;
+	real_t bottom = 0.0;
+	real_t corner_radius[4] = {};
+
+	bool is_valid() const {
+		return right - left > CMP_EPSILON && bottom - top > CMP_EPSILON;
+	}
+};
+
+struct SmoothRectCorner {
+	Vector2 origin;
+	real_t radius = 0.0;
+
+	Vector2 start_direction;
+	real_t start_influence = 0.0;
+	real_t start_angle = 0.0;
+
+	Vector2 end_direction;
+	real_t end_influence = 0.0;
+	real_t end_angle = 0.0;
+
+	Vector2 get_start() const {
+		return origin + start_direction * start_influence;
+	}
+
+	Vector2 get_end() const {
+		return origin + end_direction * end_influence;
+	}
+};
+
+struct SmoothCornerCubic {
+	Vector2 from;
+	Vector2 control_point_1;
+	Vector2 control_point_2;
+	Vector2 to;
+};
+
+struct SmoothContourSample {
+	Vector2 point;
+	Vector2 derivative;
+};
+
+inline SmoothRectGeometry make_smooth_rect_geometry(const Rect2 &p_rect, const real_t p_corner_radius[4]) {
+	SmoothRectGeometry geometry;
+	geometry.left = p_rect.position.x;
+	geometry.top = p_rect.position.y;
+	geometry.right = p_rect.get_end().x;
+	geometry.bottom = p_rect.get_end().y;
+
+	for (int corner = 0; corner < 4; corner++) {
+		geometry.corner_radius[corner] = MAX(p_corner_radius[corner], (real_t)0.0);
+	}
+
+	return geometry;
+}
+
+inline void adapt_smooth_side_influence(int p_corner_a, int p_corner_b, real_t p_side_length, real_t r_influence[4]) {
+	const real_t side_length = MAX(p_side_length, (real_t)0.0);
+
+	const real_t influence_a = MAX(r_influence[p_corner_a], (real_t)0.0);
+	const real_t influence_b = MAX(r_influence[p_corner_b], (real_t)0.0);
+
+	const real_t influence_sum = influence_a + influence_b;
+
+	if (influence_sum <= CMP_EPSILON) {
+		r_influence[p_corner_a] = 0.0;
+		r_influence[p_corner_b] = 0.0;
+		return;
+	}
+
+	const real_t factor = MIN((real_t)1.0, side_length / influence_sum);
+
+	r_influence[p_corner_a] = influence_a * factor;
+	r_influence[p_corner_b] = influence_b * factor;
+}
+
+inline void resolve_smooth_corner_side(real_t p_corner_radius, real_t p_influence, real_t &r_influence, real_t &r_angle) {
+	if (p_corner_radius <= CMP_EPSILON || p_influence <= CMP_EPSILON) {
+		r_influence = 0.0;
+		r_angle = 0.0;
+		return;
+	}
+
+	const real_t effective_smoothing = CLAMP(p_influence / p_corner_radius - (real_t)1.0, (real_t)0.0, (real_t)1.0);
+
+	if (effective_smoothing < MIN_EFFECTIVE_CORNER_SMOOTHING) {
+		r_influence = p_corner_radius;
+		r_angle = 0.0;
+		return;
+	}
+
+	r_influence = p_influence;
+	r_angle = effective_smoothing * (real_t)Math::PI * (real_t)0.25;
+}
+
+inline SmoothRectCorner make_smooth_rect_corner(const Vector2 &p_origin, const Vector2 &p_start_direction, const Vector2 &p_end_direction, real_t p_corner_radius, real_t p_start_influence, real_t p_end_influence) {
+	SmoothRectCorner corner;
+
+	corner.origin = p_origin;
+	corner.radius = p_corner_radius;
+
+	corner.start_direction = p_start_direction;
+	resolve_smooth_corner_side(p_corner_radius, p_start_influence, corner.start_influence, corner.start_angle);
+
+	corner.end_direction = p_end_direction;
+	resolve_smooth_corner_side(p_corner_radius, p_end_influence, corner.end_influence, corner.end_angle);
+
+	return corner;
+}
+
+inline void build_smooth_corner_cubics(const SmoothRectCorner &p_corner, SmoothCornerCubic r_cubics[3]) {
+	const real_t radius = p_corner.radius;
+	const real_t start_angle = p_corner.start_angle;
+	const real_t end_angle = p_corner.end_angle;
+	const real_t start_influence = p_corner.start_influence;
+	const real_t end_influence = p_corner.end_influence;
+	const real_t start_tangent_distance = radius - radius * Math::tan(start_angle * 0.5);
+	const real_t end_tangent_distance = radius - radius * Math::tan(end_angle * 0.5);
+	const real_t start_handle_length = (start_influence - start_tangent_distance) / 3.0;
+	const real_t end_handle_length = (end_influence - end_tangent_distance) / 3.0;
+	const Vector2 first_arc_point = p_corner.origin + p_corner.start_direction * (radius - radius * Math::sin(start_angle)) + p_corner.end_direction * (radius - radius * Math::cos(start_angle));
+	const Vector2 second_arc_point = p_corner.origin + p_corner.start_direction * (radius - radius * Math::cos(end_angle)) + p_corner.end_direction * (radius - radius * Math::sin(end_angle));
+	const real_t middle_arc_angle = MAX(Math::PI * 0.5 - start_angle - end_angle, (real_t)0.0);
+	const real_t middle_arc_handle_length = middle_arc_angle <= CMP_EPSILON ? (real_t)0.0 : (real_t)(4.0 / 3.0) * Math::tan(middle_arc_angle * (real_t)0.25) * radius;
+	r_cubics[0] = { p_corner.get_start(), p_corner.origin + p_corner.start_direction * (start_influence - 2.0 * start_handle_length), p_corner.origin + p_corner.start_direction * start_tangent_distance, first_arc_point };
+	r_cubics[1] = { first_arc_point, first_arc_point + p_corner.start_direction * (-middle_arc_handle_length * Math::cos(start_angle)) + p_corner.end_direction * (middle_arc_handle_length * Math::sin(start_angle)), second_arc_point + p_corner.start_direction * (middle_arc_handle_length * Math::sin(end_angle)) + p_corner.end_direction * (-middle_arc_handle_length * Math::cos(end_angle)), second_arc_point };
+	r_cubics[2] = { second_arc_point, p_corner.origin + p_corner.end_direction * end_tangent_distance, p_corner.origin + p_corner.end_direction * (end_tangent_distance + end_handle_length), p_corner.get_end() };
+}
+
+inline Vector2 compute_smooth_cubic_point(const SmoothCornerCubic &p_cubic, real_t p_t) {
+	const real_t u = 1.0 - p_t;
+	return u * u * u * p_cubic.from + 3.0 * u * u * p_t * p_cubic.control_point_1 + 3.0 * u * p_t * p_t * p_cubic.control_point_2 + p_t * p_t * p_t * p_cubic.to;
+}
+
+inline Vector2 compute_smooth_cubic_derivative(const SmoothCornerCubic &p_cubic, real_t p_t) {
+	const real_t u = 1.0 - p_t;
+	return 3.0 * u * u * (p_cubic.control_point_1 - p_cubic.from) + 6.0 * u * p_t * (p_cubic.control_point_2 - p_cubic.control_point_1) + 3.0 * p_t * p_t * (p_cubic.to - p_cubic.control_point_2);
+}
+
+inline void append_smooth_corner_samples(Vector<SmoothContourSample> &r_samples, const SmoothRectCorner &p_corner, int p_corner_detail) {
+	if (p_corner.radius <= CMP_EPSILON) {
+		r_samples.push_back({
+				p_corner.origin,
+				(-p_corner.start_direction + p_corner.end_direction).normalized(),
+		});
+		return;
+	}
+	SmoothCornerCubic cubics[3];
+	build_smooth_corner_cubics(p_corner, cubics);
+	if (p_corner_detail == 1) {
+		Vector2 start_derivative = compute_smooth_cubic_derivative(cubics[0], (real_t)0.0);
+		if (start_derivative.is_zero_approx()) {
+			start_derivative = compute_smooth_cubic_derivative(cubics[1], (real_t)0.0);
+		}
+		Vector2 end_derivative = compute_smooth_cubic_derivative(cubics[2], (real_t)1.0);
+		if (end_derivative.is_zero_approx()) {
+			end_derivative = compute_smooth_cubic_derivative(cubics[1], (real_t)1.0);
+		}
+		r_samples.push_back({
+				cubics[0].from,
+				start_derivative,
+		});
+		r_samples.push_back({
+				cubics[2].to,
+				end_derivative,
+		});
+		return;
+	}
+	const int corner_segment_count = MAX(p_corner_detail, 3);
+	const int base_segment_count = corner_segment_count / 3;
+	const int remaining_segment_count = corner_segment_count % 3;
+	for (int cubic_index = 0; cubic_index < 3; cubic_index++) {
+		const SmoothCornerCubic &cubic = cubics[cubic_index];
+		const int cubic_segment_count = base_segment_count + (cubic_index < remaining_segment_count ? 1 : 0);
+		const int first_sample_index = cubic_index == 0 ? 0 : 1;
+		for (int sample_index = first_sample_index; sample_index <= cubic_segment_count; sample_index++) {
+			const real_t t = (real_t)sample_index / cubic_segment_count;
+			Vector2 point;
+			if (sample_index == 0) {
+				point = cubic.from;
+			} else if (sample_index == cubic_segment_count) {
+				point = cubic.to;
+			} else {
+				point = compute_smooth_cubic_point(cubic, t);
+			}
+			Vector2 derivative = compute_smooth_cubic_derivative(cubic, t);
+			if (derivative.is_zero_approx()) {
+				if (cubic_index == 0) {
+					derivative = compute_smooth_cubic_derivative(cubics[1], (real_t)0.0);
+				} else if (cubic_index == 2) {
+					derivative = compute_smooth_cubic_derivative(cubics[1], (real_t)1.0);
+				} else {
+					Vector2 previous_derivative = compute_smooth_cubic_derivative(cubics[0], (real_t)1.0);
+					Vector2 next_derivative = compute_smooth_cubic_derivative(cubics[2], (real_t)0.0);
+					if (!previous_derivative.is_zero_approx()) {
+						previous_derivative.normalize();
+					}
+					if (!next_derivative.is_zero_approx()) {
+						next_derivative.normalize();
+					}
+					derivative = previous_derivative + next_derivative;
+					if (!derivative.is_zero_approx()) {
+						derivative.normalize();
+					}
+				}
+			}
+			r_samples.push_back({ point, derivative });
+		}
+	}
+}
+
+inline Vector<SmoothContourSample> build_smooth_contour_samples(const SmoothRectGeometry &p_geometry, real_t p_corner_smoothing, int p_corner_detail) {
+	Vector<SmoothContourSample> samples;
+	const real_t width = p_geometry.right - p_geometry.left;
+	const real_t height = p_geometry.bottom - p_geometry.top;
+	real_t horizontal_influence[4];
+	real_t vertical_influence[4];
+	for (int corner = 0; corner < 4; corner++) {
+		const real_t desired_influence = ((real_t)1.0 + p_corner_smoothing) * p_geometry.corner_radius[corner];
+		horizontal_influence[corner] = desired_influence;
+		vertical_influence[corner] = desired_influence;
+	}
+	adapt_smooth_side_influence(CORNER_TOP_LEFT, CORNER_TOP_RIGHT, width, horizontal_influence);
+	adapt_smooth_side_influence(CORNER_BOTTOM_LEFT, CORNER_BOTTOM_RIGHT, width, horizontal_influence);
+	adapt_smooth_side_influence(CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, height, vertical_influence);
+	adapt_smooth_side_influence(CORNER_TOP_RIGHT, CORNER_BOTTOM_RIGHT, height, vertical_influence);
+	const SmoothRectCorner top_left = make_smooth_rect_corner(Vector2(p_geometry.left, p_geometry.top), Vector2(0.0, 1.0), Vector2(1.0, 0.0), p_geometry.corner_radius[CORNER_TOP_LEFT], vertical_influence[CORNER_TOP_LEFT], horizontal_influence[CORNER_TOP_LEFT]);
+	const SmoothRectCorner top_right = make_smooth_rect_corner(Vector2(p_geometry.right, p_geometry.top), Vector2(-1.0, 0.0), Vector2(0.0, 1.0), p_geometry.corner_radius[CORNER_TOP_RIGHT], horizontal_influence[CORNER_TOP_RIGHT], vertical_influence[CORNER_TOP_RIGHT]);
+	const SmoothRectCorner bottom_right = make_smooth_rect_corner(Vector2(p_geometry.right, p_geometry.bottom), Vector2(0.0, -1.0), Vector2(-1.0, 0.0), p_geometry.corner_radius[CORNER_BOTTOM_RIGHT], vertical_influence[CORNER_BOTTOM_RIGHT], horizontal_influence[CORNER_BOTTOM_RIGHT]);
+	const SmoothRectCorner bottom_left = make_smooth_rect_corner(Vector2(p_geometry.left, p_geometry.bottom), Vector2(1.0, 0.0), Vector2(0.0, -1.0), p_geometry.corner_radius[CORNER_BOTTOM_LEFT], horizontal_influence[CORNER_BOTTOM_LEFT], vertical_influence[CORNER_BOTTOM_LEFT]);
+	const int reserved_corner_detail = MAX(p_corner_detail, 3);
+	samples.reserve((reserved_corner_detail + 1) * 4);
+	append_smooth_corner_samples(samples, top_right, p_corner_detail);
+	append_smooth_corner_samples(samples, bottom_right, p_corner_detail);
+	append_smooth_corner_samples(samples, bottom_left, p_corner_detail);
+	append_smooth_corner_samples(samples, top_left, p_corner_detail);
+	return samples;
+}
+
+inline Vector<SmoothContourSample> apply_offset(const Vector<SmoothContourSample> &p_samples, const Rect2 &p_source_rect, const Rect2 &p_target_rect) {
+	Vector<SmoothContourSample> offset_samples = p_samples;
+	const Vector2 source_end = p_source_rect.get_end();
+	const Vector2 target_end = p_target_rect.get_end();
+	const real_t left_offset = p_target_rect.position.x - p_source_rect.position.x;
+	const real_t top_offset = p_target_rect.position.y - p_source_rect.position.y;
+	const real_t right_offset = source_end.x - target_end.x;
+	const real_t bottom_offset = source_end.y - target_end.y;
+	for (int sample_index = 0; sample_index < p_samples.size(); sample_index++) {
+		const SmoothContourSample &sample = p_samples[sample_index];
+		SmoothContourSample &offset_sample = offset_samples.write[sample_index];
+		const bool on_left = Math::is_equal_approx(sample.point.x, p_source_rect.position.x);
+		const bool on_right = Math::is_equal_approx(sample.point.x, source_end.x);
+		const bool on_top = Math::is_equal_approx(sample.point.y, p_source_rect.position.y);
+		const bool on_bottom = Math::is_equal_approx(sample.point.y, source_end.y);
+		if ((on_left || on_right) && (on_top || on_bottom)) {
+			offset_sample.point = Vector2(on_left ? p_target_rect.position.x : target_end.x, on_top ? p_target_rect.position.y : target_end.y);
+			continue;
+		}
+		const Vector2 inward_normal = Vector2(-sample.derivative.y, sample.derivative.x).normalized();
+		const real_t horizontal_offset = inward_normal.x >= 0.0 ? left_offset : right_offset;
+		const real_t vertical_offset = inward_normal.y >= 0.0 ? top_offset : bottom_offset;
+		const Vector2 axis_scaled_normal(inward_normal.x * horizontal_offset, inward_normal.y * vertical_offset);
+		const real_t offset_distance = axis_scaled_normal.dot(inward_normal);
+		offset_sample.point = sample.point + inward_normal * offset_distance;
+	}
+	return offset_samples;
+}
+
+inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color> &colors, const Rect2 &style_rect, const real_t corner_radius[4], const Rect2 &ring_rect, const Rect2 &inner_rect, const Color &inner_color, const Color &outer_color, real_t corner_smoothing, const int corner_detail, const Vector2 &skew, bool is_filled = false) {
+	const SmoothRectGeometry geometry = make_smooth_rect_geometry(style_rect, corner_radius);
+	const Vector<SmoothContourSample> samples = build_smooth_contour_samples(geometry, corner_smoothing, corner_detail);
+	const int sample_count = samples.size();
+	if (sample_count < 3) {
+		return;
+	}
+	const bool draw_border = !is_filled;
+	const Vector<SmoothContourSample> inner_samples = apply_offset(samples, style_rect, inner_rect);
+	Vector<SmoothContourSample> ring_samples;
+	if (draw_border) {
+		ring_samples = apply_offset(samples, style_rect, ring_rect);
+	}
+	const int vert_offset = verts.size();
+	const int colors_size = colors.size();
+	const int verts_size = verts.size();
+	const int new_verts_amount = sample_count * (draw_border ? 2 : 1);
+	colors.resize(colors_size + new_verts_amount);
+	verts.resize(verts_size + new_verts_amount);
+	Color *colors_ptr = colors.ptrw();
+	Vector2 *verts_ptr = verts.ptrw();
+	const Point2 style_rect_center = style_rect.get_center();
+	for (int sample_index = 0; sample_index < sample_count; sample_index++) {
+		const Vector2 &inner_point = inner_samples[sample_index].point;
+		const int vertex_index = draw_border ? sample_index * 2 : sample_index;
+		const float inner_x_skew = -skew.x * (inner_point.y - style_rect_center.y);
+		const float inner_y_skew = -skew.y * (inner_point.x - style_rect_center.x);
+		verts_ptr[verts_size + vertex_index] = Vector2(inner_point.x + inner_x_skew, inner_point.y + inner_y_skew);
+		colors_ptr[colors_size + vertex_index] = inner_color;
+		if (draw_border) {
+			const Vector2 &ring_point = ring_samples[sample_index].point;
+			const float ring_x_skew = -skew.x * (ring_point.y - style_rect_center.y);
+			const float ring_y_skew = -skew.y * (ring_point.x - style_rect_center.x);
+			verts_ptr[verts_size + vertex_index + 1] = Vector2(ring_point.x + ring_x_skew, ring_point.y + ring_y_skew);
+			colors_ptr[colors_size + vertex_index + 1] = outer_color;
+		}
+	}
+	if (draw_border) {
+		const int ring_vert_count = sample_count * 2;
+		const int indices_size = indices.size();
+		indices.resize(indices_size + ring_vert_count * 3);
+		int *indices_ptr = indices.ptrw();
+		for (int vertex_index = 0; vertex_index < ring_vert_count; vertex_index++) {
+			const int index_offset = indices_size + vertex_index * 3;
+			indices_ptr[index_offset] = vert_offset + vertex_index % ring_vert_count;
+			indices_ptr[index_offset + 1] = vert_offset + (vertex_index + 2) % ring_vert_count;
+			indices_ptr[index_offset + 2] = vert_offset + (vertex_index + 1) % ring_vert_count;
+		}
+		return;
+	}
+	const int triangle_count = sample_count - 2;
+	const int indices_size = indices.size();
+	indices.resize(indices_size + triangle_count * 3);
+	int *indices_ptr = indices.ptrw();
+	for (int triangle_index = 0; triangle_index < triangle_count; triangle_index++) {
+		const int index_offset = indices_size + triangle_index * 3;
+		indices_ptr[index_offset] = vert_offset;
+		indices_ptr[index_offset + 1] = vert_offset + triangle_index + 1;
+		indices_ptr[index_offset + 2] = vert_offset + triangle_index + 2;
+	}
+}
+
+} // namespace style_box_flat_smooth
+
+inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color> &colors, const Rect2 &style_rect, const real_t corner_radius[4], const Rect2 &ring_rect, const Rect2 &inner_rect, const Color &inner_color, const Color &outer_color, real_t corner_smoothing, const int corner_detail, const Vector2 &skew, bool is_filled = false) {
+	if (corner_smoothing <= CMP_EPSILON) {
+		style_box_flat_legacy::draw_rounded_rectangle(verts, indices, colors, style_rect, corner_radius, ring_rect, inner_rect, inner_color, outer_color, corner_detail, skew, is_filled);
+		return;
+	}
+	style_box_flat_smooth::draw_rounded_rectangle(verts, indices, colors, style_rect, corner_radius, ring_rect, inner_rect, inner_color, outer_color, corner_smoothing, corner_detail, skew, is_filled);
 }
 
 Rect2 StyleBoxFlat::get_draw_rect(const Rect2 &p_rect) const {
@@ -467,7 +830,6 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	if (Math::is_zero_approx(style_rect.size.width) || Math::is_zero_approx(style_rect.size.height)) {
 		return;
 	}
-
 	const bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
 	// Only enable antialiasing if it is actually needed. This improves performance
 	// and maximizes sharpness for non-skewed StyleBoxes with sharp corners.
@@ -536,24 +898,24 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 		Color shadow_color_transparent = Color(shadow_color.r, shadow_color.g, shadow_color.b, 0);
 
 		draw_rounded_rectangle(verts, indices, colors, shadow_inner_rect, adapted_corner,
-				shadow_rect, shadow_inner_rect, shadow_color, shadow_color_transparent, corner_detail, skew);
+				shadow_rect, shadow_inner_rect, shadow_color, shadow_color_transparent, corner_smoothing, corner_detail, skew);
 
 		if (draw_center) {
 			draw_rounded_rectangle(verts, indices, colors, shadow_inner_rect, adapted_corner,
-					shadow_inner_rect, shadow_inner_rect, shadow_color, shadow_color, corner_detail, skew, true);
+					shadow_inner_rect, shadow_inner_rect, shadow_color, shadow_color, corner_smoothing, corner_detail, skew, true);
 		}
 	}
 
 	// Create border (no AA).
 	if (draw_border && !aa_on) {
 		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-				border_style_rect, infill_rect, border_color_inner, border_color, corner_detail, skew);
+				border_style_rect, infill_rect, border_color_inner, border_color, corner_smoothing, corner_detail, skew);
 	}
 
 	// Create infill (no AA).
 	if (draw_center && (!aa_on || blend_on)) {
 		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-				infill_rect, infill_rect, bg_color, bg_color, corner_detail, skew, true);
+				infill_rect, infill_rect, bg_color, bg_color, corner_smoothing, corner_detail, skew, true);
 	}
 
 	if (aa_on) {
@@ -595,13 +957,13 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 			if (!blend_on) {
 				// Create center fill, not antialiased yet
 				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_rect_aa_colored, infill_rect_aa_colored, bg_color, bg_color, corner_detail, skew, true);
+						infill_rect_aa_colored, infill_rect_aa_colored, bg_color, bg_color, corner_smoothing, corner_detail, skew, true);
 			}
 			if (!blend_on || !draw_border) {
 				Color alpha_bg = Color(bg_color.r, bg_color.g, bg_color.b, 0);
 				// Add antialiasing on the center fill
 				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_rect_aa_transparent, infill_rect_aa_colored, bg_color, alpha_bg, corner_detail, skew);
+						infill_rect_aa_transparent, infill_rect_aa_colored, bg_color, alpha_bg, corner_smoothing, corner_detail, skew);
 			}
 		}
 
@@ -621,15 +983,15 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 			// Create border ring, not antialiased yet
 			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-					outer_rect_aa_colored, ((blend_on) ? infill_rect : inner_rect_aa_colored), border_color_inner, border_color, corner_detail, skew);
+					outer_rect_aa_colored, ((blend_on) ? infill_rect : inner_rect_aa_colored), border_color_inner, border_color, corner_smoothing, corner_detail, skew);
 			if (!blend_on) {
 				// Add antialiasing on the ring inner border
 				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-						inner_rect_aa_colored, inner_rect_aa_transparent, border_color_blend, border_color, corner_detail, skew);
+						inner_rect_aa_colored, inner_rect_aa_transparent, border_color_blend, border_color, corner_smoothing, corner_detail, skew);
 			}
 			// Add antialiasing on the ring outer border
 			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-					outer_rect_aa_transparent, outer_rect_aa_colored, border_color, border_color_alpha, corner_detail, skew);
+					outer_rect_aa_transparent, outer_rect_aa_colored, border_color, border_color_alpha, corner_smoothing, corner_detail, skew);
 		}
 	}
 
@@ -667,6 +1029,9 @@ void StyleBoxFlat::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_corner_radius", "corner", "radius"), &StyleBoxFlat::set_corner_radius);
 	ClassDB::bind_method(D_METHOD("get_corner_radius", "corner"), &StyleBoxFlat::get_corner_radius);
+
+	ClassDB::bind_method(D_METHOD("set_corner_smoothing", "smoothing"), &StyleBoxFlat::set_corner_smoothing);
+	ClassDB::bind_method(D_METHOD("get_corner_smoothing"), &StyleBoxFlat::get_corner_smoothing);
 
 	ClassDB::bind_method(D_METHOD("set_expand_margin", "margin", "size"), &StyleBoxFlat::set_expand_margin);
 	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxFlat::set_expand_margin_all);
@@ -712,11 +1077,13 @@ void StyleBoxFlat::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "border_blend"), "set_border_blend", "get_border_blend");
 
-	ADD_GROUP("Corner Radius", "corner_radius_");
+	ADD_GROUP("Corner", "corner_");
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_top_left", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_TOP_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_top_right", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_TOP_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_bottom_right", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_BOTTOM_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "corner_radius_bottom_left", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_corner_radius", "get_corner_radius", CORNER_BOTTOM_LEFT);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "corner_smoothing", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_corner_smoothing", "get_corner_smoothing");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "corner_detail", PROPERTY_HINT_RANGE, "1,20,1"), "set_corner_detail", "get_corner_detail");
 
