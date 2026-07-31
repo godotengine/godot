@@ -781,6 +781,14 @@ Variant SceneState::make_local_resource(Variant &p_value, const SceneState::Node
 
 	Node *base = (p_i == 0 || p_node->is_instance()) ? p_node : (p_node->get_owner() ? p_node->get_owner() : p_ret_nodes[0]);
 
+	// If the resource override is an external file, do not duplicate it into an anonymous subresource.
+	// Configure it for the local scene and keep it pointing to its external file.
+	if (p_edit_state == GEN_EDIT_STATE_MAIN || res->get_path().is_resource_file()) {
+		res->configure_for_local_scene(base, p_resources_local_to_scenes[base]);
+		p_resources_local_to_scenes[base][res] = res;
+		return res;
+	}
+
 	if (p_node_data.type == TYPE_INSTANTIATED) { // For the (root) nodes of sub-scenes, treat them as parts of the sub-scenes.
 		return get_remap_resource(res, p_resources_local_to_scenes, p_node->get(p_sname), base);
 	}
@@ -789,12 +797,6 @@ Variant SceneState::make_local_resource(Variant &p_value, const SceneState::Node
 	HashMap<Ref<Resource>, Ref<Resource>>::Iterator R = p_resources_local_to_scenes[base].find(res);
 	if (R) {
 		return R->value;
-	}
-
-	if (p_edit_state == GEN_EDIT_STATE_MAIN) { // For the main scene, use the resource as is
-		res->configure_for_local_scene(base, p_resources_local_to_scenes[base]);
-		p_resources_local_to_scenes[base][res] = res;
-		return res;
 	}
 
 	// For instances, a copy must be made.
