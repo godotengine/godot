@@ -348,7 +348,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 		if (!edited_scene->get_scene_file_path().is_empty()) {
 			if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
 				accept->set_text(vformat(TTR("Cannot instantiate the scene '%s' because the current scene exists within one of its nodes."), p_files[i]));
-				accept->popup_centered();
+				callable_mp((Window *)accept, &Window::popup_centered).call_deferred(Size2i());
 				error = true;
 				break;
 			}
