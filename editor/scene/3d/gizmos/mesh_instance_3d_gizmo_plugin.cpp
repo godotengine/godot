@@ -34,7 +34,6 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/soft_body_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
-#include "scene/resources/3d/tapered_capsule_mesh.h"
 
 bool MeshInstance3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<MeshInstance3D>(p_spatial) != nullptr && Object::cast_to<SoftBody3D>(p_spatial) == nullptr;
@@ -56,19 +55,15 @@ String MeshInstance3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_giz
 	MeshInstance3D *mesh = Object::cast_to<MeshInstance3D>(p_gizmo->get_node_3d());
 
 	if (Object::cast_to<CapsuleMesh>(*mesh->get_mesh())) {
-		return helper->capsule_get_handle_name(p_id);
+		return helper->tapered_capsule_cylinder_get_handle_name(p_id, false);
 	}
 
 	if (Object::cast_to<CylinderMesh>(*mesh->get_mesh())) {
-		return helper->cone_frustum_get_handle_name(p_id);
+		return helper->tapered_capsule_cylinder_get_handle_name(p_id, true);
 	}
 
 	if (Object::cast_to<BoxMesh>(*mesh->get_mesh())) {
 		return helper->box_get_handle_name(p_id);
-	}
-
-	if (Object::cast_to<TaperedCapsuleMesh>(*mesh->get_mesh())) {
-		return helper->tapered_capsule_cylinder_get_handle_name(p_id);
 	}
 
 	return "";
@@ -79,7 +74,7 @@ Variant MeshInstance3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_g
 
 	const Ref<CapsuleMesh> capsule_mesh = mesh->get_mesh();
 	if (capsule_mesh.is_valid()) {
-		return Vector2(capsule_mesh->get_radius(), capsule_mesh->get_height());
+		return Vector3(capsule_mesh->get_top_radius(), capsule_mesh->get_bottom_radius(), capsule_mesh->get_mid_height());
 	}
 
 	const Ref<CylinderMesh> cylinder_mesh = mesh->get_mesh();
@@ -90,11 +85,6 @@ Variant MeshInstance3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_g
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
 	if (box_mesh.is_valid()) {
 		return box_mesh->get_size();
-	}
-
-	const Ref<TaperedCapsuleMesh> tapered_capsule_mesh = mesh->get_mesh();
-	if (tapered_capsule_mesh.is_valid()) {
-		return Vector3(tapered_capsule_mesh->get_top_radius(), tapered_capsule_mesh->get_bottom_radius(), tapered_capsule_mesh->get_mid_height());
 	}
 
 	return Variant();
@@ -112,23 +102,24 @@ void MeshInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int
 
 	const Ref<CapsuleMesh> capsule_mesh = mesh->get_mesh();
 	if (capsule_mesh.is_valid()) {
-		real_t height, radius;
-		Vector3 position;
-		helper->capsule_set_handle(segment, p_id, height, radius, position);
-		capsule_mesh->set_height(height);
-		capsule_mesh->set_radius(radius);
-		mesh->set_global_position(position);
+		real_t top_radius = capsule_mesh->get_top_radius();
+		real_t bottom_radius = capsule_mesh->get_bottom_radius();
+		real_t mid_height = capsule_mesh->get_mid_height();
+		helper->tapered_capsule_set_handle(segment, p_id, top_radius, bottom_radius, mid_height);
+		capsule_mesh->set_top_radius(top_radius);
+		capsule_mesh->set_bottom_radius(bottom_radius);
+		capsule_mesh->set_mid_height(mid_height);
 	}
 
 	const Ref<CylinderMesh> cylinder_mesh = mesh->get_mesh();
 	if (cylinder_mesh.is_valid()) {
-		real_t height, radius_top, radius_bottom;
-		Vector3 position;
-		helper->cone_frustum_set_handle(segment, p_id, height, radius_top, radius_bottom, position);
+		real_t top_radius = cylinder_mesh->get_top_radius();
+		real_t bottom_radius = cylinder_mesh->get_bottom_radius();
+		real_t height = cylinder_mesh->get_height();
+		helper->tapered_cylinder_set_handle(segment, p_id, top_radius, bottom_radius, height);
+		cylinder_mesh->set_top_radius(top_radius);
+		cylinder_mesh->set_bottom_radius(bottom_radius);
 		cylinder_mesh->set_height(height);
-		cylinder_mesh->set_top_radius(radius_top);
-		cylinder_mesh->set_bottom_radius(radius_bottom);
-		mesh->set_global_position(position);
 	}
 
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
@@ -138,17 +129,6 @@ void MeshInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int
 		box_mesh->set_size(box_size);
 		mesh->set_global_position(position);
 	}
-
-	const Ref<TaperedCapsuleMesh> tapered_capsule_mesh = mesh->get_mesh();
-	if (tapered_capsule_mesh.is_valid()) {
-		real_t top_radius = tapered_capsule_mesh->get_top_radius();
-		real_t bottom_radius = tapered_capsule_mesh->get_bottom_radius();
-		real_t mid_height = tapered_capsule_mesh->get_mid_height();
-		helper->tapered_capsule_set_handle(segment, p_id, top_radius, bottom_radius, mid_height);
-		tapered_capsule_mesh->set_top_radius(top_radius);
-		tapered_capsule_mesh->set_bottom_radius(bottom_radius);
-		tapered_capsule_mesh->set_mid_height(mid_height);
-	}
 }
 
 void MeshInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
@@ -156,22 +136,17 @@ void MeshInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, 
 
 	const Ref<CapsuleMesh> capsule_mesh = mesh->get_mesh();
 	if (capsule_mesh.is_valid()) {
-		helper->cylinder_commit_handle(p_id, TTR("Change Capsule Mesh Radius"), TTR("Change Capsule Mesh Height"), p_cancel, mesh, *capsule_mesh, *capsule_mesh);
+		helper->tapered_capsule_commit_handle(p_id, p_cancel, *capsule_mesh);
 	}
 
 	const Ref<CylinderMesh> cylinder_mesh = mesh->get_mesh();
 	if (cylinder_mesh.is_valid()) {
-		helper->cone_frustum_commit_handle(p_id, TTR("Change Cylinder Mesh Radius"), TTR("Change Cylinder Mesh Height"), p_cancel, mesh, *cylinder_mesh, *cylinder_mesh, *cylinder_mesh);
+		helper->tapered_cylinder_commit_handle(p_id, p_cancel, *cylinder_mesh);
 	}
 
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
 	if (box_mesh.is_valid()) {
 		helper->box_commit_handle(TTR("Change Box Mesh Size"), p_cancel, mesh, *box_mesh);
-	}
-
-	const Ref<TaperedCapsuleMesh> tapered_capsule_mesh = mesh->get_mesh();
-	if (tapered_capsule_mesh.is_valid()) {
-		helper->tapered_capsule_commit_handle(p_id, p_cancel, *tapered_capsule_mesh);
 	}
 }
 
@@ -210,25 +185,19 @@ void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	const Ref<CapsuleMesh> capsule_mesh = mesh->get_mesh();
 	if (capsule_mesh.is_valid()) {
-		const Vector<Vector3> handles = helper->capsule_get_handles(capsule_mesh->get_height(), capsule_mesh->get_radius());
+		Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(capsule_mesh->get_top_radius(), capsule_mesh->get_bottom_radius(), capsule_mesh->get_mid_height(), false);
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
 	const Ref<CylinderMesh> cylinder_mesh = mesh->get_mesh();
 	if (cylinder_mesh.is_valid()) {
-		const Vector<Vector3> handles = helper->cone_frustum_get_handles(cylinder_mesh->get_height(), cylinder_mesh->get_top_radius(), cylinder_mesh->get_bottom_radius());
+		const Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(cylinder_mesh->get_top_radius(), cylinder_mesh->get_bottom_radius(), cylinder_mesh->get_height(), true);
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
 	const Ref<BoxMesh> box_mesh = mesh->get_mesh();
 	if (box_mesh.is_valid()) {
 		const Vector<Vector3> handles = helper->box_get_handles(box_mesh->get_size());
-		p_gizmo->add_handles(handles, handles_material);
-	}
-
-	const Ref<TaperedCapsuleMesh> tapered_capsule_mesh = mesh->get_mesh();
-	if (tapered_capsule_mesh.is_valid()) {
-		Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(tapered_capsule_mesh->get_top_radius(), tapered_capsule_mesh->get_bottom_radius(), tapered_capsule_mesh->get_mid_height());
 		p_gizmo->add_handles(handles, handles_material);
 	}
 }

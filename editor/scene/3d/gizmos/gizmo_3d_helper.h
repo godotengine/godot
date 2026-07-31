@@ -87,8 +87,15 @@ public:
 
 	// Tapered Capsule and Cylinder
 
-	Vector<Vector3> tapered_capsule_cylinder_get_handles(real_t p_top_radius, real_t p_bottom_radius, real_t p_height);
-	String tapered_capsule_cylinder_get_handle_name(int p_id);
+	enum tapered_revolution_handle {
+		RADIUS_TOP,
+		RADIUS_BOTTOM,
+		RADIUS,
+		HEIGHT,
+	};
+
+	Vector<Vector3> tapered_capsule_cylinder_get_handles(real_t p_top_radius, real_t p_bottom_radius, real_t p_height, bool cylinder);
+	String tapered_capsule_cylinder_get_handle_name(int p_id, bool cylinder);
 
 	// Tapered capsule
 	void tapered_capsule_set_handle(const Vector3 p_segment[2], int p_id, real_t &r_top_radius, real_t &r_bottom_radius, real_t &r_mid_height);

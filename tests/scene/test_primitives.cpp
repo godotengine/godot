@@ -53,8 +53,8 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 	}
 
 	SUBCASE("[SceneTree][Primitive][Capsule] Set properties of the capsule and get them with accessor methods") {
-		capsule->set_height(7.1f);
 		capsule->set_radius(1.3f);
+		capsule->set_height(7.1f);
 		capsule->set_radial_segments(16);
 		capsule->set_rings(32);
 
