@@ -89,7 +89,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
 
 		Vector2 gpoint = mb->get_position();
-		Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
+		Vector2 cpoint = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
 		cpoint = node->to_local(node->get_viewport()->get_popup_base_transform().affine_inverse().xform(cpoint));
 
 		if (mb->is_pressed() && action == ACTION_NONE) {
@@ -378,7 +378,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			// Handle point/control movement.
 			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
 			Vector2 gpoint = mm->get_position();
-			Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
+			Vector2 cpoint = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
 			cpoint = node->to_local(node->get_viewport()->get_popup_base_transform().affine_inverse().xform(cpoint));
 
 			Ref<Curve2D> curve = node->get_curve();

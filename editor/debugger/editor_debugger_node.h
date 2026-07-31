@@ -103,6 +103,7 @@ private:
 
 	bool inspect_edited_object_wait = false;
 	float inspect_edited_object_timeout = 0;
+	bool clear_remote_selection = true;
 	EditorDebuggerTree *remote_scene_tree = nullptr;
 	bool remote_scene_tree_wait = false;
 	float remote_scene_tree_timeout = 0.0;
