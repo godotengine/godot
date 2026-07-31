@@ -1794,7 +1794,7 @@ bool CodeEdit::_fold_line(int p_line) {
 					end_line = i;
 					continue;
 				}
-				if (is_in_string(i) == -1 && is_in_comment(i) == -1) {
+				if ((is_in_string(i) == -1 && is_in_comment(i) == -1) || (can_fold_line(i) && get_indent_level(i) == start_indent)) {
 					break;
 				}
 			}
