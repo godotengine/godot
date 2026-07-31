@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "tab_bar.h"
+#include "tab_bar.compat.inc"
 
 #include "core/input/input.h"
 #include "core/object/callable_mp.h"
@@ -343,7 +344,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				set_process_internal(true);
 			}
-			if (is_layout_rtl() ? select_previous_available() : select_next_available()) {
+			if (is_layout_rtl() ? select_previous_available(false) : select_next_available(false)) {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_left", true)) {
@@ -353,7 +354,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				set_process_internal(true);
 			}
-			if (is_layout_rtl() ? select_next_available() : select_previous_available()) {
+			if (is_layout_rtl() ? select_next_available(false) : select_previous_available(false)) {
 				accept_event();
 			}
 		}
@@ -438,11 +439,11 @@ void TabBar::_notification(int p_what) {
 			if (gamepad_event_delay_ms <= 0) {
 				gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
 				if (input->is_action_pressed("ui_right")) {
-					is_layout_rtl() ? select_previous_available() : select_next_available();
+					is_layout_rtl() ? select_previous_available(false) : select_next_available(false);
 				}
 
 				if (input->is_action_pressed("ui_left")) {
-					is_layout_rtl() ? select_next_available() : select_previous_available();
+					is_layout_rtl() ? select_next_available(false) : select_previous_available(false);
 				}
 			}
 		} break;
@@ -869,15 +870,12 @@ int TabBar::get_hovered_tab() const {
 	return hover;
 }
 
-int TabBar::get_previous_available(int p_idx) const {
+int TabBar::get_previous_available(int p_idx, bool p_wrap) const {
 	ERR_FAIL_COND_V(p_idx < -1 || p_idx > get_tab_count(), -1);
 	const int idx = p_idx == -1 ? get_current_tab() : p_idx;
-	const int offset_end = idx + 1;
+	const int offset_end = p_wrap ? get_tab_count() : idx + 1;
 	for (int i = 1; i < offset_end; i++) {
-		int target_tab = idx - i;
-		if (target_tab < 0) {
-			target_tab += get_tab_count();
-		}
+		const int target_tab = (idx - i + get_tab_count()) % get_tab_count();
 		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
 			return target_tab;
 		}
@@ -885,12 +883,12 @@ int TabBar::get_previous_available(int p_idx) const {
 	return -1;
 }
 
-int TabBar::get_next_available(int p_idx) const {
+int TabBar::get_next_available(int p_idx, bool p_wrap) const {
 	ERR_FAIL_COND_V(p_idx < -1 || p_idx > get_tab_count(), -1);
 	const int idx = p_idx == -1 ? get_current_tab() : p_idx;
-	const int offset_end = get_tab_count() - idx;
+	const int offset_end = get_tab_count() - (p_wrap ? 0 : idx);
 	for (int i = 1; i < offset_end; i++) {
-		int target_tab = (idx + i) % get_tab_count();
+		const int target_tab = (idx + i) % get_tab_count();
 		if (!is_tab_disabled(target_tab) && !is_tab_hidden(target_tab)) {
 			return target_tab;
 		}
@@ -898,16 +896,16 @@ int TabBar::get_next_available(int p_idx) const {
 	return -1;
 }
 
-bool TabBar::select_previous_available() {
-	const int previous_available = get_previous_available();
+bool TabBar::select_previous_available(bool p_wrap) {
+	const int previous_available = get_previous_available(get_current_tab(), p_wrap);
 	if (previous_available != -1) {
 		set_current_tab(previous_available);
 	}
 	return previous_available != -1;
 }
 
-bool TabBar::select_next_available() {
-	const int next_available = get_next_available();
+bool TabBar::select_next_available(bool p_wrap) {
+	const int next_available = get_next_available(get_current_tab(), p_wrap);
 	if (next_available != -1) {
 		set_current_tab(next_available);
 	}
@@ -2258,7 +2256,7 @@ void TabBar::set_deselect_enabled(bool p_enabled) {
 	}
 	deselect_enabled = p_enabled;
 	if (!deselect_enabled && current == -1 && !tabs.is_empty()) {
-		select_next_available();
+		select_next_available(false);
 	}
 }
 
@@ -2272,8 +2270,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabBar::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabBar::get_current_tab);
 	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabBar::get_previous_tab);
-	ClassDB::bind_method(D_METHOD("select_previous_available"), &TabBar::select_previous_available);
-	ClassDB::bind_method(D_METHOD("select_next_available"), &TabBar::select_next_available);
+	ClassDB::bind_method(D_METHOD("select_previous_available", "wrap"), &TabBar::select_previous_available, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("select_next_available", "wrap"), &TabBar::select_next_available, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabBar::set_tab_title);
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabBar::get_tab_title);
 	ClassDB::bind_method(D_METHOD("set_tab_tooltip", "tab_idx", "tooltip"), &TabBar::set_tab_tooltip);

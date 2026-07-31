@@ -415,14 +415,10 @@ void EditorSceneTabs::shortcut_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if ((k.is_valid() && k->is_pressed() && !k->is_echo()) || Object::cast_to<InputEventShortcut>(*p_event)) {
 		if (ED_IS_SHORTCUT("editor/next_tab", p_event)) {
-			int next_tab = EditorNode::get_editor_data().get_edited_scene() + 1;
-			next_tab %= EditorNode::get_editor_data().get_edited_scene_count();
-			set_current_tab(next_tab);
+			scene_tabs->select_next_available(true);
 		}
 		if (ED_IS_SHORTCUT("editor/prev_tab", p_event)) {
-			int next_tab = EditorNode::get_editor_data().get_edited_scene() - 1;
-			next_tab = next_tab >= 0 ? next_tab : EditorNode::get_editor_data().get_edited_scene_count() - 1;
-			set_current_tab(next_tab);
+			scene_tabs->select_previous_available(true);
 		}
 	}
 }

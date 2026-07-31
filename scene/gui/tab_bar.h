@@ -221,6 +221,11 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _select_previous_available_bind_compat_115349();
+	bool _select_next_available_bind_compat_115349();
+	static void _bind_compatibility_methods();
+#endif
 
 	Variant get_drag_data(const Point2 &p_point) override;
 	bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
@@ -303,11 +308,11 @@ public:
 	int get_previous_tab() const;
 	int get_hovered_tab() const;
 
-	int get_previous_available(int p_idx = -1) const;
-	int get_next_available(int p_idx = -1) const;
+	int get_previous_available(int p_idx = -1, bool p_wrap = false) const;
+	int get_next_available(int p_idx = -1, bool p_wrap = false) const;
 
-	bool select_previous_available();
-	bool select_next_available();
+	bool select_previous_available(bool p_wrap = false);
+	bool select_next_available(bool p_wrap = false);
 
 	void set_tab_offset(int p_offset);
 	int get_tab_offset() const;

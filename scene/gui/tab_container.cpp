@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "tab_container.h"
+#include "tab_container.compat.inc"
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -543,9 +544,9 @@ void TabContainer::_on_tab_visibility_changed(Control *p_child) {
 			p_child->show();
 		} else {
 			// Set a different tab to be the current tab.
-			bool selected = select_next_available();
+			bool selected = select_next_available(false);
 			if (!selected) {
-				selected = select_previous_available();
+				selected = select_previous_available(false);
 			}
 			if (!selected) {
 				// No available tabs, deselect.
@@ -708,12 +709,12 @@ int TabContainer::get_previous_tab() const {
 	return tab_bar->get_previous_tab();
 }
 
-bool TabContainer::select_previous_available() {
-	return tab_bar->select_previous_available();
+bool TabContainer::select_previous_available(bool p_wrap) {
+	return tab_bar->select_previous_available(p_wrap);
 }
 
-bool TabContainer::select_next_available() {
-	return tab_bar->select_next_available();
+bool TabContainer::select_next_available(bool p_wrap) {
+	return tab_bar->select_next_available(p_wrap);
 }
 
 void TabContainer::set_deselect_enabled(bool p_enabled) {
@@ -1210,8 +1211,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabContainer::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabContainer::get_current_tab);
 	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
-	ClassDB::bind_method(D_METHOD("select_previous_available"), &TabContainer::select_previous_available);
-	ClassDB::bind_method(D_METHOD("select_next_available"), &TabContainer::select_next_available);
+	ClassDB::bind_method(D_METHOD("select_previous_available", "wrap"), &TabContainer::select_previous_available, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("select_next_available", "wrap"), &TabContainer::select_next_available, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_current_tab_control"), &TabContainer::get_current_tab_control);
 	ClassDB::bind_method(D_METHOD("get_tab_bar"), &TabContainer::get_tab_bar);
 	ClassDB::bind_method(D_METHOD("get_tab_control", "tab_idx"), &TabContainer::get_tab_control);
