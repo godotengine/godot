@@ -46,8 +46,6 @@
 #include "scene/resources/3d/height_map_shape_3d.h"
 #include "scene/resources/3d/separation_ray_shape_3d.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
-#include "scene/resources/3d/tapered_capsule_shape_3d.h"
-#include "scene/resources/3d/tapered_cylinder_shape_3d.h"
 #include "scene/resources/3d/world_boundary_shape_3d.h"
 
 CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {
@@ -121,15 +119,13 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
-		return helper->capsule_get_handle_name(p_id);
+		Ref<CapsuleShape3D> cs2 = s;
+		return helper->tapered_capsule_cylinder_get_handle_name(p_id, false);
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
-		return helper->cylinder_get_handle_name(p_id);
-	}
-
-	if (Object::cast_to<TaperedCapsuleShape3D>(*s) || Object::cast_to<TaperedCylinderShape3D>(*s)) {
-		return helper->tapered_capsule_cylinder_get_handle_name(p_id);
+		Ref<CapsuleShape3D> cs2 = s;
+		return helper->tapered_capsule_cylinder_get_handle_name(p_id, true);
 	}
 
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
@@ -159,22 +155,12 @@ Variant CollisionShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Ref<CapsuleShape3D> cs2 = s;
-		return Vector2(cs2->get_radius(), cs2->get_height());
+		return Vector3(cs2->get_top_radius(), cs2->get_bottom_radius(), cs2->get_mid_height());
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Ref<CylinderShape3D> cs2 = s;
-		return Vector2(cs2->get_radius(), cs2->get_height());
-	}
-
-	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
-		Ref<TaperedCapsuleShape3D> tcs = s;
-		return Vector3(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_mid_height());
-	}
-
-	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
-		Ref<TaperedCylinderShape3D> tcs = s;
-		return Vector3(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_height());
+		return Vector3(cs2->get_top_radius(), cs2->get_bottom_radius(), cs2->get_height());
 	}
 
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
@@ -243,49 +229,24 @@ void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Ref<CapsuleShape3D> cs2 = s;
-
-		real_t height = cs2->get_height();
-		real_t radius = cs2->get_radius();
-		Vector3 position;
-		helper->capsule_set_handle(sg, p_id, height, radius, position);
-		cs2->set_height(height);
-		cs2->set_radius(radius);
-		cs->set_global_position(position);
+		real_t top_radius = cs2->get_top_radius();
+		real_t bottom_radius = cs2->get_bottom_radius();
+		real_t mid_height = cs2->get_mid_height();
+		helper->tapered_capsule_set_handle(sg, p_id, top_radius, bottom_radius, mid_height);
+		cs2->set_top_radius(top_radius);
+		cs2->set_bottom_radius(bottom_radius);
+		cs2->set_mid_height(mid_height);
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Ref<CylinderShape3D> cs2 = s;
-
+		real_t top_radius = cs2->get_top_radius();
+		real_t bottom_radius = cs2->get_bottom_radius();
 		real_t height = cs2->get_height();
-		real_t radius = cs2->get_radius();
-		Vector3 position;
-		helper->cylinder_set_handle(sg, p_id, height, radius, position);
-		cs2->set_height(height);
-		cs2->set_radius(radius);
-		cs->set_global_position(position);
-	}
-
-	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
-		Ref<TaperedCapsuleShape3D> tcs = s;
-
-		real_t top_radius = tcs->get_top_radius();
-		real_t bottom_radius = tcs->get_bottom_radius();
-		real_t mid_height = tcs->get_mid_height();
-		helper->tapered_capsule_set_handle(sg, p_id, top_radius, bottom_radius, mid_height);
-		tcs->set_top_radius(top_radius);
-		tcs->set_bottom_radius(bottom_radius);
-		tcs->set_mid_height(mid_height);
-	}
-	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
-		Ref<TaperedCylinderShape3D> tcs = s;
-
-		real_t top_radius = tcs->get_top_radius();
-		real_t bottom_radius = tcs->get_bottom_radius();
-		real_t height = tcs->get_height();
 		helper->tapered_cylinder_set_handle(sg, p_id, top_radius, bottom_radius, height);
-		tcs->set_top_radius(top_radius);
-		tcs->set_bottom_radius(bottom_radius);
-		tcs->set_height(height);
+		cs2->set_top_radius(top_radius);
+		cs2->set_bottom_radius(bottom_radius);
+		cs2->set_height(height);
 	}
 }
 
@@ -317,22 +278,12 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Ref<CapsuleShape3D> ss = s;
-		helper->cylinder_commit_handle(p_id, TTR("Change Capsule Shape Radius"), TTR("Change Capsule Shape Height"), p_cancel, cs, *ss, *ss);
+		helper->tapered_capsule_commit_handle(p_id, p_cancel, *ss);
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Ref<CylinderShape3D> ss = s;
-		helper->cylinder_commit_handle(p_id, TTR("Change Cylinder Shape Radius"), TTR("Change Cylinder Shape Height"), p_cancel, cs, *ss, *ss);
-	}
-
-	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
-		Ref<TaperedCapsuleShape3D> tcs = s;
-		helper->tapered_capsule_commit_handle(p_id, p_cancel, *tcs);
-	}
-
-	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
-		Ref<TaperedCylinderShape3D> tcs = s;
-		helper->tapered_cylinder_commit_handle(p_id, p_cancel, *tcs);
+		helper->tapered_cylinder_commit_handle(p_id, p_cancel, *ss);
 	}
 
 	if (Object::cast_to<SeparationRayShape3D>(*s)) {
@@ -486,171 +437,24 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Ref<CapsuleShape3D> cs2 = s;
-		float radius = cs2->get_radius();
-		float height = cs2->get_height();
-
-		// Number of points in an octant. So there will be 8 * points_in_octant points in total.
-		// This corresponds to the smoothness of the circle.
-		const uint32_t points_in_octant = 16;
-		const real_t octant_angle = Math::PI / 4;
-		const real_t inc = (Math::PI / (4 * points_in_octant));
-		const real_t radius_squared = radius * radius;
-		real_t r = 0;
-
-		Vector<Vector3> points;
-		// 4 vertical lines and 4 full circles.
-		points.resize(4 * 2 + 4 * 8 * points_in_octant * 2);
-		Vector3 *points_ptrw = points.ptrw();
-
-		uint32_t index = 0;
-		float y_value = height * 0.5 - radius;
-
-		// Vertical Lines.
-		points_ptrw[index++] = Vector3(0.f, y_value, radius);
-		points_ptrw[index++] = Vector3(0.f, -y_value, radius);
-		points_ptrw[index++] = Vector3(0.f, y_value, -radius);
-		points_ptrw[index++] = Vector3(0.f, -y_value, -radius);
-		points_ptrw[index++] = Vector3(radius, y_value, 0.f);
-		points_ptrw[index++] = Vector3(radius, -y_value, 0.f);
-		points_ptrw[index++] = Vector3(-radius, y_value, 0.f);
-		points_ptrw[index++] = Vector3(-radius, -y_value, 0.f);
-
-#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y) \
-	points_ptrw[index++] = Vector3(from_x, y, from_y); \
-	points_ptrw[index++] = Vector3(to_x, y, to_y); \
-	points_ptrw[index++] = Vector3(from_x, y, -from_y); \
-	points_ptrw[index++] = Vector3(to_x, y, -to_y); \
-	points_ptrw[index++] = Vector3(-from_x, y, from_y); \
-	points_ptrw[index++] = Vector3(-to_x, y, to_y); \
-	points_ptrw[index++] = Vector3(-from_x, y, -from_y); \
-	points_ptrw[index++] = Vector3(-to_x, y, -to_y);
-
-#define PUSH_QUARTER_XY(from_x, from_y, to_x, to_y, y) \
-	points_ptrw[index++] = Vector3(from_x, -from_y - y, 0); \
-	points_ptrw[index++] = Vector3(to_x, -to_y - y, 0); \
-	points_ptrw[index++] = Vector3(from_x, from_y + y, 0); \
-	points_ptrw[index++] = Vector3(to_x, to_y + y, 0); \
-	points_ptrw[index++] = Vector3(-from_x, -from_y - y, 0); \
-	points_ptrw[index++] = Vector3(-to_x, -to_y - y, 0); \
-	points_ptrw[index++] = Vector3(-from_x, from_y + y, 0); \
-	points_ptrw[index++] = Vector3(-to_x, to_y + y, 0);
-
-#define PUSH_QUARTER_YZ(from_x, from_y, to_x, to_y, y) \
-	points_ptrw[index++] = Vector3(0, -from_y - y, from_x); \
-	points_ptrw[index++] = Vector3(0, -to_y - y, to_x); \
-	points_ptrw[index++] = Vector3(0, from_y + y, from_x); \
-	points_ptrw[index++] = Vector3(0, to_y + y, to_x); \
-	points_ptrw[index++] = Vector3(0, -from_y - y, -from_x); \
-	points_ptrw[index++] = Vector3(0, -to_y - y, -to_x); \
-	points_ptrw[index++] = Vector3(0, from_y + y, -from_x); \
-	points_ptrw[index++] = Vector3(0, to_y + y, -to_x);
-
-		real_t previous_x = radius;
-		real_t previous_y = 0.f;
-
-		for (uint32_t i = 0; i < points_in_octant; ++i) {
-			r += inc;
-			real_t x = Math::cos((i == points_in_octant - 1) ? octant_angle : r) * radius;
-			real_t y = Math::sqrt(radius_squared - (x * x));
-
-			// High circle ring.
-			PUSH_QUARTER(previous_x, previous_y, x, y, y_value);
-			PUSH_QUARTER(previous_y, previous_x, y, x, y_value);
-
-			// Low circle ring.
-			PUSH_QUARTER(previous_x, previous_y, x, y, -y_value);
-			PUSH_QUARTER(previous_y, previous_x, y, x, -y_value);
-
-			// Up and Low circle in X-Y plane.
-			PUSH_QUARTER_XY(previous_x, previous_y, x, y, y_value);
-			PUSH_QUARTER_XY(previous_y, previous_x, y, x, y_value);
-
-			// Up and Low circle in Y-Z plane.
-			PUSH_QUARTER_YZ(previous_x, previous_y, x, y, y_value);
-			PUSH_QUARTER_YZ(previous_y, previous_x, y, x, y_value)
-
-			previous_x = x;
-			previous_y = y;
-		}
-
-#undef PUSH_QUARTER
-#undef PUSH_QUARTER_XY
-#undef PUSH_QUARTER_YZ
-
-		p_gizmo->add_lines(points, material, false, collision_color);
-		p_gizmo->add_collision_segments(points);
-
+		Vector<Vector3> lines = cs2->get_debug_mesh_lines();
+		p_gizmo->add_lines(lines, material, false, collision_color);
+		p_gizmo->add_collision_segments(lines);
 		if (!shape_readonly) {
-			Vector<Vector3> handles = helper->capsule_get_handles(cs2->get_height(), cs2->get_radius());
+			// Add handles for tapered capsule
+			Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(cs2->get_top_radius(), cs2->get_bottom_radius(), cs2->get_mid_height(), false);
 			p_gizmo->add_handles(handles, handles_material);
 		}
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Ref<CylinderShape3D> cs2 = s;
-		float radius = cs2->get_radius();
-		float height = cs2->get_height();
-
-#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y) \
-	points_ptrw[index++] = Vector3(from_x, y, from_y); \
-	points_ptrw[index++] = Vector3(to_x, y, to_y); \
-	points_ptrw[index++] = Vector3(from_x, y, -from_y); \
-	points_ptrw[index++] = Vector3(to_x, y, -to_y); \
-	points_ptrw[index++] = Vector3(-from_x, y, from_y); \
-	points_ptrw[index++] = Vector3(-to_x, y, to_y); \
-	points_ptrw[index++] = Vector3(-from_x, y, -from_y); \
-	points_ptrw[index++] = Vector3(-to_x, y, -to_y);
-
-		// Number of points in an octant. So there will be 8 * points_in_octant * 2 points in total for one circle.
-		// This corresponds to the smoothness of the circle.
-		const uint32_t points_in_octant = 16;
-		const real_t inc = (Math::PI / (4 * points_in_octant));
-		const real_t radius_squared = radius * radius;
-		real_t r = 0;
-
-		Vector<Vector3> points;
-		uint32_t index = 0;
-		// 4 vertical lines and 2 full circles.
-		points.resize(4 * 2 + 2 * 8 * points_in_octant * 2);
-		Vector3 *points_ptrw = points.ptrw();
-		real_t y_value = height * 0.5;
-
-		// Vertical lines.
-		points_ptrw[index++] = Vector3(0.f, y_value, radius);
-		points_ptrw[index++] = Vector3(0.f, -y_value, radius);
-		points_ptrw[index++] = Vector3(0.f, y_value, -radius);
-		points_ptrw[index++] = Vector3(0.f, -y_value, -radius);
-		points_ptrw[index++] = Vector3(radius, y_value, 0.f);
-		points_ptrw[index++] = Vector3(radius, -y_value, 0.f);
-		points_ptrw[index++] = Vector3(-radius, y_value, 0.f);
-		points_ptrw[index++] = Vector3(-radius, -y_value, 0.f);
-
-		real_t previous_x = radius;
-		real_t previous_y = 0.f;
-
-		for (uint32_t i = 0; i < points_in_octant; ++i) {
-			r += inc;
-			real_t x = Math::cos(r) * radius;
-			real_t y = Math::sqrt(radius_squared - (x * x));
-
-			// High circle ring.
-			PUSH_QUARTER(previous_x, previous_y, x, y, y_value);
-			PUSH_QUARTER(previous_y, previous_x, y, x, y_value);
-
-			// Low circle ring.
-			PUSH_QUARTER(previous_x, previous_y, x, y, -y_value);
-			PUSH_QUARTER(previous_y, previous_x, y, x, -y_value);
-
-			previous_x = x;
-			previous_y = y;
-		}
-#undef PUSH_QUARTER
-
-		p_gizmo->add_lines(points, material, false, collision_color);
-		p_gizmo->add_collision_segments(points);
-
+		Vector<Vector3> lines = cs2->get_debug_mesh_lines();
+		p_gizmo->add_lines(lines, material, false, collision_color);
+		p_gizmo->add_collision_segments(lines);
 		if (!shape_readonly) {
-			Vector<Vector3> handles = helper->cylinder_get_handles(cs2->get_height(), cs2->get_radius());
+			// Add handles for tapered cylinder
+			Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(cs2->get_top_radius(), cs2->get_bottom_radius(), cs2->get_height(), true);
 			p_gizmo->add_handles(handles, handles_material);
 		}
 	}
@@ -727,30 +531,6 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			handles.push_back(Vector3(0, 0, rs->get_length()));
 			p_gizmo->add_handles(handles, handles_material);
 		}
-	}
-
-	if (Object::cast_to<TaperedCapsuleShape3D>(*s)) {
-		Ref<TaperedCapsuleShape3D> tcs = s;
-
-		Vector<Vector3> lines = tcs->get_debug_mesh_lines();
-		p_gizmo->add_lines(lines, material, false, collision_color);
-		p_gizmo->add_collision_segments(lines);
-
-		// Add handles for tapered capsule
-		Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_mid_height());
-		p_gizmo->add_handles(handles, handles_material);
-	}
-
-	if (Object::cast_to<TaperedCylinderShape3D>(*s)) {
-		Ref<TaperedCylinderShape3D> tcs = s;
-
-		Vector<Vector3> lines = tcs->get_debug_mesh_lines();
-		p_gizmo->add_lines(lines, material, false, collision_color);
-		p_gizmo->add_collision_segments(lines);
-
-		// Add handles for tapered cylinder
-		Vector<Vector3> handles = helper->tapered_capsule_cylinder_get_handles(tcs->get_top_radius(), tcs->get_bottom_radius(), tcs->get_height());
-		p_gizmo->add_handles(handles, handles_material);
 	}
 
 	if (Object::cast_to<HeightMapShape3D>(*s)) {
