@@ -150,6 +150,7 @@ void EditorDebuggerInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("objects_edited", PropertyInfo(Variant::ARRAY, "ids"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value"), PropertyInfo(Variant::STRING, "field")));
 	ADD_SIGNAL(MethodInfo("object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
+	ADD_SIGNAL(MethodInfo("canvas_item_objects_changed", PropertyInfo(Variant::DICTIONARY, "states")));
 }
 
 void EditorDebuggerInspector::_notification(int p_what) {
@@ -173,12 +174,12 @@ void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
 	emit_signal(SNAME("object_selected"), p_object);
 }
 
-EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p_arr, int p_debugger_id) {
-	ERR_FAIL_COND_V(p_arr.is_empty(), nullptr);
+EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p_array, int p_debugger_id) {
+	ERR_FAIL_COND_V(p_array.is_empty(), nullptr);
 
 	TypedArray<uint64_t> ids;
 	LocalVector<SceneDebuggerObject> objects;
-	for (const Array arr : p_arr) {
+	for (const Array arr : p_array) {
 		SceneDebuggerObject obj;
 		obj.deserialize(arr);
 		if (obj.id.is_valid()) {
@@ -191,10 +192,13 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 	// Sorting is necessary, as selected nodes in the remote tree are ordered by index.
 	ids.sort();
 
+	bool pre_existing = false;
+
 	EditorDebuggerRemoteObjects *remote_objects = nullptr;
 	for (EditorDebuggerRemoteObjects *robjs : remote_objects_list) {
 		if (robjs->remote_object_ids == ids) {
 			remote_objects = robjs;
+			pre_existing = true;
 			break;
 		}
 	}
@@ -260,8 +264,13 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 			}
 		}
 
+		if (!pre_existing && ClassDB::is_parent_class(obj.class_name, CanvasItem::get_class_static())) {
+			remote_objects->has_canvas_items = true;
+		}
+
 		nc++;
 	}
+
 	for (HashMap<String, UsageData>::Iterator E = usage.begin(); E;) {
 		HashMap<String, UsageData>::Iterator next = E;
 		++next;
@@ -394,6 +403,38 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 	}
 
 	return remote_objects;
+}
+
+void EditorDebuggerInspector::add_undo_redo_action(const Array &p_array) {
+	Dictionary states = p_array[1];
+	ERR_FAIL_COND(states.is_empty());
+
+	Object *obj = InspectorDock::get_inspector_singleton()->get_edited_object();
+	EditorDebuggerRemoteObjects *remote_objects = Object::cast_to<EditorDebuggerRemoteObjects>(obj);
+	if (!remote_objects) {
+		return;
+	}
+
+	for (Variant var : states.keys()) {
+		if (!remote_objects->remote_object_ids.has(var)) {
+			return;
+		}
+	}
+
+	Dictionary undo_state;
+	for (KeyValue kv : states) {
+		undo_state[kv.key] = Dictionary(kv.value)["undo"];
+	}
+	Dictionary redo_state;
+	for (KeyValue kv : states) {
+		redo_state[kv.key] = Dictionary(kv.value)["redo"];
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(p_array[0], UndoRedo::MERGE_DISABLE, remote_objects);
+	ur->add_do_method(this, SNAME("emit_signal"), SNAME("canvas_item_objects_changed"), redo_state);
+	ur->add_undo_method(this, SNAME("emit_signal"), SNAME("canvas_item_objects_changed"), undo_state);
+	ur->commit_action(false);
 }
 
 void EditorDebuggerInspector::clear_remote_inspector() {

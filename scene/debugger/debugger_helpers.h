@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  visible_on_screen_notifier_2d.h                                       */
+/*  debugger_helpers.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,83 +30,21 @@
 
 #pragma once
 
-#include "scene/2d/node_2d.h"
-
-class Viewport;
-class VisibleOnScreenNotifier2D : public Node2D {
-	GDCLASS(VisibleOnScreenNotifier2D, Node2D);
-
-	Rect2 rect;
-	bool show_rect = true;
-
-private:
-	bool on_screen = false;
-	void _visibility_enter();
-	void _visibility_exit();
-
-protected:
-	virtual void _screen_enter() {}
-	virtual void _screen_exit() {}
-
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
 #ifdef DEBUG_ENABLED
-	virtual Dictionary _edit_get_state() const override;
-	virtual void _edit_set_state(const Dictionary &p_state) override;
+#include "core/input/input_event.h"
 
-	virtual Vector2 _edit_get_minimum_size() const override { return Vector2(); }
+class Node;
 
-	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
-
-	virtual Rect2 _edit_get_rect() const override;
-
-	virtual bool _edit_use_rect() const override;
-#endif // DEBUG_ENABLED
-
-	void set_rect(const Rect2 &p_rect);
-	Rect2 get_rect() const;
-
-	void set_show_rect(bool p_show_rect);
-	bool is_showing_rect() const;
-
-	bool is_on_screen() const;
-
-	VisibleOnScreenNotifier2D();
-};
-
-class VisibleOnScreenEnabler2D : public VisibleOnScreenNotifier2D {
-	GDCLASS(VisibleOnScreenEnabler2D, VisibleOnScreenNotifier2D);
-
+class DebuggerHelpers {
 public:
-	enum EnableMode {
-		ENABLE_MODE_INHERIT,
-		ENABLE_MODE_ALWAYS,
-		ENABLE_MODE_WHEN_PAUSED,
+	struct SelectResult {
+		Node *item = nullptr;
+		bool has_order = false;
+		real_t order = 0;
+		_FORCE_INLINE_ bool operator<(const SelectResult &p_rr) const { return p_rr.order < order; }
 	};
 
-protected:
-	ObjectID node_id;
-	virtual void _screen_enter() override;
-	virtual void _screen_exit() override;
-
-	EnableMode enable_mode = ENABLE_MODE_INHERIT;
-	NodePath enable_node_path = NodePath("..");
-
-	void _notification(int p_what);
-	static void _bind_methods();
-
-	void _update_enable_mode(bool p_enable);
-
-public:
-	void set_enable_mode(EnableMode p_mode);
-	EnableMode get_enable_mode();
-
-	void set_enable_node_path(NodePath p_path);
-	NodePath get_enable_node_path();
-
-	VisibleOnScreenEnabler2D();
+	static bool is_shortcut_pressed(const int p_idx, const HashMap<int, Ref<Shortcut>> &p_shortcuts, bool p_true_if_empty = false);
+	static bool is_shortcut_empty(const int p_idx, const HashMap<int, Ref<Shortcut>> &p_shortcuts);
 };
-
-VARIANT_ENUM_CAST(VisibleOnScreenEnabler2D::EnableMode);
+#endif // DEBUG_ENABLED

@@ -88,8 +88,7 @@ public:
 
 // Editor plugin interoperability.
 
-// TODO: Decouple controls from their editor plugin and get rid of this.
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Dictionary Control::_edit_get_state() const {
 	Dictionary s;
 	s["rotation"] = get_rotation();
@@ -152,8 +151,11 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 }
 
 void Control::_edit_set_position(const Point2 &p_position) {
-	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
+#ifdef TOOLS_ENABLED
 	set_position(p_position, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled() && get_parent_control());
+#else
+	set_position(p_position);
+#endif
 }
 
 Point2 Control::_edit_get_position() const {
@@ -169,13 +171,17 @@ Size2 Control::_edit_get_scale() const {
 }
 
 void Control::_edit_set_rect(const Rect2 &p_edit_rect) {
-	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
 	// Changing the size might change the internal transform (in case of non-zero `pivot_offset_ratio`),
 	// hence `position` (which is in the parent space, and is not always equivalent to the Control's rect top-left corner)
 	// needs to be changed after `size` (which is local) and needs to account for the possibly changed internal transform.
 	Vector2 rect_new_pos_in_parent_space = get_transform().xform(p_edit_rect.position);
+#ifdef TOOLS_ENABLED
 	set_size(p_edit_rect.size, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
 	set_position(rect_new_pos_in_parent_space - _get_internal_transform().get_origin(), ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled());
+#else
+	set_size(p_edit_rect.size);
+	set_position(rect_new_pos_in_parent_space - _get_internal_transform().get_origin());
+#endif
 }
 
 void Control::_edit_set_rotation(real_t p_rotation) {
@@ -209,9 +215,7 @@ bool Control::_edit_use_pivot() const {
 Size2 Control::_edit_get_minimum_size() const {
 	return get_combined_minimum_size();
 }
-#endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
 Rect2 Control::_edit_get_rect() const {
 	return Rect2(Point2(), get_size());
 }

@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef _3D_DISABLED
+#if defined(DEBUG_ENABLED) && !defined(_3D_DISABLED)
 
 #include "view_3d_controller.h"
 
 #include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
+#include "scene/debugger/debugger_helpers.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
@@ -53,37 +54,6 @@ Transform3D View3DController::_to_camera_transform(const Cursor &p_cursor) const
 	}
 
 	return camera_transform;
-}
-
-bool View3DController::_is_shortcut_pressed(const ShortcutName p_name, const bool p_true_if_empty) {
-	Ref<Shortcut> shortcut = inputs[p_name];
-	if (shortcut.is_null()) {
-		return p_true_if_empty;
-	}
-
-	const Array shortcuts = shortcut->get_events();
-	if (shortcuts.is_empty()) {
-		return p_true_if_empty;
-	}
-
-	for (Ref<InputEventKey> k : shortcuts) {
-		if (k.is_null()) {
-			continue;
-		}
-
-		if (k->get_physical_keycode() == Key::NONE && Input::get_singleton()->is_key_pressed(emulate_numpad_key(k->get_keycode()))) {
-			return true;
-		} else if (Input::get_singleton()->is_physical_key_pressed(emulate_numpad_key(k->get_physical_keycode()))) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool View3DController::_is_shortcut_empty(const ShortcutName p_name) {
-	Ref<Shortcut> shortcut = inputs[p_name];
-	return shortcut.is_null() || shortcut->get_events().is_empty();
 }
 
 View3DController::NavigationMode View3DController::_get_nav_mode_from_shortcuts(NavigationMouseButton p_mouse_button, const Vector<ShortcutCheck> &p_shortcut_checks, bool p_not_empty) {
@@ -141,15 +111,15 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 	if (Input::get_singleton()->get_mouse_mode() != Input::MouseMode::MOUSE_MODE_CAPTURED) {
 #define GET_SHORTCUT_COUNT(p_name) (inputs[p_name].is_null() ? 0 : inputs[p_name]->get_events().size())
 
-		bool orbit_mod_pressed = _is_shortcut_pressed(SHORTCUT_ORBIT_MOD_1, true) && _is_shortcut_pressed(SHORTCUT_ORBIT_MOD_2, true);
-		bool pan_mod_pressed = _is_shortcut_pressed(SHORTCUT_PAN_MOD_1, true) && _is_shortcut_pressed(SHORTCUT_PAN_MOD_2, true);
-		bool zoom_mod_pressed = _is_shortcut_pressed(SHORTCUT_ZOOM_MOD_1, true) && _is_shortcut_pressed(SHORTCUT_ZOOM_MOD_2, true);
+		bool orbit_mod_pressed = DebuggerHelpers::is_shortcut_pressed(SHORTCUT_ORBIT_MOD_1, inputs, true) && DebuggerHelpers::is_shortcut_pressed(SHORTCUT_ORBIT_MOD_2, inputs, true);
+		bool pan_mod_pressed = DebuggerHelpers::is_shortcut_pressed(SHORTCUT_PAN_MOD_1, inputs, true) && DebuggerHelpers::is_shortcut_pressed(SHORTCUT_PAN_MOD_2, inputs, true);
+		bool zoom_mod_pressed = DebuggerHelpers::is_shortcut_pressed(SHORTCUT_ZOOM_MOD_1, inputs, true) && DebuggerHelpers::is_shortcut_pressed(SHORTCUT_ZOOM_MOD_2, inputs, true);
 		int orbit_mod_input_count = GET_SHORTCUT_COUNT(SHORTCUT_ORBIT_MOD_1) + GET_SHORTCUT_COUNT(SHORTCUT_ORBIT_MOD_2);
 		int pan_mod_input_count = GET_SHORTCUT_COUNT(SHORTCUT_PAN_MOD_1) + GET_SHORTCUT_COUNT(SHORTCUT_PAN_MOD_2);
 		int zoom_mod_input_count = GET_SHORTCUT_COUNT(SHORTCUT_ZOOM_MOD_1) + GET_SHORTCUT_COUNT(SHORTCUT_ZOOM_MOD_2);
-		bool orbit_not_empty = !_is_shortcut_empty(SHORTCUT_ORBIT_MOD_1) || !_is_shortcut_empty(SHORTCUT_ORBIT_MOD_2);
-		bool pan_not_empty = !_is_shortcut_empty(SHORTCUT_PAN_MOD_1) || !_is_shortcut_empty(SHORTCUT_PAN_MOD_2);
-		bool zoom_not_empty = !_is_shortcut_empty(SHORTCUT_ZOOM_MOD_1) || !_is_shortcut_empty(SHORTCUT_ZOOM_MOD_2);
+		bool orbit_not_empty = !DebuggerHelpers::is_shortcut_empty(SHORTCUT_ORBIT_MOD_1, inputs) || !DebuggerHelpers::is_shortcut_empty(SHORTCUT_ORBIT_MOD_2, inputs);
+		bool pan_not_empty = !DebuggerHelpers::is_shortcut_empty(SHORTCUT_PAN_MOD_1, inputs) || !DebuggerHelpers::is_shortcut_empty(SHORTCUT_PAN_MOD_2, inputs);
+		bool zoom_not_empty = !DebuggerHelpers::is_shortcut_empty(SHORTCUT_ZOOM_MOD_1, inputs) || !DebuggerHelpers::is_shortcut_empty(SHORTCUT_ZOOM_MOD_2, inputs);
 		shortcut_checks.push_back(ShortcutCheck(orbit_mod_pressed, orbit_not_empty, orbit_mod_input_count, orbit_mouse_button, NAV_MODE_ORBIT));
 		shortcut_checks.push_back(ShortcutCheck(pan_mod_pressed, pan_not_empty, pan_mod_input_count, pan_mouse_button, NAV_MODE_PAN));
 		shortcut_checks.push_back(ShortcutCheck(zoom_mod_pressed, zoom_not_empty, zoom_mod_input_count, zoom_mouse_button, NAV_MODE_ZOOM));
@@ -300,15 +270,15 @@ bool View3DController::gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_
 	bool pressed = false;
 	float old_fov_scale = cursor.fov_scale;
 
-	if (_is_shortcut_pressed(SHORTCUT_FOV_DECREASE)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FOV_DECREASE, inputs)) {
 		cursor.fov_scale = CLAMP(cursor.fov_scale - 0.05, CAMERA_MIN_FOV_SCALE, CAMERA_MAX_FOV_SCALE);
 		pressed = true;
 	}
-	if (_is_shortcut_pressed(SHORTCUT_FOV_INCREASE)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FOV_INCREASE, inputs)) {
 		cursor.fov_scale = CLAMP(cursor.fov_scale + 0.05, CAMERA_MIN_FOV_SCALE, CAMERA_MAX_FOV_SCALE);
 		pressed = true;
 	}
-	if (_is_shortcut_pressed(SHORTCUT_FOV_RESET)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FOV_RESET, inputs)) {
 		cursor.fov_scale = 1;
 		pressed = true;
 	}
@@ -367,8 +337,8 @@ void View3DController::cursor_orbit(const Ref<InputEventWithModifiers> &p_event,
 
 	ViewType new_view_type = VIEW_TYPE_USER;
 
-	bool snap_modifier_configured = !_is_shortcut_empty(SHORTCUT_ORBIT_SNAP_MOD_1) || !_is_shortcut_empty(SHORTCUT_ORBIT_SNAP_MOD_2);
-	if (snap_modifier_configured && _is_shortcut_pressed(SHORTCUT_ORBIT_SNAP_MOD_1, true) && _is_shortcut_pressed(SHORTCUT_ORBIT_SNAP_MOD_2, true)) {
+	bool snap_modifier_configured = !DebuggerHelpers::is_shortcut_empty(SHORTCUT_ORBIT_SNAP_MOD_1, inputs) || !DebuggerHelpers::is_shortcut_empty(SHORTCUT_ORBIT_SNAP_MOD_2, inputs);
+	if (snap_modifier_configured && DebuggerHelpers::is_shortcut_pressed(SHORTCUT_ORBIT_SNAP_MOD_1, inputs, true) && DebuggerHelpers::is_shortcut_pressed(SHORTCUT_ORBIT_SNAP_MOD_2, inputs, true)) {
 		const float snap_angle = Math::deg_to_rad(45.0);
 		const float snap_threshold = Math::deg_to_rad(angle_snap_threshold);
 
@@ -566,31 +536,31 @@ void View3DController::update_freelook(const float p_delta) {
 	}
 
 	Vector3 direction;
-	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_LEFT)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FREELOOK_LEFT, inputs)) {
 		direction -= right;
 	}
-	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_RIGHT)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FREELOOK_RIGHT, inputs)) {
 		direction += right;
 	}
-	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_FORWARD)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FREELOOK_FORWARD, inputs)) {
 		direction += forward;
 	}
-	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_BACKWARDS)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FREELOOK_BACKWARDS, inputs)) {
 		direction -= forward;
 	}
-	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_UP)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FREELOOK_UP, inputs)) {
 		direction += up;
 	}
-	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_DOWN)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FREELOOK_DOWN, inputs)) {
 		direction -= up;
 	}
 
 	real_t speed = freelook_speed;
 
-	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_SPEED_MOD)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FREELOOK_SPEED_MOD, inputs)) {
 		speed *= 3.0;
 	}
-	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_SLOW_MOD)) {
+	if (DebuggerHelpers::is_shortcut_pressed(SHORTCUT_FREELOOK_SLOW_MOD, inputs)) {
 		speed *= 0.333333;
 	}
 
@@ -818,4 +788,4 @@ void View3DController::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("cursor_distance_scaled"));
 }
 
-#endif // _3D_DISABLED
+#endif // DEBUG_ENABLED && _3D_DISABLED

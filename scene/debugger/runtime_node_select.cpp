@@ -48,11 +48,10 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 #ifndef PHYSICS_2D_DISABLED
-#include "scene/2d/physics/collision_object_2d.h"
-#include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/2d/physics/collision_shape_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
@@ -92,6 +91,16 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	root->connect("size_changed", callable_mp(this, &RuntimeNodeSelect::_queue_selection_update), CONNECT_DEFERRED);
 
 	max_selection = p_settings.get("debugger/max_node_selection", 1);
+	scale = GLOBAL_GET("display/window/stretch/scale");
+
+	accent_color = p_settings.get("accent_color", Color());
+	axis_x_color = p_settings.get("axis_x_color", Color());
+	axis_y_color = p_settings.get("axis_y_color", Color());
+
+	Ref<Theme> theme = ThemeDB::get_singleton()->get_default_theme();
+	pivot_icon = theme->get_icon(SNAME("pivot"), SNAME("Debug"));
+	resize_icon = theme->get_icon(SNAME("resize"), SNAME("Debug"));
+	anchor_icon = theme->get_icon(SNAME("anchor"), SNAME("Debug"));
 
 	// Panner Setup
 
@@ -106,8 +115,47 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	panner->setup_warped_panning(root, p_settings.get("editors/panning/warped_mouse_panning", true));
 	panner->set_scroll_speed(pan_speed);
 
-	sel_2d_grab_dist = p_settings.get("editors/polygon_editor/point_grab_radius", 0);
-	sel_2d_scale = MAX(1, Math::ceil(2.0 / (float)GLOBAL_GET("display/window/stretch/scale")));
+	// CanvasItemManipulator Setup
+
+	ci_manipulator.instantiate();
+	ci_manipulator->set_show_transformation_gizmos(true);
+	ci_manipulator->set_grab_distance(p_settings.get("editors/polygon_editor/point_grab_radius", 1));
+	ci_manipulator->set_scale(scale);
+	ci_manipulator->set_viewport(root);
+	ci_manipulator->set_callbacks(
+			callable_mp(this, &RuntimeNodeSelect::_find_ci_start_callback),
+			callable_mp(this, &RuntimeNodeSelect::_point_selected_ci_callback),
+			callable_mp(this, &RuntimeNodeSelect::_get_selection_ci_callback),
+			callable_mp(this, &RuntimeNodeSelect::_local_transform_callback),
+			callable_mp((Viewport *)root, &Viewport::get_screen_transform),
+			callable_mp(this, &RuntimeNodeSelect::_local_mouse_pos_callback),
+			callable_mp(this, &RuntimeNodeSelect::_plugin_input_callback));
+	ci_manipulator->connect("box_selected", callable_mp(this, &RuntimeNodeSelect::_box_selected_ci));
+	ci_manipulator->connect("box_selection_updated", callable_mp(this, &RuntimeNodeSelect::_set_selection_area));
+	ci_manipulator->connect("clear_selection_requested", callable_mp(this, &RuntimeNodeSelect::_clear_selection).unbind(1).bind(true));
+	ci_manipulator->connect("selection_menu_requested", callable_mp(this, &RuntimeNodeSelect::_open_selection_list));
+	ci_manipulator->connect("scene_double_clicked", callable_mp(this, &RuntimeNodeSelect::_scene_double_clicked));
+	ci_manipulator->connect("update_canvas_requested", callable_mp(this, &RuntimeNodeSelect::_queue_selection_update));
+	ci_manipulator->connect("save_canvas_state_requested", callable_mp(this, &RuntimeNodeSelect::_save_canvas_state_requested));
+	ci_manipulator->connect("restore_canvas_state_requested", callable_mp(this, &RuntimeNodeSelect::_restore_canvas_state_requested));
+	ci_manipulator->connect("commit_canvas_state_requested", callable_mp(this, &RuntimeNodeSelect::_commit_canvas_state_requested));
+	ci_manipulator->connect("cursor_shape_changed", callable_mp(this, &RuntimeNodeSelect::_update_cursor_shape));
+
+#define SET_CI_SHORTCUT(p_name, p_setting) \
+	{ \
+		Ref<Shortcut> shortcut = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get(p_setting, Array()).operator Array()); \
+		if (shortcut.is_valid()) { \
+			ci_manipulator->set_shortcut(p_name, shortcut); \
+		} \
+	}
+
+	SET_CI_SHORTCUT(CanvasItemManipulator::SHORTCUT_CANCEL_TRANSFORM, "canvas_item_editor/cancel_transform");
+
+#undef SET_CI_SHORTCUT
+
+	/// 2D Selection Rectangle Generation
+
+	sel_2d_scale = MAX(1, Math::ceil(2.0 / scale));
 
 	selection_area_fill = p_settings.get("box_selection_fill_color", Color());
 	selection_area_outline = p_settings.get("box_selection_stroke_color", Color());
@@ -115,9 +163,8 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	draw_canvas = RS::get_singleton()->canvas_create();
 	sel_drag_ci = RS::get_singleton()->canvas_item_create();
 
-	/// 2D Selection Rectangle Generation
-
 	srect_color = p_settings.get("editors/2d/selection_rectangle_color", Color());
+	srect_locked_color = p_settings.get("editors/2d/locked_selection_rectangle_color", Color());
 
 	srect_ci = RS::get_singleton()->canvas_item_create();
 	RS::get_singleton()->viewport_attach_canvas(root->get_viewport_rid(), draw_canvas);
@@ -196,7 +243,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 		}
 	}
 
-#define SET_SHORTCUT(p_name, p_setting) \
+#define SET_VIEW3D_SHORTCUT(p_name, p_setting) \
 	{ \
 		Ref<Shortcut> shortcut = DebuggerMarshalls::deserialize_key_shortcut(p_settings.get(p_setting, Array()).operator Array()); \
 		if (shortcut.is_valid()) { \
@@ -204,27 +251,27 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 		} \
 	}
 
-	SET_SHORTCUT(View3DController::SHORTCUT_FOV_DECREASE, "spatial_editor/decrease_fov");
-	SET_SHORTCUT(View3DController::SHORTCUT_FOV_INCREASE, "spatial_editor/increase_fov");
-	SET_SHORTCUT(View3DController::SHORTCUT_FOV_RESET, "spatial_editor/reset_fov");
-	SET_SHORTCUT(View3DController::SHORTCUT_PAN_MOD_1, "spatial_editor/viewport_pan_modifier_1");
-	SET_SHORTCUT(View3DController::SHORTCUT_PAN_MOD_2, "spatial_editor/viewport_pan_modifier_2");
-	SET_SHORTCUT(View3DController::SHORTCUT_ORBIT_MOD_1, "spatial_editor/viewport_orbit_modifier_1");
-	SET_SHORTCUT(View3DController::SHORTCUT_ORBIT_MOD_2, "spatial_editor/viewport_orbit_modifier_2");
-	SET_SHORTCUT(View3DController::SHORTCUT_ORBIT_SNAP_MOD_1, "spatial_editor/viewport_orbit_snap_modifier_1");
-	SET_SHORTCUT(View3DController::SHORTCUT_ORBIT_SNAP_MOD_2, "spatial_editor/viewport_orbit_snap_modifier_2");
-	SET_SHORTCUT(View3DController::SHORTCUT_ZOOM_MOD_1, "spatial_editor/viewport_zoom_modifier_1");
-	SET_SHORTCUT(View3DController::SHORTCUT_ZOOM_MOD_2, "spatial_editor/viewport_zoom_modifier_2");
-	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_FORWARD, "spatial_editor/freelook_forward");
-	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_BACKWARDS, "spatial_editor/freelook_backwards");
-	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_LEFT, "spatial_editor/freelook_left");
-	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_RIGHT, "spatial_editor/freelook_right");
-	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_UP, "spatial_editor/freelook_up");
-	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_DOWN, "spatial_editor/freelook_down");
-	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_SPEED_MOD, "spatial_editor/freelook_speed_modifier");
-	SET_SHORTCUT(View3DController::SHORTCUT_FREELOOK_SLOW_MOD, "spatial_editor/freelook_slow_modifier");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FOV_DECREASE, "spatial_editor/decrease_fov");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FOV_INCREASE, "spatial_editor/increase_fov");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FOV_RESET, "spatial_editor/reset_fov");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_PAN_MOD_1, "spatial_editor/viewport_pan_modifier_1");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_PAN_MOD_2, "spatial_editor/viewport_pan_modifier_2");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_ORBIT_MOD_1, "spatial_editor/viewport_orbit_modifier_1");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_ORBIT_MOD_2, "spatial_editor/viewport_orbit_modifier_2");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_ORBIT_SNAP_MOD_1, "spatial_editor/viewport_orbit_snap_modifier_1");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_ORBIT_SNAP_MOD_2, "spatial_editor/viewport_orbit_snap_modifier_2");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_ZOOM_MOD_1, "spatial_editor/viewport_zoom_modifier_1");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_ZOOM_MOD_2, "spatial_editor/viewport_zoom_modifier_2");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FREELOOK_FORWARD, "spatial_editor/freelook_forward");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FREELOOK_BACKWARDS, "spatial_editor/freelook_backwards");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FREELOOK_LEFT, "spatial_editor/freelook_left");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FREELOOK_RIGHT, "spatial_editor/freelook_right");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FREELOOK_UP, "spatial_editor/freelook_up");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FREELOOK_DOWN, "spatial_editor/freelook_down");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FREELOOK_SPEED_MOD, "spatial_editor/freelook_speed_modifier");
+	SET_VIEW3D_SHORTCUT(View3DController::SHORTCUT_FREELOOK_SLOW_MOD, "spatial_editor/freelook_slow_modifier");
 
-#undef SET_SHORTCUT
+#undef SET_VIEW3D_SHORTCUT
 
 	/// 3D Selection Box Generation
 	// Copied from the Node3DEditor implementation.
@@ -271,20 +318,18 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 #endif // _3D_DISABLED
 
 	SceneTree::get_singleton()->connect("process_frame", callable_mp(this, &RuntimeNodeSelect::_process_frame));
+#ifndef _3D_DISABLED
 	SceneTree::get_singleton()->connect("physics_frame", callable_mp(this, &RuntimeNodeSelect::_physics_frame));
+#endif
 
 	// This function will be called before the root enters the tree at first when the Game view is passing its settings to
 	// the debugger, so queue the update for after it enters.
 	root->connect(SceneStringName(tree_entered), callable_mp(this, &RuntimeNodeSelect::_update_input_state), Object::CONNECT_ONE_SHOT);
 }
 
-void RuntimeNodeSelect::_node_set_type(NodeType p_type) {
+void RuntimeNodeSelect::_set_node_type(NodeType p_type) {
 	node_select_type = p_type;
 	_update_input_state();
-}
-
-void RuntimeNodeSelect::_select_set_mode(SelectMode p_mode) {
-	node_select_mode = p_mode;
 }
 
 void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
@@ -310,6 +355,52 @@ void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 	}
 }
 
+void RuntimeNodeSelect::_set_ci_tool(CanvasItemManipulator::Tool p_tool) {
+	ci_manipulator->set_tool(p_tool);
+	panner->set_force_drag(p_tool == CanvasItemManipulator::TOOL_PAN);
+	_queue_selection_update();
+}
+
+void RuntimeNodeSelect::_set_ci_local_space(bool p_enabled) {
+	ci_manipulator->set_local_space_enabled(p_enabled);
+	_queue_selection_update();
+}
+
+void RuntimeNodeSelect::_set_ci_smart_snap(bool p_enabled) {
+	ci_manipulator->set_smart_snap_enabled(p_enabled);
+}
+
+void RuntimeNodeSelect::_set_n3d_tool(SelectMode p_tool) {
+	node_select_mode = p_tool;
+}
+
+Variant RuntimeNodeSelect::_find_ci_start_callback() const {
+	return Object::cast_to<Node>(SceneTree::get_singleton()->get_root());
+}
+
+bool RuntimeNodeSelect::_point_selected_ci_callback(const Variant &p_node, bool p_append) {
+	Node *node = Object::cast_to<Node>(p_node);
+	if (p_append || !selected_ci_nodes.has(node->get_instance_id())) {
+		_send_ids({ node }, p_append, true);
+	}
+	return selected_ci_nodes.has(node->get_instance_id());
+}
+
+bool RuntimeNodeSelect::_get_selection_ci_callback(Array r_selection) {
+	for (const KeyValue<ObjectID, Dictionary> &kv : selected_ci_nodes) {
+		Object *obj = ObjectDB::get_instance(kv.key);
+		if (obj) {
+			r_selection.append(obj);
+		}
+	}
+	return false;
+}
+
+Point2 RuntimeNodeSelect::_local_mouse_pos_callback() const {
+	Window *root = SceneTree::get_singleton()->get_root();
+	return root->get_screen_transform().affine_inverse().xform(root->get_mouse_position());
+}
+
 void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 	Window *root = SceneTree::get_singleton()->get_root();
 	if (node_select_type == NODE_TYPE_NONE || (selection_list && selection_list->is_visible())) {
@@ -323,6 +414,15 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	if (SceneTree::get_singleton()->is_suspended() && ci_manipulator->is_showing_transformation_gizmos()) {
+		Ref<InputEventKey> k = p_event;
+		if (k.is_valid() && !k->is_echo() && (k->get_keycode() == Key::CTRL || k->get_keycode() == Key::ALT || k->get_keycode() == Key::SHIFT)) {
+			_queue_selection_update();
+		}
+	}
+
+	_update_cursor_shape();
+
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid() && b->is_pressed()) {
@@ -330,11 +430,16 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 	}
 
 	bool is_dragging_camera = false;
-	if (camera_override && !list_shortcut_pressed) {
+	if (camera_override) {
 		if (node_select_type == NODE_TYPE_2D) {
 			is_dragging_camera = panner->gui_input(p_event, Rect2(Vector2(), root->get_visible_rect().get_size()));
+
+			if (is_panning != panner->is_panning()) {
+				is_panning = panner->is_panning();
+				_update_cursor_shape();
+			}
 #ifndef _3D_DISABLED
-		} else if (node_select_type == NODE_TYPE_3D && selection_drag_state == SELECTION_DRAG_NONE) {
+		} else if (!list_shortcut_pressed && node_select_type == NODE_TYPE_3D && selection_drag_state == SELECTION_DRAG_NONE) {
 			if (_handle_3d_input(p_event)) {
 				return;
 			}
@@ -353,30 +458,50 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (b.is_null()) {
-		return;
-	}
+	if (b.is_valid()) {
+		if (node_select_type == NODE_TYPE_3D) {
+			if (selection_drag_state == SELECTION_DRAG_MOVE && !b->is_pressed() && b->get_button_index() == MouseButton::LEFT) {
+				selection_drag_state = SELECTION_DRAG_END;
+				selection_drag_area = selection_drag_area.abs();
+				_update_selection_drag();
 
-	// Ignore mouse wheel inputs.
-	if (b->get_button_index() != MouseButton::LEFT && b->get_button_index() != MouseButton::RIGHT) {
-		return;
-	}
+				// Trigger a selection in the position on release.
+				if (multi_shortcut_pressed) {
+					selection_position = root->get_screen_transform().affine_inverse().xform(b->get_position());
+				}
+			}
+		}
 
-	if (selection_drag_state == SELECTION_DRAG_MOVE && !b->is_pressed() && b->get_button_index() == MouseButton::LEFT) {
-		selection_drag_state = SELECTION_DRAG_END;
-		selection_drag_area = selection_drag_area.abs();
-		_update_selection_drag();
+		if (!is_dragging_camera && b->is_pressed()) {
+			if (b->get_button_index() != MouseButton::NONE) {
+				multi_shortcut_pressed = b->is_shift_pressed();
+			}
 
-		// Trigger a selection in the position on release.
-		if (multi_shortcut_pressed) {
-			selection_position = root->get_screen_transform().affine_inverse().xform(b->get_position());
+			if (node_select_type == NODE_TYPE_3D) {
+				if (list_shortcut_pressed || b->get_button_index() == MouseButton::LEFT) {
+					selection_position = root->get_screen_transform().affine_inverse().xform(b->get_position());
+				}
+			}
 		}
 	}
 
-	if (!is_dragging_camera && b->is_pressed()) {
-		multi_shortcut_pressed = b->is_shift_pressed();
-		if (list_shortcut_pressed || b->get_button_index() == MouseButton::LEFT) {
-			selection_position = root->get_screen_transform().affine_inverse().xform(b->get_position());
+	if (node_select_type == NODE_TYPE_2D) {
+		Input *input = Input::get_singleton();
+		bool was_input_disabled = input->is_input_disabled();
+		if (was_input_disabled) {
+			input->set_disable_input(false);
+		}
+
+		if (!ci_manipulator->gui_input(p_event)) {
+			// Remind the user to enable the camera override when panning.
+			if (!camera_override && ci_manipulator->get_tool() == CanvasItemManipulator::TOOL_PAN && b.is_valid() && b->is_pressed()) {
+				const String msg = RTR("Camera override must be enabled to allow panning.");
+				EngineDebugger::get_singleton()->send_message("game_view:show_toaster", { msg, 0 });
+			}
+		}
+
+		if (was_input_disabled) {
+			input->set_disable_input(true);
 		}
 	}
 }
@@ -386,7 +511,7 @@ void RuntimeNodeSelect::_items_popup_index_pressed(int p_index, PopupMenu *p_pop
 	if (obj) {
 		Vector<Node *> node;
 		node.append(Object::cast_to<Node>(obj));
-		_send_ids(node);
+		_send_ids(node, selection_list_appending, true);
 	}
 }
 
@@ -402,6 +527,32 @@ void RuntimeNodeSelect::_update_input_state() {
 	Input::get_singleton()->set_disable_input(disable_input);
 	Input::get_singleton()->set_mouse_mode_override_enabled(disable_input);
 	scene_tree->get_root()->set_disable_input_override(disable_input);
+}
+
+void RuntimeNodeSelect::_update_cursor_shape() {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE)) {
+		return;
+	}
+
+	// Choose the correct default cursor.
+	DisplayServerEnums::CursorShape c = DisplayServerEnums::CURSOR_ARROW;
+	if (panner->is_panning()) {
+		c = DisplayServerEnums::CursorShape::CURSOR_DRAG;
+	} else {
+		c = (DisplayServerEnums::CursorShape)ci_manipulator->get_cursor_shape();
+	}
+
+	// Since this is only used when inputs are disabled, just change the shape directly.
+	DisplayServer::get_singleton()->cursor_set_shape(c);
+}
+
+void RuntimeNodeSelect::_show_limit_warning() {
+	const String msg = vformat(RTR("Some remote nodes were not selected, as the configured maximum selection is %d. This can be changed at \"debugger/max_node_selection\" in the Editor Settings."), max_selection);
+	EngineDebugger::get_singleton()->send_message("game_view:show_toaster", { msg, 1 });
+}
+
+void RuntimeNodeSelect::_scene_double_clicked(const String &p_path) {
+	EngineDebugger::get_singleton()->send_message("game_view:open_scene", { p_path });
 }
 
 void RuntimeNodeSelect::_process_frame() {
@@ -428,40 +579,30 @@ void RuntimeNodeSelect::_process_frame() {
 
 	if (selection_update_queued || !SceneTree::get_singleton()->is_suspended()) {
 		selection_update_queued = false;
-		if (has_selection) {
+		if (has_selection && selection_visible) {
 			_update_selection();
 		}
 	}
 }
 
+#ifndef _3D_DISABLED
 void RuntimeNodeSelect::_physics_frame() {
+	if (node_select_type != NODE_TYPE_3D) {
+		return;
+	}
+
 	if (selection_drag_state != SELECTION_DRAG_END && (selection_drag_state == SELECTION_DRAG_MOVE || !selection_position.is_finite())) {
 		return;
 	}
 
 	Window *root = SceneTree::get_singleton()->get_root();
 	bool selection_drag_valid = selection_drag_state == SELECTION_DRAG_END && selection_drag_area.get_area() > SELECTION_MIN_AREA;
-	Vector<SelectResult> items;
+	Vector<DebuggerHelpers::SelectResult> items;
 
-	if (node_select_type == NODE_TYPE_2D) {
-		if (selection_drag_valid) {
-			for (int i = 0; i < root->get_child_count(); i++) {
-				_find_canvas_items_at_rect(selection_drag_area, root->get_child(i), items);
-			}
-		} else if (selection_position.is_finite()) {
-			for (int i = 0; i < root->get_child_count(); i++) {
-				_find_canvas_items_at_pos(selection_position, root->get_child(i), items);
-			}
-		}
-
-#ifndef _3D_DISABLED
-	} else if (node_select_type == NODE_TYPE_3D) {
-		if (selection_drag_valid) {
-			_find_3d_items_at_rect(selection_drag_area, items);
-		} else if (selection_position.is_finite()) {
-			_find_3d_items_at_pos(selection_position, items);
-		}
-#endif // _3D_DISABLED
+	if (selection_drag_valid) {
+		_find_3d_items_at_rect(selection_drag_area, items);
+	} else if (selection_position.is_finite()) {
+		_find_3d_items_at_pos(selection_position, items);
 	}
 
 	if ((prefer_group_selection || avoid_locked_nodes) && !list_shortcut_pressed && node_select_mode == SELECT_MODE_SINGLE) {
@@ -476,16 +617,11 @@ void RuntimeNodeSelect::_physics_frame() {
 					if (node->has_meta("_edit_group_")) {
 						final_node = node;
 
-						if (Object::cast_to<CanvasItem>(final_node)) {
-							CanvasItem *ci_tmp = Object::cast_to<CanvasItem>(final_node);
-							order = ci_tmp->get_effective_z_index() + ci_tmp->get_canvas_layer();
-#ifndef _3D_DISABLED
-						} else if (Object::cast_to<Node3D>(final_node)) {
+						if (Object::cast_to<Node3D>(final_node)) {
 							Node3D *node3d_tmp = Object::cast_to<Node3D>(final_node);
 							Camera3D *camera = root->get_camera_3d();
 							Vector3 pos = camera->project_ray_origin(selection_position);
 							order = -pos.distance_to(node3d_tmp->get_global_transform().origin);
-#endif // _3D_DISABLED
 						}
 					}
 					node = node->get_parent();
@@ -493,7 +629,7 @@ void RuntimeNodeSelect::_physics_frame() {
 			}
 
 			// Filter out locked nodes.
-			if (avoid_locked_nodes && final_node->get_meta("_edit_lock_", false)) {
+			if (avoid_locked_nodes && ci_manipulator->is_node_locked(final_node)) {
 				items.remove_at(i);
 				i--;
 				continue;
@@ -527,10 +663,10 @@ void RuntimeNodeSelect::_physics_frame() {
 			if (selection_drag_area.get_area() > SELECTION_MIN_AREA) {
 				if (!items.is_empty()) {
 					Vector<Node *> nodes;
-					for (const SelectResult item : items) {
+					for (const DebuggerHelpers::SelectResult item : items) {
 						nodes.append(item.item);
 					}
-					_send_ids(nodes, false);
+					_send_ids(nodes, multi_shortcut_pressed);
 				}
 
 				_update_selection_drag();
@@ -549,12 +685,7 @@ void RuntimeNodeSelect::_physics_frame() {
 				// Allow forcing box selection when an item was clicked.
 				selection_drag_state = SELECTION_DRAG_MOVE;
 			} else if (items.is_empty()) {
-#ifdef _3D_DISABLED
-				if (!selected_ci_nodes.is_empty()) {
-#else
 				if (!selected_ci_nodes.is_empty() || !selected_3d_nodes.is_empty()) {
-#endif // _3D_DISABLED
-					EngineDebugger::get_singleton()->send_message("remote_nothing_selected", Array());
 					_clear_selection();
 				}
 
@@ -580,38 +711,46 @@ void RuntimeNodeSelect::_physics_frame() {
 		selection_position = Point2(Math::INF, Math::INF);
 		return;
 	}
-	if ((!list_shortcut_pressed && node_select_mode == SELECT_MODE_SINGLE) || items.size() == 1) {
+
+	if (items.size() == 1 || (!list_shortcut_pressed && node_select_mode == SELECT_MODE_SINGLE)) {
 		selection_position = Point2(Math::INF, Math::INF);
 
 		Vector<Node *> node;
 		node.append(items[0].item);
-		_send_ids(node);
+		_send_ids(node, multi_shortcut_pressed, true);
 
 		return;
 	}
 
 	if (!selection_list && (list_shortcut_pressed || node_select_mode == SELECT_MODE_LIST)) {
-		_open_selection_list(items, selection_position);
+		Array nodes;
+		for (const DebuggerHelpers::SelectResult item : items) {
+			nodes.append(item.item);
+		}
+		_open_selection_list(nodes, selection_position, multi_shortcut_pressed);
 	}
 
 	selection_position = Point2(Math::INF, Math::INF);
 }
+#endif // _3D_DISABLED
 
-void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_invert_new_selections) {
+void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_append, bool p_invert) {
 	ERR_FAIL_COND(p_picked_nodes.is_empty());
 
 	Vector<Node *> picked_nodes = p_picked_nodes;
 	Array message;
 
-	if (!multi_shortcut_pressed) {
+	if (!p_append) {
 		if (picked_nodes.size() > max_selection) {
 			picked_nodes.resize(max_selection);
-			EngineDebugger::get_singleton()->send_message("show_selection_limit_warning", Array());
+			_show_limit_warning();
 		}
 
+		Array fuck;
 		for (const Node *node : picked_nodes) {
 			SceneDebuggerObject obj(node->get_instance_id());
 			Array arr;
+			fuck.append(node);
 			obj.serialize(arr);
 			message.append(arr);
 		}
@@ -622,60 +761,42 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 		return;
 	}
 
-	LocalVector<Node *> nodes;
 	LocalVector<ObjectID> ids;
+	LocalVector<Node *> nodes;
+
+	for (const KeyValue<ObjectID, Dictionary> &kv : selected_ci_nodes) {
+		ids.push_back(kv.key);
+		nodes.push_back(ObjectDB::get_instance<Node>(kv.key));
+	}
+#ifndef _3D_DISABLED
+	for (const KeyValue<ObjectID, Ref<SelectionBox>> &kv : selected_3d_nodes) {
+		ids.push_back(kv.key);
+		nodes.push_back(ObjectDB::get_instance<Node>(kv.key));
+	}
+#endif // _3D_DISABLED
+
 	for (Node *node : picked_nodes) {
 		ObjectID id = node->get_instance_id();
-		if (CanvasItem *ci = Object::cast_to<CanvasItem>(node)) {
-			if (selected_ci_nodes.has(id)) {
-				if (p_invert_new_selections) {
-					selected_ci_nodes.erase(id);
-				}
-			} else {
-				ids.push_back(id);
-				nodes.push_back(ci);
+		if (ids.has(id)) {
+			if (p_append && p_invert) {
+				ids.erase(id);
+				nodes.erase(node);
 			}
 		} else {
-#ifndef _3D_DISABLED
-			if (Node3D *node3d = Object::cast_to<Node3D>(node)) {
-				if (selected_3d_nodes.has(id)) {
-					if (p_invert_new_selections) {
-						selected_3d_nodes.erase(id);
-					}
-				} else {
-					ids.push_back(id);
-					nodes.push_back(node3d);
-				}
-			}
-#endif // _3D_DISABLED
+			ids.push_back(id);
+			nodes.push_back(node);
 		}
 	}
 
-	uint32_t limit = max_selection - selected_ci_nodes.size();
-#ifndef _3D_DISABLED
-	limit -= selected_3d_nodes.size();
-#endif // _3D_DISABLED
-	if (ids.size() > limit) {
-		ids.resize(limit);
-		nodes.resize(limit);
-		EngineDebugger::get_singleton()->send_message("show_selection_limit_warning", Array());
+	if ((int)ids.size() > max_selection) {
+		ids.resize(max_selection);
+		_show_limit_warning();
 	}
-
-	for (ObjectID id : selected_ci_nodes) {
-		ids.push_back(id);
-		nodes.push_back(ObjectDB::get_instance<Node>(id));
-	}
-#ifndef _3D_DISABLED
-	for (const KeyValue<ObjectID, Ref<SelectionBox>> &KV : selected_3d_nodes) {
-		ids.push_back(KV.key);
-		nodes.push_back(ObjectDB::get_instance<Node>(KV.key));
-	}
-#endif // _3D_DISABLED
 
 	if (ids.is_empty()) {
 		EngineDebugger::get_singleton()->send_message("remote_nothing_selected", message);
 	} else {
-		for (const ObjectID &id : ids) {
+		for (const ObjectID id : ids) {
 			SceneDebuggerObject obj(id);
 			Array arr;
 			obj.serialize(arr);
@@ -695,7 +816,7 @@ void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
 	}
 
 	bool changed = false;
-	LocalVector<ObjectID> nodes_ci;
+	HashMap<ObjectID, Dictionary> nodes_ci;
 #ifndef _3D_DISABLED
 	HashMap<ObjectID, Ref<SelectionBox>> nodes_3d;
 #endif // _3D_DISABLED
@@ -707,7 +828,7 @@ void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
 				changed = true;
 			}
 
-			nodes_ci.push_back(id);
+			nodes_ci.insert(id, Dictionary());
 		} else {
 #ifndef _3D_DISABLED
 			Node3D *node_3d = Object::cast_to<Node3D>(node);
@@ -721,7 +842,7 @@ void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
 
 			if (selected_3d_nodes.has(id)) {
 				// Assign an already available visual instance.
-				nodes_3d[id] = selected_3d_nodes.get(id);
+				nodes_3d[id] = selected_3d_nodes[id];
 				continue;
 			}
 
@@ -766,7 +887,8 @@ void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
 	}
 #endif // _3D_DISABLED
 
-	_clear_selection();
+	_clear_selection(false);
+
 	selected_ci_nodes = nodes_ci;
 	has_selection = !nodes_ci.is_empty();
 
@@ -794,12 +916,20 @@ void RuntimeNodeSelect::_update_selection() {
 	RS::get_singleton()->canvas_item_clear(srect_ci);
 	RS::get_singleton()->canvas_item_set_visible(srect_ci, selection_visible);
 
-	for (LocalVector<ObjectID>::Iterator E = selected_ci_nodes.begin(); E != selected_ci_nodes.end(); ++E) {
-		ObjectID id = *E;
-		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(id);
+	CanvasItemManipulator::Tool tool = ci_manipulator->get_tool();
+	bool transform_tool = tool == CanvasItemManipulator::TOOL_SELECT ||
+			tool == CanvasItemManipulator::TOOL_MOVE ||
+			tool == CanvasItemManipulator::TOOL_SCALE ||
+			tool == CanvasItemManipulator::TOOL_ROTATE ||
+			tool == CanvasItemManipulator::TOOL_EDIT_PIVOT;
+	CanvasItemManipulator::DragType drag = ci_manipulator->get_drag_type();
+	bool single = selected_ci_nodes.size() == 1;
+
+	for (HashMap<ObjectID, Dictionary>::ConstIterator kv = selected_ci_nodes.begin(); kv != selected_ci_nodes.end(); ++kv) {
+		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(kv->key);
 		if (!ci) {
-			selected_ci_nodes.erase(id);
-			--E;
+			selected_ci_nodes.erase(kv->key);
+			--kv;
 			continue;
 		}
 
@@ -808,8 +938,98 @@ void RuntimeNodeSelect::_update_selection() {
 		}
 
 		Transform2D xform = ci->get_global_transform_with_canvas();
+		bool item_locked = ci_manipulator->is_node_locked(ci);
 
-		// Fallback.
+		if (single && node_select_type == NODE_TYPE_2D) {
+			// Pivot
+
+			if (transform_tool && !item_locked && ci->_edit_use_pivot()) {
+				Transform2D xform_unscaled = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
+				Transform2D simple_xform;
+				if (ci_manipulator->is_local_space_enabled()) {
+					simple_xform *= xform_unscaled;
+				} else {
+					simple_xform *= Transform2D(0.0f, xform_unscaled.get_origin());
+				}
+
+				Size2 pivot_size = pivot_icon->get_size() * scale;
+				Rect2 rect(simple_xform.get_origin() - (pivot_size / 2.0).floor(), pivot_size);
+				RS::get_singleton()->canvas_item_add_texture_rect(srect_ci, rect, pivot_icon->get_rid());
+			}
+
+			if (tool == CanvasItemManipulator::TOOL_SELECT) {
+				// Anchors
+
+				Control *control = Object::cast_to<Control>(ci);
+				if (control && ci_manipulator->is_node_movable(ci)) {
+					// Compute the anchors.
+					real_t anchors_values[4];
+					anchors_values[0] = control->get_anchor(SIDE_LEFT);
+					anchors_values[1] = control->get_anchor(SIDE_TOP);
+					anchors_values[2] = control->get_anchor(SIDE_RIGHT);
+					anchors_values[3] = control->get_anchor(SIDE_BOTTOM);
+
+					Vector2 anchors_pos[4];
+					for (int i = 0; i < 4; i++) {
+						Vector2 value = Vector2((i % 2 == 0) ? anchors_values[i] : anchors_values[(i + 1) % 4], (i % 2 == 1) ? anchors_values[i] : anchors_values[(i + 1) % 4]);
+						anchors_pos[i] = xform.xform(ci_manipulator->anchor_to_position(control, value));
+					}
+
+					// Draw the anchors handles.
+					Size2 handle_size = CanvasItemManipulator::ANCHOR_HANDLE_SIZE * scale;
+					Rect2 anchor_rects[4];
+					if (control->is_layout_rtl()) {
+						anchor_rects[0] = Rect2(anchors_pos[0] - Vector2(0.0, handle_size.y), Point2(-handle_size.x, handle_size.y));
+						anchor_rects[1] = Rect2(anchors_pos[1] - handle_size, handle_size);
+						anchor_rects[2] = Rect2(anchors_pos[2] - Vector2(handle_size.x, 0.0), Point2(handle_size.x, -handle_size.y));
+						anchor_rects[3] = Rect2(anchors_pos[3], -handle_size);
+					} else {
+						anchor_rects[0] = Rect2(anchors_pos[0] - handle_size, handle_size);
+						anchor_rects[1] = Rect2(anchors_pos[1] - Vector2(0.0, handle_size.y), Point2(-handle_size.x, handle_size.y));
+						anchor_rects[2] = Rect2(anchors_pos[2], -handle_size);
+						anchor_rects[3] = Rect2(anchors_pos[3] - Vector2(handle_size.x, 0.0), Point2(handle_size.x, -handle_size.y));
+					}
+
+					for (int i = 0; i < 4; i++) {
+						RS::get_singleton()->canvas_item_add_texture_rect(srect_ci, anchor_rects[i], anchor_icon->get_rid());
+					}
+				}
+
+				// Resize
+
+				if (ci->_edit_use_rect() && ci_manipulator->is_node_movable(ci)) {
+					Rect2 rect = ci->_edit_get_rect();
+					const Point2 endpoints[4] = {
+						xform.xform(rect.position),
+						xform.xform(rect.position + Point2(rect.size.x, 0)),
+						xform.xform(rect.position + rect.size),
+						xform.xform(rect.position + Point2(0, rect.size.y))
+					};
+
+					Size2 handle_size = Size2(CanvasItemManipulator::RESIZE_HANDLE_DIAMETER, CanvasItemManipulator::RESIZE_HANDLE_DIAMETER) * scale;
+					for (int i = 0; i < 4; i++) {
+						int prev = (i + 3) % 4;
+						int next = (i + 1) % 4;
+
+						Point2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
+						ofs *= Math::SQRT2 * (handle_size.width / 2);
+						Rect2 icon_rect((endpoints[i] + ofs - (handle_size / 2)).floor(), handle_size);
+
+						RS::get_singleton()->canvas_item_add_texture_rect(srect_ci, icon_rect, resize_icon->get_rid());
+
+						ofs = (endpoints[i] + endpoints[next]) / 2;
+						ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (handle_size.width / 2);
+						icon_rect.position = (ofs - (handle_size / 2)).floor();
+
+						RS::get_singleton()->canvas_item_add_texture_rect(srect_ci, icon_rect, resize_icon->get_rid());
+					}
+				}
+			}
+		}
+
+		// 2D Selection Rectangle
+
+		// Default fallback.
 		Rect2 rect = Rect2(Vector2(), Vector2(10, 10));
 
 		if (ci->_edit_use_rect()) {
@@ -826,41 +1046,156 @@ void RuntimeNodeSelect::_update_selection() {
 #endif // PHYSICS_2D_DISABLED
 		}
 
-		const Vector2 endpoints[4] = {
+		Vector2 endpoints[4] = {
 			xform.xform(rect.position),
 			xform.xform(rect.position + Point2(rect.size.x, 0)),
 			xform.xform(rect.position + rect.size),
 			xform.xform(rect.position + Point2(0, rect.size.y))
 		};
 
+		Color color = item_locked ? srect_locked_color : srect_color;
 		for (int i = 0; i < 4; i++) {
-			RS::get_singleton()->canvas_item_add_line(srect_ci, endpoints[i], endpoints[(i + 1) % 4], srect_color, sel_2d_scale);
+			RS::get_singleton()->canvas_item_add_line(srect_ci, endpoints[i], endpoints[(i + 1) % 4], color, sel_2d_scale);
+		}
+	}
+
+	if (node_select_type == NODE_TYPE_2D) {
+		Point2 temp_pivot = ci_manipulator->get_temp_pivot();
+
+		if (!selected_ci_nodes.is_empty() && ci_manipulator->is_showing_transformation_gizmos()) {
+			CanvasItem *ci = nullptr;
+
+			// Find the first movable node.
+			for (const KeyValue<ObjectID, Dictionary> &kv : selected_ci_nodes) {
+				ci = ObjectDB::get_instance<CanvasItem>(kv.key);
+				if (ci_manipulator->is_node_movable(ci)) {
+					break;
+				}
+				ci = nullptr;
+			}
+
+			if (ci) {
+				Input *input = Input::get_singleton();
+				bool was_input_disabled = input->is_input_disabled();
+				if (was_input_disabled) {
+					input->set_disable_input(false);
+				}
+
+				bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+				bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
+				bool is_moving = tool == CanvasItemManipulator::TOOL_MOVE || (tool == CanvasItemManipulator::TOOL_SELECT && is_alt && !is_ctrl);
+
+				Transform2D edit_xform;
+				if (!is_moving && !Math::is_inf(temp_pivot.x) && !Math::is_inf(temp_pivot.y)) {
+					edit_xform = Transform2D(ci->_edit_get_rotation(), temp_pivot);
+				} else {
+					edit_xform = ci->_edit_get_transform();
+				}
+
+				Transform2D xform_unscaled = (ci->get_global_transform_with_canvas() * ci->get_transform().affine_inverse() * edit_xform).orthonormalized();
+				Transform2D simple_xform;
+				if (ci_manipulator->is_local_space_enabled()) {
+					simple_xform *= xform_unscaled;
+				} else {
+					simple_xform *= Transform2D(0.0f, xform_unscaled.get_origin());
+				}
+
+				RS::get_singleton()->canvas_item_add_set_transform(srect_ci, simple_xform);
+
+				// Move Handles
+				if (is_moving) {
+					Vector<Point2> points = {
+						Point2(CanvasItemManipulator::GIZMO_HANDLE_X_RECT.position.x, CanvasItemManipulator::GIZMO_HANDLE_X_RECT.size.height / 2.0),
+						Point2(CanvasItemManipulator::GIZMO_HANDLE_X_RECT.position.x, -CanvasItemManipulator::GIZMO_HANDLE_X_RECT.size.height / 2.0),
+						Point2(CanvasItemManipulator::GIZMO_HANDLE_X_RECT.position.x + CanvasItemManipulator::GIZMO_HANDLE_X_RECT.size.width, 0)
+					};
+					Vector<Color> colors = { axis_x_color };
+
+					RS::get_singleton()->canvas_item_add_polygon(srect_ci, points, colors);
+					RS::get_singleton()->canvas_item_add_line(srect_ci, Point2(), Point2(CanvasItemManipulator::GIZMO_HANDLE_DISTANCE, 0), axis_x_color, scale);
+
+					points = {
+						Point2(CanvasItemManipulator::GIZMO_HANDLE_Y_RECT.size.width / 2.0, CanvasItemManipulator::GIZMO_HANDLE_Y_RECT.position.y),
+						Point2(-CanvasItemManipulator::GIZMO_HANDLE_Y_RECT.size.width / 2.0, CanvasItemManipulator::GIZMO_HANDLE_Y_RECT.position.y),
+						Point2(0, CanvasItemManipulator::GIZMO_HANDLE_Y_RECT.position.y + CanvasItemManipulator::GIZMO_HANDLE_Y_RECT.size.height)
+					};
+					colors = { axis_y_color };
+
+					RS::get_singleton()->canvas_item_add_polygon(srect_ci, points, colors);
+					RS::get_singleton()->canvas_item_add_line(srect_ci, Point2(), Point2(0, CanvasItemManipulator::GIZMO_HANDLE_DISTANCE), axis_y_color, scale);
+				}
+
+				// Scale Handles
+				if (tool == CanvasItemManipulator::TOOL_SCALE || drag == CanvasItemManipulator::DRAG_SCALE_X || drag == CanvasItemManipulator::DRAG_SCALE_Y || (tool == CanvasItemManipulator::TOOL_SELECT && is_alt && is_ctrl)) {
+					Size2 scale_factor(CanvasItemManipulator::GIZMO_HANDLE_DISTANCE, CanvasItemManipulator::GIZMO_HANDLE_DISTANCE);
+					bool uniform = Input::get_singleton()->is_key_pressed(Key::SHIFT);
+					Point2 offset = simple_xform.affine_inverse().xform(ci_manipulator->get_drag_to()) - simple_xform.affine_inverse().xform(ci_manipulator->get_drag_from());
+
+					if (drag == CanvasItemManipulator::DRAG_SCALE_X) {
+						scale_factor.x += offset.x;
+						if (uniform) {
+							scale_factor.y += offset.x;
+						}
+					} else if (drag == CanvasItemManipulator::DRAG_SCALE_Y) {
+						scale_factor.y += offset.y;
+						if (uniform) {
+							scale_factor.x += offset.y;
+						}
+					}
+
+					Rect2 handle_x_rect(Point2(scale_factor.x, CanvasItemManipulator::GIZMO_HANDLE_X_RECT.position.y), CanvasItemManipulator::GIZMO_HANDLE_X_RECT.size);
+					RS::get_singleton()->canvas_item_add_rect(srect_ci, handle_x_rect, axis_x_color);
+					RS::get_singleton()->canvas_item_add_line(srect_ci, Point2(), Point2(scale_factor.x, 0), axis_x_color, scale);
+
+					Rect2 handle_y_rect(Point2(CanvasItemManipulator::GIZMO_HANDLE_Y_RECT.position.x, scale_factor.y), CanvasItemManipulator::GIZMO_HANDLE_Y_RECT.size);
+					RS::get_singleton()->canvas_item_add_rect(srect_ci, handle_y_rect, axis_y_color);
+					RS::get_singleton()->canvas_item_add_line(srect_ci, Point2(), Point2(0, scale_factor.y), axis_y_color, scale);
+				}
+
+				RS::get_singleton()->canvas_item_add_set_transform(srect_ci, Transform2D());
+
+				if (was_input_disabled) {
+					input->set_disable_input(true);
+				}
+
+				// Rotation Line
+				if (drag == CanvasItemManipulator::DRAG_ROTATE) {
+					RS::get_singleton()->canvas_item_add_line(srect_ci, ci_manipulator->get_drag_rotation_center(), ci_manipulator->get_drag_to(), accent_color * Color(1, 1, 1, 0.6), 2 * scale);
+				}
+			}
+		}
+
+		if (!Math::is_inf(temp_pivot.x) && !Math::is_inf(temp_pivot.y)) {
+			Size2 pivot_size = pivot_icon->get_size() * scale;
+			Rect2 rect(((temp_pivot - view_2d_offset) * view_2d_zoom - (pivot_size / 2.0)).floor(), pivot_size);
+			RS::get_singleton()->canvas_item_add_texture_rect(srect_ci, rect, pivot_icon->get_rid(), false, accent_color);
 		}
 	}
 
 #ifndef _3D_DISABLED
-	for (HashMap<ObjectID, Ref<SelectionBox>>::ConstIterator KV = selected_3d_nodes.begin(); KV != selected_3d_nodes.end(); ++KV) {
-		ObjectID id = KV->key;
-		Node3D *node_3d = ObjectDB::get_instance<Node3D>(id);
-		if (!node_3d) {
+	for (HashMap<ObjectID, Ref<SelectionBox>>::ConstIterator kv = selected_3d_nodes.begin(); kv != selected_3d_nodes.end(); ++kv) {
+		ObjectID id = kv->key;
+
+		Node3D *n3d = ObjectDB::get_instance<Node3D>(id);
+		if (!n3d) {
 			selected_3d_nodes.erase(id);
-			--KV;
+			--kv;
 			continue;
 		}
 
-		if (!node_3d->is_inside_tree()) {
+		if (!n3d->is_inside_tree()) {
 			continue;
 		}
 
 		// Fallback.
 		AABB bounds(Vector3(-0.5, -0.5, -0.5), Vector3(1, 1, 1));
 
-		VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(node_3d);
+		VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(n3d);
 		if (visual_instance) {
 			bounds = visual_instance->get_aabb();
 		} else {
 #ifndef PHYSICS_3D_DISABLED
-			CollisionShape3D *collision_shape = Object::cast_to<CollisionShape3D>(node_3d);
+			CollisionShape3D *collision_shape = Object::cast_to<CollisionShape3D>(n3d);
 			if (collision_shape) {
 				Ref<Shape3D> shape = collision_shape->get_shape();
 				if (shape.is_valid()) {
@@ -870,11 +1205,11 @@ void RuntimeNodeSelect::_update_selection() {
 #endif // PHYSICS_3D_DISABLED
 		}
 
-		Transform3D xform_to_top_level_parent_space = node_3d->get_global_transform().affine_inverse() * node_3d->get_global_transform();
+		Transform3D xform_to_top_level_parent_space = n3d->get_global_transform().affine_inverse() * n3d->get_global_transform();
 		bounds = xform_to_top_level_parent_space.xform(bounds);
-		Transform3D t = node_3d->get_global_transform();
+		Transform3D t = n3d->get_global_transform();
 
-		Ref<SelectionBox> sb = KV->value;
+		Ref<SelectionBox> sb = kv->value;
 		if (t == sb->transform && bounds == sb->bounds) {
 			continue; // Nothing changed.
 		}
@@ -912,7 +1247,7 @@ void RuntimeNodeSelect::_update_selection() {
 #endif // _3D_DISABLED
 }
 
-void RuntimeNodeSelect::_clear_selection() {
+void RuntimeNodeSelect::_clear_selection(bool p_send_msg) {
 	selected_ci_nodes.clear();
 	if (draw_canvas.is_valid()) {
 		RS::get_singleton()->canvas_item_clear(srect_ci);
@@ -921,6 +1256,10 @@ void RuntimeNodeSelect::_clear_selection() {
 #ifndef _3D_DISABLED
 	selected_3d_nodes.clear();
 #endif // _3D_DISABLED
+
+	if (has_selection && p_send_msg) {
+		EngineDebugger::get_singleton()->send_message("remote_nothing_selected", Array());
+	}
 
 	has_selection = false;
 }
@@ -938,26 +1277,32 @@ void RuntimeNodeSelect::_update_selection_drag(const Point2 &p_end_pos) {
 		return;
 	}
 
-	Rect2 selection_drawing = selection_drag_area.abs();
-	int thickness = 1;
+	_set_selection_area(selection_drag_area.abs());
+}
+
+void RuntimeNodeSelect::_set_selection_area(const Rect2 &p_area) {
+	RS::get_singleton()->canvas_item_clear(sel_drag_ci);
+	if (!p_area.has_area()) {
+		return;
+	}
 
 	const Vector2 endpoints[4] = {
-		selection_drawing.position,
-		selection_drawing.position + Point2(selection_drawing.size.x, 0),
-		selection_drawing.position + selection_drawing.size,
-		selection_drawing.position + Point2(0, selection_drawing.size.y)
+		p_area.position,
+		p_area.position + Point2(p_area.size.x, 0),
+		p_area.position + p_area.size,
+		p_area.position + Point2(0, p_area.size.y)
 	};
 
 	// Draw fill.
-	RS::get_singleton()->canvas_item_add_rect(sel_drag_ci, selection_drawing, selection_area_fill);
+	RS::get_singleton()->canvas_item_add_rect(sel_drag_ci, p_area, selection_area_fill);
 	// Draw outline.
 	for (int i = 0; i < 4; i++) {
-		RS::get_singleton()->canvas_item_add_line(sel_drag_ci, endpoints[i], endpoints[(i + 1) % 4], selection_area_outline, thickness);
+		RS::get_singleton()->canvas_item_add_line(sel_drag_ci, endpoints[i], endpoints[(i + 1) % 4], selection_area_outline, 1);
 	}
 }
 
-void RuntimeNodeSelect::_open_selection_list(const Vector<SelectResult> &p_items, const Point2 &p_pos) {
-	Window *root = SceneTree::get_singleton()->get_root();
+void RuntimeNodeSelect::_open_selection_list(const Array &p_selection, const Point2 &p_pos, bool p_append) {
+	selection_list_appending = p_append;
 
 	selection_list = memnew(PopupMenu);
 	selection_list->set_theme(ThemeDB::get_singleton()->get_default_theme());
@@ -966,21 +1311,22 @@ void RuntimeNodeSelect::_open_selection_list(const Vector<SelectResult> &p_items
 	selection_list->connect("index_pressed", callable_mp(this, &RuntimeNodeSelect::_items_popup_index_pressed).bind(selection_list));
 	selection_list->connect("popup_hide", callable_mp(this, &RuntimeNodeSelect::_close_selection_list));
 
+	Window *root = SceneTree::get_singleton()->get_root();
 	root->add_child(selection_list);
 
-	for (const SelectResult &I : p_items) {
+	for (const Variant &var : p_selection) {
+		Node *node = Object::cast_to<Node>(var);
 		int locked = 0;
-		if (I.item->get_meta("_edit_lock_", false)) {
+
+		if (ci_manipulator->is_node_locked(node)) {
 			locked = 1;
 		} else {
-			Node *scene = SceneTree::get_singleton()->get_root();
-			Node *node = I.item;
-
-			while (node && node != scene->get_parent()) {
-				if (node->has_meta("_edit_group_")) {
+			Node *parent = node;
+			while (parent && parent != root->get_parent()) {
+				if (parent->has_meta("_edit_group_")) {
 					locked = 2;
 				}
-				node = node->get_parent();
+				parent = parent->get_parent();
 			}
 		}
 
@@ -991,8 +1337,8 @@ void RuntimeNodeSelect::_open_selection_list(const Vector<SelectResult> &p_items
 			suffix = " (" + RTR("Grouped") + ")";
 		}
 
-		selection_list->add_item((String)I.item->get_name() + suffix);
-		selection_list->set_item_metadata(-1, I.item);
+		selection_list->add_item((String)node->get_name() + suffix);
+		selection_list->set_item_metadata(-1, node);
 	}
 
 	selection_list->set_position(selection_list->is_embedded() ? p_pos : (Input::get_singleton()->get_mouse_position() + root->get_position()));
@@ -1016,7 +1362,11 @@ void RuntimeNodeSelect::_set_selection_visible(bool p_visible) {
 	selection_visible = p_visible;
 
 	if (has_selection) {
-		_update_selection();
+		if (p_visible) {
+			_queue_selection_update();
+		} else {
+			_update_selection();
+		}
 	}
 }
 
@@ -1026,129 +1376,6 @@ void RuntimeNodeSelect::_set_avoid_locked(bool p_enabled) {
 
 void RuntimeNodeSelect::_set_prefer_group(bool p_enabled) {
 	prefer_group_selection = p_enabled;
-}
-
-// Copied and trimmed from the CanvasItemEditor implementation.
-void RuntimeNodeSelect::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
-	if (!p_node || Object::cast_to<Viewport>(p_node)) {
-		return;
-	}
-
-	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
-	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-		if (ci) {
-			if (!ci->is_set_as_top_level()) {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), p_canvas_xform);
-			} else {
-				_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, ci->get_transform(), p_canvas_xform);
-			}
-		} else {
-			CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-			_find_canvas_items_at_pos(p_pos, p_node->get_child(i), r_items, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
-		}
-	}
-
-	if (!ci || !ci->is_visible_in_tree()) {
-		return;
-	}
-
-	Transform2D xform = p_canvas_xform;
-	if (!ci->is_set_as_top_level()) {
-		xform *= p_parent_xform;
-	}
-
-	Window *root = SceneTree::get_singleton()->get_root();
-	Point2 pos;
-
-	// Cameras don't affect `CanvasLayer`s.
-	if (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport()) {
-		pos = root->get_canvas_transform().affine_inverse().xform(p_pos);
-	} else {
-		pos = p_pos;
-	}
-
-	xform = (xform * ci->get_transform()).affine_inverse();
-	const real_t local_grab_distance = xform.basis_xform(Vector2(sel_2d_grab_dist, 0)).length() / view_2d_zoom;
-	if (ci->_edit_is_selected_on_click(xform.xform(pos), local_grab_distance)) {
-		SelectResult res;
-		res.item = ci;
-		res.order = ci->get_effective_z_index() + ci->get_canvas_layer();
-		r_items.push_back(res);
-
-#ifndef PHYSICS_2D_DISABLED
-		// If it's a shape, get the collision object it's from.
-		// FIXME: If the collision object has multiple shapes, only the topmost will be above it in the list.
-		if (Object::cast_to<CollisionShape2D>(ci) || Object::cast_to<CollisionPolygon2D>(ci)) {
-			CollisionObject2D *collision_object = Object::cast_to<CollisionObject2D>(ci->get_parent());
-			if (collision_object) {
-				SelectResult res_col;
-				res_col.item = ci->get_parent();
-				res_col.order = collision_object->get_z_index() + ci->get_canvas_layer();
-				r_items.push_back(res_col);
-			}
-		}
-#endif // PHYSICS_2D_DISABLED
-	}
-}
-
-// Copied and trimmed from the CanvasItemEditor implementation.
-void RuntimeNodeSelect::_find_canvas_items_at_rect(const Rect2 &p_rect, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
-	if (!p_node || Object::cast_to<Viewport>(p_node)) {
-		return;
-	}
-
-	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
-	for (int i = p_node->get_child_count() - 1; i >= 0; i--) {
-		if (ci) {
-			if (!ci->is_set_as_top_level()) {
-				_find_canvas_items_at_rect(p_rect, p_node->get_child(i), r_items, p_parent_xform * ci->get_transform(), p_canvas_xform);
-			} else {
-				_find_canvas_items_at_rect(p_rect, p_node->get_child(i), r_items, ci->get_transform(), p_canvas_xform);
-			}
-		} else {
-			CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node);
-			_find_canvas_items_at_rect(p_rect, p_node->get_child(i), r_items, Transform2D(), cl ? cl->get_transform() : p_canvas_xform);
-		}
-	}
-
-	if (!ci || !ci->is_visible_in_tree()) {
-		return;
-	}
-
-	Transform2D xform = p_canvas_xform;
-	if (!ci->is_set_as_top_level()) {
-		xform *= p_parent_xform;
-	}
-
-	Window *root = SceneTree::get_singleton()->get_root();
-	Rect2 rect;
-	// Cameras don't affect `CanvasLayer`s.
-	if (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport()) {
-		rect = root->get_canvas_transform().affine_inverse().xform(p_rect);
-	} else {
-		rect = p_rect;
-	}
-	rect = (xform * ci->get_transform()).affine_inverse().xform(rect);
-
-	bool selected = false;
-	if (ci->_edit_use_rect()) {
-		Rect2 ci_rect = ci->_edit_get_rect();
-		if (rect.has_point(ci_rect.position) &&
-				rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, 0)) &&
-				rect.has_point(ci_rect.position + Vector2(ci_rect.size.x, ci_rect.size.y)) &&
-				rect.has_point(ci_rect.position + Vector2(0, ci_rect.size.y))) {
-			selected = true;
-		}
-	} else if (rect.has_point(Point2())) {
-		selected = true;
-	}
-
-	if (selected) {
-		SelectResult res;
-		res.item = ci;
-		res.order = ci->get_effective_z_index() + ci->get_canvas_layer();
-		r_items.push_back(res);
-	}
 }
 
 void RuntimeNodeSelect::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
@@ -1202,20 +1429,21 @@ void RuntimeNodeSelect::_reset_camera_2d() {
 
 void RuntimeNodeSelect::_update_view_2d() {
 	Window *root = SceneTree::get_singleton()->get_root();
-	ERR_FAIL_COND(!root->is_camera_2d_override_enabled());
-
 	Camera2D *override_camera = root->get_override_camera_2d();
 	ERR_FAIL_NULL(override_camera);
 	override_camera->set_anchor_mode(Camera2D::ANCHOR_MODE_FIXED_TOP_LEFT);
 	override_camera->set_zoom(Vector2(view_2d_zoom, view_2d_zoom));
 	override_camera->set_offset(view_2d_offset);
 
+	ci_manipulator->set_zoom(view_2d_zoom);
+	ci_manipulator->set_view_offset(view_2d_offset);
+
 	_queue_selection_update();
 }
 
 #ifndef _3D_DISABLED
 
-void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items) {
+void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<DebuggerHelpers::SelectResult> &r_items) {
 	Window *root = SceneTree::get_singleton()->get_root();
 
 	Vector3 ray, pos, to;
@@ -1240,7 +1468,7 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 	while (true) {
 		ray_params.exclude = excluded;
 		if (ss->intersect_ray(ray_params, result)) {
-			SelectResult res;
+			DebuggerHelpers::SelectResult res;
 			res.item = Object::cast_to<Node>(result.collider);
 			res.order = -pos.distance_to(result.position);
 
@@ -1250,7 +1478,7 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 				List<uint32_t> owners;
 				collision->get_shape_owners(&owners);
 				for (uint32_t &I : owners) {
-					SelectResult res_shape;
+					DebuggerHelpers::SelectResult res_shape;
 					res_shape.item = Object::cast_to<Node>(collision->shape_owner_get_owner(I));
 					res_shape.order = res.order;
 					r_items.push_back(res_shape);
@@ -1280,7 +1508,7 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 				Transform3D ai = gt.affine_inverse();
 				Vector3 point, normal;
 				if (mesh_collision->intersect_ray(ai.xform(pos), ai.basis.xform(ray).normalized(), point, normal)) {
-					SelectResult res;
+					DebuggerHelpers::SelectResult res;
 					res.item = Object::cast_to<Node>(obj);
 					res.order = -pos.distance_to(gt.xform(point));
 					r_items.push_back(res);
@@ -1295,7 +1523,7 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 	}
 }
 
-void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<SelectResult> &r_items) {
+void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<DebuggerHelpers::SelectResult> &r_items) {
 	Window *root = SceneTree::get_singleton()->get_root();
 	Camera3D *camera = root->get_camera_3d();
 	if (!camera) {
@@ -1368,7 +1596,7 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 			continue;
 		}
 
-		SelectResult res;
+		DebuggerHelpers::SelectResult res;
 		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
 
@@ -1378,7 +1606,7 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 			List<uint32_t> owners;
 			collision->get_shape_owners(&owners);
 			for (uint32_t &I : owners) {
-				SelectResult res_shape;
+				DebuggerHelpers::SelectResult res_shape;
 				res_shape.item = Object::cast_to<Node>(collision->shape_owner_get_owner(I));
 				if (!node_list.has(res_shape.item)) {
 					node_list.insert(res_shape.item);
@@ -1419,7 +1647,7 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 				}
 				Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(transformed_frustum.ptr(), plane_count);
 				if (mesh_collision->inside_convex_shape(transformed_frustum.ptr(), transformed_frustum.size(), convex_points.ptr(), convex_points.size(), mesh_scale)) {
-					SelectResult res;
+					DebuggerHelpers::SelectResult res;
 					res.item = Object::cast_to<Node>(obj);
 					if (!node_list.has(res.item)) {
 						node_list.insert(res.item);
@@ -1447,6 +1675,53 @@ Vector3 RuntimeNodeSelect::_get_screen_to_space(const Vector3 &p_vector3) {
 	Projection cm = Projection::create_perspective(camera->get_fov(), size.aspect(), znear + p_vector3.z, camera->get_far());
 	Vector2 screen_he = cm.get_viewport_half_extents();
 	return camera_transform.xform(Vector3(((p_vector3.x / size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (p_vector3.y / size.height)) * 2.0 - 1.0) * screen_he.y, -(znear + p_vector3.z)));
+}
+
+void RuntimeNodeSelect::_box_selected_ci(const Array &p_selection) {
+	Vector<Node *> nodes;
+	for (Variant node : p_selection) {
+		nodes.append(Object::cast_to<Node>(node));
+	}
+	_send_ids(nodes, true);
+}
+
+void RuntimeNodeSelect::_save_canvas_state_requested(const Array &p_selection, bool p_save_bones) {
+	for (const Variant &var : p_selection) {
+		CanvasItem *ci = Object::cast_to<CanvasItem>(var);
+		ObjectID id = ci->get_instance_id();
+		ERR_CONTINUE(!selected_ci_nodes.has(id));
+		selected_ci_nodes[id] = ci->_edit_get_state();
+	}
+}
+
+void RuntimeNodeSelect::_restore_canvas_state_requested(const Array &p_selection, bool p_restore_bones) {
+	for (const Variant &var : p_selection) {
+		CanvasItem *ci = Object::cast_to<CanvasItem>(var);
+		ObjectID id = ci->get_instance_id();
+		ERR_CONTINUE(!selected_ci_nodes.has(id));
+		ci->_edit_set_state(selected_ci_nodes[id]);
+	}
+}
+
+void RuntimeNodeSelect::_commit_canvas_state_requested(const Array &p_selection, const String &p_message, bool p_restore_bones) {
+	Dictionary ids;
+
+	for (const Variant &var : p_selection) {
+		CanvasItem *ci = Object::cast_to<CanvasItem>(var);
+		if (!ci) {
+			continue;
+		}
+
+		ObjectID id = ci->get_instance_id();
+
+		Dictionary states;
+		states["undo"] = selected_ci_nodes[id];
+		states["redo"] = ci->_edit_get_state();
+
+		ids[id] = states;
+	}
+
+	EngineDebugger::get_singleton()->send_message("remote_undo_redo_action", { p_message, ids });
 }
 
 void RuntimeNodeSelect::_fov_scaled() {

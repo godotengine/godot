@@ -79,8 +79,8 @@ void ScenePaint2DEditor::_edit(Object *p_object) {
 		{
 #endif
 			grid = CanvasItemEditor::get_singleton()->is_grid_visible();
-			grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
-			grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
+			grid_step = CanvasItemEditor::get_singleton()->get_canvas_item_manipulator()->get_grid_step();
+			grid_offset = CanvasItemEditor::get_singleton()->get_canvas_item_manipulator()->get_grid_offset();
 		}
 	}
 
@@ -368,9 +368,9 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 		pos = paint_mode == PAINT_MODE_SNAP_GRID ? cell_pos : (cell_pos + offset);
 
 		if (!allow_overlapping) {
-			Vector<CanvasItemEditor::SelectResult> results;
-			canvas_item_editor->find_canvas_items_at_pos(pos, node, results);
-			for (const CanvasItemEditor::SelectResult &result : results) {
+			Vector<DebuggerHelpers::SelectResult> results;
+			canvas_item_editor->get_canvas_item_manipulator()->find_canvas_items_at_pos(pos, node, results);
+			for (const DebuggerHelpers::SelectResult &result : results) {
 				Node2D *root = _get_node_root(result.item);
 				if (_is_scene_painted(root)) {
 					Vector2 root_pos = node->get_global_transform().xform(root->get_position());
@@ -423,10 +423,10 @@ void ScenePaint2DEditor::_remove_node_at_pos() {
 	}
 
 	Node *scene = EditorNode::get_singleton()->get_edited_scene();
-	Vector<CanvasItemEditor::SelectResult> results;
-	canvas_item_editor->find_canvas_items_at_pos(pos, node, results);
+	Vector<DebuggerHelpers::SelectResult> results;
+	canvas_item_editor->get_canvas_item_manipulator()->find_canvas_items_at_pos(pos, node, results);
 
-	for (const CanvasItemEditor::SelectResult &result : results) {
+	for (const DebuggerHelpers::SelectResult &result : results) {
 		Node2D *root = _get_node_root(result.item);
 		if (!_is_scene_painted(root)) {
 			continue;
@@ -638,10 +638,10 @@ void ScenePaint2DEditor::_update_scene_picker(int p_mode, Control *p_control) {
 		case PICK_CANVAS_ITEM: {
 			CanvasItemEditor *canvas_item_editor = CanvasItemEditor::get_singleton();
 			Vector2 pos = canvas_item_editor->get_canvas_transform().affine_inverse().xform(viewport->get_local_mouse_position());
-			Vector<CanvasItemEditor::SelectResult> results;
+			Vector<DebuggerHelpers::SelectResult> results;
 			Node *scene = EditorNode::get_singleton()->get_edited_scene();
-			canvas_item_editor->find_canvas_items_at_pos(pos, scene, results);
-			for (const CanvasItemEditor::SelectResult &result : results) {
+			canvas_item_editor->get_canvas_item_manipulator()->find_canvas_items_at_pos(pos, scene, results);
+			for (const DebuggerHelpers::SelectResult &result : results) {
 				Node2D *root = _get_node_root(result.item);
 				if (_is_selected_scene_valid(root)) {
 					node_2d = root;
@@ -754,8 +754,8 @@ ScenePaint2DEditor::PaintMode ScenePaint2DEditor::_reload_paint_mode() {
 }
 
 void ScenePaint2DEditor::_grid_step_changed() {
-	grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
-	grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
+	grid_step = CanvasItemEditor::get_singleton()->get_canvas_item_manipulator()->get_grid_step();
+	grid_offset = CanvasItemEditor::get_singleton()->get_canvas_item_manipulator()->get_grid_offset();
 }
 
 void ScenePaint2DEditor::_bind_methods() {
@@ -980,7 +980,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 
 void ScenePaint2DEditorPlugin::_canvas_item_tool_changed(int p_tool) {
 	bool prev_selected = scene_paint_2d_editor->is_tool_selected;
-	scene_paint_2d_editor->is_tool_selected = (CanvasItemEditor::Tool)p_tool == CanvasItemEditor::TOOL_SCENE_PAINT;
+	scene_paint_2d_editor->is_tool_selected = (CanvasItemManipulator::Tool)p_tool == CanvasItemManipulator::TOOL_SCENE_PAINT;
 	if (!scene_paint_2d_editor->is_tool_selected && prev_selected) {
 		make_visible(false);
 		scene_paint_2d_editor->_update_hint_label();

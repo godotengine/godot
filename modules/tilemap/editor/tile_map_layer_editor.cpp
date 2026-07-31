@@ -121,7 +121,7 @@ void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 	random_tile_toggle->set_visible(!using_select);
 	bucket_contiguous_checkbox->set_visible(!using_select && pressed_tool == bucket_tool_button);
 	scatter_controls_container->set_visible(!using_select && random_tile_toggle->is_pressed());
-	CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
+	CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemManipulator::TOOL_SELECT);
 }
 
 void TileMapLayerEditorTilesPlugin::_update_transform_buttons() {
@@ -556,7 +556,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 		return false;
 	}
 
-	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SELECT) {
+	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemManipulator::TOOL_SELECT) {
 		_stop_dragging();
 		return false;
 	}
@@ -840,7 +840,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 	}
 
 	// Handle the preview of the tiles to be placed.
-	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_mc->is_visible_in_tree()) && CanvasItemEditor::get_singleton()->get_current_tool() == CanvasItemEditor::TOOL_SELECT && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
+	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_mc->is_visible_in_tree()) && CanvasItemEditor::get_singleton()->get_current_tool() == CanvasItemManipulator::TOOL_SELECT && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
 		HashMap<Vector2i, TileMapCell> preview;
 		Rect2i drawn_grid_rect;
 
@@ -3000,7 +3000,7 @@ bool TileMapLayerEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputE
 		return false;
 	}
 
-	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SELECT) {
+	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemManipulator::TOOL_SELECT) {
 		return false;
 	}
 
@@ -3709,8 +3709,8 @@ void TileMapLayerEditor::_notification(int p_what) {
 			}
 			if (is_visible()) {
 				// Fix: Don't change the tool if we are in scene paint mode.
-				if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SCENE_PAINT) {
-					CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
+				if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemManipulator::TOOL_SCENE_PAINT) {
+					CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemManipulator::TOOL_SELECT);
 				}
 			}
 		} break;

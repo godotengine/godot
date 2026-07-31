@@ -243,6 +243,8 @@ class ControlEditorToolbar : public HBoxContainer {
 protected:
 	void _notification(int p_notification);
 
+	static void _bind_methods();
+
 	static ControlEditorToolbar *singleton;
 
 public:

@@ -36,7 +36,7 @@
 #include "scene/main/viewport.h"
 #include "servers/display/accessibility_server.h"
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = offset;
@@ -75,9 +75,7 @@ void Sprite2D::_edit_set_rect(const Rect2 &p_rect) {
 	set_region_rect(Rect2(region_rect.position, p_rect.size));
 	set_position(get_position() + get_transform().basis_xform(delta));
 }
-#endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
 bool Sprite2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	return is_pixel_opaque(p_point);
 }

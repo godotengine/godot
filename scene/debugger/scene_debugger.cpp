@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/debugger/remote_debugger.h"
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
 #include "core/io/dir_access.h"
@@ -120,21 +121,70 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 		return;
 	}
 
-	Ref<Shortcut> p_shortcut = p_settings.get("editor/next_frame_embedded_project", Ref<Shortcut>());
-	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
-		EngineDebugger::get_singleton()->send_message("request_embed_next_frame", Array());
+	LocalVector<String> shortcuts = {
+		"editor/suspend_resume_embedded_project",
+		"canvas_item_editor/select_mode",
+		"canvas_item_editor/move_mode",
+		"canvas_item_editor/rotate_mode",
+		"canvas_item_editor/scale_mode",
+		"canvas_item_editor/pan_mode",
+		"canvas_item_editor/use_local_space",
+	};
+	for (const String &key : shortcuts) {
+		Ref<Shortcut> shortcut = p_settings.get(key, Ref<Shortcut>());
+		if (shortcut.is_valid() && shortcut->matches_event(k) && !k->is_echo()) {
+			EngineDebugger::get_singleton()->send_message("editor_shortcut_pressed", { key });
+			return;
+		}
+	}
+
+	Ref<Shortcut> shortcut = p_settings.get("editor/next_frame_embedded_project", Ref<Shortcut>());
+	if (shortcut.is_valid() && shortcut->matches_event(k)) {
+		EngineDebugger::get_singleton()->send_message("editor_shortcut_pressed", { "editor/next_frame_embedded_project" });
 		return;
 	}
 
-	if (k->is_echo()) {
-		return;
-	} // Shortcuts that doesn't need is_echo goes below here
+	if (RuntimeNodeSelect::get_singleton()->node_select_type == RuntimeNodeSelect::NODE_TYPE_NONE) {
+		return; // Ignore undo/redo actions in Input mode, as it can result in unwanted edits.
+	}
 
-	p_shortcut = p_settings.get("editor/suspend_resume_embedded_project", Ref<Shortcut>());
-	if (p_shortcut.is_valid() && p_shortcut->matches_event(k)) {
-		EngineDebugger::get_singleton()->send_message("request_embed_suspend_toggle", Array());
+	String action;
+	shortcut = p_settings.get("ui_undo", Ref<Shortcut>());
+	if (shortcut.is_valid() && shortcut->matches_event(k)) {
+		action = "ui_undo";
+	} else {
+		shortcut = p_settings.get("ui_redo", Ref<Shortcut>());
+		if (shortcut.is_valid() && shortcut->matches_event(k)) {
+			action = "ui_redo";
+		}
+	}
+
+	if (action.is_empty()) {
 		return;
 	}
+
+	Input *input = Input::get_singleton();
+	bool was_input_disabled = input->is_input_disabled();
+	if (was_input_disabled) {
+		input->set_disable_input(false);
+	}
+
+	const bool mouse_pressed = (int)Input::get_singleton()->get_mouse_button_mask() & 0x7;
+
+	if (was_input_disabled) {
+		input->set_disable_input(true);
+	}
+
+	// Undo/redo actions should not be done while mouse buttons are pressed,
+	// since it could mean that nodes are being manipulated.
+	if (mouse_pressed) {
+		Vector<String> strings = { RTR("Can't undo while mouse buttons are pressed.") };
+		Vector<int> types = { RemoteDebugger::MESSAGE_TYPE_EDITOR };
+		EngineDebugger::get_singleton()->send_message("output", { strings, types });
+		return;
+	}
+
+	EngineDebugger::get_singleton()->send_message("editor_shortcut_pressed", { action });
 }
 
 void SceneDebugger::_on_window_size_changed() {
@@ -179,6 +229,17 @@ Error SceneDebugger::_msg_inspect_objects(const Array &p_args) {
 		ids.append(ObjectID(id.operator uint64_t()));
 	}
 	_send_object_ids(ids, p_args[1]);
+	return OK;
+}
+
+Error SceneDebugger::_msg_change_canvas_item_states(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() != 1, ERR_INVALID_DATA);
+	for (KeyValue kv : (Dictionary)p_args[0]) {
+		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(kv.key);
+		if (ci) {
+			ci->_edit_set_state(kv.value);
+		}
+	}
 	return OK;
 }
 
@@ -449,21 +510,35 @@ Error SceneDebugger::_msg_runtime_node_select_setup(const Array &p_args) {
 	return OK;
 }
 
-Error SceneDebugger::_msg_runtime_node_select_set_type(const Array &p_args) {
+Error SceneDebugger::_msg_runtime_node_select_set_node_type(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	RuntimeNodeSelect::NodeType type = (RuntimeNodeSelect::NodeType)(int)p_args[0];
-	RuntimeNodeSelect::get_singleton()->_node_set_type(type);
+	RuntimeNodeSelect::get_singleton()->_set_node_type(type);
 	return OK;
 }
 
-Error SceneDebugger::_msg_runtime_node_select_set_mode(const Array &p_args) {
+Error SceneDebugger::_msg_runtime_node_select_set_ci_tool(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
-	RuntimeNodeSelect::SelectMode mode = (RuntimeNodeSelect::SelectMode)(int)p_args[0];
-	RuntimeNodeSelect::get_singleton()->_select_set_mode(mode);
+	CanvasItemManipulator::Tool tool = (CanvasItemManipulator::Tool)(int)p_args[0];
+	RuntimeNodeSelect::get_singleton()->_set_ci_tool(tool);
 	return OK;
 }
 
-Error SceneDebugger::_msg_runtime_node_select_set_visible(const Array &p_args) {
+Error SceneDebugger::_msg_runtime_node_select_set_ci_local_space(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	bool enabled = p_args[0];
+	RuntimeNodeSelect::get_singleton()->_set_ci_local_space(enabled);
+	return OK;
+}
+
+Error SceneDebugger::_msg_runtime_node_select_set_n3d_tool(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	RuntimeNodeSelect::SelectMode tool = (RuntimeNodeSelect::SelectMode)(int)p_args[0];
+	RuntimeNodeSelect::get_singleton()->_set_n3d_tool(tool);
+	return OK;
+}
+
+Error SceneDebugger::_msg_runtime_node_select_set_selection_visible(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool visible = p_args[0];
 	RuntimeNodeSelect::get_singleton()->_set_selection_visible(visible);
@@ -617,6 +692,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["request_scene_tree"] = _msg_request_scene_tree;
 	message_handlers["save_node"] = _msg_save_node;
 	message_handlers["inspect_objects"] = _msg_inspect_objects;
+	message_handlers["change_canvas_item_states"] = _msg_change_canvas_item_states;
 #ifndef DISABLE_DEPRECATED
 	message_handlers["inspect_object"] = _msg_inspect_object;
 #endif // DISABLE_DEPRECATED
@@ -654,9 +730,11 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["live_duplicate_node"] = _msg_live_duplicate_node;
 	message_handlers["live_reparent_node"] = _msg_live_reparent_node;
 	message_handlers["runtime_node_select_setup"] = _msg_runtime_node_select_setup;
-	message_handlers["runtime_node_select_set_type"] = _msg_runtime_node_select_set_type;
-	message_handlers["runtime_node_select_set_mode"] = _msg_runtime_node_select_set_mode;
-	message_handlers["runtime_node_select_set_visible"] = _msg_runtime_node_select_set_visible;
+	message_handlers["runtime_node_select_set_node_type"] = _msg_runtime_node_select_set_node_type;
+	message_handlers["runtime_node_select_set_selection_visible"] = _msg_runtime_node_select_set_selection_visible;
+	message_handlers["runtime_node_select_set_ci_tool"] = _msg_runtime_node_select_set_ci_tool;
+	message_handlers["runtime_node_select_set_ci_local_space"] = _msg_runtime_node_select_set_ci_local_space;
+	message_handlers["runtime_node_select_set_n3d_tool"] = _msg_runtime_node_select_set_n3d_tool;
 	message_handlers["runtime_node_select_set_avoid_locked"] = _msg_runtime_node_select_set_avoid_locked;
 	message_handlers["runtime_node_select_set_prefer_group"] = _msg_runtime_node_select_set_prefer_group;
 	message_handlers["runtime_node_select_reset_camera_2d"] = _msg_runtime_node_select_reset_camera_2d;
@@ -706,7 +784,7 @@ void SceneDebugger::_send_object_ids(const Vector<ObjectID> &p_ids, bool p_updat
 	Vector<ObjectID> ids = p_ids;
 	if (ids.size() > RuntimeNodeSelect::get_singleton()->max_selection) {
 		ids.resize(RuntimeNodeSelect::get_singleton()->max_selection);
-		EngineDebugger::get_singleton()->send_message("show_selection_limit_warning", Array());
+		RuntimeNodeSelect::get_singleton()->_show_limit_warning();
 	}
 
 	LocalVector<Node *> nodes;
