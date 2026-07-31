@@ -4399,7 +4399,7 @@ void TextEdit::_clear() {
 	carets.write[0].last_fit_x = 0;
 	deselect();
 
-	emit_signal(SNAME("lines_edited_from"), old_text_size, 0);
+	emit_signal(SNAME("lines_edited_from"), old_text_size - 1, 0);
 }
 
 void TextEdit::_set_text(const String &p_text, bool p_emit_signal) {
