@@ -94,6 +94,11 @@ public:
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	void _set_oversampling_bind_compat_121234(int p_oversampling);
+	int _get_oversampling_bind_compat_121234() const;
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	Ref<AudioEffectInstance> instantiate() override;

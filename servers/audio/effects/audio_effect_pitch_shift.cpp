@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "audio_effect_pitch_shift.h"
+#include "audio_effect_pitch_shift.compat.inc"
 
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
