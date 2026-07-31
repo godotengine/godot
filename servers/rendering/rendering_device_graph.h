@@ -164,6 +164,8 @@ public:
 		RESOURCE_USAGE_TEXTURE_BUFFER_READ_WRITE,
 		RESOURCE_USAGE_STORAGE_BUFFER_READ,
 		RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE,
+		// Same as above, but writes are not ordered against each other (e.g. atomics).
+		RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE_RELAXED,
 		RESOURCE_USAGE_VERTEX_BUFFER_READ,
 		RESOURCE_USAGE_INDEX_BUFFER_READ,
 		RESOURCE_USAGE_TEXTURE_SAMPLE,
@@ -211,7 +213,6 @@ public:
 		bool in_parent_dirty_list = false;
 		bool write_command_list_enabled = false;
 		bool is_discardable = false;
-		bool relaxed_write_ordering = false;
 
 		_FORCE_INLINE_ void reset_if_outdated(int64_t new_command_frame) {
 			if (new_command_frame != command_frame) {

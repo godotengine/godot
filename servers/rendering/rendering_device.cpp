@@ -1502,7 +1502,6 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> 
 	// Storage buffers are assumed to be mutable.
 	buffer.draw_tracker = RDG::resource_tracker_create();
 	buffer.draw_tracker->buffer_driver_id = buffer.driver_id;
-	buffer.draw_tracker->relaxed_write_ordering = buffer.relaxed_write_ordering;
 
 	if (p_data.size()) {
 		_buffer_initialize(&buffer, p_data);
@@ -4734,7 +4733,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					draw_trackers.push_back(buffer->draw_tracker);
 
 					if (set_uniform.writable) {
-						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE);
+						draw_trackers_usage.push_back(buffer->relaxed_write_ordering ? RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE_RELAXED : RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE);
 					} else {
 						draw_trackers_usage.push_back(RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ);
 					}
@@ -7536,7 +7535,6 @@ bool RenderingDevice::_buffer_make_mutable(Buffer *p_buffer, RID p_buffer_id) {
 		// Create a tracker for the buffer and make all its dependencies mutable.
 		p_buffer->draw_tracker = RDG::resource_tracker_create();
 		p_buffer->draw_tracker->buffer_driver_id = p_buffer->driver_id;
-		p_buffer->draw_tracker->relaxed_write_ordering = p_buffer->relaxed_write_ordering;
 		if (p_buffer_id.is_valid()) {
 			_dependencies_make_mutable(p_buffer_id, p_buffer->draw_tracker);
 		}
@@ -10420,6 +10418,7 @@ static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_TEXTURE_BUFFER_READ
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_TEXTURE_BUFFER_READ_WRITE, RDG::RESOURCE_USAGE_TEXTURE_BUFFER_READ_WRITE));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_STORAGE_BUFFER_READ, RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE, RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE));
+static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE_RELAXED, RDG::RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE_RELAXED));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_VERTEX_BUFFER_READ, RDG::RESOURCE_USAGE_VERTEX_BUFFER_READ));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_INDEX_BUFFER_READ, RDG::RESOURCE_USAGE_INDEX_BUFFER_READ));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_TEXTURE_SAMPLE, RDG::RESOURCE_USAGE_TEXTURE_SAMPLE));

@@ -70,6 +70,8 @@ String RenderingDeviceGraph::_usage_to_string(ResourceUsage p_usage) {
 			return "Storage Buffer Read";
 		case RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE:
 			return "Storage Buffer Read Write";
+		case RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE_RELAXED:
+			return "Storage Buffer Read Write Relaxed";
 		case RESOURCE_USAGE_VERTEX_BUFFER_READ:
 			return "Vertex Buffer Read";
 		case RESOURCE_USAGE_INDEX_BUFFER_READ:
@@ -111,6 +113,7 @@ bool RenderingDeviceGraph::_is_write_usage(ResourceUsage p_usage) {
 		case RESOURCE_USAGE_RESOLVE_TO:
 		case RESOURCE_USAGE_TEXTURE_BUFFER_READ_WRITE:
 		case RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE:
+		case RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE_RELAXED:
 		case RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE:
 		case RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE:
 		case RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE:
@@ -184,6 +187,7 @@ RDD::BarrierAccessBits RenderingDeviceGraph::_usage_to_access_bits(ResourceUsage
 			return RDD::BARRIER_ACCESS_SHADER_READ_BIT;
 		case RESOURCE_USAGE_TEXTURE_BUFFER_READ_WRITE:
 		case RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE:
+		case RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE_RELAXED:
 		case RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE:
 			return RDD::BarrierAccessBits(RDD::BARRIER_ACCESS_SHADER_READ_BIT | RDD::BARRIER_ACCESS_SHADER_WRITE_BIT);
 		case RESOURCE_USAGE_VERTEX_BUFFER_READ:
@@ -579,7 +583,7 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 		ResourceTracker *search_tracker = resource_has_parent ? resource_tracker->parent : resource_tracker;
 		bool different_usage = resource_tracker->usage != new_resource_usage;
 
-		bool relaxed_write = write_usage && !different_usage && search_tracker->relaxed_write_ordering && search_tracker->write_command_or_list_index >= 0;
+		bool relaxed_write = !different_usage && new_resource_usage == RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE_RELAXED && search_tracker->write_command_or_list_index >= 0;
 		bool write_usage_after_write = (write_usage && !relaxed_write && search_tracker->write_command_or_list_index >= 0);
 		if (different_usage || write_usage_after_write) {
 			// A barrier must be pushed if the usage is different of it's a write usage and there was already a command that wrote to this resource previously.
