@@ -1039,6 +1039,9 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 			for (Node *node : nodes_to_move) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(node);
 				if (ci) {
+					if (!_is_node_movable(ci, true)) {
+						continue;
+					}
 					Transform2D xform = ci->get_global_transform_with_canvas().affine_inverse() * ci->get_transform();
 					undo_redo->add_do_method(ci, "_edit_set_position", xform.xform(node_create_position));
 					undo_redo->add_undo_method(ci, "_edit_set_position", ci->_edit_get_position());
@@ -2545,7 +2548,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				}
 			}
 			for (Node *node : EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list()) {
-				if (Object::cast_to<CanvasItem>(node)) {
+				if (Object::cast_to<CanvasItem>(node) && _is_node_movable(node, false)) {
 					add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("ToolMove")), TTRC("Move Node(s) Here"), ADD_MOVE);
 					break;
 				}
