@@ -834,6 +834,12 @@ void FileDialog::_popup_menu(const Vector2 &p_pos, int p_for_item) {
 }
 
 void FileDialog::update_file_list() {
+	Vector<String> selected_files;
+	if (mode == FILE_MODE_OPEN_FILES) {
+		for (int idx : file_list->get_selected_items()) {
+			selected_files.push_back(file_list->get_item_text(idx));
+		}
+	}
 	file_list->clear();
 
 	// Scroll back to the top after opening a directory
@@ -965,6 +971,11 @@ void FileDialog::update_file_list() {
 		d["dir"] = !info.bundle;
 		d["bundle"] = info.bundle;
 		file_list->set_item_metadata(-1, d);
+		if (mode == FILE_MODE_OPEN_FILES) {
+			if (selected_files.has(info.name)) {
+				file_list->select(file_list->get_item_count() - 1, false);
+			}
+		}
 	}
 
 	LocalVector<FileInfo> filtered_files;
@@ -1074,7 +1085,11 @@ void FileDialog::update_file_list() {
 		d["bundle"] = false;
 		file_list->set_item_metadata(-1, d);
 
-		if (filename_edit->get_text() == info.name || info.match_string == info.name) {
+		if (mode == FILE_MODE_OPEN_FILES) {
+			if (filename_edit->get_text() == info.name || info.match_string == info.name || selected_files.has(info.name)) {
+				file_list->select(file_list->get_item_count() - 1, false);
+			}
+		} else if (filename_edit->get_text() == info.name || info.match_string == info.name) {
 			file_list->select(file_list->get_item_count() - 1);
 		}
 	}
