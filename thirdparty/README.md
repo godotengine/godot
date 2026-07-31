@@ -519,6 +519,10 @@ Files extracted from upstream source:
 - All files in `Jolt/`, except `Jolt/Jolt.cmake`, any files dependent on `ENABLE_OBJECT_STREAM` as seen in `Jolt/Jolt.cmake` and the `Jolt/Physics/Hair/`, `Jolt/Compute/` and `Jolt/Shaders/` folders.
 - `LICENSE`
 
+Patches:
+
+- `0001-backport-upstream-commit-63f2f57.patch` (GH-121974)
+
 
 ## libbacktrace
 
