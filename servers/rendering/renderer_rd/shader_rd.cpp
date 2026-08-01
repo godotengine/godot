@@ -277,7 +277,7 @@ void ShaderRD::_clear_version(Version *p_version) {
 	}
 }
 
-void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template) {
+void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template, const String &p_driver_name) {
 	for (const StageTemplate::Chunk &chunk : p_template.chunks) {
 		switch (chunk.type) {
 			case StageTemplate::Chunk::TYPE_VERSION_DEFINES: {
@@ -294,7 +294,10 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 				for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
 					builder.append(String("#define ") + String(E.key) + "_CODE_USED\n");
 				}
-				builder.append(String("#define RENDER_DRIVER_") + OS::get_singleton()->get_current_rendering_driver_name().to_upper() + "\n");
+				// The driver can be overridden when the source is generated for a
+				// different target than the host, such as by the shader baker.
+				const String &driver_name = p_driver_name.is_empty() ? OS::get_singleton()->get_current_rendering_driver_name() : p_driver_name;
+				builder.append(String("#define RENDER_DRIVER_") + driver_name.to_upper() + "\n");
 				builder.append("#define samplerExternalOES sampler2D\n");
 				builder.append("#define textureExternalOES texture2D\n");
 			} break;
@@ -337,7 +340,7 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 	}
 }
 
-Vector<String> ShaderRD::_build_variant_stage_sources(uint32_t p_variant, CompileData p_data) {
+Vector<String> ShaderRD::_build_variant_stage_sources(uint32_t p_variant, CompileData p_data, const String &p_driver_name) {
 	if (!variants_enabled[p_variant]) {
 		return Vector<String>(); // Variant is disabled, return.
 	}
@@ -348,55 +351,55 @@ Vector<String> ShaderRD::_build_variant_stage_sources(uint32_t p_variant, Compil
 	if (pipeline_type == RD::PIPELINE_TYPE_COMPUTE) {
 		// Compute stage.
 		StringBuilder builder;
-		_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_COMPUTE]);
+		_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_COMPUTE], p_driver_name);
 		stage_sources.write[RD::SHADER_STAGE_COMPUTE] = builder.as_string();
 	} else if (pipeline_type == RD::PIPELINE_TYPE_RAYTRACING) {
 		{
 			// Raygen stage.
 			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_RAYGEN]);
+			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_RAYGEN], p_driver_name);
 			stage_sources.write[RD::SHADER_STAGE_RAYGEN] = builder.as_string();
 		}
 
 		{
 			// Any hit stage.
 			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_ANY_HIT]);
+			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_ANY_HIT], p_driver_name);
 			stage_sources.write[RD::SHADER_STAGE_ANY_HIT] = builder.as_string();
 		}
 
 		{
 			// Closest hit stage.
 			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_CLOSEST_HIT]);
+			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_CLOSEST_HIT], p_driver_name);
 			stage_sources.write[RD::SHADER_STAGE_CLOSEST_HIT] = builder.as_string();
 		}
 
 		{
 			// Miss stage.
 			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_MISS]);
+			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_MISS], p_driver_name);
 			stage_sources.write[RD::SHADER_STAGE_MISS] = builder.as_string();
 		}
 
 		{
 			// Intersection stage.
 			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_INTERSECTION]);
+			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_INTERSECTION], p_driver_name);
 			stage_sources.write[RD::SHADER_STAGE_INTERSECTION] = builder.as_string();
 		}
 	} else {
 		{
 			// Vertex stage.
 			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_VERTEX]);
+			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_VERTEX], p_driver_name);
 			stage_sources.write[RD::SHADER_STAGE_VERTEX] = builder.as_string();
 		}
 
 		{
 			// Fragment stage.
 			StringBuilder builder;
-			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_FRAGMENT]);
+			_build_variant_code(builder, p_variant, p_data.version, stage_templates[STAGE_TYPE_FRAGMENT], p_driver_name);
 			stage_sources.write[RD::SHADER_STAGE_FRAGMENT] = builder.as_string();
 		}
 	}
@@ -423,7 +426,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 	}
 }
 
-Vector<String> ShaderRD::version_build_variant_stage_sources(RID p_version, int p_variant) {
+Vector<String> ShaderRD::version_build_variant_stage_sources(RID p_version, int p_variant, const String &p_driver_name) {
 	Version *version = version_owner.get_or_null(p_version);
 	ERR_FAIL_NULL_V(version, Vector<String>());
 
@@ -434,7 +437,7 @@ Vector<String> ShaderRD::version_build_variant_stage_sources(RID p_version, int 
 	CompileData compile_data;
 	compile_data.version = version;
 	compile_data.group = variant_to_group[p_variant];
-	return _build_variant_stage_sources(p_variant, compile_data);
+	return _build_variant_stage_sources(p_variant, compile_data, p_driver_name);
 }
 
 RenderingServerTypes::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {

@@ -171,8 +171,8 @@ private:
 
 	StageTemplate stage_templates[STAGE_TYPE_MAX];
 
-	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template);
-	Vector<String> _build_variant_stage_sources(uint32_t p_variant, CompileData p_data);
+	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template, const String &p_driver_name = String());
+	Vector<String> _build_variant_stage_sources(uint32_t p_variant, CompileData p_data, const String &p_driver_name = String());
 
 	void _add_stage(const char *p_code, StageType p_stage_type);
 
@@ -264,7 +264,7 @@ public:
 	static Vector<RD::ShaderStageSPIRVData> compile_stages(const Vector<String> &p_stage_sources, const Vector<uint64_t> &p_dynamic_buffers);
 	static PackedByteArray save_shader_cache_bytes(const LocalVector<int> &p_variants, const Vector<Vector<uint8_t>> &p_variant_data);
 
-	Vector<String> version_build_variant_stage_sources(RID p_version, int p_variant);
+	Vector<String> version_build_variant_stage_sources(RID p_version, int p_variant, const String &p_driver_name = String());
 	RenderingServerTypes::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 	String version_get_cache_file_relative_path(RID p_version, int p_group, const String &p_api_name);
 

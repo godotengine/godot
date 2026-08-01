@@ -408,7 +408,9 @@ void ShaderBakerExportPlugin::_customize_shader_version(ShaderRD *p_shader, RID 
 		WorkItem work_item;
 		work_item.cache_path = group_items[group].cache_path;
 		work_item.shader_name = p_shader->get_name();
-		work_item.stage_sources = p_shader->version_build_variant_stage_sources(p_version, i);
+		// Build the source with the define of the driver the shaders are baked
+		// for, which can differ from the driver the editor is running on.
+		work_item.stage_sources = p_shader->version_build_variant_stage_sources(p_version, i, shader_container_driver);
 		work_item.dynamic_buffers = p_shader->get_dynamic_buffers();
 		work_item.variant = i;
 
