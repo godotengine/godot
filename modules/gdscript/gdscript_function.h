@@ -31,6 +31,7 @@
 #pragma once
 
 #include "gdscript_utility_functions.h"
+#include "inline_cache.h"
 
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
@@ -381,6 +382,7 @@ private:
 	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
 	Vector<const MethodBind *> methods;
 	Vector<GDScriptFunction *> lambdas;
+	TightLocalVector<InlineCache> inline_caches;
 
 	int _code_size = 0;
 	int _default_arg_count = 0;
@@ -399,6 +401,7 @@ private:
 	int _gds_utilities_count = 0;
 	int _methods_count = 0;
 	int _lambdas_count = 0;
+	int _inline_cache_count = 0;
 
 	int *_code_ptr = nullptr;
 	const int *_default_arg_ptr = nullptr;
@@ -417,6 +420,7 @@ private:
 	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
 	const MethodBind *const *_methods_ptr = nullptr;
 	GDScriptFunction **_lambdas_ptr = nullptr;
+	InlineCache *_inline_cache_ptr = nullptr;
 
 #ifdef DEBUG_ENABLED
 	CharString func_cname;
