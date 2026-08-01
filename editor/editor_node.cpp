@@ -4897,7 +4897,7 @@ int EditorNode::new_scene() {
 	return idx;
 }
 
-Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_force_open_imported, bool p_update_tabs) {
+Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_force_open_imported, bool p_update_tabs, bool p_force_new_scene) {
 	const String lpath = ProjectSettings::get_singleton()->localize_path(ResourceUID::ensure_path(p_scene));
 	_update_prev_closed_scenes(lpath, false);
 
@@ -4984,7 +4984,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	}
 
 	int idx = editor_data.get_edited_scene();
-	if (idx == -1 || editor_data.get_edited_scene_root() || !editor_data.get_scene_path(idx).is_empty()) {
+	if (idx == -1 || editor_data.get_edited_scene_root() || !editor_data.get_scene_path(idx).is_empty() || p_force_new_scene) {
 		idx = editor_data.add_edited_scene(-1);
 	}
 	editor_data.set_scene_root(idx, new_scene);
@@ -7180,7 +7180,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	// Reload scene.
 	_remove_scene(scene_idx, false);
-	Error err = load_scene(p_path, true, false, false, false);
+	Error err = load_scene(p_path, true, false, false, false, true);
 	if (err != OK) {
 		return;
 	}
@@ -7194,8 +7194,8 @@ void EditorNode::reload_scene(const String &p_path) {
 		_set_current_scene_nocheck(current_tab, true);
 	} else {
 		editor_data.set_edited_scene(current_tab);
-		scene_tabs->update_scene_tabs();
 	}
+	scene_tabs->update_scene_tabs();
 }
 
 void EditorNode::find_all_instances_inheriting_path_in_node(Node *p_root, Node *p_node, const String &p_instance_path, HashSet<Node *> &p_instance_list) {
