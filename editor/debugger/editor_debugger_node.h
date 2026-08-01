@@ -120,7 +120,7 @@ private:
 	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
 
 	ScriptEditorDebugger *_add_debugger();
-	void _update_errors();
+	void _update_errors(bool p_force = false);
 	void _update_margins();
 
 	friend class DebuggerEditorPlugin;

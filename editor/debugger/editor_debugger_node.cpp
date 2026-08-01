@@ -131,7 +131,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("remote_objects_requested", callable_mp(this, &EditorDebuggerNode::_remote_objects_requested).bind(id));
 	node->connect("set_breakpoint", callable_mp(this, &EditorDebuggerNode::_breakpoint_set_in_tree).bind(id));
 	node->connect("clear_breakpoints", callable_mp(this, &EditorDebuggerNode::_breakpoints_cleared_in_tree).bind(id));
-	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors));
+	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors).bind(false));
 
 	if (tabs->get_tab_count() > 0) {
 		get_debugger(0)->clear_style();
@@ -356,6 +356,8 @@ void EditorDebuggerNode::_notification(int p_what) {
 			if (tabs->get_tab_count() > 1) {
 				tabs->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
+
+			_update_errors(true);
 			_update_margins();
 
 			remote_scene_tree->update_icon_max_width();
@@ -447,7 +449,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 	}
 }
 
-void EditorDebuggerNode::_update_errors() {
+void EditorDebuggerNode::_update_errors(bool p_force) {
 	int error_count = 0;
 	int warning_count = 0;
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
@@ -455,7 +457,7 @@ void EditorDebuggerNode::_update_errors() {
 		warning_count += dbg->get_warning_count();
 	});
 
-	if (error_count != last_error_count || warning_count != last_warning_count) {
+	if (p_force || error_count != last_error_count || warning_count != last_warning_count) {
 		_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 			dbg->update_tabs();
 		});
