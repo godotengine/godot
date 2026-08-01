@@ -210,6 +210,15 @@ void Script::reload_from_file() {
 #endif
 }
 
+void *Script::lookup_method(const StringName &p_method) const {
+	// Do not use inline cache if not supported type.
+	return nullptr;
+}
+
+void Script::call_method(Variant &p_base, void *p_method, const Variant **p_args, int p_argcount, Variant *r_ret, Callable::CallError &r_error) const {
+	ERR_FAIL_MSG("UNSUPPORTED CALL");
+}
+
 void ScriptServer::set_scripting_enabled(bool p_enabled) {
 	scripting_enabled = p_enabled;
 }
