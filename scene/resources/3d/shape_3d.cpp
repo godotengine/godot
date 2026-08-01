@@ -125,7 +125,12 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 		}
 
 		if (debug_fill) {
-			Ref<ArrayMesh> array_mesh = get_debug_arraymesh_faces(debug_color * Color(1.0, 1.0, 1.0, 0.0625));
+			Ref<ArrayMesh> array_mesh;
+			if (debug_mesh_faces_cache.is_valid()) { array_mesh = debug_mesh_faces_cache; }
+			else {
+				debug_mesh_faces_cache = get_debug_arraymesh_faces(debug_color * Color(1.0, 1.0, 1.0, 0.0625));
+				array_mesh = debug_mesh_faces_cache;
+			}
 			if (array_mesh.is_valid() && array_mesh->get_surface_count() > 0) {
 				Array solid_array = array_mesh->surface_get_arrays(0);
 				debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, solid_array);

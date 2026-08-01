@@ -44,6 +44,7 @@ class Shape3D : public Resource {
 	real_t margin = 0.04;
 
 	Ref<ArrayMesh> debug_mesh_cache;
+	Ref<ArrayMesh> debug_mesh_faces_cache;
 
 	// Not wrapped in `#ifdef DEBUG_ENABLED` as it is used for rendering.
 	Color debug_color = Color(0.0, 0.0, 0.0, 0.0);
