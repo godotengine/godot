@@ -155,9 +155,29 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const PS2DT::RayParameters &p
 
 		Vector2 shape_point, shape_normal;
 
+		Transform2D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
+
+		// Is the colliding shape, one way?
+		bool is_shape_one_way = col_obj->is_shape_set_as_one_way_collision(shape_idx);
+
+		Vector2 one_way_dir;
+		
+		if (is_shape_one_way) {
+			// If it is, get its one way direction, to use later
+			one_way_dir = xform.basis_xform(col_obj->get_shape_one_way_collision_direction(shape_idx)).normalized();
+		}
+
 		if (shape->contains_point(local_from)) {
 			if (p_parameters.hit_from_inside) {
 				// Hit shape at starting point.
+
+				// Check if shape is one-way
+				if (is_shape_one_way) {
+					if (one_way_dir != Vector2() && one_way_dir.dot(normal) < CMP_EPSILON) {
+						continue;
+					}
+				}
+
 				min_d = 0;
 				res_point = begin;
 				res_normal = Vector2();
@@ -172,7 +192,16 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const PS2DT::RayParameters &p
 		}
 
 		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
-			Transform2D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
+
+			Vector2 world_normal = inv_xform.basis_xform_inv(shape_normal).normalized();
+
+			if (is_shape_one_way) {
+				// If ray normal is parallel to one way direction, ignore, since the ray can pass through.
+				if (one_way_dir != Vector2() && one_way_dir.dot(world_normal) > -CMP_EPSILON) {
+					continue;
+				}
+			}
+
 			shape_point = xform.xform(shape_point);
 
 			real_t ld = normal.dot(shape_point);
@@ -180,7 +209,7 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const PS2DT::RayParameters &p
 			if (ld < min_d) {
 				min_d = ld;
 				res_point = shape_point;
-				res_normal = inv_xform.basis_xform_inv(shape_normal).normalized();
+				res_normal = world_normal;
 				res_shape = shape_idx;
 				res_obj = col_obj;
 				collided = true;
