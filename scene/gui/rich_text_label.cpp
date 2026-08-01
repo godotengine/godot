@@ -4113,6 +4113,7 @@ bool RichTextLabel::_validate_line_caches() {
 
 		// Update fonts.
 		float old_scroll = vscroll->get_value();
+		float old_max = vscroll->get_max();
 		if (main->first_invalid_font_line.load() != (int)main->lines.size()) {
 			for (int i = main->first_invalid_font_line.load(); i < (int)main->lines.size(); i++) {
 				_update_line_font(main, i, theme_cache.normal_font, theme_cache.normal_font_size);
@@ -4140,7 +4141,13 @@ bool RichTextLabel::_validate_line_caches() {
 			total_height = _update_scroll_exceeds(total_height, ctrl_height, wrap_width, i, old_scroll, text_rect.size.height);
 			main->first_resized_line.store(i);
 		}
-
+		if (!(scroll_follow && scroll_following)) {
+			float scaled_old_scroll = old_scroll;
+			if (old_max > 0.0f) {
+				scaled_old_scroll = total_height * old_scroll / old_max;
+			}
+			vscroll->set_value(scaled_old_scroll);
+		}
 		main->first_resized_line.store(main->lines.size());
 
 		if (fit_content) {
