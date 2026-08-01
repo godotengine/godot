@@ -1,0 +1,81 @@
+name: Sync latest stable release
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Stable tag to build (leave empty to use the newest release)"
+        required: false
+        type: string
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  sync-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this fork
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Find the latest stable upstream tag
+        id: release
+        env:
+          REQUESTED_TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          upstream_url="https://github.com/godotengine/godot.git"
+          stable_tag_pattern='^[0-9]+\.[0-9]+(\.[0-9]+)?-stable$'
+
+          if [[ -n "$REQUESTED_TAG" ]]; then
+            tag="$REQUESTED_TAG"
+            [[ "$tag" =~ $stable_tag_pattern ]] || {
+              echo "Only final Godot *-stable tags are supported: $tag" >&2
+              exit 1
+            }
+            git ls-remote --exit-code --tags "$upstream_url" "refs/tags/$tag" >/dev/null
+          else
+            tag="$(git ls-remote --tags --refs "$upstream_url" \
+              | sed 's#.*refs/tags/##' \
+              | grep -E "$stable_tag_pattern" \
+              | sort -V \
+              | tail -n 1)"
+            [[ -n "$tag" ]] || {
+              echo "No stable Godot tag was found." >&2
+              exit 1
+            }
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "branch=build/stable-$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Create a branch for the release when needed
+        id: sync
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+          BRANCH: ${{ steps.release.outputs.branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            echo "created=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git fetch --no-tags https://github.com/godotengine/godot.git "refs/tags/$TAG:refs/tags/$TAG"
+          git push origin "refs/tags/$TAG:refs/heads/$BRANCH"
+          echo "created=true" >> "$GITHUB_OUTPUT"
+
+      - name: Run the full Godot CI
+        if: steps.sync.outputs.created == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.release.outputs.branch }}
+        shell: bash
+        run: gh workflow run runner.yml --ref "$BRANCH"

@@ -6,10 +6,14 @@ on:
         description: A list of changed files, pre-filtered for parsing by clangd-tidy.
         required: true
         type: string
+    secrets:
+      SCRIPT_AES256_ENCRYPTION_KEY:
+        required: true
   workflow_dispatch:
 
 # Global Settings
 env:
+  SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
   SCONS_FLAGS: >-
     dev_mode=yes
     module_text_server_fb_enabled=yes

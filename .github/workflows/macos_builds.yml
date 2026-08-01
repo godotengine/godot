@@ -1,10 +1,14 @@
 name: 🍎 macOS Builds
 on:
   workflow_call:
+    secrets:
+      SCRIPT_AES256_ENCRYPTION_KEY:
+        required: true
   workflow_dispatch:
 
 # Global Settings
 env:
+  SCRIPT_AES256_ENCRYPTION_KEY: ${{ secrets.SCRIPT_AES256_ENCRYPTION_KEY }}
   SCONS_FLAGS: >-
     dev_mode=yes
     module_text_server_fb_enabled=yes
