@@ -142,6 +142,7 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 void Shape3D::_update_shape() {
 	emit_changed();
 	debug_mesh_cache.unref();
+	debug_mesh_faces_cache.unref();
 }
 
 void Shape3D::_bind_methods() {

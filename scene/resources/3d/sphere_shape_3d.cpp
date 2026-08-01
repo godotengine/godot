@@ -56,7 +56,13 @@ Vector<Vector3> SphereShape3D::get_debug_mesh_lines() const {
 	return points;
 }
 
-Ref<ArrayMesh> SphereShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+Ref<ArrayMesh> SphereShape3D::get_debug_arraymesh_faces(const Color &p_modulate) {
+	if (debug_mesh_faces_cache.is_valid()) {
+		return debug_mesh_faces_cache;
+	}
+	print_line("SphereShape3D Cache Miss");
+	debug_mesh_faces_cache.instantiate();
+
 	Array sphere_array;
 	sphere_array.resize(RSE::ARRAY_MAX);
 	SphereMesh::create_mesh_array(sphere_array, radius, radius * 2, 32);
@@ -71,6 +77,8 @@ Ref<ArrayMesh> SphereShape3D::get_debug_arraymesh_faces(const Color &p_modulate)
 	Ref<ArrayMesh> sphere_mesh = memnew(ArrayMesh);
 	sphere_array[RSE::ARRAY_COLOR] = colors;
 	sphere_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, sphere_array);
+
+	debug_mesh_faces_cache = sphere_mesh;
 	return sphere_mesh;
 }
 

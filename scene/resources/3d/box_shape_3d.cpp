@@ -50,7 +50,13 @@ Vector<Vector3> BoxShape3D::get_debug_mesh_lines() const {
 	return lines;
 }
 
-Ref<ArrayMesh> BoxShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+Ref<ArrayMesh> BoxShape3D::get_debug_arraymesh_faces(const Color &p_modulate) {
+	if (debug_mesh_faces_cache.is_valid()) {
+		return debug_mesh_faces_cache;
+	}
+	print_line("BoxShape3D Cache Miss");
+	debug_mesh_faces_cache.instantiate();
+
 	Array box_array;
 	box_array.resize(RSE::ARRAY_MAX);
 	BoxMesh::create_mesh_array(box_array, size);
@@ -65,6 +71,8 @@ Ref<ArrayMesh> BoxShape3D::get_debug_arraymesh_faces(const Color &p_modulate) co
 	Ref<ArrayMesh> box_mesh = memnew(ArrayMesh);
 	box_array[RSE::ARRAY_COLOR] = colors;
 	box_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, box_array);
+
+	debug_mesh_faces_cache = box_mesh;
 	return box_mesh;
 }
 
