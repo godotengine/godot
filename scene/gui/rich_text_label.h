@@ -546,6 +546,8 @@ private:
 	int scroll_w = 0;
 	bool scroll_updated = false;
 	bool updating_scroll = false;
+	int first_line = 0;
+	int character_inside_first_drawn_subline = 0;
 	int current_idx = 1;
 	int current_char_ofs = 0;
 	int visible_paragraph_count = 0;
