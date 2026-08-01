@@ -29,10 +29,10 @@
 		</member>
 		<member name="compress/high_quality_mode" type="int" setter="" getter="" default="0">
 			Controls the priorities of the VRAM compression when [member compress/high_quality] is enabled.
-			[b]Automatic:[/b] Automatically adjusts the quality level based on the number of unique color channels present in the image. For ASTC, this corresponds to picking 8x8 when only one channel is detected (R, L), 6x6 when two channels are detected (RG, LA), and 4x4 in all other cases.
-			[b]Max Quality:[/b] Prioritizes highest quality over compression. For ASTC, this corresponds to using a 4x4 block size.
-			[b]Compressed:[/b] Prioritizes some compression over quality. For ASTC, this corresponds to using a 6x6 block size.
-			[b]Max Compression:[/b] Prioritizes highest compression over quality. For ASTC, this corresponds to using an 8x8 block size.
+			[b]Automatic:[/b] Automatically adjusts the quality level based on the number of unique color channels present in the image. For ASTC, this corresponds to picking 8×8 when only one channel is detected (R, L), 6×6 when two channels are detected (RG, LA), and 4×4 in all other cases.
+			[b]Max Quality:[/b] Prioritizes highest quality over compression. For ASTC, this corresponds to using a 4×4 block size.
+			[b]Compressed:[/b] Prioritizes some compression over quality. For ASTC, this corresponds to using a 6×6 block size.
+			[b]Max Compression:[/b] Prioritizes highest compression over quality. For ASTC, this corresponds to using an 8×8 block size.
 			[b]Note:[/b] Currently, only the ASTC compressor uses this setting. Other compressors will ignore it.
 		</member>
 		<member name="compress/lossy_quality" type="float" setter="" getter="" default="0.7">

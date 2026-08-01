@@ -2458,6 +2458,14 @@ void Node3DEditor::_notification(int p_what) {
 			_finish_indicators();
 		} break;
 
+		case NOTIFICATION_PROCESS: {
+			if (gizmo_bvh_needs_optimization) {
+				// Only call this once per frame and only call when dirty. This is very expensive.
+				gizmo_bvh.optimize_incremental(1);
+				gizmo_bvh_needs_optimization = false;
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
 			_update_gizmos_menu_theme();
@@ -4079,7 +4087,7 @@ DynamicBVH::ID Node3DEditor::insert_gizmo_bvh_node(Node3D *p_node, const AABB &p
 
 void Node3DEditor::update_gizmo_bvh_node(DynamicBVH::ID p_id, const AABB &p_aabb) {
 	gizmo_bvh.update(p_id, p_aabb);
-	gizmo_bvh.optimize_incremental(1);
+	gizmo_bvh_needs_optimization = true;
 }
 
 void Node3DEditor::remove_gizmo_bvh_node(DynamicBVH::ID p_id) {

@@ -36,6 +36,7 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
+#include "core/string/regex.h"
 #include "main/main.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
@@ -52,11 +53,6 @@
 #ifdef WAYLAND_ENABLED
 #include "wayland/detect_prime_egl.h"
 #include "wayland/display_server_wayland.h"
-#endif
-
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
 #endif
 
 #if defined(RD_ENABLED)
@@ -98,6 +94,15 @@
 #else
 #include <fontconfig/fontconfig.h>
 #endif
+#endif
+
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || (defined(__GLIBC_MINOR__) && (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
+// In <unistd.h>.
+// One day... (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700)
+// https://publications.opengroup.org/standards/unix/c211
+#define UNIX_GET_ENTROPY
+#elif !defined(NO_URANDOM)
+#include <fcntl.h>
 #endif
 
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
@@ -366,10 +371,8 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 	Vector<String> class_display_device_candidates;
 	Vector<String> class_3d_device_candidates;
 
-#ifdef MODULE_REGEX_ENABLED
 	RegEx regex_id_format = RegEx();
 	regex_id_format.compile("^[a-f0-9]{4}:[a-f0-9]{4}$"); // e.g. `10de:13c2`; IDs are always in hexadecimal
-#endif
 
 	Vector<String> value_lines = vendor_device_id_mappings.split("\n", false); // example: `02:00.0 0300: 10de:13c2 (rev a1)`
 	for (const String &line : value_lines) {
@@ -380,11 +383,9 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 		String device_class = columns[1].trim_suffix(":");
 		const String &vendor_device_id_mapping = columns[2];
 
-#ifdef MODULE_REGEX_ENABLED
 		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {
 			continue;
 		}
-#endif
 
 		if (device_class == dc_vga) {
 			class_vga_device_candidates.push_back(vendor_device_id_mapping);
@@ -1217,6 +1218,32 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 	return f->get_as_text();
 }
 
+Error OS_LinuxBSD::get_entropy(uint8_t *r_buffer, int p_bytes) {
+#if defined(UNIX_GET_ENTROPY)
+	int left = p_bytes;
+	int ofs = 0;
+	do {
+		int chunk = MIN(left, 256);
+		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+		left -= chunk;
+		ofs += chunk;
+	} while (left > 0);
+// Define this yourself if you don't want to fall back to /dev/urandom.
+#elif !defined(NO_URANDOM)
+	int r = open("/dev/urandom", O_RDONLY);
+	ERR_FAIL_COND_V(r < 0, FAILED);
+	int left = p_bytes;
+	do {
+		ssize_t ret = read(r, r_buffer, p_bytes);
+		ERR_FAIL_COND_V(ret <= 0, FAILED);
+		left -= ret;
+	} while (left > 0);
+#else
+	return ERR_UNAVAILABLE;
+#endif
+	return OK;
+}
+
 #ifdef TOOLS_ENABLED
 bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) const {
 	// Tests Rendering Device creation.
@@ -1343,9 +1370,12 @@ OS_LinuxBSD::~OS_LinuxBSD() {
 #ifdef FONTCONFIG_ENABLED
 	if (object_set) {
 		FcObjectSetDestroy(object_set);
+		object_set = nullptr;
 	}
 	if (config) {
+		FcConfigSetCurrent(nullptr);
 		FcConfigDestroy(config);
+		config = nullptr;
 	}
 #endif // FONTCONFIG_ENABLED
 }

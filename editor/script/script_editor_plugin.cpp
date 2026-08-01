@@ -49,7 +49,6 @@
 #include "editor/doc/editor_help_search.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
-#include "editor/docks/signals_dock.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
@@ -2449,9 +2448,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	seb->edited_file_data.last_modified_time = FileAccess::get_modified_time(p_resource->get_path());
 
 	seb->connect("name_changed", callable_mp(this, &ScriptEditor::_update_filenames));
-	if (this == script_editor) {
-		seb->connect("edited_script_changed", callable_mp(this, &ScriptEditor::_script_changed));
-	}
+	seb->connect("_validation_updated", callable_mp(this, &ScriptEditor::_validation_updated));
 
 	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(seb)) {
 		// Syntax highlighting.
@@ -3150,11 +3147,11 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		document_list->goto_next_document(true);
 		accept_event();
 	}
-	if (ED_IS_SHORTCUT("script_editor/window_move_up", p_event)) {
+	if (ED_IS_SHORTCUT("script_editor/move_document_up", p_event)) {
 		_menu_option(FILE_MENU_MOVE_UP);
 		accept_event();
 	}
-	if (ED_IS_SHORTCUT("script_editor/window_move_down", p_event)) {
+	if (ED_IS_SHORTCUT("script_editor/move_document_down", p_event)) {
 		_menu_option(FILE_MENU_MOVE_DOWN);
 		accept_event();
 	}
@@ -3241,9 +3238,9 @@ void ScriptEditor::_setup_popup_menu(PopupMenu *p_menu, bool p_is_context_menu) 
 	}
 
 	if (p_is_context_menu) {
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_up"), FILE_MENU_MOVE_UP);
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_move_down"), FILE_MENU_MOVE_DOWN);
-		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/window_sort"), FILE_MENU_SORT);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/move_document_up"), FILE_MENU_MOVE_UP);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/move_document_down"), FILE_MENU_MOVE_DOWN);
+		p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/sort_documents"), FILE_MENU_SORT);
 	}
 
 	p_menu->add_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"), FILE_MENU_TOGGLE_FILES_PANEL);
@@ -3890,9 +3887,7 @@ void ScriptEditor::register_create_script_editor_function(CreateScriptEditorFunc
 	script_editor_funcs[script_editor_func_count++] = p_func;
 }
 
-void ScriptEditor::_script_changed() {
-	SignalsDock::get_singleton()->update_lists();
-
+void ScriptEditor::_validation_updated() {
 	document_list->update_list();
 
 	document_outline->update_outline();
@@ -4115,9 +4110,9 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	code_editor_container->add_child(find_replace_bar);
 	find_replace_bar->hide();
 
-	ED_SHORTCUT("script_editor/window_sort", TTRC("Sort"));
-	ED_SHORTCUT("script_editor/window_move_up", TTRC("Move Up"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::UP);
-	ED_SHORTCUT("script_editor/window_move_down", TTRC("Move Down"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::DOWN);
+	ED_SHORTCUT("script_editor/sort_documents", TTRC("Sort Documents"));
+	ED_SHORTCUT("script_editor/move_document_up", TTRC("Move Document Up"));
+	ED_SHORTCUT("script_editor/move_document_down", TTRC("Move Document Down"));
 	// FIXME: These should be `Key::GREATER` and `Key::LESS` but those don't work.
 	ED_SHORTCUT("script_editor/next_script", TTRC("Next Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::PERIOD);
 	ED_SHORTCUT("script_editor/prev_script", TTRC("Previous Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::COMMA);

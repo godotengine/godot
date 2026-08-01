@@ -45,6 +45,7 @@
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/regex.h"
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/version.h"
@@ -61,8 +62,6 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/animation.h"
 #include "servers/display/display_server.h"
-
-#include "modules/regex/regex.h"
 
 // PRIVATE METHODS
 
@@ -1355,6 +1354,9 @@ void EditorSettings::_handle_setting_compatibility() {
 
 	// Handle renamed shortcuts.
 	_rename_shortcut("editor/editor_assetlib", "editor/editor_asset_store");
+	_rename_shortcut("script_editor/window_move_up", "script_editor/move_document_up");
+	_rename_shortcut("script_editor/window_move_down", "script_editor/move_document_down");
+	_rename_shortcut("script_editor/window_sort", "script_editor/sort_documents");
 }
 
 void EditorSettings::_rename_setting(const String &p_old_name, const String &p_new_name) {

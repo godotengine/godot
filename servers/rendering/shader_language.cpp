@@ -9483,7 +9483,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				tk = _get_token();
 				if (tk.type == TK_IDENTIFIER) {
 					st.name = tk.text;
-					if (shader->constants.has(st.name) || shader->structs.has(st.name)) {
+					if (shader->functions.has(st.name) || shader->constants.has(st.name) || shader->structs.has(st.name)) {
 						_set_redefinition_error(String(st.name));
 						return ERR_PARSE_ERROR;
 					}
@@ -10740,7 +10740,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 								array_size = constant.array_size;
 
-								ConstantNode *expr = memnew(ConstantNode);
+								ConstantNode *expr = alloc_node<ConstantNode>();
 
 								expr->datatype = constant.type;
 

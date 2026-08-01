@@ -75,7 +75,7 @@ class RegEx : public RefCounted {
 	void *code = nullptr;
 	String pattern;
 
-	void _pattern_info(uint32_t what, void *where) const;
+	void _pattern_info(uint32_t p_what, void *r_where) const;
 
 	int _sub(const String &p_subject, const String &p_replacement, int p_offset, int p_end, uint32_t p_flags, String &r_output) const;
 

@@ -656,6 +656,11 @@ void CreateDialog::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			// Update `EditorHelpBit` in case it contains custom text.
+			_update_search();
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			search_options->add_theme_constant_override("icon_max_width", icon_width);
@@ -1077,6 +1082,7 @@ CreateDialog::CreateDialog() {
 
 	search_options = memnew(Tree);
 	search_box->set_forward_control(search_options);
+	search_options->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	search_options->set_accessibility_name(TTRC("Matches:"));
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);

@@ -2697,7 +2697,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 				fold();
 			}
 		}
-	} else if ((!checkable || checked) && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		accept_event();
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
@@ -2811,6 +2811,10 @@ void EditorInspectorSection::set_checked(bool p_checked) {
 	queue_redraw();
 }
 
+void EditorInspectorSection::set_doc_path(const String &p_doc_path) {
+	doc_path = p_doc_path;
+}
+
 bool EditorInspectorSection::has_revertable_properties() const {
 	return !revertable_properties.is_empty();
 }
@@ -2853,20 +2857,62 @@ void EditorInspectorSection::update_property() {
 }
 
 void EditorInspectorSection::_update_popup() {
-	if (!menu) {
+	if (menu) {
+		menu->clear();
+	} else {
 		menu = memnew(PopupMenu);
 		add_child(menu);
 		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorInspectorSection::menu_option));
-
-		menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Section Values"), MENU_COPY_VALUE);
-		menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Section Values"), MENU_PASTE_VALUE);
 	}
-	menu->set_item_disabled(MENU_PASTE_VALUE, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION);
+
+	if (checkable) {
+		menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Value"), MENU_COPY_VALUE);
+		menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Value"), MENU_PASTE_VALUE);
+		menu->set_item_disabled(-1, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY);
+		menu->add_icon_item(theme_cache.icon_copy_path, TTRC("Copy Property Path"), MENU_COPY_PROPERTY_PATH);
+		menu->set_item_disabled(-1, related_enable_property.is_empty());
+		menu->add_separator();
+	}
+
+	menu->add_icon_item(theme_cache.icon_copy, TTRC("Copy Section Values"), MENU_COPY_SECTION);
+	menu->add_icon_item(theme_cache.icon_paste, TTRC("Paste Section Values"), MENU_PASTE_SECTION);
+	menu->set_item_disabled(-1, EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION);
+
+	if (can_revert) {
+		menu->add_separator();
+		menu->add_icon_item(theme_cache.icon_gui_revert, TTRC("Revert Value"), MENU_REVERT_VALUE);
+	}
+	if (!doc_path.is_empty() && ScriptEditor::get_singleton() && EditorNode::get_singleton()) {
+		menu->add_separator();
+		menu->add_icon_item(theme_cache.help_icon, TTRC("Open Documentation"), MENU_OPEN_DOCUMENTATION);
+	}
 }
 
-void EditorInspectorSection::menu_option(int p_option) const {
+void EditorInspectorSection::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
+			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::PROPERTY, object->get(related_enable_property));
+		} break;
+
+		case MENU_PASTE_VALUE: {
+			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY) {
+				return;
+			}
+
+			checked = EditorInspector::get_property_clipboard_value();
+			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
+			if (checked) {
+				unfold();
+			} else if (!checkbox_only) {
+				vbox->hide();
+			}
+		} break;
+
+		case MENU_COPY_PROPERTY_PATH: {
+			DisplayServer::get_singleton()->clipboard_set(related_enable_property);
+		} break;
+
+		case MENU_COPY_SECTION: {
 			Dictionary clipboard;
 			for (const EditorProperty *property : section_properties) {
 				clipboard[property->get_edited_property()] = property->get_edited_property_value();
@@ -2874,7 +2920,7 @@ void EditorInspectorSection::menu_option(int p_option) const {
 			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::SECTION, clipboard);
 		} break;
 
-		case MENU_PASTE_VALUE: {
+		case MENU_PASTE_SECTION: {
 			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::SECTION) {
 				break;
 			}
@@ -2893,6 +2939,24 @@ void EditorInspectorSection::menu_option(int p_option) const {
 				}
 			}
 			ur->commit_action();
+		} break;
+
+		case MENU_REVERT_VALUE: {
+			bool is_valid_revert = false;
+			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, related_enable_property, &is_valid_revert);
+			ERR_FAIL_COND(!is_valid_revert);
+			checked = revert_value;
+			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, revert_value);
+			if (checked) {
+				unfold();
+			} else if (!checkbox_only) {
+				vbox->hide();
+			}
+		} break;
+
+		case MENU_OPEN_DOCUMENTATION: {
+			ScriptEditor::get_singleton()->goto_help(doc_path);
+			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 		} break;
 	}
 }
@@ -3951,6 +4015,8 @@ void EditorInspector::initialize_section_theme(EditorInspectorSection::ThemeCach
 	p_cache.icon_gui_animation_key = p_control->get_editor_theme_icon(SNAME("Key"));
 	p_cache.icon_copy = p_control->get_editor_theme_icon(SNAME("ActionCopy"));
 	p_cache.icon_paste = p_control->get_editor_theme_icon(SNAME("ActionPaste"));
+	p_cache.icon_copy_path = p_control->get_editor_theme_icon(SNAME("CopyNodePath"));
+	p_cache.help_icon = p_control->get_editor_theme_icon(SNAME("Help"));
 
 	p_cache.indent_box = p_control->get_theme_stylebox(SNAME("indent_box"), SNAME("EditorInspectorSection"));
 	p_cache.icon_hover = p_control->get_theme_stylebox(SceneStringName(hover), SceneStringName(FlatButton));
@@ -4109,6 +4175,92 @@ String EditorInspector::get_selected_path() const {
 	return property_selected;
 }
 
+void EditorInspector::_populate_property_map(EditorProperty *p_ep, const PropertyInfo &p_property_info, const EditorInspectorPlugin::AddedEditor &p_editor, const Vector<String> &p_properties, const String &p_property_label_string) {
+	if (p_properties.size()) {
+		if (p_properties.size() == 1) {
+			// Since it's one, associate:
+			p_ep->property = p_properties[0];
+			p_ep->property_path = property_prefix + p_properties[0];
+			p_ep->property_usage = p_property_info.usage;
+		}
+		if (!p_editor.label.is_empty()) {
+			p_ep->set_label(p_editor.label);
+		} else {
+			// Use the existing one.
+			p_ep->set_label(p_property_label_string);
+		}
+
+		for (int j = 0; j < p_properties.size(); j++) {
+			String prop = p_properties[j];
+
+			if (!editor_property_map.has(prop)) {
+				editor_property_map[prop] = List<EditorProperty *>();
+			}
+			editor_property_map[prop].push_back(p_ep);
+		}
+	}
+}
+
+void EditorInspector::_apply_property_editor_flags(EditorProperty *p_ep, bool p_sub_inspector_use_filter, bool p_disable_favorite, bool p_property_read_only, bool p_all_read_only, bool p_checkable, bool p_checked, bool p_draw_warning) {
+	if (p_sub_inspector_use_filter) {
+		EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(p_ep);
+		if (epr) {
+			epr->set_use_filter(true);
+		}
+	}
+
+	p_ep->set_deletable(deletable_properties);
+	p_ep->set_draw_warning(p_draw_warning);
+	p_ep->set_use_folding(use_folding);
+	p_ep->set_favoritable(can_favorite && !p_disable_favorite && !p_ep->is_deletable());
+	p_ep->set_checkable(p_checkable);
+	p_ep->set_checked(p_checked);
+	p_ep->set_keying(keying);
+	p_ep->set_read_only(p_property_read_only || p_all_read_only);
+}
+
+void EditorInspector::_connect_property_editor_signals(EditorProperty *p_ep, bool p_update_all) {
+	p_ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(p_update_all));
+	p_ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+	p_ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
+	p_ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
+	p_ep->connect("property_favorited", callable_mp(this, &EditorInspector::_set_property_favorited), CONNECT_DEFERRED);
+	p_ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
+	p_ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
+	p_ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
+	p_ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
+	p_ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
+	p_ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
+}
+
+void EditorInspector::_apply_property_editor_doc(EditorProperty *p_ep, const PropertyInfo &p_property_info, const String &p_doc_tooltip_text, const String &p_doc_path) {
+	p_ep->set_tooltip_text(p_doc_tooltip_text);
+	p_ep->has_doc_tooltip = use_doc_hints;
+	p_ep->set_doc_path(p_doc_path);
+	p_ep->set_internal(p_property_info.usage & PROPERTY_USAGE_INTERNAL);
+}
+
+void EditorInspector::_search_and_connect_sections(EditorProperty *p_ep, Node *p_section_search) {
+	while (p_section_search) {
+		EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(p_section_search);
+		if (section) {
+			p_ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+		}
+		p_section_search = p_section_search->get_parent();
+		if (Object::cast_to<EditorInspector>(p_section_search)) {
+			// Skip sub-resource inspectors.
+			break;
+		}
+	}
+}
+
+void EditorInspector::_update_property_editor(EditorProperty *p_ep) {
+	p_ep->update_property();
+	p_ep->_update_flags();
+	p_ep->update_editor_property_status();
+	p_ep->update_cache();
+}
+
 void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> p_plugin) {
 	for (const EditorInspectorPlugin::AddedEditor &F : p_plugin->added_editors) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
@@ -4122,17 +4274,8 @@ void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, Editor
 
 		if (ep) {
 			ep->object = object;
-			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(false));
-			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-			ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
-			ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
-			ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
-			ep->connect("property_favorited", callable_mp(this, &EditorInspector::_set_property_favorited), CONNECT_DEFERRED);
-			ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
-			ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
-			ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-			ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
-			ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
+
+			_connect_property_editor_signals(ep, true);
 
 			if (F.properties.size()) {
 				if (F.properties.size() == 1) {
@@ -4156,18 +4299,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, Editor
 				}
 			}
 
-			Node *section_search = p_section;
-			while (section_search) {
-				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
-				if (section) {
-					ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
-				}
-				section_search = section_search->get_parent();
-				if (Object::cast_to<EditorInspector>(section_search)) {
-					// Skip sub-resource inspectors.
-					break;
-				}
-			}
+			_search_and_connect_sections(ep, p_section);
 
 			ep->set_read_only(read_only);
 			ep->update_property();
@@ -4594,6 +4726,10 @@ void EditorInspector::update_tree() {
 		if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
 			name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
 		}
+		// Metadata entries are accessed by String, so we should show the actual key name directly.
+		if (path.begins_with("metadata/")) {
+			name_style = EditorPropertyNameProcessor::STYLE_RAW;
+		}
 		const String property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style, p.name, doc_name) + feature_tag;
 
 		// Remove the property from the path.
@@ -4921,6 +5057,7 @@ void EditorInspector::update_tree() {
 						}
 
 						if (use_doc_hints) {
+							last_created_section->set_doc_path(doc_path);
 							last_created_section->set_tooltip_text(doc_tooltip_text);
 						}
 						continue;
@@ -4971,37 +5108,7 @@ void EditorInspector::update_tree() {
 				// Set all this before the control gets the ENTER_TREE notification.
 				ep->object = object;
 
-				if (properties.size()) {
-					if (properties.size() == 1) {
-						// Since it's one, associate:
-						ep->property = properties[0];
-						ep->property_path = property_prefix + properties[0];
-						ep->property_usage = p.usage;
-						// And set label?
-					}
-					if (!editors[i].label.is_empty()) {
-						ep->set_label(editors[i].label);
-					} else {
-						// Use the existing one.
-						ep->set_label(property_label_string);
-					}
-
-					for (int j = 0; j < properties.size(); j++) {
-						String prop = properties[j];
-
-						if (!editor_property_map.has(prop)) {
-							editor_property_map[prop] = List<EditorProperty *>();
-						}
-						editor_property_map[prop].push_back(ep);
-					}
-				}
-
-				if (sub_inspector_use_filter) {
-					EditorPropertyResource *epr = Object::cast_to<EditorPropertyResource>(ep);
-					if (epr) {
-						epr->set_use_filter(true);
-					}
-				}
+				_populate_property_map(ep, p, editors[i], properties, property_label_string);
 
 				if (p.name.begins_with("metadata/")) {
 					if (property_read_only || all_read_only) {
@@ -5017,13 +5124,7 @@ void EditorInspector::update_tree() {
 					ep->set_deletable(deletable_properties);
 				}
 
-				ep->set_draw_warning(draw_warning);
-				ep->set_use_folding(use_folding);
-				ep->set_favoritable(can_favorite && !disable_favorite && !ep->is_deletable());
-				ep->set_checkable(checkable);
-				ep->set_checked(checked);
-				ep->set_keying(keying);
-				ep->set_read_only(property_read_only || all_read_only);
+				_apply_property_editor_flags(ep, sub_inspector_use_filter, disable_favorite, property_read_only, all_read_only, checkable, checked, draw_warning);
 			}
 
 			if (ep && ep->is_favoritable() && current_favorites.has(p.name)) {
@@ -5036,51 +5137,43 @@ void EditorInspector::update_tree() {
 				if (subgroup_togglable_property) {
 					togglable_editor_inspector_sections[group + "/" + subgroup] = subgroup_togglable_property;
 				}
+
+				// A copy of the property editor created for the original position. Synced with the main entry.
+				EditorProperty *ep_copy = instantiate_property_editor(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
+				if (ep_copy) {
+					ep_copy->object = object;
+
+					_populate_property_map(ep_copy, p, editors[i], properties, property_label_string);
+					_apply_property_editor_flags(ep_copy, sub_inspector_use_filter, disable_favorite, property_read_only, all_read_only, checkable, checked, draw_warning);
+					ep_copy->favorited = true;
+
+					current_vbox->add_child(ep_copy);
+
+					bool update_all = (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
+					_connect_property_editor_signals(ep_copy, update_all);
+					_apply_property_editor_doc(ep_copy, p, doc_tooltip_text, doc_path);
+					_search_and_connect_sections(ep_copy, current_vbox->get_parent());
+
+					_update_property_editor(ep_copy);
+				}
 			} else {
 				current_vbox->add_child(editors[i].property_editor);
 
 				if (ep) {
-					Node *section_search = current_vbox->get_parent();
-					while (section_search) {
-						EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
-						if (section) {
-							ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
-						}
-						section_search = section_search->get_parent();
-						if (Object::cast_to<EditorInspector>(section_search)) {
-							// Skip sub-resource inspectors.
-							break;
-						}
-					}
+					_search_and_connect_sections(ep, current_vbox->get_parent());
 				}
 			}
 
 			if (ep) {
 				// Eventually, set other properties/signals after the property editor got added to the tree.
 				bool update_all = (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
-				ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(update_all));
-				ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-				ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
-				ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
-				ep->connect("property_favorited", callable_mp(this, &EditorInspector::_set_property_favorited), CONNECT_DEFERRED);
-				ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
-				ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
-				ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
-				ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-				ep->connect("resource_selected", callable_mp(get_root_inspector(), &EditorInspector::_resource_selected), CONNECT_DEFERRED);
-				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
+				_connect_property_editor_signals(ep, update_all);
 
-				ep->set_tooltip_text(doc_tooltip_text);
-				ep->has_doc_tooltip = use_doc_hints;
-				ep->set_doc_path(doc_path);
-				ep->set_internal(p.usage & PROPERTY_USAGE_INTERNAL);
+				_apply_property_editor_doc(ep, p, doc_tooltip_text, doc_path);
 
 				// If this property is favorited, it won't be in the tree yet. So don't do this setup right now.
 				if (ep->is_inside_tree()) {
-					ep->update_property();
-					ep->_update_flags();
-					ep->update_editor_property_status();
-					ep->update_cache();
+					_update_property_editor(ep);
 
 					if (current_selected && ep->property == current_selected) {
 						ep->select(current_focusable);
@@ -5124,9 +5217,11 @@ void EditorInspector::update_tree() {
 					Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
 					if (valid) {
 						section->section = corresponding_section->section;
+						section->label = corresponding_section->label;
 						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, value_checked.operator bool());
 						section->set_keying(keying);
 						if (use_doc_hints) {
+							section->set_doc_path(corresponding_section->doc_path);
 							section->set_tooltip_text(corresponding_section->get_tooltip_text());
 						}
 
@@ -5161,9 +5256,11 @@ void EditorInspector::update_tree() {
 						Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
 						if (valid) {
 							section->section = corresponding_section->section;
+							section->label = corresponding_section->label;
 							section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, value_checked.operator bool());
 							section->set_keying(keying);
 							if (use_doc_hints) {
+								section->set_doc_path(corresponding_section->doc_path);
 								section->set_tooltip_text(corresponding_section->get_tooltip_text());
 							}
 
@@ -5177,24 +5274,10 @@ void EditorInspector::update_tree() {
 				for (EditorProperty *ep : KV2.value) {
 					vbox->add_child(ep);
 
-					Node *section_search = vbox->get_parent();
-					while (section_search) {
-						EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(section_search);
-						if (section) {
-							ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
-						}
-						section_search = section_search->get_parent();
-						if (Object::cast_to<EditorInspector>(section_search)) {
-							// Skip sub-resource inspectors.
-							break;
-						}
-					}
+					_search_and_connect_sections(ep, vbox->get_parent());
 
 					// Now that it's inside the tree, do the setup.
-					ep->update_property();
-					ep->_update_flags();
-					ep->update_editor_property_status();
-					ep->update_cache();
+					_update_property_editor(ep);
 
 					if (current_selected && ep->property == current_selected) {
 						ep->select(current_focusable);
@@ -6246,6 +6329,19 @@ void EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard:
 	property_clipboard.value = p_value;
 }
 
+void EditorInspector::set_property_clipboard_property_value(const Variant &p_value) {
+	property_clipboard.type = EditorInspector::PropertyClipboard::Type::PROPERTY;
+	property_clipboard.value = p_value;
+}
+
+Variant EditorInspector::get_property_clipboard_property_value() {
+	if (get_property_clipboard_type() == EditorInspector::PropertyClipboard::Type::PROPERTY) {
+		return get_property_clipboard_value();
+	} else {
+		return Variant();
+	}
+}
+
 void EditorInspector::_show_add_meta_dialog() {
 	if (!add_meta_dialog) {
 		add_meta_dialog = memnew(AddMetadataDialog());
@@ -6305,6 +6401,9 @@ void EditorInspector::_bind_methods() {
 
 	ClassDB::bind_static_method("EditorInspector", D_METHOD("instantiate_property_editor", "object", "type", "path", "hint", "hint_text", "usage", "wide"), &EditorInspector::instantiate_property_editor, DEFVAL(false));
 	ClassDB::bind_static_method("EditorInspector", D_METHOD("create_default_inspector", "filter_line_edit"), &EditorInspector::create_default_inspector, DEFVAL(Variant()));
+
+	ClassDB::bind_static_method("EditorInspector", D_METHOD("set_property_clipboard", "value"), &EditorInspector::set_property_clipboard_property_value);
+	ClassDB::bind_static_method("EditorInspector", "get_property_clipboard", &EditorInspector::get_property_clipboard_property_value);
 
 	ADD_SIGNAL(MethodInfo("property_selected", PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::NIL, "value", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT), PropertyInfo(Variant::BOOL, "advance")));

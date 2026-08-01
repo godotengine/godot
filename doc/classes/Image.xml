@@ -30,6 +30,7 @@
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
 				Alpha-blends [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
+				[b]Note:[/b] Simultaneously reading and writing to the same image reference may lead to unexpected results.
 			</description>
 		</method>
 		<method name="blend_rect_mask">
@@ -898,16 +899,16 @@
 			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
 		</constant>
 		<constant name="COMPRESS_PROFILE_AUTOMATIC" value="0" enum="CompressProfile">
-			Automatically adjusts the quality level based on the number of unique color channels present in the image. For ASTC, this corresponds to picking 8x8 when only one channel is detected (R, L), 6x6 when two channels are detected (RG, LA), and 4x4 in all other cases.
+			Automatically adjusts the quality level based on the number of unique color channels present in the image. For ASTC, this corresponds to picking 8×8 when only one channel is detected (R, L), 6×6 when two channels are detected (RG, LA), and 4×4 in all other cases.
 		</constant>
 		<constant name="COMPRESS_PROFILE_MAX_QUALITY" value="1" enum="CompressProfile">
-			Prioritizes highest quality over compression. For ASTC, this corresponds to using a 4x4 block size.
+			Prioritizes highest quality over compression. For ASTC, this corresponds to using a 4×4 block size.
 		</constant>
 		<constant name="COMPRESS_PROFILE_COMPRESSED" value="2" enum="CompressProfile">
-			Prioritizes some compression over quality. For ASTC, this corresponds to using a 6x6 block size.
+			Prioritizes some compression over quality. For ASTC, this corresponds to using a 6×6 block size.
 		</constant>
 		<constant name="COMPRESS_PROFILE_MAX_COMPRESSION" value="3" enum="CompressProfile">
-			Prioritizes highest compression over quality. For ASTC, this corresponds to using an 8x8 block size.
+			Prioritizes highest compression over quality. For ASTC, this corresponds to using an 8×8 block size.
 		</constant>
 		<constant name="COMPRESS_PROFILE_MAX" value="4" enum="CompressProfile">
 			Represents the size of the [enum CompressProfile] enum.

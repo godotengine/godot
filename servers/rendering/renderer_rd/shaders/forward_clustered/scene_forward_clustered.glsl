@@ -6,7 +6,6 @@
 
 /* Include half precision types. */
 #include "../half_inc.glsl"
-
 #include "scene_forward_clustered_inc.glsl"
 
 #define SHADER_IS_SRGB false
@@ -877,7 +876,6 @@ void main() {
 
 /* Include half precision types. */
 #include "../half_inc.glsl"
-
 #include "scene_forward_clustered_inc.glsl"
 
 /* Varyings */
@@ -1080,9 +1078,8 @@ layout(location = 2) out vec2 motion_vector;
 #define SPECULAR_SCHLICK_GGX
 #endif
 
-#include "../scene_forward_lights_inc.glsl"
-
 #include "../scene_forward_gi_inc.glsl"
+#include "../scene_forward_lights_inc.glsl"
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -2346,10 +2343,10 @@ void fragment_shader(in SceneData scene_data) {
 					vec3 light_dir = directional_lights.data[i].direction;
 					vec3 base_normal_bias = geo_normal * (1.0 - max(0.0, dot(light_dir, -geo_normal)));
 
-#define BIAS_FUNC(m_var, m_idx)                                                                 \
-	m_var.xyz += light_dir * directional_lights.data[i].shadow_bias[m_idx];                     \
+#define BIAS_FUNC(m_var, m_idx) \
+	m_var.xyz += light_dir * directional_lights.data[i].shadow_bias[m_idx]; \
 	vec3 normal_bias = base_normal_bias * directional_lights.data[i].shadow_normal_bias[m_idx]; \
-	normal_bias -= light_dir * dot(light_dir, normal_bias);                                     \
+	normal_bias -= light_dir * dot(light_dir, normal_bias); \
 	m_var.xyz += normal_bias;
 
 					//version with soft shadows, more expensive
@@ -2423,7 +2420,7 @@ void fragment_shader(in SceneData scene_data) {
 							blend_count++;
 						}
 
-						if (blend_count < blend_max) {
+						if (blend_count < blend_max && depth_z < directional_lights.data[i].shadow_split_offsets.w) {
 							vec4 v = vec4(vertex, 1.0);
 
 							BIAS_FUNC(v, 3)

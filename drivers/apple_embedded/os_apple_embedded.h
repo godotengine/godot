@@ -99,6 +99,7 @@ public:
 
 	void start();
 
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	virtual Vector<String> get_system_fonts() const override;
