@@ -99,7 +99,7 @@ Error EditorDebuggerServerTCP::start(const String &p_uri) {
 			break;
 		}
 		if (attempt >= max_attempts) {
-			EditorNode::get_log()->add_message(vformat("Cannot listen on port %d, remote debugging unavailable.", bind_port), EditorLog::MSG_TYPE_ERROR);
+			EditorNode::get_log()->add_message(vformat("Cannot listen on %s:%d, remote debugging unavailable.", bind_host, bind_port), EditorLog::MSG_TYPE_ERROR);
 			return err;
 		}
 		int last_port = bind_port++;

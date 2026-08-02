@@ -360,6 +360,10 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 	if (uri.is_empty()) {
 		uri = "tcp://";
 	}
+
+	// Prevent clearing useful information.
+	emit_signal(SNAME("play_pressed"));
+
 	EditorDebuggerNode::get_singleton()->start(uri);
 	Error error = editor_run.run(run_filename, write_movie_file, args);
 	if (error != OK) {
@@ -370,8 +374,6 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 
 	_update_play_buttons();
 	stop_button->set_disabled(false);
-
-	emit_signal(SNAME("play_pressed"));
 }
 
 void EditorRunBar::_run_native(const Ref<EditorExportPreset> &p_preset) {
