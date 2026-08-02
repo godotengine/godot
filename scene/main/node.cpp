@@ -2893,7 +2893,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 	}
 
 	if (get_name() != String()) {
-		node->set_name(get_name());
+		node->_set_name_nocheck(get_name());
 	}
 
 #ifdef TOOLS_ENABLED
