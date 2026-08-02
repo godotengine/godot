@@ -122,6 +122,7 @@ def configure(env: "SConsEnvironment"):
 
     env["EXPORTED_FUNCTIONS"] = ["_main"]
     env["EXPORTED_RUNTIME_METHODS"] = []
+    env["supported"] = ["mono"]
 
     # Validate arch.
     supported_arches = ["wasm32", "wasm64"]
