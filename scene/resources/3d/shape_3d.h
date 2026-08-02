@@ -66,7 +66,7 @@ protected:
 public:
 	virtual RID get_rid() const override { return shape; }
 
-	bool isDebugMeshFacesCacheValid() { return debug_mesh_faces_cache.is_valid(); }
+	bool is_debug_mesh_faces_cache_valid() const { return debug_mesh_faces_cache.is_valid(); }
 
 	Ref<ArrayMesh> get_debug_mesh();
 	virtual Vector<Vector3> get_debug_mesh_lines() const = 0; // { return Vector<Vector3>(); }

@@ -326,7 +326,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	const Color collision_color = cs->is_disabled() ? Color(1.0, 1.0, 1.0, 0.75) : cs->get_debug_color();
 
 	if (cs->get_debug_fill_enabled()) {
-		bool wasCacheValid = s->isDebugMeshFacesCacheValid();
+		bool wasCacheValid = s->is_debug_mesh_faces_cache_valid();
 		Ref<ArrayMesh> array_mesh = s->get_debug_arraymesh_faces(collision_color);
 		if (array_mesh.is_valid()
 			&& array_mesh->get_surface_count() > 0
