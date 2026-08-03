@@ -10533,7 +10533,11 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 				_set_tkpos(prev_pos);
 
-				_get_completable_identifier(nullptr, COMPLETION_MAIN_FUNCTION, name);
+				if (type == TYPE_VOID && !is_constant) {
+					_get_completable_identifier(nullptr, COMPLETION_MAIN_FUNCTION, name);
+				} else {
+					_get_completable_identifier(nullptr, COMPLETION_NONE, name);
+				}
 
 				if (name == StringName()) {
 					if (is_constant) {
