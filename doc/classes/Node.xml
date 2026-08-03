@@ -1237,6 +1237,9 @@
 		<constant name="NOTIFICATION_EDITOR_POST_SAVE" value="9002">
 			Notification received right after the scene with the node is saved in the editor. This notification is only sent in the Godot editor and will not occur in exported projects.
 		</constant>
+		<constant name="NOTIFICATION_EDITOR_CREATED" value="9005">
+			Notification received right after the node has been created using the editor's interface, such as via Add Child Node or as a root of a new scene. This notification is not sent when the node is created by scripts or when instantiating packed scenes.
+		</constant>
 		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
 			Notification received when the mouse enters the window.
 			Implemented for embedded windows and on desktop and web platforms.
