@@ -445,6 +445,19 @@ void FileDialog::_post_popup() {
 	_push_history();
 }
 
+void FileDialog::_files_dropped(const PackedStringArray &p_files) {
+	if (p_files.size() != 1) {
+		return;
+	}
+
+	String path = p_files[0].get_base_dir();
+	if (path.is_empty()) {
+		return;
+	}
+
+	set_current_dir(path);
+}
+
 void FileDialog::_push_history() {
 	local_history.resize(local_history_pos + 1);
 	String new_path = dir_access->get_current_dir();
@@ -2679,6 +2692,8 @@ FileDialog::FileDialog() {
 	item_menu = memnew(PopupMenu);
 	item_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FileDialog::_item_menu_id_pressed));
 	add_child(item_menu, false, INTERNAL_MODE_FRONT);
+
+	connect("files_dropped", callable_mp(this, &FileDialog::_files_dropped));
 
 	connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_action_pressed));
 

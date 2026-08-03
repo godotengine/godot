@@ -1315,7 +1315,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-void ProjectManager::_files_dropped(PackedStringArray p_files) {
+void ProjectManager::_files_dropped(const PackedStringArray &p_files) {
 	// TODO: Support installing multiple ZIPs at the same time?
 	if (p_files.size() == 1 && p_files[0].ends_with(".zip")) {
 		const String &file = p_files[0];

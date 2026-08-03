@@ -270,7 +270,7 @@ class ProjectManager : public Control {
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_ev) override;
 
-	void _files_dropped(PackedStringArray p_files);
+	void _files_dropped(const PackedStringArray &p_files);
 
 protected:
 	void _notification(int p_what);

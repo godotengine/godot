@@ -372,6 +372,8 @@ private:
 
 	virtual void _post_popup() override;
 
+	void _files_dropped(const PackedStringArray &p_files);
+
 protected:
 	Ref<DirAccess> dir_access;
 
