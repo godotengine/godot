@@ -192,7 +192,6 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const PS2DT::RayParameters &p
 		}
 
 		if (shape->intersect_segment(local_from, local_to, shape_point, shape_normal)) {
-
 			Vector2 world_normal = inv_xform.basis_xform_inv(shape_normal).normalized();
 
 			if (is_shape_one_way) {
