@@ -79,6 +79,7 @@
 		</member>
 		<member name="lower_fade" type="float" setter="set_lower_fade" getter="get_lower_fade" default="0.3">
 			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB]. Only positive values are valid (negative values will be clamped to [code]0.0[/code]). See also [member upper_fade].
+			[b]Note:[/b] Decal nodes created in the editor default [member lower_fade] to [code]0.0[/code], so that the decal does not fade regardless of the distance between the decal and the surface being affected. This does not apply to Decal nodes created via code, which still default [member lower_fade] to [code]0.3[/code].
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Changes the [Color] of the Decal by multiplying the albedo and emission colors with this value. The alpha component is only taken into account when multiplying the albedo color, not the emission color. See also [member emission_energy] and [member albedo_mix] to change the emission and albedo intensity independently of each other.
@@ -90,6 +91,7 @@
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(2, 2, 2)">
 			Sets the size of the [AABB] used by the decal. All dimensions must be set to a value greater than zero (they will be clamped to [code]0.001[/code] if this is not the case). The AABB goes from [code]-size/2[/code] to [code]size/2[/code].
 			[b]Note:[/b] To improve culling efficiency of "hard surface" decals, set their [member upper_fade] and [member lower_fade] to [code]0.0[/code] and set the Y component of the [member size] as low as possible. This will reduce the decals' AABB size without affecting their appearance.
+			[b]Note:[/b] Decal nodes created in the editor set [member size] to [code]Vector3(2, 1, 2)[/code] by default for improved culling efficiency. This does not apply to Decal nodes created via code.
 		</member>
 		<member name="texture_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] with the base [Color] of the Decal. Either this or the [member texture_emission] must be set for the Decal to be visible. Use the alpha channel like a mask to smoothly blend the edges of the decal with the underlying object.
@@ -112,6 +114,7 @@
 		</member>
 		<member name="upper_fade" type="float" setter="set_upper_fade" getter="get_upper_fade" default="0.3">
 			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB]. Only positive values are valid (negative values will be clamped to [code]0.0[/code]). See also [member lower_fade].
+			[b]Note:[/b] Decal nodes created in the editor set [member upper_fade] to [code]0.0[/code] by default, so that the decal does not fade regardless of the distance between the decal and the surface being affected. This does not apply to Decal nodes created via code.
 		</member>
 	</members>
 	<constants>

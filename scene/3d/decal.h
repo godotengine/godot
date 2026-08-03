@@ -60,6 +60,9 @@ private:
 	real_t distance_fade_length = 10.0;
 
 protected:
+#ifdef TOOLS_ENABLED
+	void _notification(int p_what);
+#endif
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 #ifndef DISABLE_DEPRECATED
