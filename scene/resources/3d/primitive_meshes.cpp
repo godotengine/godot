@@ -423,7 +423,7 @@ real_t CapsuleMesh::get_tangent_angle(real_t p_top_radius, real_t p_bottom_radiu
 	return Math::asin((p_bottom_radius - p_top_radius) / p_mid_height);
 }
 
-void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const float height, const int radial_segments, const int rings, bool p_add_uv2, const float p_uv2_padding) {
+void CapsuleMesh::create_mesh_array(Array &p_arr, const real_t radius, const real_t height, const int radial_segments, const int rings, bool p_add_uv2, const real_t p_uv2_padding) {
 	return create_mesh_array(p_arr, radius, radius, height - radius * 2, radial_segments, rings, p_add_uv2, p_uv2_padding);
 }
 
