@@ -328,9 +328,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	if (cs->get_debug_fill_enabled()) {
 		bool wasCacheValid = s->is_debug_mesh_faces_cache_valid();
 		Ref<ArrayMesh> array_mesh = s->get_debug_arraymesh_faces(collision_color);
-		if (array_mesh.is_valid()
-			&& array_mesh->get_surface_count() > 0
-			&& !wasCacheValid) {
+		if (array_mesh.is_valid() && array_mesh->get_surface_count() > 0 && !wasCacheValid) {
 			p_gizmo->add_mesh(array_mesh, material_arraymesh);
 		}
 	}
