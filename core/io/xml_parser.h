@@ -90,12 +90,18 @@ private:
 	void _parse_current_node();
 
 	_FORCE_INLINE_ char peek(int p_offset = 0) const {
-		const char *ptr = P + p_offset;
-		return (ptr >= data && ptr < data + length) ? *ptr : '\0';
+		if (!P || !data) {
+			return '\0';
+		}
+		int64_t offset = (P - data) + p_offset;
+		if (offset >= 0 && (uint64_t)offset < length) {
+			return data[offset];
+		}
+		return '\0';
 	}
 
 	_FORCE_INLINE_ void next_char() {
-		if (P < data + length) {
+		if (P && data && P < data + length) {
 			if (*P == '\n') {
 				current_line++;
 			}
