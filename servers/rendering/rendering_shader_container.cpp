@@ -334,6 +334,10 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 				reflection.compute_local_size[0] = module.entry_points->local_size.x;
 				reflection.compute_local_size[1] = module.entry_points->local_size.y;
 				reflection.compute_local_size[2] = module.entry_points->local_size.z;
+				// A specialization constant can control a dimension. Then `local_size` holds the
+				// default value of that constant, and the ID identifies the constant.
+				static_assert(sizeof(reflection.compute_local_spec_id) == sizeof(module.entry_points->local_size_spec_id));
+				memcpy(reflection.compute_local_spec_id, module.entry_points->local_size_spec_id, sizeof(reflection.compute_local_spec_id));
 			}
 			uint32_t binding_count = 0;
 			result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, nullptr);
@@ -689,6 +693,9 @@ void RenderingShaderContainer::set_from_shader_reflection(const ReflectShader &p
 	reflection_data.compute_local_size[0] = p_reflection.compute_local_size[0];
 	reflection_data.compute_local_size[1] = p_reflection.compute_local_size[1];
 	reflection_data.compute_local_size[2] = p_reflection.compute_local_size[2];
+	reflection_data.compute_local_spec_id[0] = p_reflection.compute_local_spec_id[0];
+	reflection_data.compute_local_spec_id[1] = p_reflection.compute_local_spec_id[1];
+	reflection_data.compute_local_spec_id[2] = p_reflection.compute_local_spec_id[2];
 	reflection_data.set_count = p_reflection.uniform_sets.size();
 	reflection_data.push_constant_size = p_reflection.push_constant_size;
 	reflection_data.push_constant_stages_mask = uint32_t(p_reflection.push_constant_stages);
@@ -748,6 +755,9 @@ RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_shader_re
 	shader_refl.compute_local_size[0] = reflection_data.compute_local_size[0];
 	shader_refl.compute_local_size[1] = reflection_data.compute_local_size[1];
 	shader_refl.compute_local_size[2] = reflection_data.compute_local_size[2];
+	shader_refl.compute_local_spec_id[0] = reflection_data.compute_local_spec_id[0];
+	shader_refl.compute_local_spec_id[1] = reflection_data.compute_local_spec_id[1];
+	shader_refl.compute_local_spec_id[2] = reflection_data.compute_local_spec_id[2];
 	shader_refl.uniform_sets.resize(reflection_data.set_count);
 	shader_refl.specialization_constants.resize(reflection_data.specialization_constants_count);
 	shader_refl.stages_vector.resize(reflection_data.stage_count);
@@ -802,9 +812,11 @@ bool RenderingShaderContainer::from_bytes(const PackedByteArray &p_bytes) {
 	bytes_offset += _from_bytes_header_extra_data(&bytes_ptr[bytes_offset]);
 
 	ERR_FAIL_COND_V_MSG(container_header.magic_number != CONTAINER_MAGIC_NUMBER, false, "Incorrect magic number in shader container.");
-	ERR_FAIL_COND_V_MSG(container_header.version > CONTAINER_VERSION, false, "Unsupported version in shader container.");
+	// The version identifies the memory layout of the shared reflection data. A different
+	// version can have a different layout. Thus the engine must reject it and compile again.
+	ERR_FAIL_COND_V_MSG(container_header.version != CONTAINER_VERSION, false, "Unsupported version in shader container.");
 	ERR_FAIL_COND_V_MSG(container_header.format != _format(), false, "Incorrect format in shader container.");
-	ERR_FAIL_COND_V_MSG(container_header.format_version > _format_version(), false, "Unsupported format version in shader container.");
+	ERR_FAIL_COND_V_MSG(container_header.format_version != _format_version(), false, "Unsupported format version in shader container.");
 
 	// Adjust shaders to the size indicated by the container header.
 	shaders.resize(container_header.shader_count);

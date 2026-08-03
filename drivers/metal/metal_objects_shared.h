@@ -917,7 +917,12 @@ public:
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDComputeShader final : public MDShader {
 public:
+	/// The workgroup size when all specialization constants have their default values.
 	MTL::Size local = {};
+
+	/// The ID of the specialization constant that controls each dimension of `local`.
+	/// If no constant controls a dimension, the value is UINT32_MAX.
+	uint32_t local_size_spec_id[3] = { UINT32_MAX, UINT32_MAX, UINT32_MAX };
 
 	std::shared_ptr<MDLibrary> kernel;
 

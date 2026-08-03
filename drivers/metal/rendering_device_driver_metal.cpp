@@ -1255,6 +1255,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 				libraries[RDD::ShaderStage::SHADER_STAGE_COMPUTE]);
 
 		cs->local = MTL::Size(refl.compute_local_size[0], refl.compute_local_size[1], refl.compute_local_size[2]);
+		memcpy(cs->local_size_spec_id, refl.compute_local_spec_id, sizeof(cs->local_size_spec_id));
 		shader = cs;
 	} else {
 		MDRenderShader *rs = new MDRenderShader(
@@ -2229,6 +2230,28 @@ void RenderingDeviceDriverMetal::command_compute_dispatch_indirect(CommandBuffer
 
 // ----- PIPELINE -----
 
+/*! @brief Returns the workgroup size of `p_shader` after the specialization constants apply.
+ *
+ * Metal gets the threadgroup size at dispatch time, not from the shader. Thus a pipeline must
+ * hold the specialized size. A dimension that no constant controls keeps its default value.
+ */
+static MTL::Size _resolve_local_size(const MDComputeShader *p_shader, VectorView<RDD::PipelineSpecializationConstant> p_specialization_constants) {
+	NS::UInteger dimensions[3] = { p_shader->local.width, p_shader->local.height, p_shader->local.depth };
+	for (uint32_t dim = 0; dim < std_size(p_shader->local_size_spec_id); dim++) {
+		if (p_shader->local_size_spec_id[dim] == UINT32_MAX) {
+			continue;
+		}
+		for (uint32_t i = 0; i < p_specialization_constants.size(); i++) {
+			const RDD::PipelineSpecializationConstant &sc = p_specialization_constants[i];
+			if (sc.constant_id == p_shader->local_size_spec_id[dim] && sc.int_value != 0) {
+				dimensions[dim] = sc.int_value;
+				break;
+			}
+		}
+	}
+	return MTL::Size(dimensions[0], dimensions[1], dimensions[2]);
+}
+
 RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) {
 	MDComputeShader *shader = (MDComputeShader *)(p_shader.id);
 
@@ -2273,7 +2296,7 @@ RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_s
 	ERR_FAIL_COND_V_MSG(!state, PipelineID(), "Failed to create compute pipeline state");
 
 	MDComputePipeline *pipeline = new MDComputePipeline(state);
-	pipeline->compute_state.local = shader->local;
+	pipeline->compute_state.local = _resolve_local_size(shader, p_specialization_constants);
 	pipeline->shader = shader;
 
 	if (arc) {

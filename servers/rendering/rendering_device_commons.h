@@ -1165,6 +1165,10 @@ public:
 		bool has_multiview = false;
 		bool has_dynamic_buffers = false;
 		uint32_t compute_local_size[3] = {};
+		/// The ID of the specialization constant that controls each dimension of
+		/// `compute_local_size`. A dimension that no constant controls has the value
+		/// UINT32_MAX.
+		uint32_t compute_local_spec_id[3] = { UINT32_MAX, UINT32_MAX, UINT32_MAX };
 		uint32_t push_constant_size = 0;
 
 		Vector<Vector<ShaderUniform>> uniform_sets;
