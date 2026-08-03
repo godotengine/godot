@@ -231,4 +231,25 @@ TEST_CASE("[XMLParser] CDATA") {
 	CHECK_EQ(parser.get_node_name(), "a");
 }
 
+TEST_CASE("[XMLParser] Raw buffer parsing with garbage suffix") {
+	uint8_t buf[] = {'<', 'a', '/', '>', 0xFF, 0xFF, 0xFF}; // 4 valid bytes
+	XMLParser parser;
+	REQUIRE_EQ(parser._open_buffer(buf, 4), OK);
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+	CHECK_EQ(parser.get_node_name(), "a");
+	CHECK(parser.is_empty());
+	CHECK_EQ(parser.read(), ERR_FILE_EOF);
+}
+
+TEST_CASE("[XMLParser] Truncated buffer is handled safely") {
+	uint8_t buf[] = {'<', 't', 'a', 'g'}; // "<tag" no closing
+	XMLParser parser;
+	REQUIRE_EQ(parser._open_buffer(buf, 4), OK);
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+	CHECK_EQ(parser.get_node_name(), "tag");
+	CHECK_EQ(parser.read(), ERR_FILE_EOF);
+}
+
 } // namespace TestXMLParser
