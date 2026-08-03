@@ -161,7 +161,7 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const PS2DT::RayParameters &p
 		bool is_shape_one_way = col_obj->is_shape_set_as_one_way_collision(shape_idx);
 
 		Vector2 one_way_dir;
-		
+
 		if (is_shape_one_way) {
 			// If it is, get its one way direction, to use later
 			one_way_dir = xform.basis_xform(col_obj->get_shape_one_way_collision_direction(shape_idx)).normalized();
