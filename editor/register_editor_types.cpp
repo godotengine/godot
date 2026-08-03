@@ -92,6 +92,7 @@
 #include "editor/scene/2d/sprite_2d_editor_plugin.h"
 #include "editor/scene/3d/bone_map_editor_plugin.h"
 #include "editor/scene/3d/camera_3d_editor_plugin.h"
+#include "editor/scene/3d/decal_editor_plugin.h"
 #include "editor/scene/3d/gpu_particles_collision_sdf_editor_plugin.h"
 #include "editor/scene/3d/lightmap_gi_editor_plugin.h"
 #include "editor/scene/3d/mesh_editor_plugin.h"
@@ -275,6 +276,7 @@ void register_editor_types() {
 	// 3D editor plugins.
 	EditorPlugins::add_by_type<BoneMapEditorPlugin>();
 	EditorPlugins::add_by_type<Camera3DEditorPlugin>();
+	EditorPlugins::add_by_type<DecalEditorPlugin>();
 	EditorPlugins::add_by_type<CPUParticles3DEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticles3DEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticlesCollisionSDF3DEditorPlugin>();
