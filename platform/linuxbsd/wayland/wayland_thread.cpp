@@ -4498,6 +4498,30 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 
 	ERR_FAIL_NULL(parent_xdg_surface);
 
+	// Popups without an explicit xdg_popup grab are dismissed (at least by Gnome-Mutter)
+	// as soon as the cursor isnt over any surface belonging to the popups tree.
+	//
+	// Submenus are sometimes positioned so it just about touches its parents edge with 
+	// a 1 pixel gap between the two surfaces (look at panel margin/content scale rounding 
+	// upstream) and the cursor crossing that gap while moving from the parent item 
+	// towards the submenu is enough to trigger this -> making the submenu flash and 
+	// close immediately. 
+	//
+	// We know the popup is meant to be adjacent to its parent along a given axis.
+	// Whenever the offset places it right at or just past the parents edge, we can clamp 
+	// away small gaps like this so the two surfaces always touch or slightly overlap.
+	constexpr int32_t POPUP_ADJACENCY_GAP_FIX_PX = 4;
+	if (offset.x > 0 && offset.x - positioner_rect.size.width >= 0 && offset.x - positioner_rect.size.width <= POPUP_ADJACENCY_GAP_FIX_PX) {
+		offset.x = positioner_rect.size.width;
+	} else if (offset.x < 0 && offset.x + ws.rect.size.width <= 0 && offset.x + ws.rect.size.width >= -POPUP_ADJACENCY_GAP_FIX_PX) {
+		offset.x = -ws.rect.size.width;
+	}
+	if (offset.y > 0 && offset.y - positioner_rect.size.height >= 0 && offset.y - positioner_rect.size.height <= POPUP_ADJACENCY_GAP_FIX_PX) {
+		offset.y = positioner_rect.size.height;
+	} else if (offset.y < 0 && offset.y + ws.rect.size.height <= 0 && offset.y + ws.rect.size.height >= -POPUP_ADJACENCY_GAP_FIX_PX) {
+		offset.y = -ws.rect.size.height;
+	}
+
 	struct xdg_positioner *xdg_positioner = xdg_wm_base_create_positioner(registry.xdg_wm_base);
 	xdg_positioner_set_size(xdg_positioner, ws.rect.size.width, ws.rect.size.height);
 	xdg_positioner_set_anchor(xdg_positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
