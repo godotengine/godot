@@ -1529,7 +1529,7 @@ void SpringBoneSimulator3D::_update_joint_array(int p_index) {
 	Skeleton3D *sk = get_skeleton();
 	int current_bone = settings[p_index]->end_bone;
 	int root_bone = settings[p_index]->root_bone;
-	if (!sk || current_bone < 0 || root_bone < 0) {
+	if (!sk || current_bone < 0 || root_bone < 0 || current_bone >= sk->get_bone_count() || root_bone >= sk->get_bone_count()) {
 		set_joint_count(p_index, 0);
 		return;
 	}
