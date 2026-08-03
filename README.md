@@ -41,7 +41,7 @@ Official binaries for the Godot editor and the export templates can be found
 
 ### Compiling from source
 
-[See the official docs](https://docs.godotengine.org/en/latest/engine_details/development/compiling)
+[See the official docs](https://docs.godotengine.org/en/stable/engine_details/development/compiling)
 for compilation instructions for every supported platform.
 
 ## Community and contributing
@@ -60,14 +60,14 @@ This document also includes guidelines for reporting bugs.
 The official documentation is hosted on [Read the Docs](https://docs.godotengine.org).
 It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
 
-The [class reference](https://docs.godotengine.org/en/latest/classes/)
+The [class reference](https://docs.godotengine.org/en/stable/classes/)
 is also accessible from the Godot editor.
 
 We also maintain official demos in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
 as well as a list of [awesome Godot community resources](https://github.com/godotengine/awesome-godot).
 
 There are also a number of other
-[learning resources](https://docs.godotengine.org/en/latest/community/tutorials.html)
+[learning resources](https://docs.godotengine.org/en/stable/community/tutorials.html)
 provided by the community, such as text and video tutorials, demos, etc.
 Consult the [community channels](https://godotengine.org/community)
 for more information.
