@@ -264,6 +264,13 @@
 				Shows the given property on the given [param object] in the editor's Inspector dock. If [param inspector_only] is [code]true[/code], plugins will not attempt to edit [param object].
 			</description>
 		</method>
+		<method name="instantiate_object_properties">
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<description>
+				Initializes the node as if it was created by the editor. This involves instantiating properties that use [constant @GlobalScope.PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT] and emitting the [signal object_created_in_editor] signal.
+			</description>
+		</method>
 		<method name="is_exiting" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -549,4 +556,22 @@
 			If [code]true[/code], the Movie Maker mode is enabled in the editor. See [MovieWriter] for more information.
 		</member>
 	</members>
+	<signals>
+		<signal name="object_created_in_editor">
+			<param index="0" name="object" type="Object" />
+			<description>
+				Emitted right after an object has been created using the editor's interface, such as via Add Child Node or as a root of a new scene. [param object] is the created object.
+				This signal is not emitted when instantiating packed scenes. If you created a node via script, use [method instantiate_object_properties] to set up its properties.
+				[codeblock]
+				func _ready():
+					EditorInterface.object_created_in_editor.connect(setup_object)
+
+				func setup_object(object):
+					if object is Sprite2D:
+						# Make sprites automatically translucent.
+						object.modulate.a = 0.5
+				[/codeblock]
+			</description>
+		</signal>
+	</signals>
 </class>

@@ -194,6 +194,8 @@ public:
 	void save_all_scenes();
 	Error close_scene();
 
+	void instantiate_object_properties(Object *p_object);
+
 	// Scene playback.
 
 	void play_main_scene();
