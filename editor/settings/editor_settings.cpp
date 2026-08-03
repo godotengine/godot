@@ -1661,6 +1661,15 @@ void EditorSettings::set_basic(const StringName &p_setting, bool p_basic) {
 	props[p_setting].basic = p_basic;
 }
 
+void EditorSettings::set_as_internal(const StringName &p_setting, bool p_internal) {
+	_THREAD_SAFE_METHOD_
+
+	if (!props.has(p_setting)) {
+		return;
+	}
+	props[p_setting].hide_from_editor = p_internal;
+}
+
 void EditorSettings::set_initial_value(const StringName &p_setting, const Variant &p_value, bool p_update_current) {
 	_THREAD_SAFE_METHOD_
 
@@ -2425,7 +2434,8 @@ void EditorSettings::get_argument_options(const StringName &p_function, int p_id
 	const String pf = p_function;
 	if (p_idx == 0) {
 		if (pf == "has_setting" || pf == "set_setting" || pf == "get_setting" || pf == "erase" ||
-				pf == "set_initial_value" || pf == "set_as_basic" || pf == "mark_setting_changed") {
+				pf == "set_initial_value" || pf == "set_as_basic" || pf == "set_as_internal" ||
+				pf == "set_restart_if_changed" || pf == "mark_setting_changed") {
 			for (const KeyValue<String, VariantContainer> &E : props) {
 				if (E.value.hide_from_editor) {
 					continue;
@@ -2453,6 +2463,9 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_setting", "name"), &EditorSettings::get_setting);
 	ClassDB::bind_method(D_METHOD("erase", "property"), &EditorSettings::erase);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value", "update_current"), &EditorSettings::set_initial_value);
+	ClassDB::bind_method(D_METHOD("set_as_basic", "name", "basic"), &EditorSettings::set_basic);
+	ClassDB::bind_method(D_METHOD("set_restart_if_changed", "name", "restart"), &EditorSettings::set_restart_if_changed);
+	ClassDB::bind_method(D_METHOD("set_as_internal", "name", "internal"), &EditorSettings::set_as_internal);
 	ClassDB::bind_method(D_METHOD("add_property_info", "info"), &EditorSettings::_add_property_info_bind);
 
 	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);
