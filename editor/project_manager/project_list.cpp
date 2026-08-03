@@ -936,14 +936,15 @@ void ProjectList::update_project_list() {
 	// If you have 150 projects, it may read through 150 files on your disk at once + load 150 icons.
 	// FIXME: Does it really have to be a full, hard reload? Runtime updates should be made much cheaper.
 
-	int temp_title_index = -1;
-	if (ProjectManager::get_singleton()->is_initialized()) {
+	HashMap<String, int> temp_title_index;
+	bool initialized = ProjectManager::get_singleton()->is_initialized();
+	if (initialized) {
 		// Clear whole list
 		for (int i = 0; i < _projects.size(); ++i) {
 			Item &project = _projects.write[i];
 			CRASH_COND(project.control == nullptr);
 
-			temp_title_index = project.project_title_index;
+			temp_title_index[project.project_name] = project.project_title_index;
 			memdelete(project.control); // Why not queue_free()?
 		}
 
@@ -957,7 +958,7 @@ void ProjectList::update_project_list() {
 	// Create controls
 	for (int i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
-		item.project_title_index = temp_title_index;
+		item.project_title_index = initialized ? temp_title_index[item.project_name] : -1;
 
 		_create_project_item_control(i);
 	}
