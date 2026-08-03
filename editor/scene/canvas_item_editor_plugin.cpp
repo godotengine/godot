@@ -1093,6 +1093,8 @@ void CanvasItemEditor::_create_node() {
 	CanvasItem *child = add_node_dialog->instantiate_selected<CanvasItem>();
 	ERR_FAIL_NULL(child);
 
+	EditorNode::get_editor_data().instantiate_object_properties(child);
+
 	Node *parent = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
 	if (!parent) {
 		parent = EditorNode::get_editor_data().get_edited_scene_root();
@@ -6419,6 +6421,8 @@ void CanvasItemEditorViewport::_remove_preview() {
 }
 
 void CanvasItemEditorViewport::_create_texture_node(Node *p_parent, Node *p_child, const String &p_path, const Point2 &p_point) {
+	EditorNode::get_editor_data().instantiate_object_properties(p_child);
+
 	// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
 	const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
 	if (!node_name.is_empty()) {
@@ -6461,6 +6465,7 @@ void CanvasItemEditorViewport::_create_texture_node(Node *p_parent, Node *p_chil
 
 void CanvasItemEditorViewport::_create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
 	AudioStreamPlayer2D *child = memnew(AudioStreamPlayer2D);
+	EditorNode::get_editor_data().instantiate_object_properties(child);
 
 	// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
 	const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
@@ -6480,6 +6485,7 @@ void CanvasItemEditorViewport::_create_audio_node(Node *p_parent, const String &
 
 void CanvasItemEditorViewport::_create_mesh_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
 	MeshInstance2D *child = memnew(MeshInstance2D);
+	EditorNode::get_editor_data().instantiate_object_properties(child);
 
 	// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
 	const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());

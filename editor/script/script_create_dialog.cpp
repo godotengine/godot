@@ -370,6 +370,7 @@ void ScriptCreateDialog::_create_new() {
 
 	String class_name = file_path->get_text().get_file().get_basename();
 	scr = ScriptServer::get_language(language_menu->get_selected())->make_template(sinfo.content, class_name, parent_class);
+	EditorNode::get_editor_data().instantiate_object_properties(scr.ptr());
 
 	if (is_built_in) {
 		scr->set_name(built_in_name->get_text());
