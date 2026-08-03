@@ -1854,7 +1854,7 @@
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] for hiDPI (Retina) screens, and [code]1.0[/code] for all other cases.
 				[b]Note:[/b] On Linux (Wayland), the returned value is accurate only when [param screen] is [constant SCREEN_OF_MAIN_WINDOW]. Due to API limitations, passing a direct index will return a rounded-up integer, if the screen has a fractional scale (e.g. [code]1.25[/code] would get rounded up to [code]2.0[/code]).
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, and Linux (Wayland). On other platforms, this method always returns [code]1.0[/code].
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, Linux (Wayland), and Windows. On other platforms, this method always returns [code]1.0[/code].
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">
