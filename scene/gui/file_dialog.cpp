@@ -57,6 +57,10 @@ void FileDialog::popup_file_dialog() {
 	_focus_file_text();
 }
 
+void FileDialog::_request_focus_file_text() {
+	focus_file_text_pending = true;
+}
+
 void FileDialog::_focus_file_text() {
 	int lp = filename_edit->get_text().rfind_char('.');
 	if (lp != -1) {
@@ -558,8 +562,51 @@ void FileDialog::_action_pressed() {
 	}
 }
 
+int FileDialog::_find_item_with_text(const String &p_text) {
+	int item_count = file_list->get_item_count();
+	for (int i = 0; i < item_count; i++) {
+		String text = file_list->get_item_text(i);
+		if (text == p_text) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+// When p_idx == -1, clears filename_edit if input is invalid (no text match found in folder). Useful for deselect_all.
+// For selecting (p_idx != -1), it is a convenience method when index is already known.
+void FileDialog::_filename_edit_set_item(int p_idx) {
+	if (p_idx == -1) {
+		if (target_id != -1) {
+			target_id = -1;
+			filename_edit->set_text("");
+		}
+	} else {
+		target_id = p_idx;
+		String text = file_list->get_item_text(target_id);
+		filename_edit->set_text(text);
+	}
+}
+
+void FileDialog::_filename_edit_text_changed() {
+	if (target_id != -1) {
+		file_list->deselect(target_id);
+		target_id = -1;
+	}
+
+	String new_text = filename_edit->get_text();
+	int item_match_id = _find_item_with_text(new_text);
+
+	if (item_match_id != -1) {
+		file_list->select(item_match_id, false);
+		target_id = item_match_id;
+	}
+
+	get_ok_button()->set_disabled(_is_open_should_be_disabled());
+}
+
 void FileDialog::_cancel_pressed() {
-	filename_edit->set_text("");
+	_filename_edit_set_item(-1);
 	hide();
 }
 
@@ -615,6 +662,7 @@ void FileDialog::_go_forward() {
 void FileDialog::deselect_all() {
 	// Clear currently selected items in file manager.
 	file_list->deselect_all();
+	_filename_edit_set_item(-1);
 
 	// And change get_ok title.
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -650,6 +698,9 @@ void FileDialog::_file_list_multi_selected(int p_item, bool p_selected) {
 	if (p_selected) {
 		_file_list_selected(p_item);
 	} else {
+		target_id = _get_selected_file_idx();
+		_filename_edit_set_item(target_id);
+
 		get_ok_button()->set_disabled(_is_open_should_be_disabled());
 	}
 }
@@ -658,7 +709,7 @@ void FileDialog::_file_list_selected(int p_item) {
 	Dictionary d = file_list->get_item_metadata(p_item);
 
 	if (!d["dir"]) {
-		filename_edit->set_text(d["name"]);
+		_filename_edit_set_item(p_item);
 		if (mode == FILE_MODE_SAVE_FILE) {
 			set_default_ok_text(ETR("Save"));
 		} else {
@@ -1101,6 +1152,9 @@ void FileDialog::update_file_list() {
 		break;
 	}
 	_update_fav_buttons();
+
+	int filename_item = _find_item_with_text(filename_edit->get_text());
+	_filename_edit_set_item(filename_item);
 }
 
 void FileDialog::_filter_selected(int) {
@@ -1132,7 +1186,7 @@ void FileDialog::_delete_confirm() {
 void FileDialog::_filename_filter_selected() {
 	int selected = _get_selected_file_idx();
 	if (selected > -1) {
-		filename_edit->set_text(file_list->get_item_text(selected));
+		_filename_edit_set_item(selected);
 		filename_edit->emit_signal(SceneStringName(text_submitted), filename_edit->get_text());
 	}
 }
@@ -1334,7 +1388,7 @@ void FileDialog::set_current_file(const String &p_file) {
 	filename_edit->set_text(p_file);
 	update_dir();
 	invalidate();
-	_focus_file_text();
+	_request_focus_file_text();
 }
 
 void FileDialog::set_current_path(const String &p_path) {
@@ -1580,6 +1634,11 @@ void FileDialog::_invalidate() {
 	update_file_list();
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 
+	if (focus_file_text_pending) {
+		_focus_file_text();
+		focus_file_text_pending = false;
+	}
+
 	if (ensure_visible_after_invalidating) {
 		file_list->ensure_current_is_visible();
 		ensure_visible_after_invalidating = false;
@@ -1631,7 +1690,7 @@ void FileDialog::_select_drive(int p_idx) {
 	selected_drive = p_idx;
 
 	_change_dir(meta["path"]);
-	filename_edit->set_text("");
+	_filename_edit_set_item(-1);
 	_push_history();
 }
 
@@ -2624,6 +2683,7 @@ FileDialog::FileDialog() {
 	filename_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	file_box->add_child(filename_edit);
 	filename_edit->connect(SceneStringName(text_submitted), callable_mp(this, &FileDialog::_action_pressed).unbind(1));
+	filename_edit->connect(SceneStringName(text_changed), callable_mp(this, &FileDialog::_filename_edit_text_changed).unbind(1));
 
 	filter = memnew(OptionButton);
 	filter->set_stretch_ratio(3);
