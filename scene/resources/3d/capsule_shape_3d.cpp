@@ -150,27 +150,12 @@ real_t CapsuleShape3D::get_enclosing_radius() const {
 
 void CapsuleShape3D::_update_shape() {
 	Dictionary d;
-	PhysicsServer3DEnums::ShapeType actual_shape = PS3DE::SHAPE_WORLD_BOUNDARY;
-	//for each type, resolve once the actually created shape to check if the collision engine is compatible with tapered/non-tapered, and then give the correct collision data
-	if (is_tapered()) {
-		static PhysicsServer3DEnums::ShapeType created_shape = PhysicsServer3D::get_singleton()->shape_get_type(get_shape());
-		actual_shape = created_shape;
-	} else {
-		static PhysicsServer3DEnums::ShapeType created_shape = PhysicsServer3D::get_singleton()->shape_get_type(get_shape());
-		actual_shape = created_shape;
-	}
 
-	if (actual_shape == PS3DE::SHAPE_TAPERED_CAPSULE) {
-		d["radius_top"] = top_radius;
-		d["radius_bottom"] = bottom_radius;
-		d["height"] = mid_height;
-	} else if (actual_shape == PS3DE::SHAPE_CAPSULE) {
-		d["radius"] = (top_radius + bottom_radius) / 2.0;
-		d["height"] = get_height();
-	}
-	if (is_tapered() && (actual_shape != PS3DE::SHAPE_TAPERED_CAPSULE)) {
-		WARN_PRINT_ONCE("Tapered capsule shapes aren't supported by the current physics engine (" + PhysicsServer3DManager::get_singleton()->get_server_name(PhysicsServer3DManager::get_singleton()->get_default_server_index()) + "). They will behave as regular capsules instead.");
-	}
+	d["radius_top"] = top_radius;
+	d["radius_bottom"] = bottom_radius;
+	d["mid_height"] = mid_height;
+	d["radius"] = (top_radius + bottom_radius) / 2.0;
+	d["height"] = get_height();
 
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
@@ -267,6 +252,6 @@ void CapsuleShape3D::_bind_methods() {
 }
 
 CapsuleShape3D::CapsuleShape3D() :
-		Shape3D(PhysicsServer3D::get_singleton()->shape_create(is_tapered() ? PS3DE::SHAPE_TAPERED_CAPSULE : PS3DE::SHAPE_CAPSULE)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PS3DE::SHAPE_CAPSULE)) {
 	_update_shape();
 }
