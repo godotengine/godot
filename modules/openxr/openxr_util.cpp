@@ -111,7 +111,7 @@ String OpenXRUtil::string_from_xruuid(const XrUuid &xr_uuid) {
 	for (int i = 0; i < XR_UUID_SIZE; i++) {
 		non_zero |= xr_uuid.data[i] != 0;
 
-		char a = xr_uuid.data[i] & 0xF0 >> 4;
+		char a = (xr_uuid.data[i] & 0xF0) >> 4;
 		char b = xr_uuid.data[i] & 0x0F;
 
 		if (a < 10) {
