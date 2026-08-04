@@ -2244,8 +2244,8 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 		{
 			Vector3 frustum_corners_world[8];
-			for (int i = 0; i < 8; i++) {
-				frustum_corners_world[i] = frustum_corners_local[i] + p_cam_transform.origin;
+			for (int j = 0; j < 8; j++) {
+				frustum_corners_world[j] = frustum_corners_local[j] + p_cam_transform.origin;
 			}
 			Vector<Plane> receiver_frustum_planes = camera_matrix.get_projection_planes(p_cam_transform);
 			// We need world space here, not local space.
