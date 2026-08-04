@@ -1521,6 +1521,12 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	return data.dpi;
 }
 
+float DisplayServerWindows::screen_get_scale(int p_screen) const {
+	// Windows always reports the monitor DPI as 96 when the scale option in Windows' settings is set to 100%,
+	// regardless of the monitor's resolution and physical size. This value is then multiplied by the scale factor.
+	return screen_get_dpi(p_screen) / 96.0;
+}
+
 Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 	Point2i pos = p_position + _get_screens_origin();
 
