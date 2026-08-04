@@ -291,14 +291,6 @@ float LightmapGIData::get_baked_exposure() const {
 	return baked_exposure;
 }
 
-void LightmapGIData::_set_light_textures_data(const Array &p_data) {
-	set_lightmap_textures(p_data);
-}
-
-Array LightmapGIData::_get_light_textures_data() const {
-	return Array(storage_light_textures);
-}
-
 void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("bounds"));
 	ERR_FAIL_COND(!p_data.has("points"));
@@ -339,6 +331,14 @@ Ref<TextureLayered> LightmapGIData::get_light_texture() const {
 		return Ref<TextureLayered>();
 	}
 	return storage_light_textures.get(0);
+}
+
+void LightmapGIData::_set_light_textures_data(const Array &p_data) {
+	set_lightmap_textures(p_data);
+}
+
+Array LightmapGIData::_get_light_textures_data() const {
+	return Array(storage_light_textures);
 }
 #endif
 
