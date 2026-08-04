@@ -51,6 +51,7 @@
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #include <X11/Xatom.h>
+#include <X11/Xresource.h>
 
 #ifdef SOWRAP_ENABLED
 #include "x11/dynwrappers/xext-so_wrap.h"
@@ -1662,7 +1663,7 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 96);
 
-	//Get physical monitor Dimensions through XRandR and calculate dpi
+	// Get physical monitor Dimensions through XRandR and calculate DPI.
 	Size2i sc = screen_get_size(p_screen);
 	if (xrandr_ext_ok) {
 		int count = 0;
@@ -1693,8 +1694,56 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
 	}
 
-	//could not get dpi
+	// Could not get DPI.
 	return 96;
+}
+
+float DisplayServerX11::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 1.0);
+
+	// KDE on X11 stores fractional scaling in the Xsettings configuration file.
+	// Other desktop environments such as GNOME usually only support fractional scaling on Wayland.
+	// <https://wiki.archlinux.org/title/Xsettingsd>
+	const String xsettings_path = OS::get_singleton()->get_environment("HOME").path_join(".config/xsettingsd/xsettingsd.conf");
+	if (FileAccess::exists(xsettings_path)) {
+		Ref<FileAccess> file = FileAccess::open(xsettings_path, FileAccess::READ);
+		if (file.is_valid()) {
+			// The display scaling value is split into an integer portion, and a fractional part reported as `dpi * 1024`.
+			// The fractional part rolls over to `96 * 1024 = 98304` when reaching a new integer scale factor.
+			//
+			// We do not use the value reported by `screen_get_dpi()` as it reports the actual physical DPI of the monitor,
+			// rather than a pseudo-DPI value meant for scaling (which is always 96 DPI at 100% scaling, like on Windows).
+			int window_scaling_factor = 1;
+			float dpi = 0.0;
+			while (!file->eof_reached()) {
+				const String line = file->get_line().strip_edges();
+
+				if (line.begins_with("Gdk/WindowScalingFactor")) {
+					const Vector<String> parts = line.split(" ");
+					if (parts.size() == 2) {
+						window_scaling_factor = parts[1].to_int();
+					}
+				}
+
+				if (line.begins_with("Gdk/UnscaledDPI")) {
+					const Vector<String> parts = line.split(" ");
+					if (parts.size() == 2) {
+						dpi = parts[1].to_float() / 1024.0;
+					}
+				}
+			}
+
+			if (dpi > 0.0) {
+				return (dpi * MAX(window_scaling_factor, 1)) / 96.0;
+			}
+		}
+	}
+
+	// Could not get scale factor.
+	return 1.0;
 }
 
 int get_image_errorhandler(Display *dpy, XErrorEvent *ev) {
