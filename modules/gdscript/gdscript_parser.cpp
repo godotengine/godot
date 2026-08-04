@@ -4954,14 +4954,18 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 		Variant::Type enum_type = Variant::INT;
 
-		if (export_type.kind == DataType::BUILTIN && export_type.builtin_type == Variant::STRING) {
-			enum_type = Variant::STRING;
+		if (export_type.kind == DataType::BUILTIN) {
+			if (export_type.builtin_type == Variant::STRING) {
+				enum_type = Variant::STRING;
+			} else if (export_type.builtin_type == Variant::STRING_NAME) {
+				enum_type = Variant::STRING_NAME;
+			}
 		}
 
 		variable->export_info.type = enum_type;
 
 		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != enum_type)) {
-			Vector<Variant::Type> expected_types = { Variant::INT, Variant::STRING };
+			Vector<Variant::Type> expected_types = { Variant::INT, Variant::STRING, Variant::STRING_NAME };
 			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->type_constraint), p_annotation);
 			return false;
 		}
