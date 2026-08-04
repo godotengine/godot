@@ -1755,39 +1755,51 @@ void main() {
 			if (sc_use_lightmap_specular()) {
 				// Fake specular light to create some direct light specular lobes for directional lightmaps.
 				// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
-				hvec3 l1_r = hvec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
-				hvec3 l1_g = hvec3(lm_light_l1p1.g, lm_light_l1n1.g, lm_light_l1_0.g);
-				hvec3 l1_b = hvec3(lm_light_l1p1.b, lm_light_l1n1.b, lm_light_l1_0.b);
+				const vec3 luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+				vec3 l1 = vec3(
+						dot(vec3(lm_light_l0 * lm_light_l1p1), luminance_weights),
+						dot(vec3(lm_light_l0 * lm_light_l1n1), luminance_weights),
+						dot(vec3(lm_light_l0 * lm_light_l1_0), luminance_weights));
+				float l1_len = length(l1);
+				float l0_luminance = dot(vec3(lm_light_l0), luminance_weights);
 
-				hvec3 l1 = (l1_r + l1_g + l1_b) / half(3.0);
-				float l1_len = max(length(l1), half(1e-5));
-				hvec3 lightmap_direction = hvec3(l1 / l1_len);
+				if (l1_len > 1e-5 && l0_luminance > 1e-5) {
+					vec3 lightmap_direction = l1 / l1_len;
+					vec3 L_view_highp = normalize(mat3(transpose(lightmaps.data[ofs].normal_xform)) * lightmap_direction);
+					float NdotL = max(dot(vec3(normal), L_view_highp), 0.0);
 
-				hvec3 L_view = hvec3(normalize(mat3(transpose(lightmaps.data[ofs].normal_xform)) * lightmap_direction));
+					if (NdotL > 1e-4) {
+						vec3 specular_lightmap_normal = normalize(lightmaps.data[ofs].normal_xform * vec3(normal));
+						vec3 specular_irradiance = vec3(lm_light_l0);
+						specular_irradiance += vec3(lm_light_l0 * lm_light_l1n1) * specular_lightmap_normal.y * 4.0;
+						specular_irradiance += vec3(lm_light_l0 * lm_light_l1_0) * specular_lightmap_normal.z * 4.0;
+						specular_irradiance += vec3(lm_light_l0 * lm_light_l1p1) * specular_lightmap_normal.x * 4.0;
+						specular_irradiance *= lightmaps.data[ofs].exposure_normalization;
+						hvec3 specular_light_color = hvec3(max(specular_irradiance, vec3(0.0)) / max(NdotL, 0.1));
 
-				hvec3 f0 = F0(metallic, specular, albedo);
+						hvec3 f0 = F0(metallic, specular, albedo);
 
-				// Discard diffuse light from this fake light, as we're only interested in its specular light output.
-				hvec3 diffuse_light_discarded = diffuse_light;
+						hvec3 diffuse_light_discarded = diffuse_light;
+						float directionality = clamp(l1_len / l0_luminance, 0.0, 1.0);
 
-				float specular_intensity = length(l1) * lightmaps.data[ofs].specular_intensity * 10.0;
-
-				light_compute(normal, L_view, view, saturateHalf(0.0), hvec3(sh_light), true, half(1.0), f0, roughness, metallic, half(specular_intensity), albedo, alpha,
+						light_compute(normal, hvec3(L_view_highp), view, saturateHalf(0.0), specular_light_color, true, half(1.0), f0, roughness, metallic, half(directionality * lightmaps.data[ofs].specular_intensity), albedo, alpha,
 						screen_uv, hvec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
-						backlight,
+								backlight,
 #endif
 #ifdef LIGHT_RIM_USED
-						rim, rim_tint,
+								rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-						clearcoat, clearcoat_roughness, geo_normal,
+								clearcoat, clearcoat_roughness, geo_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
-						binormal, tangent, anisotropy,
+								binormal, tangent, anisotropy,
 #endif
-						diffuse_light_discarded,
-						direct_specular_light);
+								diffuse_light_discarded,
+								direct_specular_light);
+					}
+				}
 			}
 
 		} else {
