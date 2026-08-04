@@ -36,6 +36,8 @@
 #include "gdscript_parser.h"
 
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/templates/rb_set.h"
 #include "core/templates/vector.h"
 
 GDScriptParserRef::Status GDScriptParserRef::get_status() const {
@@ -128,13 +130,8 @@ void GDScriptParserRef::clear() {
 
 	clearing = false;
 
-	if (lanalyzer != nullptr) {
-		memdelete(lanalyzer);
-	}
-
-	if (lparser != nullptr) {
-		memdelete(lparser);
-	}
+	memdelete(lanalyzer);
+	memdelete(lparser);
 }
 
 GDScriptParserRef::~GDScriptParserRef() {
@@ -259,7 +256,7 @@ void GDScriptCache::remove_parser(const String &p_path) {
 	singleton->parser_map.erase(p_path);
 
 	// Have to copy while iterating, because parser_inverse_dependencies is modified.
-	HashSet<String> ideps = singleton->parser_inverse_dependencies[p_path];
+	HashSet<String> ideps(singleton->parser_inverse_dependencies[p_path]);
 	singleton->parser_inverse_dependencies.erase(p_path);
 	for (String idep_path : ideps) {
 		remove_parser(idep_path);
@@ -427,7 +424,7 @@ Error GDScriptCache::finish_compiling(const String &p_owner) {
 	singleton->full_gdscript_cache[p_owner] = script;
 	singleton->shallow_gdscript_cache.erase(p_owner);
 
-	HashSet<String> depends = singleton->dependencies[p_owner];
+	HashSet<String> depends(singleton->dependencies[p_owner]);
 
 	Error err = OK;
 	for (const String &E : depends) {
@@ -447,7 +444,7 @@ Error GDScriptCache::finish_compiling(const String &p_owner) {
 
 void GDScriptCache::add_static_script(Ref<GDScript> p_script) {
 	ERR_FAIL_COND_MSG(p_script.is_null(), "Trying to cache empty script as static.");
-	ERR_FAIL_COND_MSG(!p_script->is_valid(), "Trying to cache non-compiled script as static.");
+	ERR_FAIL_COND_MSG(!p_script->is_script_valid(), "Trying to cache non-compiled script as static.");
 	singleton->static_gdscript_cache[p_script->get_fully_qualified_name()] = p_script;
 }
 

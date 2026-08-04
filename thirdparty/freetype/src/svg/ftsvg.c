@@ -4,7 +4,7 @@
  *
  *   The FreeType SVG renderer interface (body).
  *
- * Copyright (C) 2022-2025 by
+ * Copyright (C) 2022-2026 by
  * David Turner, Robert Wilhelm, Werner Lemberg, and Moazin Khatti.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -108,8 +108,6 @@
     FT_Memory   memory  = library->memory;
     FT_Error    error;
 
-    FT_ULong  size_image_buffer;
-
     SVG_RendererHooks  hooks = svg_renderer->hooks;
 
 
@@ -135,10 +133,10 @@
 
     ft_svg_preset_slot( (FT_Module)renderer, slot, TRUE );
 
-    size_image_buffer = (FT_ULong)slot->bitmap.pitch * slot->bitmap.rows;
-    /* No `FT_QALLOC` here since we need a clean, empty canvas */
-    /* to start with.                                          */
-    if ( FT_ALLOC( slot->bitmap.buffer, size_image_buffer ) )
+    /* No `FT_QALLOC_MULT` here since we need a clean, empty canvas */
+    /* to start with.                                               */
+    if ( FT_ALLOC_MULT( slot->bitmap.buffer,
+                        slot->bitmap.rows, slot->bitmap.pitch ) )
       return error;
 
     error = hooks.render_svg( slot, &svg_renderer->state );

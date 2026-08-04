@@ -29,12 +29,16 @@
 /**************************************************************************/
 
 #include "movie_writer.h"
+
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/object/class_db.h"
 #include "core/os/time.h"
+#include "core/templates/rb_set.h"
 #include "scene/main/window.h"
 #include "servers/audio/audio_driver_dummy.h"
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 #include "servers/rendering/rendering_server.h"
 
 MovieWriter *MovieWriter::writers[MovieWriter::MAX_WRITERS];
@@ -59,8 +63,9 @@ uint32_t MovieWriter::get_audio_mix_rate() const {
 	GDVIRTUAL_CALL(_get_audio_mix_rate, ret);
 	return ret;
 }
-AudioServer::SpeakerMode MovieWriter::get_audio_speaker_mode() const {
-	AudioServer::SpeakerMode ret = AudioServer::SPEAKER_MODE_STEREO;
+
+AuSE::SpeakerMode MovieWriter::get_audio_speaker_mode() const {
+	AuSE::SpeakerMode ret = AuSE::SPEAKER_MODE_STEREO;
 	GDVIRTUAL_CALL(_get_audio_speaker_mode, ret);
 	return ret;
 }
@@ -102,12 +107,11 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 	print_line(vformat(U"Movie Maker mode enabled, recording movie in %s×%s @ %d FPS...", movie_size.width, movie_size.height, p_fps));
 
 	// Check for available disk space and warn the user if needed.
-	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	String path = p_base_path.get_base_dir();
 	if (path.is_relative_path()) {
 		path = "res://" + path;
 	}
-	dir->open(path);
+	Ref<DirAccess> dir = DirAccess::open(path);
 	if (dir->get_space_left() < 10 * Math::pow(1024.0, 3.0)) {
 		// Less than 10 GiB available.
 		WARN_PRINT(vformat("Current available space on disk is low (%s). MovieWriter will fail during movie recording if the disk runs out of available space.", String::humanize_size(dir->get_space_left())));
@@ -138,6 +142,7 @@ void MovieWriter::_bind_methods() {
 	GDVIRTUAL_BIND(_get_audio_speaker_mode)
 
 	GDVIRTUAL_BIND(_handles_file, "path")
+	GDVIRTUAL_BIND(_get_supported_extensions)
 
 	GDVIRTUAL_BIND(_write_begin, "movie_size", "fps", "base_path")
 	GDVIRTUAL_BIND(_write_frame, "frame_image", "audio_frame_block")
@@ -187,12 +192,12 @@ void MovieWriter::add_frame() {
 			String::num(movie_time_seconds % 60, 0).pad_zeros(2),
 			String::num(frame_remainder, 0).pad_zeros(2));
 
-	Window *main_window = Window::get_from_id(DisplayServer::MAIN_WINDOW_ID);
+	Window *main_window = Window::get_from_id(DisplayServerEnums::MAIN_WINDOW_ID);
 	if (main_window) {
 		main_window->set_title(vformat("MovieWriter: Frame %d (time: %s) - %s", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
 	}
 
-	RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
+	RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServerEnums::MAIN_WINDOW_ID);
 	RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
 	Ref<Image> vp_tex = RenderingServer::get_singleton()->texture_2d_get(main_vp_texture);
 

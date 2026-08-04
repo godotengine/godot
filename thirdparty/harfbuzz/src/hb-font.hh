@@ -172,13 +172,13 @@ struct hb_font_t
   /* Convert from parent-font user-space to our user-space */
   hb_position_t parent_scale_x_distance (hb_position_t v)
   {
-    if (unlikely (parent && parent->x_scale != x_scale))
+    if (unlikely (parent && parent->x_scale && parent->x_scale != x_scale))
       return (hb_position_t) (v * (int64_t) this->x_scale / this->parent->x_scale);
     return v;
   }
   hb_position_t parent_scale_y_distance (hb_position_t v)
   {
-    if (unlikely (parent && parent->y_scale != y_scale))
+    if (unlikely (parent && parent->y_scale && parent->y_scale != y_scale))
       return (hb_position_t) (v * (int64_t) this->y_scale / this->parent->y_scale);
     return v;
   }
@@ -903,15 +903,11 @@ struct hb_font_t
 	}
 	else
 	{
-	  for (unsigned j = 0; j < n; j++)
-	  {
-	    origins[j].x = 0;
-	    origins[j].y = 0;
-	  }
+	  mult = 0; /* Indicates all origins[].x and origins[].y values are 0, therefore we can skip adjusting offsets below */
 	}
       }
 
-      assert (mult == -1 || mult == +1);
+      assert (mult == -1 || mult == +1 || mult == 0);
       if (mult == +1)
         for (unsigned j = 0; j < n; j++)
 	{
@@ -919,13 +915,14 @@ struct hb_font_t
 	  add_offset (&pos->x_offset, &pos->y_offset,
 		      origins[j].x, origins[j].y);
 	}
-      else /* mult == -1 */
+      else if (mult == -1)
 	for (unsigned j = 0; j < n; j++)
 	{
 	  hb_glyph_position_t *pos = &buf->pos[offset + j];
 	  subtract_offset (&pos->x_offset, &pos->y_offset,
 			   origins[j].x, origins[j].y);
 	}
+      /* else if (mult == 0) --> Do nothing */
 
       offset += n;
     }
@@ -970,15 +967,11 @@ struct hb_font_t
 	}
 	else
 	{
-	  for (unsigned j = 0; j < n; j++)
-	  {
-	    origins[j].x = 0;
-	    origins[j].y = 0;
-	  }
+	  mult = 0; /* Indicates all origins[].x and origins[].y values are 0, therefore we can skip adjusting offsets below */
 	}
       }
 
-      assert (mult == -1 || mult == +1);
+      assert (mult == -1 || mult == +1 || mult == 0);
       if (mult == +1)
         for (unsigned j = 0; j < n; j++)
 	{
@@ -986,13 +979,14 @@ struct hb_font_t
 	  add_offset (&pos->x_offset, &pos->y_offset,
 		      origins[j].x, origins[j].y);
 	}
-      else /* mult == -1 */
+      else if (mult == -1)
 	for (unsigned j = 0; j < n; j++)
 	{
 	  hb_glyph_position_t *pos = &buf->pos[offset + j];
 	  subtract_offset (&pos->x_offset, &pos->y_offset,
 			   origins[j].x, origins[j].y);
 	}
+      /* else if (mult == 0) --> Do nothing */
 
       offset += n;
     }

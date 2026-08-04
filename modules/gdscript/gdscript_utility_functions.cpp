@@ -41,36 +41,36 @@
 
 #ifdef DEBUG_ENABLED
 
-#define DEBUG_VALIDATE_ARG_COUNT(m_min_count, m_max_count)                  \
-	if (unlikely(p_arg_count < m_min_count)) {                              \
-		*r_ret = Variant();                                                 \
-		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;  \
-		r_error.expected = m_min_count;                                     \
-		return;                                                             \
-	}                                                                       \
-	if (unlikely(p_arg_count > m_max_count)) {                              \
-		*r_ret = Variant();                                                 \
+#define DEBUG_VALIDATE_ARG_COUNT(m_min_count, m_max_count) \
+	if (unlikely(p_arg_count < m_min_count)) { \
+		*r_ret = Variant(); \
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS; \
+		r_error.expected = m_min_count; \
+		return; \
+	} \
+	if (unlikely(p_arg_count > m_max_count)) { \
+		*r_ret = Variant(); \
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS; \
-		r_error.expected = m_max_count;                                     \
-		return;                                                             \
+		r_error.expected = m_max_count; \
+		return; \
 	}
 
-#define DEBUG_VALIDATE_ARG_TYPE(m_arg, m_type)                                       \
+#define DEBUG_VALIDATE_ARG_TYPE(m_arg, m_type) \
 	if (unlikely(!Variant::can_convert_strict(p_args[m_arg]->get_type(), m_type))) { \
-		*r_ret = Variant();                                                          \
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;            \
-		r_error.argument = m_arg;                                                    \
-		r_error.expected = m_type;                                                   \
-		return;                                                                      \
+		*r_ret = Variant(); \
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; \
+		r_error.argument = m_arg; \
+		r_error.expected = m_type; \
+		return; \
 	}
 
-#define DEBUG_VALIDATE_ARG_CUSTOM(m_arg, m_type, m_cond, m_msg)           \
-	if (unlikely(m_cond)) {                                               \
-		*r_ret = m_msg;                                                   \
+#define DEBUG_VALIDATE_ARG_CUSTOM(m_arg, m_type, m_cond, m_msg) \
+	if (unlikely(m_cond)) { \
+		*r_ret = m_msg; \
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; \
-		r_error.argument = m_arg;                                         \
-		r_error.expected = m_type;                                        \
-		return;                                                           \
+		r_error.argument = m_arg; \
+		r_error.expected = m_type; \
+		return; \
 	}
 
 #else // !DEBUG_ENABLED
@@ -81,20 +81,20 @@
 
 #endif // DEBUG_ENABLED
 
-#define VALIDATE_ARG_CUSTOM(m_arg, m_type, m_cond, m_msg)                 \
-	if (unlikely(m_cond)) {                                               \
-		*r_ret = m_msg;                                                   \
+#define VALIDATE_ARG_CUSTOM(m_arg, m_type, m_cond, m_msg) \
+	if (unlikely(m_cond)) { \
+		*r_ret = m_msg; \
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; \
-		r_error.argument = m_arg;                                         \
-		r_error.expected = m_type;                                        \
-		return;                                                           \
+		r_error.argument = m_arg; \
+		r_error.expected = m_type; \
+		return; \
 	}
 
-#define GDFUNC_FAIL_COND_MSG(m_cond, m_msg)                             \
-	if (unlikely(m_cond)) {                                             \
-		*r_ret = m_msg;                                                 \
+#define GDFUNC_FAIL_COND_MSG(m_cond, m_msg) \
+	if (unlikely(m_cond)) { \
+		*r_ret = m_msg; \
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; \
-		return;                                                         \
+		return; \
 	}
 
 struct GDScriptUtilityFunctionsDefinitions {
@@ -109,19 +109,20 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		Variant::construct(Variant::Type(type), *r_ret, p_args, 1, r_error);
 	}
-#endif // DISABLE_DEPRECATED
 
 	static inline void type_exists(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		DEBUG_VALIDATE_ARG_COUNT(1, 1);
 		DEBUG_VALIDATE_ARG_TYPE(0, Variant::STRING_NAME);
 		*r_ret = ClassDB::class_exists(*p_args[0]);
 	}
+#endif // DISABLE_DEPRECATED
 
 	static inline void _char(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		DEBUG_VALIDATE_ARG_COUNT(1, 1);
 		DEBUG_VALIDATE_ARG_TYPE(0, Variant::INT);
 		const int64_t code = *p_args[0];
-		VALIDATE_ARG_CUSTOM(0, Variant::INT, code < 0 || code > UINT32_MAX, RTR("Expected an integer between 0 and 2^32 - 1."));
+		VALIDATE_ARG_CUSTOM(0, Variant::INT, code <= 0 || (code & 0xFFFFF800) == 0xD800 || code > 0x10FFFF,
+				vformat(RTR("%d is not a valid character code."), code));
 		*r_ret = String::chr(code);
 	}
 
@@ -324,7 +325,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		for (KeyValue<StringName, GDScript::MemberInfo> &E : gd_ref->member_indices) {
 			if (d.has(E.key)) {
-				inst->members.write[E.value.index] = d[E.key];
+				inst->members[E.value.index] = d[E.key];
 			}
 		}
 	}
@@ -478,7 +479,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		GDScriptNativeClass *native_type = Object::cast_to<GDScriptNativeClass>(type_object);
 		if (native_type) {
-			*r_ret = ClassDB::is_parent_class(value_object->get_class_name(), native_type->get_name());
+			*r_ret = value_object->is_class(native_type->get_name());
 			return;
 		}
 
@@ -527,19 +528,19 @@ static void _register_function(const StringName &p_name, const MethodInfo &p_met
 	utility_function_name_table.push_back(p_name);
 }
 
-#define REGISTER_FUNC(m_func, m_is_const, m_return, m_args, m_is_vararg, m_default_args)         \
-	{                                                                                            \
-		String name(#m_func);                                                                    \
-		if (name.begins_with("_")) {                                                             \
-			name = name.substr(1);                                                               \
-		}                                                                                        \
-		MethodInfo info = m_args;                                                                \
-		info.name = name;                                                                        \
-		info.return_val = m_return;                                                              \
-		info.default_arguments = m_default_args;                                                 \
-		if (m_is_vararg) {                                                                       \
-			info.flags |= METHOD_FLAG_VARARG;                                                    \
-		}                                                                                        \
+#define REGISTER_FUNC(m_func, m_is_const, m_return, m_args, m_is_vararg, m_default_args) \
+	{ \
+		String name(#m_func); \
+		if (name.begins_with("_")) { \
+			name = name.substr(1); \
+		} \
+		MethodInfo info = m_args; \
+		info.name = name; \
+		info.return_val = m_return; \
+		info.default_arguments = m_default_args; \
+		if (m_is_vararg) { \
+			info.flags |= METHOD_FLAG_VARARG; \
+		} \
 		_register_function(name, info, GDScriptUtilityFunctionsDefinitions::m_func, m_is_const); \
 	}
 
@@ -571,8 +572,8 @@ void GDScriptUtilityFunctions::register_functions() {
 	/* clang-format off */
 #ifndef DISABLE_DEPRECATED
 	REGISTER_FUNC( convert,        true,  RETVAR,             ARGS( ARGVAR("what"), ARGTYPE("type") ), false, varray(     ));
-#endif // DISABLE_DEPRECATED
 	REGISTER_FUNC( type_exists,    true,  RET(BOOL),          ARGS( ARG("type", STRING_NAME)        ), false, varray(     ));
+#endif // DISABLE_DEPRECATED
 	REGISTER_FUNC( _char,          true,  RET(STRING),        ARGS( ARG("code", INT)                ), false, varray(     ));
 	REGISTER_FUNC( ord,            true,  RET(INT),           ARGS( ARG("char", STRING)             ), false, varray(     ));
 	REGISTER_FUNC( range,          false, RET(ARRAY),         NOARGS,                                  true,  varray(     ));

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Container" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Container" inherits="Control" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all GUI containers.
 	</brief_description>
@@ -44,6 +44,7 @@
 			If [code]true[/code], this container is marked as a region for accessibility. Use [member Control.accessibility_name] to give the region a descriptive name. Screen readers can navigate between regions using landmark navigation.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="1" />
+		<member name="propagate_maximum_size" type="bool" setter="set_propagate_maximum_size" getter="is_propagating_maximum_size" overrides="Control" default="true" />
 	</members>
 	<signals>
 		<signal name="pre_sort_children">

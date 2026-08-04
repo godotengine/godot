@@ -32,6 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
@@ -46,7 +50,7 @@
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/property_selector.h"
 #include "editor/scene/scene_tree_editor.h"
-#include "editor/script/script_editor_plugin.h"
+#include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
@@ -56,11 +60,19 @@
 #include "scene/gui/color_picker.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/texture_button.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/sky.h"
-#include "scene/resources/visual_shader_nodes.h"
+#include "servers/display/display_server.h"
+
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_VISUAL_SHADER_ENABLED
+#include "modules/visual_shader/vs_nodes/visual_shader_nodes.h"
+#endif // MODULE_VISUAL_SHADER_ENABLED
 
 ///////////////////// NIL /////////////////////////
 
@@ -96,6 +108,10 @@ void EditorPropertyVariant::_popup_edit_menu() {
 	change_type->popup();
 }
 
+void EditorPropertyVariant::_object_id_selected(const StringName &p_property, ObjectID p_id) {
+	emit_signal(SNAME("object_id_selected"), p_property, p_id);
+}
+
 void EditorPropertyVariant::_set_read_only(bool p_read_only) {
 	edit_button->set_disabled(p_read_only);
 	if (sub_property) {
@@ -124,11 +140,21 @@ void EditorPropertyVariant::update_property() {
 		}
 
 		if (current_type == Variant::OBJECT) {
-			sub_property = EditorInspector::instantiate_property_editor(nullptr, current_type, "", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static(), PROPERTY_USAGE_NONE);
+			Object *obj = value.get_validated_object();
+			if (Object::cast_to<EncodedObjectAsID>(obj)) {
+				EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
+				editor->setup("Object");
+				sub_property = editor;
+			} else {
+				sub_property = EditorInspector::instantiate_property_editor(nullptr, current_type, "", PROPERTY_HINT_RESOURCE_TYPE, Resource::get_class_static(), PROPERTY_USAGE_NONE);
+			}
 		} else {
 			sub_property = EditorInspector::instantiate_property_editor(nullptr, current_type, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 		}
 		ERR_FAIL_NULL(sub_property);
+
+		// Doesn't affect foldable property types, since they don't start with a bottom editor.
+		set_bottom_editor(sub_property->get_bottom_editor() ? content : nullptr);
 
 		sub_property->set_object_and_property(get_edited_object(), get_edited_property());
 		sub_property->set_name_split_ratio(0);
@@ -137,6 +163,7 @@ void EditorPropertyVariant::update_property() {
 		sub_property->set_read_only(is_read_only());
 		sub_property->set_h_size_flags(SIZE_EXPAND_FILL);
 		sub_property->connect(SNAME("property_changed"), callable_mp((EditorProperty *)this, &EditorProperty::emit_changed));
+		sub_property->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyVariant::_object_id_selected));
 		content->add_child(sub_property);
 		content->move_child(sub_property, 0);
 		sub_property->update_property();
@@ -561,7 +588,10 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	option_button->set_accessibility_name(TTRC("Enum Options"));
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	option_button->set_clip_text(true);
+	option_button->set_fit_to_longest_item(false);
 	option_button->set_flat(true);
+	option_button->set_search_bar_enabled(true);
+	option_button->set_search_bar_min_item_count(10);
 	option_button->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	default_layout->add_child(option_button);
@@ -775,16 +805,7 @@ void EditorPropertyPath::_update_uid_icon() {
 
 void EditorPropertyPath::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	const Dictionary drag_data = p_data;
-	if (!drag_data.has("type")) {
-		return;
-	}
-	if (String(drag_data["type"]) != "files") {
-		return;
-	}
 	const Vector<String> filesPaths = drag_data["files"];
-	if (filesPaths.is_empty()) {
-		return;
-	}
 
 	_path_selected(filesPaths[0]);
 }
@@ -794,17 +815,31 @@ bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant 
 	if (!drag_data.has("type")) {
 		return false;
 	}
-	if (String(drag_data["type"]) != "files") {
-		return false;
-	}
 	const Vector<String> filesPaths = drag_data["files"];
-	if (filesPaths.is_empty()) {
-		return false;
-	}
+	if (folder) {
+		if (String(drag_data["type"]) != "files_and_dirs") {
+			return false;
+		}
+		if (filesPaths.size() > 1) {
+			for (const String &p : filesPaths) {
+				if (!p.ends_with("/")) {
+					return false;
+				}
+			}
+		}
+		return true;
+	} else {
+		if (String(drag_data["type"]) != "files") {
+			return false;
+		}
+		if (filesPaths.is_empty()) {
+			return false;
+		}
 
-	for (const String &extension : extensions) {
-		if (filesPaths[0].ends_with(extension.substr(1))) {
-			return true;
+		for (const String &extension : extensions) {
+			if (filesPaths[0].ends_with(extension.substr(1))) {
+				return true;
+			}
 		}
 	}
 
@@ -966,9 +1001,12 @@ OptionButton *EditorPropertyEnum::get_option_button() {
 EditorPropertyEnum::EditorPropertyEnum() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	options->set_flat(true);
 	options->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	options->set_search_bar_enabled(true);
+	options->set_search_bar_min_item_count(10);
 	add_child(options);
 	add_focusable(options);
 	options->connect(SceneStringName(item_selected), callable_mp(this, &EditorPropertyEnum::_option_selected));
@@ -1561,6 +1599,12 @@ void EditorPropertyInteger::_value_changed(int64_t val) {
 	emit_changed(get_edited_property(), val);
 }
 
+void EditorPropertyInteger::set_deferred_drag_mode_enabled(bool p_enabled) {
+	EditorProperty::set_deferred_drag_mode_enabled(p_enabled);
+
+	spin->set_deferred_drag_mode_enabled(p_enabled);
+}
+
 void EditorPropertyInteger::update_property() {
 	int64_t val = get_edited_property_display_value();
 	spin->set_value_no_signal(val);
@@ -1597,12 +1641,24 @@ EditorPropertyInteger::EditorPropertyInteger() {
 
 ///////////////////// OBJECT ID /////////////////////////
 
-void EditorPropertyObjectID::_set_read_only(bool p_read_only) {
-	edit->set_disabled(p_read_only);
+ObjectID EditorPropertyObjectID::_get_object_id() const {
+	const Variant value = get_edited_property_value();
+	if (value.get_type() == Variant::OBJECT) {
+		Object *obj = value.get_validated_object();
+		EncodedObjectAsID *obj_as_id = Object::cast_to<EncodedObjectAsID>(obj);
+		if (obj_as_id) {
+			return obj_as_id->get_object_id();
+		}
+	}
+	return value;
 }
 
 void EditorPropertyObjectID::_edit_pressed() {
-	emit_signal(SNAME("object_id_selected"), get_edited_property(), get_edited_property_value());
+	emit_signal(SNAME("object_id_selected"), get_edited_property(), _get_object_id());
+}
+
+void EditorPropertyObjectID::_set_read_only(bool p_read_only) {
+	edit->set_disabled(p_read_only);
 }
 
 void EditorPropertyObjectID::update_property() {
@@ -1611,10 +1667,10 @@ void EditorPropertyObjectID::update_property() {
 		type = "Object";
 	}
 
-	ObjectID id = get_edited_property_value();
+	const ObjectID id = _get_object_id();
 	if (id.is_valid()) {
-		edit->set_text(type + " ID: " + uitos(id));
-		edit->set_tooltip_text(type + " ID: " + uitos(id));
+		edit->set_text(type + ": " + uitos(id));
+		edit->set_tooltip_text(type + ": " + uitos(id));
 		edit->set_disabled(false);
 		edit->set_button_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
@@ -1622,6 +1678,14 @@ void EditorPropertyObjectID::update_property() {
 		edit->set_tooltip_text("");
 		edit->set_disabled(true);
 		edit->set_button_icon(Ref<Texture2D>());
+	}
+}
+
+void EditorPropertyObjectID::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			edit->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+		} break;
 	}
 }
 
@@ -1647,8 +1711,6 @@ void EditorPropertySignal::_edit_pressed() {
 }
 
 void EditorPropertySignal::update_property() {
-	String type = base_type;
-
 	Signal signal = get_edited_property_value();
 
 	edit->set_text("Signal: " + signal.get_name());
@@ -1668,8 +1730,6 @@ EditorPropertySignal::EditorPropertySignal() {
 ///////////////////// CALLABLE /////////////////////////
 
 void EditorPropertyCallable::update_property() {
-	String type = base_type;
-
 	Callable callable = get_edited_property_value();
 
 	edit->set_text("Callable");
@@ -1696,6 +1756,12 @@ void EditorPropertyFloat::_value_changed(double val) {
 		val = Math::deg_to_rad(val);
 	}
 	emit_changed(get_edited_property(), val);
+}
+
+void EditorPropertyFloat::set_deferred_drag_mode_enabled(bool p_enabled) {
+	EditorProperty::set_deferred_drag_mode_enabled(p_enabled);
+
+	spin->set_deferred_drag_mode_enabled(p_enabled);
 }
 
 void EditorPropertyFloat::update_property() {
@@ -2405,6 +2471,7 @@ EditorPropertyQuaternion::EditorPropertyQuaternion() {
 	warning->set_theme_type_variation(SNAME("EditorInspectorButton"));
 	warning->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyQuaternion::_warning_pressed));
 	warning_dialog = memnew(AcceptDialog);
+	warning_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(warning_dialog);
 	warning_dialog->set_text(TTR("Temporary Euler will not be stored in the object with the original value. Instead, it will be stored as Quaternion with irreversible conversion.\nThis is due to the fact that the result of Euler->Quaternion can be determined uniquely, but the result of Quaternion->Euler can be multi-existent."));
 
@@ -3242,15 +3309,29 @@ Node *EditorPropertyNodePath::get_base_node() {
 			}
 		}
 	}
-	if (use_path_from_scene_root) {
-		if (get_edited_object()->has_method("get_root_path")) {
-			base_node = Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
-		} else {
-			base_node = get_tree()->get_edited_scene_root();
-		}
+
+	if (!use_path_from_scene_root) {
+		return base_node;
 	}
 
-	return base_node;
+	if (get_edited_object()->has_method("get_root_path")) {
+		return Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
+	}
+
+	if (!base_node) {
+		return nullptr; // Editing external resources.
+	}
+
+	if (base_node->is_instance()) {
+		return base_node; // Known scene root.
+	}
+
+	base_node = base_node->get_owner();
+	if (base_node) {
+		return base_node; // Node in known scene.
+	}
+
+	return get_tree()->get_edited_scene_root(); // Treat as a node in the main scene.
 }
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
@@ -3314,6 +3395,14 @@ void EditorPropertyResource::_set_read_only(bool p_read_only) {
 }
 
 void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource, bool p_inspect) {
+	_select_resource(p_resource, p_inspect, false);
+}
+
+void EditorPropertyResource::_resource_expand_requested(const Ref<Resource> &p_resource, bool p_inspect) {
+	_select_resource(p_resource, p_inspect, true);
+}
+
+void EditorPropertyResource::_select_resource(const Ref<Resource> &p_resource, bool p_inspect, bool p_force_open) {
 	if (p_resource->is_built_in() && !p_resource->get_path().is_empty()) {
 		String parent = p_resource->get_path().get_slice("::", 0);
 		List<String> extensions;
@@ -3331,8 +3420,12 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 	}
 
 	if (!p_inspect && use_sub_inspector) {
-		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
+		bool unfold = p_force_open;
+		if (!unfold) {
+			unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
+		}
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
+		user_opened_editor = unfold;
 		update_property();
 	} else if (!is_checkable() || is_checked()) {
 		emit_signal(SNAME("resource_selected"), get_edited_property(), p_resource);
@@ -3354,6 +3447,17 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 		}
 	}
 
+	if (p_resource.is_valid() && p_resource->is_local_to_scene()) {
+		// Attempting to configure the local scene.
+		Node *local_scene = _get_base_node();
+		if (local_scene) {
+			HashMap<Ref<Resource>, Ref<Resource>> remap;
+			p_resource->configure_for_local_scene(local_scene, remap);
+		} else {
+			WARN_PRINT("You are attempting to assign a local-to-scene resource outside the scene.");
+		}
+	}
+
 	// The bool is_script applies only to an object's main script.
 	// Changing the value of Script-type exported variables of the main script should not trigger saving/reloading properties.
 	bool is_script = false;
@@ -3368,12 +3472,14 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 	Ref<ViewportTexture> vpt = p_resource;
 	if (vpt.is_valid()) {
 		r = Object::cast_to<Resource>(get_edited_object());
+#ifdef MODULE_VISUAL_SHADER_ENABLED
 		if (Object::cast_to<VisualShaderNodeTexture>(r)) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture in a Texture2D node because the texture will not be bound to a scene.\nUse a Texture2DParameter node instead and set the texture in the \"Shader Parameters\" tab."));
 			emit_changed(get_edited_property(), Ref<Resource>());
 			update_property();
 			return;
 		}
+#endif // MODULE_VISUAL_SHADER_ENABLED
 
 		if (r && r->get_path().is_resource_file()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on resources saved as a file.\nResource needs to belong to a scene."));
@@ -3434,7 +3540,7 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 void EditorPropertyResource::_open_editor_pressed() {
 	Ref<Resource> res = get_edited_property_value();
 	if (res.is_valid()) {
-		EditorNode::get_singleton()->edit_item(res.ptr(), this);
+		EditorNode::get_singleton()->edit_item(res.ptr(), this, user_opened_editor);
 	}
 }
 
@@ -3455,10 +3561,10 @@ void EditorPropertyResource::_update_preferred_shader() {
 		// Set preferred shader based on edited parent type.
 		if ((Object::cast_to<GPUParticles2D>(ed_object) || Object::cast_to<GPUParticles3D>(ed_object)) && ed_property == SNAME("process_material")) {
 			shader_picker->set_preferred_mode(Shader::MODE_PARTICLES);
-		} else if (Object::cast_to<FogVolume>(ed_object)) {
-			shader_picker->set_preferred_mode(Shader::MODE_FOG);
 		} else if (Object::cast_to<CanvasItem>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_CANVAS_ITEM);
+		} else if (Object::cast_to<FogVolume>(ed_object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_FOG);
 		} else if (Object::cast_to<Node3D>(ed_object) || Object::cast_to<Mesh>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SPATIAL);
 		} else if (Object::cast_to<Sky>(ed_object)) {
@@ -3471,6 +3577,39 @@ bool EditorPropertyResource::_should_stop_editing() const {
 	return !resource_picker->is_toggle_pressed();
 }
 
+Node *EditorPropertyResource::_get_base_node() {
+	Node *base_node = Object::cast_to<Node>(get_edited_object());
+
+	if (!base_node) {
+		base_node = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+	}
+
+	if (!base_node) {
+		// Try a base node within history.
+		if (EditorNode::get_singleton()->get_editor_selection_history()->get_path_size() > 0) {
+			Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_selection_history()->get_path_object(0));
+			if (base) {
+				base_node = Object::cast_to<Node>(base);
+			}
+		}
+	}
+
+	if (!base_node) {
+		return nullptr; // Editing external resources.
+	}
+
+	if (!base_node->get_scene_file_path().is_empty()) {
+		return base_node; // Known scene root.
+	}
+
+	base_node = base_node->get_owner();
+	if (base_node) {
+		return base_node; // Node in known scene.
+	}
+
+	return get_tree()->get_edited_scene_root(); // Treat as a node in the main scene.
+}
+
 void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	Node *to_node = get_node(p_path);
 	if (!Object::cast_to<Viewport>(to_node)) {
@@ -3481,7 +3620,9 @@ void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	Ref<ViewportTexture> vt = get_edited_property_value();
 	ERR_FAIL_COND(vt.is_null());
 
-	vt->set_viewport_path_in_scene(get_tree()->get_edited_scene_root()->get_path_to(to_node));
+	Node *local_scene = _get_base_node();
+	ERR_FAIL_NULL(local_scene);
+	vt->set_viewport_path_in_scene(local_scene->get_path_to(to_node));
 
 	emit_changed(get_edited_property(), vt);
 	update_property();
@@ -3518,6 +3659,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 
 	resource_picker->connect("resource_selected", callable_mp(this, &EditorPropertyResource::_resource_selected));
 	resource_picker->connect("resource_changed", callable_mp(this, &EditorPropertyResource::_resource_changed));
+	resource_picker->connect("_resource_expand_requested", callable_mp(this, &EditorPropertyResource::_resource_expand_requested));
 
 	for (int i = 0; i < resource_picker->get_child_count(); i++) {
 		Button *b = Object::cast_to<Button>(resource_picker->get_child(i));
@@ -3525,6 +3667,10 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 			add_focusable(b);
 		}
 	}
+}
+
+void EditorPropertyResource::make_passthrough(bool p_passthrough) {
+	resource_picker->make_passthrough(p_passthrough);
 }
 
 void EditorPropertyResource::update_property() {
@@ -3539,6 +3685,7 @@ void EditorPropertyResource::update_property() {
 			if (!sub_inspector) {
 				sub_inspector = memnew(EditorInspector);
 				sub_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+				sub_inspector->set_show_categories(true, true);
 				sub_inspector->set_use_doc_hints(true);
 
 				EditorInspector *parent_inspector = get_parent_inspector();
@@ -3587,6 +3734,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->edit(res.ptr());
 				_update_property_bg();
 			}
+			sub_inspector->set_category_color_level(get_sub_inspector_color_level());
 
 		} else if (sub_inspector) {
 			set_bottom_editor(nullptr);
@@ -3603,6 +3751,8 @@ void EditorPropertyResource::update_property() {
 	resource_picker->set_edited_resource_no_check(res);
 	const Ref<Resource> &real_res = get_edited_property_value();
 	resource_picker->set_force_allow_unique(real_res.is_null() && res.is_valid());
+
+	user_opened_editor = false;
 }
 
 void EditorPropertyResource::collapse_all_folding() {
@@ -3640,6 +3790,13 @@ void EditorPropertyResource::fold_resource() {
 		resource_picker->set_toggle_pressed(false);
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
 		update_property();
+	}
+}
+
+void EditorPropertyResource::set_keying(bool p_keying) {
+	EditorProperty::set_keying(p_keying);
+	if (sub_inspector) {
+		sub_inspector->set_keying(p_keying);
 	}
 }
 
@@ -3900,7 +4057,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				Vector<String> options;
 				Vector<String> option_names;
 				if (p_hint_text.begins_with(";")) {
-					// This is not supported officially. Only for `interface/editor/editor_language`.
+					// This is not supported officially. Only for `interface/editor/localization/editor_language`.
 					for (const String &option : p_hint_text.split(";", false)) {
 						options.append(option.get_slicec('/', 0));
 						option_names.append(option.get_slicec('/', 1));
@@ -4029,7 +4186,14 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::QUATERNION: {
 			EditorPropertyQuaternion *editor = memnew(EditorPropertyQuaternion);
-			editor->setup(_parse_range_hint(p_hint, p_hint_text, default_float_step), p_hint == PROPERTY_HINT_HIDE_QUATERNION_EDIT);
+			// Quaternions are almost never used for human-readable values that need stepifying,
+			// so we should be more precise with their step, as much as the float precision allows.
+#ifdef REAL_T_IS_DOUBLE
+			constexpr double QUATERNION_STEP = 1e-14;
+#else
+			constexpr double QUATERNION_STEP = 1e-6;
+#endif
+			editor->setup(_parse_range_hint(p_hint, p_hint_text, QUATERNION_STEP), p_hint == PROPERTY_HINT_HIDE_QUATERNION_EDIT);
 			return editor;
 		} break;
 		case Variant::AABB: {

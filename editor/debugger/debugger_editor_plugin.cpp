@@ -30,15 +30,16 @@
 
 #include "debugger_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "editor/debugger/editor_file_server.h"
+#include "editor/debugger/script_editor_debugger.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/run/run_instances_dialog.h"
 #include "editor/script/script_editor_plugin.h"
-#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/popup_menu.h"
 
@@ -147,10 +148,11 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 		} break;
 		case RUN_DEBUG_COLLISIONS: {
-			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS));
-			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS), !ischecked);
+			bool enable = !debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS));
+			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS), enable);
 			if (!initializing) {
-				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisions", !ischecked);
+				EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisions", enable);
+				EditorDebuggerNode::get_singleton()->set_debug_collisions(enable);
 			}
 
 		} break;

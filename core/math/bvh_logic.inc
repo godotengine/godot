@@ -33,10 +33,10 @@ void _logic_item_remove_and_reinsert(uint32_t p_ref_id) {
 }
 
 // from randy gaul balance function
-BVHABB_CLASS _logic_abb_merge(const BVHABB_CLASS &a, const BVHABB_CLASS &b) {
-	BVHABB_CLASS c = a;
-	c.merge(b);
-	return c;
+BVHABB_CLASS _logic_abb_merge(const BVHABB_CLASS &p_left, const BVHABB_CLASS &p_right) {
+	BVHABB_CLASS tmp = p_left;
+	tmp.merge(p_right);
+	return tmp;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ BVHABB_CLASS _logic_abb_merge(const BVHABB_CLASS &a, const BVHABB_CLASS &b) {
 // https://github.com/RandyGaul/qu3e
 // It is MODIFIED from qu3e version.
 // This is the only function used (and _logic_abb_merge helper function).
-int32_t _logic_balance(int32_t iA, uint32_t p_tree_id) {
+int32_t _logic_balance(int32_t iA, uint32_t p_tree_id) { // NOLINT(readability-identifier-naming)
 	//return iA; // uncomment this to bypass balance
 
 	TNode *A = &_nodes[iA];

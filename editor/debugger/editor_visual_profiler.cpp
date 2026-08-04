@@ -31,12 +31,15 @@
 #include "editor_visual_profiler.h"
 
 #include "core/io/image.h"
+#include "core/object/callable_mp.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/color_rect.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/label.h"
 #include "scene/resources/image_texture.h"
 
 void EditorVisualProfiler::set_hardware_info(const String &p_cpu_name, const String &p_gpu_name) {
@@ -111,6 +114,7 @@ void EditorVisualProfiler::clear() {
 	last_metric = -1;
 	variables->clear();
 	//activate->set_pressed(false);
+	category_folding.clear();
 
 	graph_limit = 1000.0f / CLAMP(int(EDITOR_GET("debugger/profiler_target_fps")), 1, 1000);
 
@@ -158,6 +162,11 @@ void EditorVisualProfiler::_item_selected() {
 	_update_plot();
 }
 
+void EditorVisualProfiler::_item_collapsed(TreeItem *p_item) {
+	StringName fullpath = p_item->get_metadata(0);
+	category_folding[fullpath] = p_item->is_collapsed();
+}
+
 void EditorVisualProfiler::_update_plot() {
 	const int w = graph->get_size().width + 1; // `+1` is to prevent from crashing when visual profiler is auto started.
 	const int h = graph->get_size().height + 1;
@@ -179,7 +188,7 @@ void EditorVisualProfiler::_update_plot() {
 		wr[i + 0] = Math::fast_ftoi(background_color.r * 255);
 		wr[i + 1] = Math::fast_ftoi(background_color.g * 255);
 		wr[i + 2] = Math::fast_ftoi(background_color.b * 255);
-		wr[i + 3] = 255;
+		wr[i + 3] = Math::fast_ftoi(background_color.a * 255);
 	}
 
 	//find highest value
@@ -273,43 +282,47 @@ void EditorVisualProfiler::_update_plot() {
 
 			//plot CPU
 			for (int j = 0; j < h; j++) {
-				uint8_t r, g, b;
+				uint8_t r, g, b, a;
 
 				if (column_cpu[j].a == 0) {
 					r = Math::fast_ftoi(background_color.r * 255);
 					g = Math::fast_ftoi(background_color.g * 255);
 					b = Math::fast_ftoi(background_color.b * 255);
+					a = Math::fast_ftoi(background_color.a * 255);
 				} else {
 					r = CLAMP((column_cpu[j].r / column_cpu[j].a) * 255.0, 0, 255);
 					g = CLAMP((column_cpu[j].g / column_cpu[j].a) * 255.0, 0, 255);
 					b = CLAMP((column_cpu[j].b / column_cpu[j].a) * 255.0, 0, 255);
+					a = 255;
 				}
 
 				int widx = (j * w + i) * 4;
 				wr[widx + 0] = r;
 				wr[widx + 1] = g;
 				wr[widx + 2] = b;
-				wr[widx + 3] = 255;
+				wr[widx + 3] = a;
 			}
 			//plot GPU
 			for (int j = 0; j < h; j++) {
-				uint8_t r, g, b;
+				uint8_t r, g, b, a;
 
 				if (column_gpu[j].a == 0) {
 					r = Math::fast_ftoi(background_color.r * 255);
 					g = Math::fast_ftoi(background_color.g * 255);
 					b = Math::fast_ftoi(background_color.b * 255);
+					a = Math::fast_ftoi(background_color.a * 255);
 				} else {
 					r = CLAMP((column_gpu[j].r / column_gpu[j].a) * 255.0, 0, 255);
 					g = CLAMP((column_gpu[j].g / column_gpu[j].a) * 255.0, 0, 255);
 					b = CLAMP((column_gpu[j].b / column_gpu[j].a) * 255.0, 0, 255);
+					a = 255;
 				}
 
 				int widx = (j * w + w / 2 + i) * 4;
 				wr[widx + 0] = r;
 				wr[widx + 1] = g;
 				wr[widx + 2] = b;
-				wr[widx + 3] = 255;
+				wr[widx + 3] = a;
 			}
 		}
 	}
@@ -367,9 +380,14 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 
 			name = name.substr(1);
 
+			category->set_metadata(0, m.areas[i].fullpath_cache);
 			category->set_text(0, name);
 			category->set_metadata(1, cpu_time);
 			category->set_metadata(2, gpu_time);
+
+			if (category_folding.has(m.areas[i].fullpath_cache)) {
+				category->set_collapsed(category_folding[m.areas[i].fullpath_cache]);
+			}
 			continue;
 		}
 
@@ -414,6 +432,13 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 	}
 
 	if (ensure_selected) {
+		// Make visible when it's collapsed.
+		TreeItem *node = ensure_selected->get_parent();
+		while (node) {
+			node->set_collapsed(false);
+			node = node->get_parent();
+		}
+		ensure_selected->select(0);
 		variables->ensure_cursor_is_visible();
 	}
 	updating_frame = false;
@@ -455,6 +480,11 @@ void EditorVisualProfiler::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
+			graph_background->set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
+
+			if (last_metric > -1) {
+				_update_plot();
+			}
 		} break;
 	}
 }
@@ -467,25 +497,30 @@ void EditorVisualProfiler::_graph_tex_draw() {
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	const Color color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
+	Size2 graph_size = graph->get_size();
 
 	if (seeking) {
 		int max_frames = frame_metrics.size();
-		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
+
+		int64_t first_visible_frame = static_cast<int64_t>(frame_metrics[last_metric].frame_number) - max_frames + 1;
+		int frame = (cursor_metric_edit->get_value() - first_visible_frame);
 		if (frame < 0) {
 			frame = 0;
 		}
 
-		int half_width = graph->get_size().x / 2;
+		int half_width = graph_size.x / 2;
 		int cur_x = frame * half_width / max_frames;
 
-		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), color * Color(1, 1, 1));
-		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), color * Color(1, 1, 1));
+		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph_size.y), color * Color(1, 1, 1));
+		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph_size.y), color * Color(1, 1, 1));
 	}
 
 	if (graph_height_cpu > 0) {
-		int frame_y = graph->get_size().y - graph_limit * graph->get_size().y / graph_height_cpu - 1;
+		int cpu_height = graph_limit * graph_size.y / graph_height_cpu;
+		cpu_height = CLAMP(cpu_height, 0, graph_size.y - (font->get_ascent(font_size) + 2) * 2);
+		int frame_y = graph_size.y - cpu_height - 1;
 
-		int half_width = graph->get_size().x / 2;
+		int half_width = graph_size.x / 2;
 
 		graph->draw_line(Vector2(0, frame_y), Vector2(half_width, frame_y), color * Color(1, 1, 1, 0.5));
 
@@ -494,18 +529,20 @@ void EditorVisualProfiler::_graph_tex_draw() {
 	}
 
 	if (graph_height_gpu > 0) {
-		int frame_y = graph->get_size().y - graph_limit * graph->get_size().y / graph_height_gpu - 1;
+		int gpu_height = graph_limit * graph_size.y / graph_height_gpu;
+		gpu_height = CLAMP(gpu_height, 0, graph_size.y - (font->get_ascent(font_size) + 2) * 2);
+		int frame_y = graph_size.y - gpu_height - 1;
 
-		int half_width = graph->get_size().x / 2;
+		int half_width = graph_size.x / 2;
 
-		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph->get_size().x, frame_y), color * Color(1, 1, 1, 0.5));
+		graph->draw_line(Vector2(half_width, frame_y), Vector2(graph_size.x, frame_y), color * Color(1, 1, 1, 0.5));
 
 		const String limit_str = String::num(graph_limit, 2) + " ms";
 		graph->draw_string(font, Vector2(half_width * 2 - font->get_string_size(limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 2, frame_y - 2), limit_str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
 	}
 
 	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, font->get_ascent(font_size) + 2), "CPU: " + cpu_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
-	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + graph->get_size().width / 2, font->get_ascent(font_size) + 2), "GPU: " + gpu_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
+	graph->draw_string(font, Vector2(font->get_string_size("X", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + graph_size.width / 2, font->get_ascent(font_size) + 2), "GPU: " + gpu_name, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color * Color(1, 1, 1, 0.75));
 }
 
 void EditorVisualProfiler::_graph_tex_mouse_exit() {
@@ -820,7 +857,6 @@ EditorVisualProfiler::EditorVisualProfiler() {
 
 	variables = memnew(Tree);
 	variables->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
-	variables->set_hide_folding(true);
 	h_split->add_child(variables);
 	variables->set_hide_root(true);
 	variables->set_columns(3);
@@ -839,16 +875,21 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	variables->set_column_custom_minimum_width(2, 75 * EDSCALE);
 	variables->set_theme_type_variation("TreeSecondary");
 	variables->connect("cell_selected", callable_mp(this, &EditorVisualProfiler::_item_selected));
+	variables->connect("item_collapsed", callable_mp(this, &EditorVisualProfiler::_item_collapsed));
+
+	graph_background = memnew(ColorRect);
+	h_split->add_child(graph_background);
 
 	graph = memnew(TextureRect);
 	graph->set_custom_minimum_size(Size2(250 * EDSCALE, 0));
 	graph->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	graph->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	graph->connect(SceneStringName(draw), callable_mp(this, &EditorVisualProfiler::_graph_tex_draw));
 	graph->connect(SceneStringName(gui_input), callable_mp(this, &EditorVisualProfiler::_graph_tex_input));
 	graph->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorVisualProfiler::_graph_tex_mouse_exit));
 
-	h_split->add_child(graph);
+	graph_background->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);

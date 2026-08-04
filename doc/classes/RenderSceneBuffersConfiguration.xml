@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RenderSceneBuffersConfiguration" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RenderSceneBuffersConfiguration" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Configuration object used to setup a [RenderSceneBuffers] object.
 	</brief_description>
@@ -35,6 +35,7 @@
 		</member>
 		<member name="texture_mipmap_bias" type="float" setter="set_texture_mipmap_bias" getter="get_texture_mipmap_bias" default="0.0">
 			Bias applied to mipmaps.
+			[b]Note:[/b] This property is only supported in the Forward+ and Mobile renderers, not Compatibility. In Compatibility, this property is always treated as if it was set to [code]0.0[/code].
 		</member>
 		<member name="view_count" type="int" setter="set_view_count" getter="get_view_count" default="1">
 			The number of views we're rendering.

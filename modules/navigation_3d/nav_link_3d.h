@@ -34,6 +34,8 @@
 #include "nav_base_3d.h"
 #include "nav_utils_3d.h"
 
+#include "core/os/rw_lock.h"
+
 class NavLinkIteration3D : public NavBaseIteration3D {
 	GDCLASS(NavLinkIteration3D, NavBaseIteration3D);
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OptimizedTranslation" inherits="Translation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OptimizedTranslation" inherits="Translation" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An optimized translation.
 	</brief_description>
@@ -11,10 +11,10 @@
 	</tutorials>
 	<methods>
 		<method name="generate">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="from" type="Translation" />
 			<description>
-				Generates and sets an optimized translation from the given [Translation] resource.
+				Generates and sets an optimized translation from the given [Translation] resource. Returns [code]true[/code] if successful.
 				[b]Note:[/b] Messages in [param from] should not use context or plural forms.
 				[b]Note:[/b] This method is intended to be used in the editor. It does nothing when called from an exported project.
 			</description>

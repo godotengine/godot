@@ -30,20 +30,21 @@
 
 #pragma once
 
+#include "core/os/memory.h"
 #include "core/templates/span.h"
 
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Warray-bounds")
 
 /**
- * A high performance Vector of fixed capacity.
- * Especially useful if you need to create an array on the stack, to
- *  prevent dynamic allocations (especially in bottleneck code).
+ * Array-like storage that's local (no allocations).
  *
- * Choose CAPACITY such that it is enough for all elements that could be added through all branches.
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  *
+ * @tparam CAPACITY Must be enough for all elements that could be added through all code branches.
  */
 template <class T, uint32_t CAPACITY>
-class FixedVector {
+class _WARN_UNUSED_ FixedVector {
 	// This declaration allows us to access other FixedVector's private members.
 	template <class T_, uint32_t CAPACITY_>
 	friend class FixedVector;
@@ -124,11 +125,11 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ constexpr T *ptr() { return (T *)(_data); }
-	_FORCE_INLINE_ constexpr const T *ptr() const { return (const T *)(_data); }
+	_FORCE_INLINE_ constexpr T *ptr() _LIFETIME_BOUND_ { return (T *)(_data); }
+	_FORCE_INLINE_ constexpr const T *ptr() const _LIFETIME_BOUND_ { return (const T *)(_data); }
 
-	_FORCE_INLINE_ constexpr operator Span<T>() const { return Span<T>(ptr(), size()); }
-	_FORCE_INLINE_ constexpr Span<T> span() const { return operator Span<T>(); }
+	_FORCE_INLINE_ constexpr operator Span<T>() const _LIFETIME_BOUND_ { return Span<T>(ptr(), size()); }
+	_FORCE_INLINE_ constexpr Span<T> span() const _LIFETIME_BOUND_ { return operator Span<T>(); }
 
 	_FORCE_INLINE_ constexpr uint32_t size() const { return _size; }
 	_FORCE_INLINE_ constexpr bool is_empty() const { return !_size; }
@@ -187,21 +188,21 @@ public:
 	// NOTE: Subscripts sanity check the bounds to avoid undefined behavior.
 	//       This is slower than direct buffer access and can prevent autovectorization.
 	//       If the bounds are known, use ptr() subscript instead.
-	constexpr const T &operator[](uint32_t p_index) const {
+	constexpr const T &operator[](uint32_t p_index) const _LIFETIME_BOUND_ {
 		CRASH_COND(p_index >= _size);
 		return ptr()[p_index];
 	}
 
-	constexpr T &operator[](uint32_t p_index) {
+	constexpr T &operator[](uint32_t p_index) _LIFETIME_BOUND_ {
 		CRASH_COND(p_index >= _size);
 		return ptr()[p_index];
 	}
 
-	_FORCE_INLINE_ constexpr T *begin() { return ptr(); }
-	_FORCE_INLINE_ constexpr T *end() { return ptr() + _size; }
+	_FORCE_INLINE_ constexpr T *begin() _LIFETIME_BOUND_ { return ptr(); }
+	_FORCE_INLINE_ constexpr T *end() _LIFETIME_BOUND_ { return ptr() + _size; }
 
-	_FORCE_INLINE_ constexpr const T *begin() const { return ptr(); }
-	_FORCE_INLINE_ constexpr const T *end() const { return ptr() + _size; }
+	_FORCE_INLINE_ constexpr const T *begin() const _LIFETIME_BOUND_ { return ptr(); }
+	_FORCE_INLINE_ constexpr const T *end() const _LIFETIME_BOUND_ { return ptr() + _size; }
 };
 
 GODOT_GCC_WARNING_POP

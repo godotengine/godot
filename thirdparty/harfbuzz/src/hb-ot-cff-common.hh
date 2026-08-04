@@ -201,7 +201,7 @@ struct FDSelect0 {
   hb_pair_t<unsigned, hb_codepoint_t> get_fd_range (hb_codepoint_t glyph) const
   { return {fds[glyph], glyph + 1}; }
 
-  unsigned int get_size (unsigned int num_glyphs) const
+  size_t get_size (unsigned int num_glyphs) const
   { return HBUINT8::static_size * num_glyphs; }
 
   HBUINT8     fds[HB_VAR_ARRAY];
@@ -229,7 +229,7 @@ struct FDSelect3_4_Range
 template <typename GID_TYPE, typename FD_TYPE>
 struct FDSelect3_4
 {
-  unsigned int get_size () const
+  size_t get_size () const
   { return GID_TYPE::static_size * 2 + ranges.get_size (); }
 
   bool sanitize (hb_sanitize_context_t *c, unsigned int fdcount) const
@@ -304,7 +304,7 @@ struct FDSelect
     return_trace (true);
   }
 
-  unsigned int get_size (unsigned int num_glyphs) const
+  size_t get_size (unsigned int num_glyphs) const
   {
     switch (format)
     {

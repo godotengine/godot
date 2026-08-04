@@ -52,7 +52,7 @@ struct ExtensionFormat1 : public OT::ExtensionFormat1<T>
 
   bool sanitize (graph_t::vertex_t& vertex) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     return vertex_len >= OT::ExtensionFormat1<T>::static_size;
   }
 
@@ -76,7 +76,7 @@ struct Lookup : public OT::Lookup
 
   bool sanitize (graph_t::vertex_t& vertex) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < OT::Lookup::min_size) return false;
     hb_barrier ();
     return vertex_len >= this->get_size ();
@@ -390,7 +390,7 @@ struct LookupList : public OT::LookupList<T>
 {
   bool sanitize (const graph_t::vertex_t& vertex) const
   {
-    int64_t vertex_len = vertex.obj.tail - vertex.obj.head;
+    size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < OT::LookupList<T>::min_size) return false;
     hb_barrier ();
     return vertex_len >= OT::LookupList<T>::item_size * this->len;
@@ -424,7 +424,7 @@ struct GSTAR : public OT::GSUBGPOS
 
   bool sanitize (const graph_t::vertex_t& vertex)
   {
-    int64_t len = vertex.obj.tail - vertex.obj.head;
+    size_t len = vertex.obj.tail - vertex.obj.head;
     if (len < OT::GSUBGPOS::min_size) return false;
     hb_barrier ();
     return len >= get_size ();

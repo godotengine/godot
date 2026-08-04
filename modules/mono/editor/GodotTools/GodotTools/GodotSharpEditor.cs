@@ -533,6 +533,8 @@ namespace GodotTools
             // Move Build button so it appears to the left of the Play button.
             _toolBarBuildButton.GetParent().MoveChild(_toolBarBuildButton, 0);
 
+            EditorInterface.Singleton.GetCommandPalette().AddCommand("Build C# project".TTR(), "dotnet/build_solution", Callable.From(BuildProjectPressed), _toolBarBuildButton.Shortcut.GetAsText());
+
             if (File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
                 ApplyNecessaryChangesToSolution();

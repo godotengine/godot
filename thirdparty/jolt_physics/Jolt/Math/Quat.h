@@ -264,7 +264,7 @@ public:
 	Vec4						mValue;
 };
 
-static_assert(std::is_trivial<Quat>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<Quat>() && std::is_trivially_copyable<Quat>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

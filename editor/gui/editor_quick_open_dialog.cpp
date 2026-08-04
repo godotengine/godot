@@ -31,11 +31,15 @@
 #include "editor_quick_open_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/string/fuzzy_search.h"
+#include "core/templates/fixed_vector.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_toaster.h"
@@ -146,17 +150,19 @@ String EditorQuickOpenDialog::get_dialog_title(const Vector<StringName> &p_base_
 		return TTR("Select Scene");
 	}
 
-	return TTR("Select") + " " + p_base_types[0];
+	return vformat(TTR("Select %s"), p_base_types[0]);
 }
 
-void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback) {
+void EditorQuickOpenDialog::popup_dialog(const Vector<StringName> &p_base_types, const Callable &p_item_selected_callback, bool p_allow_type_switching) {
 	ERR_FAIL_COND(p_base_types.is_empty());
 	ERR_FAIL_COND(!p_item_selected_callback.is_valid());
 
 	property_object = nullptr;
 	property_path = "";
 	item_selected_callback = p_item_selected_callback;
+	allow_type_switching = p_allow_type_switching;
 
+	is_cycling_items = false;
 	container->init(p_base_types);
 	container->set_instant_preview_toggle_visible(false);
 	_finish_dialog_setup(p_base_types);
@@ -171,6 +177,7 @@ void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &
 	property_path = p_path;
 	item_selected_callback = p_item_selected_callback;
 	initial_property_value = property_object->get(property_path);
+	allow_type_switching = false;
 
 	// Reset this, so that the property isn't updated immediately upon opening
 	// the window.
@@ -182,6 +189,7 @@ void EditorQuickOpenDialog::popup_dialog_for_property(const Vector<StringName> &
 }
 
 void EditorQuickOpenDialog::_finish_dialog_setup(const Vector<StringName> &p_base_types) {
+	set_process_shortcut_input(allow_type_switching);
 	get_ok_button()->set_disabled(container->has_nothing_selected());
 	set_title(get_dialog_title(p_base_types));
 	popup_centered_clamped(Size2(780, 650) * EDSCALE, 0.8f);
@@ -202,15 +210,14 @@ bool EditorQuickOpenDialog::_is_instant_preview_active() const {
 }
 
 void EditorQuickOpenDialog::selection_changed() {
-	if (!_is_instant_preview_active()) {
-		return;
-	}
-
 	// This prevents the property from being changed the first time the Quick Open
 	// window is opened.
 	if (!initial_selection_performed) {
 		initial_selection_performed = true;
-	} else {
+		return;
+	}
+
+	if (_is_instant_preview_active()) {
 		preview_property();
 	}
 }
@@ -292,6 +299,55 @@ void EditorQuickOpenDialog::cancel_pressed() {
 	search_box->clear();
 }
 
+void EditorQuickOpenDialog::shortcut_input(const Ref<InputEvent> &p_event) {
+	// If the user is cycling through items (with up/down arrows), confirm selection when releasing the keys.
+	Ref<InputEventWithModifiers> iewm = p_event;
+	if (is_cycling_items && iewm.is_valid() && p_event->is_released() && iewm->get_modifiers_mask().is_empty()) {
+		ok_pressed();
+		return;
+	}
+
+	if (p_event.is_null() || !p_event->is_pressed() || p_event->is_echo()) {
+		return;
+	}
+
+	Vector<StringName> new_base_types;
+	if (EditorSettings *settings = EditorSettings::get_singleton()) {
+		if (settings->is_shortcut("editor/quick_open", p_event)) {
+			new_base_types.push_back("Resource");
+		} else if (settings->is_shortcut("editor/quick_open_scene", p_event)) {
+			new_base_types.push_back("PackedScene");
+		} else if (settings->is_shortcut("editor/quick_open_script", p_event)) {
+			new_base_types.push_back("Script");
+		}
+	}
+
+	if (new_base_types.size() != 1) {
+		return;
+	}
+
+	// Check if we're already showing this dialog type.
+	const Vector<StringName> &current_base_types = container->get_base_types();
+	if (current_base_types.size() == 1 && current_base_types[0] == new_base_types[0]) {
+		// Already showing the requested dialog type, move next.
+		Ref<InputEventKey> down_event = memnew(InputEventKey);
+		down_event->set_keycode(Key::DOWN);
+		down_event->set_pressed(true);
+		container->handle_search_box_input(down_event);
+		is_cycling_items = true;
+	} else {
+		// Switch to the new dialog type.
+		container->init(new_base_types);
+		container->set_instant_preview_toggle_visible(false);
+		is_cycling_items = false;
+		set_title(get_dialog_title(new_base_types));
+		search_box->clear();
+		search_box->grab_focus();
+	}
+
+	set_input_as_handled();
+}
+
 void EditorQuickOpenDialog::_search_box_text_changed(const String &p_query) {
 	container->set_query_and_update(p_query);
 	get_ok_button()->set_disabled(container->has_nothing_selected());
@@ -360,7 +416,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 
 			file_context_menu = memnew(PopupMenu);
 			file_context_menu->add_item(TTR("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
-			file_context_menu->add_item(TTR("Show in File Manager"), FILE_SHOW_IN_FILE_MANAGER);
+			file_context_menu->add_item(OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW), FILE_SHOW_IN_FILE_MANAGER);
 			file_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &QuickOpenResultContainer::_menu_option));
 			file_context_menu->hide();
 			scroll_container->add_child(file_context_menu);
@@ -663,15 +719,15 @@ QuickOpenResultCandidate QuickOpenResultCandidate::from_uid(const ResourceUID::I
 	return candidate;
 }
 
-QuickOpenResultCandidate QuickOpenResultCandidate::from_result(const FuzzySearchResult &p_result, bool &r_success) {
-	ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(p_result.target);
+QuickOpenResultCandidate QuickOpenResultCandidate::from_result(Ref<FuzzySearchMatch> p_result, bool &r_success) {
+	ResourceUID::ID uid = EditorFileSystem::get_singleton()->get_file_uid(p_result->get_target());
 
 	QuickOpenResultCandidate candidate = from_uid(uid, r_success);
 	if (!r_success) {
 		return QuickOpenResultCandidate();
 	}
 
-	candidate.result = &p_result;
+	candidate.result = p_result;
 	return candidate;
 }
 
@@ -689,6 +745,22 @@ void QuickOpenResultContainer::_add_candidate(QuickOpenResultCandidate &p_candid
 	}
 
 	String file_path = ResourceUID::get_singleton()->get_id_path(p_candidate.uid);
+
+	// Verify that a PackedScene is actually a "real" Scene if in a Open Scene context.
+	if (base_types[0] == SNAME("PackedScene")) {
+		static FixedVector<String, 3> valid_extensions = { "tscn", "scn", "res" };
+		bool is_valid_type = false;
+		for (const String &ext : valid_extensions) {
+			if (file_path.has_extension(ext)) {
+				is_valid_type = true;
+				break;
+			}
+		}
+		if (!is_valid_type) {
+			return;
+		}
+	}
+
 	EditorResourcePreview::PreviewItem item = EditorResourcePreview::get_singleton()->get_resource_preview_if_available(file_path);
 	if (item.preview.is_valid()) {
 		p_candidate.thumbnail = item.preview;
@@ -719,8 +791,6 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
-	HashSet<ResourceUID::ID> existing_uids;
-
 	Vector<ResourceUID::ID> *history = _get_history();
 	if (history) {
 		for (const ResourceUID::ID &uid : *history) {
@@ -751,15 +821,15 @@ void QuickOpenResultContainer::_use_default_candidates() {
 	}
 }
 
-void QuickOpenResultContainer::_update_fuzzy_search_results() {
+Vector<Ref<FuzzySearchMatch>> QuickOpenResultContainer::_get_fuzzy_search_results() {
 	FuzzySearch fuzzy_search;
-	fuzzy_search.start_offset = 6; // Don't match against "res://" at the start of each filepath.
-	fuzzy_search.set_query(query);
-	fuzzy_search.max_results = max_total_results;
+	fuzzy_search.set_start_offset(6); // Don't match against "res://" at the start of each filepath.
+	fuzzy_search.set_case_sensitive(!query.is_lowercase());
+	fuzzy_search.set_max_results(max_total_results);
 	bool fuzzy_matching = EDITOR_GET("filesystem/quick_open_dialog/enable_fuzzy_matching");
 	int max_misses = EDITOR_GET("filesystem/quick_open_dialog/max_fuzzy_misses");
-	fuzzy_search.allow_subsequences = fuzzy_matching;
-	fuzzy_search.max_misses = fuzzy_matching ? max_misses : 0;
+	fuzzy_search.set_use_exact_tokens(!fuzzy_matching);
+	fuzzy_search.set_max_misses(fuzzy_matching ? max_misses : 0);
 
 	PackedStringArray paths;
 	paths.reserve_exact(uids.size());
@@ -768,13 +838,11 @@ void QuickOpenResultContainer::_update_fuzzy_search_results() {
 		paths.push_back(ResourceUID::get_singleton()->get_id_path(uid));
 	}
 
-	fuzzy_search.search_all(paths, search_results);
+	return fuzzy_search.search_all(query, paths);
 }
 
 void QuickOpenResultContainer::_score_and_sort_candidates() {
-	_update_fuzzy_search_results();
-
-	for (const FuzzySearchResult &result : search_results) {
+	for (const Ref<FuzzySearchMatch> &result : _get_fuzzy_search_results()) {
 		bool success;
 		QuickOpenResultCandidate candidate = QuickOpenResultCandidate::from_result(result, success);
 		if (!success) {
@@ -1025,6 +1093,10 @@ String QuickOpenResultContainer::get_selected_path() const {
 	String path = ResourceUID::get_singleton()->get_id_path(candidates[selection_index].uid);
 	ERR_FAIL_COND_V_MSG(path.is_empty(), "", "Failed to get selected file path.");
 	return path;
+}
+
+const Vector<StringName> &QuickOpenResultContainer::get_base_types() const {
+	return base_types;
 }
 
 QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const Vector<StringName> &p_base_types) {
@@ -1302,11 +1374,11 @@ void QuickOpenResultListItem::set_content(const QuickOpenResultCandidate &p_cand
 	name->reset_highlights();
 	path->reset_highlights();
 
-	if (p_highlight && p_candidate.result != nullptr) {
-		for (const FuzzyTokenMatch &match : p_candidate.result->token_matches) {
+	if (p_highlight && p_candidate.result.is_valid()) {
+		for (const FuzzyTokenMatch &match : p_candidate.result->get_token_matches()) {
 			for (const Vector2i &interval : match.substrings) {
-				path->add_highlight(_get_path_interval(interval, p_candidate.result->dir_index));
-				name->add_highlight(_get_name_interval(interval, p_candidate.result->dir_index));
+				path->add_highlight(_get_path_interval(interval, p_candidate.result->get_dir_index()));
+				name->add_highlight(_get_name_interval(interval, p_candidate.result->get_dir_index()));
 			}
 		}
 	}
@@ -1374,10 +1446,10 @@ void QuickOpenResultGridItem::set_content(const QuickOpenResultCandidate &p_cand
 	name->set_tooltip_text(file_path);
 	name->reset_highlights();
 
-	if (p_highlight && p_candidate.result != nullptr) {
-		for (const FuzzyTokenMatch &match : p_candidate.result->token_matches) {
+	if (p_highlight && p_candidate.result.is_valid()) {
+		for (const FuzzyTokenMatch &match : p_candidate.result->get_token_matches()) {
 			for (const Vector2i &interval : match.substrings) {
-				name->add_highlight(_get_name_interval(interval, p_candidate.result->dir_index));
+				name->add_highlight(_get_name_interval(interval, p_candidate.result->get_dir_index()));
 			}
 		}
 	}

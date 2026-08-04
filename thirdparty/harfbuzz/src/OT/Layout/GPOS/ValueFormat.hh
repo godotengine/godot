@@ -64,7 +64,7 @@ struct ValueFormat : HBUINT16
   // be added to ValueFormat. As such, we use the faster hb_popcount8
   // that only processes the lowest 8 bits.
   unsigned int get_len () const  { return hb_popcount8 ((uint8_t) *this); }
-  unsigned int get_size () const { return get_len () * Value::static_size; }
+  size_t get_size () const { return get_len () * Value::static_size; }
 
   hb_vector_t<unsigned> get_device_table_indices () const {
     unsigned i = 0;

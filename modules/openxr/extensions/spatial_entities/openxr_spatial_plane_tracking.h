@@ -30,9 +30,14 @@
 
 #pragma once
 
+#include "../openxr_extension_wrapper.h"
+#include "../openxr_future_extension.h"
 #include "openxr_spatial_entities.h"
 #include "openxr_spatial_entity_extension.h"
+
+#ifndef PHYSICS_3D_DISABLED
 #include "scene/resources/3d/shape_3d.h"
+#endif
 
 // Plane tracking capability configuration
 class OpenXRSpatialCapabilityConfigurationPlaneTracking : public OpenXRSpatialCapabilityConfigurationBaseHeader {
@@ -105,6 +110,7 @@ public:
 	virtual void *get_structure_data(void *p_next) override;
 
 	Transform3D get_transform(int64_t p_index) const;
+	XrSpatialBufferIdEXT get_vertex_buffer_id(int64_t p_index) const;
 	PackedVector2Array get_vertices(RID p_snapshot, int64_t p_index) const;
 
 private:
@@ -160,11 +166,19 @@ public:
 	String get_plane_label() const;
 
 	void set_mesh_data(const Transform3D &p_origin, const PackedVector2Array &p_vertices, const PackedInt32Array &p_indices = PackedInt32Array());
+	void set_mesh_data_with_buffer_ids(const Transform3D &p_origin, const PackedVector2Array &p_vertices, const PackedInt32Array &p_indices = PackedInt32Array(), XrSpatialBufferIdEXT p_vertex_buffer_id = XR_NULL_SPATIAL_BUFFER_ID_EXT, XrSpatialBufferIdEXT p_index_buffer_id = XR_NULL_SPATIAL_BUFFER_ID_EXT);
 	void clear_mesh_data();
 
 	Transform3D get_mesh_offset() const;
+	PackedVector2Array get_vertices() const { return mesh.vertices; }
+	PackedInt32Array get_indices() const { return mesh.indices; }
 	Ref<Mesh> get_mesh();
+#ifndef PHYSICS_3D_DISABLED
 	Ref<Shape3D> get_shape(real_t p_thickness = 0.01);
+#endif
+
+	XrSpatialBufferIdEXT get_vertex_buffer_id() const { return vertex_buffer_id; }
+	XrSpatialBufferIdEXT get_index_buffer_id() const { return index_buffer_id; }
 
 protected:
 	static void _bind_methods();
@@ -182,7 +196,9 @@ private:
 		PackedInt32Array indices;
 
 		Ref<Mesh> mesh;
+#ifndef PHYSICS_3D_DISABLED
 		Ref<Shape3D> shape3d;
+#endif
 	} mesh;
 
 	struct Edge {
@@ -204,6 +220,10 @@ private:
 			}
 		}
 	};
+
+	// Cache buffer ids so we can check for new data
+	XrSpatialBufferIdEXT vertex_buffer_id = XR_NULL_SPATIAL_BUFFER_ID_EXT;
+	XrSpatialBufferIdEXT index_buffer_id = XR_NULL_SPATIAL_BUFFER_ID_EXT;
 };
 
 // Plane tracking logic
@@ -226,29 +246,39 @@ public:
 
 	virtual void on_process() override;
 
+	Ref<OpenXRFutureResult> start_entity_discovery(RID p_spatial_context, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_create = nullptr, Ref<OpenXRStructureBase> p_next_snapshot_query = nullptr, const Callable &p_user_callback = Callable());
+
 	bool is_supported();
+
+	OpenXRSpatialEntityExtension::TrackingState get_built_in_tracking_state() { return builtin_tracking_state; }
+	bool start_built_in_tracking();
+	void stop_built_in_tracking(bool p_clear_trackers = true);
 
 private:
 	static OpenXRSpatialPlaneTrackingCapability *singleton;
 	bool spatial_plane_tracking_ext = false;
 	bool spatial_plane_tracking_supported = false;
 
+	OpenXRSpatialEntityExtension::TrackingState builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_NOT_ACTIVE;
+	Ref<OpenXRFutureResult> built_in_future;
 	RID spatial_context;
+
 	bool need_discovery = false;
 	int discovery_cooldown = 0;
 	Ref<OpenXRFutureResult> discovery_query_result;
 
 	Ref<OpenXRSpatialCapabilityConfigurationPlaneTracking> plane_configuration;
+	TypedArray<OpenXRSpatialComponentData> plane_component_data;
 
 	// Discovery logic
 	Ref<OpenXRFutureResult> _create_spatial_context();
 	void _on_spatial_context_created(RID p_spatial_context);
+	void _on_spatial_context_creation_failed(int p_xr_result, bool p_is_completion_failure);
 
 	void _on_spatial_discovery_recommended(RID p_spatial_context);
 
-	Ref<OpenXRFutureResult> _start_entity_discovery();
-	void _process_snapshot(RID p_snapshot);
+	void _process_snapshot(RID p_snapshot, RID p_spatial_context, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_query, const Callable &p_user_callback);
 
-	// Trackers
-	HashMap<XrSpatialEntityIdEXT, Ref<OpenXRPlaneTracker>> plane_trackers;
+	// Trackers; maps each Spatial Context RID to their plane entities and trackers
+	HashMap<RID, HashMap<XrSpatialEntityIdEXT, Ref<OpenXRPlaneTracker>>> plane_trackers;
 };

@@ -30,6 +30,8 @@
 
 #include "navigation_region_3d_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/multi_node_edit.h"
@@ -39,6 +41,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
+#include "scene/main/scene_tree.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 
 void NavigationRegion3DEditor::_node_removed(Node *p_node) {
@@ -248,6 +251,7 @@ NavigationRegion3DEditor::NavigationRegion3DEditor() {
 	bake_hbox->add_child(bake_info);
 
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 
 	multibake_dialog = memnew(ConfirmationDialog);

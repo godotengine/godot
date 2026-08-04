@@ -10,8 +10,6 @@
             android:name="org.godotengine.library.version"
             android:value="${godotLibraryVersion}" />
 
-        <service android:name=".GodotDownloaderService" />
-
         <activity
             android:name=".utils.ProcessPhoenix"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"

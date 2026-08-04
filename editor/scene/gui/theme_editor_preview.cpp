@@ -31,6 +31,8 @@
 #include "theme_editor_preview.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
@@ -55,7 +57,33 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
 
-constexpr double REFRESH_TIMER = 1.5;
+void ScalableContainer::_notification(int p_what) {
+	if (EDSCALE == 1 || p_what != NOTIFICATION_SORT_CHILDREN) {
+		return;
+	}
+
+	Size2 size = get_size() / EDSCALE;
+	size.width -= get_margin_size(SIDE_LEFT) + get_margin_size(SIDE_RIGHT);
+	size.height -= get_margin_size(SIDE_TOP) + get_margin_size(SIDE_BOTTOM);
+
+	for (Node *child : iterate_children()) {
+		Control *control = as_sortable_control(child);
+		if (control) {
+			fit_child_in_rect(control, Rect2(control->get_position(), size));
+		}
+	}
+}
+
+Size2 ScalableContainer::get_minimum_size() const {
+	return MarginContainer::get_minimum_size() * EDSCALE;
+}
+
+ScalableContainer::ScalableContainer() {
+	set_offset_transform_enabled(true);
+	set_offset_transform_pivot_ratio(Point2());
+	set_offset_transform_visual_only(false);
+	set_offset_transform_scale(Size2(EDSCALE, EDSCALE));
+}
 
 void ThemeEditorPreview::set_preview_theme(const Ref<Theme> &p_theme) {
 	preview_content->set_theme(p_theme);
@@ -64,30 +92,6 @@ void ThemeEditorPreview::set_preview_theme(const Ref<Theme> &p_theme) {
 void ThemeEditorPreview::add_preview_overlay(Control *p_overlay) {
 	preview_overlay->add_child(p_overlay);
 	p_overlay->hide();
-}
-
-void ThemeEditorPreview::_propagate_redraw(Control *p_at) {
-	p_at->notification(NOTIFICATION_THEME_CHANGED);
-	p_at->update_minimum_size();
-	p_at->queue_redraw();
-	for (int i = 0; i < p_at->get_child_count(); i++) {
-		Control *a = Object::cast_to<Control>(p_at->get_child(i));
-		if (a) {
-			_propagate_redraw(a);
-		}
-	}
-}
-
-void ThemeEditorPreview::_refresh_interval() {
-	// In case the project settings have changed.
-	preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
-
-	_propagate_redraw(preview_bg);
-	_propagate_redraw(preview_content);
-}
-
-void ThemeEditorPreview::_preview_visibility_changed() {
-	set_process(is_visible_in_tree());
 }
 
 void ThemeEditorPreview::_picker_button_cbk() {
@@ -199,19 +203,17 @@ void ThemeEditorPreview::_reset_picker_overlay() {
 	picker_overlay->queue_redraw();
 }
 
+void ThemeEditorPreview::_update_preview_bg() {
+	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/environment/defaults/default_clear_color")) {
+		preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
+	}
+}
+
 void ThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_POSTINITIALIZE: {
-			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
-		} break;
-
-		case NOTIFICATION_ENTER_TREE: {
-			if (is_visible_in_tree()) {
-				set_process(true);
-			}
-		} break;
-
-		case NOTIFICATION_READY: {
+		// Due to NOTIFICATION_READY being called only once, and theme contexts being destroyed on node removal,
+		// this is the notification needed, as it can be triggered indefinitely.
+		case NOTIFICATION_POST_ENTER_TREE: {
 			Vector<Ref<Theme>> preview_themes;
 			preview_themes.push_back(ThemeDB::get_singleton()->get_default_theme());
 			ThemeDB::get_singleton()->create_theme_context(preview_root, preview_themes);
@@ -225,14 +227,6 @@ void ThemeEditorPreview::_notification(int p_what) {
 			theme_cache.preview_picker_label = get_theme_stylebox(SNAME("preview_picker_label"), SNAME("ThemeEditor"));
 			theme_cache.preview_picker_font = get_theme_font(SNAME("status_source"), EditorStringName(EditorFonts));
 			theme_cache.font_size = get_theme_default_font_size();
-		} break;
-
-		case NOTIFICATION_PROCESS: {
-			time_left -= get_process_delta_time();
-			if (time_left < 0) {
-				time_left = REFRESH_TIMER;
-				_refresh_interval();
-			}
 		} break;
 	}
 }
@@ -249,7 +243,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_toolbar->add_child(picker_button);
 	picker_button->set_theme_type_variation(SceneStringName(FlatButton));
 	picker_button->set_toggle_mode(true);
-	picker_button->set_tooltip_text(TTR("Toggle the control picker, allowing to visually select control types for edit."));
+	picker_button->set_tooltip_text(TTRC("Toggle the control picker, allowing to visually select control types for edit."));
 	picker_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
 
 	MarginContainer *preview_body = memnew(MarginContainer);
@@ -271,7 +265,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_bg->set_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 	preview_root->add_child(preview_bg);
 
-	preview_content = memnew(MarginContainer);
+	preview_content = memnew(ScalableContainer);
 	preview_content->add_theme_constant_override("margin_right", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_top", 4 * EDSCALE);
 	preview_content->add_theme_constant_override("margin_left", 4 * EDSCALE);
@@ -288,46 +282,50 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	picker_overlay->connect(SceneStringName(draw), callable_mp(this, &ThemeEditorPreview::_draw_picker_overlay));
 	picker_overlay->connect(SceneStringName(gui_input), callable_mp(this, &ThemeEditorPreview::_gui_input_picker_overlay));
 	picker_overlay->connect(SceneStringName(mouse_exited), callable_mp(this, &ThemeEditorPreview::_reset_picker_overlay));
+
+	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ThemeEditorPreview::_update_preview_bg));
 }
 
 void DefaultThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
+			test_color_picker_button->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))) / EDSCALE);
 		} break;
 	}
 }
 
 DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
+	set_oversampling_with_scale(OVERSAMPLING_WITH_SCALE_ENABLED);
+
 	Panel *main_panel = memnew(Panel);
 	preview_content->add_child(main_panel);
 
 	MarginContainer *main_mc = memnew(MarginContainer);
-	main_mc->add_theme_constant_override("margin_right", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_top", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
+	main_mc->add_theme_constant_override("margin_right", 4);
+	main_mc->add_theme_constant_override("margin_top", 4);
+	main_mc->add_theme_constant_override("margin_left", 4);
+	main_mc->add_theme_constant_override("margin_bottom", 4);
 	preview_content->add_child(main_mc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
 	main_mc->add_child(main_hb);
-	main_hb->add_theme_constant_override("separation", 20 * EDSCALE);
+	main_hb->add_theme_constant_override("separation", 20);
 
 	VBoxContainer *first_vb = memnew(VBoxContainer);
 	main_hb->add_child(first_vb);
 	first_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	first_vb->add_theme_constant_override("separation", 10 * EDSCALE);
+	first_vb->add_theme_constant_override("separation", 10);
 
 	first_vb->add_child(memnew(Label("Label")));
 
 	first_vb->add_child(memnew(Button("Button")));
 	Button *bt = memnew(Button);
-	bt->set_text(TTR("Toggle Button"));
+	bt->set_text(TTRC("Toggle Button"));
 	bt->set_toggle_mode(true);
 	bt->set_pressed(true);
 	first_vb->add_child(bt);
 	bt = memnew(Button);
-	bt->set_text(TTR("Disabled Button"));
+	bt->set_text(TTRC("Disabled Button"));
 	bt->set_disabled(true);
 	first_vb->add_child(bt);
 	Button *tb = memnew(Button);
@@ -344,31 +342,31 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 
 	MenuButton *test_menu_button = memnew(MenuButton);
 	test_menu_button->set_text("MenuButton");
-	test_menu_button->get_popup()->add_item(TTR("Item"));
-	test_menu_button->get_popup()->add_item(TTR("Disabled Item"));
+	test_menu_button->get_popup()->add_item(TTRC("Item"));
+	test_menu_button->get_popup()->add_item(TTRC("Disabled Item"));
 	test_menu_button->get_popup()->set_item_disabled(1, true);
 	test_menu_button->get_popup()->add_separator();
-	test_menu_button->get_popup()->add_check_item(TTR("Check Item"));
-	test_menu_button->get_popup()->add_check_item(TTR("Checked Item"));
+	test_menu_button->get_popup()->add_check_item(TTRC("Check Item"));
+	test_menu_button->get_popup()->add_check_item(TTRC("Checked Item"));
 	test_menu_button->get_popup()->set_item_checked(4, true);
 	test_menu_button->get_popup()->add_separator();
-	test_menu_button->get_popup()->add_radio_check_item(TTR("Radio Item"));
-	test_menu_button->get_popup()->add_radio_check_item(TTR("Checked Radio Item"));
+	test_menu_button->get_popup()->add_radio_check_item(TTRC("Radio Item"));
+	test_menu_button->get_popup()->add_radio_check_item(TTRC("Checked Radio Item"));
 	test_menu_button->get_popup()->set_item_checked(7, true);
-	test_menu_button->get_popup()->add_separator(TTR("Named Separator"));
+	test_menu_button->get_popup()->add_separator(TTRC("Named Separator"));
 
 	PopupMenu *test_submenu = memnew(PopupMenu);
-	test_menu_button->get_popup()->add_submenu_node_item(TTR("Submenu"), test_submenu);
-	test_submenu->add_item(TTR("Subitem 1"));
-	test_submenu->add_item(TTR("Subitem 2"));
+	test_menu_button->get_popup()->add_submenu_node_item(TTRC("Submenu"), test_submenu);
+	test_submenu->add_item(TTRC("Subitem 1"));
+	test_submenu->add_item(TTRC("Subitem 2"));
 	first_vb->add_child(test_menu_button);
 
 	OptionButton *test_option_button = memnew(OptionButton);
 	test_option_button->add_item("OptionButton");
 	test_option_button->add_separator();
-	test_option_button->add_item(TTR("Has"));
-	test_option_button->add_item(TTR("Many"));
-	test_option_button->add_item(TTR("Options"));
+	test_option_button->add_item(TTRC("Has"));
+	test_option_button->add_item(TTRC("Many"));
+	test_option_button->add_item(TTRC("Options"));
 	first_vb->add_child(test_option_button);
 	test_color_picker_button = memnew(ColorPickerButton);
 	first_vb->add_child(test_color_picker_button);
@@ -376,23 +374,23 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	VBoxContainer *second_vb = memnew(VBoxContainer);
 	second_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_hb->add_child(second_vb);
-	second_vb->add_theme_constant_override("separation", 10 * EDSCALE);
+	second_vb->add_theme_constant_override("separation", 10);
 	LineEdit *le = memnew(LineEdit);
 	le->set_text("LineEdit");
 	second_vb->add_child(le);
 	le = memnew(LineEdit);
-	le->set_text(TTR("Disabled LineEdit"));
+	le->set_text(TTRC("Disabled LineEdit"));
 	le->set_editable(false);
 	second_vb->add_child(le);
 	TextEdit *te = memnew(TextEdit);
 	te->set_text("TextEdit");
-	te->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
+	te->set_custom_minimum_size(Size2(0, 100));
 	second_vb->add_child(te);
 	second_vb->add_child(memnew(SpinBox));
 
 	HBoxContainer *vhb = memnew(HBoxContainer);
 	second_vb->add_child(vhb);
-	vhb->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
+	vhb->set_custom_minimum_size(Size2(0, 100));
 	vhb->add_child(memnew(VSlider));
 	VScrollBar *vsb = memnew(VScrollBar);
 	vsb->set_page(25);
@@ -416,26 +414,26 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 
 	VBoxContainer *third_vb = memnew(VBoxContainer);
 	third_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	third_vb->add_theme_constant_override("separation", 10 * EDSCALE);
+	third_vb->add_theme_constant_override("separation", 10);
 	main_hb->add_child(third_vb);
 
 	TabContainer *tc = memnew(TabContainer);
 	third_vb->add_child(tc);
-	tc->set_custom_minimum_size(Size2(0, 135) * EDSCALE);
+	tc->set_custom_minimum_size(Size2(0, 135));
 	Control *tcc = memnew(Control);
-	tcc->set_name(TTR("Tab 1"));
+	tcc->set_name(TTRC("Tab 1"));
 	tc->add_child(tcc);
 	tcc = memnew(Control);
-	tcc->set_name(TTR("Tab 2"));
+	tcc->set_name(TTRC("Tab 2"));
 	tc->add_child(tcc);
 	tcc = memnew(Control);
-	tcc->set_name(TTR("Tab 3"));
+	tcc->set_name(TTRC("Tab 3"));
 	tc->add_child(tcc);
 	tc->set_tab_disabled(2, true);
 
 	Tree *test_tree = memnew(Tree);
 	third_vb->add_child(test_tree);
-	test_tree->set_custom_minimum_size(Size2(0, 175) * EDSCALE);
+	test_tree->set_custom_minimum_size(Size2(0, 175));
 
 	TreeItem *item = test_tree->create_item();
 	item->set_text(0, "Tree");
@@ -443,9 +441,9 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	item->set_text(0, "Item");
 	item = test_tree->create_item(test_tree->get_root());
 	item->set_editable(0, true);
-	item->set_text(0, TTR("Editable Item"));
+	item->set_text(0, TTRC("Editable Item"));
 	TreeItem *sub_tree = test_tree->create_item(test_tree->get_root());
-	sub_tree->set_text(0, TTR("Subtree"));
+	sub_tree->set_text(0, TTRC("Subtree"));
 	item = test_tree->create_item(sub_tree);
 	item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	item->set_editable(0, true);
@@ -458,7 +456,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	item = test_tree->create_item(sub_tree);
 	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
 	item->set_editable(0, true);
-	item->set_text(0, TTR("Has,Many,Options"));
+	item->set_text(0, TTRC("Has,Many,Options"));
 	item->set_range(0, 2);
 }
 
@@ -468,7 +466,7 @@ void SceneThemeEditorPreview::_reload_scene() {
 	}
 
 	if (loaded_scene->get_path().is_empty() || !ResourceLoader::exists(loaded_scene->get_path())) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid path, the PackedScene resource was probably moved or removed."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid path, the PackedScene resource was probably moved or removed."));
 		emit_signal(SNAME("scene_invalidated"));
 		return;
 	}
@@ -481,7 +479,7 @@ void SceneThemeEditorPreview::_reload_scene() {
 
 	Node *instance = loaded_scene->instantiate();
 	if (!instance || !Object::cast_to<Control>(instance)) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, must have a Control node at its root."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid PackedScene resource, must have a Control node at its root."));
 		emit_signal(SNAME("scene_invalidated"));
 		return;
 	}
@@ -506,19 +504,19 @@ void SceneThemeEditorPreview::_bind_methods() {
 bool SceneThemeEditorPreview::set_preview_scene(const String &p_path) {
 	loaded_scene = ResourceLoader::load(p_path);
 	if (loaded_scene.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid file, not a PackedScene resource."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid file, not a PackedScene resource."));
 		return false;
 	}
 
 	Node *instance = loaded_scene->instantiate();
 
 	if (!instance) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, could not instantiate it."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid PackedScene resource, could not instantiate it."));
 		return false;
 	}
 
 	if (!Object::cast_to<Control>(instance)) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, must have a Control node at its root."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid PackedScene resource, must have a Control node at its root."));
 		memdelete(instance);
 		return false;
 	}
@@ -540,7 +538,7 @@ SceneThemeEditorPreview::SceneThemeEditorPreview() {
 
 	reload_scene_button = memnew(Button);
 	reload_scene_button->set_flat(true);
-	reload_scene_button->set_tooltip_text(TTR("Reload the scene to reflect its most actual state."));
+	reload_scene_button->set_tooltip_text(TTRC("Reload the scene to reflect its most actual state."));
 	preview_toolbar->add_child(reload_scene_button);
 	reload_scene_button->connect(SceneStringName(pressed), callable_mp(this, &SceneThemeEditorPreview::_reload_scene));
 }

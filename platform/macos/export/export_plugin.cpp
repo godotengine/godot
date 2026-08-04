@@ -33,17 +33,23 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
-#include "core/io/image_loader.h"
+#include "core/config/project_settings.h"
+#include "core/io/marshalls.h"
 #include "core/io/plist.h"
+#include "core/io/zip_io.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/codesign.h"
+#include "editor/export/editor_export.h"
 #include "editor/export/lipo.h"
 #include "editor/export/macho.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
@@ -484,8 +490,8 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "application/copyright_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_x86_64"), "10.12"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_arm64"), "11.00"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_x86_64"), "11.00"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_arm64"), "13.00"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), true));
 
@@ -1617,8 +1623,8 @@ Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPres
 	return OK;
 }
 
-Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
-	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
 	const String base_dir = p_path.get_base_dir();
 
@@ -1835,7 +1841,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 			if (appnames.is_empty()) {
 				domain->set_locale_override(lang);
-				const String &name = domain->translate(project_name, String());
+				String name = domain->translate(project_name, String());
 				if (name != project_name) {
 					f->store_line("CFBundleDisplayName = \"" + name.xml_escape(true) + "\";");
 				}
@@ -2481,13 +2487,17 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 	String architecture = p_preset->get("binary_format/architecture");
 	if (architecture == "universal" || architecture == "x86_64") {
 		if (!ResourceImporterTextureSettings::should_import_s3tc_bptc()) {
-			err += TTR("Cannot export for universal or x86_64 if S3TC BPTC texture format is disabled. Enable it in the Project Settings (Rendering > Textures > VRAM Compression > Import S3TC BPTC).") + "\n";
+			if (EditorNode::is_cmdline_mode()) {
+				err += TTR("Cannot export for universal or x86_64 if S3TC BPTC texture format is disabled. Enable it in the Project Settings (Rendering > Textures > VRAM Compression > Import S3TC BPTC).") + "\n";
+			}
 			valid = false;
 		}
 	}
 	if (architecture == "universal" || architecture == "arm64") {
 		if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
-			err += TTR("Cannot export for universal or arm64 if ETC2 ASTC texture format is disabled. Enable it in the Project Settings (Rendering > Textures > VRAM Compression > Import ETC2 ASTC).") + "\n";
+			if (EditorNode::is_cmdline_mode()) {
+				err += TTR("Cannot export for universal or arm64 if ETC2 ASTC texture format is disabled. Enable it in the Project Settings (Rendering > Textures > VRAM Compression > Import ETC2 ASTC).") + "\n";
+			}
 			valid = false;
 		}
 	}
@@ -2701,19 +2711,19 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 
 	const String basepath = dest.path_join("tmp_macos_export");
 
-#define CLEANUP_AND_RETURN(m_err)                      \
-	{                                                  \
-		if (da->file_exists(basepath + ".zip")) {      \
-			da->remove(basepath + ".zip");             \
-		}                                              \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
+		if (da->file_exists(basepath + ".zip")) { \
+			da->remove(basepath + ".zip"); \
+		} \
 		if (da->file_exists(basepath + "_start.sh")) { \
-			da->remove(basepath + "_start.sh");        \
-		}                                              \
+			da->remove(basepath + "_start.sh"); \
+		} \
 		if (da->file_exists(basepath + "_clean.sh")) { \
-			da->remove(basepath + "_clean.sh");        \
-		}                                              \
-		return m_err;                                  \
-	}                                                  \
+			da->remove(basepath + "_clean.sh"); \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	if (ep.step(TTR("Exporting project..."), 1)) {

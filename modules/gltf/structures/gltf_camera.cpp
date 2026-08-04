@@ -31,6 +31,8 @@
 #include "gltf_camera.h"
 
 #include "gltf_object_model_property.h"
+
+#include "core/object/class_db.h"
 #include "scene/3d/camera_3d.h"
 
 void GLTFCamera::_bind_methods() {

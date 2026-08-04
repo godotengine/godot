@@ -31,6 +31,12 @@
  *    assumed these fields are empty.
  *  - The RFC allows for the signed Data type to contain contentInfo. This
  *    implementation assumes the type is DATA and the content is empty.
+ *  - The RFC doesn't put any constrain on the hash algorithm to be used, but
+ *    this implementation by default rejects weak hash algorithms (i.e. RIPEMD160,
+ *    MD5, SHA-1, SHA-224, SHA3-224). In general accepted hash algorithms
+ *    are the ones belonging to ::mbedtls_x509_crt_profile_default.
+ *    #MBEDTLS_PKCS7_ALLOW_WEAK_SIGNATURES can be enabled to accept all
+ *    supported hash algorithms.
  */
 
 #ifndef MBEDTLS_PKCS7_H
@@ -55,9 +61,9 @@
 #define MBEDTLS_ERR_PKCS7_INVALID_CERT                     -0x5580  /**< The certificate tag or value is invalid or cannot be parsed. */
 #define MBEDTLS_ERR_PKCS7_INVALID_SIGNATURE                -0x5600  /**< Error parsing the signature */
 #define MBEDTLS_ERR_PKCS7_INVALID_SIGNER_INFO              -0x5680  /**< Error parsing the signer's info */
-#define MBEDTLS_ERR_PKCS7_BAD_INPUT_DATA                   -0x5700  /**< Input invalid. */
-#define MBEDTLS_ERR_PKCS7_ALLOC_FAILED                     -0x5780  /**< Allocation of memory failed. */
-#define MBEDTLS_ERR_PKCS7_VERIFY_FAIL                      -0x5800  /**< Verification Failed */
+#define MBEDTLS_ERR_PKCS7_BAD_INPUT_DATA                   PSA_ERROR_INVALID_ARGUMENT  /**< Input invalid. */
+#define MBEDTLS_ERR_PKCS7_ALLOC_FAILED                     PSA_ERROR_INSUFFICIENT_MEMORY  /**< Allocation of memory failed. */
+#define MBEDTLS_ERR_PKCS7_VERIFY_FAIL                      PSA_ERROR_INVALID_SIGNATURE  /**< Verification Failed */
 #define MBEDTLS_ERR_PKCS7_CERT_DATE_INVALID                -0x5880  /**< The PKCS #7 date issued/expired dates are invalid */
 /* \} name */
 
@@ -190,6 +196,9 @@ int mbedtls_pkcs7_parse_der(mbedtls_pkcs7 *pkcs7, const unsigned char *buf,
  * \note           This function internally calculates the hash on the supplied
  *                 plain data for signature verification.
  *
+ * \note           For limitation on the supported hash algorithms, please refer
+ *                 to the note at the top of this document.
+ *
  * \return         0 if the signature verifies, or a negative error code on failure.
  */
 int mbedtls_pkcs7_signed_data_verify(mbedtls_pkcs7 *pkcs7,
@@ -218,6 +227,9 @@ int mbedtls_pkcs7_signed_data_verify(mbedtls_pkcs7 *pkcs7,
  *
  * \note           This function is different from mbedtls_pkcs7_signed_data_verify()
  *                 in that it is directly passed the hash of the data.
+ *
+ * \note           For limitation on the supported hash algorithms, please refer
+ *                 to the note at the top of this document.
  *
  * \return         0 if the signature verifies, or a negative error code on failure.
  */

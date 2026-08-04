@@ -34,8 +34,11 @@ import android.content.ComponentName
 import android.content.Intent
 import android.util.Log
 import androidx.test.core.app.ActivityScenario
+import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.godot.game.test.GodotAppInstrumentedTestPlugin
+import org.godotengine.godot.Godot
 import org.godotengine.godot.GodotActivity.Companion.EXTRA_COMMAND_LINE_PARAMS
 import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.junit.Test
@@ -111,6 +114,28 @@ class GodotAppTest {
 	}
 
 	/**
+	 * Runs test to validate android plugin signals.
+	 */
+	@Test
+	fun runPluginSignalTests() {
+		ActivityScenario.launch(GodotApp::class.java).use { scenario ->
+			scenario.onActivity { activity ->
+				val testPlugin = getTestPlugin()
+				assertNotNull(testPlugin)
+
+				Log.d(TAG, "Waiting for the Godot main loop to start...")
+				testPlugin.waitForGodotMainLoopStarted()
+
+				Log.d(TAG, "Running Android plugin signal tests...")
+				val result = testPlugin.runPluginSignalTests()
+				assertNotNull(result)
+				result.exceptionOrNull()?.let { throw it }
+				assertTrue(result.isSuccess)
+			}
+		}
+	}
+
+	/**
 	 * Test implicit launch of the Godot app, and validates this resolves to the `GodotAppLauncher` activity alias.
 	 */
 	@Test
@@ -167,6 +192,58 @@ class GodotAppTest {
 				assertNotNull(commandLineParams)
 				assertTrue(commandLineParams.contentEquals(TEST_COMMAND_LINE_PARAMS))
 			}
+		}
+	}
+
+	/**
+	 * Validate that the back press does not quit the game when 'quit_on_go_back' is disabled.
+	 */
+	@Test
+	fun testGameNotQuittingOnBackPress() {
+		ActivityScenario.launch(GodotApp::class.java).use { scenario ->
+			val testPlugin = getTestPlugin()
+			assertNotNull(testPlugin)
+
+			Log.d(TAG, "Waiting for the Godot main loop to start...")
+			testPlugin.waitForGodotMainLoopStarted()
+
+			// Disable 'quit_on_go_back'.
+			testPlugin.updateQuitOnGoBack(false)
+
+			// Trigger the back press event.
+			Espresso.pressBackUnconditionally()
+
+			Log.d(TAG, "Waiting for the engine to terminate...")
+			testPlugin.waitForEngineTermination(5_000L)
+
+			val godot = Godot.getInstance(InstrumentationRegistry.getInstrumentation().targetContext)
+			assertTrue { godot.runStatus != Godot.RunStatus.TERMINATING }
+		}
+	}
+
+	/**
+	 * Validate that the back press event quits the game when 'quit_on_go_back' is enabled.
+	 */
+	@Test
+	fun testGameQuittingOnBackPress() {
+		ActivityScenario.launch(GodotApp::class.java).use { scenario ->
+			val testPlugin = getTestPlugin()
+			assertNotNull(testPlugin)
+
+			Log.d(TAG, "Waiting for the Godot main loop to start...")
+			testPlugin.waitForGodotMainLoopStarted()
+
+			// Enable 'quit_on_go_back'.
+			testPlugin.updateQuitOnGoBack(true)
+
+			// Trigger the back press event.
+			Espresso.pressBackUnconditionally()
+
+			Log.d(TAG, "Waiting for the engine to terminate...")
+			testPlugin.waitForEngineTermination(5_000L)
+
+			val godot = Godot.getInstance(InstrumentationRegistry.getInstrumentation().targetContext)
+			assertTrue { godot.runStatus == Godot.RunStatus.TERMINATING }
 		}
 	}
 }

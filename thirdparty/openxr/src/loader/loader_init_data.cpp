@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -45,8 +45,7 @@ XrResult LoaderInitData::initializeProperties(const XrLoaderInitInfoBaseHeaderKH
                 if (propertyInfo->propertyValues[i].value == nullptr) {
                     return XR_ERROR_VALIDATION_FAILURE;
                 }
-                std::string view{propertyInfo->propertyValues[i].name};
-                if (view.size() == 0) {
+                if (propertyInfo->propertyValues[i].name[0] == '\0') {
                     return XR_ERROR_VALIDATION_FAILURE;
                 }
             }

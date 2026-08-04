@@ -37,7 +37,7 @@ layout(OCTMAP_FORMAT, set = 1, binding = 0) uniform restrict writeonly image2D d
 layout(push_constant, std430) uniform Params {
 	float border_size;
 	uint size;
-	uint pad;
+	uint pad1;
 	uint pad2;
 }
 params;

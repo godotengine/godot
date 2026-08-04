@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/io/config_file.h"
 #include "core/templates/vector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_mixer.h"

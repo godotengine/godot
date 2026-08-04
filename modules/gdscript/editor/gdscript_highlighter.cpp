@@ -35,8 +35,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
+#include "core/object/class_db.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/text_edit.h"
 
 Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
@@ -947,7 +947,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			HashMap<StringName, Variant> scr_constant_list;
 			scr_class->get_constants(&scr_constant_list);
 			for (const KeyValue<StringName, Variant> &E : scr_constant_list) {
-				member_keywords[E.key.operator String()] = member_variable_color;
+				member_keywords[E.key.string()] = member_variable_color;
 			}
 			scr_class = scr_class->get_base_script();
 		}

@@ -31,8 +31,10 @@
 #include "translation_server.h"
 #include "translation_server.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/locales.h"

@@ -36,7 +36,8 @@
 #include "core/os/time.h"
 #include "core/version.h"
 #include "scene/main/node.h"
-#include "scene/main/window.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h" // IWYU pragma: keep. FIXME: Couldn't figure out how to make RequiredResult<T> equality checks be analyzed properly by include-cleaner.
 
 void SnapshotCollector::initialize() {
 	pending_snapshots.clear();

@@ -30,7 +30,9 @@
 
 #include "blit_material.h"
 
+#include "core/object/class_db.h"
 #include "core/version.h"
+#include "servers/rendering/rendering_server.h"
 
 void BlitMaterial::_update_shader(BlendMode p_blend) {
 	MutexLock shader_lock(shader_mutex);
@@ -55,6 +57,9 @@ void BlitMaterial::_update_shader(BlendMode p_blend) {
 				break;
 			case BLEND_MODE_DISABLED:
 				code += "blend_disabled";
+				break;
+			case BLEND_MODE_PREMULTIPLIED_ALPHA:
+				code += "blend_premul_alpha";
 				break;
 			default:
 				code += "blend_mix";
@@ -129,6 +134,7 @@ void BlitMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(BLEND_MODE_PREMULTIPLIED_ALPHA);
 }
 
 BlitMaterial::BlitMaterial() {

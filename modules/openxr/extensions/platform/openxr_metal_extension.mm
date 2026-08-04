@@ -30,10 +30,12 @@
 
 #import "openxr_metal_extension.h"
 
+#include "../../openxr_api.h"
 #include "../../openxr_util.h"
 
 #import "drivers/metal/rendering_device_driver_metal.h"
-#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server.h"
 
 HashMap<String, bool *> OpenXRMetalExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
@@ -122,8 +124,8 @@ void OpenXRMetalExtension::get_usable_depth_formats(Vector<int64_t> &p_usable_sw
 }
 
 #define ENUM_TO_STRING_CASE(m_e) \
-	case m_e: {                  \
-		return String(#m_e);     \
+	case m_e: { \
+		return String(#m_e); \
 	} break;
 
 String OpenXRMetalExtension::get_swapchain_format_name(int64_t p_swapchain_format) const {
@@ -207,15 +209,15 @@ bool OpenXRMetalExtension::get_swapchain_image_data(XrSwapchain p_swapchain, int
 			break;
 		case MTLPixelFormatDepth32Float:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		case MTLPixelFormatDepth24Unorm_Stencil8:
 			format = RenderingDevice::DATA_FORMAT_D24_UNORM_S8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		case MTLPixelFormatDepth32Float_Stencil8:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT_S8_UINT;
-			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT;
 			break;
 		default:
 			// Continue with our default value.

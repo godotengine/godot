@@ -41,7 +41,7 @@
 class GamepadMotion;
 
 namespace InputClassEnums {
-// Keep synced with "DisplayServer::MouseMode" enum.
+// Keep synced with DisplayServerEnums::MouseMode enum.
 enum MouseMode : int {
 	MOUSE_MODE_VISIBLE,
 	MOUSE_MODE_HIDDEN,
@@ -51,6 +51,7 @@ enum MouseMode : int {
 	MOUSE_MODE_MAX,
 };
 
+// Keep synced with DisplayServerEnums and Control enums.
 #undef CursorShape
 enum CursorShape : int {
 	CURSOR_ARROW,
@@ -91,11 +92,15 @@ public:
 	public:
 		virtual ~JoypadFeatures() {}
 
+		virtual bool has_joy_vibration() const { return false; }
+
 		virtual bool has_joy_light() const { return false; }
 		virtual void set_joy_light(const Color &p_color) {}
 
 		virtual bool has_joy_motion_sensors() const { return false; }
 		virtual void set_joy_motion_sensors_enabled(bool p_enable) {}
+
+		virtual int get_joy_num_touchpads() const { return 0; }
 	};
 
 	static constexpr int32_t JOYPADS_MAX = 16;
@@ -123,6 +128,9 @@ private:
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
 	bool disable_input = false;
+	bool ignore_joypad_on_unfocused_application = false;
+	bool application_focused = true;
+	bool embedder_focused = false;
 
 	struct ActionState {
 		uint64_t pressed_physics_frame = UINT64_MAX;
@@ -137,6 +145,7 @@ private:
 			bool pressed[MAX_EVENT] = { false };
 			float strength[MAX_EVENT] = { 0.0 };
 			float raw_strength[MAX_EVENT] = { 0.0 };
+			InputEventType event_type[MAX_EVENT] = { InputEventType::INVALID };
 		};
 		bool api_pressed = false;
 		float api_strength = 0.0;
@@ -185,6 +194,18 @@ private:
 
 	HashMap<int, MotionInfo> joy_motion;
 
+	struct TouchpadFingerInfo {
+		Vector2 position;
+		float pressure;
+	};
+
+	struct TouchpadInfo {
+		int num_touchpads = 0;
+		HashMap<uint16_t, TouchpadFingerInfo> finger_info;
+	};
+
+	HashMap<int, TouchpadInfo> joy_touch;
+
 	struct VelocityTrack {
 		uint64_t last_tick = 0;
 		Vector2 velocity;
@@ -212,6 +233,7 @@ private:
 		int hat_current = 0;
 		Dictionary info;
 		bool has_light = false;
+		bool has_vibration = false;
 		Input::JoypadFeatures *features = nullptr;
 	};
 
@@ -284,11 +306,11 @@ private:
 
 	void _set_joypad_mapping(Joypad &p_js, int p_map_index);
 
-	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button);
-	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range);
-	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
-	JoyButton _get_output_button(const String &output);
-	JoyAxis _get_output_axis(const String &output);
+	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &p_mapping, JoyButton p_button);
+	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &p_mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range);
+	void _get_mapped_hat_events(const JoyDeviceMapping &p_mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
+	JoyButton _get_output_button(const String &p_output);
+	JoyAxis _get_output_axis(const String &p_output);
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
@@ -303,6 +325,8 @@ private:
 #endif
 
 	friend class DisplayServer;
+	friend class SceneTree;
+	friend class SceneDebugger;
 
 	static void (*set_mouse_mode_func)(MouseMode);
 	static MouseMode (*get_mouse_mode_func)();
@@ -316,6 +340,8 @@ private:
 	static void (*set_custom_mouse_cursor_func)(const Ref<Resource> &, CursorShape, const Vector2 &);
 
 	EventDispatchFunc event_dispatch_function = nullptr;
+
+	bool _should_ignore_joypad_events() const;
 
 #ifndef DISABLE_DEPRECATED
 	void _vibrate_handheld_bind_compat_91143(int p_duration_ms = 500);
@@ -340,7 +366,7 @@ public:
 	static Input *get_singleton();
 
 	bool is_anything_pressed() const;
-	bool is_anything_pressed_except_mouse() const;
+	bool is_any_key_pressed() const;
 	bool is_key_pressed(Key p_keycode) const;
 	bool is_physical_key_pressed(Key p_keycode) const;
 	bool is_key_label_pressed(Key p_keycode) const;
@@ -362,13 +388,18 @@ public:
 	TypedArray<int> get_connected_joypads();
 	Vector2 get_joy_vibration_strength(int p_device);
 	float get_joy_vibration_duration(int p_device);
+	float get_joy_vibration_remaining_duration(int p_device);
 	uint64_t get_joy_vibration_timestamp(int p_device);
+	bool is_joy_vibrating(int p_device);
+	bool has_joy_vibration(int p_device) const;
 	void joy_connection_changed(int p_idx, bool p_connected, const String &p_name, const String &p_guid = "", const Dictionary &p_joypad_info = Dictionary());
 
 	Vector3 get_gravity() const;
 	Vector3 get_accelerometer() const;
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
+
+	int get_joy_num_touchpads(int p_device) const;
 
 	Point2 get_mouse_position() const;
 	Vector2 get_last_mouse_velocity();
@@ -413,9 +444,16 @@ public:
 
 	void set_joy_motion_sensors_rate(int p_device, float p_rate);
 
+	Vector2 get_joy_touchpad_finger_position(int p_device, int p_finger, int p_touchpad = 0) const;
+	float get_joy_touchpad_finger_pressure(int p_device, int p_finger, int p_touchpad = 0) const;
+	PackedInt32Array get_joy_touchpad_fingers(int p_device, int p_touchpad = 0) const;
+
 	void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0);
 	void stop_joy_vibration(int p_device);
 	void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0);
+
+	void set_ignore_joypad_on_unfocused_application(bool p_ignore);
+	bool is_ignoring_joypad_on_unfocused_application() const;
 
 	void set_mouse_position(const Point2 &p_posf);
 
@@ -439,6 +477,7 @@ public:
 	void joy_axis(int p_device, JoyAxis p_axis, float p_value);
 	void joy_hat(int p_device, BitField<HatMask> p_val);
 	void joy_motion_sensors(int p_device, const Vector3 &p_accelerometer, const Vector3 &p_gyroscope);
+	void joy_touchpad(int p_device, int p_touchpad, int p_finger, const Vector2 &p_position, float p_pressure, bool p_pressed);
 
 	void add_joy_mapping(const String &p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(const String &p_guid);

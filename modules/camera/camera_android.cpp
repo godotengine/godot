@@ -31,6 +31,7 @@
 #include "camera_android.h"
 
 #include "core/os/os.h"
+
 #include "platform/android/display_server_android.h"
 #include "platform/android/java_godot_io_wrapper.h"
 #include "platform/android/os_android.h"
@@ -72,7 +73,7 @@ public:
 
 #ifndef IF_EQUAL_RETURN
 #define MAKE_FORMAT_CONST(suffix) AIMAGE_FORMAT_##suffix
-#define IF_EQUAL_RETURN(param, val)      \
+#define IF_EQUAL_RETURN(param, val) \
 	if (MAKE_FORMAT_CONST(val) == param) \
 	return #val
 #endif
@@ -89,8 +90,7 @@ String GetFormatName(const int32_t &format) {
 // CameraFeedAndroid - Subclass for our camera feed on Android
 
 CameraFeedAndroid::CameraFeedAndroid(ACameraManager *manager, ACameraMetadata *metadata, const char *id,
-		CameraFeed::FeedPosition position, int32_t orientation) :
-		CameraFeed() {
+		CameraFeed::FeedPosition position, int32_t orientation) {
 	this->manager = manager;
 	this->metadata = metadata;
 	this->orientation = orientation;

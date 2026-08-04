@@ -174,7 +174,7 @@ private:
 	NodePath visibility_parent_path;
 
 	_FORCE_INLINE_ uint32_t _read_dirty_mask() const { return is_group_processing() ? data.dirty.mt.get() : data.dirty.st; }
-	_FORCE_INLINE_ bool _test_dirty_bits(uint32_t p_bits) const { return is_group_processing() ? data.dirty.mt.bit_and(p_bits) : (data.dirty.st & p_bits); }
+	_FORCE_INLINE_ bool _test_dirty_bits(uint32_t p_bits) const { return (is_group_processing() ? data.dirty.mt.get() : data.dirty.st) & p_bits; }
 	void _replace_dirty_mask(uint32_t p_mask) const;
 	void _set_dirty_bits(uint32_t p_bits) const;
 	void _clear_dirty_bits(uint32_t p_bits) const;
@@ -232,7 +232,7 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
+		NOTIFICATION_TRANSFORM_CHANGED = 2000, // Keep in sync with SceneTree.
 		NOTIFICATION_ENTER_WORLD = 41,
 		NOTIFICATION_EXIT_WORLD = 42,
 		NOTIFICATION_VISIBILITY_CHANGED = 43,

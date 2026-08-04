@@ -32,6 +32,7 @@
 
 #include "core/math/convex_hull.h"
 #include "core/math/geometry_3d.h"
+#include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/3d/gizmos/gizmo_3d_helper.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
@@ -314,6 +315,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		return;
 	}
 
+	bool shape_readonly = EditorNode::get_singleton()->is_resource_read_only(s);
+
 	const Ref<StandardMaterial3D> material =
 			get_material(!cs->is_disabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
 	const Ref<StandardMaterial3D> material_arraymesh =
@@ -333,34 +336,34 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Ref<SphereShape3D> sp = s;
 		float radius = sp->get_radius();
 
-#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y)      \
-	points_ptrw[index++] = Vector3(from_x, y, from_y);   \
-	points_ptrw[index++] = Vector3(to_x, y, to_y);       \
-	points_ptrw[index++] = Vector3(from_x, y, -from_y);  \
-	points_ptrw[index++] = Vector3(to_x, y, -to_y);      \
-	points_ptrw[index++] = Vector3(-from_x, y, from_y);  \
-	points_ptrw[index++] = Vector3(-to_x, y, to_y);      \
+#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, to_y); \
+	points_ptrw[index++] = Vector3(from_x, y, -from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, -to_y); \
+	points_ptrw[index++] = Vector3(-from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(-to_x, y, to_y); \
 	points_ptrw[index++] = Vector3(-from_x, y, -from_y); \
 	points_ptrw[index++] = Vector3(-to_x, y, -to_y);
 
-#define PUSH_QUARTER_XY(from_x, from_y, to_x, to_y, y)       \
-	points_ptrw[index++] = Vector3(from_x, -from_y - y, 0);  \
-	points_ptrw[index++] = Vector3(to_x, -to_y - y, 0);      \
-	points_ptrw[index++] = Vector3(from_x, from_y + y, 0);   \
-	points_ptrw[index++] = Vector3(to_x, to_y + y, 0);       \
+#define PUSH_QUARTER_XY(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(from_x, -from_y - y, 0); \
+	points_ptrw[index++] = Vector3(to_x, -to_y - y, 0); \
+	points_ptrw[index++] = Vector3(from_x, from_y + y, 0); \
+	points_ptrw[index++] = Vector3(to_x, to_y + y, 0); \
 	points_ptrw[index++] = Vector3(-from_x, -from_y - y, 0); \
-	points_ptrw[index++] = Vector3(-to_x, -to_y - y, 0);     \
-	points_ptrw[index++] = Vector3(-from_x, from_y + y, 0);  \
+	points_ptrw[index++] = Vector3(-to_x, -to_y - y, 0); \
+	points_ptrw[index++] = Vector3(-from_x, from_y + y, 0); \
 	points_ptrw[index++] = Vector3(-to_x, to_y + y, 0);
 
-#define PUSH_QUARTER_YZ(from_x, from_y, to_x, to_y, y)       \
-	points_ptrw[index++] = Vector3(0, -from_y - y, from_x);  \
-	points_ptrw[index++] = Vector3(0, -to_y - y, to_x);      \
-	points_ptrw[index++] = Vector3(0, from_y + y, from_x);   \
-	points_ptrw[index++] = Vector3(0, to_y + y, to_x);       \
+#define PUSH_QUARTER_YZ(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(0, -from_y - y, from_x); \
+	points_ptrw[index++] = Vector3(0, -to_y - y, to_x); \
+	points_ptrw[index++] = Vector3(0, from_y + y, from_x); \
+	points_ptrw[index++] = Vector3(0, to_y + y, to_x); \
 	points_ptrw[index++] = Vector3(0, -from_y - y, -from_x); \
-	points_ptrw[index++] = Vector3(0, -to_y - y, -to_x);     \
-	points_ptrw[index++] = Vector3(0, from_y + y, -from_x);  \
+	points_ptrw[index++] = Vector3(0, -to_y - y, -to_x); \
+	points_ptrw[index++] = Vector3(0, from_y + y, -from_x); \
 	points_ptrw[index++] = Vector3(0, to_y + y, -to_x);
 
 		// Number of points in an octant. So there will be 8 * points_in_octant * 2 points in total for one circle.
@@ -402,9 +405,11 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		p_gizmo->add_lines(points, material, false, collision_color);
 		p_gizmo->add_collision_segments(points);
-		Vector<Vector3> handles;
-		handles.push_back(Vector3(radius, 0, 0));
-		p_gizmo->add_handles(handles, handles_material);
+		if (!shape_readonly) {
+			Vector<Vector3> handles;
+			handles.push_back(Vector3(radius, 0, 0));
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<BoxShape3D>(*s)) {
@@ -425,7 +430,9 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		p_gizmo->add_lines(lines, material, false, collision_color);
 		p_gizmo->add_collision_segments(lines);
-		p_gizmo->add_handles(handles, handles_material);
+		if (!shape_readonly) {
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
@@ -459,34 +466,34 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		points_ptrw[index++] = Vector3(-radius, y_value, 0.f);
 		points_ptrw[index++] = Vector3(-radius, -y_value, 0.f);
 
-#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y)      \
-	points_ptrw[index++] = Vector3(from_x, y, from_y);   \
-	points_ptrw[index++] = Vector3(to_x, y, to_y);       \
-	points_ptrw[index++] = Vector3(from_x, y, -from_y);  \
-	points_ptrw[index++] = Vector3(to_x, y, -to_y);      \
-	points_ptrw[index++] = Vector3(-from_x, y, from_y);  \
-	points_ptrw[index++] = Vector3(-to_x, y, to_y);      \
+#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, to_y); \
+	points_ptrw[index++] = Vector3(from_x, y, -from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, -to_y); \
+	points_ptrw[index++] = Vector3(-from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(-to_x, y, to_y); \
 	points_ptrw[index++] = Vector3(-from_x, y, -from_y); \
 	points_ptrw[index++] = Vector3(-to_x, y, -to_y);
 
-#define PUSH_QUARTER_XY(from_x, from_y, to_x, to_y, y)       \
-	points_ptrw[index++] = Vector3(from_x, -from_y - y, 0);  \
-	points_ptrw[index++] = Vector3(to_x, -to_y - y, 0);      \
-	points_ptrw[index++] = Vector3(from_x, from_y + y, 0);   \
-	points_ptrw[index++] = Vector3(to_x, to_y + y, 0);       \
+#define PUSH_QUARTER_XY(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(from_x, -from_y - y, 0); \
+	points_ptrw[index++] = Vector3(to_x, -to_y - y, 0); \
+	points_ptrw[index++] = Vector3(from_x, from_y + y, 0); \
+	points_ptrw[index++] = Vector3(to_x, to_y + y, 0); \
 	points_ptrw[index++] = Vector3(-from_x, -from_y - y, 0); \
-	points_ptrw[index++] = Vector3(-to_x, -to_y - y, 0);     \
-	points_ptrw[index++] = Vector3(-from_x, from_y + y, 0);  \
+	points_ptrw[index++] = Vector3(-to_x, -to_y - y, 0); \
+	points_ptrw[index++] = Vector3(-from_x, from_y + y, 0); \
 	points_ptrw[index++] = Vector3(-to_x, to_y + y, 0);
 
-#define PUSH_QUARTER_YZ(from_x, from_y, to_x, to_y, y)       \
-	points_ptrw[index++] = Vector3(0, -from_y - y, from_x);  \
-	points_ptrw[index++] = Vector3(0, -to_y - y, to_x);      \
-	points_ptrw[index++] = Vector3(0, from_y + y, from_x);   \
-	points_ptrw[index++] = Vector3(0, to_y + y, to_x);       \
+#define PUSH_QUARTER_YZ(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(0, -from_y - y, from_x); \
+	points_ptrw[index++] = Vector3(0, -to_y - y, to_x); \
+	points_ptrw[index++] = Vector3(0, from_y + y, from_x); \
+	points_ptrw[index++] = Vector3(0, to_y + y, to_x); \
 	points_ptrw[index++] = Vector3(0, -from_y - y, -from_x); \
-	points_ptrw[index++] = Vector3(0, -to_y - y, -to_x);     \
-	points_ptrw[index++] = Vector3(0, from_y + y, -from_x);  \
+	points_ptrw[index++] = Vector3(0, -to_y - y, -to_x); \
+	points_ptrw[index++] = Vector3(0, from_y + y, -from_x); \
 	points_ptrw[index++] = Vector3(0, to_y + y, -to_x);
 
 		float previous_x = radius;
@@ -524,8 +531,10 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(points, material, false, collision_color);
 		p_gizmo->add_collision_segments(points);
 
-		Vector<Vector3> handles = helper->capsule_get_handles(cs2->get_height(), cs2->get_radius());
-		p_gizmo->add_handles(handles, handles_material);
+		if (!shape_readonly) {
+			Vector<Vector3> handles = helper->capsule_get_handles(cs2->get_height(), cs2->get_radius());
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
@@ -533,13 +542,13 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		float radius = cs2->get_radius();
 		float height = cs2->get_height();
 
-#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y)      \
-	points_ptrw[index++] = Vector3(from_x, y, from_y);   \
-	points_ptrw[index++] = Vector3(to_x, y, to_y);       \
-	points_ptrw[index++] = Vector3(from_x, y, -from_y);  \
-	points_ptrw[index++] = Vector3(to_x, y, -to_y);      \
-	points_ptrw[index++] = Vector3(-from_x, y, from_y);  \
-	points_ptrw[index++] = Vector3(-to_x, y, to_y);      \
+#define PUSH_QUARTER(from_x, from_y, to_x, to_y, y) \
+	points_ptrw[index++] = Vector3(from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, to_y); \
+	points_ptrw[index++] = Vector3(from_x, y, -from_y); \
+	points_ptrw[index++] = Vector3(to_x, y, -to_y); \
+	points_ptrw[index++] = Vector3(-from_x, y, from_y); \
+	points_ptrw[index++] = Vector3(-to_x, y, to_y); \
 	points_ptrw[index++] = Vector3(-from_x, y, -from_y); \
 	points_ptrw[index++] = Vector3(-to_x, y, -to_y);
 
@@ -591,8 +600,10 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(points, material, false, collision_color);
 		p_gizmo->add_collision_segments(points);
 
-		Vector<Vector3> handles = helper->cylinder_get_handles(cs2->get_height(), cs2->get_radius());
-		p_gizmo->add_handles(handles, handles_material);
+		if (!shape_readonly) {
+			Vector<Vector3> handles = helper->cylinder_get_handles(cs2->get_height(), cs2->get_radius());
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<WorldBoundaryShape3D>(*s)) {
@@ -662,9 +673,11 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		};
 		p_gizmo->add_lines(points, material, false, collision_color);
 		p_gizmo->add_collision_segments(points);
-		Vector<Vector3> handles;
-		handles.push_back(Vector3(0, 0, rs->get_length()));
-		p_gizmo->add_handles(handles, handles_material);
+		if (!shape_readonly) {
+			Vector<Vector3> handles;
+			handles.push_back(Vector3(0, 0, rs->get_length()));
+			p_gizmo->add_handles(handles, handles_material);
+		}
 	}
 
 	if (Object::cast_to<HeightMapShape3D>(*s)) {

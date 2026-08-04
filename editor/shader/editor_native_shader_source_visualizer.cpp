@@ -30,11 +30,14 @@
 
 #include "editor_native_shader_source_visualizer.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/code_edit.h"
-#include "scene/gui/text_edit.h"
+#include "scene/gui/tab_container.h"
+#include "scene/resources/syntax_highlighter.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 
 void EditorNativeShaderSourceVisualizer::_load_theme_settings() {
@@ -77,7 +80,7 @@ void EditorNativeShaderSourceVisualizer::_inspect_shader(RID p_shader) {
 		versions = nullptr;
 	}
 
-	RS::ShaderNativeSourceCode nsc = RS::get_singleton()->shader_get_native_source_code(p_shader);
+	RenderingServerTypes::ShaderNativeSourceCode nsc = RS::get_singleton()->shader_get_native_source_code(p_shader);
 
 	_load_theme_settings();
 

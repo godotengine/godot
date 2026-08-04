@@ -153,6 +153,7 @@ class EditorBuildProfileManager : public AcceptDialog {
 		ACTION_SAVE,
 		ACTION_SAVE_AS,
 		ACTION_DETECT,
+		ACTION_CLEAR_CACHE,
 		ACTION_MAX
 	};
 

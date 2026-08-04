@@ -90,6 +90,24 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_set
 #endif
 }
 
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSelectionAvoidLocked(JNIEnv *env, jclass clazz, jboolean enabled) {
+#ifdef TOOLS_ENABLED
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
+		game_view_plugin->get_debugger()->set_selection_avoid_locked(enabled);
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setSelectionPreferGroup(JNIEnv *env, jclass clazz, jboolean enabled) {
+#ifdef TOOLS_ENABLED
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
+		game_view_plugin->get_debugger()->set_selection_prefer_group(enabled);
+	}
+#endif
+}
+
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_GameMenuUtils_setCameraOverride(JNIEnv *env, jclass clazz, jboolean enabled) {
 #ifdef TOOLS_ENABLED
 	GameViewPlugin *game_view_plugin = _get_game_view_plugin();

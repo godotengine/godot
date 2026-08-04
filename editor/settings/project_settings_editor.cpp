@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -39,6 +41,8 @@
 #include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/settings/editor_settings_dialog.h"
+#include "editor/settings/gdextension/project_settings_gdextension.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
@@ -135,14 +139,16 @@ void ProjectSettingsEditor::_on_category_changed(const String &p_new_category) {
 }
 
 void ProjectSettingsEditor::_on_editor_override_deleted(const String &p_setting) {
-	const String full_name = general_settings_inspector->get_full_item_path(p_setting);
-	ERR_FAIL_COND(!full_name.begins_with(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX));
+	String setting_name = general_settings_inspector->get_full_item_path(p_setting);
+	ERR_FAIL_COND(!setting_name.begins_with(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX));
 
-	ProjectSettings::get_singleton()->set_setting(full_name, Variant());
-	EditorSettings::get_singleton()->mark_setting_changed(full_name.trim_prefix(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX));
-	pending_override_notify = true;
-	_save();
-	general_settings_inspector->update_category_list();
+	setting_name = setting_name.trim_prefix(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Remove project override for setting: %s"), setting_name));
+	undo_redo->add_do_method(EditorSettingsDialog::get_singleton(), "_remove_setting_override", setting_name);
+	undo_redo->add_undo_method(EditorSettingsDialog::get_singleton(), "_create_setting_override", setting_name, ProjectSettings::get_singleton()->get_editor_setting_override(setting_name));
+	undo_redo->commit_action();
 }
 
 void ProjectSettingsEditor::_advanced_toggled(bool p_button_pressed) {
@@ -411,8 +417,6 @@ void ProjectSettingsEditor::_focus_current_path_box() {
 		current_path_box = property_box;
 	} else if (tab == action_map_editor) {
 		current_path_box = action_map_editor->get_path_box();
-	} else if (tab == autoload_settings) {
-		current_path_box = autoload_settings->get_path_box();
 	} else if (tab == shaders_global_shader_uniforms_editor) {
 		current_path_box = shaders_global_shader_uniforms_editor->get_name_box();
 	} else if (tab == group_settings) {
@@ -613,6 +617,11 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 		String display_name = property_name.substr(String("input/").size() - 1);
 		Dictionary action = GLOBAL_GET(property_name);
 
+		if (!action.has("events")) {
+			WARN_PRINT_ONCE_ED(vformat("Attempted to load invalid input action from setting at \"%s\". The `input/` prefix should only be used for input actions, and cannot be changed in the settings editor. Consider changing the category.", property_name));
+			continue;
+		}
+
 		ActionMapEditor::ActionInfo action_info;
 		action_info.action = action;
 		action_info.editable = true;
@@ -672,6 +681,12 @@ void ProjectSettingsEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_theme();
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				general_settings_inspector->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
+			}
 		} break;
 	}
 }
@@ -832,9 +847,18 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	globals_container->add_child(group_settings);
 
+	TabContainer *addons_container = memnew(TabContainer);
+	addons_container->set_theme_type_variation("TabContainerInner");
+	addons_container->set_name(TTRC("Addons"));
+	tab_container->add_child(addons_container);
+
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTRC("Plugins"));
-	tab_container->add_child(plugin_settings);
+	addons_container->add_child(plugin_settings);
+
+	gdextension_settings = memnew(ProjectSettingsGDExtension);
+	gdextension_settings->set_name(TTRC("GDExtension"));
+	addons_container->add_child(gdextension_settings);
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);

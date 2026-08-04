@@ -31,14 +31,19 @@
 #include "cpu_particles_2d.h"
 #include "cpu_particles_2d.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/transform_interpolator.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/2d/gpu_particles_2d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/canvas_item_material.h"
 #include "scene/resources/curve_texture.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
+#include "servers/rendering/rendering_server.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {
@@ -77,7 +82,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((8 + 4 + 4) * p_amount);
-	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_2D, true, true);
+	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RSE::MULTIMESH_TRANSFORM_2D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -219,14 +224,14 @@ void CPUParticles2D::_update_mesh_texture() {
 	Vector<int> indices = { 0, 1, 2, 2, 3, 0 };
 
 	Array arr;
-	arr.resize(RS::ARRAY_MAX);
-	arr[RS::ARRAY_VERTEX] = vertices;
-	arr[RS::ARRAY_TEX_UV] = uvs;
-	arr[RS::ARRAY_COLOR] = colors;
-	arr[RS::ARRAY_INDEX] = indices;
+	arr.resize(RSE::ARRAY_MAX);
+	arr[RSE::ARRAY_VERTEX] = vertices;
+	arr[RSE::ARRAY_TEX_UV] = uvs;
+	arr[RSE::ARRAY_COLOR] = colors;
+	arr[RSE::ARRAY_INDEX] = indices;
 
 	RS::get_singleton()->mesh_clear(mesh);
-	RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr);
+	RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RSE::PRIMITIVE_TRIANGLES, arr);
 }
 
 void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
@@ -396,25 +401,42 @@ void CPUParticles2D::set_param_curve(Parameter p_param, const Ref<Curve> &p_curv
 	curve_parameters[p_param] = p_curve;
 
 	switch (p_param) {
-		case PARAM_ANGULAR_VELOCITY:
-		case PARAM_ORBIT_VELOCITY:
-		case PARAM_LINEAR_ACCEL:
-		case PARAM_RADIAL_ACCEL:
-		case PARAM_TANGENTIAL_ACCEL:
-		case PARAM_ANGLE:
+		case PARAM_INITIAL_LINEAR_VELOCITY: {
+			//do none for this one
+		} break;
+		case PARAM_ANGULAR_VELOCITY: {
+			_adjust_curve_range(p_curve, -360, 360);
+		} break;
+		case PARAM_ORBIT_VELOCITY: {
+			_adjust_curve_range(p_curve, -500, 500);
+		} break;
+		case PARAM_LINEAR_ACCEL: {
+			_adjust_curve_range(p_curve, -200, 200);
+		} break;
+		case PARAM_RADIAL_ACCEL: {
+			_adjust_curve_range(p_curve, -200, 200);
+		} break;
+		case PARAM_TANGENTIAL_ACCEL: {
+			_adjust_curve_range(p_curve, -200, 200);
+		} break;
+		case PARAM_DAMPING: {
+			_adjust_curve_range(p_curve, 0, 100);
+		} break;
+		case PARAM_ANGLE: {
+			_adjust_curve_range(p_curve, -360, 360);
+		} break;
+		case PARAM_SCALE: {
+		} break;
 		case PARAM_HUE_VARIATION: {
 			_adjust_curve_range(p_curve, -1, 1);
 		} break;
-		case PARAM_DAMPING:
-		case PARAM_SCALE:
-		case PARAM_ANIM_SPEED:
+		case PARAM_ANIM_SPEED: {
+			_adjust_curve_range(p_curve, 0, 200);
+		} break;
 		case PARAM_ANIM_OFFSET: {
-			_adjust_curve_range(p_curve, 0, 1);
 		} break;
-		case PARAM_INITIAL_LINEAR_VELOCITY:
-		case PARAM_MAX: {
-			// No curve available.
-		} break;
+		default: {
+		}
 	}
 
 	update_configuration_warnings();
@@ -610,51 +632,55 @@ uint32_t CPUParticles2D::get_seed() const {
 	return seed;
 }
 
-void CPUParticles2D::request_particles_process(real_t p_requested_process_time) {
-	_requested_process_time = p_requested_process_time;
+void CPUParticles2D::request_particles_process(real_t p_request_process_time, real_t p_request_process_time_residual) {
+	_request_process_time = p_request_process_time;
+	_request_process_time_residual = p_request_process_time_residual;
+	_update_internal();
 }
 
 void CPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
-	}
-
-	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_rect_extents" && emission_shape != EMISSION_SHAPE_RECTANGLE) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if ((p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") && (emission_shape < EMISSION_SHAPE_POINTS)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_normals" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_points" && emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_colors" && emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (p_property.name.begins_with("scale_curve_") && !split_scale) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_ring_inner_radius" && emission_shape != EMISSION_SHAPE_RING) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-	if (p_property.name == "emission_ring_radius" && emission_shape != EMISSION_SHAPE_RING) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "emission_sphere_radius") {
+		if (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_rect_extents") {
+		if (emission_shape != EMISSION_SHAPE_RECTANGLE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture") {
+		if (emission_shape < EMISSION_SHAPE_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_normals") {
+		if (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_points") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_colors") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("scale_curve_")) {
+		if (!split_scale) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_ring_inner_radius") {
+		if (emission_shape != EMISSION_SHAPE_RING) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_ring_radius") {
+		if (emission_shape != EMISSION_SHAPE_RING) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "seed") {
+		if (!use_fixed_seed) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
 	}
 }
 
@@ -700,38 +726,68 @@ void CPUParticles2D::_update_internal() {
 		cycle = 0;
 		return;
 	}
+
 	_set_do_redraw(true);
+	{
+		float todo = time == 0 ? pre_process_time : 0;
+		todo = todo > _request_process_time ? todo : _request_process_time;
+		todo = todo > _request_process_time_residual ? todo : _request_process_time_residual;
+
+		if (todo > 0.0) {
+			real_t frame_time;
+			if (fixed_fps > 0) {
+				frame_time = 1.0 / fixed_fps;
+			} else {
+				frame_time = 1.0 / 30.0;
+			}
+
+			float tmp_scale = speed_scale;
+			// We need this otherwise the speed scale of the particle system influences the `todo`.
+			speed_scale = 1.0;
+			if (time == 0) {
+				todo = pre_process_time;
+				while (todo > 0.0) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			if (_request_process_time > 0.0) {
+				todo = _request_process_time;
+				emitting = true;
+				while (todo > 0.0) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			if (_request_process_time_residual > 0.0) {
+				emitting = false;
+				todo = _request_process_time_residual;
+				while (todo > 0.0) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			speed_scale = tmp_scale;
+		}
+		_request_process_time = 0;
+		_request_process_time_residual = 0;
+	}
 	double frame_time;
 	if (fixed_fps > 0) {
 		frame_time = 1.0 / fixed_fps;
 	} else {
 		frame_time = 1.0 / 30.0;
 	}
-	double todo = _requested_process_time;
-	_requested_process_time = 0;
-	if (time == 0 && pre_process_time > 0.0) {
-		todo += pre_process_time;
-	}
-	real_t tmp_speed = speed_scale;
-	speed_scale = 1.0;
-	while (todo > 0) {
-		_particles_process(frame_time);
-		todo -= frame_time;
-	}
-	speed_scale = tmp_speed;
-
-	todo = 0.0;
-
 	if (fixed_fps > 0) {
 		double decr = frame_time;
 
 		double ldelta = delta;
 		if (ldelta > 0.1) { //avoid recursive stalls if fps goes below 10
 			ldelta = 0.1;
-		} else if (ldelta <= 0.0) { //unlikely but..
-			ldelta = 0.001;
+		} else if (ldelta < 0.0) {
+			ldelta = 0.0;
 		}
-		todo = frame_remainder + ldelta;
+		double todo = frame_remainder + ldelta;
 
 		while (todo >= frame_time) {
 			_particles_process(frame_time);
@@ -951,7 +1007,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 		} else if (!p.active) {
 			continue;
-		} else if (p.time > p.lifetime) {
+		} else if (p.time >= p.lifetime) {
 			p.active = false;
 			tv = 1.0;
 		} else {
@@ -1013,14 +1069,14 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			Vector2 pos = p.transform[2];
 
 			//apply linear acceleration
-			force += p.velocity.length() > 0.0 ? p.velocity.normalized() * tex_linear_accel * Math::lerp(parameters_min[PARAM_LINEAR_ACCEL], parameters_max[PARAM_LINEAR_ACCEL], rand_from_seed(_seed)) : Vector2();
+			force += p.velocity.length() > 0.0f ? p.velocity.normalized() * tex_linear_accel * Math::lerp(parameters_min[PARAM_LINEAR_ACCEL], parameters_max[PARAM_LINEAR_ACCEL], rand_from_seed(_seed)) : Vector2();
 			//apply radial acceleration
 			Vector2 org = emission_xform[2];
 			Vector2 diff = pos - org;
-			force += diff.length() > 0.0 ? diff.normalized() * (tex_radial_accel)*Math::lerp(parameters_min[PARAM_RADIAL_ACCEL], parameters_max[PARAM_RADIAL_ACCEL], rand_from_seed(_seed)) : Vector2();
+			force += diff.length() > 0.0f ? diff.normalized() * (tex_radial_accel)*Math::lerp(parameters_min[PARAM_RADIAL_ACCEL], parameters_max[PARAM_RADIAL_ACCEL], rand_from_seed(_seed)) : Vector2();
 			//apply tangential acceleration;
 			Vector2 yx = Vector2(diff.y, diff.x);
-			force += yx.length() > 0.0 ? (yx * Vector2(-1.0, 1.0)).normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(_seed))) : Vector2();
+			force += yx.length() > 0.0f ? (yx * Vector2(-1.0f, 1.0f)).normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(_seed))) : Vector2();
 			//apply attractor forces
 			p.velocity += force * local_delta;
 			//orbit velocity
@@ -1109,7 +1165,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 		p.color *= p.base_color * p.start_color_rand;
 
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
-			if (p.velocity.length() > 0.0) {
+			if (p.velocity.length() > 0.0f) {
 				p.transform.columns[1] = p.velocity;
 			}
 
@@ -1404,13 +1460,13 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	set_gravity(Vector2(proc_mat->get_gravity().x, proc_mat->get_gravity().y));
 	set_lifetime_randomness(proc_mat->get_lifetime_randomness());
 
-#define CONVERT_PARAM(m_param)                                                                  \
-	set_param_min(m_param, proc_mat->get_param_min(ParticleProcessMaterial::m_param));          \
-	{                                                                                           \
+#define CONVERT_PARAM(m_param) \
+	set_param_min(m_param, proc_mat->get_param_min(ParticleProcessMaterial::m_param)); \
+	{ \
 		Ref<CurveTexture> ctex = proc_mat->get_param_texture(ParticleProcessMaterial::m_param); \
-		if (ctex.is_valid())                                                                    \
-			set_param_curve(m_param, ctex->get_curve());                                        \
-	}                                                                                           \
+		if (ctex.is_valid()) \
+			set_param_curve(m_param, ctex->get_curve()); \
+	} \
 	set_param_max(m_param, proc_mat->get_param_max(ParticleProcessMaterial::m_param));
 
 	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
@@ -1442,7 +1498,7 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fixed_fps", "fps"), &CPUParticles2D::set_fixed_fps);
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &CPUParticles2D::set_fractional_delta);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &CPUParticles2D::set_speed_scale);
-	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &CPUParticles2D::request_particles_process);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time", "process_time_residual"), &CPUParticles2D::request_particles_process, DEFVAL(0.0));
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &CPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &CPUParticles2D::get_amount);

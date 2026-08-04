@@ -32,6 +32,8 @@
 
 #include "shared_controls.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/split_container.h"

@@ -34,6 +34,7 @@
 #include "run_icon_svg.gen.h"
 
 #include "editor/editor_node.h"
+#include "main/splash.gen.h"
 
 Vector<String> EditorExportPlatformIOS::device_types({ "iPhone", "iPad" });
 
@@ -98,28 +99,28 @@ HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(co
 	switch (image_scale_mode) {
 		case 0: {
 			String logo_path = get_project_setting(p_preset, "application/boot_splash/image");
-			RenderingServer::SplashStretchMode stretch_mode = get_project_setting(p_preset, "application/boot_splash/stretch_mode");
+			RSE::SplashStretchMode stretch_mode = get_project_setting(p_preset, "application/boot_splash/stretch_mode");
 			// If custom logo is not specified, Godot does not scale default one, so we should do the same.
 			if (logo_path.is_empty()) {
 				value = "center";
 			} else {
 				switch (stretch_mode) {
-					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_DISABLED: {
+					case RSE::SplashStretchMode::SPLASH_STRETCH_MODE_DISABLED: {
 						value = "center";
 					} break;
-					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP: {
+					case RSE::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP: {
 						value = "scaleAspectFit";
 					} break;
-					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
+					case RSE::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_WIDTH: {
 						value = "scaleAspectFit";
 					} break;
-					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
+					case RSE::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP_HEIGHT: {
 						value = "scaleAspectFit";
 					} break;
-					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_COVER: {
+					case RSE::SplashStretchMode::SPLASH_STRETCH_MODE_COVER: {
 						value = "scaleAspectFill";
 					} break;
-					case RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_IGNORE: {
+					case RSE::SplashStretchMode::SPLASH_STRETCH_MODE_IGNORE: {
 						value = "scaleToFill";
 					} break;
 				}
@@ -194,7 +195,6 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 }
 
 Vector<EditorExportPlatformAppleEmbedded::IconInfo> EditorExportPlatformIOS::get_icon_infos() const {
-	Vector<EditorExportPlatformAppleEmbedded::IconInfo> icon_infos;
 	return {
 		// Settings on iPhone, iPad Pro, iPad, iPad mini
 		{ PNAME("icons/settings_58x58"), "universal", "Icon-58", "58", "2x", "29x29", false },
@@ -455,7 +455,9 @@ String EditorExportPlatformIOS::_process_config_file_line(const Ref<EditorExport
 			}
 		}
 
-		strnew += p_line.replace("$launch_screen_image_mode", value) + "\n";
+		strnew += p_line.replace("$launch_screen_image_mode", value).replace("$launch_screen_image_file_name", launch_screen_image_file_name) + "\n";
+	} else if (p_line.contains("$launch_screen_image_file_name")) {
+		strnew += p_line.replace("$launch_screen_image_file_name", launch_screen_image_file_name) + "\n";
 	} else if (p_line.contains("$launch_screen_background_color")) {
 		bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
 		Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : get_project_setting(p_preset, "application/boot_splash/bg_color");

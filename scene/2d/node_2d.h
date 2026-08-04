@@ -111,10 +111,10 @@ public:
 	void look_at(const Vector2 &p_pos);
 	real_t get_angle_to(const Vector2 &p_pos) const;
 
-	Point2 to_local(Point2 p_global) const;
-	Point2 to_global(Point2 p_local) const;
+	Point2 to_local(const Point2 &p_global) const;
+	Point2 to_global(const Point2 &p_local) const;
 
-	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
+	Transform2D get_relative_transform_to_parent(RequiredParam<const Node> p_parent) const;
 
 	Transform2D get_transform() const override;
 

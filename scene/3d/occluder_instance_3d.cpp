@@ -30,14 +30,19 @@
 
 #include "occluder_instance_3d.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/triangulate.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
@@ -453,8 +458,9 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 	update_configuration_warnings();
 
 #ifdef TOOLS_ENABLED
-	// PolygonOccluder3D is edited via an editor plugin, this ensures the plugin is shown/hidden when necessary
-	if (Engine::get_singleton()->is_editor_hint()) {
+	// PolygonOccluder3D is edited via an editor plugin, this ensures the plugin is shown/hidden when necessary.
+	// HACK: This should only be called when this node is the currently edited object (i.e. when edited through the inspector) to prevent side effects. We use `is_part_of_edited_scene()` as approximation.
+	if (is_part_of_edited_scene()) {
 		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_current).call_deferred();
 	}
 #endif

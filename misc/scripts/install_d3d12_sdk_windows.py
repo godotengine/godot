@@ -25,7 +25,7 @@ args = parser.parse_args()
 # Base Godot dependencies path
 # If cross-compiling (no LOCALAPPDATA), we install in `bin`
 deps_folder = os.getenv("LOCALAPPDATA")
-if deps_folder:
+if deps_folder and not os.getenv("MSYSTEM"):
     deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
 else:
     deps_folder = os.path.join("bin", "build_deps")
@@ -33,7 +33,7 @@ else:
 # Mesa NIR
 # Sync with `drivers/d3d12/SCsub` when updating Mesa.
 # Check for latest version: https://github.com/godotengine/godot-nir-static/releases/latest
-mesa_version = "25.3.1-1"
+mesa_version = "25.3.1-3"
 # WinPixEventRuntime
 # Check for latest version: https://www.nuget.org/api/v2/package/WinPixEventRuntime (check downloaded filename)
 pix_version = "1.0.240308001"

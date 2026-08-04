@@ -4,7 +4,7 @@
  *
  *   TrueType GX Font Variation loader
  *
- * Copyright (C) 2004-2025 by
+ * Copyright (C) 2004-2026 by
  * David Turner, Robert Wilhelm, Werner Lemberg, and George Williams.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -697,11 +697,9 @@
       if ( long_words )
         per_region_size *= 2;
 
-      if ( FT_NEW_ARRAY( varData->deltaSet, per_region_size * item_count ) )
+      if ( FT_QALLOC_MULT( varData->deltaSet, item_count, per_region_size ) )
         goto Exit;
-      if ( FT_Stream_Read( stream,
-                           varData->deltaSet,
-                           per_region_size * item_count ) )
+      if ( FT_STREAM_READ( varData->deltaSet, item_count * per_region_size ) )
       {
         FT_TRACE2(( "deltaSet read failed." ));
         error = FT_THROW( Invalid_Table );

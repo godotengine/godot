@@ -60,7 +60,7 @@ private:
 	_FORCE_INLINE_ Error _change_multicast_group(IPAddress p_ip, String p_if_name, bool p_add);
 
 protected:
-	static NetSocket *_create_func();
+	static Ref<NetSocket> _create_func();
 
 	bool _can_use_ip(const IPAddress &p_ip, const bool p_for_bind) const;
 

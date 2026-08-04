@@ -32,18 +32,23 @@
 
 #ifdef APPLE_EMBEDDED_ENABLED
 
-#import "app_delegate_service.h"
-#import "display_server_apple_embedded.h"
-#import "godot_view_apple_embedded.h"
-#import "godot_view_controller.h"
-
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #import "drivers/apple/os_log_logger.h"
+#import "drivers/apple_embedded/app_delegate_service.h"
+#import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_apple_embedded.h"
+#import "drivers/apple_embedded/godot_view_controller.h"
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 #include "main/main.h"
+#include "servers/camera/camera_server.h"
 
 #import <AVFoundation/AVFAudio.h>
 #import <AudioToolbox/AudioServices.h>
@@ -52,12 +57,15 @@
 #import <dlfcn.h>
 #include <sys/sysctl.h>
 
+#include <iterator>
+
 #if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+
 #import <QuartzCore/CAMetalLayer.h>
 
 #if defined(VULKAN_ENABLED)
-#include "drivers/vulkan/godot_vulkan.h"
+#include <drivers/vulkan/godot_vulkan.h>
 #endif // VULKAN_ENABLED
 #endif
 
@@ -151,6 +159,11 @@ OS_AppleEmbedded::OS_AppleEmbedded() {
 
 OS_AppleEmbedded::~OS_AppleEmbedded() {}
 
+Error OS_AppleEmbedded::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	int status = SecRandomCopyBytes(kSecRandomDefault, p_bytes, r_buffer);
+	return status == errSecSuccess ? OK : FAILED;
+}
+
 void OS_AppleEmbedded::alert(const String &p_alert, const String &p_title) {
 	const CharString utf8_alert = p_alert.utf8();
 	const CharString utf8_title = p_title.utf8();
@@ -166,7 +179,14 @@ void OS_AppleEmbedded::initialize() {
 }
 
 void OS_AppleEmbedded::initialize_joypads() {
-	joypad_apple = memnew(JoypadApple);
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
 }
 
 void OS_AppleEmbedded::initialize_modules() {
@@ -175,13 +195,10 @@ void OS_AppleEmbedded::initialize_modules() {
 }
 
 void OS_AppleEmbedded::deinitialize_modules() {
-	if (joypad_apple) {
-		memdelete(joypad_apple);
-	}
-
-	if (apple_embedded) {
-		memdelete(apple_embedded);
-	}
+#ifdef SDL_ENABLED
+	memdelete(joypad_sdl);
+#endif
+	memdelete(apple_embedded);
 }
 
 void OS_AppleEmbedded::set_main_loop(MainLoop *p_main_loop) {
@@ -213,7 +230,11 @@ bool OS_AppleEmbedded::iterate() {
 		DisplayServer::get_singleton()->process_events();
 	}
 
-	joypad_apple->process_joypads();
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		joypad_sdl->process_events();
+	}
+#endif
 
 	return Main::iteration();
 }
@@ -300,7 +321,14 @@ Error OS_AppleEmbedded::open_dynamic_library(const String &p_path, void *&p_libr
 	}
 
 	if (!FileAccess::exists(path) && (p_path.ends_with(".a") || p_path.ends_with(".xcframework"))) {
-		path = String(); // Try loading static library.
+		// Static library already linked into the binary — use RTLD_SELF.
+		p_library_handle = RTLD_SELF;
+
+		if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
+			*p_data->r_resolved_path = p_path;
+		}
+
+		return OK;
 	} else {
 		ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 	}
@@ -417,7 +445,11 @@ String OS_AppleEmbedded::get_bundle_resource_dir() const {
 	if (!str) {
 		return OS_Unix::get_bundle_resource_dir();
 	} else {
-		return String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+		String res_path = String::utf8([str cStringUsingEncoding:NSUTF8StringEncoding]);
+		if (res_path.is_relative_path()) {
+			res_path = String::utf8([[[NSBundle mainBundle] bundlePath] cStringUsingEncoding:NSUTF8StringEncoding]).path_join(res_path);
+		}
+		return res_path;
 	}
 }
 
@@ -430,6 +462,18 @@ String OS_AppleEmbedded::get_locale() const {
 
 	NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
 	return String::utf8([localeIdentifier UTF8String]).replace_char('-', '_');
+}
+
+Vector<String> OS_AppleEmbedded::get_preferred_locales() const {
+	Vector<String> out;
+	for (NSString *locale_code in [NSLocale preferredLanguages]) {
+		out.push_back(String([locale_code UTF8String]).replace_char('-', '_'));
+	}
+	if (out.is_empty()) {
+		NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
+		out.push_back(String::utf8([localeIdentifier UTF8String]).replace_char('-', '_'));
+	}
+	return out;
 }
 
 String OS_AppleEmbedded::get_unique_id() const {
@@ -475,7 +519,7 @@ static const _ModelInfo _models[] = {
 	{ { "iPad17,1", "iPad17,2", "iPad17,3", "iPad17,4", "RealityDevice17,1" }, "Apple M5" },
 	{ { "iPhone17,3", "iPhone17,4", "iPhone17,5" }, "Apple A18" },
 	{ { "iPhone17,1", "iPhone17,2" }, "Apple A18 Pro" },
-	{ { "iPhone18,3" }, "Apple A19" },
+	{ { "iPhone18,3", "iPhone18,5" }, "Apple A19" },
 	{ { "iPhone18,1", "iPhone18,2", "iPhone18,4" }, "Apple A19 Pro" },
 };
 
@@ -744,7 +788,7 @@ void OS_AppleEmbedded::on_focus_out() {
 		is_focused = false;
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
-			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
+			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {
@@ -762,7 +806,7 @@ void OS_AppleEmbedded::on_focus_in() {
 		is_focused = true;
 
 		if (DisplayServerAppleEmbedded::get_singleton()) {
-			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+			DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_FOCUS_IN);
 		}
 
 		if (OS::get_singleton()->get_main_loop()) {
@@ -778,6 +822,11 @@ void OS_AppleEmbedded::on_focus_in() {
 void OS_AppleEmbedded::on_enter_background() {
 	// Do not check for is_focused, because on_focus_out will always be fired first by applicationWillResignActive.
 
+	CameraServer *camera_server = CameraServer::get_singleton();
+	if (camera_server) {
+		camera_server->handle_application_pause();
+	}
+
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_PAUSED);
 	}
@@ -791,6 +840,11 @@ void OS_AppleEmbedded::on_exit_background() {
 
 		if (OS::get_singleton()->get_main_loop()) {
 			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_RESUMED);
+		}
+
+		CameraServer *camera_server = CameraServer::get_singleton();
+		if (camera_server) {
+			camera_server->handle_application_resume();
 		}
 	}
 }

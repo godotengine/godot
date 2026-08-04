@@ -30,37 +30,20 @@
 
 #include "thorvg_svg_in_ot.h"
 
-#ifdef GDEXTENSION
-// Headers for building as GDExtension plug-in.
-
-#include <godot_cpp/classes/xml_parser.hpp>
-#include <godot_cpp/core/mutex_lock.hpp>
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/templates/vector.hpp>
-
-using namespace godot;
-
-#elif defined(GODOT_MODULE)
-// Headers for building as built-in module.
-
 #include "core/error/error_macros.h"
 #include "core/io/xml_parser.h"
 #include "core/os/memory.h"
-#include "core/os/os.h"
 #include "core/string/ustring.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
 #include "modules/modules_enabled.gen.h" // For svg, freetype.
-#endif
 
 #ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED
 
 #include <freetype/otsvg.h>
 #include <ft2build.h>
-
-#include <cstdlib>
 
 FT_Error tvg_svg_in_ot_init(FT_Pointer *p_state) {
 	*p_state = memnew(TVG_State);
@@ -180,11 +163,7 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 				if (!is_in_defs && parser->has_attribute("id")) {
 					const String &gl_name = parser->get_named_attribute_value("id");
 					if (gl_name.begins_with("glyph")) {
-#ifdef GDEXTENSION
-						int dot_pos = gl_name.find(".");
-#else
 						int dot_pos = gl_name.find_char('.');
-#endif // GDEXTENSION
 						int64_t gl_idx = gl_name.substr(5, (dot_pos > 0) ? dot_pos - 5 : -1).to_int();
 
 						TVG_NodeCache node_cache = TVG_NodeCache();
@@ -222,11 +201,12 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			cache.embox_y = embox_y;
 		}
 
-		std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
+		tvg::Picture *picture = tvg::Picture::gen();
 		gl_state.xml_code = xml_body.utf8();
 
-		tvg::Result result = picture->load(gl_state.xml_code.get_data(), gl_state.xml_code.length(), "svg+xml", false);
+		tvg::Result result = picture->load(gl_state.xml_code.get_data(), gl_state.xml_code.length(), "svg+xml", nullptr, false);
 		if (result != tvg::Result::Success) {
+			tvg::Paint::rel(picture);
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (glyph metrics).");
 		}
 
@@ -237,6 +217,7 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 
 		result = picture->size(embox_x * aspect_x, embox_y * aspect_y);
 		if (result != tvg::Result::Success) {
+			tvg::Paint::rel(picture);
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to resize SVG document.");
 		}
 
@@ -258,11 +239,13 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 
 		result = picture->size(embox_x * aspect_x * x_svg_to_out, embox_y * aspect_y * y_svg_to_out);
 		if (result != tvg::Result::Success) {
+			tvg::Paint::rel(picture);
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to resize SVG document.");
 		}
 
 		result = picture->transform(gl_state.m);
 		if (result != tvg::Result::Success) {
+			tvg::Paint::rel(picture);
 			ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to apply transform to SVG document.");
 		}
 
@@ -270,6 +253,8 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 
 		gl_state.x = (double(p_slot->metrics.horiAdvance) / 64.0 - gl_state.w) / 2.0;
 		gl_state.y = -Math::ceil(gl_state.h * yoff);
+
+		tvg::Paint::rel(picture);
 
 		gl_state.ready = true;
 	}
@@ -325,26 +310,30 @@ FT_Error tvg_svg_in_ot_render(FT_GlyphSlot p_slot, FT_Pointer *p_state) {
 	GL_State &gl_state = state->glyph_map[p_slot->glyph_index];
 	ERR_FAIL_COND_V_MSG(!gl_state.ready, FT_Err_Invalid_SVG_Document, "SVG glyph not ready.");
 
-	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
-	tvg::Result res = picture->load(gl_state.xml_code.get_data(), gl_state.xml_code.length(), "svg+xml", false);
+	tvg::Picture *picture = tvg::Picture::gen();
+	tvg::Result res = picture->load(gl_state.xml_code.get_data(), gl_state.xml_code.length(), "svg+xml", nullptr, false);
 	if (res != tvg::Result::Success) {
+		tvg::Paint::rel(picture);
 		ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to load SVG document (glyph rendering).");
 	}
 	res = picture->size(gl_state.w, gl_state.h);
 	if (res != tvg::Result::Success) {
+		tvg::Paint::rel(picture);
 		ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to resize SVG document.");
 	}
 	res = picture->transform(gl_state.m);
 	if (res != tvg::Result::Success) {
+		tvg::Paint::rel(picture);
 		ERR_FAIL_V_MSG(FT_Err_Invalid_SVG_Document, "Failed to apply transform to SVG document.");
 	}
 
-	std::unique_ptr<tvg::SwCanvas> sw_canvas = tvg::SwCanvas::gen();
-	res = sw_canvas->target((uint32_t *)p_slot->bitmap.buffer, (int)p_slot->bitmap.width, (int)p_slot->bitmap.width, (int)p_slot->bitmap.rows, tvg::SwCanvas::ARGB8888S);
+	std::unique_ptr<tvg::SwCanvas> sw_canvas(tvg::SwCanvas::gen());
+	res = sw_canvas->target((uint32_t *)p_slot->bitmap.buffer, (int)p_slot->bitmap.width, (int)p_slot->bitmap.width, (int)p_slot->bitmap.rows, tvg::ColorSpace::ARGB8888S);
 	if (res != tvg::Result::Success) {
+		tvg::Paint::rel(picture);
 		ERR_FAIL_V_MSG(FT_Err_Invalid_Outline, "Failed to create SVG canvas.");
 	}
-	res = sw_canvas->push(std::move(picture));
+	res = sw_canvas->add(picture);
 	if (res != tvg::Result::Success) {
 		ERR_FAIL_V_MSG(FT_Err_Invalid_Outline, "Failed to set SVG canvas source.");
 	}

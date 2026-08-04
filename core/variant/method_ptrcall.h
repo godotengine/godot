@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "core/object/object.h"
 #include "core/object/object_id.h"
-#include "core/templates/simple_type.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
@@ -141,7 +141,7 @@ template <typename T, typename = void>
 struct PtrToArg;
 
 template <typename T>
-struct PtrToArg<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : PtrToArg<GetSimpleTypeT<T>> {};
+struct PtrToArg<T, std::enable_if_t<!std::is_same_v<T, std::decay_t<T>>>> : PtrToArg<std::decay_t<T>> {};
 
 template <>
 struct PtrToArg<bool> : Internal::PtrToArgConvert<bool, uint8_t> {};
@@ -269,9 +269,32 @@ struct PtrToArg<const T *> {
 	}
 };
 
+// This is for Ref.
+
+template <typename T>
+struct PtrToArg<Ref<T>> {
+	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
+		if (p_ptr == nullptr) {
+			return Ref<T>();
+		}
+		// p_ptr points to a RefCounted object
+		return Ref<T>(*reinterpret_cast<T *const *>(p_ptr));
+	}
+
+	typedef Ref<T> EncodeT;
+
+	_FORCE_INLINE_ static void encode(Ref<T> p_val, const void *p_ptr) {
+		// p_ptr points to an EncodeT object which is a Ref<T> object.
+		*(const_cast<Ref<T> *>(reinterpret_cast<const Ref<T> *>(p_ptr))) = p_val;
+	}
+};
+
 // This is for RequiredParam.
 
-template <class T>
+template <typename T>
+class RequiredParam;
+
+template <typename T>
 struct PtrToArg<RequiredParam<T>> {
 	typedef typename RequiredParam<T>::persistent_type EncodeT;
 
@@ -289,7 +312,10 @@ struct PtrToArg<RequiredParam<T>> {
 
 // This is for RequiredResult.
 
-template <class T>
+template <typename T>
+class RequiredResult;
+
+template <typename T>
 struct PtrToArg<RequiredResult<T>> {
 	typedef typename RequiredResult<T>::ptr_type EncodeT;
 

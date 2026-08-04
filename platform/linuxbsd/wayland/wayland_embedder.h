@@ -34,30 +34,23 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/templates/a_hash_map.h"
-#include "core/templates/pooled_list.h"
-
-#ifdef SOWRAP_ENABLED
-#include "wayland/dynwrappers/wayland-client-core-so_wrap.h"
-#else
-#include <wayland-client-core.h>
-#endif
-
 #include "protocol/wayland.gen.h"
 
-#include "protocol/linux_dmabuf_v1.gen.h"
-#include "protocol/xdg_shell.gen.h"
+// Keep wayland protocol included first.
 
+#include "protocol/color_management.gen.h"
 #include "protocol/commit_timing_v1.gen.h"
 #include "protocol/cursor_shape.gen.h"
 #include "protocol/fifo_v1.gen.h"
 #include "protocol/fractional_scale.gen.h"
 #include "protocol/godot_embedding_compositor.gen.h"
 #include "protocol/idle_inhibit.gen.h"
+#include "protocol/linux_dmabuf_v1.gen.h"
 #include "protocol/linux_drm_syncobj_v1.gen.h"
 #include "protocol/linux_explicit_synchronization_unstable_v1.gen.h"
 #include "protocol/pointer_constraints.gen.h"
 #include "protocol/pointer_gestures.gen.h"
+#include "protocol/pointer_warp.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
 #include "protocol/tablet.gen.h"
@@ -65,6 +58,7 @@
 #include "protocol/text_input.gen.h"
 #include "protocol/viewporter.gen.h"
 #include "protocol/wayland-drm.gen.h"
+#include "protocol/wayland.gen.h"
 #include "protocol/xdg_activation.gen.h"
 #include "protocol/xdg_decoration.gen.h"
 #include "protocol/xdg_foreign_v1.gen.h"
@@ -73,18 +67,19 @@
 #include "protocol/xdg_system_bell.gen.h"
 #include "protocol/xdg_toplevel_icon.gen.h"
 
-#include <errno.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "core/io/dir_access.h"
+#include "core/os/thread.h"
+#include "core/templates/a_hash_map.h"
+#include "core/templates/pooled_list.h"
+
+#include <poll.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include <poll.h>
-
-#include "core/io/dir_access.h"
-#include "core/os/thread.h"
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 // TODO: Consider resizing the ancillary buffer dynamically.
 #define EMBED_ANCILLARY_BUF_SIZE 4096
@@ -184,6 +179,8 @@ class WaylandEmbedder {
 		LocalVector<uint32_t> free_server_ids;
 
 		uint32_t get_global_id(uint32_t p_local_id) const { return global_ids.has(p_local_id) ? global_ids[p_local_id].id : INVALID_ID; }
+
+		// TODO: Add a LocalObjectHandle version.
 		uint32_t get_local_id(uint32_t p_global_id) const { return local_ids.has(p_global_id) ? local_ids[p_global_id] : INVALID_ID; }
 
 		uint32_t allocate_server_id();
@@ -197,7 +194,43 @@ class WaylandEmbedder {
 		WaylandObject *new_fake_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
 		WaylandObject *new_global_instance(uint32_t p_local_id, uint32_t p_global_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
 
-		Error send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalData *p_state);
+		// TODO: Generate all this stuff with a custom scanner.
+
+		Error send_wl_display_delete_id(uint32_t wl_display, uint32_t id);
+		Error send_wl_display_error(uint32_t wl_display, uint32_t object_id, uint32_t code, String &message);
+
+		Error send_wl_registry_global(uint32_t wl_registry, uint32_t name, const char *interface, uint32_t version);
+		Error send_wl_registry_global_remove(uint32_t wl_registry, uint32_t name);
+
+		Error send_wl_keyboard_enter(uint32_t wl_keyboard, uint32_t serial, uint32_t surface, struct wl_array *keys);
+		Error send_wl_keyboard_leave(uint32_t wl_keyboard, uint32_t serial, uint32_t surface);
+		Error send_wl_keyboard_modifiers(uint32_t wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
+
+		Error send_wl_shm_format(uint32_t wl_shm, uint32_t format);
+
+		Error send_zwp_tablet_seat_v2_tablet_added(uint32_t zwp_tablet_seat_v2, uint32_t id);
+		Error send_zwp_tablet_seat_v2_tool_added(uint32_t zwp_tablet_seat_v2, uint32_t id);
+		Error send_zwp_tablet_tool_v2_proximity_in(uint32_t zwp_tablet_tool_v2, uint32_t serial, uint32_t tablet, uint32_t surface);
+
+		Error send_xdg_surface_configure(uint32_t xdg_surface, uint32_t serial);
+
+		Error send_xdg_toplevel_configure(uint32_t xdg_toplevel, uint32_t width, uint32_t height, struct wl_array *states);
+		Error send_xdg_toplevel_close(uint32_t xdg_toplevel);
+
+		Error send_xdg_popup_configure(uint32_t xdg_popup, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+
+		Error send_wl_drm_device(uint32_t wl_drm, String &name);
+		Error send_wl_drm_format(uint32_t wl_drm, uint32_t format);
+		Error send_wl_drm_authenticated(uint32_t wl_drm);
+		Error send_wl_drm_capabilities(uint32_t wl_drm, uint32_t capabilities);
+
+		Error send_godot_embedding_compositor_client(uint32_t godot_embedding_compositor, uint32_t client, uint32_t p_pid);
+		Error send_godot_embedded_client_disconnected(uint32_t godot_embedded_client);
+		Error send_godot_embedded_client_window_embedded(uint32_t godot_embedded_client);
+		Error send_godot_embedded_client_window_focus_in(uint32_t godot_embedded_client);
+		Error send_godot_embedded_client_window_focus_out(uint32_t godot_embedded_client);
+
+		Error handle_wl_drm_bind(uint32_t p_id, WaylandDrmGlobalData *p_state);
 	};
 
 	// Local IDs are a mess to handle as they strictly depend on their client of
@@ -227,6 +260,7 @@ class WaylandEmbedder {
 	struct WaylandSeatInstanceData : WaylandObjectData {
 		uint32_t wl_keyboard_id = INVALID_ID;
 		uint32_t wl_pointer_id = INVALID_ID;
+		uint32_t wl_touch_id = INVALID_ID;
 	};
 
 	struct WaylandSeatGlobalData : WaylandObjectData {
@@ -234,6 +268,12 @@ class WaylandEmbedder {
 
 		uint32_t pointed_surface_id = INVALID_ID;
 		uint32_t focused_surface_id = INVALID_ID;
+
+		// Keyboard stuff.
+		uint32_t mods_depressed = 0;
+		uint32_t mods_latched = 0;
+		uint32_t mods_locked = 0;
+		uint32_t group = 0;
 	};
 
 	struct WaylandKeyboardData : WaylandObjectData {
@@ -242,6 +282,11 @@ class WaylandEmbedder {
 
 	struct WaylandPointerData : WaylandObjectData {
 		uint32_t wl_seat_id = INVALID_ID;
+	};
+
+	struct WaylandTouchData : WaylandObjectData {
+		uint32_t wl_seat_id = INVALID_ID;
+		int touch_point_count = 0;
 	};
 
 	struct WaylandSurfaceData : WaylandObjectData {
@@ -280,6 +325,22 @@ class WaylandEmbedder {
 	struct EmbeddedClientData : WaylandObjectData {
 		Client *client = nullptr;
 		bool disconnected = false;
+	};
+
+	struct TabletSeatData : WaylandObjectData {
+		HashSet<uint32_t> tablets;
+
+		uint32_t wl_seat_name = 0;
+
+		LocalObjectHandle proximal_surface;
+	};
+
+	struct TabletData : WaylandObjectData {
+		uint32_t seat_id = INVALID_ID;
+	};
+
+	struct TabletToolData : WaylandObjectData {
+		uint32_t seat_id = INVALID_ID;
 	};
 
 	struct RegistryGlobalInfo {
@@ -327,7 +388,7 @@ class WaylandEmbedder {
 		&wl_subcompositor_interface,
 		&wl_subsurface_interface,
 		&wl_surface_interface,
-		//&wl_touch_interface, // Unused (at the moment).
+		&wl_touch_interface,
 
 		// xdg-shell
 		&xdg_wm_base_interface,
@@ -345,6 +406,16 @@ class WaylandEmbedder {
 		&zwp_linux_explicit_synchronization_v1_interface,
 		&zwp_linux_surface_synchronization_v1_interface,
 		&zwp_linux_buffer_release_v1_interface,
+
+		// color-management
+		&wp_color_manager_v1_interface,
+		&wp_color_management_output_v1_interface,
+		&wp_color_management_surface_v1_interface,
+		&wp_color_management_surface_feedback_v1_interface,
+		&wp_image_description_creator_icc_v1_interface,
+		&wp_image_description_creator_params_v1_interface,
+		&wp_image_description_v1_interface,
+		&wp_image_description_info_v1_interface,
 
 		// fractional-scale
 		&wp_fractional_scale_manager_v1_interface,
@@ -377,14 +448,14 @@ class WaylandEmbedder {
 
 		// tablet
 		// TODO: Needs some extra work
-		//&zwp_tablet_manager_v2_interface,
-		//&zwp_tablet_seat_v2_interface,
-		//&zwp_tablet_tool_v2_interface,
-		//&zwp_tablet_v2_interface,
-		//&zwp_tablet_pad_ring_v2_interface,
-		//&zwp_tablet_pad_strip_v2_interface,
-		//&zwp_tablet_pad_group_v2_interface,
-		//&zwp_tablet_pad_v2_interface,
+		&zwp_tablet_manager_v2_interface,
+		&zwp_tablet_seat_v2_interface,
+		&zwp_tablet_tool_v2_interface,
+		&zwp_tablet_v2_interface,
+		&zwp_tablet_pad_ring_v2_interface,
+		&zwp_tablet_pad_strip_v2_interface,
+		&zwp_tablet_pad_group_v2_interface,
+		&zwp_tablet_pad_v2_interface,
 
 		// text-input
 		&zwp_text_input_v3_interface,
@@ -451,6 +522,9 @@ class WaylandEmbedder {
 		&wp_tearing_control_manager_v1_interface,
 		&wp_tearing_control_v1_interface,
 
+		// pointer-warp-v1
+		&wp_pointer_warp_v1_interface,
+
 		// Our custom things.
 		&godot_embedding_compositor_interface,
 		&godot_embedded_client_interface,
@@ -470,6 +544,7 @@ class WaylandEmbedder {
 
 	static constexpr uint32_t INVALID_ID = 0;
 	static constexpr uint32_t DISPLAY_ID = 1;
+	// Global registry. All client registries actually mirror this one.
 	static constexpr uint32_t REGISTRY_ID = 2;
 
 	int proxy_socket = -1;
@@ -505,7 +580,6 @@ class WaylandEmbedder {
 
 	Thread proxy_thread;
 
-	List<int> client_fds;
 	List<int> compositor_fds;
 
 	uint32_t serial_counter = 0;
@@ -529,22 +603,12 @@ class WaylandEmbedder {
 
 	static Error send_raw_message(int p_socket, std::initializer_list<struct iovec> p_vecs, const LocalVector<int> &p_fds = LocalVector<int>());
 
-	static Error send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, const uint32_t *p_args, const size_t p_args_words);
+	// Internal, do not use unless you know what you're doing.
+	static Error send_raw_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, const uint32_t *p_args, const size_t p_args_words, bool p_log = true);
+
 	static Error send_wayland_message(ProxyDirection p_direction, int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, const LocalVector<union wl_argument> &p_args);
 
 	// Utility aliases.
-
-	static Error send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, std::initializer_list<uint32_t> p_args) {
-		return send_wayland_message(p_socket, p_id, p_opcode, p_args.begin(), p_args.size());
-	}
-
-	static Error send_wayland_method(int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, const LocalVector<union wl_argument> &p_args) {
-		return send_wayland_message(ProxyDirection::COMPOSITOR, p_socket, p_id, p_interface, p_opcode, p_args);
-	}
-
-	static Error send_wayland_event(int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, const LocalVector<union wl_argument> &p_args) {
-		return send_wayland_message(ProxyDirection::CLIENT, p_socket, p_id, p_interface, p_opcode, p_args);
-	}
 
 	// Closes the socket.
 	static void socket_error(int p_socket, uint32_t p_object_id, uint32_t p_code, const String &p_message);
@@ -572,6 +636,11 @@ class WaylandEmbedder {
 		arg.s = p_value;
 		return arg;
 	}
+
+	static const union wl_argument wl_arg_string(const String &p_value) {
+		return wl_arg_string(p_value.utf8().get_data());
+	}
+
 	static constexpr union wl_argument wl_arg_object(uint32_t p_value) {
 		union wl_argument arg = {};
 		arg.u = p_value;
@@ -582,6 +651,30 @@ class WaylandEmbedder {
 		arg.n = p_value;
 		return arg;
 	}
+
+	static constexpr union wl_argument wl_arg_array(struct wl_array *p_array) {
+		union wl_argument arg = {};
+		arg.a = p_array;
+		return arg;
+	}
+
+	static Error send_raw_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, std::initializer_list<uint32_t> p_args) {
+		return send_raw_wayland_message(p_socket, p_id, p_opcode, p_args.begin(), p_args.size());
+	}
+
+	static Error send_wayland_method(int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, const LocalVector<union wl_argument> &p_args) {
+		return send_wayland_message(ProxyDirection::COMPOSITOR, p_socket, p_id, p_interface, p_opcode, p_args);
+	}
+
+	static Error send_wayland_event(int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, const LocalVector<union wl_argument> &p_args) {
+		return send_wayland_message(ProxyDirection::CLIENT, p_socket, p_id, p_interface, p_opcode, p_args);
+	}
+
+	Error send_wl_subsurface_destroy(uint32_t wl_subsurface) {
+		return send_wayland_method(compositor_socket, wl_subsurface, wl_subsurface_interface, WL_SUBSURFACE_DESTROY, {});
+	}
+
+	static String stringify_message_body(ProxyDirection p_direction, const struct wl_interface *p_interface, const struct wl_message *p_message, const uint32_t *body, size_t body_bytes, bool normalized = false);
 
 	uint32_t new_object(const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
 	WaylandObject *new_server_object(uint32_t p_global_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
@@ -610,7 +703,7 @@ class WaylandEmbedder {
 	void shutdown();
 
 	bool handle_generic_msg(Client *client, const WaylandObject *p_object, const struct wl_message *message, const struct msg_info *info, uint32_t *buf, uint32_t instance_id = INVALID_ID);
-	Error handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested);
+	Error handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, LocalVector<int> &r_fds_requested);
 	Error handle_sock(int p_fd);
 	void handle_fd(int p_fd, int p_revents);
 
@@ -618,7 +711,7 @@ class WaylandEmbedder {
 
 public:
 	// Returns path to socket.
-	Error init();
+	Error init(bool debug = false);
 
 	String get_socket_path() const { return socket_path; }
 

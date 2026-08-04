@@ -34,14 +34,21 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/variant/variant_utility.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/image_texture.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/renderer_compositor.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
@@ -102,7 +109,7 @@ void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewp
 		RID root_vp = st->get_root()->get_viewport_rid();
 		RenderingServer::get_singleton()->viewport_set_active(root_vp, false);
 
-		RS::get_singleton()->viewport_set_update_mode(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
+		RS::get_singleton()->viewport_set_update_mode(p_viewport, RSE::VIEWPORT_UPDATE_ONCE);
 		RS::get_singleton()->draw(false);
 
 		// Let main viewport and children be drawn again.
@@ -122,7 +129,7 @@ void EditorResourcePreviewGenerator::request_draw_and_wait(RID viewport) const {
 }
 
 void EditorResourcePreviewGenerator::DrawRequester::_prepare_draw(RID p_viewport) {
-	RS::get_singleton()->viewport_set_update_mode(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
+	RS::get_singleton()->viewport_set_update_mode(p_viewport, RSE::VIEWPORT_UPDATE_ONCE);
 	RS::get_singleton()->request_frame_drawn_callback(callable_mp(this, &EditorResourcePreviewGenerator::DrawRequester::_post_semaphore));
 }
 
@@ -431,10 +438,21 @@ void EditorResourcePreview::_idle_callback() {
 		return;
 	}
 
+	static uint64_t prev_process_frame = 0;
+	static uint64_t spent_frame_msec = 0;
+
+	uint64_t current_process_frame = Engine::get_singleton()->get_process_frames();
+	if (current_process_frame != prev_process_frame) {
+		prev_process_frame = current_process_frame;
+		spent_frame_msec = 0;
+	}
+
 	// Process preview tasks, trying to leave a little bit of responsiveness worst case.
-	uint64_t start = OS::get_singleton()->get_ticks_msec();
-	while (!singleton->queue.is_empty() && OS::get_singleton()->get_ticks_msec() - start < 100) {
+	while (!singleton->queue.is_empty() && spent_frame_msec < 100) {
+		uint64_t start_msec = OS::get_singleton()->get_ticks_msec();
 		singleton->_iterate();
+		uint64_t end_msec = OS::get_singleton()->get_ticks_msec();
+		spent_frame_msec += end_msec - start_msec;
 	}
 }
 

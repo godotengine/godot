@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main.mm                                                               */
+/*  main_visionos.mm                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -36,6 +36,7 @@
 #include "main/main.h"
 
 #import <UIKit/UIKit.h>
+
 #include <cstdio>
 
 static OS_VisionOS *os = nullptr;

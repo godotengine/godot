@@ -74,6 +74,11 @@ class Polygon2D : public Node2D {
 	void _skeleton_bone_setup_changed();
 
 	RID mesh;
+	int last_len = 0;
+	int last_index_count = 0;
+	bool last_has_uv = false;
+	bool last_has_color = false;
+	bool last_has_bones = false;
 
 protected:
 	void _notification(int p_what);
@@ -141,7 +146,7 @@ public:
 	void add_bone(const NodePath &p_path = NodePath(), const Vector<float> &p_weights = Vector<float>());
 	int get_bone_count() const;
 	NodePath get_bone_path(int p_index) const;
-	Vector<float> get_bone_weights(int p_index) const;
+	const Vector<float> &get_bone_weights(int p_index) const _LIFETIME_BOUND_;
 	void erase_bone(int p_idx);
 	void clear_bones();
 	void set_bone_weights(int p_index, const Vector<float> &p_weights);

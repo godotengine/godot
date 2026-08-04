@@ -30,6 +30,7 @@
 
 #include "gltf_mesh.h"
 
+#include "core/object/class_db.h"
 #include "scene/resources/3d/importer_mesh.h"
 
 void GLTFMesh::_bind_methods() {
@@ -83,7 +84,7 @@ void GLTFMesh::set_blend_weights(const Vector<float> &p_blend_weights) {
 }
 
 Variant GLTFMesh::get_additional_data(const StringName &p_extension_name) {
-	return additional_data[p_extension_name];
+	return additional_data.get(p_extension_name, Variant());
 }
 
 void GLTFMesh::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {

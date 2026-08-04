@@ -2,7 +2,7 @@
 #define VULKAN_XLIB_XRANDR_H_ 1
 
 /*
-** Copyright 2015-2024 The Khronos Group Inc.
+** Copyright 2015-2025 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -27,16 +27,20 @@ typedef VkResult (VKAPI_PTR *PFN_vkAcquireXlibDisplayEXT)(VkPhysicalDevice physi
 typedef VkResult (VKAPI_PTR *PFN_vkGetRandROutputDisplayEXT)(VkPhysicalDevice physicalDevice, Display* dpy, RROutput rrOutput, VkDisplayKHR* pDisplay);
 
 #ifndef VK_NO_PROTOTYPES
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkAcquireXlibDisplayEXT(
     VkPhysicalDevice                            physicalDevice,
     Display*                                    dpy,
     VkDisplayKHR                                display);
+#endif
 
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkGetRandROutputDisplayEXT(
     VkPhysicalDevice                            physicalDevice,
     Display*                                    dpy,
     RROutput                                    rrOutput,
     VkDisplayKHR*                               pDisplay);
+#endif
 #endif
 
 #ifdef __cplusplus

@@ -30,11 +30,13 @@
 
 #include "shader_rd.h"
 
+#include "core/config/engine.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
+#include "core/string/string_builder.h"
 #include "core/version.h"
-#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/shader_include_db.h"
 
 #define ENABLE_SHADER_CACHE 1
@@ -256,6 +258,7 @@ void ShaderRD::_initialize_version(Version *p_version) {
 	p_version->variants.resize_initialized(variant_defines.size());
 	p_version->variant_data.resize(variant_defines.size());
 	p_version->group_compilation_tasks.resize_initialized(group_enabled.size());
+	p_version->group_loaded_from_cache.resize_initialized(group_enabled.size());
 }
 
 void ShaderRD::_clear_version(Version *p_version) {
@@ -434,9 +437,9 @@ Vector<String> ShaderRD::version_build_variant_stage_sources(RID p_version, int 
 	return _build_variant_stage_sources(p_variant, compile_data);
 }
 
-RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
+RenderingServerTypes::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_version) {
 	Version *version = version_owner.get_or_null(p_version);
-	RS::ShaderNativeSourceCode source_code;
+	RenderingServerTypes::ShaderNativeSourceCode source_code;
 	ERR_FAIL_NULL_V(version, source_code);
 
 	MutexLock lock(*version->mutex);
@@ -450,7 +453,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_VERTEX]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "vertex";
 			stage.code = builder.as_string();
 
@@ -463,7 +466,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_FRAGMENT]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "fragment";
 			stage.code = builder.as_string();
 
@@ -476,7 +479,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_COMPUTE]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "compute";
 			stage.code = builder.as_string();
 
@@ -489,7 +492,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_RAYGEN]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "raygen";
 			stage.code = builder.as_string();
 
@@ -501,7 +504,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_ANY_HIT]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "any_hit";
 			stage.code = builder.as_string();
 
@@ -513,7 +516,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_CLOSEST_HIT]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "closest_hit";
 			stage.code = builder.as_string();
 
@@ -525,7 +528,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_MISS]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "miss";
 			stage.code = builder.as_string();
 
@@ -537,7 +540,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 			StringBuilder builder;
 			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_INTERSECTION]);
 
-			RS::ShaderNativeSourceCode::Version::Stage stage;
+			RenderingServerTypes::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "intersection";
 			stage.code = builder.as_string();
 
@@ -609,6 +612,16 @@ String ShaderRD::_get_cache_file_path(Version *p_version, int p_group, const Str
 	return shader_cache_dir.path_join(relative_path);
 }
 
+void ShaderRD::_load_variant_from_cache(uint32_t p_variant, CompileData p_data) {
+	uint32_t variant = group_to_variant_map[p_data.group][p_variant];
+	if (!variants_enabled[variant]) {
+		p_data.version->variants.write[variant] = RID();
+		return; // Variant is disabled, return.
+	}
+
+	p_data.version->variants.write[variant] = RD::get_singleton()->shader_create_from_bytecode_with_samplers(p_data.version->variant_data[variant], p_data.version->variants[variant], immutable_samplers);
+}
+
 bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 	String api_safe_name = String(RD::get_singleton()->get_device_api_name()).validate_filename().to_lower();
 	Ref<FileAccess> f;
@@ -643,6 +656,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		int variant_id = group_to_variant_map[p_group][i];
 		uint32_t variant_size = f->get_32();
 		if (!variants_enabled[variant_id]) {
+			f->seek(f->get_position() + variant_size);
 			continue;
 		}
 		if (variant_size == 0) {
@@ -660,28 +674,14 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		p_version->variant_data.write[variant_id] = variant_bytes;
 	}
 
-	for (uint32_t i = 0; i < variant_count; i++) {
-		int variant_id = group_to_variant_map[p_group][i];
-		if (!variants_enabled[variant_id]) {
-			p_version->variants.write[variant_id] = RID();
-			continue;
-		}
-		print_verbose(vformat("Loading cache for shader %s, variant %d", name, i));
-		{
-			RID shader = RD::get_singleton()->shader_create_from_bytecode_with_samplers(p_version->variant_data[variant_id], p_version->variants[variant_id], immutable_samplers);
-			if (shader.is_null()) {
-				for (uint32_t j = 0; j < i; j++) {
-					int variant_free_id = group_to_variant_map[p_group][j];
-					RD::get_singleton()->free_rid(p_version->variants[variant_free_id]);
-				}
-				ERR_FAIL_COND_V(shader.is_null(), false);
-			}
+	CompileData compile_data;
+	compile_data.version = p_version;
+	compile_data.group = p_group;
 
-			p_version->variants.write[variant_id] = shader;
-		}
-	}
+	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_load_variant_from_cache, compile_data, variant_count, -1, true, "LoadVariantFromCache");
+	p_version->group_compilation_tasks.write[p_group] = group_task;
+	p_version->group_loaded_from_cache.write[p_group] = true;
 
-	p_version->valid = true;
 	return true;
 }
 
@@ -731,6 +731,7 @@ void ShaderRD::_compile_version_start(Version *p_version, int p_group) {
 
 	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_compile_variant, compile_data, group_to_variant_map[p_group].size(), -1, true, SNAME("ShaderCompilation"));
 	p_version->group_compilation_tasks.write[p_group] = group_task;
+	p_version->group_loaded_from_cache.write[p_group] = false;
 }
 
 void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
@@ -770,7 +771,7 @@ void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
 		return;
 	}
 #if ENABLE_SHADER_CACHE
-	else if (shader_cache_user_dir_valid) {
+	else if (shader_cache_user_dir_valid && !p_version->group_loaded_from_cache[p_group]) {
 		_save_to_cache(p_version, p_group);
 	}
 #endif

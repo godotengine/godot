@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/display/display_server.h"
+#include "servers/display/display_server_enums.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
@@ -39,7 +39,7 @@ class DisplayServerMacOS;
 
 @interface GodotWindowDelegate : NSObject <NSWindowDelegate>
 
-- (void)setWindowID:(DisplayServer::WindowID)wid;
+- (void)setWindowID:(DisplayServerEnums::WindowID)wid;
 
 - (instancetype)initWithDisplayServer:(DisplayServerMacOS *)p_ds;
 

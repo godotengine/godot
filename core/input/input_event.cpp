@@ -30,10 +30,14 @@
 
 #include "input_event.h"
 
+#include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
+#include "core/math/transform_2d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/ustring.h"
 
 void InputEvent::set_device(int p_device) {
 	device = p_device;
@@ -58,6 +62,10 @@ bool InputEvent::is_action_released(const StringName &p_action, bool p_exact_mat
 	bool pressed_state;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed_state, nullptr, nullptr);
 	return valid && !pressed_state;
+}
+
+bool InputEvent::is_action_just_pressed_or_echo(const StringName &p_action, bool p_exact_match) const {
+	return is_action(p_action, p_exact_match) && (is_echo() || Input::get_singleton()->is_action_just_pressed_by_event(p_action, const_cast<InputEvent *>(this)));
 }
 
 float InputEvent::get_action_strength(const StringName &p_action, bool p_exact_match) const {
@@ -131,6 +139,8 @@ void InputEvent::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
 
 	BIND_CONSTANT(DEVICE_ID_EMULATION);
+	BIND_CONSTANT(DEVICE_ID_KEYBOARD);
+	BIND_CONSTANT(DEVICE_ID_MOUSE);
 }
 
 ///////////////////////////////////
@@ -223,11 +233,11 @@ bool InputEventWithModifiers::is_meta_pressed() const {
 	return meta_pressed;
 }
 
-void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *event) {
-	set_alt_pressed(event->is_alt_pressed());
-	set_shift_pressed(event->is_shift_pressed());
-	set_ctrl_pressed(event->is_ctrl_pressed());
-	set_meta_pressed(event->is_meta_pressed());
+void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *p_event) {
+	set_alt_pressed(p_event->is_alt_pressed());
+	set_shift_pressed(p_event->is_shift_pressed());
+	set_ctrl_pressed(p_event->is_ctrl_pressed());
+	set_meta_pressed(p_event->is_meta_pressed());
 }
 
 BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
@@ -314,8 +324,7 @@ void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const
 		if (p_property.name == "meta_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
-		}
-		if (p_property.name == "ctrl_pressed") {
+		} else if (p_property.name == "ctrl_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
@@ -662,6 +671,10 @@ void InputEventKey::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }
 
+InputEventKey::InputEventKey() {
+	set_device(DEVICE_ID_KEYBOARD);
+}
+
 ///////////////////////////////////
 
 void InputEventMouse::set_button_mask(BitField<MouseButtonMask> p_mask) {
@@ -702,6 +715,10 @@ void InputEventMouse::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px"), "set_global_position", "get_global_position");
+}
+
+InputEventMouse::InputEventMouse() {
+	set_device(DEVICE_ID_MOUSE);
 }
 
 ///////////////////////////////////
@@ -1920,7 +1937,7 @@ void InputEventShortcut::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &InputEventShortcut::set_shortcut);
 	ClassDB::bind_method(D_METHOD("get_shortcut"), &InputEventShortcut::get_shortcut);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_shortcut", "get_shortcut");
 }
 
 String InputEventShortcut::as_text() const {

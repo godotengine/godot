@@ -30,13 +30,13 @@
 
 #pragma once
 
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
-#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
-
 #include "core/templates/hash_map.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
+
+#import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @interface GodotOpenSaveDelegate : NSObject <NSOpenSavePanelDelegate> {
 	NSSavePanel *dialog;

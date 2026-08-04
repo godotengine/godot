@@ -30,6 +30,10 @@
 
 #include "camera_attributes_storage.h"
 
+#ifdef DEBUG_ENABLED
+#include "core/os/os.h"
+#endif
+
 RendererCameraAttributes *RendererCameraAttributes::singleton = nullptr;
 uint64_t RendererCameraAttributes::auto_exposure_counter = 2;
 
@@ -53,12 +57,12 @@ void RendererCameraAttributes::camera_attributes_free(RID p_rid) {
 	camera_attributes_owner.free(p_rid);
 }
 
-void RendererCameraAttributes::camera_attributes_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) {
+void RendererCameraAttributes::camera_attributes_set_dof_blur_quality(RSE::DOFBlurQuality p_quality, bool p_use_jitter) {
 	dof_blur_quality = p_quality;
 	dof_blur_use_jitter = p_use_jitter;
 }
 
-void RendererCameraAttributes::camera_attributes_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) {
+void RendererCameraAttributes::camera_attributes_set_dof_blur_bokeh_shape(RSE::DOFBokehShape p_shape) {
 	dof_blur_bokeh_shape = p_shape;
 }
 

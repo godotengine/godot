@@ -874,7 +874,7 @@ enum { UFBX_MAXIMUM_ALIGNMENT = sizeof(void*) > 8 ? sizeof(void*) : 8 };
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 21, 2)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 21, 3)
 ufbx_abi_data_def const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -27075,7 +27075,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_bake_postprocess_quat(ufbxi_bake
 	ufbx_quat ref = src.data[0].value;
 	for (size_t i = 1; i < src.count; i++) {
 		ufbx_quat v = src.data[i].value;
-		if (v.x != ref.x || v.y != ref.y || v.z != ref.z || v.y != ref.w) {
+		if (v.x != ref.x || v.y != ref.y || v.z != ref.z || v.w != ref.w) {
 			constant = false;
 			break;
 		}

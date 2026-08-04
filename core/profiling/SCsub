@@ -11,10 +11,12 @@ Import("env")
 
 env.add_source_files(env.core_sources, "*.cpp")
 
+default_perfetto_install_dir = "../../thirdparty/perfetto"
+
 
 def find_perfetto_path(path: pathlib.Path) -> pathlib.Path:
     if not path.is_dir():
-        print("profiler_path must be empty or point to a directory.")
+        print(f"Perfetto profiler path '{path.absolute()}' is invalid.")
         Exit(255)
 
     if (path / "sdk" / "perfetto.cc").is_file():
@@ -24,7 +26,7 @@ def find_perfetto_path(path: pathlib.Path) -> pathlib.Path:
         # perfetto sdk directory.
         return path
 
-    print("Invalid profiler_path. Unable to find perfetto.cc.")
+    print("Invalid perfetto profiler path. Unable to find perfetto.cc.")
     Exit(255)
 
 
@@ -50,6 +52,8 @@ if env["profiler"]:
             print("profiler_sample_callstack ignored. Please configure callstack sampling in Instruments instead.")
         if env["profiler_track_memory"]:
             print("profiler_track_memory ignored. Please configure memory tracking in Instruments instead.")
+        if env["profiler_record_on_demand"]:
+            print("profiler_record_on_demand ignored. Instruments is always recording.")
     elif env["profiler"] == "tracy":
         if not env["profiler_path"]:
             print("profiler_path must be set when using the tracy profiler. Aborting.")
@@ -69,13 +73,19 @@ if env["profiler"]:
             env_tracy.Append(CPPDEFINES=[("TRACY_CALLSTACK", 62)])
         if env["profiler_track_memory"]:
             env_tracy.Append(CPPDEFINES=["GODOT_PROFILER_TRACK_MEMORY"])
+        if env["profiler_record_on_demand"]:
+            env_tracy.Append(CPPDEFINES=["TRACY_ON_DEMAND"])
         env_tracy.disable_warnings()
         env_tracy.add_source_files(env.core_sources, str((profiler_path / "TracyClient.cpp").absolute()))
     elif env["profiler"] == "perfetto":
-        if not env["profiler_path"]:
-            print("profiler_path must be set when using the perfetto profiler. Aborting.")
+        if env["profiler_path"]:
+            profiler_path = find_perfetto_path(pathlib.Path(env["profiler_path"]))
+        elif (default_perfetto_path := pathlib.Path(default_perfetto_install_dir)).is_dir():
+            profiler_path = find_perfetto_path(default_perfetto_path)
+        else:
+            print("Perfetto must be installed or profiler_path must be set when using the perfetto profiler. Aborting.")
             Exit(255)
-        profiler_path = find_perfetto_path(pathlib.Path(env["profiler_path"]))
+
         env.Prepend(CPPPATH=[str(profiler_path.absolute())])
 
         env_perfetto = env.Clone()
@@ -85,6 +95,8 @@ if env["profiler"]:
         if env["profiler_track_memory"]:
             print("Perfetto does not support memory tracking. Aborting.")
             Exit(255)
+        if env["profiler_record_on_demand"]:
+            print("profiler_record_on_demand ignored. Perfetto is always recording.")
         env_perfetto.disable_warnings()
         env_perfetto.Prepend(CPPPATH=[str(profiler_path.absolute())])
         env_perfetto.add_source_files(env.core_sources, str((profiler_path / "perfetto.cc").absolute()))
@@ -94,6 +106,11 @@ elif env["profiler_path"]:
 
 env.CommandNoCache(
     "profiling.gen.h",
-    [env.Value(env["profiler"]), env.Value(env["profiler_sample_callstack"]), env.Value(env["profiler_track_memory"])],
+    [
+        env.Value(env["profiler"]),
+        env.Value(env["profiler_sample_callstack"]),
+        env.Value(env["profiler_track_memory"]),
+        env.Value(env["profiler_record_on_demand"]),
+    ],
     env.Run(profiling_builders.profiler_gen_builder),
 )

@@ -80,6 +80,7 @@ public:
 		int inspector_property_height = 28;
 		float subresource_hue_tint = 0.0;
 		float dragging_hover_wait_msec = 0;
+		int max_sticky_tree_items = 5;
 
 		// Make sure to keep those in sync with the definitions in the editor settings.
 		const float default_icon_saturation = 2.0;

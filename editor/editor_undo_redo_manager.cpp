@@ -32,6 +32,7 @@
 #include "editor_undo_redo_manager.compat.inc"
 
 #include "core/io/resource.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
@@ -389,6 +390,7 @@ void EditorUndoRedoManager::set_history_as_saved(int p_id) {
 void EditorUndoRedoManager::set_history_as_unsaved(int p_id) {
 	History &history = get_or_create_history(p_id);
 	history.saved_version = UNSAVED_VERSION;
+	emit_signal(SNAME("history_changed"));
 }
 
 bool EditorUndoRedoManager::is_history_unsaved(int p_id) {

@@ -31,12 +31,13 @@
 #pragma once
 
 #include "core/os/mutex.h"
-#include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "core/templates/self_list.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server_types.h"
+
+class StringBuilder;
 
 class ShaderRD {
 public:
@@ -81,6 +82,7 @@ private:
 		HashMap<StringName, CharString> code_sections;
 		Vector<CharString> custom_defines;
 		Vector<WorkerThreadPool::GroupID> group_compilation_tasks;
+		Vector<bool> group_loaded_from_cache;
 
 		Vector<Vector<uint8_t>> variant_data;
 		Vector<RID> variants;
@@ -177,6 +179,7 @@ private:
 	String _version_get_sha1(Version *p_version) const;
 	String _get_cache_file_relative_path(Version *p_version, int p_group, const String &p_api_name);
 	String _get_cache_file_path(Version *p_version, int p_group, const String &p_api_name, bool p_user_dir);
+	void _load_variant_from_cache(uint32_t p_variant, CompileData p_data);
 	bool _load_from_cache(Version *p_version, int p_group);
 	void _save_to_cache(Version *p_version, int p_group);
 	void _initialize_cache();
@@ -262,7 +265,7 @@ public:
 	static PackedByteArray save_shader_cache_bytes(const LocalVector<int> &p_variants, const Vector<Vector<uint8_t>> &p_variant_data);
 
 	Vector<String> version_build_variant_stage_sources(RID p_version, int p_variant);
-	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
+	RenderingServerTypes::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 	String version_get_cache_file_relative_path(RID p_version, int p_group, const String &p_api_name);
 
 	struct DynamicBuffer {

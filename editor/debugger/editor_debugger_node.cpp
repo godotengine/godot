@@ -30,7 +30,10 @@
 
 #include "editor_debugger_node.h"
 
+#include "core/config/engine.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/object/undo_redo.h"
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_debugger_tree.h"
@@ -50,6 +53,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display/display_server.h"
 
 template <typename Func>
 void _for_all(TabContainer *p_node, const Func &p_func) {
@@ -68,9 +72,7 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	set_layout_key("Debugger");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Dock"), KeyModifierMask::ALT | Key::D));
 	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
-	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL);
-	set_global(false);
-	set_transient(true);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 
 	_update_margins();
 
@@ -129,7 +131,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("remote_objects_requested", callable_mp(this, &EditorDebuggerNode::_remote_objects_requested).bind(id));
 	node->connect("set_breakpoint", callable_mp(this, &EditorDebuggerNode::_breakpoint_set_in_tree).bind(id));
 	node->connect("clear_breakpoints", callable_mp(this, &EditorDebuggerNode::_breakpoints_cleared_in_tree).bind(id));
-	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors));
+	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors).bind(false));
 
 	if (tabs->get_tab_count() > 0) {
 		get_debugger(0)->clear_style();
@@ -165,7 +167,7 @@ void EditorDebuggerNode::_stack_frame_selected(int p_debugger) {
 void EditorDebuggerNode::_error_selected(const String &p_file, int p_line, int p_debugger) {
 	if (!p_file.is_resource_file() && !ResourceCache::has(p_file)) {
 		// If it's a built-in script, make sure the scene is opened first.
-		EditorNode::get_singleton()->load_scene(p_file.get_slice("::", 0));
+		EditorNode::get_singleton()->open_scene(p_file.get_slice("::", 0));
 	}
 	Ref<Script> s = ResourceLoader::load(p_file);
 	emit_signal(SNAME("goto_script_line"), s, p_line - 1);
@@ -232,6 +234,12 @@ void EditorDebuggerNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoint_toggled", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 	ADD_SIGNAL(MethodInfo("breakpoint_set_in_tree", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled"), PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("breakpoints_cleared_in_tree", PropertyInfo(Variant::INT, "debugger")));
+}
+
+void EditorDebuggerNode::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->update_layout(p_layout, p_slot);
+	});
 }
 
 void EditorDebuggerNode::register_undo_redo(UndoRedo *p_undo_redo) {
@@ -309,6 +317,17 @@ void EditorDebuggerNode::stop(bool p_force) {
 	inspect_edited_object_wait = false;
 
 	current_uri.clear();
+	// Also close all debugging sessions.
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		// If the server is also still active, let the debugger notify that it stopped.
+		// Otherwise, just stop it silently.
+		if (server.is_valid() || dbg->is_session_active()) {
+			dbg->_stop_and_notify();
+		} else {
+			dbg->stop();
+		}
+	});
+
 	if (server.is_valid()) {
 		server->stop();
 		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
@@ -321,12 +340,6 @@ void EditorDebuggerNode::stop(bool p_force) {
 		server.unref();
 	}
 
-	// Also close all debugging sessions.
-	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-		if (dbg->is_session_active()) {
-			dbg->_stop_and_notify();
-		}
-	});
 	_break_state_changed();
 	breakpoints.clear();
 	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::REMOTE_HISTORY, false);
@@ -343,6 +356,8 @@ void EditorDebuggerNode::_notification(int p_what) {
 			if (tabs->get_tab_count() > 1) {
 				tabs->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
+
+			_update_errors(true);
 			_update_margins();
 
 			remote_scene_tree->update_icon_max_width();
@@ -434,7 +449,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 	}
 }
 
-void EditorDebuggerNode::_update_errors() {
+void EditorDebuggerNode::_update_errors(bool p_force) {
 	int error_count = 0;
 	int warning_count = 0;
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
@@ -442,7 +457,7 @@ void EditorDebuggerNode::_update_errors() {
 		warning_count += dbg->get_warning_count();
 	});
 
-	if (error_count != last_error_count || warning_count != last_warning_count) {
+	if (p_force || error_count != last_error_count || warning_count != last_warning_count) {
 		_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 			dbg->update_tabs();
 		});
@@ -905,6 +920,12 @@ void EditorDebuggerNode::set_debug_mute_audio(bool p_mute) {
 
 bool EditorDebuggerNode::get_debug_mute_audio() const {
 	return debug_mute_audio;
+}
+
+void EditorDebuggerNode::set_debug_collisions(bool p_enabled) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->set_debug_collisions(p_enabled);
+	});
 }
 
 void EditorDebuggerNode::set_camera_override(CameraOverride p_override) {

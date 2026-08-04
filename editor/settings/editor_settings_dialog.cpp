@@ -30,8 +30,11 @@
 
 #include "editor_settings_dialog.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_log.h"
@@ -45,13 +48,16 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/settings/input_event_configuration_dialog.h"
+#include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/debugger/view_3d_controller.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "scene/main/timer.h"
 
 void EditorSettingsDialog::ok_pressed() {
 	if (!EditorSettings::get_singleton()) {
@@ -83,18 +89,21 @@ void EditorSettingsDialog::_settings_property_edited() {
 	} else if (full_name.begins_with("editors/visual_editors/connection_colors") || full_name.begins_with("editors/visual_editors/category_colors")) {
 		EditorSettings::get_singleton()->set_manually("editors/visual_editors/color_theme", "Custom");
 	} else if (full_name == "editors/3d/navigation/orbit_mouse_button" || full_name == "editors/3d/navigation/pan_mouse_button" || full_name == "editors/3d/navigation/zoom_mouse_button" || full_name == "editors/3d/navigation/emulate_3_button_mouse") {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
 	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
-		update_navigation_preset();
+		update_3d_navigation_preset();
 		_update_shortcuts();
+	} else if (full_name == "interface/editor/appearance/custom_display_scale") {
+		// The "Custom" display scale is index 7 in the setting's enum hint.
+		EditorSettings::get_singleton()->set_manually("interface/editor/appearance/display_scale", 7);
 	}
 }
 
-void EditorSettingsDialog::update_navigation_preset() {
-	Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
-	Node3DEditorViewport::ViewportNavMouseButton set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-	Node3DEditorViewport::ViewportNavMouseButton set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-	Node3DEditorViewport::ViewportNavMouseButton set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+void EditorSettingsDialog::update_3d_navigation_preset() {
+	View3DController::NavigationScheme nav_scheme = (View3DController::NavigationScheme)EDITOR_GET("editors/3d/navigation/navigation_scheme").operator int();
+	View3DController::NavigationMouseButton set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+	View3DController::NavigationMouseButton set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+	View3DController::NavigationMouseButton set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
 	bool set_3_button_mouse = false;
 	Ref<InputEventKey> orbit_mod_key_1;
 	Ref<InputEventKey> orbit_mod_key_2;
@@ -102,13 +111,15 @@ void EditorSettingsDialog::update_navigation_preset() {
 	Ref<InputEventKey> pan_mod_key_2;
 	Ref<InputEventKey> zoom_mod_key_1;
 	Ref<InputEventKey> zoom_mod_key_2;
+	Ref<InputEventKey> orbit_snap_mod_key_1;
+	Ref<InputEventKey> orbit_snap_mod_key_2;
 	bool set_preset = false;
 
-	if (nav_scheme == Node3DEditorViewport::NAVIGATION_GODOT) {
+	if (nav_scheme == View3DController::NAV_SCHEME_GODOT) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
 		set_3_button_mouse = false;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::NONE);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -116,11 +127,13 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA) {
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::ALT);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+	} else if (nav_scheme == View3DController::NAV_SCHEME_MAYA) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_RIGHT_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_RIGHT;
 		set_3_button_mouse = false;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -128,11 +141,13 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) {
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+	} else if (nav_scheme == View3DController::NAV_SCHEME_MODO) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_LEFT;
 		set_3_button_mouse = false;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -140,11 +155,13 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::ALT);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::CTRL);
-	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_TABLET) {
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+	} else if (nav_scheme == View3DController::NAV_SCHEME_TABLET) {
 		set_preset = true;
-		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
-		set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_MIDDLE_MOUSE;
+		set_orbit_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_pan_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
+		set_zoom_mouse_button = View3DController::NAV_MOUSE_BUTTON_MIDDLE;
 		set_3_button_mouse = true;
 		orbit_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		orbit_mod_key_2 = InputEventKey::create_reference(Key::NONE);
@@ -152,6 +169,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::CTRL);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_1 = InputEventKey::create_reference(Key::NONE);
+		orbit_snap_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 	}
 	// Set settings to the desired preset values.
 	if (set_preset) {
@@ -165,6 +184,8 @@ void EditorSettingsDialog::update_navigation_preset() {
 		_set_shortcut_input("spatial_editor/viewport_pan_modifier_2", pan_mod_key_2);
 		_set_shortcut_input("spatial_editor/viewport_zoom_modifier_1", zoom_mod_key_1);
 		_set_shortcut_input("spatial_editor/viewport_zoom_modifier_2", zoom_mod_key_2);
+		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_1", orbit_snap_mod_key_1);
+		_set_shortcut_input("spatial_editor/viewport_orbit_snap_modifier_2", orbit_snap_mod_key_2);
 	}
 }
 
@@ -226,8 +247,42 @@ void EditorSettingsDialog::popup_edit_settings() {
 	_focus_current_search_box();
 }
 
+void EditorSettingsDialog::set_advanced_mode_enabled(bool p_enabled) {
+	advanced_switch->set_pressed(p_enabled);
+}
+
+void EditorSettingsDialog::set_current_section(const String &p_section) {
+	inspector->set_current_section(p_section);
+}
+
 void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_name) {
 	EditorNode::get_log()->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
+}
+
+void EditorSettingsDialog::_create_setting_override(const String &p_setting, const Variant p_value) {
+	ProjectSettings::get_singleton()->set_editor_setting_override(p_setting, p_value);
+	ProjectSettings::get_singleton()->save();
+
+	if (is_visible() && p_setting.begins_with(inspector->get_current_section())) {
+		inspector->get_inspector()->update_tree();
+	}
+	if (ProjectSettingsEditor::get_singleton()->is_visible()) {
+		ProjectSettingsEditor::get_singleton()->get_inspector()->update_category_list();
+	}
+}
+
+void EditorSettingsDialog::_remove_setting_override(const String &p_setting) {
+	ProjectSettings::get_singleton()->set_editor_setting_override(p_setting, Variant());
+	ProjectSettings::get_singleton()->save();
+	EditorSettings::get_singleton()->mark_setting_changed(p_setting);
+	EditorNode::get_singleton()->notify_settings_overrides_changed();
+
+	if (is_visible() && p_setting.begins_with(inspector->get_current_section())) {
+		inspector->get_inspector()->update_tree();
+	}
+	if (ProjectSettingsEditor::get_singleton()->is_visible()) {
+		ProjectSettingsEditor::get_singleton()->get_inspector()->update_category_list();
+	}
 }
 
 void EditorSettingsDialog::_notification(int p_what) {
@@ -240,8 +295,6 @@ void EditorSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			EditorSettingsPropertyWrapper::restart_request_callback = callable_mp(this, &EditorSettingsDialog::_editor_restart_request);
-
 			if (_is_in_project_manager()) {
 				return;
 			}
@@ -277,8 +330,12 @@ void EditorSettingsDialog::_notification(int p_what) {
 				inspector->get_inspector()->update_tree();
 			}
 
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localization/localize_settings")) {
 				inspector->update_category_list();
+			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen")) {
+				inspector->set_touch_dragger_enabled(EDITOR_GET("interface/touchscreen/enable_touch_optimizations"));
 			}
 		} break;
 	}
@@ -301,7 +358,7 @@ void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (k->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F))) {
+		if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			_focus_current_search_box();
 			handled = true;
 		}
@@ -350,7 +407,7 @@ bool EditorSettingsDialog::_is_in_project_manager() const {
 void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Array &p_events) {
 	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
 	if (old_input_array.is_empty()) {
-		List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier];
+		List<Ref<InputEvent>> defaults(InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier]);
 		old_input_array = _event_list_to_array_helper(defaults);
 	}
 
@@ -405,7 +462,7 @@ void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const A
 	bool path_is_pan_mod = p_path == "spatial_editor/viewport_pan_modifier_1" || p_path == "spatial_editor/viewport_pan_modifier_2";
 	bool path_is_zoom_mod = p_path == "spatial_editor/viewport_zoom_modifier_1" || p_path == "spatial_editor/viewport_zoom_modifier_2";
 	if (path_is_orbit_mod || path_is_pan_mod || path_is_zoom_mod) {
-		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)Node3DEditorViewport::NAVIGATION_CUSTOM);
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/navigation_scheme", (int)View3DController::NAV_SCHEME_CUSTOM);
 	}
 }
 
@@ -427,6 +484,7 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 	TreeItem *shortcut_item = shortcuts->create_item(p_parent);
 	shortcut_item->set_collapsed(p_is_collapsed);
 	shortcut_item->set_text(0, p_display);
+	shortcut_item->set_tooltip_text(0, p_shortcut_identifier);
 
 	Ref<InputEvent> primary = p_events.size() > 0 ? Ref<InputEvent>(p_events[0]) : Ref<InputEvent>();
 	Ref<InputEvent> secondary = p_events.size() > 1 ? Ref<InputEvent>(p_events[1]) : Ref<InputEvent>();
@@ -491,7 +549,7 @@ TreeItem *EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, co
 	return shortcut_item;
 }
 
-bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const {
+bool EditorSettingsDialog::_should_display_shortcut(const String &p_path, const Array &p_events, const String &p_name) const {
 	const Ref<InputEvent> search_ev = shortcut_search_bar->get_event();
 	if (search_ev.is_valid()) {
 		bool event_match = false;
@@ -514,7 +572,10 @@ bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const 
 	if (search_text.is_subsequence_ofn(p_name)) {
 		return true;
 	}
-	if (p_match_localized_name && search_text.is_subsequence_ofn(TTR(p_name))) {
+	if (search_text.is_subsequence_ofn(TTR(p_name))) {
+		return true;
+	}
+	if (search_text.is_subsequence_ofn(p_path)) {
 		return true;
 	}
 
@@ -586,7 +647,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 		const List<Ref<InputEvent>> &all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name)->value;
 		Array action_events = _event_list_to_array_helper(action.inputs);
-		if (!_should_display_shortcut(action_name, action_events, false)) {
+		if (!_should_display_shortcut(action_name, action_events)) {
 			continue;
 		}
 
@@ -649,7 +710,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		String section_name = E.get_slicec('/', 0);
 		TreeItem *section = sections[section_name];
 
-		if (!_should_display_shortcut(sc->get_name(), sc->get_events(), true)) {
+		if (!_should_display_shortcut(E, sc->get_events(), sc->get_name())) {
 			continue;
 		}
 
@@ -730,7 +791,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		case EditorSettingsDialog::SHORTCUT_REVERT: {
 			// Only for "shortcut" types
 			if (is_editing_action) {
-				List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier];
+				List<Ref<InputEvent>> defaults(InputMap::get_singleton()->get_builtins_with_feature_overrides_applied()[current_edited_identifier]);
 				Array events = _event_list_to_array_helper(defaults);
 
 				_update_builtin_action(current_edited_identifier, events);
@@ -923,11 +984,15 @@ void EditorSettingsDialog::_editor_restart_close() {
 void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
+	ClassDB::bind_method(D_METHOD("_create_setting_override"), &EditorSettingsDialog::_create_setting_override);
+	ClassDB::bind_method(D_METHOD("_remove_setting_override"), &EditorSettingsDialog::_remove_setting_override);
 
 	ADD_SIGNAL(MethodInfo("restart_requested"));
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
+	singleton = this;
+
 	set_title(TTRC("Editor Settings"));
 	set_flag(FLAG_MAXIMIZE_DISABLED, false);
 	set_clamp_to_embedder(true);
@@ -1017,7 +1082,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_theme_type_variation("NoBorderBottomPanel");
 	tab_shortcuts->add_child(mc);
 
 	shortcuts = memnew(Tree);
@@ -1056,7 +1121,13 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	EditorInspector::add_inspector_plugin(plugin);
 }
 
+EditorSettingsDialog::~EditorSettingsDialog() {
+	singleton = nullptr;
+}
+
 void EditorSettingsPropertyWrapper::_setup_override_info() {
+	bottom_editor_seperation = true;
+
 	override_container = memnew(HBoxContainer);
 
 	override_icon = memnew(TextureRect);
@@ -1115,21 +1186,29 @@ void EditorSettingsPropertyWrapper::_update_override() {
 }
 
 void EditorSettingsPropertyWrapper::_create_override() {
-	ProjectSettings::get_singleton()->set_editor_setting_override(property, EDITOR_GET(property));
+	const Variant setting_value = EDITOR_GET(property);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Add project override for setting: %s"), property));
+	undo_redo->add_do_method(EditorSettingsDialog::get_singleton(), "_create_setting_override", property, setting_value);
+	undo_redo->add_undo_method(EditorSettingsDialog::get_singleton(), "_remove_setting_override", property);
+	undo_redo->commit_action(false);
+
+	ProjectSettings::get_singleton()->set_editor_setting_override(property, setting_value);
 	ProjectSettings::get_singleton()->save();
 	_update_override();
 }
 
 void EditorSettingsPropertyWrapper::_remove_override() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(TTR("Remove project override for setting: %s"), property));
+	undo_redo->add_do_method(EditorSettingsDialog::get_singleton(), "_remove_setting_override", property);
+	undo_redo->add_undo_method(EditorSettingsDialog::get_singleton(), "_create_setting_override", property, ProjectSettings::get_singleton()->get_editor_setting_override(property));
+	undo_redo->commit_action(false);
+
 	ProjectSettings::get_singleton()->set_editor_setting_override(property, Variant());
 	ProjectSettings::get_singleton()->save();
-	EditorSettings::get_singleton()->mark_setting_changed(property);
-	EditorNode::get_singleton()->notify_settings_overrides_changed();
 	_update_override();
-
-	if (usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
-		restart_request_callback.call();
-	}
 }
 
 void EditorSettingsPropertyWrapper::_notification(int p_what) {

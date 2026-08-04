@@ -36,10 +36,13 @@ name is available.
     Aaron Record (LightningAA)
     Adam Johnston (a-johnston)
     Adam Scott (adamscott)
+    Adriaan de Jongh (AdriaandeJongh)
     Æio Much (AeioMuch)
+    Akosmo
     Alex Drozd (brno32)
     Alexander Hartmann (Alex2782)
     Alexander Holland (AlexHolly)
+    Alexander Streng (warriormaster12)
     Alexey Khoroshavin (allkhor)
     Alfred Reinold Baudisch (alfredbaudisch)
     Alistair Leslie-Hughes (alesliehughes)
@@ -113,10 +116,12 @@ name is available.
     Dominik Jasiński (dreamsComeTrue)
     Douglas Leão (DeeJayLSP)
     DualMatrix
+    Edward Chan (EdwardChanCH)
     Ellen Poe (ellenhp)
     Emilio Coppola (coppolaemilio)
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
+    Enzo Novoselic (StarryWorm)
     Eoin O'Neill (Eoin-ONeill-Yokai)
     Eric Lasota (elasota)
     Eric M (EricEzaM)
@@ -148,13 +153,13 @@ name is available.
     Hakim Rouatbi (hakro)
     Hanif Bin Ariffin (hbina)
     Haoyu Qiu (timothyqiu)
-    Hein-Pieter van Braam-Stewart (hpvb)
     Hendrik Brucker (Geometror)
     Hilderin
     Hiroshi Ogawa (hi-ogawa)
     HolonProduction
     homer666
     hoontee
+    HP van Braam (hpvb)
     Hugo Locurcio (Calinou)
     Ian Bishop (ianb96)
     Ibrahn Sahir (ibrahn)
@@ -175,6 +180,8 @@ name is available.
     Jean-Michel Bernard (jmb462)
     Jérôme Gully (Nutriz)
     Jia Jun Chai (SkyLucilfer)
+    Jin Q.W. (LanzaSchneider)
+    Jin Yang (jinyangcruise)
     jitspoe
     Joan Fons Sanchez (JFonS)
     Johan Aires Rastén (JohanAR)
@@ -185,6 +192,7 @@ name is available.
     Jorrit Rouwe (jrouwe)
     Josh Jones (DarkKilauea)
     Joshua Grams (JoshuaGrams)
+    Joyless (Joy-less)
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
     Julien Nguyen (Blackiris)
@@ -256,6 +264,7 @@ name is available.
     Michał Iwańczuk (iwek7)
     MichiRecRoom (LikeLakers2)
     Micky (Mickeon)
+    Miguel de Icaza (migueldeicaza)
     Mika Viskari (miv391)
     Mikael Hermansson (mihe)
     MinusKube

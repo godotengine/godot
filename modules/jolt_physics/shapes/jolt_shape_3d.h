@@ -30,11 +30,16 @@
 
 #pragma once
 
-#include "servers/physics_3d/physics_server_3d.h"
+#include "core/math/aabb.h"
+#include "core/os/mutex.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
+#include "servers/physics_3d/physics_server_3d_enums.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Collision/Shape/Shape.h"
+#include <Jolt/Physics/Collision/Shape/Shape.h>
 
 class JoltShapedObject3D;
 
@@ -50,7 +55,7 @@ protected:
 	String _owners_to_string() const;
 
 public:
-	typedef PhysicsServer3D::ShapeType ShapeType;
+	typedef PS3DE::ShapeType ShapeType;
 
 	virtual ~JoltShape3D() = 0;
 
@@ -95,25 +100,25 @@ public:
 
 #ifdef DEBUG_ENABLED
 
-#define JOLT_ENSURE_SCALE_NOT_ZERO(m_transform, m_msg)                                                         \
-	if (unlikely((m_transform).basis.determinant() == 0.0f)) {                                                 \
-		WARN_PRINT(vformat("%s "                                                                               \
+#define JOLT_ENSURE_SCALE_NOT_ZERO(m_transform, m_msg) \
+	if (unlikely((m_transform).basis.determinant() == 0.0f)) { \
+		WARN_PRINT(vformat("%s " \
 						   "The basis of the transform was singular, which is not supported by Jolt Physics. " \
-						   "This is likely caused by one or more axes having a scale of zero. "                \
-						   "The basis (and thus its scale) will be treated as identity.",                      \
-				m_msg));                                                                                       \
-                                                                                                               \
-		(m_transform).basis = Basis();                                                                         \
-	} else                                                                                                     \
+						   "This is likely caused by one or more axes having a scale of zero. " \
+						   "The basis (and thus its scale) will be treated as identity.", \
+				m_msg)); \
+\
+		(m_transform).basis = Basis(); \
+	} else \
 		((void)0)
 
-#define ERR_PRINT_INVALID_SCALE_MSG(m_scale, m_valid_scale, m_msg)                               \
-	if (unlikely(!JoltShape3D::is_scale_valid(m_scale, valid_scale))) {                          \
-		ERR_PRINT(vformat("%s "                                                                  \
+#define ERR_PRINT_INVALID_SCALE_MSG(m_scale, m_valid_scale, m_msg) \
+	if (unlikely(!JoltShape3D::is_scale_valid(m_scale, valid_scale))) { \
+		ERR_PRINT(vformat("%s " \
 						  "A scale of %v is not supported by Jolt Physics for this shape/body. " \
-						  "The scale will instead be treated as %v.",                            \
-				m_msg, m_scale, valid_scale));                                                   \
-	} else                                                                                       \
+						  "The scale will instead be treated as %v.", \
+				m_msg, m_scale, valid_scale)); \
+	} else \
 		((void)0)
 
 #else
@@ -124,10 +129,10 @@ public:
 
 #endif
 
-#define JOLT_ENSURE_SCALE_VALID(m_shape, m_scale, m_msg)                             \
-	if (true) {                                                                      \
+#define JOLT_ENSURE_SCALE_VALID(m_shape, m_scale, m_msg) \
+	if (true) { \
 		const Vector3 valid_scale = JoltShape3D::make_scale_valid(m_shape, m_scale); \
-		ERR_PRINT_INVALID_SCALE_MSG(m_scale, valid_scale, m_msg);                    \
-		(m_scale) = valid_scale;                                                     \
-	} else                                                                           \
+		ERR_PRINT_INVALID_SCALE_MSG(m_scale, valid_scale, m_msg); \
+		(m_scale) = valid_scale; \
+	} else \
 		((void)0)

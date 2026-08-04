@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2025 The Khronos Group Inc.
+// Copyright (c) 2018-2026 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
@@ -84,7 +84,7 @@
 #include <wayland-client.h>
 #endif  // XR_USE_PLATFORM_WAYLAND
 
-#if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
+#if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB) || defined(XR_USE_PLATFORM_EGL)
 #ifdef Success
 #undef Success
 #endif  // Success

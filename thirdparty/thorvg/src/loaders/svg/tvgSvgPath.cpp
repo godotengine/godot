@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,43 +20,15 @@
  * SOFTWARE.
  */
 
-/*
- * Copyright notice for the EFL:
-
- * Copyright (C) EFL developers (see AUTHORS)
-
- * All rights reserved.
-
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
-
- *   1. Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *   2. Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
-
- * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
 #define _USE_MATH_DEFINES       //Math Constants are not defined in Standard C/C++.
 
 #include <cstring>
 #include <ctype.h>
 #include "tvgMath.h"
-#include "tvgShape.h"
 #include "tvgSvgLoaderCommon.h"
 #include "tvgSvgPath.h"
 #include "tvgStr.h"
+#include "tvgSvgUtil.h"
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
@@ -64,9 +36,7 @@
 
 static char* _skipComma(const char* content)
 {
-    while (*content && isspace(*content)) {
-        content++;
-    }
+    content = svgUtilSkipWhiteSpace(content, nullptr);
     if (*content == ',') return (char*)content + 1;
     return (char*)content;
 }
@@ -75,7 +45,7 @@ static char* _skipComma(const char* content)
 static bool _parseNumber(char** content, float* number)
 {
     char* end = NULL;
-    *number = strToFloat(*content, &end);
+    *number = toFloat(*content, &end);
     //If the start of string is not number
     if ((*content) == end) return false;
     //Skip comma if any
@@ -97,114 +67,70 @@ static bool _parseFlag(char** content, int* number)
 }
 
 
-void _pathAppendArcTo(Array<PathCommand>* cmds, Array<Point>* pts, Point* cur, Point* curCtl, float x, float y, float rx, float ry, float angle, bool largeArc, bool sweep)
+//Some helpful stuff is available here:
+//http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
+void _pathAppendArcTo(RenderPath& out, Point& cur, Point& curCtl, const Point& next, Point radius, float angle, bool largeArc, bool sweep)
 {
-    float cxp, cyp, cx, cy;
-    float sx, sy;
-    float cosPhi, sinPhi;
-    float dx2, dy2;
-    float x1p, y1p;
-    float x1p2, y1p2;
-    float rx2, ry2;
-    float lambda;
-    float c;
-    float at;
-    float theta1, deltaTheta;
-    float nat;
-    float delta, bcp;
-    float cosPhiRx, cosPhiRy;
-    float sinPhiRx, sinPhiRy;
-    float cosTheta1, sinTheta1;
-    int segments;
-
-    //Some helpful stuff is available here:
-    //http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
-    sx = cur->x;
-    sy = cur->y;
-
-    //Correction of out-of-range radii, see F6.6.1 (step 2)
-    rx = fabsf(rx);
-    ry = fabsf(ry);
-
-    angle = deg2rad(angle);
-    cosPhi = cosf(angle);
-    sinPhi = sinf(angle);
-    dx2 = (sx - x) / 2.0f;
-    dy2 = (sy - y) / 2.0f;
-    x1p = cosPhi * dx2 + sinPhi * dy2;
-    y1p = cosPhi * dy2 - sinPhi * dx2;
-    x1p2 = x1p * x1p;
-    y1p2 = y1p * y1p;
-    rx2 = rx * rx;
-    ry2 = ry * ry;
-    lambda = (x1p2 / rx2) + (y1p2 / ry2);
+    auto start = cur;
+    auto cosPhi = cosf(angle);
+    auto sinPhi = sinf(angle);
+    auto d2 = (start - next) * 0.5f;
+    auto x1p = cosPhi * d2.x + sinPhi * d2.y;
+    auto y1p = cosPhi * d2.y - sinPhi * d2.x;
+    auto x1p2 = x1p * x1p;
+    auto y1p2 = y1p * y1p;
+    auto radius2 = Point{radius.x * radius.x, radius.y * radius.y};
+    auto lambda = (x1p2 / radius2.x) + (y1p2 / radius2.y);
 
     //Correction of out-of-range radii, see F6.6.2 (step 4)
     if (lambda > 1.0f) {
         //See F6.6.3
-        float lambdaRoot = sqrtf(lambda);
-
-        rx *= lambdaRoot;
-        ry *= lambdaRoot;
-        //Update rx2 and ry2
-        rx2 = rx * rx;
-        ry2 = ry * ry;
+        radius *= sqrtf(lambda);
+        radius2 = {radius.x * radius.x, radius.y * radius.y};
     }
 
-    c = (rx2 * ry2) - (rx2 * y1p2) - (ry2 * x1p2);
+    Point cp, center;
+    auto c = (radius2.x * radius2.y) - (radius2.x * y1p2) - (radius2.y * x1p2);
 
     //Check if there is no possible solution
     //(i.e. we can't do a square root of a negative value)
     if (c < 0.0f) {
         //Scale uniformly until we have a single solution
         //(see F6.2) i.e. when c == 0.0
-        float scale = sqrtf(1.0f - c / (rx2 * ry2));
-        rx *= scale;
-        ry *= scale;
-        //Update rx2 and ry2
-        rx2 = rx * rx;
-        ry2 = ry * ry;
-
+        radius *= sqrtf(1.0f - c / (radius2.x * radius2.y));
+        radius2 = {radius.x * radius.x, radius.y * radius.y};
         //Step 2 (F6.5.2) - simplified since c == 0.0
-        cxp = 0.0f;
-        cyp = 0.0f;
+        cp = {0.0f, 0.0f};
         //Step 3 (F6.5.3 first part) - simplified since cxp and cyp == 0.0
-        cx = 0.0f;
-        cy = 0.0f;
+        center = {0.0f, 0.0f};
     } else {
         //Complete c calculation
-        c = sqrtf(c / ((rx2 * y1p2) + (ry2 * x1p2)));
+        c = sqrtf(c / ((radius2.x * y1p2) + (radius2.y * x1p2)));
         //Inverse sign if Fa == Fs
         if (largeArc == sweep) c = -c;
-
         //Step 2 (F6.5.2)
-        cxp = c * (rx * y1p / ry);
-        cyp = c * (-ry * x1p / rx);
-
+        cp = c * Point{(radius.x * y1p / radius.y), (-radius.y * x1p / radius.x)};
         //Step 3 (F6.5.3 first part)
-        cx = cosPhi * cxp - sinPhi * cyp;
-        cy = sinPhi * cxp + cosPhi * cyp;
+        center = {cosPhi * cp.x - sinPhi * cp.y, sinPhi * cp.x + cosPhi * cp.y};
     }
 
     //Step 3 (F6.5.3 second part) we now have the center point of the ellipse
-    cx += (sx + x) / 2.0f;
-    cy += (sy + y) / 2.0f;
+    center += (start + next) * 0.5f;
 
     //Step 4 (F6.5.4)
-    //We dont' use arccos (as per w3c doc), see
+    //We don't use arccos (as per w3c doc), see
     //http://www.euclideanspace.com/maths/algebra/vectors/angleBetween/index.htm
     //Note: atan2 (0.0, 1.0) == 0.0
-    at = tvg::atan2(((y1p - cyp) / ry), ((x1p - cxp) / rx));
-    theta1 = (at < 0.0f) ? 2.0f * MATH_PI + at : at;
-
-    nat = tvg::atan2(((-y1p - cyp) / ry), ((-x1p - cxp) / rx));
-    deltaTheta = (nat < at) ? 2.0f * MATH_PI - at + nat : nat - at;
+    auto at = tvg::atan2(((y1p - cp.y) / radius.y), ((x1p - cp.x) / radius.x));
+    auto theta1 = (at < 0.0f) ? 2.0f * MATH_PI + at : at;
+    auto nat = tvg::atan2(((-y1p - cp.y) / radius.y), ((-x1p - cp.x) / radius.x));
+    auto deltaTheta = (nat < at) ? 2.0f * MATH_PI - at + nat : nat - at;
 
     if (sweep) {
         //Ensure delta theta < 0 or else add 360 degrees
         if (deltaTheta < 0.0f) deltaTheta += 2.0f * MATH_PI;
     } else {
-        //Ensure delta theta > 0 or else substract 360 degrees
+        //Ensure delta theta > 0 or else subtract 360 degrees
         if (deltaTheta > 0.0f) deltaTheta -= 2.0f * MATH_PI;
     }
 
@@ -212,58 +138,42 @@ void _pathAppendArcTo(Array<PathCommand>* cmds, Array<Point>* pts, Point* cur, P
     //(smaller than 90 degrees)
     //We add one extra segment because we want something
     //Smaller than 90deg (i.e. not 90 itself)
-    segments = static_cast<int>(fabsf(deltaTheta / MATH_PI2) + 1.0f);
-    delta = deltaTheta / segments;
+    auto segments = int(fabsf(deltaTheta / MATH_PI2) + 1.0f);
+    auto delta = deltaTheta / segments;
 
     //http://www.stillhq.com/ctpfaq/2001/comp.text.pdf-faq-2001-04.txt (section 2.13)
-    bcp = 4.0f / 3.0f * (1.0f - cosf(delta / 2.0f)) / sinf(delta / 2.0f);
-
-    cosPhiRx = cosPhi * rx;
-    cosPhiRy = cosPhi * ry;
-    sinPhiRx = sinPhi * rx;
-    sinPhiRy = sinPhi * ry;
-
-    cosTheta1 = cosf(theta1);
-    sinTheta1 = sinf(theta1);
+    auto bcp = 4.0f / 3.0f * (1.0f - cosf(delta / 2.0f)) / sinf(delta / 2.0f);
+    auto cosPhiR = Point{cosPhi * radius.x, cosPhi * radius.y};
+    auto sinPhiR = Point{sinPhi * radius.x, sinPhi * radius.y};
+    auto cosTheta1 = cosf(theta1);
+    auto sinTheta1 = sinf(theta1);
 
     for (int i = 0; i < segments; ++i) {
         //End angle (for this segment) = current + delta
-        float c1x, c1y, ex, ey, c2x, c2y;
-        float theta2 = theta1 + delta;
-        float cosTheta2 = cosf(theta2);
-        float sinTheta2 = sinf(theta2);
-        Point p[3];
+        auto theta2 = theta1 + delta;
+        auto cosTheta2 = cosf(theta2);
+        auto sinTheta2 = sinf(theta2);
 
         //First control point (based on start point sx,sy)
-        c1x = sx - bcp * (cosPhiRx * sinTheta1 + sinPhiRy * cosTheta1);
-        c1y = sy + bcp * (cosPhiRy * cosTheta1 - sinPhiRx * sinTheta1);
+        auto c1 = start + Point{-bcp * (cosPhiR.x * sinTheta1 + sinPhiR.y * cosTheta1), bcp * (cosPhiR.y * cosTheta1 - sinPhiR.x * sinTheta1)};
 
         //End point (for this segment)
-        ex = cx + (cosPhiRx * cosTheta2 - sinPhiRy * sinTheta2);
-        ey = cy + (sinPhiRx * cosTheta2 + cosPhiRy * sinTheta2);
+        auto e = center + Point{cosPhiR.x * cosTheta2 - sinPhiR.y * sinTheta2, sinPhiR.x * cosTheta2 + cosPhiR.y * sinTheta2};
 
         //Second control point (based on end point ex,ey)
-        c2x = ex + bcp * (cosPhiRx * sinTheta2 + sinPhiRy * cosTheta2);
-        c2y = ey + bcp * (sinPhiRx * sinTheta2 - cosPhiRy * cosTheta2);
-        cmds->push(PathCommand::CubicTo);
-        p[0] = {c1x, c1y};
-        p[1] = {c2x, c2y};
-        p[2] = {ex, ey};
-        pts->push(p[0]);
-        pts->push(p[1]);
-        pts->push(p[2]);
-        *curCtl = p[1];
-        *cur = p[2];
+        curCtl = e + Point{bcp * (cosPhiR.x * sinTheta2 + sinPhiR.y * cosTheta2), bcp * (sinPhiR.x * sinTheta2 - cosPhiR.y * cosTheta2)};
+        cur = e;
+        out.cubicTo(c1, curCtl, cur);
 
         //Next start point is the current end point (same for angle)
-        sx = ex;
-        sy = ey;
+        start = e;
         theta1 = theta2;
         //Avoid recomputations
         cosTheta1 = cosTheta2;
         sinTheta1 = sinTheta2;
     }
 }
+
 
 static int _numberCount(char cmd)
 {
@@ -304,14 +214,13 @@ static int _numberCount(char cmd)
             count = 7;
             break;
         }
-        default:
-            break;
+        default: break;
     }
     return count;
 }
 
 
-static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cmd, float* arr, int count, Point* cur, Point* curCtl, Point* startPoint, bool *isQuadratic, bool* closed)
+static bool _processCommand(RenderPath& out, char cmd, float* arr, int count, Point& cur, Point& curCtl, Point& start, bool& quadratic, bool& closed)
 {
     switch (cmd) {
         case 'm':
@@ -321,169 +230,120 @@ static bool _processCommand(Array<PathCommand>* cmds, Array<Point>* pts, char cm
         case 'q':
         case 't': {
             for (int i = 0; i < count - 1; i += 2) {
-                arr[i] = arr[i] + cur->x;
-                arr[i + 1] = arr[i + 1] + cur->y;
+                arr[i] = arr[i] + cur.x;
+                arr[i + 1] = arr[i + 1] + cur.y;
             }
             break;
         }
         case 'h': {
-            arr[0] = arr[0] + cur->x;
+            arr[0] = arr[0] + cur.x;
             break;
         }
         case 'v': {
-            arr[0] = arr[0] + cur->y;
+            arr[0] = arr[0] + cur.y;
             break;
         }
         case 'a': {
-            arr[5] = arr[5] + cur->x;
-            arr[6] = arr[6] + cur->y;
+            arr[5] = arr[5] + cur.x;
+            arr[6] = arr[6] + cur.y;
             break;
         }
-        default: {
-            break;
-        }
+        default: break;
     }
 
     switch (cmd) {
         case 'm':
         case 'M': {
-            Point p = {arr[0], arr[1]};
-            cmds->push(PathCommand::MoveTo);
-            pts->push(p);
-            *cur = {arr[0], arr[1]};
-            *startPoint = {arr[0], arr[1]};
+            start = cur = {arr[0], arr[1]};
+            out.moveTo(cur);
             break;
         }
         case 'l':
         case 'L': {
-            Point p = {arr[0], arr[1]};
-            cmds->push(PathCommand::LineTo);
-            pts->push(p);
-            *cur = {arr[0], arr[1]};
+            cur = {arr[0], arr[1]};
+            out.lineTo(cur);
             break;
         }
         case 'c':
         case 'C': {
-            Point p[3];
-            cmds->push(PathCommand::CubicTo);
-            p[0] = {arr[0], arr[1]};
-            p[1] = {arr[2], arr[3]};
-            p[2] = {arr[4], arr[5]};
-            pts->push(p[0]);
-            pts->push(p[1]);
-            pts->push(p[2]);
-            *curCtl = p[1];
-            *cur = p[2];
-            *isQuadratic = false;
+            curCtl = {arr[2], arr[3]};
+            cur = {arr[4], arr[5]};
+            out.cubicTo({arr[0], arr[1]}, curCtl, cur);
+            quadratic = false;
             break;
         }
         case 's':
         case 'S': {
-            Point p[3], ctrl;
-            if ((cmds->count > 1) && (cmds->last() == PathCommand::CubicTo) &&
-                !(*isQuadratic)) {
-                ctrl.x = 2 * cur->x - curCtl->x;
-                ctrl.y = 2 * cur->y - curCtl->y;
+            Point ctrl;
+            if ((out.cmds.count > 1) && (out.cmds.last() == PathCommand::CubicTo) && !quadratic) {
+                ctrl = 2 * cur - curCtl;
             } else {
-                ctrl = *cur;
+                ctrl = cur;
             }
-            cmds->push(PathCommand::CubicTo);
-            p[0] = ctrl;
-            p[1] = {arr[0], arr[1]};
-            p[2] = {arr[2], arr[3]};
-            pts->push(p[0]);
-            pts->push(p[1]);
-            pts->push(p[2]);
-            *curCtl = p[1];
-            *cur = p[2];
-            *isQuadratic = false;
+            curCtl = {arr[0], arr[1]};
+            cur = {arr[2], arr[3]};
+            out.cubicTo(ctrl, curCtl, cur);
+            quadratic = false;
             break;
         }
         case 'q':
         case 'Q': {
-            Point p[3];
-            float ctrl_x0 = (cur->x + 2 * arr[0]) * (1.0f / 3.0f);
-            float ctrl_y0 = (cur->y + 2 * arr[1]) * (1.0f / 3.0f);
-            float ctrl_x1 = (arr[2] + 2 * arr[0]) * (1.0f / 3.0f);
-            float ctrl_y1 = (arr[3] + 2 * arr[1]) * (1.0f / 3.0f);
-            cmds->push(PathCommand::CubicTo);
-            p[0] = {ctrl_x0, ctrl_y0};
-            p[1] = {ctrl_x1, ctrl_y1};
-            p[2] = {arr[2], arr[3]};
-            pts->push(p[0]);
-            pts->push(p[1]);
-            pts->push(p[2]);
-            *curCtl = {arr[0], arr[1]};
-            *cur = p[2];
-            *isQuadratic = true;
+            auto ctrl1 = (cur + 2 * Point{arr[0], arr[1]}) * (1.0f / 3.0f);
+            auto ctrl2 = (Point{arr[2], arr[3]} + 2 * Point{arr[0], arr[1]}) * (1.0f / 3.0f);
+            curCtl = {arr[0], arr[1]};
+            cur = {arr[2], arr[3]};
+            out.cubicTo(ctrl1, ctrl2, cur);
+            quadratic = true;
             break;
         }
         case 't':
         case 'T': {
-            Point p[3], ctrl;
-            if ((cmds->count > 1) && (cmds->last() == PathCommand::CubicTo) &&
-                *isQuadratic) {
-                ctrl.x = 2 * cur->x - curCtl->x;
-                ctrl.y = 2 * cur->y - curCtl->y;
+            Point ctrl;
+            if ((out.cmds.count > 1) && (out.cmds.last() == PathCommand::CubicTo) && quadratic) {
+                ctrl = 2 * cur - curCtl;
             } else {
-                ctrl = *cur;
+                ctrl = cur;
             }
-            float ctrl_x0 = (cur->x + 2 * ctrl.x) * (1.0f / 3.0f);
-            float ctrl_y0 = (cur->y + 2 * ctrl.y) * (1.0f / 3.0f);
-            float ctrl_x1 = (arr[0] + 2 * ctrl.x) * (1.0f / 3.0f);
-            float ctrl_y1 = (arr[1] + 2 * ctrl.y) * (1.0f / 3.0f);
-            cmds->push(PathCommand::CubicTo);
-            p[0] = {ctrl_x0, ctrl_y0};
-            p[1] = {ctrl_x1, ctrl_y1};
-            p[2] = {arr[0], arr[1]};
-            pts->push(p[0]);
-            pts->push(p[1]);
-            pts->push(p[2]);
-            *curCtl = {ctrl.x, ctrl.y};
-            *cur = p[2];
-            *isQuadratic = true;
+            auto ctrl1 = (cur + 2 * ctrl) * (1.0f / 3.0f);
+            auto ctrl2 = (Point{arr[0], arr[1]} + 2 * ctrl) * (1.0f / 3.0f);
+            curCtl = {ctrl.x, ctrl.y};
+            cur = {arr[0], arr[1]};
+            out.cubicTo(ctrl1, ctrl2, cur);
+            quadratic = true;
             break;
         }
         case 'h':
         case 'H': {
-            Point p = {arr[0], cur->y};
-            cmds->push(PathCommand::LineTo);
-            pts->push(p);
-            cur->x = arr[0];
+            out.lineTo({arr[0], cur.y});
+            cur.x = arr[0];
             break;
         }
         case 'v':
         case 'V': {
-            Point p = {cur->x, arr[0]};
-            cmds->push(PathCommand::LineTo);
-            pts->push(p);
-            cur->y = arr[0];
+            out.lineTo({cur.x, arr[0]});
+            cur.y = arr[0];
             break;
         }
         case 'z':
         case 'Z': {
-            cmds->push(PathCommand::Close);
-            *cur = *startPoint;
-            *closed = true;
+            out.close();
+            cur = start;
+            closed = true;
             break;
         }
         case 'a':
         case 'A': {
             if (tvg::zero(arr[0]) || tvg::zero(arr[1])) {
-                Point p = {arr[5], arr[6]};
-                cmds->push(PathCommand::LineTo);
-                pts->push(p);
-                *cur = {arr[5], arr[6]};
-            } else if (!tvg::equal(cur->x, arr[5]) || !tvg::equal(cur->y, arr[6])) {
-                _pathAppendArcTo(cmds, pts, cur, curCtl, arr[5], arr[6], fabsf(arr[0]), fabsf(arr[1]), arr[2], arr[3], arr[4]);
-                *cur = *curCtl = {arr[5], arr[6]};
-                *isQuadratic = false;
+                cur = {arr[5], arr[6]};
+                out.lineTo(cur);
+            } else if (!tvg::equal(cur.x, arr[5]) || !tvg::equal(cur.y, arr[6])) {
+                _pathAppendArcTo(out, cur, curCtl, {arr[5], arr[6]}, {fabsf(arr[0]), fabsf(arr[1])}, deg2rad(arr[2]), arr[3], arr[4]);
+                cur = curCtl = {arr[5], arr[6]};
+                quadratic = false;
             }
             break;
         }
-        default: {
-            return false;
-        }
+        default: return false;
     }
     return true;
 }
@@ -525,12 +385,12 @@ static char* _nextCommand(char* path, char* cmd, float* arr, int* count, bool* c
             }
         }
         *count = 0;
-        return NULL;
+        return nullptr;
     }
     for (int i = 0; i < *count; i++) {
         if (!_parseNumber(&path, &arr[i])) {
             *count = 0;
-            return NULL;
+            return nullptr;
         }
         path = _skipComma(path);
     }
@@ -543,29 +403,26 @@ static char* _nextCommand(char* path, char* cmd, float* arr, int* count, bool* c
 /************************************************************************/
 
 
-bool svgPathToShape(const char* svgPath, Shape* shape)
+bool svgPathToShape(const char* svgPath, RenderPath& out)
 {
     float numberArray[7];
     int numberCount = 0;
-    Point cur = { 0, 0 };
-    Point curCtl = { 0, 0 };
-    Point startPoint = { 0, 0 };
+    Point cur = {0, 0};
+    Point curCtl = {0, 0};
+    Point start = {0, 0};
     char cmd = 0;
-    bool isQuadratic = false;
-    bool closed = false;
-    char* path = (char*)svgPath;
-
-    auto& pts = P(shape)->rs.path.pts;
-    auto& cmds = P(shape)->rs.path.cmds;
-    auto lastCmds = cmds.count;
+    auto path = (char*)svgPath;
+    auto lastCmds = out.cmds.count;
+    auto isQuadratic = false;
+    auto closed = false;
 
     while ((path[0] != '\0')) {
         path = _nextCommand(path, &cmd, numberArray, &numberCount, &closed);
         if (!path) break;
         closed = false;
-        if (!_processCommand(&cmds, &pts, cmd, numberArray, numberCount, &cur, &curCtl, &startPoint, &isQuadratic, &closed)) break;
+        if (!_processCommand(out, cmd, numberArray, numberCount, cur, curCtl, start, isQuadratic, closed)) break;
     }
 
-    if (cmds.count > lastCmds && cmds[lastCmds] != PathCommand::MoveTo) return false;
+    if (out.cmds.count > lastCmds && out.cmds[lastCmds] != PathCommand::MoveTo) return false;
     return true;
 }

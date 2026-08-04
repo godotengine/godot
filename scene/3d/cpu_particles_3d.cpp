@@ -31,7 +31,10 @@
 #include "cpu_particles_3d.h"
 #include "cpu_particles_3d.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/math/random_number_generator.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/main/viewport.h"
@@ -39,6 +42,7 @@
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/particle_process_material.h"
+#include "servers/rendering/rendering_server.h"
 
 AABB CPUParticles3D::get_aabb() const {
 	return AABB();
@@ -83,7 +87,7 @@ void CPUParticles3D::set_amount(int p_amount) {
 
 	particle_data.resize((12 + 4 + 4) * p_amount);
 	RS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
-	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_3D, true, true);
+	RS::get_singleton()->multimesh_allocate_data(multimesh, p_amount, RSE::MULTIMESH_TRANSFORM_3D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -336,25 +340,42 @@ void CPUParticles3D::set_param_curve(Parameter p_param, const Ref<Curve> &p_curv
 	curve_parameters[p_param] = p_curve;
 
 	switch (p_param) {
-		case PARAM_ANGULAR_VELOCITY:
-		case PARAM_ORBIT_VELOCITY:
-		case PARAM_LINEAR_ACCEL:
-		case PARAM_RADIAL_ACCEL:
-		case PARAM_TANGENTIAL_ACCEL:
-		case PARAM_ANGLE:
+		case PARAM_INITIAL_LINEAR_VELOCITY: {
+			//do none for this one
+		} break;
+		case PARAM_ANGULAR_VELOCITY: {
+			_adjust_curve_range(p_curve, -360, 360);
+		} break;
+		case PARAM_ORBIT_VELOCITY: {
+			_adjust_curve_range(p_curve, -500, 500);
+		} break;
+		case PARAM_LINEAR_ACCEL: {
+			_adjust_curve_range(p_curve, -200, 200);
+		} break;
+		case PARAM_RADIAL_ACCEL: {
+			_adjust_curve_range(p_curve, -200, 200);
+		} break;
+		case PARAM_TANGENTIAL_ACCEL: {
+			_adjust_curve_range(p_curve, -200, 200);
+		} break;
+		case PARAM_DAMPING: {
+			_adjust_curve_range(p_curve, 0, 100);
+		} break;
+		case PARAM_ANGLE: {
+			_adjust_curve_range(p_curve, -360, 360);
+		} break;
+		case PARAM_SCALE: {
+		} break;
 		case PARAM_HUE_VARIATION: {
 			_adjust_curve_range(p_curve, -1, 1);
 		} break;
-		case PARAM_DAMPING:
-		case PARAM_SCALE:
-		case PARAM_ANIM_SPEED:
+		case PARAM_ANIM_SPEED: {
+			_adjust_curve_range(p_curve, 0, 200);
+		} break;
 		case PARAM_ANIM_OFFSET: {
-			_adjust_curve_range(p_curve, 0, 1);
 		} break;
-		case PARAM_INITIAL_LINEAR_VELOCITY:
-		case PARAM_MAX: {
-			// No curve available.
-		} break;
+		default: {
+		}
 	}
 
 	update_configuration_warnings();
@@ -566,45 +587,47 @@ uint32_t CPUParticles3D::get_seed() const {
 	return seed;
 }
 
-void CPUParticles3D::request_particles_process(real_t p_requested_process_time) {
-	_requested_process_time = p_requested_process_time;
+void CPUParticles3D::request_particles_process(real_t p_request_process_time, real_t p_request_process_time_residual) {
+	_request_process_time = p_request_process_time;
+	_request_process_time_residual = p_request_process_time_residual;
+	_update_internal();
 }
 
 void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
-	}
-
-	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_box_extents" && emission_shape != EMISSION_SHAPE_BOX) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if ((p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture" || p_property.name == "emission_points") && (emission_shape != EMISSION_SHAPE_POINTS && (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS))) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "emission_normals" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("emission_ring_") && emission_shape != EMISSION_SHAPE_RING) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("orbit_") && !particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name.begins_with("scale_curve_") && !split_scale) {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-
-	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "emission_sphere_radius") {
+		if (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_box_extents") {
+		if (emission_shape != EMISSION_SHAPE_BOX) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_point_texture" || p_property.name == "emission_color_texture" || p_property.name == "emission_points") {
+		if (emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "emission_normals") {
+		if (emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("emission_ring_")) {
+		if (emission_shape != EMISSION_SHAPE_RING) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("orbit_")) {
+		if (!particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name.begins_with("scale_curve_")) {
+		if (!split_scale) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	} else if (p_property.name == "seed") {
+		if (!use_fixed_seed) {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
 	}
 }
 
@@ -651,25 +674,58 @@ void CPUParticles3D::_update_internal() {
 
 	bool processed = false;
 
+	{
+		float todo = time == 0 ? pre_process_time : 0;
+		todo = todo > _request_process_time ? todo : _request_process_time;
+		todo = todo > _request_process_time_residual ? todo : _request_process_time_residual;
+
+		if (todo > 0.0) {
+			real_t frame_time;
+			if (fixed_fps > 0) {
+				frame_time = 1.0 / fixed_fps;
+			} else {
+				frame_time = 1.0 / 30.0;
+			}
+
+			float tmp_scale = speed_scale;
+			// We need this otherwise the speed scale of the particle system influences the TODO.
+			speed_scale = 1.0;
+			if (time == 0) {
+				todo = pre_process_time;
+				while (todo > 0.0) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			if (_request_process_time > 0.0) {
+				todo = _request_process_time;
+				emitting = true;
+				while (todo > 0.0) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			if (_request_process_time_residual > 0.0) {
+				emitting = false;
+				todo = _request_process_time_residual;
+				while (todo > 0.0) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			speed_scale = tmp_scale;
+			processed = true;
+		}
+		_request_process_time = 0;
+		_request_process_time_residual = 0;
+	}
+
 	double frame_time;
 	if (fixed_fps > 0) {
 		frame_time = 1.0 / fixed_fps;
 	} else {
 		frame_time = 1.0 / 30.0;
 	}
-	double todo = _requested_process_time;
-	_requested_process_time = 0.;
-	if (time == 0 && pre_process_time > 0.0) {
-		todo += pre_process_time;
-	}
-	real_t tmp_speed = speed_scale;
-	speed_scale = 1.0;
-	while (todo > 0) {
-		_particles_process(frame_time);
-		todo -= frame_time;
-	}
-	speed_scale = tmp_speed;
-	todo = 0.0;
 
 	if (fixed_fps > 0) {
 		double decr = frame_time;
@@ -677,10 +733,10 @@ void CPUParticles3D::_update_internal() {
 		double ldelta = delta;
 		if (ldelta > 0.1) { //avoid recursive stalls if fps goes below 10
 			ldelta = 0.1;
-		} else if (ldelta <= 0.0) { //unlikely but..
-			ldelta = 0.001;
+		} else if (ldelta < 0.0) {
+			ldelta = 0.0;
 		}
-		todo = frame_remainder + ldelta;
+		double todo = frame_remainder + ldelta;
 
 		while (todo >= frame_time) {
 			_particles_process(frame_time);
@@ -844,7 +900,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				}
 				// rotate spread to direction
 				Vector3 binormal = Vector3(0.0, 1.0, 0.0).cross(direction_nrm);
-				if (binormal.length_squared() < 0.00000001) {
+				if (binormal.length_squared() < 0.00000001f) {
 					// direction is parallel to Y. Choose Z as the binormal.
 					binormal = Vector3(0.0, 0.0, 1.0);
 				}
@@ -1028,19 +1084,19 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				position.z = 0.0;
 			}
 			//apply linear acceleration
-			force += p.velocity.length() > 0.0 ? p.velocity.normalized() * tex_linear_accel * Math::lerp(parameters_min[PARAM_LINEAR_ACCEL], parameters_max[PARAM_LINEAR_ACCEL], rand_from_seed(alt_seed)) : Vector3();
+			force += p.velocity.length() > 0.0f ? p.velocity.normalized() * tex_linear_accel * Math::lerp(parameters_min[PARAM_LINEAR_ACCEL], parameters_max[PARAM_LINEAR_ACCEL], rand_from_seed(alt_seed)) : Vector3();
 			//apply radial acceleration
 			Vector3 org = emission_xform.origin;
 			Vector3 diff = position - org;
-			force += diff.length() > 0.0 ? diff.normalized() * (tex_radial_accel)*Math::lerp(parameters_min[PARAM_RADIAL_ACCEL], parameters_max[PARAM_RADIAL_ACCEL], rand_from_seed(alt_seed)) : Vector3();
+			force += diff.length() > 0.0f ? diff.normalized() * (tex_radial_accel)*Math::lerp(parameters_min[PARAM_RADIAL_ACCEL], parameters_max[PARAM_RADIAL_ACCEL], rand_from_seed(alt_seed)) : Vector3();
 			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 				Vector2 yx = Vector2(diff.y, diff.x);
 				Vector2 yx2 = (yx * Vector2(-1.0, 1.0)).normalized();
-				force += yx.length() > 0.0 ? Vector3(yx2.x, yx2.y, 0.0) * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector3();
+				force += yx.length() > 0.0f ? Vector3(yx2.x, yx2.y, 0.0f) * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector3();
 
 			} else {
 				Vector3 crossDiff = diff.normalized().cross(gravity.normalized());
-				force += crossDiff.length() > 0.0 ? crossDiff.normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector3();
+				force += crossDiff.length() > 0.0f ? crossDiff.normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector3();
 			}
 			//apply attractor forces
 			p.velocity += force * local_delta;
@@ -1140,7 +1196,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 
 		if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 			if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
-				if (p.velocity.length() > 0.0) {
+				if (p.velocity.length() > 0.0f) {
 					p.transform.basis.set_column(1, p.velocity.normalized());
 				} else {
 					p.transform.basis.set_column(1, p.transform.basis.get_column(1));
@@ -1157,7 +1213,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 		} else {
 			//orient particle Y towards velocity
 			if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
-				if (p.velocity.length() > 0.0) {
+				if (p.velocity.length() > 0.0f) {
 					p.transform.basis.set_column(1, p.velocity.normalized());
 				} else {
 					p.transform.basis.set_column(1, p.transform.basis.get_column(1).normalized());
@@ -1311,13 +1367,13 @@ void CPUParticles3D::_set_redraw(bool p_redraw) {
 
 		if (redraw) {
 			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread));
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
 			RS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 		} else {
 			if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread))) {
 				RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread));
 			}
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
 			RS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 		}
 	}
@@ -1359,7 +1415,11 @@ void CPUParticles3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			inv_emission_transform = get_global_transform().affine_inverse();
+			Transform3D global_transform = get_global_transform();
+			if (unlikely(global_transform.basis.determinant() == 0)) {
+				return;
+			}
+			inv_emission_transform = global_transform.affine_inverse();
 
 			if (!local_coords) {
 				int pc = particles.size();
@@ -1460,13 +1520,13 @@ void CPUParticles3D::convert_from_particles(Node *p_particles) {
 	set_gravity(material->get_gravity());
 	set_lifetime_randomness(material->get_lifetime_randomness());
 
-#define CONVERT_PARAM(m_param)                                                                  \
-	set_param_min(m_param, material->get_param_min(ParticleProcessMaterial::m_param));          \
-	{                                                                                           \
+#define CONVERT_PARAM(m_param) \
+	set_param_min(m_param, material->get_param_min(ParticleProcessMaterial::m_param)); \
+	{ \
 		Ref<CurveTexture> ctex = material->get_param_texture(ParticleProcessMaterial::m_param); \
-		if (ctex.is_valid())                                                                    \
-			set_param_curve(m_param, ctex->get_curve());                                        \
-	}                                                                                           \
+		if (ctex.is_valid()) \
+			set_param_curve(m_param, ctex->get_curve()); \
+	} \
 	set_param_max(m_param, material->get_param_max(ParticleProcessMaterial::m_param));
 
 	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
@@ -1528,7 +1588,7 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_seed"), &CPUParticles3D::get_seed);
 
 	ClassDB::bind_method(D_METHOD("restart", "keep_seed"), &CPUParticles3D::restart, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &CPUParticles3D::request_particles_process);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time", "process_time_residual"), &CPUParticles3D::request_particles_process, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("capture_aabb"), &CPUParticles3D::capture_aabb);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting", PROPERTY_HINT_ONESHOT), "set_emitting", "is_emitting");
@@ -1550,7 +1610,11 @@ void CPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "visibility_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_visibility_aabb", "get_visibility_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,View Depth"), "set_draw_order", "get_draw_order");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()), "set_mesh", "get_mesh");
+	// Specify all types for explicit ordering in the inspector,
+	// but list generic Mesh last to allow extended types to show up at the end.
+	// Keep the order in sync with MeshInstance3D's `mesh` property,
+	// with the exception of moving QuadMesh to the beginning so that it's automatically instanced on node creation.
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "QuadMesh,BoxMesh,SphereMesh,CapsuleMesh,CylinderMesh,PrismMesh,TorusMesh,PlaneMesh,TextMesh,RibbonTrailMesh,TubeTrailMesh,PointMesh,ArrayMesh,ImmediateMesh,PlaceholderMesh,Mesh", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_mesh", "get_mesh");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);

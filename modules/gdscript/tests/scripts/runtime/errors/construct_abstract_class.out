@@ -1,0 +1,5 @@
+GDTEST_RUNTIME_ERROR
+false
+>> SCRIPT ERROR at runtime/errors/construct_abstract_class.gd:11 on subtest_gdscript(): Invalid call function 'new' in base 'GDScript': Can't instantiate an abstract class.
+false
+>> SCRIPT ERROR at runtime/errors/construct_abstract_class.gd:16 on subtest_variant(): Invalid call function 'new' in base 'GDScript': Can't instantiate an abstract class.

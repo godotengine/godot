@@ -32,6 +32,9 @@
 
 #include "core/templates/vset.h"
 #include "scene/2d/physics/physics_body_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_body_state_2d.h"
+
+class PhysicsMaterial;
 
 class RigidBody2D : public PhysicsBody2D {
 	GDCLASS(RigidBody2D, PhysicsBody2D);
@@ -187,6 +190,16 @@ public:
 
 	void set_linear_velocity(const Vector2 &p_velocity);
 	Vector2 get_linear_velocity() const;
+
+	_FORCE_INLINE_ Vector2 get_velocity_at_local_position(const Vector2 &p_position) const {
+		const Vector2 com_to_pos = p_position + get_global_position() - to_global(center_of_mass);
+		return linear_velocity + Vector2(-angular_velocity * com_to_pos.y, angular_velocity * com_to_pos.x);
+	}
+
+	_FORCE_INLINE_ Vector2 get_velocity_at_position(const Vector2 &p_position) const {
+		const Vector2 com_to_pos = p_position - to_global(center_of_mass);
+		return linear_velocity + Vector2(-angular_velocity * com_to_pos.y, angular_velocity * com_to_pos.x);
+	}
 
 	void set_axis_velocity(const Vector2 &p_axis);
 

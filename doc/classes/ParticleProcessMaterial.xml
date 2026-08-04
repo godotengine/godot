@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ParticleProcessMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ParticleProcessMaterial" inherits="Material" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Holds a particle configuration for [GPUParticles2D] or [GPUParticles3D] nodes.
 	</brief_description>
@@ -291,6 +291,10 @@
 		<member name="particle_flag_disable_z" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			If [code]true[/code], particles will not move on the z axis.
 		</member>
+		<member name="particle_flag_inherit_emitter_scale" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
+			If [code]true[/code], particles will inherit the scale of the emitter.
+			[b]Note:[/b] This has no effect when [member GPUParticles3D.local_coords] is [code]true[/code], since particles in local space are already affected by the emitter's scale.
+		</member>
 		<member name="particle_flag_rotate_y" type="bool" setter="set_particle_flag" getter="get_particle_flag" default="false">
 			If [code]true[/code], particles rotate around Y axis by [member angle_min].
 		</member>
@@ -314,6 +318,29 @@
 		<member name="radial_velocity_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum radial velocity applied to each particle. Makes particles move away from the [member velocity_pivot], or toward it if negative.
 			[b]Note:[/b] Animated velocities will not be affected by damping, use [member velocity_limit_curve] instead.
+		</member>
+		<member name="rotation_3d_max" type="Vector3" setter="set_rotation_3d_max" getter="get_rotation_3d_max">
+			The maximum 3D orientation, in degrees. Works only in 3D and if [member use_rotation_3d] is enabled.
+		</member>
+		<member name="rotation_3d_min" type="Vector3" setter="set_rotation_3d_min" getter="get_rotation_3d_min">
+			The minimum 3D orientation, in degrees. Works only in 3D and if [member use_rotation_3d] is enabled.
+		</member>
+		<member name="rotation_velocity_3d_curve" type="Texture2D" setter="set_rotation_velocity_3d_curve" getter="get_rotation_velocity_3d_curve">
+			Rotation velocity curve over lifetime, per-axis. Enable [member use_rotation_velocity_3d] to use this.
+		</member>
+		<member name="rotation_velocity_3d_max" type="Vector3" setter="set_rotation_velocity_3d_max" getter="get_rotation_velocity_3d_max">
+			Maximum 3D rotation velocity on the particle's local axis. Enable [member use_rotation_velocity_3d] to use this.
+		</member>
+		<member name="rotation_velocity_3d_min" type="Vector3" setter="set_rotation_velocity_3d_min" getter="get_rotation_velocity_3d_min">
+			Minimum 3D rotation velocity on the particle's local axis. Enable [member use_rotation_velocity_3d] to use this.
+		</member>
+		<member name="scale_3d_max" type="Vector3" setter="set_scale_3d_max" getter="get_scale_3d_max">
+			The maximum value of the random scale vector for each particle.
+			Works only if [member use_scale_3d] is enabled.
+		</member>
+		<member name="scale_3d_min" type="Vector3" setter="set_scale_3d_min" getter="get_scale_3d_min">
+			The minimum value of the random scale vector for each particle.
+			Works only if [member use_scale_3d] is enabled.
 		</member>
 		<member name="scale_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's scale will vary along this [CurveTexture] over its lifetime. If a [CurveXYZTexture] is supplied instead, the scale will be separated per-axis.
@@ -407,6 +434,15 @@
 		<member name="turbulence_noise_strength" type="float" setter="set_turbulence_noise_strength" getter="get_turbulence_noise_strength" default="1.0">
 			The turbulence noise strength. Increasing this will result in a stronger, more contrasting, flow pattern.
 		</member>
+		<member name="use_rotation_3d" type="bool" setter="set_use_rotation_3d" getter="is_using_rotation_3d" default="false">
+			Enable the usage of [member rotation_3d_min] and [member rotation_3d_max].
+		</member>
+		<member name="use_rotation_velocity_3d" type="bool" setter="set_using_rotation_velocity_3d" getter="is_using_rotation_velocity_3d" default="false">
+			Enable 3D rotation velocity.
+		</member>
+		<member name="use_scale_3d" type="bool" setter="set_use_scale_3d" getter="is_using_scale_3d" default="false">
+			Enable the usage of [member scale_3d_min] and [member scale_3d_max].
+		</member>
 		<member name="velocity_limit_curve" type="Texture2D" setter="set_velocity_limit_curve" getter="get_velocity_limit_curve">
 			A [CurveTexture] that defines the maximum velocity of a particle during its lifetime.
 		</member>
@@ -482,7 +518,9 @@
 		</constant>
 		<constant name="PARTICLE_FLAG_DAMPING_AS_FRICTION" value="3" enum="ParticleFlags">
 		</constant>
-		<constant name="PARTICLE_FLAG_MAX" value="4" enum="ParticleFlags">
+		<constant name="PARTICLE_FLAG_INHERIT_EMITTER_SCALE" value="4" enum="ParticleFlags">
+		</constant>
+		<constant name="PARTICLE_FLAG_MAX" value="5" enum="ParticleFlags">
 			Represents the size of the [enum ParticleFlags] enum.
 		</constant>
 		<constant name="EMISSION_SHAPE_POINT" value="0" enum="EmissionShape">

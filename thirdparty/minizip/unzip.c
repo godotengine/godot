@@ -1,14 +1,13 @@
 /* unzip.c -- IO for uncompress .zip files using zlib
-   Version 1.1, February 14h, 2010
-   part of the MiniZip project - ( http://www.winimage.com/zLibDll/minizip.html )
+   part of the MiniZip project - ( https://www.winimage.com/zLibDll/minizip.html )
 
-         Copyright (C) 1998-2010 Gilles Vollant (minizip) ( http://www.winimage.com/zLibDll/minizip.html )
+         Copyright (C) 1998-2026 Gilles Vollant (minizip) ( https://www.winimage.com/zLibDll/minizip.html )
 
          Modifications of Unzip for Zip64
          Copyright (C) 2007-2008 Even Rouault
 
          Modifications for Zip64 support on both zip and unzip
-         Copyright (C) 2009-2010 Mathias Svensson ( http://result42.com )
+         Copyright (C) 2009-2010 Mathias Svensson ( https://result42.com )
 
          For more info read MiniZip_info.txt
 
@@ -68,6 +67,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef ZLIB_DLL
+#  undef ZLIB_DLL
+#endif
 #include "zlib.h"
 #include "unzip.h"
 
@@ -111,7 +113,7 @@
 
 
 const char unz_copyright[] =
-   " unzip 1.01 Copyright 1998-2004 Gilles Vollant - http://www.winimage.com/zLibDll";
+   " unzip 1.01 Copyright 1998-2004 Gilles Vollant - https://www.winimage.com/zLibDll/minizip.html";
 
 /* unz_file_info64_internal contain internal info about a file in zipfile*/
 typedef struct unz_file_info64_internal_s
@@ -684,6 +686,7 @@ extern unzFile ZEXPORT unzOpen2_64(const void *path,
     {
         zlib_filefunc64_32_def zlib_filefunc64_32_def_fill;
         zlib_filefunc64_32_def_fill.zfile_func64 = *pzlib_filefunc_def;
+        zlib_filefunc64_32_def_fill.zopen32_file = NULL;
         zlib_filefunc64_32_def_fill.ztell32_file = NULL;
         zlib_filefunc64_32_def_fill.zseek32_file = NULL;
         return unzOpenInternal(path, &zlib_filefunc64_32_def_fill, 1);

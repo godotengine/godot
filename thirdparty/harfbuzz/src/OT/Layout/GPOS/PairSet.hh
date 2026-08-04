@@ -24,11 +24,11 @@ struct PairSet : ValueBase
   public:
   DEFINE_SIZE_MIN (2);
 
-  static unsigned get_size (unsigned len1, unsigned len2)
+  static size_t get_size (unsigned len1, unsigned len2)
   {
     return Types::HBGlyphID::static_size + Value::static_size * (len1 + len2);
   }
-  static unsigned get_size (const ValueFormat valueFormats[2])
+  static size_t get_size (const ValueFormat valueFormats[2])
   {
     unsigned len1 = valueFormats[0].get_len ();
     unsigned len2 = valueFormats[1].get_len ();
@@ -39,7 +39,7 @@ struct PairSet : ValueBase
   {
     const ValueFormat *valueFormats;
     unsigned int len1; /* valueFormats[0].get_len() */
-    unsigned int stride; /* bytes */
+    size_t stride; /* bytes */
   };
 
   bool sanitize (hb_sanitize_context_t *c, const sanitize_closure_t *closure) const

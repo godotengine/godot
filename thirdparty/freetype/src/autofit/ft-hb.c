@@ -4,7 +4,7 @@
  *
  *   FreeType-HarfBuzz bridge (body).
  *
- * Copyright (C) 2025 by
+ * Copyright (C) 2025-2026 by
  * Behdad Esfahbod.
  *
  * This file is part of the FreeType project, and may only be used,

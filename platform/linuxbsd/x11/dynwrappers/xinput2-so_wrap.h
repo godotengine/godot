@@ -41,7 +41,7 @@
 #define XIBarrierReleasePointers XIBarrierReleasePointers_dylibloader_orig_xinput2
 #define XIBarrierReleasePointer XIBarrierReleasePointer_dylibloader_orig_xinput2
 #define XIFreeDeviceInfo XIFreeDeviceInfo_dylibloader_orig_xinput2
-#include "thirdparty/linuxbsd_headers/X11/extensions/XInput2.h"
+#include <thirdparty/linuxbsd_headers/X11/extensions/XInput2.h> // IWYU pragma: export.
 #undef XIQueryPointer
 #undef XIWarpPointer
 #undef XIDefineCursor

@@ -200,6 +200,9 @@ public:
 	/// Returns a locking interface that locks the body so other threads cannot modify it.
 	inline const BodyLockInterfaceLocking &	GetBodyLockInterface() const					{ return mBodyLockInterfaceLocking; }
 
+	/// Return the BroadPhaseLayerInterface that this class has been initialized with
+	const BroadPhaseLayerInterface &GetBroadPhaseLayerInterface() const						{ return mBodyManager.GetBroadPhaseLayerInterface(); }
+
 	/// Broadphase layer filter that decides if two objects can collide, this was passed to the Init function.
 	const ObjectVsBroadPhaseLayerFilter &GetObjectVsBroadPhaseLayerFilter() const			{ return *mObjectVsBroadPhaseLayerFilter; }
 
@@ -247,13 +250,19 @@ public:
 	/// - During the ContactListener::OnContactRemoved callback this function can be used to determine if this is the last contact pair between the bodies (function returns false) or if there are other contacts still present (function returns true).
 	bool						WereBodiesInContact(const BodyID &inBody1ID, const BodyID &inBody2ID) const { return mContactManager.WereBodiesInContact(inBody1ID, inBody2ID); }
 
-	/// Get the bounding box of all bodies in the physics system
+	/// Get the bounding box of all bodies in the physics system.
+	/// Deprecated: Use GetBroadPhaseQuery().GetBounds() instead.
 	AABox						GetBounds() const											{ return mBroadPhase->GetBounds(); }
 
 #ifdef JPH_TRACK_BROADPHASE_STATS
 	/// Trace the accumulated broadphase stats to the TTY
 	void						ReportBroadphaseStats()										{ mBroadPhase->ReportStats(); }
 #endif // JPH_TRACK_BROADPHASE_STATS
+
+#if defined(JPH_TRACK_SIMULATION_STATS) && defined(JPH_PROFILE_ENABLED)
+	/// Dump the per body simulation stats to the TTY
+	void						ReportSimulationStats()										{ mBodyManager.ReportSimulationStats(); }
+#endif
 
 private:
 	using CCDBody = PhysicsUpdateContext::Step::CCDBody;
@@ -283,6 +292,11 @@ private:
 	/// Tries to spawn a new FindCollisions job if max concurrency hasn't been reached yet
 	void						TrySpawnJobFindCollisions(PhysicsUpdateContext::Step *ioStep) const;
 
+#ifdef JPH_TRACK_SIMULATION_STATS
+	/// Gather stats from the islands and distribute them over the bodies
+	void						GatherIslandStats();
+#endif
+
 	using ContactAllocator = ContactConstraintManager::ContactAllocator;
 
 	/// Process narrow phase for a single body pair
@@ -293,6 +307,10 @@ private:
 
 	/// Called at the end of JobSolveVelocityConstraints to check if bodies need to go to sleep and to update their bounding box in the broadphase
 	void						CheckSleepAndUpdateBounds(uint32 inIslandIndex, const PhysicsUpdateContext *ioContext, const PhysicsUpdateContext::Step *ioStep, BodiesToSleep &ioBodiesToSleep);
+
+	/// Helper function that solves the velocity of a CCD contact
+	template <EMotionType Type2>
+	static void					sSolveCCDContact(Body &ioBody1, float inInvM1, Mat44Arg inInvI1, Vec3Arg inR1PlusU, Body &ioBody2, Vec3Arg inR2, Vec3Arg inContactNormal, float inNormalVelocityBias, Vec3Arg inFrictionDirection, const ContactSettings &inContactSettings);
 
 	/// Number of constraints to process at once in JobDetermineActiveConstraints
 	static constexpr int		cDetermineActiveConstraintsBatchSize = 64;

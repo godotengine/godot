@@ -128,8 +128,6 @@ class EditorPropertyOTVariation : public EditorProperty {
 	EditorPaginator *paginator = nullptr;
 
 protected:
-	static void _bind_methods() {}
-
 	void _edit_pressed();
 	void _page_changed(int p_page);
 	void _property_changed(const String &p_property, const Variant &p_value, const String &p_name = "", bool p_changing = false);
@@ -206,7 +204,6 @@ class FontPreview : public Control {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 	Ref<Font> prev_font;
 
@@ -240,7 +237,6 @@ protected:
 	virtual void _add_element() override;
 
 	void _add_font(int p_option);
-	static void _bind_methods() {}
 
 public:
 	EditorPropertyFontNamesArray();

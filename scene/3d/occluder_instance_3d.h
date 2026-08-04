@@ -32,6 +32,8 @@
 
 #include "scene/3d/visual_instance_3d.h"
 
+class ArrayMesh;
+
 class Occluder3D : public Resource {
 	GDCLASS(Occluder3D, Resource);
 	RES_BASE_EXTENSION("occ");

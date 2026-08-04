@@ -31,14 +31,15 @@
 #pragma once
 
 #include "core/io/dir_access.h"
-#include "core/io/resource_importer.h"
-#include "core/io/resource_loader.h"
+#include "core/io/resource_loader_constants.h"
+#include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 
+class ResourceFormatImporter;
 class FileAccess;
 
 struct EditorProgressBG;
@@ -121,11 +122,7 @@ protected:
 	GDVIRTUAL0RC_REQUIRED(bool, _is_active)
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_file_extensions)
 	GDVIRTUAL0RC_REQUIRED(bool, _query)
-	static void _bind_methods() {
-		GDVIRTUAL_BIND(_is_active);
-		GDVIRTUAL_BIND(_get_file_extensions);
-		GDVIRTUAL_BIND(_query);
-	}
+	static void _bind_methods();
 
 public:
 	virtual bool is_active() const {
@@ -177,6 +174,7 @@ class EditorFileSystem : public Node {
 		~ScannedDirectory();
 	};
 
+	bool is_case_sensitive = true;
 	bool use_threads = false;
 	Thread thread;
 	static void _thread_func(void *_userdata);
@@ -184,7 +182,7 @@ class EditorFileSystem : public Node {
 	EditorFileSystemDirectory *new_filesystem = nullptr;
 	static ScannedDirectory *first_scan_root_dir;
 
-	bool filesystem_changed_queued = false;
+	SafeFlag filesystem_changed_queued;
 	bool scanning = false;
 	bool importing = false;
 	bool first_scan = true;
@@ -334,7 +332,7 @@ class EditorFileSystem : public Node {
 	ScriptClassInfo _get_global_script_class(const String &p_type, const String &p_path) const;
 
 	static Error _resource_import(const String &p_path);
-	static Ref<Resource> _load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode);
+	static Ref<Resource> _load_resource_on_startup(ResourceFormatImporter *p_importer, const String &p_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceLoaderConstants::CacheMode p_cache_mode);
 
 	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 
@@ -380,6 +378,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	// The name is the version, to keep compatibility with different versions of Godot.
+	static inline String CACHE_FILE_NAME = "filesystem_cache10";
+
 	static EditorFileSystem *get_singleton() { return singleton; }
 
 	EditorFileSystemDirectory *get_filesystem();
@@ -393,6 +394,8 @@ public:
 	void update_files(const Vector<String> &p_script_paths);
 	HashSet<String> get_valid_extensions() const;
 	void register_global_class_script(const String &p_search_path, const String &p_target_path);
+
+	void filesystem_changed();
 
 	EditorFileSystemDirectory *get_filesystem_path(const String &p_path);
 	String get_file_type(const String &p_file) const;

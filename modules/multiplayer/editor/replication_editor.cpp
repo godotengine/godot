@@ -32,11 +32,14 @@
 
 #include "../multiplayer_synchronizer.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/inspector/property_selector.h"
 #include "editor/scene/scene_tree_editor.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -152,10 +155,18 @@ void ReplicationEditor::_pick_node_property_selected(String p_name) {
 
 /// ReplicationEditor
 ReplicationEditor::ReplicationEditor() {
+	set_name(TTRC("Replication"));
+	set_icon_name("ReplicationDock");
+	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_replication_bottom_panel", TTRC("Toggle Replication Dock")));
+	set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
+	set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_global(false);
+	set_transient(true);
 	set_v_size_flags(SIZE_EXPAND_FILL);
 	set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	delete_dialog->connect("canceled", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(false));
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
 	add_child(delete_dialog);
@@ -253,6 +264,11 @@ ReplicationEditor::ReplicationEditor() {
 	pin->set_tooltip_text(TTRC("Pin replication editor"));
 	hb->add_child(pin);
 
+	tree_mc = memnew(MarginContainer);
+	tree_mc->set_theme_type_variation("NoBorderHorizontal");
+	tree_mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	vb->add_child(tree_mc);
+
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
 	tree->set_columns(4);
@@ -269,8 +285,8 @@ ReplicationEditor::ReplicationEditor() {
 	tree->create_item();
 	tree->connect("button_clicked", callable_mp(this, &ReplicationEditor::_tree_button_pressed));
 	tree->connect("item_edited", callable_mp(this, &ReplicationEditor::_tree_item_edited));
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
-	vb->add_child(tree);
+	tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
+	tree_mc->add_child(tree);
 
 	drop_label = memnew(Label(TTRC("Add properties using the options above, or\ndrag them from the inspector and drop them here.")));
 	drop_label->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -513,6 +529,16 @@ void ReplicationEditor::_update_config() {
 	for (int i = 0; i < props.size(); i++) {
 		const NodePath path = props[i];
 		_add_property(path, config->property_get_spawn(path), config->property_get_replication_mode(path));
+	}
+}
+
+void ReplicationEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
+		tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_DISABLED);
+	} else {
+		tree_mc->set_theme_type_variation("NoBorderHorizontal");
+		tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
 	}
 }
 

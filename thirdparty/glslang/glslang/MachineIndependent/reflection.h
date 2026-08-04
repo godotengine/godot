@@ -37,8 +37,8 @@
 #define _REFLECTION_INCLUDED
 
 #include "../Public/ShaderLang.h"
-#include "../Include/Types.h"
-
+#include "../Include/BaseTypes.h"
+#include "../Include/visibility.h"
 #include <list>
 #include <set>
 
@@ -58,13 +58,16 @@ public:
     TReflection(EShReflectionOptions opts, EShLanguage first, EShLanguage last)
         : options(opts), firstStage(first), lastStage(last), badReflection(TObjectReflection::badReflection())
     { 
-        for (int dim=0; dim<3; ++dim)
+        for (int dim=0; dim<3; ++dim) {
             localSize[dim] = 0;
+            tileShadingRateQCOM[dim] = 0;
+        }
     }
 
     virtual ~TReflection() {}
 
     // grow the reflection stage by stage
+    GLSLANG_EXPORT_FOR_TESTS
     bool addStage(EShLanguage, const TIntermediate&);
 
     // for mapping a uniform index to a uniform object's description
@@ -167,6 +170,9 @@ public:
     // Thread local size
     unsigned getLocalSize(int dim) const { return dim <= 2 ? localSize[dim] : 0; }
 
+    // Tile shading rate QCOM
+    unsigned getTileShadingRateQCOM(int dim) const { return dim <= 2 ? tileShadingRateQCOM[dim] : 0; }
+
     void dump();
 
 protected:
@@ -212,6 +218,7 @@ protected:
     TIndices atomicCounterUniformIndices;
 
     unsigned int localSize[3];
+    unsigned int tileShadingRateQCOM[3];
 };
 
 } // end namespace glslang

@@ -86,8 +86,8 @@ hb_ms_setup_features (const hb_feature_t                *features,
 		      hb_vector_t<hb_ms_feature_t>      &feature_records, /* OUT */
 		      hb_vector_t<hb_ms_range_record_t> &range_records /* OUT */)
 {
-  feature_records.shrink(0);
-  range_records.shrink(0);
+  feature_records.clear ();
+  range_records.clear ();
 
   /* Sort features by start/end events. */
   hb_vector_t<hb_ms_feature_event_t> feature_events;
@@ -195,8 +195,8 @@ hb_ms_make_feature_ranges (hb_vector_t<hb_ms_feature_t>      &feature_records,
 			   hb_vector_t<hb_ms_features_t*>    &range_features, /* OUT */
 			   hb_vector_t<uint32_t>             &range_counts /* OUT */)
 {
-  range_features.shrink (0);
-  range_counts.shrink (0);
+  range_features.clear ();
+  range_counts.clear ();
 
   auto *last_range = &range_records[0];
   for (unsigned int i = chars_offset; i < chars_len; i++)
@@ -213,8 +213,8 @@ hb_ms_make_feature_ranges (hb_vector_t<hb_ms_feature_t>      &feature_records,
       auto *c = range_counts.push ();
       if (unlikely (!features || !c))
       {
-        range_features.shrink (0);
-        range_counts.shrink (0);
+        range_features.clear ();
+        range_counts.clear ();
         break;
       }
       *features = &range->features;

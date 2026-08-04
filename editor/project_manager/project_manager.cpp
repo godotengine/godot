@@ -30,15 +30,18 @@
 
 #include "project_manager.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/object/callable_mp.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/asset_library/asset_library_editor_plugin.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_about.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -63,6 +66,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"
@@ -75,6 +79,8 @@
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
+
+#include "modules/modules_enabled.gen.h" // For gdscript, mono. (For editor help highlighter).
 
 constexpr int GODOT4_CONFIG_VERSION = 5;
 
@@ -98,7 +104,7 @@ void ProjectManager::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/keep_screen_on"));
+			DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/display/keep_screen_on"));
 			const int default_sorting = (int)EDITOR_GET("project_manager/sorting_order");
 			filter_option->select(default_sorting);
 			project_list->set_order_option(default_sorting, false);
@@ -106,6 +112,7 @@ void ProjectManager::_notification(int p_what) {
 			_select_main_view(MAIN_VIEW_PROJECTS);
 			_update_list_placeholder();
 			_titlebar_resized();
+			_update_compact_mode(true);
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -113,10 +120,12 @@ void ProjectManager::_notification(int p_what) {
 			SceneTree::get_singleton()->get_root()->set_title(GODOT_VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 			const String line1 = TTR("You don't have any projects yet.");
-			const String line2 = TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Library!");
+			const String line2 = TTR("Get started by creating a new one,\nimporting one that exists, or by downloading a project template from the Asset Store!");
 			empty_list_message->set_text(vformat("[center][b]%s[/b] %s[/center]", line1, line2));
 
 			_titlebar_resized();
+
+			EditorHelpBit::clear_cache();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -136,6 +145,10 @@ void ProjectManager::_notification(int p_what) {
 				_update_theme();
 			}
 			_update_list_placeholder();
+		} break;
+		case NOTIFICATION_RESIZED: {
+			project_list->resize_project_titles();
+			_update_compact_mode();
 		} break;
 	}
 }
@@ -171,8 +184,18 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 
 // Main layout.
 
+// Hides certain parts of the Project Manager when window width gets smaller than combined_minimum_size.
+void ProjectManager::_update_compact_mode(bool p_reset_threshold) {
+	if (p_reset_threshold) {
+		compact_mode_threshold = root_container->get_combined_minimum_size().width;
+	}
+
+	bool compact_mode = get_size().width < compact_mode_threshold;
+	project_list_sidebar->set_visible(!compact_mode);
+}
+
 void ProjectManager::_update_size_limits() {
-	const Size2 minimum_size = Size2(720, 450) * EDSCALE;
+	const Size2 minimum_size = Size2(480, 300) * EDSCALE;
 
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
@@ -193,7 +216,7 @@ void ProjectManager::_update_size_limits() {
 		// Limit popup menus to prevent unusably long lists.
 		// We try to set it to half the screen resolution, but no smaller than the minimum window size.
 		Size2 half_screen_rect = (screen_rect.size * EDSCALE) / 2;
-		Size2 maximum_popup_size = MAX(half_screen_rect, minimum_size);
+		Size2 maximum_popup_size = half_screen_rect.max(minimum_size);
 		quick_settings_dialog->update_size_limits(maximum_popup_size);
 	}
 }
@@ -240,7 +263,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 		title_bar_logo->set_button_icon(get_editor_theme_icon("TitleBarLogo"));
 
 		_set_main_view_icon(MAIN_VIEW_PROJECTS, get_editor_theme_icon("ProjectList"));
-		_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon("AssetLib"));
+		_set_main_view_icon(MAIN_VIEW_ASSETLIB, get_editor_theme_icon("AssetStore"));
 
 		// Project list.
 		{
@@ -249,7 +272,7 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 
 			empty_list_create_project->set_button_icon(get_editor_theme_icon("Add"));
 			empty_list_import_project->set_button_icon(get_editor_theme_icon("Load"));
-			empty_list_open_assetlib->set_button_icon(get_editor_theme_icon("AssetLib"));
+			empty_list_open_assetlib->set_button_icon(get_editor_theme_icon("AssetStore"));
 
 			empty_list_online_warning->add_theme_font_override(SceneStringName(font), get_theme_font("italic", EditorStringName(EditorFonts)));
 			empty_list_online_warning->add_theme_color_override(SceneStringName(font_color), get_theme_color("font_placeholder_color", EditorStringName(Editor)));
@@ -293,15 +316,20 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			open_options_popup->set_item_icon(1, get_editor_theme_icon("NodeWarning"));
 		}
 
-		// Dialogs
+		// Dialogs.
 		migration_guide_button->set_button_icon(get_editor_theme_icon("ExternalLink"));
 
-		// Asset library popup.
+		// Asset store popup.
 		if (asset_library && EDITOR_GET("interface/theme/style") == "Classic") {
 			// Removes extra border margins.
 			asset_library->add_theme_style_override(SceneStringName(panel), memnew(StyleBoxEmpty));
 		}
 	}
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+	EditorHelpHighlighter::get_singleton()->clear_cache();
+#endif
+
 #ifdef ANDROID_ENABLED
 	DisplayServer::get_singleton()->window_set_color(theme->get_color("background", EditorStringName(Editor)));
 #endif
@@ -392,7 +420,6 @@ void ProjectManager::_open_asset_library_confirmed() {
 		EditorSettings::get_singleton()->save();
 	}
 
-	asset_library->disable_community_support();
 	_select_main_view(MAIN_VIEW_ASSETLIB);
 }
 
@@ -464,6 +491,12 @@ void ProjectManager::_dim_window() {
 // Quick settings.
 
 void ProjectManager::_show_quick_settings() {
+	if (!EditorPropertyNameProcessor::get_singleton()) {
+		EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
+		add_child(epnp);
+
+		EditorHelp::generate_doc();
+	}
 	quick_settings_dialog->popup_centered(Size2(640, 200) * EDSCALE);
 }
 
@@ -488,10 +521,10 @@ void ProjectManager::_update_list_placeholder() {
 
 	const int network_mode = EDITOR_GET("network/connection/network_mode");
 	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
-		empty_list_open_assetlib->set_text(TTRC("Go Online and Open Asset Library"));
+		empty_list_open_assetlib->set_text(TTRC("Go Online and Open Asset Store"));
 		empty_list_online_warning->set_visible(true);
 	} else {
-		empty_list_open_assetlib->set_text(TTRC("Open Asset Library"));
+		empty_list_open_assetlib->set_text(TTRC("Open Asset Store"));
 		empty_list_online_warning->set_visible(false);
 	}
 
@@ -587,6 +620,10 @@ void ProjectManager::_open_selected_projects() {
 			args.push_back("--verbose");
 		}
 
+		if (ask_upgrade_tool->is_pressed()) {
+			args.push_back("--run-upgrade-tool");
+		}
+
 		Error err = OS::get_singleton()->create_instance(args);
 		if (err != OK) {
 			loading_label->hide();
@@ -627,9 +664,11 @@ void ProjectManager::_open_selected_projects_check_warnings() {
 
 	ask_update_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT); // Reset in case of previous center align.
 	ask_update_backup->set_pressed(false);
+	ask_upgrade_tool->set_pressed(false);
 	full_convert_button->hide();
 	migration_guide_button->hide();
 	ask_update_backup->hide();
+	ask_upgrade_tool->hide();
 
 	ask_update_settings->get_ok_button()->set_text("OK");
 
@@ -676,7 +715,10 @@ void ProjectManager::_open_selected_projects_check_warnings() {
 				i--;
 			} else if (ProjectList::project_feature_looks_like_version(feature)) {
 				ask_update_backup->show();
-				migration_guide_button->show();
+				if (project.control->is_older_version()) {
+					ask_upgrade_tool->show();
+					migration_guide_button->show();
+				}
 				version_convert_feature = feature;
 				warning_message += vformat(TTR("Warning: This project was last edited in Godot %s. Opening will change it to Godot %s.\n\n"), Variant(feature), Variant(GODOT_VERSION_BRANCH));
 				unsupported_features.remove_at(i);
@@ -737,6 +779,7 @@ void ProjectManager::_open_selected_projects_with_migration() {
 	}
 #endif
 	_open_selected_projects();
+	ask_upgrade_tool->set_pressed(false);
 }
 
 void ProjectManager::_install_project(const String &p_zip_path, const String &p_title) {
@@ -1296,8 +1339,8 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 }
 
 void ProjectManager::_titlebar_resized() {
-	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
-	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
+	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(title_bar->get_global_position().y + title_bar->get_size().y / 2, title_bar->get_global_position().y + title_bar->get_size().y / 2), DisplayServerEnums::MAIN_WINDOW_ID);
+	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServerEnums::MAIN_WINDOW_ID);
 	if (left_menu_spacer) {
 		int w = (root_container->is_layout_rtl()) ? margin.y : margin.x;
 		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
@@ -1340,7 +1383,7 @@ ProjectManager::ProjectManager() {
 			Input::get_singleton()->set_use_accumulated_input(use_accumulated_input);
 		}
 
-		int display_scale = EDITOR_GET("interface/editor/display_scale");
+		int display_scale = EDITOR_GET("interface/editor/appearance/display_scale");
 
 		switch (display_scale) {
 			case 0:
@@ -1366,7 +1409,7 @@ ProjectManager::ProjectManager() {
 				EditorScale::set_scale(2.0);
 				break;
 			default:
-				EditorScale::set_scale(EDITOR_GET("interface/editor/custom_display_scale"));
+				EditorScale::set_scale(EDITOR_GET("interface/editor/appearance/custom_display_scale"));
 				break;
 		}
 		FileDialog::set_get_icon_callback(callable_mp_static(ProjectManager::_file_dialog_get_icon));
@@ -1375,7 +1418,7 @@ ProjectManager::ProjectManager() {
 		FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
 		FileDialog::set_default_display_mode((FileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
-		int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+		int swap_cancel_ok = EDITOR_GET("interface/editor/appearance/accept_dialog_cancel_ok_buttons");
 		if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
 			// Swap on means OK first.
 			AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
@@ -1384,11 +1427,15 @@ ProjectManager::ProjectManager() {
 		OS::get_singleton()->set_low_processor_usage_mode(true);
 	}
 
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+	EditorHelpHighlighter::create_singleton();
+#endif
+
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
 	// Initialize UI.
 	{
-		int pm_root_dir = EDITOR_GET("interface/editor/ui_layout_direction");
+		int pm_root_dir = EDITOR_GET("interface/editor/localization/ui_layout_direction");
 		Control::set_root_layout_direction(pm_root_dir);
 		Window::set_root_layout_direction(pm_root_dir);
 
@@ -1415,7 +1462,7 @@ ProjectManager::ProjectManager() {
 	root_container->add_child(main_vbox);
 
 	// Title bar.
-	bool can_expand = bool(EDITOR_GET("interface/editor/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EXTEND_TO_TITLE);
+	bool can_expand = bool(EDITOR_GET("interface/editor/appearance/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EXTEND_TO_TITLE);
 
 	{
 		title_bar = memnew(EditorTitleBar);
@@ -1440,7 +1487,7 @@ ProjectManager::ProjectManager() {
 		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_about));
 
-		bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
+		bool global_menu = !bool(EDITOR_GET("interface/editor/appearance/use_embedded_menu")) && NativeMenu::get_singleton()->has_feature(NativeMenu::FEATURE_GLOBAL_MENU);
 		if (global_menu) {
 			MenuBar *main_menu_bar = memnew(MenuBar);
 			main_menu_bar->set_start_index(0); // Main menu, add to the start of global menu.
@@ -1538,7 +1585,7 @@ ProjectManager::ProjectManager() {
 			hb->add_child(scan_btn);
 
 			loading_label = memnew(Label(TTRC("Loading, please wait...")));
-			loading_label->set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_ASSERTIVE);
+			loading_label->set_accessibility_live(AccessibilityServerEnums::AccessibilityLiveMode::LIVE_ASSERTIVE);
 			loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			loading_label->hide();
 			hb->add_child(loading_label);
@@ -1559,6 +1606,7 @@ ProjectManager::ProjectManager() {
 
 			filter_option = memnew(OptionButton);
 			filter_option->set_clip_text(true);
+			filter_option->set_fit_to_longest_item(false);
 			filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			filter_option->set_stretch_ratio(0.3);
 			filter_option->set_accessibility_name(TTRC("Sort:"));
@@ -1624,7 +1672,7 @@ ProjectManager::ProjectManager() {
 				empty_list_import_project->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_import_project));
 
 				empty_list_open_assetlib = memnew(Button);
-				empty_list_open_assetlib->set_text(TTRC("Open Asset Library"));
+				empty_list_open_assetlib->set_text(TTRC("Open Asset Store"));
 				empty_list_open_assetlib->set_theme_type_variation("PanelBackgroundButton");
 				empty_list_actions->add_child(empty_list_open_assetlib);
 				empty_list_open_assetlib->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_asset_library_confirmed));
@@ -1635,13 +1683,13 @@ ProjectManager::ProjectManager() {
 				empty_list_online_warning->set_custom_minimum_size(Size2(220, 0) * EDSCALE);
 				empty_list_online_warning->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 				empty_list_online_warning->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-				empty_list_online_warning->set_text(TTRC("Note: The Asset Library requires an online connection and involves sending data over the internet."));
+				empty_list_online_warning->set_text(TTRC("Note: The Asset Store requires an online connection and involves sending data over the internet."));
 				empty_list_placeholder->add_child(empty_list_online_warning);
 			}
 
 			// The side bar with the edit, run, rename, etc. buttons.
-			VBoxContainer *project_list_sidebar = memnew(VBoxContainer);
-			project_list_sidebar->set_custom_minimum_size(Size2(120, 120));
+			project_list_sidebar = memnew(VBoxContainer);
+			project_list_sidebar->set_custom_minimum_size(Size2(120, 120) * EDSCALE);
 			project_list_hbox->add_child(project_list_sidebar);
 
 			project_list_sidebar->add_child(memnew(HSeparator));
@@ -1721,18 +1769,18 @@ ProjectManager::ProjectManager() {
 		}
 	}
 
-	// Asset library view.
+	// Asset store view.
 	if (AssetLibraryEditorPlugin::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
 		asset_library->set_name("AssetLibraryTab");
-		_add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Library"), Ref<Texture2D>(), asset_library);
+		_add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Store"), Ref<Texture2D>(), asset_library);
 		asset_library->connect("install_asset", callable_mp(this, &ProjectManager::_install_project));
 	} else {
 		VBoxContainer *asset_library_filler = memnew(VBoxContainer);
 		asset_library_filler->set_name("AssetLibraryTab");
-		Button *asset_library_toggle = _add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Library"), Ref<Texture2D>(), asset_library_filler);
+		Button *asset_library_toggle = _add_main_view(MAIN_VIEW_ASSETLIB, TTRC("Asset Store"), Ref<Texture2D>(), asset_library_filler);
 		asset_library_toggle->set_disabled(true);
-		asset_library_toggle->set_tooltip_text(TTRC("Asset Library not available (due to using Web editor, or because SSL support disabled)."));
+		asset_library_toggle->set_tooltip_text(TTRC("Asset Store not available (due to using Web editor, or because SSL support disabled)."));
 	}
 
 	// Footer bar.
@@ -1769,6 +1817,7 @@ ProjectManager::ProjectManager() {
 		scan_dir->connect("dir_selected", callable_mp(project_list, &ProjectList::find_projects));
 
 		erase_missing_ask = memnew(ConfirmationDialog);
+		erase_missing_ask->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 		erase_missing_ask->set_ok_button_text(TTRC("Remove All"));
 		erase_missing_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_erase_missing_projects_confirm));
 		add_child(erase_missing_ask);
@@ -1792,11 +1841,13 @@ ProjectManager::ProjectManager() {
 		//erase_ask_vb->add_child(delete_project_contents);
 
 		multi_open_ask = memnew(ConfirmationDialog);
+		multi_open_ask->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 		multi_open_ask->set_ok_button_text(TTRC("Edit"));
 		multi_open_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects));
 		add_child(multi_open_ask);
 
 		multi_run_ask = memnew(ConfirmationDialog);
+		multi_run_ask->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 		multi_run_ask->set_ok_button_text(TTRC("Run"));
 		multi_run_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_run_project_confirm));
 		add_child(multi_run_ask);
@@ -1823,8 +1874,13 @@ ProjectManager::ProjectManager() {
 		ask_update_backup->set_text(TTRC("Backup project first"));
 		ask_update_backup->set_h_size_flags(SIZE_SHRINK_CENTER);
 		ask_update_vb->add_child(ask_update_backup);
+		ask_upgrade_tool = memnew(CheckBox);
+		ask_upgrade_tool->set_text(TTRC("Upgrade All Project Files"));
+		ask_upgrade_tool->set_tooltip_text(TTRC("Automatically runs the upgrade tool. This may take a while to finish. The project will be restarted once in the process."));
+		ask_upgrade_tool->set_h_size_flags(SIZE_SHRINK_CENTER);
+		ask_update_vb->add_child(ask_upgrade_tool);
 		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_with_migration));
-		int ed_swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+		int ed_swap_cancel_ok = EDITOR_GET("interface/editor/appearance/accept_dialog_cancel_ok_buttons");
 		if (ed_swap_cancel_ok == 0) {
 			ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
 		}
@@ -1960,7 +2016,7 @@ ProjectManager::ProjectManager() {
 	// Extend menu bar to window title.
 	if (can_expand) {
 		DisplayServer::get_singleton()->process_events();
-		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
+		DisplayServer::get_singleton()->window_set_flag(DisplayServerEnums::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServerEnums::MAIN_WINDOW_ID);
 		title_bar->set_can_move_window(true);
 		title_bar->connect(SceneStringName(item_rect_changed), callable_mp(this, &ProjectManager::_titlebar_resized));
 	}
@@ -1971,6 +2027,13 @@ ProjectManager::ProjectManager() {
 ProjectManager::~ProjectManager() {
 	singleton = nullptr;
 	EditorInspector::cleanup_plugins();
+
+	EditorHelp::cleanup_doc();
+
+#if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
+	EditorHelpHighlighter::free_singleton();
+#endif
+
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}

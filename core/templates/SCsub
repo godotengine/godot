@@ -3,6 +3,4 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-env_templates = env.Clone()
-
-env_templates.add_source_files(env.core_sources, "*.cpp")
+env.add_source_files(env.core_sources, "*.cpp")

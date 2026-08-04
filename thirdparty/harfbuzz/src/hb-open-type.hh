@@ -148,7 +148,7 @@ struct HBUINT15 : HBUINT16
 /* 32-bit unsigned integer with variable encoding. */
 struct HBUINT32VAR
 {
-  unsigned get_size () const
+  size_t get_size () const
   {
     unsigned b0 = v[0];
     if (b0 < 0x80)
@@ -163,7 +163,7 @@ struct HBUINT32VAR
       return 5;
   }
 
-  static unsigned get_size (uint32_t v)
+  static size_t get_size (uint32_t v)
   {
     if (v < 0x80)
       return 1;
@@ -563,7 +563,7 @@ struct UnsizedArrayOf
     return arrayZ[i];
   }
 
-  static unsigned int get_size (unsigned int len)
+  static size_t get_size (unsigned int len)
   { return len * Type::static_size; }
 
   template <typename T> operator T * () { return arrayZ; }
@@ -725,7 +725,7 @@ struct ArrayOf
     return arrayZ[i];
   }
 
-  unsigned int get_size () const
+  size_t get_size () const
   { return len.static_size + len * Type::static_size; }
 
   explicit operator bool () const { return len; }
@@ -909,7 +909,7 @@ struct HeadlessArrayOf
     hb_barrier ();
     return arrayZ[i-1];
   }
-  unsigned int get_size () const
+  size_t get_size () const
   { return lenP1.static_size + get_length () * Type::static_size; }
 
   unsigned get_length () const { return lenP1 ? lenP1 - 1 : 0; }
@@ -1003,7 +1003,7 @@ struct ArrayOfM1
     hb_barrier ();
     return arrayZ[i];
   }
-  unsigned int get_size () const
+  size_t get_size () const
   { return lenM1.static_size + (lenM1 + 1) * Type::static_size; }
 
   template <typename ...Ts>
@@ -1197,7 +1197,7 @@ struct VarSizedBinSearchArrayOf
   }
   unsigned int get_length () const
   { return header.nUnits - last_is_terminator (); }
-  unsigned int get_size () const
+  size_t get_size () const
   { return header.static_size + header.nUnits * header.unitSize; }
 
   template <typename ...Ts>
@@ -1275,11 +1275,22 @@ struct CFFIndex
     if (unlikely (!serialize_header (c, +it, data_size, min_off_size))) return_trace (false);
     unsigned char *ret = c->allocate_size<unsigned char> (data_size, false);
     if (unlikely (!ret)) return_trace (false);
+    unsigned remaining = data_size;
     for (const auto &_ : +it)
     {
       unsigned len = _.length;
+
       if (!len)
 	continue;
+
+      if (unlikely (len > remaining)) {
+        // We have more bytes to write then the computed data size, so the size calculation
+        // must have encountered overflow.
+        return_trace (c->check_success (false, HB_SERIALIZE_ERROR_INT_OVERFLOW));
+      }
+
+      remaining -= len;
+
       if (len <= 1)
       {
 	*ret++ = *_.arrayZ;
@@ -1450,7 +1461,7 @@ struct CFFIndex
     return hb_ubytes_t (data_base () + offset0, offset1 - offset0);
   }
 
-  unsigned int get_size () const
+  size_t get_size () const
   {
     if (count)
       return min_size + offSize.static_size + offset_array_size () + (offset_at (count) - 1);
@@ -1948,6 +1959,7 @@ struct TupleValues
       return true;
     }
 
+    public:
     void skip (unsigned n)
     {
       while (n)
@@ -1961,6 +1973,7 @@ struct TupleValues
       }
     }
 
+    private:
     template <bool scaled>
     void _add_to (hb_array_t<float> out, float scale = 1.0f)
     {
@@ -2035,14 +2048,6 @@ struct TupleValues
     public:
     void add_to (hb_array_t<float> out, float scale = 1.0f)
     {
-      unsigned n = out.length;
-
-      if (scale == 0.0f)
-      {
-        skip (n);
-	return;
-      }
-
 #ifndef HB_OPTIMIZE_SIZE
       // The following branch is supposed to speed things up by avoiding
       // the multiplication in _add_to<> if scale is 1.0f.
@@ -2077,7 +2082,7 @@ struct TupleList : CFF2Index
 template <unsigned int alignment>
 struct Align
 {
-  unsigned get_size (const void *base) const
+  size_t get_size (const void *base) const
   {
     unsigned offset = (const char *) this - (const char *) base;
     return (alignment - offset) & (alignment - 1);

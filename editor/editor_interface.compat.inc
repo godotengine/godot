@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef DISABLE_DEPRECATED
+
 #include "editor_interface.h"
 
-#ifndef DISABLE_DEPRECATED
+#include "core/object/class_db.h"
 
 void EditorInterface::_popup_node_selector_bind_compat_94323(const Callable &p_callback, const TypedArray<StringName> &p_valid_types) {
 	popup_node_selector(p_callback, p_valid_types, nullptr);
@@ -50,4 +52,4 @@ void EditorInterface::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("open_scene_from_path", "scene_path"), &EditorInterface::_open_scene_from_path_bind_compat_90057);
 }
 
-#endif
+#endif // DISABLE_DEPRECATED

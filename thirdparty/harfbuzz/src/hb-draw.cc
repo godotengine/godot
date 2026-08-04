@@ -32,6 +32,8 @@
 
 #include "hb-machinery.hh"
 
+#include <cmath>
+
 
 /**
  * SECTION:hb-draw
@@ -116,25 +118,25 @@ _hb_draw_funcs_set_middle (hb_draw_funcs_t   *dfuncs,
 			   void              *user_data,
 			   hb_destroy_func_t  destroy)
 {
+  auto destroy_guard = hb_make_scope_guard ([&]() {
+    if (destroy) destroy (user_data);
+  });
+
   if (user_data && !dfuncs->user_data)
   {
     dfuncs->user_data = (decltype (dfuncs->user_data)) hb_calloc (1, sizeof (*dfuncs->user_data));
     if (unlikely (!dfuncs->user_data))
-      goto fail;
+      return false;
   }
   if (destroy && !dfuncs->destroy)
   {
     dfuncs->destroy = (decltype (dfuncs->destroy)) hb_calloc (1, sizeof (*dfuncs->destroy));
     if (unlikely (!dfuncs->destroy))
-      goto fail;
+      return false;
   }
 
+  destroy_guard.release ();
   return true;
-
-fail:
-  if (destroy)
-    (destroy) (user_data);
-  return false;
 }
 
 #define HB_DRAW_FUNC_IMPLEMENT(name)						\
@@ -457,6 +459,268 @@ hb_draw_close_path (hb_draw_funcs_t *dfuncs, void *draw_data,
 		    hb_draw_state_t *st)
 {
   dfuncs->close_path (draw_data, *st);
+}
+
+
+/**
+ * hb_draw_line:
+ * @dfuncs: draw functions
+ * @draw_data: associated draw data passed by the caller
+ * @st: current draw state
+ * @x0: start X coordinate
+ * @y0: start Y coordinate
+ * @w0: stroke width at the start
+ * @x1: end X coordinate
+ * @y1: end Y coordinate
+ * @w1: stroke width at the end
+ * @cap: end-cap shape (butt or square)
+ *
+ * Emits a tapered line segment as a filled trapezoid.  @w0 and
+ * @w1 are the full stroke widths at the start and end points
+ * respectively; they may differ for a tapered stroke or match
+ * for a uniform one.  Pass `NaN` for @w1 to use @w0 (uniform
+ * stroke) without repeating the value.
+ *
+ * With #HB_DRAW_LINE_CAP_SQUARE each endpoint is extended along
+ * the line direction by half its local stroke width, so four
+ * `hb_draw_line()` calls form a closed rectangle without gaps
+ * at the corners.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_draw_line (hb_draw_funcs_t *dfuncs, void *draw_data,
+	      hb_draw_state_t *st,
+	      float x0, float y0, float w0,
+	      float x1, float y1, float w1,
+	      hb_draw_line_cap_t cap)
+{
+  if (std::isnan (w1)) w1 = w0;
+  float dx = x1 - x0, dy = y1 - y0;
+  float len = sqrtf (dx * dx + dy * dy);
+  if (len <= 0.f)
+    return;
+  /* Unit tangent and normal to the line direction. */
+  float tx = dx / len;
+  float ty = dy / len;
+  float nx = -ty;
+  float ny =  tx;
+  float h0 = 0.5f * w0;
+  float h1 = 0.5f * w1;
+  /* Square caps: extend each endpoint outward along the line
+   * tangent by half its local stroke width. */
+  if (cap == HB_DRAW_LINE_CAP_SQUARE)
+  {
+    x0 -= tx * h0; y0 -= ty * h0;
+    x1 += tx * h1; y1 += ty * h1;
+  }
+  /* Trapezoid corners (counter-clockwise). */
+  float ax = x0 + nx * h0, ay = y0 + ny * h0;
+  float bx = x1 + nx * h1, by = y1 + ny * h1;
+  float cx = x1 - nx * h1, cy = y1 - ny * h1;
+  float dx_ = x0 - nx * h0, dy_ = y0 - ny * h0;
+
+  hb_draw_move_to   (dfuncs, draw_data, st, ax, ay);
+  hb_draw_line_to   (dfuncs, draw_data, st, bx, by);
+  hb_draw_line_to   (dfuncs, draw_data, st, cx, cy);
+  hb_draw_line_to   (dfuncs, draw_data, st, dx_, dy_);
+  hb_draw_close_path (dfuncs, draw_data, st);
+}
+
+/* Emit an axis-aligned rectangle as a single closed contour.
+ * @ccw picks the winding direction (useful for cutting a hole
+ * out of another rectangle in a stroked rect). */
+static void
+_hb_draw_rect_contour (hb_draw_funcs_t *dfuncs, void *draw_data,
+		       hb_draw_state_t *st,
+		       float x, float y, float w, float h,
+		       bool ccw)
+{
+  hb_draw_move_to (dfuncs, draw_data, st, x, y);
+  if (ccw)
+  {
+    hb_draw_line_to (dfuncs, draw_data, st, x + w, y);
+    hb_draw_line_to (dfuncs, draw_data, st, x + w, y + h);
+    hb_draw_line_to (dfuncs, draw_data, st, x,     y + h);
+  }
+  else
+  {
+    hb_draw_line_to (dfuncs, draw_data, st, x,     y + h);
+    hb_draw_line_to (dfuncs, draw_data, st, x + w, y + h);
+    hb_draw_line_to (dfuncs, draw_data, st, x + w, y);
+  }
+  hb_draw_close_path (dfuncs, draw_data, st);
+}
+
+/**
+ * hb_draw_rectangle:
+ * @dfuncs: draw functions
+ * @draw_data: associated draw data passed by the caller
+ * @st: current draw state
+ * @x: top-left X coordinate
+ * @y: top-left Y coordinate
+ * @w: width (may be negative)
+ * @h: height (may be negative)
+ * @stroke_width: stroke width, or `NaN` for a filled rectangle
+ *
+ * Emits an axis-aligned rectangle.  If @stroke_width is a finite
+ * positive value, the rectangle is rendered as an outlined ring
+ * of that thickness centered on the edges; if @stroke_width is
+ * `NaN`, the rectangle is rendered filled.
+ *
+ * Note: stroked rectangles produce a bounding box covering the
+ * full outer rectangle, so if the pen is a GPU fragment-shader
+ * backend, the shader runs for every interior pixel even though
+ * only the outline contributes coverage.  For very thin
+ * outlines where the interior is much larger than the stroke,
+ * emitting four hb_draw_line() segments (one per edge) is
+ * considerably cheaper per frame.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_draw_rectangle (hb_draw_funcs_t *dfuncs, void *draw_data,
+		   hb_draw_state_t *st,
+		   float x, float y,
+		   float w, float h,
+		   float stroke_width)
+{
+  if (std::isnan (stroke_width))
+  {
+    /* Filled rectangle with zero area is nothing to draw. */
+    if (w == 0.f || h == 0.f)
+      return;
+    _hb_draw_rect_contour (dfuncs, draw_data, st, x, y, w, h, /*ccw*/ true);
+    return;
+  }
+
+  if (stroke_width <= 0.f || !std::isfinite (stroke_width))
+    return;
+
+  /* Normalize to non-negative width/height so the stroke math
+   * below (outer grows by sw, inner shrinks by sw) produces the
+   * expected outer-contains-inner ring regardless of w/h signs. */
+  if (w < 0.f) { x += w; w = -w; }
+  if (h < 0.f) { y += h; h = -h; }
+  /* w or h == 0 is still meaningful when stroking: a stroked
+   * zero-height rect is a horizontal line of length w; zero
+   * width is a vertical line.  Both degenerate to a single
+   * outer contour because the inner hole collapses. */
+
+  /* Stroke is centered on the edge: outer contour grows by
+   * stroke_width/2, inner contour shrinks by the same. */
+  float s = 0.5f * stroke_width;
+  /* Outer rectangle (CCW = adds coverage). */
+  _hb_draw_rect_contour (dfuncs, draw_data, st,
+			 x - s, y - s,
+			 w + stroke_width, h + stroke_width,
+			 /*ccw*/ true);
+  /* Inner rectangle (CW = removes coverage for the hole). */
+  float iw = w - stroke_width;
+  float ih = h - stroke_width;
+  if (iw > 0.f && ih > 0.f)
+    _hb_draw_rect_contour (dfuncs, draw_data, st,
+			   x + s, y + s, iw, ih,
+			   /*ccw*/ false);
+}
+
+/* Circle approximated by 4 cubic Beziers, one per quadrant.
+ * The magic constant 0.5522847498307936 is
+ *   (4/3) * (sqrt(2) - 1)
+ * and minimizes the max radial error to ~2.7e-4 of r. */
+static void
+_hb_draw_circle_contour (hb_draw_funcs_t *dfuncs, void *draw_data,
+			 hb_draw_state_t *st,
+			 float cx, float cy, float r,
+			 bool ccw)
+{
+  static const float k = 0.5522847498307936f;
+  float ck = r * k;
+
+  hb_draw_move_to (dfuncs, draw_data, st, cx + r, cy);
+  if (ccw)
+  {
+    hb_draw_cubic_to (dfuncs, draw_data, st,
+		      cx + r, cy + ck,
+		      cx + ck, cy + r,
+		      cx,      cy + r);
+    hb_draw_cubic_to (dfuncs, draw_data, st,
+		      cx - ck, cy + r,
+		      cx - r,  cy + ck,
+		      cx - r,  cy);
+    hb_draw_cubic_to (dfuncs, draw_data, st,
+		      cx - r,  cy - ck,
+		      cx - ck, cy - r,
+		      cx,      cy - r);
+    hb_draw_cubic_to (dfuncs, draw_data, st,
+		      cx + ck, cy - r,
+		      cx + r,  cy - ck,
+		      cx + r,  cy);
+  }
+  else
+  {
+    hb_draw_cubic_to (dfuncs, draw_data, st,
+		      cx + r, cy - ck,
+		      cx + ck, cy - r,
+		      cx,      cy - r);
+    hb_draw_cubic_to (dfuncs, draw_data, st,
+		      cx - ck, cy - r,
+		      cx - r,  cy - ck,
+		      cx - r,  cy);
+    hb_draw_cubic_to (dfuncs, draw_data, st,
+		      cx - r,  cy + ck,
+		      cx - ck, cy + r,
+		      cx,      cy + r);
+    hb_draw_cubic_to (dfuncs, draw_data, st,
+		      cx + ck, cy + r,
+		      cx + r,  cy + ck,
+		      cx + r,  cy);
+  }
+  hb_draw_close_path (dfuncs, draw_data, st);
+}
+
+/**
+ * hb_draw_circle:
+ * @dfuncs: draw functions
+ * @draw_data: associated draw data passed by the caller
+ * @st: current draw state
+ * @cx: center X coordinate
+ * @cy: center Y coordinate
+ * @r: radius
+ * @stroke_width: stroke width, or `NaN` for a filled disc
+ *
+ * Emits a circle approximated by four cubic Bezier curves.  If
+ * @stroke_width is a finite positive value, the circle is
+ * rendered as an outlined ring of that thickness centered on
+ * the nominal radius; if @stroke_width is `NaN`, the circle is
+ * rendered as a filled disc.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_draw_circle (hb_draw_funcs_t *dfuncs, void *draw_data,
+		hb_draw_state_t *st,
+		float cx, float cy,
+		float r,
+		float stroke_width)
+{
+  if (r <= 0.f)
+    return;
+
+  if (std::isnan (stroke_width))
+  {
+    _hb_draw_circle_contour (dfuncs, draw_data, st, cx, cy, r, /*ccw*/ true);
+    return;
+  }
+
+  if (stroke_width <= 0.f || !std::isfinite (stroke_width))
+    return;
+
+  float s = 0.5f * stroke_width;
+  _hb_draw_circle_contour (dfuncs, draw_data, st, cx, cy, r + s, /*ccw*/ true);
+  float ir = r - s;
+  if (ir > 0.f)
+    _hb_draw_circle_contour (dfuncs, draw_data, st, cx, cy, ir, /*ccw*/ false);
 }
 
 

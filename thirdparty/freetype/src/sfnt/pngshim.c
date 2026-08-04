@@ -4,7 +4,7 @@
  *
  *   PNG Bitmap glyph support.
  *
- * Copyright (C) 2013-2025 by
+ * Copyright (C) 2013-2026 by
  * Google, Inc.
  * Written by Stuart Gill and Behdad Esfahbod.
  *
@@ -420,10 +420,7 @@
     if ( populate_map_and_metrics )
     {
       /* this doesn't overflow: 0x7FFF * 0x7FFF * 4 < 2^32 */
-      FT_ULong  size = map->rows * (FT_ULong)map->pitch;
-
-
-      error = ft_glyphslot_alloc_bitmap( slot, size );
+      error = ft_glyphslot_alloc_bitmap( slot );
       if ( error )
         goto DestroyExit;
     }

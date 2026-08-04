@@ -30,8 +30,12 @@
 
 #include "theme_db.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "scene/gui/control.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
@@ -39,6 +43,7 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "scene/theme/default_theme.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/text/text_server.h"
 
 // Default engine theme creation and configuration.
@@ -72,7 +77,7 @@ void ThemeDB::initialize_theme() {
 
 	Ref<Font> project_font;
 	if (!project_font_path.is_empty()) {
-		project_font = ResourceLoader::load(project_font_path);
+		project_font = ResourceLoader::load(project_font_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 		if (project_font.is_valid()) {
 			set_fallback_font(project_font);
 		} else {

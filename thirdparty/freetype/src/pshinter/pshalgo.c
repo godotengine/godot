@@ -4,7 +4,7 @@
  *
  *   PostScript hinting algorithm (body).
  *
- * Copyright (C) 2001-2025 by
+ * Copyright (C) 2001-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used
@@ -33,10 +33,6 @@
   PSH_HintFunc    ps_debug_hint_func  = NULL;
   PSH_Glyph       ps_debug_glyph      = NULL;
 #endif
-
-
-#define  COMPUTE_INFLEXS  /* compute inflection points to optimize `S' */
-                          /* and similar glyphs                        */
 
 
   /*************************************************************************/
@@ -920,117 +916,6 @@
 #define  psh_corner_orientation  ft_corner_orientation
 
 
-#ifdef COMPUTE_INFLEXS
-
-  /* compute all inflex points in a given glyph */
-  static void
-  psh_glyph_compute_inflections( PSH_Glyph  glyph )
-  {
-    FT_UInt  n;
-
-
-    for ( n = 0; n < glyph->num_contours; n++ )
-    {
-      PSH_Point  first, start, end, before, after;
-      FT_Pos     in_x, in_y, out_x, out_y;
-      FT_Int     orient_prev, orient_cur;
-      FT_Int     finished = 0;
-
-
-      /* we need at least 4 points to create an inflection point */
-      if ( glyph->contours[n].count < 4 )
-        continue;
-
-      /* compute first segment in contour */
-      first = glyph->contours[n].start;
-
-      start = end = first;
-      do
-      {
-        end = end->next;
-        if ( end == first )
-          goto Skip;
-
-        in_x = end->org_u - start->org_u;
-        in_y = end->org_v - start->org_v;
-
-      } while ( in_x == 0 && in_y == 0 );
-
-      /* extend the segment start whenever possible */
-      before = start;
-      do
-      {
-        do
-        {
-          start  = before;
-          before = before->prev;
-          if ( before == first )
-            goto Skip;
-
-          out_x = start->org_u - before->org_u;
-          out_y = start->org_v - before->org_v;
-
-        } while ( out_x == 0 && out_y == 0 );
-
-        orient_prev = psh_corner_orientation( in_x, in_y, out_x, out_y );
-
-      } while ( orient_prev == 0 );
-
-      first = start;
-      in_x  = out_x;
-      in_y  = out_y;
-
-      /* now, process all segments in the contour */
-      do
-      {
-        /* first, extend current segment's end whenever possible */
-        after = end;
-        do
-        {
-          do
-          {
-            end   = after;
-            after = after->next;
-            if ( after == first )
-              finished = 1;
-
-            out_x = after->org_u - end->org_u;
-            out_y = after->org_v - end->org_v;
-
-          } while ( out_x == 0 && out_y == 0 );
-
-          orient_cur = psh_corner_orientation( in_x, in_y, out_x, out_y );
-
-        } while ( orient_cur == 0 );
-
-        if ( ( orient_cur ^ orient_prev ) < 0 )
-        {
-          do
-          {
-            psh_point_set_inflex( start );
-            start = start->next;
-          }
-          while ( start != end );
-
-          psh_point_set_inflex( start );
-        }
-
-        start       = end;
-        end         = after;
-        orient_prev = orient_cur;
-        in_x        = out_x;
-        in_y        = out_y;
-
-      } while ( !finished );
-
-    Skip:
-      ;
-    }
-  }
-
-#endif /* COMPUTE_INFLEXS */
-
-
   static void
   psh_glyph_done( PSH_Glyph  glyph )
   {
@@ -1258,11 +1143,6 @@
     glyph->outline = outline;
     glyph->globals = globals;
 
-#ifdef COMPUTE_INFLEXS
-    psh_glyph_load_points( glyph, 0 );
-    psh_glyph_compute_inflections( glyph );
-#endif /* COMPUTE_INFLEXS */
-
     /* now deal with hints tables */
     error = psh_hint_table_init( &glyph->hint_tables [0],
                                  &ps_hints->dimension[0].hints,
@@ -1285,122 +1165,47 @@
   }
 
 
-  /* compute all extrema in a glyph for a given dimension */
+  /* compute all extreme and inflection points */
+  /* in a glyph for a given dimension          */
   static void
   psh_glyph_compute_extrema( PSH_Glyph  glyph )
   {
     FT_UInt  n;
 
 
-    /* first of all, compute all local extrema */
     for ( n = 0; n < glyph->num_contours; n++ )
     {
-      PSH_Point  first = glyph->contours[n].start;
-      PSH_Point  point, before, after;
+      PSH_Point  first, point, before, after;
 
 
-      if ( glyph->contours[n].count == 0 )
+      /* we need at least 3 points to create an extremum */
+      if ( glyph->contours[n].count < 3 )
         continue;
 
-      point  = first;
-      before = point;
+      first = glyph->contours[n].start;
+      point = first->prev;
+      after = first;
 
       do
       {
-        before = before->prev;
-        if ( before == first )
-          goto Skip;
-
-      } while ( before->org_u == point->org_u );
-
-      first = point = before->next;
-
-      for (;;)
-      {
-        after = point;
-        do
-        {
-          after = after->next;
-          if ( after == first )
-            goto Next;
-
-        } while ( after->org_u == point->org_u );
-
-        if ( before->org_u < point->org_u )
-        {
-          if ( after->org_u < point->org_u )
-          {
-            /* local maximum */
-            goto Extremum;
-          }
-        }
-        else /* before->org_u > point->org_u */
-        {
-          if ( after->org_u > point->org_u )
-          {
-            /* local minimum */
-          Extremum:
-            do
-            {
-              psh_point_set_extremum( point );
-              point = point->next;
-
-            } while ( point != after );
-          }
-        }
-
-        before = after->prev;
+        before = point;
         point  = after;
+        after  = point->next;
 
-      } /* for  */
+        if ( ( before->org_u < point->org_u && point->org_u < after->org_u ) ||
+             ( before->org_u > point->org_u && point->org_u > after->org_u ) )
+          continue;
 
-    Next:
-      ;
-    }
+        /* otherwise this is either extremum or inflection point */
+        psh_point_set_extremum( point );
 
-    /* for each extremum, determine its direction along the */
-    /* orthogonal axis                                      */
-    for ( n = 0; n < glyph->num_points; n++ )
-    {
-      PSH_Point  point, before, after;
+        /* also note its direction */
+        if ( before->org_v < after->org_v )
+          psh_point_set_positive( point );
+        else if ( before->org_v > after->org_v )
+          psh_point_set_negative( point );
 
-
-      point  = &glyph->points[n];
-      before = point;
-      after  = point;
-
-      if ( psh_point_is_extremum( point ) )
-      {
-        do
-        {
-          before = before->prev;
-          if ( before == point )
-            goto Skip;
-
-        } while ( before->org_v == point->org_v );
-
-        do
-        {
-          after = after->next;
-          if ( after == point )
-            goto Skip;
-
-        } while ( after->org_v == point->org_v );
-      }
-
-      if ( before->org_v < point->org_v &&
-           after->org_v  > point->org_v )
-      {
-        psh_point_set_positive( point );
-      }
-      else if ( before->org_v > point->org_v &&
-                after->org_v  < point->org_v )
-      {
-        psh_point_set_negative( point );
-      }
-
-    Skip:
-      ;
+      } while ( after != first );
     }
   }
 
@@ -1836,8 +1641,7 @@
              point->dir_in != point->dir_out )
           continue;
 
-        if ( !psh_point_is_extremum( point ) &&
-             !psh_point_is_inflex( point )   )
+        if ( !psh_point_is_extremum( point ) )
           continue;
 
         point->flags &= ~PSH_POINT_SMOOTH;

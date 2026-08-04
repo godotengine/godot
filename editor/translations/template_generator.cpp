@@ -34,7 +34,7 @@
 #include "editor/translations/editor_translation.h"
 #include "editor/translations/editor_translation_parser.h"
 
-TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(const Vector<String> &p_sources, bool p_add_builtin) const {
+TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(const Vector<String> &p_sources, bool p_add_builtin, bool p_add_title) const {
 	Vector<Vector<String>> raw;
 
 	for (const String &path : p_sources) {
@@ -67,15 +67,19 @@ TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(con
 		}
 	}
 
-	if (GLOBAL_GET("application/config/name_localized").operator Dictionary().is_empty()) {
+	if (p_add_title && GLOBAL_GET("application/config/name_localized").operator Dictionary().is_empty()) {
 		const String &project_name = GLOBAL_GET("application/config/name");
 		if (!project_name.is_empty()) {
 			raw.push_back({ project_name, String(), String(), String(), String() });
 		}
 	}
 
+	EditorTranslationParser::get_singleton()->customize_strings(raw);
+
 	MessageMap result;
-	for (const Vector<String> &entry : raw) {
+	for (Vector<String> &entry : raw) {
+		entry.resize(5); // Ensure size, in case the strings were customized.
+
 		const String &msgid = entry[0];
 		const String &msgctxt = entry[1];
 		const String &plural = entry[2];
@@ -102,8 +106,9 @@ TranslationTemplateGenerator::MessageMap TranslationTemplateGenerator::parse(con
 void TranslationTemplateGenerator::generate(const String &p_file) {
 	const Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
 	const bool add_builtin = GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot");
+	const bool add_title = GLOBAL_GET("internationalization/locale/translation_add_project_title_to_translation_template");
 
-	const MessageMap &map = parse(files, add_builtin);
+	const MessageMap &map = parse(files, add_builtin, add_title);
 	if (map.is_empty()) {
 		WARN_PRINT_ED(TTR("No translatable strings found."));
 		return;

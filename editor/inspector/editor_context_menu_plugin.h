@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/object/gdvirtual.gen.inc"
+#include "core/object/gdvirtual.gen.h"
 #include "core/object/ref_counted.h"
 
 class InputEvent;
@@ -54,6 +54,7 @@ public:
 		CONTEXT_SLOT_SCRIPT_EDITOR_CODE,
 		CONTEXT_SLOT_SCENE_TABS,
 		CONTEXT_SLOT_2D_EDITOR,
+		CONTEXT_SLOT_INSPECTOR_PROPERTY,
 	};
 	static constexpr int BASE_ID = 2000;
 

@@ -31,16 +31,33 @@
 #include "code_edit.h"
 #include "code_edit.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "core/string/translation_server.h"
 #include "core/string/ustring.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/rendering/rendering_server.h"
 
 void CodeEdit::_apply_project_settings() {
 	symbol_tooltip_timer->set_wait_time(GLOBAL_GET_CACHED(double, "gui/timers/tooltip_delay_sec"));
+}
+
+RID CodeEdit::get_focused_accessibility_element() const {
+	bool draw_code_completion = code_completion_active && !code_completion_options.is_empty();
+	if (draw_code_completion && code_completion_current_selected >= 0 && code_completion_current_selected < code_completion_options.size()) {
+		RID item = code_completion_ac_items[code_completion_current_selected];
+		if (item.is_valid()) {
+			return item;
+		}
+	}
+	return TextEdit::get_focused_accessibility_element();
 }
 
 void CodeEdit::_notification(int p_what) {
@@ -55,7 +72,7 @@ void CodeEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			set_gutter_width(main_gutter, get_line_height());
+			_update_draw_main_gutter();
 			_update_line_number_gutter_width();
 			set_gutter_width(fold_gutter, get_line_height() / 1.2);
 			_clear_line_number_text_cache();
@@ -68,6 +85,141 @@ void CodeEdit::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			// Avoid having many hidden text editors with unused cache filling up memory.
 			_clear_line_number_text_cache();
+		} break;
+		case NOTIFICATION_ACCESSIBILITY_INVALIDATE: {
+			code_completion_ac_items.clear();
+			code_completion_ac_items.resize_initialized(code_completion_options.size());
+			code_completion_ac_scroll_element = RID();
+			code_completion_ac_root_element = RID();
+		} break;
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			if (code_completion_ac_root_element.is_null()) {
+				code_completion_ac_root_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU);
+			}
+
+			if (code_completion_ac_scroll_element.is_null()) {
+				code_completion_ac_scroll_element = AccessibilityServer::get_singleton()->create_sub_element(code_completion_ac_root_element, AccessibilityServerEnums::AccessibilityRole::ROLE_CONTAINER);
+			}
+
+			bool draw_code_completion = code_completion_active && !code_completion_options.is_empty();
+			if (draw_code_completion && code_completion_current_selected >= 0 && code_completion_current_selected < code_completion_options.size()) {
+				int options_count = code_completion_options.size();
+				int row_height = get_line_height();
+				const bool draw_code_hint = !code_hint.is_empty();
+
+				Size2 code_hint_minsize;
+				if (draw_code_hint) {
+					const int font_height = theme_cache.font->get_height(theme_cache.font_size);
+
+					Vector<String> code_hint_lines = code_hint.split("\n");
+					int line_count = code_hint_lines.size();
+
+					int max_width = 0;
+					for (int i = 0; i < line_count; i++) {
+						max_width = MAX(max_width, theme_cache.font->get_string_size(code_hint_lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x);
+					}
+					code_hint_minsize = theme_cache.code_hint_style->get_minimum_size() + Size2(max_width, line_count * font_height + (theme_cache.line_spacing * line_count - 1));
+				}
+
+				int lines = MIN(options_count, theme_cache.code_completion_max_lines);
+				const Size2 icon_area_size(row_height, row_height);
+
+				code_completion_rect.size.width = code_completion_longest_line + theme_cache.code_completion_icon_separation + icon_area_size.width + 2;
+				code_completion_rect.size.height = lines * row_height;
+
+				const Point2 caret_pos = get_caret_draw_pos();
+				int total_height = theme_cache.code_completion_style->get_minimum_size().y + code_completion_rect.size.height;
+				int min_y = caret_pos.y - row_height;
+				int max_y = caret_pos.y + row_height + total_height;
+				if (draw_code_hint) {
+					if (code_hint_draw_below) {
+						max_y += code_hint_minsize.y;
+					} else {
+						min_y -= code_hint_minsize.y;
+					}
+				}
+
+				const bool can_fit_completion_above = min_y > total_height;
+				const bool can_fit_completion_below = max_y <= get_size().height;
+
+				bool should_place_above = !can_fit_completion_below && can_fit_completion_above;
+
+				if (!can_fit_completion_below && !can_fit_completion_above) {
+					const int space_above = caret_pos.y - row_height;
+					const int space_below = get_size().height - caret_pos.y;
+					should_place_above = space_above > space_below;
+
+					// Reduce the line count and recalculate heights to better fit the completion popup.
+					int space_avail;
+					if (should_place_above) {
+						space_avail = space_above - theme_cache.code_completion_style->get_minimum_size().y;
+					} else {
+						space_avail = space_below - theme_cache.code_completion_style->get_minimum_size().y;
+					}
+
+					int max_lines_fit = MAX(1, space_avail / row_height);
+					lines = MIN(lines, max_lines_fit);
+					code_completion_rect.size.height = lines * row_height;
+					total_height = theme_cache.code_completion_style->get_minimum_size().y + code_completion_rect.size.height;
+				}
+
+				if (should_place_above) {
+					code_completion_rect.position.y = (caret_pos.y - total_height - row_height) + theme_cache.line_spacing;
+					if (draw_code_hint && !code_hint_draw_below) {
+						code_completion_rect.position.y -= code_hint_minsize.y;
+					}
+				} else {
+					code_completion_rect.position.y = caret_pos.y + (theme_cache.line_spacing / 2.0f);
+					if (draw_code_hint && code_hint_draw_below) {
+						code_completion_rect.position.y += code_hint_minsize.y;
+					}
+				}
+
+				const int scroll_width = options_count > theme_cache.code_completion_max_lines ? theme_cache.code_completion_scroll_width : 0;
+				const int code_completion_base_width = theme_cache.font->get_string_size(code_completion_base, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width;
+				if (caret_pos.x - code_completion_base_width + code_completion_rect.size.width + scroll_width > get_size().width) {
+					code_completion_rect.position.x = get_size().width - code_completion_rect.size.width - scroll_width;
+				} else {
+					code_completion_rect.position.x = caret_pos.x - code_completion_base_width;
+				}
+
+				code_completion_line_ofs = CLAMP((code_completion_force_item_center < 0 ? code_completion_current_selected : code_completion_force_item_center) - lines / 2, 0, options_count - lines);
+
+				Transform2D scroll_xform;
+				scroll_xform.set_origin(Vector2i(0, -row_height * code_completion_line_ofs));
+				AccessibilityServer::get_singleton()->update_set_flag(code_completion_ac_root_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, false);
+				AccessibilityServer::get_singleton()->update_set_list_item_count(code_completion_ac_root_element, options_count);
+				AccessibilityServer::get_singleton()->update_set_bounds(code_completion_ac_root_element, code_completion_rect);
+				AccessibilityServer::get_singleton()->update_set_name(code_completion_ac_root_element, ETR("Code completion list:"));
+
+				AccessibilityServer::get_singleton()->update_set_flag(code_completion_ac_scroll_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, false);
+				AccessibilityServer::get_singleton()->update_set_transform(code_completion_ac_scroll_element, scroll_xform);
+				AccessibilityServer::get_singleton()->update_set_bounds(code_completion_ac_scroll_element, code_completion_rect);
+
+				for (int i = 0; i < options_count; i++) {
+					if (code_completion_ac_items[i].is_null()) {
+						RID item = AccessibilityServer::get_singleton()->create_sub_element(code_completion_ac_scroll_element, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU_ITEM);
+						code_completion_ac_items.write[i] = item;
+					}
+					RID item = code_completion_ac_items[i];
+					AccessibilityServer::get_singleton()->update_set_role(item, AccessibilityServerEnums::AccessibilityRole::ROLE_MENU_ITEM);
+					AccessibilityServer::get_singleton()->update_set_list_item_index(item, i);
+					AccessibilityServer::get_singleton()->update_set_list_item_level(item, 0);
+					AccessibilityServer::get_singleton()->update_set_list_item_selected(item, i == code_completion_current_selected);
+					AccessibilityServer::get_singleton()->update_set_name(item, code_completion_options[i].display);
+					AccessibilityServer::get_singleton()->update_set_bounds(item, Rect2(code_completion_rect.position.x, code_completion_rect.position.y + row_height * i, code_completion_rect.size.x, row_height));
+				}
+			} else {
+				AccessibilityServer::get_singleton()->update_set_flag(code_completion_ac_root_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, true);
+				AccessibilityServer::get_singleton()->update_set_list_item_count(code_completion_ac_root_element, 0);
+				AccessibilityServer::get_singleton()->update_set_bounds(code_completion_ac_root_element, Rect2(0, 0, 1, 1));
+
+				AccessibilityServer::get_singleton()->update_set_flag(code_completion_ac_scroll_element, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, true);
+				AccessibilityServer::get_singleton()->update_set_bounds(code_completion_ac_scroll_element, Rect2(0, 0, 1, 1));
+			}
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -201,6 +353,8 @@ void CodeEdit::_notification(int p_what) {
 						code_completion_rect.position.x = caret_pos.x - code_completion_base_width;
 					}
 
+					code_completion_rect.position.x = MAX(0, code_completion_rect.position.x);
+
 					theme_cache.code_completion_style->draw(ci, Rect2(code_completion_rect.position - theme_cache.code_completion_style->get_offset(), code_completion_rect.size + theme_cache.code_completion_style->get_minimum_size() + Size2(scroll_width, 0)));
 					if (theme_cache.code_completion_background_color.a > 0.01) {
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(code_completion_rect.position, code_completion_rect.size + Size2(scroll_width, 0)), theme_cache.code_completion_background_color);
@@ -303,7 +457,7 @@ void CodeEdit::_draw_guidelines() {
 		const int column_pos = theme_cache.font->get_string_size(String("0").repeat((int)line_length_guideline_columns[i]), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
 		const int xoffset = xmargin_beg + column_pos - get_h_scroll();
 		if (xoffset > xmargin_beg && xoffset < xmargin_end) {
-			Color guideline_color = (i == 0) ? theme_cache.line_length_guideline_color : theme_cache.line_length_guideline_color * Color(1, 1, 1, 0.5);
+			Color guideline_color = (i == 0) ? theme_cache.line_length_guideline_color : theme_cache.line_length_guideline_color * Color(1, 1, 1, 0.6);
 			if (rtl) {
 				RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(size.width - xoffset, 0), Point2(size.width - xoffset, size.height), guideline_color);
 				continue;
@@ -314,9 +468,65 @@ void CodeEdit::_draw_guidelines() {
 }
 
 void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
+	int event_device_id = p_gui_input->get_device();
+	Ref<InputEventScreenTouch> touch = p_gui_input;
+	if (touch.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		if (code_completion_active) {
+			Vector2 touch_pos = touch->get_position();
+			if (code_completion_rect.has_point(touch_pos) || code_completion_scroll_rect.has_point(touch_pos)) {
+				if (touch->is_pressed()) {
+					is_code_completion_drag_started = true;
+					if (code_completion_force_item_center == -1) {
+						code_completion_force_item_center = code_completion_current_selected;
+					}
+
+					code_completion_current_selected = CLAMP(code_completion_line_ofs + (touch_pos.y - code_completion_rect.position.y) / get_line_height(), 0, code_completion_options.size() - 1);
+					code_completion_pan_offset = 0.0f;
+					if (touch->is_double_tap()) {
+						confirm_code_completion();
+					}
+					queue_redraw();
+					queue_accessibility_update();
+				} else {
+					// Finger lifted up inside the boundaries.
+					is_code_completion_drag_started = false;
+				}
+				accept_event();
+				return;
+			}
+
+			// If touch lands completely outside the completion popup.
+			if (touch->is_pressed()) {
+				cancel_code_completion();
+				set_code_hint("");
+			} else {
+				is_code_completion_drag_started = false;
+				accept_event();
+				return;
+			}
+		} else {
+			if (touch->is_pressed()) {
+				set_code_hint("");
+			}
+		}
+	}
+
+	real_t delta = 0.0;
+	bool is_valid_scroll_event = false;
+
 	Ref<InputEventPanGesture> pan_gesture = p_gui_input;
 	if (pan_gesture.is_valid() && code_completion_active && code_completion_rect.has_point(pan_gesture->get_position())) {
-		const real_t delta = pan_gesture->get_delta().y;
+		delta = pan_gesture->get_delta().y;
+		is_valid_scroll_event = true;
+	}
+
+	Ref<InputEventScreenDrag> drag = p_gui_input;
+	if (drag.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION && code_completion_active && is_code_completion_drag_started) {
+		delta = -(drag->get_relative().y / (real_t)get_line_height());
+		is_valid_scroll_event = true;
+	}
+
+	if (is_valid_scroll_event) {
 		code_completion_pan_offset += delta;
 		if (code_completion_pan_offset <= -1.0) {
 			if (code_completion_current_selected > 0) {
@@ -338,7 +548,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_gui_input;
-	if (mb.is_valid()) {
+	if (mb.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		// Ignore mouse clicks in IME input mode, let TextEdit handle it.
 		if (has_ime_text()) {
 			TextEdit::gui_input(p_gui_input);
@@ -394,6 +604,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						confirm_code_completion();
 					}
 					queue_redraw();
+					queue_accessibility_update();
 				} break;
 				default:
 					break;
@@ -412,6 +623,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				is_code_completion_scroll_pressed = true;
 
 				_update_scroll_selected_line(mb->get_position().y);
+				queue_accessibility_update();
 				queue_redraw();
 			}
 
@@ -467,7 +679,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	Ref<InputEventMouseMotion> mm = p_gui_input;
-	if (mm.is_valid()) {
+	if (mm.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		Vector2i mpos = mm->get_position();
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
@@ -501,6 +713,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (is_code_completion_scroll_pressed) {
 			_update_scroll_selected_line(mpos.y);
 			accept_event();
+			queue_accessibility_update();
 			queue_redraw();
 			return;
 		}
@@ -569,6 +782,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 			code_completion_force_item_center = -1;
 			code_completion_pan_offset = 0.0f;
+			queue_accessibility_update();
 			queue_redraw();
 			accept_event();
 			return;
@@ -581,6 +795,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 			code_completion_force_item_center = -1;
 			code_completion_pan_offset = 0.0f;
+			queue_accessibility_update();
 			queue_redraw();
 			accept_event();
 			return;
@@ -589,6 +804,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			code_completion_current_selected = MAX(0, code_completion_current_selected - theme_cache.code_completion_max_lines);
 			code_completion_force_item_center = -1;
 			code_completion_pan_offset = 0.0f;
+			queue_accessibility_update();
 			queue_redraw();
 			accept_event();
 			return;
@@ -597,11 +813,12 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			code_completion_current_selected = MIN(code_completion_options.size() - 1, code_completion_current_selected + theme_cache.code_completion_max_lines);
 			code_completion_force_item_center = -1;
 			code_completion_pan_offset = 0.0f;
+			queue_accessibility_update();
 			queue_redraw();
 			accept_event();
 			return;
 		}
-		if (k->is_action("ui_text_caret_line_start", true) || k->is_action("ui_text_caret_line_end", true)) {
+		if (k->is_action("ui_text_caret_line_end", true)) {
 			cancel_code_completion();
 		}
 		if (k->is_action("ui_text_completion_replace", true) || k->is_action("ui_text_completion_accept", true)) {
@@ -1335,6 +1552,8 @@ String CodeEdit::get_auto_brace_completion_close_key(const String &p_open_key) c
 /* Main Gutter */
 void CodeEdit::_update_draw_main_gutter() {
 	set_gutter_draw(main_gutter, draw_breakpoints || draw_bookmarks || draw_executing_lines);
+	int main_gutter_width = get_line_height() / (_is_bookmark_only() ? 2 : 1);
+	set_gutter_width(main_gutter, main_gutter_width);
 }
 
 void CodeEdit::set_draw_breakpoints_gutter(bool p_draw) {
@@ -1391,7 +1610,7 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
 		if (bookmarked || (hovering && !is_dragging_cursor() && shift_pressed)) {
-			int horizontal_padding = p_region.size.x / 2;
+			int horizontal_padding = p_region.size.x / (_is_bookmark_only() ? 8 : 2);
 			int vertical_padding = p_region.size.y / 4;
 
 			Color use_color = theme_cache.bookmark_color;
@@ -1605,12 +1824,14 @@ void CodeEdit::_clear_line_number_text_cache() {
 }
 
 void CodeEdit::_update_line_number_gutter_width() {
-	set_gutter_width(line_number_gutter, (line_number_digits + 1) * theme_cache.font->get_char_size('0', theme_cache.font_size).width);
+	int width_in_chars = line_number_digits + (!is_drawing_fold_gutter() ? 1 : 0); // Extra padding if there is no fold gutter.
+	set_gutter_width(line_number_gutter, width_in_chars * theme_cache.font->get_char_size('0', theme_cache.font_size).width);
 }
 
 /* Fold Gutter */
 void CodeEdit::set_draw_fold_gutter(bool p_draw) {
 	set_gutter_draw(fold_gutter, p_draw);
+	_update_line_number_gutter_width();
 }
 
 bool CodeEdit::is_drawing_fold_gutter() const {
@@ -2291,6 +2512,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(line[ofs - 2])) {
 		emit_signal(SNAME("code_completion_requested"));
 	}
+	queue_accessibility_update();
 }
 
 void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const Ref<Resource> &p_icon, const Variant &p_value, int p_location) {
@@ -2309,6 +2531,7 @@ void CodeEdit::update_code_completion_options(bool p_forced) {
 	code_completion_forced = p_forced;
 	code_completion_option_sources = code_completion_option_submitted;
 	code_completion_option_submitted.clear();
+	code_completion_caret_line = get_caret_line();
 	_filter_code_completion_candidates_impl();
 }
 
@@ -2362,6 +2585,7 @@ void CodeEdit::set_code_completion_selected_index(int p_index) {
 	code_completion_current_selected = p_index;
 	code_completion_force_item_center = -1;
 	code_completion_pan_offset = 0.0f;
+	queue_accessibility_update();
 	queue_redraw();
 }
 
@@ -2493,6 +2717,7 @@ void CodeEdit::cancel_code_completion() {
 	code_completion_forced = false;
 	code_completion_active = false;
 	is_code_completion_drag_started = false;
+	queue_accessibility_update();
 	queue_redraw();
 }
 
@@ -2694,6 +2919,44 @@ void CodeEdit::delete_lines() {
 
 	// Deselect all.
 	deselect();
+
+	end_multicaret_edit();
+	end_complex_operation();
+}
+
+void CodeEdit::join_lines(const String &p_line_ending) {
+	ERR_FAIL_COND_MSG(p_line_ending.contains_char('\n'), "Cannot join lines with a newline.");
+
+	begin_complex_operation();
+	begin_multicaret_edit();
+
+	Vector<Point2i> line_ranges = get_line_ranges_from_carets();
+	int line_offset = 0;
+	for (const Point2i &line_range : line_ranges) {
+		for (int32_t line_index = line_range.x; line_index <= line_range.y; line_index++) {
+			int32_t real_line = line_index + line_offset;
+			if (real_line + 1 >= get_line_count()) {
+				break;
+			}
+			unfold_line(real_line);
+			String line = get_line(real_line);
+			int line_length = line.length();
+			int next_line_leading_whitespace_length = get_first_non_whitespace_column(real_line + 1);
+			int next_line_length = get_line(real_line + 1).length();
+			int corrected_line_length = line_length - 1;
+			for (; corrected_line_length >= 0; corrected_line_length--) {
+				if (!is_whitespace(line[corrected_line_length])) {
+					break;
+				}
+			}
+			corrected_line_length++;
+			remove_text(real_line, corrected_line_length, real_line + 1, next_line_leading_whitespace_length);
+			if (next_line_leading_whitespace_length != next_line_length && corrected_line_length != 0) {
+				insert_text(p_line_ending, real_line, corrected_line_length);
+			}
+			line_offset--;
+		}
+	}
 
 	end_multicaret_edit();
 	end_complex_operation();
@@ -2920,6 +3183,7 @@ void CodeEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(KIND_NODE_PATH);
 	BIND_ENUM_CONSTANT(KIND_FILE_PATH);
 	BIND_ENUM_CONSTANT(KIND_PLAIN_TEXT);
+	BIND_ENUM_CONSTANT(KIND_KEYWORD);
 
 	BIND_ENUM_CONSTANT(LOCATION_LOCAL);
 	BIND_ENUM_CONSTANT(LOCATION_PARENT_MASK);
@@ -2971,6 +3235,7 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_lines_up"), &CodeEdit::move_lines_up);
 	ClassDB::bind_method(D_METHOD("move_lines_down"), &CodeEdit::move_lines_down);
 	ClassDB::bind_method(D_METHOD("delete_lines"), &CodeEdit::delete_lines);
+	ClassDB::bind_method(D_METHOD("join_lines", "line_ending"), &CodeEdit::join_lines, DEFVAL(" "));
 	ClassDB::bind_method(D_METHOD("duplicate_selection"), &CodeEdit::duplicate_selection);
 	ClassDB::bind_method(D_METHOD("duplicate_lines"), &CodeEdit::duplicate_lines);
 
@@ -3547,6 +3812,11 @@ void CodeEdit::_update_scroll_selected_line(float p_mouse_y) {
 void CodeEdit::_filter_code_completion_candidates_impl() {
 	int line_height = get_line_height();
 
+	const int caret_line = get_caret_line();
+	const int caret_column = get_caret_column();
+	const String line = get_line(caret_line);
+	ERR_FAIL_INDEX_MSG(caret_column, line.length() + 1, "Caret column exceeds line length.");
+
 	if (GDVIRTUAL_IS_OVERRIDDEN(_filter_code_completion_candidates)) {
 		Vector<ScriptLanguage::CodeCompletionOption> code_completion_options_new;
 		code_completion_base = "";
@@ -3605,19 +3875,24 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			code_completion_current_selected = 0;
 			code_completion_pan_offset = 0.0f;
 		}
+		for (RID &E : code_completion_ac_items) {
+			if (E.is_valid()) {
+				AccessibilityServer::get_singleton()->free_element(E);
+			}
+		}
+		code_completion_ac_items.clear();
 		code_completion_options = code_completion_options_new;
+		code_completion_ac_items.resize_initialized(code_completion_options.size());
 
+		code_completion_caret_column = caret_column;
+		code_completion_line = line;
 		code_completion_longest_line = MIN(max_width, theme_cache.code_completion_max_width * theme_cache.font_size);
 		code_completion_force_item_center = -1;
 		code_completion_active = true;
+		queue_accessibility_update();
 		queue_redraw();
 		return;
 	}
-
-	const int caret_line = get_caret_line();
-	const int caret_column = get_caret_column();
-	const String line = get_line(caret_line);
-	ERR_FAIL_INDEX_MSG(caret_column, line.length() + 1, "Caret column exceeds line length.");
 
 	if (caret_column > 0 && line[caret_column - 1] == '(' && !code_completion_forced) {
 		cancel_code_completion();
@@ -3824,11 +4099,21 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		code_completion_current_selected = 0;
 		code_completion_pan_offset = 0.0f;
 	}
+	for (RID &E : code_completion_ac_items) {
+		if (E.is_valid()) {
+			AccessibilityServer::get_singleton()->free_element(E);
+		}
+	}
+	code_completion_ac_items.clear();
 	code_completion_options = code_completion_options_new;
+	code_completion_ac_items.resize_initialized(code_completion_options.size());
 
+	code_completion_caret_column = caret_column;
+	code_completion_line = line;
 	code_completion_longest_line = MIN(max_width, theme_cache.code_completion_max_width * theme_cache.font_size);
 	code_completion_force_item_center = -1;
 	code_completion_active = true;
+	queue_accessibility_update();
 	queue_redraw();
 }
 
@@ -3868,6 +4153,10 @@ void CodeEdit::_text_set() {
 }
 
 void CodeEdit::_text_changed() {
+	if (code_completion_active && get_line(get_caret_line()) != code_completion_line) {
+		cancel_code_completion();
+	}
+
 	if (lines_edited_from == -1) {
 		return;
 	}
@@ -3903,6 +4192,16 @@ void CodeEdit::_text_changed() {
 	lines_edited_from = -1;
 	lines_edited_to = -1;
 	lines_edited_changed = 0;
+}
+
+void CodeEdit::_line_col_changed() {
+	if (!code_completion_active) {
+		return;
+	}
+
+	if (get_caret_line() != code_completion_caret_line || get_caret_column() != code_completion_caret_column) {
+		cancel_code_completion();
+	}
 }
 
 CodeEdit::CodeEdit() {
@@ -3967,6 +4266,7 @@ CodeEdit::CodeEdit() {
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));
 	connect("text_set", callable_mp(this, &CodeEdit::_text_set));
+	connect("caret_changed", callable_mp(this, &CodeEdit::_line_col_changed));
 	connect(SceneStringName(text_changed), callable_mp(this, &CodeEdit::_text_changed));
 
 	connect("gutter_clicked", callable_mp(this, &CodeEdit::_gutter_clicked));

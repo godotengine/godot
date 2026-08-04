@@ -163,6 +163,7 @@ protected:
 	struct ThemeCache {
 		int h_separation = 0;
 		int v_separation = 0;
+		int scroll_bar_h_separation = 0;
 
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
@@ -175,6 +176,8 @@ protected:
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
+		Color font_disabled_color;
+		Color font_disabled_hovered_color;
 
 		int line_separation = 0;
 		int icon_margin = 0;
@@ -185,6 +188,8 @@ protected:
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;
 		Ref<StyleBox> cursor_focus_style;
+		Ref<StyleBox> disabled_style;
+		Ref<StyleBox> disabled_hovered_style;
 		Color guide_color;
 
 		Ref<Texture2D> scroll_hint;
@@ -325,6 +330,7 @@ public:
 	int find_metadata(const Variant &p_metadata) const;
 
 	virtual String get_tooltip(const Point2 &p_pos) const override;
+	virtual AutoTranslateMode get_tooltip_auto_translate_mode_at(const Point2 &p_at) const override;
 	int get_item_at_position(const Point2 &p_pos, bool p_exact = false) const;
 	bool is_pos_at_end_of_items(const Point2 &p_pos) const;
 

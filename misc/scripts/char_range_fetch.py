@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Script used to dump char ranges for specific properties from
-# the Unicode Character Database to the `char_range.inc` file.
+# the Unicode Character Database to the `char_range.cpp` file.
 # NOTE: This script is deliberately not integrated into the build system;
 # you should run it manually whenever you want to update the data.
 from __future__ import annotations
@@ -89,7 +89,8 @@ def parse_unicode_data() -> None:
 
 
 def make_array(array_name: str, range_list: list[tuple[int, int]]) -> str:
-    result: str = f"\n\nconstexpr inline CharRange {array_name}[] = {{\n"
+    result: str = f"\n\nconst int {array_name}_size = {len(range_list)};\n"
+    result += f"const CharRange {array_name}[{array_name}_size] = {{\n"
 
     for start, end in range_list:
         result += f"\t{{ 0x{start:x}, 0x{end:x} }},\n"
@@ -102,22 +103,16 @@ def make_array(array_name: str, range_list: list[tuple[int, int]]) -> str:
 def generate_char_range_inc() -> None:
     parse_unicode_data()
 
-    source: str = generate_copyright_header("char_range.inc")
+    source: str = generate_copyright_header("char_range.cpp")
 
     source += f"""
 // This file was generated using the `misc/scripts/char_range_fetch.py` script.
 
-#pragma once
-
-#include "core/typedefs.h"
+#include "core/string/char_utils.h"
 
 // Unicode Derived Core Properties
-// Source: {URL}
-
-struct CharRange {{
-\tchar32_t start;
-\tchar32_t end;
-}};"""
+// Source: {URL}\
+"""
 
     source += make_array("xid_start", xid_start)
     source += make_array("xid_continue", xid_continue)
@@ -127,11 +122,11 @@ struct CharRange {{
 
     source += "\n"
 
-    char_range_path: str = os.path.join(os.path.dirname(__file__), "../../core/string/char_range.inc")
+    char_range_path: str = os.path.join(os.path.dirname(__file__), "../../core/string/char_range.cpp")
     with open(char_range_path, "w", newline="\n") as f:
         f.write(source)
 
-    print("`char_range.inc` generated successfully.")
+    print("`char_range.cpp` generated successfully.")
 
 
 if __name__ == "__main__":

@@ -30,9 +30,13 @@
 
 #include "register_types.h"
 
-#include "core/config/engine.h"
-#include "core/os/os.h"
 #include "shader_compile.h"
+
+#include "core/config/engine.h"
+
+#ifdef D3D12_ENABLED
+#include "core/os/os.h"
+#endif
 
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wshadow")
 

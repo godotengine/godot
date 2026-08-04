@@ -30,6 +30,7 @@
 
 #include "shader_compiler.h"
 
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_types.h"
 
@@ -178,7 +179,7 @@ static String _mkid(const String &p_id) {
 }
 
 static String f2sp0(float p_float) {
-	String num = rtos(p_float);
+	String num = String::num_scientific(p_float);
 	if (!num.contains_char('.') && !num.contains_char('e')) {
 		num += ".0";
 	}
@@ -928,7 +929,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.renames.has(vnode->name)) {
 				code = p_default_actions.renames[vnode->name];
 			} else {
-				if (shader->uniforms.has(vnode->name)) {
+				bool param_found = false;
+				if (function) {
+					for (const SL::FunctionNode::Argument &argument : function->arguments) {
+						if (argument.name == vnode->name) {
+							param_found = true;
+							break;
+						}
+					}
+				}
+				if (!param_found && shader->uniforms.has(vnode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
 					if (u.is_texture()) {
@@ -1053,7 +1063,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			if (p_default_actions.renames.has(anode->name)) {
 				code = p_default_actions.renames[anode->name];
 			} else {
-				if (shader->uniforms.has(anode->name)) {
+				bool param_found = false;
+				if (function) {
+					for (const SL::FunctionNode::Argument &argument : function->arguments) {
+						if (argument.name == anode->name) {
+							param_found = true;
+							break;
+						}
+					}
+				}
+				if (!param_found && shader->uniforms.has(anode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[anode->name];
 					if (u.is_texture()) {
@@ -1187,6 +1206,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					bool is_radiance_texture = false;
 					bool texture_func_no_uv = false;
 					bool texture_func_returns_data = false;
+					bool texture_func_simple = false;
 
 					if (onode->op == SL::OP_STRUCT) {
 						code += _mkid(vnode->name);
@@ -1203,6 +1223,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							is_texture_func = texture_functions.has(vnode->name);
 							texture_func_no_uv = (vnode->name == "textureSize" || vnode->name == "textureQueryLevels");
 							texture_func_returns_data = texture_func_no_uv || vnode->name == "textureQueryLod";
+							texture_func_simple = vnode->name == "texture";
 						} else if (p_default_actions.renames.has(vnode->name)) {
 							code += p_default_actions.renames[vnode->name];
 						} else {
@@ -1340,6 +1361,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									data_type_name = "multiviewSampler";
 									multiview_uv_needed = true;
 								} else if (is_radiance_texture) {
+									// We need to use an explicit level of detail to avoid mip mapping artifacts caused by the octahedral discontinuity.
+									if (texture_func_simple) {
+										code = code.replace("texture(", "textureLod(");
+									}
 									data_type_name = "sampler2D";
 								} else {
 									data_type_name = ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype());
@@ -1376,6 +1401,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							code += node_code;
 						} else if (is_radiance_texture && !texture_func_no_uv && i == 2) {
 							node_code = "vec3_to_oct_with_border(" + node_code + ", params.border_size)";
+
+							// Need an explicit level of detail if one isn't provided by the user.
+							if (texture_func_simple && onode->arguments.size() == 3) {
+								node_code += ", 0.0";
+							}
 
 							code += node_code;
 						} else {
@@ -1507,11 +1537,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 }
 
 ShaderLanguage::DataType ShaderCompiler::_get_global_shader_uniform_type(const StringName &p_name) {
-	RS::GlobalShaderParameterType gvt = RSG::material_storage->global_shader_parameter_get_type(p_name);
+	RSE::GlobalShaderParameterType gvt = RSG::material_storage->global_shader_parameter_get_type(p_name);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
-Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
+Error ShaderCompiler::compile(RSE::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
 	SL::ShaderCompileInfo info;
 	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);

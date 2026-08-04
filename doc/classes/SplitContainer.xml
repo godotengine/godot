@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SplitContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SplitContainer" inherits="Container" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container that arranges child controls horizontally or vertically and provides grabbers for adjusting the split ratios between them.
 	</brief_description>
@@ -55,6 +55,9 @@
 		</member>
 		<member name="drag_area_offset" type="int" setter="set_drag_area_offset" getter="get_drag_area_offset" default="0">
 			Shifts the drag area in the axis of the container to prevent the drag area from overlapping the [ScrollBar] or other selectable [Control] of a child node.
+		</member>
+		<member name="drag_nested_intersections" type="bool" setter="set_drag_nested_intersections" getter="is_dragging_nested_intersections" default="false">
+			Adds extra draggers at the intersection of the draggers of two SplitContainers to allow dragging both at once. This must be set to [code]true[/code] for both SplitContainers, and one needs to be a descendant of the other. They also must be orthogonal (their [member vertical] are different) and the descendant must be next to at least one of the ancestor's draggers (within [theme_item minimum_grab_thickness]).
 		</member>
 		<member name="dragger_visibility" type="int" setter="set_dragger_visibility" getter="get_dragger_visibility" enum="SplitContainer.DraggerVisibility" default="0">
 			Determines the dragger's visibility. This property does not determine whether dragging is enabled or not. Use [member dragging_enabled] for that.

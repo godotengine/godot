@@ -31,6 +31,7 @@
 #include "core_bind.h"
 #include "core_bind.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
@@ -39,8 +40,11 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
@@ -90,11 +94,13 @@ Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &
 	return ret;
 }
 
-void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
+void ResourceLoader::add_resource_format_loader(RequiredParam<ResourceFormatLoader> rp_format_loader, bool p_at_front) {
+	EXTRACT_PARAM_OR_FAIL(p_format_loader, rp_format_loader);
 	::ResourceLoader::add_resource_format_loader(p_format_loader, p_at_front);
 }
 
-void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader) {
+void ResourceLoader::remove_resource_format_loader(RequiredParam<ResourceFormatLoader> rp_format_loader) {
+	EXTRACT_PARAM_OR_FAIL(p_format_loader, rp_format_loader);
 	::ResourceLoader::remove_resource_format_loader(p_format_loader);
 }
 
@@ -132,6 +138,10 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	return ::ResourceLoader::get_resource_uid(p_path);
 }
 
+String ResourceLoader::get_resource_type(const String &p_path) {
+	return ::ResourceLoader::get_resource_type(p_path);
+}
+
 Vector<String> ResourceLoader::list_directory(const String &p_directory) {
 	return ::ResourceLoader::list_directory(p_directory);
 }
@@ -151,6 +161,7 @@ void ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cached_ref", "path"), &ResourceLoader::get_cached_ref);
 	ClassDB::bind_method(D_METHOD("exists", "path", "type_hint"), &ResourceLoader::exists, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_resource_uid", "path"), &ResourceLoader::get_resource_uid);
+	ClassDB::bind_method(D_METHOD("get_resource_type", "path"), &ResourceLoader::get_resource_type);
 	ClassDB::bind_method(D_METHOD("list_directory", "directory_path"), &ResourceLoader::list_directory);
 
 	BIND_ENUM_CONSTANT(THREAD_LOAD_INVALID_RESOURCE);
@@ -175,7 +186,8 @@ Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 	return ::ResourceSaver::set_uid(p_path, p_uid);
 }
 
-Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
+Vector<String> ResourceSaver::get_recognized_extensions(RequiredParam<Resource> rp_resource) {
+	EXTRACT_PARAM_OR_FAIL_V(p_resource, rp_resource, Vector<String>());
 	List<String> exts;
 	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
 	Vector<String> ret;
@@ -185,11 +197,13 @@ Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_r
 	return ret;
 }
 
-void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
+void ResourceSaver::add_resource_format_saver(RequiredParam<ResourceFormatSaver> rp_format_saver, bool p_at_front) {
+	EXTRACT_PARAM_OR_FAIL(p_format_saver, rp_format_saver);
 	::ResourceSaver::add_resource_format_saver(p_format_saver, p_at_front);
 }
 
-void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
+void ResourceSaver::remove_resource_format_saver(RequiredParam<ResourceFormatSaver> rp_format_saver) {
+	EXTRACT_PARAM_OR_FAIL(p_format_saver, rp_format_saver);
 	::ResourceSaver::remove_resource_format_saver(p_format_saver);
 }
 
@@ -425,7 +439,7 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
-	::OS::ProcessID pid = 0;
+	ProcessID pid = 0;
 	Error err = ::OS::get_singleton()->create_instance(args, &pid);
 	if (err != OK) {
 		return -1;
@@ -446,7 +460,7 @@ int OS::create_process(const String &p_path, const Vector<String> &p_arguments, 
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
-	::OS::ProcessID pid = 0;
+	ProcessID pid = 0;
 	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid, p_open_console);
 	if (err != OK) {
 		return -1;
@@ -551,6 +565,10 @@ Vector<String> OS::get_restart_on_exit_arguments() const {
 
 String OS::get_locale() const {
 	return ::OS::get_singleton()->get_locale();
+}
+
+Vector<String> OS::get_preferred_locales() const {
+	return ::OS::get_singleton()->get_preferred_locales();
 }
 
 String OS::get_locale_language() const {
@@ -704,8 +722,8 @@ String OS::get_unique_id() const {
 	return ::OS::get_singleton()->get_unique_id();
 }
 
-void OS::add_logger(const Ref<Logger> &p_logger) {
-	ERR_FAIL_COND(p_logger.is_null());
+void OS::add_logger(RequiredParam<Logger> rp_logger) {
+	EXTRACT_PARAM_OR_FAIL(p_logger, rp_logger);
 
 	if (!logger_bind) {
 		logger_bind = memnew(LoggerBind);
@@ -716,8 +734,8 @@ void OS::add_logger(const Ref<Logger> &p_logger) {
 	logger_bind->loggers.push_back(p_logger);
 }
 
-void OS::remove_logger(const Ref<Logger> &p_logger) {
-	ERR_FAIL_COND(p_logger.is_null());
+void OS::remove_logger(RequiredParam<Logger> rp_logger) {
+	EXTRACT_PARAM_OR_FAIL(p_logger, rp_logger);
 	ERR_FAIL_COND_MSG(!logger_bind || logger_bind->loggers.find(p_logger) == -1, "Could not remove logger, as it hasn't been added.");
 	logger_bind->loggers.erase(p_logger);
 }
@@ -809,6 +827,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &OS::delay_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &OS::get_locale);
+	ClassDB::bind_method(D_METHOD("get_preferred_locales"), &OS::get_preferred_locales);
 	ClassDB::bind_method(D_METHOD("get_locale_language"), &OS::get_locale_language);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &OS::get_model_name);
 
@@ -860,10 +879,12 @@ void OS::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode_sleep_usec", 6900);
 
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_VULKAN);
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_OPENGL3);
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_D3D12);
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_METAL);
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DESKTOP);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DCIM);
@@ -927,9 +948,9 @@ Variant Geometry2D::line_intersects_line(const Vector2 &p_from_a, const Vector2 
 	}
 }
 
-Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
+Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p_p1, const Vector2 &p_q1, const Vector2 &p_p2, const Vector2 &p_q2) {
 	Vector2 r1, r2;
-	::Geometry2D::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
+	::Geometry2D::get_closest_points_between_segments(p_p1, p_q1, p_p2, p_q2, r1, r2);
 	Vector<Vector2> r = { r1, r2 };
 	return r;
 }
@@ -942,8 +963,8 @@ Vector2 Geometry2D::get_closest_point_to_segment_uncapped(const Vector2 &p_point
 	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
-bool Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
-	return ::Geometry2D::is_point_in_triangle(s, a, b, c);
+bool Geometry2D::point_is_inside_triangle(const Vector2 &p_s, const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_c) const {
+	return ::Geometry2D::is_point_in_triangle(p_s, p_a, p_b, p_c);
 }
 
 bool Geometry2D::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
@@ -1186,9 +1207,9 @@ TypedArray<Plane> Geometry3D::build_capsule_planes(float p_radius, float p_heigh
 	return ret;
 }
 
-Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
+Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p_p1, const Vector3 &p_p2, const Vector3 &p_q1, const Vector3 &p_q2) {
 	Vector3 r1, r2;
-	::Geometry3D::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
+	::Geometry3D::get_closest_points_between_segments(p_p1, p_p2, p_q1, p_q2, r1, r2);
 	Vector<Vector3> r = { r1, r2 };
 	return r;
 }
@@ -1442,8 +1463,8 @@ void Mutex::_bind_methods() {
 
 ////// Thread //////
 
-void Thread::_start_func(void *ud) {
-	Ref<Thread> *tud = (Ref<Thread> *)ud;
+void Thread::_start_func(void *p_ud) {
+	Ref<Thread> *tud = (Ref<Thread> *)p_ud;
 	Ref<Thread> t = *tud;
 	memdelete(tud);
 
@@ -1662,14 +1683,15 @@ StringName ClassDB::class_get_property_setter(const StringName &p_class, const S
 	return ::ClassDB::get_property_setter(p_class, p_property);
 }
 
-Variant ClassDB::class_get_property(Object *p_object, const StringName &p_property) const {
+Variant ClassDB::class_get_property(RequiredParam<Object> rp_object, const StringName &p_property) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_object, rp_object, Variant());
 	Variant ret;
 	::ClassDB::get_property(p_object, p_property, ret);
 	return ret;
 }
 
-Error ClassDB::class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const {
-	Variant ret;
+Error ClassDB::class_set_property(RequiredParam<Object> rp_object, const StringName &p_property, const Variant &p_value) const {
+	EXTRACT_PARAM_OR_FAIL_V(p_object, rp_object, ERR_INVALID_PARAMETER);
 	bool valid;
 	if (!::ClassDB::set_property(p_object, p_property, p_value, &valid)) {
 		return ERR_UNAVAILABLE;
@@ -1815,7 +1837,7 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 		::ClassDB::get_class_list(classes);
 		for (const StringName &E : classes) {
 			if (::ClassDB::is_class_exposed(E)) {
-				r_options->push_back(E.operator String().quote());
+				r_options->push_back(E.string().quote());
 			}
 		}
 	}
@@ -1985,7 +2007,8 @@ Object *Engine::get_singleton_object(const StringName &p_name) const {
 	return ::Engine::get_singleton()->get_singleton_object(p_name);
 }
 
-void Engine::register_singleton(const StringName &p_name, Object *p_object) {
+void Engine::register_singleton(const StringName &p_name, RequiredParam<Object> rp_instance) {
+	EXTRACT_PARAM_OR_FAIL(p_object, rp_instance);
 	ERR_FAIL_COND_MSG(has_singleton(p_name), vformat("Singleton already registered: '%s'.", String(p_name)));
 	ERR_FAIL_COND_MSG(!String(p_name).is_valid_ascii_identifier(), vformat("Singleton name is not a valid identifier: '%s'.", p_name));
 	::Engine::Singleton s;
@@ -2012,11 +2035,13 @@ Vector<String> Engine::get_singleton_list() const {
 	return ret;
 }
 
-Error Engine::register_script_language(ScriptLanguage *p_language) {
+Error Engine::register_script_language(RequiredParam<ScriptLanguage> rp_language) {
+	EXTRACT_PARAM_OR_FAIL_V(p_language, rp_language, ERR_INVALID_PARAMETER);
 	return ScriptServer::register_language(p_language);
 }
 
-Error Engine::unregister_script_language(const ScriptLanguage *p_language) {
+Error Engine::unregister_script_language(RequiredParam<const ScriptLanguage> rp_language) {
+	EXTRACT_PARAM_OR_FAIL_V(p_language, rp_language, ERR_INVALID_PARAMETER);
 	return ScriptServer::unregister_language(p_language);
 }
 
@@ -2145,6 +2170,10 @@ void Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
+
+	// Those default values need to be specified for the docs generator,
+	// to avoid using values from a `--quiet` run.
+	ADD_PROPERTY_DEFAULT("print_to_stdout", true);
 }
 
 ////// EngineDebugger //////
@@ -2325,6 +2354,35 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("insert_breakpoint", "line", "source"), &EngineDebugger::insert_breakpoint);
 	ClassDB::bind_method(D_METHOD("remove_breakpoint", "line", "source"), &EngineDebugger::remove_breakpoint);
 	ClassDB::bind_method(D_METHOD("clear_breakpoints"), &EngineDebugger::clear_breakpoints);
+}
+
+Variant WeakRef::get_ref() const {
+	if (ref.is_null()) {
+		return Variant();
+	}
+
+	Object *obj = ObjectDB::get_instance(ref);
+	if (!obj) {
+		return Variant();
+	}
+	RefCounted *r = cast_to<RefCounted>(obj);
+	if (r) {
+		return Ref<RefCounted>(r);
+	}
+
+	return obj;
+}
+
+void WeakRef::set_obj(Object *p_object) {
+	ref = p_object ? p_object->get_instance_id() : ObjectID();
+}
+
+void WeakRef::set_ref(const Ref<RefCounted> &p_ref) {
+	ref = p_ref.is_valid() ? p_ref->get_instance_id() : ObjectID();
+}
+
+void WeakRef::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_ref"), &WeakRef::get_ref);
 }
 
 } // namespace CoreBind

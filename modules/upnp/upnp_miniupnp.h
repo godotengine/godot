@@ -40,7 +40,7 @@ class UPNPMiniUPNP : public UPNP {
 	GDCLASS(UPNPMiniUPNP, UPNP);
 
 private:
-	static UPNP *_create(bool p_notify_postinitialize) { return static_cast<UPNP *>(ClassDB::creator<UPNPMiniUPNP>(p_notify_postinitialize)); }
+	static UPNP *_create(bool p_notify_postinitialize);
 
 	String discover_multicast_if = "";
 	int discover_local_port = 0;

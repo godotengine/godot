@@ -41,7 +41,7 @@ namespace OT {
 
 struct DeviceRecord
 {
-  static unsigned int get_size (unsigned count)
+  static size_t get_size (unsigned count)
   { return hb_ceil_to_4 (min_size + count * HBUINT8::static_size); }
 
   template<typename Iterator,
@@ -87,7 +87,7 @@ struct hdmx
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_hdmx;
 
-  unsigned int get_size () const
+  size_t get_size () const
   { return min_size + numRecords * sizeDeviceRecord; }
 
   template<typename Iterator,

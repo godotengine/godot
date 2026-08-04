@@ -4,7 +4,7 @@
  *
  *   WOFF2 format management (base).
  *
- * Copyright (C) 2019-2025 by
+ * Copyright (C) 2019-2026 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1043,7 +1043,6 @@
         FT_ULong   total_n_points = 0;
         FT_UShort  n_points_contour;
         FT_UInt    j;
-        FT_ULong   flag_size;
         FT_ULong   triplet_size;
         FT_ULong   triplet_bytes_used;
         FT_Bool    have_overlap  = FALSE;
@@ -1088,8 +1087,8 @@
         }
         substreams[N_POINTS_STREAM].offset = FT_STREAM_POS();
 
-        flag_size = total_n_points;
-        if ( flag_size > substreams[FLAG_STREAM].size )
+        points_size += total_n_points;
+        if ( points_size > substreams[FLAG_STREAM].size )
           goto Fail;
 
         flags_buf   = stream->base + substreams[FLAG_STREAM].offset;
@@ -1106,8 +1105,7 @@
         triplet_bytes_used = 0;
 
         /* Create array to store point information. */
-        points_size = total_n_points;
-        if ( FT_QNEW_ARRAY( points, points_size ) )
+        if ( FT_QNEW_ARRAY( points, total_n_points ) )
           goto Fail;
 
         if ( triplet_decode( flags_buf,
@@ -1118,7 +1116,7 @@
                              &triplet_bytes_used ) )
           goto Fail;
 
-        substreams[FLAG_STREAM].offset  += flag_size;
+        substreams[FLAG_STREAM].offset  += total_n_points;
         substreams[GLYPH_STREAM].offset += triplet_bytes_used;
 
         if ( FT_STREAM_SEEK( substreams[GLYPH_STREAM].offset ) ||

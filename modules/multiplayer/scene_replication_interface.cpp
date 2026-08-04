@@ -34,10 +34,11 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "scene/main/node.h"
 
-#define MAKE_ROOM(m_amount)             \
+#define MAKE_ROOM(m_amount) \
 	if (packet_cache.size() < m_amount) \
 		packet_cache.resize(m_amount);
 
@@ -142,7 +143,7 @@ void SceneReplicationInterface::on_network_process() {
 	// Process syncs.
 	uint64_t usec = OS::get_singleton()->get_ticks_usec();
 	for (KeyValue<int, PeerInfo> &E : peers_info) {
-		const HashSet<ObjectID> to_sync = E.value.sync_nodes;
+		const HashSet<ObjectID> to_sync(E.value.sync_nodes);
 		if (to_sync.is_empty()) {
 			continue; // Nothing to sync
 		}
@@ -249,7 +250,7 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 		if (pending_buffer_size > 0) {
 			ERR_FAIL_COND_V(!node || !sync->get_replication_config_ptr(), ERR_UNCONFIGURED);
 			int consumed = 0;
-			const List<NodePath> props = sync->get_replication_config_ptr()->get_spawn_properties();
+			const List<NodePath> props(sync->get_replication_config_ptr()->get_spawn_properties());
 			Vector<Variant> vars;
 			vars.resize(props.size());
 			Error err = MultiplayerAPI::decode_and_decompress_variants(vars, pending_buffer, pending_buffer_size, consumed);
@@ -281,7 +282,7 @@ Error SceneReplicationInterface::on_replication_stop(Object *p_obj, Variant p_co
 	for (KeyValue<int, PeerInfo> &E : peers_info) {
 		E.value.sync_nodes.erase(sid);
 		E.value.last_watch_usecs.erase(sid);
-		if (sync->get_net_id()) {
+		if (sync->get_net_id() && uint32_t(E.key) == tobj.remote_peer) {
 			E.value.recv_sync_ids.erase(sync->get_net_id());
 		}
 	}
@@ -386,7 +387,7 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 	ERR_FAIL_NULL_V(spawner, ERR_BUG);
 	ERR_FAIL_COND_V(!_has_authority(spawner), ERR_BUG);
 	ERR_FAIL_COND_V(!tracked_nodes.has(p_oid), ERR_BUG);
-	const HashSet<ObjectID> synchronizers = tracked_nodes[p_oid].synchronizers;
+	const HashSet<ObjectID> synchronizers(tracked_nodes[p_oid].synchronizers);
 	bool is_visible = true;
 	for (const ObjectID &sid : synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(sid);
@@ -490,7 +491,7 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 	// Prepare spawn state.
 	List<NodePath> state_props;
 	List<uint32_t> sync_ids;
-	const HashSet<ObjectID> synchronizers = tnode->synchronizers;
+	const HashSet<ObjectID> synchronizers(tnode->synchronizers);
 	for (const ObjectID &sid : synchronizers) {
 		MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(sid);
 		if (!_has_authority(sync)) {
@@ -519,7 +520,7 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, MultiplayerSpa
 
 	// Encode scene ID, path ID, net ID, node name.
 	int path_id = multiplayer_cache->make_object_cache(p_spawner);
-	CharString cname = p_node->get_name().operator String().utf8();
+	CharString cname = p_node->get_name().string().utf8();
 	int nlen = encode_cstring(cname.get_data(), nullptr);
 	MAKE_ROOM(1 + 1 + 4 + 4 + 4 + 4 * sync_ids.size() + 4 + nlen + (is_custom ? 4 + spawn_arg_size : 0) + state_size);
 	uint8_t *ptr = packet_cache.ptrw();
@@ -823,7 +824,7 @@ void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> &
 		int size;
 		Vector<Variant> vars;
 		Vector<const Variant *> varp;
-		const List<NodePath> props = sync->get_replication_config_ptr()->get_sync_properties();
+		const List<NodePath> props(sync->get_replication_config_ptr()->get_sync_properties());
 		Error err = MultiplayerSynchronizer::get_state(props, node, vars, varp);
 		ERR_CONTINUE_MSG(err != OK, "Unable to retrieve sync state.");
 		err = MultiplayerAPI::encode_and_compress_variants(varp.ptrw(), varp.size(), nullptr, size);
@@ -882,7 +883,7 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 			ofs += size;
 			continue;
 		}
-		const List<NodePath> props = sync->get_replication_config_ptr()->get_sync_properties();
+		const List<NodePath> props(sync->get_replication_config_ptr()->get_sync_properties());
 		Vector<Variant> vars;
 		vars.resize(props.size());
 		int consumed;

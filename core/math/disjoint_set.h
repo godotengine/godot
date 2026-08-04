@@ -46,20 +46,20 @@ class DisjointSet {
 
 	MapT elements;
 
-	Element *get_parent(Element *element);
+	Element *get_parent(Element *r_element);
 
-	_FORCE_INLINE_ Element *insert_or_get(T object);
+	_FORCE_INLINE_ Element *insert_or_get(T p_object);
 
 public:
 	~DisjointSet();
 
-	_FORCE_INLINE_ void insert(T object) { (void)insert_or_get(object); }
+	_FORCE_INLINE_ void insert(T p_object) { (void)insert_or_get(p_object); }
 
-	void create_union(T a, T b);
+	void create_union(T p_left, T p_right);
 
-	void get_representatives(Vector<T> &out_roots);
+	void get_representatives(Vector<T> &r_out_roots);
 
-	void get_members(Vector<T> &out_members, T representative);
+	void get_members(Vector<T> &r_out_members, T p_representative);
 };
 
 /* FUNCTIONS */
@@ -72,33 +72,33 @@ DisjointSet<T, H, C, AL>::~DisjointSet() {
 }
 
 template <typename T, typename H, typename C, typename AL>
-typename DisjointSet<T, H, C, AL>::Element *DisjointSet<T, H, C, AL>::get_parent(Element *element) {
-	if (element->parent != element) {
-		element->parent = get_parent(element->parent);
+typename DisjointSet<T, H, C, AL>::Element *DisjointSet<T, H, C, AL>::get_parent(Element *r_element) {
+	if (r_element->parent != r_element) {
+		r_element->parent = get_parent(r_element->parent);
 	}
 
-	return element->parent;
+	return r_element->parent;
 }
 
 template <typename T, typename H, typename C, typename AL>
-typename DisjointSet<T, H, C, AL>::Element *DisjointSet<T, H, C, AL>::insert_or_get(T object) {
-	typename MapT::Iterator itr = elements.find(object);
+typename DisjointSet<T, H, C, AL>::Element *DisjointSet<T, H, C, AL>::insert_or_get(T p_object) {
+	typename MapT::Iterator itr = elements.find(p_object);
 	if (itr != nullptr) {
 		return itr->value;
 	}
 
 	Element *new_element = memnew_allocator(Element, AL);
-	new_element->object = object;
+	new_element->object = p_object;
 	new_element->parent = new_element;
-	elements.insert(object, new_element);
+	elements.insert(p_object, new_element);
 
 	return new_element;
 }
 
 template <typename T, typename H, typename C, typename AL>
-void DisjointSet<T, H, C, AL>::create_union(T a, T b) {
-	Element *x = insert_or_get(a);
-	Element *y = insert_or_get(b);
+void DisjointSet<T, H, C, AL>::create_union(T p_left, T p_right) {
+	Element *x = insert_or_get(p_left);
+	Element *y = insert_or_get(p_right);
 
 	Element *x_root = get_parent(x);
 	Element *y_root = get_parent(y);
@@ -121,18 +121,18 @@ void DisjointSet<T, H, C, AL>::create_union(T a, T b) {
 }
 
 template <typename T, typename H, typename C, typename AL>
-void DisjointSet<T, H, C, AL>::get_representatives(Vector<T> &out_representatives) {
+void DisjointSet<T, H, C, AL>::get_representatives(Vector<T> &r_out_representatives) {
 	for (KeyValue<T, Element *> &E : elements) {
 		Element *element = E.value;
 		if (element->parent == element) {
-			out_representatives.push_back(element->object);
+			r_out_representatives.push_back(element->object);
 		}
 	}
 }
 
 template <typename T, typename H, typename C, typename AL>
-void DisjointSet<T, H, C, AL>::get_members(Vector<T> &out_members, T representative) {
-	typename MapT::Iterator rep_itr = elements.find(representative);
+void DisjointSet<T, H, C, AL>::get_members(Vector<T> &r_out_members, T p_representative) {
+	typename MapT::Iterator rep_itr = elements.find(p_representative);
 	ERR_FAIL_NULL(rep_itr);
 
 	Element *rep_element = rep_itr->value;
@@ -141,7 +141,7 @@ void DisjointSet<T, H, C, AL>::get_members(Vector<T> &out_members, T representat
 	for (KeyValue<T, Element *> &E : elements) {
 		Element *parent = get_parent(E.value);
 		if (parent == rep_element) {
-			out_members.push_back(E.key);
+			r_out_members.push_back(E.key);
 		}
 	}
 }

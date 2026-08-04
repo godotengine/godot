@@ -62,6 +62,14 @@ public:
 		DRAW_MAX,
 	};
 
+	enum SizingMode {
+		TAB_SIZING_FIT_CONTENT,
+		TAB_SIZING_UNIFORM,
+		TAB_SIZING_JUSTIFY,
+		TAB_SIZING_EXPAND,
+		TAB_SIZING_MAX
+	};
+
 private:
 	struct Tab {
 		mutable RID accessibility_item_element;
@@ -112,6 +120,7 @@ private:
 	int current = -1;
 	int previous = -1;
 	AlignmentMode tab_alignment = ALIGNMENT_LEFT;
+	SizingMode tab_sizing = TAB_SIZING_FIT_CONTENT;
 	bool clip_tabs = true;
 	int rb_hover = -1;
 	bool rb_pressing = false;
@@ -270,6 +279,9 @@ public:
 	void set_tab_alignment(AlignmentMode p_alignment);
 	AlignmentMode get_tab_alignment() const;
 
+	void set_tab_sizing(SizingMode p_sizing);
+	SizingMode get_tab_sizing() const;
+
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
 
@@ -334,9 +346,11 @@ public:
 
 	Rect2 get_tab_rect(int p_tab) const;
 	Size2 get_minimum_size() const override;
+	Size2 get_desired_size() const override;
 
 	TabBar();
 };
 
 VARIANT_ENUM_CAST(TabBar::AlignmentMode);
+VARIANT_ENUM_CAST(TabBar::SizingMode);
 VARIANT_ENUM_CAST(TabBar::CloseButtonDisplayPolicy);

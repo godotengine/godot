@@ -14,7 +14,10 @@ class SoftBodyMotionProperties;
 class SoftBodyContactListener;
 class SimShapeFilter;
 
+/// @cond INTERNAL
 /// Temporary data used by the update of a soft body
+///
+/// WARNING: This class is an internal part of PhysicsSystem, it has no functions that can be called by users of the library.
 class SoftBodyUpdateContext : public NonCopyable
 {
 public:
@@ -55,5 +58,6 @@ public:
 	Vec3								mDeltaPosition;								///< Delta position of the body in the current time step, should be applied after the update
 	ECanSleep							mCanSleep;									///< Can the body sleep? Should be applied after the update
 };
+/// @endcond
 
 JPH_NAMESPACE_END

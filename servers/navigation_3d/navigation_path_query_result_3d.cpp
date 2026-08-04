@@ -30,6 +30,8 @@
 
 #include "navigation_path_query_result_3d.h"
 
+#include "core/object/class_db.h"
+
 void NavigationPathQueryResult3D::set_path(const Vector<Vector3> &p_path) {
 	path = p_path;
 }

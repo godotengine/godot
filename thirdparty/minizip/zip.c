@@ -1,11 +1,10 @@
 /* zip.c -- IO on .zip files using zlib
-   Version 1.1, February 14h, 2010
-   part of the MiniZip project - ( http://www.winimage.com/zLibDll/minizip.html )
+   part of the MiniZip project - ( https://www.winimage.com/zLibDll/minizip.html )
 
-         Copyright (C) 1998-2010 Gilles Vollant (minizip) ( http://www.winimage.com/zLibDll/minizip.html )
+         Copyright (C) 1998-2026 Gilles Vollant (minizip) ( https://www.winimage.com/zLibDll/minizip.html )
 
          Modifications for Zip64 support
-         Copyright (C) 2009-2010 Mathias Svensson ( http://result42.com )
+         Copyright (C) 2009-2010 Mathias Svensson ( https://result42.com )
 
          For more info read MiniZip_info.txt
 
@@ -28,6 +27,9 @@
 #include <time.h>
 #ifndef ZLIB_CONST
 #  define ZLIB_CONST
+#endif
+#ifdef ZLIB_DLL
+#  undef ZLIB_DLL
 #endif
 #include "zlib.h"
 #include "zip.h"
@@ -93,7 +95,7 @@
 #  define DEF_MEM_LEVEL  MAX_MEM_LEVEL
 #endif
 #endif
-const char zip_copyright[] =" zip 1.01 Copyright 1998-2004 Gilles Vollant - http://www.winimage.com/zLibDll";
+const char zip_copyright[] =" zip 1.01 Copyright 1998-2004 Gilles Vollant - https://www.winimage.com/zLibDll/minizip.html";
 
 
 #define SIZEDATA_INDATABLOCK (4096-(4*4))
@@ -337,7 +339,7 @@ local int block_get(block_t *block) {
             return -1;
         /* Update left in case more was filled in since we were last here. */
         block->left = block->node->filled_in_this_block -
-                      (block->next - block->node->data);
+                      (size_t)(block->next - block->node->data);
         if (block->left != 0)
             /* There was indeed more data appended in the current datablock. */
             break;
@@ -357,8 +359,9 @@ local int block_get(block_t *block) {
 /* Return a 16-bit unsigned little-endian value from block, or a negative value
 // if the end is reached. */
 local long block_get2(block_t *block) {
-    long got = block_get(block);
-    return got | ((unsigned long)block_get(block) << 8);
+    int low = block_get(block);
+    int high = block_get(block);
+    return low < 0 || high < 0 ? -1 : low | ((long)high << 8);
 }
 
 /* Read up to len bytes from block into buf. Return the number of bytes read. */
@@ -420,9 +423,9 @@ local char *block_central_name(block_t *block, set_t *set) {
         /* Go through the remaining fixed-length portion of the record,
         // extracting the lengths of the three variable-length fields. */
         block_skip(block, 24);
-        unsigned flen = block_get2(block);      /* file name length */
-        unsigned xlen = block_get2(block);      /* extra field length */
-        unsigned clen = block_get2(block);      /* comment field length */
+        unsigned flen = (unsigned)block_get2(block);    /* file name length */
+        unsigned xlen = (unsigned)block_get2(block);    /* extra length */
+        unsigned clen = (unsigned)block_get2(block);    /* comment length */
         if (block_skip(block, 12) == -1)
             /* Premature end of the record. */
             break;
@@ -500,7 +503,7 @@ extern int ZEXPORT zipAlreadyThere(zipFile file, char const *name) {
     /* Return true if name is in the central directory. */
     size_t len = strlen(name);
     char *copy = set_alloc(&zip->set, NULL, len + 1);
-    strcpy(copy, name);
+    memcpy(copy, name, len + 1);
     int found = set_found(&zip->set, copy);
     set_free(&zip->set, copy);
     return found;
@@ -1141,6 +1144,7 @@ extern zipFile ZEXPORT zipOpen2_64(const void *pathname, int append, zipcharpc* 
     {
         zlib_filefunc64_32_def zlib_filefunc64_32_def_fill;
         zlib_filefunc64_32_def_fill.zfile_func64 = *pzlib_filefunc_def;
+        zlib_filefunc64_32_def_fill.zopen32_file = NULL;
         zlib_filefunc64_32_def_fill.ztell32_file = NULL;
         zlib_filefunc64_32_def_fill.zseek32_file = NULL;
         return zipOpen3(pathname, append, globalcomment, &zlib_filefunc64_32_def_fill);
@@ -1247,6 +1251,46 @@ local int Write_LocalFileHeader(zip64_internal* zi, const char* filename, uInt s
   return err;
 }
 
+/* Return the length of the UTF-8 code at str[0..len-1] in [1..4], or negative
+   if there is no valid UTF-8 code there. If negative, it is minus the number
+   of bytes examined in order to determine it was bad. Or if minus the return
+   code is one less than len, then at least one more byte than provided would
+   be needed to complete the code. */
+local int utf8len(unsigned char const *str, size_t len) {
+    return
+        len == 0 ? -1 :                         /* empty input */
+        str[0] < 0x80 ? 1 :                     /* good one-byte */
+        str[0] < 0xc0 ? -1 :                    /* bad first byte */
+        len < 2 || (str[1] >> 6) != 2 ? -2 :    /* missing or bad 2nd byte */
+        str[0] < 0xc2 ? -2 :                    /* overlong code */
+        str[0] < 0xe0 ? 2 :                     /* good two-byte */
+        len < 3 || (str[2] >> 6) != 2 ? -3 :    /* missing or bad 3rd byte */
+        str[0] == 0xe0 && str[1] < 0xa0 ? -3 :  /* overlong code */
+        str[0] < 0xf0 ? 3 :                     /* good three-byte */
+        len < 4 || (str[3] >> 6) != 2 ? -4 :    /* missing or bad 4th byte */
+        str[0] == 0xf0 && str[1] < 0x90 ? -4 :  /* overlong code */
+        str[0] < 0xf4 ||
+        (str[0] == 0xf4 && str[1] < 0x90) ? 4 : /* good four-byte */
+        -4;                                     /* code > 0x10ffff */
+}
+
+/* Return true if str[0..len-1] is valid UTF-8 *and* it contains at least one
+   code of two or more bytes. This is used to determine whether or not to set
+   bit 11 in the zip header flags. */
+local int isutf8(char const *str, size_t len) {
+    int utf8 = 0;
+    while (len) {
+        int code = utf8len((unsigned char const *)str, len);
+        if (code < 0)
+            return 0;
+        if (code > 1)
+            utf8 = 1;
+        str += code;
+        len -= (unsigned)code;
+    }
+    return utf8;
+}
+
 /*
  NOTE.
  When writing RAW the ZIP64 extended information in extrafield_local and extrafield_global needs to be stripped
@@ -1333,6 +1377,9 @@ extern int ZEXPORT zipOpenNewFileInZip4_64(zipFile file, const char* filename, c
       zi->ci.flag |= 6;
     if (password != NULL)
       zi->ci.flag |= 1;
+    if (isutf8(filename, size_filename) &&
+        (size_comment == 0 || isutf8(comment, size_comment)))
+      zi->ci.flag |= (1 << 11);
 
     zi->ci.crc32 = 0;
     zi->ci.method = method;

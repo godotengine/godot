@@ -31,11 +31,17 @@
 #include "localization_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/string/translation_server.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_toaster.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/settings/project_settings_editor.h"
 #include "editor/translations/editor_translation_parser.h"
 #include "editor/translations/template_generator.h"
 #include "scene/gui/control.h"
@@ -47,6 +53,7 @@ void LocalizationEditor::_notification(int p_what) {
 			translation_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_delete));
 			template_source_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_template_source_delete));
 			template_add_builtin->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot"));
+			template_add_title->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_project_title_to_translation_template"));
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
@@ -402,8 +409,24 @@ void LocalizationEditor::_template_generate_open() {
 	template_generate_dialog->popup_file_dialog();
 }
 
+void LocalizationEditor::_template_generate_command() {
+	const String current_path = template_generate_dialog->get_current_path();
+	if (!current_path.is_empty() && current_path.get_file().is_valid_filename()) {
+		_template_generate(current_path);
+		EditorToaster::get_singleton()->popup_str(TTR("Template generated."));
+	} else {
+		ProjectSettingsEditor::get_singleton()->popup_centered();
+		_template_generate_open();
+	}
+}
+
 void LocalizationEditor::_template_add_builtin_toggled() {
 	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_builtin_strings_to_pot", template_add_builtin->is_pressed());
+	ProjectSettings::get_singleton()->save();
+}
+
+void LocalizationEditor::_template_add_title_toggled() {
+	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_project_title_to_translation_template", template_add_title->is_pressed());
 	ProjectSettings::get_singleton()->save();
 }
 
@@ -484,7 +507,7 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 	if (remaps_changed) {
 		ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_remaps", remaps);
 		update_translations();
-		emit_signal("localization_changed");
+		emit_signal(localization_changed);
 	}
 }
 
@@ -524,7 +547,7 @@ void LocalizationEditor::_filesystem_file_removed(const String &p_file) {
 
 	if (remaps_changed) {
 		update_translations();
-		emit_signal("localization_changed");
+		emit_signal(localization_changed);
 	}
 }
 
@@ -753,7 +776,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+		mc->set_theme_type_variation("NoBorderBottomWideWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -791,7 +814,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalWide");
+		mc->set_theme_type_variation("NoBorderHorizontalWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -819,7 +842,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+		mc->set_theme_type_variation("NoBorderBottomWideWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -868,7 +891,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(template_generate_button);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalWide");
+		mc->set_theme_type_variation("NoBorderHorizontalWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -879,10 +902,17 @@ LocalizationEditor::LocalizationEditor() {
 		tree_data_types[template_source_list] = "localization_editor_pot_item";
 		tree_settings[template_source_list] = "internationalization/locale/translations_pot_files";
 
+		HBoxContainer *checkbox_hb = memnew(HBoxContainer);
+		tvb->add_child(checkbox_hb);
+
 		template_add_builtin = memnew(CheckBox(TTRC("Add Built-in Strings")));
 		template_add_builtin->set_tooltip_text(TTRC("Add strings from built-in components such as certain Control nodes."));
 		template_add_builtin->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_add_builtin_toggled));
-		tvb->add_child(template_add_builtin);
+		checkbox_hb->add_child(template_add_builtin);
+
+		template_add_title = memnew(CheckBox(TTRC("Add Project Title")));
+		template_add_title->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_add_title_toggled));
+		checkbox_hb->add_child(template_add_title);
 
 		template_generate_dialog = memnew(EditorFileDialog);
 		template_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
@@ -899,4 +929,6 @@ LocalizationEditor::LocalizationEditor() {
 	for (Tree *tree : trees) {
 		SET_DRAG_FORWARDING_GCD(tree, LocalizationEditor);
 	}
+
+	EditorCommandPalette::get_singleton()->add_command(TTRC("Generate Translation Template"), "editor/template_generator/generate", callable_mp(this, &LocalizationEditor::_template_generate_command));
 }

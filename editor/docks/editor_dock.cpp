@@ -31,7 +31,8 @@
 #include "editor_dock.h"
 
 #include "core/input/shortcut.h"
-#include "core/io/config_file.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock_manager.h"
 
@@ -44,10 +45,15 @@ void EditorDock::_emit_changed() {
 	emit_signal(SNAME("_tab_style_changed"));
 }
 
+void EditorDock::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "accessibility_name") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void EditorDock::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			set_accessibility_region(true);
 			set_accessibility_name(get_display_title());
 		} break;
 
@@ -114,6 +120,7 @@ void EditorDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_available_layouts"), &EditorDock::get_available_layouts);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "available_layouts", PROPERTY_HINT_FLAGS, "Vertical:1,Horizontal:2,Floating:4"), "set_available_layouts", "get_available_layouts");
 
+	ADD_SIGNAL(MethodInfo("opened"));
 	ADD_SIGNAL(MethodInfo("closed"));
 	ADD_SIGNAL(MethodInfo("_tab_style_changed"));
 
@@ -132,11 +139,17 @@ void EditorDock::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UR);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM_L);
+	BIND_ENUM_CONSTANT(DOCK_SLOT_BOTTOM_R);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
 
-	GDVIRTUAL_BIND(_update_layout, "layout");
+	GDVIRTUAL_BIND(_update_layout_and_slot, "layout", "slot");
 	GDVIRTUAL_BIND(_save_layout_to_config, "config", "section");
 	GDVIRTUAL_BIND(_load_layout_from_config, "config", "section");
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND(_update_layout, "layout");
+#endif
 }
 
 void EditorDock::open() {
@@ -149,8 +162,16 @@ void EditorDock::make_visible() {
 	EditorDockManager::get_singleton()->open_dock(this, true);
 }
 
-void EditorDock::make_floating() {
+void EditorDock::make_floating(int p_screen) {
 	EditorDockManager::get_singleton()->make_dock_floating(this);
+
+	if (p_screen < 0) {
+		return;
+	}
+	Window *current_window = get_window();
+	if (current_window) {
+		current_window->set_current_screen(p_screen);
+	}
 }
 
 void EditorDock::close() {
@@ -295,8 +316,12 @@ void EditorDock::update_tab_style() {
 		} break;
 	}
 
-	if (shortcut.is_valid() && shortcut->has_valid_event()) {
-		tooltip += (tooltip.is_empty() ? "" : "\n") + TTR(shortcut->get_name()) + " (" + shortcut->get_as_text() + ")";
+	if (shortcut.is_valid()) {
+		tooltip += (tooltip.is_empty() ? "" : "\n") + TTR(shortcut->get_name());
+
+		if (shortcut->has_valid_event()) {
+			tooltip += " (" + shortcut->get_as_text() + ")";
+		}
 	}
 	parent_dock_container->set_tab_tooltip(index, tooltip);
 
@@ -313,4 +338,18 @@ Ref<Texture2D> EditorDock::get_effective_icon(const Callable &p_icon_fetch) {
 		icon = p_icon_fetch.call(icon_name);
 	}
 	return icon;
+}
+
+void EditorDock::update_layout(DockLayout p_layout, int p_slot) {
+	if (GDVIRTUAL_CALL(_update_layout_and_slot, p_layout, p_slot)) {
+		return;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_CALL(_update_layout, p_layout);
+#endif
+}
+
+EditorDock::EditorDock() {
+	set_accessibility_region(true);
 }

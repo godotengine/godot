@@ -120,7 +120,7 @@ private:
 	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
 
 	ScriptEditorDebugger *_add_debugger();
-	void _update_errors();
+	void _update_errors(bool p_force = false);
 	void _update_margins();
 
 	friend class DebuggerEditorPlugin;
@@ -163,6 +163,8 @@ protected:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 public:
 	static EditorDebuggerNode *get_singleton() { return singleton; }
@@ -214,6 +216,8 @@ public:
 
 	void set_debug_mute_audio(bool p_mute);
 	bool get_debug_mute_audio() const;
+
+	void set_debug_collisions(bool p_enabled);
 
 	void set_camera_override(CameraOverride p_override);
 	CameraOverride get_camera_override();

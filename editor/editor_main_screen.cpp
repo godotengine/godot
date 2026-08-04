@@ -31,6 +31,7 @@
 #include "editor_main_screen.h"
 
 #include "core/io/config_file.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/editor_plugin.h"
@@ -265,7 +266,7 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	tb->set_name(p_editor->get_plugin_name());
 	tb->set_text(p_editor->get_plugin_name());
 
-	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut("editor/editor_" + p_editor->get_plugin_name().to_lower());
+	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut("editor/editor_" + p_editor->get_plugin_name().to_lower().replace_char(' ', '_'));
 	if (shortcut.is_valid()) {
 		tb->set_shortcut(shortcut);
 	}

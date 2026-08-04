@@ -50,6 +50,7 @@ public:
 		KIND_NODE_PATH,
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
+		KIND_KEYWORD,
 	};
 
 	// core/object/script_language.h - ScriptLanguage::CodeCompletionLocation
@@ -97,6 +98,7 @@ private:
 	int main_gutter = -1;
 	void _update_draw_main_gutter();
 	void _main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
+	_FORCE_INLINE_ bool _is_bookmark_only() { return draw_bookmarks && !draw_executing_lines && !draw_breakpoints; }
 
 	// breakpoints
 	HashMap<int, bool> breakpointed_lines;
@@ -208,11 +210,15 @@ private:
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
 
+	Vector2 completion_touch_drag_accum;
 	bool code_completion_active = false;
 	bool is_code_completion_scroll_hovered = false;
 	bool is_code_completion_scroll_pressed = false;
 	bool is_code_completion_drag_started = false;
 	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
+	Vector<RID> code_completion_ac_items;
+	RID code_completion_ac_scroll_element;
+	RID code_completion_ac_root_element;
 	int code_completion_line_ofs = 0;
 	int code_completion_current_selected = 0;
 	int code_completion_force_item_center = -1;
@@ -225,6 +231,9 @@ private:
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
 	List<ScriptLanguage::CodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
+	String code_completion_line;
+	int code_completion_caret_line = 0;
+	int code_completion_caret_column = 0;
 
 	void _update_scroll_selected_line(float p_mouse_y);
 	void _filter_code_completion_candidates_impl();
@@ -311,6 +320,7 @@ private:
 
 	void _lines_edited_from(int p_from_line, int p_to_line);
 	void _text_set();
+	void _line_col_changed();
 	void _text_changed();
 
 	void _apply_project_settings();
@@ -321,7 +331,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	String _get_text_for_symbol_lookup_bind_compat_73196();
-	void _add_code_completion_option_compat_84906(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, int p_location = LOCATION_OTHER);
+	void _add_code_completion_option_bind_compat_84906(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, int p_location = LOCATION_OTHER);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -335,6 +345,8 @@ protected:
 	virtual void _handle_unicode_input_internal(const uint32_t p_unicode, int p_caret) override;
 	virtual void _backspace_internal(int p_caret) override;
 	virtual void _cut_internal(int p_caret) override;
+
+	virtual RID get_focused_accessibility_element() const override;
 
 	GDVIRTUAL1(_confirm_code_completion, bool)
 	GDVIRTUAL1(_request_code_completion, bool)
@@ -523,6 +535,7 @@ public:
 	void move_lines_up();
 	void move_lines_down();
 	void delete_lines();
+	void join_lines(const String &p_line_ending = " ");
 	void duplicate_selection();
 	void duplicate_lines();
 
