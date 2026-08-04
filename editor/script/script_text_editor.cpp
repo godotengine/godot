@@ -1794,7 +1794,7 @@ void ScriptTextEditor::_notification(int p_what) {
 	}
 }
 
-PackedInt32Array ScriptTextEditor::get_breakpoints() {
+PackedInt32Array ScriptTextEditor::get_breakpoints() const {
 	return code_editor->get_text_editor()->get_breakpointed_lines();
 }
 

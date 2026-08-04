@@ -224,7 +224,7 @@ public:
 	virtual Variant get_edit_state() override;
 	virtual void set_edit_state(const Variant &p_state, bool p_grab_focus = true) override;
 
-	virtual PackedInt32Array get_breakpoints() override;
+	virtual PackedInt32Array get_breakpoints() const override;
 	virtual void clear_breakpoints() override;
 
 	virtual void add_callback(const String &p_function, const PackedStringArray &p_args);

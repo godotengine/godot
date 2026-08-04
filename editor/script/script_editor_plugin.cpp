@@ -743,99 +743,6 @@ void DocumentEditorContainer::_resource_created(Ref<Resource> p_res) {
 	EditorNode::get_singleton()->push_item(p_res.ptr());
 }
 
-void DocumentEditorContainer::_goto_script_line(Ref<RefCounted> p_script, int p_line) {
-	Ref<Script> scr = Object::cast_to<Script>(*p_script);
-	if (scr.is_valid() && (scr->has_source_code() || scr->get_path().is_resource_file())) {
-		if (edit(p_script, p_line, 0)) {
-			EditorNode::get_singleton()->push_item(p_script.ptr());
-		}
-	}
-}
-
-void DocumentEditorContainer::_change_execution(Ref<RefCounted> p_script, int p_line, bool p_set) {
-	Ref<Script> scr = Object::cast_to<Script>(*p_script);
-	if (scr.is_valid() && (scr->has_source_code() || scr->get_path().is_resource_file())) {
-		for (int i = 0; i < tab_container->get_tab_count(); i++) {
-			if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(tab_container->get_tab_control(i))) {
-				if ((scr.is_valid() && teb->get_edited_resource() == p_script) || teb->get_edited_resource()->get_path() == scr->get_path()) {
-					if (p_set) {
-						teb->set_executing_line(p_line);
-					} else {
-						teb->clear_executing_line();
-					}
-				}
-			}
-		}
-	}
-}
-
-void DocumentEditorContainer::_set_breakpoint(Ref<RefCounted> p_script, int p_line, bool p_enabled) {
-	Ref<Script> scr = Object::cast_to<Script>(*p_script);
-	if (scr.is_valid() && (scr->has_source_code() || scr->get_path().is_resource_file())) {
-		// Update if open.
-		for (int i = 0; i < tab_container->get_tab_count(); i++) {
-			CodeEditorBase *ceb = Object::cast_to<CodeEditorBase>(tab_container->get_tab_control(i));
-			if (ceb && ceb->get_edited_resource()->get_path() == scr->get_path()) {
-				ceb->set_breakpoint(p_line, p_enabled);
-				return;
-			}
-		}
-
-		// Handle closed.
-		Dictionary state = script_editor_cache->get_value(scr->get_path(), "state");
-		Array breakpoints;
-		if (state.has("breakpoints")) {
-			breakpoints = state["breakpoints"];
-		}
-
-		if (breakpoints.has(p_line)) {
-			if (!p_enabled) {
-				breakpoints.erase(p_line);
-			}
-		} else if (p_enabled) {
-			breakpoints.push_back(p_line);
-		}
-		state["breakpoints"] = breakpoints;
-		script_editor_cache->set_value(scr->get_path(), "state", state);
-		EditorDebuggerNode::get_singleton()->set_breakpoint(scr->get_path(), p_line + 1, p_enabled);
-	}
-}
-
-void DocumentEditorContainer::_clear_breakpoints() {
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		if (CodeEditorBase *ceb = Object::cast_to<CodeEditorBase>(tab_container->get_tab_control(i))) {
-			ceb->clear_breakpoints();
-		}
-	}
-
-	// Clear from closed scripts.
-	Vector<String> cached_editors = script_editor_cache->get_sections();
-	for (const String &E : cached_editors) {
-		Array breakpoints = _get_cached_breakpoints_for_script(E);
-		for (int breakpoint : breakpoints) {
-			EditorDebuggerNode::get_singleton()->set_breakpoint(E, (int)breakpoint + 1, false);
-		}
-
-		if (breakpoints.size() > 0) {
-			Dictionary state = script_editor_cache->get_value(E, "state");
-			state["breakpoints"] = Array();
-			script_editor_cache->set_value(E, "state", state);
-		}
-	}
-}
-
-Array DocumentEditorContainer::_get_cached_breakpoints_for_script(const String &p_path) const {
-	if (!ResourceLoader::exists(p_path, "Script") || p_path.begins_with("local://") || !script_editor_cache->has_section_key(p_path, "state")) {
-		return Array();
-	}
-
-	Dictionary state = script_editor_cache->get_value(p_path, "state");
-	if (!state.has("breakpoints")) {
-		return Array();
-	}
-	return state["breakpoints"];
-}
-
 ScriptEditorBase *DocumentEditorContainer::_get_current_editor() const {
 	return Object::cast_to<ScriptEditorBase>(tab_container->get_current_tab_control());
 }
@@ -1153,8 +1060,9 @@ void DocumentEditorContainer::_close_tab(int p_idx, bool p_save) {
 	_compress_history_patterns(false);
 
 	int idx = tab_container->get_current_tab();
-	if (TextEditorBase *current = Object::cast_to<TextEditorBase>(tselected)) {
-		_save_editor_state(current);
+	TextEditorBase *teb = Object::cast_to<TextEditorBase>(tselected);
+	if (teb && !restoring_layout) {
+		ScriptEditor::get_singleton()->save_editor_state(teb);
 	}
 	memdelete(tselected);
 
@@ -1553,7 +1461,7 @@ void _save_text_editor_theme_as(const String &p_file) {
 	}
 }
 
-bool DocumentEditorContainer::_script_exists(const String &p_path) const {
+static bool _file_exists(const String &p_path) {
 	if (p_path.is_empty()) {
 		return false;
 	} else if (p_path.is_resource_file()) {
@@ -2040,8 +1948,6 @@ void DocumentEditorContainer::_notification(int p_what) {
 			EditorNode::get_singleton()->connect("scene_saved", callable_mp(this, &DocumentEditorContainer::_scene_saved_callback));
 			// Connect to scene_root child entered instead of scene_changed for new scenes.
 			EditorNode::get_singleton()->get_scene_root()->connect("child_entered_tree", callable_mp(this, &DocumentEditorContainer::_connect_to_scene).unbind(1));
-			FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &DocumentEditorContainer::_files_moved));
-			FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &DocumentEditorContainer::_file_removed));
 
 			script_split->connect("dragged", callable_mp(this, &DocumentEditorContainer::_split_dragged));
 			list_split->connect("dragged", callable_mp(this, &DocumentEditorContainer::_split_dragged));
@@ -2117,57 +2023,6 @@ void DocumentEditorContainer::_close_builtin_scripts_from_scene(const String &p_
 
 void DocumentEditorContainer::edited_scene_changed() {
 	_update_modified_scripts_for_external_editor();
-}
-
-Vector<String> DocumentEditorContainer::_get_breakpoints() {
-	List<String> bpoints_list;
-	get_breakpoints(&bpoints_list);
-
-	Vector<String> ret;
-	for (const String &E : bpoints_list) {
-		ret.push_back(E);
-	}
-
-	return ret;
-}
-
-void DocumentEditorContainer::get_breakpoints(List<String> *p_breakpoints) {
-	HashSet<String> loaded_scripts;
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		CodeEditorBase *ceb = Object::cast_to<CodeEditorBase>(tab_container->get_tab_control(i));
-		if (!ceb) {
-			continue;
-		}
-
-		Ref<Script> scr = ceb->get_edited_resource();
-		if (scr.is_null()) {
-			continue;
-		}
-
-		String base = scr->get_path();
-		loaded_scripts.insert(base);
-		if (base.is_empty() || base.begins_with("local://")) {
-			continue;
-		}
-
-		PackedInt32Array bpoints = ceb->get_breakpoints();
-		for (int32_t bpoint : bpoints) {
-			p_breakpoints->push_back(base + ":" + itos((int)bpoint + 1));
-		}
-	}
-
-	// Load breakpoints that are in closed scripts.
-	Vector<String> cached_editors = script_editor_cache->get_sections();
-	for (const String &E : cached_editors) {
-		if (loaded_scripts.has(E)) {
-			continue;
-		}
-
-		Array breakpoints = _get_cached_breakpoints_for_script(E);
-		for (int breakpoint : breakpoints) {
-			p_breakpoints->push_back(E + ":" + itos((int)breakpoint + 1));
-		}
-	}
 }
 
 void DocumentEditorContainer::ensure_select_current() {
@@ -2513,7 +2368,7 @@ bool DocumentEditorContainer::edit(const Ref<Resource> &p_resource, int p_line, 
 		teb->set_tooltip_request_func(callable_mp(this, &DocumentEditorContainer::_get_debug_tooltip));
 
 		teb->connect("request_help", callable_mp(this, &DocumentEditorContainer::_help_search));
-		teb->connect("request_open_script_at_line", callable_mp(this, &DocumentEditorContainer::_goto_script_line));
+		teb->connect("request_open_script_at_line", callable_mp(ScriptEditor::get_singleton(), &ScriptEditor::goto_script_line));
 		teb->connect("go_to_help", callable_mp(this, &DocumentEditorContainer::_help_class_goto));
 		teb->connect("_request_save_new_history", callable_mp(this, &DocumentEditorContainer::_save_new_history).bind(teb));
 		teb->connect("_request_save_previous_state", callable_mp(this, &DocumentEditorContainer::_save_previous_state).bind(teb));
@@ -2524,9 +2379,11 @@ bool DocumentEditorContainer::edit(const Ref<Resource> &p_resource, int p_line, 
 		teb->connect("replace_in_files_requested", callable_mp(ScriptEditor::get_singleton(), &ScriptEditor::open_find_in_files_dialog).bind(true));
 #endif
 
-		if (script_editor_cache->has_section(p_resource->get_path())) {
-			teb->set_edit_state(script_editor_cache->get_value(p_resource->get_path(), "state"), p_grab_focus);
-			if (ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(teb)) {
+		const Variant stored_state = ScriptEditor::get_singleton()->get_editor_state(p_resource->get_path());
+		if (stored_state != Variant()) {
+			teb->set_edit_state(stored_state, p_grab_focus);
+			ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(teb);
+			if (ste) {
 				ste->store_previous_state();
 			}
 		}
@@ -2877,6 +2734,17 @@ Error DocumentEditorContainer::close_file(const String &p_file) {
 	return ERR_FILE_NOT_FOUND;
 }
 
+void DocumentEditorContainer::close_removed_file(const String &p_removed_file) {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (seb && seb->edited_file_data.path == p_removed_file) {
+			// The file is deleted with no undo, so just close the tab.
+			_close_tab(i, false);
+			break;
+		}
+	}
+}
+
 void DocumentEditorContainer::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {
 	ERR_FAIL_NULL(p_obj);
 	Ref<Script> scr = p_obj->get_script();
@@ -2912,22 +2780,6 @@ void DocumentEditorContainer::_add_callback(Object *p_obj, const String &p_funct
 	// Move back to the previously edited node to reselect it in the Inspector and the SignalsDock.
 	// We assume that the previous item is the node on which the callbacks were added.
 	EditorNode::get_singleton()->edit_previous_item();
-}
-
-void DocumentEditorContainer::_save_editor_state(ScriptEditorBase *p_editor) {
-	if (restoring_layout) {
-		return;
-	}
-
-	const String &path = p_editor->get_edited_resource()->get_path();
-	if (path.is_empty()) {
-		return;
-	}
-
-	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(p_editor)) {
-		script_editor_cache->set_value(path, "state", teb->get_edit_state());
-	}
-	// This is saved later when we save the editor layout.
 }
 
 void DocumentEditorContainer::_save_layout() {
@@ -3052,54 +2904,6 @@ void DocumentEditorContainer::_update_filenames() {
 
 	document_list->update_list();
 	_update_document_name_button();
-}
-
-void DocumentEditorContainer::_files_moved(const String &p_old_file, const String &p_new_file) {
-	if (!script_editor_cache->has_section(p_old_file)) {
-		return;
-	}
-
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
-		if (seb && seb->edited_file_data.path == p_old_file) {
-			seb->edited_file_data.path = p_new_file;
-			break;
-		}
-	}
-
-	Variant state = script_editor_cache->get_value(p_old_file, "state");
-	script_editor_cache->erase_section(p_old_file);
-	script_editor_cache->set_value(p_new_file, "state", state);
-
-	// If Script, update breakpoints with debugger.
-	Array breakpoints = _get_cached_breakpoints_for_script(p_new_file);
-	for (int breakpoint : breakpoints) {
-		int line = (int)breakpoint + 1;
-		EditorDebuggerNode::get_singleton()->set_breakpoint(p_old_file, line, false);
-		if (!p_new_file.begins_with("local://") && ResourceLoader::exists(p_new_file, "Script")) {
-			EditorDebuggerNode::get_singleton()->set_breakpoint(p_new_file, line, true);
-		}
-	}
-	// This is saved later when we save the editor layout.
-}
-
-void DocumentEditorContainer::_file_removed(const String &p_removed_file) {
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
-		if (seb && seb->edited_file_data.path == p_removed_file) {
-			// The script is deleted with no undo, so just close the tab.
-			_close_tab(i, false);
-		}
-	}
-
-	// Check closed.
-	if (script_editor_cache->has_section(p_removed_file)) {
-		Array breakpoints = _get_cached_breakpoints_for_script(p_removed_file);
-		for (int breakpoint : breakpoints) {
-			EditorDebuggerNode::get_singleton()->set_breakpoint(p_removed_file, (int)breakpoint + 1, false);
-		}
-		script_editor_cache->erase_section(p_removed_file);
-	}
 }
 
 void DocumentEditorContainer::_update_find_replace_bar() {
@@ -3422,7 +3226,6 @@ void DocumentEditorContainer::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	restoring_layout = true;
 
-	HashSet<String> loaded_scripts;
 	List<String> extensions = _get_recognized_extensions();
 
 	ScriptEditorNavigationMarker::get_singleton()->init_begin();
@@ -3437,15 +3240,11 @@ void DocumentEditorContainer::set_window_layout(Ref<ConfigFile> p_layout) {
 			path = script_info["path"];
 		}
 
-		if (!_script_exists(path)) {
-			if (script_editor_cache->has_section(path)) {
-				script_editor_cache->erase_section(path);
-			}
+		if (!_file_exists(path)) {
 			continue;
 		} else if (!path.is_resource_file() && !EditorNode::get_singleton()->is_scene_open(path.get_slice("::", 0))) {
 			continue;
 		}
-		loaded_scripts.insert(path);
 
 		bool is_script = false;
 		if (path.is_resource_file()) {
@@ -3505,25 +3304,6 @@ void DocumentEditorContainer::set_window_layout(Ref<ConfigFile> p_layout) {
 		list_split->set_split_offset(p_layout->get_value(config_section, "list_split_offset"));
 	}
 
-	// Remove any deleted editors that have been removed between launches.
-	// and if a Script, register breakpoints with the debugger.
-	Vector<String> cached_editors = script_editor_cache->get_sections();
-	for (const String &E : cached_editors) {
-		if (loaded_scripts.has(E)) {
-			continue;
-		}
-
-		if (!_script_exists(E)) {
-			script_editor_cache->erase_section(E);
-			continue;
-		}
-
-		Array breakpoints = _get_cached_breakpoints_for_script(E);
-		for (int breakpoint : breakpoints) {
-			EditorDebuggerNode::get_singleton()->set_breakpoint(E, (int)breakpoint + 1, true);
-		}
-	}
-
 	restoring_layout = false;
 
 	_update_filenames();
@@ -3576,7 +3356,7 @@ void DocumentEditorContainer::get_window_layout(Ref<ConfigFile> p_layout) {
 				selected_script = path;
 			}
 
-			_save_editor_state(seb);
+			ScriptEditor::get_singleton()->save_editor_state(seb);
 			scripts.push_back(path);
 		}
 
@@ -3591,9 +3371,6 @@ void DocumentEditorContainer::get_window_layout(Ref<ConfigFile> p_layout) {
 	p_layout->set_value(config_section, "script_split_offset", script_split->get_split_offset());
 	p_layout->set_value(config_section, "list_split_offset", list_split->get_split_offset());
 	p_layout->set_value(config_section, "zoom_factor", zoom_factor);
-
-	// Save the cache.
-	script_editor_cache->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join(cache_path));
 }
 
 void DocumentEditorContainer::_help_class_open(const String &p_class) {
@@ -4033,13 +3810,11 @@ void DocumentEditorContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("make_floating", PropertyInfo(Variant::INT, "screen")));
 }
 
-DocumentEditorContainer::DocumentEditorContainer(bool p_is_main_editor, const String &p_config_section, const String &p_cache_path) {
+DocumentEditorContainer::DocumentEditorContainer(bool p_is_main_editor, const String &p_config_section) {
 	is_main_editor = p_is_main_editor;
 	config_section = p_config_section;
-	cache_path = p_cache_path;
 
-	script_editor_cache.instantiate();
-	script_editor_cache->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join(cache_path));
+	ScriptEditor::get_singleton()->register_document_editor_container(this);
 
 	pending_auto_reload = false;
 	auto_reload_running_scripts = true;
@@ -4171,11 +3946,6 @@ DocumentEditorContainer::DocumentEditorContainer(bool p_is_main_editor, const St
 
 		EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
 		debugger->set_script_debug_button(debug_menu_btn);
-		debugger->connect("goto_script_line", callable_mp(this, &DocumentEditorContainer::_goto_script_line));
-		debugger->connect("set_execution", callable_mp(this, &DocumentEditorContainer::_set_execution));
-		debugger->connect("clear_execution", callable_mp(this, &DocumentEditorContainer::_clear_execution));
-		debugger->connect("breakpoint_set_in_tree", callable_mp(this, &DocumentEditorContainer::_set_breakpoint));
-		debugger->connect("breakpoints_cleared_in_tree", callable_mp(this, &DocumentEditorContainer::_clear_breakpoints));
 	}
 
 	script_name_button_hbox = memnew(HBoxContainer);
@@ -4330,6 +4100,283 @@ DocumentEditorContainer::DocumentEditorContainer(bool p_is_main_editor, const St
 	register_syntax_highlighter(gdshader_syntax_highlighter);
 }
 
+void ScriptEditor::goto_script_line(Ref<RefCounted> p_script, int p_line) {
+	Ref<Script> scr = Object::cast_to<Script>(*p_script);
+	if (scr.is_null() || (!scr->has_source_code() && !scr->get_path().is_resource_file())) {
+		return;
+	}
+	if (edit(p_script, p_line, 0)) {
+		EditorNode::get_singleton()->push_item(p_script.ptr());
+	}
+}
+
+void ScriptEditor::_change_execution(Ref<RefCounted> p_script, int p_line, bool p_set) {
+	Ref<Script> scr = Object::cast_to<Script>(*p_script);
+	if (scr.is_null() || (!scr->has_source_code() && !scr->get_path().is_resource_file())) {
+		return;
+	}
+	for (Control *editor : script_container->get_all_editors()) {
+		TextEditorBase *teb = Object::cast_to<TextEditorBase>(editor);
+		if (!teb) {
+			continue;
+		}
+		if ((scr.is_valid() && teb->get_edited_resource() == p_script) || teb->get_edited_resource()->get_path() == scr->get_path()) {
+			if (p_set) {
+				teb->set_executing_line(p_line);
+			} else {
+				teb->clear_executing_line();
+			}
+		}
+	}
+}
+
+void ScriptEditor::_set_breakpoint(Ref<RefCounted> p_script, int p_line, bool p_enabled) {
+	Ref<Script> scr = Object::cast_to<Script>(*p_script);
+	if (scr.is_null() || (!scr->has_source_code() && !scr->get_path().is_resource_file())) {
+		return;
+	}
+	// Update if open.
+	for (Control *editor : script_container->get_all_editors()) {
+		CodeEditorBase *ceb = Object::cast_to<CodeEditorBase>(editor);
+		if (ceb && ceb->get_edited_resource()->get_path() == scr->get_path()) {
+			ceb->set_breakpoint(p_line, p_enabled);
+			return;
+		}
+	}
+
+	// Handle closed.
+	Dictionary state = script_editor_cache->get_value(scr->get_path(), "state");
+	PackedInt32Array breakpoints;
+	if (state.has("breakpoints")) {
+		breakpoints = state["breakpoints"];
+	}
+
+	if (breakpoints.has(p_line)) {
+		if (!p_enabled) {
+			breakpoints.erase(p_line);
+		}
+	} else if (p_enabled) {
+		breakpoints.push_back(p_line);
+	}
+	state["breakpoints"] = breakpoints;
+	script_editor_cache->set_value(scr->get_path(), "state", state);
+	EditorDebuggerNode::get_singleton()->set_breakpoint(scr->get_path(), p_line + 1, p_enabled);
+}
+
+void ScriptEditor::_clear_breakpoints() {
+	for (Control *editor : script_container->get_all_editors()) {
+		CodeEditorBase *ceb = Object::cast_to<CodeEditorBase>(editor);
+		if (ceb) {
+			ceb->clear_breakpoints();
+		}
+	}
+
+	// Clear from closed scripts.
+	PackedStringArray cached_paths = script_editor_cache->get_sections();
+	for (const String &path : cached_paths) {
+		PackedInt32Array breakpoints = _get_cached_breakpoints_for_script(path);
+		for (int breakpoint : breakpoints) {
+			EditorDebuggerNode::get_singleton()->set_breakpoint(path, breakpoint + 1, false);
+		}
+
+		if (!breakpoints.is_empty()) {
+			Dictionary state = script_editor_cache->get_value(path, "state");
+			state["breakpoints"] = PackedInt32Array();
+			script_editor_cache->set_value(path, "state", state);
+		}
+	}
+}
+
+static bool _is_script(const String &p_path) {
+	if (p_path.begins_with("local://")) {
+		return false;
+	}
+	const String ext = p_path.get_extension().to_lower();
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		if (ScriptServer::get_language(i)->get_extension() == ext) {
+			return true;
+		}
+	}
+	return false;
+}
+
+PackedInt32Array ScriptEditor::_get_cached_breakpoints_for_script(const String &p_path) const {
+	if (!script_editor_cache->has_section_key(p_path, "state") || !_is_script(p_path)) {
+		return PackedInt32Array();
+	}
+
+	Dictionary state = script_editor_cache->get_value(p_path, "state");
+	if (!state.has("breakpoints")) {
+		return PackedInt32Array();
+	}
+	return state["breakpoints"];
+}
+
+Vector<String> ScriptEditor::_get_breakpoints() {
+	List<String> bpoints_list;
+	get_breakpoints(&bpoints_list);
+
+	Vector<String> ret;
+	for (const String &E : bpoints_list) {
+		ret.push_back(E);
+	}
+
+	return ret;
+}
+
+void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
+	HashSet<String> loaded_scripts;
+	for (const Control *editor : script_container->get_all_editors()) {
+		const CodeEditorBase *ceb = Object::cast_to<CodeEditorBase>(editor);
+		if (!ceb) {
+			continue;
+		}
+
+		Ref<Script> scr = ceb->get_edited_resource();
+		if (scr.is_null()) {
+			continue;
+		}
+
+		const String path = scr->get_path();
+		loaded_scripts.insert(path);
+		if (path.is_empty() || path.begins_with("local://")) {
+			continue;
+		}
+
+		PackedInt32Array breakpoints = ceb->get_breakpoints();
+		for (int breakpoint : breakpoints) {
+			p_breakpoints->push_back(path + ":" + itos(breakpoint + 1));
+		}
+	}
+
+	// Load breakpoints that are in closed scripts.
+	PackedStringArray cached_paths = script_editor_cache->get_sections();
+	for (const String &path : cached_paths) {
+		if (loaded_scripts.has(path)) {
+			continue;
+		}
+
+		PackedInt32Array breakpoints = _get_cached_breakpoints_for_script(path);
+		for (int breakpoint : breakpoints) {
+			p_breakpoints->push_back(path + ":" + itos(breakpoint + 1));
+		}
+	}
+}
+
+void ScriptEditor::save_editor_state(ScriptEditorBase *p_editor) {
+	const String &path = p_editor->get_edited_resource()->get_path();
+	if (path.is_empty()) {
+		return;
+	}
+
+	TextEditorBase *teb = Object::cast_to<TextEditorBase>(p_editor);
+	if (teb) {
+		script_editor_cache->set_value(path, "state", teb->get_edit_state());
+	}
+	// The cache is saved later when we save the editor layout.
+}
+
+Variant ScriptEditor::get_editor_state(const String &p_path) const {
+	if (!script_editor_cache->has_section(p_path)) {
+		return Variant();
+	}
+	return script_editor_cache->get_value(p_path, "state");
+}
+
+void ScriptEditor::_files_moved(const String &p_old_file, const String &p_new_file) {
+	PackedInt32Array breakpoints;
+	bool is_open = false;
+	for (DocumentEditorContainer *container : all_document_editor_containers) {
+		for (Control *editor : container->get_all_editors()) {
+			ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(editor);
+			if (seb && seb->edited_file_data.path == p_old_file) {
+				seb->edited_file_data.path = p_new_file;
+				is_open = true;
+				CodeEditorBase *ceb = Object::cast_to<CodeEditorBase>(editor);
+				if (ceb && _is_script(p_old_file)) {
+					breakpoints = ceb->get_breakpoints();
+				}
+				break;
+			}
+		}
+	}
+
+	// If Script, update breakpoints with debugger.
+	if (!is_open) {
+		breakpoints = _get_cached_breakpoints_for_script(p_old_file);
+	}
+	bool is_script = _is_script(p_new_file);
+	for (int breakpoint : breakpoints) {
+		int line = breakpoint + 1;
+		EditorDebuggerNode::get_singleton()->set_breakpoint(p_old_file, line, false);
+		if (is_script) {
+			EditorDebuggerNode::get_singleton()->set_breakpoint(p_new_file, line, true);
+		}
+	}
+
+	if (script_editor_cache->has_section(p_old_file)) {
+		Variant state = script_editor_cache->get_value(p_old_file, "state");
+		script_editor_cache->erase_section(p_old_file);
+		script_editor_cache->set_value(p_new_file, "state", state);
+	}
+}
+
+void ScriptEditor::_file_removed(const String &p_removed_file) {
+	for (DocumentEditorContainer *container : all_document_editor_containers) {
+		container->close_removed_file(p_removed_file);
+	}
+
+	// Remove any breakpoints.
+	if (_is_script(p_removed_file)) {
+		EditorDebuggerNode::get_singleton()->set_breakpoints(p_removed_file, {});
+	}
+
+	// Remove from cache.
+	if (script_editor_cache->has_section(p_removed_file)) {
+		script_editor_cache->erase_section(p_removed_file);
+	}
+}
+
+void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
+	if (bool(EDITOR_GET("text_editor/behavior/files/restore_scripts_on_load"))) {
+		script_container->set_window_layout(p_layout);
+	}
+
+	// Remove any deleted editors that have been removed between launches.
+	// and if a Script, register breakpoints with the debugger.
+	PackedStringArray all_open_paths;
+	for (const DocumentEditorContainer *container : all_document_editor_containers) {
+		for (const Control *editor : container->get_all_editors()) {
+			const ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(editor);
+			if (seb) {
+				all_open_paths.push_back(seb->get_edited_resource()->get_path());
+			}
+		}
+	}
+
+	PackedStringArray cached_paths = script_editor_cache->get_sections();
+	for (const String &path : cached_paths) {
+		if (all_open_paths.has(path)) {
+			continue;
+		}
+
+		if (!_file_exists(path)) {
+			script_editor_cache->erase_section(path);
+			continue;
+		}
+
+		PackedInt32Array breakpoints = _get_cached_breakpoints_for_script(path);
+		for (int breakpoint : breakpoints) {
+			EditorDebuggerNode::get_singleton()->set_breakpoint(path, breakpoint + 1, true);
+		}
+	}
+}
+
+void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
+	script_container->get_window_layout(p_layout);
+	script_editor_cache->save(EditorPaths::get_singleton()->get_project_settings_dir().path_join("script_editor_cache.cfg"));
+}
+
 void ScriptEditor::_goto_line(int p_line) {
 	TextEditorBase *teb = Object::cast_to<TextEditorBase>(get_current_editor());
 	if (teb) {
@@ -4412,10 +4459,17 @@ void ScriptEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static())));
 }
 
+void ScriptEditor::register_document_editor_container(DocumentEditorContainer *p_document_editor_container) {
+	all_document_editor_containers.push_back(p_document_editor_container);
+}
+
 ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	script_editor = this;
 
-	script_container = memnew(DocumentEditorContainer(true, "ScriptEditor", "script_editor_cache.cfg"));
+	script_editor_cache.instantiate();
+	script_editor_cache->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("script_editor_cache.cfg"));
+
+	script_container = memnew(DocumentEditorContainer(true, "ScriptEditor"));
 	script_container->set_handled_resource_types({ "GDScript", "Script", "JSON" });
 	script_container->connect("make_floating", callable_mp(p_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
 	add_child(script_container);
@@ -4427,6 +4481,16 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	find_in_files = memnew(FindInFiles);
 	find_in_files->connect("result_selected", callable_mp(this, &ScriptEditor::_on_find_in_files_result_selected));
 	find_in_files->connect("files_modified", callable_mp(this, &ScriptEditor::_on_find_in_files_modified_files));
+
+	EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
+	debugger->connect("goto_script_line", callable_mp(this, &ScriptEditor::goto_script_line));
+	debugger->connect("set_execution", callable_mp(this, &ScriptEditor::_set_execution));
+	debugger->connect("clear_execution", callable_mp(this, &ScriptEditor::_clear_execution));
+	debugger->connect("breakpoint_set_in_tree", callable_mp(this, &ScriptEditor::_set_breakpoint));
+	debugger->connect("breakpoints_cleared_in_tree", callable_mp(this, &ScriptEditor::_clear_breakpoints));
+
+	FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &ScriptEditor::_files_moved));
+	FileSystemDock::get_singleton()->connect("file_removed", callable_mp(this, &ScriptEditor::_file_removed));
 }
 
 ScriptEditor::~ScriptEditor() {
@@ -4618,9 +4682,7 @@ void ScriptEditorPlugin::save_external_data() {
 }
 
 void ScriptEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
-	if (bool(EDITOR_GET("text_editor/behavior/files/restore_scripts_on_load"))) {
-		script_editor->set_window_layout(p_layout);
-	}
+	script_editor->set_window_layout(p_layout);
 
 	if (EDITOR_GET("interface/multi_window/restore_windows_on_load") && window_wrapper->is_window_available() && p_layout->has_section_key("ScriptEditor", "window_rect")) {
 		window_wrapper->restore_window_from_saved_position(

@@ -164,7 +164,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 
 	make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("shader_editor/make_floating", TTRC("Make Floating"));
 
-	shader_container = memnew(DocumentEditorContainer(false, config_section, "shader_editor_cache.cfg"));
+	shader_container = memnew(DocumentEditorContainer(false, config_section));
 	shader_container->connect("make_floating", callable_mp(shader_dock, &EditorDock::make_floating));
 	shader_container->set_handled_resource_types({ "Shader", "VisualShader", "ShaderInclude" });
 

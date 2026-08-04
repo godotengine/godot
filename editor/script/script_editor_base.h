@@ -303,7 +303,7 @@ public:
 
 	virtual Vector<String> get_functions() { return Vector<String>(); }
 
-	virtual PackedInt32Array get_breakpoints() { return PackedInt32Array(); }
+	virtual PackedInt32Array get_breakpoints() const { return PackedInt32Array(); }
 	virtual void set_breakpoint(int p_line, bool p_enabled);
 	virtual void clear_breakpoints() {}
 
