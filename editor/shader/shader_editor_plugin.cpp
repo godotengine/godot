@@ -162,7 +162,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	shader_dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	EditorDockManager::get_singleton()->add_dock(shader_dock);
 
-	shader_container = memnew(DocumentEditorContainer(false, config_section, "shader_editor_cache.cfg"));
+	shader_container = memnew(DocumentEditorContainer(false, config_section));
 	shader_container->set_handled_resource_types({ "Shader", "VisualShader", "ShaderInclude" });
 
 	shader_dock->add_child(shader_container);

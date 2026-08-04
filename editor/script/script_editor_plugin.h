@@ -315,7 +315,6 @@ class DocumentEditorContainer : public MarginContainer {
 	void _resave_scripts(const String &p_str);
 
 	bool _test_script_times_on_disk(Ref<Resource> p_for_script = Ref<Resource>());
-	bool _script_exists(const String &p_path) const;
 
 	void _add_recent_script(const String &p_path);
 	void _update_recent_scripts();
@@ -356,27 +355,14 @@ class DocumentEditorContainer : public MarginContainer {
 	bool convert_indent_on_save;
 	bool external_editor_active;
 
-	void _goto_script_line(Ref<RefCounted> p_script, int p_line);
-	void _change_execution(Ref<RefCounted> p_script, int p_line = -1, bool p_set = false);
-	void _set_execution(Ref<RefCounted> p_script, int p_line) { _change_execution(p_script, p_line, true); }
-	void _clear_execution(Ref<RefCounted> p_script) { _change_execution(p_script); }
 	String _get_debug_tooltip(const String &p_text, Node *p_se);
 	void _resource_created(Ref<Resource> p_res);
-	void _set_breakpoint(Ref<RefCounted> p_script, int p_line, bool p_enabled);
-	void _clear_breakpoints();
-	Array _get_cached_breakpoints_for_script(const String &p_path) const;
 
 	ScriptEditorBase *_get_current_editor() const;
 
-	Ref<ConfigFile> script_editor_cache;
-	String cache_path;
-
-	void _save_editor_state(ScriptEditorBase *p_editor);
 	void _save_layout();
 	void _apply_editor_settings();
 	void _update_filenames();
-	void _files_moved(const String &p_old_file, const String &p_new_file);
-	void _file_removed(const String &p_file);
 	void _autosave_scripts();
 	void _update_autosave_timer();
 	void _reload_scripts(bool p_refresh_only = false);
@@ -449,6 +435,7 @@ public:
 	Ref<Resource> open_file(const String &p_file);
 	bool can_open_file(const String &p_file) const;
 	Error close_file(const String &p_file);
+	void close_removed_file(const String &p_removed_file);
 
 	void ensure_select_current();
 
@@ -459,9 +446,6 @@ public:
 
 	Control *get_active_editor() const;
 	Vector<Control *> get_all_editors() const;
-
-	Vector<String> _get_breakpoints();
-	void get_breakpoints(List<String> *p_breakpoints);
 
 	void reload_open_files();
 	PackedStringArray get_unsaved_files() const;
@@ -497,7 +481,7 @@ public:
 
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
-	DocumentEditorContainer(bool p_is_main_editor, const String &p_config_section, const String &p_cache_path);
+	DocumentEditorContainer(bool p_is_main_editor, const String &p_config_section);
 };
 
 class ScriptEditor : public EditorDock {
@@ -506,10 +490,24 @@ class ScriptEditor : public EditorDock {
 	inline static ScriptEditor *script_editor = nullptr;
 
 	DocumentEditorContainer *script_container = nullptr;
+	LocalVector<DocumentEditorContainer *> all_document_editor_containers;
+
+	Ref<ConfigFile> script_editor_cache;
 
 	EditorHelpSearch *help_search_dialog = nullptr;
 
 	bool external_editor_active = false;
+
+	void _change_execution(Ref<RefCounted> p_script, int p_line = -1, bool p_set = false);
+	void _set_execution(Ref<RefCounted> p_script, int p_line) { _change_execution(p_script, p_line, true); }
+	void _clear_execution(Ref<RefCounted> p_script) { _change_execution(p_script); }
+	void _set_breakpoint(Ref<RefCounted> p_script, int p_line, bool p_enabled);
+	void _clear_breakpoints();
+	PackedInt32Array _get_cached_breakpoints_for_script(const String &p_path) const;
+	Vector<String> _get_breakpoints();
+
+	void _files_moved(const String &p_old_file, const String &p_new_file);
+	void _file_removed(const String &p_file);
 
 	void _on_find_in_files_result_selected(const String &p_path, int p_line_number, int p_begin, int p_end);
 
@@ -531,6 +529,7 @@ public:
 	static ScriptEditor *get_singleton() { return script_editor; }
 
 	DocumentEditorContainer *get_script_container() { return script_container; }
+	void register_document_editor_container(DocumentEditorContainer *p_document_editor_container);
 
 	bool should_use_external_editor(const Ref<Script> &p_for_script);
 	void focus_editor();
@@ -548,8 +547,9 @@ public:
 	_FORCE_INLINE_ bool edit(const Ref<Resource> &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
 	bool edit(const Ref<Resource> &p_resource, int p_line, int p_col, bool p_grab_focus = true) { return script_container->edit(p_resource, p_line, p_col, p_grab_focus); }
 
-	Vector<String> _get_breakpoints() { return script_container->_get_breakpoints(); }
-	void get_breakpoints(List<String> *p_breakpoints) { script_container->get_breakpoints(p_breakpoints); }
+	void get_breakpoints(List<String> *p_breakpoints);
+	void save_editor_state(ScriptEditorBase *p_editor);
+	Variant get_editor_state(const String &p_path) const;
 
 	void reload_open_files() { script_container->reload_open_files(); }
 	PackedStringArray get_unsaved_files() const { return script_container->get_unsaved_files(); }
@@ -557,12 +557,16 @@ public:
 	void save_all_scripts() { script_container->save_all_scripts(); }
 	void update_script_times() { script_container->update_script_times(); }
 
+	void set_window_layout(Ref<ConfigFile> p_layout);
+	void get_window_layout(Ref<ConfigFile> p_layout);
+
 	void set_scene_root_script(const Ref<Script> &p_script);
 	Vector<Ref<Script>> get_open_scripts() const { return script_container->get_open_scripts(); }
 
 	ScriptEditorBase *get_current_editor() const { return script_container->get_current_editor(); }
 
 	bool script_goto_method(Ref<Script> p_script, const String &p_method) { return script_container->script_goto_method(p_script, p_method); }
+	void goto_script_line(Ref<RefCounted> p_script, int p_line);
 
 	void notify_script_close(const Ref<Script> &p_script);
 	void notify_script_changed(const Ref<Script> &p_script);
