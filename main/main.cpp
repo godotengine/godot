@@ -597,6 +597,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--gpu-abort", "Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n", CLI_OPTION_AVAILABILITY_TEMPLATE_DEBUG);
 #endif
 	print_help_option("--generate-spirv-debug-info", "Generate SPIR-V debug information (Vulkan only). This allows source-level shader debugging with RenderDoc.\n");
+	print_help_option("--clear-shader-cache", "Clear the shader_cache directory at launch, so it's re-generated.\n");
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 	print_help_option("--extra-gpu-memory-tracking", "Enables additional memory tracking (see class reference for `RenderingDevice.get_driver_and_device_memory_report()` and linked methods). Currently only implemented for Vulkan. Enabling this feature may cause crashes on some systems due to buggy drivers or bugs in the Vulkan Loader. See https://github.com/godotengine/godot/issues/95967\n");
 	print_help_option("--accurate-breadcrumbs", "Force barriers between breadcrumbs. Useful for narrowing down a command causing GPU resets. Currently only implemented for Vulkan.\n");
@@ -1047,6 +1048,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String main_pack;
 	bool quiet_stdout = false;
 	int separate_thread_render = -1; // Tri-state: -1 = not set, 0 = false, 1 = true.
+	bool clear_shader_cache = false;
 
 #if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	String remotefs;
@@ -1289,6 +1291,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 		} else if (arg == "--generate-spirv-debug-info") {
 			Engine::singleton->generate_spirv_debug_info = true;
+		} else if (arg == "--clear-shader-cache") {
+			clear_shader_cache = true;
 #if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
 		} else if (arg == "--extra-gpu-memory-tracking") {
 			Engine::singleton->extra_gpu_memory_tracking = true;
@@ -2060,6 +2064,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		goto error;
 #endif
+	}
+
+	if (clear_shader_cache && !project_path.is_empty()) {
+		const String cache_path = project_path.path_join(".godot").path_join("shader_cache");
+		if (DirAccess::dir_exists_absolute(cache_path)) {
+			OS::get_singleton()->move_to_trash(cache_path);
+		}
 	}
 
 	// Initialize WorkerThreadPool.
