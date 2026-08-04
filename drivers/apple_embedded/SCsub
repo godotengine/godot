@@ -10,6 +10,7 @@ Import("env")
 env_apple_embedded = env.Clone()
 
 # Enable module support
+# Need a functional export template here, so not using `try_use_cxx20_module`.
 env_apple_embedded.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 
 # Configure Swift builder
