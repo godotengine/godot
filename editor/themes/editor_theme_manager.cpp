@@ -64,6 +64,9 @@ uint32_t EditorThemeManager::ThemeConfiguration::hash() {
 
 	hash = hash_murmur3_one_32(base_color.to_rgba32(), hash);
 	hash = hash_murmur3_one_32(accent_color.to_rgba32(), hash);
+	hash = hash_murmur3_one_32(success_color.to_rgba32(), hash);
+	hash = hash_murmur3_one_32(warning_color.to_rgba32(), hash);
+	hash = hash_murmur3_one_32(error_color.to_rgba32(), hash);
 	hash = hash_murmur3_one_float(contrast, hash);
 	hash = hash_murmur3_one_float(icon_saturation, hash);
 
@@ -248,6 +251,9 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 
 	config.base_color = EDITOR_GET("interface/theme/base_color");
 	config.accent_color = EDITOR_GET("interface/theme/accent_color");
+	config.success_color = EDITOR_GET("interface/theme/success_color");
+	config.warning_color = EDITOR_GET("interface/theme/warning_color");
+	config.error_color = EDITOR_GET("interface/theme/error_color");
 	config.contrast = EDITOR_GET("interface/theme/contrast");
 	config.icon_saturation = EDITOR_GET("interface/theme/icon_saturation");
 	config.corner_radius = EDITOR_GET("interface/theme/corner_radius");
@@ -442,6 +448,46 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 	// We add 2 to the vsep to give it some extra spacing which looks a bit more modern (see Windows, for example).
 	const int separation_base = config.increased_margin + 6;
 	config.forced_even_separation = separation_base + (separation_base % 2);
+
+	// Handle theme style colors.
+	if (config.preset != "Custom") {
+		if (config.style == "Classic") {
+			if (config.dark_icon_and_font) {
+				// Dark theme
+				config.success_color = Color(0.45, 0.95, 0.5);
+				config.warning_color = Color(1, 0.87, 0.4);
+				config.error_color = Color(1, 0.47, 0.42);
+			} else {
+				// Light theme
+				// Darken some colors to be readable on a light background.
+				config.success_color = config.success_color.lerp(Color(0, 0, 0), 0.35);
+				config.warning_color = Color(0.82, 0.56, 0.1);
+				config.error_color = Color(0.8, 0.22, 0.22);
+			}
+		} else { // Default
+			if (config.dark_icon_and_font) {
+				// Dark theme
+				config.success_color = Color(0.45, 0.95, 0.5);
+				config.warning_color = Color(0.83, 0.78, 0.62);
+				config.error_color = Color(1, 0.47, 0.42);
+			} else {
+				// Light theme
+				// Darken some colors to be readable on a light background.
+				config.success_color = config.success_color.lerp(Color(0, 0, 0), 0.35);
+				config.warning_color = Color(0.83, 0.49, 0.01);
+				config.error_color = Color(0.8, 0.22, 0.22);
+			}
+		}
+
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/success_color", config.success_color);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/warning_color", config.warning_color);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/error_color", config.error_color);
+
+		// Enforce values in case they were adjusted or overridden.
+		EditorSettings::get_singleton()->set_manually("interface/theme/success_color", config.success_color);
+		EditorSettings::get_singleton()->set_manually("interface/theme/warning_color", config.warning_color);
+		EditorSettings::get_singleton()->set_manually("interface/theme/error_color", config.error_color);
+	}
 
 	return config;
 }

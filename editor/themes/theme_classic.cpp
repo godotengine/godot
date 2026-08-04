@@ -49,6 +49,9 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 
 		p_theme->set_color("base_color", EditorStringName(Editor), p_config.base_color);
 		p_theme->set_color("accent_color", EditorStringName(Editor), p_config.accent_color);
+		p_theme->set_color("success_color", EditorStringName(Editor), p_config.success_color);
+		p_theme->set_color("warning_color", EditorStringName(Editor), p_config.warning_color);
+		p_theme->set_color("error_color", EditorStringName(Editor), p_config.error_color);
 
 		// White (dark theme) or black (light theme), will be used to generate the rest of the colors
 		p_config.mono_color = p_config.dark_theme ? Color(1, 1, 1) : Color(0, 0, 0);
@@ -66,23 +69,12 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_config.highlight_color = Color(p_config.accent_color.r, p_config.accent_color.g, p_config.accent_color.b, 0.275);
 		p_config.highlight_disabled_color = p_config.highlight_color.lerp(p_config.dark_icon_and_font ? Color(0, 0, 0) : Color(1, 1, 1), 0.5);
 
-		p_config.success_color = Color(0.45, 0.95, 0.5);
-		p_config.warning_color = Color(1, 0.87, 0.4);
-		p_config.error_color = Color(1, 0.47, 0.42);
-
 		// Keep dark theme colors accessible for use in the frame time gradient in the 3D editor.
 		// This frame time gradient is used to colorize text for a dark background, so it should keep using bright colors
 		// even when using a light theme.
-		p_theme->set_color("success_color_dark_background", EditorStringName(Editor), p_config.success_color);
-		p_theme->set_color("warning_color_dark_background", EditorStringName(Editor), p_config.warning_color);
-		p_theme->set_color("error_color_dark_background", EditorStringName(Editor), p_config.error_color);
-
-		if (!p_config.dark_icon_and_font) {
-			// Darken some colors to be readable on a light background.
-			p_config.success_color = p_config.success_color.lerp(p_config.mono_color_font, 0.35);
-			p_config.warning_color = Color(0.82, 0.56, 0.1);
-			p_config.error_color = Color(0.8, 0.22, 0.22);
-		}
+		p_theme->set_color("success_color_dark_background", EditorStringName(Editor), Color(0.45, 0.95, 0.5));
+		p_theme->set_color("warning_color_dark_background", EditorStringName(Editor), Color(1, 0.87, 0.4));
+		p_theme->set_color("error_color_dark_background", EditorStringName(Editor), Color(1, 0.47, 0.42));
 
 		p_theme->set_color("mono_color", EditorStringName(Editor), p_config.mono_color);
 		p_theme->set_color("dark_color_1", EditorStringName(Editor), p_config.dark_color_1);
@@ -92,9 +84,6 @@ void ThemeClassic::populate_shared_styles(const Ref<EditorTheme> &p_theme, Edito
 		p_theme->set_color("contrast_color_2", EditorStringName(Editor), p_config.contrast_color_2);
 		p_theme->set_color("highlight_color", EditorStringName(Editor), p_config.highlight_color);
 		p_theme->set_color("highlight_disabled_color", EditorStringName(Editor), p_config.highlight_disabled_color);
-		p_theme->set_color("success_color", EditorStringName(Editor), p_config.success_color);
-		p_theme->set_color("warning_color", EditorStringName(Editor), p_config.warning_color);
-		p_theme->set_color("error_color", EditorStringName(Editor), p_config.error_color);
 		p_theme->set_color("ruler_color", EditorStringName(Editor), p_config.dark_color_2);
 #ifndef DISABLE_DEPRECATED // Used before 4.3.
 		p_theme->set_color("disabled_highlight_color", EditorStringName(Editor), p_config.highlight_disabled_color);
