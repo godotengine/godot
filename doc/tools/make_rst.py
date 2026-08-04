@@ -2512,6 +2512,12 @@ def format_text_block(
             state,
         )
 
+    # Backwards compatibility for admonition blocks.
+    text = re.sub(r"\\ \*\*Note:\*\* (.*)", ".. classref_note::\n\n    \\1\n", text)
+    text = re.sub(r"\\ \*\*Warning:\*\* (.*)", ".. classref_warning::\n\n    \\1\n", text)
+    text = re.sub(r"\\ \*\*Tip:\*\* (.*)", ".. classref_tip::\n\n    \\1\n", text)
+    text = re.sub(r"\\ \*\*Important:\*\* (.*)", ".. classref_important::\n\n    \\1\n", text)
+
     return text
 
 
