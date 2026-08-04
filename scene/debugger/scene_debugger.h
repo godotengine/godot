@@ -85,6 +85,7 @@ private:
 	static Error _msg_window_request_size(const Array &p_args);
 	static Error _msg_hdr_output_request_state(const Array &p_args);
 	static Error _msg_hdr_output_toggle_requested(const Array &p_args);
+	static Error _msg_set_debug_collisions(const Array &p_args);
 	static Error _msg_override_cameras(const Array &p_args);
 	static Error _msg_set_object_property(const Array &p_args);
 	static Error _msg_set_object_property_field(const Array &p_args);
