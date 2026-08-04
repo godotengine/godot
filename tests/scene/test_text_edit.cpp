@@ -132,7 +132,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			// Can clear even if not editable.
 			text_edit->set_editable(false);
 
-			Array lines_edited_clear_args = { { 1, 0 } };
+			Array lines_edited_clear_args = { { 0, 0 } };
 
 			text_edit->clear();
 			MessageQueue::get_singleton()->flush();
