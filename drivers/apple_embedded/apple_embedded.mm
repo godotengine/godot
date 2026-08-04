@@ -106,12 +106,22 @@ void AppleEmbedded::vibrate_haptic_engine(float p_duration_seconds, float p_ampl
 					};
 				}
 
-				NSError *error;
+				NSError *error = nil;
 				CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithDictionary:hapticDict error:&error];
-
-				[[cur_haptic_engine createPlayerWithPattern:pattern error:&error] startAtTime:0 error:&error];
-
-				NSLog(@"Could not vibrate using haptic engine: %@", error);
+				if (error) {
+					NSLog(@"Could not vibrate using haptic engine: %@", error);
+					return;
+				}
+				id player = [cur_haptic_engine createPlayerWithPattern:pattern error:&error];
+				if (error) {
+					NSLog(@"Could not vibrate using haptic engine: %@", error);
+					return;
+				}
+				[player startAtTime:0 error:&error];
+				if (error) {
+					NSLog(@"Could not vibrate using haptic engine: %@", error);
+					return;
+				}
 			}
 
 			return;
