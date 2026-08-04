@@ -11654,26 +11654,43 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			return OK;
 		} break;
 		case COMPLETION_MAIN_FUNCTION: {
-			for (const KeyValue<StringName, FunctionInfo> &E : p_info.functions) {
-				if (!E.value.main_function) {
-					continue;
-				}
-				bool found = false;
-				for (int i = 0; i < shader->vfunctions.size(); i++) {
-					if (shader->vfunctions[i].name == E.key) {
-						found = true;
-						break;
-					}
-				}
-				if (found) {
-					continue;
-				}
-				ScriptLanguage::CodeCompletionOption option(E.key, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
-				r_options->push_back(option);
-			}
+	for (const KeyValue<StringName, FunctionInfo> &E : p_info.functions) {
+		if (!E.value.main_function) {
+			continue;
+		}
 
-			return OK;
-		} break;
+		bool found = false;
+
+		// Check functions already parsed into the shader.
+		for (int i = 0; i < shader->vfunctions.size(); i++) {
+			if (shader->vfunctions[i].name == E.key) {
+				found = true;
+				break;
+			}
+		}
+
+		// Code completion may happen before functions declared later in the
+		// shader have been parsed. Check the shader source for an existing
+		// declaration as well.
+		if (!found) {
+			const String function_declaration = "void " + String(E.key) + "(";
+			if (p_code.find(function_declaration) != -1) {
+				found = true;
+			}
+		}
+
+		if (found) {
+			continue;
+		}
+
+		ScriptLanguage::CodeCompletionOption option(
+				E.key,
+				ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+		r_options->push_back(option);
+	}
+
+	return OK;
+} break;
 		case COMPLETION_IDENTIFIER:
 		case COMPLETION_FUNCTION_CALL: {
 			bool comp_ident = completion_type == COMPLETION_IDENTIFIER;
