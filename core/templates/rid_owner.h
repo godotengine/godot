@@ -116,11 +116,7 @@ class RID_Alloc : public RID_AllocBase {
 			uint32_t chunk_count = alloc_count == 0 ? 0 : (max_alloc / elements_in_chunk);
 			if (THREAD_SAFE && chunk_count == chunk_limit) {
 				mutex.unlock();
-				if (description != nullptr) {
-					ERR_FAIL_V_MSG(RID(), vformat("Element limit for RID of type '%s' reached.", String(description)));
-				} else {
-					ERR_FAIL_V_MSG(RID(), "Element limit reached.");
-				}
+				ERR_FAIL_V_MSG(RID(), vformat("Element limit for RID of type '%s' reached.", description ? description : typeid(T).name()));
 			}
 
 			//grow chunks
