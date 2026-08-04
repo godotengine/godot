@@ -1874,7 +1874,7 @@ void fragment_shader(in SceneData scene_data) {
 
 				if (l1_len > 1e-5 && l0_luminance > 1e-5) {
 					vec3 lightmap_direction = l1 / l1_len;
-					vec3 L_view = normalize(transpose(lightmaps.data[ofs].normal_xform) * lightmap_direction);
+					vec3 L_view = normalize(lightmap_direction * lightmaps.data[ofs].normal_xform);
 					float NdotL = max(dot(normal, L_view), 0.0);
 
 					if (NdotL > 1e-4) {

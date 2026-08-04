@@ -1765,7 +1765,7 @@ void main() {
 
 				if (l1_len > 1e-5 && l0_luminance > 1e-5) {
 					vec3 lightmap_direction = l1 / l1_len;
-					vec3 L_view_highp = normalize(mat3(transpose(lightmaps.data[ofs].normal_xform)) * lightmap_direction);
+					vec3 L_view_highp = normalize(lightmap_direction * lightmaps.data[ofs].normal_xform);
 					float NdotL = max(dot(vec3(normal), L_view_highp), 0.0);
 
 					if (NdotL > 1e-4) {
