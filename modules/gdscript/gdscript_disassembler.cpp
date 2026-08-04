@@ -55,11 +55,11 @@ static String _get_variant_string(const Variant &p_variant) {
 			} else {
 				Script *script = Object::cast_to<Script>(obj);
 				if (script) {
-					txt = "script(" + GDScript::debug_get_script_name(script) + ")";
+					txt = "script(" + script->debug_get_script_name() + ")";
 				} else {
 					txt = "object(" + obj->get_class();
 					if (obj->get_script_instance()) {
-						txt += ", " + GDScript::debug_get_script_name(obj->get_script_instance()->get_script());
+						txt += ", " + obj->get_script_instance()->get_script()->debug_get_script_name();
 					}
 					txt += ")";
 				}
@@ -165,7 +165,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				if (script_type.is_valid() && script_type->is_script_valid()) {
 					text += "script(";
-					text += GDScript::debug_get_script_name(script_type);
+					text += script_type->debug_get_script_name();
 					text += ")";
 				} else if (native_type != StringName()) {
 					text += native_type;
@@ -190,7 +190,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				if (key_script_type.is_valid() && key_script_type->is_script_valid()) {
 					text += "script(";
-					text += GDScript::debug_get_script_name(key_script_type);
+					text += key_script_type->debug_get_script_name();
 					text += ")";
 				} else if (key_native_type != StringName()) {
 					text += key_native_type;
@@ -206,7 +206,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				if (value_script_type.is_valid() && value_script_type->is_script_valid()) {
 					text += "script(";
-					text += GDScript::debug_get_script_name(value_script_type);
+					text += value_script_type->debug_get_script_name();
 					text += ")";
 				} else if (value_native_type != StringName()) {
 					text += value_native_type;
@@ -371,7 +371,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 
 				text += "set_static_variable script(";
-				text += GDScript::debug_get_script_name(gdscript);
+				text += gdscript->debug_get_script_name();
 				text += ")";
 				if (gdscript.is_valid()) {
 					text += "[\"" + gdscript->debug_get_static_var_by_index(_code_ptr[ip + 3]) + "\"]";
@@ -394,7 +394,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "get_static_variable ";
 				text += DADDR(1);
 				text += " = script(";
-				text += GDScript::debug_get_script_name(gdscript);
+				text += gdscript->debug_get_script_name();
 				text += ")";
 				if (gdscript.is_valid()) {
 					text += "[\"" + gdscript->debug_get_static_var_by_index(_code_ptr[ip + 3]) + "\"]";
@@ -473,7 +473,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				Ref<Script> script = get_constant(_code_ptr[ip + 3] & ADDR_MASK);
 
 				text += "assign typed script (";
-				text += GDScript::debug_get_script_name(script);
+				text += script->debug_get_script_name();
 				text += ") ";
 				text += DADDR(1);
 				text += " = ";
@@ -579,7 +579,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				String type_name;
 				if (script_type.is_valid() && script_type->is_script_valid()) {
-					type_name = "script(" + GDScript::debug_get_script_name(script_type) + ")";
+					type_name = "script(" + script_type->debug_get_script_name() + ")";
 				} else if (native_type != StringName()) {
 					type_name = native_type;
 				} else {
@@ -634,7 +634,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				String key_type_name;
 				if (key_script_type.is_valid() && key_script_type->is_script_valid()) {
-					key_type_name = "script(" + GDScript::debug_get_script_name(key_script_type) + ")";
+					key_type_name = "script(" + key_script_type->debug_get_script_name() + ")";
 				} else if (key_native_type != StringName()) {
 					key_type_name = key_native_type;
 				} else {
@@ -647,7 +647,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				String value_type_name;
 				if (value_script_type.is_valid() && value_script_type->is_script_valid()) {
-					value_type_name = "script(" + GDScript::debug_get_script_name(value_script_type) + ")";
+					value_type_name = "script(" + value_script_type->debug_get_script_name() + ")";
 				} else if (value_native_type != StringName()) {
 					value_type_name = value_native_type;
 				} else {
@@ -1110,7 +1110,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				Ref<Script> script = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
 
 				text += "return typed script (";
-				text += GDScript::debug_get_script_name(script);
+				text += script->debug_get_script_name();
 				text += ") ";
 				text += DADDR(1);
 

@@ -38,6 +38,8 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "core/variant/container_type_validate.h"
+
 static bool _profile_count_as_native(const Object *p_base_obj, const StringName &p_methodname) {
 	if (!p_base_obj) {
 		return false;
@@ -50,58 +52,15 @@ static bool _profile_count_as_native(const Object *p_base_obj, const StringName 
 }
 
 static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {
-	if (script_type.is_valid() && script_type->is_script_valid()) {
-		return GDScript::debug_get_script_name(script_type);
-	} else if (native_type != StringName()) {
-		return native_type.string();
-	} else {
-		return Variant::get_type_name(builtin_type);
-	}
+	ContainerTypeValidate container_type{};
+	container_type.type = builtin_type;
+	container_type.class_name = native_type;
+	container_type.script = script_type;
+	return container_type.debug_get_type_name();
 }
 
 static String _get_var_type(const Variant *p_var) {
-	String basestr;
-
-	if (p_var->get_type() == Variant::OBJECT) {
-		bool was_freed;
-		Object *bobj = p_var->get_validated_object_with_check(was_freed);
-		if (!bobj) {
-			if (was_freed) {
-				basestr = "previously freed";
-			} else {
-				basestr = "null instance";
-			}
-		} else {
-			if (bobj->is_class_ptr(GDScriptNativeClass::get_class_ptr_static())) {
-				basestr = Object::cast_to<GDScriptNativeClass>(bobj)->get_name();
-			} else {
-				basestr = bobj->get_class();
-				if (bobj->get_script_instance()) {
-					basestr += " (" + GDScript::debug_get_script_name(bobj->get_script_instance()->get_script()) + ")";
-				}
-			}
-		}
-
-	} else {
-		if (p_var->get_type() == Variant::ARRAY) {
-			basestr = "Array";
-			const Array *p_array = VariantInternal::get_array(p_var);
-			if (p_array->is_typed()) {
-				basestr += "[" + _get_element_type((Variant::Type)p_array->get_typed_builtin(), p_array->get_typed_class_name(), p_array->get_typed_script()) + "]";
-			}
-		} else if (p_var->get_type() == Variant::DICTIONARY) {
-			basestr = "Dictionary";
-			const Dictionary *p_dictionary = VariantInternal::get_dictionary(p_var);
-			if (p_dictionary->is_typed()) {
-				basestr += "[" + _get_element_type((Variant::Type)p_dictionary->get_typed_key_builtin(), p_dictionary->get_typed_key_class_name(), p_dictionary->get_typed_key_script()) +
-						", " + _get_element_type((Variant::Type)p_dictionary->get_typed_value_builtin(), p_dictionary->get_typed_value_class_name(), p_dictionary->get_typed_value_script()) + "]";
-			}
-		} else {
-			basestr = Variant::get_type_name(p_var->get_type());
-		}
-	}
-
-	return basestr;
+	return p_var->debug_get_type_name();
 }
 
 void GDScriptFunction::_profile_native_call(uint64_t p_t_taken, const String &p_func_name, const String &p_instance_class_name) {
@@ -175,7 +134,7 @@ String GDScriptFunction::_get_call_error(const String &p_where, const Variant **
 			if (p_err.expected == Variant::DICTIONARY && p_argptrs[p_err.argument]->get_type() == p_err.expected) {
 				return "Invalid type in " + p_where + ". The dictionary of argument " + itos(p_err.argument + 1) + " (" + _get_var_type(p_argptrs[p_err.argument]) + ") does not have the same element type as the expected typed dictionary argument.";
 			}
-			return "Invalid type in " + p_where + ". Cannot convert argument " + itos(p_err.argument + 1) + " from " + Variant::get_type_name(p_argptrs[p_err.argument]->get_type()) + " to " + Variant::get_type_name(Variant::Type(p_err.expected)) + ".";
+			return "Invalid type in " + p_where + ". Cannot convert argument " + itos(p_err.argument + 1) + " from " + p_argptrs[p_err.argument]->debug_get_type_name() + " to " + Variant::get_type_name(Variant::Type(p_err.expected)) + ".";
 		case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 		case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 			return "Invalid call to " + p_where + ". Expected " + itos(p_err.expected) + " argument(s).";
@@ -789,7 +748,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					if (unlikely(!op_func)) {
 #ifdef DEBUG_ENABLED
-						err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
+						err_text = "Invalid operands '" + a->debug_get_type_name() + "' and '" + b->debug_get_type_name() + "' in operator '" + Variant::get_operator_name(op) + "'.";
 #endif
 						initializer_mutex.unlock();
 						OPCODE_BREAK;
@@ -831,7 +790,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							err_text = ret;
 							err_text += " in operator '" + Variant::get_operator_name(op) + "'.";
 						} else {
-							err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
+							err_text = "Invalid operands '" + a->debug_get_type_name() + "' and '" + b->debug_get_type_name() + "' in operator '" + Variant::get_operator_name(op) + "'.";
 						}
 						OPCODE_BREAK;
 					}
@@ -1319,7 +1278,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					err_text = "Internal error setting property: " + String(*index);
 					OPCODE_BREAK;
 				} else if (!valid) {
-					err_text = "Error setting property '" + String(*index) + "' with value of type " + Variant::get_type_name(src->get_type()) + ".";
+					err_text = "Error setting property '" + String(*index) + "' with value of type " + src->debug_get_type_name() + ".";
 					OPCODE_BREAK;
 				}
 #endif
@@ -1439,7 +1398,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						Variant::construct(var_type, *dst, const_cast<const Variant **>(&src), 1, ce);
 					} else {
 #ifdef DEBUG_ENABLED
-						err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
+						err_text = "Trying to assign value of type '" + src->debug_get_type_name() +
 								"' to a variable of type '" + Variant::get_type_name(var_type) + "'.";
 						OPCODE_BREAK;
 					}
@@ -1541,7 +1500,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(type->operator Object *());
 				GD_ERR_BREAK(!nc);
 				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
-					err_text = "Trying to assign value of type '" + Variant::get_type_name(src->get_type()) +
+					err_text = "Trying to assign value of type '" + src->debug_get_type_name() +
 							"' to a variable of type '" + nc->get_name() + "'.";
 					OPCODE_BREAK;
 				}
@@ -2988,7 +2947,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (r->get_type() != Variant::OBJECT && r->get_type() != Variant::NIL) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
-							_get_var_type(r), GDScript::debug_get_script_name(Ref<Script>(base_type)));
+							_get_var_type(r), base_type->debug_get_script_name());
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
@@ -3010,7 +2969,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (!ret_inst) {
 #ifdef DEBUG_ENABLED
 						err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
-								_get_var_type(r), GDScript::debug_get_script_name(Ref<GDScript>(base_type)));
+								_get_var_type(r), base_type->debug_get_script_name());
 #endif // DEBUG_ENABLED
 						OPCODE_BREAK;
 					}
@@ -3029,7 +2988,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (!valid) {
 #ifdef DEBUG_ENABLED
 						err_text = vformat(R"(Trying to return a value of type "%s" from a function whose return type is "%s".)",
-								_get_var_type(r), GDScript::debug_get_script_name(Ref<GDScript>(base_type)));
+								_get_var_type(r), base_type->debug_get_script_name());
 #endif // DEBUG_ENABLED
 						OPCODE_BREAK;
 					}
@@ -3054,7 +3013,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (!container->iter_init(*counter, valid)) {
 #ifdef DEBUG_ENABLED
 					if (!valid) {
-						err_text = "Unable to iterate on object of type '" + Variant::get_type_name(container->get_type()) + "'.";
+						err_text = "Unable to iterate on object of type '" + container->debug_get_type_name() + "'.";
 						OPCODE_BREAK;
 					}
 #endif
@@ -3067,7 +3026,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*iterator = container->iter_get(*counter, valid);
 #ifdef DEBUG_ENABLED
 					if (!valid) {
-						err_text = "Unable to obtain iterator object of type '" + Variant::get_type_name(container->get_type()) + "'.";
+						err_text = "Unable to obtain iterator object of type '" + container->debug_get_type_name() + "'.";
 						OPCODE_BREAK;
 					}
 #endif
@@ -3388,7 +3347,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (ref.size() != 1 || ce.error != Callable::CallError::CALL_OK) {
-					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
+					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type "%s".)", obj->debug_get_type_name());
 					OPCODE_BREAK;
 				}
 #endif
@@ -3403,7 +3362,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*iterator = obj->callp(CoreStringName(_iter_get), const_cast<const Variant **>(&state_ptr), 1, ce);
 #ifdef DEBUG_ENABLED
 					if (ce.error != Callable::CallError::CALL_OK) {
-						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
+						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type "%s".)", obj->debug_get_type_name());
 						OPCODE_BREAK;
 					}
 #endif
@@ -3456,7 +3415,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (!container->iter_next(*counter, valid)) {
 #ifdef DEBUG_ENABLED
 					if (!valid) {
-						err_text = "Unable to iterate on object of type '" + Variant::get_type_name(container->get_type()) + "' (type changed since first iteration?).";
+						err_text = "Unable to iterate on object of type '" + container->debug_get_type_name() + "' (type changed since first iteration?).";
 						OPCODE_BREAK;
 					}
 #endif
@@ -3469,7 +3428,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*iterator = container->iter_get(*counter, valid);
 #ifdef DEBUG_ENABLED
 					if (!valid) {
-						err_text = "Unable to obtain iterator object of type '" + Variant::get_type_name(container->get_type()) + "' (but was obtained on first iteration?).";
+						err_text = "Unable to obtain iterator object of type '" + container->debug_get_type_name() + "' (but was obtained on first iteration?).";
 						OPCODE_BREAK;
 					}
 #endif
@@ -3747,7 +3706,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (VariantInternal::get_array(state)->size() != 1 || ce.error != Callable::CallError::CALL_OK) {
-					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
+					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type "%s".)", obj->debug_get_type_name());
 					OPCODE_BREAK;
 				}
 #endif
@@ -3763,7 +3722,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*iterator = obj->callp(CoreStringName(_iter_get), const_cast<const Variant **>(&state_ptr), 1, ce);
 #ifdef DEBUG_ENABLED
 					if (ce.error != Callable::CallError::CALL_OK) {
-						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
+						err_text = vformat(R"(There was an error calling "_iter_get" on iterator object of type "%s".)", obj->debug_get_type_name());
 						OPCODE_BREAK;
 					}
 #endif

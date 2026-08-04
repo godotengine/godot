@@ -18,6 +18,12 @@
 				Returns [code]true[/code] if the script can be instantiated.
 			</description>
 		</method>
+		<method name="debug_get_script_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a descriptive name for the script. Suitable for debug print statements.
+			</description>
+		</method>
 		<method name="get_base_script" qualifiers="const">
 			<return type="Script" />
 			<description>

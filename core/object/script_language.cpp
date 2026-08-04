@@ -171,6 +171,7 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_base_type"), &Script::get_instance_base_type);
 
 	ClassDB::bind_method(D_METHOD("get_global_name"), &Script::get_global_name);
+	ClassDB::bind_method(D_METHOD("debug_get_script_name"), &Script::debug_get_script_name);
 
 	ClassDB::bind_method(D_METHOD("has_script_method", "method_name"), &Script::has_method);
 	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
@@ -208,6 +209,19 @@ void Script::reload_from_file() {
 #else
 	Resource::reload_from_file();
 #endif
+}
+
+String Script::debug_get_script_name() const {
+	String ret = get_global_name();
+	if (!ret.is_empty()) {
+		return ret;
+	}
+
+	return get_path().get_file();
+}
+
+String Script::debug_get_type_name() {
+	return vformat("%s[%s]", get_class_name(), debug_get_script_name());
 }
 
 void ScriptServer::set_scripting_enabled(bool p_enabled) {

@@ -962,6 +962,25 @@ String Object::to_string() {
 	return _to_string();
 }
 
+String Object::debug_get_type_name() {
+	Ref<Script> scr = get_script();
+	if (scr.is_null()) {
+		return get_class_name();
+	}
+
+	String script_name = scr->get_global_name();
+	if (!script_name.is_empty()) {
+		return script_name;
+	}
+
+	script_name = scr->debug_get_script_name();
+	if (script_name.is_empty()) {
+		script_name = "?";
+	}
+
+	return vformat("%s(%s)", get_class_name(), script_name);
+}
+
 void Object::set_script(const Variant &p_script) {
 	if (get_script() == p_script) {
 		return;

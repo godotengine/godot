@@ -6,5 +6,5 @@ GDTEST_RUNTIME_ERROR
 >>   Attempted to set an object into a TypedArray of incompatible type 'GDScript'.
 >> ERROR: Condition "!_p->typed.validate(value, "set")" is true.
 end subtest_assign_wrong_to_typed
->> SCRIPT ERROR at runtime/errors/typed_array.gd:24 on subtest_pass_basic_to_typed(): Invalid type in function 'expect_typed' in base 'RefCounted (typed_array.gd)'. The array of argument 1 (Array) does not have the same element type as the expected typed array argument.
->> SCRIPT ERROR at runtime/errors/typed_array.gd:29 on subtest_pass_basic_to_differently_typed(): Invalid type in function 'expect_typed' in base 'RefCounted (typed_array.gd)'. The array of argument 1 (Array[float]) does not have the same element type as the expected typed array argument.
+>> SCRIPT ERROR at runtime/errors/typed_array.gd:24 on subtest_pass_basic_to_typed(): Invalid type in function 'expect_typed' in base 'RefCounted(typed_array.gd)'. The array of argument 1 (Array) does not have the same element type as the expected typed array argument.
+>> SCRIPT ERROR at runtime/errors/typed_array.gd:29 on subtest_pass_basic_to_differently_typed(): Invalid type in function 'expect_typed' in base 'RefCounted(typed_array.gd)'. The array of argument 1 (Array[float]) does not have the same element type as the expected typed array argument.

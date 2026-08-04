@@ -686,6 +686,7 @@ public:
 	bool derives_from() const;
 
 	const StringName &get_class_name() const;
+	virtual String debug_get_type_name();
 
 	StringName get_class_name_for_extension(const GDExtension *p_library) const;
 

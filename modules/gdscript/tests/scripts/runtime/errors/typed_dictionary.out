@@ -14,5 +14,5 @@ GDTEST_RUNTIME_ERROR
 >>   Attempted to set an object into a TypedDictionary.Key of incompatible type 'GDScript'.
 >> ERROR: Condition "!_p->typed_key.validate(key, "set")" is true. Returning: false
 end subtest_assign_wrong_to_typed
->> SCRIPT ERROR at runtime/errors/typed_dictionary.gd:40 on subtest_pass_basic_to_typed(): Invalid type in function 'expect_typed' in base 'RefCounted (typed_dictionary.gd)'. The dictionary of argument 1 (Dictionary) does not have the same element type as the expected typed dictionary argument.
->> SCRIPT ERROR at runtime/errors/typed_dictionary.gd:45 on subtest_pass_basic_to_differently_typed(): Invalid type in function 'expect_typed' in base 'RefCounted (typed_dictionary.gd)'. The dictionary of argument 1 (Dictionary[float, float]) does not have the same element type as the expected typed dictionary argument.
+>> SCRIPT ERROR at runtime/errors/typed_dictionary.gd:40 on subtest_pass_basic_to_typed(): Invalid type in function 'expect_typed' in base 'RefCounted(typed_dictionary.gd)'. The dictionary of argument 1 (Dictionary) does not have the same element type as the expected typed dictionary argument.
+>> SCRIPT ERROR at runtime/errors/typed_dictionary.gd:45 on subtest_pass_basic_to_differently_typed(): Invalid type in function 'expect_typed' in base 'RefCounted(typed_dictionary.gd)'. The dictionary of argument 1 (Dictionary[float, float]) does not have the same element type as the expected typed dictionary argument.
