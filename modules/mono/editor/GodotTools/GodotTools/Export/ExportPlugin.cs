@@ -179,7 +179,7 @@ namespace GodotTools.Export
             if (!TryDeterminePlatformFromOSName(osName, out string? platform))
                 throw new NotSupportedException("Target platform not supported.");
 
-            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
+            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS, OS.Platforms.Web }
                     .Contains(platform))
             {
                 throw new NotImplementedException("Target platform not yet implemented.");
@@ -214,6 +214,11 @@ namespace GodotTools.Export
             if (features.Contains("arm32"))
             {
                 publishConfig.Archs.Add("arm32");
+            }
+
+            if (features.Contains("wasm32"))
+            {
+                publishConfig.Archs.Add("wasm32");
             }
 
             if (features.Contains("universal"))
@@ -491,6 +496,9 @@ namespace GodotTools.Export
 
         private string DetermineRuntimeIdentifierOS(string platform, bool useAndroidLinuxBionic)
         {
+            if (platform == OS.Platforms.Web)
+                return "browser";
+
             if (platform == OS.Platforms.Android && useAndroidLinuxBionic)
             {
                 return OS.DotNetOS.LinuxBionic;
@@ -510,6 +518,7 @@ namespace GodotTools.Export
                 "arm64-v8a" => "arm64",
                 "arm32" => "arm",
                 "arm64" => "arm64",
+                "wasm32" => "wasm",
                 _ => throw new ArgumentOutOfRangeException(nameof(arch), arch, "Unexpected architecture")
             };
         }
