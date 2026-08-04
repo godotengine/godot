@@ -208,6 +208,9 @@ struct HashMapHasherDefaultImpl<char *> {
 };
 
 template <>
+struct HashMapHasherDefaultImpl<const char *> : HashMapHasherDefaultImpl<char *> {};
+
+template <>
 struct HashMapHasherDefaultImpl<wchar_t> {
 	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return hash_fmix32(uint32_t(p_wchar)); }
 };
