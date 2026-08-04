@@ -353,6 +353,8 @@ void CodeEdit::_notification(int p_what) {
 						code_completion_rect.position.x = caret_pos.x - code_completion_base_width;
 					}
 
+					code_completion_rect.position.x = MAX(0, code_completion_rect.position.x);
+
 					theme_cache.code_completion_style->draw(ci, Rect2(code_completion_rect.position - theme_cache.code_completion_style->get_offset(), code_completion_rect.size + theme_cache.code_completion_style->get_minimum_size() + Size2(scroll_width, 0)));
 					if (theme_cache.code_completion_background_color.a > 0.01) {
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(code_completion_rect.position, code_completion_rect.size + Size2(scroll_width, 0)), theme_cache.code_completion_background_color);
