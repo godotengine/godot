@@ -51,6 +51,7 @@
 /**************************************************************************/
 
 #include "drivers/metal/metal_objects_shared.h"
+#include "drivers/metal/rendering_device_driver_metal.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #include <Metal/Metal.hpp>
@@ -279,21 +280,24 @@ private:
 	Alloc allocate_arg_buffer(uint32_t p_size);
 
 	struct {
+		MTL_IGNORE_AVAILABILITY_BEGIN
 		NS::SharedPtr<MTL::ResidencySet> rs;
+		MTL_IGNORE_AVAILABILITY_END
 	} _frame_state;
 
 #pragma mark - Synchronization
 
-	enum {
-		STAGE_RENDER,
-		STAGE_COMPUTE,
-		STAGE_BLIT,
-		STAGE_MAX,
-	};
-	bool use_barriers = false;
-	MTL::Stages pending_after_stages[STAGE_MAX] = { 0, 0, 0 };
-	MTL::Stages pending_before_queue_stages[STAGE_MAX] = { 0, 0, 0 };
-	void _encode_barrier(MTL::CommandEncoder *p_enc);
+	RDM::SyncMode sync_mode = RDM::SyncMode::HazardTracking;
+
+	// Level-fence hooks. Render encoders are stage-scoped; compute and blit
+	// encoders are not. Called once per encoder: _fence_wait right after
+	// creation, _fence_update immediately before endEncoding.
+	void _fence_wait(MTL::RenderCommandEncoder *p_enc);
+	void _fence_wait(MTL::ComputeCommandEncoder *p_enc);
+	void _fence_wait(MTL::BlitCommandEncoder *p_enc);
+	void _fence_update(MTL::RenderCommandEncoder *p_enc);
+	void _fence_update(MTL::ComputeCommandEncoder *p_enc);
+	void _fence_update(MTL::BlitCommandEncoder *p_enc);
 
 	void reset();
 
@@ -304,7 +308,10 @@ private:
 	MTL::CommandBuffer *command_buffer();
 
 	void _end_compute_dispatch();
+	void _end_inline_render();
 	void _end_blit();
+	void _pop_active_encoder_labels();
+	void _set_inline_render_encoder(MTL::RenderCommandEncoder *p_encoder);
 	MTL::BlitCommandEncoder *_ensure_blit_encoder();
 
 	enum class CopySource {
@@ -338,7 +345,10 @@ protected:
 	const MDSubpass &get_current_subpass() const override { return render.get_subpass(); }
 	LocalVector<RDD::RenderPassClearValue> &get_clear_values() override { return render.clear_values; }
 	const Rect2i &get_render_area() const override { return render.render_area; }
-	void end_render_encoding() override { render.end_encoding(); }
+	void end_render_encoding() override {
+		_fence_update(render.encoder.get());
+		render.end_encoding();
+	}
 
 public:
 	struct RenderState : public RenderStateBase {
@@ -346,7 +356,7 @@ public:
 		MDFrameBuffer *frameBuffer = nullptr;
 		MDRenderPipeline *pipeline = nullptr;
 		LocalVector<RDD::RenderPassClearValue> clear_values;
-		uint32_t current_subpass = UINT32_MAX;
+		MDSubpass *current_subpass = nullptr;
 		Rect2i render_area;
 		bool is_rendering_entire_area = false;
 		NS::SharedPtr<MTL::RenderPassDescriptor> desc;
@@ -367,8 +377,8 @@ public:
 		void end_encoding();
 
 		_ALWAYS_INLINE_ const MDSubpass &get_subpass() const {
-			DEV_ASSERT(pass != nullptr);
-			return pass->subpasses[current_subpass];
+			DEV_ASSERT(current_subpass != nullptr);
+			return *current_subpass;
 		}
 
 		_FORCE_INLINE_ void mark_viewport_dirty() {
@@ -490,6 +500,14 @@ public:
 		}
 	} compute;
 
+	struct {
+		NS::SharedPtr<MTL::RenderCommandEncoder> encoder;
+
+		_FORCE_INLINE_ void reset() {
+			encoder.reset();
+		}
+	} inline_render;
+
 	// State specific to a blit pass.
 	struct {
 		NS::SharedPtr<MTL::BlitCommandEncoder> encoder;
@@ -502,9 +520,9 @@ public:
 		return commandBuffer.get();
 	}
 
-	void begin() override;
-	void commit() override;
-	void end() override;
+	void _begin() override;
+	void _commit() override;
+	void _end() override;
 
 	void bind_pipeline(RDD::PipelineID p_pipeline) override;
 
@@ -540,6 +558,8 @@ public:
 
 #pragma mark - Compute Commands
 
+	void compute_begin_pass() override;
+	void compute_end_pass() override;
 	void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) override;
 	void compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) override;
 	void compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset) override;

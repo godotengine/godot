@@ -75,14 +75,14 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 
 	Vector<MDCommandBuffer *> command_buffers;
 
-	Error _create_device() override;
 	Error _execute_and_present_barriers(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains);
 	Error _execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains);
 
 protected:
+	Error _create_device() override;
 	MTL::CommandQueue *get_command_queue() const override { return device_queue.get(); }
-	void add_residency_set_to_main_queue(MTL::ResidencySet *p_set) override;
-	void remove_residency_set_to_main_queue(MTL::ResidencySet *p_set) override;
+	void add_residency_set_to_main_queue(MTL::ResidencySet *p_set) override API_AVAILABLE(macos(15.0), ios(18.0), tvos(18.0), visionos(2.0));
+	void remove_residency_set_to_main_queue(MTL::ResidencySet *p_set) override API_AVAILABLE(macos(15.0), ios(18.0), tvos(18.0), visionos(2.0));
 
 public:
 	Error initialize(uint32_t p_device_index, uint32_t p_frame_count) override;
