@@ -82,6 +82,8 @@ protected:
 	}
 
 public:
+	static void check_disk_space(const String &p_target_path, float p_size_gib, const String &p_rationale);
+
 	virtual Error list_dir_begin() = 0; ///< This starts dir listing
 	virtual String get_next() = 0;
 	virtual bool current_is_dir() const = 0;

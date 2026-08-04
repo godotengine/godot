@@ -37,6 +37,23 @@
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
 
+// Check for available disk space on the target disk and warn the user if needed according to a set threshold.
+// The threshold (set in GiB) should be set to cover most use cases for the file being written.
+void DirAccess::check_disk_space(const String &p_target_path, float p_size_gib, const String &p_rationale) {
+	String path = p_target_path;
+	if (path.is_relative_path()) {
+		path = "res://" + path;
+	}
+	// Use a global path for more user-friendly warning display.
+	path = ProjectSettings::get_singleton()->globalize_path(path.get_base_dir());
+
+	const Ref<DirAccess> dir = DirAccess::open(path);
+	if (dir.is_valid() && dir->get_space_left() < p_size_gib * Math::pow(1024.0, 3.0)) {
+		// Less than `p_size_gib` GiB available.
+		WARN_PRINT_ED(vformat("%s: Current available space on target disk is low (%s).", path, String::humanize_size(dir->get_space_left())) + " " + p_rationale);
+	}
+}
+
 String DirAccess::_get_root_path() const {
 	switch (_access_type) {
 		case ACCESS_RESOURCES:
