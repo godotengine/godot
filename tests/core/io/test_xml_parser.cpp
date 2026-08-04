@@ -232,7 +232,7 @@ TEST_CASE("[XMLParser] CDATA") {
 }
 
 TEST_CASE("[XMLParser] Raw buffer parsing with garbage suffix") {
-	uint8_t buf[] = {'<', 'a', '/', '>', 0xFF, 0xFF, 0xFF}; // 4 valid bytes
+	uint8_t buf[] = { '<', 'a', '/', '>', 0xFF, 0xFF, 0xFF }; // 4 valid bytes
 	XMLParser parser;
 	REQUIRE_EQ(parser._open_buffer(buf, 4), OK);
 	REQUIRE_EQ(parser.read(), OK);
@@ -243,7 +243,7 @@ TEST_CASE("[XMLParser] Raw buffer parsing with garbage suffix") {
 }
 
 TEST_CASE("[XMLParser] Truncated buffer is handled safely") {
-	uint8_t buf[] = {'<', 't', 'a', 'g'}; // "<tag" no closing
+	uint8_t buf[] = { '<', 't', 'a', 'g' }; // "<tag" no closing
 	XMLParser parser;
 	REQUIRE_EQ(parser._open_buffer(buf, 4), OK);
 	REQUIRE_EQ(parser.read(), OK);
