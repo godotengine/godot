@@ -454,13 +454,17 @@ half sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex_
 
 #endif // SHADOWS_DISABLED
 
-half get_omni_attenuation(float distance, float inv_range, float decay) {
+float get_omni_attenuation_highp(float distance, float inv_range, float decay) {
 	float nd = distance * inv_range;
 	nd *= nd;
 	nd *= nd; // nd^4
 	nd = max(1.0 - nd, 0.0);
 	nd *= nd; // nd^2
-	return half(nd * pow(max(distance, 0.0001), -decay));
+	return nd * pow(max(distance, 0.0001), -decay);
+}
+
+half get_omni_attenuation(float distance, float inv_range, float decay) {
+	return half(get_omni_attenuation_highp(distance, inv_range, decay));
 }
 
 void light_process_omni(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3 vertex_ddx, vec3 vertex_ddy, hvec3 f0, half roughness, half metallic, float taa_frame_count, hvec3 albedo, inout half alpha, vec2 screen_uv, hvec3 energy_compensation,
@@ -998,16 +1002,16 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	hvec3 pos_local_to_light = hvec3(dot(light_to_vert, area_a_dir), dot(light_to_vert, area_b_dir), dot(light_to_vert, -area_direction));
 
 	hvec3 closest_point_local_to_light = hvec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
-	half dist = length(closest_point_local_to_light - pos_local_to_light);
+	half dist = half(length(vec3(closest_point_local_to_light) - vec3(pos_local_to_light)));
 
 	half light_length = max(half(0.0), dist);
-	half light_attenuation_raw = get_omni_attenuation(float(light_length), area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation);
-	half light_attenuation_ltc = light_attenuation_raw * half(light_length * light_length); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+	float light_length_squared = float(light_length) * float(light_length); // LTC and solid-angle terms already decreases by inverse square. Apply this factor to each such term below.
+	float light_attenuation_raw = get_omni_attenuation_highp(float(light_length), area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation);
 	half shadow = half(1.0);
 
 #ifndef SHADOWS_DISABLED
 	// Area light shadow.
-	if (light_attenuation_raw > HALF_FLT_MIN && area_lights.data[idx].shadow_opacity > 0.001) {
+	if (light_attenuation_raw > float(HALF_FLT_MIN) && area_lights.data[idx].shadow_opacity > 0.001) {
 		// there is a shadowmap
 		vec2 texel_size = scene_data_block.data.shadow_atlas_pixel_size;
 		vec4 base_uv_rect = area_lights.data[idx].atlas_rect;
@@ -1122,8 +1126,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		}
 	}
 #endif
-	light_attenuation_ltc = light_attenuation_ltc * shadow;
-	half light_attenuation = light_attenuation_raw * shadow;
+	float light_attenuation = light_attenuation_raw * float(shadow);
 	hvec3 color = hvec3(area_lights.data[idx].color);
 	float max_mipmap = area_lights.data[idx].cone_angle;
 
@@ -1142,9 +1145,11 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	vec2 ltc_fresnel = vec2(0.0);
 	hvec3 fresnel_color = hvec3(0.0);
 	ltc_evaluate(vec3(normal), vec3(eye_vec), mat3(1), points, area_lights.data[idx].projector_rect, max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP, ltc_diffuse, ltc_diffuse_tex_color);
+	float ltc_diffuse_compensated = ltc_diffuse * light_length_squared;
 
 #if !defined(SPECULAR_DISABLED) || (defined(LIGHT_CODE_USED) && defined(AREA_LIGHT_CODE_USED))
 	ltc_evaluate_specular(vec3(normal), vec3(eye_vec), roughness, points, area_lights.data[idx].projector_rect, max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP, ltc_lut1, ltc_lut2, ltc_specular, ltc_fresnel, ltc_specular_tex_color);
+	float ltc_specular_compensated = ltc_specular * light_length_squared;
 	half f90 = clamp(dot(f0, hvec3(50.0 * 0.33)), metallic, half(1.0));
 	fresnel_color = f0 * max(half(ltc_fresnel.x), half(0.0)) + (f90 - f0) * max(half(ltc_fresnel.y), half(0.0));
 #endif
@@ -1190,13 +1195,13 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	vec3 view_highp = vec3(eye_vec);
 	float specular_amount_highp = float(area_lights.data[idx].specular_amount);
 	vec3 light_color_highp = vec3(color);
-	float attenuation_highp = float(light_attenuation_ltc);
+	float attenuation_highp = light_attenuation;
 	vec3 diffuse_light_highp = vec3(diffuse_light);
 	vec3 specular_light_highp = vec3(specular_light);
 	bool is_directional = false;
 	bool is_area = true;
-	vec3 area_diffuse = ltc_diffuse * ltc_diffuse_tex_color;
-	vec3 area_specular = ltc_specular * vec3(fresnel_color) * ltc_specular_tex_color;
+	vec3 area_diffuse = ltc_diffuse_compensated * ltc_diffuse_tex_color;
+	vec3 area_specular = ltc_specular_compensated * vec3(fresnel_color) * ltc_specular_tex_color;
 
 #CODE : LIGHT
 
@@ -1222,7 +1227,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 #ifdef LIGHT_TRANSMITTANCE_USED
 	{
 		half transmittance_z = transmittance_depth;
-		transmittance_color.a *= light_attenuation_raw; // not including shadows or ltc falloff
+		transmittance_color.a = half(float(transmittance_color.a) * light_attenuation_raw); // not including shadows or ltc falloff
 #ifndef SHADOWS_DISABLED
 		if (area_lights.data[idx].shadow_opacity > 0.001) {
 			// Redo shadowmapping, but shrink the model a bit to avoid artifacts.
@@ -1265,9 +1270,10 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	float cc_specular_ltc = 0.0;
 	vec2 cc_fresnel;
 	ltc_evaluate_specular(vec3(vertex_normal), vec3(eye_vec), sqrt(mix(0.001, 0.1, float(clearcoat_roughness))), points, area_lights.data[idx].projector_rect, max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP, ltc_lut1, ltc_lut2, cc_specular_ltc, cc_fresnel, cc_specular_tex_color);
+	cc_specular_ltc *= light_length_squared;
 	half Fr = (half(0.04) * max(half(cc_fresnel.x), half(0.0)) + half(1.0 - 0.04) * max(half(cc_fresnel.y), half(0.0))) * clearcoat;
 	cc_attenuation = half(1.0) - Fr;
-	specular_light += half(cc_specular_ltc) * hvec3(cc_specular_tex_color) * Fr * color * light_attenuation_ltc * specular_amount;
+	specular_light += hvec3(cc_specular_ltc * cc_specular_tex_color * float(Fr) * vec3(color) * light_attenuation * float(specular_amount));
 #endif // LIGHT_CLEARCOAT_USED
 
 	if (metallic < half(1.0)) {
@@ -1277,21 +1283,23 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		ltc_evaluate(vec3(-normal), vec3(eye_vec), mat3(1), points, vec4(0.0), max_mipmap, area_light_atlas, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP, backface_ltc_diffuse, backface_ltc_tex_color_discard);
 		half NdotL = half((ltc_diffuse - backface_ltc_diffuse) / (max(solid_angle, 0.001) / M_PI));
 		half diffuse_brdf_NL = smoothstep(-roughness, max(roughness, half(0.01)), NdotL) * half(1.0 / M_PI);
-		diffuse_light += diffuse_brdf_NL * isotropic_light_color * color * area * light_attenuation * cc_attenuation;
+		diffuse_light += hvec3(float(diffuse_brdf_NL) * vec3(isotropic_light_color) * vec3(color) * float(area) * light_attenuation * float(cc_attenuation));
 #else
-		diffuse_light += half(ltc_diffuse) * hvec3(ltc_diffuse_tex_color) * color * light_attenuation_ltc * cc_attenuation;
+		diffuse_light += hvec3(ltc_diffuse_compensated * ltc_diffuse_tex_color * vec3(color) * light_attenuation * float(cc_attenuation));
 #endif // DIFFUSE_TOON
 
 #if defined(LIGHT_BACKLIGHT_USED)
 		// backlight can't use ltc_diffuse_tex_color, because for backface pixels texture would have to sampled for opposite normal direction.
-		diffuse_light += color * max(half(solid_angle / M_PI) - half(ltc_diffuse), half(0.0)) * backlight * isotropic_light_color * light_attenuation_ltc;
+		float backlight_ltc = max(solid_angle / M_PI - ltc_diffuse, 0.0) * light_length_squared;
+		diffuse_light += hvec3(vec3(color) * backlight_ltc * vec3(backlight) * vec3(isotropic_light_color) * light_attenuation);
 #endif
 	}
 
 #if defined(LIGHT_RIM_USED) // same as for point lights
 	half cNdotV = max(dot(normal, eye_vec), half(1e-4));
 	half rim_light = pow(max(half(1e-4), half(1.0) - cNdotV), max(half(0.0), (half(1.0) - roughness) * half(16.0)));
-	diffuse_light += rim_light * rim * mix(hvec3(1.0), albedo, rim_tint) * isotropic_light_color * color * half(solid_angle) * light_attenuation_ltc;
+	float solid_angle_compensated = solid_angle * light_length_squared;
+	diffuse_light += hvec3(float(rim_light * rim) * vec3(mix(hvec3(1.0), albedo, rim_tint)) * vec3(isotropic_light_color) * vec3(color) * solid_angle_compensated * light_attenuation);
 #endif
 
 #if defined(SPECULAR_TOON)
@@ -1301,12 +1309,14 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 	half RdotV = half(ltc_specular / (max(solid_angle, 0.001) / (M_PI)));
 	half intensity = smoothstep(mid - roughness * half(0.5), mid + roughness * half(0.5), RdotV) * mid; // should we use specular tex color here?? or diffuse? or white?
-	diffuse_light += intensity * hvec3(ltc_specular_tex_color) * color * area * light_attenuation * specular_amount; // write to diffuse_light, as in toon shading you generally want no reflection
+	if (intensity > half(0.0)) { // Avoid 0 * Inf producing NaN
+		diffuse_light += hvec3(float(intensity) * ltc_specular_tex_color * vec3(color) * float(area) * light_attenuation * float(specular_amount)); // write to diffuse_light, as in toon shading you generally want no reflection
+	}
 #elif defined(SPECULAR_DISABLED)
 	// do nothing
 #else
-	hvec3 spec = half(ltc_specular) * hvec3(ltc_specular_tex_color) * color * fresnel_color;
-	specular_light += spec * specular_amount * light_attenuation_ltc * cc_attenuation;
+	vec3 spec = half(ltc_specular_compensated) * ltc_specular_tex_color * vec3(color) * vec3(fresnel_color);
+	specular_light += hvec3(spec * float(specular_amount) * light_attenuation * float(cc_attenuation));
 #endif // SPECULAR_TOON
 
 #endif // LIGHT_CODE_USED
