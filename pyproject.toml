@@ -27,13 +27,14 @@ fix = true
 #  legacy defaults.
 select = ["E4", "E7", "E9", "F"]
 extend-select = [
-	"FA",    # flake8-future-annotations.
-	"I",     # isort.
-	"UP006", # Use {to} instead of {from} for type annotation.
-	"UP007", # Use `X | Y` for type annotations.
-	"UP037", # Remove quotes from type annotation.
+	"FA", # flake8-future-annotations.
+	"I",  # isort.
+	"UP", # pyupgrade.
 ]
-extend-safe-fixes = ["FA", "UP006", "UP007"]
+ignore = [
+	"UP015", # Unnecessary mode argument.
+]
+extend-safe-fixes = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "{SConstruct,SCsub}" = [
