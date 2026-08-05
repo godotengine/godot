@@ -30,8 +30,12 @@
 
 #include "visual_shader_editor_plugin.h"
 
+#include "../vs_nodes/visual_shader_nodes.h"
+#include "../vs_nodes/visual_shader_particle_nodes.h"
+
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/io/config_file.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/math_defs.h"
@@ -68,15 +72,15 @@
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
 #include "scene/resources/curve_texture.h"
+#include "scene/resources/environment.h"
+#include "scene/resources/material.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/style_box_flat.h"
+#include "scene/resources/syntax_highlighter.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
-
-#include "modules/visual_shader/vs_nodes/visual_shader_nodes.h"
-#include "modules/visual_shader/vs_nodes/visual_shader_particle_nodes.h"
 
 struct FloatConstantDef {
 	String name;

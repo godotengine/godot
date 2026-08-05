@@ -30,20 +30,20 @@
 
 #pragma once
 
+#include "../visual_shader.h"
+
 #include "editor/inspector/editor_properties.h"
-#include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/script/script_editor_base.h"
+#include "scene/gui/control.h"
 #include "scene/gui/graph_edit.h"
-#include "scene/resources/environment.h"
-#include "scene/resources/material.h"
-#include "scene/resources/syntax_highlighter.h"
-
-#include "modules/visual_shader/visual_shader.h"
 
 class CodeEdit;
+class CodeHighlighter;
 class ColorPicker;
+class ConfigFile;
 class CurveEditor;
+class Environment;
 class FilterLineEdit;
 class GraphElement;
 class GraphFrame;
@@ -51,6 +51,7 @@ class HFlowContainer;
 class MenuButton;
 class PopupPanel;
 class RichTextLabel;
+class ShaderMaterial;
 class Tree;
 
 class VisualShaderEditor;
