@@ -2406,6 +2406,7 @@ void main() {
 #ifndef MODE_UNSHADED
 	vec3 f0 = F0(metallic, specular, albedo);
 	vec3 specular_light = vec3(0.0, 0.0, 0.0);
+	vec3 lightmap_specular_light = vec3(0.0);
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
 
@@ -2585,8 +2586,9 @@ void main() {
 
 				vec3 diffuse_light_discarded = diffuse_light;
 				float directionality = clamp(l1_len / l0_luminance, 0.0, 1.0);
+				float specular_intensity = directionality * lightmap_specular_intensity * 2.0;
 
-				light_compute(normal, L_view, view, 0.0, specular_light_color, true, 1.0, f0, roughness, metallic, directionality * lightmap_specular_intensity, albedo, alpha, screen_uv,
+				light_compute(normal, L_view, view, 0.0, specular_light_color, true, 1.0, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2600,7 +2602,7 @@ void main() {
 						binormal, tangent, anisotropy,
 #endif
 						diffuse_light_discarded,
-						specular_light);
+						lightmap_specular_light);
 			}
 		}
 #endif // USE_LIGHTMAP_SPECULAR
@@ -2663,7 +2665,7 @@ void main() {
 #endif
 	}
 #endif // !AMBIENT_LIGHT_DISABLED
-
+	specular_light += lightmap_specular_light;
 #ifdef USE_VERTEX_LIGHTING
 	specular_light += specular_light_interp * f0;
 	diffuse_light += diffuse_light_interp;

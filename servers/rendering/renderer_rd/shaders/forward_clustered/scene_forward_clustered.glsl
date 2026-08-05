@@ -1890,8 +1890,9 @@ void fragment_shader(in SceneData scene_data) {
 
 						vec3 diffuse_light_discarded = diffuse_light;
 						float directionality = clamp(l1_len / l0_luminance, 0.0, 1.0);
+						float specular_intensity = directionality * lightmaps.data[ofs].specular_intensity * 2.0;
 
-						light_compute(normal, L_view, view, 0.0, specular_light_color, true, 1.0, f0, roughness, metallic, directionality * lightmaps.data[ofs].specular_intensity, albedo, alpha, screen_uv, energy_compensation,
+						light_compute(normal, L_view, view, 0.0, specular_light_color, true, 1.0, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 								backlight,
 #endif

@@ -1781,9 +1781,10 @@ void main() {
 
 						hvec3 diffuse_light_discarded = diffuse_light;
 						float directionality = clamp(l1_len / l0_luminance, 0.0, 1.0);
+						float specular_intensity = directionality * lightmaps.data[ofs].specular_intensity * 2.0;
 
-						light_compute(normal, hvec3(L_view_highp), view, saturateHalf(0.0), specular_light_color, true, half(1.0), f0, roughness, metallic, half(directionality * lightmaps.data[ofs].specular_intensity), albedo, alpha,
-						screen_uv, hvec3(1.0),
+						light_compute(normal, hvec3(L_view_highp), view, saturateHalf(0.0), specular_light_color, true, half(1.0), f0, roughness, metallic, half(specular_intensity), albedo, alpha,
+								screen_uv, hvec3(1.0),
 #ifdef LIGHT_BACKLIGHT_USED
 								backlight,
 #endif
