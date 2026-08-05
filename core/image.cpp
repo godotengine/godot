@@ -2658,9 +2658,9 @@ Color Image::get_pixel(int p_x, int p_y) const {
 		}
 		case FORMAT_RGBA5551: {
 			uint16_t u = ((uint16_t *)ptr)[ofs];
-			float r = ((u >> 11) & 0x1F) / 15.0;
-			float g = ((u >> 6) & 0x1F) / 15.0;
-			float b = ((u >> 1) & 0x1F) / 15.0;
+			float r = ((u >> 11) & 0x1F) / 31.0;
+			float g = ((u >> 6) & 0x1F) / 31.0;
+			float b = ((u >> 1) & 0x1F) / 31.0;
 			float a = (u & 0x1) / 1.0;
 			return Color(r, g, b, a);
 		}
