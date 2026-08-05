@@ -545,13 +545,13 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 
 		switch (screen_orientation) {
 			case DisplayServerEnums::SCREEN_LANDSCAPE:
-				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
+				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
 				break;
 			case DisplayServerEnums::SCREEN_PORTRAIT:
 				orientations += "<string>UIInterfaceOrientationPortrait</string>\n";
 				break;
 			case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
-				orientations += "<string>UIInterfaceOrientationLandscapeRight</string>\n";
+				orientations += "<string>UIInterfaceOrientationLandscapeLeft</string>\n";
 				break;
 			case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 				orientations += "<string>UIInterfaceOrientationPortraitUpsideDown</string>\n";
