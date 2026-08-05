@@ -1791,9 +1791,8 @@
 		<method name="screen_get_max_scale" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the greatest scale factor of all screens.
-				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
-				[b]Note:[/b] This method is implemented only on macOS.
+				Returns the greatest scale factor of all screens. See also [method screen_get_scale].
+				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
 			</description>
 		</method>
 		<method name="screen_get_orientation" qualifiers="const">
@@ -1850,7 +1849,7 @@
 			<return type="float" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the scale factor of the specified screen by index. Returns [code]1.0[/code] if [param screen] is invalid.
+				Returns the scale factor of the specified screen by index. Returns [code]1.0[/code] if [param screen] is invalid. See also [method screen_get_max_scale].
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] for hiDPI (Retina) screens, and [code]1.0[/code] for all other cases.
 				[b]Note:[/b] On Linux (Wayland), the returned value is accurate only when [param screen] is [constant SCREEN_OF_MAIN_WINDOW]. Due to API limitations, passing a direct index will return a rounded-up integer, if the screen has a fractional scale (e.g. [code]1.25[/code] would get rounded up to [code]2.0[/code]).
