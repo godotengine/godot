@@ -30,7 +30,7 @@
 
 #include "visual_shader_language_plugin.h"
 
-#include "modules/visual_shader/visual_shader.h"
+#include "../visual_shader.h"
 
 Ref<Shader> VisualShaderLanguagePlugin::create_new_shader(int p_variation_index, Shader::Mode p_shader_mode, int p_template_index) {
 	Ref<VisualShader> shader;

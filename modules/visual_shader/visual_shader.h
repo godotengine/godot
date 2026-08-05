@@ -32,10 +32,11 @@
 
 #include "core/string/string_builder.h"
 #include "core/templates/rb_map.h"
-#include "core/templates/safe_refcount.h"
-#include "scene/gui/control.h"
+#include "core/variant/typed_array.h"
 #include "scene/resources/shader.h"
+#include "servers/rendering/rendering_server_enums.h"
 
+class Control;
 class VisualShaderNodeParameter;
 class VisualShaderNode;
 
@@ -385,8 +386,6 @@ public:
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
 
 	virtual Category get_category() const;
-
-	VisualShaderNode();
 };
 
 VARIANT_ENUM_CAST(VisualShaderNode::PortType)
@@ -546,8 +545,6 @@ public:
 	virtual Vector<StringName> get_editable_properties() const override;
 
 	virtual Category get_category() const override { return CATEGORY_INPUT; }
-
-	VisualShaderNodeInput();
 };
 
 ///
@@ -587,8 +584,6 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_OUTPUT; }
-
-	VisualShaderNodeOutput();
 };
 
 class VisualShaderNodeParameter : public VisualShaderNode {
@@ -637,8 +632,6 @@ public:
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	virtual Category get_category() const override { return CATEGORY_INPUT; }
-
-	VisualShaderNodeParameter();
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeParameter::Qualifier)
@@ -711,8 +704,6 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_INPUT; }
-
-	VisualShaderNodeParameterRef();
 };
 
 class VisualShaderNodeResizableBase : public VisualShaderNode {
@@ -779,8 +770,6 @@ public:
 	PackedInt32Array get_attached_nodes() const;
 
 	virtual Category get_category() const override { return CATEGORY_NONE; }
-
-	VisualShaderNodeFrame();
 };
 
 #ifndef DISABLE_DEPRECATED
@@ -964,8 +953,6 @@ public:
 
 	void set_varying_type(VisualShader::VaryingType p_varying_type);
 	VisualShader::VaryingType get_varying_type() const;
-
-	VisualShaderNodeVarying();
 };
 
 class VisualShaderNodeVaryingSetter : public VisualShaderNodeVarying {
@@ -985,8 +972,6 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_OUTPUT; }
-
-	VisualShaderNodeVaryingSetter();
 };
 
 class VisualShaderNodeVaryingGetter : public VisualShaderNodeVarying {
