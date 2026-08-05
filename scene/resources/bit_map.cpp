@@ -530,22 +530,48 @@ static PackedVector2Array generate_obb_from_polyline(const Vector<Vector2> &pl) 
 
 	// Precalc edge vectors
 	PackedVector2Array edge_vectors;
-	Vector2 p1, p2;
+	Vector2 p1, p2, u;
 	for (int i = 0; i < n; ++i) {
 		p1 = polygon[i];
 		p2 = polygon[(i + 1) % n];
 		Vector2 d = p2 - p1;
 		float inv_len = 1.0 / sqrt(d.x * d.x + d.y * d.y);
-		Vector2 u = d * inv_len;
+		u = d * inv_len;
 		edge_vectors.push_back(u);
 	}
 
-	int top, bottom, left, right;
-	find_extrema(polygon, top, bottom, left, right);
+	// Find the furthest orthographic projections for each point based on the first edge.
+	int top = 0, bottom = 0, left = 0, right = 0;
+	float ortho_projs[4] = { MAXFLOAT, -MAXFLOAT, -MAXFLOAT, MAXFLOAT };
+
+	u = edge_vectors[0];
+	Vector2 v = Vector2(-u.y, u.x); // Perpendicular Vector
+	for (int i = 0; i < n; ++i) {
+		p1 = polygon[i];
+		float ortho_lr = u.dot(p1);
+		float ortho_tb = v.dot(p1);
+
+		if (ortho_lr < ortho_projs[0]) {
+			left = i;
+			ortho_projs[0] = ortho_lr;
+		}
+		if (ortho_lr > ortho_projs[1]) {
+			right = i;
+			ortho_projs[1] = ortho_lr;
+		}
+		if (ortho_tb > ortho_projs[2]) {
+			top = i;
+			ortho_projs[2] = ortho_tb;
+		}
+		if (ortho_tb < ortho_projs[3]) {
+			bottom = i;
+			ortho_projs[3] = ortho_tb;
+		}
+	}
 
 	for (int i = 0; i < n; ++i) {
-		Vector2 u = edge_vectors[i];
-		Vector2 v = Vector2(-u.y, u.x); // Perpendicular Vector
+		u = edge_vectors[i];
+		v = Vector2(-u.y, u.x); // Perpendicular Vector
 
 		top = advance(polygon, n, top, v); // max projection in +v
 		bottom = advance(polygon, n, bottom, -v); // min projection in -v
