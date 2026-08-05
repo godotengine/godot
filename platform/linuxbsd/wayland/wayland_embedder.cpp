@@ -860,6 +860,11 @@ void WaylandEmbedder::cleanup_socket(int p_socket) {
 		}
 	}
 
+	// prevent unclaimed FDs received from SCM_RIGHTS from leaking
+	for (int fd : client.fds) {
+		close(fd);
+	}
+
 	uint32_t eclient_id = client.embedded_client_id;
 
 	clients.erase(client.socket);
@@ -2762,6 +2767,12 @@ void WaylandEmbedder::shutdown() {
 		}
 	}
 
+	// Prevent unclaimed FD leak
+	for (int fd : compositor_fds) {
+		close(fd);
+	}
+	compositor_fds.clear();
+
 	close(compositor_socket);
 	compositor_socket = -1;
 
@@ -3038,7 +3049,27 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 		head_msg.msg_iov = &vec;
 		head_msg.msg_iovlen = 1;
 
-		ssize_t head_rec = recvmsg(p_fd, &head_msg, MSG_PEEK);
+		ssize_t head_rec;
+		while (true) {
+			// MSG_WAITALL makes kernel block until 1.) full header is queued
+			// to peek 2.) error occurs or 3.) peer disconnects (instead of
+			// returning as soon as any data is available which was the default
+			// recvmsg behavour for stream sockets and caused short reads here).
+			head_rec = recvmsg(p_fd, &head_msg, MSG_PEEK | MSG_WAITALL);
+
+			if (head_rec == -1 && errno == EINTR) {
+				continue;
+			}
+
+			if (head_rec > 0 && (size_t)head_rec != vec.iov_len) {
+				// MSG_WAITALL isnt a full protection against short reads as
+				// signals can still cut it short. SImply try again by peeking
+				// as that restarts from queue head
+				continue;
+			}
+
+			break;
+		}
 
 		if (head_rec == 0) {
 			// Client disconnected.
@@ -3054,8 +3085,6 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 
 			ERR_FAIL_V_MSG(FAILED, vformat("Can't read message header: %s", strerror(errno)));
 		}
-
-		ERR_FAIL_COND_V_MSG(((size_t)head_rec) != vec.iov_len, ERR_CONNECTION_ERROR, vformat("Should've received %d bytes, instead got %d bytes", vec.iov_len, head_rec));
 
 		// Header is two 32-bit words: first is ID, second has size in most significant
 		// half and opcode in the other half.
@@ -3076,70 +3105,92 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 	{
 		full_msg.msg_iov = &vec;
 		full_msg.msg_iovlen = 1;
-		full_msg.msg_control = ancillary_buf.ptr();
-		full_msg.msg_controllen = ancillary_buf.size();
 
-		ssize_t full_rec = recvmsg(p_fd, &full_msg, 0);
+		// Loop instead of trusting a single recvmsg to fill the whole
+		// message. A blocking SOCK_STREAM socket thats only guaranteed with
+		// MSG_WAITALL, and even that can still be cut short by a signal.
+		// SCM_RIGHTS data can arrive attached to whichever chunk carried it,
+		// so handling it on every iteration.
+		size_t total_rec = 0;
+		while (total_rec < info.size) {
+			vec.iov_base = (uint8_t *)msg_buf.ptr() + total_rec;
+			vec.iov_len = info.size - total_rec;
+			full_msg.msg_control = ancillary_buf.ptr();
+			full_msg.msg_controllen = ancillary_buf.size();
 
-		if (full_rec == -1) {
-			if (errno == ECONNRESET) {
+			// MSG_CMSG_CLOEXEC sets FD_CLOEXEC on any FDs received via
+			// SCM_RIGHTS on creation to prevent it from leaking into child
+			// if this process forks+execs before its manually closed.
+			ssize_t full_rec = recvmsg(p_fd, &full_msg, MSG_WAITALL | MSG_CMSG_CLOEXEC);
+
+			if (full_rec == -1) {
+				if (errno == EINTR) {
+					continue;
+				}
+
 				// No need to print the error, the client forcefully disconnected, that's
 				// fine.
+				if (errno == ECONNRESET) {
+					return ERR_CONNECTION_ERROR;
+				}
+
+				ERR_FAIL_V_MSG(FAILED, vformat("Can't read message: %s", strerror(errno)));
+			}
+
+			if (full_rec == 0) {
 				return ERR_CONNECTION_ERROR;
 			}
 
-			ERR_FAIL_V_MSG(FAILED, vformat("Can't read message: %s", strerror(errno)));
-		}
+			if (full_msg.msg_controllen > 0) {
+				struct cmsghdr *cmsg = CMSG_FIRSTHDR(&full_msg);
+				while (cmsg) {
+					// TODO: Check for validity of message fields.
+					size_t data_len = cmsg->cmsg_len - sizeof *cmsg;
 
-		ERR_FAIL_COND_V_MSG(((size_t)full_rec) != info.size, ERR_CONNECTION_ERROR, "Invalid message length.");
+					if (cmsg->cmsg_type == SCM_RIGHTS) {
+						// NOTE: Linux docs say that we can't just cast data to pointer type because
+						// of alignment concerns. So we have to memcpy into a new buffer.
+						int *cmsg_fds = (int *)malloc(data_len);
+						memcpy(cmsg_fds, CMSG_DATA(cmsg), data_len);
+
+						size_t cmsg_fds_count = data_len / sizeof *cmsg_fds;
+						for (size_t i = 0; i < cmsg_fds_count; ++i) {
+							int fd = cmsg_fds[i];
+
+							if (info.direction == ProxyDirection::COMPOSITOR) {
+								clients[p_fd].fds.push_back(fd);
+							} else {
+								compositor_fds.push_back(fd);
+							}
+						}
+
+#ifdef WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
+						printf("[PROXY] Received %ld file descriptors: ", cmsg_fds_count);
+						for (size_t i = 0; i < cmsg_fds_count; ++i) {
+							printf("%d ", cmsg_fds[i]);
+						}
+						printf("\n");
+#endif
+
+						free(cmsg_fds);
+					}
+
+					cmsg = CMSG_NXTHDR(&full_msg, cmsg);
+				}
+			}
+
+			total_rec += full_rec;
+		}
 
 		DEBUG_LOG_WAYLAND_EMBED_VERBOSE(" === START PACKET === ");
 
 #ifdef WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
 		printf("[PROXY] Received bytes: ");
-		for (ssize_t i = 0; i < full_rec; ++i) {
+		for (size_t i = 0; i < info.size; ++i) {
 			printf("%.2x", ((const uint8_t *)msg_buf.ptr())[i]);
 		}
 		printf("\n");
 #endif
-	}
-
-	if (full_msg.msg_controllen > 0) {
-		struct cmsghdr *cmsg = CMSG_FIRSTHDR(&full_msg);
-		while (cmsg) {
-			// TODO: Check for validity of message fields.
-			size_t data_len = cmsg->cmsg_len - sizeof *cmsg;
-
-			if (cmsg->cmsg_type == SCM_RIGHTS) {
-				// NOTE: Linux docs say that we can't just cast data to pointer type because
-				// of alignment concerns. So we have to memcpy into a new buffer.
-				int *cmsg_fds = (int *)malloc(data_len);
-				memcpy(cmsg_fds, CMSG_DATA(cmsg), data_len);
-
-				size_t cmsg_fds_count = data_len / sizeof *cmsg_fds;
-				for (size_t i = 0; i < cmsg_fds_count; ++i) {
-					int fd = cmsg_fds[i];
-
-					if (info.direction == ProxyDirection::COMPOSITOR) {
-						clients[p_fd].fds.push_back(fd);
-					} else {
-						compositor_fds.push_back(fd);
-					}
-				}
-
-#ifdef WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
-				printf("[PROXY] Received %ld file descriptors: ", cmsg_fds_count);
-				for (size_t i = 0; i < cmsg_fds_count; ++i) {
-					printf("%d ", cmsg_fds[i]);
-				}
-				printf("\n");
-#endif
-
-				free(cmsg_fds);
-			}
-
-			cmsg = CMSG_NXTHDR(&full_msg, cmsg);
-		}
 	}
 	full_msg.msg_control = nullptr;
 	full_msg.msg_controllen = 0;
@@ -3332,7 +3383,10 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 	if (p_fd == compositor_socket && p_revents & POLLIN) {
 		Error err = handle_sock(p_fd);
 
-		if (err == ERR_BUG) {
+		if (err != OK) {
+			// No clientside cleanup_socket equivalent exists so any error here
+			// must bring the whole embedder down rather than silently keep
+			// polling a socket that may be desynced or closed now.
 			ERR_PRINT("Unexpected error while handling socket, shutting down.");
 			shutdown();
 			return;
