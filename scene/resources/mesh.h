@@ -53,6 +53,8 @@ class Mesh : public Resource {
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
 	mutable Vector<Ref<TriangleMesh>> surface_triangle_meshes; //cached
 	mutable Vector<Vector3> debug_lines;
+	mutable Size2i estimated_lightmap_size_hint;
+	mutable bool estimated_lightmap_size_hint_valid = false;
 	Size2i lightmap_size_hint;
 
 	Vector<Vector3> _get_faces() const;
@@ -195,6 +197,7 @@ public:
 
 	void set_lightmap_size_hint(const Size2i &p_size);
 	Size2i get_lightmap_size_hint() const;
+	Size2i get_lightmap_size_hint_or_estimate() const;
 	void clear_cache() const;
 
 #ifndef PHYSICS_3D_DISABLED

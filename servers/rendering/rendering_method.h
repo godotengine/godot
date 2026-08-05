@@ -117,6 +117,7 @@ public:
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index) = 0;
 	virtual void instance_geometry_set_lightmap_baked_texel_scale(RID p_instance, float p_scale) = 0;
 	virtual void instance_geometry_set_lightmap_texel_scale(RID p_instance, float p_scale) = 0;
+	virtual void instance_geometry_set_lightmap_size_hint(RID p_instance, const Size2i &p_size) = 0;
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value) = 0;
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;

@@ -79,12 +79,16 @@ private:
 		int32_t sub_instance = 0;
 		Rect2 uv_scale;
 		int slice_index = 0;
+		float baked_texel_scale = 1.0;
 	};
 
 	Vector<User> users;
+	bool has_user_baked_texel_scales = false;
 
 	void _set_user_data(const Array &p_data);
 	Array _get_user_data() const;
+	void _set_user_baked_texel_scales(const PackedFloat32Array &p_scales);
+	PackedFloat32Array _get_user_baked_texel_scales() const;
 	void _set_probe_data(const Dictionary &p_data);
 	Dictionary _get_probe_data() const;
 
@@ -95,12 +99,14 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance = -1);
+	void add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance = -1, float p_baked_texel_scale = 1.0);
 	int get_user_count() const;
 	NodePath get_user_path(int p_user) const;
 	int32_t get_user_sub_instance(int p_user) const;
 	Rect2 get_user_lightmap_uv_scale(int p_user) const;
 	int get_user_lightmap_slice_index(int p_user) const;
+	float get_user_baked_texel_scale(int p_user) const;
+	bool has_baked_texel_scales_per_user() const;
 	void clear_users();
 
 #ifndef DISABLE_DEPRECATED
@@ -217,6 +223,8 @@ private:
 
 	Ref<LightmapGIData> light_data;
 	Node *last_owner = nullptr;
+
+	void _update_lightmap_size_hints(Node *p_node, float p_texel_scale);
 
 	struct LightsFound {
 		Transform3D xform;

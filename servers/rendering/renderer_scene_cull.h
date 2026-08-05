@@ -435,6 +435,7 @@ public:
 		int lightmap_slice_index;
 		float lightmap_baked_texel_scale;
 		float lightmap_texel_scale;
+		Size2i lightmap_size_hint;
 		uint32_t lightmap_cull_index;
 		Vector<Color> lightmap_sh; //spherical harmonic
 
@@ -1065,6 +1066,7 @@ public:
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lightmap_baked_texel_scale(RID p_instance, float p_scale);
 	virtual void instance_geometry_set_lightmap_texel_scale(RID p_instance, float p_scale);
+	virtual void instance_geometry_set_lightmap_size_hint(RID p_instance, const Size2i &p_size);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);

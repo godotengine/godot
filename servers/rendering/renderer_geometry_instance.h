@@ -60,6 +60,7 @@ public:
 	virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) = 0;
 	virtual void set_baked_texel_scale(float p_scale) = 0;
 	virtual void set_texel_scale(float p_scale) = 0;
+	virtual void set_lightmap_size_hint(const Size2i &p_size) = 0;
 	virtual void set_lightmap_capture(const Color *p_sh9) = 0;
 	virtual void set_instance_shader_uniforms_offset(int32_t p_offset) = 0;
 	virtual void set_cast_double_sided_shadows(bool p_enable) = 0;
@@ -128,6 +129,7 @@ public:
 
 		bool use_baked_light = false;
 		bool use_dynamic_gi = false;
+		Size2i lightmap_size_hint;
 		bool cast_double_sided_shadows = false;
 		bool dirty_dependencies = false;
 
@@ -154,6 +156,7 @@ public:
 	virtual void set_use_dynamic_gi(bool p_enable) override;
 	virtual void set_baked_texel_scale(float p_scale) override;
 	virtual void set_texel_scale(float p_scale) override;
+	virtual void set_lightmap_size_hint(const Size2i &p_size) override;
 	virtual void set_instance_shader_uniforms_offset(int32_t p_offset) override;
 	virtual void set_cast_double_sided_shadows(bool p_enable) override;
 

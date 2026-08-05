@@ -58,13 +58,15 @@
 #include "core/os/os.h"
 #endif
 
-void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
+void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance, float p_baked_texel_scale) {
 	User user;
 	user.path = p_path;
 	user.uv_scale = p_uv_scale;
 	user.slice_index = p_slice_index;
 	user.sub_instance = p_sub_instance;
+	user.baked_texel_scale = p_baked_texel_scale;
 	users.push_back(user);
+	has_user_baked_texel_scales = true;
 }
 
 int LightmapGIData::get_user_count() const {
@@ -91,8 +93,18 @@ int LightmapGIData::get_user_lightmap_slice_index(int p_user) const {
 	return users[p_user].slice_index;
 }
 
+float LightmapGIData::get_user_baked_texel_scale(int p_user) const {
+	ERR_FAIL_INDEX_V(p_user, users.size(), 1.0);
+	return users[p_user].baked_texel_scale;
+}
+
+bool LightmapGIData::has_baked_texel_scales_per_user() const {
+	return has_user_baked_texel_scales;
+}
+
 void LightmapGIData::clear_users() {
 	users.clear();
+	has_user_baked_texel_scales = false;
 }
 
 void LightmapGIData::_set_user_data(const Array &p_data) {
@@ -101,6 +113,8 @@ void LightmapGIData::_set_user_data(const Array &p_data) {
 	for (int i = 0; i < p_data.size(); i += 4) {
 		add_user(p_data[i + 0], p_data[i + 1], p_data[i + 2], p_data[i + 3]);
 	}
+	// Legacy lightmap data only contains the four fields above.
+	has_user_baked_texel_scales = false;
 }
 
 Array LightmapGIData::_get_user_data() const {
@@ -112,6 +126,26 @@ Array LightmapGIData::_get_user_data() const {
 		ret.push_back(users[i].sub_instance);
 	}
 	return ret;
+}
+
+void LightmapGIData::_set_user_baked_texel_scales(const PackedFloat32Array &p_scales) {
+	const int count = MIN(users.size(), p_scales.size());
+	for (int i = 0; i < count; i++) {
+		users.write[i].baked_texel_scale = p_scales[i];
+	}
+	has_user_baked_texel_scales = true;
+}
+
+PackedFloat32Array LightmapGIData::_get_user_baked_texel_scales() const {
+	PackedFloat32Array scales;
+	if (!has_user_baked_texel_scales) {
+		return scales;
+	}
+	scales.resize(users.size());
+	for (int i = 0; i < users.size(); i++) {
+		scales.set(i, users[i].baked_texel_scale);
+	}
+	return scales;
 }
 
 void LightmapGIData::set_lightmap_textures(const TypedArray<TextureLayered> &p_data) {
@@ -199,6 +233,7 @@ RID LightmapGIData::get_rid() const {
 
 void LightmapGIData::clear() {
 	users.clear();
+	has_user_baked_texel_scales = false;
 }
 
 void LightmapGIData::_reset_lightmap_textures() {
@@ -368,10 +403,13 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_uses_packed_directional", "_uses_packed_directional"), &LightmapGIData::_set_uses_packed_directional);
 	ClassDB::bind_method(D_METHOD("_is_using_packed_directional"), &LightmapGIData::_is_using_packed_directional);
 
-	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance"), &LightmapGIData::add_user);
+	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance", "baked_texel_scale"), &LightmapGIData::add_user, DEFVAL(-1), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("get_user_count"), &LightmapGIData::get_user_count);
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &LightmapGIData::get_user_path);
 	ClassDB::bind_method(D_METHOD("clear_users"), &LightmapGIData::clear_users);
+
+	ClassDB::bind_method(D_METHOD("_set_user_baked_texel_scales", "scales"), &LightmapGIData::_set_user_baked_texel_scales);
+	ClassDB::bind_method(D_METHOD("_get_user_baked_texel_scales"), &LightmapGIData::_get_user_baked_texel_scales);
 
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
@@ -385,6 +423,7 @@ void LightmapGIData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "shadowmask_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_shadowmask_textures", "get_shadowmask_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "user_baked_texel_scales", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_baked_texel_scales", "_get_user_baked_texel_scales");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "_uses_packed_directional", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_uses_packed_directional", "_is_using_packed_directional");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "baked_texel_scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_baked_texel_scale", "get_baked_texel_scale");
@@ -1125,10 +1164,10 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			MeshesFound &mf = meshes_found.write[m_i];
 
-			Size2i mesh_lightmap_size = mf.mesh->get_lightmap_size_hint();
+			Size2i mesh_lightmap_size = mf.mesh->get_lightmap_size_hint_or_estimate();
 			if (mesh_lightmap_size == Size2i(0, 0)) {
-				// TODO we should compute a size if no lightmap hint is set, as we did in 3.x.
-				// For now set to basic size to avoid crash.
+				// Keep a basic fallback for meshes whose geometry or UV2 data
+				// doesn't allow estimating a lightmap size.
 				mesh_lightmap_size = Size2i(64, 64);
 			}
 			// Double lightmap texel density if downsampling is enabled, as the final texture size will be halved before saving lightmaps.
@@ -1156,6 +1195,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			{
 				Dictionary d;
 				d["path"] = mf.node_path;
+				d["lightmap_scale"] = mf.lightmap_scale;
 				if (mf.subindex >= 0) {
 					d["subindex"] = mf.subindex;
 				}
@@ -1557,10 +1597,11 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		if (d.has("subindex")) {
 			subindex = d["subindex"];
 		}
+		const float baked_texel_scale = d.get("lightmap_scale", 1.0);
 
 		Rect2 uv_scale = lightmapper->get_bake_mesh_uv_scale(i);
 		int slice_index = lightmapper->get_bake_mesh_texture_slice(i);
-		gi_data->add_user(np, uv_scale, slice_index, subindex);
+		gi_data->add_user(np, uv_scale, slice_index, subindex, baked_texel_scale);
 	}
 
 	int probe_count = lightmapper->get_bake_probe_count();
@@ -1733,6 +1774,10 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 void LightmapGI::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
+			if (get_parent()) {
+				_update_lightmap_size_hints(get_parent(), texel_scale);
+			}
+
 			if (light_data.is_valid()) {
 				ERR_FAIL_COND_MSG(
 						light_data->is_using_spherical_harmonics() && !light_data->_is_using_packed_directional(),
@@ -1751,10 +1796,29 @@ void LightmapGI::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			last_owner = get_owner();
 
+			if (get_parent()) {
+				_update_lightmap_size_hints(get_parent(), 1.0);
+			}
+
 			if (light_data.is_valid()) {
 				_clear_lightmaps();
 			}
 		} break;
+	}
+}
+
+void LightmapGI::_update_lightmap_size_hints(Node *p_node, float p_texel_scale) {
+	MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
+	if (mesh_instance && mesh_instance->get_gi_mode() == GeometryInstance3D::GI_MODE_STATIC) {
+		Ref<Mesh> mesh = mesh_instance->get_mesh();
+		if (mesh.is_valid()) {
+			const Size2i size_hint = mesh->get_lightmap_size_hint_or_estimate();
+			RS::get_singleton()->instance_geometry_set_lightmap_size_hint(mesh_instance->get_instance(), Size2i(Size2(size_hint) * p_texel_scale));
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_update_lightmap_size_hints(p_node->get_child(i), p_texel_scale);
 	}
 }
 
@@ -1775,11 +1839,17 @@ void LightmapGI::_assign_lightmaps() {
 			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
 			if (instance_id.is_valid()) {
 				RS::get_singleton()->instance_geometry_set_lightmap(instance_id, get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
+				if (light_data->has_baked_texel_scales_per_user()) {
+					RS::get_singleton()->instance_geometry_set_lightmap_baked_texel_scale(instance_id, light_data->get_user_baked_texel_scale(i));
+				}
 			}
 		} else {
 			VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(node);
 			ERR_CONTINUE(!vi);
 			RS::get_singleton()->instance_geometry_set_lightmap(vi->get_instance(), get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
+			if (light_data->has_baked_texel_scales_per_user()) {
+				RS::get_singleton()->instance_geometry_set_lightmap_baked_texel_scale(vi->get_instance(), light_data->get_user_baked_texel_scale(i));
+			}
 		}
 	}
 
@@ -1982,6 +2052,10 @@ void LightmapGI::set_texel_scale(float p_scale) {
 	}
 
 	texel_scale = p_scale;
+
+	if (is_inside_tree() && get_parent()) {
+		_update_lightmap_size_hints(get_parent(), texel_scale);
+	}
 }
 
 float LightmapGI::get_texel_scale() const {
