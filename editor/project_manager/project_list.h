@@ -303,6 +303,13 @@ public:
 
 	static bool project_feature_looks_like_version(const String &p_feature);
 
+	// Compact mode.
+
+	bool compact_mode = false;
+	bool compact_mode_cache = false;
+	bool sb_visible_cache = false;
+	int compact_size_cache = 0;
+
 	// Initialization & loading.
 
 	void save_config();
