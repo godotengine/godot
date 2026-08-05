@@ -786,13 +786,13 @@ void GPUParticles2D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (one_shot) {
 				time += get_process_delta_time();
-				if (time > emission_time) {
+				if ((time * speed_scale) > emission_time) {
 					emitting = false;
 					if (!active) {
 						set_process_internal(false);
 					}
 				}
-				if (time > active_time) {
+				if ((time * speed_scale) > active_time) {
 					if (active && !signal_canceled) {
 						emit_signal(SceneStringName(finished));
 					}
