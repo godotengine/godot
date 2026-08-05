@@ -1581,6 +1581,20 @@ void ProjectList::resize_project_titles() {
 	window_size_cache = window_size;
 	title_and_tags_size_cache += difference;
 
+	if (compact_mode) {
+		const bool sb_visible = ProjectManager::get_singleton()->is_project_list_sidebar_visible();
+		if (sb_visible && !sb_visible_cache) {
+			title_and_tags_size_cache -= sidebar_size_cache;
+		} else if (!sb_visible && sb_visible_cache) {
+			title_and_tags_size_cache += sidebar_size_cache;
+		}
+		sb_visible_cache = sb_visible;
+	} else if (compact_mode_cache && !sb_visible_cache) {
+		title_and_tags_size_cache -= sidebar_size_cache;
+		sb_visible_cache = true;
+	}
+	compact_mode_cache = compact_mode;
+
 	for (Item &item : _projects) {
 		item.control->resize_project_title(title_and_tags_size_cache, abs_title_and_tags_minsize_cache);
 	}

@@ -309,6 +309,9 @@ public:
 	// Compact mode.
 
 	bool compact_mode = false;
+	bool compact_mode_cache = false;
+	bool sb_visible_cache = false;
+	int sidebar_size_cache = 0;
 
 	// Initialization & loading.
 
