@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_apple_embedded.h                                           */
+/*  godot_compositor_services_renderer.h                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,43 +30,19 @@
 
 #pragma once
 
-#import <UIKit/UIKit.h>
+#import "drivers/apple_embedded/godot_renderer.h"
 
-class String;
+#import <CompositorServices/CompositorServices.h>
 
-@class GDTView;
-@class GDTViewRenderer;
-@protocol GDTDisplayLayer;
+@interface GDTCompositorServicesRenderer : GDTRenderer
 
-@protocol GDTViewDelegate
+- (instancetype)initWithLayerRenderer:(cp_layer_renderer_t)layer_renderer
+						 capabilities:(cp_layer_renderer_capabilities_t)capabilities;
 
-- (BOOL)godotViewFinishedSetup:(GDTView *)view;
+- (void)updateXRInterface;
 
-@end
-
-@interface GDTView : UIView
-
-@property(weak, nonatomic) GDTViewRenderer *renderer;
-@property(weak, nonatomic) id<GDTViewDelegate> delegate;
-
-@property(assign, readonly, nonatomic) BOOL isActive;
-
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
-
-@property(assign, nonatomic) float preferredFrameRate;
-
-// Can be extended by subclasses
-- (void)godot_commonInit;
-
-// Implemented in subclasses
-- (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-
-- (void)startRendering;
-- (void)stopRendering;
+- (void)startRenderLoop;
+- (void)renderFrame;
+- (void)worldRecentered;
 
 @end
-
-// Implemented in subclasses
-extern GDTView *GDTViewCreate();

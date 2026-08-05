@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  app.swift                                                             */
+/*  register_types.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-import SwiftUI
-import UIKit
+#pragma once
 
-struct GodotSwiftUIViewController: UIViewControllerRepresentable {
+#ifdef VISIONOS_ENABLED
 
-	func makeUIViewController(context: Context) -> GDTViewController {
-		let viewController = GDTViewController()
-		GDTAppDelegateService.viewController = viewController
-		return viewController
-	}
+#include "modules/register_module_types.h"
 
-	func updateUIViewController(_ uiViewController: GDTViewController, context: Context) {
-		// NOOP
-	}
+void initialize_visionos_xr_module(ModuleInitializationLevel p_level);
+void uninitialize_visionos_xr_module(ModuleInitializationLevel p_level);
 
-}
-
-@main
-struct SwiftUIApp: App {
-	@UIApplicationDelegateAdaptor(GDTApplicationDelegate.self) var appDelegate
-
-	var body: some Scene {
-		WindowGroup {
-			GodotSwiftUIViewController()
-				.ignoresSafeArea()
-		}
-	}
-}
+#endif

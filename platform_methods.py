@@ -304,7 +304,16 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
     shutil.rmtree(app_dir)
 
 
-def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_header_filename, all_swift_files):
+def setup_swift_builder(
+    env,
+    apple_platform,
+    sdk_path,
+    current_path,
+    bridging_header_filename,
+    all_swift_files,
+):
+    # Compile Swift sources and emit a Swift->ObjC interop header.
+
     from SCons.Script import Action, Builder
 
     if apple_platform == "macos":
@@ -327,8 +336,6 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
 
     swiftc_target = env["arch"] + "-apple-" + target_suffix
 
-    env["ALL_SWIFT_FILES"] = all_swift_files
-    env["CURRENT_PATH"] = current_path
     if "SWIFT_COMPILER" in env and env["SWIFT_COMPILER"] != "":
         swiftc_path = env["SWIFT_COMPILER"]
     elif "osxcross" not in env:
@@ -340,8 +347,11 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         raise Exception("Swift compiler path is not set. Please set SWIFT_COMPILER.")
 
     bridging_header_path = current_path + "/" + bridging_header_filename
-    env["SWIFTC"] = swiftc_path + " -frontend -c"  # Swift compiler
-    env["SWIFTCFLAGS"] = [
+    swift_module_name = "godot_swift_module"
+    env["SWIFTC"] = swiftc_path  # Swift compiler
+    # Flags for the whole-module Swift compile.
+    common_swift_flags = [
+        "-warnings-as-errors",
         "-cxx-interoperability-mode=default",
         "-emit-object",
         "-target",
@@ -354,15 +364,19 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         "6",
         "-parse-as-library",
         "-module-name",
-        "godot_swift_module",
+        swift_module_name,
         "-I./",  # Pass the current directory as the header root so bridging headers can include files from any point of the hierarchy
     ]
+    # All sources are compiled together into a single object, which requires whole-module mode.
+    env["SWIFTCFLAGS"] = ["-wmo"] + common_swift_flags
 
     if "osxcross" in env:
         env.Append(
             SWIFTCFLAGS=[
                 "-resource-dir",
                 "/root/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift",
+                "-Xfrontend",
+                "-enable-cross-import-overlays",
             ]
         )
 
@@ -379,11 +393,8 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         env.Append(SWIFTCFLAGS=["-Onone"])
 
     def generate_swift_action(source, target, env, for_signature):
-        fullpath_swift_files = [env["CURRENT_PATH"] + "/" + file for file in env["ALL_SWIFT_FILES"]]
-        fullpath_swift_files.remove(source[0].abspath)
-
-        fullpath_swift_files_string = '"' + '" "'.join(fullpath_swift_files) + '"'
-        compile_command = "$SWIFTC " + fullpath_swift_files_string + " -primary-file $SOURCE -o $TARGET $SWIFTCFLAGS"
+        swift_files_string = '"' + '" "'.join([file.abspath for file in source]) + '"'
+        compile_command = "$SWIFTC " + swift_files_string + " -o $TARGET $SWIFTCFLAGS"
 
         swift_comdstr = env.get("SWIFTCOMSTR")
         if swift_comdstr is not None:
@@ -393,11 +404,14 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
 
         return swift_action
 
-    # Define Builder for Swift files
+    # Define Builder that compiles all Swift sources into a single object file.
     swift_builder = Builder(
         generator=generate_swift_action, suffix=env["OBJSUFFIX"], src_suffix=".swift", emitter=methods.redirect_emitter
     )
 
-    env.Append(BUILDERS={"Swift": swift_builder})
-    env["BUILDERS"]["Library"].add_src_builder("Swift")
-    env["BUILDERS"]["Object"].add_action(".swift", Action(generate_swift_action, generator=1))
+    env.Append(BUILDERS={"SwiftModule": swift_builder})
+
+    swift_sources = [env.File(current_path + "/" + file) for file in all_swift_files]
+    swift_module = env.SwiftModule(current_path + "/" + swift_module_name, swift_sources)
+
+    return swift_module

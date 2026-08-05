@@ -31,7 +31,7 @@
 #import "os_visionos.h"
 
 #include "core/profiling/profiling.h"
-#import "drivers/apple_embedded/godot_app_delegate.h"
+#import "drivers/apple_embedded/godot_app_delegate_apple_embedded.h"
 #import "drivers/apple_embedded/main_utilities.h"
 #include "main/main.h"
 
