@@ -121,12 +121,12 @@ private:
 	Camera3D::ProjectionType grid_camera_last_update_perspective = Camera3D::PROJECTION_PERSPECTIVE;
 	Vector3 grid_camera_last_update_position;
 
-	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[3], scale_plane_gizmo[3], axis_gizmo[3];
+	Ref<ArrayMesh> move_gizmo[4], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[4], scale_plane_gizmo[3], axis_gizmo[3];
 	Ref<ArrayMesh> trackball_sphere_gizmo;
-	Ref<StandardMaterial3D> gizmo_color[3];
+	Ref<StandardMaterial3D> gizmo_color[4];
 	Ref<StandardMaterial3D> plane_gizmo_color[3];
 	Ref<ShaderMaterial> rotate_gizmo_color[4];
-	Ref<StandardMaterial3D> gizmo_color_hl[3];
+	Ref<StandardMaterial3D> gizmo_color_hl[4];
 	Ref<StandardMaterial3D> plane_gizmo_color_hl[3];
 	Ref<ShaderMaterial> rotate_gizmo_color_hl[4];
 	Ref<StandardMaterial3D> trackball_sphere_material;
