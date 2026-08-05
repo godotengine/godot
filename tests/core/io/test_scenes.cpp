@@ -32,10 +32,15 @@
 
 TEST_FORCE_LINK(test_scenes)
 
+#include "core/io/file_access.h"
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "core/object/object.h"
+#include "core/object/property_info.h"
+#include "core/os/memory.h"
 #include "core/string/string_name.h"
 #include "core/variant/variant.h"
 #include "scene/main/node.h"
@@ -43,6 +48,30 @@ TEST_FORCE_LINK(test_scenes)
 #include "tests/test_utils.h"
 
 namespace TestScenes {
+
+class _TestNodeForTestingNestedScenes : public Node {
+	GDCLASS(_TestNodeForTestingNestedScenes, Node);
+
+	Ref<PackedScene> _inner_scene;
+
+public:
+	void set_inner_scene(const Ref<PackedScene> p_scene) {
+		_inner_scene = p_scene;
+	}
+
+	Ref<PackedScene> get_inner_scene() const {
+		return _inner_scene;
+	}
+
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_inner_scene", "p_scene"), &_TestNodeForTestingNestedScenes::set_inner_scene);
+		ClassDB::bind_method(D_METHOD("get_inner_scene"), &_TestNodeForTestingNestedScenes::get_inner_scene);
+
+		ADD_PROPERTY(
+				PropertyInfo(Variant::OBJECT, "inner_scene", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE),
+				"set_inner_scene", "get_inner_scene");
+	}
+};
 
 void prepare_scene(Ref<PackedScene> scene) {
 	Ref<Resource> child_resource = memnew(Resource);
@@ -73,7 +102,7 @@ void validate_scene(Ref<PackedScene> loaded_scene) {
 
 void validate_and_instantiate_scene(Ref<PackedScene> loaded_scene) {
 	bool is_null = loaded_scene.is_null();
-	CHECK(!is_null);
+	CHECK_MESSAGE(!is_null, "Could not open scene file");
 
 	if (is_null) {
 		return;
@@ -132,5 +161,113 @@ TEST_CASE("[Scenes] Scene Saving and loading") {
 
 	memdelete(node);
 	memdelete(inner_node);
+}
+
+void validate_nested_scene(Ref<PackedScene> loaded_scene) {
+	bool is_null = loaded_scene.is_null();
+	CHECK_MESSAGE(!is_null, "Could not open scene file");
+
+	if (is_null) {
+		return;
+	}
+
+	_TestNodeForTestingNestedScenes *node_for_testing = static_cast<_TestNodeForTestingNestedScenes *>(loaded_scene->instantiate());
+	Ref<PackedScene> inner_scene = node_for_testing->get_inner_scene();
+	Node *inner_node = inner_scene->instantiate();
+
+	CHECK_MESSAGE(
+			inner_node->get_name() == "named_node",
+			"The instantiated node has invalid name.");
+
+	memdelete(node_for_testing);
+	memdelete(inner_node);
+}
+
+// This is to test a specific bug that can happen.
+TEST_CASE("[Scenes] Scene Saving and loading as property") {
+	ClassDB::register_class<_TestNodeForTestingNestedScenes>();
+
+	Node *inner_node = memnew(Node);
+	const Ref<PackedScene> inner_scene = memnew(PackedScene);
+	inner_node->set_name("named_node");
+	inner_scene->pack(inner_node);
+
+	_TestNodeForTestingNestedScenes *nested_scene_node = memnew(_TestNodeForTestingNestedScenes);
+	nested_scene_node->set_inner_scene(inner_scene);
+
+	Ref<PackedScene> scene = memnew(PackedScene);
+	scene->pack(nested_scene_node);
+
+	const String save_path_binary = TestUtils::get_temp_path("nested_scene_test.res");
+	const String save_path_text = TestUtils::get_temp_path("nested_scene_test.tscn");
+
+	ResourceSaver::save(scene, save_path_binary);
+	ResourceSaver::save(scene, save_path_text);
+
+	memdelete(inner_node);
+	memdelete(nested_scene_node);
+
+	const Ref<PackedScene> &loaded_resource_binary = ResourceLoader::load(save_path_binary);
+	validate_nested_scene(loaded_resource_binary);
+
+	const Ref<PackedScene> &loaded_resource_text = ResourceLoader::load(save_path_text);
+	validate_nested_scene(loaded_resource_text);
+	MessageQueue::get_singleton()->flush();
+}
+
+void validate_simple_scene(Ref<PackedScene> loaded_scene) {
+	bool is_null = loaded_scene.is_null();
+	CHECK(!is_null);
+
+	if (is_null) {
+		return;
+	}
+
+	Node *instanced_node = static_cast<Node *>(loaded_scene->instantiate());
+	CHECK_MESSAGE(
+			instanced_node->get_name() == "SimpleNode",
+			"The instantiated node has invalid name..");
+
+	memdelete(instanced_node);
+}
+
+TEST_CASE("[Scenes] Simple scene saving and loading") {
+	Node *node = memnew(Node);
+	node->set_name("SimpleNode");
+
+	Ref<PackedScene> scene = memnew(PackedScene);
+	scene->pack(node);
+
+	const String save_path_binary = TestUtils::get_temp_path("simple_scene_test.res");
+	const String save_path_text = TestUtils::get_temp_path("simple_scene_test.tscn");
+
+	ResourceSaver::save(scene, save_path_binary);
+	ResourceSaver::save(scene, save_path_text);
+
+	memdelete(node);
+
+	const Ref<PackedScene> &loaded_resource_binary = ResourceLoader::load(save_path_binary);
+	validate_simple_scene(loaded_resource_binary);
+
+	const Ref<PackedScene> &loaded_resource_text = ResourceLoader::load(save_path_text);
+	validate_simple_scene(loaded_resource_text);
+
+	// Simple scenes should not have a [resource] tag, so let's validate it.
+	Ref<FileAccess> f = FileAccess::open(save_path_text, FileAccess::READ);
+	bool is_null = f.is_null();
+	CHECK(!is_null);
+
+	if (is_null) {
+		return;
+	}
+
+	while (!f->eof_reached()) {
+		String line;
+		line = f->get_line();
+		CHECK_MESSAGE(
+				line != "[resource]",
+				"The scene file cannot have the [resource] tag");
+	}
+	f->close();
 }
 } //namespace TestScenes

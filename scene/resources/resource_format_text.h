@@ -125,7 +125,7 @@ private:
 	Ref<Resource> resource;
 	Ref<PackedScene> packed_scene;
 
-	void _parse_node_tag(Ref<PackedScene> curr_scene, VariantParser::ResourceParser &parser);
+	Ref<PackedScene> _parse_node_tag(const Ref<PackedScene> p_current_scene, VariantParser::ResourceParser &p_parser);
 
 public:
 	Ref<Resource> get_resource();
@@ -200,7 +200,7 @@ class ResourceFormatSaverTextInstance {
 	};
 
 	void _find_resources(const Variant &p_variant, bool p_main = false);
-	void _parse_nodes(Ref<PackedScene> curr_scene, Ref<FileAccess> f);
+	void _parse_nodes(const Ref<PackedScene> &curr_scene, const Ref<FileAccess> &p_file);
 
 	static String _write_resources(void *ud, const Ref<Resource> &p_resource);
 	String _write_resource(const Ref<Resource> &res);

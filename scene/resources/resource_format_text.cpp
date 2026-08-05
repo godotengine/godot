@@ -182,7 +182,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 	return err;
 }
 
-void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantParser::ResourceParser &parser) {
+Ref<PackedScene> ResourceLoaderText::_parse_node_tag(const Ref<PackedScene> p_current_scene, VariantParser::ResourceParser &p_parser) {
 	while (true) {
 		if (next_tag.name == "node") {
 			int parent = -1;
@@ -196,7 +196,7 @@ void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantPar
 			//int base_scene=-1;
 
 			if (next_tag.fields.has("name")) {
-				name = curr_scene->get_state()->add_name(next_tag.fields["name"]);
+				name = p_current_scene->get_state()->add_name(next_tag.fields["name"]);
 			}
 
 			if (next_tag.fields.has("parent")) {
@@ -206,14 +206,14 @@ void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantPar
 				if (next_tag.fields.has("parent_id_path")) {
 					np_id = next_tag.fields["parent_id_path"];
 				}
-				parent = curr_scene->get_state()->add_node_path(np, np_id);
+				parent = p_current_scene->get_state()->add_node_path(np, np_id);
 			}
 			if (next_tag.fields.has("unique_id")) {
 				unique_id = next_tag.fields["unique_id"];
 			}
 
 			if (next_tag.fields.has("type")) {
-				type = curr_scene->get_state()->add_name(next_tag.fields["type"]);
+				type = p_current_scene->get_state()->add_name(next_tag.fields["type"]);
 			} else {
 				type = SceneState::TYPE_INSTANTIATED; //no type? assume this was instantiated
 			}
@@ -228,10 +228,10 @@ void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantPar
 			}
 
 			if (next_tag.fields.has("instance")) {
-				instance = curr_scene->get_state()->add_value(next_tag.fields["instance"]);
+				instance = p_current_scene->get_state()->add_value(next_tag.fields["instance"]);
 
-				if (curr_scene->get_state()->get_node_count() == 0 && parent == -1) {
-					curr_scene->get_state()->set_base_scene(instance);
+				if (p_current_scene->get_state()->get_node_count() == 0 && parent == -1) {
+					p_current_scene->get_state()->set_base_scene(instance);
 					instance = -1;
 				}
 			}
@@ -239,13 +239,13 @@ void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantPar
 			if (next_tag.fields.has("instance_placeholder")) {
 				String path = next_tag.fields["instance_placeholder"];
 
-				int path_v = curr_scene->get_state()->add_value(path);
+				int path_v = p_current_scene->get_state()->add_value(path);
 
-				if (curr_scene->get_state()->get_node_count() == 0) {
+				if (p_current_scene->get_state()->get_node_count() == 0) {
 					error = ERR_FILE_CORRUPT;
 					error_text = "Instance Placeholder can't be used for inheritance";
 					_printerr();
-					curr_scene = Ref<PackedScene>();
+					return Ref<PackedScene>();
 				}
 
 				instance = path_v | SceneState::FLAG_INSTANCE_IS_PLACEHOLDER;
@@ -256,7 +256,7 @@ void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantPar
 				if (next_tag.fields.has("owner_uid_path")) {
 					np_id = next_tag.fields["owner_uid_path"];
 				}
-				owner = curr_scene->get_state()->add_node_path(next_tag.fields["owner"], np_id);
+				owner = p_current_scene->get_state()->add_node_path(next_tag.fields["owner"], np_id);
 			} else {
 				if (parent != -1 && !(type == SceneState::TYPE_INSTANTIATED && instance == -1)) {
 					owner = 0; //if no owner, owner is root
@@ -267,12 +267,12 @@ void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantPar
 				index = next_tag.fields["index"];
 			}
 
-			int node_id = curr_scene->get_state()->add_node(parent, owner, type, name, instance, index, unique_id);
+			int node_id = p_current_scene->get_state()->add_node(parent, owner, type, name, instance, index, unique_id);
 
 			if (next_tag.fields.has("groups")) {
 				Array groups = next_tag.fields["groups"];
 				for (const Variant &group : groups) {
-					curr_scene->get_state()->add_node_group(node_id, curr_scene->get_state()->add_name(group));
+					p_current_scene->get_state()->add_node_group(node_id, p_current_scene->get_state()->add_name(group));
 				}
 			}
 
@@ -280,25 +280,25 @@ void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantPar
 				String assign;
 				Variant value;
 
-				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &parser);
+				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &p_parser);
 
 				if (error) {
 					if (error == ERR_FILE_MISSING_DEPENDENCIES) {
 						// Resource loading error, just skip it.
 					} else if (error != ERR_FILE_EOF) {
 						ERR_PRINT(vformat("Parse Error: %s. [Resource file %s:%d]", error_names[error], res_path, lines));
-						curr_scene = Ref<PackedScene>();
+						return Ref<PackedScene>();
 					} else {
 						error = OK;
-						return;
+						return p_current_scene;
 					}
 				}
 
 				if (!assign.is_empty()) {
 					StringName assign_name = assign;
-					int nameidx = curr_scene->get_state()->add_name(assign_name);
-					int valueidx = curr_scene->get_state()->add_value(value);
-					curr_scene->get_state()->add_node_property(node_id, nameidx, valueidx, path_properties.has(assign_name));
+					int nameidx = p_current_scene->get_state()->add_name(assign_name);
+					int valueidx = p_current_scene->get_state()->add_value(value);
+					p_current_scene->get_state()->add_node_property(node_id, nameidx, valueidx, path_properties.has(assign_name));
 					//it's assignment
 				} else if (!next_tag.name.is_empty()) {
 					break;
@@ -308,29 +308,25 @@ void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantPar
 			if (!next_tag.fields.has("from")) {
 				error = ERR_FILE_CORRUPT;
 				error_text = "missing 'from' field from connection tag";
-				curr_scene = Ref<PackedScene>();
-				return;
+				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("to")) {
 				error = ERR_FILE_CORRUPT;
 				error_text = "missing 'to' field from connection tag";
-				curr_scene = Ref<PackedScene>();
-				return;
+				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("signal")) {
 				error = ERR_FILE_CORRUPT;
 				error_text = "missing 'signal' field from connection tag";
-				curr_scene = Ref<PackedScene>();
-				return;
+				return Ref<PackedScene>();
 			}
 
 			if (!next_tag.fields.has("method")) {
 				error = ERR_FILE_CORRUPT;
 				error_text = "missing 'method' field from connection tag";
-				curr_scene = Ref<PackedScene>();
-				return;
+				return Ref<PackedScene>();
 			}
 
 			NodePath from = next_tag.fields["from"];
@@ -365,28 +361,27 @@ void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantPar
 
 			Vector<int> bind_ints;
 			for (const Variant &bind : binds) {
-				bind_ints.push_back(curr_scene->get_state()->add_value(bind));
+				bind_ints.push_back(p_current_scene->get_state()->add_value(bind));
 			}
 
-			curr_scene->get_state()->add_connection(
-					curr_scene->get_state()->add_node_path(from.simplified(), from_id),
-					curr_scene->get_state()->add_node_path(to.simplified(), to_id),
-					curr_scene->get_state()->add_name(signal),
-					curr_scene->get_state()->add_name(method),
+			p_current_scene->get_state()->add_connection(
+					p_current_scene->get_state()->add_node_path(from.simplified(), from_id),
+					p_current_scene->get_state()->add_node_path(to.simplified(), to_id),
+					p_current_scene->get_state()->add_name(signal),
+					p_current_scene->get_state()->add_name(method),
 					flags,
 					unbinds,
 					bind_ints);
 
-			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &parser);
+			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &p_parser);
 
 			if (error) {
 				if (error != ERR_FILE_EOF) {
 					_printerr();
-					curr_scene = Ref<PackedScene>();
-					return;
+					return Ref<PackedScene>();
 				} else {
 					error = OK;
-					return;
+					return p_current_scene;
 				}
 			}
 		} else if (next_tag.name == "editable") {
@@ -394,35 +389,32 @@ void ResourceLoaderText::_parse_node_tag(Ref<PackedScene> curr_scene, VariantPar
 				error = ERR_FILE_CORRUPT;
 				error_text = "Missing 'path' field from editable tag";
 				_printerr();
-				curr_scene = Ref<PackedScene>();
-				return;
+				return Ref<PackedScene>();
 			}
 
 			NodePath path = next_tag.fields["path"];
 
-			curr_scene->get_state()->add_editable_instance(path.simplified());
+			p_current_scene->get_state()->add_editable_instance(path.simplified());
 
-			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &parser);
+			error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &p_parser);
 
 			if (error) {
 				if (error != ERR_FILE_EOF) {
 					_printerr();
-					curr_scene = Ref<PackedScene>();
-					return;
+					return Ref<PackedScene>();
 				} else {
 					error = OK;
-					return;
+					return p_current_scene;
 				}
 			}
-			// If it's a nested packed scene, and there's a resource after, we return without errors
-		} else if (curr_scene != packed_scene && (next_tag.name == "sub_resource" || next_tag.name == "resource")) {
-			return;
+			// If it's a nested packed scene, and there's a resource after, we return without errors.
+		} else if (p_current_scene != packed_scene && (next_tag.name == "sub_resource" || next_tag.name == "resource")) {
+			return p_current_scene;
 		} else {
 			error = ERR_FILE_CORRUPT;
 			error_text = vformat("Unknown tag '%s' in file", next_tag.name);
 			_printerr();
-			curr_scene = Ref<PackedScene>();
-			return;
+			return Ref<PackedScene>();
 		}
 	}
 }
@@ -705,7 +697,7 @@ Error ResourceLoaderText::load() {
 				//it's assignment
 			} else if (!next_tag.name.is_empty()) {
 				if (type == "PackedScene" && next_tag.name == "node") {
-					_parse_node_tag(res, rp);
+					res = _parse_node_tag(res, rp);
 				}
 
 				error = OK;
@@ -901,7 +893,7 @@ Error ResourceLoaderText::load() {
 			return error;
 		}
 
-		_parse_node_tag(packed_scene, rp);
+		packed_scene = _parse_node_tag(packed_scene, rp);
 
 		if (packed_scene.is_null()) {
 			return error;
@@ -1782,7 +1774,7 @@ static String _resource_get_class(Ref<Resource> p_resource) {
 	}
 }
 
-void ResourceFormatSaverTextInstance::_parse_nodes(Ref<PackedScene> curr_scene, Ref<FileAccess> f) {
+void ResourceFormatSaverTextInstance::_parse_nodes(const Ref<PackedScene> &curr_scene, const Ref<FileAccess> &p_file) {
 	// If this is a scene, save nodes and connections!
 	Ref<SceneState> state = curr_scene->get_state();
 	for (int i = 0; i < state->get_node_count(); i++) {
@@ -1845,39 +1837,39 @@ void ResourceFormatSaverTextInstance::_parse_nodes(Ref<PackedScene> curr_scene, 
 			header += sgroups;
 		}
 
-		f->store_string(header);
+		p_file->store_string(header);
 
 		if (!instance_placeholder.is_empty()) {
 			String vars;
-			f->store_string(" instance_placeholder=");
+			p_file->store_string(" instance_placeholder=");
 			VariantWriter::write_to_string(instance_placeholder, vars, true, _write_resources, this, use_compat);
-			f->store_string(vars);
+			p_file->store_string(vars);
 		}
 
 		if (instance.is_valid()) {
 			String vars;
-			f->store_string(" instance=");
+			p_file->store_string(" instance=");
 			VariantWriter::write_to_string(instance, vars, true, _write_resources, this, use_compat);
-			f->store_string(vars);
+			p_file->store_string(vars);
 		}
 
-		f->store_line("]");
+		p_file->store_line("]");
 
 		for (int j = 0; j < state->get_node_property_count(i); j++) {
 			String vars;
 			VariantWriter::write_to_string(state->get_node_property_value(i, j), vars, true, _write_resources, this, use_compat);
 
-			f->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
+			p_file->store_string(String(state->get_node_property_name(i, j)).property_name_encode() + " = " + vars + "\n");
 		}
 
 		if (i < state->get_node_count() - 1) {
-			f->store_line(String());
+			p_file->store_line(String());
 		}
 	}
 
 	for (int i = 0; i < state->get_connection_count(); i++) {
 		if (i == 0) {
-			f->store_line("");
+			p_file->store_line("");
 		}
 
 		String connstr = "[connection";
@@ -1910,22 +1902,22 @@ void ResourceFormatSaverTextInstance::_parse_nodes(Ref<PackedScene> curr_scene, 
 		}
 
 		Array binds = state->get_connection_binds(i);
-		f->store_string(connstr);
+		p_file->store_string(connstr);
 		if (binds.size()) {
 			String vars;
 			VariantWriter::write_to_string(binds, vars, true, _write_resources, this, use_compat);
-			f->store_string(" binds= " + vars);
+			p_file->store_string(" binds= " + vars);
 		}
 
-		f->store_line("]");
+		p_file->store_line("]");
 	}
 
 	Vector<NodePath> editable_instances = state->get_editable_instances();
 	for (int i = 0; i < editable_instances.size(); i++) {
 		if (i == 0) {
-			f->store_line("");
+			p_file->store_line("");
 		}
-		f->store_line("[editable path=\"" + editable_instances[i].operator String().c_escape() + "\"]");
+		p_file->store_line("[editable path=\"" + editable_instances[i].operator String().c_escape() + "\"]");
 	}
 }
 
@@ -2082,6 +2074,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 	}
 
 	bool first_meta = true;
+	bool has_nested_scene = false;
 	for (List<Ref<Resource>>::Element *E = saved_resources.front(); E; E = E->next()) {
 		Ref<Resource> res = E->get();
 		ERR_CONTINUE(!resource_set.has(res));
@@ -2184,6 +2177,12 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 		if (!main && is_scene && res.is_valid()) {
 			_parse_nodes(res, f);
+			has_nested_scene = true;
+		}
+
+		if (is_scene && main && first_meta && has_nested_scene) {
+			f->store_line("[resource]");
+			first_meta = false;
 		}
 
 		if (E->next()) {
