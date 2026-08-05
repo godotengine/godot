@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "modules/visual_shader/visual_shader.h"
+#include "../visual_shader.h"
 
 class VisualShaderNodeSDFToScreenUV : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeSDFToScreenUV, VisualShaderNode);
@@ -49,8 +49,6 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
-
-	VisualShaderNodeSDFToScreenUV();
 };
 
 class VisualShaderNodeScreenUVToSDF : public VisualShaderNode {
@@ -71,8 +69,6 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
-
-	VisualShaderNodeScreenUVToSDF();
 };
 
 class VisualShaderNodeTextureSDF : public VisualShaderNode {
@@ -92,8 +88,6 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
-
-	VisualShaderNodeTextureSDF();
 };
 
 class VisualShaderNodeTextureSDFNormal : public VisualShaderNode {
@@ -113,8 +107,6 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	virtual Category get_category() const override { return CATEGORY_TEXTURES; }
-
-	VisualShaderNodeTextureSDFNormal();
 };
 
 class VisualShaderNodeSDFRaymarch : public VisualShaderNode {

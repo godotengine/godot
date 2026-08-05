@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include "modules/visual_shader/visual_shader.h"
+#include "../visual_shader.h"
 
 class ImageTexture;
+class Mesh;
 
 // Emit nodes
 
@@ -57,8 +58,6 @@ public:
 	bool is_show_prop_names() const override;
 
 	virtual Category get_category() const override { return CATEGORY_PARTICLE; }
-
-	VisualShaderNodeParticleEmitter();
 };
 
 class VisualShaderNodeParticleSphereEmitter : public VisualShaderNodeParticleEmitter {
@@ -318,8 +317,6 @@ public:
 	virtual bool is_port_separator(int p_index) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
-
-	VisualShaderNodeParticleOutput();
 };
 
 class VisualShaderNodeParticleEmit : public VisualShaderNode {
