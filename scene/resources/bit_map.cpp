@@ -486,29 +486,6 @@ int advance(const PackedVector2Array &pl, const int pl_len, int k, const Vector2
 	return k;
 }
 
-void find_extrema(const PackedVector2Array &points,
-		int &top, int &bottom, int &left, int &right) {
-	int n = points.size();
-	top = bottom = left = right = 0;
-
-	for (int i = 1; i < n; i++) {
-		const Vector2 &p = points[i];
-
-		if (p.y > points[top].y) {
-			top = i;
-		}
-		if (p.y < points[bottom].y) {
-			bottom = i;
-		}
-		if (p.x < points[left].x) {
-			left = i;
-		}
-		if (p.x > points[right].x) {
-			right = i;
-		}
-	}
-}
-
 // Rotating Calipers Algorithm to determine the Minimum Area Enclosed Rectangle(OBB)
 static PackedVector2Array generate_obb_from_polyline(const Vector<Vector2> &pl) {
 	if (pl.size() <= 2) {
@@ -542,14 +519,14 @@ static PackedVector2Array generate_obb_from_polyline(const Vector<Vector2> &pl) 
 
 	// Find the furthest orthographic projections for each point based on the first edge.
 	int top = 0, bottom = 0, left = 0, right = 0;
-	float ortho_projs[4] = { MAXFLOAT, -MAXFLOAT, -MAXFLOAT, MAXFLOAT };
+	double ortho_projs[4] = { Math::INF, -Math::INF, -Math::INF, Math::INF };
 
 	u = edge_vectors[0];
 	Vector2 v = Vector2(-u.y, u.x); // Perpendicular Vector
 	for (int i = 0; i < n; ++i) {
 		p1 = polygon[i];
-		float ortho_lr = u.dot(p1);
-		float ortho_tb = v.dot(p1);
+		double ortho_lr = u.dot(p1);
+		double ortho_tb = v.dot(p1);
 
 		if (ortho_lr < ortho_projs[0]) {
 			left = i;
@@ -812,6 +789,29 @@ struct ChainBoxData {
 	List<List<Vector2>::Element *>::Element *chain_end_node;
 	PackedVector2Array obb;
 };
+
+void find_extrema(const PackedVector2Array &points,
+		int &top, int &bottom, int &left, int &right) {
+	int n = points.size();
+	top = bottom = left = right = 0;
+
+	for (int i = 1; i < n; i++) {
+		const Vector2 &p = points[i];
+
+		if (p.y > points[top].y) {
+			top = i;
+		}
+		if (p.y < points[bottom].y) {
+			bottom = i;
+		}
+		if (p.x < points[left].x) {
+			left = i;
+		}
+		if (p.x > points[right].x) {
+			right = i;
+		}
+	}
+}
 
 static Vector<ChainBoxData> generate_obbs_aabbs(List<List<Vector2>::Element *> &mono_chain_lst) {
 	Vector<ChainBoxData> obb_aabb_data;
