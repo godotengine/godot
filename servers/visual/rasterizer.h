@@ -282,7 +282,7 @@ public:
 
 	virtual RID mesh_create() = 0;
 
-	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes = Vector<PoolVector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) = 0;
+	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, PoolVector<uint8_t> p_array, int p_vertex_count, PoolVector<uint8_t> p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t>> &p_blend_shapes = Vector<PoolVector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) = 0;
 
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_amount) = 0;
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
@@ -293,7 +293,7 @@ public:
 	virtual void mesh_set_blend_shape_values(RID p_mesh, PoolVector<float> p_values) = 0;
 	virtual PoolVector<float> mesh_get_blend_shape_values(RID p_mesh) const = 0;
 
-	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) = 0;
+	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, PoolVector<uint8_t> p_data) = 0;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
@@ -362,9 +362,9 @@ public:
 	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const;
 	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
 	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
-	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array);
+	virtual void multimesh_set_as_bulk_array(RID p_multimesh, PoolVector<float> p_array);
 
-	virtual void multimesh_set_as_bulk_array_interpolated(RID p_multimesh, const PoolVector<float> &p_array, const PoolVector<float> &p_array_prev);
+	virtual void multimesh_set_as_bulk_array_interpolated(RID p_multimesh, PoolVector<float> p_array, PoolVector<float> p_array_prev);
 	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated);
 	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, VS::MultimeshPhysicsInterpolationQuality p_quality);
 	virtual void multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index);
@@ -388,7 +388,7 @@ public:
 	virtual Transform2D _multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const = 0;
 	virtual Color _multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
 	virtual Color _multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
-	virtual void _multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) = 0;
+	virtual void _multimesh_set_as_bulk_array(RID p_multimesh, PoolVector<float> p_array) = 0;
 	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int _multimesh_get_visible_instances(RID p_multimesh) const = 0;
 	virtual AABB _multimesh_get_aabb(RID p_multimesh) const = 0;
@@ -516,7 +516,7 @@ public:
 	virtual void gi_probe_set_to_cell_xform(RID p_probe, const Transform &p_xform) = 0;
 	virtual Transform gi_probe_get_to_cell_xform(RID p_probe) const = 0;
 
-	virtual void gi_probe_set_dynamic_data(RID p_probe, const PoolVector<int> &p_data) = 0;
+	virtual void gi_probe_set_dynamic_data(RID p_probe, PoolVector<int> p_data) = 0;
 	virtual PoolVector<int> gi_probe_get_dynamic_data(RID p_probe) const = 0;
 
 	virtual void gi_probe_set_dynamic_range(RID p_probe, int p_range) = 0;
@@ -566,7 +566,7 @@ public:
 	virtual RID lightmap_capture_create() = 0;
 	virtual void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) = 0;
 	virtual AABB lightmap_capture_get_bounds(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) = 0;
+	virtual void lightmap_capture_set_octree(RID p_capture, PoolVector<uint8_t> p_octree) = 0;
 	virtual PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const = 0;
 	virtual void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) = 0;
 	virtual Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const = 0;
@@ -651,7 +651,7 @@ public:
 	/* LIGHT SHADOW MAPPING */
 
 	virtual RID canvas_light_occluder_create() = 0;
-	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) = 0;
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, PoolVector<Vector2> p_lines) = 0;
 
 	/* INTERPOLATION */
 	struct InterpolationData {

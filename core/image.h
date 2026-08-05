@@ -155,6 +155,25 @@ public:
 	static Ref<Image> (*png_unpacker)(const PoolVector<uint8_t> &p_buffer);
 
 	PoolVector<uint8_t>::Write write_lock;
+	mutable PoolVector<uint8_t>::Read read_lock;
+
+	// By keeping a refcount on locks, we can allow users
+	// to manually lock, but still allow calling functions which require their own lock,
+	// by reusing the existing lock.
+	SafeNumeric<uint32_t> write_lock_refcount;
+	mutable SafeNumeric<uint32_t> read_lock_refcount;
+
+	// Use this, NOT write_lock.ptr() (because that will be NULL for zero size images).
+	bool _is_locked() const { return write_lock.is_active(); }
+	bool _is_read_locked() const { return read_lock_refcount.get() > 0; }
+
+	// Returns pointer to locked data, or NULL on failure.
+	uint8_t *_lock_refcounted();
+	const uint8_t *_read_lock_refcounted() const;
+
+	// Returns true when lock released when refcount reaches zero.
+	bool _unlock_refcounted();
+	bool _read_unlock_refcounted() const;
 
 protected:
 	static void _bind_methods();
