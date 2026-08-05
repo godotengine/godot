@@ -272,7 +272,7 @@ class CircleShape2DSW : public Shape2DSW {
 	real_t radius;
 
 public:
-	_FORCE_INLINE_ const real_t &get_radius() const { return radius; }
+	_FORCE_INLINE_ real_t get_radius() const { return radius; }
 
 	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_CIRCLE; }
 
@@ -378,8 +378,8 @@ class CapsuleShape2DSW : public Shape2DSW {
 	real_t height;
 
 public:
-	_FORCE_INLINE_ const real_t &get_radius() const { return radius; }
-	_FORCE_INLINE_ const real_t &get_height() const { return height; }
+	_FORCE_INLINE_ real_t get_radius() const { return radius; }
+	_FORCE_INLINE_ real_t get_height() const { return height; }
 
 	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_CAPSULE; }
 
