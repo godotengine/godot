@@ -1284,8 +1284,8 @@ void Image::crop(int p_width, int p_height) {
 }
 
 void Image::flip_y() {
+	// Consider ERR_FAIL if locked.
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_y in compressed or custom image formats.");
-	ERR_FAIL_COND_MSG(_is_locked(), "Cannot flip_y when Image is locked.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -1293,21 +1293,23 @@ void Image::flip_y() {
 	}
 
 	{
-		PoolVector<uint8_t>::Write w = data.write();
+		uint8_t *ptr = _lock_refcounted();
 		uint8_t up[16];
 		uint8_t down[16];
 		uint32_t pixel_size = get_format_pixel_size(format);
 
 		for (int y = 0; y < height / 2; y++) {
 			for (int x = 0; x < width; x++) {
-				_get_pixelb(x, y, pixel_size, w.ptr(), up);
-				_get_pixelb(x, height - y - 1, pixel_size, w.ptr(), down);
+				_get_pixelb(x, y, pixel_size, ptr, up);
+				_get_pixelb(x, height - y - 1, pixel_size, ptr, down);
 
-				_put_pixelb(x, height - y - 1, pixel_size, w.ptr(), up);
-				_put_pixelb(x, y, pixel_size, w.ptr(), down);
+				_put_pixelb(x, height - y - 1, pixel_size, ptr, up);
+				_put_pixelb(x, y, pixel_size, ptr, down);
 			}
 		}
 	}
+
+	_unlock_refcounted();
 
 	if (used_mipmaps) {
 		generate_mipmaps();
@@ -1315,8 +1317,8 @@ void Image::flip_y() {
 }
 
 void Image::flip_x() {
+	// Consider ERR_FAIL if locked.
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_x in compressed or custom image formats.");
-	ERR_FAIL_COND_MSG(_is_locked(), "Cannot flip_x when Image is locked.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -1324,21 +1326,23 @@ void Image::flip_x() {
 	}
 
 	{
-		PoolVector<uint8_t>::Write w = data.write();
+		uint8_t *ptr = _lock_refcounted();
 		uint8_t up[16];
 		uint8_t down[16];
 		uint32_t pixel_size = get_format_pixel_size(format);
 
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width / 2; x++) {
-				_get_pixelb(x, y, pixel_size, w.ptr(), up);
-				_get_pixelb(width - x - 1, y, pixel_size, w.ptr(), down);
+				_get_pixelb(x, y, pixel_size, ptr, up);
+				_get_pixelb(width - x - 1, y, pixel_size, ptr, down);
 
-				_put_pixelb(width - x - 1, y, pixel_size, w.ptr(), up);
-				_put_pixelb(x, y, pixel_size, w.ptr(), down);
+				_put_pixelb(width - x - 1, y, pixel_size, ptr, up);
+				_put_pixelb(x, y, pixel_size, ptr, down);
 			}
 		}
 	}
+
+	_unlock_refcounted();
 
 	if (used_mipmaps) {
 		generate_mipmaps();
@@ -1569,12 +1573,13 @@ void Image::shrink_x2() {
 }
 
 void Image::normalize() {
+	// Consider ERR_FAIL if locked.
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
 		clear_mipmaps();
 	}
 
-	lock();
+	_lock_refcounted();
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
@@ -1588,7 +1593,7 @@ void Image::normalize() {
 		}
 	}
 
-	unlock();
+	_unlock_refcounted();
 
 	if (used_mipmaps) {
 		generate_mipmaps(true);
@@ -1711,6 +1716,7 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 }
 
 void Image::clear_mipmaps() {
+	// Consider ERR_FAIL if locked.
 	if (!mipmaps) {
 		return;
 	}
@@ -1735,13 +1741,13 @@ const PoolVector<uint8_t> &Image::get_data() const {
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+	ERR_FAIL_COND_MSG(_is_locked(), "Cannot create image when it is locked.");
 	ERR_FAIL_COND_MSG(p_width <= 0, "The Image width specified (" + itos(p_width) + " pixels) must be greater than 0 pixels.");
 	ERR_FAIL_COND_MSG(p_height <= 0, "The Image height specified (" + itos(p_height) + " pixels) must be greater than 0 pixels.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
 			"The Image width specified (" + itos(p_width) + " pixels) cannot be greater than " + itos(MAX_WIDTH) + "pixels.");
 	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT,
 			"The Image height specified (" + itos(p_height) + " pixels) cannot be greater than " + itos(MAX_HEIGHT) + "pixels.");
-	ERR_FAIL_COND_MSG(_is_locked(), "Cannot create image when it is locked.");
 	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, "The Image format specified (" + itos(p_format) + ") is out of range. See Image's Format enum.");
 
 	int mm = 0;
@@ -1759,6 +1765,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 }
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const PoolVector<uint8_t> &p_data) {
+	ERR_FAIL_COND_MSG(_is_locked(), "Cannot create when Image is locked.");
 	ERR_FAIL_COND_MSG(p_width <= 0, "The Image width specified (" + itos(p_width) + " pixels) must be greater than 0 pixels.");
 	ERR_FAIL_COND_MSG(p_height <= 0, "The Image height specified (" + itos(p_height) + " pixels) must be greater than 0 pixels.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
@@ -1966,6 +1973,7 @@ void Image::create(const char **p_xpm) {
 	}
 
 bool Image::is_invisible() const {
+	// Consider ERR_FAIL if locked.
 	if (format == FORMAT_L8 ||
 			format == FORMAT_RGB8 || format == FORMAT_RG8) {
 		return false;
@@ -2061,6 +2069,7 @@ Image::AlphaMode Image::detect_alpha() const {
 }
 
 Error Image::load(const String &p_path) {
+	// Consider ERR_FAIL if locked.
 #ifdef DEBUG_ENABLED
 	if (p_path.begins_with("res://") && ResourceLoader::exists(p_path)) {
 		WARN_PRINT("Loaded resource as image file, this will not work on export: '" + p_path + "'. Instead, import the image file as an Image resource and load it normally as a resource.");
@@ -2070,27 +2079,33 @@ Error Image::load(const String &p_path) {
 }
 
 Error Image::save_png(const String &p_path) const {
+	// Consider ERR_FAIL if locked.
 	if (save_png_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
-	return save_png_func(p_path, Ref<Image>((Image *)this));
+	Ref<Image> self_ref(const_cast<Image *>(this));
+	return save_png_func(p_path, self_ref);
 }
 
 PoolVector<uint8_t> Image::save_png_to_buffer() const {
+	// Consider ERR_FAIL if locked.
 	if (save_png_buffer_func == nullptr) {
 		return PoolVector<uint8_t>();
 	}
 
-	return save_png_buffer_func(Ref<Image>((Image *)this));
+	Ref<Image> self_ref(const_cast<Image *>(this));
+	return save_png_buffer_func(self_ref);
 }
 
 Error Image::save_exr(const String &p_path, bool p_grayscale) const {
+	// Consider ERR_FAIL if locked.
 	if (save_exr_func == nullptr) {
 		return ERR_UNAVAILABLE;
 	}
 
-	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale);
+	Ref<Image> self_ref(const_cast<Image *>(this));
+	return save_exr_func(p_path, self_ref, p_grayscale);
 }
 
 int Image::get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps) {
@@ -2117,6 +2132,7 @@ bool Image::is_compressed() const {
 }
 
 Error Image::decompress() {
+	// Consider ERR_FAIL if locked.
 	if (format >= FORMAT_DXT1 && format <= FORMAT_RGTC_RG && _image_decompress_bc) {
 		_image_decompress_bc(this);
 	} else if (format >= FORMAT_BPTC_RGBA && format <= FORMAT_BPTC_RGBFU && _image_decompress_bptc) {
@@ -2134,6 +2150,7 @@ Error Image::decompress() {
 }
 
 Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {
+	// Consider ERR_FAIL if locked.
 	ERR_FAIL_INDEX_V_MSG(p_mode, COMPRESS_MAX, ERR_INVALID_PARAMETER, "Invalid compress mode.");
 	ERR_FAIL_INDEX_V_MSG(p_source, COMPRESS_SOURCE_MAX, ERR_INVALID_PARAMETER, "Invalid compress source.");
 	switch (p_mode) {
@@ -2197,6 +2214,7 @@ Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const P
 }
 
 Rect2 Image::get_used_rect() const {
+	// Consider ERR_FAIL if locked.
 	if (format != FORMAT_LA8 && format != FORMAT_RGBA8 && format != FORMAT_RGBAF && format != FORMAT_RGBAH && format != FORMAT_RGBA4444 && format != FORMAT_RGBA5551) {
 		return Rect2(Point2(), Size2(width, height));
 	}
@@ -2241,7 +2259,9 @@ Rect2 Image::get_used_rect() const {
 
 Ref<Image> Image::get_rect(const Rect2 &p_area) const {
 	Ref<Image> img = memnew(Image(p_area.size.x, p_area.size.y, mipmaps, format));
-	img->blit_rect(Ref<Image>((Image *)this), p_area, Point2(0, 0));
+	// Create an explicit stack reference to keep 'this' alive
+	Ref<Image> self_ref(const_cast<Image *>(this));
+	img->blit_rect(self_ref, p_area, Point2(0, 0));
 	return img;
 }
 
@@ -2279,6 +2299,7 @@ void Image::_get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2
 }
 
 void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+	// Consider ERR_FAIL if locked, for this and p_src.
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
@@ -2287,9 +2308,6 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	ERR_FAIL_COND(format != p_src->format);
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot blit_rect in compressed or custom image formats.");
 
-	ERR_FAIL_COND_MSG(_is_locked(), "Cannot blit_rect when Image is locked.");
-	ERR_FAIL_COND_MSG(p_src->_is_locked(), "Cannot blit_rect when p_src is locked.");
-
 	Rect2i src_rect;
 	Rect2i dest_rect;
 	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
@@ -2297,11 +2315,8 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 		return;
 	}
 
-	PoolVector<uint8_t>::Write wp = data.write();
-	uint8_t *dst_data_ptr = wp.ptr();
-
-	PoolVector<uint8_t>::Read rp = p_src->data.read();
-	const uint8_t *src_data_ptr = rp.ptr();
+	uint8_t *dst_data_ptr = _lock_refcounted();
+	const uint8_t *src_data_ptr = p_src->_read_lock_refcounted();
 
 	int pixel_size = get_format_pixel_size(format);
 
@@ -2321,9 +2336,13 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 			}
 		}
 	}
+
+	p_src->_read_unlock_refcounted();
+	_unlock_refcounted();
 }
 
 void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+	// Consider ERR_FAIL if locked, for this and p_src and p_mask.
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
@@ -2336,10 +2355,6 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	ERR_FAIL_COND_MSG(p_src->height != p_mask->height, "Source image height is different from mask height.");
 	ERR_FAIL_COND(format != p_src->format);
 
-	ERR_FAIL_COND_MSG(_is_locked(), "Cannot blit_rect_mask when Image is locked.");
-	ERR_FAIL_COND_MSG(p_src->_is_locked(), "Cannot blit_rect_mask when p_src is locked.");
-	ERR_FAIL_COND_MSG(p_mask->_is_locked(), "Cannot blit_rect_mask when p_mask is locked.");
-
 	Rect2i src_rect;
 	Rect2i dest_rect;
 	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
@@ -2347,16 +2362,13 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 		return;
 	}
 
-	PoolVector<uint8_t>::Write wp = data.write();
-	uint8_t *dst_data_ptr = wp.ptr();
-
-	PoolVector<uint8_t>::Read rp = p_src->data.read();
-	const uint8_t *src_data_ptr = rp.ptr();
+	uint8_t *dst_data_ptr = _lock_refcounted();
+	const uint8_t *src_data_ptr = p_src->_read_lock_refcounted();
 
 	int pixel_size = get_format_pixel_size(format);
 
 	Ref<Image> msk = p_mask;
-	msk->lock();
+	msk->_lock_refcounted();
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
@@ -2377,10 +2389,13 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 		}
 	}
 
-	msk->unlock();
+	p_src->_read_unlock_refcounted();
+	msk->_unlock_refcounted();
+	_unlock_refcounted();
 }
 
 void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
+	// Consider ERR_FAIL if locked, for this and p_src.
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
@@ -2395,9 +2410,9 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 		return;
 	}
 
-	lock();
+	_lock_refcounted();
 	Ref<Image> img = p_src;
-	img->lock();
+	img->_lock_refcounted();
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
@@ -2416,11 +2431,12 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 		}
 	}
 
-	img->unlock();
-	unlock();
+	img->_unlock_refcounted();
+	_unlock_refcounted();
 }
 
 void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
+	// Consider ERR_FAIL if locked, for this and p_src and p_mask.
 	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
@@ -2440,11 +2456,12 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 		return;
 	}
 
-	lock();
 	Ref<Image> img = p_src;
 	Ref<Image> msk = p_mask;
-	img->lock();
-	msk->lock();
+
+	_lock_refcounted();
+	img->_lock_refcounted();
+	msk->_lock_refcounted();
 
 	for (int i = 0; i < dest_rect.size.y; i++) {
 		for (int j = 0; j < dest_rect.size.x; j++) {
@@ -2468,9 +2485,9 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 		}
 	}
 
-	msk->unlock();
-	img->unlock();
-	unlock();
+	msk->_unlock_refcounted();
+	img->_unlock_refcounted();
+	_unlock_refcounted();
 }
 
 // Repeats `p_pixel` `p_count` times in consecutive memory.
@@ -2490,10 +2507,10 @@ void Image::fill(const Color &p_color) {
 	if (data.size() == 0) {
 		return;
 	}
+	// Consider ERR_FAIL if locked.
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill in compressed or custom image formats.");
 
-	lock();
-	uint8_t *dst_data_ptr = write_lock.ptr();
+	uint8_t *dst_data_ptr = _lock_refcounted();
 
 	int pixel_size = get_format_pixel_size(format);
 
@@ -2502,25 +2519,22 @@ void Image::fill(const Color &p_color) {
 
 	_repeat_pixel_over_subsequent_memory(dst_data_ptr, pixel_size, width * height);
 
-	unlock();
+	_unlock_refcounted();
 }
 
 void Image::fill_rect(const Rect2 &p_rect, const Color &p_color) {
 	if (data.size() == 0) {
 		return;
 	}
+	// Consider ERR_FAIL if locked.
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
-	ERR_FAIL_COND_MSG(_is_locked(), "Cannot fill_rect when Image is locked.");
 
 	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect.abs());
 	if (r.has_no_area()) {
 		return;
 	}
 
-	lock();
-
-	PoolVector<uint8_t>::Write wp = data.write();
-	uint8_t *dst_data_ptr = wp.ptr();
+	uint8_t *dst_data_ptr = _lock_refcounted();
 
 	int pixel_size = get_format_pixel_size(format);
 
@@ -2538,7 +2552,7 @@ void Image::fill_rect(const Rect2 &p_rect, const Color &p_color) {
 		}
 	}
 
-	unlock();
+	_unlock_refcounted();
 }
 
 ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
@@ -2600,13 +2614,83 @@ Dictionary Image::_get_data() const {
 	return d;
 }
 
+// Returns true when lock first created when refcount is one.
+uint8_t *Image::_lock_refcounted() {
+	uint32_t rc = write_lock_refcount.increment();
+	if (rc == 1) {
+		// We Shouldn't be attempting to write lock when read locked.
+		// This can cause corruption of the image data.
+		// We'll support this for backward compatibility but flag a warning.
+#ifdef DEBUG_ENABLED
+		if (_is_read_locked()) {
+			WARN_PRINT_ONCE("Create Image write lock during a read lock can cause corruption.");
+		}
+#endif
+
+		write_lock = data.write();
+	}
+	return write_lock.ptr();
+}
+
+const uint8_t *Image::_read_lock_refcounted() const {
+	uint32_t rc = read_lock_refcount.increment();
+	if (rc == 1) {
+		// We Shouldn't be attempting to read lock when write locked.
+		// This can cause corruption of the image data.
+		// We'll support this for backward compatibility but flag a warning.
+#ifdef DEBUG_ENABLED
+		if (_is_locked()) {
+			WARN_PRINT_ONCE("Create Image read lock during a write lock can cause corruption.");
+		}
+#endif
+		read_lock = data.read();
+	}
+	return read_lock.ptr();
+}
+
+// Returns true when lock released when refcount reaches zero.
+bool Image::_unlock_refcounted() {
+	uint32_t rc = write_lock_refcount.decrement();
+	if (rc == 0) {
+		write_lock.release();
+		return true;
+	}
+
+	// Something has gone wrong with engine refcounting.
+	// Protect user generally from this in `unlock()`,
+	// but this will detect any race conditions.
+	DEV_ASSERT(rc != UINT32_MAX);
+	return false;
+}
+
+bool Image::_read_unlock_refcounted() const {
+	uint32_t rc = read_lock_refcount.decrement();
+	if (rc == 0) {
+		read_lock.release();
+		return true;
+	}
+
+	// Something has gone wrong with engine refcounting.
+	// Protect user generally from this in `unlock()`,
+	// but this will detect any race conditions.
+	DEV_ASSERT(rc != UINT32_MAX);
+	return false;
+}
+
 void Image::lock() {
+	// By convention, Image will fail to lock when zero sized.
+	// (It could pass this, but there would be nothing to change,
+	// so usually it would be a user error.)
 	ERR_FAIL_COND(data.size() == 0);
-	write_lock = data.write();
+	_lock_refcounted();
 }
 
 void Image::unlock() {
-	write_lock.release();
+	// This should also catch cases where refcount has pre-maturely
+	// reached zero, and unlock is called again, because the write_lock
+	// will have been released.
+	ERR_FAIL_COND(!_is_locked());
+	_unlock_refcounted();
 }
 
 Color Image::get_pixelv(const Point2 &p_src) const {
@@ -2838,10 +2922,11 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 }
 
 Image::DetectChannels Image::get_detected_channels() {
+	// Consider ERR_FAIL if locked.
 	ERR_FAIL_COND_V(data.size() == 0, DETECTED_RGBA);
 	ERR_FAIL_COND_V(is_compressed(), DETECTED_RGBA);
 	bool r = false, g = false, b = false, a = false, c = false;
-	lock();
+	_lock_refcounted();
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < height; j++) {
 			Color col = get_pixel(i, j);
@@ -2865,7 +2950,7 @@ Image::DetectChannels Image::get_detected_channels() {
 		}
 	}
 
-	unlock();
+	_unlock_refcounted();
 
 	if (!c && !a) {
 		return DETECTED_L;
@@ -3070,14 +3155,14 @@ void Image::normalmap_to_xy() {
 
 	{
 		int len = data.size() / 4;
-		PoolVector<uint8_t>::Write wp = data.write();
-		unsigned char *data_ptr = wp.ptr();
+		unsigned char *data_ptr = _lock_refcounted();
 
 		for (int i = 0; i < len; i++) {
 			data_ptr[(i << 2) + 3] = data_ptr[(i << 2) + 0]; //x to w
 			data_ptr[(i << 2) + 0] = data_ptr[(i << 2) + 1]; //y to xz
 			data_ptr[(i << 2) + 2] = data_ptr[(i << 2) + 1];
 		}
+		_unlock_refcounted();
 	}
 
 	convert(Image::FORMAT_LA8);
@@ -3088,13 +3173,14 @@ Ref<Image> Image::rgbe_to_srgb() {
 		return Ref<Image>();
 	}
 
+	// Consider ERR_FAIL if locked.
 	ERR_FAIL_COND_V(format != FORMAT_RGBE9995, Ref<Image>());
 
 	Ref<Image> new_image;
 	new_image.instance();
 	new_image->create(width, height, false, Image::FORMAT_RGB8);
 
-	lock();
+	_lock_refcounted();
 
 	new_image->lock();
 
@@ -3104,7 +3190,7 @@ Ref<Image> Image::rgbe_to_srgb() {
 		}
 	}
 
-	unlock();
+	_unlock_refcounted();
 	new_image->unlock();
 
 	if (has_mipmaps()) {
@@ -3124,13 +3210,16 @@ void Image::bumpmap_to_normalmap(float bump_scale) {
 	result_image.resize(width * height * 4);
 
 	{
-		PoolVector<uint8_t>::Read rp = data.read();
+		ERR_FAIL_COND(data.size() == 0);
+		float *read_ptr = (float *)_read_lock_refcounted();
 		PoolVector<uint8_t>::Write wp = result_image.write();
 
-		ERR_FAIL_COND(!rp.ptr());
+		if (!read_ptr) {
+			_read_unlock_refcounted();
+			ERR_FAIL_NULL(read_ptr);
+		}
 
 		unsigned char *write_ptr = wp.ptr();
-		float *read_ptr = (float *)rp.ptr();
 
 		for (int ty = 0; ty < height; ty++) {
 			int py = ty + 1;
@@ -3158,6 +3247,7 @@ void Image::bumpmap_to_normalmap(float bump_scale) {
 				write_ptr[((ty * width + tx) << 2) + 3] = 255;
 			}
 		}
+		_read_unlock_refcounted();
 	}
 	format = FORMAT_RGBA8;
 	data = result_image;
@@ -3168,33 +3258,32 @@ void Image::srgb_to_linear() {
 		return;
 	}
 
-	ERR_FAIL_COND_MSG(_is_locked(), "Cannot srgb_to_linear when Image is locked.");
-
 	static const uint8_t srgb2lin[256] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 22, 22, 23, 23, 24, 24, 25, 26, 26, 27, 27, 28, 29, 29, 30, 31, 31, 32, 33, 33, 34, 35, 36, 36, 37, 38, 38, 39, 40, 41, 42, 42, 43, 44, 45, 46, 47, 47, 48, 49, 50, 51, 52, 53, 54, 55, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78, 80, 81, 82, 83, 84, 85, 87, 88, 89, 90, 92, 93, 94, 95, 97, 98, 99, 101, 102, 103, 105, 106, 107, 109, 110, 112, 113, 114, 116, 117, 119, 120, 122, 123, 125, 126, 128, 129, 131, 132, 134, 135, 137, 139, 140, 142, 144, 145, 147, 148, 150, 152, 153, 155, 157, 159, 160, 162, 164, 166, 167, 169, 171, 173, 175, 176, 178, 180, 182, 184, 186, 188, 190, 192, 193, 195, 197, 199, 201, 203, 205, 207, 209, 211, 213, 215, 218, 220, 222, 224, 226, 228, 230, 232, 235, 237, 239, 241, 243, 245, 248, 250, 252, 255 };
 
+	// Consider ERR_FAIL if locked.
 	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8);
 
 	if (format == FORMAT_RGBA8) {
 		int len = data.size() / 4;
-		PoolVector<uint8_t>::Write wp = data.write();
-		unsigned char *data_ptr = wp.ptr();
+		unsigned char *data_ptr = _lock_refcounted();
 
 		for (int i = 0; i < len; i++) {
 			data_ptr[(i << 2) + 0] = srgb2lin[data_ptr[(i << 2) + 0]];
 			data_ptr[(i << 2) + 1] = srgb2lin[data_ptr[(i << 2) + 1]];
 			data_ptr[(i << 2) + 2] = srgb2lin[data_ptr[(i << 2) + 2]];
 		}
+		_unlock_refcounted();
 
 	} else if (format == FORMAT_RGB8) {
 		int len = data.size() / 3;
-		PoolVector<uint8_t>::Write wp = data.write();
-		unsigned char *data_ptr = wp.ptr();
+		unsigned char *data_ptr = _lock_refcounted();
 
 		for (int i = 0; i < len; i++) {
 			data_ptr[(i * 3) + 0] = srgb2lin[data_ptr[(i * 3) + 0]];
 			data_ptr[(i * 3) + 1] = srgb2lin[data_ptr[(i * 3) + 1]];
 			data_ptr[(i * 3) + 2] = srgb2lin[data_ptr[(i * 3) + 2]];
 		}
+		_unlock_refcounted();
 	}
 }
 
@@ -3207,10 +3296,8 @@ void Image::premultiply_alpha() {
 		return; //not needed
 	}
 
-	ERR_FAIL_COND_MSG(_is_locked(), "Cannot premultiply_alpha when Image is locked.");
-
-	PoolVector<uint8_t>::Write wp = data.write();
-	unsigned char *data_ptr = wp.ptr();
+	// Consider ERR_FAIL if locked.
+	unsigned char *data_ptr = _lock_refcounted();
 
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
@@ -3221,6 +3308,8 @@ void Image::premultiply_alpha() {
 			ptr[2] = (uint16_t(ptr[2]) * uint16_t(ptr[3])) >> 8;
 		}
 	}
+
+	_unlock_refcounted();
 }
 
 void Image::fix_alpha_edges() {
@@ -3239,8 +3328,7 @@ void Image::fix_alpha_edges() {
 	PoolVector<uint8_t>::Read rp = dcopy.read();
 	const uint8_t *srcptr = rp.ptr();
 
-	PoolVector<uint8_t>::Write wp = data.write();
-	unsigned char *data_ptr = wp.ptr();
+	unsigned char *data_ptr = _lock_refcounted();
 
 	const int max_radius = 4;
 	const int alpha_threshold = 20;
@@ -3293,6 +3381,8 @@ void Image::fix_alpha_edges() {
 			}
 		}
 	}
+
+	_unlock_refcounted();
 }
 
 String Image::get_format_name(Format p_format) {
@@ -3420,7 +3510,10 @@ Image::Image() {
 }
 
 Image::~Image() {
-	if (_is_locked()) {
-		unlock();
+	while (_is_locked()) {
+		_unlock_refcounted();
+	}
+	while (_is_read_locked()) {
+		_read_unlock_refcounted();
 	}
 }
