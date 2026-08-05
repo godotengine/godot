@@ -406,14 +406,14 @@
 			<return type="Vector2" />
 			<param index="0" name="step" type="Vector2" />
 			<description>
-				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
+				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step], with halfway cases rounded up for a positive [param step] and down for a negative [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
 		<method name="snappedf" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="step" type="float" />
 			<description>
-				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
+				Returns a new vector with each component snapped to the nearest multiple of [param step], with halfway cases rounded up for a positive [param step] and down for a negative [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>
