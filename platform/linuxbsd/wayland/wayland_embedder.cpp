@@ -3054,7 +3054,7 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 			// MSG_WAITALL makes kernel block until 1.) full header is queued
 			// to peek 2.) error occurs or 3.) peer disconnects (instead of
 			// returning as soon as any data is available which was the default
-			// recvmsg behavour for stream sockets and caused short reads here).
+			// recvmsg behaviour for stream sockets and caused short reads here).
 			head_rec = recvmsg(p_fd, &head_msg, MSG_PEEK | MSG_WAITALL);
 
 			if (head_rec == -1 && errno == EINTR) {
@@ -3062,7 +3062,7 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 			}
 
 			if (head_rec > 0 && (size_t)head_rec != vec.iov_len) {
-				// MSG_WAITALL isnt a full protection against short reads as
+				// MSG_WAITALL isn't a full protection against short reads as
 				// signals can still cut it short. SImply try again by peeking
 				// as that restarts from queue head
 				continue;
@@ -3107,7 +3107,7 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 		full_msg.msg_iovlen = 1;
 
 		// Loop instead of trusting a single recvmsg to fill the whole
-		// message. A blocking SOCK_STREAM socket thats only guaranteed with
+		// message. A blocking SOCK_STREAM socket that's only guaranteed with
 		// MSG_WAITALL, and even that can still be cut short by a signal.
 		// SCM_RIGHTS data can arrive attached to whichever chunk carried it,
 		// so handling it on every iteration.
