@@ -737,6 +737,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				geom->geometry_instance->set_use_baked_light(instance->baked_light);
 				geom->geometry_instance->set_texel_scale(instance->lightmap_texel_scale);
 				geom->geometry_instance->set_baked_texel_scale(instance->lightmap_baked_texel_scale);
+				geom->geometry_instance->set_lightmap_size_hint(instance->lightmap_size_hint);
 				geom->geometry_instance->set_use_dynamic_gi(instance->dynamic_gi);
 				geom->geometry_instance->set_use_lightmap(RID(), instance->lightmap_uv_scale, instance->lightmap_slice_index);
 				geom->geometry_instance->set_instance_shader_uniforms_offset(instance->instance_uniforms.location());
@@ -1543,6 +1544,19 @@ void RendererSceneCull::instance_geometry_set_lightmap_texel_scale(RID p_instanc
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 		ERR_FAIL_NULL(geom->geometry_instance);
 		geom->geometry_instance->set_texel_scale(p_scale);
+	}
+}
+
+void RendererSceneCull::instance_geometry_set_lightmap_size_hint(RID p_instance, const Size2i &p_size) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL(instance);
+
+	instance->lightmap_size_hint = p_size;
+
+	if ((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK && instance->base_data) {
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
+		ERR_FAIL_NULL(geom->geometry_instance);
+		geom->geometry_instance->set_lightmap_size_hint(p_size);
 	}
 }
 
@@ -4458,6 +4472,7 @@ bool RendererSceneCull::free(RID p_rid) {
 		instance_attach_skeleton(p_rid, RID());
 		instance_geometry_set_lightmap_baked_texel_scale(p_rid, 1.0);
 		instance_geometry_set_lightmap_texel_scale(p_rid, 1.0);
+		instance_geometry_set_lightmap_size_hint(p_rid, Size2i());
 
 		instance->instance_uniforms.free(instance->self);
 		update_dirty_instances(); //in case something changed this

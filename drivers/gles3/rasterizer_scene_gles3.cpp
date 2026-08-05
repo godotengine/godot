@@ -1438,26 +1438,35 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 
 #ifdef DEBUG_ENABLED
 		if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY)) {
-			if (inst->data->base_type == RSE::INSTANCE_MESH && inst->data->use_baked_light && inst->lightmap_instance.is_valid()) {
-				GLES3::LightmapInstance *lightmap_instance = light_storage->get_lightmap_instance(inst->lightmap_instance);
-				RID lightmap_rid = lightmap_instance->lightmap;
-				GLES3::Lightmap *lightmap = light_storage->get_lightmap(lightmap_rid);
-				Vector2i lightmap_atlas_size = lightmap->light_texture_size;
-				float lightmap_texel_scale = light_storage->lightmap_get_texel_scale(lightmap_rid);
-				float lightmap_baked_texel_scale = light_storage->lightmap_get_baked_texel_scale(lightmap_rid);
-				float mesh_lightmap_texel_scale = inst->lightmap_texel_scale;
-				float mesh_lightmap_baked_texel_scale = inst->lightmap_baked_texel_scale;
+			if (inst->data->base_type == RSE::INSTANCE_MESH) {
+				Size2 lightmap_size;
+				if (inst->lightmap_instance.is_valid()) {
+					GLES3::LightmapInstance *lightmap_instance = light_storage->get_lightmap_instance(inst->lightmap_instance);
+					RID lightmap_rid = lightmap_instance->lightmap;
+					GLES3::Lightmap *lightmap = light_storage->get_lightmap(lightmap_rid);
+					lightmap_size = inst->lightmap_uv_scale.size * Size2(lightmap->light_texture_size) * light_storage->lightmap_get_texel_scale(lightmap_rid) * inst->lightmap_texel_scale / (light_storage->lightmap_get_baked_texel_scale(lightmap_rid) * inst->lightmap_baked_texel_scale);
+				} else {
+					lightmap_size = Size2(inst->data->lightmap_size_hint) * inst->lightmap_texel_scale;
+				}
 
-				Size2 lightmap_size = inst->lightmap_uv_scale.size * Size2(lightmap_atlas_size) * lightmap_texel_scale * mesh_lightmap_texel_scale / (lightmap_baked_texel_scale * mesh_lightmap_baked_texel_scale);
-
-				if (inst->data->lightmap_size_global_uniform_pos == -2) {
+				if (lightmap_size.x > 0.0 && lightmap_size.y > 0.0 && inst->data->lightmap_size_global_uniform_pos == -2) {
 					// Not allocated, try to allocate.
 					inst->data->lightmap_size_global_uniform_pos = RSG::material_storage->global_shader_parameters_unit_variable_allocate();
 				}
 
-				if (inst->data->lightmap_size_global_uniform_pos >= 0) {
+				if (lightmap_size.x > 0.0 && lightmap_size.y > 0.0 && inst->data->lightmap_size_global_uniform_pos >= 0) {
 					RSG::material_storage->global_shader_parameters_unit_variable_update(inst->data->lightmap_size_global_uniform_pos, lightmap_size);
+				} else if ((lightmap_size.x <= 0.0 || lightmap_size.y <= 0.0) && inst->data->lightmap_size_global_uniform_pos != -2) {
+					if (inst->data->lightmap_size_global_uniform_pos >= 0) {
+						RSG::material_storage->global_shader_parameters_unit_variable_free(inst->data->lightmap_size_global_uniform_pos);
+					}
+					inst->data->lightmap_size_global_uniform_pos = -2;
 				}
+			} else if (inst->data->lightmap_size_global_uniform_pos != -2) {
+				if (inst->data->lightmap_size_global_uniform_pos >= 0) {
+					RSG::material_storage->global_shader_parameters_unit_variable_free(inst->data->lightmap_size_global_uniform_pos);
+				}
+				inst->data->lightmap_size_global_uniform_pos = -2;
 			}
 		} else if (unlikely(inst->data->lightmap_size_global_uniform_pos != -2)) {
 			if (inst->data->lightmap_size_global_uniform_pos >= 0) {
@@ -3332,7 +3341,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			} else if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
 				material_data = default_material_data_ptr;
 				shader = material_data->shader_data;
-			} else if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY)) {
+			} else if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY && inst->data->lightmap_size_global_uniform_pos >= 0)) {
 				material_data = uv2_texel_density_material_data_ptr;
 				shader = material_data->shader_data;
 			} else {
@@ -4009,7 +4018,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::INSTANCE_OFFSET, uint32_t(inst->shader_uniforms_offset), shader->version, instance_variant, spec_constants);
 
 #ifdef DEBUG_ENABLED
-			if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY && inst->data->use_baked_light && inst->data->lightmap_size_global_uniform_pos >= 0)) {
+			if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_UV2_TEXEL_DENSITY && inst->data->lightmap_size_global_uniform_pos >= 0)) {
 				material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::INSTANCE_OFFSET, uint32_t(inst->data->lightmap_size_global_uniform_pos), shader->version, instance_variant, spec_constants);
 			}
 #endif
