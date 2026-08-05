@@ -76,6 +76,18 @@
 		<theme_item name="tick" data_type="icon" type="Texture2D">
 			The texture for the ticks, visible when [member Slider.tick_count] is greater than 0.
 		</theme_item>
+		<theme_item name="drag_ended_sound" data_type="sound" type="AudioStream">
+			Played when mouse or touch drag ends. This is also used by [SpinBox] when dragging over its arrows, or [ColorPicker] when dragging over its color wheel/rectangle.
+		</theme_item>
+		<theme_item name="drag_started_sound" data_type="sound" type="AudioStream">
+			Played when mouse or touch drag begins. This is also used by [SpinBox] when dragging over its arrows, or [ColorPicker] when dragging over its color wheel/rectangle.
+		</theme_item>
+		<theme_item name="focus_sound" data_type="sound" type="AudioStream">
+			Played when this [Slider] receives keyboard or gamepad-induced focus. Mouse or touch-induced focus does not play a focus sound.
+		</theme_item>
+		<theme_item name="value_changed_sound" data_type="sound" type="AudioStream">
+			Played when the value is changed through keyboard or gamepad input.
+		</theme_item>
 		<theme_item name="grabber_area" data_type="style" type="StyleBox">
 			The background of the area to the left or bottom of the grabber.
 		</theme_item>
