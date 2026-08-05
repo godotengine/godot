@@ -750,7 +750,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 		actions.usage_defines["TANGENT"] = "#define TANGENT_USED\n";
-		actions.usage_defines["BINORMAL"] = "@TANGENT";
+		actions.usage_defines["BINORMAL"] = "#define BINORMAL_USED";
 		actions.usage_defines["RIM"] = "#define LIGHT_RIM_USED\n";
 		actions.usage_defines["RIM_TINT"] = "@RIM";
 		actions.usage_defines["CLEARCOAT"] = "#define LIGHT_CLEARCOAT_USED\n";
