@@ -2039,7 +2039,7 @@ float EditorSettings::get_auto_display_scale() {
 	}
 #endif
 
-#if defined(MACOS_ENABLED) || defined(WINDOWS_ENABLED) || defined(ANDROID_ENABLED)
+#if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED) || defined(WINDOWS_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
 
@@ -2067,7 +2067,7 @@ float EditorSettings::get_auto_display_scale() {
 	}
 	return 1.0;
 
-#endif // defined(MACOS_ENABLED) || defined(WINDOWS_ENABLED) || defined(ANDROID_ENABLED)
+#endif // defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED) || defined(WINDOWS_ENABLED) || defined(ANDROID_ENABLED)
 }
 
 String EditorSettings::get_language() const {
