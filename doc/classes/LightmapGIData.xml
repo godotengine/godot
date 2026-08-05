@@ -14,15 +14,22 @@
 			<param index="0" name="path" type="NodePath" />
 			<param index="1" name="uv_scale" type="Rect2" />
 			<param index="2" name="slice_index" type="int" />
-			<param index="3" name="sub_instance" type="int" />
+			<param index="3" name="sub_instance" type="int" default="-1" />
+			<param index="4" name="baked_texel_scale" type="float" default="1.0" />
 			<description>
-				Adds an object that is considered baked within this [LightmapGIData].
+				Adds an object that is considered baked within this [LightmapGIData]. [param baked_texel_scale] is the object's texel scale at bake time.
 			</description>
 		</method>
 		<method name="clear_users">
 			<return type="void" />
 			<description>
 				Clear all objects that are considered baked within this [LightmapGIData].
+			</description>
+		</method>
+		<method name="get_baked_texel_scale" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the global texel scale used to bake this lightmap data.
 			</description>
 		</method>
 		<method name="get_user_count" qualifiers="const">
@@ -42,6 +49,20 @@
 			<return type="bool" />
 			<description>
 				If [code]true[/code], lightmaps were baked with directional information. See also [member LightmapGI.directional].
+			</description>
+		</method>
+		<method name="set_baked_texel_scale">
+			<return type="void" />
+			<param index="0" name="baked_texel_scale" type="float" />
+			<description>
+				Sets the global texel scale used to bake this lightmap data.
+			</description>
+		</method>
+		<method name="set_texel_scale">
+			<return type="void" />
+			<param index="0" name="baked_texel_scale" type="float" />
+			<description>
+				Sets the current global texel scale used when displaying the UV2 texel density debug view.
 			</description>
 		</method>
 		<method name="set_uses_spherical_harmonics">

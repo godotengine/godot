@@ -128,6 +128,12 @@ void RenderGeometryInstanceBase::set_texel_scale(float p_scale) {
 	_mark_dirty();
 }
 
+void RenderGeometryInstanceBase::set_lightmap_size_hint(const Size2i &p_size) {
+	data->lightmap_size_hint = p_size;
+
+	_mark_dirty();
+}
+
 void RenderGeometryInstanceBase::set_use_dynamic_gi(bool p_enable) {
 	data->use_dynamic_gi = p_enable;
 

@@ -806,6 +806,71 @@ Size2i Mesh::get_lightmap_size_hint() const {
 	return lightmap_size_hint;
 }
 
+Size2i Mesh::get_lightmap_size_hint_or_estimate() const {
+	if (lightmap_size_hint != Size2i()) {
+		return lightmap_size_hint;
+	}
+	if (estimated_lightmap_size_hint_valid) {
+		return estimated_lightmap_size_hint;
+	}
+
+	double surface_area = 0.0;
+	double uv_area = 0.0;
+
+	for (int surface = 0; surface < get_surface_count(); surface++) {
+		if (surface_get_primitive_type(surface) != PRIMITIVE_TRIANGLES || !(surface_get_format(surface) & ARRAY_FORMAT_TEX_UV2)) {
+			continue;
+		}
+
+		Array arrays = surface_get_arrays(surface);
+		PackedVector3Array vertices = arrays[ARRAY_VERTEX];
+		PackedVector2Array uv2 = arrays[ARRAY_TEX_UV2];
+		PackedInt32Array indices = arrays[ARRAY_INDEX];
+		if (vertices.is_empty() || uv2.size() != vertices.size()) {
+			continue;
+		}
+
+		const int face_count = indices.is_empty() ? vertices.size() / 3 : indices.size() / 3;
+		for (int face = 0; face < face_count; face++) {
+			int vertex_indices[3];
+			bool valid_face = true;
+			for (int vertex = 0; vertex < 3; vertex++) {
+				const int index = indices.is_empty() ? face * 3 + vertex : indices[face * 3 + vertex];
+				if (index < 0 || index >= vertices.size()) {
+					valid_face = false;
+					break;
+				}
+				vertex_indices[vertex] = index;
+			}
+			if (!valid_face) {
+				continue;
+			}
+
+			const Vector3 edge_1 = vertices[vertex_indices[1]] - vertices[vertex_indices[0]];
+			const Vector3 edge_2 = vertices[vertex_indices[2]] - vertices[vertex_indices[0]];
+			surface_area += edge_1.cross(edge_2).length() * 0.5;
+
+			const Vector2 uv_edge_1 = uv2[vertex_indices[1]] - uv2[vertex_indices[0]];
+			const Vector2 uv_edge_2 = uv2[vertex_indices[2]] - uv2[vertex_indices[0]];
+			uv_area += Math::abs(uv_edge_1.cross(uv_edge_2)) * 0.5;
+		}
+	}
+
+	if (surface_area <= 0.0 || uv_area <= 0.0) {
+		estimated_lightmap_size_hint = Size2i();
+		estimated_lightmap_size_hint_valid = true;
+		return estimated_lightmap_size_hint;
+	}
+
+	// Match the fallback density used by Godot 3.x when no imported size hint
+	// was available. Per-instance and LightmapGI texel scales are applied later.
+	constexpr double default_texels_per_unit = 16.0;
+	const int size = CLAMP(int(Math::ceil(Math::sqrt(surface_area * default_texels_per_unit / uv_area))), 2, 4096);
+	estimated_lightmap_size_hint = Size2i(size, size);
+	estimated_lightmap_size_hint_valid = true;
+	return estimated_lightmap_size_hint;
+}
+
 Ref<Resource> Mesh::create_placeholder() const {
 	Ref<PlaceholderMesh> placeholder;
 	placeholder.instantiate();
@@ -915,6 +980,8 @@ void Mesh::_bind_methods() {
 void Mesh::clear_cache() const {
 	triangle_mesh.unref();
 	debug_lines.clear();
+	estimated_lightmap_size_hint = Size2i();
+	estimated_lightmap_size_hint_valid = false;
 }
 
 #ifndef PHYSICS_3D_DISABLED
@@ -1979,12 +2046,14 @@ String ArrayMesh::surface_get_name(int p_idx) const {
 void ArrayMesh::surface_update_vertex_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
 	ERR_FAIL_INDEX(p_surface, surfaces.size());
 	RS::get_singleton()->mesh_surface_update_vertex_region(mesh, p_surface, p_offset, p_data);
+	clear_cache();
 	emit_changed();
 }
 
 void ArrayMesh::surface_update_attribute_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
 	ERR_FAIL_INDEX(p_surface, surfaces.size());
 	RS::get_singleton()->mesh_surface_update_attribute_region(mesh, p_surface, p_offset, p_data);
+	clear_cache();
 	emit_changed();
 }
 
