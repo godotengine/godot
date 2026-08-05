@@ -671,12 +671,12 @@ void Control::set_drag_forwarding(Control *p_target) {
 	if (p_target) {
 		data.drag_owner = p_target->get_instance_id();
 	} else {
-		data.drag_owner = 0;
+		data.drag_owner = ObjectID();
 	}
 }
 
 Variant Control::get_drag_data(const Point2 &p_point) {
-	if (data.drag_owner) {
+	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
@@ -698,7 +698,7 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 }
 
 bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (data.drag_owner) {
+	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
@@ -720,7 +720,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 }
 
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
-	if (data.drag_owner) {
+	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
 			Control *c = Object::cast_to<Control>(obj);
@@ -2084,7 +2084,7 @@ void Control::_modal_stack_remove() {
 
 	get_viewport()->_gui_remove_from_modal_stack(element, data.modal_prev_focus_owner);
 
-	data.modal_prev_focus_owner = 0;
+	data.modal_prev_focus_owner = ObjectID();
 }
 
 void Control::_propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool p_assign) {
@@ -2978,7 +2978,6 @@ Control::Control() {
 	data.rotation = 0;
 	data.parent_canvas_item = nullptr;
 	data.scale = Vector2(1, 1);
-	data.drag_owner = 0;
 	data.modal_frame = 0;
 	data.block_minimum_size_adjust = false;
 	data.disable_visibility_clip = false;
@@ -2993,7 +2992,6 @@ Control::Control() {
 		data.margin[i] = 0;
 	}
 	data.focus_mode = FOCUS_NONE;
-	data.modal_prev_focus_owner = 0;
 
 	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 }
