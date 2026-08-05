@@ -153,7 +153,7 @@ public:
 
 	FUNCRID(mesh)
 
-	FUNC10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t>> &, const Vector<AABB> &)
+	FUNC10(mesh_add_surface, RID, uint32_t, PrimitiveType, PoolVector<uint8_t>, int, PoolVector<uint8_t>, int, const AABB &, const Vector<PoolVector<uint8_t>> &, const Vector<AABB> &)
 
 	FUNC2(mesh_set_blend_shape_count, RID, int)
 	FUNC1RC(int, mesh_get_blend_shape_count, RID)
@@ -161,7 +161,7 @@ public:
 	FUNC2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
 	FUNC1RC(BlendShapeMode, mesh_get_blend_shape_mode, RID)
 
-	FUNC4(mesh_surface_update_region, RID, int, int, const PoolVector<uint8_t> &)
+	FUNC4(mesh_surface_update_region, RID, int, int, PoolVector<uint8_t>)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
@@ -208,9 +208,9 @@ public:
 	FUNC2RC(Color, multimesh_instance_get_color, RID, int)
 	FUNC2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
-	FUNC2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+	FUNC2(multimesh_set_as_bulk_array, RID, PoolVector<float>)
 
-	FUNC3(multimesh_set_as_bulk_array_interpolated, RID, const PoolVector<float> &, const PoolVector<float> &)
+	FUNC3(multimesh_set_as_bulk_array_interpolated, RID, PoolVector<float>, PoolVector<float>)
 	FUNC2(multimesh_set_physics_interpolated, RID, bool)
 	FUNC2(multimesh_set_physics_interpolation_quality, RID, MultimeshPhysicsInterpolationQuality)
 	FUNC2(multimesh_instance_reset_physics_interpolation, RID, int)
@@ -321,7 +321,7 @@ public:
 	FUNC2(gi_probe_set_compress, RID, bool)
 	FUNC1RC(bool, gi_probe_is_compressed, RID)
 
-	FUNC2(gi_probe_set_dynamic_data, RID, const PoolVector<int> &)
+	FUNC2(gi_probe_set_dynamic_data, RID, PoolVector<int>)
 	FUNC1RC(PoolVector<int>, gi_probe_get_dynamic_data, RID)
 
 	/* LIGHTMAP CAPTURE */
@@ -331,7 +331,7 @@ public:
 	FUNC2(lightmap_capture_set_bounds, RID, const AABB &)
 	FUNC1RC(AABB, lightmap_capture_get_bounds, RID)
 
-	FUNC2(lightmap_capture_set_octree, RID, const PoolVector<uint8_t> &)
+	FUNC2(lightmap_capture_set_octree, RID, PoolVector<uint8_t>)
 	FUNC1RC(PoolVector<uint8_t>, lightmap_capture_get_octree, RID)
 	FUNC2(lightmap_capture_set_octree_cell_transform, RID, const Transform &)
 	FUNC1RC(Transform, lightmap_capture_get_octree_cell_transform, RID)
@@ -688,8 +688,8 @@ public:
 	FUNC2(canvas_light_occluder_transform_physics_interpolation, RID, const Transform2D &)
 
 	FUNCRID(canvas_occluder_polygon)
-	FUNC3(canvas_occluder_polygon_set_shape, RID, const PoolVector<Vector2> &, bool)
-	FUNC2(canvas_occluder_polygon_set_shape_as_lines, RID, const PoolVector<Vector2> &)
+	FUNC3(canvas_occluder_polygon_set_shape, RID, PoolVector<Vector2>, bool)
+	FUNC2(canvas_occluder_polygon_set_shape_as_lines, RID, PoolVector<Vector2>)
 
 	FUNC2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)
 

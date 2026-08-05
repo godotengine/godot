@@ -102,7 +102,6 @@ extern void unregister_variant_methods();
 
 void register_core_types() {
 	OS::get_singleton()->benchmark_begin_measure("register_core_types");
-	MemoryPool::setup();
 
 	StringName::setup();
 
@@ -323,8 +322,6 @@ void unregister_core_types() {
 	ResourceCache::clear();
 	CoreStringNames::free();
 	StringName::cleanup();
-
-	MemoryPool::cleanup();
 
 	OS::get_singleton()->benchmark_end_measure("unregister_core_types");
 }
