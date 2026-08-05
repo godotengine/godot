@@ -646,9 +646,8 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (is_line_folded(line)) {
 					int wrap_index = get_line_wrap_index_at_column(line, col);
 					if (wrap_index == get_line_wrap_count(line)) {
-						int eol_icon_width = theme_cache.folded_eol_icon->get_width();
-						int left_margin = get_total_gutter_width() + eol_icon_width + get_line_width(line, wrap_index) - get_h_scroll();
-						if (mpos.x > left_margin && mpos.x <= left_margin + eol_icon_width + 3) {
+						Rect2 rect = _get_folded_eol_icon_rect(get_line_width(line, wrap_index));
+						if (mpos.x > rect.position.x && mpos.x <= rect.position.x + rect.size.x + 3) {
 							unfold_line(line);
 							return;
 						}
@@ -928,9 +927,8 @@ Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	if (line != -1 && is_line_folded(line)) {
 		int wrap_index = get_line_wrap_index_at_column(line, col);
 		if (wrap_index == get_line_wrap_count(line)) {
-			int eol_icon_width = theme_cache.folded_eol_icon->get_width();
-			int left_margin = get_total_gutter_width() + eol_icon_width + get_line_width(line, wrap_index) - get_h_scroll();
-			if (p_pos.x > left_margin && p_pos.x <= left_margin + eol_icon_width + 3) {
+			Rect2 rect = _get_folded_eol_icon_rect(get_line_width(line, wrap_index));
+			if (p_pos.x > rect.position.x && p_pos.x <= rect.position.x + rect.size.x + 3) {
 				return CURSOR_POINTING_HAND;
 			}
 		}
