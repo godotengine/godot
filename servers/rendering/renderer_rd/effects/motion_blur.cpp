@@ -298,7 +298,8 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 
 		motion_blur.blur_push_constant.motion_blur_intensity = intensity;
 		motion_blur.blur_push_constant.sample_count = sample_count;
-		motion_blur.blur_push_constant.frame = Engine::get_singleton()->get_frames_drawn() % 8;
+		// from https://blog.demofox.org/2022/01/01/interleaved-gradient-noise-a-different-kind-of-low-discrepancy-sequence/ (section: Derivation Of IGN And Extensions) for animation of the noise.
+		motion_blur.blur_push_constant.frame = Engine::get_singleton()->get_frames_drawn() % 64;
 		motion_blur.blur_push_constant.clamp_velocities_to_tile = clamp_velocities_to_tile ? 1 : 0;
 		motion_blur.blur_push_constant.transparent_bg = p_transparent_bg ? 1 : 0;
 	}

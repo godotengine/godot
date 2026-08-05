@@ -61,10 +61,11 @@ float soft_compare(float a, float b, float sze) {
 }
 // ----------------------------------------------------------
 
-// from https://www.shadertoy.com/view/ftKfzc
+// from https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/
+// and https://blog.demofox.org/2022/01/01/interleaved-gradient-noise-a-different-kind-of-low-discrepancy-sequence/ (section: Derivation Of IGN And Extensions) for animation of the noise.
 // ----------------------------------------------------------
 float interleaved_gradient_noise(vec2 uv) {
-	uv += float(params.frame) * (vec2(47, 17) * 0.695);
+	uv += float(params.frame) * 5.588238;
 
 	vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
 
