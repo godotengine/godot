@@ -179,6 +179,8 @@
 /modules/openxr/                              @godotengine/xr
 /modules/openxr/doc_classes/                  @godotengine/xr @godotengine/documentation
 /modules/openxr/editor/                       @godotengine/xr @godotengine/editor
+/modules/visionos_xr/                         @godotengine/xr
+/modules/visionos_xr/doc_classes/             @godotengine/xr @godotengine/documentation
 /modules/webxr/                               @godotengine/xr
 /modules/webxr/doc_classes/                   @godotengine/xr @godotengine/documentation
 
