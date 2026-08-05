@@ -40,21 +40,12 @@
 Path3D::Path3D() {
 	SceneTree *st = SceneTree::get_singleton();
 	if (st && st->is_debugging_paths_hint()) {
-		debug_instance = RS::get_singleton()->instance_create();
-		set_notify_transform(true);
-		_update_debug_mesh();
+		_create_debug_mesh();
 	}
 }
 
 Path3D::~Path3D() {
-	if (debug_instance.is_valid()) {
-		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free_rid(debug_instance);
-	}
-	if (debug_mesh.is_valid()) {
-		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RS::get_singleton()->free_rid(debug_mesh->get_rid());
-	}
+	_free_debug_mesh();
 }
 
 void Path3D::set_update_callback(Callable p_callback) {
@@ -64,17 +55,17 @@ void Path3D::set_update_callback(Callable p_callback) {
 void Path3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			SceneTree *st = SceneTree::get_singleton();
-			if (st && st->is_debugging_paths_hint()) {
-				_update_debug_mesh();
-			}
+			_update_debug_mesh();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			SceneTree *st = SceneTree::get_singleton();
-			if (st && st->is_debugging_paths_hint()) {
+			if (debug_instance.is_valid()) {
 				RS::get_singleton()->instance_set_visible(debug_instance, false);
 			}
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_debug_mesh();
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -86,17 +77,50 @@ void Path3D::_notification(int p_what) {
 				update_callback.call();
 			}
 		} break;
+
+		case NOTIFICATION_DEBUG_PATHS_HINT_CHANGED: {
+			SceneTree *st = SceneTree::get_singleton();
+			if (st && st->is_debugging_paths_hint()) {
+				_create_debug_mesh();
+			} else {
+				_free_debug_mesh();
+			}
+		} break;
 	}
 }
 
-void Path3D::_update_debug_mesh() {
-	SceneTree *st = SceneTree::get_singleton();
-	if (!(st && st->is_debugging_paths_hint())) {
-		return;
+void Path3D::_create_debug_mesh() {
+	if (debug_instance.is_null()) {
+		debug_instance = RS::get_singleton()->instance_create();
 	}
 
 	if (debug_mesh.is_null()) {
 		debug_mesh.instantiate();
+	}
+
+	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh->get_rid());
+	set_notify_transform(true);
+
+	_update_debug_mesh();
+}
+
+void Path3D::_free_debug_mesh() {
+	if (debug_instance.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
+		RS::get_singleton()->free_rid(debug_instance);
+		debug_instance = RID();
+	}
+	if (debug_mesh.is_valid()) {
+		debug_mesh.unref();
+	}
+}
+
+void Path3D::_update_debug_mesh() {
+	if (debug_instance.is_null()) {
+		return;
+	}
+	if (!is_inside_tree()) {
+		return;
 	}
 
 	if (curve.is_null()) {
@@ -169,12 +193,9 @@ void Path3D::_update_debug_mesh() {
 	debug_mesh->surface_set_material(0, debug_material);
 	debug_mesh->surface_set_material(1, debug_material);
 
-	RS::get_singleton()->instance_set_base(debug_instance, debug_mesh->get_rid());
-	if (is_inside_tree()) {
-		RS::get_singleton()->instance_set_scenario(debug_instance, get_world_3d()->get_scenario());
-		RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
-		RS::get_singleton()->instance_set_visible(debug_instance, is_visible_in_tree());
-	}
+	RS::get_singleton()->instance_set_scenario(debug_instance, get_world_3d()->get_scenario());
+	RS::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
+	RS::get_singleton()->instance_set_visible(debug_instance, is_visible_in_tree());
 }
 
 void Path3D::set_debug_custom_color(const Color &p_color) {
@@ -232,10 +253,8 @@ void Path3D::_curve_changed() {
 			}
 		}
 	}
-	SceneTree *st = SceneTree::get_singleton();
-	if (st && st->is_debugging_paths_hint()) {
-		_update_debug_mesh();
-	}
+
+	_update_debug_mesh();
 }
 
 void Path3D::set_curve(const Ref<Curve3D> &p_curve) {

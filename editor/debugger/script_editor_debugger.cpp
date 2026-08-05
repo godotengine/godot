@@ -1719,6 +1719,11 @@ void ScriptEditorDebugger::set_debug_collisions(bool p_enable) {
 	_put_msg("scene:set_debug_collisions", msg);
 }
 
+void ScriptEditorDebugger::set_debug_paths(bool p_enable) {
+	Array msg = { p_enable };
+	_put_msg("scene:set_debug_paths", msg);
+}
+
 CameraOverride ScriptEditorDebugger::get_camera_override() const {
 	return camera_override;
 }
