@@ -3054,7 +3054,7 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 			// MSG_WAITALL makes kernel block until 1.) full header is queued
 			// to peek 2.) error occurs or 3.) peer disconnects (instead of
 			// returning as soon as any data is available which was the default
-			// recvmsg behaviour for stream sockets and caused short reads here).
+			// recvmsg behavior for stream sockets and caused short reads here).
 			head_rec = recvmsg(p_fd, &head_msg, MSG_PEEK | MSG_WAITALL);
 
 			if (head_rec == -1 && errno == EINTR) {
