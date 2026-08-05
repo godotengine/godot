@@ -19,7 +19,7 @@
 #endif
 #endif
 
-#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
+#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(BINORMAL_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
 #define TANGENT_USED
 #endif
 

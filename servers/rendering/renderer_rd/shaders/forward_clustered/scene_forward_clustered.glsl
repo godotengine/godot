@@ -448,6 +448,10 @@ void vertex_shader(vec3 vertex_input,
 	float point_size = 1.0;
 #endif
 
+#ifdef BINORMAL_USED
+	vec3 binormal = normalize(cross(normal_highp, tangent) * tangent_input.w);
+#endif
+
 	{
 #CODE : VERTEX
 	}
@@ -788,6 +792,9 @@ void main() {
 #endif
 			prev_vertex);
 
+#if defined(NORMAL_USED) || defined(TANGENT_USED)
+	prev_tangent.w *= bool(instances.data[instance_index].flags & INSTANCE_FLAGS_POSITIVE_DET) ? 1.0 : -1.0;
+#endif
 	global_time = scene_data_block.prev_data.time;
 	vertex_shader(prev_vertex,
 #ifdef NORMAL_USED
@@ -828,6 +835,10 @@ void main() {
 			vertex);
 
 	// Current vertex.
+
+#if defined(NORMAL_USED) || defined(TANGENT_USED)
+	tangent.w *= bool(instances.data[instance_index].flags & INSTANCE_FLAGS_POSITIVE_DET) ? 1.0 : -1.0;
+#endif
 	global_time = scene_data_block.data.time;
 	vertex_shader(vertex,
 #ifdef NORMAL_USED

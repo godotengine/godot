@@ -972,8 +972,8 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 
 		if (inst->non_uniform_scale) {
 			flags |= INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE;
-			flags |= inst->mirror ? 0 : INSTANCE_DATA_FLAG_POSITIVE_DET;
 		}
+		flags |= inst->mirror ? 0 : INSTANCE_DATA_FLAG_POSITIVE_DET;
 		bool uses_lightmap = false;
 		bool uses_gi = false;
 		bool uses_motion = false;
