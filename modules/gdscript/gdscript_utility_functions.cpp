@@ -105,7 +105,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		int type = *p_args[1];
 		DEBUG_VALIDATE_ARG_CUSTOM(1, Variant::INT, type < 0 || type >= Variant::VARIANT_MAX,
-				RTR("Invalid type argument to convert(), use TYPE_* constants."));
+				"Invalid type argument for convert(), use TYPE_* constants.");
 
 		Variant::construct(Variant::Type(type), *r_ret, p_args, 1, r_error);
 	}
@@ -122,7 +122,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		DEBUG_VALIDATE_ARG_TYPE(0, Variant::INT);
 		const int64_t code = *p_args[0];
 		VALIDATE_ARG_CUSTOM(0, Variant::INT, code <= 0 || (code & 0xFFFFF800) == 0xD800 || code > 0x10FFFF,
-				vformat(RTR("%d is not a valid character code."), code));
+				vformat("%d is not a valid character code.", code));
 		*r_ret = String::chr(code);
 	}
 
@@ -130,7 +130,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		DEBUG_VALIDATE_ARG_COUNT(1, 1);
 		DEBUG_VALIDATE_ARG_TYPE(0, Variant::STRING);
 		const String string = *p_args[0];
-		VALIDATE_ARG_CUSTOM(0, Variant::STRING, string.length() != 1, RTR("Expected a string of length 1 (a character)."));
+		VALIDATE_ARG_CUSTOM(0, Variant::STRING, string.length() != 1, "Expected a string of length 1 (a character).");
 		*r_ret = string.get(0);
 	}
 
@@ -148,9 +148,9 @@ struct GDScriptUtilityFunctionsDefinitions {
 					return;
 				}
 
-				GDFUNC_FAIL_COND_MSG(count > INT32_MAX, RTR("Range too big."));
+				GDFUNC_FAIL_COND_MSG(count > INT32_MAX, "Range too big.");
 				Error err = arr.resize(count);
-				GDFUNC_FAIL_COND_MSG(err != OK, RTR("Cannot resize array."));
+				GDFUNC_FAIL_COND_MSG(err != OK, "Cannot resize array.");
 
 				for (int64_t i = 0; i < count; i++) {
 					arr[i] = i;
@@ -171,9 +171,9 @@ struct GDScriptUtilityFunctionsDefinitions {
 					return;
 				}
 
-				GDFUNC_FAIL_COND_MSG(to - from > INT32_MAX, RTR("Range too big."));
+				GDFUNC_FAIL_COND_MSG(to - from > INT32_MAX, "Range too big.");
 				Error err = arr.resize(to - from);
-				GDFUNC_FAIL_COND_MSG(err != OK, RTR("Cannot resize array."));
+				GDFUNC_FAIL_COND_MSG(err != OK, "Cannot resize array.");
 
 				for (int64_t i = from; i < to; i++) {
 					arr[i - from] = i;
@@ -190,7 +190,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 				int64_t to = *p_args[1];
 				int64_t incr = *p_args[2];
 
-				VALIDATE_ARG_CUSTOM(2, Variant::INT, incr == 0, RTR("Step argument is zero!"));
+				VALIDATE_ARG_CUSTOM(2, Variant::INT, incr == 0, "Step argument is 0!");
 
 				Array arr;
 				if (from >= to && incr > 0) {
@@ -210,9 +210,9 @@ struct GDScriptUtilityFunctionsDefinitions {
 					count = Math::division_round_up(from - to, -incr);
 				}
 
-				GDFUNC_FAIL_COND_MSG(count > INT32_MAX, RTR("Range too big."));
+				GDFUNC_FAIL_COND_MSG(count > INT32_MAX, "Range too big.");
 				Error err = arr.resize(count);
-				GDFUNC_FAIL_COND_MSG(err != OK, RTR("Cannot resize array."));
+				GDFUNC_FAIL_COND_MSG(err != OK, "Cannot resize array.");
 
 				if (incr > 0) {
 					int64_t idx = 0;
@@ -256,12 +256,12 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		VALIDATE_ARG_CUSTOM(0, Variant::OBJECT,
 				!obj->get_script_instance() || obj->get_script_instance()->get_language() != GDScriptLanguage::get_singleton(),
-				RTR("Not a script with an instance."));
+				"Not a script with an instance.");
 
 		GDScriptInstance *inst = static_cast<GDScriptInstance *>(obj->get_script_instance());
 
 		Ref<GDScript> base = inst->get_script();
-		VALIDATE_ARG_CUSTOM(0, Variant::OBJECT, base.is_null(), RTR("Not based on a script."));
+		VALIDATE_ARG_CUSTOM(0, Variant::OBJECT, base.is_null(), "Not based on a script.");
 
 		GDScript *p = base.ptr();
 		String path = p->get_script_path();
@@ -273,7 +273,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 		sname.reverse();
 
-		VALIDATE_ARG_CUSTOM(0, Variant::OBJECT, !path.is_resource_file(), RTR("Not based on a resource file."));
+		VALIDATE_ARG_CUSTOM(0, Variant::OBJECT, !path.is_resource_file(), "Not based on a resource file.");
 
 		NodePath cp(sname, Vector<StringName>(), false);
 
@@ -296,13 +296,13 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		Dictionary d = *p_args[0];
 
-		VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, !d.has("@path"), RTR("Invalid instance dictionary format (missing @path)."));
+		VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, !d.has("@path"), "Invalid instance dictionary format (missing @path).");
 
 		Ref<Script> scr = ResourceLoader::load(d["@path"]);
-		VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, scr.is_null(), RTR("Invalid instance dictionary format (can't load script at @path)."));
+		VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, scr.is_null(), "Invalid instance dictionary format (can't load script at @path).");
 
 		Ref<GDScript> gdscr = scr;
-		VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, gdscr.is_null(), RTR("Invalid instance dictionary format (invalid script at @path)."));
+		VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, gdscr.is_null(), "Invalid instance dictionary format (invalid script at @path).");
 
 		NodePath sub;
 		if (d.has("@subpath")) {
@@ -311,12 +311,12 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		for (int i = 0; i < sub.get_name_count(); i++) {
 			gdscr = gdscr->subclasses[sub.get_name(i)];
-			VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, gdscr.is_null(), RTR("Invalid instance dictionary (invalid subclasses)."));
+			VALIDATE_ARG_CUSTOM(0, Variant::DICTIONARY, gdscr.is_null(), "Invalid instance dictionary (invalid subclasses).");
 		}
 
 		*r_ret = gdscr->_new(nullptr, -1 /* skip initializer */, r_error);
 		if (r_error.error != Callable::CallError::CALL_OK) {
-			*r_ret = RTR("Cannot instantiate GDScript class.");
+			*r_ret = "Cannot instantiate GDScript class.";
 			return;
 		}
 
@@ -444,7 +444,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 				*r_ret = d.size();
 			} break;
 			default: {
-				*r_ret = vformat(RTR("Value of type '%s' can't provide a length."), Variant::get_type_name(p_args[0]->get_type()));
+				*r_ret = vformat("Value of type '%s' can't provide a length.", Variant::get_type_name(p_args[0]->get_type()));
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::NIL;
@@ -458,20 +458,20 @@ struct GDScriptUtilityFunctionsDefinitions {
 		if (p_args[1]->get_type() == Variant::INT) {
 			int builtin_type = *p_args[1];
 			DEBUG_VALIDATE_ARG_CUSTOM(1, Variant::NIL, builtin_type < 0 || builtin_type >= Variant::VARIANT_MAX,
-					RTR("Invalid type argument for is_instance_of(), use TYPE_* constants for built-in types."));
+					"Invalid type argument for is_instance_of(), use TYPE_* constants for built-in types.");
 			*r_ret = p_args[0]->get_type() == builtin_type;
 			return;
 		}
 
 		bool was_type_freed = false;
 		Object *type_object = p_args[1]->get_validated_object_with_check(was_type_freed);
-		VALIDATE_ARG_CUSTOM(1, Variant::NIL, was_type_freed, RTR("Type argument is a previously freed instance."));
+		VALIDATE_ARG_CUSTOM(1, Variant::NIL, was_type_freed, "Type argument is a previously freed instance.");
 		VALIDATE_ARG_CUSTOM(1, Variant::NIL, !type_object,
-				RTR("Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class or a script."));
+				"Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class, or a script.");
 
 		bool was_value_freed = false;
 		Object *value_object = p_args[0]->get_validated_object_with_check(was_value_freed);
-		VALIDATE_ARG_CUSTOM(0, Variant::NIL, was_value_freed, RTR("Value argument is a previously freed instance."));
+		VALIDATE_ARG_CUSTOM(0, Variant::NIL, was_value_freed, "Value argument is a previously freed instance.");
 		if (!value_object) {
 			*r_ret = false;
 			return;
@@ -500,7 +500,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 			return;
 		}
 
-		*r_ret = RTR("Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class or a script.");
+		*r_ret = "Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class, or a script.";
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
 		r_error.expected = Variant::NIL;
