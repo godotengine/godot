@@ -361,7 +361,21 @@ bool BaseButton::is_hovered() const {
 	return status.hovering;
 }
 
+bool BaseButton::has_point(const Point2 &p_point) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	bool ret;
+	if (GDVIRTUAL_CALL(_has_point, p_point, ret)) {
+		return ret;
+	}
+	Rect2 rect = Rect2(Point2(), get_size()).grow(theme_cache.click_margin);
+	return rect.has_area() && rect.has_point(p_point);
+}
+
 BaseButton::DrawMode BaseButton::get_draw_mode() const {
+	if (custom_draw_mode != DRAW_AUTO) {
+		return custom_draw_mode;
+	}
+
 	if (status.disabled) {
 		return DRAW_DISABLED;
 	}
@@ -396,14 +410,17 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	}
 }
 
-bool BaseButton::has_point(const Point2 &p_point) const {
-	ERR_READ_THREAD_GUARD_V(false);
-	bool ret;
-	if (GDVIRTUAL_CALL(_has_point, p_point, ret)) {
-		return ret;
+void BaseButton::set_custom_draw_mode(DrawMode p_draw_mode) {
+	if (custom_draw_mode == p_draw_mode) {
+		return;
 	}
-	Rect2 rect = Rect2(Point2(), get_size()).grow(theme_cache.click_margin);
-	return rect.has_area() && rect.has_point(p_point);
+
+	custom_draw_mode = p_draw_mode;
+	queue_redraw();
+}
+
+BaseButton::DrawMode BaseButton::get_custom_draw_mode() const {
+	return custom_draw_mode;
 }
 
 void BaseButton::set_toggle_mode(bool p_on) {
@@ -605,8 +622,13 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_mask", "mask"), &BaseButton::set_button_mask);
 	ClassDB::bind_method(D_METHOD("get_button_mask"), &BaseButton::get_button_mask);
 	ClassDB::bind_method(D_METHOD("get_draw_mode"), &BaseButton::get_draw_mode);
+
+	ClassDB::bind_method(D_METHOD("set_custom_draw_mode", "draw_mode"), &BaseButton::set_custom_draw_mode);
+	ClassDB::bind_method(D_METHOD("get_custom_draw_mode"), &BaseButton::get_custom_draw_mode);
+
 	ClassDB::bind_method(D_METHOD("set_keep_pressed_outside", "enabled"), &BaseButton::set_keep_pressed_outside);
 	ClassDB::bind_method(D_METHOD("is_keep_pressed_outside"), &BaseButton::is_keep_pressed_outside);
+
 	ClassDB::bind_method(D_METHOD("set_shortcut_feedback", "enabled"), &BaseButton::set_shortcut_feedback);
 	ClassDB::bind_method(D_METHOD("is_shortcut_feedback"), &BaseButton::is_shortcut_feedback);
 
@@ -632,6 +654,8 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, ButtonGroup::get_class_static()), "set_button_group", "get_button_group");
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "custom_draw_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_custom_draw_mode", "get_custom_draw_mode");
+
 	ADD_GROUP("Shortcut", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_feedback"), "set_shortcut_feedback", "is_shortcut_feedback");
@@ -639,6 +663,7 @@ void BaseButton::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, BaseButton, click_margin);
 
+	BIND_ENUM_CONSTANT(DRAW_AUTO);
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);
 	BIND_ENUM_CONSTANT(DRAW_HOVER);
