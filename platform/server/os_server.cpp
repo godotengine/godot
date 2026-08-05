@@ -41,6 +41,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#ifdef __APPLE__
+#include <sys/random.h>
+#define UNIX_GET_ENTROPY
+#elif defined(__FreeBSD__) || defined(__OpenBSD__) || (defined(__GLIBC_MINOR__) && (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
+// In <unistd.h>.
+// One day... (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700)
+// https://publications.opengroup.org/standards/unix/c211
+#define UNIX_GET_ENTROPY
+#elif !defined(NO_URANDOM)
+#include <fcntl.h>
+#endif
+
 int OS_Server::get_video_driver_count() const {
 	return 1;
 }
@@ -110,6 +122,32 @@ void OS_Server::finalize() {
 	resource_loader_dummy.unref();
 
 	args.clear();
+}
+
+Error OS_Server::get_entropy(uint8_t *r_buffer, int p_bytes) {
+#if defined(UNIX_GET_ENTROPY)
+	int left = p_bytes;
+	int ofs = 0;
+	do {
+		int chunk = MIN(left, 256);
+		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+		left -= chunk;
+		ofs += chunk;
+	} while (left > 0);
+// Define this yourself if you don't want to fall back to /dev/urandom.
+#elif !defined(NO_URANDOM)
+	int r = open("/dev/urandom", O_RDONLY);
+	ERR_FAIL_COND_V(r < 0, FAILED);
+	int left = p_bytes;
+	do {
+		ssize_t ret = read(r, r_buffer, p_bytes);
+		ERR_FAIL_COND_V(ret <= 0, FAILED);
+		left -= ret;
+	} while (left > 0);
+#else
+	return ERR_UNAVAILABLE;
+#endif
+	return OK;
 }
 
 void OS_Server::set_mouse_show(bool p_show) {

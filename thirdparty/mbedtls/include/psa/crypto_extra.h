@@ -33,13 +33,32 @@ extern "C" {
 #endif
 
 /* If the size of static key slots is not explicitly defined by the user, then
- * set it to the maximum between PSA_EXPORT_KEY_PAIR_OR_PUBLIC_MAX_SIZE and
- * PSA_CIPHER_MAX_KEY_LENGTH.
- * See mbedtls_config.h for the definition. */
+ * try to guess it based on some of the most common the key types enabled in the build.
+ * See mbedtls_config.h for the definition of MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE. */
 #if !defined(MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE)
-#define MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE  \
-    ((PSA_EXPORT_KEY_PAIR_OR_PUBLIC_MAX_SIZE > PSA_CIPHER_MAX_KEY_LENGTH) ? \
-     PSA_EXPORT_KEY_PAIR_OR_PUBLIC_MAX_SIZE : PSA_CIPHER_MAX_KEY_LENGTH)
+
+#define MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE 1
+
+#if PSA_EXPORT_ASYMMETRIC_KEY_MAX_SIZE > MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE
+#undef MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE
+#define MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE PSA_EXPORT_ASYMMETRIC_KEY_MAX_SIZE
+#endif
+
+/* This covers ciphers, AEADs and CMAC. */
+#if PSA_CIPHER_MAX_KEY_LENGTH > MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE
+#undef MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE
+#define MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE PSA_CIPHER_MAX_KEY_LENGTH
+#endif
+
+/* For HMAC, it's typical but not mandatory to use a key size that is equal to
+ * the hash size. */
+#if defined(PSA_WANT_ALG_HMAC)
+#if PSA_HASH_MAX_SIZE > MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE
+#undef MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE
+#define MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE PSA_HASH_MAX_SIZE
+#endif
+#endif /* PSA_WANT_ALG_HMAC */
+
 #endif /* !MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE*/
 
 /** \addtogroup attributes
@@ -434,7 +453,7 @@ psa_status_t mbedtls_psa_inject_entropy(const uint8_t *seed,
 /**@}*/
 
 
-/** \defgroup psa_external_rng External random generator
+/** \defgroup psa_rng Random generator
  * @{
  */
 
@@ -482,6 +501,155 @@ psa_status_t mbedtls_psa_external_get_random(
     mbedtls_psa_external_random_context_t *context,
     uint8_t *output, size_t output_size, size_t *output_length);
 #endif /* MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG */
+
+/** Force an immediate reseed of the PSA random generator.
+ *
+ * The entropy source(s) are the ones configured at compile time.
+ *
+ * The random generator is always seeded automatically before use, and
+ * it is reseeded as needed based on the configured policy, so most
+ * applications do not need to call this function.
+ *
+ * The main reason to call this function is in scenarios where the process
+ * state is cloned (i.e. duplicated) while the random generator is active.
+ * In such scenarios, you must call this function in every clone of
+ * the original process before performing any cryptographic operation
+ * that uses randomness. (Note that any operation that uses a private or
+ * secret key may use randomness internally even if the result is not
+ * randomized, but hashing and signature verification are ok.) For example:
+ *
+ * - If the process is part of a live virtual machine that is cloned,
+ *   call this function after cloning so that the new instance has a
+ *   distinct random generator state.
+ * - If the process is part of a hibernated image that may be resumed
+ *   multiple times, call this function after resuming so that each
+ *   resumed instance has a distinct random generator state.
+ * - If the process is cloned through the fork() system call, the
+ *   child process should call this function before using the random
+ *   generator.
+ *
+ * An additional consideration applies in configurations where there is no
+ * actual entropy source, only a nonvolatile seed (i.e.
+ * #MBEDTLS_ENTROPY_NV_SEED is enabled, #MBEDTLS_NO_PLATFORM_ENTROPY is
+ * enabled and #MBEDTLS_ENTROPY_HARDWARE_ALT is disabled).
+ * In such configurations, simply calling psa_random_reseed() in multiple
+ * cloned processes would result in the same random generator state in
+ * all the clones. To avoid this, in such configurations, you must pass
+ * a unique \p perso string in every clone.
+ *
+ * \note  This function has no effect when the compilation option
+ *        #MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG is enabled.
+ *
+ * \note  In client-server builds, this function may not be available
+ *        from clients, since the decision to reseed is generally based
+ *        on the server state.
+ *
+ * \note  If the entropy source fails, the random generator remains usable:
+ *        subsequent calls to generate random data will succeed until
+ *        the random generator itself decides to reseed. If you want to
+ *        force a reseed, either treat the failure as a fatal error,
+ *        or call psa_random_deplete() instead of this function (or in
+ *        addition).
+ *
+ * \param[in] perso     A personalization string, i.e. a byte string to
+ *                      inject into the random generator state in addition
+ *                      to entropy obtained from the normal source(s).
+ *                      In most cases, it is fine for \c perso to be
+ *                      empty. The main use case for a personalization
+ *                      string is when the random generator state is cloned,
+ *                      as described above, and there is no actual entropy
+ *                      source.
+ * \param perso_size    Length of \c perso in bytes.
+ *
+ * \retval #PSA_SUCCESS
+ *         The reseed succeeded.
+ * \retval #PSA_ERROR_BAD_STATE
+ *         The PSA random generator is not active.
+ * \retval #PSA_ERROR_NOT_SUPPORTED
+ *         PSA uses an external random generator because the compilation
+ *         option #MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG is enabled. This
+ *         configuration does not support explicit reseeding.
+ * \retval #PSA_ERROR_INSUFFICIENT_ENTROPY
+ *         The entropy source failed.
+ */
+psa_status_t psa_random_reseed(const uint8_t *perso, size_t perso_size);
+
+/** Force a reseed of the PSA random generator the next time it is used.
+ *
+ * The entropy source(s) are the ones configured at compile time.
+ *
+ * The random generator is always seeded automatically before use, and
+ * it is reseeded as needed based on the configured policy, so most
+ * applications do not need to call this function.
+ *
+ * This function has a similar purpose as psa_random_reseed(),
+ * but the reseed will happen the next time the random generator is used.
+ * The advantage of this function is that it does not fail unless the
+ * system is in an unintended state, so it can be used in contexts where
+ * propagating errors is difficult.
+ *
+ * \note This function has no effect when #MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG
+ *       is enabled.
+ *
+ * \note If prediction resistance is enabled (either explicitly, or because
+ *       the reseed interval is set to 1), calling this function is
+ *       unnecessary since the random generator will always reseed anyway.
+ *
+ * \retval #PSA_SUCCESS
+ *         The reseed succeeded.
+ * \retval #PSA_ERROR_BAD_STATE
+ *         The PSA random generator is not active.
+ * \retval #PSA_ERROR_NOT_SUPPORTED
+ *         PSA uses an external random generator because the compilation
+ *         option #MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG is enabled. This
+ *         configuration does not support explicit reseeding.
+ */
+psa_status_t psa_random_deplete(void);
+
+/** Enable or disable prediction resistance in the PSA random generator.
+ *
+ * When prediction resistance is enabled, the random generator
+ * injects extra entropy before each request regardless of its size.
+ * As a consequence, a temporary compromise of the random generator
+ * state does not, by itself, compromise future steps.
+ * Furthermore, duplicating the random generator state (because the
+ * running application instance is cloned) is safe since it will
+ * not lead to identical random generator outputs in the clones.
+ *
+ * When prediction resistance is disabled, the random generator injects
+ * extra entropy periodically only as determined by
+ * #MBEDTLS_CTR_DRBG_RESEED_INTERVAL if #MBEDTLS_CTR_DRBG_C
+ * is enabled, or #MBEDTLS_HMAC_DRBG_RESEED_INTERVAL otherwise.
+ *
+ * Prediction resistance is disabled by default, although setting
+ * #MBEDTLS_CTR_DRBG_RESEED_INTERVAL or #MBEDTLS_HMAC_DRBG_RESEED_INTERVAL
+ * to \c 1 satisfies the prediction resistance property even when the
+ * option is disabled.
+ *
+ * \note This function has no effect when #MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG
+ *       is enabled.
+ *
+ * \note Prediction resistance cannot be enabled when the only entropy source
+ *       is a nonvolatile seed, since prediction resistance is effectively
+ *       impossible to achieve without actual entropy.
+ *
+ * \param enabled   \c 1 to enable prediction resistance.
+ *                  \c 0 to disable prediction resistance.
+ *
+ * \retval #PSA_SUCCESS
+ *         The PSA random generator is active, and prediction resistance
+ *         has been changed to the desired option.
+ * \retval #PSA_ERROR_BAD_STATE
+ *         The PSA random generator is not active.
+ * \retval #PSA_ERROR_INVALID_ARGUMENT
+ *         \p enabled is not valid.
+ * \retval #PSA_ERROR_NOT_SUPPORTED
+ *         PSA uses an external random generator because the compilation
+ *         option #MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG is enabled.
+ *         Or, the random generator only has a nonvolatile seed but no entropy
+ *         source, and prediction resistance has been requested.
+ */
+psa_status_t psa_random_set_prediction_resistance(unsigned enabled);
 
 /**@}*/
 
@@ -1191,9 +1359,7 @@ typedef struct psa_pake_cipher_suite_s psa_pake_cipher_suite_t;
 
 /** Return an initial value for a PAKE cipher suite object.
  */
-#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_pake_cipher_suite_t psa_pake_cipher_suite_init(void);
-#endif
 
 /** Retrieve the PAKE algorithm from a PAKE cipher suite.
  *
@@ -1332,9 +1498,7 @@ typedef struct psa_jpake_computation_stage_s psa_jpake_computation_stage_t;
 
 /** Return an initial value for a PAKE operation object.
  */
-#if !(defined(__cplusplus) && defined(_MSC_VER))
 static psa_pake_operation_t psa_pake_operation_init(void);
-#endif
 
 /** Get the length of the password in bytes from given inputs.
  *

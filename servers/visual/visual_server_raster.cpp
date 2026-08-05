@@ -133,7 +133,14 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 	}
 	VS::get_singleton()->emit_signal("frame_post_draw");
 }
+
 void VisualServerRaster::sync() {
+}
+
+void VisualServerRaster::sync_and_halt() {
+}
+
+void VisualServerRaster::thaw() {
 }
 
 void VisualServerRaster::set_physics_interpolation_enabled(bool p_enabled) {

@@ -213,22 +213,11 @@ mbedtls_ecp_point;
  *
  * If \p modp is NULL, reduction modulo \p P is done using a generic algorithm.
  * Otherwise, \p modp must point to a function that takes an \p mbedtls_mpi in the
- * range of <code>0..2^(2*pbits)-1</code>, and transforms it in-place to an integer
- * which is congruent mod \p P to the given MPI, and is close enough to \p pbits
- * in size, so that it may be efficiently brought in the 0..P-1 range by a few
- * additions or subtractions. Therefore, it is only an approximate modular
- * reduction. It must return 0 on success and non-zero on failure.
- *
- * \note        Alternative implementations of the ECP module must obey the
- *              following constraints.
- *              * Group IDs must be distinct: if two group structures have
- *                the same ID, then they must be identical.
- *              * The fields \c id, \c P, \c A, \c B, \c G, \c N,
- *                \c pbits and \c nbits must have the same type and semantics
- *                as in the built-in implementation.
- *                They must be available for reading, but direct modification
- *                of these fields does not need to be supported.
- *                They do not need to be at the same offset in the structure.
+ * range of [0, 2^(2*pbits)), and transforms it in-place to an integer which is
+ * congruent mod \p P to the given MPI, is in the range [0, 2P), and has no more
+ * non-zero limbs than P, so that it may be efficiently brought into the range
+ * [0, P) by a single constant-time conditional subtraction.
+ * It must return 0 on success and non-zero on failure.
  */
 typedef struct mbedtls_ecp_group {
     mbedtls_ecp_group_id id;    /*!< An internal group identifier. */
@@ -248,7 +237,7 @@ typedef struct mbedtls_ecp_group {
                                      private keys. */
     /* End of public fields */
 
-    unsigned int MBEDTLS_PRIVATE(h);             /*!< \internal 1 if the constants are static. */
+    unsigned int MBEDTLS_PRIVATE(h);             /*!< \internal 1 if all the constants are static, 2 if only N and P are static */
     int(*MBEDTLS_PRIVATE(modp))(mbedtls_mpi *);  /*!< The function for fast pseudo-reduction
                                                     mod \p P (see above).*/
     int(*MBEDTLS_PRIVATE(t_pre))(mbedtls_ecp_point *, void *);   /*!< Unused. */

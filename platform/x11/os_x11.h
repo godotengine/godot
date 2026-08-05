@@ -263,6 +263,8 @@ protected:
 public:
 	virtual String get_name() const;
 
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes);
+
 #ifdef SPEECHD_ENABLED
 	virtual bool tts_is_speaking() const;
 	virtual bool tts_is_paused() const;

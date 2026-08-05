@@ -255,6 +255,8 @@ public:
 	virtual String get_current_tablet_driver() const { return ""; };
 	virtual void set_current_tablet_driver(const String &p_driver){};
 
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) = 0; // Should return cryptographically-safe random bytes.
+
 	virtual PoolStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();

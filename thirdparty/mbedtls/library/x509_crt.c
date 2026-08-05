@@ -88,11 +88,13 @@ typedef struct {
  * concerns. */
 const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_default =
 {
-    /* Hashes from SHA-256 and above. Note that this selection
-     * should be aligned with ssl_preset_default_hashes in ssl_tls.c. */
+    /* Hashes from SHA-256 and above. */
     MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA256) |
     MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA384) |
-    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA512),
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA512) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA3_256) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA3_384) |
+    MBEDTLS_X509_ID_FLAG(MBEDTLS_MD_SHA3_512),
     0xFFFFFFF, /* Any PK alg    */
 #if defined(MBEDTLS_PK_HAVE_ECC_KEYS)
     /* Curves at or above 128-bit security level. Note that this selection
@@ -166,12 +168,8 @@ const mbedtls_x509_crt_profile mbedtls_x509_crt_profile_none =
     (uint32_t) -1,
 };
 
-/*
- * Check md_alg against profile
- * Return 0 if md_alg is acceptable for this profile, -1 otherwise
- */
-static int x509_profile_check_md_alg(const mbedtls_x509_crt_profile *profile,
-                                     mbedtls_md_type_t md_alg)
+int mbedtls_x509_profile_check_md_alg(const mbedtls_x509_crt_profile *profile,
+                                      mbedtls_md_type_t md_alg)
 {
     if (md_alg == MBEDTLS_MD_NONE) {
         return -1;
@@ -184,12 +182,8 @@ static int x509_profile_check_md_alg(const mbedtls_x509_crt_profile *profile,
     return -1;
 }
 
-/*
- * Check pk_alg against profile
- * Return 0 if pk_alg is acceptable for this profile, -1 otherwise
- */
-static int x509_profile_check_pk_alg(const mbedtls_x509_crt_profile *profile,
-                                     mbedtls_pk_type_t pk_alg)
+int mbedtls_x509_profile_check_pk_alg(const mbedtls_x509_crt_profile *profile,
+                                      mbedtls_pk_type_t pk_alg)
 {
     if (pk_alg == MBEDTLS_PK_NONE) {
         return -1;
@@ -513,22 +507,33 @@ static int x509_get_basic_constraints(unsigned char **p,
     }
 
     if (*p == end) {
+        /* Empty basicConstraints: valid, not a CA. */
         return 0;
     }
 
-    if ((ret = mbedtls_asn1_get_bool(p, end, ca_istrue)) != 0) {
-        if (ret == MBEDTLS_ERR_ASN1_UNEXPECTED_TAG) {
-            ret = mbedtls_asn1_get_int(p, end, ca_istrue);
-        }
-
-        if (ret != 0) {
-            return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
-        }
-
-        if (*ca_istrue != 0) {
-            *ca_istrue = 1;
-        }
+    if ((size_t) (end - *p) != len) {
+        /* Reject junk after the SEQUENCE inside the extension (which is
+         * probably benign), and reject a SEQUENCE that extends beyond
+         * the extension (could be very dangerous). */
+        return MBEDTLS_ERR_X509_INVALID_EXTENSIONS;
     }
+
+    if ((ret = mbedtls_asn1_get_bool(p, end, ca_istrue)) != 0) {
+        /* If the SEQUENCE starts with an INTEGER and not a BOOLEAN,
+         * according to RFC 5280, it's syntactically valid, but it's
+         * something that a CA MUST NOT produce. So we reject it.
+         *
+         * Note: historically, from XySSL 0.9 to Mbed TLS 3.6.6/4.1.0,
+         * `SEQUENCE { INTEGER n }` was interpreted as cA=FALSE if n == 0
+         * and cA=TRUE if n != 0. This was dangerous since
+         * `SEQUENCE { INTEGER n }` should be parsed as cA=FALSE
+         * according to RFC 5280, so we stopped doing it.
+         */
+        return MBEDTLS_ERROR_ADD(MBEDTLS_ERR_X509_INVALID_EXTENSIONS, ret);
+    }
+    /* `SEQUENCE { BOOLEAN FALSE }` is not DER since default-value fields
+     * must be omitted in DER. But it seems harmless, and Mbed TLS has
+     * always accepted it, so we continue to accept it. */
 
     if (*p == end) {
         return 0;
@@ -1746,15 +1751,15 @@ static int x509_info_cert_policies(char **buf, size_t *size,
 /*
  * Return an informational string about the certificate.
  */
-#define BEFORE_COLON    18
-#define BC              "18"
+#define MBEDTLS_BEFORE_COLON        18
+#define MBEDTLS_BEFORE_COLON_STR    "18"
 int mbedtls_x509_crt_info(char *buf, size_t size, const char *prefix,
                           const mbedtls_x509_crt *crt)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t n;
     char *p;
-    char key_size_str[BEFORE_COLON];
+    char key_size_str[MBEDTLS_BEFORE_COLON];
 
     p = buf;
     n = size;
@@ -1808,13 +1813,13 @@ int mbedtls_x509_crt_info(char *buf, size_t size, const char *prefix,
     MBEDTLS_X509_SAFE_SNPRINTF;
 
     /* Key size */
-    if ((ret = mbedtls_x509_key_size_helper(key_size_str, BEFORE_COLON,
+    if ((ret = mbedtls_x509_key_size_helper(key_size_str, MBEDTLS_BEFORE_COLON,
                                             mbedtls_pk_get_name(&crt->pk))) != 0) {
         return ret;
     }
 
-    ret = mbedtls_snprintf(p, n, "\n%s%-" BC "s: %d bits", prefix, key_size_str,
-                           (int) mbedtls_pk_get_bitlen(&crt->pk));
+    ret = mbedtls_snprintf(p, n, "\n%s%-" MBEDTLS_BEFORE_COLON_STR "s: %d bits",
+                           prefix, key_size_str, (int) mbedtls_pk_get_bitlen(&crt->pk));
     MBEDTLS_X509_SAFE_SNPRINTF;
 
     /*
@@ -2044,11 +2049,11 @@ static int x509_crt_verifycrl(mbedtls_x509_crt *crt, mbedtls_x509_crt *ca,
         /*
          * Check if CRL is correctly signed by the trusted CA
          */
-        if (x509_profile_check_md_alg(profile, crl_list->sig_md) != 0) {
+        if (mbedtls_x509_profile_check_md_alg(profile, crl_list->sig_md) != 0) {
             flags |= MBEDTLS_X509_BADCRL_BAD_MD;
         }
 
-        if (x509_profile_check_pk_alg(profile, crl_list->sig_pk) != 0) {
+        if (mbedtls_x509_profile_check_pk_alg(profile, crl_list->sig_pk) != 0) {
             flags |= MBEDTLS_X509_BADCRL_BAD_PK;
         }
 
@@ -2579,11 +2584,11 @@ static int x509_crt_verify_chain(
         }
 
         /* Check signature algorithm: MD & PK algs */
-        if (x509_profile_check_md_alg(profile, child->sig_md) != 0) {
+        if (mbedtls_x509_profile_check_md_alg(profile, child->sig_md) != 0) {
             *flags |= MBEDTLS_X509_BADCERT_BAD_MD;
         }
 
-        if (x509_profile_check_pk_alg(profile, child->sig_pk) != 0) {
+        if (mbedtls_x509_profile_check_pk_alg(profile, child->sig_pk) != 0) {
             *flags |= MBEDTLS_X509_BADCERT_BAD_PK;
         }
 
@@ -2748,22 +2753,25 @@ static int x509_inet_pton_ipv6(const char *src, void *dst)
             if (*p == '\0') {
                 break;
             } else if (*p == '.') {
-                /* Don't accept IPv4 too early or late */
-                if ((nonzero_groups == 0 && zero_group_start == -1) ||
+                /* Don't accept IPv4 too early or late:
+                 * - The first 6 nonzero groups must be 16 bit pieces of address delimited by ':'
+                 * - This might be fully or partially represented with compressed syntax (a zero
+                 *   group "::")
+                 */
+                if ((nonzero_groups < 6 && zero_group_start == -1) ||
                     nonzero_groups >= 7) {
                     break;
                 }
 
-                /* Walk back to prior ':', then parse as IPv4-mapped */
-                int steps = 4;
+                /* Walk back to prior ':', then parse as IPv4-mapped.
+                 * At this point nonzero_groups == 6 or zero_group_start >= 0. Either way we have a
+                 * ':' before the current position and still inside the buffer. Thus it is safe to
+                 * search back for that ':' without any further checks.
+                 */
                 do {
                     p--;
-                    steps--;
-                } while (*p != ':' && steps > 0);
+                } while (*p != ':');
 
-                if (*p != ':') {
-                    break;
-                }
                 p++;
                 nonzero_groups--;
                 if (x509_inet_pton_ipv4((const char *) p,
@@ -3088,7 +3096,7 @@ static int x509_crt_verify_restartable_ca_cb(mbedtls_x509_crt *crt,
     /* Check the type and size of the key */
     pk_type = mbedtls_pk_get_type(&crt->pk);
 
-    if (x509_profile_check_pk_alg(profile, pk_type) != 0) {
+    if (mbedtls_x509_profile_check_pk_alg(profile, pk_type) != 0) {
         ee_flags |= MBEDTLS_X509_BADCERT_BAD_PK;
     }
 

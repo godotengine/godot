@@ -310,6 +310,9 @@ int mbedtls_x509_string_to_names(mbedtls_asn1_named_data **head, const char *nam
             } else {
                 oid.len = strlen(attr_descr->oid);
                 oid.p = mbedtls_calloc(1, oid.len);
+                if (oid.p == NULL) {
+                    return MBEDTLS_ERR_X509_ALLOC_FAILED;
+                }
                 memcpy(oid.p, attr_descr->oid, oid.len);
                 numericoid = 0;
             }

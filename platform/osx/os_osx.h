@@ -195,6 +195,8 @@ protected:
 public:
 	static OS_OSX *singleton;
 
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes);
+
 	virtual bool tts_is_speaking() const;
 	virtual bool tts_is_paused() const;
 	virtual Array tts_get_voices() const;
