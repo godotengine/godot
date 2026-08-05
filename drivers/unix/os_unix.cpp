@@ -73,6 +73,7 @@
 #endif
 
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <poll.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
@@ -838,50 +839,25 @@ bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
 	return false;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool p_read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
 #else
+	int pipe_out[2] = { -1, -1 };
 	if (r_pipe) {
-		String command = "\"" + p_path + "\"";
-		for (const String &arg : p_arguments) {
-			command += String(" \"") + arg + "\"";
-		}
-		if (read_stderr) {
-			command += " 2>&1"; // Include stderr
-		} else {
-			command += " 2>/dev/null"; // Silence stderr
-		}
-
-		FILE *f = popen(command.utf8().get_data(), "r");
-		ERR_FAIL_NULL_V_MSG(f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command + ".");
-		char buf[65535];
-		while (fgets(buf, 65535, f)) {
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
-			}
-			String pipe_out;
-			if (pipe_out.append_utf8(buf) == OK) {
-				(*r_pipe) += pipe_out;
-			} else {
-				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
-			}
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
-			}
-		}
-		int rv = pclose(f);
-
-		if (r_exitcode) {
-			*r_exitcode = WEXITSTATUS(rv);
-		}
-		return OK;
+		ERR_FAIL_COND_V(pipe(pipe_out) != 0, ERR_CANT_CREATE);
 	}
 
 	pid_t pid = fork();
-	ERR_FAIL_COND_V(pid < 0, ERR_CANT_FORK);
+	if (pid < 0) {
+		if (r_pipe) {
+			::close(pipe_out[0]);
+			::close(pipe_out[1]);
+		}
+		ERR_FAIL_V(ERR_CANT_FORK);
+	}
 
 	if (pid == 0) {
 		// The child process
@@ -897,10 +873,54 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		}
 		args.push_back(0);
 
+		if (r_pipe) {
+			::close(STDOUT_FILENO);
+			::close(STDERR_FILENO);
+
+			::dup2(pipe_out[1], STDOUT_FILENO);
+			if (p_read_stderr) {
+				::dup2(pipe_out[1], STDERR_FILENO);
+			} else {
+				int dev_null = ::open("/dev/null", O_WRONLY);
+				::dup2(dev_null, STDERR_FILENO);
+				::close(dev_null);
+			}
+			::close(pipe_out[0]);
+			::close(pipe_out[1]);
+		}
+
 		execvp(p_path.utf8().get_data(), &args[0]);
 		// The execvp() function only returns if an error occurs.
 		fprintf(stderr, "Could not create child process: %s\n", p_path.utf8().get_data());
 		raise(SIGKILL);
+	}
+
+	if (r_pipe) {
+		::close(pipe_out[1]);
+
+		FILE *f = fdopen(pipe_out[0], "r");
+		if (!f) {
+			::close(pipe_out[0]);
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, "Cannot create pipe.");
+		}
+		const int PIPE_BUFFER_SIZE = 65535;
+		char buf[PIPE_BUFFER_SIZE];
+		while (fgets(buf, PIPE_BUFFER_SIZE, f)) {
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
+			String pipe_out_str;
+			if (pipe_out_str.append_utf8(buf) == OK) {
+				(*r_pipe) += pipe_out_str;
+			} else {
+				(*r_pipe) += String(buf); // If not valid UTF-8, try decoding as Latin-1.
+			}
+			if (p_pipe_mutex) {
+				p_pipe_mutex->unlock();
+			}
+		}
+		fclose(f);
+		::close(pipe_out[0]);
 	}
 
 	int status = 0;
