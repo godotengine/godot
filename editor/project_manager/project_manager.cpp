@@ -469,6 +469,10 @@ void ProjectManager::_project_list_menu_option(int p_option) {
 		case ProjectList::MENU_REMOVE:
 			_erase_project();
 			break;
+
+		case ProjectList::MENU_RELOCATE:
+			_relocate_project();
+			break;
 	}
 }
 
@@ -749,6 +753,7 @@ void ProjectManager::_open_selected_projects_check_recovery_mode() {
 
 	const ProjectList::Item &project = selected_projects[0];
 	if (project.missing) {
+		_relocate_project();
 		return;
 	}
 
@@ -833,6 +838,20 @@ void ProjectManager::_duplicate_project_with_action(PostDuplicateAction p_post_a
 	project_dialog->set_original_project_path(project.path);
 	project_dialog->set_duplicate_can_edit(p_post_action == POST_DUPLICATE_ACTION_NONE);
 	project_dialog->show_dialog(false);
+}
+
+void ProjectManager::_relocate_project() {
+	const Vector<ProjectList::Item> &selected_list = project_list->get_selected_projects();
+
+	if (selected_list.is_empty()) {
+		return;
+	}
+
+	const ProjectList::Item &project = selected_list[0];
+
+	project_dialog->set_project_path(project.path);
+	project_dialog->set_mode(ProjectDialog::MODE_RELOCATE);
+	project_dialog->ask_for_path_and_show();
 }
 
 void ProjectManager::_show_project_in_file_manager() {
@@ -1006,6 +1025,34 @@ void ProjectManager::_on_project_duplicated(const String &p_original_path, const
 	}
 
 	post_duplicate_action = POST_DUPLICATE_ACTION_NONE;
+}
+
+void ProjectManager::_on_project_relocated(const String &p_new_path, const bool p_edit) {
+	const Vector<ProjectList::Item> &selected_list = project_list->get_selected_projects();
+
+	if (selected_list.is_empty()) {
+		return;
+	}
+
+	const ProjectList::Item &project = selected_list[0];
+	project_list->erase_project(project.path);
+	project_list->refresh_project(project.path);
+
+	project_list->add_project(p_new_path, false);
+	project_list->save_config();
+	int i = project_list->refresh_project(p_new_path);
+	project_list->ensure_project_visible(i);
+	project_list->select_project(i);
+
+	search_box->clear();
+
+	_update_list_placeholder();
+
+	if (p_edit) {
+		_open_selected_projects_check_warnings();
+	}
+
+	project_list->update_dock_menu();
 }
 
 void ProjectManager::_on_order_option_changed(int p_idx) {
@@ -1899,6 +1946,7 @@ ProjectManager::ProjectManager() {
 		project_dialog->connect("projects_updated", callable_mp(this, &ProjectManager::_on_projects_updated));
 		project_dialog->connect("project_created", callable_mp(this, &ProjectManager::_on_project_created));
 		project_dialog->connect("project_duplicated", callable_mp(this, &ProjectManager::_on_project_duplicated));
+		project_dialog->connect("project_relocated", callable_mp(this, &ProjectManager::_on_project_relocated));
 		add_child(project_dialog);
 
 		error_dialog = memnew(AcceptDialog);

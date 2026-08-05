@@ -200,6 +200,7 @@ class ProjectManager : public Control {
 	void _rename_project();
 	void _duplicate_project();
 	void _duplicate_project_with_action(PostDuplicateAction p_action);
+	void _relocate_project();
 	void _show_project_in_file_manager();
 	void _erase_project();
 	void _erase_missing_projects();
@@ -212,6 +213,7 @@ class ProjectManager : public Control {
 
 	void _on_project_created(const String &dir, bool edit);
 	void _on_project_duplicated(const String &p_original_path, const String &p_duplicate_path, bool p_edit);
+	void _on_project_relocated(const String &p_new_path, bool p_edit);
 	void _on_projects_updated();
 	void _on_open_options_selected(int p_option);
 	void _on_recovery_mode_popup_open_normal();

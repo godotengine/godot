@@ -110,7 +110,7 @@ void ProjectDialog::_validate_path() {
 	String target_path = path;
 	InputType target_path_input_type = PROJECT_PATH;
 
-	if (mode == MODE_IMPORT) {
+	if (mode == MODE_IMPORT || mode == MODE_RELOCATE) {
 		if (path.get_file().strip_edges() == "project.godot") {
 			path = path.get_base_dir();
 			project_path->set_text(path);
@@ -124,7 +124,7 @@ void ProjectDialog::_validate_path() {
 			zip_path = "";
 		}
 
-		if (!zip_path.is_empty()) {
+		if (mode == MODE_IMPORT && !zip_path.is_empty()) {
 			target_path = install_path->get_text().simplify_path();
 			target_path_input_type = INSTALL_PATH;
 
@@ -181,7 +181,16 @@ void ProjectDialog::_validate_path() {
 			create_dir->hide();
 			install_path_container->hide();
 
-			_set_message(TTRC("Please choose a \"project.godot\", a directory with one, or a \".zip\" file."), MESSAGE_ERROR);
+			switch (mode) {
+				case MODE_IMPORT:
+					_set_message(TTRC("Please choose a \"project.godot\", a directory with one, or a \".zip\" file."), MESSAGE_ERROR);
+					break;
+				case MODE_RELOCATE:
+					_set_message(TTRC("Please choose a \"project.godot\" or a directory with one."), MESSAGE_ERROR);
+					break;
+				default:
+					break;
+			}
 			return;
 		}
 	}
@@ -212,6 +221,15 @@ void ProjectDialog::_validate_path() {
 	String documents_dir = OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS);
 	if (target_path == home_dir || target_path == documents_dir) {
 		_set_message(TTRC("You cannot save a project at the selected path. Please create a subfolder or choose a new path."), MESSAGE_ERROR, target_path_input_type);
+		return;
+	}
+
+	if (mode == MODE_RELOCATE) {
+		if (!d->dir_exists(target_path)) {
+			_set_message(TTRC("The path specified doesn't exist."), MESSAGE_ERROR, target_path_input_type);
+		} else {
+			_set_message(TTRC("The selected path will be used as the new project path."), MESSAGE_SUCCESS, target_path_input_type);
+		}
 		return;
 	}
 
@@ -293,7 +311,7 @@ void ProjectDialog::_validate_path() {
 }
 
 String ProjectDialog::_get_target_path() {
-	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE || mode == MODE_RELOCATE) {
 		return project_path->get_text();
 	} else if (mode == MODE_IMPORT) {
 		return install_path->get_text();
@@ -302,7 +320,7 @@ String ProjectDialog::_get_target_path() {
 	}
 }
 void ProjectDialog::_set_target_path(const String &p_text) {
-	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_DUPLICATE || mode == MODE_RELOCATE) {
 		project_path->set_text(p_text);
 	} else if (mode == MODE_IMPORT) {
 		install_path->set_text(p_text);
@@ -419,11 +437,13 @@ void ProjectDialog::_browse_project_path() {
 		fdialog_project->set_current_dir(path);
 	}
 
-	if (mode == MODE_IMPORT) {
+	if (mode == MODE_IMPORT || mode == MODE_RELOCATE) {
 		fdialog_project->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_ANY);
 		fdialog_project->clear_filters();
 		fdialog_project->add_filter("project.godot", vformat("%s %s", GODOT_VERSION_NAME, TTR("Project")));
-		fdialog_project->add_filter("*.zip", TTR("ZIP File"));
+		if (mode == MODE_IMPORT) {
+			fdialog_project->add_filter("*.zip", TTR("ZIP File"));
+		}
 	} else {
 		fdialog_project->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
 	}
@@ -487,7 +507,11 @@ void ProjectDialog::_install_path_selected(const String &p_path) {
 }
 
 void ProjectDialog::_reset_name() {
-	project_name->set_text(TTR("New Game Project"));
+	if (mode == MODE_RELOCATE) {
+		project_name->set_text(TTR("Relocate Game Project"));
+	} else {
+		project_name->set_text(TTR("New Game Project"));
+	}
 }
 
 void ProjectDialog::_renderer_selected() {
@@ -815,6 +839,8 @@ void ProjectDialog::ok_pressed() {
 		emit_signal(SNAME("project_duplicated"), original_project_path, path, edit_check_box->is_visible() && edit_check_box->is_pressed());
 	} else if (mode == MODE_RENAME) {
 		emit_signal(SNAME("projects_updated"));
+	} else if (mode == MODE_RELOCATE) {
+		emit_signal(SNAME("project_relocated"), path, edit_check_box->is_pressed());
 	}
 }
 
@@ -854,7 +880,7 @@ void ProjectDialog::ask_for_path_and_show() {
 void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 	_update_ok_button();
 
-	if (mode == MODE_IMPORT && !p_is_confirmed) {
+	if ((mode == MODE_IMPORT || mode == MODE_RELOCATE) && !p_is_confirmed) {
 		return;
 	}
 	if (mode == MODE_RENAME) {
@@ -894,7 +920,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 				project_path->set_text(fav_dir);
 				install_path->set_text(fav_dir);
 				fdialog_project->set_current_dir(fav_dir);
-			} else {
+			} else if (mode != MODE_RELOCATE) {
 				Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 				project_path->set_text(d->get_current_dir());
 				install_path->set_text(d->get_current_dir());
@@ -906,9 +932,15 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 		project_status_rect->show();
 		project_browse->show();
 
-		if (mode == MODE_IMPORT) {
-			set_title(TTRC("Import Existing Project"));
-			set_ok_button_text(TTRC("Import"));
+		if (mode == MODE_IMPORT || mode == MODE_RELOCATE) {
+			if (mode == MODE_IMPORT) {
+				set_title(TTRC("Import Existing Project"));
+				set_ok_button_text(TTRC("Import"));
+			} else {
+				set_title(TTRC("Relocate Missing Project"));
+				set_ok_button_text(TTRC("Confirm"));
+				create_dir->hide();
+			}
 
 			name_container->hide();
 			install_path_container->hide();
@@ -1015,6 +1047,7 @@ void ProjectDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("project_created"));
 	ADD_SIGNAL(MethodInfo("project_duplicated"));
 	ADD_SIGNAL(MethodInfo("projects_updated"));
+	ADD_SIGNAL(MethodInfo("project_relocated"));
 }
 
 ProjectDialog::ProjectDialog() {
