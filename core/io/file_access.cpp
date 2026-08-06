@@ -814,7 +814,7 @@ PackedStringArray FileAccess::get_extended_attributes_list(const String &p_file)
 }
 
 bool FileAccess::store_string(const String &p_string) {
-	if (p_string.length() == 0) {
+	if (p_string.is_empty()) {
 		return true;
 	}
 
