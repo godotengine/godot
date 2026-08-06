@@ -355,9 +355,16 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 					break;
 				}
 
-				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(effective_args[i].second, mi.arguments[i].class_name)) {
-					type_mismatch = true;
-					break;
+				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && effective_args[i].second != mi.arguments[i].class_name) {
+					if (ScriptServer::is_global_class(effective_args[i].second) == true || ScriptServer::is_global_class(mi.arguments[i].class_name) == true) {
+						if (EditorNode::get_editor_data().script_class_is_parent(effective_args[i].second, mi.arguments[i].class_name) == false) {
+							type_mismatch = true;
+							break;
+						}
+					} else if (ClassDB::is_parent_class(effective_args[i].second, mi.arguments[i].class_name) == false) {
+						type_mismatch = true;
+						break;
+					}
 				}
 			}
 
