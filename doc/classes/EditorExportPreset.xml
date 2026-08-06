@@ -60,7 +60,7 @@
 		<method name="get_encryption_key" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns PCK encryption key.
+				Returns PCK encryption key. This will only return the value set in the export preset and not the value of the [code]GODOT_SCRIPT_ENCRYPTION_KEY[/code] environment variable. See also [method resolve_encryption_key].
 			</description>
 		</method>
 		<method name="get_exclude_filter" qualifiers="const">
@@ -167,6 +167,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the "Runnable" toggle is enabled in the export dialog.
+			</description>
+		</method>
+		<method name="resolve_encryption_key">
+			<return type="PackedByteArray" />
+			<description>
+				Returns PCK encryption key as a [PackedByteArray]. If the [code]GODOT_SCRIPT_ENCRYPTION_KEY[/code] environment variable is set, this will return that key instead of the key set in the export preset. See also [method get_encryption_key].
 			</description>
 		</method>
 	</methods>
