@@ -114,7 +114,7 @@ public:
 
 	static bool _store_header(Ref<FileAccess> p_fd, bool p_enc, bool p_sparse, uint64_t &r_file_base_ofs, uint64_t &r_dir_base_ofs, const String &p_salt);
 	static bool _encrypt_and_store_directory(Ref<FileAccess> p_fd, PackData &p_pack_data, const Vector<uint8_t> &p_key, uint64_t p_seed, uint64_t p_file_base);
-	static Error _encrypt_and_store_data(Ref<FileAccess> p_fd, const Ref<EditorExportPreset> &p_preset, const String &p_path, const Vector<uint8_t> &p_data, bool &r_encrypt);
+	static Error _encrypt_and_store_data(Ref<FileAccess> p_fd, const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_source_path, const Vector<uint8_t> &p_data, bool &r_encrypt);
 
 private:
 	struct ZipData {

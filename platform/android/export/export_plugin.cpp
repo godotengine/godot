@@ -834,10 +834,11 @@ Error EditorExportPlatformAndroid::save_apk_file(const Ref<EditorExportPreset> &
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
 
 	const String simplified_path = EditorExportPlatform::simplify_path(p_info.path);
+	const String simplified_source_path = EditorExportPlatform::simplify_path(p_info.source_path);
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	RETURN_IF_ERROR(_store_temp_file(p_preset, simplified_path, p_data, enc_data, sd));
+	RETURN_IF_ERROR(_store_temp_file(p_preset, simplified_path, simplified_source_path, p_data, enc_data, sd));
 
 	String dst_path;
 	if (ed->pd.salt.length() == 32) {
