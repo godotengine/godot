@@ -97,6 +97,11 @@ void PrimitiveMesh::_update() const {
 			SWAP(w[i + 0], w[i + 1]);
 		}
 		arr[RSE::ARRAY_INDEX] = indices;
+	} else {
+		for (int i = 0; i < points.size(); i += 3) {
+			SWAP(points.write[i + 0], points.write[i + 1]);
+		}
+		arr[RSE::ARRAY_VERTEX] = points;
 	}
 }
 
