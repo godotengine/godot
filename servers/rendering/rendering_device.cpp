@@ -9916,6 +9916,12 @@ RenderingDevice::RenderingDevice() {
 		singleton = this;
 	}
 
+	// Give unique descriptions to the RID_Owners of Buffers.
+	uniform_buffer_owner.set_description("UniformBuffer");
+	storage_buffer_owner.set_description("StorageBuffer");
+	texture_buffer_owner.set_description("TextureBuffer");
+	vertex_buffer_owner.set_description("VertexBuffer");
+
 	render_thread_id = Thread::get_caller_id();
 }
 
