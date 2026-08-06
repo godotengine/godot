@@ -133,7 +133,6 @@ void EditorAudioBus::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			update_bus();
-			set_process(true);
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -1332,6 +1331,7 @@ void EditorAudioBuses::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				_update_file_label();
 			}
+			set_process(is_visible_in_tree());
 		} break;
 	}
 }
@@ -1630,8 +1630,6 @@ EditorAudioBuses::EditorAudioBuses() {
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &EditorAudioBuses::_rebuild_buses));
 	AudioServer::get_singleton()->connect("bus_renamed", callable_mp(this, &EditorAudioBuses::_rebuild_buses).unbind(3));
 	FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &EditorAudioBuses::_file_moved));
-
-	set_process(true);
 }
 
 void EditorAudioBuses::open_layout(const String &p_path) {
