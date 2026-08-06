@@ -37,7 +37,6 @@ TEST_FORCE_LINK(test_scenes)
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
-#include "core/object/message_queue.h"
 #include "core/object/object.h"
 #include "core/object/property_info.h"
 #include "core/os/memory.h"
@@ -212,7 +211,6 @@ TEST_CASE("[Scenes] Scene Saving and loading as property") {
 
 	const Ref<PackedScene> &loaded_resource_text = ResourceLoader::load(save_path_text);
 	validate_nested_scene(loaded_resource_text);
-	MessageQueue::get_singleton()->flush();
 }
 
 void validate_simple_scene(Ref<PackedScene> loaded_scene) {
