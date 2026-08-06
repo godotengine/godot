@@ -81,6 +81,11 @@ def get_doc_classes():
         "OpenXRSpatialContainerSelfRenderingExtension",
         "OpenXRSpatialContainerState",
         "OpenXrSpatialFilterArchetype",
+        "OpenXRSpatialCapabilityConfigurationImageTracking",
+        "OpenXRSpatialComponentImage2DList",
+        "OpenXRImageTracker",
+        "OpenXRSpatialImageTrackingCapability",
+        "OpenXRSpatialImageDatabase",
     ]
 
 
