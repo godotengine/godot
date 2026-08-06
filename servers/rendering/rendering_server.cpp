@@ -1453,6 +1453,7 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 									Vector3 vec = Vector3(float(v[0]) / 65535.0, float(v[1]) / 65535.0, float(v[2]) / 65535.0);
 									w[j] = (vec * p_aabb.size) + p_aabb.position;
 								}
+								ret[i] = arr_3d;
 								continue;
 							}
 
