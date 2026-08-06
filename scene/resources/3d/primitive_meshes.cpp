@@ -79,31 +79,31 @@ void PrimitiveMesh::_update() const {
 	Vector<int> indices = arr[RSE::ARRAY_INDEX];
 
 	if (flip_faces) {
-	Vector<Vector3> normals = arr[RSE::ARRAY_NORMAL];
+		Vector<Vector3> normals = arr[RSE::ARRAY_NORMAL];
 
-	if (normals.size()) {
-		int nc = normals.size();
-		Vector3 *w = normals.ptrw();
-		for (int i = 0; i < nc; i++) {
-			w[i] = -w[i];
+		if (normals.size()) {
+			int nc = normals.size();
+			Vector3 *w = normals.ptrw();
+			for (int i = 0; i < nc; i++) {
+				w[i] = -w[i];
+			}
+			arr[RSE::ARRAY_NORMAL] = normals;
 		}
-		arr[RSE::ARRAY_NORMAL] = normals;
-	}
 
-	if (indices.size()) {
-		int ic = indices.size();
-		int *w = indices.ptrw();
-		for (int i = 0; i < ic; i += 3) {
-			SWAP(w[i + 0], w[i + 1]);
+		if (indices.size()) {
+			int ic = indices.size();
+			int *w = indices.ptrw();
+			for (int i = 0; i < ic; i += 3) {
+				SWAP(w[i + 0], w[i + 1]);
+			}
+			arr[RSE::ARRAY_INDEX] = indices;
+		} else {
+			for (int i = 0; i < points.size(); i += 3) {
+				SWAP(points.write[i + 0], points.write[i + 1]);
+			}
+			arr[RSE::ARRAY_VERTEX] = points;
 		}
-		arr[RSE::ARRAY_INDEX] = indices;
-	} else {
-		for (int i = 0; i < points.size(); i += 3) {
-			SWAP(points.write[i + 0], points.write[i + 1]);
-		}
-		arr[RSE::ARRAY_VERTEX] = points;
 	}
-}
 
 	if (add_uv2) {
 		// _create_mesh_array should populate our UV2, this is a fallback in case it doesn't.
