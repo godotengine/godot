@@ -38,7 +38,12 @@
 #include "core/variant/variant.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <typeinfo> // IWYU pragma: keep // Used in macro.
+
+#if defined(__GNUC__) && !defined(_MSC_VER)
+#include <cxxabi.h>
+#endif
 
 #ifdef TSAN_ENABLED
 #include <sanitizer/tsan_interface.h>
@@ -116,7 +121,7 @@ class RID_Alloc : public RID_AllocBase {
 			uint32_t chunk_count = alloc_count == 0 ? 0 : (max_alloc / elements_in_chunk);
 			if (THREAD_SAFE && chunk_count == chunk_limit) {
 				mutex.unlock();
-				ERR_FAIL_V_MSG(RID(), vformat("Element limit for RID of type '%s' reached.", description ? description : typeid(T).name()));
+				ERR_FAIL_V_MSG(RID(), vformat("Element limit for RID of type '%s' reached.", get_description()));
 			}
 
 			//grow chunks
@@ -407,6 +412,36 @@ public:
 		description = p_description;
 	}
 
+	// Gets the description, falling back to the element type name.
+	String get_description() const {
+		if (description) {
+			return String(description);
+		}
+
+		const char *type_name_ptr = typeid(T).name();
+#if defined(__GNUC__) && !defined(_MSC_VER)
+		// GCC/Clang: need to manually de-mangle the name. The return type has to be
+		// a String so the demangled buffer can be freed before returning.
+		String type_name;
+		int status;
+		char *demangled = abi::__cxa_demangle(type_name_ptr, nullptr, nullptr, &status);
+
+		if (status == 0 && demangled) {
+			type_name = demangled;
+		} else {
+			type_name = type_name_ptr;
+		}
+
+		if (demangled) {
+			::free(demangled);
+		}
+		return type_name;
+#else
+		// MSVC automatically de-mangles the type name.
+		return String(type_name_ptr);
+#endif
+	}
+
 	RID_Alloc(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 262144) {
 		elements_in_chunk = sizeof(T) > p_target_chunk_byte_size ? 1 : (p_target_chunk_byte_size / sizeof(T));
 		if constexpr (THREAD_SAFE) {
@@ -424,7 +459,7 @@ public:
 
 		if (alloc_count) {
 			print_error(vformat("ERROR: %d RID allocations of type '%s' were leaked at exit.",
-					alloc_count, description ? description : typeid(T).name()));
+					alloc_count, get_description()));
 
 			for (size_t i = 0; i < max_alloc; i++) {
 				uint32_t validator = chunks[i / elements_in_chunk][i % elements_in_chunk].validator;
