@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialComponentImage2DList" inherits="OpenXRSpatialComponentData" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Object for storing the queries image result data.
+	</brief_description>
+	<description>
+		Object for storing the queries image result data when calling [method OpenXRSpatialEntityExtension.query_snapshot].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_image_tracking_database" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="index" type="int" />
+			<description>
+				The RID of the image tracking database containing this image.
+			</description>
+		</method>
+		<method name="get_reference_image_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				The index of the image within the image tracking database.
+			</description>
+		</method>
+	</methods>
+</class>
