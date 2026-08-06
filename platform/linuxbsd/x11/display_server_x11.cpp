@@ -51,7 +51,6 @@
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #include <X11/Xatom.h>
-#include <X11/Xresource.h>
 
 #ifdef SOWRAP_ENABLED
 #include "x11/dynwrappers/xext-so_wrap.h"
