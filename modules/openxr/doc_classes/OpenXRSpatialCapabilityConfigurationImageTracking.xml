@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialCapabilityConfigurationImageTracking" inherits="OpenXRSpatialCapabilityConfigurationBaseHeader" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration header for image tracking.
+	</brief_description>
+	<description>
+		Configuration header for image tracking. Pass this to [method OpenXRSpatialEntityExtension.create_spatial_context] to create a spatial context that can detect images.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_image_tracking_database">
+			<return type="void" />
+			<param index="0" name="image_database" type="RID" />
+			<description>
+				Adds this image tracking database to our configuration. Images held in this database will be detected. Call [method OpenXRSpatialImageTrackingCapability.image_database_create] to create an image database. The image database must be submitted before adding to the configuration.
+			</description>
+		</method>
+		<method name="get_enabled_components" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<description>
+				Lists components that are enabled by this configuration (list is only valid after configuration object has been used to create a spatial context).
+			</description>
+		</method>
+		<method name="remove_image_tracking_database">
+			<return type="void" />
+			<param index="0" name="image_database" type="RID" />
+			<description>
+				Remove this image tracking database from our configuration.
+			</description>
+		</method>
+	</methods>
+</class>
