@@ -559,26 +559,14 @@ void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 
 			const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, p_ev);
 			if (custom_callback.is_valid()) {
-				Vector<SelectResult> currently_hovered;
-				_get_canvas_items_at_pos(transform.affine_inverse().xform(viewport->get_local_mouse_position()), currently_hovered, true);
-
-				TypedArray<CanvasItem> items;
-				items.reserve(currently_hovered.size());
-				for (const SelectResult &result : currently_hovered) {
-					items.append(result.item);
-				}
-
+				EditorContextMenuPlugin::OptionsData context_data = _get_context_data();
 #ifndef DISABLE_DEPRECATED
 				if (p_ev->get_meta("_legacy_shortcut", false)) {
-					EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, items);
+					EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data["hovered_nodes"]);
 					accept_event();
 					return;
 				}
 #endif
-
-				EditorContextMenuPlugin::OptionsData context_data;
-				context_data["hovered_nodes"] = items;
-				context_data["mouse_position"] = transform.affine_inverse().xform(viewport->get_local_mouse_position());
 				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
 				accept_event();
 			}
@@ -828,6 +816,24 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 			}
 		}
 	}
+}
+
+Dictionary CanvasItemEditor::_get_context_data() {
+	const Vector2 mouse_pos = transform.affine_inverse().xform(viewport->get_local_mouse_position());
+
+	Vector<SelectResult> currently_hovered;
+	_get_canvas_items_at_pos(mouse_pos, currently_hovered, true);
+
+	TypedArray<CanvasItem *> items;
+	items.reserve(currently_hovered.size());
+	for (const SelectResult &result : currently_hovered) {
+		items.push_back(result.item);
+	}
+
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["hovered_nodes"] = items;
+	context_data["mouse_position"] = mouse_pos;
+	return context_data;
 }
 
 bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append) {
@@ -2573,25 +2579,16 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			}
 
 			if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR)) {
-				Vector<SelectResult> currently_hovered;
-				_get_canvas_items_at_pos(transform.affine_inverse().xform(b->get_position()), currently_hovered, true);
-
-				TypedArray<CanvasItem *> items;
-				items.reserve(currently_hovered.size());
-				for (const SelectResult &result : currently_hovered) {
-					items.push_back(result.item);
-				}
-
-				EditorContextMenuPlugin::OptionsData context_data;
-				context_data["hovered_nodes"] = items;
-				context_data["mouse_position"] = transform.affine_inverse().xform(b->get_position());
+				EditorContextMenuPlugin::OptionsData context_data = _get_context_data();
 				EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(add_node_menu, EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, context_data);
 
 #ifndef DISABLE_DEPRECATED
+				TypedArray<CanvasItem> items = context_data["hovered_nodes"];
 				PackedStringArray paths;
-				paths.reserve_exact(currently_hovered.size());
-				for (const SelectResult &result : currently_hovered) {
-					paths.append((String)result.item->get_path());
+				paths.reserve_exact(items.size());
+				for (const Variant &v : items) {
+					CanvasItem *ci = Object::cast_to<CanvasItem>(v);
+					paths.append((String)ci->get_path());
 				}
 				EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(add_node_menu, EditorContextMenuPlugin::CONTEXT_SLOT_2D_EDITOR, paths, items, 500);
 #endif

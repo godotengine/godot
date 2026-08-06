@@ -193,6 +193,7 @@ private:
 	void _update_popup();
 	void _focusable_focused(int p_index);
 	int _get_v_separation() const { return bottom_editor && bottom_editor_seperation ? theme_cache.vertical_separation : 0; }
+	Dictionary _get_context_data();
 
 	bool selectable = true;
 	bool selected = false;

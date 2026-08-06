@@ -2192,6 +2192,19 @@ Vector<String> FileSystemDock::_file_list_get_selected() const {
 	return selected;
 }
 
+Dictionary FileSystemDock::_get_context_data(const PackedStringArray &p_selected_files) {
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["selected_files"] = p_selected_files;
+	return context_data;
+}
+
+Dictionary FileSystemDock::_get_context_data_for_create(const String &p_base_dir, bool p_needs_prefix) {
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["base_directory"] = p_base_dir;
+	context_data["needs_prefix"] = p_needs_prefix;
+	return context_data;
+}
+
 Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> selected_strings) {
 	// Remove paths or files that are included into another.
 	if (selected_strings.size() > 1) {
@@ -3686,9 +3699,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 #endif
 
 	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM)) {
-		EditorContextMenuPlugin::OptionsData context_data;
-		context_data["selected_files"] = p_paths;
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, context_data);
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, FileSystemDock::_get_context_data(p_paths));
 
 #ifndef DISABLE_DEPRECATED
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_paths, p_paths, 1000);
@@ -3710,10 +3721,8 @@ void FileSystemDock::_add_create_options(PopupMenu *p_popup, const String &p_bas
 	p_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
 	// Options for CONTEXT_SLOT_FILESYSTEM_CREATE are added with an offset, to avoid conflicts in case plugins add options for both FileSystem slots.
 	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE)) {
-		EditorContextMenuPlugin::OptionsData context_data;
-		context_data["base_directory"] = prefix_new ? "res://" : p_base_folder;
-		context_data["needs_prefix"] = prefix_new;
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, context_data, 500);
+		const String base_directory = prefix_new ? "res://" : p_base_folder;
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, FileSystemDock::_get_context_data_for_create(base_directory, prefix_new), 500);
 
 #ifndef DISABLE_DEPRECATED
 		const PackedStringArray legacy_data = prefix_new ? PackedStringArray() : PackedStringArray{ p_base_folder };
@@ -3984,13 +3993,9 @@ bool FileSystemDock::_handle_custom_context_callback(Ref<InputEvent> p_event, co
 	}
 #endif
 
-	EditorContextMenuPlugin::OptionsData context_data;
-	if (create) {
-		context_data["base_directory"] = base_dir;
-		context_data["needs_prefix"] = p_selected.is_empty();
-	} else {
-		context_data["selected_files"] = p_selected;
-	}
+	EditorContextMenuPlugin::OptionsData context_data = create
+			? FileSystemDock::_get_context_data_for_create(base_dir, p_selected.is_empty())
+			: FileSystemDock::_get_context_data(p_selected);
 	EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
 
 	return true;

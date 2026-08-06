@@ -97,7 +97,7 @@
 		<constant name="CONTEXT_SLOT_SCRIPT_EDITOR" value="2" enum="ContextMenuSlot">
 			Context menu of Script editor's script tabs and Shader editor's shader tabs. The data [Dictionary] contains:
 			[code]&amp;"selected_resource": Resource[/code] - The currently selected resource. Can be a [Script], a [Shader], a text file, or [code]null[/code] in case of help pages.
-			[code]&amp;"resource_path": String[/code] - The path of the selected resource.
+			[code]&amp;"path": String[/code] - The path of the selected file. If a help page is selected, the path will be the name of the opened class, prefixed with [code]help:[/code].
 		</constant>
 		<constant name="CONTEXT_SLOT_FILESYSTEM_CREATE" value="3" enum="ContextMenuSlot">
 			The "Create..." submenu of FileSystem dock's context menu, or the "New" section of the main context menu when empty space is clicked. The data [Dictionary] contains:
