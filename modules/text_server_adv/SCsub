@@ -149,6 +149,8 @@ if env["builtin_harfbuzz"]:
                 ("U_HAVE_LIB_SUFFIX", 1),
                 ("U_LIB_SUFFIX_C_NAME", "_godot"),
                 "HAVE_ICU_BUILTIN",
+                # Harfbuzz can use ICU to get unicode data, we don't need to include its own subset: https://github.com/harfbuzz/harfbuzz/blob/main/CONFIG.md#unicode-functions
+                "HB_NO_UCD",
             ]
         )
 
