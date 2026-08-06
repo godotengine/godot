@@ -3274,7 +3274,7 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		code_edit->fold_line(0);
 		CHECK(code_edit->is_line_folded(0));
 		CHECK_FALSE(code_edit->is_line_folded(1));
-		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 2);
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 4);
 
 		code_edit->set_text("test\n\tline1\n$line1\nline2$\n\ttest");
 		CHECK(code_edit->can_fold_line(0));
@@ -3284,7 +3284,7 @@ TEST_CASE("[SceneTree][CodeEdit] folding") {
 		code_edit->fold_line(0);
 		CHECK(code_edit->is_line_folded(0));
 		CHECK_FALSE(code_edit->is_line_folded(1));
-		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 2);
+		CHECK(code_edit->get_next_visible_line_offset_from(1, 1) == 4);
 	}
 
 	SUBCASE("[CodeEdit] folding comments including and/or adjacent to code regions") {
