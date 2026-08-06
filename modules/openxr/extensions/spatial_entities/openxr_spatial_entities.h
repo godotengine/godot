@@ -37,6 +37,8 @@
 
 #include <openxr/openxr.h>
 
+#define SPATIAL_DISCOVERY_RECOMMENDED SNAME("spatial_discovery_recommended")
+
 // Wrapper class for XrSpatialCapabilityConfigurationBaseHeaderEXT
 class OpenXRSpatialCapabilityConfigurationBaseHeader : public RefCounted {
 	GDCLASS(OpenXRSpatialCapabilityConfigurationBaseHeader, RefCounted);
