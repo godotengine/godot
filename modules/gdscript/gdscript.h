@@ -638,10 +638,6 @@ public:
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override;
 
-	/* LOADER FUNCTIONS */
-
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-
 	/* GLOBAL CLASSES */
 
 	virtual bool handles_global_class_type(const String &p_type) const override;

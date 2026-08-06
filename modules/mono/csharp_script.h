@@ -563,9 +563,6 @@ public:
 	void reload_scripts(const Array &p_scripts) override;
 	void reload_tool_script(const Ref<Script> &p_script) override;
 
-	/* LOADER FUNCTIONS */
-	void get_recognized_extensions(List<String> *p_extensions) const override;
-
 #ifdef TOOLS_ENABLED
 	Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) override;
 	bool overrides_external_editor() override;

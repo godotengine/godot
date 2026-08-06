@@ -668,15 +668,9 @@ public:
 	}
 	/* LOADER FUNCTIONS */
 
-	GDVIRTUAL0RC_REQUIRED(PackedStringArray, _get_recognized_extensions)
-
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override {
-		PackedStringArray ret;
-		GDVIRTUAL_CALL(_get_recognized_extensions, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_extensions->push_back(ret[i]);
-		}
-	}
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL0RC(PackedStringArray, _get_recognized_extensions)
+#endif
 
 	GDVIRTUAL0RC_REQUIRED(TypedArray<Dictionary>, _get_public_functions)
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const override {
