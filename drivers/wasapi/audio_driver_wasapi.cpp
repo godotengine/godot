@@ -916,7 +916,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 								r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2 + 1);
 							} else if (ad->audio_input.channels == 1) {
 								l = r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
-							} else if (ad->audio_input.channels >= 2) {
+							} else if (ad->audio_input.channels > 2) {
 								// Average all channels to left and right channels.
 								// This is done to cater to microphones with 3 channels or more,
 								// some of which may be used for specialized purposes
