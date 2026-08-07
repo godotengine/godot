@@ -213,12 +213,14 @@ void EditorExport::add_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
 	if (!export_plugins.has(p_plugin)) {
 		export_plugins.push_back(p_plugin);
 		should_update_presets = true;
+		should_reload_presets = true;
 	}
 }
 
 void EditorExport::remove_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
 	export_plugins.erase(p_plugin);
 	should_update_presets = true;
+	should_reload_presets = true;
 }
 
 Vector<Ref<EditorExportPlugin>> EditorExport::get_export_plugins() {
