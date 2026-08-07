@@ -60,6 +60,8 @@ class SceneImportSettingsData : public Object {
 	HashMap<StringName, Variant> defaults;
 	List<ResourceImporter::ImportOption> options;
 	Vector<String> animation_list;
+	Ref<Animation> animation;
+	float animation_fps = 30.0;
 
 	bool hide_options = false;
 	String path;
@@ -98,6 +100,20 @@ class SceneImportSettingsData : public Object {
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
+		if (String(p_name) == "properties/animation_length") {
+			if (animation.is_valid()) {
+				r_ret = animation->get_length();
+				return true;
+			}
+			return false;
+		}
+		if (String(p_name) == "properties/animation_frames") {
+			if (animation.is_valid()) {
+				r_ret = (int)Math::round(animation->get_length() * animation_fps);
+				return true;
+			}
+			return false;
+		}
 		if (settings) {
 			if (settings->has(p_name)) {
 				r_ret = (*settings)[p_name];
@@ -167,6 +183,12 @@ class SceneImportSettingsData : public Object {
 			return;
 		}
 		Ref<ResourceImporterScene> resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
+		if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION) {
+			PropertyInfo animation_length_prop(Variant::FLOAT, "properties/animation_length", PROPERTY_HINT_NONE, "suffix:s", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY);
+			r_list->push_back(animation_length_prop);
+			PropertyInfo animation_frames_prop(Variant::INT, "properties/animation_frames", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY);
+			r_list->push_back(animation_frames_prop);
+		}
 		for (const ResourceImporter::ImportOption &E : options) {
 			PropertyInfo option = E.option;
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
@@ -798,6 +820,10 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 		}
 	}
 
+	if (defaults.has(SNAME("animation/fps"))) {
+		animation_fps = defaults[SNAME("animation/fps")];
+	}
+
 	// Regardless of p_scene_import_type, use PackedScene for pre_import because we want to see the full thing.
 	_resource_importer_scene->set_scene_import_type("PackedScene");
 	scene = _resource_importer_scene->pre_import(p_path, defaults);
@@ -921,6 +947,8 @@ void SceneImportSettingsDialog::_select(Tree *p_from, const String &p_type, cons
 		scene_import_settings_data->settings = &ad.settings;
 		scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION;
 		scene_import_settings_data->hide_options = hide_anim_and_skel_options;
+		scene_import_settings_data->animation = ad.animation;
+		scene_import_settings_data->animation_fps = animation_fps;
 
 		_animation_update_skeleton_visibility();
 	} else if (p_type == "Mesh") {
@@ -1032,6 +1060,11 @@ void SceneImportSettingsDialog::_inspector_property_edited(const String &p_name)
 			animation_loop_mode = Animation::LoopMode::LOOP_NONE;
 		}
 	}
+	if (p_name == "animation/fps") {
+		if (scene_import_settings_data->current.has("animation/fps")) {
+			animation_fps = scene_import_settings_data->current["animation/fps"];
+		}
+	}
 	if ((p_name == "use_external/enabled") || (p_name == "use_external/path") || (p_name == "use_external/fallback_path")) {
 		MaterialData &material_data = material_map[selected_id];
 		String spath = base_path.get_base_dir();
@@ -1087,6 +1120,7 @@ void SceneImportSettingsDialog::_stop_current_animation() {
 	animation_player->stop();
 	animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	animation_slider->set_value_no_signal(0.0);
+	animation_frame_spin_box->set_value_no_signal(0);
 	set_process(false);
 }
 
@@ -1109,9 +1143,15 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 		animation_pingpong = false;
 
 		if (animation_map.has(p_animation_name)) {
-			HashMap<StringName, Variant> settings(animation_map[p_animation_name].settings);
+			const AnimationData &animation_data = animation_map[p_animation_name];
+			HashMap<StringName, Variant> settings(animation_data.settings);
 			if (settings.has("settings/loop_mode")) {
 				animation_loop_mode = static_cast<Animation::LoopMode>((int)settings["settings/loop_mode"]);
+			}
+
+			if (animation_data.animation.is_valid()) {
+				int max_frames = (int)Math::round(animation_data.animation->get_length() * animation_fps);
+				animation_frame_spin_box->set_max(max_frames);
 			}
 		}
 
@@ -1123,9 +1163,19 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 			animation_player->set_assigned_animation(p_animation_name);
 			animation_player->seek(0.0, true);
 			animation_slider->set_value_no_signal(0.0);
+			animation_frame_spin_box->set_value_no_signal(0);
 			set_process(false);
 		}
 	}
+}
+
+void SceneImportSettingsDialog::_animation_frame_spin_box_value_changed(double p_value) {
+	if (animation_player == nullptr || !animation_map.has(selected_id) || animation_map[selected_id].animation.is_null()) {
+		return;
+	}
+
+	int frames = (int)Math::round(animation_map[selected_id].animation->get_length() * animation_fps);
+	animation_slider->set_value(CLAMP(p_value / frames, 0.0, 1.0));
 }
 
 void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) {
@@ -1137,7 +1187,12 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 		animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	}
-	animation_player->seek(p_value * animation_map[selected_id].animation->get_length(), true);
+	const double animation_length = animation_map[selected_id].animation->get_length();
+	animation_player->seek(p_value * animation_length, true);
+
+	int frames = (int)Math::round(animation_length * animation_fps);
+	int frame = CLAMP((int)Math::round(p_value * frames), 0, frames);
+	animation_frame_spin_box->set_value_no_signal(frame);
 }
 
 void SceneImportSettingsDialog::_skeleton_tree_entered(Skeleton3D *p_skeleton) {
@@ -1154,6 +1209,7 @@ void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 		case Animation::LOOP_NONE: {
 			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			animation_slider->set_value_no_signal(1.0);
+			animation_frame_spin_box->set_value_no_signal(animation_map[selected_id].animation->get_length() * 30.0);
 			set_process(false);
 		} break;
 		case Animation::LOOP_LINEAR: {
@@ -1173,11 +1229,7 @@ void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 }
 
 void SceneImportSettingsDialog::_animation_update_skeleton_visibility() {
-	if (animation_toggle_skeleton_visibility->is_pressed()) {
-		bones_mesh_preview->show();
-	} else {
-		bones_mesh_preview->hide();
-	}
+	bones_mesh_preview->set_visible(animation_toggle_skeleton_visibility->is_pressed());
 }
 
 void SceneImportSettingsDialog::_material_tree_selected() {
@@ -1395,6 +1447,7 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 			if (animation_player != nullptr) {
 				animation_slider->set_value_no_signal(animation_player->get_current_animation_position() / animation_player->get_current_animation_length());
+				animation_frame_spin_box->set_value_no_signal(animation_player->get_current_animation_position() * animation_fps);
 			}
 		} break;
 
@@ -1781,6 +1834,11 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_stop_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	animation_stop_button->set_tooltip_text(TTR("Selected Animation Stop"));
 	animation_stop_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
+
+	animation_frame_spin_box = memnew(SpinBox);
+	animation_hbox->add_child(animation_frame_spin_box);
+	animation_frame_spin_box->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	animation_frame_spin_box->connect(SceneStringName(value_changed), callable_mp(this, &SceneImportSettingsDialog::_animation_frame_spin_box_value_changed));
 
 	animation_slider = memnew(HSlider);
 	animation_hbox->add_child(animation_slider);
