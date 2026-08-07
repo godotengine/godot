@@ -101,6 +101,8 @@ public:
 	virtual int get_input_mix_rate() const override;
 	virtual SpeakerMode get_speaker_mode() const override;
 
+	virtual float get_latency() override;
+
 	virtual void lock() override;
 	virtual void unlock() override;
 	virtual void finish() override;
@@ -123,6 +125,11 @@ public:
 
 	AudioDriverCoreAudio();
 	~AudioDriverCoreAudio() {}
+
+#ifdef MACOS_ENABLED
+private:
+	OSStatus _get_macos_audio_output_property(AudioObjectID object_id, AudioObjectPropertySelector selector, void *data, UInt32 *data_size);
+#endif
 };
 
 #endif // COREAUDIO_ENABLED

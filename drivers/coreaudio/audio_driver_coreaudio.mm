@@ -37,6 +37,8 @@
 #include "core/math/math_funcs_binary.h"
 #include "core/os/os.h"
 
+#include <vector>
+
 #define kOutputBus 0
 #define kInputBus 1
 
@@ -301,6 +303,88 @@ int AudioDriverCoreAudio::get_input_mix_rate() const {
 
 AudioDriver::SpeakerMode AudioDriverCoreAudio::get_speaker_mode() const {
 	return get_speaker_mode_by_total_channels(channels);
+}
+
+float AudioDriverCoreAudio::get_latency() {
+#ifdef MACOS_ENABLED
+	// On MacOS, output latency comes from four different values which need to be combined for the total latency in frames:
+	// buffer size, safety offset, device latency, and stream latency
+	OSStatus result;
+	UInt32 data_size;
+
+	// get device id
+	AudioDeviceID device_id;
+	data_size = sizeof(AudioDeviceID);
+	result = _get_macos_audio_output_property(kAudioObjectSystemObject, kAudioHardwarePropertyDefaultOutputDevice, &device_id, &data_size);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	// buffer size
+	UInt32 output_buffer_frames = 0;
+	data_size = sizeof(output_buffer_frames);
+	result = _get_macos_audio_output_property(device_id, kAudioDevicePropertyBufferFrameSize, &output_buffer_frames, &data_size);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	// safety offset
+	UInt32 safety_offset = 0;
+	data_size = sizeof(safety_offset);
+	result = _get_macos_audio_output_property(device_id, kAudioDevicePropertySafetyOffset, &safety_offset, &data_size);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	// device latency
+	UInt32 device_latency = 0;
+	data_size = sizeof(device_latency);
+	result = _get_macos_audio_output_property(device_id, kAudioDevicePropertyLatency, &device_latency, &data_size);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	// Stream latency
+	UInt32 max_stream_latency = 0;
+	UInt32 streams_bytesize;
+	int stream_count = 0;
+
+	AudioObjectPropertyAddress property_address;
+	property_address.mElement = kAudioObjectPropertyElementMain;
+	property_address.mScope = kAudioDevicePropertyScopeOutput;
+	property_address.mSelector = kAudioDevicePropertyStreams;
+
+	// Get the number of streams, and then loop through them to find the maximum latency reported by any stream
+	// Generally there will only be one stream, and most external audio devices report stream latency as zero
+	// but finding the maximum latency seems like the safest approach
+	result = AudioObjectGetPropertyDataSize(device_id, &property_address, 0, nullptr, &streams_bytesize);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+	stream_count = streams_bytesize / sizeof(AudioStreamID);
+
+	if (stream_count > 0) {
+		std::vector<AudioStreamID> streams(stream_count);
+		data_size = stream_count * sizeof(AudioStreamID);
+		result = _get_macos_audio_output_property(device_id, kAudioDevicePropertyStreams, streams.data(), &data_size);
+		ERR_FAIL_COND_V(result != noErr, FAILED);
+
+		UInt32 stream_latency = 0;
+		data_size = sizeof(stream_latency);
+
+		for (int i = 0; i < stream_count; i++) {
+			result = _get_macos_audio_output_property(streams[i], kAudioStreamPropertyLatency, &stream_latency, &data_size);
+
+			if (result == noErr) {
+				max_stream_latency = MAX(max_stream_latency, stream_latency);
+			}
+		}
+	}
+
+	UInt32 total_latency_frames = output_buffer_frames + safety_offset + device_latency + max_stream_latency;
+
+	double hw_mix_rate;
+	data_size = sizeof(hw_mix_rate);
+	result = _get_macos_audio_output_property(device_id, kAudioDevicePropertyNominalSampleRate, &hw_mix_rate, &data_size);
+	ERR_FAIL_COND_V(result != noErr, FAILED);
+
+	// convert latency from frames to seconds
+	float latency = (float)total_latency_frames / (float)hw_mix_rate;
+
+	return latency;
+#else
+	return 0;
+#endif
 }
 
 void AudioDriverCoreAudio::lock() {
@@ -719,6 +803,19 @@ void AudioDriverCoreAudio::set_input_device(const String &p_name) {
 	if (active) {
 		_set_device(input_device_name, true);
 	}
+}
+
+OSStatus AudioDriverCoreAudio::_get_macos_audio_output_property(AudioObjectID object_id, AudioObjectPropertySelector selector, void *data, UInt32 *data_size) {
+	OSStatus result;
+
+	AudioObjectPropertyAddress property_address;
+	property_address.mElement = kAudioObjectPropertyElementMain;
+	property_address.mScope = kAudioDevicePropertyScopeOutput;
+	property_address.mSelector = selector;
+
+	result = AudioObjectGetPropertyData(object_id, &property_address, 0, nullptr, data_size, data);
+
+	return result;
 }
 
 #endif
