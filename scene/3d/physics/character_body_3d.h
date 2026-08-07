@@ -62,6 +62,7 @@ public:
 	Vector3 get_position_delta() const;
 	const Vector3 &get_floor_normal() const;
 	const Vector3 &get_wall_normal() const;
+	const Vector3 &get_ceiling_normal() const;
 	const Vector3 &get_real_velocity() const;
 	real_t get_floor_angle(const Vector3 &p_up_direction = Vector3(0.0, 1.0, 0.0)) const;
 	const Vector3 &get_platform_velocity() const;
