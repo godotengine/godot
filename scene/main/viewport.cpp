@@ -530,7 +530,11 @@ void Viewport::_sub_window_remove(Window *p_window) {
 		} else {
 			new_focused_window = Object::cast_to<Window>(this);
 		}
-
+#ifdef TOOLS_ENABLED
+		if (new_focused_window && is_part_of_edited_scene() != new_focused_window->is_part_of_edited_scene()) {
+			new_focused_window = nullptr;
+		}
+#endif
 		if (new_focused_window) {
 			int new_focused_index = _sub_window_find(new_focused_window);
 			if (new_focused_index != -1) {
