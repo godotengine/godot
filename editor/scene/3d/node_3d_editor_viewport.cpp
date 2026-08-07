@@ -2526,13 +2526,20 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				} else {
 					if (ruler->is_inside_tree()) {
 						EditorNode::get_singleton()->get_scene_root()->remove_child(ruler);
+						collision_reposition = false;
+
 						ruler_start_point->set_visible(false);
 						ruler_end_point->set_visible(false);
 						ruler_label->set_visible(false);
 						ruler_label_x->set_visible(false);
 						ruler_label_y->set_visible(false);
 						ruler_label_z->set_visible(false);
-						collision_reposition = false;
+
+						geometry->clear_surfaces();
+						geometry_xray->clear_surfaces();
+						triangle_mesh->clear_surfaces();
+						triangle_mesh_xray->clear_surfaces();
+
 						break;
 					}
 
@@ -3259,7 +3266,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-			if (ruler->is_inside_tree()) {
+			if (ruler->is_inside_tree() && ruler_start_point->is_visible()) {
 				Vector3 start_pos = ruler_start_point->get_global_position();
 				Vector3 end_pos = ruler_end_point->get_global_position();
 
@@ -3292,103 +3299,91 @@ void Node3DEditorViewport::_notification(int p_what) {
 				bool show_components = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
 				if (show_components) {
-					Ref<ImmediateMesh> triangle_mesh = ruler_triangle_lines->get_mesh();
-					Ref<ImmediateMesh> triangle_mesh_xray = ruler_triangle_lines_xray->get_mesh();
-
-					if (triangle_mesh.is_valid() && triangle_mesh_xray.is_valid()) {
-						Vector3 delta = end_pos - start_pos;
-						delta = delta.abs();
-						const real_t threshold = 0.001;
-						if (delta.x < threshold) {
-							delta.x = 0.0;
-						}
-						if (delta.y < threshold) {
-							delta.y = 0.0;
-						}
-						if (delta.z < threshold) {
-							delta.z = 0.0;
-						}
-
-						Vector3 corner_point;
-						Color first_line_color;
-						Color second_line_color;
-
-						Color axis_x_color = get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor));
-						Color axis_y_color = get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor));
-						Color axis_z_color = get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor));
-
-						if (delta.x > 0.0 && delta.y > 0.0 && delta.z == 0.0) {
-							// XY plane
-							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
-							first_line_color = axis_x_color;
-							second_line_color = axis_y_color;
-						} else if (delta.x > 0.0 && delta.z > 0.0 && delta.y == 0.0) {
-							// XZ plane
-							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
-							first_line_color = axis_x_color;
-							second_line_color = axis_z_color;
-						} else if (delta.y > 0.0 && delta.z > 0.0 && delta.x == 0.0) {
-							// YZ plane
-							corner_point = Vector3(start_pos.x, start_pos.y, end_pos.z);
-							first_line_color = axis_z_color;
-							second_line_color = axis_y_color;
-						} else if (delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0) {
-							// All three axes
-							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
-							first_line_color = axis_x_color;
-							second_line_color = axis_y_color;
-						} else {
-							corner_point = end_pos;
-							first_line_color = axis_x_color;
-							second_line_color = axis_x_color;
-						}
-
-						triangle_mesh->clear_surfaces();
-						triangle_mesh->surface_begin(Mesh::PRIMITIVE_LINES);
-
-						Vector3 triangle_camera_dir = (camera->get_transform().origin - center).normalized();
-						real_t triangle_offset_distance = 0.01;
-
-						triangle_mesh->surface_set_color(first_line_color);
-						triangle_mesh->surface_add_vertex(start_pos + triangle_camera_dir * triangle_offset_distance);
-						triangle_mesh->surface_set_color(first_line_color);
-						triangle_mesh->surface_add_vertex(corner_point + triangle_camera_dir * triangle_offset_distance);
-						triangle_mesh->surface_set_color(second_line_color);
-						triangle_mesh->surface_add_vertex(corner_point + triangle_camera_dir * triangle_offset_distance);
-						triangle_mesh->surface_set_color(second_line_color);
-						triangle_mesh->surface_add_vertex(end_pos + triangle_camera_dir * triangle_offset_distance);
-
-						triangle_mesh->surface_end();
-
-						Color first_line_color_xray = first_line_color;
-						Color second_line_color_xray = second_line_color;
-						first_line_color_xray.a = 0.15;
-						second_line_color_xray.a = 0.15;
-
-						triangle_mesh_xray->clear_surfaces();
-						triangle_mesh_xray->surface_begin(Mesh::PRIMITIVE_LINES);
-
-						triangle_mesh_xray->surface_set_color(first_line_color_xray);
-						triangle_mesh_xray->surface_add_vertex(start_pos);
-						triangle_mesh_xray->surface_set_color(first_line_color_xray);
-						triangle_mesh_xray->surface_add_vertex(corner_point);
-						triangle_mesh_xray->surface_set_color(second_line_color_xray);
-						triangle_mesh_xray->surface_add_vertex(corner_point);
-						triangle_mesh_xray->surface_set_color(second_line_color_xray);
-						triangle_mesh_xray->surface_add_vertex(end_pos);
-
-						triangle_mesh_xray->surface_end();
+					Vector3 delta = end_pos - start_pos;
+					delta = delta.abs();
+					const real_t threshold = 0.001;
+					if (delta.x < threshold) {
+						delta.x = 0.0;
 					}
+					if (delta.y < threshold) {
+						delta.y = 0.0;
+					}
+					if (delta.z < threshold) {
+						delta.z = 0.0;
+					}
+
+					Vector3 corner_point;
+					Color first_line_color;
+					Color second_line_color;
+
+					Color axis_x_color = get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor));
+					Color axis_y_color = get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor));
+					Color axis_z_color = get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor));
+
+					if (delta.x > 0.0 && delta.y > 0.0 && delta.z == 0.0) {
+						// XY plane
+						corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+						first_line_color = axis_x_color;
+						second_line_color = axis_y_color;
+					} else if (delta.x > 0.0 && delta.z > 0.0 && delta.y == 0.0) {
+						// XZ plane
+						corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+						first_line_color = axis_x_color;
+						second_line_color = axis_z_color;
+					} else if (delta.y > 0.0 && delta.z > 0.0 && delta.x == 0.0) {
+						// YZ plane
+						corner_point = Vector3(start_pos.x, start_pos.y, end_pos.z);
+						first_line_color = axis_z_color;
+						second_line_color = axis_y_color;
+					} else if (delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0) {
+						// All three axes
+						corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+						first_line_color = axis_x_color;
+						second_line_color = axis_y_color;
+					} else {
+						corner_point = end_pos;
+						first_line_color = axis_x_color;
+						second_line_color = axis_x_color;
+					}
+
+					triangle_mesh->clear_surfaces();
+					triangle_mesh->surface_begin(Mesh::PRIMITIVE_LINES);
+
+					Vector3 triangle_camera_dir = (camera->get_transform().origin - center).normalized();
+					real_t triangle_offset_distance = 0.01;
+
+					triangle_mesh->surface_set_color(first_line_color);
+					triangle_mesh->surface_add_vertex(start_pos + triangle_camera_dir * triangle_offset_distance);
+					triangle_mesh->surface_set_color(first_line_color);
+					triangle_mesh->surface_add_vertex(corner_point + triangle_camera_dir * triangle_offset_distance);
+					triangle_mesh->surface_set_color(second_line_color);
+					triangle_mesh->surface_add_vertex(corner_point + triangle_camera_dir * triangle_offset_distance);
+					triangle_mesh->surface_set_color(second_line_color);
+					triangle_mesh->surface_add_vertex(end_pos + triangle_camera_dir * triangle_offset_distance);
+
+					triangle_mesh->surface_end();
+
+					Color first_line_color_xray = first_line_color;
+					Color second_line_color_xray = second_line_color;
+					first_line_color_xray.a = 0.15;
+					second_line_color_xray.a = 0.15;
+
+					triangle_mesh_xray->clear_surfaces();
+					triangle_mesh_xray->surface_begin(Mesh::PRIMITIVE_LINES);
+
+					triangle_mesh_xray->surface_set_color(first_line_color_xray);
+					triangle_mesh_xray->surface_add_vertex(start_pos);
+					triangle_mesh_xray->surface_set_color(first_line_color_xray);
+					triangle_mesh_xray->surface_add_vertex(corner_point);
+					triangle_mesh_xray->surface_set_color(second_line_color_xray);
+					triangle_mesh_xray->surface_add_vertex(corner_point);
+					triangle_mesh_xray->surface_set_color(second_line_color_xray);
+					triangle_mesh_xray->surface_add_vertex(end_pos);
+
+					triangle_mesh_xray->surface_end();
 				} else {
-					Ref<ImmediateMesh> triangle_mesh = ruler_triangle_lines->get_mesh();
-					Ref<ImmediateMesh> triangle_mesh_xray = ruler_triangle_lines_xray->get_mesh();
-
-					if (triangle_mesh.is_valid()) {
-						triangle_mesh->clear_surfaces();
-					}
-					if (triangle_mesh_xray.is_valid()) {
-						triangle_mesh_xray->clear_surfaces();
-					}
+					triangle_mesh->clear_surfaces();
+					triangle_mesh_xray->clear_surfaces();
 				}
 
 				if (show_components) {
@@ -7093,15 +7088,13 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ruler_material_xray->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
 	ruler_material_xray->set_render_priority(BaseMaterial3D::RENDER_PRIORITY_MAX);
 
-	geometry.instantiate();
-
-	geometry_xray.instantiate();
-
 	ruler_line = memnew(MeshInstance3D);
+	geometry.instantiate();
 	ruler_line->set_mesh(geometry);
 	ruler_line->set_material_override(ruler_material);
 
 	ruler_line_xray = memnew(MeshInstance3D);
+	geometry_xray.instantiate();
 	ruler_line_xray->set_mesh(geometry_xray);
 	ruler_line_xray->set_material_override(ruler_material_xray);
 
@@ -7122,13 +7115,11 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ruler_triangle_material_xray->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 	ruler_triangle_lines = memnew(MeshInstance3D);
-	Ref<ImmediateMesh> triangle_mesh;
 	triangle_mesh.instantiate();
 	ruler_triangle_lines->set_mesh(triangle_mesh);
 	ruler_triangle_lines->set_material_override(ruler_triangle_material);
 
 	ruler_triangle_lines_xray = memnew(MeshInstance3D);
-	Ref<ImmediateMesh> triangle_mesh_xray;
 	triangle_mesh_xray.instantiate();
 	ruler_triangle_lines_xray->set_mesh(triangle_mesh_xray);
 	ruler_triangle_lines_xray->set_material_override(ruler_triangle_material_xray);
