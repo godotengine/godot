@@ -167,4 +167,44 @@ TEST_CASE("[Vector2i] Abs and sign methods") {
 			"Vector2i sign should work as expected.");
 }
 
+TEST_CASE("[Vector2i] Division and modulo by -1") {
+	// `INT32_MIN / -1` overflows the quotient. That is undefined behavior, and on x86
+	// it traps at the hardware level rather than wrapping.
+	const Vector2i overflowing = Vector2i(INT32_MIN, 0);
+	const Vector2i minus_one_v = Vector2i(-1, 1);
+
+	CHECK_MESSAGE(
+			overflowing / minus_one_v == Vector2i(INT32_MIN, 0),
+			"Vector2i division of INT32_MIN by -1 should wrap instead of overflowing.");
+	CHECK_MESSAGE(
+			overflowing / -1 == Vector2i(INT32_MIN, 0),
+			"Vector2i division of INT32_MIN by the -1 scalar should wrap instead of overflowing.");
+	CHECK_MESSAGE(
+			overflowing % minus_one_v == Vector2i(0, 0),
+			"Vector2i modulo of INT32_MIN by -1 should be zero instead of overflowing.");
+	CHECK_MESSAGE(
+			overflowing % -1 == Vector2i(0, 0),
+			"Vector2i modulo of INT32_MIN by the -1 scalar should be zero instead of overflowing.");
+
+	Vector2i assigned = overflowing;
+	assigned /= -1;
+	CHECK_MESSAGE(
+			assigned == Vector2i(INT32_MIN, 0),
+			"Vector2i division assignment by -1 should wrap instead of overflowing.");
+	assigned = overflowing;
+	assigned %= -1;
+	CHECK_MESSAGE(
+			assigned == Vector2i(0, 0),
+			"Vector2i modulo assignment by -1 should be zero instead of overflowing.");
+
+	// Values that do not overflow must keep their ordinary results.
+	const Vector2i ordinary = Vector2i(10, -20);
+	CHECK_MESSAGE(
+			ordinary / -1 == Vector2i(-10, 20),
+			"Vector2i division by -1 should still negate when the quotient fits.");
+	CHECK_MESSAGE(
+			ordinary % -1 == Vector2i(0, 0),
+			"Vector2i modulo by -1 should still be zero when the quotient fits.");
+}
+
 } // namespace TestVector2i

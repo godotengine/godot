@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/math_funcs.h"
 #include "core/variant/method_ptrcall.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant.h"
@@ -130,6 +131,26 @@ public:
 	using ReturnType = R;
 };
 
+namespace VariantOpInternal {
+
+template <typename A, typename B>
+constexpr auto div_nz(const A &p_a, const B &p_b) -> decltype(p_a / p_b) {
+	return p_a / p_b;
+}
+constexpr int64_t div_nz(int64_t p_a, int64_t p_b) {
+	return Math::division_no_overflow(p_a, p_b);
+}
+
+template <typename A, typename B>
+constexpr auto mod_nz(const A &p_a, const B &p_b) -> decltype(p_a % p_b) {
+	return p_a % p_b;
+}
+constexpr int64_t mod_nz(int64_t p_a, int64_t p_b) {
+	return Math::modulo_no_overflow(p_a, p_b);
+}
+
+} // namespace VariantOpInternal
+
 template <typename R, typename A, typename B>
 class OperatorEvaluatorDivNZ {
 public:
@@ -141,14 +162,14 @@ public:
 			*r_ret = "Division by zero error";
 			return;
 		}
-		*r_ret = a / b;
+		*r_ret = VariantOpInternal::div_nz(a, b);
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *p_left, const Variant *p_right, Variant *r_ret) {
-		VariantInternalAccessor<R>::get(r_ret) = VariantInternalAccessor<A>::get(p_left) / VariantInternalAccessor<B>::get(p_right);
+		VariantInternalAccessor<R>::get(r_ret) = VariantOpInternal::div_nz(VariantInternalAccessor<A>::get(p_left), VariantInternalAccessor<B>::get(p_right));
 	}
 	static void ptr_evaluate(const void *p_left, const void *p_right, void *r_ret) {
-		PtrToArg<R>::encode(PtrToArg<A>::convert(p_left) / PtrToArg<B>::convert(p_right), r_ret);
+		PtrToArg<R>::encode(VariantOpInternal::div_nz(PtrToArg<A>::convert(p_left), PtrToArg<B>::convert(p_right)), r_ret);
 	}
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
 };
@@ -248,14 +269,14 @@ public:
 			*r_ret = "Modulo by zero error";
 			return;
 		}
-		*r_ret = a % b;
+		*r_ret = VariantOpInternal::mod_nz(a, b);
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *p_left, const Variant *p_right, Variant *r_ret) {
-		VariantInternalAccessor<R>::get(r_ret) = VariantInternalAccessor<A>::get(p_left) % VariantInternalAccessor<B>::get(p_right);
+		VariantInternalAccessor<R>::get(r_ret) = VariantOpInternal::mod_nz(VariantInternalAccessor<A>::get(p_left), VariantInternalAccessor<B>::get(p_right));
 	}
 	static void ptr_evaluate(const void *p_left, const void *p_right, void *r_ret) {
-		PtrToArg<R>::encode(PtrToArg<A>::convert(p_left) % PtrToArg<B>::convert(p_right), r_ret);
+		PtrToArg<R>::encode(VariantOpInternal::mod_nz(PtrToArg<A>::convert(p_left), PtrToArg<B>::convert(p_right)), r_ret);
 	}
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
 };
