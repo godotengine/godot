@@ -218,6 +218,8 @@ Vector2i _logical_to_physical(const Vector2i &p_point) {
 }
 
 Vector2i DisplayServerWindows::_get_screen_expand_offset(int p_screen) const {
+	constexpr int FS_TRANSP_BORDER = 2;
+
 	Vector2i p1 = _logical_to_physical(screen_get_position(p_screen));
 	Vector2i p2 = _logical_to_physical(screen_get_position(p_screen) + screen_get_size(p_screen));
 
@@ -238,16 +240,16 @@ Vector2i DisplayServerWindows::_get_screen_expand_offset(int p_screen) const {
 	}
 
 	if (screen_down == -1) {
-		return Vector2i(0, 2);
+		return Vector2i(0, FS_TRANSP_BORDER);
 	} else if (screen_right == -1) {
-		return Vector2i(2, 0);
+		return Vector2i(FS_TRANSP_BORDER, 0);
 	} else {
 		int diff_d = screen_get_refresh_rate(p_screen) - screen_get_refresh_rate(screen_down);
 		int diff_r = screen_get_refresh_rate(p_screen) - screen_get_refresh_rate(screen_right);
 		if (diff_d < diff_r) {
-			return Vector2i(0, 2);
+			return Vector2i(0, FS_TRANSP_BORDER);
 		} else {
-			return Vector2i(2, 0);
+			return Vector2i(FS_TRANSP_BORDER, 0);
 		}
 	}
 }
@@ -2045,6 +2047,13 @@ void DisplayServerWindows::gl_window_make_current(DisplayServerEnums::WindowID p
 #endif
 	if (gl_manager_native) {
 		gl_manager_native->window_make_current(p_window_id);
+	}
+	if (windows.has(p_window_id)) {
+		WindowData &wd = windows[p_window_id];
+		Vector2i off = (wd.multiwindow_fs || (!wd.fullscreen && wd.borderless && wd.maximized)) ? _get_screen_expand_offset(window_get_current_screen(p_window_id)) : Vector2i();
+		RasterizerGLES3::set_screen_y_offset(off.y);
+	} else {
+		RasterizerGLES3::set_screen_y_offset(0);
 	}
 #endif
 }
