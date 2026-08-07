@@ -1398,7 +1398,7 @@ void ConnectionsDock::_tree_gui_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
 		if (ED_IS_SHORTCUT("connections_editor/disconnect", p_event)) {
 			item = tree->get_selected();
-			if (item && _get_item_type(*item) == TREE_ITEM_TYPE_CONNECTION) {
+			if (item && _get_item_type(*item) == TREE_ITEM_TYPE_CONNECTION && !item->has_meta("_inherited_connection")) {
 				Connection connection = item->get_metadata(0);
 				_disconnect(connection);
 				update_tree();
