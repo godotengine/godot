@@ -19,7 +19,7 @@
 #endif
 #endif
 
-#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
+#if !defined(TANGENT_USED) && (defined(NORMAL_MAP_USED) || defined(BINORMAL_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED))
 #define TANGENT_USED
 #endif
 
@@ -175,6 +175,7 @@ layout(constant_id = 2) const bool sc_emulate_point_size = false;
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
+#define INSTANCE_FLAGS_POSITIVE_DET (1 << 0)
 #define INSTANCE_FLAGS_DYNAMIC (1 << 3)
 #define INSTANCE_FLAGS_NON_UNIFORM_SCALE (1 << 4)
 #define INSTANCE_FLAGS_USE_GI_BUFFERS (1 << 5)
