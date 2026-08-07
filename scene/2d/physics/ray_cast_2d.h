@@ -47,6 +47,7 @@ class RayCast2D : public Node2D {
 	HashSet<RID> exclude;
 	uint32_t collision_mask = 1;
 	bool exclude_parent_body = true;
+	Color debug_color;
 
 	Vector2 target_position = Vector2(0, 50);
 
@@ -56,10 +57,14 @@ class RayCast2D : public Node2D {
 	bool hit_from_inside = false;
 
 	void _draw_debug_shape();
+	Color _get_default_debug_color() const;
 
 protected:
 	void _notification(int p_what);
 	void _update_raycast_state();
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -95,6 +100,9 @@ public:
 	int get_collider_shape() const;
 	Vector2 get_collision_point() const;
 	Vector2 get_collision_normal() const;
+
+	void set_debug_color(const Color &p_color);
+	Color get_debug_color() const;
 
 	void add_exception_rid(const RID &p_rid);
 	void add_exception(RequiredParam<const CollisionObject2D> rp_node);
