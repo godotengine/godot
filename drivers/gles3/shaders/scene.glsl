@@ -634,7 +634,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 		// Uncompressed format.
 		vec2 signed_tangent_attrib = axis_tangent_attrib.zw * 2.0 - 1.0;
 		tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
-		binormal_sign = sign(signed_tangent_attrib.y);
+		binormal_sign = signed_tangent_attrib.y >= 0.0 ? 1.0 : -1.0;
 		binormal = normalize(cross(normal, tangent) * binormal_sign);
 	} else {
 		// Compressed format.
