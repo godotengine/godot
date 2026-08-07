@@ -41,7 +41,6 @@
 #include "servers/rendering/shader_preprocessor.h"
 
 #ifdef TOOLS_ENABLED
-#include "core/string/regex.h"
 #include "editor/doc/editor_help.h"
 #endif
 
@@ -162,6 +161,7 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 		class_doc.is_script_doc = true;
 		class_doc.inherits = "Shader";
 	}
+	int char_idx = 0;
 #endif
 
 	for (PropertyInfo &pi : local) {
@@ -183,15 +183,158 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 			if (generate_doc) {
 				DocData::PropertyDoc prop_doc;
 				prop_doc.name = "shader_parameter/" + pi.name;
-				const RegEx pattern("/\\*\\*\\s([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/\\s*uniform\\s+\\w+\\s+" + pi.name + "(?=[\\s:;=])");
-				Ref<RegExMatch> pattern_ref = pattern.search(code);
-				if (pattern_ref.is_valid()) {
-					RegExMatch *match = pattern_ref.ptr();
-					const RegEx pattern_tip("\\/\\*\\*([\\s\\S]*?)\\*/");
-					Ref<RegExMatch> pattern_tip_ref = pattern_tip.search(match->get_string(0));
-					RegExMatch *match_tip = pattern_tip_ref.ptr();
-					const RegEx pattern_stripped("\\n\\s*\\*\\s*");
-					prop_doc.description = pattern_stripped.sub(match_tip->get_string(1), "\n", true);
+
+				Vector<char32_t> comment_chars;
+				String comment;
+				bool found = false;
+#define GETCHAR(m_idx) (((char_idx + m_idx) < code.length()) ? code[char_idx + m_idx] : char32_t(0))
+				while (!found && char_idx < code.length()) {
+					char_idx++;
+
+					switch (GETCHAR(-1)) {
+						case '(':
+						case ')':
+						case '{':
+						case '}':
+						case ';':
+						case '=':
+						case ':': {
+							// Reset since property name was not found since new uniform.
+							comment_chars.clear();
+							continue;
+						}
+						case '"': {
+							// String constant.
+							comment_chars.clear();
+							bool _previous_backslash = false;
+
+							while (true) {
+								bool _ended = false;
+								char32_t c = GETCHAR(0);
+								if (c == 0) {
+									// EOF
+									break;
+								}
+								switch (c) {
+									case '"': {
+										if (_previous_backslash) {
+											_previous_backslash = false;
+										} else {
+											_ended = true;
+										}
+										break;
+									}
+									case '\\': {
+										_previous_backslash = !_previous_backslash;
+										break;
+									}
+								}
+
+								char_idx++;
+								if (_ended) {
+									break;
+								}
+							}
+						} break;
+						case '/': {
+							// Block comment
+							comment_chars.clear();
+
+							if (GETCHAR(0) == '*') {
+								char_idx++;
+
+								// Doc comment
+								bool is_doc_comment = GETCHAR(0) == '*';
+								if (is_doc_comment) {
+									char_idx++;
+								}
+
+								while (true) {
+									// EOF
+									if (GETCHAR(0) == 0) {
+										break;
+									}
+									// New doc comment.
+									if (GETCHAR(0) == '/' && GETCHAR(1) == '*' && GETCHAR(2) == '*') {
+										char_idx += 3;
+
+										// Reset since property name was not found since previous comment.
+										comment_chars.clear();
+										is_doc_comment = true;
+										continue;
+									}
+									// End of comment.
+									if (GETCHAR(0) == '*' && GETCHAR(1) == '/') {
+										char_idx += 2;
+										break;
+									}
+									if (is_doc_comment) {
+										// Skip duplicate or trailing whitespace.
+										if (is_whitespace(GETCHAR(0)) && !is_linebreak(GETCHAR(0)) && (comment_chars.is_empty() || is_whitespace(comment_chars.get(comment_chars.size() - 1)))) {
+											char_idx++;
+											continue;
+										}
+										// Skip asterisks at beginning of line.
+										if (GETCHAR(0) == '*' && !comment_chars.is_empty() && is_linebreak(comment_chars.get(comment_chars.size() - 1))) {
+											char_idx++;
+											continue;
+										}
+
+										comment_chars.push_back(GETCHAR(0));
+									}
+
+									char_idx++;
+								}
+							} else if (GETCHAR(0) == '/') {
+								// Line comment.
+								char_idx++;
+
+								while (true) {
+									// EOF
+									if (GETCHAR(0) == 0) {
+										break;
+									}
+									// End line comment.
+									if (GETCHAR(0) == '\n') {
+										char_idx++;
+										break;
+									}
+
+									char_idx++;
+								}
+							}
+
+							continue; // A comment, continue to next token.
+						} break;
+						default: {
+							if (is_ascii_identifier_char(GETCHAR(-1))) {
+								String str;
+
+								while (is_ascii_identifier_char(GETCHAR(-1))) {
+									str += char32_t(GETCHAR(-1));
+									char_idx++;
+								}
+
+								if (str == pi.name) {
+									found = true;
+									if (comment_chars.is_empty()) {
+										break;
+									}
+									comment.resize_uninitialized(comment_chars.size() + 1);
+									char32_t *ret_ptrw = comment.ptrw();
+									for (char32_t &chr : comment_chars) {
+										*ret_ptrw = chr;
+										ret_ptrw += 1;
+									}
+									*ret_ptrw = 0;
+								}
+							}
+						} break;
+					}
+				}
+#undef GETCHAR
+				if (found) {
+					prop_doc.description = comment;
 
 					pi.class_name = class_doc.name;
 					class_doc.properties.push_back(prop_doc);
