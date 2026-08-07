@@ -478,6 +478,9 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				col = reserved_keywords[word];
 				// Don't highlight `list` as a type in `for elem: Type in list`.
 				expect_type = false;
+				if (word == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::TK_IN)) {
+					is_after_var_const_declaration = false;
+				}
 			} else if (member_keywords.has(word)) {
 				col = member_keywords[word];
 				in_member_variable = true;
