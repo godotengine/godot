@@ -134,10 +134,9 @@ RenderRegion Paint::Impl::bounds()
     return ret;
 }
 
-
-Iterator* Paint::Impl::iterator()
+AccessorIterator* Paint::Impl::iterator()
 {
-    Iterator* ret;
+    AccessorIterator* ret;
     PAINT_METHOD(ret, iterator());
     return ret;
 }

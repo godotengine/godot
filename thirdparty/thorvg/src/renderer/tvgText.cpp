@@ -49,14 +49,14 @@ Result Text::load(const char* filename) noexcept
 {
 #ifdef THORVG_FILE_IO_SUPPORT
     bool invalid; //invalid path
-    auto loader = LoaderMgr::loader(filename, &invalid);
+    LoaderOps ops = {Type::Text};
+    auto loader = LoaderMgr::loader(filename, &ops, &invalid);
     if (loader) {
         if (loader->sharing > 0) --loader->sharing;   //font loading doesn't mean sharing.
         return Result::Success;
-    } else {
-        if (invalid) return Result::InvalidArguments;
-        else return Result::NonSupport;
     }
+    if (invalid) return Result::InvalidArguments;
+    else return Result::NonSupport;
 #else
     TVGLOG("RENDERER", "FILE IO is disabled!");
     return Result::NonSupport;
@@ -74,7 +74,8 @@ Result Text::load(const char* name, const char* data, uint32_t size, const char*
         return Result::InsufficientCondition;
     }
 
-    if (!LoaderMgr::loader(name, data, size, mimeType, copy)) return Result::NonSupport;
+    LoaderOps ops = {Type::Text};
+    if (!LoaderMgr::loader(name, data, size, mimeType, &ops, copy)) return Result::NonSupport;
     return Result::Success;
 }
 

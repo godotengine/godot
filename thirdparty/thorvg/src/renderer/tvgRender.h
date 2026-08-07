@@ -227,6 +227,13 @@ struct RenderPath
     Array<PathCommand> cmds;
     Array<Point> pts;
 
+    void dismiss()
+    {
+        // If you moved the data manually, destroy the RenderPath instance safely
+        cmds.data = nullptr;
+        pts.data = nullptr;
+    }
+
     bool empty() const
     {
         return pts.empty();
@@ -312,12 +319,11 @@ struct RenderPath
         return curr;
     }
 
-    /* Optimize path in screen space by collapsing zero length lines
-       and removing unnecessary cubic beziers. */
-    void optimize(RenderPath& out, const Matrix& matrix, bool& thin) const;
     bool bounds(const Matrix* m, BBox& box);
     void addCircle(float cx, float cy, float rx, float ry, bool cw);
     void addRect(float x, float y, float w, float h, float rx, float ry, bool cw);
+
+    static RenderPath& scratch();
 };
 
 struct RenderTrimPath
@@ -458,8 +464,6 @@ struct RenderShape
     {
         return stroke ? stroke->miterlimit : 4.0f;
     }
-
-    bool strokeDash(RenderPath& out, const Matrix* transform = nullptr) const;
 };
 
 struct RenderEffect
@@ -596,8 +600,8 @@ public:
     //main features
     virtual ~RenderMethod() {}
     virtual bool preUpdate() = 0;
-    virtual RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
-    virtual RenderData prepare(RenderSurface* surface, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags) = 0;
+    virtual RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) = 0;
+    virtual RenderData prepare(RenderSurface* surface, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags) = 0;
     virtual bool postUpdate() = 0;
     virtual bool preRender() = 0;
     virtual bool renderShape(RenderData data) = 0;

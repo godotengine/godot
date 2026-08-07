@@ -27,7 +27,7 @@
 #include "tvgMath.h"
 #include "tvgShape.h"
 #include "tvgFill.h"
-#include "tvgLoader.h"
+#include "tvgLoaderMgr.h"
 
 namespace tvg
 {
@@ -240,7 +240,7 @@ struct TextImpl : Text
         return text;
     }
 
-    Iterator* iterator()
+    AccessorIterator* iterator()
     {
         return nullptr;
     }

@@ -513,8 +513,8 @@ bool effectFill(SwCompositor* cmp, const RenderEffectFill* params, bool direct)
                 auto tmp = ALPHA_BLEND(color, a);
                 *dst = tmp + ALPHA_BLEND(*dst, 255 - a);
             }
-            dbuffer += cmp->image.stride;
-            sbuffer += cmp->recoverSfc->stride;
+            dbuffer += cmp->recoverSfc->stride;
+            sbuffer += cmp->image.stride;
         }
         cmp->valid = true;  //no need the subsequent composition
     } else {
@@ -564,8 +564,8 @@ bool effectTint(SwCompositor* cmp, const RenderEffectTint* params, bool direct)
                 if (params->intensity < 255) val = INTERPOLATE(val, *src, params->intensity);
                 *dst = INTERPOLATE(val, *dst, MULTIPLY(opacity, A(*src)));
             }
-            dbuffer += cmp->image.stride;
-            sbuffer += cmp->recoverSfc->stride;
+            dbuffer += cmp->recoverSfc->stride;
+            sbuffer += cmp->image.stride;
         }
         cmp->valid = true;  //no need the subsequent composition
     } else {
@@ -635,8 +635,8 @@ bool effectTritone(SwCompositor* cmp, const RenderEffectTritone* params, bool di
                     *dst = INTERPOLATE(INTERPOLATE(*src, _trintone(shadow, midtone, highlight, luma((uint8_t*)src)), params->blender), *dst, MULTIPLY(opacity, A(*src)));
                 }
             }
-            dbuffer += cmp->image.stride;
-            sbuffer += cmp->recoverSfc->stride;
+            dbuffer += cmp->recoverSfc->stride;
+            sbuffer += cmp->image.stride;
         }
         cmp->valid = true;  //no need the subsequent composition
     } else {

@@ -26,36 +26,7 @@
 #include <algorithm>
 #include "tvgMath.h"
 #include "tvgPaint.h"
-
-
-struct SceneIterator : Iterator
-{
-    list<Paint*>* paints;
-    list<Paint*>::iterator itr;
-
-    SceneIterator(list<Paint*>* p) : paints(p)
-    {
-        begin();
-    }
-
-    const Paint* next() override
-    {
-        if (itr == paints->end()) return nullptr;
-        auto paint = *itr;
-        ++itr;
-        return paint;
-    }
-
-    uint32_t count() override
-    {
-       return paints->size();
-    }
-
-    void begin() override
-    {
-        itr = paints->begin();
-    }
-};
+#include "tvgAccessor.h"
 
 struct SceneImpl : Scene
 {
@@ -389,8 +360,27 @@ struct SceneImpl : Scene
         return Result::Success;
     }
 
-    Iterator* iterator()
+    AccessorIterator* iterator()
     {
+        struct SceneIterator : AccessorIterator
+        {
+            list<Paint*>* paints;
+            list<Paint*>::iterator itr;
+
+            SceneIterator(list<Paint*>* p) : paints(p)
+            {
+                itr = paints->begin();
+            }
+
+            const Paint* next() override
+            {
+                if (itr == paints->end()) return nullptr;
+                auto paint = *itr;
+                ++itr;
+                return paint;
+            }
+        };
+
         return new SceneIterator(&paints);
     }
 

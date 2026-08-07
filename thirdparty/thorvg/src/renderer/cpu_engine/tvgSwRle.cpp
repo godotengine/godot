@@ -222,8 +222,11 @@ struct RleWorker
 
     SwPoint pos;
 
-    SwPoint bezStack[32 * 3 + 1];
-    SwPoint lineStack[32 + 1];
+#define BEZ_STACK_SIZE (32 * 3 + 1)
+    SwPoint bezStack[BEZ_STACK_SIZE];
+
+#define LINE_STACK_SIZE (32 + 1)
+    SwPoint lineStack[LINE_STACK_SIZE];
     int levStack[32];
 
     SwOutline* outline;
@@ -276,17 +279,6 @@ static inline int32_t HYPOT(SwPoint pt)
     if (pt.y < 0) pt.y = -pt.y;
     return ((pt.x > pt.y) ? (pt.x + (3 * pt.y >> 3)) : (pt.y + (3 * pt.x >> 3)));
 }
-
-
-// Used to prevent integer overflow when calculating the distance between points.
-// This function uses 64-bit arithmetic to safely compute the difference between coordinates.
-static inline uint32_t SAFE_HYPOT(SwPoint& pt1, SwPoint& pt2)
-{
-    auto x = uint32_t(abs(int64_t(pt1.x) - int64_t(pt2.x)));
-    auto y = uint32_t(abs(int64_t(pt1.y) - int64_t(pt2.y)));
-    return (x > y) ? (x + (3 * y >> 3)) : (y + (3 * x >> 3));
-}
-
 
 static void _horizLine(RleWorker& rw, int32_t x, int32_t y, int32_t area, int32_t aCount)
 {
@@ -486,16 +478,20 @@ static bool _lineTo(RleWorker& rw, const SwPoint& to)
     }
 
     auto line = rw.lineStack;
+    auto end = line + LINE_STACK_SIZE;
     line[0] = to;
     line[1] = rw.pos;
 
-    while (true) {
-        if (SAFE_HYPOT(line[0], line[1]) > SHRT_MAX) {
+    while (line < end) {
+        auto diff = line[0] - line[1];
+
+        // avoid possible arithmetic overflow below by splitting
+        if (HYPOT(diff) > SHRT_MAX) {
             mathSplitLine(line);
             ++line;
             continue;
         }
-        auto diff = line[0] - line[1];
+
         e1 = TRUNC(line[1]);
         e2 = TRUNC(line[0]);
 
@@ -595,12 +591,14 @@ static bool _lineTo(RleWorker& rw, const SwPoint& to)
 
         if (line-- == rw.lineStack) return true;
     }
+    return false;
 }
 
 
 static bool _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, const SwPoint& to)
 {
     auto arc = rw.bezStack;
+    auto end = rw.bezStack + BEZ_STACK_SIZE;
     arc[0] = to;
     arc[1] = ctrl2;
     arc[2] = ctrl1;
@@ -623,7 +621,7 @@ static bool _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, 
     /* Evaluation for Recursive Subdivision of Bezier Curves' by Thomas */
     /* F. Hain, at                                                      */
     /* http://www.cis.southalabama.edu/~hain/general/Publications/Bezier/Camera-ready%20CISST02%202.pdf */
-    while (true) {
+    while (arc < end) {
         {
             //diff is the P0 - P3 chord vector
             auto diff = arc[3] - arc[0];
@@ -636,15 +634,11 @@ static bool _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, 
             auto sLimit = L * (ONE_PIXEL / 6);
 
             auto diff1 = arc[1] - arc[0];
-            auto s = diff.y * diff1.x - diff.x * diff1.y;
-            if (s < 0) s = -s;
-            if (s > sLimit) goto split;
+            if (abs(diff.y * diff1.x - diff.x * diff1.y) > sLimit) goto split;
 
             //s is L * the perpendicular distance from P2 to the line P0 - P3
             auto diff2 = arc[2] - arc[0];
-            s = diff.y * diff2.x - diff.x * diff2.y;
-            if (s < 0) s = -s;
-            if (s > sLimit) goto split;
+            if (abs(diff.y * diff2.x - diff.x * diff2.y) > sLimit) goto split;
 
             /* Split super curvy segments where the off points are so far
             from the chord that the angles P0-P1-P3 or P0-P2-P3 become
@@ -666,6 +660,7 @@ static bool _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, 
         if (arc == rw.bezStack) return true;
         arc -= 3;
     }
+    return false;
 }
 
 

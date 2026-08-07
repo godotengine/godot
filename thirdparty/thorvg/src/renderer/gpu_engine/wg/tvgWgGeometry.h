@@ -20,38 +20,27 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_FRAME_MODULE_H_
-#define _TVG_FRAME_MODULE_H_
+#ifndef _TVG_WG_GEOMETRY_H_
+#define _TVG_WG_GEOMETRY_H_
 
-#include "tvgLoadModule.h"
+#include <cassert>
+#include "tvgMath.h"
+#include "tvgArray.h"
 
-namespace tvg
-{
+struct WgMeshData {
+    Array<Point> vbuffer;
+    Array<Point> tbuffer;
+    Array<uint32_t> ibuffer;
+    size_t voffset{};
+    size_t toffset{};
+    size_t ioffset{};
 
-class FrameModule: public ImageLoader
-{
-public:
-    float segmentBegin = 0.0f;
-    float segmentEnd;             //Initialize the value with the total frame number
+    void bbox(const Point pmin, const Point pmax);
+    void imageBox(float w, float h, const Matrix& transform);
+    void blitBox();
+    void clear();
 
-    FrameModule(FileType type) : ImageLoader(type) {}
-    virtual ~FrameModule() {}
-
-    virtual bool frame(float no) = 0;       //set the current frame number
-    virtual float totalFrame() = 0;         //return the total frame count
-    virtual float curFrame() = 0;           //return the current frame number
-    virtual float duration() = 0;           //return the animation duration in seconds
-    virtual Result segment(float begin, float end) = 0;
-
-    void segment(float* begin, float* end)
-    {
-        if (begin) *begin = segmentBegin;
-        if (end) *end = segmentEnd;
-    }
-
-    virtual bool animatable() override { return true; }
+    bool invalid() { return vbuffer.empty(); }
 };
 
-}
-
-#endif //_TVG_FRAME_MODULE_H_
+#endif // _TVG_WG_GEOMETRY_H_

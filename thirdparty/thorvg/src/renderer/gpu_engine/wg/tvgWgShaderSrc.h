@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
+ * Copyright (c) 2023 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,32 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_ITERATOR_ACCESSOR_H_
-#define _TVG_ITERATOR_ACCESSOR_H_
+#ifndef _TVG_WG_SHADER_SRC_H_
+#define _TVG_WG_SHADER_SRC_H_
 
-#include "tvgPaint.h"
+// helper shaders
+extern const char* cShaderSrc_Stencil;
+extern const char* cShaderSrc_Depth;
+// shaders normal blend
+extern const char* cShaderSrc_Solid;
+extern const char* cShaderSrc_Linear;
+extern const char* cShaderSrc_Radial;
+extern const char* cShaderSrc_Image;
+extern const char* cShaderSrc_Scene;
+// shaders custrom blend
+extern const char* cShaderSrc_Solid_Blend;
+extern const char* cShaderSrc_Linear_Blend;
+extern const char* cShaderSrc_Radial_Blend;
+extern const char* cShaderSrc_Image_Blend;
+extern const char* cShaderSrc_Scene_Blend;
+extern const char* cShaderSrc_BlendFuncs;
+// shaders scene compose
+extern const char* cShaderSrc_Scene_Compose;
+// shaders blit
+extern const char* cShaderSrc_Blit;
 
-namespace tvg
-{
+// shader sources effects
+extern const char* cShaderSrc_Shadow;
+extern const char* cShaderSrc_Effects;
 
-class IteratorAccessor
-{
-public:
-    //Utility Method: Iterator Accessor
-    static Iterator* iterator(const Paint* paint)
-    {
-        return PAINT(paint)->iterator();
-    }
-};
-
-}
-
-#endif //_TVG_ITERATOR_ACCESSOR_H_
+#endif // _TVG_WG_SHEDER_SRC_H_

@@ -8,7 +8,7 @@
 
 #define TVG_VERSION_MAJOR 1  // for compile-time checks
 #define TVG_VERSION_MINOR 0  // for compile-time checks
-#define TVG_VERSION_MICRO 3  // for compile-time checks
+#define TVG_VERSION_MICRO 4  // for compile-time checks
 
 #ifdef TVG_API
     #undef TVG_API
@@ -1743,15 +1743,18 @@ struct TVG_API Picture : Paint
     Result filter(FilterMethod method) noexcept;
 
     /**
-     * @brief Retrieve a paint object from the Picture scene by its Unique ID.
+     * @brief Retrieve a Paint object from the Picture scene by its unique ID.
      *
-     * This function searches for a paint object within the Picture scene that matches the provided @p id.
+     * Searches for a Paint object within the Picture scene that matches the given @p id.
      *
-     * @param[in] id The Unique ID of the paint object.
+     * @param[in] id The unique identifier of the Paint object.
      *
-     * @return A pointer to the paint object that matches the given identifier, or @c nullptr if no matching paint object is found.
+     * @return A pointer to the matching Paint object, or @c nullptr if not found.
+     *
+     * @note Setting @ref Picture::accessible to @c true enables more efficient access.
      *
      * @see Accessor::id()
+     * @see Picture::accessible
      *
      * @since 1.0
      */
@@ -1779,6 +1782,8 @@ struct TVG_API Picture : Paint
      * @since 1.0
      */
     Type type() const noexcept override;
+
+    bool accessible = false;
 
     _TVG_DECLARE_ACCESSOR(Animation);
     _TVG_DECLARE_PRIVATE_DERIVE(Picture);
@@ -2712,7 +2717,6 @@ struct TVG_API Saver final
     _TVG_DECLARE_PRIVATE_BASE(Saver);
 };
 
-
 /**
  * @class Accessor
  *
@@ -2721,12 +2725,13 @@ struct TVG_API Saver final
  * The Accessor helps you search specific nodes to read the property information, figure out the structure of the scene tree and its size.
  *
  * @warning We strongly warn you not to change the paints of a scene unless you really know the design-structure.
+ * @warning This class is not designed for inheritance.
  *
  * @since 0.10
  */
-struct TVG_API Accessor final
+struct TVG_API Accessor
 {
-    ~Accessor();
+    virtual ~Accessor();
 
     /**
      * @brief Set the access function for traversing the Picture scene tree nodes.
@@ -2752,10 +2757,33 @@ struct TVG_API Accessor final
      * @return The generated unique identifier value.
      *
      * @see Paint::id
+     * @see Picture::paint()
      *
      * @since 1.0
      */
     static uint32_t id(const char* name) noexcept;
+
+    /**
+     * @brief Retrieve the original name string from a given unique ID.
+     *
+     * Returns the name associated with the specified identifier.
+     *
+     * This method is only valid when @ref Picture::accessible is set to @c true
+     * for the Picture associated with the given @p paint in @ref Accessor::set() Otherwise, the name
+     * information may not be available.
+     *
+     * @param[in] id The unique identifier.
+     *
+     * @return The corresponding name string, or @c nullptr if not found or unavailable.
+     *
+     * @see Accessor::id()
+     * @see Accessor::set()
+     * @see Picture::accessible
+     *
+     * @note This function is only availble within Accessor callbacks registered via @ref Accessor::set().
+     * @note Experimental API
+     */
+    const char* name(uint32_t id) noexcept;
 
     /**
      * @brief Creates a new Accessor object.

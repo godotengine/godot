@@ -20,11 +20,35 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_SVG_SCENE_BUILDER_H_
-#define _TVG_SVG_SCENE_BUILDER_H_
+#ifndef _TVG_GL_PROGRAM_H_
+#define _TVG_GL_PROGRAM_H_
 
-#include "tvgCommon.h"
+#include "tvgGlShader.h"
 
-Scene* svgSceneBuild(SvgLoaderData& loaderData, Box vBox, float w, float h, AspectRatioAlign align, AspectRatioMeetOrSlice meetOrSlice, const string& svgPath, SvgViewFlag viewFlag);
+class GlProgram
+{
+public:
+    GlProgram(const char* vertSrc, const char* fragSrc);
+    ~GlProgram();
 
-#endif //_TVG_SVG_SCENE_BUILDER_H_
+    void load();
+    static void unload();
+    int32_t getAttributeLocation(const char* name);
+    int32_t getUniformLocation(const char* name);
+    int32_t getUniformBlockIndex(const char* name);
+    uint32_t getProgramId();
+    void setUniform1Value(int32_t location, int count, const int* values);
+    void setUniform2Value(int32_t location, int count, const int* values);
+    void setUniform3Value(int32_t location, int count, const int* values);
+    void setUniform4Value(int32_t location, int count, const int* values);
+    void setUniform1Value(int32_t location, int count, const float* values);
+    void setUniform2Value(int32_t location, int count, const float* values);
+    void setUniform3Value(int32_t location, int count, const float* values);
+    void setUniform4Value(int32_t location, int count, const float* values);
+
+private:
+    uint32_t mProgramObj;
+    static uint32_t mCurrentProgram;
+};
+
+#endif /* _TVG_GL_PROGRAM_H_ */

@@ -23,6 +23,7 @@
 #include <cstring>
 #include "tvgCommon.h"
 #include "tvgStr.h"
+#include "tvgMath.h"
 #include "tvgSaveModule.h"
 
 #ifdef THORVG_GIF_SAVER_SUPPORT

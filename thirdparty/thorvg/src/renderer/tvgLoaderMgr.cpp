@@ -23,7 +23,7 @@
 #include <atomic>
 #include "tvgInlist.h"
 #include "tvgStr.h"
-#include "tvgLoader.h"
+#include "tvgLoaderMgr.h"
 #include "tvgLock.h"
 
 #ifdef THORVG_SVG_LOADER_SUPPORT
@@ -52,7 +52,6 @@
 
 #include "tvgRawLoader.h"
 
-
 uintptr_t HASH_KEY(const char* data)
 {
     return reinterpret_cast<uintptr_t>(data);
@@ -62,16 +61,15 @@ uintptr_t HASH_KEY(const char* data)
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-//TODO: remove it.
+// TODO: remove it.
 atomic<ColorSpace> ImageLoader::cs{ColorSpace::ARGB8888};
 
 static Key _key;
-static Inlist<tvg::LoadModule> _activeLoaders;
+static Inlist<tvg::Loader> _activeLoaders;
 
-
-static tvg::LoadModule* _find(FileType type)
+static tvg::Loader* _find(FileType type)
 {
-    switch(type) {
+    switch (type) {
         case FileType::Png: {
 #ifdef THORVG_PNG_LOADER_SUPPORT
             return new PngLoader;
@@ -118,8 +116,8 @@ static tvg::LoadModule* _find(FileType type)
     }
 
 #ifdef THORVG_LOG_ENABLED
-    const char *format;
-    switch(type) {
+    const char* format;
+    switch (type) {
         case FileType::Svg: {
             format = "SVG";
             break;
@@ -158,9 +156,8 @@ static tvg::LoadModule* _find(FileType type)
     return nullptr;
 }
 
-
 #ifdef THORVG_FILE_IO_SUPPORT
-static tvg::LoadModule* _findByPath(const char* filename)
+static tvg::Loader* _findByPath(const char* filename)
 {
     auto ext = fileext(filename);
     if (!ext) return nullptr;
@@ -175,7 +172,6 @@ static tvg::LoadModule* _findByPath(const char* filename)
     return nullptr;
 }
 #endif
-
 
 static FileType _convert(const char* mimeType)
 {
@@ -195,14 +191,12 @@ static FileType _convert(const char* mimeType)
     return type;
 }
 
-
-static tvg::LoadModule* _findByType(const char* mimeType)
+static tvg::Loader* _findByType(const char* mimeType)
 {
     return _find(_convert(mimeType));
 }
 
-
-static tvg::LoadModule* _findFromCache(const char* filename)
+static tvg::Loader* _findFromCache(const char* filename)
 {
     ScopedLock lock(_key);
     INLIST_FOREACH(_activeLoaders, loader) {
@@ -214,8 +208,7 @@ static tvg::LoadModule* _findFromCache(const char* filename)
     return nullptr;
 }
 
-
-static tvg::LoadModule* _findFromCache(const char* data, uint32_t size, const char* mimeType)
+static tvg::Loader* _findFromCache(const char* data, uint32_t size, const char* mimeType)
 {
     auto type = _convert(mimeType);
     if (type == FileType::Unknown) return nullptr;
@@ -233,32 +226,28 @@ static tvg::LoadModule* _findFromCache(const char* data, uint32_t size, const ch
     return nullptr;
 }
 
-
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
-
 
 bool LoaderMgr::init()
 {
     return true;
 }
 
-
 bool LoaderMgr::term()
 {
-    //clean up the remained font loaders which is globally used.
+    // clean up the remained font loaders which is globally used.
     INLIST_SAFE_FOREACH(_activeLoaders, loader) {
         if (loader->type != FileType::Ttf) continue;
         auto ret = loader->close();
         _activeLoaders.remove(loader);
-        if (ret) delete(loader);
+        if (ret) delete (loader);
     }
     return true;
 }
 
-
-bool LoaderMgr::retrieve(LoadModule* loader)
+bool LoaderMgr::retrieve(Loader* loader)
 {
     if (!loader) return false;
 
@@ -266,18 +255,17 @@ bool LoaderMgr::retrieve(LoadModule* loader)
         if (loader->cached) {
             _activeLoaders.remove(loader);
         }
-        delete(loader);
+        delete (loader);
     }
     return true;
 }
 
-
-tvg::LoadModule* LoaderMgr::loader(const char* filename, bool* invalid)
+tvg::Loader* LoaderMgr::loader(const char* filename, const LoaderOps* ops, bool* invalid)
 {
 #ifdef THORVG_FILE_IO_SUPPORT
     *invalid = false;
 
-    //TODO: make lottie sharable.
+    // TODO: make lottie sharable.
     auto allowCache = true;
     auto ext = fileext(filename);
     if (ext && (!strcmp(ext, "json") || !strcmp(ext, "lot"))) allowCache = false;
@@ -287,7 +275,7 @@ tvg::LoadModule* LoaderMgr::loader(const char* filename, bool* invalid)
     }
 
     if (auto loader = _findByPath(filename)) {
-        if (loader->open(filename)) {
+        if (loader->open(filename, ops)) {
             if (allowCache) {
                 loader->cache(duplicate(filename));
                 {
@@ -297,12 +285,12 @@ tvg::LoadModule* LoaderMgr::loader(const char* filename, bool* invalid)
             }
             return loader;
         }
-        delete(loader);
+        delete (loader);
     }
-    //Unknown MimeType. Try with the candidates in the order
+    // Unknown MimeType. Try with the candidates in the order
     for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
         if (auto loader = _find(static_cast<FileType>(i))) {
-            if (loader->open(filename)) {
+            if (loader->open(filename, ops)) {
                 if (allowCache) {
                     loader->cache(duplicate(filename));
                     {
@@ -312,7 +300,7 @@ tvg::LoadModule* LoaderMgr::loader(const char* filename, bool* invalid)
                 }
                 return loader;
             }
-            delete(loader);
+            delete (loader);
         }
     }
     *invalid = true;
@@ -320,20 +308,18 @@ tvg::LoadModule* LoaderMgr::loader(const char* filename, bool* invalid)
     return nullptr;
 }
 
-
 bool LoaderMgr::retrieve(const char* filename)
 {
     return retrieve(_findFromCache(filename));
 }
 
-
-tvg::LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const char* mimeType, const char* rpath, bool copy)
+tvg::Loader* LoaderMgr::loader(const char* data, uint32_t size, const char* mimeType, const LoaderOps* ops, bool copy)
 {
-    //Note that users could use the same data pointer with the different content.
-    //Thus caching is only valid for shareable.
+    // Note that users could use the same data pointer with the different content.
+    // Thus caching is only valid for shareable.
     auto allowCache = !copy;
 
-    //TODO: make lottie shareable.
+    // TODO: make lottie shareable.
     if (allowCache) {
         auto type = _convert(mimeType);
         if (type == FileType::Lot) allowCache = false;
@@ -343,10 +329,10 @@ tvg::LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const char* 
         if (auto loader = _findFromCache(data, size, mimeType)) return loader;
     }
 
-    //Try with the given MimeType
+    // Try with the given MimeType
     if (mimeType) {
         if (auto loader = _findByType(mimeType)) {
-            if (loader->open(data, size, rpath, copy)) {
+            if (loader->open(data, size, ops, copy)) {
                 if (allowCache) {
                     loader->cache(HASH_KEY(data));
                     ScopedLock lock(_key);
@@ -355,15 +341,15 @@ tvg::LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const char* 
                 return loader;
             } else {
                 TVGLOG("LOADER", "Given mimetype \"%s\" seems incorrect or not supported.", mimeType);
-                delete(loader);
+                delete (loader);
             }
         }
     }
-    //Unknown MimeType. Try with the candidates in the order
+    // Unknown MimeType. Try with the candidates in the order
     for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
         auto loader = _find(static_cast<FileType>(i));
         if (loader) {
-            if (loader->open(data, size, rpath, copy)) {
+            if (loader->open(data, size, ops, copy)) {
                 if (allowCache) {
                     loader->cache(HASH_KEY(data));
                     ScopedLock lock(_key);
@@ -371,23 +357,22 @@ tvg::LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const char* 
                 }
                 return loader;
             }
-            delete(loader);
+            delete (loader);
         }
     }
     return nullptr;
 }
 
-
-tvg::LoadModule* LoaderMgr::loader(const uint32_t *data, uint32_t w, uint32_t h, ColorSpace cs, bool copy)
+tvg::Loader* LoaderMgr::loader(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, bool copy)
 {
-    //Note that users could use the same data pointer with the different content.
-    //Thus caching is only valid for shareable.
+    // Note that users could use the same data pointer with the different content.
+    // Thus caching is only valid for shareable.
     if (!copy) {
-        //TODO: should we check premultiplied??
+        // TODO: should we check premultiplied??
         if (auto loader = _findFromCache((const char*)(data), w * h, "raw")) return loader;
     }
 
-    //function is dedicated for raw images only
+    // function is dedicated for raw images only
     auto loader = new RawLoader;
     if (loader->open(data, w, h, cs, copy)) {
         if (!copy) {
@@ -397,36 +382,34 @@ tvg::LoadModule* LoaderMgr::loader(const uint32_t *data, uint32_t w, uint32_t h,
         }
         return loader;
     }
-    delete(loader);
+    delete (loader);
     return nullptr;
 }
 
-
-//loads fonts from memory - loader is cached (regardless of copy value) in order to access it while setting font
-tvg::LoadModule* LoaderMgr::loader(const char* name, const char* data, uint32_t size, TVG_UNUSED const char* mimeType, bool copy)
+// loads fonts from memory - loader is cached (regardless of copy value) in order to access it while setting font
+tvg::Loader* LoaderMgr::loader(const char* name, const char* data, uint32_t size, TVG_UNUSED const char* mimeType, const LoaderOps* ops, bool copy)
 {
 #ifdef THORVG_TTF_LOADER_SUPPORT
-    //TODO: add check for mimetype ?
+    // TODO: add check for mimetype ?
     if (auto loader = font(name)) return loader;
 
-    //function is dedicated for ttf loader (the only supported font loader)
+    // function is dedicated for ttf loader (the only supported font loader)
     auto loader = new TtfLoader;
-    if (loader->open(data, size, "", copy)) {
+    if (loader->open(data, size, ops, copy)) {
         loader->name = duplicate(name);
-        loader->cached = true;  //force it.
+        loader->cached = true;  // force it.
         ScopedLock lock(_key);
         _activeLoaders.back(loader);
         return loader;
     }
 
     TVGLOG("LOADER", "The font data \"%s\" could not be loaded.", name);
-    delete(loader);
+    delete (loader);
 #endif
     return nullptr;
 }
 
-
-tvg::LoadModule* LoaderMgr::font(const char* name)
+tvg::Loader* LoaderMgr::font(const char* name)
 {
     ScopedLock lock(_key);
     INLIST_FOREACH(_activeLoaders, loader) {
@@ -439,8 +422,7 @@ tvg::LoadModule* LoaderMgr::font(const char* name)
     return nullptr;
 }
 
-
-tvg::LoadModule* LoaderMgr::anyfont()
+tvg::Loader* LoaderMgr::anyfont()
 {
     ScopedLock lock(_key);
     INLIST_FOREACH(_activeLoaders, loader) {

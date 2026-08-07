@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2024 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,10 @@ namespace tvg
         std::mutex mtx;
     };
 
+    struct StrictKey : Key
+    {
+    };
+
     struct ScopedLock
     {
         Key* key = nullptr;
@@ -46,19 +50,41 @@ namespace tvg
             }
         }
 
+        ScopedLock(StrictKey& k)
+        {
+            k.mtx.lock();
+            key = &k;
+        }
+
         ~ScopedLock()
         {
-            if (TaskScheduler::threads() > 0) {
-                key->mtx.unlock();
-            }
+            if (key) key->mtx.unlock();
         }
     };
 #else //THORVG_THREAD_SUPPORT
     struct Key {};
 
+    struct StrictKey : Key
+    {
+        std::mutex mtx;
+    };
+
     struct ScopedLock
     {
-        ScopedLock(Key& key) {}
+        StrictKey* key = nullptr;
+
+        ScopedLock(Key& k) {}
+
+        ScopedLock(StrictKey& k)
+        {
+            k.mtx.lock();
+            key = &k;
+        }
+
+        ~ScopedLock()
+        {
+            if (key) key->mtx.unlock();
+        }
     };
 #endif //THORVG_THREAD_SUPPORT
 }
