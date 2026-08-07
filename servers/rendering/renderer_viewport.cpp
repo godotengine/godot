@@ -754,6 +754,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 	if (RSG::texture_storage->render_target_get_msaa_needs_resolve(p_viewport->render_target)) {
 		WARN_PRINT_ONCE("2D MSAA is enabled while there is no 2D content. Disable 2D MSAA for better performance.");
+		// And there is no need for this pass now
 		RSG::texture_storage->render_target_do_msaa_resolve(p_viewport->render_target);
 	}
 
