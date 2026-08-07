@@ -687,7 +687,6 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 			}
 		}
 	}
-	err = OK;
 
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(meshes.size() != 1, ERR_BUG);
