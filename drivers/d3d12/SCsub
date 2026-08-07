@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 from misc.utility.scons_hints import *
 
 import os
@@ -104,7 +106,7 @@ mesa_blacklist_inc_paths = [mesa_dir + "/" + v for v in mesa_blacklist_inc_paths
 mesa_private_inc_paths = [v for v in mesa_private_inc_paths if v not in mesa_blacklist_inc_paths]
 
 # Added by ourselves.
-extra_defines = [
+extra_defines: list[str | tuple[str, str | int]] = [
     "WINDOWS_NO_FUTEX",
 ]
 

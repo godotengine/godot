@@ -107,7 +107,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(ASFLAGS=["-mtargetos=xros26.0-simulator"])
         env.Append(CCFLAGS=["-mtargetos=xros26.0-simulator"])
         env.Append(CPPDEFINES=["VISIONOS_SIMULATOR"])
-        env.extra_suffix = ".simulator" + env.extra_suffix
+        env.extra_suffix = ".simulator" + env.extra_suffix  # ty:ignore[unresolved-attribute]
     else:
         env["APPLE_PLATFORM"] = "visionos"
         env.Append(ASFLAGS=["-mtargetos=xros26.0"])
