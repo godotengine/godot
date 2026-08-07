@@ -672,4 +672,39 @@ TEST_CASE_TEMPLATE("[Math] bezier_interpolate", T, float, double) {
 	static_assert(Math::is_equal_approx(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)1.0), (T)1.0));
 }
 
+TEST_CASE("[Math] snap_scalar") {
+	CHECK(Math::snap_scalar(0.0, 0.04, 0.5) == doctest::Approx(0.52));
+	CHECK(Math::snap_scalar(0.0, 0.04, 0.0) == doctest::Approx(0));
+	CHECK(Math::snap_scalar(0.0, 0.04, 128'000.025) == doctest::Approx(128'000.04));
+
+	CHECK(Math::snap_scalar(0.0, 2.0, 5.0) == doctest::Approx(6.0));
+	CHECK(Math::snap_scalar(0.0, -2.0, 5.0) == doctest::Approx(4.0));
+
+	CHECK(Math::snap_scalar(2.0, 3.0, 10.0) == doctest::Approx(11.0));
+	CHECK(Math::snap_scalar(2.0, -3.0, 10.0) == doctest::Approx(11.0));
+	CHECK(Math::snap_scalar(-2.0, 3.0, -10.0) == doctest::Approx(-11.0));
+	CHECK(Math::snap_scalar(-2.0, -3.0, -10.0) == doctest::Approx(-11.0));
+	CHECK(Math::snap_scalar(-2.0, 3.0, 10.0) == doctest::Approx(10.0));
+	CHECK(Math::snap_scalar(-2.0, -3.0, 10.0) == doctest::Approx(10.0));
+	CHECK(Math::snap_scalar(2.0, 3.0, -10.0) == doctest::Approx(-10.0));
+	CHECK(Math::snap_scalar(2.0, -3.0, -10.0) == doctest::Approx(-10.0));
+
+	CHECK(Math::snap_scalar(1.0, 2.0, 6.0) == doctest::Approx(7.0));
+	CHECK(Math::snap_scalar(1.0, -2.0, 6.0) == doctest::Approx(5.0));
+
+	CHECK(Math::snap_scalar(1000.0, 0.0, 128'000.025) == doctest::Approx(128'000.025));
+	CHECK(Math::snap_scalar(-1000.0, 0.0, 128'000.025) == doctest::Approx(128'000.025));
+
+	CHECK(Math::snap_scalar(1.0, 2.0, 9.0) == doctest::Approx(9.0));
+	CHECK(Math::snap_scalar(1.0, 2.0, 8.0) == doctest::Approx(9.0));
+	CHECK(Math::snap_scalar(1.0, 2.0, 10.0) == doctest::Approx(11.0));
+
+	CHECK(Math::snap_scalar(1.35, 2.1, 9.4) == doctest::Approx(9.75));
+	CHECK(Math::snap_scalar(203.3, 32.2, 8.2) == doctest::Approx(10.1));
+	CHECK(Math::snap_scalar(1.9, 69.3, 10.0) == doctest::Approx(1.9));
+
+	// float's precision differs from double, so -0.5/0.04 doesn't hit the exact same tie as snapped().
+	CHECK(Math::snap_scalar(0.0, 0.04, -0.5) == doctest::Approx(-0.52));
+}
+
 } // namespace TestMathFuncs
