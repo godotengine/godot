@@ -135,10 +135,6 @@ void CollisionShape2D::_notification(int p_what) {
 				draw_primitive(pts, cols, Vector<Vector2>());
 			}
 		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			queue_redraw();
-		} break;
 	}
 }
 
@@ -334,4 +330,8 @@ CollisionShape2D::CollisionShape2D() {
 	set_notify_local_transform(true);
 	set_hide_clip_children(true);
 	debug_color = _get_default_debug_color();
+
+#ifdef DEBUG_ENABLED
+	SceneTree::get_singleton()->connect("_debug_collisions_hint_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }

@@ -31,6 +31,7 @@
 #include "ray_cast_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/main/scene_tree.h"
@@ -216,14 +217,6 @@ void RayCast3D::_notification(int p_what) {
 				if (is_inside_tree() && debug_instance.is_valid()) {
 					RenderingServer::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 				}
-			}
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			if (get_tree()->is_debugging_collisions_hint()) {
-				_update_debug_shape();
-			} else {
-				_clear_debug_shape();
 			}
 		} break;
 	}
@@ -570,5 +563,16 @@ void RayCast3D::_clear_debug_shape() {
 	}
 }
 
+void RayCast3D::_debug_collisions_hint_changed() {
+	if (get_tree()->is_debugging_collisions_hint()) {
+		_update_debug_shape();
+	} else {
+		_clear_debug_shape();
+	}
+}
+
 RayCast3D::RayCast3D() {
+#ifdef DEBUG_ENABLED
+	SceneTree::get_singleton()->connect("_debug_collisions_hint_changed", callable_mp(this, &RayCast3D::_debug_collisions_hint_changed));
+#endif
 }

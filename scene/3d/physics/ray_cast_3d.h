@@ -65,6 +65,7 @@ class RayCast3D : public Node3D {
 	void _update_debug_shape_material(bool p_check_collision = false);
 	void _update_debug_shape_vertices();
 	void _clear_debug_shape();
+	void _debug_collisions_hint_changed();
 
 	bool collide_with_areas = false;
 	bool collide_with_bodies = true;

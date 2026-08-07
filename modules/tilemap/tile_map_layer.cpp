@@ -208,6 +208,10 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	_debug_was_cleaned_up = false;
 }
 
+void TileMapLayer::_debug_collisions_hint_changed() {
+	dirty.flags[DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE] = true;
+	_queue_internal_update();
+}
 #endif // DEBUG_ENABLED
 
 Color TileMapLayer::_highlight_color(const Color &p_modulate) const {
@@ -2171,11 +2175,6 @@ void TileMapLayer::_notification(int p_what) {
 			dirty.flags[DIRTY_FLAGS_LAYER_VISIBILITY] = true;
 			_queue_internal_update();
 		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			dirty.flags[DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE] = true;
-			_queue_internal_update();
-		} break;
 	}
 
 	_rendering_notification(p_what);
@@ -3610,6 +3609,10 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 
 TileMapLayer::TileMapLayer() {
 	set_notify_transform(true);
+
+#ifdef DEBUG_ENABLED
+	SceneTree::get_singleton()->connect("_debug_collisions_hint_changed", callable_mp(this, &TileMapLayer::_debug_collisions_hint_changed));
+#endif
 }
 
 TileMapLayer::~TileMapLayer() {

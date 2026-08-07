@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_object_2d.h"
@@ -169,10 +170,6 @@ void CollisionPolygon2D::_notification(int p_what) {
 
 				draw_primitive(pts, cols, Vector<Vector2>()); //small arrow
 			}
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			queue_redraw();
 		} break;
 	}
 }
@@ -347,4 +344,8 @@ void CollisionPolygon2D::_bind_methods() {
 CollisionPolygon2D::CollisionPolygon2D() {
 	set_notify_local_transform(true);
 	set_hide_clip_children(true);
+
+#ifdef DEBUG_ENABLED
+	SceneTree::get_singleton()->connect("_debug_collisions_hint_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }

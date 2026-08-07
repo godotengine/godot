@@ -39,6 +39,10 @@
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
 
+#ifdef DEBUG_ENABLED
+#include "servers/physics_2d/physics_server_2d.h"
+#endif
+
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
 	if (texture_normal == p_texture) {
 		return;
@@ -216,10 +220,6 @@ void TouchScreenButton::_notification(int p_what) {
 			if (is_pressed()) {
 				_release();
 			}
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			queue_redraw();
 		} break;
 	}
 }
@@ -462,4 +462,8 @@ void TouchScreenButton::_bind_methods() {
 TouchScreenButton::TouchScreenButton() {
 	unit_rect.instantiate();
 	unit_rect->set_size(Vector2(1, 1));
+
+#ifdef DEBUG_ENABLED
+	SceneTree::get_singleton()->connect("_debug_collisions_hint_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }
