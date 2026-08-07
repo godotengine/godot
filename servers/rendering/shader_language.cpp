@@ -10533,9 +10533,15 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 				_set_tkpos(prev_pos);
 
-				_get_completable_identifier(nullptr, COMPLETION_MAIN_FUNCTION, name);
+				bool completion_id = _get_completable_identifier(nullptr, COMPLETION_MAIN_FUNCTION, name);
 
 				if (name == StringName()) {
+					if (completion_id) {
+						// A code completion was triggered while parsing a function or constant name.
+						// Skip the incomplete declaration and continue parsing the rest of the shader,
+						// so declarations that appear after the completion position are still registered.
+						break;
+					}
 					if (is_constant) {
 						_set_error(RTR("Expected an identifier or '[' after type."));
 					} else {
