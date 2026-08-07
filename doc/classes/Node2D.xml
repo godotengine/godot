@@ -69,7 +69,7 @@
 			<return type="void" />
 			<param index="0" name="radians" type="float" />
 			<description>
-				Applies a rotation to the node, in radians, starting from its current rotation. This is equivalent to [code]rotation += radians[/code].
+				Applies a clockwise rotation to the node, in radians, starting from its current rotation. This is equivalent to [code]rotation += radians[/code].
 			</description>
 		</method>
 		<method name="to_global" qualifiers="const">
