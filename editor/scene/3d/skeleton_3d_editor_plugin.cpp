@@ -121,6 +121,19 @@ void BonePropertiesEditor::create_editors() {
 	rest_matrix->set_selectable(false);
 	rest_section->get_vbox()->add_child(rest_matrix);
 
+	// Skin section.
+	skin_section = memnew(EditorInspectorSection);
+	skin_section->setup("trf_properties_skin", "Skin", this, Color(0.0f, 0.0f, 0.0f), true);
+	section->get_vbox()->add_child(skin_section);
+
+	// Skin scale property.
+	skin_scale_property = memnew(EditorPropertyVector3());
+	skin_scale_property->setup(large_range_hint, true);
+	skin_scale_property->set_label("Scale");
+	skin_scale_property->set_selectable(false);
+	skin_scale_property->connect("property_changed", callable_mp(this, &BonePropertiesEditor::_value_changed));
+	skin_section->get_vbox()->add_child(skin_scale_property);
+
 	// Bone Metadata property
 	meta_section = memnew(EditorInspectorSection);
 	meta_section->setup("bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
@@ -141,6 +154,7 @@ void BonePropertiesEditor::_notification(int p_what) {
 			const Color section_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			section->set_bg_color(section_color);
 			rest_section->set_bg_color(section_color);
+			skin_section->set_bg_color(section_color);
 		} break;
 	}
 }
@@ -260,6 +274,7 @@ void BonePropertiesEditor::set_skeleton(Skeleton3D *p_skeleton) {
 	rotation_property->set_object_and_property(nullptr, String());
 	scale_property->set_object_and_property(nullptr, String());
 	rest_matrix->set_object_and_property(nullptr, String());
+	skin_scale_property->set_object_and_property(nullptr, String());
 
 	for (KeyValue<StringName, EditorProperty *> &E : meta_editors) {
 		E.value->set_object_and_property(nullptr, String());
@@ -281,6 +296,9 @@ void BonePropertiesEditor::set_target(const String &p_prop) {
 
 	rest_matrix->set_object_and_property(skeleton, p_prop + "rest");
 	rest_matrix->update_property();
+
+	skin_scale_property->set_object_and_property(skeleton, p_prop + "skin_scale");
+	skin_scale_property->update_property();
 }
 
 void BonePropertiesEditor::_property_keyed(const String &p_path, bool p_advance) {
@@ -346,6 +364,12 @@ void BonePropertiesEditor::_update_properties() {
 					rest_matrix->update_editor_property_status();
 					rest_matrix->queue_redraw();
 				}
+				if (split[2] == "skin_scale") {
+					skin_scale_property->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
+					skin_scale_property->update_property();
+					skin_scale_property->update_editor_property_status();
+					skin_scale_property->queue_redraw();
+				}
 				if (split[2] == "bone_meta") {
 					meta_seen.insert(E.name);
 					if (!meta_editors.find(E.name)) {
@@ -390,6 +414,7 @@ void Skeleton3DEditor::set_keyable(const bool p_keyable) {
 
 void Skeleton3DEditor::set_bone_options_enabled(const bool p_bone_options_enabled) {
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_RESET_SELECTED_POSES, !p_bone_options_enabled);
+	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_RESET_SELECTED_POSE_AND_SKIN_SCALES, !p_bone_options_enabled);
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_SELECTED_POSES_TO_RESTS, !p_bone_options_enabled);
 }
 
@@ -403,33 +428,33 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 
 	switch (p_skeleton_option) {
 		case SKELETON_OPTION_RESET_ALL_POSES: {
-			reset_pose(true);
-			break;
-		}
+			reset_pose(true, false);
+		} break;
 		case SKELETON_OPTION_RESET_SELECTED_POSES: {
-			reset_pose(false);
-			break;
-		}
+			reset_pose(false, false);
+		} break;
+		case SKELETON_OPTION_RESET_ALL_POSE_AND_SKIN_SCALE: {
+			reset_pose(true, true);
+		} break;
+		case SKELETON_OPTION_RESET_SELECTED_POSE_AND_SKIN_SCALES: {
+			reset_pose(false, true);
+		} break;
 		case SKELETON_OPTION_ALL_POSES_TO_RESTS: {
 			pose_to_rest(true);
-			break;
-		}
+		} break;
 		case SKELETON_OPTION_SELECTED_POSES_TO_RESTS: {
 			pose_to_rest(false);
-			break;
-		}
+		} break;
 		case SKELETON_OPTION_CREATE_PHYSICAL_SKELETON: {
 			create_physical_skeleton();
-			break;
-		}
+		} break;
 		case SKELETON_OPTION_EXPORT_SKELETON_PROFILE: {
 			export_skeleton_profile();
-			break;
-		}
+		} break;
 	}
 }
 
-void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
+void Skeleton3DEditor::reset_pose(const bool p_all_bones, const bool p_reset_bone_skin_scale) {
 	ERR_FAIL_COND(!skeleton);
 
 	const int bone_count = skeleton->get_bone_count();
@@ -444,8 +469,11 @@ void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
 			ur->add_undo_method(skeleton, "set_bone_pose_position", i, skeleton->get_bone_pose_position(i));
 			ur->add_undo_method(skeleton, "set_bone_pose_rotation", i, skeleton->get_bone_pose_rotation(i));
 			ur->add_undo_method(skeleton, "set_bone_pose_scale", i, skeleton->get_bone_pose_scale(i));
+			if (p_reset_bone_skin_scale) {
+				ur->add_undo_method(skeleton, "set_bone_skin_scale", i, skeleton->get_bone_skin_scale(i));
+			}
 		}
-		ur->add_do_method(skeleton, "reset_bone_poses");
+		ur->add_do_method(skeleton, "reset_bone_poses", p_reset_bone_skin_scale);
 	} else {
 		// Todo: Do method with multiple bone selection.
 		if (selected_bone == -1) {
@@ -455,7 +483,10 @@ void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
 		ur->add_undo_method(skeleton, "set_bone_pose_position", selected_bone, skeleton->get_bone_pose_position(selected_bone));
 		ur->add_undo_method(skeleton, "set_bone_pose_rotation", selected_bone, skeleton->get_bone_pose_rotation(selected_bone));
 		ur->add_undo_method(skeleton, "set_bone_pose_scale", selected_bone, skeleton->get_bone_pose_scale(selected_bone));
-		ur->add_do_method(skeleton, "reset_bone_pose", selected_bone);
+		if (p_reset_bone_skin_scale) {
+			ur->add_undo_method(skeleton, "set_bone_skin_scale", selected_bone, skeleton->get_bone_skin_scale(selected_bone));
+		}
+		ur->add_do_method(skeleton, "reset_bone_pose", selected_bone, p_reset_bone_skin_scale);
 	}
 
 	ur->add_undo_method(this, "update_joint_tree");
@@ -884,6 +915,7 @@ void Skeleton3DEditor::_joint_tree_button_clicked(Object *p_item, int p_column, 
 		String bone_rotation_property = tree_item_metadata + "/rotation";
 		String bone_scale_property = tree_item_metadata + "/scale";
 		String bone_rest_property = tree_item_metadata + "/rest";
+		String bone_skin_scale_property = tree_item_metadata + "/skin_scale";
 
 		Variant current_enabled = skeleton->get(bone_enabled_property);
 		Variant current_parent = skeleton->get(bone_parent_property);
@@ -892,6 +924,7 @@ void Skeleton3DEditor::_joint_tree_button_clicked(Object *p_item, int p_column, 
 		Variant current_rotation = skeleton->get(bone_rotation_property);
 		Variant current_scale = skeleton->get(bone_scale_property);
 		Variant current_rest = skeleton->get(bone_rest_property);
+		Variant current_skin_scale = skeleton->get(bone_skin_scale_property);
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		ur->create_action(TTR("Revert Bone"));
@@ -960,6 +993,15 @@ void Skeleton3DEditor::_joint_tree_button_clicked(Object *p_item, int p_column, 
 				ur->add_do_method(skeleton, "set", bone_rest_property, new_rest);
 			}
 		}
+		bool can_revert_skin_scale = EditorPropertyRevert::can_property_revert(skeleton, bone_skin_scale_property, &current_skin_scale);
+		if (can_revert_skin_scale) {
+			bool is_valid = false;
+			Variant new_skin_scale = EditorPropertyRevert::get_property_revert_value(skeleton, bone_skin_scale_property, &is_valid);
+			if (is_valid) {
+				ur->add_undo_method(skeleton, "set", bone_skin_scale_property, current_skin_scale);
+				ur->add_do_method(skeleton, "set", bone_skin_scale_property, new_skin_scale);
+			}
+		}
 
 		ur->add_undo_method(this, "update_all");
 		ur->add_do_method(this, "update_all");
@@ -1017,6 +1059,7 @@ void Skeleton3DEditor::update_joint_tree() {
 		String bone_rotation_property = "bones/" + itos(current_bone_idx) + "/rotation";
 		String bone_scale_property = "bones/" + itos(current_bone_idx) + "/scale";
 		String bone_rest_property = "bones/" + itos(current_bone_idx) + "/rest";
+		String bone_skin_scale_property = "bones/" + itos(current_bone_idx) + "/skin_scale";
 
 		Variant current_enabled = skeleton->get(bone_enabled_property);
 		Variant current_parent = skeleton->get(bone_parent_property);
@@ -1025,6 +1068,7 @@ void Skeleton3DEditor::update_joint_tree() {
 		Variant current_rotation = skeleton->get(bone_rotation_property);
 		Variant current_scale = skeleton->get(bone_scale_property);
 		Variant current_rest = skeleton->get(bone_rest_property);
+		Variant current_skin_scale = skeleton->get(bone_skin_scale_property);
 
 		bool can_revert_enabled = EditorPropertyRevert::can_property_revert(skeleton, bone_enabled_property, &current_enabled);
 		bool can_revert_parent = EditorPropertyRevert::can_property_revert(skeleton, bone_parent_property, &current_parent);
@@ -1033,8 +1077,9 @@ void Skeleton3DEditor::update_joint_tree() {
 		bool can_revert_rotation = EditorPropertyRevert::can_property_revert(skeleton, bone_rotation_property, &current_rotation);
 		bool can_revert_scale = EditorPropertyRevert::can_property_revert(skeleton, bone_scale_property, &current_scale);
 		bool can_revert_rest = EditorPropertyRevert::can_property_revert(skeleton, bone_rest_property, &current_rest);
+		bool can_revert_skin_scale = EditorPropertyRevert::can_property_revert(skeleton, bone_skin_scale_property, &current_skin_scale);
 
-		if (can_revert_enabled || can_revert_parent || can_revert_name || can_revert_position || can_revert_rotation || can_revert_scale || can_revert_rest) {
+		if (can_revert_enabled || can_revert_parent || can_revert_name || can_revert_position || can_revert_rotation || can_revert_scale || can_revert_rest || can_revert_skin_scale) {
 			joint_item->add_button(0, get_editor_theme_icon(SNAME("ReloadSmall")), JOINT_BUTTON_REVERT, false, TTR("Revert"));
 		}
 
@@ -1084,6 +1129,8 @@ void Skeleton3DEditor::create_editors() {
 	PopupMenu *p = skeleton_options->get_popup();
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_all_poses", TTRC("Reset All Bone Poses")), SKELETON_OPTION_RESET_ALL_POSES);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_selected_poses", TTRC("Reset Selected Poses")), SKELETON_OPTION_RESET_SELECTED_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_all_pose_and_skin_scales", TTRC("Reset All Bone Pose & Skin Scales")), SKELETON_OPTION_RESET_ALL_POSE_AND_SKIN_SCALE);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_selected_pose_and_skin_scales", TTRC("Reset Selected Pose & Skin Scales")), SKELETON_OPTION_RESET_SELECTED_POSE_AND_SKIN_SCALES);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTRC("Apply All Poses to Rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTRC("Apply Selected Poses to Rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
 	p->add_item(TTR("Create Physical Skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
