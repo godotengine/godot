@@ -693,11 +693,13 @@ void FileSystemDock::_notification(int p_what) {
 				do_redraw = true;
 			}
 
-			int new_thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
-			if (new_thumbnail_size_setting != thumbnail_size_setting) {
-				thumbnail_size_setting = new_thumbnail_size_setting;
-				thumbnail_size_slider->set_value(thumbnail_size_setting);
-				do_redraw = true;
+			if (thumbnail_debounce_timer->is_stopped()) {
+				int new_thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
+				if (new_thumbnail_size_setting != thumbnail_size_setting) {
+					thumbnail_size_setting = new_thumbnail_size_setting;
+					thumbnail_size_slider->set_value(thumbnail_size_setting);
+					do_redraw = true;
+				}
 			}
 
 			if (do_redraw) {
@@ -3757,7 +3759,6 @@ void FileSystemDock::_thumbnail_size_changed(float p_value) {
 
 void FileSystemDock::_thumbnail_size_timeout() {
 	EditorSettings::get_singleton()->set_setting("docks/filesystem/thumbnail_size", thumbnail_size_setting);
-	EditorSettings::get_singleton()->notify_changes();
 	EditorSettings::get_singleton()->save();
 }
 
@@ -4013,7 +4014,7 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 	}
 
 	const Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_command_or_control_pressed() && file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS) {
+	if (mb.is_valid() && mb->is_command_or_control_pressed() && mb->is_pressed() && file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS) {
 		if (mb->get_button_index() == MouseButton::WHEEL_UP) {
 			thumbnail_size_slider->set_value(thumbnail_size_setting + 16);
 			_update_file_list(true);
