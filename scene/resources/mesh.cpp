@@ -402,7 +402,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 	}
 
 	triangle_mesh.instantiate();
-	triangle_mesh->create(faces);
+	triangle_mesh->create(faces, surface_indices);
 
 	return triangle_mesh;
 }
@@ -463,6 +463,14 @@ Ref<TriangleMesh> Mesh::generate_surface_triangle_mesh(int p_surface) const {
 	surface_triangle_meshes.set(p_surface, tr_mesh);
 
 	return tr_mesh;
+}
+
+Ref<TriangleMesh> Mesh::get_triangle_mesh() const {
+	if (triangle_mesh.is_null()) {
+		generate_triangle_mesh();
+	}
+
+	return triangle_mesh;
 }
 
 void Mesh::generate_debug_mesh_lines(Vector<Vector3> &r_lines) {
