@@ -2575,6 +2575,17 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					instance_data->ninepatch_pixel_size[1] = tex_info->texpixel_size.height;
 				}
 
+				if (np->texture.is_valid()) {
+					if (np->flags & CANVAS_RECT_FLIP_H) {
+						src_rect.position.x += src_rect.size.x;
+						src_rect.size.x *= -1;
+					}
+					if (np->flags & CANVAS_RECT_FLIP_V) {
+						src_rect.position.y += src_rect.size.y;
+						src_rect.size.y *= -1;
+					}
+				}
+
 				Color modulated = np->color * base_color;
 				if (use_linear_colors) {
 					modulated = modulated.srgb_to_linear();
