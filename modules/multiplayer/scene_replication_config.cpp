@@ -164,6 +164,34 @@ int SceneReplicationConfig::property_get_index(const NodePath &p_path) const {
 	ERR_FAIL_V(-1);
 }
 
+void SceneReplicationConfig::swap_property_by_index(const int p_from_index, const int p_to_index) {
+	ERR_FAIL_INDEX(p_from_index, properties.size());
+	ERR_FAIL_INDEX(p_to_index, properties.size());
+
+	if (p_from_index == p_to_index) {
+		return;
+	}
+
+	List<ReplicationProperty>::Element *element_from = nullptr;
+	List<ReplicationProperty>::Element *element_to = nullptr;
+
+	int i = 0;
+	for (List<ReplicationProperty>::Element *E = properties.front(); E; E = E->next(), i++) {
+		if (i == p_from_index) {
+			element_from = E;
+		}
+		if (i == p_to_index) {
+			element_to = E;
+		}
+		if (element_from && element_to) {
+			break;
+		}
+	}
+
+	if (element_from && element_to) {
+		properties.swap(element_from, element_to);
+	}
+}
 bool SceneReplicationConfig::property_get_spawn(const NodePath &p_path) {
 	List<ReplicationProperty>::Element *E = properties.find(p_path);
 	ERR_FAIL_COND_V(!E, false);
