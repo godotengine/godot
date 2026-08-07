@@ -31,6 +31,7 @@
 #include "resource_format_text.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
 #include "core/object/class_db.h"
@@ -183,6 +184,8 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 }
 
 Ref<PackedScene> ResourceLoaderText::_parse_node_tag(const Ref<PackedScene> p_current_scene, VariantParser::ResourceParser &p_parser) {
+	ERR_FAIL_COND_V_EDMSG(p_current_scene.is_null(), Ref<PackedScene>(), "p_current_scene cannot be null");
+
 	while (true) {
 		if (next_tag.name == "node") {
 			int parent = -1;
@@ -719,52 +722,47 @@ Error ResourceLoaderText::load() {
 		}
 	}
 
-	if (is_scene) {
-		packed_scene = ResourceLoader::get_resource_ref_override(local_path);
-		if (packed_scene.is_null()) {
-			packed_scene.instantiate();
-		}
-	}
-
 	while (true) {
 		if (next_tag.name != "resource") {
 			break;
 		}
 
 		Ref<MissingResource> missing_resource;
-		if (!is_scene) {
-			resource = ResourceLoader::get_resource_ref_override(local_path);
+		resource = ResourceLoader::get_resource_ref_override(local_path);
+		if (resource.is_null()) {
+			Ref<Resource> cache = ResourceCache::get_ref(local_path);
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class() == res_type) {
+				cache->reset_state();
+				resource = cache;
+			}
+
 			if (resource.is_null()) {
-				Ref<Resource> cache = ResourceCache::get_ref(local_path);
-				if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class() == res_type) {
-					cache->reset_state();
-					resource = cache;
-				}
-
-				if (resource.is_null()) {
-					Object *obj = ClassDB::instantiate(res_type);
-					if (!obj) {
-						if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
-							missing_resource = memnew(MissingResource);
-							missing_resource->set_original_class(res_type);
-							missing_resource->set_recording_properties(true);
-							obj = missing_resource.ptr();
-						} else {
-							error_text = vformat("Can't create sub resource of type '%s'", res_type);
-							_printerr();
-							error = ERR_FILE_CORRUPT;
-							return error;
-						}
-					}
-
-					Resource *r = Object::cast_to<Resource>(obj);
-					if (!r) {
-						error_text = vformat("Can't create sub resource of type '%s' as it's not a resource type", res_type);
+				Object *obj = ClassDB::instantiate(res_type);
+				if (!obj) {
+					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+						missing_resource = memnew(MissingResource);
+						missing_resource->set_original_class(res_type);
+						missing_resource->set_recording_properties(true);
+						obj = missing_resource.ptr();
+					} else {
+						error_text = vformat("Can't create sub resource of type '%s'", res_type);
 						_printerr();
 						error = ERR_FILE_CORRUPT;
 						return error;
 					}
+				}
 
+				Resource *r = Object::cast_to<Resource>(obj);
+				if (!r) {
+					error_text = vformat("Can't create sub resource of type '%s' as it's not a resource type", res_type);
+					_printerr();
+					error = ERR_FILE_CORRUPT;
+					return error;
+				}
+
+				if (is_scene) {
+					packed_scene = Ref<PackedScene>(r);
+				} else {
 					resource = Ref<Resource>(r);
 				}
 			}
@@ -893,6 +891,13 @@ Error ResourceLoaderText::load() {
 			return error;
 		}
 
+		// This is just a standard scene, so we just instantiate normally
+		if (is_scene && packed_scene.is_null()) {
+			packed_scene = ResourceLoader::get_resource_ref_override(local_path);
+			if (packed_scene.is_null()) {
+				packed_scene.instantiate();
+			}
+		}
 		packed_scene = _parse_node_tag(packed_scene, rp);
 
 		if (packed_scene.is_null()) {
@@ -1180,9 +1185,10 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 
 	if (tag.name == "gd_scene") {
 		is_scene = true;
+	}
 
-	} else if (tag.name == "gd_resource") {
-		if (!tag.fields.has("type")) {
+	if ((is_scene && tag.fields.has("type")) || tag.name == "gd_resource") {
+		if (!is_scene && !tag.fields.has("type")) {
 			error_text = "Missing 'type' field in 'gd_resource' tag";
 			_printerr();
 			error = ERR_PARSE_ERROR;
@@ -1195,6 +1201,8 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 
 		res_type = tag.fields["type"];
 
+	} else if (is_scene && !tag.fields.has("type")) {
+		res_type = "PackedScene";
 	} else {
 		error_text = vformat("Unrecognized file type '%s'", tag.name);
 		_printerr();
@@ -1964,9 +1972,13 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 	{
 		String title = packed_scene.is_valid() ? "[gd_scene " : "[gd_resource ";
-		if (packed_scene.is_null()) {
-			title += "type=\"" + _resource_get_class(p_resource) + "\" ";
-			Ref<Script> script = p_resource->get_script();
+		String res_type = _resource_get_class(p_resource);
+		Ref<Script> script = p_resource->get_script();
+		if (
+				packed_scene.is_null() ||
+				(script.is_valid() && script->get_global_name() != "PackedScene") ||
+				res_type != "PackedScene") {
+			title += "type=\"" + res_type + "\" ";
 			if (script.is_valid() && script->get_global_name()) {
 				title += "script_class=\"" + String(script->get_global_name()) + "\" ";
 			}

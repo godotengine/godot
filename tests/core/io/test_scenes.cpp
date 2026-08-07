@@ -72,6 +72,27 @@ public:
 	}
 };
 
+class CustomScene : public PackedScene {
+	GDCLASS(CustomScene, PackedScene)
+	StringName special_custom_variable;
+
+public:
+	StringName get_special_custom_variable() const {
+		return special_custom_variable;
+	}
+
+	void set_special_custom_variable(StringName contents) {
+		special_custom_variable = contents;
+	}
+
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_special_custom_variable", "contents"), &CustomScene::set_special_custom_variable);
+		ClassDB::bind_method(D_METHOD("get_special_custom_variable"), &CustomScene::get_special_custom_variable);
+
+		ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "special_custom_variable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_special_custom_variable", "get_special_custom_variable");
+	}
+};
+
 void prepare_scene(Ref<PackedScene> scene) {
 	Ref<Resource> child_resource = memnew(Resource);
 	child_resource->set_name("I'm a child resource");
@@ -162,13 +183,29 @@ TEST_CASE("[Scenes] Scene Saving and loading") {
 	memdelete(inner_node);
 }
 
-void validate_nested_scene(Ref<PackedScene> loaded_scene) {
+void validate_custom_scene(Ref<CustomScene> loaded_scene) {
 	bool is_null = loaded_scene.is_null();
-	CHECK_MESSAGE(!is_null, "Could not open scene file");
+	CHECK(!is_null);
 
 	if (is_null) {
 		return;
 	}
+
+	Node *new_node = static_cast<Node *>(loaded_scene->instantiate());
+	CHECK_MESSAGE(
+			new_node->get_name() == "named_node",
+			"The instantiated node has invalid name.");
+
+	CHECK_MESSAGE(
+			loaded_scene->get_special_custom_variable() == "Another Hello",
+			"The instantiated custom scene have a invalid property value.");
+
+	memdelete(new_node);
+}
+
+void validate_nested_scene(Ref<PackedScene> loaded_scene) {
+	bool is_null = loaded_scene.is_null();
+	CHECK_MESSAGE(!is_null, "Could not open scene file");
 
 	_TestNodeForTestingNestedScenes *node_for_testing = static_cast<_TestNodeForTestingNestedScenes *>(loaded_scene->instantiate());
 	Ref<PackedScene> inner_scene = node_for_testing->get_inner_scene();
@@ -267,5 +304,32 @@ TEST_CASE("[Scenes] Simple scene saving and loading") {
 				"The scene file cannot have the [resource] tag");
 	}
 	f->close();
+}
+
+TEST_CASE("[Scenes] Custom Scene Saving and loading") {
+	ClassDB::register_class<CustomScene>();
+
+	Node *node = memnew(Node);
+	node->set_name("named_node");
+
+	Ref<CustomScene> scene = memnew(CustomScene);
+	scene->pack(node);
+	scene->set_special_custom_variable("Another Hello");
+	prepare_scene(scene);
+
+	//const String save_path_binary = TestUtils::get_temp_path("custom_scene.res");
+	const String save_path_text = TestUtils::get_temp_path("custom_scene.tscn");
+
+	// ResourceSaver::save(scene, save_path_binary);
+	ResourceSaver::save(scene, save_path_text);
+
+	/*const Ref<PackedScene> &loaded_resource_binary = ResourceLoader::load(save_path_binary);
+	validate_and_instantiate_scene(loaded_resource_binary);
+	validate_custom_scene(loaded_resource_binary);*/
+
+	const Ref<PackedScene> &loaded_resource_text = ResourceLoader::load(save_path_text);
+	validate_custom_scene(loaded_resource_text);
+
+	memdelete(node);
 }
 } //namespace TestScenes
