@@ -626,6 +626,10 @@ void Node3DEditor::edit(Node3D *p_spatial) {
 	}
 }
 
+void Node3DEditor::_update_snap_input() {
+	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+}
+
 void Node3DEditor::_snap_changed() {
 	snap_translate_value = snap_translate->get_value();
 	snap_rotate_value = snap_rotate->get_value();
@@ -2299,7 +2303,7 @@ void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	_update_snap_input();
 }
 
 void Node3DEditor::_sun_environ_settings_pressed() {
@@ -2439,6 +2443,8 @@ void Node3DEditor::_notification(int p_what) {
 			SceneTreeDock::get_singleton()->get_tree_editor()->connect("node_changed", callable_mp(this, &Node3DEditor::_refresh_menu_icons));
 			editor_selection->connect("selection_changed", callable_mp(this, &Node3DEditor::_selection_changed));
 
+			get_window()->connect("focus_entered", callable_mp(this, &Node3DEditor::_update_snap_input));
+
 			_update_preview_environment();
 
 			sun_state->set_custom_minimum_size(sun_vb->get_combined_minimum_size());
@@ -2455,6 +2461,7 @@ void Node3DEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			get_window()->disconnect("focus_entered", callable_mp(this, &Node3DEditor::_update_snap_input));
 			_finish_indicators();
 		} break;
 
