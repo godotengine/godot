@@ -652,7 +652,7 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 	dirty_sky_list = nullptr;
 }
 
-GLES3::SkyMaterialData *RasterizerSceneGLES3::_get_sky_material_data(RID p_env) {
+GLES3::SkyMaterialData *RasterizerSceneGLES3::_get_sky_material_data(RID p_env, SkyMaterialPurpose p_purpose) {
 	ERR_FAIL_COND_V(p_env.is_null(), nullptr);
 
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
@@ -662,7 +662,7 @@ GLES3::SkyMaterialData *RasterizerSceneGLES3::_get_sky_material_data(RID p_env) 
 	GLES3::SkyMaterialData *material_data = nullptr;
 	RID sky_material;
 
-	if (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) {
+	if (p_purpose == SkyMaterialPurpose::BACKGROUND && (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR)) {
 		sky_material = sky_globals.fog_material;
 		material_data = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RSE::SHADER_SKY));
 	} else if (sky) {
@@ -684,11 +684,11 @@ GLES3::SkyMaterialData *RasterizerSceneGLES3::_get_sky_material_data(RID p_env) 
 	return material_data;
 }
 
-void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size) {
+void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, SkyMaterialPurpose p_purpose) {
 	GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
 	ERR_FAIL_COND(p_render_data->environment.is_null());
 
-	GLES3::SkyMaterialData *material_data = _get_sky_material_data(p_render_data->environment);
+	GLES3::SkyMaterialData *material_data = _get_sky_material_data(p_render_data->environment, p_purpose);
 	ERR_FAIL_NULL(material_data);
 
 	GLES3::SkyShaderData *shader_data = material_data->shader_data;
@@ -882,7 +882,7 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_sky_energy_multiplier, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y, bool p_apply_environment_effects_in_post) {
 	ERR_FAIL_COND(p_env.is_null());
 
-	GLES3::SkyMaterialData *material_data = _get_sky_material_data(p_env);
+	GLES3::SkyMaterialData *material_data = _get_sky_material_data(p_env, SkyMaterialPurpose::BACKGROUND);
 	ERR_FAIL_NULL(material_data);
 	material_data->bind_uniforms();
 
@@ -953,7 +953,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 	GLES3::CubemapFilter *cubemap_filter = GLES3::CubemapFilter::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
 
-	GLES3::SkyMaterialData *material_data = _get_sky_material_data(p_env);
+	GLES3::SkyMaterialData *material_data = _get_sky_material_data(p_env, SkyMaterialPurpose::RADIANCE);
 	ERR_FAIL_NULL(material_data);
 	material_data->bind_uniforms();
 
@@ -2645,7 +2645,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 			sky_energy_multiplier *= bg_energy_multiplier;
 
-			_setup_sky(&render_data, *render_data.lights, projection, render_data.cam_transform, screen_size);
+			SkyMaterialPurpose sky_setup_purpose = (sky_reflections || sky_ambient) ? SkyMaterialPurpose::RADIANCE : SkyMaterialPurpose::BACKGROUND;
+			_setup_sky(&render_data, *render_data.lights, projection, render_data.cam_transform, screen_size, sky_setup_purpose);
 
 			if (environment_get_sky(render_data.environment).is_valid()) {
 				if (sky_reflections || sky_ambient) {

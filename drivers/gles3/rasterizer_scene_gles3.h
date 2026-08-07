@@ -788,6 +788,11 @@ protected:
 
 	/* Sky */
 
+	enum class SkyMaterialPurpose {
+		BACKGROUND,
+		RADIANCE,
+	};
+
 	struct SkyGlobals {
 		float fog_aerial_perspective = 0.0;
 		Color fog_light_color;
@@ -858,8 +863,8 @@ protected:
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 
-	GLES3::SkyMaterialData *_get_sky_material_data(RID p_env);
-	void _setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
+	GLES3::SkyMaterialData *_get_sky_material_data(RID p_env, SkyMaterialPurpose p_purpose);
+	void _setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, SkyMaterialPurpose p_purpose);
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();
 	void _update_sky_radiance(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_sky_energy_multiplier);
