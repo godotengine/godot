@@ -1582,6 +1582,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 
 	Error err = canvas_singleton->shader.compiler.compile(RSE::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
 	if (err != OK) {
+		pipeline_hash_map.clear_pipelines();
 		if (version.is_valid()) {
 			canvas_singleton->shader.canvas_shader.version_free(version);
 			version = RID();
@@ -1699,12 +1700,15 @@ RendererRD::MaterialStorage::ShaderData *RendererCanvasRenderRD::_create_shader_
 }
 
 bool RendererCanvasRenderRD::CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
-	RID shader_to_update = canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0);
-	MutexLock lock(canvas_singleton->shader.mutex);
-	bool uniform_set_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, shader_to_update, MATERIAL_UNIFORM_SET, true, false);
-	bool uniform_set_srgb_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set_srgb, shader_to_update, MATERIAL_UNIFORM_SET, false, false);
-	return uniform_set_changed || uniform_set_srgb_changed;
+	if (shader_data->version.is_valid()) {
+		RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
+		RID shader_to_update = canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0);
+		MutexLock lock(canvas_singleton->shader.mutex);
+		bool uniform_set_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, shader_to_update, MATERIAL_UNIFORM_SET, true, false);
+		bool uniform_set_srgb_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set_srgb, shader_to_update, MATERIAL_UNIFORM_SET, false, false);
+		return uniform_set_changed || uniform_set_srgb_changed;
+	}
+	return false;
 }
 
 RendererCanvasRenderRD::CanvasMaterialData::~CanvasMaterialData() {
