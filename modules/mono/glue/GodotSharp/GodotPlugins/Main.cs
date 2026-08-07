@@ -128,6 +128,9 @@ namespace GodotPlugins
             }
         }
 
+        [UnmanagedCallersOnly]
+        public static void InitializeMarshalingData(uint refCountOffset, uint capacityOffset, uint sizeOffset, uint dataOffset) => Godot.NativeInterop.Marshaling.Initialize(refCountOffset, capacityOffset, sizeOffset, dataOffset);
+
         [StructLayout(LayoutKind.Sequential)]
         private struct PluginsCallbacks
         {
