@@ -47,6 +47,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, Engine);
 #include "core/object/script_language.h"
 #include "core/string/print_string.h"
 #include "scene/animation/tween.h"
+#include "scene/gui/dialogs.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/scene_tree.h"
@@ -2157,12 +2158,18 @@ Window *Node::get_non_popup_window() const {
 	return w;
 }
 
-Window *Node::get_last_exclusive_window() const {
+Window *Node::get_last_exclusive_window(bool p_stop_at_dialog) const {
 	Window *w = get_window();
-	while (w && w->get_exclusive_child()) {
-		w = w->get_exclusive_child();
+	while (w) {
+		Window *next = w->get_exclusive_child();
+		if (!next) {
+			break;
+		}
+		if (p_stop_at_dialog && Object::cast_to<AcceptDialog>(next)) {
+			break;
+		}
+		w = next;
 	}
-
 	return w;
 }
 
@@ -3885,7 +3892,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_translation_domain_inherited"), &Node::set_translation_domain_inherited);
 
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
-	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
+	ClassDB::bind_method(D_METHOD("get_last_exclusive_window", "stop_at_dialog"), &Node::get_last_exclusive_window, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
