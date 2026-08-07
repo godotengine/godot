@@ -48,6 +48,8 @@ private:
 
 	Callable update_callback; // Used only by CSG currently.
 
+	void _create_debug_mesh();
+	void _free_debug_mesh();
 	void _update_debug_mesh();
 	void _update_debug_path_material();
 	void _curve_changed();

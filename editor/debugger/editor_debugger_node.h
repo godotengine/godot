@@ -218,6 +218,7 @@ public:
 	bool get_debug_mute_audio() const;
 
 	void set_debug_collisions(bool p_enabled);
+	void set_debug_paths(bool p_enabled);
 
 	void set_camera_override(CameraOverride p_override);
 	CameraOverride get_camera_override();

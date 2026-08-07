@@ -928,6 +928,12 @@ void EditorDebuggerNode::set_debug_collisions(bool p_enabled) {
 	});
 }
 
+void EditorDebuggerNode::set_debug_paths(bool p_enabled) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->set_debug_paths(p_enabled);
+	});
+}
+
 void EditorDebuggerNode::set_camera_override(CameraOverride p_override) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->set_camera_override(p_override);
