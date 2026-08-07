@@ -40,17 +40,16 @@ class SpringBoneCollisionSphere3D : public SpringBoneCollision3D {
 	friend class SpringBoneCollisionCapsule3D;
 
 	float radius = 0.1;
-	bool inside = false;
+	CollideMode collide_mode = COLLIDE_MODE_JOINT;
 
 protected:
 	static void _bind_methods();
 
-	static Vector3 _collide_sphere(const Vector3 &p_origin, float p_radius, bool p_inside, float p_bone_radius, float p_bone_length, const Vector3 &p_current);
-	virtual Vector3 _collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const override;
+	virtual Vector3 _collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3& p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const override;
 
 public:
 	void set_radius(float p_radius);
 	float get_radius() const;
-	void set_inside(bool p_enabled);
-	bool is_inside() const;
+	void set_collide_mode(CollideMode p_collide_mode);
+	CollideMode get_collide_mode() const;
 };
