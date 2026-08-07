@@ -85,7 +85,8 @@
 			How rapidly particles in an emission cycle are emitted. If greater than [code]0[/code], there will be a gap in emissions before the next cycle begins.
 		</member>
 		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="30">
-			The particle system's frame rate is fixed to a value. For example, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
+			If set above [code]0[/code], the particle system's frame rate is fixed to a value. For example, changing the value to [code]2[/code] will make the particles render at [code]2[/code] frames per second, with interpolation if [member interpolate] is [code]true[/code]. This can be used to reduce the particle system's performance impact by simulating it less often. Note this does not slow down the simulation of the particle system itself. If set to [code]0[/code], the particle system renders at the same frame rate as the rest of the scene. In this case, [member interpolate] has no effect.
+			[b]Note:[/b] Trails require [member fixed_fps] to be set to a value greater than [code]0[/code]. If [member fixed_fps] is set to [code]0[/code] and [member trail_enabled] is [code]true[/code], a fixed FPS of [code]30[/code] is automatically used.
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
@@ -133,6 +134,7 @@
 		<member name="trail_enabled" type="bool" setter="set_trail_enabled" getter="is_trail_enabled" default="false">
 			If [code]true[/code], enables particle trails using a mesh skinning system.
 			[b]Note:[/b] Unlike [GPUParticles3D], the number of trail sections and subdivisions is set with the [member trail_sections] and [member trail_section_subdivisions] properties.
+			[b]Note:[/b] If [member fixed_fps] is set to [code]0[/code], a fixed FPS of [code]30[/code] is automatically used when trails are enabled.
 		</member>
 		<member name="trail_lifetime" type="float" setter="set_trail_lifetime" getter="get_trail_lifetime" default="0.3">
 			The amount of time the particle's trail should represent (in seconds). Only effective if [member trail_enabled] is [code]true[/code].
