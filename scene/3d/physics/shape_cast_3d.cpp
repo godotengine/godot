@@ -52,7 +52,7 @@ void ShapeCast3D::_notification(int p_what) {
 				set_physics_process_internal(false);
 			}
 
-			if (get_tree()->is_debugging_collisions_hint()) {
+			if (PhysicsServer3D::get_singleton()->debug_is_enabled()) {
 				_update_debug_shape();
 			}
 
@@ -88,7 +88,7 @@ void ShapeCast3D::_notification(int p_what) {
 
 			bool prev_collision_state = collided;
 			_update_shapecast_state();
-			if (get_tree()->is_debugging_collisions_hint()) {
+			if (PhysicsServer3D::get_singleton()->debug_is_enabled()) {
 				if (prev_collision_state != collided) {
 					_update_debug_shape_material(true);
 				}
@@ -101,14 +101,6 @@ void ShapeCast3D::_notification(int p_what) {
 				if (is_inside_tree() && debug_instance.is_valid()) {
 					RenderingServer::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 				}
-			}
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			if (get_tree()->is_debugging_collisions_hint()) {
-				_update_debug_shape();
-			} else {
-				_clear_debug_shape();
 			}
 		} break;
 	}
@@ -216,7 +208,7 @@ void ShapeCast3D::set_enabled(bool p_enabled) {
 		collided = false;
 	}
 
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint()) {
+	if (is_inside_tree() && PhysicsServer3D::get_singleton()->debug_is_enabled()) {
 		if (p_enabled) {
 			_update_debug_shape();
 		} else {
@@ -231,7 +223,7 @@ bool ShapeCast3D::is_enabled() const {
 
 void ShapeCast3D::set_target_position(const Vector3 &p_point) {
 	target_position = p_point;
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint()) {
+	if (is_inside_tree() && PhysicsServer3D::get_singleton()->debug_is_enabled()) {
 		_update_debug_shape();
 	}
 	update_gizmos();
@@ -344,7 +336,7 @@ void ShapeCast3D::resource_changed(Ref<Resource> p_res) {
 void ShapeCast3D::_shape_changed() {
 	update_gizmos();
 	bool is_editor = Engine::get_singleton()->is_editor_hint();
-	if (is_inside_tree() && (is_editor || get_tree()->is_debugging_collisions_hint())) {
+	if (is_inside_tree() && (is_editor || PhysicsServer3D::get_singleton()->debug_is_enabled())) {
 		_update_debug_shape();
 	}
 }
@@ -363,7 +355,7 @@ void ShapeCast3D::set_shape(const Ref<Shape3D> &p_shape) {
 	}
 
 	bool is_editor = Engine::get_singleton()->is_editor_hint();
-	if (is_inside_tree() && (is_editor || get_tree()->is_debugging_collisions_hint())) {
+	if (is_inside_tree() && (is_editor || PhysicsServer3D::get_singleton()->debug_is_enabled())) {
 		_update_debug_shape();
 	}
 	update_gizmos();
@@ -655,4 +647,18 @@ void ShapeCast3D::_clear_debug_shape() {
 		RenderingServer::get_singleton()->free_rid(debug_mesh->get_rid());
 		debug_mesh = Ref<ArrayMesh>();
 	}
+}
+
+void ShapeCast3D::_physics_debug_changed() {
+	if (PhysicsServer3D::get_singleton()->debug_is_enabled()) {
+		_update_debug_shape();
+	} else {
+		_clear_debug_shape();
+	}
+}
+
+ShapeCast3D::ShapeCast3D() {
+#ifdef DEBUG_ENABLED
+	PhysicsServer3D::get_singleton()->connect("_debug_changed", callable_mp(this, &ShapeCast3D::_physics_debug_changed));
+#endif
 }

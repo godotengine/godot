@@ -31,6 +31,7 @@
 #include "ray_cast_3d.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/main/scene_tree.h"
@@ -124,7 +125,7 @@ void RayCast3D::set_enabled(bool p_enabled) {
 		collided = false;
 	}
 
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint()) {
+	if (is_inside_tree() && PhysicsServer3D::get_singleton()->debug_is_enabled()) {
 		if (p_enabled) {
 			_update_debug_shape();
 		} else {
@@ -173,7 +174,7 @@ void RayCast3D::_notification(int p_what) {
 				set_physics_process_internal(false);
 			}
 
-			if (get_tree()->is_debugging_collisions_hint()) {
+			if (PhysicsServer3D::get_singleton()->debug_is_enabled()) {
 				_update_debug_shape();
 			}
 
@@ -209,21 +210,13 @@ void RayCast3D::_notification(int p_what) {
 
 			bool prev_collision_state = collided;
 			_update_raycast_state();
-			if (get_tree()->is_debugging_collisions_hint()) {
+			if (PhysicsServer3D::get_singleton()->debug_is_enabled()) {
 				if (prev_collision_state != collided) {
 					_update_debug_shape_material(true);
 				}
 				if (is_inside_tree() && debug_instance.is_valid()) {
 					RenderingServer::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 				}
-			}
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			if (get_tree()->is_debugging_collisions_hint()) {
-				_update_debug_shape();
-			} else {
-				_clear_debug_shape();
 			}
 		} break;
 	}
@@ -570,5 +563,16 @@ void RayCast3D::_clear_debug_shape() {
 	}
 }
 
+void RayCast3D::_physics_debug_changed() {
+	if (PhysicsServer3D::get_singleton()->debug_is_enabled()) {
+		_update_debug_shape();
+	} else {
+		_clear_debug_shape();
+	}
+}
+
 RayCast3D::RayCast3D() {
+#ifdef DEBUG_ENABLED
+	PhysicsServer3D::get_singleton()->connect("_debug_changed", callable_mp(this, &RayCast3D::_physics_debug_changed));
+#endif
 }
