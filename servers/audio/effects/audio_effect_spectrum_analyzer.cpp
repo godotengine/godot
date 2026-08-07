@@ -151,6 +151,7 @@ void AudioEffectSpectrumAnalyzerInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_magnitude_for_frequency_range", "from_hz", "to_hz", "mode"), &AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range, DEFVAL(MAGNITUDE_MAX));
 	BIND_ENUM_CONSTANT(MAGNITUDE_AVERAGE);
 	BIND_ENUM_CONSTANT(MAGNITUDE_MAX);
+	ClassDB::bind_method(D_METHOD("get_fft"), &AudioEffectSpectrumAnalyzerInstance::get_fft);
 }
 
 Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(float p_begin, float p_end, MagnitudeMode p_mode) const {
@@ -187,6 +188,19 @@ Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(f
 
 		return max;
 	}
+}
+
+PackedVector2Array AudioEffectSpectrumAnalyzerInstance::get_fft() const {
+	int fft_index = fft_pos;
+	const AudioFrame *last_fft = fft_history[fft_index].ptr();
+
+	PackedVector2Array ret;
+	ret.resize(fft_size);
+	for (int i = 0; i < fft_size; i++) {
+		ret.write[i] = Vector2(last_fft[i].left, last_fft[i].right);
+	}
+
+	return ret;
 }
 
 Ref<AudioEffectInstance> AudioEffectSpectrumAnalyzer::instantiate() {
