@@ -2169,6 +2169,15 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 			}
 			break;
 		}
+		case GDScriptTokenizer::Token::UNDERSCORE: {
+			advance();
+			if (check(GDScriptTokenizer::Token::COLON)) {
+				push_error(R"(Incorrect indentation for "_:")");
+			} else {
+				push_error(vformat(R"(Expected statement, found "%s" instead.)", previous.get_name()));
+			}
+			break;
+		}
 		default: {
 			// Expression statement.
 			ExpressionNode *expression = parse_expression(true); // Allow assignment here.
