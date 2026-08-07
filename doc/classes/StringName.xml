@@ -1212,5 +1212,12 @@
 				Returns [code]true[/code] if the left [StringName]'s pointer comes after [param right] or if they are the same. Note that this will not match their [url=https://en.wikipedia.org/wiki/List_of_Unicode_characters]Unicode order[/url].
 			</description>
 		</operator>
+		<operator name="operator []">
+			<return type="String" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns a new [String] that only contains the character at [param index]. Indices start from [code]0[/code]. If [param index] is greater or equal to [code]0[/code], the character is fetched starting from the beginning of the string. If [param index] is a negative value, it is fetched starting from the end. Accessing a string out-of-bounds will cause a run-time error, pausing the project execution if run from the editor.
+			</description>
+		</operator>
 	</operators>
 </class>
