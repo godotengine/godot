@@ -215,15 +215,30 @@ VisualInstance3D::~VisualInstance3D() {
 	RenderingServer::get_singleton()->free_rid(instance);
 }
 
+void GeometryInstance3D::_update_material_property_list_connection(const Ref<Material> &p_old_material, const Ref<Material> &p_new_material) {
+	const Callable notify_property_list_changed_callable = callable_mp((Object *)this, &Object::notify_property_list_changed);
+
+	const bool is_old_material_still_used = p_old_material.is_valid() && (material_override == p_old_material || material_overlay == p_old_material);
+
+	if (p_old_material.is_valid() && !is_old_material_still_used && p_old_material->is_connected(CoreStringName(property_list_changed), notify_property_list_changed_callable)) {
+		p_old_material->disconnect(CoreStringName(property_list_changed), notify_property_list_changed_callable);
+	}
+
+	if (p_new_material.is_valid() && !p_new_material->is_connected(CoreStringName(property_list_changed), notify_property_list_changed_callable)) {
+		p_new_material->connect(CoreStringName(property_list_changed), notify_property_list_changed_callable);
+	}
+}
+
 void GeometryInstance3D::set_material_override(const Ref<Material> &p_material) {
-	if (material_override.is_valid()) {
-		material_override->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+	if (material_override == p_material) {
+		return;
 	}
+
+	Ref<Material> old_material = material_override;
 	material_override = p_material;
-	if (material_override.is_valid()) {
-		material_override->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
-	}
-	RS::get_singleton()->instance_geometry_set_material_override(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+	_update_material_property_list_connection(old_material, material_override);
+	RS::get_singleton()->instance_geometry_set_material_override(get_instance(), material_override.is_valid() ? material_override->get_rid() : RID());
+	notify_property_list_changed();
 }
 
 Ref<Material> GeometryInstance3D::get_material_override() const {
@@ -231,8 +246,15 @@ Ref<Material> GeometryInstance3D::get_material_override() const {
 }
 
 void GeometryInstance3D::set_material_overlay(const Ref<Material> &p_material) {
+	if (material_overlay == p_material) {
+		return;
+	}
+
+	Ref<Material> old_material = material_overlay;
 	material_overlay = p_material;
-	RS::get_singleton()->instance_geometry_set_material_overlay(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
+	_update_material_property_list_connection(old_material, material_overlay);
+	RS::get_singleton()->instance_geometry_set_material_overlay(get_instance(), material_overlay.is_valid() ? material_overlay->get_rid() : RID());
+	notify_property_list_changed();
 }
 
 Ref<Material> GeometryInstance3D::get_material_overlay() const {
