@@ -54,6 +54,7 @@ class AudioStreamEditor : public ColorRect {
 	float _current = 0;
 	bool _dragging = false;
 	bool _pausing = false;
+	bool _stream_empty = false;
 
 protected:
 	void _notification(int p_what);

@@ -50,6 +50,9 @@ private:
 	float audio_stream_volume_db[MAX_STREAMS] = {};
 	HashSet<AudioStreamPlaybackSynchronized *> playbacks;
 
+	bool pending_emit_changed = false;
+	void emit_pending_changed();
+
 public:
 	virtual double get_bpm() const override;
 	virtual int get_beat_count() const override;

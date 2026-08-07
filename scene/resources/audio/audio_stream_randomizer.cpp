@@ -30,6 +30,7 @@
 
 #include "audio_stream_randomizer.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 
 void AudioStreamRandomizer::add_stream(int p_index, Ref<AudioStream> p_stream, float p_weight) {
@@ -69,8 +70,26 @@ void AudioStreamRandomizer::remove_stream(int p_index) {
 
 void AudioStreamRandomizer::set_stream(int p_index, Ref<AudioStream> p_stream) {
 	ERR_FAIL_INDEX(p_index, audio_stream_pool.size());
+
+	Ref<AudioStream> old_stream = audio_stream_pool[p_index].stream;
+	if (old_stream.is_valid()) {
+		old_stream->disconnect_changed(callable_mp((Resource *)this, &Resource::emit_changed));
+	}
+	if (p_stream.is_valid()) {
+		p_stream->connect_changed(callable_mp((Resource *)this, &Resource::emit_changed));
+	}
+
 	audio_stream_pool.write[p_index].stream = p_stream;
-	emit_signal(CoreStringName(changed));
+
+	if (!pending_emit_changed) {
+		pending_emit_changed = true;
+		callable_mp(this, &AudioStreamRandomizer::emit_pending_changed).call_deferred();
+	}
+}
+
+void AudioStreamRandomizer::emit_pending_changed() {
+	pending_emit_changed = false;
+	emit_changed();
 }
 
 Ref<AudioStream> AudioStreamRandomizer::get_stream(int p_index) const {

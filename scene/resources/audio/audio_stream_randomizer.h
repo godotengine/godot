@@ -68,6 +68,9 @@ private:
 	Ref<AudioStream> last_playback = nullptr;
 	PlaybackMode playback_mode = PLAYBACK_RANDOM_NO_REPEATS;
 
+	bool pending_emit_changed = false;
+	void emit_pending_changed();
+
 protected:
 	static void _bind_methods();
 
