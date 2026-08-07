@@ -94,6 +94,8 @@
 			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
 			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
 			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+			[b]Luminance (linear):[/b] Use the luminance value of linear-encoded RGB channels.
+			[b]Luminance (sRGB):[/b] Use the luminance value of sRGB-encoded RGB channels.
 		</member>
 		<member name="process/channel_remap/blue" type="int" setter="" getter="" default="2">
 			Specifies the data source of the output image's blue channel.
@@ -108,6 +110,8 @@
 			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
 			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
 			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+			[b]Luminance (linear):[/b] Use the luminance value of linear-encoded RGB channels.
+			[b]Luminance (sRGB):[/b] Use the luminance value of sRGB-encoded RGB channels.
 		</member>
 		<member name="process/channel_remap/green" type="int" setter="" getter="" default="1">
 			Specifies the data source of the output image's green channel.
@@ -122,6 +126,8 @@
 			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
 			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
 			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+			[b]Luminance (linear):[/b] Use the luminance value of linear-encoded RGB channels.
+			[b]Luminance (sRGB):[/b] Use the luminance value of sRGB-encoded RGB channels.
 		</member>
 		<member name="process/channel_remap/red" type="int" setter="" getter="" default="0">
 			Specifies the data source of the output image's red channel.
@@ -136,6 +142,8 @@
 			[b]Unused:[/b] Set the color channel's value to the default ([code]1.0[/code] for alpha, [code]0.0[/code] for red, green or blue).
 			[b]Zero:[/b] Set the color channel's value to [code]0.0[/code].
 			[b]One:[/b] Set the color channel's value to [code]1.0[/code].
+			[b]Luminance (linear):[/b] Use the luminance value of linear-encoded RGB channels.
+			[b]Luminance (sRGB):[/b] Use the luminance value of sRGB-encoded RGB channels.
 		</member>
 		<member name="process/fix_alpha_border" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], puts pixels of the same surrounding color in transition from transparent to opaque areas. For textures displayed with bilinear filtering, this helps to reduce the outline effect when exporting images from an image editor.
