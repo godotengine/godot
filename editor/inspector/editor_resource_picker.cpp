@@ -118,7 +118,10 @@ void EditorResourcePicker::_update_resource() {
 			assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + class_name);
 
 			// Preview will override the above, so called at the end.
-			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, callable_mp(this, &EditorResourcePicker::_update_resource_preview).bind(edited_resource->get_instance_id()));
+			const ScenePreviewMode preview_mode = (ScenePreviewMode)EDITOR_GET("interface/inspector/scene_preview_mode").operator int();
+			if (Ref<PackedScene>(edited_resource).is_null() || preview_mode == ScenePreviewMode::MODE_THUMBNAIL) {
+				EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, callable_mp(this, &EditorResourcePicker::_update_resource_preview).bind(edited_resource->get_instance_id()));
+			}
 		}
 	} else if (edited_resource.is_valid()) {
 		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
