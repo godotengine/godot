@@ -118,6 +118,7 @@ void CSharpLanguage::init() {
 	GLOBAL_DEF("dotnet/project/assembly_name", "");
 #ifdef TOOLS_ENABLED
 	GLOBAL_DEF("dotnet/project/solution_directory", "");
+	GLOBAL_DEF("dotnet/project/project_directory", "");
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
 #endif
 
@@ -1089,6 +1090,8 @@ void CSharpLanguage::_editor_init_callback() {
 	godotsharp_editor->enable_plugin();
 
 	get_singleton()->godotsharp_editor = godotsharp_editor;
+
+	_flush_deferred_editor_data_entries();
 }
 #endif
 
@@ -2221,6 +2224,55 @@ void CSharpScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &CSharpScript::_new, MethodInfo("new"));
 }
 
+#ifdef TOOLS_ENABLED
+// Assembly-backed (csharp://) script registrations can happen before EditorNode exists
+// (during `ScriptServer::init_languages()` in `Main::setup2`, which runs well before
+// `memnew(EditorNode)`). In that window we can't populate the EditorData icon/name maps,
+// so we queue them and flush from `CSharpLanguage::_editor_init_callback` once EditorNode
+// is alive. Without this, EditorData misses the fast-path class-name → icon lookup for
+// assembly-backed `[GlobalClass]` types until something triggers a re-registration.
+struct DeferredEditorDataEntry {
+	StringName class_name;
+	String icon_path;
+	String script_path;
+};
+static Vector<DeferredEditorDataEntry> _deferred_editor_data_entries;
+
+void CSharpLanguage::_flush_deferred_editor_data_entries() {
+	if (!EditorNode::get_singleton()) {
+		return;
+	}
+	for (const DeferredEditorDataEntry &entry : _deferred_editor_data_entries) {
+		EditorNode::get_editor_data().script_class_set_icon_path(entry.class_name, entry.icon_path);
+		EditorNode::get_editor_data().script_class_set_name(entry.script_path, entry.class_name);
+	}
+	_deferred_editor_data_entries.clear();
+}
+
+void CSharpScript::_register_csharp_global_class(const String &p_script_path, const CSharpScript::TypeInfo &p_type_info) {
+	if (!p_type_info.is_global_class) {
+		return;
+	}
+	if (p_script_path.begins_with("csharp://")) {
+		// Assembly-backed scripts bypass EditorFileSystem; register directly with ScriptServer.
+		ScriptServer::add_global_class(p_type_info.class_name, p_type_info.native_base_name,
+				CSharpLanguage::get_singleton()->get_name(), p_script_path,
+				p_type_info.is_abstract, p_type_info.is_tool);
+		if (EditorNode::get_singleton()) {
+			EditorNode::get_editor_data().script_class_set_icon_path(p_type_info.class_name, p_type_info.icon_path);
+			EditorNode::get_editor_data().script_class_set_name(p_script_path, p_type_info.class_name);
+		} else {
+			_deferred_editor_data_entries.push_back({ p_type_info.class_name, p_type_info.icon_path, p_script_path });
+		}
+	} else {
+		EditorFileSystem *efs = EditorFileSystem::get_singleton();
+		if (efs) {
+			efs->update_file(p_script_path);
+		}
+	}
+}
+#endif
+
 void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 	// IMPORTANT:
 	// This method must be called only after the CSharpScript and its associated type
@@ -2241,11 +2293,9 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 	p_script->_update_exports();
 
 #ifdef TOOLS_ENABLED
-	// If the EditorFileSystem singleton is available, update the file;
-	// otherwise, the file will be updated when the singleton becomes available.
-	EditorFileSystem *efs = EditorFileSystem::get_singleton();
-	if (efs && !p_script->get_path().is_empty()) {
-		efs->update_file(p_script->get_path());
+	String script_path = p_script->get_path();
+	if (!script_path.is_empty()) {
+		_register_csharp_global_class(script_path, p_script->type_info);
 	}
 #endif
 }
@@ -2614,12 +2664,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 		_update_exports();
 
 #ifdef TOOLS_ENABLED
-		// If the EditorFileSystem singleton is available, update the file;
-		// otherwise, the file will be updated when the singleton becomes available.
-		EditorFileSystem *efs = EditorFileSystem::get_singleton();
-		if (efs) {
-			efs->update_file(script_path);
-		}
+		_register_csharp_global_class(script_path, type_info);
 #endif
 	}
 

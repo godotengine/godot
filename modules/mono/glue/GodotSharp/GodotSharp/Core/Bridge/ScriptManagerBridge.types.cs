@@ -72,7 +72,17 @@ public static partial class ScriptManagerBridge
 
         public void Add(string scriptPath, Type scriptType)
         {
-            _pathTypeMap.Add(scriptPath, scriptType);
+            // With multi-assembly support, the same res:// path may be registered by both
+            // the main assembly and a referenced assembly (when the source file is inside
+            // the Godot project tree). Use TryAdd to ignore duplicates.
+            if (!_pathTypeMap.TryAdd(scriptPath, scriptType) &&
+                _pathTypeMap.TryGetValue(scriptPath, out var existingType) &&
+                existingType != scriptType)
+            {
+                GD.PushWarning($"Script path '{scriptPath}' registered by both " +
+                    $"'{existingType.Assembly.GetName().Name}.{existingType.FullName}' and " +
+                    $"'{scriptType.Assembly.GetName().Name}.{scriptType.FullName}'. Using first registration.");
+            }
 
             // Due to partial classes, more than one file can point to the same type, so
             // there could be duplicate keys in this case. We only add a type as key once.
