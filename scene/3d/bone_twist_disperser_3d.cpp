@@ -601,6 +601,8 @@ void BoneTwistDisperser3D::_make_joints_dirty(int p_index) {
 }
 
 void BoneTwistDisperser3D::_update_joints(int p_index) {
+	ERR_FAIL_INDEX(p_index, (int)settings.size());
+
 	Skeleton3D *sk = get_skeleton();
 	int current_bone = settings[p_index]->end_bone.bone;
 	int root_bone = settings[p_index]->root_bone.bone;
