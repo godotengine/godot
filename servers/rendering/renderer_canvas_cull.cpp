@@ -1724,6 +1724,25 @@ void RendererCanvasCull::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 	style->margin[SIDE_BOTTOM] = p_bottomright.y;
 	style->axis_x = p_x_axis_mode;
 	style->axis_y = p_y_axis_mode;
+
+	style->flags = 0;
+
+	if (p_rect.size.x < 0) {
+		style->flags |= RendererCanvasRender::CANVAS_RECT_FLIP_H;
+		style->rect.size.x = -style->rect.size.x;
+	}
+	if (p_source.size.x < 0) {
+		style->flags ^= RendererCanvasRender::CANVAS_RECT_FLIP_H;
+		style->source.size.x = -style->source.size.x;
+	}
+	if (p_rect.size.y < 0) {
+		style->flags |= RendererCanvasRender::CANVAS_RECT_FLIP_V;
+		style->rect.size.y = -style->rect.size.y;
+	}
+	if (p_source.size.y < 0) {
+		style->flags ^= RendererCanvasRender::CANVAS_RECT_FLIP_V;
+		style->source.size.y = -style->source.size.y;
+	}
 }
 
 void RendererCanvasCull::canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture) {
