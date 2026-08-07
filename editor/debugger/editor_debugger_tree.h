@@ -80,6 +80,8 @@ private:
 	void _scene_tree_rmb_selected(const Vector2 &p_position, MouseButton p_button);
 	void _item_menu_id_pressed(int p_option);
 	void _file_selected(const String &p_file);
+	bool _item_matches_filter(TreeItem *p_item, const String &p_type_name, const String &p_term);
+	bool _node_matches_class_term(const String &p_type_name, const String &p_term);
 
 protected:
 	static void _bind_methods();
