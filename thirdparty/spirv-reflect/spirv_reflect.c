@@ -52,7 +52,7 @@ enum {
 };
 
 enum {
-  INVALID_VALUE  = 0xFFFFFFFF,
+  INVALID_VALUE  = SPV_REFLECT_INVALID_VALUE,
 };
 
 enum {
@@ -3726,6 +3726,9 @@ static SpvReflectResult ParseEntryPoints(SpvReflectPrvParser* p_parser, SpvRefle
     }
 
     SpvReflectEntryPoint* p_entry_point = &(p_module->entry_points[entry_point_index]);
+    p_entry_point->local_size_spec_id[0] = (uint32_t)INVALID_VALUE;
+    p_entry_point->local_size_spec_id[1] = (uint32_t)INVALID_VALUE;
+    p_entry_point->local_size_spec_id[2] = (uint32_t)INVALID_VALUE;
     CHECKED_READU32_CAST(p_parser, p_node->word_offset + 1, SpvExecutionModel, p_entry_point->spirv_execution_model);
     CHECKED_READU32(p_parser, p_node->word_offset + 2, p_entry_point->id);
 
@@ -3886,23 +3889,13 @@ static SpvReflectResult ParseExecutionModes(SpvReflectPrvParser* p_parser, SpvRe
           SpvReflectPrvNode* y_node = FindNode(p_parser, local_size_y_id);
           SpvReflectPrvNode* z_node = FindNode(p_parser, local_size_z_id);
           if (IsNotNull(x_node) && IsNotNull(y_node) && IsNotNull(z_node)) {
-            if (IsSpecConstant(x_node)) {
-              p_entry_point->local_size.x = (uint32_t)SPV_REFLECT_EXECUTION_MODE_SPEC_CONSTANT;
-            } else {
-              CHECKED_READU32(p_parser, x_node->word_offset + 3, p_entry_point->local_size.x);
-            }
+            CHECKED_READU32(p_parser, x_node->word_offset + 3, p_entry_point->local_size.x);
+            CHECKED_READU32(p_parser, y_node->word_offset + 3, p_entry_point->local_size.y);
+            CHECKED_READU32(p_parser, z_node->word_offset + 3, p_entry_point->local_size.z);
 
-            if (IsSpecConstant(y_node)) {
-              p_entry_point->local_size.y = (uint32_t)SPV_REFLECT_EXECUTION_MODE_SPEC_CONSTANT;
-            } else {
-              CHECKED_READU32(p_parser, y_node->word_offset + 3, p_entry_point->local_size.y);
-            }
-
-            if (IsSpecConstant(z_node)) {
-              p_entry_point->local_size.z = (uint32_t)SPV_REFLECT_EXECUTION_MODE_SPEC_CONSTANT;
-            } else {
-              CHECKED_READU32(p_parser, z_node->word_offset + 3, p_entry_point->local_size.z);
-            }
+            p_entry_point->local_size_spec_id[0] = IsSpecConstant(x_node) ? x_node->decorations.spec_id : (uint32_t)INVALID_VALUE;
+            p_entry_point->local_size_spec_id[1] = IsSpecConstant(y_node) ? y_node->decorations.spec_id : (uint32_t)INVALID_VALUE;
+            p_entry_point->local_size_spec_id[2] = IsSpecConstant(z_node) ? z_node->decorations.spec_id : (uint32_t)INVALID_VALUE;
           }
         } break;
 

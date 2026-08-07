@@ -338,6 +338,11 @@ enum {
   SPV_REFLECT_SET_NUMBER_DONT_CHANGE            = ~0
 };
 
+// A field that holds this value has no data.
+enum {
+  SPV_REFLECT_INVALID_VALUE                     = 0xFFFFFFFF,
+};
+
 typedef struct SpvReflectNumericTraits {
   struct Scalar {
     uint32_t                        width;
@@ -555,11 +560,19 @@ typedef struct SpvReflectEntryPoint {
   uint32_t                          execution_mode_count;
   SpvExecutionMode*                 execution_modes;
 
+  // The workgroup size. If a specialization constant controls a dimension, that
+  // dimension has the default value of the constant. Thus this field is always a
+  // usable size. Read `local_size_spec_id` to find the dimensions that a
+  // specialization constant controls.
   struct LocalSize {
     uint32_t                        x;
     uint32_t                        y;
     uint32_t                        z;
   } local_size;
+  // The ID of the specialization constant that controls each dimension of
+  // `local_size`. A dimension that no constant controls has the value
+  // SPV_REFLECT_INVALID_VALUE.
+  uint32_t                          local_size_spec_id[3];
   uint32_t                          invocations; // valid for geometry
   uint32_t                          output_vertices; // valid for geometry, tesselation
 } SpvReflectEntryPoint;
