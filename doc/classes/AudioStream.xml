@@ -4,45 +4,48 @@
 		Base class for audio streams.
 	</brief_description>
 	<description>
-		Base class for audio streams. Audio streams are used for sound effects and music playback, and support WAV (via [AudioStreamWAV]), Ogg (via [AudioStreamOggVorbis]), and MP3 (via [AudioStreamMP3]) file formats.
+		[AudioStream] is an audio resource that stores audio data. It can be used by an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio) to play music, sound effects, or voices.
+		Godot has built-in audio streams that supports WAV (via [AudioStreamWAV]), Ogg Vorbis (via [AudioStreamOggVorbis]), and MP3 (via [AudioStreamMP3]) file formats. To understand how those audio files are imported, see [ResourceImporterWAV], [ResourceImporterOggVorbis], and [ResourceImporterMP3].
+		To handle playback of an audio stream resource at a low level, use the [AudioStreamPlayback] class.
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
+		<link title="Recording with microphone">$DOCS_URL/tutorials/audio/recording_with_microphone.html</link>
 		<link title="Audio Generator Demo">https://godotengine.org/asset-library/asset/2759</link>
-		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
-		<link title="Audio Spectrum Visualizer Demo">https://godotengine.org/asset-library/asset/2762</link>
+		<link title="Truck Town Demo">https://godotengine.org/asset-library/asset/2752</link>
+		<link title="Platformer 3D Demo">https://godotengine.org/asset-library/asset/2748</link>
 	</tutorials>
 	<methods>
 		<method name="_get_bar_beats" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Override this method to return the bar beats of this stream.
+				Overridable method. Should return the number of beats per bar of this stream.
 			</description>
 		</method>
 		<method name="_get_beat_count" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Overridable method. Should return the total number of beats of this audio stream. Used by the engine to determine the position of every beat.
-				Ideally, the returned value should be based off the stream's sample rate ([member AudioStreamWAV.mix_rate], for example).
+				Overridable method. Should return the total number of beats of this stream. Used by the engine to determine the length of this stream, in beats.
+				Ideally, the returned value should be based off the stream's sample rate. An example of how sample rate is obtained can be found in [code]AudioStreamPlaybackOggVorbis::get_stream_sampling_rate()[/code], in the source code.
 			</description>
 		</method>
 		<method name="_get_bpm" qualifiers="virtual const">
 			<return type="float" />
 			<description>
-				Overridable method. Should return the tempo of this audio stream, in beats per minute (BPM). Used by the engine to determine the position of every beat.
-				Ideally, the returned value should be based off the stream's sample rate ([member AudioStreamWAV.mix_rate], for example).
+				Overridable method. Should return the tempo of this stream, in beats per minute (BPM). Used by the engine to determine the length of a beat.
+				Ideally, the returned value should be based off the stream's sample rate. An example of how sample rate is obtained can be found in [code]AudioStreamPlaybackOggVorbis::get_stream_sampling_rate()[/code], in the source code.
 			</description>
 		</method>
 		<method name="_get_length" qualifiers="virtual const">
 			<return type="float" />
 			<description>
-				Override this method to customize the returned value of [method get_length]. Should return the length of this audio stream, in seconds.
+				Override this method to customize the return value of [method get_length], in seconds. Used by the engine to determine the upper limit for a seeking function (such as [method AudioStreamPlayer.seek]).
 			</description>
 		</method>
 		<method name="_get_parameter_list" qualifiers="virtual const">
 			<return type="Dictionary[]" />
 			<description>
-				Return the controllable parameters of this stream. This array contains dictionaries with a property info description format (see [method Object.get_property_list]). Additionally, the default value for this parameter must be added tho each dictionary in "default_value" field.
+				Overridable method. Should return an array representing the controllable parameters of this stream. This array contains dictionaries with a property info description format (see [method Object.get_property_list]). Additionally, the default value for a parameter must be added to each dictionary in a [code]default_value[/code] field.
 			</description>
 		</method>
 		<method name="_get_stream_name" qualifiers="virtual const" deprecated="This method is not used by the engine.">
@@ -61,25 +64,25 @@
 		<method name="_has_loop" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Override this method to return [code]true[/code] if this stream has a loop.
+				Override this method to return [code]true[/code] if this stream has a loop. Used by the engine for looping and interactive music behavior.
 			</description>
 		</method>
 		<method name="_instantiate_playback" qualifiers="virtual required const">
 			<return type="AudioStreamPlayback" />
 			<description>
-				Override this method to customize the returned value of [method instantiate_playback]. Should return a new [AudioStreamPlayback] created when the stream is played (such as by an [AudioStreamPlayer]).
+				Override this method to customize the return value of [method instantiate_playback]. Should return a new [AudioStreamPlayback] created when the stream is played (such as by an [AudioStreamPlayer]).
 			</description>
 		</method>
 		<method name="_is_monophonic" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Override this method to customize the returned value of [method is_monophonic]. Should return [code]true[/code] if this audio stream only supports one channel.
+				Override this method to customize the return value of [method is_monophonic]. Should return [code]true[/code] if this stream must restart playback if called to play while already playing. Returns [code]false[/code] if this stream can play on top of itself.
 			</description>
 		</method>
 		<method name="can_be_sampled" qualifiers="const" experimental="">
 			<return type="bool" />
 			<description>
-				Returns if the current [AudioStream] can be used as a sample. Only static streams can be sampled.
+				Returns [code]true[/code] if this stream can be used as a sample. Only static streams can be sampled.
 			</description>
 		</method>
 		<method name="generate_sample" qualifiers="const" experimental="">
@@ -91,25 +94,29 @@
 		<method name="get_length" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the length of the audio stream in seconds. If this stream is an [AudioStreamRandomizer], returns the length of the last played stream. If this stream has an indefinite length (such as for [AudioStreamGenerator] and [AudioStreamMicrophone]), returns [code]0.0[/code].
+				Returns the length of the stream in seconds.
+				If the stream is an [AudioStreamRandomizer], returns the length of the last played sub-stream.
+				If the stream is an [AudioStreamPlaylist], returns the length of all sub-streams combined.
+				If the stream is an [AudioStreamSynchronized], returns the length of the longest sub-stream.
+				If this stream has an indefinite length (such as for [AudioStreamGenerator] and [AudioStreamMicrophone]), returns [code]0.0[/code].
 			</description>
 		</method>
 		<method name="instantiate_playback">
 			<return type="AudioStreamPlayback" />
 			<description>
-				Returns a newly created [AudioStreamPlayback] intended to play this audio stream. Useful for when you want to extend [method _instantiate_playback] but call [method instantiate_playback] from an internally held AudioStream subresource. An example of this can be found in the source code for [code]AudioStreamRandomPitch::instantiate_playback[/code].
+				Returns a newly created [AudioStreamPlayback] intended to play this stream. Useful for when you want to extend [method _instantiate_playback] but call [method instantiate_playback] from an internally held AudioStream subresource. An example of this can be found in the source code for [code]AudioStreamRandomizer::instantiate_playback[/code].
 			</description>
 		</method>
 		<method name="is_meta_stream" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the stream is a collection of other streams, [code]false[/code] otherwise.
+				Returns [code]true[/code] if the stream is a collection of other streams (such as [AudioStreamPlaylist]) or is polyphonic (see [method is_monophonic]).
 			</description>
 		</method>
 		<method name="is_monophonic" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this audio stream only supports one channel ([i]monophony[/i]), or [code]false[/code] if the audio stream supports two or more channels ([i]polyphony[/i]).
+				Returns [code]true[/code] if this stream only supports one playback at a time ([i]monophony[/i]), or [code]false[/code] if the stream supports multiple playbacks at once ([i]polyphony[/i]).
 			</description>
 		</method>
 	</methods>
