@@ -3653,7 +3653,8 @@ void PopupMenu::_native_popup(const Rect2i &p_rect) {
 		}
 		popup_pos += DisplayServer::get_singleton()->window_get_position(wid);
 	}
-	float win_scale = get_parent_visible_window()->get_content_scale_factor();
+	Window *parent_window = get_parent_visible_window();
+	float win_scale = parent_window ? parent_window->get_content_scale_factor() : 1.0;
 	NativeMenu::get_singleton()->set_minimum_width(global_menu, p_rect.size.x * win_scale);
 	NativeMenu::get_singleton()->popup(global_menu, popup_pos);
 }
