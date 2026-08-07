@@ -6,6 +6,36 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="find_blend_shape_by_name">
+			<return type="int" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the index of the blend shape with the given [param name]. Returns [code]-1[/code] if no blend shape with this name exists, including when [member mesh] is [code]null[/code].
+			</description>
+		</method>
+		<method name="get_blend_shape_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of blend shapes available. Produces an error if [member mesh] is [code]null[/code].
+			</description>
+		</method>
+		<method name="get_blend_shape_value" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="blend_shape_idx" type="int" />
+			<description>
+				Returns the value of the blend shape at the given [param blend_shape_idx]. Returns [code]0.0[/code] and produces an error if [member mesh] is [code]null[/code] or doesn't have a blend shape at that index.
+			</description>
+		</method>
+		<method name="set_blend_shape_value">
+			<return type="void" />
+			<param index="0" name="blend_shape_idx" type="int" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Sets the value of the blend shape at [param blend_shape_idx] to [param value]. Produces an error if [member mesh] is [code]null[/code] or doesn't have a blend shape at that index.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" enum="GeometryInstance3D.ShadowCastingSetting" default="1">
 		</member>

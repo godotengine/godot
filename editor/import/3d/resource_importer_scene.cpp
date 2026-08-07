@@ -2893,6 +2893,9 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 			if (mesh.is_valid()) {
 				_copy_meta(importer_mesh.ptr(), mesh.ptr());
 				mesh_node->set_mesh(mesh);
+				for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
+					mesh_node->set_blend_shape_value(i, src_mesh_node->get_blend_shape_value(i));
+				}
 				for (int i = 0; i < mesh->get_surface_count(); i++) {
 					mesh_node->set_surface_override_material(i, src_mesh_node->get_surface_material(i));
 				}
