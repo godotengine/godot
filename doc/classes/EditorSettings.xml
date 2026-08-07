@@ -1602,6 +1602,9 @@
 		<member name="text_editor/completion/code_complete_enabled" type="bool" setter="" getter="">
 			If [code]true[/code], code completion will be triggered automatically after [member text_editor/completion/code_complete_delay]. Even if [code]false[/code], code completion can be triggered manually with the [code]ui_text_completion_query[/code] action (by default [kbd]Ctrl + Space[/kbd] or [kbd]Cmd + Space[/kbd] on macOS).
 		</member>
+		<member name="text_editor/completion/code_complete_on_period" type="bool" setter="" getter="">
+			If [code]true[/code], pressing the period key ([kbd].[/kbd]) while the code completion popup is open accepts the currently selected completion, the period character is then inserted and code completion immediately appears for the accepted item's members and methods.
+		</member>
 		<member name="text_editor/completion/colorize_suggestions" type="bool" setter="" getter="">
 			If [code]true[/code] enables the coloring for some items in the autocompletion suggestions, like vector components.
 		</member>
