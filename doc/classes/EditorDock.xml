@@ -130,7 +130,7 @@
 			The color of the dock tab's title. If its alpha is [code]0.0[/code], the default font color will be used.
 		</member>
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
-			If [code]true[/code], the dock is not automatically opened or closed when loading an editor layout, only moved. It also can't be opened using a shortcut. This is meant for docks that are opened and closed in specific cases, such as when selecting a [TileMap] or [AnimationTree] node.
+			If [code]true[/code], the dock is not automatically opened or closed when loading an editor layout, only moved. It also can't be opened using a shortcut. This is meant for docks that are opened and closed in specific cases, such as when selecting a [TileMapLayer] or [AnimationTree] node.
 		</member>
 	</members>
 	<signals>
