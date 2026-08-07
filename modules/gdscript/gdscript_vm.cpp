@@ -2597,6 +2597,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						if (obj) {
 							if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
 								result = Signal(obj, SNAME("completed"));
+								// Drop reference to the awaited GDScriptFunctionState, this prevents cyclical leaks.
+								*argobj = Variant();
 							}
 						}
 					}
