@@ -603,7 +603,7 @@ void add_exposed_classes(Context &r_context) {
 
 			PropertyInfo return_info = method_info.return_val;
 
-			MethodBind *m = method.is_virtual ? nullptr : ClassDB::get_method(class_name, method_info.name);
+			const MethodBind *m = method.is_virtual ? nullptr : ClassDB::get_method(class_name, method_info.name);
 
 			method.is_vararg = m && m->is_vararg();
 
