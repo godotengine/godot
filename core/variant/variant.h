@@ -61,6 +61,7 @@
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/method_ptrarg.h"
 #include "core/variant/variant_deep_duplicate.h"
 
 class GDType;
@@ -564,6 +565,13 @@ public:
 	template <typename K, typename V>
 	_FORCE_INLINE_ Variant(const TypedDictionary<K, V> &p_typed_dictionary) :
 			Variant(static_cast<const Dictionary &>(p_typed_dictionary)) {}
+
+	template <typename T, typename = std::enable_if_t<ConvertiblePtrToArg<T>::value>
+	_FORCE_INLINE_ explicit Variant(const T &v) {
+		typename PtrToArg<T>::EncodeT t;
+		PtrToArg<T>::encode(v, t);
+		*this = t;
+	}
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {
