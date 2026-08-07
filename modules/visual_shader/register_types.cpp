@@ -115,6 +115,7 @@ void initialize_visual_shader_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(VisualShaderNodeVectorDecompose);
 		GDREGISTER_CLASS(VisualShaderNodeTransformDecompose);
 		GDREGISTER_CLASS(VisualShaderNodeTexture);
+		GDREGISTER_CLASS(VisualShaderNodeTextureFunc);
 		GDREGISTER_CLASS(VisualShaderNodeCurveTexture);
 		GDREGISTER_CLASS(VisualShaderNodeCurveXYZTexture);
 		GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeSample3D);
