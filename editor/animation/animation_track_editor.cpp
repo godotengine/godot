@@ -9634,7 +9634,7 @@ void AnimationMarkerEdit::_insert_marker(float p_ofs) {
 
 	editor->resolve_insertion_offset(p_ofs);
 
-	marker_insert_confirm->popup_centered(Size2(200, 100) * EDSCALE);
+	marker_insert_confirm->popup_centered(Size2(300, 100) * EDSCALE);
 	marker_insert_color->set_pick_color(Color(1, 1, 1));
 
 	String base = "new_marker";
