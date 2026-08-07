@@ -453,8 +453,6 @@ void EditorSpinSlider::_draw_spin_slider() {
 			const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
 			draw_rect(grabber_rect, c);
 
-			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
-
 			bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input && value_input->is_visible());
 			if (grabber->is_visible() != display_grabber) {
 				grabber->set_visible(display_grabber);
