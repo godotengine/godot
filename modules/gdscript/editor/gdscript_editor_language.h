@@ -44,6 +44,8 @@ public:
 
 	virtual int32_t find_function(const String &p_function, const String &p_code) const override;
 
+	virtual Error get_code_actions(const String &p_code, const String &p_path, Vector<ScriptLanguage::CodeActionGroupWithDiagnostics> *r_actions) override;
+
 	GDScriptEditorLanguage() {
 		ERR_FAIL_COND(singleton != nullptr);
 		singleton = this;
