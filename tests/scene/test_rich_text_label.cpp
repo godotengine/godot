@@ -137,6 +137,22 @@ TEST_CASE("[SceneTree][RichTextLabel] Sizing with fit content") {
 	memdelete(test_label);
 }
 
+TEST_CASE("[SceneTree][RichTextLabel] BBCode ruby parsing") {
+	RichTextLabel *test_label = memnew(RichTextLabel);
+	Window *root = SceneTree::get_singleton()->get_root();
+	root->add_child(test_label);
+
+	test_label->set_use_bbcode(true);
+	test_label->set_text("word[ruby=furigana]base[/ruby]word");
+	SceneTree::get_singleton()->process(0);
+
+	CHECK_MESSAGE(
+			test_label->get_parsed_text() == "wordbaseword",
+			"get_parsed_text() should return the base text, ignoring ruby properties but keeping the base payload.");
+
+	memdelete(test_label);
+}
+
 } // namespace TestRichTextLabel
 
 #endif // ADVANCED_GUI_DISABLED
