@@ -74,67 +74,6 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 #endif
 }
 
-void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
-	if (!should_log(true)) {
-		return;
-	}
-
-	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (OS::get_singleton()->get_stdout_type() != OS::STD_HANDLE_CONSOLE || !hCon || hCon == INVALID_HANDLE_VALUE) {
-		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type, p_script_backtraces);
-	} else {
-		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
-		GetConsoleScreenBufferInfo(hCon, &sbi);
-
-		WORD current_bg = sbi.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
-
-		uint32_t basecol = 0;
-		switch (p_type) {
-			case ERR_WARNING:
-				basecol = FOREGROUND_RED | FOREGROUND_GREEN;
-				break;
-			case ERR_SCRIPT:
-				basecol = FOREGROUND_RED | FOREGROUND_BLUE;
-				break;
-			case ERR_SHADER:
-				basecol = FOREGROUND_GREEN | FOREGROUND_BLUE;
-				break;
-			case ERR_ERROR:
-			default:
-				basecol = FOREGROUND_RED;
-				break;
-		}
-
-		basecol |= current_bg;
-
-		SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
-		logf_error("%s:", error_type_string(p_type));
-
-		SetConsoleTextAttribute(hCon, basecol);
-		if (p_rationale && p_rationale[0]) {
-			logf_error(" %s\n", p_rationale);
-		} else {
-			logf_error(" %s\n", p_code);
-		}
-
-		// `FOREGROUND_INTENSITY` alone results in gray text.
-		SetConsoleTextAttribute(hCon, FOREGROUND_INTENSITY);
-		if (p_rationale && p_rationale[0]) {
-			logf_error("%sat: (%s:%i)\n", error_type_indent(p_type), p_file, p_line);
-		} else {
-			logf_error("%sat: %s (%s:%i)\n", error_type_indent(p_type), p_function, p_file, p_line);
-		}
-
-		for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
-			if (!backtrace->is_empty()) {
-				logf_error("%s\n", backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data());
-			}
-		}
-
-		SetConsoleTextAttribute(hCon, sbi.wAttributes);
-	}
-}
-
 WindowsTerminalLogger::~WindowsTerminalLogger() {}
 
 #endif // WINDOWS_ENABLED
