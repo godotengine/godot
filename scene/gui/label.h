@@ -161,6 +161,7 @@ public:
 	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
 	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
 
+	void _recalculate_visible_characters();
 	void set_visible_characters(int p_amount);
 	int get_visible_characters() const;
 	int get_total_character_count() const;
