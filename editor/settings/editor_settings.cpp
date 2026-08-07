@@ -1260,14 +1260,14 @@ void EditorSettings::_load_default_visual_shader_editor_theme() {
 }
 
 String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path) {
-	Ref<RegEx> regex = RegEx::create_from_string(R"((?:jetbrains\s*)?rider(?:\s*(eap|\d{4}\.\d+|\d{4}\.\d+\s*dev)?)?|visual\s*studio\s*code|subl(ime\s*text)?|sublime_text|zed(it(or)?)?|(g)?vim|emacs|atom|geany|kate|code|(vs)?codium)");
-	Ref<RegExMatch> editor_match = regex->search(p_path.to_lower().get_file().get_basename());
+	RegEx regex = RegEx(R"((?:jetbrains\s*)?rider(?:\s*(eap|\d{4}\.\d+|\d{4}\.\d+\s*dev)?)?|visual\s*studio\s*code|subl(ime\s*text)?|sublime_text|zed(it(or)?)?|(g)?vim|emacs|atom|geany|kate|code|(vs)?codium)");
+	RegExMatch editor_match = regex.search(p_path.to_lower().get_file().get_basename());
 
-	if (editor_match.is_null()) {
+	if (!editor_match.is_valid()) {
 		return String();
 	}
 
-	const String editor = editor_match->get_string(0).to_lower();
+	const String editor = editor_match.get_string(0).to_lower();
 	String new_exec_flags = "{file}";
 
 	if (editor.begins_with("rider")) {
