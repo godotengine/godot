@@ -31,6 +31,7 @@
 #include "audio_stream_player_2d.h"
 #include "audio_stream_player_2d.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
@@ -40,6 +41,7 @@
 #include "scene/resources/audio/audio_stream.h"
 #include "scene/resources/world_2d.h"
 #include "servers/audio/audio_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/area_2d.h"
@@ -47,16 +49,34 @@
 #include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
+#ifdef DEBUG_ENABLED
+#include "servers/audio/audio_server_debug.h"
+#endif // DEBUG_ENABLED
+
 void AudioStreamPlayer2D::_notification(int p_what) {
 	internal->notification(p_what);
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			AudioServer::get_singleton()->add_listener_changed_callback(_listener_changed_cb, this);
+#ifdef DEBUG_ENABLED
+			if (Engine::get_singleton()->is_editor_hint() || AudioServerDebug::get_singleton()->get_debug_audio_2d_visualization_enabled()) {
+				RS::get_singleton()->canvas_item_set_parent(debug_canvas_item, get_canvas());
+				set_notify_transform(true);
+				AudioServer::get_singleton()->connect("_debug_audio_2d_visualization_changed", callable_mp(this, &AudioStreamPlayer2D::_update_debug_visualization));
+				_update_debug_visualization();
+			}
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			AudioServer::get_singleton()->remove_listener_changed_callback(_listener_changed_cb, this);
+#ifdef DEBUG_ENABLED
+			if (Engine::get_singleton()->is_editor_hint() || AudioServerDebug::get_singleton()->get_debug_audio_2d_visualization_enabled()) {
+				RS::get_singleton()->canvas_item_set_parent(debug_canvas_item, RID());
+				AudioServer::get_singleton()->disconnect("_debug_audio_2d_visualization_changed", callable_mp(this, &AudioStreamPlayer2D::_update_debug_visualization));
+			}
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -78,8 +98,89 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 			}
 			internal->ensure_playback_limit();
 		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+#ifdef DEBUG_ENABLED
+			RS::get_singleton()->canvas_item_set_visible(debug_canvas_item, is_visible_in_tree());
+#endif // DEBUG_ENABLED
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+#ifdef DEBUG_ENABLED
+			RS::get_singleton()->canvas_item_set_transform(debug_canvas_item, Transform2D(0, get_global_position()));
+#endif // DEBUG_ENABLED
+		} break;
+
+		case NOTIFICATION_DRAW: {
+#ifdef DEBUG_ENABLED
+			if (Engine::get_singleton()->is_editor_hint() || AudioServerDebug::get_singleton()->get_debug_audio_2d_visualization_enabled()) {
+				_update_debug_visualization();
+			}
+#endif // DEBUG_ENABLED
+		} break;
 	}
 }
+
+#ifdef DEBUG_ENABLED
+void AudioStreamPlayer2D::_update_debug_visualization() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	AudioServerDebug *audio_server = AudioServerDebug::get_singleton();
+
+	rs->canvas_item_clear(debug_canvas_item);
+	rs->canvas_item_set_z_index(debug_canvas_item, get_z_index());
+	rs->canvas_item_set_custom_rect(debug_canvas_item, true, Rect2(Vector2(-max_distance, -max_distance), Vector2(max_distance * 2.0, max_distance * 2.0)));
+
+	if (max_distance <= 0.0 || audio_server->get_debug_audio_2d_visualization_mode() == 0) {
+		return;
+	} else if (audio_server->get_debug_audio_2d_visualization_mode() == 1) {
+		Color debug_color = audio_server->get_debug_audio_2d_visualization_color();
+
+		// center
+		debug_color.a = 0.4;
+		Transform2D trans_center;
+		trans_center.scale_basis(Vector2(max_distance, max_distance));
+		rs->canvas_item_add_mesh(debug_canvas_item, audio_server->get_debug_audio_2d_visualization_circle_mesh_rid(), trans_center, debug_color);
+
+		// outline
+		debug_color.a = 0.9;
+		Transform2D transf_outline;
+		transf_outline.scale_basis(Vector2(max_distance, max_distance));
+		rs->canvas_item_add_mesh(debug_canvas_item, audio_server->get_debug_audio_2d_visualization_outline_mesh_rid(), transf_outline, debug_color);
+	} else if (audio_server->get_debug_audio_2d_visualization_mode() == 2) {
+		int ring_count = audio_server->get_debug_audio_2d_visualization_ring_count();
+		float scale_factor = max_distance / (float(ring_count) + 0.5f);
+		Color debug_color = audio_server->get_debug_audio_2d_visualization_color();
+
+		// center
+		debug_color.a = Math::pow(1.0f - float(-1.0 + 1.0) / float(ring_count + 1.0), attenuation) * 0.9;
+		Transform2D trans_center;
+		trans_center.scale_basis(Vector2(scale_factor / 2.0, scale_factor / 2.0));
+		rs->canvas_item_add_mesh(debug_canvas_item, audio_server->get_debug_audio_2d_visualization_circle_mesh_rid(), trans_center, debug_color);
+
+		// rings
+		Transform2D trans_rings;
+		trans_rings.scale_basis(Vector2(scale_factor, scale_factor));
+		const Vector<RID> &ring_meshes = audio_server->get_debug_audio_2d_visualization_rings_mesh_rids();
+		for (int i = 0; i < ring_meshes.size(); i++) {
+			debug_color.a = Math::pow(1.0f - float(i + 1.0) / float(ring_count + 1.0), attenuation) * 0.9;
+			rs->canvas_item_add_mesh(debug_canvas_item, ring_meshes[i], trans_rings, debug_color);
+		}
+
+		// outline
+		debug_color.a = 0.9;
+		Transform2D transf_outline;
+		transf_outline.scale_basis(Vector2(max_distance, max_distance));
+		rs->canvas_item_add_mesh(debug_canvas_item, audio_server->get_debug_audio_2d_visualization_outline_mesh_rid(), transf_outline, debug_color);
+	}
+}
+
+bool AudioStreamPlayer2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	if (AudioServerDebug::get_singleton()->get_debug_audio_2d_visualization_mode() == 0) {
+		return CanvasItem::_edit_is_selected_on_click(p_point, p_tolerance);
+	}
+	return get_global_mouse_position().distance_to(get_global_position()) <= max_distance + p_tolerance;
+}
+#endif // DEBUG_ENABLED
 
 // Interacts with PhysicsServer2D, so can only be called during _physics_process.
 StringName AudioStreamPlayer2D::_get_actual_bus() {
@@ -307,6 +408,9 @@ void AudioStreamPlayer2D::_validate_property(PropertyInfo &p_property) const {
 void AudioStreamPlayer2D::set_max_distance(float p_pixels) {
 	ERR_FAIL_COND(p_pixels <= 0.0);
 	max_distance = p_pixels;
+#ifdef DEBUG_ENABLED
+	queue_redraw();
+#endif // DEBUG_ENABLED
 }
 
 float AudioStreamPlayer2D::get_max_distance() const {
@@ -315,6 +419,9 @@ float AudioStreamPlayer2D::get_max_distance() const {
 
 void AudioStreamPlayer2D::set_attenuation(float p_curve) {
 	attenuation = p_curve;
+#ifdef DEBUG_ENABLED
+	queue_redraw();
+#endif // DEBUG_ENABLED
 }
 
 float AudioStreamPlayer2D::get_attenuation() const {
@@ -456,8 +563,17 @@ AudioStreamPlayer2D::AudioStreamPlayer2D() {
 	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer2D::play), callable_mp(this, &AudioStreamPlayer2D::stop), true));
 	cached_global_panning_strength = GLOBAL_GET_CACHED(float, "audio/general/2d_panning_strength");
 	set_hide_clip_children(true);
+
+#ifdef DEBUG_ENABLED
+	debug_canvas_item = RS::get_singleton()->canvas_item_create();
+#endif // DEBUG_ENABLED
 }
 
 AudioStreamPlayer2D::~AudioStreamPlayer2D() {
 	memdelete(internal);
+
+#ifdef DEBUG_ENABLED
+	RenderingServer::get_singleton()->free_rid(debug_canvas_item);
+	debug_canvas_item = RID();
+#endif // DEBUG_ENABLED
 }

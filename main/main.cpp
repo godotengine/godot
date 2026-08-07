@@ -72,6 +72,9 @@
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/audio_server.h"
+#ifdef DEBUG_ENABLED
+#include "servers/audio/audio_server_debug.h"
+#endif // DEBUG_ENABLED
 #include "servers/camera/camera_server.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
@@ -264,6 +267,7 @@ static bool force_res = false;
 static bool use_debug_profiler = false;
 #ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
+static bool debug_audio_visualization = false;
 static bool debug_paths = false;
 static bool debug_navigation = false;
 static bool debug_avoidance = false;
@@ -1832,6 +1836,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(DEBUG_ENABLED)
 		} else if (arg == "--debug-collisions") {
 			debug_collisions = true;
+		} else if (arg == "--debug-audio-visualization") {
+			debug_audio_visualization = true;
 		} else if (arg == "--debug-paths") {
 			debug_paths = true;
 		} else if (arg == "--debug-navigation") {
@@ -4371,7 +4377,11 @@ int Main::start() {
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);
 		}
-
+		if (debug_audio_visualization) {
+#ifdef DEBUG_ENABLED
+			AudioServerDebug::get_singleton()->set_debug_audio_2d_visualization_enabled(true);
+#endif // DEBUG_ENABLED
+		}
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
 #ifndef NAVIGATION_2D_DISABLED
