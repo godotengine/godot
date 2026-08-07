@@ -93,6 +93,7 @@ private:
 	TypedArray<Plane> _get_frustum() const;
 
 	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
+	float doppler_scale = 1.0;
 	Ref<VelocityTracker3D> velocity_tracker;
 
 #ifndef PHYSICS_3D_DISABLED
@@ -203,6 +204,9 @@ public:
 
 	void set_doppler_tracking(DopplerTracking p_tracking);
 	DopplerTracking get_doppler_tracking() const;
+
+	void set_doppler_scale(float p_scale);
+	float get_doppler_scale() const;
 
 	Vector3 get_doppler_tracked_velocity() const;
 
