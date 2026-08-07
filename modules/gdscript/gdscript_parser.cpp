@@ -766,6 +766,7 @@ void GDScriptParser::parse_program() {
 		} else if (check(GDScriptTokenizer::Token::LITERAL) && current.literal.get_type() == Variant::STRING) {
 			// Allow strings in class body as multiline comments.
 			advance();
+			push_warning(previous.start_line, previous.start_column, previous.end_line, previous.end_column, GDScriptWarning::STANDALONE_EXPRESSION);
 			if (!match(GDScriptTokenizer::Token::NEWLINE)) {
 				push_error("Expected newline after comment string.");
 			}
@@ -809,6 +810,7 @@ void GDScriptParser::parse_program() {
 				if (current.literal.get_type() == Variant::STRING) {
 					// Allow strings in class body as multiline comments.
 					advance();
+					push_warning(previous.start_line, previous.start_column, previous.end_line, previous.end_column, GDScriptWarning::STANDALONE_EXPRESSION);
 					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
 						push_error("Expected newline after comment string.");
 					}
@@ -1204,6 +1206,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				if (current.literal.get_type() == Variant::STRING) {
 					// Allow strings in class body as multiline comments.
 					advance();
+					push_warning(previous.start_line, previous.start_column, previous.end_line, previous.end_column, GDScriptWarning::STANDALONE_EXPRESSION);
 					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
 						push_error("Expected newline after comment string.");
 					}
@@ -2203,12 +2206,6 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					case Node::LAMBDA:
 						// Standalone lambdas can't be used, so make this an error.
 						push_error("Standalone lambdas cannot be accessed. Consider assigning it to a variable.", expression);
-						break;
-					case Node::LITERAL:
-						// Allow strings as multiline comments.
-						if (static_cast<GDScriptParser::LiteralNode *>(expression)->value.get_type() != Variant::STRING) {
-							push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
-						}
 						break;
 					case Node::TERNARY_OPERATOR:
 						push_warning(expression, GDScriptWarning::STANDALONE_TERNARY);

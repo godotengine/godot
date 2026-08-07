@@ -17,5 +17,6 @@ func test():
 	"""
 	Python-like "comment".
 	"""
+	'single line string'
 	@warning_ignore("standalone_ternary")
 	1 if 2 else 3 # Produces `STANDALONE_TERNARY` instead.
