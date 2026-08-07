@@ -305,7 +305,7 @@ bool ResourceImporterScene::get_option_visibility(const String &p_path, const St
 		if (p_option == "animation/import") { // Option ignored, animation always imported.
 			return false;
 		}
-		if (p_option == "nodes/root_type" || p_option == "nodes/root_name" || p_option == "nodes/root_script" || p_option.begins_with("meshes/") || p_option.begins_with("skins/")) {
+		if (p_option == "nodes/root_type" || p_option == "nodes/root_name" || p_option == "nodes/root_script" || p_option == "nodes/remove_empty_root" || p_option.begins_with("meshes/") || p_option.begins_with("skins/")) {
 			return false; // Nothing to do here for animations.
 		}
 	} else if (_scene_import_type == "MeshLibrary") {
@@ -2639,6 +2639,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "nodes/root_script", PROPERTY_HINT_RESOURCE_TYPE, Script::get_class_static()), Variant()));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/remove_empty_root"), false));
 
 	List<String> script_extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &script_extensions);
@@ -3215,6 +3216,68 @@ Error ResourceImporterScene::_check_resource_save_paths(ResourceUID::ID p_source
 	return OK;
 }
 
+static void _update_node_owner_recursive(Node *p_node, Node *p_owner) {
+	if (p_node != p_owner) {
+		p_node->set_owner(p_owner);
+	}
+	for (int i = 0; i < p_node->get_child_count(false); i++) {
+		_update_node_owner_recursive(p_node->get_child(i, false), p_owner);
+	}
+}
+
+static void _retarget_animation_paths(Node *p_node, const String &p_old_prefix) {
+	AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
+	if (ap) {
+		LocalVector<StringName> libs;
+		ap->get_animation_library_list(&libs);
+
+		for (const StringName &lib_name : libs) {
+			Ref<AnimationLibrary> lib = ap->get_animation_library(lib_name);
+			if (lib.is_null()) {
+				continue;
+			}
+
+			LocalVector<StringName> anims;
+			lib->get_animation_list(&anims);
+
+			for (const StringName &anim_name : anims) {
+				Ref<Animation> anim = lib->get_animation(anim_name);
+				if (anim.is_null()) {
+					continue;
+				}
+
+				for (int i = 0; i < anim->get_track_count(); ++i) {
+					NodePath old_path = anim->track_get_path(i);
+					String old_names = old_path.get_concatenated_names();
+					String old_subnames = old_path.get_concatenated_subnames();
+
+					String new_names = old_names;
+
+					if (old_names == p_old_prefix) {
+						new_names = ".";
+					} else if (old_names.begins_with(p_old_prefix + "/")) {
+						new_names = old_names.trim_prefix(p_old_prefix + "/");
+					} else if (p_old_prefix.begins_with(old_names + "/")) {
+						new_names = ".";
+					}
+
+					if (new_names != old_names) {
+						String new_path = new_names;
+						if (!old_subnames.is_empty()) {
+							new_path += ":" + old_subnames;
+						}
+						anim->track_set_path(i, NodePath(new_path));
+					}
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(false); i++) {
+		_retarget_animation_paths(p_node->get_child(i, false), p_old_prefix);
+	}
+}
+
 Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	const String &src_path = p_source_file;
 
@@ -3356,6 +3419,7 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps, apply_root ? root_scale : 1.0, p_source_file, p_options);
 	_post_fix_animations(scene, scene, node_data, animation_data, fps, remove_immutable_tracks);
 
+	bool remove_empty_root = p_options["nodes/remove_empty_root"];
 	String root_type = p_options["nodes/root_type"];
 	Ref<Script> root_script = p_options["nodes/root_script"];
 	scene = _replace_node_with_type_and_script(scene, root_type, root_script);
@@ -3491,6 +3555,57 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		err = ResourceSaver::save(library, p_save_path + ".res", flags); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save animation to file '" + p_save_path + ".res'.");
 	} else if (_scene_import_type == "PackedScene") {
+		StringName node3d_name = "Node3D";
+		if (remove_empty_root && scene->get_class_name() == node3d_name) {
+			Node *current = scene;
+			LocalVector<Node *> non_3d_nodes_to_keep;
+
+			while (current->get_class_name() == node3d_name) {
+				Node3D *only_3d_child = nullptr;
+				int child_3d_count = 0;
+
+				for (int i = 0; i < current->get_child_count(false); i++) {
+					Node3D *child_3d = Object::cast_to<Node3D>(current->get_child(i, false));
+					if (child_3d) {
+						only_3d_child = child_3d;
+						child_3d_count++;
+					}
+				}
+
+				if (child_3d_count == 1 && only_3d_child != nullptr) {
+					for (int i = 0; i < current->get_child_count(false); i++) {
+						Node *child = current->get_child(i, false);
+						if (!Object::cast_to<Node3D>(child)) {
+							non_3d_nodes_to_keep.push_back(child);
+						}
+					}
+					current = only_3d_child;
+				} else {
+					break;
+				}
+			}
+
+			if (current != scene) {
+				Node3D *new_root = Object::cast_to<Node3D>(current);
+				String old_prefix = String(scene->get_path_to(new_root));
+
+				new_root->get_parent()->remove_child(new_root);
+
+				for (uint32_t i = 0; i < non_3d_nodes_to_keep.size(); i++) {
+					Node *non_3d_node = non_3d_nodes_to_keep[i];
+					non_3d_node->get_parent()->remove_child(non_3d_node);
+					non_3d_node->set_owner(nullptr);
+					new_root->add_child(non_3d_node);
+				}
+
+				new_root->set_name(scene->get_name());
+				memdelete(scene);
+				scene = new_root;
+
+				_update_node_owner_recursive(scene, scene);
+				_retarget_animation_paths(scene, old_prefix);
+			}
+		}
 		Ref<PackedScene> packer = memnew(PackedScene);
 		packer->pack(scene);
 		print_verbose("Saving scene to: " + p_save_path + ".scn");
