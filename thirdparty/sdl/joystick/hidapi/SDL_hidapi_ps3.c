@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,8 +31,6 @@
 
 // Define this if you want to log all packets from the controller
 // #define DEBUG_PS3_PROTOCOL
-
-#define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
 typedef enum
 {
@@ -349,6 +347,11 @@ static float HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
     return ((float)(value - 511) / 113.0f) * SDL_STANDARD_GRAVITY;
 }
 
+static float HIDAPI_DriverPS3ThirdParty_ScaleAccel(Sint16 value)
+{
+    return ((float)(value - 512) / 113.0f) * SDL_STANDARD_GRAVITY;
+}
+
 static void HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
@@ -637,7 +640,14 @@ static bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *devi
                 // Supported third party controller
                 return true;
             } else {
-                return false;
+                // Some third party controllers don't have report ids
+                size = ReadFeatureReport(device->dev, 0x00, data, sizeof(data));
+                if (size == 9 && data[2] == 0x26) {
+                    // Supported third party controller
+                    return true;
+                } else {
+                    return false;
+                }
             }
         } else {
             // Might be supported by this driver, enumerate and find out
@@ -669,6 +679,39 @@ static bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
     if (device->vendor_id == USB_VENDOR_LOGITECH &&
         device->product_id == USB_PRODUCT_LOGITECH_CHILLSTREAM) {
         HIDAPI_SetDeviceName(device, "Logitech ChillStream");
+    }
+
+    if (device->vendor_id == USB_VENDOR_HARMONIX) {
+        switch (device->product_id) {
+            case USB_PRODUCT_HARMONIX_WII_RB1_GUITAR:
+            case USB_PRODUCT_HARMONIX_WII_RB2_GUITAR:
+                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                break;
+            case USB_PRODUCT_HARMONIX_WII_RB1_DRUMS:
+            case USB_PRODUCT_HARMONIX_WII_RB2_DRUMS:
+            case USB_PRODUCT_HARMONIX_WII_RB3_MPA_DRUMS_MODE:
+                device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                break;
+            default:
+                break;
+        }
+    }
+
+    if (device->vendor_id == USB_VENDOR_SCEA) {
+        switch (device->product_id) {
+            case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
+            case USB_PRODUCT_SCEA_PS3_RB_GUITAR:
+            case USB_PRODUCT_SCEA_PS3WIIU_GHLIVE:
+                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                break;
+            case USB_PRODUCT_SCEA_PS3_GH_DRUMS:
+            case USB_PRODUCT_SCEA_PS3_RB_DRUMS:
+            case USB_PRODUCT_SCEA_PS3_RB3_MPA_DRUMS_MODE:
+                device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                break;
+            default:
+                break;
+        }
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -705,6 +748,8 @@ static bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, S
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
     }
 
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
+
     return true;
 }
 
@@ -735,7 +780,11 @@ static bool HIDAPI_DriverPS3ThirdParty_SendJoystickEffect(SDL_HIDAPI_Device *dev
 
 static bool HIDAPI_DriverPS3ThirdParty_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
-    return SDL_Unsupported();
+    SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
+
+    ctx->report_sensors = enabled;
+
+    return true;
 }
 
 static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
@@ -971,6 +1020,15 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
             SDL_SendJoystickAxis(timestamp, joystick, axis_index, axis);
             ++axis_index;
         }
+    }
+
+    if (ctx->report_sensors) {
+        float sensor_data[3];
+
+        sensor_data[0] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[19], data[20]));
+        sensor_data[1] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[21], data[22]));
+        sensor_data[2] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[23], data[24]));
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
     }
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));

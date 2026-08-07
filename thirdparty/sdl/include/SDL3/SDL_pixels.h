@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -451,7 +451,7 @@ typedef enum SDL_PackedLayout
  * expressions with side-effects here.
  *
  * \param format an SDL_PixelFormat to check.
- * \returns true if the format is 10-bit, false otherwise.
+ * \returns true if the format is a floating point, false otherwise.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
@@ -1096,7 +1096,7 @@ typedef enum SDL_Colorspace
                                  SDL_CHROMA_LOCATION_LEFT), */
 
     SDL_COLORSPACE_RGB_DEFAULT = SDL_COLORSPACE_SRGB, /**< The default colorspace for RGB surfaces if no colorspace is specified */
-    SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_JPEG  /**< The default colorspace for YUV surfaces if no colorspace is specified */
+    SDL_COLORSPACE_YUV_DEFAULT = SDL_COLORSPACE_BT601_LIMITED  /**< The default colorspace for YUV surfaces if no colorspace is specified */
 } SDL_Colorspace;
 
 /**
@@ -1379,7 +1379,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *for
  * (e.g., a completely white pixel in 16-bit RGB565 format would return [0xff,
  * 0xff, 0xff] not [0xf8, 0xfc, 0xf8]).
  *
- * \param pixel a pixel value.
+ * \param pixelvalue a pixel value.
  * \param format a pointer to SDL_PixelFormatDetails describing the pixel
  *               format.
  * \param palette an optional palette for indexed formats, may be NULL.
@@ -1397,7 +1397,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *for
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
+extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixelvalue, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
 
 /**
  * Get RGBA values from a pixel in the specified format.
@@ -1410,7 +1410,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatD
  * If the surface has no alpha component, the alpha will be returned as 0xff
  * (100% opaque).
  *
- * \param pixel a pixel value.
+ * \param pixelvalue a pixel value.
  * \param format a pointer to SDL_PixelFormatDetails describing the pixel
  *               format.
  * \param palette an optional palette for indexed formats, may be NULL.
@@ -1429,7 +1429,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatD
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+extern SDL_DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixelvalue, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
 
 
 /* Ends C function definitions when using C++ */
