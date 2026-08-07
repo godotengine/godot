@@ -599,6 +599,14 @@ void EditorPropertyArray::update_property() {
 	}
 }
 
+void EditorPropertyArray::update_properties_recursive() {
+	for (const Slot &slot : slots) {
+		if (slot.prop) {
+			slot.prop->update_properties_recursive();
+		}
+	}
+}
+
 void EditorPropertyArray::_remove_pressed(int p_slot_index) {
 	Variant array = object->get_array().duplicate();
 	array.call("remove_at", slots[p_slot_index].index);
@@ -1526,6 +1534,17 @@ void EditorPropertyDictionary::update_property() {
 			container = nullptr;
 			add_panel = nullptr;
 			slots.clear();
+		}
+	}
+}
+
+void EditorPropertyDictionary::update_properties_recursive() {
+	for (const Slot &slot : slots) {
+		if (slot.prop) {
+			slot.prop->update_properties_recursive();
+		}
+		if (slot.prop_key) {
+			slot.prop_key->update_properties_recursive();
 		}
 	}
 }
