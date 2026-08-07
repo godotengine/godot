@@ -37,6 +37,7 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/gles3/rasterizer_util_gles3.h"
 #include "drivers/gles3/storage/material_storage.h"
+#include "drivers/gles3/storage/render_scene_buffers_gles3.h"
 #include "drivers/gles3/storage/utilities.h"
 
 using namespace GLES3;
@@ -1021,7 +1022,18 @@ RID TextureStorage::texture_allocate() {
 void TextureStorage::texture_free(RID p_texture) {
 	Texture *t = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(t);
-	ERR_FAIL_COND(t->is_render_target);
+	ERR_FAIL_COND(t->is_render_target && !t->is_from_native_handle);
+
+	// If this texture was created from a native handle, then its lifetime is controlled outside
+	// of Godot, which means we need to allow freeing render targets and cleaning up any FBO's
+	// using them (both here and on the render scene buffers).
+	if (t->is_render_target && t->is_from_native_handle) {
+		RenderTarget *rt = t->render_target;
+		if (rt != nullptr) {
+			_render_target_release_texture(rt, p_texture, t->tex_id);
+		}
+		RenderSceneBuffersGLES3::clear_cached_fbos_using_texture(t->tex_id);
+	}
 
 	memdelete(t->canvas_texture);
 
@@ -2847,8 +2859,8 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		return;
 	}
 
-	for (KeyValue<uint32_t, GLuint> &E : rt->overridden.velocity_fbo_cache) {
-		glDeleteFramebuffers(1, &E.value);
+	for (KeyValue<uint32_t, RenderTarget::RTOverridden::VelocityFBOCacheEntry> &E : rt->overridden.velocity_fbo_cache) {
+		glDeleteFramebuffers(1, &E.value.fbo);
 	}
 	rt->overridden.velocity_fbo_cache.clear();
 	rt->overridden.velocity_fbo = 0;
@@ -2881,10 +2893,6 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 			tex->gl_set_filter(RSE::CANVAS_ITEM_TEXTURE_FILTER_MAX);
 			tex->gl_set_repeat(RSE::CANVAS_ITEM_TEXTURE_REPEAT_MAX);
 		}
-	} else {
-		Texture *tex = get_texture(rt->overridden.color);
-		tex->render_target = nullptr;
-		tex->is_render_target = false;
 	}
 
 	if (rt->overridden.color.is_valid()) {
@@ -2905,6 +2913,18 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	}
 	rt->depth = 0;
 
+	rt->overridden.velocity = RID();
+	rt->overridden.velocity_depth = RID();
+
+	for (const RID &texture : rt->overridden.associated_textures) {
+		Texture *tex = get_texture(texture);
+		if (tex) {
+			RenderSceneBuffersGLES3::clear_cached_fbos_using_texture(tex->tex_id);
+		}
+		_texture_set_render_target(texture, nullptr);
+	}
+	rt->overridden.associated_textures.clear();
+
 	rt->overridden.is_overridden = false;
 
 	if (rt->backbuffer_fbo != 0) {
@@ -2922,19 +2942,80 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 	_render_target_clear_sdf(rt);
 }
 
+void TextureStorage::_texture_set_render_target(RID p_texture, RenderTarget *p_render_target) {
+	if (p_texture.is_null()) {
+		return;
+	}
+
+	Texture *tex = get_texture(p_texture);
+	if (tex == nullptr) {
+		return;
+	}
+
+	tex->render_target = p_render_target;
+	tex->is_render_target = (p_render_target != nullptr);
+
+	if (p_render_target != nullptr && !p_render_target->overridden.associated_textures.has(p_texture)) {
+		p_render_target->overridden.associated_textures.push_back(p_texture);
+	}
+}
+
+void TextureStorage::_render_target_release_texture(RenderTarget *p_render_target, RID p_texture, GLuint p_texture_id) {
+	RenderTarget::RTOverridden &overridden = p_render_target->overridden;
+
+	if (overridden.color == p_texture || overridden.depth == p_texture || overridden.velocity == p_texture || overridden.velocity_depth == p_texture) {
+		// This will clear all the caches.
+		render_target_set_override(p_render_target->self, RID(), RID(), RID(), RID());
+		return;
+	}
+
+	{
+		RBMap<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry>::Element *E = overridden.fbo_cache.front();
+		while (E != nullptr) {
+			RBMap<uint32_t, RenderTarget::RTOverridden::FBOCacheEntry>::Element *next = E->next();
+			if (E->get().color == p_texture_id || E->get().depth == p_texture_id) {
+				for (const GLuint &allocated_texture : E->get().allocated_textures) {
+					GLES3::Utilities::get_singleton()->texture_free_data(allocated_texture);
+				}
+				glDeleteFramebuffers(1, &E->get().fbo);
+				overridden.fbo_cache.erase(E);
+			}
+			E = next;
+		}
+	}
+
+	{
+		RBMap<uint32_t, RenderTarget::RTOverridden::VelocityFBOCacheEntry>::Element *E = overridden.velocity_fbo_cache.front();
+		while (E != nullptr) {
+			RBMap<uint32_t, RenderTarget::RTOverridden::VelocityFBOCacheEntry>::Element *next = E->next();
+			if (E->get().velocity == p_texture_id || E->get().velocity_depth == p_texture_id) {
+				glDeleteFramebuffers(1, &E->get().fbo);
+				overridden.velocity_fbo_cache.erase(E);
+			}
+			E = next;
+		}
+	}
+
+	overridden.associated_textures.erase(p_texture);
+	_texture_set_render_target(p_texture, nullptr);
+}
+
 RID TextureStorage::render_target_create() {
-	RenderTarget render_target;
-	render_target.used_in_frame = false;
-	render_target.clear_requested = false;
+	RID rid = render_target_owner.make_rid(RenderTarget());
+	RenderTarget *rt = render_target_owner.get_or_null(rid);
+	rt->self = rid;
+	rt->used_in_frame = false;
+	rt->clear_requested = false;
 
 	Texture t;
 	t.active = true;
-	t.render_target = &render_target;
+	t.render_target = rt;
 	t.is_render_target = true;
 
-	render_target.texture = texture_owner.make_rid(t);
-	_update_render_target_color(&render_target);
-	return render_target_owner.make_rid(render_target);
+	rt->texture = texture_owner.make_rid(t);
+	_update_render_target_color(rt);
+
+	return rid;
 }
 
 void TextureStorage::render_target_free(RID p_rid) {
@@ -3003,6 +3084,7 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 
 	bool create_new_color_fbo = true;
 	bool create_new_velocity_fbo = true;
+	bool needs_clear = !rt->overridden.is_overridden;
 
 	if (rt->overridden.color == p_color_texture && rt->overridden.depth == p_depth_texture && rt->overridden.velocity == p_velocity_texture && rt->overridden.velocity_depth == p_velocity_depth_texture) {
 		return;
@@ -3017,9 +3099,10 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 		_clear_render_target(rt);
 		_update_render_target_color(rt);
 		create_new_color_fbo = false;
+		needs_clear = false;
 	}
 
-	if (!rt->overridden.is_overridden) {
+	if (needs_clear) {
 		_clear_render_target(rt);
 	}
 
@@ -3028,7 +3111,12 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	rt->overridden.depth_has_stencil = p_depth_texture.is_null();
 	rt->overridden.velocity = p_velocity_texture;
 	rt->overridden.velocity_depth = p_velocity_depth_texture;
-	rt->overridden.is_overridden = true;
+	rt->overridden.is_overridden = p_color_texture.is_valid() || p_depth_texture.is_valid() || p_velocity_texture.is_valid() || p_velocity_depth_texture.is_valid();
+
+	_texture_set_render_target(p_color_texture, rt);
+	_texture_set_render_target(p_depth_texture, rt);
+	_texture_set_render_target(p_velocity_texture, rt);
+	_texture_set_render_target(p_velocity_depth_texture, rt);
 
 	// Update to our new color output.
 	RID new_color_texture = render_target_get_texture(p_render_target);
@@ -3047,7 +3135,6 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 		rt->depth = cache->get().depth;
 		rt->depth_has_stencil = cache->get().depth_has_stencil;
 		rt->size = cache->get().size;
-		rt->texture = p_color_texture;
 		create_new_color_fbo = false;
 	}
 
@@ -3055,15 +3142,15 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	velocity_hash_key = hash_murmur3_one_64(p_velocity_depth_texture.get_id(), velocity_hash_key);
 	velocity_hash_key = hash_fmix32(velocity_hash_key);
 
-	RBMap<uint32_t, GLuint>::Element *fbo = rt->overridden.velocity_fbo_cache.find(velocity_hash_key);
+	RBMap<uint32_t, RenderTarget::RTOverridden::VelocityFBOCacheEntry>::Element *fbo = rt->overridden.velocity_fbo_cache.find(velocity_hash_key);
 	if (fbo != nullptr) {
-		rt->overridden.velocity_fbo = fbo->get();
+		rt->overridden.velocity_fbo = fbo->get().fbo;
 		create_new_velocity_fbo = false;
 	}
 
 	if (p_velocity_texture.is_null()) {
-		for (KeyValue<uint32_t, GLuint> &E : rt->overridden.velocity_fbo_cache) {
-			glDeleteFramebuffers(1, &E.value);
+		for (KeyValue<uint32_t, RenderTarget::RTOverridden::VelocityFBOCacheEntry> &E : rt->overridden.velocity_fbo_cache) {
+			glDeleteFramebuffers(1, &E.value.fbo);
 		}
 
 		rt->overridden.velocity_fbo_cache.clear();
@@ -3091,7 +3178,12 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 
 	if (create_new_velocity_fbo) {
 		_update_render_target_velocity(rt);
-		rt->overridden.velocity_fbo_cache.insert(velocity_hash_key, rt->overridden.velocity_fbo);
+
+		RenderTarget::RTOverridden::VelocityFBOCacheEntry new_entry;
+		new_entry.fbo = rt->overridden.velocity_fbo;
+		new_entry.velocity = texture_get_texid(p_velocity_texture);
+		new_entry.velocity_depth = texture_get_texid(p_velocity_depth_texture);
+		rt->overridden.velocity_fbo_cache.insert(velocity_hash_key, new_entry);
 	}
 }
 

@@ -405,8 +405,17 @@ struct RenderTarget {
 		};
 		RBMap<uint32_t, FBOCacheEntry> fbo_cache;
 
+		struct VelocityFBOCacheEntry {
+			GLuint fbo = 0;
+			GLuint velocity = 0;
+			GLuint velocity_depth = 0;
+		};
+
 		GLuint velocity_fbo = 0;
-		RBMap<uint32_t, GLuint> velocity_fbo_cache;
+		RBMap<uint32_t, VelocityFBOCacheEntry> velocity_fbo_cache;
+
+		// Textures that are associated with the FBO caches above.
+		LocalVector<RID> associated_textures;
 	} overridden;
 
 	RID texture;
@@ -471,6 +480,8 @@ private:
 	mutable RID_Owner<RenderTarget> render_target_owner;
 
 	void _clear_render_target(RenderTarget *rt);
+	void _texture_set_render_target(RID p_texture, RenderTarget *p_render_target);
+	void _render_target_release_texture(RenderTarget *p_render_target, RID p_texture, GLuint p_texture_id);
 	void _update_render_target_color(RenderTarget *rt);
 	void _update_render_target_velocity(RenderTarget *rt);
 	void _create_render_target_backbuffer(RenderTarget *rt);
