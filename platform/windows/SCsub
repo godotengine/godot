@@ -54,6 +54,8 @@ if env["arch"] == "x86_64" and env["library_type"] == "executable":
     else:
         if "-msse4.2" in env_cpp_check["CCFLAGS"]:
             env_cpp_check["CCFLAGS"].remove("-msse4.2")
+        if "-mpopcnt" in env_cpp_check["CCFLAGS"]:
+            env_cpp_check["CCFLAGS"].remove("-mpopcnt")
         env.Append(LINKFLAGS=["-Wl,--entry=ShimMainCRTStartup"])
 
 
