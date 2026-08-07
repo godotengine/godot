@@ -853,12 +853,15 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 		undo_redo->add_do_method(blend_space.ptr(), "remove_blend_point", selected_point);
 		undo_redo->add_undo_method(blend_space.ptr(), "add_blend_point", node, position, selected_point, point_name);
 
+		// if auto triangles is off
 		//restore triangles using this point
-		for (int i = 0; i < blend_space->get_triangle_count(); i++) {
-			for (int j = 0; j < 3; j++) {
-				if (blend_space->get_triangle_point(i, j) == selected_point) {
-					undo_redo->add_undo_method(blend_space.ptr(), "add_triangle", blend_space->get_triangle_point(i, 0), blend_space->get_triangle_point(i, 1), blend_space->get_triangle_point(i, 2), i);
-					break;
+		if (!blend_space->get_auto_triangles()) {
+			for (int i = 0; i < blend_space->get_triangle_count(); i++) {
+				for (int j = 0; j < 3; j++) {
+					if (blend_space->get_triangle_point(i, j) == selected_point) {
+						undo_redo->add_undo_method(blend_space.ptr(), "add_triangle", blend_space->get_triangle_point(i, 0), blend_space->get_triangle_point(i, 1), blend_space->get_triangle_point(i, 2), i);
+						break;
+					}
 				}
 			}
 		}
