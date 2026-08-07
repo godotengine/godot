@@ -73,6 +73,14 @@ private:
 		Error send_data();
 
 		/**
+		 * Filepath to the workspace as the client indicated it.
+		 *
+		 * Since incoming paths are normalized for symlinks, when returning paths we need to use this path
+		 * to prevent path mismatches on the client side.
+		 */
+		String cannonical_root;
+
+		/**
 		 * Represents how the server should behave towards this client in certain situations.
 		 * This gets derived from client capabilities so the configured behavior is guaranteed to be supported by the client.
 		 */
@@ -115,6 +123,9 @@ private:
 	Ref<GDScriptTextDocument> text_document;
 	Ref<GDScriptWorkspace> workspace;
 
+	// Absolute paths that are known to point to res://
+	HashSet<String> absolute_res_paths;
+
 	Error on_client_connected();
 	void on_client_disconnected(const int &p_client_id);
 
@@ -146,6 +157,19 @@ public:
 
 	bool is_smart_resolve_enabled() const;
 	bool is_goto_native_symbols_enabled() const;
+
+	/**
+	 * Extracts a file path from a file URI.
+	 *
+	 * LSP limitations apply (e.g. only local files).
+	 */
+	String decode_file_uri(const String &p_uri) const;
+
+	/**
+	 * Transforms a file URI into a `res://` adjusted file path.
+	 */
+	String get_file_path(const String &p_uri);
+	String get_file_uri(const String &p_path) const;
 
 	// Text Document Synchronization
 	void lsp_did_open(const Dictionary &p_params);
