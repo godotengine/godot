@@ -86,9 +86,21 @@ Camera3DEditor::Camera3DEditor() {
 
 bool Camera3DPreview::camera_preview_folded = false;
 
-void Camera3DPreview::_update_sub_viewport_size() {
+void Camera3DPreview::_update_sub_viewport_settings() {
 	const Size2i camera_size = Node3DEditor::get_camera_viewport_size(camera);
 	centering_container->set_ratio(camera_size.aspect());
+
+	sub_viewport->set_msaa_3d(GLOBAL_GET("rendering/anti_aliasing/quality/msaa_3d"));
+	sub_viewport->set_screen_space_aa(GLOBAL_GET("rendering/anti_aliasing/quality/screen_space_aa"));
+	sub_viewport->set_use_debanding(GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding"));
+	sub_viewport->set_transparent_background(GLOBAL_GET("rendering/viewport/transparent_background"));
+
+	sub_viewport->set_positional_shadow_atlas_size(GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_size"));
+	sub_viewport->set_positional_shadow_atlas_quadrant_subdiv(0, GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv"));
+	sub_viewport->set_positional_shadow_atlas_quadrant_subdiv(1, GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv"));
+	sub_viewport->set_positional_shadow_atlas_quadrant_subdiv(2, GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv"));
+	sub_viewport->set_positional_shadow_atlas_quadrant_subdiv(3, GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv"));
+	sub_viewport->set_positional_shadow_atlas_16_bits(GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_16_bits"));
 }
 
 void Camera3DPreview::_toggle_folding(bool p_folded) {
@@ -122,12 +134,16 @@ Camera3DPreview::Camera3DPreview(Camera3D *p_camera) {
 	EditorNode::get_singleton()->register_hdr_viewport(sub_viewport);
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Camera3DPreview::_project_settings_changed));
-	_update_sub_viewport_size();
+	_update_sub_viewport_settings();
 }
 
 void Camera3DPreview::_project_settings_changed() {
-	if (ProjectSettings::get_singleton()->check_changed_settings_in_group("display/window/size")) {
-		_update_sub_viewport_size();
+	if (
+			ProjectSettings::get_singleton()->check_changed_settings_in_group("display/window/size") ||
+			ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/anti_aliasing/quality") ||
+			ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/viewport/transparent_background") ||
+			ProjectSettings::get_singleton()->check_changed_settings_in_group("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality")) {
+		_update_sub_viewport_settings();
 	}
 }
 
