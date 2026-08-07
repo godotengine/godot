@@ -615,11 +615,12 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			bl_points.write[j] = ofs + point;
 		}
 
+		Color color = linecolor;
+		color.a *= 0.4;
 		for (int j = 0; j < 3; j++) {
-			blend_space_draw->draw_line(bl_points[j], bl_points[(j + 1) % 3], linecolor, Math::round(EDSCALE), true);
+			blend_space_draw->draw_line(bl_points[j], bl_points[(j + 1) % 3], color, Math::round(EDSCALE), true);
 		}
 
-		Color color;
 		if (i == selected_triangle) {
 			color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 			color.a *= 0.5;
@@ -653,6 +654,87 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 		points.push_back(ofs + point);
 
+		Vector2 gui_point = (ofs + point - icon->get_size() / 2).floor();
+
+		if (point.x >= 0.0 && point.x <= s.width && point.y >= 0.0 && point.y <= s.height) {
+			String name_text = show_indices ? itos(i) : String(blend_space->get_blend_point_name(i));
+			Vector2 text_size = font->get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+			float base_x = CLAMP(point.x - text_size.x / 2.0, 0, s.width - text_size.x);
+			float above_y = gui_point.y - ofs.y - 4 * EDSCALE;
+			float below_y = gui_point.y - ofs.y + icon->get_size().y / 2.0 + 4 * EDSCALE + font->get_ascent(font_size);
+
+			// Try above, below, above+nudge, below+nudge... until we find a spot that doesn't intersect with another label.
+			Vector2 text_pos;
+			bool show_line = false;
+			bool is_below = false;
+			bool above_oob = false;
+			bool below_oob = false;
+			for (int attempt = 0; attempt <= i + 1; attempt++) {
+				show_line = above_oob ? attempt > 1 : attempt > 0; // Only show line if ambiguous.
+				float base_y = is_below ? below_y : above_y;
+				text_pos = ofs + Vector2(base_x, base_y);
+				Rect2 candidate(Vector2(text_pos.x, text_pos.y - font->get_ascent(font_size)), text_size);
+
+				// Lock orientation after going out of bounds, and break if it happens again.
+				if (candidate.position.y < ofs.y || candidate.get_end().y > ofs.y + s.height) {
+					if (is_below) {
+						below_oob = true;
+					} else {
+						above_oob = true;
+					}
+					if (above_oob && below_oob) {
+						break;
+					}
+					is_below = !is_below;
+					continue;
+				}
+
+				int blocking_label = -1;
+				for (int j = 0; j < i; j++) {
+					if (text_rects[j].intersects(candidate)) {
+						blocking_label = j;
+						break;
+					}
+				}
+				if (blocking_label == -1) {
+					break;
+				}
+
+				Rect2 blocker = text_rects[blocking_label];
+				if (is_below) {
+					below_y = blocker.get_end().y + font->get_ascent(font_size) - 6 * EDSCALE;
+					if (!above_oob) {
+						is_below = false;
+					}
+				} else {
+					above_y = blocker.position.y - text_size.y + font->get_ascent(font_size) - 6 * EDSCALE;
+					if (!below_oob) {
+						is_below = true;
+					}
+				}
+			}
+
+			if (text_rects.size() <= i) {
+				text_rects.resize(i + 1);
+			}
+			text_rects.write[i] = Rect2(Vector2(text_pos.x, text_pos.y - font->get_ascent(font_size)), text_size);
+
+			Color name_color = i == selected_point ? get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) : linecolor;
+			if (editing_point != i) {
+				blend_space_draw->draw_string(font, text_pos, name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
+			}
+
+			if (show_line) {
+				name_color.a *= 0.55;
+				Vector2 pos = text_pos;
+				pos.x = (ofs + point).x;
+				if (is_below) {
+					pos.y -= text_size.y / 2;
+				}
+				blend_space_draw->draw_line(ofs + point, pos, name_color, Math::round(1 * EDSCALE));
+			}
+		}
+
 		// Draw × marker on non-AnimationNodeAnimation points when in cyclic mode.
 		bool is_key_valid = true;
 		AnimationNodeBlendSpace2D::SyncMode sync_mode = blend_space->get_sync_mode();
@@ -663,28 +745,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 				is_key_valid = false;
 			}
 		}
-		Vector2 gui_point = (ofs + point - icon->get_size() / 2).floor();
 		blend_space_draw->draw_texture(is_key_valid ? (i == selected_point ? icon_selected : icon) : icon_invalid, gui_point);
-
-		if (point.x >= 0.0 && point.x <= s.width && point.y >= 0.0 && point.y <= s.height && editing_point != i) {
-			String name_text = show_indices ? itos(i) : String(blend_space->get_blend_point_name(i));
-			Vector2 text_size = font->get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
-
-			float half_icon_h = icon->get_size().y / 2.0;
-			float above_pos_y = (ofs.y + point.y) - half_icon_h - 4 * EDSCALE;
-			float text_x = CLAMP((ofs.x + point.x) - text_size.x / 2.0, ofs.x, ofs.x + s.width - text_size.x);
-			float text_y = above_pos_y >= (ofs.y + text_size.y) ? above_pos_y : (ofs.y + point.y) + half_icon_h + font->get_ascent(font_size);
-			Vector2 text_pos = Vector2(text_x, text_y);
-
-			Color name_color = i == selected_point ? get_theme_color(SNAME("accent_color"), EditorStringName(Editor)) : linecolor;
-			blend_space_draw->draw_string(font, text_pos, name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, name_color);
-
-			if (text_rects.size() <= i) {
-				text_rects.resize(i + 1);
-			}
-
-			text_rects.write[i] = Rect2(Vector2(text_pos.x, text_pos.y - font->get_ascent(font_size)), text_size);
-		}
 	}
 
 	if (making_triangle.size()) {
