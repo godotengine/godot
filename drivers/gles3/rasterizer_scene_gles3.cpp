@@ -2403,6 +2403,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	Ref<RenderSceneBuffersGLES3> rb = p_render_buffers;
 	ERR_FAIL_COND(rb.is_null());
 
+	// View count of our render target must match our camera data.
+	ERR_FAIL_COND(rb->get_view_count() != p_camera_data->view_count);
+
 	if (rb->get_scaling_3d_mode() != RSE::VIEWPORT_SCALING_3D_MODE_OFF) {
 		// If we're scaling, we apply tonemapping etc. in post, so disable it during rendering
 		apply_environment_effects_in_post = true;
@@ -2445,6 +2448,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
 		render_data.cam_projection = p_camera_data->main_projection;
 		render_data.cam_orthogonal = p_camera_data->is_orthogonal;
+		render_data.cam_asymmetrical = p_camera_data->is_asymmetrical;
 		render_data.camera_visible_layers = p_camera_data->visible_layers;
 		render_data.main_cam_transform = p_camera_data->main_transform;
 

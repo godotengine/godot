@@ -243,10 +243,22 @@
 				Returns a [Projection] that performs the inverse of this [Projection]'s projective transformation.
 			</description>
 		</method>
+		<method name="is_asymmetrical" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Projection] is an asymmetrical projection.
+			</description>
+		</method>
 		<method name="is_orthogonal" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this [Projection] performs an orthogonal projection.
+			</description>
+		</method>
+		<method name="is_z_axis_projection" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Projection] is z-axis aligned.
 			</description>
 		</method>
 		<method name="jitter_offseted" qualifiers="const">
