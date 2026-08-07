@@ -838,7 +838,7 @@ void TabContainer::set_tabs_visible(bool p_visible) {
 	}
 
 	tabs_visible = p_visible;
-	tab_bar->set_visible(tabs_visible);
+	internal_container->set_visible(tabs_visible);
 
 	_repaint_call_deferred();
 	queue_redraw();
