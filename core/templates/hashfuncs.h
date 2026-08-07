@@ -424,3 +424,19 @@ static _FORCE_INLINE_ uint32_t fastmod(const uint32_t p_n, const uint64_t p_c, c
 #endif // __SIZEOF_INT128__
 #endif // _MSC_VER
 }
+
+// Returns true when the probe length from `a` to `idx` is LESS THAN the probe length from `b` to `idx`.
+static _FORCE_INLINE_ bool probe_length_cmp(const uint32_t p_a, const uint32_t p_b, const uint32_t p_idx) {
+	if (unlikely(p_idx < p_b)) {
+		return likely(p_idx >= p_a) || p_b < p_a;
+	}
+	return p_b < p_a && likely(p_idx >= p_a);
+}
+
+static _FORCE_INLINE_ constexpr void increment_mod(uint32_t &r_idx, const uint32_t p_capacity) {
+	r_idx++;
+	// `if` is faster than both fastmod and mod.
+	if (unlikely(r_idx == p_capacity)) {
+		r_idx = 0;
+	}
+}
