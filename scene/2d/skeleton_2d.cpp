@@ -321,9 +321,6 @@ bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p
 	if (!is_inside_tree()) {
 		return false; //may have been removed
 	}
-	if (!p_other_bone && length <= 0) {
-		return false;
-	}
 
 	Vector2 rel;
 	if (p_other_bone) {
@@ -465,6 +462,11 @@ bool Bone2D::get_autocalculate_length_and_angle() const {
 }
 
 void Bone2D::set_length(real_t p_length) {
+	if (p_length < 1) {
+		WARN_PRINT("Attempted to set Bone2D length to a value less than 1. Using minimum value of 1.");
+		p_length = 1;
+	}
+
 	length = p_length;
 
 #ifdef TOOLS_ENABLED
