@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventJoypadTouchpadTouch" inherits="InputEvent" api_type="core" experimental="" keywords="gamepad, controller" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents a gamepad touchpad touch event.
+	</brief_description>
+	<description>
+		Stores information about gamepad touchpad multi-touch press/release input events. Supports touch press, touch release, and [member finger_id] for multi-touch count and order.
+	</description>
+	<tutorials>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+	</tutorials>
+	<members>
+		<member name="finger_id" type="int" setter="set_finger_id" getter="get_finger_id" default="0">
+			The touch finger index in the case of a multi-touch event. One index for each finger.
+		</member>
+		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
+			The touch position. The X and Y values are in the range from [code]0.0[/code] to [code]1.0[/code], with [code](0.0, 0.0)[/code] representing the top-left corner of the touchpad and [code](1.0, 1.0)[/code] representing the bottom-right corner.
+		</member>
+		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
+			If [code]true[/code], the touch's state is pressed. If [code]false[/code], the touch's state is released.
+		</member>
+		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure" default="0.0">
+			The touch pressure in the range from [code]0.0[/code] to [code]1.0[/code].
+		</member>
+		<member name="touchpad_id" type="int" setter="set_touchpad_id" getter="get_touchpad_id" default="0">
+			The touchpad index.
+		</member>
+	</members>
+</class>
