@@ -4196,9 +4196,8 @@ Node *AnimationTrackEditor::get_root() const {
 void AnimationTrackEditor::update_keying() {
 	bool keying_enabled = false;
 
-	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
-	if (is_visible_in_tree() && animation.is_valid() && editor_history->get_path_size() > 0) {
-		Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));
+	if (is_visible_in_tree() && animation.is_valid()) {
+		Object *obj = InspectorDock::get_inspector_singleton()->get_edited_object();
 		keying_enabled = Object::cast_to<Node>(obj) != nullptr || Object::cast_to<MultiNodeEdit>(obj) != nullptr;
 	}
 
