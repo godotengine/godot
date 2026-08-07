@@ -1577,10 +1577,10 @@
 			The control will grow/shrink in both directions equally if its size is changed to be larger/smaller than its current size.
 		</constant>
 		<constant name="ANCHOR_BEGIN" value="0" enum="Anchor">
-			Snaps one of the 4 anchor's sides to the origin of the node's [code]Rect[/code], in the top left. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
+			Snaps one of the 4 anchor's sides to the origin of the node's bounding rectangle, in the top left. Use it with [member anchor_left], [member anchor_right], [member anchor_top], or [member anchor_bottom]. To change all 4 anchors at once, use [method set_anchors_preset].
 		</constant>
 		<constant name="ANCHOR_END" value="1" enum="Anchor">
-			Snaps one of the 4 anchor's sides to the end of the node's [code]Rect[/code], in the bottom right. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
+			Snaps one of the 4 anchor's sides to the end of the node's bounding rectangle, in the bottom right. Use it with [member anchor_left], [member anchor_right], [member anchor_top], or [member anchor_bottom]. To change all 4 anchors at once, use [method set_anchors_preset].
 		</constant>
 		<constant name="LAYOUT_DIRECTION_INHERITED" value="0" enum="LayoutDirection">
 			Automatic layout direction, determined from the parent control layout direction.
