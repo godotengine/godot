@@ -79,10 +79,12 @@ void PhysicsDirectBodyState3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_apply_central_impulse, "impulse");
 	GDVIRTUAL_BIND(_apply_impulse, "impulse", "position");
+	GDVIRTUAL_BIND(_apply_impulse_at_position, "impulse", "global_position");
 	GDVIRTUAL_BIND(_apply_torque_impulse, "impulse");
 
 	GDVIRTUAL_BIND(_apply_central_force, "force");
 	GDVIRTUAL_BIND(_apply_force, "force", "position");
+	GDVIRTUAL_BIND(_apply_force_at_position, "force", "global_position");
 	GDVIRTUAL_BIND(_apply_torque, "torque");
 
 	GDVIRTUAL_BIND(_add_constant_central_force, "force");
@@ -268,10 +270,12 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_body_apply_central_impulse, "body", "impulse");
 	GDVIRTUAL_BIND(_body_apply_impulse, "body", "impulse", "position");
+	GDVIRTUAL_BIND(_body_apply_impulse_at_position, "body", "impulse", "global_position");
 	GDVIRTUAL_BIND(_body_apply_torque_impulse, "body", "impulse");
 
 	GDVIRTUAL_BIND(_body_apply_central_force, "body", "force");
 	GDVIRTUAL_BIND(_body_apply_force, "body", "force", "position");
+	GDVIRTUAL_BIND(_body_apply_force_at_position, "body", "force", "position");
 	GDVIRTUAL_BIND(_body_apply_torque, "body", "torque");
 
 	GDVIRTUAL_BIND(_body_add_constant_central_force, "body", "force");
