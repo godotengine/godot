@@ -113,16 +113,16 @@ void EditorLog::_update_theme() {
 
 	Button *button = type_filter_map[MSG_TYPE_STD]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("Popup")));
-	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x, 0));
 	button = type_filter_map[MSG_TYPE_ERROR]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
-	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x, 0));
 	button = type_filter_map[MSG_TYPE_WARNING]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("StatusWarning")));
-	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x, 0));
 	button = type_filter_map[MSG_TYPE_EDITOR]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
-	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x, 0));
 
 	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
@@ -146,8 +146,11 @@ void EditorLog::_editor_settings_changed() {
 void EditorLog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			_update_theme();
 			_load_state();
+		} break;
+
+		case NOTIFICATION_READY: {
+			_update_theme();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
