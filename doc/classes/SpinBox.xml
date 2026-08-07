@@ -67,6 +67,9 @@
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="1" />
 		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
+		<member name="stepper_mode" type="int" setter="set_stepper_mode" getter="get_stepper_mode" enum="SpinBox.StepperMode" default="1">
+			Determines the layout of the up and down buttons.
+		</member>
 		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
 			Adds the specified suffix string after the numerical value of the [SpinBox].
 		</member>
@@ -75,6 +78,20 @@
 			[b]Note:[/b] If set to [code]true[/code], this will interfere with entering mathematical expressions in the [SpinBox]. The [SpinBox] will try to evaluate the expression as you type, which means symbols like a trailing [code]+[/code] are removed immediately by the expression being evaluated.
 		</member>
 	</members>
+	<constants>
+		<constant name="DISPLAY_NONE" value="0" enum="StepperMode">
+			No up and down buttons are drawn.
+		</constant>
+		<constant name="DISPLAY_VERTICALLY" value="1" enum="StepperMode">
+			Draws the up and down buttons stacked vertically.
+		</constant>
+		<constant name="DISPLAY_HORIZONTALLY" value="2" enum="StepperMode">
+			Draws the up and down buttons side‑by‑side on one side of the underlying [LineEdit].
+		</constant>
+		<constant name="DISPLAY_SPLIT_HORIZONTALLY" value="3" enum="StepperMode">
+			Draws the up and down buttons on opposite sides of the underlying [LineEdit].
+		</constant>
+	</constants>
 	<theme_items>
 		<theme_item name="down_disabled_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Down button icon modulation color, when the button is disabled.
@@ -101,7 +118,7 @@
 			Up button icon modulation color, when the button is being pressed.
 		</theme_item>
 		<theme_item name="buttons_vertical_separation" data_type="constant" type="int" default="0">
-			Vertical separation between the up and down buttons.
+			Separation between the up and down buttons.
 		</theme_item>
 		<theme_item name="buttons_width" data_type="constant" type="int" default="16">
 			Width of the up and down buttons. If smaller than any icon set on the buttons, the respective icon may overlap neighboring elements. If smaller than [code]0[/code], the width is automatically adjusted from the icon size.
