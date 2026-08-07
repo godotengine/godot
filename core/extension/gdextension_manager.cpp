@@ -140,6 +140,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 	extension.instantiate();
 	Error err = extension->open_library(p_path, p_loader);
 	if (err != OK) {
+		if (err == ERR_SKIP) {
+			return LOAD_STATUS_OK;
+		}
 		return LOAD_STATUS_FAILED;
 	}
 
@@ -192,6 +195,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 
 	Error err = extension->open_library(p_path, extension->loader);
 	if (err != OK) {
+		if (err == ERR_SKIP) {
+			return LOAD_STATUS_OK;
+		}
 		return LOAD_STATUS_FAILED;
 	}
 

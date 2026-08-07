@@ -61,6 +61,32 @@ void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p
 		return;
 	}
 
+	PackedStringArray include_tags = config->get_value("configuration", "include_tags", PackedStringArray());
+	PackedStringArray exclude_tags = config->get_value("configuration", "exclude_tags", PackedStringArray());
+	std::function<bool(String)> has_tag = [p_features](const String &p_feature) {
+		return p_features.has(p_feature);
+	};
+	if (include_tags.size()) {
+		bool matches = false;
+		for (const String &tag : include_tags) {
+			if (!GDExtensionLibraryLoader::match_all_tags(tag.split(".", false), has_tag)) {
+				continue;
+			}
+			matches = true;
+			break;
+		}
+		if (!matches) {
+			return;
+		}
+	}
+	if (exclude_tags.size()) {
+		for (const String &tag : exclude_tags) {
+			if (GDExtensionLibraryLoader::match_all_tags(tag.split(".", false), has_tag)) {
+				return;
+			}
+		}
+	}
+
 	ERR_FAIL_COND_MSG(!config->has_section_key("configuration", "entry_symbol"), "Failed to export GDExtension file, missing entry symbol: " + p_path);
 
 	String entry_symbol = config->get_value("configuration", "entry_symbol");
