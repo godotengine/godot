@@ -291,8 +291,12 @@ protected:
 class RDShaderSPIRV : public Resource {
 	GDCLASS(RDShaderSPIRV, Resource)
 
+	friend class RenderingDevice;
+	friend class RDShaderFile;
+
 	Vector<uint8_t> bytecode[RD::SHADER_STAGE_MAX];
 	String compile_error[RD::SHADER_STAGE_MAX];
+	bool compile_error_printed[RD::SHADER_STAGE_MAX] = {};
 
 public:
 	void set_stage_bytecode(RD::ShaderStage p_stage, const Vector<uint8_t> &p_bytecode) {
@@ -321,11 +325,23 @@ public:
 	void set_stage_compile_error(RD::ShaderStage p_stage, const String &p_compile_error) {
 		ERR_FAIL_INDEX(p_stage, RD::SHADER_STAGE_MAX);
 		compile_error[p_stage] = p_compile_error;
+		compile_error_printed[p_stage] = false;
 	}
 
 	String get_stage_compile_error(RD::ShaderStage p_stage) const {
 		ERR_FAIL_INDEX_V(p_stage, RD::SHADER_STAGE_MAX, String());
 		return compile_error[p_stage];
+	}
+
+private:
+	void mark_stage_compile_error_printed(RD::ShaderStage p_stage) {
+		ERR_FAIL_INDEX(p_stage, RD::SHADER_STAGE_MAX);
+		compile_error_printed[p_stage] = true;
+	}
+
+	bool was_stage_compile_error_printed(RD::ShaderStage p_stage) const {
+		ERR_FAIL_INDEX_V(p_stage, RD::SHADER_STAGE_MAX, false);
+		return compile_error_printed[p_stage];
 	}
 
 protected:
@@ -409,21 +425,16 @@ public:
 
 	void print_errors(const String &p_file) {
 		if (!base_error.is_empty()) {
-			ERR_PRINT("Error parsing shader '" + p_file + "':\n\n" + base_error);
+			String error_message = "Error parsing shader '" + p_file + "':\n\n" + base_error;
+			ERR_PRINT(error_message);
 		} else {
 			for (KeyValue<StringName, Ref<RDShaderSPIRV>> &E : versions) {
 				for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 					String error = E.value->get_stage_compile_error(RD::ShaderStage(i));
 					if (!error.is_empty()) {
-						static const char *stage_str[RD::SHADER_STAGE_MAX] = {
-							"vertex",
-							"fragment",
-							"tesselation_control",
-							"tesselation_evaluation",
-							"compute"
-						};
-
-						print_error("Error parsing shader '" + p_file + "', version '" + String(E.key) + "', stage '" + stage_str[i] + "':\n\n" + error);
+						String error_message = "Error parsing shader '" + p_file + "', version '" + String(E.key) + "', stage '" + RD::SHADER_STAGE_NAMES[i] + "':\n\n" + error;
+						ERR_PRINT(error_message);
+						E.value->mark_stage_compile_error_printed(RD::ShaderStage(i));
 					}
 				}
 			}
