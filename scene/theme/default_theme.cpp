@@ -192,6 +192,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "MenuBar", Color(0, 0, 0));
 
 	theme->set_constant("h_separation", "MenuBar", Math::round(4 * scale));
+	theme->set_constant("popup_offset_x", "MenuBar", 0);
+	theme->set_constant("popup_offset_y", "MenuBar", 0);
 
 	// LinkButton
 
@@ -249,6 +251,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("arrow_margin", "OptionButton", Math::round(4 * scale));
 	theme->set_constant("outline_size", "OptionButton", 0);
 	theme->set_constant("modulate_arrow", "OptionButton", false);
+	theme->set_constant("popup_offset_x", "OptionButton", 0);
+	theme->set_constant("popup_offset_y", "OptionButton", 0);
 
 	// MenuButton
 
@@ -270,6 +274,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("h_separation", "MenuButton", Math::round(4 * scale));
 	theme->set_constant("outline_size", "MenuButton", 0);
+	theme->set_constant("popup_offset_x", "MenuButton", 0);
+	theme->set_constant("popup_offset_y", "MenuButton", 0);
 
 	// CheckBox
 

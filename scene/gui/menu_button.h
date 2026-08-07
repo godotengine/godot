@@ -41,6 +41,11 @@ class MenuButton : public Button {
 	bool disable_shortcuts = false;
 	PopupMenu *popup = nullptr;
 
+	struct ThemeCache {
+		int popup_offset_x = 0;
+		int popup_offset_y = 0;
+	} theme_cache;
+
 	static inline PropertyListHelper base_property_helper;
 	PropertyListHelper property_helper;
 
