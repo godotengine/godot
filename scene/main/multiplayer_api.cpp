@@ -286,6 +286,9 @@ Error MultiplayerAPI::_rpc_bind(int p_peer, Object *p_object, const StringName &
 }
 
 void MultiplayerAPI::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_packet_processing_paused", "paused"), &MultiplayerAPI::set_packet_processing_paused);
+	ClassDB::bind_method(D_METHOD("get_packet_processing_paused"), &MultiplayerAPI::get_packet_processing_paused);
+
 	ClassDB::bind_method(D_METHOD("has_multiplayer_peer"), &MultiplayerAPI::has_multiplayer_peer);
 	ClassDB::bind_method(D_METHOD("get_multiplayer_peer"), &MultiplayerAPI::get_multiplayer_peer);
 	ClassDB::bind_method(D_METHOD("set_multiplayer_peer", "peer"), &MultiplayerAPI::set_multiplayer_peer);
@@ -317,6 +320,16 @@ void MultiplayerAPI::_bind_methods() {
 }
 
 /// MultiplayerAPIExtension
+
+void MultiplayerAPIExtension::set_packet_processing_paused(bool p_paused) {
+	GDVIRTUAL_CALL(_set_packet_processing_paused, p_paused);
+}
+
+bool MultiplayerAPIExtension::get_packet_processing_paused() {
+	bool paused = false;
+	GDVIRTUAL_CALL(_get_packet_processing_paused, paused);
+	return paused;
+}
 
 Error MultiplayerAPIExtension::poll() {
 	Error err = OK;
@@ -378,6 +391,8 @@ Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, Var
 }
 
 void MultiplayerAPIExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_set_packet_processing_paused, "paused");
+	GDVIRTUAL_BIND(_get_packet_processing_paused);
 	GDVIRTUAL_BIND(_poll);
 	GDVIRTUAL_BIND(_set_multiplayer_peer, "multiplayer_peer");
 	GDVIRTUAL_BIND(_get_multiplayer_peer);
