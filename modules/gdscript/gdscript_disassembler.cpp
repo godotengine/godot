@@ -301,8 +301,13 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 5;
 			} break;
-			case OPCODE_SET_NAMED: {
-				text += "set_named ";
+			case OPCODE_SET_NAMED:
+			case OPCODE_SET_NAMED_SAFE: {
+				if (opcode == OPCODE_SET_NAMED_SAFE) {
+					text += "set_named_safe ";
+				} else {
+					text += "set_named ";
+				}
 				text += DADDR(1);
 				text += "[\"";
 				text += _global_names_ptr[_code_ptr[ip + 3]];
@@ -321,8 +326,13 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 4;
 			} break;
-			case OPCODE_GET_NAMED: {
-				text += "get_named ";
+			case OPCODE_GET_NAMED:
+			case OPCODE_GET_NAMED_SAFE: {
+				if (opcode == OPCODE_GET_NAMED_SAFE) {
+					text += "get_named_safe ";
+				} else {
+					text += "get_named ";
+				}
 				text += DADDR(2);
 				text += " = ";
 				text += DADDR(1);
@@ -677,19 +687,30 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 9 + argc * 2;
 			} break;
 			case OPCODE_CALL:
+			case OPCODE_CALL_SAFE:
+			case OPCODE_CALL_SAFE_RETURN:
 			case OPCODE_CALL_RETURN:
 			case OPCODE_CALL_ASYNC: {
-				bool ret = (_code_ptr[ip]) == OPCODE_CALL_RETURN;
+				bool ret = (_code_ptr[ip]) == OPCODE_CALL_RETURN || (_code_ptr[ip]) == OPCODE_CALL_SAFE_RETURN;
 				bool async = (_code_ptr[ip]) == OPCODE_CALL_ASYNC;
+				bool safe = (_code_ptr[ip]) == OPCODE_CALL_SAFE || (_code_ptr[ip]) == OPCODE_CALL_SAFE_RETURN;
 
 				int instr_var_args = _code_ptr[++ip];
 
 				if (ret) {
-					text += "call-ret ";
+					if (safe) {
+						text += "call-safe-ret ";
+					} else {
+						text += "call-ret ";
+					}
 				} else if (async) {
 					text += "call-async ";
 				} else {
-					text += "call ";
+					if (safe) {
+						text += "call-safe ";
+					} else {
+						text += "call ";
+					}
 				}
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
