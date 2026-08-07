@@ -80,6 +80,50 @@ void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset
 	}
 }
 
+String EditorExportPlatformMacOS::get_package_name(const Ref<EditorExportPreset> &p_preset) const {
+	String pname = p_preset->get("application/bundle_identifier");
+	String name = get_valid_basename(p_preset);
+	pname = pname.replace("$genname", name);
+	return pname;
+}
+
+// Returns the project name without invalid characters
+// or the "noname" string if all characters are invalid.
+bool EditorExportPlatformMacOS::is_project_name_valid(const Ref<EditorExportPreset> &p_preset) const {
+	// Get the original project name and convert to lowercase.
+	String basename = get_project_setting(p_preset, "application/config/name");
+	basename = basename.to_lower();
+	// Check if there are invalid characters.
+	if (basename != get_valid_basename(p_preset)) {
+		return false;
+	}
+	return true;
+}
+
+String EditorExportPlatformMacOS::get_valid_basename(const Ref<EditorExportPreset> &p_preset) const {
+	String basename = get_project_setting(p_preset, "application/config/name");
+	basename = basename.to_lower();
+
+	String name;
+	bool first = true;
+	for (int i = 0; i < basename.length(); i++) {
+		char32_t c = basename[i];
+		if (is_digit(c) && first) {
+			continue;
+		}
+		if (is_ascii_identifier_char(c)) {
+			name += String::chr(c);
+			first = false;
+		}
+	}
+
+	if (name.is_empty()) {
+		name = "noname";
+	}
+
+	return name;
+}
+
 String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
 		int dist_type = p_preset->get("export/distribution_type");
@@ -103,7 +147,7 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 		}
 
 		if (p_name == "application/bundle_identifier") {
-			String identifier = p_preset->get("application/bundle_identifier");
+			String identifier = get_package_name(Ref<EditorExportPreset>(p_preset));
 			String pn_err;
 			if (!is_package_name_valid(identifier, &pn_err)) {
 				return TTR("Invalid bundle identifier:") + " " + pn_err;
@@ -483,7 +527,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/liquid_glass_icon", PROPERTY_HINT_FILE, "*.icon"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.icns,*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "com.example.$genname", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_category", PROPERTY_HINT_ENUM, "Business,Developer-tools,Education,Entertainment,Finance,Games,Action-games,Adventure-games,Arcade-games,Board-games,Card-games,Casino-games,Dice-games,Educational-games,Family-games,Kids-games,Music-games,Puzzle-games,Racing-games,Role-playing-games,Simulation-games,Sports-games,Strategy-games,Trivia-games,Word-games,Graphics-design,Healthcare-fitness,Lifestyle,Medical,Music,News,Photography,Productivity,Reference,Social-networking,Sports,Travel,Utilities,Video,Weather"), "Games"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
@@ -852,7 +896,7 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 		} else if (lines[i].contains("$name")) {
 			strnew += lines[i].replace("$name", get_project_setting(p_preset, "application/config/name").operator String().xml_escape(true)) + "\n";
 		} else if (lines[i].contains("$bundle_identifier")) {
-			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
+			strnew += lines[i].replace("$bundle_identifier", get_package_name(p_preset)) + "\n";
 		} else if (lines[i].contains("$short_version")) {
 			strnew += lines[i].replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
 		} else if (lines[i].contains("$version")) {
@@ -1228,7 +1272,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 			args.push_back("runtime");
 
 			if (p_set_id) {
-				String app_id = p_preset->get("application/bundle_identifier");
+				String app_id = get_package_name(p_preset);
 				args.push_back("--binary-identifier");
 				args.push_back(app_id);
 			}
@@ -1293,7 +1337,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 			}
 
 			if (p_set_id) {
-				String app_id = p_preset->get("application/bundle_identifier");
+				String app_id = get_package_name(p_preset);
 				args.push_back("-i");
 				args.push_back(app_id);
 			}
@@ -1423,7 +1467,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("\"%s\": Info.plist missing or invalid, new Info.plist generated."), p_src_path.get_file()));
 			// Generate Info.plist
 			String lib_name = p_src_path.get_basename().get_file();
-			String lib_id = p_preset->get("application/bundle_identifier");
+			String lib_id = get_package_name(p_preset);
 			String lib_clean_name = lib_name;
 			for (int i = 0; i < lib_clean_name.length(); i++) {
 				if (!is_ascii_alphanumeric_char(lib_clean_name[i]) && lib_clean_name[i] != '.' && lib_clean_name[i] != '-') {
@@ -2190,7 +2234,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				if (dist_type == 2) {
 					String pprof = p_preset->get_or_env("codesign/provisioning_profile", ENV_MAC_CODESIGN_PROFILE);
 					String teamid = p_preset->get("codesign/apple_team_id");
-					String bid = p_preset->get("application/bundle_identifier");
+					String bid = get_package_name(p_preset);
 					if (!pprof.is_empty() && !teamid.is_empty()) {
 						ent_f->store_line("<key>com.apple.developer.team-identifier</key>");
 						ent_f->store_line("<string>" + teamid + "</string>");
