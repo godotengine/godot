@@ -225,6 +225,8 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _toggle_files_pressed();
 
+	void _on_coding_symbol_selected(const String &p_symbol);
+
 protected:
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
