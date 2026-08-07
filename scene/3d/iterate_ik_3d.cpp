@@ -63,6 +63,8 @@ bool IterateIK3D::_set(const StringName &p_path, const Variant &p_value) {
 				} else {
 					return false;
 				}
+			} else if (prop == "use_rest_for_limitation") {
+				set_joint_use_rest_for_limitation(which, idx, p_value);
 			} else {
 				return false;
 			}
@@ -103,6 +105,8 @@ bool IterateIK3D::_get(const StringName &p_path, Variant &r_ret) const {
 				} else {
 					return false;
 				}
+			} else if (prop == "use_rest_for_limitation") {
+				r_ret = is_joint_using_rest_for_limitation(which, idx);
 			} else {
 				return false;
 			}
@@ -126,6 +130,7 @@ void IterateIK3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			props.push_back(PropertyInfo(Variant::INT, joint_path + "limitation/right_axis", PROPERTY_HINT_ENUM, SkeletonModifier3D::get_hint_secondary_direction()));
 			props.push_back(PropertyInfo(Variant::VECTOR3, joint_path + "limitation/right_axis_vector"));
 			props.push_back(PropertyInfo(Variant::QUATERNION, joint_path + "limitation/rotation_offset"));
+			props.push_back(PropertyInfo(Variant::BOOL, joint_path + "use_rest_for_limitation"));
 		}
 	}
 
@@ -145,6 +150,9 @@ void IterateIK3D::_validate_dynamic_prop(PropertyInfo &p_property) const {
 		// Joints option.
 		if (split[2] == "joints" && split.size() > 4) {
 			if (split[4] == "rotation_axis_vector" && get_joint_rotation_axis(which, joint) != ROTATION_AXIS_CUSTOM) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+			if (split[4] == "use_rest_for_limitation" && get_joint_limitation(which, joint).is_null() && get_joint_rotation_axis(which, joint) == ROTATION_AXIS_ALL) {
 				p_property.usage = PROPERTY_USAGE_NONE;
 			}
 			if (split[4] == "limitation" && split.size() > 5) {
@@ -258,12 +266,14 @@ Vector3 IterateIK3D::get_joint_rotation_axis_vector(int p_index, int p_joint) co
 	return joint_settings[p_joint]->get_rotation_axis_vector();
 }
 
+#ifdef TOOLS_ENABLED
 Quaternion IterateIK3D::get_joint_limitation_space(int p_index, int p_joint, const Vector3 &p_forward) const {
 	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), Quaternion());
 	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX_V(p_joint, (int)joint_settings.size(), Quaternion());
 	return joint_settings[p_joint]->get_limitation_space(p_forward);
 }
+#endif // TOOLS_ENABLED
 
 void IterateIK3D::set_joint_limitation(int p_index, int p_joint, const Ref<JointLimitation3D> &p_limitation) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
@@ -327,6 +337,21 @@ Quaternion IterateIK3D::get_joint_limitation_rotation_offset(int p_index, int p_
 	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
 	ERR_FAIL_INDEX_V(p_joint, (int)joint_settings.size(), Quaternion());
 	return joint_settings[p_joint]->limitation_rotation_offset;
+}
+
+void IterateIK3D::set_joint_use_rest_for_limitation(int p_index, int p_joint, bool p_enabled) {
+	ERR_FAIL_INDEX(p_index, (int)settings.size());
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	ERR_FAIL_INDEX(p_joint, (int)joint_settings.size());
+	joint_settings[p_joint]->use_rest_for_limitation = p_enabled;
+	_update_joint_limitation(p_index, p_joint);
+}
+
+bool IterateIK3D::is_joint_using_rest_for_limitation(int p_index, int p_joint) const {
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), false);
+	const LocalVector<IterateIK3DJointSetting *> &joint_settings = iterate_settings[p_index]->joint_settings;
+	ERR_FAIL_INDEX_V(p_joint, (int)joint_settings.size(), false);
+	return joint_settings[p_joint]->use_rest_for_limitation;
 }
 
 void IterateIK3D::_set_joint_count(int p_index, int p_count) {
@@ -396,6 +421,8 @@ void IterateIK3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joint_limitation_right_axis_vector", "index", "joint"), &IterateIK3D::get_joint_limitation_right_axis_vector);
 	ClassDB::bind_method(D_METHOD("set_joint_limitation_rotation_offset", "index", "joint", "offset"), &IterateIK3D::set_joint_limitation_rotation_offset);
 	ClassDB::bind_method(D_METHOD("get_joint_limitation_rotation_offset", "index", "joint"), &IterateIK3D::get_joint_limitation_rotation_offset);
+	ClassDB::bind_method(D_METHOD("set_joint_use_rest_for_limitation", "index", "joint", "enabled"), &IterateIK3D::set_joint_use_rest_for_limitation);
+	ClassDB::bind_method(D_METHOD("is_joint_using_rest_for_limitation", "index", "joint"), &IterateIK3D::is_joint_using_rest_for_limitation);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_iterations", PROPERTY_HINT_RANGE, "0,100,or_greater"), "set_max_iterations", "get_max_iterations");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_distance", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater"), "set_min_distance", "get_min_distance");
@@ -509,6 +536,34 @@ void IterateIK3D::_update_bone_axis(Skeleton3D *p_skeleton, int p_index) {
 #endif // TOOLS_ENABLED
 }
 
+#ifdef TOOLS_ENABLED
+void IterateIK3D::_update_limitation_gizmo(Skeleton3D *p_skeleton, int p_index) {
+	IterateIK3DSetting *setting = iterate_settings[p_index];
+	bool changed = false;
+	for (uint32_t j = 0; j < setting->joints.size(); j++) {
+		IterateIK3DJointSetting *joint_setting = setting->joint_settings[j];
+		IKModifier3DSolverInfo *solver_info = setting->solver_info_list[j];
+		if (!joint_setting || joint_setting->limitation.is_null() || !solver_info) {
+			continue;
+		}
+		Quaternion offset;
+		if (!joint_setting->use_rest_for_limitation) {
+			int bone = setting->joints[j].bone;
+			if (bone >= 0 && bone < p_skeleton->get_bone_count()) {
+				offset = p_skeleton->get_bone_rest(bone).basis.get_rotation_quaternion().inverse() * solver_info->current_lrest;
+			}
+		}
+		if (!joint_setting->limitation_gizmo_offset.is_equal_approx(offset)) {
+			joint_setting->limitation_gizmo_offset = offset;
+			changed = true;
+		}
+	}
+	if (changed) {
+		_make_gizmo_dirty();
+	}
+}
+#endif // TOOLS_ENABLED
+
 void IterateIK3D::_process_ik(Skeleton3D *p_skeleton, double p_delta) {
 	min_distance_squared = min_distance * min_distance;
 	for (uint32_t i = 0; i < settings.size(); i++) {
@@ -517,7 +572,11 @@ void IterateIK3D::_process_ik(Skeleton3D *p_skeleton, double p_delta) {
 		if (!target || iterate_settings[i]->chain.is_empty()) {
 			continue; // Abort.
 		}
-		iterate_settings[i]->cache_current_joint_rotations(p_skeleton); // Iterate over first to detect parent (outside of the chain) bone pose changes.
+		iterate_settings[i]->cache_current_joint_rotations(p_skeleton, Math::PI); // Iterate over first to detect parent (outside of the chain) bone pose changes.
+
+#ifdef TOOLS_ENABLED
+		_update_limitation_gizmo(p_skeleton, i);
+#endif // TOOLS_ENABLED
 
 		Vector3 destination = cached_space.affine_inverse().xform(target->get_global_transform_interpolated().origin);
 		_process_joints(p_delta, p_skeleton, iterate_settings[i], destination);
