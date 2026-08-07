@@ -77,6 +77,8 @@ public:
 
 	Error add_directory(const String &p_path, BitField<FileAccess::UnixPermissionFlags> p_permissions = 0755, uint64_t p_modified_time = 0);
 
+	static Error compress(const PackedStringArray &p_input_paths, const String &p_output_path, int p_compression_level = COMPRESSION_DEFAULT, ZipAppend p_append = ZipAppend::APPEND_CREATE);
+
 	ZIPPacker();
 	~ZIPPacker();
 };
