@@ -928,10 +928,9 @@ void RendererSceneCull::instance_set_layer_mask(RID p_instance, uint32_t p_mask)
 		return;
 	}
 
-	// Particles always need to be unpaired. Geometry may need to be unpaired, but only if lights or decals use pairing.
+	// Particles and geometries need to be unpaired.
 	// Needs to happen before layer mask changes so we can avoid attempting to unpair something that was never paired.
-	if (instance->base_type == RSE::INSTANCE_PARTICLES ||
-			(((geometry_instance_pair_mask & (1 << RSE::INSTANCE_LIGHT)) || (geometry_instance_pair_mask & (1 << RSE::INSTANCE_DECAL))) && ((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK))) {
+	if (instance->base_type == RSE::INSTANCE_PARTICLES || ((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK)) {
 		_unpair_instance(instance);
 		singleton->_instance_queue_update(instance, false, false);
 	}
