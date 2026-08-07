@@ -794,6 +794,7 @@ protected:
 	virtual Color _get_brace_mismatch_color() const { return Color(); }
 	virtual Color _get_code_folding_color() const { return Color(); }
 	virtual Ref<Texture2D> _get_folded_eol_icon() const { return Ref<Texture2D>(); }
+	virtual Rect2 _get_folded_eol_icon_rect(int p_line_width) const;
 
 	/* Text manipulation */
 

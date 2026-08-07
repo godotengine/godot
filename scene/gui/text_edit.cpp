@@ -1913,12 +1913,12 @@ void TextEdit::_notification(int p_what) {
 
 					// is_line_folded
 					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && _is_line_hidden(line + 1)) {
-						int xofs = char_ofs + char_margin + (_get_folded_eol_icon()->get_width() / 2);
-						if (xofs >= xmargin_beg && xofs < xmargin_end) {
-							int yofs = (text_height - _get_folded_eol_icon()->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
+						Rect2 rect = _get_folded_eol_icon_rect(char_ofs);
+						if (rect.position.x >= xmargin_beg && rect.position.x < xmargin_end) {
+							rect.position.y = Math::round(ofs_y + (text_height - rect.size.y) / 2 - ldata->get_line_ascent(line_wrap_index));
 							Color eol_color = _get_code_folding_color();
 							eol_color.a = 1;
-							_get_folded_eol_icon()->draw(text_ci, Point2(xofs, ofs_y + yofs), eol_color);
+							_get_folded_eol_icon()->draw_rect(text_ci, rect, false, eol_color);
 						}
 					}
 
@@ -8473,6 +8473,15 @@ void TextEdit::_set_symbol_lookup_word(const String &p_symbol) {
 
 	lookup_symbol_word = p_symbol;
 	queue_redraw();
+}
+
+// Theme items.
+Rect2 TextEdit::_get_folded_eol_icon_rect(int p_line_width) const {
+	Size2 icon_size = _get_folded_eol_icon()->get_size();
+	Rect2 rect;
+	rect.position = Point2(get_total_gutter_width() + icon_size.x / 2 + p_line_width - get_h_scroll(), 0);
+	rect.size = icon_size;
+	return rect;
 }
 
 /* Text manipulation */
