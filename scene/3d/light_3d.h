@@ -178,6 +178,8 @@ private:
 	bool blend_splits;
 	ShadowMode shadow_mode;
 	SkyMode sky_mode = SKY_MODE_LIGHT_AND_SKY;
+	real_t min_shadow_fov;
+	real_t min_shadow_size;
 
 protected:
 	static void _bind_methods();
@@ -192,6 +194,12 @@ public:
 
 	void set_sky_mode(SkyMode p_mode);
 	SkyMode get_sky_mode() const;
+
+	void set_min_shadow_fov(real_t p_fov);
+	real_t get_min_shadow_fov() const;
+
+	void set_min_shadow_size(real_t p_size);
+	real_t get_min_shadow_size() const;
 
 	DirectionalLight3D();
 };
