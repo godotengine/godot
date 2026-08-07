@@ -1279,8 +1279,11 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	_set_reason_text(TTRC("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
 
+	Array message;
 	Array quit_keys = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
-	_put_msg("scene:setup_scene", quit_keys);
+	message.push_back(quit_keys);
+	message.push_back(EDSCALE);
+	_put_msg("scene:setup_scene", message);
 
 	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
 		profiler->set_profiling(true);

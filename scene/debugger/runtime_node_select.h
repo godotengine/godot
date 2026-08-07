@@ -69,6 +69,7 @@ public:
 
 private:
 	friend class SceneDebugger;
+	friend class SceneDebuggerToolbar;
 
 	NodeType node_select_type = NODE_TYPE_2D;
 	SelectMode node_select_mode = SELECT_MODE_SINGLE;
