@@ -2036,10 +2036,11 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 
 	if (fullscreen_shortcut_enabled && p_ev->is_action_pressed("ui_toggle_fullscreen")) {
 		if (mode == MODE_FULLSCREEN || mode == MODE_EXCLUSIVE_FULLSCREEN) {
-			set_mode(toggle_fullscreen_previous_mode);
+			toggle_fullscreen_previous_fullscreen_mode = mode;
+			set_mode(toggle_fullscreen_previous_windowed_mode);
 		} else {
-			toggle_fullscreen_previous_mode = mode;
-			set_mode(MODE_FULLSCREEN);
+			toggle_fullscreen_previous_windowed_mode = mode;
+			set_mode(toggle_fullscreen_previous_fullscreen_mode);
 		}
 	}
 
@@ -3734,6 +3735,13 @@ Window::Window() {
 
 	theme_owner = memnew(ThemeOwner(this));
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_DISABLED);
+
+	// Ensure the built-in fullscreen toggle switches back to the intended mode if the project starts in fullscreen.
+	if (GLOBAL_GET_CACHED(DisplayServerEnums::WindowMode, "display/window/size/mode") == DisplayServerEnums::WindowMode::WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		toggle_fullscreen_previous_fullscreen_mode = MODE_EXCLUSIVE_FULLSCREEN;
+	} else {
+		toggle_fullscreen_previous_fullscreen_mode = MODE_FULLSCREEN;
+	}
 }
 
 Window::~Window() {
