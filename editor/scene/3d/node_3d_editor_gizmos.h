@@ -223,7 +223,8 @@ public:
 	Ref<EditorNode3DGizmo> get_gizmo(Node3D *p_spatial);
 	void set_state(int p_state);
 	int get_state() const;
-	void unregister_gizmo(EditorNode3DGizmo *p_gizmo);
+	virtual void register_gizmo(EditorNode3DGizmo *p_gizmo);
+	virtual void unregister_gizmo(EditorNode3DGizmo *p_gizmo);
 
 	EditorNode3DGizmoPlugin();
 	virtual ~EditorNode3DGizmoPlugin();
