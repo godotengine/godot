@@ -150,6 +150,7 @@ public:
 	// MARK: -
 
 	virtual bool has_feature(DisplayServerEnums::Feature p_feature) const override;
+	virtual int accessibility_screen_reader_active() const override;
 
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;

@@ -67,6 +67,9 @@ bool AccessibilityServerAccessKit::window_create(DisplayServerEnums::WindowID p_
 #ifdef LINUXBSD_ENABLED
 	wd.adapter = accesskit_unix_adapter_new(&_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id, &_accessibility_deactivation_callback, (void *)(size_t)p_window_id);
 #endif
+#ifdef APPLE_EMBEDDED_ENABLED
+	wd.adapter = accesskit_ios_subclassing_adapter_new(p_handle, &_accessibility_initial_tree_update_callback, (void *)(size_t)p_window_id, &_accessibility_action_callback, (void *)(size_t)p_window_id, &_accessibility_deactivation_callback, (void *)(size_t)p_window_id);
+#endif
 	print_verbose(vformat("Accessibility: window %d adapter created.", p_window_id));
 
 	if (wd.adapter == nullptr) {
@@ -94,6 +97,9 @@ void AccessibilityServerAccessKit::window_destroy(DisplayServerEnums::WindowID p
 #endif
 #ifdef LINUXBSD_ENABLED
 	accesskit_unix_adapter_free(wd->adapter);
+#endif
+#ifdef APPLE_EMBEDDED_ENABLED
+	accesskit_ios_subclassing_adapter_free(wd->adapter);
 #endif
 	free_element(wd->root_id);
 
@@ -693,6 +699,12 @@ void AccessibilityServerAccessKit::update_if_active(const Callable &p_callable) 
 #endif
 #ifdef LINUXBSD_ENABLED
 		accesskit_unix_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
+#endif
+#ifdef APPLE_EMBEDDED_ENABLED
+		accesskit_ios_queued_events *events = accesskit_ios_subclassing_adapter_update_if_active(window.value.adapter, _accessibility_build_tree_update, (void *)(size_t)window.key);
+		if (events) {
+			accesskit_ios_queued_events_raise(events);
+		}
 #endif
 	}
 	update_cb = Callable();
