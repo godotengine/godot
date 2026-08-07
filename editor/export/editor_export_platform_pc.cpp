@@ -61,6 +61,7 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) c
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, ext_filter), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_debug_symbols", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
 
@@ -185,6 +186,9 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	int con_wrapper_mode = p_preset->get("debug/export_console_wrapper");
 	bool copy_wrapper = (con_wrapper_mode == 1 && p_debug) || (con_wrapper_mode == 2);
 
+	int debug_symbols_mode = p_preset->get("debug/export_debug_symbols");
+	bool copy_debug_symbols = (debug_symbols_mode == 1 && p_debug) || (debug_symbols_mode == 2);
+
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->make_dir_recursive(p_path.get_base_dir());
 	Error err = da->copy(template_path, p_path, get_chmod_flags());
@@ -194,6 +198,21 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 			if (FileAccess::exists(wrapper_path)) {
 				err = da->copy(wrapper_path, p_path.get_basename() + ".console.exe", get_chmod_flags());
 				break;
+			}
+		}
+	}
+	if (err == OK && copy_debug_symbols) {
+		const String debug_symbols_path = template_path + ".debugsymbols";
+		if (FileAccess::exists(debug_symbols_path)) {
+			err = da->copy(debug_symbols_path, p_path + ".debugsymbols");
+		}
+		if (err == OK && copy_wrapper) {
+			for (int i = 0; wrapper_extensions[i]; ++i) {
+				const String wrapper_path = template_path.get_basename() + wrapper_extensions[i] + ".debugsymbols";
+				if (FileAccess::exists(wrapper_path)) {
+					err = da->copy(wrapper_path, p_path.get_basename() + ".console.exe.debugsymbols");
+					break;
+				}
 			}
 		}
 	}
