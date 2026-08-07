@@ -433,11 +433,21 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 						return true;
 					}
 				}
-			} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed() && !edited_point.valid()) {
-				const PosVertex closest = closest_point(gpoint);
+			} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
+				if (!edited_point.valid()) {
+					const PosVertex closest = closest_point(gpoint);
 
-				if (closest.valid()) {
-					remove_point(closest);
+					if (closest.valid()) {
+						remove_point(closest);
+						return true;
+					}
+				} else {
+					_set_polygon(edited_point.polygon, pre_move_edit);
+					edited_point = PosVertex();
+					hover_point = Vertex();
+					selected_point = Vertex();
+					edge_point = PosVertex();
+					canvas_item_editor->update_viewport();
 					return true;
 				}
 			}
@@ -493,6 +503,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 				}
 			} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed() && wip_active) {
 				_wip_cancel();
+				return true;
 			}
 		}
 
