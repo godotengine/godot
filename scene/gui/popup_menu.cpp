@@ -1140,6 +1140,20 @@ void PopupMenu::_search_bar_text_changed(const String &p_new_text) {
 	_menu_changed();
 }
 
+void PopupMenu::_search_bar_text_submitted(const String &p_new_text) {
+	if (p_new_text.is_empty()) {
+		return;
+	}
+
+	// Select the first visible search result when pressing Enter.
+	for (PopupMenu::Item &item : items) {
+		if (item.visible) {
+			activate_item(item.id);
+			break;
+		}
+	}
+}
+
 void PopupMenu::_search_bar_focus_entered() {
 	prev_mouse_over = mouse_over;
 	mouse_over = -1;
@@ -3839,6 +3853,7 @@ PopupMenu::PopupMenu() {
 	search_bar->set_keep_editing_on_text_submit(true);
 	search_bar->set_virtual_keyboard_show_on_focus(false);
 	search_bar->connect(SceneStringName(text_changed), callable_mp(this, &PopupMenu::_search_bar_text_changed));
+	search_bar->connect(SceneStringName(text_submitted), callable_mp(this, &PopupMenu::_search_bar_text_submitted));
 	search_bar->connect(SceneStringName(focus_entered), callable_mp(this, &PopupMenu::_search_bar_focus_entered));
 	vbox_container->add_child(search_bar, false, INTERNAL_MODE_FRONT);
 
