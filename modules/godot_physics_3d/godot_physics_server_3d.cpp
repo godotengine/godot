@@ -74,6 +74,7 @@ RID GodotPhysicsServer3D::capsule_shape_create() {
 	shape->set_self(rid);
 	return rid;
 }
+
 RID GodotPhysicsServer3D::cylinder_shape_create() {
 	GodotShape3D *shape = memnew(GodotCylinderShape3D);
 	RID rid = shape_owner.make_rid(shape);
