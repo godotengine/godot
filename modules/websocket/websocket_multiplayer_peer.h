@@ -96,7 +96,6 @@ public:
 	virtual bool is_server_relay_supported() const override { return true; }
 
 	virtual int get_max_packet_size() const override;
-	virtual bool is_server() const override;
 	virtual void poll() override;
 	virtual void close() override;
 	virtual void disconnect_peer(int p_peer_id, bool p_force = false) override;
