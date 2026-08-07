@@ -153,6 +153,48 @@ public:
 	static Variant::Type get_return_type() { return GetTypeInfo<R>::VARIANT_TYPE; }
 };
 
+template <typename A, typename B>
+class OperatorEvaluatorIntDiv {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		*r_ret = static_cast<int64_t>(a / b);
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<int64_t>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) / *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<int64_t>::encode(PtrToArg<A>::convert(left) / PtrToArg<B>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<int64_t>::VARIANT_TYPE; }
+};
+
+template <typename A, typename B>
+class OperatorEvaluatorIntDivNZ {
+public:
+	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
+		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
+		const B &b = *VariantGetInternalPtr<B>::get_ptr(&p_right);
+		if (b == 0) {
+			r_valid = false;
+			*r_ret = "Division by zero error";
+			return;
+		}
+		*r_ret = static_cast<int64_t>(a / b);
+		r_valid = true;
+	}
+	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
+		*VariantGetInternalPtr<int64_t>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) / *VariantGetInternalPtr<B>::get_ptr(right);
+	}
+	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
+		PtrToArg<int64_t>::encode(PtrToArg<A>::convert(left) / PtrToArg<B>::convert(right), r_ret);
+	}
+	static Variant::Type get_return_type() { return GetTypeInfo<int64_t>::VARIANT_TYPE; }
+};
+
+
 template <>
 class OperatorEvaluatorDivNZ<Vector2i, Vector2i, Vector2i> {
 public:
