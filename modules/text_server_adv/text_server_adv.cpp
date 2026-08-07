@@ -1432,10 +1432,10 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 						hb_raster_paint_reset(p_font_data->hb_rdr);
 						hb_raster_paint_set_scale_factor(p_font_data->hb_rdr, 64.0, 64.0);
 						if (Math::is_equal_approx(p_font_data->transform[0][0], (real_t)1.f) && Math::is_equal_approx(p_font_data->transform[1][0], (real_t)0.f) && Math::is_equal_approx(p_font_data->transform[1][1], (real_t)1.f)) {
-							hb_raster_paint_set_transform(p_font_data->hb_rdr, 1.f, 0.f, 0.f, -1.f, xshift, 0.f);
+							hb_raster_paint_set_transform(p_font_data->hb_rdr, 1.f, 0.f, 0.f, -1.f, -xshift, 0.f);
 						} else {
 							Transform2D tr = p_font_data->transform * Transform2D::FLIP_Y;
-							hb_raster_paint_set_transform(p_font_data->hb_rdr, tr[0][0], tr[1][0], tr[0][1], tr[1][1], xshift, 0.f);
+							hb_raster_paint_set_transform(p_font_data->hb_rdr, tr[0][0], tr[1][0], tr[0][1], tr[1][1], -xshift, 0.f);
 						}
 						hb_raster_paint_clear_custom_palette_colors(p_font_data->hb_rdr);
 						if (!p_font_data->palette_custom_colors_hb.is_empty()) {
@@ -4299,10 +4299,10 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 		}
 		// Subpixel X-shift, bits 27, 28
 		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
-			int xshift = (int)(Math::floor(4 * (p_pos.x + 0.125)) - 4 * Math::floor(p_pos.x + 0.125));
+			int xshift = (int)(Math::floor(4 * (p_pos.x * oversampling_factor + 0.125)) - 4 * Math::floor(p_pos.x * oversampling_factor + 0.125));
 			index = index | (xshift << 27);
 		} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
-			int xshift = (int)(Math::floor(2 * (p_pos.x + 0.25)) - 2 * Math::floor(p_pos.x + 0.25));
+			int xshift = (int)(Math::floor(2 * (p_pos.x * oversampling_factor + 0.25)) - 2 * Math::floor(p_pos.x * oversampling_factor + 0.25));
 			index = index | (xshift << 27);
 		}
 	}
@@ -4350,13 +4350,12 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 				Point2 cpos = p_pos;
 				double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
 				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
-					cpos.x = cpos.x + 0.125;
+					cpos.x = Math::floor(cpos.x * oversampling_factor + 0.125) / oversampling_factor;
 				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
-					cpos.x = cpos.x + 0.25;
-				}
-				if (scale == 1.0) {
-					cpos.y = Math::floor(cpos.y);
-					cpos.x = Math::floor(cpos.x);
+					cpos.x = Math::floor(cpos.x * oversampling_factor + 0.25) / oversampling_factor;
+				} else if (scale == 1.0) {
+					cpos.y = Math::floor(cpos.y * oversampling_factor) / oversampling_factor;
+					cpos.x = Math::floor(cpos.x * oversampling_factor) / oversampling_factor;
 				}
 				Vector2 gpos = fgl.rect.position;
 				Size2 csize = fgl.rect.size;
@@ -4442,10 +4441,10 @@ void TextServerAdvanced::_font_draw_glyph_outline(const RID &p_font_rid, const R
 		}
 		// Subpixel X-shift, bits 27, 28
 		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
-			int xshift = (int)(Math::floor(4 * (p_pos.x + 0.125)) - 4 * Math::floor(p_pos.x + 0.125));
+			int xshift = (int)(Math::floor(4 * (p_pos.x * oversampling_factor + 0.125)) - 4 * Math::floor(p_pos.x * oversampling_factor + 0.125));
 			index = index | (xshift << 27);
 		} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
-			int xshift = (int)(Math::floor(2 * (p_pos.x + 0.25)) - 2 * Math::floor(p_pos.x + 0.25));
+			int xshift = (int)(Math::floor(2 * (p_pos.x * oversampling_factor + 0.25)) - 2 * Math::floor(p_pos.x * oversampling_factor + 0.25));
 			index = index | (xshift << 27);
 		}
 	}
@@ -4489,13 +4488,12 @@ void TextServerAdvanced::_font_draw_glyph_outline(const RID &p_font_rid, const R
 				Point2 cpos = p_pos;
 				double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
 				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
-					cpos.x = cpos.x + 0.125;
+					cpos.x = Math::floor(cpos.x * oversampling_factor + 0.125) / oversampling_factor;
 				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
-					cpos.x = cpos.x + 0.25;
-				}
-				if (scale == 1.0) {
-					cpos.y = Math::floor(cpos.y);
-					cpos.x = Math::floor(cpos.x);
+					cpos.x = Math::floor(cpos.x * oversampling_factor + 0.25) / oversampling_factor;
+				} else if (scale == 1.0) {
+					cpos.y = Math::floor(cpos.y * oversampling_factor) / oversampling_factor;
+					cpos.x = Math::floor(cpos.x * oversampling_factor) / oversampling_factor;
 				}
 				Vector2 gpos = fgl.rect.position;
 				Size2 csize = fgl.rect.size;
