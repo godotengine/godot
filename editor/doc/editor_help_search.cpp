@@ -389,8 +389,10 @@ EditorHelpSearch::EditorHelpSearch() {
 }
 
 void EditorHelpSearch::TreeCache::clear() {
-	for (const KeyValue<String, TreeItem *> &E : item_cache) {
-		memdelete(E.value);
+	for (const KeyValue<String, Vector<TreeItem *>> &E : item_cache) {
+		for (TreeItem *item : E.value) {
+			memdelete(item);
+		}
 	}
 	item_cache.clear();
 }
@@ -530,14 +532,16 @@ bool EditorHelpSearch::Runner::_phase_fill_member_items_init() {
 
 TreeItem *EditorHelpSearch::Runner::_create_category_item(TreeItem *p_parent, const String &p_class, const StringName &p_icon, const String &p_text, const String &p_metatype) {
 	const String item_meta = "class_" + p_metatype + ":" + p_class;
+	const String cache_key = item_meta + ":" + p_text;
 
 	TreeItem *item = nullptr;
-	if (_find_or_create_item(p_parent, item_meta, item)) {
+	if (_find_or_create_item(p_parent, cache_key, item)) {
 		item->set_icon(0, ui_service->get_editor_theme_icon(p_icon));
 		item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_ALWAYS);
 		item->set_text(0, p_text);
-		item->set_metadata(0, item_meta);
 	}
+	item->set_metadata(0, item_meta);
+	item->set_metadata(1, cache_key);
 	item->set_collapsed(true);
 
 	return item;
@@ -843,7 +847,8 @@ void EditorHelpSearch::Runner::_populate_cache() {
 			stack.resize(stack.size() - 1);
 
 			// Add to the cache.
-			tree_cache->item_cache.insert(cur_item->get_metadata(0).operator String(), cur_item);
+			const String cache_key = cur_item->get_metadata(1).operator String();
+			tree_cache->item_cache[cache_key].push_back(cur_item);
 
 			// Add any children to the stack.
 			for (TreeItem *child = cur_item->get_first_child(); child; child = child->get_next()) {
@@ -1110,17 +1115,25 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 	return class_item;
 }
 
-bool EditorHelpSearch::Runner::_find_or_create_item(TreeItem *p_parent, const String &p_item_meta, TreeItem *&r_item) {
+bool EditorHelpSearch::Runner::_find_or_create_item(TreeItem *p_parent, const String &p_cache_key, TreeItem *&r_item) {
+	// Ensure empty r_item.
+	r_item = nullptr;
 	// Attempt to find in cache.
-	if (tree_cache->item_cache.has(p_item_meta)) {
-		r_item = tree_cache->item_cache[p_item_meta];
-
-		// Remove from cache.
-		tree_cache->item_cache.erase(p_item_meta);
-
-		// Add to tree.
+	HashMap<String, Vector<TreeItem *>> &cache = tree_cache->item_cache;
+	if (cache.has(p_cache_key)) {
+		Vector<TreeItem *> &row_container = cache[p_cache_key];
+		if (row_container.size() > 0) {
+			int last_index = row_container.size() - 1;
+			r_item = row_container[last_index];
+			row_container.resize(last_index);
+		}
+		//Remove empty containers.
+		if (row_container.size() == 0) {
+			cache.erase(p_cache_key);
+		}
+	}
+	if (r_item != nullptr) {
 		p_parent->add_child(r_item);
-
 		return false;
 	} else {
 		// Otherwise create item.
@@ -1135,14 +1148,14 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 	tooltip += _build_keywords_tooltip(p_doc->keywords);
 
 	const String item_meta = "class_name:" + p_doc->name;
+	const String cache_key = item_meta;
 
 	TreeItem *item = nullptr;
-	if (_find_or_create_item(p_parent, item_meta, item)) {
+	if (_find_or_create_item(p_parent, cache_key, item)) {
 		item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_doc->name));
 		item->set_text(1, TTR("Class"));
 		item->set_tooltip_text(0, tooltip);
 		item->set_tooltip_text(1, tooltip);
-		item->set_metadata(0, item_meta);
 		if (p_doc->is_deprecated) {
 			Ref<Texture2D> error_icon = ui_service->get_editor_theme_icon(SNAME("StatusError"));
 			item->add_button(0, error_icon, 0, false, TTR("This class is marked as deprecated."));
@@ -1152,6 +1165,8 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 		}
 	}
 	// Cached item might be collapsed.
+	item->set_metadata(0, item_meta);
+	item->set_metadata(1, cache_key);
 	item->set_collapsed(false);
 
 	if (p_gray) {
@@ -1246,14 +1261,14 @@ TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_pare
 
 TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const StringName &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, const String &p_keywords, bool p_is_deprecated, bool p_is_experimental, const String &p_matching_keyword) {
 	const String item_meta = "class_" + p_metatype + ":" + p_class_name + ":" + p_name;
+	const String cache_key = item_meta + ":" + p_text;
 
 	TreeItem *item = nullptr;
-	if (_find_or_create_item(p_parent, item_meta, item)) {
+	if (_find_or_create_item(p_parent, cache_key, item)) {
 		item->set_icon(0, ui_service->get_editor_theme_icon(p_icon));
 		item->set_text(1, TTRGET(p_type));
 		item->set_tooltip_text(0, p_tooltip);
 		item->set_tooltip_text(1, p_tooltip);
-		item->set_metadata(0, item_meta);
 
 		if (p_is_deprecated) {
 			Ref<Texture2D> error_icon = ui_service->get_editor_theme_icon(SNAME("StatusError"));
@@ -1263,6 +1278,9 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 			item->add_button(0, warning_icon, 0, false, TTR("This member is marked as experimental."));
 		}
 	}
+
+	item->set_metadata(0, item_meta);
+	item->set_metadata(1, cache_key);
 
 	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
