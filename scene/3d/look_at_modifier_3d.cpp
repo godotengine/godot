@@ -393,7 +393,7 @@ float LookAtModifier3D::get_interpolation_remaining() const {
 }
 
 bool LookAtModifier3D::is_interpolating() const {
-	return Math::is_zero_approx(remaining);
+	return !Math::is_zero_approx(remaining);
 }
 
 // General API.
