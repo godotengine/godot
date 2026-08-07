@@ -117,7 +117,7 @@ class EditorAudioBus : public PanelContainer {
 
 	bool updating_bus = false;
 	bool is_master;
-	mutable bool hovering_drop = false;
+	bool is_dragging_bus = false;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _effects_gui_input(Ref<InputEvent> p_event);
@@ -143,8 +143,6 @@ class EditorAudioBus : public PanelContainer {
 	void _update_visible_channels();
 
 	virtual Variant get_drag_data(const Point2 &p_point) override;
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
-	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -168,14 +166,17 @@ public:
 class EditorAudioBusDrop : public Control {
 	GDCLASS(EditorAudioBusDrop, Control);
 
+	Rect2 buses_rect;
+
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
-
-	mutable bool hovering_drop = false;
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+public:
+	void set_buses_rect(const Rect2 &p_rect) { buses_rect = p_rect; }
 };
 
 class EditorAudioBuses : public EditorDock {
@@ -216,7 +217,8 @@ class EditorAudioBuses : public EditorDock {
 	void _duplicate_bus(int p_which);
 	void _reset_bus_volume(Object *p_which);
 
-	void _request_drop_end();
+	void _request_drop_end(int p_at_index);
+	void _bus_hovered(Node *p_bus);
 	void _drop_at_index(int p_bus, int p_index);
 
 	void _server_save();
