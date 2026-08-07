@@ -26,6 +26,8 @@ elif env["platform"] in ["ios", "visionos"]:
     env.Append(MODULES_EXTERNAL=["_camera"])
 
 elif env["platform"] == "linuxbsd":
+    if env["builtin_libjpeg_turbo"]:
+        env_camera.Prepend(CPPPATH=["#thirdparty/libjpeg-turbo/src"])
     env_camera.add_source_files(env.modules_sources, "camera_linux.cpp")
     env_camera.add_source_files(env.modules_sources, "camera_feed_linux.cpp")
     env_camera.add_source_files(env.modules_sources, "buffer_decoder.cpp")
