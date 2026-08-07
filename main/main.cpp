@@ -741,13 +741,6 @@ Error Main::test_setup() {
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 
-	translation_server->setup(); //register translations, load them, etc.
-	if (!locale.is_empty()) {
-		translation_server->set_locale(locale);
-	}
-	translation_server->load_project_translations(translation_server->get_main_domain());
-	ResourceLoader::load_translation_remaps(); //load remaps for resources
-
 	message_queue = memnew(MessageQueue);
 
 	RasterizerDummy::make_current();
@@ -773,6 +766,13 @@ Error Main::test_setup() {
 
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SCENE);
+
+	translation_server->setup(); //register translations, load them, etc.
+	if (!locale.is_empty()) {
+		translation_server->set_locale(locale);
+	}
+	translation_server->load_project_translations(translation_server->get_main_domain());
+	ResourceLoader::load_translation_remaps(); //load remaps for resources
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
@@ -830,6 +830,9 @@ void Main::test_cleanup() {
 	// Printing in the usual way can become problematic during/after cleanup.
 	CoreGlobals::print_ready = false;
 
+	ResourceLoader::clear_translation_remaps();
+	memdelete(translation_server);
+
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();
 	}
@@ -881,7 +884,6 @@ void Main::test_cleanup() {
 	OS::get_singleton()->finalize();
 
 	memdelete(packed_data);
-	memdelete(translation_server);
 	memdelete(tsman);
 #ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3DManager::finalize_server_manager();
@@ -2901,6 +2903,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	return OK;
 
 error:
+	memdelete(translation_server);
 
 	text_driver = "";
 	display_driver = "";
@@ -2924,7 +2927,6 @@ error:
 
 	memdelete(performance);
 	memdelete(input_map);
-	memdelete(translation_server);
 	memdelete(globals);
 	memdelete(packed_data);
 
@@ -3610,23 +3612,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 		OS::get_singleton()->benchmark_end_measure("Startup", "Setup Window and Boot");
 	}
 
-	MAIN_PRINT("Main: Load Translations and Remaps");
-
-	/* Setup translations and remaps */
-
-	{
-		OS::get_singleton()->benchmark_begin_measure("Startup", "Translations and Remaps");
-
-		translation_server->setup(); //register translations, load them, etc.
-		if (!locale.is_empty()) {
-			translation_server->set_locale(locale);
-		}
-		translation_server->load_project_translations(translation_server->get_main_domain());
-		ResourceLoader::load_translation_remaps(); //load remaps for resources
-
-		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
-	}
-
 	MAIN_PRINT("Main: Load TextServer");
 
 	/* Setup Text Server */
@@ -3738,6 +3723,23 @@ Error Main::setup2(bool p_show_boot_logo) {
 		}
 	}
 	OS::get_singleton()->benchmark_end_measure("Startup", "Scene");
+
+	MAIN_PRINT("Main: Load Translations and Remaps");
+
+	/* Setup translations and remaps */
+
+	{
+		OS::get_singleton()->benchmark_begin_measure("Startup", "Translations and Remaps");
+
+		translation_server->setup(); //register translations, load them, etc.
+		if (!locale.is_empty()) {
+			translation_server->set_locale(locale);
+		}
+		translation_server->load_project_translations(translation_server->get_main_domain());
+		ResourceLoader::load_translation_remaps(); //load remaps for resources
+
+		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
+	}
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
@@ -5160,6 +5162,10 @@ void Main::cleanup(bool p_force) {
 
 	GDExtensionManager::get_singleton()->shutdown();
 
+	ResourceLoader::clear_translation_remaps();
+
+	memdelete(translation_server);
+
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();
 	}
@@ -5189,8 +5195,6 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->_user_args.clear();
 	OS::get_singleton()->_execpath = "";
 	OS::get_singleton()->_local_clipboard = "";
-
-	ResourceLoader::clear_translation_remaps();
 
 	WorkerThreadPool::get_singleton()->exit_languages_threads();
 
@@ -5271,7 +5275,6 @@ void Main::cleanup(bool p_force) {
 	memdelete(packed_data);
 	memdelete(performance);
 	memdelete(input_map);
-	memdelete(translation_server);
 	memdelete(tsman);
 #ifndef PHYSICS_2D_DISABLED
 	PhysicsServer2DManager::finalize_server_manager();
