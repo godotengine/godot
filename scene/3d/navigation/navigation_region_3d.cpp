@@ -37,6 +37,9 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
 #include "servers/rendering/rendering_server.h"
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_3d/navigation_server_3d_debug.h"
+#endif // DEBUG_ENABLED
 
 RID NavigationRegion3D::get_rid() const {
 	return region;
@@ -56,10 +59,10 @@ void NavigationRegion3D::set_enabled(bool p_enabled) {
 		if (!is_enabled()) {
 			if (debug_mesh.is_valid()) {
 				if (debug_mesh->get_surface_count() > 0) {
-					RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_material()->get_rid());
+					RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_disabled_material()->get_rid());
 				}
 				if (debug_mesh->get_surface_count() > 1) {
-					RS::get_singleton()->instance_set_surface_override_material(debug_instance, 1, NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_material()->get_rid());
+					RS::get_singleton()->instance_set_surface_override_material(debug_instance, 1, NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_edge_disabled_material()->get_rid());
 				}
 			}
 		} else {
@@ -330,7 +333,7 @@ void NavigationRegion3D::_navigation_mesh_changed() {
 	NavigationServer3D::get_singleton()->region_set_navigation_mesh(region, navigation_mesh);
 
 #ifdef DEBUG_ENABLED
-	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+	if (is_inside_tree() && NavigationServer3DDebug::get_singleton()->get_debug_navigation_enabled()) {
 		if (navigation_mesh.is_valid()) {
 			_update_debug_mesh();
 			_update_debug_edge_connections_mesh();
@@ -385,7 +388,7 @@ void NavigationRegion3D::_region_enter_navigation_map() {
 	NavigationServer3D::get_singleton()->region_set_enabled(region, enabled);
 
 #ifdef DEBUG_ENABLED
-	if (NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+	if (NavigationServer3DDebug::get_singleton()->get_debug_navigation_enabled()) {
 		_update_debug_mesh();
 	}
 #endif // DEBUG_ENABLED
@@ -468,7 +471,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 		return;
 	}
 
-	if (!NavigationServer3D::get_singleton()->get_debug_enabled() || !NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+	if (!NavigationServer3DDebug::get_singleton()->get_debug_enabled() || !NavigationServer3DDebug::get_singleton()->get_debug_navigation_enabled()) {
 		if (debug_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(debug_instance, false);
 		}
@@ -502,8 +505,8 @@ void NavigationRegion3D::_update_debug_mesh() {
 		return;
 	}
 
-	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
-	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
+	bool enabled_geometry_face_random_color = NavigationServer3DDebug::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
+	bool enabled_edge_lines = NavigationServer3DDebug::get_singleton()->get_debug_navigation_enable_edge_lines();
 
 	int vertex_count = 0;
 	int line_count = 0;
@@ -531,7 +534,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 		line_vertex_array.resize(line_count);
 	}
 
-	Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+	Color debug_navigation_geometry_face_color = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_color();
 
 	RandomPCG rand;
 	Color polygon_color = debug_navigation_geometry_face_color;
@@ -583,7 +586,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 		}
 	}
 
-	Ref<StandardMaterial3D> face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material();
+	Ref<StandardMaterial3D> face_material = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_material();
 
 	Array face_mesh_array;
 	face_mesh_array.resize(Mesh::ARRAY_MAX);
@@ -595,7 +598,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 	debug_mesh->surface_set_material(0, face_material);
 
 	if (enabled_edge_lines) {
-		Ref<StandardMaterial3D> line_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_material();
+		Ref<StandardMaterial3D> line_material = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_edge_material();
 
 		Array line_mesh_array;
 		line_mesh_array.resize(Mesh::ARRAY_MAX);
@@ -613,10 +616,10 @@ void NavigationRegion3D::_update_debug_mesh() {
 	if (!is_enabled()) {
 		if (debug_mesh.is_valid()) {
 			if (debug_mesh->get_surface_count() > 0) {
-				RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_material()->get_rid());
+				RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_disabled_material()->get_rid());
 			}
 			if (debug_mesh->get_surface_count() > 1) {
-				RS::get_singleton()->instance_set_surface_override_material(debug_instance, 1, NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_material()->get_rid());
+				RS::get_singleton()->instance_set_surface_override_material(debug_instance, 1, NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_edge_disabled_material()->get_rid());
 			}
 		}
 	} else {
@@ -634,7 +637,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 
 #ifdef DEBUG_ENABLED
 void NavigationRegion3D::_update_debug_edge_connections_mesh() {
-	if (!NavigationServer3D::get_singleton()->get_debug_enabled() || !NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+	if (!NavigationServer3DDebug::get_singleton()->get_debug_enabled() || !NavigationServer3DDebug::get_singleton()->get_debug_navigation_enabled()) {
 		if (debug_edge_connections_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(debug_edge_connections_instance, false);
 		}
@@ -713,7 +716,7 @@ void NavigationRegion3D::_update_debug_edge_connections_mesh() {
 		return;
 	}
 
-	Ref<StandardMaterial3D> edge_connections_material = NavigationServer3D::get_singleton()->get_debug_navigation_edge_connections_material();
+	Ref<StandardMaterial3D> edge_connections_material = NavigationServer3DDebug::get_singleton()->get_debug_navigation_edge_connections_material();
 
 	Array mesh_array;
 	mesh_array.resize(Mesh::ARRAY_MAX);
@@ -728,7 +731,7 @@ void NavigationRegion3D::_update_debug_edge_connections_mesh() {
 		RS::get_singleton()->instance_set_scenario(debug_edge_connections_instance, get_world_3d()->get_scenario());
 	}
 
-	bool enable_edge_connections = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_connections();
+	bool enable_edge_connections = NavigationServer3DDebug::get_singleton()->get_debug_navigation_enable_edge_connections();
 	if (!enable_edge_connections) {
 		RS::get_singleton()->instance_set_visible(debug_edge_connections_instance, false);
 	}

@@ -34,6 +34,9 @@
 #include "core/os/rw_lock.h"
 #include "core/templates/rid_owner.h"
 #include "core/variant/type_info.h"
+#ifdef DEBUG_ENABLED
+class NavigationServer2DDebug;
+#endif // DEBUG_ENABLED
 
 class Node;
 class NavigationPolygon;
@@ -316,122 +319,24 @@ protected:
 	static void _bind_compatibility_methods();
 #endif
 
-private:
-	bool debug_enabled = false;
-
 #ifdef DEBUG_ENABLED
-	bool debug_dirty = true;
+public:
+	void emit_navigation_debug_changed();
+	void emit_avoidance_debug_changed();
 
-	bool debug_navigation_enabled = false;
-	bool navigation_debug_dirty = true;
+private:
+	NavigationServer2DDebug *debug = nullptr;
+
+	bool navigation_debug_dirty = false;
 	void _emit_navigation_debug_changed_signal();
 
-	bool debug_avoidance_enabled = false;
-	bool avoidance_debug_dirty = true;
+	bool avoidance_debug_dirty = false;
 	void _emit_avoidance_debug_changed_signal();
-
-	Color debug_navigation_edge_connection_color = Color(1.0, 0.0, 1.0, 1.0);
-	Color debug_navigation_geometry_edge_color = Color(0.5, 1.0, 1.0, 1.0);
-	Color debug_navigation_geometry_face_color = Color(0.5, 1.0, 1.0, 0.4);
-	Color debug_navigation_geometry_edge_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
-	Color debug_navigation_geometry_face_disabled_color = Color(0.5, 0.5, 0.5, 0.4);
-	Color debug_navigation_link_connection_color = Color(1.0, 0.5, 1.0, 1.0);
-	Color debug_navigation_link_connection_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
-	Color debug_navigation_agent_path_color = Color(1.0, 0.0, 0.0, 1.0);
-
-	real_t debug_navigation_agent_path_point_size = 4.0;
-
-	Color debug_navigation_avoidance_agents_radius_color = Color(1.0, 1.0, 0.0, 0.25);
-	Color debug_navigation_avoidance_obstacles_radius_color = Color(1.0, 0.5, 0.0, 0.25);
-
-	Color debug_navigation_avoidance_static_obstacle_pushin_face_color = Color(1.0, 0.0, 0.0, 0.0);
-	Color debug_navigation_avoidance_static_obstacle_pushout_face_color = Color(1.0, 1.0, 0.0, 0.5);
-	Color debug_navigation_avoidance_static_obstacle_pushin_edge_color = Color(1.0, 0.0, 0.0, 1.0);
-	Color debug_navigation_avoidance_static_obstacle_pushout_edge_color = Color(1.0, 1.0, 0.0, 1.0);
-
-	bool debug_navigation_enable_edge_connections = true;
-	bool debug_navigation_enable_edge_lines = true;
-	bool debug_navigation_enable_geometry_face_random_color = true;
-	bool debug_navigation_enable_link_connections = true;
-	bool debug_navigation_enable_agent_paths = true;
-
-	bool debug_navigation_avoidance_enable_agents_radius = true;
-	bool debug_navigation_avoidance_enable_obstacles_radius = true;
-	bool debug_navigation_avoidance_enable_obstacles_static = true;
+#endif // DEBUG_ENABLED
 
 public:
-	void set_debug_navigation_enabled(bool p_enabled);
-	bool get_debug_navigation_enabled() const;
-
-	void set_debug_avoidance_enabled(bool p_enabled);
-	bool get_debug_avoidance_enabled() const;
-
-	void set_debug_navigation_edge_connection_color(const Color &p_color);
-	Color get_debug_navigation_edge_connection_color() const;
-
-	void set_debug_navigation_geometry_face_color(const Color &p_color);
-	Color get_debug_navigation_geometry_face_color() const;
-
-	void set_debug_navigation_geometry_face_disabled_color(const Color &p_color);
-	Color get_debug_navigation_geometry_face_disabled_color() const;
-
-	void set_debug_navigation_geometry_edge_color(const Color &p_color);
-	Color get_debug_navigation_geometry_edge_color() const;
-
-	void set_debug_navigation_geometry_edge_disabled_color(const Color &p_color);
-	Color get_debug_navigation_geometry_edge_disabled_color() const;
-
-	void set_debug_navigation_link_connection_color(const Color &p_color);
-	Color get_debug_navigation_link_connection_color() const;
-
-	void set_debug_navigation_link_connection_disabled_color(const Color &p_color);
-	Color get_debug_navigation_link_connection_disabled_color() const;
-
-	void set_debug_navigation_enable_edge_connections(const bool p_value);
-	bool get_debug_navigation_enable_edge_connections() const;
-
-	void set_debug_navigation_enable_geometry_face_random_color(const bool p_value);
-	bool get_debug_navigation_enable_geometry_face_random_color() const;
-
-	void set_debug_navigation_enable_edge_lines(const bool p_value);
-	bool get_debug_navigation_enable_edge_lines() const;
-
-	void set_debug_navigation_agent_path_color(const Color &p_color);
-	Color get_debug_navigation_agent_path_color() const;
-
-	void set_debug_navigation_enable_agent_paths(const bool p_value);
-	bool get_debug_navigation_enable_agent_paths() const;
-
-	void set_debug_navigation_agent_path_point_size(real_t p_point_size);
-	real_t get_debug_navigation_agent_path_point_size() const;
-
-	void set_debug_navigation_avoidance_enable_agents_radius(const bool p_value);
-	bool get_debug_navigation_avoidance_enable_agents_radius() const;
-
-	void set_debug_navigation_avoidance_enable_obstacles_radius(const bool p_value);
-	bool get_debug_navigation_avoidance_enable_obstacles_radius() const;
-
-	void set_debug_navigation_avoidance_agents_radius_color(const Color &p_color);
-	Color get_debug_navigation_avoidance_agents_radius_color() const;
-
-	void set_debug_navigation_avoidance_obstacles_radius_color(const Color &p_color);
-	Color get_debug_navigation_avoidance_obstacles_radius_color() const;
-
-	void set_debug_navigation_avoidance_static_obstacle_pushin_face_color(const Color &p_color);
-	Color get_debug_navigation_avoidance_static_obstacle_pushin_face_color() const;
-
-	void set_debug_navigation_avoidance_static_obstacle_pushout_face_color(const Color &p_color);
-	Color get_debug_navigation_avoidance_static_obstacle_pushout_face_color() const;
-
-	void set_debug_navigation_avoidance_static_obstacle_pushin_edge_color(const Color &p_color);
-	Color get_debug_navigation_avoidance_static_obstacle_pushin_edge_color() const;
-
-	void set_debug_navigation_avoidance_static_obstacle_pushout_edge_color(const Color &p_color);
-	Color get_debug_navigation_avoidance_static_obstacle_pushout_edge_color() const;
-
-	void set_debug_navigation_avoidance_enable_obstacles_static(const bool p_value);
-	bool get_debug_navigation_avoidance_enable_obstacles_static() const;
-#endif // DEBUG_ENABLED
+	void register_settings();
+	void update_from_settings();
 };
 
 VARIANT_ENUM_CAST(NavigationServer2D::ProcessInfo);

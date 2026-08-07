@@ -38,6 +38,9 @@
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/rendering/rendering_server.h"
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_2d/navigation_server_2d_debug.h"
+#endif // DEBUG_ENABLED
 
 void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationAgent2D::get_rid);
@@ -240,7 +243,7 @@ void NavigationAgent2D::_notification(int p_what) {
 			}
 
 #ifdef DEBUG_ENABLED
-			if (NavigationServer2D::get_singleton()->get_debug_enabled()) {
+			if (NavigationServer2DDebug::get_singleton()->get_debug_enabled()) {
 				debug_path_dirty = true;
 			}
 #endif // DEBUG_ENABLED
@@ -1092,7 +1095,7 @@ void NavigationAgent2D::_update_debug_path() {
 
 	RenderingServer::get_singleton()->canvas_item_clear(debug_path_instance);
 
-	if (!(debug_enabled && NavigationServer2D::get_singleton()->get_debug_navigation_enable_agent_paths())) {
+	if (!(debug_enabled && NavigationServer2DDebug::get_singleton()->get_debug_navigation_enable_agent_paths())) {
 		return;
 	}
 
@@ -1110,7 +1113,7 @@ void NavigationAgent2D::_update_debug_path() {
 		return;
 	}
 
-	Color debug_path_color = NavigationServer2D::get_singleton()->get_debug_navigation_agent_path_color();
+	Color debug_path_color = NavigationServer2DDebug::get_singleton()->get_debug_navigation_agent_path_color();
 	if (debug_use_custom) {
 		debug_path_color = debug_path_custom_color;
 	}
@@ -1125,7 +1128,7 @@ void NavigationAgent2D::_update_debug_path() {
 		return;
 	}
 
-	float point_size = NavigationServer2D::get_singleton()->get_debug_navigation_agent_path_point_size();
+	float point_size = NavigationServer2DDebug::get_singleton()->get_debug_navigation_agent_path_point_size();
 	float half_point_size = point_size * 0.5;
 
 	if (debug_use_custom) {
