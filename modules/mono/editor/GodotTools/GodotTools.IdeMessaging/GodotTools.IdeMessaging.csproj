@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ProjectGuid>{92600954-25F0-4291-8E11-1FEE9FC4BE20}</ProjectGuid>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>9</LangVersion>
+    <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <PackageId>GodotTools.IdeMessaging</PackageId>
     <Version>1.1.2</Version>
@@ -21,6 +21,6 @@ A client using this library is only compatible with servers of the same major ve
     </Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 </Project>
