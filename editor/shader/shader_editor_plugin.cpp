@@ -30,6 +30,7 @@
 
 #include "shader_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "core/variant/variant.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
@@ -60,7 +61,7 @@ void ShaderEditorPlugin::make_visible(bool p_visible) {
 
 void ShaderEditorPlugin::set_current() {
 	shader_dock->make_visible();
-	TextEditorBase *text_shader_editor = Object::cast_to<TextEditorBase>(script_editor->get_current_editor());
+	TextEditorBase *text_shader_editor = Object::cast_to<TextEditorBase>(shader_container->get_current_editor());
 	if (text_shader_editor) {
 		text_shader_editor->ensure_focus();
 	}
@@ -72,7 +73,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 	}
 
 	if (Object::cast_to<Shader>(p_object) || Object::cast_to<ShaderInclude>(p_object)) {
-		script_editor->edit(Object::cast_to<Resource>(p_object), false);
+		shader_container->edit(Object::cast_to<Resource>(p_object), false);
 	}
 }
 
@@ -90,7 +91,7 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 #endif
 
 	if (bool(EDITOR_GET("editors/shader_editor/behavior/files/restore_shaders_on_load"))) {
-		script_editor->set_window_layout(p_layout);
+		shader_container->set_window_layout(p_layout);
 	}
 }
 
@@ -103,11 +104,11 @@ void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 	}
 #endif
 
-	script_editor->get_window_layout(p_layout);
+	shader_container->get_window_layout(p_layout);
 }
 
 String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
-	const PackedStringArray unsaved_scripts = script_editor->get_unsaved_scripts();
+	const PackedStringArray unsaved_scripts = shader_container->get_unsaved_scripts();
 	if (unsaved_scripts.is_empty()) {
 		return String();
 	}
@@ -139,7 +140,7 @@ String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 
 void ShaderEditorPlugin::save_external_data() {
 	if (!EditorNode::get_singleton()->is_exiting()) {
-		script_editor->save_all_scripts();
+		shader_container->save_all_scripts();
 	}
 }
 
@@ -163,9 +164,11 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 
 	make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("shader_editor/make_floating", TTRC("Make Floating"));
 
-	script_editor = memnew(ScriptEditor(config_section, "shader_editor_cache.cfg", nullptr, shader_dock));
-	script_editor->set_handled_resource_types({ "Shader", "VisualShader", "ShaderInclude" });
-	shader_dock->add_child(script_editor);
+	shader_container = memnew(DocumentEditorContainer(false, config_section, "shader_editor_cache.cfg"));
+	shader_container->connect("make_floating", callable_mp(shader_dock, &EditorDock::make_floating));
+	shader_container->set_handled_resource_types({ "Shader", "VisualShader", "ShaderInclude" });
+
+	shader_dock->add_child(shader_container);
 }
 
 ShaderEditorPlugin::~ShaderEditorPlugin() {
