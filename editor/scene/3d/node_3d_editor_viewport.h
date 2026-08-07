@@ -541,6 +541,8 @@ private:
 	void _set_lock_view_rotation(bool p_lock_rotation);
 	void _add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods = SupportedRenderingMethods::ALL, const String &p_tooltip = "");
 
+	real_t _screen_space_selection_cost(const Vector3 &p_center, const float p_radius, const Vector3 &p_pos);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

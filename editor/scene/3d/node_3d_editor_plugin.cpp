@@ -1325,7 +1325,7 @@ void fragment() {
 						nivec * 0.0 + ivec * 0.0,
 						nivec * 0.01 + ivec * 0.0,
 						nivec * 0.01 + ivec * GIZMO_ARROW_OFFSET,
-						nivec * 0.065 + ivec * GIZMO_ARROW_OFFSET,
+						nivec * GIZMO_ARROW_RADIUS + ivec * GIZMO_ARROW_OFFSET,
 						nivec * 0.0 + ivec * (GIZMO_ARROW_OFFSET + GIZMO_ARROW_SIZE),
 					};
 
@@ -1545,10 +1545,10 @@ void fragment() {
 					Vector3 arrow[6] = {
 						nivec * 0.0 + ivec * 0.0,
 						nivec * 0.01 + ivec * 0.0,
-						nivec * 0.01 + ivec * 1.0 * GIZMO_SCALE_OFFSET,
-						nivec * 0.07 + ivec * 1.0 * GIZMO_SCALE_OFFSET,
-						nivec * 0.07 + ivec * 1.11 * GIZMO_SCALE_OFFSET,
-						nivec * 0.0 + ivec * 1.11 * GIZMO_SCALE_OFFSET,
+						nivec * 0.01 + ivec * GIZMO_SCALE_OFFSET,
+						nivec * 0.5 * GIZMO_SCALE_SIZE + ivec * GIZMO_SCALE_OFFSET,
+						nivec * 0.5 * GIZMO_SCALE_SIZE + ivec * (GIZMO_SCALE_OFFSET + GIZMO_SCALE_SIZE),
+						nivec * 0.0 + ivec * (GIZMO_SCALE_OFFSET + GIZMO_SCALE_SIZE),
 					};
 
 					int arrow_sides = 4;
