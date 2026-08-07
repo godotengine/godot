@@ -419,6 +419,13 @@ void GodotBody2D::_update_transform_dependent() {
 	center_of_mass = get_transform().basis_xform(center_of_mass_local);
 }
 
+void GodotBody2D::offset_position_for_ccd(const Vector2 &p_offset) {
+	Transform2D offset_transform = get_transform();
+	offset_transform.set_origin(offset_transform.get_origin() + p_offset);
+	_set_transform(offset_transform);
+	_set_inv_transform(offset_transform.affine_inverse());
+}
+
 void GodotBody2D::integrate_forces(real_t p_step) {
 	if (mode == PS2DE::BODY_MODE_STATIC) {
 		return;

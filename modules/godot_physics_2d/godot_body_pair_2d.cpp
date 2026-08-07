@@ -161,13 +161,11 @@ void GodotBodyPair2D::_validate_contacts() {
 	}
 }
 
-// `_test_ccd` prevents tunneling by slowing down a high velocity body that is about to collide so
+// `_test_ccd` prevents tunneling by moving a high velocity body that is about to collide so
 // that next frame it will be at an appropriate location to collide (i.e. slight overlap).
-// WARNING: The way velocity is adjusted down to cause a collision means the momentum will be
-// weaker than it should for a bounce!
 // Process: Only proceed if body A's motion is high relative to its size.
 // Cast forward along motion vector to see if A is going to enter/pass B's collider next frame, only proceed if it does.
-// Adjust the velocity of A down so that it will just slightly intersect the collider instead of blowing right past it.
+// Adjust the position of A so that it will just slightly intersect the collider instead of blowing right past it.
 bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, const Transform2D &p_xform_A, GodotBody2D *p_B, int p_shape_B, const Transform2D &p_xform_B) {
 	Vector2 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
@@ -230,12 +228,11 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 		}
 	}
 
-	// Shorten the linear velocity so it does not hit, but gets close enough,
-	// next frame will hit softly or soft enough.
+	// Back up the body so that it will hit the proper location in the next integration without changing the velocity.
 	Vector2 hitpos = predicted_xform_B.xform(rpos);
-
 	real_t newlen = hitpos.distance_to(from) + (max - min) * 0.01; // adding 1% of body length to the distance between collision and support point should cause body A's support point to arrive just within B's collider next frame.
-	p_A->set_linear_velocity(mnormal * (newlen / p_step));
+	real_t pos_offset = p_A->get_linear_velocity().length() * p_step - newlen;
+	p_A->offset_position_for_ccd(mnormal * -pos_offset);
 
 	return true;
 }
