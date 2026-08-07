@@ -173,7 +173,7 @@ void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
 	emit_signal(SNAME("object_selected"), p_object);
 }
 
-EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p_arr) {
+EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p_arr, int p_debugger_id) {
 	ERR_FAIL_COND_V(p_arr.is_empty(), nullptr);
 
 	TypedArray<uint64_t> ids;
@@ -203,6 +203,7 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 		remote_objects = memnew(EditorDebuggerRemoteObjects);
 		remote_objects->remote_object_ids = ids;
 		remote_objects->remote_object_ids.make_read_only();
+		remote_objects->debugger_id = p_debugger_id;
 		remote_objects->connect("values_edited", callable_mp(this, &EditorDebuggerInspector::_objects_edited));
 		remote_objects_list.push_back(remote_objects);
 	}
