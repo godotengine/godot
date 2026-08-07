@@ -985,6 +985,69 @@ void DisplayServerWayland::delete_sub_window(DisplayServerEnums::WindowID p_wind
 	_delete_window(p_window_id);
 }
 
+void DisplayServerWayland::window_set_visible(bool p_visible, DisplayServerEnums::WindowID p_window) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.visible == p_visible) {
+		return;
+	}
+
+	if (Engine::get_singleton()->is_embedded_in_editor()) {
+		print_line("Embedded window can't be hidden.");
+		return;
+	}
+
+	bool is_vulkan = (rendering_driver == "vulkan");
+	if (!p_visible) {
+		if (is_vulkan) {
+			if (hovered_window_id == p_window) {
+				_hover_window(DisplayServerEnums::INVALID_WINDOW_ID);
+			}
+
+#ifdef RD_ENABLED
+			if (rendering_device) {
+				rendering_device->screen_free(p_window);
+			}
+
+			if (rendering_context) {
+				rendering_context->window_destroy(p_window);
+			}
+#endif
+
+			if (wd.created) {
+				wayland_thread.window_destroy(p_window);
+				wd.created = false;
+			}
+		} else {
+			wayland_thread.window_set_visible(p_window, false);
+		}
+
+		wd.visible = false;
+	} else {
+		if (is_vulkan) {
+			show_window(p_window);
+		} else {
+			wayland_thread.window_set_visible(p_window, true);
+
+			wayland_thread.window_set_title(p_window, wd.title);
+			wayland_thread.window_set_app_id(p_window, _get_app_id_from_context(context));
+			wayland_thread.window_set_min_size(p_window, wd.min_size);
+			wayland_thread.window_set_max_size(p_window, wd.max_size);
+			wayland_thread.window_set_borderless(p_window, window_get_flag(DisplayServerEnums::WINDOW_FLAG_BORDERLESS, p_window));
+
+			bool ready = wayland_thread.window_wait_ready(p_window, WINDOW_READY_TIMEOUT_MS);
+			if (!ready) {
+				ERR_PRINT(vformat("Could not map window %d: timeout waiting for configure.", p_window));
+				return;
+			}
+
+			wd.visible = true;
+		}
+	}
+}
+
 DisplayServerEnums::WindowID DisplayServerWayland::window_get_active_popup() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -1399,6 +1462,11 @@ bool DisplayServerWayland::window_is_focused(DisplayServerEnums::WindowID p_wind
 
 bool DisplayServerWayland::window_can_draw(DisplayServerEnums::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
+	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
+
+	if (!windows[p_window_id].visible) {
+		return false;
+	}
 
 	uint64_t last_frame_time = wayland_thread.window_get_last_frame_time(p_window_id);
 	uint64_t time_since_frame = OS::get_singleton()->get_ticks_usec() - last_frame_time;
