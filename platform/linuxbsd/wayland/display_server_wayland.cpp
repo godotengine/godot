@@ -879,7 +879,9 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 
 		wd.root_id = root_id;
 
-		if (!window_get_flag(DisplayServerEnums::WINDOW_FLAG_POPUP_WM_HINT, p_window_id)) {
+		bool is_toplevel = !window_get_flag(DisplayServerEnums::WINDOW_FLAG_POPUP_WM_HINT, p_window_id);
+
+		if (is_toplevel) {
 			// NOTE: DO **NOT** KEEP THE POSITION SET FOR TOPLEVELS. Wayland does not
 			// track them and we're gonna get our events transformed in unexpected ways.
 			wd.rect.position = Point2i();
@@ -889,7 +891,6 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 			wayland_thread.window_set_min_size(p_window_id, wd.min_size);
 			wayland_thread.window_set_max_size(p_window_id, wd.max_size);
 			wayland_thread.window_set_app_id(p_window_id, _get_app_id_from_context(context));
-			wayland_thread.window_set_borderless(p_window_id, window_get_flag(DisplayServerEnums::WINDOW_FLAG_BORDERLESS, p_window_id));
 
 			// Since it can't have a position. Let's tell the window node the news by
 			// sending the actual rect to it.
@@ -917,6 +918,11 @@ void DisplayServerWayland::show_window(DisplayServerEnums::WindowID p_window_id)
 			_send_window_event(DisplayServerEnums::WINDOW_EVENT_FORCE_CLOSE, p_window_id);
 
 			return;
+		}
+
+		if (is_toplevel) {
+			// Need to do this after window_wait_ready above to avoid zero-geometry error with libdecor.
+			wayland_thread.window_set_borderless(p_window_id, window_get_flag(DisplayServerEnums::WINDOW_FLAG_BORDERLESS, p_window_id));
 		}
 
 		// NOTE: The XDG shell protocol is built in a way that causes the window to
