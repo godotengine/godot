@@ -470,6 +470,7 @@ public:
 	FUNCRIDSPLIT(skeleton)
 	FUNC3(skeleton_allocate_data, RID, int, bool)
 	FUNC1RC(int, skeleton_get_bone_count, RID)
+	FUNC1RC(RID, skeleton_get_bones_buffer, RID)
 	FUNC3(skeleton_bone_set_transform, RID, int, const Transform3D &)
 	FUNC2RC(Transform3D, skeleton_bone_get_transform, RID, int)
 	FUNC3(skeleton_bone_set_transform_2d, RID, int, const Transform2D &)
@@ -644,6 +645,7 @@ public:
 
 	FUNC1(particles_request_process, RID)
 	FUNC1(particles_restart, RID)
+	FUNC2(particles_set_skeleton, RID, RID)
 	FUNC6(particles_emit, RID, const Transform3D &, const Vector3 &, const Color &, const Color &, uint32_t)
 	FUNC2(particles_set_subemitter, RID, RID)
 	FUNC2(particles_set_collision_base_size, RID, float)

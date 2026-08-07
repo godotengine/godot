@@ -297,6 +297,7 @@ public:
 	virtual RID skeleton_create() = 0;
 	virtual void skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) = 0;
 	virtual int skeleton_get_bone_count(RID p_skeleton) const = 0;
+	virtual RID skeleton_get_bones_buffer(RID p_skeleton) const = 0;
 	virtual void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) = 0;
 	virtual Transform3D skeleton_bone_get_transform(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) = 0;
@@ -470,6 +471,8 @@ public:
 	virtual bool particles_is_inactive(RID p_particles) = 0;
 	virtual void particles_request_process(RID p_particles) = 0;
 	virtual void particles_restart(RID p_particles) = 0;
+
+	virtual void particles_set_skeleton(RID p_particles, RID p_skeleton) = 0;
 
 	virtual void particles_set_subemitter(RID p_particles, RID p_subemitter_particles) = 0;
 
