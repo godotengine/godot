@@ -137,6 +137,70 @@ TEST_CASE("[SceneTree][RichTextLabel] Sizing with fit content") {
 	memdelete(test_label);
 }
 
+// RichTextLabel
+TEST_CASE("[SceneTree][RichTextLabel] append_text simple case") {
+	RichTextLabel *label = memnew(RichTextLabel);
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	label->set_use_bbcode(true);
+
+	label->append_text("Hello, World!");
+	CHECK(label->get_parsed_text() == "Hello, World!");
+
+	memdelete(label);
+}
+
+TEST_CASE("[SceneTree][RichTextLabel] append_text brackets") {
+	RichTextLabel *label = memnew(RichTextLabel);
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	label->set_use_bbcode(true);
+
+	label->set_text("[lb]test");
+	label->append_text("[rb]");
+	CHECK(label->get_parsed_text() == "[test]");
+
+	memdelete(label);
+}
+
+TEST_CASE("[SceneTree][RichTextLabel] append_text with unordered list") {
+	RichTextLabel *label = memnew(RichTextLabel);
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	label->set_use_bbcode(true);
+
+	label->append_text("[ul]item 1[/ul]");
+	CHECK(label->get_parsed_text() == "\titem 1\n");
+
+	label->set_text("");
+	label->append_text("[ul]\n[/ul]");
+	// Should not add extra newlines for empty list items.
+	CHECK(label->get_parsed_text() == "\t\n");
+
+	memdelete(label);
+}
+
+TEST_CASE("[SceneTree][RichTextLabel] append_text mismatched brackets") {
+	RichTextLabel *label = memnew(RichTextLabel);
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	label->set_use_bbcode(true);
+
+	label->set_text("[b]test");
+	label->append_text("[/i]");
+	CHECK(label->get_parsed_text() == "test[/i]");
+
+	memdelete(label);
+}
+
+TEST_CASE("[SceneTree][RichTextLabel] append_text brackets with incorrect case") {
+	RichTextLabel *label = memnew(RichTextLabel);
+	SceneTree::get_singleton()->get_root()->add_child(label);
+	label->set_use_bbcode(true);
+
+	label->set_text("[b]test");
+	label->append_text("[/B]");
+	CHECK(label->get_parsed_text() == "test[/B]");
+
+	memdelete(label);
+}
+
 } // namespace TestRichTextLabel
 
 #endif // ADVANCED_GUI_DISABLED
