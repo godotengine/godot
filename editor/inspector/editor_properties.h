@@ -296,11 +296,12 @@ public:
 
 class EditorPropertyFlags : public EditorProperty {
 	GDCLASS(EditorPropertyFlags, EditorProperty);
-	VBoxContainer *vbox = nullptr;
-	Vector<CheckBox *> flags;
+	MenuButton *menu = nullptr;
+	Vector<String> flag_names;
 	Vector<uint32_t> flag_values;
 
-	void _flag_toggled(int p_index);
+	void _flag_selected(int p_index);
+	void _update_button_text(uint32_t p_value);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
