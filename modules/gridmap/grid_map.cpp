@@ -1280,10 +1280,6 @@ void GridMap::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_visibility();
 		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			_recreate_octant_data();
-		} break;
 	}
 }
 
@@ -1917,6 +1913,10 @@ GridMap::GridMap() {
 	NavigationServer3D::get_singleton()->connect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
 	NavigationServer3D::get_singleton()->connect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));
 #endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
+
+#ifdef DEBUG_ENABLED
+	SceneTree::get_singleton()->connect("_debug_collisions_hint_changed", callable_mp(this, &GridMap::_recreate_octant_data));
+#endif
 }
 
 #ifndef NAVIGATION_3D_DISABLED

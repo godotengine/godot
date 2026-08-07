@@ -283,10 +283,6 @@ void ShapeCast2D::_notification(int p_what) {
 			}
 			_update_shapecast_state();
 		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			queue_redraw();
-		} break;
 	}
 }
 
@@ -488,4 +484,8 @@ void ShapeCast2D::_bind_methods() {
 
 ShapeCast2D::ShapeCast2D() {
 	set_hide_clip_children(true);
+
+#ifdef DEBUG_ENABLED
+	SceneTree::get_singleton()->connect("_debug_collisions_hint_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }

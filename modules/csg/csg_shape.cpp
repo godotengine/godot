@@ -869,6 +869,16 @@ void CSGShape3D::_build_surfaces_default(CSGBrush *p_brush, Vector<CSGShape3D::S
 	}
 }
 
+void CSGShape3D::_debug_collisions_hint_changed() {
+#ifndef PHYSICS_3D_DISABLED
+	if (_is_debug_collision_shape_visible()) {
+		_update_debug_collision_shape();
+	} else {
+		_clear_debug_collision_shape();
+	}
+#endif // PHYSICS_3D_DISABLED
+}
+
 Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
 	Ref<ArrayMesh> baked_mesh;
 	if (is_root_shape() && root_mesh.is_valid()) {
@@ -1062,14 +1072,6 @@ void CSGShape3D::_notification(int p_what) {
 			}
 			_on_transform_changed();
 		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			if (_is_debug_collision_shape_visible()) {
-				_update_debug_collision_shape();
-			} else {
-				_clear_debug_collision_shape();
-			}
-		} break;
 #endif // PHYSICS_3D_DISABLED
 	}
 }
@@ -1224,6 +1226,10 @@ void CSGShape3D::_bind_methods() {
 
 CSGShape3D::CSGShape3D() {
 	set_notify_local_transform(true);
+
+#ifdef DEBUG_ENABLED
+	SceneTree::get_singleton()->connect("_debug_collisions_hint_changed", callable_mp(this, &CSGShape3D::_debug_collisions_hint_changed));
+#endif
 }
 
 CSGShape3D::~CSGShape3D() {

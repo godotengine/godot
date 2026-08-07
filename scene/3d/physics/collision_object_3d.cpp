@@ -140,17 +140,6 @@ void CollisionObject3D::_notification(int p_what) {
 		case NOTIFICATION_ENABLED: {
 			_apply_enabled();
 		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			if (_are_collision_shapes_visible()) {
-				for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
-					debug_shapes_to_update.insert(E.key);
-				}
-				_update_debug_shapes();
-			} else {
-				_clear_debug_shapes();
-			}
-		} break;
 	}
 }
 
@@ -447,6 +436,17 @@ void CollisionObject3D::_clear_debug_shapes() {
 	debug_shapes_count = 0;
 }
 
+void CollisionObject3D::_debug_collisions_hint_changed() {
+	if (_are_collision_shapes_visible()) {
+		for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+			debug_shapes_to_update.insert(E.key);
+		}
+		_update_debug_shapes();
+	} else {
+		_clear_debug_shapes();
+	}
+}
+
 void CollisionObject3D::_on_transform_changed() {
 	if (debug_shapes_count > 0 && !debug_shape_old_transform.is_equal_approx(get_global_transform())) {
 		debug_shape_old_transform = get_global_transform();
@@ -739,6 +739,10 @@ CollisionObject3D::CollisionObject3D(RID p_rid, bool p_area) {
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
 		PhysicsServer3D::get_singleton()->body_set_mode(rid, body_mode);
 	}
+
+#ifdef DEBUG_ENABLED
+	SceneTree::get_singleton()->connect("_debug_collisions_hint_changed", callable_mp(this, &CollisionObject3D::_debug_collisions_hint_changed));
+#endif
 }
 
 void CollisionObject3D::set_capture_input_on_drag(bool p_capture) {

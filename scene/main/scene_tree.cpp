@@ -970,9 +970,7 @@ void SceneTree::set_debug_collisions_hint(bool p_enabled) {
 		return;
 	}
 	debug_collisions_hint = p_enabled;
-	if (root) {
-		root->propagate_notification(Node::NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED);
-	}
+	emit_signal("_debug_collisions_hint_changed");
 }
 
 bool SceneTree::is_debugging_collisions_hint() const {
@@ -1986,6 +1984,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
 	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static())));
+	ADD_SIGNAL(MethodInfo("_debug_collisions_hint_changed"));
 
 	ADD_SIGNAL(MethodInfo("process_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));

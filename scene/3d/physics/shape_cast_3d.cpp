@@ -103,14 +103,6 @@ void ShapeCast3D::_notification(int p_what) {
 				}
 			}
 		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			if (get_tree()->is_debugging_collisions_hint()) {
-				_update_debug_shape();
-			} else {
-				_clear_debug_shape();
-			}
-		} break;
 	}
 }
 
@@ -655,4 +647,18 @@ void ShapeCast3D::_clear_debug_shape() {
 		RenderingServer::get_singleton()->free_rid(debug_mesh->get_rid());
 		debug_mesh = Ref<ArrayMesh>();
 	}
+}
+
+void ShapeCast3D::_debug_collisions_hint_changed() {
+	if (get_tree()->is_debugging_collisions_hint()) {
+		_update_debug_shape();
+	} else {
+		_clear_debug_shape();
+	}
+}
+
+ShapeCast3D::ShapeCast3D() {
+#ifdef DEBUG_ENABLED
+	SceneTree::get_singleton()->connect("_debug_collisions_hint_changed", callable_mp(this, &ShapeCast3D::_debug_collisions_hint_changed));
+#endif
 }
