@@ -38,6 +38,7 @@
 
 void AnimationNodeStateMachineTransition::set_switch_mode(SwitchMode p_mode) {
 	switch_mode = p_mode;
+	notify_property_list_changed();
 }
 
 AnimationNodeStateMachineTransition::SwitchMode AnimationNodeStateMachineTransition::get_switch_mode() const {
@@ -111,6 +112,15 @@ Ref<Curve> AnimationNodeStateMachineTransition::get_xfade_curve() const {
 	return xfade_curve;
 }
 
+void AnimationNodeStateMachineTransition::set_sync_mapping_curve(const Ref<Curve> &p_curve) {
+	sync_mapping_curve = p_curve;
+	emit_changed();
+}
+
+Ref<Curve> AnimationNodeStateMachineTransition::get_sync_mapping_curve() const {
+	return sync_mapping_curve;
+}
+
 void AnimationNodeStateMachineTransition::set_break_loop_at_end(bool p_enable) {
 	break_loop_at_end = p_enable;
 	emit_changed();
@@ -160,6 +170,9 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_reset", "reset"), &AnimationNodeStateMachineTransition::set_reset);
 	ClassDB::bind_method(D_METHOD("is_reset"), &AnimationNodeStateMachineTransition::is_reset);
 
+	ClassDB::bind_method(D_METHOD("set_sync_mapping_curve", "curve"), &AnimationNodeStateMachineTransition::set_sync_mapping_curve);
+	ClassDB::bind_method(D_METHOD("get_sync_mapping_curve"), &AnimationNodeStateMachineTransition::get_sync_mapping_curve);
+
 	ClassDB::bind_method(D_METHOD("set_priority", "priority"), &AnimationNodeStateMachineTransition::set_priority);
 	ClassDB::bind_method(D_METHOD("get_priority"), &AnimationNodeStateMachineTransition::get_priority);
 
@@ -175,6 +188,7 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
 	ADD_GROUP("Switch", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End"), "set_switch_mode", "get_switch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sync_mapping_curve", PROPERTY_HINT_RESOURCE_TYPE, "", PROPERTY_USAGE_NONE, Curve::get_class_static()), "set_sync_mapping_curve", "get_sync_mapping_curve"); // Add this dynamic property here so doctool finds it
 	ADD_GROUP("Advance", "advance_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "advance_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Auto"), "set_advance_mode", "get_advance_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
@@ -189,6 +203,30 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	BIND_ENUM_CONSTANT(ADVANCE_MODE_AUTO);
 
 	ADD_SIGNAL(MethodInfo("advance_condition_changed"));
+}
+
+bool AnimationNodeStateMachineTransition::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "sync_mapping_curve") {
+		set_sync_mapping_curve(p_value);
+		return true;
+	}
+
+	return false;
+}
+
+bool AnimationNodeStateMachineTransition::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "sync_mapping_curve") {
+		r_ret = get_sync_mapping_curve();
+		return true;
+	}
+
+	return false;
+}
+
+void AnimationNodeStateMachineTransition::_get_property_list(List<PropertyInfo> *p_list) const {
+	// Conditionally display "Sync mapping curve" if switch_mode is "Sync"
+	p_list->push_back(PropertyInfo(Variant::STRING, "Switch", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP)); // Display under "Switch" group
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "sync_mapping_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static(), switch_mode == SwitchMode::SWITCH_MODE_SYNC ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_NO_EDITOR));
 }
 
 AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
@@ -989,7 +1027,28 @@ bool AnimationNodeStateMachinePlayback::_transition_to_next_recursive(AnimationN
 
 		AnimationNodeInstance *other_instance = p_instance.get_child_instance_by_path_or_null(current);
 		if (next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
-			pi.time = current_nti.position;
+			double position = current_nti.position;
+			if (next.sync_mapping_curve.is_valid()) {
+				// A sync mapping curve is specified, so remap the current time using this curve and the next state length
+				pi.time = 0;
+				pi.is_external_seeking = false;
+				pi.weight = 0;
+				pi.seeked = next.is_reset;
+				AnimationNode::NodeTimeInfo next_nti = p_state_machine->blend_node(p_process_state, p_instance, other_instance, pi, AnimationNode::FILTER_IGNORE, true, true); // Just retrieve remain length, don't process.
+
+				double current_alpha = 0.0;
+				if (std::abs(current_nti.length) >= CMP_EPSILON) {
+					current_alpha = current_nti.position / current_nti.length;
+				}
+				current_alpha = CLAMP(current_alpha, 0.0, 1.0);
+
+				double next_alpha = next.sync_mapping_curve->sample_baked(current_alpha);
+				next_alpha = CLAMP(next_alpha, 0.0, 1.0);
+
+				position = next_alpha * next_nti.length;
+			}
+
+			pi.time = position;
 			pi.seeked = true;
 			pi.is_external_seeking = false;
 			pi.weight = 0;
@@ -1089,6 +1148,7 @@ AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_
 				next.switch_mode = ref_transition->get_switch_mode();
 				next.is_reset = ref_transition->is_reset();
 				next.break_loop_at_end = ref_transition->is_loop_broken_at_end();
+				next.sync_mapping_curve = ref_transition->get_sync_mapping_curve();
 			}
 		}
 	} else {
@@ -1119,6 +1179,7 @@ AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_
 			next.switch_mode = ref_transition->get_switch_mode();
 			next.is_reset = ref_transition->is_reset();
 			next.break_loop_at_end = ref_transition->is_loop_broken_at_end();
+			next.sync_mapping_curve = ref_transition->get_sync_mapping_curve();
 		}
 	}
 
