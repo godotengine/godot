@@ -199,6 +199,20 @@ PackedStringArray Decal::get_configuration_warnings() const {
 	return warnings;
 }
 
+#ifdef TOOLS_ENABLED
+void Decal::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_EDITOR_CREATED: {
+			// Set improved defaults for newly created Decal nodes in the editor.
+			// This does not affect Decals created by code, or Decals created in older versions of Godot.
+			set_size(Vector3(2.0, 1.0, 2.0));
+			set_upper_fade(0.0);
+			set_lower_fade(0.0);
+		} break;
+	}
+}
+#endif
+
 void Decal::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Decal::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &Decal::get_size);
