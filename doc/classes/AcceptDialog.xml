@@ -60,6 +60,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="clamp_to_embedder" type="bool" setter="set_clamp_to_embedder" getter="is_clamped_to_embedder" overrides="Window" default="true" />
 		<member name="dialog_autowrap" type="bool" setter="set_autowrap" getter="has_autowrap" default="false">
 			Sets autowrapping for the text in the dialog.
 		</member>
