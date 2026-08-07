@@ -147,6 +147,7 @@ GDScriptParser::GDScriptParser() {
 		register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 		register_annotation(MethodInfo("@static_unload"), AnnotationInfo::SCRIPT, &GDScriptParser::static_unload_annotation);
 		register_annotation(MethodInfo("@abstract"), AnnotationInfo::SCRIPT | AnnotationInfo::CLASS | AnnotationInfo::FUNCTION, &GDScriptParser::abstract_annotation);
+		register_annotation(MethodInfo("@editor_allow_animation_call"), AnnotationInfo::FUNCTION, &GDScriptParser::editor_allow_animation_call_annotation);
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Export annotations.
@@ -4525,6 +4526,23 @@ bool GDScriptParser::abstract_annotation(AnnotationNode *p_annotation, Node *p_t
 		return true;
 	}
 	ERR_FAIL_V_MSG(false, R"("@abstract" annotation can only be applied to classes and functions.)");
+}
+
+bool GDScriptParser::editor_allow_animation_call_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::FUNCTION, false, R"("@editor_allow_animation_call" annotation can only be applied to functions.)");
+
+	if (!_is_tool) {
+		push_error(R"("@editor_allow_animation_call" annotation can only be used in a tool script.)", p_annotation);
+		return false;
+	}
+
+	FunctionNode* function_node = static_cast<FunctionNode*>(p_target);
+	if (function_node->editor_allow_animation_call) {
+		push_error(R"("@editor_allow_animation_call" annotation can only be used once per function.)", p_annotation);
+		return false;
+	}
+	function_node->editor_allow_animation_call = true;
+	return true;
 }
 
 bool GDScriptParser::onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
