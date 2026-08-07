@@ -347,7 +347,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							scr = scr->base.ptr();
 						}
 
-						if (nc && (identifier == CoreStringName(free_) || ClassDB::has_signal(nc->get_name(), identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
+						if (nc && (identifier == CoreStringName(free_) || nc->get_type()->get_signal_map().has(identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
 							// Get like it was a property.
 							GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
 							GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
@@ -377,10 +377,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 						// Class C++ integer constant.
 						if (nc) {
-							bool success = false;
-							int64_t constant = ClassDB::get_integer_constant(nc->get_name(), identifier, &success);
-							if (success) {
-								return codegen.add_constant(constant);
+							if (const int64_t *constant = nc->get_type()->get_integer_constant_map().getptr(identifier)) {
+								return codegen.add_constant(*constant);
 							}
 						}
 
