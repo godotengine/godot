@@ -603,6 +603,8 @@ namespace Godot.NativeInterop
 
         internal static partial void godotsharp_err_print_error(in godot_string p_function, in godot_string p_file, int p_line, in godot_string p_error, in godot_string p_message = default, godot_bool p_editor_notify = godot_bool.False, godot_error_handler_type p_type = godot_error_handler_type.ERR_HANDLER_ERROR);
 
+        internal static partial void godotsharp_internal_os_print_error(in godot_string p_message, godot_error_handler_type p_type = godot_error_handler_type.ERR_HANDLER_ERROR);
+
         // Object
 
         public static partial void godotsharp_object_to_string(IntPtr ptr, out godot_string r_str);
