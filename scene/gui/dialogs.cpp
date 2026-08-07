@@ -38,6 +38,10 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/settings/editor_settings.h"
+#endif
+
 // AcceptDialog
 
 void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
@@ -45,6 +49,17 @@ void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 		_cancel_pressed();
 	}
 	Window::_input_from_window(p_event);
+}
+
+Rect2i AcceptDialog::_popup_adjust_rect() const {
+	Rect2i rect = Window::_popup_adjust_rect();
+#ifdef TOOLS_ENABLED
+	rect = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", this->get_class_name(), Rect2i());
+	if (rect != Rect2i()) {
+		return rect;
+	}
+#endif
+	return rect;
 }
 
 void AcceptDialog::_parent_focused() {
@@ -78,6 +93,9 @@ void AcceptDialog::_notification(int p_what) {
 					parent_visible->connect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 				}
 			} else {
+#ifdef TOOLS_ENABLED
+				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", this->get_class_name(), Rect2i(get_position(), get_size()));
+#endif
 				popped_up = false;
 				if (parent_visible) {
 					parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));

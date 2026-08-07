@@ -75,6 +75,7 @@ class AcceptDialog : public Window {
 protected:
 	virtual Size2 _get_contents_minimum_size() const override;
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
+	virtual Rect2i _popup_adjust_rect() const override;
 	virtual void _post_popup() override;
 
 	void _notification(int p_what);
