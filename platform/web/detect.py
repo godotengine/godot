@@ -79,6 +79,7 @@ def get_flags():
     return {
         "arch": "wasm32",
         "target": "template_debug",
+        "supported": ["library"],
         "builtin_pcre2_with_jit": False,
         "vulkan": False,
         # Embree is heavy and requires too much memory (GH-70621).
@@ -293,11 +294,13 @@ def configure(env: "SConsEnvironment"):
             env["proxy_to_pthread"] = False
 
         env.Append(CPPDEFINES=["WEB_DLINK_ENABLED"])
+        env.extra_suffix = ".dlink" + env.extra_suffix
+
+    if env["dlink_enabled"] or env["library_type"] == "shared_library":
         env.Append(CCFLAGS=["-sSIDE_MODULE=2"])
         env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
         env.Append(CCFLAGS=["-fvisibility=hidden"])
         env.Append(LINKFLAGS=["-fvisibility=hidden"])
-        env.extra_suffix = ".dlink" + env.extra_suffix
 
     env.Append(LINKFLAGS=["-sWASM_BIGINT"])
     env.Append(CCFLAGS=[f"-sMEMORY64={0 if env['arch'] == 'wasm32' else 1}"])
