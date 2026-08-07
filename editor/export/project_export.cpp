@@ -421,8 +421,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		export_texture_format_error->hide();
 	}
 
-	String enc_in_filters_str = current->get_enc_in_filter();
-	String enc_ex_filters_str = current->get_enc_ex_filter();
+	String enc_in_filters_str = current->get_enc_in_filters_str();
+	String enc_ex_filters_str = current->get_enc_ex_filters_str();
 	if (!updating_enc_filters) {
 		enc_in_filters->set_text(enc_in_filters_str);
 		enc_ex_filters->set_text(enc_ex_filters_str);
@@ -658,8 +658,8 @@ void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
-	current->set_enc_in_filter(enc_in_filters->get_text());
-	current->set_enc_ex_filter(enc_ex_filters->get_text());
+	current->set_enc_in_filters_str(enc_in_filters->get_text());
+	current->set_enc_ex_filters_str(enc_ex_filters->get_text());
 
 	updating_enc_filters = true;
 	_update_current_preset();
@@ -807,8 +807,8 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_patch_delta_include_filter(current->get_patch_delta_include_filter());
 	preset->set_patch_delta_exclude_filter(current->get_patch_delta_exclude_filter());
 	preset->set_custom_features(current->get_custom_features());
-	preset->set_enc_in_filter(current->get_enc_in_filter());
-	preset->set_enc_ex_filter(current->get_enc_ex_filter());
+	preset->set_enc_in_filters_str(current->get_enc_in_filters_str());
+	preset->set_enc_ex_filters_str(current->get_enc_ex_filters_str());
 	preset->set_enc_pck(current->get_enc_pck());
 	preset->set_enc_directory(current->get_enc_directory());
 	preset->set_script_encryption_key(current->get_script_encryption_key());
