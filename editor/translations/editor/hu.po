@@ -48,13 +48,15 @@
 # Tallyrald <tally.github@gmail.com>, 2026.
 # Csala Péter <csalapeter@protonmail.com>, 2026.
 # Lenom Tom <lenombusinesshehe69@gmail.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# Tamás Nagy-Pál <taymosh000@yahoo.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-01 16:01+0000\n"
-"Last-Translator: Csala Péter <csalapeter@protonmail.com>\n"
+"PO-Revision-Date: 2026-08-03 10:02+0000\n"
+"Last-Translator: Tamás Nagy-Pál <taymosh000@yahoo.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -62,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -2055,6 +2057,9 @@ msgstr "Figyelmeztetés: AnimationPlayer inaktív"
 msgid "Toggle between the bezier curve editor and track editor."
 msgstr "Váltás a beziér-görbe szerkesztő és a sávszerkesztő között."
 
+msgid "Toggle method names"
+msgstr "Metódus nevek ki/bekapcsolása"
+
 msgid "Toggle function names in the track editor."
 msgstr "A sávszerkesztőbeli függvényneveket kapcsolja."
 
@@ -2080,6 +2085,9 @@ msgstr "Beillesztés az aktuális időpontnál."
 msgid "Apply snapping to timeline cursor."
 msgstr "Idővonal kurzorjához igazítás."
 
+msgid "Apply snapping to selected key(s)."
+msgstr "Kiválasztott kulcs(ok) rácshoz igazítása."
+
 msgid "Apply snapping to the nearest integer FPS."
 msgstr "A legközelebbi egész számú FPS-re igazítás."
 
@@ -2097,6 +2105,9 @@ msgstr "Snap Mód"
 
 msgid "Zoom"
 msgstr "Zoom"
+
+msgid "Fit to panel"
+msgstr "Kerethez igazítás"
 
 msgid "Auto Fit"
 msgstr "Automatikus Illesztés"
@@ -2125,11 +2136,14 @@ msgstr "Kezdeti Eltolás Beállítása (Audió)"
 msgid "Set End Offset (Audio)"
 msgstr "Végeltolás Beállítása (Audió)"
 
+msgid "Cut Selected Keys"
+msgstr "Kiválasztott Kulcs(ok) Kivágása"
+
 msgid "Copy Selected Keys"
 msgstr "Kiválasztott Kulcsok Másolása"
 
 msgid "Paste Keys"
-msgstr "Kulcsok beillesztése"
+msgstr "Kulcsok Beillesztése"
 
 msgid "Move First Selected Key to Cursor"
 msgstr "Először Kijelölt Kulcs Kurzorhoz Mozgatása"
@@ -2145,6 +2159,12 @@ msgstr "Ugrás a Következő Lépésre"
 
 msgid "Go to Previous Step"
 msgstr "Ugrás az Előző Lépésre"
+
+msgid "Go to Next Keyframe"
+msgstr "Ugrás a Következő Kulcshoz"
+
+msgid "Go to Previous Keyframe"
+msgstr "Ugrás az Előző Kulcshoz"
 
 msgid "Add tracks to RESET"
 msgstr "Sávok RESET-hez adása"
@@ -8167,6 +8187,9 @@ msgstr "Rácsra Illesztés"
 msgid "Subdivision"
 msgstr "Felosztás"
 
+msgid "Polygon %d"
+msgstr "Sokszögek %d"
+
 msgid "One Way"
 msgstr "Egyirányú"
 
@@ -9716,13 +9739,6 @@ msgid ""
 msgstr ""
 "Szétválasztja a kijelölt node-ot és annak gyermekeit. A gyermek node-ok "
 "önállóvá válnak 2D és 3D nézetben."
-
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"LMB+Húzás: Távolságmérés két pont között.\n"
-"Shift+LMB+Húzás: Komponensmérések megjelenítése."
 
 msgid "Ruler Mode"
 msgstr "Vonalzó mód"

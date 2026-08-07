@@ -161,13 +161,14 @@
 # Valentin Romanutti <valentinromanutti@gmail.com>, 2026.
 # Segundo <segudlq@gmail.com>, 2026.
 # Libre <6n0n1m0s@proton.me>, 2026.
+# Pedro Bartolomei <bartolomeip16@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-02 18:23+0000\n"
-"Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2026-07-24 20:42+0000\n"
+"Last-Translator: Alejandro Moctezuma <moctezumaalejandro25@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -175,7 +176,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.1.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "Aceptar"
@@ -1826,7 +1827,7 @@ msgstr "Balanceado"
 
 msgctxt "Bezier Handle Mode"
 msgid "Mirrored"
-msgstr "Reflejados"
+msgstr "Reflejado"
 
 msgid "Handle mode: %s"
 msgstr "Modo de Manipulador: %s"
@@ -1957,15 +1958,15 @@ msgstr ""
 
 msgctxt "Transition Type"
 msgid "Linear"
-msgstr "Linear"
+msgstr "Lineal"
 
 msgctxt "Transition Type"
 msgid "Quint"
-msgstr "Quint"
+msgstr "Quíntico"
 
 msgctxt "Transition Type"
 msgid "Quart"
-msgstr "Quart"
+msgstr "Cuártica"
 
 msgctxt "Transition Type"
 msgid "Quad"
@@ -1973,47 +1974,47 @@ msgstr "Quad"
 
 msgctxt "Transition Type"
 msgid "Expo"
-msgstr "Expo"
+msgstr "Exponencial"
 
 msgctxt "Transition Type"
 msgid "Elastic"
-msgstr "Elastic"
+msgstr "Elástica"
 
 msgctxt "Transition Type"
 msgid "Cubic"
-msgstr "Cubic"
+msgstr "Cubica"
 
 msgctxt "Transition Type"
 msgid "Circ"
-msgstr "Circ"
+msgstr "Circular"
 
 msgctxt "Transition Type"
 msgid "Bounce"
-msgstr "Bounce"
+msgstr "Rebote"
 
 msgctxt "Transition Type"
 msgid "Back"
-msgstr "Back"
+msgstr "Retroceso"
 
 msgctxt "Transition Type"
 msgid "Spring"
-msgstr "Spring"
+msgstr "Resorte"
 
 msgctxt "Ease Type"
 msgid "Ease In"
-msgstr "Ease In"
+msgstr "Entrada Suave"
 
 msgctxt "Ease Type"
 msgid "Ease Out"
-msgstr "Ease Out"
+msgstr "Salida Suave"
 
 msgctxt "Ease Type"
 msgid "Ease In-Out"
-msgstr "Ease In-Out"
+msgstr "Entrada y salida suaves"
 
 msgctxt "Ease Type"
 msgid "Ease Out-In"
-msgstr "Ease Out-In"
+msgstr "Salida Suave"
 
 msgid "Change Animation Step"
 msgstr "Cambiar Paso de Animación"
@@ -9140,7 +9141,7 @@ msgstr "Nueva Ventana"
 
 msgctxt "Application"
 msgid "Project Manager"
-msgstr "Administrador de Proyectos"
+msgstr "Gestor de proyectos"
 
 msgid "You don't have any projects yet."
 msgstr "Aún no tienes ningún proyecto."
@@ -13162,13 +13163,6 @@ msgstr ""
 
 msgid "Ungroup"
 msgstr "Desagrupar"
-
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"LMB+Arrastrar: Medir la distancia entre dos puntos.\n"
-"Shift+LMB+Arrastrar: Mostrar medidas de los componentes."
 
 msgid "Ruler Mode"
 msgstr "Modo de Regla"
@@ -17346,7 +17340,7 @@ msgid "Autoload"
 msgstr "Autoload"
 
 msgid "Shader Globals"
-msgstr "Shaders Globales"
+msgstr "Globales de Shaders"
 
 msgid "Plugins"
 msgstr "Plugins"
@@ -18234,7 +18228,7 @@ msgstr "Mismo"
 
 msgctxt "Transition Time Position"
 msgid "Start"
-msgstr "Iniciar"
+msgstr "Inicio"
 
 msgctxt "Transition Time Position"
 msgid "Prev"

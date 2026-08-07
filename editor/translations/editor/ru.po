@@ -237,13 +237,14 @@
 # Viktor Antonov <vijorich@mail.ru>, 2026.
 # kureca <deviantart189@gmail.com>, 2026.
 # Артур <atter192837@gmail.com>, 2026.
+# DatVex <kinorealme241@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-28 14:13+0000\n"
-"Last-Translator: JekSun97 <jeksun2022@gmail.com>\n"
+"PO-Revision-Date: 2026-07-15 06:32+0000\n"
+"Last-Translator: DatVex <kinorealme241@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -252,7 +253,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -10568,6 +10569,16 @@ msgstr ""
 msgid "Scene Picker"
 msgstr "Выбор сцены"
 
+msgid ""
+"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
+"2D editor's viewport.\n"
+"Holding Ctrl enables picking from the 2D editor's viewport."
+msgstr ""
+"Если эта опция включена, вы можете выбирать сцены из панели Файловая система, "
+"панели Сцена или из области просмотра 2D-редактора.\n"
+"Удерживая нажатой клавишу Ctrl, вы можете выбирать сцены из области просмотра "
+"2D-редактора."
+
 msgid "Edit Properties"
 msgstr "Редактировать свойства"
 
@@ -10585,6 +10596,14 @@ msgstr "Привязка к центру ячейки сетки"
 
 msgid "Allow Overlapping"
 msgstr "Разрешить перекрытие"
+
+msgid ""
+"Allow painting over existing painted scenes.\n"
+"Hold Shift while painting to temporarily toggle this option."
+msgstr ""
+"Разрешить рисование поверх уже существующих нарисованных сцен.\n"
+"Удерживайте клавишу Shift во время рисования, чтобы временно переключить эту "
+"опцию."
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "У этого скелета нет костей, создайте дочерние узлы Bone2D."
@@ -12249,6 +12268,13 @@ msgid "The transform to apply to the item's mesh."
 msgstr "Преобразование, которое будет применено к сетке элемента."
 
 msgid ""
+"The shadow casting mode used by the item's mesh. See [enum "
+"RenderingServer.ShadowCastingSetting]."
+msgstr ""
+"Режим отбрасывания теней, используемый сеткой элемента. См. [enum "
+"RenderingServer.ShadowCastingSetting]."
+
+msgid ""
 "The item's collision shapes.\n"
 "The array should consist of [Shape3D] objects, each followed by a "
 "[Transform3D] that will be applied to it. For shapes that should not have a "
@@ -12272,6 +12298,15 @@ msgid "The texture to use as the item's preview icon in the editor."
 msgstr ""
 "Текстура, используемая в качестве значка предварительного просмотра элемента "
 "в редакторе."
+
+msgid ""
+"No items found inside the MeshLibrary.\n"
+"You can add some by using the Add button on the left, or by importing them "
+"from a scene file via the Import menu."
+msgstr ""
+"В MeshLibrary не найдено элементов.\n"
+"Вы можете добавить их с помощью кнопки «Добавить» слева или импортировать их "
+"из файла сцены через меню «Импорт»."
 
 msgid "Apply without Transforms"
 msgstr "Применить без преобразований"
@@ -13122,13 +13157,6 @@ msgstr ""
 
 msgid "Ungroup"
 msgstr "Разгруппировать"
-
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"ЛКМ+Перетаскивание: Измерение расстояния между двумя точками.\n"
-"Shift+ЛКМ+Перетаскивание: Отображение размеров компонентов."
 
 msgid "Ruler Mode"
 msgstr "Режим измерения"
@@ -22551,6 +22579,9 @@ msgstr "Применить сброс анимации"
 msgid "No playback resource set at path: %s."
 msgstr "По пути нет ресурсов воспроизведения: %s."
 
+msgid "Nothing connected to input %d."
+msgstr "Ничего не подключено к входу %d."
+
 msgid "No root AnimationNode for the graph is set."
 msgstr "Не задан корневой AnimationNode для графа."
 
@@ -22667,6 +22698,14 @@ msgstr ""
 
 msgid "%s can not be dropped here. Use %s to cancel."
 msgstr "%s нельзя перетащить сюда. Используйте %s для отмены."
+
+msgid ""
+"Labels with autowrapping enabled must have a positive custom minimum or "
+"maximum width configured to work correctly."
+msgstr ""
+"Для правильной работы текстовых меток с включенным автоматическим переносом "
+"строк необходимо настроить положительную пользовательскую минимальную или "
+"максимальную ширину."
 
 msgid ""
 "The current font does not support rendering one or more characters used in "

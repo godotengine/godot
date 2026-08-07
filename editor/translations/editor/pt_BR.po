@@ -215,13 +215,15 @@
 # Maíra Alves Rodrigues <contato@mairarodrigues.org>, 2026.
 # Artur Alves Coqueiro <arturalvescoqueiro@proton.me>, 2026.
 # Marco André Babinski <mab.babinski@gmail.com>, 2026.
+# Kawoshi <kawoshi@users.noreply.hosted.weblate.org>, 2026.
+# Jonathan M <jonathan2007toledo@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2026-06-22 13:01+0000\n"
-"Last-Translator: Marco André Babinski <mab.babinski@gmail.com>\n"
+"PO-Revision-Date: 2026-07-21 23:38+0000\n"
+"Last-Translator: Jonathan M <jonathan2007toledo@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -229,7 +231,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -256,7 +258,7 @@ msgid "File not found"
 msgstr "Arquivo não encontrado"
 
 msgid "File: Bad drive"
-msgstr "Arquivo: disco incorreto"
+msgstr "Arquivo: disco errado"
 
 msgid "File: Bad path"
 msgstr "Arquivo: caminho incorreto"
@@ -13087,13 +13089,6 @@ msgstr ""
 msgid "Ungroup"
 msgstr "Desagrupar"
 
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"Clique Esquerdo+Arrastar: Medir a distância entre dois pontos em 3D.\n"
-"Shift+Esquerdo+Arrastar: Mostrar medidas do componente."
-
 msgid "Ruler Mode"
 msgstr "Modo de Régua"
 
@@ -16536,7 +16531,7 @@ msgid "SIL Graphite Fonts"
 msgstr "Fontes Grafite SIL"
 
 msgid "Multi-channel Signed Distance Field Font Rendering"
-msgstr "Renderização de Fonte de Campo de Distância com Sinal Multicanal (MSDF)"
+msgstr "Renderização de Fonte de Campo de Distância Assinado Multicanal"
 
 msgid ""
 "3D Nodes as well as RenderingServer access to 3D features.\n"

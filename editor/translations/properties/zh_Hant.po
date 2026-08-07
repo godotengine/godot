@@ -53,12 +53,13 @@
 # RogerFang <newlag@gmail.com>, 2025.
 # Wei-Fu Chen <410477jimmy@gmail.com>, 2026.
 # 李奕寯 <eugenelego88@gmail.com>, 2026.
+# Dachi <hello.ch126@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-01 16:01+0000\n"
+"PO-Revision-Date: 2026-08-04 12:17+0000\n"
 "Last-Translator: 李奕寯 <eugenelego88@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hant/>\n"
@@ -67,16 +68,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.1.dev0\n"
 
 msgid "Application"
-msgstr "應用"
+msgstr "應用程式"
 
 msgid "Config"
-msgstr "設置"
+msgstr "組態"
 
 msgid "Name"
-msgstr "Name"
+msgstr "名稱"
 
 msgid "Name Localized"
 msgstr "名稱在地化"
@@ -141,6 +142,9 @@ msgstr "無障礙支援"
 msgid "Updates per Second"
 msgstr "每秒更新次數"
 
+msgid "Accessibility Driver"
+msgstr "無障礙驅動程式"
+
 msgid "Display"
 msgstr "顯示"
 
@@ -169,7 +173,7 @@ msgid "Initial Screen"
 msgstr "初始螢幕"
 
 msgid "Resizable"
-msgstr "可調整大小的"
+msgstr "可調整大小"
 
 msgid "Borderless"
 msgstr "無邊框"
@@ -196,7 +200,7 @@ msgid "Maximize Disabled"
 msgstr "禁用最大化"
 
 msgid "Window Width Override"
-msgstr "窗口寬度覆蓋"
+msgstr "視窗寬度覆蓋"
 
 msgid "Window Height Override"
 msgstr "視窗高度覆蓋"
@@ -257,6 +261,9 @@ msgstr "iOS"
 
 msgid "Session Category"
 msgstr "工作階段分類"
+
+msgid "Mix with Others"
+msgstr "允許混合音訊"
 
 msgid "Subwindows"
 msgstr "子視窗"
@@ -382,7 +389,10 @@ msgid "Tooltip Delay (sec)"
 msgstr "工具提示延遲（毫秒）"
 
 msgid "Common"
-msgstr "常見"
+msgstr "一般"
+
+msgid "Drag Threshold"
+msgstr "拖曳觸發門檻（px）"
 
 msgid "Snap Controls to Pixels"
 msgstr "將控件對齊到像素"
@@ -397,7 +407,7 @@ msgid "Use Oversampling"
 msgstr "使用過取樣"
 
 msgid "Rendering Device"
-msgstr "算繪設備"
+msgstr "算繪裝置"
 
 msgid "V-Sync"
 msgstr "垂直同步"
@@ -440,6 +450,9 @@ msgstr "各池最大描述符數"
 
 msgid "D3D12"
 msgstr "D3D12"
+
+msgid "Max Resource Descriptors"
+msgstr "最大資源描述符數量"
 
 msgid "Agility SDK Version"
 msgstr "Agility SDK 版本"
@@ -573,6 +586,9 @@ msgstr "以觸控模擬滑鼠"
 msgid "Emulate Touch From Mouse"
 msgstr "以滑鼠模擬觸控"
 
+msgid "Ignore Joypad on Unfocused Application"
+msgstr "忽略未聚焦於應用程式的手把"
+
 msgid "Legacy Just Pressed Behavior"
 msgstr "舊式剛按下的行為"
 
@@ -591,11 +607,14 @@ msgstr "啟用陀螺儀"
 msgid "Enable Magnetometer"
 msgstr "啟用磁力感測器"
 
+msgid "Joypads"
+msgstr "手把"
+
 msgid "Device"
 msgstr "裝置"
 
 msgid "Window ID"
-msgstr "視窗ID"
+msgstr "視窗 ID"
 
 msgid "Command or Control Autoremap"
 msgstr "自動重對映 Command 和 Ctrl"
@@ -1243,7 +1262,7 @@ msgid "Shape Type"
 msgstr "形狀型別"
 
 msgid "Physics Material Override"
-msgstr "物理材質覆蓋"
+msgstr "物理材質覆寫"
 
 msgid "Layer"
 msgstr "圖層"
@@ -1966,17 +1985,20 @@ msgstr "主要字體大小"
 msgid "Code Font Size"
 msgstr "程式碼字體大小"
 
+msgid "Main Font Custom OpenType Features"
+msgstr "主要字體自訂 OpenType 功能"
+
 msgid "Code Font Contextual Ligatures"
 msgstr "程式碼字體前後合字"
 
 msgid "Code Font Custom OpenType Features"
-msgstr "程式碼字體自定義 OpenType 功能"
+msgstr "程式碼字體自訂 OpenType 功能"
 
 msgid "Code Font Custom Variations"
-msgstr "程式碼字體自定義變異量"
+msgstr "程式碼字體自訂變體"
 
 msgid "Font Antialiasing"
-msgstr "文字抗鋸齒"
+msgstr "字體抗鋸齒"
 
 msgid "Font Hinting"
 msgstr "字體微調"
@@ -2248,6 +2270,9 @@ msgstr "壓縮二進位資源"
 msgid "Safe Save on Backup then Rename"
 msgstr "安全儲存備份後重命名"
 
+msgid "Warn on Saving Large Text Resources"
+msgstr "儲存大型文字資源時提出警告"
+
 msgid "File Server"
 msgstr "檔案伺服器"
 
@@ -2396,22 +2421,22 @@ msgid "Guidelines"
 msgstr "參考線"
 
 msgid "Show Line Length Guidelines"
-msgstr "顯示行長度參考線"
+msgstr "顯示列長度參考線"
 
 msgid "Line Length Guideline Soft Column"
-msgstr "行長度參考線軟列數"
+msgstr "列長度參考線軟行數"
 
 msgid "Line Length Guideline Hard Column"
-msgstr "行長度參考線硬列數"
+msgstr "列長度參考線硬行數"
 
 msgid "Gutters"
 msgstr "邊欄"
 
 msgid "Show Line Numbers"
-msgstr "顯示行號"
+msgstr "顯示列號"
 
 msgid "Line Numbers Zero Padded"
-msgstr "行號補零"
+msgstr "列號補零"
 
 msgid "Highlight Type Safe Lines"
 msgstr "高亮型別安全的行"
@@ -2429,7 +2454,7 @@ msgid "Minimap Width"
 msgstr "迷你地圖寬度"
 
 msgid "Lines"
-msgstr "行"
+msgstr "列"
 
 msgid "Code Folding"
 msgstr "程式碼折疊"
@@ -2971,6 +2996,9 @@ msgstr "洋蔥圖層先前顏色"
 msgid "Onion Layers Future Color"
 msgstr "洋蔥圖層未來顏色"
 
+msgid "Audio Buses"
+msgstr "音訊匯流排"
+
 msgid "Shader Editor"
 msgstr "著色器編輯器"
 
@@ -3008,7 +3036,7 @@ msgid "Rect"
 msgstr "矩形"
 
 msgid "Rect Custom Position"
-msgstr "矩形自定義位置"
+msgstr "矩形自訂位置"
 
 msgid "Screen"
 msgstr "螢幕"
@@ -3020,7 +3048,7 @@ msgid "Game Embed Mode"
 msgstr "遊戲內嵌模式"
 
 msgid "Auto Save"
-msgstr "自動保存"
+msgstr "自動儲存"
 
 msgid "Save Before Running"
 msgstr "執行前儲存"
@@ -3047,7 +3075,7 @@ msgid "Max Lines"
 msgstr "最大行數"
 
 msgid "Platforms"
-msgstr "平台"
+msgstr "平臺"
 
 msgid "Linux/*BSD"
 msgstr "Linux/*BSD"
@@ -3362,7 +3390,7 @@ msgid "Startup Alert"
 msgstr "啟動警報"
 
 msgid "Extensions"
-msgstr "擴充功能"
+msgstr "擴充套件"
 
 msgid "Debug Utils"
 msgstr "除錯工具"
@@ -5387,7 +5415,7 @@ msgid "Variant"
 msgstr "變體"
 
 msgid "Extensions Support"
-msgstr "擴展支援"
+msgstr "擴充套件支援"
 
 msgid "Thread Support"
 msgstr "執行緒支援"
@@ -6350,7 +6378,7 @@ msgid "Damp"
 msgstr "阻尼"
 
 msgid "Angular"
-msgstr "角"
+msgstr "角度"
 
 msgid "Constant Forces"
 msgstr "恆定的力"
@@ -6886,7 +6914,7 @@ msgid "Custom Color"
 msgstr "自訂顏色"
 
 msgid "Custom Energy"
-msgstr "自定義能量"
+msgstr "自訂能量"
 
 msgid "Camera Attributes"
 msgstr "攝影機屬性"
@@ -7717,16 +7745,16 @@ msgid "Use Top Left"
 msgstr "使用左上角"
 
 msgid "Symbol Lookup on Click"
-msgstr "點擊查詢符號"
+msgstr "點選查詢符號"
 
 msgid "Symbol Tooltip on Hover"
 msgstr "滑鼠懸停時顯示符號工具提示"
 
 msgid "Line Folding"
-msgstr "折疊行"
+msgstr "折疊列"
 
 msgid "Line Length Guidelines"
-msgstr "行長度參考線"
+msgstr "列長度參考線"
 
 msgid "Draw Breakpoints Gutter"
 msgstr "繪製中斷點欄"
@@ -7735,13 +7763,16 @@ msgid "Draw Bookmarks"
 msgstr "繪製書簽"
 
 msgid "Draw Executing Lines"
-msgstr "繪製執行行"
+msgstr "繪製執行列"
 
 msgid "Draw Line Numbers"
-msgstr "繪製行號"
+msgstr "繪製列號"
 
 msgid "Zero Pad Line Numbers"
-msgstr "行號用零填充"
+msgstr "列號用零填充"
+
+msgid "Line Numbers Min Digits"
+msgstr "列號最小位數"
 
 msgid "Draw Fold Gutter"
 msgstr "繪製折疊欄"
@@ -8176,22 +8207,22 @@ msgid "Expand to Text Length"
 msgstr "擴展至文字長度"
 
 msgid "Context Menu Enabled"
-msgstr "本文菜單啟用"
+msgstr "已啟用環境選單"
 
 msgid "Emoji Menu Enabled"
-msgstr "啟用表情符號選單"
+msgstr "已啟用表情符號選單"
 
 msgid "Backspace Deletes Composite Character Enabled"
-msgstr "啟用退格刪除組合字元"
+msgstr "已啟用退格刪除組合字元"
 
 msgid "Clear Button Enabled"
-msgstr "清除按鈕啟用"
+msgstr "已啟用清除按鈕"
 
 msgid "Shortcut Keys Enabled"
-msgstr "快捷鍵啟用"
+msgstr "已啟用快捷鍵"
 
 msgid "Middle Mouse Paste Enabled"
-msgstr "滑鼠中鍵貼上啟用"
+msgstr "已啟用滑鼠中鍵貼上"
 
 msgid "Selecting Enabled"
 msgstr "選擇啟用"
@@ -8628,6 +8659,12 @@ msgstr "展開"
 
 msgid "Buffering Msec"
 msgstr "緩衝毫秒"
+
+msgid "Joystick Mode"
+msgstr "搖桿模式"
+
+msgid "Joystick Size"
+msgstr "搖桿大小"
 
 msgid "Self Modulate"
 msgstr "自我調變"
@@ -10556,13 +10593,13 @@ msgid "Brace Mismatch Color"
 msgstr "大括號不對稱顏色"
 
 msgid "Line Number Color"
-msgstr "行號顏色"
+msgstr "列號顏色"
 
 msgid "Line Length Guideline Color"
 msgstr "線長導引顏色"
 
 msgid "Completion Lines"
-msgstr "補全行數"
+msgstr "補全列數"
 
 msgid "Completion Max Width"
 msgstr "補全最大寬度"
@@ -10716,6 +10753,12 @@ msgstr "按鈕寬度"
 
 msgid "Set Min Buttons Width From Icons"
 msgstr "根據圖示設定最小按鈕寬度"
+
+msgid "Normal Joystick"
+msgstr "標準搖桿"
+
+msgid "Pressed Joystick"
+msgstr "按下的搖桿"
 
 msgid "Embedded Border"
 msgstr "嵌入式邊框"
@@ -11351,7 +11394,7 @@ msgid "Default Theme Scale"
 msgstr "預設主題縮放"
 
 msgid "Custom"
-msgstr "自定功能"
+msgstr "自訂主題"
 
 msgid "Custom Font"
 msgstr "自訂字體"
@@ -11375,7 +11418,7 @@ msgid "Bus Count"
 msgstr "匯流排數量"
 
 msgid "Output Device"
-msgstr "輸出設備"
+msgstr "輸出裝置"
 
 msgid "Input Device"
 msgstr "輸入裝置"
@@ -11794,6 +11837,9 @@ msgstr "常數 ID"
 msgid "Sample Masks"
 msgstr "取樣遮罩"
 
+msgid "Specialization Constants"
+msgstr "特化常數"
+
 msgid "Render Loop Enabled"
 msgstr "啟用算繪迴圈"
 
@@ -11805,6 +11851,9 @@ msgstr "匯入 S3TC BPTC"
 
 msgid "Import ETC2 ASTC"
 msgstr "匯入 ETC2 ASTC"
+
+msgid "Compress with GPU"
+msgstr "使用 GPU 壓縮"
 
 msgid "Cache GPU Compressor"
 msgstr "快取 GPU 壓縮器"

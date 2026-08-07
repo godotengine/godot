@@ -118,13 +118,15 @@
 # 张华 <i1tb@qq.com>, 2026.
 # kexuejiaLv0 <timezhang35@gmail.com>, 2026.
 # Louish <louish666666@outlook.com>, 2026.
+# Floruit <1964993179@qq.com>, 2026.
+# 罗翌宸 <Luo_Yichen@yeah.net>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2026-06-18 04:28+0000\n"
-"Last-Translator: 风青山 <idleman@yeah.net>\n"
+"PO-Revision-Date: 2026-07-27 00:22+0000\n"
+"Last-Translator: 罗翌宸 <Luo_Yichen@yeah.net>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -132,7 +134,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "确定"
@@ -168,7 +170,7 @@ msgid "File: Permission denied"
 msgstr "文件：权限不足"
 
 msgid "File already in use"
-msgstr "文件正被使用"
+msgstr "文件被占用"
 
 msgid "Can't open file"
 msgstr "无法打开文件"
@@ -183,7 +185,7 @@ msgid "File unrecognized"
 msgstr "无法识别文件"
 
 msgid "File corrupt"
-msgstr "文件损坏"
+msgstr "文件已损坏"
 
 msgid "Missing dependencies for file"
 msgstr "文件缺少依赖"
@@ -222,13 +224,13 @@ msgid "Can't acquire resource"
 msgstr "无法获取资源"
 
 msgid "Can't fork"
-msgstr "无法分叉"
+msgstr "无法分支"
 
 msgid "Invalid data"
-msgstr "无效数据"
+msgstr "数据无效"
 
 msgid "Invalid parameter"
-msgstr "无效参数"
+msgstr "参数无效"
 
 msgid "Already exists"
 msgstr "已存在"
@@ -279,7 +281,7 @@ msgid "Bug"
 msgstr "Bug"
 
 msgid "Printer on fire"
-msgstr "打印机起火"
+msgstr "打印机故障"
 
 msgid "unset"
 msgstr "未设置"
@@ -12448,13 +12450,6 @@ msgstr "解除所选节点与其子节点的组合。子节点在 2D 和 3D 视�
 
 msgid "Ungroup"
 msgstr "取消分组"
-
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"左键+拖动：测量两点之间的距离。 \n"
-"Shift+左键+拖动：显示分量测量值。"
 
 msgid "Ruler Mode"
 msgstr "标尺模式"

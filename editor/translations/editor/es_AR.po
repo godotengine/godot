@@ -51,13 +51,16 @@
 # Lorenzo Maieru <bvnanadev@gmail.com>, 2026.
 # Valentin Romanutti <valentinromanutti@gmail.com>, 2026.
 # Valentino Rocca <roccavalentino5@gmail.com>, 2026.
+# Lucas Sogaray <lucassogaray72@gmail.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# mae <maelunacat@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-25 13:01+0000\n"
-"Last-Translator: Valentino Rocca <roccavalentino5@gmail.com>\n"
+"PO-Revision-Date: 2026-07-21 11:49+0000\n"
+"Last-Translator: mae <maelunacat@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -65,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -763,6 +766,12 @@ msgstr "Añadir Punto de Animación"
 msgid "Remove BlendSpace1D Point"
 msgstr "Eliminar Punto BlendSpace1D"
 
+msgid "Reorder BlendSpace1D Point Index"
+msgstr "Reordena el índice de puntos de BlendSpace1D"
+
+msgid "Change BlendSpace1D Point Name"
+msgstr "Cambia el nombre del punto BlendSpace1D"
+
 msgid "Continuous"
 msgstr "Contínuo"
 
@@ -771,6 +780,18 @@ msgstr "Discreto"
 
 msgid "Capture"
 msgstr "Captura"
+
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"Seleccionar y mover puntos.\n"
+"Clic derecho: Crea un punto en la posición seleccionada.\n"
+"Mayús + Clic izquierdo + Arrastrar: Establecer la posición de fusión dentro "
+"del espacio.\n"
+"Desplazamiento: Incrementar o decrementar el índice."
 
 msgid "Create points."
 msgstr "Crear puntos."
@@ -805,6 +826,14 @@ msgstr "Constante ciclico"
 msgid "Cyclic Length"
 msgstr "Duracion ciclica"
 
+msgid ""
+"Cycle length in seconds for cyclic sync. All animations are time-scaled to "
+"complete one cycle in this duration."
+msgstr ""
+"Duración del ciclo en segundos para la sincronización cíclica. Todas las "
+"animaciones están ajustadas en el tiempo para completar un ciclo en esta "
+"duración."
+
 msgid "Blend"
 msgstr "Blend"
 
@@ -813,6 +842,16 @@ msgstr "Abrir Editor"
 
 msgid "Index"
 msgstr "Indice"
+
+msgid "Blend Point Index"
+msgstr "Indice de Punto de Fusión"
+
+msgid ""
+"Index of the blend point.\n"
+"Values outside of the valid range will be clamped to the nearest index."
+msgstr ""
+"Indice del punto de fusión.\n"
+"Valores afuera del rango valido serán sujetados al indice mas cercano."
 
 msgid "Position"
 msgstr "Posición"
@@ -2247,6 +2286,12 @@ msgstr "Cambiar Offset Inicial de Clip de Pista de Audio"
 msgid "Change Audio Track Clip End Offset"
 msgstr "Cambiar Offset Final de Clip de Pista de Audio"
 
+msgid "%s at "
+msgstr "%s en "
+
+msgid "'%s':"
+msgstr "\"%s\":"
+
 msgid "input %d '%s'."
 msgstr "nodo %d '%s'."
 
@@ -2271,6 +2316,9 @@ msgstr "Autor verificado"
 msgid "License"
 msgstr "Licencia"
 
+msgid "No changelog provided for this version."
+msgstr "No hay una lista de cambios para esta versión."
+
 msgid "Loading..."
 msgstr "Cargando..."
 
@@ -2285,6 +2333,13 @@ msgstr "Instalar..."
 
 msgid "Version:"
 msgstr "Version:"
+
+msgid "Open the web browser to show the asset in the online store page."
+msgstr ""
+"Abre el navegador web para mostrar el asset en la pagina de la tienda online."
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "Abre el navegador web para mostrar una pagina con los archivos fuente."
 
 msgid "Description"
 msgstr "Descripción"
@@ -2385,11 +2440,20 @@ msgstr "Actualizado(Mas viejo primero)"
 msgid "Reviews (Highest Score First)"
 msgstr "Reviews(mejor valorados primeros)"
 
+msgid "Reviews (Lowest Score First)"
+msgstr "Reseñas (Menor Puntaje Primero)"
+
 msgid "All"
 msgstr "Todos"
 
+msgid "Repository returned with invalid data."
+msgstr "Repositorio devuelto con datos inválidos."
+
 msgid "No results for \"%s\"."
 msgstr "No hay resultados para \"%s\"."
+
+msgid "Search templates. Use tags by including \"#tagname\"."
+msgstr "Buscar plantillas. Usa etiquetas incluyendo \"#nombredeetiqueta\"."
 
 msgid "Import..."
 msgstr "Importar..."
@@ -3822,6 +3886,15 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Gira cuando la ventana del editor se redibuja."
 
+msgid ""
+"Cannot save resource at path \"%s\", as it is imported.\n"
+"Imported resources can't be saved. Instead, modify the source file or change "
+"options in the Import dock."
+msgstr ""
+"No se pudo guardar el recurso en la ubicación \"%s\", como ya fue importado.\n"
+"Los recursos importados no pueden ser guardados. En vez, modifica el archivo "
+"fuente o cambia las opciones en el panel Importar."
+
 msgid "Error saving resource at path \"%s\": %s."
 msgstr "Error al guardar el perfil en la ruta \"%s\": %s."
 
@@ -4443,6 +4516,12 @@ msgstr "Tipo de paquete desconocido."
 msgid "Unknown object type."
 msgstr "Tipo de objeto desconocido."
 
+msgid ""
+"Could not extract assets from Android bundle \"%s\", due to error \"%s\"."
+msgstr ""
+"No se pudo extraer assets del paquete de Android \"%s\", debido al error "
+"\"%s\"."
+
 msgid "Storing File:"
 msgstr "Almacenando Archivo:"
 
@@ -4507,6 +4586,19 @@ msgstr "Extrayendo Plantillas de Exportación"
 msgid "Importing:"
 msgstr "Importando:"
 
+msgid "32-bit build for Microsoft Windows, including console wrapper."
+msgstr "Build 32-bit para Microsoft Windows, incluyendo un console wrapper."
+
+msgid "64-bit build for Microsoft Windows, including console wrapper."
+msgstr "Build 64-bit para Microsoft Windows, incluyendo un console wrapper."
+
+msgid ""
+"64-bit build for Microsoft Windows on ARM architecture, including console "
+"wrapper."
+msgstr ""
+"Build 64-bit para Microsoft Windows en arquitectura ARM, incluyendo un "
+"console wrapper."
+
 msgid "32-bit build for Linux systems."
 msgstr "Compilación de 32 bits para sistemas Linux."
 
@@ -4522,8 +4614,44 @@ msgstr "compilación de 64 bits para sistemas Linux con arquitectura ARM."
 msgid "Universal build for macOS."
 msgstr "Compilacion universal para macOS."
 
+msgid ""
+"Regular web build with threading support. Threads improve performance, but "
+"require \"cross-origin isolated\" website to run."
+msgstr ""
+"Web build regular con soporte para threading. Los hilos (threads) mejoran el "
+"rendimiento, pero requieren de una pagina web \"cross-origin isolated\" para "
+"funcionar."
+
+msgid ""
+"Web build with support for GDExtensions. Only useful if you use GDExtensions, "
+"otherwise it only increases build size."
+msgstr ""
+"Web build con soporte para GDExtensions. Solo es útil si usa GDExtensions, de "
+"no ser así solo incrementara el tamaño de la build."
+
+msgid "Web Single-Threaded"
+msgstr "Web Con un solo Thread"
+
+msgid "Web build without threading support."
+msgstr "Web build sin soporte para threading."
+
+msgid "Web with Extensions Single-Threaded"
+msgstr "Web con Extensiones con un solo Hilo"
+
+msgid "Web build with GDExtension support and no threading support."
+msgstr "Web build con soporte de GDExtension y sin soporte para threading."
+
 msgid "Build for Apple's iOS."
 msgstr "Compilación de Apple iOS."
+
+msgid "Line breaking dictionaries for TextServer, used by certain languages."
+msgstr ""
+"La linea esta rompiendo diccionarios para TextServer, que es usado por "
+"ciertos idiomas."
+
+msgctxt "Platform Group"
+msgid "Desktop"
+msgstr "Escritorio"
 
 msgctxt "Platform Group"
 msgid "Web"
@@ -4537,6 +4665,13 @@ msgstr "Fallo la descarga de algunos archivos."
 
 msgid "Canceled by the user"
 msgstr "Cancelado por el usuario"
+
+msgid ""
+"Download failed.\n"
+"Reason: %s."
+msgstr ""
+"La descarga fallo.\n"
+"Razón: %s."
 
 msgid "Uncompressing Android Build Sources"
 msgstr "Descomprimiendo Fuentes de Compilación Android"
@@ -4555,6 +4690,24 @@ msgstr "Elegir Archivo de Plantilla"
 
 msgid "Godot Export Templates"
 msgstr "Plantillas de Exportación de Godot"
+
+msgid "Offline mode, some functionality is not available."
+msgstr "Modo fuera de linea, algunas funcionalidades no están disponibles."
+
+msgid "Archive fragment too small. Loaded: %d, required: %d."
+msgstr "El Archive fragment es muy pequeño. Cargado: %d, requerido: %d."
+
+msgid "ZIP reader could not open mini-ZIP."
+msgstr "Lector ZIP no pudo abrir mini-ZIP."
+
+msgid "Unable to read file information from ZIP archive."
+msgstr "No se pudo leer la información del archivo del ZIP archive."
+
+msgid "IO/zlib error reading file from ZIP archive."
+msgstr "Error IO/zlib al leer archivo del ZIP archive."
+
+msgid "CRC error reading file from ZIP archive."
+msgstr "Error CRC al leer archivo del ZIP archive."
 
 msgid "Invalid Encryption Key (must be 64 hexadecimal characters long)"
 msgstr ""
@@ -5524,6 +5677,15 @@ msgstr ""
 "%s\n"
 "Por favor utiliza el renderizador de Compatibilidad."
 
+msgid "Opening it will upgrade it to Godot %s.%s."
+msgstr "Abrirlo lo actualizara a Godot %s.%s."
+
+msgid "Opening it will downgrade it to Godot %s.%s."
+msgstr "Abrirlo lo desactualizara a Godot %s.%s."
+
+msgid "Downgrading projects is not recommended."
+msgstr "Desactualizar proyectos no es recomendable."
+
 msgid "This project uses an unknown version of Godot."
 msgstr "Este proyecto utiliza una versión desconocida de Godot."
 
@@ -5675,6 +5837,10 @@ msgstr "Estilo"
 msgid "Re-saving scene:"
 msgstr "Volver a guardar la Escena"
 
+msgid "Failed to run the project because the project.godot file is missing."
+msgstr ""
+"Falla al abrir el proyecto ya que el archivo project.godot no esta presente."
+
 msgid "Recovery Mode is enabled. Disable it to run the project."
 msgstr ""
 "El modo de Recuperación está activado. Desactivalo para ejecutar el proyecto."
@@ -5691,11 +5857,62 @@ msgstr ""
 "Por favor agregá un preset ejecutable en el menú Exportar o definí un preset "
 "como ejecutable."
 
+msgid "Window Dynamic Range"
+msgstr "Rango Dinámico de Ventana"
+
 msgid "HDR"
 msgstr "HDR"
 
+msgid ""
+"Window size: %s\n"
+"Mode: %s\n"
+"Maximum linear value: %.2f%s"
+msgstr ""
+"Tamaño de ventana: %s\n"
+"Modo: %s\n"
+"Valor máximo linear: %.2f%s"
+
+msgid "SDR"
+msgstr "SDR"
+
+msgid ""
+"\n"
+"Reference luminance: %.0f nits\n"
+"Maximum luminance: %.0f nits"
+msgstr ""
+"\n"
+"Luminancia de referencia: %.0f nits\n"
+"Luminancia máxima: %.0f nits"
+
 msgid "Request HDR Output"
 msgstr "Solicitar salida HDR"
+
+msgid ""
+"Move the game window to a screen\n"
+"that is operating in HDR mode."
+msgstr ""
+"Mueve la ventana del juego a una pantalla\n"
+"que este operando en modo HDR."
+
+msgid ""
+"Change the display/display_server/driver\n"
+"advanced project setting to a driver\n"
+"that supports HDR output."
+msgstr ""
+"Cambia la configuración avanzada\n"
+"de display/display_server/driver\n"
+"a una que soporte una salida HDR."
+
+msgid ""
+"Change the rendering/renderer/rendering_method\n"
+"project setting to a renderer that supports HDR output and\n"
+"the rendering/rendering_device/driver advanced project\n"
+"setting to a driver that supports HDR output."
+msgstr ""
+"Cambia la configuración del proyecto en\n"
+"rendering/renderer/rendering_method a una\n"
+"que soporte salida HDR y la configuración avanzada del proyecto\n"
+"en rendering/rendering_device/driver que soporte salida HDR."
 
 msgid "Clear All"
 msgstr "Limpiar Todo"
@@ -5933,6 +6150,48 @@ msgstr ""
 "Las propiedades modificadas se aplicarán a las instancias recién dibujadas. "
 "Se almacenarán localmente en la escena actual."
 
+msgid ""
+"Pin the current node.\n"
+"When enabled, the painting parent node will not change when selecting other "
+"nodes in the scene."
+msgstr ""
+"Fijar el nodo actual.\n"
+"Al activarlo, el nodo padre de pintura no cambiara al seleccionar otros nodos "
+"en la escena."
+
+msgid ""
+"Hold Alt while painting to temporarily switch to the previously used paint "
+"snap mode."
+msgstr ""
+"Mantén Alt mientras pintas para temporalmente cambiar al anteriormente usado "
+"modo de ajuste de pintura."
+
+msgid ""
+"When enabled, the painting parent node will not change when selecting other "
+"nodes in the scene."
+msgstr ""
+"Al activarlo, el nodo padre de pintura no cambiara al seleccionar otros nodos "
+"en la escena."
+
+msgid ""
+"When enabled, you can select scenes from the FileSystem dock, Scene dock, or "
+"2D editor's viewport.\n"
+"Holding Ctrl enables picking from the 2D editor's viewport."
+msgstr ""
+"Al activarlo, puedes seleccionar escenas desde el panel FileSystem, panel de "
+"la Escena, o la vista del editor 2D.\n"
+"Mantener Ctrl activa la selección desde la vista del editor 2D."
+
+msgid "Allow Overlapping"
+msgstr "Permitir Sobreponer"
+
+msgid ""
+"Allow painting over existing painted scenes.\n"
+"Hold Shift while painting to temporarily toggle this option."
+msgstr ""
+"Permitir pintar sobre escenas ya pintadas.\n"
+"Mantén Shift mientras pintas para temporalmente cambiar esta opción."
+
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Este esqueleto no tiene huesos, crea algunos nodos Bone2D hijos."
 
@@ -6023,8 +6282,14 @@ msgstr "Espejar Verticalmente"
 msgid "Grid Snap"
 msgstr "Ajustar a Grilla"
 
+msgid "Polygon %d"
+msgstr "Polígono %d"
+
 msgid "One Way"
 msgstr "Camino unico"
+
+msgid "Linear Velocity"
+msgstr "Velocidad Linear"
 
 msgid "Scattering:"
 msgstr "Dispersión:"

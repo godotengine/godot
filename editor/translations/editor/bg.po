@@ -30,13 +30,15 @@
 # Vladimir Kirov <morbeo@gmail.com>, 2026.
 # bruvzg <bruvzg13@proton.me>, 2026.
 # Supermyskin <supermyskin@abv.bg>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# Repa <youme.ytv@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-21 12:01+0000\n"
-"Last-Translator: Supermyskin <supermyskin@abv.bg>\n"
+"PO-Revision-Date: 2026-07-17 12:16+0000\n"
+"Last-Translator: Repa <youme.ytv@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -44,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "Добре"
@@ -555,7 +557,7 @@ msgid "Go Up One Level"
 msgstr "Качване едно ниво по-нагоре"
 
 msgid "Refresh"
-msgstr "Опресни"
+msgstr "Обнови"
 
 msgid "Show Hidden"
 msgstr "Показване на скритите"
@@ -1790,12 +1792,24 @@ msgid "Set the default handle mode of new bezier keys."
 msgstr "Задайте режим на работа по подразбиране за новите ключове на Безие."
 
 msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Квинт"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Кварта"
+
+msgctxt "Transition Type"
 msgid "Quad"
 msgstr "четириъгълник"
 
 msgctxt "Transition Type"
 msgid "Elastic"
 msgstr "Еластично"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "Кръг"
 
 msgctxt "Transition Type"
 msgid "Bounce"
@@ -2056,6 +2070,9 @@ msgstr "Кадри/сек"
 msgid "Snap Mode"
 msgstr "Режим на Закрепване"
 
+msgid "Zoom"
+msgstr "Приближаване"
+
 msgid "Fit to panel"
 msgstr "Преместване в кадър"
 
@@ -2122,6 +2139,12 @@ msgstr "Макс. грешка в точността:"
 msgid "Optimize"
 msgstr "Оптимизиране"
 
+msgid "Remove invalid keys"
+msgstr "Премахни невалидните ключове"
+
+msgid "Clean-up all animations"
+msgstr "Изчисти всички анимации"
+
 msgid "Clean-Up"
 msgstr "Почистване"
 
@@ -2157,6 +2180,9 @@ msgstr "Път:"
 
 msgid "Errors"
 msgstr "Грешки"
+
+msgid "Title"
+msgstr "Заглавие"
 
 msgid "Author"
 msgstr "Автор"
@@ -2484,6 +2510,9 @@ msgstr ""
 "Вмомента няма описание за този клас. Моля помогнете ни, като [color=$color]"
 "[url=$url]напѝшете едно[/url][/color]!"
 
+msgid "Properties"
+msgstr "Свойства"
+
 msgid "overrides %s:"
 msgstr "заменя %s:"
 
@@ -2746,6 +2775,9 @@ msgstr "Глобална"
 
 msgid "Description:"
 msgstr "Описание:"
+
+msgid "Rename"
+msgstr "Преименуване"
 
 msgid "Scene"
 msgstr "Сцена"
@@ -3138,6 +3170,9 @@ msgstr "Заснемане на екрана"
 
 msgid "Online Documentation"
 msgstr "Документация в Интернет"
+
+msgid "Community"
+msgstr "Общност"
 
 msgid "Report a Bug"
 msgstr "Докладване на проблем"
@@ -4020,6 +4055,9 @@ msgstr "Прилепване към решетката"
 
 msgid "Painting:"
 msgstr "Рисуване:"
+
+msgid "Polygon %d"
+msgstr "Полигони %d"
 
 msgid "Flip Tile Horizontally"
 msgstr "Обърни Плочката Хоризонтално"

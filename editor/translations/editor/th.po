@@ -29,13 +29,14 @@
 # Wi Chan <mac.wikrom@gmail.com>, 2026.
 # M1ST3RWiCK <suwanruch.s@gmail.com>, 2026.
 # Krissaphon Natpaphatpisit <krissaphonfocus@gmail.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-21 13:09+0000\n"
-"Last-Translator: Krissaphon Natpaphatpisit <krissaphonfocus@gmail.com>\n"
+"PO-Revision-Date: 2026-07-07 03:32+0000\n"
+"Last-Translator: MedProgAyat <hosseinmehriyari1383@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -43,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.16.1-dev\n"
+"X-Generator: Weblate 2026.7.1.dev0\n"
 
 msgid "OK"
 msgstr "ตกลง"
@@ -3833,6 +3834,9 @@ msgstr "พลิกแนวตั้ง"
 
 msgid "Grid Snap"
 msgstr "สแนปเส้นกริด"
+
+msgid "Polygon %d"
+msgstr "โพลีกอน %d"
 
 msgid "Scattering:"
 msgstr "การกระจาย:"

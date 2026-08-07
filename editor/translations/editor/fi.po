@@ -34,13 +34,16 @@
 # sevonj <100710152+sevonj@users.noreply.github.com>, 2025.
 # Aki Ryhänen <aki.ryhanen@gmail.com>, 2026.
 # jesseojala20-crypto <jesseojala20@gmail.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# Kieli Puoli <kielipuoli@gmail.com>, 2026.
+# Niksu <notinuseuser@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-02-26 02:09+0000\n"
-"Last-Translator: Aki Ryhänen <aki.ryhanen@gmail.com>\n"
+"PO-Revision-Date: 2026-08-05 16:48+0000\n"
+"Last-Translator: Niksu <notinuseuser@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -48,16 +51,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.16.1-dev\n"
+"X-Generator: Weblate 2026.8.1.dev0\n"
 
 msgid "OK"
 msgstr "OK"
 
 msgid "Failed"
-msgstr "Epäonnistui."
+msgstr "Epäonnistui"
 
 msgid "Unavailable"
-msgstr "%s kuvaus ei ole saatavilla."
+msgstr "Ei saatavilla"
 
 msgid "Unconfigured"
 msgstr "Määrittelemätön"
@@ -72,28 +75,28 @@ msgid "Out of memory"
 msgstr "Muisti täynnä"
 
 msgid "File not found"
-msgstr "Tiedostoa ei löytynyt."
+msgstr "Tiedostoa ei löytynyt"
 
 msgid "File: Bad drive"
-msgstr "Tiedosto: Kelvoton asema"
+msgstr "Tiedosto: viallinen asema"
 
 msgid "File: Bad path"
-msgstr "Tiedosto: Kelvoton polku"
+msgstr "Tiedosto: viallinen polku"
 
 msgid "File: Permission denied"
-msgstr "Tiedosto: Pääsy estetty"
+msgstr "Tiedosto: pääsy estetty"
 
 msgid "File already in use"
-msgstr "Tiedosto on jo käytössä."
+msgstr "Tiedosto on jo käytössä"
 
 msgid "Can't open file"
-msgstr "Tiedostoa ei voi avata"
+msgstr "Tiedoston avaaminen epäonnistui"
 
 msgid "Can't write file"
-msgstr "Ei pysty kirjoittamaan tiedostoa"
+msgstr "Tiedoston kirjoittaminen epäonnistui"
 
 msgid "Can't read file"
-msgstr "Ei pysty lukemaan tiedostoa"
+msgstr "Tiedoston lukeminen epäonnistui"
 
 msgid "File unrecognized"
 msgstr "Tunnistamaton tiedosto"
@@ -108,10 +111,13 @@ msgid "End of file"
 msgstr "Tiedoston loppu"
 
 msgid "Can't open"
-msgstr "Ei pysty avamaan"
+msgstr "Avaaminen epäonnistui"
 
 msgid "Can't create"
 msgstr "Luonti epäonnistui"
+
+msgid "Query failed"
+msgstr "Kysely epäonnistui"
 
 msgid "Already in use"
 msgstr "Jo käytössä"
@@ -123,19 +129,76 @@ msgid "Timeout"
 msgstr "Aikakatkaisu"
 
 msgid "Can't connect"
-msgstr "Yhdistäminen epäonnistui."
+msgstr "Yhdistäminen epäonnistui"
 
 msgid "Can't resolve"
-msgstr "Yhteydenselvitys epäonnistui"
+msgstr "Ratkaiseminen epäonnistui"
 
 msgid "Connection error"
-msgstr "Yhdistämisvirhe"
+msgstr "Yhteysvirhe"
+
+msgid "Can't acquire resource"
+msgstr "Resurssin noutaminen epäonnistui"
+
+msgid "Invalid data"
+msgstr "Virheelliset tiedot"
+
+msgid "Invalid parameter"
+msgstr "Virheellinen parametri"
+
+msgid "Already exists"
+msgstr "On jo olemassa"
+
+msgid "Does not exist"
+msgstr "Ei ole olemassa"
+
+msgid "Can't read database"
+msgstr "Tietokannan lukeminen epäonnistui"
+
+msgid "Can't write database"
+msgstr "Tietokantaan kirjoittaminen epäonnistui"
+
+msgid "Compilation failed"
+msgstr "Kääntäminen epäonnistui"
+
+msgid "Method not found"
+msgstr "Metodia ei löydy"
+
+msgid "Link failed"
+msgstr "Linkitys epäonnistui"
+
+msgid "Script failed"
+msgstr "Skripti epäonnistui"
+
+msgid "Cyclic link detected"
+msgstr "Syklinen linkki havaittu"
+
+msgid "Invalid declaration"
+msgstr "Virheellinen määrittely"
+
+msgid "Duplicate symbol"
+msgstr "Symbolin kaksoiskappale"
+
+msgid "Parse error"
+msgstr "Jäsennysvirhe"
+
+msgid "Busy"
+msgstr "Varattu"
+
+msgid "Skip"
+msgstr "Ohita"
 
 msgid "Help"
 msgstr "Ohje"
 
+msgid "Bug"
+msgstr "Ohjelmavirhe"
+
+msgid "Printer on fire"
+msgstr "Tulostin tulessa"
+
 msgid "unset"
-msgstr "Asettamaton"
+msgstr "asettamaton"
 
 msgid "Physical"
 msgstr "Fyysinen"
@@ -645,6 +708,9 @@ msgstr "Poista Avainten Valinnat"
 msgid "Add Animation"
 msgstr "Lisää animaatio"
 
+msgid "No available animations"
+msgstr "Ei vapaita animaatioita"
+
 msgid "Add %s"
 msgstr "Lisää %s"
 
@@ -677,6 +743,12 @@ msgstr "Lisää animaatiopiste"
 msgid "Remove BlendSpace1D Point"
 msgstr "Poista BlendSpace1D piste"
 
+msgid "Reorder BlendSpace1D Point Index"
+msgstr "Uudelleen järjestä BlendSpace1D piste indeksit"
+
+msgid "Change BlendSpace1D Point Name"
+msgstr "Muuta BlendSpace1D Piste Nimeä"
+
 msgid "Continuous"
 msgstr "Jatkuva"
 
@@ -686,8 +758,22 @@ msgstr "Erillinen"
 msgid "Capture"
 msgstr "Kaappaa"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"Valitse ja siirrä pisteitä.\n"
+"Oikea hiiren painike: Lisää pisteen osoitettuun kohtaan.\n"
+"Shift+vasen hiiren painike+vedä: Aseta sekoitus kohta alueen sisään.\n"
+"Hiiren vieritys: Korota tai alenna indeksiä."
+
 msgid "Create points."
 msgstr "Luo pisteitä."
+
+msgid "Set the blending position within the space."
+msgstr "Aseta sekoitus paikka tilaan."
 
 msgid "Erase points."
 msgstr "Pyyhi pisteitä."
@@ -704,8 +790,27 @@ msgstr "Synkronoi"
 msgid "None"
 msgstr "Ei mitään"
 
+msgid "Independent"
+msgstr "Itsenäinen"
+
+msgid "Cyclic Mutable"
+msgstr "Paikallinen muuttuja"
+
+msgid "Cyclic Length"
+msgstr "Syklinen pituus"
+
+msgid ""
+"Cycle length in seconds for cyclic sync. All animations are time-scaled to "
+"complete one cycle in this duration."
+msgstr ""
+"Syklinen pituus sekunneissa sykliseen synkronointiin. Kaikki animaatiot "
+"aikaskaalataan suorittamaan yhden syklin tässä ajassa."
+
 msgid "Open Editor"
 msgstr "Avaa editori"
+
+msgid "Index"
+msgstr "Osoitin"
 
 msgid "Position"
 msgstr "Sijainti"
@@ -742,6 +847,9 @@ msgstr "Poista BlendSpace2D piste"
 
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Poista BlendSpace2D kolmio"
+
+msgid "Change BlendSpace2D Point Name"
+msgstr "Muuta BlendSpace2D Piste Nimeä"
 
 msgid "Toggle Auto Triangles"
 msgstr "Aseta automaattiset kolmiot"
@@ -2156,6 +2264,9 @@ msgstr "Muuta ääniraidan leikkeen alkusiirrosta"
 msgid "Change Audio Track Clip End Offset"
 msgstr "Muuta ääniraidan leikkeen loppusiirrosta"
 
+msgid "%s at "
+msgstr "%s / "
+
 msgid "Root"
 msgstr "Juuri"
 
@@ -2174,8 +2285,14 @@ msgstr "Otsikko"
 msgid "Author"
 msgstr "Tekijä"
 
+msgid "Verified Author"
+msgstr "Vahvistettu tekijä"
+
 msgid "License"
 msgstr "Lisenssi"
+
+msgid "No changelog provided for this version."
+msgstr "Tälle versiolle ei ole toimitettu muutoslokia."
 
 msgid "Loading..."
 msgstr "Ladataan..."
@@ -2191,6 +2308,12 @@ msgstr "Asenna..."
 
 msgid "Version:"
 msgstr "Versio:"
+
+msgid "Open the web browser to show the asset in the online store page."
+msgstr "Näytä resurssi verkkokaupan sivulla avaamalla selain."
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "Näytä sivu ja lähdetiedostot avaamalla selain."
 
 msgid "Description"
 msgstr "Kuvaus"
@@ -2282,6 +2405,18 @@ msgstr "Yritä uudelleen"
 msgid "Download Error"
 msgstr "Latausvirhe"
 
+msgid "Updated (Newest First)"
+msgstr "Päivitetty (uusin ensin)"
+
+msgid "Updated (Oldest First)"
+msgstr "Päivitetty (vanhin ensin)"
+
+msgid "Reviews (Highest Score First)"
+msgstr "Arvostelut (paras tulos ensin)"
+
+msgid "Reviews (Lowest Score First)"
+msgstr "Arvostelut (heikoin tulos ensin)"
+
 msgctxt "Pagination"
 msgid "First"
 msgstr "Ensimmäinen"
@@ -2324,6 +2459,9 @@ msgstr "Lisenssit"
 
 msgid "Assets ZIP File"
 msgstr "Assettien zip-tiedosto"
+
+msgid "Asset Store"
+msgstr "Resurssikauppa"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "Virhe avattaessa \"%s\" asset-tiedostoa (se ei ole ZIP-muodossa)."
@@ -3490,6 +3628,9 @@ msgstr "Siirrä tätä telakkaa yhden ruudun verran vasemmalle."
 msgid "Close this dock."
 msgstr "Sulje tämä telakka."
 
+msgid "This dock can't be closed."
+msgstr "Tätä telakkaa ei voi sulkea."
+
 msgid "Make this dock floating."
 msgstr "Muuta tämä telakka kelluvaksi."
 
@@ -3803,6 +3944,14 @@ msgstr "Luo skripti"
 
 msgid "Convert"
 msgstr "Muunna"
+
+msgid ""
+"This dialog can be skipped by holding shift or enabled/disabled in the Editor "
+"Settings: Docks > FileSystem > Ask Before Moving Files."
+msgstr ""
+"Tämän valintaikkunan voi ohittaa pitämällä vaihtopainiketta painettuna, tai "
+"sen voi ottaa käyttöön tai pois käytöstä muokkaimen asetusten kohdasta Telkat "
+"> Tiedostojärjestelmä > Kysy ennen tiedostojen siirtämistä."
 
 msgid "Groups"
 msgstr "Ryhmät"
@@ -4559,6 +4708,15 @@ msgstr ""
 
 msgid "Spins when the editor window redraws."
 msgstr "Pyörii kun editorin ikkuna päivittyy."
+
+msgid ""
+"Cannot save resource at path \"%s\", as it is imported.\n"
+"Imported resources can't be saved. Instead, modify the source file or change "
+"options in the Import dock."
+msgstr ""
+"Resurssia ei voi tallentaa hakemistoon %s, koska se on tuotu.\n"
+"Tuotuja resursseja ei voi tallentaa. Muokkaa tämän sijaan lähdetiedostoa tai "
+"muuta asetuksia Tuo-telakassa."
 
 msgid ""
 "This resource can't be saved because it was imported from another file. Make "
@@ -5721,6 +5879,13 @@ msgstr "Mallien lataaminen on pois käytöstä offline-tilassa."
 msgid "Error getting the list of mirrors."
 msgstr "Virhe peilipalvelimien listan haussa."
 
+msgid ""
+"Result: %d\n"
+"Response code: %d"
+msgstr ""
+"Tulos: %d\n"
+"Vastauskoodi: %d"
+
 msgid "Error parsing JSON with the list of mirrors. Please report this issue!"
 msgstr ""
 "Virhe jäsennettäessä peilipalvelimien JSON-listaa. Raportoi tämä ongelma, "
@@ -5744,8 +5909,81 @@ msgstr "Puretaan vientimalleja"
 msgid "Importing:"
 msgstr "Tuodaan:"
 
+msgid "32-bit build for Linux systems."
+msgstr "32-bittinen versio Linuxille."
+
+msgid "64-bit build for Linux systems."
+msgstr "64-bittinen versio Linuxille."
+
+msgid "32-bit build for Linux systems on ARM architecture."
+msgstr "32-bittinen versio ARM-arkkitehtuuria käyttävälle Linuxille."
+
+msgid "64-bit build for Linux systems on ARM architecture."
+msgstr "64-bittinen versio ARM-arkkitehtuuria käyttävälle Linuxille."
+
+msgid "Universal build for macOS."
+msgstr "Yleisversio macOS:lle."
+
+msgid "Build for Apple's iOS."
+msgstr "Versio Applen iOS:lle."
+
+msgctxt "Platform Group"
+msgid "Desktop"
+msgstr "Työpöytäversio"
+
+msgctxt "Platform Group"
+msgid "Mobile"
+msgstr "Mobiiliversio"
+
+msgctxt "Platform Group"
+msgid "Web"
+msgstr "Verkkoversio"
+
 msgid "Common"
 msgstr "Yleinen"
+
+msgid "Download this missing file."
+msgstr "Lataa tämä puuttuva tiedosto."
+
+msgid "Some files have failed to download."
+msgstr "Joidenkin tiedostojen lataaminen epäonnistui."
+
+msgid "Download missing template files."
+msgstr "Lataa puuttuvat mallitiedostot."
+
+msgid "Remove this template."
+msgstr "Poista tämä malli."
+
+msgid "All templates installed."
+msgstr "Kaikki mallit on asennettu."
+
+msgid "No templates installed."
+msgstr "Malleja ei ole asennettu."
+
+msgid "Downloading templates..."
+msgstr "Ladataan malleja..."
+
+msgid "Install All Templates"
+msgstr "Asenna kaikki mallit"
+
+msgid "Install Selected Templates"
+msgstr "Asenna valitut mallit"
+
+msgid "Download not available in offline mode."
+msgstr "Lataaminen ei ole mahdollista offline-tilassa."
+
+msgid "No mirrors available for download."
+msgstr "Lataukselle ei ole peilipalvelimia."
+
+msgid "Canceled by the user"
+msgstr "Käyttäjän peruma"
+
+msgid ""
+"Download failed.\n"
+"Reason: %s."
+msgstr ""
+"Lataaminen epäonnistui.\n"
+"Syy: %s."
 
 msgid "Uncompressing Android Build Sources"
 msgstr "Puretaan Android-käännöksen lähdetiedostoja"
@@ -5759,11 +5997,92 @@ msgstr "Lataa sijannista:"
 msgid "Open in Web Browser"
 msgstr "Avaa selaimessa"
 
+msgid "Install from a TPZ file."
+msgstr "Asenna TPZ-tiedostosta."
+
 msgid "Select Template File"
 msgstr "Valitse mallitiedosto"
 
 msgid "Godot Export Templates"
 msgstr "Godotin vientimallit"
+
+msgid "Godot Version"
+msgstr "Godotin versio"
+
+msgid "Godot Version List"
+msgstr "Godotin versioluettelo"
+
+msgid "Available Templates"
+msgstr "Saatavilla olevat mallit"
+
+msgid "Installed Templates"
+msgstr "Asennetut mallit"
+
+msgid "Open templates directory."
+msgstr "Avaa mallihakemisto."
+
+msgid "Remove all installed templates."
+msgstr "Poista kaikki asennetut mallit."
+
+msgid "Offline mode, some functionality is not available."
+msgstr "Olet offline-tilassa. Jotkin toiminnot eivät ole käytettävissä."
+
+msgid "Can't resolve the requested address"
+msgstr "Pyydetyn osoitteen selvitys epäonnistui"
+
+msgid "Can't connect to the mirror"
+msgstr "Peilipalvelimeen yhdistäminen epäonnistui"
+
+msgid "No response from the mirror"
+msgstr "Ei vastausta peilipalvelimelta"
+
+msgid "Request failed"
+msgstr "Pyyntö epäonnistui"
+
+msgid "Request ended up in a redirect loop"
+msgstr "Pyyntö päätyi uudelleenohjaussilmukkaan"
+
+msgid "Forbidden"
+msgstr "Kielletty"
+
+msgid "Not found"
+msgstr "Ei löytynyt"
+
+msgid "Response code: %d"
+msgstr "Vastauskoodi: %d"
+
+msgid "Invalid template archive header."
+msgstr "Mallin arkistoinnin ylätunniste on virheellinen."
+
+msgid "Requested template not found in the archive."
+msgstr "Pyydettyä mallia ei löydy arkistosta."
+
+msgid "Failed to open mini-ZIP for writing."
+msgstr "Mini-zip-tiedostoa ei voitu avata kirjoittamista varten."
+
+msgid "ZIP reader could not open mini-ZIP."
+msgstr "Zip-tiedostonlukija ei pystynyt avaamaan mini-zip-tiedostoa."
+
+msgid "File does not exist in ZIP archive."
+msgstr "Tiedostoa ei ole zip-arkistossa."
+
+msgid "Could not open file within ZIP archive."
+msgstr "Tiedostoa ei voitu avata zip-arkistossa."
+
+msgid "Unable to read file information from ZIP archive."
+msgstr "Tiedoston tietoja ei voida lukea zip-arkistosta."
+
+msgid "IO/zlib error reading file from ZIP archive."
+msgstr "IO-/zlib-virhe luettaessa tiedostoa zip-arkistosta."
+
+msgid "CRC error reading file from ZIP archive."
+msgstr "CRC-virhe luettaessa tiedostoa zip-arkistosta."
+
+msgid "Mini-ZIP data was empty."
+msgstr "Mini-zip-tietoja ei ollut."
+
+msgid "Failed to open template file for writing."
+msgstr "Mallitiedostoa ei voi avata kirjoittamista varten."
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
@@ -7486,6 +7805,9 @@ msgstr "Vaihda Ruudukon Tartunta Päälle/Pois"
 
 msgid "Grid Snap"
 msgstr "Tartu ruudukkoon"
+
+msgid "Polygon %d"
+msgstr "Polygonit %d"
 
 msgid "Index: %d"
 msgstr "Indeksi: %d"

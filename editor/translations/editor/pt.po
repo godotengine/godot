@@ -12934,13 +12934,6 @@ msgstr ""
 msgid "Ungroup"
 msgstr "Desagrupar"
 
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"Clique Esquerdo+Arrastar: Medir a distância entre dois pontos em 3D.\n"
-"Shift+Esquerdo+Arrastar: Mostrar medidas do componente."
-
 msgid "Ruler Mode"
 msgstr "Modo Régua"
 

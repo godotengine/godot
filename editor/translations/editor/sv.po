@@ -52,13 +52,14 @@
 # Alshat <gamaltk@gmail.com>, 2025.
 # Lasse Edsvik <lasse@lasseedsvik.se>, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Jonatan Nyberg <monalisa@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-18 04:28+0000\n"
-"Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
+"PO-Revision-Date: 2026-07-24 08:01+0000\n"
+"Last-Translator: Jonatan Nyberg <monalisa@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -66,13 +67,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "OK"
 
 msgid "Failed"
-msgstr "Misslyckade"
+msgstr "Misslyckades"
 
 msgid "Unavailable"
 msgstr "Otillgänglig"
@@ -141,7 +142,7 @@ msgid "Locked"
 msgstr "Låst"
 
 msgid "Timeout"
-msgstr "Timeout"
+msgstr "Tidsgräns"
 
 msgid "Can't connect"
 msgstr "Kan inte ansluta"
@@ -3233,7 +3234,7 @@ msgid "%s Source:"
 msgstr "%s källa:"
 
 msgid "Stack Trace"
-msgstr "Stack Trace"
+msgstr "Stackspårning"
 
 msgid "Stack Trace:"
 msgstr "Stacktrace:"
@@ -3275,7 +3276,7 @@ msgid "Thread:"
 msgstr "Tråd:"
 
 msgid "Stack Frames"
-msgstr "Stack Frames"
+msgstr "Stackramar"
 
 msgid "Filter Stack Variables"
 msgstr "Filtrera stack-variabler"
@@ -3347,7 +3348,7 @@ msgid "Live Edit Root:"
 msgstr "Realtids Redigering Root:"
 
 msgid "Set From Tree"
-msgstr "Set From Tree"
+msgstr "Ange från trädet"
 
 msgid "Export measures as CSV"
 msgstr "Exportera mätvärden som CSV"
@@ -6434,7 +6435,7 @@ msgstr "Radbrytningsordlistor för TextServer, använda av vissa språk."
 
 msgctxt "Platform Group"
 msgid "Desktop"
-msgstr "Desktop"
+msgstr "Skrivbord"
 
 msgctxt "Platform Group"
 msgid "Mobile"
@@ -6442,7 +6443,7 @@ msgstr "Mobil"
 
 msgctxt "Platform Group"
 msgid "Web"
-msgstr "Web"
+msgstr "Webb"
 
 msgid "Common"
 msgstr "Vanliga"
@@ -6697,7 +6698,7 @@ msgid "%s Export"
 msgstr "%s export"
 
 msgid "Release"
-msgstr "Release"
+msgstr "Utgåva"
 
 msgid "Exporting All"
 msgstr "Exportera alla"
@@ -12855,13 +12856,6 @@ msgstr ""
 msgid "Ungroup"
 msgstr "Dela upp grupperingen"
 
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"Vänsterklick+Drag: Mät avståndet mellan två punkter.\n"
-"Shift+Vänsterklick+Drag: Visa komponentmått."
-
 msgid "Ruler Mode"
 msgstr "Linjalläge"
 
@@ -14867,7 +14861,7 @@ msgid "Preview is not available for this shader mode."
 msgstr "Förhandsvisning är inte tillgänglig för detta shader‑läge."
 
 msgid "Box"
-msgstr "Box"
+msgstr "Ruta"
 
 msgid "Quad"
 msgstr "Kvadrupel"

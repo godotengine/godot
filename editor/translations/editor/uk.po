@@ -12944,13 +12944,6 @@ msgstr ""
 msgid "Ungroup"
 msgstr "Розгрупувати"
 
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"ЛКМ + перетягування: виміряти відстань між двома точками.\n"
-"Shift + ЛКМ + перетягування: показати виміри компонентів."
-
 msgid "Ruler Mode"
 msgstr "Режим вимірювання"
 

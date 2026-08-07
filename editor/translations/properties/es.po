@@ -124,13 +124,14 @@
 # Bruno Soria <soriabrunoissac@gmail.com>, 2026.
 # Libre <6n0n1m0s@proton.me>, 2026.
 # Manuel Lobato <mlobdev@gmail.com>, 2026.
+# "M. Campos" <visual.design.90@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-03 08:13+0000\n"
-"Last-Translator: Manuel Lobato <mlobdev@gmail.com>\n"
+"PO-Revision-Date: 2026-08-01 18:57+0000\n"
+"Last-Translator: \"M. Campos\" <visual.design.90@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -138,7 +139,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.7.1.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -669,7 +670,7 @@ msgid "Emulate Touch From Mouse"
 msgstr "Emular Toque con Ratón"
 
 msgid "Ignore Joypad on Unfocused Application"
-msgstr "Ignorar JoyStick cuando la aplicación este desenfocada"
+msgstr "Ignorar JoyStick cuando la aplicación esté desenfocada"
 
 msgid "Legacy Just Pressed Behavior"
 msgstr "Comportamiento de Pulsación Reciente Heredado"
@@ -2236,7 +2237,7 @@ msgid "Collapse Main Menu"
 msgstr "Minimizar Menú Principal"
 
 msgid "Show Renderer Selector"
-msgstr "Mostrar selector de renderizador"
+msgstr "Mostrar selector de renderizado"
 
 msgid "Derive Script Globals by Name"
 msgstr "Derivar Script Globales por Nombre"
@@ -2293,7 +2294,7 @@ msgid "Resources to Open in New Inspector"
 msgstr "Recursos Para Abrir En el Nuevo Inspector"
 
 msgid "Property Descriptions"
-msgstr "Descripción de Propiedad"
+msgstr "Descripciones de Propiedad"
 
 msgid "Default Color Picker Mode"
 msgstr "Modo Predeterminado del Selector de Color"
@@ -2962,7 +2963,7 @@ msgid "Lightmap GI Probe Size"
 msgstr "Tamaño de Sonda de GI de Lightmap"
 
 msgid "Show Collision Shapes Only When Selected"
-msgstr "Mostrar sombras de colisión solo cuando se seleccione"
+msgstr "Mostrar formas de colisión solo cuando se seleccione"
 
 msgid "Primary Grid Steps"
 msgstr "Pasos Primarios de Cuadrícula"
@@ -3232,7 +3233,7 @@ msgid "Audio Buses"
 msgstr "Buses de audio"
 
 msgid "Active Max dB Color"
-msgstr "Color de dB Activa Max"
+msgstr "Activar Color de dB máximo"
 
 msgid "Active Min dB Color"
 msgstr "Color de dB Activo Min"

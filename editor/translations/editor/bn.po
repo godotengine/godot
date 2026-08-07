@@ -20,12 +20,13 @@
 # "deboneil." <bhattacharjeedeboneil@gmail.com>, 2025.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # Shaon Biswas <shaonbiswasjhumabiswas@gmail.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-12 13:11+0000\n"
+"PO-Revision-Date: 2026-08-03 10:01+0000\n"
 "Last-Translator: Shaon Biswas <shaonbiswasjhumabiswas@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
@@ -34,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 2026.5-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "ঠিক আছে"
@@ -166,7 +167,7 @@ msgid "Duplicate symbol"
 msgstr "ডুপ্লিকেট সিম্বল আছে"
 
 msgid "Parse error"
-msgstr "পার্স করতে সমস্যা %s"
+msgstr "পার্স করতে সমস্যা"
 
 msgid "Busy"
 msgstr "ব্যস্থ"
@@ -182,6 +183,9 @@ msgstr "ত্রুটি"
 
 msgid "Printer on fire"
 msgstr "প্রিন্টার আগুনে"
+
+msgid "unset"
+msgstr "অনির্ধারিত"
 
 msgid "Physical"
 msgstr "ফিজিকল"
@@ -355,6 +359,12 @@ msgstr "চ্যানেলে MIDI ইনপুট=%s বার্তা=%s"
 msgid "Input Event with Shortcut=%s"
 msgstr "শর্টকাট এর সাথে Input Event=%s"
 
+msgid " or "
+msgstr " বা "
+
+msgid "Action has no bound inputs"
+msgstr "অ্যাকশনের সাথে কোনো ইনপুট যুক্ত নেই"
+
 msgid "Accept"
 msgstr "মেনে নিন"
 
@@ -363,6 +373,9 @@ msgstr "নির্বাচন করুন"
 
 msgid "Cancel"
 msgstr "বাতিল"
+
+msgid "Close Dialog"
+msgstr "ডায়ালগ বন্ধ করুন"
 
 msgid "Focus Next"
 msgstr "পরবর্তী ফোকাস করুন"
@@ -520,6 +533,12 @@ msgstr "ডুপ্লিকেট নোডসমূহ"
 msgid "Delete Nodes"
 msgstr "নোডসমূহ অপসারণ"
 
+msgid "Follow Input Port Connection"
+msgstr "ইনপুট পোর্ট কানেকশন অনুসরণ করুন"
+
+msgid "Follow Output Port Connection"
+msgstr "আউটপুট পোর্ট কানেকশন অনুসরণ করুন"
+
 msgid "Go Up One Level"
 msgstr "এক লেভেল উপরে যান"
 
@@ -529,6 +548,9 @@ msgstr "রিফ্রেস করুন"
 msgid "Show Hidden"
 msgstr "লুকানো দেখুন"
 
+msgid "Find"
+msgstr "খুঁজুন"
+
 msgid "Focus Path"
 msgstr "পথের উপর ফোকাস করুন"
 
@@ -537,6 +559,12 @@ msgstr "ইনপুটের দিক বদলান"
 
 msgid "Start Unicode Character Input"
 msgstr "ইউনিকোড ক্যারেক্টার ইনপুট শুরু করুন"
+
+msgid "ColorPicker: Delete Preset"
+msgstr "কালার পিকার: প্রিসেট ডিলিট করুন"
+
+msgid "Accessibility: Keyboard Drag and Drop"
+msgstr "অ্যাক্সেসিবিলিটি: কীবোর্ড ড্র্যাগ আর ড্রপ"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "অবৈধ ইনপুট %d(পাস করেনি) expression এ"
@@ -667,32 +695,134 @@ msgstr "%s সংযুক্ত করুন"
 msgid "Load..."
 msgstr "লোড…"
 
+msgid "Move BlendSpace1D Node Point"
+msgstr "BlendSpace1D Node Pointকে সরান"
+
+msgid "This type of node can't be used. Only animation nodes are allowed."
+msgstr "এই ধরনের নোড ব্যবহার করা যাবে না। শুধুমাত্র অ্যানিমেশন নোডের অনুমতি আছে।"
+
+msgid "This type of node can't be used. Only root nodes are allowed."
+msgstr "এই ধরনের নোড ব্যবহার করা যাবে না। শুধুমাত্র রূট নোডের অনুমতি আছে।"
+
+msgid "Change BlendSpace1D Point Name"
+msgstr "BlendSpace1D পয়েন্টের নাম পরিবর্তন করুন"
+
 msgid "Continuous"
-msgstr "অবিচ্ছিন্ন/নিরবচ্ছিন্ন"
+msgstr "অবিচ্ছিন্ন"
 
 msgid "Discrete"
-msgstr "স্বতন্ত্র/পৃথক্"
+msgstr "পৃথক"
 
 msgid "Capture"
 msgstr "ক্যাপচার"
 
+msgid ""
+"Select and move points.\n"
+"RMB: Create point at position clicked.\n"
+"Shift+LMB+Drag: Set the blending position within the space.\n"
+"Scroll: Increment or decrement index."
+msgstr ""
+"বিন্দু নির্বাচন করুন ও সরান।\n"
+"ডান মাউস বোতাম (RMB): ক্লিক করা স্থানে নতুন বিন্দু তৈরি করুন।\n"
+"Shift + বাম মাউস বোতাম (LMB) + ড্র্যাগ: স্পেসের মধ্যে ব্লেন্ডিং পজিশন সেট করুন।\n"
+"স্ক্রল: ইনডেক্স বাড়ান বা কমান।"
+
 msgid "Create points."
 msgstr "বিন্দু তৈরি করুন।"
+
+msgid "Set the blending position within the space."
+msgstr "স্পেসের মধ্যে ব্লেন্ডিং পজিশন সেট করুন।"
+
+msgid "Erase points."
+msgstr "বিন্দু মুছুন।"
+
+msgid "Enable snap and show grid."
+msgstr "স্ন্যাপ এনেবল করুন ও গ্রিড দেখান।"
+
+msgid "Grid Step"
+msgstr "গ্রিডের পদক্ষেপ"
 
 msgid "Sync"
 msgstr "সিঙ্ক"
 
+msgid "None"
+msgstr "কিছু না"
+
+msgid "Independent"
+msgstr "স্বাধীন"
+
+msgid "Cyclic Mutable"
+msgstr "সাইক্লিক মিউটেবল"
+
+msgid "Cyclic Constant"
+msgstr "সাইক্লিক কন্সট্যান্ট"
+
+msgid "Cyclic Length"
+msgstr "সাইক্লিক লেন্থ"
+
+msgid "Blend"
+msgstr "ব্লেন্ড"
+
+msgid "Open Editor"
+msgstr "এডিটার খুলুন"
+
+msgid "Index"
+msgstr "ইনডেক্স"
+
+msgid "Blend Point Index"
+msgstr "ব্লেন্ড পয়েন্টের ইনডেক্স"
+
+msgid ""
+"Index of the blend point.\n"
+"Values outside of the valid range will be clamped to the nearest index."
+msgstr ""
+"ব্লেন্ড পয়েন্টের ইনডেক্স।\n"
+"বৈধ সীমার বাইরের মানগুলো কাছাকাছি ইনডেক্সে ক্ল্যাম্প হয়ে যাবে।"
+
 msgid "Position"
 msgstr "অবস্থান"
+
+msgid "Blend Value"
+msgstr "ব্লেন্ড ভ্যালু"
+
+msgid "Min"
+msgstr "সর্বনিম্ন"
+
+msgid "Max"
+msgstr "সর্বোচ্চ"
 
 msgid "Value"
 msgstr "মান"
 
+msgid "Open Animation Node"
+msgstr "অ্যানিমেশন নোড খুলুন"
+
 msgid "Triangle already exists."
 msgstr "ত্রিভুজ ইতিমধ্যেই বিদ্যমান।"
 
+msgid "Add Triangle"
+msgstr "ত্রিভুজ যোগ করুন"
+
+msgid "Create triangles by connecting points."
+msgstr "বিন্দুগুলো জুড়ে ত্রিভুজ তৈরি করুন।"
+
 msgid "Erase points and triangles."
 msgstr "বিন্দু এবং ত্রিভুজ মুছুন।"
+
+msgid "Generate blend triangles automatically (instead of manually)"
+msgstr "স্বয়ংক্রিয়ভাবে ব্লেন্ড ট্রায়াঙ্গেল তৈরি করুন (ম্যানুয়ালি করার বদলে)"
+
+msgid "Max Y"
+msgstr "সর্বোচ্চ Y"
+
+msgid "Min Y"
+msgstr "সর্বনিম্ন Y"
+
+msgid "Min X"
+msgstr "সর্বনিম্ন X"
+
+msgid "Max X"
+msgstr "সর্বোচ্চ X"
 
 msgid "Parameter Changed: %s"
 msgstr "প্যারামিটার পরিবর্তন করা হয়েছে: %s"
@@ -700,8 +830,21 @@ msgstr "প্যারামিটার পরিবর্তন করা হ
 msgid "Inspect Filters"
 msgstr "ফিল্টার পরিদর্শন করুন"
 
+msgid "Output node can't be added to the blend tree."
+msgstr "আউটপুট নোড-কে ব্লেন্ড ট্রি-তে জোরা যাবে না।"
+
+msgid "Unable to connect, port may be in use or connection may be invalid."
+msgstr ""
+"কানেক্ট করা যাচ্ছে না, পোর্টটি ব্যবহারে থাকতে পারে অথবা কানেকশনটি অবৈধ হতে পারে।"
+
 msgid "Delete Node(s)"
 msgstr "নোড(সমূহ) অপসারণ করুন"
+
+msgid ""
+"Animation player has no valid root node path, so unable to retrieve track "
+"names."
+msgstr ""
+"অ্যানিমেশন প্লেয়ারের কোন বৈধ রুট নোড পথ নেই, তাই ট্র্যাকগুলোর নাম আনা যাচ্ছে না।"
 
 msgid "Functions"
 msgstr "ফাংশনগুলি"
@@ -718,8 +861,17 @@ msgstr "নোডের নাম পরিবর্তন করা হয়�
 msgid "Add Node..."
 msgstr "নোড সংযোজন করুন…"
 
+msgid "Invert"
+msgstr "ওল্টান"
+
 msgid "Clear"
 msgstr "পরিস্কার করুন/ক্লীয়ার"
+
+msgid "Set Custom Timeline from Marker"
+msgstr "মার্কার থেকে কাস্টম টাইমলাইন সেট করুন"
+
+msgid "End Marker"
+msgstr "শেষ মার্কার"
 
 msgid "Animation name can't be empty."
 msgstr "অ্যানিমেশনের নাম খালি থাকতে পারে না।"
@@ -730,11 +882,17 @@ msgstr "অ্যানিমেশন নামের অবৈধ অক্ষ
 msgid "Animation with the same name already exists."
 msgstr "একই নামের অ্যানিমেশন আগে থেকেই আছে।"
 
+msgid "Enter a library name."
+msgstr "লাইব্রেরির নাম দিন।"
+
 msgid "Library name contains invalid characters: '/', ':', ',' or '['."
 msgstr "লাইব্রেরির নামে অবৈধ অক্ষর রয়েছে: '/', ':', ',' বা '['।"
 
 msgid "Library with the same name already exists."
 msgstr "একই নামের লাইব্রেরি আগে থেকেই আছে।"
+
+msgid "Global library will be created."
+msgstr "গ্লোবাল লাইব্রেরি তৈরি করা হবে।"
 
 msgid "Library name is valid."
 msgstr "লাইব্রেরির নাম বৈধ।"
@@ -748,14 +906,89 @@ msgstr "অ্যানিমেশন লাইব্রেরি যোগ ক
 msgid "Load Animation"
 msgstr "অ্যানিমেশন লোড করুন"
 
+msgid ""
+"This animation library can't be saved because it does not belong to the "
+"edited scene. Make it unique first."
+msgstr ""
+"এই অ্যানিমেশন লাইব্রেরিটিকে সংরক্ষণ করা যাচ্ছে না কারণ এটি কোনো সম্পাদিত সিনের অংশ "
+"নয়। প্রথমে এটিকে ইউনীক বানান।"
+
+msgid ""
+"This animation library can't be saved because it was imported from another "
+"file. Make it unique first."
+msgstr ""
+"এই অ্যানিমেশন লাইব্রেরিটিকে সংরক্ষণ করা যাচ্ছে না কারণ এটিকে অন্য ফাইল থেকে ইমপোর্ট "
+"করা হয়েছে । প্রথমে এটিকে ইউনীক বানান।"
+
 msgid "Save Library"
 msgstr "লাইব্রেরি সংরক্ষণ করুন"
+
+msgid "Make Animation Library Unique: %s"
+msgstr "অ্যানিমেশন লাইব্রেরিটিকে ইউনীক বানান: %s"
+
+msgid ""
+"This animation can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
+"এই অ্যানিমেশনটিকে সংরক্ষণ করা যাচ্ছে না কারণ এটি কোনো সম্পাদিত সিনের অংশ নয়। "
+"প্রথমে এটিকে ইউনীক বানান।"
+
+msgid ""
+"This animation can't be saved because it was imported from another file. Make "
+"it unique first."
+msgstr ""
+"এই অ্যানিমেশনটিকে সংরক্ষণ করা যাচ্ছে না কারণ এটিকে অন্য ফাইল থেকে ইমপোর্ট করা "
+"হয়েছে । প্রথমে এটিকে ইউনীক বানান।"
 
 msgid "Make Animation Unique: %s"
 msgstr "অ্যানিমেশনকে অনন্য করুন: %s"
 
+msgid "Save Animation library to File: %s"
+msgstr "অ্যানিমেশন লাইব্রেরিকে ফাইলে সংরক্ষণ করুন: %s"
+
 msgid "Save Animation to File: %s"
 msgstr "ফাইলে অ্যানিমেশন সংরক্ষণ করুন: %s"
+
+msgid ""
+"The file you selected is an imported scene from a 3D model such as glTF or "
+"FBX.\n"
+"\n"
+"In Godot, 3D models can be imported as either scenes or animation libraries, "
+"which is why they show up here.\n"
+"\n"
+"If you want to use animations from this 3D model, open the Advanced Import "
+"Settings\n"
+"dialog and save the animations using Actions... → Set Animation Save Paths,\n"
+"or import the whole scene as a single AnimationLibrary in the Import dock."
+msgstr ""
+"আপনার নির্বাচিত ফাইলটি glTF বা FBX-এর মতো কোনো 3D মডেল থেকে ইম্পোর্ট করা একটি "
+"সিন।\n"
+"\n"
+"Godot-এ 3D মডেলকে সিন বা অ্যানিমেশন লাইব্রেরি হিসেবে ইম্পোর্ট করা যায়, তাই এগুলোকে "
+"এখানে দেখানো হচ্ছে।\n"
+"\n"
+"আপনি যদি এই 3D মডেলের অ্যানিমেশনগুলো ব্যবহার করতে চান, তবে 'অ্যাডভান্স ইমপোর্ট "
+"সেটিংস' ডায়ালগটি খুলুন\n"
+"এবং 'একশান্স... → অ্যানিমেশন সংরক্ষণ পথ সেট করুন' ব্যবহার করে অ্যানিমেশনগুলো সংরক্ষণ "
+"করুন;\n"
+"অথবা ইমপোর্ট ডক থেকে সম্পূর্ণ সিনটিকে একটি 'AnimationLibrary' হিসেবে ইম্পোর্ট করুন।"
+
+msgid ""
+"The file you selected is not a valid AnimationLibrary.\n"
+"\n"
+"If the animations you want are inside of this file, save them to a separate "
+"file first."
+msgstr ""
+"নির্বাচিত ফাইলটি একটি বৈধ AnimationLibrary নয়।\n"
+"\n"
+"এই ফাইলে যদি কোনো প্রয়োজনীয় অ্যানিমেশন থাকে, সেগুলো প্রথমে একটি আলাদা ফাইলে "
+"সংরক্ষণ করুন।"
+
+msgid "Some of the selected libraries were already added to the mixer."
+msgstr "নির্বাচিত লাইব্রেরিগুলোর কয়েকটি আগেই মিক্সারে যুক্ত আছে।"
+
+msgid "Some of the selected animations were already added to the library."
+msgstr "নির্বাচিত অ্যানিমেশনগুলোর কয়েকটি আগেই মিক্সারে যুক্ত আছে।"
 
 msgid "Load Animation into Library: %s"
 msgstr "লাইব্রেরিতে অ্যানিমেশন লোড করুন: %s"
@@ -783,6 +1016,12 @@ msgstr "অ্যানিমেশন লাইব্রেরি সরান:
 
 msgid "Remove Animation from Library: %s"
 msgstr "লাইব্রেরি থেকে অ্যানিমেশন সরান: %s"
+
+msgid "[built-in]"
+msgstr "[অন্তনির্মিত]"
+
+msgid "[foreign]"
+msgstr "[বহিরাগত]"
 
 msgid "Add animation to library."
 msgstr "লাইব্রেরিতে অ্যানিমেশন যোগ করুন।"
@@ -871,6 +1110,9 @@ msgstr "[গ্লোবাল](তৈরি)"
 msgid "Duplicated Animation Name:"
 msgstr "অ্যানিমেশন প্রতিলিপির নাম:"
 
+msgid "Onion skinning requires a RESET animation."
+msgstr "অনিয়ন স্কিনিং-এর জন্য RESET অ্যানিমেশন প্রয়োজন।"
+
 msgid "Animation"
 msgstr "অ্যানিমেশন"
 
@@ -882,6 +1124,9 @@ msgstr "নোডের অ্যানিমেশন চালনার স্
 
 msgid "Animation Tools"
 msgstr "অ্যানিমেশনের সরঞ্জামসমূহ"
+
+msgid "New..."
+msgstr "নতুন..।"
 
 msgid "Manage Animations..."
 msgstr "অ্যানিমেশন ম্যানেজ করুন…"
@@ -904,11 +1149,32 @@ msgstr "প্লেয়ারে অ্যানিমেশনসমূহে�
 msgid "Autoplay on Load"
 msgstr "লোডের পরেই স্বয়ংক্রিয়ভাবে চালান্‌"
 
+msgid "Enable Onion Skinning"
+msgstr "অনিয়ন স্কিনিং এনেবল করুন"
+
 msgid "Directions"
 msgstr "দিকনির্দেশ"
 
 msgid "Depth"
 msgstr "গভীরতা"
+
+msgid "1 step"
+msgstr "১ ধাপ"
+
+msgid "2 steps"
+msgstr "২ ধাপ"
+
+msgid "3 steps"
+msgstr "৩ ধাপ"
+
+msgid "Differences Only"
+msgstr "শুধু পার্থক্যগুলো"
+
+msgid "Force White Modulate"
+msgstr "মডুলেট জোর করে সাদা করুন"
+
+msgid "Include Gizmos (3D)"
+msgstr "গিজমো (3D) অন্তর্ভুক্ত করুন"
 
 msgid "Animation Name:"
 msgstr "অ্যানিমেশনের নাম:"
@@ -931,11 +1197,26 @@ msgstr "পরবর্তী (স্বয়ংক্রিয়ভাবে সা
 msgid "Transition exists!"
 msgstr "স্থানান্তর বিদ্যমান!"
 
+msgid "Cannot transition to self!"
+msgstr "নিজেতে ট্রানজিশন করা সম্ভব নয়!"
+
+msgid "Cannot transition to \"Start\"!"
+msgstr "\"Start\"-এ ট্রানজিশন করা সম্ভব নয়!"
+
+msgid "Cannot transition from \"End\"!"
+msgstr "\"End\"-এ ট্রানজিশন করা সম্ভব নয়!"
+
+msgid "Play/Travel to %s"
+msgstr "%s-এ প্লে/ট্রাভেল যান"
+
 msgid "Edit %s"
 msgstr "সম্পাদন করুন (Edit) %s"
 
 msgid "Immediate"
 msgstr "তাৎক্ষণিক"
+
+msgid "At End"
+msgstr "শেষে"
 
 msgid "Travel"
 msgstr "ভ্রমণ"
@@ -943,11 +1224,25 @@ msgstr "ভ্রমণ"
 msgid "Node Removed"
 msgstr "নোড অপসারিত"
 
+msgid ""
+"Select and move nodes.\n"
+"RMB: Add node at position clicked.\n"
+"Shift+LMB+Drag: Connects the selected node with another node or creates a new "
+"node if you select an area without nodes."
+msgstr ""
+"নোড নির্বাচন ও স্থানান্তর করুন।\n"
+"RMB: (মাউসের ডান বোতাম): ক্লিক করা অবস্থানে নোড যোগ করুন।\n"
+"Shift+LMB+Drag: নির্বাচিত নোডটিকে অন্য একটি নোডের সাথে সংযুক্ত করে, অথবা নোডবিহীন "
+"কোনো এলাকা নির্বাচন করলে একটি নতুন নোড তৈরি করে।"
+
 msgid "Create new nodes."
 msgstr "নতুন নোড তৈরি করুন।"
 
 msgid "Connect nodes."
 msgstr "নোড সংযুক্ত করুন।"
+
+msgid "New Transitions Should Auto Advance"
+msgstr "নতুন ট্রানজিশনগুলোকে স্বয়ংক্রিয়ভাবে এগোনো উচিত"
 
 msgid "Animation Change Transition"
 msgstr "অ্যানিমেশন বদল ট্রানজিশন"
@@ -991,6 +1286,19 @@ msgstr "অ্যানিমেশনের ব্যাপ্তিকাল �
 msgid "Change Animation Loop"
 msgstr "অ্যানিমেশনের লুপ পরিবর্তন করুন"
 
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"আমদানি করা সিন থেকে আনা অ্যানিমেশনের লুপ মোড পরিবর্তন করা যাবে না।\n"
+"\n"
+"এই অ্যানিমেশনের লুপ মোড পরিবর্তন করতে, সিনের Advanced Import Settings-এ যান এবং "
+"অ্যানিমেশনটি নির্বাচন করুন।\n"
+"তারপর Inspector মেনু থেকে আপনি লুপ মোড পরিবর্তন করতে পারবেন।"
+
 msgid "Property Track..."
 msgstr "বৈশিষ্ট্য ট্র্যাক…"
 
@@ -1023,6 +1331,9 @@ msgstr "অ্যানিমেশনের দৈর্ঘ্য (ফ্রে
 
 msgid "Animation length (seconds)"
 msgstr "অ্যানিমেশনের (Animation) দৈর্ঘ্য (সেকেন্ডে)"
+
+msgid "Filter tracks by entering part of their node name or property."
+msgstr "নোডের নাম বা প্রপার্টি আংশিক লিখে ট্রাকগুলোকে ফিল্টার করুন।"
 
 msgid "Animation Looping"
 msgstr "অ্যানিমেশন (Animation) লুপিং"
@@ -1087,6 +1398,10 @@ msgstr "ইন-হ্যান্ডেল:"
 msgid "Out-Handle:"
 msgstr "আউট-হ্যান্ডেল:"
 
+msgctxt "Bezier Handle Mode"
+msgid "Free"
+msgstr "Free"
+
 msgid "Stream:"
 msgstr "স্ট্রিম:"
 
@@ -1137,6 +1452,9 @@ msgstr "keys কাট করুন"
 
 msgid "Copy Key(s)"
 msgstr "এক বা একাধিক key কপি করুন"
+
+msgid "Send Key(s) to RESET"
+msgstr "RESET-এ কী(গুলো) পাঠান"
 
 msgid "Delete Key(s)"
 msgstr "কী (সমূহ) অপসারণ করুন"
@@ -1189,6 +1507,65 @@ msgstr "অ্যানিমেশনপ্লেয়ার নিজেই �
 
 msgid "property '%s'"
 msgstr "প্রপার্টি '%s'"
+
+msgid "Set the default handle mode of new bezier keys."
+msgstr "নতুন bezier কীগুলোর ডিফল্ট হ্যান্ডেল মোড সেট করুন।"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "কুইন্ট"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "কুয়ার্ট"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "কুয়াড"
+
+msgctxt "Transition Type"
+msgid "Expo"
+msgstr "এক্সপো"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "ইলাস্টিক"
+
+msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "কিউবিক"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "সার্ক"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "বাউন্স"
+
+msgctxt "Transition Type"
+msgid "Back"
+msgstr "ব্যাক"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "স্প্রিঙ্গ"
+
+msgctxt "Ease Type"
+msgid "Ease In"
+msgstr "ইজ ইন"
+
+msgctxt "Ease Type"
+msgid "Ease Out"
+msgstr "ইজ আউট"
+
+msgctxt "Ease Type"
+msgid "Ease In-Out"
+msgstr "ইজ ইন-আউট"
+
+msgctxt "Ease Type"
+msgid "Ease Out-In"
+msgstr "ইজ আউট-ইন"
 
 msgid "Change Animation Step"
 msgstr "অ্যানিমেশনের ধাপ পরিবর্তন করুন"
@@ -1259,20 +1636,60 @@ msgstr "সরলরৈখিকভাবে অ্যানিমেশনে�
 msgid "Create Node"
 msgstr "নোড তৈরি করুন"
 
+msgid ""
+"Some AnimationPlayerEditor's options are disabled since this is the dummy "
+"AnimationPlayer for preview.\n"
+"\n"
+"The dummy player is forced active, non-deterministic and doesn't have the "
+"root motion track. Furthermore, the original node is inactive temporary."
+msgstr ""
+"AnimationPlayerEditor-এর কিছু বিকল্প নিষ্ক্রিয় করা আছে, কারণ এটি প্রিভিউয়ের জন্য "
+"একটি ডামি AnimationPlayer।\n"
+"\n"
+"ডামি প্লেয়ারটিকে জোর করে সক্রিয় করা হয়, এটি অনির্দিষ্ট এবং এর কোনো রুট মোশন ট্র্যাক "
+"নেই। উপরন্তু, মূল নোডটি সাময়িকভাবে নিষ্ক্রিয় আছে।"
+
+msgid "AnimationPlayer is inactive. The playback will not be processed."
+msgstr "AnimationPlayer নিষ্ক্রিয়। প্লেব্যাক প্রক্রিয়া সম্পন্ন হবে না।"
+
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "অ্যানিমেশন তৈরি এবং সম্পাদনা করতে একটি অ্যানিমেশনপ্লেয়ার নোড নির্বাচন করুন।"
 
 msgid "Warning: Editing imported animation"
 msgstr "সতর্কতা: Imported অ্যানিমেশন সম্পাদনা করা হচ্ছে"
 
+msgid "Dummy Player"
+msgstr "ডামি প্লেয়ার"
+
 msgid "Warning: AnimationPlayer is inactive"
 msgstr "সতর্কতা: এনিমেশনপ্লেয়ার অকার্যকর"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "bezier কার্ভ এডিটর এবং ট্র্যাক এডিটরের মধ্যে টগল করুন।"
+
+msgid "Toggle function names in the track editor."
+msgstr "ট্র্যাক এডিটরে ফাংশনের নাম টগল করুন।"
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Tree মধ্যে নির্বাচিত নোডগুলি থেকে কেবল ট্র্যাকগুলি দেখান।"
 
+msgid ""
+"Sort tracks/groups alphabetically.\n"
+"If disabled, tracks are shown in the order they are added and can be "
+"reordered using drag-and-drop."
+msgstr ""
+"ট্র্যাক বা গ্রুপগুলোকে বর্ণানুক্রমে সাজান।\n"
+"নিষ্ক্রিয় থাকলে, ট্র্যাকগুলোকে যোগ করার ক্রম অনুযায়ী দেখানো হয়েছে এবং ড্র্যাগ-অ্যান্ড-"
+"ড্রপ করে সেগুলোর ক্রম পরিবর্তন করা যাবে।"
+
 msgid "Group tracks by node or display them as plain list."
 msgstr "নোড দ্বারা গ্রুপ ট্র্যাক করুন বা তাদের সরল তালিকা হিসাবে প্রদর্শন করুন।"
+
+msgid "Apply snapping to timeline cursor."
+msgstr "টাইমলাইন কার্সরকে স্ন্যাপ করুন।"
+
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "নিকটতম পূর্ণসংখা FPSকে স্ন্যাপ করুন।"
 
 msgid "Animation step value."
 msgstr "অ্যানিমেশন পদক্ষেপের মান।"
@@ -1282,6 +1699,9 @@ msgstr "সেকেন্ড"
 
 msgid "FPS"
 msgstr "এফপিএস"
+
+msgid "Auto Fit Bezier"
+msgstr "Bezierকে স্বয়ংক্রিয়ভাবে ফিট করুন"
 
 msgid "Edit"
 msgstr "সম্পাদন করুন (Edit)"
@@ -1298,8 +1718,20 @@ msgstr "নির্বাচিত সমূহের আকার পরিব
 msgid "Scale From Cursor..."
 msgstr "কার্সর হতে আকার পরিবর্তন করুন…"
 
+msgid "Set Start Offset (Audio)"
+msgstr "স্টার্ট অফসেট নির্ধারন করুন (অডিও)"
+
+msgid "Set End Offset (Audio)"
+msgstr "এন্ড অফসেট নির্ধারন করুন (অডিও)"
+
 msgid "Make Easing Selection..."
 msgstr "ইজিইং নির্বাচিত করুন…"
+
+msgid "Move First Selected Key to Cursor"
+msgstr "প্রথম নির্বাচিত কী-কে কার্সরে নিয়ে যান"
+
+msgid "Move Last Selected Key to Cursor"
+msgstr "শেষ নির্বাচিত কী-কে কার্সরে নিয়ে যান"
 
 msgid "Delete Selection"
 msgstr "নির্বাচিত সমূহ Delete করুন"
@@ -1309,6 +1741,9 @@ msgstr "পরবর্তী ধাপে যান"
 
 msgid "Go to Previous Step"
 msgstr "পূর্ববর্তী ধাপে যান"
+
+msgid "Add tracks to RESET"
+msgstr "RESET-এ ট্র্যাকগুলো যোগ করুন"
 
 msgid "Bake Animation..."
 msgstr "অ্যানিমেশন বেক করুন…"
@@ -1324,6 +1759,12 @@ msgstr "বেজিয়ার কার্ভ ব্যবহার করু
 
 msgid "Optimize"
 msgstr "পরিমার্জন করুন"
+
+msgid "Trim keys placed in negative time"
+msgstr "ট্রিম কীগুলো ঋণাত্মক সময় রাখা"
+
+msgid "Trim keys placed exceed the animation length"
+msgstr "ট্রিম কীগুলো অ্যানিমেশনের মাপ ছাড়িয়ে গাছে"
 
 msgid "Remove invalid keys"
 msgstr "অগ্রহনযোগ্য চাবিসমূহ অপসারণ করুন"
@@ -1343,11 +1784,17 @@ msgstr "পরিচ্ছন্ন করুন"
 msgid "Scale Ratio:"
 msgstr "স্কেল/মাপের অনুপাত:"
 
+msgid "Select Transition and Easing"
+msgstr "ট্রানজিশন ও ইজিঙ্গ নির্বাচন করুন"
+
 msgid "Transition Type:"
 msgstr "ট্র্যানজিশন ধরণ:"
 
 msgid "Ease Type:"
 msgstr "ইজ টাইপ:"
+
+msgid "FPS:"
+msgstr "FPS:"
 
 msgid "Animation Baker"
 msgstr "অ্যানিমেশন বেকার"
@@ -1364,6 +1811,24 @@ msgstr "গুণাগুণ/বৈশিষ্ট্য copy করুন"
 msgid "Select All/None"
 msgstr "কোনোটাই নির্বাচন করবেন/না"
 
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"শুধু অ্যানিমেশন এডিটরে মার্কারের উপর রাইট ক্লিক করে \"মার্কারের নাম পরিবর্তন করুন\" "
+"নির্বাচন করেই একটি মার্কারের নাম পরিবর্তন করা যাবে, যাতে মার্কারের নামগুলো সর্বদা "
+"পৃথক থাকে।"
+
+msgid "Rename Marker"
+msgstr "মার্কারের নাম পরিবর্তন করুন"
+
+msgid "Marker:"
+msgstr "মার্কার:"
+
+msgid "Multi Edit Marker Color"
+msgstr "একাধিক মার্করের রঙ সম্পাদনা"
+
 msgid "Add Audio Track Clip"
 msgstr "অডিও ট্র্যাক ক্লিপ যুক্ত করুন"
 
@@ -1373,14 +1838,32 @@ msgstr "অডিও ট্র্যাক ক্লিপ শুরু অফ�
 msgid "Change Audio Track Clip End Offset"
 msgstr "অডিও ট্র্যাক ক্লিপ শেষ অফসেট পরিবর্তন করুন"
 
+msgid "%s at "
+msgstr "-এ %s "
+
+msgid "'%s':"
+msgstr "'%s':"
+
+msgid "Root"
+msgstr "রুট"
+
 msgid "Path:"
 msgstr "পথ:"
 
 msgid "Errors"
 msgstr "সমস্যাসমূহ"
 
+msgid "Title"
+msgstr "টাইটেল"
+
+msgid "Verified Author"
+msgstr "যাচাইকৃত স্রষ্টা"
+
 msgid "License"
 msgstr "লাইসেন্স"
+
+msgid "No changelog provided for this version."
+msgstr "এই ভার্সনের জন্য কোনো পরিবর্তন তালিকা দেওয়া হয়নি।"
 
 msgid "Loading..."
 msgstr "লোড হচ্ছে…"
@@ -1393,6 +1876,12 @@ msgstr "ইন্সটল…"
 
 msgid "Version:"
 msgstr "সংস্করণ:"
+
+msgid "Open the web browser to show the asset in the online store page."
+msgstr "ওয়েব ব্রাউজার খুলে অনলাইন স্টোর পেজে অ্যাসেটটি দেখুন।"
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "ওয়েব ব্রাউজার খুলে সোর্স ফাইলসহ একটি পেজ দেখুন।"
 
 msgid "Description"
 msgstr "বর্ণনা"
@@ -1411,6 +1900,9 @@ msgstr "হোস্টনাম রিসলভ করা যায়নি:"
 
 msgid "Can't resolve."
 msgstr "সমস্যা সমাধানে ব্যর্থ।"
+
+msgid "Write error."
+msgstr "লিখন ত্রুটি।"
 
 msgid "Request failed, too many redirects"
 msgstr "অনুরোধ ব্যর্থ হয়েছে, অধিক সংখ্যক রিডাইরেক্ট এর কারণে"
@@ -1436,6 +1928,9 @@ msgstr "প্রাপ্ত:"
 msgid "Asset Download Error:"
 msgstr "অ্যাসেট ডাউনলোড ত্রুটি:"
 
+msgid "Ready to install."
+msgstr "ইনস্টল করতে প্রস্তুত।"
+
 msgid "Downloading (%s / %s)..."
 msgstr "ডাউনলোড হচ্ছে (%s / %s)..।"
 
@@ -1451,8 +1946,42 @@ msgstr "অনিয়োজিত"
 msgid "Retry"
 msgstr "পুনরায় চেষ্টা করুন"
 
+msgid "Updated (Newest First)"
+msgstr "আপডেট করা (সর্বশেষটি আগে)"
+
+msgid "Updated (Oldest First)"
+msgstr "আপডেট করা (সবচেয়ে পুরনো আগে)"
+
+msgid "Reviews (Highest Score First)"
+msgstr "রিভিউগুলো (সর্বোচ্চ স্কোর আগে)"
+
+msgid "Reviews (Lowest Score First)"
+msgstr "রিভিউগুলো (সর্বোনিম্ন স্কোর আগে)"
+
+msgid ""
+"The Asset Store requires an online connection and involves sending data over "
+"the internet."
+msgstr ""
+"অ্যাসেট স্টোর ব্যাবহার করতে অনলাইন সংযোগ প্রয়োজন এবং এতে ইন্টারনেটের মাধ্যমে ডেটা "
+"আদান-প্রদান করতে হয়।"
+
 msgid "All"
 msgstr "সকল"
+
+msgid "Repository returned with invalid data."
+msgstr "রিপোজিটরি অবৈধ ডেটা এনেছে।"
+
+msgid "No results for \"%s\"."
+msgstr "\"%s\"-এর জন্য কোনো ফলাফল নেই।"
+
+msgid "No results compatible with %s %s."
+msgstr "%s %s-এর সাথে সামঞ্জস্যপূর্ণ কোনো ফলাফল নেই।"
+
+msgid "Search templates. Use tags by including \"#tagname\"."
+msgstr "টেমপ্লেট খুঁজুন। \"#tagname\" লিখে ট্যাগ ব্যবহার করুন।"
+
+msgid "Search assets (excluding templates). Use tags by including \"#tagname\"."
+msgstr "অ্যাসেট খুঁজুন (টেমপ্লেট বাদে)। \"#tagname\" লিখে ট্যাগ ব্যবহার করুন।"
 
 msgid "Plugins..."
 msgstr "প্লাগইন-সমূহ…"
@@ -1469,11 +1998,25 @@ msgstr "লাইসেন্স"
 msgid "Assets ZIP File"
 msgstr "প্রয়োজনীয় উপকরণসমূহের ZIP ফাইল"
 
+msgid "Asset Store"
+msgstr "অ্যাসেট স্টোর"
+
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "অ্যাসেট ফাইল \"%s\" এর জন্য খোলা সম্ভব হয় নি (ZIP ফরম্যাটে নেই)।"
 
 msgid "%s (already exists)"
 msgstr "%s (ইতোমধ্যে আছে)"
+
+msgid "%d file conflicts with your project and won't be installed"
+msgid_plural "%d files conflict with your project and won't be installed"
+msgstr[0] "%dটি ফাইল আপনার প্রজেক্টের সাথে সাংঘর্ষিক এবং সেটি ইনস্টল করা হবে না"
+msgstr[1] "%dটি ফাইল আপনার প্রজেক্টের সাথে সাংঘর্ষিক এবং সেগুলো ইনস্টল করা হবে না"
+
+msgid "This asset doesn't have a root directory, so it can't be ignored."
+msgstr "এই অ্যাসেটটির কোনো রুট ডিরেক্টরি নেই, তাই এটিকে উপেক্ষা করা যাবে না।"
+
+msgid "Ignore the root directory when extracting files."
+msgstr "ফাইল এক্সট্র্যাক্ট করার সময় রুট ডিরেক্টরিকে উপেক্ষা করুন।"
 
 msgid "Uncompressing Assets"
 msgstr "আনকম্প্রেস্ড অ্যাসেটস"
@@ -1484,14 +2027,42 @@ msgstr "\"%s\" প্যাকেজ হতে নীম্নোক্ত ফ�
 msgid "(and %s more files)"
 msgstr "(এবং %s টি আরো ফাইল)"
 
+msgid "Asset \"%s\" installed successfully!"
+msgstr "অ্যাসেট \"%s\"-এর ইনস্টল সফল!"
+
 msgid "Success!"
 msgstr "সম্পন্ন হয়েছে!"
+
+msgid "Open the list of the asset contents and select which files to install."
+msgstr "অ্যাসেট কন্টেন্টের তালিকা খুলুন এবং ইনস্টল করার জন্য ফাইলগুলো নির্বাচন করুন।"
+
+msgid ""
+"Change the folder where the contents of the asset are going to be installed."
+msgstr "অ্যাসেটের কন্টেন্ট যেখানে ইনস্টল হবে, সেই ফোল্ডারটি পরিবর্তন করুন।"
+
+msgid "Ignore Asset Root"
+msgstr "অ্যাসেট রুট উপেক্ষা করুন"
+
+msgid "No files conflict with your project."
+msgstr "আপনার প্রজেক্টের সাথে কোনো ফাইলের সংঘর্ষ নেই।"
+
+msgid "Show contents of the asset and conflicting files."
+msgstr "অ্যাসেট এবং সাংঘর্ষিক ফাইলগুলোর কন্টেন্ট দেখান।"
+
+msgid "Contents of the asset:"
+msgstr "অ্যাসেটটির কন্টেন্টগুলো:"
 
 msgid "Installation preview:"
 msgstr "ইনস্টলেশন প্রিভিউ:"
 
+msgid "Configure Asset Before Installing"
+msgstr "ইনষ্টল করার আগে অ্যাসেট কনফিগার করুন"
+
 msgid "Install"
 msgstr "ইন্সটল"
+
+msgid "Audio Preview Play/Pause"
+msgstr "অডিও প্রিভিউ প্লে/পজ"
 
 msgid "Stop"
 msgstr "থামো"
@@ -1537,6 +2108,12 @@ msgstr "বাইপাস"
 
 msgid "Volume"
 msgstr "আয়তন"
+
+msgid "Channel %d, Left VU"
+msgstr "চ্যানেল %d, বাম VU"
+
+msgid "Send"
+msgstr "পাঠান"
 
 msgid "Reset Volume"
 msgstr "রিসেট ভলিউম"
@@ -1613,6 +2190,19 @@ msgstr "সচল"
 msgid "Deploy with Remote Debug"
 msgstr "দূরবর্তী ডিবাগের সহিত ডিপ্লয় করুন"
 
+msgid ""
+"When this option is enabled, using one-click deploy will make the executable "
+"attempt to connect to this computer's IP so the running project can be "
+"debugged.\n"
+"This option is intended to be used for remote debugging (typically with a "
+"mobile device).\n"
+"You don't need to enable it to use the GDScript debugger locally."
+msgstr ""
+"এই বিকল্পটি চালু করা থাকলে, ওয়ান-ক্লিক ডিপ্লয় ব্যবহার করলে এক্সিকিউটেবলটি এই "
+"কম্পিউটারের IP-তে সংযোগ করার চেষ্টা করবে, যাতে চলমান প্রজেক্টটি ডিবাগ করা যাবে।\n"
+"এই অপশনটি রিমোট ডিবাগিং (সাধারণত মোবাইল ডিভাইসের মাধ্যমে) এর উদ্দেশ্যে তৈরি।\n"
+"স্থানীয়ভাবে GDScript ডিবাগার ব্যবহার করার জন্য এটি চালু করার প্রয়োজন নেই।"
+
 msgid "Visible Collision Shapes"
 msgstr "দৃশ্যমান সাংঘর্ষিক আকারসমূহ (Collision Shapes)"
 
@@ -1631,17 +2221,66 @@ msgstr ""
 "হবে (একটি ছোট ফ্ল্যাশ হিসাবে)।\n"
 "কম প্রসেসর মোডের সমস্যা সমাধানের জন্য এটি কার্যকর।"
 
+msgid ""
+"When this option is enabled, the editor debug server will stay open and "
+"listen for new sessions started outside of the editor itself."
+msgstr ""
+"এই বিকল্পটি চালু করলে, এডিটর ডিবাগ সার্ভারটি সচল থাকবে এবং এডিটরের বাইরে শুরু হওয়া "
+"নতুন সেশনগুলোর জন্য অপেক্ষা করবে।"
+
+msgid "Customize Run Instances..."
+msgstr "রান ইন্সট্যান্সগুলো কাস্টোমাইজ করুন..।"
+
+msgid "Set %s"
+msgstr "%s সেট করুন"
+
 msgid "Debugger"
 msgstr "ডিবাগার"
 
+msgid "Session %d"
+msgstr "সেশন %d"
+
 msgid "Debug"
 msgstr "ডিবাগ"
+
+msgid ""
+"Some remote nodes were not selected, as the configured maximum selection is "
+"%d. This can be changed at \"debugger/max_node_selection\" in the Editor "
+"Settings."
+msgstr ""
+"কিছু রিমোট নোড নির্বাচিত হয়নি, যেহেতু কনফিগার করা সর্বোচ্চ নির্বাচনের সংখ্যা %d । "
+"এটি এডিটর সেটিংস-এর \"debugger/max_node_selection\"-এ পরিবর্তন করা যাবে।"
 
 msgid "Save Branch as Scene..."
 msgstr "দৃশ্য হিসাবে শাখা সংরক্ষণ করুন..।"
 
 msgid "Instance:"
 msgstr "ইন্সট্যান্স:"
+
+msgid ""
+"This node has been instantiated from a PackedScene file:\n"
+"%s\n"
+"Click to open the original file in the Editor."
+msgstr ""
+"এই নোডটিকে একটি PackedScene ফাইল থেকে ইনস্ট্যান্স করা হয়েছে:\n"
+"%s\n"
+"এডিটরে মূল ফাইলটি খুলতে ক্লিক করুন।"
+
+msgid ""
+"Saving the branch as a scene requires selecting only one node, but you have "
+"selected %d nodes."
+msgstr ""
+"ব্রাঞ্চটিকে সিন হিসেবে সংরক্ষণ করতে কেবল একটি নোড নির্বাচন করতে হবে, কিন্তু আপনি "
+"%dটি নোড নির্বাচন করেছেন।"
+
+msgid "Expression to evaluate (Up/Down: Navigate history)"
+msgstr "মূল্যায়ন করার জন্য রাশি (উপরে/নিচে: ইতিহাস নেভিগেট করুন)"
+
+msgid "Expression to evaluate"
+msgstr "মূল্যায়ন করার জন্য রাশি"
+
+msgid "Updating assets on target device:"
+msgstr "টার্গেট ডিভাইসে অ্যাসেট আপডেট করা হচ্ছে:"
 
 msgid "Scanning for local changes"
 msgstr "স্থানীয় পরিবর্তন-সমূহ খোঁজা হচ্ছে"
@@ -3487,6 +4126,9 @@ msgstr "পেন্টিং টাইলস সম্পত্তি"
 
 msgid "Painting:"
 msgstr "পেইন্টিং:"
+
+msgid "Polygon %d"
+msgstr "পলিগন %d"
 
 msgid "Shift: Draw line."
 msgstr "Shift: লাইন আঁকুন।"

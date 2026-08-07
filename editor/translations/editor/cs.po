@@ -12829,13 +12829,6 @@ msgstr ""
 msgid "Ungroup"
 msgstr "Rozdělit seskupení"
 
-msgid ""
-"LMB+Drag: Measure distance between two points.\n"
-"Shift+LMB+Drag: Show component measurements."
-msgstr ""
-"LTM+Táhnutí: Měřit vzdálenost mezi dvěma body v 3D prostoru.\n"
-"Shift+LTM+Táhnutí: Zobrazit měření součástí."
-
 msgid "Ruler Mode"
 msgstr "Režim pravítka"
 

@@ -106,13 +106,14 @@
 # Hasan Kara <hasanbeytullahkara@gmail.com>, 2026.
 # Fikret Sadak <fsadak@gmail.com>, 2026.
 # can unal <justplay95@gmail.com>, 2026.
+# Efe Yılmaz <iceburn322@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-04-13 02:09+0000\n"
-"Last-Translator: can unal <justplay95@gmail.com>\n"
+"PO-Revision-Date: 2026-07-11 11:02+0000\n"
+"Last-Translator: Efe Yılmaz <iceburn322@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -120,7 +121,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.7.1.dev0\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -194,6 +195,9 @@ msgstr "Erişilebilirlik Desteği"
 msgid "Updates per Second"
 msgstr "Saniye Başına Güncelleme Hızı"
 
+msgid "Accessibility Driver"
+msgstr "Erişilebilirlik Sürücüsü"
+
 msgid "Display"
 msgstr "Görüntüle"
 
@@ -254,6 +258,12 @@ msgstr "Pencere Genişliğinin Üzerine Yaz"
 msgid "Window Height Override"
 msgstr "Pencere Yüksekliğinin Üzerine Yaz"
 
+msgid "HDR"
+msgstr "HDR"
+
+msgid "Request HDR Output"
+msgstr "HDR Çıktısı İste"
+
 msgid "Energy Saving"
 msgstr "Enerji Tasarrufu"
 
@@ -265,6 +275,9 @@ msgstr "Animasyon"
 
 msgid "Warnings"
 msgstr "Uyarılar"
+
+msgid "Check Invalid Skeleton Modifier Node Paths"
+msgstr "Geçersiz İskelet Değiştirici Düğüm Yollarını Kontrol Et"
 
 msgid "Check Invalid Track Paths"
 msgstr "Geçersiz İz Yollarını Kontrol Et"

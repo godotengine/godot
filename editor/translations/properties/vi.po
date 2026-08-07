@@ -37,13 +37,14 @@
 # Khắc Vinh Vũ <vukhacvinh31@gmail.com>, 2026.
 # Lý Hoàng Bách <bachmeme1212@gmail.com>, 2026.
 # Nguyễn Thị Đào <kenhcuatoilaan@gmail.com>, 2026.
+# The Earth <winterwolfvn123@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-25 13:02+0000\n"
-"Last-Translator: Nguyễn Thị Đào <kenhcuatoilaan@gmail.com>\n"
+"PO-Revision-Date: 2026-07-26 09:02+0000\n"
+"Last-Translator: The Earth <winterwolfvn123@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/vi/>\n"
 "Language: vi\n"
@@ -51,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "Application"
 msgstr "Ứng dụng"
@@ -459,7 +460,7 @@ msgid "Use Ambient"
 msgstr "Sử dụng Ambient"
 
 msgid "Enable Long Press as Right Click"
-msgstr "Bật Dài Nhấn khi Nhấp chuột phải"
+msgstr "Bật nhấn giữ lâu thành chuột phải"
 
 msgid "Enable Pan and Scale Gestures"
 msgstr "Kích hoạt Cử chỉ Xoay và Thu phóng"
@@ -470,14 +471,26 @@ msgstr "Trục cuộn đầu vào quay"
 msgid "Navigation"
 msgstr "Điều hướng"
 
+msgid "World"
+msgstr "Thế giới"
+
+msgid "Map Use Async Iterations"
+msgstr "Sử dụng lặp không đồng bộ của Map"
+
+msgid "Region Use Async Iterations"
+msgstr "Vùng sử dụng các phép lặp không đồng bộ"
+
 msgid "Avoidance Use High Priority Threads"
 msgstr "Tránh sử dụng luồng có mức độ ưu tiên cao"
 
 msgid "Pathfinding"
 msgstr "Tìm đường"
 
+msgid "Max Threads"
+msgstr "Luồng tối đa"
+
 msgid "Baking"
-msgstr "Tính Toán Sẵn"
+msgstr "Tính toán sẵn"
 
 msgid "Use Crash Prevention Checks"
 msgstr "Sử dụng Kiểm tra phòng ngừa sự cố"
@@ -495,7 +508,7 @@ msgid "Delta Smoothing"
 msgstr "Làm Mượt Delta"
 
 msgid "Print Error Messages"
-msgstr "In thông điệp lỗi"
+msgstr "In tin nhắn lỗi"
 
 msgid "Print to stdout"
 msgstr "In ra đầu ra tiêu chuẩn"
@@ -527,11 +540,32 @@ msgstr "Bỏ qua tay cầm khi ứng dụng chạy nền"
 msgid "Legacy Just Pressed Behavior"
 msgstr "Hành vi Just Pressed cũ"
 
+msgid "Sensors"
+msgstr "Cảm biến"
+
+msgid "Enable Accelerometer"
+msgstr "Bật cảm biến gia tốc"
+
+msgid "Enable Gravity"
+msgstr "Kích hoạt trọng lực"
+
+msgid "Enable Gyroscope"
+msgstr "Kích hoạt con quay hồi chuyển"
+
+msgid "Enable Magnetometer"
+msgstr "Kích hoạt cảm biến từ trường"
+
+msgid "Joypads"
+msgstr "Tay cầm"
+
 msgid "Device"
 msgstr "Thiết bị"
 
+msgid "Window ID"
+msgstr "ID cửa sổ"
+
 msgid "Command or Control Autoremap"
-msgstr "Lệnh hoặc Kiểm soát Autoremap"
+msgstr "Lệnh hoặc Điều khiển Autoremap"
 
 msgid "Alt Pressed"
 msgstr "Phím Alt Đã Được Ấn"
@@ -596,8 +630,14 @@ msgstr "Đảo ngược bút"
 msgid "Relative"
 msgstr "Tương đối"
 
+msgid "Screen Relative"
+msgstr "Tương đối trên màn hình"
+
 msgid "Velocity"
 msgstr "Vận tốc"
+
+msgid "Screen Velocity"
+msgstr "Vận tốc trên màn hình"
 
 msgid "Axis"
 msgstr "Trục"
@@ -623,11 +663,26 @@ msgstr "Delta"
 msgid "Channel"
 msgstr "Kênh"
 
+msgid "Pitch"
+msgstr "Tỷ lệ"
+
 msgid "Instrument"
 msgstr "Nhạc cụ"
 
+msgid "Controller Number"
+msgstr "Số điều khiển"
+
 msgid "Controller Value"
 msgstr "Giá trị bộ điều khiển"
+
+msgid "Events"
+msgstr "Nội dung"
+
+msgid "Include Navigational"
+msgstr "Bao gồm điều hướng"
+
+msgid "Include Hidden"
+msgstr "Bao gồm ẩn"
 
 msgid "Big Endian"
 msgstr "Big Endian"
@@ -636,10 +691,10 @@ msgid "Blocking Mode Enabled"
 msgstr "Đã bật chế độ chặn"
 
 msgid "Connection"
-msgstr "Kết Nối­­"
+msgstr "Kết Nối"
 
 msgid "Read Chunk Size"
-msgstr "Kích thước đoạn đọc"
+msgstr "Kích thước đọc Chunk"
 
 msgid "Data"
 msgstr "Dữ liệu"
@@ -668,11 +723,29 @@ msgstr "Đường dẫn"
 msgid "Data Array"
 msgstr "Mảng dữ liệu"
 
+msgid "Max Pending Connections"
+msgstr "Số lượng kết nối tối đa đang chờ xử lý"
+
 msgid "Region"
 msgstr "Khu vực"
 
+msgid "Offset"
+msgstr "Độ dời"
+
 msgid "Cell Size"
 msgstr "Kích thước ô"
+
+msgid "Cell Shape"
+msgstr "Hình dạng ô"
+
+msgid "Jumping Enabled"
+msgstr "Chức năng nhảy đã được kích hoạt"
+
+msgid "Default Compute Heuristic"
+msgstr "Thuật toán tính toán mặc định"
+
+msgid "Default Estimate Heuristic"
+msgstr "Phương pháp ước tính mặc định"
 
 msgid "Seed"
 msgstr "Số nguồn"

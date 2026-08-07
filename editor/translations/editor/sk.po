@@ -27,13 +27,15 @@
 # Marek J <marek.workspace@gmail.com>, 2026.
 # Martin Sinansky <martin.sinansky@gmail.com>, 2026.
 # Shrek3010 <martinlukac2244@gmail.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# Gohurlok <Gohurlok@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-03-02 14:35+0000\n"
-"Last-Translator: Shrek3010 <martinlukac2244@gmail.com>\n"
+"PO-Revision-Date: 2026-07-14 15:01+0000\n"
+"Last-Translator: Gohurlok <Gohurlok@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -41,7 +43,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.16.1-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "OK"
@@ -118,8 +120,65 @@ msgstr "Čas vypršal."
 msgid "Can't connect"
 msgstr "Nie je možné pripojiť."
 
+msgid "Connection error"
+msgstr "Problém s pripojením"
+
+msgid "Can't fork"
+msgstr "Nedá sa rozvetviť"
+
+msgid "Invalid parameter"
+msgstr "Neplatný parameter"
+
+msgid "Already exists"
+msgstr "Už existuje"
+
+msgid "Does not exist"
+msgstr "neexistuje"
+
+msgid "Can't read database"
+msgstr "nie je možné čítať databázu"
+
+msgid "Can't write database"
+msgstr "Nedá sa zapisať do databázy"
+
+msgid "Compilation failed"
+msgstr "Kompilácia zlyhala"
+
+msgid "Method not found"
+msgstr "Metóda nebola nájdená"
+
+msgid "Link failed"
+msgstr "Prepojenie zlyhalo"
+
+msgid "Script failed"
+msgstr "Skript zlyhal"
+
+msgid "Cyclic link detected"
+msgstr "Zistené cyklické prepojenie"
+
+msgid "Invalid declaration"
+msgstr "Neplatné vyhlásenie"
+
+msgid "Duplicate symbol"
+msgstr "Dublikovať symbol"
+
+msgid "Parse error"
+msgstr "Chyba pri analýze"
+
+msgid "Busy"
+msgstr "zaneprázdnený"
+
+msgid "Skip"
+msgstr "preskočiť"
+
 msgid "Help"
 msgstr "Pomoc"
+
+msgid "Bug"
+msgstr "chyba"
+
+msgid "Printer on fire"
+msgstr "horiaca tlačiareň"
 
 msgid "unset"
 msgstr "Nenastavené"
@@ -630,6 +689,9 @@ msgstr "Odobrať Všetky Kľúče"
 msgid "Add Animation"
 msgstr "Pridať Animáciu"
 
+msgid "No available animations"
+msgstr "Žiadne dostupné animácie"
+
 msgid "Add %s"
 msgstr "Pridať %s"
 
@@ -693,6 +755,12 @@ msgstr "Židany"
 msgid "Open Editor"
 msgstr "Otvorit Editor"
 
+msgid "Blend Point Index"
+msgstr "Index bodu zmiešania"
+
+msgid "Position"
+msgstr "Pozícia"
+
 msgid "Blend Value"
 msgstr "Hodnota zmiešavania"
 
@@ -715,7 +783,7 @@ msgid "Add Triangle"
 msgstr "Pridať Trojuholník"
 
 msgid "Change BlendSpace2D Config"
-msgstr "Zmeniť nastavenia BlendSpace2D"
+msgstr "Zmeniť konfiguráciu BlendSpace2D"
 
 msgid "Change BlendSpace2D Labels"
 msgstr "Zmeniť Label BlendSpace2D"
@@ -4326,6 +4394,9 @@ msgstr "Prepnúť Prichytávanie Mriežky"
 
 msgid "Grid Snap"
 msgstr "Prichytenie Mriežky"
+
+msgid "Polygon %d"
+msgstr "Polygony %d"
 
 msgid "Navigation"
 msgstr "Navigácia"

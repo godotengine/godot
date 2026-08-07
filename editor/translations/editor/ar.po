@@ -77,7 +77,7 @@
 # Mohammedi Mohammed Djawad <smallcloverstudio@gmail.com>, 2023.
 # Hamed Mohammed Almuslhi <wbk7777@hotmail.com>, 2023.
 # KhalilBenGaied <grozz1@yahoo.com>, 2023.
-# بسام العوفي <co-able@hotmail.com>, 2023, 2024.
+# بسام العوفي <co-able@hotmail.com>, 2023, 2024, 2026.
 # Abdulkarim <abwkhaldalhwsawy@gmail.com>, 2023.
 # Rémi Verschelde <remi@godotengine.org>, 2023.
 # Omran Alsaedi <Omran2222@outlook.sa>, 2023.
@@ -113,13 +113,16 @@
 # Mohammad Bouland <mohammad.bouland@gmail.com>, 2026.
 # Majd Tqe <majd.t321@gmail.com>, 2026.
 # احمد صلاح <wiahmedslah@gmail.com>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
+# الاصيل <a8451321@gmail.com>, 2026.
+# kAPET <dvman814@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-07-01 16:01+0000\n"
-"Last-Translator: احمد صلاح <wiahmedslah@gmail.com>\n"
+"PO-Revision-Date: 2026-08-01 18:57+0000\n"
+"Last-Translator: kAPET <dvman814@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ar/>\n"
 "Language: ar\n"
@@ -128,7 +131,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "OK"
 msgstr "حسنا"
@@ -815,14 +818,34 @@ msgstr "مزامنة"
 msgid "None"
 msgstr "لا شيء"
 
+msgid "Cyclic Mutable"
+msgstr "دوري قابل للتعديل"
+
 msgid "Cyclic Length"
 msgstr "طول الدورة"
+
+msgid ""
+"Cycle length in seconds for cyclic sync. All animations are time-scaled to "
+"complete one cycle in this duration."
+msgstr ""
+"مدة الدورة بالثواني للمزامنة الدورية. تُعدَّل سرعة جميع الحركات زمنيًا بحيث تُكمل "
+"دورة واحدة خلال هذه المدة."
 
 msgid "Blend"
 msgstr "مزج"
 
 msgid "Open Editor"
 msgstr "فتح المُحرر"
+
+msgid "Blend Point Index"
+msgstr "فهرس نقطة المزج"
+
+msgid ""
+"Index of the blend point.\n"
+"Values outside of the valid range will be clamped to the nearest index."
+msgstr ""
+"فهرس نقطة المزج.\n"
+"ستُقيَّد القيم الواقعة خارج النطاق الصالح إلى أقرب فهرس."
 
 msgid "Position"
 msgstr "موقع"
@@ -1654,6 +1677,9 @@ msgstr "قطع المفتاح (المفاتيح)"
 msgid "Copy Key(s)"
 msgstr "نسخ المفتاح (المفاتيح)"
 
+msgid "Send Key(s) to RESET"
+msgstr "إرسال المفتاح (أو المفاتيح) إلى RESET"
+
 msgid "Delete Key(s)"
 msgstr "حذف المفتاح (المفاتيح)"
 
@@ -1709,6 +1735,9 @@ msgstr "الخاصية '%s'"
 
 msgid "Nearest FPS: %d"
 msgstr "لأقرب إطار في الثانية :%d"
+
+msgid "Set the default handle mode of new bezier keys."
+msgstr "تعيين وضع مقابض مفاتيح بيزييه الجديدة الافتراضي."
 
 msgctxt "Transition Type"
 msgid "Linear"
@@ -1906,6 +1935,15 @@ msgstr "‌قم بالتبديل بين محرر منحنى بيزير ومحر�
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "أظهرْ المقاطع من العُقد المحددة داخل الشجرة، فقط."
+
+msgid ""
+"Sort tracks/groups alphabetically.\n"
+"If disabled, tracks are shown in the order they are added and can be "
+"reordered using drag-and-drop."
+msgstr ""
+"رتِب المقاطع/المجموعات أبجدياً.\n"
+"في حالة الإيقاف، يتم عرض المقاطع في بالترتيب الذي تمت إضافتها به، ويمكن إعادة "
+"ترتيبها بإستخدام خاصية السحب والإفلات."
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "جمع المقاطع حسب العُقد أو إظهارها في قائمة واضحة."
@@ -2162,6 +2200,12 @@ msgstr "تغيير موضع بداية مقطع صوت"
 msgid "Change Audio Track Clip End Offset"
 msgstr "تغيير موضع نهاية مقطع الصوت"
 
+msgid "%s at "
+msgstr "%s في "
+
+msgid "'%s':"
+msgstr "'%s':"
+
 msgid "Error: "
 msgstr "خطأ: "
 
@@ -2186,8 +2230,14 @@ msgstr "عنوان"
 msgid "Author"
 msgstr "المالك"
 
+msgid "Verified Author"
+msgstr "مؤلف موثوق"
+
 msgid "License"
 msgstr "الرخصة"
+
+msgid "No changelog provided for this version."
+msgstr "لم يتم توفير سجل تغييرات لهذا المصدر."
 
 msgid "Loading..."
 msgstr "جاري التحميل..."
@@ -2206,6 +2256,12 @@ msgstr "النسخة:"
 
 msgid "Download other versions."
 msgstr "تحميل إصدارات أخرى."
+
+msgid "Open the web browser to show the asset in the online store page."
+msgstr "افتح متصفح الويب لعرض المنتج في صفحة المتجر الإلكترونية."
+
+msgid "Open the web browser to show a page with the source files."
+msgstr "افتح المتصفح لعرض صفحة مع ملفات المصدر."
 
 msgid "Description"
 msgstr "الوصف"
@@ -2297,6 +2353,18 @@ msgstr "إعادة المحاولة"
 msgid "Download Error"
 msgstr "خطأ في التحميل"
 
+msgid "Updated (Newest First)"
+msgstr "مُحدّث (الأحدث أولاً)"
+
+msgid "Updated (Oldest First)"
+msgstr "مُحدّث (الأقدم أولاً)"
+
+msgid "Reviews (Highest Score First)"
+msgstr "المراجعات (اعلى الدرجات اولاً)"
+
+msgid "Reviews (Lowest Score First)"
+msgstr "المراجعات (أقل الدرجات اولاً)"
+
 msgid "Created (Newest First)"
 msgstr "تم إنشاؤه (الجديد اولاً)"
 
@@ -2328,6 +2396,14 @@ msgstr "الكل"
 msgid "No results for \"%s\"."
 msgstr "لا نتائج من أجل \"%s\"."
 
+msgid "Search templates. Use tags by including \"#tagname\"."
+msgstr "البحث عن قوالب. إستخدم العلامات عن طريقة إضافة \"#إسم_العلامة\"."
+
+msgid "Search assets (excluding templates). Use tags by including \"#tagname\"."
+msgstr ""
+"البحث في الأصول (عدا القوالب، والمشاريع، والأمثلة). إستخدم العلامات عن طريق "
+"وضع \"#اسم_العلامة\"."
+
 msgid "Import..."
 msgstr "استيراد..."
 
@@ -2348,6 +2424,9 @@ msgstr "تراخيص"
 
 msgid "Assets ZIP File"
 msgstr "ملف أصول مضغوط"
+
+msgid "Asset Store"
+msgstr "متجر الأصول"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "حدث خطأ عند فتح ملف الحزمة لـ \"%s\" (لأنه ليس بصيغة ZIP) ."
@@ -7047,7 +7126,7 @@ msgid "Advanced 3D graphics available."
 msgstr "تتوفر رسومات ثلاثية الأبعاد متقدمة."
 
 msgid "Can scale to large complex scenes."
-msgstr "يمكن أن تحجمة إلى مشاهد معقدة كبيرة."
+msgstr "يمكن توسيعه إلى مشاهد معقدة كبيرة."
 
 msgid "Uses RenderingDevice backend."
 msgstr "يستخدم الواجهة الخلفية لـ RenderingDevice."
@@ -7069,6 +7148,9 @@ msgstr "عرض سريع للمشاهد البسيطة."
 
 msgid "Supports desktop, mobile + web platforms."
 msgstr "يدعم منصات سطح المكتب والجوال + الويب."
+
+msgid "Least advanced 3D graphics."
+msgstr "أقل الرسومات ثلاثية الأبعاد تقدمًا."
 
 msgid "Intended for low-end/older devices."
 msgstr "مخصص للأجهزة ذات القوة المنخفضة او القديمة."
@@ -7136,6 +7218,9 @@ msgstr "مسار تنصيب المشروع:"
 msgid "Renderer:"
 msgstr "مُحرك الإخراج البصري:"
 
+msgid "More information"
+msgstr "ملعومات أكثر"
+
 msgid "The renderer can be changed later, but scenes may need to be adjusted."
 msgstr "نظام التكوين يمكن تغييره لاحقا، ولكن المَشاهد قد تحتاج إلى تعديل."
 
@@ -7144,6 +7229,9 @@ msgstr "البيانات الوصفية للتحكم في الإصدار:"
 
 msgid "Git"
 msgstr "جت (Git)"
+
+msgid "Edit Now"
+msgstr "التعديل الآن"
 
 msgid "Project Name"
 msgstr "اسم المشروع"
@@ -8112,6 +8200,9 @@ msgstr "خاصية طلاء البلاط"
 
 msgid "Painting:"
 msgstr "الطلاء:"
+
+msgid "Polygon %d"
+msgstr "المُضلعات %d"
 
 msgid "No terrains"
 msgstr "لا تضاريس"
@@ -12008,7 +12099,7 @@ msgid "Go to Function..."
 msgstr "الذهاب إلى وظيفة برمجية..."
 
 msgid "Go to Line..."
-msgstr "الذهاب إلى خط..."
+msgstr "الذهاب إلى سطر..."
 
 msgid "Lookup Symbol"
 msgstr "رمز البحث"

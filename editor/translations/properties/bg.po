@@ -26,13 +26,14 @@
 # Кристиан Николов <kris.nikolov07@gmail.com>, 2025, 2026.
 # Stanislav Yuliyanov <stanislav.yuliyanov@gmail.com>, 2025, 2026.
 # Antoan Ignatov <antoan.a.ignatov@gmail.com>, 2026.
+# Repa <youme.ytv@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-04-17 08:09+0000\n"
-"Last-Translator: Antoan Ignatov <antoan.a.ignatov@gmail.com>\n"
+"PO-Revision-Date: 2026-07-17 12:17+0000\n"
+"Last-Translator: Repa <youme.ytv@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/bg/>\n"
 "Language: bg\n"
@@ -40,7 +41,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "Application"
 msgstr "Апликация"
@@ -6318,6 +6319,12 @@ msgstr "Дебъгване на Времето за Прерисуване"
 
 msgid "Debug Redraw Color"
 msgstr "Дебъгване на Прерисуване на Цвят"
+
+msgid "Bytecode"
+msgstr "Байткод"
+
+msgid "IDs"
+msgstr "Идентификатори"
 
 msgid "Import S3TC BPTC"
 msgstr "Импортирай S3TC BPTC"

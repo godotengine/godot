@@ -175,13 +175,14 @@
 # Maíra Alves Rodrigues <contato@mairarodrigues.org>, 2026.
 # Bruno <alvesbrunodesouza@gmail.com>, 2026.
 # ickyDev <lunavicpotato@protonmail.com>, 2026.
+# Kawoshi <kawoshi@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2026-06-22 14:54+0000\n"
-"Last-Translator: Joel Gomes da Silva <joelgomes1994@hotmail.com>\n"
+"PO-Revision-Date: 2026-07-08 04:02+0000\n"
+"Last-Translator: Kawoshi <kawoshi@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -189,7 +190,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.7.dev0\n"
+"X-Generator: Weblate 2026.7.1.dev0\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -456,7 +457,7 @@ msgid "Zstd"
 msgstr "Zstd"
 
 msgid "Long Distance Matching"
-msgstr "Correspondência de Longa Distância (LDM)"
+msgstr "Correspondência de Longa Distância"
 
 msgid "Compression Level"
 msgstr "Nível de Compressão"
@@ -1701,7 +1702,7 @@ msgid "Disable Embedded Bitmaps"
 msgstr "Desativar Bitmaps Integrados"
 
 msgid "Multichannel Signed Distance Field"
-msgstr "Campo de Distância com Sinal Multicanal (MSDF)"
+msgstr "Campo de Distância com Sinal Multicanal"
 
 msgid "MSDF Pixel Range"
 msgstr "Alcance de Pixel do MSDF"
@@ -5215,7 +5216,7 @@ msgid "Varying Type"
 msgstr "Tipo do Varying"
 
 msgid "Op Type"
-msgstr "Tipo de Op."
+msgstr "Tipo da Operação"
 
 msgid "Constant"
 msgstr "Constante"
@@ -10198,13 +10199,13 @@ msgid "Particles Animation"
 msgstr "Animação de Partículas"
 
 msgid "Particles Anim H Frames"
-msgstr "Quadros Horizontais Anim. Part."
+msgstr "Quadros Horizontais da Animação das Partículas"
 
 msgid "Particles Anim V Frames"
-msgstr "Quadros Verticais Anim. Part."
+msgstr "Quadros Verticais da Animação das Partículas"
 
 msgid "Particles Anim Loop"
-msgstr "Repetir Anim. Part."
+msgstr "Repetir animação das partículas"
 
 msgid "Effect Callback Type"
 msgstr "Tipo de Callback do Efeito"
@@ -10231,10 +10232,10 @@ msgid "Load Path"
 msgstr "Caminho de Carregamento"
 
 msgid "Min Domain"
-msgstr "Mín. Domínio"
+msgstr "Dom. Mín"
 
 msgid "Max Domain"
-msgstr "Max. Domínio"
+msgstr "Dom. Máx"
 
 msgid "Bake Resolution"
 msgstr "Resolução de Pré-Cálculo"
@@ -13036,7 +13037,7 @@ msgid "Default Font Subpixel Positioning"
 msgstr "Posicionamento de Subpixel de Fonte Padrão"
 
 msgid "Default Font Multichannel Signed Distance Field"
-msgstr "MSDF de Fonte Padrão"
+msgstr "Campo de Distância Assinado Multicanal da Fonte Padrão"
 
 msgid "Default Font Generate Mipmaps"
 msgstr "Gerar Mipmaps de Fonte Padrão"

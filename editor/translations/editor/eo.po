@@ -27,19 +27,20 @@
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
 # bruvzg <bruvzg13@proton.me>, 2026.
 # Matty-H <matissegouery@yahoo.fr>, 2026.
+# MedProgAyat <hosseinmehriyari1383@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2026-05-05 18:11+0000\n"
-"Last-Translator: Matty-H <matissegouery@yahoo.fr>\n"
+"PO-Revision-Date: 2026-07-07 03:32+0000\n"
+"Last-Translator: MedProgAyat <hosseinmehriyari1383@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.17.1\n"
+"X-Generator: Weblate 2026.7.1.dev0\n"
 
 msgid "OK"
 msgstr "Bone"
@@ -4322,6 +4323,9 @@ msgstr "Skeleton2D"
 
 msgid "Advanced"
 msgstr "Altnivela"
+
+msgid "Polygon %d"
+msgstr "Redakti plurlateron %d"
 
 msgid "Yes"
 msgstr "Jes"

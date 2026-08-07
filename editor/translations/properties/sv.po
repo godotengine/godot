@@ -36,13 +36,14 @@
 # Isak Waltin <isak@waltin.se>, 2024, 2025.
 # Lasse Edsvik <lasse@lasseedsvik.se>, 2025, 2026.
 # "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# Jonatan Nyberg <monalisa@users.noreply.hosted.weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-06-10 12:02+0000\n"
-"Last-Translator: Lasse Edsvik <lasse@lasseedsvik.se>\n"
+"PO-Revision-Date: 2026-07-24 08:01+0000\n"
+"Last-Translator: Jonatan Nyberg <monalisa@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/sv/>\n"
 "Language: sv\n"
@@ -50,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 msgid "Application"
 msgstr "Applikation"
@@ -812,7 +813,7 @@ msgid "Diagonal Mode"
 msgstr "Diagonalt läge"
 
 msgid "Seed"
-msgstr "Seed"
+msgstr "Slumpfrö"
 
 msgid "State"
 msgstr "Tillstånd"
@@ -1058,7 +1059,7 @@ msgid "Camera"
 msgstr "Kamera"
 
 msgid "Plugins"
-msgstr "Plugins"
+msgstr "Insticksmoduler"
 
 msgid "Entitlements"
 msgstr "Rättigheter"
@@ -1724,7 +1725,7 @@ msgid "Normal Map"
 msgstr "Normalkarta"
 
 msgid "Roughness"
-msgstr "Roughness"
+msgstr "Råhet"
 
 msgid "Src Normal"
 msgstr "Normal (källa)"
@@ -1989,7 +1990,7 @@ msgid "Preview"
 msgstr "Förhandsgranska"
 
 msgid "Interface"
-msgstr "Interface"
+msgstr "Gränssnitt"
 
 msgid "Localization"
 msgstr "Lokalisering"
@@ -1998,7 +1999,7 @@ msgid "Editor Language"
 msgstr "Editorspråk"
 
 msgid "Asset Store"
-msgstr "Asset Store"
+msgstr "Resursbutik"
 
 msgid "Use Threads"
 msgstr "Använd trådar"
@@ -4116,7 +4117,7 @@ msgid "Onready With Export"
 msgstr "Onready med export"
 
 msgid "Copyright"
-msgstr "Copyright"
+msgstr "Upphovsrätt"
 
 msgid "Bake FPS"
 msgstr "Baka FPS"
@@ -4317,7 +4318,7 @@ msgid "Original Name"
 msgstr "Orginalnamn"
 
 msgid "Loop"
-msgstr "Loop"
+msgstr "Slinga"
 
 msgid "Buffer"
 msgstr "Buffert"
@@ -5409,7 +5410,7 @@ msgid "Min iOS Version"
 msgstr "Minimal iOS‑version"
 
 msgid "Storyboard"
-msgstr "Storyboard"
+msgstr "Bildmanus"
 
 msgid "Image Scale Mode"
 msgstr "Bildskalningsläge"
@@ -5871,7 +5872,7 @@ msgid "Playing"
 msgstr "Spelar"
 
 msgid "Autoplay"
-msgstr "Autoplay"
+msgstr "Spela upp automatiskt"
 
 msgid "Stream Paused"
 msgstr "Pausad"
@@ -6255,7 +6256,7 @@ msgid "Fill"
 msgstr "Fyll"
 
 msgid "Gradient"
-msgstr "Gradient"
+msgstr "Övertoning"
 
 msgid "Texture Mode"
 msgstr "Texturläge"
@@ -6273,7 +6274,7 @@ msgid "End Cap Mode"
 msgstr "Slutändläge"
 
 msgid "Border"
-msgstr "Border"
+msgstr "Kant"
 
 msgid "Sharp Limit"
 msgstr "Skärpegräns"
@@ -7907,7 +7908,7 @@ msgid "Autorestart"
 msgstr "Automatisk omstart"
 
 msgid "Delay"
-msgstr "Delay"
+msgstr "Fördröjning"
 
 msgid "Random Delay"
 msgstr "Slumpmässig delay"
@@ -9960,7 +9961,7 @@ msgid "Frames"
 msgstr "Bildrutor"
 
 msgid "Pause"
-msgstr "Pause"
+msgstr "Paus"
 
 msgid "Atlas"
 msgstr "Atlas"
@@ -10242,7 +10243,7 @@ msgid "Mix"
 msgstr "Blanda"
 
 msgid "Bloom"
-msgstr "Bloom"
+msgstr "Glöd"
 
 msgid "HDR Threshold"
 msgstr "HDR‑tröskel"
@@ -10485,7 +10486,7 @@ msgid "Transmittance"
 msgstr "Transmittans"
 
 msgid "Boost"
-msgstr "Boost"
+msgstr "Förstärkning"
 
 msgid "Back Lighting"
 msgstr "Bakljus"
@@ -10494,7 +10495,7 @@ msgid "Backlight"
 msgstr "Bakljus"
 
 msgid "Refraction"
-msgstr "Refraction"
+msgstr "Ljusbrytning"
 
 msgid "UV Layer"
 msgstr "UV-lager"
@@ -12177,7 +12178,7 @@ msgid "Time Pullout (ms)"
 msgstr "Tidsförskjutning (ms)"
 
 msgid "Surround"
-msgstr "Surround"
+msgstr "Surroundljud"
 
 msgid "Mix Rate Mode"
 msgstr "Mixningsfrekvensläge"
@@ -12678,7 +12679,7 @@ msgid "Screen Space Reflection"
 msgstr "Skärmbaserade reflektioner"
 
 msgid "Subsurface Scattering"
-msgstr "Subsurface Scattering"
+msgstr "Spridning under ytan"
 
 msgid "Subsurface Scattering Quality"
 msgstr "Kvalitet för subsurface‑spridning"
