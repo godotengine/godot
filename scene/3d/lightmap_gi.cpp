@@ -1376,6 +1376,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			if (use_physical_light_units) {
 				energy *= light->get_param(Light3D::PARAM_INTENSITY);
 				linear_color *= light->get_correlated_color().srgb_to_linear();
+				energy *= 1.0 / Math::PI;
 			}
 
 			if (Object::cast_to<DirectionalLight3D>(light)) {
