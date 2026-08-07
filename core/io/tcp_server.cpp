@@ -38,9 +38,10 @@ void TCPServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("take_connection"), &TCPServer::take_connection);
 }
 
-Error TCPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
+Error TCPServer::listen(int64_t p_port, const IPAddress &p_bind_address) {
 	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_PARAMETER_RANGE_ERROR, vformat("Can't listen on port %d. The port number must be between 0 and 65535 (inclusive).", p_port));
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
 	Error err;
