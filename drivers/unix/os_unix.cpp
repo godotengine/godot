@@ -844,40 +844,9 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
 #else
+	int pipe_out[2] = { -1, -1 };
 	if (r_pipe) {
-		String command = "\"" + p_path + "\"";
-		for (const String &arg : p_arguments) {
-			command += String(" \"") + arg + "\"";
-		}
-		if (read_stderr) {
-			command += " 2>&1"; // Include stderr
-		} else {
-			command += " 2>/dev/null"; // Silence stderr
-		}
-
-		FILE *f = popen(command.utf8().get_data(), "r");
-		ERR_FAIL_NULL_V_MSG(f, ERR_CANT_OPEN, "Cannot create pipe from command: " + command + ".");
-		char buf[65535];
-		while (fgets(buf, 65535, f)) {
-			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
-			}
-			String pipe_out;
-			if (pipe_out.append_utf8(buf) == OK) {
-				(*r_pipe) += pipe_out;
-			} else {
-				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
-			}
-			if (p_pipe_mutex) {
-				p_pipe_mutex->unlock();
-			}
-		}
-		int rv = pclose(f);
-
-		if (r_exitcode) {
-			*r_exitcode = WEXITSTATUS(rv);
-		}
-		return OK;
+		ERR_FAIL_COND_V(pipe(pipe_out) != 0, ERR_CANT_CREATE);
 	}
 
 	pid_t pid = fork();
@@ -897,10 +866,44 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		}
 		args.push_back(0);
 
+		if (r_pipe) {
+			::close(STDOUT_FILENO);
+			::dup2(pipe_out[1], STDOUT_FILENO);
+			if (read_stderr) {
+				::close(STDERR_FILENO);
+				::dup2(pipe_out[1], STDERR_FILENO);
+			}
+			::close(pipe_out[0]);
+			::close(pipe_out[1]);
+		}
+
 		execvp(p_path.utf8().get_data(), &args[0]);
 		// The execvp() function only returns if an error occurs.
 		fprintf(stderr, "Could not create child process: %s\n", p_path.utf8().get_data());
 		raise(SIGKILL);
+	}
+	if (r_pipe) {
+		::close(pipe_out[1]);
+
+		FILE *f = fdopen(pipe_out[0], "r");
+		ERR_FAIL_NULL_V_MSG(f, ERR_CANT_OPEN, "Cannot create pipe.");
+		char buf[65535];
+		while (fgets(buf, 65535, f)) {
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
+			String pipe_out_str;
+			if (pipe_out_str.append_utf8(buf) == OK) {
+				(*r_pipe) += pipe_out_str;
+			} else {
+				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
+			}
+			if (p_pipe_mutex) {
+				p_pipe_mutex->unlock();
+			}
+		}
+		fclose(f);
+		::close(pipe_out[0]);
 	}
 
 	int status = 0;
