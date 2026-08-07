@@ -43,7 +43,7 @@
 #include <sanitizer/asan_interface.h>
 #endif
 
-static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
+static_assert(std::is_trivially_destructible_v<SafeRefCount>);
 
 // Silences false-positive warnings.
 GODOT_GCC_WARNING_PUSH
@@ -64,19 +64,20 @@ public:
 	static constexpr USize MAX_INT = INT64_MAX;
 
 private:
-	// Alignment:  ↓ max_align_t           ↓ USize          ↓ USize            ↓ MAX_ALIGN
-	//             ┌────────────────────┬──┬───────────────┬──┬─────────────┬──┬───────────...
-	//             │ SafeNumeric<USize> │░░│ USize         │░░│ USize       │░░│ T[]
-	//             │ ref. count         │░░│ data capacity │░░│ data size   │░░│ data
-	//             └────────────────────┴──┴───────────────┴──┴─────────────┴──┴───────────...
-	// Offset:     ↑ REF_COUNT_OFFSET      ↑ CAPACITY_OFFSET  ↑ SIZE_OFFSET    ↑ DATA_OFFSET
+	struct alignas(max_align_t) _Header {
+		mutable SafeRefCount refcount;
+		USize capacity;
+		USize size;
+		// _data will actually be a T[] with max alignment
+		alignas(Memory::MAX_ALIGN) max_align_t _data;
+	};
 
-	static constexpr size_t REF_COUNT_OFFSET = 0;
-	static constexpr size_t CAPACITY_OFFSET = Memory::get_aligned_address(REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>), alignof(USize));
-	static constexpr size_t SIZE_OFFSET = Memory::get_aligned_address(CAPACITY_OFFSET + sizeof(USize), alignof(USize));
-	static constexpr size_t DATA_OFFSET = Memory::get_aligned_address(SIZE_OFFSET + sizeof(USize), Memory::MAX_ALIGN);
+	static constexpr size_t REF_COUNT_OFFSET = offsetof(_Header, refcount);
+	static constexpr size_t CAPACITY_OFFSET = offsetof(_Header, capacity);
+	static constexpr size_t SIZE_OFFSET = offsetof(_Header, size);
+	static constexpr size_t DATA_OFFSET = offsetof(_Header, _data);
 
-	mutable T *_ptr = nullptr;
+	T *_ptr = nullptr; // Points to _Header._data out of convenience.
 
 	// internal helpers
 
@@ -106,19 +107,8 @@ private:
 	}
 
 	/// Note: Assumes _ptr != nullptr.
-	_FORCE_INLINE_ SafeNumeric<USize> *_get_refcount() const {
-		return (SafeNumeric<USize> *)((uint8_t *)_ptr - DATA_OFFSET + REF_COUNT_OFFSET);
-	}
-
-	/// Note: Assumes _ptr != nullptr.
-	_FORCE_INLINE_ USize *_get_size() const {
-		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + SIZE_OFFSET);
-	}
-
-	/// Note: Assumes _ptr != nullptr.
-	_FORCE_INLINE_ USize *_get_capacity() const {
-		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + CAPACITY_OFFSET);
-	}
+	_FORCE_INLINE_ _Header &header() { return *(_Header *)((char *)_ptr - DATA_OFFSET); }
+	_FORCE_INLINE_ const _Header &header() const { return *(_Header *)((char *)_ptr - DATA_OFFSET); }
 
 	// Decrements the reference count. Deallocates the backing buffer if needed.
 	// After this function, _ptr is guaranteed to be NULL.
@@ -173,9 +163,9 @@ public:
 		return _ptr;
 	}
 
-	_FORCE_INLINE_ Size size() const { return !_ptr ? 0 : *_get_size(); }
-	_FORCE_INLINE_ USize capacity() const { return !_ptr ? 0 : *_get_capacity(); }
-	_FORCE_INLINE_ USize refcount() const { return !_ptr ? 0 : *_get_refcount(); }
+	_FORCE_INLINE_ Size size() const { return !_ptr ? 0 : header().size; }
+	_FORCE_INLINE_ USize capacity() const { return !_ptr ? 0 : header().capacity; }
+	_FORCE_INLINE_ USize refcount() const { return !_ptr ? 0 : header().refcount.get(); }
 
 	_FORCE_INLINE_ void clear() { _unref(); }
 	_FORCE_INLINE_ bool is_empty() const { return size() == 0; }
@@ -238,7 +228,7 @@ void CowData<T>::_unref() {
 		return;
 	}
 
-	if (_get_refcount()->decrement() > 0) {
+	if (!header().refcount.unref()) {
 		// Data is still in use elsewhere.
 		_ptr = nullptr;
 		return;
@@ -293,7 +283,7 @@ Error CowData<T>::insert(Size p_pos, T &&p_val) {
 
 	// Create the new element at the given index.
 	memnew_placement(_ptr + p_pos, T(std::move(p_val)));
-	*_get_size() = new_size;
+	header().size = new_size;
 
 	return OK;
 }
@@ -306,7 +296,7 @@ Error CowData<T>::push_back(T &&p_val) {
 	}
 
 	memnew_placement(_ptr + size(), T(std::move(p_val)));
-	*_get_size() = size() + 1;
+	header().size = size() + 1;
 
 	return OK;
 }
@@ -337,7 +327,7 @@ Error CowData<T>::append(Span<T> p_span) {
 	}
 	const T *span_ptr = span_in_self ? (_ptr + idx_in_self) : p_span.ptr();
 	copy_arr_placement(_ptr + size(), span_ptr, p_span.size());
-	*_get_size() = size() + p_span.size();
+	header().size = size() + p_span.size();
 	return OK;
 }
 
@@ -347,7 +337,7 @@ Error CowData<T>::_insert_uninitialized(USize p_index, USize p_count, USize p_ca
 
 	if (!_ptr) {
 		return _alloc_exact(p_capacity);
-	} else if (_get_refcount()->get() == 1) {
+	} else if (header().refcount.get() == 1) {
 		if (capacity() < p_capacity) {
 			// Need to grow.
 			const Error error = _realloc_exact(p_capacity);
@@ -377,7 +367,7 @@ Error CowData<T>::_insert_uninitialized(USize p_index, USize p_count, USize p_ca
 				_ptr + p_index,
 				size() - p_index);
 
-		*new_data._get_size() = size();
+		new_data.header().size = size();
 		SWAP(_ptr, new_data._ptr);
 	}
 
@@ -398,7 +388,7 @@ Error CowData<T>::_remove(USize p_index, USize p_count) {
 
 	const USize new_size = prev_size - p_count;
 
-	if (_get_refcount()->get() == 1) {
+	if (header().refcount.get() == 1) {
 		// We're the only owner; remove in-place.
 
 		// Destruct the elements, then relocate the rest down.
@@ -432,7 +422,7 @@ Error CowData<T>::_remove(USize p_index, USize p_count) {
 		SWAP(_ptr, new_data._ptr);
 	}
 
-	*_get_size() = new_size;
+	header().size = new_size;
 
 	return OK;
 }
@@ -475,7 +465,7 @@ Error CowData<T>::resize(Size p_size) {
 		if constexpr (p_initialize) {
 			memnew_arr_placement(_ptr + prev_size, p_size - prev_size);
 		}
-		*_get_size() = p_size;
+		header().size = p_size;
 
 		return OK;
 	} else {
@@ -494,10 +484,11 @@ Error CowData<T>::_alloc_exact(USize p_capacity) {
 	_ptr = _get_data_ptr(mem_new);
 
 	// If we alloc, we're guaranteed to be the only reference.
-	new (_get_refcount()) SafeNumeric<USize>(1);
-	*_get_size() = 0;
+	new (&header().refcount) SafeRefCount;
+	header().refcount.init(1);
+	header().size = 0;
 	// The actual capacity is whatever we can stuff into the alloc_size.
-	*_get_capacity() = p_capacity;
+	header().capacity = p_capacity;
 
 	return OK;
 }
@@ -513,17 +504,17 @@ Error CowData<T>::_realloc_exact(USize p_capacity) {
 
 	// If we realloc, we're guaranteed to be the only reference.
 	// So the reference was 1 and was copied to be 1 again.
-	DEV_ASSERT(_get_refcount()->get() == 1);
+	DEV_ASSERT(header().refcount.get() == 1);
 	// The size was also copied from the previous allocation.
 	// The actual capacity is whatever we can stuff into the alloc_size.
-	*_get_capacity() = p_capacity;
+	header().capacity = p_capacity;
 
 	return OK;
 }
 
 template <typename T>
 Error CowData<T>::_copy_on_write() {
-	if (!_ptr || _get_refcount()->get() == 1) {
+	if (!_ptr || header().refcount.get() == 1) {
 		// Nothing to do.
 		return OK;
 	}
@@ -543,7 +534,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 	CowData old_data;
 	old_data._ptr = _ptr;
 
-	if (p_from._ptr && p_from._get_refcount()->conditional_increment() > 0) {
+	if (p_from._ptr && p_from.header().refcount.ref()) {
 		_ptr = p_from._ptr;
 	} else {
 		// New data is null or we cannot copy.
@@ -559,7 +550,7 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 	CRASH_COND(_alloc_exact(p_init.size()));
 
 	copy_arr_placement(_ptr, p_init.begin(), p_init.size());
-	*_get_size() = p_init.size();
+	header().size = p_init.size();
 }
 
 template <typename T>
@@ -570,7 +561,7 @@ CowData<T>::CowData(Span<T> p_span) {
 	CRASH_COND(_alloc_exact(p_span.size()));
 
 	copy_arr_placement(_ptr, p_span.begin(), p_span.size());
-	*_get_size() = p_span.size();
+	header().size = p_span.size();
 }
 
 GODOT_GCC_WARNING_POP
