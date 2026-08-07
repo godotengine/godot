@@ -493,6 +493,13 @@ void ExportTemplateManager::_initialize_template_data() {
 		info.file_list = { "ios.zip" };
 		template_data[TemplateID::IOS] = info;
 	}
+	{
+		TemplateInfo info;
+		info.name = "visionOS";
+		info.description = TTRC("Build for Apple's visionOS.");
+		info.file_list = { "visionos.zip" };
+		template_data[TemplateID::VISIONOS] = info;
+	}
 
 	{
 		TemplateInfo info;
@@ -542,6 +549,14 @@ void ExportTemplateManager::_initialize_template_data() {
 		info.templates = { TemplateID::IOS };
 		info.group = TTR("Mobile", "Platform Group");
 		platform_map[PlatformID::IOS] = info;
+	}
+	{
+		PlatformInfo info;
+		info.name = "visionOS";
+		info.icon = _get_platform_icon("visionOS");
+		info.templates = { TemplateID::VISIONOS };
+		info.group = TTR("Mobile", "Platform Group");
+		platform_map[PlatformID::VISIONOS] = info;
 	}
 	{
 		PlatformInfo info;
