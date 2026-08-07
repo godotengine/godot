@@ -859,6 +859,12 @@ void GroupsEditor::_groups_gui_input(Ref<InputEvent> p_event) {
 		}
 
 		accept_event();
+	} else if (key.is_valid() && key->is_pressed() && key->is_action("ui_menu", true)) {
+		TreeItem *item = tree->get_selected();
+		if (!item) {
+			return;
+		}
+		_item_mouse_selected(tree->get_item_rect(item).position, MouseButton::RIGHT);
 	}
 }
 
