@@ -1233,6 +1233,11 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 			continue; //invalid
 		}
 
+		if (ext == "bundle") {
+			p_progress.increment();
+			continue;
+		}
+
 		String path = p_scan_dir->full_path.path_join(scan_file);
 
 		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
@@ -1501,6 +1506,11 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 				String ext = f.get_extension().to_lower();
 				if (!valid_extensions.has(ext)) {
 					continue; //invalid
+				}
+
+				if (ext == "bundle") {
+					p_progress.increment();
+					continue;
 				}
 
 				int idx = p_dir->find_file_index(f);
@@ -2436,6 +2446,10 @@ void EditorFileSystem::update_files(const Vector<String> &p_script_paths) {
 				// The file did not exist, it was added.
 				int idx = 0;
 				String file_name = file.get_file();
+				String file_ext = file_name.get_extension().to_lower();
+				if (file_ext == "bundle") {
+					continue;
+				}
 
 				for (int i = 0; i < fs->files.size(); i++) {
 					if (file.filenocasecmp_to(fs->files[i]->file) < 0) {
