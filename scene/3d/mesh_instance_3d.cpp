@@ -132,12 +132,14 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		// If mesh is a PrimitiveMesh, calling get_rid on it can trigger a changed callback
 		// so do this before connecting _mesh_changed.
 		set_base(mesh->get_rid());
+		RS::get_singleton()->instance_geometry_set_lightmap_size_hint(get_instance(), mesh->get_lightmap_size_hint_or_estimate());
 		mesh->connect_changed(callable_mp(this, &MeshInstance3D::_mesh_changed));
 		_mesh_changed();
 	} else {
 		blend_shape_tracks.clear();
 		blend_shape_properties.clear();
 		set_base(RID());
+		RS::get_singleton()->instance_geometry_set_lightmap_size_hint(get_instance(), Size2i());
 		update_gizmos();
 	}
 
@@ -359,6 +361,7 @@ void MeshInstance3D::_notification(int p_what) {
 			}
 #endif
 			_resolve_skeleton_path();
+
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (mesh.is_valid()) {
@@ -411,6 +414,7 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 
 void MeshInstance3D::_mesh_changed() {
 	ERR_FAIL_COND(mesh.is_null());
+	RS::get_singleton()->instance_geometry_set_lightmap_size_hint(get_instance(), mesh->get_lightmap_size_hint_or_estimate());
 	const int surface_count = mesh->get_surface_count();
 
 	surface_override_materials.resize(surface_count);
