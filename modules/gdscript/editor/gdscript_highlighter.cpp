@@ -31,6 +31,7 @@
 #include "gdscript_highlighter.h"
 
 #include "../gdscript.h"
+#include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
 
 #include "core/config/project_settings.h"
@@ -916,40 +917,62 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			}
 		}
 
-		List<PropertyInfo> scr_property_list;
-		scr->get_script_property_list(&scr_property_list);
-		for (const PropertyInfo &E : scr_property_list) {
-			String prop_name = E.name;
-			if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
-				continue;
+		// Direct members of the script, parsed from live text.
+		GDScriptParser parser;
+		parser.parse(text_edit->get_text(), scr->get_path(), false);
+		if (GDScriptParser::ClassNode *p_class = parser.get_tree()) {
+			using Member = GDScriptParser::ClassNode::Member;
+			for (Member &m : p_class->members) {
+				switch (m.type) {
+					case Member::Type::VARIABLE:
+					case Member::Type::SIGNAL:
+					case Member::Type::FUNCTION:
+					case Member::Type::CONSTANT:
+					case Member::Type::CLASS:
+						member_keywords[m.get_name()] = member_variable_color;
+						break;
+					default:; // skip
+				}
 			}
-			if (prop_name.contains_char('/')) {
-				continue;
-			}
-			member_keywords[prop_name] = member_variable_color;
 		}
 
-		List<MethodInfo> scr_signal_list;
-		scr->get_script_signal_list(&scr_signal_list);
-		for (const MethodInfo &E : scr_signal_list) {
-			member_keywords[E.name] = member_variable_color;
-		}
-
-		// For callables.
-		List<MethodInfo> scr_method_list;
-		scr->get_script_method_list(&scr_method_list);
-		for (const MethodInfo &E : scr_method_list) {
-			member_keywords[E.name] = member_variable_color;
-		}
-
-		Ref<Script> scr_class = scr;
-		while (scr_class.is_valid()) {
-			HashMap<StringName, Variant> scr_constant_list;
-			scr_class->get_constants(&scr_constant_list);
-			for (const KeyValue<StringName, Variant> &E : scr_constant_list) {
-				member_keywords[E.key.string()] = member_variable_color;
+		// Inherited members.
+		Ref<Script> ancestor_scr = scr->get_base_script();
+		if (ancestor_scr.is_valid()) {
+			List<PropertyInfo> scr_property_list;
+			ancestor_scr->get_script_property_list(&scr_property_list);
+			for (const PropertyInfo &E : scr_property_list) {
+				String prop_name = E.name;
+				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
+					continue;
+				}
+				if (prop_name.contains_char('/')) {
+					continue;
+				}
+				member_keywords[prop_name] = member_variable_color;
 			}
-			scr_class = scr_class->get_base_script();
+
+			List<MethodInfo> scr_signal_list;
+			ancestor_scr->get_script_signal_list(&scr_signal_list);
+			for (const MethodInfo &E : scr_signal_list) {
+				member_keywords[E.name] = member_variable_color;
+			}
+
+			// For callables.
+			List<MethodInfo> scr_method_list;
+			ancestor_scr->get_script_method_list(&scr_method_list);
+			for (const MethodInfo &E : scr_method_list) {
+				member_keywords[E.name] = member_variable_color;
+			}
+
+			while (ancestor_scr.is_valid()) {
+				HashMap<StringName, Variant> scr_constant_list;
+				ancestor_scr->get_constants(&scr_constant_list);
+				for (const KeyValue<StringName, Variant> &E : scr_constant_list) {
+					member_keywords[E.key.string()] = member_variable_color;
+				}
+				ancestor_scr = ancestor_scr->get_base_script();
+			}
 		}
 	}
 
@@ -977,6 +1000,9 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	for (int i = 0; i < notice_list.size(); i++) {
 		comment_markers[notice_list[i]] = COMMENT_MARKER_NOTICE;
 	}
+
+	// Force the text edit to update its highlighting.
+	emit_changed();
 }
 
 void GDScriptSyntaxHighlighter::add_color_region(ColorRegion::Type p_type, const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only, bool p_r_prefix) {
