@@ -293,6 +293,7 @@ class ScriptEditor : public PanelContainer {
 	struct ScriptHistory {
 		Control *control = nullptr;
 		Dictionary state;
+		String source;
 	};
 
 	Vector<ScriptHistory> history;
