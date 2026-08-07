@@ -420,7 +420,7 @@ private:
 	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<SelectResult> &r_items, bool p_allow_locked = false);
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 
-	bool _select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append);
+	bool _select_click_on_item(CanvasItem *item, bool p_append);
 
 	ConfirmationDialog *snap_dialog = nullptr;
 
@@ -520,6 +520,7 @@ private:
 	void _selection_changed();
 	void _focus_selection(int p_op);
 	void _reset_drag();
+	void _click_select(const Point2 &p_pos, bool p_append);
 
 	void _project_settings_changed();
 
