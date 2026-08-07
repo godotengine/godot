@@ -60,6 +60,7 @@ class SceneTreeDock : public EditorDock {
 		TOOL_PASTE,
 		TOOL_PASTE_AS_SIBLING,
 		TOOL_PASTE_AS_REPLACEMENT,
+		TOOL_PASTE_AS_UNIQUE,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
 		TOOL_CHANGE_TYPE,
@@ -357,6 +358,9 @@ public:
 
 	List<Node *> paste_nodes(bool p_paste_as_sibling = false);
 	void paste_node_as_replacement();
+	List<Node *> paste_nodes_as_unique();
+	void _make_node_resources_unique_recursive(Node *p_node, HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap);
+	void _make_nested_resources_unique_recursive(const Ref<Resource> &p_resource, HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap);
 	List<Node *> get_node_clipboard() const;
 
 	ScriptCreateDialog *get_script_create_dialog() {
