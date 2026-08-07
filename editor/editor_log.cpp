@@ -135,14 +135,6 @@ void EditorLog::_update_theme() {
 	theme_cache.message_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.6);
 }
 
-void EditorLog::_editor_settings_changed() {
-	int new_line_limit = int(EDITOR_GET("run/output/max_lines"));
-	if (new_line_limit != line_limit) {
-		line_limit = new_line_limit;
-		_rebuild_log();
-	}
-}
-
 void EditorLog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -189,19 +181,18 @@ void EditorLog::_start_state_save_timer() {
 
 void EditorLog::_save_state() {
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
-		EditorSettings::get_singleton()->set_setting("_editor_log_filter_" + itos(E.key), E.value->is_active());
+		filter_settings[E.key].set(E.value->is_active());
 	}
-	EditorSettings::get_singleton()->set_setting("_editor_log_collapse", collapse);
-	EditorSettings::save();
+	collapse_setting.set(collapse);
 }
 
 void EditorLog::_load_state() {
 	is_loading_state = true;
 
 	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
-		E.value->set_active(EDITOR_DEF("_editor_log_filter_" + itos(E.key), true));
+		E.value->set_active(filter_settings[E.key].get());
 	}
-	collapse_button->set_pressed(EDITOR_DEF("_editor_log_collapse", false));
+	collapse_button->set_pressed(collapse_setting.get());
 
 	is_loading_state = false;
 }
@@ -333,8 +324,8 @@ void EditorLog::_rebuild_log() {
 				}
 			}
 		}
-		if (line_count >= line_limit) {
-			initial_skip = line_count - line_limit;
+		if (line_count >= max_lines_setting.get<int>()) {
+			initial_skip = line_count - max_lines_setting.get<int>();
 			break;
 		}
 		if (start_message_index == 0) {
@@ -436,6 +427,8 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			// Distinguish editor messages from messages printed by the project
 			log->push_color(theme_cache.message_color);
 		} break;
+		case MSG_TYPE_MAX: {
+		} break;
 	}
 
 	// If collapsing, add the count of this message in bold at the start of the line.
@@ -463,7 +456,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		}
 	}
 
-	while (log->get_paragraph_count() > line_limit + 1) {
+	while (log->get_paragraph_count() > max_lines_setting.get<int>() + 1) {
 		log->remove_paragraph(0, true);
 	}
 }
@@ -498,9 +491,6 @@ EditorLog::EditorLog() {
 	save_state_timer->set_one_shot(true);
 	save_state_timer->connect("timeout", callable_mp(this, &EditorLog::_save_state));
 	add_child(save_state_timer);
-
-	line_limit = int(EDITOR_GET("run/output/max_lines"));
-	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorLog::_editor_settings_changed));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -588,6 +578,11 @@ EditorLog::EditorLog() {
 	eh.errfunc = _error_handler;
 	eh.userdata = this;
 	add_error_handler(&eh);
+
+	max_lines_setting.set_changed_callback(callable_mp(this, &EditorLog::_rebuild_log));
+	for (const KeyValue<MessageType, LogFilter *> &E : type_filter_map) {
+		filter_settings[E.key].setup("_editor_log_filter_" + itos(E.key), true);
+	}
 }
 
 void EditorLog::deinit() {
