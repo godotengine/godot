@@ -3580,7 +3580,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_disable_follow_mode();
 			}
 
-			if (focused_node_id.is_valid() && get_selected_count() > 0 && times_focused_consecutively >= 2 && times_focused_consecutively % 2 == 0) {
+			if (focused_node_id.is_valid() && get_selected_count() > 0 && times_focused_consecutively >= 2 && times_focused_consecutively % 2 == 0 && !previewing_camera) {
 				Node *focused_node = ObjectDB::get_instance<Node>(focused_node_id);
 				if (focused_node) {
 					follow_mode->set_text(vformat(TTR("Following %s"), focused_node->get_name()));
@@ -4897,6 +4897,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	_update_navigation_controls_visibility();
 
 	if (!p_activate) {
+		times_focused_consecutively = pre_preview_times_focused_consecutively;
 		_pilot_commit_undo_session();
 		previewing->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
@@ -4916,6 +4917,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 		surface->queue_redraw();
 
 	} else {
+		pre_preview_times_focused_consecutively = times_focused_consecutively;
 		previewing = preview;
 		previewing->connect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		previewing->connect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
@@ -5385,6 +5387,9 @@ void Node3DEditorViewport::reset() {
 }
 
 void Node3DEditorViewport::focus_selection() {
+	if (previewing_camera) {
+		return;
+	}
 	Vector3 center;
 	int count = 0;
 
