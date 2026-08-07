@@ -470,6 +470,9 @@ class EditorInspectorSection : public Container {
 		MENU_PASTE_SECTION,
 		MENU_REVERT_VALUE,
 		MENU_OPEN_DOCUMENTATION,
+		MENU_AUTO_UNFOLD_SAME_CLASS,
+		MENU_AUTO_UNFOLD_ANY_CLASS,
+		MENU_COLLAPSE_SECTION_ON_ALL_NODES,
 	};
 
 	String label;
@@ -510,6 +513,11 @@ class EditorInspectorSection : public Container {
 	int _get_header_height();
 	Ref<Texture2D> _get_arrow();
 	Ref<Texture2D> _get_checkbox();
+	bool _should_auto_unfold(const String &p_class_name) const;
+	void _toggle_auto_unfold(int p_id) const;
+	bool _is_unfolded_by_any_class() const;
+	bool _is_unfolded_by_same_class() const;
+	void _collapse_section_recursive(Node *p_node) const;
 
 	EditorInspector *_get_parent_inspector() const;
 
