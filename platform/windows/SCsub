@@ -111,12 +111,13 @@ sources += res_obj
 if env["accesskit"] and not env.msvc:
     sources += env.DEFLIB("uiautomationcore")
 
+godot_bin_path = f"#{env['output_path']}" if env["output_path"] else "#bin/godot"
 if env["library_type"] == "static_library":
-    prog = env.add_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+    prog = env.add_library(godot_bin_path, sources, PROGSUFFIX=env["PROGSUFFIX"])
 elif env["library_type"] == "shared_library":
-    prog = env.add_shared_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+    prog = env.add_shared_library(godot_bin_path, sources, PROGSUFFIX=env["PROGSUFFIX"])
 else:
-    prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+    prog = env.add_program(godot_bin_path, sources, PROGSUFFIX=env["PROGSUFFIX"])
 arrange_program_clean(prog)
 
 env.Depends(prog, "godot.manifest")
