@@ -1153,8 +1153,10 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 	if (sub_emitter && sub_emitter->emission_storage_buffer.is_valid()) {
 		//	print_line("updating subemitter buffer");
-		int32_t zero[4] = { 0, sub_emitter->amount, 0, 0 };
-		RD::get_singleton()->buffer_update(sub_emitter->emission_storage_buffer, 0, sizeof(uint32_t) * 4, zero);
+		if (!sub_emitter->force_sub_emit) {
+			int32_t zero[4] = { 0, sub_emitter->amount, 0, 0 };
+			RD::get_singleton()->buffer_update(sub_emitter->emission_storage_buffer, 0, sizeof(uint32_t) * 4, zero);
+		}
 		push_constant.can_emit = true;
 
 		if (sub_emitter->emitting) {
