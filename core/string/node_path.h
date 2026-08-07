@@ -72,6 +72,7 @@ public:
 	StringName get_concatenated_names() const;
 	StringName get_concatenated_subnames() const;
 	NodePath slice(int p_begin, int p_end = INT_MAX) const;
+	NodePath with_subnames(const Vector<StringName> &p_subname) const;
 
 	NodePath rel_path_to(const NodePath &p_np) const;
 	NodePath get_as_property_path() const;
