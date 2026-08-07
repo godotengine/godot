@@ -413,7 +413,7 @@ class AssetLibraryEditorPlugin : public EditorPlugin {
 public:
 	static bool is_available();
 
-	virtual String get_plugin_name() const override { return TTRC("Asset Store"); }
+	virtual String get_plugin_name() const override { return TTRC("Assets"); }
 	virtual const Ref<Texture2D> get_plugin_icon() const override;
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override {}
