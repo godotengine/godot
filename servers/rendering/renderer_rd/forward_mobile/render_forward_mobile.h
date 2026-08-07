@@ -189,7 +189,9 @@ private:
 		float normal_xform[12];
 		float texture_size[2];
 		float exposure_normalization;
+		float specular_intensity;
 		uint32_t flags;
+		float pad[3];
 	};
 
 	struct LightmapCaptureData {
@@ -289,6 +291,7 @@ private:
 		LightmapData lightmaps[MAX_LIGHTMAPS];
 		RID lightmap_ids[MAX_LIGHTMAPS];
 		bool lightmap_has_sh[MAX_LIGHTMAPS];
+		bool lightmap_has_specular = false;
 		uint32_t lightmaps_used = 0;
 		uint32_t max_lightmaps;
 		RID lightmap_buffer;
