@@ -92,7 +92,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
     output_filename = output_folder + "/" + short_filename
     output_path = Path(output_filename)
 
-    if not output_path.exists() or output_path.read_text() != file_text:
+    if not output_path.exists() or output_path.read_text(encoding="utf8") != file_text:
         if _verbose:
             print("SCU: Generating: %s" % short_filename)
         output_path.write_text(file_text, encoding="utf8")
@@ -119,7 +119,7 @@ def write_exception_output_file(file_count, exception_string, output_folder, out
 
     output_path = Path(output_filename)
 
-    if not output_path.exists() or output_path.read_text() != file_text:
+    if not output_path.exists() or output_path.read_text(encoding="utf8") != file_text:
         if _verbose:
             print("SCU: Generating: " + short_filename)
         output_path.write_text(file_text, encoding="utf8")
