@@ -2729,6 +2729,8 @@ void EditorNode::_dialog_action(String p_file) {
 			}
 
 			open_scene(p_file, false, true);
+			// Configure the save dialog, so that it opens in the same directory as the base scene.
+			file->set_current_dir(p_file.get_base_dir());
 		} break;
 		case SCENE_OPEN_SCENE: {
 			open_scene(p_file);
