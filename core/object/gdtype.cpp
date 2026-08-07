@@ -64,6 +64,7 @@ void GDType::initialize() {
 		super_type->init_state = InitState::FINALIZED;
 
 		constant_map = super_type->constant_map;
+		variant_constant_map = super_type->variant_constant_map;
 		enum_map = super_type->enum_map;
 		signal_map = super_type->signal_map;
 	}
@@ -75,6 +76,7 @@ void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p
 	ERR_FAIL_COND(!Thread::is_main_thread());
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
 	ERR_FAIL_COND_MSG(self_constant_map.has(p_name), vformat("Class '%s' already has constant '%s'.", String(name), String(p_name)));
+	ERR_FAIL_COND_MSG(self_variant_constant_map.has(p_name), vformat("Class '%s' already has constant '%s' as a variant constant.", String(name), String(p_name)));
 
 	constant_map[p_name] = p_constant;
 	self_constant_map[p_name] = p_constant;
@@ -100,6 +102,21 @@ void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p
 			enum_map[enum_name] = enum_info;
 		}
 	}
+}
+
+void GDType::bind_variant_constant(const StringName &p_name, const Variant &p_constant) {
+	ERR_FAIL_COND(!Thread::is_main_thread());
+	ERR_FAIL_COND(init_state != InitState::MUTABLE);
+	ERR_FAIL_COND_MSG(self_constant_map.has(p_name), vformat("Class '%s' already has constant '%s' as an integer constant.", String(name), String(p_name)));
+	ERR_FAIL_COND_MSG(self_variant_constant_map.has(p_name), vformat("Class '%s' already has constant '%s'.", String(name), String(p_name)));
+
+	Variant::Type type = p_constant.get_type();
+	String type_name = Variant::get_type_name(type);
+	ERR_FAIL_COND_MSG(type == Variant::OBJECT || type == Variant::DICTIONARY || type_name.contains("ARRAY"),
+			vformat("Class '%s': constant '%s' has unsupported type '%s' (Object, Dictionary, and array types are not allowed).", String(name), String(p_name), type_name));
+
+	variant_constant_map[p_name] = p_constant;
+	self_variant_constant_map[p_name] = p_constant;
 }
 
 const GDType::EnumInfo *GDType::get_integer_constant_enum(const StringName &p_name, bool p_no_inheritance) const {
