@@ -30,7 +30,6 @@
 
 #include "gdscript_workspace.h"
 
-#include "../editor/gdscript_editor_language.h"
 #include "../gdscript.h"
 #include "../gdscript_parser.h"
 #include "gdscript_language_protocol.h"
@@ -605,42 +604,6 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	params["diagnostics"] = errors;
 	params["uri"] = get_file_uri(p_path);
 	GDScriptLanguageProtocol::get_singleton()->notify_client("textDocument/publishDiagnostics", params);
-}
-
-void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<ScriptLanguage::CodeCompletionOption> *r_options) {
-	String path = get_file_path(p_params.textDocument.uri);
-	String call_hint;
-	bool forced = false;
-
-	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
-	if (parser) {
-		Node *owner_scene_node = GDScriptLanguageProtocol::get_singleton()->get_scene_cache()->get(path);
-
-		Array stack;
-		Node *current = nullptr;
-		if (owner_scene_node != nullptr) {
-			stack.push_back(owner_scene_node);
-
-			while (!stack.is_empty()) {
-				current = Object::cast_to<Node>(stack.pop_back());
-				Ref<GDScript> scr = current->get_script();
-				if (scr.is_valid() && GDScript::is_canonically_equal_paths(scr->get_path(), path)) {
-					break;
-				}
-				for (int i = 0; i < current->get_child_count(); ++i) {
-					stack.push_back(current->get_child(i));
-				}
-			}
-
-			Ref<GDScript> scr = current->get_script();
-			if (scr.is_null() || !GDScript::is_canonically_equal_paths(scr->get_path(), path)) {
-				current = owner_scene_node;
-			}
-		}
-
-		String code = parser->get_text_for_completion(p_params.position);
-		GDScriptEditorLanguage::get_singleton()->complete_code(code, path, current, r_options, forced, call_hint);
-	}
 }
 
 const LSP::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const LSP::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name, bool p_func_required) {
