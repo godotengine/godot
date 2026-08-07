@@ -40,6 +40,24 @@ PhysicsServer2D *PhysicsServer2D::get_singleton() {
 	return singleton;
 }
 
+void PhysicsServer2D::debug_set_enabled(bool p_enabled) {
+#ifdef DEBUG_ENABLED
+	if (debug_enabled == p_enabled) {
+		return;
+	}
+	debug_enabled = p_enabled;
+	emit_signal("_debug_changed");
+#endif
+}
+
+bool PhysicsServer2D::debug_is_enabled() const {
+#ifdef DEBUG_ENABLED
+	return debug_enabled;
+#else
+	return false;
+#endif
+}
+
 bool PhysicsServer2D::_body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters2D> rp_parameters, const Ref<PhysicsTestMotionResult2D> &p_result) {
 	EXTRACT_PARAM_OR_FAIL_V(p_parameters, rp_parameters, false);
 
@@ -323,6 +341,10 @@ void PhysicsServer2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PS2DE::INFO_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PS2DE::INFO_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PS2DE::INFO_ISLAND_COUNT);
+
+#ifdef DEBUG_ENABLED
+	ADD_SIGNAL(MethodInfo("_debug_changed"));
+#endif
 }
 
 PhysicsServer2D::PhysicsServer2D() {

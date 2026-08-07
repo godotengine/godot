@@ -966,17 +966,16 @@ void SceneTree::set_quit_on_go_back(bool p_enable) {
 
 #ifdef DEBUG_ENABLED
 void SceneTree::set_debug_collisions_hint(bool p_enabled) {
-	if (debug_collisions_hint == p_enabled) {
-		return;
-	}
-	debug_collisions_hint = p_enabled;
-	if (root) {
-		root->propagate_notification(Node::NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED);
-	}
+#ifndef PHYSICS_2D_DISABLED
+	PhysicsServer2D::get_singleton()->debug_set_enabled(p_enabled);
+#endif
+#ifndef PHYSICS_3D_DISABLED
+	PhysicsServer3D::get_singleton()->debug_set_enabled(p_enabled);
+#endif
 }
 
 bool SceneTree::is_debugging_collisions_hint() const {
-	return debug_collisions_hint;
+	return PhysicsServer2D::get_singleton()->debug_is_enabled() || PhysicsServer3D::get_singleton()->debug_is_enabled();
 }
 
 void SceneTree::set_debug_paths_hint(bool p_enabled) {

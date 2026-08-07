@@ -55,11 +55,18 @@ class PhysicsServer3D : public Object {
 
 	virtual bool _body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters3D> rp_parameters, const Ref<PhysicsTestMotionResult3D> &p_result = Ref<PhysicsTestMotionResult3D>());
 
+#ifdef DEBUG_ENABLED
+	bool debug_enabled = false;
+#endif
+
 protected:
 	static void _bind_methods();
 
 public:
 	static PhysicsServer3D *get_singleton();
+
+	void debug_set_enabled(bool p_enabled);
+	bool debug_is_enabled() const;
 
 	RID shape_create(PS3DE::ShapeType p_shape);
 

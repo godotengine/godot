@@ -140,17 +140,6 @@ void CollisionObject3D::_notification(int p_what) {
 		case NOTIFICATION_ENABLED: {
 			_apply_enabled();
 		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			if (_are_collision_shapes_visible()) {
-				for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
-					debug_shapes_to_update.insert(E.key);
-				}
-				_update_debug_shapes();
-			} else {
-				_clear_debug_shapes();
-			}
-		} break;
 	}
 }
 
@@ -362,7 +351,7 @@ void CollisionObject3D::_update_pickable() {
 }
 
 bool CollisionObject3D::_are_collision_shapes_visible() {
-	return is_inside_tree() && get_tree()->is_debugging_collisions_hint() && !Engine::get_singleton()->is_editor_hint();
+	return is_inside_tree() && PhysicsServer3D::get_singleton()->debug_is_enabled() && !Engine::get_singleton()->is_editor_hint();
 }
 
 void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
@@ -445,6 +434,17 @@ void CollisionObject3D::_clear_debug_shapes() {
 		}
 	}
 	debug_shapes_count = 0;
+}
+
+void CollisionObject3D::_physics_debug_changed() {
+	if (_are_collision_shapes_visible()) {
+		for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+			debug_shapes_to_update.insert(E.key);
+		}
+		_update_debug_shapes();
+	} else {
+		_clear_debug_shapes();
+	}
 }
 
 void CollisionObject3D::_on_transform_changed() {
@@ -739,6 +739,10 @@ CollisionObject3D::CollisionObject3D(RID p_rid, bool p_area) {
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(rid, get_instance_id());
 		PhysicsServer3D::get_singleton()->body_set_mode(rid, body_mode);
 	}
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer3D::get_singleton()->connect("_debug_changed", callable_mp(this, &CollisionObject3D::_physics_debug_changed));
+#endif
 }
 
 void CollisionObject3D::set_capture_input_on_drag(bool p_capture) {

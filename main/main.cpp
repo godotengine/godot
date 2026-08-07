@@ -4366,7 +4366,12 @@ int Main::start() {
 	if (sml) {
 #ifdef DEBUG_ENABLED
 		if (debug_collisions) {
-			sml->set_debug_collisions_hint(true);
+#ifndef PHYSICS_2D_DISABLED
+			PhysicsServer2D::get_singleton()->debug_set_enabled(true);
+#endif
+#ifndef PHYSICS_3D_DISABLED
+			PhysicsServer3D::get_singleton()->debug_set_enabled(true);
+#endif
 		}
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);
