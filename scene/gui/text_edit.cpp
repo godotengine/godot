@@ -978,6 +978,7 @@ void TextEdit::_notification(int p_what) {
 				minimap_clicked = false;
 				set_process_internal(false);
 			}
+			_selection_mode_update();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -2488,6 +2489,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					// Scroll 3 lines.
 					_scroll_up(3 * mb->get_factor(), true);
 				}
+				_selection_mode_update();
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_DOWN && !mb->is_command_or_control_pressed()) {
 				if (mb->is_shift_pressed()) {
@@ -2500,14 +2502,17 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					// Scroll 3 lines.
 					_scroll_down(3 * mb->get_factor(), true);
 				}
+				_selection_mode_update();
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_LEFT) {
 				h_scroll->set_value(h_scroll->get_value() - (100 * mb->get_factor()));
 				queue_accessibility_update();
+				_selection_mode_update();
 			}
 			if (mb->get_button_index() == MouseButton::WHEEL_RIGHT) {
 				h_scroll->set_value(h_scroll->get_value() + (100 * mb->get_factor()));
 				queue_accessibility_update();
+				_selection_mode_update();
 			}
 
 			if (mb->get_button_index() == MouseButton::LEFT) {
@@ -2968,6 +2973,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			time_since_motion = 0.0;
 			accept_event();
+			_selection_mode_update();
 		} else {
 			// Likely follow up from a double tap touch event; we apply similar logic as the mouse motion logic.
 			_on_drag_or_mouse_motion_event(drag->get_position(), true);
@@ -2993,6 +2999,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 			accept_event(); // Accept event if scroll changed.
 		}
+		_selection_mode_update();
 		queue_accessibility_update();
 
 		return;
@@ -3310,20 +3317,7 @@ void TextEdit::_on_drag_or_mouse_motion_event(Vector2i p_event_position, bool p_
 		}
 
 		if (!dragging_minimap && !has_ime_text()) {
-			switch (selecting_mode) {
-				case SelectionMode::SELECTION_MODE_POINTER: {
-					_update_selection_mode_pointer();
-				} break;
-				case SelectionMode::SELECTION_MODE_WORD: {
-					_update_selection_mode_word();
-				} break;
-				case SelectionMode::SELECTION_MODE_LINE: {
-					_update_selection_mode_line();
-				} break;
-				default: {
-					break;
-				}
-			}
+			_selection_mode_update();
 		}
 	}
 
@@ -7174,10 +7168,6 @@ HScrollBar *TextEdit::get_h_scroll_bar() const {
 
 void TextEdit::set_v_scroll(double p_scroll) {
 	v_scroll->set_value(p_scroll);
-	int max_v_scroll = v_scroll->get_max() - v_scroll->get_page();
-	if (p_scroll >= max_v_scroll - 1.0) {
-		_scroll_moved(v_scroll->get_value());
-	}
 	queue_accessibility_update();
 }
 
@@ -7186,9 +7176,6 @@ double TextEdit::get_v_scroll() const {
 }
 
 void TextEdit::set_h_scroll(int p_scroll) {
-	if (p_scroll < 0) {
-		p_scroll = 0;
-	}
 	h_scroll->set_value(p_scroll);
 	queue_accessibility_update();
 }
@@ -9504,6 +9491,22 @@ void TextEdit::_scroll_moved(double p_to_val) {
 	queue_redraw();
 }
 
+void TextEdit::_selection_mode_update() {
+	switch (get_selection_mode()) {
+		case SelectionMode::SELECTION_MODE_POINTER: {
+			_update_selection_mode_pointer();
+		} break;
+		case SelectionMode::SELECTION_MODE_WORD: {
+			_update_selection_mode_word();
+		} break;
+		case SelectionMode::SELECTION_MODE_LINE: {
+			_update_selection_mode_line();
+		} break;
+		default:
+			break;
+	}
+}
+
 double TextEdit::_get_visible_lines_offset() const {
 	double total = _get_control_height();
 	total /= (double)get_line_height();
@@ -9594,6 +9597,8 @@ void TextEdit::_scroll_lines_up() {
 		}
 	}
 	merge_overlapping_carets();
+
+	_selection_mode_update();
 }
 
 void TextEdit::_scroll_lines_down() {
@@ -9615,6 +9620,8 @@ void TextEdit::_scroll_lines_down() {
 		}
 	}
 	merge_overlapping_carets();
+
+	_selection_mode_update();
 }
 
 void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximize_selection) {
@@ -10101,6 +10108,9 @@ TextEdit::TextEdit(const String &p_placeholder) {
 
 	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &TextEdit::_scroll_moved));
 	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &TextEdit::_scroll_moved));
+
+	h_scroll->connect(CoreStringName(changed), callable_mp(this, &TextEdit::_selection_mode_update));
+	v_scroll->connect(CoreStringName(changed), callable_mp(this, &TextEdit::_selection_mode_update));
 
 	v_scroll->connect("scrolling", callable_mp(this, &TextEdit::_v_scroll_input));
 
