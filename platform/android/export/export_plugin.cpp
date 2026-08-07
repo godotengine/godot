@@ -3697,14 +3697,15 @@ static String _copy_keystore_to_temp(const String &p_keystore_path, const String
 Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
-	const String base_dir = p_path.get_base_dir();
-	if (!DirAccess::exists(base_dir)) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
-		return ERR_FILE_BAD_PATH;
+	// Allow exporting to `res://` and `user://` for convenience, but ensure the export folder exists beforehand.
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	const String base_dir = ProjectSettings::get_singleton()->globalize_path(p_path.get_base_dir());
+	Error err = ensure_folder(da, base_dir);
+	if (err != OK) {
+		return err;
 	}
 
 	String src_apk;
-	Error err;
 
 	EditorProgress ep("export", TTR("Exporting for Android"), 105, true);
 
