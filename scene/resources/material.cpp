@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/property_info.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
@@ -736,6 +737,11 @@ void BaseMaterial3D::_update_shader() {
 		texfilter_height_str += ", repeat_disable";
 	}
 
+	bool animation_enabled = features[FEATURE_PARTICLES_ANIMATION];
+#ifndef DISABLE_DEPRECATED
+	animation_enabled = animation_enabled || billboard_mode == BILLBOARD_PARTICLES;
+#endif
+
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 	String code = vformat(
 			"// NOTE: Shader automatically converted from " GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG "'s %s.\n\n",
@@ -1024,7 +1030,7 @@ uniform float metallic : hint_range(0.0, 1.0, 0.01);
 		code += "uniform sampler2D texture_orm : hint_roughness_g, " + texfilter_str + ";\n";
 	}
 
-	if (billboard_mode == BILLBOARD_PARTICLES) {
+	if (animation_enabled) {
 		code += R"(
 uniform int particles_anim_h_frames : hint_range(1, 128);
 uniform int particles_anim_v_frames : hint_range(1, 128);
@@ -1304,25 +1310,30 @@ void vertex() {)";
 			vec4(0.0, 0.0, 0.0, 1.0));
 )";
 			}
-			// Set modelview normal and handle animation.
+			// Set modelview normal.
 			code += R"(
 	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
-
-	float h_frames = float(particles_anim_h_frames);
-	float v_frames = float(particles_anim_v_frames);
-	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);
-	float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));
-	if (!particles_anim_loop) {
-		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);
-	} else {
-		particle_frame = mod(particle_frame, particle_total_frames);
-	}
-	UV /= vec2(h_frames, v_frames);
-	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);
 )";
 		} break;
 		case BILLBOARD_MAX:
 			break; // Internal value, skip.
+	}
+
+	// Handle animation.
+	if (animation_enabled) {
+		code += R"(
+		float h_frames = float(particles_anim_h_frames);
+		float v_frames = float(particles_anim_v_frames);
+		float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);
+		float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));
+		if (!particles_anim_loop) {
+			particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);
+		} else {
+			particle_frame = mod(particle_frame, particle_total_frames);
+		}
+		UV /= vec2(h_frames, v_frames);
+		UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);
+)";
 	}
 
 	if (flags[FLAG_FIXED_SIZE]) {
@@ -2549,9 +2560,16 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+#ifndef DISABLE_DEPRECATED
+	if (billboard_mode == BILLBOARD_PARTICLES) {
+		if (p_property.name == "particles_anim_enabled") {
+			p_property.hint = PROPERTY_HINT_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
+		} else if (p_property.name.begins_with("particles_anim_")) {
+			p_property.usage = PROPERTY_USAGE_DEFAULT;
+		}
 	}
+#endif
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
@@ -3712,6 +3730,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
 
 	ADD_GROUP("Particles Anim", "particles_anim_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particles_anim_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_PARTICLES_ANIMATION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_loop"), "set_particles_anim_loop", "get_particles_anim_loop");
@@ -3809,6 +3828,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_REFRACTION);
 	BIND_ENUM_CONSTANT(FEATURE_DETAIL);
 	BIND_ENUM_CONSTANT(FEATURE_BENT_NORMAL_MAPPING);
+	BIND_ENUM_CONSTANT(FEATURE_PARTICLES_ANIMATION);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 
 	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);
