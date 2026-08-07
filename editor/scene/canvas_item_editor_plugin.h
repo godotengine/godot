@@ -134,6 +134,8 @@ private:
 		SHOW_TRANSFORMATION_GIZMOS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
+		LOCK_MULTIPLE_SELECTED,
+		UNLOCK_MULTIPLE_SELECTED,
 		GROUP_SELECTED,
 		UNGROUP_SELECTED,
 		ANIM_INSERT_KEY,
@@ -358,6 +360,8 @@ private:
 
 	Button *lock_button = nullptr;
 	Button *unlock_button = nullptr;
+	Button *lock_multiple_button = nullptr;
+	Button *unlock_multiple_button = nullptr;
 
 	Button *group_button = nullptr;
 	Button *ungroup_button = nullptr;
@@ -435,6 +439,7 @@ private:
 
 	void _prepare_view_menu();
 	void _popup_callback(int p_op);
+	void _lock_canvas_item_and_children(Node *p_node, EditorUndoRedoManager *undo_redo, bool p_lock);
 	bool updating_scroll = false;
 	void _update_scroll(real_t);
 	void _update_scrollbars();
