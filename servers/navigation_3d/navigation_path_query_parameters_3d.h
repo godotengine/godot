@@ -43,6 +43,7 @@ protected:
 public:
 	enum PathfindingAlgorithm {
 		PATHFINDING_ALGORITHM_ASTAR = NavigationEnums3D::PATHFINDING_ALGORITHM_ASTAR,
+		PATHFINDING_ALGORITHM_DIJKSTRA = NavigationEnums3D::PATHFINDING_ALGORITHM_DIJKSTRA,
 	};
 
 	enum PathPostProcessing {
