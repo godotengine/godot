@@ -435,6 +435,7 @@ private:
 	Callable tooltip_callback;
 
 	/* Mouse */
+#ifndef DISABLE_DEPRECATED
 	struct LineDrawingCache {
 		int y_offset = 0;
 		Vector<int> first_visible_chars;
@@ -442,6 +443,7 @@ private:
 	};
 
 	HashMap<int, LineDrawingCache> line_drawing_cache;
+#endif // DISABLE_DEPRECATED
 
 	int _get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 
@@ -501,7 +503,8 @@ private:
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
 
-	int _get_column_x_offset_for_line(int p_char, int p_line, int p_column) const;
+	float _get_column_x_offset_for_line(int p_char, int p_line, int p_column) const;
+	float _get_line_start_y(int p_line, int p_wrap_index = 0) const;
 	bool _is_line_col_in_range(int p_line, int p_column, int p_from_line, int p_from_column, int p_to_line, int p_to_column, bool p_include_edges = true) const;
 
 	void _offset_carets_after(int p_old_line, int p_old_column, int p_new_line, int p_new_column, bool p_include_selection_begin = true, bool p_include_selection_end = true);
@@ -549,8 +552,7 @@ private:
 	Vector2 selection_handle_drag_offset;
 	bool show_selection_handle = false;
 	bool selection_handle_enabled = true;
-	Vector<Point2i> _get_selection_handles_pos(int p_cursor) const;
-	bool _is_first_column(int p_line, int p_column) const;
+	Vector<Point2> _get_selection_handles_pos(int p_cursor) const;
 	void _draw_selection_handle(Vector2 p_pos) const;
 
 	void _cancel_inertial_scroll();
@@ -1002,8 +1004,12 @@ public:
 	String get_word(int p_line, int p_column) const;
 
 	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
+#ifndef DISABLE_DEPRECATED
 	Point2i get_pos_at_line_column(int p_line, int p_column) const;
 	Rect2i get_rect_at_line_column(int p_line, int p_column) const;
+#endif
+	Rect2 get_grapheme_rect(int p_line, int p_column, bool p_only_in_bounds = true) const;
+	Point2 get_column_position(int p_line, int p_column, bool p_only_in_bounds = true) const;
 	int get_line_start_margin() const;
 
 	int get_minimap_line_at_pos(const Point2i &p_pos) const;

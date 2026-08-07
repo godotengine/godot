@@ -1399,7 +1399,9 @@ void TextEdit::_notification(int p_what) {
 			_draw_guidelines();
 
 			// Draw main text.
+#ifndef DISABLE_DEPRECATED
 			line_drawing_cache.clear();
+#endif // DISABLE_DEPRECATED
 			int row_height = draw_placeholder ? placeholder_line_height + theme_cache.line_spacing : get_line_height();
 			int line = first_vis_line;
 			for (int i = 0; i < draw_amount; i++) {
@@ -1420,7 +1422,9 @@ void TextEdit::_notification(int p_what) {
 					continue;
 				}
 
+#ifndef DISABLE_DEPRECATED
 				LineDrawingCache cache_entry;
+#endif
 
 				const Vector<Pair<int64_t, Color>> color_map = _get_line_syntax_highlighting(line);
 
@@ -1491,7 +1495,9 @@ void TextEdit::_notification(int p_what) {
 					if (line_wrap_index == 0) {
 						// Only do these if we are on the first wrapped part of a line.
 
+#ifndef DISABLE_DEPRECATED
 						cache_entry.y_offset = ofs_y;
+#endif
 
 						int gutter_offset = left_margin;
 						for (int g = 0; g < gutters.size(); g++) {
@@ -1712,9 +1718,10 @@ void TextEdit::_notification(int p_what) {
 					int gl_size = TS->shaped_text_get_glyph_count(rid);
 
 					ofs_y += ldata->get_line_ascent(line_wrap_index);
-
+#ifndef DISABLE_DEPRECATED
 					int first_visible_char = TS->shaped_text_get_range(rid).y;
 					int last_visible_char = TS->shaped_text_get_range(rid).x;
+#endif
 
 					float char_ofs = 0;
 					if (theme_cache.outline_size > 0 && theme_cache.outline_color.a > 0) {
@@ -1802,20 +1809,27 @@ void TextEdit::_notification(int p_what) {
 							}
 						}
 
+#ifndef DISABLE_DEPRECATED
 						bool had_glyphs_drawn = false;
+#endif
 						for (int k = 0; k < glyphs[j].repeat; k++) {
 							if (!clipped && (char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
 								if (glyphs[j].font_rid != RID()) {
 									TS->font_draw_glyph(glyphs[j].font_rid, text_ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, gl_color);
+#ifndef DISABLE_DEPRECATED
 									had_glyphs_drawn = true;
+#endif
 								} else if (((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[j].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
 									TS->draw_hex_code_box(text_ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, gl_color);
+#ifndef DISABLE_DEPRECATED
 									had_glyphs_drawn = true;
+#endif
 								}
 							}
 							char_ofs += glyphs[j].advance;
 						}
 
+#ifndef DISABLE_DEPRECATED
 						if (had_glyphs_drawn) {
 							if (first_visible_char > glyphs[j].start) {
 								first_visible_char = glyphs[j].start;
@@ -1824,6 +1838,7 @@ void TextEdit::_notification(int p_what) {
 								last_visible_char = glyphs[j].end;
 							}
 						}
+#endif
 
 						if ((char_ofs + char_margin) >= xmargin_end) {
 							break;
@@ -1839,10 +1854,10 @@ void TextEdit::_notification(int p_what) {
 						int end_column = u.end_column;
 
 						if (line != u.start_line) {
-							start_column = 0;
+							start_column = TS->shaped_text_get_range(rid).x;
 						}
 						if (line != u.end_line) {
-							end_column = last_visible_char;
+							end_column = TS->shaped_text_get_range(rid).y;
 						}
 
 						const Vector<Vector2> underline = TS->shaped_text_get_selection(rid, start_column, end_column);
@@ -1908,8 +1923,10 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
+#ifndef DISABLE_DEPRECATED
 					cache_entry.first_visible_chars.push_back(first_visible_char);
 					cache_entry.last_visible_chars.push_back(last_visible_char);
+#endif
 
 					// is_line_folded
 					if (line_wrap_index == line_wrap_amount && line < text.size() - 1 && _is_line_hidden(line + 1)) {
@@ -2090,10 +2107,11 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 				}
-
+#ifndef DISABLE_DEPRECATED
 				if (!draw_placeholder) {
 					line_drawing_cache[line] = cache_entry;
 				}
+#endif
 			}
 
 			// Selection handles.
@@ -2103,9 +2121,9 @@ void TextEdit::_notification(int p_what) {
 						continue;
 					}
 
-					Vector<Point2i> handles_pos = _get_selection_handles_pos(c);
-					Point2i start_pos = handles_pos[0];
-					Point2i end_pos = handles_pos[1];
+					Vector<Point2> handles_pos = _get_selection_handles_pos(c);
+					Point2 start_pos = handles_pos[0];
+					Point2 end_pos = handles_pos[1];
 					if (start_pos.x != -1) {
 						_draw_selection_handle(start_pos);
 					}
@@ -2229,40 +2247,14 @@ void TextEdit::_draw_selection_handle(Vector2 p_pos) const {
 	RS::get_singleton()->canvas_item_add_circle(text_ci, circle_center, selection_handle_radius, handle_color);
 }
 
-/*
- * Returns true if p_column is at index 0 or if it is the first character of a wrapped line segment.
- */
-bool TextEdit::_is_first_column(int p_line, int p_column) const {
-	bool is_first_column = p_column == 0;
-	if (!is_first_column && is_line_wrapped(p_line)) {
-		int wrap_index = get_line_wrap_index_at_column(p_line, p_column);
-		int wrap_index_last_column = get_line_wrap_index_at_column(p_line, p_column - 1);
-		is_first_column = wrap_index != wrap_index_last_column;
-	}
-	return is_first_column;
-}
-
-Vector<Point2i> TextEdit::_get_selection_handles_pos(int p_caret) const {
+Vector<Point2> TextEdit::_get_selection_handles_pos(int p_caret) const {
 	int selection_from_line = get_selection_from_line(p_caret);
 	int selection_from_column = get_selection_from_column(p_caret);
 	int selection_to_line = get_selection_to_line(p_caret);
 	int selection_to_column = get_selection_to_column(p_caret);
-	Rect2i start_rect = get_rect_at_line_column(selection_from_line, selection_from_column);
-	Rect2i end_rect = get_rect_at_line_column(selection_to_line, selection_to_column);
-
-	Point2i start_pos = start_rect.position;
-	if (start_pos.x != -1 && !_is_first_column(selection_from_line, selection_from_column)) {
-		start_pos.x += start_rect.size.x;
-	}
-
-	Point2i end_pos = end_rect.position;
-	if (end_pos.x != -1 && !_is_first_column(selection_to_line, selection_to_column)) {
-		end_pos.x += end_rect.size.x;
-	}
-
-	Vector<Point2i> result;
-	result.push_back(start_pos);
-	result.push_back(end_pos);
+	Vector<Point2> result;
+	result.push_back(get_column_position(selection_from_line, selection_from_column));
+	result.push_back(get_column_position(selection_to_line, selection_to_column));
 	return result;
 }
 
@@ -2645,8 +2637,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						obj_rect.position.x += xmargin_beg + wrap_indent - first_visible_col;
 
 						if (mpos.x > obj_rect.position.x && mpos.x < obj_rect.get_end().x) {
-							Rect2 col_rect = get_rect_at_line_column(line, col);
-							col_rect.position += get_screen_position() + Vector2(col_rect.size.x, 0);
+							Rect2 col_rect;
+							col_rect.position = get_column_position(line, col) + get_screen_position();
 							col_rect.size = obj_rect.size;
 							set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_NONE);
 							inline_object_click_handler.call(info, col_rect);
@@ -2737,9 +2729,9 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					continue;
 				}
 
-				Vector<Point2i> handles_pos = _get_selection_handles_pos(c);
-				Point2i start_pos = handles_pos[0];
-				Point2i end_pos = handles_pos[1];
+				Vector<Point2> handles_pos = _get_selection_handles_pos(c);
+				Point2 start_pos = handles_pos[0];
+				Point2 end_pos = handles_pos[1];
 
 				int line_height = get_line_height();
 
@@ -2882,8 +2874,8 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					obj_rect.position.x += xmargin_beg + wrap_indent - first_visible_col;
 
 					if (touch_pos.x > obj_rect.position.x && touch_pos.x < obj_rect.get_end().x) {
-						Rect2 col_rect = get_rect_at_line_column(line, col);
-						col_rect.position += get_screen_position() + Vector2(col_rect.size.x, 0);
+						Rect2 col_rect;
+						col_rect.position = get_column_position(line, col) + get_screen_position();
 						col_rect.size = obj_rect.size;
 						set_selection_mode(TextEdit::SelectionMode::SELECTION_MODE_NONE);
 						inline_object_click_handler.call(info, col_rect);
@@ -5743,6 +5735,7 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line
 	return Point2i(col, row);
 }
 
+#ifndef DISABLE_DEPRECATED
 Point2i TextEdit::get_pos_at_line_column(int p_line, int p_column) const {
 	Rect2i rect = get_rect_at_line_column(p_line, p_column);
 	return rect.position.x == -1 ? rect.position : rect.position + Vector2i(0, get_line_height());
@@ -5791,6 +5784,84 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 	size.y = get_line_height();
 
 	return Rect2i(pos, size);
+}
+#endif // DISABLE_DEPRECATED
+
+Rect2 TextEdit::get_grapheme_rect(int p_line, int p_column, bool p_only_in_bounds) const {
+	p_line = CLAMP(p_line, 0, text.size() - 1);
+	const int line_length = text.get_text_with_ime(p_line).length();
+	p_column = CLAMP(p_column, 0, MAX(0, line_length - 1));
+
+	const int wrap_index = get_line_wrap_index_at_column(p_line, p_column);
+	const float wrap_indent = _get_wrap_indent_offset(p_line, wrap_index, is_layout_rtl());
+	Ref<StyleBox> style = _get_current_stylebox();
+
+	Rect2 rect;
+	rect.position.y = _get_line_start_y(p_line, wrap_index);
+	rect.size.y = get_line_height();
+
+	if (p_only_in_bounds) {
+		const int top_draw_limit = style->get_margin(SIDE_TOP) - get_line_height();
+		const int bottom_draw_limit = get_size().height - style->get_margin(SIDE_BOTTOM) + get_line_height();
+		if (rect.position.y + rect.size.y < top_draw_limit || rect.position.y > bottom_draw_limit) {
+			return Rect2(-1, -1, 0, 0);
+		}
+	}
+
+	const RID text_rid = text.get_line_data(p_line)->get_line_rid(wrap_index);
+	const int start_column = get_previous_composite_character_column(p_line, MIN(p_column + 1, line_length));
+	const int end_column = get_next_composite_character_column(p_line, p_column);
+	const Vector<Vector2> selection = TS->shaped_text_get_selection(text_rid, start_column, end_column);
+	Vector2 col_bounds;
+	if (!selection.is_empty()) {
+		col_bounds = selection[0];
+	}
+	rect.size.x = col_bounds.y - col_bounds.x;
+	float start_pos_x = get_line_start_margin() + get_total_gutter_width() + wrap_indent - h_scroll->get_value();
+	if (is_layout_rtl()) {
+		rect.position.x = get_size().width - start_pos_x - TS->shaped_text_get_size(text_rid).x + col_bounds.x;
+	} else {
+		rect.position.x = start_pos_x + col_bounds.x;
+	}
+
+	if (p_only_in_bounds) {
+		const int left_draw_limit = get_line_start_margin() + get_total_gutter_width();
+		const int right_draw_limit = get_size().width - Math::floor(style->get_margin(SIDE_RIGHT)) - (draw_minimap ? minimap_width : 0);
+		if (rect.position.x + rect.size.x < left_draw_limit || rect.position.x > right_draw_limit) {
+			return Rect2(-1, -1, 0, 0);
+		}
+	}
+
+	return rect;
+}
+
+Point2 TextEdit::get_column_position(int p_line, int p_column, bool p_only_in_bounds) const {
+	p_line = CLAMP(p_line, 0, text.size() - 1);
+	const int line_length = text.get_text_with_ime(p_line).length();
+	p_column = CLAMP(p_column, 0, line_length);
+
+	const int wrap_index = get_line_wrap_index_at_column(p_line, p_column);
+
+	float start_pos_x = get_line_start_margin() + get_total_gutter_width() - h_scroll->get_value();
+	if (is_layout_rtl()) {
+		RID text_rid = text.get_line_data(p_line)->get_line_rid(wrap_index);
+		start_pos_x = get_size().width - start_pos_x - TS->shaped_text_get_size(text_rid).x;
+	}
+	Point2 pos;
+	pos.x = start_pos_x + _get_column_x_offset_for_line(p_column, p_line, p_column);
+	pos.y = _get_line_start_y(p_line, wrap_index);
+
+	if (p_only_in_bounds) {
+		Ref<StyleBox> style = _get_current_stylebox();
+		const int top_draw_limit = style->get_margin(SIDE_TOP) - get_line_height();
+		const int bottom_draw_limit = get_size().height - style->get_margin(SIDE_BOTTOM) + get_line_height();
+		const int left_draw_limit = get_line_start_margin() + get_total_gutter_width();
+		const int right_draw_limit = get_size().width - Math::floor(style->get_margin(SIDE_RIGHT)) - (draw_minimap ? minimap_width : 0);
+		if (pos.x < left_draw_limit || pos.x > right_draw_limit || pos.y < top_draw_limit || pos.y > bottom_draw_limit) {
+			return Point2(-1, -1);
+		}
+	}
+	return pos;
 }
 
 int TextEdit::get_line_start_margin() const {
@@ -6916,17 +6987,17 @@ int TextEdit::get_selection_origin_column(int p_caret) const {
 
 int TextEdit::get_next_composite_character_column(int p_line, int p_column) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), -1);
-	ERR_FAIL_INDEX_V(p_column, text[p_line].length() + 1, -1);
-	if (p_column == text[p_line].length()) {
+	ERR_FAIL_INDEX_V(p_column, text.get_text_with_ime(p_line).length() + 1, -1);
+	if (p_column == text.get_text_with_ime(p_line).length()) {
 		return p_column;
 	} else {
-		return TS->shaped_text_next_character_pos(text.get_line_data(p_line)->get_rid(), (p_column));
+		return TS->shaped_text_next_character_pos(text.get_line_data(p_line)->get_rid(), p_column);
 	}
 }
 
 int TextEdit::get_previous_composite_character_column(int p_line, int p_column) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), -1);
-	ERR_FAIL_INDEX_V(p_column, text[p_line].length() + 1, -1);
+	ERR_FAIL_INDEX_V(p_column, text.get_text_with_ime(p_line).length() + 1, -1);
 	if (p_column == 0) {
 		return 0;
 	} else {
@@ -8017,8 +8088,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_word_at_pos", "position"), &TextEdit::get_word_at_pos);
 
 	ClassDB::bind_method(D_METHOD("get_line_column_at_pos", "position", "clamp_line", "clamp_column"), &TextEdit::get_line_column_at_pos, DEFVAL(true), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_pos_at_line_column", "line", "column"), &TextEdit::get_pos_at_line_column);
-	ClassDB::bind_method(D_METHOD("get_rect_at_line_column", "line", "column"), &TextEdit::get_rect_at_line_column);
+	ClassDB::bind_method(D_METHOD("get_grapheme_rect", "line", "column", "only_in_bounds"), &TextEdit::get_grapheme_rect, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_column_position", "line", "column", "only_in_bounds"), &TextEdit::get_column_position, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_minimap_line_at_pos", "position"), &TextEdit::get_minimap_line_at_pos);
 
@@ -8279,6 +8350,8 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_caret_index_edit_order"), &TextEdit::get_caret_index_edit_order);
 	ClassDB::bind_method(D_METHOD("get_selection_line", "caret_index"), &TextEdit::get_selection_line, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_selection_column", "caret_index"), &TextEdit::get_selection_column, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_pos_at_line_column", "line", "column"), &TextEdit::get_pos_at_line_column);
+	ClassDB::bind_method(D_METHOD("get_rect_at_line_column", "line", "column"), &TextEdit::get_rect_at_line_column);
 #endif
 
 	/* Inspector */
@@ -9020,7 +9093,7 @@ void TextEdit::_toggle_draw_caret() {
 	}
 }
 
-int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line, int p_column) const {
+float TextEdit::_get_column_x_offset_for_line(int p_char, int p_line, int p_column) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
 	int wrap_index = 0;
@@ -9042,6 +9115,13 @@ int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line, int p_column
 	} else {
 		return ts_caret.t_caret.position.x + (rtl ? -wrap_indent : wrap_indent);
 	}
+}
+
+float TextEdit::_get_line_start_y(int p_line, int p_wrap_index) const {
+	const int num_lines_before = p_line == 0 ? 0 : get_visible_line_count_in_range(0, p_line - 1);
+	Ref<StyleBox> style = _get_current_stylebox();
+	const int top_start = style->get_margin(SIDE_TOP);
+	return top_start + get_line_height() * (num_lines_before + p_wrap_index - get_v_scroll());
 }
 
 bool TextEdit::_is_line_col_in_range(int p_line, int p_column, int p_from_line, int p_from_column, int p_to_line, int p_to_column, bool p_include_edges) const {
