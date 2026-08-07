@@ -69,7 +69,7 @@ void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const
 	}
 }
 
-Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneFormatImporter::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, ImportMeta *r_meta, Error *r_err) {
 	Dictionary options_dict;
 	for (const KeyValue<StringName, Variant> &elem : p_options) {
 		options_dict[elem.key] = elem.value;
@@ -285,7 +285,7 @@ String ResourceImporterScene::get_resource_type() const {
 }
 
 int ResourceImporterScene::get_format_version() const {
-	return 1;
+	return 2;
 }
 
 bool ResourceImporterScene::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
@@ -3135,8 +3135,11 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	ERR_FAIL_COND_V(p_options.is_empty(), nullptr);
 
 	Error err = OK;
+	uint32_t flags = EditorSceneFormatImporter::IMPORT_ANIMATION |
+			EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS |
+			EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
 
-	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS | EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION, p_options, nullptr, &err);
+	Node *scene = importer->import_scene(p_source_file, flags, p_options, nullptr, nullptr, &err);
 	if (!scene || err != OK) {
 		return nullptr;
 	}
@@ -3286,10 +3289,19 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		}
 	}
 
+	ImportMeta import_meta;
 	List<String> missing_deps; // for now, not much will be done with this
-	Node *scene = importer->import_scene(src_path, import_flags, p_options, &missing_deps, &err);
+	Node *scene = importer->import_scene(src_path, import_flags, p_options, &missing_deps, &import_meta, &err);
 	if (!scene || err != OK) {
 		return err;
+	}
+
+	// Write metadata
+	if (r_metadata != nullptr) {
+		Dictionary import_meta_dict;
+		import_meta_dict.set("tris_count", import_meta.tris_count);
+		import_meta_dict.set("texture_sizes", import_meta.texture_sizes);
+		*r_metadata = import_meta_dict;
 	}
 
 	bool apply_root = true;
@@ -3571,7 +3583,7 @@ void EditorSceneFormatImporterESCN::get_extensions(List<String> *r_extensions) c
 	r_extensions->push_back("escn");
 }
 
-Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, ImportMeta *r_meta, Error *r_err) {
 	Error error;
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
 	ERR_FAIL_COND_V_MSG(ps.is_null(), nullptr, "Cannot load scene as text resource from path '" + p_path + "'.");

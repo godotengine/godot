@@ -1802,7 +1802,7 @@ void EditorSceneFormatImporterCollada::get_extensions(List<String> *r_extensions
 	r_extensions->push_back("dae");
 }
 
-Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err) {
+Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, ImportMeta *r_meta, Error *r_err) {
 	if (r_err) {
 		*r_err = OK;
 	}
@@ -1853,6 +1853,21 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 		}
 		state.scene->add_child(ap, true);
 		ap->set_owner(state.scene);
+	}
+
+	// Record meta
+	if (r_meta != nullptr) {
+		// tris count
+		for (HashMap<String, Ref<ImporterMesh>>::Iterator it = state.mesh_cache.begin(); it != state.mesh_cache.end(); ++it) {
+			Ref<ImporterMesh> imesh = state.mesh_cache[it->key];
+			if (!imesh.is_valid()) {
+				continue;
+			}
+			Ref<ArrayMesh> arr_mesh = imesh->get_mesh();
+			for (int i = 0; i < arr_mesh->get_surface_count(); i++) {
+				r_meta->tris_count += arr_mesh->surface_get_array_index_len(i) / 3;
+			}
+		}
 	}
 
 	return state.scene;
