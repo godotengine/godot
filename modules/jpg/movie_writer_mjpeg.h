@@ -34,7 +34,7 @@
 #include "servers/movie_writer/movie_writer.h"
 
 class MovieWriterMJPEG : public MovieWriter {
-	GDCLASS(MovieWriterMJPEG, MovieWriter)
+	GDSOFTCLASS(MovieWriterMJPEG, MovieWriter)
 
 	uint32_t mix_rate = 48000;
 	AuSE::SpeakerMode speaker_mode = AuSE::SPEAKER_MODE_STEREO;
