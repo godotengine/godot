@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/resources/audio/audio_stream.h"
@@ -42,6 +43,9 @@
 #include "servers/audio/audio_frame.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
 
+#ifdef DEBUG_ENABLED
+#include "servers/audio/audio_server_debug.h"
+#endif // DEBUG_ENABLED
 #ifdef TOOLS_ENABLED
 #define MARK_EDITED set_edited(true);
 #else
@@ -1912,10 +1916,42 @@ void AudioServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(AuSE::PLAYBACK_TYPE_STREAM);
 	BIND_ENUM_CONSTANT(AuSE::PLAYBACK_TYPE_SAMPLE);
 	BIND_ENUM_CONSTANT(AuSE::PLAYBACK_TYPE_MAX);
+
+#ifdef DEBUG_ENABLED
+	ADD_SIGNAL(MethodInfo("_debug_audio_2d_visualization_changed"));
+#endif // DEBUG_ENABLED
 }
+
+#ifdef DEBUG_ENABLED
+
+void AudioServer::emit_debug_audio_2d_visualization_changed_signal(bool p_regenerate_rids) {
+	if (p_regenerate_rids) {
+		debug_audio_2d_visualization_regenerate_rids_dirty = true;
+	}
+	if (!debug_audio_2d_visualization_dirty) {
+		debug_audio_2d_visualization_dirty = true;
+		callable_mp(this, &AudioServer::_emit_debug_audio_2d_visualization_changed_signal).call_deferred();
+	}
+}
+
+void AudioServer::_emit_debug_audio_2d_visualization_changed_signal() {
+	if (debug_audio_2d_visualization_regenerate_rids_dirty) {
+		audio_server_debug->clear_rids();
+		audio_server_debug->generate_rids();
+	}
+	debug_audio_2d_visualization_dirty = false;
+	debug_audio_2d_visualization_regenerate_rids_dirty = false;
+	emit_signal(SNAME("_debug_audio_2d_visualization_changed"));
+}
+#endif // DEBUG_ENABLED
 
 AudioServer::AudioServer() {
 	singleton = this;
+
+#ifdef DEBUG_ENABLED
+	audio_server_debug = memnew(AudioServerDebug);
+	ERR_FAIL_NULL(AudioServerDebug::get_singleton());
+#endif // DEBUG_ENABLED
 }
 
 AudioServer::~AudioServer() {
@@ -1924,4 +1960,8 @@ AudioServer::~AudioServer() {
 	_cleanup_lists();
 
 	singleton = nullptr;
+#ifdef DEBUG_ENABLED
+	memdelete(audio_server_debug);
+	audio_server_debug = nullptr;
+#endif // DEBUG_ENABLED
 }

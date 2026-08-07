@@ -40,6 +40,10 @@
 #include "servers/audio/audio_server_enums.h"
 #include "servers/audio/audio_server_types.h" // IWYU pragma: keep. Included to have a dedicated file to move stuff over.
 
+#ifdef DEBUG_ENABLED
+class AudioServerDebug;
+#endif // DEBUG_ENABLED
+
 class AudioSample;
 class AudioStream;
 class AudioStreamPlayback;
@@ -369,6 +373,18 @@ public:
 
 	AudioServer();
 	virtual ~AudioServer();
+
+#ifdef DEBUG_ENABLED
+private:
+	AudioServerDebug *audio_server_debug = nullptr;
+
+	bool debug_audio_2d_visualization_dirty = false;
+	bool debug_audio_2d_visualization_regenerate_rids_dirty = false;
+	void _emit_debug_audio_2d_visualization_changed_signal();
+
+public:
+	void emit_debug_audio_2d_visualization_changed_signal(bool p_regenerate_rids);
+#endif // DEBUG_ENABLED
 };
 
 VARIANT_ENUM_CAST_EXT(AuSE::SpeakerMode, AudioServer::SpeakerMode);

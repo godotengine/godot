@@ -79,6 +79,7 @@
 #include "editor/inspector/input_event_editor_plugin.h"
 #include "editor/inspector/sub_viewport_preview_editor_plugin.h"
 #include "editor/inspector/tool_button_editor_plugin.h"
+#include "editor/scene/2d/audio_stream_player_2d_editor_plugin.h"
 #include "editor/scene/2d/camera_2d_editor_plugin.h"
 #include "editor/scene/2d/light_occluder_2d_editor_plugin.h"
 #include "editor/scene/2d/line_2d_editor_plugin.h"
@@ -256,6 +257,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<VirtualJoystickEditorPlugin>();
 
 	// Node2D-based editor plugins.
+	EditorPlugins::add_by_type<AudioStreamPlayer2DEditorPlugin>();
 	EditorPlugins::add_by_type<Camera2DEditorPlugin>();
 	EditorPlugins::add_by_type<CPUParticles2DEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticles2DEditorPlugin>();
