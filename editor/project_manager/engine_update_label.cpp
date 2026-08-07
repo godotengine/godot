@@ -32,6 +32,7 @@
 
 #include "core/io/json.h"
 #include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
@@ -52,7 +53,7 @@ void EngineUpdateLabel::_check_update() {
 void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body) {
 	if (p_result != OK) {
 		_set_status(UpdateStatus::ERROR);
-		_set_message(TTRC("Failed to check for updates. Error: %d."), theme_cache.error_color, p_result);
+		_set_message(TTRC("Failed to check for updates. Error: %s."), theme_cache.error_color, _http_result_enum_string(p_result));
 		return;
 	}
 
@@ -256,6 +257,26 @@ EngineUpdateLabel::VersionType EngineUpdateLabel::_get_version_type(const String
 String EngineUpdateLabel::_extract_sub_string(const String &p_line) const {
 	int j = p_line.find_char('"') + 1;
 	return p_line.substr(j, p_line.find_char('"', j) - j);
+}
+
+String EngineUpdateLabel::_http_result_enum_string(int p_constant) const {
+	String result = String::num_int64(p_constant);
+
+	List<StringName> constants;
+	ClassDB::get_enum_constants(SNAME("HTTPRequest"), SNAME("Result"), &constants);
+	for (const StringName &E : constants) {
+		bool success = false;
+		int int_constant = ClassDB::get_integer_constant(SNAME("HTTPRequest"), E, &success);
+		if (!success) {
+			continue;
+		}
+		if (int_constant == p_constant) {
+			result = E.string().trim_prefix("RESULT_");
+			break;
+		}
+	}
+
+	return result;
 }
 
 void EngineUpdateLabel::_notification(int p_what) {
