@@ -599,6 +599,14 @@ void EditorPropertyArray::update_property() {
 	}
 }
 
+void EditorPropertyArray::update_properties_recursive() {
+	for (Slot &slot : slots) {
+		if (slot.prop) {
+			slot.prop->update_properties_recursive();
+		}
+	}
+}
+
 void EditorPropertyArray::_remove_pressed(int p_slot_index) {
 	Variant array = object->get_array().duplicate();
 	array.call("remove_at", slots[p_slot_index].index);
