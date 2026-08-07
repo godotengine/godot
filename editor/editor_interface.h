@@ -177,6 +177,11 @@ public:
 	void open_scene_from_path(const String &scene_path, bool p_set_inherited = false);
 	void reload_scene_from_path(const String &scene_path);
 
+	void set_node_locked(Node *p_node, bool p_locked);
+	bool is_node_locked(Node *p_node) const;
+	void set_node_selection_grouped(Node *p_node, bool p_grouped);
+	bool is_node_selection_grouped(Node *p_node) const;
+
 	void set_object_edited(Object *p_object, bool p_edited);
 	bool is_object_edited(Object *p_object) const;
 
