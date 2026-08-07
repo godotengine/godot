@@ -765,7 +765,9 @@ void ShaderTextEditor::_notification(int p_what) {
 			Ref<StyleBoxFlat> tab_style = get_theme_stylebox(SNAME("tab_selected"), "TabBar");
 			Ref<StyleBoxFlat> preview_style = memnew(StyleBoxFlat);
 			preview_style->set_bg_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
-			preview_style->set_corner_radius_all(tab_style->get_corner_radius(CORNER_TOP_LEFT));
+			if (tab_style.is_valid()) {
+				preview_style->set_corner_radius_all(tab_style->get_corner_radius(CORNER_TOP_LEFT));
+			}
 			preview_panel->add_theme_style_override(SceneStringName(panel), preview_style);
 
 			update_params_btn->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
