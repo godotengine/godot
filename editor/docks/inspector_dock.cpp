@@ -509,7 +509,7 @@ void InspectorDock::_bind_methods() {
 	ClassDB::bind_method("store_script_properties", &InspectorDock::store_script_properties);
 	ClassDB::bind_method("apply_script_properties", &InspectorDock::apply_script_properties);
 
-	ADD_SIGNAL(MethodInfo("request_help"));
+	ADD_SIGNAL(MethodInfo("request_help", PropertyInfo(Variant::STRING, "class")));
 }
 
 void InspectorDock::edit_resource(const Ref<Resource> &p_resource) {
