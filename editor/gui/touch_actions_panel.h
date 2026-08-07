@@ -70,6 +70,7 @@ private:
 
 	bool is_floating = false; // Embedded panel mode is default.
 	int embedded_panel_index = 0;
+	bool portrait_mode = false;
 
 	void _notification(int p_what);
 	virtual void input(const Ref<InputEvent> &event) override;
@@ -86,6 +87,7 @@ private:
 	void _on_modifier_button_toggled(bool p_pressed, int p_modifier);
 
 	void _hardware_keyboard_connected(bool p_connected);
+	void _screen_orientation_changed(int p_new_orientation);
 
 public:
 	TouchActionsPanel();

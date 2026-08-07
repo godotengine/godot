@@ -32,11 +32,13 @@
 
 #include "core/input/input.h"
 #include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/style_box_flat.h"
 #include "servers/display/display_server.h"
 
@@ -44,6 +46,7 @@ void TouchActionsPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			DisplayServer::get_singleton()->set_hardware_keyboard_connection_change_callback(callable_mp(this, &TouchActionsPanel::_hardware_keyboard_connected));
+			DisplayServer::get_singleton()->connect("orientation_changed", callable_mp(this, &TouchActionsPanel::_screen_orientation_changed));
 			_hardware_keyboard_connected(DisplayServer::get_singleton()->has_hardware_keyboard());
 			if (!is_floating) {
 				get_parent()->move_child(this, embedded_panel_index);
@@ -91,6 +94,14 @@ void TouchActionsPanel::input(const Ref<InputEvent> &event) {
 
 void TouchActionsPanel::_hardware_keyboard_connected(bool p_connected) {
 	set_visible(!p_connected);
+}
+
+void TouchActionsPanel::_screen_orientation_changed(int p_new_orientation) {
+	if (!is_floating) {
+		return;
+	}
+	portrait_mode = p_new_orientation == 1;
+	set_position(EDITOR_DEF(portrait_mode ? "_touch_actions_panel_portrait_pos" : "_touch_actions_panel_position", Point2(200, 480)));
 }
 
 void TouchActionsPanel::_simulate_editor_shortcut(const String &p_shortcut_name) {
@@ -177,7 +188,7 @@ void TouchActionsPanel::_on_drag_handle_gui_input(const Ref<InputEvent> &p_event
 		} else {
 			if (dragging) {
 				dragging = false;
-				EditorSettings::get_singleton()->set("_touch_actions_panel_position", get_position());
+				EditorSettings::get_singleton()->set(portrait_mode ? "_touch_actions_panel_portrait_pos" : "_touch_actions_panel_position", get_position());
 				EditorSettings::get_singleton()->save();
 			}
 		}
@@ -186,7 +197,7 @@ void TouchActionsPanel::_on_drag_handle_gui_input(const Ref<InputEvent> &p_event
 	Ref<InputEventMouseMotion> mouse_motion_event = p_event;
 	if (dragging && mouse_motion_event.is_valid()) {
 		Vector2 new_position = get_position() + mouse_motion_event->get_relative();
-		const float margin = 25.0;
+		const float margin = 15.0;
 		Vector2 parent_size = get_parent_area_size();
 		Vector2 panel_size = get_size();
 		new_position = new_position.clamp(Vector2(margin, margin), parent_size - panel_size - Vector2(margin, margin));
@@ -227,6 +238,9 @@ TouchActionsPanel::TouchActionsPanel() {
 	int panel_mode = EDITOR_GET("interface/touchscreen/touch_actions_panel");
 	is_floating = panel_mode == 2;
 
+	Vector2 parent_area = get_parent_area_size();
+	portrait_mode = parent_area.height > parent_area.width;
+
 	if (is_floating) {
 		Ref<StyleBoxFlat> panel_style;
 		panel_style.instantiate();
@@ -237,7 +251,7 @@ TouchActionsPanel::TouchActionsPanel() {
 		panel_style->set_content_margin_all(12);
 		add_theme_style_override(SceneStringName(panel), panel_style);
 
-		set_position(EDITOR_DEF("_touch_actions_panel_position", Point2(480, 480))); // Dropped it here for no good reason — users can move it anyway.
+		set_position(EDITOR_DEF(portrait_mode ? "_touch_actions_panel_portrait_pos" : "_touch_actions_panel_position", Point2(200, 480)));
 	}
 
 	box = memnew(BoxContainer);
