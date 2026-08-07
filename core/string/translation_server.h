@@ -122,13 +122,13 @@ public:
 	bool has_translation_for_locale(const String &p_locale, bool p_exact) const;
 
 	Vector<String> get_all_languages() const;
-	String get_language_name(const String &p_language) const;
+	String get_language_name(const String &p_code) const;
 
 	Vector<String> get_all_scripts() const;
-	String get_script_name(const String &p_script) const;
+	String get_script_name(const String &p_code) const;
 
 	Vector<String> get_all_countries() const;
-	String get_country_name(const String &p_country) const;
+	String get_country_name(const String &p_code) const;
 
 	String get_locale_name(const String &p_locale) const;
 	String get_plural_rules(const String &p_locale) const;
