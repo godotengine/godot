@@ -200,6 +200,9 @@ void HTTPRequest::cancel_request() {
 		set_process_internal(false);
 	} else {
 		thread_request_quit.set();
+		if (client.is_valid()) {
+			client->shutdown();
+		}
 		if (thread.is_started()) {
 			thread.wait_to_finish();
 		}

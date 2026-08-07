@@ -113,6 +113,10 @@ Error HTTPClientWeb::request(Method p_method, const String &p_url, const Vector<
 	return OK;
 }
 
+void HTTPClientWeb::shutdown() {
+	// Not implemented since there is no blocking mode on the web.
+}
+
 void HTTPClientWeb::close() {
 	host = "";
 	port = -1;

@@ -246,6 +246,12 @@ Error HTTPClientTCP::get_response_headers(List<String> *r_response) {
 	return OK;
 }
 
+void HTTPClientTCP::shutdown() {
+	if (tcp_connection.is_valid()) {
+		tcp_connection->shutdown();
+	}
+}
+
 void HTTPClientTCP::close() {
 	if (tcp_connection->get_status() != StreamPeerTCP::STATUS_NONE) {
 		tcp_connection->disconnect_from_host();
@@ -744,6 +750,12 @@ Error HTTPClientTCP::_get_http_data(uint8_t *p_buffer, int p_bytes, int &r_recei
 		int left = p_bytes;
 		r_received = 0;
 		while (left > 0) {
+			// Don't wait if there are already pending bytes.
+			// This might happen due to TLS buffers waiting for an EOF or having
+			// processed only partial information.
+			if (connection->get_available_bytes() == 0 && tcp_connection->get_available_bytes() == 0) {
+				err = tcp_connection->wait(NetSocket::POLL_TYPE_IN, -1);
+			}
 			err = connection->get_partial_data(p_buffer + r_received, left, read);
 			if (err == OK) {
 				r_received += read;
