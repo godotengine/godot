@@ -42,6 +42,9 @@ ext {
     rootDir = "../../.."
     binDir = "$rootDir/bin/"
     androidEditorBuildsDir = "$binDir/android_editor_builds/"
+
+    // Used by the editor module to set abiFilters.
+    detectedAbis = []
 }
 
 def getSconsTaskName(String flavor, String buildType, String abi) {
@@ -120,8 +123,17 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
     boolean excludeSconsBuildTasks = excludeSconsBuildTasks()
     boolean isTemplate = flavor == "template"
     String libsDir = isTemplate ? "lib/libs/" : "lib/libs/tools/"
+    def validAbis = ["arm64-v8a", "armeabi-v7a", "x86_64", "x86"]
     for (String target : supportedFlavorsBuildTypes[flavor]) {
         File targetLibs = new File(libsDir + target)
+
+        if (targetLibs != null && targetLibs.isDirectory()) {
+            targetLibs.listFiles()?.each { abiDir ->
+                if (abiDir.isDirectory() && validAbis.contains(abiDir.name) && abiDir.listFiles()?.length > 0) {
+                    detectedAbis.add(abiDir.name)
+                }
+            }
+        }
 
         String targetSuffix = target
 
