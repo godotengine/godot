@@ -231,6 +231,7 @@ private:
 		HatMask last_hat = HatMask::CENTER;
 		int mapping = -1;
 		int hat_current = 0;
+		bool raw = false;
 		Dictionary info;
 		bool has_light = false;
 		bool has_vibration = false;
@@ -481,6 +482,8 @@ public:
 
 	void add_joy_mapping(const String &p_mapping, bool p_update_existing = false);
 	void remove_joy_mapping(const String &p_guid);
+	void set_joy_raw(int p_device, bool p_raw);
+	bool get_joy_raw(int p_device) const;
 
 	int get_unused_joy_id();
 
