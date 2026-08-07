@@ -6729,9 +6729,6 @@ void TextEdit::select(int p_origin_line, int p_origin_column, int p_caret_line, 
 	if (had_selection != activate) {
 		_selection_changed(p_caret);
 	}
-
-	queue_accessibility_update();
-	queue_redraw();
 }
 
 bool TextEdit::has_selection(int p_caret) const {
@@ -9621,7 +9618,6 @@ void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximi
 	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE) {
 		first_visible_col = 0;
 		h_scroll->set_value(first_visible_col);
-		queue_redraw();
 		return;
 	}
 
@@ -9678,9 +9674,6 @@ void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximi
 	}
 
 	h_scroll->set_value(first_visible_col);
-
-	queue_accessibility_update();
-	queue_redraw();
 }
 
 // Minimap
