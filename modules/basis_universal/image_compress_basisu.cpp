@@ -178,11 +178,9 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 		const int orig_width = image->get_width();
 		const int orig_height = image->get_height();
 
-		bool is_res_div_4 = (orig_width % 4 == 0) && (orig_height % 4 == 0);
-
 		// Image's resolution rounded up to the nearest values divisible by 4.
-		int next_width = orig_width <= 2 ? orig_width : (orig_width + 3) & ~3;
-		int next_height = orig_height <= 2 ? orig_height : (orig_height + 3) & ~3;
+		int required_width = (orig_width + 3) & ~3;
+		int required_height = (orig_height + 3) & ~3;
 
 		Vector<uint8_t> image_data = image->get_data();
 		basisu::vector<basisu::image> basisu_mipmaps;
@@ -191,33 +189,34 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 		// Buffer for storing padded mipmap data.
 		Vector<uint8_t> mip_data_padded;
 
-		for (int32_t i = 0; i <= image->get_mipmap_count(); i++) {
+		int required_mipmaps = image->has_mipmaps() ? Image::get_image_required_mipmaps(required_width, required_height, image->get_format()) : 0;
+		int mipmaps = image->get_mipmap_count();
+		for (int32_t i = 0; i <= required_mipmaps; i++) {
 			int64_t ofs, size;
 			int width, height;
-			image->get_mipmap_offset_size_and_dimensions(i, ofs, size, width, height);
+
+			// Worst-case scenario, the image will require 2 more mipmaps due to the padding.
+			// To avoid reading from uninitialized memory, read once again from the last existing mipmap.
+			image->get_mipmap_offset_size_and_dimensions(MIN(i, mipmaps), ofs, size, width, height);
 
 			const uint8_t *image_mip_data = image_data.ptr() + ofs;
 
-			// Pad the mipmap's data if its resolution isn't divisible by 4.
-			if (image->has_mipmaps() && !is_res_div_4 && (width > 2 && height > 2) && (width != next_width || height != next_height)) {
+			// Pad the mipmap's data if the image's resolution is not divisible by 4.
+			if (width != required_width || height != required_height) {
 				if (is_hdr) {
-					_basisu_pad_mipmap<BasisRGBAF>(image_mip_data, mip_data_padded, next_width, next_height, width, height, size);
+					_basisu_pad_mipmap<BasisRGBAF>(image_mip_data, mip_data_padded, required_width, required_height, width, height, size);
 				} else {
-					_basisu_pad_mipmap<uint32_t>(image_mip_data, mip_data_padded, next_width, next_height, width, height, size);
+					_basisu_pad_mipmap<uint32_t>(image_mip_data, mip_data_padded, required_width, required_height, width, height, size);
 				}
 
 				// Override the image_mip_data pointer with our temporary Vector.
 				image_mip_data = reinterpret_cast<const uint8_t *>(mip_data_padded.ptr());
 
 				// Override the mipmap's properties.
-				width = next_width;
-				height = next_height;
+				width = required_width;
+				height = required_height;
 				size = mip_data_padded.size();
 			}
-
-			// Get the next mipmap's resolution.
-			next_width /= 2;
-			next_height /= 2;
 
 			// Copy the source mipmap's data to a BasisU image.
 			if (is_hdr) {
@@ -240,6 +239,10 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 					basisu_mipmaps.push_back(basisu_image);
 				}
 			}
+
+			// Get the next mipmap's resolution.
+			required_width = MAX(required_width / 2, 1);
+			required_height = MAX(required_height / 2, 1);
 		}
 
 		if (is_hdr) {
