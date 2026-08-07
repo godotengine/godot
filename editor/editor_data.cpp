@@ -646,6 +646,10 @@ void EditorData::instantiate_object_properties(Object *p_object) {
 			p_object->set(pi.name, prop);
 		}
 	}
+
+	if (Object::cast_to<Node>(p_object)) {
+		p_object->notification(Node::NOTIFICATION_EDITOR_CREATED);
+	}
 }
 
 int EditorData::add_edited_scene(int p_at_pos) {
