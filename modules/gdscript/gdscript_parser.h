@@ -1048,7 +1048,7 @@ public:
 
 		HashMap<StringName, IdentifierNode *> binds;
 
-		bool has_bind(const StringName &p_name);
+		bool has_bind(const StringName &p_name) const;
 		IdentifierNode *get_bind(const StringName &p_name);
 
 		PatternNode() {

@@ -2744,7 +2744,7 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 	return pattern;
 }
 
-bool GDScriptParser::PatternNode::has_bind(const StringName &p_name) {
+bool GDScriptParser::PatternNode::has_bind(const StringName &p_name) const {
 	return binds.has(p_name);
 }
 
