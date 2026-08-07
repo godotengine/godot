@@ -5,6 +5,9 @@
 	</brief_description>
 	<description>
 		A control that provides a horizontal bar with tabs. Similar to [TabContainer] but is only in charge of drawing tabs, not interacting with children.
+		[TabBar] tabs support the following screen reader commands:
+		- "Focus" - opens this tab.
+		- "Scroll Into View" - scrolls [TabBar] to make this tab visible on screen.
 	</description>
 	<tutorials>
 	</tutorials>
