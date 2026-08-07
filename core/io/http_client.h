@@ -171,6 +171,7 @@ public:
 	virtual void set_connection(const Ref<StreamPeer> &p_connection) = 0;
 	virtual Ref<StreamPeer> get_connection() const = 0;
 
+	virtual void disconnect_from_host() = 0;
 	virtual void close() = 0;
 
 	virtual Status get_status() const = 0;
