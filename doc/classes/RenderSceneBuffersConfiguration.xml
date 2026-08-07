@@ -24,6 +24,9 @@
 		<member name="render_target" type="RID" setter="set_render_target" getter="get_render_target" default="RID()">
 			The render target associated with these buffer.
 		</member>
+		<member name="scaling_3d_custom_upscaler" type="RID" setter="set_scaling_3d_custom_upscaler" getter="get_scaling_3d_custom_upscaler" default="RID()">
+			The custom viewport upscaler to use if [member scaling_3d_mode] is [constant RenderingServer.VIEWPORT_SCALING_3D_MODE_CUSTOM].
+		</member>
 		<member name="scaling_3d_mode" type="int" setter="set_scaling_3d_mode" getter="get_scaling_3d_mode" enum="RenderingServer.ViewportScaling3DMode" default="255">
 			The requested scaling mode with which we upscale/downscale if [member internal_size] and [member target_size] are not equal.
 		</member>
