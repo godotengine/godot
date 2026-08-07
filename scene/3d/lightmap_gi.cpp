@@ -357,6 +357,8 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_user", "path", "uv_scale", "slice_index", "sub_instance"), &LightmapGIData::add_user);
 	ClassDB::bind_method(D_METHOD("get_user_count"), &LightmapGIData::get_user_count);
 	ClassDB::bind_method(D_METHOD("get_user_path", "user_idx"), &LightmapGIData::get_user_path);
+	ClassDB::bind_method(D_METHOD("get_user_lightmap_uv_scale", "user_idx"), &LightmapGIData::get_user_lightmap_uv_scale);
+	ClassDB::bind_method(D_METHOD("get_user_lightmap_slice_index", "user_idx"), &LightmapGIData::get_user_lightmap_slice_index);
 	ClassDB::bind_method(D_METHOD("clear_users"), &LightmapGIData::clear_users);
 
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
