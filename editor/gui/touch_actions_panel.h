@@ -68,6 +68,10 @@ private:
 	bool shift_btn_pressed = false;
 	bool alt_btn_pressed = false;
 
+	Ref<InputEventKey> shift_modifier_event;
+	Ref<InputEventKey> ctrl_modifier_event;
+	Ref<InputEventKey> alt_modifier_event;
+
 	bool is_floating = false; // Embedded panel mode is default.
 	int embedded_panel_index = 0;
 
