@@ -2128,6 +2128,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 	}
 
 	tabs = memnew(TabContainer);
+	tabs->set_continuous_scroll_enabled(true);
 	add_child(tabs);
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
