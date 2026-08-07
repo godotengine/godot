@@ -939,6 +939,11 @@ static void _complete_include_paths(List<ScriptLanguage::CodeCompletionOption> *
 }
 
 void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+	CodeEdit *editor = code_editor->get_text_editor();
+	if (editor->is_in_comment(editor->get_caret_line(), editor->get_caret_column()) != -1) {
+		return;
+	}
+
 	List<ScriptLanguage::CodeCompletionOption> pp_options;
 	List<ScriptLanguage::CodeCompletionOption> pp_defines;
 	ShaderPreprocessor preprocessor;
