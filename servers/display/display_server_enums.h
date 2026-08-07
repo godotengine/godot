@@ -246,6 +246,8 @@ enum WindowEvent {
 	WINDOW_EVENT_TITLEBAR_CHANGE,
 	WINDOW_EVENT_FORCE_CLOSE,
 	WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED,
+	// Internal event used to update engine-drawn caption buttons without emitting a public event
+	WINDOW_EVENT_CAPTION_BUTTONS_CHANGE,
 };
 
 enum WindowResizeEdge {
