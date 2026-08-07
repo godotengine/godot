@@ -785,6 +785,7 @@ protected:
 	bool glow_bicubic_upscale = false;
 
 	bool lightmap_bicubic_upscale = false;
+	bool material_use_debanding = false;
 
 	/* Sky */
 
