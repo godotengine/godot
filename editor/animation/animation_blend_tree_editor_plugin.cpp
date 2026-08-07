@@ -79,8 +79,13 @@ void AnimationNodeBlendTreeEditor::remove_custom_type(const Ref<Script> &p_scrip
 }
 
 void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) {
+	if (graph->is_inside_tree()) {
+		popup_menu_point = graph->get_local_mouse_position();
+	}
+
 	add_node->get_popup()->clear();
 	add_node->get_popup()->reset_size();
+
 	for (int i = 0; i < add_options.size(); i++) {
 		if (p_has_input_ports && add_options[i].input_port_count == 0) {
 			continue;
@@ -88,13 +93,22 @@ void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) 
 		add_node->get_popup()->add_item(add_options[i].name, i);
 	}
 
-	Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
-	if (clipb.is_valid()) {
-		add_node->get_popup()->add_separator();
-		add_node->get_popup()->add_item(TTR("Paste"), MENU_PASTE);
+	bool can_copy = false;
+	for (int i = 0; i < graph->get_child_count(false); ++i) {
+		GraphNode *graph_node = Object::cast_to<GraphNode>(graph->get_child(i, false));
+		if (graph_node && graph_node->is_selected()) {
+			can_copy = true;
+			break;
+		}
 	}
+
+	bool can_paste = !copy_items_buffer.is_empty();
+
+	_add_standard_context_menu_items(add_node->get_popup(), can_copy, can_paste);
+
 	add_node->get_popup()->add_separator();
 	add_node->get_popup()->add_item(TTR("Load..."), MENU_LOAD_FILE);
+
 	use_position_from_popup_menu = false;
 }
 
@@ -392,6 +406,176 @@ void AnimationNodeBlendTreeEditor::_file_opened(const String &p_file) {
 	}
 }
 
+void AnimationNodeBlendTreeEditor::_dup_copy_nodes(List<CopyItem> &r_items, List<Ref<GraphEdit::Connection>> &r_connections) {
+	Vector2 top_left = {
+		std::numeric_limits<real_t>::max(),
+		std::numeric_limits<real_t>::max()
+	};
+
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		GraphElement *graph_element = Object::cast_to<GraphElement>(graph->get_child(i));
+		if (!graph_element) {
+			continue;
+		}
+
+		if (!graph_element->is_selected()) {
+			continue;
+		}
+
+		Vector2 position = blend_tree->get_node_position(graph_element->get_name());
+		if (position.x < top_left.x) {
+			top_left.x = position.x;
+		}
+		if (position.y < top_left.y) {
+			top_left.y = position.y;
+		}
+	}
+
+	HashSet<StringName> nodes;
+
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		GraphElement *graph_element = Object::cast_to<GraphElement>(graph->get_child(i));
+		if (!graph_element) {
+			continue;
+		}
+
+		if (!graph_element->is_selected()) {
+			continue;
+		}
+
+		Ref<AnimationNode> node = blend_tree->get_node(graph_element->get_name());
+		if (!node.is_valid()) {
+			continue;
+		}
+
+		Ref<AnimationNodeOutput> output(node);
+		if (output.is_valid()) { // Can't duplicate output.
+			continue;
+		}
+
+		Vector2 position = blend_tree->get_node_position(graph_element->get_name());
+
+		CopyItem item;
+		item.name = graph_element->get_name();
+		item.node = node->duplicate();
+		item.position = position - top_left;
+
+		r_items.push_back(item);
+
+		nodes.insert(graph_element->get_name());
+	}
+
+	Vector<Ref<GraphEdit::Connection>> node_connections = graph->get_connections();
+	for (const Ref<GraphEdit::Connection> &E : node_connections) {
+		if (nodes.has(E->from_node) && nodes.has(E->to_node)) {
+			r_connections.push_back(*E);
+		}
+	}
+}
+
+void AnimationNodeBlendTreeEditor::_dup_paste_nodes(List<CopyItem> &p_items, const List<Ref<GraphEdit::Connection>> &p_connections, const Vector2 &p_position, bool p_duplicate) {
+	if (p_items.is_empty()) {
+		return;
+	}
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	if (p_duplicate) {
+		undo_redo->create_action(TTR("Duplicate AnimationTree Node(s)"));
+	} else {
+		undo_redo->create_action(TTR("Paste AnimationTree Node(s)"));
+	}
+
+	HashMap<StringName, StringName> connection_remap;
+	HashSet<StringName> added_set;
+
+	float scale = graph->get_zoom();
+	Vector2 position = graph->get_scroll_offset() / scale + p_position / scale;
+
+	for (CopyItem &item : p_items) {
+		String name = _deduplicate_node_name(item.name);
+		connection_remap[item.name] = name;
+		// Must duplicate node again for multiple pastes.
+		undo_redo->add_do_method(blend_tree.ptr(), "add_node", name, item.node->duplicate(), item.position + position);
+		added_set.insert(name);
+	}
+
+	for (const Ref<GraphEdit::Connection> &E : p_connections) {
+		undo_redo->add_do_method(blend_tree.ptr(), "connect_node", String(connection_remap[E->to_node]), E->to_port, String(connection_remap[E->from_node]));
+		undo_redo->add_undo_method(blend_tree.ptr(), "disconnect_node", connection_remap[E->to_node], E->to_port);
+	}
+
+	for (const CopyItem &item : p_items) {
+		undo_redo->add_undo_method(blend_tree.ptr(), "remove_node", connection_remap[item.name]);
+	}
+
+	undo_redo->add_do_method(this, "update_graph");
+	undo_redo->add_undo_method(this, "update_graph");
+
+	undo_redo->commit_action();
+
+	// Select the new nodes so that the user can easily move them away.
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		GraphElement *graph_element = Object::cast_to<GraphElement>(graph->get_child(i));
+		if (graph_element) {
+			graph_element->set_selected(added_set.has(graph_element->get_name()));
+		}
+	}
+}
+
+void AnimationNodeBlendTreeEditor::_duplicate_nodes(const Vector2 &p_position) {
+	List<CopyItem> items;
+	List<Ref<GraphEdit::Connection>> node_connections;
+	_dup_copy_nodes(items, node_connections);
+
+	if (items.is_empty()) {
+		return;
+	}
+
+	_dup_paste_nodes(items, node_connections, p_position, true);
+}
+
+void AnimationNodeBlendTreeEditor::_clear_copy_buffer() {
+	copy_items_buffer.clear();
+	copy_connections_buffer.clear();
+}
+
+void AnimationNodeBlendTreeEditor::_copy_nodes(bool p_cut) {
+	_clear_copy_buffer();
+
+	_dup_copy_nodes(copy_items_buffer, copy_connections_buffer);
+
+	if (p_cut) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Cut BlendTree Node(s)"));
+
+		TypedArray<StringName> names;
+		for (const CopyItem &E : copy_items_buffer) {
+			names.push_back(E.name);
+		}
+
+		_delete_nodes_request(names);
+		//update_graph();
+
+		undo_redo->commit_action();
+	}
+}
+
+void AnimationNodeBlendTreeEditor::_paste_nodes(const Vector2 &p_position) {
+	if (!copy_items_buffer.is_empty()) {
+		_dup_paste_nodes(copy_items_buffer, copy_connections_buffer, p_position, false);
+	}
+}
+
+String AnimationNodeBlendTreeEditor::_deduplicate_node_name(const String &p_name) {
+	int base = 1;
+	String name = p_name;
+	while (blend_tree->has_node(name)) {
+		base++;
+		name = p_name + " " + itos(base);
+	}
+	return name;
+}
+
 void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 	Ref<AnimationNode> anode;
 
@@ -410,10 +594,22 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		anode = file_loaded;
 		file_loaded.unref();
 		base_name = anode->get_class();
+	} else if (p_idx == MENU_DUPLICATE) {
+		_duplicate_nodes(popup_menu_point);
+		return;
+	} else if (p_idx == MENU_CUT) {
+		_copy_nodes(true);
+		return;
+	} else if (p_idx == MENU_COPY) {
+		_copy_nodes(false);
+		return;
 	} else if (p_idx == MENU_PASTE) {
-		anode = EditorSettings::get_singleton()->get_resource_clipboard();
-		ERR_FAIL_COND(anode.is_null());
-		base_name = anode->get_class();
+		_paste_nodes(popup_menu_point);
+		return;
+	} else if (p_idx == MENU_DELETE) {
+		_delete_nodes_request({});
+		update_graph();
+		return;
 	} else if (!add_options[p_idx].type.is_empty()) {
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(add_options[p_idx].type));
 		ERR_FAIL_NULL(an);
@@ -1156,13 +1352,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 		return; //nothing to do
 	}
 
-	const String &base_name = new_name;
-	int base = 1;
-	String name = base_name;
-	while (blend_tree->has_node(name)) {
-		base++;
-		name = base_name + " " + itos(base);
-	}
+	String name = _deduplicate_node_name(new_name);
 
 	String base_path = AnimationTreeEditor::get_singleton()->get_base_path();
 
@@ -1252,6 +1442,33 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 
 	add_node->set_disabled(read_only);
 	graph->set_show_arrange_button(!read_only);
+}
+
+void AnimationNodeBlendTreeEditor::shortcut_input(const Ref<InputEvent> &p_event) {
+	if (!is_visible_in_tree()) {
+		return;
+	}
+
+	if (!is_focus_owner_in_shortcut_context()) {
+		return;
+	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && !k->is_echo()) {
+		if (ED_IS_SHORTCUT("blend_tree_editor/cut", p_event)) {
+			accept_event();
+			_copy_nodes(true);
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/copy", p_event)) {
+			accept_event();
+			_copy_nodes(false);
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/paste", p_event)) {
+			accept_event();
+			_paste_nodes(graph->get_local_mouse_position());
+		} else if (ED_IS_SHORTCUT("blend_tree_editor/duplicate", p_event)) {
+			accept_event();
+			_duplicate_nodes(graph->get_local_mouse_position());
+		}
+	}
 }
 
 AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {

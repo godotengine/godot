@@ -142,14 +142,28 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	Ref<AnimationNode> file_loaded;
 	void _file_opened(const String &p_file);
 
-	enum {
-		MENU_LOAD_FILE = 1000,
-		MENU_PASTE = 1001,
-		MENU_LOAD_FILE_CONFIRM = 1002
-	};
-
 	Ref<EditorInspectorPluginAnimationNodeAnimation> animation_node_inspector_plugin;
 	Ref<Tween> pan_to_tween;
+
+	Vector2 popup_menu_point;
+
+	struct CopyItem {
+		Ref<AnimationNode> node;
+		StringName name;
+		Vector2 position;
+	};
+
+	List<CopyItem> copy_items_buffer;
+	List<Ref<GraphEdit::Connection>> copy_connections_buffer;
+
+	void _dup_copy_nodes(List<CopyItem> &r_items, List<Ref<GraphEdit::Connection>> &r_connections);
+	void _dup_paste_nodes(List<CopyItem> &p_items, const List<Ref<GraphEdit::Connection>> &p_connections, const Vector2 &p_position, bool p_duplicate);
+	void _duplicate_nodes(const Vector2 &p_position);
+	void _copy_nodes(bool p_cut);
+	void _paste_nodes(const Vector2 &p_position);
+	void _clear_copy_buffer();
+
+	String _deduplicate_node_name(const String &p_name);
 
 protected:
 	void _notification(int p_what);
@@ -165,6 +179,8 @@ public:
 
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 	void update_graph();
 	void update_graph_immediately();
