@@ -1,1208 +1,867 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// MetalFX/MTLFXTemporalDenoisedScaler.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #include "MTLFXDefines.hpp"
-#include "MTLFXPrivate.hpp"
-#include "MTLFXTemporalScaler.hpp"
+#include "MTLFXBridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
 
-#include "../Metal/Metal.hpp"
-
-#include <simd/simd.h>
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-namespace MTL4FX
-{
+namespace MTL {
+    class CommandBuffer;
+    class Device;
+    class Fence;
+    class Texture;
+    enum PixelFormat : NS::UInteger;
+    using TextureUsage = NS::UInteger;
+}
+namespace MTL4 {
+    class Compiler;
+}
+namespace MTL4FX {
     class TemporalDenoisedScaler;
 }
 
 namespace MTLFX
 {
-    class TemporalDenoisedScalerDescriptor : public NS::Copying< TemporalDenoisedScalerDescriptor >
-    {
-        public:
-            static class TemporalDenoisedScalerDescriptor*       alloc();
-            class TemporalDenoisedScalerDescriptor*              init();
 
-            MTL::PixelFormat                                     colorTextureFormat() const;
-            void                                                 setColorTextureFormat( MTL::PixelFormat pixelFormat );
+class TemporalDenoisedScalerDescriptor;
+class TemporalDenoisedScalerBase;
+class TemporalDenoisedScaler;
 
-            MTL::PixelFormat                                     depthTextureFormat() const;
-            void                                                 setDepthTextureFormat( MTL::PixelFormat pixelFormat );
+class TemporalDenoisedScalerDescriptor : public NS::Copying<TemporalDenoisedScalerDescriptor>
+{
+public:
+    static TemporalDenoisedScalerDescriptor* alloc();
+    TemporalDenoisedScalerDescriptor*        init() const;
 
-            MTL::PixelFormat                                     motionTextureFormat() const;
-            void                                                 setMotionTextureFormat( MTL::PixelFormat pixelFormal );
+    static float supportedInputContentMaxScale(MTL::Device* device);
+    static float supportedInputContentMinScale(MTL::Device* device);
+    static bool  supportsDevice(MTL::Device* device);
+    static bool  supportsMetal4FX(MTL::Device* device);
 
-            MTL::PixelFormat                                     diffuseAlbedoTextureFormat() const;
-            void                                                 setDiffuseAlbedoTextureFormat( MTL::PixelFormat pixelFormat );
+    bool                            autoExposureEnabled() const;
+    MTL::PixelFormat                colorTextureFormat() const;
+    bool                            denoiseStrengthMaskTextureEnabled() const;
+    MTL::PixelFormat                denoiseStrengthMaskTextureFormat() const;
+    MTL::PixelFormat                depthTextureFormat() const;
+    MTL::PixelFormat                diffuseAlbedoTextureFormat() const;
+    NS::UInteger                    inputHeight() const;
+    NS::UInteger                    inputWidth() const;
+    bool                            isAutoExposureEnabled();
+    bool                            isDenoiseStrengthMaskTextureEnabled();
+    bool                            isReactiveMaskTextureEnabled();
+    bool                            isSpecularHitDistanceTextureEnabled();
+    bool                            isTransparencyOverlayTextureEnabled();
+    MTL::PixelFormat                motionTextureFormat() const;
+    MTLFX::TemporalDenoisedScaler*  newTemporalDenoisedScaler(MTL::Device* device);
+    MTL4FX::TemporalDenoisedScaler* newTemporalDenoisedScaler(MTL::Device* device, MTL4::Compiler* compiler);
+    MTL::PixelFormat                normalTextureFormat() const;
+    NS::UInteger                    outputHeight() const;
+    MTL::PixelFormat                outputTextureFormat() const;
+    NS::UInteger                    outputWidth() const;
+    bool                            reactiveMaskTextureEnabled() const;
+    MTL::PixelFormat                reactiveMaskTextureFormat() const;
+    bool                            requiresSynchronousInitialization() const;
+    MTL::PixelFormat                roughnessTextureFormat() const;
+    void                            setAutoExposureEnabled(bool autoExposureEnabled);
+    void                            setColorTextureFormat(MTL::PixelFormat colorTextureFormat);
+    void                            setDenoiseStrengthMaskTextureEnabled(bool denoiseStrengthMaskTextureEnabled);
+    void                            setDenoiseStrengthMaskTextureFormat(MTL::PixelFormat denoiseStrengthMaskTextureFormat);
+    void                            setDepthTextureFormat(MTL::PixelFormat depthTextureFormat);
+    void                            setDiffuseAlbedoTextureFormat(MTL::PixelFormat diffuseAlbedoTextureFormat);
+    void                            setInputHeight(NS::UInteger inputHeight);
+    void                            setInputWidth(NS::UInteger inputWidth);
+    void                            setMotionTextureFormat(MTL::PixelFormat motionTextureFormat);
+    void                            setNormalTextureFormat(MTL::PixelFormat normalTextureFormat);
+    void                            setOutputHeight(NS::UInteger outputHeight);
+    void                            setOutputTextureFormat(MTL::PixelFormat outputTextureFormat);
+    void                            setOutputWidth(NS::UInteger outputWidth);
+    void                            setReactiveMaskTextureEnabled(bool reactiveMaskTextureEnabled);
+    void                            setReactiveMaskTextureFormat(MTL::PixelFormat reactiveMaskTextureFormat);
+    void                            setRequiresSynchronousInitialization(bool requiresSynchronousInitialization);
+    void                            setRoughnessTextureFormat(MTL::PixelFormat roughnessTextureFormat);
+    void                            setSpecularAlbedoTextureFormat(MTL::PixelFormat specularAlbedoTextureFormat);
+    void                            setSpecularHitDistanceTextureEnabled(bool specularHitDistanceTextureEnabled);
+    void                            setSpecularHitDistanceTextureFormat(MTL::PixelFormat specularHitDistanceTextureFormat);
+    void                            setTransparencyOverlayTextureEnabled(bool transparencyOverlayTextureEnabled);
+    void                            setTransparencyOverlayTextureFormat(MTL::PixelFormat transparencyOverlayTextureFormat);
+    MTL::PixelFormat                specularAlbedoTextureFormat() const;
+    bool                            specularHitDistanceTextureEnabled() const;
+    MTL::PixelFormat                specularHitDistanceTextureFormat() const;
+    bool                            transparencyOverlayTextureEnabled() const;
+    MTL::PixelFormat                transparencyOverlayTextureFormat() const;
 
-            MTL::PixelFormat                                     specularAlbedoTextureFormat() const;
-            void                                                 setSpecularAlbedoTextureFormat( MTL::PixelFormat pixelFormat );
+};
 
-            MTL::PixelFormat                                     normalTextureFormat() const;
-            void                                                 setNormalTextureFormat( MTL::PixelFormat pixelFormat );
+class TemporalDenoisedScalerBase : public NS::Referencing<TemporalDenoisedScalerBase>
+{
+public:
+    MTL::Texture*     colorTexture() const;
+    MTL::PixelFormat  colorTextureFormat() const;
+    MTL::TextureUsage colorTextureUsage() const;
+    MTL::Texture*     denoiseStrengthMaskTexture() const;
+    MTL::PixelFormat  denoiseStrengthMaskTextureFormat() const;
+    MTL::TextureUsage denoiseStrengthMaskTextureUsage() const;
+    bool              depthReversed() const;
+    MTL::Texture*     depthTexture() const;
+    MTL::PixelFormat  depthTextureFormat() const;
+    MTL::TextureUsage depthTextureUsage() const;
+    MTL::Texture*     diffuseAlbedoTexture() const;
+    MTL::PixelFormat  diffuseAlbedoTextureFormat() const;
+    MTL::TextureUsage diffuseAlbedoTextureUsage() const;
+    MTL::Texture*     exposureTexture() const;
+    MTL::Fence*       fence() const;
+    float             inputContentMaxScale() const;
+    float             inputContentMinScale() const;
+    NS::UInteger      inputHeight() const;
+    NS::UInteger      inputWidth() const;
+    bool              isDepthReversed();
+    float             jitterOffsetX() const;
+    float             jitterOffsetY() const;
+    MTL::Texture*     motionTexture() const;
+    MTL::PixelFormat  motionTextureFormat() const;
+    MTL::TextureUsage motionTextureUsage() const;
+    float             motionVectorScaleX() const;
+    float             motionVectorScaleY() const;
+    MTL::Texture*     normalTexture() const;
+    MTL::PixelFormat  normalTextureFormat() const;
+    MTL::TextureUsage normalTextureUsage() const;
+    NS::UInteger      outputHeight() const;
+    MTL::Texture*     outputTexture() const;
+    MTL::PixelFormat  outputTextureFormat() const;
+    MTL::TextureUsage outputTextureUsage() const;
+    NS::UInteger      outputWidth() const;
+    float             preExposure() const;
+    MTL::Texture*     reactiveMaskTexture() const;
+    MTL::PixelFormat  reactiveMaskTextureFormat() const;
+    MTL::TextureUsage reactiveTextureUsage() const;
+    MTL::Texture*     roughnessTexture() const;
+    MTL::PixelFormat  roughnessTextureFormat() const;
+    MTL::TextureUsage roughnessTextureUsage() const;
+    void              setColorTexture(MTL::Texture* colorTexture);
+    void              setDenoiseStrengthMaskTexture(MTL::Texture* denoiseStrengthMaskTexture);
+    void              setDepthReversed(bool depthReversed);
+    void              setDepthTexture(MTL::Texture* depthTexture);
+    void              setDiffuseAlbedoTexture(MTL::Texture* diffuseAlbedoTexture);
+    void              setExposureTexture(MTL::Texture* exposureTexture);
+    void              setFence(MTL::Fence* fence);
+    void              setJitterOffsetX(float jitterOffsetX);
+    void              setJitterOffsetY(float jitterOffsetY);
+    void              setMotionTexture(MTL::Texture* motionTexture);
+    void              setMotionVectorScaleX(float motionVectorScaleX);
+    void              setMotionVectorScaleY(float motionVectorScaleY);
+    void              setNormalTexture(MTL::Texture* normalTexture);
+    void              setOutputTexture(MTL::Texture* outputTexture);
+    void              setPreExposure(float preExposure);
+    void              setReactiveMaskTexture(MTL::Texture* reactiveMaskTexture);
+    void              setRoughnessTexture(MTL::Texture* roughnessTexture);
+    void              setShouldResetHistory(bool shouldResetHistory);
+    void              setSpecularAlbedoTexture(MTL::Texture* specularAlbedoTexture);
+    void              setSpecularHitDistanceTexture(MTL::Texture* specularHitDistanceTexture);
+    void              setTransparencyOverlayTexture(MTL::Texture* transparencyOverlayTexture);
+    void              setViewToClipMatrix(void* viewToClipMatrix);
+    void              setWorldToViewMatrix(void* worldToViewMatrix);
+    bool              shouldResetHistory() const;
+    MTL::Texture*     specularAlbedoTexture() const;
+    MTL::PixelFormat  specularAlbedoTextureFormat() const;
+    MTL::TextureUsage specularAlbedoTextureUsage() const;
+    MTL::Texture*     specularHitDistanceTexture() const;
+    MTL::PixelFormat  specularHitDistanceTextureFormat() const;
+    MTL::TextureUsage specularHitDistanceTextureUsage() const;
+    MTL::Texture*     transparencyOverlayTexture() const;
+    MTL::PixelFormat  transparencyOverlayTextureFormat() const;
+    MTL::TextureUsage transparencyOverlayTextureUsage() const;
+    void*             viewToClipMatrix() const;
+    void*             worldToViewMatrix() const;
 
-            MTL::PixelFormat                                     roughnessTextureFormat() const;
-            void                                                 setRoughnessTextureFormat( MTL::PixelFormat pixelFormat );
+};
 
-            MTL::PixelFormat                                     specularHitDistanceTextureFormat() const;
-            void                                                 setSpecularHitDistanceTextureFormat( MTL::PixelFormat pixelFormat );
+class TemporalDenoisedScaler : public NS::Referencing<TemporalDenoisedScaler, MTLFX::TemporalDenoisedScalerBase>
+{
+public:
+    void encodeToCommandBuffer(MTL::CommandBuffer* commandBuffer);
 
-            MTL::PixelFormat                                     denoiseStrengthMaskTextureFormat() const;
-            void                                                 setDenoiseStrengthMaskTextureFormat( MTL::PixelFormat pixelFormat );
+};
 
-            MTL::PixelFormat                                     transparencyOverlayTextureFormat() const;
-            void                                                 setTransparencyOverlayTextureFormat( MTL::PixelFormat pixelFormat );
+} // namespace MTLFX
 
-            MTL::PixelFormat                                     outputTextureFormat() const;
-            void                                                 setOutputTextureFormat( MTL::PixelFormat pixelFormat );
+// --- Class symbols + inline implementations ---
 
-            NS::UInteger                                         inputWidth() const;
-            void                                                 setInputWidth( NS::UInteger inputWidth );
-
-            NS::UInteger                                         inputHeight() const;
-            void                                                 setInputHeight( NS::UInteger inputHeight );
-
-            NS::UInteger                                         outputWidth() const;
-            void                                                 setOutputWidth( NS::UInteger outputWidth );
-
-            NS::UInteger                                         outputHeight() const;
-            void                                                 setOutputHeight( NS::UInteger outputHeight );
-
-            bool                                                 requiresSynchronousInitialization() const;
-            void                                                 setRequiresSynchronousInitialization( bool requiresSynchronousInitialization );
-
-            bool                                                 isAutoExposureEnabled() const;
-            void                                                 setAutoExposureEnabled( bool enabled );
-
-            bool                                                 isInputContentPropertiesEnabled() const;
-            void                                                 setInputContentPropertiesEnabled( bool enabled );
-
-            float                                                inputContentMinScale() const;
-            void                                                 setInputContentMinScale( float inputContentMinScale );
-
-            float                                                inputContentMaxScale() const;
-            void                                                 setInputContentMaxScale( float inputContentMaxScale );
-
-            bool                                                 isReactiveMaskTextureEnabled() const;
-            void                                                 setReactiveMaskTextureEnabled( bool enabled );
-
-            MTL::PixelFormat                                     reactiveMaskTextureFormat() const;
-            void                                                 setReactiveMaskTextureFormat( MTL::PixelFormat pixelFormat );
-
-            bool                                                 isSpecularHitDistanceTextureEnabled() const;
-            void                                                 setSpecularHitDistanceTextureEnabled( bool enabled );
-
-            bool                                                 isDenoiseStrengthMaskTextureEnabled() const;
-            void                                                 setDenoiseStrengthMaskTextureEnabled( bool enabled );
-
-            bool                                                 isTransparencyOverlayTextureEnabled() const;
-            void                                                 setTransparencyOverlayTextureEnabled( bool enabled );
-
-            class TemporalDenoisedScaler*                        newTemporalDenoisedScaler( const MTL::Device* device ) const;
-            MTL4FX::TemporalDenoisedScaler*                      newTemporalDenoisedScaler( const MTL::Device* device, const MTL4::Compiler* compiler) const;
-
-            static float                                         supportedInputContentMinScale(MTL::Device* device);
-            static float                                         supportedInputContentMaxScale(MTL::Device* device);
-
-            static bool                                          supportsMetal4FX( MTL::Device* device);
-            static bool                                          supportsDevice( MTL::Device* device);
-    };
-
-    class TemporalDenoisedScalerBase : public NS::Referencing< TemporalDenoisedScalerBase, FrameInterpolatableScaler >
-    {
-    public:
-        MTL::TextureUsage                                       colorTextureUsage() const;
-        MTL::TextureUsage                                       depthTextureUsage() const;
-        MTL::TextureUsage                                       motionTextureUsage() const;
-        MTL::TextureUsage                                       reactiveTextureUsage() const;
-        MTL::TextureUsage                                       diffuseAlbedoTextureUsage() const;
-        MTL::TextureUsage                                       specularAlbedoTextureUsage() const;
-        MTL::TextureUsage                                       normalTextureUsage() const;
-        MTL::TextureUsage                                       roughnessTextureUsage() const;
-        MTL::TextureUsage                                       specularHitDistanceTextureUsage() const;
-        MTL::TextureUsage                                       denoiseStrengthMaskTextureUsage() const;
-        MTL::TextureUsage                                       transparencyOverlayTextureUsage() const;
-        MTL::TextureUsage                                       outputTextureUsage() const;
-
-        MTL::Texture*                                           colorTexture() const;
-        void                                                    setColorTexture( MTL::Texture* colorTexture );
-
-        MTL::Texture*                                           depthTexture() const;
-        void                                                    setDepthTexture( MTL::Texture* depthTexture );
-
-        MTL::Texture*                                           motionTexture() const;
-        void                                                    setMotionTexture( MTL::Texture* motionTexture );
-
-        MTL::Texture*                                           diffuseAlbedoTexture() const;
-        void                                                    setDiffuseAlbedoTexture( MTL::Texture* diffuseAlbedoTexture );
-
-        MTL::Texture*                                           specularAlbedoTexture() const;
-        void                                                    setSpecularAlbedoTexture( MTL::Texture* specularAlbedoTexture );
-
-        MTL::Texture*                                           normalTexture() const;
-        void                                                    setNormalTexture( MTL::Texture* normalTexture );
-
-        MTL::Texture*                                           roughnessTexture() const;
-        void                                                    setRoughnessTexture( MTL::Texture* roughnessTexture );
-
-        MTL::Texture*                                           specularHitDistanceTexture() const;
-        void                                                    setSpecularHitDistanceTexture( MTL::Texture* specularHitDistanceTexture );
-
-        MTL::Texture*                                           denoiseStrengthMaskTexture() const;
-        void                                                    setDenoiseStrengthMaskTexture( MTL::Texture* denoiseStrengthMaskTexture );
-
-        MTL::Texture*                                           transparencyOverlayTexture() const;
-        void                                                    setTransparencyOverlayTexture( MTL::Texture* transparencyOverlayTexture );
-
-        MTL::Texture*                                           outputTexture() const;
-        void                                                    setOutputTexture( MTL::Texture* outputTexture );
-
-        MTL::Texture*                                           exposureTexture() const;
-        void                                                    setExposureTexture( MTL::Texture* exposureTexture );
-
-        float                                                   preExposure() const;
-        void                                                    setPreExposure( float preExposure );
-
-        MTL::Texture*                                           reactiveMaskTexture() const;
-        void                                                    setReactiveMaskTexture( MTL::Texture* reactiveMaskTexture );
-
-        float                                                   jitterOffsetX() const;
-        void                                                    setJitterOffsetX( float jitterOffsetX );
-
-        float                                                   jitterOffsetY() const;
-        void                                                    setJitterOffsetY( float jitterOffsetY );
-
-        float                                                   motionVectorScaleX() const;
-        void                                                    setMotionVectorScaleX( float motionVectorScaleX );
-
-        float                                                   motionVectorScaleY() const;
-        void                                                    setMotionVectorScaleY( float motionVectorScaleY );
-
-        bool                                                    shouldResetHistory() const;
-        void                                                    setShouldResetHistory( bool shouldResetHistory );
-
-        bool                                                    isDepthReversed() const;
-        void                                                    setDepthReversed( bool depthReversed );
-
-        MTL::PixelFormat                                        colorTextureFormat() const;
-        MTL::PixelFormat                                        depthTextureFormat() const;
-        MTL::PixelFormat                                        motionTextureFormat() const;
-        MTL::PixelFormat                                        diffuseAlbedoTextureFormat() const;
-        MTL::PixelFormat                                        specularAlbedoTextureFormat() const;
-        MTL::PixelFormat                                        normalTextureFormat() const;
-        MTL::PixelFormat                                        roughnessTextureFormat() const;
-        MTL::PixelFormat                                        specularHitDistanceTextureFormat() const;
-        MTL::PixelFormat                                        denoiseStrengthMaskTextureFormat() const;
-        MTL::PixelFormat                                        transparencyOverlayTextureFormat() const;
-        MTL::PixelFormat                                        reactiveMaskTextureFormat() const;
-        MTL::PixelFormat                                        outputTextureFormat() const;
-
-        NS::UInteger                                            inputWidth() const;
-        NS::UInteger                                            inputHeight() const;
-        NS::UInteger                                            outputWidth() const;
-        NS::UInteger                                            outputHeight() const;
-        float                                                   inputContentMinScale() const;
-        float                                                   inputContentMaxScale() const;
-
-        simd::float4x4                                          worldToViewMatrix() const;
-        void                                                    setWorldToViewMatrix( simd::float4x4 worldToViewMatrix );
-
-        simd::float4x4                                          viewToClipMatrix() const;
-        void                                                    setViewToClipMatrix( simd::float4x4 viewToClipMatrix );
-
-        MTL::Fence*                                             fence() const;
-        void                                                    setFence( MTL::Fence* fence );
-    };
-
-    class TemporalDenoisedScaler : public NS::Referencing< TemporalDenoisedScaler, TemporalDenoisedScalerBase >
-    {
-    public:
-
-        void                                                    encodeToCommandBuffer(MTL::CommandBuffer* commandBuffer);
-    };
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+extern "C" void *OBJC_CLASS_$_MTLFXTemporalDenoisedScalerDescriptor;
+extern "C" void *OBJC_CLASS_$_MTLFXTemporalDenoisedScalerBase;
+extern "C" void *OBJC_CLASS_$_MTLFXTemporalDenoisedScaler;
 
 _MTLFX_INLINE MTLFX::TemporalDenoisedScalerDescriptor* MTLFX::TemporalDenoisedScalerDescriptor::alloc()
 {
-    return NS::Object::alloc< TemporalDenoisedScalerDescriptor >( _MTLFX_PRIVATE_CLS( MTLFXTemporalDenoisedScalerDescriptor ) );
+    return _MTLFX_msg_MTLFX__TemporalDenoisedScalerDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTLFXTemporalDenoisedScalerDescriptor, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTLFX::TemporalDenoisedScalerDescriptor* MTLFX::TemporalDenoisedScalerDescriptor::init()
+_MTLFX_INLINE MTLFX::TemporalDenoisedScalerDescriptor* MTLFX::TemporalDenoisedScalerDescriptor::init() const
 {
-    return NS::Object::init< TemporalDenoisedScalerDescriptor >();
+    return _MTLFX_msg_MTLFX__TemporalDenoisedScalerDescriptorp_init((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_MTLFX_INLINE float MTLFX::TemporalDenoisedScalerDescriptor::supportedInputContentMinScale(MTL::Device* device)
+{
+    return _MTLFX_msg_float_supportedInputContentMinScaleForDevice__MTL__Devicep((const void*)&OBJC_CLASS_$_MTLFXTemporalDenoisedScalerDescriptor, nullptr, device);
+}
+
+_MTLFX_INLINE float MTLFX::TemporalDenoisedScalerDescriptor::supportedInputContentMaxScale(MTL::Device* device)
+{
+    return _MTLFX_msg_float_supportedInputContentMaxScaleForDevice__MTL__Devicep((const void*)&OBJC_CLASS_$_MTLFXTemporalDenoisedScalerDescriptor, nullptr, device);
+}
+
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::supportsMetal4FX(MTL::Device* device)
+{
+    return _MTLFX_msg_bool_supportsMetal4FX__MTL__Devicep((const void*)&OBJC_CLASS_$_MTLFXTemporalDenoisedScalerDescriptor, nullptr, device);
+}
+
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::supportsDevice(MTL::Device* device)
+{
+    return _MTLFX_msg_bool_supportsDevice__MTL__Devicep((const void*)&OBJC_CLASS_$_MTLFXTemporalDenoisedScalerDescriptor, nullptr, device);
+}
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::colorTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( colorTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_colorTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setColorTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setColorTextureFormat(MTL::PixelFormat colorTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setColorTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setColorTextureFormat__MTL__PixelFormat((const void*)this, nullptr, colorTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::depthTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( depthTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_depthTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setDepthTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setDepthTextureFormat(MTL::PixelFormat depthTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDepthTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setDepthTextureFormat__MTL__PixelFormat((const void*)this, nullptr, depthTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::motionTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( motionTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_motionTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setMotionTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setMotionTextureFormat(MTL::PixelFormat motionTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setMotionTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setMotionTextureFormat__MTL__PixelFormat((const void*)this, nullptr, motionTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::diffuseAlbedoTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( diffuseAlbedoTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_diffuseAlbedoTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setDiffuseAlbedoTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setDiffuseAlbedoTextureFormat(MTL::PixelFormat diffuseAlbedoTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDiffuseAlbedoTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setDiffuseAlbedoTextureFormat__MTL__PixelFormat((const void*)this, nullptr, diffuseAlbedoTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::specularAlbedoTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( specularAlbedoTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_specularAlbedoTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setSpecularAlbedoTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setSpecularAlbedoTextureFormat(MTL::PixelFormat specularAlbedoTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setSpecularAlbedoTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setSpecularAlbedoTextureFormat__MTL__PixelFormat((const void*)this, nullptr, specularAlbedoTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::normalTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( normalTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_normalTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setNormalTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setNormalTextureFormat(MTL::PixelFormat normalTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setNormalTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setNormalTextureFormat__MTL__PixelFormat((const void*)this, nullptr, normalTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::roughnessTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( roughnessTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_roughnessTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setRoughnessTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setRoughnessTextureFormat(MTL::PixelFormat roughnessTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setRoughnessTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setRoughnessTextureFormat__MTL__PixelFormat((const void*)this, nullptr, roughnessTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::specularHitDistanceTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( specularHitDistanceTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_specularHitDistanceTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setSpecularHitDistanceTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setSpecularHitDistanceTextureFormat(MTL::PixelFormat specularHitDistanceTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setSpecularHitDistanceTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setSpecularHitDistanceTextureFormat__MTL__PixelFormat((const void*)this, nullptr, specularHitDistanceTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::denoiseStrengthMaskTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( denoiseStrengthMaskTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_denoiseStrengthMaskTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setDenoiseStrengthMaskTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setDenoiseStrengthMaskTextureFormat(MTL::PixelFormat denoiseStrengthMaskTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDenoiseStrengthMaskTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setDenoiseStrengthMaskTextureFormat__MTL__PixelFormat((const void*)this, nullptr, denoiseStrengthMaskTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::transparencyOverlayTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( transparencyOverlayTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_transparencyOverlayTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setTransparencyOverlayTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setTransparencyOverlayTextureFormat(MTL::PixelFormat transparencyOverlayTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setTransparencyOverlayTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setTransparencyOverlayTextureFormat__MTL__PixelFormat((const void*)this, nullptr, transparencyOverlayTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::outputTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( outputTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_outputTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setOutputTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setOutputTextureFormat(MTL::PixelFormat outputTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setOutputTextureFormat__MTL__PixelFormat((const void*)this, nullptr, outputTextureFormat);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::TemporalDenoisedScalerDescriptor::inputWidth() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputWidth ) );
+    return _MTLFX_msg_NS__UInteger_inputWidth((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setInputWidth( NS::UInteger inputWidth )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setInputWidth(NS::UInteger inputWidth)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputWidth_ ), inputWidth );
+    _MTLFX_msg_v_setInputWidth__NS__UInteger((const void*)this, nullptr, inputWidth);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::TemporalDenoisedScalerDescriptor::inputHeight() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputHeight ) );
+    return _MTLFX_msg_NS__UInteger_inputHeight((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setInputHeight( NS::UInteger inputHeight )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setInputHeight(NS::UInteger inputHeight)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputHeight_ ), inputHeight );
+    _MTLFX_msg_v_setInputHeight__NS__UInteger((const void*)this, nullptr, inputHeight);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::TemporalDenoisedScalerDescriptor::outputWidth() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputWidth ) );
+    return _MTLFX_msg_NS__UInteger_outputWidth((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setOutputWidth( NS::UInteger outputWidth )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setOutputWidth(NS::UInteger outputWidth)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputWidth_ ), outputWidth );
+    _MTLFX_msg_v_setOutputWidth__NS__UInteger((const void*)this, nullptr, outputWidth);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::TemporalDenoisedScalerDescriptor::outputHeight() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputHeight ) );
+    return _MTLFX_msg_NS__UInteger_outputHeight((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setOutputHeight( NS::UInteger outputHeight )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setOutputHeight(NS::UInteger outputHeight)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputHeight_ ), outputHeight );
+    _MTLFX_msg_v_setOutputHeight__NS__UInteger((const void*)this, nullptr, outputHeight);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::requiresSynchronousInitialization() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( requiresSynchronousInitialization ) );
+    return _MTLFX_msg_bool_requiresSynchronousInitialization((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setRequiresSynchronousInitialization( bool requiresSynchronousInitialization )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setRequiresSynchronousInitialization(bool requiresSynchronousInitialization)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setRequiresSynchronousInitialization_ ), requiresSynchronousInitialization );
+    _MTLFX_msg_v_setRequiresSynchronousInitialization__bool((const void*)this, nullptr, requiresSynchronousInitialization);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isAutoExposureEnabled() const
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::autoExposureEnabled() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( isAutoExposureEnabled ) );
+    return _MTLFX_msg_bool_autoExposureEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setAutoExposureEnabled( bool enabled )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setAutoExposureEnabled(bool autoExposureEnabled)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setAutoExposureEnabled_ ), enabled );
+    _MTLFX_msg_v_setAutoExposureEnabled__bool((const void*)this, nullptr, autoExposureEnabled);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isInputContentPropertiesEnabled() const
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::reactiveMaskTextureEnabled() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( isInputContentPropertiesEnabled ) );
+    return _MTLFX_msg_bool_reactiveMaskTextureEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setInputContentPropertiesEnabled( bool enabled )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setReactiveMaskTextureEnabled(bool reactiveMaskTextureEnabled)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputContentPropertiesEnabled_ ), enabled );
+    _MTLFX_msg_v_setReactiveMaskTextureEnabled__bool((const void*)this, nullptr, reactiveMaskTextureEnabled);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE float MTLFX::TemporalDenoisedScalerDescriptor::inputContentMinScale() const
-{
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( inputContentMinScale ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setInputContentMinScale( float inputContentMinScale )
-{
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputContentMinScale_ ), inputContentMinScale );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE float MTLFX::TemporalDenoisedScalerDescriptor::inputContentMaxScale() const
-{
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( inputContentMaxScale ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setInputContentMaxScale( float inputContentMaxScale )
-{
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setInputContentMaxScale_ ), inputContentMaxScale );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isReactiveMaskTextureEnabled() const
-{
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( isReactiveMaskTextureEnabled ) );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setReactiveMaskTextureEnabled( bool enabled )
-{
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setReactiveMaskTextureEnabled_ ), enabled );
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerDescriptor::reactiveMaskTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( reactiveMaskTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_reactiveMaskTextureFormat((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setReactiveMaskTextureFormat( MTL::PixelFormat pixelFormat )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setReactiveMaskTextureFormat(MTL::PixelFormat reactiveMaskTextureFormat)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setReactiveMaskTextureFormat_ ), pixelFormat );
+    _MTLFX_msg_v_setReactiveMaskTextureFormat__MTL__PixelFormat((const void*)this, nullptr, reactiveMaskTextureFormat);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isSpecularHitDistanceTextureEnabled() const
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::specularHitDistanceTextureEnabled() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( isSpecularHitDistanceTextureEnabled ) );
+    return _MTLFX_msg_bool_specularHitDistanceTextureEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setSpecularHitDistanceTextureEnabled( bool enabled )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setSpecularHitDistanceTextureEnabled(bool specularHitDistanceTextureEnabled)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setSpecularHitDistanceTextureEnabled_ ), enabled );
+    _MTLFX_msg_v_setSpecularHitDistanceTextureEnabled__bool((const void*)this, nullptr, specularHitDistanceTextureEnabled);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isDenoiseStrengthMaskTextureEnabled() const
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::denoiseStrengthMaskTextureEnabled() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( isDenoiseStrengthMaskTextureEnabled ) );
+    return _MTLFX_msg_bool_denoiseStrengthMaskTextureEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setDenoiseStrengthMaskTextureEnabled( bool enabled )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setDenoiseStrengthMaskTextureEnabled(bool denoiseStrengthMaskTextureEnabled)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDenoiseStrengthMaskTextureEnabled_ ), enabled );
+    _MTLFX_msg_v_setDenoiseStrengthMaskTextureEnabled__bool((const void*)this, nullptr, denoiseStrengthMaskTextureEnabled);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isTransparencyOverlayTextureEnabled() const
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::transparencyOverlayTextureEnabled() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( isTransparencyOverlayTextureEnabled ) );
+    return _MTLFX_msg_bool_transparencyOverlayTextureEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setTransparencyOverlayTextureEnabled( bool enabled )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerDescriptor::setTransparencyOverlayTextureEnabled(bool transparencyOverlayTextureEnabled)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setTransparencyOverlayTextureEnabled_ ), enabled );
+    _MTLFX_msg_v_setTransparencyOverlayTextureEnabled__bool((const void*)this, nullptr, transparencyOverlayTextureEnabled);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTLFX::TemporalDenoisedScaler* MTLFX::TemporalDenoisedScalerDescriptor::newTemporalDenoisedScaler( const MTL::Device* device ) const
+_MTLFX_INLINE MTLFX::TemporalDenoisedScaler* MTLFX::TemporalDenoisedScalerDescriptor::newTemporalDenoisedScaler(MTL::Device* device)
 {
-    return NS::Object::sendMessage< TemporalDenoisedScaler* >( this, _MTLFX_PRIVATE_SEL( newTemporalDenoisedScalerWithDevice_ ), device );
+    return _MTLFX_msg_MTLFX__TemporalDenoisedScalerp_newTemporalDenoisedScalerWithDevice__MTL__Devicep((const void*)this, nullptr, device);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE MTL4FX::TemporalDenoisedScaler* MTLFX::TemporalDenoisedScalerDescriptor::newTemporalDenoisedScaler( const MTL::Device* device, const MTL4::Compiler* compiler ) const
+_MTLFX_INLINE MTL4FX::TemporalDenoisedScaler* MTLFX::TemporalDenoisedScalerDescriptor::newTemporalDenoisedScaler(MTL::Device* device, MTL4::Compiler* compiler)
 {
-    return NS::Object::sendMessage< MTL4FX::TemporalDenoisedScaler* >( this, _MTLFX_PRIVATE_SEL( newTemporalDenoisedScalerWithDevice_compiler_ ), device, compiler );
+    return _MTLFX_msg_MTL4FX__TemporalDenoisedScalerp_newTemporalDenoisedScalerWithDevice_compiler__MTL__Devicep_MTL4__Compilerp((const void*)this, nullptr, device, compiler);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE float MTLFX::TemporalDenoisedScalerDescriptor::supportedInputContentMinScale( MTL::Device* pDevice )
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isAutoExposureEnabled()
 {
-    float scale = 1.0f;
-
-    if ( nullptr != methodSignatureForSelector( _MTLFX_PRIVATE_CLS( MTLFXTemporalDenoisedScalerDescriptor ), _MTLFX_PRIVATE_SEL( supportedInputContentMinScaleForDevice_ ) ) )
-    {
-        scale = sendMessage< float >( _NS_PRIVATE_CLS( MTLFXTemporalDenoisedScalerDescriptor ), _MTLFX_PRIVATE_SEL( supportedInputContentMinScaleForDevice_ ), pDevice );
-    }
-
-    return scale;
+    return _MTLFX_msg_bool_isAutoExposureEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE float MTLFX::TemporalDenoisedScalerDescriptor::supportedInputContentMaxScale( MTL::Device* pDevice )
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isReactiveMaskTextureEnabled()
 {
-    float scale = 1.0f;
-
-    if ( nullptr != methodSignatureForSelector( _MTLFX_PRIVATE_CLS( MTLFXTemporalDenoisedScalerDescriptor ), _MTLFX_PRIVATE_SEL( supportedInputContentMaxScaleForDevice_ ) ) )
-    {
-        scale = sendMessage< float >( _MTLFX_PRIVATE_CLS( MTLFXTemporalDenoisedScalerDescriptor ), _MTLFX_PRIVATE_SEL( supportedInputContentMaxScaleForDevice_ ), pDevice );
-    }
-    else if ( supportsDevice( pDevice ) )
-    {
-        scale = 2.0f;
-    }
-
-    return scale;
+    return _MTLFX_msg_bool_isReactiveMaskTextureEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::supportsMetal4FX( MTL::Device* device )
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isSpecularHitDistanceTextureEnabled()
 {
-    return NS::Object::sendMessageSafe< bool >( _MTLFX_PRIVATE_CLS(MTLFXTemporalDenoisedScalerDescriptor), _MTLFX_PRIVATE_SEL( supportsMetal4FX_ ), device );
+    return _MTLFX_msg_bool_isSpecularHitDistanceTextureEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::supportsDevice( MTL::Device* device )
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isDenoiseStrengthMaskTextureEnabled()
 {
-    return NS::Object::sendMessageSafe< bool >( _MTLFX_PRIVATE_CLS(MTLFXTemporalDenoisedScalerDescriptor), _MTLFX_PRIVATE_SEL( supportsDevice_ ), device );
+    return _MTLFX_msg_bool_isDenoiseStrengthMaskTextureEnabled((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerDescriptor::isTransparencyOverlayTextureEnabled()
+{
+    return _MTLFX_msg_bool_isTransparencyOverlayTextureEnabled((const void*)this, nullptr);
+}
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::colorTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( colorTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_colorTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::depthTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( depthTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_depthTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::motionTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( motionTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_motionTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::reactiveTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( reactiveTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_reactiveTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::diffuseAlbedoTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( diffuseAlbedoTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_diffuseAlbedoTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::specularAlbedoTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( specularAlbedoTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_specularAlbedoTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::normalTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( normalTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_normalTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::roughnessTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( roughnessTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_roughnessTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::specularHitDistanceTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( specularHitDistanceTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_specularHitDistanceTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::denoiseStrengthMaskTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( denoiseStrengthMaskTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_denoiseStrengthMaskTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::transparencyOverlayTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( transparencyOverlayTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_transparencyOverlayTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::TextureUsage MTLFX::TemporalDenoisedScalerBase::outputTextureUsage() const
 {
-    return NS::Object::sendMessage< MTL::TextureUsage >( this, _MTLFX_PRIVATE_SEL( outputTextureUsage ) );
+    return _MTLFX_msg_MTL__TextureUsage_outputTextureUsage((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::colorTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( colorTexture ) );
+    return _MTLFX_msg_MTL__Texturep_colorTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setColorTexture( MTL::Texture* colorTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setColorTexture(MTL::Texture* colorTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setColorTexture_ ), colorTexture );
+    _MTLFX_msg_v_setColorTexture__MTL__Texturep((const void*)this, nullptr, colorTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::depthTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( depthTexture ) );
+    return _MTLFX_msg_MTL__Texturep_depthTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setDepthTexture( MTL::Texture* depthTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setDepthTexture(MTL::Texture* depthTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDepthTexture_ ), depthTexture );
+    _MTLFX_msg_v_setDepthTexture__MTL__Texturep((const void*)this, nullptr, depthTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::motionTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( motionTexture ) );
+    return _MTLFX_msg_MTL__Texturep_motionTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setMotionTexture( MTL::Texture* motionTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setMotionTexture(MTL::Texture* motionTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setMotionTexture_ ), motionTexture );
+    _MTLFX_msg_v_setMotionTexture__MTL__Texturep((const void*)this, nullptr, motionTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::diffuseAlbedoTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( diffuseAlbedoTexture ) );
+    return _MTLFX_msg_MTL__Texturep_diffuseAlbedoTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setDiffuseAlbedoTexture( MTL::Texture* diffuseAlbedoTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setDiffuseAlbedoTexture(MTL::Texture* diffuseAlbedoTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDiffuseAlbedoTexture_ ), diffuseAlbedoTexture );
+    _MTLFX_msg_v_setDiffuseAlbedoTexture__MTL__Texturep((const void*)this, nullptr, diffuseAlbedoTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::specularAlbedoTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( specularAlbedoTexture ) );
+    return _MTLFX_msg_MTL__Texturep_specularAlbedoTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setSpecularAlbedoTexture( MTL::Texture* specularAlbedoTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setSpecularAlbedoTexture(MTL::Texture* specularAlbedoTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setSpecularAlbedoTexture_ ), specularAlbedoTexture );
+    _MTLFX_msg_v_setSpecularAlbedoTexture__MTL__Texturep((const void*)this, nullptr, specularAlbedoTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::normalTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( normalTexture ) );
+    return _MTLFX_msg_MTL__Texturep_normalTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setNormalTexture( MTL::Texture* normalTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setNormalTexture(MTL::Texture* normalTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setNormalTexture_ ), normalTexture );
+    _MTLFX_msg_v_setNormalTexture__MTL__Texturep((const void*)this, nullptr, normalTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::roughnessTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( roughnessTexture ) );
+    return _MTLFX_msg_MTL__Texturep_roughnessTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setRoughnessTexture( MTL::Texture* roughnessTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setRoughnessTexture(MTL::Texture* roughnessTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setRoughnessTexture_ ), roughnessTexture );
+    _MTLFX_msg_v_setRoughnessTexture__MTL__Texturep((const void*)this, nullptr, roughnessTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::specularHitDistanceTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( specularHitDistanceTexture ) );
+    return _MTLFX_msg_MTL__Texturep_specularHitDistanceTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setSpecularHitDistanceTexture( MTL::Texture* specularHitDistanceTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setSpecularHitDistanceTexture(MTL::Texture* specularHitDistanceTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setSpecularHitDistanceTexture_ ), specularHitDistanceTexture );
+    _MTLFX_msg_v_setSpecularHitDistanceTexture__MTL__Texturep((const void*)this, nullptr, specularHitDistanceTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::denoiseStrengthMaskTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( denoiseStrengthMaskTexture ) );
+    return _MTLFX_msg_MTL__Texturep_denoiseStrengthMaskTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setDenoiseStrengthMaskTexture( MTL::Texture* denoiseStrengthMaskTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setDenoiseStrengthMaskTexture(MTL::Texture* denoiseStrengthMaskTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDenoiseStrengthMaskTexture_ ), denoiseStrengthMaskTexture );
+    _MTLFX_msg_v_setDenoiseStrengthMaskTexture__MTL__Texturep((const void*)this, nullptr, denoiseStrengthMaskTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::transparencyOverlayTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( transparencyOverlayTexture ) );
+    return _MTLFX_msg_MTL__Texturep_transparencyOverlayTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setTransparencyOverlayTexture( MTL::Texture* transparencyOverlayTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setTransparencyOverlayTexture(MTL::Texture* transparencyOverlayTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setTransparencyOverlayTexture_ ), transparencyOverlayTexture );
+    _MTLFX_msg_v_setTransparencyOverlayTexture__MTL__Texturep((const void*)this, nullptr, transparencyOverlayTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::outputTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( outputTexture ) );
+    return _MTLFX_msg_MTL__Texturep_outputTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setOutputTexture( MTL::Texture* outputTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setOutputTexture(MTL::Texture* outputTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setOutputTexture_ ), outputTexture );
+    _MTLFX_msg_v_setOutputTexture__MTL__Texturep((const void*)this, nullptr, outputTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::exposureTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( exposureTexture ) );
+    return _MTLFX_msg_MTL__Texturep_exposureTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setExposureTexture( MTL::Texture* exposureTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setExposureTexture(MTL::Texture* exposureTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setExposureTexture_ ), exposureTexture );
+    _MTLFX_msg_v_setExposureTexture__MTL__Texturep((const void*)this, nullptr, exposureTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::TemporalDenoisedScalerBase::preExposure() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( preExposure ) );
+    return _MTLFX_msg_float_preExposure((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setPreExposure( float preExposure )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setPreExposure(float preExposure)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setPreExposure_ ), preExposure );
+    _MTLFX_msg_v_setPreExposure__float((const void*)this, nullptr, preExposure);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Texture* MTLFX::TemporalDenoisedScalerBase::reactiveMaskTexture() const
 {
-    return NS::Object::sendMessage< MTL::Texture* >( this, _MTLFX_PRIVATE_SEL( reactiveMaskTexture ) );
+    return _MTLFX_msg_MTL__Texturep_reactiveMaskTexture((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setReactiveMaskTexture( MTL::Texture* reactiveMaskTexture )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setReactiveMaskTexture(MTL::Texture* reactiveMaskTexture)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setReactiveMaskTexture_ ), reactiveMaskTexture );
+    _MTLFX_msg_v_setReactiveMaskTexture__MTL__Texturep((const void*)this, nullptr, reactiveMaskTexture);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::TemporalDenoisedScalerBase::jitterOffsetX() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( jitterOffsetX ) );
+    return _MTLFX_msg_float_jitterOffsetX((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setJitterOffsetX( float jitterOffsetX )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setJitterOffsetX(float jitterOffsetX)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setJitterOffsetX_ ), jitterOffsetX );
+    _MTLFX_msg_v_setJitterOffsetX__float((const void*)this, nullptr, jitterOffsetX);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::TemporalDenoisedScalerBase::jitterOffsetY() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( jitterOffsetY ) );
+    return _MTLFX_msg_float_jitterOffsetY((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setJitterOffsetY( float jitterOffsetY )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setJitterOffsetY(float jitterOffsetY)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setJitterOffsetY_ ), jitterOffsetY );
+    _MTLFX_msg_v_setJitterOffsetY__float((const void*)this, nullptr, jitterOffsetY);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::TemporalDenoisedScalerBase::motionVectorScaleX() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( motionVectorScaleX ) );
+    return _MTLFX_msg_float_motionVectorScaleX((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setMotionVectorScaleX( float motionVectorScaleX )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setMotionVectorScaleX(float motionVectorScaleX)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setMotionVectorScaleX_ ), motionVectorScaleX );
+    _MTLFX_msg_v_setMotionVectorScaleX__float((const void*)this, nullptr, motionVectorScaleX);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::TemporalDenoisedScalerBase::motionVectorScaleY() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( motionVectorScaleY ) );
+    return _MTLFX_msg_float_motionVectorScaleY((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setMotionVectorScaleY( float motionVectorScaleY )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setMotionVectorScaleY(float motionVectorScaleY)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setMotionVectorScaleY_ ), motionVectorScaleY );
+    _MTLFX_msg_v_setMotionVectorScaleY__float((const void*)this, nullptr, motionVectorScaleY);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerBase::shouldResetHistory() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( shouldResetHistory ) );
+    return _MTLFX_msg_bool_shouldResetHistory((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setShouldResetHistory( bool shouldResetHistory )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setShouldResetHistory(bool shouldResetHistory)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setShouldResetHistory_ ), shouldResetHistory );
+    _MTLFX_msg_v_setShouldResetHistory__bool((const void*)this, nullptr, shouldResetHistory);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerBase::isDepthReversed() const
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerBase::depthReversed() const
 {
-    return NS::Object::sendMessage< bool >( this, _MTLFX_PRIVATE_SEL( isDepthReversed ) );
+    return _MTLFX_msg_bool_depthReversed((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setDepthReversed( bool depthReversed )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setDepthReversed(bool depthReversed)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setDepthReversed_ ), depthReversed );
+    _MTLFX_msg_v_setDepthReversed__bool((const void*)this, nullptr, depthReversed);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::colorTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( colorTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_colorTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::depthTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( depthTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_depthTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::motionTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( motionTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_motionTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::diffuseAlbedoTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( diffuseAlbedoTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_diffuseAlbedoTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::specularAlbedoTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( specularAlbedoTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_specularAlbedoTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::normalTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( normalTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_normalTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::roughnessTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( roughnessTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_roughnessTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::specularHitDistanceTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( specularHitDistanceTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_specularHitDistanceTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::denoiseStrengthMaskTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( denoiseStrengthMaskTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_denoiseStrengthMaskTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::transparencyOverlayTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( transparencyOverlayTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_transparencyOverlayTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::reactiveMaskTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( reactiveMaskTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_reactiveMaskTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::PixelFormat MTLFX::TemporalDenoisedScalerBase::outputTextureFormat() const
 {
-    return NS::Object::sendMessage< MTL::PixelFormat >( this, _MTLFX_PRIVATE_SEL( outputTextureFormat ) );
+    return _MTLFX_msg_MTL__PixelFormat_outputTextureFormat((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::TemporalDenoisedScalerBase::inputWidth() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputWidth ) );
+    return _MTLFX_msg_NS__UInteger_inputWidth((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::TemporalDenoisedScalerBase::inputHeight() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( inputHeight ) );
+    return _MTLFX_msg_NS__UInteger_inputHeight((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::TemporalDenoisedScalerBase::outputWidth() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputWidth ) );
+    return _MTLFX_msg_NS__UInteger_outputWidth((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE NS::UInteger MTLFX::TemporalDenoisedScalerBase::outputHeight() const
 {
-    return NS::Object::sendMessage< NS::UInteger >( this, _MTLFX_PRIVATE_SEL( outputHeight ) );
+    return _MTLFX_msg_NS__UInteger_outputHeight((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::TemporalDenoisedScalerBase::inputContentMinScale() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( inputContentMinScale ) );
+    return _MTLFX_msg_float_inputContentMinScale((const void*)this, nullptr);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE float MTLFX::TemporalDenoisedScalerBase::inputContentMaxScale() const
 {
-    return NS::Object::sendMessage< float >( this, _MTLFX_PRIVATE_SEL( inputContentMaxScale ) );
+    return _MTLFX_msg_float_inputContentMaxScale((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE simd::float4x4 MTLFX::TemporalDenoisedScalerBase::worldToViewMatrix() const
+_MTLFX_INLINE void* MTLFX::TemporalDenoisedScalerBase::worldToViewMatrix() const
 {
-    return NS::Object::sendMessage< simd::float4x4 >( this, _MTLFX_PRIVATE_SEL( worldToViewMatrix ) );
+    return _MTLFX_msg_voidp_worldToViewMatrix((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setWorldToViewMatrix( simd::float4x4 worldToViewMatrix )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setWorldToViewMatrix(void* worldToViewMatrix)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setWorldToViewMatrix_ ), worldToViewMatrix );
+    _MTLFX_msg_v_setWorldToViewMatrix__voidp((const void*)this, nullptr, worldToViewMatrix);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE simd::float4x4 MTLFX::TemporalDenoisedScalerBase::viewToClipMatrix() const
+_MTLFX_INLINE void* MTLFX::TemporalDenoisedScalerBase::viewToClipMatrix() const
 {
-    return NS::Object::sendMessage< simd::float4x4 >( this, _MTLFX_PRIVATE_SEL( viewToClipMatrix ) );
+    return _MTLFX_msg_voidp_viewToClipMatrix((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setViewToClipMatrix( simd::float4x4 viewToClipMatrix )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setViewToClipMatrix(void* viewToClipMatrix)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setViewToClipMatrix_ ), viewToClipMatrix );
+    _MTLFX_msg_v_setViewToClipMatrix__voidp((const void*)this, nullptr, viewToClipMatrix);
 }
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 _MTLFX_INLINE MTL::Fence* MTLFX::TemporalDenoisedScalerBase::fence() const
 {
-    return NS::Object::sendMessage< MTL::Fence* >( this, _MTLFX_PRIVATE_SEL( fence ) );
+    return _MTLFX_msg_MTL__Fencep_fence((const void*)this, nullptr);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setFence( MTL::Fence* fence )
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScalerBase::setFence(MTL::Fence* fence)
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( setFence_ ), fence );
+    _MTLFX_msg_v_setFence__MTL__Fencep((const void*)this, nullptr, fence);
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-_MTLFX_INLINE void MTLFX::TemporalDenoisedScaler::encodeToCommandBuffer( MTL::CommandBuffer* commandBuffer )
+_MTLFX_INLINE bool MTLFX::TemporalDenoisedScalerBase::isDepthReversed()
 {
-    return NS::Object::sendMessage< void >( this, _MTLFX_PRIVATE_SEL( encodeToCommandBuffer_ ), commandBuffer );
+    return _MTLFX_msg_bool_isDepthReversed((const void*)this, nullptr);
+}
+
+_MTLFX_INLINE void MTLFX::TemporalDenoisedScaler::encodeToCommandBuffer(MTL::CommandBuffer* commandBuffer)
+{
+    _MTLFX_msg_v_encodeToCommandBuffer__MTL__CommandBufferp((const void*)this, nullptr, commandBuffer);
 }

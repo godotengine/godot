@@ -1,150 +1,143 @@
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-//
-// Metal/MTL4PipelineState.hpp
-//
-// Copyright 2020-2025 Apple Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 #pragma once
 
-#include "../Foundation/Foundation.hpp"
-#include "MTLDefines.hpp"
-#include "MTLHeaderBridge.hpp"
-#include "MTLPipeline.hpp"
-#include "MTLPrivate.hpp"
+#include "MTL4Defines.hpp"
+#include "MTL4Blocks.hpp"
+#include "MTL4Structs.hpp"
+#include "MTL4Bridge.hpp"
+#include "../Foundation/NSObject.hpp"
+#include "../Foundation/NSTypes.hpp"
+#include "../Foundation/NSRange.hpp"
+
+namespace MTL {
+    enum ShaderValidation : NS::Integer;
+}
+namespace NS {
+    class String;
+}
 
 namespace MTL4
 {
-class PipelineDescriptor;
-class PipelineOptions;
-_MTL_ENUM(NS::Integer, AlphaToOneState) {
+
+_MTL4_OPTIONS(NS::UInteger, ShaderReflection) {
+    ShaderReflectionNone = 0,
+    ShaderReflectionBindingInfo = 1 << 0,
+    ShaderReflectionBufferTypeInfo = 1 << 1,
+};
+
+_MTL4_ENUM(NS::Integer, AlphaToOneState) {
     AlphaToOneStateDisabled = 0,
     AlphaToOneStateEnabled = 1,
 };
 
-_MTL_ENUM(NS::Integer, AlphaToCoverageState) {
+_MTL4_ENUM(NS::Integer, AlphaToCoverageState) {
     AlphaToCoverageStateDisabled = 0,
     AlphaToCoverageStateEnabled = 1,
 };
 
-_MTL_ENUM(NS::Integer, BlendState) {
+_MTL4_ENUM(NS::Integer, BlendState) {
     BlendStateDisabled = 0,
     BlendStateEnabled = 1,
     BlendStateUnspecialized = 2,
 };
 
-_MTL_ENUM(NS::Integer, IndirectCommandBufferSupportState) {
+_MTL4_ENUM(NS::Integer, IndirectCommandBufferSupportState) {
     IndirectCommandBufferSupportStateDisabled = 0,
     IndirectCommandBufferSupportStateEnabled = 1,
 };
 
-_MTL_OPTIONS(NS::UInteger, ShaderReflection) {
-    ShaderReflectionNone = 0,
-    ShaderReflectionBindingInfo = 1,
-    ShaderReflectionBufferTypeInfo = 1 << 1,
-};
+
+class PipelineOptions;
+class PipelineDescriptor;
 
 class PipelineOptions : public NS::Copying<PipelineOptions>
 {
 public:
     static PipelineOptions* alloc();
+    PipelineOptions*        init() const;
 
-    PipelineOptions*        init();
+    void                   setShaderReflection(MTL4::ShaderReflection shaderReflection);
+    void                   setShaderValidation(MTL::ShaderValidation shaderValidation);
+    MTL4::ShaderReflection shaderReflection() const;
+    MTL::ShaderValidation  shaderValidation() const;
 
-    void                    setShaderReflection(MTL4::ShaderReflection shaderReflection);
-
-    void                    setShaderValidation(MTL::ShaderValidation shaderValidation);
-
-    ShaderReflection        shaderReflection() const;
-
-    MTL::ShaderValidation   shaderValidation() const;
 };
+
 class PipelineDescriptor : public NS::Copying<PipelineDescriptor>
 {
 public:
     static PipelineDescriptor* alloc();
+    PipelineDescriptor*        init() const;
 
-    PipelineDescriptor*        init();
+    NS::String*            label() const;
+    MTL4::PipelineOptions* options() const;
+    void                   setLabel(NS::String* label);
+    void                   setOptions(MTL4::PipelineOptions* options);
 
-    NS::String*                label() const;
-
-    PipelineOptions*           options() const;
-
-    void                       setLabel(const NS::String* label);
-
-    void                       setOptions(const MTL4::PipelineOptions* options);
 };
 
-}
-_MTL_INLINE MTL4::PipelineOptions* MTL4::PipelineOptions::alloc()
+} // namespace MTL4
+
+// --- Class symbols + inline implementations ---
+
+extern "C" void *OBJC_CLASS_$_MTL4PipelineOptions;
+extern "C" void *OBJC_CLASS_$_MTL4PipelineDescriptor;
+
+_MTL4_INLINE MTL4::PipelineOptions* MTL4::PipelineOptions::alloc()
 {
-    return NS::Object::alloc<MTL4::PipelineOptions>(_MTL_PRIVATE_CLS(MTL4PipelineOptions));
+    return _MTL4_msg_MTL4__PipelineOptionsp_alloc((const void*)&OBJC_CLASS_$_MTL4PipelineOptions, nullptr);
 }
 
-_MTL_INLINE MTL4::PipelineOptions* MTL4::PipelineOptions::init()
+_MTL4_INLINE MTL4::PipelineOptions* MTL4::PipelineOptions::init() const
 {
-    return NS::Object::init<MTL4::PipelineOptions>();
+    return _MTL4_msg_MTL4__PipelineOptionsp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::PipelineOptions::setShaderReflection(MTL4::ShaderReflection shaderReflection)
+_MTL4_INLINE MTL::ShaderValidation MTL4::PipelineOptions::shaderValidation() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setShaderReflection_), shaderReflection);
+    return _MTL4_msg_MTL__ShaderValidation_shaderValidation((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::PipelineOptions::setShaderValidation(MTL::ShaderValidation shaderValidation)
+_MTL4_INLINE void MTL4::PipelineOptions::setShaderValidation(MTL::ShaderValidation shaderValidation)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setShaderValidation_), shaderValidation);
+    _MTL4_msg_v_setShaderValidation__MTL__ShaderValidation((const void*)this, nullptr, shaderValidation);
 }
 
-_MTL_INLINE MTL4::ShaderReflection MTL4::PipelineOptions::shaderReflection() const
+_MTL4_INLINE MTL4::ShaderReflection MTL4::PipelineOptions::shaderReflection() const
 {
-    return Object::sendMessage<MTL4::ShaderReflection>(this, _MTL_PRIVATE_SEL(shaderReflection));
+    return _MTL4_msg_MTL4__ShaderReflection_shaderReflection((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL::ShaderValidation MTL4::PipelineOptions::shaderValidation() const
+_MTL4_INLINE void MTL4::PipelineOptions::setShaderReflection(MTL4::ShaderReflection shaderReflection)
 {
-    return Object::sendMessage<MTL::ShaderValidation>(this, _MTL_PRIVATE_SEL(shaderValidation));
+    _MTL4_msg_v_setShaderReflection__MTL4__ShaderReflection((const void*)this, nullptr, shaderReflection);
 }
 
-_MTL_INLINE MTL4::PipelineDescriptor* MTL4::PipelineDescriptor::alloc()
+_MTL4_INLINE MTL4::PipelineDescriptor* MTL4::PipelineDescriptor::alloc()
 {
-    return NS::Object::alloc<MTL4::PipelineDescriptor>(_MTL_PRIVATE_CLS(MTL4PipelineDescriptor));
+    return _MTL4_msg_MTL4__PipelineDescriptorp_alloc((const void*)&OBJC_CLASS_$_MTL4PipelineDescriptor, nullptr);
 }
 
-_MTL_INLINE MTL4::PipelineDescriptor* MTL4::PipelineDescriptor::init()
+_MTL4_INLINE MTL4::PipelineDescriptor* MTL4::PipelineDescriptor::init() const
 {
-    return NS::Object::init<MTL4::PipelineDescriptor>();
+    return _MTL4_msg_MTL4__PipelineDescriptorp_init((const void*)this, nullptr);
 }
 
-_MTL_INLINE NS::String* MTL4::PipelineDescriptor::label() const
+_MTL4_INLINE NS::String* MTL4::PipelineDescriptor::label() const
 {
-    return Object::sendMessage<NS::String*>(this, _MTL_PRIVATE_SEL(label));
+    return _MTL4_msg_NS__Stringp_label((const void*)this, nullptr);
 }
 
-_MTL_INLINE MTL4::PipelineOptions* MTL4::PipelineDescriptor::options() const
+_MTL4_INLINE void MTL4::PipelineDescriptor::setLabel(NS::String* label)
 {
-    return Object::sendMessage<MTL4::PipelineOptions*>(this, _MTL_PRIVATE_SEL(options));
+    _MTL4_msg_v_setLabel__NS__Stringp((const void*)this, nullptr, label);
 }
 
-_MTL_INLINE void MTL4::PipelineDescriptor::setLabel(const NS::String* label)
+_MTL4_INLINE MTL4::PipelineOptions* MTL4::PipelineDescriptor::options() const
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setLabel_), label);
+    return _MTL4_msg_MTL4__PipelineOptionsp_options((const void*)this, nullptr);
 }
 
-_MTL_INLINE void MTL4::PipelineDescriptor::setOptions(const MTL4::PipelineOptions* options)
+_MTL4_INLINE void MTL4::PipelineDescriptor::setOptions(MTL4::PipelineOptions* options)
 {
-    Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(setOptions_), options);
+    _MTL4_msg_v_setOptions__MTL4__PipelineOptionsp((const void*)this, nullptr, options);
 }
