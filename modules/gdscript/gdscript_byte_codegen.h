@@ -83,6 +83,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	RBMap<StringName, int> stack_identifiers;
 	List<int> stack_identifiers_counts;
 	RBMap<StringName, int> local_constants;
+	int inline_cache_count = 0;
 
 	Vector<StackSlot> locals;
 	HashSet<int> dirty_locals;

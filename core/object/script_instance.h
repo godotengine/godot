@@ -36,6 +36,9 @@ class Script;
 class ScriptLanguage;
 
 class ScriptInstance {
+protected:
+	Script *script_raw = nullptr;
+
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value) = 0;
 	virtual bool get(const StringName &p_name, Variant &r_ret) const = 0;
@@ -84,6 +87,7 @@ public:
 	virtual bool refcount_decremented() { return true; } //return true if it can die
 
 	virtual Ref<Script> get_script() const = 0;
+	_ALWAYS_INLINE_ const Script *get_script_raw() const { return script_raw; }
 
 	virtual bool is_placeholder() const { return false; }
 

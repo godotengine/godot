@@ -308,6 +308,9 @@ public:
 
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
+	virtual void *lookup_method(const StringName &p_method) const override;
+	virtual void call_method(Variant &p_base, void *p_method, const Variant **p_args, int p_argcount, Variant *r_ret, Callable::CallError &r_error) const override;
+
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
 
 	virtual ScriptLanguage *get_language() const override;
