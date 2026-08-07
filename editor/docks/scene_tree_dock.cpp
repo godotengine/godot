@@ -65,10 +65,12 @@
 #include "editor/shader/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
+#include "scene/3d/label_3d.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/color_picker.h"
 #include "scene/gui/panel_container.h"
 #include "scene/main/missing_node.h"
 #include "scene/main/scene_tree.h"
@@ -3094,20 +3096,48 @@ void SceneTreeDock::_post_do_create(Node *p_child) {
 	editor_selection->add_node(p_child);
 	_push_item(p_child);
 
-	// Make editor more comfortable, so some controls don't appear super shrunk.
 	Control *control = Object::cast_to<Control>(p_child);
 	if (control) {
+		// Set default text to give immediate visual feedback when creating controls in the editor.
+		// Use `get_class_name()` so that `class_name` is respected for custom controls.
+		// Do not set text on ColorPickerButton, as doing so increases its minimum width
+		// (even if the text can't be seen).
+		if (!Object::cast_to<ColorPickerButton>(control)) {
+			control->set("text", control->get_class_name());
+			// For FoldableContainer, GraphFrame, and GraphNode.
+			control->set("title", control->get_class_name());
+		}
+
+		// Increase the size of small controls, so that they are easily visible in their default state
+		// and can have their handles easily dragged.
 		Size2 ms = control->get_minimum_size();
-		if (ms.width < 4) {
+		if (ms.width < 10) {
 			ms.width = 40;
 		}
-		if (ms.height < 4) {
+		if (ms.height < 10) {
 			ms.height = 40;
 		}
 		if (control->is_layout_rtl()) {
 			control->set_position(control->get_position() - Vector2(ms.x, 0));
 		}
 		control->set_size(ms);
+
+		// Set a reasonable minimum size for controls that do not resize according to their text.
+		// The minimum size is set to allow the default text to show without wrapping
+		// (or in ColorPicker's case, allow the color to be seen).
+		constexpr int DEFAULT_LINE_HEIGHT = 31;
+		if (Object::cast_to<RichTextLabel>(control)) {
+			control->set_custom_minimum_size(Vector2(120, DEFAULT_LINE_HEIGHT));
+		} else if (Object::cast_to<TextEdit>(control)) {
+			control->set_custom_minimum_size(Vector2(80, DEFAULT_LINE_HEIGHT));
+		} else if (Object::cast_to<ColorPickerButton>(control)) {
+			control->set_custom_minimum_size(Vector2(40, DEFAULT_LINE_HEIGHT));
+		}
+	}
+
+	Label3D *label_3d = Object::cast_to<Label3D>(p_child);
+	if (label_3d) {
+		label_3d->set_text(label_3d->get_class_name());
 	}
 }
 
