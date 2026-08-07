@@ -2462,7 +2462,7 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 
 	List<AnnotationNode *> match_branch_annotation_stack;
 
-	while (!check(GDScriptTokenizer::Token::DEDENT) && !is_at_end()) {
+	while (!check(GDScriptTokenizer::Token::DEDENT) && !check(GDScriptTokenizer::Token::COMMA) && !is_at_end()) {
 		if (match(GDScriptTokenizer::Token::PASS)) {
 			consume(GDScriptTokenizer::Token::NEWLINE, R"(Expected newline after "pass".)");
 			continue;
@@ -2503,6 +2503,10 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 		match_node->branches.push_back(branch);
 	}
 	complete_extents(match_node);
+
+	if (check(GDScriptTokenizer::Token::COMMA)) {
+		return match_node;
+	}
 
 	consume(GDScriptTokenizer::Token::DEDENT, R"(Expected an indented block after "match" statement.)");
 
