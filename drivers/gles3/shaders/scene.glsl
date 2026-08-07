@@ -2299,7 +2299,7 @@ void main() {
 	} else {
 		model_normal_matrix = mat3(model_matrix);
 	}
-
+	vec2 user_motion_v;
 	{
 #CODE : FRAGMENT
 	}
