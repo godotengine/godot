@@ -40,6 +40,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/main/scene_tree.h"
@@ -48,15 +49,26 @@ void CSGShapeEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = nullptr;
 		options->hide();
+		hbox->hide();
 	}
 }
 
 void CSGShapeEditor::edit(CSGShape3D *p_csg_shape) {
 	node = p_csg_shape;
 	if (node) {
-		options->show();
+		hbox->show();
+		if (node->is_root_shape()) {
+			options->show();
+		} else {
+			options->hide();
+		}
+		cubemap_uvs->show();
+		cylinder_uvs->show();
+		global_uv_toggle->show();
+		rebuild_csg->show();
 	} else {
 		options->hide();
+		hbox->hide();
 	}
 }
 
@@ -64,6 +76,8 @@ void CSGShapeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			options->set_button_icon(get_editor_theme_icon(SNAME("CSGCombiner3D")));
+			// FIXME We need an icon for this button. Using KeepAspect for now.
+			global_uv_toggle->set_button_icon(get_editor_theme_icon(SNAME("KeepAspect")));
 		} break;
 	}
 }
@@ -152,6 +166,36 @@ void CSGShapeEditor::_create_baked_collision_shape() {
 	ur->commit_action();
 }
 
+void CSGShapeEditor::_rebuild_brush() {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	Dictionary dict = node->get_csg_brush();
+	ur->create_action(TTR("Rebuild CSG Brush"));
+	ur->add_do_method(node, "rebuild_brush");
+	ur->add_undo_method(node, "set_csg_brush", dict);
+	ur->commit_action();
+}
+
+void CSGShapeEditor::_make_cube_uv() {
+	// This is just too practical to not have it as a button.
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	Dictionary dict = node->get_csg_brush();
+	ur->create_action(TTR("Make Cube UV"));
+	// TODO Add a SpinBox to set uv_scale before pressing the button.
+	ur->add_do_method(node, "calculate_cube_map", node->get_all_csg_faces(), Vector3(1.0, 1.0, 1.0), global_uv_toggle->is_pressed());
+	ur->add_undo_method(node, "set_csg_brush", dict);
+	ur->commit_action();
+}
+
+void CSGShapeEditor::_make_cylinder_uv() {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	Dictionary dict = node->get_csg_brush();
+	ur->create_action(TTR("Make Cylinder UV"));
+	// TODO Add a SpinBox to set uv_scale before pressing the button.
+	ur->add_do_method(node, "calculate_cylinder_map", node->get_all_csg_faces(), Vector3(1.0, 1.0, 1.0), global_uv_toggle->is_pressed());
+	ur->add_undo_method(node, "set_csg_brush", dict);
+	ur->commit_action();
+}
+
 CSGShapeEditor::CSGShapeEditor() {
 	options = memnew(MenuButton);
 	options->hide();
@@ -169,6 +213,41 @@ CSGShapeEditor::CSGShapeEditor() {
 	err_dialog = memnew(AcceptDialog);
 	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
+
+	hbox = memnew(HBoxContainer);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(hbox);
+	hbox->hide();
+
+	rebuild_csg = memnew(Button);
+	rebuild_csg->hide();
+	rebuild_csg->set_text(TTR("Rebuild"));
+	rebuild_csg->set_flat(false);
+	hbox->add_child(rebuild_csg);
+	rebuild_csg->set_tooltip_text(TTRC("Rebuild this brush, removing any changes to faces or vertices. Children of this node will not be affected."));
+	rebuild_csg->connect(SceneStringName(pressed), callable_mp(this, &CSGShapeEditor::_rebuild_brush));
+
+	cubemap_uvs = memnew(Button);
+	cubemap_uvs->hide();
+	cubemap_uvs->set_text(TTR("Make cube UV"));
+	cubemap_uvs->set_flat(false);
+	hbox->add_child(cubemap_uvs);
+	cubemap_uvs->set_tooltip_text(TTRC("Apply cube map UVs to this node's CSGBrush."));
+	cubemap_uvs->connect(SceneStringName(pressed), callable_mp(this, &CSGShapeEditor::_make_cube_uv));
+
+	cylinder_uvs = memnew(Button);
+	cylinder_uvs->hide();
+	cylinder_uvs->set_text(TTR("Make cylinder UV"));
+	cylinder_uvs->set_flat(false);
+	hbox->add_child(cylinder_uvs);
+	cylinder_uvs->set_tooltip_text(TTRC("Apply cylinder map UVs to this node's CSGBrush."));
+	cylinder_uvs->connect(SceneStringName(pressed), callable_mp(this, &CSGShapeEditor::_make_cylinder_uv));
+
+	global_uv_toggle = memnew(Button);
+	global_uv_toggle->set_toggle_mode(true);
+	global_uv_toggle->hide();
+	hbox->add_child(global_uv_toggle);
+	// TODO Shortcut.
+	global_uv_toggle->set_tooltip_text(TTRC("When enabled, pressing the `Make cube UV` or `Make cylinder UV` buttons will calculate UVs using global space instead of local space."));
 }
 
 ///////////
@@ -390,16 +469,52 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	Vector<Vector3> lines;
-	lines.resize(faces.size() * 2);
-	{
-		const Vector3 *r = faces.ptr();
+	TypedArray<Vector<Vector3>> local_csg_faces = cs->get_csg_ngon_colliders();
+	bool skip = local_csg_faces.is_empty();
+	if (!skip) {
+		for (int i = 0; i < local_csg_faces.size(); i++) {
+			Vector<Vector3> curr_ngon = local_csg_faces[i];
+			// Convert to lines.
+			if (curr_ngon.size() == 6) {
+				// Quad.
+				lines.push_back(curr_ngon[0]);
+				lines.push_back(curr_ngon[1]);
+				lines.push_back(curr_ngon[1]);
+				lines.push_back(curr_ngon[2]);
+				lines.push_back(curr_ngon[3]);
+				lines.push_back(curr_ngon[4]);
+				lines.push_back(curr_ngon[4]);
+				lines.push_back(curr_ngon[5]);
+			} else if (curr_ngon.size() > 6) {
+				// Since the only way to generate Ngons is through CSG building and they are always surrounded by quads, we just skip the ngons.
+				continue;
+			} else {
+				// Tris.
+				for (int j = 0; j < curr_ngon.size() / 3; j++) {
+					for (int k = 0; k < 3; k++) {
+						int k_n = (k + 1) % 3;
+						lines.push_back(curr_ngon[j * 3 + k]);
+						lines.push_back(curr_ngon[j * 3 + k_n]);
+					}
+				}
+			}
+		}
+		if (lines.is_empty()) {
+			skip = true;
+		}
+	}
+	if (skip) {
+		lines.resize(faces.size() * 2);
+		{
+			const Vector3 *r = faces.ptr();
 
-		for (int i = 0; i < lines.size(); i += 6) {
-			int f = i / 6;
-			for (int j = 0; j < 3; j++) {
-				int j_n = (j + 1) % 3;
-				lines.write[i + j * 2 + 0] = r[f * 3 + j];
-				lines.write[i + j * 2 + 1] = r[f * 3 + j_n];
+			for (int i = 0; i < lines.size(); i += 6) {
+				int f = i / 6;
+				for (int j = 0; j < 3; j++) {
+					int j_n = (j + 1) % 3;
+					lines.write[i + j * 2 + 0] = r[f * 3 + j];
+					lines.write[i + j * 2 + 1] = r[f * 3 + j_n];
+				}
 			}
 		}
 	}
@@ -491,16 +606,12 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 void EditorPluginCSG::edit(Object *p_object) {
 	CSGShape3D *csg_shape = Object::cast_to<CSGShape3D>(p_object);
-	if (csg_shape && csg_shape->is_root_shape()) {
-		csg_shape_editor->edit(csg_shape);
-	} else {
-		csg_shape_editor->edit(nullptr);
-	}
+	csg_shape_editor->edit(csg_shape);
 }
 
 bool EditorPluginCSG::handles(Object *p_object) const {
 	CSGShape3D *csg_shape = Object::cast_to<CSGShape3D>(p_object);
-	return csg_shape && csg_shape->is_root_shape();
+	return csg_shape != nullptr;
 }
 
 EditorPluginCSG::EditorPluginCSG() {
