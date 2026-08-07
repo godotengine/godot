@@ -215,8 +215,8 @@ private:
 	bool is_code_completion_scroll_hovered = false;
 	bool is_code_completion_scroll_pressed = false;
 	bool is_code_completion_drag_started = false;
-	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options;
-	Vector<RID> code_completion_ac_items;
+	LocalVector<ScriptLanguage::CodeCompletionOption> code_completion_options;
+	LocalVector<RID> code_completion_ac_items;
 	RID code_completion_ac_scroll_element;
 	RID code_completion_ac_root_element;
 	int code_completion_line_ofs = 0;
@@ -228,8 +228,8 @@ private:
 	float code_completion_pan_offset = 0.0f;
 
 	HashSet<char32_t> code_completion_prefixes;
-	List<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
-	List<ScriptLanguage::CodeCompletionOption> code_completion_option_sources;
+	LocalVector<ScriptLanguage::CodeCompletionOption> code_completion_option_submitted;
+	LocalVector<ScriptLanguage::CodeCompletionOption> code_completion_option_sources;
 	String code_completion_base;
 	String code_completion_line;
 	int code_completion_caret_line = 0;
@@ -237,7 +237,7 @@ private:
 
 	void _update_scroll_selected_line(float p_mouse_y);
 	void _filter_code_completion_candidates_impl();
-	bool _should_reset_selected_option_for_new_options(const Vector<ScriptLanguage::CodeCompletionOption> &p_new_options);
+	bool _should_reset_selected_option_for_new_options(const LocalVector<ScriptLanguage::CodeCompletionOption> &p_new_options) const;
 
 	/* Line length guidelines */
 	TypedArray<int> line_length_guideline_columns;
@@ -548,5 +548,5 @@ VARIANT_ENUM_CAST(CodeEdit::CodeCompletionLocation);
 
 // The custom comparer which will sort completion options.
 struct CodeCompletionOptionCompare {
-	_FORCE_INLINE_ bool operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const;
+	_FORCE_INLINE_ bool operator()(const ScriptLanguage::CodeCompletionOption &p_left, const ScriptLanguage::CodeCompletionOption &p_right) const;
 };
