@@ -587,9 +587,11 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--accessibility-driver <driver>", "Select accessibility driver ['accesskit', 'dummy'].\n");
 
 	print_help_title("Debug options");
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
-	print_help_option("-b, --breakpoints", "Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
+	print_help_option("-b, --breakpoints", "Breakpoint list as source:line comma-separated pairs, no spaces (use %%20 instead).\n");
 	print_help_option("--ignore-error-breaks", "If debugger is connected, prevents sending error breakpoints.\n");
+#endif
 	print_help_option("--profiling", "Enable profiling in the script debugger.\n");
 	print_help_option("--gpu-profile", "Show a GPU profile of the tasks that took the most time during frame rendering.\n");
 	print_help_option("--gpu-validation", "Enable graphics API validation layers for debugging.\n");
@@ -1038,13 +1040,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	String audio_driver = "";
 	String project_path = ".";
+
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	String debug_uri = "";
+	bool skip_breakpoints = false;
+	bool ignore_error_breaks = false;
+	Vector<String> breakpoints;
+#endif
+
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	bool test_rd_creation = false;
 	bool test_rd_support = false;
 #endif
-	bool skip_breakpoints = false;
-	bool ignore_error_breaks = false;
 	String main_pack;
 	bool quiet_stdout = false;
 	int separate_thread_render = -1; // Tri-state: -1 = not set, 0 = false, 1 = true.
@@ -1055,7 +1062,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String remotefs_pass;
 #endif
 
-	Vector<String> breakpoints;
 	bool delta_smoothing_override = false;
 	bool load_shell_env = false;
 
@@ -1752,6 +1758,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
 			goto error;
 #endif // defined(OVERRIDE_PATH_ENABLED)
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 		} else if (arg == "-b" || arg == "--breakpoints") { // add breakpoints
 
 			if (N) {
@@ -1762,7 +1769,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing list of breakpoints, aborting.\n");
 				goto error;
 			}
-
+#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
 		} else if (arg == "--max-fps") { // set maximum rendered FPS
 
 			if (N) {
@@ -1827,8 +1834,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif // defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) || defined(ANDROID_ENABLED)
 
 		} else if (arg == "-d" || arg == "--debug") {
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			debug_uri = "local://";
 			OS::get_singleton()->_debug_stdout = true;
+#else
+			ERR_PRINT(
+					arg + " was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+						  "To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+			goto error;
+#endif
 #if defined(DEBUG_ENABLED)
 		} else if (arg == "--debug-collisions") {
 			debug_collisions = true;
@@ -1914,10 +1928,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			profile_gpu = true;
 		} else if (arg == "--disable-crash-handler") {
 			OS::get_singleton()->disable_crash_handler();
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 		} else if (arg == "--skip-breakpoints") {
 			skip_breakpoints = true;
 		} else if (I->get() == "--ignore-error-breaks") {
 			ignore_error_breaks = true;
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 #ifndef XR_DISABLED
 		} else if (arg == "--xr-mode") {
 			if (N) {
@@ -2235,11 +2251,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_errors_per_second", PROPERTY_HINT_RANGE, "1,200,1,or_greater"), 400);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_warnings_per_second", PROPERTY_HINT_RANGE, "1,200,1,or_greater"), 400);
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	EngineDebugger::initialize(debug_uri, skip_breakpoints, ignore_error_breaks, breakpoints, []() {
 		if (editor_pid) {
 			DisplayServer::get_singleton()->enable_for_stealing_focus(editor_pid);
 		}
 	});
+#endif
 
 #ifdef TOOLS_ENABLED
 	if (editor) {
