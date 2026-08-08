@@ -30,6 +30,8 @@
 
 #include "remote_debugger_peer_websocket.h"
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+
 #include "core/config/project_settings.h"
 
 Error RemoteDebuggerPeerWebSocket::connect_to_host(const String &p_uri) {
@@ -139,3 +141,5 @@ Ref<RemoteDebuggerPeer> RemoteDebuggerPeerWebSocket::create(const String &p_uri)
 	}
 	return peer;
 }
+
+#endif

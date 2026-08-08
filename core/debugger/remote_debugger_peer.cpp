@@ -30,6 +30,8 @@
 
 #include "remote_debugger_peer.h"
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "core/io/stream_peer_socket.h"
@@ -269,3 +271,5 @@ void RemoteDebuggerPeerTCP::_disconnect_with_error(const String &p_reason) {
 	ERR_PRINT(p_reason);
 	tcp_client->disconnect_from_host();
 }
+
+#endif

@@ -63,10 +63,12 @@ void EngineDebugger::unregister_message_capture(const StringName &p_name) {
 	captures.erase(p_name);
 }
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 void EngineDebugger::register_uri_handler(const String &p_protocol, CreatePeerFunc p_func) {
 	ERR_FAIL_COND_MSG(protocols.has(p_protocol), vformat("Protocol handler already registered: '%s'.", p_protocol));
 	protocols.insert(p_protocol, p_func);
 }
+#endif
 
 void EngineDebugger::profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts) {
 	ERR_FAIL_COND_MSG(!profilers.has(p_name), vformat("Can't change profiler state, no profiler: '%s'.", p_name));
@@ -121,9 +123,11 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks,
 }
 
 void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bool p_ignore_error_breaks, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)()) {
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create_tcp); // TCP is the default protocol. Platforms/modules can add more.
 #ifdef UNIX_ENABLED
 	register_uri_handler("unix://", RemoteDebuggerPeerTCP::create_unix);
+#endif
 #endif
 	if (p_uri.is_empty()) {
 		return;
@@ -133,7 +137,9 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bo
 		script_debugger = memnew(ScriptDebugger);
 		// Tell the OS that we want to handle termination signals.
 		OS::get_singleton()->initialize_debugging();
-	} else if (p_uri.contains("://")) {
+	}
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+	else if (p_uri.contains("://")) {
 		const String proto = p_uri.substr(0, p_uri.find("://") + 3);
 		CreatePeerFunc *create_fn = protocols.getptr(proto);
 		ERR_FAIL_NULL_MSG(create_fn, vformat("Invalid protocol: %s.", proto));
@@ -148,6 +154,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bo
 		Array msg = { OS::get_singleton()->get_process_id() };
 		singleton->send_message("set_pid", msg);
 	}
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	if (!singleton) {
 		return;
 	}
@@ -187,7 +194,9 @@ void EngineDebugger::deinitialize() {
 	// Clear profilers/captures/protocol handlers.
 	profilers.clear();
 	captures.clear();
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	protocols.clear();
+#endif
 }
 
 EngineDebugger::~EngineDebugger() {

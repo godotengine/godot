@@ -70,8 +70,10 @@ void initialize_websocket_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(WebSocketMultiplayerPeer);
 		ClassDB::register_custom_instance_class<WebSocketPeer>();
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 		EngineDebugger::register_uri_handler("ws://", RemoteDebuggerPeerWebSocket::create);
 		EngineDebugger::register_uri_handler("wss://", RemoteDebuggerPeerWebSocket::create);
+#endif
 	}
 
 #ifdef TOOLS_ENABLED
