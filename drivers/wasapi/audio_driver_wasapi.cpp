@@ -936,7 +936,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 									}
 								}
 								int32_t last_sample = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * channels + (channels - 1));
-								r += last_sample;
+								rtemp += last_sample;
 								if (channels % 2 != 0) {
 									ltemp += last_sample;
 									ltemp /= ((channels + 1) / 2);
