@@ -1392,7 +1392,9 @@ partial class SceneMultiplayer
     /// <param name="packet">
     /// The packet payload. Only valid for the duration of the handler; do not store or return this span.
     /// </param>
+#pragma warning disable CA1711
     public delegate void PeerPacketNonAllocEventHandler(long id, ReadOnlySpan<byte> packet);
+#pragma warning restore CA1711
 
     private static unsafe void PeerPacketNonAllocTrampoline(object delegateObj, NativeVariantPtrArgs args, out godot_variant ret)
     {
