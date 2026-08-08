@@ -65,7 +65,7 @@ void RigidBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	const Vector3 center_of_mass = rigid_body->get_center_of_mass();
 
 	// Length of the crosshair lines.
-	constexpr float extents = 0.1;
+	constexpr float extents = 0.25;
 
 	// Draw a crosshair at the center of mass position.
 	Vector<Vector3> lines;
