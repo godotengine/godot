@@ -1382,3 +1382,46 @@ partial class PhysicsBody3D
         }
     }
 }
+
+partial class SceneMultiplayer
+{
+    /// <summary>
+    /// Represents the method that handles the <see cref="PeerPacketNonAlloc"/> event of a <see cref="SceneMultiplayer"/> class.
+    /// </summary>
+    /// <param name="id">The peer ID of the peer that sent the packet.</param>
+    /// <param name="packet">
+    /// The packet payload. Only valid for the duration of the handler; do not store or return this span.
+    /// </param>
+    public delegate void PeerPacketNonAllocEventHandler(long id, ReadOnlySpan<byte> packet);
+
+    private static unsafe void PeerPacketNonAllocTrampoline(object delegateObj, NativeVariantPtrArgs args, out godot_variant ret)
+    {
+        Callable.ThrowIfArgCountMismatch(args, 2);
+        long id = VariantUtils.ConvertTo<long>(args[0]);
+
+        godot_packed_byte_array packed = NativeFuncs.godotsharp_variant_as_packed_byte_array(args[1]);
+        try
+        {
+            ReadOnlySpan<byte> packet = packed.Size == 0
+                ? ReadOnlySpan<byte>.Empty
+                : new ReadOnlySpan<byte>(packed.Buffer, packed.Size);
+            ((PeerPacketNonAllocEventHandler)delegateObj)(id, packet);
+        }
+        finally
+        {
+            packed.Dispose();
+        }
+
+        ret = default;
+    }
+
+    /// <summary>
+    /// <para>Emitted when this MultiplayerAPI's <see cref="MultiplayerApi.MultiplayerPeer"/> receives a <c>packet</c> with custom data (see <see cref="SendBytes(byte[], int, MultiplayerPeer.TransferModeEnum, int)"/>). ID is the peer ID of the peer that sent the packet.</para>
+    /// <para>Unlike <see cref="PeerPacket"/>, this event delivers the payload as a <see cref="ReadOnlySpan{T}"/> over the native buffer and does not allocate a managed <c>byte[]</c>. The span is only valid for the duration of the handler.</para>
+    /// </summary>
+    public unsafe event PeerPacketNonAllocEventHandler PeerPacketNonAlloc
+    {
+        add => Connect(SignalName.PeerPacket, Callable.CreateWithUnsafeTrampoline(value, &PeerPacketNonAllocTrampoline));
+        remove => Disconnect(SignalName.PeerPacket, Callable.CreateWithUnsafeTrampoline(value, &PeerPacketNonAllocTrampoline));
+    }
+}
