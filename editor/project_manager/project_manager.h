@@ -185,6 +185,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *open_recovery_mode_ask = nullptr;
 
 	ProjectDialog *project_dialog = nullptr;
+	ConfirmationDialog *import_mode_ask = nullptr;
 
 	void _scan_projects();
 	void _run_project();
@@ -196,6 +197,8 @@ class ProjectManager : public Control {
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 	void _import_project();
+	void _import_project_from_path();
+	void _clone_project();
 	void _new_project();
 	void _rename_project();
 	void _duplicate_project();

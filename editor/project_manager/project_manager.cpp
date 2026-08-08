@@ -790,8 +790,18 @@ void ProjectManager::_install_project(const String &p_zip_path, const String &p_
 }
 
 void ProjectManager::_import_project() {
+	import_mode_ask->popup_centered();
+}
+
+void ProjectManager::_import_project_from_path() {
 	project_dialog->set_mode(ProjectDialog::MODE_IMPORT);
 	project_dialog->ask_for_path_and_show();
+}
+
+void ProjectManager::_clone_project() {
+	import_mode_ask->hide();
+	project_dialog->set_mode(ProjectDialog::MODE_CLONE);
+	project_dialog->show_dialog();
 }
 
 void ProjectManager::_new_project() {
@@ -1900,6 +1910,14 @@ ProjectManager::ProjectManager() {
 		project_dialog->connect("project_created", callable_mp(this, &ProjectManager::_on_project_created));
 		project_dialog->connect("project_duplicated", callable_mp(this, &ProjectManager::_on_project_duplicated));
 		add_child(project_dialog);
+
+		import_mode_ask = memnew(ConfirmationDialog);
+		import_mode_ask->set_title(TTRC("Import Project"));
+		import_mode_ask->set_text(TTRC("Choose whether to import a local project or clone a project from a Git URL."));
+		import_mode_ask->get_ok_button()->set_text(TTRC("From File"));
+		import_mode_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_import_project_from_path));
+		import_mode_ask->add_button(TTRC("Clone from URL"), true)->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_clone_project));
+		add_child(import_mode_ask);
 
 		error_dialog = memnew(AcceptDialog);
 		error_dialog->set_title(TTRC("Error"));
