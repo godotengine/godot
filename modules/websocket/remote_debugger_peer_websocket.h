@@ -30,6 +30,8 @@
 
 #pragma once
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+
 #include "websocket_peer.h"
 
 #include "core/debugger/remote_debugger_peer.h"
@@ -59,3 +61,5 @@ public:
 
 	RemoteDebuggerPeerWebSocket(const Ref<WebSocketPeer> &p_peer = Ref<WebSocketPeer>());
 };
+
+#endif
