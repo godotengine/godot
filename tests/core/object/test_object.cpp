@@ -106,6 +106,9 @@ public:
 	Ref<Script> get_script() const override {
 		return Ref<Script>();
 	}
+	bool script_eq(const Ref<Script> &p_script) const override {
+		return false;
+	}
 	const Variant get_rpc_config() const override {
 		return Variant();
 	}

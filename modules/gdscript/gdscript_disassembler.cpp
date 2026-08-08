@@ -709,7 +709,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 6 + argc;
+				incr = 5 + FunctionInlineCacheIntSize + argc;
 			} break;
 			case OPCODE_CALL_METHOD_BIND:
 			case OPCODE_CALL_METHOD_BIND_RET: {
