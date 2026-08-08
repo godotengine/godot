@@ -95,17 +95,73 @@ static bool is_zip_file(Ref<DirAccess> p_d, const String &p_path) {
 	return p_path.get_extension() == "zip" && p_d->file_exists(p_path);
 }
 
+String ProjectDialog::_get_github_repository_url(const String &p_url) {
+	const String url = p_url.strip_edges().trim_suffix("/");
+	static const String github_url_prefix = "https://github.com/";
+	if (!url.begins_with(github_url_prefix)) {
+		return "";
+	}
+
+	const String repository_path = url.trim_prefix(github_url_prefix);
+	const Vector<String> path_parts = repository_path.split("/", false);
+	if (path_parts.size() != 2 || path_parts[0].is_empty() ||
+			path_parts[1].trim_suffix(".git").is_empty() ||
+			repository_path.contains("?") || repository_path.contains("#")) {
+		return "";
+	}
+
+	return url;
+}
+
+String ProjectDialog::_get_clone_target_path() const {
+	const String repository_name = project_path->get_text().strip_edges().trim_suffix("/").get_file().get_basename();
+	return install_path->get_text().simplify_path().path_join(repository_name);
+}
+
 void ProjectDialog::_validate_path() {
 	_set_message("", MESSAGE_SUCCESS, PROJECT_PATH);
 	_set_message("", MESSAGE_SUCCESS, INSTALL_PATH);
 
-	if (project_name->get_text().strip_edges().is_empty()) {
+	if (mode != MODE_CLONE && project_name->get_text().strip_edges().is_empty()) {
 		_set_message(TTRC("It would be a good idea to name your project."), MESSAGE_ERROR);
 		return;
 	}
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	String path = project_path->get_text().simplify_path();
+	String path = mode == MODE_CLONE ? project_path->get_text() : project_path->get_text().simplify_path();
+	const String github_repository_url = mode == MODE_CLONE ? _get_github_repository_url(path) : "";
+
+	if (mode == MODE_CLONE) {
+		if (github_repository_url.is_empty()) {
+			_set_message(TTRC("Enter a valid GitHub repository URL."), MESSAGE_ERROR);
+			return;
+		}
+
+		const String parent_path = install_path->get_text().simplify_path();
+		if (parent_path.is_relative_path() || !d->dir_exists(parent_path)) {
+			_set_message(TTRC("The parent folder specified doesn't exist."), MESSAGE_ERROR, INSTALL_PATH);
+			return;
+		}
+
+		const String clone_target_path = _get_clone_target_path();
+		if (d->dir_exists(clone_target_path)) {
+			d->change_dir(clone_target_path);
+			d->list_dir_begin();
+			String entry = d->get_next();
+			while (entry == "." || entry == "..") {
+				entry = d->get_next();
+			}
+			d->list_dir_end();
+			if (!entry.is_empty()) {
+				_set_message(TTRC("The repository folder already exists. Choose a different parent folder."), MESSAGE_ERROR, INSTALL_PATH);
+				return;
+			}
+		}
+
+		is_folder_empty = true;
+		_set_message(vformat(TTR("The repository will be cloned to: %s"), clone_target_path), MESSAGE_SUCCESS, INSTALL_PATH);
+		return;
+	}
 
 	String target_path = path;
 	InputType target_path_input_type = PROJECT_PATH;
@@ -433,13 +489,13 @@ void ProjectDialog::_browse_project_path() {
 }
 
 void ProjectDialog::_browse_install_path() {
-	ERR_FAIL_COND_MSG(mode != MODE_IMPORT, "Install path is only used for MODE_IMPORT.");
+	ERR_FAIL_COND_MSG(mode != MODE_IMPORT && mode != MODE_CLONE, "Install path is only used for MODE_IMPORT and MODE_CLONE.");
 
 	String path = install_path->get_text();
 	if (path.is_relative_path() || !DirAccess::dir_exists_absolute(path)) {
 		path = EDITOR_GET("filesystem/directories/default_project_path");
 	}
-	if (create_dir->is_pressed()) {
+	if (mode == MODE_IMPORT && create_dir->is_pressed()) {
 		// Select parent directory of install path.
 		fdialog_install->set_current_dir(path.get_base_dir());
 	} else {
@@ -472,9 +528,9 @@ void ProjectDialog::_project_path_selected(const String &p_path) {
 }
 
 void ProjectDialog::_install_path_selected(const String &p_path) {
-	ERR_FAIL_COND_MSG(mode != MODE_IMPORT, "Install path is only used for MODE_IMPORT.");
+	ERR_FAIL_COND_MSG(mode != MODE_IMPORT && mode != MODE_CLONE, "Install path is only used for MODE_IMPORT and MODE_CLONE.");
 
-	if (create_dir->is_pressed()) {
+	if (mode == MODE_IMPORT && create_dir->is_pressed()) {
 		// Replace parent directory, but keep target dir name.
 		install_path->set_text(p_path.path_join(install_path->get_text().get_file()));
 	} else {
@@ -631,6 +687,33 @@ void ProjectDialog::ok_pressed() {
 			f->store_line("charset = utf-8");
 			f->close();
 			FileAccess::set_hidden_attribute(editor_config_path, true);
+		}
+	}
+
+	if (mode == MODE_CLONE) {
+		path = _get_clone_target_path();
+
+		List<String> git_args;
+		git_args.push_back("clone");
+		git_args.push_back("--recurse-submodules");
+		git_args.push_back(_get_github_repository_url(project_path->get_text()));
+		git_args.push_back(path);
+
+		int exit_code = 0;
+		const Error err = OS::get_singleton()->execute("git", git_args, nullptr, &exit_code, true);
+		if (err != OK) {
+			_set_message(TTRC("Couldn't start Git. Make sure Git is installed and available in PATH."), MESSAGE_ERROR, INSTALL_PATH);
+			return;
+		}
+		if (exit_code != 0) {
+			_set_message(vformat(TTR("Couldn't clone GitHub repository (error %d)."), exit_code), MESSAGE_ERROR, INSTALL_PATH);
+			return;
+		}
+
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		if (!d->file_exists(path.path_join("project.godot"))) {
+			_set_message(TTRC("The cloned repository doesn't contain a \"project.godot\" file."), MESSAGE_ERROR, INSTALL_PATH);
+			return;
 		}
 	}
 
@@ -793,7 +876,7 @@ void ProjectDialog::ok_pressed() {
 	}
 
 	hide();
-	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_CLONE || mode == MODE_INSTALL) {
 #ifdef ANDROID_ENABLED
 		// Create a .nomedia file to hide assets from media apps on Android.
 		// Android 11 has some issues with nomedia files, so it's disabled there. See GH-106479, GH-105399 for details.
@@ -810,7 +893,7 @@ void ProjectDialog::ok_pressed() {
 			}
 		}
 #endif
-		emit_signal(SNAME("project_created"), path, mode == MODE_NEW || edit_check_box->is_pressed());
+		emit_signal(SNAME("project_created"), path, mode == MODE_NEW || (mode != MODE_CLONE && edit_check_box->is_pressed()));
 	} else if (mode == MODE_DUPLICATE) {
 		emit_signal(SNAME("project_duplicated"), original_project_path, path, edit_check_box->is_visible() && edit_check_box->is_pressed());
 	} else if (mode == MODE_RENAME) {
@@ -851,12 +934,9 @@ void ProjectDialog::ask_for_path_and_show() {
 	_browse_project_path();
 }
 
-void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
+void ProjectDialog::show_dialog(bool p_reset_name) {
 	_update_ok_button();
 
-	if (mode == MODE_IMPORT && !p_is_confirmed) {
-		return;
-	}
 	if (mode == MODE_RENAME) {
 		// Name and path are set in `ProjectManager::_rename_project`.
 		project_path->set_editable(false);
@@ -868,11 +948,15 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 		project_status_rect->hide();
 		project_browse->hide();
 		edit_check_box->hide();
+		clone_description->hide();
 
 		name_container->show();
 		install_path_container->hide();
 		renderer_container->hide();
 		default_files_container->hide();
+		project_path_label->set_text(TTRC("Project Path:"));
+		project_path->set_accessibility_name(TTRC("Project Path:"));
+		project_path->set_placeholder("");
 
 		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 		callable_mp(project_name, &LineEdit::select_all).call_deferred();
@@ -887,7 +971,7 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			project_path->set_text(original_dir);
 			install_path->set_text(original_dir);
 			fdialog_project->set_current_dir(original_dir);
-		} else {
+		} else if (p_reset_name) {
 			String fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
 			fav_dir = fav_dir.simplify_path();
 			if (!fav_dir.is_empty()) {
@@ -905,6 +989,10 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 		create_dir->show();
 		project_status_rect->show();
 		project_browse->show();
+		install_status_rect->show();
+		clone_description->hide();
+		install_path_label->set_text(TTRC("Project Installation Path:"));
+		install_path->set_accessibility_name(TTRC("Project Installation Path:"));
 
 		if (mode == MODE_IMPORT) {
 			set_title(TTRC("Import Existing Project"));
@@ -916,7 +1004,37 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			default_files_container->hide();
 			edit_check_box->show();
 
-			// Project path dialog is also opened; no need to change focus.
+			project_path_label->set_text(TTRC("Project Path:"));
+			project_path->set_accessibility_name(TTRC("Project Path:"));
+			project_path->set_placeholder("");
+			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred(false);
+			callable_mp(project_path, &LineEdit::select_all).call_deferred();
+		} else if (mode == MODE_CLONE) {
+			set_title(TTRC("Clone from URL"));
+			set_ok_button_text(TTRC("Clone"));
+
+			name_container->hide();
+			install_path_container->show();
+			renderer_container->hide();
+			default_files_container->hide();
+			edit_check_box->hide();
+
+			clone_description->show();
+			create_dir->hide();
+			project_status_rect->hide();
+			project_browse->hide();
+			install_status_rect->hide();
+
+			project_path_label->set_text(TTRC("Git URL:"));
+			project_path->set_accessibility_name(TTRC("Git URL:"));
+			project_path->set_placeholder(TTRC("https://github.com/user/repo.git"));
+			install_path_label->set_text(TTRC("Parent Folder:"));
+			install_path->set_accessibility_name(TTRC("Parent Folder:"));
+			if (p_reset_name) {
+				project_path->clear();
+			}
+
+			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred(false);
 		} else if (mode == MODE_NEW) {
 			set_title(TTRC("Create New Project"));
 			set_ok_button_text(TTRC("Create"));
@@ -944,8 +1062,11 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			default_files_container->show();
 			edit_check_box->hide();
 
+			project_path_label->set_text(TTRC("Project Path:"));
+			project_path->set_accessibility_name(TTRC("Project Path:"));
 			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();
+			project_path->set_placeholder("");
 		} else if (mode == MODE_INSTALL) {
 			set_title(TTR("Install Project:") + " " + zip_title);
 			set_ok_button_text(TTRC("Install"));
@@ -958,7 +1079,10 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			default_files_container->hide();
 			edit_check_box->show();
 
+			project_path_label->set_text(TTRC("Project Path:"));
+			project_path->set_accessibility_name(TTRC("Project Path:"));
 			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred(false);
+			project_path->set_placeholder("");
 		} else if (mode == MODE_DUPLICATE) {
 			set_title(TTRC("Duplicate Project"));
 			set_ok_button_text(TTRC("Duplicate"));
@@ -969,21 +1093,31 @@ void ProjectDialog::show_dialog(bool p_reset_name, bool p_is_confirmed) {
 			default_files_container->hide();
 			edit_check_box->set_visible(duplicate_can_edit);
 
+			project_path_label->set_text(TTRC("Project Path:"));
+			project_path->set_accessibility_name(TTRC("Project Path:"));
 			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(false);
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();
+			project_path->set_placeholder("");
 		}
 
-		auto_dir = "";
-		last_custom_target_dir = "";
-		_update_target_auto_dir();
-		if (create_dir->is_pressed()) {
-			// Append `auto_dir` to target path.
-			_create_dir_toggled(true);
+		if ((p_reset_name && mode != MODE_CLONE) || mode == MODE_DUPLICATE) {
+			auto_dir = "";
+			last_custom_target_dir = "";
+			_update_target_auto_dir();
+			if (create_dir->is_pressed()) {
+				// Append `auto_dir` to target path.
+				_create_dir_toggled(true);
+			}
 		}
 	}
 
 	_validate_path();
 
+	if (mode == MODE_CLONE) {
+		// The dialog may have previously shown the new-project controls.
+		// Recalculate its size after hiding them for the compact clone flow.
+		reset_size();
+	}
 	popup_centered(Size2(500, 0) * EDSCALE);
 }
 
@@ -1005,7 +1139,7 @@ void ProjectDialog::_notification(int p_what) {
 			fdialog_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 			fdialog_project->connect("dir_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
 			fdialog_project->connect("file_selected", callable_mp(this, &ProjectDialog::_project_path_selected));
-			fdialog_project->connect("canceled", callable_mp(this, &ProjectDialog::show_dialog).bind(false, false), CONNECT_DEFERRED);
+			fdialog_project->connect("canceled", callable_mp(this, &ProjectDialog::show_dialog).bind(false), CONNECT_DEFERRED);
 			callable_mp((Node *)this, &Node::add_sibling).call_deferred(fdialog_project, false);
 		} break;
 	}
@@ -1034,16 +1168,22 @@ ProjectDialog::ProjectDialog() {
 	project_name->set_accessibility_name(TTRC("Project Name:"));
 	name_container->add_child(project_name);
 
+	clone_description = memnew(Label);
+	clone_description->set_text(TTRC("Enter a Git URL and select a location to clone it to."));
+	clone_description->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	vb->add_child(clone_description);
+	clone_description->hide();
+
 	project_path_container = memnew(VBoxContainer);
 	vb->add_child(project_path_container);
 
 	HBoxContainer *pphb_label = memnew(HBoxContainer);
 	project_path_container->add_child(pphb_label);
 
-	l = memnew(Label);
-	l->set_text(TTRC("Project Path:"));
-	l->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	pphb_label->add_child(l);
+	project_path_label = memnew(Label);
+	project_path_label->set_text(TTRC("Project Path:"));
+	project_path_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	pphb_label->add_child(project_path_label);
 
 	create_dir = memnew(CheckButton);
 	create_dir->set_text(TTRC("Create Folder"));
@@ -1063,9 +1203,9 @@ ProjectDialog::ProjectDialog() {
 	install_path_container = memnew(VBoxContainer);
 	vb->add_child(install_path_container);
 
-	l = memnew(Label);
-	l->set_text(TTRC("Project Installation Path:"));
-	install_path_container->add_child(l);
+	install_path_label = memnew(Label);
+	install_path_label->set_text(TTRC("Project Installation Path:"));
+	install_path_container->add_child(install_path_label);
 
 	HBoxContainer *iphb = memnew(HBoxContainer);
 	install_path_container->add_child(iphb);

@@ -47,6 +47,7 @@ public:
 	enum Mode {
 		MODE_NEW,
 		MODE_IMPORT,
+		MODE_CLONE,
 		MODE_INSTALL,
 		MODE_RENAME,
 		MODE_DUPLICATE,
@@ -80,6 +81,9 @@ private:
 	VBoxContainer *name_container = nullptr;
 	VBoxContainer *project_path_container = nullptr;
 	VBoxContainer *install_path_container = nullptr;
+	Label *project_path_label = nullptr;
+	Label *install_path_label = nullptr;
+	Label *clone_description = nullptr;
 
 	VBoxContainer *renderer_container = nullptr;
 	Label *renderer_info = nullptr;
@@ -115,9 +119,11 @@ private:
 	void _set_message(const String &p_msg, MessageType p_type, InputType input_type = PROJECT_PATH);
 	void _update_ok_button();
 	void _validate_path();
+	static String _get_github_repository_url(const String &p_url);
+	String _get_clone_target_path() const;
 
 	// Project path for MODE_NEW and MODE_INSTALL. Install path for MODE_IMPORT.
-	// Install path is only visible when importing a ZIP.
+	// In MODE_CLONE, the install path is the clone's parent folder.
 	String _get_target_path();
 	void _set_target_path(const String &p_text);
 
@@ -161,7 +167,7 @@ public:
 	void set_duplicate_can_edit(bool p_duplicate_can_edit);
 
 	void ask_for_path_and_show();
-	void show_dialog(bool p_reset_name = true, bool p_is_confirmed = true);
+	void show_dialog(bool p_reset_name = true);
 
 	ProjectDialog();
 };
