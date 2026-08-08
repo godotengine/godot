@@ -243,13 +243,15 @@ namespace Godot.SourceGenerators
 
             // Generate ValidateExportedProperties
 
+            bool needsExportValidationHelper = false;
+
             if (exportedNonNullableGodotTypes is { Count: > 0 })
             {
                 source.Append("    /// <inheritdoc/>\n");
                 source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
                 source.Append("    protected override void ValidateExportedProperties()\n    {\n");
 
-                GenerateNullChecksForValidation(source, exportedNonNullableGodotTypes);
+                needsExportValidationHelper = GenerateNullChecksForValidation(source, exportedNonNullableGodotTypes);
 
                 source.Append("        base.ValidateExportedProperties();\n");
                 source.Append("    }\n");
@@ -332,6 +334,11 @@ namespace Godot.SourceGenerators
             if (hasNamespace)
             {
                 source.Append("\n}\n");
+            }
+
+            if (needsExportValidationHelper)
+            {
+                AppendGeneratedExportValidationHelper(source);
             }
 
             context.AddSource(uniqueHint, SourceText.From(source.ToString(), Encoding.UTF8));
@@ -471,11 +478,13 @@ namespace Godot.SourceGenerators
             source.Append(") {\n           return true;\n        }\n");
         }
 
-        private static void GenerateNullChecksForValidation(
+        private static bool GenerateNullChecksForValidation(
             StringBuilder source,
             List<(string Name, ITypeSymbol Type)> exportedNonNullableGodotTypes
         )
         {
+            bool needsExportValidationHelper = false;
+
             foreach (var (memberName, memberType) in exportedNonNullableGodotTypes)
             {
                 // Check if this is a string type
@@ -518,10 +527,27 @@ namespace Godot.SourceGenerators
                 }
                 else
                 {
-                    // For other types (Node, Resource, NodePath, Collections), throw NullReferenceException
-                    source.Append($"global::System.ArgumentNullException.ThrowIfNull(this.{memberName}, \"{memberName}\");\n");
+                    // For other types (Node, Resource, Collections), validate via file-local helper
+                    needsExportValidationHelper = true;
+                    source.Append($"GeneratedExportValidation.ValidateExportedMemberNotNull(this.{memberName}, \"{memberName}\");\n");
                 }
             }
+
+            return needsExportValidationHelper;
+        }
+
+        private static void AppendGeneratedExportValidationHelper(StringBuilder source)
+        {
+            source.Append("\nfile static class GeneratedExportValidation\n{\n");
+            source.Append("    public static void ValidateExportedMemberNotNull(object? value, string memberName)\n    {\n");
+            source.Append("        if (value is not null)\n");
+            source.Append("            return;\n\n");
+            source.Append("        if (global::Godot.Engine.IsEditorHint())\n");
+            source.Append("            global::Godot.GD.PushError($\"Exported member '{memberName}' is null.\");\n");
+            source.Append("        else\n");
+            source.Append("            global::System.ArgumentNullException.ThrowIfNull(value, memberName);\n");
+            source.Append("    }\n");
+            source.Append("}\n");
         }
         private static void GenerateMethodInvoker(
             GodotMethodData method,
