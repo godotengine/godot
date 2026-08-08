@@ -31,7 +31,6 @@
 #pragma once
 
 #include "gdscript_utility_functions.h"
-#include "inline_cache.h"
 
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
@@ -385,7 +384,7 @@ private:
 	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
 	Vector<const MethodBind *> methods;
 	Vector<GDScriptFunction *> lambdas;
-	TightLocalVector<InlineCache> inline_caches;
+	LocalVector<int> function_inline_cache_locations;
 
 	int _code_size = 0;
 	int _default_arg_count = 0;
@@ -404,7 +403,6 @@ private:
 	int _gds_utilities_count = 0;
 	int _methods_count = 0;
 	int _lambdas_count = 0;
-	int _inline_cache_count = 0;
 
 	int *_code_ptr = nullptr;
 	const int *_default_arg_ptr = nullptr;
@@ -423,7 +421,6 @@ private:
 	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
 	const MethodBind *const *_methods_ptr = nullptr;
 	GDScriptFunction **_lambdas_ptr = nullptr;
-	InlineCache *_inline_cache_ptr = nullptr;
 
 #ifdef DEBUG_ENABLED
 	CharString func_cname;
@@ -496,6 +493,7 @@ public:
 	StringName get_global_name(int p_idx) const;
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
+
 	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
 #ifdef DEBUG_ENABLED

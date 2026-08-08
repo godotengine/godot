@@ -51,6 +51,7 @@ public:
 	Variant _new();
 	Object *instantiate();
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+	virtual VariantCallCache lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error) override;
 	GDScriptNativeClass(const StringName &p_name);
 };
 
@@ -213,6 +214,8 @@ protected:
 
 	Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
+	virtual VariantCallCache lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error) override;
+
 	static void _bind_methods();
 
 public:
@@ -310,9 +313,6 @@ public:
 
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
-	virtual void *lookup_method(const StringName &p_method) const override;
-	virtual void call_method(Variant &p_base, void *p_method, const Variant **p_args, int p_argcount, Variant *r_ret, Callable::CallError &r_error) const override;
-
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
 
 	virtual ScriptLanguage *get_language() const override;
@@ -378,6 +378,8 @@ public:
 	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
+
+	virtual VariantCallCache lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error) override;
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 

@@ -36,9 +36,6 @@ class Script;
 class ScriptLanguage;
 
 class ScriptInstance {
-protected:
-	Script *script_raw = nullptr;
-
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value) = 0;
 	virtual bool get(const StringName &p_name, Variant &r_ret) const = 0;
@@ -71,6 +68,9 @@ public:
 	}
 
 	virtual Variant call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error); // implement if language supports const functions
+
+	virtual VariantCallCache lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error);
+
 	virtual void notification(int p_notification, bool p_reversed = false) = 0;
 	virtual String to_string(bool *r_valid) {
 		if (r_valid) {

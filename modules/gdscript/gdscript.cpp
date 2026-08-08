@@ -124,6 +124,22 @@ Variant GDScriptNativeClass::callp(const StringName &p_method, const Variant **p
 	return Variant();
 }
 
+VariantCallCache GDScriptNativeClass::lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error) {
+	if (p_method_name == SNAME("new")) {
+		return Object::lookup_function_call(p_method_name, p_error);
+	}
+
+	const MethodBind *method = ClassDB::get_method(name, p_method_name);
+	if (method && method->is_static()) {
+		// Native static method.
+		p_error = Callable::CallError::Error::CALL_OK;
+		return VariantCallCache(method);
+	}
+
+	p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+	return VariantCallCache();
+}
+
 GDScriptFunction *GDScript::_super_constructor(GDScript *p_script) {
 	if (likely(p_script->valid) && p_script->initializer) {
 		return p_script->initializer;
@@ -159,7 +175,6 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	GDScriptInstance *instance = memnew(GDScriptInstance);
 	instance->members.resize(member_indices.size());
 	instance->script = Ref<GDScript>(this);
-	instance->script_raw = this;
 	instance->owner = p_owner;
 	instance->owner_id = p_owner->get_instance_id();
 	instance->owner->set_script_instance(instance);
@@ -174,7 +189,6 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	if (r_error.error != Callable::CallError::CALL_OK) {
 		String error_text = Variant::get_call_error_text(instance->owner, "@implicit_new", nullptr, 0, r_error);
 		instance->script = Ref<GDScript>();
-		instance->script_raw = nullptr;
 		instance->owner->set_script_instance(nullptr);
 		{
 			MutexLock lock(GDScriptLanguage::singleton->mutex);
@@ -193,7 +207,6 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		if (r_error.error != Callable::CallError::CALL_OK) {
 			String error_text = Variant::get_call_error_text(instance->owner, "_init", p_args, p_argcount, r_error);
 			instance->script = Ref<GDScript>();
-			instance->script_raw = nullptr;
 			instance->owner->set_script_instance(nullptr);
 			{
 				MutexLock lock(GDScriptLanguage::singleton->mutex);
@@ -393,35 +406,6 @@ MethodInfo GDScript::get_method_info(const StringName &p_method) const {
 	}
 
 	return E->value->get_method_info();
-}
-
-void *GDScript::lookup_method(const StringName &p_method) const {
-	if (unlikely(p_method == SceneStringName(_ready))) {
-		// Call implicit ready first, including for the super classes recursively.
-		return nullptr;
-	}
-	GDScript *sptr = const_cast<GDScript *>(this);
-	while (sptr) {
-		if (likely(sptr->valid)) {
-			HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(p_method);
-			if (E) {
-				return E->value;
-			}
-		}
-		sptr = sptr->base.ptr();
-	}
-
-	return nullptr;
-}
-
-void GDScript::call_method(Variant &p_base, void *p_method, const Variant **p_args, int p_argcount, Variant *r_ret, Callable::CallError &r_error) const {
-	Object *obj = *VariantInternal::get_object(&p_base);
-	GDScriptInstance *instance = static_cast<GDScriptInstance *>(obj->get_script_instance());
-	if (r_ret != nullptr) {
-		*r_ret = static_cast<GDScriptFunction *>(p_method)->call(instance, p_args, p_argcount, r_error);
-	} else {
-		static_cast<GDScriptFunction *>(p_method)->call(instance, p_args, p_argcount, r_error);
-	}
 }
 
 bool GDScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
@@ -1003,6 +987,38 @@ Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int 
 
 	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	return Variant();
+}
+
+VariantCallCache GDScript::lookup_function_call(const StringName &p_method, Callable::CallError::Error &p_error) {
+	GDScript *top = this;
+	while (top) {
+		if (likely(top->valid)) {
+			HashMap<StringName, GDScriptFunction *>::Iterator E = top->member_functions.find(p_method);
+			if (E) {
+				// TODO: add static call check
+				return VariantCallCache(E->value);
+			}
+		}
+		top = top->base.ptr();
+	}
+
+	// NOTE: I think this should be Object:: but leaving it as is to mirror GDScript::callp
+	VariantCallCache ret = Script::lookup_function_call(p_method, p_error);
+	if (p_error != Callable::CallError::Error::CALL_ERROR_INVALID_METHOD) {
+		return ret;
+	}
+
+	if (_is_abstract && p_method == SNAME("new")) {
+		p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+		return ret;
+	}
+
+	if (native.is_valid()) {
+		return native->lookup_function_call(p_method, p_error);
+	}
+
+	p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+	return VariantCallCache();
 }
 
 bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
@@ -2010,6 +2026,27 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 
 	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	return Variant();
+}
+
+VariantCallCache GDScriptInstance::lookup_function_call(const StringName &p_method, Callable::CallError::Error &p_error) {
+	if (unlikely(p_method == SceneStringName(_ready))) {
+		// Do not cache `ready`
+		p_error = Callable::CallError::Error::CALL_OK;
+		return VariantCallCache();
+	}
+	GDScript *sptr = script.ptr();
+	while (sptr) {
+		if (likely(sptr->valid)) {
+			HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(p_method);
+			if (E) {
+				p_error = Callable::CallError::Error::CALL_OK;
+				return VariantCallCache(E->value);
+			}
+		}
+		sptr = sptr->base.ptr();
+	}
+	p_error = Callable::CallError::Error::CALL_ERROR_INVALID_METHOD;
+	return VariantCallCache();
 }
 
 void GDScriptInstance::notification(int p_notification, bool p_reversed) {

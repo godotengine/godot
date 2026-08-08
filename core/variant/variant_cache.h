@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  inline_cache.cpp                                                      */
+/*  variant_cache.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,46 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "inline_cache.h"
+#pragma once
 
-#include "core/debugger/engine_debugger.h"
-#include "core/object/object.h"
-#include "core/os/memory.h"
-#include "core/variant/variant_internal.h"
+class GDScriptFunction;
+class MethodBind;
 
-void FunctionInlineCache::load(Variant &p_base, const StringName &p_method) {
-	Callable::CallError::Error err;
-	VariantCallCache found = p_base.lookup_function_call(p_method, err);
-	if (found.type != VariantCallCache::Type::INVALID) {
-		// There is a chance another thread already updated while we looked up the function.
-		if (state == CacheState::UNINITIALIZED) {
-			state = CacheState::INITIALIZING;
-			fn = std::move(found);
-			type = p_base.get_type();
-			gdtype = get_gdtype(p_base);
-			if (p_base.get_type() == Variant::OBJECT) {
-				Object *obj = p_base.operator Object *();
+struct VariantCallCache {
+	enum class Type {
+		INVALID,
+		GDSCRIPT_FUNCTION,
+		METHOD_BIND,
+		VARIANT_BUILTIN_METHOD,
+	};
 
-				const ScriptInstance *si = obj->get_script_instance();
-				if (si) {
-					script = si->get_script();
-					is_static = false;
-				} else {
-					// Can be null with no Script attached (MethodBind)
-					script = Object::cast_to<Script>(obj);
-					is_static = true;
-				}
-			}
-			state = CacheState::MONOMORPHIC;
-		}
-	} else {
-		state = CacheState::DISABLED;
-	}
-}
+	Type type;
 
-void FunctionInlineCache::reset() {
-	script = nullptr;
-	fn = {};
-	type = Variant::NIL;
-	state = CacheState::UNINITIALIZED;
-}
+	struct VariantBuiltInMethod {
+		void (*call)(Variant *, const Variant **, int, Variant &, const Vector<Variant> &, Callable::CallError &);
+		const Vector<Variant> *default_values;
+	};
+
+	union {
+		GDScriptFunction *gdscript_function;
+		const MethodBind *method_bind;
+		VariantBuiltInMethod variant_builtin_method;
+	};
+
+	VariantCallCache() : type(Type::INVALID) {}
+	VariantCallCache(GDScriptFunction *p_gdscript_function) : type(Type::GDSCRIPT_FUNCTION), gdscript_function(p_gdscript_function) {}
+	VariantCallCache(const MethodBind *p_method_bind) : type(Type::METHOD_BIND), method_bind(p_method_bind) {}
+	VariantCallCache(
+			void (*p_call)(Variant *, const Variant **, int, Variant &, const Vector<Variant> &, Callable::CallError &),
+			const Vector<Variant> *p_default_values) :
+			type(Type::VARIANT_BUILTIN_METHOD), variant_builtin_method{ p_call, p_default_values } {}
+};
