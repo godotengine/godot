@@ -19,7 +19,7 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ///////////////////////////////////////////////////////////////////////////////////
 // File changes (yyyy-mm-dd)
-// 2026-07-14: Rene Prašnikar: Total shader rewrite, simplified the shader, new "all-in" anti-ghosting strategy introduced
+// 2026-07-14: Rene Prašnikar: Total shader rewrite, simplified the shader, new anti-ghosting strategy introduced
 // 2025-11-05: Jakub Brzyski: Added dynamic variance, base variance value adjusted to reduce ghosting
 // 2022-05-06: Panos Karabelas: first commit
 // 2020-12-05: Joan Fons: convert to Vulkan and Godot
@@ -116,148 +116,106 @@ vec3 sample_catmull_rom_9(sampler2D stex, vec2 uv, vec2 resolution) {
 	return max(result, 0.0f);
 }
 
-// Based on "Temporal Reprojection Anti-Aliasing" - https://github.com/playdeadgames/temporal
-vec3 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec3 p, vec3 q) {
-	vec3 r = q - p;
-	vec3 rmax = (aabb_max - p.xyz);
-	vec3 rmin = (aabb_min - p.xyz);
-
-	if (r.x > rmax.x + FLT_MIN) {
-		r *= (rmax.x / r.x);
-	}
-	if (r.y > rmax.y + FLT_MIN) {
-		r *= (rmax.y / r.y);
-	}
-	if (r.z > rmax.z + FLT_MIN) {
-		r *= (rmax.z / r.z);
-	}
-	if (r.x < rmin.x - FLT_MIN) {
-		r *= (rmin.x / r.x);
-	}
-	if (r.y < rmin.y - FLT_MIN) {
-		r *= (rmin.y / r.y);
-	}
-	if (r.z < rmin.z - FLT_MIN) {
-		r *= (rmin.z / r.z);
-	}
-
-	return p + r;
-}
-
 vec4 temporal_antialiasing(vec2 uv) {
 	vec2 jitter = params.jitter / params.resolution;
-	vec2 v1 = textureLodOffset(velocity_buffer, uv, 0.0, numpad[1]).xy;
-	vec2 v2 = textureLodOffset(velocity_buffer, uv, 0.0, numpad[2]).xy;
-	vec2 v3 = textureLodOffset(velocity_buffer, uv, 0.0, numpad[3]).xy;
-	vec2 v4 = textureLodOffset(velocity_buffer, uv, 0.0, numpad[4]).xy;
-	vec2 v5 = textureLodOffset(velocity_buffer, uv, 0.0, numpad[5]).xy;
-	vec2 v6 = textureLodOffset(velocity_buffer, uv, 0.0, numpad[6]).xy;
-	vec2 v7 = textureLodOffset(velocity_buffer, uv, 0.0, numpad[7]).xy;
-	vec2 v8 = textureLodOffset(velocity_buffer, uv, 0.0, numpad[8]).xy;
-	vec2 v9 = textureLodOffset(velocity_buffer, uv, 0.0, numpad[9]).xy;
+	vec2 velocity = textureLod(velocity_buffer, uv, 0.0).xy;
 
-	vec2 v_avg = (v1 + v2 + v3 + v4 + v5 + v6 + v7 + v8 + v9) * RPC_9;
+	vec2 uv_reprojected = uv + velocity;
 
-	vec2 uv_reprojected = uv + v5;
+	vec3 s = textureLod(color_buffer, uv + jitter, 0.0).rgb;
 
 	vec3 history = sample_catmull_rom_9(history_buffer, uv_reprojected, params.resolution).rgb;
 
-	// Current Samples
-	vec3 s1 = textureLodOffset(color_buffer, uv + jitter, 0.0, numpad[1]).rgb;
-	vec3 s2 = textureLodOffset(color_buffer, uv + jitter, 0.0, numpad[2]).rgb;
-	vec3 s3 = textureLodOffset(color_buffer, uv + jitter, 0.0, numpad[3]).rgb;
-	vec3 s4 = textureLodOffset(color_buffer, uv + jitter, 0.0, numpad[4]).rgb;
-	vec3 s5 = textureLodOffset(color_buffer, uv + jitter, 0.0, numpad[5]).rgb;
-	vec3 s6 = textureLodOffset(color_buffer, uv + jitter, 0.0, numpad[6]).rgb;
-	vec3 s7 = textureLodOffset(color_buffer, uv + jitter, 0.0, numpad[7]).rgb;
-	vec3 s8 = textureLodOffset(color_buffer, uv + jitter, 0.0, numpad[8]).rgb;
-	vec3 s9 = textureLodOffset(color_buffer, uv + jitter, 0.0, numpad[9]).rgb;
+	history = mix(history, s, RPC_16);
 
-	vec3 s_min = min(s1, min(s2, min(s3, min(s4, min(s5, min(s6, min(s7, min(s8, s9))))))));
-	vec3 s_max = max(s1, max(s2, max(s3, max(s4, max(s5, max(s6, max(s7, max(s8, s9))))))));
-	vec3 s_avg = (s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * RPC_9;
-	vec3 s_range = s_max - s_min;
+	// Sample pattern taken from https://stackoverflow.com/questions/74541193/what-algorithm-8xmsaa-16xmsaa-use-to-generate-the-position-of-8-points-16-poi
+	vec3 s1 = textureLod(color_buffer, uv + jitter + (vec2(0.5625, 0.5625) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s2 = textureLod(color_buffer, uv + jitter + (vec2(0.4375, 0.3125) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s3 = textureLod(color_buffer, uv + jitter + (vec2(0.3125, 0.625) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s4 = textureLod(color_buffer, uv + jitter + (vec2(0.75, 0.4375) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s5 = textureLod(color_buffer, uv + jitter + (vec2(0.1875, 0.375) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s6 = textureLod(color_buffer, uv + jitter + (vec2(0.625, 0.8125) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s7 = textureLod(color_buffer, uv + jitter + (vec2(0.8125, 0.6875) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s8 = textureLod(color_buffer, uv + jitter + (vec2(0.6875, 0.1875) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s9 = textureLod(color_buffer, uv + jitter + (vec2(0.375, 0.875) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s10 = textureLod(color_buffer, uv + jitter + (vec2(0.5, 0.0625) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s11 = textureLod(color_buffer, uv + jitter + (vec2(0.25, 0.125) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s12 = textureLod(color_buffer, uv + jitter + (vec2(0.125, 0.75) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s13 = textureLod(color_buffer, uv + jitter + (vec2(0.0, 0.5) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s14 = textureLod(color_buffer, uv + jitter + (vec2(0.9375, 0.25) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s15 = textureLod(color_buffer, uv + jitter + (vec2(0.875, 0.9375) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
+	vec3 s16 = textureLod(color_buffer, uv + jitter + (vec2(0.0625, 0.0) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
 
-	float c1 = dot(normalize(history), normalize(s1));
-	float c2 = dot(normalize(history), normalize(s2));
-	float c3 = dot(normalize(history), normalize(s3));
-	float c4 = dot(normalize(history), normalize(s4));
-	float c5 = dot(normalize(history), normalize(s5));
-	float c6 = dot(normalize(history), normalize(s6));
-	float c7 = dot(normalize(history), normalize(s7));
-	float c8 = dot(normalize(history), normalize(s8));
-	float c9 = dot(normalize(history), normalize(s9));
-
-	vec3 unjittered = textureLodOffset(color_buffer, uv, 0.0, numpad[5]).rgb;
-
-	float d1 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[1]).r;
-	float d2 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[2]).r;
-	float d3 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[3]).r;
-	float d4 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[4]).r;
-	float d5 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[5]).r;
-	float d6 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[6]).r;
-	float d7 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[7]).r;
-	float d8 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[8]).r;
-	float d9 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[9]).r;
-
-	float depth_avg = (d1 + d2 + d3 + d4 + d5 + d6 + d7 + d8 + d9) * RPC_9;
-
-	float factor_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
-	float blend_factor = clamp(RPC_16 + factor_screen, 0.0, 1.0);
-
-	vec3 color_resolved = mix(history, s5, blend_factor);
-
-	// Compute min and max (with an adaptive box size, which greatly reduces ghosting)
-	vec3 color_avg = (s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * RPC_9;
-	vec3 color_avg2 = ((s1 * s1) + (s2 * s2) + (s3 * s3) + (s4 * s4) + (s5 * s5) + (s6 * s6) + (s7 * s7) + (s8 * s8) + (s9 * s9)) * RPC_9;
-	// Use variance clipping as described in https://developer.download.nvidia.com/gameworks/events/GDC2016/msalvi_temporal_supersampling.pdf
-	// Larger multiplier relaxes Clipping
-	vec3 dev = sqrt(abs(color_avg2 - (color_avg * color_avg))) * 1.75;
-	vec3 color_min = color_avg - dev;
-	vec3 color_max = color_avg + dev;
-
-	// Variance clipping
-	vec3 color = clip_aabb(color_min, color_max, clamp(color_avg, color_min, color_max), history);
-
-	// Clamp to prevent NaNs
-	color = clamp(color, FLT_MIN, FLT_MAX);
-
-	// Higher values stabilize higher distances, but lead to more ghosting
-	float distance_relaxation_strength = 0.25;
-	float distance_relaxation = (1.0 - distance_relaxation_strength) + (depth_avg * distance_relaxation_strength);
-	float velocity_rejection = clamp(1.0 - length(v_avg), 0.0, 1.0);
-
-	float sample_brightness_divergence = length(history - s5);
-	float sample_brightness_range = length(s_range);
-	bool brightness_rejection_criteria = sample_brightness_divergence * distance_relaxation > sample_brightness_range * velocity_rejection;
-
-	float sample_chroma_divergence = dot(normalize(history), normalize(s5));
-	float sample_chroma_range = max(c1, max(c2, max(c3, max(c4, max(c5, max(c6, max(c7, max(c8, c9))))))));
-	bool chroma_rejection_criteria = sample_chroma_divergence * distance_relaxation > sample_chroma_range * velocity_rejection;
-
-	bool variance_clipped = length(history - color) > FLT_MIN;
-
-	// Maintains Glow for Glowing Bullets flying around
-	bool bullet_detected = length(v_avg - v5) > length(jitter) * 5.0 && length(unjittered) > 100.0;
-
-	// Reject Background, it has no valid Motion Vectors
-	if (depth_avg == 0) {
-		color_resolved = s5;
+	// Pick Sample blend closest to History
+	float min_delta = length(history - s);
+	if (min_delta > length(history - s1)) {
+		s = s1;
+		min_delta = length(history - s1);
 	}
-	if (brightness_rejection_criteria == true) {
-		color_resolved = s5;
+	if (min_delta > length(history - s2)) {
+		s = s2;
+		min_delta = length(history - s2);
 	}
-	if (chroma_rejection_criteria == true) {
-		color_resolved = s5;
+	if (min_delta > length(history - s3)) {
+		s = s3;
+		min_delta = length(history - s3);
 	}
-	if (variance_clipped == true) {
-		color_resolved = s5;
+	if (min_delta > length(history - s4)) {
+		s = s4;
+		min_delta = length(history - s4);
 	}
-	if (bullet_detected == true) {
-		color_resolved = unjittered;
+	if (min_delta > length(history - s5)) {
+		s = s5;
+		min_delta = length(history - s5);
+	}
+	if (min_delta > length(history - s6)) {
+		s = s6;
+		min_delta = length(history - s6);
+	}
+	if (min_delta > length(history - s7)) {
+		s = s7;
+		min_delta = length(history - s7);
+	}
+	if (min_delta > length(history - s8)) {
+		s = s8;
+		min_delta = length(history - s8);
+	}
+	if (min_delta > length(history - s9)) {
+		s = s9;
+		min_delta = length(history - s9);
+	}
+	if (min_delta > length(history - s10)) {
+		s = s10;
+		min_delta = length(history - s10);
+	}
+	if (min_delta > length(history - s11)) {
+		s = s11;
+		min_delta = length(history - s11);
+	}
+	if (min_delta > length(history - s12)) {
+		s = s12;
+		min_delta = length(history - s12);
+	}
+	if (min_delta > length(history - s13)) {
+		s = s13;
+		min_delta = length(history - s13);
+	}
+	if (min_delta > length(history - s14)) {
+		s = s14;
+		min_delta = length(history - s14);
+	}
+	if (min_delta > length(history - s15)) {
+		s = s15;
+		min_delta = length(history - s15);
+	}
+	if (min_delta > length(history - s16)) {
+		s = s16;
+		min_delta = length(history - s16);
 	}
 
-	return vec4(color_resolved, d5 * 10000.0);
+	float depth = textureLod(depth_buffer, uv, 0.0).r;
+
+	return vec4(s, depth * 10000.0);
 }
 
 void main() {
