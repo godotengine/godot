@@ -1113,7 +1113,7 @@ void PopupMenu::_update_search_bar_visibility() {
 }
 
 void PopupMenu::_items_focus_entered() {
-	if (mouse_over != -1) {
+	if (mouse_over != -1 || !activated_by_keyboard) {
 		return;
 	}
 
