@@ -358,65 +358,45 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 			for (int y = 0; y < grid_size.y; y++) {
 				Vector2i origin = margins + (Vector2i(x, y) * (texture_region_size + separation));
 				Vector2i base_tile_coords = tile_set_atlas_source->get_tile_at_coords(Vector2i(x, y));
+				Vector2i region_size;
+				Color tile_color;
 
 				if (base_tile_coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					if (base_tile_coords == Vector2(x, y)) {
-						for (int c = 0; c < 4; c++) {
-							colors.push_back(Color(1.0, 1.0, 1.0, 0.8));
-						}
+						tile_color = Color(1.0, 1.0, 1.0, 0.8);
 
 						Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(base_tile_coords);
-						Vector2i region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
-
-						Vector2i top_line_left = origin;
-						Vector2i top_line_right = top_line_left + Vector2i{ region_size.x, 0 };
-
-						Vector2i bottom_line_left = origin + Vector2i{ 0, region_size.y };
-						Vector2i bottom_line_right = bottom_line_left + Vector2i{ region_size.x, 0 };
-
-						Vector2i left_line_top = origin;
-						Vector2i left_line_bottom = left_line_top + Vector2i{ 0, region_size.y };
-
-						Vector2i right_line_top = origin + Vector2i{ region_size.x, 0 };
-						Vector2i right_line_bottom = right_line_top + Vector2i{ 0, region_size.y };
-
-						points.push_back(top_line_left);
-						points.push_back(top_line_right);
-						points.push_back(bottom_line_left);
-						points.push_back(bottom_line_right);
-						points.push_back(left_line_top);
-						points.push_back(left_line_bottom);
-						points.push_back(right_line_top);
-						points.push_back(right_line_bottom);
+						region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
 					}
 				} else {
-					for (int c = 0; c < 4; c++) {
-						colors.push_back(Color(0.7, 0.7, 0.7, 0.1));
-					}
-
-					Vector2i region_size = texture_region_size;
-
-					Vector2i top_line_left = origin;
-					Vector2i top_line_right = top_line_left + Vector2i{ region_size.x, 0 };
-
-					Vector2i bottom_line_left = origin + Vector2i{ 0, region_size.y };
-					Vector2i bottom_line_right = bottom_line_left + Vector2i{ region_size.x, 0 };
-
-					Vector2i left_line_top = origin;
-					Vector2i left_line_bottom = left_line_top + Vector2i{ 0, region_size.y };
-
-					Vector2i right_line_top = origin + Vector2i{ region_size.x, 0 };
-					Vector2i right_line_bottom = right_line_top + Vector2i{ 0, region_size.y };
-
-					points.push_back(top_line_left);
-					points.push_back(top_line_right);
-					points.push_back(bottom_line_left);
-					points.push_back(bottom_line_right);
-					points.push_back(left_line_top);
-					points.push_back(left_line_bottom);
-					points.push_back(right_line_top);
-					points.push_back(right_line_bottom);
+					tile_color = Color(0.7, 0.7, 0.7, 0.1);
+					region_size = texture_region_size;
 				}
+
+				for (int c = 0; c < 4; c++) {
+					colors.push_back(tile_color);
+				}
+
+				Vector2i top_line_left = origin;
+				Vector2i top_line_right = top_line_left + Vector2i{ region_size.x, 0 };
+
+				Vector2i bottom_line_left = origin + Vector2i{ 0, region_size.y };
+				Vector2i bottom_line_right = bottom_line_left + Vector2i{ region_size.x, 0 };
+
+				Vector2i left_line_top = origin;
+				Vector2i left_line_bottom = left_line_top + Vector2i{ 0, region_size.y };
+
+				Vector2i right_line_top = origin + Vector2i{ region_size.x, 0 };
+				Vector2i right_line_bottom = right_line_top + Vector2i{ 0, region_size.y };
+
+				points.push_back(top_line_left);
+				points.push_back(top_line_right);
+				points.push_back(bottom_line_left);
+				points.push_back(bottom_line_right);
+				points.push_back(left_line_top);
+				points.push_back(left_line_bottom);
+				points.push_back(right_line_top);
+				points.push_back(right_line_bottom);
 			}
 		}
 
