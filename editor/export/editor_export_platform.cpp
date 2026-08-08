@@ -1541,40 +1541,55 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 
 		bool do_export = true;
+		Vector<SharedObject> collected_shared_objects;
+		Vector<EditorExportPlugin::ExtraFile> collected_extra_files;
 		for (int i = 0; i < export_plugins.size(); i++) {
 			if (GDVIRTUAL_IS_OVERRIDDEN_PTR(export_plugins[i], _export_file)) {
 				export_plugins.write[i]->_export_file_script(path, type, features_psa);
 			} else {
 				export_plugins.write[i]->_export_file(path, type, features);
 			}
-			if (p_so_func) {
-				for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
-					err = p_so_func(p_preset, p_udata, export_plugins[i]->shared_objects[j]);
-					if (err != OK) {
-						return err;
-					}
-				}
-			}
-
-			for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
-				err = save_proxy.save_file(p_preset, p_udata, export_plugins[i]->extra_files[j].path, export_plugins[i]->extra_files[j].data, idx, total, enc_in_filters, enc_ex_filters, key, seed, false);
-				if (err != OK) {
-					return err;
-				}
-				if (export_plugins[i]->extra_files[j].remap) {
-					do_export = false; // If remap, do not.
-					path_remaps.push_back(path);
-					path_remaps.push_back(export_plugins[i]->extra_files[j].path);
-				}
-			}
 
 			if (export_plugins[i]->skipped) {
 				do_export = false;
 			}
+
+			for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
+				collected_shared_objects.append(export_plugins[i]->shared_objects[j]);
+			}
+
+			for (int j = 0; j < export_plugins[i]->extra_files.size(); j++) {
+				collected_extra_files.append(export_plugins[i]->extra_files[j]);
+			}
+
 			export_plugins.write[i]->_clear();
 
 			if (!do_export) {
 				break;
+			}
+		}
+		if (!do_export) {
+			continue;
+		}
+
+		if (p_so_func) {
+			for (const SharedObject &shared_object : collected_shared_objects) {
+				err = p_so_func(p_preset, p_udata, shared_object);
+				if (err != OK) {
+					return err;
+				}
+			}
+		}
+
+		for (const EditorExportPlugin::ExtraFile &extra_file : collected_extra_files) {
+			err = save_proxy.save_file(p_preset, p_udata, extra_file.path, extra_file.data, idx, total, enc_in_filters, enc_ex_filters, key, seed, false);
+			if (err != OK) {
+				return err;
+			}
+			if (extra_file.remap) {
+				do_export = false;
+				path_remaps.push_back(path);
+				path_remaps.push_back(extra_file.path);
 			}
 		}
 		if (!do_export) {
