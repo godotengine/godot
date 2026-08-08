@@ -265,8 +265,9 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 					tile_set_atlas_source->set_tile_animation_frames_count(tile.tile, frame_count);
 				}
 			}
+			editor_set_section_unfold("Animation", true);
 			notify_property_list_changed();
-			emit_signal(CoreStringName(changed), "animation_separation");
+			emit_signal(CoreStringName(changed), "animation_frames_count");
 			return true;
 		} else if (components.size() == 2 && components[0].begins_with("animation_frame_") && components[0].trim_prefix("animation_frame_").is_valid_int()) {
 			for (TileSelection tile : tiles) {
