@@ -75,7 +75,7 @@ public:
 class EditorResourcePreview : public Node {
 	GDCLASS(EditorResourcePreview, Node);
 
-	static constexpr int CURRENT_METADATA_VERSION = 1; // Increment this number to invalidate all previews.
+	static constexpr int CURRENT_METADATA_VERSION = 2; // Increment this number to invalidate all previews.
 	inline static EditorResourcePreview *singleton = nullptr;
 
 	struct QueueItem {
@@ -91,6 +91,9 @@ class EditorResourcePreview : public Node {
 	Thread thread;
 	SafeFlag exiting;
 	SafeFlag exited;
+	QueueItem processing_item;
+	int last_process_msec = -1;
+	int progress_total_steps = -1;
 
 	struct Item {
 		Ref<Texture2D> preview;
@@ -147,6 +150,7 @@ public:
 
 	void start();
 	void stop();
+	bool can_run_on_thread() const;
 	bool is_threaded() const;
 
 	EditorResourcePreview();
