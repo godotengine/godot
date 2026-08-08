@@ -344,16 +344,21 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 
 		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 
+		int num_squares_h = texture->get_height() / texture_region_size.height;
+		int num_squares_w = texture->get_width() / texture_region_size.width;
+
+		// Square 6 pts (2 triangles)
 		Vector<Point2> points;
+		points.reserve(num_squares_h * num_squares_w * 6);
+
 		Vector<Color> colors;
-		size_t ctrPoints = 0;
-		size_t ctr1Colors = 0;
-		size_t ctr2Colors = 0;
+		colors.reserve(num_squares_h * num_squares_w * 6);
 
 		for (int x = 0; x < grid_size.x; x++) {
 			for (int y = 0; y < grid_size.y; y++) {
 				Vector2i origin = margins + (Vector2i(x, y) * (texture_region_size + separation));
 				Vector2i base_tile_coords = tile_set_atlas_source->get_tile_at_coords(Vector2i(x, y));
+
 				points.push_back(origin);
 				points.push_back(origin + Vector2i{ texture_region_size.x, 0 });
 				points.push_back(origin + Vector2i{ 0, texture_region_size.y });
@@ -361,19 +366,16 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 				points.push_back(origin + Vector2i{ texture_region_size.x, 0 });
 				points.push_back(origin + texture_region_size);
 				points.push_back(origin + Vector2i{ 0, texture_region_size.y });
-				ctrPoints++;
+
+				Color tile_color;
 				if (base_tile_coords != TileSetSource::INVALID_ATLAS_COORDS) {
-					// if (base_tile_coords == Vector2i(x, y)) {
-						for (int c = 0; c < 6; c++) {
-							colors.push_back(Color(1.0, 1.0, 1.0, 0.8));
-						}
-						ctr1Colors++;
-					// }
+					tile_color = Color(1.0, 1.0, 1.0, 0.8);
 				} else {
-					for (int c = 0; c < 6; c++) {
-						colors.push_back(Color(1.0, 1.0, 1.0, 0.1));
-					}
-					ctr2Colors++;
+					tile_color = Color(1.0, 1.0, 1.0, 0.1);
+				}
+
+				for (int c = 0; c < 6; c++) {
+					colors.push_back(tile_color);
 				}
 			}
 		}
@@ -385,9 +387,6 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 					points,
 					colors);
 		}
-
-		std::cout << "CtrPoints: " << ctrPoints << ", CtrCol1: " << ctr1Colors << ", CtrCol2: " << ctr2Colors << std::endl;
-		std::cout << "TotalClr: " << (ctr1Colors + ctr2Colors) << std::endl;
 	}
 }
 
