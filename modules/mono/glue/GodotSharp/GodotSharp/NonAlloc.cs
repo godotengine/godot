@@ -1,5 +1,3 @@
-// This file contains methods that are specifically written to return a non-allocating struct as opposed to a Dictionary (or Array of Dictionaries) to avoid allocations.
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -7,196 +5,31 @@ using Godot.NativeInterop;
 
 namespace Godot;
 
-#pragma warning disable IDE0040 // Add accessibility modifiers.
-// ReSharper disable InconsistentNaming
-// ReSharper disable NotAccessedPositionalProperty.Global
-// ReSharper disable UseSymbolAlias
+#pragma warning disable IDE0040
 
-file static class NonAllocInterop
+file static class NativeDictionary
 {
-    public static bool TryGetValue(ref godot_dictionary dict, scoped in Variant key, out godot_variant value) =>
-        NativeFuncs.godotsharp_dictionary_try_get_value(ref dict, (godot_variant)key.NativeVar, out value).ToBool();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsEmpty(scoped ref godot_dictionary dictionary) =>
+        NativeFuncs.godotsharp_dictionary_count(ref dictionary) == 0;
 
-    public static unsafe void MethodCallVector2IArray(nint method, nint instance, void** callArgs, List<Vector2I> results)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryGetValue(scoped ref godot_dictionary dictionary, Variant key, out godot_variant value) =>
+        NativeFuncs.godotsharp_dictionary_try_get_value(ref dictionary, key.NativeVar.DangerousSelfRef, out value).ToBool();
+}
+
+file static class NativeArray
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void Fill<[MustBeVariant] T>(scoped ref godot_array array, List<T> results)
     {
         ArgumentNullException.ThrowIfNull(results);
 
-        godot_array ret = default;
-        NativeFuncs.godotsharp_method_bind_ptrcall(method, instance, callArgs, &ret);
-        try
-        {
-            for (var i = 0; i < ret.Size; i++)
-            {
-                results.Add(VariantUtils.ConvertToVector2I(ret.Elements[i]));
-            }
-        }
-        finally
-        {
-            NativeFuncs.godotsharp_array_destroy(ref ret);
-        }
-    }
+        results.EnsureCapacity(results.Count + array.Size);
 
-    public static unsafe void MethodCallGodotObjectArray<TGodotObject>(nint method, nint instance, void** callArgs, List<TGodotObject> results) where TGodotObject : GodotObject
-    {
-        ArgumentNullException.ThrowIfNull(results);
-
-        godot_array ret = default;
-        NativeFuncs.godotsharp_method_bind_ptrcall(method, instance, callArgs, &ret);
-        try
+        for (var i = 0; i < array.Size; i++)
         {
-            for (var i = 0; i < ret.Size; i++)
-            {
-                results.Add((TGodotObject)VariantUtils.ConvertToGodotObject(ret.Elements[i]));
-            }
-        }
-        finally
-        {
-            NativeFuncs.godotsharp_array_destroy(ref ret);
-        }
-    }
-
-    public delegate bool DictionaryMarshaller<T>(ref godot_dictionary dict, ref T result) where T : struct;
-    public static unsafe void MethodCallDictionaryArray<T>(nint method, nint instance, void** callArgs, DictionaryMarshaller<T> marshaller, List<T> results) where T : struct
-    {
-        ArgumentNullException.ThrowIfNull(results);
-
-        godot_array ret = default;
-        NativeFuncs.godotsharp_method_bind_ptrcall(method, instance, callArgs, &ret);
-        try
-        {
-            for (var i = 0; i < ret.Size; i++)
-            {
-                var item = ret.Elements[i];
-                var dict = item.Dictionary;
-                var data = default(T);
-                if (!marshaller(ref dict, ref data))
-                {
-                    throw new InvalidOperationException($"Failed to marshal the return element #{i} to the target type {ReflectionUtils.ConstructTypeName(typeof(T))}");
-                }
-                results.Add(data);
-            }
-        }
-        finally
-        {
-            NativeFuncs.godotsharp_array_destroy(ref ret);
-        }
-    }
-
-    public delegate bool NullableDictionaryMarshaller<T>(ref godot_dictionary dict, ref T? result) where T : struct;
-    public static unsafe void MethodCallDictionary<T>(nint method, nint instance, void** callArgs, NullableDictionaryMarshaller<T> marshaller, ref T? result) where T : struct
-    {
-        godot_dictionary ret = default;
-        NativeFuncs.godotsharp_method_bind_ptrcall(method, instance, callArgs, &ret);
-        if (NativeFuncs.godotsharp_dictionary_count(ref ret) == 0)
-        {
-            NativeFuncs.godotsharp_dictionary_destroy(ref ret);
-            return;
-        }
-
-        try
-        {
-            if (!marshaller(ref ret, ref result))
-            {
-                throw new InvalidOperationException($"Failed to marshal the return value to the target type {ReflectionUtils.ConstructTypeName(typeof(T))}");
-            }
-        }
-        finally
-        {
-            NativeFuncs.godotsharp_dictionary_destroy(ref ret);
-        }
-    }
-
-    public static unsafe void MethodCallVector2Array(nint method, nint instance, void** callArgs, List<Vector2> results, int maxResults)
-    {
-        ArgumentNullException.ThrowIfNull(results);
-
-        godot_array ret = default;
-        NativeFuncs.godotsharp_method_bind_ptrcall(method, instance, callArgs, &ret);
-        try
-        {
-            for (var i = 0; i < ret.Size; i++)
-            {
-                if (results.Count >= maxResults) break;
-                var item = ret.Elements[i];
-                if (item.Type != Variant.Type.Vector2) continue;
-                results.Add(item.Vector2);
-            }
-        }
-        finally
-        {
-            NativeFuncs.godotsharp_array_destroy(ref ret);
-        }
-    }
-
-    public static unsafe void MethodCallVector3Array(nint method, nint instance, void** callArgs, List<Vector3> results, int maxResults)
-    {
-        ArgumentNullException.ThrowIfNull(results);
-
-        godot_array ret = default;
-        NativeFuncs.godotsharp_method_bind_ptrcall(method, instance, callArgs, &ret);
-        try
-        {
-            for (var i = 0; i < ret.Size; i++)
-            {
-                if (results.Count >= maxResults) break;
-                var item = ret.Elements[i];
-                if (item.Type != Variant.Type.Vector3) continue;
-                results.Add(item.Vector3);
-            }
-        }
-        finally
-        {
-            NativeFuncs.godotsharp_array_destroy(ref ret);
-        }
-    }
-
-    public delegate bool PackedFloat32ArrayMarshaller<T>(ref godot_packed_float32_array arr, ref T result);
-
-    public static unsafe void MethodCallPackedFloat32Array<T>(nint method, nint instance, void** callArgs, PackedFloat32ArrayMarshaller<T> marshaller, ref T result) where T : struct
-    {
-        godot_packed_float32_array ret = default;
-        NativeFuncs.godotsharp_method_bind_ptrcall(method, instance, callArgs, &ret);
-        if (ret.Size == 0)
-        {
-            NativeFuncs.godotsharp_packed_float32_array_destroy(ref ret);
-            return;
-        }
-
-        try
-        {
-            if (!marshaller(ref ret, ref result))
-            {
-                throw new InvalidOperationException($"Failed to marshal the return value to the target type {ReflectionUtils.ConstructTypeName(typeof(T))}");
-            }
-        }
-        finally
-        {
-            NativeFuncs.godotsharp_packed_float32_array_destroy(ref ret);
-        }
-    }
-
-    public delegate bool RefMarshaller<T>(nint nativeRef, ref T? result) where T : struct;
-
-    public static unsafe void MethodCallRef<T>(nint method, nint instance, void** callArgs, RefMarshaller<T> marshaller, ref T? result) where T : struct
-    {
-        godot_ref ret = default;
-        NativeFuncs.godotsharp_method_bind_ptrcall(method, instance, callArgs, &ret);
-        if (ret.IsNull)
-        {
-            result = null;
-            return;
-        }
-
-        try
-        {
-            if (!marshaller(ret.Reference, ref result))
-            {
-                throw new InvalidOperationException($"Failed to marshal the return value to the target type {ReflectionUtils.ConstructTypeName(typeof(T))}");
-            }
-        }
-        finally
-        {
-            ret.Dispose();
+            results.Add(VariantUtils.ConvertTo<T>(array.Elements[i]));
         }
     }
 }
@@ -212,7 +45,16 @@ partial class Node
         var instancePtr = GetPtr(this);
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var callArgs = stackalloc void*[1] { &includeInternal };
-        NonAllocInterop.MethodCallGodotObjectArray(MethodBind9, instancePtr, callArgs, results);
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind9, instancePtr, callArgs, &ret);
+        try
+        {
+            NativeArray.Fill(ref ret, results);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 }
 
@@ -227,7 +69,16 @@ partial class TileMap
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var coords_in = coords;
         var callArgs = stackalloc void*[1] { &coords_in };
-        NonAllocInterop.MethodCallVector2IArray(MethodBind54, instancePtr, callArgs, results);
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind54, instancePtr, callArgs, &ret);
+        try
+        {
+            NativeArray.Fill(ref ret, results);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
     /// <summary>
@@ -239,7 +90,16 @@ partial class TileMap
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         long layer_in = layer;
         var callArgs = stackalloc void*[1] { &layer_in };
-        NonAllocInterop.MethodCallVector2IArray(MethodBind55, instancePtr, callArgs, results);
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind55, instancePtr, callArgs, &ret);
+        try
+        {
+            NativeArray.Fill(ref ret, results);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
     /// <summary>
@@ -255,7 +115,16 @@ partial class TileMap
         var atlas_coords_in = atlasCoords ?? new Vector2I(-1, -1);
         long alternative_tile_in = alternativeTile;
         var callArgs = stackalloc void*[4] { &layer_in, &source_id_in, &atlas_coords_in, &alternative_tile_in };
-        NonAllocInterop.MethodCallVector2IArray(MethodBind56, instancePtr, callArgs, results);
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind56, instancePtr, callArgs, &ret);
+        try
+        {
+            NativeArray.Fill(ref ret, results);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 }
 
@@ -270,7 +139,16 @@ partial class TileMapLayer
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var coords_in = coords;
         var callArgs = stackalloc void*[1] { &coords_in };
-        NonAllocInterop.MethodCallVector2IArray(MethodBind23, instancePtr, callArgs, results);
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind23, instancePtr, callArgs, &ret);
+        try
+        {
+            NativeArray.Fill(ref ret, results);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
     /// <summary>
@@ -280,7 +158,16 @@ partial class TileMapLayer
     {
         var instancePtr = GetPtr(this);
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
-        NonAllocInterop.MethodCallVector2IArray(MethodBind11, instancePtr, null, results);
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind11, instancePtr, null, &ret);
+        try
+        {
+            NativeArray.Fill(ref ret, results);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
     /// <summary>
@@ -295,7 +182,16 @@ partial class TileMapLayer
         var atlas_coords_in = atlasCoords ?? new Vector2I(-1, -1);
         long alternative_tile_in = alternativeTile;
         var callArgs = stackalloc void*[3] { &source_id_in, &atlas_coords_in, &alternative_tile_in };
-        NonAllocInterop.MethodCallVector2IArray(MethodBind12, instancePtr, callArgs, results);
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind12, instancePtr, callArgs, &ret);
+        try
+        {
+            NativeArray.Fill(ref ret, results);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 }
 
@@ -308,7 +204,16 @@ partial class TileMapPattern
     {
         var instancePtr = GetPtr(this);
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
-        NonAllocInterop.MethodCallVector2IArray(MethodBind6, instancePtr, null, results);
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind6, instancePtr, null, &ret);
+        try
+        {
+            NativeArray.Fill(ref ret, results);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 }
 
@@ -342,27 +247,40 @@ partial class PhysicsDirectSpaceState2D
     /// </remarks>
     public unsafe void IntersectPointNonAlloc(PhysicsPointQueryParameters2D parameters, List<IntersectPointResult> results, int maxResults = 32)
     {
+        ArgumentNullException.ThrowIfNull(results);
         var instancePtr = GetPtr(this);
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var arg1 = GetPtr(parameters);
         long arg2 = maxResults;
         var callArgs = stackalloc void*[2] { &arg1, &arg2 };
-        NonAllocInterop.MethodCallDictionaryArray(MethodBind0, instancePtr, callArgs, static (ref godot_dictionary dict, ref IntersectPointResult result) =>
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind0, instancePtr, callArgs, &ret);
+        try
         {
-            if (!NonAllocInterop.TryGetValue(ref dict, IntersectPointResult.ColliderKey, out var colliderValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectPointResult.ColliderIdKey, out var colliderIdValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectPointResult.RidKey, out var ridValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectPointResult.ShapeKey, out var shapeValue))
-                return false;
+            results.EnsureCapacity(results.Count + ret.Size);
+            for (int i = 0; i < ret.Size; i++)
+            {
+                var dict = ret.Elements[i].Dictionary;
+                if (!NativeDictionary.TryGetValue(ref dict, IntersectPointResult.ColliderKey, out var colliderValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectPointResult.ColliderIdKey, out var colliderIdValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectPointResult.RidKey, out var ridValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectPointResult.ShapeKey, out var shapeValue))
+                {
+                    throw new InvalidOperationException($"IntersectPoint result item #{i} was invalid");
+                }
 
-            result = new IntersectPointResult(
-                VariantUtils.ConvertToGodotObject(colliderValue),
-                colliderIdValue.Int,
-                ridValue.Rid,
-                shapeValue.Int
-            );
-            return true;
-        }, results);
+                results.Add(new IntersectPointResult(
+                    VariantUtils.ConvertToGodotObject(colliderValue),
+                    colliderIdValue.Int,
+                    ridValue.Rid,
+                    shapeValue.Int
+                ));
+            }
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
 
@@ -404,33 +322,38 @@ partial class PhysicsDirectSpaceState2D
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var arg1 = GetPtr(parameters);
         var callArgs = stackalloc void*[1] { &arg1 };
-        IntersectRayResult? ret = null;
-        NonAllocInterop.MethodCallDictionary(MethodBind1,
-            instancePtr,
-            callArgs,
-            static (ref godot_dictionary dict, ref IntersectRayResult? result) =>
+        godot_dictionary ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind1, instancePtr, callArgs, &ret);
+        try
+        {
+            if (NativeDictionary.IsEmpty(ref ret))
             {
-                if (!NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.ColliderKey, out var colliderValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.ColliderIdKey, out var colliderIdValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.NormalKey, out var normalValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.PositionKey, out var positionValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.RidKey, out var ridValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.ShapeKey, out var shapeValue))
-                    return false;
+                return null;
+            }
 
-                result = new IntersectRayResult(
-                    VariantUtils.ConvertToGodotObject(colliderValue),
-                    colliderIdValue.Int,
-                    normalValue.Vector2,
-                    positionValue.Vector2,
-                    ridValue.Rid,
-                    shapeValue.Int
-                );
-                return true;
-            },
-            ref ret
-        );
-        return ret;
+            if (!NativeDictionary.TryGetValue(ref ret, IntersectRayResult.ColliderKey, out var colliderValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.ColliderIdKey, out var colliderIdValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.NormalKey, out var normalValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.PositionKey, out var positionValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.RidKey, out var ridValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.ShapeKey, out var shapeValue))
+            {
+                throw new InvalidOperationException("IntersectRay result was invalid");
+            }
+
+            return new IntersectRayResult(
+                VariantUtils.ConvertToGodotObject(colliderValue),
+                colliderIdValue.Int,
+                normalValue.Vector2,
+                positionValue.Vector2,
+                ridValue.Rid,
+                shapeValue.Int
+            );
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
 
@@ -459,27 +382,40 @@ partial class PhysicsDirectSpaceState2D
     /// </summary>
     public unsafe void IntersectShapeNonAlloc(PhysicsShapeQueryParameters2D parameters, List<IntersectShapeResult> results, int maxResults = 32)
     {
+        ArgumentNullException.ThrowIfNull(results);
         var instancePtr = GetPtr(this);
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var arg1 = GetPtr(parameters);
         long arg2 = maxResults;
         var callArgs = stackalloc void*[2] { &arg1, &arg2 };
-        NonAllocInterop.MethodCallDictionaryArray(MethodBind2, instancePtr, callArgs, static (ref godot_dictionary dict, ref IntersectShapeResult result) =>
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind2, instancePtr, callArgs, &ret);
+        try
         {
-            if (!NonAllocInterop.TryGetValue(ref dict, IntersectShapeResult.ColliderKey, out var colliderValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectShapeResult.ColliderIdKey, out var colliderIdValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectShapeResult.RidKey, out var ridValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectShapeResult.ShapeKey, out var shapeValue))
-                return false;
+            results.EnsureCapacity(results.Count + ret.Size);
+            for (int i = 0; i < ret.Size; i++)
+            {
+                var dict = ret.Elements[i].Dictionary;
+                if (!NativeDictionary.TryGetValue(ref dict, IntersectShapeResult.ColliderKey, out var colliderValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectShapeResult.ColliderIdKey, out var colliderIdValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectShapeResult.RidKey, out var ridValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectShapeResult.ShapeKey, out var shapeValue))
+                {
+                    throw new InvalidOperationException($"IntersectShape result item #{i} was invalid");
+                }
 
-            result = new IntersectShapeResult(
-                VariantUtils.ConvertToGodotObject(colliderValue),
-                colliderIdValue.Int,
-                ridValue.Rid,
-                shapeValue.Int
-            );
-            return true;
-        }, results);
+                results.Add(new IntersectShapeResult(
+                    VariantUtils.ConvertToGodotObject(colliderValue),
+                    colliderIdValue.Int,
+                    ridValue.Rid,
+                    shapeValue.Int
+                ));
+            }
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
 
@@ -506,19 +442,21 @@ partial class PhysicsDirectSpaceState2D
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var arg1 = GetPtr(parameters);
         var callArgs = stackalloc void*[1] { &arg1 };
-        var ret = new CastMotionResult(1.0f, 1.0f);
-        NonAllocInterop.MethodCallPackedFloat32Array(MethodBind3,
-            instancePtr,
-            callArgs,
-            static (ref godot_packed_float32_array arr, ref CastMotionResult result) =>
+        godot_packed_float32_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind3, instancePtr, callArgs, &ret);
+        try
+        {
+            if (ret.Size < 2)
             {
-                if (arr.Size < 2) return false;
-                result = new CastMotionResult(arr.Buffer[0], arr.Buffer[1]);
-                return true;
-            },
-            ref ret
-        );
-        return ret;
+                return new CastMotionResult(1.0f, 1.0f);
+            }
+
+            return new CastMotionResult(ret.Buffer[0], ret.Buffer[1]);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
     /// <summary>
@@ -537,7 +475,16 @@ partial class PhysicsDirectSpaceState2D
         var arg1 = GetPtr(parameters);
         long arg2 = maxResults;
         var callArgs = stackalloc void*[2] { &arg1, &arg2 };
-        NonAllocInterop.MethodCallVector2Array(MethodBind4, instancePtr, callArgs, results, maxResults);
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind4, instancePtr, callArgs, &ret);
+        try
+        {
+            NativeArray.Fill(ref ret, results);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
 
@@ -580,33 +527,38 @@ partial class PhysicsDirectSpaceState2D
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var arg1 = GetPtr(parameters);
         var callArgs = stackalloc void*[1] { &arg1 };
-        GetRestInfoResult? ret = null;
-        NonAllocInterop.MethodCallDictionary(MethodBind5,
-            instancePtr,
-            callArgs,
-            static (ref godot_dictionary dict, ref GetRestInfoResult? result) =>
+        godot_dictionary ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind5, instancePtr, callArgs, &ret);
+        try
+        {
+            if (NativeDictionary.IsEmpty(ref ret))
             {
-                if (!NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.ColliderIdKey, out var colliderIdValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.LinearVelocityKey, out var linearVelocityValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.NormalKey, out var normalValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.PointKey, out var pointValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.RidKey, out var ridValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.ShapeKey, out var shapeValue))
-                    return false;
+                return null;
+            }
 
-                result = new GetRestInfoResult(
-                    colliderIdValue.Int,
-                    linearVelocityValue.Vector2,
-                    normalValue.Vector2,
-                    pointValue.Vector2,
-                    ridValue.Rid,
-                    shapeValue.Int
-                );
-                return true;
-            },
-            ref ret
-        );
-        return ret;
+            if (!NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.ColliderIdKey, out var colliderIdValue)
+                || !NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.LinearVelocityKey, out var linearVelocityValue)
+                || !NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.NormalKey, out var normalValue)
+                || !NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.PointKey, out var pointValue)
+                || !NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.RidKey, out var ridValue)
+                || !NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.ShapeKey, out var shapeValue))
+            {
+                throw new InvalidOperationException("GetRestInfo result was invalid");
+            }
+
+            return new GetRestInfoResult(
+                colliderIdValue.Int,
+                linearVelocityValue.Vector2,
+                normalValue.Vector2,
+                pointValue.Vector2,
+                ridValue.Rid,
+                shapeValue.Int
+            );
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 }
 
@@ -640,27 +592,40 @@ partial class PhysicsDirectSpaceState3D
     /// </remarks>
     public unsafe void IntersectPointNonAlloc(PhysicsPointQueryParameters3D parameters, List<IntersectPointResult> results, int maxResults = 32)
     {
+        ArgumentNullException.ThrowIfNull(results);
         var instancePtr = GetPtr(this);
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var arg1 = GetPtr(parameters);
         long arg2 = maxResults;
         var callArgs = stackalloc void*[2] { &arg1, &arg2 };
-        NonAllocInterop.MethodCallDictionaryArray(MethodBind0, instancePtr, callArgs, static (ref godot_dictionary dict, ref IntersectPointResult result) =>
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind0, instancePtr, callArgs, &ret);
+        try
         {
-            if (!NonAllocInterop.TryGetValue(ref dict, IntersectPointResult.ColliderKey, out var colliderValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectPointResult.ColliderIdKey, out var colliderIdValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectPointResult.RidKey, out var ridValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectPointResult.ShapeKey, out var shapeValue))
-                return false;
+            results.EnsureCapacity(results.Count + ret.Size);
+            for (int i = 0; i < ret.Size; i++)
+            {
+                var dict = ret.Elements[i].Dictionary;
+                if (!NativeDictionary.TryGetValue(ref dict, IntersectPointResult.ColliderKey, out var colliderValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectPointResult.ColliderIdKey, out var colliderIdValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectPointResult.RidKey, out var ridValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectPointResult.ShapeKey, out var shapeValue))
+                {
+                    throw new InvalidOperationException($"IntersectPoint result item #{i} was invalid");
+                }
 
-            result = new IntersectPointResult(
-                VariantUtils.ConvertToGodotObject(colliderValue),
-                colliderIdValue.Int,
-                ridValue.Rid,
-                shapeValue.Int
-            );
-            return true;
-        }, results);
+                results.Add(new IntersectPointResult(
+                    VariantUtils.ConvertToGodotObject(colliderValue),
+                    colliderIdValue.Int,
+                    ridValue.Rid,
+                    shapeValue.Int
+                ));
+            }
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
     /// <summary>
@@ -704,34 +669,40 @@ partial class PhysicsDirectSpaceState3D
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var arg1 = GetPtr(parameters);
         var callArgs = stackalloc void*[1] { &arg1 };
-        IntersectRayResult? ret = null;
-        NonAllocInterop.MethodCallDictionary(MethodBind1,
-            instancePtr,
-            callArgs,
-            static (ref godot_dictionary dict, ref IntersectRayResult? result) =>
+        godot_dictionary ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind1, instancePtr, callArgs, &ret);
+        try
+        {
+            if (NativeDictionary.IsEmpty(ref ret))
             {
-                if (!NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.ColliderKey, out var colliderValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.ColliderIdKey, out var colliderIdValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.NormalKey, out var normalValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.PositionKey, out var positionValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.FaceIndexKey, out var faceIndexValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.RidKey, out var ridValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, IntersectRayResult.ShapeKey, out var shapeValue))
-                    return false;
+                return null;
+            }
 
-                result = new IntersectRayResult(
-                    VariantUtils.ConvertToGodotObject(colliderValue),
-                    colliderIdValue.Int,
-                    normalValue.Vector3,
-                    positionValue.Vector3,
-                    faceIndexValue.Int,
-                    ridValue.Rid,
-                    shapeValue.Int
-                );
-                return true;
-            },
-            ref ret);
-        return ret;
+            if (!NativeDictionary.TryGetValue(ref ret, IntersectRayResult.ColliderKey, out var colliderValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.ColliderIdKey, out var colliderIdValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.NormalKey, out var normalValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.PositionKey, out var positionValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.FaceIndexKey, out var faceIndexValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.RidKey, out var ridValue)
+                || !NativeDictionary.TryGetValue(ref ret, IntersectRayResult.ShapeKey, out var shapeValue))
+            {
+                throw new InvalidOperationException("IntersectRay result was invalid");
+            }
+
+            return new IntersectRayResult(
+                VariantUtils.ConvertToGodotObject(colliderValue),
+                colliderIdValue.Int,
+                normalValue.Vector3,
+                positionValue.Vector3,
+                faceIndexValue.Int,
+                ridValue.Rid,
+                shapeValue.Int
+            );
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
     /// <summary>
@@ -765,27 +736,40 @@ partial class PhysicsDirectSpaceState3D
     /// </remarks>
     public unsafe void IntersectShapeNonAlloc(PhysicsShapeQueryParameters3D parameters, List<IntersectShapeResult> results, int maxResults = 32)
     {
+        ArgumentNullException.ThrowIfNull(results);
         var instancePtr = GetPtr(this);
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var arg1 = GetPtr(parameters);
         long arg2 = maxResults;
         var callArgs = stackalloc void*[2] { &arg1, &arg2 };
-        NonAllocInterop.MethodCallDictionaryArray(MethodBind2, instancePtr, callArgs, static (ref godot_dictionary dict, ref IntersectShapeResult result) =>
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind2, instancePtr, callArgs, &ret);
+        try
         {
-            if (!NonAllocInterop.TryGetValue(ref dict, IntersectShapeResult.ColliderKey, out var colliderValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectShapeResult.ColliderIdKey, out var colliderIdValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectShapeResult.RidKey, out var ridValue)
-                || !NonAllocInterop.TryGetValue(ref dict, IntersectShapeResult.ShapeKey, out var shapeValue))
-                return false;
+            results.EnsureCapacity(results.Count + ret.Size);
+            for (int i = 0; i < ret.Size; i++)
+            {
+                var dict = ret.Elements[i].Dictionary;
+                if (!NativeDictionary.TryGetValue(ref dict, IntersectShapeResult.ColliderKey, out var colliderValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectShapeResult.ColliderIdKey, out var colliderIdValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectShapeResult.RidKey, out var ridValue)
+                    || !NativeDictionary.TryGetValue(ref dict, IntersectShapeResult.ShapeKey, out var shapeValue))
+                {
+                    throw new InvalidOperationException($"IntersectShape result item #{i} was invalid");
+                }
 
-            result = new IntersectShapeResult(
-                VariantUtils.ConvertToGodotObject(colliderValue),
-                colliderIdValue.Int,
-                ridValue.Rid,
-                shapeValue.Int
-            );
-            return true;
-        }, results);
+                results.Add(new IntersectShapeResult(
+                    VariantUtils.ConvertToGodotObject(colliderValue),
+                    colliderIdValue.Int,
+                    ridValue.Rid,
+                    shapeValue.Int
+                ));
+            }
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
     /// <summary>
@@ -811,19 +795,21 @@ partial class PhysicsDirectSpaceState3D
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var arg1 = GetPtr(parameters);
         var callArgs = stackalloc void*[1] { &arg1 };
-        var ret = new CastMotionResult(1.0f, 1.0f);
-        NonAllocInterop.MethodCallPackedFloat32Array(MethodBind3,
-            instancePtr,
-            callArgs,
-            static (ref godot_packed_float32_array arr, ref CastMotionResult result) =>
+        godot_packed_float32_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind3, instancePtr, callArgs, &ret);
+        try
+        {
+            if (ret.Size < 2)
             {
-                if (arr.Size < 2) return false;
-                result = new CastMotionResult(arr.Buffer[0], arr.Buffer[1]);
-                return true;
-            },
-            ref ret
-        );
-        return ret;
+                return new CastMotionResult(1.0f, 1.0f);
+            }
+
+            return new CastMotionResult(ret.Buffer[0], ret.Buffer[1]);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
     /// <summary>
@@ -842,7 +828,16 @@ partial class PhysicsDirectSpaceState3D
         var arg1 = GetPtr(parameters);
         long arg2 = maxResults;
         var callArgs = stackalloc void*[2] { &arg1, &arg2 };
-        NonAllocInterop.MethodCallVector3Array(MethodBind4, instancePtr, callArgs, results, maxResults);
+        godot_array ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind4, instancePtr, callArgs, &ret);
+        try
+        {
+            NativeArray.Fill(ref ret, results);
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 
     /// <summary>
@@ -886,33 +881,38 @@ partial class PhysicsDirectSpaceState3D
         ExceptionUtils.ThrowIfNullPtr(instancePtr);
         var arg1 = GetPtr(parameters);
         var callArgs = stackalloc void*[1] { &arg1 };
-        GetRestInfoResult? ret = null;
-        NonAllocInterop.MethodCallDictionary(MethodBind5,
-            instancePtr,
-            callArgs,
-            static (ref godot_dictionary dict, ref GetRestInfoResult? result) =>
+        godot_dictionary ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind5, instancePtr, callArgs, &ret);
+        try
+        {
+            if (NativeDictionary.IsEmpty(ref ret))
             {
-                if (!NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.ColliderIdKey, out var colliderIdValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.LinearVelocityKey, out var linearVelocityValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.NormalKey, out var normalValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.PointKey, out var pointValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.RidKey, out var ridValue)
-                    || !NonAllocInterop.TryGetValue(ref dict, GetRestInfoResult.ShapeKey, out var shapeValue))
-                    return false;
+                return null;
+            }
 
-                result = new GetRestInfoResult(
-                    colliderIdValue.Int,
-                    linearVelocityValue.Vector3,
-                    normalValue.Vector3,
-                    pointValue.Vector3,
-                    ridValue.Rid,
-                    shapeValue.Int
-                );
-                return true;
-            },
-            ref ret
-        );
-        return ret;
+            if (!NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.ColliderIdKey, out var colliderIdValue)
+                || !NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.LinearVelocityKey, out var linearVelocityValue)
+                || !NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.NormalKey, out var normalValue)
+                || !NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.PointKey, out var pointValue)
+                || !NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.RidKey, out var ridValue)
+                || !NativeDictionary.TryGetValue(ref ret, GetRestInfoResult.ShapeKey, out var shapeValue))
+            {
+                throw new InvalidOperationException("GetRestInfo result was invalid");
+            }
+
+            return new GetRestInfoResult(
+                colliderIdValue.Int,
+                linearVelocityValue.Vector3,
+                normalValue.Vector3,
+                pointValue.Vector3,
+                ridValue.Rid,
+                shapeValue.Int
+            );
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 }
 
@@ -1082,9 +1082,16 @@ partial class PhysicsBody2D
         double arg3 = safeMargin;
         godot_bool arg4 = recoveryAsCollision.ToGodotBool();
         var callArgs = stackalloc void*[4] { &arg1, &arg2, &arg3, &arg4 };
-        KinematicCollision2DResult? ret = null;
-        NonAllocInterop.MethodCallRef(MethodBind0, instancePtr, callArgs, static (nint nativeRef, ref KinematicCollision2DResult? result) =>
+        godot_ref ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind0, instancePtr, callArgs, &ret);
+        try
         {
+            if (ret.IsNull)
+            {
+                return null;
+            }
+
+            nint nativeRef = ret.Reference;
             Vector2 position;
             NativeFuncs.godotsharp_method_bind_ptrcall(KinematicCollision2D_MethodBind0, nativeRef, null, &position);
             Vector2 normal;
@@ -1102,7 +1109,7 @@ partial class PhysicsBody2D
             Vector2 colliderVelocity;
             NativeFuncs.godotsharp_method_bind_ptrcall(KinematicCollision2D_MethodBind12, nativeRef, null, &colliderVelocity);
 
-            result = new KinematicCollision2DResult(
+            return new KinematicCollision2DResult(
                 colliderId,
                 colliderShapeIndex,
                 colliderVelocity,
@@ -1112,9 +1119,11 @@ partial class PhysicsBody2D
                 remainder,
                 travel
             );
-            return true;
-        }, ref ret);
-        return ret;
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 }
 
@@ -1309,9 +1318,16 @@ partial class PhysicsBody3D
         godot_bool arg4 = recoveryAsCollision.ToGodotBool();
         long arg5 = maxCollisions;
         var callArgs = stackalloc void*[5] { &arg1, &arg2, &arg3, &arg4, &arg5 };
-        KinematicCollision3DResult? ret = null;
-        NonAllocInterop.MethodCallRef(MethodBind0, instancePtr, callArgs, (nint nativeRef, ref KinematicCollision3DResult? result) =>
+        godot_ref ret = default;
+        NativeFuncs.godotsharp_method_bind_ptrcall(MethodBind0, instancePtr, callArgs, &ret);
+        try
         {
+            if (ret.IsNull)
+            {
+                return null;
+            }
+
+            nint nativeRef = ret.Reference;
             Vector3 travel;
             NativeFuncs.godotsharp_method_bind_ptrcall(KinematicCollision3D_MethodBind0, nativeRef, null, &travel);
             Vector3 remainder;
@@ -1321,17 +1337,11 @@ partial class PhysicsBody3D
             int collisionCount;
             NativeFuncs.godotsharp_method_bind_ptrcall(KinematicCollision3D_MethodBind3, nativeRef, null, &collisionCount);
 
-            result = new KinematicCollision3DResult(
-                depth,
-                remainder,
-                travel,
-                collisionCount
-            );
-
             if (collisions != null)
             {
                 int count = Math.Min(collisionCount, maxCollisions);
                 collisions.Clear();
+                collisions.EnsureCapacity(count);
                 long idx = 0;
                 var idxArgs = stackalloc void*[1] { &idx };
                 for (int i = 0; i < count; i++)
@@ -1359,8 +1369,16 @@ partial class PhysicsBody3D
                 }
             }
 
-            return true;
-        }, ref ret);
-        return ret;
+            return new KinematicCollision3DResult(
+                depth,
+                remainder,
+                travel,
+                collisionCount
+            );
+        }
+        finally
+        {
+            ret.Dispose();
+        }
     }
 }
