@@ -41,6 +41,9 @@
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
 
+#include <iostream>
+#include <string>
+
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (panner->gui_input(p_event, get_global_rect())) {
 		accept_event();
@@ -341,26 +344,85 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 
 		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 
-		// Draw each tile texture region.
+		Vector<Point2> points;
+		Vector<Color> colors;
+		size_t ctrPoints = 0;
+		size_t ctr1Colors = 0;
+		size_t ctr2Colors = 0;
+
 		for (int x = 0; x < grid_size.x; x++) {
 			for (int y = 0; y < grid_size.y; y++) {
 				Vector2i origin = margins + (Vector2i(x, y) * (texture_region_size + separation));
 				Vector2i base_tile_coords = tile_set_atlas_source->get_tile_at_coords(Vector2i(x, y));
+				points.push_back(origin);
+				points.push_back(origin + Vector2i{ texture_region_size.x, 0 });
+				points.push_back(origin + Vector2i{ 0, texture_region_size.y });
+
+				points.push_back(origin + Vector2i{ texture_region_size.x, 0 });
+				points.push_back(origin + texture_region_size);
+				points.push_back(origin + Vector2i{ 0, texture_region_size.y });
+				ctrPoints++;
 				if (base_tile_coords != TileSetSource::INVALID_ATLAS_COORDS) {
-					if (base_tile_coords == Vector2i(x, y)) {
-						// Draw existing tile.
-						Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(base_tile_coords);
-						Vector2 region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
-						base_tiles_texture_grid->draw_rect(Rect2i(origin, region_size), Color(1.0, 1.0, 1.0, 0.8), false);
-					}
+					// if (base_tile_coords == Vector2i(x, y)) {
+						for (int c = 0; c < 6; c++) {
+							colors.push_back(Color(1.0, 1.0, 1.0, 0.8));
+						}
+						ctr1Colors++;
+					// }
 				} else {
-					// Draw the grid.
-					base_tiles_texture_grid->draw_rect(Rect2i(origin, texture_region_size), Color(0.7, 0.7, 0.7, 0.1), false);
+					for (int c = 0; c < 6; c++) {
+						colors.push_back(Color(1.0, 1.0, 1.0, 0.1));
+					}
+					ctr2Colors++;
 				}
 			}
 		}
+
+		if (!points.is_empty()) {
+			RenderingServer::get_singleton()->canvas_item_add_triangle_array(
+					base_tiles_texture_grid->get_canvas_item(),
+					Vector<int>(),
+					points,
+					colors);
+		}
+
+		std::cout << "CtrPoints: " << ctrPoints << ", CtrCol1: " << ctr1Colors << ", CtrCol2: " << ctr2Colors << std::endl;
+		std::cout << "TotalClr: " << (ctr1Colors + ctr2Colors) << std::endl;
 	}
 }
+
+// void TileAtlasView::_draw_base_tiles_texture_grid() {
+// 	if (tile_set_atlas_source.is_null()) {
+// 		return;
+// 	}
+// 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
+// 	if (texture.is_valid()) {
+// 		Vector2i margins = tile_set_atlas_source->get_margins();
+// 		Vector2i separation = tile_set_atlas_source->get_separation();
+// 		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
+
+// 		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
+
+// 		// Draw each tile texture region.
+// 		for (int x = 0; x < grid_size.x; x++) {
+// 			for (int y = 0; y < grid_size.y; y++) {
+// 				Vector2i origin = margins + (Vector2i(x, y) * (texture_region_size + separation));
+// 				Vector2i base_tile_coords = tile_set_atlas_source->get_tile_at_coords(Vector2i(x, y));
+// 				if (base_tile_coords != TileSetSource::INVALID_ATLAS_COORDS) {
+// 					if (base_tile_coords == Vector2i(x, y)) {
+// 						// Draw existing tile.
+// 						Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(base_tile_coords);
+// 						Vector2 region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
+// 						base_tiles_texture_grid->draw_rect(Rect2i(origin, region_size), Color(1.0, 1.0, 1.0, 0.8), false);
+// 					}
+// 				} else {
+// 					// Draw the grid.
+// 					base_tiles_texture_grid->draw_rect(Rect2i(origin, texture_region_size), Color(0.7, 0.7, 0.7, 0.1), false);
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
 void TileAtlasView::_draw_base_tiles_shape_grid() {
 	if (tile_set.is_null() || tile_set_atlas_source.is_null()) {
