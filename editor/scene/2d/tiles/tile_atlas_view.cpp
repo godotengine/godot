@@ -352,7 +352,7 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 		points.reserve(num_squares_h * num_squares_w * 8);
 
 		Vector<Color> colors;
-		colors.reserve(num_squares_h * num_squares_w * 8);
+		colors.reserve(num_squares_h * num_squares_w * 4);
 
 		for (int x = 0; x < grid_size.x; x++) {
 			for (int y = 0; y < grid_size.y; y++) {
