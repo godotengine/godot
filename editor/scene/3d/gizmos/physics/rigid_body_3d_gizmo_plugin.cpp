@@ -34,8 +34,8 @@
 
 RigidBody3DGizmoPlugin::RigidBody3DGizmoPlugin() {
 	// Materials for center of mass crosshair.
-	create_material("center_of_mass_material_custom", Color(1.0, 0.3, 1.0)); // Magenta
-	create_material("center_of_mass_material_auto", Color(1.0, 0.6, 0.0)); // Orange
+	create_material("center_of_mass_material_custom", Color(1.0, 0.3, 1.0), false, true); // Magenta
+	create_material("center_of_mass_material_auto", Color(1.0, 0.6, 0.0), false, true); // Orange
 }
 
 bool RigidBody3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
