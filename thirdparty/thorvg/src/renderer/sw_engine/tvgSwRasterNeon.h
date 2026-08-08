@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 the ThorVG project. All rights reserved.
+ * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,22 +89,24 @@ static void neonRasterPixel32(uint32_t *dst, uint32_t val, uint32_t offset, int3
 }
 
 
-static bool neonRasterTranslucentRle(SwSurface* surface, const SwRle* rle, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+static bool neonRasterTranslucentRle(SwSurface* surface, const SwRle* rle, const RenderRegion& bbox, const RenderColor& c)
 {
-    auto span = rle->spans;
+    const SwSpan* end;
+    int32_t x, len;
 
     //32bit channels
     if (surface->channelSize == sizeof(uint32_t)) {
-        auto color = surface->join(r, g, b, a);
+        auto color = surface->join(c.r, c.g, c.b, c.a);
         uint32_t src;
         uint8x8_t *vDst = nullptr;
-        uint16_t align;
+        int32_t align;
 
-        for (uint32_t i = 0; i < rle->size; ++i) {
+        for (auto span = rle->fetch(bbox, &end); span < end; ++span) {
+            if (!span->fetch(bbox, x, len)) continue;
             if (span->coverage < 255) src = ALPHA_BLEND(color, span->coverage);
             else src = color;
 
-            auto dst = &surface->buf32[span->y * surface->stride + span->x];
+            auto dst = &surface->buf32[span->y * surface->stride + x];
             auto ialpha = IA(src);
 
             if ((((uintptr_t) dst) & 0x7) != 0) {
@@ -120,24 +122,23 @@ static bool neonRasterTranslucentRle(SwSurface* surface, const SwRle* rle, uint8
             uint8x8_t vSrc = (uint8x8_t) vdup_n_u32(src);
             uint8x8_t vIalpha = vdup_n_u8((uint8_t) ialpha);
 
-            for (uint32_t x = 0; x < (span->len - align) / 2; ++x)
+            for (int32_t x = 0; x < (len - align) / 2; ++x)
                 vDst[x] = vadd_u8(vSrc, ALPHA_BLEND(vDst[x], vIalpha));
 
-            auto leftovers = (span->len - align) % 2;
-            if (leftovers > 0) dst[span->len - 1] = src + ALPHA_BLEND(dst[span->len - 1], ialpha);
-
-            ++span;
+            auto leftovers = (len - align) % 2;
+            if (leftovers > 0) dst[len - 1] = src + ALPHA_BLEND(dst[len - 1], ialpha);
         }
     //8bit grayscale
     } else if (surface->channelSize == sizeof(uint8_t)) {
         TVGLOG("SW_ENGINE", "Require Neon Optimization, Channel Size = %d", surface->channelSize);
         uint8_t src;
-        for (uint32_t i = 0; i < rle->size; ++i, ++span) {
-            auto dst = &surface->buf8[span->y * surface->stride + span->x];
-            if (span->coverage < 255) src = MULTIPLY(span->coverage, a);
-            else src = a;
-            auto ialpha = ~a;
-            for (uint32_t x = 0; x < span->len; ++x, ++dst) {
+        for (auto span = rle->fetch(bbox, &end); span < end; ++span) {
+            if (!span->fetch(bbox, x, len)) continue;
+            auto dst = &surface->buf8[span->y * surface->stride + x];
+            if (span->coverage < 255) src = MULTIPLY(span->coverage, c.a);
+            else src = c.a;
+            auto ialpha = ~c.a;
+            for (auto x = 0; x < len; ++x, ++dst) {
                 *dst = src + MULTIPLY(*dst, ialpha);
             }
         }
@@ -146,16 +147,16 @@ static bool neonRasterTranslucentRle(SwSurface* surface, const SwRle* rle, uint8
 }
 
 
-static bool neonRasterTranslucentRect(SwSurface* surface, const SwBBox& region, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+static bool neonRasterTranslucentRect(SwSurface* surface, const RenderRegion& bbox, const RenderColor& c)
 {
-    auto h = static_cast<uint32_t>(region.max.y - region.min.y);
-    auto w = static_cast<uint32_t>(region.max.x - region.min.x);
+    auto h = bbox.h();
+    auto w = bbox.w();
 
     //32bits channels
     if (surface->channelSize == sizeof(uint32_t)) {
-        auto color = surface->join(r, g, b, a);
-        auto buffer = surface->buf32 + (region.min.y * surface->stride) + region.min.x;
-        auto ialpha = 255 - a;
+        auto color = surface->join(c.r, c.g, c.b, c.a);
+        auto buffer = surface->buf32 + (bbox.min.y * surface->stride) + bbox.min.x;
+        auto ialpha = 255 - c.a;
 
         auto vColor = vdup_n_u32(color);
         auto vIalpha = vdup_n_u8((uint8_t) ialpha);
@@ -185,12 +186,12 @@ static bool neonRasterTranslucentRect(SwSurface* surface, const SwBBox& region, 
     //8bit grayscale
     } else if (surface->channelSize == sizeof(uint8_t)) {
         TVGLOG("SW_ENGINE", "Require Neon Optimization, Channel Size = %d", surface->channelSize);
-        auto buffer = surface->buf8 + (region.min.y * surface->stride) + region.min.x;
-        auto ialpha = ~a;
+        auto buffer = surface->buf8 + (bbox.min.y * surface->stride) + bbox.min.x;
+        auto ialpha = ~c.a;
         for (uint32_t y = 0; y < h; ++y) {
             auto dst = &buffer[y * surface->stride];
             for (uint32_t x = 0; x < w; ++x, ++dst) {
-                *dst = a + MULTIPLY(*dst, ialpha);
+                *dst = c.a + MULTIPLY(*dst, ialpha);
             }
         }
     }

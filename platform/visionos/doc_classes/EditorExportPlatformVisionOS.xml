@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlatformVisionOS" inherits="EditorExportPlatformAppleEmbedded" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPlatformVisionOS" inherits="EditorExportPlatformAppleEmbedded" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Exporter for visionOS.
 	</brief_description>
@@ -16,6 +16,9 @@
 			&lt;key&gt;key_name&lt;/key&gt;
 			&lt;string&gt;value&lt;/string&gt;
 			[/codeblock]
+		</member>
+		<member name="application/app_role" type="int" setter="" getter="">
+			The application role on the visionOS platform. It can be [code skip-lint]Window[/code] for running a 3D game on a 2D window, or [code skip-lint]Immersive[/code] for an XR experience.
 		</member>
 		<member name="application/app_store_team_id" type="String" setter="" getter="">
 			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organizational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
@@ -44,14 +47,17 @@
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
+		<member name="application/immersion_style" type="int" setter="" getter="">
+			The immersion style, only applicable if you have chosen the [code]Immersive[/code] app role. It can be [code]Full[/code] for a VR experience, or [code]Mixed[/code] for a mixed reality experience where the rendered content is display along with the real environment.
+		</member>
 		<member name="application/min_visionos_version" type="String" setter="" getter="">
 		</member>
 		<member name="application/provisioning_profile_specifier_debug" type="String" setter="" getter="">
-			Name of the provisioning profile. Sets XCode PROVISIONING_PROFILE_SPECIFIER for debug. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Name of the provisioning profile. Sets Xcode PROVISIONING_PROFILE_SPECIFIER for debug. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
 			Can be overridden with the environment variable [code]GODOT_APPLE_PLATFORM_PROFILE_SPECIFIER_DEBUG[/code].
 		</member>
 		<member name="application/provisioning_profile_specifier_release" type="String" setter="" getter="">
-			Name of the provisioning profile. Sets XCode PROVISIONING_PROFILE_SPECIFIER for release. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Name of the provisioning profile. Sets Xcode PROVISIONING_PROFILE_SPECIFIER for release. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
 			Can be overridden with the environment variable [code]GODOT_APPLE_PLATFORM_PROFILE_SPECIFIER_RELEASE[/code].
 		</member>
 		<member name="application/provisioning_profile_uuid_debug" type="String" setter="" getter="">
@@ -120,6 +126,9 @@
 		</member>
 		<member name="icons/icon_1024x1024_tinted" type="String" setter="" getter="">
 			Base application icon used to generate other icons, tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
+		<member name="modules/camera" type="bool" setter="" getter="">
+			If [code]true[/code], [CameraServer] module is added to the exported project.
 		</member>
 		<member name="privacy/active_keyboard_access_reasons" type="int" setter="" getter="">
 			The reasons your app use active keyboard API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
@@ -514,16 +523,16 @@
 		<member name="privacy/collected_data/purchase_history/used_for_tracking" type="bool" setter="" getter="">
 			Indicates whether your app uses purchase history for tracking.
 		</member>
-		<member name="privacy/collected_data/search_hhistory/collected" type="bool" setter="" getter="">
+		<member name="privacy/collected_data/search_history/collected" type="bool" setter="" getter="">
 			Indicates whether your app collects search history.
 		</member>
-		<member name="privacy/collected_data/search_hhistory/collection_purposes" type="int" setter="" getter="">
+		<member name="privacy/collected_data/search_history/collection_purposes" type="int" setter="" getter="">
 			The reasons your app collects search history. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
 		</member>
-		<member name="privacy/collected_data/search_hhistory/linked_to_user" type="bool" setter="" getter="">
+		<member name="privacy/collected_data/search_history/linked_to_user" type="bool" setter="" getter="">
 			Indicates whether your app links search history to the user's identity.
 		</member>
-		<member name="privacy/collected_data/search_hhistory/used_for_tracking" type="bool" setter="" getter="">
+		<member name="privacy/collected_data/search_history/used_for_tracking" type="bool" setter="" getter="">
 			Indicates whether your app uses search history for tracking.
 		</member>
 		<member name="privacy/collected_data/sensitive_info/collected" type="bool" setter="" getter="">
@@ -582,6 +591,7 @@
 		</member>
 		<member name="shader_baker/enabled" type="bool" setter="" getter="">
 			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ and Mobile renderers.
+			[b]Note:[/b] When exporting as a dedicated server, the shader baker is always disabled since no rendering is performed.
 		</member>
 		<member name="user_data/accessible_from_files_app" type="bool" setter="" getter="">
 			If [code]true[/code], the app "Documents" folder can be accessed via "Files" app. See [url=https://developer.apple.com/documentation/bundleresources/information_property_list/lssupportsopeningdocumentsinplace]LSSupportsOpeningDocumentsInPlace[/url].

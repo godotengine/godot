@@ -519,6 +519,8 @@ BOOL has_cmov, last_range_set;
 sljit_u32 category_list = 0;
 sljit_u32 items;
 int typereg = TMP1;
+#else
+(void)c; /* Avoid compiler warning. */
 #endif /* SUPPORT_UNICODE */
 
 SLJIT_ASSERT(common->locals_size >= SSIZE_OF(sw));
@@ -568,7 +570,7 @@ while (*cc == XCL_PROP || *cc == XCL_NOTPROP)
       break;
       }
     compares++;
-    /* Fall through */
+    PCRE2_FALLTHROUGH /* Fall through */
 
     case PT_SC:
     status |= XCLASS_HAS_SCRIPT;
@@ -696,13 +698,11 @@ if (status & XCLASS_NEEDS_UCD)
   OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 1);
   OP1(SLJIT_MOV_U16, TMP2, 0, SLJIT_MEM1(TMP2), (sljit_sw)PRIV(ucd_stage1));
   OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, UCD_BLOCK_MASK);
-  OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, UCD_BLOCK_SHIFT);
-  OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+  sljit_emit_op2_shift(compiler, SLJIT_ADD | SLJIT_SHL_IMM | SLJIT_SRC2_UNDEFINED, TMP1, 0, TMP1, 0, TMP2, 0, UCD_BLOCK_SHIFT);
   OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, (sljit_sw)PRIV(ucd_stage2));
   OP1(SLJIT_MOV_U16, TMP2, 0, SLJIT_MEM2(TMP2, TMP1), 1);
-  OP2(SLJIT_SHL, TMP1, 0, TMP2, 0, SLJIT_IMM, 3);
+  sljit_emit_op2_shift(compiler, SLJIT_ADD | SLJIT_SHL_IMM | SLJIT_SRC2_UNDEFINED, TMP2, 0, TMP2, 0, TMP2, 0, 1);
   OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 2);
-  OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, TMP1, 0);
 
   ccbegin = cc;
 
@@ -768,7 +768,7 @@ if (status & XCLASS_NEEDS_UCD)
         case PT_SCX:
         if (cc[-1] == XCL_NOTPROP)
           break;
-        /* Fall through */
+        PCRE2_FALLTHROUGH /* Fall through */
 
         case PT_SC:
         compares--;
@@ -1104,7 +1104,7 @@ if (ranges.range_count >= 6)
 
 depth = 0;
 first_item = 0;
-last_item = ranges.range_count - 2;
+last_item = (sljit_u32)(ranges.range_count - 2);
 has_cmov = sljit_has_cpu_feature(SLJIT_HAS_CMOV) != 0;
 
 while (TRUE)
@@ -1486,7 +1486,7 @@ static PCRE2_SPTR SLJIT_FUNC do_extuni_utf(jit_arguments *args, PCRE2_SPTR cc)
 {
 PCRE2_SPTR start_subject = args->begin;
 PCRE2_SPTR end_subject = args->end;
-int lgb, rgb, ricount;
+int lgb = 0, rgb, ricount;
 PCRE2_SPTR prevcc, endcc, bptr;
 BOOL first = TRUE;
 BOOL was_ep_ZWJ = FALSE;
@@ -1569,7 +1569,7 @@ static PCRE2_SPTR SLJIT_FUNC do_extuni_utf_invalid(jit_arguments *args, PCRE2_SP
 {
 PCRE2_SPTR start_subject = args->begin;
 PCRE2_SPTR end_subject = args->end;
-int lgb, rgb, ricount;
+int lgb = 0, rgb, ricount;
 PCRE2_SPTR prevcc, endcc, bptr;
 BOOL first = TRUE;
 BOOL was_ep_ZWJ = FALSE;
@@ -1964,9 +1964,9 @@ switch(type)
     detect_partial_match(common, backtracks);
 
   if (type == OP_NOT_HSPACE)
-    read_char(common, 0x9, 0x3000, backtracks, READ_CHAR_UPDATE_STR_PTR);
+    read_char(common, 0x1, 0x3000, backtracks, READ_CHAR_UPDATE_STR_PTR);
   else
-    read_char(common, 0x9, 0x3000, NULL, 0);
+    read_char(common, 0x1, 0x3000, NULL, 0);
 
   add_jump(compiler, &common->hspace, JUMP(SLJIT_FAST_CALL));
   sljit_set_current_flags(compiler, SLJIT_SET_Z);
@@ -1979,9 +1979,9 @@ switch(type)
     detect_partial_match(common, backtracks);
 
   if (type == OP_NOT_VSPACE)
-    read_char(common, 0xa, 0x2029, backtracks, READ_CHAR_UPDATE_STR_PTR);
+    read_char(common, 0x1, 0x2029, backtracks, READ_CHAR_UPDATE_STR_PTR);
   else
-    read_char(common, 0xa, 0x2029, NULL, 0);
+    read_char(common, 0x1, 0x2029, NULL, 0);
 
   add_jump(compiler, &common->vspace, JUMP(SLJIT_FAST_CALL));
   sljit_set_current_flags(compiler, SLJIT_SET_Z);

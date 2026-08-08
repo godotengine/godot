@@ -30,7 +30,11 @@
 
 #include "slider.h"
 
+#include "core/config/engine.h"
+#include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 Size2 Slider::get_minimum_size() const {
 	Size2i ss = theme_cache.slider_style->get_minimum_size();
@@ -89,12 +93,12 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-				if (get_focus_mode_with_override() != FOCUS_NONE) {
+				if (_is_focusable()) {
 					grab_focus();
 				}
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				if (get_focus_mode_with_override() != FOCUS_NONE) {
+				if (_is_focusable()) {
 					grab_focus();
 				}
 				set_value(get_value() - get_step());
@@ -243,7 +247,7 @@ void Slider::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SLIDER);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SLIDER);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

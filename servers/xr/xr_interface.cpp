@@ -30,6 +30,9 @@
 
 #include "xr_interface.h"
 
+#include "core/object/class_db.h"
+#include "servers/xr/xr_server.h"
+
 void XRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("play_area_changed", PropertyInfo(Variant::INT, "mode")));
 
@@ -112,6 +115,7 @@ void XRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(XR_VRS_TEXTURE_FORMAT_UNIFIED);
 	BIND_ENUM_CONSTANT(XR_VRS_TEXTURE_FORMAT_FRAGMENT_SHADING_RATE);
 	BIND_ENUM_CONSTANT(XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP);
+	BIND_ENUM_CONSTANT(XR_VRS_TEXTURE_FORMAT_RASTERIZATION_RATE_MAP);
 }
 
 bool XRInterface::is_primary() {

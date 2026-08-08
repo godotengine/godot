@@ -43,10 +43,12 @@ layout(location = 0) out vec4 frag_color;
 #define M_PI 3.14159265359
 
 // Don't include tonemap_inc.glsl because all we want is these functions, we don't want the uniforms
+// This approximation expects non-negative input; negative input is undefined behavior.
 vec3 linear_to_srgb(vec3 color) {
 	return max(vec3(1.055) * pow(color, vec3(0.416666667)) - vec3(0.055), vec3(0.0));
 }
 
+// This approximation expects non-negative input; negative input behaves poorly.
 vec3 srgb_to_linear(vec3 color) {
 	return color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);
 }

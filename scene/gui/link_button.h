@@ -84,6 +84,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual String _get_accessibility_name() const override;
+
 public:
 	void set_text(const String &p_text);
 	String get_text() const;
@@ -113,6 +115,8 @@ public:
 
 	Ref<Font> get_button_font() const;
 	int get_button_font_size() const;
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	LinkButton(const String &p_text = String());
 };

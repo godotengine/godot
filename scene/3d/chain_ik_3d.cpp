@@ -30,6 +30,8 @@
 
 #include "chain_ik_3d.h"
 
+#include "core/object/class_db.h"
+
 bool ChainIK3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -59,16 +61,6 @@ bool ChainIK3D::_set(const StringName &p_path, const Variant &p_value) {
 			set_extend_end_bone(which, p_value);
 		} else if (what == "joint_count") {
 			set_joint_count(which, p_value);
-		} else if (what == "joints") {
-			int idx = path.get_slicec('/', 3).to_int();
-			String prop = path.get_slicec('/', 4);
-			if (prop == "bone_name") {
-				set_joint_bone_name(which, idx, p_value);
-			} else if (prop == "bone") {
-				set_joint_bone(which, idx, p_value);
-			} else {
-				return false;
-			}
 		} else {
 			return false;
 		}
@@ -144,7 +136,7 @@ void ChainIK3D::get_property_list(List<PropertyInfo> *p_list) const {
 		for (uint32_t j = 0; j < chain_settings[i]->joints.size(); j++) {
 			String joint_path = path + "joints/" + itos(j) + "/";
 			props.push_back(PropertyInfo(Variant::STRING, joint_path + "bone_name", PROPERTY_HINT_ENUM_SUGGESTION, enum_hint, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY));
-			props.push_back(PropertyInfo(Variant::INT, joint_path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_READ_ONLY));
+			props.push_back(PropertyInfo(Variant::INT, joint_path + "bone", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY));
 		}
 	}
 
@@ -194,7 +186,7 @@ void ChainIK3D::set_root_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (chain_settings[p_index]->root_bone.bone <= -1 || chain_settings[p_index]->root_bone.bone >= sk->get_bone_count()) {
-			WARN_PRINT("Root bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": Root bone index '" + itos(p_bone) + "' is out of range!");
 			chain_settings[p_index]->root_bone.bone = -1;
 		} else {
 			chain_settings[p_index]->root_bone.name = sk->get_bone_name(chain_settings[p_index]->root_bone.bone);
@@ -231,7 +223,7 @@ void ChainIK3D::set_end_bone(int p_index, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (chain_settings[p_index]->end_bone.bone <= -1 || chain_settings[p_index]->end_bone.bone >= sk->get_bone_count()) {
-			WARN_PRINT("End bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + ": End bone index '" + itos(p_bone) + "' is out of range!");
 			chain_settings[p_index]->end_bone.bone = -1;
 		} else {
 			chain_settings[p_index]->end_bone.name = sk->get_bone_name(chain_settings[p_index]->end_bone.bone);
@@ -258,7 +250,7 @@ void ChainIK3D::set_extend_end_bone(int p_index, bool p_enabled) {
 	}
 	notify_property_list_changed();
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
 }
 
@@ -270,14 +262,17 @@ bool ChainIK3D::is_end_bone_extended(int p_index) const {
 void ChainIK3D::set_end_bone_direction(int p_index, BoneDirection p_bone_direction) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	chain_settings[p_index]->end_bone_direction = p_bone_direction;
-	_make_simulation_dirty(p_index);
 	Skeleton3D *sk = get_skeleton();
 	if (sk && !chain_settings[p_index]->joints.is_empty()) {
 		_validate_axis(sk, p_index, chain_settings[p_index]->joints.size() - 1);
 	}
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
+	if (mutable_bone_axes) {
+		return; // Chain dir will be recaluclated in _update_bone_axis().
+	}
+	_make_simulation_dirty(p_index);
 }
 
 SkeletonModifier3D::BoneDirection ChainIK3D::get_end_bone_direction(int p_index) const {
@@ -287,11 +282,15 @@ SkeletonModifier3D::BoneDirection ChainIK3D::get_end_bone_direction(int p_index)
 
 void ChainIK3D::set_end_bone_length(int p_index, float p_length) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
+	float old = chain_settings[p_index]->end_bone_length;
 	chain_settings[p_index]->end_bone_length = p_length;
-	_make_simulation_dirty(p_index);
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
+	if (mutable_bone_axes && Math::is_zero_approx(old) == Math::is_zero_approx(p_length)) {
+		return; // If chain size is not changed, length will be recaluclated in _update_bone_axis().
+	}
+	_make_simulation_dirty(p_index);
 }
 
 float ChainIK3D::get_end_bone_length(int p_index) const {
@@ -301,18 +300,6 @@ float ChainIK3D::get_end_bone_length(int p_index) const {
 
 // Individual joints.
 
-void ChainIK3D::set_joint_bone_name(int p_index, int p_joint, const String &p_bone_name) {
-	// Exists only for indicate bone name on the inspector, no needs to make dirty joint array.
-	ERR_FAIL_INDEX(p_index, (int)settings.size());
-	LocalVector<BoneJoint> &joints = chain_settings[p_index]->joints;
-	ERR_FAIL_INDEX(p_joint, (int)joints.size());
-	joints[p_joint].name = p_bone_name;
-	Skeleton3D *sk = get_skeleton();
-	if (sk) {
-		set_joint_bone(p_index, p_joint, sk->find_bone(joints[p_joint].name));
-	}
-}
-
 String ChainIK3D::get_joint_bone_name(int p_index, int p_joint) const {
 	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), String());
 	const LocalVector<BoneJoint> &joints = chain_settings[p_index]->joints;
@@ -320,7 +307,7 @@ String ChainIK3D::get_joint_bone_name(int p_index, int p_joint) const {
 	return joints[p_joint].name;
 }
 
-void ChainIK3D::set_joint_bone(int p_index, int p_joint, int p_bone) {
+void ChainIK3D::_set_joint_bone(int p_index, int p_joint, int p_bone) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	LocalVector<BoneJoint> &joints = chain_settings[p_index]->joints;
 	ERR_FAIL_INDEX(p_joint, (int)joints.size());
@@ -328,7 +315,7 @@ void ChainIK3D::set_joint_bone(int p_index, int p_joint, int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (joints[p_joint].bone <= -1 || joints[p_joint].bone >= sk->get_bone_count()) {
-			WARN_PRINT("Joint bone index out of range!");
+			WARN_PRINT_ED("Setting: " + itos(p_index) + " : Joint: " + itos(p_joint) + ": bone index '" + itos(p_bone) + "' is out of range!");
 			joints[p_joint].bone = -1;
 		} else {
 			joints[p_joint].name = sk->get_bone_name(joints[p_joint].bone);
@@ -464,7 +451,7 @@ void ChainIK3D::_update_joints(int p_index) {
 
 	set_joint_count(p_index, new_joints.size());
 	for (uint32_t i = 0; i < new_joints.size(); i++) {
-		set_joint_bone(p_index, i, new_joints[i]);
+		_set_joint_bone(p_index, i, new_joints[i]);
 	}
 
 	if (sk) {
@@ -472,13 +459,67 @@ void ChainIK3D::_update_joints(int p_index) {
 	}
 
 #ifdef TOOLS_ENABLED
-	update_gizmos();
+	_make_gizmo_dirty();
 #endif // TOOLS_ENABLED
 }
 
 void ChainIK3D::_process_ik(Skeleton3D *p_skeleton, double p_delta) {
 	//
 }
+
+#ifdef TOOLS_ENABLED
+void ChainIK3D::_update_mutable_info() {
+	if (!is_inside_tree()) {
+		return;
+	}
+	Skeleton3D *skeleton = get_skeleton();
+	if (!skeleton) {
+		for (uint32_t i = 0; i < settings.size(); i++) {
+			chain_settings[i]->root_global_rest = Transform3D();
+		}
+		return;
+	}
+	bool changed = false;
+	for (uint32_t i = 0; i < settings.size(); i++) {
+		int root_bone = chain_settings[i]->root_bone.bone;
+		if (root_bone < 0) {
+			continue;
+		}
+		Transform3D new_tr = get_bone_global_rest_mutable(skeleton, root_bone);
+		changed = changed || !chain_settings[i]->root_global_rest.is_equal_approx(new_tr);
+		chain_settings[i]->root_global_rest = new_tr;
+	}
+	if (changed) {
+		_make_gizmo_dirty();
+	}
+}
+
+Transform3D ChainIK3D::get_bone_global_rest_mutable(Skeleton3D *p_skeleton, int p_bone) {
+	int current = p_bone;
+	Transform3D accum;
+	int parent = p_skeleton->get_bone_parent(current);
+	if (parent >= 0) {
+		accum = p_skeleton->get_bone_global_rest(parent);
+	}
+	Transform3D tr = p_skeleton->get_bone_rest(current);
+	// Note:
+	// Chain IK gizmo might not be able to retrieve this pose in SkeletonModifier update process.
+	// So the gizmo uses bone_vector insteads but parent of root bone doesn't have bone_vector.
+	// Then, we needs to cache this pose in IK node.
+	tr.origin = p_skeleton->get_bone_pose_position(current);
+	accum *= tr;
+	return accum;
+}
+
+Transform3D ChainIK3D::get_chain_root_global_rest(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), Transform3D());
+	return chain_settings[p_index]->root_global_rest;
+}
+
+Vector3 ChainIK3D::get_bone_vector(int p_index, int p_joint) const {
+	return Vector3();
+}
+#endif // TOOLS_ENABLED
 
 ChainIK3D::~ChainIK3D() {
 	clear_settings();

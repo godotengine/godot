@@ -11,7 +11,7 @@ partial class ExportedFields
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     internal new static global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant> GetGodotPropertyDefaultValues()
     {
-        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(61);
+        var values = new global::System.Collections.Generic.Dictionary<global::Godot.StringName, global::Godot.Variant>(62);
         bool ___fieldBoolean_default_value = true;
         values.Add(PropertyName.@_fieldBoolean, global::Godot.Variant.From<bool>(___fieldBoolean_default_value));
         char ___fieldChar_default_value = 'f';
@@ -118,6 +118,8 @@ partial class ExportedFields
         values.Add(PropertyName.@_fieldGodotObjectOrDerived, global::Godot.Variant.From<global::Godot.GodotObject>(___fieldGodotObjectOrDerived_default_value));
         global::Godot.Texture ___fieldGodotResourceTexture_default_value = default;
         values.Add(PropertyName.@_fieldGodotResourceTexture, global::Godot.Variant.From<global::Godot.Texture>(___fieldGodotResourceTexture_default_value));
+        global::Godot.Texture ___fieldGodotResourceTextureWithInitializer_default_value = new()  { ResourceName  = ""   };
+        values.Add(PropertyName.@_fieldGodotResourceTextureWithInitializer, global::Godot.Variant.From<global::Godot.Texture>(___fieldGodotResourceTextureWithInitializer_default_value));
         global::Godot.StringName ___fieldStringName_default_value = new global::Godot.StringName("foo");
         values.Add(PropertyName.@_fieldStringName, global::Godot.Variant.From<global::Godot.StringName>(___fieldStringName_default_value));
         global::Godot.NodePath ___fieldNodePath_default_value = new global::Godot.NodePath("foo");

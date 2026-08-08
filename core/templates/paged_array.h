@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/math_funcs_binary.h"
 #include "core/os/memory.h"
 #include "core/os/spin_lock.h"
 #include "core/typedefs.h"
@@ -88,7 +89,7 @@ public:
 	}
 
 	uint32_t get_page_size_shift() const {
-		return get_shift_from_power_of_2(page_size);
+		return Math::get_shift_from_power_of_2(page_size);
 	}
 
 	uint32_t get_page_size_mask() const {
@@ -116,7 +117,7 @@ public:
 	void configure(uint32_t p_page_size) {
 		ERR_FAIL_COND(page_pool != nullptr); // Safety check.
 		ERR_FAIL_COND(p_page_size == 0);
-		page_size = nearest_power_of_2_templated(p_page_size);
+		page_size = Math::nearest_power_of_2_templated(p_page_size);
 	}
 
 	PagedArrayPool(uint32_t p_page_size = 4096) { // power of 2 recommended because of alignment with OS page sizes. Even if element is bigger, its still a multiple and get rounded amount of pages
@@ -134,7 +135,7 @@ public:
 // It is safe to use multiple PagedArrays from different threads, sharing a single PagedArrayPool
 
 template <typename T>
-class PagedArray {
+class _WARN_UNUSED_ PagedArray {
 	PagedArrayPool<T> *page_pool = nullptr;
 
 	T **page_data = nullptr;

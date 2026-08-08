@@ -66,12 +66,12 @@ uint32_t hash_murmur3_one_double(double p_in, uint32_t p_seed) {
 	return hash_murmur3_one_64(u.i, p_seed);
 }
 
-uint32_t hash_murmur3_buffer(const void *key, int length, const uint32_t seed) {
+uint32_t hash_murmur3_buffer(const void *p_key, int p_length, const uint32_t p_seed) {
 	// Although not required, this is a random prime number.
-	const uint8_t *data = (const uint8_t *)key;
-	const int nblocks = length / 4;
+	const uint8_t *data = (const uint8_t *)p_key;
+	const int nblocks = p_length / 4;
 
-	uint32_t h1 = seed;
+	uint32_t h1 = p_seed;
 
 	const uint32_t c1 = 0xcc9e2d51;
 	const uint32_t c2 = 0x1b873593;
@@ -94,7 +94,7 @@ uint32_t hash_murmur3_buffer(const void *key, int length, const uint32_t seed) {
 
 	uint32_t k1 = 0;
 
-	switch (length & 3) {
+	switch (p_length & 3) {
 		case 3:
 			k1 ^= tail[2] << 16;
 			[[fallthrough]];
@@ -110,7 +110,7 @@ uint32_t hash_murmur3_buffer(const void *key, int length, const uint32_t seed) {
 	};
 
 	// Finalize with additional bit mixing.
-	h1 ^= length;
+	h1 ^= p_length;
 	return hash_fmix32(h1);
 }
 

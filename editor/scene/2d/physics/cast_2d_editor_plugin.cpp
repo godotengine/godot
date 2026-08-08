@@ -30,11 +30,13 @@
 
 #include "cast_2d_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "scene/2d/physics/ray_cast_2d.h"
 #include "scene/2d/physics/shape_cast_2d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
 
 void Cast2DEditor::_notification(int p_what) {
@@ -136,8 +138,14 @@ void Cast2DEditor::edit(Node2D *p_node) {
 		canvas_item_editor = CanvasItemEditor::get_singleton();
 	}
 
+	if (node) {
+		node->disconnect(SceneStringName(draw), callable_mp((CanvasItem *)canvas_item_editor->get_viewport_control(), &CanvasItem::queue_redraw));
+	}
+
 	if (Object::cast_to<RayCast2D>(p_node) || Object::cast_to<ShapeCast2D>(p_node)) {
 		node = p_node;
+		// Update the canvas overlay.
+		node->connect(SceneStringName(draw), callable_mp((CanvasItem *)canvas_item_editor->get_viewport_control(), &CanvasItem::queue_redraw));
 	} else {
 		node = nullptr;
 	}

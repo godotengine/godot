@@ -15,6 +15,7 @@
 		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
 		[b]Note:[/b] Godot uses a [url=https://en.wikipedia.org/wiki/Right-hand_rule]right-handed coordinate system[/url], which is a common standard. For directions, the convention for built-in types like [Camera3D] is for -Z to point forward (+X is right, +Y is up, and +Z is back). Other objects may use different direction conventions. For more information, see the [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/model_export_considerations.html#d-asset-direction-conventions]3D asset direction conventions[/url] tutorial.
 		[b]Note:[/b] The basis matrices are exposed as [url=https://www.mindcontrol.org/~hplus/graphics/matrix-layout.html]column-major[/url] order, which is the same as OpenGL. However, they are stored internally in row-major order, which is the same as DirectX.
+		[b]Note:[/b] In a boolean context, a basis will evaluate to [code]false[/code] if it's equal to [constant IDENTITY]. Otherwise, a basis will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
@@ -100,7 +101,7 @@
 				GD.Print(myBasis.Z); // Prints (0, -1, 0)
 				[/csharp]
 				[/codeblocks]
-				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). By default, the YXZ convention is used ([constant EULER_ORDER_YXZ]): the basis rotates first around the Y axis (yaw), then X (pitch), and lastly Z (roll). When using the opposite method [method get_euler], this order is reversed.
+				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). In Godot, Euler angles always use intrinsic order. By default, the intrinsic YXZ convention is used ([constant EULER_ORDER_YXZ]): the basis rotates first around the local Y axis (yaw), then local X (pitch), and lastly local Z (roll). When using the opposite method [method get_euler] to decompose a rotation, this order is reversed.
 			</description>
 		</method>
 		<method name="from_scale" qualifiers="static">
@@ -135,7 +136,7 @@
 				- The [member Vector3.x] contains the angle around the [member x] axis (pitch);
 				- The [member Vector3.y] contains the angle around the [member y] axis (yaw);
 				- The [member Vector3.z] contains the angle around the [member z] axis (roll).
-				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). By default, the YXZ convention is used ([constant EULER_ORDER_YXZ]): Z (roll) is calculated first, then X (pitch), and lastly Y (yaw). When using the opposite method [method from_euler], this order is reversed.
+				The order of each consecutive rotation can be changed with [param order] (see [enum EulerOrder] constants). In Godot, Euler angles always use intrinsic order. By default, the intrinsic YXZ convention is used ([constant EULER_ORDER_YXZ]): since we are decomposing, local Z (roll) is calculated first, then local X (pitch), and lastly local Y (yaw). When using the opposite method [method from_euler] to compose a rotation, this order is reversed.
 				[b]Note:[/b] For this method to return correctly, the basis needs to be [i]orthonormal[/i] (see [method orthonormalized]).
 				[b]Note:[/b] Euler angles are much more intuitive but are not suitable for 3D math. Because of this, consider using the [method get_rotation_quaternion] method instead, which returns a [Quaternion].
 				[b]Note:[/b] In the Inspector dock, a basis's rotation is often displayed in Euler angles (in degrees), as is the case with the [member Node3D.rotation] property.
@@ -204,6 +205,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if this basis is finite, by calling [method @GlobalScope.is_finite] on all vector components.
+			</description>
+		</method>
+		<method name="is_orthonormal" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this basis is orthonormal. An orthonormal basis is both [i]orthogonal[/i] (the axes are perpendicular to each other) and [i]normalized[/i] (the length of every axis is [code]1.0[/code]). This method can be especially useful during physics calculations.
 			</description>
 		</method>
 		<method name="looking_at" qualifiers="static">

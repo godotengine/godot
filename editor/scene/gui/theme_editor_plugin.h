@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/templates/rb_map.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/scene/gui/theme_editor_preview.h"
 #include "scene/gui/dialogs.h"
@@ -40,6 +42,8 @@
 class Button;
 class CheckButton;
 class EditorFileDialog;
+class FilterLineEdit;
+class HSplitContainer;
 class ItemList;
 class Label;
 class LineEdit;
@@ -294,7 +298,7 @@ class ThemeTypeDialog : public ConfirmationDialog {
 
 	String pre_submitted_value;
 
-	LineEdit *add_type_filter = nullptr;
+	FilterLineEdit *add_type_filter = nullptr;
 	ItemList *add_type_options = nullptr;
 	ConfirmationDialog *add_type_confirmation = nullptr;
 
@@ -304,7 +308,6 @@ class ThemeTypeDialog : public ConfirmationDialog {
 	void _update_add_type_options(const String &p_filter = "");
 
 	void _add_type_filter_cbk(const String &p_value);
-	void _type_filter_input(const Ref<InputEvent> &p_event);
 	void _add_type_options_cbk(int p_index);
 	void _add_type_dialog_entered(const String &p_value);
 	void _add_type_dialog_activated(int p_index);
@@ -432,16 +435,20 @@ public:
 	ThemeTypeEditor();
 };
 
-class ThemeEditor : public VBoxContainer {
-	GDCLASS(ThemeEditor, VBoxContainer);
+class ThemeEditor : public EditorDock {
+	GDCLASS(ThemeEditor, EditorDock);
 
 	friend class ThemeEditorPlugin;
 	ThemeEditorPlugin *plugin = nullptr;
 
 	Ref<Theme> theme;
 
+	Button *theme_edit_button = nullptr;
+	Button *theme_close_button = nullptr;
+
 	TabBar *preview_tabs = nullptr;
 	PanelContainer *preview_tabs_content = nullptr;
+	Control *add_preview_button_ph = nullptr;
 	Button *add_preview_button = nullptr;
 	EditorFileDialog *preview_scene_dialog = nullptr;
 
@@ -449,10 +456,12 @@ class ThemeEditor : public VBoxContainer {
 
 	Label *theme_name = nullptr;
 	ThemeItemEditorDialog *theme_edit_dialog = nullptr;
+	HSplitContainer *main_hs = nullptr;
 
 	void _theme_save_button_cbk(bool p_save_as);
 	void _theme_edit_button_cbk();
 	void _theme_close_button_cbk();
+	void _dock_closed_cbk();
 	void _scene_closed(const String &p_path);
 	void _resource_saved(const Ref<Resource> &p_resource);
 	void _files_moved(const String &p_old_path, const String &p_new_path);
@@ -466,9 +475,13 @@ class ThemeEditor : public VBoxContainer {
 	void _remove_preview_tab_invalid(Node *p_tab_control);
 	void _update_preview_tab(Node *p_tab_control);
 	void _preview_control_picked(String p_class_name);
+	void _preview_tabs_resized();
 
 protected:
 	void _notification(int p_what);
+
+	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
+	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
 
 public:
 	void edit(const Ref<Theme> &p_theme);
@@ -484,11 +497,9 @@ class ThemeEditorPlugin : public EditorPlugin {
 	GDCLASS(ThemeEditorPlugin, EditorPlugin);
 
 	ThemeEditor *theme_editor = nullptr;
-	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "Theme"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

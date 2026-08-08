@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 import contextlib
 import glob
@@ -6,12 +8,11 @@ import os
 import re
 import subprocess
 import sys
-import textwrap
 import zlib
 from collections import OrderedDict
-from io import StringIO, TextIOBase
+from io import StringIO
 from pathlib import Path
-from typing import Generator, List, Optional, Union, cast
+from typing import Generator, TextIO, cast
 
 from misc.utility.color import print_error, print_info, print_warning
 from platform_methods import detect_arch
@@ -525,12 +526,7 @@ def find_visual_c_batch_file(env):
     from SCons.Tool.MSCommon.vc import find_batch_file, find_vc_pdir, get_default_version, get_host_target
 
     msvc_version = get_default_version(env)
-
-    # Syntax changed in SCons 4.4.0.
-    if env.scons_version >= (4, 4, 0):
-        (host_platform, target_platform, _) = get_host_target(env, msvc_version)
-    else:
-        (host_platform, target_platform, _) = get_host_target(env)
+    host_platform, target_platform, _ = get_host_target(env, msvc_version)
 
     if env.scons_version < (4, 6, 0):
         return find_batch_file(env, msvc_version, host_platform, target_platform)[0]
@@ -671,7 +667,8 @@ def is_apple_clang(env):
         return False
     try:
         version = (
-            subprocess.check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
+            subprocess
+            .check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
             .strip()
             .decode("utf-8")
         )
@@ -722,8 +719,6 @@ def get_compiler_version(env):
                 "-prerelease",
                 "-products",
                 "*",
-                "-requires",
-                "Microsoft.Component.MSBuild",
                 "-utf8",
             ]
             version = subprocess.check_output(args, encoding="utf-8").strip()
@@ -1149,7 +1144,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         sys.modules.pop("msvs")
 
     extensions = {}
-    extensions["headers"] = [".h", ".hh", ".hpp", ".hxx", ".inc"]
+    extensions["headers"] = [".h", ".hh", ".hpp", ".hxx", ".inc", ".inl"]
     extensions["sources"] = [".c", ".cc", ".cpp", ".cxx", ".m", ".mm", ".java"]
     extensions["others"] = [".natvis", ".glsl", ".rc"]
 
@@ -1553,8 +1548,8 @@ def generate_copyright_header(filename: str) -> str:
 @contextlib.contextmanager
 def generated_wrapper(
     path: str,
-    guard: Optional[bool] = None,
-) -> Generator[TextIOBase, None, None]:
+    guard: bool | None = None,
+) -> Generator[TextIO, None, None]:
     """
     Wrapper class to automatically handle copyright headers and header guards
     for generated scripts. Meant to be invoked via `with` statement similar to
@@ -1593,14 +1588,8 @@ def compress_buffer(buffer: bytes) -> bytes:
     return zlib.compress(buffer, zlib.Z_BEST_COMPRESSION)
 
 
-def format_buffer(buffer: bytes, indent: int = 0, width: int = 120, initial_indent: bool = False) -> str:
-    return textwrap.fill(
-        ", ".join(str(byte) for byte in buffer),
-        width=width,
-        initial_indent="\t" * indent if initial_indent else "",
-        subsequent_indent="\t" * indent,
-        tabsize=4,
-    )
+def format_buffer(buffer: bytes, indent: int = 0, width: int = 120) -> str:
+    return re.sub(f"(.{{0,{width - indent - 1}}},) ", ("\t" * indent) + "\\g<1>\n", ", ".join(map(str, buffer)))
 
 
 ############################################################
@@ -1626,13 +1615,13 @@ def to_escaped_cstring(value: str) -> str:
     return value.translate(C_ESCAPE_TABLE)
 
 
-def to_raw_cstring(value: Union[str, List[str]]) -> str:
+def to_raw_cstring(value: str | list[str]) -> str:
     MAX_LITERAL = 16 * 1024
 
     if isinstance(value, list):
         value = "\n".join(value) + "\n"
 
-    split: List[bytes] = []
+    split: list[bytes] = []
     offset = 0
     encoded = value.encode()
 

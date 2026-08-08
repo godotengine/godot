@@ -149,7 +149,11 @@ int GetLabels(std::vector<int>& components,
 namespace manifold {
 
 #if (MANIFOLD_PAR == 1)
+#if (TBB_VERSION_MAJOR < 2021)
+tbb::task_arena gc_arena(1, 1);
+#else
 tbb::task_arena gc_arena(1, 1, tbb::task_arena::priority::low);
+#endif
 #endif
 
 std::atomic<uint32_t> Manifold::Impl::meshIDCounter_(1);
@@ -484,8 +488,9 @@ void Manifold::Impl::CreateHalfedges(const Vec<ivec3>& triProp,
       const int pair1 = ids[k];
       Halfedge& h1 = halfedge_[pair1];
       if (h0.startVert != h1.endVert || h0.endVert != h1.startVert) break;
-      if (halfedge_[NextHalfedge(pair0)].endVert ==
-          halfedge_[NextHalfedge(pair1)].endVert) {
+      if (h1.pairedHalfedge != kRemovedHalfedge &&
+          halfedge_[NextHalfedge(pair0)].endVert ==
+              halfedge_[NextHalfedge(pair1)].endVert) {
         h0.pairedHalfedge = h1.pairedHalfedge = kRemovedHalfedge;
         // Reorder so that remaining edges pair up
         if (k != i + numEdge) std::swap(ids[i + numEdge], ids[k]);

@@ -106,6 +106,7 @@ internal class AssetData(context: Context, private val filePath: String, accessF
 
 	override fun seek(position: Long) {
 		try {
+			inputStream.reset();
 			inputStream.skip(position)
 
 			this.position = position

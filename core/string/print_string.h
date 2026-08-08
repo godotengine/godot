@@ -44,8 +44,6 @@ struct PrintHandlerList {
 	void *userdata = nullptr;
 
 	PrintHandlerList *next = nullptr;
-
-	PrintHandlerList() {}
 };
 
 String stringify_variants(const Span<Variant> &p_vars);
@@ -60,11 +58,11 @@ extern void print_error(const String &p_string);
 extern bool is_print_verbose_enabled();
 
 // This version avoids processing the text to be printed until it actually has to be printed, saving some CPU usage.
-#define print_verbose(m_text)             \
-	{                                     \
+#define print_verbose(m_text) \
+	{ \
 		if (is_print_verbose_enabled()) { \
-			print_line(m_text);           \
-		}                                 \
+			print_line(m_text); \
+		} \
 	}
 
 template <typename... Args>

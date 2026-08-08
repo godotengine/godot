@@ -514,7 +514,10 @@
 	The window geometry of a surface is its "visible bounds" from the
 	user's perspective. Client-side decorations often have invisible
 	portions like drop-shadows which should be ignored for the
-	purposes of aligning, placing and constraining windows.
+	purposes of aligning, placing and constraining windows. Note that
+	in some situations, compositors may clip rendering to the window
+	geometry, so the client should avoid putting functional elements
+	outside of it.
 
 	The window geometry is double-buffered state, see wl_surface.commit.
 
@@ -936,7 +939,7 @@
 	</description>
       </entry>
       <entry name="constrained_bottom" value="13" since="7">
-	<description summary="the surface’s bottom edge is tiled">
+	<description summary="the surface’s bottom edge is constrained">
           The bottom edge of the window is currently constrained, meaning it
           shouldn't attempt to resize from that edge. It can for example mean
           it's tiled next to a monitor edge on the constrained side of the

@@ -46,6 +46,10 @@ public:
 	};
 
 private:
+	struct ThemeCache {
+		int click_margin = 0;
+	} theme_cache;
+
 	BitField<MouseButtonMask> button_mask = MouseButtonMask::LEFT;
 	bool toggle_mode = false;
 	bool shortcut_in_tooltip = true;
@@ -63,7 +67,7 @@ private:
 		bool pressing_inside = false;
 		bool pressed_down_with_focus = false;
 		bool disabled = false;
-
+		int touch_index = -1;
 	} status;
 
 	Ref<ButtonGroup> button_group;
@@ -103,14 +107,16 @@ public:
 
 	DrawMode get_draw_mode() const;
 
-	/* Signals */
+	virtual bool has_point(const Point2 &p_point) const override;
 
 	bool is_pressed() const; ///< return whether button is pressed (toggled in)
 	bool is_pressing() const; ///< return whether button is pressed (toggled in)
 	bool is_hovered() const;
 
+	void press();
 	void set_pressed(bool p_pressed); // Only works in toggle mode.
 	void set_pressed_no_signal(bool p_pressed);
+
 	void set_toggle_mode(bool p_on);
 	bool is_toggle_mode() const;
 

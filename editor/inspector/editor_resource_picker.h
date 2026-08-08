@@ -49,6 +49,7 @@ class EditorResourcePicker : public HBoxContainer {
 
 	bool editable = true;
 	bool dropping = false;
+	bool force_allow_unique = false;
 
 	Vector<String> inheritors_array;
 	mutable HashSet<StringName> allowed_types_without_convert;
@@ -111,6 +112,7 @@ class EditorResourcePicker : public HBoxContainer {
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
 	bool _is_type_valid(const String &p_type_name, const HashSet<StringName> &p_allowed_types) const;
 	bool _is_custom_type_script() const;
+	Ref<Resource> _get_dropped_resource(const Variant &p_data) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -139,9 +141,13 @@ public:
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;
 
+	void make_passthrough(bool p_passthrough);
+
+	bool is_resource_allowed(const Ref<Resource> &p_resource);
 	void set_edited_resource(Ref<Resource> p_resource);
 	void set_edited_resource_no_check(Ref<Resource> p_resource);
 	Ref<Resource> get_edited_resource();
+	void set_force_allow_unique(bool p_force) { force_allow_unique = p_force; }
 
 	void set_toggle_mode(bool p_enable);
 	bool is_toggle_mode() const;

@@ -93,6 +93,10 @@ class ProjectManager : public Control {
 	Button *title_bar_logo = nullptr;
 	HBoxContainer *main_view_toggles = nullptr;
 	Button *quick_settings_button = nullptr;
+	VBoxContainer *project_list_sidebar = nullptr;
+
+	int compact_mode_threshold = 0;
+	void _update_compact_mode(bool p_reset_threshold = false);
 
 	enum MainViewTab {
 		MAIN_VIEW_PROJECTS,
@@ -118,6 +122,7 @@ class ProjectManager : public Control {
 
 	void _show_about();
 	void _open_asset_library_confirmed();
+	void _project_list_menu_option(int p_option);
 
 	AcceptDialog *error_dialog = nullptr;
 
@@ -160,7 +165,6 @@ class ProjectManager : public Control {
 	Button *rename_btn = nullptr;
 	Button *duplicate_btn = nullptr;
 	Button *manage_tags_btn = nullptr;
-	Button *show_in_fm_btn = nullptr;
 	Button *erase_btn = nullptr;
 	Button *erase_missing_btn = nullptr;
 	Button *donate_btn = nullptr;
@@ -247,6 +251,7 @@ class ProjectManager : public Control {
 	VBoxContainer *ask_update_vb = nullptr;
 	Label *ask_update_label = nullptr;
 	CheckBox *ask_update_backup = nullptr;
+	CheckBox *ask_upgrade_tool = nullptr;
 	Button *full_convert_button = nullptr;
 	Button *migration_guide_button = nullptr;
 
@@ -284,6 +289,9 @@ public:
 	// Project tag management.
 
 	void add_new_tag(const String &p_tag);
+
+	// Theme.
+	Ref<Theme> get_theme() const { return theme; }
 
 	ProjectManager();
 	~ProjectManager();

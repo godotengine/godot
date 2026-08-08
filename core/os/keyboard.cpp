@@ -31,6 +31,7 @@
 #include "keyboard.h"
 
 #include "core/os/os.h"
+#include "core/string/ustring.h"
 
 struct _KeyCodeText {
 	Key code;
@@ -61,18 +62,29 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::PAGEDOWN              ,"PageDown"},
 	{Key::SHIFT                 ,"Shift"},
 	{Key::CTRL                  ,"Ctrl"},
+	// Include all strings for all platforms. The first string
+	// should be the one expected from get_keycode_string().
 #if defined(MACOS_ENABLED)
 	{Key::META                  ,"Command"},
+	{Key::META                  ,"Windows"},
+	{Key::META                  ,"Meta"},
 	{Key::CMD_OR_CTRL           ,"Command"},
 	{Key::ALT                   ,"Option"},
+	{Key::ALT                   ,"Alt"},
 #elif defined(WINDOWS_ENABLED)
 	{Key::META                  ,"Windows"},
-	{Key::CMD_OR_CTRL           ,"Ctrl"},
-	{Key::ALT                   ,"Alt"},
-#else
+	{Key::META                  ,"Command"},
 	{Key::META                  ,"Meta"},
 	{Key::CMD_OR_CTRL           ,"Ctrl"},
 	{Key::ALT                   ,"Alt"},
+	{Key::ALT                   ,"Option"},
+#else
+	{Key::META                  ,"Meta"},
+	{Key::META                  ,"Windows"},
+	{Key::META                  ,"Command"},
+	{Key::CMD_OR_CTRL           ,"Ctrl"},
+	{Key::ALT                   ,"Alt"},
+	{Key::ALT                   ,"Option"},
 #endif
 	{Key::CAPSLOCK              ,"CapsLock"},
 	{Key::NUMLOCK               ,"NumLock"},
@@ -361,7 +373,7 @@ bool keycode_has_unicode(Key p_keycode) {
 
 String keycode_get_string(Key p_code) {
 	Vector<String> keycode_string;
-	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE && !(OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios"))) {
+	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE && !OS::prefer_meta_over_ctrl()) {
 		keycode_string.push_back(find_keycode_name(Key::CTRL));
 	}
 	if ((p_code & KeyModifierMask::CTRL) != Key::NONE) {
@@ -373,7 +385,7 @@ String keycode_get_string(Key p_code) {
 	if ((p_code & KeyModifierMask::SHIFT) != Key::NONE) {
 		keycode_string.push_back(find_keycode_name(Key::SHIFT));
 	}
-	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE && (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios"))) {
+	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE && OS::prefer_meta_over_ctrl()) {
 		keycode_string.push_back(find_keycode_name(Key::META));
 	}
 	if ((p_code & KeyModifierMask::META) != Key::NONE) {

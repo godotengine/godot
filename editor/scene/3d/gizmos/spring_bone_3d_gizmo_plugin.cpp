@@ -31,9 +31,12 @@
 #include "spring_bone_3d_gizmo_plugin.h"
 
 #include "editor/settings/editor_settings.h"
+#include "scene/3d/spring_bone_collision_3d.h"
 #include "scene/3d/spring_bone_collision_capsule_3d.h"
 #include "scene/3d/spring_bone_collision_plane_3d.h"
 #include "scene/3d/spring_bone_collision_sphere_3d.h"
+#include "scene/3d/spring_bone_simulator_3d.h"
+#include "scene/resources/surface_tool.h"
 
 // SpringBoneSimulator3D
 
@@ -142,8 +145,10 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 			Transform3D global_pose = p_skeleton->get_bone_global_rest(current_bone);
 			if (j > 0) {
 				Transform3D parent_global_pose = p_skeleton->get_bone_global_rest(prev_bone);
-				draw_line(surface_tool, parent_global_pose.origin, global_pose.origin, bone_color);
-				draw_sphere(surface_tool, global_pose.basis, global_pose.origin, p_simulator->get_joint_radius(i, j - 1), bone_color);
+				Vector3 bone_vector = p_simulator->get_bone_vector(i, j - 1);
+				Vector3 center = parent_global_pose.translated_local(bone_vector).origin;
+				draw_line(surface_tool, parent_global_pose.origin, center, bone_color);
+				draw_sphere(surface_tool, global_pose.basis, center, p_simulator->get_joint_radius(i, j - 1), bone_color);
 
 				// Draw rotation axis vector if not ROTATION_AXIS_ALL.
 				if (j != joint_end || (j == joint_end && is_extended)) {
@@ -153,22 +158,22 @@ Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_s
 						if (!axis_vector.is_zero_approx()) {
 							float line_length = p_simulator->get_joint_radius(i, j - 1) * 2.0;
 							Vector3 axis = global_pose.basis.xform(axis_vector.normalized()) * line_length;
-							draw_line(surface_tool, global_pose.origin - axis, global_pose.origin + axis, bone_color);
+							draw_line(surface_tool, center - axis, center + axis, bone_color);
 						}
 					}
 				}
 			}
 			if (j == joint_end && is_extended) {
-				Vector3 axis = p_simulator->get_end_bone_axis(current_bone, p_simulator->get_end_bone_direction(i));
-				if (axis.is_zero_approx()) {
+				Vector3 bone_vector = p_simulator->get_bone_vector(i, j);
+				if (bone_vector.is_zero_approx()) {
 					continue;
 				}
 				bones[0] = current_bone;
 				surface_tool->set_bones(Vector<int>(bones));
 				surface_tool->set_weights(Vector<float>(weights));
-				axis = global_pose.xform(axis * p_simulator->get_end_bone_length(i));
-				draw_line(surface_tool, global_pose.origin, axis, bone_color);
-				draw_sphere(surface_tool, global_pose.basis, axis, p_simulator->get_joint_radius(i, j), bone_color);
+				Vector3 center = global_pose.translated_local(bone_vector).origin;
+				draw_line(surface_tool, global_pose.origin, center, bone_color);
+				draw_sphere(surface_tool, global_pose.basis, center, p_simulator->get_joint_radius(i, j), bone_color);
 			} else {
 				bones[0] = current_bone;
 				surface_tool->set_bones(Vector<int>(bones));

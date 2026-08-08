@@ -30,6 +30,9 @@
 
 #include "spline_ik_3d.h"
 
+#include "core/object/class_db.h"
+#include "scene/3d/path_3d.h"
+
 bool SplineIK3D::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -122,6 +125,9 @@ PackedStringArray SplineIK3D::get_configuration_warnings() const {
 void SplineIK3D::set_path_3d(int p_index, const NodePath &p_path_3d) {
 	ERR_FAIL_INDEX(p_index, (int)settings.size());
 	sp_settings[p_index]->path_3d = p_path_3d;
+	if (should_check_node_path() && !p_path_3d.is_empty() && !Object::cast_to<Path3D>(get_node_or_null(p_path_3d))) {
+		WARN_PRINT_ED("Setting: " + itos(p_index) + ": Path3D '" + String(p_path_3d) + "' not found.");
+	}
 	notify_property_list_changed();
 	update_configuration_warnings();
 }
@@ -189,12 +195,13 @@ void SplineIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 	SplineIK3DSetting *setting = sp_settings[p_index];
 	cached_space = p_skeleton->get_global_transform_interpolated();
 	if (!setting->simulation_dirty) {
+		if (mutable_bone_axes) {
+			_update_bone_axis(p_skeleton, p_index);
+		}
 		return;
 	}
 	for (uint32_t i = 0; i < setting->solver_info_list.size(); i++) {
-		if (setting->solver_info_list[i]) {
-			memdelete(setting->solver_info_list[i]);
-		}
+		memdelete(setting->solver_info_list[i]);
 	}
 	setting->solver_info_list.clear();
 	setting->solver_info_list.resize_initialized(setting->joints.size());
@@ -205,7 +212,7 @@ void SplineIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 		setting->chain.push_back(p_skeleton->get_bone_global_pose(setting->joints[i].bone).origin);
 		bool last = i == setting->joints.size() - 1;
 		if (last && extend_end_bone && setting->end_bone_length > 0) {
-			Vector3 axis = get_bone_axis(setting->end_bone.bone, setting->end_bone_direction);
+			Vector3 axis = IKModifier3D::get_bone_axis(p_skeleton, setting->end_bone.bone, setting->end_bone_direction, mutable_bone_axes);
 			if (axis.is_zero_approx()) {
 				setting->chain_length_accum[i] = accum;
 				continue;
@@ -230,6 +237,14 @@ void SplineIK3D::_init_joints(Skeleton3D *p_skeleton, int p_index) {
 		setting->chain_length_accum[i] = accum;
 	}
 
+	if (mutable_bone_axes) {
+		_update_bone_axis(p_skeleton, p_index);
+#ifdef TOOLS_ENABLED
+	} else {
+		_make_gizmo_dirty();
+#endif // TOOLS_ENABLED
+	}
+
 	setting->init_current_joint_rotations(p_skeleton);
 
 	setting->simulation_dirty = false;
@@ -241,6 +256,56 @@ void SplineIK3D::_make_simulation_dirty(int p_index) {
 		return;
 	}
 	setting->simulation_dirty = true;
+}
+
+void SplineIK3D::_update_bone_axis(Skeleton3D *p_skeleton, int p_index) {
+#ifdef TOOLS_ENABLED
+	bool changed = false;
+#endif // TOOLS_ENABLED
+	SplineIK3DSetting *setting = sp_settings[p_index];
+	const LocalVector<BoneJoint> &joints = setting->joints;
+	const LocalVector<IKModifier3DSolverInfo *> &solver_info_list = setting->solver_info_list;
+	int len = (int)solver_info_list.size() - 1;
+	for (int j = 0; j < len; j++) {
+		if (!solver_info_list[j]) {
+			continue;
+		}
+		Vector3 axis = p_skeleton->get_bone_pose(joints[j + 1].bone).origin;
+		if (axis.is_zero_approx()) {
+			continue;
+		}
+		// Less computing.
+#ifdef TOOLS_ENABLED
+		if (!changed) {
+			Vector3 old_v = solver_info_list[j]->forward_vector;
+			solver_info_list[j]->forward_vector = axis.normalized();
+			changed = changed || !old_v.is_equal_approx(solver_info_list[j]->forward_vector);
+			float old_l = solver_info_list[j]->length;
+			solver_info_list[j]->length = axis.length();
+			changed = changed || !Math::is_equal_approx(old_l, solver_info_list[j]->length);
+		} else {
+			solver_info_list[j]->forward_vector = axis.normalized();
+			solver_info_list[j]->length = axis.length();
+		}
+#else
+		solver_info_list[j]->forward_vector = axis.normalized();
+		solver_info_list[j]->length = axis.length();
+#endif // TOOLS_ENABLED
+	}
+	if (setting->extend_end_bone && len >= 0) {
+		if (solver_info_list[len]) {
+			Vector3 axis = IKModifier3D::get_bone_axis(p_skeleton, setting->end_bone.bone, setting->end_bone_direction, mutable_bone_axes);
+			if (!axis.is_zero_approx()) {
+				solver_info_list[len]->forward_vector = axis.normalized();
+				solver_info_list[len]->length = setting->end_bone_length;
+			}
+		}
+	}
+#ifdef TOOLS_ENABLED
+	if (changed) {
+		_make_gizmo_dirty();
+	}
+#endif // TOOLS_ENABLED
 }
 
 void SplineIK3D::_process_ik(Skeleton3D *p_skeleton, double p_delta) {
@@ -330,26 +395,7 @@ void SplineIK3D::_process_joints(double p_delta, Skeleton3D *p_skeleton, SplineI
 		bool is_fitting_first = HEAD == chain_path_start;
 
 		// Special case for out of path joints.
-		if (point_count == 1 || HEAD <= chain_path_start) {
-			// Set twist only for first fitting joint.
-			if (!is_fitting_first) {
-				p_setting->update_chain_coordinate(p_skeleton, TAIL, limit_length(p_setting->chain[HEAD], p_setting->chain[HEAD] + start_vector, solver_info->length));
-			}
-			if (p_setting->tilt_enabled) {
-				if (p_setting->tilt_fade_in < 0) {
-					p_setting->twists[HEAD] = 0.0;
-				} else if (p_setting->tilt_fade_in == 0) {
-					p_setting->twists[HEAD] = tilts[0];
-				} else {
-					// Decreases monotonically in a straight line, fetch the distance.
-					double fade_in_dumping = CLAMP((double)(p_setting->chain[HEAD].distance_to(start_point) / fade_in_denom), 0.0, 1.0);
-					p_setting->twists[HEAD] = Math::lerp((double)tilts[0], 0.0, fade_in_dumping);
-				}
-			}
-			if (!is_fitting_first) {
-				continue;
-			}
-		} else if (ended > 0) {
+		if (ended > 0) {
 			p_setting->update_chain_coordinate(p_skeleton, TAIL, limit_length(p_setting->chain[HEAD], p_setting->chain[HEAD] + end_vector, solver_info->length));
 			if (p_setting->tilt_enabled) {
 				if (p_setting->tilt_fade_out < 0) {
@@ -369,6 +415,26 @@ void SplineIK3D::_process_joints(double p_delta, Skeleton3D *p_skeleton, SplineI
 				}
 			}
 			continue;
+		} else if (point_count == 1 || HEAD <= chain_path_start) {
+			// Set twist only for first fitting joint.
+			bool update_coordinate = !is_fitting_first || point_count == 1;
+			if (update_coordinate) {
+				p_setting->update_chain_coordinate(p_skeleton, TAIL, limit_length(p_setting->chain[HEAD], p_setting->chain[HEAD] + start_vector, solver_info->length));
+			}
+			if (p_setting->tilt_enabled) {
+				if (p_setting->tilt_fade_in < 0) {
+					p_setting->twists[HEAD] = 0.0;
+				} else if (p_setting->tilt_fade_in == 0) {
+					p_setting->twists[HEAD] = tilts[0];
+				} else {
+					// Decreases monotonically in a straight line, fetch the distance.
+					double fade_in_dumping = CLAMP((double)(p_setting->chain[HEAD].distance_to(start_point) / fade_in_denom), 0.0, 1.0);
+					p_setting->twists[HEAD] = Math::lerp((double)tilts[0], 0.0, fade_in_dumping);
+				}
+			}
+			if (update_coordinate) {
+				continue;
+			}
 		}
 
 		// General case.
@@ -429,6 +495,30 @@ void SplineIK3D::_process_joints(double p_delta, Skeleton3D *p_skeleton, SplineI
 		p_skeleton->set_bone_pose_rotation(p_setting->joints[i].bone, solver_info->current_lpose);
 	}
 }
+
+#ifdef TOOLS_ENABLED
+Vector3 SplineIK3D::get_bone_vector(int p_index, int p_joint) const {
+	Skeleton3D *skeleton = get_skeleton();
+	if (!skeleton) {
+		return Vector3();
+	}
+	ERR_FAIL_INDEX_V(p_index, (int)settings.size(), Vector3());
+	SplineIK3DSetting *setting = sp_settings[p_index];
+	if (!setting) {
+		return Vector3();
+	}
+	const LocalVector<BoneJoint> &joints = setting->joints;
+	ERR_FAIL_INDEX_V(p_joint, (int)joints.size(), Vector3());
+	const LocalVector<IKModifier3DSolverInfo *> &solver_info_list = setting->solver_info_list;
+	if (p_joint >= (int)solver_info_list.size() || !solver_info_list[p_joint]) {
+		if (p_joint == (int)joints.size() - 1) {
+			return IKModifier3D::get_bone_axis(skeleton, setting->end_bone.bone, setting->end_bone_direction, mutable_bone_axes) * setting->end_bone_length;
+		}
+		return mutable_bone_axes ? skeleton->get_bone_pose(joints[p_joint + 1].bone).origin : skeleton->get_bone_rest(joints[p_joint + 1].bone).origin;
+	}
+	return solver_info_list[p_joint]->forward_vector * solver_info_list[p_joint]->length;
+}
+#endif // TOOLS_ENABLED
 
 SplineIK3D::~SplineIK3D() {
 	clear_settings();

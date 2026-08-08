@@ -31,7 +31,9 @@
 #include "godot_instance.h"
 
 #include "core/extension/gdextension_manager.h"
+#include "core/object/class_db.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "main/main.h"
 #include "servers/display/display_server.h"
 
@@ -54,7 +56,7 @@ GodotInstance::~GodotInstance() {
 bool GodotInstance::initialize(GDExtensionInitializationFunction p_init_func) {
 	print_verbose("Godot Instance initialization");
 	GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
-	GDExtensionConstPtr<const GDExtensionInitializationFunction> ptr((const GDExtensionInitializationFunction *)&p_init_func);
+	GDExtensionPtr<const GDExtensionInitializationFunction> ptr((const GDExtensionInitializationFunction *)&p_init_func);
 	GDExtensionManager::LoadStatus status = gdextension_manager->load_extension_from_function("libgodot://main", ptr);
 	return status == GDExtensionManager::LoadStatus::LOAD_STATUS_OK;
 }

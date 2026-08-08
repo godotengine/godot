@@ -32,6 +32,9 @@
 #include "xr_server.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_positional_tracker.h"
 
@@ -107,6 +110,8 @@ void XRServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("tracker_updated", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type")));
+
+	ADD_SIGNAL(MethodInfo("world_origin_changed"));
 }
 
 double XRServer::get_world_scale() const {
@@ -157,6 +162,7 @@ Transform3D XRServer::get_world_origin() const {
 
 void XRServer::set_world_origin(const Transform3D &p_world_origin) {
 	world_origin = p_world_origin;
+	emit_signal(SNAME("world_origin_changed"));
 	set_render_world_origin(world_origin);
 }
 
@@ -234,6 +240,30 @@ void XRServer::_set_render_reference_frame(const Transform3D &p_reference_frame)
 	xr_server->render_state.reference_frame = p_reference_frame;
 }
 
+void XRServer::set_render_world_scale(double p_world_scale) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_world_scale).bind(p_world_scale));
+}
+
+void XRServer::set_render_world_origin(const Transform3D &p_world_origin) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_world_origin).bind(p_world_origin));
+}
+
+void XRServer::set_render_reference_frame(const Transform3D &p_reference_frame) {
+	// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+
+	rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_reference_frame).bind(p_reference_frame));
+}
+
 Transform3D XRServer::get_hmd_transform() {
 	Transform3D hmd_transform;
 	if (primary_interface.is_valid()) {
@@ -249,11 +279,9 @@ void XRServer::set_camera_locked_to_origin(bool p_enable) {
 void XRServer::add_interface(const Ref<XRInterface> &p_interface) {
 	ERR_FAIL_COND(p_interface.is_null());
 
-	for (int i = 0; i < interfaces.size(); i++) {
-		if (interfaces[i] == p_interface) {
-			ERR_PRINT("Interface was already added");
-			return;
-		}
+	if (interfaces.has(p_interface)) {
+		ERR_PRINT("Interface was already added");
+		return;
 	}
 
 	interfaces.push_back(p_interface);
@@ -263,14 +291,7 @@ void XRServer::add_interface(const Ref<XRInterface> &p_interface) {
 void XRServer::remove_interface(const Ref<XRInterface> &p_interface) {
 	ERR_FAIL_COND(p_interface.is_null());
 
-	int idx = -1;
-	for (int i = 0; i < interfaces.size(); i++) {
-		if (interfaces[i] == p_interface) {
-			idx = i;
-			break;
-		}
-	}
-
+	int idx = interfaces.find(p_interface);
 	ERR_FAIL_COND_MSG(idx == -1, "Interface not found.");
 	print_verbose("XR: Removed interface \"" + p_interface->get_name() + "\"");
 	emit_signal(SNAME("interface_removed"), p_interface->get_name());
@@ -282,15 +303,15 @@ int XRServer::get_interface_count() const {
 }
 
 Ref<XRInterface> XRServer::get_interface(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, interfaces.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_index, (int)interfaces.size(), nullptr);
 
 	return interfaces[p_index];
 }
 
 Ref<XRInterface> XRServer::find_interface(const String &p_name) const {
-	for (int i = 0; i < interfaces.size(); i++) {
-		if (interfaces[i]->get_name() == p_name) {
-			return interfaces[i];
+	for (const Ref<XRInterface> &interface : interfaces) {
+		if (interface->get_name() == p_name) {
+			return interface;
 		}
 	}
 	return Ref<XRInterface>();
@@ -299,7 +320,7 @@ Ref<XRInterface> XRServer::find_interface(const String &p_name) const {
 TypedArray<Dictionary> XRServer::get_interfaces() const {
 	Array ret;
 
-	for (int i = 0; i < interfaces.size(); i++) {
+	for (uint32_t i = 0; i < interfaces.size(); i++) {
 		Dictionary iface_info;
 
 		iface_info["id"] = i;
@@ -380,12 +401,11 @@ Ref<XRTracker> XRServer::get_tracker(const StringName &p_name) const {
 PackedStringArray XRServer::get_suggested_tracker_names() const {
 	PackedStringArray arr;
 
-	for (int i = 0; i < interfaces.size(); i++) {
-		Ref<XRInterface> interface = interfaces[i];
+	for (const Ref<XRInterface> &interface : interfaces) {
 		PackedStringArray interface_arr = interface->get_suggested_tracker_names();
-		for (int a = 0; a < interface_arr.size(); a++) {
-			if (!arr.has(interface_arr[a])) {
-				arr.push_back(interface_arr[a]);
+		for (int i = 0; i < interface_arr.size(); i++) {
+			if (!arr.has(interface_arr[i])) {
+				arr.push_back(interface_arr[i]);
 			}
 		}
 	}
@@ -403,8 +423,7 @@ PackedStringArray XRServer::get_suggested_tracker_names() const {
 PackedStringArray XRServer::get_suggested_pose_names(const StringName &p_tracker_name) const {
 	PackedStringArray arr;
 
-	for (int i = 0; i < interfaces.size(); i++) {
-		Ref<XRInterface> interface = interfaces[i];
+	for (const Ref<XRInterface> &interface : interfaces) {
 		PackedStringArray interface_arr = interface->get_suggested_pose_names(p_tracker_name);
 		for (int a = 0; a < interface_arr.size(); a++) {
 			if (!arr.has(interface_arr[a])) {
@@ -432,11 +451,11 @@ void XRServer::_process() {
 	// note that we can have multiple interfaces active if we have interfaces that purely handle tracking
 
 	// process all active interfaces
-	for (int i = 0; i < interfaces.size(); i++) {
-		if (interfaces[i].is_null()) {
+	for (const Ref<XRInterface> &interface : interfaces) {
+		if (interface.is_null()) {
 			// ignore, not a valid reference
-		} else if (interfaces[i]->is_initialized()) {
-			interfaces.write[i]->process();
+		} else if (interface->is_initialized()) {
+			interface->process();
 		}
 	}
 }
@@ -446,11 +465,11 @@ void XRServer::pre_render() {
 	// note that we can have multiple interfaces active if we have interfaces that purely handle tracking
 
 	// process all active interfaces
-	for (int i = 0; i < interfaces.size(); i++) {
-		if (interfaces[i].is_null()) {
+	for (const Ref<XRInterface> &interface : interfaces) {
+		if (interface.is_null()) {
 			// ignore, not a valid reference
-		} else if (interfaces[i]->is_initialized()) {
-			interfaces.write[i]->pre_render();
+		} else if (interface->is_initialized()) {
+			interface->pre_render();
 		}
 	}
 }
@@ -459,11 +478,11 @@ void XRServer::end_frame() {
 	// called from RenderingServerDefault after Vulkan queues have been submitted
 
 	// process all active interfaces
-	for (int i = 0; i < interfaces.size(); i++) {
-		if (interfaces[i].is_null()) {
+	for (const Ref<XRInterface> &interface : interfaces) {
+		if (interface.is_null()) {
 			// ignore, not a valid reference
-		} else if (interfaces[i]->is_initialized()) {
-			interfaces.write[i]->end_frame();
+		} else if (interface->is_initialized()) {
+			interface->end_frame();
 		}
 	}
 }

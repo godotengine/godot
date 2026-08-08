@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SubViewport" inherits="Viewport" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SubViewport" inherits="Viewport" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An interface to a game world that doesn't create a window or draw to the screen directly.
 	</brief_description>
@@ -35,6 +35,9 @@
 		</member>
 		<member name="size_2d_override_stretch" type="bool" setter="set_size_2d_override_stretch" getter="is_size_2d_override_stretch_enabled" default="false">
 			If [code]true[/code], the 2D size override affects stretch as well.
+		</member>
+		<member name="view_count" type="int" setter="set_view_count" getter="get_view_count" default="1">
+			The number of view layers we are rendering to. Set this to [code]2[/code] to enable stereo rendering.
 		</member>
 	</members>
 	<constants>

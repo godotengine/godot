@@ -31,7 +31,8 @@
 #pragma once
 
 #include "scene/3d/chain_ik_3d.h"
-#include "scene/3d/path_3d.h"
+
+class Curve3D;
 
 class SplineIK3D : public ChainIK3D {
 	GDCLASS(SplineIK3D, ChainIK3D);
@@ -151,6 +152,7 @@ protected:
 
 	virtual void _init_joints(Skeleton3D *p_skeleton, int p_index) override;
 	virtual void _make_simulation_dirty(int p_index) override;
+	virtual void _update_bone_axis(Skeleton3D *p_skeleton, int p_index) override;
 
 	virtual void _process_ik(Skeleton3D *p_skeleton, double p_delta) override;
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, SplineIK3DSetting *p_setting, Ref<Curve3D> p_curve, const Transform3D &p_curve_space);
@@ -182,6 +184,10 @@ public:
 
 	// Helper.
 	double get_bezier_arc_length();
+
+#ifdef TOOLS_ENABLED
+	virtual Vector3 get_bone_vector(int p_index, int p_joint) const override;
+#endif // TOOLS_ENABLED
 
 	~SplineIK3D();
 };

@@ -35,10 +35,12 @@
 #include "core/core_bind.h"
 #include "core/crypto/aes_context.h"
 #include "core/crypto/crypto.h"
+#include "core/crypto/crypto_resource_format.h"
 #include "core/crypto/hashing_context.h"
 #include "core/debugger/engine_profiler.h"
 #include "core/extension/gdextension.h"
 #include "core/extension/gdextension_manager.h"
+#include "core/extension/gdextension_resource_format.h"
 #include "core/extension/godot_instance.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
@@ -46,10 +48,11 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/dtls_server.h"
-#include "core/io/file_access_encrypted.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
+#include "core/io/image_resource_format.h"
 #include "core/io/json.h"
+#include "core/io/json_resource_format.h"
 #include "core/io/marshalls.h"
 #include "core/io/missing_resource.h"
 #include "core/io/packet_peer.h"
@@ -58,6 +61,8 @@
 #include "core/io/pck_packer.h"
 #include "core/io/resource_format_binary.h"
 #include "core/io/resource_importer.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/io/resource_uid.h"
 #include "core/io/stream_peer_gzip.h"
 #include "core/io/stream_peer_tls.h"
@@ -77,8 +82,11 @@
 #include "core/object/undo_redo.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/os/time.h"
+#include "core/string/fuzzy_search.h"
 #include "core/string/optimized_translation.h"
+#include "core/string/regex.h"
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
 #ifndef DISABLE_DEPRECATED
@@ -130,6 +138,8 @@ void register_core_types() {
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
 
+	CryptoCore::initialize();
+
 	ObjectDB::setup();
 	StringName::setup();
 	register_global_constants();
@@ -137,7 +147,7 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(Object);
 	GDREGISTER_CLASS(RefCounted);
-	GDREGISTER_CLASS(WeakRef);
+	GDREGISTER_CLASS(CoreBind::WeakRef);
 	GDREGISTER_CLASS(Resource);
 
 	GDREGISTER_CLASS(Time);
@@ -266,6 +276,8 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);
+	GDREGISTER_CLASS(RegExMatch);
+	GDREGISTER_CLASS(RegEx);
 
 	GDREGISTER_CLASS(ConfigFile);
 
@@ -294,6 +306,9 @@ void register_core_types() {
 	GDREGISTER_ABSTRACT_CLASS(ResourceUID);
 
 	GDREGISTER_CLASS(EngineProfiler);
+
+	GDREGISTER_CLASS(FuzzySearch);
+	GDREGISTER_CLASS(FuzzySearchMatch);
 
 	resource_uid = memnew(ResourceUID);
 
@@ -335,7 +350,6 @@ void register_core_types() {
 	_engine_debugger = memnew(CoreBind::EngineDebugger);
 
 	GDREGISTER_NATIVE_STRUCT(ObjectID, "uint64_t id = 0");
-	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 
 	worker_thread_pool = memnew(WorkerThreadPool);
@@ -359,6 +373,7 @@ void register_early_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", CoreBind::OS::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Time", Time::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
 }
 
 void register_core_singletons() {
@@ -369,7 +384,6 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry3D", CoreBind::Geometry3D::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", CoreBind::ResourceLoader::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", CoreBind::ResourceSaver::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", CoreBind::Marshalls::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
@@ -427,9 +441,7 @@ void unregister_core_types() {
 
 	memdelete(resource_uid);
 
-	if (ip) {
-		memdelete(ip);
-	}
+	memdelete(ip);
 
 	if constexpr (GD_IS_CLASS_ENABLED(Image)) {
 		ResourceLoader::remove_resource_format_loader(resource_format_image);
@@ -480,6 +492,8 @@ void unregister_core_types() {
 	memdelete(_time);
 	ObjectDB::cleanup();
 
+	CryptoCore::finalize();
+
 	Variant::unregister_types();
 
 	unregister_global_constants();
@@ -488,8 +502,6 @@ void unregister_core_types() {
 	ClassDB::cleanup();
 	CoreStringNames::free();
 	StringName::cleanup();
-
-	FileAccessEncrypted::deinitialize();
 
 	OS::get_singleton()->benchmark_end_measure("Core", "Unregister Types");
 }

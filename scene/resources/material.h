@@ -33,8 +33,7 @@
 #include "core/io/resource.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/shader.h"
-#include "scene/resources/texture.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 class Material : public Resource {
 	GDCLASS(Material, Resource);
@@ -71,8 +70,8 @@ protected:
 	GDVIRTUAL0RC(bool, _can_use_render_priority)
 public:
 	enum {
-		RENDER_PRIORITY_MAX = RS::MATERIAL_RENDER_PRIORITY_MAX,
-		RENDER_PRIORITY_MIN = RS::MATERIAL_RENDER_PRIORITY_MIN,
+		RENDER_PRIORITY_MAX = RSE::MATERIAL_RENDER_PRIORITY_MAX,
+		RENDER_PRIORITY_MIN = RSE::MATERIAL_RENDER_PRIORITY_MIN,
 	};
 
 	bool _is_initialized() { return init_state == INIT_STATE_READY; }
@@ -358,27 +357,27 @@ public:
 private:
 	struct MaterialKey {
 		// enum values
-		uint64_t texture_filter : get_num_bits(TEXTURE_FILTER_MAX - 1);
-		uint64_t detail_uv : get_num_bits(DETAIL_UV_MAX - 1);
-		uint64_t transparency : get_num_bits(TRANSPARENCY_MAX - 1);
-		uint64_t alpha_antialiasing_mode : get_num_bits(ALPHA_ANTIALIASING_MAX - 1);
-		uint64_t shading_mode : get_num_bits(SHADING_MODE_MAX - 1);
-		uint64_t blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
-		uint64_t depth_draw_mode : get_num_bits(DEPTH_DRAW_MAX - 1);
-		uint64_t depth_test : get_num_bits(DEPTH_TEST_MAX - 1);
-		uint64_t cull_mode : get_num_bits(CULL_MAX - 1);
-		uint64_t diffuse_mode : get_num_bits(DIFFUSE_MAX - 1);
-		uint64_t specular_mode : get_num_bits(SPECULAR_MAX - 1);
-		uint64_t billboard_mode : get_num_bits(BILLBOARD_MAX - 1);
-		uint64_t detail_blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
-		uint64_t roughness_channel : get_num_bits(TEXTURE_CHANNEL_MAX - 1);
-		uint64_t emission_op : get_num_bits(EMISSION_OP_MAX - 1);
-		uint64_t distance_fade : get_num_bits(DISTANCE_FADE_MAX - 1);
+		uint64_t texture_filter : Math::get_num_bits(TEXTURE_FILTER_MAX - 1);
+		uint64_t detail_uv : Math::get_num_bits(DETAIL_UV_MAX - 1);
+		uint64_t transparency : Math::get_num_bits(TRANSPARENCY_MAX - 1);
+		uint64_t alpha_antialiasing_mode : Math::get_num_bits(ALPHA_ANTIALIASING_MAX - 1);
+		uint64_t shading_mode : Math::get_num_bits(SHADING_MODE_MAX - 1);
+		uint64_t blend_mode : Math::get_num_bits(BLEND_MODE_MAX - 1);
+		uint64_t depth_draw_mode : Math::get_num_bits(DEPTH_DRAW_MAX - 1);
+		uint64_t depth_test : Math::get_num_bits(DEPTH_TEST_MAX - 1);
+		uint64_t cull_mode : Math::get_num_bits(CULL_MAX - 1);
+		uint64_t diffuse_mode : Math::get_num_bits(DIFFUSE_MAX - 1);
+		uint64_t specular_mode : Math::get_num_bits(SPECULAR_MAX - 1);
+		uint64_t billboard_mode : Math::get_num_bits(BILLBOARD_MAX - 1);
+		uint64_t detail_blend_mode : Math::get_num_bits(BLEND_MODE_MAX - 1);
+		uint64_t roughness_channel : Math::get_num_bits(TEXTURE_CHANNEL_MAX - 1);
+		uint64_t emission_op : Math::get_num_bits(EMISSION_OP_MAX - 1);
+		uint64_t distance_fade : Math::get_num_bits(DISTANCE_FADE_MAX - 1);
 
 		// stencil
-		uint64_t stencil_mode : get_num_bits(STENCIL_MODE_MAX - 1);
+		uint64_t stencil_mode : Math::get_num_bits(STENCIL_MODE_MAX - 1);
 		uint64_t stencil_flags : STENCIL_FLAG_NUM_BITS;
-		uint64_t stencil_compare : get_num_bits(STENCIL_COMPARE_MAX - 1);
+		uint64_t stencil_compare : Math::get_num_bits(STENCIL_COMPARE_MAX - 1);
 		uint64_t stencil_reference : 8;
 
 		// booleans
@@ -551,7 +550,6 @@ private:
 	float anisotropy = 0.0f;
 	float heightmap_scale = 0.0f;
 	float subsurface_scattering_strength = 0.0f;
-	float transmittance_amount = 0.0f;
 	Color transmittance_color;
 	float transmittance_depth = 0.0f;
 	float transmittance_boost = 0.0f;
@@ -878,7 +876,7 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
-	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, RID *r_shader_rid = nullptr);
+	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, bool p_texture_repeat = false, RID *r_shader_rid = nullptr);
 
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;

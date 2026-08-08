@@ -1,0 +1,5 @@
+GH-85393
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsShapeQueryParameters3D/properties/motion': type changed value in new API, from "Vector2" to "Vector3".
+
+The type was registered wrongly, this was a bug.

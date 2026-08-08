@@ -37,6 +37,7 @@
 #include "godot_soft_body_3d.h"
 
 #include "core/typedefs.h"
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
 
 class GodotPhysicsDirectSpaceState3D : public PhysicsDirectSpaceState3D {
 	GDCLASS(GodotPhysicsDirectSpaceState3D, PhysicsDirectSpaceState3D);
@@ -44,12 +45,12 @@ class GodotPhysicsDirectSpaceState3D : public PhysicsDirectSpaceState3D {
 public:
 	GodotSpace3D *space = nullptr;
 
-	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override;
-	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override;
-	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) override;
-	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, ShapeRestInfo *r_info = nullptr) override;
-	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) override;
-	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) override;
+	virtual int intersect_point(const PS3DT::PointParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) override;
+	virtual bool intersect_ray(const PS3DT::RayParameters &p_parameters, PS3DT::RayResult &r_result) override;
+	virtual int intersect_shape(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) override;
+	virtual bool cast_motion(const PS3DT::ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, PS3DT::ShapeRestInfo *r_info = nullptr) override;
+	virtual bool collide_shape(const PS3DT::ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) override;
+	virtual bool rest_info(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeRestInfo *r_info) override;
 	virtual Vector3 get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const override;
 
 	GodotPhysicsDirectSpaceState3D();
@@ -175,8 +176,8 @@ public:
 	real_t get_last_step() const { return last_step; }
 	void set_last_step(real_t p_step) { last_step = p_step; }
 
-	void set_param(PhysicsServer3D::SpaceParameter p_param, real_t p_value);
-	real_t get_param(PhysicsServer3D::SpaceParameter p_param) const;
+	void set_param(PS3DE::SpaceParameter p_param, real_t p_value);
+	real_t get_param(PS3DE::SpaceParameter p_param) const;
 
 	void set_island_count(int p_island_count) { island_count = p_island_count; }
 	int get_island_count() const { return island_count; }
@@ -204,7 +205,7 @@ public:
 	void set_elapsed_time(ElapsedTime p_time, uint64_t p_msec) { elapsed_time[p_time] = p_msec; }
 	uint64_t get_elapsed_time(ElapsedTime p_time) const { return elapsed_time[p_time]; }
 
-	bool test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::MotionParameters &p_parameters, PhysicsServer3D::MotionResult *r_result);
+	bool test_body_motion(GodotBody3D *p_body, const PS3DT::MotionParameters &p_parameters, PS3DT::MotionResult *r_result);
 
 	GodotSpace3D();
 	~GodotSpace3D();

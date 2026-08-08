@@ -88,6 +88,7 @@ public partial class ExportedFields : GodotObject
     // Classes
     [Export] private GodotObject _fieldGodotObjectOrDerived;
     [Export] private Godot.Texture _fieldGodotResourceTexture;
+    [Export] private Godot.Texture _fieldGodotResourceTextureWithInitializer = new() { ResourceName = "" };
     [Export] private StringName _fieldStringName = new StringName("foo");
     [Export] private NodePath _fieldNodePath = new NodePath("foo");
     [Export] private Rid _fieldRid;
@@ -103,4 +104,9 @@ public partial class ExportedFields : GodotObject
 
     [Export]
     private Godot.Collections.Array<int> _fieldGodotGenericArray = new() { 0, 1, 2, 3, 4, 5, 6 };
+
+    private int _notIgnoredField;
+
+    [IgnoreMember]
+    private int _ignoredField;
 }

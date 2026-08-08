@@ -39,18 +39,18 @@
 #include "core/config/project_settings.h"
 #include "core/core_globals.h"
 #include "core/io/dir_access.h"
-#include "core/io/file_access_pack.h"
+#include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_uid.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "scene/resources/packed_scene.h"
-
 #include "tests/test_macros.h"
 
 namespace GDScriptTests {
 
 void init_autoloads() {
-	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
-
 	// First pass, add the constants so they exist before any script is loaded.
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
@@ -76,7 +76,7 @@ void init_autoloads() {
 			// Cache the scene reference before loading it (for cyclic references)
 			Ref<PackedScene> scn;
 			scn.instantiate();
-			scn->set_path(info.path);
+			scn->set_path(ResourceUID::ensure_path(info.path));
 			scn->reload_from_file();
 			ERR_CONTINUE_MSG(scn.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
 
@@ -145,6 +145,7 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 	if (do_init_languages) {
 		init_language(p_source_dir);
 	}
+
 #ifdef DEBUG_ENABLED
 	// Set all warning levels to "Warn" in order to test them properly, even the ones that default to error.
 	ProjectSettings::get_singleton()->set_setting("debug/gdscript/warnings/enable", true);
@@ -153,12 +154,16 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 			// TODO: Add ability for test scripts to specify which warnings to enable/disable for testing.
 			continue;
 		}
-		String warning_setting = GDScriptWarning::get_settings_path_from_code((GDScriptWarning::Code)i);
-		ProjectSettings::get_singleton()->set_setting(warning_setting, (int)GDScriptWarning::WARN);
+		const String setting_path = GDScriptWarning::get_setting_path_from_code((GDScriptWarning::Code)i);
+		ProjectSettings::get_singleton()->set_setting(setting_path, (int)GDScriptWarning::WARN);
 	}
-#endif
 
-	// Enable printing to show results
+	// Force the call, since the language is initialized **before** applying project settings
+	// and the `settings_changed` signal is emitted with `call_deferred()`.
+	GDScriptParser::update_project_settings();
+#endif // DEBUG_ENABLED
+
+	// Enable printing to show results.
 	CoreGlobals::print_line_enabled = true;
 	CoreGlobals::print_error_enabled = true;
 }
@@ -537,6 +542,18 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		ERR_FAIL_V_MSG(result, "\nCould not load source code for: '" + source_file + "'");
 	}
 
+#ifdef DEBUG_ENABLED
+	// Allows us to enable the UNTYPED_DECLARATION and INFERRED_DECLARATION
+	// warnings for specific tests by including a comment.
+	const String sc = script->get_source_code();
+	const String untyped_declaration_path = GDScriptWarning::get_setting_path_from_code(GDScriptWarning::UNTYPED_DECLARATION);
+	const String inferred_declaration_path = GDScriptWarning::get_setting_path_from_code(GDScriptWarning::INFERRED_DECLARATION);
+
+	ProjectSettings::get_singleton()->set_setting(untyped_declaration_path, (int)(sc.contains("# enable UNTYPED_DECLARATION") ? GDScriptWarning::WARN : GDScriptWarning::IGNORE));
+	ProjectSettings::get_singleton()->set_setting(inferred_declaration_path, (int)(sc.contains("# enable INFERRED_DECLARATION") ? GDScriptWarning::WARN : GDScriptWarning::IGNORE));
+	GDScriptParser::update_project_settings();
+#endif // DEBUG_ENABLED
+
 	// Test parsing.
 	GDScriptParser parser;
 	if (tokenizer_mode == TOKENIZER_TEXT) {
@@ -568,9 +585,21 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.status = GDTEST_ANALYZER_ERROR;
 		result.output = get_text_for_status(result.status) + "\n";
 
+		// Errors are stored in the order they were added, which may not match the source code.
+		// Here we sort only by lines, preserving the original order for columns.
+		// So, within a single line, the primary error is printed first, not cascading ones.
+		struct SortErrors {
+			_FORCE_INLINE_ bool operator()(const GDScriptParser::ParserError &p_a, const GDScriptParser::ParserError &p_b) const {
+				return p_a.start_line < p_b.start_line;
+			}
+		};
+
+		List<GDScriptParser::ParserError> errors = List<GDScriptParser::ParserError>(parser.get_errors());
+		errors.sort_custom<SortErrors>();
+
 		StringBuilder error_string;
-		for (const GDScriptParser::ParserError &error : parser.get_errors()) {
-			error_string.append(vformat(">> ERROR at line %d: %s\n", error.line, error.message));
+		for (const GDScriptParser::ParserError &error : errors) {
+			error_string.append(vformat(">> ERROR at line %d: %s\n", error.start_line, error.message));
 		}
 		result.output += error_string.as_string();
 		if (!p_is_generating) {

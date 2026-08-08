@@ -32,11 +32,11 @@
 
 #include "core/os/time.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/resources/style_box_flat.h"
 
 SnapshotSummaryView::SnapshotSummaryView() {
 	set_name(TTRC("Summary"));
@@ -44,36 +44,19 @@ SnapshotSummaryView::SnapshotSummaryView() {
 	set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->add_theme_constant_override("margin_left", 5);
-	mc->add_theme_constant_override("margin_right", 5);
-	mc->add_theme_constant_override("margin_top", 5);
-	mc->add_theme_constant_override("margin_bottom", 5);
-	mc->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
-	PanelContainer *content_wrapper = memnew(PanelContainer);
+	content_wrapper = memnew(PanelContainer);
 	content_wrapper->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
-	Ref<StyleBoxFlat> content_wrapper_sbf;
-	content_wrapper_sbf.instantiate();
-	content_wrapper_sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_2", "Editor"));
-	content_wrapper->add_theme_style_override(SceneStringName(panel), content_wrapper_sbf);
-	content_wrapper->add_child(mc);
 	add_child(content_wrapper);
 
 	VBoxContainer *content = memnew(VBoxContainer);
-	mc->add_child(content);
+	content_wrapper->add_child(content);
 	content->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
 
-	PanelContainer *pc = memnew(PanelContainer);
-	Ref<StyleBoxFlat> sbf;
-	sbf.instantiate();
-	sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_3", "Editor"));
-	pc->add_theme_style_override("panel", sbf);
-	content->add_child(pc);
-	pc->set_anchors_preset(LayoutPreset::PRESET_TOP_WIDE);
-	Label *title = memnew(Label(TTRC("ObjectDB Snapshot Summary")));
-	pc->add_child(title);
+	title = memnew(Label(TTRC("ObjectDB Snapshot Summary")));
+	content->add_child(title);
 	title->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 	title->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
+	title->set_anchors_preset(LayoutPreset::PRESET_TOP_WIDE);
 
 	explainer_text = memnew(CenterContainer);
 	explainer_text->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
@@ -103,31 +86,38 @@ SnapshotSummaryView::SnapshotSummaryView() {
 	blurb_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 }
 
+void SnapshotSummaryView::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		content_wrapper->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ObjectDBContentWrapper"), EditorStringName(EditorStyles)));
+		title->add_theme_style_override(SNAME("normal"), get_theme_stylebox(SNAME("ObjectDBTitle"), EditorStringName(EditorStyles)));
+	}
+}
+
 void SnapshotSummaryView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
 	SnapshotView::show_snapshot(p_data, p_diff_data);
 	explainer_text->set_visible(false);
 
-	String snapshot_a_name = diff_data == nullptr ? TTRC("Snapshot") : TTRC("Snapshot A");
-	String snapshot_b_name = TTRC("Snapshot B");
+	String snapshot_a_name = diff_data == nullptr ? TTR("Snapshot") : TTR("Snapshot A");
+	String snapshot_b_name = TTR("Snapshot B");
 
-	_push_overview_blurb(snapshot_a_name + " " + TTRC("Overview"), snapshot_data);
+	_push_overview_blurb(snapshot_a_name + " " + TTR("Overview"), snapshot_data);
 	if (diff_data) {
-		_push_overview_blurb(snapshot_b_name + " " + TTRC("Overview"), diff_data);
+		_push_overview_blurb(snapshot_b_name + " " + TTR("Overview"), diff_data);
 	}
 
-	_push_node_blurb(snapshot_a_name + " " + TTRC("Nodes"), snapshot_data);
+	_push_node_blurb(snapshot_a_name + " " + TTR("Nodes"), snapshot_data);
 	if (diff_data) {
-		_push_node_blurb(snapshot_b_name + " " + TTRC("Nodes"), diff_data);
+		_push_node_blurb(snapshot_b_name + " " + TTR("Nodes"), diff_data);
 	}
 
-	_push_refcounted_blurb(snapshot_a_name + " " + TTRC("RefCounteds"), snapshot_data);
+	_push_refcounted_blurb(snapshot_a_name + " " + TTR("RefCounteds"), snapshot_data);
 	if (diff_data) {
-		_push_refcounted_blurb(snapshot_b_name + " " + TTRC("RefCounteds"), diff_data);
+		_push_refcounted_blurb(snapshot_b_name + " " + TTR("RefCounteds"), diff_data);
 	}
 
-	_push_object_blurb(snapshot_a_name + " " + TTRC("Objects"), snapshot_data);
+	_push_object_blurb(snapshot_a_name + " " + TTR("Objects"), snapshot_data);
 	if (diff_data) {
-		_push_object_blurb(snapshot_b_name + " " + TTRC("Objects"), diff_data);
+		_push_object_blurb(snapshot_b_name + " " + TTR("Objects"), diff_data);
 	}
 }
 
@@ -214,7 +204,7 @@ void SnapshotSummaryView::_push_node_blurb(const String &p_title, GameStateSnaps
 		return;
 	}
 
-	String c = TTRC("Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')[/i]\n");
+	String c = TTR("Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')[/i]") + "\n";
 	c += "[ul]\n";
 	for (const String &node : nodes) {
 		c += " " + node + "\n";
@@ -243,7 +233,7 @@ void SnapshotSummaryView::_push_refcounted_blurb(const String &p_title, GameStat
 		return;
 	}
 
-	String c = TTRC("RefCounted objects only referenced in cycles [i](cycles often indicate a memory leaks)[/i]\n");
+	String c = TTR("RefCounted objects only referenced in cycles [i](cycles often indicate a memory leaks)[/i]") + "\n";
 	c += "[ul]\n";
 	for (const String &rc : rcs) {
 		c += " " + rc + "\n";
@@ -273,7 +263,7 @@ void SnapshotSummaryView::_push_object_blurb(const String &p_title, GameStateSna
 		return;
 	}
 
-	String c = TTRC("Scripted objects not referenced by any other objects [i](unreferenced objects may indicate a memory leak)[/i]\n");
+	String c = TTR("Scripted objects not referenced by any other objects [i](unreferenced objects may indicate a memory leak)[/i]") + "\n";
 	c += "[ul]\n";
 	for (const String &object : objects) {
 		c += " " + object + "\n";

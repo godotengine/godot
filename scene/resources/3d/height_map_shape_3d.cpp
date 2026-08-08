@@ -31,8 +31,11 @@
 #include "height_map_shape_3d.h"
 
 #include "core/io/image.h"
+#include "core/object/class_db.h"
 #include "scene/resources/mesh.h"
 #include "servers/physics_3d/physics_server_3d.h"
+
+#include <cfloat> // FLT_MAX
 
 Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
@@ -129,9 +132,9 @@ Ref<ArrayMesh> HeightMapShape3D::get_debug_arraymesh_faces(const Color &p_modula
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
-	a[RS::ARRAY_VERTEX] = verts;
-	a[RS::ARRAY_COLOR] = colors;
-	a[RS::ARRAY_INDEX] = indices;
+	a[RSE::ARRAY_VERTEX] = verts;
+	a[RSE::ARRAY_COLOR] = colors;
+	a[RSE::ARRAY_INDEX] = indices;
 	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
 
 	return mesh;
@@ -359,7 +362,7 @@ void HeightMapShape3D::_bind_methods() {
 }
 
 HeightMapShape3D::HeightMapShape3D() :
-		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_HEIGHTMAP)) {
+		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PS3DE::SHAPE_HEIGHTMAP)) {
 	map_data.resize(map_width * map_depth);
 	real_t *w = map_data.ptrw();
 	w[0] = 0.0;

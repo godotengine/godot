@@ -618,7 +618,7 @@
     /*       Our copy of it does not change that requirement.         */
     cf2_arrstack_setCount( &subrStack, CF2_MAX_SUBR + 1 );
 
-    charstring  = (CF2_Buffer)cf2_arrstack_getBuffer( &subrStack );
+    charstring = (CF2_Buffer)cf2_arrstack_getBuffer( &subrStack );
 
     /* catch errors so far */
     if ( *error )

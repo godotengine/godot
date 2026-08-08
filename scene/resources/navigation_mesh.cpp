@@ -30,6 +30,8 @@
 
 #include "navigation_mesh.h"
 
+#include "core/object/class_db.h"
+
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_3d/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
@@ -630,9 +632,7 @@ void NavigationMesh::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
-	}
-
-	if (p_property.name == "geometry_source_group_name") {
+	} else if (p_property.name == "geometry_source_group_name") {
 		if (source_geometry_mode == SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 			return;

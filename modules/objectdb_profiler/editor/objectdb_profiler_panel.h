@@ -69,9 +69,9 @@ protected:
 	HashMap<int, PartialSnapshot> partial_snapshots;
 
 	LocalVector<SnapshotView *> views;
-	Ref<GameStateSnapshotRef> current_snapshot;
-	Ref<GameStateSnapshotRef> diff_snapshot;
-	LRUCache<String, Ref<GameStateSnapshotRef>> snapshot_cache;
+	Ref<GameStateSnapshot> current_snapshot;
+	Ref<GameStateSnapshot> diff_snapshot;
+	LRUCache<String, Ref<GameStateSnapshot>> snapshot_cache;
 
 	void _request_object_snapshot();
 	void _begin_object_snapshot();
@@ -95,7 +95,7 @@ public:
 	void receive_snapshot(int p_request_id);
 	void show_snapshot(const String &p_snapshot_file_name, const String &p_snapshot_diff_file_name);
 	void clear_snapshot(bool p_update_view_tabs = true);
-	Ref<GameStateSnapshotRef> get_snapshot(const String &p_snapshot_file_name);
+	Ref<GameStateSnapshot> get_snapshot(const String &p_snapshot_file_name);
 	void set_enabled(bool p_enabled);
 	void add_view(SnapshotView *p_to_add);
 

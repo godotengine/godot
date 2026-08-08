@@ -30,8 +30,13 @@
 
 #include "ray_cast_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
 #include "scene/3d/physics/collision_object_3d.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
+#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/rendering/rendering_server.h"
 
 void RayCast3D::set_target_position(const Vector3 &p_point) {
 	target_position = p_point;
@@ -213,6 +218,14 @@ void RayCast3D::_notification(int p_what) {
 				}
 			}
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			if (get_tree()->is_debugging_collisions_hint()) {
+				_update_debug_shape();
+			} else {
+				_clear_debug_shape();
+			}
+		} break;
 	}
 }
 
@@ -230,7 +243,7 @@ void RayCast3D::_update_raycast_state() {
 		to = Vector3(0, 0.01, 0);
 	}
 
-	PhysicsDirectSpaceState3D::RayParameters ray_params;
+	PS3DT::RayParameters ray_params;
 	ray_params.from = gt.get_origin();
 	ray_params.to = gt.xform(to);
 	ray_params.exclude = exclude;
@@ -240,7 +253,7 @@ void RayCast3D::_update_raycast_state() {
 	ray_params.hit_from_inside = hit_from_inside;
 	ray_params.hit_back_faces = hit_back_faces;
 
-	PhysicsDirectSpaceState3D::RayResult rr;
+	PS3DT::RayResult rr;
 	if (dss->intersect_ray(ray_params, rr)) {
 		collided = true;
 		against = rr.collider_id;
@@ -265,8 +278,8 @@ void RayCast3D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void RayCast3D::add_exception(const CollisionObject3D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+void RayCast3D::add_exception(RequiredParam<const CollisionObject3D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
 	add_exception_rid(p_node->get_rid());
 }
 
@@ -274,8 +287,8 @@ void RayCast3D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void RayCast3D::remove_exception(const CollisionObject3D *p_node) {
-	ERR_FAIL_NULL_MSG(p_node, "The passed Node must be an instance of CollisionObject3D.");
+void RayCast3D::remove_exception(RequiredParam<const CollisionObject3D> rp_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
 	remove_exception_rid(p_node->get_rid());
 }
 

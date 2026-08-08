@@ -32,17 +32,23 @@
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
-#include "core/string/print_string.h"
+#include "core/string/print_string.h" // IWYU pragma: keep. `WARN_VERBOSE` macro.
 #include "core/templates/sort_array.h"
 #include "core/templates/vector.h"
 
 #include <initializer_list>
 #include <type_traits>
 
-// If tight, it grows strictly as much as needed.
-// Otherwise, it grows exponentially (the default and what you want in most cases).
+/**
+ * Array-like container with unique ownership.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ *
+ * @tparam tight Disable exponential growth (reallocate element-by-element instead).
+ */
 template <typename T, typename U = uint32_t, bool force_trivial = false, bool tight = false>
-class LocalVector {
+class _WARN_UNUSED_ LocalVector {
 	static_assert(!force_trivial, "force_trivial is no longer supported. Use resize_uninitialized instead.");
 
 private:
@@ -71,12 +77,12 @@ private:
 	}
 
 public:
-	_FORCE_INLINE_ T *ptr() { return data; }
-	_FORCE_INLINE_ const T *ptr() const { return data; }
+	_FORCE_INLINE_ T *ptr() _LIFETIME_BOUND_ { return data; }
+	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ { return data; }
 	_FORCE_INLINE_ U size() const { return count; }
 
-	_FORCE_INLINE_ Span<T> span() const { return Span(data, count); }
-	_FORCE_INLINE_ operator Span<T>() const { return span(); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return Span(data, count); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return span(); }
 
 	// Must take a copy instead of a reference (see GH-31736).
 	_FORCE_INLINE_ void push_back(T p_elem) {
@@ -99,7 +105,7 @@ public:
 	/// Removes the item copying the last value into the position of the one to
 	/// remove. It's generally faster than `remove_at`.
 	void remove_at_unordered(U p_index) {
-		ERR_FAIL_INDEX(p_index, count);
+		ERR_FAIL_UNSIGNED_INDEX(p_index, count);
 		count--;
 		if (count > p_index) {
 			data[p_index] = std::move(data[count]);
@@ -190,18 +196,19 @@ public:
 		_resize<!std::is_trivially_constructible_v<T>>(p_size);
 	}
 
-	/// Resize and set all values to 0 / false / nullptr.
+	/// Resize and set new values to 0 / false / nullptr.
 	_FORCE_INLINE_ void resize_initialized(U p_size) { _resize<true>(p_size); }
 
-	/// Resize and set all values to 0 / false / nullptr.
+	/// Resize and keep memory uninitialized.
+	/// This means that any newly added elements have an unknown value, and are expected to be set after the `resize_uninitialized` call.
 	/// This is only available for trivially destructible types (otherwise, trivial resize might be UB).
 	_FORCE_INLINE_ void resize_uninitialized(U p_size) { _resize<false>(p_size); }
 
-	_FORCE_INLINE_ const T &operator[](U p_index) const {
+	_FORCE_INLINE_ const T &operator[](U p_index) const _LIFETIME_BOUND_ {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
 		return data[p_index];
 	}
-	_FORCE_INLINE_ T &operator[](U p_index) {
+	_FORCE_INLINE_ T &operator[](U p_index) _LIFETIME_BOUND_ {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
 		return data[p_index];
 	}
@@ -220,8 +227,8 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return elem_ptr != b.elem_ptr; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return elem_ptr == p_other.elem_ptr; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return elem_ptr != p_other.elem_ptr; }
 
 		Iterator(T *p_ptr) { elem_ptr = p_ptr; }
 		Iterator() {}
@@ -245,8 +252,8 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return elem_ptr != b.elem_ptr; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return elem_ptr == p_other.elem_ptr; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return elem_ptr != p_other.elem_ptr; }
 
 		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
 		ConstIterator() {}
@@ -256,17 +263,17 @@ public:
 		const T *elem_ptr = nullptr;
 	};
 
-	_FORCE_INLINE_ Iterator begin() {
+	_FORCE_INLINE_ Iterator begin() _LIFETIME_BOUND_ {
 		return Iterator(data);
 	}
-	_FORCE_INLINE_ Iterator end() {
+	_FORCE_INLINE_ Iterator end() _LIFETIME_BOUND_ {
 		return Iterator(data + size());
 	}
 
-	_FORCE_INLINE_ ConstIterator begin() const {
+	_FORCE_INLINE_ ConstIterator begin() const _LIFETIME_BOUND_ {
 		return ConstIterator(ptr());
 	}
-	_FORCE_INLINE_ ConstIterator end() const {
+	_FORCE_INLINE_ ConstIterator end() const _LIFETIME_BOUND_ {
 		return ConstIterator(ptr() + size());
 	}
 
@@ -313,23 +320,8 @@ public:
 	}
 
 	void ordered_insert(T p_val) {
-		U i;
-		for (i = 0; i < count; i++) {
-			if (p_val < data[i]) {
-				break;
-			}
-		}
-		insert(i, p_val);
-	}
-
-	explicit operator Vector<T>() const {
-		Vector<T> ret;
-		ret.resize(count);
-		T *w = ret.ptrw();
-		if (w) {
-			copy_arr_placement(w, data, count);
-		}
-		return ret;
+		U idx = span().bisect(p_val, false);
+		insert(idx, std::move(p_val));
 	}
 
 	Vector<uint8_t> to_byte_array() const { //useful to pass stuff to gpu or variant
@@ -342,20 +334,26 @@ public:
 		return ret;
 	}
 
-	_FORCE_INLINE_ LocalVector() {}
-	_FORCE_INLINE_ LocalVector(std::initializer_list<T> p_init) {
+	LocalVector() = default;
+	LocalVector(std::initializer_list<T> p_init) {
 		reserve(p_init.size());
-		for (const T &element : p_init) {
-			push_back(element);
+		size_t i = 0;
+		for (const T &value : p_init) {
+			memnew_placement(&data[i], T(value));
+			i++;
 		}
+		count = p_init.size();
 	}
-	_FORCE_INLINE_ LocalVector(const LocalVector &p_from) {
-		resize(p_from.size());
-		for (U i = 0; i < p_from.count; i++) {
-			data[i] = p_from.data[i];
+	explicit LocalVector(Span<T> p_span) {
+		reserve(p_span.size());
+		for (size_t i = 0; i < p_span.size(); i++) {
+			memnew_placement(&data[i], T(p_span.ptr()[i]));
 		}
+		count = p_span.size();
 	}
-	_FORCE_INLINE_ LocalVector(LocalVector &&p_from) {
+	explicit LocalVector(const LocalVector &p_vector) :
+			LocalVector(p_vector.span()) {}
+	LocalVector(LocalVector &&p_from) {
 		data = p_from.data;
 		count = p_from.count;
 		capacity = p_from.capacity;
@@ -365,19 +363,14 @@ public:
 		p_from.capacity = 0;
 	}
 
-	inline void operator=(const LocalVector &p_from) {
+	void operator=(Span<T> p_from) {
 		resize(p_from.size());
-		for (U i = 0; i < p_from.count; i++) {
-			data[i] = p_from.data[i];
-		}
-	}
-	inline void operator=(const Vector<T> &p_from) {
-		resize(p_from.size());
-		for (U i = 0; i < count; i++) {
+		for (size_t i = 0; i < p_from.size(); i++) {
 			data[i] = p_from[i];
 		}
 	}
-	inline void operator=(LocalVector &&p_from) {
+	void operator=(const LocalVector &p_vector) { operator=(p_vector.span()); }
+	void operator=(LocalVector &&p_from) {
 		if (unlikely(this == &p_from)) {
 			return;
 		}
@@ -391,14 +384,14 @@ public:
 		p_from.count = 0;
 		p_from.capacity = 0;
 	}
-	inline void operator=(Vector<T> &&p_from) {
+	void operator=(Vector<T> &&p_from) {
 		resize(p_from.size());
 		for (U i = 0; i < count; i++) {
 			data[i] = std::move(p_from[i]);
 		}
 	}
 
-	_FORCE_INLINE_ ~LocalVector() {
+	~LocalVector() {
 		if (data) {
 			reset();
 		}

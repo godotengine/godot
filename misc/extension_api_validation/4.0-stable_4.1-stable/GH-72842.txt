@@ -1,0 +1,5 @@
+GH-72842
+--------
+Validate extension JSON: API was removed: classes/PathFollow2D/methods/get_lookahead
+Validate extension JSON: API was removed: classes/PathFollow2D/methods/set_lookahead
+Validate extension JSON: API was removed: classes/PathFollow2D/properties/lookahead

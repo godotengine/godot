@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "godot_area_pair_2d.h"
+
 #include "godot_collision_solver_2d.h"
 
 bool GodotAreaPair2D::setup(real_t p_step) {
@@ -40,11 +41,11 @@ bool GodotAreaPair2D::setup(real_t p_step) {
 	process_collision = false;
 	has_space_override = false;
 	if (result != colliding) {
-		if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
+		if ((int)area->get_param(PS2DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PS2DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			has_space_override = true;
-		} else if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
+		} else if ((int)area->get_param(PS2DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE) != PS2DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			has_space_override = true;
-		} else if ((int)area->get_param(PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE) != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED) {
+		} else if ((int)area->get_param(PS2DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE) != PS2DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			has_space_override = true;
 		}
 		process_collision = has_space_override;
@@ -98,7 +99,7 @@ GodotAreaPair2D::GodotAreaPair2D(GodotBody2D *p_body, int p_body_shape, GodotAre
 	area_shape = p_area_shape;
 	body->add_constraint(this, 0);
 	area->add_constraint(this);
-	if (p_body->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) { //need to be active to process pair
+	if (p_body->get_mode() == PS2DE::BODY_MODE_KINEMATIC) { //need to be active to process pair
 		p_body->set_active(true);
 	}
 }

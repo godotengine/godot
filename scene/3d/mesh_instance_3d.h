@@ -75,6 +75,7 @@ public:
 
 #ifndef DISABLE_DEPRECATED
 	static inline bool use_parent_skeleton_compat = false;
+	static inline bool upgrading_skeleton_compat = false;
 #endif
 
 	void set_mesh(const Ref<Mesh> &p_mesh);
@@ -131,6 +132,7 @@ public:
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
 #endif // NAVIGATION_3D_DISABLED
 
+	virtual PackedStringArray get_configuration_warnings() const override;
+
 	MeshInstance3D();
-	~MeshInstance3D();
 };

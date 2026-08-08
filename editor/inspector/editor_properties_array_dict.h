@@ -133,6 +133,7 @@ class EditorPropertyArray : public EditorProperty {
 	int reorder_to_index = -1;
 	float reorder_mouse_y_delta = 0.0f;
 	void initialize_array(Variant &p_array);
+	void _update_slots_size();
 
 	void _page_changed(int p_page);
 
@@ -140,6 +141,8 @@ class EditorPropertyArray : public EditorProperty {
 	void _reorder_button_down(int p_index);
 	void _reorder_button_up();
 	void _create_new_property_slot();
+
+	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 
 	Node *get_base_node();
 
@@ -170,6 +173,7 @@ protected:
 public:
 	void setup(Variant::Type p_array_type, const String &p_hint_string = "");
 	void set_preview_value(bool p_preview_value);
+	virtual void make_passthrough(bool p_passthrough) override;
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyArray();
@@ -238,7 +242,6 @@ class EditorPropertyDictionary : public EditorProperty {
 	PanelContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
 	PanelContainer *add_panel = nullptr;
-	EditorSpinSlider *size_sliderv = nullptr;
 	Button *button_add_item = nullptr;
 	EditorPaginator *paginator = nullptr;
 	LocalVector<Slot> slots;
@@ -247,6 +250,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	void _page_changed(int p_page);
 	void _edit_pressed();
 	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 	void _change_type(Object *p_button, int p_slot_index);
 	void _change_type_menu(int p_index);
 
@@ -268,6 +272,7 @@ protected:
 public:
 	void setup(PropertyHint p_hint, const String &p_hint_string = "");
 	void set_preview_value(bool p_preview_value);
+	virtual void make_passthrough(bool p_passthrough) override;
 	virtual void update_property() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyDictionary();

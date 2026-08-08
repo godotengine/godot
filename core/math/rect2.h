@@ -144,6 +144,8 @@ struct [[nodiscard]] Rect2 {
 		return size.x > 0.0f && size.y > 0.0f;
 	}
 
+	Rect2 intersection_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const;
+
 	// Returns the intersection between two Rect2s or an empty Rect2 if there is no intersection.
 	inline Rect2 intersection(const Rect2 &p_rect) const {
 		Rect2 new_rect = p_rect;
@@ -368,6 +370,30 @@ struct [[nodiscard]] Rect2 {
 		h = hash_murmur3_one_real(size.x, h);
 		h = hash_murmur3_one_real(size.y, h);
 		return hash_fmix32(h);
+	}
+
+	static Rect2 from_points(const Vector2 *p_points, int p_point_count) {
+		Rect2 result;
+		ERR_FAIL_NULL_V_MSG(p_points, result, "The pointer of points passed in is invalid.");
+		ERR_FAIL_COND_V_MSG(p_point_count <= 0, result, "The number of points passed in is invalid.");
+		result.position = p_points[0];
+		Vector2 end = result.position;
+		for (int i = 1; i < p_point_count; i++) {
+			const Vector2 &p = p_points[i];
+
+			if (p.x < result.position.x) {
+				result.position.x = p.x;
+			} else if (p.x > end.x) {
+				end.x = p.x;
+			}
+			if (p.y < result.position.y) {
+				result.position.y = p.y;
+			} else if (p.y > end.y) {
+				end.y = p.y;
+			}
+		}
+		result.size = end - result.position;
+		return result;
 	}
 
 	Rect2() = default;

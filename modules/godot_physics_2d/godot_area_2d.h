@@ -32,17 +32,18 @@
 
 #include "godot_collision_object_2d.h"
 
+#include "core/templates/hash_set.h"
 #include "core/templates/self_list.h"
-#include "servers/physics_2d/physics_server_2d.h"
+#include "core/variant/callable.h"
 
 class GodotSpace2D;
 class GodotBody2D;
 class GodotConstraint2D;
 
 class GodotArea2D : public GodotCollisionObject2D {
-	PhysicsServer2D::AreaSpaceOverrideMode gravity_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
-	PhysicsServer2D::AreaSpaceOverrideMode linear_damping_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
-	PhysicsServer2D::AreaSpaceOverrideMode angular_damping_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
+	PS2DE::AreaSpaceOverrideMode gravity_override_mode = PS2DE::AREA_SPACE_OVERRIDE_DISABLED;
+	PS2DE::AreaSpaceOverrideMode linear_damping_override_mode = PS2DE::AREA_SPACE_OVERRIDE_DISABLED;
+	PS2DE::AreaSpaceOverrideMode angular_damping_override_mode = PS2DE::AREA_SPACE_OVERRIDE_DISABLED;
 
 	real_t gravity = 9.80665;
 	Vector2 gravity_vector = Vector2(0, -1);
@@ -96,7 +97,7 @@ class GodotArea2D : public GodotCollisionObject2D {
 	virtual void _shapes_changed() override;
 	void _queue_monitor_update();
 
-	void _set_space_override_mode(PhysicsServer2D::AreaSpaceOverrideMode &r_mode, PhysicsServer2D::AreaSpaceOverrideMode p_new_mode);
+	void _set_space_override_mode(PS2DE::AreaSpaceOverrideMode &r_mode, PS2DE::AreaSpaceOverrideMode p_new_mode);
 
 public:
 	void set_monitor_callback(const Callable &p_callback);
@@ -111,8 +112,8 @@ public:
 	_FORCE_INLINE_ void add_area_to_query(GodotArea2D *p_area, uint32_t p_area_shape, uint32_t p_self_shape);
 	_FORCE_INLINE_ void remove_area_from_query(GodotArea2D *p_area, uint32_t p_area_shape, uint32_t p_self_shape);
 
-	void set_param(PhysicsServer2D::AreaParameter p_param, const Variant &p_value);
-	Variant get_param(PhysicsServer2D::AreaParameter p_param) const;
+	void set_param(PS2DE::AreaParameter p_param, const Variant &p_value);
+	Variant get_param(PS2DE::AreaParameter p_param) const;
 
 	_FORCE_INLINE_ void set_gravity(real_t p_gravity) { gravity = p_gravity; }
 	_FORCE_INLINE_ real_t get_gravity() const { return gravity; }

@@ -59,5 +59,21 @@
 	$additional_plist_content
 	$plist_launch_screen_name
 	<key>CADisableMinimumFrameDurationOnPhone</key><true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		$application_scene_manifest_default_session_role
+		<key>UIApplicationSupportsMultipleScenes</key><false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+				</dict>
+			</array>
+			$application_scene_manifest_immersive_configuration
+		</dict>
+	</dict>
 </dict>
 </plist>

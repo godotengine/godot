@@ -30,6 +30,9 @@
 
 #include "framebuffer_cache_rd.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_device_binds.h"
+
 FramebufferCacheRD *FramebufferCacheRD::singleton = nullptr;
 
 void FramebufferCacheRD::_bind_methods() {

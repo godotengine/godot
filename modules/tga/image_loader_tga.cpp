@@ -89,8 +89,8 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 }
 
 Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buffer, const tga_header_s &p_header, const uint8_t *p_palette, const bool p_is_monochrome, size_t p_input_size) {
-#define TGA_PUT_PIXEL(r, g, b, a)             \
-	int image_data_ofs = ((y * width) + x);   \
+#define TGA_PUT_PIXEL(r, g, b, a) \
+	int image_data_ofs = ((y * width) + x); \
 	image_data_w[image_data_ofs * 4 + 0] = r; \
 	image_data_w[image_data_ofs * 4 + 1] = g; \
 	image_data_w[image_data_ofs * 4 + 2] = b; \

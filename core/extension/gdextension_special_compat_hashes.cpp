@@ -331,6 +331,12 @@ void GDExtensionSpecialCompatHashes::initialize() {
 	});
 	mappings.insert("EditorFileDialog", {
 		{ "add_filter", 233059325, 3388804757 },
+		{ "get_access", 778734016, 3344081076 },
+		{ "set_access", 3882893764, 4104413466 },
+		{ "get_display_mode", 3517174669, 1092104624 },
+		{ "set_display_mode", 3049004050, 2692197101 },
+		{ "get_file_mode", 2681044145, 4074825319 },
+		{ "set_file_mode", 274150415, 3654936397 },
 	});
 	mappings.insert("EditorImportPlugin", {
 		{ "append_import_external_resource", 3645925746, 320493106 },

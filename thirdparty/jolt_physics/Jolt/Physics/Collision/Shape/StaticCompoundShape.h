@@ -19,7 +19,8 @@ class JPH_EXPORT StaticCompoundShapeSettings final : public CompoundShapeSetting
 	JPH_DECLARE_SERIALIZABLE_VIRTUAL(JPH_EXPORT, StaticCompoundShapeSettings)
 
 public:
-	// See: ShapeSettings
+	/// Create a shape according to the settings specified by this object.
+	/// Note when there is only 1 sub shape, this will create a RotatedTranslatedShape, or when the sub shape has no rotation/translation, it will return the child shape itself.
 	virtual ShapeResult				Create() const override;
 
 	/// Specialization of Create() function that allows specifying a temp allocator to avoid temporary memory allocations on the heap

@@ -107,10 +107,10 @@ struct LigatureSubstFormat1_2
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
     external_cache_t *cache = (external_cache_t *) external_cache;
     const hb_set_digest_t *seconds = cache ? &cache->seconds : nullptr;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
+    unsigned int index = (this+coverage).get_coverage (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
 #else
     const hb_set_digest_t *seconds = nullptr;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
+    unsigned int index = (this+coverage).get_coverage (buffer->cur().codepoint);
 #endif
     if (index == NOT_COVERED) return_trace (false);
 

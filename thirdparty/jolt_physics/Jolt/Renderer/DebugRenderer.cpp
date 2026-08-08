@@ -635,15 +635,15 @@ AABox DebugRenderer::sCalculateBounds(const Vertex *inVertices, int inVertexCoun
 	return bounds;
 }
 
-DebugRenderer::Batch DebugRenderer::CreateTriangleBatch(const VertexList &inVertices, const IndexedTriangleNoMaterialList &inTriangles)
+DebugRenderer::Batch DebugRenderer::CreateTriangleBatch(const Float3 *inVertices, int inVertexCount, const IndexedTriangleNoMaterial *inTriangles, int inTriangleCount)
 {
 	JPH_PROFILE_FUNCTION();
 
 	Array<Vertex> vertices;
 
 	// Create render vertices
-	vertices.resize(inVertices.size());
-	for (size_t v = 0; v < inVertices.size(); ++v)
+	vertices.resize(inVertexCount);
+	for (int v = 0; v < inVertexCount; ++v)
 	{
 		vertices[v].mPosition = inVertices[v];
 		vertices[v].mNormal = Float3(0, 0, 0);
@@ -652,7 +652,7 @@ DebugRenderer::Batch DebugRenderer::CreateTriangleBatch(const VertexList &inVert
 	}
 
 	// Calculate normals
-	for (size_t i = 0; i < inTriangles.size(); ++i)
+	for (int i = 0; i < inTriangleCount; ++i)
 	{
 		const IndexedTriangleNoMaterial &tri = inTriangles[i];
 
@@ -671,7 +671,7 @@ DebugRenderer::Batch DebugRenderer::CreateTriangleBatch(const VertexList &inVert
 	for (size_t i = 0; i < vertices.size(); ++i)
 		Vec3::sLoadFloat3Unsafe(vertices[i].mNormal).Normalized().StoreFloat3(&vertices[i].mNormal);
 
-	return CreateTriangleBatch(&vertices[0], (int)vertices.size(), &inTriangles[0].mIdx[0], (int)(3 * inTriangles.size()));
+	return CreateTriangleBatch(&vertices[0], (int)vertices.size(), &inTriangles[0].mIdx[0], 3 * inTriangleCount);
 }
 
 DebugRenderer::Batch DebugRenderer::CreateTriangleBatchForConvex(SupportFunction inGetSupport, int inLevel, AABox *outBounds)
@@ -913,7 +913,7 @@ void DebugRenderer::DrawSwingConeLimits(RMat44Arg inMatrix, float inSwingYHalfAn
 
 					// Calculate the corresponding z value of the quaternion
 					float z_sq = e1_sq - e1_sq / e2_sq * Square(y);
-					z = z_sq <= 0.0f? 0.0f : sqrt(z_sq);
+					z = z_sq <= 0.0f? 0.0f : Sqrt(z_sq);
 				}
 				else
 				{
@@ -922,7 +922,7 @@ void DebugRenderer::DrawSwingConeLimits(RMat44Arg inMatrix, float inSwingYHalfAn
 
 					// Calculate the corresponding y value of the quaternion
 					float y_sq = e2_sq - e2_sq / e1_sq * Square(z);
-					y = y_sq <= 0.0f? 0.0f : sqrt(y_sq);
+					y = y_sq <= 0.0f? 0.0f : Sqrt(y_sq);
 				}
 
 				// If we're tracing the opposite side, flip the values
@@ -934,7 +934,7 @@ void DebugRenderer::DrawSwingConeLimits(RMat44Arg inMatrix, float inSwingYHalfAn
 
 				// Create quaternion
 				Vec3 q_xyz(0, y, z);
-				float w = sqrt(1.0f - q_xyz.LengthSq());
+				float w = Sqrt(1.0f - q_xyz.LengthSq());
 				Quat q(Vec4(q_xyz, w));
 
 				// Store vertex

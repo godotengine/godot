@@ -30,6 +30,8 @@
 
 #include "texture_layered_editor_plugin.h"
 
+#include "core/input/input.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
 #include "editor/themes/editor_scale.h"
@@ -151,8 +153,8 @@ void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::RIGHT)) {
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 		}
 
 		y_rot += mm->get_relative().x * 0.01;
@@ -163,10 +165,10 @@ void TextureLayeredEditor::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT) {
-		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_CAPTURED) {
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(original_mouse_pos);
-		} else if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
+		} else if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
 			original_mouse_pos = mb->get_global_position();
 		}
 	}
@@ -240,7 +242,7 @@ void TextureLayeredEditor::_update_gui() {
 	info->set_text(texture_info);
 
 	const uint32_t components_mask = Image::get_format_component_mask(format);
-	if (is_power_of_2(components_mask)) {
+	if (Math::is_power_of_2(components_mask)) {
 		// Only one channel available, no point in showing a channel selector.
 		channel_selector->hide();
 	} else {

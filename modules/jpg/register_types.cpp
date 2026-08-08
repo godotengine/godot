@@ -33,6 +33,8 @@
 #include "image_loader_libjpeg_turbo.h"
 #include "movie_writer_mjpeg.h"
 
+#include "core/object/class_db.h"
+
 static Ref<ImageLoaderLibJPEGTurbo> image_loader_libjpeg_turbo;
 static MovieWriterMJPEG *writer_mjpeg = nullptr;
 

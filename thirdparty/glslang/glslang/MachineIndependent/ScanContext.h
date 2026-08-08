@@ -53,7 +53,7 @@ public:
     explicit TScanContext(TParseContextBase& pc) :
         parseContext(pc),
         afterType(false), afterStruct(false),
-        field(false), afterBuffer(false) { }
+        field(false), afterBuffer(false), inDeclaratorList(false), afterDeclarator(false), angleBracketDepth(0), squareBracketDepth(0), parenDepth(0) { }
     virtual ~TScanContext() { }
 
     static void fillInKeywordMap();
@@ -82,6 +82,11 @@ protected:
     bool afterStruct;         // true if we've recognized the STRUCT keyword, so can only be looking for an identifier
     bool field;               // true if we're on a field, right after a '.'
     bool afterBuffer;         // true if we've recognized the BUFFER keyword
+    bool inDeclaratorList;    // true if we detected we're in a declarator list like "float a, b;"
+    bool afterDeclarator;     // true if we just saw an identifier after a type (potential declarator)
+    int angleBracketDepth;    // track nesting level of < > to detect template parameters
+    int squareBracketDepth;   // track nesting level of [ ] to detect array expressions
+    int parenDepth;           // track nesting level of ( ) to detect function parameters
     TSourceLoc loc;
     TParserToken* parserToken;
     TPpToken* ppToken;

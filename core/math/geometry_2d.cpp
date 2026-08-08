@@ -30,15 +30,16 @@
 
 #include "geometry_2d.h"
 
+#include "core/math/math_funcs_binary.h"
+
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Walloc-zero")
-#include "thirdparty/clipper2/include/clipper2/clipper.h"
+#include <thirdparty/clipper2/include/clipper2/clipper.h>
 GODOT_GCC_WARNING_POP
-#include "thirdparty/misc/polypartition.h"
+#include <thirdparty/misc/polypartition.h>
 #define STB_RECT_PACK_IMPLEMENTATION
-#include "thirdparty/misc/stb_rect_pack.h"
+#include <thirdparty/misc/stb_rect_pack.h>
 
 const int clipper_precision = 5; // Based on CMP_EPSILON.
-const double clipper_scale = Math::pow(10.0, clipper_precision);
 
 void Geometry2D::merge_many_polygons(const Vector<Vector<Vector2>> &p_polygons, Vector<Vector<Vector2>> &r_out_polygons, Vector<Vector<Vector2>> &r_out_holes) {
 	using namespace Clipper2Lib;
@@ -228,8 +229,8 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	real_t best_aspect = 1e20;
 
 	for (int i = 0; i < results.size(); i++) {
-		real_t h = next_power_of_2((uint32_t)results[i].max_h);
-		real_t w = next_power_of_2((uint32_t)results[i].max_w);
+		real_t h = Math::next_power_of_2((uint32_t)results[i].max_h);
+		real_t w = Math::next_power_of_2((uint32_t)results[i].max_w);
 		real_t aspect = h > w ? h / w : w / h;
 		if (aspect < best_aspect) {
 			best = i;
@@ -246,7 +247,7 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 	r_size = Size2(results[best].max_w, results[best].max_h);
 }
 
-Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open) {
+Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool p_is_a_open) {
 	using namespace Clipper2Lib;
 
 	ClipType op = ClipType::Union;
@@ -277,7 +278,7 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 
 	ClipperD clp(clipper_precision); // Scale points up internally to attain the desired precision.
 	clp.PreserveCollinear(false); // Remove redundant vertices.
-	if (is_a_open) {
+	if (p_is_a_open) {
 		clp.AddOpenSubject({ path_a });
 	} else {
 		clp.AddSubject({ path_a });
@@ -286,7 +287,7 @@ Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation 
 
 	PathsD paths;
 
-	if (is_a_open) {
+	if (p_is_a_open) {
 		PolyTreeD tree; // Needed to populate polylines.
 		clp.Execute(op, FillRule::EvenOdd, tree, paths);
 	} else {
@@ -351,10 +352,7 @@ Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_poly
 	}
 
 	// Inflate/deflate.
-	PathsD paths = InflatePaths({ polypath }, p_delta, jt, et, 2.0, clipper_precision, 0.25 * clipper_scale);
-	// Here the points are scaled up internally and
-	// the arc_tolerance is scaled accordingly
-	// to attain the desired precision.
+	PathsD paths = InflatePaths({ polypath }, p_delta, jt, et, 2.0, clipper_precision, 0.25);
 
 	Vector<Vector<Point2>> polypaths;
 	polypaths.resize(paths.size());

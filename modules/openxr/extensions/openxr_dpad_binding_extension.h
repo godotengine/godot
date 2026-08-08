@@ -33,7 +33,6 @@
 #include "../action_map/openxr_action_set.h"
 #include "../action_map/openxr_binding_modifier.h"
 #include "../action_map/openxr_haptic_feedback.h"
-#include "../util.h"
 #include "openxr_extension_wrapper.h"
 
 class OpenXRDPadBindingExtension : public OpenXRExtensionWrapper {
@@ -48,7 +47,7 @@ public:
 	OpenXRDPadBindingExtension();
 	virtual ~OpenXRDPadBindingExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	bool is_available();
 

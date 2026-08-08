@@ -32,6 +32,8 @@
 
 #include "scene/3d/physics/physics_body_3d.h"
 
+class PhysicsMaterial;
+
 #ifndef NAVIGATION_3D_DISABLED
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
@@ -59,7 +61,7 @@ public:
 	Vector3 get_constant_linear_velocity() const;
 	Vector3 get_constant_angular_velocity() const;
 
-	StaticBody3D(PhysicsServer3D::BodyMode p_mode = PhysicsServer3D::BODY_MODE_STATIC);
+	StaticBody3D(PS3DE::BodyMode p_mode = PS3DE::BODY_MODE_STATIC);
 
 private:
 	void _reload_physics_characteristics();

@@ -32,7 +32,8 @@
 
 #include "crash_handler_macos.h"
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
+#include "core/templates/rb_map.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
@@ -79,6 +80,23 @@ protected:
 	virtual void delete_main_loop() override;
 
 public:
+	static inline const char *headless_args[] = {
+		"--headless",
+		"-h",
+		"--help",
+		"/?",
+		"--version",
+		"--dump-gdextension-interface",
+		"--dump-extension-api",
+		"--dump-gdextension-interface-json",
+		"--dump-extension-api-with-docs",
+		"--validate-extension-api",
+		"--convert-3to4",
+		"--validate-conversion-3to4",
+		"--doctool",
+		"--test",
+	};
+
 	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 
 	virtual void set_cmdline_platform_args(const List<String> &p_args);
@@ -107,11 +125,13 @@ public:
 	virtual String get_godot_dir_name() const override;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
 	virtual Error shell_open(const String &p_uri) override;
 	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
 
 	virtual String get_locale() const override;
+	virtual Vector<String> get_preferred_locales() const override;
 
 	virtual Vector<String> get_system_fonts() const override;
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const override;
@@ -149,6 +169,17 @@ public:
 
 	virtual void run() = 0;
 
+	virtual String get_platform_string(PlatformString p_platform_string) const override {
+		switch (p_platform_string) {
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_OPEN:
+				return ETR("Open in Finder");
+			case OS::PlatformString::PLATFORM_STRING_FILE_MANAGER_SHOW:
+				return ETR("Show in Finder");
+			default:
+				return OS::get_platform_string(p_platform_string);
+		}
+	}
+
 	OS_MacOS(const char *p_execpath, int p_argc, char **p_argv);
 };
 
@@ -179,7 +210,7 @@ public:
 	OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv);
 };
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 
 class OS_MacOS_Embedded : public OS_MacOS {
 public:

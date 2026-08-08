@@ -164,7 +164,7 @@ void main() {
 	color.rgb *= s4ao(uv_interp); // The USE_SSAO_X controls the number of samples.
 #endif
 
-	color.rgb = apply_tonemapping(color.rgb, white);
+	color.rgb = apply_tonemapping(color.rgb);
 
 #ifdef USE_BCS
 	// Apply brightness:

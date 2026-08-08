@@ -30,8 +30,12 @@
 
 #include "scroll_bar.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 bool ScrollBar::focus_by_default = false;
 
@@ -45,6 +49,37 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	Ref<InputEventMouseButton> b = p_event;
+
+	Ref<InputEventPanGesture> pg = p_event;
+
+	if (pg.is_valid()) {
+		accept_event();
+
+		if (orientation == HORIZONTAL) {
+			if (pg->get_delta().x != 0) {
+				if (pg->get_delta().x < 0) {
+					scroll(-MAX(Math::abs(pg->get_delta().x), get_step()));
+				}
+				if (pg->get_delta().x > 0) {
+					scroll(MAX(pg->get_delta().x, get_step()));
+				}
+			} else if (pg->get_delta().y != 0) {
+				if (pg->get_delta().y < 0) {
+					scroll(-MAX(Math::abs(pg->get_delta().y), get_step()));
+				}
+				if (pg->get_delta().y > 0) {
+					scroll(MAX(pg->get_delta().y, get_step()));
+				}
+			}
+		} else {
+			if (pg->get_delta().y < 0) {
+				scroll(-MAX(Math::abs(pg->get_delta().y), get_step()));
+			}
+			if (pg->get_delta().y > 0) {
+				scroll(MAX(pg->get_delta().y, get_step()));
+			}
+		}
+	}
 
 	if (b.is_valid()) {
 		accept_event();
@@ -228,7 +263,7 @@ void ScrollBar::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SCROLL_BAR);
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SCROLL_BAR);
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -295,15 +330,19 @@ void ScrollBar::_notification(int p_what) {
 			Rect2 grabber_rect;
 
 			if (orientation == HORIZONTAL) {
+				int padding_top = MAX(theme_cache.padding_top, 0);
+				int padding_bottom = MAX(theme_cache.padding_bottom, 0);
 				grabber_rect.size.width = get_grabber_size();
-				grabber_rect.size.height = get_size().height;
-				grabber_rect.position.y = 0;
+				grabber_rect.size.height = get_size().height - padding_top - padding_bottom;
+				grabber_rect.position.y = padding_top;
 				grabber_rect.position.x = get_grabber_offset() + decr->get_width() + theme_cache.scroll_style->get_margin(SIDE_LEFT);
 			} else {
-				grabber_rect.size.width = get_size().width;
+				int padding_left = MAX(theme_cache.padding_left, 0);
+				int padding_right = MAX(theme_cache.padding_right, 0);
+				grabber_rect.size.width = get_size().width - padding_left - padding_right;
 				grabber_rect.size.height = get_grabber_size();
 				grabber_rect.position.y = get_grabber_offset() + decr->get_height() + theme_cache.scroll_style->get_margin(SIDE_TOP);
-				grabber_rect.position.x = 0;
+				grabber_rect.position.x = padding_left;
 			}
 
 			grabber->draw(ci, grabber_rect);
@@ -334,7 +373,7 @@ void ScrollBar::_notification(int p_what) {
 			if (scrolling) {
 				if (get_value() != target_scroll) {
 					double target = target_scroll - get_value();
-					double dist = std::abs(target);
+					double dist = Math::abs(target);
 					double vel = ((target / dist) * 500) * get_process_delta_time();
 
 					if (Math::abs(vel) >= dist) {
@@ -488,7 +527,10 @@ Size2 ScrollBar::get_minimum_size() const {
 	Size2 minsize;
 
 	if (orientation == VERTICAL) {
+		int padding_left = MAX(theme_cache.padding_left, 0);
+		int padding_right = MAX(theme_cache.padding_right, 0);
 		minsize.width = MAX(incr->get_size().width, bg->get_minimum_size().width);
+		minsize.width += padding_left + padding_right;
 		minsize.height += incr->get_size().height;
 		minsize.height += decr->get_size().height;
 		minsize.height += bg->get_minimum_size().height;
@@ -496,7 +538,10 @@ Size2 ScrollBar::get_minimum_size() const {
 	}
 
 	if (orientation == HORIZONTAL) {
+		int padding_top = MAX(theme_cache.padding_top, 0);
+		int padding_bottom = MAX(theme_cache.padding_bottom, 0);
 		minsize.height = MAX(incr->get_size().height, bg->get_minimum_size().height);
+		minsize.height += padding_top + padding_bottom;
 		minsize.width += incr->get_size().width;
 		minsize.width += decr->get_size().width;
 		minsize.width += bg->get_minimum_size().width;
@@ -668,4 +713,14 @@ ScrollBar::ScrollBar(Orientation p_orientation) {
 }
 
 ScrollBar::~ScrollBar() {
+}
+
+void VScrollBar::_bind_methods() {
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, VScrollBar, padding_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, VScrollBar, padding_right);
+}
+
+void HScrollBar::_bind_methods() {
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, HScrollBar, padding_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, HScrollBar, padding_bottom);
 }

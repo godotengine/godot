@@ -72,6 +72,7 @@ public:
 		MENU_MAX
 	};
 
+	// Keep synced with DisplayServerEnums::VirtualKeyboardType enum.
 	enum VirtualKeyboardType {
 		KEYBOARD_TYPE_DEFAULT,
 		KEYBOARD_TYPE_MULTILINE,
@@ -83,6 +84,12 @@ public:
 		KEYBOARD_TYPE_URL
 	};
 
+	enum ExpandMode {
+		EXPAND_MODE_ORIGINAL_SIZE,
+		EXPAND_MODE_FIT_TO_TEXT,
+		EXPAND_MODE_FIT_TO_LINE_EDIT,
+	};
+
 private:
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
@@ -91,6 +98,7 @@ private:
 	bool editable = false;
 	bool pass = false;
 	bool text_changed_dirty = false;
+	ExpandMode icon_expand_mode = EXPAND_MODE_ORIGINAL_SIZE;
 
 	enum AltInputMode {
 		ALT_INPUT_NONE,
@@ -158,6 +166,7 @@ private:
 
 	Ref<Texture2D> right_icon;
 	bool flat = false;
+	float right_icon_scale = 1.0;
 
 	struct Selection {
 		int begin = 0;
@@ -264,6 +273,7 @@ private:
 	void _texture_changed();
 
 	void _edit(bool p_show_virtual_keyboard = true, bool p_hide_focus = false);
+	Point2 _get_right_icon_size(Ref<Texture2D> p_right_icon) const;
 
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;
@@ -286,6 +296,8 @@ protected:
 	void _accessibility_action_replace_selected(const Variant &p_data);
 	void _accessibility_action_set_value(const Variant &p_data);
 	void _accessibility_action_menu(const Variant &p_data);
+
+	virtual String _get_accessibility_name() const override;
 
 public:
 	void edit(bool p_hide_focus = false);
@@ -333,6 +345,7 @@ public:
 	void delete_char();
 	void delete_text(int p_from_column, int p_to_column);
 
+	void _set_text(String p_text, bool p_emit_signal = false);
 	void set_text(String p_text);
 	String get_text() const;
 	void set_text_with_selection(const String &p_text); // Set text, while preserving selection.
@@ -430,6 +443,12 @@ public:
 	void set_right_icon(const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_right_icon();
 
+	void set_icon_expand_mode(ExpandMode p_mode);
+	ExpandMode get_icon_expand_mode() const;
+
+	void set_right_icon_scale(float p_scale);
+	float get_right_icon_scale() const;
+
 	void set_flat(bool p_enabled);
 	bool is_flat() const;
 
@@ -449,3 +468,4 @@ public:
 
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
 VARIANT_ENUM_CAST(LineEdit::VirtualKeyboardType);
+VARIANT_ENUM_CAST(LineEdit::ExpandMode);

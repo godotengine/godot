@@ -30,6 +30,9 @@
 
 #include "render_scene_buffers.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h" // IWYU pragma: keep // Needed to bind RSE enums.
+
 void RenderSceneBuffersConfiguration::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_render_target"), &RenderSceneBuffersConfiguration::get_render_target);
 	ClassDB::bind_method(D_METHOD("set_render_target", "render_target"), &RenderSceneBuffersConfiguration::set_render_target);
@@ -49,7 +52,7 @@ void RenderSceneBuffersConfiguration::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_scaling_3d_mode"), &RenderSceneBuffersConfiguration::get_scaling_3d_mode);
 	ClassDB::bind_method(D_METHOD("set_scaling_3d_mode", "scaling_3d_mode"), &RenderSceneBuffersConfiguration::set_scaling_3d_mode);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "scaling_3d_mode", PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast),FSR 2.2 (Slow),MetalFX (Spatial),MetalFX (Temporal)"), "set_scaling_3d_mode", "get_scaling_3d_mode"); // TODO VIEWPORT_SCALING_3D_MODE_OFF is possible here too, but we can't specify an enum string for it.
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "scaling_3d_mode", PROPERTY_HINT_ENUM, "Nearest (Fastest):5,Bilinear (Fastest):0,FSR 1.0 (Fast):1,FSR 2.2 (Slow):2,MetalFX (Spatial - Fast):3,MetalFX (Temporal - Slow):4"), "set_scaling_3d_mode", "get_scaling_3d_mode"); // TODO VIEWPORT_SCALING_3D_MODE_OFF is possible here too, but we can't specify an enum string for it.
 
 	ClassDB::bind_method(D_METHOD("get_msaa_3d"), &RenderSceneBuffersConfiguration::get_msaa_3d);
 	ClassDB::bind_method(D_METHOD("set_msaa_3d", "msaa_3d"), &RenderSceneBuffersConfiguration::set_msaa_3d);
@@ -74,32 +77,4 @@ void RenderSceneBuffersConfiguration::_bind_methods() {
 
 void RenderSceneBuffers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("configure", "config"), &RenderSceneBuffers::configure);
-}
-
-void RenderSceneBuffersExtension::_bind_methods() {
-	GDVIRTUAL_BIND(_configure, "config");
-	GDVIRTUAL_BIND(_set_fsr_sharpness, "fsr_sharpness");
-	GDVIRTUAL_BIND(_set_texture_mipmap_bias, "texture_mipmap_bias");
-	GDVIRTUAL_BIND(_set_anisotropic_filtering_level, "anisotropic_filtering_level");
-	GDVIRTUAL_BIND(_set_use_debanding, "use_debanding");
-}
-
-void RenderSceneBuffersExtension::configure(const RenderSceneBuffersConfiguration *p_config) {
-	GDVIRTUAL_CALL(_configure, p_config);
-}
-
-void RenderSceneBuffersExtension::set_fsr_sharpness(float p_fsr_sharpness) {
-	GDVIRTUAL_CALL(_set_fsr_sharpness, p_fsr_sharpness);
-}
-
-void RenderSceneBuffersExtension::set_texture_mipmap_bias(float p_texture_mipmap_bias) {
-	GDVIRTUAL_CALL(_set_texture_mipmap_bias, p_texture_mipmap_bias);
-}
-
-void RenderSceneBuffersExtension::set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) {
-	GDVIRTUAL_CALL(_set_anisotropic_filtering_level, p_anisotropic_filtering_level);
-}
-
-void RenderSceneBuffersExtension::set_use_debanding(bool p_use_debanding) {
-	GDVIRTUAL_CALL(_set_use_debanding, p_use_debanding);
 }

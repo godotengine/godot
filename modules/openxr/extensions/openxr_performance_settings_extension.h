@@ -41,7 +41,7 @@ public:
 	OpenXRPerformanceSettingsExtension();
 	virtual ~OpenXRPerformanceSettingsExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual bool on_event_polled(const XrEventDataBuffer &event) override;

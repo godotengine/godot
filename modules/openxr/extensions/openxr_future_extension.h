@@ -46,8 +46,9 @@
 */
 
 #include "../util.h"
-#include "core/object/ref_counted.h"
 #include "openxr_extension_wrapper.h"
+
+#include "core/object/ref_counted.h"
 
 #include <openxr/openxr.h>
 
@@ -104,7 +105,7 @@ public:
 	OpenXRFutureExtension();
 	virtual ~OpenXRFutureExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_instance_destroyed() override;

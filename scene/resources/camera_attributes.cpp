@@ -30,7 +30,10 @@
 
 #include "camera_attributes.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "servers/rendering/rendering_server.h"
 
 void CameraAttributes::set_exposure_multiplier(float p_multiplier) {
@@ -458,7 +461,6 @@ void CameraAttributesPhysical::_validate_property(PropertyInfo &property) const 
 	}
 	if (!GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units") && (property.name == "exposure_aperture" || property.name == "exposure_shutter_speed")) {
 		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
-		return;
 	}
 }
 

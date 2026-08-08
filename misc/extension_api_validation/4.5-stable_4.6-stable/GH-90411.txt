@@ -1,0 +1,5 @@
+GH-90411
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/SplitContainer/methods/clamp_split_offset': arguments
+
+Optional argument added for index. Compatibility method registered.

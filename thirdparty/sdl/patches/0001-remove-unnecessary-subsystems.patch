@@ -1,5 +1,5 @@
 diff --git a/thirdparty/sdl/SDL.c b/thirdparty/sdl/SDL.c
-index 502f6617a4..dd0b823634 100644
+index 46a74aafdb..3dad7e29ba 100644
 --- a/thirdparty/sdl/SDL.c
 +++ b/thirdparty/sdl/SDL.c
 @@ -40,23 +40,14 @@
@@ -358,7 +358,7 @@ index 5746e2ef98..04e3e9d6b6 100644
      SDL_free(item->touchscreen_data->name);
      SDL_free(item->touchscreen_data);
 diff --git a/thirdparty/sdl/events/SDL_events.c b/thirdparty/sdl/events/SDL_events.c
-index a151740524..24c2c4270f 100644
+index 81220a1787..7ca683e0eb 100644
 --- a/thirdparty/sdl/events/SDL_events.c
 +++ b/thirdparty/sdl/events/SDL_events.c
 @@ -24,10 +24,7 @@
@@ -417,7 +417,7 @@ index a151740524..24c2c4270f 100644
  #endif
  }
  
-@@ -1420,9 +1406,9 @@ void SDL_PumpEventMaintenance(void)
+@@ -1421,9 +1407,9 @@ void SDL_PumpEventMaintenance(void)
      }
  #endif
  
@@ -429,7 +429,7 @@ index a151740524..24c2c4270f 100644
  }
  
  // Run the system dependent event loops
-@@ -1432,7 +1418,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
+@@ -1433,7 +1419,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
      SDL_FreeTemporaryMemory();
  
      // Release any keys held down from last frame
@@ -438,7 +438,7 @@ index a151740524..24c2c4270f 100644
  
      // Run any pending main thread callbacks
      SDL_RunMainThreadCallbacks();
-@@ -1440,12 +1426,6 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
+@@ -1441,12 +1427,6 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
  #ifdef SDL_PLATFORM_ANDROID
      // Android event processing is independent of the video subsystem
      Android_PumpEvents(0);
@@ -451,7 +451,7 @@ index a151740524..24c2c4270f 100644
  #endif
  
      SDL_PumpEventMaintenance();
-@@ -1476,103 +1456,6 @@ bool SDL_PollEvent(SDL_Event *event)
+@@ -1477,103 +1457,6 @@ bool SDL_PollEvent(SDL_Event *event)
      return SDL_WaitEventTimeoutNS(event, 0);
  }
  
@@ -555,7 +555,7 @@ index a151740524..24c2c4270f 100644
  bool SDL_WaitEvent(SDL_Event *event)
  {
      return SDL_WaitEventTimeoutNS(event, -1);
-@@ -1662,24 +1545,6 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
+@@ -1665,24 +1548,6 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
          Android_PumpEvents(delay);
      }
  #else
@@ -580,7 +580,7 @@ index a151740524..24c2c4270f 100644
      for (;;) {
          SDL_PumpEventsInternal(true);
  
-@@ -1852,7 +1717,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
+@@ -1855,7 +1720,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
          /* turn off drag'n'drop support if we've disabled the events.
             This might change some UI details at the OS level. */
          if (type == SDL_EVENT_DROP_FILE || type == SDL_EVENT_DROP_TEXT) {
@@ -589,7 +589,7 @@ index a151740524..24c2c4270f 100644
          }
      }
  }
-@@ -1944,14 +1809,14 @@ bool SDL_InitEvents(void)
+@@ -1947,14 +1812,14 @@ bool SDL_InitEvents(void)
          return false;
      }
  
@@ -629,7 +629,7 @@ index e56ac475e5..f3a0744d1c 100644
  // Start and stop the event processing loop
  extern bool SDL_StartEventLoop(void);
 diff --git a/thirdparty/sdl/include/SDL3/SDL.h b/thirdparty/sdl/include/SDL3/SDL.h
-index ed1b32483a..f0671c95c3 100644
+index 7ec527b6d0..c99997044b 100644
 --- a/thirdparty/sdl/include/SDL3/SDL.h
 +++ b/thirdparty/sdl/include/SDL3/SDL.h
 @@ -47,7 +47,7 @@
@@ -650,7 +650,7 @@ index ed1b32483a..f0671c95c3 100644
  
  #endif /* SDL_h_ */
 diff --git a/thirdparty/sdl/joystick/SDL_joystick.c b/thirdparty/sdl/joystick/SDL_joystick.c
-index 921576854e..f36ca95baa 100644
+index 5ce36de867..090dc07303 100644
 --- a/thirdparty/sdl/joystick/SDL_joystick.c
 +++ b/thirdparty/sdl/joystick/SDL_joystick.c
 @@ -29,7 +29,7 @@
@@ -662,7 +662,7 @@ index 921576854e..f36ca95baa 100644
  #include "../sensor/SDL_sensor_c.h"
  #include "hidapi/SDL_hidapijoystick_c.h"
  
-@@ -1011,7 +1011,8 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, bool invert_sensors)
+@@ -1014,7 +1014,8 @@ static void AttemptSensorFusion(SDL_Joystick *joystick, bool invert_sensors)
         When a phone is being used as a gamepad, its orientation changes,
         so adjust sensor axes to match.
       */
@@ -672,7 +672,7 @@ index 921576854e..f36ca95baa 100644
          /* When a device in landscape orientation is laid flat, the axes change
             orientation as follows:
              -X to +X becomes -X to +X
-@@ -2068,11 +2069,6 @@ static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
+@@ -2071,11 +2072,6 @@ static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
      if (SDL_joystick_allows_background_events) {
          return false;
      }
@@ -684,20 +684,3 @@ index 921576854e..f36ca95baa 100644
      return false;
  }
  
-diff --git a/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c b/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
-index b00218d969..377992ed9e 100644
---- a/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
-+++ b/thirdparty/sdl/joystick/windows/SDL_dinputjoystick.c
-@@ -40,11 +40,8 @@
- #define CONVERT_MAGNITUDE(x) (((x)*10000) / 0x7FFF)
- 
- // external variables referenced.
--#ifdef SDL_VIDEO_DRIVER_WINDOWS
- extern HWND SDL_HelperWindow;
--#else
--static const HWND SDL_HelperWindow = NULL;
--#endif
-+
- 
- // local variables
- static bool coinitialized = false;

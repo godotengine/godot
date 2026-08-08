@@ -33,7 +33,7 @@
 #include "core/templates/local_vector.h"
 
 template <typename T>
-class RingBuffer {
+class _WARN_UNUSED_ RingBuffer {
 	LocalVector<T> data;
 	int read_pos = 0;
 	int write_pos = 0;
@@ -48,7 +48,7 @@ class RingBuffer {
 
 public:
 	T read() {
-		ERR_FAIL_COND_V(space_left() < 1, T());
+		ERR_FAIL_COND_V(data_left() < 1, T());
 		return data.ptr()[inc(read_pos, 1)];
 	}
 
@@ -78,7 +78,7 @@ public:
 	int copy(T *p_buf, int p_offset, int p_size) const {
 		int left = data_left();
 		if ((p_offset + p_size) > left) {
-			p_size -= left - p_offset;
+			p_size = left - p_offset;
 			if (p_size <= 0) {
 				return 0;
 			}
@@ -101,10 +101,10 @@ public:
 		return p_size;
 	}
 
-	int find(const T &t, int p_offset, int p_max_size) const {
+	int find(const T &p_value, int p_offset, int p_max_size) const {
 		int left = data_left();
 		if ((p_offset + p_max_size) > left) {
-			p_max_size -= left - p_offset;
+			p_max_size = left - p_offset;
 			if (p_max_size <= 0) {
 				return 0;
 			}
@@ -118,7 +118,7 @@ public:
 			end = MIN(end, size());
 			int total = end - pos;
 			for (int i = 0; i < total; i++) {
-				if (data[pos + i] == t) {
+				if (data[pos + i] == p_value) {
 					return i + (p_max_size - to_read);
 				}
 			}
@@ -213,5 +213,4 @@ public:
 	RingBuffer(int p_power = 0) {
 		resize(p_power);
 	}
-	~RingBuffer() {}
 };

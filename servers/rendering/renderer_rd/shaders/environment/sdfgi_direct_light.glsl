@@ -10,8 +10,9 @@ layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 
 layout(set = 0, binding = 1) uniform texture3D sdf_cascades[MAX_CASCADES];
 layout(set = 0, binding = 2) uniform sampler linear_sampler;
+layout(set = 0, binding = 3) uniform sampler linear_sampler_with_mipmaps;
 
-layout(set = 0, binding = 3, std430) restrict readonly buffer DispatchData {
+layout(set = 0, binding = 4, std430) restrict readonly buffer DispatchData {
 	uint x;
 	uint y;
 	uint z;
@@ -28,17 +29,17 @@ struct ProcessVoxel {
 };
 
 #ifdef MODE_PROCESS_STATIC
-layout(set = 0, binding = 4, std430) restrict buffer ProcessVoxels {
+layout(set = 0, binding = 5, std430) restrict buffer ProcessVoxels {
 #else
-layout(set = 0, binding = 4, std430) restrict buffer readonly ProcessVoxels {
+layout(set = 0, binding = 5, std430) restrict buffer readonly ProcessVoxels {
 #endif
 	ProcessVoxel data[];
 }
 process_voxels;
 
-layout(r32ui, set = 0, binding = 5) uniform restrict uimage3D dst_light;
-layout(rgba8, set = 0, binding = 6) uniform restrict image3D dst_aniso0;
-layout(rg8, set = 0, binding = 7) uniform restrict image3D dst_aniso1;
+layout(r32ui, set = 0, binding = 6) uniform restrict uimage3D dst_light;
+layout(rgba8, set = 0, binding = 7) uniform restrict image3D dst_aniso0;
+layout(rg8, set = 0, binding = 8) uniform restrict image3D dst_aniso1;
 
 struct CascadeData {
 	vec3 offset; //offset of (0,0,0) in world coordinates
@@ -48,7 +49,7 @@ struct CascadeData {
 	vec4 pad2;
 };
 
-layout(set = 0, binding = 8, std140) uniform Cascades {
+layout(set = 0, binding = 9, std140) uniform Cascades {
 	CascadeData data[MAX_CASCADES];
 }
 cascades;
@@ -56,6 +57,9 @@ cascades;
 #define LIGHT_TYPE_DIRECTIONAL 0
 #define LIGHT_TYPE_OMNI 1
 #define LIGHT_TYPE_SPOT 2
+#define LIGHT_TYPE_AREA 3
+
+#include "../area_lights_inc.glsl"
 
 struct Light {
 	vec3 color;
@@ -71,15 +75,21 @@ struct Light {
 	float cos_spot_angle;
 	float inv_spot_attenuation;
 	float radius;
+
+	vec4 area_width;
+	vec4 area_height;
+	vec4 area_projector_rect;
 };
 
-layout(set = 0, binding = 9, std140) buffer restrict readonly Lights {
+layout(set = 0, binding = 10, std140) buffer restrict readonly Lights {
 	Light data[];
 }
 lights;
 
-layout(set = 0, binding = 10) uniform texture2DArray lightprobe_texture;
-layout(set = 0, binding = 11) uniform texture3D occlusion_texture;
+layout(set = 0, binding = 11) uniform texture2DArray lightprobe_texture;
+layout(set = 0, binding = 12) uniform texture3D occlusion_texture;
+
+layout(set = 1, binding = 0) uniform texture2D area_light_atlas;
 
 layout(push_constant, std430) uniform Params {
 	vec3 grid_size;
@@ -119,6 +129,51 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 	nd = max(1.0 - nd, 0.0);
 	nd *= nd; // nd^2
 	return nd * pow(max(distance, 0.0001), -decay);
+}
+
+void compute_area_light(uint index, vec3 position, out float attenuation, out vec3 light_vec, out float light_distance, out vec3 texture_color) {
+	vec3 area_width = lights.data[index].area_width.xyz;
+	vec3 area_height = lights.data[index].area_height.xyz;
+	vec3 area_direction = lights.data[index].direction;
+	float a_len = length(area_width);
+	float b_len = length(area_height);
+	vec3 area_width_norm = normalize(area_width);
+	vec3 area_height_norm = normalize(area_height);
+	float a_half_len = a_len / 2.0;
+	float b_half_len = b_len / 2.0;
+	vec3 light_center = lights.data[index].position;
+	vec3 light_to_vert = position - light_center;
+	vec3 pos_local_to_light = vec3(dot(light_to_vert, area_width_norm), dot(light_to_vert, area_height_norm), dot(light_to_vert, -area_direction)); // position in LIGHT SPACE
+	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0.0); // LIGHT SPACE
+	float inv_center_range = lights.data[index].inv_spot_attenuation;
+	vec3 closest_point_on_light = light_center + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm; // VIEW SPACE
+	vec3 light_rel_vec = closest_point_on_light - position;
+	light_distance = length(light_rel_vec);
+	light_vec = light_rel_vec / light_distance;
+	float EPSILON = 1e-4f;
+	if (light_distance < EPSILON) {
+		light_vec = area_direction;
+	}
+	float max_mipmap = lights.data[index].cos_spot_angle;
+
+	if (light_distance * inv_center_range >= 1.0) { // position in range
+		attenuation = 0.0;
+		return;
+	}
+
+	vec3 h_area_width = area_width / 2.0;
+	vec3 h_area_height = area_height / 2.0;
+	vec3 light_points[4];
+	light_points[0] = lights.data[index].position - h_area_width - h_area_height - position;
+	light_points[1] = lights.data[index].position + h_area_width - h_area_height - position;
+	light_points[2] = lights.data[index].position + h_area_width + h_area_height - position;
+	light_points[3] = lights.data[index].position - h_area_width + h_area_height - position;
+
+	attenuation = get_omni_attenuation(light_distance, 1.0 / lights.data[index].radius, lights.data[index].attenuation - 2.0);
+	float ltc_diffuse = 0.0;
+	vec3 normal = light_vec;
+	ltc_evaluate_diff(normal, light_points, lights.data[index].area_projector_rect, max_mipmap, area_light_atlas, linear_sampler_with_mipmaps, ltc_diffuse, texture_color);
+	attenuation *= ltc_diffuse;
 }
 
 void main() {
@@ -264,6 +319,7 @@ void main() {
 		float attenuation = 1.0;
 		vec3 direction;
 		float light_distance = 1e20;
+		vec3 texture_color = vec3(1.0);
 
 		switch (lights.data[i].type) {
 			case LIGHT_TYPE_DIRECTIONAL: {
@@ -294,6 +350,18 @@ void main() {
 				float scos = max(cos_angle, cos_spot_angle);
 				float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
 				attenuation *= 1.0 - pow(spot_rim, lights.data[i].inv_spot_attenuation);
+			} break;
+			case LIGHT_TYPE_AREA: {
+				float EPSILON = 1e-7f;
+				vec3 area_width = lights.data[i].area_width.xyz;
+				vec3 area_height = lights.data[i].area_height.xyz;
+				if (dot(area_width, area_width) < EPSILON || dot(area_height, area_height) < EPSILON) {
+					continue; // area is 0
+				}
+				if (dot(lights.data[i].direction, position - lights.data[i].position) <= 0) {
+					continue; // position is behind light
+				}
+				compute_area_light(i, position, attenuation, direction, light_distance, texture_color);
 			} break;
 		}
 
@@ -366,7 +434,7 @@ void main() {
 		}
 
 		if (!hit) {
-			vec3 light = albedo * lights.data[i].color.rgb * lights.data[i].energy * attenuation;
+			vec3 light = albedo * lights.data[i].color.rgb * texture_color * lights.data[i].energy * attenuation;
 
 			for (int j = 0; j < 6; j++) {
 				if (bool(valid_aniso & (1 << j))) {

@@ -31,6 +31,7 @@
 #include "reference_rect.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 void ReferenceRect::_notification(int p_what) {
 	switch (p_what) {

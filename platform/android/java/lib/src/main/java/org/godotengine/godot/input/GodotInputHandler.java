@@ -47,6 +47,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.GestureDetector;
+import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -70,6 +71,16 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	private static final int ROTARY_INPUT_VERTICAL_AXIS = 1;
 	private static final int ROTARY_INPUT_HORIZONTAL_AXIS = 0;
 
+	private static final String[] JOYPAD_IGNORE_LIST = new String[] {
+		// Ignore fingerprint scanners.
+		"uinput-fpc",
+		"uinput-goodix",
+		"uinput-synaptics",
+		"uinput-elan",
+		"uinput-vfs",
+		"uinput-atrus",
+	};
+
 	private final SparseIntArray mJoystickIds = new SparseIntArray(4);
 	private final SparseArray<Joystick> mJoysticksDevices = new SparseArray<>(4);
 	private final HashSet<Integer> mHardwareKeyboardIds = new HashSet<>();
@@ -77,8 +88,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	private final Godot godot;
 	private final InputManager mInputManager;
 	private final WindowManager windowManager;
-	private final GestureDetector gestureDetector;
-	private final ScaleGestureDetector scaleGestureDetector;
+	final GestureDetector gestureDetector;
+	final ScaleGestureDetector scaleGestureDetector;
 	private final GodotGestureHandler godotGestureHandler;
 
 	/**
@@ -101,9 +112,12 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 		this.godotGestureHandler = new GodotGestureHandler(this);
 		this.gestureDetector = new GestureDetector(context, godotGestureHandler);
-		this.gestureDetector.setIsLongpressEnabled(false);
+		enableLongPress(false);
+
 		this.scaleGestureDetector = new ScaleGestureDetector(context, godotGestureHandler);
 		this.scaleGestureDetector.setStylusScaleEnabled(true);
+		this.scaleGestureDetector.setQuickScaleEnabled(false);
+
 		Configuration config = context.getResources().getConfiguration();
 		hasHardwareKeyboardConfig = config.keyboard != Configuration.KEYBOARD_NOKEYS &&
 				config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
@@ -114,6 +128,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	 */
 	public void enableLongPress(boolean enable) {
 		this.gestureDetector.setIsLongpressEnabled(enable);
+		this.godotGestureHandler.setLongPressEnabled(enable);
 	}
 
 	/**
@@ -124,12 +139,30 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	/**
+	 * Enable haptic feedback (vibration) when a long-press right-click is triggered.
+	 */
+	public void enableHapticFeedback(boolean enable) {
+		this.godotGestureHandler.setHapticFeedbackEnabled(enable);
+	}
+
+	/**
+	 * Perform haptic feedback on the render view.
+	 */
+	void performHapticFeedback() {
+		GodotRenderView view = godot.getRenderView();
+		if (view != null) {
+			view.getView().performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+		}
+	}
+
+	/**
 	 * Enable multi-fingers pan & scale gestures. This is false by default.
 	 * <p>
 	 * Note: This may interfere with multi-touch handling / support.
 	 */
 	public void enablePanningAndScalingGestures(boolean enable) {
-		this.godotGestureHandler.setPanningAndScalingEnabled(enable);
+		this.godotGestureHandler.setPanningEnabled(enable);
+		this.godotGestureHandler.setScalingEnabled(enable);
 	}
 
 	/**
@@ -357,6 +390,13 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		if (!device.supportsSource(InputDevice.SOURCE_GAMEPAD) &&
 				!device.supportsSource(InputDevice.SOURCE_JOYSTICK)) {
 			return;
+		}
+
+		for (String name : JOYPAD_IGNORE_LIST) {
+			if (device.getName().equals(name)) {
+				Log.i(TAG, "=== Input Device ignored: " + device.getName());
+				return;
+			}
 		}
 
 		// Assign first available number. Reuse numbers where possible.

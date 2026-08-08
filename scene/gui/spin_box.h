@@ -42,6 +42,8 @@ protected:
 
 	void _accessibility_action_inc(const Variant &p_data);
 	void _accessibility_action_dec(const Variant &p_data);
+
+	virtual String _get_accessibility_name() const override;
 };
 
 class SpinBox : public Range {
@@ -67,6 +69,7 @@ class SpinBox : public Range {
 	Timer *range_click_timer = nullptr;
 	void _range_click_timeout();
 	void _release_mouse_from_drag_mode();
+	void _arrow_clicked(bool p_up);
 
 	void _update_text(bool p_only_update_if_value_changed = false);
 	void _text_submitted(const String &p_string);
@@ -76,6 +79,7 @@ class SpinBox : public Range {
 	String suffix;
 	String last_text_value;
 	double custom_arrow_step = 0.0;
+	bool custom_arrow_round = false;
 
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
@@ -179,6 +183,9 @@ public:
 	void apply();
 	void set_custom_arrow_step(const double p_custom_arrow_step);
 	double get_custom_arrow_step() const;
+
+	void set_custom_arrow_round(bool p_round);
+	bool is_custom_arrow_rounding() const;
 
 	SpinBox();
 };

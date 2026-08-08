@@ -65,14 +65,14 @@ void RendererCompositorStorage::compositor_effect_free(RID p_rid) {
 	}
 
 	// Update motion vector count if needed.
-	if (effect->is_enabled && effect->flags.has_flag(RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS)) {
+	if (effect->is_enabled && effect->flags.has_flag(RSE::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS)) {
 		num_compositor_effects_with_motion_vectors--;
 	}
 
 	compositor_effects_owner.free(p_rid);
 }
 
-void RendererCompositorStorage::compositor_effect_set_callback(RID p_effect, RS::CompositorEffectCallbackType p_callback_type, const Callable &p_callback) {
+void RendererCompositorStorage::compositor_effect_set_callback(RID p_effect, RSE::CompositorEffectCallbackType p_callback_type, const Callable &p_callback) {
 	CompositorEffect *effect = compositor_effects_owner.get_or_null(p_effect);
 	ERR_FAIL_NULL(effect);
 
@@ -84,7 +84,7 @@ void RendererCompositorStorage::compositor_effect_set_enabled(RID p_effect, bool
 	CompositorEffect *effect = compositor_effects_owner.get_or_null(p_effect);
 	ERR_FAIL_NULL(effect);
 
-	if (effect->is_enabled != p_enabled && effect->flags.has_flag(RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS)) {
+	if (effect->is_enabled != p_enabled && effect->flags.has_flag(RSE::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS)) {
 		if (p_enabled) {
 			num_compositor_effects_with_motion_vectors++;
 		} else {
@@ -102,9 +102,9 @@ bool RendererCompositorStorage::compositor_effect_get_enabled(RID p_effect) cons
 	return effect->is_enabled;
 }
 
-RS::CompositorEffectCallbackType RendererCompositorStorage::compositor_effect_get_callback_type(RID p_effect) const {
+RSE::CompositorEffectCallbackType RendererCompositorStorage::compositor_effect_get_callback_type(RID p_effect) const {
 	CompositorEffect *effect = compositor_effects_owner.get_or_null(p_effect);
-	ERR_FAIL_NULL_V(effect, RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_MAX);
+	ERR_FAIL_NULL_V(effect, RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_MAX);
 
 	return effect->callback_type;
 }
@@ -116,12 +116,12 @@ Callable RendererCompositorStorage::compositor_effect_get_callback(RID p_effect)
 	return effect->callback;
 }
 
-void RendererCompositorStorage::compositor_effect_set_flag(RID p_effect, RS::CompositorEffectFlags p_flag, bool p_set) {
+void RendererCompositorStorage::compositor_effect_set_flag(RID p_effect, RSE::CompositorEffectFlags p_flag, bool p_set) {
 	CompositorEffect *effect = compositor_effects_owner.get_or_null(p_effect);
 	ERR_FAIL_NULL(effect);
 
-	if (effect->is_enabled && p_flag == RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS) {
-		bool was_set = effect->flags.has_flag(RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS);
+	if (effect->is_enabled && p_flag == RSE::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS) {
+		bool was_set = effect->flags.has_flag(RSE::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS);
 
 		if (was_set != p_set) {
 			if (p_set) {
@@ -139,7 +139,7 @@ void RendererCompositorStorage::compositor_effect_set_flag(RID p_effect, RS::Com
 	}
 }
 
-bool RendererCompositorStorage::compositor_effect_get_flag(RID p_effect, RS::CompositorEffectFlags p_flag) const {
+bool RendererCompositorStorage::compositor_effect_get_flag(RID p_effect, RSE::CompositorEffectFlags p_flag) const {
 	CompositorEffect *effect = compositor_effects_owner.get_or_null(p_effect);
 	ERR_FAIL_NULL_V(effect, false);
 
@@ -174,15 +174,15 @@ void RendererCompositorStorage::compositor_set_compositor_effects(RID p_composit
 	}
 }
 
-Vector<RID> RendererCompositorStorage::compositor_get_compositor_effects(RID p_compositor, RS::CompositorEffectCallbackType p_callback_type, bool p_enabled_only) const {
+Vector<RID> RendererCompositorStorage::compositor_get_compositor_effects(RID p_compositor, RSE::CompositorEffectCallbackType p_callback_type, bool p_enabled_only) const {
 	Compositor *compositor = compositor_owner.get_or_null(p_compositor);
 	ERR_FAIL_NULL_V(compositor, Vector<RID>());
 
-	if (p_enabled_only || p_callback_type != RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY) {
+	if (p_enabled_only || p_callback_type != RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY) {
 		Vector<RID> effects;
 
 		for (RID rid : compositor->compositor_effects) {
-			if ((!p_enabled_only || compositor_effect_get_enabled(rid)) && (p_callback_type == RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY || compositor_effect_get_callback_type(rid) == p_callback_type)) {
+			if ((!p_enabled_only || compositor_effect_get_enabled(rid)) && (p_callback_type == RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY || compositor_effect_get_callback_type(rid) == p_callback_type)) {
 				effects.push_back(rid);
 			}
 		}

@@ -78,6 +78,7 @@ public:
 		FILL_LINEAR,
 		FILL_RADIAL,
 		FILL_SQUARE,
+		FILL_CONIC,
 	};
 	enum Repeat {
 		REPEAT_NONE,

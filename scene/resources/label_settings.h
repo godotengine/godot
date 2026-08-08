@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "font.h"
 #include "scene/property_list_helper.h"
+#include "scene/resources/font.h"
 
 /*************************************************************************/
 
@@ -45,7 +45,7 @@ public:
 		Color color;
 	};
 	struct StackedShadowData {
-		Vector2i offset = Vector2i(1, 1);
+		Vector2 offset = Vector2(1, 1);
 		Color color;
 		int32_t outline_size = 0;
 	};

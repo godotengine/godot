@@ -30,6 +30,8 @@
 
 #include "texture_button.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/typedefs.h"
 
 Size2 TextureButton::get_minimum_size() const {
@@ -83,17 +85,12 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 			Point2 ofs = _position_rect.position;
 			Size2 scale = mask_size / _position_rect.size;
 
-			switch (stretch_mode) {
-				case STRETCH_KEEP_ASPECT_COVERED: {
-					// if the stretch mode is aspect covered the image uses a texture region so we need to take that into account
-					float min = MIN(scale.x, scale.y);
-					scale.x = min;
-					scale.y = min;
-					ofs -= _texture_region.position / min;
-				} break;
-				default: {
-					// FIXME: Why a switch if we only handle one enum value?
-				}
+			if (stretch_mode == STRETCH_KEEP_ASPECT_COVERED) {
+				// if the stretch mode is aspect covered the image uses a texture region so we need to take that into account
+				float min = MIN(scale.x, scale.y);
+				scale.x = min;
+				scale.y = min;
+				ofs -= _texture_region.position / min;
 			}
 
 			// offset and scale the new point position to adjust it to the bitmask size
@@ -272,16 +269,16 @@ void TextureButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureButton::get_stretch_mode);
 
 	ADD_GROUP("Textures", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_normal", "get_texture_normal");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_pressed", "get_texture_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_hover", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_hover", "get_texture_hover");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_disabled", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_disabled", "get_texture_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_focused", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture_focused", "get_texture_focused");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_click_mask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_click_mask", "get_click_mask");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_texture_size", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_ignore_texture_size", "get_ignore_texture_size");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture_normal", "get_texture_normal");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_pressed", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture_pressed", "get_texture_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_hover", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture_hover", "get_texture_hover");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_disabled", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture_disabled", "get_texture_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_focused", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture_focused", "get_texture_focused");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_click_mask", PROPERTY_HINT_RESOURCE_TYPE, BitMap::get_class_static()), "set_click_mask", "get_click_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_texture_size"), "set_ignore_texture_size", "get_ignore_texture_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_flip_h", "is_flipped_h");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_flip_v", "is_flipped_v");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 
 	BIND_ENUM_CONSTANT(STRETCH_SCALE);
 	BIND_ENUM_CONSTANT(STRETCH_TILE);

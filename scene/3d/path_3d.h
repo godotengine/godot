@@ -32,6 +32,9 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/curve.h"
+#include "scene/resources/material.h"
+
+class ArrayMesh;
 
 class Path3D : public Node3D {
 	GDCLASS(Path3D, Node3D);
@@ -89,7 +92,6 @@ private:
 	bool cubic = true;
 	bool loop = true;
 	bool tilt_enabled = true;
-	bool transform_dirty = true;
 	bool use_model_front = false;
 	RotationMode rotation_mode = ROTATION_XYZ;
 

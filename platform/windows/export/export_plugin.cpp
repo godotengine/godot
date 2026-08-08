@@ -36,11 +36,14 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-#include "core/io/image_loader.h"
+#include "core/io/file_access.h"
+#include "core/io/zip_io.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
 
@@ -200,7 +203,7 @@ Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset>
 	return OK;
 }
 
-Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	String custom_debug = p_preset->get("custom_template/debug");
 	String custom_release = p_preset->get("custom_template/release");
 	String arch = p_preset->get("binary_format/architecture");
@@ -303,7 +306,9 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		pck_path = pck_path.get_basename() + ".tmp";
 	}
 
-	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags);
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, export_as_zip);
+
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags, !export_as_zip);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;
@@ -499,10 +504,10 @@ void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/host"), "user@host_ip"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/port"), "22"));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT), run_script));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT), cleanup_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_ssh", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/extra_args_scp", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/run_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), run_script));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "ssh_remote_deploy/cleanup_script", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), cleanup_script));
 }
 
 Error EditorExportPlatformWindows::_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon) {
@@ -916,20 +921,17 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 	return OK;
 }
 
+void EditorExportPlatformWindows::get_platform_features(List<String> *r_features) const {
+	EditorExportPlatformPC::get_platform_features(r_features);
+	r_features->push_back("windows");
+}
+
 Ref<Texture2D> EditorExportPlatformWindows::get_run_icon() const {
 	return run_icon;
 }
 
 bool EditorExportPlatformWindows::poll_export() {
-	Ref<EditorExportPreset> preset;
-
-	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
-		if (ep->is_runnable() && ep->get_platform() == this) {
-			preset = ep;
-			break;
-		}
-	}
+	Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_runnable_preset_for_platform(this);
 
 	int prev = menu_options;
 	menu_options = (preset.is_valid() && preset->get("ssh_remote_deploy/enabled").operator bool());
@@ -1012,19 +1014,19 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 
 	const String basepath = dest.path_join("tmp_windows_export");
 
-#define CLEANUP_AND_RETURN(m_err)                       \
-	{                                                   \
-		if (da->file_exists(basepath + ".zip")) {       \
-			da->remove(basepath + ".zip");              \
-		}                                               \
+#define CLEANUP_AND_RETURN(m_err) \
+	{ \
+		if (da->file_exists(basepath + ".zip")) { \
+			da->remove(basepath + ".zip"); \
+		} \
 		if (da->file_exists(basepath + "_start.ps1")) { \
-			da->remove(basepath + "_start.ps1");        \
-		}                                               \
+			da->remove(basepath + "_start.ps1"); \
+		} \
 		if (da->file_exists(basepath + "_clean.ps1")) { \
-			da->remove(basepath + "_clean.ps1");        \
-		}                                               \
-		return m_err;                                   \
-	}                                                   \
+			da->remove(basepath + "_clean.ps1"); \
+		} \
+		return m_err; \
+	} \
 	((void)0)
 
 	if (ep.step(TTR("Exporting project..."), 1)) {

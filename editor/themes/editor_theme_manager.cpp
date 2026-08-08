@@ -32,6 +32,8 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
@@ -78,7 +80,7 @@ uint32_t EditorThemeManager::ThemeConfiguration::hash() {
 	hash = hash_murmur3_one_32(class_icon_size, hash);
 	hash = hash_murmur3_one_32((int)enable_touch_optimizations, hash);
 	hash = hash_murmur3_one_float(gizmo_handle_scale, hash);
-	hash = hash_murmur3_one_32(color_picker_button_height, hash);
+	hash = hash_murmur3_one_32(inspector_property_height, hash);
 	hash = hash_murmur3_one_float(subresource_hue_tint, hash);
 
 	hash = hash_murmur3_one_float(default_contrast, hash);
@@ -168,7 +170,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 	OS::get_singleton()->benchmark_begin_measure(get_benchmark_key(), "Create Base Theme");
 
 	Ref<EditorTheme> theme = memnew(EditorTheme);
-	ThemeConfiguration config = _create_theme_config(theme);
+	ThemeConfiguration config = _create_theme_config();
 	theme->set_generated_hash(config.hash());
 	theme->set_generated_fonts_hash(config.hash_fonts());
 	theme->set_generated_icons_hash(config.hash_icons());
@@ -235,7 +237,7 @@ Ref<EditorTheme> EditorThemeManager::_create_base_theme(const Ref<EditorTheme> &
 	return theme;
 }
 
-EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(const Ref<EditorTheme> &p_theme) {
+EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config() {
 	ThemeConfiguration config;
 
 	// Basic properties.
@@ -264,9 +266,9 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 	config.class_icon_size = 16 * EDSCALE;
 	config.enable_touch_optimizations = EDITOR_GET("interface/touchscreen/enable_touch_optimizations");
 	config.gizmo_handle_scale = EDITOR_GET("interface/touchscreen/scale_gizmo_handles");
-	config.color_picker_button_height = 28 * EDSCALE;
 	config.subresource_hue_tint = EDITOR_GET("docks/property_editor/subresource_hue_tint");
-	config.dragging_hover_wait_msec = (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000;
+	config.dragging_hover_wait_msec = (float)EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds") * 1000;
+	config.max_sticky_tree_items = EDITOR_GET("interface/editor/appearance/max_sticky_tree_items");
 
 	// Handle theme style.
 	if (config.preset != "Custom") {
@@ -319,7 +321,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			float preset_icon_saturation = config.default_icon_saturation;
 
 			// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
-			const float light_contrast = config.style == "Modern" ? -0.4 : -0.06;
+			const float light_contrast = -0.06;
 
 			// Please use alphabetical order if you're adding a new color preset here.
 			if (config.preset == "Black (OLED)") {
@@ -346,6 +348,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				preset_accent_color = Color(0.18, 0.50, 1.00);
 				preset_base_color = Color(0.9, 0.9, 0.9);
 				preset_contrast = light_contrast;
+				preset_icon_saturation = 1;
 			} else if (config.preset == "Solarized (Dark)") {
 				preset_accent_color = Color(0.15, 0.55, 0.82);
 				preset_base_color = Color(0.03, 0.21, 0.26);
@@ -356,7 +359,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 				preset_contrast = light_contrast;
 			} else { // Default
 				preset_accent_color = Color(0.337, 0.62, 1.0);
-				preset_base_color = Color(0.153, 0.153, 0.153);
+				preset_base_color = Color(0.161, 0.161, 0.161);
 			}
 
 			config.accent_color = preset_accent_color;
@@ -370,11 +373,6 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", config.contrast);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", config.draw_extra_borders);
 			EditorSettings::get_singleton()->set_initial_value("interface/theme/icon_saturation", config.icon_saturation);
-		}
-
-		if (follow_system_theme && system_base_color != Color(0, 0, 0, 0)) {
-			config.base_color = system_base_color;
-			config.preset = "Custom";
 		}
 
 		if (use_system_accent_color && system_accent_color != Color(0, 0, 0, 0)) {
@@ -506,10 +504,11 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/comment_color"] = p_config.dark_icon_and_font ? dim_color : Color(0.08, 0.08, 0.08, 0.5);
 			colors["text_editor/theme/highlighting/doc_comment_color"] = p_config.dark_icon_and_font ? Color(0.6, 0.7, 0.8, 0.8) : Color(0.15, 0.15, 0.4, 0.7);
 			colors["text_editor/theme/highlighting/string_color"] = p_config.dark_icon_and_font ? Color(1, 0.93, 0.63) : Color(0.6, 0.42, 0);
+			colors["text_editor/theme/highlighting/string_placeholder_color"] = p_config.dark_icon_and_font ? Color(1, 0.75, 0.4) : Color(0.93, 0.6, 0.33);
 
 			// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
-			colors["text_editor/theme/highlighting/background_color"] = p_config.dark_icon_and_font ? p_config.dark_color_2 : p_config.dark_color_3;
-			colors["text_editor/theme/highlighting/completion_background_color"] = p_config.dark_icon_and_font ? p_config.base_color : p_config.dark_color_2;
+			colors["text_editor/theme/highlighting/background_color"] = p_config.base_color.lerp(Color(0, 0, 0), p_config.contrast * (p_config.dark_icon_and_font ? 1.2 : 1.8)).clamp();
+			colors["text_editor/theme/highlighting/completion_background_color"] = p_config.base_color.lerp(Color(0, 0, 0), p_config.contrast * 0.3).clamp();
 			colors["text_editor/theme/highlighting/completion_selected_color"] = alpha1;
 			colors["text_editor/theme/highlighting/completion_existing_color"] = alpha2;
 			// Same opacity as the scroll grabber editor icon.
@@ -525,7 +524,9 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/selection_color"] = p_config.selection_color;
 			colors["text_editor/theme/highlighting/brace_mismatch_color"] = p_config.dark_icon_and_font ? p_config.error_color : Color(1, 0.08, 0, 1);
 			colors["text_editor/theme/highlighting/current_line_color"] = alpha1;
-			colors["text_editor/theme/highlighting/line_length_guideline_color"] = p_config.dark_icon_and_font ? p_config.base_color : p_config.dark_color_2;
+			// Contrast is positive in dark themes and negative in light themes. Lerping with a negative weight
+			// gives us lighter lines than base_color in dark themes and darker lines in light themes.
+			colors["text_editor/theme/highlighting/line_length_guideline_color"] = p_config.base_color.lerp(Color(0, 0, 0), p_config.contrast * -1.25).clamp();
 			colors["text_editor/theme/highlighting/word_highlighted_color"] = alpha1;
 			colors["text_editor/theme/highlighting/number_color"] = p_config.dark_icon_and_font ? Color(0.63, 1, 0.88) : Color(0, 0.55, 0.28, 1);
 			colors["text_editor/theme/highlighting/function_color"] = p_config.dark_icon_and_font ? Color(0.34, 0.7, 1.0) : Color(0, 0.225, 0.9, 1);
@@ -539,6 +540,8 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 			colors["text_editor/theme/highlighting/folded_code_region_color"] = Color(0.68, 0.46, 0.77, 0.2);
 			colors["text_editor/theme/highlighting/search_result_color"] = alpha1;
 			colors["text_editor/theme/highlighting/search_result_border_color"] = p_config.dark_icon_and_font ? Color(0.41, 0.61, 0.91, 0.38) : Color(0, 0.4, 1, 0.38);
+			colors["text_editor/theme/highlighting/warning_underline_color"] = Color(0.89, 0.7, 0.2);
+			colors["text_editor/theme/highlighting/error_underline_color"] = Color(1.0, 0.0, 0.0);
 
 			if (p_config.dark_icon_and_font) {
 				colors["text_editor/theme/highlighting/gdscript/function_definition_color"] = Color(0.4, 0.9, 1.0);
@@ -594,12 +597,10 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	p_theme->set_constant("line_spacing", "CodeEdit", EDITOR_GET("text_editor/appearance/whitespace/line_spacing"));
 
 	const Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
-	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(background_color, p_config.widget_margin.x, p_config.widget_margin.y, p_config.widget_margin.x, p_config.widget_margin.y, p_config.corner_radius);
+	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(background_color, 0, p_config.widget_margin.y, p_config.widget_margin.x, p_config.widget_margin.y, p_config.corner_radius);
 	p_theme->set_stylebox(CoreStringName(normal), "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("focus", "CodeEdit", memnew(StyleBoxEmpty));
-
-	p_theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0)); // Unset any color, we use a stylebox.
 
 	/* clang-format off */
 	p_theme->set_color("completion_background_color",     "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/completion_background_color"));
@@ -716,9 +717,9 @@ bool EditorThemeManager::is_generated_theme_outdated() {
 	if (outdated_cache_dirty) {
 		// TODO: We can use this information more intelligently to do partial theme updates and speed things up.
 		outdated_cache = EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/font") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/main_font") ||
-				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/code_font") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/fonts") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/appearance/max_sticky_tree_items") ||
+				EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/enable_touch_optimizations") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("editors/visual_editors") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
 				EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||

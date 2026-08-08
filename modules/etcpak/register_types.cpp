@@ -38,7 +38,7 @@ void initialize_etcpak_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-#ifdef TOOLS_ENABLED
+#ifdef ETCPAK_COMPRESS_ENABLED
 	Image::_image_compress_etc1_func = _compress_etc1;
 	Image::_image_compress_etc2_func = _compress_etc2;
 	Image::_image_compress_bc_func = _compress_bc;

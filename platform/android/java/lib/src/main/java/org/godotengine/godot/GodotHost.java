@@ -154,6 +154,11 @@ public interface GodotHost {
 	default void onEditorWorkspaceSelected(String workspace) {}
 
 	/**
+	 * Triggered when the editor's distraction-free mode changes.
+	 */
+	default void onDistractionFreeModeChanged(Boolean enabled) {}
+
+	/**
 	 * Runs the specified action on a host provided thread.
 	 */
 	default void runOnHostThread(Runnable action) {
@@ -165,5 +170,14 @@ public interface GodotHost {
 		if (activity != null) {
 			activity.runOnUiThread(action);
 		}
+	}
+
+	/**
+	 * Gets the build provider, if available.
+	 *
+	 * @return the build provider, if available; otherwise, null.
+	 */
+	default @Nullable BuildProvider getBuildProvider() {
+		return null;
 	}
 }

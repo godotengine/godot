@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BaseButton" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="BaseButton" inherits="Control" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for GUI buttons.
 	</brief_description>
@@ -32,6 +32,13 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the mouse has entered the button and has not left it yet.
+			</description>
+		</method>
+		<method name="press">
+			<return type="void" />
+			<description>
+				Presses the button. This causes the corresponding virtual method to be called and the corresponding signal to be emitted, depending on [member toggle_mode]. If [member disabled] is [code]true[/code], nothing happens.
+				[b]Note:[/b] This method does not change the visual state of the button and does not grab focus to the button.
 			</description>
 		</method>
 		<method name="set_pressed_no_signal">
@@ -75,7 +82,7 @@
 			If [code]true[/code], the button will highlight for a short amount of time when its shortcut is activated. If [code]false[/code] and [member toggle_mode] is [code]false[/code], the shortcut will activate without any visual feedback.
 		</member>
 		<member name="shortcut_in_tooltip" type="bool" setter="set_shortcut_in_tooltip" getter="is_shortcut_in_tooltip_enabled" default="true">
-			If [code]true[/code], the button will add information about its shortcut in the tooltip.
+			If [code]true[/code], the button will add information about its shortcut in the tooltip. This includes the shortcut's events and its [member Resource.resource_name]. If both events and name are empty, the shortcut will not be included.
 			[b]Note:[/b] This property does nothing when the tooltip control is customized using [method Control._make_custom_tooltip].
 		</member>
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" default="false">
@@ -129,4 +136,9 @@
 			Require a press and a subsequent release before considering the button clicked.
 		</constant>
 	</constants>
+	<theme_items>
+		<theme_item name="click_margin" data_type="constant" type="int" default="0">
+			Defines the margin around the button's area that still counts as a valid click. This is useful to make it easier to click small buttons.
+		</theme_item>
+	</theme_items>
 </class>

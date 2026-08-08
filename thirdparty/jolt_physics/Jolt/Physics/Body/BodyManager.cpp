@@ -47,7 +47,8 @@ JPH_NAMESPACE_BEGIN
 	}
 #endif
 
-// Helper class that combines a body and its motion properties
+/// @cond INTERNAL
+/// Helper class that combines a body and its motion properties
 class BodyWithMotionProperties : public Body
 {
 public:
@@ -55,8 +56,10 @@ public:
 
 	MotionProperties			mMotionProperties;
 };
+/// @endcond
 
-// Helper class that combines a soft body its motion properties and shape
+/// @cond INTERNAL
+/// Helper class that combines a soft body its motion properties and shape
 class SoftBodyWithMotionPropertiesAndShape : public Body
 {
 public:
@@ -68,6 +71,7 @@ public:
 	SoftBodyMotionProperties	mMotionProperties;
 	SoftBodyShape				mShape;
 };
+/// @endcond
 
 inline void BodyManager::sDeleteBody(Body *inBody)
 {
@@ -194,46 +198,7 @@ Body *BodyManager::AllocateBody(const BodyCreationSettings &inBodyCreationSettin
 		body = new Body;
 	}
 	body->mBodyType = EBodyType::RigidBody;
-	body->mShape = inBodyCreationSettings.GetShape();
-	body->mUserData = inBodyCreationSettings.mUserData;
-	body->SetFriction(inBodyCreationSettings.mFriction);
-	body->SetRestitution(inBodyCreationSettings.mRestitution);
-	body->mMotionType = inBodyCreationSettings.mMotionType;
-	if (inBodyCreationSettings.mIsSensor)
-		body->SetIsSensor(true);
-	if (inBodyCreationSettings.mCollideKinematicVsNonDynamic)
-		body->SetCollideKinematicVsNonDynamic(true);
-	if (inBodyCreationSettings.mUseManifoldReduction)
-		body->SetUseManifoldReduction(true);
-	if (inBodyCreationSettings.mApplyGyroscopicForce)
-		body->SetApplyGyroscopicForce(true);
-	if (inBodyCreationSettings.mEnhancedInternalEdgeRemoval)
-		body->SetEnhancedInternalEdgeRemoval(true);
-	SetBodyObjectLayerInternal(*body, inBodyCreationSettings.mObjectLayer);
-	body->mObjectLayer = inBodyCreationSettings.mObjectLayer;
-	body->mCollisionGroup = inBodyCreationSettings.mCollisionGroup;
-
-	if (inBodyCreationSettings.HasMassProperties())
-	{
-		MotionProperties *mp = body->mMotionProperties;
-		mp->SetLinearDamping(inBodyCreationSettings.mLinearDamping);
-		mp->SetAngularDamping(inBodyCreationSettings.mAngularDamping);
-		mp->SetMaxLinearVelocity(inBodyCreationSettings.mMaxLinearVelocity);
-		mp->SetMaxAngularVelocity(inBodyCreationSettings.mMaxAngularVelocity);
-		mp->SetMassProperties(inBodyCreationSettings.mAllowedDOFs, inBodyCreationSettings.GetMassProperties());
-		mp->SetLinearVelocity(inBodyCreationSettings.mLinearVelocity); // Needs to happen after setting the max linear/angular velocity and setting allowed DOFs
-		mp->SetAngularVelocity(inBodyCreationSettings.mAngularVelocity);
-		mp->SetGravityFactor(inBodyCreationSettings.mGravityFactor);
-		mp->SetNumVelocityStepsOverride(inBodyCreationSettings.mNumVelocityStepsOverride);
-		mp->SetNumPositionStepsOverride(inBodyCreationSettings.mNumPositionStepsOverride);
-		mp->mMotionQuality = inBodyCreationSettings.mMotionQuality;
-		mp->mAllowSleeping = inBodyCreationSettings.mAllowSleeping;
-		JPH_IF_ENABLE_ASSERTS(mp->mCachedBodyType = body->mBodyType;)
-		JPH_IF_ENABLE_ASSERTS(mp->mCachedMotionType = body->mMotionType;)
-	}
-
-	// Position body
-	body->SetPositionAndRotationInternal(inBodyCreationSettings.mPosition, inBodyCreationSettings.mRotation);
+	body->ApplyBodyCreationSettings(inBodyCreationSettings, *mBroadPhaseLayerInterface);
 
 	return body;
 }
@@ -250,27 +215,7 @@ Body *BodyManager::AllocateSoftBody(const SoftBodyCreationSettings &inSoftBodyCr
 	body->mBodyType = EBodyType::SoftBody;
 	body->mMotionProperties = mp;
 	body->mShape = shape;
-	body->mUserData = inSoftBodyCreationSettings.mUserData;
-	body->SetFriction(inSoftBodyCreationSettings.mFriction);
-	body->SetRestitution(inSoftBodyCreationSettings.mRestitution);
-	body->mMotionType = EMotionType::Dynamic;
-	SetBodyObjectLayerInternal(*body, inSoftBodyCreationSettings.mObjectLayer);
-	body->mObjectLayer = inSoftBodyCreationSettings.mObjectLayer;
-	body->mCollisionGroup = inSoftBodyCreationSettings.mCollisionGroup;
-	mp->SetLinearDamping(inSoftBodyCreationSettings.mLinearDamping);
-	mp->SetAngularDamping(0);
-	mp->SetMaxLinearVelocity(inSoftBodyCreationSettings.mMaxLinearVelocity);
-	mp->SetMaxAngularVelocity(FLT_MAX);
-	mp->SetLinearVelocity(Vec3::sZero());
-	mp->SetAngularVelocity(Vec3::sZero());
-	mp->SetGravityFactor(inSoftBodyCreationSettings.mGravityFactor);
-	mp->mMotionQuality = EMotionQuality::Discrete;
-	mp->mAllowSleeping = inSoftBodyCreationSettings.mAllowSleeping;
-	JPH_IF_ENABLE_ASSERTS(mp->mCachedBodyType = body->mBodyType;)
-	JPH_IF_ENABLE_ASSERTS(mp->mCachedMotionType = body->mMotionType;)
-	mp->Initialize(inSoftBodyCreationSettings);
-
-	body->SetPositionAndRotationInternal(inSoftBodyCreationSettings.mPosition, inSoftBodyCreationSettings.mMakeRotationIdentity? Quat::sIdentity() : inSoftBodyCreationSettings.mRotation);
+	body->ApplySoftBodyCreationSettings(inSoftBodyCreationSettings, *mBroadPhaseLayerInterface);
 
 	return body;
 }
@@ -605,6 +550,11 @@ void BodyManager::DeactivateBodies(const BodyID *inBodyIDs, int inNumber)
 
 				// Mark this body as no longer active
 				body.mMotionProperties->mIslandIndex = Body::cInactiveIndex;
+
+			#ifdef JPH_TRACK_SIMULATION_STATS
+				// Reset simulation stats
+				body.mMotionProperties->mSimulationStats.Reset();
+			#endif
 
 				// Reset velocity
 				body.mMotionProperties->mLinearVelocity = Vec3::sZero();
@@ -1159,5 +1109,54 @@ void BodyManager::ValidateActiveBodyBounds()
 		}
 }
 #endif // JPH_DEBUG
+
+#ifdef JPH_TRACK_SIMULATION_STATS
+void BodyManager::ResetSimulationStats()
+{
+	JPH_PROFILE_FUNCTION();
+
+	UniqueLock lock(mActiveBodiesMutex JPH_IF_ENABLE_ASSERTS(, this, EPhysicsLockTypes::ActiveBodiesList));
+
+	for (uint type = 0; type < cBodyTypeCount; ++type)
+		for (BodyID *id = mActiveBodies[type], *id_end = mActiveBodies[type] + mNumActiveBodies[type].load(memory_order_relaxed); id < id_end; ++id)
+		{
+			const Body *body = mBodies[id->GetIndex()];
+			body->mMotionProperties->GetSimulationStats().Reset();
+		}
+}
+
+#ifdef JPH_PROFILE_ENABLED
+void BodyManager::ReportSimulationStats()
+{
+	UniqueLock lock(mActiveBodiesMutex JPH_IF_ENABLE_ASSERTS(, this, EPhysicsLockTypes::ActiveBodiesList));
+
+	Trace("BodyID, IslandIndex, LargeIsland, BroadPhase (us), NarrowPhase (us), VelocityConstraint (us), PositionConstraint (us), UpdateBounds (us), CCD (us), NumContactConstraints, NumCollisionSteps, NumVelocitySteps, NumPositionSteps");
+
+	double us_per_tick = 1000000.0 / Profiler::sInstance->GetProcessorTicksPerSecond();
+
+	for (uint type = 0; type < cBodyTypeCount; ++type)
+		for (BodyID *id = mActiveBodies[type], *id_end = mActiveBodies[type] + mNumActiveBodies[type].load(memory_order_relaxed); id < id_end; ++id)
+		{
+			const Body *body = mBodies[id->GetIndex()];
+			const MotionProperties *mp = body->mMotionProperties;
+			const MotionProperties::SimulationStats &stats = mp->GetSimulationStats();
+			Trace("%u, %u, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %u, %u, %u, %u",
+				body->GetID().GetIndex(),
+				mp->GetIslandIndexInternal(),
+				stats.mIsLargeIsland? "True" : "False",
+				double(stats.mBroadPhaseTicks) * us_per_tick,
+				double(stats.mNarrowPhaseTicks) * us_per_tick,
+				double(stats.mVelocityConstraintTicks) * us_per_tick,
+				double(stats.mPositionConstraintTicks) * us_per_tick,
+				double(stats.mUpdateBoundsTicks) * us_per_tick,
+				double(stats.mCCDTicks) * us_per_tick,
+				stats.mNumContactConstraints.load(memory_order_relaxed),
+				stats.mNumCollisionSteps,
+				stats.mNumVelocitySteps,
+				stats.mNumPositionSteps);
+		}
+}
+#endif // JPH_PROFILE_ENABLED
+#endif // JPH_TRACK_SIMULATION_STATS
 
 JPH_NAMESPACE_END

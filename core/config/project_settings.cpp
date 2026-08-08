@@ -30,23 +30,28 @@
 
 #include "project_settings.h"
 
-#include "core/core_bind.h" // For Compression enum.
 #include "core/input/input_map.h"
+#include "core/io/compression.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "core/object/script_language.h"
+#include "core/os/os.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
-#include "servers/rendering/rendering_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "modules/modules_enabled.gen.h" // For mono.
+#include "core/config/engine.h"
+
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #endif // TOOLS_ENABLED
 
 ProjectSettings *ProjectSettings::get_singleton() {
@@ -65,6 +70,7 @@ String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
+// This returns paths like "res://.godot/imported".
 String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().path_join("imported");
 }
@@ -283,15 +289,22 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	_THREAD_SAFE_METHOD_
 
+	// Early return if value hasn't changed (unless it's being deleted)
+	if (p_value.get_type() != Variant::NIL) {
+		if (props.has(p_name) && props[p_name].variant == p_value) {
+			return true;
+		}
+	}
+
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
-		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().get_slicec('/', 1);
+		if (p_name.string().begins_with("autoload/")) {
+			String node_name = p_name.string().get_slicec('/', 1);
 			if (autoloads.has(node_name)) {
 				remove_autoload(node_name);
 			}
-		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slicec('/', 1);
+		} else if (p_name.string().begins_with("global_group/")) {
+			String group_name = p_name.string().get_slicec('/', 1);
 			if (global_groups.has(group_name)) {
 				remove_global_group(group_name);
 			}
@@ -304,14 +317,14 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			_version++;
-			_queue_changed();
+			_queue_changed(p_name);
 			return true;
 		}
 
 		{ // Feature overrides.
-			int dot = p_name.operator String().find_char('.');
+			int dot = p_name.string().find_char('.');
 			if (dot != -1) {
-				Vector<String> s = p_name.operator String().split(".");
+				Vector<String> s = p_name.string().split(".");
 
 				for (int i = 1; i < s.size(); i++) {
 					String feature = s[i].strip_edges();
@@ -331,8 +344,20 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
-		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().get_slicec('/', 1);
+		if (p_name.string().begins_with("autoload_prepend/")) {
+			String node_name = p_name.string().get_slicec('/', 1);
+			AutoloadInfo autoload;
+			autoload.name = node_name;
+			String path = p_value;
+			if (path.begins_with("*")) {
+				autoload.is_singleton = true;
+				autoload.path = path.substr(1).simplify_path();
+			} else {
+				autoload.path = path.simplify_path();
+			}
+			add_autoload(autoload, true);
+		} else if (p_name.string().begins_with("autoload/")) {
+			String node_name = p_name.string().get_slicec('/', 1);
 			AutoloadInfo autoload;
 			autoload.name = node_name;
 			String path = p_value;
@@ -343,14 +368,14 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				autoload.path = path.simplify_path();
 			}
 			add_autoload(autoload);
-		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slicec('/', 1);
+		} else if (p_name.string().begins_with("global_group/")) {
+			String group_name = p_name.string().get_slicec('/', 1);
 			add_global_group(group_name, p_value);
 		}
 	}
 
 	_version++;
-	_queue_changed();
+	_queue_changed(p_name);
 	return true;
 }
 
@@ -526,12 +551,18 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void ProjectSettings::_queue_changed() {
-	if (is_changed || !MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
+void ProjectSettings::_queue_changed(const StringName &p_name) {
+	changed_settings.insert(p_name);
+
+	if (!MessageQueue::get_singleton() || MessageQueue::get_singleton()->get_max_buffer_usage() == 0) {
 		return;
 	}
-	is_changed = true;
-	callable_mp(this, &ProjectSettings::_emit_changed).call_deferred();
+
+	// Only queue the deferred call once per frame.
+	if (!is_changed) {
+		is_changed = true;
+		callable_mp(this, &ProjectSettings::_emit_changed).call_deferred();
+	}
 }
 
 void ProjectSettings::_emit_changed() {
@@ -539,7 +570,12 @@ void ProjectSettings::_emit_changed() {
 		return;
 	}
 	is_changed = false;
+
+	// Emit the general settings_changed signal to indicate changes are complete.
 	emit_signal("settings_changed");
+
+	// Clear the changed settings after emitting the signal
+	changed_settings.clear();
 }
 
 bool ProjectSettings::load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
@@ -604,12 +640,25 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 	} else if (p_from_version <= 6) {
 		// Check if we still have legacy boot splash (removed in 4.6), map it to new project setting, then remove legacy setting.
 		if (has_setting("application/boot_splash/fullsize")) {
-			set_setting("application/boot_splash/stretch_mode", RenderingServer::map_scaling_option_to_stretch_mode(get_setting("application/boot_splash/fullsize")));
+			// See RenderingServerEnums::SplashStretchMode.
+			set_setting("application/boot_splash/stretch_mode", get_setting("application/boot_splash/fullsize") ? 1 : 0);
 			set_setting("application/boot_splash/fullsize", Variant());
 		}
 	}
+	// Automatically adds overrides for project settings that were changed to editor settings.
+	_handle_editor_setting_compat("editor/script/search_in_file_extensions", "text_editor/behavior/general/find_in_file_extensions");
 #endif // DISABLE_DEPRECATED
 }
+
+#ifndef DISABLE_DEPRECATED
+void ProjectSettings::_handle_editor_setting_compat(const String &p_original_setting, const String &p_new_setting) {
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (ps->has_setting(p_original_setting)) {
+		ps->set_editor_setting_override(p_new_setting, ps->get_setting(p_original_setting));
+		ps->set_setting(p_original_setting, Variant());
+	}
+}
+#endif
 
 /*
  * This method is responsible for loading a project.godot file and/or data file
@@ -632,9 +681,8 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *    If found, load it or fail.
  *  - Lookup project file in passed `p_path` (--path passed by the user), i.e. we
  *    are running from source code.
- *    If not found and `p_upwards` is true (--upwards passed by the user), look for
- *    project files in parent folders up to the system root (used to run a game
- *    from command line while in a subfolder).
+ *    If not found and `p_upwards` is true, look for project files in parent folders
+ *    up to the system root (used to run a game from command line while in a subfolder).
  *    If a project file is found, load it or fail.
  *    If nothing was found, error out.
  */
@@ -688,7 +736,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// We need to test both possibilities as extensions for Linux binaries are optional
 		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
 
-#ifdef MACOS_ENABLED
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
 			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"), false, 0, true);
@@ -731,7 +779,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 #endif
 
 	// Try to use the filesystem for files, according to OS.
-	// (Only Android -when reading from pck- and iOS use this.)
+	// (Only Android -when reading from PCK-.)
 
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
@@ -747,7 +795,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		return err;
 	}
 
-#ifdef MACOS_ENABLED
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	// Attempt to load project file from macOS .app bundle resources.
 	resource_path = OS::get_singleton()->get_bundle_resource_dir();
 	if (!resource_path.is_empty()) {
@@ -804,6 +852,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			break;
 		}
 
+#if defined(OVERRIDE_PATH_ENABLED)
 		if (p_upwards) {
 			// Try to load settings ascending through parent directories
 			d->change_dir("..");
@@ -812,6 +861,9 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			}
 			current_dir = d->get_current_dir();
 		} else {
+#else
+		{
+#endif
 			break;
 		}
 	}
@@ -829,12 +881,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
+#ifdef OVERRIDE_ENABLED
 	if (err == OK && !p_ignore_override) {
-		String custom_settings = GLOBAL_GET("application/config/project_settings_override");
-		if (!custom_settings.is_empty()) {
-			_load_settings_text(custom_settings);
+		bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+		if (!disable_override) {
+			String custom_settings = GLOBAL_GET("application/config/project_settings_override");
+			if (!custom_settings.is_empty()) {
+				_load_settings_text(custom_settings);
+			}
 		}
 	}
+#endif
 
 	// Updating the default value after the project settings have loaded.
 	bool use_hidden_directory = GLOBAL_GET("application/config/use_hidden_project_data_directory");
@@ -962,6 +1019,21 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 	// Fallback to text-based project.godot file if binary was not found.
 	err = _load_settings_text(p_text_path);
 	if (err == OK) {
+#ifndef DISABLE_DEPRECATED
+		const PackedStringArray features = get_setting("application/config/features");
+		for (const String &feat : features) {
+			if (feat.contains_char('.') && feat.get_slice_count(".") == 2) {
+				int major_version = feat.get_slicec('.', 0).to_int();
+				int minor_version = feat.get_slicec('.', 1).to_int();
+				// Major version is irrelevant, but the extra check ensures that the feature is in fact a version string.
+				if (major_version == 4 && minor_version < 6) {
+					// Enable MeshInstance3D compat for projects created before 4.6.
+					set_setting("animation/compatibility/default_parent_skeleton_in_mesh_instance_3d", true);
+				}
+				break;
+			}
+		}
+#endif
 		return OK;
 	} else if (err != ERR_FILE_NOT_FOUND) {
 		ERR_PRINT(vformat("Couldn't load file '%s', error code %d.", p_text_path, err));
@@ -1003,6 +1075,7 @@ bool ProjectSettings::is_builtin_setting(const String &p_name) const {
 void ProjectSettings::clear(const String &p_name) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
 	props.erase(p_name);
+	_queue_changed(p_name);
 }
 
 Error ProjectSettings::save() {
@@ -1124,7 +1197,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 			}
 
 			String vstr;
-			VariantWriter::write_to_string(value, vstr);
+			VariantWriter::write_to_string(value, vstr, true);
 			file->store_string(F.property_name_encode() + "=" + vstr + "\n");
 		}
 	}
@@ -1352,6 +1425,23 @@ Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_d
 	}
 }
 
+PackedStringArray ProjectSettings::get_changed_settings() const {
+	PackedStringArray arr;
+	for (const StringName &setting : changed_settings) {
+		arr.push_back(setting);
+	}
+	return arr;
+}
+
+bool ProjectSettings::check_changed_settings_in_group(const String &p_setting_prefix) const {
+	for (const StringName &setting : changed_settings) {
+		if (String(setting).begins_with(p_setting_prefix)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void ProjectSettings::refresh_global_class_list() {
 	// This is called after mounting a new PCK file to pick up class changes.
 	is_global_class_list_loaded = false; // Make sure we read from the freshly mounted PCK.
@@ -1409,9 +1499,16 @@ const HashMap<StringName, ProjectSettings::AutoloadInfo> &ProjectSettings::get_a
 	return autoloads;
 }
 
-void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload) {
+void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload, bool p_front_insert) {
 	ERR_FAIL_COND_MSG(p_autoload.name == StringName(), "Trying to add autoload with no name.");
-	autoloads[p_autoload.name] = p_autoload;
+	if (p_front_insert) {
+		if (autoloads.has(p_autoload.name)) {
+			autoloads.erase(p_autoload.name);
+		}
+		autoloads.insert(p_autoload.name, p_autoload, true);
+	} else {
+		autoloads[p_autoload.name] = p_autoload;
+	}
 }
 
 void ProjectSettings::remove_autoload(const StringName &p_autoload) {
@@ -1426,6 +1523,12 @@ bool ProjectSettings::has_autoload(const StringName &p_autoload) const {
 ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(!autoloads.has(p_name), AutoloadInfo(), "Trying to get non-existent autoload.");
 	return autoloads[p_name];
+}
+
+void ProjectSettings::fix_autoload_paths() {
+	for (KeyValue<StringName, AutoloadInfo> &kv : autoloads) {
+		kv.value.path = ResourceUID::ensure_path(kv.value.path);
+	}
 }
 
 const HashMap<StringName, String> &ProjectSettings::get_global_groups_list() const {
@@ -1548,12 +1651,15 @@ void ProjectSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
+	// Change tracking methods
+	ClassDB::bind_method(D_METHOD("get_changed_settings"), &ProjectSettings::get_changed_settings);
+	ClassDB::bind_method(D_METHOD("check_changed_settings_in_group", "setting_prefix"), &ProjectSettings::check_changed_settings_in_group);
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 }
 
 void ProjectSettings::_add_builtin_input_map() {
 	if (InputMap::get_singleton()) {
-		HashMap<String, List<Ref<InputEvent>>> builtins = InputMap::get_singleton()->get_builtins();
+		HashMap<String, List<Ref<InputEvent>>> builtins(InputMap::get_singleton()->get_builtins());
 
 		for (KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
 			Array events;
@@ -1595,7 +1701,7 @@ ProjectSettings::ProjectSettings() {
 #endif
 
 	GLOBAL_DEF_BASIC("application/config/name", "");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
+	GLOBAL_DEF(PropertyInfo(Variant::DICTIONARY, "application/config/name_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary());
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT), "");
 	GLOBAL_DEF_BASIC("application/config/version", "");
 	GLOBAL_DEF_INTERNAL(PropertyInfo(Variant::STRING, "application/config/tags"), PackedStringArray());
@@ -1616,6 +1722,7 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/accessibility_support", PROPERTY_HINT_ENUM, "Auto (When Screen Reader is Running),Always Active,Disabled"), 0);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "accessibility/general/updates_per_second", PROPERTY_HINT_RANGE, "1,100,1"), 60);
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "accessibility/general/accessibility_driver", PROPERTY_HINT_ENUM, "accesskit,dummy"), "accesskit");
 
 	// The default window size is tuned to:
 	// - Have a 16:9 aspect ratio,
@@ -1641,11 +1748,15 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/size/sharp_corners", false);
 	GLOBAL_DEF("display/window/size/minimize_disabled", false);
 	GLOBAL_DEF("display/window/size/maximize_disabled", false);
+	GLOBAL_DEF("display/window/size/enable_toggle_fullscreen_shortcut", true);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_width_override", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"), 0); // 8K resolution
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/size/window_height_override", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"), 0); // 8K resolution
 
+	GLOBAL_DEF_BASIC("display/window/hdr/request_hdr_output", false);
+
 	GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true);
+	GLOBAL_DEF("animation/warnings/check_invalid_skeleton_modifier_node_paths", true);
 	GLOBAL_DEF("animation/warnings/check_invalid_track_paths", true);
 	GLOBAL_DEF("animation/warnings/check_angle_interpolation_type_conflicting", true);
 #ifndef DISABLE_DEPRECATED
@@ -1664,10 +1775,10 @@ ProjectSettings::ProjectSettings() {
 
 	_add_builtin_input_map();
 
-	// Keep the enum values in sync with the `DisplayServer::ScreenOrientation` enum.
+	// Keep the enum values in sync with the `DisplayServerEnums::ScreenOrientation` enum.
 	custom_prop_info["display/window/handheld/orientation"] = PropertyInfo(Variant::INT, "display/window/handheld/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor");
 	GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
-	// Keep the enum values in sync with the `DisplayServer::VSyncMode` enum.
+	// Keep the enum values in sync with the `DisplayServerEnums::VSyncMode` enum.
 	custom_prop_info["display/window/vsync/vsync_mode"] = PropertyInfo(Variant::INT, "display/window/vsync/vsync_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Adaptive,Mailbox");
 
 	GLOBAL_DEF("display/window/frame_pacing/android/enable_frame_pacing", true);
@@ -1719,7 +1830,7 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("gui/common/drag_threshold", 10);
 	GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/show_focus_state_on_pointer_event", PROPERTY_HINT_ENUM, "Never,Control Supports Keyboard Input,Always"), 1);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/show_focus_state_on_pointer_event", PROPERTY_HINT_ENUM, "Never,Text Input Controls,Always"), 1);
 	GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/vsync/frame_queue_size", PROPERTY_HINT_RANGE, "2,3,1"), 2);
@@ -1732,18 +1843,16 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/rendering_device/pipeline_cache/save_chunk_size_mb", PROPERTY_HINT_RANGE, "0.000001,64.0,0.001,or_greater"), 3.0);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/vulkan/max_descriptors_per_pool", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), 64);
 
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", 16384);
-	custom_prop_info["rendering/rendering_device/d3d12/max_resource_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_resource_descriptors_per_frame", PROPERTY_HINT_RANGE, "512,262144");
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", 1024);
-	custom_prop_info["rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame", PROPERTY_HINT_RANGE, "256,2048");
-	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", 512);
-	custom_prop_info["rendering/rendering_device/d3d12/max_misc_descriptors_per_frame"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_misc_descriptors_per_frame", PROPERTY_HINT_RANGE, "32,4096");
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_resource_descriptors", 65536);
+	custom_prop_info["rendering/rendering_device/d3d12/max_resource_descriptors"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_resource_descriptors", PROPERTY_HINT_RANGE, "512,1000000");
+	GLOBAL_DEF_RST("rendering/rendering_device/d3d12/max_sampler_descriptors", 1024);
+	custom_prop_info["rendering/rendering_device/d3d12/max_sampler_descriptors"] = PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/max_sampler_descriptors", PROPERTY_HINT_RANGE, "256,2048");
 
 	// The default value must match the minor part of the Agility SDK version
 	// installed by the scripts provided in the repository
 	// (check `misc/scripts/install_d3d12_sdk_windows.py`).
-	// For example, if the script installs 1.613.3, the default value must be 613.
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_control"), 613);
+	// For example, if the script installs 1.618.5, the default value must be 618.
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_control"), 618);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
@@ -1763,6 +1872,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations_pot_files", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_add_builtin_strings_to_pot", false);
+	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_add_project_title_to_translation_template", false);
 
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	GLOBAL_DEF("navigation/world/map_use_async_iterations", true);

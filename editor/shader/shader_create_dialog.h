@@ -30,13 +30,11 @@
 
 #pragma once
 
-#include "editor/settings/editor_settings.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/panel_container.h"
 
 class EditorFileDialog;
 class EditorValidationPanel;
@@ -78,7 +76,6 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	bool load_enabled = false;
 	bool re_check_path = false;
 	int current_type = -1;
-	int default_type = -1;
 	int current_mode = 0;
 	int current_template = 0;
 
@@ -105,6 +102,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void config(const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true, int p_preferred_type = -1, int p_preferred_mode = -1);
+	void config(const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true, const String &p_preferred_type = "", int p_preferred_mode = -1);
 	ShaderCreateDialog();
 };

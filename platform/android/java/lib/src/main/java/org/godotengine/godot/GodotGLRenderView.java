@@ -130,8 +130,8 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	}
 
 	@Override
-	public void onActivityDestroyed() {
-		requestRenderThreadExitAndWait();
+	public boolean blockingExitRenderer(long blockingTimeInMs) {
+		return requestRenderThreadExitAndWait(blockingTimeInMs);
 	}
 
 	@Override
@@ -170,6 +170,12 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	public void onPointerCaptureChange(boolean hasCapture) {
 		super.onPointerCaptureChange(hasCapture);
 		inputHandler.onPointerCaptureChange(hasCapture);
+	}
+
+	@Override
+	public boolean canCapturePointer() {
+		// Pointer capture is not supported on XR devices.
+		return !godot.isXrRuntime() && inputHandler.canCapturePointer();
 	}
 
 	@Override

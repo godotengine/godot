@@ -12,7 +12,7 @@ struct ReverseChainSingleSubst
 {
   protected:
   union {
-  HBUINT16                              format;         /* Format identifier */
+  struct { HBUINT16 v; }                format;         /* Format identifier */
   ReverseChainSingleSubstFormat1        format1;
   } u;
 
@@ -20,9 +20,9 @@ struct ReverseChainSingleSubst
   template <typename context_t, typename ...Ts>
   typename context_t::return_t dispatch (context_t *c, Ts&&... ds) const
   {
-    if (unlikely (!c->may_dispatch (this, &u.format))) return c->no_dispatch_return_value ();
-    TRACE_DISPATCH (this, u.format);
-    switch (u.format) {
+    if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
+    TRACE_DISPATCH (this, u.format.v);
+    switch (u.format.v) {
     case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }

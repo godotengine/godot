@@ -18,9 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.3-rc\n"
 
-msgid "All Recognized"
-msgstr "ทุกนามสุกลที่รู้จัก"
-
 msgid "Save"
 msgstr "บันทึก"
 
@@ -38,6 +35,9 @@ msgstr "เลือกโฟลเดอร์ปัจจุบัน"
 
 msgid "Select This Folder"
 msgstr "เลือกโฟลเดอร์นี้"
+
+msgid "All Recognized"
+msgstr "ทุกนามสุกลที่รู้จัก"
 
 msgid "Open a File"
 msgstr "เปิดไฟล์"

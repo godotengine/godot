@@ -1,0 +1,6 @@
+GH-76794
+--------
+Validate extension JSON: Error: Hash changed for 'classes/Tree/methods/edit_selected', from 859196D4 to 9AB67ACD. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Tree/methods/edit_selected': arguments
+
+Added an optional parameter with a default value. No adjustments should be necessary.

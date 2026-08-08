@@ -12,6 +12,8 @@
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include <string.h>
+
+#include "src/webp/types.h"
 #include "src/utils/random_utils.h"
 
 //------------------------------------------------------------------------------
@@ -31,13 +33,12 @@ static const uint32_t kRandomTable[VP8_RANDOM_TABLE_SIZE] = {
 };
 
 void VP8InitRandom(VP8Random* const rg, float dithering) {
-  memcpy(rg->tab_, kRandomTable, sizeof(rg->tab_));
-  rg->index1_ = 0;
-  rg->index2_ = 31;
-  rg->amp_ = (dithering < 0.0) ? 0
-           : (dithering > 1.0) ? (1 << VP8_RANDOM_DITHER_FIX)
-           : (uint32_t)((1 << VP8_RANDOM_DITHER_FIX) * dithering);
+  memcpy(rg->tab, kRandomTable, sizeof(rg->tab));
+  rg->index1 = 0;
+  rg->index2 = 31;
+  rg->amp = (dithering < 0.0) ? 0
+          : (dithering > 1.0) ? (1 << VP8_RANDOM_DITHER_FIX)
+          : (uint32_t)((1 << VP8_RANDOM_DITHER_FIX) * dithering);
 }
 
 //------------------------------------------------------------------------------
-
