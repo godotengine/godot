@@ -362,7 +362,7 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 				Color tile_color;
 
 				if (base_tile_coords != TileSetSource::INVALID_ATLAS_COORDS) {
-					if (base_tile_coords == Vector2(x, y)) {
+					if (base_tile_coords == Vector2i(x, y)) {
 						tile_color = Color(1.0, 1.0, 1.0, 0.8);
 
 						Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(base_tile_coords);
