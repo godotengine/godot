@@ -783,6 +783,7 @@ public:
 
 	void set_use_sub_inspector(bool p_enable);
 	void set_use_filter(bool p_use);
+	void update_properties_recursive() override;
 	void fold_resource();
 
 	virtual void set_keying(bool p_keying) override;
