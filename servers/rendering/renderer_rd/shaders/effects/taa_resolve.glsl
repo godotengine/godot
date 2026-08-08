@@ -213,9 +213,24 @@ vec4 temporal_antialiasing(vec2 uv) {
 		min_delta = length(history - s16);
 	}
 
-	float depth = textureLod(depth_buffer, uv, 0.0).r;
+	float d1 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[1]).r;
+	float d2 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[2]).r;
+	float d3 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[3]).r;
+	float d4 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[4]).r;
+	float d5 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[5]).r;
+	float d6 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[6]).r;
+	float d7 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[7]).r;
+	float d8 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[8]).r;
+	float d9 = textureLodOffset(depth_buffer, uv + jitter, 0.0, numpad[9]).r;
 
-	return vec4(s, depth * 10000.0);
+	float depth_avg = (d1 + d2 + d3 + d4 + d5 + d6 + d7 + d8 + d9) * RPC_9;
+
+	// Reject Background, it has no valid Motion Vectors
+	if (depth_avg == 0) {
+		s = textureLod(color_buffer, uv + jitter, 0.0).rgb;
+	}
+
+	return vec4(s, d5 * 10000.0);
 }
 
 void main() {
