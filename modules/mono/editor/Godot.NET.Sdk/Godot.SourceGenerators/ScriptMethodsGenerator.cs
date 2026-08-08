@@ -538,7 +538,8 @@ namespace Godot.SourceGenerators
 
         private static void AppendGeneratedExportValidationHelper(StringBuilder source)
         {
-            source.Append("\nfile static class GeneratedExportValidation\n{\n");
+            source.Append("\n#nullable enable\n");
+            source.Append("file static class GeneratedExportValidation\n{\n");
             source.Append("    public static void ValidateExportedMemberNotNull(object? value, string memberName)\n    {\n");
             source.Append("        if (value is not null)\n");
             source.Append("            return;\n\n");
@@ -548,6 +549,7 @@ namespace Godot.SourceGenerators
             source.Append("            global::System.ArgumentNullException.ThrowIfNull(value, memberName);\n");
             source.Append("    }\n");
             source.Append("}\n");
+            source.Append("#nullable restore\n");
         }
         private static void GenerateMethodInvoker(
             GodotMethodData method,
