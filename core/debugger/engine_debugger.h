@@ -97,7 +97,9 @@ protected:
 
 	static inline HashMap<StringName, Profiler> profilers;
 	static inline HashMap<StringName, Capture> captures;
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	static inline HashMap<String, CreatePeerFunc> protocols;
+#endif
 
 	static void (*allow_focus_steal_fn)();
 
@@ -119,7 +121,9 @@ public:
 	static void unregister_message_capture(const StringName &p_name);
 	static bool has_capture(const StringName &p_name);
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	static void register_uri_handler(const String &p_protocol, CreatePeerFunc p_func);
+#endif
 
 	void iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time);
 	void profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts = Array());
