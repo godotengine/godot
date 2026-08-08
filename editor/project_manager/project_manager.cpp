@@ -112,7 +112,12 @@ void ProjectManager::_notification(int p_what) {
 			_select_main_view(MAIN_VIEW_PROJECTS);
 			_update_list_placeholder();
 			_titlebar_resized();
-			_update_compact_mode(true);
+
+			if (compact_mode) {
+				_update_compact_mode(true);
+			}
+			project_list->sb_visible_cache = is_project_list_sidebar_visible();
+			project_list->compact_size_cache = project_list_sidebar->get_size().x;
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -144,11 +149,15 @@ void ProjectManager::_notification(int p_what) {
 			if (EditorThemeManager::is_generated_theme_outdated()) {
 				_update_theme();
 			}
+			_update_project_manager_settings();
 			_update_list_placeholder();
 		} break;
+
 		case NOTIFICATION_RESIZED: {
+			if (compact_mode) {
+				_update_compact_mode();
+			}
 			project_list->resize_project_titles();
-			_update_compact_mode();
 		} break;
 	}
 }
@@ -186,12 +195,13 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 
 // Hides certain parts of the Project Manager when window width gets smaller than combined_minimum_size.
 void ProjectManager::_update_compact_mode(bool p_reset_threshold) {
+#ifdef ANDRIOD_ENABLED
 	if (p_reset_threshold) {
 		compact_mode_threshold = root_container->get_combined_minimum_size().width;
 	}
-
-	bool compact_mode = get_size().width < compact_mode_threshold;
-	project_list_sidebar->set_visible(!compact_mode);
+#endif
+	bool compact = get_size().width < compact_mode_threshold;
+	project_list_sidebar->set_visible(!compact);
 }
 
 void ProjectManager::_update_size_limits() {
@@ -1354,6 +1364,31 @@ void ProjectManager::_titlebar_resized() {
 	}
 }
 
+bool ProjectManager::is_project_list_sidebar_visible() {
+	return project_list_sidebar->is_visible();
+}
+
+Vector2 ProjectManager::get_project_list_sidebar_size() {
+	return project_list_sidebar->get_size();
+}
+
+void ProjectManager::_update_project_manager_settings() {
+	// Compact Mode setting.
+	{
+		compact_mode = EDITOR_GET("project_manager/compact_mode");
+		if (compact_mode) {
+#ifndef ANDRIOD_ENABLED
+			compact_mode_threshold = EDITOR_GET("project_manager/compact_mode_threshold");
+#endif
+			_update_compact_mode();
+		} else if (!project_list_sidebar->is_visible()) {
+			project_list_sidebar->set_visible(true);
+		}
+		project_list->compact_mode = compact_mode;
+		project_list->resize_project_titles();
+	}
+}
+
 void ProjectManager::_open_donate_page() {
 	OS::get_singleton()->shell_open("https://fund.godotengine.org/?ref=project_manager");
 }
@@ -2020,6 +2055,11 @@ ProjectManager::ProjectManager() {
 		title_bar->set_can_move_window(true);
 		title_bar->connect(SceneStringName(item_rect_changed), callable_mp(this, &ProjectManager::_titlebar_resized));
 	}
+
+	compact_mode = EDITOR_GET("project_manager/compact_mode");
+	const int threshold = EDITOR_GET("project_manager/compact_mode_threshold");
+	compact_mode_threshold = compact_mode ? threshold : 0;
+	project_list->compact_mode = compact_mode;
 
 	_update_size_limits();
 }
