@@ -134,6 +134,7 @@ class PopupMenu : public Popup {
 	BitField<MouseButtonMask> initial_button_mask = MouseButtonMask::NONE;
 	bool during_grabbed_click = false;
 	bool is_scrolling = false;
+	bool mouse_event = false;
 	int mouse_over = -1;
 	int prev_mouse_over = -1;
 	int submenu_over = -1;

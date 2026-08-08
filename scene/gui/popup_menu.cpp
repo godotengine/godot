@@ -505,6 +505,7 @@ void PopupMenu::_submenu_timeout() {
 
 void PopupMenu::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (p_event.is_valid()) {
+		mouse_event = Ref<InputEventMouse>(p_event).is_valid();
 		_input_from_window_internal(p_event);
 	} else {
 		WARN_PRINT_ONCE("PopupMenu has received an invalid InputEvent. Consider filtering out invalid events.");
@@ -1113,7 +1114,7 @@ void PopupMenu::_update_search_bar_visibility() {
 }
 
 void PopupMenu::_items_focus_entered() {
-	if (mouse_over != -1) {
+	if (mouse_over != -1 || mouse_event) {
 		return;
 	}
 
