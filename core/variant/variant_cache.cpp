@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  inline_cache.cpp                                                      */
+/*  variant_cache.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,43 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "inline_cache.h"
-
-#include "core/debugger/engine_debugger.h"
 #include "core/object/object.h"
-#include "core/os/memory.h"
-#include "core/variant/variant_internal.h"
+#include "core/variant/variant.h"
 
-void FunctionInlineCache::load(Variant &p_base, const StringName &p_method) {
-	Variant::VariantCacheFunctionCall found = p_base.lookup_function_call(p_method);
-	if (found) {
-		// There is a chance another thread already updated while we looked up the function.
-		if (state == CacheState::UNINITIALIZED) {
-			state = CacheState::INITIALIZING;
-			fn = std::move(found);
-			type = get_type(p_base);
-			if (p_base.get_type() == Variant::OBJECT) {
-				Object *obj = *VariantInternal::get_object(&p_base);
-
-				const ScriptInstance *si = obj->get_script_instance();
-				if (si) {
-					script = si->get_script();
-					is_static = false;
-				} else {
-					script = Object::cast_to<Script>(obj);
-					DEV_ASSERT(script.is_valid());
-					is_static = true;
-				}
-			}
-			state = CacheState::MONOMORPHIC;
-		}
-	} else {
-		state = CacheState::DISABLED;
+Variant::VariantCacheFunctionCall Variant::lookup_function_call(const StringName &p_method_name) {
+	// Currently only supports objects
+	if (type == OBJECT) {
+		return _get_obj().obj->lookup_function_call(p_method_name);
 	}
-}
-
-void FunctionInlineCache::reset() {
-	script = nullptr;
-	fn = nullptr;
-	state = CacheState::UNINITIALIZED;
+	return Variant::VariantCacheFunctionCall();
 }

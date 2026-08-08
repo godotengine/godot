@@ -989,6 +989,14 @@ public:
 		return Ref<Script>();
 	}
 
+	virtual bool script_eq(const Ref<Script> &p_script) const override {
+		if (native_info->get_script_func) {
+			GDExtensionObjectPtr script = native_info->get_script_func(instance);
+			return *p_script == reinterpret_cast<Script *>(script);
+		}
+		return false;
+	}
+
 	virtual bool is_placeholder() const override {
 		if (native_info->is_placeholder_func) {
 			return native_info->is_placeholder_func(instance);

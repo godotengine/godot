@@ -161,6 +161,14 @@ StringName GDScriptFunction::get_global_name(int p_idx) const {
 	return global_names[p_idx];
 }
 
+Variant GDScriptFunction::call_for_variant_cache(Variant *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err) {
+	if (p_instance->get_type() == Variant::OBJECT) {
+		Object *obj = *VariantInternal::get_object(p_instance);
+		return call(reinterpret_cast<GDScriptInstance *>(obj->get_script_instance()), p_args, p_argcount, r_err);
+	}
+	ERR_FAIL_V_MSG(Variant(), "GDScript cache fail: calling on non object type");
+}
+
 struct _GDFKC {
 	int order = 0;
 	List<int> pos;
@@ -244,6 +252,10 @@ GDScriptFunction::~GDScriptFunction() {
 		argument_types.write[i].script_type_ref = Ref<Script>();
 	}
 	return_type.script_type_ref = Ref<Script>();
+
+	for (int i : function_inline_cache_locations) {
+		reinterpret_cast<FunctionInlineCache *>(&_code_ptr[i])->reset();
+	}
 
 #ifdef DEBUG_ENABLED
 	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);

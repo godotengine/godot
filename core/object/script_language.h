@@ -176,10 +176,6 @@ public:
 
 	virtual MethodInfo get_method_info(const StringName &p_method) const = 0;
 
-	// For inline caching
-	virtual void *lookup_method(const StringName &p_method) const;
-	virtual void call_method(Variant &p_base, void *p_method, const Variant **p_args, int p_argcount, Variant *r_ret, Callable::CallError &r_error) const;
-
 	virtual bool is_tool() const = 0;
 	virtual bool is_script_valid() const = 0;
 	virtual bool is_abstract() const = 0;
@@ -449,6 +445,7 @@ public:
 	virtual void notification(int p_notification, bool p_reversed = false) override {}
 
 	virtual Ref<Script> get_script() const override { return script; }
+	virtual bool script_eq(const Ref<Script> &p_script) const override { return *script == *p_script; }
 
 	virtual ScriptLanguage *get_language() override { return language; }
 

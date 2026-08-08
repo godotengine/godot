@@ -1923,7 +1923,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_INSTRUCTION_ARG(base, argc);
 				Variant **argptrs = instruction_args;
 
-				InlineCache *ic = _inline_cache_ptr + _code_ptr[ip + 3];
+				FunctionInlineCache *fn = reinterpret_cast<FunctionInlineCache *>(&_code_ptr[ip + 3]);
 
 #ifdef DEBUG_ENABLED
 				uint64_t call_time = 0;
@@ -1939,7 +1939,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Callable::CallError err;
 				if (call_ret) {
 					GET_INSTRUCTION_ARG(ret, argc + 1);
-					ic->call(*base, *methodname, (const Variant **)argptrs, argc, &temp_ret, err);
+					fn->callp(*base, *methodname, const_cast<const Variant **>(argptrs), argc, &temp_ret, err);
 					*ret = temp_ret;
 #ifdef DEBUG_ENABLED
 					if (ret->get_type() == Variant::NIL) {
@@ -1974,7 +1974,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 #endif
 				} else {
-					ic->call(*base, *methodname, (const Variant **)argptrs, argc, nullptr, err);
+					fn->callp(*base, *methodname, const_cast<const Variant **>(argptrs), argc, nullptr, err);
 				}
 #ifdef DEBUG_ENABLED
 
@@ -2030,7 +2030,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif // DEBUG_ENABLED
 
-				ip += 4;
+				ip += 3 + FunctionInlineCacheIntSize;
 			}
 			DISPATCH_OPCODE;
 

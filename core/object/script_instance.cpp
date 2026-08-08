@@ -58,6 +58,10 @@ Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p
 	return callp(p_method, p_args, p_argcount, r_error);
 }
 
+Variant::VariantCacheFunctionCall ScriptInstance::lookup_function_call(const StringName &p_method_name) {
+	return Variant::VariantCacheFunctionCall();
+}
+
 void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &r_state) {
 	List<PropertyInfo> pinfo;
 	get_property_list(&pinfo);
