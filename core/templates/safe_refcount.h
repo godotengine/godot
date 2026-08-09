@@ -121,8 +121,8 @@ public:
 	}
 
 	_ALWAYS_INLINE_ T exchange_if_greater(T p_value) {
+		T tmp = value.load(std::memory_order_acquire);
 		while (true) {
-			T tmp = value.load(std::memory_order_acquire);
 			if (tmp >= p_value) {
 				return tmp; // already greater, or equal
 			}
@@ -134,8 +134,8 @@ public:
 	}
 
 	_ALWAYS_INLINE_ T conditional_increment() {
+		T c = value.load(std::memory_order_acquire);
 		while (true) {
-			T c = value.load(std::memory_order_acquire);
 			if (c == 0) {
 				return 0;
 			}
