@@ -4443,15 +4443,15 @@ bool TextEdit::is_empty_selection_clipboard_enabled() const {
 }
 
 // Text manipulation
-void TextEdit::clear() {
+void TextEdit::clear(bool p_clear_undo_history) {
 	setting_text = true;
-	_clear();
+	_clear(p_clear_undo_history);
 	setting_text = false;
 	emit_signal(SNAME("text_set"));
 }
 
-void TextEdit::_clear() {
-	if (editable && undo_enabled) {
+void TextEdit::_clear(bool p_clear_undo_history) {
+	if (!p_clear_undo_history && undo_enabled && is_inside_tree()) {
 		remove_secondary_carets();
 		_move_caret_document_start(false);
 		begin_complex_operation();
@@ -5137,7 +5137,7 @@ void TextEdit::menu_option(int p_option) {
 		} break;
 		case MENU_CLEAR: {
 			if (editable) {
-				clear();
+				clear(false);
 			}
 		} break;
 		case MENU_SELECT_ALL: {
@@ -7790,7 +7790,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_empty_selection_clipboard_enabled"), &TextEdit::is_empty_selection_clipboard_enabled);
 
 	// Text manipulation
-	ClassDB::bind_method(D_METHOD("clear"), &TextEdit::clear);
+	ClassDB::bind_method(D_METHOD("clear", "clear_undo_history"), &TextEdit::clear, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &TextEdit::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &TextEdit::get_text);
