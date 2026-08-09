@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #include "debugger_marshalls.h"
 
 #include "core/io/marshalls.h"
@@ -205,3 +207,5 @@ String DebuggerMarshalls::parse_type_from_variant(const Variant &p_variant) {
 
 	return name;
 }
+
+#endif

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
 #include "core/templates/hash_set.h"
@@ -83,3 +85,5 @@ public:
 	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, ErrorHandlerType p_type, const Vector<StackInfo> &p_stack_info);
 	Vector<StackInfo> get_error_stack_info() const;
 };
+
+#endif

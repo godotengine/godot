@@ -30,6 +30,8 @@
 
 #include "script_debugger.h"
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+
 #include "core/debugger/engine_debugger.h"
 
 thread_local Vector<ScriptDebugger::StackInfo> ScriptDebugger::error_stack_info;
@@ -105,3 +107,5 @@ Vector<ScriptLanguage::StackInfo> ScriptDebugger::get_error_stack_info() const {
 ScriptLanguage *ScriptDebugger::get_break_language() const {
 	return break_lang;
 }
+
+#endif

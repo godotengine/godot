@@ -34,6 +34,7 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/object/script_backtrace.h"
 #include "core/string/char_utils.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
@@ -123,6 +124,7 @@ static void _setup_clock() {
 struct sigaction old_action;
 
 static void handle_interrupt(int sig) {
+#ifdef DEBUG_ENABLED
 	if (!EngineDebugger::is_active()) {
 		return;
 	}
@@ -134,6 +136,7 @@ static void handle_interrupt(int sig) {
 	if (old_action.sa_handler && old_action.sa_handler != SIG_IGN && old_action.sa_handler != SIG_DFL) {
 		old_action.sa_handler(sig);
 	}
+#endif
 }
 
 void OS_Unix::initialize_debugging() {

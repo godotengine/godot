@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef DEBUG_ENABLED
+
 #include "core/input/shortcut.h"
 #include "core/object/script_language.h"
 
@@ -74,3 +76,5 @@ struct DebuggerMarshalls {
 
 	static String parse_type_from_variant(const Variant &p_variant);
 };
+
+#endif

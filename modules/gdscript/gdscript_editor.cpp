@@ -270,6 +270,7 @@ thread_local int GDScriptLanguage::_debug_parse_err_line = -1;
 thread_local String GDScriptLanguage::_debug_parse_err_file;
 thread_local String GDScriptLanguage::_debug_error;
 
+#ifdef DEBUG_ENABLED
 bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
 	// break because of parse error
 
@@ -302,6 +303,7 @@ bool GDScriptLanguage::debug_break(const String &p_error, bool p_allow_continue)
 		return false;
 	}
 }
+#endif
 
 String GDScriptLanguage::debug_get_error() const {
 	return _debug_error;

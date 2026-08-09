@@ -30,6 +30,8 @@
 
 #include "scene_debugger.h"
 
+#ifdef DEBUG_ENABLED
+
 #include "core/config/engine.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
@@ -92,14 +94,14 @@ SceneDebugger::~SceneDebugger() {
 	singleton = nullptr;
 }
 
+#ifdef DEBUG_ENABLED
 void SceneDebugger::initialize() {
 	if (EngineDebugger::is_active()) {
-#ifdef DEBUG_ENABLED
 		_init_message_handlers();
-#endif
 		memnew(SceneDebugger);
 	}
 }
+#endif
 
 void SceneDebugger::deinitialize() {
 	memdelete(singleton);
@@ -146,8 +148,10 @@ void SceneDebugger::_on_output_max_linear_value_changed(float max_linear_value) 
 }
 
 Error SceneDebugger::_msg_setup_scene(const Array &p_args) {
+#ifdef DEBUG_ENABLED
 	SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
 	return OK;
+#endif
 }
 
 Error SceneDebugger::_msg_setup_game_view(const Array &p_args) {
@@ -311,6 +315,7 @@ Error SceneDebugger::_msg_reload_cached_files(const Array &p_args) {
 }
 
 Error SceneDebugger::_msg_setup_embedded_shortcuts(const Array &p_args) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V(p_args.is_empty() || p_args[0].get_type() != Variant::DICTIONARY, ERR_INVALID_DATA);
 	Dictionary dict = p_args[0];
 	LocalVector<Variant> keys = dict.get_key_list();
@@ -321,6 +326,7 @@ Error SceneDebugger::_msg_setup_embedded_shortcuts(const Array &p_args) {
 
 	SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_embed_input).bind(dict));
 	return OK;
+#endif
 }
 
 // region Live editing.
@@ -792,9 +798,11 @@ void SceneDebugger::add_to_cache(const String &p_filename, Node *p_node) {
 		return;
 	}
 
+#ifdef DEBUG_ENABLED
 	if (EngineDebugger::get_script_debugger() && !p_filename.is_empty()) {
 		debugger->live_scene_edit_cache[p_filename].insert(p_node);
 	}
+#endif
 }
 
 void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
@@ -1339,3 +1347,4 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 	}
 }
 #endif // DEBUG_ENABLED
+#endif

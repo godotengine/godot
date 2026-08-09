@@ -121,7 +121,7 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks,
 	}
 	singleton->poll_events(true);
 }
-
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bool p_ignore_error_breaks, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)()) {
 #if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create_tcp); // TCP is the default protocol. Platforms/modules can add more.
@@ -174,6 +174,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bo
 
 	allow_focus_steal_fn = p_allow_focus_steal_fn;
 }
+#endif
 
 void EngineDebugger::deinitialize() {
 	if (singleton) {
@@ -200,7 +201,9 @@ void EngineDebugger::deinitialize() {
 }
 
 EngineDebugger::~EngineDebugger() {
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	memdelete(script_debugger);
 	script_debugger = nullptr;
+#endif
 	singleton = nullptr;
 }

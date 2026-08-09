@@ -41,6 +41,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -2234,18 +2235,30 @@ bool EngineDebugger::has_capture(const StringName &p_name) {
 }
 
 void EngineDebugger::send_message(const String &p_msg, const Array &p_data) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::is_active(), "Can't send message. No active debugger");
 	::EngineDebugger::get_singleton()->send_message(p_msg, p_data);
+#else
+	ERR_FAIL_MSG("Can't send message. No active debugger");
+#endif
 }
 
 void EngineDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::is_active(), "Can't send debug. No active debugger");
 	::EngineDebugger::get_singleton()->debug(p_can_continue, p_is_error_breakpoint);
+#else
+	ERR_FAIL_MSG("Can't send debug. No active debugger");
+#endif
 }
 
 void EngineDebugger::script_debug(ScriptLanguage *p_lang, bool p_can_continue, bool p_is_error_breakpoint) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't send debug. No active debugger");
 	::EngineDebugger::get_script_debugger()->debug(p_lang, p_can_continue, p_is_error_breakpoint);
+#else
+	ERR_FAIL_MSG("Can't send debug. No active debugger");
+#endif
 }
 
 Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
@@ -2270,48 +2283,84 @@ void EngineDebugger::line_poll() {
 }
 
 void EngineDebugger::set_lines_left(int p_lines) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't set lines left. No active debugger");
 	::EngineDebugger::get_script_debugger()->set_lines_left(p_lines);
+#else
+	ERR_FAIL_MSG("Can't set lines left. No active debugger");
+#endif
 }
 
 int EngineDebugger::get_lines_left() const {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), 0, "Can't get lines left. No active debugger");
 	return ::EngineDebugger::get_script_debugger()->get_lines_left();
+#else
+	ERR_FAIL_V_MSG(0, "Can't get lines left. No active debugger");
+#endif
 }
 
 void EngineDebugger::set_depth(int p_depth) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't set depth. No active debugger");
 	::EngineDebugger::get_script_debugger()->set_depth(p_depth);
+#else
+	ERR_FAIL_MSG("Can't set depth. No active debugger");
+#endif
 }
 
 int EngineDebugger::get_depth() const {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), 0, "Can't get depth. No active debugger");
 	return ::EngineDebugger::get_script_debugger()->get_depth();
+#else
+	ERR_FAIL_V_MSG(0, "Can't get depth. No active debugger");
+#endif
 }
 
 bool EngineDebugger::is_breakpoint(int p_line, const StringName &p_source) const {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), false, "Can't check breakpoint. No active debugger");
 	return ::EngineDebugger::get_script_debugger()->is_breakpoint(p_line, p_source);
+#else
+	ERR_FAIL_V_MSG(false, "Can't check breakpoint. No active debugger");
+#endif
 }
 
 bool EngineDebugger::is_skipping_breakpoints() const {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), false, "Can't check skipping breakpoint. No active debugger");
 	return ::EngineDebugger::get_script_debugger()->is_skipping_breakpoints();
+#else
+	ERR_FAIL_V_MSG(false, "Can't check skipping breakpoint. No active debugger");
+#endif
 }
 
 void EngineDebugger::insert_breakpoint(int p_line, const StringName &p_source) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't insert breakpoint. No active debugger");
 	::EngineDebugger::get_script_debugger()->insert_breakpoint(p_line, p_source);
+#else
+	ERR_FAIL_MSG("Can't insert breakpoint. No active debugger");
+#endif
 }
 
 void EngineDebugger::remove_breakpoint(int p_line, const StringName &p_source) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't remove breakpoint. No active debugger");
 	::EngineDebugger::get_script_debugger()->remove_breakpoint(p_line, p_source);
+#else
+	ERR_FAIL_MSG("Can't remove breakpoint. No active debugger");
+#endif
 }
 
 void EngineDebugger::clear_breakpoints() {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't clear breakpoints. No active debugger");
 	::EngineDebugger::get_script_debugger()->clear_breakpoints();
+#else
+	ERR_FAIL_MSG("Can't clear breakpoints. No active debugger");
+#endif
 }
 
 EngineDebugger::~EngineDebugger() {

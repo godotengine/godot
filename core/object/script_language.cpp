@@ -114,9 +114,11 @@ Dictionary Script::_get_script_constant_map() {
 }
 
 void Script::_set_debugger_break_language() {
+#ifdef DEBUG_ENABLED
 	if (EngineDebugger::is_active()) {
 		EngineDebugger::get_script_debugger()->set_break_language(get_language());
 	}
+#endif
 }
 
 int Script::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {

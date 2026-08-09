@@ -33,6 +33,8 @@
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 
+#ifdef DEBUG_ENABLED
+
 class Array;
 class InputEvent;
 class Node;
@@ -129,6 +131,8 @@ public:
 	static void reload_cached_files(const PackedStringArray &p_files);
 #endif
 };
+
+#endif
 
 #ifdef DEBUG_ENABLED
 class LiveEditor {

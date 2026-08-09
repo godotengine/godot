@@ -38,7 +38,9 @@
 #include "core/variant/array.h"
 
 class RemoteDebuggerPeer;
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 class ScriptDebugger;
+#endif
 
 class EngineDebugger {
 public:
@@ -93,7 +95,9 @@ private:
 
 protected:
 	static inline EngineDebugger *singleton = nullptr;
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	static inline ScriptDebugger *script_debugger = nullptr;
+#endif
 
 	static inline HashMap<StringName, Profiler> profilers;
 	static inline HashMap<StringName, Capture> captures;
@@ -105,11 +109,19 @@ protected:
 
 public:
 	_FORCE_INLINE_ static EngineDebugger *get_singleton() { return singleton; }
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	_FORCE_INLINE_ static bool is_active() { return singleton != nullptr && script_debugger != nullptr; }
+#else
+	_FORCE_INLINE_ static bool is_active() { return false; }
+#endif
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	_FORCE_INLINE_ static ScriptDebugger *get_script_debugger() { return script_debugger; }
+#endif
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	static void initialize(const String &p_uri, bool p_skip_breakpoints, bool p_ignore_error_breaks, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)());
+#endif
 	static void deinitialize();
 	static void register_profiler(const StringName &p_name, const Profiler &p_profiler);
 	static void unregister_profiler(const StringName &p_name);

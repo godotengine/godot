@@ -30,6 +30,8 @@
 
 #include "local_debugger.h"
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
+
 #include "core/debugger/script_debugger.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -397,3 +399,5 @@ LocalDebugger::~LocalDebugger() {
 	unregister_profiler("scripts");
 	memdelete(scripts_profiler);
 }
+
+#endif
