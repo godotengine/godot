@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "core/string/print_string.h"
 #include "tests/test_macros.h"
 
 TEST_FORCE_LINK(test_scenes)
@@ -87,7 +88,7 @@ public:
 		_special_custom_variable = p_contents;
 	}
 
-	Ref<CustomScene> get_inner_scene() const {
+	Ref<PackedScene> get_inner_scene() const {
 		return _inner_scene;
 	}
 
@@ -115,7 +116,7 @@ public:
 	}
 };
 
-void prepare_scene(Ref<PackedScene> scene) {
+void prepare_scene(const Ref<PackedScene> &scene) {
 	Ref<Resource> child_resource = memnew(Resource);
 	child_resource->set_name("I'm a child resource");
 	scene->set_meta("other_resource", child_resource);
@@ -125,7 +126,7 @@ void prepare_scene(Ref<PackedScene> scene) {
 	scene->set_meta("string", "The\nstring\nwith\nunnecessary\nline\n\t\\\nbreaks");
 }
 
-void validate_scene(Ref<PackedScene> loaded_scene) {
+void validate_scene(const Ref<PackedScene> &loaded_scene) {
 	CHECK_MESSAGE(
 			loaded_scene->get_name() == "Hello world",
 			"The loaded resource name should be equal to the expected value.");
@@ -142,7 +143,7 @@ void validate_scene(Ref<PackedScene> loaded_scene) {
 			"The loaded child resource name should be equal to the expected value.");
 }
 
-void validate_and_instantiate_scene(Ref<PackedScene> loaded_scene) {
+void validate_and_instantiate_scene(const Ref<PackedScene> &loaded_scene) {
 	bool is_null = loaded_scene.is_null();
 	CHECK_MESSAGE(!is_null, "Could not open scene file");
 
@@ -216,7 +217,7 @@ TEST_CASE("[Scenes] Scene Saving and loading") {
 	memdelete(inner_node);
 }
 
-void validate_nested_scene(Ref<PackedScene> loaded_scene) {
+void validate_nested_scene(const Ref<PackedScene> &loaded_scene) {
 	bool is_null = loaded_scene.is_null();
 	CHECK_MESSAGE(!is_null, "Could not open scene file");
 
@@ -265,7 +266,7 @@ TEST_CASE("[Scenes] Scene Saving and loading as property") {
 	validate_nested_scene(loaded_resource_text);
 }
 
-void validate_simple_scene(Ref<PackedScene> loaded_scene) {
+void validate_simple_scene(const Ref<PackedScene> &loaded_scene) {
 	bool is_null = loaded_scene.is_null();
 	CHECK(!is_null);
 
@@ -321,7 +322,7 @@ TEST_CASE("[Scenes] Simple scene saving and loading") {
 	f->close();
 }
 
-void validate_custom_scene(Ref<CustomScene> loaded_scene) {
+void validate_custom_scene(const Ref<CustomScene> &loaded_scene) {
 	bool is_null = loaded_scene.is_null();
 	CHECK(!is_null);
 
@@ -330,10 +331,21 @@ void validate_custom_scene(Ref<CustomScene> loaded_scene) {
 	}
 
 	Ref<PackedScene> inner_scene = loaded_scene->get_inner_scene();
-	Node *inner_node = inner_scene->instantiate();
-	CHECK_MESSAGE(
-			inner_node->get_name() == "inner_node",
-			"The instantiated node has invalid name.");
+
+	CHECK_MESSAGE(inner_scene.is_valid(), "inner scene cannot be null");
+
+	if (inner_scene.is_valid()) {
+		CHECK_MESSAGE(
+				inner_scene->get_name() == "inner_scene_name",
+				"The inner scene have a invalid name.");
+
+		Node *inner_node = inner_scene->instantiate();
+		CHECK_MESSAGE(
+				inner_node->get_name() == "inner_node",
+				"The instantiated node has invalid name.");
+
+		memdelete(inner_node);
+	}
 
 	Node *new_node = static_cast<Node *>(loaded_scene->instantiate());
 	CHECK_MESSAGE(
@@ -341,11 +353,12 @@ void validate_custom_scene(Ref<CustomScene> loaded_scene) {
 			"The instantiated node has invalid name.");
 
 	CHECK_MESSAGE(
-			loaded_scene->get_special_custom_variable() == "Another Hello",
+			loaded_scene->get_special_custom_variable() == "Custom Variable",
 			"The instantiated custom scene have a invalid property value.");
 
+	validate_scene(loaded_scene);
+
 	memdelete(new_node);
-	memdelete(inner_node);
 }
 
 TEST_CASE("[Scenes] Custom Scene Saving and loading") {
@@ -353,7 +366,9 @@ TEST_CASE("[Scenes] Custom Scene Saving and loading") {
 
 	Node *inner_node = memnew(Node);
 	inner_node->set_name("inner_node");
+
 	const Ref<PackedScene> inner_scene = memnew(PackedScene);
+	inner_scene->set_name("inner_scene_name");
 	inner_scene->pack(inner_node);
 
 	Node *node = memnew(Node);
@@ -361,8 +376,7 @@ TEST_CASE("[Scenes] Custom Scene Saving and loading") {
 
 	const Ref<CustomScene> scene = memnew(CustomScene);
 	scene->set_inner_scene(inner_scene);
-
-	scene->set_special_custom_variable("Another Hello");
+	scene->set_special_custom_variable("Custom Variable");
 	scene->pack(node);
 
 	prepare_scene(scene);
