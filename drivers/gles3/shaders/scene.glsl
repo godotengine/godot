@@ -2486,7 +2486,7 @@ void main() {
 
 #ifndef DISABLE_REFLECTION_PROBE
 		if (ambient_accum.a > 0.0) {
-			ambient_light = mix(ambient_light, (ambient_accum.rgb / ambient_accum.a) * scene_data_block.data.ambient_light_color_energy.a, scene_data_block.data.ambient_color_sky_mix);
+			ambient_light = mix(ambient_light, (ambient_accum.rgb / ambient_accum.a) * scene_data_block.data.ambient_light_color_energy.a, ambient_accum.a);
 		}
 #endif // DISABLE_REFLECTION_PROBE
 	}
