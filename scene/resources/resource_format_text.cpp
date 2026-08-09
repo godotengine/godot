@@ -31,8 +31,10 @@
 #include "resource_format_text.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
+#include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "scene/property_utils.h"
@@ -408,7 +410,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(const Ref<PackedScene> &p_c
 				}
 			}
 			// If it's a nested packed scene, and there's a resource after, we return without errors.
-		} else if (p_current_scene != packed_scene && (next_tag.name == "sub_resource" || next_tag.name == "resource")) {
+		} else if (p_current_scene != resource && (next_tag.name == "sub_resource" || next_tag.name == "resource")) {
 			return p_current_scene;
 		} else {
 			error = ERR_FILE_CORRUPT;
@@ -719,60 +721,61 @@ Error ResourceLoaderText::load() {
 		}
 	}
 
-	if (is_scene) {
-		packed_scene = ResourceLoader::get_resource_ref_override(local_path);
-		if (packed_scene.is_null()) {
-			packed_scene.instantiate();
-		}
-	}
-
 	while (true) {
-		if (next_tag.name != "resource") {
+		if (next_tag.name != "node" && next_tag.name != "resource") {
 			break;
 		}
 
 		Ref<MissingResource> missing_resource;
-		if (!is_scene) {
-			resource = ResourceLoader::get_resource_ref_override(local_path);
+		resource = ResourceLoader::get_resource_ref_override(local_path);
+		if (resource.is_null()) {
+			Ref<Resource> cache = ResourceCache::get_ref(local_path);
+			if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class() == res_type) {
+				cache->reset_state();
+				resource = cache;
+			}
+
 			if (resource.is_null()) {
-				Ref<Resource> cache = ResourceCache::get_ref(local_path);
-				if (cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && cache.is_valid() && cache->get_class() == res_type) {
-					cache->reset_state();
-					resource = cache;
-				}
-
-				if (resource.is_null()) {
-					Object *obj = ClassDB::instantiate(res_type);
-					if (!obj) {
-						if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
-							missing_resource = memnew(MissingResource);
-							missing_resource->set_original_class(res_type);
-							missing_resource->set_recording_properties(true);
-							obj = missing_resource.ptr();
-						} else {
-							error_text = vformat("Can't create sub resource of type '%s'", res_type);
-							_printerr();
-							error = ERR_FILE_CORRUPT;
-							return error;
-						}
-					}
-
-					Resource *r = Object::cast_to<Resource>(obj);
-					if (!r) {
-						error_text = vformat("Can't create sub resource of type '%s' as it's not a resource type", res_type);
+				Object *obj = ClassDB::instantiate(res_type);
+				if (!obj) {
+					if (ResourceLoader::is_creating_missing_resources_if_class_unavailable_enabled()) {
+						missing_resource = memnew(MissingResource);
+						missing_resource->set_original_class(res_type);
+						missing_resource->set_recording_properties(true);
+						obj = missing_resource.ptr();
+					} else {
+						error_text = vformat("Can't create sub resource of type '%s'", res_type);
 						_printerr();
 						error = ERR_FILE_CORRUPT;
 						return error;
 					}
-
-					resource = Ref<Resource>(r);
 				}
+
+				Resource *r = Object::cast_to<Resource>(obj);
+				if (!r) {
+					error_text = vformat("Can't create sub resource of type '%s' as it's not a resource type", res_type);
+					_printerr();
+					error = ERR_FILE_CORRUPT;
+					return error;
+				}
+
+				resource = Ref<Resource>(r);
 			}
 		}
 
 		Dictionary missing_resource_properties;
 
 		while (true) {
+			if (next_tag.name == "node") {
+				if (!is_scene) {
+					error_text = "Unexpected 'node' tag in a resource file";
+					_printerr();
+					error = ERR_FILE_CORRUPT;
+					return error;
+				}
+				break;
+			}
+
 			String assign;
 			Variant value;
 
@@ -846,11 +849,7 @@ Error ResourceLoaderText::load() {
 				}
 
 				if (set_valid) {
-					if (is_scene) {
-						packed_scene->set(assign, value);
-					} else {
-						resource->set(assign, value);
-					}
+					resource->set(assign, value);
 				}
 				//it's assignment
 			} else if (!is_scene && !next_tag.name.is_empty()) {
@@ -861,6 +860,9 @@ Error ResourceLoaderText::load() {
 			} else {
 				break;
 			}
+		}
+		if (next_tag.name == "node") {
+			break;
 		}
 
 		resource_current++;
@@ -886,13 +888,7 @@ Error ResourceLoaderText::load() {
 	//for scene files
 
 	if (next_tag.name == "node") {
-		if (!is_scene) {
-			error_text = "Unexpected 'node' tag in a resource file";
-			_printerr();
-			error = ERR_FILE_CORRUPT;
-			return error;
-		}
-
+		Ref<PackedScene> packed_scene = Object::cast_to<PackedScene>(resource.ptr());
 		packed_scene = _parse_node_tag(packed_scene, rp);
 
 		if (packed_scene.is_null()) {
@@ -901,7 +897,6 @@ Error ResourceLoaderText::load() {
 
 		error = OK;
 		//get it here
-		resource = packed_scene;
 		if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 			if (!ResourceCache::has(res_path)) {
 				packed_scene->set_path(res_path);
@@ -911,6 +906,7 @@ Error ResourceLoaderText::load() {
 			packed_scene->set_path_cache(res_path);
 		}
 
+		resource = Object::cast_to<Resource>(packed_scene.ptr());
 		resource_current++;
 
 		if (progress && resources_total > 0) {
@@ -1180,9 +1176,10 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 
 	if (tag.name == "gd_scene") {
 		is_scene = true;
+	}
 
-	} else if (tag.name == "gd_resource") {
-		if (!tag.fields.has("type")) {
+	if ((is_scene && tag.fields.has("type")) || tag.name == "gd_resource") {
+		if (!is_scene && !tag.fields.has("type")) {
 			error_text = "Missing 'type' field in 'gd_resource' tag";
 			_printerr();
 			error = ERR_PARSE_ERROR;
@@ -1195,6 +1192,8 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 
 		res_type = tag.fields["type"];
 
+	} else if (is_scene && !tag.fields.has("type")) {
+		res_type = "PackedScene";
 	} else {
 		error_text = vformat("Unrecognized file type '%s'", tag.name);
 		_printerr();
@@ -1964,9 +1963,13 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 
 	{
 		String title = packed_scene.is_valid() ? "[gd_scene " : "[gd_resource ";
-		if (packed_scene.is_null()) {
-			title += "type=\"" + _resource_get_class(p_resource) + "\" ";
-			Ref<Script> script = p_resource->get_script();
+		String res_type = _resource_get_class(p_resource);
+		Ref<Script> script = p_resource->get_script();
+		if (
+				packed_scene.is_null() ||
+				(script.is_valid() && script->get_global_name() != "PackedScene") ||
+				res_type != "PackedScene") {
+			title += "type=\"" + res_type + "\" ";
 			if (script.is_valid() && script->get_global_name()) {
 				title += "script_class=\"" + String(script->get_global_name()) + "\" ";
 			}
