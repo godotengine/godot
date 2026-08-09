@@ -36,7 +36,6 @@ TEST_FORCE_LINK(test_string_builder)
 namespace TestString_builder {
 
 TEST_CASE("[String_builder] Test append()") {
-	
 	String test_string("Hello, append() test!");
 	CHECK(test_string == "Hello, append() test!");
 
