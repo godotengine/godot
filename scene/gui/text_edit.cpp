@@ -4451,7 +4451,7 @@ void TextEdit::clear() {
 }
 
 void TextEdit::_clear() {
-	if (editable && undo_enabled) {
+	if (undo_enabled && is_inside_tree()) {
 		remove_secondary_carets();
 		_move_caret_document_start(false);
 		begin_complex_operation();
