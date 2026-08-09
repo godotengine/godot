@@ -7,13 +7,12 @@ import sys
 
 
 def main():
-    # Capture the caller's original working directory before changing it below,
-    # so that relative paths passed by the caller resolve correctly.
-    original_cwd = os.getcwd()
-
-    # Change to the directory where the script is located,
-    # so that the script can be run from any location.
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    # Change to the directory where the script is located (the tests/ folder),
+    # so that the script can be run from any location and the path argument
+    # (which is documented as relative to the tests/ folder) resolves correctly
+    # regardless of the caller's original working directory.
+    tests_dir = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(tests_dir)
 
     parser = argparse.ArgumentParser(description="Creates a new unit test file.")
     parser.add_argument(
@@ -30,9 +29,10 @@ def main():
     )
     args = parser.parse_args()
 
-    # Resolve the path argument against the caller's original working directory,
-    # not the script's own directory (which we chdir'd into above).
-    args.path = os.path.join(original_cwd, args.path)
+    # Resolve the path argument against the tests/ folder (the script's own
+    # directory), since it is documented as relative to tests/, not relative
+    # to the caller's original working directory.
+    args.path = os.path.join(tests_dir, args.path)
 
     snake_case_regex = re.compile(r"(?<!^)(?=[A-Z, 0-9])")
     # Replace 2D, 3D, and 4D with 2d, 3d, and 4d, respectively. This avoids undesired splits like node_3_d.
