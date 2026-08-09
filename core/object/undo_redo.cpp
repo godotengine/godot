@@ -353,7 +353,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *r_elements, boo
 		Operation &op = r_elements->get();
 
 		Object *obj = ObjectDB::get_instance(op.object);
-		if (!obj) { //may have been deleted and this is fine
+		if (op.object.is_valid() && !obj) { // May have been deleted and this is fine.
 			continue;
 		}
 
