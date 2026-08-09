@@ -441,6 +441,7 @@ private:
 	bool _block_signals : 1;
 	bool _can_translate : 1;
 	bool _emitting : 1;
+	bool _notifying : 1;
 	bool _predelete_ok : 1;
 
 public:
@@ -724,11 +725,17 @@ public:
 	// - Forward calls subclasses in descending order (e.g. Object -> Node -> Node3D -> extension -> script).
 	//   Backward calls subclasses in descending order (e.g. script -> extension -> Node3D -> Node -> Object).
 	_FORCE_INLINE_ void notification(int p_notification, bool p_reversed = false) {
+		// Save/restore to support nested re-entrant notifications.
+		const bool prev_notifying = _notifying;
+		_notifying = true;
+
 		if (p_reversed) {
 			_notification_backward(p_notification);
 		} else {
 			_notification_forward(p_notification);
 		}
+
+		_notifying = prev_notifying;
 	}
 
 	String to_string();
