@@ -7,6 +7,10 @@ import sys
 
 
 def main():
+    # Capture the caller's original working directory before changing it below,
+    # so that relative paths passed by the caller resolve correctly.
+    original_cwd = os.getcwd()
+
     # Change to the directory where the script is located,
     # so that the script can be run from any location.
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -25,6 +29,10 @@ def main():
         default=".",
     )
     args = parser.parse_args()
+
+    # Resolve the path argument against the caller's original working directory,
+    # not the script's own directory (which we chdir'd into above).
+    args.path = os.path.join(original_cwd, args.path)
 
     snake_case_regex = re.compile(r"(?<!^)(?=[A-Z, 0-9])")
     # Replace 2D, 3D, and 4D with 2d, 3d, and 4d, respectively. This avoids undesired splits like node_3_d.
