@@ -156,7 +156,8 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Performs a full reset of [TextEdit], including undo history.
+				Performs a full reset of [TextEdit] state. This clears the text content, selections, carets, and other runtime state, including undo history.
+				Does [b]not[/b] reset property values (such as font, colors, etc.) to their defaults.
 			</description>
 		</method>
 		<method name="clear_undo_history">

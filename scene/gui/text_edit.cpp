@@ -4454,19 +4454,6 @@ void TextEdit::clear() {
 }
 
 void TextEdit::_clear() {
-	if (editable && undo_enabled) {
-		remove_secondary_carets();
-		_move_caret_document_start(false);
-		begin_complex_operation();
-
-		_remove_text(0, 0, MAX(0, get_line_count() - 1), MAX(get_line(MAX(get_line_count() - 1, 0)).size() - 1, 0));
-		insert_text_at_caret("");
-		text.clear();
-
-		end_complex_operation();
-		return;
-	}
-	// Cannot merge with above, as we are not part of the tree on creation.
 	int old_text_size = text.size();
 
 	clear_undo_history();
@@ -4481,6 +4468,27 @@ void TextEdit::_clear() {
 	deselect();
 
 	emit_signal(SNAME("lines_edited_from"), old_text_size - 1, 0);
+}
+
+void TextEdit::_clear_preserving_undo_history() {
+	if (!undo_enabled) {
+		clear();
+		return;
+	}
+
+	setting_text = true;
+
+	_move_caret_document_start(false);
+	begin_complex_operation();
+
+	_remove_text(0, 0, MAX(0, get_line_count() - 1), MAX(get_line(MAX(get_line_count() - 1, 0)).size() - 1, 0));
+	insert_text_at_caret("");
+	text.clear();
+
+	end_complex_operation();
+
+	setting_text = false;
+	emit_signal(SNAME("text_set"));
 }
 
 void TextEdit::_set_text(const String &p_text, bool p_emit_signal) {
@@ -5229,7 +5237,7 @@ void TextEdit::menu_option(int p_option) {
 		} break;
 		case MENU_CLEAR: {
 			if (editable) {
-				clear();
+				_clear_preserving_undo_history();
 			}
 		} break;
 		case MENU_SELECT_ALL: {
