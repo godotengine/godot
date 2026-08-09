@@ -1183,9 +1183,11 @@
 		</constant>
 		<constant name="NOTIFICATION_PHYSICS_PROCESS" value="16">
 			Notification received from the tree every physics frame when [method is_physics_processing] returns [code]true[/code]. See [method _physics_process].
+			[b]Note:[/b] using this notification in [method Object._notification] doesn't automatically call [code]set_physics_process(true)[/code]. You must call it yourself on [method _ready].
 		</constant>
 		<constant name="NOTIFICATION_PROCESS" value="17">
 			Notification received from the tree every rendered frame when [method is_processing] returns [code]true[/code]. See [method _process].
+			[b]Note:[/b] using this notification in [method Object._notification] doesn't automatically call [code]set_process(true)[/code]. You must call it yourself on [method _ready].
 		</constant>
 		<constant name="NOTIFICATION_PARENTED" value="18">
 			Notification received when the node is set as a child of another node (see [method add_child] and [method add_sibling]).
