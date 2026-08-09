@@ -4094,7 +4094,7 @@ void Node3DEditor::remove_gizmo_bvh_node(DynamicBVH::ID p_id) {
 	gizmo_bvh.remove(p_id);
 }
 
-Vector<Node3D *> Node3DEditor::gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_end) {
+Vector<Node3D *> Node3DEditor::gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_dir, real_t ray_length) {
 	struct Result {
 		Vector<Node3D *> nodes;
 		bool operator()(void *p_data) {
@@ -4103,9 +4103,7 @@ Vector<Node3D *> Node3DEditor::gizmo_bvh_ray_query(const Vector3 &p_ray_start, c
 		}
 	} result;
 
-	Vector3 segment = p_ray_end - p_ray_start;
-	real_t length = segment.length();
-	gizmo_bvh.ray_query(p_ray_start, segment / length, length, result);
+	gizmo_bvh.ray_query(p_ray_start, p_ray_dir, ray_length, result);
 
 	return result.nodes;
 }
