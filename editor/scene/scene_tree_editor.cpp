@@ -2117,8 +2117,8 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	if (String(d["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
 		if (se) {
-			String sp = se->get_edited_resource()->get_path();
-			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+			Ref<Resource> sr = se->get_edited_resource();
+			if (_is_script_type(sr->get_class())) {
 				tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 				return _has_drop_selection(item, p_point);
 			}
@@ -2183,8 +2183,19 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	if (String(d["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
 		if (se) {
-			String sp = se->get_edited_resource()->get_path();
-			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+			Ref<Resource> sr = se->get_edited_resource();
+			if (_is_script_type(sr->get_class())) {
+				// Check if we are setting a built-in script from another scene.
+				if (sr->is_built_in()) {
+					String src_scene = sr->get_path().get_slice("::", 0);
+					Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+					String current_scene_path = edited_scene ? edited_scene->get_scene_file_path() : "";
+					if (src_scene != current_scene_path) {
+						sr = sr->duplicate();
+						EditorNode::setup_built_in_resource(sr, current_scene_path);
+					}
+				}
+				String sp = sr->get_path();
 				emit_signal(SNAME("script_dropped"), sp, n);
 			}
 		}

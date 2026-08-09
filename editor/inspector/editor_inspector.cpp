@@ -5703,9 +5703,24 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 	}
 
+	Variant new_value = p_value;
+
+	// Check if we are setting a built-in script from another scene.
+	Script *scr = Object::cast_to<Script>(new_value);
+	if (scr && scr->is_built_in()) {
+		String src_scene = scr->get_path().get_slice("::", 0);
+		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+		String current_scene_path = edited_scene ? edited_scene->get_scene_file_path() : "";
+		if (src_scene != current_scene_path) {
+			Ref<Resource> duplicated_res = scr->duplicate();
+			EditorNode::setup_built_in_resource(duplicated_res, current_scene_path);
+			new_value = duplicated_res;
+		}
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (!undo_redo || bool(object->call(SNAME("_dont_undo_redo")))) {
-		object->set(p_name, p_value);
+		object->set(p_name, new_value);
 		if (p_refresh_all) {
 			_edit_request_change(object, "");
 		} else {
@@ -5714,19 +5729,19 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 
 		emit_signal(_prop_edited, p_name);
 	} else if (Object::cast_to<MultiNodeEdit>(object)) {
-		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
+		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, new_value, p_changed_field);
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else if (Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
-		Object::cast_to<EditorDebuggerRemoteObjects>(object)->set_property_field(p_name, p_value, p_changed_field);
+		Object::cast_to<EditorDebuggerRemoteObjects>(object)->set_property_field(p_name, new_value, p_changed_field);
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else {
 		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS, nullptr, false, mark_unsaved);
-		undo_redo->add_do_property(object, p_name, p_value);
+		undo_redo->add_do_property(object, p_name, new_value);
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
-		Variant::Type type = p_value.get_type();
+		Variant::Type type = new_value.get_type();
 		if (valid) {
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
@@ -5734,13 +5749,13 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 				undo_redo->add_undo_property(object, p_name, value);
 			}
 			Node *N = Object::cast_to<Node>(object);
-			bool double_counting = Object::cast_to<Node>(p_value) == N || Object::cast_to<Node>(value) == N;
-			if (N && !double_counting && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
+			bool double_counting = Object::cast_to<Node>(new_value) == N || Object::cast_to<Node>(value) == N;
+			if (N && !double_counting && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != new_value) {
 				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
-				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
+				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", new_value, N, false);
 				// Perhaps an inefficient way of updating the resource count.
 				// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
+				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", new_value, N, true);
 				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
 			}
 		}
@@ -5756,7 +5771,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			}
 		}
 
-		const PackedStringArray linked_properties_dynamic = object->call(SNAME("_get_linked_undo_properties"), p_name, p_value);
+		const PackedStringArray linked_properties_dynamic = object->call(SNAME("_get_linked_undo_properties"), p_name, new_value);
 		for (const String &prop : linked_properties_dynamic) {
 			valid = false;
 			Variant undo_value = object->get(prop, &valid);
@@ -5770,7 +5785,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Variant v_name = p_name;
 		const Vector<Callable> &callbacks = EditorNode::get_editor_data().get_undo_redo_inspector_hook_callback();
 		for (const Callable &callback : callbacks) {
-			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
+			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &new_value };
 			Variant return_value;
 			Callable::CallError call_error;
 
@@ -5794,18 +5809,18 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			//Setting a Subresource. Since there's possibly multiple Nodes referencing 'r', we need to link them to the Subresource.
 			List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_node_list(r);
 			for (Node *N : shared_nodes) {
-				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
+				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != new_value) {
 					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
-					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
+					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", new_value, N, false);
 					// Perhaps an inefficient way of updating the resource count.
 					// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", new_value, N, true);
 					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
 				}
 			}
 			if (String(p_name) == "resource_local_to_scene") {
 				bool prev = object->get(p_name);
-				bool next = p_value;
+				bool next = new_value;
 				if (next) {
 					undo_redo->add_do_method(r, "setup_local_to_scene");
 				}
