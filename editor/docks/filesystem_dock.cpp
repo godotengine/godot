@@ -1479,12 +1479,18 @@ void FileSystemDock::_update_history() {
 	current_path = history[history_pos];
 	_set_current_path_line_edit_text(current_path);
 
+	file_list_search_box->clear();
+	tree_search_box->clear();
+	searched_tokens.clear();
+
 	if (tree->is_visible()) {
+		tree->deselect_all();
 		_update_tree(get_uncollapsed_paths());
 		tree->grab_focus(true);
 	}
 
 	if (file_list_vb->is_visible()) {
+		files->deselect_all();
 		_update_file_list(false);
 	}
 
