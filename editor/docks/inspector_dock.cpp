@@ -372,7 +372,7 @@ void InspectorDock::_select_history(int p_idx) {
 	EditorNode::get_singleton()->push_item(obj);
 
 	if (const EditorDebuggerRemoteObjects *robjs = Object::cast_to<EditorDebuggerRemoteObjects>(obj)) {
-		EditorDebuggerNode::get_singleton()->set_remote_selection(robjs->remote_object_ids.duplicate());
+		EditorDebuggerNode::get_singleton()->set_remote_selection(robjs->remote_object_ids, robjs->debugger_id);
 	}
 }
 
@@ -415,7 +415,7 @@ void InspectorDock::_edit_forward() {
 		EditorNode::get_singleton()->edit_current();
 
 		if (const EditorDebuggerRemoteObjects *robjs = Object::cast_to<EditorDebuggerRemoteObjects>(current)) {
-			EditorDebuggerNode::get_singleton()->set_remote_selection(robjs->remote_object_ids.duplicate());
+			EditorDebuggerNode::get_singleton()->set_remote_selection(robjs->remote_object_ids, robjs->debugger_id);
 		}
 	}
 }
@@ -426,7 +426,7 @@ void InspectorDock::_edit_back() {
 		EditorNode::get_singleton()->edit_current();
 
 		if (const EditorDebuggerRemoteObjects *robjs = Object::cast_to<EditorDebuggerRemoteObjects>(current)) {
-			EditorDebuggerNode::get_singleton()->set_remote_selection(robjs->remote_object_ids.duplicate());
+			EditorDebuggerNode::get_singleton()->set_remote_selection(robjs->remote_object_ids, robjs->debugger_id);
 		}
 	}
 }
