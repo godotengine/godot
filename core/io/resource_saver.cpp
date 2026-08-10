@@ -77,18 +77,9 @@ bool ResourceFormatSaver::recognize_path(const Ref<Resource> &p_resource, const 
 		return ret;
 	}
 
-	String extension = p_path.get_extension();
-
 	List<String> extensions;
 	get_recognized_extensions(p_resource, &extensions);
-
-	for (const String &E : extensions) {
-		if (E.nocasecmp_to(extension) == 0) {
-			return true;
-		}
-	}
-
-	return false;
+	return p_path.validate_extension(extensions);
 }
 
 void ResourceFormatSaver::_bind_methods() {
