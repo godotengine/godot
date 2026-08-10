@@ -320,8 +320,7 @@ private:
 		}
 	};
 	LocalVector<Underline> underlines;
-	Vector<Underline> _cut_line_from_underline(const Underline &p_ul, int p_line);
-	Vector<Underline> _get_underline_data_for_line(int p_line);
+	void _cut_line_from_underline(Underline &r_ul, int p_line);
 
 	// Placeholder
 	String placeholder_text = "";
