@@ -1209,7 +1209,7 @@ void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 		case Animation::LOOP_NONE: {
 			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			animation_slider->set_value_no_signal(1.0);
-			animation_frame_spin_box->set_value_no_signal(animation_map[selected_id].animation->get_length() * 30.0);
+			animation_frame_spin_box->set_value_no_signal(animation_map[selected_id].animation->get_length() * animation_fps);
 			set_process(false);
 		} break;
 		case Animation::LOOP_LINEAR: {
