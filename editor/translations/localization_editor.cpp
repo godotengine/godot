@@ -415,7 +415,7 @@ void LocalizationEditor::_template_generate_command() {
 		_template_generate(current_path);
 		EditorToaster::get_singleton()->popup_str(TTR("Template generated."));
 	} else {
-		ProjectSettingsEditor::get_singleton()->popup_centered();
+		ProjectSettingsEditor::get_singleton()->popup_project_settings();
 		_template_generate_open();
 	}
 }
