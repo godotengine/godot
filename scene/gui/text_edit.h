@@ -320,8 +320,24 @@ private:
 		}
 	};
 	LocalVector<Underline> underlines;
-	Vector<Underline> _cut_line_from_underline(const Underline &p_ul, int p_line);
-	Vector<Underline> _get_underline_data_for_line(int p_line);
+	LocalVector<Underline> new_underlines;
+
+	LocalVector<Underline> temp_from_line_underlines;
+	LocalVector<Underline> temp_to_line_underlines;
+	LocalVector<Underline> temp_cut_line_from_underline;
+	LocalVector<Underline> temp2_cut_line_from_underline; // Needed due to double loop.
+
+	void _cut_line_from_underline(const Underline &p_ul, int p_line, LocalVector<Underline> &r_underline_data);
+	void _get_underline_data_for_line(int p_line, LocalVector<Underline> &r_underline_data);
+
+	RID underlines_mesh_rid;
+	RID underlines_instance;
+	LocalVector<Vector2> temp_underline_points;
+	LocalVector<Color> temp_underline_colors;
+	LocalVector<Vector2> temp_underlines_mesh_points;
+	LocalVector<Color> temp_underlines_mesh_colors;
+
+	void _update_underlines(const int p_line, const int p_last_visible_char, RID p_line_rid, const int p_char_margin, const int p_ofs_y, const int p_xmargin_beg, const int p_xmargin_end, const float p_char_w);
 
 	// Placeholder
 	String placeholder_text = "";

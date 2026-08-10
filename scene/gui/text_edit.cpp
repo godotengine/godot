@@ -981,6 +981,21 @@ void TextEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
+			RenderingServer *rs = RS::get_singleton();
+			ERR_FAIL_NULL(RenderingServer::get_singleton());
+			rs->mesh_clear(underlines_mesh_rid);
+
+			temp_underlines_mesh_points.clear();
+			temp_underlines_mesh_colors.clear();
+
+			// uneducated underlines reserve guessing number
+			// because no idea what amount would make sense as a min default
+			// but since some script errors turn entire code windows code-red
+			// may end up frequently needing a lot of those underlines-lines.
+			uint32_t uurgn = underlines.size() * 16;
+			temp_underlines_mesh_points.reserve(uurgn);
+			temp_underlines_mesh_colors.reserve(uurgn);
+
 			if (first_draw) {
 				// Size may not be the final one, so attempts to ensure caret was visible may have failed.
 				adjust_viewport_to_caret();
@@ -1830,83 +1845,7 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					for (const Underline &u : underlines) {
-						if (line < u.start_line || line > u.end_line) {
-							continue;
-						}
-
-						int start_column = u.start_column;
-						int end_column = u.end_column;
-
-						if (line != u.start_line) {
-							start_column = 0;
-						}
-						if (line != u.end_line) {
-							end_column = last_visible_char;
-						}
-
-						const Vector<Vector2> underline = TS->shaped_text_get_selection(rid, start_column, end_column);
-						Rect2 combined_rect;
-						for (int j = 0; j < underline.size(); j++) {
-							Rect2 rect = Rect2(
-									underline[j].x + char_margin,
-									ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size),
-									underline[j].y - underline[j].x,
-									theme_cache.font_size * 0.1);
-
-							combined_rect = j == 0 ? rect : combined_rect.merge(rect);
-						}
-
-						PackedVector2Array points;
-						PackedColorArray colors;
-
-						float squiggle_top_y = combined_rect.position.y;
-						float squiggle_center_y = combined_rect.position.y + (combined_rect.size.y / 2.0);
-						float squiggle_bottom_y = combined_rect.position.y + combined_rect.size.y;
-
-						float distance = combined_rect.position.x;
-						float end_position = combined_rect.position.x + combined_rect.size.x;
-
-						bool use_top_squiggle = false;
-
-						// Add first point.
-						if (distance >= xmargin_beg && distance <= xmargin_end) {
-							points.append(Vector2(distance, squiggle_center_y));
-							distance += char_w * 0.25;
-						}
-
-						while (true) {
-							if (distance >= xmargin_beg && distance <= xmargin_end) {
-								float y_pos = use_top_squiggle ? squiggle_top_y : squiggle_bottom_y;
-								// Ensure the underline ends at the end of the text.
-								if (distance >= end_position) {
-									if (points.is_empty()) {
-										break;
-									}
-									Vector2 prev_point = points.get(points.size() - 1);
-									float prev_distance = prev_point.x;
-									float ratio_across = (end_position - prev_distance) / (distance - prev_distance);
-									float prev_y = prev_point.y;
-									float mid_y = Math::lerp(prev_y, y_pos, ratio_across);
-									points.append(Vector2(end_position, mid_y));
-									break;
-								}
-								points.append(Vector2(distance, y_pos));
-							}
-							if (distance >= end_position) {
-								break;
-							}
-							distance += char_w * 0.5;
-							use_top_squiggle = !use_top_squiggle;
-						}
-
-						if (points.size() >= 2) {
-							colors.append(u.color);
-							// theme_cache.base_scale is not necessary here, as font size is already dependent on editor scale.
-							// See https://github.com/godotengine/godot/pull/119588#pullrequestreview-4618459305 for more info.
-							RS::get_singleton()->canvas_item_add_polyline(text_ci, points, colors, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size), 1), true);
-						}
-					}
+					_update_underlines(line, last_visible_char, rid, char_margin, ofs_y, xmargin_beg, xmargin_end, char_w);
 
 					cache_entry.first_visible_chars.push_back(first_visible_char);
 					cache_entry.last_visible_chars.push_back(last_visible_char);
@@ -2117,6 +2056,37 @@ void TextEdit::_notification(int p_what) {
 
 			if (has_focus()) {
 				_update_ime_window_position();
+			}
+
+			if (temp_underlines_mesh_points.size() >= 2) {
+				// theme_cache.base_scale is not necessary here, as font size is already dependent on editor scale.
+				// See https://github.com/godotengine/godot/pull/119588#pullrequestreview-4618459305 for more info.
+
+				Vector<Vector2> underlines_mesh_vertices;
+				Vector<Color> underlines_mesh_colors;
+
+				underlines_mesh_vertices.resize(temp_underlines_mesh_points.size());
+				underlines_mesh_colors.resize(temp_underlines_mesh_colors.size());
+
+				Vector2 *_mesh_vertices_ptrw = underlines_mesh_vertices.ptrw();
+				Color *_mesh_colors_ptrw = underlines_mesh_colors.ptrw();
+
+				const Vector2 *_temp_points_ptr = temp_underlines_mesh_points.ptr();
+				const Color *_temp_colors_ptr = temp_underlines_mesh_colors.ptr();
+
+				for (uint32_t i = 0; i < temp_underlines_mesh_points.size(); i++) {
+					_mesh_vertices_ptrw[i] = _temp_points_ptr[i];
+					_mesh_colors_ptrw[i] = _temp_colors_ptr[i];
+				}
+
+				Array underlines_mesh_array;
+				underlines_mesh_array.resize(RSE::ARRAY_MAX);
+				underlines_mesh_array[RSE::ARRAY_VERTEX] = underlines_mesh_vertices;
+				underlines_mesh_array[RSE::ARRAY_COLOR] = underlines_mesh_colors;
+
+				rs->mesh_add_surface_from_arrays(underlines_mesh_rid, RSE::PRIMITIVE_LINES, underlines_mesh_array, Array(), Dictionary(), RSE::ARRAY_FLAG_USE_2D_VERTICES);
+
+				rs->canvas_item_add_mesh(text_ci, underlines_mesh_rid, Transform2D());
 			}
 		} break;
 
@@ -4708,8 +4678,12 @@ void TextEdit::swap_lines(int p_from_line, int p_to_line) {
 
 	String from_line_text = get_line(p_from_line);
 	String to_line_text = get_line(p_to_line);
-	Vector<Underline> from_line_underlines = _get_underline_data_for_line(p_from_line);
-	Vector<Underline> to_line_underlines = _get_underline_data_for_line(p_to_line);
+
+	temp_from_line_underlines.clear();
+	temp_to_line_underlines.clear();
+
+	_get_underline_data_for_line(p_from_line, temp_from_line_underlines);
+	_get_underline_data_for_line(p_to_line, temp_to_line_underlines);
 
 	begin_complex_operation();
 	begin_multicaret_edit();
@@ -4736,40 +4710,46 @@ void TextEdit::swap_lines(int p_from_line, int p_to_line) {
 	}
 
 	// Swap underlines.
-	LocalVector<Underline> new_underlines;
+	new_underlines.clear();
+	new_underlines.reserve(underlines.size() + temp_from_line_underlines.size() + temp_to_line_underlines.size());
+
 	for (const Underline &ul : underlines) {
 		if (!ul.contains_line(p_from_line) && !ul.contains_line(p_to_line)) {
 			new_underlines.push_back(ul);
 		}
 
 		else if (ul.contains_line(p_from_line) && !ul.contains_line(p_to_line)) {
-			for (const Underline &new_ul : _cut_line_from_underline(ul, p_from_line)) {
+			_cut_line_from_underline(ul, p_from_line, temp_cut_line_from_underline);
+			for (const Underline &new_ul : temp_cut_line_from_underline) {
 				new_underlines.push_back(new_ul);
 			}
 		}
 
 		else if (!ul.contains_line(p_from_line) && ul.contains_line(p_to_line)) {
-			for (const Underline &new_ul : _cut_line_from_underline(ul, p_to_line)) {
+			_cut_line_from_underline(ul, p_to_line, temp_cut_line_from_underline);
+			for (const Underline &new_ul : temp_cut_line_from_underline) {
 				new_underlines.push_back(new_ul);
 			}
 		}
 
 		else {
-			for (const Underline &new_ul : _cut_line_from_underline(ul, p_from_line)) {
-				for (const Underline &new_ul_2 : _cut_line_from_underline(new_ul, p_to_line)) {
+			_cut_line_from_underline(ul, p_from_line, temp_cut_line_from_underline);
+			for (const Underline &new_ul : temp_cut_line_from_underline) {
+				_cut_line_from_underline(new_ul, p_to_line, temp2_cut_line_from_underline);
+				for (const Underline &new_ul_2 : temp2_cut_line_from_underline) {
 					new_underlines.push_back(new_ul_2);
 				}
 			}
 		}
 	}
 
-	for (Underline &ul : from_line_underlines) {
+	for (Underline &ul : temp_from_line_underlines) {
 		ul.start_line = p_to_line;
 		ul.end_line = p_to_line;
 		new_underlines.push_back(ul);
 	}
 
-	for (Underline &ul : to_line_underlines) {
+	for (Underline &ul : temp_to_line_underlines) {
 		ul.start_line = p_from_line;
 		ul.end_line = p_from_line;
 		new_underlines.push_back(ul);
@@ -4784,18 +4764,19 @@ void TextEdit::swap_lines(int p_from_line, int p_to_line) {
 	end_complex_operation();
 }
 
-Vector<TextEdit::Underline> TextEdit::_cut_line_from_underline(const Underline &p_ul, int p_line) {
-	Vector<Underline> out;
+void TextEdit::_cut_line_from_underline(const Underline &p_ul, int p_line, LocalVector<Underline> &r_underline_data) {
+	r_underline_data.clear();
+
 	// If this underline doesn't contain the line we want to cut,
 	// then the result is just the original underline unchanged.
 	if (!p_ul.contains_line(p_line)) {
-		out.push_back(p_ul);
+		r_underline_data.push_back(p_ul);
 	}
 
 	// If this underline is only on the line we want to cut,
 	// then the result is no underline at all.
 	else if (p_ul.start_line == p_line && p_ul.end_line == p_line) {
-		return out;
+		return;
 	}
 
 	// If this underline starts on the line we want to cut,
@@ -4808,7 +4789,7 @@ Vector<TextEdit::Underline> TextEdit::_cut_line_from_underline(const Underline &
 		new_ul.end_line = p_ul.end_line;
 		new_ul.end_column = p_ul.end_column;
 		new_ul.color = p_ul.color;
-		out.push_back(new_ul);
+		r_underline_data.push_back(new_ul);
 	}
 
 	// If this underline ends on the line we want to cut,
@@ -4821,7 +4802,7 @@ Vector<TextEdit::Underline> TextEdit::_cut_line_from_underline(const Underline &
 		new_ul.end_line = p_ul.end_line - 1;
 		new_ul.end_column = text[p_ul.end_line - 1].length();
 		new_ul.color = p_ul.color;
-		out.push_back(new_ul);
+		r_underline_data.push_back(new_ul);
 	}
 
 	// At this point, the line we want to cut must be in the middle of the
@@ -4835,7 +4816,7 @@ Vector<TextEdit::Underline> TextEdit::_cut_line_from_underline(const Underline &
 		ul_start_to_cut.end_line = p_line - 1;
 		ul_start_to_cut.end_column = text[p_line - 1].length();
 		ul_start_to_cut.color = p_ul.color;
-		out.push_back(ul_start_to_cut);
+		r_underline_data.push_back(ul_start_to_cut);
 
 		Underline ul_cut_to_end;
 		ul_cut_to_end.start_line = p_line + 1;
@@ -4843,14 +4824,13 @@ Vector<TextEdit::Underline> TextEdit::_cut_line_from_underline(const Underline &
 		ul_cut_to_end.end_line = p_ul.end_line;
 		ul_cut_to_end.end_column = p_ul.end_column;
 		ul_cut_to_end.color = p_ul.color;
-		out.push_back(ul_cut_to_end);
+		r_underline_data.push_back(ul_cut_to_end);
 	}
-
-	return out;
 }
 
-Vector<TextEdit::Underline> TextEdit::_get_underline_data_for_line(int p_line) {
-	Vector<Underline> out;
+void TextEdit::_get_underline_data_for_line(int p_line, LocalVector<Underline> &r_underline_data) {
+	r_underline_data.clear();
+
 	for (const Underline &ul : underlines) {
 		// Underline doesn't contain this line at all; skip it.
 		if (!ul.contains_line(p_line)) {
@@ -4859,7 +4839,7 @@ Vector<TextEdit::Underline> TextEdit::_get_underline_data_for_line(int p_line) {
 
 		// Underline is entirely on this line; copy it all over.
 		else if (ul.start_line == p_line && ul.end_line == p_line) {
-			out.push_back(ul);
+			r_underline_data.push_back(ul);
 		}
 
 		// Underline starts on this line, but does not end here; copy the first line.
@@ -4870,7 +4850,7 @@ Vector<TextEdit::Underline> TextEdit::_get_underline_data_for_line(int p_line) {
 			new_ul.end_line = ul.start_line;
 			new_ul.end_column = text[ul.start_line].length();
 			new_ul.color = ul.color;
-			out.push_back(new_ul);
+			r_underline_data.push_back(new_ul);
 		}
 
 		// Underline ends on this line, but starts before it; copy the last line.
@@ -4881,7 +4861,7 @@ Vector<TextEdit::Underline> TextEdit::_get_underline_data_for_line(int p_line) {
 			new_ul.end_line = ul.end_line;
 			new_ul.end_column = ul.end_column;
 			new_ul.color = ul.color;
-			out.push_back(new_ul);
+			r_underline_data.push_back(new_ul);
 		}
 
 		// This line is in the middle of the underline; just highlight the whole line.
@@ -4892,10 +4872,9 @@ Vector<TextEdit::Underline> TextEdit::_get_underline_data_for_line(int p_line) {
 			new_ul.end_line = p_line;
 			new_ul.end_column = text[p_line].length();
 			new_ul.color = ul.color;
-			out.push_back(new_ul);
+			r_underline_data.push_back(new_ul);
 		}
 	}
-	return out;
 }
 
 void TextEdit::insert_line_at(int p_line, const String &p_text) {
@@ -10075,6 +10054,94 @@ void TextEdit::_draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const
 	}
 }
 
+void TextEdit::_update_underlines(const int p_line, const int p_last_visible_char, RID p_line_rid, const int p_char_margin, const int p_ofs_y, const int p_xmargin_beg, const int p_xmargin_end, const float p_char_w) {
+	for (const Underline &u : underlines) {
+		if (p_line < u.start_line || p_line > u.end_line) {
+			continue;
+		}
+
+		int start_column = u.start_column;
+		int end_column = u.end_column;
+
+		if (p_line != u.start_line) {
+			start_column = 0;
+		}
+		if (p_line != u.end_line) {
+			end_column = p_last_visible_char;
+		}
+
+		const Vector<Vector2> &underline = TS->shaped_text_get_selection(p_line_rid, start_column, end_column);
+		const Vector2 *underline_ptr = underline.ptr();
+		Rect2 combined_rect;
+		for (int j = 0; j < underline.size(); j++) {
+			Rect2 rect = Rect2(
+					underline_ptr[j].x + p_char_margin,
+					p_ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size),
+					underline_ptr[j].y - underline_ptr[j].x,
+					theme_cache.font_size * 0.1);
+
+			combined_rect = j == 0 ? rect : combined_rect.merge(rect);
+		}
+
+		temp_underline_points.clear();
+		temp_underline_colors.clear();
+
+		float squiggle_top_y = combined_rect.position.y;
+		float squiggle_center_y = combined_rect.position.y + (combined_rect.size.y / 2.0);
+		float squiggle_bottom_y = combined_rect.position.y + combined_rect.size.y;
+
+		float distance = combined_rect.position.x;
+		float end_position = combined_rect.position.x + combined_rect.size.x;
+
+		bool use_top_squiggle = false;
+
+		// Add first point.
+		if (distance >= p_xmargin_beg && distance <= p_xmargin_end) {
+			temp_underline_points.push_back(Vector2(distance, squiggle_center_y));
+			temp_underline_colors.push_back(u.color);
+			distance += p_char_w * 0.25;
+		}
+
+		while (true) {
+			if (distance >= p_xmargin_beg && distance <= p_xmargin_end) {
+				float y_pos = use_top_squiggle ? squiggle_top_y : squiggle_bottom_y;
+				// Ensure the underline ends at the end of the text.
+				if (distance >= end_position) {
+					if (temp_underline_points.is_empty()) {
+						break;
+					}
+					Vector2 prev_point = temp_underline_points[temp_underline_points.size() - 1];
+					float prev_distance = prev_point.x;
+					float ratio_across = (end_position - prev_distance) / (distance - prev_distance);
+					float prev_y = prev_point.y;
+					float mid_y = Math::lerp(prev_y, y_pos, ratio_across);
+					temp_underline_points.push_back(Vector2(end_position, mid_y));
+					temp_underline_colors.push_back(u.color);
+					break;
+				}
+				temp_underline_points.push_back(Vector2(distance, y_pos));
+				temp_underline_colors.push_back(u.color);
+			}
+			if (distance >= end_position) {
+				break;
+			}
+			distance += p_char_w * 0.5;
+			use_top_squiggle = !use_top_squiggle;
+		}
+
+		if (temp_underline_points.size() >= 2) {
+			const Vector2 *temp_underline_points_ptr = temp_underline_points.ptr();
+
+			for (uint32_t i = 0; i < temp_underline_points.size() - 1; i++) {
+				temp_underlines_mesh_points.push_back(temp_underline_points_ptr[i]);
+				temp_underlines_mesh_points.push_back(temp_underline_points_ptr[i + 1]);
+				temp_underlines_mesh_colors.push_back(u.color);
+				temp_underlines_mesh_colors.push_back(u.color);
+			}
+		}
+	}
+}
+
 TextEdit::TextEdit(const String &p_placeholder) {
 	placeholder_data_buf.instantiate();
 	carets.push_back(Caret());
@@ -10128,8 +10195,22 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	set_placeholder(p_placeholder);
 
 	set_editable(true);
+
+	underlines_mesh_rid = RS::get_singleton()->mesh_create();
+	underlines_instance = RS::get_singleton()->instance_create();
+
+	RS::get_singleton()->instance_set_base(underlines_instance, underlines_mesh_rid);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(underlines_instance, RSE::SHADOW_CASTING_SETTING_OFF);
 }
 
 TextEdit::~TextEdit() {
+	if (underlines_instance.is_valid()) {
+		RS::get_singleton()->free_rid(underlines_instance);
+		underlines_instance = RID();
+	}
+	if (underlines_mesh_rid.is_valid()) {
+		RS::get_singleton()->free_rid(underlines_mesh_rid);
+		underlines_mesh_rid = RID();
+	}
 	RS::get_singleton()->free_rid(text_ci);
 }
