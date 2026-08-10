@@ -1671,13 +1671,24 @@ void ScriptTextEditor::_update_connected_methods() {
 }
 
 void ScriptTextEditor::shortcut_input(const Ref<InputEvent> &p_event) {
-	if (!p_event->is_pressed() || p_event->is_echo()) {
+	if (!code_editor->is_visible_in_tree() || !p_event->is_pressed() || p_event->is_echo()) {
 		return;
 	}
 
 	const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, p_event);
 	if (custom_callback.is_valid()) {
-		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, code_editor->get_text_editor());
+#ifndef DISABLE_DEPRECATED
+		if (p_event->get_meta("_legacy_shortcut", false)) {
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, code_editor->get_text_editor());
+			accept_event();
+			return;
+		}
+#endif
+		EditorContextMenuPlugin::OptionsData context_data;
+		context_data["code_edit"] = code_editor->get_text_editor();
+		context_data["file_path"] = get_edited_resource()->get_path();
+
+		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
 		accept_event();
 	}
 }
@@ -1859,7 +1870,7 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				return true;
 			}
 			if (p_op >= EditorContextMenuPlugin::BASE_ID) {
-				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, p_op, tx);
+				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, p_op);
 			}
 		}
 	}
@@ -2520,8 +2531,19 @@ void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bo
 		}
 	}
 
-	const PackedStringArray paths = { String(code_editor->get_text_editor()->get_path()) };
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, paths);
+	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE)) {
+		EditorContextMenuPlugin::OptionsData context_data;
+		context_data["code_edit"] = code_editor->get_text_editor();
+		context_data["file_path"] = get_edited_resource()->get_path();
+
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, context_data);
+
+#ifndef DISABLE_DEPRECATED
+		const PackedStringArray paths = { String(code_editor->get_text_editor()->get_path()) };
+		Ref<Script> edited_script = get_edited_resource();
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, paths, code_editor->get_text_editor(), 500);
+#endif
+	}
 
 	_show_context_menu(p_position);
 }
