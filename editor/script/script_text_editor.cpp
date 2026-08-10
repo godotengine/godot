@@ -752,8 +752,8 @@ void ScriptTextEditor::_update_background_color() {
 			int warning_end_column = warning.end_column - 1;
 			int folded_line_header = te->get_folded_line_header(warning_start_line);
 
-			if (warning_underline_color.a != 0.0) {
-				te->add_underline(warning_underline_color, warning_start_line, warning_start_column, warning_end_line, warning_end_column);
+			if (warning_underline_style != TextEdit::UNDERLINE_STYLE_NONE && warning_underline_color.a != 0.0) {
+				te->add_underline(warning_underline_color, warning_underline_style, warning_start_line, warning_start_column, warning_end_line, warning_end_column);
 			}
 
 			if (warning_line_color.a != 0.0) {
@@ -779,8 +779,8 @@ void ScriptTextEditor::_update_background_color() {
 			int error_end_column = error.end_column - 1;
 			int folded_line_header = te->get_folded_line_header(error_start_line);
 
-			if (error_underline_color.a != 0.0) {
-				te->add_underline(error_underline_color, error_start_line, error_start_column, error_end_line, error_end_column);
+			if (error_underline_style != TextEdit::UNDERLINE_STYLE_NONE && error_underline_color.a != 0.0) {
+				te->add_underline(error_underline_color, error_underline_style, error_start_line, error_start_column, error_end_line, error_end_column);
 			}
 
 			if (marked_line_color.a != 0.0) {
@@ -812,6 +812,8 @@ void ScriptTextEditor::update_settings() {
 	} else {
 		code_editor->get_text_editor()->set_inline_object_handlers(Callable(), Callable(), Callable());
 	}
+	warning_underline_style = (TextEdit::UnderlineStyle)EDITOR_GET("text_editor/appearance/underlining/warning_underline_style");
+	error_underline_style = (TextEdit::UnderlineStyle)EDITOR_GET("text_editor/appearance/underlining/error_underline_style");
 	TextEditorBase::update_settings();
 }
 

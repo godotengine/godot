@@ -121,6 +121,13 @@ public:
 		SEARCH_BACKWARDS = 4
 	};
 
+	/* Styles to use for code underlines. */
+	enum UnderlineStyle {
+		UNDERLINE_STYLE_NONE, // Redundant, but helps keep other areas of the code a bit smoother.
+		UNDERLINE_STYLE_STRAIGHT,
+		UNDERLINE_STYLE_SQUIGGLY
+	};
+
 private:
 	struct GutterInfo {
 		GutterType type = GutterType::GUTTER_TYPE_STRING;
@@ -315,6 +322,8 @@ private:
 		int end_line;
 		int end_column;
 
+		UnderlineStyle style;
+
 		bool contains_line(int p_line) const {
 			return start_line <= p_line && p_line <= end_line;
 		}
@@ -322,6 +331,9 @@ private:
 	LocalVector<Underline> underlines;
 	Vector<Underline> _cut_line_from_underline(const Underline &p_ul, int p_line);
 	Vector<Underline> _get_underline_data_for_line(int p_line);
+
+	void _do_underline_straight(const Underline &u, int line, int last_visible_char, RID rid, int char_margin, int ofs_y, int xmargin_beg, int xmargin_end, float char_w);
+	void _do_underline_squiggly(const Underline &u, int line, int last_visible_char, RID rid, int char_margin, int ofs_y, int xmargin_beg, int xmargin_end, float char_w);
 
 	// Placeholder
 	String placeholder_text = "";
@@ -826,9 +838,10 @@ protected:
 
 public:
 	void clear_underlines() { underlines.clear(); }
-	void add_underline(const Color &p_color, int p_start_line, int p_start_column, int p_end_line, int p_end_column) {
+	void add_underline(const Color &p_color, UnderlineStyle p_style, int p_start_line, int p_start_column, int p_end_line, int p_end_column) {
 		Underline u;
 		u.color = p_color;
+		u.style = p_style;
 		u.start_line = p_start_line;
 		u.start_column = p_start_column;
 		u.end_line = p_end_line;
