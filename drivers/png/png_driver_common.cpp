@@ -111,12 +111,16 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, bool p_force_linear, 
 		png_image_free(&png_img); // only required when we return before finish_read
 		return err;
 	}
-	PoolVector<uint8_t>::Write writer = buffer.write();
 
-	// read image data to buffer and release libpng resources
-	success = png_image_finish_read(&png_img, nullptr, writer.ptr(), stride, nullptr);
-	ERR_FAIL_COND_V_MSG(check_error(png_img), ERR_FILE_CORRUPT, png_img.message);
-	ERR_FAIL_COND_V(!success, ERR_FILE_CORRUPT);
+	// Ensure the Write is closed before copying from buffer.
+	{
+		PoolVector<uint8_t>::Write writer = buffer.write();
+
+		// read image data to buffer and release libpng resources
+		success = png_image_finish_read(&png_img, nullptr, writer.ptr(), stride, nullptr);
+		ERR_FAIL_COND_V_MSG(check_error(png_img), ERR_FILE_CORRUPT, png_img.message);
+		ERR_FAIL_COND_V(!success, ERR_FILE_CORRUPT);
+	}
 
 	p_image->create(png_img.width, png_img.height, false, dest_format, buffer);
 
