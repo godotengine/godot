@@ -286,6 +286,13 @@ class DisplayServerWindows : public DisplayServer {
 	bool has_winrt_queue = false;
 	void _winrt_adv_color_info_cb(DisplayServerEnums::WindowID p_id);
 
+	// Default icon.
+	bool icon_is_set = false;
+	Vector<BYTE> icon_buffer_big;
+	HICON icon_big = nullptr;
+	Vector<BYTE> icon_buffer_small;
+	HICON icon_small = nullptr;
+
 	struct WindowData {
 		HWND hWnd;
 		DisplayServerEnums::WindowID id;
@@ -355,7 +362,8 @@ class DisplayServerWindows : public DisplayServer {
 		Point2 last_pos;
 
 		ObjectID instance_id;
-		bool icon_set = false;
+
+		bool icon_is_set = false;
 		Vector<BYTE> icon_buffer_big;
 		HICON icon_big = nullptr;
 		Vector<BYTE> icon_buffer_small;
@@ -406,8 +414,6 @@ class DisplayServerWindows : public DisplayServer {
 
 	Error _create_window(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, DisplayServerEnums::WindowID p_transient_parent, HWND p_parent_hwnd, bool p_no_redirection_bitmap);
 	void _destroy_window(DisplayServerEnums::WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
-
-	void _window_set_native_icon(const String &p_filename, DisplayServerEnums::WindowID p_window);
 
 #ifdef RD_ENABLED
 	Error _create_rendering_context_window(DisplayServerEnums::WindowID p_window_id, const String &p_rendering_driver);
@@ -568,6 +574,10 @@ class DisplayServerWindows : public DisplayServer {
 	ScreenHdrData _get_screen_hdr_data(DisplayServerEnums::WindowID p_window, bool p_include_sdr_white_level) const;
 	void _update_hdr_output_for_window(DisplayServerEnums::WindowID p_window, const WindowData &p_window_data, ScreenHdrData p_screen_data);
 	void _legacy_update_hdr_output_for_tracked_windows(bool p_include_sdr_white_level);
+
+	bool _load_native_icon(const String &p_filename, DisplayServerEnums::WindowID p_window);
+	bool _load_image_icon(const Ref<Image> &p_image, DisplayServerEnums::WindowID p_window);
+	void _update_window_icon(DisplayServerEnums::WindowID p_window);
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

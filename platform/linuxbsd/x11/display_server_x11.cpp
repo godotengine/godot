@@ -3217,16 +3217,18 @@ void DisplayServerX11::window_set_icon(const Ref<Image> &p_icon, DisplayServerEn
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
-	wd.icon_set = true;
 
 	Ref<Image> img;
-	if (p_icon.is_valid()) {
-		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
 		img = p_icon->duplicate();
 		img->convert(Image::FORMAT_RGBA8);
+		wd.icon = img;
+		wd.icon_is_set = true;
+	} else {
+		wd.icon = Ref<Image>();
+		wd.icon_is_set = false;
 	}
-	wd.icon = img;
-	_update_window_icon(wd);
+	_update_window_icon(p_window);
 }
 
 bool DisplayServerX11::g_set_icon_error = false;
@@ -3236,17 +3238,19 @@ int DisplayServerX11::set_icon_errorhandler(Display *dpy, XErrorEvent *ev) {
 	return 0;
 }
 
-void DisplayServerX11::_update_window_icon(WindowData &p_wd) {
-	Ref<Image> w_icon;
-	if (p_wd.icon_set) {
-		w_icon = p_wd.icon;
-	} else {
-		w_icon = icon;
-	}
+void DisplayServerX11::_update_window_icon(DisplayServerEnums::WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
 
 	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&DisplayServerX11::set_icon_errorhandler);
-
 	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
+
+	Ref<Image> w_icon;
+	if (wd.icon_is_set) {
+		w_icon = wd.icon->duplicate();
+	} else if (icon_is_set) {
+		w_icon = icon->duplicate();
+	}
 
 	if (w_icon.is_valid()) {
 		while (true) {
@@ -3300,7 +3304,7 @@ void DisplayServerX11::_update_window_icon(WindowData &p_wd) {
 			}
 
 			if (net_wm_icon != None) {
-				XChangeProperty(x11_display, p_wd.x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
+				XChangeProperty(x11_display, wd.x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)pd.ptr(), pd.size());
 			}
 
 			if (!g_set_icon_error) {
@@ -3308,7 +3312,7 @@ void DisplayServerX11::_update_window_icon(WindowData &p_wd) {
 			}
 		}
 	} else {
-		XDeleteProperty(x11_display, p_wd.x11_window, net_wm_icon);
+		XDeleteProperty(x11_display, wd.x11_window, net_wm_icon);
 	}
 
 	XFlush(x11_display);
@@ -5889,16 +5893,20 @@ void DisplayServerX11::set_native_icon(const String &p_filename) {
 }
 
 void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
-	ERR_FAIL_COND(p_icon.is_null());
+	if (p_icon.is_valid()) {
+		icon = p_icon->duplicate();
+		icon->convert(Image::FORMAT_RGBA8);
+		icon_is_set = true;
+	} else {
+		icon = Ref<Image>();
+		icon_is_set = false;
+	}
 
-	icon = p_icon->duplicate();
-	icon->convert(Image::FORMAT_RGBA8);
-
-	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
-		if (E.value.icon_set && E.key != DisplayServerEnums::MAIN_WINDOW_ID) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowData> &E : windows) {
+		if (E.value.icon_is_set) {
 			continue;
 		}
-		_update_window_icon(E.value);
+		_update_window_icon(E.key);
 	}
 }
 
@@ -6758,7 +6766,7 @@ DisplayServerEnums::WindowID DisplayServerX11::_create_window(DisplayServerEnums
 		XDefineCursor(x11_display, wd.x11_window, cursors[current_cursor]);
 	}
 
-	_update_window_icon(wd);
+	_update_window_icon(id);
 
 	return id;
 }

@@ -318,7 +318,7 @@ public:
 
 		xdg_toplevel_icon_v1 *xdg_icon = nullptr;
 		wl_buffer *icon_buffer = nullptr;
-		bool icon_set = false;
+		bool icon_is_set = false;
 
 		HashSet<struct wl_output *> wl_outputs;
 
@@ -672,6 +672,7 @@ private:
 
 	xdg_toplevel_icon_v1 *xdg_icon = nullptr;
 	wl_buffer *icon_buffer = nullptr;
+	bool icon_is_set = false;
 
 	String cursor_theme_name;
 	int unscaled_cursor_size = 24;
@@ -1281,6 +1282,7 @@ public:
 
 	void beep() const;
 
+	void _update_window_icon(DisplayServerEnums::WindowID p_window_id);
 	void set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window_id);
 	void set_default_icon(const Ref<Image> &p_icon);
 
