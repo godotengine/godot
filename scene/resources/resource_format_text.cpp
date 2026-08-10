@@ -729,7 +729,7 @@ Error ResourceLoaderText::load() {
 				Resource *r = Object::cast_to<Resource>(obj);
 				if (!r) {
 					error_text = vformat("Can't create sub resource of type '%s' as it's not a resource type", res_type);
-					_printerr();
+					ERR_PRINT(_get_error_string());
 					error = ERR_FILE_CORRUPT;
 					return error;
 				}
@@ -744,7 +744,7 @@ Error ResourceLoaderText::load() {
 			if (next_tag.name == "node") {
 				if (!is_scene) {
 					error_text = "Unexpected 'node' tag in a resource file";
-					_printerr();
+					ERR_PRINT(_get_error_string());
 					error = ERR_FILE_CORRUPT;
 					return error;
 				}
