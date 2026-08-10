@@ -2055,7 +2055,20 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 		p_function->return_type_constraint = p_function->body->suite_type;
 	} else if (p_function->return_type_constraint.is_hard_type() && (p_function->return_type_constraint.kind != GDScriptParser::DataType::BUILTIN || p_function->return_type_constraint.builtin_type != Variant::NIL)) {
 		if (!p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
-			push_error(R"(Not all code paths return a value.)", p_function);
+			int start_line = p_function->start_line;
+			int start_column = p_function->start_column;
+			int end_line = p_function->end_line;
+			int end_column = p_function->end_column;
+
+			if (p_function->return_type && !p_function->return_type->type_chain.is_empty()) {
+				const Vector<GDScriptParser::IdentifierNode *> &type_chain = p_function->return_type->type_chain;
+				start_line = type_chain[0]->start_line;
+				start_column = type_chain[0]->start_column;
+				end_line = type_chain[type_chain.size() - 1]->end_line;
+				end_column = type_chain[type_chain.size() - 1]->end_column;
+			}
+
+			push_error(R"(Not all code paths return a value.)", p_function, start_line, start_column, end_line, end_column);
 		}
 	}
 
@@ -6588,6 +6601,11 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 void GDScriptAnalyzer::push_error(const String &p_message, const GDScriptParser::Node *p_origin) const {
 	mark_node_unsafe(p_origin);
 	parser->push_error(p_message, p_origin);
+}
+
+void GDScriptAnalyzer::push_error(const String &p_message, const GDScriptParser::Node *p_origin, int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
+	mark_node_unsafe(p_origin);
+	parser->push_error(p_message, p_start_line, p_start_column, p_end_line, p_end_column);
 }
 
 void GDScriptAnalyzer::mark_node_unsafe(const GDScriptParser::Node *p_node) const {
