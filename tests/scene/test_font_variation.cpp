@@ -154,4 +154,3 @@ TEST_CASE("[FontVariation] Baseline offset and Palette colors") {
 }
 
 } // namespace TestFontVariation
-
