@@ -240,9 +240,9 @@ private:
 	OptionButton *xform_type = nullptr;
 
 	VBoxContainer *settings_vbc = nullptr;
-	SpinBox *settings_fov = nullptr;
-	SpinBox *settings_znear = nullptr;
-	SpinBox *settings_zfar = nullptr;
+	EditorSpinSlider *settings_fov = nullptr;
+	EditorSpinSlider *settings_znear = nullptr;
+	EditorSpinSlider *settings_zfar = nullptr;
 
 	void _snap_changed();
 	void _snap_update();

@@ -41,9 +41,9 @@ constexpr float DISTANCE_DEFAULT = 4;
 constexpr float ZOOM_FREELOOK_MULTIPLIER = 1.08;
 constexpr float ZOOM_FREELOOK_MIN = 0.01;
 #ifdef REAL_T_IS_DOUBLE
-constexpr double ZOOM_FREELOOK_MAX = 1'000'000'000'000;
+constexpr double ZOOM_FREELOOK_MAX = Math::MAX_DOUBLE;
 #else
-constexpr float ZOOM_FREELOOK_MAX = 10'000;
+constexpr float ZOOM_FREELOOK_MAX = Math::MAX_FLOAT;
 #endif
 
 constexpr float CAMERA_MIN_FOV_SCALE = 0.1;

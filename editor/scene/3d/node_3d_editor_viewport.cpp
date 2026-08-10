@@ -643,12 +643,20 @@ Vector3 Node3DEditorViewport::get_ray_pos(const Vector2 &p_pos) const {
 	return camera->project_ray_origin(p_pos);
 }
 
+Vector3 Node3DEditorViewport::get_ray_pos_local(const Vector2 &p_pos) const {
+	return camera->project_local_ray_origin(p_pos / subviewport_container->get_stretch_shrink());
+}
+
 Vector3 Node3DEditorViewport::_get_camera_normal() const {
 	return -_get_camera_transform().basis.get_column(2);
 }
 
 Vector3 Node3DEditorViewport::get_ray(const Vector2 &p_pos) const {
 	return camera->project_ray_normal(p_pos);
+}
+
+Vector3 Node3DEditorViewport::get_ray_local(const Vector2 &p_pos) const {
+	return camera->project_local_ray_normal(p_pos / subviewport_container->get_stretch_shrink());
 }
 
 void Node3DEditorViewport::_clear_selected() {
@@ -753,7 +761,7 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 	Node *edited_scene = get_tree()->get_edited_scene_root();
 	ObjectID closest;
 	Node *item = nullptr;
-	float closest_dist = 1e20;
+	float max_z = -INFINITY;
 
 	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_ray_query(pos, ray, camera->get_far());
 
@@ -776,25 +784,24 @@ ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 			Vector3 normal;
 
 			bool inters = seg->intersect_ray(camera, shrinked_pos, point, normal);
+			point = _get_camera_transform().xform_inv(point);
 
 			if (!inters) {
 				continue;
 			}
 
-			const real_t dist = pos.distance_to(point);
-
-			if (dist < 0) {
+			if (point.z > 0) {
 				continue;
 			}
 
-			if (dist < closest_dist) {
+			if (point.z > max_z) {
 				item = Object::cast_to<Node>(spat);
 				if (item != edited_scene) {
 					item = edited_scene->get_deepest_editable_node(item);
 				}
 
 				closest = item->get_instance_id();
-				closest_dist = dist;
+				max_z = point.z;
 			}
 		}
 	}
@@ -955,7 +962,7 @@ bool Node3DEditorViewport::_find_closest_vertex_in_scene(const Point2 &p_screen_
 
 	Point2 min_pos(p_screen_pos.x - p_threshold, p_screen_pos.y - p_threshold);
 	Point2 max_pos(p_screen_pos.x + p_threshold, p_screen_pos.y + p_threshold);
-	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_frustum_query(_build_screen_frustum(min_pos, max_pos));
+	Vector<Node3D *> nodes_with_gizmos = Node3DEditor::get_singleton()->gizmo_bvh_frustum_query(_build_screen_frustum(min_pos, max_pos, view_3d_controller->is_orthogonal()));
 
 	bool use_collision = Node3DEditor::get_singleton()->is_vertex_snap_use_collision();
 
@@ -1181,57 +1188,34 @@ void Node3DEditorViewport::_find_items_at_pos(const Point2 &p_pos, Vector<_RayRe
 	r_results.sort();
 }
 
-Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
-	Frustum fm;
-	if (view_3d_controller->is_orthogonal()) {
-		fm.set_orthogonal(camera->get_size(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
+Vector<Plane> Node3DEditorViewport::_build_screen_frustum(const Point2 &p_min, const Point2 &p_max, bool p_orthogonal) {
+	// Retrieve the selected rect's boundaries in ndc
+	Vector2 size = get_size();
+	Vector2 left_right = Vector2(p_min.x, p_max.x) / size.x * 2.0f - Vector2(1.0f, 1.0f);
+	Vector2 bottom_top = -Vector2(p_max.y, p_min.y) / size.y * 2.0f + Vector2(1.0f, 1.0f);
+
+	const real_t near_clamped = MAX(get_znear(), 5);
+	real_t aspect = get_size().aspect();
+
+	// Build the frustum casted by the selected rect
+	Frustum frustum;
+	if (p_orthogonal) {
+		Vector2 camera_half_size = camera->get_size() * Vector2(aspect, 1) / 2;
+		frustum.set_orthogonal(left_right.x * camera_half_size.x, left_right.y * camera_half_size.x, bottom_top.x * camera_half_size.y, bottom_top.y * camera_half_size.y, -get_zfar(), get_zfar()); // Captures the entire world irrespective of the camera position.
 	} else {
-		fm.set_perspective(get_fov(), get_size().aspect(), get_znear() + p_vector3.z, get_zfar());
+		Vector2 camera_half_size = Vector2(0, near_clamped * tan(Math::deg_to_rad(get_fov() / 2.0)));
+		camera_half_size.x = camera_half_size.y * aspect;
+		frustum.set_frustum(left_right.x * camera_half_size.x, left_right.y * camera_half_size.x, bottom_top.x * camera_half_size.y, bottom_top.y * camera_half_size.y, near_clamped, get_zfar());
 	}
-	Vector2 screen_he = fm.get_viewport_half_extents();
 
-	Transform3D camera_transform;
-	camera_transform.translate_local(Vector3(view_3d_controller->cursor.pos_x, view_3d_controller->cursor.pos_y, view_3d_controller->cursor.pos_z));
-	camera_transform.basis.rotate(Vector3(1, 0, 0), -view_3d_controller->cursor.x_rot);
-	camera_transform.basis.rotate(Vector3(0, 1, 0), -view_3d_controller->cursor.y_rot);
-	camera_transform.translate_local(0, 0, view_3d_controller->cursor.distance);
-
-	return camera_transform.xform(Vector3(((p_vector3.x / get_size().width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (p_vector3.y / get_size().height)) * 2.0 - 1.0) * screen_he.y, -(get_znear() + p_vector3.z)));
-}
-
-Vector<Plane> Node3DEditorViewport::_build_screen_frustum(const Point2 &p_min, const Point2 &p_max) {
-	const real_t z_offset = MAX(0.0, 5.0 - get_znear());
-	Vector3 box[4] = {
-		Vector3(p_min.x, p_min.y, z_offset),
-		Vector3(p_max.x, p_min.y, z_offset),
-		Vector3(p_max.x, p_max.y, z_offset),
-		Vector3(p_min.x, p_max.y, z_offset),
-	};
-
-	Vector<Plane> frustum;
-	Vector3 cam_pos = _get_camera_position();
-	for (int i = 0; i < 4; i++) {
-		Vector3 a = _get_screen_to_space(box[i]);
-		Vector3 b = _get_screen_to_space(box[(i + 1) % 4]);
-		if (view_3d_controller->is_orthogonal()) {
-			frustum.push_back(Plane((a - b).normalized(), a));
-		} else {
-			frustum.push_back(Plane(a, b, cam_pos));
-		}
-	}
-	Plane near_plane = Plane(-_get_camera_normal(), cam_pos);
-	near_plane.d -= get_znear();
-	frustum.push_back(near_plane);
-	Plane far_plane = -near_plane;
-	far_plane.d += get_zfar();
-	frustum.push_back(far_plane);
-	return frustum;
+	// Return the transformed frustum to world space
+	return frustum.get_projection_planes(camera->get_camera_transform());
 }
 
 void Node3DEditorViewport::_select_region() {
 	View3DController::Cursor cursor = view_3d_controller->cursor;
 
-	if (cursor.region_begin == cursor.region_end) {
+	if (cursor.region_begin.x == cursor.region_end.x || cursor.region_begin.y == cursor.region_end.y) {
 		if (!clicked_wants_append) {
 			_clear_selected();
 		}
@@ -1240,7 +1224,7 @@ void Node3DEditorViewport::_select_region() {
 
 	Point2 region_min = cursor.region_begin.min(cursor.region_end);
 	Point2 region_max = cursor.region_begin.max(cursor.region_end);
-	Vector<Plane> frustum = _build_screen_frustum(region_min, region_max);
+	Vector<Plane> frustum = _build_screen_frustum(region_min, region_max, view_3d_controller->is_orthogonal());
 
 	if (spatial_editor->get_single_selected_node()) {
 		Node3D *single_selected = spatial_editor->get_single_selected_node();
@@ -1495,14 +1479,14 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		return false;
 	}
 
-	Vector3 ray_pos = get_ray_pos(p_screenpos);
-	Vector3 ray = get_ray(p_screenpos);
+	Vector3 ray_pos = get_ray_pos_local(p_screenpos);
+	Vector3 ray = get_ray_local(p_screenpos);
 
-	Transform3D gt = spatial_editor->get_gizmo_transform();
+	Transform3D gt = camera->get_camera_transform().inverse() * spatial_editor->get_gizmo_transform();
 
 	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
 		int col_axis = -1;
-		real_t col_cost = 1e20;
+		real_t col_cost = INFINITY;
 
 		for (int i = 0; i < 3; i++) {
 			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * (GIZMO_ARROW_OFFSET + GIZMO_ARROW_SIZE * 0.5);
@@ -1511,7 +1495,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 			Vector3 r;
 
 			const real_t effective_radius = grabber_radius * 1.5;
-			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, effective_radius, &r)) {
+			if (Geometry3D::ray_intersects_sphere(ray_pos, ray, grabber_pos, grabber_radius, &r, nullptr, get_zfar())) {
 				const real_t cost = _screen_space_selection_cost(grabber_pos, effective_radius, r);
 				if (cost < col_cost) {
 					col_cost = cost;
@@ -1587,9 +1571,9 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		Vector3 hit_position;
 		Vector3 hit_normal;
 		real_t ray_length = gt.origin.distance_to(ray_pos) + (GIZMO_CIRCLE_SIZE * gizmo_scale) * 4.0f;
-		if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * ray_length, gt.origin, gizmo_scale * (GIZMO_CIRCLE_SIZE), &hit_position, &hit_normal)) {
-			if (hit_normal.dot(_get_camera_normal()) < 0.05) {
-				hit_position = gt.xform_inv(hit_position).abs();
+		if (Geometry3D::ray_intersects_sphere(ray_pos, ray, gt.origin, gizmo_scale * (GIZMO_CIRCLE_SIZE), &hit_position, &hit_normal, ray_length)) {
+			if (hit_normal.z > -0.05) {
+				hit_position = gt.xform_inv(_get_camera_transform().xform(hit_position)).abs();
 				int min_axis = hit_position.min_axis_index();
 				if (hit_position[min_axis] < gizmo_scale * GIZMO_RING_HALF_WIDTH) {
 					col_axis = min_axis;
@@ -1598,7 +1582,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		}
 
 		if (col_axis == -1) {
-			float col_d = 1e20;
+			float col_z = -INFINITY;
 
 			for (int i = 0; i < 3; i++) {
 				Plane plane(gt.basis.get_column(i).normalized(), gt.origin);
@@ -1610,11 +1594,10 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 				const real_t dist = r.distance_to(gt.origin);
 				const Vector3 r_dir = (r - gt.origin).normalized();
 
-				if (_get_camera_normal().dot(r_dir) <= 0.005) {
+				if (r_dir.z >= -0.005) {
 					if (dist > gizmo_scale * (GIZMO_CIRCLE_SIZE - GIZMO_RING_HALF_WIDTH) && dist < gizmo_scale * (GIZMO_CIRCLE_SIZE + GIZMO_RING_HALF_WIDTH)) {
-						const real_t d = ray_pos.distance_to(r);
-						if (d < col_d) {
-							col_d = d;
+						if (r.z > col_z) {
+							col_z = r.z;
 							col_axis = i;
 						}
 					}
@@ -1688,7 +1671,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
 		int col_axis = -1;
-		float col_cost = 1e20;
+		float col_cost = INFINITY;
 
 		for (int i = 0; i < 3; i++) {
 			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * (GIZMO_SCALE_OFFSET + GIZMO_SCALE_SIZE * 0.5);
@@ -1697,7 +1680,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 			Vector3 r;
 
 			const real_t effective_radius = grabber_radius * 1.5;
-			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, effective_radius, &r)) {
+			if (Geometry3D::ray_intersects_sphere(ray_pos, ray, grabber_pos, grabber_radius, &r, nullptr, get_zfar())) {
 				const real_t cost = _screen_space_selection_cost(grabber_pos, effective_radius, r);
 				if (cost < col_cost) {
 					col_cost = cost;
@@ -3046,7 +3029,7 @@ void Node3DEditorViewport::_cursor_interpolated() {
 	if (view_3d_controller->is_orthogonal()) {
 		float half_fov = Math::deg_to_rad(get_fov()) / 2.0;
 		float height = 2.0 * view_3d_controller->cursor.distance * Math::tan(half_fov);
-		camera->set_orthogonal(height, get_znear(), get_zfar());
+		camera->set_orthogonal(height, -get_zfar(), get_zfar()); // Captures the entire world irrespective of the camera position.
 	} else {
 		camera->set_perspective(get_fov(), get_znear(), get_zfar());
 	}
@@ -5039,13 +5022,8 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		return;
 	}
 
-	const Vector3 camz = -camera_xform.get_basis().get_column(2).normalized();
-	const Vector3 camy = -camera_xform.get_basis().get_column(1).normalized();
-	const Plane p = Plane(camz, camera_xform.origin);
-	const real_t gizmo_d = MAX(Math::abs(p.distance_to(xform.origin)), CMP_EPSILON);
-	const real_t d0 = camera->unproject_position(camera_xform.origin + camz * gizmo_d).y;
-	const real_t d1 = camera->unproject_position(camera_xform.origin + camz * gizmo_d + camy).y;
-	const real_t dd = MAX(Math::abs(d0 - d1), CMP_EPSILON);
+	const Vector4 up_1_meter = camera->get_camera_projection().xform(Vector4(0, 1, camera_xform.xform_inv(xform.origin).z, 1));
+	const real_t dd = up_1_meter.y / up_1_meter.w * 0.5 * camera->get_viewport()->get_visible_rect().size.y;
 
 	const real_t gizmo_size = EDITOR_GET("editors/3d/manipulator_gizmo_size");
 	// At low viewport heights, multiply the gizmo scale based on the viewport height.
@@ -5682,7 +5660,7 @@ bool Node3DEditorViewport::_apply_preview_material(ObjectID p_target, const Poin
 		Vector3 world_pos = get_ray_pos(p_point);
 
 		int closest_surface = -1;
-		float closest_dist = 1e20;
+		float closest_dist = INFINITY;
 
 		Transform3D gt = mesh_instance->get_global_transform();
 
@@ -6469,12 +6447,8 @@ void Node3DEditorViewport::update_transform(bool p_shift) {
 		case TRANSFORM_ROTATE: {
 			Plane plane;
 			if (camera->get_projection() == Camera3D::PROJECTION_PERSPECTIVE) {
-				Vector3 cam_to_obj = _edit.center - _get_camera_position();
-				if (!cam_to_obj.is_zero_approx()) {
-					plane = Plane(cam_to_obj.normalized(), _edit.center);
-				} else {
-					plane = Plane(_get_camera_normal(), _edit.center);
-				}
+				Vector3 cam_to_obj = camera->project_ray_normal(camera->unproject_position(_edit.center));
+				plane = Plane(cam_to_obj, _edit.center);
 			} else {
 				plane = Plane(_get_camera_normal(), _edit.center);
 			}

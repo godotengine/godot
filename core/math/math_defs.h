@@ -45,6 +45,8 @@ inline constexpr double PI = 3.1415926535897932384626433833;
 inline constexpr double E = 2.7182818284590452353602874714;
 inline constexpr double INF = std::numeric_limits<double>::infinity();
 inline constexpr double NaN = std::numeric_limits<double>::quiet_NaN();
+inline constexpr float MAX_FLOAT = std::numeric_limits<float>::max();
+inline constexpr double MAX_DOUBLE = std::numeric_limits<double>::max();
 } // namespace Math
 
 inline constexpr double CMP_EPSILON = 0.00001;
