@@ -1760,6 +1760,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_ui->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_USER_INTERFACE, false));
 
 			favorite_node_shortcuts = memnew(VBoxContainer);
+			favorite_node_shortcuts->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			node_shortcuts->add_child(favorite_node_shortcuts);
 
 			button_custom = memnew(Button);
