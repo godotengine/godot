@@ -210,8 +210,9 @@ public:
 	protected:
 		SharedData *shared = nullptr;
 		T *mem = nullptr;
+		bool write_lock = false;
 
-		_FORCE_INLINE_ void _ref(SharedData *p_shared) {
+		_FORCE_INLINE_ void _ref(SharedData *p_shared, bool p_write) {
 			if (!p_shared) {
 				return;
 			}
@@ -221,7 +222,10 @@ public:
 				shared = p_shared;
 
 				// Lock prevents resizes / relocations of the buffer while the Access exists.
-				PoolVectorLockTracker::register_lock(p_shared);
+				write_lock = p_write;
+				if (write_lock) {
+					PoolVectorLockTracker::register_lock(p_shared);
+				}
 
 				if (shared->v.size() > 0) {
 					mem = shared->v.ptr();
@@ -237,13 +241,16 @@ public:
 
 		_FORCE_INLINE_ void _unref() {
 			if (shared) {
-				PoolVectorLockTracker::unregister_lock(shared);
+				if (write_lock) {
+					PoolVectorLockTracker::unregister_lock(shared);
+				}
 
 				if (shared->refcount.unref()) {
 					memdelete(shared);
 				}
 				shared = nullptr;
 				mem = nullptr;
+				write_lock = false;
 			}
 		}
 
@@ -279,20 +286,22 @@ public:
 				return *this;
 			}
 			this->_unref();
-			this->_ref(p_read.shared);
+			this->_ref(p_read.shared, false);
 			return *this;
 		}
 
 		Read(const Read &p_read) {
-			this->_ref(p_read.shared);
+			this->_ref(p_read.shared, false);
 		}
 
 		// Move semantics.
 		Read(Read &&p_read) {
 			this->shared = p_read.shared;
 			this->mem = p_read.mem;
+			this->write_lock = p_read.write_lock;
 			p_read.shared = nullptr;
 			p_read.mem = nullptr;
+			p_read.write_lock = false;
 		}
 
 		Read &operator=(Read &&p_read) {
@@ -302,8 +311,10 @@ public:
 			this->_unref();
 			this->shared = p_read.shared;
 			this->mem = p_read.mem;
+			this->write_lock = p_read.write_lock;
 			p_read.shared = nullptr;
 			p_read.mem = nullptr;
+			p_read.write_lock = false;
 			return *this;
 		}
 
@@ -320,20 +331,22 @@ public:
 				return *this;
 			}
 			this->_unref();
-			this->_ref(p_write.shared);
+			this->_ref(p_write.shared, true);
 			return *this;
 		}
 
 		Write(const Write &p_write) {
-			this->_ref(p_write.shared);
+			this->_ref(p_write.shared, true);
 		}
 
 		// Move semantics.
 		Write(Write &&p_write) {
 			this->shared = p_write.shared;
 			this->mem = p_write.mem;
+			this->write_lock = p_write.write_lock;
 			p_write.shared = nullptr;
 			p_write.mem = nullptr;
+			p_write.write_lock = false;
 		}
 
 		Write &operator=(Write &&p_write) {
@@ -343,8 +356,10 @@ public:
 			this->_unref();
 			this->shared = p_write.shared;
 			this->mem = p_write.mem;
+			this->write_lock = p_write.write_lock;
 			p_write.shared = nullptr;
 			p_write.mem = nullptr;
+			p_write.write_lock = false;
 			return *this;
 		}
 
@@ -355,7 +370,7 @@ public:
 	Read read() const _LIFETIME_BOUND_ {
 		Read r;
 		if (shared_data) {
-			r._ref(shared_data);
+			r._ref(shared_data, false);
 		}
 		return r;
 	}
@@ -366,7 +381,7 @@ public:
 		Write w;
 		if (shared_data) {
 			_copy_on_write();
-			w._ref(shared_data);
+			w._ref(shared_data, true);
 		}
 		return w;
 	}
@@ -375,8 +390,6 @@ public:
 		CRASH_BAD_INDEX(p_index, size());
 		return shared_data->v[p_index];
 	}
-
-	bool is_locked() const { return _is_locally_locked(); }
 
 	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return shared_data ? shared_data->v.span() : Span<T>(); }
 	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return span(); }
