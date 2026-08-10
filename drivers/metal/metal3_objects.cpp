@@ -60,7 +60,7 @@
 using namespace MTL3;
 
 MDCommandBuffer::MDCommandBuffer(MTL::CommandQueue *p_queue, ::RenderingDeviceDriverMetal *p_device_driver) :
-		_scratch(p_queue->device()), queue(p_queue) {
+		_scratch(p_device_driver->get_allocator()), queue(p_queue) {
 	device_driver = p_device_driver;
 	type = MDCommandBufferStateType::None;
 	use_barriers = device_driver->use_barriers;
@@ -307,8 +307,8 @@ MTL::BlitCommandEncoder *MDCommandBuffer::_ensure_blit_encoder() {
 }
 
 void MDCommandBuffer::resolve_texture(RDD::TextureID p_src_texture, RDD::TextureLayout p_src_texture_layout, uint32_t p_src_layer, uint32_t p_src_mipmap, RDD::TextureID p_dst_texture, RDD::TextureLayout p_dst_texture_layout, uint32_t p_dst_layer, uint32_t p_dst_mipmap) {
-	MTL::Texture *src_tex = rid::get<MTL::Texture>(p_src_texture);
-	MTL::Texture *dst_tex = rid::get<MTL::Texture>(p_dst_texture);
+	MTL::Texture *src_tex = rid::get<RDM::TextureInfo>(p_src_texture)->texture.get();
+	MTL::Texture *dst_tex = rid::get<RDM::TextureInfo>(p_dst_texture)->texture.get();
 
 	NS::SharedPtr<MTL::RenderPassDescriptor> mtlRPD = NS::TransferPtr(MTL::RenderPassDescriptor::alloc()->init());
 	MTL::RenderPassColorAttachmentDescriptor *mtlColorAttDesc = mtlRPD->colorAttachments()->object(0);
@@ -327,7 +327,7 @@ void MDCommandBuffer::resolve_texture(RDD::TextureID p_src_texture, RDD::Texture
 }
 
 void MDCommandBuffer::clear_color_texture(RDD::TextureID p_texture, RDD::TextureLayout p_texture_layout, const Color &p_color, const RDD::TextureSubresourceRange &p_subresources) {
-	MTL::Texture *src_tex = rid::get<MTL::Texture>(p_texture);
+	MTL::Texture *src_tex = rid::get<RDM::TextureInfo>(p_texture)->texture.get();
 
 	if (src_tex->parentTexture()) {
 		// Clear via the parent texture rather than the view.
@@ -407,11 +407,11 @@ void MDCommandBuffer::clear_buffer(RDD::BufferID p_buffer, uint64_t p_offset, ui
 	MTL::BlitCommandEncoder *blit_enc = _ensure_blit_encoder();
 	const RDM::BufferInfo *buffer = (const RDM::BufferInfo *)p_buffer.id;
 
-	blit_enc->fillBuffer(buffer->metal_buffer.get(), NS::Range(p_offset, p_size), 0);
+	blit_enc->fillBuffer(buffer->buffer.get(), NS::Range(p_offset, p_size), 0);
 }
 
 void MDCommandBuffer::clear_depth_stencil_texture(RDD::TextureID p_texture, RDD::TextureLayout p_texture_layout, float p_depth, uint8_t p_stencil, const RDD::TextureSubresourceRange &p_subresources) {
-	MTL::Texture *src_tex = rid::get<MTL::Texture>(p_texture);
+	MTL::Texture *src_tex = rid::get<RDM::TextureInfo>(p_texture)->texture.get();
 
 	if (src_tex->parentTexture()) {
 		// Clear via the parent texture rather than the view.
@@ -536,14 +536,14 @@ void MDCommandBuffer::copy_buffer(RDD::BufferID p_src_buffer, RDD::BufferID p_ds
 
 	for (uint32_t i = 0; i < p_regions.size(); i++) {
 		RDD::BufferCopyRegion region = p_regions[i];
-		enc->copyFromBuffer(src->metal_buffer.get(), region.src_offset,
-				dst->metal_buffer.get(), region.dst_offset, region.size);
+		enc->copyFromBuffer(src->buffer.get(), region.src_offset,
+				dst->buffer.get(), region.dst_offset, region.size);
 	}
 }
 
 void MDCommandBuffer::copy_texture(RDD::TextureID p_src_texture, RDD::TextureID p_dst_texture, VectorView<RDD::TextureCopyRegion> p_regions) {
-	MTL::Texture *src = rid::get<MTL::Texture>(p_src_texture);
-	MTL::Texture *dst = rid::get<MTL::Texture>(p_dst_texture);
+	MTL::Texture *src = rid::get<RDM::TextureInfo>(p_src_texture)->texture.get();
+	MTL::Texture *dst = rid::get<RDM::TextureInfo>(p_dst_texture)->texture.get();
 
 	MTL::BlitCommandEncoder *enc = _ensure_blit_encoder();
 	PixelFormats &pf = device_driver->get_pixel_formats();
@@ -635,7 +635,7 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 		RDD::BufferID p_buffer,
 		VectorView<RDD::BufferTextureCopyRegion> p_regions) {
 	const RDM::BufferInfo *buffer = (const RDM::BufferInfo *)p_buffer.id;
-	MTL::Texture *texture = rid::get<MTL::Texture>(p_texture);
+	MTL::Texture *texture = rid::get<RDM::TextureInfo>(p_texture)->texture.get();
 
 	MTL::BlitCommandEncoder *enc = _ensure_blit_encoder();
 
@@ -686,11 +686,14 @@ void MDCommandBuffer::_copy_texture_buffer(CopySource p_source,
 		}
 
 		if (p_source == CopySource::Buffer) {
-			enc->copyFromBuffer(buffer->metal_buffer.get(), region.buffer_offset, bytesPerRow, bytesPerImg, txt_size,
+			enc->copyFromBuffer(buffer->buffer.get(), region.buffer_offset,
+					bytesPerRow, bytesPerImg, txt_size,
 					texture, region.texture_subresource.layer, mip_level, txt_origin, blit_options);
 		} else {
-			enc->copyFromTexture(texture, region.texture_subresource.layer, mip_level, txt_origin, txt_size,
-					buffer->metal_buffer.get(), region.buffer_offset, bytesPerRow, bytesPerImg, blit_options);
+			enc->copyFromTexture(texture, region.texture_subresource.layer, mip_level,
+					txt_origin, txt_size,
+					buffer->buffer.get(), region.buffer_offset,
+					bytesPerRow, bytesPerImg, blit_options);
 		}
 	}
 }
@@ -1232,8 +1235,8 @@ void MDCommandBuffer::render_bind_vertex_buffers(uint32_t p_binding_count, const
 			p_dynamic_offsets >>= 2;
 			dynamic_offset = frame_idx * dyn_buf->size_bytes;
 		}
-		if (render.vertex_buffers[i] != buf_info->metal_buffer.get()) {
-			render.vertex_buffers[i] = buf_info->metal_buffer.get();
+		if (render.vertex_buffers[i] != buf_info->buffer.get()) {
+			render.vertex_buffers[i] = buf_info->buffer.get();
 			same = false;
 		}
 
@@ -1262,7 +1265,7 @@ void MDCommandBuffer::render_bind_index_buffer(RDD::BufferID p_buffer, RDD::Inde
 
 	const RenderingDeviceDriverMetal::BufferInfo *buffer = (const RenderingDeviceDriverMetal::BufferInfo *)p_buffer.id;
 
-	render.index_buffer = buffer->metal_buffer.get();
+	render.index_buffer = buffer->buffer.get();
 	render.index_type = p_format == RDD::IndexBufferFormat::INDEX_BUFFER_FORMAT_UINT16 ? MTL::IndexTypeUInt16 : MTL::IndexTypeUInt32;
 	render.index_offset = p_offset;
 }
@@ -1302,7 +1305,7 @@ void MDCommandBuffer::render_draw_indexed_indirect(RDD::BufferID p_indirect_buff
 	NS::UInteger indirect_offset = p_offset;
 
 	for (uint32_t i = 0; i < p_draw_count; i++) {
-		enc->drawIndexedPrimitives(render.pipeline->raster_state.render_primitive, render.index_type, render.index_buffer, 0, indirect_buffer->metal_buffer.get(), indirect_offset);
+		enc->drawIndexedPrimitives(render.pipeline->raster_state.render_primitive, render.index_type, render.index_buffer, 0, indirect_buffer->buffer.get(), indirect_offset);
 		indirect_offset += p_stride;
 	}
 }
@@ -1323,7 +1326,7 @@ void MDCommandBuffer::render_draw_indirect(RDD::BufferID p_indirect_buffer, uint
 	NS::UInteger indirect_offset = p_offset;
 
 	for (uint32_t i = 0; i < p_draw_count; i++) {
-		enc->drawPrimitives(render.pipeline->raster_state.render_primitive, indirect_buffer->metal_buffer.get(), indirect_offset);
+		enc->drawPrimitives(render.pipeline->raster_state.render_primitive, indirect_buffer->buffer.get(), indirect_offset);
 		indirect_offset += p_stride;
 	}
 }
@@ -1509,7 +1512,7 @@ void MDCommandBuffer::compute_dispatch_indirect(RDD::BufferID p_indirect_buffer,
 	const RenderingDeviceDriverMetal::BufferInfo *indirectBuffer = (const RenderingDeviceDriverMetal::BufferInfo *)p_indirect_buffer.id;
 
 	MTL::ComputeCommandEncoder *enc = compute.encoder.get();
-	enc->dispatchThreadgroups(indirectBuffer->metal_buffer.get(), p_offset, compute.pipeline->compute_state.local);
+	enc->dispatchThreadgroups(indirectBuffer->buffer.get(), p_offset, compute.pipeline->compute_state.local);
 }
 
 void MDCommandBuffer::reset() {
@@ -1652,15 +1655,15 @@ void MDCommandBuffer::_bind_uniforms_argument_buffers(MDUniformSet *p_set, MDSha
 			uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xf;
 
 			const MetalBufferDynamicInfo *buf_info = (const MetalBufferDynamicInfo *)uniform.ids[0].id;
-			uint64_t gpu_address = buf_info->metal_buffer.get()->gpuAddress() + frame_idx * buf_info->size_bytes;
+			uint64_t gpu_address = buf_info->buffer.get()->gpuAddress() + frame_idx * buf_info->size_bytes;
 			*(uint64_t *)(ptr + idx.buffer) = gpu_address;
 		}
 
 		enc->setVertexBuffer(alloc.buffer, alloc.offset, p_set_index);
 		enc->setFragmentBuffer(alloc.buffer, alloc.offset, p_set_index);
 	} else {
-		enc->setVertexBuffer(p_set->arg_buffer.get(), 0, p_set_index);
-		enc->setFragmentBuffer(p_set->arg_buffer.get(), 0, p_set_index);
+		enc->setVertexBuffer(p_set->arg_buffer.buffer.get(), 0, p_set_index);
+		enc->setFragmentBuffer(p_set->arg_buffer.buffer.get(), 0, p_set_index);
 	}
 }
 
@@ -1701,7 +1704,7 @@ void MDCommandBuffer::_bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_sha
 				MTL::SamplerState **samplers = ALLOCA_ARRAY(MTL::SamplerState *, count);
 				for (uint32_t j = 0; j < count; j += 1) {
 					samplers[j] = rid::get<MTL::SamplerState>(uniform.ids[j * 2 + 0]);
-					textures[j] = rid::get<MTL::Texture>(uniform.ids[j * 2 + 1]);
+					textures[j] = rid::get<RDM::TextureInfo>(uniform.ids[j * 2 + 1])->texture.get();
 				}
 				NS::Range sampler_range = { indexes.sampler, count };
 				NS::Range texture_range = { indexes.texture, count };
@@ -1712,7 +1715,7 @@ void MDCommandBuffer::_bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_sha
 				size_t count = uniform.ids.size();
 				MTL::Texture **objects = ALLOCA_ARRAY(MTL::Texture *, count);
 				for (size_t j = 0; j < count; j += 1) {
-					objects[j] = rid::get<MTL::Texture>(uniform.ids[j]);
+					objects[j] = rid::get<RDM::TextureInfo>(uniform.ids[j])->texture.get();
 				}
 				NS::Range texture_range = { indexes.texture, count };
 				p_enc.set(objects, texture_range);
@@ -1721,7 +1724,7 @@ void MDCommandBuffer::_bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_sha
 				size_t count = uniform.ids.size();
 				MTL::Texture **objects = ALLOCA_ARRAY(MTL::Texture *, count);
 				for (size_t j = 0; j < count; j += 1) {
-					objects[j] = rid::get<MTL::Texture>(uniform.ids[j]);
+					objects[j] = rid::get<RDM::TextureInfo>(uniform.ids[j])->texture.get();
 				}
 				NS::Range texture_range = { indexes.texture, count };
 				p_enc.set(objects, texture_range);
@@ -1752,18 +1755,18 @@ void MDCommandBuffer::_bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_sha
 			case RDD::UNIFORM_TYPE_UNIFORM_BUFFER:
 			case RDD::UNIFORM_TYPE_STORAGE_BUFFER: {
 				const RDM::BufferInfo *buf_info = (const RDM::BufferInfo *)uniform.ids[0].id;
-				p_enc.set(buf_info->metal_buffer.get(), 0, indexes.buffer);
+				p_enc.set(buf_info->buffer.get(), 0, indexes.buffer);
 			} break;
 			case RDD::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:
 			case RDD::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 				const MetalBufferDynamicInfo *buf_info = (const MetalBufferDynamicInfo *)uniform.ids[0].id;
-				p_enc.set(buf_info->metal_buffer.get(), frame_idx * buf_info->size_bytes, indexes.buffer);
+				p_enc.set(buf_info->buffer.get(), frame_idx * buf_info->size_bytes, indexes.buffer);
 			} break;
 			case RDD::UNIFORM_TYPE_INPUT_ATTACHMENT: {
 				size_t count = uniform.ids.size();
 				MTL::Texture **objects = ALLOCA_ARRAY(MTL::Texture *, count);
 				for (size_t j = 0; j < count; j += 1) {
-					objects[j] = rid::get<MTL::Texture>(uniform.ids[j]);
+					objects[j] = rid::get<RDM::TextureInfo>(uniform.ids[j])->texture.get();
 				}
 				NS::Range texture_range = { indexes.texture, count };
 				p_enc.set(objects, texture_range);
@@ -1808,13 +1811,13 @@ void MDCommandBuffer::_bind_uniforms_argument_buffers_compute(MDUniformSet *p_se
 			uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xf;
 
 			const MetalBufferDynamicInfo *buf_info = (const MetalBufferDynamicInfo *)uniform.ids[0].id;
-			uint64_t gpu_address = buf_info->metal_buffer.get()->gpuAddress() + frame_idx * buf_info->size_bytes;
+			uint64_t gpu_address = buf_info->buffer.get()->gpuAddress() + frame_idx * buf_info->size_bytes;
 			*(uint64_t *)(ptr + idx.buffer) = gpu_address;
 		}
 
 		enc->setBuffer(alloc.buffer, alloc.offset, p_set_index);
 	} else {
-		enc->setBuffer(p_set->arg_buffer.get(), 0, p_set_index);
+		enc->setBuffer(p_set->arg_buffer.buffer.get(), 0, p_set_index);
 	}
 }
 
