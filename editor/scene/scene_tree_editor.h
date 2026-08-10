@@ -208,7 +208,7 @@ class SceneTreeEditor : public Control {
 	void _set_item_custom_color(TreeItem *p_item, Color p_color);
 	void _update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _queue_update_node_tooltip(Node *p_node, TreeItem *p_item);
-	void _tree_scroll_to_item(ObjectID p_item_id);
+	void _tree_scroll_to_item(ObjectID p_item_id, bool p_center_on_item);
 	void _reset_visibility_drag();
 
 	void _selection_changed();
