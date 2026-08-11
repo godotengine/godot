@@ -31,6 +31,8 @@
 #ifndef ERROR_LIST_H
 #define ERROR_LIST_H
 
+#include "typedefs.h"
+
 /** Error List. Please never compare an error against FAILED
  * Either do result != OK , or !result. This way, Error fail
  * values can be more detailed in the future.
@@ -88,6 +90,23 @@ enum Error {
 	ERR_HELP, ///< user requested help!!
 	ERR_BUG, ///< a bug in the software certainly happened, due to a double check failing or unexpected behavior.
 	ERR_PRINTER_ON_FIRE, /// the parallel port printer is engulfed in flames
+};
+
+// This is the same as `Error`, and can be cross-converted.
+// In contrast to `Error`, it cannot be auto-converted to int or bool.
+// Use it when you need to avoid footguns by implicit conversions.
+class SafeError {
+	Error value;
+
+public:
+	// Delete the implicit conversion to bool to trigger a compiler error.
+	operator bool() const = delete;
+
+	// Allow it to still act like a normal Error enum everywhere else.
+	_ALWAYS_INLINE_ operator Error() const { return value; }
+
+	_ALWAYS_INLINE_ SafeError(Error p_value) :
+			value(p_value) {}
 };
 
 #endif // ERROR_LIST_H
