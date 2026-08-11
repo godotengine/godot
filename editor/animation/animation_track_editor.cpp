@@ -5624,6 +5624,8 @@ void AnimationTrackEditor::_notification(int p_what) {
 			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_BALANCED), get_editor_theme_icon(SNAME("BezierHandlesBalanced")));
 			bezier_key_mode->set_item_icon(bezier_key_mode->get_item_index(Animation::HANDLE_MODE_MIRRORED), get_editor_theme_icon(SNAME("BezierHandlesMirror")));
 
+			track_copy_filter->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+
 			_update_timeline_margins();
 		} break;
 
@@ -6995,37 +6997,43 @@ void AnimationTrackEditor::goto_next_step(bool p_from_mouse_event, bool p_timeli
 void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 	switch (p_option) {
 		case EDIT_COPY_TRACKS: {
-			track_copy_select->clear();
-			TreeItem *troot = track_copy_select->create_item();
+			struct TrackCopyData {
+				Ref<Texture2D> icon;
+				String text;
+				int track_idx;
+				NodePath path;
+			};
 
+			LocalVector<TrackCopyData> track_copy_list;
 			for (int i = 0; i < animation->get_track_count(); i++) {
-				NodePath path = animation->track_get_path(i);
+				TrackCopyData tcd = TrackCopyData();
+				tcd.track_idx = i;
+				tcd.path = animation->track_get_path(i);
 				Node *node = nullptr;
 
 				if (root) {
-					node = root->get_node_or_null(path);
+					node = root->get_node_or_null(tcd.path);
 				}
 
-				String text;
-				Ref<Texture2D> icon = get_editor_theme_icon(SNAME("Node"));
+				tcd.icon = get_editor_theme_icon(SNAME("Node"));
 				if (node) {
 					if (has_theme_icon(node->get_class(), EditorStringName(EditorIcons))) {
-						icon = get_editor_theme_icon(node->get_class());
+						tcd.icon = get_editor_theme_icon(node->get_class());
 					}
 
-					text = node->get_name();
-					Vector<StringName> sn = path.get_subnames();
+					tcd.text = node->get_name();
+					Vector<StringName> sn = tcd.path.get_subnames();
 					for (int j = 0; j < sn.size(); j++) {
-						text += ".";
-						text += sn[j];
+						tcd.text += ".";
+						tcd.text += sn[j];
 					}
 
-					path = NodePath(node->get_path().get_names(), path.get_subnames(), true); // Store full path instead for copying.
+					tcd.path = NodePath(node->get_path().get_names(), tcd.path.get_subnames(), true); // Store full path instead for copying.
 				} else {
-					text = String(path);
-					int sep = text.find_char(':');
+					tcd.text = String(tcd.path);
+					int sep = tcd.text.find_char(':');
 					if (sep != -1) {
-						text = text.substr(sep + 1);
+						tcd.text = tcd.text.substr(sep + 1);
 					}
 				}
 
@@ -7056,22 +7064,40 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					};
 				}
 				if (!track_type.is_empty()) {
-					text += vformat(" (%s)", track_type);
+					tcd.text += vformat(" (%s)", track_type);
 				}
 
+				track_copy_list.push_back(tcd);
+			}
+
+			track_copy_dialog->popup_centered(Size2(350, 500) * EDSCALE);
+
+			if (alphabetic_sorting->is_pressed()) {
+				struct CopyTrackAlphaCompare {
+					bool operator()(const TrackCopyData &p_lhs, const TrackCopyData &p_rhs) const {
+						return p_lhs.text < p_rhs.text;
+					}
+				};
+
+				track_copy_list.sort_custom<CopyTrackAlphaCompare>();
+			}
+
+			track_copy_filter->clear();
+			track_copy_select->clear();
+			TreeItem *troot = track_copy_select->create_item();
+
+			for (uint32_t i = 0; i < track_copy_list.size(); i++) {
 				TreeItem *it = track_copy_select->create_item(troot);
 				it->set_editable(0, true);
 				it->set_selectable(0, true);
 				it->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				it->set_icon(0, icon);
-				it->set_text(0, text);
+				it->set_icon(0, track_copy_list[i].icon);
+				it->set_text(0, track_copy_list[i].text);
 				Dictionary md;
-				md["track_idx"] = i;
-				md["path"] = path;
+				md["track_idx"] = track_copy_list[i].track_idx;
+				md["path"] = track_copy_list[i].path;
 				it->set_metadata(0, md);
 			}
-
-			track_copy_dialog->popup_centered(Size2(350, 500) * EDSCALE);
 		} break;
 		case EDIT_COPY_TRACKS_CONFIRM: {
 			track_clipboard.clear();
@@ -7081,7 +7107,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				while (it) {
 					Dictionary md = it->get_metadata(0);
 					int idx = md["track_idx"];
-					if (it->is_checked(0) && idx >= 0 && idx < animation->get_track_count()) {
+					if (it->is_checked(0) && it->is_visible() && idx >= 0 && idx < animation->get_track_count()) {
 						TrackClipboard tc;
 						tc.base_path = animation->track_get_path(idx);
 						tc.full_path = md["path"];
@@ -8029,7 +8055,7 @@ void AnimationTrackEditor::_select_all_tracks_for_copy() {
 
 	bool all_selected = true;
 	while (track) {
-		if (!track->is_checked(0)) {
+		if (!track->is_checked(0) && track->is_visible()) {
 			all_selected = false;
 		}
 
@@ -8038,7 +8064,26 @@ void AnimationTrackEditor::_select_all_tracks_for_copy() {
 
 	track = track_copy_select->get_root()->get_first_child();
 	while (track) {
-		track->set_checked(0, !all_selected);
+		if (track->is_visible()) {
+			track->set_checked(0, !all_selected);
+		}
+		track = track->get_next();
+	}
+}
+
+void AnimationTrackEditor::_update_copy_tracks() {
+	TreeItem *track = track_copy_select->get_root()->get_first_child();
+	if (!track) {
+		return;
+	}
+
+	while (track) {
+		if (track->get_text(0).containsn(track_copy_filter->get_text()) || track_copy_filter->get_text().is_empty()) {
+			track->set_visible(true);
+		} else {
+			track->set_visible(false);
+		}
+
 		track = track->get_next();
 	}
 }
@@ -8680,6 +8725,13 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	select_all_button->set_text(TTRC("Select All/None"));
 	select_all_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_select_all_tracks_for_copy));
 	track_copy_vbox->add_child(select_all_button);
+
+	track_copy_filter = memnew(LineEdit);
+	track_copy_filter->connect(SceneStringName(text_changed), callable_mp(this, &AnimationTrackEditor::_update_copy_tracks).unbind(1));
+	track_copy_filter->set_placeholder(TTRC("Filter Tracks"));
+	track_copy_filter->set_tooltip_text(TTRC("Filter tracks by entering part of their node name or property."));
+	track_copy_filter->set_clear_button_enabled(true);
+	track_copy_vbox->add_child(track_copy_filter);
 
 	track_copy_select = memnew(Tree);
 	track_copy_select->set_accessibility_name(TTRC("Copy Selection"));
