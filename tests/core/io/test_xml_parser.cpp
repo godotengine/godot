@@ -231,4 +231,20 @@ TEST_CASE("[XMLParser] CDATA") {
 	CHECK_EQ(parser.get_node_name(), "a");
 }
 
+TEST_CASE("[XMLParser] Non-null-terminated buffer via open_buffer") {
+	const uint8_t input_data[] = { '<', 'a', '>', '<', '/', 'a', '>' }; // No null terminator
+	Vector<uint8_t> input;
+	input.resize(sizeof(input_data));
+	memcpy(input.ptrw(), input_data, sizeof(input_data));
+
+	XMLParser parser;
+	REQUIRE_EQ(parser.open_buffer(input), OK);
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+	CHECK_EQ(parser.get_node_name(), "a");
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+	CHECK_EQ(parser.get_node_name(), "a");
+}
+
 } // namespace TestXMLParser
