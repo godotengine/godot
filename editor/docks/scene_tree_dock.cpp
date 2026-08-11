@@ -4070,11 +4070,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				BEGIN_SECTION()
 				menu->add_item(TTRC("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
 			}
-
-			// TODO: This condition incorrectly hides "open_in_editor" for unsaved inherited scene root.
-			if (is_external) {
-				is_tool_scene_open_inherited_available = true;
-			}
+			is_tool_scene_open_inherited_available = true;
 		}
 
 		if (is_external && !is_top_level) {
