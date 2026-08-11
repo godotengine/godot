@@ -1012,10 +1012,12 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 		if (registry->wayland_thread->xdg_icon) {
 			xdg_toplevel_icon_v1_destroy(registry->wayland_thread->xdg_icon);
+			registry->wayland_thread->xdg_icon = nullptr;
 		}
 
 		if (registry->wayland_thread->icon_buffer) {
 			wl_buffer_destroy(registry->wayland_thread->icon_buffer);
+			registry->wayland_thread->icon_buffer = nullptr;
 		}
 
 		registry->xdg_toplevel_icon_manager_name = 0;
@@ -4380,7 +4382,7 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 		ws.libdecor_frame = libdecor_decorate(libdecor_context, ws.wl_surface, (struct libdecor_frame_interface *)&libdecor_frame_interface, &ws);
 		libdecor_frame_map(ws.libdecor_frame);
 
-		if (registry.xdg_toplevel_icon_manager) {
+		if (registry.xdg_toplevel_icon_manager && icon_is_set) {
 			xdg_toplevel *toplevel = libdecor_frame_get_xdg_toplevel(ws.libdecor_frame);
 			if (toplevel != nullptr) {
 				xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, xdg_icon);
@@ -4408,7 +4410,7 @@ void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, cons
 			decorated = true;
 		}
 
-		if (registry.xdg_toplevel_icon_manager) {
+		if (registry.xdg_toplevel_icon_manager && icon_is_set) {
 			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, xdg_icon);
 		}
 	}
@@ -4569,10 +4571,12 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 
 	if (ws.xdg_icon) {
 		xdg_toplevel_icon_v1_destroy(ws.xdg_icon);
+		ws.xdg_icon = nullptr;
 	}
 
 	if (ws.icon_buffer) {
 		wl_buffer_destroy(ws.icon_buffer);
+		ws.icon_buffer = nullptr;
 	}
 
 	// Before continuing, let's handle any leftover event that might still refer to
@@ -5070,11 +5074,12 @@ void WaylandThread::set_icon(const Ref<Image> &p_icon, DisplayServerEnums::Windo
 
 	if (ws.xdg_icon) {
 		xdg_toplevel_icon_v1_destroy(ws.xdg_icon);
+		ws.xdg_icon = nullptr;
 	}
 	if (ws.icon_buffer) {
 		wl_buffer_destroy(ws.icon_buffer);
+		ws.icon_buffer = nullptr;
 	}
-	ws.icon_set = true;
 
 	if (p_icon.is_valid()) {
 		Size2i icon_size = p_icon->get_size();
@@ -5113,107 +5118,109 @@ void WaylandThread::set_icon(const Ref<Image> &p_icon, DisplayServerEnums::Windo
 
 		ws.xdg_icon = xdg_toplevel_icon_manager_v1_create_icon(registry.xdg_toplevel_icon_manager);
 		xdg_toplevel_icon_v1_add_buffer(ws.xdg_icon, ws.icon_buffer, icon_size.width);
-
-#ifdef LIBDECOR_ENABLED
-		if (ws.libdecor_frame) {
-			xdg_toplevel *toplevel = libdecor_frame_get_xdg_toplevel(ws.libdecor_frame);
-			ERR_FAIL_NULL(toplevel);
-			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, ws.xdg_icon);
-		}
-#endif
-		if (ws.xdg_toplevel) {
-			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, ws.xdg_icon);
-		}
+		ws.icon_is_set = true;
 	} else {
-#ifdef LIBDECOR_ENABLED
-		if (ws.libdecor_frame) {
-			xdg_toplevel *toplevel = libdecor_frame_get_xdg_toplevel(ws.libdecor_frame);
-			ERR_FAIL_NULL(toplevel);
-			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, nullptr);
-		}
-#endif
-		if (ws.xdg_toplevel) {
-			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, nullptr);
-		}
+		ws.icon_is_set = false;
 	}
+	_update_window_icon(p_window_id);
 }
 
 void WaylandThread::set_default_icon(const Ref<Image> &p_icon) {
-	ERR_FAIL_COND(p_icon.is_null());
-
-	Size2i icon_size = p_icon->get_size();
-	ERR_FAIL_COND(icon_size.width != icon_size.height);
-
 	if (!registry.xdg_toplevel_icon_manager) {
 		return;
 	}
 
 	if (xdg_icon) {
 		xdg_toplevel_icon_v1_destroy(xdg_icon);
+		xdg_icon = nullptr;
 	}
-
 	if (icon_buffer) {
 		wl_buffer_destroy(icon_buffer);
+		icon_buffer = nullptr;
 	}
 
-	// NOTE: The stride is the width of the icon in bytes.
-	uint32_t icon_stride = icon_size.width * 4;
-	uint32_t data_size = icon_stride * icon_size.height;
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+		Size2i icon_size = p_icon->get_size();
 
-	// We need a shared memory object file descriptor in order to create a
-	// wl_buffer through wl_shm.
-	int fd = WaylandThread::_allocate_shm_file(data_size);
-	ERR_FAIL_COND(fd == -1);
+		// NOTE: The stride is the width of the icon in bytes.
+		uint32_t icon_stride = icon_size.width * 4;
+		uint32_t data_size = icon_stride * icon_size.height;
 
-	uint32_t *buffer_data = (uint32_t *)mmap(nullptr, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		// We need a shared memory object file descriptor in order to create a
+		// wl_buffer through wl_shm.
+		int fd = WaylandThread::_allocate_shm_file(data_size);
+		ERR_FAIL_COND(fd == -1);
 
-	// Create the Wayland buffer.
-	struct wl_shm_pool *shm_pool = wl_shm_create_pool(registry.wl_shm, fd, data_size);
-	icon_buffer = wl_shm_pool_create_buffer(shm_pool, 0, icon_size.width, icon_size.height, icon_stride, WL_SHM_FORMAT_ARGB8888);
-	wl_shm_pool_destroy(shm_pool);
+		uint32_t *buffer_data = (uint32_t *)mmap(nullptr, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
-	// Fill the cursor buffer with the image data.
-	for (uint32_t index = 0; index < (uint32_t)(icon_size.width * icon_size.height); index++) {
-		int row_index = index / icon_size.width;
-		int column_index = (index % icon_size.width);
+		// Create the Wayland buffer.
+		struct wl_shm_pool *shm_pool = wl_shm_create_pool(registry.wl_shm, fd, data_size);
+		icon_buffer = wl_shm_pool_create_buffer(shm_pool, 0, icon_size.width, icon_size.height, icon_stride, WL_SHM_FORMAT_ARGB8888);
+		wl_shm_pool_destroy(shm_pool);
 
-		buffer_data[index] = p_icon->get_pixel(column_index, row_index).to_argb32();
+		// Fill the cursor buffer with the image data.
+		for (uint32_t index = 0; index < (uint32_t)(icon_size.width * icon_size.height); index++) {
+			int row_index = index / icon_size.width;
+			int column_index = (index % icon_size.width);
 
-		// Wayland buffers, unless specified, require associated alpha, so we'll just
-		// associate the alpha in-place.
-		uint8_t *pixel_data = (uint8_t *)&buffer_data[index];
-		pixel_data[0] = pixel_data[0] * pixel_data[3] / 255;
-		pixel_data[1] = pixel_data[1] * pixel_data[3] / 255;
-		pixel_data[2] = pixel_data[2] * pixel_data[3] / 255;
-	}
+			buffer_data[index] = p_icon->get_pixel(column_index, row_index).to_argb32();
 
-	xdg_icon = xdg_toplevel_icon_manager_v1_create_icon(registry.xdg_toplevel_icon_manager);
-	xdg_toplevel_icon_v1_add_buffer(xdg_icon, icon_buffer, icon_size.width);
+			// Wayland buffers, unless specified, require associated alpha, so we'll just
+			// associate the alpha in-place.
+			uint8_t *pixel_data = (uint8_t *)&buffer_data[index];
+			pixel_data[0] = pixel_data[0] * pixel_data[3] / 255;
+			pixel_data[1] = pixel_data[1] * pixel_data[3] / 255;
+			pixel_data[2] = pixel_data[2] * pixel_data[3] / 255;
+		}
 
-	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		// Setting a name allows the godot icon to be overridden by a system theme.
-		// We only want the project manager and editor to get themed,
-		// Games will get icons with the protocol and themed icons with .desktop entries.
-		// NOTE: should be synced with the icon name in misc/dist/linuxbsd/Godot.desktop
-		xdg_toplevel_icon_v1_set_name(xdg_icon, "godot");
+		xdg_icon = xdg_toplevel_icon_manager_v1_create_icon(registry.xdg_toplevel_icon_manager);
+		xdg_toplevel_icon_v1_add_buffer(xdg_icon, icon_buffer, icon_size.width);
+
+		if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
+			// Setting a name allows the godot icon to be overridden by a system theme.
+			// We only want the project manager and editor to get themed,
+			// Games will get icons with the protocol and themed icons with .desktop entries.
+			// NOTE: should be synced with the icon name in misc/dist/linuxbsd/Godot.desktop
+			xdg_toplevel_icon_v1_set_name(xdg_icon, "godot");
+		}
+		icon_is_set = true;
+	} else {
+		icon_is_set = false;
 	}
 
 	for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : windows) {
 		WindowState &ws = pair.value;
-		if (ws.icon_set) {
+		if (ws.icon_is_set) {
 			continue;
 		}
+		_update_window_icon(pair.key);
+	}
+}
+
+void WaylandThread::_update_window_icon(DisplayServerEnums::WindowID p_window_id) {
+	if (!registry.xdg_toplevel_icon_manager) {
+		return;
+	}
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowState &ws = windows[p_window_id];
+
+	xdg_toplevel_icon_v1 *icon = nullptr;
+	if (ws.icon_is_set) {
+		icon = ws.xdg_icon;
+	} else if (icon_is_set) {
+		icon = xdg_icon;
+	}
 
 #ifdef LIBDECOR_ENABLED
-		if (ws.libdecor_frame) {
-			xdg_toplevel *toplevel = libdecor_frame_get_xdg_toplevel(ws.libdecor_frame);
-			ERR_FAIL_NULL(toplevel);
-			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, xdg_icon);
-		}
+	if (ws.libdecor_frame) {
+		xdg_toplevel *toplevel = libdecor_frame_get_xdg_toplevel(ws.libdecor_frame);
+		ERR_FAIL_NULL(toplevel);
+		xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, toplevel, icon);
+	}
 #endif
-		if (ws.xdg_toplevel) {
-			xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, xdg_icon);
-		}
+	if (ws.xdg_toplevel) {
+		xdg_toplevel_icon_manager_v1_set_icon(registry.xdg_toplevel_icon_manager, ws.xdg_toplevel, icon);
 	}
 }
 

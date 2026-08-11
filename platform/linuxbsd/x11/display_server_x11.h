@@ -153,7 +153,7 @@ class DisplayServerX11 : public DisplayServer {
 		xkb_compose_state *xkb_state = nullptr;
 #endif
 		Ref<Image> icon;
-		bool icon_set = false;
+		bool icon_is_set = false;
 
 		Size2i min_size;
 		Size2i max_size;
@@ -276,7 +276,9 @@ class DisplayServerX11 : public DisplayServer {
 	} xi;
 
 	Ref<Image> icon;
-	void _update_window_icon(WindowData &p_wd);
+	bool icon_is_set = false;
+
+	void _update_window_icon(DisplayServerEnums::WindowID p_window);
 
 	static bool g_set_icon_error;
 	static int set_icon_errorhandler(Display *dpy, XErrorEvent *ev);

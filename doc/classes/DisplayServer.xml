@@ -1909,7 +1909,7 @@
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
 			<description>
-				Sets the application icon and icons of all windows with an [Image]. To use icons in the operating system's native format, use [method set_native_icon] instead.
+				Sets the application icon and default window icon to an [Image]. To override specific window icon, use [method window_set_icon] instead. To use icons in the operating system's native format, use [method set_native_icon] instead. To revert to executable built-in or OS provided icon, set to [code]null[/code].
 				[b]Note:[/b] Requires support for [constant FEATURE_ICON].
 			</description>
 		</method>
@@ -2453,7 +2453,7 @@
 			<param index="0" name="icon" type="Image" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the window icon (usually displayed in the top-left corner) for the window specified by [param window_id].
+				Sets the window icon (usually displayed in the top-left corner) for the window specified by [param window_id]. Set to [code]null[/code] to restore default icon, see [method set_icon].
 				[b]Note:[/b] This method is implemented on Linux and Windows.
 			</description>
 		</method>
