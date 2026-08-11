@@ -173,6 +173,7 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	Error err = SceneShaderForwardMobile::singleton->compiler.compile(RSE::SHADER_SPATIAL, code, &actions, path, gen_code);
 
 	if (err != OK) {
+		pipeline_hash_map.clear_pipelines();
 		if (version.is_valid()) {
 			SceneShaderForwardMobile::singleton->shader.version_free(version);
 			version = RID();
