@@ -248,7 +248,7 @@ private:
 #define GDCLASS(m_class, m_inherits) \
 	GDSOFTCLASS(m_class, m_inherits) \
 private: \
-	void operator=(const m_class &p_rval) {} \
+	void operator=(const m_class &p_rval) = delete; \
 	friend class ::ClassDB; \
 \
 	static GDType &get_gdtype_static_mutable() { \
