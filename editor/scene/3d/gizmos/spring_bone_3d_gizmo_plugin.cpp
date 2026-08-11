@@ -253,7 +253,7 @@ void SpringBoneSimulator3DGizmoPlugin::draw_sphere_tangent_cone(Ref<SurfaceTool>
 	Vector3 cone_center = p_center + cone_axis * (p_radius * cone_gradient);
 
 	float cone_rad_fac = sqrt(1 - cone_gradient * cone_gradient);
-	Vector3 cone_side_axis = cone_axis.cross(fabs(axis_vec.x) < 0.5 ? Vector3(1,0,0) : Vector3(0,0,1)).normalized();
+	Vector3 cone_side_axis = cone_axis.cross(fabs(axis_vec.x) < 0.5 ? Vector3(1, 0, 0) : Vector3(0, 0, 1)).normalized();
 	Vector3 prev_cone_side_vec = cone_side_axis * (p_prev_radius * cone_rad_fac);
 	Vector3 cone_side_vec = cone_side_axis * (p_radius * cone_rad_fac);
 
