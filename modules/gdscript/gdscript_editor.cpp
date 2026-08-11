@@ -3925,22 +3925,16 @@ void GDScriptEditorLanguage::format_code(String &r_code, uint32_t p_from_line, u
 			}
 		}
 
-		if (i >= p_from_line) {
-			l = indent.repeat(indent_stack.size()) + st;
-		} else if (i > p_to_line) {
+		if (i > p_to_line) {
 			break;
+		} else if (i >= p_from_line) {
+			l = indent.repeat(indent_stack.size()) + st;
 		}
 
 		lines.write[i] = l;
 	}
 
-	r_code = String();
-	for (int i = 0; i < lines.size(); i++) {
-		if (i > 0) {
-			r_code += "\n";
-		}
-		r_code += lines[i];
-	}
+	r_code = String("\n").join(lines);
 }
 
 static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, const String &p_symbol, EditorLanguage::LookupResult &r_result) {
