@@ -157,7 +157,7 @@ Dictionary CodeHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 		Dictionary highlighter_info;
 
 		color = font_color;
-		bool is_char = !is_symbol(str[j]);
+		bool is_char = is_symbol(str[j]);
 		bool is_a_symbol = is_symbol(str[j]);
 		bool is_number = is_digit(str[j]);
 
