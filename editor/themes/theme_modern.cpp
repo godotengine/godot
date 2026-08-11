@@ -762,14 +762,22 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			Ref<StyleBoxFlat> style_itemlist_cursor = p_config.base_style->duplicate();
 			style_itemlist_cursor->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.04));
 
+			// Use the accent-tinted highlight color instead of the neutral pressed color so the
+			// selected item remains clearly distinguishable from a merely hovered item.
+			const Color itemlist_selected_color = p_config.highlight_color * Color(1, 1, 1, 0.65);
+			Ref<StyleBoxFlat> style_itemlist_selected = p_config.flat_button_pressed->duplicate();
+			style_itemlist_selected->set_bg_color(itemlist_selected_color);
+			Ref<StyleBoxFlat> style_itemlist_hover_selected = p_config.flat_button_hover_pressed->duplicate();
+			style_itemlist_hover_selected->set_bg_color(itemlist_selected_color);
+
 			p_theme->set_stylebox(SceneStringName(panel), "ItemList", style_itemlist_bg);
 			p_theme->set_stylebox("focus", "ItemList", p_config.focus_style);
 			p_theme->set_stylebox("cursor", "ItemList", style_itemlist_cursor);
 			p_theme->set_stylebox("cursor_unfocused", "ItemList", style_itemlist_cursor);
 			p_theme->set_stylebox("selected_focus", "ItemList", p_config.focus_style);
-			p_theme->set_stylebox("selected", "ItemList", p_config.flat_button_pressed);
+			p_theme->set_stylebox("selected", "ItemList", style_itemlist_selected);
 			p_theme->set_stylebox("hovered", "ItemList", p_config.flat_button_hover);
-			p_theme->set_stylebox("hovered_selected", "ItemList", p_config.flat_button_hover_pressed);
+			p_theme->set_stylebox("hovered_selected", "ItemList", style_itemlist_hover_selected);
 			p_theme->set_stylebox("hovered_selected_focus", "ItemList", p_config.focus_style);
 			p_theme->set_color(SceneStringName(font_color), "ItemList", p_config.font_color);
 			p_theme->set_color("font_hovered_color", "ItemList", p_config.font_hover_color);
