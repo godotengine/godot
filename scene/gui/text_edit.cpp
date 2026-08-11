@@ -4702,8 +4702,20 @@ void TextEdit::swap_lines(int p_from_line, int p_to_line) {
 
 	String from_line_text = get_line(p_from_line);
 	String to_line_text = get_line(p_to_line);
-	Vector<Underline> from_line_underlines = _get_underline_data_for_line(p_from_line);
-	Vector<Underline> to_line_underlines = _get_underline_data_for_line(p_to_line);
+
+	// Separate underlines on both lines so they can be swapped.
+	// `_cut_line_from_underline` can push to `underlines` so iterate to the original size.
+	// The second cut can operate on the results of the first one, so loop separately.
+	int num_underlines = underlines.size();
+	for (int i = 0; i < num_underlines; i++) {
+		Underline &ul = underlines[i];
+		_cut_line_from_underline(ul, p_from_line);
+	}
+	num_underlines = underlines.size();
+	for (int i = 0; i < num_underlines; i++) {
+		Underline &ul = underlines[i];
+		_cut_line_from_underline(ul, p_to_line);
+	}
 
 	begin_complex_operation();
 	begin_multicaret_edit();
@@ -4730,46 +4742,15 @@ void TextEdit::swap_lines(int p_from_line, int p_to_line) {
 	}
 
 	// Swap underlines.
-	LocalVector<Underline> new_underlines;
-	for (const Underline &ul : underlines) {
-		if (!ul.contains_line(p_from_line) && !ul.contains_line(p_to_line)) {
-			new_underlines.push_back(ul);
-		}
-
-		else if (ul.contains_line(p_from_line) && !ul.contains_line(p_to_line)) {
-			for (const Underline &new_ul : _cut_line_from_underline(ul, p_from_line)) {
-				new_underlines.push_back(new_ul);
-			}
-		}
-
-		else if (!ul.contains_line(p_from_line) && ul.contains_line(p_to_line)) {
-			for (const Underline &new_ul : _cut_line_from_underline(ul, p_to_line)) {
-				new_underlines.push_back(new_ul);
-			}
-		}
-
-		else {
-			for (const Underline &new_ul : _cut_line_from_underline(ul, p_from_line)) {
-				for (const Underline &new_ul_2 : _cut_line_from_underline(new_ul, p_to_line)) {
-					new_underlines.push_back(new_ul_2);
-				}
-			}
+	for (Underline &ul : underlines) {
+		if (ul.start_line == p_from_line) {
+			ul.start_line = p_to_line;
+			ul.end_line = p_to_line;
+		} else if (ul.start_line == p_to_line) {
+			ul.start_line = p_from_line;
+			ul.end_line = p_from_line;
 		}
 	}
-
-	for (Underline &ul : from_line_underlines) {
-		ul.start_line = p_to_line;
-		ul.end_line = p_to_line;
-		new_underlines.push_back(ul);
-	}
-
-	for (Underline &ul : to_line_underlines) {
-		ul.start_line = p_from_line;
-		ul.end_line = p_from_line;
-		new_underlines.push_back(ul);
-	}
-
-	underlines = new_underlines;
 
 	// If only part of a selection was changed, it may now overlap.
 	merge_overlapping_carets();
@@ -4778,118 +4759,48 @@ void TextEdit::swap_lines(int p_from_line, int p_to_line) {
 	end_complex_operation();
 }
 
-Vector<TextEdit::Underline> TextEdit::_cut_line_from_underline(const Underline &p_ul, int p_line) {
-	Vector<Underline> out;
+void TextEdit::_cut_line_from_underline(Underline &r_ul, int p_line) {
 	// If this underline doesn't contain the line we want to cut,
-	// then the result is just the original underline unchanged.
-	if (!p_ul.contains_line(p_line)) {
-		out.push_back(p_ul);
+	// then no cuts are needed.
+	if (!r_ul.contains_line(p_line)) {
+		return;
 	}
 
 	// If this underline is only on the line we want to cut,
-	// then the result is no underline at all.
-	else if (p_ul.start_line == p_line && p_ul.end_line == p_line) {
-		return out;
+	// then no cuts are needed.
+	if (r_ul.start_line == p_line && r_ul.end_line == p_line) {
+		return;
 	}
 
-	// If this underline starts on the line we want to cut,
-	// then the result is a single underline starting at the beginning of the
-	// original underline's second line.
-	else if (p_ul.start_line == p_line) {
+	// If this underline ends after line we want to cut,
+	// then add an underline starting after the line to cut.
+	if (r_ul.end_line > p_line) {
 		Underline new_ul;
-		new_ul.start_line = p_ul.start_line + 1;
+		new_ul.start_line = p_line + 1;
 		new_ul.start_column = 0;
-		new_ul.end_line = p_ul.end_line;
-		new_ul.end_column = p_ul.end_column;
-		new_ul.color = p_ul.color;
-		out.push_back(new_ul);
+		new_ul.end_line = r_ul.end_line;
+		new_ul.end_column = r_ul.end_column;
+		new_ul.color = r_ul.color;
+		underlines.push_back(new_ul);
+
+		r_ul.end_line = p_line;
+		r_ul.end_column = text[r_ul.end_line].length();
 	}
 
-	// If this underline ends on the line we want to cut,
-	// then the result is a single underline ending just before the original
-	// underline's last line.
-	else if (p_ul.end_line == p_line) {
+	// If this underline starts before the line we want to cut,
+	// then add an underline ending before the line to cut.
+	if (r_ul.start_line < p_line) {
 		Underline new_ul;
-		new_ul.start_line = p_ul.start_line;
-		new_ul.start_column = p_ul.start_column;
-		new_ul.end_line = p_ul.end_line - 1;
-		new_ul.end_column = text[p_ul.end_line - 1].length();
-		new_ul.color = p_ul.color;
-		out.push_back(new_ul);
+		new_ul.start_line = r_ul.start_line;
+		new_ul.start_column = r_ul.start_column;
+		new_ul.end_line = p_line - 1;
+		new_ul.end_column = text[p_line - 1].length();
+		new_ul.color = r_ul.color;
+		underlines.push_back(new_ul);
+
+		r_ul.start_line = p_line;
+		r_ul.start_column = 0;
 	}
-
-	// At this point, the line we want to cut must be in the middle of the
-	// underline range. So the result will be two underlines: one going from
-	// the original underline's first line to just before the cut line, and
-	// another going from just after the cut line to the original's last line.
-	else {
-		Underline ul_start_to_cut;
-		ul_start_to_cut.start_line = p_ul.start_line;
-		ul_start_to_cut.start_column = p_ul.start_column;
-		ul_start_to_cut.end_line = p_line - 1;
-		ul_start_to_cut.end_column = text[p_line - 1].length();
-		ul_start_to_cut.color = p_ul.color;
-		out.push_back(ul_start_to_cut);
-
-		Underline ul_cut_to_end;
-		ul_cut_to_end.start_line = p_line + 1;
-		ul_cut_to_end.start_column = text[p_line + 1].length();
-		ul_cut_to_end.end_line = p_ul.end_line;
-		ul_cut_to_end.end_column = p_ul.end_column;
-		ul_cut_to_end.color = p_ul.color;
-		out.push_back(ul_cut_to_end);
-	}
-
-	return out;
-}
-
-Vector<TextEdit::Underline> TextEdit::_get_underline_data_for_line(int p_line) {
-	Vector<Underline> out;
-	for (const Underline &ul : underlines) {
-		// Underline doesn't contain this line at all; skip it.
-		if (!ul.contains_line(p_line)) {
-			continue;
-		}
-
-		// Underline is entirely on this line; copy it all over.
-		else if (ul.start_line == p_line && ul.end_line == p_line) {
-			out.push_back(ul);
-		}
-
-		// Underline starts on this line, but does not end here; copy the first line.
-		else if (ul.start_line == p_line) {
-			Underline new_ul;
-			new_ul.start_line = ul.start_line;
-			new_ul.start_column = ul.start_column;
-			new_ul.end_line = ul.start_line;
-			new_ul.end_column = text[ul.start_line].length();
-			new_ul.color = ul.color;
-			out.push_back(new_ul);
-		}
-
-		// Underline ends on this line, but starts before it; copy the last line.
-		else if (ul.end_line == p_line) {
-			Underline new_ul;
-			new_ul.start_line = ul.end_line;
-			new_ul.start_column = 0;
-			new_ul.end_line = ul.end_line;
-			new_ul.end_column = ul.end_column;
-			new_ul.color = ul.color;
-			out.push_back(new_ul);
-		}
-
-		// This line is in the middle of the underline; just highlight the whole line.
-		else {
-			Underline new_ul;
-			new_ul.start_line = p_line;
-			new_ul.start_column = 0;
-			new_ul.end_line = p_line;
-			new_ul.end_column = text[p_line].length();
-			new_ul.color = ul.color;
-			out.push_back(new_ul);
-		}
-	}
-	return out;
 }
 
 void TextEdit::insert_line_at(int p_line, const String &p_text) {
