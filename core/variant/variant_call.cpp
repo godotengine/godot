@@ -1350,21 +1350,25 @@ static void _populate_variant_builtin_method_info(VariantBuiltInMethodInfo &r_im
 	r_imi.get_argument_type = T::get_argument_type;
 }
 
-template <typename T>
-static void register_builtin_method(const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
-	StringName name = T::get_name();
+// Don't use outside of `register_builtin_method`, the returned pointer might become invalid. Splitting the implementation like this reduces template bloat.
+static VariantBuiltInMethodInfo *insert_builtin_method(const StringName &p_name, Variant::Type p_base_type, const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
+	ERR_FAIL_COND_V(builtin_method_info[p_base_type].has(p_name), nullptr);
 
-	ERR_FAIL_COND(builtin_method_info[T::get_base_type()].has(name));
-
+	GODOT_GCC_WARNING_IGNORE("-Wmaybe-uninitialized"); // The things we do for a smaller binary. This is guaranteed to be initialized by `_populate_variant_builtin_method_info` later.
 	VariantBuiltInMethodInfo imi;
-	_populate_variant_builtin_method_info<T>(imi, p_argnames, p_def_args);
 
 #ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(!imi.is_vararg && imi.argument_count != imi.argument_names.size());
+	ERR_FAIL_COND_V(!imi.is_vararg && imi.argument_count != imi.argument_names.size(), nullptr);
 #endif // DEBUG_ENABLED
 
-	builtin_method_info[T::get_base_type()].insert(name, imi);
-	builtin_method_names[T::get_base_type()].push_back(name);
+	builtin_method_names[p_base_type].push_back(p_name);
+	return &builtin_method_info[p_base_type].insert(p_name, imi)->value;
+}
+
+template <typename T>
+_FORCE_INLINE_ static void register_builtin_method(const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
+	VariantBuiltInMethodInfo *ptr = insert_builtin_method(T::get_name(), T::get_base_type(), p_argnames, p_def_args);
+	_populate_variant_builtin_method_info<T>(*ptr, p_argnames, p_def_args);
 }
 
 #ifndef DISABLE_DEPRECATED
