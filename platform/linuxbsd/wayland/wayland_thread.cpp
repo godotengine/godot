@@ -4517,6 +4517,52 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 	wl_surface_commit(ws.wl_surface);
 }
 
+void WaylandThread::window_popup_set_position(DisplayServerEnums::WindowID p_window_id, const Vector2i &p_pos) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+
+	WindowState &ws = windows[p_window_id];
+
+	ERR_FAIL_COND(!windows.has(ws.parent_id));
+	WindowState &parent = windows[ws.parent_id];
+
+	double parent_scale = window_state_get_scale_factor(&parent);
+	ws.rect.position = scale_vector2i(p_pos, 1.0 / parent_scale);
+
+	Rect2i positioner_rect;
+	positioner_rect.size = parent.rect.size;
+	struct xdg_surface *parent_xdg_surface = parent.xdg_surface;
+
+	Point2i offset = ws.rect.position - parent.rect.position;
+
+#ifdef LIBDECOR_ENABLED
+	if (!parent_xdg_surface && parent.libdecor_frame) {
+		parent_xdg_surface = libdecor_frame_get_xdg_surface(parent.libdecor_frame);
+
+		int corner_x = 0;
+		int corner_y = 0;
+		libdecor_frame_translate_coordinate(parent.libdecor_frame, 0, 0, &corner_x, &corner_y);
+
+		positioner_rect.position.x = corner_x;
+		positioner_rect.position.y = corner_y;
+
+		positioner_rect.size.width -= corner_x;
+		positioner_rect.size.height -= corner_y;
+	}
+#endif
+
+	struct xdg_positioner *xdg_positioner = xdg_wm_base_create_positioner(registry.xdg_wm_base);
+	xdg_positioner_set_size(xdg_positioner, ws.rect.size.width, ws.rect.size.height);
+	xdg_positioner_set_anchor(xdg_positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
+	xdg_positioner_set_gravity(xdg_positioner, XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
+	xdg_positioner_set_constraint_adjustment(xdg_positioner, XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y);
+	xdg_positioner_set_anchor_rect(xdg_positioner, positioner_rect.position.x, positioner_rect.position.y, positioner_rect.size.width, positioner_rect.size.height);
+	xdg_positioner_set_offset(xdg_positioner, offset.x, offset.y);
+
+	xdg_popup_reposition(ws.xdg_popup, xdg_positioner, 0);
+
+	xdg_positioner_destroy(xdg_positioner);
+}
+
 void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowState &ws = windows[p_window_id];
