@@ -1194,7 +1194,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	}
 }
 
-void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+void ScriptTextEditor::_code_complete_script(const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) {
 	Ref<Script> script = edited_res;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {

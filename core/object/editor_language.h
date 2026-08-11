@@ -45,6 +45,69 @@
  */
 class EditorLanguage {
 public:
+	// Keep enums in sync with:
+	// scene/gui/code_edit.h - CodeEdit::CodeCompletionKind
+	enum class CompletionKind {
+		CLASS,
+		FUNCTION,
+		SIGNAL,
+		VARIABLE,
+		MEMBER_VARIABLE,
+		ENUM,
+		CONSTANT,
+		NODE_PATH,
+		FILE_PATH,
+		PLAIN_TEXT,
+		KEYWORD,
+	};
+
+	// scene/gui/code_edit.h - CodeEdit::CodeCompletionLocation
+	// Can't bundle in namespace since namespaces are not allowed inside of class :/
+	struct CompletionLocation {
+		static constexpr int LOCAL = 0;
+		static constexpr int PARENT_MASK = 1 << 8;
+		static constexpr int OTHER_USER_CODE = 1 << 9;
+		static constexpr int OTHER = 1 << 10;
+
+		CompletionLocation() = delete;
+	};
+
+	struct TextEdit {
+		String new_text;
+		int start_line = -1;
+		int start_column = -1;
+		int end_line = -1;
+		int end_column = -1;
+
+		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
+	};
+
+	struct CompletionOption {
+		EditorLanguage::CompletionKind kind = EditorLanguage::CompletionKind::PLAIN_TEXT;
+		String display;
+		String insert_text;
+		/**
+		 * Optional server side calculated insertion.
+		 *
+		 * In contrast to `insert_text`, the editor must not do matching of preexisting text on `text_edit`.
+		 * Note: This is used by the language server, there is no support in the builtin editor for this property at the moment.
+		 */
+		TextEdit text_edit;
+		Variant default_value;
+		int location = CompletionLocation::OTHER;
+		String theme_color_name;
+
+		CompletionOption() = default;
+
+		CompletionOption(const String &p_text, EditorLanguage::CompletionKind p_kind, int p_location = CompletionLocation::OTHER, const String &p_theme_color_name = String()) {
+			display = p_text;
+			insert_text = p_text;
+			kind = p_kind;
+			location = p_location;
+			theme_color_name = p_theme_color_name;
+		}
+	};
+
 	/**
 	 * Called by the editor to request a list of `CodeCompletionOptions` from the language.
 	 *
@@ -57,7 +120,7 @@ public:
 	 * @param r_force If `false` a non-empty signature hint will take priority over completion. If `true` completion will take priority. Might be removed in the future in favor of showing both.
 	 * @param r_call_hint The returned signature hint. Can be empty.
 	 */
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
 	// Keep ScriptLanguageExtension::LookupResultType a subset of this.
 	struct LookupResult {

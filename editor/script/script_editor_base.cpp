@@ -846,7 +846,7 @@ void CodeEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const
 	}
 }
 
-void CodeEditorBase::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+void CodeEditorBase::_code_complete_scripts(void *p_ud, const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) {
 	CodeEditorBase *ste = (CodeEditorBase *)p_ud;
 	ste->_code_complete_script(p_code, r_options, r_force);
 }
