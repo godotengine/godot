@@ -1173,9 +1173,16 @@ void SceneImportSettingsDialog::_animation_frame_spin_box_value_changed(double p
 	if (animation_player == nullptr || !animation_map.has(selected_id) || animation_map[selected_id].animation.is_null()) {
 		return;
 	}
-
-	int frames = (int)Math::round(animation_map[selected_id].animation->get_length() * animation_fps);
-	animation_slider->set_value(CLAMP(p_value / frames, 0.0, 1.0));
+	if (animation_player->is_playing()) {
+		animation_player->stop();
+		animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
+		set_process(false);
+	}
+	const double animation_length = animation_map[selected_id].animation->get_length();
+	const int frames = (int)Math::round(animation_length * animation_fps);
+	const float slider_value = CLAMP((float)p_value / (float)frames, 0.0f, 1.0f);
+	animation_player->seek(slider_value * animation_length, true);
+	animation_slider->set_value_no_signal(slider_value);
 }
 
 void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) {
@@ -1190,8 +1197,8 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 	const double animation_length = animation_map[selected_id].animation->get_length();
 	animation_player->seek(p_value * animation_length, true);
 
-	int frames = (int)Math::round(animation_length * animation_fps);
-	int frame = CLAMP((int)Math::round(p_value * frames), 0, frames);
+	const int frames = (int)Math::round(animation_length * animation_fps);
+	const int frame = CLAMP((int)Math::round(p_value * frames), 0, frames);
 	animation_frame_spin_box->set_value_no_signal(frame);
 }
 
