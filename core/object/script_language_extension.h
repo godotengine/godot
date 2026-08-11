@@ -237,6 +237,30 @@ GDVIRTUAL_NATIVE_PTR(ScriptLanguageExtensionProfilingInfo)
 class ScriptLanguageExtension : public ScriptLanguage {
 	GDCLASS(ScriptLanguageExtension, ScriptLanguage)
 protected:
+	// See CodeEdit::CodeCompletionKind and EditorLanguage::CompletionKind.
+	enum CodeCompletionKind {
+		CODE_COMPLETION_KIND_CLASS,
+		CODE_COMPLETION_KIND_FUNCTION,
+		CODE_COMPLETION_KIND_SIGNAL,
+		CODE_COMPLETION_KIND_VARIABLE,
+		CODE_COMPLETION_KIND_MEMBER,
+		CODE_COMPLETION_KIND_ENUM,
+		CODE_COMPLETION_KIND_CONSTANT,
+		CODE_COMPLETION_KIND_NODE_PATH,
+		CODE_COMPLETION_KIND_FILE_PATH,
+		CODE_COMPLETION_KIND_PLAIN_TEXT,
+		CODE_COMPLETION_KIND_KEYWORD,
+		CODE_COMPLETION_KIND_MAX
+	};
+
+	// See CodeEdit::CodeCompletionLocation and EditorLanguage::CompletionLocation.
+	enum CodeCompletionLocation {
+		LOCATION_LOCAL = 0,
+		LOCATION_PARENT_MASK = 1 << 8,
+		LOCATION_OTHER_USER_CODE = 1 << 9,
+		LOCATION_OTHER = 1 << 10,
+	};
+
 	// See `EditorLanguage::LookupResult::Type`.
 	enum LookupResultType {
 		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.
@@ -271,7 +295,7 @@ private:
 		ScriptLanguageExtension *script_language = nullptr;
 
 	public:
-		virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) override {
+		virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<EditorLanguage::CompletionOption> *r_options, bool &r_force, String &r_call_hint) override {
 			return script_language->complete_code(p_code, p_path, p_owner, r_options, r_force, r_call_hint);
 		}
 
@@ -464,7 +488,7 @@ public:
 	GDVIRTUAL3RC_REQUIRED(Dictionary, _complete_code, const String &, const String &, Object *)
 
 #ifdef TOOLS_ENABLED
-	Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) {
+	Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<EditorLanguage::CompletionOption> *r_options, bool &r_force, String &r_call_hint) {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_complete_code, p_code, p_path, p_owner, ret);
 		if (!ret.has("result")) {
@@ -475,29 +499,17 @@ public:
 			Array options = ret["options"];
 			for (const Variant &var : options) {
 				Dictionary op = var;
-				CodeCompletionOption option;
+				EditorLanguage::CompletionOption option;
 				ERR_CONTINUE(!op.has("kind"));
-				option.kind = CodeCompletionKind(int(op["kind"]));
+				option.kind = EditorLanguage::CompletionKind(int(op["kind"]));
 				ERR_CONTINUE(!op.has("display"));
 				option.display = op["display"];
 				ERR_CONTINUE(!op.has("insert_text"));
 				option.insert_text = op["insert_text"];
-				ERR_CONTINUE(!op.has("font_color"));
-				option.font_color = op["font_color"];
-				ERR_CONTINUE(!op.has("icon"));
-				option.icon = op["icon"];
 				ERR_CONTINUE(!op.has("default_value"));
 				option.default_value = op["default_value"];
 				ERR_CONTINUE(!op.has("location"));
 				option.location = op["location"];
-				if (op.has("matches")) {
-					PackedInt32Array matches = op["matches"];
-					ERR_CONTINUE(matches.size() & 1);
-					for (int j = 0; j < matches.size(); j += 2) {
-						option.matches.push_back(Pair<int, int>(matches[j], matches[j + 1]));
-					}
-				}
-				option.matches_dirty = true;
 				r_options->push_back(option);
 			}
 		}
