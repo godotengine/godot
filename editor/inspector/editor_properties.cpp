@@ -3784,6 +3784,13 @@ void EditorPropertyResource::set_use_filter(bool p_use) {
 	}
 }
 
+void EditorPropertyResource::update_properties_recursive() {
+	update_property();
+	if (sub_inspector) {
+		sub_inspector->update_properties_recursive();
+	}
+}
+
 void EditorPropertyResource::fold_resource() {
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 	if (unfolded) {

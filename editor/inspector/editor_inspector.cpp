@@ -873,6 +873,9 @@ void EditorProperty::update_property() {
 	GDVIRTUAL_CALL(_update_property);
 }
 
+void EditorProperty::update_properties_recursive() {
+}
+
 void EditorProperty::_set_read_only(bool p_read_only) {
 }
 
@@ -5382,6 +5385,14 @@ void EditorInspector::update_property(const String &p_prop) {
 	for (EditorInspectorSection *S : sections) {
 		if (S->is_checkable()) {
 			S->_property_edited(p_prop);
+		}
+	}
+}
+
+void EditorInspector::update_properties_recursive() {
+	for (const KeyValue<StringName, List<EditorProperty *>> &F : editor_property_map) {
+		for (EditorProperty *E : F.value) {
+			E->update_properties_recursive();
 		}
 	}
 }

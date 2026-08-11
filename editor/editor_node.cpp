@@ -2860,7 +2860,7 @@ void EditorNode::_dialog_action(String p_file) {
 			ObjectID current_id = editor_history.get_current();
 			Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
 			ERR_FAIL_NULL(current_obj);
-			current_obj->notify_property_list_changed();
+			InspectorDock::get_inspector_singleton()->update_properties_recursive();
 		} break;
 		case LAYOUT_SAVE: {
 			if (p_file.is_empty()) {
