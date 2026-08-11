@@ -1030,10 +1030,6 @@ void CSharpLanguage::reload_assemblies() {
 }
 #endif
 
-void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const {
-	p_extensions->push_back("cs");
-}
-
 #ifdef TOOLS_ENABLED
 Error CSharpLanguage::open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) {
 	return (Error)(int)get_godotsharp_editor()->call("OpenInExternalEditor", p_script, p_line, p_col);

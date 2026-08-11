@@ -189,7 +189,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="_get_recognized_extensions" qualifiers="virtual required const">
+		<method name="_get_recognized_extensions" qualifiers="virtual const" deprecated="This method is not called by the engine.">
 			<return type="PackedStringArray" />
 			<description>
 			</description>
