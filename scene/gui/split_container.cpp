@@ -1149,7 +1149,7 @@ void SplitContainer::add_child_notify(Node *p_child) {
 	}
 
 	child->connect(SceneStringName(visibility_changed), callable_mp(this, &SplitContainer::_on_child_visibility_changed).bind(child));
-	if (child->is_visible()) {
+	if (child->is_visible_in_tree()) {
 		_add_valid_child(child);
 	}
 }
