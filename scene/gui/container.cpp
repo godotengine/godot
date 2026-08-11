@@ -108,17 +108,17 @@ void Container::_sort_children() {
 	layout_pending_finish();
 }
 
-void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &p_rect) {
-	EXTRACT_PARAM_OR_FAIL(p_child, rp_child);
-	ERR_FAIL_COND(p_child->get_parent() != this);
+void Container::fit_child_in_rect(RequiredParam<Control> p_child, const Rect2 &p_rect) {
+	EXTRACT_PARAM_OR_FAIL(child, p_child);
+	ERR_FAIL_COND(child->get_parent() != this);
 
 	bool rtl = is_layout_rtl();
-	Size2 minsize = p_child->get_combined_minimum_size();
-	Size2 desired_size = p_child->get_bound_desired_size();
-	Size2 maxsize = p_child->get_combined_maximum_size();
+	Size2 minsize = child->get_combined_minimum_size();
+	Size2 desired_size = child->get_bound_desired_size();
+	Size2 maxsize = child->get_combined_maximum_size();
 	Rect2 r = p_rect;
-	BitField<SizeFlags> h_size_flags = p_child->get_h_size_flags();
-	BitField<SizeFlags> v_size_flags = p_child->get_v_size_flags();
+	BitField<SizeFlags> h_size_flags = child->get_h_size_flags();
+	BitField<SizeFlags> v_size_flags = child->get_v_size_flags();
 
 	if (!h_size_flags.has_flag(SIZE_FILL)) {
 		float final_width = minsize.width;
@@ -150,9 +150,9 @@ void Container::fit_child_in_rect(RequiredParam<Control> rp_child, const Rect2 &
 		}
 	}
 
-	p_child->set_rect(r);
-	p_child->set_rotation(0);
-	p_child->set_scale(Vector2(1, 1));
+	child->set_rect(r);
+	child->set_rotation(0);
+	child->set_scale(Vector2(1, 1));
 }
 
 void Container::queue_sort() {

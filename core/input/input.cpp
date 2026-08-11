@@ -451,9 +451,9 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 	}
 }
 
-bool Input::is_action_just_pressed_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact) const {
+bool Input::is_action_just_pressed_by_event(const StringName &p_action, RequiredParam<InputEvent> p_event, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
+	EXTRACT_PARAM_OR_FAIL_V(event, p_event, false);
 
 	if (disable_input) {
 		return false;
@@ -468,7 +468,7 @@ bool Input::is_action_just_pressed_by_event(const StringName &p_action, Required
 		return false;
 	}
 
-	if (E->value.pressed_event_id != p_event->get_instance_id()) {
+	if (E->value.pressed_event_id != event->get_instance_id()) {
 		return false;
 	}
 
@@ -508,9 +508,9 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 	}
 }
 
-bool Input::is_action_just_released_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact) const {
+bool Input::is_action_just_released_by_event(const StringName &p_action, RequiredParam<InputEvent> p_event, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
-	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
+	EXTRACT_PARAM_OR_FAIL_V(event, p_event, false);
 
 	if (disable_input) {
 		return false;
@@ -525,7 +525,7 @@ bool Input::is_action_just_released_by_event(const StringName &p_action, Require
 		return false;
 	}
 
-	if (E->value.released_event_id != p_event->get_instance_id()) {
+	if (E->value.released_event_id != event->get_instance_id()) {
 		return false;
 	}
 
@@ -1600,18 +1600,18 @@ void Input::set_custom_mouse_cursor(const Ref<Resource> &p_cursor, CursorShape p
 	set_custom_mouse_cursor_func(p_cursor, p_shape, p_hotspot);
 }
 
-void Input::parse_input_event(RequiredParam<InputEvent> rp_event) {
+void Input::parse_input_event(RequiredParam<InputEvent> p_event) {
 	_THREAD_SAFE_METHOD_
 
-	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
+	EXTRACT_PARAM_OR_FAIL(event, p_event);
 
 #ifdef DEBUG_ENABLED
 	uint64_t curr_frame = Engine::get_singleton()->get_process_frames();
 	if (curr_frame != last_parsed_frame) {
 		frame_parsed_events.clear();
 		last_parsed_frame = curr_frame;
-		frame_parsed_events.insert(p_event);
-	} else if (frame_parsed_events.has(p_event)) {
+		frame_parsed_events.insert(event);
+	} else if (frame_parsed_events.has(event)) {
 		// It would be technically safe to send the same event in cases such as:
 		// - After an explicit flush.
 		// - In platforms using buffering when agile flushing is enabled, after one of the mid-frame flushes.
@@ -1626,18 +1626,18 @@ void Input::parse_input_event(RequiredParam<InputEvent> rp_event) {
 				"If you are generating events in a script, you have to instantiate a new event instead of sending the same one more than once, unless the original one was sent on an earlier frame.\n"
 				"You can call duplicate() on the event to get a new instance with identical values.");
 	} else {
-		frame_parsed_events.insert(p_event);
+		frame_parsed_events.insert(event);
 	}
 #endif
 
 	if (use_accumulated_input) {
-		if (buffered_events.is_empty() || !buffered_events.back()->get()->accumulate(p_event)) {
-			buffered_events.push_back(p_event);
+		if (buffered_events.is_empty() || !buffered_events.back()->get()->accumulate(event)) {
+			buffered_events.push_back(event);
 		}
 	} else if (agile_input_event_flushing) {
-		buffered_events.push_back(p_event);
+		buffered_events.push_back(event);
 	} else {
-		_parse_input_event_impl(p_event, false);
+		_parse_input_event_impl(event, false);
 	}
 }
 

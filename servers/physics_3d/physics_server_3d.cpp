@@ -40,15 +40,15 @@ PhysicsServer3D *PhysicsServer3D::get_singleton() {
 	return singleton;
 }
 
-bool PhysicsServer3D::_body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters3D> rp_parameters, const Ref<PhysicsTestMotionResult3D> &p_result) {
-	EXTRACT_PARAM_OR_FAIL_V(p_parameters, rp_parameters, false);
+bool PhysicsServer3D::_body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters3D> p_parameters, const Ref<PhysicsTestMotionResult3D> &p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(parameters, p_parameters, false);
 
 	PS3DT::MotionResult *result_ptr = nullptr;
 	if (p_result.is_valid()) {
 		result_ptr = p_result->get_result_ptr();
 	}
 
-	return body_test_motion(p_body, p_parameters->get_parameters(), result_ptr);
+	return body_test_motion(p_body, parameters->get_parameters(), result_ptr);
 }
 
 RID PhysicsServer3D::shape_create(PS3DE::ShapeType p_shape) {

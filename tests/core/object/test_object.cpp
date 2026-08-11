@@ -653,9 +653,9 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 			"Object was tail-deleted without crashes.");
 }
 
-int required_param_compare(const Ref<RefCounted> &p_ref, const RequiredParam<RefCounted> &rp_required) {
-	EXTRACT_PARAM_OR_FAIL_V(p_required, rp_required, false);
-	ERR_FAIL_COND_V(p_ref->get_reference_count() != p_required->get_reference_count(), -1);
+int required_param_compare(const Ref<RefCounted> &p_ref, const RequiredParam<RefCounted> &p_required) {
+	EXTRACT_PARAM_OR_FAIL_V(required, p_required, false);
+	ERR_FAIL_COND_V(p_ref->get_reference_count() != required->get_reference_count(), -1);
 	return p_ref->get_reference_count();
 }
 

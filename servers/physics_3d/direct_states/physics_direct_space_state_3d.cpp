@@ -33,11 +33,11 @@
 #include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 
-Dictionary PhysicsDirectSpaceState3D::_intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> rp_ray_query) {
-	EXTRACT_PARAM_OR_FAIL_V(p_ray_query, rp_ray_query, Dictionary());
+Dictionary PhysicsDirectSpaceState3D::_intersect_ray(RequiredParam<PhysicsRayQueryParameters3D> p_ray_query) {
+	EXTRACT_PARAM_OR_FAIL_V(ray_query, p_ray_query, Dictionary());
 
 	PS3DT::RayResult result;
-	bool res = intersect_ray(p_ray_query->get_parameters(), result);
+	bool res = intersect_ray(ray_query->get_parameters(), result);
 
 	if (!res) {
 		return Dictionary();
@@ -55,13 +55,13 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(RequiredParam<PhysicsRayQue
 	return d;
 }
 
-TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(RequiredParam<PhysicsPointQueryParameters3D> rp_point_query, int p_max_results) {
-	EXTRACT_PARAM_OR_FAIL_V(p_point_query, rp_point_query, TypedArray<Dictionary>());
+TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(RequiredParam<PhysicsPointQueryParameters3D> p_point_query, int p_max_results) {
+	EXTRACT_PARAM_OR_FAIL_V(point_query, p_point_query, TypedArray<Dictionary>());
 
 	Vector<PS3DT::ShapeResult> ret;
 	ret.resize(p_max_results);
 
-	int rc = intersect_point(p_point_query->get_parameters(), ret.ptrw(), ret.size());
+	int rc = intersect_point(point_query->get_parameters(), ret.ptrw(), ret.size());
 
 	if (rc == 0) {
 		return TypedArray<Dictionary>();
@@ -80,12 +80,12 @@ TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(RequiredParam
 	return r;
 }
 
-TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results) {
-	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, TypedArray<Dictionary>());
+TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, int p_max_results) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, TypedArray<Dictionary>());
 
 	Vector<PS3DT::ShapeResult> sr;
 	sr.resize(p_max_results);
-	int rc = intersect_shape(p_shape_query->get_parameters(), sr.ptrw(), sr.size());
+	int rc = intersect_shape(shape_query->get_parameters(), sr.ptrw(), sr.size());
 	TypedArray<Dictionary> ret;
 	ret.resize(rc);
 	for (int i = 0; i < rc; i++) {
@@ -100,11 +100,11 @@ TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(RequiredParam
 	return ret;
 }
 
-Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query) {
-	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Vector<real_t>());
+Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, Vector<real_t>());
 
 	real_t closest_safe = 1.0f, closest_unsafe = 1.0f;
-	bool res = cast_motion(p_shape_query->get_parameters(), closest_safe, closest_unsafe);
+	bool res = cast_motion(shape_query->get_parameters(), closest_safe, closest_unsafe);
 	if (!res) {
 		return Vector<real_t>();
 	}
@@ -115,13 +115,13 @@ Vector<real_t> PhysicsDirectSpaceState3D::_cast_motion(RequiredParam<PhysicsShap
 	return ret;
 }
 
-TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query, int p_max_results) {
-	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, TypedArray<Vector3>());
+TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query, int p_max_results) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, TypedArray<Vector3>());
 
 	Vector<Vector3> ret;
 	ret.resize(p_max_results * 2);
 	int rc = 0;
-	bool res = collide_shape(p_shape_query->get_parameters(), ret.ptrw(), p_max_results, rc);
+	bool res = collide_shape(shape_query->get_parameters(), ret.ptrw(), p_max_results, rc);
 	if (!res) {
 		return TypedArray<Vector3>();
 	}
@@ -133,12 +133,12 @@ TypedArray<Vector3> PhysicsDirectSpaceState3D::_collide_shape(RequiredParam<Phys
 	return r;
 }
 
-Dictionary PhysicsDirectSpaceState3D::_get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> rp_shape_query) {
-	EXTRACT_PARAM_OR_FAIL_V(p_shape_query, rp_shape_query, Dictionary());
+Dictionary PhysicsDirectSpaceState3D::_get_rest_info(RequiredParam<PhysicsShapeQueryParameters3D> p_shape_query) {
+	EXTRACT_PARAM_OR_FAIL_V(shape_query, p_shape_query, Dictionary());
 
 	PS3DT::ShapeRestInfo sri;
 
-	bool res = rest_info(p_shape_query->get_parameters(), &sri);
+	bool res = rest_info(shape_query->get_parameters(), &sri);
 	Dictionary r;
 	if (!res) {
 		return r;
