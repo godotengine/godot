@@ -34,33 +34,6 @@
 #include "core/object/class_db.h"
 #include "core/typedefs.h"
 
-Size2 TextureButton::get_minimum_size() const {
-	Size2 rscale = Control::get_minimum_size();
-
-	if (!ignore_texture_size) {
-		if (normal.is_null()) {
-			if (pressed.is_null()) {
-				if (hover.is_null()) {
-					if (click_mask.is_null()) {
-						rscale = Size2();
-					} else {
-						rscale = click_mask->get_size();
-					}
-				} else {
-					rscale = hover->get_size();
-				}
-			} else {
-				rscale = pressed->get_size();
-			}
-
-		} else {
-			rscale = normal->get_size();
-		}
-	}
-
-	return rscale.abs();
-}
-
 bool TextureButton::has_point(const Point2 &p_point) const {
 	if (click_mask.is_valid()) {
 		Point2 point = p_point;
@@ -287,6 +260,33 @@ void TextureButton::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT);
 	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_CENTERED);
 	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_COVERED);
+}
+
+Size2 TextureButton::get_minimum_size() const {
+	Size2 rscale = Control::get_minimum_size();
+
+	if (!ignore_texture_size) {
+		if (normal.is_null()) {
+			if (pressed.is_null()) {
+				if (hover.is_null()) {
+					if (click_mask.is_null()) {
+						rscale = Size2();
+					} else {
+						rscale = click_mask->get_size();
+					}
+				} else {
+					rscale = hover->get_size();
+				}
+			} else {
+				rscale = pressed->get_size();
+			}
+
+		} else {
+			rscale = normal->get_size();
+		}
+	}
+
+	return rscale.abs();
 }
 
 void TextureButton::set_texture_normal(const Ref<Texture2D> &p_normal) {
