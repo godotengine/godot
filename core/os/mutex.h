@@ -52,7 +52,7 @@ public:
 		mutex.unlock();
 	}
 
-	_ALWAYS_INLINE_ Error try_lock() const {
+	_ALWAYS_INLINE_ SafeError try_lock() const {
 		return mutex.try_lock() ? OK : ERR_BUSY;
 	}
 };
@@ -104,7 +104,7 @@ class MutexImpl {
 public:
 	_ALWAYS_INLINE_ void lock() const {}
 	_ALWAYS_INLINE_ void unlock() const {}
-	_ALWAYS_INLINE_ Error try_lock() const { return OK; }
+	_ALWAYS_INLINE_ SafeError try_lock() const { return OK; }
 };
 
 class _NO_DISCARD_CLASS_ MutexLock {
