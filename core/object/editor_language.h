@@ -119,6 +119,17 @@ public:
 	 */
 	virtual int32_t find_function(const String &p_function, const String &p_code) const { return -1; }
 
+	/**
+	 * Called by the editor to reformat a section of code.
+	 *
+	 * In the case of GDScript the only supported kind of formatting is auto-indentation.
+	 *
+	 * @param r_code The current content of the source fragment. Implementations should also use this to return the formatted code. Either by formatting in place or through assignment.
+	 * @param p_from_line First line to be formatted (inclusive).
+	 * @param p_to_line Last line to be formatted (inclusive).
+	 */
+	virtual void format_code(String &r_code, uint32_t p_from_line, uint32_t p_to_line) const {}
+
 	virtual ~EditorLanguage() = default;
 };
 

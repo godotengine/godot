@@ -283,6 +283,10 @@ private:
 			return script_language->find_function(p_function, p_code);
 		}
 
+		virtual void format_code(String &r_code, uint32_t p_from_line, uint32_t p_to_line) const override {
+			return script_language->auto_indent_code(r_code, p_from_line, p_to_line);
+		}
+
 		EditorAdapter(ScriptLanguageExtension *p_script_language) {
 			script_language = p_script_language;
 		}
@@ -547,11 +551,15 @@ public:
 #endif // TOOLS_ENABLED
 
 	GDVIRTUAL3RC_REQUIRED(String, _auto_indent_code, const String &, int, int)
-	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {
+
+#ifdef TOOLS_ENABLED
+	void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {
 		String ret;
 		GDVIRTUAL_CALL(_auto_indent_code, p_code, p_from_line, p_to_line, ret);
 		p_code = ret;
 	}
+#endif
+
 	EXBIND2(add_global_constant, const StringName &, const Variant &)
 	EXBIND2(add_named_global_constant, const StringName &, const Variant &)
 	EXBIND1(remove_named_global_constant, const StringName &)
