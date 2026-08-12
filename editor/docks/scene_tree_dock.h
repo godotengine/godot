@@ -303,6 +303,7 @@ class SceneTreeDock : public EditorDock {
 	bool determine_path_automatically = true;
 
 	static void _update_configuration_warning();
+	static Dictionary _get_context_data(const List<Node *> &p_selected_nodes);
 
 	bool _update_node_path(Node *p_root_node, NodePath &r_node_path, HashMap<Node *, NodePath> *p_renames) const;
 	void _check_object_properties_recursive(Node *p_root_node, Object *p_obj, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;

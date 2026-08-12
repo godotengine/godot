@@ -287,7 +287,6 @@ class ScriptEditor : public PanelContainer {
 
 	static int script_editor_func_count;
 	static CreateScriptEditorFunc script_editor_funcs[SCRIPT_EDITOR_FUNC_MAX];
-
 	Vector<Ref<EditorSyntaxHighlighter>> syntax_highlighters;
 
 	struct ScriptHistory {
@@ -459,6 +458,8 @@ protected:
 public:
 	static ScriptEditor *get_singleton() { return script_editor; }
 	static ScriptEditor *get_bottom_script_editor() { return bottom_script_editor; }
+
+	static Dictionary get_context_data(Control *p_tab_control);
 
 	bool toggle_files_panel();
 	bool is_files_panel_toggled();

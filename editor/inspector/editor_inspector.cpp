@@ -1106,6 +1106,14 @@ void EditorProperty::_focusable_focused(int p_index) {
 	}
 }
 
+Dictionary EditorProperty::_get_context_data() {
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["property"] = this;
+	context_data["object"] = get_edited_object();
+	context_data["property_name"] = get_edited_property();
+	return context_data;
+}
+
 void EditorProperty::add_focusable(Control *p_control) {
 	p_control->connect(SceneStringName(focus_entered), callable_mp(this, &EditorProperty::_focusable_focused).bind(focusables.size()));
 	focusables.push_back(p_control);
@@ -1339,13 +1347,7 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 #endif
-
-			EditorContextMenuPlugin::OptionsData context_data;
-			context_data["property"] = this;
-			context_data["object"] = get_edited_object();
-			context_data["property_name"] = get_edited_property();
-
-			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _get_context_data());
 			accept_event();
 		}
 	}
@@ -1802,11 +1804,7 @@ void EditorProperty::_update_popup() {
 	}
 
 	if (EditorContextMenuPluginManager::get_singleton() && EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY)) {
-		EditorContextMenuPlugin::OptionsData context_data;
-		context_data["property"] = this;
-		context_data["object"] = get_edited_object();
-		context_data["property_name"] = get_edited_property();
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, context_data);
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_INSPECTOR_PROPERTY, _get_context_data());
 
 #ifndef DISABLE_DEPRECATED
 		Vector<String> property_paths = { String::num_int64(get_edited_object()->get_instance_id()), property_path };

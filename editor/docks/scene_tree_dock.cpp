@@ -262,23 +262,15 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 	} else {
 		const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_event);
 		if (custom_callback.is_valid()) {
-			const List<Node *> selection = editor_selection->get_top_selected_node_list();
-			TypedArray<Node> selected_nodes;
-			selected_nodes.reserve(selection.size());
-			for (const Node *node : selection) {
-				selected_nodes.push_back(node);
-			}
+			EditorContextMenuPlugin::OptionsData context_data = SceneTreeDock::_get_context_data(editor_selection->get_top_selected_node_list());
 
 #ifndef DISABLE_DEPRECATED
 			if (p_event->get_meta("_legacy_shortcut", false)) {
-				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, selected_nodes);
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data["selected_nodes"]);
 				accept_event();
 				return;
 			}
 #endif
-
-			EditorContextMenuPlugin::OptionsData context_data;
-			context_data["selected_nodes"] = selected_nodes;
 			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
 		} else {
 			return;
@@ -3881,10 +3873,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
 
 		if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE)) {
-			EditorContextMenuPlugin::OptionsData context_data;
-			context_data["selected_nodes"] = TypedArray<Node>();
-
-			EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, context_data);
+			EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, SceneTreeDock::_get_context_data(List<Node *>()));
 #ifndef DISABLE_DEPRECATED
 			EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, PackedStringArray(), TypedArray<Node>(), 500);
 #endif
@@ -4162,13 +4151,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 #undef END_SECTION
 
 	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE)) {
-		TypedArray<Node> selected_nodes;
-		selected_nodes.reserve(selection.size());
-		for (const Node *node : selection) {
-			selected_nodes.append(node);
-		}
-		EditorContextMenuPlugin::OptionsData context_data;
-		context_data["selected_nodes"] = selected_nodes;
+		EditorContextMenuPlugin::OptionsData context_data = SceneTreeDock::_get_context_data(selection);
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, context_data);
 
 #ifndef DISABLE_DEPRECATED
@@ -4178,7 +4161,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			const String node_path = (String)root->get_path().rel_path_to(node->get_path());
 			p_paths.push_back(node_path);
 		}
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_paths, selected_nodes, 500);
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_paths, context_data["selected_nodes"], 500);
 #endif
 	}
 
@@ -4988,6 +4971,17 @@ void SceneTreeDock::_update_configuration_warning() {
 	if (singleton) {
 		callable_mp(singleton->scene_tree, &SceneTreeEditor::update_warning).call_deferred();
 	}
+}
+
+Dictionary SceneTreeDock::_get_context_data(const List<Node *> &p_selected_nodes) {
+	TypedArray<Node> selected_nodes;
+	selected_nodes.reserve(p_selected_nodes.size());
+	for (const Node *node : p_selected_nodes) {
+		selected_nodes.append(node);
+	}
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["selected_nodes"] = selected_nodes;
+	return context_data;
 }
 
 SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data) {

@@ -1684,11 +1684,7 @@ void ScriptTextEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 #endif
-		EditorContextMenuPlugin::OptionsData context_data;
-		context_data["code_edit"] = code_editor->get_text_editor();
-		context_data["file_path"] = get_edited_resource()->get_path();
-
-		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
+		EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _get_context_data());
 		accept_event();
 	}
 }
@@ -2532,12 +2528,7 @@ void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bo
 	}
 
 	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE)) {
-		EditorContextMenuPlugin::OptionsData context_data;
-		context_data["code_edit"] = code_editor->get_text_editor();
-		context_data["file_path"] = get_edited_resource()->get_path();
-
-		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, context_data);
-
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, _get_context_data());
 #ifndef DISABLE_DEPRECATED
 		const PackedStringArray paths = { String(code_editor->get_text_editor()->get_path()) };
 		Ref<Script> edited_script = get_edited_resource();
@@ -2546,6 +2537,13 @@ void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bo
 	}
 
 	_show_context_menu(p_position);
+}
+
+Dictionary ScriptTextEditor::_get_context_data() const {
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["code_edit"] = code_editor->get_text_editor();
+	context_data["file_path"] = get_edited_resource()->get_path();
+	return context_data;
 }
 
 void ScriptTextEditor::register_editor() {
