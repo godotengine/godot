@@ -592,6 +592,18 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	// can and will fill the validation layers with useless info otherwise if not enabled.
 	_register_requested_device_extension(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME, false);
 
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+	// WALKUP (h0tz0mbie/WALKUP#264): let a GDExtension import a D3D11
+	// video decoder's surface as a Vulkan image (zero-copy video decode),
+	// and the decoder's fence as a semaphore so the cross-API handoff can
+	// be synchronized GPU-side. Optional on purpose: enabling them changes
+	// nothing until an extension asks the device for an import, so
+	// hardware or drivers without them behave exactly as stock. The
+	// Windows siblings of the FD extension registered above.
+	_register_requested_device_extension(VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME, false);
+#endif
+
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
 	}
