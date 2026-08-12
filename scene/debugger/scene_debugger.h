@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef DEBUG_ENABLED
+
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
 
@@ -50,7 +52,6 @@ public:
 
 	~SceneDebugger();
 
-#ifdef DEBUG_ENABLED
 private:
 	static void _handle_input(const Ref<InputEvent> &p_event, const Ref<Shortcut> &p_shortcut);
 	static void _handle_embed_input(const Ref<InputEvent> &p_event, const Dictionary &p_settings);
@@ -127,10 +128,8 @@ public:
 	static void add_to_cache(const String &p_filename, Node *p_node);
 	static void remove_from_cache(const String &p_filename, Node *p_node);
 	static void reload_cached_files(const PackedStringArray &p_files);
-#endif
 };
 
-#ifdef DEBUG_ENABLED
 class LiveEditor {
 private:
 	friend class SceneDebugger;
@@ -174,4 +173,5 @@ private:
 public:
 	static LiveEditor *get_singleton();
 };
+
 #endif // DEBUG_ENABLED

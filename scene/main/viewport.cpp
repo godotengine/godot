@@ -4485,7 +4485,7 @@ void Viewport::_audio_listener_2d_remove(AudioListener2D *p_audio_listener) {
 }
 
 void Viewport::_camera_2d_set(Camera2D *p_camera_2d) {
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	if (is_camera_2d_override_enabled()) {
 		camera_2d_override.set_overridden_camera(p_camera_2d);
 		return;
@@ -4615,7 +4615,7 @@ void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
 	}
 }
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 void Viewport::enable_camera_2d_override(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 
@@ -4761,7 +4761,7 @@ void Viewport::_camera_3d_set(Camera3D *p_camera) {
 		return;
 	}
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	if (is_camera_3d_override_enabled()) {
 		camera_3d_override.set_overridden_camera(p_camera);
 		return;
@@ -4816,7 +4816,7 @@ void Viewport::_camera_3d_make_next_current(Camera3D *p_exclude) {
 	}
 }
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 void Viewport::enable_camera_3d_override(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 
@@ -5859,7 +5859,7 @@ SubViewport::SubViewport() {
 
 /////////////////////////////////
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 template <class T>
 bool Viewport::CameraOverride<T>::is_enabled() const {
 	return enabled;

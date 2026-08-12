@@ -764,7 +764,7 @@ public:
 	virtual bool is_sub_viewport() const { return false; }
 
 private:
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	template <class T>
 	class CameraOverride {
 	private:
@@ -792,7 +792,7 @@ private:
 	friend class Camera2D; // Needs _camera_2d_set
 	Camera2D *camera_2d = nullptr;
 	void _camera_2d_set(Camera2D *p_camera_2d);
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	CameraOverride<Camera2D> camera_2d_override;
 
 public:
@@ -844,7 +844,7 @@ private:
 
 	friend class Camera3D;
 	Camera3D *camera_3d = nullptr;
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	CameraOverride<Camera3D> camera_3d_override;
 #endif // DEBUG_ENABLED
 	HashSet<Camera3D *> camera_3d_set;
@@ -867,7 +867,7 @@ public:
 
 	Camera3D *get_camera_3d() const;
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	void enable_camera_3d_override(bool p_enable);
 	bool is_camera_3d_override_enabled() const;
 	Camera3D *get_overridden_camera_3d() const;

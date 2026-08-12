@@ -425,9 +425,11 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 
 	if (top->native.is_valid()) {
 		if (!p_this->is_class(top->native->get_name())) {
+#ifdef DEBUG_ENABLED
 			if (EngineDebugger::is_active()) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be assigned to an object of type: '" + p_this->get_class() + "'");
 			}
+#endif
 			ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be assigned to an object of type '" + p_this->get_class() + "'" + ".");
 		}
 	}
@@ -829,9 +831,11 @@ Error GDScript::reload(bool p_keep_state) {
 		err = parser.parse(source, path, false);
 	}
 	if (err) {
+#ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().start_line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
+#endif
 		// TODO: Show all error messages.
 		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().start_line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		reloading = false;
@@ -842,9 +846,11 @@ Error GDScript::reload(bool p_keep_state) {
 	err = analyzer.analyze();
 
 	if (err) {
+#ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), parser.get_errors().front()->get().start_line, "Parser Error: " + parser.get_errors().front()->get().message);
 		}
+#endif
 
 		const List<GDScriptParser::ParserError>::Element *e = parser.get_errors().front();
 		while (e != nullptr) {
@@ -864,9 +870,11 @@ Error GDScript::reload(bool p_keep_state) {
 		// TODO: Provide the script function as the first argument.
 		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 		if (can_run) {
+#ifdef DEBUG_ENABLED
 			if (EngineDebugger::is_active()) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
+#endif
 			reloading = false;
 			return ERR_COMPILATION_FAILED;
 		} else {

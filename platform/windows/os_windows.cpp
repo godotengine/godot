@@ -231,6 +231,7 @@ bool OS_Windows::is_using_con_wrapper() const {
 	return found_conwrap_exe;
 }
 
+#ifdef DEBUG_ENABLED
 BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	if (!EngineDebugger::is_active()) {
 		return FALSE;
@@ -245,14 +246,17 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 			return FALSE;
 	}
 }
+#endif
 
 void OS_Windows::alert(const String &p_alert, const String &p_title) {
 	MessageBoxW(nullptr, (LPCWSTR)(p_alert.utf16().get_data()), (LPCWSTR)(p_title.utf16().get_data()), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
 }
 
+#ifdef DEBUG_ENABLED
 void OS_Windows::initialize_debugging() {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 }
+#endif
 
 #ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
 static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {

@@ -1042,27 +1042,29 @@ bool CSharpLanguage::overrides_external_editor() {
 
 bool CSharpLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
 	// Not a parser error in our case, but it's still used for other type of errors
+#ifdef DEBUG_ENABLED
 	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 		_debug_parse_err_line = p_line;
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
 		EngineDebugger::get_script_debugger()->debug(this, false, true);
 		return true;
-	} else {
-		return false;
 	}
+#endif
+	return false;
 }
 
 bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
+#ifdef DEBUG_ENABLED
 	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 		_debug_parse_err_line = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
 		EngineDebugger::get_script_debugger()->debug(this, p_allow_continue);
 		return true;
-	} else {
-		return false;
 	}
+#endif
+	return false;
 }
 
 #ifdef TOOLS_ENABLED
@@ -2461,11 +2463,13 @@ ScriptInstance *CSharpScript::instance_create(Object *p_this) {
 	ERR_FAIL_COND_V(native_name == StringName(), nullptr);
 
 	if (!p_this->is_class(native_name)) {
+#ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
 			CSharpLanguage::get_singleton()->debug_break_parse(get_path(), 0,
 					"Script inherits from native type '" + String(native_name) +
 							"', so it can't be assigned to an object of type: '" + p_this->get_class() + "'");
 		}
+#endif
 		ERR_FAIL_V_MSG(nullptr, "Script inherits from native type '" + String(native_name) + "', so it can't be assigned to an object of type: '" + p_this->get_class() + "'.");
 	}
 
