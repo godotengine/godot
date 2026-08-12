@@ -903,24 +903,33 @@ class Godot private constructor(val context: Context) {
 
 	@JvmOverloads
 	fun alert(message: String, title: String, okCallback: Runnable? = null) {
-		val activity = getActivity() ?: return
-
 		val renderLatch = CountDownLatch(1)
 		runOnHostThread {
-			val builder = AlertDialog.Builder(activity)
-			builder.setMessage(message).setTitle(title)
-			builder.setPositiveButton(
-				R.string.dialog_ok
-			) { dialog: DialogInterface, _: Int ->
-				okCallback?.run()
-				dialog.cancel()
+			val activity = getActivity()
+			if (activity == null) {
+				renderLatch.countDown()
+				return@runOnHostThread
+			}
+
+			try {
+				val builder = AlertDialog.Builder(activity)
+				builder.setMessage(message).setTitle(title)
+				builder.setPositiveButton(
+					R.string.dialog_ok
+				) { dialog: DialogInterface, _: Int ->
+					okCallback?.run()
+					dialog.cancel()
+					renderLatch.countDown()
+				}
+				builder.setOnCancelListener {
+					renderLatch.countDown()
+				}
+				val dialog = builder.create()
+				dialog.show()
+			} catch (e: WindowManager.BadTokenException) {
+				// fallback in case the activity state changes before show().
 				renderLatch.countDown()
 			}
-			builder.setOnCancelListener {
-				renderLatch.countDown()
-			}
-			val dialog = builder.create()
-			dialog.show()
 		}
 
 		// We only block the render thread.
