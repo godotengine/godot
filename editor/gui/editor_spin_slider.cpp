@@ -66,7 +66,16 @@ Size2 EditorSpinSlider::get_minimum_size() const {
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
 
 	Size2 ms = sb->get_minimum_size();
+
+	const int sep = 4 * EDSCALE + sb->get_offset().x;
+	const int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
+	const int digit_width = Math::ceil(font->get_char_size('W', font_size).x);
+
 	Ref<Texture2D> updown = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
+
+	ms.width += label_width;
+	ms.width += sep;
+	ms.width += digit_width;
 	ms.width += updown->get_width();
 
 	ms.height += font->get_height(font_size);
@@ -386,30 +395,53 @@ void EditorSpinSlider::_draw_spin_slider() {
 		draw_string(font, Vector2(Math::round(sb->get_offset().x), vofs), label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, lc * Color(1, 1, 1, 0.5));
 	}
 
-	int suffix_start = numstr.length();
 	RID num_rid = TS->create_shaped_text();
 	TS->shaped_text_add_string(num_rid, numstr + U"\u2009" + suffix, font->get_rids(), font_size, font->get_opentype_features());
 
 	float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(sb->get_offset().x + label_width + sep);
 	Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - TS->shaped_text_get_width(num_rid)), vofs) : Vector2(text_start, vofs);
-	int v_size = TS->shaped_text_get_glyph_count(num_rid);
-	const Glyph *glyphs = TS->shaped_text_get_glyphs(num_rid);
-	for (int i = 0; i < v_size; i++) {
-		for (int j = 0; j < glyphs[i].repeat; j++) {
-			if (text_ofs.x >= text_start && (text_ofs.x + glyphs[i].advance) <= (text_start + number_width)) {
-				Color color = fc;
-				if (glyphs[i].start >= suffix_start) {
-					color.a *= 0.4;
-				}
-				if (glyphs[i].font_rid != RID()) {
-					TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
-				} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
-					TS->draw_hex_code_box(ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
-				}
-			}
-			text_ofs.x += glyphs[i].advance;
+
+	double clip_l = -1.0;
+	double clip_r = -1.0;
+
+	if (editing_integer && control_state == CONTROL_STATE_DEFAULT) {
+		Ref<Texture2D> updown2 = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
+
+		if (rtl) {
+			clip_l = text_start + sb->get_margin(SIDE_LEFT) + updown2->get_width();
+		} else {
+			clip_r = size.width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
+		}
+	} else {
+		if (rtl) {
+			clip_l = text_start + sb->get_margin(SIDE_LEFT);
+		} else {
+			clip_r = size.width - sb->get_margin(SIDE_RIGHT);
 		}
 	}
+
+	if (!numstr.is_empty()) {
+		RID value_rid = TS->shaped_text_substr(num_rid, 0, numstr.length());
+
+		if (clip_r == -1 || clip_r - text_ofs.x > 0) {
+			TS->shaped_text_draw(value_rid, ci, text_ofs, (clip_l >= 0) ? clip_l - text_ofs.x : -1, (clip_r >= 0) ? clip_r - text_ofs.x : -1, fc);
+		}
+
+		TS->free_rid(value_rid);
+	}
+
+	if (!suffix.is_empty()) {
+		RID suffix_rid = TS->shaped_text_substr(num_rid, numstr.length(), suffix.length() + 1);
+
+		Vector2 value_offset = text_ofs + Vector2(TS->shaped_text_get_width(num_rid) - TS->shaped_text_get_width(suffix_rid), 0);
+
+		if (clip_r == -1 || clip_r - value_offset.x > 0) {
+			TS->shaped_text_draw(suffix_rid, ci, value_offset, (clip_l >= 0) ? clip_l - value_offset.x : -1, (clip_r >= 0) ? clip_r - value_offset.x : -1, fc * Color(1, 1, 1, 0.4));
+		}
+
+		TS->free_rid(suffix_rid);
+	}
+
 	TS->free_rid(num_rid);
 
 	if (control_state != CONTROL_STATE_HIDE) {
