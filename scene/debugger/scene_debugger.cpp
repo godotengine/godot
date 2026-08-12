@@ -64,6 +64,14 @@
 #include "scene/debugger/runtime_node_select.h"
 #endif
 
+#ifndef PHYSICS_2D_DISABLED
+#include "servers/physics_2d/physics_server_2d.h"
+#endif
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#endif
+
 SceneDebugger::SceneDebugger() {
 	singleton = this;
 
@@ -273,7 +281,12 @@ Error SceneDebugger::_msg_hdr_output_toggle_requested(const Array &p_args) {
 Error SceneDebugger::_msg_set_debug_collisions(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enabled = p_args[0];
-	SceneTree::get_singleton()->set_debug_collisions_hint(enabled);
+#ifndef PHYSICS_2D_DISABLED
+	PhysicsServer2D::get_singleton()->debug_set_enabled(enabled);
+#endif
+#ifndef PHYSICS_3D_DISABLED
+	PhysicsServer3D::get_singleton()->debug_set_enabled(enabled);
+#endif
 	return OK;
 }
 

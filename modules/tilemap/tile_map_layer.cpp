@@ -208,6 +208,12 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	_debug_was_cleaned_up = false;
 }
 
+void TileMapLayer::_physics_debug_changed() {
+#ifndef PHYSICS_2D_DISABLED
+	dirty.flags[DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE] = true;
+	_queue_internal_update();
+#endif
+}
 #endif // DEBUG_ENABLED
 
 Color TileMapLayer::_highlight_color(const Color &p_modulate) const {
@@ -1095,7 +1101,7 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 	bool show_collision = false;
 	switch (collision_visibility_mode) {
 		case TileMapLayer::DEBUG_VISIBILITY_MODE_DEFAULT:
-			show_collision = !Engine::get_singleton()->is_editor_hint() && get_tree()->is_debugging_collisions_hint();
+			show_collision = !Engine::get_singleton()->is_editor_hint() && PhysicsServer2D::get_singleton()->debug_is_enabled();
 			break;
 		case TileMapLayer::DEBUG_VISIBILITY_MODE_FORCE_HIDE:
 			show_collision = false;
@@ -2169,11 +2175,6 @@ void TileMapLayer::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			dirty.flags[DIRTY_FLAGS_LAYER_VISIBILITY] = true;
-			_queue_internal_update();
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			dirty.flags[DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE] = true;
 			_queue_internal_update();
 		} break;
 	}
@@ -3610,6 +3611,10 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 
 TileMapLayer::TileMapLayer() {
 	set_notify_transform(true);
+
+#if defined(DEBUG_ENABLED) && !defined(PHYSICS_2D_DISABLED)
+	PhysicsServer2D::get_singleton()->connect("_debug_changed", callable_mp(this, &TileMapLayer::_physics_debug_changed));
+#endif
 }
 
 TileMapLayer::~TileMapLayer() {

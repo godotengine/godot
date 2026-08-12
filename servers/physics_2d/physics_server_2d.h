@@ -54,8 +54,15 @@ protected:
 	static void _bind_compatibility_methods();
 #endif
 
+#ifdef DEBUG_ENABLED
+	bool debug_enabled = false;
+#endif
+
 public:
 	static PhysicsServer2D *get_singleton();
+
+	void debug_set_enabled(bool p_enabled);
+	bool debug_is_enabled() const;
 
 	virtual RID world_boundary_shape_create() = 0;
 	virtual RID separation_ray_shape_create() = 0;

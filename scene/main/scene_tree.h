@@ -138,7 +138,6 @@ private:
 	bool quit_on_go_back = true;
 
 #ifdef DEBUG_ENABLED
-	bool debug_collisions_hint = false;
 	bool debug_paths_hint = false;
 	bool debug_navigation_hint = false;
 #endif
