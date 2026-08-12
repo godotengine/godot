@@ -4627,6 +4627,14 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 			}
 		}
 
+		Ref<VisualShaderNodeGroup> group_node = vsnode;
+		if (group_node.is_valid()) {
+			Ref<VisualShaderGroup> new_group;
+			new_group.instantiate();
+			new_group->create_default_nodes();
+			group_node->set_group(new_group);
+		}
+
 		// Set shader context on Input nodes inside groups.
 		if (_is_editing_group()) {
 			Ref<VisualShaderNodeInput> input_node = vsnode;

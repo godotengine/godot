@@ -137,7 +137,7 @@ public:
 
 	String generate_preview_shader(int p_node, int p_port, Vector<ShaderGraph::DefaultTextureParam> &r_default_tex_params) const;
 
-	void create_default_nodes_if_empty();
+	void create_default_nodes();
 
 	VisualShaderGroup();
 };

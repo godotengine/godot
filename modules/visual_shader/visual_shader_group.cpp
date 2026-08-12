@@ -780,11 +780,7 @@ String VisualShaderGroup::generate_preview_shader(int p_node, int p_port, Vector
 	return graph->generate_preview_shader(p_node, p_port, r_default_tex_params);
 }
 
-void VisualShaderGroup::create_default_nodes_if_empty() {
-	if (!graph->is_empty()) {
-		return;
-	}
-
+void VisualShaderGroup::create_default_nodes() {
 	Ref<VisualShaderNodeGroupInput> input_node;
 	input_node.instantiate();
 	input_node->set_group(this);
@@ -918,7 +914,6 @@ void VisualShaderNodeGroup::set_group(const Ref<VisualShaderGroup> &p_group) {
 	}
 	group = p_group;
 	if (group.is_valid()) {
-		group->create_default_nodes_if_empty();
 		group->connect_changed(callable_mp(this, &VisualShaderNodeGroup::_emit_changed));
 	}
 	emit_changed();
