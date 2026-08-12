@@ -172,24 +172,13 @@ def combine_libs_apple_embedded(target, source, env):
     )
 
 
-def lipo_and_copy_apple_embedded(
-    platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, module_prefix, app_dir, env
-):
+def lipo_and_copy_apple_embedded(platform, framework_dir, rel_prefix, dbg_prefix, module_prefix, app_dir, env):
     bin_dir = env.Dir("#bin").abspath
 
-    # Lipo template libraries.
-    #
-    # env.extra_suffix contains ".simulator" when building for simulator,
-    # but it's undesired when calling lipo()
-    extra_suffix = env.extra_suffix.replace(".simulator", "")
+    extra_suffix = env.extra_suffix
     rel_target_bin = lipo(bin_dir + "/libgodot" + module_prefix + "." + rel_prefix, extra_suffix + ".a")
     dbg_target_bin = lipo(bin_dir + "/libgodot" + module_prefix + "." + dbg_prefix, extra_suffix + ".a")
-    rel_target_bin_sim = lipo(
-        bin_dir + "/libgodot" + module_prefix + "." + rel_prefix, ".simulator" + extra_suffix + ".a"
-    )
-    dbg_target_bin_sim = lipo(
-        bin_dir + "/libgodot" + module_prefix + "." + dbg_prefix, ".simulator" + extra_suffix + ".a"
-    )
+
     # Assemble Xcode project bundle.
     if rel_target_bin != "":
         print(f' Copying "{platform}" release framework')
@@ -221,41 +210,11 @@ def lipo_and_copy_apple_embedded(
             + module_prefix
             + ".a",
         )
-    if rel_target_bin_sim != "":
-        print(f' Copying "{platform}" (simulator) release framework')
-        shutil.copy(
-            rel_target_bin_sim,
-            app_dir
-            + "/libgodot"
-            + module_prefix
-            + "."
-            + platform
-            + ".release.xcframework/"
-            + framework_dir_sim
-            + "/libgodot"
-            + module_prefix
-            + ".a",
-        )
-    if dbg_target_bin_sim != "":
-        print(f' Copying "{platform}" (simulator) debug framework')
-        shutil.copy(
-            dbg_target_bin_sim,
-            app_dir
-            + "/libgodot"
-            + module_prefix
-            + "."
-            + platform
-            + ".debug.xcframework/"
-            + framework_dir_sim
-            + "/libgodot"
-            + module_prefix
-            + ".a",
-        )
 
 
-def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, use_mkv, target, source, env):
+def generate_bundle_apple_embedded(platform, framework_dir, use_mkv, target, source, env):
     # Template bundle.
-    extra_suffix = env.extra_suffix.replace(".simulator", "")
+    extra_suffix = env.extra_suffix
     app_prefix = "godot." + platform
     rel_prefix = platform + "." + "template_release"
     dbg_prefix = platform + "." + "template_debug"
@@ -274,12 +233,10 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
         shutil.rmtree(app_dir)
     shutil.copytree(templ, app_dir)
 
-    lipo_and_copy_apple_embedded(platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, "", app_dir, env)
+    lipo_and_copy_apple_embedded(platform, framework_dir, rel_prefix, dbg_prefix, "", app_dir, env)
     if "MODULES_EXTERNAL" in env:
         for mod in env["MODULES_EXTERNAL"]:
-            lipo_and_copy_apple_embedded(
-                platform, framework_dir, framework_dir_sim, rel_prefix, dbg_prefix, mod, app_dir, env
-            )
+            lipo_and_copy_apple_embedded(platform, framework_dir, rel_prefix, dbg_prefix, mod, app_dir, env)
 
     # Remove other platform xcframeworks
     for entry in os.listdir(app_dir):
@@ -293,9 +250,6 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
         mvk_path = detect_mvk(env, "ios-arm64")
         if mvk_path != "":
             shutil.copytree(mvk_path + "/ios-arm64", app_dir + "/MoltenVK.xcframework/ios-arm64")
-            shutil.copytree(
-                mvk_path + "/ios-arm64_x86_64-simulator", app_dir + "/MoltenVK.xcframework/ios-arm64_x86_64-simulator"
-            )
             shutil.copy(mvk_path + "/Info.plist", app_dir + "/MoltenVK.xcframework/Info.plist")
 
     # ZIP Xcode project bundle.
@@ -322,14 +276,8 @@ def setup_swift_builder(
     elif apple_platform == "ios":
         target_suffix = "ios15.0"  # iOS 15.0 needed for SwiftUI lifecycle
 
-    elif apple_platform == "iossimulator":
-        target_suffix = "ios15.0-simulator"  # iOS 15.0 needed for SwiftUI lifecycle
-
     elif apple_platform == "visionos":
         target_suffix = "xros26.0"
-
-    elif apple_platform == "visionossimulator":
-        target_suffix = "xros26.0-simulator"
 
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")

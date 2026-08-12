@@ -29,7 +29,6 @@ def get_opts():
         ("APPLE_TOOLCHAIN_PATH", "Path to the Apple toolchain", ""),
         (("APPLE_SDK_PATH", "VISIONOS_SDK_PATH"), "Path to the visionOS SDK", ""),
         ("apple_target_triple", "Triple for corresponding target Apple platform toolchain", ""),
-        BoolVariable("simulator", "Build for Simulator", False),
         BoolVariable("generate_bundle", "Generate an APP bundle after building visionOS/macOS binaries", False),
     ]
 
@@ -102,16 +101,9 @@ def configure(env: "SConsEnvironment"):
 
     ## Compile flags
 
-    if env["simulator"]:
-        env["APPLE_PLATFORM"] = "visionossimulator"
-        env.Append(ASFLAGS=["-mtargetos=xros26.0-simulator"])
-        env.Append(CCFLAGS=["-mtargetos=xros26.0-simulator"])
-        env.Append(CPPDEFINES=["VISIONOS_SIMULATOR"])
-        env.extra_suffix = ".simulator" + env.extra_suffix
-    else:
-        env["APPLE_PLATFORM"] = "visionos"
-        env.Append(ASFLAGS=["-mtargetos=xros26.0"])
-        env.Append(CCFLAGS=["-mtargetos=xros26.0"])
+    env["APPLE_PLATFORM"] = "visionos"
+    env.Append(ASFLAGS=["-mtargetos=xros26.0"])
+    env.Append(CCFLAGS=["-mtargetos=xros26.0"])
     detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
@@ -143,10 +135,6 @@ def configure(env: "SConsEnvironment"):
     if env["vulkan"]:
         print_warning("The visionOS platform does not support the Vulkan rendering driver")
         env["vulkan"] = False
-
-    if env["metal"] and env["simulator"]:
-        print_warning("visionOS Simulator does not support the Metal rendering driver")
-        env["metal"] = False
 
     if env["metal"]:
         env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])

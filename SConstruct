@@ -701,8 +701,6 @@ if env["scu_build"]:
 detect.configure(env)
 
 platform_string = env["platform"]
-if env.get("simulator"):
-    platform_string += " (simulator)"
 print(f'Building for platform "{platform_string}", architecture "{env["arch"]}", target "{env["target"]}".')
 
 if env.dev_build:

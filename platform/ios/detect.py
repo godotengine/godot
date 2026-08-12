@@ -2,7 +2,7 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-from methods import detect_darwin_sdk_path, detect_darwin_toolchain_path, print_error, print_warning
+from methods import detect_darwin_sdk_path, detect_darwin_toolchain_path, print_warning
 from platform_methods import validate_arch
 
 if TYPE_CHECKING:
@@ -30,7 +30,6 @@ def get_opts():
         (("APPLE_TOOLCHAIN_PATH", "IOS_TOOLCHAIN_PATH"), "Path to the Apple toolchain", ""),
         (("APPLE_SDK_PATH", "IOS_SDK_PATH"), "Path to the iOS SDK", ""),
         (("apple_target_triple", "ios_triple"), "Triple for the corresponding target Apple platform toolchain", ""),
-        BoolVariable(("simulator", "ios_simulator"), "Build for Simulator", False),
         BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
     ]
 
@@ -58,7 +57,7 @@ def get_flags():
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
-    supported_arches = ["x86_64", "arm64"]
+    supported_arches = ["arm64"]
     validate_arch(env["arch"], get_name(), supported_arches)
     detect_darwin_toolchain_path(env)
 
@@ -101,44 +100,22 @@ def configure(env: "SConsEnvironment"):
 
     ## Compile flags
 
-    if env["simulator"]:
-        env["APPLE_PLATFORM"] = "iossimulator"
-        env.Append(ASFLAGS=["-mios-simulator-version-min=15.0"])
-        env.Append(CCFLAGS=["-mios-simulator-version-min=15.0"])
-        env.Append(CPPDEFINES=["IOS_SIMULATOR"])
-        env.extra_suffix = ".simulator" + env.extra_suffix
-    else:
-        env["APPLE_PLATFORM"] = "ios"
-        env.Append(ASFLAGS=["-miphoneos-version-min=15.0"])
-        env.Append(CCFLAGS=["-miphoneos-version-min=15.0"])
+    env["APPLE_PLATFORM"] = "ios"
+    env.Append(ASFLAGS=["-miphoneos-version-min=15.0"])
+    env.Append(CCFLAGS=["-miphoneos-version-min=15.0"])
     detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
 
-    if env["arch"] == "x86_64":
-        if not env["simulator"]:
-            print_error("Building for iOS with 'arch=x86_64' requires 'simulator=yes'.")
-            sys.exit(255)
-
-        env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
-        env.Append(
-            CCFLAGS=(
-                "-fobjc-arc -arch x86_64"
-                " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks"
-                " -fasm-blocks -isysroot $APPLE_SDK_PATH"
-            ).split()
+    env.Append(
+        CCFLAGS=(
+            "-fobjc-arc -arch arm64 -fmessage-length=0"
+            " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
+            " -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies"
+            " -isysroot $APPLE_SDK_PATH".split()
         )
-        env.Append(ASFLAGS=["-arch", "x86_64"])
-    elif env["arch"] == "arm64":
-        env.Append(
-            CCFLAGS=(
-                "-fobjc-arc -arch arm64 -fmessage-length=0"
-                " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
-                " -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies"
-                " -isysroot $APPLE_SDK_PATH".split()
-            )
-        )
-        env.Append(ASFLAGS=["-arch", "arm64"])
+    )
+    env.Append(ASFLAGS=["-arch", "arm64"])
 
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])
@@ -153,10 +130,6 @@ def configure(env: "SConsEnvironment"):
     env.Prepend(CPPPATH=["#platform/ios"])
     env.Append(CPPDEFINES=["IOS_ENABLED", "APPLE_EMBEDDED_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
-    if env["metal"] and env["simulator"]:
-        print_warning("iOS Simulator does not support the Metal rendering driver")
-        env["metal"] = False
-
     if env["metal"]:
         env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
         env.Prepend(
@@ -167,10 +140,6 @@ def configure(env: "SConsEnvironment"):
             ]
         )
         env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
-
-    if env["vulkan"] and env["simulator"]:
-        print_warning("iOS Simulator does not support the Vulkan rendering driver")
-        env["vulkan"] = False
 
     if env["vulkan"]:
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
