@@ -109,15 +109,6 @@ static AppDelegate *delegate_singleton = nil;
 		return FALSE;
 	}
 
-	if (@available(iOS 13, tvOS 13, *)) {
-		// NOP
-	} else {
-		// Create a full-screen window
-		CGRect windowBounds = [[UIScreen mainScreen] bounds];
-		self.window = [[UIWindow alloc] initWithFrame:windowBounds];
-		[self createViewController];
-	}
-
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(onAudioInterruption:)

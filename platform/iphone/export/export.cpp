@@ -83,20 +83,6 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		Vector<String> capabilities;
 		bool use_swift_runtime;
 	};
-	struct ExportArchitecture {
-		String name;
-		bool is_default;
-
-		ExportArchitecture() :
-				name(""),
-				is_default(false) {
-		}
-
-		ExportArchitecture(String p_name, bool p_is_default) {
-			name = p_name;
-			is_default = p_is_default;
-		}
-	};
 
 	struct IOSExportAsset {
 		String exported_path;
@@ -110,9 +96,6 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	void _fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const IOSConfigData &p_config, bool p_debug);
 	Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir);
 	Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir);
-
-	Vector<ExportArchitecture> _get_supported_architectures();
-	Vector<String> _get_preset_architectures(const Ref<EditorExportPreset> &p_preset);
 
 	void _add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets);
 	Error _copy_asset(const String &p_out_dir, const String &p_asset, const String *p_custom_file_name, bool p_is_framework, bool p_should_embed, Vector<IOSExportAsset> &r_exported_assets);
@@ -308,17 +291,7 @@ void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> 
 		r_features->push_back("etc2");
 	}
 
-	Vector<String> architectures = _get_preset_architectures(p_preset);
-	for (int i = 0; i < architectures.size(); ++i) {
-		r_features->push_back(architectures[i]);
-	}
-}
-
-Vector<EditorExportPlatformIOS::ExportArchitecture> EditorExportPlatformIOS::_get_supported_architectures() {
-	Vector<ExportArchitecture> archs;
-	archs.push_back(ExportArchitecture("armv7", false)); // Disabled by default, not included in official templates.
-	archs.push_back(ExportArchitecture("arm64", true));
-	return archs;
+	r_features->push_back("arm64");
 }
 
 struct APIAccessInfo {
@@ -413,11 +386,6 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
-	Vector<ExportArchitecture> architectures = _get_supported_architectures();
-	for (int i = 0; i < architectures.size(); ++i) {
-		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("architectures"), architectures[i].name)), architectures[i].is_default));
-	}
-
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_debug"), ""));
@@ -428,6 +396,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_method_release", PROPERTY_HINT_ENUM, "App Store,Development,Ad-Hoc,Enterprise"), 0));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/targeted_device_family", PROPERTY_HINT_ENUM, "iPhone,iPad,iPhone & iPad"), 2));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), "15.0"));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/info"), "Made with Godot Engine"));
@@ -610,7 +579,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$additional_plist_content") != -1) {
 			strnew += lines[i].replace("$additional_plist_content", p_config.plist_content) + "\n";
 		} else if (lines[i].find("$godot_archs") != -1) {
-			strnew += lines[i].replace("$godot_archs", p_config.architectures) + "\n";
+			strnew += lines[i].replace("$godot_archs", "arm64") + "\n";
 		} else if (lines[i].find("$linker_flags") != -1) {
 			strnew += lines[i].replace("$linker_flags", p_config.linker_flags) + "\n";
 		} else if (lines[i].find("$targeted_device_family") != -1) {
@@ -627,6 +596,10 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 					break;
 			}
 			strnew += lines[i].replace("$targeted_device_family", xcode_value) + "\n";
+		} else if (lines[i].find("$os_deployment_target") != -1) {
+			String min_version = p_preset->get("application/min_ios_version");
+			String value = "IPHONEOS_DEPLOYMENT_TARGET = " + min_version + ";";
+			strnew += lines[i].replace("$os_deployment_target", value) + "\n";
 		} else if (lines[i].find("$cpp_code") != -1) {
 			strnew += lines[i].replace("$cpp_code", p_config.cpp_code) + "\n";
 		} else if (lines[i].find("$docs_in_place") != -1) {
@@ -1582,18 +1555,6 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 	return OK;
 }
 
-Vector<String> EditorExportPlatformIOS::_get_preset_architectures(const Ref<EditorExportPreset> &p_preset) {
-	Vector<ExportArchitecture> all_archs = _get_supported_architectures();
-	Vector<String> enabled_archs;
-	for (int i = 0; i < all_archs.size(); ++i) {
-		bool is_enabled = p_preset->get("architectures/" + all_archs[i].name);
-		if (is_enabled) {
-			enabled_archs.push_back(all_archs[i].name);
-		}
-	}
-	return enabled_archs;
-}
-
 Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets, bool p_debug) {
 	String plugin_definition_cpp_code;
 	String plugin_initialization_cpp_code;
@@ -1907,7 +1868,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		pkg_name,
 		binary_name,
 		_get_additional_plist_content(),
-		String(" ").join(_get_preset_architectures(p_preset)),
+		"arm64",
 		_get_linker_flags(),
 		_get_cpp_code(),
 		"",

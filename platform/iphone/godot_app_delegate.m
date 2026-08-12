@@ -64,29 +64,15 @@ static NSMutableArray<ApplicationDelegateService *> *services = nil;
 - (UIWindow *)window {
 	UIWindow *result = nil;
 
-	if (@available(iOS 13, tvOS 13, *)) {
-		for (SceneDelegateService *service in [SceneDelegate services]) {
-			if (![service respondsToSelector:_cmd]) {
-				continue;
-			}
-
-			UIWindow *value = [service window];
-
-			if (value) {
-				result = value;
-			}
+	for (SceneDelegateService *service in [SceneDelegate services]) {
+		if (![service respondsToSelector:_cmd]) {
+			continue;
 		}
-	} else {
-		for (ApplicationDelegateService *service in services) {
-			if (![service respondsToSelector:_cmd]) {
-				continue;
-			}
 
-			UIWindow *value = [service window];
+		UIWindow *value = [service window];
 
-			if (value) {
-				result = value;
-			}
+		if (value) {
+			result = value;
 		}
 	}
 

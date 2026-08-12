@@ -101,9 +101,7 @@
 	[self observeKeyboard];
 	[self displayLoadingOverlay];
 
-	if (@available(iOS 11.0, *)) {
-		[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
-	}
+	[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
 }
 
 - (void)observeKeyboard {
