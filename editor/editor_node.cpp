@@ -8369,21 +8369,21 @@ void EditorNode::_bottom_panel_resized() {
 void EditorNode::_touch_actions_panel_mode_changed() {
 	int panel_mode = EDITOR_GET("interface/touchscreen/touch_actions_panel");
 	switch (panel_mode) {
-		case 1:
+		case 1: // Embedded
 			if (touch_actions_panel != nullptr) {
 				touch_actions_panel->queue_free();
 			}
-			touch_actions_panel = memnew(TouchActionsPanel);
-			main_hbox->call_deferred("add_child", touch_actions_panel);
+			touch_actions_panel = memnew(TouchActionsPanel(false));
+			main_box->call_deferred("add_child", touch_actions_panel);
 			break;
-		case 2:
+		case 2: // Floating
 			if (touch_actions_panel != nullptr) {
 				touch_actions_panel->queue_free();
 			}
-			touch_actions_panel = memnew(TouchActionsPanel);
+			touch_actions_panel = memnew(TouchActionsPanel(true));
 			call_deferred("add_child", touch_actions_panel);
 			break;
-		case 0:
+		case 0: // Disabled
 			if (touch_actions_panel != nullptr) {
 				touch_actions_panel->queue_free();
 				touch_actions_panel = nullptr;
@@ -8762,11 +8762,13 @@ EditorNode::EditorNode() {
 	title_bar = memnew(EditorTitleBar);
 	base_vbox->add_child(title_bar);
 
-	main_hbox = memnew(HBoxContainer);
-	main_hbox->add_child(main_vbox);
+	main_box = memnew(BoxContainer);
+	main_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_box->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	main_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	main_hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	base_vbox->add_child(main_hbox);
+	main_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_box->add_child(main_vbox);
+	base_vbox->add_child(main_box);
 
 	_touch_actions_panel_mode_changed();
 
