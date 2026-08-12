@@ -1127,7 +1127,7 @@ EditorSettingsDialog::~EditorSettingsDialog() {
 }
 
 void EditorSettingsPropertyWrapper::_setup_override_info() {
-	bottom_editor_seperation = true;
+	bottom_editor_separation = true;
 
 	override_container = memnew(HBoxContainer);
 
