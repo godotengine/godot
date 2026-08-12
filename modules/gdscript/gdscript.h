@@ -601,8 +601,6 @@ public:
 	virtual bool supports_documentation() const override;
 	virtual bool can_inherit_from_file() const override { return true; }
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
-	virtual String _get_indentation() const;
-	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) override;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) override;
 	virtual void remove_named_global_constant(const StringName &p_name) override;

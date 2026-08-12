@@ -44,6 +44,8 @@ public:
 
 	virtual int32_t find_function(const String &p_function, const String &p_code) const override;
 
+	virtual void format_code(String &r_code, uint32_t p_from_line, uint32_t p_to_line) const override;
+
 	GDScriptEditorLanguage() {
 		ERR_FAIL_COND(singleton != nullptr);
 		singleton = this;
