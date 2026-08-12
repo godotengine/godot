@@ -134,7 +134,9 @@ public:
 
 	virtual String get_locale() const override;
 
+#ifdef DEBUG_ENABLED
 	virtual void initialize_debugging() override;
+#endif
 
 	virtual String get_executable_path() const override;
 	virtual String get_user_data_dir(const String &p_user_dir) const override;

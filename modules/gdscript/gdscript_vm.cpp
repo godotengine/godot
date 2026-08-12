@@ -3945,6 +3945,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				line = _code_ptr[ip + 1];
 				ip += 2;
 
+#ifdef DEBUG_ENABLED
 				if (EngineDebugger::is_active()) {
 					// line
 					bool do_break = false;
@@ -3968,6 +3969,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					EngineDebugger::get_singleton()->line_poll();
 				}
+#endif
 			}
 			DISPATCH_OPCODE;
 
