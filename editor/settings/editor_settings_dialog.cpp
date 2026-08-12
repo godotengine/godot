@@ -1093,6 +1093,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_titles_visible(true);
 	shortcuts->set_column_title(0, TTRC("Name"));
 	shortcuts->set_column_title(1, TTRC("Binding"));
+	shortcuts->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	shortcuts->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
 	mc->add_child(shortcuts);
