@@ -40,12 +40,14 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Debug
 import android.os.Environment
 import android.os.Process
 import android.preference.PreferenceManager
+import android.provider.DocumentsContract
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -54,7 +56,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.annotation.CallSuper
 import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.ContentInfoCompat
 import androidx.core.view.isVisible
+import androidx.draganddrop.DropHelper
 import androidx.window.layout.WindowMetricsCalculator
 import org.godotengine.editor.buildprovider.GradleBuildProvider
 import org.godotengine.editor.embed.EmbeddedGodotGame
@@ -75,6 +79,7 @@ import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 import org.godotengine.openxr.vendors.utils.*
 import java.io.File
+import java.io.FileOutputStream
 import kotlin.math.min
 import kotlin.text.indexOf
 
@@ -165,6 +170,14 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		private const val PREF_KEY_DONT_SHOW_GAME_RESUME_HINT = "pref_key_dont_show_game_resume_hint"
 
+		private val DRAG_DROP_SUPPORTED_MIME_TYPES = arrayOf(
+			"application/octet-stream",
+			"audio/*",
+			"image/*",
+			"video/*",
+			"text/*",
+		)
+
 		@JvmStatic
 		fun isRunningInInstrumentation(): Boolean {
 			if (BuildConfig.BUILD_TYPE == "release") {
@@ -176,6 +189,36 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				true
 			} catch (_: ClassNotFoundException) {
 				false
+			}
+		}
+
+		private fun copyFileFromUri(context: Context, srcUri: Uri, destFile: File): Boolean {
+			return try {
+				context.contentResolver.openInputStream(srcUri)?.use { inputStream ->
+					FileOutputStream(destFile).use { outputStream ->
+						inputStream.copyTo(outputStream)
+					}
+				}
+				true
+			} catch (e: Exception) {
+				Log.e(TAG, "Error copying from uri $srcUri to $destFile.", e)
+				false
+			}
+		}
+
+		private fun isMimeTypeValid(resolvedMime: String?, allowedTypes: Array<String>): Boolean {
+			if (resolvedMime == null) {
+				return false
+			}
+
+			return allowedTypes.any { allowed ->
+				if (allowed.endsWith("/*")) {
+					// Match wildcards like "image/*".
+					resolvedMime.startsWith(allowed.removeSuffix("*"))
+				} else {
+					// Match exact types like "application/pdf".
+					resolvedMime.equals(allowed, ignoreCase = true)
+				}
 			}
 		}
 	}
@@ -247,6 +290,80 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	@CallSuper
 	protected open fun getXRRuntimePermissions(): MutableSet<String> {
 		return mutableSetOf()
+	}
+
+	/**
+	 * Configure drag & drop support for the main editor window.
+	 *
+	 * This should be invoked after the engine has been set up in [onGodotSetupCompleted].
+	 */
+	private fun setupDragAndDrop() {
+		if (getEditorWindowInfo() != EDITOR_MAIN_INFO || godot?.isEditorHint() != true) {
+			// Drag and drop is only enabled for the main editor window.
+			return
+		}
+
+		val godotView = godot?.renderView?.view ?: return
+
+		Log.v(TAG, "Configuring main editor window for drag and drop support.")
+		DropHelper.configureView(this, godotView, DRAG_DROP_SUPPORTED_MIME_TYPES) { _, payload: ContentInfoCompat ->
+			val split = payload.partition { item -> item.uri != null }
+			val uriContent = split.first
+			val remaining = split.second
+			if (uriContent != null) {
+				val addedFiles = mutableListOf<String>()
+
+				val clipData = uriContent.clip
+				for (index in 0 until clipData.itemCount) {
+					val clipItem = clipData.getItemAt(index)
+					val clipUri = clipItem.uri ?: continue
+
+					val mimeType = contentResolver.getType(clipUri)
+					if (!isMimeTypeValid(mimeType, DRAG_DROP_SUPPORTED_MIME_TYPES)) {
+						Log.w(TAG, "Unsupported mime type $mimeType for drag&drop.")
+						continue
+					}
+
+					val displayName = contentResolver.query(clipUri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)?.use { cursor ->
+						if (cursor.moveToFirst()) {
+							val colIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+							if (colIndex != -1 && !cursor.isNull(colIndex)) {
+								return@use cursor.getString(colIndex)
+							}
+						}
+						return@use clipUri.lastPathSegment
+					}
+
+					if (displayName.isNullOrBlank()) {
+						continue
+					}
+
+					val currentPath = getProjectPathFromCommandLine()
+					if (currentPath.isBlank()) {
+						Log.w(TAG, "Missing project path. Unable to store dropped content from $clipUri.")
+						continue
+					}
+
+					val destFile = File(currentPath, displayName)
+					val result = copyFileFromUri(this, clipUri, destFile)
+					if (result) {
+						Log.v(TAG, "Copied uri $clipUri to $destFile")
+						addedFiles.add(destFile.absolutePath)
+					} else {
+						Log.e(TAG, "Failed to copy uri $clipUri to $destFile")
+					}
+				}
+
+				if (addedFiles.isNotEmpty()) {
+					godot?.runOnRenderThread {
+						EditorUtils.onDragDropCompleted(addedFiles.toTypedArray())
+					}
+				}
+			}
+
+			// Return the rest for the platform to handle.
+			remaining
+		}
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -411,21 +528,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 							updatedCommandLineParams.addAll(loadProjectArgs)
 						} else {
 							// Check if we are already editing the specified directory.
-							var isEditor = false
-							var nextIsPath = false
-							var currentPath = ""
-							for (arg in commandLine) {
-								if (nextIsPath) {
-									currentPath = arg
-									nextIsPath = false
-								}
-
-								if (arg == EDITOR_ARG || arg == EDITOR_ARG_SHORT) {
-									isEditor = true
-								} else if (arg == PATH_ARG) {
-									nextIsPath = true
-								}
-							}
+							val isEditor = commandLine.contains(EDITOR_ARG) || commandLine.contains(EDITOR_ARG_SHORT)
+							val currentPath = getProjectPathFromCommandLine()
 							if (!isEditor || currentPath != dataDir.absolutePath) {
 								onNewGodotInstanceRequested(loadProjectArgs)
 							}
@@ -436,6 +540,26 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		}
 
 		super.handleStartIntent(intent, newLaunch)
+	}
+
+	/**
+	 * Retrieve the project path from the command line arguments.
+	 */
+	private fun getProjectPathFromCommandLine(): String {
+		var nextIsPath = false
+		var currentPath = ""
+		for (arg in commandLine) {
+			if (nextIsPath) {
+				currentPath = arg
+				nextIsPath = false
+			}
+
+			if (arg == PATH_ARG) {
+				nextIsPath = true
+			}
+		}
+
+		return currentPath
 	}
 
 	protected open fun shouldShowGameMenuBar() = gameMenuContainer != null
@@ -474,6 +598,9 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				setOverrideVolumeButtons(overrideVolumeButtonsEnabled)
 				enableHapticFeedback(hapticEnabled)
 			}
+
+			// Enable drag and drop for the main editor window.
+			setupDragAndDrop()
 		}
 	}
 

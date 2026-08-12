@@ -41,4 +41,12 @@ object EditorUtils {
 
 	@JvmStatic
 	external fun orientationChanged(isPortrait: Boolean)
+
+	/**
+	 * Invoked when a drag&drop operation completes successfully.
+	 *
+	 * @param addedFiles List of paths for the added files.
+	 */
+	@JvmStatic
+	external fun onDragDropCompleted(addedFiles: Array<String>)
 }
