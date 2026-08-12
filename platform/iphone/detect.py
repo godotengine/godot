@@ -76,16 +76,16 @@ def configure(env):
             env.Append(LINKFLAGS=["-flto"])
 
     # Architecture
-    if env["arch"] == "x86":  # i386
-        env["bits"] = "32"
-    elif env["arch"] == "x86_64":
-        env["bits"] = "64"
-    elif env["arch"] == "arm" or env["arch"] == "arm32" or env["arch"] == "armv7" or env["bits"] == "32":  # arm
-        env["arch"] = "arm"
-        env["bits"] = "32"
-    else:  # armv64
+
+    # iOS no longer runs on 32-bit since 11.0 which is unsupported since 2018
+    # As such, we only support 64-bit
+    env["bits"] = "64"
+
+    if env["arch"] == "x86_64":
+        print("Building for iOS 15.0+, platform x86-64.")
+    else:
         env["arch"] = "arm64"
-        env["bits"] = "64"
+        print("Building for iOS 15.0+, platform arm64.")
 
     ## Compiler configuration
 
@@ -116,38 +116,29 @@ def configure(env):
 
     if env["ios_simulator"]:
         detect_darwin_sdk_path("iphonesimulator", env)
-        env.Append(ASFLAGS=["-mios-simulator-version-min=12.0"])
-        env.Append(CCFLAGS=["-mios-simulator-version-min=12.0"])
-        env.Append(LINKFLAGS=["-mios-simulator-version-min=12.0"])
+        env.Append(ASFLAGS=["-mios-simulator-version-min=15.0"])
+        env.Append(CCFLAGS=["-mios-simulator-version-min=15.0"])
+        env.Append(LINKFLAGS=["-mios-simulator-version-min=15.0"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         detect_darwin_sdk_path("iphone", env)
-        env.Append(ASFLAGS=["-miphoneos-version-min=12.0"])
-        env.Append(CCFLAGS=["-miphoneos-version-min=12.0"])
-        env.Append(LINKFLAGS=["-miphoneos-version-min=12.0"])
+        env.Append(ASFLAGS=["-miphoneos-version-min=15.0"])
+        env.Append(CCFLAGS=["-miphoneos-version-min=15.0"])
+        env.Append(LINKFLAGS=["-miphoneos-version-min=15.0"])
 
-    if env["arch"] == "x86" or env["arch"] == "x86_64":
+    if env["arch"] == "x86_64":
         if not env["ios_simulator"]:
-            print("ERROR: Building for iOS with 'arch=x86_64' or 'arch=x86' requires 'ios_simulator=yes'.")
+            print("ERROR: Building for iOS with 'arch=x86_64' requires 'ios_simulator=yes'.")
             sys.exit(255)
 
-        env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
-        arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
+        env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
         env.Append(
             CCFLAGS=(
-                "-arch "
-                + arch_flag
-                + " -fobjc-arc -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK"
+                "-arch x86_64 -fobjc-arc -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK"
             ).split()
         )
-        env.Append(ASFLAGS=["-arch", arch_flag])
-    elif env["arch"] == "arm":
-        detect_darwin_sdk_path("iphone", env)
-        env.Append(
-            CCFLAGS='-fobjc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -MMD -MT dependencies'.split()
-        )
-        env.Append(ASFLAGS=["-arch", "armv7"])
-    elif env["arch"] == "arm64":
+        env.Append(ASFLAGS=["-arch x86_64"])
+    else:
         detect_darwin_sdk_path("iphone", env)
         env.Append(
             CCFLAGS="-fobjc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies -isysroot $IPHONESDK".split()
@@ -161,12 +152,11 @@ def configure(env):
 
     ## Link flags
 
-    if env["arch"] == "x86" or env["arch"] == "x86_64":
-        arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
+    if env["arch"] == "x86_64":
         env.Append(
             LINKFLAGS=[
                 "-arch",
-                arch_flag,
+                "x86_64",
                 "-isysroot",
                 "$IPHONESDK",
                 "-Xlinker",
@@ -176,9 +166,7 @@ def configure(env):
                 "-F$IPHONESDK",
             ]
         )
-    elif env["arch"] == "arm":
-        env.Append(LINKFLAGS=["-arch", "armv7", "-Wl,-dead_strip"])
-    if env["arch"] == "arm64":
+    else:
         env.Append(LINKFLAGS=["-arch", "arm64", "-Wl,-dead_strip"])
 
     env.Append(
