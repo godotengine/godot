@@ -1034,10 +1034,6 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		return;
 	}
 
-	if (!update_when_invisible && !is_visible_in_tree()) {
-		return;
-	}
-
 	Node *scene_node = get_scene_node();
 	const ObjectID scene_id = scene_node ? scene_node->get_instance_id() : ObjectID();
 	if (node_cache.current_scene_id != scene_id) {
@@ -1045,6 +1041,10 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		marked.clear();
 		node_cache.current_scene_id = scene_id;
 		node_cache.force_update = true;
+	}
+
+	if (!update_when_invisible && !is_visible_in_tree()) {
+		return;
 	}
 
 	if (tree->is_editing()) {
