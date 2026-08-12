@@ -1454,6 +1454,10 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			uint64_t flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			Dictionary mesh_prim = primitives[j];
 
+			ERR_FAIL_COND_V(!mesh_prim.has("attributes"), ERR_PARSE_ERROR);
+			const Dictionary a = mesh_prim["attributes"];
+			has_vertex_color = a.has("COLOR_0");
+
 			// Read the material.
 			Ref<Material> mat;
 			String mat_name;
@@ -1499,10 +1503,6 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			// Read the mesh primitive data into Godot ArrayMesh array data.
 			Array array;
 			array.resize(Mesh::ARRAY_MAX);
-
-			ERR_FAIL_COND_V(!mesh_prim.has("attributes"), ERR_PARSE_ERROR);
-
-			Dictionary a = mesh_prim["attributes"];
 
 			Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_TRIANGLES;
 			if (mesh_prim.has("mode")) {
@@ -1654,9 +1654,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					}
 				}
 			}
-			if (a.has("COLOR_0")) {
+			if (has_vertex_color) {
 				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a["COLOR_0"], indices_mapping);
-				has_vertex_color = true;
 			}
 			if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
 				PackedInt32Array joints_0 = _decode_accessor_as_int32s(p_state, a["JOINTS_0"], indices_vec4_mapping);
