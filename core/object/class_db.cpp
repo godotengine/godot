@@ -2278,7 +2278,7 @@ void ClassDB::register_extension_class(ObjectGDExtension *p_extension) {
 		// The parent classes should be exposed if it has an exposed child class.
 		while (parent && !parent->exposed) {
 			parent->exposed = true;
-			parent = classes.getptr(parent->gdtype->get_name());
+			parent = classes.getptr(parent->gdtype->get_super_type_name());
 		}
 	}
 	c.reloadable = p_extension->reloadable;
