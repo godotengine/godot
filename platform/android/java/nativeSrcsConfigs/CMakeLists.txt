@@ -32,4 +32,5 @@ add_definitions(
         -DDEBUG_ENABLED
         -DRD_ENABLED
         -DGODOT_USE_PERFETTO
+        -DACCESSKIT_ENABLED
 )
