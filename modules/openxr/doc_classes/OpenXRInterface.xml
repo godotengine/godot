@@ -85,6 +85,13 @@
 				If handtracking is enabled and motion range is supported, gets the currently configured motion range for [param hand].
 			</description>
 		</method>
+		<method name="get_recommended_target_size" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the recommended render target size from the OpenXR runtime.
+				This may not match the current render target size returned by [method XRInterface.get_render_target_size].
+			</description>
+		</method>
 		<method name="get_session_state">
 			<return type="int" enum="OpenXRInterface.SessionState" />
 			<description>

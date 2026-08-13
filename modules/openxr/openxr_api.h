@@ -148,6 +148,7 @@ private:
 	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
 	double render_target_size_multiplier = 1.0;
 	Rect2i render_region;
+	Size2i main_swapchain_size;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
@@ -359,6 +360,7 @@ private:
 		double render_target_size_multiplier = 1.0;
 		uint64_t frame = 0;
 		Rect2i render_region;
+		Size2i render_region_maximum;
 
 		LocalVector<XrView> views;
 		LocalVector<XrCompositionLayerProjectionView> projection_views;
@@ -482,6 +484,7 @@ public:
 	XrHandTrackerEXT get_hand_tracker(int p_hand_index);
 
 	Size2 get_recommended_target_size();
+	Size2 get_render_target_size();
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool get_view_transform(uint32_t p_view, Transform3D &r_transform);
 	bool get_view_projection(uint32_t p_view, double p_z_near, double p_z_far, Projection &p_camera_matrix);
@@ -515,6 +518,7 @@ public:
 
 	Rect2i get_render_region() const;
 	void set_render_region(const Rect2i &p_render_region);
+	Rect2i get_combined_render_region();
 
 	// Foveation settings
 	bool is_foveation_supported() const;
