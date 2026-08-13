@@ -246,6 +246,12 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 
 	int64_t loop_begin = base->loop_begin;
 	int64_t loop_end = base->loop_end;
+	if (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) {
+		/* `loop_end` is inclusive, so it can never address past the last frame. Clamping here
+		   keeps an out-of-range loop point from reading outside the sample data. */
+		loop_end = CLAMP(loop_end, 0, (int64_t)len - 1);
+		loop_begin = CLAMP(loop_begin, 0, loop_end);
+	}
 	int64_t begin_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_begin : 0;
 	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end : len - 1;
 	bool is_stereo = base->stereo;
@@ -293,8 +299,8 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 					increment = -increment;
 					sign *= -1;
 				} else {
-					/* go to loop-end */
-					offset = loop_end - (loop_begin - offset);
+					/* go to loop-end (inclusive, so the loop spans `loop_end - loop_begin + 1` frames) */
+					offset = loop_end - (loop_begin - offset) + 1;
 				}
 			} else {
 				/* check for sample not reaching beginning */
@@ -305,7 +311,10 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 			}
 		} else {
 			/* going forward */
-			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset >= loop_end) {
+			/* ping-pong reflects at `loop_end`, while a forward loop must wrap only once
+			   `loop_end` itself has been mixed. */
+			int64_t forward_wrap = (loop_format == AudioStreamWAV::LOOP_PINGPONG) ? loop_end : loop_end + 1;
+			if (loop_format != AudioStreamWAV::LOOP_DISABLED && offset >= forward_wrap) {
 				/* loopend reached */
 
 				if (loop_format == AudioStreamWAV::LOOP_PINGPONG) {
@@ -324,7 +333,7 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 						}
 						offset = loop_begin;
 					} else {
-						offset = loop_begin + (offset - loop_end);
+						offset = loop_begin + (offset - loop_end - 1);
 					}
 				}
 			} else {

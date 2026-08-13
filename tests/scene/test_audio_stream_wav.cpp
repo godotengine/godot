@@ -37,6 +37,7 @@ TEST_FORCE_LINK(test_audio_stream_wav)
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "scene/resources/audio/audio_stream_wav.h"
+#include "servers/audio/audio_server.h"
 #include "tests/test_utils.h"
 
 namespace TestAudioStreamWAV {
@@ -216,6 +217,136 @@ TEST_CASE("[Audio][AudioStreamWAV] Saving IMA ADPCM is not supported") {
 	ERR_PRINT_OFF;
 	CHECK(stream->save_to_wav(save_path) == ERR_UNAVAILABLE);
 	ERR_PRINT_ON;
+}
+
+/* Builds a mono 16-bit PCM stream whose frames all hold distinct, easily recognizable values,
+ * so that the exact frame a mixer produced can be identified from its output. */
+Ref<AudioStreamWAV> gen_loop_test_stream(const Vector<int16_t> &p_samples) {
+	Vector<uint8_t> data;
+	data.resize(p_samples.size() * 2);
+	uint8_t *write_ptr = data.ptrw();
+	for (int i = 0; i < p_samples.size(); i++) {
+		encode_uint16((uint16_t)p_samples[i], write_ptr + i * 2);
+	}
+
+	Ref<AudioStreamWAV> stream = memnew(AudioStreamWAV);
+	stream->set_format(AudioStreamWAV::FORMAT_16_BITS);
+	stream->set_data(data);
+	/* Matching the server's rate keeps the resampler at a 1:1 ratio, where cubic interpolation
+	   reduces to passing each source frame through unchanged. */
+	stream->set_mix_rate(AudioServer::get_singleton()->get_mix_rate());
+	stream->set_loop_mode(AudioStreamWAV::LOOP_FORWARD);
+	return stream;
+}
+
+/* `loop_end` is inclusive: it names the last frame that is played before wrapping back to
+ * `loop_begin`. A forward loop must therefore replay the whole range on every pass, and must
+ * never read outside the sample data. Regression test for GH-119778. */
+TEST_CASE("[Audio][AudioStreamWAV] Forward loop plays every frame of the loop range") {
+	const Vector<int16_t> samples = { 24000, 18000, 12000, 6000 };
+	const int frame_count = samples.size();
+
+	// Number of leading frames to discard, covering the resampler's cubic interpolation history.
+	constexpr int PRIMING = 8;
+	constexpr int MIX_FRAMES = 128;
+
+	SUBCASE("Whole-file loop replays loop_begin on every pass") {
+		Ref<AudioStreamWAV> stream = gen_loop_test_stream(samples);
+		stream->set_loop_begin(0);
+		stream->set_loop_end(frame_count - 1);
+
+		Ref<AudioStreamPlayback> playback = stream->instantiate_playback();
+		REQUIRE(playback.is_valid());
+		playback->start();
+
+		AudioFrame buffer[MIX_FRAMES];
+		playback->mix(buffer, 1.0, MIX_FRAMES);
+
+		// Every mixed frame must be one of the source frames, never data from outside the stream.
+		for (int i = PRIMING; i < MIX_FRAMES; i++) {
+			bool found = false;
+			for (int j = 0; j < frame_count; j++) {
+				if (Math::is_equal_approx(buffer[i].left, samples[j] / 32767.0f)) {
+					found = true;
+					break;
+				}
+			}
+			CHECK_MESSAGE(found, "Mixed frame ", i, " is not one of the source frames.");
+		}
+
+		/* Every source frame must still be reachable after wrapping. Treating `loop_end` as
+		   exclusive when wrapping drops `loop_begin` from every pass after the first. */
+		for (int j = 0; j < frame_count; j++) {
+			bool found = false;
+			for (int i = PRIMING; i < MIX_FRAMES; i++) {
+				if (Math::is_equal_approx(buffer[i].left, samples[j] / 32767.0f)) {
+					found = true;
+					break;
+				}
+			}
+			CHECK_MESSAGE(found, "Frame ", j, " is never played after the loop wraps.");
+		}
+
+		// The loop is periodic over its whole length, not a shorter range.
+		for (int i = PRIMING; i < MIX_FRAMES - frame_count; i++) {
+			CHECK(Math::is_equal_approx(buffer[i].left, buffer[i + frame_count].left));
+		}
+	}
+
+	SUBCASE("Sub-range loop replays loop_begin on every pass") {
+		const int loop_begin = 1;
+		const int loop_end = 2;
+		Ref<AudioStreamWAV> stream = gen_loop_test_stream(samples);
+		stream->set_loop_begin(loop_begin);
+		stream->set_loop_end(loop_end);
+
+		Ref<AudioStreamPlayback> playback = stream->instantiate_playback();
+		REQUIRE(playback.is_valid());
+		playback->start();
+
+		AudioFrame buffer[MIX_FRAMES];
+		playback->mix(buffer, 1.0, MIX_FRAMES);
+
+		const int loop_length = loop_end - loop_begin + 1;
+		for (int j = loop_begin; j <= loop_end; j++) {
+			bool found = false;
+			for (int i = PRIMING; i < MIX_FRAMES; i++) {
+				if (Math::is_equal_approx(buffer[i].left, samples[j] / 32767.0f)) {
+					found = true;
+					break;
+				}
+			}
+			CHECK_MESSAGE(found, "Frame ", j, " is never played after the loop wraps.");
+		}
+		for (int i = PRIMING; i < MIX_FRAMES - loop_length; i++) {
+			CHECK(Math::is_equal_approx(buffer[i].left, buffer[i + loop_length].left));
+		}
+	}
+
+	SUBCASE("Out-of-range loop_end does not read past the sample data") {
+		Ref<AudioStreamWAV> stream = gen_loop_test_stream(samples);
+		stream->set_loop_begin(0);
+		// One past the last valid frame, which an inclusive `loop_end` can never address.
+		stream->set_loop_end(frame_count);
+
+		Ref<AudioStreamPlayback> playback = stream->instantiate_playback();
+		REQUIRE(playback.is_valid());
+		playback->start();
+
+		AudioFrame buffer[MIX_FRAMES];
+		playback->mix(buffer, 1.0, MIX_FRAMES);
+
+		for (int i = PRIMING; i < MIX_FRAMES; i++) {
+			bool found = false;
+			for (int j = 0; j < frame_count; j++) {
+				if (Math::is_equal_approx(buffer[i].left, samples[j] / 32767.0f)) {
+					found = true;
+					break;
+				}
+			}
+			CHECK_MESSAGE(found, "Mixed frame ", i, " was read from outside the sample data.");
+		}
+	}
 }
 
 } // namespace TestAudioStreamWAV

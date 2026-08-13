@@ -67,7 +67,7 @@
 			The loop start point (in number of samples, relative to the beginning of the stream).
 		</member>
 		<member name="loop_end" type="int" setter="set_loop_end" getter="get_loop_end" default="0">
-			The loop end point (in number of samples, relative to the beginning of the stream).
+			The loop end point (in number of samples, relative to the beginning of the stream). This sample is part of the loop: it is played, and playback then returns to [member loop_begin]. Values past the last sample of the stream are clamped to it.
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamWAV.LoopMode" default="0">
 			The loop mode.
