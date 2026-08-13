@@ -1,0 +1,13 @@
+diff --git a/thirdparty/icu4c/common/unicode/uniset.h b/thirdparty/icu4c/common/unicode/uniset.h
+index 127e4ce..f68e714 100644
+--- a/thirdparty/icu4c/common/unicode/uniset.h
++++ b/thirdparty/icu4c/common/unicode/uniset.h
+@@ -282,7 +282,7 @@ class RuleCharacterIterator;
+  * @author Alan Liu
+  * @stable ICU 2.0
+  */
+-class U_COMMON_API UnicodeSet final : public UnicodeFilter {
++class U_COMMON_API UnicodeSet : public UnicodeFilter {
+ private:
+     /**
+      * Enough for sets with few ranges.
