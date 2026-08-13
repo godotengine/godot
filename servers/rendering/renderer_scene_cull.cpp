@@ -2685,10 +2685,24 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 			// Resize the jitter array and fill it with the pre-computed Halton sequence.
 			camera_jitter_array.resize(p_jitter_phase_count);
 
-			for (uint32_t i = current_jitter_count; i < p_jitter_phase_count; i++) {
-				camera_jitter_array[i].x = get_halton_value(i, 2);
-				camera_jitter_array[i].y = get_halton_value(i, 3);
-			}
+			camera_jitter_array[0].x = 0.0f;
+			camera_jitter_array[0].y = 0.0f;
+			camera_jitter_array[1].x = 0.75f;
+			camera_jitter_array[1].y = 0.75f;
+			camera_jitter_array[2].x = 0.0f;
+			camera_jitter_array[2].y = 0.0f;
+			camera_jitter_array[3].x = -0.75f;
+			camera_jitter_array[3].y = 0.75f;
+			camera_jitter_array[4].x = 0.0f;
+			camera_jitter_array[4].y = 0.0f;
+			camera_jitter_array[5].x = -0.75f;
+			camera_jitter_array[5].y = -0.75f;
+			camera_jitter_array[6].x = 0.0f;
+			camera_jitter_array[6].y = 0.0f;
+			camera_jitter_array[7].x = 0.75f;
+			camera_jitter_array[7].y = -0.75f;
+			camera_jitter_array[8].x = 0.0f;
+			camera_jitter_array[8].y = 0.0f;
 		}
 
 		jitter = camera_jitter_array[RSG::rasterizer->get_frame_number() % p_jitter_phase_count] / p_viewport_size;

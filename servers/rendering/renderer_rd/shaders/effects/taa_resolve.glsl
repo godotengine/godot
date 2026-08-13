@@ -126,7 +126,7 @@ vec4 temporal_antialiasing(vec2 uv) {
 
 	vec3 history = sample_catmull_rom_9(history_buffer, uv_reprojected, params.resolution).rgb;
 
-	history = mix(history, s, RPC_16);
+	history = mix(history, s, RPC_9);
 
 	// Sample pattern taken from https://stackoverflow.com/questions/74541193/what-algorithm-8xmsaa-16xmsaa-use-to-generate-the-position-of-8-points-16-poi
 	vec3 s1 = textureLod(color_buffer, uv + jitter + (vec2(0.5625, 0.5625) - vec2(0.5, 0.5)) / params.resolution, 0.0).rgb;
