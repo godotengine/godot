@@ -99,6 +99,7 @@ void TouchActionsPanel::_screen_orientation_changed(int p_new_orientation) {
 	portrait_mode = p_new_orientation == 1;
 
 	if (is_floating) {
+		set_position(EDITOR_DEF(portrait_mode ? "_touch_actions_panel_portrait_pos" : "_touch_actions_panel_position", Point2(100, 480)));
 		return;
 	}
 
@@ -194,7 +195,7 @@ void TouchActionsPanel::_on_drag_handle_gui_input(const Ref<InputEvent> &p_event
 		} else {
 			if (dragging) {
 				dragging = false;
-				EditorSettings::get_singleton()->set("_touch_actions_panel_position", get_position());
+				EditorSettings::get_singleton()->set(portrait_mode ? "_touch_actions_panel_portrait_pos" : "_touch_actions_panel_position", get_position());
 				EditorSettings::get_singleton()->save();
 			}
 		}
@@ -203,7 +204,7 @@ void TouchActionsPanel::_on_drag_handle_gui_input(const Ref<InputEvent> &p_event
 	Ref<InputEventMouseMotion> mouse_motion_event = p_event;
 	if (dragging && mouse_motion_event.is_valid()) {
 		Vector2 new_position = get_position() + mouse_motion_event->get_relative();
-		const float margin = 25.0;
+		const float margin = 15.0;
 		Vector2 parent_size = get_parent_area_size();
 		Vector2 panel_size = get_size();
 		new_position = new_position.clamp(Vector2(margin, margin), parent_size - panel_size - Vector2(margin, margin));
@@ -256,7 +257,7 @@ TouchActionsPanel::TouchActionsPanel(bool p_floating) {
 		panel_style->set_content_margin_all(12);
 		add_theme_style_override(SceneStringName(panel), panel_style);
 
-		set_position(EDITOR_DEF("_touch_actions_panel_position", Point2(100, 480)));
+		set_position(EDITOR_DEF(portrait_mode ? "_touch_actions_panel_portrait_pos" : "_touch_actions_panel_position", Point2(100, 480)));
 	}
 
 	box = memnew(BoxContainer);

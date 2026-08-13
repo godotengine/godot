@@ -101,10 +101,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runSc
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_orientationChanged(JNIEnv *p_env, jclass, jboolean p_portrait) {
 #ifdef TOOLS_ENABLED
 	if (EditorNode::get_singleton() != nullptr) {
-		EditorTitleBar *title_bar = EditorNode::get_singleton()->get_title_bar();
-		if (title_bar != nullptr) {
+		if (EditorRunBar::get_singleton() != nullptr) {
 			// TODO: Enable for portrait once the title bar width is optimized.
-			title_bar->set_visible(!p_portrait);
+			EditorRunBar::get_singleton()->set_visible(!p_portrait);
 		}
 
 		if (ScriptEditor::get_singleton() != nullptr && EDITOR_GET("text_editor/appearance/minimap/show_minimap")) {

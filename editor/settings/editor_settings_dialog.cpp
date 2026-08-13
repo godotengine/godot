@@ -236,6 +236,11 @@ void EditorSettingsDialog::popup_edit_settings() {
 		saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
 	}
 
+#ifdef ANDROID_ENABLED
+	// The Android Editor's aspect ratio may change when the device orientation changes, and `saved_size` may correspond to a different orientation (example, a very small width if it was last opened in portrait mode).
+	// Always reset the popup size so that it covers most of the available area.
+	popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
+#else
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else if (_is_in_project_manager()) {
@@ -243,6 +248,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	} else {
 		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
+#endif
 
 	_focus_current_search_box();
 }

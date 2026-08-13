@@ -1140,7 +1140,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 		Ref<StyleBoxFlat> grabber_hl_style = p_config.base_style->duplicate();
 		grabber_hl_style->set_bg_color(p_config.mono_color * Color(1, 1, 1, 0.5));
 
-		int scroll_margin = EDSCALE_RND(p_config.enable_touch_optimizations ? 10 : 3);
+		int scroll_margin = EDSCALE_RND(p_config.enable_touch_optimizations ? 13 : 3);
 
 		// HScrollBar.
 
