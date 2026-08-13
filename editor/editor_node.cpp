@@ -8984,6 +8984,7 @@ EditorNode::EditorNode() {
 	save_accept = memnew(AcceptDialog);
 	save_accept->set_unparent_when_invisible(true);
 	save_accept->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind((int)MenuOptions::SCENE_SAVE_AS_SCENE));
+	save_accept->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 
 	project_export = memnew(ProjectExportDialog);
 	gui_base->add_child(project_export);
@@ -9029,6 +9030,7 @@ EditorNode::EditorNode() {
 	warning->set_unparent_when_invisible(true);
 	warning->add_button(TTRC("Copy Text"), true, "copy");
 	warning->connect("custom_action", callable_mp(this, &EditorNode::_copy_warning));
+	warning->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 
 	clear_cache_dialog = memnew(ConfirmationDialog);
 	clear_cache_dialog->set_autowrap(true);
