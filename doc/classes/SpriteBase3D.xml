@@ -63,6 +63,11 @@
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
 			If [code]true[/code], texture will be centered.
 		</member>
+		<member name="custom_material" type="ShaderMaterial" setter="set_custom_material" getter="get_custom_material">
+			An optional shader material that can be used to render the texture instead of the default material.
+			[b]Note:[/b] This material's shader must contain the uniforms [code]sampler2D texture_albedo[/code] and [code]vec2i texture_albedo_size[/code]. Modifying these shader parameters on the material directly may result in visual errors, but they will be corrected when the [SpriteBase3D] redraws.
+			[b]Note:[/b] This material should be unique, otherwise other [SpriteBase3D] nodes using the same material may fail to display their textures correctly. When assigned in the editor, the material will be made unique automatically, duplicating it if necessary.
+		</member>
 		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag" default="true">
 			If [code]true[/code], texture can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind.
 		</member>
