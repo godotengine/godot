@@ -420,11 +420,7 @@ static const int max_touches = 32;
 
 	UIInterfaceOrientation interfaceOrientation = UIInterfaceOrientationUnknown;
 
-	if (@available(iOS 13, *)) {
-		interfaceOrientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
-	} else {
-		interfaceOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-	}
+	interfaceOrientation = [UIApplication sharedApplication].delegate.window.windowScene.interfaceOrientation;
 
 	switch (interfaceOrientation) {
 		case UIInterfaceOrientationLandscapeLeft: {

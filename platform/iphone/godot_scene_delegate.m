@@ -42,10 +42,8 @@ static NSMutableArray<SceneDelegateService *> *services = nil;
 }
 
 + (void)load {
-	if (@available(iOS 13, tvOS 13, *)) {
-		services = [NSMutableArray new];
-		[services addObject:[AppDelegate getSingleton]];
-	}
+	services = [NSMutableArray new];
+	[services addObject:[AppDelegate getSingleton]];
 }
 
 + (void)addService:(SceneDelegateService *)service API_AVAILABLE(ios(13.0), tvos(13.0)) {
