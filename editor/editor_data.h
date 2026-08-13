@@ -203,6 +203,7 @@ public:
 	void set_scene_root(int p_idx, Node *p_root);
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node *p_root);
+	bool has_edited_scene_selection(int p_idx) const;
 	int get_edited_scene() const;
 	int get_edited_scene_from_path(const String &p_path) const;
 	Node *get_edited_scene_root(int p_idx = -1);
