@@ -30,12 +30,18 @@
 
 package org.godotengine.editor
 
+import android.util.Log
+
 /**
  * Primary window of the Godot Editor.
  *
  * This is the implementation of the editor used when running on Android devices.
  */
 open class GodotEditor : BaseGodotEditor() {
+
+	companion object {
+		private val TAG = GodotEditor::class.simpleName
+	}
 
 	override fun getXRRuntimePermissions(): MutableSet<String> {
 		val xrRuntimePermissions = super.getXRRuntimePermissions()
@@ -44,5 +50,17 @@ open class GodotEditor : BaseGodotEditor() {
 		xrRuntimePermissions.add("android.permission.HAND_TRACKING")
 
 		return xrRuntimePermissions
+	}
+
+	override fun getCommandLine(): MutableList<String> {
+		val updatedArgs = super.getCommandLine()
+		if (getEditorWindowInfo() == EDITOR_MAIN_INFO && packageManager.hasSystemFeature("android.hardware.xr.input.eye_tracking")) {
+			if (!updatedArgs.contains("--accessibility ")) {
+				Log.v(TAG, "Enabling accessibility for Android XR to add support for eye hovers.")
+				updatedArgs.add("--accessibility ")
+				updatedArgs.add("always")
+			}
+		}
+		return updatedArgs
 	}
 }

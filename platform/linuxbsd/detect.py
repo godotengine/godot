@@ -530,7 +530,7 @@ def configure(env: "SConsEnvironment"):
                 "The screen reader support driver requires dependencies to be installed.\n"
                 f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
                 "See the documentation for more information:\n"
-                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html\n"
+                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html#compiling-with-accesskit-support\n"
                 "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
             )
             env["accesskit"] = False
