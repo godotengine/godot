@@ -150,6 +150,7 @@ private:
 	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
 	double render_target_size_multiplier = 1.0;
 	Rect2i render_region;
+	Size2i main_swapchain_size;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
@@ -377,6 +378,7 @@ private:
 		double render_target_size_multiplier = 1.0;
 		uint64_t frame = 0;
 		Rect2i render_region;
+		Size2i render_region_maximum;
 
 		LocalVector<XrCompositionLayerProjectionView> projection_views;
 		LocalVector<XrCompositionLayerDepthInfoKHR> depth_views; // Only used by Composition Layer Depth Extension if available
@@ -507,6 +509,7 @@ public:
 	XrHandTrackerEXT get_hand_tracker(int p_hand_index);
 
 	Size2 get_recommended_target_size();
+	Size2 get_render_target_size();
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far);
 	TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name);
@@ -545,6 +548,7 @@ public:
 
 	Rect2i get_render_region() const;
 	void set_render_region(const Rect2i &p_render_region);
+	Rect2i get_combined_render_region();
 
 	// Spatial container settings.
 	bool is_spatial_container_enabled() const;
