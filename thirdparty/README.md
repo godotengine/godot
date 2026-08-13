@@ -290,6 +290,8 @@ Files generated from upstream source:
 - Step 3: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
 - Step 4: Copy `source/data/out/icudt72l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt72l.dat`.
 
+Apply `patches` to fix the `-Wunnecessary-virtual-specifier` warning in Clang. Newer versions of ICU4C do not have this warning, this only applies to older versions.
+
 
 ## jpeg-compressor
 
