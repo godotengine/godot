@@ -440,18 +440,18 @@ Object *CollisionObject2D::shape_owner_get_owner(uint32_t p_owner) const {
 	return ObjectDB::get_instance(shapes[p_owner].owner_id);
 }
 
-void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape2D> rp_shape) {
+void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape2D> p_shape) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
-	EXTRACT_PARAM_OR_FAIL(p_shape, rp_shape);
+	EXTRACT_PARAM_OR_FAIL(shape, p_shape);
 
 	ShapeData &sd = shapes[p_owner];
 	ShapeData::Shape s;
 	s.index = total_subshapes;
-	s.shape = p_shape;
+	s.shape = shape;
 	if (area) {
-		PhysicsServer2D::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+		PhysicsServer2D::get_singleton()->area_add_shape(rid, shape->get_rid(), sd.xform, sd.disabled);
 	} else {
-		PhysicsServer2D::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+		PhysicsServer2D::get_singleton()->body_add_shape(rid, shape->get_rid(), sd.xform, sd.disabled);
 	}
 	sd.shapes.push_back(s);
 
