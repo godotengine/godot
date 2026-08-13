@@ -51,7 +51,21 @@ public:
 		TEST_METHODRC_ARGS,
 		TEST_METHOD_DEFARGS,
 		TEST_METHOD_OBJECT_CAST,
-		TEST_MAX
+		TEST_MAX,
+	};
+
+	enum class TestScoped {
+		METHOD,
+		METHOD_ARGS,
+		METHODC,
+		METHODC_ARGS,
+		METHODR,
+		METHODR_ARGS,
+		METHODRC,
+		METHODRC_ARGS,
+		METHOD_DEFARGS,
+		METHOD_OBJECT_CAST,
+		MAX,
 	};
 
 	class ObjectSubclass : public Object {
@@ -109,18 +123,7 @@ public:
 		test_valid[TEST_METHOD_OBJECT_CAST] = p_object->value == 1;
 	}
 
-	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("test_method"), &MethodBindTester::test_method);
-		ClassDB::bind_method(D_METHOD("test_method_args"), &MethodBindTester::test_method_args);
-		ClassDB::bind_method(D_METHOD("test_methodc"), &MethodBindTester::test_methodc);
-		ClassDB::bind_method(D_METHOD("test_methodc_args"), &MethodBindTester::test_methodc_args);
-		ClassDB::bind_method(D_METHOD("test_methodr"), &MethodBindTester::test_methodr);
-		ClassDB::bind_method(D_METHOD("test_methodr_args"), &MethodBindTester::test_methodr_args);
-		ClassDB::bind_method(D_METHOD("test_methodrc"), &MethodBindTester::test_methodrc);
-		ClassDB::bind_method(D_METHOD("test_methodrc_args"), &MethodBindTester::test_methodrc_args);
-		ClassDB::bind_method(D_METHOD("test_method_default_args"), &MethodBindTester::test_method_default_args, DEFVAL(9) /* wrong on purpose */, DEFVAL(4), DEFVAL(5));
-		ClassDB::bind_method(D_METHOD("test_method_object_cast", "object"), &MethodBindTester::test_method_object_cast);
-	}
+	static void _bind_methods();
 
 	virtual void run_tests() {
 		for (int i = 0; i < TEST_MAX; i++) {
@@ -153,6 +156,51 @@ public:
 	}
 };
 
+} // namespace TestMethodBind
+
+// FIXME: Support binding enums/bitfields regardless of namespace scope.
+VARIANT_ENUM_CAST(TestMethodBind::MethodBindTester::Test)
+VARIANT_ENUM_CAST(TestMethodBind::MethodBindTester::TestScoped)
+
+namespace TestMethodBind {
+
+void MethodBindTester::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("test_method"), &MethodBindTester::test_method);
+	ClassDB::bind_method(D_METHOD("test_method_args"), &MethodBindTester::test_method_args);
+	ClassDB::bind_method(D_METHOD("test_methodc"), &MethodBindTester::test_methodc);
+	ClassDB::bind_method(D_METHOD("test_methodc_args"), &MethodBindTester::test_methodc_args);
+	ClassDB::bind_method(D_METHOD("test_methodr"), &MethodBindTester::test_methodr);
+	ClassDB::bind_method(D_METHOD("test_methodr_args"), &MethodBindTester::test_methodr_args);
+	ClassDB::bind_method(D_METHOD("test_methodrc"), &MethodBindTester::test_methodrc);
+	ClassDB::bind_method(D_METHOD("test_methodrc_args"), &MethodBindTester::test_methodrc_args);
+	ClassDB::bind_method(D_METHOD("test_method_default_args"), &MethodBindTester::test_method_default_args, DEFVAL(9) /* wrong on purpose */, DEFVAL(4), DEFVAL(5));
+	ClassDB::bind_method(D_METHOD("test_method_object_cast", "object"), &MethodBindTester::test_method_object_cast);
+
+	BIND_ENUM_CONSTANT(TEST_METHOD);
+	BIND_ENUM_CONSTANT(TEST_METHOD_ARGS);
+	BIND_ENUM_CONSTANT(TEST_METHODC);
+	BIND_ENUM_CONSTANT(TEST_METHODC_ARGS);
+	BIND_ENUM_CONSTANT(TEST_METHODR);
+	BIND_ENUM_CONSTANT(TEST_METHODR_ARGS);
+	BIND_ENUM_CONSTANT(TEST_METHODRC);
+	BIND_ENUM_CONSTANT(TEST_METHODRC_ARGS);
+	BIND_ENUM_CONSTANT(TEST_METHOD_DEFARGS);
+	BIND_ENUM_CONSTANT(TEST_METHOD_OBJECT_CAST);
+	BIND_ENUM_CONSTANT(TEST_MAX);
+
+	BIND_ENUM_CONSTANT_EXT(TestScoped::METHOD, TEST_SCOPED_METHOD);
+	BIND_ENUM_CONSTANT_EXT(TestScoped::METHOD_ARGS, TEST_SCOPED_METHOD_ARGS);
+	BIND_ENUM_CONSTANT_EXT(TestScoped::METHODC, TEST_SCOPED_METHODC);
+	BIND_ENUM_CONSTANT_EXT(TestScoped::METHODC_ARGS, TEST_SCOPED_METHODC_ARGS);
+	BIND_ENUM_CONSTANT_EXT(TestScoped::METHODR, TEST_SCOPED_METHODR);
+	BIND_ENUM_CONSTANT_EXT(TestScoped::METHODR_ARGS, TEST_SCOPED_METHODR_ARGS);
+	BIND_ENUM_CONSTANT_EXT(TestScoped::METHODRC, TEST_SCOPED_METHODRC);
+	BIND_ENUM_CONSTANT_EXT(TestScoped::METHODRC_ARGS, TEST_SCOPED_METHODRC_ARGS);
+	BIND_ENUM_CONSTANT_EXT(TestScoped::METHOD_DEFARGS, TEST_SCOPED_METHOD_DEFARGS);
+	BIND_ENUM_CONSTANT_EXT(TestScoped::METHOD_OBJECT_CAST, TEST_SCOPED_METHOD_OBJECT_CAST);
+	BIND_ENUM_CONSTANT_EXT(TestScoped::MAX, TEST_SCOPED_MAX);
+}
+
 TEST_CASE("[MethodBind] check all method binds") {
 	MethodBindTester *mbt = memnew(MethodBindTester);
 
@@ -170,6 +218,50 @@ TEST_CASE("[MethodBind] check all method binds") {
 	CHECK(mbt->test_valid[MethodBindTester::TEST_METHOD_OBJECT_CAST]);
 
 	memdelete(mbt);
+}
+
+TEST_CASE("[MethodBind] check bound enums") {
+	const AHashMap<StringName, const GDType::EnumInfo *> &enum_map = MethodBindTester::get_gdtype_static().get_enum_map();
+
+#define BOUND_ENUM_LOOP(m_info, m_value, m_name) \
+	CHECK(m_info->values.has(#m_name)); \
+	if (m_info->values.has(#m_name)) { \
+		CHECK(static_cast<int64_t>(m_value) == m_info->values[#m_name]); \
+	}
+
+	const GDType::EnumInfo *enum_info_test = enum_map.has("Test") ? enum_map.get("Test") : nullptr;
+	CHECK(enum_info_test != nullptr);
+	if (enum_info_test) {
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHOD, TEST_METHOD)
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHOD_ARGS, TEST_METHOD_ARGS)
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHODC, TEST_METHODC)
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHODC_ARGS, TEST_METHODC_ARGS)
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHODR, TEST_METHODR)
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHODR_ARGS, TEST_METHODR_ARGS)
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHODRC, TEST_METHODRC)
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHODRC_ARGS, TEST_METHODRC_ARGS)
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHOD_DEFARGS, TEST_METHOD_DEFARGS)
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_METHOD_OBJECT_CAST, TEST_METHOD_OBJECT_CAST)
+		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_MAX, TEST_MAX)
+	}
+
+	const GDType::EnumInfo *enum_info_test_scoped = enum_map.has("TestScoped") ? enum_map.get("TestScoped") : nullptr;
+	CHECK(enum_info_test_scoped != nullptr);
+	if (enum_info_test_scoped) {
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHOD, TEST_SCOPED_METHOD)
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHOD_ARGS, TEST_SCOPED_METHOD_ARGS)
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHODC, TEST_SCOPED_METHODC)
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHODC_ARGS, TEST_SCOPED_METHODC_ARGS)
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHODR, TEST_SCOPED_METHODR)
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHODR_ARGS, TEST_SCOPED_METHODR_ARGS)
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHODRC, TEST_SCOPED_METHODRC)
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHODRC_ARGS, TEST_SCOPED_METHODRC_ARGS)
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHOD_DEFARGS, TEST_SCOPED_METHOD_DEFARGS)
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::METHOD_OBJECT_CAST, TEST_SCOPED_METHOD_OBJECT_CAST)
+		BOUND_ENUM_LOOP(enum_info_test_scoped, MethodBindTester::TestScoped::MAX, TEST_SCOPED_MAX)
+	}
+
+#undef BOUND_ENUM_LOOP
 }
 
 } // namespace TestMethodBind

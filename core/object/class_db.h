@@ -546,13 +546,19 @@ public:
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	get_gdtype_static_mutable().bind_integer_constant(__constant_get_enum_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant);
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_enum_name(m_constant), __constant_get_enum_value_name(#m_constant), static_cast<int64_t>(m_constant));
+#define BIND_ENUM_CONSTANT_EXT(m_constant, m_bound_name) \
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_enum_name(m_constant), #m_bound_name, static_cast<int64_t>(m_constant));
 
 #define BIND_BITFIELD_FLAG(m_constant) \
-	get_gdtype_static_mutable().bind_integer_constant(__constant_get_bitfield_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant, true);
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_bitfield_name(m_constant), __constant_get_enum_value_name(#m_constant), static_cast<int64_t>(m_constant), true);
+#define BIND_BITFIELD_FLAG_EXT(m_constant, m_bound_name) \
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_bitfield_name(m_constant), #m_bound_name, static_cast<int64_t>(m_constant), true);
 
 #define BIND_CONSTANT(m_constant) \
-	get_gdtype_static_mutable().bind_integer_constant(StringName(), __constant_get_enum_value_name(#m_constant), m_constant);
+	get_gdtype_static_mutable().bind_integer_constant(StringName(), __constant_get_enum_value_name(#m_constant), static_cast<int64_t>(m_constant));
+#define BIND_CONSTANT_EXT(m_constant, m_bound_name) \
+	get_gdtype_static_mutable().bind_integer_constant(StringName(), #m_bound_name, static_cast<int64_t>(m_constant));
 
 #ifdef DEBUG_ENABLED
 
