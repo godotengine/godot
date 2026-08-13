@@ -29,7 +29,7 @@
 				Adds an [AudioEffect] effect to the bus [param bus_idx] at [param at_position].
 			</description>
 		</method>
-		<method name="generate_bus_layout" qualifiers="const">
+		<method name="generate_bus_layout" qualifiers="const" deprecated="Use [method AudioBusLayout.generate_from_server_bus_layout] instead.">
 			<return type="AudioBusLayout" />
 			<description>
 				Generates an [AudioBusLayout] using the available buses and effects.
@@ -287,7 +287,7 @@
 				If [code]true[/code], the effect at index [param effect_idx] on the bus at index [param bus_idx] is enabled.
 			</description>
 		</method>
-		<method name="set_bus_layout">
+		<method name="set_bus_layout" deprecated="Use [method AudioBusLayout.set_server_bus_layout] instead.">
 			<return type="void" />
 			<param index="0" name="bus_layout" type="AudioBusLayout" />
 			<description>

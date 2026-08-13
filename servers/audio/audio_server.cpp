@@ -1424,7 +1424,7 @@ void AudioServer::load_default_bus_layout() {
 	if (ResourceLoader::exists(layout_path)) {
 		Ref<AudioBusLayout> default_layout = ResourceLoader::load(layout_path);
 		if (default_layout.is_valid()) {
-			set_bus_layout(default_layout);
+			_set_server_bus_layout(default_layout);
 		}
 	}
 }
@@ -1530,44 +1530,52 @@ void AudioServer::remove_listener_changed_callback(AudioCallback p_callback, voi
 	}
 }
 
+#ifndef DISABLE_DEPRECATED
 void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
-	ERR_FAIL_COND(p_bus_layout.is_null() || p_bus_layout->buses.is_empty());
+	ERR_FAIL_COND(p_bus_layout.is_null());
+	// Forward for compatibility.
+	p_bus_layout->set_server_bus_layout();
+}
+#endif // DISABLE_DEPRECATED
+
+void AudioServer::_set_server_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
+	ERR_FAIL_COND(p_bus_layout.is_null() || p_bus_layout->get_bus_count() == 0);
 
 	lock();
 	for (int i = 0; i < buses.size(); i++) {
 		memdelete(buses[i]);
 	}
-	buses.resize(p_bus_layout->buses.size());
+	buses.resize(p_bus_layout->get_bus_count());
 	bus_map.clear();
 
 	AudioDriver::get_singleton()->set_sample_bus_count(buses.size());
 
-	for (int i = 0; i < p_bus_layout->buses.size(); i++) {
+	for (int i = 0; i < p_bus_layout->get_bus_count(); i++) {
 		Bus *bus = memnew(Bus);
 		if (i == 0) {
 			bus->name = SceneStringName(Master);
 		} else {
-			bus->name = p_bus_layout->buses[i].name;
-			bus->send = p_bus_layout->buses[i].send;
+			bus->name = p_bus_layout->get_bus_name(i);
+			bus->send = p_bus_layout->get_bus_send(i);
 			AudioDriver::get_singleton()->set_sample_bus_send(i, bus->send);
 		}
 
-		bus->solo = p_bus_layout->buses[i].solo;
-		bus->mute = p_bus_layout->buses[i].mute;
-		bus->bypass = p_bus_layout->buses[i].bypass;
-		bus->volume_db = p_bus_layout->buses[i].volume_db;
+		bus->solo = p_bus_layout->is_bus_solo(i);
+		bus->mute = p_bus_layout->is_bus_mute(i);
+		bus->bypass = p_bus_layout->is_bus_bypassing_effects(i);
+		bus->volume_db = p_bus_layout->get_bus_volume_db(i);
 
 		AudioDriver::get_singleton()->set_sample_bus_solo(i, bus->solo);
 		AudioDriver::get_singleton()->set_sample_bus_mute(i, bus->mute);
 		AudioDriver::get_singleton()->set_sample_bus_volume_db(i, bus->volume_db);
 
-		for (int j = 0; j < p_bus_layout->buses[i].effects.size(); j++) {
-			Ref<AudioEffect> fx = p_bus_layout->buses[i].effects[j].effect;
+		for (int j = 0; j < p_bus_layout->get_bus_effect_count(i); j++) {
+			Ref<AudioEffect> fx = p_bus_layout->get_bus_effect(i, j);
 
 			if (fx.is_valid()) {
 				Bus::Effect bfx;
 				bfx.effect = fx;
-				bfx.enabled = p_bus_layout->buses[i].effects[j].enabled;
+				bfx.enabled = p_bus_layout->is_bus_effect_enabled(i, j);
 #ifdef DEBUG_ENABLED
 				bfx.prof_time = 0;
 #endif
@@ -1592,29 +1600,16 @@ void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 	// Samples bus sync.
 }
 
+#ifndef DISABLE_DEPRECATED
 Ref<AudioBusLayout> AudioServer::generate_bus_layout() const {
 	Ref<AudioBusLayout> state;
 	state.instantiate();
 
-	state->buses.resize(buses.size());
-
-	for (int i = 0; i < buses.size(); i++) {
-		state->buses.write[i].name = buses[i]->name;
-		state->buses.write[i].send = buses[i]->send;
-		state->buses.write[i].mute = buses[i]->mute;
-		state->buses.write[i].solo = buses[i]->solo;
-		state->buses.write[i].bypass = buses[i]->bypass;
-		state->buses.write[i].volume_db = buses[i]->volume_db;
-		for (int j = 0; j < buses[i]->effects.size(); j++) {
-			AudioBusLayout::Bus::Effect fx;
-			fx.effect = buses[i]->effects[j].effect;
-			fx.enabled = buses[i]->effects[j].enabled;
-			state->buses.write[i].effects.push_back(fx);
-		}
-	}
+	state->generate_from_server_bus_layout();
 
 	return state;
 }
+#endif // DISABLE_DEPRECATED
 
 PackedStringArray AudioServer::get_output_device_list() {
 	return AudioDriver::get_singleton()->get_output_device_list();
@@ -1884,8 +1879,10 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_buffer_length_frames"), &AudioServer::get_input_buffer_length_frames);
 	ClassDB::bind_method(D_METHOD("get_input_frames", "frames"), &AudioServer::get_input_frames);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("set_enable_tagging_used_audio_streams", "enable"), &AudioServer::set_enable_tagging_used_audio_streams);
 
