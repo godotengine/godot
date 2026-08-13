@@ -215,6 +215,54 @@ static String _contextualize_class_specifier(const String &p_class_specifier, co
 	return p_class_specifier.substr(p_edited_class.length() + 1);
 }
 
+static bool _doc_class_has_enum_value(const DocData::ClassDoc &p_class_doc, const String &p_enum_name, const String &p_value_name) {
+	for (const DocData::ConstantDoc &constant : p_class_doc.constants) {
+		if (constant.name == p_value_name && _contextualize_class_specifier(constant.enumeration, p_class_doc.name) == p_enum_name) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static void _resolve_doc_member_link(const String &p_link, const String &p_current_class, bool p_allow_enum_value, String &r_class_name, String &r_member_name) {
+	r_class_name = p_current_class;
+	r_member_name = p_link;
+
+	const int member_separator = p_link.rfind_char('.');
+	if (p_allow_enum_value && member_separator > 0) {
+		const String enum_name = p_link.left(member_separator);
+		const String value_name = p_link.substr(member_separator + 1);
+		const DocData::ClassDoc *current_class_doc = EditorHelp::get_doc(p_current_class);
+		if (current_class_doc && _doc_class_has_enum_value(*current_class_doc, enum_name, value_name)) {
+			return;
+		}
+		if (CoreConstants::is_global_enum(enum_name) && CoreConstants::is_global_constant(value_name) && CoreConstants::get_global_constant_enum(CoreConstants::get_global_constant_index(value_name)) == enum_name) {
+			r_class_name = "@GlobalScope";
+			return;
+		}
+
+		for (int dot_pos = enum_name.rfind_char('.'); dot_pos > 0; dot_pos = enum_name.rfind_char('.', dot_pos - 1)) {
+			const String class_name = enum_name.left(dot_pos);
+			const String class_enum_name = enum_name.substr(dot_pos + 1);
+			const DocData::ClassDoc *class_doc = EditorHelp::get_doc(class_name);
+			if (class_doc && _doc_class_has_enum_value(*class_doc, class_enum_name, value_name)) {
+				r_class_name = class_name;
+				r_member_name = class_enum_name + "." + value_name;
+				return;
+			}
+		}
+	}
+
+	for (int dot_pos = member_separator; dot_pos > 0; dot_pos = p_link.rfind_char('.', dot_pos - 1)) {
+		const String class_name = p_link.left(dot_pos);
+		if (EditorHelp::has_doc(class_name)) {
+			r_class_name = class_name;
+			r_member_name = p_link.substr(dot_pos + 1);
+			return;
+		}
+	}
+}
+
 /// EditorHelp ///
 
 void EditorHelp::_update_theme_item_cache() {
@@ -380,8 +428,10 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 			}
 
 			if (link.contains_char('.')) {
-				const int class_end = link.rfind_char('.');
-				emit_signal(SNAME("go_to_help"), topic + ":" + link.left(class_end) + ":" + link.substr(class_end + 1));
+				String member_class_name;
+				String member_name;
+				_resolve_doc_member_link(link, edited_class, topic == "class_constant", member_class_name, member_name);
+				emit_signal(SNAME("go_to_help"), topic + ":" + member_class_name + ":" + member_name);
 			}
 		}
 	} else if (p_select.begins_with("http:") || p_select.begins_with("https:")) {
@@ -1820,7 +1870,14 @@ void EditorHelp::_update_doc() {
 					}
 
 					// Add the enum constant line to the constant_line map so we can locate it as a constant.
-					constant_line[enum_value.name] = class_desc->get_paragraph_count() - 2;
+					const int enum_value_line = class_desc->get_paragraph_count() - 2;
+					constant_line[enum_value.name] = enum_value_line;
+					if (key != "@unnamed_enums") {
+						// Named enum values can be referenced as `Enum.VALUE` or `Class.Enum.VALUE`.
+						constant_line[key + "." + enum_value.name] = enum_value_line;
+						constant_line[E.key + "." + enum_value.name] = enum_value_line;
+						constant_line[cd.name + "." + key + "." + enum_value.name] = enum_value_line;
+					}
 
 					class_desc->push_indent(1);
 
@@ -4432,12 +4489,10 @@ void EditorHelpBit::_meta_clicked(const String &p_select) {
 			}
 		}
 
-		if (link.contains_char('.')) {
-			const int class_end = link.rfind_char('.');
-			_go_to_help(topic + ":" + link.left(class_end) + ":" + link.substr(class_end + 1));
-		} else {
-			_go_to_help(topic + ":" + symbol_class_name + ":" + link);
-		}
+		String member_class_name;
+		String member_name;
+		_resolve_doc_member_link(link, symbol_class_name, topic == "class_constant", member_class_name, member_name);
+		_go_to_help(topic + ":" + member_class_name + ":" + member_name);
 	} else if (p_select.begins_with("open-file:")) {
 		String path = ProjectSettings::get_singleton()->globalize_path(p_select.trim_prefix("open-file:"));
 		OS::get_singleton()->shell_show_in_file_manager(path, true);
