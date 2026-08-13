@@ -106,6 +106,9 @@ void XRVRS::set_vrs_render_region(const Rect2i &p_vrs_render_region) {
 RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const Vector<Vector2> &p_eye_foci) {
 	ERR_FAIL_COND_V(p_eye_foci.is_empty(), RID());
 
+	// VRS textures are only available on rendering methods backed by a RenderingDevice.
+	ERR_FAIL_NULL_V_MSG(RD::get_singleton(), RID(), "VRS textures require a RenderingDevice-based rendering method.");
+
 	Size2i texel_size = RD::get_singleton()->vrs_get_texel_size();
 
 	// Should return sensible data or graphics API does not support VRS.
