@@ -1097,7 +1097,7 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	if (p_scroll_to_selected && last_selected) {
 		// Scrolling to the first selected in the _update_filter call above followed by the last
 		// selected here is enough to frame all selected items as well as possible.
-		callable_mp(tree, &Tree::scroll_to_item).call_deferred(last_selected, false);
+		callable_mp(this, &SceneTreeEditor::_tree_scroll_to_item).call_deferred(last_selected->get_instance_id(), false);
 	}
 	return result;
 }
@@ -1233,7 +1233,7 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 			if (n && editor_selection->is_selected(n)) {
 				if (p_scroll_to_selected) {
 					// Needs to be deferred to account for possible root visibility change.
-					callable_mp(tree, &Tree::scroll_to_item).call_deferred(Variant(p_parent), false);
+					callable_mp(this, &SceneTreeEditor::_tree_scroll_to_item).call_deferred(p_parent->get_instance_id(), false);
 				} else {
 					r_last_selected = p_parent;
 				}
@@ -1459,11 +1459,11 @@ void SceneTreeEditor::_process_selection_update() {
 	emit_signal(SNAME("node_changed"));
 }
 
-void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
+void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id, bool p_center_on_item) {
 	ERR_FAIL_NULL(tree);
 	TreeItem *item = ObjectDB::get_instance<TreeItem>(p_item_id);
 	if (item) {
-		tree->scroll_to_item(item, true);
+		tree->scroll_to_item(item, p_center_on_item);
 	}
 }
 
@@ -1530,7 +1530,7 @@ void SceneTreeEditor::_notification(int p_what) {
 				if (update_when_invisible) {
 					if (has_item) {
 						ObjectID item_id = item->get_instance_id();
-						callable_mp(this, &SceneTreeEditor::_tree_scroll_to_item).call_deferred(item_id);
+						callable_mp(this, &SceneTreeEditor::_tree_scroll_to_item).call_deferred(item_id, true);
 					}
 				} else {
 					callable_mp(this, &SceneTreeEditor::_update_tree).call_deferred(has_item);
