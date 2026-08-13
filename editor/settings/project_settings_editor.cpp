@@ -105,7 +105,8 @@ void ProjectSettingsEditor::_save() {
 }
 
 void ProjectSettingsEditor::set_plugins_page() {
-	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(plugin_settings));
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(addons_container));
+	addons_container->set_current_tab(0);
 }
 
 void ProjectSettingsEditor::set_general_page(const String &p_category) {
@@ -847,7 +848,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	globals_container->add_child(group_settings);
 
-	TabContainer *addons_container = memnew(TabContainer);
+	addons_container = memnew(TabContainer);
 	addons_container->set_theme_type_variation("TabContainerInner");
 	addons_container->set_name(TTRC("Addons"));
 	tab_container->add_child(addons_container);
