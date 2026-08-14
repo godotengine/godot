@@ -33,6 +33,8 @@
 #include "godot_body_2d.h"
 #include "godot_space_2d.h"
 
+PagedAllocator<HashMapElement<GodotArea2D::BodyKey, GodotArea2D::BodyState>, false, 2048> GodotArea2D::SharedAllocator::allocator;
+
 GodotArea2D::BodyKey::BodyKey(GodotBody2D *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	rid = p_body->get_self();
 	instance_id = p_body->get_instance_id();
@@ -211,32 +213,36 @@ void GodotArea2D::call_queries() {
 				resptr[i] = &res[i];
 			}
 
-			for (HashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_bodies.begin(); E;) {
-				if (E->value.state == 0) { // Nothing happened
-					HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
-					++next;
+			// The first pass issues `AREA_BODY_ADDED`, while the second pass issues `AREA_BODY_REMOVED`.
+			// This execution order ensures that the callback doesn't incorrectly issue a body_exit signal.
+			bool first_pass = true;
+			for (HashMap<BodyKey, BodyState, BodyKey, HashMapComparatorDefault<BodyKey>, SharedAllocator>::Iterator next = monitored_bodies.begin(), E = next; E; E = next) {
+				++next;
+
+				if ((E->value.state > 0) || !first_pass) {
+					res[0] = E->value.state > 0 ? PS2DE::AREA_BODY_ADDED : PS2DE::AREA_BODY_REMOVED;
+					res[1] = E->key.rid;
+					res[2] = E->key.instance_id;
+					res[3] = E->key.body_shape;
+					res[4] = E->key.area_shape;
+
 					monitored_bodies.remove(E);
-					E = next;
-					continue;
+
+					Callable::CallError ce;
+					Variant ret;
+					monitor_callback.callp((const Variant **)resptr, 5, ret, ce);
+
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT_ONCE("Error calling event callback method " + Variant::get_callable_error_text(monitor_callback, (const Variant **)resptr, 5, ce));
+					}
+				} else if (E->value.state == 0) { // Nothing happened.
+					monitored_bodies.remove(E);
 				}
 
-				res[0] = E->value.state > 0 ? PS2DE::AREA_BODY_ADDED : PS2DE::AREA_BODY_REMOVED;
-				res[1] = E->key.rid;
-				res[2] = E->key.instance_id;
-				res[3] = E->key.body_shape;
-				res[4] = E->key.area_shape;
-
-				HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
-				++next;
-				monitored_bodies.remove(E);
-				E = next;
-
-				Callable::CallError ce;
-				Variant ret;
-				monitor_callback.callp((const Variant **)resptr, 5, ret, ce);
-
-				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT_ONCE("Error calling event callback method " + Variant::get_callable_error_text(monitor_callback, (const Variant **)resptr, 5, ce));
+				if (!next && first_pass) {
+					// Start the second pass.
+					first_pass = false;
+					next = monitored_bodies.begin();
 				}
 			}
 		} else {
@@ -253,32 +259,34 @@ void GodotArea2D::call_queries() {
 				resptr[i] = &res[i];
 			}
 
-			for (HashMap<BodyKey, BodyState, BodyKey>::Iterator E = monitored_areas.begin(); E;) {
-				if (E->value.state == 0) { // Nothing happened
-					HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
-					++next;
+			bool first_pass = true;
+			for (HashMap<BodyKey, BodyState, BodyKey, HashMapComparatorDefault<BodyKey>, SharedAllocator>::Iterator next = monitored_areas.begin(), E = next; E; E = next) {
+				++next;
+
+				if ((E->value.state > 0) || !first_pass) {
+					res[0] = E->value.state > 0 ? PS2DE::AREA_BODY_ADDED : PS2DE::AREA_BODY_REMOVED;
+					res[1] = E->key.rid;
+					res[2] = E->key.instance_id;
+					res[3] = E->key.body_shape;
+					res[4] = E->key.area_shape;
+
 					monitored_areas.remove(E);
-					E = next;
-					continue;
+
+					Callable::CallError ce;
+					Variant ret;
+					area_monitor_callback.callp((const Variant **)resptr, 5, ret, ce);
+
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_PRINT_ONCE("Error calling event callback method " + Variant::get_callable_error_text(area_monitor_callback, (const Variant **)resptr, 5, ce));
+					}
+				} else if (E->value.state == 0) { // Nothing happened.
+					monitored_areas.remove(E);
 				}
 
-				res[0] = E->value.state > 0 ? PS2DE::AREA_BODY_ADDED : PS2DE::AREA_BODY_REMOVED;
-				res[1] = E->key.rid;
-				res[2] = E->key.instance_id;
-				res[3] = E->key.body_shape;
-				res[4] = E->key.area_shape;
-
-				HashMap<BodyKey, BodyState, BodyKey>::Iterator next = E;
-				++next;
-				monitored_areas.remove(E);
-				E = next;
-
-				Callable::CallError ce;
-				Variant ret;
-				area_monitor_callback.callp((const Variant **)resptr, 5, ret, ce);
-
-				if (ce.error != Callable::CallError::CALL_OK) {
-					ERR_PRINT_ONCE("Error calling event callback method " + Variant::get_callable_error_text(area_monitor_callback, (const Variant **)resptr, 5, ce));
+				if (!next && first_pass) {
+					// Start the second pass.
+					first_pass = false;
+					next = monitored_areas.begin();
 				}
 			}
 		} else {

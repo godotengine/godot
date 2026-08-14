@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/paged_allocator.h"
 #include "core/templates/vset.h"
 #include "scene/2d/physics/collision_object_2d.h"
 
@@ -95,7 +96,16 @@ private:
 		VSet<ShapePair> shapes;
 	};
 
-	HashMap<ObjectID, BodyState> body_map;
+	// This wraps a global allocator for use by all Area2D objects
+	struct SharedBodyAllocator {
+		static PagedAllocator<HashMapElement<ObjectID, BodyState>, false, 512> allocator;
+
+		template <typename... Args>
+		HashMapElement<ObjectID, BodyState> *new_allocation(Args &&...p_args) { return allocator.new_allocation(p_args...); }
+		void delete_allocation(HashMapElement<ObjectID, BodyState> *p_mem) { allocator.free(p_mem); }
+	};
+
+	HashMap<ObjectID, BodyState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedBodyAllocator> body_map;
 
 	void _area_inout(int p_status, const RID &p_area, ObjectID p_instance, int p_area_shape, int p_self_shape);
 
@@ -127,7 +137,16 @@ private:
 		VSet<AreaShapePair> shapes;
 	};
 
-	HashMap<ObjectID, AreaState> area_map;
+	// This wraps a global allocator for use by all Area2D objects
+	struct SharedAreaAllocator {
+		static PagedAllocator<HashMapElement<ObjectID, AreaState>, false, 512> allocator;
+
+		template <typename... Args>
+		HashMapElement<ObjectID, AreaState> *new_allocation(Args &&...p_args) { return allocator.new_allocation(p_args...); }
+		void delete_allocation(HashMapElement<ObjectID, AreaState> *p_mem) { allocator.free(p_mem); }
+	};
+
+	HashMap<ObjectID, AreaState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedAreaAllocator> area_map;
 	void _clear_monitoring();
 
 	bool audio_bus_override = false;

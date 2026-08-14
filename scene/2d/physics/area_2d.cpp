@@ -36,6 +36,9 @@
 #include "servers/audio/audio_server.h"
 #include "servers/physics_2d/physics_server_2d.h"
 
+PagedAllocator<HashMapElement<ObjectID, Area2D::BodyState>, false, 512> Area2D::SharedBodyAllocator::allocator;
+PagedAllocator<HashMapElement<ObjectID, Area2D::AreaState>, false, 512> Area2D::SharedAreaAllocator::allocator;
+
 void Area2D::set_gravity_space_override_mode(SpaceOverride p_mode) {
 	gravity_space_override = p_mode;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PS2DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE, p_mode);
@@ -140,7 +143,7 @@ void Area2D::_body_enter_tree(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_NULL(node);
 
-	HashMap<ObjectID, BodyState>::Iterator E = body_map.find(p_id);
+	HashMap<ObjectID, BodyState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedBodyAllocator>::Iterator E = body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(E->value.in_tree);
 
@@ -155,7 +158,7 @@ void Area2D::_body_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_NULL(node);
-	HashMap<ObjectID, BodyState>::Iterator E = body_map.find(p_id);
+	HashMap<ObjectID, BodyState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedBodyAllocator>::Iterator E = body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->value.in_tree);
 	E->value.in_tree = false;
@@ -187,7 +190,7 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
 
-	HashMap<ObjectID, BodyState>::Iterator E = body_map.find(objid);
+	HashMap<ObjectID, BodyState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedBodyAllocator>::Iterator E = body_map.find(objid);
 
 	if (!body_in && !E) {
 		return; //does not exist because it was likely removed from the tree
@@ -251,7 +254,7 @@ void Area2D::_area_enter_tree(ObjectID p_id) {
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_NULL(node);
 
-	HashMap<ObjectID, AreaState>::Iterator E = area_map.find(p_id);
+	HashMap<ObjectID, AreaState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedAreaAllocator>::Iterator E = area_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(E->value.in_tree);
 
@@ -266,7 +269,7 @@ void Area2D::_area_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
 	ERR_FAIL_NULL(node);
-	HashMap<ObjectID, AreaState>::Iterator E = area_map.find(p_id);
+	HashMap<ObjectID, AreaState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedAreaAllocator>::Iterator E = area_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->value.in_tree);
 	E->value.in_tree = false;
@@ -298,7 +301,7 @@ void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
 
-	HashMap<ObjectID, AreaState>::Iterator E = area_map.find(objid);
+	HashMap<ObjectID, AreaState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedAreaAllocator>::Iterator E = area_map.find(objid);
 
 	if (!area_in && !E) {
 		return; //likely removed from the tree
@@ -361,7 +364,7 @@ void Area2D::_clear_monitoring() {
 	ERR_FAIL_COND_MSG(locked, "This function can't be used during the in/out signal.");
 
 	{
-		HashMap<ObjectID, BodyState> bmcopy(body_map);
+		HashMap<ObjectID, BodyState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedBodyAllocator> bmcopy(body_map);
 		body_map.clear();
 		//disconnect all monitored stuff
 
@@ -389,7 +392,7 @@ void Area2D::_clear_monitoring() {
 	}
 
 	{
-		HashMap<ObjectID, AreaState> bmcopy(area_map);
+		HashMap<ObjectID, AreaState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedAreaAllocator> bmcopy(area_map);
 		area_map.clear();
 		//disconnect all monitored stuff
 
@@ -507,7 +510,7 @@ bool Area2D::has_overlapping_areas() const {
 
 bool Area2D::overlaps_area(RequiredParam<Node> p_area) const {
 	EXTRACT_PARAM_OR_FAIL_V(check_area, p_area, false);
-	HashMap<ObjectID, AreaState>::ConstIterator E = area_map.find(check_area->get_instance_id());
+	HashMap<ObjectID, AreaState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedAreaAllocator>::ConstIterator E = area_map.find(check_area->get_instance_id());
 	if (!E) {
 		return false;
 	}
@@ -516,7 +519,7 @@ bool Area2D::overlaps_area(RequiredParam<Node> p_area) const {
 
 bool Area2D::overlaps_body(RequiredParam<Node> p_body) const {
 	EXTRACT_PARAM_OR_FAIL_V(body, p_body, false);
-	HashMap<ObjectID, BodyState>::ConstIterator E = body_map.find(body->get_instance_id());
+	HashMap<ObjectID, BodyState, HashMapHasherDefault, HashMapComparatorDefault<ObjectID>, SharedBodyAllocator>::ConstIterator E = body_map.find(body->get_instance_id());
 	if (!E) {
 		return false;
 	}
