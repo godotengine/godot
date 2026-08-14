@@ -875,26 +875,26 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	}
 
 	// Add zero-width space to the end if line did not end with /n to ensure uniform height.
-	if (it_prev) {
-		Ref<Font> font = p_base_font;
-		int font_size = p_base_font_size;
+	// if (it_prev) {
+	// 	Ref<Font> font = p_base_font;
+	// 	int font_size = p_base_font_size;
 
-		ItemFont *font_it = _find_font(it_prev);
-		if (font_it) {
-			if (font_it->font.is_valid()) {
-				font = font_it->font;
-			}
-			if (font_it->font_size > 0) {
-				font_size = font_it->font_size;
-			}
-		}
-		ItemFontSize *font_size_it = _find_font_size(it_prev);
-		if (font_size_it && font_size_it->font_size > 0) {
-			font_size = font_size_it->font_size;
-		}
-		l.text_buf->add_string(String::chr(0x200B), font, font_size, String(), it_prev->rid);
-		txt += "\n";
-	}
+	// 	ItemFont *font_it = _find_font(it_prev);
+	// 	if (font_it) {
+	// 		if (font_it->font.is_valid()) {
+	// 			font = font_it->font;
+	// 		}
+	// 		if (font_it->font_size > 0) {
+	// 			font_size = font_it->font_size;
+	// 		}
+	// 	}
+	// 	ItemFontSize *font_size_it = _find_font_size(it_prev);
+	// 	if (font_size_it && font_size_it->font_size > 0) {
+	// 		font_size = font_size_it->font_size;
+	// 	}
+	// 	l.text_buf->add_string(String::chr(0x200B), font, font_size, String(), it_prev->rid);
+	// 	txt += "\n";
+	// }
 
 	// Apply BiDi override.
 	TextServer::StructuredTextParser stt = _find_stt(l.from);
