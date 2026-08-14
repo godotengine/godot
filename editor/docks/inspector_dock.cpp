@@ -470,6 +470,8 @@ Container *InspectorDock::get_addon_area() {
 void InspectorDock::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			backward_button->set_tooltip_text(TTR("Go to previous edited object in history.") + "\n" + TTR("Right-click to show history of edited objects."));
+
 			update(current);
 			[[fallthrough]];
 		}
@@ -744,9 +746,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	backward_button = memnew(Button);
 	backward_button->set_theme_type_variation(SceneStringName(FlatButton));
-	button_hb->add_child(backward_button);
-	backward_button->set_tooltip_text(TTR("Go to previous edited object in history.") + "\n" + TTR("Right-click to show history of edited objects."));
 	backward_button->set_disabled(true);
+	button_hb->add_child(backward_button);
 	backward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_back_pressed));
 	backward_button->connect(SceneStringName(gui_input), callable_mp(this, &InspectorDock::_edit_back_input));
 
@@ -758,9 +759,9 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	forward_button = memnew(Button);
 	forward_button->set_theme_type_variation(SceneStringName(FlatButton));
-	button_hb->add_child(forward_button);
 	forward_button->set_tooltip_text(TTRC("Go to next edited object in history."));
 	forward_button->set_disabled(true);
+	button_hb->add_child(forward_button);
 	forward_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_edit_forward));
 
 	object_selector = memnew(EditorObjectSelector(EditorNode::get_singleton()->get_editor_selection_history()));
@@ -773,9 +774,9 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_save_button->set_theme_type_variation("FlatMenuButton");
 	resource_save_button->set_tooltip_text(TTRC("Save the currently edited resource."));
 	resource_save_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_save_resource).bind(false));
-	general_options_hb->add_child(resource_save_button);
 	resource_save_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	resource_save_button->set_disabled(true);
+	general_options_hb->add_child(resource_save_button);
 
 	resource_extra_button = memnew(MenuButton);
 	resource_extra_button->set_flat(false);
@@ -786,25 +787,25 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	PopupMenu *resource_extra_popup = resource_extra_button->get_popup();
 	resource_extra_popup->add_shortcut(ED_SHORTCUT("property_editor/new_resource", TTRC("New Resource")), RESOURCE_NEW);
+	resource_extra_popup->set_item_tooltip(-1, TTRC("Create a new resource in memory and edit it."));
 	resource_extra_popup->add_shortcut(ED_SHORTCUT("property_editor/load_resource", TTRC("Load Resource...")), RESOURCE_LOAD);
+	resource_extra_popup->set_item_tooltip(-1, TTRC("Load a resource from disk and edit it."));
 	resource_extra_popup->add_separator();
 	resource_extra_popup->add_shortcut(ED_SHORTCUT("property_editor/save_resource", TTRC("Save Resource")), RESOURCE_SAVE);
+	resource_extra_popup->set_item_disabled(-1, true);
+	resource_extra_popup->set_item_tooltip(-1, TTRC("Save the currently edited resource."));
 	resource_extra_popup->add_shortcut(ED_SHORTCUT("property_editor/save_resource_as", TTRC("Save Resource As...")), RESOURCE_SAVE_AS);
+	resource_extra_popup->set_item_disabled(-1, true);
 	resource_extra_popup->add_separator();
 	resource_extra_popup->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTRC("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
 	resource_extra_popup->add_shortcut(ED_SHORTCUT("property_editor/copy_resource", TTRC("Copy Resource")), RESOURCE_COPY);
-	resource_extra_popup->set_item_tooltip(resource_extra_popup->get_item_index(RESOURCE_NEW), TTRC("Create a new resource in memory and edit it."));
-	resource_extra_popup->set_item_tooltip(resource_extra_popup->get_item_index(RESOURCE_LOAD), TTRC("Load a resource from disk and edit it."));
-	resource_extra_popup->set_item_tooltip(resource_extra_popup->get_item_index(RESOURCE_SAVE), TTRC("Save the currently edited resource."));
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_COPY), true);
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_SAVE), true);
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_SAVE_AS), true);
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_MAKE_BUILT_IN), true);
+	resource_extra_popup->set_item_disabled(-1, true);
 	resource_extra_popup->add_separator();
 	resource_extra_popup->add_shortcut(ED_SHORTCUT("property_editor/show_in_filesystem", TTRC("Show in FileSystem")), RESOURCE_SHOW_IN_FILESYSTEM);
 	resource_extra_popup->add_shortcut(ED_SHORTCUT("property_editor/open_docs", TTRC("Open Documentation")), OBJECT_REQUEST_HELP);
 	resource_extra_popup->add_separator();
 	resource_extra_popup->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTRC("Make Resource Built-In")), RESOURCE_MAKE_BUILT_IN);
+	resource_extra_popup->set_item_disabled(-1, true);
 	resource_extra_popup->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_menu_option));
 
 	new_resource_dialog = memnew(CreateDialog);
