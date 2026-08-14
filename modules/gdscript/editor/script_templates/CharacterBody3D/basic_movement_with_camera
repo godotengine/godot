@@ -1,5 +1,5 @@
 
-# meta-description: Classic movement with camera movment for gravity games (FPS, TPS, ...)
+# meta-description: Classic movement with camera movement for gravity games (FPS, TPS, ...)
 
 extends _BASE_
 
@@ -38,9 +38,9 @@ func _physics_process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
-		head.rotate_x(-event.relative.y * SENSITIVITY)
-		rotate_y(-event.relative.x * SENSITIVITY)
-		head.rotation.x = clamp(
-			head.rotation.x,
+		camera.rotate_x(-event.relative.y * mouse_sensitivity)
+		rotate_y(-event.relative.x * mouse_sensitivity)
+		camera.rotation.x = clamp(
+			camera.rotation.x,
 			deg_to_rad(-90),
 			deg_to_rad(90))
