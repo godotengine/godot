@@ -4475,12 +4475,12 @@ void RenderForwardClustered::_geometry_instance_update(RenderGeometryInstance *p
 		if (!particles_storage->particles_is_using_local_coords(ginstance->data->base)) {
 			store_transform = false;
 		}
-		ginstance->transforms_uniform_set = particles_storage->particles_get_instance_buffer_uniform_set(ginstance->data->base, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);
-
 		if (particles_storage->particles_get_frame_counter(ginstance->data->base) == 0) {
 			// Particles haven't been cleared or updated, update once now to ensure they are ready to render.
 			particles_storage->update_particles();
 		}
+
+		ginstance->transforms_uniform_set = particles_storage->particles_get_instance_buffer_uniform_set(ginstance->data->base, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);
 
 		if (ginstance->data->dirty_dependencies) {
 			particles_storage->particles_update_dependency(ginstance->data->base, &ginstance->data->dependency_tracker);
