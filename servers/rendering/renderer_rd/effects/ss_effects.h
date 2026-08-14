@@ -43,6 +43,7 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ssao_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_blur.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/ssil_upsample.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/subsurface_scattering.glsl.gen.h"
 
 #define RB_SCOPE_SSLF SNAME("rb_sslf")
@@ -226,6 +227,7 @@ private:
 		SSIL_GATHER,
 		SSIL_BLUR_FAST,
 		SSIL_BLUR_ACCURATE,
+		SSIL_UPSAMPLE,
 		SSIL_MAX
 	};
 
@@ -254,6 +256,11 @@ private:
 		int blur_dir;
 	};
 
+	struct SSILUpsamplePushConstant {
+		int32_t screen_size[2];
+		int32_t half_pixel_size[2];
+	};
+
 	struct SSILProjectionUniforms {
 		float last_frame_reprojection_matrix[16];
 	};
@@ -263,6 +270,10 @@ private:
 		SsilShaderRD gather_shader;
 		RID gather_shader_version;
 		RID projection_uniform_buffer;
+
+		SSILUpsamplePushConstant upsample_push_constant;
+		SsilUpsampleShaderRD upsample_shader;
+		RID upsample_shader_version;
 
 		SSILBlurPushConstant blur_push_constant;
 		SsilBlurShaderRD blur_shader;

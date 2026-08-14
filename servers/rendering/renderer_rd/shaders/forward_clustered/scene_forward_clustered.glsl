@@ -2187,6 +2187,7 @@ void fragment_shader(in SceneData scene_data) {
 #else
 			vec4 ssil = textureLod(sampler2D(ssil_buffer, SAMPLER_LINEAR_CLAMP), screen_uv, 0.0);
 #endif // USE_MULTIVIEW
+			ambient_light *= ssil.a;
 			ambient_light += ssil.rgb * albedo.rgb;
 		}
 

@@ -96,31 +96,13 @@ vec3 clipspace_to_viewspace(vec2 p_tex_coord, float p_linear_depth) {
 	return (view_space_position);
 }
 
-// Quaternion utils
-vec4 get_quaternion(vec3 p_to) {
-	//vec3 from = vec3(0.0, 0.0,-1.0);
-
-	vec3 xyz = vec3(p_to.y, -p_to.x, 0.0); // cross(from, p_to);
-	float s = -p_to.z; // dot(from, p_to);
-
-	float u = inversesqrt(max(0.0, s * 0.5 + 0.5)); // rcp(cosine half-angle formula)
-
-	s = 1.0 / u;
-	xyz *= u * 0.5;
-
-	return vec4(xyz, s);
-}
-
-// transform p_v.xy0 by unit quaternion q.xy0s
-vec3 transform_vz0qz0(vec2 p_v, vec4 p_q) {
-	float o = p_q.x * p_v.y;
-	float c = p_q.y * p_v.x;
-
-	vec3 b = vec3(o - c,
-			-o + c,
-			o - c);
-
-	return vec3(p_v, 0.0) + 2.0 * (b * p_q.yxw);
+// https://jcgt.org/published/0006/01/01/
+void get_orthonormal_basis(vec3 n, out vec3 b1, out vec3 b2) {
+	float sign_ = n.z >= 0.0 ? 1.0 : -1.0;
+	float a = -1.0 / (sign_ + n.z);
+	float b = n.x * n.y * a;
+	b1 = vec3(1.0 + sign_ * n.x * n.x * a, sign_ * b, -sign_ * n.x);
+	b2 = vec3(b, sign_ + n.y * n.y * a, -n.y);
 }
 
 // Helper functions
@@ -137,15 +119,11 @@ uint CountBits(uint v) {
 	return ((v + (v >> 4u) & 0xF0F0F0Fu) * 0x1010101u) >> 24u;
 }
 
-// noise
+// https://blog.demofox.org/2022/01/01/interleaved-gradient-noise-a-different-kind-of-low-discrepancy-sequence/
 float ign(vec2 p_uv, uint p_n) {
 	p_uv += 5.588238 * float(p_n);
 
 	return mod(52.9829189 * mod(0.06711056 * p_uv.x + 0.00583715 * p_uv.y, 1.0), 1.0);
-}
-
-float randf(int x, int y) {
-	return mod(52.9829189 * mod(0.06711056 * float(x) + 0.00583715 * float(y), 1.0), 1.0);
 }
 
 vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
@@ -160,13 +138,14 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 	const vec2 pixel_size_at_center = clipspace_to_viewspace(p_pos + (1.0 / vec2(params.screen_size)), p_linear_depth).xy - vs_pos.xy;
 
 	const float s = pow(params.radius / pixel_size_at_center.x, 1.0 / float(count));
-	uint OxFFFFFFFFu = 0xFFFFFFFFu;
 
 	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
 	vs_pos *= 0.99;
 
 	vec3 v = params.is_orthogonal ? vec3(0.0, 0.0, -1.0) : -normalize(vs_pos);
-	vec4 q_to_v = get_quaternion(v);
+	vec3 v_tangent;
+	vec3 v_bitangent;
+	get_orthonormal_basis(v, v_tangent, v_bitangent);
 
 	// Micro optimization by taking this out of the inner loop to avoid doing this multiply more than necessary.
 	vec3 v_mul_thickness = v * params.thickness;
@@ -174,6 +153,7 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 	vec2 ray_start = viewspace_to_screenspace(vs_pos).xy;
 	vec3 ray_start_vc3 = vec3(ray_start, p_linear_depth);
 
+	float ao = 0.0;
 	vec3 gi = vec3(0.0);
 
 	uint frame = params.frame_index;
@@ -190,7 +170,7 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 		sample_dir_vs = vec3(dir, 0.0);
 
 		if (!params.is_orthogonal) {
-			sample_dir_vs = transform_vz0qz0(dir, q_to_v);
+			sample_dir_vs = dir.x * v_tangent + dir.y * v_bitangent;
 
 			vec3 ray_end = viewspace_to_screenspace(vs_pos + sample_dir_vs * (params.z_near * 0.5));
 
@@ -221,7 +201,7 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 		const float global_mip_offset = SSIL_DEPTH_MIPS_GLOBAL_OFFSET;
 		float mip_offset = (log2(s) + global_mip_offset);
 
-		vec2 rnd01_vc2 = vec2(randf(uvi.x, uvi.y), randf(uvi.y, uvi.x));
+		vec2 rnd01_vc2 = vec2(ign(floor(p_pos * vec2(params.screen_size)), n * 2u + 1u), ign(floor(p_pos * vec2(params.screen_size)), n * 2u + 2u));
 
 		for (float d = -1.0; d <= 1.0; d += 2.0) {
 			vec2 ray_dir0 = dir * d;
@@ -238,7 +218,7 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 
 				// handle out of bounds samples
 				if (sample_pos.x < 0.0 || sample_pos.x >= float(params.screen_size.x) ||
-						sample_pos.y < 0.0 || sample_pos.y >= float(params.screen_size.y)) {
+					sample_pos.y < 0.0 || sample_pos.y >= float(params.screen_size.y)) {
 					break;
 				}
 
@@ -268,8 +248,8 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 
 				uvec2 hor_int = uvec2(floor(hor01 * 32.0));
 
-				uint m_x = hor_int.x < 32u ? OxFFFFFFFFu << hor_int.x : 0u;
-				uint m_y = hor_int.y != 0u ? OxFFFFFFFFu >> (32u - hor_int.y) : 0u;
+				uint m_x = hor_int.x < 32u ? 0xFFFFFFFFu << hor_int.x : 0u;
+				uint m_y = hor_int.y != 0u ? 0xFFFFFFFFu >> (32u - hor_int.y) : 0u;
 
 				uint occ_bits0 = m_x & m_y;
 				uint vis_bits0 = occ_bits0 & (~occ_bits);
@@ -316,15 +296,22 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 				break;
 			}
 		}
+		float occ0 = float(CountBits(occ_bits) * (1.0 / 32.0));
 
+		ao += 1.0 - occ0;
 		gi += gi0;
 	}
 
+	float norm = (1.0 / float(dir_count));
+
 	// inverse tonemap
-	gi *= (1.0 / float(dir_count));
+	gi *= norm;
 	gi /= 1.0 - dot(gi, vec3(0.299, 0.587, 0.114));
 	gi *= params.intensity;
-	return vec4(gi, 1.0);
+
+	ao *= norm;
+
+	return vec4(gi, ao);
 }
 
 void main() {
