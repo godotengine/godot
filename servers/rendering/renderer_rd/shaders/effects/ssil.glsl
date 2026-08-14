@@ -218,7 +218,7 @@ vec4 ssilvb(vec2 p_pos, const int p_quality, float p_linear_depth) {
 
 				// handle out of bounds samples
 				if (sample_pos.x < 0.0 || sample_pos.x >= float(params.screen_size.x) ||
-					sample_pos.y < 0.0 || sample_pos.y >= float(params.screen_size.y)) {
+						sample_pos.y < 0.0 || sample_pos.y >= float(params.screen_size.y)) {
 					break;
 				}
 

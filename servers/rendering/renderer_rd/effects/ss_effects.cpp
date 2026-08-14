@@ -617,7 +617,7 @@ void SSEffects::ssil_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers
 	}
 
 	p_ssil_buffers.half_size = ssil_half_size;
-	if(p_ssil_buffers.half_size) {
+	if (p_ssil_buffers.half_size) {
 		p_ssil_buffers.buffer_width = (p_settings.full_screen_size.x) / 2;
 		p_ssil_buffers.buffer_height = (p_settings.full_screen_size.y) / 2;
 	} else {
