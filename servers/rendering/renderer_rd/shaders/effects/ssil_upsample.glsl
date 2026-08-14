@@ -18,35 +18,34 @@ layout(push_constant, std430) uniform Params {
 params;
 
 void add_sample(vec2 p_uv, vec4 color_sample, float p_edge, float p_center_depth, inout vec4 sum_color, inout float sum_weight) {
+	float diff = clamp(1.0 - (abs(p_edge - p_center_depth)), 0.0, 1.0);
 
-    float diff = clamp(1.0 - (abs(p_edge - p_center_depth)), 0.0, 1.0);
-
-    sum_color += color_sample * diff;
-    sum_weight += diff;
+	sum_color += color_sample * diff;
+	sum_weight += diff;
 }
 
 vec4 edges_LRTB(vec2 p_uv) {
-    float L = textureLodOffset(depth_buffer, p_uv, 0.0, ivec2(-2, 0)).r;
-    float R = textureLodOffset(depth_buffer, p_uv, 0.0, ivec2(2, 0)).r;
-    float T = textureLodOffset(depth_buffer, p_uv, 0.0, ivec2(0, 2)).r;
-    float B = textureLodOffset(depth_buffer, p_uv, 0.0, ivec2(0, -2)).r;
+	float L = textureLodOffset(depth_buffer, p_uv, 0.0, ivec2(-2, 0)).r;
+	float R = textureLodOffset(depth_buffer, p_uv, 0.0, ivec2(2, 0)).r;
+	float T = textureLodOffset(depth_buffer, p_uv, 0.0, ivec2(0, 2)).r;
+	float B = textureLodOffset(depth_buffer, p_uv, 0.0, ivec2(0, -2)).r;
 
-    return vec4(L, R, T, B);
+	return vec4(L, R, T, B);
 }
 
 vec4 bilateral_upsample(vec2 p_uv, float p_linear_depth) {
-    vec4 center_color = textureLod(source_ssil, p_uv, 0.0);
-    vec4 edges = edges_LRTB(p_uv);
+	vec4 center_color = textureLod(source_ssil, p_uv, 0.0);
+	vec4 edges = edges_LRTB(p_uv);
 
-    vec4 sum_color = center_color;
-    float sum_weight = 1.0;
+	vec4 sum_color = center_color;
+	float sum_weight = 1.0;
 
-    add_sample(p_uv, textureLodOffset(source_ssil, p_uv, 0.0, ivec2(-1, 0)), edges.x, p_linear_depth, sum_color, sum_weight);
-    add_sample(p_uv, textureLodOffset(source_ssil, p_uv, 0.0, ivec2(1, 0)), edges.y, p_linear_depth, sum_color, sum_weight);
-    add_sample(p_uv, textureLodOffset(source_ssil, p_uv, 0.0, ivec2(0, 1)), edges.z, p_linear_depth, sum_color, sum_weight);
-    add_sample(p_uv, textureLodOffset(source_ssil, p_uv, 0.0, ivec2(0, -1)), edges.w, p_linear_depth, sum_color, sum_weight);
+	add_sample(p_uv, textureLodOffset(source_ssil, p_uv, 0.0, ivec2(-1, 0)), edges.x, p_linear_depth, sum_color, sum_weight);
+	add_sample(p_uv, textureLodOffset(source_ssil, p_uv, 0.0, ivec2(1, 0)), edges.y, p_linear_depth, sum_color, sum_weight);
+	add_sample(p_uv, textureLodOffset(source_ssil, p_uv, 0.0, ivec2(0, 1)), edges.z, p_linear_depth, sum_color, sum_weight);
+	add_sample(p_uv, textureLodOffset(source_ssil, p_uv, 0.0, ivec2(0, -1)), edges.w, p_linear_depth, sum_color, sum_weight);
 
-    return sum_color / sum_weight;
+	return sum_color / sum_weight;
 }
 
 void main() {
@@ -57,9 +56,9 @@ void main() {
 	}
 
 	vec2 uv = (vec2(ssC) + 0.5) / vec2(params.screen_size);
-    float depth = textureLod(depth_buffer, uv, 0.0).r;
+	float depth = textureLod(depth_buffer, uv, 0.0).r;
 
-    vec4 upsampled_ssil = bilateral_upsample(uv, depth);
+	vec4 upsampled_ssil = bilateral_upsample(uv, depth);
 
 	imageStore(dest_image, ssC, upsampled_ssil);
 }
