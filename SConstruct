@@ -716,24 +716,17 @@ cc_version_metadata1 = cc_version["metadata1"]
 
 if cc_version_major == -1:
     print_warning(
-        "Couldn't detect compiler version, skipping version checks. "
-        "Build may fail if the compiler doesn't support C++17 fully."
+        "Couldn't detect compiler version, skipping version checks. Build may fail if the compiler doesn't support C++17 fully."
     )
 elif methods.using_gcc(env):
-    if cc_version_major < 9:
+    if cc_version_major < 11:
         print_error(
-            "Detected GCC version older than 9, which does not fully support "
-            "C++17, or has bugs when compiling Godot. Supported versions are 9 "
-            "and later. Use a newer GCC version, or Clang 6 or later by passing "
-            '"use_llvm=yes" to the SCons command line.'
+            f'Detected GCC version {cc_version_major} while Godot requires GCC 11 or newer. Use a newer GCC version, or Clang 9 or newer by passing "use_llvm=yes" to the SCons command line.'
         )
         Exit(255)
     if cc_version_metadata1 == "win32":
         print_error(
-            "Detected mingw version is not using posix threads. Only posix "
-            "version of mingw is supported. "
-            'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
-            "to switch to posix threads."
+            'Detected mingw version is not using posix threads. Only posix version of mingw is supported. Use "update-alternatives --config x86_64-w64-mingw32-g++" to switch to posix threads.'
         )
         Exit(255)
 elif methods.using_clang(env):
@@ -742,14 +735,13 @@ elif methods.using_clang(env):
     if methods.is_apple_clang(env):
         if cc_version_major < 16:
             print_error(
-                "Detected Apple Clang version older than 16, supported versions are Apple Clang 16 (Xcode 16) and later."
+                f"Detected Apple Clang version {cc_version_major} while Godot requires Apple Clang 16 (Xcode 16) or newer."
             )
             Exit(255)
     else:
-        if cc_version_major < 6:
+        if cc_version_major < 9:
             print_error(
-                "Detected Clang version older than 6, which does not fully support "
-                "C++17. Supported versions are Clang 6 and later."
+                f"Detected Clang version {cc_version_major} while Godot requires Clang 9 or newer. Use a newer Clang version, or GCC 11 or newer."
             )
             Exit(255)
         elif env["debug_paths_relative"] and cc_version_major < 10:
