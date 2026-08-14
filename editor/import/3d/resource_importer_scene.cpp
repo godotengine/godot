@@ -2837,16 +2837,22 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 						} else {
 							String new_md5 = String::md5(lightmap_cache.ptr()); // MD5 is stored at the beginning of the cache data
 
+							bool inserted = false;
 							for (int i = 0; i < r_lightmap_caches.size(); i++) {
 								String md5 = String::md5(r_lightmap_caches[i].ptr());
 								if (new_md5 < md5) {
 									r_lightmap_caches.insert(i, lightmap_cache);
+									inserted = true;
 									break;
 								}
 
 								if (new_md5 == md5) {
+									inserted = true;
 									break;
 								}
+							}
+							if (!inserted) {
+								r_lightmap_caches.push_back(lightmap_cache);
 							}
 						}
 					}
