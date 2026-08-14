@@ -53,7 +53,6 @@ params;
 
 vec4 bilateral_blur(vec2 p_uv) {
 	vec2 blur_offset = params.blur_dir == 0 ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-	vec2 blur_step = blur_offset / vec2(params.screen_size);
 
 	float center_depth = textureLod(depth_buffer, p_uv, 0.0).r;
 
@@ -63,7 +62,7 @@ vec4 bilateral_blur(vec2 p_uv) {
 	vec4 result = vec4(0.0);
 
 	for (int i = 0; i < 5; ++i) {
-		vec2 sample_uv = p_uv + (OFFSETS[i] * blur_step);
+		vec2 sample_uv = p_uv + (blur_offset * OFFSETS[i] / vec2(params.screen_size));
 
 		float sample_depth = textureLod(depth_buffer, sample_uv, 0.0).r;
 		if (abs(sample_depth - center_depth) >= (1.0 - params.edge_threshold)) {
