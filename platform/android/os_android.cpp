@@ -285,16 +285,16 @@ String OS_Android::get_system_property(const char *key) const {
 
 String OS_Android::get_distribution_name() const {
 	if (!get_system_property("ro.havoc.version").is_empty()) {
-		return "Havoc OS";
+		return "Havoc-OS";
 	} else if (!get_system_property("org.pex.version").is_empty()) { // Putting before "Pixel Experience", because it's derivating from it.
 		return "Pixel Extended";
 	} else if (!get_system_property("org.pixelexperience.version").is_empty()) {
-		return "Pixel Experience";
+		return "PixelExperience";
 	} else if (!get_system_property("ro.potato.version").is_empty()) {
-		return "POSP";
+		return "Potato Open Sauce Project";
 	} else if (!get_system_property("ro.xtended.version").is_empty()) {
 		return "Project-Xtended";
-	} else if (!get_system_property("org.evolution.version").is_empty()) {
+	} else if (!get_system_property("ro.evolution.version").is_empty()) {
 		return "Evolution X";
 	} else if (!get_system_property("ro.corvus.version").is_empty()) {
 		return "Corvus-Q";
@@ -303,9 +303,17 @@ String OS_Android::get_distribution_name() const {
 	} else if (!get_system_property("ro.crdroid.version").is_empty()) {
 		return "crDroid Android";
 	} else if (!get_system_property("ro.syberia.version").is_empty()) {
-		return "Syberia Project";
+		return "Syberia OS";
 	} else if (!get_system_property("ro.arrow.version").is_empty()) {
 		return "ArrowOS";
+	} else if (!get_system_property("ro.aicp.version").is_empty()) {
+		return "AICP";
+	} else if (!get_system_property("ro.derpfest.version").is_empty() || !get_system_property("ro.derp.version").is_empty()) {
+		return "DerpFest";
+	} else if (!get_system_property("ro.dot.version").is_empty()) {
+		return "dotOS";
+	} else if (!get_system_property("ro.rising.version").is_empty()) {
+		return "RisingOS";
 	} else if (!get_system_property("ro.lineage.version").is_empty()) { // Putting LineageOS last, just in case any derivative writes to "ro.lineage.version".
 		return "LineageOS";
 	}
@@ -320,8 +328,8 @@ String OS_Android::get_distribution_name() const {
 
 String OS_Android::get_version() const {
 	const Vector<const char *> roms = { "ro.havoc.version", "org.pex.version", "org.pixelexperience.version",
-		"ro.potato.version", "ro.xtended.version", "org.evolution.version", "ro.corvus.version", "ro.pa.version",
-		"ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.lineage.version" };
+		"ro.potato.version", "ro.xtended.version", "ro.evolution.version", "ro.corvus.version", "ro.pa.version",
+		"ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.aicp.version", "ro.derpfest.version", "ro.derp.version", "ro.dot.version", "ro.rising.version", "ro.lineage.version" };
 	for (int i = 0; i < roms.size(); i++) {
 		String rom_version = get_system_property(roms[i]);
 		if (!rom_version.is_empty()) {
