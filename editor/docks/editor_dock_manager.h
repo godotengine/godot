@@ -132,6 +132,7 @@ public:
 	static EditorDockManager *get_singleton() { return singleton; }
 
 	DockTabContainer *get_dock_container(int p_slot) const;
+	EditorDock *get_dock_by_name(const String &p_name) const;
 
 	void update_docks_menu();
 	void update_tab_styles();
@@ -177,7 +178,6 @@ class DockSlotGrid : public Control {
 	int hovered_slot = -1;
 
 	Rect2 rect_cache[EditorDock::DOCK_SLOT_MAX];
-	Rect2 main_screen_rect;
 	bool rect_cache_dirty = true;
 
 	void _update_rect_cache();

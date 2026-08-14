@@ -36,8 +36,6 @@ class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor = nullptr;
-
-	EditorDock *shader_dock = nullptr;
 	Ref<Shortcut> make_floating_shortcut;
 
 	const String config_section = "ShaderEditor";
