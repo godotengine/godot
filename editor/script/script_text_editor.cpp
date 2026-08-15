@@ -282,6 +282,8 @@ void ScriptTextEditor::_load_theme_settings() {
 	bool warning_underline_color_updated = updated_warning_underline_color != warning_underline_color;
 	bool error_underline_color_updated = updated_error_underline_color != error_underline_color;
 
+	text_edit->set_underline_texture(get_editor_theme_icon(SNAME("UnderlineSquiggle")));
+
 	if (warning_underline_color_updated) {
 		text_edit->update_underline_color(warning_underline_color, updated_warning_underline_color);
 		warning_underline_color = updated_warning_underline_color;
