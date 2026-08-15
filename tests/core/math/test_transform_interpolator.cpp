@@ -58,7 +58,6 @@ TEST_CASE("[Transform_interpolator] Example test case") {
 	CHECK(transform_c.basis[0] == Vector3(7, 10, 13)); //(1,4,7) + 0.5 * ((13,16,19) - (1,4,7)) = (7,10,13)
 	CHECK(transform_c.basis[1] == Vector3(8, 11, 14)); //(2,5,8) + 0.5 * ((14,17,20) - (2,5,8)) = (8,11,14)
 	CHECK(transform_c.basis[2] == Vector3(9, 12, 15)); //(3,6,9) + 0.5 * ((15,18,21) - (3,6,9)) = (9,12,15)
-
 }
 
 } // namespace TestTransform_interpolator
