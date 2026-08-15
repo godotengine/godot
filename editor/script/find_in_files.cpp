@@ -594,8 +594,7 @@ FindInFilesSearchPanel::FindInFilesSearchPanel() {
 
 	{
 		Label *find_label = memnew(Label);
-		find_label->set_text("Find");
-		find_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		find_label->set_text(TTRC("Find"));
 		vbc->add_child(find_label);
 
 		HBoxContainer *search_hbc = memnew(HBoxContainer);
