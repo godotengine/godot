@@ -1016,7 +1016,8 @@ void TextEdit::_notification(int p_what) {
 			RS::get_singleton()->canvas_item_set_custom_rect(text_ci, !is_visibility_clip_disabled(), Rect2(Point2(0, 0), size));
 			RS::get_singleton()->canvas_item_set_clip(text_ci, true);
 			RS::get_singleton()->canvas_item_set_visibility_layer(text_ci, get_visibility_layer());
-			RS::get_singleton()->canvas_item_set_default_texture_filter(text_ci, RSE::CanvasItemTextureFilter(get_texture_filter_in_tree()));
+			RSE::CanvasItemTextureFilter ci_texture_filter = RSE::CanvasItemTextureFilter(get_texture_filter_in_tree());
+			RS::get_singleton()->canvas_item_set_default_texture_filter(text_ci, ci_texture_filter);
 
 			int left_margin = Math::ceil(style->get_margin(SIDE_LEFT));
 			int xmargin_beg = left_margin + gutters_width + gutter_padding;
@@ -1025,6 +1026,19 @@ void TextEdit::_notification(int p_what) {
 			if (draw_minimap) {
 				xmargin_end -= minimap_width;
 			}
+
+			const float char_w = theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
+
+			const float underline_scale = underline_squiggle_icon.is_null() ? 1 : MAX(char_w / underline_squiggle_icon->get_width(), 0.01);
+			RS::get_singleton()->canvas_item_clear(underlines_ci);
+			if (!underlines.is_empty()) {
+				RS::get_singleton()->canvas_item_set_custom_rect(underlines_ci, !is_visibility_clip_disabled(), Rect2(Point2(xmargin_beg / underline_scale, 0), Point2(xmargin_end - xmargin_beg, size.height) / underline_scale));
+				RS::get_singleton()->canvas_item_set_clip(underlines_ci, true);
+				RS::get_singleton()->canvas_item_set_visibility_layer(underlines_ci, get_visibility_layer());
+				RS::get_singleton()->canvas_item_set_default_texture_filter(underlines_ci, ci_texture_filter);
+				RS::get_singleton()->canvas_item_set_transform(underlines_ci, Transform2D(0, Size2(underline_scale, underline_scale), 0, Point2()));
+			}
+
 			if (!editable) {
 				draw_caret = is_drawing_caret_when_editable_disabled();
 			}
@@ -1592,7 +1606,6 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					// Draw selections.
-					float char_w = theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
 					for (int c = 0; c < get_caret_count(); c++) {
 						if (!clipped && has_selection(c) && line >= get_selection_from_line(c) && line <= get_selection_to_line(c)) {
 							int sel_from = (line > get_selection_from_line(c)) ? TS->shaped_text_get_range(rid).x : get_selection_from_column(c);
@@ -1834,81 +1847,51 @@ void TextEdit::_notification(int p_what) {
 						}
 					}
 
-					for (const Underline &u : underlines) {
-						if (line < u.start_line || line > u.end_line) {
-							continue;
-						}
+					if (!underlines.is_empty() && underline_squiggle_icon.is_valid()) {
+						const float underline_y_offset = (ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size)) / underline_scale;
+						const float underline_height = underline_squiggle_icon->get_height();
+						const Vector2 line_range = TS->shaped_text_get_range(rid);
 
-						int start_column = u.start_column;
-						int end_column = u.end_column;
+						for (const Underline &u : underlines) {
+							if (line < u.start_line || line > u.end_line) {
+								continue;
+							}
 
-						if (line != u.start_line) {
-							start_column = 0;
-						}
-						if (line != u.end_line) {
-							end_column = last_visible_char;
-						}
+							int start_column = u.start_column;
+							int end_column = u.end_column;
 
-						const Vector<Vector2> underline = TS->shaped_text_get_selection(rid, start_column, end_column);
-						Rect2 combined_rect;
-						for (int j = 0; j < underline.size(); j++) {
-							Rect2 rect = Rect2(
-									underline[j].x + char_margin,
-									ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size),
-									underline[j].y - underline[j].x,
-									theme_cache.font_size * 0.1);
+							if (line != u.start_line) {
+								start_column = line_range.x;
+							}
+							if (line != u.end_line) {
+								end_column = line_range.y;
+							}
 
-							combined_rect = j == 0 ? rect : combined_rect.merge(rect);
-						}
+							Vector<Vector2> underline_ranges = TS->shaped_text_get_selection(rid, start_column, end_column);
 
-						PackedVector2Array points;
-						PackedColorArray colors;
-
-						float squiggle_top_y = combined_rect.position.y;
-						float squiggle_center_y = combined_rect.position.y + (combined_rect.size.y / 2.0);
-						float squiggle_bottom_y = combined_rect.position.y + combined_rect.size.y;
-
-						float distance = combined_rect.position.x;
-						float end_position = combined_rect.position.x + combined_rect.size.x;
-
-						bool use_top_squiggle = false;
-
-						// Add first point.
-						if (distance >= xmargin_beg && distance <= xmargin_end) {
-							points.append(Vector2(distance, squiggle_center_y));
-							distance += char_w * 0.25;
-						}
-
-						while (true) {
-							if (distance >= xmargin_beg && distance <= xmargin_end) {
-								float y_pos = use_top_squiggle ? squiggle_top_y : squiggle_bottom_y;
-								// Ensure the underline ends at the end of the text.
-								if (distance >= end_position) {
-									if (points.is_empty()) {
-										break;
-									}
-									Vector2 prev_point = points.get(points.size() - 1);
-									float prev_distance = prev_point.x;
-									float ratio_across = (end_position - prev_distance) / (distance - prev_distance);
-									float prev_y = prev_point.y;
-									float mid_y = Math::lerp(prev_y, y_pos, ratio_across);
-									points.append(Vector2(end_position, mid_y));
-									break;
+							// Show underline for inline objects.
+							for (const Dictionary &info : object_keys) {
+								int info_column = info["column"];
+								if (info_column >= start_column && info_column < end_column) {
+									Rect2 orect = TS->shaped_text_get_object_rect(rid, info);
+									underline_ranges.push_back(Vector2(orect.position.x, orect.position.x + orect.size.x));
 								}
-								points.append(Vector2(distance, y_pos));
 							}
-							if (distance >= end_position) {
-								break;
-							}
-							distance += char_w * 0.5;
-							use_top_squiggle = !use_top_squiggle;
-						}
+							for (const Vector2 &underline_range : underline_ranges) {
+								// Snap to fixed character widths so overlapping underlines align.
+								float start_pos = char_margin + Math::floor(underline_range.x / char_w) * char_w;
+								float end_pos = MIN(xmargin_end, underline_range.y + char_margin);
+								if (end_pos < xmargin_beg || start_pos > xmargin_end) {
+									continue;
+								}
+								float width = (end_pos - start_pos) / underline_scale;
 
-						if (points.size() >= 2) {
-							colors.append(u.color);
-							// theme_cache.base_scale is not necessary here, as font size is already dependent on editor scale.
-							// See https://github.com/godotengine/godot/pull/119588#pullrequestreview-4618459305 for more info.
-							RS::get_singleton()->canvas_item_add_polyline(text_ci, points, colors, MAX(theme_cache.font->get_underline_thickness(theme_cache.font_size), 1), true);
+								if (width <= 0) {
+									continue;
+								}
+								Rect2 rect = Rect2(start_pos / underline_scale, underline_y_offset, width, underline_height);
+								underline_squiggle_icon->draw_rect(underlines_ci, rect, true, u.color);
+							}
 						}
 					}
 
@@ -9992,6 +9975,10 @@ TextEdit::TextEdit(const String &p_placeholder) {
 	RS::get_singleton()->canvas_item_set_parent(text_ci, get_canvas_item());
 	RS::get_singleton()->canvas_item_set_use_parent_material(text_ci, true);
 
+	underlines_ci = RS::get_singleton()->canvas_item_create();
+	RS::get_singleton()->canvas_item_set_parent(underlines_ci, get_canvas_item());
+	RS::get_singleton()->canvas_item_set_use_parent_material(underlines_ci, true);
+
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
 
@@ -10037,4 +10024,5 @@ TextEdit::TextEdit(const String &p_placeholder) {
 
 TextEdit::~TextEdit() {
 	RS::get_singleton()->free_rid(text_ci);
+	RS::get_singleton()->free_rid(underlines_ci);
 }
