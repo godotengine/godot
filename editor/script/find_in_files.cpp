@@ -1052,7 +1052,7 @@ void FindInFilesResultsPanel::_on_result_selected() {
 	TreeItem *item = results_display->get_selected();
 	HashMap<TreeItem *, Result>::Iterator E = result_items.find(item);
 
-	if (!E) {
+	if (!E || (results_display->get_selected_column() == 0 && with_replace)) {
 		return;
 	}
 	Result r = E->value;
