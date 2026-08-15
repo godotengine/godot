@@ -83,6 +83,7 @@
 			<description>
 				Override this method to provide a custom list of additional properties to handle by the engine.
 				Should return a property list, as an [Array] of dictionaries. The result is added to the array of [method get_property_list], and should be formatted in the same way. Each [Dictionary] must at least contain the [code]name[/code] and [code]type[/code] entries.
+				[b]Note:[/b] The [code]name[/code] of a property added here must not match an existing member variable or built-in property (including one defined with [annotation @GDScript.@export]). If it does, the engine handles it as that built-in property, and your [method _get] and [method _set] overrides are [i]not[/i] called for it.
 				You can use [method _property_can_revert] and [method _property_get_revert] to customize the default values of the properties added by this method.
 				The example below displays a list of numbers shown as words going from [code]ZERO[/code] to [code]FIVE[/code], with [code]number_count[/code] controlling the size of the list:
 				[codeblocks]
