@@ -299,6 +299,8 @@ class EditorPropertyFlags : public EditorProperty {
 	VBoxContainer *vbox = nullptr;
 	Vector<CheckBox *> flags;
 	Vector<uint32_t> flag_values;
+	uint32_t all_flags_mask = 0; // OR of every value that maps to a current flag.
+	uint32_t orphan_mask = 0; // Bits already surfaced as "Bit N" checkboxes for removed flags.
 
 	void _flag_toggled(int p_index);
 

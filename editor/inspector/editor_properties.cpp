@@ -1034,6 +1034,39 @@ void EditorPropertyFlags::_flag_toggled(int p_index) {
 void EditorPropertyFlags::update_property() {
 	uint32_t value = get_edited_property_value();
 
+	// Surface bits that no longer map to any current flag (e.g. a flag was
+	// removed from the script while its bit stayed set) as extra "Bit N"
+	// checkboxes, so they can be inspected and unticked instead of silently
+	// lingering in the stored value.
+	uint32_t new_orphans = value & ~all_flags_mask & ~orphan_mask;
+	while (new_orphans) {
+		const uint32_t bit = new_orphans & (~new_orphans + 1); // Lowest set bit.
+		int bit_index = 0;
+		for (uint32_t b = bit; b > 1; b >>= 1) {
+			bit_index++;
+		}
+		const int flag_index = flags.size();
+
+		CheckBox *cb = memnew(CheckBox);
+		cb->set_text(vformat(TTR("Bit %d (unknown flag)"), bit_index));
+		cb->set_clip_text(true);
+		cb->set_disabled(is_read_only());
+		cb->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(flag_index));
+		add_focusable(cb);
+		vbox->add_child(cb);
+		flags.push_back(cb);
+		flag_values.push_back(bit);
+		orphan_mask |= bit;
+
+		// When every named flag was removed, the orphan boxes are the only
+		// controls, so anchor the property label/focus to the first one.
+		if (flag_index == 0) {
+			set_label_reference(cb);
+		}
+
+		new_orphans &= ~bit;
+	}
+
 	for (int i = 0; i < flags.size(); i++) {
 		flags[i]->set_pressed((value & flag_values[i]) == flag_values[i]);
 	}
@@ -1064,6 +1097,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 			current_val = 1u << i;
 		}
 		flag_values.push_back(current_val);
+		all_flags_mask |= current_val;
 
 		// Create a CheckBox for the current flag.
 		CheckBox *cb = memnew(CheckBox);
