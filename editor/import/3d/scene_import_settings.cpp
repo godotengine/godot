@@ -68,6 +68,14 @@ class SceneImportSettingsData : public Object {
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		if (settings) {
+			// Import options are stored in the text `.import` file, so they can only reference
+			// saved resources. A built-in one would get an unusable `res://::` path (GH-118407).
+			Ref<Resource> res_value = p_value;
+			if (res_value.is_valid() && res_value->is_built_in()) {
+				EditorNode::get_singleton()->show_warning(TTR("Import options can only reference resources saved to a file. Save the resource to disk first, then select it here."));
+				return false;
+			}
+
 			if (defaults.has(p_name) && defaults[p_name] == p_value) {
 				settings->erase(p_name);
 			} else {
