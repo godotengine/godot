@@ -1593,6 +1593,9 @@
 			- Connecting signals from the Signals dock;
 			- Creating variables prefixed with [annotation @GDScript.@onready], by dropping nodes from the Scene dock into the script editor while holding [kbd]Ctrl[/kbd].
 		</member>
+		<member name="text_editor/completion/auto_brace_open" type="bool", setter="", getter="">
+			If [code]true[/code], automatically inserts an opening brace in functions, signals, and anything else that requires an opening brace. This includes brackets ([code]()[/code], [code][][/code], [code]{}[/code]), string quotation marks ([code]''[/code], [code]""[/code]), and comments ([code]/**/[/code]) if the language supports it.
+		</member>
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
 			If [code]true[/code], automatically inserts the matching closing brace when the opening brace is inserted by typing or autocompletion. Also automatically removes the closing brace when pressing [kbd]Backspace[/kbd] on the opening brace. This includes brackets ([code]()[/code], [code][][/code], [code]{}[/code]), string quotation marks ([code]''[/code], [code]""[/code]), and comments ([code]/**/[/code]) if the language supports it.
 		</member>
