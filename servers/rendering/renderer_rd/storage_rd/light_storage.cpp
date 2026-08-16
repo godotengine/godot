@@ -1798,7 +1798,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		//find the one used last
 		if (rpi->atlas_index == -1) {
 			//everything is in use, find the one least used via LRU
-			uint64_t pass_min = 0;
+			uint64_t pass_min = std::numeric_limits<uint64_t>::max();
 
 			for (int i = 0; i < atlas->reflections.size(); i++) {
 				ReflectionProbeInstance *rpi2 = reflection_probe_instance_owner.get_or_null(atlas->reflections[i].owner);
@@ -1833,6 +1833,11 @@ bool LightStorage::reflection_probe_instance_end_render(RID p_instance, RID p_re
 
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL_V(rpi, false);
+
+	ERR_PRINT(vformat(
+			"atlas_index = %d, reflections.size() = %d",
+			rpi->atlas_index,
+			atlas->reflections.size()));
 
 	RD::get_singleton()->draw_command_begin_label("Convert reflection probe to octahedral");
 	copy_effects->copy_cubemap_to_octmap(atlas->color_buffer, atlas->reflections.write[rpi->atlas_index].data.layers[0].mipmaps[0].framebuffer, atlas->uv_border_size);
