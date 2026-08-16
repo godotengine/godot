@@ -144,9 +144,11 @@ private:
 
 	Button *search_parse_bbcode_button = nullptr;
 	void _set_search_parse_bbcode(bool p_state);
-	bool search_parse_bbcode = false;
+	bool search_parse_bbcode = true;
 
 	void _set_search_buttons_visibility(bool p_visible);
+
+	Vector<int> _get_line_search_query_positions(const String &p_line, const String &p_keytext);
 
 	Button *collapse_button = nullptr;
 	bool collapse = false;
@@ -169,11 +171,13 @@ private:
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 	void _rebuild_log();
-	void _add_highlighted_log_line(const Color &p_color_regular, const Color &p_color_highlighted, const String &p_line, const String &p_keytext);
+	void _add_highlighted_log_line(const String &p_line, const String &p_keytext);
 	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false);
 	bool _check_display_message(LogMessage &p_message);
 	bool _contains_case_sensitive(const String &p_base, const String &p_contains);
 	int _find_case_sensitive(const String &p_base, const String &p_target);
+	String _parse_text(const String &p_text);
+	HashMap<int, int> _get_line_tag_sizes(const String &p_line);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
 	void _search_changed(const String &p_text);

@@ -419,13 +419,39 @@ int EditorLog::_find_case_sensitive(const String &p_base, const String &p_target
 	}
 }
 
-void EditorLog::_add_highlighted_log_line(const Color &p_color_regular, const Color &p_color_highlighted, const String &p_line, const String &p_keytext) {
-	if (p_keytext.is_empty() || !_contains_case_sensitive(p_line, p_keytext)) {
-		log->push_color(p_color_regular);
-		log->add_text(p_line);
-		return;
+String EditorLog::_parse_text(const String &p_text) {
+	String result;
+	
+	// Lazy initialize the BBCode parser
+	if (!bbcode_parser) {
+		bbcode_parser = memnew(RichTextLabel);
+		bbcode_parser->set_use_bbcode(true);
 	}
 
+	// Ensure clean state for each message
+	bbcode_parser->clear();
+	bbcode_parser->parse_bbcode(p_text);
+	result = bbcode_parser->get_parsed_text();
+	return result;
+}
+
+HashMap<int, int> EditorLog::_get_line_tag_sizes(const String &p_line) {
+	HashMap<int, int> result;
+
+	String parsed_text = _parse_text(p_line);
+	int parsed_text_length = parsed_text.length();
+
+	int parsed_index = 0;
+	int raw_index = 0;
+
+	while (raw_index < p_line.length()) {
+
+	}
+
+	return result;
+}
+
+Vector<int> EditorLog::_get_line_search_query_positions(const String &p_line, const String &p_keytext) {
 	int keytext_length = p_keytext.length();
 
 	String iterator_line = p_line;
@@ -464,24 +490,36 @@ void EditorLog::_add_highlighted_log_line(const Color &p_color_regular, const Co
 	// - The pair 1,2 ("u") is not a match
 	// - The pair 2,4 ("ll") is a match once again
 
-	// The last pair will always describe a match and in the case p_line does not end with a match, that would cut off p_line after the last match...
+	// The last pair will always describe a match at this point and in the case p_line does not end with a match, that would cut off p_line after the last match...
 	if (positions[positions.size() - 1] != p_line.size() - 1) {
 		positions.append(p_line.size() - 1); // ...so we add a final position. In the case of "Lullaby", it'd append 6 so that positions becomes [0,0,1,2,4,6]. That prevents the mistake described 2 lines up.
 	}
 
+	return positions;
+}
+
+void EditorLog::_add_highlighted_log_line(const String &p_line, const String &p_keytext) {
+	String parsed_text = _parse_text(p_line);
+
+	if (p_keytext.is_empty() || !_contains_case_sensitive(parsed_text, p_keytext)) {
+		log->append_text(p_line);
+		return;
+	}
+
+	Vector<int> positions = _get_line_search_query_positions(parsed_text, p_keytext);
+
 	// Iterate through map in pairs. That's why we start at index 1.
 	for (int i = 1; i < positions.size(); i++) {
-		String substring = p_line.substr(positions[i - 1], positions[i] - positions[i - 1]);
+		String substring = parsed_text.substr(positions[i - 1], positions[i] - positions[i - 1]);
 
 		// Even index means this segment is a match, uneven means the segment is not a match.
-		if (i % 2 == 1) { // Uneven
-			log->push_color(p_color_regular);
+		if (i % 2 == 1) { // Not a match
+			log->push_bgcolor(Color(1.0, 1.0, 1.0, 0.0));
 			log->push_normal();
-			log->add_text(substring);
-		} else { // Even
-			log->push_color(p_color_highlighted);
-			log->push_bold();
-			log->add_text(substring);
+			log->append_text(substring);
+		} else { // Match
+			log->push_bgcolor(EditorSettings::get_singleton()->get_setting("text_editor/theme/highlighting/selection_color"));
+			log->append_text(substring);
 		}
 	}
 
@@ -492,6 +530,7 @@ void EditorLog::_add_highlighted_log_line(const Color &p_color_regular, const Co
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	String filter_keytext = search_box->get_text();
+	String parsed_text = _parse_text(p_message.text);
 
 	if (!is_inside_tree()) {
 		// The log will be built all at once when it enters the tree and has its theme items.
@@ -507,25 +546,8 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		return;
 	}
 
-	if (!_check_display_message(p_message)) {
-		// Either darken or remove the message altogether when it does not fit the filter keytext.
-		if (!show_non_search_matches) {
-			return;
-		}
-	}
-
-	if (search_parse_bbcode && !filter_keytext.is_empty()) {
-		// Lazy initialize the BBCode parser
-		if (!bbcode_parser) {
-			bbcode_parser = memnew(RichTextLabel);
-			bbcode_parser->set_use_bbcode(true);
-		}
-
-		// Ensure clean state for each message
-		bbcode_parser->clear();
-		bbcode_parser->parse_bbcode(p_message.text);
-		String parsed_text = bbcode_parser->get_parsed_text();
-		p_message.text = parsed_text;
+	if (!_check_display_message(p_message) && (!_contains_case_sensitive(parsed_text, filter_keytext) && !show_non_search_matches)) {
+		return;
 	}
 
 	if (p_replace_previous) {
@@ -573,25 +595,20 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 
 	// Note that errors and warnings only support BBCode in the file part of the message.
 	if (!filter_keytext.is_empty()) {
-		if (_check_display_message(p_message)) {
-			if (p_message.type == MSG_TYPE_ERROR) {
-				_add_highlighted_log_line(theme_cache.error_color * Color(1.0, 1.0, 1.0, 0.5), Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
-			} else if (p_message.type == MSG_TYPE_WARNING) {
-				_add_highlighted_log_line(theme_cache.warning_color * Color(1.0, 1.0, 1.0, 0.5), Color(1.0, 0.35, 0.35), p_message.text, filter_keytext);
-			} else {
-				_add_highlighted_log_line(theme_cache.message_color, Color(1.0, 1.0, 0.5), p_message.text, filter_keytext);
-			}
-		} else {
-			log->push_color(Color(1.0, 1.0, 1.0, 0.2));
-			log->add_text(p_message.text); // Only use add_text instead of append_text for rich messages to force the BBCode tags to be exposed
-		}
-	} else { // If we aren't doing anything special with filtering, just print it as normal
-		if (p_message.type == MSG_TYPE_STD_RICH) {
-			log->append_text(p_message.text);
-		} else {
-			log->add_text(p_message.text);
-		}
+		_add_highlighted_log_line(p_message.text, filter_keytext);
+	} else {
+		log->push_normal();
+		log->append_text(p_message.text);
 	}
+
+	// log->push_bgcolor(EditorSettings::get_singleton()->get_setting("text_editor/theme/highlighting/selection_color"));
+	// log->append_text("[b]Bold text");
+	// log->append_text("[/b]");
+	// log->append_text("non-bold text");
+	// log->push_bgcolor(Color(1.0, 1.0, 1.0, 0.0));	
+	// log->append_text("non-highlighted text");
+	// log->push_normal();
+
 	if (p_message.clear || p_message.type != MSG_TYPE_STD_RICH) {
 		log->pop_all(); // Pop all unclosed tags.
 	}
