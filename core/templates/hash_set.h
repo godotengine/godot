@@ -45,12 +45,6 @@ template <typename TKey,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
 class _WARN_UNUSED_ HashSet {
-public:
-	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
-	static constexpr float MAX_OCCUPANCY = 0.75;
-	static constexpr uint32_t EMPTY_HASH = 0;
-
-private:
 	using InnerTable = AHashMap<TKey, EmptyValue, Hasher, Comparator>;
 	InnerTable _inner;
 
