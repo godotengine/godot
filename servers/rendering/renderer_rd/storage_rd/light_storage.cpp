@@ -1809,7 +1809,6 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	}
 
 	ERR_FAIL_COND_V(rpi->atlas_index == -1, false);
-
 	RD::get_singleton()->draw_command_begin_label("Reflection Probe Render"); 
 	atlas->reflections.write[rpi->atlas_index].owner = p_instance;
 	rpi->atlas = p_reflection_atlas;
