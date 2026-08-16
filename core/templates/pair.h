@@ -99,3 +99,5 @@ struct KeyValueSort {
 // KeyValue is zero-constructible if and only if both constrained types are zero-constructible.
 template <typename K, typename V>
 struct is_zero_constructible<KeyValue<K, V>> : std::conjunction<is_zero_constructible<K>, is_zero_constructible<V>> {};
+
+struct EmptyValue {};
