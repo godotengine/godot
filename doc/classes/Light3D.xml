@@ -55,7 +55,7 @@
 			If [code]true[/code], the light only appears in the editor and will not be visible at runtime. If [code]true[/code], the light will never be baked in [LightmapGI] regardless of its [member light_bake_mode].
 		</member>
 		<member name="light_angular_distance" type="float" setter="set_param" getter="get_param" default="0.0" keywords="pcss">
-			The light's angular size in degrees. Increasing this will make shadows softer at greater distances (also called percentage-closer soft shadows, or PCSS). Only available for [DirectionalLight3D]s. For reference, the Sun from the Earth is approximately [code]0.5[/code]. Increasing this value above [code]0.0[/code] for lights with shadows enabled will have a noticeable performance cost due to PCSS.
+			The light's angular radius in degrees. Increasing this will make shadows softer at greater distances (also called percentage-closer soft shadows, or PCSS). Only available for [DirectionalLight3D]s. For reference, the Sun from the Earth is approximately [code]0.5[/code]. Increasing this value above [code]0.0[/code] for lights with shadows enabled will have a noticeable performance cost due to PCSS.
 			[b]Note:[/b] [member light_angular_distance] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
 			[b]Note:[/b] PCSS for directional lights is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
@@ -95,7 +95,7 @@
 			[b]Note:[/b] Light projector textures are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0" keywords="pcss">
-			The simulated size of the light in Godot units, affecting shading and shadows. For [OmniLight3D]s and [SpotLight3D]s, increasing this value simulates a spherical area light, expanding the size of specular highlights. If shadows are enabled, a penumbra is rendered, making shadows appear blurrier. For [AreaLight3D]s, only the shadows are affected. Penumbras are simulated with percentage-closer soft shadows, or PCSS, which has a noticeable performance cost for values above [code]0.0[/code].
+			The radius of the source of the light in meters, affecting shading and shadows. Not to be confused with [member OmniLight3D.omni_range] and [member SpotLight3D.spot_range]. For [OmniLight3D]s and [SpotLight3D]s, increasing this value simulates a spherical area light, expanding the size of specular highlights. If shadows are enabled, a penumbra is rendered, making shadows appear blurrier. For [AreaLight3D]s, only the shadows are affected. Penumbras are simulated with percentage-closer soft shadows, or PCSS, which has a noticeable performance cost for values above [code]0.0[/code].
 			[b]Note:[/b] [member light_size] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
 			[b]Note:[/b] PCSS for positional lights is only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>

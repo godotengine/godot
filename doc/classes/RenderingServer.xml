@@ -5107,7 +5107,11 @@
 			The light's range.
 		</constant>
 		<constant name="LIGHT_PARAM_SIZE" value="5" enum="LightParam">
-			The size of the light when using spot light or omni light. The angular size of the light when using directional light.
+			The size of the light, with different units depending on the type of light, affecting shading and shadows.
+			- For directional lights, this is an angular radius in degrees. It affects both shadows and the size of the displayed sun in the sky. Increasing this will make shadows softer at greater distances.
+			- For spot and omni lights, this is a radius in meters. A non-zero value simulates a spherical area light, expanding the size of specular highlights. If shadows are enabled, a penumbra is rendered, making shadows appear blurrier.
+			- For area lights, this is a radius in meters. Only shadows are affected by this parameter. The full 2D area size should also be adjusted with [method light_area_set_size] for the proper effect.
+			[b]Note:[/b] Penumbras are simulated with percentage-closer soft shadows, or PCSS, which has a noticeable performance cost for values above [code]0.0[/code]. PCSS for positional lights is only supported in the Forward+ and Mobile renderers, not Compatibility.
 		</constant>
 		<constant name="LIGHT_PARAM_ATTENUATION" value="6" enum="LightParam">
 			The light's attenuation.
