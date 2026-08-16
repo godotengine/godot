@@ -2074,45 +2074,33 @@ bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, 
 	Node *target_node = p_root_node->get_node_or_null(r_node_path);
 	ERR_FAIL_NULL_V_MSG(target_node, false, "Found invalid node path '" + String(r_node_path) + "' on node '" + String(scene_root->get_path_to(p_root_node)) + "'");
 
-	// Try to find the target node in modified node paths.
 	HashMap<Node *, NodePath>::Iterator found_node_path = p_renames->find(target_node);
-	if (found_node_path) {
-		if (found_node_path->value.is_empty()) {
-			r_node_path = found_node_path->value;
-			return true;
-		}
-
-		String old_subnames;
-		if (r_node_path.get_subname_count() > 0) {
-			old_subnames = ":" + r_node_path.get_concatenated_subnames();
-		}
-
-		HashMap<Node *, NodePath>::Iterator found_root_path = p_renames->find(p_root_node);
-		NodePath root_path_new = found_root_path ? found_root_path->value : p_root_node->get_path();
-		r_node_path = NodePath(String(root_path_new.rel_path_to(found_node_path->value)) + old_subnames);
-
-		return true;
-	}
-
-	// Update the path if the base node has changed and has not been deleted.
 	HashMap<Node *, NodePath>::Iterator found_root_path = p_renames->find(p_root_node);
-	if (found_root_path) {
-		NodePath root_path_new = found_root_path->value;
-		if (!root_path_new.is_empty()) {
-			String old_subnames;
-			if (r_node_path.get_subname_count() > 0) {
-				old_subnames = ":" + r_node_path.get_concatenated_subnames();
-			}
 
-			NodePath old_abs_path = NodePath(String(p_root_node->get_path()).path_join(String(r_node_path)));
-			old_abs_path.simplify();
-			r_node_path = NodePath(String(root_path_new.rel_path_to(old_abs_path)) + old_subnames);
-		}
+	if (!found_node_path && !found_root_path) {
+		return false;
+	}
 
+	if (found_node_path && found_node_path->value.is_empty()) {
+		r_node_path = NodePath();
 		return true;
 	}
 
-	return false;
+	NodePath target_path_new = found_node_path ? found_node_path->value : target_node->get_path();
+	NodePath root_path_new = found_root_path ? found_root_path->value : p_root_node->get_path();
+
+	if (root_path_new.is_empty()) {
+		return false;
+	}
+
+	NodePath rel_path = root_path_new.rel_path_to(target_path_new);
+	Vector<StringName> names;
+	if (r_node_path.get_name_count() > 0) {
+		names = rel_path.get_names();
+	}
+	r_node_path = NodePath(names, r_node_path.get_subnames(), false);
+
+	return true;
 }
 
 _ALWAYS_INLINE_ static bool _recurse_into_property(const PropertyInfo &p_property) {

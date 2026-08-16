@@ -222,4 +222,26 @@ TEST_CASE("[NodePath] Slice") {
 			"Slice of an empty absolute path should be an empty absolute path.");
 }
 
+TEST_CASE("[NodePath] Relative path calculation with rel_path_to and subnames") {
+	const NodePath root_path_old = NodePath("/root/MyNode");
+	const NodePath root_path_new = NodePath("/root/Parent/MyNode");
+	const NodePath target_path = NodePath("/root/OtherNode");
+
+	const NodePath rel_old = root_path_old.rel_path_to(target_path);
+	CHECK_MESSAGE(
+			rel_old == NodePath("../OtherNode"),
+			"Relative path from old root to target should match expected value.");
+
+	const NodePath rel_new = root_path_new.rel_path_to(target_path);
+	CHECK_MESSAGE(
+			rel_new == NodePath("../../OtherNode"),
+			"Relative path from new root to target should match expected value.");
+
+	const NodePath orig_node_path = NodePath("../OtherNode:property:subproperty");
+	const NodePath updated_node_path = NodePath(rel_new.get_names(), orig_node_path.get_subnames(), false);
+	CHECK_MESSAGE(
+			updated_node_path == NodePath("../../OtherNode:property:subproperty"),
+			"Updated node path with subnames should preserve subnames without duplication.");
+}
+
 } // namespace TestNodePath
