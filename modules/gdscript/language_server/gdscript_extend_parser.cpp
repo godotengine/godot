@@ -84,6 +84,10 @@ void ExtendGDScriptParser::update_diagnostics() {
 		diagnostic.message = "(" + warning.get_name() + "): " + warning.get_message();
 		diagnostic.source = "gdscript";
 
+		if (warning.code == GDScriptWarning::UNREACHABLE_CODE) {
+			diagnostic.tags.append(LSP::DiagnosticTag::Unnecessary);
+		}
+
 		GodotRange godot_range(
 				GodotPosition(warning.start_line, warning.start_column),
 				GodotPosition(warning.end_line, warning.end_column));
