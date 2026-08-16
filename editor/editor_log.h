@@ -33,8 +33,10 @@
 #include "core/os/thread.h"
 #include "editor/docks/editor_dock.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/box_container.h"
 
 class Timer;
 class UndoRedo;
@@ -134,19 +136,27 @@ private:
 
 	Button *clear_button = nullptr;
 
-	Button *show_non_search_matches_button = nullptr;
+	HBoxContainer *extra_filter_options_hbox = nullptr;
+
+	// int search_matches_count = 0;
+	int currently_viewed_match_index = 0;
+
+	Label *matching_lines_count_label = nullptr;
+	void _update_matching_lines_count_label(int count);
+
+	CheckBox *show_non_search_matches_button = nullptr;
 	void _set_show_non_search_matches(bool p_state);
 	bool show_non_search_matches = true;
 
-	Button *search_case_sensitive_button = nullptr;
+	CheckBox *search_case_sensitive_button = nullptr;
 	void _set_search_case_sensitive(bool p_state);
 	bool search_case_sensitive = false;
 
-	Button *search_parse_bbcode_button = nullptr;
-	void _set_search_parse_bbcode(bool p_state);
-	bool search_parse_bbcode = true;
+	// Button *search_parse_bbcode_button = nullptr;
+	// void _set_search_parse_bbcode(bool p_state);
+	// bool search_parse_bbcode = true;
 
-	void _set_search_buttons_visibility(bool p_visible);
+	void _set_extra_filter_options_visible(bool p_visible);
 
 	Vector<int> _get_line_search_query_positions(const String &p_line, const String &p_keytext);
 
@@ -176,8 +186,7 @@ private:
 	bool _check_display_message(LogMessage &p_message);
 	bool _contains_case_sensitive(const String &p_base, const String &p_contains);
 	int _find_case_sensitive(const String &p_base, const String &p_target);
-	String _parse_text(const String &p_text);
-	HashMap<int, int> _get_line_tag_sizes(const String &p_line);
+	String _strip_bbcode_from_message(const String &p_text);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
 	void _search_changed(const String &p_text);

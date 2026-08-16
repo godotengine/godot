@@ -45,7 +45,6 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/flow_container.h"
 #include "scene/main/timer.h"
 #include "scene/resources/font.h"
@@ -126,9 +125,9 @@ void EditorLog::_update_theme() {
 
 	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
-	show_non_search_matches_button->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
-	search_case_sensitive_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
-	search_parse_bbcode_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
+	// show_non_search_matches_button->set_button_icon(get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
+	// search_case_sensitive_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
+	// search_parse_bbcode_button->set_button_icon(get_editor_theme_icon(SNAME("MatchCase")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 	theme_cache.error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
@@ -225,18 +224,16 @@ void EditorLog::_set_search_case_sensitive(bool p_state) {
 	log->set_scroll_follow(true);
 }
 
-void EditorLog::_set_search_parse_bbcode(bool p_state) {
-	search_parse_bbcode = p_state;
+// void EditorLog::_set_search_parse_bbcode(bool p_state) {
+// 	search_parse_bbcode = p_state;
 
-	log->set_scroll_follow(false);
-	_rebuild_log();
-	log->set_scroll_follow(true);
-}
+// 	log->set_scroll_follow(false);
+// 	_rebuild_log();
+// 	log->set_scroll_follow(true);
+// }
 
-void EditorLog::_set_search_buttons_visibility(bool p_visible) {
-	show_non_search_matches_button->set_visible(p_visible);
-	search_case_sensitive_button->set_visible(p_visible);
-	search_parse_bbcode_button->set_visible(p_visible);
+void EditorLog::_set_extra_filter_options_visible(bool p_visible) {
+	extra_filter_options_hbox->set_visible(p_visible);
 }
 
 void EditorLog::_meta_clicked(const String &p_meta) {
@@ -348,6 +345,9 @@ void EditorLog::_rebuild_log() {
 	int line_count = 0;
 	int start_message_index = 0;
 	int initial_skip = 0;
+	int search_matches_count = 0;
+
+	String search_text = search_box->get_text();
 
 	// Search backward for starting place.
 	for (start_message_index = messages.size() - 1; start_message_index >= 0; start_message_index--) {
@@ -372,10 +372,15 @@ void EditorLog::_rebuild_log() {
 			break;
 		}
 	}
+
 	log->clear();
 
 	for (int msg_idx = start_message_index; msg_idx < messages.size(); msg_idx++) {
 		LogMessage msg = messages[msg_idx];
+
+		if (_contains_case_sensitive(_strip_bbcode_from_message(msg.text), search_text)) {
+			search_matches_count += 1;
+		}
 
 		if (collapse) {
 			// If collapsing, only log one instance of the message.
@@ -388,9 +393,13 @@ void EditorLog::_rebuild_log() {
 			}
 		}
 	}
+
+	_update_matching_lines_count_label(search_matches_count);
 }
 
 bool EditorLog::_check_display_message(LogMessage &p_message) {
+	// Whether a message ought to be displayed in the log according to filtering
+
 	bool filter_active = type_filter_map[p_message.type]->is_active();
 	String search_text = search_box->get_text();
 
@@ -398,7 +407,7 @@ bool EditorLog::_check_display_message(LogMessage &p_message) {
 		return filter_active;
 	}
 
-	bool search_match = _contains_case_sensitive(p_message.text, search_text);
+	bool search_match = _contains_case_sensitive(_strip_bbcode_from_message(p_message.text), search_text) || show_non_search_matches;
 
 	return filter_active && search_match;
 }
@@ -419,7 +428,7 @@ int EditorLog::_find_case_sensitive(const String &p_base, const String &p_target
 	}
 }
 
-String EditorLog::_parse_text(const String &p_text) {
+String EditorLog::_strip_bbcode_from_message(const String &p_text) {
 	String result;
 	
 	// Lazy initialize the BBCode parser
@@ -432,22 +441,6 @@ String EditorLog::_parse_text(const String &p_text) {
 	bbcode_parser->clear();
 	bbcode_parser->parse_bbcode(p_text);
 	result = bbcode_parser->get_parsed_text();
-	return result;
-}
-
-HashMap<int, int> EditorLog::_get_line_tag_sizes(const String &p_line) {
-	HashMap<int, int> result;
-
-	String parsed_text = _parse_text(p_line);
-	int parsed_text_length = parsed_text.length();
-
-	int parsed_index = 0;
-	int raw_index = 0;
-
-	while (raw_index < p_line.length()) {
-
-	}
-
 	return result;
 }
 
@@ -499,7 +492,7 @@ Vector<int> EditorLog::_get_line_search_query_positions(const String &p_line, co
 }
 
 void EditorLog::_add_highlighted_log_line(const String &p_line, const String &p_keytext) {
-	String parsed_text = _parse_text(p_line);
+	String parsed_text = _strip_bbcode_from_message(p_line);
 
 	if (p_keytext.is_empty() || !_contains_case_sensitive(parsed_text, p_keytext)) {
 		log->append_text(p_line);
@@ -516,10 +509,10 @@ void EditorLog::_add_highlighted_log_line(const String &p_line, const String &p_
 		if (i % 2 == 1) { // Not a match
 			log->push_bgcolor(Color(1.0, 1.0, 1.0, 0.0));
 			log->push_normal();
-			log->append_text(substring);
+			log->add_text(substring);
 		} else { // Match
 			log->push_bgcolor(EditorSettings::get_singleton()->get_setting("text_editor/theme/highlighting/selection_color"));
-			log->append_text(substring);
+			log->add_text(substring);
 		}
 	}
 
@@ -530,7 +523,7 @@ void EditorLog::_add_highlighted_log_line(const String &p_line, const String &p_
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	String filter_keytext = search_box->get_text();
-	String parsed_text = _parse_text(p_message.text);
+	String parsed_text = _strip_bbcode_from_message(p_message.text);
 
 	if (!is_inside_tree()) {
 		// The log will be built all at once when it enters the tree and has its theme items.
@@ -546,7 +539,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		return;
 	}
 
-	if (!_check_display_message(p_message) && (!_contains_case_sensitive(parsed_text, filter_keytext) && !show_non_search_matches)) {
+	if (!_check_display_message(p_message)) {
 		return;
 	}
 
@@ -557,6 +550,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->remove_paragraph(log->get_paragraph_count() - 2);
 	}
 
+	// Add message type icons
 	switch (p_message.type) {
 		case MSG_TYPE_STD: {
 		} break;
@@ -594,20 +588,13 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	}
 
 	// Note that errors and warnings only support BBCode in the file part of the message.
+	
 	if (!filter_keytext.is_empty()) {
 		_add_highlighted_log_line(p_message.text, filter_keytext);
 	} else {
 		log->push_normal();
 		log->append_text(p_message.text);
 	}
-
-	// log->push_bgcolor(EditorSettings::get_singleton()->get_setting("text_editor/theme/highlighting/selection_color"));
-	// log->append_text("[b]Bold text");
-	// log->append_text("[/b]");
-	// log->append_text("non-bold text");
-	// log->push_bgcolor(Color(1.0, 1.0, 1.0, 0.0));	
-	// log->append_text("non-highlighted text");
-	// log->push_normal();
 
 	if (p_message.clear || p_message.type != MSG_TYPE_STD_RICH) {
 		log->pop_all(); // Pop all unclosed tags.
@@ -640,9 +627,13 @@ void EditorLog::_search_changed(const String &p_text) {
 	log->set_scroll_follow(false); // Prevent the RichTextLabel from autoscrolling due to new messages being added during _rebuild_log().
 
 	_rebuild_log();
-	_set_search_buttons_visibility(!p_text.is_empty());
+	_set_extra_filter_options_visible(!p_text.is_empty());
 
 	log->set_scroll_follow(true);
+}
+
+void EditorLog::_update_matching_lines_count_label(int count) {
+	matching_lines_count_label->set_text(vformat("%s matching lines", itos(count)));
 }
 
 void EditorLog::_reset_message_counts() {
@@ -709,36 +700,42 @@ EditorLog::EditorLog() {
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	bottom_hf->add_child(hbox);
 
+	extra_filter_options_hbox = memnew(HBoxContainer);
+	vb_left->add_child(extra_filter_options_hbox);
+
+	matching_lines_count_label = memnew(Label);
+	extra_filter_options_hbox->add_child(matching_lines_count_label);
+
 	//Exclude non-filter matches button
-	show_non_search_matches_button = memnew(Button);
+	show_non_search_matches_button = memnew(CheckBox);
+	show_non_search_matches_button->set_text("Show Non-Matches");
 	show_non_search_matches_button->set_tooltip_text(TTRC("Show Non-Matches"));
 	show_non_search_matches_button->set_accessibility_name(TTRC("Show Non-Matches"));
-	show_non_search_matches_button->set_theme_type_variation(SceneStringName(FlatButton));
-	show_non_search_matches_button->set_toggle_mode(true);
+	// show_non_search_matches_button->set_theme_type_variation(SceneStringName(FlatButton));
 	show_non_search_matches_button->set_pressed(true);
 	show_non_search_matches_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_show_non_search_matches));
-	hbox->add_child(show_non_search_matches_button);
+	extra_filter_options_hbox->add_child(show_non_search_matches_button);
 
 	// Case sensitive button
-	search_case_sensitive_button = memnew(Button);
+	search_case_sensitive_button = memnew(CheckBox);
+	search_case_sensitive_button->set_text("Match Case");
 	search_case_sensitive_button->set_tooltip_text(TTRC("Toggle case-sensitivity"));
 	search_case_sensitive_button->set_accessibility_name(TTRC("Toggle case-sensitivity"));
-	search_case_sensitive_button->set_theme_type_variation(SceneStringName(FlatButton));
-	search_case_sensitive_button->set_toggle_mode(true);
+	// search_case_sensitive_button->set_theme_type_variation(SceneStringName(FlatButton));
 	search_case_sensitive_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_case_sensitive));
-	hbox->add_child(search_case_sensitive_button);
+	extra_filter_options_hbox->add_child(search_case_sensitive_button);
 
-	// Parse BBCode button
-	search_parse_bbcode_button = memnew(Button);
-	search_parse_bbcode_button->set_tooltip_text(TTRC("Parse BBCode"));
-	search_parse_bbcode_button->set_accessibility_name(TTRC("Parse BBCode"));
-	search_parse_bbcode_button->set_theme_type_variation(SceneStringName(FlatButton));
-	search_parse_bbcode_button->set_toggle_mode(true);
-	search_parse_bbcode_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_parse_bbcode));
-	hbox->add_child(search_parse_bbcode_button);
+	// // Parse BBCode button
+	// search_parse_bbcode_button = memnew(Button);
+	// search_parse_bbcode_button->set_tooltip_text(TTRC("Parse BBCode"));
+	// search_parse_bbcode_button->set_accessibility_name(TTRC("Parse BBCode"));
+	// search_parse_bbcode_button->set_theme_type_variation(SceneStringName(FlatButton));
+	// search_parse_bbcode_button->set_toggle_mode(true);
+	// search_parse_bbcode_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_search_parse_bbcode));
+	// extra_filter_options_hbox->add_child(search_parse_bbcode_button);
 
 	// Make show_non_search_matches_button and search_case_sensitive_button invisible
-	_set_search_buttons_visibility(false);
+	_set_extra_filter_options_visible(false);
 
 	// Clear.
 	clear_button = memnew(Button);
