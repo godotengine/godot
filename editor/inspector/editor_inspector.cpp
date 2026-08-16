@@ -5703,6 +5703,11 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (!undo_redo || bool(object->call("_dont_undo_redo"))) {
 		object->set(p_name, p_value);
+		if (Node *node = Object::cast_to<Node>(object)) {
+			EditorNode::get_singleton()->mark_node_resource_usage_dirty(node);
+		} else if (Object::cast_to<Resource>(object)) {
+			EditorNode::get_singleton()->invalidate_resource_usage_cache();
+		}
 		if (p_refresh_all) {
 			_edit_request_change(object, "");
 		} else {
@@ -5723,7 +5728,6 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_do_property(object, p_name, p_value);
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
-		Variant::Type type = p_value.get_type();
 		if (valid) {
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
@@ -5731,14 +5735,9 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 				undo_redo->add_undo_property(object, p_name, value);
 			}
 			Node *N = Object::cast_to<Node>(object);
-			bool double_counting = Object::cast_to<Node>(p_value) == N || Object::cast_to<Node>(value) == N;
-			if (N && !double_counting && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
-				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
-				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
-				// Perhaps an inefficient way of updating the resource count.
-				// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
-				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
+			if (N && value != p_value) {
+				undo_redo->add_do_method(EditorNode::get_singleton(), "mark_node_resource_usage_dirty", N);
+				undo_redo->add_undo_method(EditorNode::get_singleton(), "mark_node_resource_usage_dirty", N);
 			}
 		}
 
@@ -5790,18 +5789,6 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Resource *r = Object::cast_to<Resource>(object);
 
 		if (r) {
-			//Setting a Subresource. Since there's possibly multiple Nodes referencing 'r', we need to link them to the Subresource.
-			List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_node_list(r);
-			for (Node *N : shared_nodes) {
-				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
-					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
-					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
-					// Perhaps an inefficient way of updating the resource count.
-					// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
-					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
-				}
-			}
 			if (String(p_name) == "resource_local_to_scene") {
 				bool prev = object->get(p_name);
 				bool next = p_value;
@@ -6299,6 +6286,11 @@ void EditorInspector::_notification(int p_what) {
 void EditorInspector::_changed_callback() {
 	//this is called when property change is notified via notify_property_list_changed()
 	if (object != nullptr) {
+		if (Node *node = Object::cast_to<Node>(object)) {
+			EditorNode::get_singleton()->mark_node_resource_usage_dirty(node);
+		} else {
+			EditorNode::get_singleton()->invalidate_resource_usage_cache();
+		}
 		_update_current_favorites();
 		_edit_request_change(object, String());
 	}

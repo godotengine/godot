@@ -121,6 +121,7 @@ struct EditorProgress {
 
 class EditorNode : public Node {
 	GDCLASS(EditorNode, Node);
+	friend class SceneTreeEditor;
 
 public:
 	enum SceneNameCasing {
@@ -464,7 +465,18 @@ private:
 
 	Ref<Resource> saving_resource;
 	HashSet<Ref<Resource>> saving_resources_in_path;
-	HashMap<Ref<Resource>, List<Node *>> resource_count; // Keeps track of linked Resources from a Scene.
+
+	// Lazily built index of scene-internal Resources used by each edited-scene Node.
+	// The forward snapshots make removals cheap and allow dirty Nodes to be reconciled
+	// without rescanning the entire scene.
+	HashMap<ObjectID, HashSet<Ref<Resource>>> node_resource_usage;
+	HashMap<Ref<Resource>, HashSet<ObjectID>> resource_node_usage;
+	HashSet<ObjectID> dirty_resource_usage_nodes;
+	ObjectID resource_usage_scene_id;
+	bool resource_usage_initialized = false;
+	bool resource_usage_invalid = false;
+	bool resource_usage_updating = false;
+	bool resource_usage_notification_queued = false;
 
 	uint64_t update_spinner_step_msec = 0;
 	uint64_t update_spinner_step_frame = 0;
@@ -588,6 +600,19 @@ private:
 	void _viewport_resized();
 
 	void _update_undo_redo_allowed();
+
+	void _queue_resource_usage_changed();
+	void _flush_resource_usage_changed();
+	void _reset_resource_usage_cache();
+	void _ensure_resource_usage_cache();
+	void _rebuild_resource_usage_cache();
+	void _reconcile_node_resource_usage(Node *p_node);
+	void _collect_node_resource_usage(Node *p_node, HashSet<Ref<Resource>> &r_resources);
+	void _remove_resource_usage_snapshot(ObjectID p_node_id);
+	void _mark_resource_usage_subtree_dirty(Node *p_node);
+	void _resource_usage_changed(ObjectID p_resource_id);
+	void _undo_redo_resource_usage_changed();
+	bool _is_node_in_resource_usage_scope(Node *p_node) const;
 
 	int _save_external_resources(bool p_also_save_external_data = false);
 	void _save_scene_silently();
@@ -834,11 +859,10 @@ public:
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
 	bool is_resource_internal_to_scene(Ref<Resource> p_resource);
 	void gather_resources(const Variant &p_variant, List<Ref<Resource>> &r_list, HashSet<Object *> &r_scanned_objects, bool p_subresources = false, bool p_allow_external = false);
-	void update_resource_count(Node *p_node, bool p_remove = false);
-	void update_node_reference(const Variant &p_value, Node *p_node, bool p_remove = false);
-	void clear_node_reference(Ref<Resource> p_res);
+	void invalidate_resource_usage_cache();
+	void mark_node_resource_usage_dirty(Node *p_node);
+	void remove_node_from_resource_usage_cache(Node *p_node);
 	int get_resource_count(Ref<Resource> p_res);
-	List<Node *> get_resource_node_list(Ref<Resource> p_res);
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 

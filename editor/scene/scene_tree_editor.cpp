@@ -441,8 +441,6 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 		is_new = true;
 	}
 
-	EditorNode::get_singleton()->update_resource_count(p_node);
-
 	if (!(p_force || I->value.dirty)) {
 		// Nothing to do.
 		return;
@@ -516,6 +514,12 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 	p_item->set_icon(0, icon);
 	p_item->set_metadata(0, p_node->get_path());
 
+	HashMap<Node *, CachedNode>::Iterator cache_entry = node_cache.get(p_node);
+	if (cache_entry) {
+		Node *scene = get_scene_node();
+		cache_entry->value.editable_instance = scene && scene->is_ancestor_of(p_node) && scene->is_editable_instance(p_node);
+	}
+
 	if (!p_node->is_connected("child_order_changed", callable_mp(this, &SceneTreeEditor::_node_child_order_changed))) {
 		p_node->connect("child_order_changed", callable_mp(this, &SceneTreeEditor::_node_child_order_changed).bind(p_node));
 	}
@@ -528,6 +532,9 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		if (!p_node->is_connected(CoreStringName(script_changed), callable_mp(this, &SceneTreeEditor::_node_script_changed))) {
 			p_node->connect(CoreStringName(script_changed), callable_mp(this, &SceneTreeEditor::_node_script_changed).bind(p_node));
 		}
+	}
+	if (is_scene_tree_dock && !p_node->is_connected(CoreStringName(property_list_changed), callable_mp(this, &SceneTreeEditor::_node_property_list_changed))) {
+		p_node->connect(CoreStringName(property_list_changed), callable_mp(this, &SceneTreeEditor::_node_property_list_changed).bind(p_node));
 	}
 
 	if (connecting_signal) {
@@ -873,8 +880,18 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 	}
 
 	node_cache.mark_dirty(p_node);
+	if (is_scene_tree_dock) {
+		EditorNode::get_singleton()->mark_node_resource_usage_dirty(p_node);
+	}
 
 	_update_if_clean();
+}
+
+void SceneTreeEditor::_node_property_list_changed(Node *p_node) {
+	if (!node_cache.has(p_node)) {
+		return;
+	}
+	EditorNode::get_singleton()->mark_node_resource_usage_dirty(p_node);
 }
 
 void SceneTreeEditor::_move_node_children(HashMap<Node *, CachedNode>::Iterator &p_I) {
@@ -972,6 +989,15 @@ void SceneTreeEditor::_node_editor_state_changed(Node *p_node) {
 			// All our children also change process mode.
 			node_cache.mark_children_dirty(p_node, true);
 		}
+		if (is_scene_tree_dock) {
+			Node *scene = get_scene_node();
+			const bool editable_instance = scene && scene->is_ancestor_of(p_node) && scene->is_editable_instance(p_node);
+			if (editable_instance != I->value.editable_instance) {
+				EditorNode::get_singleton()->_mark_resource_usage_subtree_dirty(p_node);
+			} else {
+				EditorNode::get_singleton()->mark_node_resource_usage_dirty(p_node);
+			}
+		}
 	}
 
 	_update_if_clean();
@@ -987,6 +1013,9 @@ void SceneTreeEditor::_node_added(Node *p_node) {
 	}
 
 	node_cache.mark_dirty(p_node);
+	if (is_scene_tree_dock) {
+		EditorNode::get_singleton()->mark_node_resource_usage_dirty(p_node);
+	}
 	_update_if_clean();
 }
 
@@ -2591,7 +2620,7 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 	HashMap<Node *, CachedNode>::Iterator I = cache.find(p_node);
 	if (I) {
 		if (editor->is_scene_tree_dock) {
-			EditorNode::get_singleton()->update_resource_count(I->key, true);
+			EditorNode::get_singleton()->remove_node_from_resource_usage_cache(I->key);
 		}
 		if (p_recursive) {
 			int cc = p_node->get_child_count(false);
