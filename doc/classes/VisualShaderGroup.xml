@@ -75,12 +75,6 @@
 				Disconnects the specified nodes and ports.
 			</description>
 		</method>
-		<method name="get_input_port_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the number of input ports defined for this group.
-			</description>
-		</method>
 		<method name="get_input_port_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="id" type="int" />
@@ -119,12 +113,6 @@
 			<param index="0" name="id" type="int" />
 			<description>
 				Returns the position of the specified node within the shader graph.
-			</description>
-		</method>
-		<method name="get_output_port_count" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the number of output ports defined for this group.
 			</description>
 		</method>
 		<method name="get_output_port_name" qualifiers="const">
@@ -266,6 +254,24 @@
 	<members>
 		<member name="group_name" type="String" setter="set_group_name" getter="get_group_name" default="&quot;NodeGroup&quot;">
 			The display name of this group. This name is shown as the caption of the [VisualShaderNodeGroup] node in the editor.
+		</member>
+		<member name="input_port_count" type="int" setter="set_input_port_count" getter="get_input_port_count" default="0">
+			The number of input ports defined for this group. Shrinking the array removes the trailing ports along with any connections made to them.
+		</member>
+		<member name="input_port_{index}/name" type="String" setter="" getter="" default="&quot;&quot;">
+			The name of the input port at [code]index[/code]. It's used as a parameter name in the generated shader function, so it's converted into a valid identifier and made unique within the group.
+		</member>
+		<member name="input_port_{index}/type" type="int" setter="" getter="" default="0">
+			The [enum VisualShaderNode.PortType] of the input port at [code]index[/code].
+		</member>
+		<member name="output_port_count" type="int" setter="set_output_port_count" getter="get_output_port_count" default="0">
+			The number of output ports defined for this group. Shrinking the array removes the trailing ports along with any connections made to them.
+		</member>
+		<member name="output_port_{index}/name" type="String" setter="" getter="" default="&quot;&quot;">
+			The name of the output port at [code]index[/code]. It's used as a parameter name in the generated shader function, so it's converted into a valid identifier and made unique within the group.
+		</member>
+		<member name="output_port_{index}/type" type="int" setter="" getter="" default="0">
+			The [enum VisualShaderNode.PortType] of the output port at [code]index[/code].
 		</member>
 	</members>
 </class>

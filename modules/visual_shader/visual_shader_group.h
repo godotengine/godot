@@ -32,6 +32,8 @@
 
 #include "visual_shader.h"
 
+#include "scene/property_list_helper.h"
+
 class VisualShaderGroup : public Resource {
 	GDCLASS(VisualShaderGroup, Resource);
 
@@ -48,6 +50,11 @@ private:
 	Ref<ShaderGraph> graph;
 
 	mutable SafeFlag dirty;
+
+	static inline PropertyListHelper input_port_base_property_helper;
+	static inline PropertyListHelper output_port_base_property_helper;
+	PropertyListHelper input_port_property_helper;
+	PropertyListHelper output_port_property_helper;
 
 	String _validate_port_name(const String &p_port_name, int p_port_id, bool p_output) const;
 	String _validate_group_name(const String &p_name) const;
@@ -92,6 +99,7 @@ public:
 	String insert_input_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
 	void set_input_port_name(int p_id, const String &p_name);
 	void set_input_port_type(int p_id, VisualShaderNode::PortType p_type);
+	void set_input_port_count(int p_count);
 	int get_input_port_count() const;
 	String get_input_port_name(int p_id) const;
 	VisualShaderNode::PortType get_input_port_type(int p_id) const;
@@ -101,6 +109,7 @@ public:
 	String insert_output_port(int p_id, VisualShaderNode::PortType p_type, const String &p_name);
 	void set_output_port_name(int p_id, const String &p_name);
 	void set_output_port_type(int p_id, VisualShaderNode::PortType p_type);
+	void set_output_port_count(int p_count);
 	int get_output_port_count() const;
 	String get_output_port_name(int p_id) const;
 	VisualShaderNode::PortType get_output_port_type(int p_id) const;
