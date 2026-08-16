@@ -378,7 +378,7 @@ void EditorLog::_rebuild_log() {
 	for (int msg_idx = start_message_index; msg_idx < messages.size(); msg_idx++) {
 		LogMessage msg = messages[msg_idx];
 
-		if (_contains_case_sensitive(_strip_bbcode_from_message(msg.text), search_text)) {
+		if (_contains_case_sensitive(_strip_bbcode_from_message(msg.text), search_text) && _check_display_message(msg)) {
 			search_matches_count += 1;
 		}
 
@@ -633,6 +633,18 @@ void EditorLog::_search_changed(const String &p_text) {
 }
 
 void EditorLog::_update_matching_lines_count_label(int count) {
+	matching_lines_count_label->set_modulate(Color(1.0, 1.0, 1.0));
+
+	if (count == 0) {
+		matching_lines_count_label->set_text("No matching lines");
+		matching_lines_count_label->set_modulate(get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+		return;
+	}
+	else if (count == 1) {
+		matching_lines_count_label->set_text("1 matching line");
+		return;
+	}
+
 	matching_lines_count_label->set_text(vformat("%s matching lines", itos(count)));
 }
 
